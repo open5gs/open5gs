@@ -15,7 +15,8 @@ Build-Depends: debhelper (>= 9),
                libgcrypt-dev,
                libssl-dev,
                libmongoc-dev,
-               libbson-dev
+               libbson-dev,
+               libyaml-dev
 Standards-Version: 3.9.6
 Vcs-Browser: https://github.com/acetcom/nextepc
 Vcs-Git: git://github.com/acetcom/nextepc

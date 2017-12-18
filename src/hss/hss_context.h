@@ -13,6 +13,8 @@ extern "C" {
 #define HSS_KEY_LEN                 16
 #define HSS_AMF_LEN                 2
 
+#define HSS_MAX_SQN                 0x7ffffffffff
+
 typedef struct _hss_db_auth_info_t {
     c_uint8_t       k[HSS_KEY_LEN];
     c_uint8_t       use_opc;

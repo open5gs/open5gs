@@ -27,6 +27,7 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
+#include "core_network.h"
 
 #include "gtp_types.h"
 #include "gtp_message.h"
@@ -182,7 +183,45 @@ c_int16_t gtp_build_tft(
                         sizeof(target.pf[i].component[j].ipv4.mask));
                     size += sizeof(target.pf[i].component[j].ipv4.mask);
                     break;
+                case GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE:
+                case GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE:
+                    d_assert(size +
+                        sizeof(target.pf[i].component[j].ipv6.addr)
+                            <= data_len, 
+                        return -1, "encode error");
+                    memcpy(octet->data + size,
+                        &target.pf[i].component[j].ipv6.addr,
+                        sizeof(target.pf[i].component[j].ipv6.addr));
+                    size += sizeof(target.pf[i].component[j].ipv6.addr);
 
+                    d_assert(size +
+                        sizeof(target.pf[i].component[j].ipv6.prefixlen)
+                            <= data_len, 
+                        return -1, "encode error");
+                    memcpy(octet->data + size,
+                        &target.pf[i].component[j].ipv6.prefixlen,
+                        sizeof(target.pf[i].component[j].ipv6.prefixlen));
+                    size += sizeof(target.pf[i].component[j].ipv6.prefixlen);
+                    break;
+                case GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE:
+                    d_assert(size +
+                        sizeof(target.pf[i].component[j].ipv6_mask.addr)
+                            <= data_len, 
+                        return -1, "encode error");
+                    memcpy(octet->data + size,
+                        &target.pf[i].component[j].ipv6_mask.addr,
+                        sizeof(target.pf[i].component[j].ipv6_mask.addr));
+                    size += sizeof(target.pf[i].component[j].ipv6_mask.addr);
+
+                    d_assert(size +
+                        sizeof(target.pf[i].component[j].ipv6_mask.mask)
+                            <= data_len, 
+                        return -1, "encode error");
+                    memcpy(octet->data + size,
+                        &target.pf[i].component[j].ipv6_mask.mask,
+                        sizeof(target.pf[i].component[j].ipv6_mask.mask));
+                    size += sizeof(target.pf[i].component[j].ipv6_mask.mask);
+                    break;
                 case GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE:
                 case GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE:
                     d_assert(size +

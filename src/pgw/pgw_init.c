@@ -3,16 +3,16 @@
 #include "core_debug.h"
 #include "core_thread.h"
 
+#include "gtp_xact.h"
+
 #include "pgw_context.h"
 #include "pgw_event.h"
+#include "pgw_sm.h"
 
 #include "pgw_fd_path.h"
 
-static thread_id sm_thread;
-static void *THREAD_FUNC sm_main(thread_id id, void *data);
-
-static thread_id net_thread;
-static void *THREAD_FUNC net_main(thread_id id, void *data);
+static thread_id pgw_thread;
+static void *THREAD_FUNC pgw_main(thread_id id, void *data);
 
 static int initialized = 0;
 
@@ -30,15 +30,13 @@ status_t pgw_initialize()
     rv = pgw_context_setup_trace_module();
     if (rv != CORE_OK) return rv;
 
-    rv = pgw_ip_pool_generate();
+    rv = pgw_ue_pool_generate();
     if (rv != CORE_OK) return rv;
 
     ret = pgw_fd_init();
     if (ret != 0) return CORE_ERROR;
 
-    rv = thread_create(&sm_thread, NULL, sm_main, NULL);
-    if (rv != CORE_OK) return rv;
-    rv = thread_create(&net_thread, NULL, net_main, NULL);
+    rv = thread_create(&pgw_thread, NULL, pgw_main, NULL);
     if (rv != CORE_OK) return rv;
 
     initialized = 1;
@@ -50,8 +48,7 @@ void pgw_terminate(void)
 {
     if (!initialized) return;
 
-    thread_delete(net_thread);
-    thread_delete(sm_thread);
+    thread_delete(pgw_thread);
 
     pgw_fd_final();
 
@@ -60,16 +57,16 @@ void pgw_terminate(void)
     gtp_xact_final();
 }
 
-static void *THREAD_FUNC sm_main(thread_id id, void *data)
+static void *THREAD_FUNC pgw_main(thread_id id, void *data)
 {
     event_t event;
     fsm_t pgw_sm;
     c_time_t prev_tm, now_tm;
-    int r;
+    status_t rv;
 
     memset(&event, 0, sizeof(event_t));
 
-    pgw_self()->queue_id = event_create(MSGQ_O_BLOCK);
+    pgw_self()->queue_id = event_create(MSGQ_O_NONBLOCK);
     d_assert(pgw_self()->queue_id, return NULL, 
             "PGW event queue creation failed");
     tm_service_init(&pgw_self()->tm_service);
@@ -81,46 +78,41 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
 
     prev_tm = time_now();
 
+#define EVENT_LOOP_TIMEOUT 10   /* 10ms */
     while ((!thread_should_stop()))
     {
-        r = event_timedrecv(pgw_self()->queue_id, &event, EVENT_WAIT_TIMEOUT);
-
-        d_assert(r != CORE_ERROR, continue,
-                "While receiving a event message, error occurs");
-
-        now_tm = time_now();
-
-        /* if the gap is over 10 ms, execute preriodic jobs */
-        if (now_tm - prev_tm > EVENT_WAIT_TIMEOUT)
+        sock_select_loop(EVENT_LOOP_TIMEOUT); 
+        do
         {
-            tm_execute_tm_service(
-                    &pgw_self()->tm_service, pgw_self()->queue_id);
+            rv = event_recv(pgw_self()->queue_id, &event);
 
-            prev_tm = now_tm;
-        }
+            d_assert(rv != CORE_ERROR, continue,
+                    "While receiving a event message, error occurs");
 
-        if (r == CORE_TIMEUP)
-        {
-            continue;
-        }
+            now_tm = time_now();
 
-        fsm_dispatch(&pgw_sm, (fsm_event_t*)&event);
+            /* if the gap is over event_loop timeout, execute preriodic jobs */
+            if (now_tm - prev_tm > (EVENT_LOOP_TIMEOUT * 1000))
+            {
+                tm_execute_tm_service(
+                        &pgw_self()->tm_service, pgw_self()->queue_id);
+
+                prev_tm = now_tm;
+            }
+
+            if (rv == CORE_EAGAIN)
+            {
+                continue;
+            }
+
+            fsm_dispatch(&pgw_sm, (fsm_event_t*)&event);
+        } while(rv == CORE_OK);
     }
 
     fsm_final(&pgw_sm, 0);
     fsm_clear(&pgw_sm);
 
     event_delete(pgw_self()->queue_id);
-
-    return NULL;
-}
-
-static void *THREAD_FUNC net_main(thread_id id, void *data)
-{
-    while (!thread_should_stop())
-    {
-        net_fds_read_run(50); 
-    }
 
     return NULL;
 }

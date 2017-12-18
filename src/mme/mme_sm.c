@@ -3,8 +3,10 @@
 
 #include "s1ap_message.h"
 #include "nas_message.h"
+#include "gtp_xact.h"
 
 #include "mme_event.h"
+#include "mme_sm.h"
 
 #include "s1ap_handler.h"
 #include "s1ap_path.h"
@@ -37,7 +39,7 @@ void mme_state_final(fsm_t *s, event_t *e)
 void mme_state_operational(fsm_t *s, event_t *e)
 {
     status_t rv;
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
 
     mme_sm_trace(3, e);
 
@@ -69,59 +71,74 @@ void mme_state_operational(fsm_t *s, event_t *e)
             {
                 d_error("Can't close S11-GTP path");
             }
-            rv = s1ap_close(mme_self()->s1ap_sock);
+            rv = s1ap_close();
             if (rv != CORE_OK)
             {
                 d_error("Can't close S1AP path");
             }
-            mme_self()->s1ap_sock = NULL;
 
             break;
         }
         case MME_EVT_S1AP_LO_ACCEPT:
         {
-            net_sock_t *sock = (net_sock_t *)event_get_param1(e);
-            d_assert(sock, break, "Null param");
-            c_uint32_t addr = (c_uint32_t)event_get_param2(e);
-            c_uint16_t port = (c_uint16_t)event_get_param3(e);
+            sock_id sock = (sock_id)event_get_param1(e);
+            d_assert(sock, break,);
+            c_sockaddr_t *addr = (c_sockaddr_t *)event_get_param2(e);
+            d_assert(addr, break,);
+            mme_enb_t *enb = NULL;
 
             d_trace(1, "eNB-S1 accepted[%s] in master_sm module\n", 
-                INET_NTOP(&addr, buf));
+                CORE_ADDR(addr, buf));
                     
-            mme_enb_t *enb = mme_enb_find_by_sock(sock);
+            enb = mme_enb_find_by_addr(addr);
             if (!enb)
             {
 #if USE_USRSCTP != 1
-                int rc = net_register_sock(sock, s1ap_recv_cb, NULL);
-                d_assert(rc == 0, break, "register _s1ap_recv_cb failed");
+                status_t rv = sock_register(sock, s1ap_recv_handler, NULL);
+                d_assert(rv == CORE_OK, break, "register s1ap_recv_cb failed");
 #endif
 
-                mme_enb_t *enb = mme_enb_add(sock);
+                mme_enb_t *enb = mme_enb_add(sock, addr);
                 d_assert(enb, break, "Null param");
-                enb->s1ap_addr = addr;
-                enb->s1ap_port = port;
             }
             else
             {
                 d_warn("eNB context duplicated with IP-address [%s]!!!", 
-                        INET_NTOP(&addr, buf));
-#if USE_USRSCTP != 1
-                net_close(sock);
-#endif
+                        CORE_ADDR(addr, buf));
+                sock_delete(sock);
                 d_warn("S1 Socket Closed");
             }
-            
+
             break;
         }
         case MME_EVT_S1AP_LO_CONNREFUSED:
         {
             mme_enb_t *enb = NULL;
-            net_sock_t *sock = NULL;
+            sock_id sock = 0;
+            c_sockaddr_t *addr = NULL;
 
-            sock = (net_sock_t *)event_get_param1(e);
+            sock = (sock_id)event_get_param1(e);
             d_assert(sock, break, "Null param");
-            
-            enb = mme_enb_find_by_sock(sock);
+            addr = (c_sockaddr_t *)event_get_param2(e);
+            d_assert(addr, break, "Null param");
+
+#ifdef NO_FD_LOCK
+            enb = mme_enb_find_by_addr(addr);
+#else
+#error do not use lock in socket fd
+            /* 
+             * <Connection Refused>
+             * if socket type is SOCK_STREAM,
+             * I'm not sure whether address is available or not.
+             * So, I'll use 'sock_id' at this point.
+             */
+            if (mme_enb_sock_type(sock) == SOCK_STREAM)
+                enb = mme_enb_find_by_sock(sock);
+            else
+                enb = mme_enb_find_by_addr(addr);
+#endif
+            core_free(addr);
+
             if (enb)
             {
                 d_trace(1, "eNB-S1[%x] connection refused!!!\n", 
@@ -139,23 +156,30 @@ void mme_state_operational(fsm_t *s, event_t *e)
         {
             s1ap_message_t message;
             mme_enb_t *enb = NULL;
-            net_sock_t *sock = NULL;
+            sock_id sock = 0;
+            c_sockaddr_t *addr = NULL;
             pkbuf_t *pkbuf = NULL;
 
-            sock = (net_sock_t *)event_get_param1(e);
+            sock = (sock_id)event_get_param1(e);
             d_assert(sock, break, "Null param");
+
+            addr = (c_sockaddr_t *)event_get_param2(e);
+            d_assert(addr, break, "Null param");
             
-            pkbuf = (pkbuf_t *)event_get_param2(e);
+            pkbuf = (pkbuf_t *)event_get_param3(e);
             d_assert(pkbuf, break, "Null param");
 
-            enb = mme_enb_find_by_sock(sock);
+            enb = mme_enb_find_by_addr(addr);
+            core_free(addr);
+
             d_assert(enb, break, "No eNB context");
             d_assert(FSM_STATE(&enb->sm), break, "No S1AP State Machine");
 
             d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
-            event_set_param3(e, (c_uintptr_t)&message);
 
+            event_set_param1(e, (c_uintptr_t)enb->index);
+            event_set_param4(e, (c_uintptr_t)&message);
             fsm_dispatch(&enb->sm, (fsm_event_t*)e);
 
             s1ap_free_pdu(&message);
@@ -344,28 +368,26 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_S11_MESSAGE:
         {
             status_t rv;
-            gtp_node_t *gnode = NULL;
-            c_uint32_t addr = (c_uint32_t)event_get_param1(e);
-            c_uint16_t port = (c_uint16_t)event_get_param2(e);
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param1(e);
             gtp_xact_t *xact = NULL;
             gtp_message_t message;
             mme_ue_t *mme_ue = NULL;
 
             d_assert(pkbuf, break, "Null param");
-            gnode = mme_sgw_find(addr, port);
-            d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
-
-            rv = gtp_xact_receive(gnode, pkbuf, &xact, &message);
-            if (rv != CORE_OK)
-                break;
-
-            d_assert(xact, return, "Null param");
+            rv = gtp_parse_msg(&message, pkbuf);
+            d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break, "parse error");
 
             mme_ue = mme_ue_find_by_teid(message.h.teid);
             d_assert(mme_ue, pkbuf_free(pkbuf); break, 
                     "No UE Context(TEID:%d)", message.h.teid);
-                    
+
+            rv = gtp_xact_receive(mme_ue->gnode, &message.h, &xact);
+            if (rv != CORE_OK)
+            {
+                pkbuf_free(pkbuf);
+                break;
+            }
+
             switch(message.h.type)
             {
                 case GTP_CREATE_SESSION_RESPONSE_TYPE:

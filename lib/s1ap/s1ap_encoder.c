@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_param.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "s1ap_message.h"
 
 static inline int s1ap_encode_initiating_message(
@@ -23,19 +23,27 @@ static inline int s1ap_encode_downlink_nas_transport(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_initial_context_setup_request(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_initial_context_setup_response(
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_e_rab_setup_request(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_e_rab_setup_response(
+        s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_e_rab_release_command(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_ue_context_release_command(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_paging(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_path_switch_request(
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_path_switch_ack(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_path_switch_failure(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_handover_request(
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_handover_request_ack(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_handover_command(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
@@ -146,6 +154,13 @@ static inline int s1ap_encode_initiating_message(
             ret = s1ap_encode_paging(message_p, pkbuf);
             break;
 
+        case S1ap_ProcedureCode_id_PathSwitchRequest:
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_pathswitchrequest,
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_path_switch_request(message_p, pkbuf);
+            break;
+
         case S1ap_ProcedureCode_id_HandoverResourceAllocation:
             s1ap_encode_xer_print_message(s1ap_xer_print_s1ap_handoverrequest,
                     s1ap_xer__print2sp, message_p);
@@ -180,6 +195,20 @@ static inline int s1ap_encode_successfull_outcome(
             ret = s1ap_encode_s1setup_response(message_p, pkbuf);
             break;
 
+        case S1ap_ProcedureCode_id_InitialContextSetup:
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_initialcontextsetupresponse, 
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_initial_context_setup_response(message_p, pkbuf);
+            break;
+
+        case S1ap_ProcedureCode_id_E_RABSetup:
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_e_rabsetupresponse, 
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_e_rab_setup_response(message_p, pkbuf);
+            break;
+
         case S1ap_ProcedureCode_id_PathSwitchRequest:
             s1ap_encode_xer_print_message(
                     s1ap_xer_print_s1ap_pathswitchrequestacknowledge,
@@ -192,6 +221,13 @@ static inline int s1ap_encode_successfull_outcome(
                     s1ap_xer_print_s1ap_handovercommand,
                     s1ap_xer__print2sp, message_p);
             ret = s1ap_encode_handover_command(message_p, pkbuf);
+            break;
+
+        case S1ap_ProcedureCode_id_HandoverResourceAllocation:
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_handoverrequestacknowledge,
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_handover_request_ack(message_p, pkbuf);
             break;
 
         case S1ap_ProcedureCode_id_HandoverCancel:
@@ -437,6 +473,46 @@ static inline int s1ap_encode_initial_context_setup_request(
     return enc_ret.encoded;
 }
 
+static inline int s1ap_encode_initial_context_setup_response(
+        s1ap_message_t *message_p, pkbuf_t *pkbuf)
+{
+    asn_enc_rval_t enc_ret = {0};
+
+    S1AP_PDU_t pdu;
+    S1ap_InitialContextSetupResponse_t initialContextSetupResponse;
+    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_InitialContextSetupResponse;
+
+    memset(&initialContextSetupResponse, 0, 
+            sizeof(S1ap_InitialContextSetupResponse_t));
+    if (s1ap_encode_s1ap_initialcontextsetupresponseies(
+            &initialContextSetupResponse, 
+            &message_p->s1ap_InitialContextSetupResponseIEs) < 0) 
+    {
+        d_error("Encoding of %s failed", td->name);
+        return -1;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome.procedureCode = message_p->procedureCode;
+    pdu.choice.successfulOutcome.criticality = S1ap_Criticality_reject;
+    ANY_fromType_aper(&pdu.choice.successfulOutcome.value,
+            td, &initialContextSetupResponse);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &initialContextSetupResponse);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", td->name);
+    }
+
+    return enc_ret.encoded;
+}
+
 static inline int s1ap_encode_e_rab_setup_request(
         s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
@@ -464,6 +540,43 @@ static inline int s1ap_encode_e_rab_setup_request(
                     &pdu, pkbuf->payload, MAX_SDU_LEN);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &req);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", td->name);
+    }
+
+    return enc_ret.encoded;
+}
+
+static inline int s1ap_encode_e_rab_setup_response(
+        s1ap_message_t *message_p, pkbuf_t *pkbuf)
+{
+    asn_enc_rval_t enc_ret = {0};
+
+    S1AP_PDU_t pdu;
+    S1ap_E_RABSetupResponse_t rsp;
+    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_E_RABSetupResponse;
+
+    memset(&rsp, 0, sizeof(S1ap_E_RABSetupResponse_t));
+    if (s1ap_encode_s1ap_e_rabsetupresponseies(
+            &rsp, &message_p->s1ap_E_RABSetupResponseIEs) < 0) 
+    {
+        d_error("Encoding of %s failed", td->name);
+        return -1;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome.procedureCode = message_p->procedureCode;
+    pdu.choice.successfulOutcome.criticality = S1ap_Criticality_reject;
+    ANY_fromType_aper(&pdu.choice.successfulOutcome.value, td, &rsp);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &rsp);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
 
     if (enc_ret.encoded < 0)
@@ -586,6 +699,43 @@ static inline int s1ap_encode_paging(s1ap_message_t *message_p, pkbuf_t *pkbuf)
     return enc_ret.encoded;
 }
 
+static inline int s1ap_encode_path_switch_request(
+    s1ap_message_t *message_p, pkbuf_t *pkbuf)
+{
+    asn_enc_rval_t enc_ret = {0};
+
+    S1AP_PDU_t pdu;
+    S1ap_PathSwitchRequest_t req;
+    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_PathSwitchRequest;
+
+    memset(&req, 0, sizeof(S1ap_PathSwitchRequest_t));
+    if (s1ap_encode_s1ap_pathswitchrequesties(
+            &req, &message_p->s1ap_PathSwitchRequestIEs) < 0) 
+    {
+        d_error("Encoding of %s failed", td->name);
+        return -1;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage.procedureCode = message_p->procedureCode;
+    pdu.choice.initiatingMessage.criticality = S1ap_Criticality_reject;
+    ANY_fromType_aper(&pdu.choice.initiatingMessage.value, td, &req);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &req);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", td->name);
+    }
+
+    return enc_ret.encoded;
+}
+
 static inline int s1ap_encode_path_switch_ack(
     s1ap_message_t *message_p, pkbuf_t *pkbuf)
 {
@@ -687,6 +837,43 @@ static inline int s1ap_encode_handover_request(
                     &pdu, pkbuf->payload, MAX_SDU_LEN);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &request);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", td->name);
+    }
+
+    return enc_ret.encoded;
+}
+
+static inline int s1ap_encode_handover_request_ack(
+    s1ap_message_t *message_p, pkbuf_t *pkbuf)
+{
+    asn_enc_rval_t enc_ret = {0};
+
+    S1AP_PDU_t pdu;
+    S1ap_HandoverRequestAcknowledge_t ack;
+    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_HandoverRequestAcknowledge;
+
+    memset(&ack, 0, sizeof(S1ap_HandoverRequestAcknowledge_t));
+    if (s1ap_encode_s1ap_handoverrequestacknowledgeies(
+                &ack, &message_p->s1ap_HandoverRequestAcknowledgeIEs) < 0) 
+    {
+        d_error("Encoding of %s failed", td->name);
+        return -1;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome.procedureCode = message_p->procedureCode;
+    pdu.choice.successfulOutcome.criticality = S1ap_Criticality_reject;
+    ANY_fromType_aper(&pdu.choice.successfulOutcome.value, td, &ack);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &ack);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
 
     if (enc_ret.encoded < 0)

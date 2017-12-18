@@ -3,6 +3,7 @@
 #include "core_debug.h"
 #include "core_lib.h"
 
+#include "gtp_node.h"
 #include "fd_lib.h"
 #include "gx_message.h"
 
@@ -63,8 +64,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
         case PGW_EVT_S5C_MESSAGE:
         {
             status_t rv;
-            gtp_node_t *gnode = (gtp_node_t *)event_get_param1(e);
-            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param2(e);
+            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param1(e);
             pkbuf_t *copybuf = NULL;
             c_uint16_t copybuf_len = 0;
             gtp_xact_t *xact = NULL;
@@ -72,7 +72,6 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             pgw_sess_t *sess = NULL;
 
             d_assert(recvbuf, break, "Null param");
-            d_assert(gnode, pkbuf_free(recvbuf); break, "Null param");
 
             copybuf_len = sizeof(gtp_message_t);
             copybuf = pkbuf_alloc(0, copybuf_len);
@@ -80,15 +79,33 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             message = copybuf->payload;
             d_assert(message, break, "Null param");
 
-            rv = gtp_xact_receive(gnode, recvbuf, &xact, message);
-            if (rv != CORE_OK)
-                break;
+            rv = gtp_parse_msg(message, recvbuf);
+            d_assert(rv == CORE_OK,
+                    pkbuf_free(recvbuf); pkbuf_free(copybuf); break,
+                    "parse error");
 
-            if (message->h.type == GTP_CREATE_SESSION_REQUEST_TYPE)
-                sess = pgw_sess_find_or_add_by_message(message);
+            if (message->h.teid == 0)
+            {
+                gtp_node_t *sgw = pgw_sgw_add_by_message(message);
+                d_assert(sgw, pkbuf_free(recvbuf);pkbuf_free(copybuf); break,);
+                sess = pgw_sess_add_by_message(message);
+                SETUP_GTP_NODE(sess, sgw);
+            }
             else
+            {
                 sess = pgw_sess_find_by_teid(message->h.teid);
-            d_assert(sess, pkbuf_free(recvbuf); break, "No Session Context");
+            }
+            d_assert(sess,
+                    pkbuf_free(recvbuf); pkbuf_free(copybuf); break,
+                    "No Session Context");
+
+            rv = gtp_xact_receive(sess->gnode, &message->h, &xact);
+            if (rv != CORE_OK)
+            {
+                pkbuf_free(recvbuf);
+                pkbuf_free(copybuf);
+                break;
+            }
 
             switch(message->h.type)
             {
@@ -97,24 +114,22 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                         xact, sess, &message->create_session_request);
                     pgw_gx_send_ccr(xact, sess, copybuf,
                         GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
-                    goto out;
+                    break;
                 case GTP_DELETE_SESSION_REQUEST_TYPE:
                     pgw_s5c_handle_delete_session_request(
                         xact, sess, &message->delete_session_request);
                     pgw_gx_send_ccr(xact, sess, copybuf,
                         GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
-                    goto out;
-
+                    break;
                 case GTP_CREATE_BEARER_RESPONSE_TYPE:
                     pgw_s5c_handle_create_bearer_response(
                         xact, sess, &message->create_bearer_response);
+                    pkbuf_free(copybuf);
                     break;
                 default:
                     d_warn("Not implmeneted(type:%d)", message->h.type);
                     break;
             }
-            pkbuf_free(copybuf);
-out:
             pkbuf_free(recvbuf);
             break;
         }

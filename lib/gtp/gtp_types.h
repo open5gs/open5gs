@@ -2,7 +2,9 @@
 #define __GTP_TYPES_H__
 
 #include "core_tlv_msg.h"
-#include "types.h"
+#include "3gpp_types.h"
+
+typedef struct c_sockaddr_t c_sockaddr_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -222,6 +224,7 @@ ED3(c_uint8_t code:3;,
 #define GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE 17
 #define GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE 32
 #define GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE 33
+#define GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE 34
 #define GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE 35
 #define GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE 64
 #define GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE 65
@@ -238,6 +241,14 @@ ED3(c_uint8_t code:3;,
                     c_uint32_t addr;
                     c_uint32_t mask;
                 } ipv4;
+                struct {
+                    c_uint32_t addr[4];
+                    c_uint8_t prefixlen;
+                } ipv6;
+                struct {
+                    c_uint32_t addr[4];
+                    c_uint32_t mask[4];
+                } ipv6_mask;
                 struct {
                     c_uint16_t low;
                     c_uint16_t high;
@@ -340,16 +351,27 @@ CORE_DECLARE(c_int16_t) gtp_build_uli(
 #define GTP_F_TEID_S11_MME_GTP_U                            38
 #define GTP_F_TEID_S11_SGW_GTP_U                            39
 
-#define GTP_F_TEID_IPV4_LEN                                 9
-#define GTP_F_TEID_IPV6_LEN                                 21
+#define GTP_F_TEID_HDR_LEN                      5
+#define GTP_F_TEID_IPV4_LEN                     IPV4_LEN+GTP_F_TEID_HDR_LEN
+#define GTP_F_TEID_IPV6_LEN                     IPV6_LEN+GTP_F_TEID_HDR_LEN
+#define GTP_F_TEID_IPV4V6_LEN                   IPV4V6_LEN+GTP_F_TEID_HDR_LEN
 typedef struct _gtp_f_teid_t {
-ED3(c_uint8_t ipv4:1;,
-    c_uint8_t ipv6:1;,
-    c_uint8_t interface_type:6;)
-    c_uint32_t teid;
+ED3(c_uint8_t       ipv4:1;,
+    c_uint8_t       ipv6:1;,
+    c_uint8_t       interface_type:6;)
+    c_uint32_t      teid;
     union {
-        c_uint32_t ipv4_addr;
-        c_uint8_t ipv6_addr[IPV6_LEN];
+        /* GTP_F_TEID_IPV4 */
+        c_uint32_t addr;
+
+        /* GTP_F_TEID_IPV6 */
+        c_uint8_t addr6[IPV6_LEN];
+
+        /* GTP_F_TEID_BOTH */
+        struct {
+            c_uint32_t addr;
+            c_uint8_t addr6[IPV6_LEN];
+        } both;
     };
 } __attribute__ ((packed)) gtp_f_teid_t;
 

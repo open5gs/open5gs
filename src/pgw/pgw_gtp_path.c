@@ -1,16 +1,25 @@
 #define TRACE_MODULE _pgw_gtp_path
 #include "core_debug.h"
 #include "core_pkbuf.h"
-#include "core_net.h"
 
-#include "types.h"
+#include "3gpp_types.h"
+#include "gtp_node.h"
 #include "gtp_path.h"
 
+#include "context.h"
 #include "pgw_context.h"
 #include "pgw_event.h"
 #include "pgw_gtp_path.h"
 
-static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
+#define PGW_GTP_HANDLED     1
+
+c_uint16_t in_cksum(c_uint16_t *addr, int len);
+static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf);
+static status_t pgw_gtp_handle_slaac(pgw_sess_t *sess, pkbuf_t *recvbuf);
+static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf);
+static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess);
+
+static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
 {
     pkbuf_t *recvbuf = NULL;
     int n;
@@ -20,7 +29,7 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
     recvbuf = pkbuf_alloc(GTPV1U_HEADER_LEN, MAX_SDU_LEN);
     d_assert(recvbuf, return -1, "pkbuf_alloc error");
 
-    n = net_link_read(net_link, recvbuf->payload, recvbuf->len, 0);
+    n = sock_read(sock, recvbuf->payload, recvbuf->len);
     if (n <= 0)
     {
         pkbuf_free(recvbuf);
@@ -36,44 +45,17 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
     bearer = pgw_bearer_find_by_packet(recvbuf);
     if (bearer)
     {
-        gtp_header_t *gtp_h = NULL;
-        gtp_node_t gnode;
-        char buf[INET_ADDRSTRLEN];
-
-        /* Add GTP-U header */
-        rv = pkbuf_header(recvbuf, GTPV1U_HEADER_LEN);
-        if (rv != CORE_OK)
-        {
-            d_error("pkbuf_header error");
-            pkbuf_free(recvbuf);
-            return -1;
-        }
-        
-        gtp_h = (gtp_header_t *)recvbuf->payload;
-        /* Bits    8  7  6  5  4  3  2  1
-         *        +--+--+--+--+--+--+--+--+
-         *        |version |PT| 1| E| S|PN|
-         *        +--+--+--+--+--+--+--+--+
-         *         0  0  1   1  0  0  0  0
-         */
-        gtp_h->flags = 0x30;
-        gtp_h->type = GTPU_MSGTYPE_GPDU;
-        gtp_h->length = htons(n);
-        gtp_h->teid = htonl(bearer->sgw_s5u_teid);
-
-        /* Send to SGW */
-        gnode.addr = bearer->sgw_s5u_addr;
-        gnode.port = GTPV1_U_UDP_PORT;
-        gnode.sock = pgw_self()->gtpu_sock;
-        d_trace(50, "Send S5U PDU (teid = 0x%x)to SGW(%s)\n",
-                bearer->sgw_s5u_teid,
-                INET_NTOP(&gnode.addr, buf));
-
-        rv =  gtp_send(&gnode, recvbuf);
+        /* Unicast */
+        rv = pgw_gtp_send_to_bearer(bearer, recvbuf);
+        d_assert(rv == CORE_OK,, "pgw_gtp_send_to_bearer() failed");
     }
     else
     {
-        d_trace(3, "Can not find bearer\n");
+        if (context_self()->parameter.multicast)
+        {
+            rv = pgw_gtp_handle_multicast(recvbuf);
+            d_assert(rv != CORE_ERROR,, "pgw_gtp_handle_multicast() failed");
+        }
     }
 
     pkbuf_free(recvbuf);
@@ -81,21 +63,18 @@ static int _gtpv1_tun_recv_cb(net_link_t *net_link, void *data)
 
 }
 
-static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv2_c_recv_cb(sock_id sock, void *data)
 {
     event_t e;
     status_t rv;
     pkbuf_t *pkbuf = NULL;
-    c_uint32_t addr;
-    c_uint16_t port;
-    pgw_sgw_t *sgw = NULL;
 
     d_assert(sock, return -1, "Null param");
 
-    pkbuf = gtp_read(sock);
-    if (pkbuf == NULL)
+    rv = gtp_recv(sock, &pkbuf);
+    if (rv != CORE_OK)
     {
-        if (sock->sndrcv_errno == EAGAIN)
+        if (errno == EAGAIN)
             return 0;
 
         return -1;
@@ -104,23 +83,8 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     d_trace(10, "S5-C PDU received from PGW\n");
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
-    addr = sock->remote.sin_addr.s_addr;
-    port = ntohs(sock->remote.sin_port);
-
-    sgw = pgw_sgw_find(addr, port);
-    if (!sgw)
-    {
-        sgw = pgw_sgw_add();
-        d_assert(sgw, return -1, "Can't add MME-GTP node");
-
-        sgw->addr = addr;
-        sgw->port = port;
-        sgw->sock = sock;
-    }
-
     event_set(&e, PGW_EVT_S5C_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)sgw);
-    event_set_param2(&e, (c_uintptr_t)pkbuf);
+    event_set_param1(&e, (c_uintptr_t)pkbuf);
     rv = pgw_event_send(&e);
     if (rv != CORE_OK)
     {
@@ -132,152 +96,405 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     return 0;
 }
 
-static int _gtpv1_u_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 {
+    status_t rv;
     pkbuf_t *pkbuf = NULL;
     c_uint32_t size = GTPV1U_HEADER_LEN;
+    gtp_header_t *gtp_h = NULL;
+    struct ip *ip_h = NULL;
+
+    c_uint32_t teid;
+    pgw_bearer_t *bearer = NULL;
+    pgw_sess_t *sess = NULL;
+    pgw_subnet_t *subnet = NULL;
+    pgw_dev_t *dev = NULL;
 
     d_assert(sock, return -1, "Null param");
 
-    pkbuf = gtp_read(sock);
-    if (pkbuf == NULL)
+    rv = gtp_recv(sock, &pkbuf);
+    if (rv != CORE_OK)
     {
-        if (sock->sndrcv_errno == EAGAIN)
+        if (errno == EAGAIN)
             return 0;
 
         return -1;
     }
 
+    d_assert(pkbuf, return 0,);
     d_trace(50, "S5-U PDU received from SGW\n");
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
+
+    d_assert(pkbuf->payload, goto cleanup,);
+    gtp_h = pkbuf->payload;
+    if (gtp_h->flags & GTPU_FLAGS_S) size += 4;
+    teid = ntohl(gtp_h->teid);
+
     /* Remove GTP header and send packets to TUN interface */
-    if (pkbuf_header(pkbuf, -size) != CORE_OK)
-    {
-        d_error("pkbuf_header error");
+    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, goto cleanup,);
 
-        pkbuf_free(pkbuf);
-        return -1;
+    ip_h = pkbuf->payload;
+    d_assert(ip_h, goto cleanup,);
+
+    bearer = pgw_bearer_find_by_pgw_s5u_teid(teid);
+    d_assert(bearer, goto cleanup,);
+    sess = bearer->sess;
+    d_assert(sess, goto cleanup,);
+
+    if (ip_h->ip_v == 4 && sess->ipv4)
+        subnet = sess->ipv4->subnet;
+    else if (ip_h->ip_v == 6 && sess->ipv6)
+        subnet = sess->ipv6->subnet;
+    d_assert(subnet, goto cleanup,);
+
+    /* Check IPv6 */
+    if (context_self()->parameter.no_slaac == 0 && ip_h->ip_v == 6)
+    {
+        rv = pgw_gtp_handle_slaac(sess, pkbuf);
+        if (rv == PGW_GTP_HANDLED)
+        {
+            pkbuf_free(pkbuf);
+            return 0;
+        }
+        d_assert(rv == CORE_OK,, "pgw_gtp_handle_slaac() failed");
     }
 
-    if (net_link_write(pgw_self()->ue_network[(c_uintptr_t)data].tun_link,
-                pkbuf->payload, pkbuf->len) <= 0)
-    {
-        d_error("Can not send packets to tuntap");
-    }
+    dev = subnet->dev;
+    d_assert(dev, goto cleanup,);
+    if (sock_write(dev->sock, pkbuf->payload, pkbuf->len) <= 0)
+        d_error("sock_write() failed");
 
+cleanup:
     pkbuf_free(pkbuf);
-
     return 0;
 }
 
 status_t pgw_gtp_open()
 {
     status_t rv;
-    int i;
+    pgw_dev_t *dev = NULL;
+    pgw_subnet_t *subnet = NULL;
     int rc;
-    char buf[INET_ADDRSTRLEN];
 
-    rv = gtp_listen(&pgw_self()->gtpc_sock, _gtpv2_c_recv_cb, 
-            pgw_self()->gtpc_addr, pgw_self()->gtpc_port, NULL);
-    if (rv != CORE_OK)
+    rv = gtp_server_list(&pgw_self()->gtpc_list, _gtpv2_c_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = gtp_server_list(&pgw_self()->gtpc_list6, _gtpv2_c_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    pgw_self()->gtpc_addr = gtp_local_addr_first(&pgw_self()->gtpc_list);
+    pgw_self()->gtpc_addr6 = gtp_local_addr_first(&pgw_self()->gtpc_list6);
+
+    d_assert(pgw_self()->gtpc_addr || pgw_self()->gtpc_addr6,
+            return CORE_ERROR, "No GTP Server");
+
+    rv = gtp_server_list(&pgw_self()->gtpu_list, _gtpv1_u_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = gtp_server_list(&pgw_self()->gtpu_list6, _gtpv1_u_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    pgw_self()->gtpu_addr = gtp_local_addr_first(&pgw_self()->gtpu_list);
+    pgw_self()->gtpu_addr6 = gtp_local_addr_first(&pgw_self()->gtpu_list6);
+
+    d_assert(pgw_self()->gtpu_addr || pgw_self()->gtpu_addr6,
+            return CORE_ERROR, "No GTP Server");
+
+    /* NOTE : tun device can be created via following command.
+     *
+     * $ sudo ip tuntap add name pgwtun mode tun
+     *
+     * Also, before running pgw, assign the one IP from IP pool of UE 
+     * to pgwtun. The IP should not be assigned to UE
+     *
+     * $ sudo ifconfig pgwtun 45.45.0.1/16 up
+     *
+     */
+
+    /* Open Tun interface */
+    for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev))
     {
-        d_error("Can't establish GTP-C Path for PGW");
-        return rv;
-    }
-
-    rv = gtp_listen(&pgw_self()->gtpu_sock, _gtpv1_u_recv_cb, 
-            pgw_self()->gtpu_addr, pgw_self()->gtpu_port, NULL);
-    if (rv != CORE_OK)
-    {
-        d_error("Can't establish GTP-U Path for PGW");
-        return rv;
-    }
-
-    for (i = 0; i < pgw_self()->num_of_ue_network; i++)
-    {
-        /* NOTE : tun device can be created via following command.
-         *
-         * $ sudo ip tuntap add name pgwtun mode tun
-         *
-         * Also, before running pgw, assign the one IP from IP pool of UE 
-         * to pgwtun. The IP should not be assigned to UE
-         *
-         * $ sudo ifconfig pgwtun 45.45.0.1/16 up
-         *
-         */
-
-        /* Open Tun interface */
-        rc = net_tun_open(&pgw_self()->ue_network[i].tun_link,
-                (char *)pgw_self()->ue_network[i].if_name, 0);
+        rc = tun_open(&dev->sock, (char *)dev->ifname, 0);
         if (rc != 0)
         {
-            d_error("Can not open tun(dev : %s)",
-                    pgw_self()->ue_network[i].if_name);
+            d_error("tun_open(dev:%s) failed", dev->ifname);
             return CORE_ERROR;
         }
 
-        /* 
-         * On Linux, it is possible to create a persistent tun/tap 
-         * interface which will continue to exist even if nextepc quit, 
-         * although this is normally not required. 
-         * It can be useful to set up a tun/tap interface owned 
-         * by a non-root user, so nextepc can be started without 
-         * needing any root privileges at all.
-         */
-
-        /* Set P-to-P IP address with Netmask
-         * Note that Linux will skip this configuration */
-        rc = net_tun_set_ipv4(pgw_self()->ue_network[i].tun_link, 
-                pgw_self()->ue_network[i].ipv4.addr,
-                pgw_self()->ue_network[i].ipv4.bits);
+        rc = sock_register(dev->sock, _gtpv1_tun_recv_cb, NULL);
         if (rc != 0)
         {
-            d_error("Can not configure tun(dev : %s for %s/%d)",
-                    pgw_self()->ue_network[i].if_name,
-                    INET_NTOP(&pgw_self()->ue_network[i].ipv4.addr, buf),
-                    pgw_self()->ue_network[i].ipv4.bits);
-            return CORE_ERROR;
-        }
-
-        rc = net_register_link(pgw_self()->ue_network[i].tun_link,
-                _gtpv1_tun_recv_cb, (void *)(c_uintptr_t)i);
-        if (rc != 0)
-        {
-            d_error("Can not register tun(dev : %s)",
-                    pgw_self()->ue_network[i].if_name);
-            net_tun_close(pgw_self()->ue_network[i].tun_link);
+            d_error("sock_register(dev:%s) failed", dev->ifname);
+            sock_delete(dev->sock);
             return CORE_ERROR;
         }
     }
+
+    /* 
+     * On Linux, it is possible to create a persistent tun/tap 
+     * interface which will continue to exist even if nextepc quit, 
+     * although this is normally not required. 
+     * It can be useful to set up a tun/tap interface owned 
+     * by a non-root user, so nextepc can be started without 
+     * needing any root privileges at all.
+     */
+
+    /* Set P-to-P IP address with Netmask
+     * Note that Linux will skip this configuration */
+    for (subnet = pgw_subnet_first(); subnet; subnet = pgw_subnet_next(subnet))
+    {
+        d_assert(subnet->dev, return CORE_ERROR,);
+        rc = tun_set_ip(subnet->dev->sock, &subnet->gw, &subnet->sub);
+        if (rc != 0)
+        {
+            d_error("tun_set_ip(dev:%s) failed", subnet->dev->ifname);
+            return CORE_ERROR;
+        }
+    }
+
+    /* Link-Local Address for PGW_TUN */
+    for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev))
+        dev->link_local_addr = core_link_local_addr_by_dev(dev->ifname);
 
     return CORE_OK;
 }
 
 status_t pgw_gtp_close()
 {
+    pgw_dev_t *dev = NULL;
+
+    sock_delete_list(&pgw_self()->gtpc_list);
+    sock_delete_list(&pgw_self()->gtpc_list6);
+
+    sock_delete_list(&pgw_self()->gtpu_list);
+    sock_delete_list(&pgw_self()->gtpu_list6);
+
+    for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev))
+        sock_delete(dev->sock);
+
+    return CORE_OK;
+}
+
+static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf)
+{
     status_t rv;
-    int i;
+    struct ip *ip_h =  NULL;
+    struct ip6_hdr *ip6_h =  NULL;
 
-    rv = gtp_close(pgw_self()->gtpc_sock);
-    if (rv != CORE_OK)
+    ip_h = (struct ip *)recvbuf->payload;
+    if (ip_h->ip_v == 6)
     {
-        d_error("Can't close GTP-C Path for MME");
-        return rv;
-    }
+        ip6_h = (struct ip6_hdr *)recvbuf->payload;
+        if (IN6_IS_ADDR_MULTICAST(&ip6_h->ip6_dst))
+        {
+            hash_index_t *hi = NULL;
 
-    rv = gtp_close(pgw_self()->gtpu_sock);
-    if (rv != CORE_OK)
-    {
-        d_error("Can't close GTP-U Path for MME");
-        return rv;
-    }
+            /* IPv6 Multicast */
+            for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
+            {
+                pgw_sess_t *sess = pgw_sess_this(hi);
+                d_assert(sess, return CORE_ERROR,);
+                if (sess->ipv6)
+                {
+                    /* PDN IPv6 is avaiable */
+                    pgw_bearer_t *bearer = pgw_default_bearer_in_sess(sess);
+                    d_assert(bearer, return CORE_ERROR,);
 
-    for (i = 0; i < pgw_self()->num_of_ue_network; i++)
-    {
-        net_unregister_link(pgw_self()->ue_network[i].tun_link);
-        net_tun_close(pgw_self()->ue_network[i].tun_link);
+                    rv = pgw_gtp_send_to_bearer(bearer, recvbuf);
+                    d_assert(rv == CORE_OK,,
+                            "pgw_gtp_send_to_bearer failed");
+
+                    return PGW_GTP_HANDLED;
+                }
+            }
+        }
     }
 
     return CORE_OK;
+}
+
+static status_t pgw_gtp_handle_slaac(pgw_sess_t *sess, pkbuf_t *recvbuf)
+{
+    status_t rv;
+    struct ip *ip_h = NULL;
+
+    d_assert(sess, return CORE_ERROR,);
+    d_assert(recvbuf, return CORE_ERROR,);
+    d_assert(recvbuf->payload, return CORE_ERROR,);
+    ip_h = (struct ip *)recvbuf->payload;
+    if (ip_h->ip_v == 6)
+    {
+        struct ip6_hdr *ip6_h = (struct ip6_hdr *)recvbuf->payload;
+        if (ip6_h->ip6_nxt == IPPROTO_ICMPV6)
+        {
+            struct icmp6_hdr *icmp_h =
+                (struct icmp6_hdr *)(recvbuf->payload + sizeof(struct ip6_hdr));
+            if (icmp_h->icmp6_type == ND_ROUTER_SOLICIT)
+            {
+                if (sess->ipv6)
+                {
+                    rv = pgw_gtp_send_router_advertisement(sess);
+                    d_assert(rv == CORE_OK,,"send router advertisement failed");
+                }
+                return PGW_GTP_HANDLED;
+            }
+        }
+    }
+
+    return CORE_OK;
+}
+
+static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf)
+{
+    status_t rv;
+    gtp_header_t *gtp_h = NULL;
+
+    /* Add GTP-U header */
+    rv = pkbuf_header(sendbuf, GTPV1U_HEADER_LEN);
+    if (rv != CORE_OK)
+    {
+        d_error("pkbuf_header error");
+        pkbuf_free(sendbuf);
+        return CORE_ERROR;
+    }
+    
+    gtp_h = (gtp_header_t *)sendbuf->payload;
+    /* Bits    8  7  6  5  4  3  2  1
+     *        +--+--+--+--+--+--+--+--+
+     *        |version |PT| 1| E| S|PN|
+     *        +--+--+--+--+--+--+--+--+
+     *         0  0  1   1  0  0  0  0
+     */
+    gtp_h->flags = 0x30;
+    gtp_h->type = GTPU_MSGTYPE_GPDU;
+    gtp_h->length = htons(sendbuf->len);
+    gtp_h->teid = htonl(bearer->sgw_s5u_teid);
+
+    /* Send to SGW */
+    d_trace(50, "Send S5U PDU (teid = 0x%x) to SGW\n",
+            bearer->sgw_s5u_teid);
+    rv =  gtp_send(bearer->gnode, sendbuf);
+
+    return rv;
+}
+
+static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
+{
+    status_t rv;
+    pkbuf_t *pkbuf = NULL;
+
+    pgw_bearer_t *bearer = NULL;
+    pgw_ue_ip_t *ue_ip = NULL;
+    pgw_subnet_t *subnet = NULL;
+    pgw_dev_t *dev = NULL;
+
+    ipsubnet_t src_ipsub;
+    ipsubnet_t dst_ipsub;
+    c_uint16_t plen = 0;
+    c_uint8_t nxt = 0;
+    c_uint8_t *p = NULL;
+    struct ip6_hdr *ip6_h =  NULL;
+    struct nd_router_advert *advert_h = NULL;
+    struct nd_opt_prefix_info *prefix = NULL;
+
+    d_assert(sess, return CORE_ERROR,);
+    bearer = pgw_default_bearer_in_sess(sess);
+    d_assert(bearer, return CORE_ERROR,);
+    ue_ip = sess->ipv6;
+    d_assert(ue_ip, return CORE_ERROR,);
+    subnet = ue_ip->subnet;
+    d_assert(subnet, return CORE_ERROR,);
+    dev = subnet->dev;
+    d_assert(dev, return CORE_ERROR,);
+
+    pkbuf = pkbuf_alloc(GTPV1U_HEADER_LEN, 200);
+    d_assert(pkbuf, return CORE_ERROR,);
+    pkbuf->len = sizeof *ip6_h + sizeof *advert_h + sizeof *prefix;
+    memset(pkbuf->payload, 0, pkbuf->len);
+
+    p = (c_uint8_t *)pkbuf->payload;
+    ip6_h = (struct ip6_hdr *)p;
+    advert_h = (struct nd_router_advert *)((c_uint8_t *)ip6_h + sizeof *ip6_h);
+    prefix = (struct nd_opt_prefix_info *)
+        ((c_uint8_t*)advert_h + sizeof *advert_h);
+
+    rv = core_ipsubnet(&src_ipsub, "fe80::1", NULL);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    if (dev->link_local_addr)
+        memcpy(src_ipsub.sub, dev->link_local_addr->sin6.sin6_addr.s6_addr,
+                sizeof src_ipsub.sub);
+
+    rv = core_ipsubnet(&dst_ipsub, "ff02::1", NULL);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    advert_h->nd_ra_type = ND_ROUTER_ADVERT;
+    advert_h->nd_ra_code = 0;
+    advert_h->nd_ra_curhoplimit = 64;
+    advert_h->nd_ra_flags_reserved = 0;
+    advert_h->nd_ra_router_lifetime = htons(64800);  /* 64800s */
+    advert_h->nd_ra_reachable = 0;
+    advert_h->nd_ra_retransmit = 0;
+
+    prefix->nd_opt_pi_type = ND_OPT_PREFIX_INFORMATION;
+    prefix->nd_opt_pi_len = 4; /* 32bytes */
+    prefix->nd_opt_pi_prefix_len = pgw_ue_ip_prefixlen(sess->ipv6);
+    prefix->nd_opt_pi_flags_reserved =
+        ND_OPT_PI_FLAG_ONLINK|ND_OPT_PI_FLAG_AUTO;
+    prefix->nd_opt_pi_valid_time = htonl(0xffffffff); /* Infinite */
+    prefix->nd_opt_pi_preferred_time = htonl(0xffffffff); /* Infinite */
+    memcpy(prefix->nd_opt_pi_prefix.s6_addr,
+            sess->ipv6->addr, prefix->nd_opt_pi_prefix_len);
+
+    /* For IPv6 Pseudo-Header */
+    plen = htons(sizeof *advert_h + sizeof *prefix);
+    nxt = IPPROTO_ICMPV6;
+
+    memcpy(p, src_ipsub.sub, sizeof src_ipsub.sub);
+    p += sizeof src_ipsub.sub;
+    memcpy(p, dst_ipsub.sub, sizeof dst_ipsub.sub);
+    p += sizeof dst_ipsub.sub;
+    p += 2; memcpy(p, &plen, 2); p += 2;
+    p += 3; *p = nxt; p += 1;
+    advert_h->nd_ra_cksum = in_cksum((c_uint16_t *)pkbuf->payload, pkbuf->len);
+
+    ip6_h->ip6_flow = htonl(0x60000001);
+    ip6_h->ip6_plen = plen;
+    ip6_h->ip6_nxt = nxt;  /* ICMPv6 */
+    ip6_h->ip6_hlim = 0xff;
+    memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
+    memcpy(ip6_h->ip6_dst.s6_addr, dst_ipsub.sub, sizeof dst_ipsub.sub);
+    
+    rv = pgw_gtp_send_to_bearer(bearer, pkbuf);
+    d_assert(rv == CORE_OK,, "pgw_gtp_send_to_bearer() faild");
+
+    pkbuf_free(pkbuf);
+    return rv;
+}
+
+c_uint16_t in_cksum(c_uint16_t *addr, int len)
+{
+    int nleft = len;
+    c_uint32_t sum = 0;
+    c_uint16_t *w = addr;
+    c_uint16_t answer = 0;
+
+    // Adding 16 bits sequentially in sum
+    while (nleft > 1)
+    {
+        sum += *w;
+        nleft -= 2;
+        w++;
+    }
+
+    // If an odd byte is left
+    if (nleft == 1)
+    {
+        *(c_uint8_t *) (&answer) = *(c_uint8_t *) w;
+        sum += answer;
+    }
+
+    sum = (sum >> 16) + (sum & 0xffff);
+    sum += (sum >> 16);
+    answer = ~sum;
+
+    return answer;
 }

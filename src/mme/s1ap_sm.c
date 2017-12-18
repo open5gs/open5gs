@@ -5,10 +5,11 @@
 #include "nas_message.h"
 #include "gtp_message.h"
 
-#include "mme_event.h"
-
 #include "s1ap_build.h"
 #include "s1ap_handler.h"
+
+#include "mme_event.h"
+#include "mme_sm.h"
 
 void s1ap_state_initial(fsm_t *s, event_t *e)
 {
@@ -29,17 +30,14 @@ void s1ap_state_final(fsm_t *s, event_t *e)
 void s1ap_state_operational(fsm_t *s, event_t *e)
 {
     mme_enb_t *enb = NULL;
-    net_sock_t *sock = NULL;
 
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
     mme_sm_trace(3, e);
 
-    sock = (net_sock_t *)event_get_param1(e);
-    d_assert(sock, return, "Null param");
-    enb = mme_enb_find_by_sock(sock);
-    d_assert(enb, return, "Null param");
+    enb = mme_enb_find(event_get_param1(e));
+    d_assert(enb, return,);
 
     switch (event_get(e))
     {
@@ -53,7 +51,7 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
         }
         case MME_EVT_S1AP_MESSAGE:
         {
-            s1ap_message_t *message = (s1ap_message_t *)event_get_param3(e);
+            s1ap_message_t *message = (s1ap_message_t *)event_get_param4(e);
             d_assert(message, break, "Null param");
 
             switch(message->direction)

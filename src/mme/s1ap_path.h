@@ -2,7 +2,6 @@
 #define __S1AP_PATH_H__
 
 #include "core_pkbuf.h"
-#include "core_net.h"
 
 #include "mme_context.h"
 #include "s1ap_message.h"
@@ -11,18 +10,21 @@
 extern "C" {
 #endif /* __cplusplus */
 
+CORE_DECLARE(status_t) s1ap_init(c_uint16_t port);
+CORE_DECLARE(status_t) s1ap_final();
+
 CORE_DECLARE(status_t) s1ap_open();
 CORE_DECLARE(status_t) s1ap_close();
 
-CORE_DECLARE(status_t) s1ap_sctp_close(net_sock_t *sock);
+CORE_DECLARE(status_t) s1ap_server(sock_node_t *snode, int type);
+CORE_DECLARE(status_t) s1ap_delete(sock_id sock);
 
-CORE_DECLARE(status_t) s1ap_final();
+CORE_DECLARE(int) s1ap_recv_handler(sock_id sock, void *data);
 
-#if 0 /* depreciated */
-CORE_DECLARE(status_t) s1ap_send(net_sock_t *s, pkbuf_t *pkb);
-#endif
-CORE_DECLARE(status_t) s1ap_sendto(net_sock_t *s, pkbuf_t *pkb,
-        c_uint32_t addr, c_uint16_t port);
+CORE_DECLARE(status_t) s1ap_send(sock_id sock,
+        pkbuf_t *pkbuf, c_sockaddr_t *addr);
+CORE_DECLARE(status_t) s1ap_recv(sock_id id, pkbuf_t *pkbuf);
+
 CORE_DECLARE(status_t) s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkb);
 CORE_DECLARE(status_t) s1ap_delayed_send_to_enb(mme_enb_t *enb,
         pkbuf_t *pkbuf, c_uint32_t duration);
@@ -50,8 +52,6 @@ CORE_DECLARE(status_t) s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
 
 CORE_DECLARE(status_t) s1ap_send_mme_status_transfer(
         enb_ue_t *target_ue, S1ap_ENBStatusTransferIEs_t *ies);
-
-int s1ap_recv_cb(net_sock_t *net_sock, void *data);
 
 #ifdef __cplusplus
 }

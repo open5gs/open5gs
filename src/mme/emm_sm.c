@@ -16,6 +16,7 @@
 #include "nas_path.h"
 #include "s1ap_path.h"
 #include "mme_gtp_path.h"
+#include "mme_sm.h"
 
 void emm_state_initial(fsm_t *s, event_t *e)
 {
@@ -302,8 +303,6 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                             &authentication_response->
                                 authentication_response_parameter;
 
-                    d_assert(mme_ue, return, "Null param");
-
                     if (authentication_response_parameter->length != 
                             mme_ue->xres_len ||
                         memcmp(authentication_response_parameter->res,
@@ -321,6 +320,18 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                     {
                         FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
                     }
+                    break;
+                }
+                case NAS_AUTHENTICATION_FAILURE:
+                {
+                    nas_authentication_failure_t *authentication_failure =
+                        &message->emm.authentication_failure;
+                    nas_authentication_failure_parameter_t
+                        *authentication_failure_parameter = 
+                            &authentication_failure->
+                                authentication_failure_parameter;
+
+                    mme_s6a_send_air(mme_ue, authentication_failure_parameter);
                     break;
                 }
                 case NAS_EMM_STATUS:

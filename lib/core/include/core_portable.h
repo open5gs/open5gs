@@ -22,6 +22,7 @@
 #define __CORE_PORTABLE_H__
 
 #include "core_thread.h"
+#include "core_network.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +31,7 @@ extern "C" {
 typedef int                   os_file_t;        /**< native file */
 typedef pthread_t             os_thread_t;      /**< native thread */
 typedef pid_t                 os_proc_t;        /**< native pid */
+typedef int                   os_sock_t;        /**< native socket */
 
 /**
  * convert the thread to os specific type from core type.
@@ -42,6 +44,14 @@ CORE_DECLARE(status_t) os_thread_get(os_thread_t **thethd, thread_id id);
  * Get the thread ID
  */
 CORE_DECLARE(os_thread_t) os_thread_current(void);
+
+
+/**
+ * Convert the socket from an core type to an OS specific socket
+ * @param thesock The socket to convert.
+ * @param sock The os specific equivalent of the core socket..
+ */
+CORE_DECLARE(status_t) os_sock_get(os_sock_t *thesock, sock_id id);
 
 #ifdef __cplusplus
 }

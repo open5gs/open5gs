@@ -4,17 +4,18 @@
 #include "core_list.h"
 #include "core_index.h"
 #include "core_errno.h"
-#include "core_net.h"
 #include "core_sha2.h"
 #include "core_hash.h"
+#include "core_network.h"
+#include "core_tlv_msg.h"
+#include "core_fsm.h"
+#include "core_msgq.h"
+#include "core_timer.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "s1ap_message.h"
 #include "nas_message.h"
-#include "gtp_xact.h"
 #include "s6a_message.h"
-
-#include "mme_sm.h"
 
 /* S1AP */
 #include "S1ap-Cause.h"
@@ -31,12 +32,13 @@ extern "C" {
 #define MAX_NUM_OF_SERVED_GUMMEI    8
 #define MAX_NUM_OF_ALGORITHM        8
 
-#define MAX_NUM_OF_TAC              256
 #define MAX_NUM_OF_BPLMN            6
 
 typedef struct _enb_ue_t enb_ue_t;
 typedef struct _mme_ue_t mme_ue_t;
-typedef gtp_node_t mme_sgw_t;
+
+typedef struct _gtp_node_t gtp_node_t;
+typedef struct _gtp_xact_t gtp_xact_t;
 
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
@@ -51,25 +53,34 @@ typedef struct _served_gummei {
 typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
 
-    c_uint32_t      s1ap_addr;      /* MME S1AP local address */
-    c_uint16_t      s1ap_port;      /* MME S1AP local port */
-    net_sock_t      *s1ap_sock;     /* MME S1AP local listen socket */
+    c_uint16_t      s1ap_port;      /* Default S1AP Port */
+    c_uint16_t      gtpc_port;      /* Default GTPC Port */
 
-    c_uint32_t      gtpc_addr;      /* MME GTPC local address */
-    c_uint16_t      gtpc_port;      /* MME GTPC local port */
-    net_sock_t      *gtpc_sock;     /* MME GTPC local listen socket */
+    list_t          s1ap_list;      /* MME S1AP IPv4 Server List */
+    list_t          s1ap_list6;     /* MME S1AP IPv6 Server List */
 
-    c_uint32_t      s5c_addr;       /* PGW S5C remote address */
-    c_uint16_t      s5c_port;       /* PGW S5C remote port */
+    list_t          gtpc_list;      /* MME GTPC IPv4 Server List */
+    c_sockaddr_t    *gtpc_addr;     /* MME GTPC IPv4 Address */
+    list_t          gtpc_list6;     /* MME GTPC IPv6 Server List */
+    c_sockaddr_t    *gtpc_addr6;    /* MME GTPC IPv6 Address */
 
-    msgq_id         queue_id;       /* Queue for processing MME control plane */
-    tm_service_t    tm_service;     /* Timer Service */
+    list_t          sgw_list;       /* SGW GTPC Client List */
+    gtp_node_t      *sgw;           /* Iterator for SGW round-robin */
 
-    /* Generator for unique identification */
-    c_uint32_t      mme_ue_s1ap_id; /* mme_ue_s1ap_id generator */
-    c_uint32_t      m_tmsi;         /* m_tmsi generator */
-    /* Iterator for SGW round-robin */
-    mme_sgw_t       *sgw;
+    list_t          pgw_list;       /* PGW GTPC Client List */
+    c_sockaddr_t    *pgw_addr;      /* First IPv4 Address Selected */
+    c_sockaddr_t    *pgw_addr6;     /* First IPv6 Address Selected */
+
+    /* Served GUMME */
+    c_uint8_t       max_num_of_served_gummei;
+    served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
+
+    /* Served TAI */
+    c_uint8_t       num_of_served_tai;
+    struct {
+        tai0_list_t list0;
+        tai2_list_t list2;
+    } served_tai[MAX_NUM_OF_SERVED_TAI];
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -86,25 +97,26 @@ typedef struct _mme_context_t {
     c_uint8_t       num_of_integrity_order;
     c_uint8_t       integrity_order[MAX_NUM_OF_ALGORITHM];
 
-    /* S1SetupRequest */
-    c_uint8_t       max_num_of_served_tai;
-    tai_t           served_tai[MAX_NUM_OF_SERVED_TAI];
-
     /* S1SetupResponse */
-    c_uint8_t       max_num_of_served_gummei;
-    served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
     c_uint8_t       relative_capacity;
 
     /* Timer value */
-    c_uint32_t      t3413_value; /* Paging retry timer */
+    c_uint32_t      t3413_value;            /* Paging retry timer */
 
-    list_t          sgw_list;  /* SGW GTP Node List */
+    /* Generator for unique identification */
+    c_uint32_t      mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
+    c_uint32_t      m_tmsi;                 /* m_tmsi generator */
 
-    hash_t          *s1ap_sock_hash;        /* hash table for S1AP IP address */
+    hash_t          *enb_sock_hash;         /* hash table for ENB Socket */
+    hash_t          *enb_addr_hash;         /* hash table for ENB Address */
     hash_t          *enb_id_hash;           /* hash table for ENB-ID */
     hash_t          *mme_ue_s1ap_id_hash;   /* hash table for MME-UE-S1AP-ID */
     hash_t          *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
     hash_t          *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
+
+    /* System */
+    msgq_id         queue_id;       /* Queue for processing MME control plane */
+    tm_service_t    tm_service;     /* Timer Service */
 } mme_context_t;
 
 typedef struct _mme_enb_t {
@@ -113,12 +125,12 @@ typedef struct _mme_enb_t {
     fsm_t           sm;     /* A state machine */
 
     c_uint32_t      enb_id;     /* eNB_ID received from eNB */
-    c_uint32_t      s1ap_addr;  /* eNB S1AP IP address */
-    c_uint16_t      s1ap_port;  /* eNB S1AP Port */
-    net_sock_t      *s1ap_sock; /* eNB S1AP Socket */
+    int             sock_type;  /* SOCK_STREAM or SOCK_SEQPACKET */
+    sock_id         sock;       /* eNB S1AP Socket */
+    c_sockaddr_t    *addr;      /* eNB S1AP Address */
 
-    c_uint8_t       num_of_tai;
-    tai_t           tai[MAX_NUM_OF_TAC * MAX_NUM_OF_BPLMN];
+    c_uint8_t       num_of_supported_ta_list;
+    tai_t           supported_ta_list[MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
 
     list_t          enb_ue_list;
 
@@ -175,13 +187,8 @@ struct _mme_ue_t {
     c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
     guti_t          guti;
 
-    /* IMPORTANT!
-     * MME-S11-TEID is same with an index */
-    c_uint32_t      mme_s11_teid;
-    c_uint32_t      mme_s11_addr;
-
-    c_uint32_t      sgw_s11_teid;
-    c_uint32_t      sgw_s11_addr;
+    c_uint32_t      mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
+    c_uint32_t      sgw_s11_teid;   /* SGW-S11-TEID is received from SGW */
 
     /* UE Info */
     tai_t           tai;
@@ -206,6 +213,7 @@ struct _mme_ue_t {
     c_uint8_t       xres[MAX_RES_LEN];
     c_uint8_t       xres_len;
     c_uint8_t       kasme[SHA256_DIGEST_SIZE];
+    c_uint8_t       rand[RAND_LEN];
     c_uint8_t       knas_int[SHA256_DIGEST_SIZE/2]; 
     c_uint8_t       knas_enc[SHA256_DIGEST_SIZE/2];
     c_uint32_t      dl_count;
@@ -317,37 +325,29 @@ struct _mme_ue_t {
         c_uint8_t response;
     } gtp_counter[MAX_NUM_OF_GTP_COUNTER];
 
-#define CONNECT_SGW_GTP_NODE(__mME) \
-    do { \
-        d_assert((__mME), break, "Null param"); \
-        (__mME)->sgw = self.sgw; \
-        d_assert(((__mME)->sgw), break, "Null param"); \
-        self.sgw = mme_sgw_next((__mME)->sgw); \
-        if (!self.sgw) self.sgw = mme_sgw_first(); \
-        d_assert(self.sgw, break, "Null param"); \
-    } while(0)
-    mme_sgw_t       *sgw;
+    gtp_node_t      *gnode;
 };
 
 #define MME_HAVE_SGW_S1U_PATH(__sESS) \
     ((__sESS) && (mme_bearer_first(__sESS)) && \
-     ((mme_default_bearer_in_sess(__sESS)->sgw_s1u_teid) && \
-      (mme_default_bearer_in_sess(__sESS)->sgw_s1u_addr)))
+     ((mme_default_bearer_in_sess(__sESS)->sgw_s1u_teid)))
 
 #define MME_HAVE_SGW_S11_PATH(__mME) \
-     ((__mME) && ((__mME)->sgw_s11_teid) && ((__mME)->sgw_s11_addr))
+     ((__mME) && ((__mME)->sgw_s11_teid))
 
 #define CLEAR_SGW_S11_PATH(__mME) \
     do { \
         d_assert((__mME), break, "Null param"); \
         (__mME)->sgw_s11_teid = 0; \
-        (__mME)->sgw_s11_addr = 0; \
     } while(0)
 typedef struct _mme_sess_t {
     lnode_t         node;       /* A node of list_t */
     index_t         index;      /* An index of this node */
 
     c_uint8_t       pti;        /* Procedure Trasaction Identity */
+
+    /* PDN Connectivity Request */
+    nas_request_type_t request_type; 
 
     /* mme_bearer_first(sess) : Default Bearer Context */
     list_t          bearer_list;
@@ -358,9 +358,6 @@ typedef struct _mme_sess_t {
 #define MME_UE_HAVE_APN(__mME) \
     ((__mME) && (mme_sess_first(__mME)) && \
     ((mme_sess_first(__mME))->pdn))
-#define MME_GET_PGW_IPV4_ADDR(__sESS) \
-    (((__sESS) && ((__sESS)->pdn) && (((__sESS)->pdn)->pgw.ipv4_addr)) ? \
-      (((__sESS)->pdn)->pgw.ipv4_addr) : (mme_self()->s5c_addr))
     pdn_t           *pdn;
 
     /* Save Protocol Configuration Options from UE */
@@ -374,27 +371,23 @@ typedef struct _mme_sess_t {
 } mme_sess_t;
 
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \
-    ((__bEARER) && ((__bEARER)->enb_s1u_teid) && ((__bEARER)->enb_s1u_addr))
+    ((__bEARER) && ((__bEARER)->enb_s1u_teid))
 
 #define MME_HAVE_ENB_DL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->enb_dl_teid) && ((__bEARER)->enb_dl_addr))
+    ((__bEARER) && ((__bEARER)->enb_dl_teid))
 #define MME_HAVE_ENB_UL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->enb_ul_teid) && ((__bEARER)->enb_ul_addr))
+    ((__bEARER) && ((__bEARER)->enb_ul_teid))
 #define MME_HAVE_SGW_DL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->sgw_dl_teid) && ((__bEARER)->sgw_dl_addr))
+    ((__bEARER) && ((__bEARER)->sgw_dl_teid))
 #define MME_HAVE_SGW_UL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->sgw_ul_teid) && ((__bEARER)->sgw_ul_addr))
+    ((__bEARER) && ((__bEARER)->sgw_ul_teid))
 #define CLEAR_INDIRECT_TUNNEL(__bEARER) \
     do { \
         d_assert((__bEARER), break, "Null param"); \
         (__bEARER)->enb_dl_teid = 0; \
-        (__bEARER)->enb_dl_addr = 0; \
         (__bEARER)->enb_ul_teid = 0; \
-        (__bEARER)->enb_ul_addr = 0; \
         (__bEARER)->sgw_dl_teid = 0; \
-        (__bEARER)->sgw_dl_addr = 0; \
         (__bEARER)->sgw_ul_teid = 0; \
-        (__bEARER)->sgw_ul_addr = 0; \
     } while(0)
 typedef struct _mme_bearer_t {
     lnode_t         node;           /* A node of list_t */
@@ -404,22 +397,22 @@ typedef struct _mme_bearer_t {
     c_uint8_t       ebi;            /* EPS Bearer ID */    
 
     c_uint32_t      enb_s1u_teid;
-    c_uint32_t      enb_s1u_addr;
+    ip_t            enb_s1u_ip;
     c_uint32_t      sgw_s1u_teid;
-    c_uint32_t      sgw_s1u_addr;
+    ip_t            sgw_s1u_ip;
 
-    c_uint32_t      target_s1u_teid;  /* Target S1U TEID from HO-Req-Ack */
-    c_uint32_t      target_s1u_addr;  /* Target S1U ADDR from HO-Req-Ack */
+    c_uint32_t      target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
+    ip_t            target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
 
     c_uint32_t      enb_dl_teid;
-    c_uint32_t      enb_dl_addr;
+    ip_t            enb_dl_ip;
     c_uint32_t      enb_ul_teid;
-    c_uint32_t      enb_ul_addr;
+    ip_t            enb_ul_ip;
 
     c_uint32_t      sgw_dl_teid;
-    c_uint32_t      sgw_dl_addr;
+    ip_t            sgw_dl_ip;
     c_uint32_t      sgw_ul_teid;
-    c_uint32_t      sgw_ul_addr;
+    ip_t            sgw_ul_ip;
 
     qos_t           qos;
     tlv_octet_t     tft;   /* Saved TFT */
@@ -437,24 +430,32 @@ CORE_DECLARE(mme_context_t*) mme_self(void);
 CORE_DECLARE(status_t)      mme_context_parse_config(void);
 CORE_DECLARE(status_t)      mme_context_setup_trace_module(void);
 
-CORE_DECLARE(mme_sgw_t*)    mme_sgw_add(void);
-CORE_DECLARE(status_t)      mme_sgw_remove(mme_sgw_t *sgw);
-CORE_DECLARE(status_t)      mme_sgw_remove_all(void);
-CORE_DECLARE(mme_sgw_t*)    mme_sgw_find(c_uint32_t addr, c_uint16_t port);
-CORE_DECLARE(mme_sgw_t*)    mme_sgw_first(void);
-CORE_DECLARE(mme_sgw_t*)    mme_sgw_next(mme_sgw_t *sgw);
-
-CORE_DECLARE(mme_enb_t*)    mme_enb_add(net_sock_t *sock);
+CORE_DECLARE(mme_enb_t*)    mme_enb_add(sock_id sock, c_sockaddr_t *addr);
 CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);
 CORE_DECLARE(status_t)      mme_enb_remove_all(void);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find(index_t index);
-CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(net_sock_t *sock);
+CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(sock_id sock);
+CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_addr(c_sockaddr_t *addr);
 CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_enb_id(c_uint32_t enb_id);
 CORE_DECLARE(status_t)      mme_enb_set_enb_id(
         mme_enb_t *enb, c_uint32_t enb_id);
 CORE_DECLARE(hash_index_t *) mme_enb_first();
 CORE_DECLARE(hash_index_t *) mme_enb_next(hash_index_t *hi);
 CORE_DECLARE(mme_enb_t *)    mme_enb_this(hash_index_t *hi);
+CORE_DECLARE(int)           mme_enb_sock_type(sock_id sock);
+
+CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
+CORE_DECLARE(unsigned int)  enb_ue_count();
+CORE_DECLARE(status_t)      enb_ue_remove(enb_ue_t *enb_ue);
+CORE_DECLARE(status_t)      enb_ue_remove_in_enb(mme_enb_t *enb);
+CORE_DECLARE(status_t)      enb_ue_switch_to_enb(enb_ue_t *enb_ue, 
+                                mme_enb_t *new_enb);
+CORE_DECLARE(enb_ue_t*)     enb_ue_find(index_t index);
+CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_enb_ue_s1ap_id(mme_enb_t *enb, 
+                                c_uint32_t enb_ue_s1ap_id);
+CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id);
+CORE_DECLARE(enb_ue_t*)     enb_ue_first_in_enb(mme_enb_t *enb);
+CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *enb_ue);
 
 CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *mme_ue);
@@ -513,18 +514,7 @@ CORE_DECLARE(status_t)      mme_pdn_remove_all(mme_ue_t *mme_ue);
 CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(
                                 mme_ue_t *mme_ue, c_int8_t *apn);
 
-CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
-CORE_DECLARE(unsigned int)  enb_ue_count();
-CORE_DECLARE(status_t)      enb_ue_remove(enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      enb_ue_remove_in_enb(mme_enb_t *enb);
-CORE_DECLARE(status_t)      enb_ue_switch_to_enb(enb_ue_t *enb_ue, 
-                                mme_enb_t *new_enb);
-CORE_DECLARE(enb_ue_t*)     enb_ue_find(index_t index);
-CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_enb_ue_s1ap_id(mme_enb_t *enb, 
-                                c_uint32_t enb_ue_s1ap_id);
-CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id);
-CORE_DECLARE(enb_ue_t*)     enb_ue_first_in_enb(mme_enb_t *enb);
-CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *enb_ue);
+CORE_DECLARE(int)           mme_find_served_tai(tai_t *tai);
 
 #ifdef __cplusplus
 }

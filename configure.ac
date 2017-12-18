@@ -8,7 +8,7 @@ dnl This program is distributed in the hope that it will be useful, but
 dnl WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 dnl implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-AC_INIT([NEXTEPC], [0.2.0], [acetcom@gmail.com])
+AC_INIT([NEXTEPC], [0.3.0], [acetcom@gmail.com])
 
 AC_SUBST(LIBVERSION)
 LIBVERSION=1:0:0
@@ -24,11 +24,13 @@ AC_CONFIG_HEADERS([config.h:config.in])dnl Keep filename to 8.3 for MS-DOS.
 AC_CONFIG_SRCDIR([main.c])
 AC_CANONICAL_HOST
 
+LO_DEV="lo0"
 case $host in
     *linux*)
         OSDIR="unix"
         OSCPPFLAGS="-DLINUX=1"
         IPFW_CPPFLAGS="-DNEED_SYSCTLBYNAME -DNEED_SIN_LEN"
+        LO_DEV="lo"
         ;;
     *-apple-darwin*)
         OSDIR="unix"
@@ -41,6 +43,7 @@ esac
 AC_SUBST(OSCPPFLAGS)
 AC_SUBST(OSDIR)
 AC_SUBST(IPFW_CPPFLAGS)
+AC_SUBST(LO_DEV)
 
 AH_TOP([
 #ifndef __NEXTEPC_CONFIG_H__
@@ -251,7 +254,7 @@ AC_CHECK_HEADERS( \
     sys/uio.h \
 )
 
-AC_CHECK_HEADERS(netinet/ip.h net/route.h,,,[[
+AC_CHECK_HEADERS(netinet/ip.h netinet/ip6.h net/route.h,,,[[
 #include <sys/types.h>
 #if HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -262,7 +265,17 @@ AC_CHECK_HEADERS(netinet/ip.h net/route.h,,,[[
 #endif
 ]])
 
-AC_CHECK_HEADERS(netinet/ip_icmp.h, [], [], [#include <netinet/ip.h>])
+AC_CHECK_HEADERS(netinet/ip_icmp.h netinet/icmp6.h,,,[[
+#include <sys/types.h>
+#if HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#include <netinet/in.h>
+#if HAVE_NETINET_IN_SYSTM_H
+#include <netinet/in_systm.h>
+#endif
+#include <netinet/ip.h>
+]])
 
 ##########################################
 #### Checks for typedefs, structures, ####
@@ -401,6 +414,7 @@ if test x$have_sctp_lib == xno; then
 fi
 AM_CONDITIONAL([USRSCTP], [test x$have_usrsctp_lib = xyes])
 
+PKG_CHECK_MODULES([YAML], yaml-0.1 >= 0.1.6)
 PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.3.1)
 FREEDIAMETER_DIR=freeDiameter-1.2.1
 AC_SUBST(FREEDIAMETER_DIR)
@@ -415,7 +429,6 @@ AC_CONFIG_FILES([lib/core/include/core.h])
 AC_CONFIG_FILES([lib/core/src/Makefile])
 AC_CONFIG_FILES([lib/core/test/Makefile])
 AC_CONFIG_FILES([lib/core/Makefile])
-AC_CONFIG_FILES([lib/3gpp/Makefile])
 AC_CONFIG_FILES([lib/s1ap/asn1c/Makefile])
 AC_CONFIG_FILES([lib/s1ap/Makefile])
 AC_CONFIG_FILES([lib/nas/Makefile])
@@ -464,8 +477,8 @@ version                 : ${PACKAGE_VERSION}
 host                    : ${host}
 source code location    : ${srcdir}
 compiler                : ${CC}
-compiler flags          : ${CFLAGS}
-linker flags            : ${LDFLAGS} ${LIBS} ${MONGOC_LIBS}
+compiler flags          : ${CFLAGS} ${YAML_CFLAGS} ${MONGOC_CFLAGS} 
+linker flags            : ${LDFLAGS} ${LIBS} ${YAML_LIBS} ${MONGOC_LIBS}
 bin directory           : ${BIN_DIR}
 lib directory           : ${LIB_DIR}/nextepc
 config directory        : ${SYSCONF_DIR}/nextepc

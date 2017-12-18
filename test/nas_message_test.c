@@ -1,11 +1,12 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 
-#include "testutil.h"
+#include "3gpp_types.h"
 
-#include "types.h"
 #include "nas_message.h"
 #include "nas_security.h"
+
+#include "testutil.h"
 
 static void nas_message_test1(abts_case *tc, void *data)
 {
@@ -54,6 +55,8 @@ static void nas_message_test2(abts_case *tc, void *data)
 
     nas_message_t message;
     nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
+    tai0_list_t tai0_list;
+    tai2_list_t tai2_list;
 
     pkbuf_t *pkbuf = NULL;
     status_t rv;
@@ -66,9 +69,15 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->t3412_value.unit = 
         NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     attach_accept->t3412_value.value = 3;
-    attach_accept->tai_list.length = 6;
-    plmn_id_build(&attach_accept->tai_list.type0.plmn_id, 417, 99, 2);
-    attach_accept->tai_list.type0.tac[0] = 12345;
+
+    memset(&tai0_list, 0, sizeof(tai0_list_t));
+    memset(&tai2_list, 0, sizeof(tai2_list_t));
+    tai0_list.tai[0].type = TAI0_TYPE;
+    tai0_list.tai[0].num = 1;
+    plmn_id_build(&tai0_list.tai[0].plmn_id, 417, 99, 2);
+    tai0_list.tai[0].tac[0] = 12345;
+    nas_tai_list_build(&attach_accept->tai_list, &tai0_list, &tai2_list);
+
     attach_accept->esm_message_container.length = sizeof(esm_buffer);
     attach_accept->esm_message_container.buffer = 
         CORE_HEX(esm_payload, strlen(esm_payload), esm_buffer);

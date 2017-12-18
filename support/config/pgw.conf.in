@@ -1,40 +1,30 @@
-{
-  "LOG" :
-  {
-    "FILE" : "@LOCALSTATE_DIR@/log/nextepc/pgw.log",
-    "SOCKET" :
-    {
-      "UNIX_DOMAIN" : "/tmp/nextepc-pgwd.sock",
-      "FILE" : 0
-    }
-  },
-  "TRACE" :
-  {
-    "FD": 1,
-    "GTP": 1,
-    "OTHERS": 1
-  },
+### For reference, see `nextepc.conf`
 
-  "PGW" :
-  {
-    "FD_CONF_PATH" : "pgw.conf",
-    "NETWORK" :
-    {
-      "GTPC_IPV4" : "127.76.0.3",
-      "GTPU_IPV4" : "127.76.0.3"
-    },
-    "UE_NETWORK":
-    [
-      {
-        "IF_NAME" : "pgwtun",
-        "IPV4_POOL" : "45.45.0.1/16"
-      }
-    ],
-    "DNS" :
-    {
-      "PRIMARY_IPV4" : "8.8.8.8",
-      "SECONDARY_IPV4" : "4.4.4.4"
-    }
-  }
+db_uri: mongodb://localhost/nextepc
 
-}
+logger:
+    file: @LOCALSTATE_DIR@/log/nextepc/pgw.log
+    trace: 
+        diameter: 1
+        gtp: 1
+        others: 1
+
+parameter:
+
+pgw:
+    freeDiameter: pgw.conf
+    gtpc:
+      addr:
+        - 127.0.0.1
+        - ::1
+    gtpu:
+      - addr: 127.0.0.1
+      - addr: ::1
+    ue_pool:
+      - addr: 45.45.0.1/16
+      - addr: cafe::1/64
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 2001:4860:4860::8888
+      - 2001:4860:4860::8844

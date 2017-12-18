@@ -23,9 +23,6 @@ void pgw_gx_handle_cca_initial_request(
     d_assert(cca_message, return, "Null param");
     d_assert(req, return, "Null param");
 
-    /* Setup GTP Node between PGW and SGW */
-    CONNECT_SGW_GTP_NODE(sess, xact);
-
     /* Send Create Session Request with Creating Default Bearer */
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_CREATE_SESSION_RESPONSE_TYPE;
@@ -95,7 +92,7 @@ void pgw_gx_handle_cca_initial_request(
         rv = pgw_s5c_build_create_bearer_request(&pkbuf, h.type, bearer);
         d_assert(rv == CORE_OK, return, "S11 build error");
 
-        xact = gtp_xact_local_create(sess->sgw, &h, pkbuf);
+        xact = gtp_xact_local_create(sess->gnode, &h, pkbuf);
         d_assert(xact, return, "Null param");
 
         rv = gtp_xact_commit(xact);

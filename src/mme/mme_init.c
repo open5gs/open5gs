@@ -2,11 +2,17 @@
 
 #include "core_debug.h"
 #include "core_thread.h"
+#include "core_msgq.h"
+#include "core_fsm.h"
+
+#include "gtp_xact.h"
 
 #include "mme_event.h"
 
 #include "mme_fd_path.h"
 #include "s1ap_path.h"
+
+#include "mme_sm.h"
 
 static thread_id sm_thread;
 static void *THREAD_FUNC sm_main(thread_id id, void *data);
@@ -32,6 +38,10 @@ status_t mme_initialize()
 
     ret = mme_fd_init();
     if (ret != 0) return CORE_ERROR;
+
+#define USRSCTP_LOCAL_UDP_PORT 9899
+    rv = s1ap_init(USRSCTP_LOCAL_UDP_PORT);
+    if (rv != CORE_OK) return rv;
 
     rv = thread_create(&sm_thread, NULL, sm_main, NULL);
     if (rv != CORE_OK) return rv;
@@ -80,9 +90,10 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
 
     prev_tm = time_now();
 
+#define EVENT_LOOP_TIMEOUT 50   /* 50ms */
     while ((!thread_should_stop()))
     {
-        rv = event_timedrecv(mme_self()->queue_id, &event, EVENT_WAIT_TIMEOUT);
+        rv = event_timedrecv(mme_self()->queue_id, &event, EVENT_LOOP_TIMEOUT);
 
         d_assert(rv != CORE_ERROR, continue,
                 "While receiving a event message, error occurs");
@@ -90,7 +101,7 @@ static void *THREAD_FUNC sm_main(thread_id id, void *data)
         now_tm = time_now();
 
         /* if the gap is over 10 ms, execute preriodic jobs */
-        if (now_tm - prev_tm > EVENT_WAIT_TIMEOUT)
+        if (now_tm - prev_tm > EVENT_LOOP_TIMEOUT * 1000)
         {
             tm_execute_tm_service(
                     &mme_self()->tm_service, mme_self()->queue_id);
@@ -118,7 +129,7 @@ static void *THREAD_FUNC net_main(thread_id id, void *data)
 {
     while (!thread_should_stop())
     {
-        net_fds_read_run(50); 
+        sock_select_loop(EVENT_LOOP_TIMEOUT); 
     }
 
     return NULL;

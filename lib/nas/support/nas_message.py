@@ -708,8 +708,8 @@ for (k, v) in sorted_msg_list:
 
     if [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
         f.write("""             default:
-                d_error("Unknown type(0x%x) or not implemented\\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\\n", type);
+                break;
         }
     }
 

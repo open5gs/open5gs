@@ -6,6 +6,7 @@
 #include "nas_path.h"
 #include "s1ap_path.h"
 
+#include "mme_sm.h"
 #include "mme_s6a_handler.h"
 
 void mme_s6a_handle_aia(mme_ue_t *mme_ue, s6a_aia_message_t *aia_message)
@@ -21,6 +22,7 @@ void mme_s6a_handle_aia(mme_ue_t *mme_ue, s6a_aia_message_t *aia_message)
     mme_ue->xres_len = e_utran_vector->xres_len;
     memcpy(mme_ue->xres, e_utran_vector->xres, mme_ue->xres_len);
     memcpy(mme_ue->kasme, e_utran_vector->kasme, SHA256_DIGEST_SIZE);
+    memcpy(mme_ue->rand, e_utran_vector->rand, RAND_LEN);
 
     rv = nas_send_authentication_request(mme_ue, e_utran_vector);
     d_assert(rv == CORE_OK,, "nas send failed");

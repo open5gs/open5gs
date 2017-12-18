@@ -13,7 +13,8 @@ CORE_DECLARE(int) mme_fd_init(void);
 CORE_DECLARE(void) mme_fd_final(void);
 
 /* MME Sends Authentication Information Request to HSS */
-CORE_DECLARE(void) mme_s6a_send_air(mme_ue_t *mme_ue);
+CORE_DECLARE(void) mme_s6a_send_air(mme_ue_t *mme_ue,
+    nas_authentication_failure_parameter_t *authentication_failure_parameter);
 /* MME Sends Update Location Request to HSS */
 CORE_DECLARE(void) mme_s6a_send_ulr(mme_ue_t *mme_ue);
 

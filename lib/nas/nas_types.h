@@ -1,7 +1,7 @@
 #ifndef _NAS_TYPES_H__
 #define _NAS_TYPES_H__
 
-#include "types.h"
+#include "3gpp_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,7 +33,7 @@ extern "C" {
 #define NAX_MAX_ADDITIONAL_INFORMATION_LEN 255
 typedef struct _nas_additional_information_t {
     c_uint8_t length;
-    c_uint32_t buffer[NAX_MAX_ADDITIONAL_INFORMATION_LEN];
+    c_uint8_t buffer[NAX_MAX_ADDITIONAL_INFORMATION_LEN];
 } __attribute__ ((packed)) nas_additional_information_t;
 
 /* 9.9.2.0A Device properties
@@ -229,7 +229,7 @@ ED4(c_uint8_t type:4;,
  * O TLV 16 */
 typedef struct _nas_authentication_failure_parameter_t {
     c_uint8_t length;
-    c_uint8_t parameter[14];
+    c_uint8_t auts[AUTS_LEN];
 } __attribute__ ((packed)) nas_authentication_failure_parameter_t;
 
 /* 9.9.3.2 Authentication parameter AUTN
@@ -609,7 +609,7 @@ ED3(c_uint8_t type:4;,
 #define NAS_MAX_MESSAGE_CONTAINER_LEN 250
 typedef struct _nas_message_container_t {
     c_uint8_t length;
-    c_uint16_t buffer[NAS_MAX_MESSAGE_CONTAINER_LEN];
+    c_uint8_t buffer[NAS_MAX_MESSAGE_CONTAINER_LEN];
 } __attribute__ ((packed)) nas_message_container_t;
 
 /* 9.9.3.23 NAS security algorithms
@@ -733,32 +733,35 @@ typedef tai_t nas_tracking_area_identity_t;
 
 /* 9.9.3.33 Tracking area identity list
  * M LV 7-97 */
-#define NAS_MAX_TRACKING_AREA_IDENTITY 16
-#define NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_NON_CONSECUTIVE_TACS 0
-#define NAS_TRACKING_AREA_IDENTITY_LIST_ONE_PLMN_CONSECUTIVE_TACS     1
-#define NAS_TRACKING_AREA_IDENTITY_LIST_MANY_PLMNS                    2
-typedef struct _nas_tracking_area_identity_type0 {
-    plmn_id_t plmn_id;
-    c_uint16_t tac[NAS_MAX_TRACKING_AREA_IDENTITY];
-} __attribute__ ((packed)) nas_tracking_area_identity_type0;
+#define NAS_MAX_TAI_LIST_LEN        96
+#define TAI0_TYPE                   0
+#define TAI1_TYPE                   1
+#define TAI2_TYPE                   2
+typedef struct _tai0_list_t {
+    struct {
+    ED3(c_uint8_t spare:1;,
+        c_uint8_t type:2;,
+        c_uint8_t num:5;)
+        plmn_id_t plmn_id;
+        c_uint16_t tac[MAX_NUM_OF_TAI];
+    } __attribute__ ((packed)) tai[MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) tai0_list_t;
 
-typedef nas_tracking_area_identity_t nas_tracking_area_identity_type1;
-
-typedef struct _nas_tracking_area_identity_type2 {
-    nas_tracking_area_identity_type1 tai[NAS_MAX_TRACKING_AREA_IDENTITY];
-} __attribute__ ((packed)) nas_tracking_area_identity_type2;
-
-typedef struct nas_tracking_area_identity_list_t {
-    c_uint8_t length;
+typedef struct _tai2_list_t {
 ED3(c_uint8_t spare:1;,
     c_uint8_t type:2;,
     c_uint8_t num:5;)
-    union {
-        nas_tracking_area_identity_type0 type0;
-        nas_tracking_area_identity_type1 type1;
-        nas_tracking_area_identity_type2 type2;
-    };
+    tai_t tai[MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) tai2_list_t;
+
+typedef struct _nas_tracking_area_identity_list_t {
+    c_uint8_t length;
+    c_uint8_t buffer[NAS_MAX_TAI_LIST_LEN];
 } __attribute__ ((packed)) nas_tracking_area_identity_list_t;
+
+CORE_DECLARE(void) nas_tai_list_build(
+        nas_tracking_area_identity_list_t *target,
+        tai0_list_t *source0, tai2_list_t *source2);
 
 /* 9.9.3.34 UE network capability
  * M LV  3-14 */
@@ -1149,10 +1152,24 @@ ED3(c_uint8_t type:4;,
 
 /* 9.9.4.9 PDN address
  * M LV 6-14 */
+#define NAS_PDN_ADDRESS_IPV4_LEN 5
+#define NAS_PDN_ADDRESS_IPV6_LEN 9
+#define NAS_PDN_ADDRESS_IPV4V6_LEN 13
 typedef struct _nas_pdn_address_t {
     c_uint8_t length;
-    paa_t paa;
-} nas_pdn_address_t;
+ED2(c_uint8_t reserved:5;,
+    c_uint8_t pdn_type:3;)
+    union {
+        c_uint32_t addr;      
+        struct {
+            c_uint8_t addr6[IPV6_LEN>>1]; /* Interface Identifer Only */
+        };
+        struct {
+            c_uint8_t addr6[IPV6_LEN>>1]; /* Interface Identifer Only */
+            c_uint32_t addr;      
+        } both;
+    };
+} __attribute__ ((packed)) nas_pdn_address_t;
 
 /* 9.9.4.11 Protocol configuration options
  * See subclause 10.5.6.3 in 3GPP TS 24.008 [13].
@@ -1194,9 +1211,9 @@ ED3(c_uint8_t spare:3;,  /* allowed in A/Gb mode or Iu mode */
 #define NAS_PDN_CONNECTIVITY_PDN_TYPE_NON_IP        5
 typedef struct _nas_request_type_t {
 ED4(c_uint8_t spare1:1;,
-    c_uint8_t request_type:3;,
+    c_uint8_t pdn_type:3;,
     c_uint8_t spare2:1;,
-    c_uint8_t pdn_type:3;)
+    c_uint8_t request_type:3;)
 } __attribute__ ((packed)) nas_request_type_t;
 
 /* 9.9.4.15 Traffic flow aggregate description

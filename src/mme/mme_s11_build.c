@@ -5,8 +5,9 @@
 #include "gtp_types.h"
 #include "gtp_conv.h"
 #include "gtp_message.h"
+#include "gtp_node.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "mme_context.h"
 
 #include "mme_s11_build.h"
@@ -16,7 +17,6 @@ status_t mme_s11_build_create_session_request(
 {
     status_t rv;
     pdn_t *pdn = NULL;
-    mme_sgw_t *sgw = NULL;
     mme_ue_t *mme_ue = NULL;
     mme_bearer_t *bearer = NULL;
     gtp_message_t gtp_message;
@@ -25,24 +25,20 @@ status_t mme_s11_build_create_session_request(
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
     gtp_f_teid_t mme_s11_teid, pgw_s5c_teid;
+    int len;
     gtp_ambr_t ambr;
     gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     gtp_ue_timezone_t ue_timezone;
     c_int8_t apn[MAX_APN_LEN];
-    c_uint32_t pgw_ipv4_addr = 0;
 
     d_assert(sess, return CORE_ERROR, "Null param");
     pdn = sess->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
     bearer = mme_default_bearer_in_sess(sess);
     d_assert(bearer, return CORE_ERROR, "Null param");
-    pgw_ipv4_addr = MME_GET_PGW_IPV4_ADDR(sess);
-    d_assert(pgw_ipv4_addr, return CORE_ERROR, "Null param");
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    sgw = mme_ue->sgw;
-    d_assert(sgw, return CORE_ERROR, "Null param");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -71,21 +67,57 @@ status_t mme_s11_build_create_session_request(
     req->rat_type.u8 = GTP_RAT_TYPE_EUTRAN;
 
     memset(&mme_s11_teid, 0, sizeof(gtp_f_teid_t));
-    mme_s11_teid.ipv4 = 1;
     mme_s11_teid.interface_type = GTP_F_TEID_S11_MME_GTP_C;
     mme_s11_teid.teid = htonl(mme_ue->mme_s11_teid);
-    mme_s11_teid.ipv4_addr = mme_ue->mme_s11_addr;
+    rv = gtp_sockaddr_to_f_teid(
+            mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &mme_s11_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &mme_s11_teid;
-    req->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
+    req->sender_f_teid_for_control_plane.len = len;
 
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5c_teid.ipv4 = 1;
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
-    pgw_s5c_teid.ipv4_addr = pgw_ipv4_addr;
-    req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
-    req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
-    req->pgw_s5_s8_address_for_control_plane_or_pmip.len = GTP_F_TEID_IPV4_LEN;
+    if (pdn->pgw_ip.ipv4 || pdn->pgw_ip.ipv6)
+    {
+        pgw_s5c_teid.ipv4 = pdn->pgw_ip.ipv4;
+        pgw_s5c_teid.ipv6 = pdn->pgw_ip.ipv6;
+        if (pgw_s5c_teid.ipv4 && pgw_s5c_teid.ipv6)
+        {
+            pgw_s5c_teid.both.addr = pdn->pgw_ip.both.addr;
+            memcpy(pgw_s5c_teid.both.addr6, pdn->pgw_ip.both.addr6,
+                    sizeof pdn->pgw_ip.both.addr6);
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
+                GTP_F_TEID_IPV4V6_LEN;
+        }
+        else if (pgw_s5c_teid.ipv4)
+        {
+            /* pdn->pgw_ip always uses both ip address memory */
+            pgw_s5c_teid.addr = pdn->pgw_ip.both.addr;
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
+                GTP_F_TEID_IPV4_LEN;
+        }
+        else if (pgw_s5c_teid.ipv6)
+        {
+            /* pdn->pgw_ip always uses both ip address memory */
+            memcpy(pgw_s5c_teid.addr6, pdn->pgw_ip.both.addr6,
+                    sizeof pdn->pgw_ip.both.addr6);
+            req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
+                GTP_F_TEID_IPV6_LEN;
+        }
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.data =
+            &pgw_s5c_teid;
+    }
+    else
+    {
+        rv = gtp_sockaddr_to_f_teid(
+            mme_self()->pgw_addr, mme_self()->pgw_addr6, &pgw_s5c_teid, &len);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
+        req->pgw_s5_s8_address_for_control_plane_or_pmip.len = len;
+    }
 
     req->access_point_name.presence = 1;
     req->access_point_name.len = apn_build(apn, pdn->apn, strlen(pdn->apn));
@@ -95,13 +127,42 @@ status_t mme_s11_build_create_session_request(
     req->selection_mode.u8 = 
         GTP_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN | 0xfc;
 
+    d_assert(sess->request_type.pdn_type ==
+            NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4 ||
+            sess->request_type.pdn_type ==
+            NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV6 ||
+            sess->request_type.pdn_type ==
+            NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6, return CORE_ERROR,
+            "UE PDN Configuration Error(%d)", sess->request_type.pdn_type);
+    if (pdn->pdn_type == HSS_PDN_TYPE_IPV4 ||
+        pdn->pdn_type == HSS_PDN_TYPE_IPV6 ||
+        pdn->pdn_type == HSS_PDN_TYPE_IPV4V6)
+    {
+        req->pdn_type.u8 = ((pdn->pdn_type + 1) & sess->request_type.pdn_type);
+        d_assert(req->pdn_type.u8 != 0, return CORE_ERROR,
+                "PDN Configuration Error:(%d, %d)",
+                pdn->pdn_type, sess->request_type.pdn_type);
+    }
+    else if (pdn->pdn_type == HSS_PDN_TYPE_IPV4_OR_IPV6)
+    {
+        req->pdn_type.u8 = sess->request_type.pdn_type;
+    }
+    else
+        d_assert(0, return CORE_ERROR,
+                "HSS PDN Confiugration Error(%d)", pdn->pdn_type);
     req->pdn_type.presence = 1;
-    req->pdn_type.u8 = GTP_PDN_TYPE_IPV4;
 
-    pdn->paa.pdn_type = GTP_PDN_TYPE_IPV4;
-    req->pdn_address_allocation.presence = 1;
+    pdn->paa.pdn_type = req->pdn_type.u8;
     req->pdn_address_allocation.data = &pdn->paa;
-    req->pdn_address_allocation.len = PAA_IPV4_LEN;
+    if (req->pdn_type.u8 == GTP_PDN_TYPE_IPV4)
+        req->pdn_address_allocation.len = PAA_IPV4_LEN;
+    else if (req->pdn_type.u8 == GTP_PDN_TYPE_IPV6)
+        req->pdn_address_allocation.len = PAA_IPV6_LEN;
+    else if (req->pdn_type.u8 == GTP_PDN_TYPE_IPV4V6)
+        req->pdn_address_allocation.len = PAA_IPV4V6_LEN;
+    else
+        d_assert(0, return CORE_ERROR, "Not supported(%d)", req->pdn_type.u8);
+    req->pdn_address_allocation.presence = 1;
 
     req->maximum_apn_restriction.presence = 1;
     req->maximum_apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
@@ -165,6 +226,7 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
     gtp_modify_bearer_request_t *req = &gtp_message.modify_bearer_request;
 
     gtp_f_teid_t enb_s1u_teid;
+    int len;
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
 
@@ -183,14 +245,13 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
 
     /* Data Plane(DL) : ENB-S1U */
     memset(&enb_s1u_teid, 0, sizeof(gtp_f_teid_t));
-    enb_s1u_teid.ipv4 = 1;
     enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
-    enb_s1u_teid.ipv4_addr = bearer->enb_s1u_addr;
     enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
+    rv = gtp_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.presence = 1;
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
-    req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = 
-        GTP_F_TEID_IPV4_LEN;
+    req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = len;
 
     if (uli_presence)
     {
@@ -272,6 +333,7 @@ status_t mme_s11_build_create_bearer_response(
 
     gtp_cause_t cause;
     gtp_f_teid_t enb_s1u_teid, sgw_s1u_teid;
+    int len;
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
 
@@ -297,20 +359,20 @@ status_t mme_s11_build_create_bearer_response(
 
     /* Data Plane(DL) : ENB-S1U */
     memset(&enb_s1u_teid, 0, sizeof(gtp_f_teid_t));
-    enb_s1u_teid.ipv4 = 1;
     enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
-    enb_s1u_teid.ipv4_addr = bearer->enb_s1u_addr;
     enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
+    rv = gtp_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     rsp->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
     rsp->bearer_contexts.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
-    rsp->bearer_contexts.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
+    rsp->bearer_contexts.s1_u_enodeb_f_teid.len = len;
     
     /* Data Plane(UL) : SGW-S1U */
     memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
-    sgw_s1u_teid.ipv4 = 1;
     sgw_s1u_teid.interface_type = GTP_F_TEID_S1_U_SGW_GTP_U;
-    sgw_s1u_teid.ipv4_addr = bearer->sgw_s1u_addr;
     sgw_s1u_teid.teid = htonl(bearer->sgw_s1u_teid);
+    rv = gtp_ip_to_f_teid(&bearer->sgw_s1u_ip, &sgw_s1u_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     rsp->bearer_contexts.s4_u_sgsn_f_teid.presence = 1;
     rsp->bearer_contexts.s4_u_sgsn_f_teid.data = &sgw_s1u_teid;
     rsp->bearer_contexts.s4_u_sgsn_f_teid.len = GTP_F_TEID_IPV4_LEN;
@@ -403,6 +465,7 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
     gtp_f_teid_t dl_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
     gtp_f_teid_t ul_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    int len;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
@@ -419,29 +482,29 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
             if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer))
             {
                 memset(&dl_teid[i], 0, sizeof(gtp_f_teid_t));
-                dl_teid[i].ipv4 = 1;
                 dl_teid[i].interface_type =
                     GTP_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING;
-                dl_teid[i].ipv4_addr = bearer->enb_dl_addr;
                 dl_teid[i].teid = htonl(bearer->enb_dl_teid);
+                rv = gtp_ip_to_f_teid(&bearer->enb_dl_ip, &dl_teid[i], &len);
+                d_assert(rv == CORE_OK, return CORE_ERROR,);
                 d_assert(bearers[i], return CORE_ERROR,);
                 bearers[i]->s1_u_enodeb_f_teid.presence = 1;
                 bearers[i]->s1_u_enodeb_f_teid.data = &dl_teid[i];
-                bearers[i]->s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
+                bearers[i]->s1_u_enodeb_f_teid.len = len;
             }
 
             if (MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer))
             {
                 memset(&ul_teid[i], 0, sizeof(gtp_f_teid_t));
-                ul_teid[i].ipv4 = 1;
                 ul_teid[i].interface_type =
                     GTP_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING;
-                ul_teid[i].ipv4_addr = bearer->enb_ul_addr;
                 ul_teid[i].teid = htonl(bearer->enb_ul_teid);
+                rv = gtp_ip_to_f_teid(&bearer->enb_ul_ip, &ul_teid[i], &len);
+                d_assert(rv == CORE_OK, return CORE_ERROR,);
                 d_assert(bearers[i], return CORE_ERROR,);
                 bearers[i]->s12_rnc_f_teid.presence = 1;
                 bearers[i]->s12_rnc_f_teid.data = &ul_teid[i];
-                bearers[i]->s12_rnc_f_teid.len = GTP_F_TEID_IPV4_LEN;
+                bearers[i]->s12_rnc_f_teid.len = len;
             }
 
             if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer) ||

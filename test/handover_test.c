@@ -14,11 +14,11 @@
 static void handover_test1(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock1, *sock2;
+    sock_id sock1, sock2;
+    sock_id gtpu;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
-    int rc;
     int i;
     int msgindex = 9;
 
@@ -45,7 +45,7 @@ static void handover_test1(abts_case *tc, void *data)
             "\"priority_level\" : 8,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 },"
+        "\"type\" : 2 },"
       "{ \"apn\" : \"internet\","
         "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2c\" },"
         "\"pcc_rule\" : ["
@@ -85,7 +85,7 @@ static void handover_test1(abts_case *tc, void *data)
             "\"priority_level\" : 1,"
             "\"pre_emption_vulnerability\" : 0,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 }"
+        "\"type\" : 2 }"
       "],"
       "\"ambr\" : {"
         "\"downlink\" : { \"$numberLong\" : \"1024000\" },"
@@ -107,11 +107,15 @@ static void handover_test1(abts_case *tc, void *data)
     mme_self()->m_tmsi = 0x0400031f;
 
     /* Two eNB connects to MME */
-    sock1 = tests1ap_enb_connect();
-    ABTS_PTR_NOTNULL(tc, sock1);
+    rv = tests1ap_enb_connect(&sock1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    sock2 = tests1ap_enb_connect();
-    ABTS_PTR_NOTNULL(tc, sock2);
+    rv = tests1ap_enb_connect(&sock2);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* eNB connects to SGW */
+    rv = testgtpu_enb_connect(&gtpu);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* S1-Setup Reqeust/Response for Source eNB */
     rv = tests1ap_build_setup_req(
@@ -121,8 +125,8 @@ static void handover_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* S1-Setup Reqeust/Response for Target eNB */
@@ -133,8 +137,8 @@ static void handover_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock2, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
@@ -167,8 +171,8 @@ static void handover_test1(abts_case *tc, void *data)
 
     /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
@@ -179,8 +183,8 @@ static void handover_test1(abts_case *tc, void *data)
 
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
@@ -191,8 +195,8 @@ static void handover_test1(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
@@ -205,8 +209,8 @@ static void handover_test1(abts_case *tc, void *data)
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -218,7 +222,8 @@ static void handover_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
+            16777690, 1, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -231,19 +236,19 @@ static void handover_test1(abts_case *tc, void *data)
 
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Receive E-RAB Setup Request + 
      * Activate dedicated EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 33554492, 1, 6, 2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -259,29 +264,53 @@ static void handover_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Path Switch Request */
-    rv = tests1ap_build_path_switch_request(&sendbuf, 0);
+    rv = tests1ap_build_path_switch_request(&sendbuf, 16777690, 1, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive Path Switch Ack */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock2, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(recvbuf->payload + 26,
                 CORE_HEX(_nh1, strlen(_nh1), tmp), 33) == 0);
     pkbuf_free(recvbuf);
 
+    /* Receive End Mark */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Receive End Mark */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
     /* Send Path Switch Request */
-    rv = tests1ap_build_path_switch_request(&sendbuf, 1);
+    rv = tests1ap_build_path_switch_request(&sendbuf, 16777690, 2, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    /* Receive End Mark */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Receive End Mark */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
     /* Receive Path Switch Ack */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(recvbuf->payload + 26,
                 CORE_HEX(_nh2, strlen(_nh2), tmp), 33) == 0);
     pkbuf_free(recvbuf);
@@ -302,17 +331,21 @@ static void handover_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_close(sock2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    /* eNB disonncect from SGW */
+    rv = testgtpu_enb_close(gtpu);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
     core_sleep(time_from_msec(300));
 }
 
 static void handover_test2(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock1, *sock2;
+    sock_id sock1, sock2;
+    sock_id gtpu;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
-    int rc;
     int i;
     int msgindex = 10;
 
@@ -333,7 +366,7 @@ static void handover_test2(abts_case *tc, void *data)
             "\"priority_level\" : 8,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 },"
+        "\"type\" : 2 },"
       "{ \"apn\" : \"internet\","
         "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2c\" },"
         "\"pcc_rule\" : ["
@@ -373,7 +406,7 @@ static void handover_test2(abts_case *tc, void *data)
             "\"priority_level\" : 1,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 0 } },"
-        "\"type\" : 0 }"
+        "\"type\" : 2 }"
       "],"
       "\"ambr\" : {"
         "\"downlink\" : { \"$numberLong\" : \"202400\" },"
@@ -395,11 +428,15 @@ static void handover_test2(abts_case *tc, void *data)
     mme_self()->m_tmsi = 0x010003e7;
 
     /* Two eNB connects to MME */
-    sock1 = tests1ap_enb_connect();
-    ABTS_PTR_NOTNULL(tc, sock1);
+    rv = tests1ap_enb_connect(&sock1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    sock2 = tests1ap_enb_connect();
-    ABTS_PTR_NOTNULL(tc, sock2);
+    rv = tests1ap_enb_connect(&sock2);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* eNB connects to SGW */
+    rv = testgtpu_enb_connect(&gtpu);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* S1-Setup Reqeust/Response for Source eNB */
     rv = tests1ap_build_setup_req(
@@ -409,8 +446,8 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* S1-Setup Reqeust/Response for Target eNB */
@@ -421,8 +458,8 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock2, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
@@ -455,8 +492,8 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive Identity Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Identity Response */
@@ -467,8 +504,8 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
@@ -479,8 +516,8 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
@@ -491,8 +528,8 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
@@ -505,8 +542,8 @@ static void handover_test2(abts_case *tc, void *data)
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -518,7 +555,8 @@ static void handover_test2(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
+            33554628, 12, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -531,19 +569,19 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Receive E-RAB Setup Request + 
      * Activate dedicated EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 33554628, 12, 6, 2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -566,20 +604,20 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive Handover Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock2, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Handover Request Ack */
-    rv = tests1ap_build_handover_request_ack(&sendbuf, 0);
+    rv = tests1ap_build_handover_request_ack(&sendbuf, 33554629, 8, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive Handover Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send eNB Status Transfer */
@@ -590,8 +628,8 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive MME Status Transfer */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock2, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Handover Notify */
@@ -600,10 +638,22 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    /* Receive End Mark */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Receive End Mark */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
     /* Receive UE Context Release Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Context Release Complete */
@@ -622,20 +672,20 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive Handover Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Handover Request Ack */
-    rv = tests1ap_build_handover_request_ack(&sendbuf, 1);
+    rv = tests1ap_build_handover_request_ack(&sendbuf, 33554630, 13, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive Handover Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock2, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send eNB Status Transfer */
@@ -646,8 +696,8 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive MME Status Transfer */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Handover Notify */
@@ -656,10 +706,22 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    /* Receive End Mark */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Receive End Mark */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
     /* Receive UE Context Release Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock2, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Context Release Complete */
@@ -678,20 +740,20 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive Handover Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock2, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Handover Request Ack */
-    rv = tests1ap_build_handover_request_ack(&sendbuf, 2);
+    rv = tests1ap_build_handover_request_ack(&sendbuf, 33554631, 9, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive Handover Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Handover Cancel */
@@ -702,14 +764,14 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Recv Handover Cancel Ack */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock1, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Recv UE Context Relase Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock2, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock2, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Context Release Complete */
@@ -734,6 +796,10 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     rv = tests1ap_enb_close(sock2);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* eNB disonncect from SGW */
+    rv = testgtpu_enb_close(gtpu);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));

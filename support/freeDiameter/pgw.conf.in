@@ -80,7 +80,7 @@ No_SCTP;
 #ListenOn = "202.249.37.5";
 #ListenOn = "2001:200:903:2::202:1";
 #ListenOn = "fe80::21c:5ff:fe98:7d62%eth0";
-ListenOn = "127.76.0.3";
+ListenOn = "127.0.0.1";
 
 
 ##############################################################
@@ -261,7 +261,7 @@ LoadExtension = "dict_dcca_3gpp.so";
 # Examples:
 #ConnectPeer = "aaa.wide.ad.jp";
 #ConnectPeer = "old.diameter.serv" { TcTimer = 60; TLS_old_method; No_SCTP; Port=3868; } ;
-ConnectPeer = "pcrf.localdomain" { ConnectTo = "127.76.0.5"; No_TLS; };
+ConnectPeer = "pcrf.localdomain" { ConnectTo = "127.0.0.5"; No_TLS; };
 
 
 ##############################################################

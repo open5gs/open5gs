@@ -17,7 +17,7 @@ status_t app_initialize(const char *config_path, const char *log_path)
     rv = app_will_initialize(config_path, log_path);
     if (rv != CORE_OK) return rv;
 
-    others = context_self()->trace_level.others;
+    others = context_self()->logger.trace.others;
     if (others)
     {
         d_trace_level(&_mme_main, others);

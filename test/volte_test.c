@@ -14,11 +14,10 @@
 static void volte_test1(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock;
+    sock_id sock;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
-    int rc;
     int i;
     int msgindex = 0;
 
@@ -39,7 +38,7 @@ static void volte_test1(abts_case *tc, void *data)
             "\"priority_level\" : 8,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 },"
+        "\"type\" : 2 },"
       "{ \"apn\" : \"internet.ng2.mnet\","
         "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2c\" },"
         "\"pcc_rule\" : ["
@@ -79,7 +78,7 @@ static void volte_test1(abts_case *tc, void *data)
             "\"priority_level\" : 6,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 }"
+        "\"type\" : 2 }"
       "],"
       "\"ambr\" : {"
         "\"downlink\" : { \"$numberLong\" : \"1024000\" },"
@@ -98,8 +97,8 @@ static void volte_test1(abts_case *tc, void *data)
     "}";
 
     /* eNB connects to MME */
-    sock = tests1ap_enb_connect();
-    ABTS_PTR_NOTNULL(tc, sock);
+    rv = tests1ap_enb_connect(&sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
@@ -110,8 +109,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive S1-Setup Response */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = s1ap_decode_pdu(&message, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     s1ap_free_pdu(&message);
@@ -147,8 +146,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
@@ -159,8 +158,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
@@ -171,8 +170,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
@@ -185,8 +184,8 @@ static void volte_test1(abts_case *tc, void *data)
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -198,7 +197,8 @@ static void volte_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
+            16777373, 1, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -211,8 +211,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send PDN Connectivity Request */
@@ -226,12 +226,12 @@ static void volte_test1(abts_case *tc, void *data)
     /* Receive E-RAB Setup Request +
      * Activate default EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 33554492, 1, 6, 2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -247,8 +247,8 @@ static void volte_test1(abts_case *tc, void *data)
     /* Receive E-RAB Setup Request +
      * Activate dedicated EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Activate dedicated EPS bearer context accept */
@@ -260,7 +260,7 @@ static void volte_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, msgindex+1);
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 33554492, 1, 7, 3);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -276,8 +276,8 @@ static void volte_test1(abts_case *tc, void *data)
     /* Receive E-RAB Release Command +
      * Deactivate EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Release Response */
@@ -302,8 +302,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive PDN Connectivity Reject */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /********** Remove Subscriber in Database */
@@ -325,11 +325,10 @@ static void volte_test1(abts_case *tc, void *data)
 static void volte_test2(abts_case *tc, void *data)
 {
     status_t rv;
-    net_sock_t *sock;
+    sock_id sock;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
-    int rc;
     int i;
     int msgindex = 0;
 
@@ -350,7 +349,7 @@ static void volte_test2(abts_case *tc, void *data)
             "\"priority_level\" : 8,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 },"
+        "\"type\" : 2 },"
       "{ \"apn\" : \"internet\","
         "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2c\" },"
         "\"pcc_rule\" : ["
@@ -372,13 +371,13 @@ static void volte_test2(abts_case *tc, void *data)
             "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/32 23454\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
           "{ \"direction\" : 1,"
-            "\"description\" : \"permit out udp from any 50020 to 10.200.136.98/32 1-65535\","
+            "\"description\" : \"permit out ip from 45.45.0.1 to any\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
           "{ \"direction\" : 2,"
-            "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/32 23455\","
+            "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/24 23455\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2f\" } },"
           "{ \"direction\" : 1,"
-            "\"description\" : \"permit out udp from any 50021 to 10.200.136.98/32 1-65535\","
+            "\"description\" : \"permit out ip from cafe::1 to any\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2e\" } } ]"
         "} ],"
         "\"ambr\" : {"
@@ -390,7 +389,7 @@ static void volte_test2(abts_case *tc, void *data)
             "\"priority_level\" : 6,"
             "\"pre_emption_vulnerability\" : 1,"
             "\"pre_emption_capability\" : 1 } },"
-        "\"type\" : 0 }"
+        "\"type\" : 2 }"
       "],"
       "\"ambr\" : {"
         "\"downlink\" : { \"$numberLong\" : \"1024000\" },"
@@ -409,8 +408,8 @@ static void volte_test2(abts_case *tc, void *data)
     "}";
 
     /* eNB connects to MME */
-    sock = tests1ap_enb_connect();
-    ABTS_PTR_NOTNULL(tc, sock);
+    rv = tests1ap_enb_connect(&sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
@@ -421,8 +420,8 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive S1-Setup Response */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = s1ap_decode_pdu(&message, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     s1ap_free_pdu(&message);
@@ -458,8 +457,8 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive Authentication Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
@@ -470,8 +469,8 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive Security mode Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
@@ -482,8 +481,8 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive ESM Information Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
@@ -496,8 +495,8 @@ static void volte_test2(abts_case *tc, void *data)
      * Attach Accept + 
      * Activate Default Bearer Context Request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -509,7 +508,8 @@ static void volte_test2(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
+            16777373, 1, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -522,19 +522,19 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive EMM information */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Receive E-RAB Setup Request + 
      * Activate dedicated EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rc = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_NEQUAL(tc, 0, rc);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, msgindex);
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 33554492, 1, 6, 2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -546,6 +546,20 @@ static void volte_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+#if 0 /* TFT Rule Tester */
+    core_sleep(time_from_msec(300));
+
+    /* Send GTP-U ICMP Packet */
+#if 1
+    rv = testgtpu_build_ping(&sendbuf, "45.45.0.2", "45.45.0.1");
+#else
+    rv = testgtpu_build_ping(&sendbuf, "cafe::2", "cafe::1");
+#endif
+    rv = testgtpu_enb_send(sendbuf);
+
+    core_sleep(time_from_msec(300));
+#endif
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));

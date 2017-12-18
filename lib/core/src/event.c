@@ -50,6 +50,22 @@ status_t event_send(msgq_id queue_id, event_t *e)
     return rv;
 }
 
+status_t event_recv(msgq_id queue_id, event_t *e)
+{
+    status_t rv;
+
+    d_assert(e, return -1, "Null param");
+    d_assert(queue_id, return -1, "event queue isn't initialized");
+
+    rv = msgq_recv(queue_id, (char*)e, EVENT_SIZE);
+    if (rv == CORE_ERROR)
+    {
+        d_error("msgq_timedrecv failed", rv);
+    }
+
+    return rv;
+}
+
 status_t event_timedrecv(msgq_id queue_id, event_t *e, c_time_t timeout)
 {
     status_t rv;

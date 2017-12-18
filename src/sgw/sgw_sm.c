@@ -1,8 +1,11 @@
 #define TRACE_MODULE _sgw_sm
 #include "core_debug.h"
 
+#include "gtp_node.h"
+
 #include "sgw_context.h"
 #include "sgw_event.h"
+#include "sgw_sm.h"
 #include "sgw_gtp_path.h"
 #include "sgw_s11_handler.h"
 #include "sgw_s5c_handler.h"
@@ -56,24 +59,34 @@ void sgw_state_operational(fsm_t *s, event_t *e)
         case SGW_EVT_S11_MESSAGE:
         {
             status_t rv;
-            gtp_node_t *gnode = (gtp_node_t *)event_get_param1(e);
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param2(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param1(e);
             gtp_xact_t *xact = NULL;
             gtp_message_t message;
             sgw_ue_t *sgw_ue = NULL;
 
-            d_assert(pkbuf, break, "Null param");
-            d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
+            d_assert(pkbuf, break,);
+            rv = gtp_parse_msg(&message, pkbuf);
+            d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break,);
 
-            rv = gtp_xact_receive(gnode, pkbuf, &xact, &message);
-            if (rv != CORE_OK)
-                break;
-
-            if (message.h.type == GTP_CREATE_SESSION_REQUEST_TYPE)
-                sgw_ue = sgw_ue_find_or_add_by_message(&message);
+            if (message.h.teid == 0)
+            {
+                gtp_node_t *mme = sgw_mme_add_by_message(&message);
+                d_assert(mme, pkbuf_free(pkbuf); break,);
+                sgw_ue = sgw_ue_add_by_message(&message);
+                SETUP_GTP_NODE(sgw_ue, mme);
+            }
             else
+            {
                 sgw_ue = sgw_ue_find_by_teid(message.h.teid);
-            d_assert(sgw_ue, pkbuf_free(pkbuf); break, "No Session Context");
+            }
+            d_assert(sgw_ue, pkbuf_free(pkbuf); break,);
+
+            rv = gtp_xact_receive(sgw_ue->gnode, &message.h, &xact);
+            if (rv != CORE_OK)
+            {
+                pkbuf_free(pkbuf);
+                break;
+            }
 
             switch(message.h.type)
             {
@@ -121,24 +134,24 @@ void sgw_state_operational(fsm_t *s, event_t *e)
         case SGW_EVT_S5C_MESSAGE:
         {
             status_t rv;
-            gtp_node_t *gnode = NULL;
-            c_uint32_t addr = (c_uint32_t)event_get_param1(e);
-            c_uint16_t port = (c_uint16_t)event_get_param2(e);
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
+            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param1(e);
             gtp_xact_t *xact = NULL;
             gtp_message_t message;
             sgw_sess_t *sess = NULL;
 
             d_assert(pkbuf, break, "Null param");
-            gnode = sgw_pgw_find(addr, port);
-            d_assert(gnode, pkbuf_free(pkbuf); break, "Null param");
-
-            rv = gtp_xact_receive(gnode, pkbuf, &xact, &message);
-            if (rv != CORE_OK)
-                break;
+            rv = gtp_parse_msg(&message, pkbuf);
+            d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break,);
 
             sess = sgw_sess_find_by_teid(message.h.teid);
-            d_assert(sess, pkbuf_free(pkbuf); break, "No Session Context");
+            d_assert(sess, pkbuf_free(pkbuf); break,);
+
+            rv = gtp_xact_receive(sess->gnode, &message.h, &xact);
+            if (rv != CORE_OK)
+            {
+                pkbuf_free(pkbuf);
+                break;
+            }
 
             switch(message.h.type)
             {

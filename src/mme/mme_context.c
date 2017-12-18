@@ -3,10 +3,18 @@
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_lib.h"
-#include <mongoc.h>
+#include "core_msgq.h"
+#include "core_fsm.h"
+#include "core_network.h"
 
-#include "gtp_path.h"
+#include <mongoc.h>
+#include <yaml.h>
+#include "yaml_helper.h"
+
 #include "s1ap_message.h"
+#include "gtp_xact.h"
+#include "gtp_node.h"
+#include "gtp_path.h"
 #include "fd_lib.h"
 
 #include "context.h"
@@ -14,14 +22,11 @@
 #include "mme_context.h"
 #include "mme_event.h"
 #include "s1ap_path.h"
+#include "mme_sm.h"
 
 #define MAX_CELL_PER_ENB            8
 
-#define S1AP_SCTP_PORT              36412
-
 static mme_context_t self;
-
-pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_GTP_NODE);
 
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 index_declare(mme_ue_pool, mme_ue_t, MAX_POOL_OF_UE);
@@ -39,8 +44,15 @@ status_t mme_context_init()
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_context_t));
 
-    pool_init(&mme_sgw_pool, MAX_NUM_OF_GTP_NODE);
+    list_init(&self.s1ap_list);
+    list_init(&self.s1ap_list6);
+
+    list_init(&self.gtpc_list);
+    list_init(&self.gtpc_list6);
+
+    gtp_node_init();
     list_init(&self.sgw_list);
+    list_init(&self.pgw_list);
 
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
     index_init(&mme_ue_pool, MAX_POOL_OF_UE);
@@ -48,7 +60,8 @@ status_t mme_context_init()
     index_init(&mme_sess_pool, MAX_POOL_OF_SESS);
     index_init(&mme_bearer_pool, MAX_POOL_OF_BEARER);
 
-    self.s1ap_sock_hash = hash_make();
+    self.enb_sock_hash = hash_make();
+    self.enb_addr_hash = hash_make();
     self.enb_id_hash = hash_make();
     self.mme_ue_s1ap_id_hash = hash_make();
     self.imsi_ue_hash = hash_make();
@@ -67,12 +80,13 @@ status_t mme_context_final()
     d_assert(context_initialized == 1, return CORE_ERROR,
             "MME context already has been finalized");
 
-    mme_sgw_remove_all();
     mme_enb_remove_all();
     mme_ue_remove_all();
 
-    d_assert(self.s1ap_sock_hash, , "Null param");
-    hash_destroy(self.s1ap_sock_hash);
+    d_assert(self.enb_sock_hash, , "Null param");
+    hash_destroy(self.enb_sock_hash);
+    d_assert(self.enb_addr_hash, , "Null param");
+    hash_destroy(self.enb_addr_hash);
     d_assert(self.enb_id_hash, , "Null param");
     hash_destroy(self.enb_id_hash);
 
@@ -89,7 +103,15 @@ status_t mme_context_final()
     index_final(&enb_ue_pool);
 
     index_final(&mme_enb_pool);
-    pool_final(&mme_sgw_pool);
+
+    gtp_remove_all_nodes(&self.sgw_list);
+    gtp_remove_all_nodes(&self.pgw_list);
+    gtp_node_final();
+
+    sock_remove_all_nodes(&self.s1ap_list);
+    sock_remove_all_nodes(&self.s1ap_list6);
+    sock_remove_all_nodes(&self.gtpc_list);
+    sock_remove_all_nodes(&self.gtpc_list6);
 
     context_initialized = 0;
 
@@ -107,7 +129,6 @@ static status_t mme_context_prepare()
 
     self.s1ap_port = S1AP_SCTP_PORT;
     self.gtpc_port = GTPV2_C_UDP_PORT;
-    self.s5c_port = GTPV2_C_UDP_PORT;
 
     return CORE_OK;
 }
@@ -116,86 +137,93 @@ static status_t mme_context_validation()
 {
     if (self.fd_conf_path == NULL)
     {
-        d_error("No MME.FD_CONF_PATH in '%s'",
-                context_self()->config.path);
-        return CORE_ERROR;
-    }
-    if (self.s1ap_addr == 0)
-    {
-        d_error("No MME.NEWORK.S1AP_IPV4 in '%s'",
-                context_self()->config.path);
-        return CORE_ERROR;
-    }
-    if (self.gtpc_addr == 0)
-    {
-        d_error("No MME.NEWORK.GTPC_IPV4 in '%s'",
+        d_error("No mme.freeDiameter in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
-    mme_sgw_t *sgw = mme_sgw_first();
-    if (sgw == NULL)
+    if (list_first(&self.s1ap_list) == NULL &&
+        list_first(&self.s1ap_list6) == NULL)
     {
-        d_error("No SGW.NEWORK in '%s'",
+        d_error("No mme.s1ap in '%s'",
+                context_self()->config.path);
+        return CORE_EAGAIN;
+    }
+
+    if (list_first(&self.gtpc_list) == NULL &&
+        list_first(&self.gtpc_list6) == NULL)
+    {
+        d_error("No mme.gtpc in '%s'",
+                context_self()->config.path);
+        return CORE_EAGAIN;
+    }
+
+    if (list_first(&self.sgw_list) == NULL)
+    {
+        d_error("No sgw.gtpc in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
-    while(sgw)
+
+    if (list_first(&self.pgw_list) == NULL)
     {
-        if (sgw->addr == 0)
-        {
-            d_error("No SGW.NEWORK.GTPC_IPV4 in '%s'",
-                    context_self()->config.path);
-            return CORE_ERROR;
-        }
-        sgw = mme_sgw_next(sgw);
+        d_error("No pgw.gtpc in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
     }
-    self.sgw = mme_sgw_first();
 
     if (self.max_num_of_served_gummei == 0)
     {
-        d_error("No MME.GUMMEI in '%s'",
+        d_error("No mme.gummei in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.served_gummei[0].num_of_plmn_id == 0)
     {
-        d_error("No MME.GUMMEI.PLMN_ID in '%s'",
+        d_error("No mme.gummei.plmn_id in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_gid == 0)
     {
-        d_error("No MME.GUMMEI.MME_GID in '%s'",
+        d_error("No mme.gummei.mme_gid in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_code == 0)
     {
-        d_error("No MME.GUMMEI.MME_CODE in '%s'",
+        d_error("No mme.gummei.mme_code in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
-    if (self.max_num_of_served_tai == 0)
+    if (self.num_of_served_tai == 0)
     {
-        d_error("No MME.TAI(PLMN_ID.MCC.MNC|TAC) in '%s'",
+        d_error("No mme.tai in '%s'",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    if (self.served_tai[0].list0.tai[0].num == 0 &&
+        self.served_tai[0].list2.num == 0)
+    {
+        d_error("No mme.tai.plmn_id|tac in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.num_of_integrity_order == 0)
     {
-        d_error("No MME.SECURITY.INTEGRITY_ORDER in '%s'",
+        d_error("No mme.security.integrity_order in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
     if (self.num_of_ciphering_order == 0)
     {
-        d_error("No MME.SECURITY.CIPHERING_ORDER in '%s'",
+        d_error("no mme.security.ciphering_order in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -207,410 +235,705 @@ status_t mme_context_parse_config()
 {
     status_t rv;
     config_t *config = &context_self()->config;
-    bson_iter_t iter;
-    c_uint32_t length = 0;
+    yaml_document_t *document = NULL;
+    yaml_iter_t root_iter;
 
-    d_assert(config, return CORE_ERROR, );
+    d_assert(config, return CORE_ERROR,);
+    document = config->document;
+    d_assert(document, return CORE_ERROR,);
 
     rv = mme_context_prepare();
     if (rv != CORE_OK) return rv;
 
-    if (!bson_iter_init(&iter, config->bson))
+    yaml_iter_init(&root_iter, document);
+    while(yaml_iter_next(&root_iter))
     {
-        d_error("bson_iter_init failed in this document");
-        return CORE_ERROR;
-    }
-
-    while(bson_iter_next(&iter))
-    {
-        const char *key = bson_iter_key(&iter);
-        if (!strcmp(key, "MME") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        const char *root_key = yaml_iter_key(&root_iter);
+        d_assert(root_key, return CORE_ERROR,);
+        if (!strcmp(root_key, "mme"))
         {
-            bson_iter_t mme_iter;
-            bson_iter_recurse(&iter, &mme_iter);
-            while(bson_iter_next(&mme_iter))
+            yaml_iter_t mme_iter;
+            yaml_iter_recurse(&root_iter, &mme_iter);
+            while(yaml_iter_next(&mme_iter))
             {
-                const char *mme_key = bson_iter_key(&mme_iter);
-                if (!strcmp(mme_key, "RELATIVE_CAPACITY") &&
-                    BSON_ITER_HOLDS_INT32(&mme_iter))
+                const char *mme_key = yaml_iter_key(&mme_iter);
+                d_assert(mme_key, return CORE_ERROR,);
+                if (!strcmp(mme_key, "freeDiameter"))
                 {
-                    self.relative_capacity = bson_iter_int32(&mme_iter);
+                    self.fd_conf_path = yaml_iter_value(&mme_iter);
                 }
-                else if (!strcmp(mme_key, "FD_CONF_PATH") &&
-                    BSON_ITER_HOLDS_UTF8(&mme_iter))
+                else if (!strcmp(mme_key, "relative_capacity"))
                 {
-                    self.fd_conf_path = bson_iter_utf8(&mme_iter, &length);
+                    const char *v = yaml_iter_value(&mme_iter);
+                    if (v) self.relative_capacity = atoi(v);
                 }
-                else if (!strcmp(mme_key, "NETWORK"))
+                else if (!strcmp(mme_key, "s1ap"))
                 {
-                    bson_iter_t network_iter;
+                    yaml_iter_t s1ap_array, s1ap_iter;
+                    yaml_iter_recurse(&mme_iter, &s1ap_array);
+                    do
+                    {
+                        int family = AF_UNSPEC;
+                        int i, num = 0;
+                        const char *hostname[MAX_NUM_OF_HOSTNAME];
+                        c_uint16_t port = self.s1ap_port;
+                        const char *dev = NULL;
+                        c_sockaddr_t *list = NULL;
+                        sock_node_t *node = NULL;
 
-                    if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
-                    {
-                        bson_iter_t array_iter;
-                        bson_iter_recurse(&mme_iter, &array_iter);
-                        if (bson_iter_next(&array_iter))
-                            bson_iter_recurse(&array_iter, &network_iter);
-                    }
-                    else if (BSON_ITER_HOLDS_DOCUMENT(&mme_iter))
-                    {
-                        bson_iter_recurse(&mme_iter, &network_iter);
-                    }
-                    else
-                        d_assert(0, return CORE_ERROR,);
-
-                    while(bson_iter_next(&network_iter))
-                    {
-                        const char *network_key = bson_iter_key(&network_iter);
-                        if (!strcmp(network_key, "S1AP_IPV4") &&
-                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        if (yaml_iter_type(&s1ap_array) == YAML_MAPPING_NODE)
                         {
-                            const char *v = 
-                                    bson_iter_utf8(&network_iter, &length);
-                            if (v) self.s1ap_addr = inet_addr(v);
+                            memcpy(&s1ap_iter, &s1ap_array,
+                                    sizeof(yaml_iter_t));
                         }
-                        else if (!strcmp(network_key, "S1AP_PORT") &&
-                            BSON_ITER_HOLDS_INT32(&network_iter))
+                        else if (yaml_iter_type(&s1ap_array) ==
+                            YAML_SEQUENCE_NODE)
                         {
-                            self.s1ap_port = bson_iter_int32(&network_iter);
+                            if (!yaml_iter_next(&s1ap_array))
+                                break;
+                            yaml_iter_recurse(&s1ap_array, &s1ap_iter);
                         }
-                        else if (!strcmp(network_key, "GTPC_IPV4") &&
-                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        else if (yaml_iter_type(&s1ap_array) ==
+                            YAML_SCALAR_NODE)
                         {
-                            const char *v = 
-                                    bson_iter_utf8(&network_iter, &length);
-                            if (v) self.gtpc_addr = inet_addr(v);
+                            break;
                         }
-                        else if (!strcmp(network_key, "GTPC_PORT") &&
-                            BSON_ITER_HOLDS_INT32(&network_iter))
+                        else
+                            d_assert(0, return CORE_ERROR,);
+
+                        while(yaml_iter_next(&s1ap_iter))
                         {
-                            self.gtpc_port = bson_iter_int32(&network_iter);
-                        }
-                    }
-                }
-                else if (!strcmp(mme_key, "GUMMEI"))
-                {
-                    int gummei_index = 0;
-                    bson_iter_t gummei_array;
-
-                    if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
-                    {
-                        bson_iter_recurse(&mme_iter, &gummei_array);
-                        d_assert(bson_iter_next(&gummei_array),
-                                return CORE_ERROR,);
-                    }
-                    else if (BSON_ITER_HOLDS_DOCUMENT(&mme_iter))
-                    {
-                        memcpy(&gummei_array, &mme_iter, sizeof(gummei_array));
-                    }
-                    else
-                        d_assert(0, return CORE_ERROR,);
-
-                    do 
-                    {
-                        served_gummei_t *gummei = NULL;
-                        bson_iter_t gummei_iter;
-                        const char *gummei_index_key =
-                            bson_iter_key(&gummei_array);
-
-                        d_assert(gummei_index_key, return CORE_ERROR,);
-                        if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
-                            gummei_index = atoi(gummei_index_key);
-                        d_assert(gummei_index < MAX_NUM_OF_SERVED_GUMMEI,
-                                return CORE_ERROR,
-                                "GUMMEI Overflow : %d", gummei_index);
-                        gummei = &self.served_gummei[gummei_index];
-
-                        bson_iter_recurse(&gummei_array, &gummei_iter);
-                        while(bson_iter_next(&gummei_iter))
-                        {
-                            const char *gummei_key =
-                                bson_iter_key(&gummei_iter);
-                            if (!strcmp(gummei_key, "PLMN_ID"))
+                            const char *s1ap_key =
+                                yaml_iter_key(&s1ap_iter);
+                            d_assert(s1ap_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(s1ap_key, "family"))
                             {
-                                int plmn_id_index = 0;
-                                bson_iter_t plmn_id_array;
-
-                                if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
+                                const char *v = yaml_iter_value(&s1ap_iter);
+                                if (v) family = atoi(v);
+                                if (family != AF_UNSPEC &&
+                                    family != AF_INET && family != AF_INET6)
                                 {
-                                    bson_iter_recurse(&gummei_iter,
-                                            &plmn_id_array);
-                                    d_assert(bson_iter_next(&plmn_id_array),
-                                            return CORE_ERROR,);
+                                    d_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                        "AF_INET(%d), AF_INET6(%d) ", 
+                                        family, AF_UNSPEC, AF_INET, AF_INET6);
+                                    family = AF_UNSPEC;
                                 }
-                                else if (BSON_ITER_HOLDS_DOCUMENT(&gummei_iter))
-                                {
-                                    memcpy(&plmn_id_array,
-                                        &gummei_iter, sizeof(plmn_id_array));
-                                }
-                                else
-                                    d_assert(0, return CORE_ERROR,);
-
-                                do 
-                                {
-                                    bson_iter_t plmn_id_iter;
-                                    const char *mcc = NULL, *mnc = NULL;
-                                    const char *plmn_id_index_key =
-                                        bson_iter_key(&plmn_id_array);
-
-                                    d_assert(plmn_id_index_key,
-                                            return CORE_ERROR, );
-                                    if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
-                                        plmn_id_index = atoi(plmn_id_index_key);
-                                    d_assert(plmn_id_index < MAX_PLMN_ID,
-                                        return CORE_ERROR,
-                                        "PLMN_ID Overflow : %d", plmn_id_index);
-
-                                    bson_iter_recurse(
-                                            &plmn_id_array, &plmn_id_iter);
-                                    while(bson_iter_next(&plmn_id_iter))
-                                    {
-                                        const char *plmn_id_key =
-                                            bson_iter_key(&plmn_id_iter);
-
-                                        if (!strcmp(plmn_id_key, "MCC") &&
-                                            BSON_ITER_HOLDS_UTF8(&plmn_id_iter))
-                                        {
-                                            mcc = bson_iter_utf8(
-                                                    &plmn_id_iter, &length);
-                                        } else if (
-                                            !strcmp(plmn_id_key, "MNC") &&
-                                            BSON_ITER_HOLDS_UTF8(&plmn_id_iter))
-                                        {
-                                            mnc = bson_iter_utf8(
-                                                    &plmn_id_iter, &length);
-                                        }
-                                    }
-                                    if (mcc && mnc)
-                                    {
-                                        plmn_id_build(&gummei->
-                                            plmn_id[gummei->num_of_plmn_id],
-                                            atoi(mcc), 
-                                            atoi(mnc), strlen(mnc));
-                                        gummei->num_of_plmn_id++;
-                                    }
-                                } while(
-                                    BSON_ITER_HOLDS_ARRAY(&gummei_iter) &&
-                                    bson_iter_next(&plmn_id_array));
                             }
-                            else if (!strcmp(gummei_key, "MME_GID"))
+                            else if (!strcmp(s1ap_key, "addr") ||
+                                    !strcmp(s1ap_key, "name"))
                             {
-                                int mme_gid_index = 0;
-                                bson_iter_t mme_gid_array;
-
-                                if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
-                                {
-                                    bson_iter_recurse(&gummei_iter,
-                                            &mme_gid_array);
-                                    d_assert(bson_iter_next(&mme_gid_array),
-                                            return CORE_ERROR,);
-                                }
-                                else if (BSON_ITER_HOLDS_INT32(&gummei_iter))
-                                {
-                                    memcpy(&mme_gid_array, &gummei_iter,
-                                            sizeof(mme_gid_array));
-                                }
-                                else
-                                    d_assert(0, return CORE_ERROR,);
+                                yaml_iter_t hostname_iter;
+                                yaml_iter_recurse(&s1ap_iter, &hostname_iter);
+                                d_assert(yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
 
                                 do
                                 {
-                                    const char *mme_gid_index_key =
-                                        bson_iter_key(&mme_gid_array);
-
-                                    d_assert(mme_gid_index_key,
-                                            return CORE_ERROR,);
-                                    if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
-                                        mme_gid_index = atoi(mme_gid_index_key);
-                                    d_assert(mme_gid_index < GRP_PER_MME,
-                                            return CORE_ERROR,
-                                            "MME_GID Overflow : %d",
-                                                mme_gid_index);
-                                    gummei->mme_gid[mme_gid_index] = 
-                                        bson_iter_int32(&mme_gid_array);
-                                    gummei->num_of_mme_gid++;
-                                } while(
-                                    BSON_ITER_HOLDS_ARRAY(&gummei_iter) &&
-                                    bson_iter_next(&mme_gid_array));
-                            }
-                            else if (!strcmp(gummei_key, "MME_CODE"))
-                            {
-                                int mme_code_index = 0;
-                                bson_iter_t mme_code_array;
-
-                                if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
-                                {
-                                    bson_iter_recurse(&gummei_iter,
-                                            &mme_code_array);
-                                    d_assert(bson_iter_next(&mme_code_array),
-                                            return CORE_ERROR,);
-                                }
-                                else if (BSON_ITER_HOLDS_INT32(&gummei_iter))
-                                {
-                                    memcpy(&mme_code_array, &gummei_iter,
-                                            sizeof(mme_code_array));
-                                }
-                                else
-                                    d_assert(0, return CORE_ERROR,);
-
-                                do
-                                {
-                                    const char *mme_code_index_key =
-                                        bson_iter_key(&mme_code_array);
-
-                                    d_assert(mme_code_index_key,
-                                            return CORE_ERROR,);
-                                    if (BSON_ITER_HOLDS_ARRAY(&gummei_iter))
-                                        mme_code_index = 
-                                            atoi(mme_code_index_key);
-                                    d_assert(mme_code_index < CODE_PER_MME,
-                                            return CORE_ERROR,
-                                            "MME_CODE Overflow : %d",
-                                                mme_code_index);
-                                    gummei->mme_code[mme_code_index] = 
-                                        bson_iter_int32(&mme_code_array);
-                                    gummei->num_of_mme_code++;
-                                } while(
-                                    BSON_ITER_HOLDS_ARRAY(&gummei_iter) &&
-                                    bson_iter_next(&mme_code_array));
-                            }
-                        }
-                        self.max_num_of_served_gummei++;
-                    } while(
-                        BSON_ITER_HOLDS_ARRAY(&mme_iter) &&
-                        bson_iter_next(&gummei_array));
-                }
-                else if (!strcmp(mme_key, "TAI"))
-                {
-                    int tai_index = 0;
-                    bson_iter_t tai_array;
-
-                    if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
-                    {
-                        bson_iter_recurse(&mme_iter, &tai_array);
-                        d_assert(bson_iter_next(&tai_array),
-                                return CORE_ERROR,);
-                    }
-                    else if (BSON_ITER_HOLDS_DOCUMENT(&mme_iter))
-                    {
-                        memcpy(&tai_array, &mme_iter, sizeof(tai_array));
-                    }
-                    else
-                        d_assert(0, return CORE_ERROR,);
-
-                    do 
-                    {
-                        const char *mcc = NULL, *mnc = NULL;
-                        c_uint16_t tac = 0;
-
-                        bson_iter_t tai_iter;
-                        const char *tai_index_key =
-                            bson_iter_key(&tai_array);
-
-                        d_assert(tai_index_key, return CORE_ERROR,);
-                        if (BSON_ITER_HOLDS_ARRAY(&mme_iter))
-                            tai_index = atoi(tai_index_key);
-                        d_assert(tai_index < MAX_NUM_OF_SERVED_TAI,
-                                return CORE_ERROR,
-                                "TAI Overflow : %d", tai_index);
-
-                        bson_iter_recurse(&tai_array, &tai_iter);
-                        while(bson_iter_next(&tai_iter))
-                        {
-                            const char *tai_key =
-                                bson_iter_key(&tai_iter);
-
-                            if (!strcmp(tai_key, "PLMN_ID") &&
-                                BSON_ITER_HOLDS_DOCUMENT(&tai_iter))
-                            {
-                                bson_iter_t plmn_id_iter;
-                                bson_iter_recurse(&tai_iter, &plmn_id_iter);
-                                while(bson_iter_next(&plmn_id_iter))
-                                {
-                                    const char *plmn_id_key =
-                                        bson_iter_key(&plmn_id_iter);
-                                    if (!strcmp(plmn_id_key, "MCC") &&
-                                        BSON_ITER_HOLDS_UTF8(&plmn_id_iter))
+                                    if (yaml_iter_type(&hostname_iter) ==
+                                            YAML_SEQUENCE_NODE)
                                     {
-                                        mcc = bson_iter_utf8(
-                                                &plmn_id_iter, &length);
+                                        if (!yaml_iter_next(&hostname_iter))
+                                            break;
                                     }
-                                    else if (!strcmp(plmn_id_key, "MNC") &&
-                                        BSON_ITER_HOLDS_UTF8(&plmn_id_iter))
-                                    {
-                                        mnc = bson_iter_utf8(
-                                                &plmn_id_iter, &length);
-                                    }
-                                }
+
+                                    d_assert(num <= MAX_NUM_OF_HOSTNAME,
+                                            return CORE_ERROR,);
+                                    hostname[num++] = 
+                                        yaml_iter_value(&hostname_iter);
+                                } while(
+                                    yaml_iter_type(&hostname_iter) ==
+                                        YAML_SEQUENCE_NODE);
                             }
-                            else if (!strcmp(tai_key, "TAC") &&
-                                    BSON_ITER_HOLDS_INT32(&tai_iter))
+                            else if (!strcmp(s1ap_key, "port"))
                             {
-                                tac = bson_iter_int32(&tai_iter);
-                            }
-                        }
-                        if (mcc && mnc && tac)
-                        {
-                            tai_t *tai = &self.served_tai[
-                                self.max_num_of_served_tai];
-                           
-                            plmn_id_build(&tai->plmn_id,
-                                atoi(mcc), atoi(mnc), strlen(mnc));
-                            tai->tac = tac;
-
-                            self.max_num_of_served_tai++;
-                        }
-                    } while(
-                        BSON_ITER_HOLDS_ARRAY(&mme_iter) &&
-                        bson_iter_next(&tai_array));
-                }
-                else if (!strcmp(mme_key, "SECURITY") &&
-                        BSON_ITER_HOLDS_DOCUMENT(&mme_iter))
-                {
-                    bson_iter_t security_iter;
-
-                    bson_iter_recurse(&mme_iter, &security_iter);
-                    while(bson_iter_next(&security_iter))
-                    {
-                        const char *security_key =
-                            bson_iter_key(&security_iter);
-                        if (!strcmp(security_key, "INTEGRITY_ORDER"))
-                        {
-                            int integrity_index = 0;
-                            bson_iter_t integrity_array;
-
-                            if (BSON_ITER_HOLDS_ARRAY(&security_iter))
-                            {
-                                bson_iter_recurse(&security_iter,
-                                        &integrity_array);
-                                d_assert(bson_iter_next(&integrity_array),
-                                        return CORE_ERROR,);
-                            }
-                            else if (BSON_ITER_HOLDS_UTF8(&security_iter))
-                            {
-                                memcpy(&integrity_array, &security_iter,
-                                        sizeof(integrity_array));
-                            }
-                            else
-                                d_assert(0, return CORE_ERROR,);
-
-                            do 
-                            {
-                                const char *integrity_index_key =
-                                    bson_iter_key(&integrity_array);
-                                const char *v =
-                                    bson_iter_utf8(&integrity_array, &length);
-
-                                d_assert(integrity_index_key,
-                                        return CORE_ERROR,);
-                                if (BSON_ITER_HOLDS_ARRAY(&security_iter))
-                                    integrity_index = atoi(integrity_index_key);
-                                d_assert(integrity_index < MAX_NUM_OF_ALGORITHM,
-                                        return CORE_ERROR,
-                                        "Integrity Overflow : %d",
-                                            integrity_index);
+                                const char *v = yaml_iter_value(&s1ap_iter);
                                 if (v)
                                 {
+                                    port = atoi(v);
+                                    self.s1ap_port = port;
+                                }
+                            }
+                            else if (!strcmp(s1ap_key, "dev"))
+                            {
+                                dev = yaml_iter_value(&s1ap_iter);
+                            }
+                            else
+                                d_warn("unknown key `%s`", s1ap_key);
+                        }
+
+                        list = NULL;
+                        for (i = 0; i < num; i++)
+                        {
+                            rv = core_addaddrinfo(&list,
+                                    family, hostname[i], port, 0);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+
+                        if (list)
+                        {
+                            if (context_self()->parameter.no_ipv4 == 0)
+                            {
+                                rv = sock_add_node(&self.s1ap_list,
+                                        &node, list, AF_INET);
+                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            }
+
+                            if (context_self()->parameter.no_ipv6 == 0)
+                            {
+                                rv = sock_add_node(&self.s1ap_list6,
+                                        &node, list, AF_INET6);
+                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            }
+
+                            core_freeaddrinfo(list);
+                        }
+
+                        if (dev)
+                        {
+                            rv = sock_probe_node(
+                                    context_self()->parameter.no_ipv4 ?
+                                        NULL : &self.s1ap_list,
+                                    context_self()->parameter.no_ipv6 ?
+                                        NULL : &self.s1ap_list6,
+                                    dev, self.s1ap_port);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+
+                    } while(yaml_iter_type(&s1ap_array) == YAML_SEQUENCE_NODE);
+
+                    if (list_first(&self.s1ap_list) == NULL &&
+                        list_first(&self.s1ap_list6) == NULL)
+                    {
+                        rv = sock_probe_node(
+                                context_self()->parameter.no_ipv4 ?
+                                    NULL : &self.s1ap_list,
+                                context_self()->parameter.no_ipv6 ?
+                                    NULL : &self.s1ap_list6,
+                                NULL, self.s1ap_port);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    }
+                }
+                else if (!strcmp(mme_key, "gtpc"))
+                {
+                    yaml_iter_t gtpc_array, gtpc_iter;
+                    yaml_iter_recurse(&mme_iter, &gtpc_array);
+                    do
+                    {
+                        int family = AF_UNSPEC;
+                        int i, num = 0;
+                        const char *hostname[MAX_NUM_OF_HOSTNAME];
+                        c_uint16_t port = self.gtpc_port;
+                        const char *dev = NULL;
+                        c_sockaddr_t *list = NULL;
+                        sock_node_t *node = NULL;
+
+                        if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
+                        {
+                            memcpy(&gtpc_iter, &gtpc_array,
+                                    sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&gtpc_array))
+                                break;
+                            yaml_iter_recurse(&gtpc_array, &gtpc_iter);
+                        }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                            YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
+
+                        while(yaml_iter_next(&gtpc_iter))
+                        {
+                            const char *gtpc_key =
+                                yaml_iter_key(&gtpc_iter);
+                            d_assert(gtpc_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(gtpc_key, "family"))
+                            {
+                                const char *v = yaml_iter_value(&gtpc_iter);
+                                if (v) family = atoi(v);
+                                if (family != AF_UNSPEC &&
+                                    family != AF_INET && family != AF_INET6)
+                                {
+                                    d_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                        "AF_INET(%d), AF_INET6(%d) ", 
+                                        family, AF_UNSPEC, AF_INET, AF_INET6);
+                                    family = AF_UNSPEC;
+                                }
+                            }
+                            else if (!strcmp(gtpc_key, "addr") ||
+                                    !strcmp(gtpc_key, "name"))
+                            {
+                                yaml_iter_t hostname_iter;
+                                yaml_iter_recurse(&gtpc_iter, &hostname_iter);
+                                d_assert(yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    if (yaml_iter_type(&hostname_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&hostname_iter))
+                                            break;
+                                    }
+
+                                    d_assert(num <= MAX_NUM_OF_HOSTNAME,
+                                            return CORE_ERROR,);
+                                    hostname[num++] = 
+                                        yaml_iter_value(&hostname_iter);
+                                } while(
+                                    yaml_iter_type(&hostname_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
+                            else if (!strcmp(gtpc_key, "port"))
+                            {
+                                const char *v = yaml_iter_value(&gtpc_iter);
+                                if (v)
+                                {
+                                    port = atoi(v);
+                                    self.gtpc_port = port;
+                                }
+                            }
+                            else if (!strcmp(gtpc_key, "dev"))
+                            {
+                                dev = yaml_iter_value(&gtpc_iter);
+                            }
+                            else
+                                d_warn("unknown key `%s`", gtpc_key);
+                        }
+
+                        list = NULL;
+                        for (i = 0; i < num; i++)
+                        {
+                            rv = core_addaddrinfo(&list,
+                                    family, hostname[i], port, 0);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+
+                        if (list)
+                        {
+                            if (context_self()->parameter.no_ipv4 == 0)
+                            {
+                                rv = sock_add_node(&self.gtpc_list,
+                                        &node, list, AF_INET);
+                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            }
+
+                            if (context_self()->parameter.no_ipv6 == 0)
+                            {
+                                rv = sock_add_node(&self.gtpc_list6,
+                                        &node, list, AF_INET6);
+                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            }
+
+                            core_freeaddrinfo(list);
+                        }
+
+                        if (dev)
+                        {
+                            rv = sock_probe_node(
+                                    context_self()->parameter.no_ipv4 ?
+                                        NULL : &self.gtpc_list,
+                                    context_self()->parameter.no_ipv6 ?
+                                        NULL : &self.gtpc_list6,
+                                    dev, self.gtpc_port);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        }
+                    } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
+
+                    if (list_first(&self.gtpc_list) == NULL &&
+                        list_first(&self.gtpc_list6) == NULL)
+                    {
+                        rv = sock_probe_node(
+                                context_self()->parameter.no_ipv4 ?
+                                    NULL : &self.gtpc_list,
+                                context_self()->parameter.no_ipv6 ?
+                                    NULL : &self.gtpc_list6,
+                                NULL, self.gtpc_port);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    }
+                }
+                else if (!strcmp(mme_key, "gummei"))
+                {
+                    yaml_iter_t gummei_array, gummei_iter;
+                    yaml_iter_recurse(&mme_iter, &gummei_array);
+                    do
+                    {
+                        served_gummei_t *gummei = NULL;
+                        d_assert(self.max_num_of_served_gummei <=
+                                MAX_NUM_OF_SERVED_GUMMEI, return CORE_ERROR,);
+                        gummei = &self.served_gummei[
+                            self.max_num_of_served_gummei];
+                        d_assert(gummei, return CORE_ERROR,);
+
+                        if (yaml_iter_type(&gummei_array) ==
+                                YAML_MAPPING_NODE)
+                        {
+                            memcpy(&gummei_iter, &gummei_array,
+                                    sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&gummei_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&gummei_array))
+                                break;
+                            yaml_iter_recurse(&gummei_array,
+                                    &gummei_iter);
+                        }
+                        else if (yaml_iter_type(&gummei_array) ==
+                            YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
+
+                        while(yaml_iter_next(&gummei_iter))
+                        {
+                            const char *gummei_key =
+                                yaml_iter_key(&gummei_iter);
+                            d_assert(gummei_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(gummei_key, "plmn_id"))
+                            {
+                                yaml_iter_t plmn_id_array, plmn_id_iter;
+                                yaml_iter_recurse(&gummei_iter, &plmn_id_array);
+                                do
+                                {
+                                    plmn_id_t *plmn_id = NULL;
+                                    const char *mcc = NULL, *mnc = NULL;
+                                    d_assert(gummei->num_of_plmn_id <=
+                                            MAX_PLMN_ID, return CORE_ERROR,);
+                                    plmn_id = &gummei->plmn_id[
+                                        gummei->num_of_plmn_id];
+                                    d_assert(plmn_id, return CORE_ERROR,);
+
+                                    if (yaml_iter_type(&plmn_id_array) ==
+                                            YAML_MAPPING_NODE)
+                                    {
+                                        memcpy(&plmn_id_iter, &plmn_id_array,
+                                                sizeof(yaml_iter_t));
+                                    }
+                                    else if (yaml_iter_type(&plmn_id_array) ==
+                                        YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&plmn_id_array))
+                                            break;
+                                        yaml_iter_recurse(&plmn_id_array,
+                                                &plmn_id_iter);
+                                    }
+                                    else if (yaml_iter_type(&plmn_id_array) ==
+                                        YAML_SCALAR_NODE)
+                                    {
+                                        break;
+                                    }
+                                    else
+                                        d_assert(0, return CORE_ERROR,);
+
+                                    while(yaml_iter_next(&plmn_id_iter))
+                                    {
+                                        const char *plmn_id_key =
+                                            yaml_iter_key(&plmn_id_iter);
+                                        d_assert(plmn_id_key,
+                                                return CORE_ERROR,);
+                                        if (!strcmp(plmn_id_key, "mcc"))
+                                        {
+                                            mcc =
+                                                yaml_iter_value(&plmn_id_iter);
+                                        }
+                                        else if (!strcmp(plmn_id_key, "mnc"))
+                                        {
+                                            mnc =
+                                                yaml_iter_value(&plmn_id_iter);
+                                        }
+                                    }
+
+                                    if (mcc && mnc)
+                                    {
+                                        plmn_id_build(plmn_id,
+                                            atoi(mcc), atoi(mnc), strlen(mnc));
+                                        gummei->num_of_plmn_id++;
+                                    }
+
+                                } while(yaml_iter_type(&plmn_id_array) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
+                            else if (!strcmp(gummei_key, "mme_gid"))
+                            {
+                                yaml_iter_t mme_gid_iter;
+                                yaml_iter_recurse(&gummei_iter, &mme_gid_iter);
+                                d_assert(yaml_iter_type(&mme_gid_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    c_uint16_t *mme_gid = NULL;
+                                    const char *v = NULL;
+
+                                    d_assert(gummei->num_of_mme_gid <=
+                                            GRP_PER_MME, return CORE_ERROR,);
+                                    mme_gid = &gummei->mme_gid[
+                                        gummei->num_of_mme_gid];
+                                    d_assert(mme_gid, return CORE_ERROR,);
+
+                                    if (yaml_iter_type(&mme_gid_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&mme_gid_iter))
+                                            break;
+                                    }
+
+                                    v = yaml_iter_value(&mme_gid_iter);
+                                    if (v) 
+                                    {
+                                        *mme_gid = atoi(v);
+                                        gummei->num_of_mme_gid++;
+                                    }
+                                } while(
+                                    yaml_iter_type(&mme_gid_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
+                            else if (!strcmp(gummei_key, "mme_code"))
+                            {
+                                yaml_iter_t mme_code_iter;
+                                yaml_iter_recurse(&gummei_iter, &mme_code_iter);
+                                d_assert(yaml_iter_type(&mme_code_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    c_uint8_t *mme_code = NULL;
+                                    const char *v = NULL;
+
+                                    d_assert(gummei->num_of_mme_code <=
+                                            CODE_PER_MME, return CORE_ERROR,);
+                                    mme_code = &gummei->mme_code[
+                                        gummei->num_of_mme_code];
+                                    d_assert(mme_code, return CORE_ERROR,);
+
+                                    if (yaml_iter_type(&mme_code_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&mme_code_iter))
+                                            break;
+                                    }
+
+                                    v = yaml_iter_value(&mme_code_iter);
+                                    if (v) 
+                                    {
+                                        *mme_code = atoi(v);
+                                        gummei->num_of_mme_code++;
+                                    }
+                                } while(
+                                    yaml_iter_type(&mme_code_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
+                            else
+                                d_warn("unknown key `%s`", gummei_key);
+                        }
+
+                        if (gummei->num_of_plmn_id &&
+                            gummei->num_of_mme_gid && gummei->num_of_mme_code)
+                        {
+                            self.max_num_of_served_gummei++;
+                        }
+                        else
+                        {
+                            d_warn("Ignore gummei : "
+                                    "plmn_id(%d), mme_gid(%d), mme_code(%d)",
+                                gummei->num_of_plmn_id,
+                                gummei->num_of_mme_gid, gummei->num_of_mme_code);
+                            gummei->num_of_plmn_id = 0;
+                            gummei->num_of_mme_gid = 0;
+                            gummei->num_of_mme_code = 0;
+                        }
+                    } while(yaml_iter_type(&gummei_array) ==
+                            YAML_SEQUENCE_NODE);
+                }
+                else if (!strcmp(mme_key, "tai"))
+                {
+                    int num_of_list0 = 0;
+                    tai0_list_t *list0 = NULL;
+                    tai2_list_t *list2 = NULL;
+
+                    d_assert(self.num_of_served_tai <=
+                            MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,);
+                    list0 = &self.served_tai[self.num_of_served_tai].list0;
+                    d_assert(list0, return CORE_ERROR,);
+                    list2 = &self.served_tai[self.num_of_served_tai].list2;
+                    d_assert(list2, return CORE_ERROR,);
+
+                    yaml_iter_t tai_array, tai_iter;
+                    yaml_iter_recurse(&mme_iter, &tai_array);
+                    do
+                    {
+                        const char *mcc = NULL, *mnc = NULL;
+                        c_uint16_t tac[MAX_NUM_OF_TAI];
+                        int num_of_tac = 0;
+
+                        if (yaml_iter_type(&tai_array) == YAML_MAPPING_NODE)
+                        {
+                            memcpy(&tai_iter, &tai_array, sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&tai_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&tai_array))
+                                break;
+                            yaml_iter_recurse(&tai_array,
+                                    &tai_iter);
+                        }
+                        else if (yaml_iter_type(&tai_array) == YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
+
+                        while(yaml_iter_next(&tai_iter))
+                        {
+                            const char *tai_key = yaml_iter_key(&tai_iter);
+                            d_assert(tai_key, return CORE_ERROR,);
+                            if (!strcmp(tai_key, "plmn_id"))
+                            {
+                                yaml_iter_t plmn_id_iter;
+
+                                yaml_iter_recurse(&tai_iter, &plmn_id_iter);
+                                while(yaml_iter_next(&plmn_id_iter))
+                                {
+                                    const char *plmn_id_key =
+                                        yaml_iter_key(&plmn_id_iter);
+                                    d_assert(plmn_id_key,
+                                            return CORE_ERROR,);
+                                    if (!strcmp(plmn_id_key, "mcc"))
+                                    {
+                                        mcc = yaml_iter_value(&plmn_id_iter);
+                                    }
+                                    else if (!strcmp(plmn_id_key, "mnc"))
+                                    {
+                                        mnc = yaml_iter_value(&plmn_id_iter);
+                                    }
+                                }
+                            }
+                            else if (!strcmp(tai_key, "tac"))
+                            {
+                                yaml_iter_t tac_iter;
+                                yaml_iter_recurse(&tai_iter, &tac_iter);
+                                d_assert(yaml_iter_type(&tac_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    const char *v = NULL;
+
+                                    d_assert(num_of_tac <=
+                                            MAX_NUM_OF_TAI, return CORE_ERROR,);
+                                    if (yaml_iter_type(&tac_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&tac_iter))
+                                            break;
+                                    }
+
+                                    v = yaml_iter_value(&tac_iter);
+                                    if (v) 
+                                    {
+                                        tac[num_of_tac] = atoi(v);
+                                        num_of_tac++;
+                                    }
+                                } while(
+                                    yaml_iter_type(&tac_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
+                            else
+                                d_warn("unknown key `%s`", tai_key);
+                        }
+
+                        if (mcc && mnc && num_of_tac)
+                        {
+                            if (num_of_tac == 1)
+                            {
+                                plmn_id_build(
+                                    &list2->tai[list2->num].plmn_id,
+                                    atoi(mcc), atoi(mnc), strlen(mnc));
+                                list2->tai[list2->num].tac = tac[0];
+
+                                list2->num++;
+                                if (list2->num > 1)
+                                    list2->type = TAI2_TYPE;
+                                else
+                                    list2->type = TAI1_TYPE;
+                            }
+                            else if (num_of_tac > 1)
+                            {
+                                int i;
+                                plmn_id_build(
+                                    &list0->tai[num_of_list0].plmn_id,
+                                    atoi(mcc), atoi(mnc), strlen(mnc));
+                                for (i = 0; i < num_of_tac; i++)
+                                {
+                                    list0->tai[num_of_list0].tac[i] = tac[i];
+                                }
+
+                                list0->tai[num_of_list0].num = num_of_tac;
+                                list0->tai[num_of_list0].type = TAI0_TYPE;
+
+                                num_of_list0++;
+                            }
+                        }
+                        else
+                        {
+                            d_warn("Ignore tai : mcc(%p), mnc(%p), "
+                                    "num_of_tac(%d)", mcc, mnc, num_of_tac);
+                        }
+                    } while(yaml_iter_type(&tai_array) ==
+                            YAML_SEQUENCE_NODE);
+
+                    if (list2->num || num_of_list0)
+                    {
+                        self.num_of_served_tai++;
+                    }
+                }
+                else if (!strcmp(mme_key, "security"))
+                {
+                    yaml_iter_t security_iter;
+                    yaml_iter_recurse(&mme_iter, &security_iter);
+                    while(yaml_iter_next(&security_iter))
+                    {
+                        const char *security_key =
+                            yaml_iter_key(&security_iter);
+                        d_assert(security_key, return CORE_ERROR,);
+                        if (!strcmp(security_key, "integrity_order"))
+                        {
+                            yaml_iter_t integrity_order_iter;
+                            yaml_iter_recurse(&security_iter,
+                                    &integrity_order_iter);
+                            d_assert(yaml_iter_type(&integrity_order_iter) !=
+                                YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                            do
+                            {
+                                const char *v = NULL;
+
+                                if (yaml_iter_type(&integrity_order_iter) ==
+                                        YAML_SEQUENCE_NODE)
+                                {
+                                    if (!yaml_iter_next(&integrity_order_iter))
+                                        break;
+                                }
+
+                                v = yaml_iter_value(&integrity_order_iter);
+                                if (v) 
+                                {
+                                    int integrity_index = 
+                                        self.num_of_integrity_order;
                                     if (strcmp(v, "EIA0") == 0)
                                     {
                                         self.integrity_order[integrity_index] = 
@@ -637,46 +960,33 @@ status_t mme_context_parse_config()
                                     }
                                 }
                             } while(
-                                BSON_ITER_HOLDS_ARRAY(&security_iter) &&
-                                bson_iter_next(&integrity_array));
+                                yaml_iter_type(&integrity_order_iter) ==
+                                    YAML_SEQUENCE_NODE);
                         }
-                        else if (!strcmp(security_key, "CIPHERING_ORDER"))
+                        else if (!strcmp(security_key, "ciphering_order"))
                         {
-                            int ciphering_index = 0;
-                            bson_iter_t ciphering_array;
+                            yaml_iter_t ciphering_order_iter;
+                            yaml_iter_recurse(&security_iter,
+                                    &ciphering_order_iter);
+                            d_assert(yaml_iter_type(&ciphering_order_iter) !=
+                                YAML_MAPPING_NODE, return CORE_ERROR,);
 
-                            if (BSON_ITER_HOLDS_ARRAY(&security_iter))
+                            do
                             {
-                                bson_iter_recurse(&security_iter,
-                                        &ciphering_array);
-                                d_assert(bson_iter_next(&ciphering_array),
-                                        return CORE_ERROR,);
-                            }
-                            else if (BSON_ITER_HOLDS_UTF8(&security_iter))
-                            {
-                                memcpy(&ciphering_array, &security_iter,
-                                        sizeof(ciphering_array));
-                            }
-                            else
-                                d_assert(0, return CORE_ERROR,);
+                                const char *v = NULL;
 
-                            do 
-                            {
-                                const char *ciphering_index_key =
-                                    bson_iter_key(&ciphering_array);
-                                const char *v =
-                                    bson_iter_utf8(&ciphering_array, &length);
-
-                                d_assert(ciphering_index_key,
-                                        return CORE_ERROR,);
-                                if (BSON_ITER_HOLDS_ARRAY(&security_iter))
-                                    ciphering_index = atoi(ciphering_index_key);
-                                d_assert(ciphering_index < MAX_NUM_OF_ALGORITHM,
-                                        return CORE_ERROR,
-                                        "Ciphering Overflow : %d",
-                                            ciphering_index);
-                                if (v)
+                                if (yaml_iter_type(&ciphering_order_iter) ==
+                                        YAML_SEQUENCE_NODE)
                                 {
+                                    if (!yaml_iter_next(&ciphering_order_iter))
+                                        break;
+                                }
+
+                                v = yaml_iter_value(&ciphering_order_iter);
+                                if (v) 
+                                {
+                                    int ciphering_index = 
+                                        self.num_of_ciphering_order;
                                     if (strcmp(v, "EEA0") == 0)
                                     {
                                         self.ciphering_order[ciphering_index] = 
@@ -703,127 +1013,243 @@ status_t mme_context_parse_config()
                                     }
                                 }
                             } while(
-                                BSON_ITER_HOLDS_ARRAY(&security_iter) &&
-                                bson_iter_next(&ciphering_array));
+                                yaml_iter_type(&ciphering_order_iter) ==
+                                    YAML_SEQUENCE_NODE);
                         }
                     }
                 }
+                else
+                    d_warn("unknown key `%s`", mme_key);
             }
         }
-        else if (!strcmp(key, "SGW") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        else if (!strcmp(root_key, "sgw"))
         {
-            bson_iter_t sgw_iter;
-            bson_iter_recurse(&iter, &sgw_iter);
-            while(bson_iter_next(&sgw_iter))
+            yaml_iter_t mme_iter;
+            yaml_iter_recurse(&root_iter, &mme_iter);
+            while(yaml_iter_next(&mme_iter))
             {
-                const char *sgw_key = bson_iter_key(&sgw_iter);
-                if (!strcmp(sgw_key, "NETWORK"))
+                const char *mme_key = yaml_iter_key(&mme_iter);
+                d_assert(mme_key, return CORE_ERROR,);
+                if (!strcmp(mme_key, "gtpc"))
                 {
-                    int network_index = 0;
-                    bson_iter_t network_array;
-
-                    if (BSON_ITER_HOLDS_ARRAY(&sgw_iter))
+                    yaml_iter_t gtpc_array, gtpc_iter;
+                    yaml_iter_recurse(&mme_iter, &gtpc_array);
+                    do
                     {
-                        bson_iter_recurse(&sgw_iter, &network_array);
-                        d_assert(bson_iter_next(&network_array),
-                                return CORE_ERROR,);
-                    }
-                    else if (BSON_ITER_HOLDS_DOCUMENT(&sgw_iter))
-                    {
-                        memcpy(&network_array, &sgw_iter,
-                                sizeof(network_array));
-                    }
-                    else
-                        d_assert(0, return CORE_ERROR,);
+                        gtp_node_t *sgw = NULL;
+                        c_sockaddr_t *list = NULL;
+                        int family = AF_UNSPEC;
+                        int i, num = 0;
+                        const char *hostname[MAX_NUM_OF_HOSTNAME];
+                        c_uint16_t port = self.gtpc_port;
 
-                    do 
-                    {
-                        bson_iter_t network_iter;
-                        const char *network_index_key =
-                            bson_iter_key(&network_array);
-                        const char *addr = NULL;
-                        c_uint16_t port = GTPV2_C_UDP_PORT;
-
-                        d_assert(network_index_key, return CORE_ERROR,);
-                        if (BSON_ITER_HOLDS_ARRAY(&sgw_iter))
-                            network_index = atoi(network_index_key);
-                        d_assert(network_index < MAX_NUM_OF_GTP_NODE,
-                                return CORE_ERROR,
-                                "GTP NODE Overflow : %d", network_index);
-
-                        bson_iter_recurse(&network_array, &network_iter);
-                        while(bson_iter_next(&network_iter))
+                        if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
                         {
-                            const char *network_key =
-                                bson_iter_key(&network_iter);
+                            memcpy(&gtpc_iter, &gtpc_array,
+                                    sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&gtpc_array))
+                                break;
+                            yaml_iter_recurse(&gtpc_array, &gtpc_iter);
+                        }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                                YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
-                            if (!strcmp(network_key, "GTPC_IPV4") &&
-                                    BSON_ITER_HOLDS_UTF8(&network_iter))
+                        while(yaml_iter_next(&gtpc_iter))
+                        {
+                            const char *gtpc_key =
+                                yaml_iter_key(&gtpc_iter);
+                            d_assert(gtpc_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(gtpc_key, "family"))
                             {
-                                addr = bson_iter_utf8(&network_iter, &length);
+                                const char *v = yaml_iter_value(&gtpc_iter);
+                                if (v) family = atoi(v);
+                                if (family != AF_UNSPEC &&
+                                    family != AF_INET && family != AF_INET6)
+                                {
+                                    d_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                        "AF_INET(%d), AF_INET6(%d) ", 
+                                        family, AF_UNSPEC, AF_INET, AF_INET6);
+                                    family = AF_UNSPEC;
+                                }
                             }
-                            else if (!strcmp(network_key, "GTPC_PORT") &&
-                                    BSON_ITER_HOLDS_INT32(&network_iter))
+                            else if (!strcmp(gtpc_key, "addr") ||
+                                    !strcmp(gtpc_key, "name"))
                             {
-                                port = bson_iter_int32(&network_iter);
+                                yaml_iter_t hostname_iter;
+                                yaml_iter_recurse(&gtpc_iter, &hostname_iter);
+                                d_assert(yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    if (yaml_iter_type(&hostname_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&hostname_iter))
+                                            break;
+                                    }
+
+                                    d_assert(num <= MAX_NUM_OF_HOSTNAME,
+                                            return CORE_ERROR,);
+                                    hostname[num++] = 
+                                        yaml_iter_value(&hostname_iter);
+                                } while(
+                                    yaml_iter_type(&hostname_iter) ==
+                                        YAML_SEQUENCE_NODE);
                             }
+                            else if (!strcmp(gtpc_key, "port"))
+                            {
+                                const char *v = yaml_iter_value(&gtpc_iter);
+                                if (v) port = atoi(v);
+                            }
+                            else
+                                d_warn("unknown key `%s`", gtpc_key);
                         }
 
-                        if (addr && port)
+                        list = NULL;
+                        for (i = 0; i < num; i++)
                         {
-                            mme_sgw_t *sgw = mme_sgw_add();
-                            d_assert(sgw, return CORE_ERROR,);
-
-                            sgw->addr = inet_addr(addr);
-                            sgw->port = port;
+                            rv = core_addaddrinfo(&list,
+                                    family, hostname[i], port, 0);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
-                    } while(
-                        BSON_ITER_HOLDS_ARRAY(&sgw_iter) &&
-                        bson_iter_next(&network_array));
+
+                        rv = gtp_add_node(&self.sgw_list, &sgw, list,
+                                context_self()->parameter.no_ipv4,
+                                context_self()->parameter.no_ipv6,
+                                context_self()->parameter.prefer_ipv4);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+                        rv = gtp_client(sgw);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+                        core_freeaddrinfo(list);
+
+                    } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
                 }
             }
         }
-        else if (!strcmp(key, "PGW") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        else if (!strcmp(root_key, "pgw"))
         {
-            bson_iter_t pgw_iter;
-            bson_iter_recurse(&iter, &pgw_iter);
-            while(bson_iter_next(&pgw_iter))
+            yaml_iter_t mme_iter;
+            yaml_iter_recurse(&root_iter, &mme_iter);
+            while(yaml_iter_next(&mme_iter))
             {
-                const char *pgw_key = bson_iter_key(&pgw_iter);
-                if (!strcmp(pgw_key, "NETWORK"))
+                const char *mme_key = yaml_iter_key(&mme_iter);
+                d_assert(mme_key, return CORE_ERROR,);
+                if (!strcmp(mme_key, "gtpc"))
                 {
-                    bson_iter_t network_iter;
+                    yaml_iter_t gtpc_array, gtpc_iter;
+                    yaml_iter_recurse(&mme_iter, &gtpc_array);
+                    do
+                    {
+                        gtp_node_t *pgw = NULL;
+                        c_sockaddr_t *list = NULL;
+                        int family = AF_UNSPEC;
+                        int i, num = 0;
+                        const char *hostname[MAX_NUM_OF_HOSTNAME];
+                        c_uint16_t port = self.gtpc_port;
 
-                    if (BSON_ITER_HOLDS_ARRAY(&pgw_iter))
-                    {
-                        bson_iter_t array_iter;
-                        bson_iter_recurse(&pgw_iter, &array_iter);
-                        if (bson_iter_next(&array_iter))
-                            bson_iter_recurse(&array_iter, &network_iter);
-                    }
-                    else if (BSON_ITER_HOLDS_DOCUMENT(&pgw_iter))
-                    {
-                        bson_iter_recurse(&pgw_iter, &network_iter);
-                    }
-                    else
-                        d_assert(0, return CORE_ERROR,);
+                        if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
+                        {
+                            memcpy(&gtpc_iter, &gtpc_array,
+                                    sizeof(yaml_iter_t));
+                        }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                            YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&gtpc_array))
+                                break;
+                            yaml_iter_recurse(&gtpc_array, &gtpc_iter);
+                        }
+                        else if (yaml_iter_type(&gtpc_array) ==
+                                YAML_SCALAR_NODE)
+                        {
+                            break;
+                        }
+                        else
+                            d_assert(0, return CORE_ERROR,);
 
-                    while(bson_iter_next(&network_iter))
-                    {
-                        const char *network_key = bson_iter_key(&network_iter);
-                        if (!strcmp(network_key, "GTPC_IPV4") &&
-                            BSON_ITER_HOLDS_UTF8(&network_iter))
+                        while(yaml_iter_next(&gtpc_iter))
                         {
-                            const char *v = 
-                                    bson_iter_utf8(&network_iter, &length);
-                            if (v) self.s5c_addr = inet_addr(v);
+                            const char *gtpc_key =
+                                yaml_iter_key(&gtpc_iter);
+                            d_assert(gtpc_key,
+                                    return CORE_ERROR,);
+                            if (!strcmp(gtpc_key, "family"))
+                            {
+                                const char *v = yaml_iter_value(&gtpc_iter);
+                                if (v) family = atoi(v);
+                                if (family != AF_UNSPEC &&
+                                    family != AF_INET && family != AF_INET6)
+                                {
+                                    d_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                        "AF_INET(%d), AF_INET6(%d) ", 
+                                        family, AF_UNSPEC, AF_INET, AF_INET6);
+                                    family = AF_UNSPEC;
+                                }
+                            }
+                            else if (!strcmp(gtpc_key, "addr") ||
+                                    !strcmp(gtpc_key, "name"))
+                            {
+                                yaml_iter_t hostname_iter;
+                                yaml_iter_recurse(&gtpc_iter, &hostname_iter);
+                                d_assert(yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    if (yaml_iter_type(&hostname_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&hostname_iter))
+                                            break;
+                                    }
+
+                                    d_assert(num <= MAX_NUM_OF_HOSTNAME,
+                                            return CORE_ERROR,);
+                                    hostname[num++] = 
+                                        yaml_iter_value(&hostname_iter);
+                                } while(
+                                    yaml_iter_type(&hostname_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
+                            else if (!strcmp(gtpc_key, "port"))
+                            {
+                                const char *v = yaml_iter_value(&gtpc_iter);
+                                if (v) port = atoi(v);
+                            }
+                            else
+                                d_warn("unknown key `%s`", gtpc_key);
                         }
-                        else if (!strcmp(network_key, "GTPC_PORT") &&
-                            BSON_ITER_HOLDS_INT32(&network_iter))
+
+                        list = NULL;
+                        for (i = 0; i < num; i++)
                         {
-                            self.s5c_port = bson_iter_int32(&network_iter);
+                            rv = core_addaddrinfo(&list,
+                                    family, hostname[i], port, 0);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
-                    }
+
+                        rv = gtp_add_node(&self.pgw_list, &pgw, list,
+                                context_self()->parameter.no_ipv4,
+                                context_self()->parameter.no_ipv6,
+                                context_self()->parameter.prefer_ipv4);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+                        core_freeaddrinfo(list);
+
+                    } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
                 }
             }
         }
@@ -837,11 +1263,11 @@ status_t mme_context_parse_config()
 
 status_t mme_context_setup_trace_module()
 {
-    int s1ap = context_self()->trace_level.s1ap;
-    int nas = context_self()->trace_level.nas;
-    int fd = context_self()->trace_level.fd;
-    int gtp = context_self()->trace_level.gtp;
-    int others = context_self()->trace_level.others;
+    int s1ap = context_self()->logger.trace.s1ap;
+    int nas = context_self()->logger.trace.nas;
+    int diameter = context_self()->logger.trace.diameter;
+    int gtp = context_self()->logger.trace.gtp;
+    int others = context_self()->logger.trace.others;
 
     if (s1ap)
     {
@@ -851,13 +1277,8 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_s1ap_build, s1ap);
         extern int _s1ap_handler;
         d_trace_level(&_s1ap_handler, s1ap);
-#if USE_USRSCTP == 1
-        extern int _s1ap_usrsctp;
-        d_trace_level(&_s1ap_usrsctp, s1ap);
-#else
         extern int _s1ap_sctp;
         d_trace_level(&_s1ap_sctp, s1ap);
-#endif
         extern int _s1ap_path;
         d_trace_level(&_s1ap_path, s1ap);
         extern int _s1ap_recv;
@@ -888,25 +1309,27 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_nas_ies, nas);
     }
 
-    if (fd)
+    if (diameter)
     {
-        if (fd <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
-        else if (fd <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
-        else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
+        if (diameter <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
+        else if (diameter <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (diameter <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
         extern int _mme_fd_path;
-        d_trace_level(&_mme_fd_path, fd);
+        d_trace_level(&_mme_fd_path, diameter);
         extern int _fd_init;
-        d_trace_level(&_fd_init, fd);
+        d_trace_level(&_fd_init, diameter);
         extern int _fd_logger;
-        d_trace_level(&_fd_logger, fd);
+        d_trace_level(&_fd_logger, diameter);
     }
 
     if (gtp)
     {
         extern int _mme_s11_handler;
         d_trace_level(&_mme_s11_handler, gtp);
+        extern int _gtp_node;
+        d_trace_level(&_gtp_node, gtp);
         extern int _gtp_path;
         d_trace_level(&_gtp_path, gtp);
         extern int _mme_s11_path;
@@ -935,93 +1358,27 @@ status_t mme_context_setup_trace_module()
     return CORE_OK;
 }
 
-mme_sgw_t* mme_sgw_add()
-{
-    mme_sgw_t *sgw = NULL;
-
-    pool_alloc_node(&mme_sgw_pool, &sgw);
-    d_assert(sgw, return NULL, "Null param");
-
-    memset(sgw, 0, sizeof(mme_sgw_t));
-
-    list_init(&sgw->local_list);
-    list_init(&sgw->remote_list);
-
-    list_append(&self.sgw_list, sgw);
-    
-    return sgw;
-}
-
-status_t mme_sgw_remove(mme_sgw_t *sgw)
-{
-    d_assert(sgw, return CORE_ERROR, "Null param");
-
-    list_remove(&self.sgw_list, sgw);
-
-    gtp_xact_delete_all(sgw);
-    pool_free_node(&mme_sgw_pool, sgw);
-
-    return CORE_OK;
-}
-
-status_t mme_sgw_remove_all()
-{
-    mme_sgw_t *sgw = NULL, *next_sgw = NULL;
-    
-    sgw = mme_sgw_first();
-    while (sgw)
-    {
-        next_sgw = mme_sgw_next(sgw);
-
-        mme_sgw_remove(sgw);
-
-        sgw = next_sgw;
-    }
-
-    return CORE_OK;
-}
-
-mme_sgw_t* mme_sgw_find(c_uint32_t addr, c_uint16_t port)
-{
-    mme_sgw_t *sgw = NULL;
-    
-    sgw = mme_sgw_first();
-    while (sgw)
-    {
-        if (sgw->addr == addr && sgw->port == port)
-            break;
-
-        sgw = mme_sgw_next(sgw);
-    }
-
-    return sgw;
-}
-
-mme_sgw_t* mme_sgw_first()
-{
-    return list_first(&self.sgw_list);
-}
-
-mme_sgw_t* mme_sgw_next(mme_sgw_t *sgw)
-{
-    return list_next(sgw);
-}
-
-mme_enb_t* mme_enb_add(net_sock_t *sock)
+mme_enb_t* mme_enb_add(sock_id sock, c_sockaddr_t *addr)
 {
     mme_enb_t *enb = NULL;
     event_t e;
 
+    d_assert(sock, return NULL,);
+    d_assert(addr, return NULL,);
+
     index_alloc(&mme_enb_pool, &enb);
     d_assert(enb, return NULL, "Null param");
 
-    enb->s1ap_sock = sock;
+    enb->sock = sock;
+    enb->addr = addr;
+    enb->sock_type = mme_enb_sock_type(enb->sock);
+
     list_init(&enb->enb_ue_list);
 
-    hash_set(self.s1ap_sock_hash,
-            &enb->s1ap_sock, sizeof(enb->s1ap_sock), enb);
+    hash_set(self.enb_sock_hash, &enb->sock, sizeof(enb->sock), enb);
+    hash_set(self.enb_addr_hash, enb->addr, sizeof(c_sockaddr_t), enb);
     
-    event_set_param1(&e, (c_uintptr_t)enb->s1ap_sock);
+    event_set_param1(&e, (c_uintptr_t)enb->index);
     fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
     fsm_init(&enb->sm, &e);
 
@@ -1033,20 +1390,26 @@ status_t mme_enb_remove(mme_enb_t *enb)
     event_t e;
 
     d_assert(enb, return CORE_ERROR, "Null param");
-    d_assert(enb->s1ap_sock, return CORE_ERROR, "Null param");
+    d_assert(enb->sock, return CORE_ERROR, "Null param");
 
-    event_set_param1(&e, (c_uintptr_t)enb->s1ap_sock);
+    event_set_param1(&e, (c_uintptr_t)enb->index);
     fsm_final(&enb->sm, &e);
     fsm_clear(&enb->sm);
 
-    hash_set(self.s1ap_sock_hash,
-            &enb->s1ap_sock, sizeof(enb->s1ap_sock), NULL);
+    hash_set(self.enb_sock_hash, &enb->sock, sizeof(enb->sock), NULL);
+    hash_set(self.enb_addr_hash, enb->addr, sizeof(c_sockaddr_t), NULL);
     if (enb->enb_id)
         hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     enb_ue_remove_in_enb(enb);
 
-    s1ap_sctp_close(enb->s1ap_sock);
+#ifdef NO_FD_LOCK
+#else
+#error do not use lock in socket fd
+    if (enb->sock_type == SOCK_STREAM)
+        s1ap_delete(enb->sock);
+#endif
+    core_free(enb->addr);
 
     index_free(&mme_enb_pool, enb);
 
@@ -1073,10 +1436,19 @@ mme_enb_t* mme_enb_find(index_t index)
     return index_find(&mme_enb_pool, index);
 }
 
-mme_enb_t* mme_enb_find_by_sock(net_sock_t *sock)
+mme_enb_t* mme_enb_find_by_sock(sock_id sock)
 {
     d_assert(sock, return NULL,"Invalid param");
-    return (mme_enb_t *)hash_get(self.s1ap_sock_hash, &sock, sizeof(sock));
+    return (mme_enb_t *)hash_get(self.enb_sock_hash, &sock, sizeof(sock));
+
+    return NULL;
+}
+
+mme_enb_t* mme_enb_find_by_addr(c_sockaddr_t *addr)
+{
+    d_assert(addr, return NULL,"Invalid param");
+    return (mme_enb_t *)hash_get(self.enb_addr_hash,
+            addr, sizeof(c_sockaddr_t));
 
     return NULL;
 }
@@ -1100,8 +1472,8 @@ status_t mme_enb_set_enb_id(mme_enb_t *enb, c_uint32_t enb_id)
 
 hash_index_t* mme_enb_first()
 {
-    d_assert(self.s1ap_sock_hash, return NULL, "Null param");
-    return hash_first(self.s1ap_sock_hash);
+    d_assert(self.enb_sock_hash, return NULL, "Null param");
+    return hash_first(self.enb_sock_hash);
 }
 
 hash_index_t* mme_enb_next(hash_index_t *hi)
@@ -1113,6 +1485,26 @@ mme_enb_t *mme_enb_this(hash_index_t *hi)
 {
     d_assert(hi, return NULL, "Null param");
     return hash_this_val(hi);
+}
+
+int mme_enb_sock_type(sock_id sock)
+{
+    sock_node_t *snode = NULL;
+
+    d_assert(sock, return SOCK_STREAM,);
+
+    for (snode = list_first(&mme_self()->s1ap_list);
+            snode; snode = list_next(snode))
+    {
+        if (snode->sock == sock) return SOCK_SEQPACKET;
+    }
+    for (snode = list_first(&mme_self()->s1ap_list6);
+            snode; snode = list_next(snode))
+    {
+        if (snode->sock == sock) return SOCK_SEQPACKET;
+    }
+
+    return SOCK_STREAM;
 }
 
 /** enb_ue_context handling function */
@@ -1250,7 +1642,14 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     list_init(&mme_ue->sess_list);
 
     mme_ue->mme_s11_teid = mme_ue->index;
-    mme_ue->mme_s11_addr = mme_self()->gtpc_addr;
+
+    /* Setup SGW with round-robin manner */
+    if (mme_self()->sgw == NULL)
+        mme_self()->sgw = list_first(&mme_self()->sgw_list);
+
+    SETUP_GTP_NODE(mme_ue, mme_self()->sgw);
+
+    mme_self()->sgw = list_next(mme_self()->sgw);
 
     /* Create t3413 timer */
     mme_ue->t3413 = timer_create(&self.tm_service, MME_EVT_EMM_T3413,
@@ -1262,8 +1661,6 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
     fsm_init(&mme_ue->sm, &e);
 
-    CONNECT_SGW_GTP_NODE(mme_ue);
-    
     return mme_ue;
 }
 
@@ -2025,4 +2422,57 @@ pdn_t* mme_pdn_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
     }
 
     return NULL;
+}
+
+int mme_find_served_tai(tai_t *tai)
+{
+    int i = 0, j = 0, k = 0;
+
+    d_assert(tai, return -1,);
+
+    for (i = 0; i < self.num_of_served_tai; i++)
+    {
+        tai0_list_t *list0 = &self.served_tai[i].list0;
+        d_assert(list0, return -1,);
+        tai2_list_t *list2 = &self.served_tai[i].list2;
+        d_assert(list2, return -1,);
+
+        for (j = 0; list0->tai[j].num; j++)
+        {
+            d_assert(list0->tai[j].type == TAI0_TYPE,
+                return -1, "type = %d", list0->tai[j].type);
+            d_assert(list0->tai[j].num < MAX_NUM_OF_TAI,
+                    return -1, "num = %d", list0->tai[j].num);
+
+            for (k = 0; k < list0->tai[j].num; k++) 
+            {
+                if (memcmp(&list0->tai[j].plmn_id,
+                            &tai->plmn_id, PLMN_ID_LEN) == 0 && 
+                    list0->tai[j].tac[k] == tai->tac)
+                {
+                    return i;
+                }
+            }
+        }
+
+        if (list2->num)
+        {
+            d_assert(list2->type == TAI1_TYPE || list2->type == TAI2_TYPE,
+                return -1, "type = %d", list2->type);
+            d_assert(list2->num < MAX_NUM_OF_TAI,
+                    return -1, "num = %d", list2->num);
+
+            for (j = 0; j < list2->num; j++) 
+            {
+                if (memcmp(&list2->tai[j].plmn_id,
+                            &tai->plmn_id, PLMN_ID_LEN) == 0 && 
+                    list2->tai[j].tac == tai->tac)
+                {
+                    return i;
+                }
+            }
+        }
+    }
+
+    return -1;
 }

@@ -3,7 +3,11 @@
 #include "core_file.h"
 #include "core_debug.h"
 #include "core_lib.h"
+#include "core_pkbuf.h"
+
 #include <mongoc.h>
+#include <yaml.h>
+#include "yaml_helper.h"
 
 #include "context.h"
 
@@ -28,8 +32,11 @@ status_t context_final()
     d_assert(context_initialized == 1, return CORE_ERROR,
             "Context already has been finalized");
 
-    if (self.config.bson)
-        bson_destroy(self.config.bson);
+    if (self.config.document)
+    {
+        yaml_document_delete(self.config.document);
+        core_free(self.config.document);
+    }
 
     context_initialized = 0;
 
@@ -43,188 +50,219 @@ context_t* context_self()
 
 status_t context_read_file()
 {
-    char buf[MAX_ERROR_STRING_LEN];
     config_t *config = &self.config;
-    status_t rv;
-    file_t *file;
-
-    bson_error_t error;
-    size_t json_len;
+    FILE *file;
+    yaml_parser_t parser;
+    yaml_document_t *document = NULL;
 
     d_assert(config->path, return CORE_ERROR,);
 
-    rv = file_open(&file, config->path, FILE_READ, FILE_OS_DEFAULT);
-    if (rv != CORE_OK) 
-    {
-        d_fatal("Can't open configuration file '%s' (errno = %d, %s)", 
-            config->path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
-        return rv;
-    }
+    file = fopen(config->path, "rb");
+    d_assert(file, return CORE_ERROR,);
 
-    json_len = MAX_CONFIG_FILE_SIZE;
-    rv = file_read(file, config->json, &json_len);
-    if (rv != CORE_OK) 
-    {
-        d_fatal("Can't read configuration file '%s' (errno = %d, %s)", 
-            config->path, rv, core_strerror(rv, buf, MAX_ERROR_STRING_LEN));
-        return rv;
-    }
-    file_close(file);
+    d_assert(yaml_parser_initialize(&parser), return CORE_ERROR,);
+    yaml_parser_set_input_file(&parser, file);
 
-    config->bson = bson_new_from_json((const uint8_t *)config->json, -1, &error);;
-    if (config->bson == NULL)
+    document = core_calloc(1, sizeof(yaml_document_t));
+    if (!yaml_parser_load(&parser, document))
     {
         d_fatal("Failed to parse configuration file '%s'", config->path);
+        core_free(document);
         return CORE_ERROR;
     }
 
-    d_print("  Config '%s'\n", config->path);
+    config->document = document;
+
+    yaml_parser_delete(&parser);
+    d_assert(!fclose(file),,);
 
     return CORE_OK;
 }
 
 static status_t context_prepare()
 {
-    self.log.console = -1;
+    self.logger.console = -1;
 
     return CORE_OK;
 }
 
+static status_t context_validation()
+{
+    if (self.parameter.no_ipv4 == 1 && self.parameter.no_ipv6 == 1)
+    {
+        d_error("Both `no_ipv4` and `no_ipv6` set to `true` in `%s`",
+                context_self()->config.path);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
 status_t context_parse_config()
 {
     status_t rv;
     config_t *config = &self.config;
-    bson_iter_t iter;
-    c_uint32_t length = 0;
+    yaml_document_t *document = NULL;
+    yaml_iter_t root_iter;
 
-    d_assert(config, return CORE_ERROR, );
+    d_assert(config, return CORE_ERROR,);
+    document = config->document;
+    d_assert(document, return CORE_ERROR,);
 
     rv = context_prepare();
     if (rv != CORE_OK) return rv;
 
-    if (!bson_iter_init(&iter, config->bson))
+    yaml_iter_init(&root_iter, document);
+    while(yaml_iter_next(&root_iter))
     {
-        d_error("bson_iter_init failed in this document");
-        return CORE_ERROR;
-    }
-
-    while(bson_iter_next(&iter))
-    {
-        const char *key = bson_iter_key(&iter);
-        if (!strcmp(key, "DB_URI") && BSON_ITER_HOLDS_UTF8(&iter))
+        const char *root_key = yaml_iter_key(&root_iter);
+        d_assert(root_key, return CORE_ERROR,);
+        if (!strcmp(root_key, "db_uri"))
         {
-            self.db_uri = bson_iter_utf8(&iter, &length);
+            self.db_uri = yaml_iter_value(&root_iter);
         }
-        else if (!strcmp(key, "LOG") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        else if (!strcmp(root_key, "logger"))
         {
-            bson_iter_t log_iter;
-            bson_iter_recurse(&iter, &log_iter);
-            while(bson_iter_next(&log_iter))
+            yaml_iter_t logger_iter;
+            yaml_iter_recurse(&root_iter, &logger_iter);
+            while(yaml_iter_next(&logger_iter))
             {
-                const char *log_key = bson_iter_key(&log_iter);
-                if (!strcmp(log_key, "CONSOLE") &&
-                    BSON_ITER_HOLDS_INT32(&log_iter))
+                const char *logger_key = yaml_iter_key(&logger_iter);
+                d_assert(logger_key, return CORE_ERROR,);
+                if (!strcmp(logger_key, "file"))
                 {
-                    self.log.console = bson_iter_int32(&log_iter);
+                    self.logger.file = yaml_iter_value(&logger_iter);
                 }
-                else if (!strcmp(log_key, "SYSLOG") &&
-                    BSON_ITER_HOLDS_UTF8(&log_iter))
+                else if (!strcmp(logger_key, "console"))
                 {
-                    self.log.syslog = bson_iter_utf8(&log_iter, &length);
+                    const char *v = yaml_iter_value(&logger_iter);
+                    if (v) self.logger.console = atoi(v);
                 }
-                else if (!strcmp(log_key, "SOCKET") &&
-                        BSON_ITER_HOLDS_DOCUMENT(&log_iter))
+                else if (!strcmp(logger_key, "syslog"))
                 {
-                    bson_iter_t socket_iter;
-                    bson_iter_recurse(&log_iter, &socket_iter);
-                    while(bson_iter_next(&socket_iter))
+                    self.logger.syslog = yaml_iter_value(&logger_iter);
+                }
+                else if (!strcmp(logger_key, "network"))
+                {
+                    yaml_iter_t network_iter;
+                    yaml_iter_recurse(&logger_iter, &network_iter);
+                    while(yaml_iter_next(&network_iter))
                     {
-                        const char *socket_key = bson_iter_key(&socket_iter);
-                        if (!strcmp(socket_key, "FILE") &&
-                            BSON_ITER_HOLDS_UTF8(&socket_iter))
+                        const char *network_key = yaml_iter_key(&network_iter);
+                        d_assert(network_key, return CORE_ERROR,);
+                        if (!strcmp(network_key, "file"))
                         {
-                            self.log.socket.file =
-                                bson_iter_utf8(&socket_iter, &length);
+                            self.logger.network.file = 
+                                yaml_iter_value(&network_iter);
                         }
-                        else if (!strcmp(socket_key, "UNIX_DOMAIN") &&
-                            BSON_ITER_HOLDS_UTF8(&socket_iter))
+                        else if (!strcmp(network_key, "unixDomain"))
                         {
-                            self.log.socket.unix_domain =
-                                bson_iter_utf8(&socket_iter, &length);
+                            self.logger.network.unix_domain = 
+                                yaml_iter_value(&network_iter);
                         }
+                        else
+                            d_warn("unknown key `%s`", network_key);
                     }
                 }
-                else if (!strcmp(log_key, "FILE") &&
-                    BSON_ITER_HOLDS_UTF8(&log_iter))
+                else if (!strcmp(logger_key, "trace"))
                 {
-                    self.log.file = bson_iter_utf8(&log_iter, &length);
+                    yaml_iter_t trace_iter;
+                    yaml_iter_recurse(&logger_iter, &trace_iter);
+                    while(yaml_iter_next(&trace_iter))
+                    {
+                        const char *trace_key = yaml_iter_key(&trace_iter);
+                        d_assert(trace_key, return CORE_ERROR,);
+                        if (!strcmp(trace_key, "s1ap"))
+                        {
+                            const char *v = yaml_iter_value(&trace_iter);
+                            if (v) self.logger.trace.s1ap = atoi(v);
+                        }
+                        else if (!strcmp(trace_key, "nas"))
+                        {
+                            const char *v = yaml_iter_value(&trace_iter);
+                            if (v) self.logger.trace.nas = atoi(v);
+                        }
+                        else if (!strcmp(trace_key, "diameter"))
+                        {
+                            const char *v = yaml_iter_value(&trace_iter);
+                            if (v) self.logger.trace.diameter = atoi(v);
+                        }
+                        else if (!strcmp(trace_key, "gtp"))
+                        {
+                            const char *v = yaml_iter_value(&trace_iter);
+                            if (v) self.logger.trace.gtp = atoi(v);
+                        }
+                        else if (!strcmp(trace_key, "others"))
+                        {
+                            const char *v = yaml_iter_value(&trace_iter);
+                            if (v) self.logger.trace.others = atoi(v);
+                        }
+                        else
+                            d_warn("unknown key `%s`", trace_key);
+                    }
                 }
             }
         }
-        else if (!strcmp(key, "TRACE") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        else if (!strcmp(root_key, "parameter"))
         {
-            bson_iter_t trace_iter;
-            bson_iter_recurse(&iter, &trace_iter);
-            while(bson_iter_next(&trace_iter))
+            yaml_iter_t parameter_iter;
+            yaml_iter_recurse(&root_iter, &parameter_iter);
+            while(yaml_iter_next(&parameter_iter))
             {
-                const char *trace_key = bson_iter_key(&trace_iter);
-                if (!strcmp(trace_key, "S1AP") &&
-                    BSON_ITER_HOLDS_INT32(&trace_iter))
+                const char *parameter_key = yaml_iter_key(&parameter_iter);
+                d_assert(parameter_key, return CORE_ERROR,);
+                if (!strcmp(parameter_key, "no_hss"))
                 {
-                    self.trace_level.s1ap = bson_iter_int32(&trace_iter);
+                    self.parameter.no_hss =
+                        yaml_iter_bool(&parameter_iter);
                 }
-                else if (!strcmp(trace_key, "NAS") &&
-                    BSON_ITER_HOLDS_INT32(&trace_iter))
+                else if (!strcmp(parameter_key, "no_sgw"))
                 {
-                    self.trace_level.nas = bson_iter_int32(&trace_iter);
+                    self.parameter.no_sgw =
+                        yaml_iter_bool(&parameter_iter);
                 }
-                else if (!strcmp(trace_key, "FD") &&
-                    BSON_ITER_HOLDS_INT32(&trace_iter))
+                else if (!strcmp(parameter_key, "no_pgw"))
                 {
-                    self.trace_level.fd = bson_iter_int32(&trace_iter);
+                    self.parameter.no_pgw =
+                        yaml_iter_bool(&parameter_iter);
                 }
-                else if (!strcmp(trace_key, "GTP") &&
-                    BSON_ITER_HOLDS_INT32(&trace_iter))
+                else if (!strcmp(parameter_key, "no_pcrf"))
                 {
-                    self.trace_level.gtp = bson_iter_int32(&trace_iter);
+                    self.parameter.no_pcrf =
+                        yaml_iter_bool(&parameter_iter);
                 }
-                else if (!strcmp(trace_key, "OTHERS") &&
-                    BSON_ITER_HOLDS_INT32(&trace_iter))
+                else if (!strcmp(parameter_key, "no_ipv4"))
                 {
-                    self.trace_level.others = bson_iter_int32(&trace_iter);
+                    self.parameter.no_ipv4 =
+                        yaml_iter_bool(&parameter_iter);
                 }
-            }
-        }
-        else if (!strcmp(key, "NODE") && BSON_ITER_HOLDS_DOCUMENT(&iter))
-        {
-            bson_iter_t node_iter;
-            bson_iter_recurse(&iter, &node_iter);
-            while(bson_iter_next(&node_iter))
-            {
-                const char *node_key = bson_iter_key(&node_iter);
-                if (!strcmp(node_key, "DISABLE_HSS") &&
-                    BSON_ITER_HOLDS_INT32(&node_iter))
+                else if (!strcmp(parameter_key, "no_ipv6"))
                 {
-                    self.node.disable_hss = bson_iter_int32(&node_iter);
+                    self.parameter.no_ipv6 =
+                        yaml_iter_bool(&parameter_iter);
                 }
-                else if (!strcmp(node_key, "DISABLE_SGW") &&
-                    BSON_ITER_HOLDS_INT32(&node_iter))
+                else if (!strcmp(parameter_key, "prefer_ipv4"))
                 {
-                    self.node.disable_sgw = bson_iter_int32(&node_iter);
+                    self.parameter.prefer_ipv4 =
+                        yaml_iter_bool(&parameter_iter);
                 }
-                else if (!strcmp(node_key, "DISABLE_PGW") &&
-                    BSON_ITER_HOLDS_INT32(&node_iter))
+                else if (!strcmp(parameter_key, "multicast"))
                 {
-                    self.node.disable_pgw = bson_iter_int32(&node_iter);
+                    self.parameter.multicast =
+                        yaml_iter_bool(&parameter_iter);
                 }
-                else if (!strcmp(node_key, "DISABLE_PCRF") &&
-                    BSON_ITER_HOLDS_INT32(&node_iter))
+                else if (!strcmp(parameter_key, "no_slaac"))
                 {
-                    self.node.disable_pcrf = bson_iter_int32(&node_iter);
+                    self.parameter.no_slaac =
+                        yaml_iter_bool(&parameter_iter);
                 }
+                else
+                    d_warn("unknown key `%s`", parameter_key);
             }
         }
     }
+
+    rv = context_validation();
+    if (rv != CORE_OK) return rv;
 
     return CORE_OK;
 }

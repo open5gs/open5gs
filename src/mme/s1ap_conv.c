@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 
-#include "types.h"
+#include "3gpp_types.h"
 #include "s1ap_conv.h"
 
 void s1ap_uint8_to_OCTET_STRING(c_uint8_t uint8, OCTET_STRING_t *octet_string)
@@ -107,6 +107,65 @@ void s1ap_ENB_ID_to_uint32(S1ap_ENB_ID_t *eNB_ID, c_uint32_t *uint32)
     {
         d_assert(0, return, "Invalid param");
     }
+}
+
+status_t s1ap_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ip_t *ip)
+{
+    d_assert(bit_string, return CORE_ERROR,);
+    d_assert(ip, return CORE_ERROR,);
+
+    if (bit_string->size == IPV4V6_LEN)
+    {
+        ip->ipv4 = 1;
+        ip->ipv6 = 1;
+        memcpy(&ip->both.addr, bit_string->buf, IPV4_LEN);
+        memcpy(&ip->both.addr6, bit_string->buf+IPV4_LEN, IPV6_LEN);
+    }
+    else if (bit_string->size == IPV4_LEN)
+    {
+        ip->ipv4 = 1;
+        memcpy(&ip->addr, bit_string->buf, IPV4_LEN);
+    }
+    else if (bit_string->size == IPV6_LEN)
+    {
+        ip->ipv6 = 1;
+        memcpy(&ip->addr6, bit_string->buf, IPV6_LEN);
+    }
+    else
+        d_assert(0, return CORE_ERROR, "Invalid Length(%d)", bit_string->size);
+
+    ip->len =  bit_string->size;
+
+    return CORE_OK;
+}
+status_t s1ap_ip_to_BIT_STRING(ip_t *ip, BIT_STRING_t *bit_string)
+{
+    d_assert(ip, return CORE_ERROR,);
+    d_assert(bit_string, return CORE_ERROR,);
+
+    if (ip->ipv4 && ip->ipv6)
+    {
+        bit_string->size = IPV4V6_LEN;
+        bit_string->buf = core_calloc(bit_string->size, sizeof(c_uint8_t));
+        memcpy(bit_string->buf, &ip->both.addr, IPV4_LEN);
+        memcpy(bit_string->buf+IPV4_LEN, &ip->both.addr6, IPV6_LEN);
+    }
+    else if (ip->ipv4)
+    {
+        bit_string->size = IPV4_LEN;
+        bit_string->buf = core_calloc(bit_string->size, sizeof(c_uint8_t));
+        memcpy(bit_string->buf, &ip->addr, IPV4_LEN);
+    }
+    else if (ip->ipv6)
+    {
+        bit_string->size = IPV6_LEN;
+        bit_string->buf = core_calloc(bit_string->size, sizeof(c_uint8_t));
+        memcpy(bit_string->buf, &ip->addr6, IPV6_LEN);
+    }
+    else
+        d_assert(0, return CORE_ERROR,);
+
+    return CORE_OK;
 }
 
 S1ap_IE_t *s1ap_copy_ie(S1ap_IE_t *ie)

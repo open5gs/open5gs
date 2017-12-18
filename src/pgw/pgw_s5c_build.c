@@ -2,11 +2,14 @@
 
 #include "core_debug.h"
 
+#include "3gpp_types.h"
 #include "gtp_types.h"
+#include "gtp_conv.h"
 #include "gtp_message.h"
 #include "gx_message.h"
 
-#include "types.h"
+#include "ipfw2.h"
+
 #include "pgw_context.h"
 
 static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco);
@@ -23,6 +26,7 @@ status_t pgw_s5c_build_create_session_response(
 
     gtp_cause_t cause;
     gtp_f_teid_t pgw_s5c_teid, pgw_s5u_teid;
+    int len;
     c_uint8_t pco_buf[MAX_PCO_LEN];
     c_int16_t pco_len;
 
@@ -44,25 +48,29 @@ status_t pgw_s5c_build_create_session_response(
 
     /* Control Plane(UL) : PGW-S5C */
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5c_teid.ipv4 = 1;
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
-    pgw_s5c_teid.ipv4_addr = sess->pgw_s5c_addr;
     pgw_s5c_teid.teid = htonl(sess->pgw_s5c_teid);
+    rv = gtp_sockaddr_to_f_teid(
+        pgw_self()->gtpc_addr, pgw_self()->gtpc_addr6, &pgw_s5c_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         data = &pgw_s5c_teid;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
-        len = GTP_F_TEID_IPV4_LEN;
+        len = len;
 
     /* PDN Address Allocation */
-    d_assert(sess->ip_pool, return CORE_ERROR, "No IP Pool");
-    sess->pdn.paa.pdn_type = GTP_PDN_TYPE_IPV4;
-    sess->pdn.paa.ipv4_addr = sess->ip_pool->ue_addr;
-
-    rsp->pdn_address_allocation.presence = 1;
     rsp->pdn_address_allocation.data = &sess->pdn.paa;
-    rsp->pdn_address_allocation.len = PAA_IPV4_LEN;
+    if (sess->ipv4 && sess->ipv6)
+        rsp->pdn_address_allocation.len = PAA_IPV4V6_LEN;
+    else if (sess->ipv4)
+        rsp->pdn_address_allocation.len = PAA_IPV4_LEN;
+    else if (sess->ipv6)
+        rsp->pdn_address_allocation.len = PAA_IPV6_LEN;
+    else
+        d_assert(0, return CORE_ERROR, "No IP Pool");
+    rsp->pdn_address_allocation.presence = 1;
 
     /* APN Restriction */
     rsp->apn_restriction.presence = 1;
@@ -91,13 +99,14 @@ status_t pgw_s5c_build_create_session_response(
 
     /* Data Plane(UL) : PGW-S5U */
     memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5u_teid.ipv4 = 1;
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
-    pgw_s5u_teid.ipv4_addr = bearer->pgw_s5u_addr;
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
+    rv = gtp_sockaddr_to_f_teid(
+        pgw_self()->gtpu_addr, pgw_self()->gtpu_addr6, &pgw_s5u_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 1;
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
-    rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = GTP_F_TEID_IPV4_LEN;
+    rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = len;
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
@@ -195,13 +204,14 @@ status_t pgw_s5c_build_create_bearer_request(
 
     /* Data Plane(UL) : PGW_S5U */
     memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5u_teid.ipv4 = 1;
     pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
-    pgw_s5u_teid.ipv4_addr = bearer->pgw_s5u_addr;
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
+    rv = gtp_sockaddr_to_f_teid(
+        pgw_self()->gtpu_addr, pgw_self()->gtpu_addr6, &pgw_s5u_teid, &len);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
     req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
-    req->bearer_contexts.s5_s8_u_sgw_f_teid.len = GTP_F_TEID_IPV4_LEN;
+    req->bearer_contexts.s5_s8_u_sgw_f_teid.len = len;
 
     /* Bearer QoS */
     memset(&bearer_qos, 0, sizeof(bearer_qos));
@@ -240,22 +250,44 @@ status_t pgw_s5c_build_create_bearer_request(
             j++; len += 2;
         }
 
-        if (pf->rule.ipv4.local.addr)
+        if (pf->rule.ipv4_local)
         {
             tft.pf[i].component[j].type = 
                 GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
-            tft.pf[i].component[j].ipv4.addr = pf->rule.ipv4.local.addr;
-            tft.pf[i].component[j].ipv4.mask = pf->rule.ipv4.local.mask;
+            tft.pf[i].component[j].ipv4.addr = pf->rule.ip.local.addr[0];
+            tft.pf[i].component[j].ipv4.mask = pf->rule.ip.local.mask[0];
             j++; len += 9;
         }
 
-        if (pf->rule.ipv4.remote.addr)
+        if (pf->rule.ipv4_remote)
         {
             tft.pf[i].component[j].type = 
                 GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
-            tft.pf[i].component[j].ipv4.addr = pf->rule.ipv4.remote.addr;
-            tft.pf[i].component[j].ipv4.mask = pf->rule.ipv4.remote.mask;
+            tft.pf[i].component[j].ipv4.addr = pf->rule.ip.remote.addr[0];
+            tft.pf[i].component[j].ipv4.mask = pf->rule.ip.remote.mask[0];
             j++; len += 9;
+        }
+
+        if (pf->rule.ipv6_local)
+        {
+            tft.pf[i].component[j].type = 
+                GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
+            memcpy(tft.pf[i].component[j].ipv6.addr, pf->rule.ip.local.addr,
+                    sizeof pf->rule.ip.local.addr);
+            tft.pf[i].component[j].ipv6.prefixlen =
+                contigmask((c_uint8_t *)pf->rule.ip.local.mask, 128);
+            j++; len += 18;
+        }
+
+        if (pf->rule.ipv6_remote)
+        {
+            tft.pf[i].component[j].type = 
+                GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
+            memcpy(tft.pf[i].component[j].ipv6.addr, pf->rule.ip.remote.addr,
+                    sizeof pf->rule.ip.remote.addr);
+            tft.pf[i].component[j].ipv6.prefixlen =
+                contigmask((c_uint8_t *)pf->rule.ip.remote.mask, 128);
+            j++; len += 18;
         }
 
         if (pf->rule.port.local.low)
@@ -317,8 +349,10 @@ status_t pgw_s5c_build_create_bearer_request(
 
 static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
 {
+    status_t rv;
     pco_t ue, pgw;
     pco_ipcp_t pco_ipcp;
+    ipsubnet_t dns_primary, dns_secondary, dns6_primary, dns6_secondary;
     c_int8_t size = 0;
     int i = 0;
 
@@ -360,14 +394,26 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                     pco_ipcp.len = htons(len);
 
                     /* Primary DNS Server IP Address */
-                    pco_ipcp.options[0].type = 129; 
-                    pco_ipcp.options[0].len = 6; 
-                    pco_ipcp.options[0].addr = pgw_self()->primary_dns_addr;
+                    if (pgw_self()->dns[0])
+                    {
+                        rv = core_ipsubnet(
+                                &dns_primary, pgw_self()->dns[0], NULL);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        pco_ipcp.options[0].type = 129; 
+                        pco_ipcp.options[0].len = 6; 
+                        pco_ipcp.options[0].addr = dns_primary.sub[0];
+                    }
 
                     /* Secondary DNS Server IP Address */
-                    pco_ipcp.options[1].type = 131; 
-                    pco_ipcp.options[1].len = 6; 
-                    pco_ipcp.options[1].addr = pgw_self()->secondary_dns_addr;
+                    if (pgw_self()->dns[1])
+                    {
+                        rv = core_ipsubnet(
+                                &dns_secondary, pgw_self()->dns[1], NULL);
+                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        pco_ipcp.options[1].type = 131; 
+                        pco_ipcp.options[1].len = 6; 
+                        pco_ipcp.options[1].addr = dns_secondary.sub[0];
+                    }
 
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = len;
@@ -379,19 +425,59 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
             }
             case PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST:
             {
-                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                pgw.ids[pgw.num_of_id].len = 4;
-                pgw.ids[pgw.num_of_id].data = &pgw_self()->primary_dns_addr;
-                pgw.num_of_id++;
+                if (pgw_self()->dns[0])
+                {
+                    rv = core_ipsubnet(
+                            &dns_primary, pgw_self()->dns[0], NULL);
+                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                    pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                    pgw.ids[pgw.num_of_id].data = dns_primary.sub;
+                    pgw.num_of_id++;
+                }
 
-                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                pgw.ids[pgw.num_of_id].len = 4;
-                pgw.ids[pgw.num_of_id].data = &pgw_self()->secondary_dns_addr;
+                if (pgw_self()->dns[1])
+                {
+                    rv = core_ipsubnet(
+                            &dns_secondary, pgw_self()->dns[1], NULL);
+                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                    pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                    pgw.ids[pgw.num_of_id].data = dns_secondary.sub;
+                    pgw.num_of_id++;
+                }
+                break;
+            }
+            case PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST:
+            {
+                if (pgw_self()->dns6[0])
+                {
+                    rv = core_ipsubnet(
+                            &dns6_primary, pgw_self()->dns6[0], NULL);
+                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                    pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                    pgw.ids[pgw.num_of_id].data = dns6_primary.sub;
+                    pgw.num_of_id++;
+                }
 
-                pgw.num_of_id++;
+                if (pgw_self()->dns6[1])
+                {
+                    rv = core_ipsubnet(
+                            &dns6_secondary, pgw_self()->dns6[1], NULL);
+                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                    pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                    pgw.ids[pgw.num_of_id].data = dns6_secondary.sub;
+                    pgw.num_of_id++;
+                }
                 break;
             }
             case PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING:
+                /* TODO */
+                break;
+            case PCO_ID_IPV4_LINK_MTU_REQUEST:
+                /* TODO */
                 break;
             default:
                 d_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);

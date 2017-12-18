@@ -7,13 +7,19 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define S1AP_SCTP_PORT              36412
+#define GTPV2_C_UDP_PORT            2123
+#define GTPV1_U_UDP_PORT            2152
+
+#define SCTP_S1AP_PPID              18
+#define SCTP_X2AP_PPID              27
+
 #define MAX_NUM_OF_ENB              128
 #define MAX_NUM_OF_UE               128
 #define MAX_NUM_OF_SESS             4
 #define MAX_NUM_OF_BEARER           4
 #define MAX_NUM_OF_TUNNEL           3   /* Num of Tunnel per Bearer */
 #define MAX_NUM_OF_PF               16  /* Num of Packet Filter per Bearer */
-#define MAX_NUM_OF_GTP_NODE         8
 
 #define MAX_POOL_OF_UE              (MAX_NUM_OF_ENB * MAX_NUM_OF_UE)
 #define MAX_POOL_OF_SESS            (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)
@@ -21,12 +27,12 @@ extern "C" {
 #define MAX_POOL_OF_TUNNEL          (MAX_POOL_OF_BEARER * MAX_NUM_OF_TUNNEL)
 #define MAX_POOL_OF_PF              (MAX_POOL_OF_BEARER * MAX_NUM_OF_PF)
 
+#define MAX_NUM_OF_HOSTNAME         16
 #define MAX_NUM_OF_PCC_RULE         8 
 #define MAX_NUM_OF_FLOW             8   /* Num of Flow per PCC Rule */
 #define MAX_NUM_OF_PACKET_FILTER    16  /* Num of Packet Filter per Bearer */
 
 #define MAX_SDU_LEN             2048
-#define IPV6_LEN                16
 #define PLMN_ID_LEN             3
 
 #define BCD_TO_BUFFER_LEN(x)    (((x)+1)/2)
@@ -35,6 +41,7 @@ extern "C" {
 
 #define RAND_LEN                16
 #define AUTN_LEN                16
+#define AUTS_LEN                14
 #define MAX_RES_LEN             16
 
 #define MAX_APN_LEN             100
@@ -65,6 +72,8 @@ CORE_DECLARE(c_uint16_t) plmn_id_mnc_len(plmn_id_t *plmn_id);
 CORE_DECLARE(void *) plmn_id_build(plmn_id_t *plmn_id, 
         c_uint16_t mcc, c_uint16_t mnc, c_uint16_t mnc_len);
 
+#define MAX_NUM_OF_TAI              16
+
 typedef struct _tai_t {
     plmn_id_t plmn_id;
     c_uint16_t tac;
@@ -83,6 +92,28 @@ typedef struct _guti_t {
 } __attribute__ ((packed)) guti_t;
 
 /**************************************************
+ * Common Structure
+ * S1AP : 9.2.2.1 Transport Layer Address, See 36.414
+ * GTP : 8.22 Fully Qualified TEID (F-TEID) */
+#define IPV4_LEN                4
+#define IPV6_LEN                16
+#define IPV4V6_LEN              20
+typedef struct _ip_t {
+    union {
+        c_uint32_t addr;
+        c_uint8_t addr6[IPV6_LEN];
+        struct {
+            c_uint32_t addr;
+            c_uint8_t addr6[IPV6_LEN];
+        } both;
+    };
+    c_uint32_t      len;
+ED3(c_uint8_t       ipv4:1;,
+    c_uint8_t       ipv6:1;,
+    c_uint8_t       reserved:6;)
+} ip_t;
+
+/**************************************************
  * 8.14 PDN Address Allocation (PAA) */
 #define PAA_IPV4_LEN                                    5
 #define PAA_IPV6_LEN                                    18
@@ -91,19 +122,29 @@ typedef struct _paa_t {
 /* 8.34 PDN Type  */
 #define GTP_PDN_TYPE_IPV4                               1
 #define GTP_PDN_TYPE_IPV6                               2
-#define GTP_PDN_TYPE_BOTH                               3
+#define GTP_PDN_TYPE_IPV4V6                             3
 #define GTP_PDN_TYPE_NON_IP                             4
 ED2(c_uint8_t spare:5;,
     c_uint8_t pdn_type:3;)
     union {
-        c_uint32_t ipv4_addr;;
+        /* GTP_PDN_TYPE_IPV4 */
+        c_uint32_t addr;      
+
+        /* GTP_PDN_TYPE_IPV6 */
         struct {
-            c_uint8_t ipv6_len;
-            c_uint8_t ipv6_addr[IPV6_LEN];
+            c_uint8_t len;
+            c_uint8_t addr6[IPV6_LEN];
         };
-        c_uint8_t ipv6_addr2[IPV6_LEN];
+
+        /* GTP_PDN_TYPE_BOTH */
+        struct {
+            struct {
+                c_uint8_t len;
+                c_uint8_t addr6[IPV6_LEN];
+            };
+            c_uint32_t addr;      
+        } __attribute__ ((packed)) both;
     };
-    c_uint32_t ipv4_addr2;
 } __attribute__ ((packed)) paa_t;
 
 #define MAX_BIT_RATE C_UINT64_C(10000000000)
@@ -176,20 +217,17 @@ typedef struct _pcc_rule_t {
 typedef struct _pdn_t {
     c_uint32_t      context_identifier;
     c_int8_t        apn[MAX_APN_LEN+1];
-#define S6A_PDN_TYPE_IPV4                       0
-#define S6A_PDN_TYPE_IPV6                       1
-#define S6A_PDN_TYPE_IPV4_AND_IPV6              2
-#define S6A_PDN_TYPE_IPV4_OR_IPV6               3
+#define HSS_PDN_TYPE_IPV4                       0
+#define HSS_PDN_TYPE_IPV6                       1
+#define HSS_PDN_TYPE_IPV4V6                     2
+#define HSS_PDN_TYPE_IPV4_OR_IPV6               3
     c_int8_t        pdn_type;
 
     qos_t           qos;
     bitrate_t       ambr; /* APN-AMBR */
 
     paa_t           paa;
-    struct {
-        c_uint32_t ipv4_addr;
-        c_uint8_t ipv6_addr[IPV6_LEN];
-    } pgw;
+    ip_t            pgw_ip;
 } pdn_t;
 
 CORE_DECLARE(c_int16_t) apn_build(c_int8_t *dst, c_int8_t *src, c_int16_t len);
@@ -203,10 +241,12 @@ CORE_DECLARE(c_int16_t) apn_parse(c_int8_t *dst, c_int8_t *src, c_int16_t len);
  * RFC 1661 [102] */
 #define PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE 0
 
-#define PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL 0x8021
-#define PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL 0xc223
-#define PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST 0x000d
-#define PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING 0x000a
+#define PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL           0x8021
+#define PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL  0xc223
+#define PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST              0x0003
+#define PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST              0x000d
+#define PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING     0x000a
+#define PCO_ID_IPV4_LINK_MTU_REQUEST                        0x0010
 typedef struct _pco_ipcp_options_t {
     c_uint8_t type;
     c_uint8_t len;

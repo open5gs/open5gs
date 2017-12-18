@@ -4,8 +4,10 @@
 
 #include "gtp_types.h"
 #include "gtp_conv.h"
+#include "gtp_xact.h"
 
 #include "mme_event.h"
+#include "mme_sm.h"
 #include "mme_context.h"
 
 #include "s1ap_path.h"
@@ -70,7 +72,6 @@ void mme_s11_handle_create_session_response(
     /* Control Plane(UL) : SGW-S11 */
     sgw_s11_teid = rsp->sender_f_teid_for_control_plane.data;
     mme_ue->sgw_s11_teid = ntohl(sgw_s11_teid->teid);
-    mme_ue->sgw_s11_addr = sgw_s11_teid->ipv4_addr;
 
     memcpy(&pdn->paa, rsp->pdn_address_allocation.data,
             rsp->pdn_address_allocation.len);
@@ -84,7 +85,8 @@ void mme_s11_handle_create_session_response(
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data;
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
-    bearer->sgw_s1u_addr = sgw_s1u_teid->ipv4_addr;
+    rv = gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
+    d_assert(rv == CORE_OK, return,);
 
     d_trace(3, "[GTP] Create Session Response : "
             "MME[%d] <-- SGW[%d]\n", mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
@@ -168,7 +170,7 @@ void mme_s11_handle_delete_session_response(
     {
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
             CLEAR_SGW_S11_PATH(mme_ue);
-            mme_s6a_send_air(mme_ue);
+            mme_s6a_send_air(mme_ue, NULL);
         );
 
         mme_sess_remove(sess);
@@ -208,6 +210,7 @@ void mme_s11_handle_delete_session_response(
 void mme_s11_handle_create_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
 {
+    status_t rv;
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
 
@@ -262,7 +265,8 @@ void mme_s11_handle_create_bearer_request(
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
-    bearer->sgw_s1u_addr = sgw_s1u_teid->ipv4_addr;
+    rv = gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
+    d_assert(rv == CORE_OK, return,);
 
     /* Bearer QoS */
     d_assert(gtp_parse_bearer_qos(&bearer_qos,
@@ -400,7 +404,8 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             d_assert(teid, return,);
 
             bearer->sgw_dl_teid = ntohl(teid->teid);
-            bearer->sgw_dl_addr = teid->ipv4_addr;
+            rv = gtp_f_teid_to_ip(teid, &bearer->sgw_dl_ip);
+            d_assert(rv == CORE_OK, return,);
         }
         if (bearers[i]->s2b_u_epdg_f_teid_5.presence)
         {
@@ -408,7 +413,8 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             d_assert(teid, return,);
 
             bearer->sgw_ul_teid = ntohl(teid->teid);
-            bearer->sgw_ul_addr = teid->ipv4_addr;
+            rv = gtp_f_teid_to_ip(teid, &bearer->sgw_ul_ip);
+            d_assert(rv == CORE_OK, return,);
         }
     }
 

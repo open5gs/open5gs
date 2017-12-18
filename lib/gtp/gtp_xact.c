@@ -3,9 +3,12 @@
 #include "core_pool.h"
 #include "core_event.h"
 
-#include "types.h"
-#include "gtp_xact.h"
+#include "3gpp_types.h"
 #include "gtp_message.h"
+#include "gtp_node.h"
+#include "gtp_path.h"
+
+#include "gtp_xact.h"
 
 #define SIZE_OF_GTP_XACT_POOL       64
 #define GTP_MIN_XACT_ID             1
@@ -77,7 +80,7 @@ gtp_xact_t *gtp_xact_local_create(
         gtp_node_t *gnode, gtp_header_t *hdesc, pkbuf_t *pkbuf)
 {
     status_t rv;
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
     d_assert(gnode, return NULL, "Null param");
@@ -113,17 +116,18 @@ gtp_xact_t *gtp_xact_local_create(
     rv = gtp_xact_update_tx(xact, hdesc, pkbuf);
     d_assert(rv == CORE_OK, return NULL, "Update Tx failed");
 
-    d_trace(3, "[%d] %s Create  peer %s:%d\n",
+    d_trace(3, "[%d] %s Create  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&gnode->addr, buf), gnode->port);
+            CORE_ADDR(sock_remote_addr(gnode->sock), buf),
+            CORE_PORT(sock_remote_addr(gnode->sock)));
 
     return xact;
 }
 
 gtp_xact_t *gtp_xact_remote_create(gtp_node_t *gnode, c_uint32_t sqn)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
     d_assert(gnode, return NULL, "Null param");
@@ -156,10 +160,11 @@ gtp_xact_t *gtp_xact_remote_create(gtp_node_t *gnode, c_uint32_t sqn)
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
 
-    d_trace(3, "[%d] %s Create  peer %s:%d\n",
+    d_trace(3, "[%d] %s Create  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&gnode->addr, buf), gnode->port);
+            CORE_ADDR(sock_remote_addr(gnode->sock), buf),
+            CORE_PORT(sock_remote_addr(gnode->sock)));
 
     return xact;
 }
@@ -185,7 +190,7 @@ void gtp_xact_delete_all(gtp_node_t *gnode)
 status_t gtp_xact_update_tx(gtp_xact_t *xact,
         gtp_header_t *hdesc, pkbuf_t *pkbuf)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_stage_t stage;
     gtp_header_t *h = NULL;
     
@@ -194,11 +199,12 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
     d_assert(hdesc, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[%d] %s UPD TX-%d  peer %s:%d\n",
+    d_trace(3, "[%d] %s UPD TX-%d  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             hdesc->type,
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+            CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+            CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
     stage = gtp_xact_get_stage(hdesc->type, xact->xid);
     if (xact->org == GTP_LOCAL_ORIGINATOR)
@@ -207,11 +213,12 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
         {
             case GTP_XACT_INITIAL_STAGE:
                 d_assert(xact->step == 0, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, hdesc->type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
                 break;
 
             case GTP_XACT_INTERMEDIATE_STAGE:
@@ -219,11 +226,12 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, hdesc->type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
                 break;
 
             default:
@@ -240,11 +248,12 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
             case GTP_XACT_INTERMEDIATE_STAGE:
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, hdesc->type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
                 break;
 
             default:
@@ -280,14 +289,15 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
 status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 {
     status_t rv = CORE_OK;
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_stage_t stage;
 
-    d_trace(3, "[%d] %s UPD RX-%d  peer %s:%d\n",
+    d_trace(3, "[%d] %s UPD RX-%d  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             type,
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+            CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+            CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
     stage = gtp_xact_get_stage(type, xact->xid);
     if (xact->org == GTP_LOCAL_ORIGINATOR)
@@ -304,11 +314,12 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 
                     d_assert(xact->step == 2 || xact->step == 3,
                         return CORE_ERROR,
-                        "[%d] %s invalid step %d for type %d peer %s:%d",
+                        "[%d] %s invalid step %d for type %d peer [%s]:%d",
                         xact->xid,
                         xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                         xact->step, type,
-                        INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                        CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                        CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
                     pkbuf = xact->seq[2].pkbuf;
                     if (pkbuf)
@@ -317,13 +328,14 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                             tm_start(xact->tm_holding);
 
                         d_warn("[%d] %s Request Duplicated. Retransmit!"
-                                " for type %d peer %s:%d",
+                                " for type %d peer [%s]:%d",
                                 xact->xid,
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
                                     "LOCAL " : "REMOTE",
                                 xact->step, type,
-                                INET_NTOP(&xact->gnode->addr, buf),
-                                xact->gnode->port);
+                                CORE_ADDR(sock_remote_addr(xact->gnode->sock),
+                                    buf),
+                                CORE_PORT(sock_remote_addr(xact->gnode->sock)));
                         rv = gtp_send(xact->gnode, pkbuf);
                         d_assert(rv == CORE_OK, return CORE_ERROR,
                                 "gtp_send error");
@@ -331,24 +343,26 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                     else
                     {
                         d_warn("[%d] %s Request Duplicated. Discard!"
-                                " for type %d peer %s:%d",
+                                " for type %d peer [%s]:%d",
                                 xact->xid,
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
                                     "LOCAL " : "REMOTE",
                                 xact->step, type,
-                                INET_NTOP(&xact->gnode->addr, buf),
-                                xact->gnode->port);
+                                CORE_ADDR(sock_remote_addr(xact->gnode->sock),
+                                    buf),
+                                CORE_PORT(sock_remote_addr(xact->gnode->sock)));
                     }
 
                     return CORE_EAGAIN;
                 }
 
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
                 if (xact->tm_holding)
                     tm_start(xact->tm_holding);
@@ -357,11 +371,12 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
                 break;
 
@@ -380,11 +395,12 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 
                     d_assert(xact->step == 1 || xact->step == 2,
                         return CORE_ERROR,
-                        "[%d] %s invalid step %d for type %d peer %s:%d",
+                        "[%d] %s invalid step %d for type %d peer [%s]:%d",
                         xact->xid,
                         xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                         xact->step, type,
-                        INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                        CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                        CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
                     pkbuf = xact->seq[1].pkbuf;
                     if (pkbuf)
@@ -393,13 +409,14 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                             tm_start(xact->tm_holding);
 
                         d_warn("[%d] %s Request Duplicated. Retransmit!"
-                                " for step %d type %d peer %s:%d",
+                                " for step %d type %d peer [%s]:%d",
                                 xact->xid,
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
                                     "LOCAL " : "REMOTE",
                                 xact->step, type,
-                                INET_NTOP(&xact->gnode->addr, buf),
-                                xact->gnode->port);
+                                CORE_ADDR(sock_remote_addr(xact->gnode->sock),
+                                    buf),
+                                CORE_PORT(sock_remote_addr(xact->gnode->sock)));
                         rv = gtp_send(xact->gnode, pkbuf);
                         d_assert(rv == CORE_OK, return CORE_ERROR,
                                 "gtp_send error");
@@ -407,24 +424,26 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
                     else
                     {
                         d_warn("[%d] %s Request Duplicated. Discard!"
-                                " for step %d type %d peer %s:%d",
+                                " for step %d type %d peer [%s]:%d",
                                 xact->xid,
                                 xact->org == GTP_LOCAL_ORIGINATOR ?
                                     "LOCAL " : "REMOTE",
                                 xact->step, type,
-                                INET_NTOP(&xact->gnode->addr, buf),
-                                xact->gnode->port);
+                                CORE_ADDR(sock_remote_addr(xact->gnode->sock),
+                                    buf),
+                                CORE_PORT(sock_remote_addr(xact->gnode->sock)));
                     }
 
                     return CORE_EAGAIN;
                 }
 
                 d_assert(xact->step == 0, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
                 if (xact->tm_holding)
                     tm_start(xact->tm_holding);
@@ -436,11 +455,12 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
                 /* continue */
                 break;
@@ -468,7 +488,7 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
 status_t gtp_xact_commit(gtp_xact_t *xact)
 {
     status_t rv;
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
 
     c_uint8_t type;
     pkbuf_t *pkbuf = NULL;
@@ -477,10 +497,11 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
     d_assert(xact, return CORE_ERROR, "Null param");
     d_assert(xact->gnode, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[%d] %s Commit  peer %s:%d\n",
+    d_trace(3, "[%d] %s Commit  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+            CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+            CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
     type = xact->seq[xact->step-1].type;
     stage = gtp_xact_get_stage(type, xact->xid);
@@ -492,11 +513,12 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
             case GTP_XACT_INITIAL_STAGE:
             {
                 d_assert(xact->step == 1, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
                 if (xact->tm_response)
                     tm_start(xact->tm_response);
@@ -509,11 +531,12 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
 
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2 || xact->step == 3, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
                 if (xact->step == 2)
                 {
@@ -536,11 +559,12 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
 
             case GTP_XACT_INTERMEDIATE_STAGE:
                 d_assert(xact->step == 2, return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
                 if (xact->tm_response)
                     tm_start(xact->tm_response);
@@ -550,11 +574,12 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
             case GTP_XACT_FINAL_STAGE:
                 d_assert(xact->step == 2 || xact->step == 3,
                     return CORE_ERROR,
-                    "[%d] %s invalid step %d for type %d peer %s:%d",
+                    "[%d] %s invalid step %d for type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, type,
-                    INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
                 if (xact->step == 3)
                 {
@@ -582,7 +607,7 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
 
 status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
     
     d_assert(index, goto out, "Invalid Index");
@@ -593,12 +618,12 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
     if (event == g_response_event)
     {
         d_trace(3, "[%d] %s Response Timeout "
-                "for step %d type %d peer %s:%d\n",
+                "for step %d type %d peer [%s]:%d\n",
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                 xact->step, xact->seq[xact->step-1].type,
-                INET_NTOP(&xact->gnode->addr, buf),
-                xact->gnode->port);
+                CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
         if (--xact->response_rcount > 0)
         {
@@ -616,24 +641,24 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
         else
         {
             d_warn("[%d] %s No Reponse. Give up! "
-                    "for step %d type %d peer %s:%d",
+                    "for step %d type %d peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, xact->seq[xact->step-1].type,
-                    INET_NTOP(&xact->gnode->addr, buf),
-                    xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
             gtp_xact_delete(xact);
         }
     }
     else if (event == g_holding_event)
     {
         d_trace(3, "[%d] %s Holding Timeout "
-                "for step %d type %d peer %s:%d\n",
+                "for step %d type %d peer [%s]:%d\n",
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                 xact->step, xact->seq[xact->step-1].type,
-                INET_NTOP(&xact->gnode->addr, buf),
-                xact->gnode->port);
+                CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
         if (--xact->holding_rcount > 0)
         {
@@ -643,12 +668,12 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
         else
         {
             d_trace(3, "[%d] %s Delete Transaction "
-                    "for step %d type %d peer %s:%d\n",
+                    "for step %d type %d peer [%s]:%d\n",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                     xact->step, xact->seq[xact->step-1].type,
-                    INET_NTOP(&xact->gnode->addr, buf),
-                    xact->gnode->port);
+                    CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+                    CORE_PORT(sock_remote_addr(xact->gnode->sock)));
             gtp_xact_delete(xact);
         }
     }
@@ -660,18 +685,14 @@ out:
     return CORE_ERROR;
 }
 
-status_t gtp_xact_receive(gtp_node_t *gnode, pkbuf_t *pkbuf,
-        gtp_xact_t **xact, gtp_message_t *message)
+status_t gtp_xact_receive(
+        gtp_node_t *gnode, gtp_header_t *h, gtp_xact_t **xact)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     status_t rv;
     gtp_xact_t *new = NULL;
-    gtp_header_t *h = NULL;
 
     d_assert(gnode, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
-    h = pkbuf->payload;
     d_assert(h, return CORE_ERROR, "Null param");
 
     new = gtp_xact_find_by_xid(gnode, h->type, GTP_SQN_TO_XID(h->sqn));
@@ -679,21 +700,17 @@ status_t gtp_xact_receive(gtp_node_t *gnode, pkbuf_t *pkbuf,
         new = gtp_xact_remote_create(gnode, h->sqn);
     d_assert(new, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[%d] %s Receive peer %s:%d\n",
+    d_trace(3, "[%d] %s Receive peer [%s]:%d\n",
             new->xid,
             new->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&gnode->addr, buf), gnode->port);
+            CORE_ADDR(sock_remote_addr(gnode->sock), buf),
+            CORE_PORT(sock_remote_addr(gnode->sock)));
 
     rv = gtp_xact_update_rx(new, h->type);
     if (rv != CORE_OK)
     {
-        pkbuf_free(pkbuf);
         return rv;
     }
-
-    rv = gtp_parse_msg(message, pkbuf);
-    d_assert(rv == CORE_OK, 
-            pkbuf_free(pkbuf); return CORE_ERROR, "parse error");
 
     *xact = new;
     return CORE_OK;
@@ -758,7 +775,7 @@ static gtp_xact_stage_t gtp_xact_get_stage(c_uint8_t type, c_uint32_t xid)
 gtp_xact_t *gtp_xact_find_by_xid(
         gtp_node_t *gnode, c_uint8_t type, c_uint32_t xid)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
     gtp_xact_t *xact = NULL;
 
     d_assert(gnode, return NULL, "Null param");
@@ -791,10 +808,11 @@ gtp_xact_t *gtp_xact_find_by_xid(
 
     if (xact)
     {
-        d_trace(3, "[%d] %s Find    peer %s:%d\n",
+        d_trace(3, "[%d] %s Find    peer [%s]:%d\n",
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-                INET_NTOP(&gnode->addr, buf), gnode->port);
+                CORE_ADDR(sock_remote_addr(gnode->sock), buf),
+                CORE_PORT(sock_remote_addr(gnode->sock)));
     }
 
     return xact;
@@ -826,15 +844,16 @@ void gtp_xact_deassociate(gtp_xact_t *xact1, gtp_xact_t *xact2)
 
 static status_t gtp_xact_delete(gtp_xact_t *xact)
 {
-    char buf[INET_ADDRSTRLEN];
+    char buf[CORE_ADDRSTRLEN];
 
     d_assert(xact, , "Null param");
     d_assert(xact->gnode, , "Null param");
 
-    d_trace(3, "[%d] %s Delete  peer %s:%d\n",
+    d_trace(3, "[%d] %s Delete  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
-            INET_NTOP(&xact->gnode->addr, buf), xact->gnode->port);
+            CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
+            CORE_PORT(sock_remote_addr(xact->gnode->sock)));
 
     if (xact->seq[0].pkbuf)
         pkbuf_free(xact->seq[0].pkbuf);

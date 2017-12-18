@@ -18,16 +18,21 @@ status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     mme_sess_t *sess = NULL;
     c_uint8_t security_protected_required = 0;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    d_assert(bearer, return CORE_ERROR,);
     sess = bearer->sess;
-    d_assert(sess, return CORE_ERROR, "Null param");
+    d_assert(sess, return CORE_ERROR,);
     mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    d_assert(mme_ue, return CORE_ERROR,);
+
+    d_assert(pdn_connectivity_request, return CORE_ERROR,);
 
     d_assert(MME_UE_HAVE_IMSI(mme_ue), return CORE_ERROR,
         "No IMSI in PDN_CPNNECTIVITY_REQUEST");
     d_assert(SECURITY_CONTEXT_IS_VALID(mme_ue), return CORE_ERROR,
         "No Security Context in PDN_CPNNECTIVITY_REQUEST");
+
+    memcpy(&sess->request_type, &pdn_connectivity_request->request_type,
+            sizeof(sess->request_type));
 
     security_protected_required = 0;
     if (pdn_connectivity_request->presencemask &

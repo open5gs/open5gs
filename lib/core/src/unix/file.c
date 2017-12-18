@@ -4,7 +4,6 @@
 #include "core_general.h"
 #include "core_debug.h"
 #include "core_pool.h"
-#include "core_net.h"
 
 pool_declare(file_pool, file_t, MAX_NUM_OF_FILE);
 
@@ -100,6 +99,8 @@ status_t file_open(file_t **new,
     os_file_t fd;
     int oflags = 0;
 
+    d_assert(fname, return CORE_ERROR,);
+
     if ((flag & FILE_READ) && (flag & FILE_WRITE))
     {
         oflags = O_RDWR;
@@ -178,6 +179,8 @@ status_t file_close(file_t *file)
 {
     status_t rv = CORE_OK;
 
+    d_assert(file, return CORE_ERROR,);
+
     if (close(file->filedes) == 0)
     {
         file->filedes = -1;
@@ -201,6 +204,8 @@ status_t file_close(file_t *file)
 
 status_t file_remove(const char *path)
 {
+    d_assert(path, return CORE_ERROR,);
+
     if (unlink(path) == 0)
     {
         return CORE_OK;
@@ -219,6 +224,9 @@ static status_t file_transfer_contents(
     status_t status;
     file_info_t finfo;
     file_perms_t perms;
+
+    d_assert(from_path, return CORE_ERROR,);
+    d_assert(to_path, return CORE_ERROR,);
 
     /* Open source file. */
     status = file_open(&s, from_path, FILE_READ, FILE_OS_DEFAULT);
@@ -297,6 +305,9 @@ static status_t file_transfer_contents(
 
 status_t file_rename(const char *from_path, const char *to_path)
 {
+    d_assert(from_path, return CORE_ERROR,);
+    d_assert(to_path, return CORE_ERROR,);
+
     if (rename(from_path, to_path) != 0)
     {
         return errno;
@@ -306,6 +317,9 @@ status_t file_rename(const char *from_path, const char *to_path)
 
 status_t file_link(const char *from_path, const char *to_path)
 {
+    d_assert(from_path, return CORE_ERROR,);
+    d_assert(to_path, return CORE_ERROR,);
+
     if (link(from_path, to_path) == -1)
     {
         return errno;
@@ -330,6 +344,8 @@ status_t file_append(
 
 status_t file_eof(file_t *fptr)
 {
+    d_assert(fptr, return CORE_ERROR,);
+
     if (fptr->eof_hit == 1)
     {
         return CORE_EOF;
@@ -341,6 +357,9 @@ status_t file_read(file_t *thefile, void *buf, size_t *nbytes)
 {
     ssize_t rv;
     size_t bytes_read;
+
+    d_assert(thefile, return CORE_ERROR,);
+    d_assert(nbytes, return CORE_ERROR,);
 
     if (*nbytes <= 0)
     {
@@ -373,6 +392,10 @@ status_t file_write(
 {
     size_t rv;
 
+    d_assert(thefile, return CORE_ERROR,);
+    d_assert(buf, return CORE_ERROR,);
+    d_assert(nbytes, return CORE_ERROR,);
+
     do
     {
         rv = write(thefile->filedes, buf, *nbytes);
@@ -392,6 +415,11 @@ status_t file_writev(file_t *thefile,
 #ifdef HAVE_WRITEV
     status_t rv;
     ssize_t bytes;
+
+    d_assert(thefile, return CORE_ERROR,);
+    d_assert(vec, return CORE_ERROR,);
+    d_assert(nvec, return CORE_ERROR,);
+    d_assert(nbytes, return CORE_ERROR,);
 
     if ((bytes = writev(thefile->filedes, vec, nvec)) < 0)
     {
@@ -430,6 +458,9 @@ status_t file_read_full(file_t *thefile, void *buf,
     status_t status;
     size_t total_read = 0;
 
+    d_assert(thefile, return CORE_ERROR,);
+    d_assert(buf, return CORE_ERROR,);
+
     do {
         size_t amt = nbytes;
 
@@ -449,6 +480,9 @@ status_t file_write_full(file_t *thefile,
 {
     status_t status;
     size_t total_written = 0;
+
+    d_assert(thefile, return CORE_ERROR,);
+    d_assert(buf, return CORE_ERROR,);
 
     do {
         size_t amt = nbytes;
@@ -472,6 +506,11 @@ status_t file_writev_full(file_t *thefile,
     size_t i;
     size_t amt = 0;
     size_t total = 0;
+
+    d_assert(thefile, return CORE_ERROR,);
+    d_assert(vec, return CORE_ERROR,);
+    d_assert(nvec, return CORE_ERROR,);
+    d_assert(bytes_written, return CORE_ERROR,);
 
     for (i = 0; i < nvec; i++)
     {
@@ -522,11 +561,15 @@ status_t file_putc(char ch, file_t *thefile)
 {
     size_t nbytes = 1;
 
+    d_assert(thefile, return CORE_ERROR,);
+
     return file_write(thefile, &ch, &nbytes);
 }
 status_t file_getc(char *ch, file_t *thefile)
 {
     size_t nbytes = 1;
+
+    d_assert(thefile, return CORE_ERROR,);
 
     return file_read(thefile, ch, &nbytes);
 }
@@ -537,6 +580,9 @@ status_t file_gets(char *str, int len, file_t *thefile)
     size_t nbytes;
     const char *str_start = str;
     char *final = str + len - 1;
+
+    d_assert(str, return CORE_ERROR,);
+    d_assert(thefile, return CORE_ERROR,);
 
     if (len <= 1)
     {
@@ -577,12 +623,17 @@ status_t file_gets(char *str, int len, file_t *thefile)
 
 status_t file_puts(const char *str, file_t *thefile)
 {
+    d_assert(str, return CORE_ERROR,);
+    d_assert(thefile, return CORE_ERROR,);
+
     return file_write_full(thefile, str, strlen(str), NULL);
 }
 
 status_t file_sync(file_t *thefile)
 {
     status_t rv = CORE_OK;
+
+    d_assert(thefile, return CORE_ERROR,);
 
     if (fsync(thefile->filedes))
     {
@@ -596,6 +647,9 @@ status_t file_seek(file_t *thefile,
         seek_where_t where, off_t *offset)
 {
     off_t rv;
+
+    d_assert(thefile, return CORE_ERROR,);
+    d_assert(offset, return CORE_ERROR,);
 
     thefile->eof_hit = 0;
 
@@ -614,6 +668,9 @@ status_t file_seek(file_t *thefile,
 
 status_t file_name_get(const char **fname, file_t *thefile)
 {
+    d_assert(fname, return CORE_ERROR,);
+    d_assert(thefile, return CORE_ERROR,);
+
     *fname = thefile->fname;
     return CORE_OK;
 }
@@ -621,6 +678,8 @@ status_t file_name_get(const char **fname, file_t *thefile)
 status_t file_perms_set(const char *fname, file_perms_t perms)
 {
     mode_t mode = unix_perms2mode(perms);
+
+    d_assert(fname, return CORE_ERROR,);
 
     if (chmod(fname, mode) == -1)
         return errno;
@@ -632,6 +691,8 @@ status_t file_attrs_set(const char *fname,
 {
     status_t status;
     file_info_t finfo;
+
+    d_assert(fname, return CORE_ERROR,);
 
     /* Don't do anything if we can't handle the requested attributes */
     if (!(attr_mask & (ATTR_READONLY | ATTR_EXECUTABLE)))
@@ -684,6 +745,8 @@ status_t file_mtime_set(const char *fname, c_time_t mtime)
     status_t status;
     file_info_t finfo;
 
+    d_assert(fname, return CORE_ERROR,);
+
     status = file_stat(&finfo, fname, FILE_INFO_ATIME);
     if (status)
     {
@@ -727,6 +790,8 @@ status_t dir_make(const char *path, file_perms_t perm)
 {
     mode_t mode = unix_perms2mode(perm);
 
+    d_assert(path, return CORE_ERROR,);
+
     if (mkdir(path, mode) == 0)
     {
         return CORE_OK;
@@ -742,6 +807,8 @@ status_t dir_make(const char *path, file_perms_t perm)
 /* Remove trailing separators that don't affect the meaning of PATH. */
 static void path_canonicalize (char *dir)
 {
+    d_assert(dir, return,);
+
     /* At some point this could eliminate redundant components.  For
      * now, it just makes sure there is no trailing slash. */
     size_t len = strlen (dir);
@@ -760,6 +827,9 @@ static void path_remove_last_component (char *dir, const char *path)
     int i;
     int len = 0;
 
+    d_assert(dir, return,);
+    d_assert(path, return,);
+
     strcpy(dir, path);
     path_canonicalize (dir);
     for (i = (strlen(dir) - 1); i >= 0; i--) {
@@ -774,6 +844,8 @@ static void path_remove_last_component (char *dir, const char *path)
 status_t dir_make_recursive(const char *path, file_perms_t perm)
 {
     status_t err = 0;
+
+    d_assert(path, return CORE_ERROR,);
 
     err = dir_make(path, perm); /* Try to make PATH right out */
 
@@ -801,6 +873,8 @@ status_t dir_make_recursive(const char *path, file_perms_t perm)
 }
 status_t dir_remove(const char *path)
 {
+    d_assert(path, return CORE_ERROR,);
+
     if (rmdir(path) == 0)
     {
         return CORE_OK;
@@ -860,6 +934,9 @@ static filetype_e filetype_from_mode(mode_t mode)
 static void fill_out_finfo(file_info_t *finfo, struct_stat *info,
                            c_int32_t wanted)
 {
+    d_assert(finfo, return,);
+    d_assert(info, return,);
+
     finfo->valid = FILE_INFO_MIN | FILE_INFO_IDENT | FILE_INFO_NLINK
                  | FILE_INFO_OWNER | FILE_INFO_PROT;
     finfo->protection = unix_mode2perms(info->st_mode);
@@ -924,6 +1001,9 @@ status_t file_info_get(file_info_t *finfo,
 {
     struct_stat info;
 
+    d_assert(finfo, return CORE_ERROR,);
+    d_assert(thefile, return CORE_ERROR,);
+
     if (fstat(thefile->filedes, &info) == 0)
     {
         strcpy(finfo->fname, thefile->fname);
@@ -937,6 +1017,8 @@ status_t file_info_get(file_info_t *finfo,
 
 status_t file_trunc(file_t *fp, off_t offset)
 {
+    d_assert(fp, return CORE_ERROR,);
+
     if (ftruncate(fp->filedes, offset) == -1)
     {
         return errno;
@@ -946,6 +1028,8 @@ status_t file_trunc(file_t *fp, off_t offset)
 
 c_int32_t file_flags_get(file_t *f)
 {
+    d_assert(f, return CORE_ERROR,);
+
     return f->flags;
 }
 
@@ -954,6 +1038,9 @@ status_t file_stat(file_info_t *finfo,
 {
     struct_stat info;
     int srv;
+
+    d_assert(finfo, return CORE_ERROR,);
+    d_assert(fname, return CORE_ERROR,);
 
     if (wanted & FILE_INFO_LINK)
         srv = lstat(fname, &info);
@@ -1006,6 +1093,8 @@ status_t file_stat(file_info_t *finfo,
 
 status_t temp_dir_get(char *temp_dir)
 {
+    d_assert(temp_dir, return CORE_ERROR,);
+
     strcpy(temp_dir, "/tmp");
     return CORE_OK;
 }

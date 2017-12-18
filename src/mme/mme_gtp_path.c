@@ -1,43 +1,37 @@
 #define TRACE_MODULE _mme_s11_path
 #include "core_debug.h"
 #include "core_pkbuf.h"
-#include "core_net.h"
+
+#include "gtp_node.h"
+#include "gtp_path.h"
+#include "gtp_xact.h"
 
 #include "mme_event.h"
 #include "mme_gtp_path.h"
 #include "mme_s11_build.h"
 
-static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
+static int _gtpv2_c_recv_cb(sock_id sock, void *data)
 {
-    char buf[INET_ADDRSTRLEN];
     status_t rv;
     event_t e;
     pkbuf_t *pkbuf = NULL;
-    c_uint32_t addr;
-    c_uint16_t port;
 
     d_assert(sock, return -1, "Null param");
 
-    pkbuf = gtp_read(sock);
-    if (pkbuf == NULL)
+    rv = gtp_recv(sock, &pkbuf);
+    if (rv != CORE_OK)
     {
-        if (sock->sndrcv_errno == EAGAIN)
+        if (errno == EAGAIN)
             return 0;
 
         return -1;
     }
 
-    addr = sock->remote.sin_addr.s_addr;
-    port = ntohs(sock->remote.sin_port);
-
-    d_trace(10, "S11_PDU is received from SGW[%s:%d]\n",
-            INET_NTOP(&addr, buf), port);
+    d_trace(10, "S11_PDU is received from SGW\n");
     d_trace_hex(10, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S11_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)addr);
-    event_set_param2(&e, (c_uintptr_t)port);
-    event_set_param3(&e, (c_uintptr_t)pkbuf);
+    event_set_param1(&e, (c_uintptr_t)pkbuf);
     rv = mme_event_send(&e);
     if (rv != CORE_OK)
     {
@@ -48,39 +42,56 @@ static int _gtpv2_c_recv_cb(net_sock_t *sock, void *data)
     return 0;
 }
 
+static c_sockaddr_t *gtp_addr_find_by_family(list_t *list, int family)
+{
+    gtp_node_t *gnode = NULL;
+    d_assert(list, return NULL,);
+
+    for (gnode = list_first(list); gnode; gnode = list_next(gnode))
+    {
+        c_sockaddr_t *addr = gnode->sa_list;
+        while(addr)
+        {
+            if (addr->c_sa_family == family)
+            {
+                return addr;
+            }
+            addr = addr->next;
+        }
+    }
+
+    return NULL;
+}
+
 status_t mme_gtp_open()
 {
     status_t rv;
-    mme_sgw_t *sgw = mme_sgw_first();
 
-    rv = gtp_listen(&mme_self()->gtpc_sock, _gtpv2_c_recv_cb, 
-            mme_self()->gtpc_addr, mme_self()->gtpc_port, NULL);
-    if (rv != CORE_OK)
-    {
-        d_error("Can't establish GTP-C Path for SGW");
-        return rv;
-    }
+    rv = gtp_server_list(&mme_self()->gtpc_list, _gtpv2_c_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = gtp_server_list(&mme_self()->gtpc_list6, _gtpv2_c_recv_cb);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    /* socket descriptor needs in gnode when packet is sending initilly */
-    while(sgw)
-    {
-        sgw->sock = mme_self()->gtpc_sock;
-        sgw = mme_sgw_next(sgw);
-    }
+    mme_self()->gtpc_addr = gtp_local_addr_first(&mme_self()->gtpc_list);
+    mme_self()->gtpc_addr6 = gtp_local_addr_first(&mme_self()->gtpc_list6);
+
+    d_assert(mme_self()->gtpc_addr || mme_self()->gtpc_addr6,
+            return CORE_ERROR, "No GTP Server");
+
+    mme_self()->pgw_addr = gtp_addr_find_by_family(
+            &mme_self()->pgw_list, AF_INET);
+    mme_self()->pgw_addr6 = gtp_addr_find_by_family(
+            &mme_self()->pgw_list, AF_INET6);
+    d_assert(mme_self()->pgw_addr || mme_self()->pgw_addr6,
+            return CORE_ERROR,);
 
     return CORE_OK;
 }
 
 status_t mme_gtp_close()
 {
-    status_t rv;
-
-    rv = gtp_close(mme_self()->gtpc_sock);
-    if (rv != CORE_OK)
-    {
-        d_error("Can't close GTP-C Path for SGW");
-        return rv;
-    }
+    sock_delete_list(&mme_self()->gtpc_list);
+    sock_delete_list(&mme_self()->gtpc_list6);
 
     return CORE_OK;
 }
@@ -104,7 +115,7 @@ status_t mme_gtp_send_create_session_request(mme_sess_t *sess)
     d_assert(rv == CORE_OK, return CORE_ERROR,
             "S11 build error");
 
-    xact = gtp_xact_local_create(mme_ue->sgw, &h, pkbuf);
+    xact = gtp_xact_local_create(mme_ue->gnode, &h, pkbuf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     rv = gtp_xact_commit(xact);
@@ -137,7 +148,7 @@ status_t mme_gtp_send_modify_bearer_request(
             &pkbuf, h.type, bearer, uli_presence);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
-    xact = gtp_xact_local_create(mme_ue->sgw, &h, pkbuf);
+    xact = gtp_xact_local_create(mme_ue->gnode, &h, pkbuf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     rv = gtp_xact_commit(xact);
@@ -165,7 +176,7 @@ status_t mme_gtp_send_delete_session_request(mme_sess_t *sess)
     rv = mme_s11_build_delete_session_request(&s11buf, h.type, sess);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
-    xact = gtp_xact_local_create(mme_ue->sgw, &h, s11buf);
+    xact = gtp_xact_local_create(mme_ue->gnode, &h, s11buf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     GTP_XACT_STORE_SESSION(xact, sess);
@@ -254,7 +265,7 @@ status_t mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue)
     rv = mme_s11_build_release_access_bearers_request(&pkbuf, h.type);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
-    xact = gtp_xact_local_create(mme_ue->sgw, &h, pkbuf);
+    xact = gtp_xact_local_create(mme_ue->gnode, &h, pkbuf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     rv = gtp_xact_commit(xact);
@@ -281,7 +292,7 @@ status_t mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
             &pkbuf, h.type, mme_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
 
-    xact = gtp_xact_local_create(mme_ue->sgw, &h, pkbuf);
+    xact = gtp_xact_local_create(mme_ue->gnode, &h, pkbuf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     rv = gtp_xact_commit(xact);
@@ -307,7 +318,7 @@ status_t mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
     pkbuf = pkbuf_alloc(TLV_MAX_HEADROOM, 0);
     d_assert(pkbuf, return CORE_ERROR, "S11 build error");
 
-    xact = gtp_xact_local_create(mme_ue->sgw, &h, pkbuf);
+    xact = gtp_xact_local_create(mme_ue->gnode, &h, pkbuf);
     d_assert(xact, return CORE_ERROR, "Null param");
 
     rv = gtp_xact_commit(xact);

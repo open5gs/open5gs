@@ -10,7 +10,6 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define EVENT_SIZE sizeof(event_t)
-#define EVENT_WAIT_TIMEOUT 10000 /* 10 msec */
 
 #define event_set(__ptr_e, __evnt) ((__ptr_e)->event = (__evnt))
 #define event_get(__ptr_e) ((__ptr_e)->event)
@@ -91,6 +90,15 @@ CORE_DECLARE(status_t) event_delete(msgq_id queue_id);
  *         If else, return CORE_ERROR
  */
 CORE_DECLARE(status_t) event_send(msgq_id queue_id, event_t *e);
+
+/**
+ * Receive a event from event queue
+ *
+ * @return If success, return CORE_OK
+ *         If queue is empty, return CORE_EAGAIN
+ *         If else, return CORE_ERROR.
+ */
+CORE_DECLARE(status_t) event_recv(msgq_id queue_id, event_t *e);
 
 /**
  * Receive a event from event queue with timeout

@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-09-06 19:43:58.452984 by acetcom
+ * Created on: 2017-12-10 14:27:23.972133 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -186,8 +186,8 @@ c_int32_t nas_decode_attach_request(nas_message_t *message, pkbuf_t *pkbuf)
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -309,8 +309,8 @@ c_int32_t nas_decode_attach_accept(nas_message_t *message, pkbuf_t *pkbuf)
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -381,8 +381,8 @@ c_int32_t nas_decode_attach_reject(nas_message_t *message, pkbuf_t *pkbuf)
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -439,8 +439,8 @@ c_int32_t nas_decode_detach_request_to_ue(nas_message_t *message, pkbuf_t *pkbuf
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -626,8 +626,8 @@ c_int32_t nas_decode_tracking_area_update_request(nas_message_t *message, pkbuf_
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -761,8 +761,8 @@ c_int32_t nas_decode_tracking_area_update_accept(nas_message_t *message, pkbuf_t
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -806,8 +806,8 @@ c_int32_t nas_decode_tracking_area_update_reject(nas_message_t *message, pkbuf_t
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -861,8 +861,8 @@ c_int32_t nas_decode_extended_service_request(nas_message_t *message, pkbuf_t *p
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -919,8 +919,8 @@ c_int32_t nas_decode_service_reject(nas_message_t *message, pkbuf_t *pkbuf)
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -958,8 +958,8 @@ c_int32_t nas_decode_guti_reallocation_command(nas_message_t *message, pkbuf_t *
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1065,8 +1065,8 @@ c_int32_t nas_decode_authentication_failure(nas_message_t *message, pkbuf_t *pkb
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1124,8 +1124,8 @@ c_int32_t nas_decode_security_mode_command(nas_message_t *message, pkbuf_t *pkbu
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1159,8 +1159,8 @@ c_int32_t nas_decode_security_mode_complete(nas_message_t *message, pkbuf_t *pkb
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1248,8 +1248,8 @@ c_int32_t nas_decode_emm_information(nas_message_t *message, pkbuf_t *pkbuf)
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1335,8 +1335,8 @@ c_int32_t nas_decode_cs_service_notification(nas_message_t *message, pkbuf_t *pk
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1378,8 +1378,8 @@ c_int32_t nas_decode_uplink_generic_nas_transport(nas_message_t *message, pkbuf_
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1421,8 +1421,8 @@ c_int32_t nas_decode_downlink_generic_nas_transport(nas_message_t *message, pkbu
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1552,8 +1552,8 @@ c_int32_t nas_decode_activate_default_eps_bearer_context_request(nas_message_t *
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1593,8 +1593,8 @@ c_int32_t nas_decode_activate_default_eps_bearer_context_accept(nas_message_t *m
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1638,8 +1638,8 @@ c_int32_t nas_decode_activate_default_eps_bearer_context_reject(nas_message_t *m
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1733,8 +1733,8 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_request(nas_message_t
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1780,8 +1780,8 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_accept(nas_message_t 
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1831,8 +1831,8 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_reject(nas_message_t 
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1932,8 +1932,8 @@ c_int32_t nas_decode_modify_eps_bearer_context_request(nas_message_t *message, p
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -1979,8 +1979,8 @@ c_int32_t nas_decode_modify_eps_bearer_context_accept(nas_message_t *message, pk
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2030,8 +2030,8 @@ c_int32_t nas_decode_modify_eps_bearer_context_reject(nas_message_t *message, pk
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2093,8 +2093,8 @@ c_int32_t nas_decode_deactivate_eps_bearer_context_request(nas_message_t *messag
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2134,8 +2134,8 @@ c_int32_t nas_decode_deactivate_eps_bearer_context_accept(nas_message_t *message
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2209,8 +2209,8 @@ c_int32_t nas_decode_pdn_connectivity_request(nas_message_t *message, pkbuf_t *p
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2272,8 +2272,8 @@ c_int32_t nas_decode_pdn_connectivity_reject(nas_message_t *message, pkbuf_t *pk
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2317,8 +2317,8 @@ c_int32_t nas_decode_pdn_disconnect_request(nas_message_t *message, pkbuf_t *pkb
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2362,8 +2362,8 @@ c_int32_t nas_decode_pdn_disconnect_reject(nas_message_t *message, pkbuf_t *pkbu
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2427,8 +2427,8 @@ c_int32_t nas_decode_bearer_resource_allocation_request(nas_message_t *message, 
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2490,8 +2490,8 @@ c_int32_t nas_decode_bearer_resource_allocation_reject(nas_message_t *message, p
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2569,8 +2569,8 @@ c_int32_t nas_decode_bearer_resource_modification_request(nas_message_t *message
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2632,8 +2632,8 @@ c_int32_t nas_decode_bearer_resource_modification_reject(nas_message_t *message,
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 
@@ -2679,8 +2679,8 @@ c_int32_t nas_decode_esm_information_response(nas_message_t *message, pkbuf_t *p
                  decoded += size;
                  break;
              default:
-                d_error("Unknown type(0x%x) or not implemented\n", type);
-                return -1;
+                d_warn("Unknown type(0x%x) or not implemented\n", type);
+                break;
         }
     }
 

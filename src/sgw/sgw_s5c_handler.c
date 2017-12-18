@@ -3,8 +3,12 @@
 #include "core_debug.h"
 #include "core_lib.h"
 
+#include "gtp_conv.h"
 #include "gtp_types.h"
+#include "gtp_node.h"
+#include "gtp_path.h"
 
+#include "context.h"
 #include "sgw_event.h"
 #include "sgw_context.h"
 #include "sgw_gtp_path.h"
@@ -14,6 +18,7 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
+    gtp_node_t *pgw = NULL;
     gtp_xact_t *s11_xact = NULL;
     sgw_bearer_t *bearer = NULL;
     sgw_tunnel_t *s1u_tunnel = NULL, *s5u_tunnel = NULL;
@@ -25,6 +30,7 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     gtp_f_teid_t sgw_s11_teid;
     gtp_f_teid_t *pgw_s5u_teid = NULL;
     gtp_f_teid_t sgw_s1u_teid;
+    int len;
 
     d_assert(sess, return, "Null param");
     sgw_ue = sess->sgw_ue;
@@ -71,7 +77,6 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
                 data;
     d_assert(pgw_s5c_teid, return, "Null param");
     sess->pgw_s5c_teid = ntohl(pgw_s5c_teid->teid);
-    sess->pgw_s5c_addr = pgw_s5c_teid->ipv4_addr;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
                 presence = 0;
 
@@ -79,28 +84,43 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     pgw_s5u_teid = rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data;
     d_assert(pgw_s5u_teid, return, "Null param");
     s5u_tunnel->remote_teid = ntohl(pgw_s5u_teid->teid);
-    s5u_tunnel->remote_addr = pgw_s5u_teid->ipv4_addr;
+    pgw = gtp_find_node(&sgw_self()->pgw_s5u_list, pgw_s5u_teid);
+    if (!pgw)
+    {
+        pgw = gtp_connect_to_node(&sgw_self()->pgw_s5u_list, pgw_s5u_teid,
+            sgw_self()->gtpu_port,
+            context_self()->parameter.no_ipv4,
+            context_self()->parameter.no_ipv6,
+            context_self()->parameter.prefer_ipv4);
+        d_assert(pgw, return,);
+    }
+    /* Setup GTP Node */
+    SETUP_GTP_NODE(s5u_tunnel, pgw);
+
+    /* Remove S5C-F-TEID */
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 0;
 
     /* Send Control Plane(UL) : SGW-S11 */
     memset(&sgw_s11_teid, 0, sizeof(gtp_f_teid_t));
-    sgw_s11_teid.ipv4 = 1;
     sgw_s11_teid.interface_type = GTP_F_TEID_S11_S4_SGW_GTP_C;
-    sgw_s11_teid.ipv4_addr = sgw_ue->sgw_s11_addr;
     sgw_s11_teid.teid = htonl(sgw_ue->sgw_s11_teid);
+    rv = gtp_sockaddr_to_f_teid(
+            sgw_self()->gtpc_addr, sgw_self()->gtpc_addr6, &sgw_s11_teid, &len);
+    d_assert(rv == CORE_OK, return,);
     rsp->sender_f_teid_for_control_plane.presence = 1;
     rsp->sender_f_teid_for_control_plane.data = &sgw_s11_teid;
-    rsp->sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
+    rsp->sender_f_teid_for_control_plane.len = len;
 
     /* Send Data Plane(UL) : SGW-S1U */
     memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
-    sgw_s1u_teid.ipv4 = 1;
     sgw_s1u_teid.interface_type = s1u_tunnel->interface_type;
-    sgw_s1u_teid.ipv4_addr = s1u_tunnel->local_addr;
     sgw_s1u_teid.teid = htonl(s1u_tunnel->local_teid);
+    rv = gtp_sockaddr_to_f_teid(
+        sgw_self()->gtpu_addr,  sgw_self()->gtpu_addr6, &sgw_s1u_teid, &len);
+    d_assert(rv == CORE_OK, return,);
     rsp->bearer_contexts_created.s1_u_enodeb_f_teid.presence = 1;
     rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data = &sgw_s1u_teid;
-    rsp->bearer_contexts_created.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
+    rsp->bearer_contexts_created.s1_u_enodeb_f_teid.len = len;
 
     rv = gtp_xact_commit(s5c_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
@@ -190,6 +210,7 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
     sgw_sess_t *sess, gtp_message_t *gtp_message)
 {
     status_t rv;
+    gtp_node_t *pgw = NULL;
     gtp_xact_t *s11_xact = NULL;
     sgw_bearer_t *bearer = NULL;
     sgw_tunnel_t *s1u_tunnel = NULL, *s5u_tunnel = NULL;
@@ -199,6 +220,7 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
 
     gtp_f_teid_t *pgw_s5u_teid = NULL;
     gtp_f_teid_t sgw_s1u_teid;
+    int len;
 
     d_assert(sess, return, "Null param");
     sgw_ue = sess->sgw_ue;
@@ -240,18 +262,32 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
     pgw_s5u_teid = req->bearer_contexts.s5_s8_u_sgw_f_teid.data;
     d_assert(pgw_s5u_teid, return, "Null param");
     s5u_tunnel->remote_teid = ntohl(pgw_s5u_teid->teid);
-    s5u_tunnel->remote_addr = pgw_s5u_teid->ipv4_addr;
+    pgw = gtp_find_node(&sgw_self()->pgw_s5u_list, pgw_s5u_teid);
+    if (!pgw)
+    {
+        pgw = gtp_connect_to_node(&sgw_self()->pgw_s5u_list, pgw_s5u_teid,
+            sgw_self()->gtpu_port,
+            context_self()->parameter.no_ipv4,
+            context_self()->parameter.no_ipv6,
+            context_self()->parameter.prefer_ipv4);
+        d_assert(pgw, return,);
+    }
+    /* Setup GTP Node */
+    SETUP_GTP_NODE(s5u_tunnel, pgw);
+
+    /* Remove S5U-F-TEID */
     req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 0;
 
     /* Send Data Plane(UL) : SGW-S1U */
     memset(&sgw_s1u_teid, 0, sizeof(gtp_f_teid_t));
-    sgw_s1u_teid.ipv4 = 1;
     sgw_s1u_teid.interface_type = s1u_tunnel->interface_type;
-    sgw_s1u_teid.ipv4_addr = s1u_tunnel->local_addr;
     sgw_s1u_teid.teid = htonl(s1u_tunnel->local_teid);
+    rv = gtp_sockaddr_to_f_teid(
+        sgw_self()->gtpu_addr, sgw_self()->gtpu_addr6, &sgw_s1u_teid, &len);
+    d_assert(rv == CORE_OK, return,);
     req->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
     req->bearer_contexts.s1_u_enodeb_f_teid.data = &sgw_s1u_teid;
-    req->bearer_contexts.s1_u_enodeb_f_teid.len = GTP_F_TEID_IPV4_LEN;
+    req->bearer_contexts.s1_u_enodeb_f_teid.len = len;
 
     gtp_message->h.type = GTP_CREATE_BEARER_REQUEST_TYPE;
     gtp_message->h.teid = sgw_ue->mme_s11_teid;
@@ -259,7 +295,7 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
     rv = gtp_build_msg(&pkbuf, gtp_message);
     d_assert(rv == CORE_OK, return, "gtp build failed");
 
-    s11_xact = gtp_xact_local_create(sgw_ue->mme, &gtp_message->h, pkbuf);
+    s11_xact = gtp_xact_local_create(sgw_ue->gnode, &gtp_message->h, pkbuf);
     d_assert(s11_xact, return, "Null param");
 
     gtp_xact_associate(s5c_xact, s11_xact);

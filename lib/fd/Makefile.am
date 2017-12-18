@@ -10,30 +10,33 @@ libfd_la_SOURCES = \
 	gx/dict_init.c gx/gx_message.c \
 	\
 	s6a/s6a_dict.h s6a/s6a_message.h \
-	s6a/dict_init.c
+	s6a/dict_init.c \
+	$(NULL)
 
 libfd_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la \
     $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
-    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
+    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la \
+	$(NULL)
 
 libfd_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
-    $(top_srcdir)/lib/3gpp/lib3gpp.la \
     $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
-    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la
+    $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la \
+	$(NULL)
 
 AM_LDFLAGS = \
-	-version-info @LIBVERSION@
+	-version-info @LIBVERSION@ \
+	$(NULL)
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-	-I$(top_srcdir)/lib/3gpp \
-	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include
+	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
+	$(NULL)
 
 AM_CFLAGS = \
-	-Wall -Werror
+	-Wall -Werror \
+	$(NULL)
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = *.stackdump

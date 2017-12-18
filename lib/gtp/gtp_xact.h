@@ -4,15 +4,15 @@
 #include "core_pkbuf.h"
 #include "core_list.h"
 #include "core_index.h"
-#include "core_net.h"
 #include "core_timer.h"
 
-#include "gtp_path.h"
 #include "gtp_message.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+typedef struct _gtp_node_t gtp_node_t;
 
 /**
  * Transaction context
@@ -74,8 +74,7 @@ CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_t *xact);
 CORE_DECLARE(status_t) gtp_xact_timeout(index_t index, c_uintptr_t event);
 
 CORE_DECLARE(status_t) gtp_xact_receive(
-        gtp_node_t *gnode, pkbuf_t *pkbuf,
-        gtp_xact_t **xact, gtp_message_t *gtp_message);
+        gtp_node_t *gnode, gtp_header_t *h, gtp_xact_t **xact);
 
 CORE_DECLARE(gtp_xact_t *) gtp_xact_find(index_t index);
 CORE_DECLARE(gtp_xact_t *)gtp_xact_find_by_xid(

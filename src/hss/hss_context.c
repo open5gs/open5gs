@@ -2,8 +2,11 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
+#include "core_network.h"
 
 #include <mongoc.h>
+#include <yaml.h>
+#include "yaml_helper.h"
 
 #include "fd_lib.h"
 
@@ -58,7 +61,7 @@ static status_t hss_context_validation()
 {
     if (self.fd_conf_path == NULL)
     {
-        d_error("No HSS.FD_CONF_PATH in '%s'",
+        d_error("No hss.freeDiameter in '%s'",
                 context_self()->config.path);
         return CORE_ERROR;
     }
@@ -70,35 +73,35 @@ status_t hss_context_parse_config()
 {
     status_t rv;
     config_t *config = &context_self()->config;
-    bson_iter_t iter;
-    c_uint32_t length = 0;
+    yaml_document_t *document = NULL;
+    yaml_iter_t root_iter;
 
-    d_assert(config, return CORE_ERROR, );
+    d_assert(config, return CORE_ERROR,);
+    document = config->document;
+    d_assert(document, return CORE_ERROR,);
 
     rv = hss_context_prepare();
     if (rv != CORE_OK) return rv;
 
-    if (!bson_iter_init(&iter, config->bson))
+    yaml_iter_init(&root_iter, document);
+    while(yaml_iter_next(&root_iter))
     {
-        d_error("bson_iter_init failed in this document");
-        return CORE_ERROR;
-    }
-
-    while(bson_iter_next(&iter))
-    {
-        const char *key = bson_iter_key(&iter);
-        if (!strcmp(key, "HSS") && BSON_ITER_HOLDS_DOCUMENT(&iter))
+        const char *root_key = yaml_iter_key(&root_iter);
+        d_assert(root_key, return CORE_ERROR,);
+        if (!strcmp(root_key, "hss"))
         {
-            bson_iter_t hss_iter;
-            bson_iter_recurse(&iter, &hss_iter);
-            while(bson_iter_next(&hss_iter))
+            yaml_iter_t hss_iter;
+            yaml_iter_recurse(&root_iter, &hss_iter);
+            while(yaml_iter_next(&hss_iter))
             {
-                const char *hss_key = bson_iter_key(&hss_iter);
-                if (!strcmp(hss_key, "FD_CONF_PATH") &&
-                    BSON_ITER_HOLDS_UTF8(&hss_iter))
+                const char *hss_key = yaml_iter_key(&hss_iter);
+                d_assert(hss_key, return CORE_ERROR,);
+                if (!strcmp(hss_key, "freeDiameter"))
                 {
-                    self.fd_conf_path = bson_iter_utf8(&hss_iter, &length);
+                    self.fd_conf_path = yaml_iter_value(&hss_iter);
                 }
+                else
+                    d_warn("unknown key `%s`", hss_key);
             }
         }
     }
@@ -111,22 +114,22 @@ status_t hss_context_parse_config()
 
 status_t hss_context_setup_trace_module()
 {
-    int fd = context_self()->trace_level.fd;
-    int others = context_self()->trace_level.others;
+    int diameter = context_self()->logger.trace.diameter;
+    int others = context_self()->logger.trace.others;
 
-    if (fd)
+    if (diameter)
     {
-        if (fd <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
-        else if (fd <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
-        else if (fd <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
+        if (diameter <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
+        else if (diameter <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (diameter <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
         extern int _hss_fd_path;
-        d_trace_level(&_hss_fd_path, fd);
+        d_trace_level(&_hss_fd_path, diameter);
         extern int _fd_init;
-        d_trace_level(&_fd_init, fd);
+        d_trace_level(&_fd_init, diameter);
         extern int _fd_logger;
-        d_trace_level(&_fd_logger, fd);
+        d_trace_level(&_fd_logger, diameter);
     }
 
     if (others)
@@ -312,7 +315,7 @@ status_t hss_db_increment_sqn(char *imsi_bcd)
     bson_t *query = NULL;
     bson_t *update = NULL;
     bson_error_t error;
-    c_uint64_t max_sqn = 0x7ffffffffff;
+    c_uint64_t max_sqn = HSS_MAX_SQN;
 
     mutex_lock(self.db_lock);
 
@@ -564,12 +567,32 @@ status_t hss_db_subscription_data(
                         {
                             const char *child3_key =
                                 bson_iter_key(&child3_iter);
-                            if (!strcmp(child3_key, "ipv4") &&
+                            if (!strcmp(child3_key, "addr") &&
                                 BSON_ITER_HOLDS_UTF8(&child3_iter))
                             {
-                                utf8 = (char *)bson_iter_utf8(
-                                        &child3_iter, &length);
-                                pdn->pgw.ipv4_addr = inet_addr(utf8);
+                                ipsubnet_t ipsub;
+                                const char *v = 
+                                    bson_iter_utf8(&child3_iter, &length);
+                                rv = core_ipsubnet(&ipsub, v, NULL);
+                                if (rv == CORE_OK)
+                                {
+                                    pdn->pgw_ip.ipv4 = 1;
+                                    pdn->pgw_ip.both.addr = ipsub.sub[0];
+                                }
+                            }
+                            else if (!strcmp(child3_key, "addr6") &&
+                                BSON_ITER_HOLDS_UTF8(&child3_iter))
+                            {
+                                ipsubnet_t ipsub;
+                                const char *v = 
+                                    bson_iter_utf8(&child3_iter, &length);
+                                rv = core_ipsubnet(&ipsub, v, NULL);
+                                if (rv == CORE_OK)
+                                {
+                                    pdn->pgw_ip.ipv6 = 1;
+                                    memcpy(pdn->pgw_ip.both.addr6,
+                                            ipsub.sub, sizeof(ipsub.sub));
+                                }
                             }
                         }
                     }

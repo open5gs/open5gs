@@ -2,10 +2,10 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 
+#include "3gpp_types.h"
+
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
-
-#include "types.h"
 
 #include "testutil.h"
 #include "testpacket.h"
