@@ -147,7 +147,7 @@ static status_t mme_context_validation()
     {
         d_error("No mme.s1ap in '%s'",
                 context_self()->config.path);
-        return CORE_ERROR;
+        return CORE_EAGAIN;
     }
 
     if (list_first(&self.gtpc_list) == NULL &&
@@ -155,7 +155,7 @@ static status_t mme_context_validation()
     {
         d_error("No mme.gtpc in '%s'",
                 context_self()->config.path);
-        return CORE_ERROR;
+        return CORE_EAGAIN;
     }
 
     if (list_first(&self.sgw_list) == NULL)

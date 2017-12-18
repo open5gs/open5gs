@@ -115,7 +115,7 @@ static status_t sgw_context_validation()
     {
         d_error("No sgw.gtpu in '%s'",
                 context_self()->config.path);
-        return CORE_ERROR;
+        return CORE_EAGAIN;
     }
     return CORE_OK;
 }
