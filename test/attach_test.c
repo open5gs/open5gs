@@ -460,6 +460,46 @@ static void attach_test2(abts_case *tc, void *data)
         "}, "
         "\"__v\" : 0 "
       "}";
+    const char *json2 =
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
+        "\"imsi\" : \"001010000000002\", "
+        "\"pdn\" : ["
+          "{"
+            "\"apn\" : \"internet\", "
+            "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c8\" }, "
+            "\"ambr\" : {"
+              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+            "},"
+            "\"qos\" : { "
+              "\"qci\" : 9, "
+              "\"arp\" : { "
+                "\"priority_level\" : 8,"
+                "\"pre_emption_vulnerability\" : 1, "
+                "\"pre_emption_capability\" : 1"
+              "} "
+            "}, "
+            "\"type\" : 2"
+          "}"
+        "],"
+        "\"ambr\" : { "
+          "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+          "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+        "},"
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"security\" : { "
+          "\"k\" : \"00112233 44556677 8899AABB CCDDEEFF\", "
+          "\"opc\" : \"00010203 04050607 08090A0B 0C0D0E0F\", "
+          "\"amf\" : \"9001\", "
+          "\"sqn\" : { \"$numberLong\" : \"96\" }, "
+          "\"rand\" : \"1c92dd6e dcd676e8 7b590ba2 20c1874e\" "
+        "}, "
+        "\"__v\" : 0 "
+      "}";
 
     c_uint8_t tmp[MAX_SDU_LEN];
 
@@ -485,20 +525,36 @@ static void attach_test2(abts_case *tc, void *data)
     s1ap_free_pdu(&message);
     pkbuf_free(recvbuf);
 
-    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
-    ABTS_PTR_NOTNULL(tc, doc);
-
     collection = mongoc_client_get_collection(
         context_self()->db_client,
         context_self()->db_name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     /********** Insert Subscriber in Database */
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+    ABTS_PTR_NOTNULL(tc, doc);
+
     ABTS_TRUE(tc, mongoc_collection_insert(collection, 
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do
+    {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
+
+    doc = bson_new_from_json((const uint8_t *)json2, -1, &error);;
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    ABTS_TRUE(tc, mongoc_collection_insert(collection, 
+                MONGOC_INSERT_NONE, doc, NULL, &error));
+    bson_destroy(doc);
+
+    doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
     ABTS_PTR_NOTNULL(tc, doc);
     do
     {
@@ -656,6 +712,12 @@ static void attach_test2(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_remove(collection, 
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
+    bson_destroy(doc);
+
+    doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection, 
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
@@ -972,9 +1034,13 @@ abts_suite *test_attach(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+#if 0
     abts_run_test(suite, attach_test1, NULL);
+#endif
     abts_run_test(suite, attach_test2, NULL);
+#if 0
     abts_run_test(suite, attach_test3, NULL);
+#endif
 
     return suite;
 }

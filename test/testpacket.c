@@ -176,7 +176,7 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i)
         "0000f11030390064 40080000f1109d67 aa500086400130",
 
         "000c405300000500 080003002100001a 002a2917bcba67c4 8207410108091010"
-        "103254866205f0f0 000000000e023cd0 11d1270780000a00 000d00c100430006"
+        "000000002005f0f0 000000000e023cd0 11d1270780000a00 000d00c100430006"
         "0000f11030390064 40080000f1109d67 aa500086400130",
 
 
@@ -341,6 +341,7 @@ status_t tests1ap_build_authentication_response(pkbuf_t **pkbuf, int i)
     return CORE_OK;
 }
 
+
 status_t tests1ap_build_authentication_failure(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {
@@ -351,8 +352,8 @@ status_t tests1ap_build_authentication_failure(pkbuf_t **pkbuf, int i)
         "",
         "",
         "000d"
-        "403d000005000000 0200030008000200 21001a001413075c 15300e9a73df7ef8"
-        "05f893f312a930a9 8f006440080000f1 100019b010004340 060000f1100001",
+        "403d000005000000 0200030008000200 21001a001413075c 15300e 61640edcfb"
+        "605d25911423ee1f 9e006440080000f1 100019b010004340 060000f1100001",
 
         "",
         "",
