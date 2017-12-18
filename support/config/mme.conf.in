@@ -34,8 +34,7 @@ mme:
 
 sgw:
     gtpc:
-      addr:
-        - 127.0.0.2
+      addr: 127.0.0.2
 
 pgw:
     gtpc:

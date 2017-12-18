@@ -36,29 +36,29 @@ mme:
 #
 #  <S1AP Server>>
 #
-#  o Specify local addresses the S1AP server must bind to
-#
 #  o S1AP Server(all address avaiable)
 #    s1ap:
-#
-#  o S1AP Server(address avaiable in `eth0` interface)
-#    s1ap:
-#      dev: eth0
 #
 #  o S1AP Server(0.0.0.0:36412)
 #    s1ap:
 #      addr: 0.0.0.0
 #
-#  o S1AP Server(127.0.0.1:36412, [::1]:36413)
+#  o S1AP Server(127.0.0.3:36412, [fe80::3%@LO_DEV@]:36412)
 #    s1ap:
-#      name: localhost
+#      - addr: 127.0.0.3
+#      - addr: fe80::3%@LO_DEV@
+#
+#  o S1AP Server(address avaiable in `eth0` interface)
+#    s1ap:
+#      dev: eth0
 #
     s1ap:
 
 #
 #  <GTP-C Server>>
 #
-#  o Specify local addresses the GTP-C server must bind to
+#  o GTP-C Server(all address avaiable)
+#    gtpc:
 #
 #  o GTP-C Server(127.0.0.1:2123, [::1]:2123)
 #    gtpc:
@@ -168,27 +168,22 @@ sgw:
 #
 #  ------------------------ SGW --------------------------
 #
-#  o Specify local addresses the GTP-C server must bind to
-#
 #  o GTP-C Server(127.0.0.2:2123, [fe80::2%@LO_DEV@]:2123)
 #    gtpc:
 #      addr:
 #        - 127.0.0.2
 #        - fe80::2%@LO_DEV@
 #
-#  o Same configuration(127.0.0.2:2123, [fe80::2%@LO_DEV@]:2123) as below.
+#  o On SGW, Same Configuration(127.0.0.2:2123, [fe80::2%@LO_DEV@]:2123) as below.
 #    gtpc:
 #      - addr: 127.0.0.2
 #      - addr: fe80::2%@LO_DEV@
 #
     gtpc:
-      addr:
-        - 127.0.0.2
+      addr: 127.0.0.2
 
 #
 #  <GTP-U Server>>
-#
-#  o Specify local addresses the GTP-U server must bind to
 #
 #  o GTP-U Server(all address avaiable)
 #    gtpu:
@@ -201,10 +196,8 @@ pgw:
 #
 #  ------------------------ MME --------------------------
 #
-#  o Specify PGW addresses the GTP-C must connect to
-#
-#  o Only first node is attempted. others are ignored.
-#  o if HSS provide PGW addresss(per-UE), it overwrites configuration.
+#  o Only first node is attempted. Others are ignored.
+#  o if HSS provide PGW addresss(per-UE), DB overwrites YAML-configuration.
 #
 #  o Two PGW are defined. 127.0.0.1:2123 is attempted. [::1]:2123 is ignored.
 #    gtpc:
@@ -219,15 +212,13 @@ pgw:
 #
 #  ------------------------ PGW --------------------------
 #
-#  o Specify local addresses the GTP-C server must bind to
-#
 #  o GTP-C Server(127.0.0.1:2123, [::1]:2123)
 #    gtpc:
 #      addr:
 #        - 127.0.0.1
 #        - ::1
 #
-#  o Same configuration(127.0.0.1:2123, [::1]:2123) as below.
+#  o On PGW, Same configuration(127.0.0.1:2123, [::1]:2123) as below.
 #    gtpc:
 #      - addr: 127.0.0.1
 #      - addr: ::1
@@ -240,12 +231,15 @@ pgw:
 #
 #  <GTP-U Server>>
 #
-#  o Specify local addresses the GTP-U server must bind to
-#
 #  o GTP-U Server(127.0.0.1:2152, [::1]:2152)
 #    gtpu:
 #      - addr: 127.0.0.1
 #      - addr: ::1
+#
+#  o Same configuration(127.0.0.1:2152, [::1]:2152) as below.
+#    gtpu:
+#      name: localhost
+#
     gtpu:
       - addr: 127.0.0.1
       - addr: ::1
@@ -269,7 +263,7 @@ pgw:
 #
 #
 #  o Specific APN(e.g 'volte') uses 45.46.0.1/16, cafe:2::1/64
-#    All other APN uses 45.45.0.1/16, cafe:1::1/64
+#    All other APNs use 45.45.0.1/16, cafe:1::1/64
 #    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
 #    $ sudo ip addr add 45.46.0.1/16 dev pgwtun
 #    $ sudo ip addr add cafe:1::1/64 dev pgwtun
@@ -283,7 +277,7 @@ pgw:
 #      - addr: cafe:2::1/64
 #        apn: volte
 #
-#  o Multiple Devices(Default:pgwtun)
+#  o Multiple Devices (default: pgwtun)
 #    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
 #    $ sudo ip addr add cafe:1::1/64 dev pgwtun2
 #    $ sudo ip addr add 45.46.0.1/16 dev pgwtun3
@@ -307,7 +301,7 @@ pgw:
 #
 #  <Domain Name Server>
 #
-#  o primary/secondary can be configured. Others is ignored
+#  o Primary/Secondary can be configured. Others are ignored.
 #
     dns:
       - 8.8.8.8
