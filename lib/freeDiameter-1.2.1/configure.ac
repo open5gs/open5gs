@@ -21,10 +21,6 @@ AM_INIT_AUTOMAKE([1.10 -Wall -Werror foreign])
 AC_CONFIG_HEADERS([include/freeDiameter/config.h])
 AC_CANONICAL_HOST
 case $host in
-    *-apple-darwin*)
-        AC_DEFINE_UNQUOTED([DISABLE_SCTP],
-                [1], [Disable SCTP])
-        ;;
     *-freebsd*)
         AC_DEFINE_UNQUOTED([SCTP_USE_MAPPED_ADDRESSES],
                 [1], [Disable SCTP])
@@ -149,6 +145,9 @@ AC_SEARCH_LIBS([pthread_barrier_wait], [pthread],
                         [Define to 1 if you have pthread_barrier_wait in libpthread])],
              [])
 AC_SEARCH_LIBS([sctp_sendmsg], [sctp], [have_sctp_lib=yes])
+if test x$have_sctp_lib != xyes; then
+    AC_DEFINE([DISABLE_SCTP], [1], [Disable SCTP])
+fi
 AM_CONDITIONAL([SCTP], [test x$have_sctp_lib = xyes])
 
 AC_SEARCH_LIBS([gnutls_global_init], [gnutls],, [have_gnutls_lib=no])
