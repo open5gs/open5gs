@@ -2424,6 +2424,26 @@ pdn_t* mme_pdn_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
     return NULL;
 }
 
+pdn_t* mme_default_pdn(mme_ue_t *mme_ue)
+{
+    s6a_subscription_data_t *subscription_data = NULL;
+    pdn_t *pdn = NULL;
+    int i = 0;
+    
+    d_assert(mme_ue, return NULL, "Null param");
+    subscription_data = &mme_ue->subscription_data;
+    d_assert(subscription_data, return NULL, "Null param");
+
+    for (i = 0; i < subscription_data->num_of_pdn; i++)
+    {
+        pdn = &subscription_data->pdn[i];
+        if (pdn->context_identifier == subscription_data->context_identifier)
+            return pdn;
+    }
+
+    return NULL;
+}
+
 int mme_find_served_tai(tai_t *tai)
 {
     int i = 0, j = 0, k = 0;

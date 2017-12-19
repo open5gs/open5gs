@@ -49,6 +49,15 @@ status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     {
         sess->pdn = mme_pdn_find_by_apn(mme_ue, 
             pdn_connectivity_request->access_point_name.apn);
+        if (!sess->pdn)
+        {
+            /* Invalid APN */
+            rv = nas_send_pdn_connectivity_reject(
+                    sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
+            d_assert(rv == CORE_OK,, "nas send failed");
+
+            return CORE_OK;
+        }
     }
 
     if (pdn_connectivity_request->presencemask &
@@ -64,22 +73,28 @@ status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     {
         rv = nas_send_esm_information_request(bearer);
         d_assert(rv == CORE_OK, return CORE_ERROR, "nas send failed");
+
+        return CORE_OK;
+    }
+
+    if (!sess->pdn)
+    {
+        /* Default APN */
+        sess->pdn = mme_default_pdn(mme_ue);
+    }
+
+    if (sess->pdn)
+    {
+        rv = mme_gtp_send_create_session_request(sess);
+        d_assert(rv == CORE_OK, return CORE_ERROR, "gtp send failed");
     }
     else
     {
-        if (sess->pdn)
-        {
-            rv = mme_gtp_send_create_session_request(sess);
-            d_assert(rv == CORE_OK, return CORE_ERROR, "gtp send failed");
-        }
-        else
-        {
-            rv = nas_send_pdn_connectivity_reject(
-                    sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
-            d_assert(rv == CORE_OK,, "nas send failed");
+        rv = nas_send_pdn_connectivity_reject(
+                sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
+        d_assert(rv == CORE_OK,, "nas send failed");
 
-            return CORE_ERROR;
-        }
+        return CORE_ERROR;
     }
 
     return CORE_OK;

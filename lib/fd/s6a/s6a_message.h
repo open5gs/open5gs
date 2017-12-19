@@ -41,6 +41,7 @@ typedef struct _s6a_subscription_data_t {
     bitrate_t               ambr;                       /* UE-AMBR */
     c_uint32_t              subscribed_rau_tau_timer;   /* unit : minutes */
 
+    c_uint32_t              context_identifier;         /* default APN */
     pdn_t                   pdn[MAX_NUM_OF_SESS];
     int                     num_of_pdn;
 } s6a_subscription_data_t;

@@ -463,7 +463,7 @@ static void attach_test2(abts_case *tc, void *data)
     const char *json2 =
       "{"
         "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c7\" }, "
-        "\"imsi\" : \"001010000000002\", "
+        "\"imsi\" : \"001010000000003\", "
         "\"pdn\" : ["
           "{"
             "\"apn\" : \"internet\", "
@@ -554,7 +554,7 @@ static void attach_test2(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
-    doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
+    doc = BCON_NEW("imsi", BCON_UTF8("001010000000003"));
     ABTS_PTR_NOTNULL(tc, doc);
     do
     {
@@ -717,7 +717,7 @@ static void attach_test2(abts_case *tc, void *data)
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
     bson_destroy(doc);
 
-    doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
+    doc = BCON_NEW("imsi", BCON_UTF8("001010000000003"));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection, 
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
@@ -1030,6 +1030,186 @@ static void attach_test3(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 }
 
+/**************************************************************
+ * eNB : MACRO
+ * UE : IMSI 
+ * Protocol Configuration Options without default APN */
+static void attach_test4(abts_case *tc, void *data)
+{
+    status_t rv;
+    sock_id sock;
+    sock_id gtpu;
+    pkbuf_t *sendbuf;
+    pkbuf_t *recvbuf;
+    s1ap_message_t message;
+    int i;
+    int msgindex = 8;
+
+    c_uint8_t tmp[MAX_SDU_LEN];
+
+    mongoc_collection_t *collection = NULL;
+    bson_t *doc = NULL;
+    c_int64_t count = 0;
+    bson_error_t error;
+    const char *json =
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223258b8861d7605378c7\" }, "
+        "\"imsi\" : \"001010000000002\", "
+        "\"pdn\" : ["
+          "{"
+            "\"apn\" : \"internet\", "
+            "\"_id\" : { \"$oid\" : \"598223158b8861d7605378c8\" }, "
+            "\"ambr\" : {"
+              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+            "},"
+            "\"qos\" : { "
+              "\"qci\" : 9, "
+              "\"arp\" : { "
+                "\"priority_level\" : 8,"
+                "\"pre_emption_vulnerability\" : 1, "
+                "\"pre_emption_capability\" : 1"
+              "} "
+            "}, "
+            "\"type\" : 2"
+          "}"
+        "],"
+        "\"ambr\" : { "
+          "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+          "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+        "},"
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"security\" : { "
+          "\"k\" : \"00112233 44556677 8899AABB CCDDEEFF\", "
+          "\"opc\" : \"00010203 04050607 08090A0B 0C0D0E0F\", "
+          "\"amf\" : \"9001\", "
+          "\"sqn\" : { \"$numberLong\" : \"96\" }, "
+          "\"rand\" : \"9bdbfb93 16be4d52 80153094 38326671\" "
+        "}, "
+        "\"__v\" : 0 "
+      "}";
+
+    core_sleep(time_from_msec(300));
+
+    /* eNB connects to MME */
+    rv = tests1ap_enb_connect(&sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* eNB connects to SGW */
+    rv = testgtpu_enb_connect(&gtpu);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Send S1-Setup Reqeust */
+    rv = tests1ap_build_setup_req(
+            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive S1-Setup Response */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = s1ap_decode_pdu(&message, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    s1ap_free_pdu(&message);
+    pkbuf_free(recvbuf);
+
+    collection = mongoc_client_get_collection(
+        context_self()->db_client,
+        context_self()->db_name, "subscribers");
+    ABTS_PTR_NOTNULL(tc, collection);
+
+    /********** Insert Subscriber in Database */
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_insert(collection, 
+                MONGOC_INSERT_NONE, doc, NULL, &error));
+    bson_destroy(doc);
+
+    doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do
+    {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
+
+    /***********************************************************************
+     * Attach Request : Known IMSI, Integrity Protected, No Security Context
+     * Send Initial-UE Message + Attach Request + PDN Connectivity        */
+    core_sleep(time_from_msec(300));
+
+    rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Authentication Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Send Authentication Response */
+    rv = tests1ap_build_authentication_response(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Security mode Command */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Send Security mode Complete */
+    rv = tests1ap_build_security_mode_complete(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Initial Context Setup Request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    core_sleep(time_from_msec(300));
+
+#if 0
+    rv = testgtpu_build_slacc_rs(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = testgtpu_enb_send(sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+#endif
+
+    doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_remove(collection,
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    bson_destroy(doc);
+
+    mongoc_collection_destroy(collection);
+
+    /* eNB disonncect from MME */
+    rv = tests1ap_enb_close(sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* eNB disonncect from SGW */
+    rv = testgtpu_enb_close(gtpu);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+}
+
 abts_suite *test_attach(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -1037,6 +1217,7 @@ abts_suite *test_attach(abts_suite *suite)
     abts_run_test(suite, attach_test1, NULL);
     abts_run_test(suite, attach_test2, NULL);
     abts_run_test(suite, attach_test3, NULL);
+    abts_run_test(suite, attach_test4, NULL);
 
     return suite;
 }

@@ -647,7 +647,11 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                 switch(hdr->avp_code)
                 {
                     case S6A_AVP_CODE_CONTEXT_IDENTIFIER:
+                    {
+                        subscription_data->context_identifier = 
+                                hdr->avp_value->i32;
                         break;
+                    }
                     case S6A_AVP_CODE_ALL_APN_CONFIG_INC_IND:
                         break;
                     case S6A_AVP_CODE_APN_CONFIGURATION:

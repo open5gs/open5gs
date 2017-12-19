@@ -513,6 +513,7 @@ CORE_DECLARE(pdn_t*)        mme_pdn_add(mme_ue_t *mme_ue, c_int8_t *apn);
 CORE_DECLARE(status_t)      mme_pdn_remove_all(mme_ue_t *mme_ue);
 CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(
                                 mme_ue_t *mme_ue, c_int8_t *apn);
+CORE_DECLARE(pdn_t*)        mme_default_pdn(mme_ue_t *mme_ue);
 
 CORE_DECLARE(int)           mme_find_served_tai(tai_t *tai);
 
