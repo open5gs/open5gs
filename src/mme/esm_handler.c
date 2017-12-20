@@ -56,7 +56,7 @@ status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
                     sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
             d_assert(rv == CORE_OK,, "nas send failed");
 
-            return CORE_OK;
+            return CORE_ERROR;
         }
     }
 
