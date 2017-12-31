@@ -1,3 +1,24 @@
+nextepc (0.3.1-1~zesty) zesty; urgency=medium
+
+  * IPv6 Support (Linux Only)
+  * Change Configuration File (JSON -> YAML)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 31 Dec 2017 22:10:52 +0000
+
+nextepc (0.3.1-1~xenial) xenial; urgency=medium
+
+  * IPv6 Support (Linux Only)
+  * Change Configuration File (JSON -> YAML)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 31 Dec 2017 22:09:26 +0000
+
+nextepc (0.3.1-1~artful) artful; urgency=medium
+
+  * IPv6 Support (Linux Only)
+  * Change Configuration File (JSON -> YAML)
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 31 Dec 2017 22:04:50 +0000
+
 nextepc (0.3-3~zesty) zesty; urgency=medium
 
   * IPv6 Support (Linux Only)
