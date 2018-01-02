@@ -308,6 +308,32 @@ void s1ap_handle_initial_context_setup_response(
     }
 }
 
+void s1ap_handle_initial_context_setup_failure(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[CORE_ADDRSTRLEN];
+
+    mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
+    S1ap_InitialContextSetupFailureIEs_t *ies = NULL;
+
+    ies = &message->s1ap_InitialContextSetupFailureIEs;
+    d_assert(ies, return, "Null param");
+
+    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, return,);
+
+    d_warn("[S1AP] Initial Context Setup Failure(%ld:%ld) : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+            ies->cause.present, ies->cause.choice.radioNetwork,
+            enb_ue->enb_ue_s1ap_id,
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
+    mme_ue_remove(mme_ue);
+}
+
 void s1ap_handle_e_rab_setup_response(
         mme_enb_t *enb, s1ap_message_t *message)
 {

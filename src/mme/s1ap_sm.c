@@ -165,6 +165,12 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                 {
                     switch(message->procedureCode)
                     {
+                        case S1ap_ProcedureCode_id_InitialContextSetup :
+                        {
+                            s1ap_handle_initial_context_setup_failure(
+                                    enb, message);
+                            break;
+                        }
                         case S1ap_ProcedureCode_id_HandoverResourceAllocation :
                         {
                             s1ap_handle_handover_failure(enb, message);
