@@ -32,6 +32,9 @@ status_t mme_s11_build_create_session_request(
     gtp_ue_timezone_t ue_timezone;
     c_int8_t apn[MAX_APN_LEN];
 
+    time_exp_t time_exp;
+    time_exp_lt(&time_exp, time_now());
+
     d_assert(sess, return CORE_ERROR, "Null param");
     pdn = sess->pdn;
     d_assert(pdn, return CORE_ERROR, "Null param");
@@ -198,9 +201,13 @@ status_t mme_s11_build_create_session_request(
     gtp_build_bearer_qos(&req->bearer_contexts_to_be_created.bearer_level_qos,
             &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);
 
-    /* FIXME : where did we receive this information from MS */
     memset(&ue_timezone, 0, sizeof(ue_timezone));
-    ue_timezone.timezone = 0x40;
+    if (time_exp.tm_gmtoff > 0)
+        ue_timezone.sign = 0;
+    else
+        ue_timezone.sign = 1;
+    /* quarters of an hour */
+    ue_timezone.gmtoff = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
     ue_timezone.daylight_saving_time = 
         GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     req->ue_time_zone.presence = 1;

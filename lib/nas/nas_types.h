@@ -705,8 +705,7 @@ typedef c_uint8_t nas_time_zone_t;
  * See subclause 10.5.3.9 in 3GPP TS 24.008 [13].
  * 9.2.3.11 TPServiceCentreTimeStamp (TPSCTS) in 3GPP TS 23.040 [90]
  * O TV 8 */
-#define NAS_TIME_TO_BCD(x) \
-    (((((x) % 10) << 4) & 0xf0) | (((x) / 10) & 0x0f))
+#define NAS_TIME_TO_BCD(x) TIME_TO_BCD(x)
 typedef struct _nas_time_zone_and_time_t {
     c_uint8_t year;
     c_uint8_t mon;

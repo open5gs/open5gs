@@ -37,9 +37,13 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
     union avp_value val;
     struct sess_state *mi = NULL, *svg;
     struct session *session = NULL;
+    gtp_message_t *message = NULL;
 
-    d_assert(sess, return, "Null param");
-    d_assert(sess->ipv4 || sess->ipv6, return, "Null param");
+    d_assert(sess, return,);
+    d_assert(sess->ipv4 || sess->ipv6, return,);
+    d_assert(gtpbuf, return, );
+    message = gtpbuf->payload;
+    d_assert(message, return, );
 
     /* Create the random value to store with the session */
     pool_alloc_node(&pgw_gx_sess_pool, &mi);
@@ -269,17 +273,12 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
         }
 
         /* Set 3GPP-MS-Timezone */
+        if (message->create_session_request.ue_time_zone.presence)
         {
-            gtp_ue_timezone_t ue_timezone;
-            memset(&ue_timezone, 0, sizeof(ue_timezone));
-            ue_timezone.timezone = 0x40;
-            ue_timezone.daylight_saving_time = 
-                GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
-
             CHECK_FCT_DO( fd_msg_avp_new(gx_3gpp_ms_timezone, 0, &avp),
                     goto out );
-            val.os.data = (c_uint8_t*)&ue_timezone;
-            val.os.len = sizeof(ue_timezone);
+            val.os.data = message->create_session_request.ue_time_zone.data;
+            val.os.len = message->create_session_request.ue_time_zone.len;
             CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
             CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
                     goto out );

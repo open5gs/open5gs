@@ -54,6 +54,9 @@ extern "C" {
     ((__id2) > (__id1) ? ((__id2) - (__id1) < ((__max)-1) ? -1 : 1) : \
      (__id1) > (__id2) ? ((__id1) - (__id2) < ((__max)-1) ? 1 : -1) : 0)
 
+#define TIME_TO_BCD(x) \
+    (((((x) % 10) << 4) & 0xf0) | (((x) / 10) & 0x0f))
+
 /**********************************
  * PLMN_ID Structure             */
 typedef struct _plmn_id_t {
