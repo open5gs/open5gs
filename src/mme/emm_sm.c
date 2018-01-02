@@ -36,6 +36,7 @@ void emm_state_final(fsm_t *s, event_t *e)
 
 void emm_state_detached(fsm_t *s, event_t *e)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
 
     d_assert(s, return, "Null param");
@@ -64,8 +65,13 @@ void emm_state_detached(fsm_t *s, event_t *e)
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
             {
-                emm_handle_service_request(
+                rv = emm_handle_service_request(
                         mme_ue, &message->emm.service_request);
+                if (rv != CORE_OK)
+                {
+                    FSM_TRAN(s, emm_state_exception);
+                    break;
+                }
 
                 if (MME_UE_HAVE_IMSI(mme_ue))
                 {
@@ -96,8 +102,13 @@ void emm_state_detached(fsm_t *s, event_t *e)
             {
                 case NAS_ATTACH_REQUEST:
                 {
-                    emm_handle_attach_request(
+                    rv = emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
+                    if (rv != CORE_OK)
+                    {
+                        FSM_TRAN(s, emm_state_exception);
+                        break;
+                    }
 
                     if (MME_UE_HAVE_IMSI(mme_ue))
                     {
@@ -119,8 +130,13 @@ void emm_state_detached(fsm_t *s, event_t *e)
 
                 case NAS_TRACKING_AREA_UPDATE_REQUEST:
                 {
-                    emm_handle_tau_request(
+                    rv = emm_handle_tau_request(
                             mme_ue, &message->emm.tracking_area_update_request);
+                    if (rv != CORE_OK)
+                    {
+                        FSM_TRAN(s, emm_state_exception);
+                        break;
+                    }
 
                     if (MME_UE_HAVE_IMSI(mme_ue))
                     {
@@ -205,8 +221,13 @@ void emm_state_identity(fsm_t *s, event_t *e)
             {
                 case NAS_IDENTITY_RESPONSE:
                 {
-                    emm_handle_identity_response(mme_ue,
+                    rv = emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
+                    if (rv != CORE_OK)
+                    {
+                        FSM_TRAN(s, emm_state_exception);
+                        break;
+                    }
 
                     if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
                     {
@@ -440,6 +461,7 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
 
 void emm_state_default_esm(fsm_t *s, event_t *e)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
 
     d_assert(s, return, "Null param");
@@ -471,8 +493,13 @@ void emm_state_default_esm(fsm_t *s, event_t *e)
                 {
                     d_trace(3, "[NAS] Attach complete : UE[%s] --> EMM\n",
                             mme_ue->imsi_bcd);
-                    emm_handle_attach_complete(
+                    rv = emm_handle_attach_complete(
                             mme_ue, &message->emm.attach_complete);
+                    if (rv != CORE_OK)
+                    {
+                        FSM_TRAN(s, emm_state_exception);
+                        break;
+                    }
                     FSM_TRAN(s, &emm_state_attached);
                     break;
                 }
@@ -518,6 +545,7 @@ void emm_state_default_esm(fsm_t *s, event_t *e)
 
 void emm_state_attached(fsm_t *s, event_t *e)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
 
     d_assert(s, return, "Null param");
@@ -546,8 +574,13 @@ void emm_state_attached(fsm_t *s, event_t *e)
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
             {
-                emm_handle_service_request(
+                rv = emm_handle_service_request(
                         mme_ue, &message->emm.service_request);
+                if (rv != CORE_OK)
+                {
+                    FSM_TRAN(s, emm_state_exception);
+                    break;
+                }
 
                 if (MME_UE_HAVE_IMSI(mme_ue))
                 {
@@ -578,8 +611,13 @@ void emm_state_attached(fsm_t *s, event_t *e)
             {
                 case NAS_ATTACH_REQUEST:
                 {
-                    emm_handle_attach_request(
+                    rv = emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
+                    if (rv != CORE_OK)
+                    {
+                        FSM_TRAN(s, emm_state_exception);
+                        break;
+                    }
 
                     if (MME_UE_HAVE_IMSI(mme_ue))
                     {
@@ -613,8 +651,13 @@ void emm_state_attached(fsm_t *s, event_t *e)
                 }
                 case NAS_TRACKING_AREA_UPDATE_REQUEST:
                 {
-                    emm_handle_tau_request(
+                    rv = emm_handle_tau_request(
                             mme_ue, &message->emm.tracking_area_update_request);
+                    if (rv != CORE_OK)
+                    {
+                        FSM_TRAN(s, emm_state_exception);
+                        break;
+                    }
 
                     if (MME_UE_HAVE_IMSI(mme_ue))
                     {

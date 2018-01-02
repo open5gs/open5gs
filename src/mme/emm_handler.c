@@ -18,10 +18,11 @@
 
 #include "emm_handler.h"
 
-void emm_handle_attach_request(
+status_t emm_handle_attach_request(
         mme_ue_t *mme_ue, nas_attach_request_t *attach_request)
 {
     status_t rv;
+    int served_tai_index = 0;
 
     enb_ue_t *enb_ue = NULL;
     nas_eps_attach_type_t *eps_attach_type =
@@ -31,12 +32,12 @@ void emm_handle_attach_request(
     nas_esm_message_container_t *esm_message_container =
                     &attach_request->esm_message_container;
 
-    d_assert(mme_ue, return, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
 
-    d_assert(esm_message_container, return, "Null param");
-    d_assert(esm_message_container->length, return, "Null param");
+    d_assert(esm_message_container, return CORE_ERROR, "Null param");
+    d_assert(esm_message_container->length, return CORE_ERROR, "Null param");
 
     /*
      * ATTACH_REQUEST
@@ -68,6 +69,18 @@ void emm_handle_attach_request(
     /* Copy TAI and ECGI from enb_ue */
     memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
+
+    /* Check TAI */
+    served_tai_index = mme_find_served_tai(&mme_ue->tai);
+    if (served_tai_index < 0)
+    {
+        /* Send Attach Reject */
+        nas_send_attach_reject(mme_ue,
+            S1ap_CauseNas_unspecified,
+            EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED,
+            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        return CORE_ERROR;
+    }
 
     /* Store UE specific information */
     if (attach_request->presencemask &
@@ -150,7 +163,7 @@ void emm_handle_attach_request(
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                d_assert(rv == CORE_OK, return, "gtp send failed");
+                d_assert(rv == CORE_OK, return CORE_ERROR, "gtp send failed");
             }
             else
             {
@@ -158,9 +171,11 @@ void emm_handle_attach_request(
             }
         }
     }
+    
+    return CORE_OK;
 }
 
-void emm_handle_attach_complete(
+status_t emm_handle_attach_complete(
     mme_ue_t *mme_ue, nas_attach_complete_t *attach_complete)
 {
     status_t rv;
@@ -176,10 +191,10 @@ void emm_handle_attach_complete(
     time_exp_t time_exp;
     time_exp_lt(&time_exp, time_now());
 
-    d_assert(mme_ue, return, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     rv = nas_send_emm_to_esm(mme_ue, &attach_complete->esm_message_container);
-    d_assert(rv == CORE_OK, return, "nas_send_emm_to_esm failed");
+    d_assert(rv == CORE_OK, return CORE_ERROR, "nas_send_emm_to_esm failed");
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -216,11 +231,13 @@ void emm_handle_attach_complete(
             mme_ue->imsi_bcd);
 
     rv = nas_security_encode(&emmbuf, mme_ue, &message);
-    d_assert(rv == CORE_OK && emmbuf, return, "emm build error");
+    d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR, "emm build error");
     d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
+
+    return CORE_OK;
 }
 
-void emm_handle_identity_response(
+status_t emm_handle_identity_response(
         mme_ue_t *mme_ue, nas_identity_response_t *identity_response)
 {
     status_t rv;
@@ -228,11 +245,11 @@ void emm_handle_identity_response(
     nas_mobile_identity_t *mobile_identity = NULL;
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(identity_response, return, "Null param");
+    d_assert(identity_response, return CORE_ERROR, "Null param");
 
-    d_assert(mme_ue, return, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     mobile_identity = &identity_response->mobile_identity;
 
@@ -244,7 +261,7 @@ void emm_handle_identity_response(
             &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
         mme_ue_set_imsi(mme_ue, imsi_bcd);
 
-        d_assert(mme_ue->imsi_len, return,
+        d_assert(mme_ue->imsi_len, return CORE_ERROR,
                 "Can't get IMSI(len:%d\n", mme_ue->imsi_len);
     }
     else
@@ -252,21 +269,23 @@ void emm_handle_identity_response(
         d_warn("Not supported Identity type(%d)", mobile_identity->imsi.type);
     }
 
-    d_assert(MME_UE_HAVE_IMSI(mme_ue), return, "No IMSI in IDENTITY_RESPONSE");
+    d_assert(MME_UE_HAVE_IMSI(mme_ue),
+            return CORE_ERROR, "No IMSI in IDENTITY_RESPONSE");
 
     if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
     {
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
             rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
-            d_assert(rv == CORE_OK, return, "nas_send_emm_to_esm failed");
+            d_assert(rv == CORE_OK,
+                    return CORE_ERROR, "nas_send_emm_to_esm failed");
         }
         else
         {
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                d_assert(rv == CORE_OK, return, "gtp send failed");
+                d_assert(rv == CORE_OK, return CORE_ERROR, "gtp send failed");
             }
             else
             {
@@ -280,7 +299,8 @@ void emm_handle_identity_response(
         {
             /* Send TAU accept */
             rv = nas_send_tau_accept(mme_ue);
-            d_assert(rv == CORE_OK, return, "nas_send_tau_accept failed");
+            d_assert(rv == CORE_OK,
+                    return CORE_ERROR, "nas_send_tau_accept failed");
         }
         else
         {
@@ -293,6 +313,8 @@ void emm_handle_identity_response(
                 /* Send TAU reject */
                 nas_send_tau_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+
+                return CORE_ERROR;
             }
         }
     }
@@ -301,7 +323,7 @@ void emm_handle_identity_response(
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
             rv = s1ap_send_initial_context_setup_request(mme_ue);
-            d_assert(rv == CORE_OK, return, "s1ap send error");
+            d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
         }
         else
         {
@@ -313,21 +335,25 @@ void emm_handle_identity_response(
             {
                 nas_send_service_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+
+                return CORE_ERROR;
             }
         }
     }
+
+    return CORE_OK;
 }
 
-void emm_handle_detach_request(
+status_t emm_handle_detach_request(
         mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
 {
     status_t rv;
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(detach_request, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
+    d_assert(detach_request, return CORE_ERROR, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[NAS] Detach request : UE_IMSI[%s] --> EMM\n", 
             mme_ue->imsi_bcd);
@@ -357,23 +383,25 @@ void emm_handle_detach_request(
     if (MME_HAVE_SGW_S11_PATH(mme_ue))
     {
         rv = mme_gtp_send_delete_all_sessions(mme_ue);
-        d_assert(rv == CORE_OK, return,
+        d_assert(rv == CORE_OK, return CORE_ERROR,
             "mme_gtp_send_delete_all_sessions failed");
     }
     else
     {
         rv = nas_send_detach_accept(mme_ue);
-        d_assert(rv == CORE_OK, return,
+        d_assert(rv == CORE_OK, return CORE_ERROR,
             "nas_send_detach_accept failed");
     }
+
+    return CORE_OK;
 }
 
-void emm_handle_service_request(
+status_t emm_handle_service_request(
         mme_ue_t *mme_ue, nas_service_request_t *service_request)
 {
     status_t rv;
 
-    d_assert(mme_ue, return, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     /*
      * ATTACH_REQUEST
@@ -404,7 +432,7 @@ void emm_handle_service_request(
         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
         {
             rv = s1ap_send_initial_context_setup_request(mme_ue);
-            d_assert(rv == CORE_OK, return, "s1ap send error");
+            d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
         }
         else
         {
@@ -416,23 +444,30 @@ void emm_handle_service_request(
             {
                 nas_send_service_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+
+                return CORE_ERROR;
             }
         }
     }
+
+    return CORE_OK;
 }
 
-void emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
+status_t emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
 {
-    d_assert(mme_ue, return, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     d_warn("[NAS] EMM status(%d) : UE[%s] --> EMM", 
             emm_status->emm_cause, mme_ue->imsi_bcd);
+
+    return CORE_OK;
 }
 
-void emm_handle_tau_request(
+status_t emm_handle_tau_request(
         mme_ue_t *mme_ue, nas_tracking_area_update_request_t *tau_request)
 {
     status_t rv;
+    int served_tai_index = 0;
 
     nas_eps_update_type_t *eps_update_type =
                     &tau_request->eps_update_type;
@@ -440,9 +475,9 @@ void emm_handle_tau_request(
                     &tau_request->old_guti;
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(mme_ue, return, "Null param");
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
+    d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     /*
      * ATTACH_REQUEST
@@ -467,6 +502,15 @@ void emm_handle_tau_request(
     /* Copy TAI and ECGI from enb_ue */
     memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
+
+    /* Check TAI */
+    served_tai_index = mme_find_served_tai(&mme_ue->tai);
+    if (served_tai_index < 0)
+    {
+        /* Send TAU reject */
+        nas_send_tau_reject(mme_ue, EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
+        return CORE_ERROR;
+    }
 
     /* Store UE specific information */
     if (tau_request->presencemask &
@@ -530,7 +574,7 @@ void emm_handle_tau_request(
             d_warn("Not implemented(type:%d)", 
                     eps_mobile_identity->imsi.type);
             
-            return;
+            return CORE_OK;
         }
     }
 
@@ -540,7 +584,8 @@ void emm_handle_tau_request(
         {
             /* Send TAU Accept */
             rv = nas_send_tau_accept(mme_ue);
-            d_assert(rv == CORE_OK, return, "nas_send_tau_accept failed");
+            d_assert(rv == CORE_OK,
+                    return CORE_ERROR, "nas_send_tau_accept failed");
         }
         else
         {
@@ -554,7 +599,11 @@ void emm_handle_tau_request(
                 /* Send TAU reject */
                 nas_send_tau_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+
+                return CORE_ERROR;
             }
         }
     }
+
+    return CORE_OK;
 }

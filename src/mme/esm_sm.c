@@ -71,7 +71,10 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                     rv = esm_handle_pdn_connectivity_request(
                             bearer, &message->esm.pdn_connectivity_request);
                     if (rv != CORE_OK)
+                    {
                         FSM_TRAN(s, esm_state_session_exception);
+                        break;
+                    }
                     break;
                 }
                 case NAS_ESM_INFORMATION_RESPONSE:
@@ -82,7 +85,10 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                     rv = esm_handle_information_response(
                             sess, &message->esm.esm_information_response);
                     if (rv != CORE_OK)
+                    {
                         FSM_TRAN(s, esm_state_session_exception);
+                        break;
+                    }
                     break;
                 }
                 case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
@@ -175,9 +181,12 @@ void esm_state_active(fsm_t *s, event_t *e)
                     rv = esm_handle_pdn_connectivity_request(
                             bearer, &message->esm.pdn_connectivity_request);
                     if (rv != CORE_OK)
+                    {
                         FSM_TRAN(s, esm_state_session_exception);
-                    else
-                        FSM_TRAN(s, esm_state_inactive);
+                        break;
+                    }
+
+                    FSM_TRAN(s, esm_state_inactive);
                     break;
                 }
                 case NAS_PDN_DISCONNECT_REQUEST:
