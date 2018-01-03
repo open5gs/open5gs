@@ -353,6 +353,7 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
     pco_t ue, pgw;
     pco_ipcp_t pco_ipcp;
     ipsubnet_t dns_primary, dns_secondary, dns6_primary, dns6_secondary;
+    ipsubnet_t p_cscf, p_cscf6;
     c_int8_t size = 0;
     int i = 0;
 
@@ -470,6 +471,40 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                     pgw.ids[pgw.num_of_id].len = IPV6_LEN;
                     pgw.ids[pgw.num_of_id].data = dns6_secondary.sub;
                     pgw.num_of_id++;
+                }
+                break;
+            }
+            case PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST:
+            {
+                if (pgw_self()->num_of_p_cscf)
+                {
+                    rv = core_ipsubnet(&p_cscf,
+                        pgw_self()->p_cscf[pgw_self()->p_cscf_index], NULL);
+                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                    pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                    pgw.ids[pgw.num_of_id].data = p_cscf.sub;
+                    pgw.num_of_id++;
+
+                    pgw_self()->p_cscf_index++;
+                    pgw_self()->p_cscf_index %= pgw_self()->num_of_p_cscf;
+                }
+                break;
+            }
+            case PCO_ID_P_CSCF_IPV6_ADDRESS_REQUEST:
+            {
+                if (pgw_self()->num_of_p_cscf6)
+                {
+                    rv = core_ipsubnet(&p_cscf6,
+                        pgw_self()->p_cscf6[pgw_self()->p_cscf6_index], NULL);
+                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                    pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                    pgw.ids[pgw.num_of_id].data = p_cscf6.sub;
+                    pgw.num_of_id++;
+
+                    pgw_self()->p_cscf6_index++;
+                    pgw_self()->p_cscf6_index %= pgw_self()->num_of_p_cscf6;
                 }
                 break;
             }

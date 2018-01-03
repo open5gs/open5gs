@@ -45,8 +45,16 @@ typedef struct _pgw_context_t {
     tm_service_t    tm_service;     /* Timer Service */
 
 #define MAX_NUM_OF_DNS              2
-    const char      *dns[MAX_NUM_OF_DNS];  /* Primary/Secondanry */
-    const char      *dns6[MAX_NUM_OF_DNS]; /* Primary/Secondanry */
+    const char      *dns[MAX_NUM_OF_DNS];
+    const char      *dns6[MAX_NUM_OF_DNS];
+
+#define MAX_NUM_OF_P_CSCF           16
+    const char      *p_cscf[MAX_NUM_OF_P_CSCF];
+    int             num_of_p_cscf;
+    int             p_cscf_index;
+    const char      *p_cscf6[MAX_NUM_OF_P_CSCF];
+    int             num_of_p_cscf6;
+    int             p_cscf6_index;
 
     list_t          sgw_s5c_list;  /* SGW GTPC Node List */
     list_t          sgw_s5u_list;  /* SGW GTPU Node List */

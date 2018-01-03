@@ -557,7 +557,6 @@ status_t pgw_context_parse_config()
                 }
                 else if (!strcmp(pgw_key, "dns"))
                 {
-                    int count = 0;
                     yaml_iter_t dns_iter;
                     yaml_iter_recurse(&pgw_iter, &dns_iter);
                     d_assert(yaml_iter_type(&dns_iter) !=
@@ -599,14 +598,59 @@ status_t pgw_context_parse_config()
                                 d_warn("Ignore DNS : %s", v);
                         }
 
-                        count++;
+                    } while(
+                        yaml_iter_type(&dns_iter) ==
+                            YAML_SEQUENCE_NODE);
+                }
+                else if (!strcmp(pgw_key, "p-cscf"))
+                {
+                    yaml_iter_t dns_iter;
+                    yaml_iter_recurse(&pgw_iter, &dns_iter);
+                    d_assert(yaml_iter_type(&dns_iter) !=
+                        YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                    self.num_of_p_cscf = 0;
+                    self.num_of_p_cscf6 = 0;
+                    do
+                    {
+                        const char *v = NULL;
+
+                        if (yaml_iter_type(&dns_iter) ==
+                                YAML_SEQUENCE_NODE)
+                        {
+                            if (!yaml_iter_next(&dns_iter))
+                                break;
+                        }
+
+                        v = yaml_iter_value(&dns_iter);
+                        if (v)
+                        {
+                            ipsubnet_t ipsub;
+                            rv = core_ipsubnet(&ipsub, v, NULL);
+                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+                            if (ipsub.family == AF_INET)
+                            {
+                                if (self.num_of_p_cscf >= MAX_NUM_OF_P_CSCF)
+                                    d_warn("Ignore P-CSCF : %s", v);
+                                else self.p_cscf[self.num_of_p_cscf++] = v;
+                            }
+                            else if (ipsub.family == AF_INET6)
+                            {
+                                if (self.num_of_p_cscf6 >= MAX_NUM_OF_P_CSCF)
+                                    d_warn("Ignore P-CSCF : %s", v);
+                                else self.p_cscf6[self.num_of_p_cscf6++] = v;
+                            }
+                            else
+                                d_warn("Ignore P-CSCF : %s", v);
+                        }
+
                     } while(
                         yaml_iter_type(&dns_iter) ==
                             YAML_SEQUENCE_NODE);
                 }
                 else
                     d_warn("unknown key `%s`", pgw_key);
-
             }
         }
     }
