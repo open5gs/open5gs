@@ -21,6 +21,8 @@ extern struct dict_object *gx_application;
 
 extern struct dict_object *gx_cmd_ccr;
 extern struct dict_object *gx_cmd_cca;
+extern struct dict_object *gx_cmd_rar;
+extern struct dict_object *gx_cmd_raa;
 
 extern struct dict_object *gx_cc_request_type;
 extern struct dict_object *gx_cc_request_number;
@@ -91,6 +93,17 @@ extern struct dict_object *gx_flow_description;
 extern struct dict_object *gx_flow_status;
 extern struct dict_object *gx_precedence;
 extern struct dict_object *gx_flows;
+extern struct dict_object *gx_specific_action;
+extern struct dict_object *gx_abort_cause;
+extern struct dict_object *gx_media_component_description;
+extern struct dict_object *gx_media_component_number;
+extern struct dict_object *gx_media_type;
+extern struct dict_object *gx_rr_bandwidth;
+extern struct dict_object *gx_rs_bandwidth;
+extern struct dict_object *gx_codec_data;
+extern struct dict_object *gx_media_sub_component;
+extern struct dict_object *gx_flow_number;
+extern struct dict_object *gx_flow_usage;
 
 int gx_dict_init(void);
 

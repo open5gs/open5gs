@@ -9,6 +9,8 @@ struct dict_object *gx_application = NULL;
 
 struct dict_object *gx_cmd_ccr = NULL;
 struct dict_object *gx_cmd_cca = NULL;
+struct dict_object *gx_cmd_rar = NULL;
+struct dict_object *gx_cmd_raa = NULL;
 
 struct dict_object *gx_cc_request_type = NULL;
 struct dict_object *gx_cc_request_number = NULL;
@@ -51,6 +53,17 @@ struct dict_object *gx_flow_description = NULL;
 struct dict_object *gx_flow_status = NULL;
 struct dict_object *gx_precedence = NULL;
 struct dict_object *gx_flows = NULL;
+struct dict_object *gx_specific_action = NULL;
+struct dict_object *gx_abort_cause = NULL;
+struct dict_object *gx_media_component_description = NULL;
+struct dict_object *gx_media_component_number = NULL;
+struct dict_object *gx_media_type = NULL;
+struct dict_object *gx_rr_bandwidth = NULL;
+struct dict_object *gx_rs_bandwidth = NULL;
+struct dict_object *gx_codec_data = NULL;
+struct dict_object *gx_media_sub_component = NULL;
+struct dict_object *gx_flow_number = NULL;
+struct dict_object *gx_flow_usage = NULL;
 
 int gx_dict_init(void)
 {
@@ -60,6 +73,8 @@ int gx_dict_init(void)
 
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Credit-Control-Request", &gx_cmd_ccr);
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Credit-Control-Answer", &gx_cmd_cca);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Re-Auth-Request", &gx_cmd_rar);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Re-Auth-Answer", &gx_cmd_raa);
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "CC-Request-Type", &gx_cc_request_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "CC-Request-Number", &gx_cc_request_number);
@@ -104,6 +119,18 @@ int gx_dict_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Status", &gx_flow_status);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Precedence", &gx_precedence);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flows", &gx_flows);
+
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Specific-Action", &gx_specific_action);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Abort-Cause", &gx_abort_cause);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Description", &gx_media_component_description);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Number", &gx_media_component_number);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Type", &gx_media_type);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RR-Bandwidth" , &gx_rr_bandwidth);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RS-Bandwidth" , &gx_rs_bandwidth);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Codec-Data", &gx_codec_data);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Sub-Component", &gx_media_sub_component);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Number", &gx_flow_number);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Usage", &gx_flow_usage);
 
     return 0;
 }

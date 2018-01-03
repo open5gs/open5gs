@@ -6,11 +6,14 @@ libfd_la_SOURCES = \
 	fd_message.h fd_logger.h fd_lib.h \
 	libapp_sip.c fd_message.c fd_logger.c fd_init.c \
 	\
+	s6a/s6a_dict.h s6a/s6a_message.h \
+	s6a/dict_init.c \
+	\
 	gx/gx_dict.h gx/gx_message.h \
 	gx/dict_init.c gx/gx_message.c \
 	\
-	s6a/s6a_dict.h s6a/s6a_message.h \
-	s6a/dict_init.c \
+	rx/rx_dict.h rx/rx_message.h \
+	rx/dict_init.c \
 	$(NULL)
 
 libfd_la_DEPENDENCIES = \
