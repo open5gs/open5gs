@@ -388,7 +388,6 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
     pgw_dev_t *dev = NULL;
 
     ipsubnet_t src_ipsub;
-    ipsubnet_t dst_ipsub;
     c_uint16_t plen = 0;
     c_uint8_t nxt = 0;
     c_uint8_t *p = NULL;
@@ -423,9 +422,6 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
         memcpy(src_ipsub.sub, dev->link_local_addr->sin6.sin6_addr.s6_addr,
                 sizeof src_ipsub.sub);
 
-    rv = core_ipsubnet(&dst_ipsub, "ff02::1", NULL);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
     advert_h->nd_ra_type = ND_ROUTER_ADVERT;
     advert_h->nd_ra_code = 0;
     advert_h->nd_ra_curhoplimit = 64;
@@ -450,8 +446,8 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
 
     memcpy(p, src_ipsub.sub, sizeof src_ipsub.sub);
     p += sizeof src_ipsub.sub;
-    memcpy(p, dst_ipsub.sub, sizeof dst_ipsub.sub);
-    p += sizeof dst_ipsub.sub;
+    memcpy(p, ue_ip->addr, sizeof ue_ip->addr);
+    p += sizeof ue_ip->addr;
     p += 2; memcpy(p, &plen, 2); p += 2;
     p += 3; *p = nxt; p += 1;
     advert_h->nd_ra_cksum = in_cksum((c_uint16_t *)pkbuf->payload, pkbuf->len);
@@ -461,7 +457,7 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
     ip6_h->ip6_nxt = nxt;  /* ICMPv6 */
     ip6_h->ip6_hlim = 0xff;
     memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
-    memcpy(ip6_h->ip6_dst.s6_addr, dst_ipsub.sub, sizeof dst_ipsub.sub);
+    memcpy(ip6_h->ip6_dst.s6_addr, ue_ip->addr, sizeof ue_ip->addr);
     
     rv = pgw_gtp_send_to_bearer(bearer, pkbuf);
     d_assert(rv == CORE_OK,, "pgw_gtp_send_to_bearer() faild");
