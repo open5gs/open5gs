@@ -334,6 +334,12 @@ static status_t pgw_gtp_handle_slaac(pgw_sess_t *sess, pkbuf_t *recvbuf)
                 {
                     rv = pgw_gtp_send_router_advertisement(sess);
                     d_assert(rv == CORE_OK,,"send router advertisement failed");
+
+#define VOLTE_TEST 0
+#if VOLTE_TEST
+                    extern void pgw_rx_send_aar();
+                    pgw_rx_send_aar();
+#endif
                 }
                 return PGW_GTP_HANDLED;
             }

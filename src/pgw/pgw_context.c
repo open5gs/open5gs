@@ -76,7 +76,7 @@ status_t pgw_context_final()
     hash_destroy(self.sess_hash);
 
     if (index_used(&pgw_sess_pool))
-        d_warn("%d not freed in pgw_sess_pool[%d] in PGW-Context",
+        d_error("%d not freed in pgw_sess_pool[%d] in PGW-Context",
                 index_used(&pgw_sess_pool), index_size(&pgw_sess_pool));
     d_trace(3, "%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
             index_used(&pgw_sess_pool), index_size(&pgw_sess_pool));

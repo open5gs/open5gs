@@ -7,15 +7,17 @@
 #include "fd_lib.h"
 #include "gx_dict.h"
 #include "gx_message.h"
+#include "rx_dict.h"
+#include "rx_message.h"
 
 #include "pcrf_context.h"
 
-/* handler for fallback cb */
+/************************************************************************
+ * GX handler ( PCRF - PGW)
+ */
 static struct disp_hdl *hdl_gx_fb = NULL; 
-/* handler for Credit-Control-Request cb */
 static struct disp_hdl *hdl_gx_ccr = NULL; 
 
-/* Default callback for the application. */
 static int pcrf_gx_fb_cb(struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
@@ -25,7 +27,6 @@ static int pcrf_gx_fb_cb(struct msg **msg, struct avp *avp,
 	return ENOTSUP;
 }
 
-/* Callback for incoming Credit-Control-Request messages */
 static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
@@ -335,29 +336,141 @@ out:
     return 0;
 }
 
+/************************************************************************
+ * RX handler ( PCRF - PGW)
+ */
+static struct disp_hdl *hdl_rx_fb = NULL; 
+static struct disp_hdl *hdl_rx_aar = NULL; 
+
+static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp, 
+        struct session *sess, void *opaque, enum disp_action *act)
+{
+	/* This CB should never be called */
+	d_warn("Unexpected message received!");
+	
+	return ENOTSUP;
+}
+
+static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp, 
+        struct session *sess, void *opaque, enum disp_action *act)
+{
+	struct msg *ans, *qry;
+#if 0
+    struct avp *avpch1, *avpch2, *avpch3, *avpch4;
+    struct avp_hdr *hdr;
+#endif
+    union avp_value val;
+
+#if 0
+    status_t rv;
+    gx_cca_message_t cca_message;
+    c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    c_int8_t apn[MAX_APN_LEN+1];
+    int i, j;
+
+    c_uint32_t cc_request_type = 0;
+    c_uint32_t result_code = RX_DIAMETER_ERROR_USER_UNKNOWN;
+#endif
+	
+    d_assert(msg, return EINVAL,);
+
+#if 0
+    /* Initialize Message */
+    memset(&cca_message, 0, sizeof(gx_cca_message_t));
+#endif
+
+	/* Create answer header */
+	qry = *msg;
+	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
+    ans = *msg;
+
+    /* Set the Auth-Application-Id AVP */
+    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_application_id, 0, &avp), goto out );
+    val.i32 = RX_APPLICATION_ID;
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
+
+    /* Set the Auth-Request-Type AVP */
+    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_request_type, 0, &avp), goto out );
+    val.i32 = 1;
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
+
+	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
+
+	/* Send the answer */
+	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
+
+	/* Add this value to the stats */
+	CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+	fd_logger_self()->stats.nb_echoed++;
+	CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
+
+#if 0
+    gx_cca_message_free(&cca_message);
+#endif
+
+    return 0;
+
+out:
+#if 0
+    if (result_code == RX_DIAMETER_ERROR_USER_UNKNOWN)
+    {
+        CHECK_FCT( fd_msg_rescode_set(ans,
+                    "DIAMETER_ERROR_USER_UNKNOWN", NULL, NULL, 1) );
+    }
+    else
+    {
+        CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
+    }
+#endif
+
+	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
+
+#if 0
+    gx_cca_message_free(&cca_message);
+#endif
+
+    return 0;
+}
+
 int pcrf_fd_init(void)
 {
 	struct disp_when data;
 
-    CHECK_FCT( fd_init(FD_MODE_SERVER, pcrf_self()->fd_conf_path) );
+    CHECK_FCT(
+        fd_init(FD_MODE_CLIENT|FD_MODE_SERVER, pcrf_self()->fd_conf_path) );
 
-	/* Install objects definitions for this application */
+	/* GX Interface */
 	CHECK_FCT( gx_dict_init() );
 
 	memset(&data, 0, sizeof(data));
 	data.app = gx_application;
 	
-	/* fallback CB if command != unexpected message received */
 	CHECK_FCT( fd_disp_register(pcrf_gx_fb_cb, DISP_HOW_APPID, &data, NULL,
                 &hdl_gx_fb) );
 	
-	/* specific handler for Credit-Control-Request */
 	data.command = gx_cmd_ccr;
 	CHECK_FCT( fd_disp_register(pcrf_gx_ccr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_gx_ccr) );
 
-	/* Advertise the support for the application in the peer */
 	CHECK_FCT( fd_disp_app_support(gx_application, fd_vendor, 1, 0) );
+
+	/* RX Interface */
+	CHECK_FCT( rx_dict_init() );
+
+	memset(&data, 0, sizeof(data));
+	data.app = rx_application;
+	
+	CHECK_FCT( fd_disp_register(pcrf_rx_fb_cb, DISP_HOW_APPID, &data, NULL,
+                &hdl_rx_fb) );
+	
+	data.command = rx_cmd_aar;
+	CHECK_FCT( fd_disp_register(pcrf_rx_aar_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_rx_aar) );
+
+	CHECK_FCT( fd_disp_app_support(rx_application, fd_vendor, 1, 0) );
 
 	return 0;
 }
@@ -369,6 +482,13 @@ void pcrf_fd_final(void)
 	}
 	if (hdl_gx_ccr) {
 		(void) fd_disp_unregister(&hdl_gx_ccr, NULL);
+	}
+
+	if (hdl_rx_fb) {
+		(void) fd_disp_unregister(&hdl_rx_fb, NULL);
+	}
+	if (hdl_rx_aar) {
+		(void) fd_disp_unregister(&hdl_rx_aar, NULL);
 	}
 
     fd_final();
