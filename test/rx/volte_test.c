@@ -2,11 +2,12 @@
 #include "core_debug.h"
 #include "core_pkbuf.h"
 #include "core_lib.h"
+#include "3gpp_types.h"
 #include <mongoc.h>
 
-#include "app/context.h"
-#include "mme/mme_context.h"
 #include "s1ap/s1ap_message.h"
+
+#include "app/context.h"
 
 #include "testutil.h"
 #include "testpacket.h"
@@ -582,7 +583,9 @@ abts_suite *test_volte(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, volte_test1, NULL);
+#if 0
     abts_run_test(suite, volte_test2, NULL);
+#endif
 
     return suite;
 }

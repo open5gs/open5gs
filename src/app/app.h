@@ -45,4 +45,4 @@ CORE_DECLARE(void) pcrf_terminate(void);
 }
 #endif /* __cplusplus */
 
-#endif /* !__NEXTEPC_H__ */
+#endif /* __APP_H__ */
