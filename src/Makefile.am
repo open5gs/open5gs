@@ -42,7 +42,7 @@ libepc_la_LIBADD = \
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
-	-I$(top_srcdir)/src/app \
+	-I$(top_srcdir)/src \
 	$(NULL)
 
 AM_CFLAGS = \

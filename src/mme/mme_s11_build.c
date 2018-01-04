@@ -1,13 +1,13 @@
 #define TRACE_MODULE _mme_s11_build
 
 #include "core_debug.h"
-
-#include "gtp_types.h"
-#include "gtp_conv.h"
-#include "gtp_message.h"
-#include "gtp_node.h"
-
 #include "3gpp_types.h"
+
+#include "gtp/gtp_types.h"
+#include "gtp/gtp_conv.h"
+#include "gtp/gtp_message.h"
+#include "gtp/gtp_node.h"
+
 #include "mme_context.h"
 
 #include "mme_s11_build.h"

@@ -1,7 +1,7 @@
 #ifndef __PGW_PATH_H__
 #define __PGW_PATH_H__
 
-#include "gtp_xact.h"
+#include "gtp/gtp_xact.h"
 
 #ifdef __cplusplus
 extern "C" {

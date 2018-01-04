@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_lib.h"
 
-#include "nas_message.h"
+#include "nas/nas_message.h"
 
 #include "nas_security.h"
 #include "esm_build.h"

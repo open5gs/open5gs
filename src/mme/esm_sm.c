@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 
-#include "nas_message.h"
+#include "nas/nas_message.h"
 
 #include "mme_event.h"
 #include "mme_sm.h"

@@ -5,7 +5,7 @@
 #include "core_msgq.h"
 #include "core_fsm.h"
 
-#include "gtp_xact.h"
+#include "gtp/gtp_xact.h"
 
 #include "mme_event.h"
 

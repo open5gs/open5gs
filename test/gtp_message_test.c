@@ -4,8 +4,8 @@
 #include "core_network.h"
 
 #include "3gpp_types.h"
-#include "gtp_types.h"
-#include "gtp_message.h"
+#include "gtp/gtp_types.h"
+#include "gtp/gtp_message.h"
 
 #include "testutil.h"
 

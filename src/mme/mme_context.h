@@ -13,9 +13,9 @@
 #include "core_timer.h"
 
 #include "3gpp_types.h"
-#include "s1ap_message.h"
-#include "nas_message.h"
-#include "s6a_message.h"
+#include "s1ap/s1ap_message.h"
+#include "nas/nas_message.h"
+#include "fd/s6a/s6a_message.h"
 
 /* S1AP */
 #include "S1ap-Cause.h"

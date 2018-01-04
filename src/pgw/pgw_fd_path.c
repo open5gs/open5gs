@@ -6,13 +6,13 @@
 #include "core_pool.h"
 #include "core_lib.h"
 
-#include "gtp_xact.h"
+#include "gtp/gtp_xact.h"
 
-#include "fd_lib.h"
-#include "gx_dict.h"
-#include "gx_message.h"
+#include "fd/fd_lib.h"
+#include "fd/gx/gx_dict.h"
+#include "fd/gx/gx_message.h"
 #if VOLTE_TEST
-#include "../rx/rx_dict.h"
+#include "fd/rx/rx_dict.h"
 #endif
 
 #include "pgw_event.h"

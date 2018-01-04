@@ -3,7 +3,7 @@
 #include "core_debug.h"
 
 #include "pgw_context.h"
-#include "gx_message.h"
+#include "fd/gx/gx_message.h"
 #include "pgw_gtp_path.h"
 #include "pgw_s5c_build.h"
 #include "pgw_ipfw.h"

@@ -15,18 +15,10 @@ testepc_LDADD = \
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/3gpp \
+    -I$(top_srcdir)/lib \
+    -I$(top_srcdir)/src \
     -I$(top_srcdir)/lib/s1ap/asn1c \
-    -I$(top_srcdir)/lib/s1ap \
-    -I$(top_srcdir)/lib/nas \
 	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
-    -I$(top_srcdir)/lib/fd/s6a \
-    -I$(top_srcdir)/lib/fd \
-    -I$(top_srcdir)/lib/gtp \
-    -I$(top_srcdir)/src/mme \
-    -I$(top_srcdir)/src/hss \
-    -I$(top_srcdir)/src/sgw \
-	-I$(top_srcdir)/src/app \
 	@MONGOC_CFLAGS@ \
 	$(NULL)
 

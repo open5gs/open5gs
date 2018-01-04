@@ -3,12 +3,12 @@
 #include "core_debug.h"
 
 #include "3gpp_types.h"
-#include "gtp_types.h"
-#include "gtp_conv.h"
-#include "gtp_message.h"
-#include "gx_message.h"
+#include "gtp/gtp_types.h"
+#include "gtp/gtp_conv.h"
+#include "gtp/gtp_message.h"
+#include "fd/gx/gx_message.h"
 
-#include "ipfw2.h"
+#include "ipfw/ipfw2.h"
 
 #include "pgw_context.h"
 

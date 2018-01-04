@@ -2,9 +2,9 @@
 
 #include "core_debug.h"
 
-#include "gtp_types.h"
-#include "gtp_conv.h"
-#include "gtp_xact.h"
+#include "gtp/gtp_types.h"
+#include "gtp/gtp_conv.h"
+#include "gtp/gtp_xact.h"
 
 #include "mme_event.h"
 #include "mme_sm.h"

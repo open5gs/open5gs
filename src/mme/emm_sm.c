@@ -2,9 +2,9 @@
 
 #include "core_debug.h"
 
-#include "nas_message.h"
-#include "fd_lib.h"
-#include "s6a_message.h"
+#include "nas/nas_message.h"
+#include "fd/fd_lib.h"
+#include "fd/s6a/s6a_message.h"
 
 #include "mme_event.h"
 #include "mme_kdf.h"

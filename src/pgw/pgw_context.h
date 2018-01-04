@@ -9,8 +9,8 @@
 #include "core_msgq.h"
 #include "core_timer.h"
 
-#include "gtp_types.h"
-#include "gtp_message.h"
+#include "gtp/gtp_types.h"
+#include "gtp/gtp_message.h"
 
 #ifdef __cplusplus
 extern "C" {

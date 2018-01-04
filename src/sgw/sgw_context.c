@@ -7,15 +7,15 @@
 
 #include <mongoc.h>
 #include <yaml.h>
-#include "yaml_helper.h"
+#include "app/yaml_helper.h"
 
-#include "gtp_types.h"
-#include "gtp_conv.h"
-#include "gtp_node.h"
-#include "gtp_path.h"
-#include "gtp_xact.h"
+#include "gtp/gtp_types.h"
+#include "gtp/gtp_conv.h"
+#include "gtp/gtp_node.h"
+#include "gtp/gtp_path.h"
+#include "gtp/gtp_xact.h"
 
-#include "context.h"
+#include "app/context.h"
 #include "sgw_context.h"
 
 static sgw_context_t self;

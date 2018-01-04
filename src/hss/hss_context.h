@@ -4,7 +4,7 @@
 #include "core_errno.h"
 #include "core_mutex.h"
 
-#include "s6a_message.h"
+#include "fd/s6a/s6a_message.h"
 
 #ifdef __cplusplus
 extern "C" {

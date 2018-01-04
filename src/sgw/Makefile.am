@@ -21,9 +21,8 @@ libsgw_la_LIBADD = \
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/3gpp \
-    -I$(top_srcdir)/lib/gtp \
-	-I$(top_srcdir)/src/app \
+    -I$(top_srcdir)/lib \
+	-I$(top_srcdir)/src \
 	@MONGOC_CFLAGS@ \
 	$(NULL)
 

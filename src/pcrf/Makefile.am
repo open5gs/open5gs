@@ -19,12 +19,9 @@ libpcrf_la_LIBADD = \
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/3gpp \
-    -I$(top_srcdir)/lib/fd/gx \
-    -I$(top_srcdir)/lib/fd/rx \
-    -I$(top_srcdir)/lib/fd \
+    -I$(top_srcdir)/lib \
+	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
-	-I$(top_srcdir)/src/app \
 	@MONGOC_CFLAGS@ \
 	$(NULL)
 

@@ -1,7 +1,7 @@
 #ifndef __S1AP_BUILD_H__
 #define __S1AP_BUILD_H__
 
-#include "s1ap_message.h"
+#include "s1ap/s1ap_message.h"
 #include "mme_context.h"
 
 #ifdef __cplusplus

@@ -3,9 +3,9 @@
 #include "core_pkbuf.h"
 
 #include "3gpp_types.h"
-#include "gtp_types.h"
-#include "gtp_node.h"
-#include "gtp_path.h"
+#include "gtp/gtp_types.h"
+#include "gtp/gtp_node.h"
+#include "gtp/gtp_path.h"
 
 #include "sgw_context.h"
 #include "sgw_event.h"

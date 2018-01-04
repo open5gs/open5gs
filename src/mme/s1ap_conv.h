@@ -1,7 +1,7 @@
 #ifndef __S1AP_CONV_H__
 #define __S1AP_CONV_H__
 
-#include "s1ap_message.h"
+#include "s1ap/s1ap_message.h"
 
 #ifdef __cplusplus
 extern "C" {

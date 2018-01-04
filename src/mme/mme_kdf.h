@@ -3,7 +3,7 @@
 
 #include "core.h"
 
-#include "nas_ies.h"
+#include "nas/nas_ies.h"
 
 /* Algorithm Type Distinguishers */
 #define MME_KDF_NAS_ENC_ALG 0x01

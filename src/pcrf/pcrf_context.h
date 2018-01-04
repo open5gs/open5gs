@@ -5,7 +5,7 @@
 #include "core_mutex.h"
 
 #include "3gpp_types.h"
-#include "gx_message.h"
+#include "fd/gx/gx_message.h"
 
 #ifdef __cplusplus
 extern "C" {

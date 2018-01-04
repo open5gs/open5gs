@@ -17,10 +17,10 @@
 #include "core_general.h"
 #include "core_debug.h"
 #include "core_semaphore.h"
-#include "fd_lib.h"
+#include "fd/fd_lib.h"
 
-#include "app.h"
-#include "context.h"
+#include "app/app.h"
+#include "app/context.h"
 #include "testpacket.h"
 #include "abts.h"
 #include "testutil.h"

@@ -1,7 +1,7 @@
 #define TRACE_MODULE _sgw_sm
 #include "core_debug.h"
 
-#include "gtp_node.h"
+#include "gtp/gtp_node.h"
 
 #include "sgw_context.h"
 #include "sgw_event.h"

@@ -21,7 +21,6 @@ AM_LDFLAGS = \
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/3gpp \
 	$(NULL)
 
 AM_CFLAGS = \

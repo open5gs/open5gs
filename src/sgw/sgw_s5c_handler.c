@@ -3,12 +3,12 @@
 #include "core_debug.h"
 #include "core_lib.h"
 
-#include "gtp_conv.h"
-#include "gtp_types.h"
-#include "gtp_node.h"
-#include "gtp_path.h"
+#include "gtp/gtp_conv.h"
+#include "gtp/gtp_types.h"
+#include "gtp/gtp_node.h"
+#include "gtp/gtp_path.h"
 
-#include "context.h"
+#include "app/context.h"
 #include "sgw_event.h"
 #include "sgw_context.h"
 #include "sgw_gtp_path.h"

@@ -4,8 +4,8 @@
 #include "core_debug.h"
 #include "core_semaphore.h"
 
-#include "context.h"
-#include "app.h"
+#include "app/context.h"
+#include "app/app.h"
 
 static semaphore_id pcrf_sem1 = 0;
 static semaphore_id pcrf_sem2 = 0;

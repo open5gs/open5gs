@@ -9,15 +9,15 @@
 
 #include <mongoc.h>
 #include <yaml.h>
-#include "yaml_helper.h"
+#include "app/yaml_helper.h"
 
-#include "s1ap_message.h"
-#include "gtp_xact.h"
-#include "gtp_node.h"
-#include "gtp_path.h"
-#include "fd_lib.h"
+#include "s1ap/s1ap_message.h"
+#include "gtp/gtp_xact.h"
+#include "gtp/gtp_node.h"
+#include "gtp/gtp_path.h"
+#include "fd/fd_lib.h"
 
-#include "context.h"
+#include "app/context.h"
 #include "nas_conv.h"
 #include "mme_context.h"
 #include "mme_event.h"

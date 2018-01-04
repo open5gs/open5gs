@@ -6,11 +6,11 @@
 
 #include <mongoc.h>
 #include <yaml.h>
-#include "yaml_helper.h"
+#include "app/yaml_helper.h"
 
-#include "fd_lib.h"
+#include "fd/fd_lib.h"
 
-#include "context.h"
+#include "app/context.h"
 #include "pcrf_context.h"
 
 static pcrf_context_t self;

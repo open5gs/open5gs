@@ -3,11 +3,11 @@
 #include "core_sha2_hmac.h"
 #include "core_pkbuf.h"
 
-#include "nas_message.h"
+#include "nas/nas_message.h"
 
-#include "milenage.h"
-#include "hss_kdf.h"
-#include "nas_security.h"
+#include "hss/milenage.h"
+#include "hss/hss_kdf.h"
+#include "mme/nas_security.h"
 
 #include "testutil.h"
 

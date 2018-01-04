@@ -1,7 +1,7 @@
 #ifndef __MME_S6A_HANDLER_H__
 #define __MME_S6A_HANDLER_H__
 
-#include "s6a_message.h"
+#include "fd/s6a/s6a_message.h"
 #include "mme_context.h"
 
 #ifdef __cplusplus

@@ -2,8 +2,8 @@
 
 #include "core_debug.h"
 
-#include "nas_message.h"
-#include "gtp_message.h"
+#include "nas/nas_message.h"
+#include "gtp/gtp_message.h"
 
 #include "s1ap_build.h"
 #include "s1ap_handler.h"

@@ -4,7 +4,7 @@
 #include "core_network.h"
 #include "core_pkbuf.h"
 
-#include "s1ap_message.h"
+#include "s1ap/s1ap_message.h"
 
 #ifdef __cplusplus
 extern "C" {

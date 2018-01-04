@@ -5,9 +5,9 @@
 #include "core_sha2.h"
 #include "core_network.h"
 
-#include "fd_lib.h"
-#include "s6a_dict.h"
-#include "s6a_message.h"
+#include "fd/fd_lib.h"
+#include "fd/s6a/s6a_dict.h"
+#include "fd/s6a/s6a_message.h"
 
 #include "hss_context.h"
 #include "hss_kdf.h"

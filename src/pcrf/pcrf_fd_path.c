@@ -4,11 +4,11 @@
 #include "core_pkbuf.h"
 #include "core_lib.h"
 
-#include "fd_lib.h"
-#include "gx_dict.h"
-#include "gx_message.h"
-#include "rx_dict.h"
-#include "rx_message.h"
+#include "fd/fd_lib.h"
+#include "fd/gx/gx_dict.h"
+#include "fd/gx/gx_message.h"
+#include "fd/rx/rx_dict.h"
+#include "fd/rx/rx_message.h"
 
 #include "pcrf_context.h"
 

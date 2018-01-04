@@ -2,7 +2,7 @@
 
 #include "core_debug.h"
 
-#include "s6a_message.h"
+#include "fd/s6a/s6a_message.h"
 #include "nas_path.h"
 #include "s1ap_path.h"
 

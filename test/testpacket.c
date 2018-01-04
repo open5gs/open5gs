@@ -3,17 +3,17 @@
 #include "core_debug.h"
 #include "core_lib.h"
 
-#include "s1ap_build.h"
-#include "s1ap_conv.h"
-#include "s1ap_path.h"
+#include "mme/s1ap_build.h"
+#include "mme/s1ap_conv.h"
+#include "mme/s1ap_path.h"
 
-#include "gtp_message.h"
-#include "gtp_conv.h"
-#include "gtp_node.h"
-#include "gtp_path.h"
+#include "gtp/gtp_message.h"
+#include "gtp/gtp_conv.h"
+#include "gtp/gtp_node.h"
+#include "gtp/gtp_path.h"
 
-#include "context.h"
-#include "mme_context.h"
+#include "app/context.h"
+#include "mme/mme_context.h"
 
 extern int test_only_control_plane;
 

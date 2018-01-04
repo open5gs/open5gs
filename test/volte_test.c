@@ -4,9 +4,9 @@
 #include "core_lib.h"
 #include <mongoc.h>
 
-#include "context.h"
-#include "mme_context.h"
-#include "s1ap_message.h"
+#include "app/context.h"
+#include "mme/mme_context.h"
+#include "s1ap/s1ap_message.h"
 
 #include "testutil.h"
 #include "testpacket.h"

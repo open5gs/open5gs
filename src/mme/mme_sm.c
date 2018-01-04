@@ -1,9 +1,10 @@
 #define TRACE_MODULE _mme_sm
 #include "core_debug.h"
 
-#include "s1ap_message.h"
-#include "nas_message.h"
-#include "gtp_xact.h"
+#include "s1ap/s1ap_message.h"
+#include "nas/nas_message.h"
+#include "gtp/gtp_xact.h"
+#include "fd/fd_lib.h"
 
 #include "mme_event.h"
 #include "mme_sm.h"
@@ -16,7 +17,6 @@
 #include "esm_handler.h"
 #include "mme_gtp_path.h"
 #include "mme_s11_handler.h"
-#include "fd_lib.h"
 #include "mme_fd_path.h"
 #include "mme_s6a_handler.h"
 

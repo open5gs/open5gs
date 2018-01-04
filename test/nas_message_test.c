@@ -3,8 +3,8 @@
 
 #include "3gpp_types.h"
 
-#include "nas_message.h"
-#include "nas_security.h"
+#include "nas/nas_message.h"
+#include "mme/nas_security.h"
 
 #include "testutil.h"
 

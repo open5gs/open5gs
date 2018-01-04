@@ -4,8 +4,8 @@
 #include "core_signal.h"
 #include "core_semaphore.h"
 
-#include "context.h"
-#include "app.h"
+#include "app/context.h"
+#include "app/app.h"
 
 const char *app_name = "hss";
 

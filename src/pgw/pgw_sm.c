@@ -3,9 +3,9 @@
 #include "core_debug.h"
 #include "core_lib.h"
 
-#include "gtp_node.h"
-#include "fd_lib.h"
-#include "gx_message.h"
+#include "gtp/gtp_node.h"
+#include "fd/fd_lib.h"
+#include "fd/gx/gx_message.h"
 
 #include "pgw_sm.h"
 #include "pgw_context.h"

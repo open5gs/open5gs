@@ -3,7 +3,7 @@
 #include "core_debug.h"
 #include "core_thread.h"
 
-#include "gtp_xact.h"
+#include "gtp/gtp_xact.h"
 
 #include "pgw_context.h"
 #include "pgw_event.h"

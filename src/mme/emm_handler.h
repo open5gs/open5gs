@@ -1,7 +1,7 @@
 #ifndef __EMM_HANDLER_H__
 #define __EMM_HANDLER_H__
 
-#include "nas_message.h"
+#include "nas/nas_message.h"
 
 #include "mme_context.h"
 
