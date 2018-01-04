@@ -354,8 +354,9 @@ static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp,
 static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
-	struct msg *ans, *qry;
+	struct msg *ans;
 #if 0
+	struct msg *ans, *qry;
     struct avp *avpch1, *avpch2, *avpch3, *avpch4;
     struct avp_hdr *hdr;
 #endif
@@ -380,7 +381,9 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 #endif
 
 	/* Create answer header */
+#if 0
 	qry = *msg;
+#endif
 	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
     ans = *msg;
 
