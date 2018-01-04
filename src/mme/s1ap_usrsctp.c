@@ -93,17 +93,18 @@ status_t sctp_server(sock_id *new, int type, c_sockaddr_t *sa_list)
     {
         rv = s1ap_usrsctp_socket(new,
                 addr->c_sa_family, type, s1ap_usrsctp_recv_handler);
-        if (rv != CORE_OK) continue;
-        
-        if (s1ap_usrsctp_bind(*new, addr) == CORE_OK)
+        if (rv == CORE_OK)
         {
-            d_trace(3, "sctp_server [%s]:%d\n",
-                    CORE_ADDR(addr, buf), CORE_PORT(addr));
-            break;
-        }
+            if (s1ap_usrsctp_bind(*new, addr) == CORE_OK)
+            {
+                d_trace(3, "sctp_server [%s]:%d\n",
+                        CORE_ADDR(addr, buf), CORE_PORT(addr));
+                break;
+            }
 
-        rv = s1ap_delete(*new);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
+            rv = s1ap_delete(*new);
+            d_assert(rv == CORE_OK, return CORE_ERROR,);
+        }
 
         addr = addr->next;
     }
@@ -131,17 +132,18 @@ status_t sctp_client(sock_id *new, int type, c_sockaddr_t *sa_list)
     while(addr)
     {
         rv = s1ap_usrsctp_socket(new, addr->c_sa_family, type, NULL);
-        if (rv != CORE_OK) continue;
-        
-        if (s1ap_usrsctp_connect(*new, addr) == CORE_OK)
+        if (rv == CORE_OK)
         {
-            d_trace(3, "sctp_client [%s]:%d\n",
-                    CORE_ADDR(addr, buf), CORE_PORT(addr));
-            break;
-        }
+            if (s1ap_usrsctp_connect(*new, addr) == CORE_OK)
+            {
+                d_trace(3, "sctp_client [%s]:%d\n",
+                        CORE_ADDR(addr, buf), CORE_PORT(addr));
+                break;
+            }
 
-        rv = s1ap_delete(*new);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
+            rv = s1ap_delete(*new);
+            d_assert(rv == CORE_OK, return CORE_ERROR,);
+        }
 
         addr = addr->next;
     }

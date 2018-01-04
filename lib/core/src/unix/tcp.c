@@ -16,22 +16,24 @@ status_t tcp_server(sock_id *new, c_sockaddr_t *sa_list)
     while(addr)
     {
         rv = sock_socket(new, addr->c_sa_family, SOCK_STREAM, IPPROTO_TCP);
-        if (rv != CORE_OK) continue;
-        
-        d_assert(sock_setsockopt(*new, SOCK_O_REUSEADDR, 1) == CORE_OK,
-                return CORE_ERROR,
-                "setsockopt [%s]:%d failed(%d:%s)",
-                CORE_ADDR(addr, buf), CORE_PORT(addr), errno, strerror(errno));
-
-        if (sock_bind(*new, addr) == CORE_OK)
+        if (rv == CORE_OK)
         {
-            d_trace(1, "tcp_server() [%s]:%d\n",
-                    CORE_ADDR(addr, buf), CORE_PORT(addr));
-            break;
-        }
+            d_assert(sock_setsockopt(*new, SOCK_O_REUSEADDR, 1) == CORE_OK,
+                    return CORE_ERROR,
+                    "setsockopt [%s]:%d failed(%d:%s)",
+                    CORE_ADDR(addr, buf), CORE_PORT(addr),
+                    errno, strerror(errno));
 
-        rv = sock_delete(*new);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
+            if (sock_bind(*new, addr) == CORE_OK)
+            {
+                d_trace(1, "tcp_server() [%s]:%d\n",
+                        CORE_ADDR(addr, buf), CORE_PORT(addr));
+                break;
+            }
+
+            rv = sock_delete(*new);
+            d_assert(rv == CORE_OK, return CORE_ERROR,);
+        }
 
         addr = addr->next;
     }
@@ -63,17 +65,18 @@ status_t tcp_client(sock_id *new, c_sockaddr_t *sa_list)
     while(addr)
     {
         rv = sock_socket(new, addr->c_sa_family, SOCK_STREAM, IPPROTO_TCP);
-        if (rv != CORE_OK) continue;
-        
-        if (sock_connect(*new, addr) == CORE_OK)
+        if (rv == CORE_OK)
         {
-            d_trace(1, "tcp_client() [%s]:%d\n",
-                    CORE_ADDR(addr, buf), CORE_PORT(addr));
-            break;
-        }
+            if (sock_connect(*new, addr) == CORE_OK)
+            {
+                d_trace(1, "tcp_client() [%s]:%d\n",
+                        CORE_ADDR(addr, buf), CORE_PORT(addr));
+                break;
+            }
 
-        rv = sock_delete(*new);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
+            rv = sock_delete(*new);
+            d_assert(rv == CORE_OK, return CORE_ERROR,);
+        }
 
         addr = addr->next;
     }

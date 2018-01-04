@@ -59,6 +59,7 @@ status_t test_initialize(char *config_path)
     core_initialize();
     rv = test_app_initialize(config_path, NULL);
     testpacket_init();
+#if 0
     if (rv == CORE_OK)
     {
         while(1)
@@ -67,6 +68,7 @@ status_t test_initialize(char *config_path)
             core_sleep(time_from_msec(50));
         }
     }
+#endif
 
     return rv;
 }
