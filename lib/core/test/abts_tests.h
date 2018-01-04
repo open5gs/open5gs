@@ -45,6 +45,7 @@ const struct testlist {
     {testpkbuf},
     {testmisc},
     {testhash},
+    {test3gpp},
 };
 
 #endif /* APR_TEST_INCLUDES */

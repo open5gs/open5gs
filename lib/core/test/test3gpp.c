@@ -26,7 +26,7 @@ static void _3gpp_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 2, plmn_id_mnc_len(&plmn_id));
 }
 
-abts_suite *test_3gpp(abts_suite *suite)
+abts_suite *test3gpp(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
