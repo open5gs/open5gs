@@ -27,6 +27,7 @@
 #define MAX_CELL_PER_ENB            8
 
 static mme_context_t self;
+static fd_config_t g_fd_conf;
 
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 index_declare(mme_ue_pool, mme_ue_t, MAX_POOL_OF_UE);
@@ -41,8 +42,12 @@ status_t mme_context_init()
     d_assert(context_initialized == 0, return CORE_ERROR,
             "MME context already has been context_initialized");
 
+    /* Initial FreeDiameter Config */
+    memset(&g_fd_conf, 0, sizeof(fd_config_t));
+
     /* Initialize MME context */
     memset(&self, 0, sizeof(mme_context_t));
+    self.fd_config = &g_fd_conf;
 
     list_init(&self.s1ap_list);
     list_init(&self.s1ap_list6);
@@ -129,89 +134,83 @@ static status_t mme_context_prepare()
 
     self.s1ap_port = S1AP_SCTP_PORT;
     self.gtpc_port = GTPV2_C_UDP_PORT;
+    self.fd_config->cnf_port = DIAMETER_PORT;
+    self.fd_config->cnf_port_tls = DIAMETER_SECURE_PORT;
 
     return CORE_OK;
 }
 
 static status_t mme_context_validation()
 {
-    if (self.fd_conf_path == NULL)
+    if (self.fd_conf_path == NULL &&
+        (self.fd_config->cnf_diamid == NULL ||
+        self.fd_config->cnf_diamrlm == NULL ||
+        self.fd_config->cnf_addr == NULL))
     {
-        d_error("No mme.freeDiameter in '%s'",
-                context_self()->config.path);
+        d_error("No mme.freeDiameter in '%s'", context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (list_first(&self.s1ap_list) == NULL &&
         list_first(&self.s1ap_list6) == NULL)
     {
-        d_error("No mme.s1ap in '%s'",
-                context_self()->config.path);
+        d_error("No mme.s1ap in '%s'", context_self()->config.path);
         return CORE_EAGAIN;
     }
 
     if (list_first(&self.gtpc_list) == NULL &&
         list_first(&self.gtpc_list6) == NULL)
     {
-        d_error("No mme.gtpc in '%s'",
-                context_self()->config.path);
+        d_error("No mme.gtpc in '%s'", context_self()->config.path);
         return CORE_EAGAIN;
     }
 
     if (list_first(&self.sgw_list) == NULL)
     {
-        d_error("No sgw.gtpc in '%s'",
-                context_self()->config.path);
+        d_error("No sgw.gtpc in '%s'", context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (list_first(&self.pgw_list) == NULL)
     {
-        d_error("No pgw.gtpc in '%s'",
-                context_self()->config.path);
+        d_error("No pgw.gtpc in '%s'", context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.max_num_of_served_gummei == 0)
     {
-        d_error("No mme.gummei in '%s'",
-                context_self()->config.path);
+        d_error("No mme.gummei in '%s'", context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.served_gummei[0].num_of_plmn_id == 0)
     {
-        d_error("No mme.gummei.plmn_id in '%s'",
-                context_self()->config.path);
+        d_error("No mme.gummei.plmn_id in '%s'", context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_gid == 0)
     {
-        d_error("No mme.gummei.mme_gid in '%s'",
-                context_self()->config.path);
+        d_error("No mme.gummei.mme_gid in '%s'", context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_code == 0)
     {
-        d_error("No mme.gummei.mme_code in '%s'",
-                context_self()->config.path);
+        d_error("No mme.gummei.mme_code in '%s'", context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.num_of_served_tai == 0)
     {
-        d_error("No mme.tai in '%s'",
-                context_self()->config.path);
+        d_error("No mme.tai in '%s'", context_self()->config.path);
         return CORE_ERROR;
     }
 
     if (self.served_tai[0].list0.tai[0].num == 0 &&
         self.served_tai[0].list2.num == 0)
     {
-        d_error("No mme.tai.plmn_id|tac in '%s'",
-                context_self()->config.path);
+        d_error("No mme.tai.plmn_id|tac in '%s'", context_self()->config.path);
         return CORE_ERROR;
     }
 
@@ -261,6 +260,181 @@ status_t mme_context_parse_config()
                 if (!strcmp(mme_key, "freeDiameter"))
                 {
                     self.fd_conf_path = yaml_iter_value(&mme_iter);
+                }
+                else if (!strcmp(mme_key, "fd"))
+                {
+                    yaml_iter_t fd_iter;
+                    yaml_iter_recurse(&mme_iter, &fd_iter);
+
+                    while(yaml_iter_next(&fd_iter))
+                    {
+                        const char *fd_key = yaml_iter_key(&fd_iter);
+                        d_assert(fd_key, return CORE_ERROR,);
+                        if (!strcmp(fd_key, "identity"))
+                        {
+                            self.fd_config->cnf_diamid = 
+                                yaml_iter_value(&fd_iter);
+                        }
+                        else if (!strcmp(fd_key, "realm"))
+                        {
+                            self.fd_config->cnf_diamrlm = 
+                                yaml_iter_value(&fd_iter);
+                        }
+                        else if (!strcmp(fd_key, "port"))
+                        {
+                            const char *v = yaml_iter_value(&fd_iter);
+                            if (v) self.fd_config->cnf_port = atoi(v);
+                        }
+                        else if (!strcmp(fd_key, "sec_port"))
+                        {
+                            const char *v = yaml_iter_value(&fd_iter);
+                            if (v) self.fd_config->cnf_port_tls = atoi(v);
+                        }
+                        else if (!strcmp(fd_key, "no_sctp"))
+                        {
+                            self.fd_config->cnf_flags.no_sctp =
+                                yaml_iter_bool(&fd_iter);
+                        }
+                        else if (!strcmp(fd_key, "listen_on"))
+                        {
+                            self.fd_config->cnf_addr = 
+                                yaml_iter_value(&fd_iter);
+                        }
+                        else if (!strcmp(fd_key, "load_extension"))
+                        {
+                            yaml_iter_t ext_array, ext_iter;
+                            yaml_iter_recurse(&fd_iter, &ext_array);
+                            do
+                            {
+                                const char *module = NULL;
+                                const char *conf = NULL;
+
+                                if (yaml_iter_type(&ext_array) ==
+                                    YAML_MAPPING_NODE)
+                                {
+                                    memcpy(&ext_iter, &ext_array,
+                                            sizeof(yaml_iter_t));
+                                }
+                                else if (yaml_iter_type(&ext_array) ==
+                                    YAML_SEQUENCE_NODE)
+                                {
+                                    if (!yaml_iter_next(&ext_array))
+                                        break;
+                                    yaml_iter_recurse(&ext_array, &ext_iter);
+                                }
+                                else if (yaml_iter_type(&ext_array) ==
+                                    YAML_SCALAR_NODE)
+                                {
+                                    break;
+                                }
+                                else
+                                    d_assert(0, return CORE_ERROR,);
+
+                                while(yaml_iter_next(&ext_iter))
+                                {
+                                    const char *ext_key =
+                                        yaml_iter_key(&ext_iter);
+                                    d_assert(ext_key,
+                                            return CORE_ERROR,);
+                                    if (!strcmp(ext_key, "module"))
+                                    {
+                                        module = yaml_iter_value(&ext_iter);
+                                    }
+                                    else if (!strcmp(ext_key, "conf"))
+                                    {
+                                        conf = yaml_iter_value(&ext_iter);
+                                    }
+                                    else
+                                        d_warn("unknown key `%s`", ext_key);
+                                }
+
+                                if (module)
+                                {
+                                    self.fd_config->
+                                        ext[self.fd_config->num_of_ext].
+                                            module = module;
+                                    self.fd_config->
+                                        ext[self.fd_config->num_of_ext].
+                                            conf = conf;
+                                    self.fd_config->num_of_ext++;
+                                }
+                            } while(yaml_iter_type(&ext_array) ==
+                                    YAML_SEQUENCE_NODE);
+                        }
+                        else if (!strcmp(fd_key, "connect"))
+                        {
+                            yaml_iter_t conn_array, conn_iter;
+                            yaml_iter_recurse(&fd_iter, &conn_array);
+                            do
+                            {
+                                const char *identity = NULL;
+                                const char *addr = NULL;
+                                c_uint16_t port = 0;
+
+                                if (yaml_iter_type(&conn_array) ==
+                                    YAML_MAPPING_NODE)
+                                {
+                                    memcpy(&conn_iter, &conn_array,
+                                            sizeof(yaml_iter_t));
+                                }
+                                else if (yaml_iter_type(&conn_array) ==
+                                    YAML_SEQUENCE_NODE)
+                                {
+                                    if (!yaml_iter_next(&conn_array))
+                                        break;
+                                    yaml_iter_recurse(&conn_array, &conn_iter);
+                                }
+                                else if (yaml_iter_type(&conn_array) ==
+                                    YAML_SCALAR_NODE)
+                                {
+                                    break;
+                                }
+                                else
+                                    d_assert(0, return CORE_ERROR,);
+
+                                while(yaml_iter_next(&conn_iter))
+                                {
+                                    const char *conn_key =
+                                        yaml_iter_key(&conn_iter);
+                                    d_assert(conn_key,
+                                            return CORE_ERROR,);
+                                    if (!strcmp(conn_key, "identity"))
+                                    {
+                                        identity = yaml_iter_value(&conn_iter);
+                                    }
+                                    else if (!strcmp(conn_key, "addr"))
+                                    {
+                                        addr = yaml_iter_value(&conn_iter);
+                                    }
+                                    else if (!strcmp(conn_key, "port"))
+                                    {
+                                        const char *v =
+                                            yaml_iter_value(&conn_iter);
+                                        if (v) port = atoi(v);
+                                    }
+                                    else
+                                        d_warn("unknown key `%s`", conn_key);
+                                }
+
+                                if (identity && addr)
+                                {
+                                    self.fd_config->
+                                        conn[self.fd_config->num_of_conn].
+                                            identity = identity;
+                                    self.fd_config->
+                                        conn[self.fd_config->num_of_conn].
+                                            addr = addr;
+                                    self.fd_config->
+                                        conn[self.fd_config->num_of_conn].
+                                            port = port;
+                                    self.fd_config->num_of_conn++;
+                                }
+                            } while(yaml_iter_type(&conn_array) ==
+                                    YAML_SEQUENCE_NODE);
+                        }
+                        else
+                            d_warn("unknown key `%s`", fd_key);
+                    }
                 }
                 else if (!strcmp(mme_key, "relative_capacity"))
                 {

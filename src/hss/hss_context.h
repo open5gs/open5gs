@@ -25,11 +25,13 @@ typedef struct _hss_db_auth_info_t {
     c_uint64_t      sqn;
 } hss_db_auth_info_t;
 
+typedef struct _fd_config_t fd_config_t;
 typedef struct _hss_context_t {
-    const char  *fd_conf_path;          /* HSS freeDiameter conf path */
+    const char      *fd_conf_path;      /* HSS freeDiameter conf path */
+    fd_config_t     *fd_config;         /* HSS freeDiameter config */
 
-    void        *subscriberCollection;
-    mutex_id    db_lock;
+    void            *subscriberCollection;
+    mutex_id        db_lock;
 } hss_context_t;
 
 CORE_DECLARE(status_t) hss_context_init(void);

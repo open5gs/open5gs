@@ -21,6 +21,7 @@
 #include "pgw_context.h"
 
 static pgw_context_t self;
+static fd_config_t g_fd_conf;
 
 pool_declare(pgw_dev_pool, pgw_dev_t, MAX_NUM_OF_DEV);
 pool_declare(pgw_subnet_pool, pgw_subnet_t, MAX_NUM_OF_SUBNET);
@@ -37,7 +38,12 @@ status_t pgw_context_init()
     d_assert(context_initiaized == 0, return CORE_ERROR,
             "PGW context already has been initialized");
 
+    /* Initial FreeDiameter Config */
+    memset(&g_fd_conf, 0, sizeof(fd_config_t));
+
+    /* Initialize PGW context */
     memset(&self, 0, sizeof(pgw_context_t));
+    self.fd_config = &g_fd_conf;
 
     list_init(&self.gtpc_list);
     list_init(&self.gtpc_list6);

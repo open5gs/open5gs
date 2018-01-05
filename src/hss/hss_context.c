@@ -14,6 +14,8 @@
 #include "hss_context.h"
 
 static hss_context_t self;
+static fd_config_t g_fd_conf;
+
 static int context_initialized = 0;
 
 hss_context_t* hss_self()
@@ -26,8 +28,12 @@ status_t hss_context_init(void)
     d_assert(context_initialized == 0, return CORE_ERROR,
             "HSS context already has been context_initialized");
 
+    /* Initial FreeDiameter Config */
+    memset(&g_fd_conf, 0, sizeof(fd_config_t));
+
     /* Initialize HSS context */
     memset(&self, 0, sizeof(hss_context_t));
+    self.fd_config = &g_fd_conf;
 
     if (mutex_create(&self.db_lock, MUTEX_DEFAULT) != CORE_OK)
     {

@@ -772,8 +772,8 @@ int pgw_fd_init(void)
 {
     pool_init(&pgw_gx_sess_pool, MAX_NUM_SESSION_STATE);
 
-    CHECK_FCT(
-        fd_init(FD_MODE_CLIENT|FD_MODE_SERVER, pgw_self()->fd_conf_path) );
+    CHECK_FCT( fd_init(FD_MODE_CLIENT|FD_MODE_SERVER,
+                pgw_self()->fd_conf_path, pgw_self()->fd_config) );
 
 	/* Install objects definitions for this application */
 	CHECK_FCT( gx_dict_init() );

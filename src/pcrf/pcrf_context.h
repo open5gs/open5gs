@@ -11,11 +11,13 @@
 extern "C" {
 #endif /* __cplusplus */
 
+typedef struct _fd_config_t fd_config_t;
 typedef struct _pcrf_context_t {
-    const char  *fd_conf_path;          /* PCRF freeDiameter conf path */
+    const char      *fd_conf_path;  /* PCRF freeDiameter conf path */
+    fd_config_t     *fd_config;     /* PCRF freeDiameter config */
 
-    void        *subscriberCollection;
-    mutex_id    db_lock;
+    void            *subscriberCollection;
+    mutex_id        db_lock;
 } pcrf_context_t;
 
 CORE_DECLARE(status_t) pcrf_context_init(void);

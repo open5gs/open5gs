@@ -40,6 +40,8 @@ typedef struct _mme_ue_t mme_ue_t;
 typedef struct _gtp_node_t gtp_node_t;
 typedef struct _gtp_xact_t gtp_xact_t;
 
+typedef struct _fd_config_t fd_config_t;
+
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
@@ -52,6 +54,7 @@ typedef struct _served_gummei {
 
 typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
+    fd_config_t     *fd_config;     /* MME freeDiameter config */
 
     c_uint16_t      s1ap_port;      /* Default S1AP Port */
     c_uint16_t      gtpc_port;      /* Default GTPC Port */

@@ -4,7 +4,7 @@ pkglib_LTLIBRARIES = libfd.la
 
 libfd_la_SOURCES = \
 	fd_message.h fd_logger.h fd_lib.h \
-	libapp_sip.c fd_message.c fd_logger.c fd_init.c \
+	libapp_sip.c fd_message.c fd_logger.c fd_config.c fd_init.c \
 	\
 	s6a/s6a_dict.h s6a/s6a_message.h \
 	s6a/dict_init.c \

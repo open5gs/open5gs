@@ -20,8 +20,12 @@ extern "C" {
 #define MAX_NUM_OF_SUBNET       16
 
 typedef struct _gtp_node_t gtp_node_t;
+typedef struct _fd_config_t fd_config_t;
 
 typedef struct _pgw_context_t {
+    const char*     fd_conf_path;   /* PGW freeDiameter conf path */
+    fd_config_t     *fd_config;     /* PGW freeDiameter config */
+
     c_uint32_t      gtpc_port;      /* Default: PGW GTP-C local port */
     c_uint32_t      gtpu_port;      /* Default: PGW GTP-U local port */
     const char      *tun_ifname;    /* Default:: pgwtun */
@@ -38,8 +42,6 @@ typedef struct _pgw_context_t {
 
     list_t          dev_list;       /* PGW Tun Device List */
     list_t          subnet_list;    /* PGW UE Subnet List */
-
-    const char*     fd_conf_path;   /* PGW freeDiameter conf path */
 
     msgq_id         queue_id;       /* Qsesssess for processing PGW control plane */
     tm_service_t    tm_service;     /* Timer Service */

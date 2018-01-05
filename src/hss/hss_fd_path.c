@@ -554,7 +554,8 @@ int hss_fd_init(void)
 {
 	struct disp_when data;
 
-    CHECK_FCT( fd_init(FD_MODE_SERVER, hss_self()->fd_conf_path) );
+    CHECK_FCT( fd_init(FD_MODE_SERVER,
+                hss_self()->fd_conf_path, hss_self()->fd_config) );
 
 	/* Install objects definitions for this application */
 	CHECK_FCT( s6a_dict_init() );

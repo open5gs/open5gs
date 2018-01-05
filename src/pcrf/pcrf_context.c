@@ -14,6 +14,8 @@
 #include "pcrf_context.h"
 
 static pcrf_context_t self;
+static fd_config_t g_fd_conf;
+
 static int context_initialized = 0;
 
 pcrf_context_t* pcrf_self()
@@ -26,8 +28,12 @@ status_t pcrf_context_init(void)
     d_assert(context_initialized == 0, return CORE_ERROR,
             "PCRF context already has been context_initialized");
 
+    /* Initial FreeDiameter Config */
+    memset(&g_fd_conf, 0, sizeof(fd_config_t));
+
     /* Initialize PCRF context */
     memset(&self, 0, sizeof(pcrf_context_t));
+    self.fd_config = &g_fd_conf;
 
     if (mutex_create(&self.db_lock, MUTEX_DEFAULT) != CORE_OK)
     {

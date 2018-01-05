@@ -918,7 +918,8 @@ int mme_fd_init(void)
 {
     pool_init(&mme_s6a_sess_pool, MAX_NUM_SESSION_STATE);
 
-    CHECK_FCT( fd_init(FD_MODE_CLIENT, mme_self()->fd_conf_path) );
+    CHECK_FCT( fd_init(FD_MODE_CLIENT,
+                mme_self()->fd_conf_path, mme_self()->fd_config) );
 
 	/* Install objects definitions for this application */
 	CHECK_FCT( s6a_dict_init() );

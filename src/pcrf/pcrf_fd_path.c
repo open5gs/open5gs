@@ -442,8 +442,8 @@ int pcrf_fd_init(void)
 {
 	struct disp_when data;
 
-    CHECK_FCT(
-        fd_init(FD_MODE_CLIENT|FD_MODE_SERVER, pcrf_self()->fd_conf_path) );
+    CHECK_FCT( fd_init(FD_MODE_CLIENT|FD_MODE_SERVER,
+                pcrf_self()->fd_conf_path, pcrf_self()->fd_config) );
 
 	/* GX Interface */
 	CHECK_FCT( gx_dict_init() );

@@ -32,6 +32,29 @@ parameter:
 
 mme:
     freeDiameter: mme.conf
+    fd:
+      identity: mme.localdomain
+      realm: localdomain
+      no_sctp: true
+#      port: 3868
+#      sec_port: 5868
+      listen_on: 127.0.0.3
+      load_extension:
+        - module: dbg_msg_dumps.so
+          conf: 0x8888
+        - module: dict_rfc5777.so
+        - module: dict_rfc5777.so
+        - module: dict_mip6i.so
+        - module: dict_nasreq.so
+        - module: dict_nas_mipv6.so
+        - module: dict_dcca.so
+        - module: dict_dcca_3gpp.so
+        - module: dict_s6a.so
+      connect:
+        - identity: hss.localdomain
+          addr: 127.0.0.4
+#          port: 3868
+
 
 #
 #  <S1AP Server>>

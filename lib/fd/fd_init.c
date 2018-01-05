@@ -11,7 +11,7 @@
 static void fd_gnutls_log_func(int level, const char *str);
 static void fd_log_func(int printlevel, const char *format, va_list ap);
 
-int fd_init(int mode, const char *conffile)
+int fd_init(int mode, const char *conffile, fd_config_t *fd_config)
 {
     int ret;
 
@@ -33,7 +33,14 @@ int fd_init(int mode, const char *conffile)
     } 
     
 	/* Parse the configuration file */
-    CHECK_FCT_DO( fd_core_parseconf(conffile), goto error );
+    if (conffile)
+    {
+        CHECK_FCT_DO( fd_core_parseconf(conffile), goto error );
+    }
+    else
+    {
+        CHECK_FCT_DO( fd_config_init(fd_config), goto error );
+    }
 
     /* Initialize FD Message */
     CHECK_FCT( fd_message_init() );
