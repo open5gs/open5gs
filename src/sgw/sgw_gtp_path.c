@@ -101,7 +101,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 
             sent = core_sendto(sock,
                     echo_rsp->payload, echo_rsp->len, 0, &from);
-            if (sent < 0 || sent != pkbuf->len)
+            if (sent < 0 || sent != echo_rsp->len)
             {
                 d_error("core_sendto failed(%d:%s)", errno, strerror(errno));
             }
