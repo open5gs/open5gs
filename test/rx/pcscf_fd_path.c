@@ -139,7 +139,7 @@ static void pgw_rx_aaa_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     int new;
-    c_int32_t result_code;
+    c_int32_t result_code = 0;
 
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &ts), return );
 
