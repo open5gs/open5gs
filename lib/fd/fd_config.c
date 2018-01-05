@@ -94,15 +94,16 @@ static status_t fd_config_apply(fd_config_t *fd_config)
      */
     for (i = 0; i < fd_config->num_of_ext; i++)
     {
-        char *fname;
-        char *cfname;
+        char *fname = NULL;
+        char *cfname = NULL;
         FILE *fd;
 
-        fname = (char *)fd_config->ext[i].module;
+        fname = strdup(fd_config->ext[i].module);
+        d_assert(fname, return CORE_ERROR,);
         fd = fopen(fname, "r");
         if ((fd == NULL) && (*fname != '/'))
         {
-            char * bkp = fname;
+            char *bkp = fname;
             fname = malloc(strlen(bkp) + strlen(DEFAULT_EXTENSIONS_PATH) + 2);
             d_assert(fname, return CORE_ERROR,);
             sprintf(fname, DEFAULT_EXTENSIONS_PATH "/%s", bkp);
@@ -117,14 +118,15 @@ static status_t fd_config_apply(fd_config_t *fd_config)
                 free(bkp);
             }
         }
-        if (fd != NULL)
-        {
+
+        if (fd)
             fclose(fd);
-        }
 
         cfname = (char *)fd_config->ext[i].conf;
         if (cfname)
         {
+            cfname = strdup(fd_config->ext[i].conf);
+            d_assert(cfname, return CORE_ERROR,);
             fd = fopen(cfname, "r");
             if ((fd == NULL) && (*cfname != '/'))
             {
@@ -143,6 +145,7 @@ static status_t fd_config_apply(fd_config_t *fd_config)
                     free(test);
                 }
             }
+
             if (fd)
                 fclose(fd);
         }
