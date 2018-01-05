@@ -43,7 +43,6 @@ mme:
         - module: dbg_msg_dumps.so
           conf: 0x8888
         - module: dict_rfc5777.so
-        - module: dict_rfc5777.so
         - module: dict_mip6i.so
         - module: dict_nasreq.so
         - module: dict_nas_mipv6.so
