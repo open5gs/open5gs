@@ -1,7 +1,5 @@
 #define TRACE_MODULE _pgw_fd_path
 
-#define VOLTE_TEST 0
-
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_lib.h"
@@ -11,9 +9,6 @@
 #include "fd/fd_lib.h"
 #include "fd/gx/gx_dict.h"
 #include "fd/gx/gx_message.h"
-#if VOLTE_TEST
-#include "fd/rx/rx_dict.h"
-#endif
 
 #include "pgw_event.h"
 #include "pgw_fd_path.h"
@@ -21,9 +16,6 @@
 #define MAX_NUM_SESSION_STATE 32
 
 static struct session_handler *pgw_gx_reg = NULL;
-#if VOLTE_TEST
-static struct session_handler *pgw_rx_reg = NULL;
-#endif
 
 struct sess_state {
     gtp_xact_t *xact;
@@ -783,25 +775,12 @@ int pgw_fd_init(void)
 	/* Advertise the support for the application in the peer */
 	CHECK_FCT( fd_disp_app_support(gx_application, fd_vendor, 1, 0) );
 
-#if VOLTE_TEST
-	CHECK_FCT( rx_dict_init() );
-
-	CHECK_FCT( fd_sess_handler_create(&pgw_rx_reg, (void *)free, NULL, NULL) );
-
-	/* Advertise the support for the application in the peer */
-	CHECK_FCT( fd_disp_app_support(rx_application, fd_vendor, 1, 0) );
-#endif
-	
 	return 0;
 }
 
 void pgw_fd_final(void)
 {
 	CHECK_FCT_DO( fd_sess_handler_destroy(&pgw_gx_reg, NULL), );
-
-#if VOLTE_TEST
-	CHECK_FCT_DO( fd_sess_handler_destroy(&pgw_rx_reg, NULL), );
-#endif
 
     fd_final();
 
@@ -813,248 +792,3 @@ void pgw_fd_final(void)
 
     pool_final(&pgw_gx_sess_pool);
 }
-
-#if VOLTE_TEST
-static void pgw_rx_aaa_cb(void *data, struct msg **msg);
-
-void pgw_rx_send_aar()
-{
-    struct msg *req = NULL;
-    struct avp *avp;
-#if 0
-    struct avp *avpch1, *avpch2;
-#else
-    struct avp *avpch1;
-#endif
-    union avp_value val;
-    struct sess_state *mi = NULL, *svg;
-    struct session *session = NULL;
-
-    c_uint32_t addr = 0x0100007f;
-
-    /* Create the random value to store with the session */
-    pool_alloc_node(&pgw_gx_sess_pool, &mi);
-    d_assert(mi, return, "malloc failed: %s", strerror(errno));
-    
-    /* Create the request */
-    CHECK_FCT_DO( fd_msg_new(rx_cmd_aar, MSGFL_ALLOC_ETEID, &req), goto out );
-    {
-        struct msg_hdr * h;
-        CHECK_FCT_DO( fd_msg_hdr( req, &h ), goto out );
-        h->msg_appl = RX_APPLICATION_ID;
-    }
-    
-    /* Create a new session */
-    #define RX_APP_SID_OPT  "app_rx"
-    CHECK_FCT_DO( fd_msg_new_session(req, (os0_t)RX_APP_SID_OPT, 
-            CONSTSTRLEN(RX_APP_SID_OPT)), goto out );
-    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL),
-            goto out );
-
-    /* Set Origin-Host & Origin-Realm */
-    CHECK_FCT_DO( fd_msg_add_origin(req, 0), goto out );
-    
-    /* Set the Destination-Realm AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(fd_destination_realm, 0, &avp), goto out );
-    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
-    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set the Auth-Application-Id AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_application_id, 0, &avp), goto out );
-    val.i32 = RX_APPLICATION_ID;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set Subscription-Id */
-    CHECK_FCT_DO( fd_msg_avp_new(rx_subscription_id, 0, &avp),
-            goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_new(rx_subscription_id_type, 0, &avpch1),
-            goto out );
-    val.i32 = GX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI;
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1), goto out );
-
-    #define RX_APP_IMSI_BCD  "0123456789012345"
-    CHECK_FCT_DO( fd_msg_avp_new(rx_subscription_id_data, 0, &avpch1),
-            goto out );
-    val.os.data = (c_uint8_t *)RX_APP_IMSI_BCD;
-    val.os.len  = strlen(RX_APP_IMSI_BCD);
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1), goto out );
-
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
-
-    /* Set Framed-IP-Address */
-    CHECK_FCT_DO( fd_msg_avp_new(rx_framed_ip_address, 0, &avp),
-            goto out );
-    val.os.data = (c_uint8_t*)&addr;
-    val.os.len = 4;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
-            goto out );
-
-    CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &mi->ts), goto out );
-    
-    /* Keep a pointer to the session data for debug purpose, 
-     * in real life we would not need it */
-    svg = mi;
-    
-    /* Store this value in the session */
-    CHECK_FCT_DO( fd_sess_state_store(pgw_rx_reg, session, &mi), goto out );
-    
-    /* Send the request */
-    CHECK_FCT_DO( fd_msg_send(&req, pgw_rx_aaa_cb, svg), goto out );
-
-    /* Increment the counter */
-    CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
-    fd_logger_self()->stats.nb_sent++;
-    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
-
-out:
-    pool_free_node(&pgw_gx_sess_pool, mi);
-    return;
-}
-
-static void pgw_rx_aaa_cb(void *data, struct msg **msg)
-{
-    struct sess_state *mi = NULL;
-    struct timespec ts;
-    struct session *session;
-#if 0
-    struct avp *avp, *avpch1, *avpch2, *avpch3, *avpch4;
-#else
-    struct avp *avp, *avpch1;
-#endif
-    struct avp_hdr *hdr;
-    unsigned long dur;
-    int error = 0;
-    int new;
-    c_int32_t result_code;
-
-    CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &ts), return );
-
-    /* Search the session, retrieve its data */
-    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new),
-            return );
-    d_assert(new == 0, return, );
-    
-    CHECK_FCT_DO( fd_sess_state_retrieve(pgw_rx_reg, session, &mi), return );
-    d_assert(mi && (void *)mi == data, return, );
-
-    /* Value of Result Code */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_result_code, &avp), return );
-    if (avp)
-    {
-        CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return);
-        result_code = hdr->avp_value->i32;
-        d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
-    }
-    else
-    {
-        CHECK_FCT_DO( fd_msg_search_avp(*msg, 
-                fd_experimental_result, &avp), return );
-        if (avp)
-        {
-            CHECK_FCT_DO( fd_avp_search_avp(avp, 
-                    fd_experimental_result_code, &avpch1), return );
-            if (avpch1)
-            {
-                CHECK_FCT_DO( fd_msg_avp_hdr(avpch1, &hdr), return);
-                result_code = hdr->avp_value->i32;
-                d_trace(3, "Experimental Result Code: %d\n",
-                        result_code);
-            }
-        }
-        else
-        {
-            d_error("no Result-Code");
-            error++;
-        }
-    }
-
-    /* Value of Origin-Host */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_origin_host, &avp), return );
-    if (avp)
-    {
-        CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
-        d_trace(3, "From '%.*s' ",
-                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
-        d_error("no_Origin-Host ");
-        error++;
-    }
-
-    /* Value of Origin-Realm */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_origin_realm, &avp), return );
-    if (avp)
-    {
-        CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
-        d_trace(3, "('%.*s') ",
-                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
-        d_error("no_Origin-Realm ");
-        error++;
-    }
-
-    if (result_code != ER_DIAMETER_SUCCESS)
-    {
-        d_warn("ERROR DIAMETER Result Code(%d)", result_code);
-        error++;
-        goto out;
-    }
-
-out:
-    /* Free the message */
-    CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
-    dur = ((ts.tv_sec - mi->ts.tv_sec) * 1000000) + 
-        ((ts.tv_nsec - mi->ts.tv_nsec) / 1000);
-    if (fd_logger_self()->stats.nb_recv)
-    {
-        /* Ponderate in the avg */
-        fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
-            fd_logger_self()->stats.nb_recv + dur) /
-            (fd_logger_self()->stats.nb_recv + 1);
-        /* Min, max */
-        if (dur < fd_logger_self()->stats.shortest)
-            fd_logger_self()->stats.shortest = dur;
-        if (dur > fd_logger_self()->stats.longest)
-            fd_logger_self()->stats.longest = dur;
-    }
-    else
-    {
-        fd_logger_self()->stats.shortest = dur;
-        fd_logger_self()->stats.longest = dur;
-        fd_logger_self()->stats.avg = dur;
-    }
-    if (error)
-        fd_logger_self()->stats.nb_errs++;
-    else 
-        fd_logger_self()->stats.nb_recv++;
-
-    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
-    
-    /* Display how long it took */
-    if (ts.tv_nsec > mi->ts.tv_nsec)
-        d_trace(3, "in %d.%06ld sec\n", 
-                (int)(ts.tv_sec - mi->ts.tv_sec),
-                (long)(ts.tv_nsec - mi->ts.tv_nsec) / 1000);
-    else
-        d_trace(3, "in %d.%06ld sec\n", 
-                (int)(ts.tv_sec + 1 - mi->ts.tv_sec),
-                (long)(1000000000 + ts.tv_nsec - mi->ts.tv_nsec) / 1000);
-    
-    CHECK_FCT_DO( fd_msg_free(*msg), return );
-    *msg = NULL;
-
-    pool_free_node(&pgw_gx_sess_pool, mi);
-
-    return;
-}
-#endif

@@ -269,8 +269,8 @@ void pcscf_fd_config()
 {
     memset(&fd_config, 0, sizeof(fd_config_t));
 
-    fd_config.cnf_diamid = "pcscf.localdomain";
-    fd_config.cnf_diamrlm = "localdomain";
+    fd_config.cnf_diamid = "pcscf.open-ims.test";
+    fd_config.cnf_diamrlm = "open-ims.test";
     fd_config.cnf_port = DIAMETER_PORT;
     fd_config.cnf_port_tls = DIAMETER_SECURE_PORT;
     fd_config.cnf_flags.no_sctp = 1;
@@ -292,7 +292,7 @@ void pcscf_fd_config()
     fd_config.ext[fd_config.num_of_ext].module = "dict_dcca_3gpp.so";
     fd_config.num_of_ext++;
 
-    fd_config.conn[fd_config.num_of_conn].identity = "pcrf.localdomain";
+    fd_config.conn[fd_config.num_of_conn].identity = "pcrf.open-ims.test";
     fd_config.conn[fd_config.num_of_conn].addr = "127.0.0.5";
     fd_config.num_of_conn++;
 }

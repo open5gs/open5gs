@@ -12,6 +12,8 @@
 #include "testutil.h"
 #include "testpacket.h"
 
+#include "pcscf_fd_path.h"
+
 static void volte_test1(abts_case *tc, void *data)
 {
     status_t rv;
@@ -267,6 +269,9 @@ static void volte_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
+
+    /* Send AA-Request */
+    pgw_rx_send_aar();
 
     /* Send PDN disconnectivity request */
     rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex);
