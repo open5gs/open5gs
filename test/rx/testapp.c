@@ -7,6 +7,8 @@
 #include "app/context.h"
 #include "app/app.h"
 
+#include "pcscf_fd_path.h"
+
 static semaphore_id pcrf_sem1 = 0;
 static semaphore_id pcrf_sem2 = 0;
 
@@ -284,12 +286,17 @@ status_t test_app_initialize(const char *config_path, const char *log_path)
     rv = app_did_initialize();
     if (rv != CORE_OK) return rv;
 
+    rv = pcscf_fd_init();
+    if (rv != CORE_OK) return CORE_ERROR;
+
     return CORE_OK;;
 }
 
 void test_app_terminate(void)
 {
     app_will_terminate();
+
+    pcscf_fd_final();
 
     /* if (context_self()->parameter.no_mme == 0) */
     {

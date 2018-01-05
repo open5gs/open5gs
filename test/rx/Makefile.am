@@ -5,7 +5,7 @@ bin_PROGRAMS = testrx
 testrx_SOURCES = \
 	abts.h abts_tests.h testutil.h \
 	abts.c testutil.c testpacket.h testpacket.c testapp.h testapp.c \
-	volte_test.c \
+	pcscf_fd_path.c volte_test.c \
 	$(NULL)
 
 testrx_LDADD = \
