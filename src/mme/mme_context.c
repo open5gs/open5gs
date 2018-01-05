@@ -442,7 +442,6 @@ status_t mme_context_parse_config()
                                 d_warn("unknown key `%s`", fd_key);
                         }
                     }
-
                 }
                 else if (!strcmp(mme_key, "relative_capacity"))
                 {

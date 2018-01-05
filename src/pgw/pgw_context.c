@@ -120,6 +120,8 @@ static status_t pgw_context_prepare()
 {
     self.gtpc_port = GTPV2_C_UDP_PORT;
     self.gtpu_port = GTPV1_U_UDP_PORT;
+    self.fd_config->cnf_port = DIAMETER_PORT;
+    self.fd_config->cnf_port_tls = DIAMETER_SECURE_PORT;
 
     self.tun_ifname = "pgwtun";
 
@@ -128,7 +130,10 @@ static status_t pgw_context_prepare()
 
 static status_t pgw_context_validation()
 {
-    if (self.fd_conf_path == NULL)
+    if (self.fd_conf_path == NULL &&
+        (self.fd_config->cnf_diamid == NULL ||
+        self.fd_config->cnf_diamrlm == NULL ||
+        self.fd_config->cnf_addr == NULL))
     {
         d_error("No pgw.freeDiameter in '%s'",
                 context_self()->config.path);
@@ -186,7 +191,189 @@ status_t pgw_context_parse_config()
                 d_assert(pgw_key, return CORE_ERROR,);
                 if (!strcmp(pgw_key, "freeDiameter"))
                 {
-                    self.fd_conf_path = yaml_iter_value(&pgw_iter);
+                    yaml_node_t *node = 
+                        yaml_document_get_node(document, pgw_iter.pair->value);
+                    d_assert(node, return CORE_ERROR,);
+                    if (node->type == YAML_SCALAR_NODE)
+                    {
+                        self.fd_conf_path = yaml_iter_value(&pgw_iter);
+                    }
+                    else if (node->type == YAML_MAPPING_NODE)
+                    {
+                        yaml_iter_t fd_iter;
+                        yaml_iter_recurse(&pgw_iter, &fd_iter);
+
+                        while(yaml_iter_next(&fd_iter))
+                        {
+                            const char *fd_key = yaml_iter_key(&fd_iter);
+                            d_assert(fd_key, return CORE_ERROR,);
+                            if (!strcmp(fd_key, "identity"))
+                            {
+                                self.fd_config->cnf_diamid = 
+                                    yaml_iter_value(&fd_iter);
+                            }
+                            else if (!strcmp(fd_key, "realm"))
+                            {
+                                self.fd_config->cnf_diamrlm = 
+                                    yaml_iter_value(&fd_iter);
+                            }
+                            else if (!strcmp(fd_key, "port"))
+                            {
+                                const char *v = yaml_iter_value(&fd_iter);
+                                if (v) self.fd_config->cnf_port = atoi(v);
+                            }
+                            else if (!strcmp(fd_key, "sec_port"))
+                            {
+                                const char *v = yaml_iter_value(&fd_iter);
+                                if (v) self.fd_config->cnf_port_tls = atoi(v);
+                            }
+                            else if (!strcmp(fd_key, "no_sctp"))
+                            {
+                                self.fd_config->cnf_flags.no_sctp =
+                                    yaml_iter_bool(&fd_iter);
+                            }
+                            else if (!strcmp(fd_key, "listen_on"))
+                            {
+                                self.fd_config->cnf_addr = 
+                                    yaml_iter_value(&fd_iter);
+                            }
+                            else if (!strcmp(fd_key, "load_extension"))
+                            {
+                                yaml_iter_t ext_array, ext_iter;
+                                yaml_iter_recurse(&fd_iter, &ext_array);
+                                do
+                                {
+                                    const char *module = NULL;
+                                    const char *conf = NULL;
+
+                                    if (yaml_iter_type(&ext_array) ==
+                                        YAML_MAPPING_NODE)
+                                    {
+                                        memcpy(&ext_iter, &ext_array,
+                                                sizeof(yaml_iter_t));
+                                    }
+                                    else if (yaml_iter_type(&ext_array) ==
+                                        YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&ext_array))
+                                            break;
+                                        yaml_iter_recurse(
+                                                &ext_array, &ext_iter);
+                                    }
+                                    else if (yaml_iter_type(&ext_array) ==
+                                        YAML_SCALAR_NODE)
+                                    {
+                                        break;
+                                    }
+                                    else
+                                        d_assert(0, return CORE_ERROR,);
+
+                                    while(yaml_iter_next(&ext_iter))
+                                    {
+                                        const char *ext_key =
+                                            yaml_iter_key(&ext_iter);
+                                        d_assert(ext_key,
+                                                return CORE_ERROR,);
+                                        if (!strcmp(ext_key, "module"))
+                                        {
+                                            module = yaml_iter_value(&ext_iter);
+                                        }
+                                        else if (!strcmp(ext_key, "conf"))
+                                        {
+                                            conf = yaml_iter_value(&ext_iter);
+                                        }
+                                        else
+                                            d_warn("unknown key `%s`", ext_key);
+                                    }
+
+                                    if (module)
+                                    {
+                                        self.fd_config->
+                                            ext[self.fd_config->num_of_ext].
+                                                module = module;
+                                        self.fd_config->
+                                            ext[self.fd_config->num_of_ext].
+                                                conf = conf;
+                                        self.fd_config->num_of_ext++;
+                                    }
+                                } while(yaml_iter_type(&ext_array) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
+                            else if (!strcmp(fd_key, "connect"))
+                            {
+                                yaml_iter_t conn_array, conn_iter;
+                                yaml_iter_recurse(&fd_iter, &conn_array);
+                                do
+                                {
+                                    const char *identity = NULL;
+                                    const char *addr = NULL;
+                                    c_uint16_t port = 0;
+
+                                    if (yaml_iter_type(&conn_array) ==
+                                        YAML_MAPPING_NODE)
+                                    {
+                                        memcpy(&conn_iter, &conn_array,
+                                                sizeof(yaml_iter_t));
+                                    }
+                                    else if (yaml_iter_type(&conn_array) ==
+                                        YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&conn_array))
+                                            break;
+                                        yaml_iter_recurse(&conn_array, &conn_iter);
+                                    }
+                                    else if (yaml_iter_type(&conn_array) ==
+                                        YAML_SCALAR_NODE)
+                                    {
+                                        break;
+                                    }
+                                    else
+                                        d_assert(0, return CORE_ERROR,);
+
+                                    while(yaml_iter_next(&conn_iter))
+                                    {
+                                        const char *conn_key =
+                                            yaml_iter_key(&conn_iter);
+                                        d_assert(conn_key,
+                                                return CORE_ERROR,);
+                                        if (!strcmp(conn_key, "identity"))
+                                        {
+                                            identity = yaml_iter_value(&conn_iter);
+                                        }
+                                        else if (!strcmp(conn_key, "addr"))
+                                        {
+                                            addr = yaml_iter_value(&conn_iter);
+                                        }
+                                        else if (!strcmp(conn_key, "port"))
+                                        {
+                                            const char *v =
+                                                yaml_iter_value(&conn_iter);
+                                            if (v) port = atoi(v);
+                                        }
+                                        else
+                                            d_warn("unknown key `%s`", conn_key);
+                                    }
+
+                                    if (identity && addr)
+                                    {
+                                        self.fd_config->
+                                            conn[self.fd_config->num_of_conn].
+                                                identity = identity;
+                                        self.fd_config->
+                                            conn[self.fd_config->num_of_conn].
+                                                addr = addr;
+                                        self.fd_config->
+                                            conn[self.fd_config->num_of_conn].
+                                                port = port;
+                                        self.fd_config->num_of_conn++;
+                                    }
+                                } while(yaml_iter_type(&conn_array) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
+                            else
+                                d_warn("unknown key `%s`", fd_key);
+                        }
+                    }
                 }
                 else if (!strcmp(pgw_key, "gtpc"))
                 {
