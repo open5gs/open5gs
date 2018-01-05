@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include "core_file.h"
+
 #include "abts.h"
 #include "abts_tests.h"
 #include "testutil.h"
@@ -430,6 +432,8 @@ int main(int argc, const char *const argv[]) {
     int list_provided = 0;
     abts_suite *suite = NULL;
     const char *config_path = NULL;
+    char dir[C_PATH_MAX];
+    char conf[C_PATH_MAX];
 
     d_trace_global_off();
     d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
@@ -473,7 +477,19 @@ int main(int argc, const char *const argv[]) {
         list_provided = 1;
     }
 
-    rv = test_initialize((char*)config_path);
+    if (config_path)
+    {
+        strcpy(conf, config_path);
+    }
+    else
+    {
+        path_remove_last_component(dir, argv[0]);
+        if (strstr(dir, ".libs"))
+            path_remove_last_component(dir, dir);
+        sprintf(conf, "%s/open-ims.conf", dir);
+    }
+
+    rv = test_initialize(conf);
     if (rv != CORE_OK) 
         return EXIT_FAILURE;
 

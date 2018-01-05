@@ -822,7 +822,7 @@ static void path_canonicalize (char *dir)
 }
 
 /* Remove one component off the end of PATH. */
-static void path_remove_last_component (char *dir, const char *path)
+void path_remove_last_component (char *dir, const char *path)
 {
     int i;
     int len = 0;

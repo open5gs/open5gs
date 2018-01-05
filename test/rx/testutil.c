@@ -28,6 +28,8 @@
 #include "abts.h"
 #include "testutil.h"
 
+#include "pcscf_fd_path.h"
+
 static int connected_count = 0;
 static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg, 
     struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
@@ -43,6 +45,7 @@ void test_terminate(void)
 {
     d_trace_global_on();
 
+    pcscf_fd_final();
     testpacket_final();
     test_app_terminate();
     core_terminate();
@@ -58,17 +61,29 @@ status_t test_initialize(char *config_path)
 
     core_initialize();
     rv = test_app_initialize(config_path, NULL);
-    testpacket_init();
-#if 0
-    if (rv == CORE_OK)
+    if (rv != CORE_OK)
     {
-        while(1)
-        {
-            if (connected_count == 1) break;
-            core_sleep(time_from_msec(50));
-        }
+        d_error("test_app_initialize() failed");
+        return CORE_ERROR;
     }
-#endif
+    rv = pcscf_fd_init();
+    if (rv != CORE_OK)
+    {
+        d_error("pcscf_fd_init() failed");
+        return CORE_ERROR;
+    }
+    rv = testpacket_init();
+    if (rv != CORE_OK)
+    {
+        d_error("testpacket() failed");
+        return CORE_ERROR;
+    }
+
+    while(1)
+    {
+        if (connected_count == 1) break;
+        core_sleep(time_from_msec(50));
+    }
 
     return rv;
 }

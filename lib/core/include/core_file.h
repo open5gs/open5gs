@@ -581,6 +581,7 @@ CORE_DECLARE(status_t) dir_make(const char *path, file_perms_t perm);
  * @param path the path for the directory to be created. (use / on all systems)
  * @param perm Permissions for the new direcoty.
  */
+CORE_DECLARE(void) path_remove_last_component(char *dir, const char *path);
 CORE_DECLARE(status_t) dir_make_recursive(const char *path, file_perms_t perm);
 
 /**

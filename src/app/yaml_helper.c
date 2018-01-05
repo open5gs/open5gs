@@ -133,7 +133,7 @@ const char *yaml_iter_value(yaml_iter_t *iter)
     {
         return (const char *)iter->node->data.scalar.value;
     }
-    if (iter->node->type == YAML_MAPPING_NODE)
+    else if (iter->node->type == YAML_MAPPING_NODE)
     {
         yaml_node_t *node = NULL;
 

@@ -55,14 +55,22 @@ status_t test_initialize(char *config_path)
 
     core_initialize();
     rv = app_initialize(config_path, NULL);
-    testpacket_init();
-    if (rv == CORE_OK)
+    if (rv != CORE_OK)
     {
-        while(1)
-        {
-            if (connected_count == 1) break;
-            core_sleep(time_from_msec(50));
-        }
+        d_error("app_initialize() failed");
+        return CORE_ERROR;
+    }
+    rv = testpacket_init();
+    if (rv != CORE_OK)
+    {
+        d_error("testpacket() failed");
+        return CORE_ERROR;
+    }
+
+    while(1)
+    {
+        if (connected_count == 1) break;
+        core_sleep(time_from_msec(50));
     }
 
     return rv;

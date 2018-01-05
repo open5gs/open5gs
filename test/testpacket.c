@@ -13,7 +13,6 @@
 #include "gtp/gtp_path.h"
 
 #include "app/context.h"
-#include "mme/mme_context.h"
 
 extern int test_only_control_plane;
 
@@ -25,6 +24,9 @@ extern int test_only_control_plane;
 #endif
 static c_sockaddr_t *test_enb_addr = NULL;
 static c_sockaddr_t *test_enb_addr6 = NULL;
+
+static list_t s1ap_list;
+static list_t s1ap_list6;
 
 status_t testpacket_init()
 {
@@ -42,6 +44,12 @@ status_t testpacket_init()
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 #endif
 
+    list_init(&s1ap_list);
+    list_init(&s1ap_list6);
+
+    rv = sock_probe_node(&s1ap_list, &s1ap_list6, NULL, 36412);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
     return CORE_OK;
 }
 
@@ -58,6 +66,9 @@ status_t testpacket_final()
         test_enb_addr6 = NULL;
     }
 
+    sock_remove_all_nodes(&s1ap_list);
+    sock_remove_all_nodes(&s1ap_list6);
+
     return CORE_OK;
 }
 
@@ -66,8 +77,8 @@ status_t tests1ap_enb_connect(sock_id *new)
     status_t rv;
     sock_node_t *snode = NULL;
 
-    snode = list_first(&mme_self()->s1ap_list);
-    if (!snode) snode = list_first(&mme_self()->s1ap_list6);
+    snode = list_first(&s1ap_list);
+    if (!snode) snode = list_first(&s1ap_list6);
     d_assert(snode, return CORE_ERROR,);
 
     rv = sctp_client(new, SOCK_STREAM, snode->list);
@@ -96,6 +107,7 @@ status_t tests1ap_build_setup_req(
 {
     int erval = -1;
     int tac = 12345;
+    plmn_id_t plmn_id;
 
     s1ap_message_t message;
     S1ap_S1SetupRequestIEs_t *ies;
@@ -106,21 +118,19 @@ status_t tests1ap_build_setup_req(
 
     ies = &message.s1ap_S1SetupRequestIEs;
 
+    plmn_id_build(&plmn_id, 1, 1, 2);
+
     s1ap_uint32_to_ENB_ID(present, enb_id, &ies->global_ENB_ID.eNB_ID);
-    s1ap_buffer_to_OCTET_STRING(&mme_self()->served_gummei[0].plmn_id[0],
-            PLMN_ID_LEN, &ies->global_ENB_ID.pLMNidentity);
+    s1ap_buffer_to_OCTET_STRING(
+            &plmn_id, PLMN_ID_LEN, &ies->global_ENB_ID.pLMNidentity);
 
     supportedTA = (S1ap_SupportedTAs_Item_t *)
         core_calloc(1, sizeof(S1ap_SupportedTAs_Item_t));
-    if (mme_self()->served_tai[0].list2.tai[0].tac)
-        tac = mme_self()->served_tai[0].list2.tai[0].tac;
-    else
-        tac = mme_self()->served_tai[0].list0.tai[0].tac[0];
     s1ap_uint16_to_OCTET_STRING(tac, &supportedTA->tAC);
     plmnIdentity = (S1ap_PLMNidentity_t *)
         core_calloc(1, sizeof(S1ap_PLMNidentity_t));
-    s1ap_buffer_to_OCTET_STRING(&mme_self()->served_gummei[0].plmn_id[0],
-            PLMN_ID_LEN, plmnIdentity);
+    s1ap_buffer_to_OCTET_STRING(
+            &plmn_id, PLMN_ID_LEN, plmnIdentity);
     ASN_SEQUENCE_ADD(&supportedTA->broadcastPLMNs, plmnIdentity);
 
     ASN_SEQUENCE_ADD(&ies->supportedTAs, supportedTA);
