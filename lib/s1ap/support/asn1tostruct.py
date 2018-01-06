@@ -767,6 +767,7 @@ xer_encode_local(asn_TYPE_descriptor_t *td, void *sptr,
     mname = td->xml_tag;
     mlen = strlen(mname);
 
+    er.encoded = 0;
     ASN__TEXT_INDENT(0, indent);
     ASN__CALLBACK3("<", 1, mname, mlen, ">", 1);
 

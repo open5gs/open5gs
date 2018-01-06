@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2018-01-06 12:17:27.342336 by acetcom
+ * Created on: 2018-01-06 22:49:59.717432 by acetcom
  * from ['fix-a90.asn']
  ******************************************************************************/
 #include "s1ap_asn1c.h"

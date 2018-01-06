@@ -30,7 +30,7 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2018-01-06 12:17:27.425343 by acetcom
+ * Created on: 2018-01-06 22:49:59.817514 by acetcom
  * from ['fix-a90.asn']
  ******************************************************************************/
 #include <stdlib.h>
@@ -77,6 +77,7 @@ xer_encode_local(asn_TYPE_descriptor_t *td, void *sptr,
     mname = td->xml_tag;
     mlen = strlen(mname);
 
+    er.encoded = 0;
     ASN__TEXT_INDENT(0, indent);
     ASN__CALLBACK3("<", 1, mname, mlen, ">", 1);
 
