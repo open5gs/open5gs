@@ -146,8 +146,13 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         subnet = sess->ipv4->subnet;
     else if (ip_h->ip_v == 6 && sess->ipv6)
         subnet = sess->ipv6->subnet;
-    d_assert(subnet, goto cleanup,
-            "V:%d, IPv4:%p, IPv6:%p", ip_h->ip_v, sess->ipv4, sess->ipv6);
+
+    if (!subnet)
+    {
+        d_print_hex(pkbuf->payload, pkbuf->len);
+        d_assert(0, goto cleanup,
+                "V:%d, IPv4:%p, IPv6:%p", ip_h->ip_v, sess->ipv4, sess->ipv6);
+    }
 
     /* Check IPv6 */
     if (context_self()->parameter.no_slaac == 0 && ip_h->ip_v == 6)
