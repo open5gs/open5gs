@@ -153,6 +153,7 @@
 #include "S1ap-GTP-TEID.h"
 #include "S1ap-GUMMEI.h"
 #include "S1ap-GUMMEIList.h"
+#include "S1ap-GUMMEIType.h"
 #include "S1ap-GWContextReleaseIndication.h"
 #include "S1ap-Global-ENB-ID.h"
 #include "S1ap-HFN.h"

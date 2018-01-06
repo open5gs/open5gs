@@ -30,8 +30,8 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-12-08 15:46:41.521668 by acetcom
- * from ['S1AP-PDU.asn']
+ * Created on: 2018-01-06 12:17:27.393079 by acetcom
+ * from ['fix-a90.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_encoder
 #include "core_debug.h"
@@ -544,6 +544,17 @@ int s1ap_encode_s1ap_initialuemessage_ies(
                             S1ap_Criticality_reject,
                             &asn_DEF_S1ap_RelayNode_Indicator,
                             &s1ap_InitialUEMessage_IEs->relayNode_Indicator)) == NULL) {
+            return -1;
+        }
+        ASN_SEQUENCE_ADD(&s1ap_InitialUEMessage->protocolIEs.list, ie);
+    }
+
+    /* Optional field */
+    if (s1ap_InitialUEMessage_IEs->presenceMask & S1AP_INITIALUEMESSAGE_IES_GUMMEITYPE_PRESENT) {
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_GUMMEIType,
+                            S1ap_Criticality_ignore,
+                            &asn_DEF_S1ap_GUMMEIType,
+                            &s1ap_InitialUEMessage_IEs->gummeiType)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_InitialUEMessage->protocolIEs.list, ie);

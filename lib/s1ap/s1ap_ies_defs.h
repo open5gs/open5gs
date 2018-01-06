@@ -30,8 +30,8 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-12-08 15:46:41.467538 by acetcom
- * from ['S1AP-PDU.asn']
+ * Created on: 2018-01-06 12:17:27.342336 by acetcom
+ * from ['fix-a90.asn']
  ******************************************************************************/
 #include "s1ap_asn1c.h"
 
@@ -214,6 +214,7 @@ typedef struct S1ap_E_RABAdmittedItemIEs_s {
 #define S1AP_INITIALUEMESSAGE_IES_CELLACCESSMODE_PRESENT               (1 << 3)
 #define S1AP_INITIALUEMESSAGE_IES_GW_TRANSPORTLAYERADDRESS_PRESENT     (1 << 4)
 #define S1AP_INITIALUEMESSAGE_IES_RELAYNODE_INDICATOR_PRESENT          (1 << 5)
+#define S1AP_INITIALUEMESSAGE_IES_GUMMEITYPE_PRESENT                   (1 << 6)
 
 typedef struct S1ap_InitialUEMessage_IEs_s {
     uint16_t                       presenceMask;
@@ -228,6 +229,7 @@ typedef struct S1ap_InitialUEMessage_IEs_s {
     S1ap_CellAccessMode_t          cellAccessMode; ///< Optional field
     S1ap_TransportLayerAddress_t   gW_TransportLayerAddress; ///< Optional field
     S1ap_RelayNode_Indicator_t     relayNode_Indicator; ///< Optional field
+    S1ap_GUMMEIType_t              gummeiType; ///< Optional field
 } S1ap_InitialUEMessage_IEs_t;
 
 #define S1AP_KILLREQUESTIES_WARNINGAREALIST_PRESENT        (1 << 0)

@@ -30,8 +30,8 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-12-08 15:46:41.554442 by acetcom
- * from ['S1AP-PDU.asn']
+ * Created on: 2018-01-06 12:17:27.425343 by acetcom
+ * from ['fix-a90.asn']
  ******************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -397,6 +397,9 @@ asn_enc_rval_t s1ap_xer_print_s1ap_initialuemessage(
     /* Optional field */
     if (s1ap_InitialUEMessage_IEs->presenceMask & S1AP_INITIALUEMESSAGE_IES_RELAYNODE_INDICATOR_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_RelayNode_Indicator, &s1ap_InitialUEMessage_IEs->relayNode_Indicator, cb, app_key, 2);
+    /* Optional field */
+    if (s1ap_InitialUEMessage_IEs->presenceMask & S1AP_INITIALUEMESSAGE_IES_GUMMEITYPE_PRESENT)
+        xer_encode_local(&asn_DEF_S1ap_GUMMEIType, &s1ap_InitialUEMessage_IEs->gummeiType, cb, app_key, 2);
     cb("    </S1ap-InitialUEMessage-IEs>\n", 33, app_key);
     cb("</S1ap-InitialUEMessage-IEs-PDU>\n", 33, app_key);
     ASN__ENCODED_OK(er);

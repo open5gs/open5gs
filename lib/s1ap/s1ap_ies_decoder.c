@@ -30,8 +30,8 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-12-08 15:46:41.493356 by acetcom
- * from ['S1AP-PDU.asn']
+ * Created on: 2018-01-06 12:17:27.364656 by acetcom
+ * from ['fix-a90.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_decoder
 #include "core_debug.h"
@@ -955,6 +955,20 @@ int s1ap_decode_s1ap_initialuemessage_ies(
                     return -1;
                 }
                 s1ap_InitialUEMessage_IEs->presenceMask |= S1AP_INITIALUEMESSAGE_IES_RELAYNODE_INDICATOR_PRESENT;
+            } break;
+            /* Optional field */
+            case S1ap_ProtocolIE_ID_id_GUMMEIType:
+            {
+                S1ap_GUMMEIType_t *s1apGUMMEIType_p = &s1ap_InitialUEMessage_IEs->gummeiType;
+
+                dec_ret = aper_decode(NULL, &asn_DEF_S1ap_GUMMEIType, (void **)&s1apGUMMEIType_p, st->buf, st->size, 0, 0);
+                if (dec_ret.code != RC_OK)
+                {
+                    d_error("Decoding of IE s1apGUMMEIType failed");
+                    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_InitialUEMessage, s1ap_InitialUEMessage_p);
+                    return -1;
+                }
+                s1ap_InitialUEMessage_IEs->presenceMask |= S1AP_INITIALUEMESSAGE_IES_GUMMEITYPE_PRESENT;
             } break;
             default:
                 d_warn("Unknown protocol IE id (%d) for message s1ap_initialuemessage_ies", (int)ie_p->id);

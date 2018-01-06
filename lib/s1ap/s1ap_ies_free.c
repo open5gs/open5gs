@@ -30,8 +30,8 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-12-08 15:46:41.538009 by acetcom
- * from ['S1AP-PDU.asn']
+ * Created on: 2018-01-06 12:17:27.412202 by acetcom
+ * from ['fix-a90.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_free
 #include "core_debug.h"
@@ -148,6 +148,8 @@ void s1ap_free_s1ap_initialuemessage_ies(
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_TransportLayerAddress, &s1ap_InitialUEMessage_IEs->gW_TransportLayerAddress);
             /* Optional field */
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_RelayNode_Indicator, &s1ap_InitialUEMessage_IEs->relayNode_Indicator);
+            /* Optional field */
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_GUMMEIType, &s1ap_InitialUEMessage_IEs->gummeiType);
 }
 
 void s1ap_free_s1ap_killrequesties(

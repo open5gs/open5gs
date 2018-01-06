@@ -205,6 +205,7 @@ ASN_MODULE_SOURCES=	\
 	S1ap-GBR-QosInformation.c	\
 	S1ap-GTP-TEID.c	\
 	S1ap-GUMMEI.c	\
+	S1ap-GUMMEIType.c	\
 	S1ap-GWContextReleaseIndication.c	\
 	S1ap-HandoverRestrictionList.c	\
 	S1ap-HandoverType.c	\
@@ -574,6 +575,7 @@ ASN_MODULE_INCLUDES=	\
 	S1ap-GBR-QosInformation.h	\
 	S1ap-GTP-TEID.h	\
 	S1ap-GUMMEI.h	\
+	S1ap-GUMMEIType.h	\
 	S1ap-GWContextReleaseIndication.h	\
 	S1ap-HandoverRestrictionList.h	\
 	S1ap-HandoverType.h	\
