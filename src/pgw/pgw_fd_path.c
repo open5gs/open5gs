@@ -21,6 +21,8 @@ struct sess_state {
     gtp_xact_t *xact;
     pgw_sess_t *sess;
     pkbuf_t *gtpbuf;
+    c_uint32_t cc_request_type;
+    c_uint32_t cc_request_number;
     struct timespec ts; /* Time of sending the message */
 };
 
@@ -43,6 +45,7 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
     union avp_value val;
     struct sess_state *mi = NULL, *svg;
     struct session *session = NULL;
+    int new;
     gtp_message_t *message = NULL;
 
     d_assert(sess, return,);
@@ -51,23 +54,57 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
     message = gtpbuf->payload;
     d_assert(message, return, );
 
-    /* Create the random value to store with the session */
-    pool_alloc_node(&pgw_gx_sess_pool, &mi);
-    d_assert(mi, return, "malloc failed: %s", strerror(errno));
-    
-    mi->xact = xact;
-    mi->sess = sess;
-    mi->gtpbuf = gtpbuf;
-    
     /* Create the request */
     CHECK_FCT_DO( fd_msg_new(gx_cmd_ccr, MSGFL_ALLOC_ETEID, &req), goto out );
     
-    /* Create a new session */
-    #define GX_APP_SID_OPT  "app_gx"
-    CHECK_FCT_DO( fd_msg_new_session(req, (os0_t)GX_APP_SID_OPT, 
-            CONSTSTRLEN(GX_APP_SID_OPT)), goto out );
-    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL),
-            goto out );
+    if (cc_request_type == GX_CC_REQUEST_TYPE_INITIAL_REQUEST)
+    {
+        d_assert(sess->gx_sid == NULL, return, );
+        d_assert(sess->gx_sidlen == 0, return, );
+
+        /* Create the state to store with the session */
+        pool_alloc_node(&pgw_gx_sess_pool, &mi);
+        d_assert(mi, return, "malloc failed: %s", strerror(errno));
+        memset(mi, 0, sizeof *mi);
+        
+        /* Create a new session */
+        #define GX_APP_SID_OPT  "app_gx"
+        CHECK_FCT_DO( fd_msg_new_session(req, (os0_t)GX_APP_SID_OPT, 
+                CONSTSTRLEN(GX_APP_SID_OPT)), goto out );
+        CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL),
+                goto out );
+
+        /* Store Gx Session-ID in PGW Session Context */
+        CHECK_FCT_DO( fd_sess_getsid(session, &sess->gx_sid, &sess->gx_sidlen),
+                goto out );
+    }
+    else
+    {
+		CHECK_FCT_DO( fd_sess_fromsid_msg(sess->gx_sid, sess->gx_sidlen, 
+                    &session, &new), goto out );
+        d_assert(new == 0, return,);
+
+        CHECK_FCT_DO( fd_sess_state_retrieve(pgw_gx_reg, session, &mi),
+                goto out );
+        d_assert(mi, return, );
+
+        CHECK_FCT_DO( fd_message_session_id_set(
+                    req, sess->gx_sid, sess->gx_sidlen), goto out );
+
+        /* Save the session associated with the message */
+        CHECK_FCT_DO( fd_msg_sess_set(req, session), goto out );
+    }
+
+    mi->xact = xact;
+    mi->sess = sess;
+    mi->gtpbuf = gtpbuf;
+
+    mi->cc_request_type = cc_request_type;
+    if (cc_request_type == GX_CC_REQUEST_TYPE_INITIAL_REQUEST ||
+        cc_request_type == GX_CC_REQUEST_TYPE_EVENT_REQUEST)
+        mi->cc_request_number = 0;
+    else
+        mi->cc_request_number++;
 
     /* Set Origin-Host & Origin-Realm */
     CHECK_FCT_DO( fd_msg_add_origin(req, 0), goto out );
@@ -87,12 +124,12 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
 
     /* Set CC-Request-Type, CC-Request-Number */
     CHECK_FCT_DO( fd_msg_avp_new(gx_cc_request_type, 0, &avp), goto out );
-    val.i32 = cc_request_type;
+    val.i32 = mi->cc_request_type;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
     CHECK_FCT_DO( fd_msg_avp_new(gx_cc_request_number, 0, &avp), goto out );
-    val.i32 = 1;
+    val.i32 = mi->cc_request_number;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
@@ -756,11 +793,22 @@ out:
         d_trace(3, "in %d.%06ld sec\n", 
                 (int)(ts.tv_sec + 1 - mi->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - mi->ts.tv_nsec) / 1000);
-    
-    CHECK_FCT_DO( fd_msg_free(*msg), return );
-    *msg = NULL;
 
-    pgw_gx_sess_cleanup(mi, NULL, NULL);
+    if (mi->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
+    {
+        CHECK_FCT_DO( fd_sess_state_store(pgw_gx_reg, session, &mi), goto out );
+
+        CHECK_FCT_DO( fd_msg_free(*msg), return );
+        *msg = NULL;
+    }
+    else
+    {
+        CHECK_FCT_DO( fd_msg_free(*msg), return );
+        *msg = NULL;
+
+        pgw_gx_sess_cleanup(mi, NULL, NULL);
+    }
+    
     return;
 }
 
