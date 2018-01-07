@@ -7,6 +7,7 @@
 
 #define FD_3GPP_VENDOR_ID 10415
 
+struct dict_object *fd_session_id = NULL;
 struct dict_object *fd_origin_host = NULL;
 struct dict_object *fd_origin_realm = NULL;
 struct dict_object *fd_destination_host = NULL;
@@ -32,6 +33,7 @@ int fd_message_init()
     CHECK_dict_search( DICT_VENDOR, VENDOR_BY_ID, (void *)&id, &fd_vendor);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Vendor-Id", &fd_vendor_id);
 
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Session-Id", &fd_session_id);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Origin-Host", &fd_origin_host);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Origin-Realm", &fd_origin_realm);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Destination-Host", &fd_destination_host);
@@ -46,6 +48,27 @@ int fd_message_init()
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Vendor-Specific-Application-Id", &fd_vendor_specific_application_id);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "MIP6-Agent-Info", &fd_mip6_agent_info);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "MIP-Home-Agent-Address", &fd_mip_home_agent_address);
+
+    return 0;
+}
+
+int fd_message_session_id_set(
+        struct msg *msg, c_uint8_t *sid, size_t sidlen)
+{
+    struct avp *avp;
+    union avp_value val;
+
+	/* Create an AVP to hold it */
+	CHECK_FCT( fd_msg_avp_new( fd_session_id, 0, &avp ) );
+	
+	/* Set its value */
+	memset(&val, 0, sizeof(val));
+	val.os.data = sid;
+	val.os.len  = sidlen;
+	CHECK_FCT( fd_msg_avp_setvalue( avp, &val ) );
+	
+	/* Add it to the message */
+	CHECK_FCT( fd_msg_avp_add( msg, MSG_BRW_FIRST_CHILD, avp ) );
 
     return 0;
 }

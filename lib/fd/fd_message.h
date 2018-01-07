@@ -10,6 +10,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
+extern struct dict_object *fd_session_id;
 extern struct dict_object *fd_origin_host;
 extern struct dict_object *fd_origin_realm;
 extern struct dict_object *fd_destination_host;
@@ -29,6 +30,8 @@ extern struct dict_object *fd_vendor;
 extern struct dict_object *fd_vendor_id;
 
 CORE_DECLARE(int) fd_message_init(void);
+CORE_DECLARE(int) fd_message_session_id_set(
+        struct msg *msg, c_uint8_t *sid, size_t sidlen);
 CORE_DECLARE(int) fd_message_experimental_rescode_set(
         struct msg *msg, c_uint32_t result_code);
 CORE_DECLARE(int) fd_message_vendor_specific_appid_set(
