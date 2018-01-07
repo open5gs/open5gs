@@ -28,6 +28,12 @@ pool_declare(pgw_gx_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 
 static void pgw_gx_cca_cb(void *data, struct msg **msg);
 
+void pgw_gx_sess_cleanup(
+        struct sess_state *sess_data, os0_t sid, void * opaque)
+{
+    pool_free_node(&pgw_gx_sess_pool, sess_data);
+}
+
 void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
         pkbuf_t *gtpbuf, c_uint32_t cc_request_type)
 {
@@ -314,7 +320,6 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
             sess->pgw_s5c_teid);
 
 out:
-    pool_free_node(&pgw_gx_sess_pool, mi);
     return;
 }
 
@@ -755,8 +760,7 @@ out:
     CHECK_FCT_DO( fd_msg_free(*msg), return );
     *msg = NULL;
 
-    pool_free_node(&pgw_gx_sess_pool, mi);
-
+    pgw_gx_sess_cleanup(mi, NULL, NULL);
     return;
 }
 
@@ -770,7 +774,8 @@ int pgw_fd_init(void)
 	/* Install objects definitions for this application */
 	CHECK_FCT( gx_dict_init() );
 
-	CHECK_FCT( fd_sess_handler_create(&pgw_gx_reg, (void *)free, NULL, NULL) );
+	CHECK_FCT( fd_sess_handler_create(&pgw_gx_reg, pgw_gx_sess_cleanup,
+                NULL, NULL) );
 
 	/* Advertise the support for the application in the peer */
 	CHECK_FCT( fd_disp_app_support(gx_application, fd_vendor, 1, 0) );

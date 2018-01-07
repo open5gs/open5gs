@@ -13,18 +13,24 @@
 
 #define MAX_NUM_SESSION_STATE 32
 
-static struct session_handler *pgw_rx_reg = NULL;
+static struct session_handler *pcscf_rx_reg = NULL;
 static fd_config_t fd_config;
 
 struct sess_state {
     struct timespec ts; /* Time of sending the message */
 };
 
-pool_declare(pgw_rx_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
+pool_declare(pcscf_rx_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 
-static void pgw_rx_aaa_cb(void *data, struct msg **msg);
+static void pcscf_rx_aaa_cb(void *data, struct msg **msg);
 
-void pgw_rx_send_aar()
+void pcscf_rx_sess_cleanup(
+        struct sess_state *sess_data, os0_t sid, void * opaque)
+{
+    pool_free_node(&pcscf_rx_sess_pool, sess_data);
+}
+
+void pcscf_rx_send_aar()
 {
     struct msg *req = NULL;
     struct avp *avp;
@@ -40,7 +46,7 @@ void pgw_rx_send_aar()
     c_uint32_t addr = 0x0100007f;
 
     /* Create the random value to store with the session */
-    pool_alloc_node(&pgw_rx_sess_pool, &mi);
+    pool_alloc_node(&pcscf_rx_sess_pool, &mi);
     d_assert(mi, return, "malloc failed: %s", strerror(errno));
     
     /* Create the request */
@@ -110,10 +116,10 @@ void pgw_rx_send_aar()
     svg = mi;
     
     /* Store this value in the session */
-    CHECK_FCT_DO( fd_sess_state_store(pgw_rx_reg, session, &mi), goto out );
+    CHECK_FCT_DO( fd_sess_state_store(pcscf_rx_reg, session, &mi), goto out );
     
     /* Send the request */
-    CHECK_FCT_DO( fd_msg_send(&req, pgw_rx_aaa_cb, svg), goto out );
+    CHECK_FCT_DO( fd_msg_send(&req, pcscf_rx_aaa_cb, svg), goto out );
 
     /* Increment the counter */
     CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
@@ -121,11 +127,10 @@ void pgw_rx_send_aar()
     CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
 
 out:
-    pool_free_node(&pgw_rx_sess_pool, mi);
     return;
 }
 
-static void pgw_rx_aaa_cb(void *data, struct msg **msg)
+static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
 {
     struct sess_state *mi = NULL;
     struct timespec ts;
@@ -148,7 +153,7 @@ static void pgw_rx_aaa_cb(void *data, struct msg **msg)
             return );
     d_assert(new == 0, return, );
     
-    CHECK_FCT_DO( fd_sess_state_retrieve(pgw_rx_reg, session, &mi), return );
+    CHECK_FCT_DO( fd_sess_state_retrieve(pcscf_rx_reg, session, &mi), return );
     d_assert(mi && (void *)mi == data, return, );
 
     /* Value of Result Code */
@@ -260,8 +265,7 @@ out:
     CHECK_FCT_DO( fd_msg_free(*msg), return );
     *msg = NULL;
 
-    pool_free_node(&pgw_rx_sess_pool, mi);
-
+    pcscf_rx_sess_cleanup(mi, NULL, NULL);
     return;
 }
 
@@ -299,7 +303,7 @@ void pcscf_fd_config()
 
 int pcscf_fd_init(void)
 {
-    pool_init(&pgw_rx_sess_pool, MAX_NUM_SESSION_STATE);
+    pool_init(&pcscf_rx_sess_pool, MAX_NUM_SESSION_STATE);
 
     pcscf_fd_config();
 
@@ -307,7 +311,8 @@ int pcscf_fd_init(void)
 
 	CHECK_FCT( rx_dict_init() );
 
-	CHECK_FCT( fd_sess_handler_create(&pgw_rx_reg, (void *)free, NULL, NULL) );
+	CHECK_FCT( fd_sess_handler_create(&pcscf_rx_reg, pcscf_rx_sess_cleanup,
+                NULL, NULL) );
 
 	/* Advertise the support for the application in the peer */
 	CHECK_FCT( fd_disp_app_support(rx_application, fd_vendor, 1, 0) );
@@ -317,15 +322,15 @@ int pcscf_fd_init(void)
 
 void pcscf_fd_final(void)
 {
-	CHECK_FCT_DO( fd_sess_handler_destroy(&pgw_rx_reg, NULL), );
+	CHECK_FCT_DO( fd_sess_handler_destroy(&pcscf_rx_reg, NULL), );
 
     fd_final();
 
-    if (pool_used(&pgw_rx_sess_pool))
-        d_error("%d not freed in pgw_rx_sess_pool[%d] of S6A-SM",
-                pool_used(&pgw_rx_sess_pool), pool_size(&pgw_rx_sess_pool));
-    d_trace(3, "%d not freed in pgw_rx_sess_pool[%d] of S6A-SM\n",
-            pool_used(&pgw_rx_sess_pool), pool_size(&pgw_rx_sess_pool));
+    if (pool_used(&pcscf_rx_sess_pool))
+        d_error("%d not freed in pcscf_rx_sess_pool[%d] of S6A-SM",
+                pool_used(&pcscf_rx_sess_pool), pool_size(&pcscf_rx_sess_pool));
+    d_trace(3, "%d not freed in pcscf_rx_sess_pool[%d] of S6A-SM\n",
+            pool_used(&pcscf_rx_sess_pool), pool_size(&pcscf_rx_sess_pool));
 
-    pool_final(&pgw_rx_sess_pool);
+    pool_final(&pcscf_rx_sess_pool);
 }

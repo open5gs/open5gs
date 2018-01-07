@@ -25,6 +25,12 @@ pool_declare(mme_s6a_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 static void mme_s6a_aia_cb(void *data, struct msg **msg);
 static void mme_s6a_ula_cb(void *data, struct msg **msg);
 
+void mme_s6a_sess_cleanup(
+        struct sess_state *sess_data, os0_t sid, void * opaque)
+{
+    pool_free_node(&mme_s6a_sess_pool, sess_data);
+}
+
 /* MME Sends Authentication Information Request to HSS */
 void mme_s6a_send_air(mme_ue_t *mme_ue,
     nas_authentication_failure_parameter_t *authentication_failure_parameter)
@@ -143,7 +149,6 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
             mme_ue->imsi_bcd);
 
 out:
-    pool_free_node(&mme_s6a_sess_pool, mi);
     return;
 }
 
@@ -376,8 +381,7 @@ out:
     CHECK_FCT_DO( fd_msg_free(*msg), return );
     *msg = NULL;
 
-    pool_free_node(&mme_s6a_sess_pool, mi);
-
+    mme_s6a_sess_cleanup(mi, NULL, NULL);
     return;
 }
 
@@ -481,7 +485,6 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
             mme_ue->imsi_bcd);
 
 out:
-    pool_free_node(&mme_s6a_sess_pool, mi);
     return;
 }
 
@@ -908,8 +911,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     CHECK_FCT_DO( fd_msg_free(*msg), return );
     *msg = NULL;
 
-    pool_free_node(&mme_s6a_sess_pool, mi);
-
+    mme_s6a_sess_cleanup(mi, NULL, NULL);
     return;
 }
 
@@ -924,7 +926,8 @@ int mme_fd_init(void)
 	/* Install objects definitions for this application */
 	CHECK_FCT( s6a_dict_init() );
 
-	CHECK_FCT( fd_sess_handler_create(&mme_s6a_reg, (void *)free, NULL, NULL) );
+	CHECK_FCT( fd_sess_handler_create(&mme_s6a_reg, &mme_s6a_sess_cleanup,
+                NULL, NULL) );
 
 	/* Advertise the support for the application in the peer */
 	CHECK_FCT( fd_disp_app_support(s6a_application, fd_vendor, 1, 0) );
