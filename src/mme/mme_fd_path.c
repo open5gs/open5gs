@@ -11,8 +11,6 @@
 #include "mme_event.h"
 #include "mme_fd_path.h"
 
-#define MAX_NUM_SESSION_STATE 32
-
 static struct session_handler *mme_s6a_reg = NULL;
 
 struct sess_state {
@@ -20,7 +18,7 @@ struct sess_state {
     struct timespec ts; /* Time of sending the message */
 };
 
-pool_declare(mme_s6a_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
+pool_declare(mme_s6a_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
 
 static void mme_s6a_aia_cb(void *data, struct msg **msg);
 static void mme_s6a_ula_cb(void *data, struct msg **msg);
@@ -918,7 +916,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 
 int mme_fd_init(void)
 {
-    pool_init(&mme_s6a_sess_pool, MAX_NUM_SESSION_STATE);
+    pool_init(&mme_s6a_sess_pool, MAX_POOL_OF_DIAMETER_SESS);
 
     CHECK_FCT( fd_init(FD_MODE_CLIENT,
                 mme_self()->fd_conf_path, mme_self()->fd_config) );
@@ -926,6 +924,7 @@ int mme_fd_init(void)
 	/* Install objects definitions for this application */
 	CHECK_FCT( s6a_dict_init() );
 
+    /* Create handler for sessions */
 	CHECK_FCT( fd_sess_handler_create(&mme_s6a_reg, &mme_s6a_sess_cleanup,
                 NULL, NULL) );
 
@@ -941,14 +940,11 @@ void mme_fd_final(void)
 
     fd_final();
 
-    if (pool_size(&mme_s6a_sess_pool) != pool_avail(&mme_s6a_sess_pool))
-        d_error("%d not freed in mme_s6a_sess_pool[%d] of S6A-SM",
-            pool_size(&mme_s6a_sess_pool) - pool_avail(&mme_s6a_sess_pool),
-            pool_size(&mme_s6a_sess_pool));
-
-    d_trace(3, "%d not freed in mme_s6a_sess_pool[%d] of S6A-SM\n",
-            pool_size(&mme_s6a_sess_pool) - pool_avail(&mme_s6a_sess_pool),
-            pool_size(&mme_s6a_sess_pool));
+    if (pool_used(&mme_s6a_sess_pool))
+        d_error("%d not freed in mme_s6a_sess_pool[%d] of GX-SM",
+                pool_used(&mme_s6a_sess_pool), pool_size(&mme_s6a_sess_pool));
+    d_trace(3, "%d not freed in mme_s6a_sess_pool[%d] of GX-SM\n",
+            pool_used(&mme_s6a_sess_pool), pool_size(&mme_s6a_sess_pool));
 
     pool_final(&mme_s6a_sess_pool);
 }

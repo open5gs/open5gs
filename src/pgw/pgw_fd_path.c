@@ -13,8 +13,6 @@
 #include "pgw_event.h"
 #include "pgw_fd_path.h"
 
-#define MAX_NUM_SESSION_STATE 32
-
 static struct session_handler *pgw_gx_reg = NULL;
 
 struct sess_state {
@@ -26,7 +24,7 @@ struct sess_state {
     struct timespec ts; /* Time of sending the message */
 };
 
-pool_declare(pgw_gx_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
+pool_declare(pgw_gx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
 
 static void pgw_gx_cca_cb(void *data, struct msg **msg);
 
@@ -345,7 +343,7 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
     
     /* Store this value in the session */
     CHECK_FCT_DO( fd_sess_state_store(pgw_gx_reg, session, &mi), goto out );
-    d_assert(mi == NULL, return,);
+    d_assert(mi == NULL,,);
     
     /* Send the request */
     CHECK_FCT_DO( fd_msg_send(&req, pgw_gx_cca_cb, svg), goto out );
@@ -799,25 +797,22 @@ out:
     if (mi->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
         CHECK_FCT_DO( fd_sess_state_store(pgw_gx_reg, session, &mi), goto out );
-        d_assert(mi == NULL, return,);
-
-        CHECK_FCT_DO( fd_msg_free(*msg), return );
-        *msg = NULL;
+        d_assert(mi == NULL,,);
     }
     else
     {
-        CHECK_FCT_DO( fd_msg_free(*msg), return );
-        *msg = NULL;
-
         pgw_gx_sess_cleanup(mi, NULL, NULL);
     }
+
+    CHECK_FCT_DO( fd_msg_free(*msg), return );
+    *msg = NULL;
     
     return;
 }
 
 int pgw_fd_init(void)
 {
-    pool_init(&pgw_gx_sess_pool, MAX_NUM_SESSION_STATE);
+    pool_init(&pgw_gx_sess_pool, MAX_POOL_OF_DIAMETER_SESS);
 
     CHECK_FCT( fd_init(FD_MODE_CLIENT|FD_MODE_SERVER,
                 pgw_self()->fd_conf_path, pgw_self()->fd_config) );
@@ -842,9 +837,9 @@ void pgw_fd_final(void)
     fd_final();
 
     if (pool_used(&pgw_gx_sess_pool))
-        d_error("%d not freed in pgw_gx_sess_pool[%d] of S6A-SM",
+        d_error("%d not freed in pgw_gx_sess_pool[%d] of GX-SM",
                 pool_used(&pgw_gx_sess_pool), pool_size(&pgw_gx_sess_pool));
-    d_trace(3, "%d not freed in pgw_gx_sess_pool[%d] of S6A-SM\n",
+    d_trace(3, "%d not freed in pgw_gx_sess_pool[%d] of GX-SM\n",
             pool_used(&pgw_gx_sess_pool), pool_size(&pgw_gx_sess_pool));
 
     pool_final(&pgw_gx_sess_pool);

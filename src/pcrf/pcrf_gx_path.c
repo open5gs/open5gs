@@ -2,6 +2,7 @@
 
 #include "core_lib.h"
 #include "core_debug.h"
+#include "core_pool.h"
 
 #include "fd/fd_lib.h"
 #include "fd/gx/gx_dict.h"
@@ -9,14 +10,22 @@
 
 #include "pcrf_context.h"
 
+struct sess_state {
+    c_uint32_t cc_request_type;
+    struct timespec ts; /* Time of sending the message */
+};
+
 static struct session_handler *pcrf_gx_reg = NULL;
 static struct disp_hdl *hdl_gx_fb = NULL; 
 static struct disp_hdl *hdl_gx_ccr = NULL; 
 
+pool_declare(pcrf_gx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
+
 void pcrf_gx_sess_cleanup(
         struct sess_state *sess_data, os0_t sid, void *opaque)
 {
-//    pool_free_node(&pgw_gx_sess_pool, sess_data);
+    printf("cleanup\n");
+    pool_free_node(&pcrf_gx_sess_pool, sess_data);
 }
 
 static int pcrf_gx_fb_cb(struct msg **msg, struct avp *avp, 
@@ -35,9 +44,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     struct avp *avpch1, *avpch2, *avpch3, *avpch4;
     struct avp_hdr *hdr;
     union avp_value val;
-#if 0
     struct sess_state *sess_data = NULL;
-#endif
 
     status_t rv;
     gx_cca_message_t cca_message;
@@ -45,22 +52,19 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     c_int8_t apn[MAX_APN_LEN+1];
     int i, j;
 
-    c_uint32_t cc_request_type = 0;
     c_uint32_t cc_request_number = 0;
     c_uint32_t result_code = GX_DIAMETER_ERROR_USER_UNKNOWN;
 	
     d_assert(msg, return EINVAL,);
 
-#if 0
     d_assert( fd_sess_state_retrieve(pcrf_gx_reg, sess, &sess_data) == 0,
             return EINVAL,);
     if (!sess_data)
     {
-        pool_alloc_node(&pgw_gx_sess_pool, &sess_data);
+        pool_alloc_node(&pcrf_gx_sess_pool, &sess_data);
         d_assert(sess_data, return EINVAL,);
         memset(sess_data, 0, sizeof *sess_data);
     }
-#endif
 
     /* Initialize Message */
     memset(&cca_message, 0, sizeof(gx_cca_message_t));
@@ -73,7 +77,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Get CC-Request-Type */
     CHECK_FCT( fd_msg_search_avp(qry, gx_cc_request_type, &avp) );
     CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
-    cc_request_type = hdr->avp_value->i32;
+    sess_data->cc_request_type = hdr->avp_value->i32;
 
     /* Get CC-Request-Number */
     CHECK_FCT( fd_msg_search_avp(qry, gx_cc_request_number, &avp) );
@@ -88,7 +92,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
     /* Set CC-Request-Type */
     CHECK_FCT_DO( fd_msg_avp_new(gx_cc_request_type, 0, &avp), goto out );
-    val.i32 = cc_request_type;
+    val.i32 = sess_data->cc_request_type;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
 
@@ -126,7 +130,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    if (cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
+    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
         /* Set Charging-Rule-Install */
         if (cca_message.num_of_pcc_rule)
@@ -328,6 +332,18 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
 
+    if (sess_data->cc_request_type == GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
+    {
+        /* Store this value in the session */
+        CHECK_FCT_DO( fd_sess_state_store(pcrf_gx_reg, sess, &sess_data),
+                goto out );
+        d_assert(sess_data == NULL,,);
+    }
+    else
+    {
+        pcrf_gx_sess_cleanup(sess_data, NULL, NULL);
+    }
+
 	/* Send the answer */
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 
@@ -362,9 +378,12 @@ int pcrf_gx_init(void)
 {
 	struct disp_when data;
 
-	/* GX Interface */
+    pool_init(&pcrf_gx_sess_pool, MAX_POOL_OF_DIAMETER_SESS);
+
+	/* Install objects definitions for this application */
 	CHECK_FCT( gx_dict_init() );
 
+    /* Create handler for sessions */
 	CHECK_FCT( fd_sess_handler_create(&pcrf_gx_reg, pcrf_gx_sess_cleanup,
                 NULL, NULL) );
 
@@ -378,6 +397,7 @@ int pcrf_gx_init(void)
 	CHECK_FCT( fd_disp_register(pcrf_gx_ccr_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_gx_ccr) );
 
+	/* Advertise the support for the application in the peer */
 	CHECK_FCT( fd_disp_app_support(gx_application, fd_vendor, 1, 0) );
 
 	return 0;
@@ -390,4 +410,12 @@ void pcrf_gx_final(void)
 		(void) fd_disp_unregister(&hdl_gx_fb, NULL);
 	if (hdl_gx_ccr)
 		(void) fd_disp_unregister(&hdl_gx_ccr, NULL);
+
+    if (pool_used(&pcrf_gx_sess_pool))
+        d_error("%d not freed in pcrf_gx_sess_pool[%d] of GX-SM",
+                pool_used(&pcrf_gx_sess_pool), pool_size(&pcrf_gx_sess_pool));
+    d_trace(3, "%d not freed in pcrf_gx_sess_pool[%d] of GX-SM\n",
+            pool_used(&pcrf_gx_sess_pool), pool_size(&pcrf_gx_sess_pool));
+
+    pool_final(&pcrf_gx_sess_pool);
 }

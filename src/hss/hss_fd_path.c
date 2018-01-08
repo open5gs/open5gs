@@ -585,15 +585,12 @@ int hss_fd_init(void)
 
 void hss_fd_final(void)
 {
-	if (hdl_s6a_fb) {
+	if (hdl_s6a_fb)
 		(void) fd_disp_unregister(&hdl_s6a_fb, NULL);
-	}
-	if (hdl_s6a_air) {
+	if (hdl_s6a_air)
 		(void) fd_disp_unregister(&hdl_s6a_air, NULL);
-	}
-	if (hdl_s6a_ulr) {
+	if (hdl_s6a_ulr)
 		(void) fd_disp_unregister(&hdl_s6a_ulr, NULL);
-	}
 
     fd_final();
 }

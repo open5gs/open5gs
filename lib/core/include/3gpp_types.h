@@ -26,6 +26,7 @@ extern "C" {
 #define MAX_POOL_OF_BEARER          (MAX_POOL_OF_SESS * MAX_NUM_OF_BEARER)
 #define MAX_POOL_OF_TUNNEL          (MAX_POOL_OF_BEARER * MAX_NUM_OF_TUNNEL)
 #define MAX_POOL_OF_PF              (MAX_POOL_OF_BEARER * MAX_NUM_OF_PF)
+#define MAX_POOL_OF_DIAMETER_SESS   32
 
 #define MAX_NUM_OF_HOSTNAME         16
 #define MAX_NUM_OF_PCC_RULE         8 
