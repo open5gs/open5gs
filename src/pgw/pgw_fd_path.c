@@ -195,7 +195,7 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
                     goto out );
         }
 
-        /* Set Framed-IP-Address-Prefix */
+        /* Set Framed-IPv6-Prefix */
         if (sess->ipv6)
         {
             CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ipv6_prefix, 0, &avp),
@@ -825,6 +825,7 @@ int pgw_fd_init(void)
 	/* Install objects definitions for this application */
 	CHECK_FCT( gx_dict_init() );
 
+    /* Create handler for sessions */
 	CHECK_FCT( fd_sess_handler_create(&pgw_gx_reg, pgw_gx_sess_cleanup,
                 NULL, NULL) );
 

@@ -4,7 +4,7 @@ noinst_LTLIBRARIES = libpcrf.la
 
 libpcrf_la_SOURCES = \
 	pcrf_context.h pcrf_fd_path.h \
-	pcrf_init.c pcrf_context.c pcrf_fd_path.c \
+	pcrf_init.c pcrf_context.c pcrf_fd_path.c pcrf_gx_path.c pcrf_rx_path.c \
 	$(NULL)
 
 libpcrf_la_DEPENDENCIES = \

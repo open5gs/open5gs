@@ -10,6 +10,11 @@ extern "C" {
 CORE_DECLARE(int) pcrf_fd_init(void);
 CORE_DECLARE(void) pcrf_fd_final(void);
 
+CORE_DECLARE(int) pcrf_gx_init(void);
+CORE_DECLARE(void) pcrf_gx_final(void);
+CORE_DECLARE(int) pcrf_rx_init(void);
+CORE_DECLARE(void) pcrf_rx_final(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

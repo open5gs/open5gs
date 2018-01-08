@@ -123,7 +123,7 @@ typedef struct _mme_context_t {
 } mme_context_t;
 
 typedef struct _mme_enb_t {
-    lnode_t         node;   /* A node of list_t */
+    lnode_t         node;   /* FIXME : remove it */
     index_t         index;  /* An index of this node */
     fsm_t           sm;     /* A state machine */
 
@@ -167,7 +167,7 @@ struct _enb_ue_t {
 }; 
 
 struct _mme_ue_t {
-    lnode_t         node;   /* A node of list_t */
+    lnode_t         node;   /* FIXME : remove it */
     index_t         index;  /* An index of this node */
     fsm_t           sm;     /* A state machine */
 

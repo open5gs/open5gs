@@ -25,6 +25,7 @@ pcrf_context_t* pcrf_self()
 
 status_t pcrf_context_init(void)
 {
+    status_t rv;
     d_assert(context_initialized == 0, return CORE_ERROR,
             "PCRF context already has been context_initialized");
 
@@ -35,11 +36,14 @@ status_t pcrf_context_init(void)
     memset(&self, 0, sizeof(pcrf_context_t));
     self.fd_config = &g_fd_conf;
 
-    if (mutex_create(&self.db_lock, MUTEX_DEFAULT) != CORE_OK)
-    {
-        d_error("Mutex creation failed");
-        return CORE_ERROR;
-    }
+    rv = mutex_create(&self.db_lock, MUTEX_DEFAULT);
+    d_assert(rv == CORE_OK, return CORE_ERROR, );
+
+    rv = mutex_create(&self.hash_lock, MUTEX_DEFAULT);
+    d_assert(rv == CORE_OK, return CORE_ERROR, );
+
+    self.ipv4_hash = hash_make();
+    self.ipv6_hash = hash_make();
 
     context_initialized = 1;
 
@@ -50,6 +54,13 @@ status_t pcrf_context_final(void)
 {
     d_assert(context_initialized == 1, return CORE_ERROR,
             "PCRF context already has been finalized");
+
+    d_assert(self.ipv4_hash,, );
+    hash_destroy(self.ipv4_hash);
+    d_assert(self.ipv6_hash,, );
+    hash_destroy(self.ipv6_hash);
+
+    mutex_delete(self.hash_lock);
 
     mutex_delete(self.db_lock);
 
@@ -320,6 +331,10 @@ status_t pcrf_context_setup_trace_module()
 
         extern int _pcrf_fd_path;
         d_trace_level(&_pcrf_fd_path, diameter);
+        extern int _pcrf_gx_path;
+        d_trace_level(&_pcrf_gx_path, diameter);
+        extern int _pcrf_rx_path;
+        d_trace_level(&_pcrf_rx_path, diameter);
         extern int _fd_init;
         d_trace_level(&_fd_init, diameter);
         extern int _fd_logger;

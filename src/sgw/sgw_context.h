@@ -45,7 +45,7 @@ typedef struct _sgw_context_t {
 } sgw_context_t;
 
 typedef struct _sgw_ue_t {
-    lnode_t         node;   /* A node of list_t */
+    lnode_t         node;   /* FIXME : remove it */
     index_t         index;  /* An index of this node */
 
     c_uint32_t      sgw_s11_teid;   /* SGW-S11-TEID is derived from INDEX */

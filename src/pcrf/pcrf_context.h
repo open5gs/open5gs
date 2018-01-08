@@ -3,6 +3,7 @@
 
 #include "core_errno.h"
 #include "core_mutex.h"
+#include "core_hash.h"
 
 #include "3gpp_types.h"
 #include "fd/gx/gx_message.h"
@@ -18,6 +19,10 @@ typedef struct _pcrf_context_t {
 
     void            *subscriberCollection;
     mutex_id        db_lock;
+
+    hash_t          *ipv4_hash;     /* hash table for Gx Frame-IP-Address */
+    hash_t          *ipv6_hash;     /* hash table for Gx Frame-IPv6s-Prefix */
+    mutex_id        hash_lock;
 } pcrf_context_t;
 
 CORE_DECLARE(status_t) pcrf_context_init(void);

@@ -25,6 +25,8 @@ hss_context_t* hss_self()
 
 status_t hss_context_init(void)
 {
+    status_t rv;
+
     d_assert(context_initialized == 0, return CORE_ERROR,
             "HSS context already has been context_initialized");
 
@@ -35,11 +37,8 @@ status_t hss_context_init(void)
     memset(&self, 0, sizeof(hss_context_t));
     self.fd_config = &g_fd_conf;
 
-    if (mutex_create(&self.db_lock, MUTEX_DEFAULT) != CORE_OK)
-    {
-        d_error("Mutex creation failed");
-        return CORE_ERROR;
-    }
+    rv = mutex_create(&self.db_lock, MUTEX_DEFAULT);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     context_initialized = 1;
 
