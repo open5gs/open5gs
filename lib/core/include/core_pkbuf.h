@@ -191,6 +191,10 @@ CORE_DECLARE(void) core_free(void *ptr);
 CORE_DECLARE(void *) core_calloc(size_t nmemb, size_t size);
 CORE_DECLARE(void *) core_realloc(void *ptr, size_t size);
 
+CORE_DECLARE(char *) core_strdup(const char *s);
+CORE_DECLARE(char *) core_strndup(const char *s, size_t n);
+CORE_DECLARE(void *) core_memdup(const void *m, size_t n);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

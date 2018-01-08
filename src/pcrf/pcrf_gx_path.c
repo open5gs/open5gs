@@ -3,6 +3,7 @@
 #include "core_lib.h"
 #include "core_debug.h"
 #include "core_pool.h"
+#include "core_pkbuf.h"
 
 #include "fd/fd_lib.h"
 #include "fd/gx/gx_dict.h"
@@ -11,8 +12,8 @@
 #include "pcrf_context.h"
 
 struct sess_state {
-    c_uint32_t cc_request_type;
-    struct timespec ts; /* Time of sending the message */
+    c_uint32_t  cc_request_type;
+    char        *sid;
 };
 
 static struct session_handler *pcrf_gx_reg = NULL;
@@ -21,10 +22,27 @@ static struct disp_hdl *hdl_gx_ccr = NULL;
 
 pool_declare(pcrf_gx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
 
-void pcrf_gx_sess_cleanup(
+static __inline__ struct sess_state *new_state(os0_t sid)
+{
+    struct sess_state *new = NULL;
+    pool_alloc_node(&pcrf_gx_sess_pool, &new);
+    d_assert(new, return NULL,);
+    memset(new, 0, sizeof *new);
+
+    new->sid = core_strdup((char *)sid);
+    d_assert(new->sid, return NULL,);
+
+    return new;
+}
+
+static void state_cleanup(
         struct sess_state *sess_data, os0_t sid, void *opaque)
 {
-    printf("cleanup\n");
+    d_assert(sess_data, return,);
+
+    if (sess_data->sid)
+        core_free(sess_data->sid);
+
     pool_free_node(&pcrf_gx_sess_pool, sess_data);
 }
 
@@ -61,9 +79,13 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
             return EINVAL,);
     if (!sess_data)
     {
-        pool_alloc_node(&pcrf_gx_sess_pool, &sess_data);
+        os0_t sid;
+        size_t sidlen;
+
+        d_assert( fd_sess_getsid(sess, &sid, &sidlen) == 0, return EINVAL,);
+
+        sess_data = new_state(sid);
         d_assert(sess_data, return EINVAL,);
-        memset(sess_data, 0, sizeof *sess_data);
     }
 
     /* Initialize Message */
@@ -341,7 +363,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     }
     else
     {
-        pcrf_gx_sess_cleanup(sess_data, NULL, NULL);
+        state_cleanup(sess_data, NULL, NULL);
     }
 
 	/* Send the answer */
@@ -384,7 +406,7 @@ int pcrf_gx_init(void)
 	CHECK_FCT( gx_dict_init() );
 
     /* Create handler for sessions */
-	CHECK_FCT( fd_sess_handler_create(&pcrf_gx_reg, pcrf_gx_sess_cleanup,
+	CHECK_FCT( fd_sess_handler_create(&pcrf_gx_reg, state_cleanup,
                 NULL, NULL) );
 
 	memset(&data, 0, sizeof(data));

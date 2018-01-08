@@ -110,8 +110,7 @@ typedef struct _pgw_sess_t {
     c_uint32_t      pgw_s5c_teid;   /* PGW-S5C-TEID is derived from INDEX */
     c_uint32_t      sgw_s5c_teid;   /* SGW-S5C-TEID is received from SGW */
 
-    c_uint8_t       *gx_sid;        /* Gx Session ID */
-    size_t          gx_sidlen;      /* Gx Session ID Length */
+    c_int8_t        *gx_sid;        /* Gx Session ID */
 
     /* IMSI */
     c_uint8_t       imsi[MAX_IMSI_LEN];

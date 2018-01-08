@@ -55,21 +55,23 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
     /* Create the request */
     CHECK_FCT_DO( fd_msg_new(gx_cmd_ccr, MSGFL_ALLOC_ETEID, &req), goto out );
 
-    if (sess->gx_sid && sess->gx_sidlen)
+    if (sess->gx_sid)
     {
         /* Retrieve session by Session-Id */
-		CHECK_FCT_DO( fd_sess_fromsid_msg(sess->gx_sid, sess->gx_sidlen, 
+        size_t sidlen = strlen(sess->gx_sid);
+		CHECK_FCT_DO( fd_sess_fromsid_msg((os0_t)sess->gx_sid, sidlen,
                     &session, &new), goto out );
         d_assert(new == 0, return,);
 
         /* Add Session-Id to the message */
         CHECK_FCT_DO( fd_message_session_id_set(
-                    req, sess->gx_sid, sess->gx_sidlen), goto out );
+                    req, (os0_t)sess->gx_sid, sidlen), goto out );
         /* Save the session associated with the message */
         CHECK_FCT_DO( fd_msg_sess_set(req, session), goto out );
     }
     else
     {
+        size_t sidlen;
         /* Create a new session */
         #define GX_APP_SID_OPT  "app_gx"
         CHECK_FCT_DO( fd_msg_new_session(req, (os0_t)GX_APP_SID_OPT, 
@@ -78,8 +80,9 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
                 goto out );
 
         /* Store Session-Id in PGW Session Context */
-        CHECK_FCT_DO( fd_sess_getsid(session, &sess->gx_sid, &sess->gx_sidlen),
+        CHECK_FCT_DO( fd_sess_getsid(session, (os0_t *)&sess->gx_sid, &sidlen),
                 goto out );
+        d_assert(sidlen == strlen(sess->gx_sid), return,);
     }
 
     /* Retrieve session state in this session */

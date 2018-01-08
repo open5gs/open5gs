@@ -613,3 +613,44 @@ void *core_realloc(void *ptr, size_t size)
     }
 }
 
+char *core_strdup(const char *s)
+{
+    char *res;
+    size_t len;
+
+    if (s == NULL)
+        return NULL;
+
+    len = strlen(s) + 1;
+    res = core_memdup(s, len);
+    return res;
+}
+
+char *core_strndup(const char *s, size_t n)
+{
+    char *res;
+    const char *end;
+
+    if (s == NULL)
+        return NULL;
+
+    end = memchr(s, '\0', n);
+    if (end != NULL)
+        n = end - s;
+    res = core_malloc(n + 1);
+    memcpy(res, s, n);
+    res[n] = '\0';
+    return res;
+}
+
+void *core_memdup(const void *m, size_t n)
+{
+    void *res;
+
+    if (m == NULL)
+        return NULL;
+
+    res = core_malloc(n);
+    memcpy(res, m, n);
+    return res;
+}
