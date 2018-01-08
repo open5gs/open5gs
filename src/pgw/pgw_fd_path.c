@@ -45,6 +45,7 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
     struct session *session = NULL;
     int new;
     gtp_message_t *message = NULL;
+    paa_t paa; /* For changing Framed-IPv6-Prefix Length to 128 */
 
     d_assert(sess, return,);
     d_assert(sess->ipv4 || sess->ipv6, return,);
@@ -201,7 +202,10 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
         {
             CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ipv6_prefix, 0, &avp),
                     goto out );
-            val.os.data = (c_uint8_t*)&sess->pdn.paa;
+            memcpy(&paa, &sess->pdn.paa, PAA_IPV6_LEN);
+#define FRAMED_IPV6_PREFIX_LENGTH 128  /* from spec document */
+            paa.len = FRAMED_IPV6_PREFIX_LENGTH; 
+            val.os.data = (c_uint8_t*)&paa;
             val.os.len = PAA_IPV6_LEN;
             CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
             CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),

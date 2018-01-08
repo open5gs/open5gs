@@ -12,8 +12,14 @@
 #include "pcrf_context.h"
 
 struct sess_state {
-    c_uint32_t  cc_request_type;
-    char        *sid;
+    c_uint32_t  cc_request_type;    /* CC-Request-Type */
+    c_int8_t    *sid;               /* Session-Id */
+
+ED3(c_uint8_t   ipv4:1;,
+    c_uint8_t   ipv6:1;,
+    c_uint8_t   reserved:6;)
+    c_uint32_t  addr;               /* Framed-IPv4-Address */
+    c_uint8_t   addr6[IPV6_LEN];     /* Framed-IPv6-Prefix */
 };
 
 static struct session_handler *pcrf_gx_reg = NULL;
@@ -39,6 +45,11 @@ static void state_cleanup(
         struct sess_state *sess_data, os0_t sid, void *opaque)
 {
     d_assert(sess_data, return,);
+
+    if (sess_data->ipv4)
+        pcrf_sess_set_ipv4(&sess_data->addr, NULL);
+    if (sess_data->ipv6)
+        pcrf_sess_set_ipv6(sess_data->addr6, NULL);
 
     if (sess_data->sid)
         core_free(sess_data->sid);
@@ -98,13 +109,51 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
     /* Get CC-Request-Type */
     CHECK_FCT( fd_msg_search_avp(qry, gx_cc_request_type, &avp) );
-    CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
-    sess_data->cc_request_type = hdr->avp_value->i32;
+    if (avp)
+    {
+        CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+        sess_data->cc_request_type = hdr->avp_value->i32;
+    }
+    else
+    {
+        d_error("no_CC-Request-Type ");
+        goto out;
+    }
 
     /* Get CC-Request-Number */
     CHECK_FCT( fd_msg_search_avp(qry, gx_cc_request_number, &avp) );
-    CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
-    cc_request_number = hdr->avp_value->i32;
+    if (avp)
+    {
+        CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+        cc_request_number = hdr->avp_value->i32;
+    }
+
+    /* Get Framed-IP-Address */
+    CHECK_FCT( fd_msg_search_avp(qry, gx_framed_ip_address, &avp) );
+    if (avp)
+    {
+        CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+        memcpy(&sess_data->addr, hdr->avp_value->os.data,
+                sizeof sess_data->addr);
+        pcrf_sess_set_ipv4(&sess_data->addr, sess_data->sid);
+        sess_data->ipv4 = 1;
+    }
+
+    /* Get Framed-IPv6-Prefix */
+    CHECK_FCT( fd_msg_search_avp(qry, gx_framed_ipv6_prefix, &avp) );
+    if (avp)
+    {
+        paa_t *paa = NULL;
+
+        CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+        paa = (paa_t *)hdr->avp_value->os.data;
+        d_assert(paa, goto out,);
+        d_assert(paa->len == IPV6_LEN * 8 /* 128bit */, goto out,
+                "Invalid Framed-IPv6-Prefix Length:%d", paa->len);
+        memcpy(sess_data->addr6, paa->addr6, sizeof sess_data->addr6);
+        pcrf_sess_set_ipv6(sess_data->addr6, sess_data->sid);
+        sess_data->ipv6 = 1;
+    }
 
     /* Set the Auth-Application-Id AVP */
     CHECK_FCT_DO( fd_msg_avp_new(fd_auth_application_id, 0, &avp), goto out );

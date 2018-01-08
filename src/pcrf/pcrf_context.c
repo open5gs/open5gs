@@ -41,9 +41,7 @@ status_t pcrf_context_init(void)
 
     rv = mutex_create(&self.hash_lock, MUTEX_DEFAULT);
     d_assert(rv == CORE_OK, return CORE_ERROR, );
-
-    self.ipv4_hash = hash_make();
-    self.ipv6_hash = hash_make();
+    self.ip_hash = hash_make();
 
     context_initialized = 1;
 
@@ -55,11 +53,8 @@ status_t pcrf_context_final(void)
     d_assert(context_initialized == 1, return CORE_ERROR,
             "PCRF context already has been finalized");
 
-    d_assert(self.ipv4_hash,, );
-    hash_destroy(self.ipv4_hash);
-    d_assert(self.ipv6_hash,, );
-    hash_destroy(self.ipv6_hash);
-
+    d_assert(self.ip_hash,, );
+    hash_destroy(self.ip_hash);
     mutex_delete(self.hash_lock);
 
     mutex_delete(self.db_lock);
@@ -768,4 +763,57 @@ out:
     mutex_unlock(self.db_lock);
 
     return rv;
+}
+
+status_t pcrf_sess_set_ipv4(const void *key, c_int8_t *sid)
+{
+    d_assert(self.ip_hash, return CORE_ERROR,);
+
+    mutex_lock(self.hash_lock);
+
+    hash_set(self.ip_hash, key, IPV4_LEN, sid);
+
+    mutex_unlock(self.hash_lock);
+
+    return CORE_OK;
+}
+status_t pcrf_sess_set_ipv6(const void *key, c_int8_t *sid)
+{
+    d_assert(self.ip_hash, return CORE_ERROR,);
+
+    mutex_lock(self.hash_lock);
+
+    hash_set(self.ip_hash, key, IPV6_LEN, sid);
+
+    mutex_unlock(self.hash_lock);
+
+    return CORE_OK;
+}
+
+c_int8_t *pcrf_sess_find_by_ipv4(const void *key)
+{
+    c_int8_t *sid = NULL;
+    d_assert(key, return NULL,);
+
+    mutex_lock(self.hash_lock);
+
+    sid = (c_int8_t *)hash_get(self.ip_hash, key, IPV4_LEN);
+
+    mutex_unlock(self.hash_lock);
+    
+    return sid;
+}
+
+c_int8_t *pcrf_sess_find_by_ipv6(const void *key)
+{
+    c_int8_t *sid = NULL;
+    d_assert(key, return NULL,);
+
+    mutex_lock(self.hash_lock);
+
+    sid = (c_int8_t *)hash_get(self.ip_hash, key, IPV6_LEN);
+
+    mutex_unlock(self.hash_lock);
+
+    return sid;
 }

@@ -20,8 +20,7 @@ typedef struct _pcrf_context_t {
     void            *subscriberCollection;
     mutex_id        db_lock;
 
-    hash_t          *ipv4_hash;     /* hash table for Gx Frame-IP-Address */
-    hash_t          *ipv6_hash;     /* hash table for Gx Frame-IPv6s-Prefix */
+    hash_t          *ip_hash; /* hash table for Gx Frame IPv4/IPv6 */
     mutex_id        hash_lock;
 } pcrf_context_t;
 
@@ -37,6 +36,11 @@ CORE_DECLARE(status_t) pcrf_db_final(void);
 
 CORE_DECLARE(status_t) pcrf_db_pdn_data(
         c_int8_t *imsi_bcd, c_int8_t *apn, gx_cca_message_t *cca_message);
+
+CORE_DECLARE(status_t) pcrf_sess_set_ipv4(const void *key, c_int8_t *sid);
+CORE_DECLARE(status_t) pcrf_sess_set_ipv6(const void *key, c_int8_t *sid);
+CORE_DECLARE(c_int8_t *) pcrf_sess_find_by_ipv4(const void *key);
+CORE_DECLARE(c_int8_t *) pcrf_sess_find_by_ipv6(const void *key);
 
 #ifdef __cplusplus
 }
