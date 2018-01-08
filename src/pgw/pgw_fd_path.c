@@ -56,17 +56,22 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
 
     /* Create the request */
     CHECK_FCT_DO( fd_msg_new(gx_cmd_ccr, MSGFL_ALLOC_ETEID, &req), goto out );
-    
-    if (cc_request_type == GX_CC_REQUEST_TYPE_INITIAL_REQUEST)
-    {
-        d_assert(sess->gx_sid == NULL, return, );
-        d_assert(sess->gx_sidlen == 0, return, );
 
-        /* Create the state to store with the session */
-        pool_alloc_node(&pgw_gx_sess_pool, &mi);
-        d_assert(mi, return, "malloc failed: %s", strerror(errno));
-        memset(mi, 0, sizeof *mi);
-        
+    if (sess->gx_sid && sess->gx_sidlen)
+    {
+        /* Retrieve session by Session-Id */
+		CHECK_FCT_DO( fd_sess_fromsid_msg(sess->gx_sid, sess->gx_sidlen, 
+                    &session, &new), goto out );
+        d_assert(new == 0, return,);
+
+        /* Add Session-Id to the message */
+        CHECK_FCT_DO( fd_message_session_id_set(
+                    req, sess->gx_sid, sess->gx_sidlen), goto out );
+        /* Save the session associated with the message */
+        CHECK_FCT_DO( fd_msg_sess_set(req, session), goto out );
+    }
+    else
+    {
         /* Create a new session */
         #define GX_APP_SID_OPT  "app_gx"
         CHECK_FCT_DO( fd_msg_new_session(req, (os0_t)GX_APP_SID_OPT, 
@@ -74,27 +79,23 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
         CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL),
                 goto out );
 
-        /* Store Gx Session-ID in PGW Session Context */
+        /* Store Session-Id in PGW Session Context */
         CHECK_FCT_DO( fd_sess_getsid(session, &sess->gx_sid, &sess->gx_sidlen),
                 goto out );
     }
-    else
+
+    /* Retrieve session state in this session */
+    CHECK_FCT_DO( fd_sess_state_retrieve(pgw_gx_reg, session, &mi),
+            goto out );
+    if (!mi)
     {
-		CHECK_FCT_DO( fd_sess_fromsid_msg(sess->gx_sid, sess->gx_sidlen, 
-                    &session, &new), goto out );
-        d_assert(new == 0, return,);
-
-        CHECK_FCT_DO( fd_sess_state_retrieve(pgw_gx_reg, session, &mi),
-                goto out );
-        d_assert(mi, return, );
-
-        CHECK_FCT_DO( fd_message_session_id_set(
-                    req, sess->gx_sid, sess->gx_sidlen), goto out );
-
-        /* Save the session associated with the message */
-        CHECK_FCT_DO( fd_msg_sess_set(req, session), goto out );
+        /* Allocate new session state memory */
+        pool_alloc_node(&pgw_gx_sess_pool, &mi);
+        d_assert(mi, return, "malloc failed: %s", strerror(errno));
+        memset(mi, 0, sizeof *mi);
     }
 
+    /* Update session state */
     mi->xact = xact;
     mi->sess = sess;
     mi->gtpbuf = gtpbuf;
@@ -344,6 +345,7 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
     
     /* Store this value in the session */
     CHECK_FCT_DO( fd_sess_state_store(pgw_gx_reg, session, &mi), goto out );
+    d_assert(mi == NULL, return,);
     
     /* Send the request */
     CHECK_FCT_DO( fd_msg_send(&req, pgw_gx_cca_cb, svg), goto out );
@@ -797,6 +799,7 @@ out:
     if (mi->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
         CHECK_FCT_DO( fd_sess_state_store(pgw_gx_reg, session, &mi), goto out );
+        d_assert(mi == NULL, return,);
 
         CHECK_FCT_DO( fd_msg_free(*msg), return );
         *msg = NULL;
