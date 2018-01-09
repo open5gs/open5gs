@@ -410,7 +410,6 @@ void s1ap_handle_ue_context_release_request(
 
     enb_ue_t *enb_ue = NULL;
     S1ap_UEContextReleaseRequest_IEs_t *ies = NULL;
-    long cause;
 
     ies = &message->s1ap_UEContextReleaseRequest_IEs;
     d_assert(ies, return, "Null param");
@@ -426,8 +425,9 @@ void s1ap_handle_ue_context_release_request(
     switch(ies->cause.present)
     {
         case S1ap_Cause_PR_radioNetwork:
-            cause = ies->cause.choice.radioNetwork;
-            if (cause == S1ap_CauseRadioNetwork_user_inactivity)
+        {
+            if (ies->cause.choice.radioNetwork
+                    == S1ap_CauseRadioNetwork_user_inactivity)
             {
                 mme_ue_t *mme_ue = enb_ue->mme_ue;
                 d_assert(mme_ue, return,);
@@ -450,24 +450,48 @@ void s1ap_handle_ue_context_release_request(
             }
             else
             {
-                d_warn("Not implmented (radioNetwork cause : %d)", cause);
+                d_warn("Not implmented (radioNetwork cause : %d)",
+                        ies->cause.choice.radioNetwork);
             }
             break;
+        }
         case S1ap_Cause_PR_transport:
-            cause = ies->cause.choice.transport;
-            d_warn("Not implmented (transport cause : %d)", cause);
+        {
+            S1ap_Cause_t cause;
+            const char *cause_string = NULL;
+
+            if (ies->cause.choice.transport ==
+                    S1ap_CauseTransport_transport_resource_unavailable)
+                cause_string = "Transport Resource Unavailable";
+            else if (ies->cause.choice.transport ==
+                    S1ap_CauseTransport_unspecified)
+                cause_string = "Unspecified";
+            else
+                cause_string = "Unknown";
+               
+
+            d_warn("[S1AP] UE Context Release Request(Transport Cause: %s[%d])",
+                    cause_string, ies->cause.choice.transport,
+                    enb_ue->enb_ue_s1ap_id,
+                    CORE_ADDR(enb->addr, buf), enb->enb_id);
+
+            cause.present = S1ap_Cause_PR_nas;
+            cause.choice.nas = S1ap_CauseNas_normal_release;
+            rv = s1ap_send_ue_context_release_commmand(
+                    enb_ue, &cause, 0);
+            d_assert(rv == CORE_OK, return, "s1ap send error");
+
             break;
+        }
         case S1ap_Cause_PR_nas:
-            cause = ies->cause.choice.nas;
-            d_warn("Not implmented (nas cause : %d)", cause);
+            d_warn("Not implmented (nas cause : %d)", ies->cause.choice.nas);
             break;
         case S1ap_Cause_PR_protocol:
-            cause = ies->cause.choice.protocol;
-            d_warn("Not implmented (protocol cause : %d)", cause);
+            d_warn("Not implmented (protocol cause : %d)",
+                    ies->cause.choice.protocol);
             break;
         case S1ap_Cause_PR_misc:
-            cause = ies->cause.choice.misc;
-            d_warn("Not implmented (misc cause : %d)", cause);
+            d_warn("Not implmented (misc cause : %d)", ies->cause.choice.misc);
             break;
         default:
             d_warn("Invalid cause type : %d", ies->cause.present);
