@@ -132,8 +132,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             mme_ue = mme_ue_find_by_guti(&guti);
             if (!mme_ue)
             {
-                d_error("Can not find mme_ue with mme_code = %d, m_tmsi = %d",
-                        guti.mme_code, guti.m_tmsi);
+                d_warn("Unknown UE by S_TMSI[G:%d,C:%d,M_TMSI:0x%x]",
+                        guti.mme_gid, guti.mme_code, guti.m_tmsi);
             }
             else
             {
@@ -493,8 +493,6 @@ void s1ap_handle_ue_context_release_complete(
 
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
-    mme_ue = enb_ue->mme_ue;
-    d_assert(mme_ue, return,);
 
     d_trace(3, "[S1AP] UE Context Release Complete : "
             "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
@@ -503,35 +501,39 @@ void s1ap_handle_ue_context_release_complete(
 
     enb_ue_remove(enb_ue);
 
-    sess = mme_sess_first(mme_ue);
-    while(sess)
+    mme_ue = enb_ue->mme_ue;
+    if (mme_ue)
     {
-        bearer = mme_bearer_first(sess);
-        while(bearer)
+        sess = mme_sess_first(mme_ue);
+        while(sess)
         {
-            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
-                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            bearer = mme_bearer_first(sess);
+            while(bearer)
             {
-                need_to_delete_indirect_tunnel = 1;
+                if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
+                    MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+                {
+                    need_to_delete_indirect_tunnel = 1;
+                }
+
+                bearer = mme_bearer_next(bearer);
             }
-
-            bearer = mme_bearer_next(bearer);
+            sess = mme_sess_next(sess);
         }
-        sess = mme_sess_next(sess);
-    }
 
-    if (need_to_delete_indirect_tunnel)
-    {
-        rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
-            mme_ue);
-        d_assert(rv == CORE_OK, return, "gtp send error");
-    }
-    else
-    {
-        if (!FSM_CHECK(&mme_ue->sm, emm_state_detached) &&
-            !FSM_CHECK(&mme_ue->sm, emm_state_attached))
+        if (need_to_delete_indirect_tunnel)
         {
-            mme_ue_remove(mme_ue);
+            rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
+                mme_ue);
+            d_assert(rv == CORE_OK, return, "gtp send error");
+        }
+        else
+        {
+            if (!FSM_CHECK(&mme_ue->sm, emm_state_detached) &&
+                !FSM_CHECK(&mme_ue->sm, emm_state_attached))
+            {
+                mme_ue_remove(mme_ue);
+            }
         }
     }
 }
