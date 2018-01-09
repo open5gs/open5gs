@@ -188,6 +188,8 @@ status_t pgw_gtp_open()
     rv = gtp_server_list(&pgw_self()->gtpc_list6, _gtpv2_c_recv_cb);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
+    pgw_self()->gtpc_sock = gtp_local_sock_first(&pgw_self()->gtpc_list);
+    pgw_self()->gtpc_sock6 = gtp_local_sock_first(&pgw_self()->gtpc_list6);
     pgw_self()->gtpc_addr = gtp_local_addr_first(&pgw_self()->gtpc_list);
     pgw_self()->gtpc_addr6 = gtp_local_addr_first(&pgw_self()->gtpc_list6);
 
@@ -199,6 +201,8 @@ status_t pgw_gtp_open()
     rv = gtp_server_list(&pgw_self()->gtpu_list6, _gtpv1_u_recv_cb);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
+    pgw_self()->gtpu_sock = gtp_local_sock_first(&pgw_self()->gtpu_list);
+    pgw_self()->gtpu_sock6 = gtp_local_sock_first(&pgw_self()->gtpu_list6);
     pgw_self()->gtpu_addr = gtp_local_addr_first(&pgw_self()->gtpu_list);
     pgw_self()->gtpu_addr6 = gtp_local_addr_first(&pgw_self()->gtpu_list6);
 

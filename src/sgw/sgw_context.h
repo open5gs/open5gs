@@ -24,13 +24,17 @@ typedef struct _sgw_context_t {
     c_uint32_t      gtpu_port;      /* Default GTPU port */
 
     list_t          gtpc_list;      /* SGW GTPC IPv4 Server List */
-    c_sockaddr_t    *gtpc_addr;     /* SGW GTPC IPv4 Address */
     list_t          gtpc_list6;     /* SGW GTPC IPv6 Server List */
+    sock_id         gtpc_sock;      /* SGW GTPC IPv4 Socket */
+    sock_id         gtpc_sock6;     /* SGW GTPC IPv6 Socket */
+    c_sockaddr_t    *gtpc_addr;     /* SGW GTPC IPv4 Address */
     c_sockaddr_t    *gtpc_addr6;    /* SGW GTPC IPv6 Address */
 
     list_t          gtpu_list;      /* SGW GTPU IPv4 Server List */
-    c_sockaddr_t    *gtpu_addr;     /* SGW GTPU IPv4 Address */
     list_t          gtpu_list6;     /* SGW GTPU IPv6 Server List */
+    sock_id         gtpu_sock;      /* SGW GTPU IPv4 Socket */
+    sock_id         gtpu_sock6;     /* SGW GTPU IPv6 Socket */
+    c_sockaddr_t    *gtpu_addr;     /* SGW GTPU IPv4 Address */
     c_sockaddr_t    *gtpu_addr6;    /* SGW GTPU IPv6 Address */
 
     msgq_id         queue_id;  /* Queue for processing SGW control plane */

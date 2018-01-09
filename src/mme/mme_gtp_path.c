@@ -66,12 +66,15 @@ static c_sockaddr_t *gtp_addr_find_by_family(list_t *list, int family)
 status_t mme_gtp_open()
 {
     status_t rv;
+    gtp_node_t *gnode = NULL;
 
     rv = gtp_server_list(&mme_self()->gtpc_list, _gtpv2_c_recv_cb);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
     rv = gtp_server_list(&mme_self()->gtpc_list6, _gtpv2_c_recv_cb);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
+    mme_self()->gtpc_sock = gtp_local_sock_first(&mme_self()->gtpc_list);
+    mme_self()->gtpc_sock6 = gtp_local_sock_first(&mme_self()->gtpc_list6);
     mme_self()->gtpc_addr = gtp_local_addr_first(&mme_self()->gtpc_list);
     mme_self()->gtpc_addr6 = gtp_local_addr_first(&mme_self()->gtpc_list6);
 
@@ -84,6 +87,13 @@ status_t mme_gtp_open()
             &mme_self()->pgw_list, AF_INET6);
     d_assert(mme_self()->pgw_addr || mme_self()->pgw_addr6,
             return CORE_ERROR,);
+
+    for (gnode = list_first(&mme_self()->sgw_list);
+            gnode; gnode = list_next(gnode))
+    {
+        rv = gtp_client(gnode);
+        d_assert(rv == CORE_OK, return CORE_ERROR,);
+    }
 
     return CORE_OK;
 }

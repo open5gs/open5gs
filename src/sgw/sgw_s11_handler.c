@@ -238,7 +238,11 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
             context_self()->parameter.prefer_ipv4);
         d_assert(enb, return,);
 
+#if 1   
         rv = gtp_client(enb);
+#else   /* Exmaple code for GTP code */
+        rv = gtp_connect(sgw_self()->gtpu_sock, sgw_self()->gtpu_sock6, enb);
+#endif
         d_assert(rv == CORE_OK, return,);
     }
     /* Setup GTP Node */
