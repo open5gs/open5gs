@@ -765,7 +765,7 @@ out:
     return rv;
 }
 
-status_t pcrf_sess_set_ipv4(const void *key, c_int8_t *sid)
+status_t pcrf_sess_set_ipv4(const void *key, c_uint8_t *sid)
 {
     d_assert(self.ip_hash, return CORE_ERROR,);
 
@@ -777,7 +777,7 @@ status_t pcrf_sess_set_ipv4(const void *key, c_int8_t *sid)
 
     return CORE_OK;
 }
-status_t pcrf_sess_set_ipv6(const void *key, c_int8_t *sid)
+status_t pcrf_sess_set_ipv6(const void *key, c_uint8_t *sid)
 {
     d_assert(self.ip_hash, return CORE_ERROR,);
 
@@ -790,30 +790,31 @@ status_t pcrf_sess_set_ipv6(const void *key, c_int8_t *sid)
     return CORE_OK;
 }
 
-c_int8_t *pcrf_sess_find_by_ipv4(const void *key)
+c_uint8_t *pcrf_sess_find_by_ipv4(const void *key)
 {
-    c_int8_t *sid = NULL;
+    c_uint8_t *sid = NULL;
     d_assert(key, return NULL,);
 
     mutex_lock(self.hash_lock);
 
-    sid = (c_int8_t *)hash_get(self.ip_hash, key, IPV4_LEN);
+    sid = (c_uint8_t *)hash_get(self.ip_hash, key, IPV4_LEN);
 
     mutex_unlock(self.hash_lock);
     
     return sid;
 }
 
-c_int8_t *pcrf_sess_find_by_ipv6(const void *key)
+c_uint8_t *pcrf_sess_find_by_ipv6(const void *key)
 {
-    c_int8_t *sid = NULL;
+    c_uint8_t *sid = NULL;
     d_assert(key, return NULL,);
 
     mutex_lock(self.hash_lock);
 
-    sid = (c_int8_t *)hash_get(self.ip_hash, key, IPV6_LEN);
+    sid = (c_uint8_t *)hash_get(self.ip_hash, key, IPV6_LEN);
 
     mutex_unlock(self.hash_lock);
 
     return sid;
 }
+

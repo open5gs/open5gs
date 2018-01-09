@@ -115,7 +115,7 @@ void pcscf_rx_send_aar(const char *ip)
         CHECK_FCT_DO( fd_msg_avp_new(rx_framed_ip_address, 0, &avp),
                 goto out );
         val.os.data = (c_uint8_t*)ipsub.sub;
-        val.os.len = 4;
+        val.os.len = IPV4_LEN;
         CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
         CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
                 goto out );

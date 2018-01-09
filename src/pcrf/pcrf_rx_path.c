@@ -3,15 +3,18 @@
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_pkbuf.h"
+#include "core_network.h"
 
 #include "fd/fd_lib.h"
 #include "fd/rx/rx_dict.h"
 #include "fd/rx/rx_message.h"
 
 #include "pcrf_context.h"
+#include "pcrf_fd_path.h"
 
 struct sess_state {
-    c_int8_t    *sid;               /* Session-Id */
+    os0_t    rx_sid;            /* Rx Session-Id */
+    os0_t    gx_sid;            /* Gx Session-Id */
 };
 
 static struct session_handler *pcrf_rx_reg = NULL;
@@ -27,8 +30,8 @@ static __inline__ struct sess_state *new_state(os0_t sid)
     d_assert(new, return NULL,);
     memset(new, 0, sizeof *new);
 
-    new->sid = core_strdup((char *)sid);
-    d_assert(new->sid, return NULL,);
+    new->rx_sid = (os0_t)core_strdup((char *)sid);
+    d_assert(new->rx_sid, return NULL,);
 
     return new;
 }
@@ -38,8 +41,10 @@ static void state_cleanup(
 {
     d_assert(sess_data, return,);
 
-    if (sess_data->sid)
-        core_free(sess_data->sid);
+    if (sess_data->rx_sid)
+        core_free((char *)sess_data->rx_sid);
+    if (sess_data->gx_sid)
+        core_free((char *)sess_data->gx_sid);
 
     pool_free_node(&pcrf_rx_sess_pool, sess_data);
 }
@@ -56,6 +61,8 @@ static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp,
 static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
+    status_t rv;
+
 	struct msg *ans, *qry;
 #if 0
     struct avp *avpch1, *avpch2, *avpch3, *avpch4;
@@ -65,7 +72,6 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     struct sess_state *sess_data = NULL;
 
 #if 0
-    status_t rv;
     gx_cca_message_t cca_message;
     c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
     c_int8_t apn[MAX_APN_LEN+1];
@@ -73,20 +79,22 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
     c_uint32_t cc_request_type = 0;
 #endif
-    c_uint32_t result_code = RX_DIAMETER_INVALID_SERVICE_INFORMATION;
+    char buf[CORE_ADDRSTRLEN];
+    os0_t rx_sid = NULL;
+    os0_t gx_sid = NULL;
+    size_t sidlen;
+    c_uint32_t result_code = RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 	
     d_assert(msg, return EINVAL,);
+    d_assert(sess, return EINVAL,);
 
     d_assert( fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data) == 0,
             return EINVAL,);
     if (!sess_data)
     {
-        os0_t sid;
-        size_t sidlen;
+        d_assert( fd_sess_getsid(sess, &rx_sid, &sidlen) == 0, return EINVAL,);
 
-        d_assert( fd_sess_getsid(sess, &sid, &sidlen) == 0, return EINVAL,);
-
-        sess_data = new_state(sid);
+        sess_data = new_state(rx_sid);
         d_assert(sess_data, return EINVAL,);
     }
 
@@ -100,32 +108,6 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
     ans = *msg;
 
-    /* Get Framed-IP-Address */
-    CHECK_FCT( fd_msg_search_avp(qry, rx_framed_ip_address, &avp) );
-    if (avp)
-    {
-        char *sid = NULL;
-        CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
-        sid = pcrf_sess_find_by_ipv4(hdr->avp_value->os.data);
-        printf("pcscf : sid = %s\n", sid);
-    }
-
-    /* Get Framed-IPv6-Prefix */
-    CHECK_FCT( fd_msg_search_avp(qry, rx_framed_ipv6_prefix, &avp) );
-    if (avp)
-    {
-        char *sid = NULL;
-        paa_t *paa = NULL;
-
-        CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
-        paa = (paa_t *)hdr->avp_value->os.data;
-        d_assert(paa, goto out,);
-        d_assert(paa->len == IPV6_LEN * 8 /* 128bit */, goto out,
-                "Invalid Framed-IPv6-Prefix Length:%d", paa->len);
-        sid = pcrf_sess_find_by_ipv6(paa->addr6);
-        printf("pcscf6 : sid = %s\n", sid);
-    }
-
     /* Set the Auth-Application-Id AVP */
     CHECK_FCT_DO( fd_msg_avp_new(fd_auth_application_id, 0, &avp), goto out );
     val.i32 = RX_APPLICATION_ID;
@@ -137,6 +119,53 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     val.i32 = 1;
     CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
     CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
+
+    /* Get Framed-IP-Address */
+    CHECK_FCT( fd_msg_search_avp(qry, rx_framed_ip_address, &avp) );
+    if (avp)
+    {
+        CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+        gx_sid = (os0_t)pcrf_sess_find_by_ipv4(hdr->avp_value->os.data);
+        if (!gx_sid)
+        {
+            d_warn("Cannot find Gx Sesson for IPv4:%s\n",
+                    INET_NTOP(hdr->avp_value->os.data, buf));
+        }
+    }
+
+    if (!gx_sid)
+    {
+        /* Get Framed-IPv6-Prefix */
+        CHECK_FCT( fd_msg_search_avp(qry, rx_framed_ipv6_prefix, &avp) );
+        if (avp)
+        {
+            paa_t *paa = NULL;
+
+            CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+            paa = (paa_t *)hdr->avp_value->os.data;
+            d_assert(paa, goto out,);
+            d_assert(paa->len == IPV6_LEN * 8 /* 128bit */, goto out,
+                    "Invalid Framed-IPv6-Prefix Length:%d", paa->len);
+            gx_sid = (os0_t)pcrf_sess_find_by_ipv6(paa->addr6);
+            if (!gx_sid)
+            {
+                d_warn("Cannot find Gx Sesson for IPv6:%s\n",
+                        INET6_NTOP(hdr->avp_value->os.data, buf));
+            }
+        }
+    }
+
+    if (!gx_sid) goto out;
+
+    /* Associate Gx-session with Rx-session */
+    rv = pcrf_sess_gx_associate_rx(gx_sid, rx_sid);
+    d_assert(rv == CORE_OK, goto out,);
+
+    /* Store Gx Session-Id in this session */
+    if (sess_data->gx_sid)
+        core_free(sess_data->gx_sid);
+    sess_data->gx_sid = (os0_t)core_strdup((char *)gx_sid);
+    d_assert(sess_data->gx_sid, goto out,);
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
@@ -174,6 +203,7 @@ out:
 
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 
+    state_cleanup(sess_data, NULL, NULL);
 #if 0
     gx_cca_message_free(&cca_message);
 #endif

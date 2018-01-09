@@ -13,6 +13,8 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _fd_config_t fd_config_t;
+struct session;
+
 typedef struct _pcrf_context_t {
     const char      *fd_conf_path;  /* PCRF freeDiameter conf path */
     fd_config_t     *fd_config;     /* PCRF freeDiameter config */
@@ -37,10 +39,10 @@ CORE_DECLARE(status_t) pcrf_db_final(void);
 CORE_DECLARE(status_t) pcrf_db_pdn_data(
         c_int8_t *imsi_bcd, c_int8_t *apn, gx_cca_message_t *cca_message);
 
-CORE_DECLARE(status_t) pcrf_sess_set_ipv4(const void *key, c_int8_t *sid);
-CORE_DECLARE(status_t) pcrf_sess_set_ipv6(const void *key, c_int8_t *sid);
-CORE_DECLARE(c_int8_t *) pcrf_sess_find_by_ipv4(const void *key);
-CORE_DECLARE(c_int8_t *) pcrf_sess_find_by_ipv6(const void *key);
+CORE_DECLARE(status_t) pcrf_sess_set_ipv4(const void *key, c_uint8_t *sid);
+CORE_DECLARE(status_t) pcrf_sess_set_ipv6(const void *key, c_uint8_t *sid);
+CORE_DECLARE(c_uint8_t *) pcrf_sess_find_by_ipv4(const void *key);
+CORE_DECLARE(c_uint8_t *) pcrf_sess_find_by_ipv6(const void *key);
 
 #ifdef __cplusplus
 }

@@ -271,7 +271,7 @@ static void volte_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send AA-Request */
-    pcscf_rx_send_aar("cafe::2");
+    pcscf_rx_send_aar("45.45.0.2");
 
     /* Send PDN disconnectivity request */
     rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex);

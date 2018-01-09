@@ -28,7 +28,7 @@ pool_declare(pgw_gx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
 
 static void pgw_gx_cca_cb(void *data, struct msg **msg);
 
-void pgw_gx_sess_cleanup(
+void state_cleanup(
         struct sess_state *sess_data, os0_t sid, void * opaque)
 {
     pool_free_node(&pgw_gx_sess_pool, sess_data);
@@ -191,7 +191,7 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
             CHECK_FCT_DO( fd_msg_avp_new(gx_framed_ip_address, 0, &avp),
                     goto out );
             val.os.data = (c_uint8_t*)&sess->ipv4->addr;
-            val.os.len = 4;
+            val.os.len = IPV4_LEN;
             CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
             CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
                     goto out );
@@ -808,7 +808,7 @@ out:
     }
     else
     {
-        pgw_gx_sess_cleanup(mi, NULL, NULL);
+        state_cleanup(mi, NULL, NULL);
     }
 
     CHECK_FCT_DO( fd_msg_free(*msg), return );
@@ -828,7 +828,7 @@ int pgw_fd_init(void)
 	CHECK_FCT( gx_dict_init() );
 
     /* Create handler for sessions */
-	CHECK_FCT( fd_sess_handler_create(&pgw_gx_reg, pgw_gx_sess_cleanup,
+	CHECK_FCT( fd_sess_handler_create(&pgw_gx_reg, state_cleanup,
                 NULL, NULL) );
 
 	/* Advertise the support for the application in the peer */
