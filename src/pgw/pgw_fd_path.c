@@ -835,8 +835,9 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     status_t rv;
 #endif
 
-	struct msg *ans, *qry;
+	struct msg *ans;
 #if 0
+	struct msg *ans, *qry;
     struct avp *avpch1, *avpch2, *avpch3, *avpch4;
     struct avp_hdr *hdr;
 #endif
@@ -854,7 +855,9 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     }
 
 	/* Create answer header */
+#if 0
 	qry = *msg;
+#endif
 	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
     ans = *msg;
 
