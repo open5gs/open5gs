@@ -372,7 +372,7 @@ static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf)
      */
     gtp_h->flags = 0x30;
     gtp_h->type = GTPU_MSGTYPE_GPDU;
-    gtp_h->length = htons(sendbuf->len);
+    gtp_h->length = htons(sendbuf->len - GTPV1U_HEADER_LEN);
     gtp_h->teid = htonl(bearer->sgw_s5u_teid);
 
     /* Send to SGW */
