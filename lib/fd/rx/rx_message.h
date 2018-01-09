@@ -12,19 +12,17 @@ typedef struct _rx_message_t {
     c_uint16_t          cmd_code;
 
 /* Result-Code AVP */
-#define RX_DIAMETER_ERROR_USER_UNKNOWN                  5030
+#define RX_DIAMETER_REQUESTED_SERVICE_TEMPORARILY_NOT_AUTHORIZED    4261
 
 /* Experimental-Result-Codes */
-#define RX_DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST      5453
-#define RX_DIAMETER_ERROR_TIMED_OUT_REQUEST             5454
-#define RX_DIAMETER_ERROR_INITIAL_PARAMETERS            5140
-#define RX_DIAMETER_ERROR_TRIGGER_EVENT                 5141
-#define RX_DIAMETER_PCC_RULE_EVENT                      5142
-#define RX_DIAMETER_ERROR_BEARER_NOT_AUTHORIZED         5143
-#define RX_DIAMETER_ERROR_TRAFFIC_MAPPING_INFO_REJECTED 5144
-#define RX_DIAMETER_ERROR_CONFLICTING_REQUEST           5147
-#define RX_DIAMETER_ADC_RULE_EVENT                      5148
-#define RX_DIAMETER_ERROR_NBIFOM_NOT_AUTHORIZED         5149
+#define RX_DIAMETER_INVALID_SERVICE_INFORMATION                     5061
+#define RX_DIAMETER_FILTER_RESTRICTIONS                             5062
+#define RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED                5063
+#define RX_DIAMETER_DUPLICATED_AF_SESSION                           5064
+#define RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE                    5065
+#define RX_DIAMETER_UNAUTHORIZED_NON_EMERGENCY_SESSION              5066
+#define RX_DIAMETER_UNAUTHORIZED_SPONSORED_DATA_CONNECTIVITY        5067
+#define RX_DIAMETER_TEMPORARY_NETWORK_FAILURE                       5068
     c_uint32_t          result_code;
 
 } rx_message_t;

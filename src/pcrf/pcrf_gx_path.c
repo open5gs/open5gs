@@ -19,7 +19,7 @@ ED3(c_uint8_t   ipv4:1;,
     c_uint8_t   ipv6:1;,
     c_uint8_t   reserved:6;)
     c_uint32_t  addr;               /* Framed-IPv4-Address */
-    c_uint8_t   addr6[IPV6_LEN];     /* Framed-IPv6-Prefix */
+    c_uint8_t   addr6[IPV6_LEN];    /* Framed-IPv6-Prefix */
 };
 
 static struct session_handler *pcrf_gx_reg = NULL;
@@ -403,7 +403,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
 
-    if (sess_data->cc_request_type == GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
+    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
         /* Store this value in the session */
         CHECK_FCT_DO( fd_sess_state_store(pcrf_gx_reg, sess, &sess_data),
