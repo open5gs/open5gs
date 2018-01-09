@@ -14,6 +14,8 @@
 #include "pgw_fd_path.h"
 
 static struct session_handler *pgw_gx_reg = NULL;
+static struct disp_hdl *hdl_gx_fb = NULL; 
+static struct disp_hdl *hdl_gx_rar = NULL; 
 
 struct sess_state {
     gtp_xact_t *xact;
@@ -817,8 +819,91 @@ out:
     return;
 }
 
+static int pgw_gx_fb_cb(struct msg **msg, struct avp *avp, 
+        struct session *sess, void *opaque, enum disp_action *act)
+{
+	/* This CB should never be called */
+	d_warn("Unexpected message received!");
+	
+	return ENOTSUP;
+}
+
+static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp, 
+        struct session *sess, void *opaque, enum disp_action *act)
+{
+#if 0
+    status_t rv;
+#endif
+
+	struct msg *ans, *qry;
+#if 0
+    struct avp *avpch1, *avpch2, *avpch3, *avpch4;
+    struct avp_hdr *hdr;
+#endif
+    union avp_value val;
+    struct sess_state *mi = NULL;
+
+    c_uint32_t result_code = GX_DIAMETER_ERROR_USER_UNKNOWN;
+	
+    d_assert(msg, return EINVAL,);
+
+    d_assert( fd_sess_state_retrieve(pgw_gx_reg, sess, &mi) == 0,
+            return EINVAL,);
+    if (mi)
+    {
+    }
+
+	/* Create answer header */
+	qry = *msg;
+	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
+    ans = *msg;
+
+    /* Set the Auth-Application-Id AVP */
+    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_application_id, 0, &avp), goto out );
+    val.i32 = GX_APPLICATION_ID;
+    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+    CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
+
+	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
+
+    /* Store this value in the session */
+    CHECK_FCT_DO( fd_sess_state_store(pgw_gx_reg, sess, &mi),
+            goto out );
+    d_assert(mi == NULL,,);
+
+	/* Send the answer */
+	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
+
+	/* Add this value to the stats */
+	CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+	fd_logger_self()->stats.nb_echoed++;
+	CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
+
+    return 0;
+
+out:
+    if (result_code == GX_DIAMETER_ERROR_USER_UNKNOWN)
+    {
+        CHECK_FCT( fd_msg_rescode_set(ans,
+                    "DIAMETER_ERROR_USER_UNKNOWN", NULL, NULL, 1) );
+    }
+    else
+    {
+        CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
+    }
+
+	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
+
+    state_cleanup(mi, NULL, NULL);
+
+    return 0;
+}
+
 int pgw_fd_init(void)
 {
+	struct disp_when data;
+
     pool_init(&pgw_gx_sess_pool, MAX_POOL_OF_DIAMETER_SESS);
 
     CHECK_FCT( fd_init(FD_MODE_CLIENT|FD_MODE_SERVER,
@@ -831,6 +916,16 @@ int pgw_fd_init(void)
 	CHECK_FCT( fd_sess_handler_create(&pgw_gx_reg, state_cleanup,
                 NULL, NULL) );
 
+	memset(&data, 0, sizeof(data));
+	data.app = gx_application;
+
+	CHECK_FCT( fd_disp_register(pgw_gx_fb_cb, DISP_HOW_APPID, &data, NULL,
+                &hdl_gx_fb) );
+
+	data.command = gx_cmd_rar;
+	CHECK_FCT( fd_disp_register(pgw_gx_rar_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_gx_rar) );
+
 	/* Advertise the support for the application in the peer */
 	CHECK_FCT( fd_disp_app_support(gx_application, fd_vendor, 1, 0) );
 
@@ -840,6 +935,10 @@ int pgw_fd_init(void)
 void pgw_fd_final(void)
 {
 	CHECK_FCT_DO( fd_sess_handler_destroy(&pgw_gx_reg, NULL), );
+	if (hdl_gx_fb)
+		(void) fd_disp_unregister(&hdl_gx_fb, NULL);
+	if (hdl_gx_rar)
+		(void) fd_disp_unregister(&hdl_gx_rar, NULL);
 
     fd_final();
 
