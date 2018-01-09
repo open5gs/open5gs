@@ -150,8 +150,9 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     if (!subnet)
     {
         d_print_hex(pkbuf->payload, pkbuf->len);
-        d_assert(0, goto cleanup,
-                "V:%d, IPv4:%p, IPv6:%p", ip_h->ip_v, sess->ipv4, sess->ipv6);
+        d_warn(0, "[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
+                ip_h->ip_v, sess->ipv4, sess->ipv6);
+        goto cleanup;
     }
 
     /* Check IPv6 */
