@@ -62,6 +62,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     status_t rv;
+    int ret;
 
 	struct msg *ans, *qry;
 #if 0
@@ -70,6 +71,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     struct avp_hdr *hdr;
     union avp_value val;
     struct sess_state *sess_data = NULL;
+    size_t sidlen;
 
 #if 0
     gx_cca_message_t cca_message;
@@ -82,17 +84,17 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     char buf[CORE_ADDRSTRLEN];
     os0_t rx_sid = NULL;
     os0_t gx_sid = NULL;
-    size_t sidlen;
     c_uint32_t result_code = RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 	
     d_assert(msg, return EINVAL,);
     d_assert(sess, return EINVAL,);
 
-    d_assert( fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data) == 0,
-            return EINVAL,);
+    ret = fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data);
+    d_assert(ret == 0, return EINVAL,);
     if (!sess_data)
     {
-        d_assert( fd_sess_getsid(sess, &rx_sid, &sidlen) == 0, return EINVAL,);
+        ret = fd_sess_getsid(sess, &rx_sid, &sidlen);
+        d_assert(ret == 0, return EINVAL,);
 
         sess_data = new_state(rx_sid);
         d_assert(sess_data, return EINVAL,);
@@ -105,26 +107,35 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
 	/* Create answer header */
 	qry = *msg;
-	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
+	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    d_assert(ret == 0, return EINVAL,);
     ans = *msg;
 
     /* Set the Auth-Application-Id AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_application_id, 0, &avp), goto out );
+    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
     val.i32 = RX_APPLICATION_ID;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
 
     /* Set the Auth-Request-Type AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_request_type, 0, &avp), goto out );
+    ret = fd_msg_avp_new(fd_auth_request_type, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
     val.i32 = 1;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp), goto out );
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
 
     /* Get Framed-IP-Address */
-    CHECK_FCT( fd_msg_search_avp(qry, rx_framed_ip_address, &avp) );
+    ret = fd_msg_search_avp(qry, rx_framed_ip_address, &avp);
+    d_assert(ret == 0, return EINVAL,);
     if (avp)
     {
-        CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return EINVAL,);
         gx_sid = (os0_t)pcrf_sess_find_by_ipv4(hdr->avp_value->os.data);
         if (!gx_sid)
         {
@@ -136,12 +147,14 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     if (!gx_sid)
     {
         /* Get Framed-IPv6-Prefix */
-        CHECK_FCT( fd_msg_search_avp(qry, rx_framed_ipv6_prefix, &avp) );
+        ret = fd_msg_search_avp(qry, rx_framed_ipv6_prefix, &avp);
+        d_assert(ret == 0, return EINVAL,);
         if (avp)
         {
             paa_t *paa = NULL;
 
-            CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+            ret = fd_msg_avp_hdr(avp, &hdr);
+            d_assert(ret == 0, return EINVAL,);
             paa = (paa_t *)hdr->avp_value->os.data;
             d_assert(paa, goto out,);
             d_assert(paa->len == IPV6_LEN * 8 /* 128bit */, goto out,
@@ -155,11 +168,15 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
         }
     }
 
-    if (!gx_sid) goto out;
+    if (!gx_sid)
+    {
+        d_error("No Gx Session");
+        goto out;
+    }
 
     /* Associate Gx-session with Rx-session */
     rv = pcrf_sess_gx_associate_rx(gx_sid, rx_sid);
-    d_assert(rv == CORE_OK, goto out,);
+    d_assert(rv == CORE_OK, goto out, "Cannot Associate Gx/Rx Session");
 
     /* Store Gx Session-Id in this session */
     if (sess_data->gx_sid)
@@ -168,20 +185,22 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     d_assert(sess_data->gx_sid, goto out,);
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
+	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
+    d_assert(ret == 0, return EINVAL,);
 
     /* Store this value in the session */
-    CHECK_FCT_DO( fd_sess_state_store(pcrf_rx_reg, sess, &sess_data),
-            goto out );
+    ret = fd_sess_state_store(pcrf_rx_reg, sess, &sess_data);
+    d_assert(ret == 0,,);
     d_assert(sess_data == NULL,,);
 
 	/* Send the answer */
-	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
+	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0,,);
 
 	/* Add this value to the stats */
-	CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
 	fd_logger_self()->stats.nb_echoed++;
-	CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
+	d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
 
 #if 0
     gx_cca_message_free(&cca_message);
@@ -192,16 +211,19 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 out:
     if (result_code == RX_DIAMETER_REQUESTED_SERVICE_TEMPORARILY_NOT_AUTHORIZED)
     {
-        CHECK_FCT( fd_msg_rescode_set(ans,
+        ret = fd_msg_rescode_set(ans,
                 "RX_DIAMETER_REQUESTED_SERVICE_TEMPORARILY_NOT_AUTHORIZED",
-                NULL, NULL, 1) );
+                NULL, NULL, 1);
+        d_assert(ret == 0, return EINVAL,);
     }
     else
     {
-        CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
+        ret = fd_message_experimental_rescode_set(ans, result_code);
+        d_assert(ret == 0, return EINVAL,);
     }
 
-	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
+	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0,,);
 
     state_cleanup(sess_data, NULL, NULL);
 #if 0
@@ -211,38 +233,47 @@ out:
     return 0;
 }
 
-int pcrf_rx_init(void)
+status_t pcrf_rx_init(void)
 {
+    int ret;
 	struct disp_when data;
 
     pool_init(&pcrf_rx_sess_pool, MAX_POOL_OF_DIAMETER_SESS);
 
 	/* Install objects definitions for this application */
-	CHECK_FCT( rx_dict_init() );
+	ret = rx_dict_init();
+    d_assert(ret == 0, return CORE_ERROR,);
 
     /* Create handler for sessions */
-	CHECK_FCT( fd_sess_handler_create(&pcrf_rx_reg, state_cleanup,
-                NULL, NULL) );
+	ret = fd_sess_handler_create(&pcrf_rx_reg, state_cleanup, NULL, NULL);
+    d_assert(ret == 0, return CORE_ERROR,);
 
 	memset(&data, 0, sizeof(data));
 	data.app = rx_application;
 	
-	CHECK_FCT( fd_disp_register(pcrf_rx_fb_cb, DISP_HOW_APPID, &data, NULL,
-                &hdl_rx_fb) );
+	ret = fd_disp_register(pcrf_rx_fb_cb, DISP_HOW_APPID, &data, NULL,
+                &hdl_rx_fb);
+    d_assert(ret == 0, return CORE_ERROR,);
 	
 	data.command = rx_cmd_aar;
-	CHECK_FCT( fd_disp_register(pcrf_rx_aar_cb, DISP_HOW_CC, &data, NULL,
-                &hdl_rx_aar) );
+	ret = fd_disp_register(pcrf_rx_aar_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_rx_aar);
+    d_assert(ret == 0, return CORE_ERROR,);
 
 	/* Advertise the support for the application in the peer */
-	CHECK_FCT( fd_disp_app_support(rx_application, fd_vendor, 1, 0) );
+	ret = fd_disp_app_support(rx_application, fd_vendor, 1, 0);
+    d_assert(ret == 0, return CORE_ERROR,);
 
-	return 0;
+	return CORE_OK;
 }
 
 void pcrf_rx_final(void)
 {
-	CHECK_FCT_DO( fd_sess_handler_destroy(&pcrf_rx_reg, NULL), );
+    int ret;
+
+	ret = fd_sess_handler_destroy(&pcrf_rx_reg, NULL);
+    d_assert(ret == 0,,);
+
 	if (hdl_rx_fb)
 		(void) fd_disp_unregister(&hdl_rx_fb, NULL);
 	if (hdl_rx_aar)

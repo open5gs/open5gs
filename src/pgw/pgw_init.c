@@ -19,7 +19,6 @@ static int initialized = 0;
 status_t pgw_initialize()
 {
     status_t rv;
-    int ret;
 
     rv = pgw_context_init();
     if (rv != CORE_OK) return rv;
@@ -33,8 +32,8 @@ status_t pgw_initialize()
     rv = pgw_ue_pool_generate();
     if (rv != CORE_OK) return rv;
 
-    ret = pgw_fd_init();
-    if (ret != 0) return CORE_ERROR;
+    rv = pgw_fd_init();
+    if (rv != 0) return CORE_ERROR;
 
     rv = thread_create(&pgw_thread, NULL, pgw_main, NULL);
     if (rv != CORE_OK) return rv;

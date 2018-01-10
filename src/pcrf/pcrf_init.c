@@ -8,7 +8,6 @@ static int initialized = 0;
 status_t pcrf_initialize(void)
 {
     status_t rv;
-    int ret;
 
     rv = pcrf_context_init();
     if (rv != CORE_OK) return rv;
@@ -22,8 +21,8 @@ status_t pcrf_initialize(void)
     rv = pcrf_db_init();
     if (rv != CORE_OK) return rv;
 
-    ret = pcrf_fd_init();
-    if (ret != CORE_OK) return CORE_ERROR;
+    rv = pcrf_fd_init();
+    if (rv != CORE_OK) return CORE_ERROR;
 
     initialized = 1;
 

@@ -35,6 +35,7 @@ void pcscf_rx_sess_cleanup(
 void pcscf_rx_send_aar(const char *ip)
 {
     status_t rv;
+    int ret;
 
     struct msg *req = NULL;
     struct avp *avp;
@@ -44,7 +45,7 @@ void pcscf_rx_send_aar(const char *ip)
     struct avp *avpch1;
 #endif
     union avp_value val;
-    struct sess_state *mi = NULL, *svg;
+    struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
 
     paa_t paa;
@@ -55,76 +56,92 @@ void pcscf_rx_send_aar(const char *ip)
     d_assert(rv == CORE_OK, return,);
 
     /* Create the random value to store with the session */
-    pool_alloc_node(&pcscf_rx_sess_pool, &mi);
-    d_assert(mi, return, "malloc failed: %s", strerror(errno));
+    pool_alloc_node(&pcscf_rx_sess_pool, &sess_data);
+    d_assert(sess_data, return,);
     
     /* Create the request */
-    CHECK_FCT_DO( fd_msg_new(rx_cmd_aar, MSGFL_ALLOC_ETEID, &req), goto out );
+    ret = fd_msg_new(rx_cmd_aar, MSGFL_ALLOC_ETEID, &req);
+    d_assert(ret == 0, return,);
     {
         struct msg_hdr * h;
-        CHECK_FCT_DO( fd_msg_hdr( req, &h ), goto out );
+        ret = fd_msg_hdr( req, &h );
+        d_assert(ret == 0, return,);
         h->msg_appl = RX_APPLICATION_ID;
     }
     
     /* Create a new session */
     #define RX_APP_SID_OPT  "app_rx"
-    CHECK_FCT_DO( fd_msg_new_session(req, (os0_t)RX_APP_SID_OPT, 
-            CONSTSTRLEN(RX_APP_SID_OPT)), goto out );
-    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL),
-            goto out );
+    ret = fd_msg_new_session(req, (os0_t)RX_APP_SID_OPT, 
+            CONSTSTRLEN(RX_APP_SID_OPT));
+    d_assert(ret == 0, return,);
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
+    d_assert(ret == 0, return,);
 
     /* Set Origin-Host & Origin-Realm */
-    CHECK_FCT_DO( fd_msg_add_origin(req, 0), goto out );
+    ret = fd_msg_add_origin(req, 0);
+    d_assert(ret == 0, return,);
     
     /* Set the Destination-Realm AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(fd_destination_realm, 0, &avp), goto out );
+    ret = fd_msg_avp_new(fd_destination_realm, 0, &avp);
+    d_assert(ret == 0, return,);
     val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
     val.os.len  = strlen(fd_g_config->cnf_diamrlm);
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
 
     /* Set the Auth-Application-Id AVP */
-    CHECK_FCT_DO( fd_msg_avp_new(fd_auth_application_id, 0, &avp), goto out );
+    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    d_assert(ret == 0, return,);
     val.i32 = RX_APPLICATION_ID;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
 
     /* Set Subscription-Id */
-    CHECK_FCT_DO( fd_msg_avp_new(rx_subscription_id, 0, &avp),
-            goto out );
+    ret = fd_msg_avp_new(rx_subscription_id, 0, &avp);
+    d_assert(ret == 0, return,);
 
-    CHECK_FCT_DO( fd_msg_avp_new(rx_subscription_id_type, 0, &avpch1),
-            goto out );
+    ret = fd_msg_avp_new(rx_subscription_id_type, 0, &avpch1);
+    d_assert(ret == 0, return,);
     val.i32 = RX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI;
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1), goto out );
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return,);
 
     #define RX_APP_IMSI_BCD  "0123456789012345"
-    CHECK_FCT_DO( fd_msg_avp_new(rx_subscription_id_data, 0, &avpch1),
-            goto out );
+    ret = fd_msg_avp_new(rx_subscription_id_data, 0, &avpch1);
+    d_assert(ret == 0, return,);
     val.os.data = (c_uint8_t *)RX_APP_IMSI_BCD;
     val.os.len  = strlen(RX_APP_IMSI_BCD);
-    CHECK_FCT_DO( fd_msg_avp_setvalue (avpch1, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1), goto out );
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return,);
 
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
 
     if (ipsub.family == AF_INET)
     {
         /* Set Framed-IP-Address */
-        CHECK_FCT_DO( fd_msg_avp_new(rx_framed_ip_address, 0, &avp),
-                goto out );
+        ret = fd_msg_avp_new(rx_framed_ip_address, 0, &avp);
+        d_assert(ret == 0, return,);
         val.os.data = (c_uint8_t*)ipsub.sub;
         val.os.len = IPV4_LEN;
-        CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
-                goto out );
+        ret = fd_msg_avp_setvalue(avp, &val);
+        d_assert(ret == 0, return,);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        d_assert(ret == 0, return,);
     }
     else if (ipsub.family == AF_INET6)
     {
         /* Set Framed-IPv6-Prefix */
-        CHECK_FCT_DO( fd_msg_avp_new(rx_framed_ipv6_prefix, 0, &avp),
-                goto out );
+        ret = fd_msg_avp_new(rx_framed_ipv6_prefix, 0, &avp);
+        d_assert(ret == 0, return,);
         memset(&paa, 0, sizeof(paa_t));
 
         memcpy(paa.addr6, ipsub.sub, IPV6_LEN);
@@ -133,35 +150,38 @@ void pcscf_rx_send_aar(const char *ip)
         paa.len = FRAMED_IPV6_PREFIX_LENGTH; 
         val.os.data = (c_uint8_t*)&paa;
         val.os.len = PAA_IPV6_LEN;
-        CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
-                goto out );
+        ret = fd_msg_avp_setvalue(avp, &val);
+        d_assert(ret == 0, return,);
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        d_assert(ret == 0, return,);
     }
 
-    CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &mi->ts), goto out );
+    ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
+    d_assert(ret == 0, return,);
     
     /* Keep a pointer to the session data for debug purpose, 
      * in real life we would not need it */
-    svg = mi;
+    svg = sess_data;
     
     /* Store this value in the session */
-    CHECK_FCT_DO( fd_sess_state_store(pcscf_rx_reg, session, &mi), goto out );
+    ret = fd_sess_state_store(pcscf_rx_reg, session, &sess_data);
+    d_assert(ret == 0, return,);
     
     /* Send the request */
-    CHECK_FCT_DO( fd_msg_send(&req, pcscf_rx_aaa_cb, svg), goto out );
+    ret = fd_msg_send(&req, pcscf_rx_aaa_cb, svg);
+    d_assert(ret == 0,,);
 
     /* Increment the counter */
-    CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+    d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
     fd_logger_self()->stats.nb_sent++;
-    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
-
-out:
-    return;
+    d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
 }
 
 static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
 {
-    struct sess_state *mi = NULL;
+    int ret;
+
+    struct sess_state *sess_data = NULL;
     struct timespec ts;
     struct session *session;
 #if 0
@@ -175,35 +195,40 @@ static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
     int new;
     c_int32_t result_code = 0;
 
-    CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &ts), return );
+    ret = clock_gettime(CLOCK_REALTIME, &ts);
+    d_assert(ret == 0, return,);
 
     /* Search the session, retrieve its data */
-    CHECK_FCT_DO( fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new),
-            return );
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
+    d_assert(ret == 0, return,);
     d_assert(new == 0, return, );
     
-    CHECK_FCT_DO( fd_sess_state_retrieve(pcscf_rx_reg, session, &mi), return );
-    d_assert(mi && (void *)mi == data, return, );
+    ret = fd_sess_state_retrieve(pcscf_rx_reg, session, &sess_data);
+    d_assert(ret == 0, return,);
+    d_assert(sess_data && (void *)sess_data == data, return, );
 
     /* Value of Result Code */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_result_code, &avp), return );
+    ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
+    d_assert(ret == 0, return,);
     if (avp)
     {
-        CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return);
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
         result_code = hdr->avp_value->i32;
         d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
     }
     else
     {
-        CHECK_FCT_DO( fd_msg_search_avp(*msg, 
-                fd_experimental_result, &avp), return );
+        ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
+        d_assert(ret == 0, return,);
         if (avp)
         {
-            CHECK_FCT_DO( fd_avp_search_avp(avp, 
-                    fd_experimental_result_code, &avpch1), return );
+            ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch1);
+            d_assert(ret == 0, return,);
             if (avpch1)
             {
-                CHECK_FCT_DO( fd_msg_avp_hdr(avpch1, &hdr), return);
+                ret = fd_msg_avp_hdr(avpch1, &hdr);
+                d_assert(ret == 0, return,);
                 result_code = hdr->avp_value->i32;
                 d_trace(3, "Experimental Result Code: %d\n",
                         result_code);
@@ -217,10 +242,12 @@ static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
     }
 
     /* Value of Origin-Host */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_origin_host, &avp), return );
+    ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
+    d_assert(ret == 0, return,);
     if (avp)
     {
-        CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
         d_trace(3, "From '%.*s' ",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
@@ -231,10 +258,12 @@ static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
     }
 
     /* Value of Origin-Realm */
-    CHECK_FCT_DO( fd_msg_search_avp(*msg, fd_origin_realm, &avp), return );
+    ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
+    d_assert(ret == 0, return,);
     if (avp)
     {
-        CHECK_FCT_DO( fd_msg_avp_hdr(avp, &hdr), return );
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
         d_trace(3, "('%.*s') ",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
@@ -253,9 +282,9 @@ static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
 
 out:
     /* Free the message */
-    CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
-    dur = ((ts.tv_sec - mi->ts.tv_sec) * 1000000) + 
-        ((ts.tv_nsec - mi->ts.tv_nsec) / 1000);
+    d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,, );
+    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
+        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
     if (fd_logger_self()->stats.nb_recv)
     {
         /* Ponderate in the avg */
@@ -279,22 +308,23 @@ out:
     else 
         fd_logger_self()->stats.nb_recv++;
 
-    CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
+    d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,, );
     
     /* Display how long it took */
-    if (ts.tv_nsec > mi->ts.tv_nsec)
+    if (ts.tv_nsec > sess_data->ts.tv_nsec)
         d_trace(3, "in %d.%06ld sec\n", 
-                (int)(ts.tv_sec - mi->ts.tv_sec),
-                (long)(ts.tv_nsec - mi->ts.tv_nsec) / 1000);
+                (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
     else
         d_trace(3, "in %d.%06ld sec\n", 
-                (int)(ts.tv_sec + 1 - mi->ts.tv_sec),
-                (long)(1000000000 + ts.tv_nsec - mi->ts.tv_nsec) / 1000);
+                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
     
-    CHECK_FCT_DO( fd_msg_free(*msg), return );
+    ret = fd_msg_free(*msg);
+    d_assert(ret == 0,,);
     *msg = NULL;
 
-    pcscf_rx_sess_cleanup(mi, NULL, NULL);
+    pcscf_rx_sess_cleanup(sess_data, NULL, NULL);
     return;
 }
 
@@ -330,28 +360,35 @@ void pcscf_fd_config()
     fd_config.num_of_conn++;
 }
 
-int pcscf_fd_init(void)
+status_t pcscf_fd_init(void)
 {
+    int ret;
     pool_init(&pcscf_rx_sess_pool, MAX_NUM_SESSION_STATE);
 
     pcscf_fd_config();
 
-    CHECK_FCT( fd_init(FD_MODE_CLIENT, NULL, &fd_config) );
+    ret = fd_init(FD_MODE_CLIENT, NULL, &fd_config);
+    d_assert(ret == 0, return CORE_ERROR,);
 
-	CHECK_FCT( rx_dict_init() );
+	ret = rx_dict_init();
+    d_assert(ret == 0, return CORE_ERROR,);
 
-	CHECK_FCT( fd_sess_handler_create(&pcscf_rx_reg, pcscf_rx_sess_cleanup,
-                NULL, NULL) );
+	ret = fd_sess_handler_create(&pcscf_rx_reg, pcscf_rx_sess_cleanup,
+                NULL, NULL);
+    d_assert(ret == 0, return CORE_ERROR,);
 
 	/* Advertise the support for the application in the peer */
-	CHECK_FCT( fd_disp_app_support(rx_application, fd_vendor, 1, 0) );
+	ret = fd_disp_app_support(rx_application, fd_vendor, 1, 0);
+    d_assert(ret == 0, return CORE_ERROR,);
 	
 	return 0;
 }
 
 void pcscf_fd_final(void)
 {
-	CHECK_FCT_DO( fd_sess_handler_destroy(&pcscf_rx_reg, NULL), );
+    int ret;
+	ret = fd_sess_handler_destroy(&pcscf_rx_reg, NULL);
+    d_assert(ret == 0,,);
 
     fd_final();
 

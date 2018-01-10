@@ -9,12 +9,12 @@ extern "C" {
 
 struct sess_state;
 
-CORE_DECLARE(int) pcrf_fd_init(void);
+CORE_DECLARE(status_t) pcrf_fd_init(void);
 CORE_DECLARE(void) pcrf_fd_final(void);
 
-CORE_DECLARE(int) pcrf_gx_init(void);
+CORE_DECLARE(status_t) pcrf_gx_init(void);
 CORE_DECLARE(void) pcrf_gx_final(void);
-CORE_DECLARE(int) pcrf_rx_init(void);
+CORE_DECLARE(status_t) pcrf_rx_init(void);
 CORE_DECLARE(void) pcrf_rx_final(void);
 
 CORE_DECLARE(status_t) pcrf_sess_gx_associate_rx(

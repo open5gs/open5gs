@@ -11,7 +11,7 @@ extern "C" {
 
 typedef struct _gtp_xact_t gtp_xact_t;
 
-CORE_DECLARE(int) pgw_fd_init(void);
+CORE_DECLARE(status_t) pgw_fd_init(void);
 CORE_DECLARE(void) pgw_fd_final(void);
 
 CORE_DECLARE(void) pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
