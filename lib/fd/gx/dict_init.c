@@ -29,6 +29,8 @@ struct dict_object *gx_qos_information = NULL;
 struct dict_object *gx_qos_class_identifier = NULL;
 struct dict_object *gx_max_requested_bandwidth_ul = NULL;
 struct dict_object *gx_max_requested_bandwidth_dl = NULL;
+struct dict_object *gx_min_requested_bandwidth_ul = NULL;
+struct dict_object *gx_min_requested_bandwidth_dl = NULL;
 struct dict_object *gx_guaranteed_bitrate_ul = NULL;
 struct dict_object *gx_guaranteed_bitrate_dl = NULL;
 struct dict_object *gx_allocation_retention_priority = NULL;
@@ -94,6 +96,8 @@ int gx_dict_init(void)
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "QoS-Class-Identifier" , &gx_qos_class_identifier);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-UL" , &gx_max_requested_bandwidth_ul);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-DL" , &gx_max_requested_bandwidth_dl);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-UL" , &gx_min_requested_bandwidth_ul);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-DL" , &gx_min_requested_bandwidth_dl);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Guaranteed-Bitrate-UL" , &gx_guaranteed_bitrate_ul);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Guaranteed-Bitrate-DL" , &gx_guaranteed_bitrate_dl);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Allocation-Retention-Priority" , &gx_allocation_retention_priority);

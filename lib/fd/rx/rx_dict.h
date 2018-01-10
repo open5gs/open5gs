@@ -17,9 +17,19 @@ extern struct dict_object *rx_cmd_aaa;
 
 extern struct dict_object *rx_media_component_description;
 extern struct dict_object *rx_media_component_number;
+#define RX_MEDIA_TYPE_AUDIO             0
+#define RX_MEDIA_TYPE_VIDEO             1
+#define RX_MEDIA_TYPE_DATA              2
+#define RX_MEDIA_TYPE_APPLICATION       3
+#define RX_MEDIA_TYPE_CONTROL           4
+#define RX_MEDIA_TYPE_TEXT              5
+#define RX_MEDIA_TYPE_MESSAGE           6
+#define RX_MEDIA_TYPE_OTHER             0xFFFFFFFF
 extern struct dict_object *rx_media_type;
 extern struct dict_object *rx_max_requested_bandwidth_ul;
 extern struct dict_object *rx_max_requested_bandwidth_dl;
+extern struct dict_object *rx_min_requested_bandwidth_ul;
+extern struct dict_object *rx_min_requested_bandwidth_dl;
 extern struct dict_object *rx_rr_bandwidth;
 extern struct dict_object *rx_rs_bandwidth;
 #define RX_FLOW_STATUS_ENABLED_UPLINK       0
@@ -30,6 +40,9 @@ extern struct dict_object *rx_flow_status;
 extern struct dict_object *rx_codec_data;
 extern struct dict_object *rx_media_sub_component;
 extern struct dict_object *rx_flow_number;
+#define RX_FLOW_USAGE_NO_INFORMATION        0
+#define RX_FLOW_USAGE_RTCP                  1
+#define RX_FLOW_USAGE_AF_SIGNALLING         2
 extern struct dict_object *rx_flow_usage;
 extern struct dict_object *rx_flow_description;
 extern struct dict_object *rx_subscription_id;

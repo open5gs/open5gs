@@ -39,11 +39,7 @@ void pcscf_rx_send_aar(const char *ip)
 
     struct msg *req = NULL;
     struct avp *avp;
-#if 0
     struct avp *avpch1, *avpch2;
-#else
-    struct avp *avpch1;
-#endif
     union avp_value val;
     struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
@@ -155,6 +151,141 @@ void pcscf_rx_send_aar(const char *ip)
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
         d_assert(ret == 0, return,);
     }
+
+    /* Set Media-Component-Description */
+    ret = fd_msg_avp_new(rx_media_component_description, 0, &avp);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_media_component_number, 0, &avpch1);
+    d_assert(ret == 0, return,);
+    val.i32 = RX_MEDIA_TYPE_AUDIO;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_media_type, 0, &avpch1);
+    d_assert(ret == 0, return,);
+    val.i32 = 1;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_max_requested_bandwidth_dl, 0, &avpch1);
+    d_assert(ret == 0, return,);
+    val.i32 = 96000;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_max_requested_bandwidth_ul, 0, &avpch1);
+    d_assert(ret == 0, return,);
+    val.i32 = 96000;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_min_requested_bandwidth_dl, 0, &avpch1);
+    d_assert(ret == 0, return,);
+    val.i32 = 2400;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_min_requested_bandwidth_ul, 0, &avpch1);
+    d_assert(ret == 0, return,);
+    val.i32 = 2400;
+    ret = fd_msg_avp_setvalue (avpch1, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return,);
+
+    /* Set Media-Sub-Component #1 */
+    ret = fd_msg_avp_new(rx_media_sub_component, 0, &avpch1);
+
+    ret = fd_msg_avp_new(rx_flow_number, 0, &avpch2);
+    d_assert(ret == 0, return,);
+    val.i32 = 1;
+    ret = fd_msg_avp_setvalue (avpch2, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_flow_description, 0, &avpch2);
+    d_assert(ret == 0, return,);
+    #define TEST_RX_FLOW_DESC1  \
+        "permit out 17 from 172.20.166.84 to 172.18.128.20 20001"
+    val.os.data = (c_uint8_t *)TEST_RX_FLOW_DESC1;
+    val.os.len  = strlen(TEST_RX_FLOW_DESC1);
+    ret = fd_msg_avp_setvalue (avpch2, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_flow_description, 0, &avpch2);
+    d_assert(ret == 0, return,);
+    #define TEST_RX_FLOW_DESC2  \
+        "permit in 17 from 172.18.128.20 to 172.20.166.84 20360"
+    val.os.data = (c_uint8_t *)TEST_RX_FLOW_DESC2;
+    val.os.len  = strlen(TEST_RX_FLOW_DESC2);
+    ret = fd_msg_avp_setvalue (avpch2, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return,);
+
+    /* Set Media-Sub-Component #2 */
+    ret = fd_msg_avp_new(rx_media_sub_component, 0, &avpch1);
+
+    ret = fd_msg_avp_new(rx_flow_number, 0, &avpch2);
+    d_assert(ret == 0, return,);
+    val.i32 = 2;
+    ret = fd_msg_avp_setvalue (avpch2, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_flow_usage, 0, &avpch2);
+    d_assert(ret == 0, return,);
+    val.i32 = RX_FLOW_USAGE_RTCP;
+    ret = fd_msg_avp_setvalue (avpch2, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_flow_description, 0, &avpch2);
+    d_assert(ret == 0, return,);
+    #define TEST_RX_FLOW_DESC3  \
+        "permit out 17 from 172.20.166.84 to 172.18.128.20 20002"
+    val.os.data = (c_uint8_t *)TEST_RX_FLOW_DESC3;
+    val.os.len  = strlen(TEST_RX_FLOW_DESC3);
+    ret = fd_msg_avp_setvalue (avpch2, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_new(rx_flow_description, 0, &avpch2);
+    d_assert(ret == 0, return,);
+    #define TEST_RX_FLOW_DESC4  \
+        "permit in 17 from 172.18.128.20 to 172.20.166.84 20361"
+    val.os.data = (c_uint8_t *)TEST_RX_FLOW_DESC4;
+    val.os.len  = strlen(TEST_RX_FLOW_DESC4);
+    ret = fd_msg_avp_setvalue (avpch2, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return,);
+
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
 
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
     d_assert(ret == 0, return,);

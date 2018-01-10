@@ -15,6 +15,8 @@ struct dict_object *rx_media_component_number = NULL;
 struct dict_object *rx_media_type = NULL;
 struct dict_object *rx_max_requested_bandwidth_ul = NULL;
 struct dict_object *rx_max_requested_bandwidth_dl = NULL;
+struct dict_object *rx_min_requested_bandwidth_ul = NULL;
+struct dict_object *rx_min_requested_bandwidth_dl = NULL;
 struct dict_object *rx_rr_bandwidth = NULL;
 struct dict_object *rx_rs_bandwidth = NULL;
 struct dict_object *rx_flow_status = NULL;
@@ -46,6 +48,8 @@ int rx_dict_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Type", &rx_media_type);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-UL" , &rx_max_requested_bandwidth_ul);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-DL" , &rx_max_requested_bandwidth_dl);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-UL" , &rx_min_requested_bandwidth_ul);
+	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-DL" , &rx_min_requested_bandwidth_dl);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RR-Bandwidth" , &rx_rr_bandwidth);
 	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RS-Bandwidth" , &rx_rs_bandwidth);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Status", &rx_flow_status);
