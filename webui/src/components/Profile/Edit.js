@@ -170,10 +170,8 @@ const schema = {
                 "flow": {
                   "type": "array",
                   "title": "",
-                  "minItems": 1,
                   "maxItems": 8,
                   "messages": {
-                    "minItems": "At least 1 Flow is required",
                     "maxItems": "8 Flows are supported"
                   },
                   "items": {

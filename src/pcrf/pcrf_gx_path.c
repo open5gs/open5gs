@@ -272,7 +272,16 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
         /* Set Charging-Rule-Install */
-        if (cca_message.num_of_pcc_rule)
+        int charging_rule_install = 0;
+
+        for (i = 0; i < cca_message.num_of_pcc_rule; i++)
+        {
+            pcc_rule_t *pcc_rule = &cca_message.pcc_rule[i];
+            if (pcc_rule->num_of_flow)
+                charging_rule_install = 1;
+        }
+
+        if (charging_rule_install)
         {
             ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
             d_assert(ret == 0, return EINVAL,);
@@ -431,7 +440,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
             d_assert(ret == 0, return EINVAL,);
         }
         
-        if (cca_message.num_of_pcc_rule)
+        if (charging_rule_install)
         {
             ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
             d_assert(ret == 0, return EINVAL,);
