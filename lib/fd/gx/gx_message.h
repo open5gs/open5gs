@@ -8,7 +8,8 @@ extern "C" {
 #include "3gpp_types.h"
 
 typedef struct _gx_message_t {
-#define GX_CMD_CODE_CREDIT_CONTROL              272
+#define GX_CMD_CODE_CREDIT_CONTROL                      272
+#define GX_CMD_RE_AUTH                                  258
     c_uint16_t          cmd_code;
 
 /* Experimental-Result-Codes */
@@ -24,10 +25,10 @@ typedef struct _gx_message_t {
 #define GX_DIAMETER_ERROR_NBIFOM_NOT_AUTHORIZED         5149
     c_uint32_t          result_code;
 
-#define GX_CC_REQUEST_TYPE_INITIAL_REQUEST      1
-#define GX_CC_REQUEST_TYPE_UPDATE_REQUEST       2
-#define GX_CC_REQUEST_TYPE_TERMINATION_REQUEST  3
-#define GX_CC_REQUEST_TYPE_EVENT_REQUEST        4
+#define GX_CC_REQUEST_TYPE_INITIAL_REQUEST              1
+#define GX_CC_REQUEST_TYPE_UPDATE_REQUEST               2
+#define GX_CC_REQUEST_TYPE_TERMINATION_REQUEST          3
+#define GX_CC_REQUEST_TYPE_EVENT_REQUEST                4
     c_uint32_t          cc_request_type;
 
     pdn_t               pdn;
@@ -35,7 +36,7 @@ typedef struct _gx_message_t {
     int                 num_of_pcc_rule;
 } gx_message_t;
 
-CORE_DECLARE(void) gx_message_free(gx_message_t *message);
+CORE_DECLARE(void) gx_message_free(gx_message_t *gx_message);
 
 #ifdef __cplusplus
 }

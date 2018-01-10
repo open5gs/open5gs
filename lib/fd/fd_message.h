@@ -10,6 +10,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define FD_AVP_CODE_FRAME_IP_ADDRESS                    8
+#define FD_AVP_CODE_FRAME_IPV6_PREFIX                   97 
+
 /* Result-Code AVP */
 #define FD_DIAMETER_AVP_UNSUPPORTED                     5001
 #define FD_DIAMETER_UNKNOWN_SESSION_ID                  5002

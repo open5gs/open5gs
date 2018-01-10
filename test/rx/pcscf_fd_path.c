@@ -10,6 +10,7 @@
 
 #include "fd/fd_lib.h"
 #include "fd/rx/rx_dict.h"
+#include "fd/rx/rx_message.h"
 
 #include "pcscf_fd_path.h"
 

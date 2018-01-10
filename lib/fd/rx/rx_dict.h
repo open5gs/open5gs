@@ -10,6 +10,20 @@ extern "C" {
 
 #define RX_APPLICATION_ID 16777236
 
+#define RX_AVP_CODE_SUBSCRIPTION_ID                 (443)
+#define RX_AVP_CODE_SPECIFIC_ACTION                 (513)
+
+#define RX_AVP_CODE_MEDIA_COMPONENT_DESCRIPTION     (517)
+#define RX_AVP_CODE_MEDIA_TYPE                      (520)
+#define RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_DL      (515)
+#define RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_UL      (516)
+#define RX_AVP_CODE_MEDIA_COMPONENT_NUMBER          (518)
+
+#define RX_AVP_CODE_MEDIA_SUB_COMPONENT             (519)
+#define RX_AVP_CODE_FLOW_DESCRIPTION                (507)
+#define RX_AVP_CODE_FLOW_NUMBER                     (509)
+#define RX_AVP_CODE_FLOW_USAGE                      (512)
+
 extern struct dict_object *rx_application;
 
 extern struct dict_object *rx_cmd_aar;
@@ -17,14 +31,6 @@ extern struct dict_object *rx_cmd_aaa;
 
 extern struct dict_object *rx_media_component_description;
 extern struct dict_object *rx_media_component_number;
-#define RX_MEDIA_TYPE_AUDIO             0
-#define RX_MEDIA_TYPE_VIDEO             1
-#define RX_MEDIA_TYPE_DATA              2
-#define RX_MEDIA_TYPE_APPLICATION       3
-#define RX_MEDIA_TYPE_CONTROL           4
-#define RX_MEDIA_TYPE_TEXT              5
-#define RX_MEDIA_TYPE_MESSAGE           6
-#define RX_MEDIA_TYPE_OTHER             0xFFFFFFFF
 extern struct dict_object *rx_media_type;
 extern struct dict_object *rx_max_requested_bandwidth_ul;
 extern struct dict_object *rx_max_requested_bandwidth_dl;
@@ -40,9 +46,6 @@ extern struct dict_object *rx_flow_status;
 extern struct dict_object *rx_codec_data;
 extern struct dict_object *rx_media_sub_component;
 extern struct dict_object *rx_flow_number;
-#define RX_FLOW_USAGE_NO_INFORMATION        0
-#define RX_FLOW_USAGE_RTCP                  1
-#define RX_FLOW_USAGE_AF_SIGNALLING         2
 extern struct dict_object *rx_flow_usage;
 extern struct dict_object *rx_flow_description;
 extern struct dict_object *rx_subscription_id;

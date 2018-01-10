@@ -4,6 +4,7 @@
 #include "core_pool.h"
 #include "core_pkbuf.h"
 #include "core_network.h"
+#include "core_lib.h"
 
 #include "fd/fd_lib.h"
 #include "fd/rx/rx_dict.h"
@@ -65,22 +66,17 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     int ret;
 
 	struct msg *ans, *qry;
-#if 0
-    struct avp *avpch1, *avpch2, *avpch3, *avpch4;
-#endif
+    struct avp *avpch1, *avpch2, *avpch3;
     struct avp_hdr *hdr;
     union avp_value val;
     struct sess_state *sess_data = NULL;
     size_t sidlen;
 
+    rx_message_t rx_message;
 #if 0
-    gx_cca_message_t cca_message;
-    c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
-    c_int8_t apn[MAX_APN_LEN+1];
     int i, j;
-
-    c_uint32_t cc_request_type = 0;
 #endif
+
     char buf[CORE_ADDRSTRLEN];
     os0_t rx_sid = NULL;
     os0_t gx_sid = NULL;
@@ -100,10 +96,8 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
         d_assert(sess_data, return EINVAL,);
     }
 
-#if 0
     /* Initialize Message */
-    memset(&cca_message, 0, sizeof(gx_cca_message_t));
-#endif
+    memset(&rx_message, 0, sizeof(rx_message_t));
 
 	/* Create answer header */
 	qry = *msg;
@@ -174,6 +168,126 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
+    ret = fd_msg_browse(qry, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
+    d_assert(ret == 0, return EINVAL,);
+    while(avpch1)
+    {
+        ret = fd_msg_avp_hdr(avpch1, &hdr);
+        d_assert(ret == 0, return EINVAL,);
+        switch(hdr->avp_code)
+        {
+            case AC_SESSION_ID:
+            case AC_ORIGIN_HOST:
+            case AC_ORIGIN_REALM:
+            case AC_DESTINATION_REALM:
+            case AC_ROUTE_RECORD:
+            case AC_PROXY_INFO:
+            case AC_AUTH_APPLICATION_ID:
+            case FD_AVP_CODE_FRAME_IP_ADDRESS:
+            case FD_AVP_CODE_FRAME_IPV6_PREFIX:
+            case RX_AVP_CODE_SUBSCRIPTION_ID:
+                break;
+            /* Gwt Specific-Action */
+            case RX_AVP_CODE_SPECIFIC_ACTION:
+                break;
+            /* Gwt Media-Component-Description */
+            case RX_AVP_CODE_MEDIA_COMPONENT_DESCRIPTION:
+            {
+                rx_media_component_t *media_component = &rx_message.
+                        media_component[rx_message.num_of_media_component];
+
+                ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
+                d_assert(ret == 0, return EINVAL,);
+                while(avpch2)
+                {
+                    ret = fd_msg_avp_hdr(avpch2, &hdr);
+                    d_assert(ret == 0, return EINVAL,);
+                    switch(hdr->avp_code)
+                    {
+                        case RX_AVP_CODE_MEDIA_COMPONENT_NUMBER:
+                            break;
+                        case RX_AVP_CODE_MEDIA_TYPE:
+                        {
+                            media_component->media_type = hdr->avp_value->i32;
+                            break;
+                        }
+                        case RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_DL:
+                        {
+                            media_component->mbr.downlink = hdr->avp_value->i32;
+                            break;
+                        }
+                        case RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_UL:
+                        {
+                            media_component->mbr.uplink = hdr->avp_value->i32;
+                            break;
+                        }
+                        case RX_AVP_CODE_MEDIA_SUB_COMPONENT:
+                        {
+                            ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD,
+                                    &avpch3, NULL);
+                            d_assert(ret == 0, return EINVAL,);
+                            while(avpch3)
+                            {
+                                ret = fd_msg_avp_hdr(avpch3, &hdr);
+                                d_assert(ret == 0, return EINVAL,);
+                                switch(hdr->avp_code)
+                                {
+                                    case RX_AVP_CODE_FLOW_NUMBER:
+                                        break;
+                                    case RX_AVP_CODE_FLOW_USAGE:
+                                    {
+                                        media_component->flow_usage =
+                                            hdr->avp_value->i32;
+                                        break;
+                                    }
+                                    case RX_AVP_CODE_FLOW_DESCRIPTION:
+                                    {
+                                        flow_t *flow = &media_component->flow
+                                            [media_component->num_of_flow];
+
+                                        flow->description = core_malloc(
+                                                hdr->avp_value->os.len+1);
+                                        core_cpystrn(
+                                            flow->description,
+                                            (char*)hdr->avp_value->os.data,
+                                            hdr->avp_value->os.len+1);
+                                        media_component->num_of_flow++;
+                                        break;
+                                    }
+                                    default:
+                                    {
+                                        d_error("Not supported(%d)",
+                                                hdr->avp_code);
+                                        break;
+                                    }
+                                }
+                                fd_msg_browse(avpch3, MSG_BRW_NEXT, &avpch3, NULL);
+                            }
+
+                            break;
+                        }
+                        default:
+                        {
+                            d_warn("Not supported(%d)", hdr->avp_code);
+                            break;
+                        }
+                    }
+
+                    fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
+                }
+
+                rx_message.num_of_media_component++;
+                break;
+            }
+            default:
+            {
+                d_warn("Not supported(%d)", hdr->avp_code);
+                break;
+            }
+        }
+        fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
+    }
+
     /* Associate Gx-session with Rx-session */
     rv = pcrf_sess_gx_associate_rx(gx_sid, rx_sid);
     d_assert(rv == CORE_OK, goto out, "Cannot Associate Gx/Rx Session");
@@ -183,6 +297,24 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
         core_free(sess_data->gx_sid);
     sess_data->gx_sid = (os0_t)core_strdup((char *)gx_sid);
     d_assert(sess_data->gx_sid, goto out,);
+
+    /* Set IP-Can-Type */
+    ret = fd_msg_avp_new(rx_ip_can_type, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    val.i32 = RX_IP_CAN_TYPE_3GPP_EPS;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
+
+    /* Set RAT-Type */
+    ret = fd_msg_avp_new(rx_rat_type, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    val.i32 = RX_RAT_TYPE_EUTRAN;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
@@ -202,10 +334,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 	fd_logger_self()->stats.nb_echoed++;
 	d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
 
-#if 0
-    gx_cca_message_free(&cca_message);
-#endif
-
+    rx_message_free(&rx_message);
     
     pcrf_gx_send_rar(gx_sid);
 
@@ -245,9 +374,7 @@ out:
     d_assert(ret == 0,,);
 
     state_cleanup(sess_data, NULL, NULL);
-#if 0
-    gx_cca_message_free(&cca_message);
-#endif
+    rx_message_free(&rx_message);
 
     return 0;
 }

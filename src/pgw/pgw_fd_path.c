@@ -573,7 +573,6 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                     d_assert(ret == 0, return,);
                     while(avpch2)
                     {
-
                         ret = fd_msg_avp_hdr(avpch2, &hdr);
                         d_assert(ret == 0, return,);
                         switch(hdr->avp_code)

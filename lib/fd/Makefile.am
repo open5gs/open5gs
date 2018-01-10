@@ -13,7 +13,7 @@ libfd_la_SOURCES = \
 	gx/dict_init.c gx/gx_message.c \
 	\
 	rx/rx_dict.h rx/rx_message.h \
-	rx/dict_init.c \
+	rx/dict_init.c rx/rx_message.c \
 	$(NULL)
 
 libfd_la_DEPENDENCIES = \

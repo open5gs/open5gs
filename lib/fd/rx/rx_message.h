@@ -7,6 +7,28 @@ extern "C" {
 
 #include "3gpp_types.h"
 
+typedef struct _rx_media_component_t {
+#define RX_MEDIA_TYPE_AUDIO             0
+#define RX_MEDIA_TYPE_VIDEO             1
+#define RX_MEDIA_TYPE_DATA              2
+#define RX_MEDIA_TYPE_APPLICATION       3
+#define RX_MEDIA_TYPE_CONTROL           4
+#define RX_MEDIA_TYPE_TEXT              5
+#define RX_MEDIA_TYPE_MESSAGE           6
+#define RX_MEDIA_TYPE_OTHER             0xFFFFFFFF
+    c_uint32_t          media_type;
+
+    bitrate_t           mbr;  /* Maxmimum Bit Rate (MBR) */
+    bitrate_t           gbr;  /* Guaranteed Bit Rate (GBR) */
+
+#define RX_FLOW_USAGE_NO_INFORMATION        0
+#define RX_FLOW_USAGE_RTCP                  1
+#define RX_FLOW_USAGE_AF_SIGNALLING         2
+    c_uint32_t          flow_usage;
+    flow_t              flow[MAX_NUM_OF_FLOW];
+    int                 num_of_flow;
+} rx_media_component_t;
+
 typedef struct _rx_message_t {
 #define RX_CMD_CODE_AA                                  265
     c_uint16_t          cmd_code;
@@ -22,7 +44,12 @@ typedef struct _rx_message_t {
 #define RX_DIAMETER_TEMPORARY_NETWORK_FAILURE                       5068
     c_uint32_t          result_code;
 
+#define MAX_NUM_OF_MEDIA_COMPONENT 16
+    rx_media_component_t media_component[MAX_NUM_OF_MEDIA_COMPONENT];
+    int num_of_media_component;
 } rx_message_t;
+
+CORE_DECLARE(void) rx_message_free(rx_message_t *rx_message);
 
 #ifdef __cplusplus
 }
