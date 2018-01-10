@@ -93,6 +93,7 @@ extern struct dict_object *gx_flow_description;
 extern struct dict_object *gx_flow_status;
 extern struct dict_object *gx_precedence;
 extern struct dict_object *gx_flows;
+extern struct dict_object *gx_re_auth_request_type;
 extern struct dict_object *gx_specific_action;
 extern struct dict_object *gx_abort_cause;
 extern struct dict_object *gx_media_component_description;

@@ -14,8 +14,10 @@
 
 struct sess_state {
     c_uint32_t  cc_request_type;    /* CC-Request-Type */
+
     os0_t       gx_sid;             /* Gx Session-Id */
     os0_t       rx_sid;             /* Rx Session-Id */
+    os0_t       peer_host;          /* Peer Host */
 
 ED3(c_uint8_t   ipv4:1;,
     c_uint8_t   ipv6:1;,
@@ -61,6 +63,8 @@ static void state_cleanup(
         core_free(sess_data->gx_sid);
     if (sess_data->rx_sid)
         core_free(sess_data->rx_sid);
+    if (sess_data->peer_host)
+        core_free(sess_data->peer_host);
 
     pool_free_node(&pcrf_gx_sess_pool, sess_data);
 }
@@ -92,7 +96,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     int i, j;
 
     c_uint32_t cc_request_number = 0;
-    c_uint32_t result_code = GX_DIAMETER_ERROR_USER_UNKNOWN;
+    c_uint32_t result_code = FD_DIAMETER_MISSING_AVP;
 	
     d_assert(msg, return EINVAL,);
 
@@ -120,6 +124,27 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     d_assert(ret == 0, return EINVAL,);
     ans = *msg;
 
+    /* Get Origin-Host */
+    ret = fd_msg_search_avp(qry, fd_origin_host, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return EINVAL,);
+
+        if (sess_data->peer_host)
+            core_free(sess_data->peer_host);
+        sess_data->peer_host =
+            (os0_t)core_strdup((char *)hdr->avp_value->os.data);
+        d_assert(sess_data->peer_host, return CORE_ERROR,);
+    }
+    else
+    {
+        d_error("no_CC-Request-Type ");
+        result_code = FD_DIAMETER_MISSING_AVP;
+        goto out;
+    }
+
     /* Get CC-Request-Type */
     ret = fd_msg_search_avp(qry, gx_cc_request_type, &avp);
     d_assert(ret == 0, return EINVAL,);
@@ -132,6 +157,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     else
     {
         d_error("no_CC-Request-Type ");
+        result_code = FD_DIAMETER_MISSING_AVP;
         goto out;
     }
 
@@ -218,6 +244,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     {
         d_error("Not implemented Subscription-Id-Type(%d)",
                 hdr->avp_value->i32);
+        result_code = FD_DIAMETER_AVP_UNSUPPORTED;
         goto out;
     }
     ret = fd_avp_search_avp(avp, gx_subscription_id_data, &avpch1);
@@ -238,6 +265,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     if (rv != CORE_OK)
     {
         d_error("Cannot get data for IMSI(%s)+APN(%s)'\n", imsi_bcd, apn);
+        result_code = FD_DIAMETER_UNKNOWN_SESSION_ID;
         goto out;
     }
 
@@ -543,10 +571,22 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
 out:
 	/* Set the Result-Code */
-    if (result_code == GX_DIAMETER_ERROR_USER_UNKNOWN)
+    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED)
     {
         ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_ERROR_USER_UNKNOWN", NULL, NULL, 1);
+                    "DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
+        d_assert(ret == 0, return EINVAL,);
+    }
+    else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID)
+    {
+        ret = fd_msg_rescode_set(ans,
+                    "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+        d_assert(ret == 0, return EINVAL,);
+    }
+    else if (result_code == FD_DIAMETER_MISSING_AVP)
+    {
+        ret = fd_msg_rescode_set(ans,
+                    "DIAMETER_MISSING_AVP", NULL, NULL, 1);
         d_assert(ret == 0, return EINVAL,);
     }
     else
@@ -594,12 +634,24 @@ void pcrf_gx_send_rar(c_uint8_t *gx_sid)
     /* Create the request */
     ret = fd_msg_new(gx_cmd_rar, MSGFL_ALLOC_ETEID, &req);
     d_assert(ret == 0, return,);
+    {
+        struct msg_hdr * h;
+        ret = fd_msg_hdr( req, &h );
+        d_assert(ret == 0, return,);
+        h->msg_appl = GX_APPLICATION_ID;
+    }
 
     /* Retrieve session by Session-Id */
     sidlen = strlen((char *)gx_sid);
     ret = fd_sess_fromsid_msg((os0_t)gx_sid, sidlen, &session, &new);
     d_assert(ret == 0, return,);
-    d_assert(new == 0, return,);
+    if (new)
+    {
+        d_error("No session data");
+        ret = fd_msg_free(req);
+        d_assert(ret == 0,,);
+        return;
+    }
 
     /* Add Session-Id to the message */
     ret = fd_message_session_id_set(req, (os0_t)gx_sid, sidlen);
@@ -634,10 +686,47 @@ void pcrf_gx_send_rar(c_uint8_t *gx_sid)
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     d_assert(ret == 0, return,);
 
+    /* Set the Destination-Host AVP */
+    ret = fd_msg_avp_new(fd_destination_host, 0, &avp);
+    d_assert(ret == 0, return,);
+    val.os.data = sess_data->peer_host;
+    val.os.len  = strlen((char *)sess_data->peer_host);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
+
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
     d_assert(ret == 0, return,);
     val.i32 = GX_APPLICATION_ID;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
+
+    /* Set the Re-Auth-Request-Type */
+    ret = fd_msg_avp_new(gx_re_auth_request_type, 0, &avp);
+    d_assert(ret == 0, return,);
+    val.i32 = 0;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
+
+    /* Set the Specific-Action */
+    ret = fd_msg_avp_new(gx_specific_action, 0, &avp);
+    d_assert(ret == 0, return,);
+    val.i32 = 0;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
+
+    /* Set the Abort-Cause */
+    ret = fd_msg_avp_new(gx_abort_cause, 0, &avp);
+    d_assert(ret == 0, return,);
+    val.i32 = 0;
     ret = fd_msg_avp_setvalue(avp, &val);
     d_assert(ret == 0, return,);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -669,6 +758,149 @@ void pcrf_gx_send_rar(c_uint8_t *gx_sid)
 
 static void pcrf_gx_raa_cb(void *data, struct msg **msg)
 {
+    int ret;
+
+    struct sess_state *sess_data = NULL;
+    struct timespec ts;
+    struct session *session;
+    struct avp *avp, *avpch1;
+#if 0
+    struct avp *avp, *avpch1, *avpch2, *avpch3, *avpch4;
+#endif
+    struct avp_hdr *hdr;
+    unsigned long dur;
+    int error = 0;
+    int new;
+    
+    c_uint32_t result_code;
+
+    ret = clock_gettime(CLOCK_REALTIME, &ts);
+    d_assert(ret == 0, return,);
+
+    /* Search the session, retrieve its data */
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
+    d_assert(ret == 0, return,);
+    d_assert(new == 0, return, );
+    
+    ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
+    d_assert(ret == 0, return,);
+    d_assert(sess_data && (void *)sess_data == data, return, );
+
+    d_trace(3, "[Gx] Re-Auth-Answer : PGW --> PCRF\n");
+
+    /* Value of Result Code */
+    ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
+    d_assert(ret == 0, return,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
+        result_code = hdr->avp_value->i32;
+        d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
+    }
+    else
+    {
+        ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
+        d_assert(ret == 0, return,);
+        if (avp)
+        {
+            ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch1);
+            d_assert(ret == 0, return,);
+            if (avpch1)
+            {
+                ret = fd_msg_avp_hdr(avpch1, &hdr);
+                d_assert(ret == 0, return,);
+                result_code = hdr->avp_value->i32;
+                d_trace(3, "Experimental Result Code: %d\n", result_code);
+            }
+        }
+        else
+        {
+            d_error("no Result-Code");
+            error++;
+        }
+    }
+
+    /* Value of Origin-Host */
+    ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
+    d_assert(ret == 0, return,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
+        d_trace(3, "From '%.*s' ",
+                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+    }
+    else
+    {
+        d_error("no_Origin-Host");
+        error++;
+    }
+
+    /* Value of Origin-Realm */
+    ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
+    d_assert(ret == 0, return,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
+        d_trace(3, "('%.*s') ",
+                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+    }
+    else
+    {
+        d_error("no_Origin-Realm");
+        error++;
+    }
+
+    /* Free the message */
+    d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
+    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
+        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    if (fd_logger_self()->stats.nb_recv)
+    {
+        /* Ponderate in the avg */
+        fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
+            fd_logger_self()->stats.nb_recv + dur) /
+            (fd_logger_self()->stats.nb_recv + 1);
+        /* Min, max */
+        if (dur < fd_logger_self()->stats.shortest)
+            fd_logger_self()->stats.shortest = dur;
+        if (dur > fd_logger_self()->stats.longest)
+            fd_logger_self()->stats.longest = dur;
+    }
+    else
+    {
+        fd_logger_self()->stats.shortest = dur;
+        fd_logger_self()->stats.longest = dur;
+        fd_logger_self()->stats.avg = dur;
+    }
+    if (error)
+        fd_logger_self()->stats.nb_errs++;
+    else 
+        fd_logger_self()->stats.nb_recv++;
+
+    d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
+    
+    /* Display how long it took */
+    if (ts.tv_nsec > sess_data->ts.tv_nsec)
+        d_trace(3, "in %d.%06ld sec\n", 
+                (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    else
+        d_trace(3, "in %d.%06ld sec\n", 
+                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+
+    ret = fd_sess_state_store(pcrf_gx_reg, session, &sess_data);
+    d_assert(ret == 0, return,);
+    d_assert(sess_data == NULL, return,);
+
+    ret = fd_msg_free(*msg);
+    d_assert(ret == 0,,);
+    *msg = NULL;
+    
+    return;
 }
 
 status_t pcrf_gx_init(void)

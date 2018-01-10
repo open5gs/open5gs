@@ -11,9 +11,6 @@ typedef struct _rx_message_t {
 #define RX_CMD_CODE_AA                                  265
     c_uint16_t          cmd_code;
 
-/* Result-Code AVP */
-#define RX_DIAMETER_REQUESTED_SERVICE_TEMPORARILY_NOT_AUTHORIZED    4261
-
 /* Experimental-Result-Codes */
 #define RX_DIAMETER_INVALID_SERVICE_INFORMATION                     5061
 #define RX_DIAMETER_FILTER_RESTRICTIONS                             5062

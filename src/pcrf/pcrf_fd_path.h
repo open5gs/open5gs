@@ -19,6 +19,7 @@ CORE_DECLARE(void) pcrf_rx_final(void);
 
 CORE_DECLARE(status_t) pcrf_sess_gx_associate_rx(
         c_uint8_t *gx_sid, c_uint8_t *rx_sid);
+CORE_DECLARE(void) pcrf_gx_send_rar(c_uint8_t *gx_sid);
 
 #ifdef __cplusplus
 }

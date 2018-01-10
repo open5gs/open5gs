@@ -513,7 +513,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     }
     else
     {
-        d_error("no_Origin-Host ");
+        d_error("no_Origin-Host");
         error++;
     }
 
@@ -529,14 +529,13 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     }
     else
     {
-        d_error("no_Origin-Realm ");
+        d_error("no_Origin-Realm");
         error++;
     }
 
     if (gx_message->result_code != ER_DIAMETER_SUCCESS)
     {
         d_warn("ERROR DIAMETER Result Code(%d)", gx_message->result_code);
-        error++;
         goto out;
     }
 
@@ -549,7 +548,10 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         cca_message->cc_request_type = hdr->avp_value->i32;
     }
     else
+    {
+        d_error("no_CC-Request-Type");
         error++;
+    }
 
     ret = fd_msg_search_avp(*msg, gx_charging_rule_install, &avp);
     d_assert(ret == 0, return,);
@@ -635,7 +637,10 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                                     pcc_rule->qos.qci = hdr->avp_value->u32;
                                 }
                                 else
+                                {
+                                    d_error("no_QCI");
                                     error++;
+                                }
 
                                 ret = fd_avp_search_avp(avpch2,
                                     gx_allocation_retention_priority, &avpch3);
@@ -653,7 +658,10 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                                             hdr->avp_value->u32;
                                     }
                                     else
+                                    {
+                                        d_error("no_Priority-Level");
                                         error++;
+                                    }
 
                                     ret = fd_avp_search_avp(avpch3,
                                         gx_pre_emption_capability, &avpch4);
@@ -667,7 +675,10 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                                                 hdr->avp_value->u32;
                                     }
                                     else
+                                    {
+                                        d_error("no_Preemption-Capability");
                                         error++;
+                                    }
 
                                     ret = fd_avp_search_avp(avpch3,
                                             gx_pre_emption_vulnerability,
@@ -682,10 +693,16 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                                                 hdr->avp_value->u32;
                                     }
                                     else
+                                    {
+                                        d_error("no_Preemption-Vulnerability");
                                         error++;
+                                    }
                                 }
                                 else
+                                {
+                                    d_error("no_ARP");
                                     error++;
+                                }
 
                                 ret = fd_avp_search_avp(avpch2,
                                         gx_max_requested_bandwidth_ul, &avpch3);
@@ -881,7 +898,8 @@ out:
     if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
         ret = fd_sess_state_store(pgw_gx_reg, session, &sess_data);
-        d_assert(sess_data == NULL,,);
+        d_assert(ret == 0, return,);
+        d_assert(sess_data == NULL, return,);
     }
     else
     {
@@ -921,40 +939,47 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
     struct sess_state *sess_data = NULL;
 
-#if 0
-    c_uint32_t result_code = GX_DIAMETER_ERROR_USER_UNKNOWN;
-#endif
+    c_uint32_t result_code = FD_DIAMETER_UNKNOWN_SESSION_ID;
 	
     d_assert(msg, return EINVAL,);
-
-    ret = fd_sess_state_retrieve(pgw_gx_reg, sess, &sess_data);
-    d_assert(ret == 0, return EINVAL,);
-    if (sess_data)
-    {
-    }
 
 	/* Create answer header */
 #if 0
 	qry = *msg;
 #endif
 	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    d_assert(ret == 0, return EINVAL,);
     ans = *msg;
+
+    ret = fd_sess_state_retrieve(pgw_gx_reg, sess, &sess_data);
+    d_assert(ret == 0, return EINVAL,);
+    if (!sess_data)
+    {
+        d_error("No Session Data");
+        goto out;
+    }
 
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
     val.i32 = GX_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
+    d_assert(ret == 0, return EINVAL,);
 
     /* Store this value in the session */
     ret = fd_sess_state_store(pgw_gx_reg, sess, &sess_data);
+    d_assert(ret == 0, return EINVAL,);
     d_assert(sess_data == NULL,,);
 
 	/* Send the answer */
 	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0, return EINVAL,);
 
 	/* Add this value to the stats */
 	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
@@ -963,24 +988,28 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
 
     return 0;
 
-#if 0
 out:
-    if (result_code == GX_DIAMETER_ERROR_USER_UNKNOWN)
+    if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID)
     {
         ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_ERROR_USER_UNKNOWN", NULL, NULL, 1);
+                    "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+        d_assert(ret == 0, return EINVAL,);
     }
     else
     {
         ret = fd_message_experimental_rescode_set(ans, result_code);
+        d_assert(ret == 0, return EINVAL,);
     }
 
-	ret = fd_msg_send(msg, NULL, NULL);
+    /* Store this value in the session */
+    ret = fd_sess_state_store(pgw_gx_reg, sess, &sess_data);
+    d_assert(ret == 0, return EINVAL,);
+    d_assert(sess_data == NULL,,);
 
-    state_cleanup(sess_data, NULL, NULL);
+	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0,,);
 
     return 0;
-#endif
 }
 
 status_t pgw_fd_init(void)

@@ -10,6 +10,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* Result-Code AVP */
+#define FD_DIAMETER_AVP_UNSUPPORTED                     5001
+#define FD_DIAMETER_UNKNOWN_SESSION_ID                  5002
+#define FD_DIAMETER_MISSING_AVP                         5004
+#define FD_DIAMETER_INVALID_AVP_VALUE                   5005
+
 extern struct dict_object *fd_session_id;
 extern struct dict_object *fd_origin_host;
 extern struct dict_object *fd_origin_realm;

@@ -23,9 +23,6 @@ typedef struct _gx_message_t {
 #define GX_CMD_CODE_CREDIT_CONTROL              272
     c_uint16_t          cmd_code;
 
-/* Result-Code AVP */
-#define GX_DIAMETER_ERROR_USER_UNKNOWN                  5030
-
 /* Experimental-Result-Codes */
 #define GX_DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST      5453
 #define GX_DIAMETER_ERROR_TIMED_OUT_REQUEST             5454

@@ -206,14 +206,28 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     gx_cca_message_free(&cca_message);
 #endif
 
+    
+    pcrf_gx_send_rar(gx_sid);
+
     return 0;
 
 out:
-    if (result_code == RX_DIAMETER_REQUESTED_SERVICE_TEMPORARILY_NOT_AUTHORIZED)
+    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED)
     {
         ret = fd_msg_rescode_set(ans,
-                "RX_DIAMETER_REQUESTED_SERVICE_TEMPORARILY_NOT_AUTHORIZED",
-                NULL, NULL, 1);
+                    "DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
+        d_assert(ret == 0, return EINVAL,);
+    }
+    else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID)
+    {
+        ret = fd_msg_rescode_set(ans,
+                    "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+        d_assert(ret == 0, return EINVAL,);
+    }
+    else if (result_code == FD_DIAMETER_MISSING_AVP)
+    {
+        ret = fd_msg_rescode_set(ans,
+                    "DIAMETER_MISSING_AVP", NULL, NULL, 1);
         d_assert(ret == 0, return EINVAL,);
     }
     else
@@ -221,6 +235,11 @@ out:
         ret = fd_message_experimental_rescode_set(ans, result_code);
         d_assert(ret == 0, return EINVAL,);
     }
+    
+    /* Store this value in the session */
+    ret = fd_sess_state_store(pcrf_rx_reg, sess, &sess_data);
+    d_assert(ret == 0,,);
+    d_assert(sess_data == NULL,,);
 
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
