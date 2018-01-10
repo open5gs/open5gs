@@ -10,7 +10,7 @@
 
 void pgw_gx_handle_cca_initial_request(
         gtp_xact_t *xact, pgw_sess_t *sess,
-        gx_cca_message_t *cca_message, gtp_create_session_request_t *req)
+        gx_message_t *gx_message, gtp_create_session_request_t *req)
 {
     status_t rv;
     gtp_header_t h;
@@ -20,7 +20,7 @@ void pgw_gx_handle_cca_initial_request(
 
     d_assert(xact, return, "Null param");
     d_assert(sess, return, "Null param");
-    d_assert(cca_message, return, "Null param");
+    d_assert(gx_message, return, "Null param");
     d_assert(req, return, "Null param");
 
     /* Send Create Session Request with Creating Default Bearer */
@@ -29,7 +29,7 @@ void pgw_gx_handle_cca_initial_request(
     h.teid = sess->sgw_s5c_teid;
 
     rv = pgw_s5c_build_create_session_response(
-            &pkbuf, h.type, sess, cca_message, req);
+            &pkbuf, h.type, sess, gx_message, req);
     d_assert(rv == CORE_OK, return, "S11 build error");
 
     rv = gtp_xact_update_tx(xact, &h, pkbuf);
@@ -39,9 +39,9 @@ void pgw_gx_handle_cca_initial_request(
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
     /* Find Dedicated Bearer */
-    for (i = 0; i < cca_message->num_of_pcc_rule; i++)
+    for (i = 0; i < gx_message->num_of_pcc_rule; i++)
     {
-        pcc_rule_t *pcc_rule = &cca_message->pcc_rule[i];
+        pcc_rule_t *pcc_rule = &gx_message->pcc_rule[i];
         bearer = pgw_bearer_find_by_qci_arp(sess, 
                     pcc_rule->qos.qci,
                     pcc_rule->qos.arp.priority_level,
@@ -104,7 +104,7 @@ void pgw_gx_handle_cca_initial_request(
 
 void pgw_gx_handle_cca_termination_request(
         gtp_xact_t *xact, pgw_sess_t *sess,
-        gx_cca_message_t *cca_message, gtp_delete_session_request_t *req)
+        gx_message_t *gx_message, gtp_delete_session_request_t *req)
 {
     status_t rv;
     gtp_header_t h;
@@ -113,7 +113,7 @@ void pgw_gx_handle_cca_termination_request(
 
     d_assert(xact, return, "Null param");
     d_assert(sess, return, "Null param");
-    d_assert(cca_message, return, "Null param");
+    d_assert(gx_message, return, "Null param");
     d_assert(req, return, "Null param");
 
     /* backup sgw_s5c_teid in session context */
@@ -127,7 +127,7 @@ void pgw_gx_handle_cca_termination_request(
     h.teid = sgw_s5c_teid;
 
     rv = pgw_s5c_build_delete_session_response(
-            &pkbuf, h.type, sess, cca_message, req);
+            &pkbuf, h.type, sess, gx_message, req);
     d_assert(rv == CORE_OK, return, "S11 build error");
 
     rv = gtp_xact_update_tx(xact, &h, pkbuf);

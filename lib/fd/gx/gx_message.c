@@ -5,15 +5,15 @@
 
 #include "gx_message.h"
 
-void gx_cca_message_free(gx_cca_message_t *cca_message)
+void gx_message_free(gx_message_t *gx_message)
 {
     int i, j;
 
-    d_assert(cca_message, return, "Null param");
+    d_assert(gx_message, return, "Null param");
 
-    for (i = 0; i < cca_message->num_of_pcc_rule; i++)
+    for (i = 0; i < gx_message->num_of_pcc_rule; i++)
     {
-        pcc_rule_t *pcc_rule = &cca_message->pcc_rule[i];
+        pcc_rule_t *pcc_rule = &gx_message->pcc_rule[i];
 
         for (j = 0; j < pcc_rule->num_of_flow; j++)
         {

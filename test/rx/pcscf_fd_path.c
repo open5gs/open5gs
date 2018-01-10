@@ -158,7 +158,7 @@ void pcscf_rx_send_aar(const char *ip)
 
     ret = fd_msg_avp_new(rx_media_component_number, 0, &avpch1);
     d_assert(ret == 0, return,);
-    val.i32 = RX_MEDIA_TYPE_AUDIO;
+    val.i32 = 1;
     ret = fd_msg_avp_setvalue (avpch1, &val);
     d_assert(ret == 0, return,);
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -166,7 +166,7 @@ void pcscf_rx_send_aar(const char *ip)
 
     ret = fd_msg_avp_new(rx_media_type, 0, &avpch1);
     d_assert(ret == 0, return,);
-    val.i32 = 1;
+    val.i32 = RX_MEDIA_TYPE_AUDIO;
     ret = fd_msg_avp_setvalue (avpch1, &val);
     d_assert(ret == 0, return,);
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -183,22 +183,6 @@ void pcscf_rx_send_aar(const char *ip)
     ret = fd_msg_avp_new(rx_max_requested_bandwidth_ul, 0, &avpch1);
     d_assert(ret == 0, return,);
     val.i32 = 96000;
-    ret = fd_msg_avp_setvalue (avpch1, &val);
-    d_assert(ret == 0, return,);
-    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-    d_assert(ret == 0, return,);
-
-    ret = fd_msg_avp_new(rx_min_requested_bandwidth_dl, 0, &avpch1);
-    d_assert(ret == 0, return,);
-    val.i32 = 2400;
-    ret = fd_msg_avp_setvalue (avpch1, &val);
-    d_assert(ret == 0, return,);
-    ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-    d_assert(ret == 0, return,);
-
-    ret = fd_msg_avp_new(rx_min_requested_bandwidth_ul, 0, &avpch1);
-    d_assert(ret == 0, return,);
-    val.i32 = 2400;
     ret = fd_msg_avp_setvalue (avpch1, &val);
     d_assert(ret == 0, return,);
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);

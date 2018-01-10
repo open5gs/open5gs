@@ -90,7 +90,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
     struct sess_state *sess_data = NULL;
 
-    gx_cca_message_t cca_message;
+    gx_message_t gx_message;
     c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
     c_int8_t apn[MAX_APN_LEN+1];
     int i, j;
@@ -116,7 +116,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Initialize Message */
-    memset(&cca_message, 0, sizeof(gx_cca_message_t));
+    memset(&gx_message, 0, sizeof(gx_message_t));
 
 	/* Create answer header */
 	qry = *msg;
@@ -261,7 +261,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     core_cpystrn(apn, (char*)hdr->avp_value->os.data, 
         c_min(hdr->avp_value->os.len, MAX_APN_LEN)+1);
 
-    rv = pcrf_db_pdn_data(imsi_bcd, apn, &cca_message);
+    rv = pcrf_db_pdn_data(imsi_bcd, apn, &gx_message);
     if (rv != CORE_OK)
     {
         d_error("Cannot get data for IMSI(%s)+APN(%s)'\n", imsi_bcd, apn);
@@ -274,9 +274,9 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         /* Set Charging-Rule-Install */
         int charging_rule_install = 0;
 
-        for (i = 0; i < cca_message.num_of_pcc_rule; i++)
+        for (i = 0; i < gx_message.num_of_pcc_rule; i++)
         {
-            pcc_rule_t *pcc_rule = &cca_message.pcc_rule[i];
+            pcc_rule_t *pcc_rule = &gx_message.pcc_rule[i];
             if (pcc_rule->num_of_flow)
                 charging_rule_install = 1;
         }
@@ -287,9 +287,9 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
             d_assert(ret == 0, return EINVAL,);
         }
 
-        for (i = 0; i < cca_message.num_of_pcc_rule; i++)
+        for (i = 0; i < gx_message.num_of_pcc_rule; i++)
         {
-            pcc_rule_t *pcc_rule = &cca_message.pcc_rule[i];
+            pcc_rule_t *pcc_rule = &gx_message.pcc_rule[i];
 
             ret = fd_msg_avp_new(gx_charging_rule_definition, 0, &avpch1);
             d_assert(ret == 0, return EINVAL,);
@@ -447,29 +447,29 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         }
 
         /* Set QoS-Information */
-        if (cca_message.pdn.ambr.downlink || cca_message.pdn.ambr.uplink)
+        if (gx_message.pdn.ambr.downlink || gx_message.pdn.ambr.uplink)
         {
             ret = fd_msg_avp_new(gx_qos_information, 0, &avp);
             d_assert(ret == 0, return EINVAL,);
 
-            if (cca_message.pdn.ambr.uplink)
+            if (gx_message.pdn.ambr.uplink)
             {
                 ret = fd_msg_avp_new(gx_apn_aggregate_max_bitrate_ul, 0,
                         &avpch1);
                 d_assert(ret == 0, return EINVAL,);
-                val.u32 = cca_message.pdn.ambr.uplink;
+                val.u32 = gx_message.pdn.ambr.uplink;
                 ret = fd_msg_avp_setvalue (avpch1, &val);
                 d_assert(ret == 0, return EINVAL,);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
                 d_assert(ret == 0, return EINVAL,);
             }
             
-            if (cca_message.pdn.ambr.downlink)
+            if (gx_message.pdn.ambr.downlink)
             {
                 ret = fd_msg_avp_new(gx_apn_aggregate_max_bitrate_dl, 0,
                         &avpch1);
                 d_assert(ret == 0, return EINVAL,);
-                val.u32 = cca_message.pdn.ambr.downlink;
+                val.u32 = gx_message.pdn.ambr.downlink;
                 ret = fd_msg_avp_setvalue (avpch1, &val);
                 d_assert(ret == 0, return EINVAL,);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -486,7 +486,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch1);
         d_assert(ret == 0, return EINVAL,);
-        val.u32 = cca_message.pdn.qos.qci;
+        val.u32 = gx_message.pdn.qos.qci;
         ret = fd_msg_avp_setvalue (avpch1, &val);
         d_assert(ret == 0, return EINVAL,);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -497,7 +497,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(gx_priority_level, 0, &avpch2);
         d_assert(ret == 0, return EINVAL,);
-        val.u32 = cca_message.pdn.qos.arp.priority_level;
+        val.u32 = gx_message.pdn.qos.arp.priority_level;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         d_assert(ret == 0, return EINVAL,);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -505,7 +505,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch2);
         d_assert(ret == 0, return EINVAL,);
-        val.u32 = cca_message.pdn.qos.arp.pre_emption_capability;
+        val.u32 = gx_message.pdn.qos.arp.pre_emption_capability;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         d_assert(ret == 0, return EINVAL,);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -513,7 +513,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch2);
         d_assert(ret == 0, return EINVAL,);
-        val.u32 = cca_message.pdn.qos.arp.pre_emption_vulnerability;
+        val.u32 = gx_message.pdn.qos.arp.pre_emption_vulnerability;
         ret = fd_msg_avp_setvalue (avpch2, &val);
         d_assert(ret == 0, return EINVAL,);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
@@ -574,7 +574,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 	fd_logger_self()->stats.nb_echoed++;
 	d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) ==0,, );
 
-    gx_cca_message_free(&cca_message);
+    gx_message_free(&gx_message);
 
     return 0;
 
@@ -618,7 +618,7 @@ out:
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
 
-    gx_cca_message_free(&cca_message);
+    gx_message_free(&gx_message);
 
     return 0;
 }

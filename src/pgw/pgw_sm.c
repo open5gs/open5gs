@@ -169,25 +169,24 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             {
                 case GX_CMD_CODE_CREDIT_CONTROL:
                 {
-                    gx_cca_message_t *cca_message = &gx_message->cca_message;
                     if (gx_message->result_code != ER_DIAMETER_SUCCESS)
                     {
                         d_error("Not implemented(%d)", gx_message->result_code);
                         break;
                     }
-                    switch(cca_message->cc_request_type)
+                    switch(gx_message->cc_request_type)
                     {
                         case GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
                         {
                             pgw_gx_handle_cca_initial_request(
-                                    xact, sess, cca_message,
+                                    xact, sess, gx_message,
                                     &message->create_session_request);
                             break;
                         }
                         case GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
                         {
                             pgw_gx_handle_cca_termination_request(
-                                    xact, sess, cca_message,
+                                    xact, sess, gx_message,
                                     &message->delete_session_request);
                             break;
                         }
@@ -197,7 +196,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                             break;
                         }
                     }
-                    gx_cca_message_free(cca_message);
+                    gx_message_free(gx_message);
                     break;
                 }
                 default:

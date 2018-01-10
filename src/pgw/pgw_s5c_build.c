@@ -16,7 +16,7 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco);
 
 status_t pgw_s5c_build_create_session_response(
         pkbuf_t **pkbuf, c_uint8_t type, pgw_sess_t *sess,
-        gx_cca_message_t *cca_message, gtp_create_session_request_t *req)
+        gx_message_t *gx_message, gtp_create_session_request_t *req)
 {
     status_t rv;
     pgw_bearer_t *bearer = NULL;
@@ -117,7 +117,7 @@ status_t pgw_s5c_build_create_session_response(
 
 status_t pgw_s5c_build_delete_session_response(
         pkbuf_t **pkbuf, c_uint8_t type, pgw_sess_t *sess,
-        gx_cca_message_t *cca_message, gtp_delete_session_request_t *req)
+        gx_message_t *gx_message, gtp_delete_session_request_t *req)
 {
     status_t rv;
 
@@ -129,7 +129,7 @@ status_t pgw_s5c_build_delete_session_response(
     c_int16_t pco_len;
     
     d_assert(sess, return CORE_ERROR, "Null param");
-    d_assert(cca_message, return CORE_ERROR, "Null param");
+    d_assert(gx_message, return CORE_ERROR, "Null param");
     d_assert(req, return CORE_ERROR, "Null param");
 
     /* prepare cause */

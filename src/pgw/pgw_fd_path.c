@@ -431,7 +431,6 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     pgw_sess_t *sess = NULL;
     pkbuf_t *gxbuf = NULL, *gtpbuf = NULL;
     gx_message_t *gx_message = NULL;
-    gx_cca_message_t *cca_message = NULL;
     c_uint16_t gxbuf_len = 0;
     
     ret = clock_gettime(CLOCK_REALTIME, &ts);
@@ -465,7 +464,6 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     /* Set Credit Control Command */
     memset(gx_message, 0, gxbuf_len);
     gx_message->cmd_code = GX_CMD_CODE_CREDIT_CONTROL;
-    cca_message = &gx_message->cca_message;
     
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
@@ -545,7 +543,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return,);
-        cca_message->cc_request_type = hdr->avp_value->i32;
+        gx_message->cc_request_type = hdr->avp_value->i32;
     }
     else
     {
@@ -568,7 +566,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                 case GX_AVP_CODE_CHARGING_RULE_DEFINITION:
                 {
                     pcc_rule_t *pcc_rule = 
-                        &cca_message->pcc_rule[cca_message->num_of_pcc_rule];
+                        &gx_message->pcc_rule[gx_message->num_of_pcc_rule];
 
                     ret = fd_msg_browse(avpch1,
                             MSG_BRW_FIRST_CHILD, &avpch2, NULL);
@@ -760,7 +758,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                         fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
                     }
 
-                    cca_message->num_of_pcc_rule++;
+                    gx_message->num_of_pcc_rule++;
 
                     break;
                 }
@@ -784,7 +782,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             d_assert(ret == 0, return,);
-            cca_message->pdn.ambr.uplink = hdr->avp_value->u32;
+            gx_message->pdn.ambr.uplink = hdr->avp_value->u32;
         }
         ret = fd_avp_search_avp(avp, gx_apn_aggregate_max_bitrate_dl, &avpch1);
         d_assert(ret == 0, return,);
@@ -792,7 +790,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             d_assert(ret == 0, return,);
-            cca_message->pdn.ambr.downlink = hdr->avp_value->u32;
+            gx_message->pdn.ambr.downlink = hdr->avp_value->u32;
         }
     }
 
@@ -806,7 +804,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             d_assert(ret == 0, return,);
-            cca_message->pdn.qos.qci = hdr->avp_value->u32;
+            gx_message->pdn.qos.qci = hdr->avp_value->u32;
         }
 
         ret = fd_avp_search_avp(avp, gx_allocation_retention_priority, &avpch1);
@@ -819,7 +817,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
             {
                 ret = fd_msg_avp_hdr(avpch4, &hdr);
                 d_assert(ret == 0, return,);
-                cca_message->pdn.qos.arp.priority_level = hdr->avp_value->u32;
+                gx_message->pdn.qos.arp.priority_level = hdr->avp_value->u32;
             }
 
             ret = fd_avp_search_avp(avpch1, gx_pre_emption_capability, &avpch4);
@@ -828,7 +826,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
             {
                 ret = fd_msg_avp_hdr(avpch4, &hdr);
                 d_assert(ret == 0, return,);
-                cca_message->pdn.qos.arp.pre_emption_capability =
+                gx_message->pdn.qos.arp.pre_emption_capability =
                     hdr->avp_value->u32;
             }
 
@@ -839,7 +837,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
             {
                 ret = fd_msg_avp_hdr(avpch4, &hdr);
                 d_assert(ret == 0, return,);
-                cca_message->pdn.qos.arp.pre_emption_vulnerability =
+                gx_message->pdn.qos.arp.pre_emption_vulnerability =
                     hdr->avp_value->u32;
             }
         }

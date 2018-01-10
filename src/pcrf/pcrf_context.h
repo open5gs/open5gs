@@ -37,7 +37,7 @@ CORE_DECLARE(status_t) pcrf_db_init(void);
 CORE_DECLARE(status_t) pcrf_db_final(void);
 
 CORE_DECLARE(status_t) pcrf_db_pdn_data(
-        c_int8_t *imsi_bcd, c_int8_t *apn, gx_cca_message_t *cca_message);
+        c_int8_t *imsi_bcd, c_int8_t *apn, gx_message_t *gx_message);
 
 CORE_DECLARE(status_t) pcrf_sess_set_ipv4(const void *key, c_uint8_t *sid);
 CORE_DECLARE(status_t) pcrf_sess_set_ipv6(const void *key, c_uint8_t *sid);

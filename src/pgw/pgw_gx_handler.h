@@ -11,10 +11,10 @@ extern "C" {
 
 CORE_DECLARE(void) pgw_gx_handle_cca_initial_request(
         gtp_xact_t *xact, pgw_sess_t *sess,
-        gx_cca_message_t *cca_message, gtp_create_session_request_t *req);
+        gx_message_t *gx_message, gtp_create_session_request_t *req);
 CORE_DECLARE(void) pgw_gx_handle_cca_termination_request(
         gtp_xact_t *xact, pgw_sess_t *sess,
-        gx_cca_message_t *cca_message, gtp_delete_session_request_t *req);
+        gx_message_t *gx_message, gtp_delete_session_request_t *req);
 
 #ifdef __cplusplus
 }

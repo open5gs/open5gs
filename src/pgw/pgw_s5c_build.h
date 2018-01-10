@@ -9,10 +9,10 @@ extern "C" {
 
 CORE_DECLARE(status_t) pgw_s5c_build_create_session_response(
         pkbuf_t **pkbuf, c_uint8_t type, pgw_sess_t *sess,
-        gx_cca_message_t *cca_message, gtp_create_session_request_t *req);
+        gx_message_t *gx_message, gtp_create_session_request_t *req);
 CORE_DECLARE(status_t) pgw_s5c_build_delete_session_response(
         pkbuf_t **pkbuf, c_uint8_t type, pgw_sess_t *sess,
-        gx_cca_message_t *cca_message, gtp_delete_session_request_t *req);
+        gx_message_t *gx_message, gtp_delete_session_request_t *req);
 
 CORE_DECLARE(status_t) pgw_s5c_build_create_bearer_request(
         pkbuf_t **pkbuf, c_uint8_t type, pgw_bearer_t *bearer);

@@ -378,7 +378,7 @@ status_t pcrf_db_final()
 }
 
 status_t pcrf_db_pdn_data(
-    c_int8_t *imsi_bcd, c_int8_t *apn, gx_cca_message_t *cca_message)
+    c_int8_t *imsi_bcd, c_int8_t *apn, gx_message_t *gx_message)
 {
     status_t rv = CORE_OK;
     mongoc_cursor_t *cursor = NULL;
@@ -394,7 +394,7 @@ status_t pcrf_db_pdn_data(
 
     d_assert(imsi_bcd, return CORE_ERROR, "Null param");
     d_assert(apn, return CORE_ERROR, "Null param");
-    d_assert(cca_message, return CORE_ERROR, "Null param");
+    d_assert(gx_message, return CORE_ERROR, "Null param");
 
     mutex_lock(self.db_lock);
 
@@ -462,7 +462,7 @@ status_t pcrf_db_pdn_data(
                 d_assert(pdn_index == 0, goto out, 
                         "Invalid PDN Index(%d)", pdn_index);
 
-                pdn = &cca_message->pdn;
+                pdn = &gx_message->pdn;
                 bson_iter_recurse(&child1_iter, &child2_iter);
                 while(bson_iter_next(&child2_iter))
                 {
@@ -566,7 +566,7 @@ status_t pcrf_db_pdn_data(
                                     "Overflow of PCC RULE number(%d>%d)",
                                     pcc_rule_index, MAX_NUM_OF_PCC_RULE);
 
-                            pcc_rule = &cca_message->pcc_rule[pcc_rule_index];
+                            pcc_rule = &gx_message->pcc_rule[pcc_rule_index];
                             bson_iter_recurse(&child3_iter, &child4_iter);
                             while(bson_iter_next(&child4_iter))
                             {
@@ -748,7 +748,7 @@ status_t pcrf_db_pdn_data(
                             }
                             pcc_rule_index++;
                         }
-                        cca_message->num_of_pcc_rule = pcc_rule_index;
+                        gx_message->num_of_pcc_rule = pcc_rule_index;
                     }
                 }
             }
