@@ -24,11 +24,11 @@ pool_declare(pkbuf_pool, pkbuf_t, MAX_NUM_OF_PKBUF);
 #define SIZEOF_CLUSTER_8192     CORE_ALIGN(8192+MAX_SIZEOF_HEADROOM, BOUNDARY)
 
 #define MAX_NUM_OF_CLUSTER_128      256
-#define MAX_NUM_OF_CLUSTER_256      32 
-#define MAX_NUM_OF_CLUSTER_512      32
-#define MAX_NUM_OF_CLUSTER_1024     32
-#define MAX_NUM_OF_CLUSTER_2048     32
-#define MAX_NUM_OF_CLUSTER_8192     32
+#define MAX_NUM_OF_CLUSTER_256      256 
+#define MAX_NUM_OF_CLUSTER_512      256
+#define MAX_NUM_OF_CLUSTER_1024     256
+#define MAX_NUM_OF_CLUSTER_2048     256
+#define MAX_NUM_OF_CLUSTER_8192     256
 
 typedef c_uint8_t cluster_128_t[SIZEOF_CLUSTER_128];
 typedef c_uint8_t cluster_256_t[SIZEOF_CLUSTER_256];
