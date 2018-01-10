@@ -9,7 +9,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(int) mme_fd_init(void);
+CORE_DECLARE(status_t) mme_fd_init(void);
 CORE_DECLARE(void) mme_fd_final(void);
 
 /* MME Sends Authentication Information Request to HSS */

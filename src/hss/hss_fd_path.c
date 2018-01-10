@@ -34,6 +34,8 @@ static int hss_s6a_fb_cb(struct msg **msg, struct avp *avp,
 static int hss_s6a_air_cb( struct msg **msg, struct avp *avp, 
         struct session *session, void *opaque, enum disp_action *act)
 {
+    int ret;
+
 	struct msg *ans, *qry;
     struct avp *avpch;
     struct avp *avp_e_utran_vector, *avp_xres, *avp_kasme, *avp_rand, *avp_autn;
@@ -63,11 +65,14 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
 	
 	/* Create answer header */
 	qry = *msg;
-	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
+	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    d_assert(ret == 0, return EINVAL,);
     ans = *msg;
 
-    CHECK_FCT( fd_msg_search_avp(qry, fd_user_name, &avp) );
-    CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+    ret = fd_msg_search_avp(qry, fd_user_name, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    d_assert(ret == 0, return EINVAL,);
     core_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data, 
         c_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
 
@@ -90,14 +95,16 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
     else
         milenage_opc(auth_info.k, auth_info.op, opc);
 
-    CHECK_FCT( fd_msg_search_avp(qry, s6a_req_eutran_auth_info, &avp) );
+    ret = fd_msg_search_avp(qry, s6a_req_eutran_auth_info, &avp);
+    d_assert(ret == 0, return EINVAL,);
     if (avp)
     {
-        CHECK_FCT( fd_avp_search_avp(avp, 
-                s6a_re_synchronization_info, &avpch) );
+        ret = fd_avp_search_avp(avp, s6a_re_synchronization_info, &avpch);
+        d_assert(ret == 0, return EINVAL,);
         if (avpch)
         {
-            CHECK_FCT( fd_msg_avp_hdr(avpch, &hdr) );
+            ret = fd_msg_avp_hdr(avpch, &hdr);
+            d_assert(ret == 0, return EINVAL,);
             hss_kdf_sqn(opc, auth_info.k, hdr->avp_value->os.data, sqn, mac_s);
             if (memcmp(mac_s, hdr->avp_value->os.data +
                         RAND_LEN + HSS_SQN_LEN, MAC_S_LEN) == 0)
@@ -138,8 +145,10 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    CHECK_FCT( fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp) );
-    CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+    ret = fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    d_assert(ret == 0, return EINVAL,);
 #if 0  // TODO : check visited_plmn_id
     memcpy(visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
 #endif
@@ -150,77 +159,99 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
     hss_kdf_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
     /* Set the Authentication-Info */
-    CHECK_FCT( fd_msg_avp_new(s6a_authentication_info, 0, &avp) );
-    CHECK_FCT( fd_msg_avp_new(s6a_e_utran_vector, 0, &avp_e_utran_vector) );
+    ret = fd_msg_avp_new(s6a_authentication_info, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_new(s6a_e_utran_vector, 0, &avp_e_utran_vector);
+    d_assert(ret == 0, return EINVAL,);
 
-    CHECK_FCT( fd_msg_avp_new(s6a_rand, 0, &avp_rand) );
+    ret = fd_msg_avp_new(s6a_rand, 0, &avp_rand);
+    d_assert(ret == 0, return EINVAL,);
     val.os.data = auth_info.rand;
     val.os.len = HSS_KEY_LEN;
-    CHECK_FCT( fd_msg_avp_setvalue(avp_rand, &val) );
-    CHECK_FCT(
-        fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_rand) );
+    ret = fd_msg_avp_setvalue(avp_rand, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_rand);
+    d_assert(ret == 0, return EINVAL,);
 
-    CHECK_FCT( fd_msg_avp_new(s6a_xres, 0, &avp_xres) );
+    ret = fd_msg_avp_new(s6a_xres, 0, &avp_xres);
+    d_assert(ret == 0, return EINVAL,);
     val.os.data = xres;
     val.os.len = xres_len;
-    CHECK_FCT( fd_msg_avp_setvalue(avp_xres, &val) );
-    CHECK_FCT(
-        fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_xres) );
+    ret = fd_msg_avp_setvalue(avp_xres, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_xres);
+    d_assert(ret == 0, return EINVAL,);
 
-    CHECK_FCT( fd_msg_avp_new(s6a_autn, 0, &avp_autn) );
+    ret = fd_msg_avp_new(s6a_autn, 0, &avp_autn);
+    d_assert(ret == 0, return EINVAL,);
     val.os.data = autn;
     val.os.len = AUTN_LEN;
-    CHECK_FCT( fd_msg_avp_setvalue(avp_autn, &val) );
-    CHECK_FCT(
-        fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_autn) );
+    ret = fd_msg_avp_setvalue(avp_autn, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_autn);
+    d_assert(ret == 0, return EINVAL,);
 
-    CHECK_FCT( fd_msg_avp_new(s6a_kasme, 0, &avp_kasme) );
+    ret = fd_msg_avp_new(s6a_kasme, 0, &avp_kasme);
+    d_assert(ret == 0, return EINVAL,);
     val.os.data = kasme;
     val.os.len = SHA256_DIGEST_SIZE;
-    CHECK_FCT( fd_msg_avp_setvalue(avp_kasme, &val) );
-    CHECK_FCT(
-        fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_kasme) );
+    ret = fd_msg_avp_setvalue(avp_kasme, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_kasme);
+    d_assert(ret == 0, return EINVAL,);
 
-    CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_e_utran_vector) );
-    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+    ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_e_utran_vector);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
+	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
+    d_assert(ret == 0, return EINVAL,);
 
     /* Set the Auth-Session-State AVP */
-    CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
+    ret = fd_msg_avp_new(fd_auth_session_state, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
     val.i32 = 1;
-    CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
-    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
 
     /* Set Vendor-Specific-Application-Id AVP */
-    CHECK_FCT_DO( fd_message_vendor_specific_appid_set(
-                ans, S6A_APPLICATION_ID), goto out );
+    ret = fd_message_vendor_specific_appid_set(ans, S6A_APPLICATION_ID);
+    d_assert(ret == 0, return EINVAL,);
 
 	/* Send the answer */
-	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
+	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0,,);
 	
 	/* Add this value to the stats */
-	CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
 	fd_logger_self()->stats.nb_echoed++;
-	CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
+	d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
 
 	return 0;
 
 out:
-    CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
+    ret = fd_message_experimental_rescode_set(ans, result_code);
+    d_assert(ret == 0, return EINVAL,);
 
     /* Set the Auth-Session-State AVP */
-    CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
+    ret = fd_msg_avp_new(fd_auth_session_state, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
     val.i32 = 1;
-    CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
-    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
 
     /* Set Vendor-Specific-Application-Id AVP */
-    CHECK_FCT_DO( fd_message_vendor_specific_appid_set(
-                ans, S6A_APPLICATION_ID), goto out );
+    ret = fd_message_vendor_specific_appid_set(ans, S6A_APPLICATION_ID);
+    d_assert(ret == 0, return EINVAL,);
 
-	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
+	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0,,);
 
     return 0;
 }
@@ -229,6 +260,7 @@ out:
 static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp, 
         struct session *session, void *opaque, enum disp_action *act)
 {
+    int ret;
 	struct msg *ans, *qry;
 
     struct avp_hdr *hdr;
@@ -246,11 +278,14 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 	
 	/* Create answer header */
 	qry = *msg;
-	CHECK_FCT( fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0) );
+	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    d_assert(ret == 0, return EINVAL,)
     ans = *msg;
 
-    CHECK_FCT( fd_msg_search_avp(qry, fd_user_name, &avp) );
-    CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+    ret = fd_msg_search_avp(qry, fd_user_name, &avp);
+    d_assert(ret == 0, return EINVAL,)
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    d_assert(ret == 0, return EINVAL,)
     core_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data, 
         c_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
 
@@ -262,29 +297,40 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    CHECK_FCT( fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp) );
-    CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+    ret = fd_msg_search_avp(qry, s6a_visited_plmn_id, &avp);
+    d_assert(ret == 0, return EINVAL,)
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    d_assert(ret == 0, return EINVAL,)
 #if 0  // TODO : check visited_plmn_id
     memcpy(visited_plmn_id, hdr->avp_value->os.data, hdr->avp_value->os.len);
 #endif
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
+	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
+    d_assert(ret == 0, return EINVAL,)
 
     /* Set the Auth-Session-State AVP */
-    CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
+    ret = fd_msg_avp_new(fd_auth_session_state, 0, &avp);
+    d_assert(ret == 0, return EINVAL,)
     val.i32 = 1;
-    CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
-    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,)
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,)
 
     /* Set the ULA Flags */
-    CHECK_FCT( fd_msg_avp_new(s6a_ula_flags, 0, &avp) );
+    ret = fd_msg_avp_new(s6a_ula_flags, 0, &avp);
+    d_assert(ret == 0, return EINVAL,)
     val.i32 = S6A_ULA_FLAGS_MME_REGISTERED_FOR_SMS;
-    CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
-    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,)
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,)
 
-    CHECK_FCT( fd_msg_search_avp(qry, s6a_ulr_flags, &avp) );
-    CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
+    ret = fd_msg_search_avp(qry, s6a_ulr_flags, &avp);
+    d_assert(ret == 0, return EINVAL,)
+    ret = fd_msg_avp_hdr(avp, &hdr);
+    d_assert(ret == 0, return EINVAL,)
     if (!(hdr->avp_value->u32 & S6A_ULR_SKIP_SUBSCRIBER_DATA))
     {
         struct avp *avp_access_restriction_data;
@@ -293,48 +339,58 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         int i;
 
         /* Set the Subscription Data */
-        CHECK_FCT( fd_msg_avp_new(s6a_subscription_data, 0, &avp) );
+        ret = fd_msg_avp_new(s6a_subscription_data, 0, &avp);
+        d_assert(ret == 0, return EINVAL,)
 
         if (subscription_data.access_restriction_data)
         {
-            CHECK_FCT( fd_msg_avp_new(s6a_access_restriction_data, 0,
-                    &avp_access_restriction_data) );
+            ret = fd_msg_avp_new(s6a_access_restriction_data, 0,
+                    &avp_access_restriction_data);
+            d_assert(ret == 0, return EINVAL,)
             val.i32 = subscription_data.access_restriction_data;
-            CHECK_FCT( fd_msg_avp_setvalue(
-                    avp_access_restriction_data, &val) );
-            CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
-                    avp_access_restriction_data) );
+            ret = fd_msg_avp_setvalue( avp_access_restriction_data, &val);
+            d_assert(ret == 0, return EINVAL,)
+            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
+                    avp_access_restriction_data);
+            d_assert(ret == 0, return EINVAL,)
         }
 
-        CHECK_FCT( fd_msg_avp_new(s6a_subscriber_status, 0, 
-                    &avp_subscriber_status) );
+        ret = fd_msg_avp_new(s6a_subscriber_status, 0, &avp_subscriber_status);
+        d_assert(ret == 0, return EINVAL,)
         val.i32 = subscription_data.subscriber_status;
-        CHECK_FCT( fd_msg_avp_setvalue(avp_subscriber_status, &val) );
-        CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
-                    avp_subscriber_status) );
+        ret = fd_msg_avp_setvalue(avp_subscriber_status, &val);
+        d_assert(ret == 0, return EINVAL,)
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_subscriber_status);
+        d_assert(ret == 0, return EINVAL,)
 
-        CHECK_FCT( fd_msg_avp_new(s6a_network_access_mode, 0, 
-                    &avp_network_access_mode) );
+        ret = fd_msg_avp_new(s6a_network_access_mode, 0, 
+                    &avp_network_access_mode);
+        d_assert(ret == 0, return EINVAL,)
         val.i32 = subscription_data.network_access_mode;
-        CHECK_FCT( fd_msg_avp_setvalue(avp_network_access_mode, &val) );
-        CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
-                avp_network_access_mode) );
+        ret = fd_msg_avp_setvalue(avp_network_access_mode, &val);
+        d_assert(ret == 0, return EINVAL,)
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_network_access_mode);
+        d_assert(ret == 0, return EINVAL,)
 
             /* Set the AMBR */
-        CHECK_FCT( fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) );
-        CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
-                    &avp_max_bandwidth_ul) );
+        ret = fd_msg_avp_new(s6a_ambr, 0, &avp_ambr);
+        d_assert(ret == 0, return EINVAL,)
+        ret = fd_msg_avp_new(s6a_max_bandwidth_ul, 0, &avp_max_bandwidth_ul);
+        d_assert(ret == 0, return EINVAL,)
         val.u32 = subscription_data.ambr.uplink;
-        CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val) );
-        CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
-                    avp_max_bandwidth_ul) );
-        CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
-                    &avp_max_bandwidth_dl) );
+        ret = fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val);
+        d_assert(ret == 0, return EINVAL,)
+        ret = fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, avp_max_bandwidth_ul);
+        d_assert(ret == 0, return EINVAL,)
+        ret = fd_msg_avp_new(s6a_max_bandwidth_dl, 0, &avp_max_bandwidth_dl);
+        d_assert(ret == 0, return EINVAL,)
         val.u32 = subscription_data.ambr.downlink;
-        CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val) );
-        CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
-                    avp_max_bandwidth_dl) );
-        CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_ambr) );
+        ret = fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val);
+        d_assert(ret == 0, return EINVAL,)
+        ret = fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, avp_max_bandwidth_dl);
+        d_assert(ret == 0, return EINVAL,)
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_ambr);
+        d_assert(ret == 0, return EINVAL,)
 
         if (subscription_data.num_of_pdn)
         {
@@ -343,25 +399,32 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
             struct avp *context_identifier;
             struct avp *all_apn_configuration_included_indicator;
 
-            CHECK_FCT( fd_msg_avp_new(s6a_apn_configuration_profile, 0, 
-                    &apn_configuration_profile) );
+            ret = fd_msg_avp_new(s6a_apn_configuration_profile, 0, 
+                    &apn_configuration_profile);
+            d_assert(ret == 0, return EINVAL,)
 
-            CHECK_FCT( fd_msg_avp_new(s6a_context_identifier, 0, 
-                    &context_identifier) );
+            ret = fd_msg_avp_new(s6a_context_identifier, 0, 
+                    &context_identifier);
+            d_assert(ret == 0, return EINVAL,)
             val.i32 = 1; /* Context Identifier : 1 */
-            CHECK_FCT( fd_msg_avp_setvalue(context_identifier, &val) );
-            CHECK_FCT( fd_msg_avp_add(apn_configuration_profile, 
-                    MSG_BRW_LAST_CHILD, context_identifier) );
+            ret = fd_msg_avp_setvalue(context_identifier, &val);
+            d_assert(ret == 0, return EINVAL,)
+            ret = fd_msg_avp_add(apn_configuration_profile, 
+                    MSG_BRW_LAST_CHILD, context_identifier);
+            d_assert(ret == 0, return EINVAL,)
 
-            CHECK_FCT( fd_msg_avp_new(
+            ret = fd_msg_avp_new(
                     s6a_all_apn_configuration_included_indicator, 0, 
-                    &all_apn_configuration_included_indicator) );
+                    &all_apn_configuration_included_indicator);
+            d_assert(ret == 0, return EINVAL,)
             val.i32 = 0;
-            CHECK_FCT( fd_msg_avp_setvalue(
-                    all_apn_configuration_included_indicator, &val) );
-            CHECK_FCT( fd_msg_avp_add(apn_configuration_profile, 
+            ret = fd_msg_avp_setvalue(
+                    all_apn_configuration_included_indicator, &val);
+            d_assert(ret == 0, return EINVAL,)
+            ret = fd_msg_avp_add(apn_configuration_profile, 
                     MSG_BRW_LAST_CHILD, 
-                    all_apn_configuration_included_indicator) );
+                    all_apn_configuration_included_indicator);
+            d_assert(ret == 0, return EINVAL,)
 
             for (i = 0; i < subscription_data.num_of_pdn; i++)
             {
@@ -377,210 +440,269 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 d_assert(pdn, goto out,);
                 pdn->context_identifier = i+1;
 
-                CHECK_FCT( fd_msg_avp_new(s6a_apn_configuration, 0, 
-                    &apn_configuration) );
+                ret = fd_msg_avp_new(s6a_apn_configuration, 0, 
+                    &apn_configuration);
+                d_assert(ret == 0, return EINVAL,)
 
                 /* Set Context-Identifier */
-                CHECK_FCT( fd_msg_avp_new(s6a_context_identifier, 0, 
-                        &context_identifier) );
+                ret = fd_msg_avp_new(s6a_context_identifier, 0, 
+                        &context_identifier);
+                d_assert(ret == 0, return EINVAL,)
                 val.i32 = pdn->context_identifier;
-                CHECK_FCT( fd_msg_avp_setvalue(context_identifier, &val) );
-                CHECK_FCT( fd_msg_avp_add(apn_configuration, 
-                        MSG_BRW_LAST_CHILD, context_identifier) );
+                ret = fd_msg_avp_setvalue(context_identifier, &val);
+                d_assert(ret == 0, return EINVAL,)
+                ret = fd_msg_avp_add(apn_configuration, 
+                        MSG_BRW_LAST_CHILD, context_identifier);
+                d_assert(ret == 0, return EINVAL,)
 
                 /* Set PDN-Type */
-                CHECK_FCT( fd_msg_avp_new(s6a_pdn_type, 0, &pdn_type) );
+                ret = fd_msg_avp_new(s6a_pdn_type, 0, &pdn_type);
+                d_assert(ret == 0, return EINVAL,)
                 val.i32 = pdn->pdn_type;
-                CHECK_FCT( fd_msg_avp_setvalue(pdn_type, &val) );
-                CHECK_FCT( fd_msg_avp_add(apn_configuration, 
-                        MSG_BRW_LAST_CHILD, pdn_type) );
+                ret = fd_msg_avp_setvalue(pdn_type, &val);
+                d_assert(ret == 0, return EINVAL,)
+                ret = fd_msg_avp_add(apn_configuration, 
+                        MSG_BRW_LAST_CHILD, pdn_type);
+                d_assert(ret == 0, return EINVAL,)
 
                 /* Set Service-Selection */
-                CHECK_FCT( fd_msg_avp_new(s6a_service_selection, 0, 
-                        &service_selection) );
+                ret = fd_msg_avp_new(s6a_service_selection, 0, 
+                        &service_selection);
+                d_assert(ret == 0, return EINVAL,)
                 val.os.data = (c_uint8_t *)pdn->apn;
                 val.os.len = strlen(pdn->apn);
-                CHECK_FCT( fd_msg_avp_setvalue(service_selection, &val) );
-                CHECK_FCT( fd_msg_avp_add(apn_configuration, 
-                        MSG_BRW_LAST_CHILD, service_selection) );
+                ret = fd_msg_avp_setvalue(service_selection, &val);
+                d_assert(ret == 0, return EINVAL,)
+                ret = fd_msg_avp_add(apn_configuration, 
+                        MSG_BRW_LAST_CHILD, service_selection);
+                d_assert(ret == 0, return EINVAL,)
 
                 /* Set the EPS Subscribed QoS Profile */
-                CHECK_FCT( fd_msg_avp_new(s6a_eps_subscribed_qos_profile, 0, 
-                        &eps_subscribed_qos_profile) );
+                ret = fd_msg_avp_new(s6a_eps_subscribed_qos_profile, 0, 
+                        &eps_subscribed_qos_profile);
+                d_assert(ret == 0, return EINVAL,)
 
-                CHECK_FCT( fd_msg_avp_new(s6a_qos_class_identifier, 0, 
-                        &qos_class_identifier) );
+                ret = fd_msg_avp_new(s6a_qos_class_identifier, 0, 
+                        &qos_class_identifier);
+                d_assert(ret == 0, return EINVAL,)
                 val.i32 = pdn->qos.qci;
-                CHECK_FCT( fd_msg_avp_setvalue(qos_class_identifier, &val) );
-                CHECK_FCT( fd_msg_avp_add(eps_subscribed_qos_profile, 
-                    MSG_BRW_LAST_CHILD, qos_class_identifier) );
+                ret = fd_msg_avp_setvalue(qos_class_identifier, &val);
+                d_assert(ret == 0, return EINVAL,)
+                ret = fd_msg_avp_add(eps_subscribed_qos_profile, 
+                        MSG_BRW_LAST_CHILD, qos_class_identifier);
+                d_assert(ret == 0, return EINVAL,)
 
                         /* Set Allocation retention priority */
-                CHECK_FCT( fd_msg_avp_new(s6a_allocation_retention_priority, 0, 
-                        &allocation_retention_priority) );
+                ret = fd_msg_avp_new(s6a_allocation_retention_priority, 0, 
+                        &allocation_retention_priority);
+                d_assert(ret == 0, return EINVAL,)
 
-                CHECK_FCT( fd_msg_avp_new(s6a_priority_level, 0, 
-                        &priority_level) );
+                ret = fd_msg_avp_new(s6a_priority_level, 0, &priority_level);
+                d_assert(ret == 0, return EINVAL,)
                 val.u32 = pdn->qos.arp.priority_level;
-                CHECK_FCT( fd_msg_avp_setvalue(priority_level, &val) );
-                CHECK_FCT( fd_msg_avp_add(allocation_retention_priority, 
-                    MSG_BRW_LAST_CHILD, priority_level) );
+                ret = fd_msg_avp_setvalue(priority_level, &val);
+                d_assert(ret == 0, return EINVAL,)
+                ret = fd_msg_avp_add(allocation_retention_priority, 
+                    MSG_BRW_LAST_CHILD, priority_level);
+                d_assert(ret == 0, return EINVAL,)
 
-                CHECK_FCT( fd_msg_avp_new(s6a_pre_emption_capability, 0, 
-                        &pre_emption_capability) );
+                ret = fd_msg_avp_new(s6a_pre_emption_capability, 0, 
+                        &pre_emption_capability);
+                d_assert(ret == 0, return EINVAL,)
                 val.u32 = pdn->qos.arp.pre_emption_capability;
-                CHECK_FCT( fd_msg_avp_setvalue(pre_emption_capability, &val) );
-                CHECK_FCT( fd_msg_avp_add(allocation_retention_priority, 
-                    MSG_BRW_LAST_CHILD, pre_emption_capability) );
+                ret = fd_msg_avp_setvalue(pre_emption_capability, &val);
+                d_assert(ret == 0, return EINVAL,)
+                ret = fd_msg_avp_add(allocation_retention_priority, 
+                    MSG_BRW_LAST_CHILD, pre_emption_capability);
+                d_assert(ret == 0, return EINVAL,)
 
-                CHECK_FCT( fd_msg_avp_new(s6a_pre_emption_vulnerability, 0, 
-                        &pre_emption_vulnerability) );
+                ret = fd_msg_avp_new(s6a_pre_emption_vulnerability, 0, 
+                        &pre_emption_vulnerability);
+                d_assert(ret == 0, return EINVAL,)
                 val.u32 = pdn->qos.arp.pre_emption_vulnerability;
-                CHECK_FCT(
-                    fd_msg_avp_setvalue(pre_emption_vulnerability, &val) );
-                CHECK_FCT( fd_msg_avp_add(allocation_retention_priority, 
-                    MSG_BRW_LAST_CHILD, pre_emption_vulnerability) );
+                ret = fd_msg_avp_setvalue(pre_emption_vulnerability, &val);
+                d_assert(ret == 0, return EINVAL,)
+                ret = fd_msg_avp_add(allocation_retention_priority, 
+                    MSG_BRW_LAST_CHILD, pre_emption_vulnerability);
+                d_assert(ret == 0, return EINVAL,)
 
-                CHECK_FCT( fd_msg_avp_add(eps_subscribed_qos_profile, 
-                    MSG_BRW_LAST_CHILD, allocation_retention_priority) );
+                ret = fd_msg_avp_add(eps_subscribed_qos_profile, 
+                    MSG_BRW_LAST_CHILD, allocation_retention_priority);
+                d_assert(ret == 0, return EINVAL,)
 
-                CHECK_FCT( fd_msg_avp_add(apn_configuration, 
-                    MSG_BRW_LAST_CHILD, eps_subscribed_qos_profile) );
+                ret = fd_msg_avp_add(apn_configuration, 
+                    MSG_BRW_LAST_CHILD, eps_subscribed_qos_profile);
+                d_assert(ret == 0, return EINVAL,)
 
                 /* Set MIP6-Agent-Info */
                 if (pdn->pgw_ip.ipv4 || pdn->pgw_ip.ipv6)
                 {
-                    CHECK_FCT( fd_msg_avp_new(fd_mip6_agent_info, 0,
-                                &mip6_agent_info) );
+                    ret = fd_msg_avp_new(fd_mip6_agent_info, 0,
+                                &mip6_agent_info);
+                    d_assert(ret == 0, return EINVAL,)
 
                     if (pdn->pgw_ip.ipv4)
                     {
-                        CHECK_FCT( fd_msg_avp_new(fd_mip_home_agent_address, 0,
-                                    &mip_home_agent_address) );
+                        ret = fd_msg_avp_new(fd_mip_home_agent_address, 0,
+                                    &mip_home_agent_address);
+                        d_assert(ret == 0, return EINVAL,)
                         sin.sin_family = AF_INET;
                         sin.sin_addr.s_addr = pdn->pgw_ip.both.addr;
-                        CHECK_FCT( fd_msg_avp_value_encode (
-                                    &sin, mip_home_agent_address ) );
-                        CHECK_FCT( fd_msg_avp_add(mip6_agent_info,
-                                MSG_BRW_LAST_CHILD, mip_home_agent_address) );
+                        ret = fd_msg_avp_value_encode (
+                                    &sin, mip_home_agent_address );
+                        d_assert(ret == 0, return EINVAL,)
+                        ret = fd_msg_avp_add(mip6_agent_info,
+                                MSG_BRW_LAST_CHILD, mip_home_agent_address);
+                        d_assert(ret == 0, return EINVAL,)
                     }
 
                     if (pdn->pgw_ip.ipv6)
                     {
-                        CHECK_FCT( fd_msg_avp_new(fd_mip_home_agent_address, 0,
-                                    &mip_home_agent_address) );
+                        ret = fd_msg_avp_new(fd_mip_home_agent_address, 0,
+                                    &mip_home_agent_address);
+                        d_assert(ret == 0, return EINVAL,)
                         sin6.sin6_family = AF_INET6;
                         memcpy(sin6.sin6_addr.s6_addr, pdn->pgw_ip.both.addr6,
                                 sizeof pdn->pgw_ip.both.addr6);
-                        CHECK_FCT( fd_msg_avp_value_encode (
-                                    &sin6, mip_home_agent_address ) );
-                        CHECK_FCT( fd_msg_avp_add(mip6_agent_info,
-                                MSG_BRW_LAST_CHILD, mip_home_agent_address) );
+                        ret = fd_msg_avp_value_encode (
+                                    &sin6, mip_home_agent_address );
+                        d_assert(ret == 0, return EINVAL,)
+                        ret = fd_msg_avp_add(mip6_agent_info,
+                                MSG_BRW_LAST_CHILD, mip_home_agent_address);
+                        d_assert(ret == 0, return EINVAL,)
                     }
 
-                    CHECK_FCT( fd_msg_avp_add(apn_configuration, 
-                            MSG_BRW_LAST_CHILD, mip6_agent_info) );
+                    ret = fd_msg_avp_add(apn_configuration, 
+                            MSG_BRW_LAST_CHILD, mip6_agent_info);
+                    d_assert(ret == 0, return EINVAL,)
                 }
 
                 /* Set AMBR */
                 if (pdn->ambr.downlink || pdn->ambr.uplink)
                 {
-                    CHECK_FCT( fd_msg_avp_new(s6a_ambr, 0, &avp_ambr) );
-                    CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
-                                &avp_max_bandwidth_ul) );
+                    ret = fd_msg_avp_new(s6a_ambr, 0, &avp_ambr);
+                    d_assert(ret == 0, return EINVAL,)
+                    ret = fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 
+                                &avp_max_bandwidth_ul);
+                    d_assert(ret == 0, return EINVAL,)
                     val.u32 = pdn->ambr.uplink;
-                    CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val) );
-                    CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
-                                avp_max_bandwidth_ul) );
-                    CHECK_FCT( fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
-                                &avp_max_bandwidth_dl) );
+                    ret = fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val);
+                    d_assert(ret == 0, return EINVAL,)
+                    ret = fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
+                                avp_max_bandwidth_ul);
+                    d_assert(ret == 0, return EINVAL,)
+                    ret = fd_msg_avp_new(s6a_max_bandwidth_dl, 0, 
+                                &avp_max_bandwidth_dl);
+                    d_assert(ret == 0, return EINVAL,)
                     val.u32 = pdn->ambr.downlink;
-                    CHECK_FCT( fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val) );
-                    CHECK_FCT( fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
-                                avp_max_bandwidth_dl) );
+                    ret = fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val);
+                    d_assert(ret == 0, return EINVAL,)
+                    ret = fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, 
+                                avp_max_bandwidth_dl);
+                    d_assert(ret == 0, return EINVAL,)
 
-                    CHECK_FCT( fd_msg_avp_add(apn_configuration, 
-                            MSG_BRW_LAST_CHILD, avp_ambr) );
+                    ret = fd_msg_avp_add(apn_configuration, 
+                            MSG_BRW_LAST_CHILD, avp_ambr);
+                    d_assert(ret == 0, return EINVAL,)
                 }
 
-                CHECK_FCT( fd_msg_avp_add(apn_configuration_profile, 
-                        MSG_BRW_LAST_CHILD, apn_configuration) );
+                ret = fd_msg_avp_add(apn_configuration_profile, 
+                        MSG_BRW_LAST_CHILD, apn_configuration);
+                d_assert(ret == 0, return EINVAL,)
             }
-            CHECK_FCT( fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
-                    apn_configuration_profile) );
+            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, 
+                    apn_configuration_profile);
+            d_assert(ret == 0, return EINVAL,)
         }
 
-        CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+        ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+        d_assert(ret == 0, return EINVAL,)
     }
 
-    CHECK_FCT( fd_msg_avp_new(s6a_subscribed_rau_tau_timer, 0, &avp) );
+    ret = fd_msg_avp_new(s6a_subscribed_rau_tau_timer, 0, &avp);
+    d_assert(ret == 0, return EINVAL,)
     val.i32 = subscription_data.subscribed_rau_tau_timer * 60; /* seconds */
-    CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
-    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,)
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,)
 
     /* Set Vendor-Specific-Application-Id AVP */
-    CHECK_FCT_DO( fd_message_vendor_specific_appid_set(
-                ans, S6A_APPLICATION_ID), goto out );
+    ret = fd_message_vendor_specific_appid_set(ans, S6A_APPLICATION_ID);
+    d_assert(ret == 0, return EINVAL,)
 
 	/* Send the answer */
-	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
+	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0,,);
 	
 	/* Add this value to the stats */
-	CHECK_POSIX_DO( pthread_mutex_lock(&fd_logger_self()->stats_lock), );
+	d_assert( pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
 	fd_logger_self()->stats.nb_echoed++;
-	CHECK_POSIX_DO( pthread_mutex_unlock(&fd_logger_self()->stats_lock), );
+	d_assert( pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
 
 	return 0;
 
 out:
-    CHECK_FCT( fd_message_experimental_rescode_set(ans, result_code) );
+    ret = fd_message_experimental_rescode_set(ans, result_code);
+    d_assert(ret == 0, return EINVAL,)
 
     /* Set the Auth-Session-State AVP */
-    CHECK_FCT( fd_msg_avp_new(fd_auth_session_state, 0, &avp) );
+    ret = fd_msg_avp_new(fd_auth_session_state, 0, &avp);
+    d_assert(ret == 0, return EINVAL,)
     val.i32 = 1;
-    CHECK_FCT( fd_msg_avp_setvalue(avp, &val) );
-    CHECK_FCT( fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp) );
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,)
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,)
 
     /* Set Vendor-Specific-Application-Id AVP */
-    CHECK_FCT_DO( fd_message_vendor_specific_appid_set(
-                ans, S6A_APPLICATION_ID), goto out );
+    ret = fd_message_vendor_specific_appid_set(ans, S6A_APPLICATION_ID);
+    d_assert(ret == 0, return EINVAL,)
 
-	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
+	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0,,);
 
     return 0;
 }
 
-int hss_fd_init(void)
+status_t hss_fd_init(void)
 {
+    int ret;
 	struct disp_when data;
 
-    CHECK_FCT( fd_init(FD_MODE_SERVER,
-                hss_self()->fd_conf_path, hss_self()->fd_config) );
+    ret = fd_init(FD_MODE_SERVER,
+                hss_self()->fd_conf_path, hss_self()->fd_config);
+    d_assert(ret == 0, return CORE_ERROR,);
 
 	/* Install objects definitions for this application */
-	CHECK_FCT( s6a_dict_init() );
+	ret = s6a_dict_init();
+    d_assert(ret == 0, return CORE_ERROR,);
 
 	memset(&data, 0, sizeof(data));
 	data.app = s6a_application;
 	
 	/* fallback CB if command != unexpected message received */
-	CHECK_FCT( fd_disp_register(hss_s6a_fb_cb, DISP_HOW_APPID, &data, NULL,
-                &hdl_s6a_fb) );
+	ret = fd_disp_register(hss_s6a_fb_cb, DISP_HOW_APPID, &data, NULL,
+                &hdl_s6a_fb);
+    d_assert(ret == 0, return CORE_ERROR,);
 	
 	/* specific handler for Authentication-Information-Request */
 	data.command = s6a_cmd_air;
-	CHECK_FCT( fd_disp_register(hss_s6a_air_cb, DISP_HOW_CC, &data, NULL,
-                &hdl_s6a_air) );
+	ret = fd_disp_register(hss_s6a_air_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_s6a_air);
+    d_assert(ret == 0, return CORE_ERROR,);
 
 	/* specific handler for Location-Update-Request */
 	data.command = s6a_cmd_ulr;
-	CHECK_FCT( fd_disp_register(hss_s6a_ulr_cb, DISP_HOW_CC, &data, NULL, 
-                &hdl_s6a_ulr) );
+	ret = fd_disp_register(hss_s6a_ulr_cb, DISP_HOW_CC, &data, NULL, 
+                &hdl_s6a_ulr);
+    d_assert(ret == 0, return CORE_ERROR,);
 
 	/* Advertise the support for the application in the peer */
-	CHECK_FCT( fd_disp_app_support(s6a_application, fd_vendor, 1, 0) );
+	ret = fd_disp_app_support(s6a_application, fd_vendor, 1, 0);
+    d_assert(ret == 0, return CORE_ERROR,);
 
-	return 0;
+	return CORE_OK;
 }
 
 void hss_fd_final(void)

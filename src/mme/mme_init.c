@@ -25,7 +25,6 @@ static int initialized = 0;
 status_t mme_initialize()
 {
     status_t rv;
-    int ret;
 
     rv = mme_context_init();
     if (rv != CORE_OK) return rv;
@@ -36,8 +35,8 @@ status_t mme_initialize()
     rv = mme_context_setup_trace_module();
     if (rv != CORE_OK) return rv;
 
-    ret = mme_fd_init();
-    if (ret != 0) return CORE_ERROR;
+    rv = mme_fd_init();
+    if (rv != CORE_OK) return CORE_ERROR;
 
 #define USRSCTP_LOCAL_UDP_PORT 9899
     rv = s1ap_init(USRSCTP_LOCAL_UDP_PORT);

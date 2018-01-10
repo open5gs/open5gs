@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(int) hss_fd_init(void);
+CORE_DECLARE(status_t) hss_fd_init(void);
 CORE_DECLARE(void) hss_fd_final(void);
 
 #ifdef __cplusplus
