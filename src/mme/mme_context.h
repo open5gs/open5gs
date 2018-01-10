@@ -63,8 +63,10 @@ typedef struct _mme_context_t {
     list_t          s1ap_list6;     /* MME S1AP IPv6 Server List */
 
     list_t          gtpc_list;      /* MME GTPC IPv4 Server List */
-    c_sockaddr_t    *gtpc_addr;     /* MME GTPC IPv4 Address */
     list_t          gtpc_list6;     /* MME GTPC IPv6 Server List */
+    sock_id         gtpc_sock;      /* MME GTPC IPv4 Socket */
+    sock_id         gtpc_sock6;     /* MME GTPC IPv6 Socket */
+    c_sockaddr_t    *gtpc_addr;     /* MME GTPC IPv4 Address */
     c_sockaddr_t    *gtpc_addr6;    /* MME GTPC IPv6 Address */
 
     list_t          sgw_list;       /* SGW GTPC Client List */

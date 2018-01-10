@@ -132,8 +132,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             mme_ue = mme_ue_find_by_guti(&guti);
             if (!mme_ue)
             {
-                d_error("Can not find mme_ue with mme_code = %d, m_tmsi = %d",
-                        guti.mme_code, guti.m_tmsi);
+                d_warn("Unknown UE by S_TMSI[G:%d,C:%d,M_TMSI:0x%x]",
+                        guti.mme_gid, guti.mme_code, guti.m_tmsi);
             }
             else
             {
@@ -410,7 +410,6 @@ void s1ap_handle_ue_context_release_request(
 
     enb_ue_t *enb_ue = NULL;
     S1ap_UEContextReleaseRequest_IEs_t *ies = NULL;
-    long cause;
 
     ies = &message->s1ap_UEContextReleaseRequest_IEs;
     d_assert(ies, return, "Null param");
@@ -426,8 +425,9 @@ void s1ap_handle_ue_context_release_request(
     switch(ies->cause.present)
     {
         case S1ap_Cause_PR_radioNetwork:
-            cause = ies->cause.choice.radioNetwork;
-            if (cause == S1ap_CauseRadioNetwork_user_inactivity)
+        {
+            if (ies->cause.choice.radioNetwork
+                    == S1ap_CauseRadioNetwork_user_inactivity)
             {
                 mme_ue_t *mme_ue = enb_ue->mme_ue;
                 d_assert(mme_ue, return,);
@@ -450,24 +450,48 @@ void s1ap_handle_ue_context_release_request(
             }
             else
             {
-                d_warn("Not implmented (radioNetwork cause : %d)", cause);
+                d_warn("Not implmented (radioNetwork cause : %d)",
+                        ies->cause.choice.radioNetwork);
             }
             break;
+        }
         case S1ap_Cause_PR_transport:
-            cause = ies->cause.choice.transport;
-            d_warn("Not implmented (transport cause : %d)", cause);
+        {
+            S1ap_Cause_t cause;
+            const char *cause_string = NULL;
+
+            if (ies->cause.choice.transport ==
+                    S1ap_CauseTransport_transport_resource_unavailable)
+                cause_string = "Transport Resource Unavailable";
+            else if (ies->cause.choice.transport ==
+                    S1ap_CauseTransport_unspecified)
+                cause_string = "Unspecified";
+            else
+                cause_string = "Unknown";
+               
+
+            d_warn("[S1AP] UE Context Release Request(Transport Cause: %s[%d])",
+                    cause_string, ies->cause.choice.transport,
+                    enb_ue->enb_ue_s1ap_id,
+                    CORE_ADDR(enb->addr, buf), enb->enb_id);
+
+            cause.present = S1ap_Cause_PR_nas;
+            cause.choice.nas = S1ap_CauseNas_normal_release;
+            rv = s1ap_send_ue_context_release_commmand(
+                    enb_ue, &cause, 0);
+            d_assert(rv == CORE_OK, return, "s1ap send error");
+
             break;
+        }
         case S1ap_Cause_PR_nas:
-            cause = ies->cause.choice.nas;
-            d_warn("Not implmented (nas cause : %d)", cause);
+            d_warn("Not implmented (nas cause : %d)", ies->cause.choice.nas);
             break;
         case S1ap_Cause_PR_protocol:
-            cause = ies->cause.choice.protocol;
-            d_warn("Not implmented (protocol cause : %d)", cause);
+            d_warn("Not implmented (protocol cause : %d)",
+                    ies->cause.choice.protocol);
             break;
         case S1ap_Cause_PR_misc:
-            cause = ies->cause.choice.misc;
-            d_warn("Not implmented (misc cause : %d)", cause);
+            d_warn("Not implmented (misc cause : %d)", ies->cause.choice.misc);
             break;
         default:
             d_warn("Invalid cause type : %d", ies->cause.present);
@@ -493,8 +517,6 @@ void s1ap_handle_ue_context_release_complete(
 
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
-    mme_ue = enb_ue->mme_ue;
-    d_assert(mme_ue, return,);
 
     d_trace(3, "[S1AP] UE Context Release Complete : "
             "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
@@ -503,35 +525,39 @@ void s1ap_handle_ue_context_release_complete(
 
     enb_ue_remove(enb_ue);
 
-    sess = mme_sess_first(mme_ue);
-    while(sess)
+    mme_ue = enb_ue->mme_ue;
+    if (mme_ue)
     {
-        bearer = mme_bearer_first(sess);
-        while(bearer)
+        sess = mme_sess_first(mme_ue);
+        while(sess)
         {
-            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
-                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            bearer = mme_bearer_first(sess);
+            while(bearer)
             {
-                need_to_delete_indirect_tunnel = 1;
+                if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
+                    MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+                {
+                    need_to_delete_indirect_tunnel = 1;
+                }
+
+                bearer = mme_bearer_next(bearer);
             }
-
-            bearer = mme_bearer_next(bearer);
+            sess = mme_sess_next(sess);
         }
-        sess = mme_sess_next(sess);
-    }
 
-    if (need_to_delete_indirect_tunnel)
-    {
-        rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
-            mme_ue);
-        d_assert(rv == CORE_OK, return, "gtp send error");
-    }
-    else
-    {
-        if (!FSM_CHECK(&mme_ue->sm, emm_state_detached) &&
-            !FSM_CHECK(&mme_ue->sm, emm_state_attached))
+        if (need_to_delete_indirect_tunnel)
         {
-            mme_ue_remove(mme_ue);
+            rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
+                mme_ue);
+            d_assert(rv == CORE_OK, return, "gtp send error");
+        }
+        else
+        {
+            if (!FSM_CHECK(&mme_ue->sm, emm_state_detached) &&
+                !FSM_CHECK(&mme_ue->sm, emm_state_attached))
+            {
+                mme_ue_remove(mme_ue);
+            }
         }
     }
 }

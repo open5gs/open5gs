@@ -31,13 +31,17 @@ typedef struct _pgw_context_t {
     const char      *tun_ifname;    /* Default:: pgwtun */
 
     list_t          gtpc_list;      /* PGW GTPC IPv4 Server List */
-    c_sockaddr_t    *gtpc_addr;     /* PGW GTPC IPv4 Address */
     list_t          gtpc_list6;     /* PGW GTPC IPv6 Server List */
+    sock_id         gtpc_sock;      /* PGW GTPC IPv4 Socket */
+    sock_id         gtpc_sock6;     /* PGW GTPC IPv6 Socket */
+    c_sockaddr_t    *gtpc_addr;     /* PGW GTPC IPv4 Address */
     c_sockaddr_t    *gtpc_addr6;    /* PGW GTPC IPv6 Address */
 
     list_t          gtpu_list;      /* PGW GTPU IPv4 Server List */
-    c_sockaddr_t    *gtpu_addr;     /* PGW GTPU IPv4 Address */
     list_t          gtpu_list6;     /* PGW GTPU IPv6 Server List */
+    sock_id         gtpu_sock;      /* PGW GTPU IPv4 Socket */
+    sock_id         gtpu_sock6;     /* PGW GTPU IPv6 Socket */
+    c_sockaddr_t    *gtpu_addr;     /* PGW GTPU IPv4 Address */
     c_sockaddr_t    *gtpu_addr6;    /* PGW GTPU IPv6 Address */
 
     list_t          dev_list;       /* PGW Tun Device List */

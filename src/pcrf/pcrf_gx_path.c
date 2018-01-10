@@ -10,16 +10,18 @@
 #include "fd/gx/gx_message.h"
 
 #include "pcrf_context.h"
+#include "pcrf_fd_path.h"
 
 struct sess_state {
     c_uint32_t  cc_request_type;    /* CC-Request-Type */
-    c_int8_t    *sid;               /* Session-Id */
+    os0_t       gx_sid;             /* Gx Session-Id */
+    os0_t       rx_sid;             /* Rx Session-Id */
 
 ED3(c_uint8_t   ipv4:1;,
     c_uint8_t   ipv6:1;,
     c_uint8_t   reserved:6;)
     c_uint32_t  addr;               /* Framed-IPv4-Address */
-    c_uint8_t   addr6[IPV6_LEN];     /* Framed-IPv6-Prefix */
+    c_uint8_t   addr6[IPV6_LEN];    /* Framed-IPv6-Prefix */
 };
 
 static struct session_handler *pcrf_gx_reg = NULL;
@@ -35,8 +37,8 @@ static __inline__ struct sess_state *new_state(os0_t sid)
     d_assert(new, return NULL,);
     memset(new, 0, sizeof *new);
 
-    new->sid = core_strdup((char *)sid);
-    d_assert(new->sid, return NULL,);
+    new->gx_sid = (os0_t)core_strdup((char *)sid);
+    d_assert(new->gx_sid, return NULL,);
 
     return new;
 }
@@ -51,8 +53,10 @@ static void state_cleanup(
     if (sess_data->ipv6)
         pcrf_sess_set_ipv6(sess_data->addr6, NULL);
 
-    if (sess_data->sid)
-        core_free(sess_data->sid);
+    if (sess_data->gx_sid)
+        core_free(sess_data->gx_sid);
+    if (sess_data->rx_sid)
+        core_free(sess_data->rx_sid);
 
     pool_free_node(&pcrf_gx_sess_pool, sess_data);
 }
@@ -135,7 +139,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         CHECK_FCT( fd_msg_avp_hdr(avp, &hdr) );
         memcpy(&sess_data->addr, hdr->avp_value->os.data,
                 sizeof sess_data->addr);
-        pcrf_sess_set_ipv4(&sess_data->addr, sess_data->sid);
+        pcrf_sess_set_ipv4(&sess_data->addr, sess_data->gx_sid);
         sess_data->ipv4 = 1;
     }
 
@@ -151,7 +155,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         d_assert(paa->len == IPV6_LEN * 8 /* 128bit */, goto out,
                 "Invalid Framed-IPv6-Prefix Length:%d", paa->len);
         memcpy(sess_data->addr6, paa->addr6, sizeof sess_data->addr6);
-        pcrf_sess_set_ipv6(sess_data->addr6, sess_data->sid);
+        pcrf_sess_set_ipv6(sess_data->addr6, sess_data->gx_sid);
         sess_data->ipv6 = 1;
     }
 
@@ -403,7 +407,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	CHECK_FCT( fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1) );
 
-    if (sess_data->cc_request_type == GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
+    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
         /* Store this value in the session */
         CHECK_FCT_DO( fd_sess_state_store(pcrf_gx_reg, sess, &sess_data),
@@ -440,6 +444,7 @@ out:
 
 	CHECK_FCT( fd_msg_send(msg, NULL, NULL) );
 
+    state_cleanup(sess_data, NULL, NULL);
     gx_cca_message_free(&cca_message);
 
     return 0;
@@ -489,4 +494,36 @@ void pcrf_gx_final(void)
             pool_used(&pcrf_gx_sess_pool), pool_size(&pcrf_gx_sess_pool));
 
     pool_final(&pcrf_gx_sess_pool);
+}
+
+status_t pcrf_sess_gx_associate_rx(c_uint8_t *gx_sid, c_uint8_t *rx_sid)
+{
+    struct session *sess = NULL;
+    struct sess_state *sess_data = NULL;
+    int ret;
+    size_t sidlen = 0;
+    int new;
+
+    d_assert(gx_sid, return CORE_ERROR,);
+    d_assert(rx_sid, return CORE_ERROR,);
+
+    sidlen = strlen((char *)gx_sid); 
+    ret = fd_sess_fromsid((os0_t)gx_sid, sidlen, &sess, &new);
+    d_assert(ret == 0, return CORE_ERROR,);
+    d_assert(new == 0, return CORE_ERROR,);
+
+    ret = fd_sess_state_retrieve(pcrf_gx_reg, sess, &sess_data);
+    d_assert(ret == 0, return CORE_ERROR,);
+    d_assert(sess_data, return CORE_ERROR,);
+
+    if (sess_data->rx_sid)
+        core_free(sess_data->rx_sid);
+    sess_data->rx_sid = (os0_t)core_strdup((char *)rx_sid);
+    d_assert(sess_data->rx_sid, return CORE_ERROR,);
+
+    ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
+    d_assert(ret == 0, return CORE_ERROR,);
+    d_assert(sess_data == NULL, return CORE_ERROR,);
+
+    return CORE_OK;
 }

@@ -3,6 +3,8 @@
 #include "core_debug.h"
 #include "core_pool.h"
 #include "core_lib.h"
+#include "core_network.h"
+#include "3gpp_types.h"
 
 #include "gtp/gtp_xact.h"
 
@@ -30,8 +32,10 @@ void pcscf_rx_sess_cleanup(
     pool_free_node(&pcscf_rx_sess_pool, sess_data);
 }
 
-void pcscf_rx_send_aar()
+void pcscf_rx_send_aar(const char *ip)
 {
+    status_t rv;
+
     struct msg *req = NULL;
     struct avp *avp;
 #if 0
@@ -43,7 +47,12 @@ void pcscf_rx_send_aar()
     struct sess_state *mi = NULL, *svg;
     struct session *session = NULL;
 
-    c_uint32_t addr = 0x0100007f;
+    paa_t paa;
+    ipsubnet_t ipsub;
+
+    d_assert(ip, return,);
+    rv = core_ipsubnet(&ipsub, ip, NULL);
+    d_assert(rv == CORE_OK, return,);
 
     /* Create the random value to store with the session */
     pool_alloc_node(&pcscf_rx_sess_pool, &mi);
@@ -100,14 +109,34 @@ void pcscf_rx_send_aar()
 
     CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp), goto out );
 
-    /* Set Framed-IP-Address */
-    CHECK_FCT_DO( fd_msg_avp_new(rx_framed_ip_address, 0, &avp),
-            goto out );
-    val.os.data = (c_uint8_t*)&addr;
-    val.os.len = 4;
-    CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
-    CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
-            goto out );
+    if (ipsub.family == AF_INET)
+    {
+        /* Set Framed-IP-Address */
+        CHECK_FCT_DO( fd_msg_avp_new(rx_framed_ip_address, 0, &avp),
+                goto out );
+        val.os.data = (c_uint8_t*)ipsub.sub;
+        val.os.len = IPV4_LEN;
+        CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
+                goto out );
+    }
+    else if (ipsub.family == AF_INET6)
+    {
+        /* Set Framed-IPv6-Prefix */
+        CHECK_FCT_DO( fd_msg_avp_new(rx_framed_ipv6_prefix, 0, &avp),
+                goto out );
+        memset(&paa, 0, sizeof(paa_t));
+
+        memcpy(paa.addr6, ipsub.sub, IPV6_LEN);
+        paa.pdn_type = 0x03;
+#define FRAMED_IPV6_PREFIX_LENGTH 128  /* from spec document */
+        paa.len = FRAMED_IPV6_PREFIX_LENGTH; 
+        val.os.data = (c_uint8_t*)&paa;
+        val.os.len = PAA_IPV6_LEN;
+        CHECK_FCT_DO( fd_msg_avp_setvalue(avp, &val), goto out );
+        CHECK_FCT_DO( fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp),
+                goto out );
+    }
 
     CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &mi->ts), goto out );
     

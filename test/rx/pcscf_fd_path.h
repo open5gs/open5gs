@@ -10,7 +10,7 @@ extern "C" {
 CORE_DECLARE(int) pcscf_fd_init(void);
 CORE_DECLARE(void) pcscf_fd_final(void);
 
-CORE_DECLARE(void) pcscf_rx_send_aar();
+CORE_DECLARE(void) pcscf_rx_send_aar(const char *ip);
 
 #ifdef __cplusplus
 }

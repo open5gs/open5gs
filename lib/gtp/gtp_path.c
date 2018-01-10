@@ -45,36 +45,49 @@ status_t gtp_client(gtp_node_t *gnode)
     return CORE_OK;
 }
 
-gtp_node_t *gtp_connect_to_node(list_t *list, gtp_f_teid_t *f_teid,
-        c_uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4)
+status_t gtp_connect(sock_id ipv4, sock_id ipv6, gtp_node_t *gnode)
 {
-    status_t rv;
-    gtp_node_t *node = NULL;
-    c_sockaddr_t *sa_list = NULL;
+    c_sockaddr_t *addr;
+    char buf[CORE_ADDRSTRLEN];
 
-    d_assert(list, return NULL,);
-    d_assert(f_teid, return NULL,);
-    d_assert(port, return NULL,);
+    d_assert(ipv4 || ipv6, return CORE_ERROR,);
+    d_assert(gnode, return CORE_ERROR,);
+    d_assert(gnode->sa_list, return CORE_ERROR,);
 
-    rv = gtp_f_teid_to_sockaddr(f_teid, port, &sa_list);
-    d_assert(rv == CORE_OK, return NULL,);
+    addr = gnode->sa_list;
+    while(addr)
+    {
+        sock_id id;
 
-    rv = gtp_add_node(list, &node, sa_list, no_ipv4, no_ipv6, prefer_ipv4);
-    d_assert(rv == CORE_OK, return NULL,);
-    d_assert(node, return NULL,);
+        if (addr->c_sa_family == AF_INET) id = ipv4;
+        else if (addr->c_sa_family == AF_INET6) id = ipv6;
+        else
+            d_assert(0, return CORE_ERROR,);
 
-    rv = gtp_f_teid_to_ip(f_teid, &node->ip);
-    d_assert(rv == CORE_OK, return NULL,);
+        if (id)
+        {
+            if (sock_connect(id, addr) == CORE_OK)
+            {
+                d_trace(1, "gtp_connect() [%s]:%d\n",
+                        CORE_ADDR(addr, buf), CORE_PORT(addr));
 
-    rv = sock_fill_scope_id_in_local(node->sa_list);
-    d_assert(rv == CORE_OK, return NULL,);
+                gnode->sock = id;
+                break;
+            }
+        }
 
-    rv = gtp_client(node);
-    d_assert(rv == CORE_OK, return NULL,);
+        addr = addr->next;
+    }
 
-    core_freeaddrinfo(sa_list);
+    if (addr == NULL)
+    {
+        d_warn("gtp_connect() [%s]:%d failed(%d:%s)",
+                CORE_ADDR(gnode->sa_list, buf), CORE_PORT(gnode->sa_list),
+                errno, strerror(errno));
+        return CORE_ERROR;
+    }
 
-    return node;
+    return CORE_OK;
 }
 
 status_t gtp_server_list(list_t *list, sock_handler handler)
@@ -92,6 +105,22 @@ status_t gtp_server_list(list_t *list, sock_handler handler)
     }
 
     return CORE_OK;
+}
+
+sock_id gtp_local_sock_first(list_t *list)
+{
+    sock_node_t *snode = NULL;
+    sock_id sock = 0;
+
+    d_assert(list, return 0,);
+
+    for (snode = list_first(list); snode; snode = list_next(snode))
+    {
+        sock = snode->sock;
+        if (sock) return sock;
+    }
+
+    return 0;
 }
 
 c_sockaddr_t *gtp_local_addr_first(list_t *list)

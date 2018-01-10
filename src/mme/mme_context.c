@@ -1311,9 +1311,6 @@ status_t mme_context_parse_config()
                                 context_self()->parameter.prefer_ipv4);
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-                        rv = gtp_client(sgw);
-                        d_assert(rv == CORE_OK, return CORE_ERROR,);
-
                         core_freeaddrinfo(list);
 
                     } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);

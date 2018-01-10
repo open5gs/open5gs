@@ -150,8 +150,9 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     if (!subnet)
     {
         d_print_hex(pkbuf->payload, pkbuf->len);
-        d_assert(0, goto cleanup,
-                "V:%d, IPv4:%p, IPv6:%p", ip_h->ip_v, sess->ipv4, sess->ipv6);
+        d_warn(0, "[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
+                ip_h->ip_v, sess->ipv4, sess->ipv6);
+        goto cleanup;
     }
 
     /* Check IPv6 */
@@ -188,6 +189,8 @@ status_t pgw_gtp_open()
     rv = gtp_server_list(&pgw_self()->gtpc_list6, _gtpv2_c_recv_cb);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
+    pgw_self()->gtpc_sock = gtp_local_sock_first(&pgw_self()->gtpc_list);
+    pgw_self()->gtpc_sock6 = gtp_local_sock_first(&pgw_self()->gtpc_list6);
     pgw_self()->gtpc_addr = gtp_local_addr_first(&pgw_self()->gtpc_list);
     pgw_self()->gtpc_addr6 = gtp_local_addr_first(&pgw_self()->gtpc_list6);
 
@@ -199,6 +202,8 @@ status_t pgw_gtp_open()
     rv = gtp_server_list(&pgw_self()->gtpu_list6, _gtpv1_u_recv_cb);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
+    pgw_self()->gtpu_sock = gtp_local_sock_first(&pgw_self()->gtpu_list);
+    pgw_self()->gtpu_sock6 = gtp_local_sock_first(&pgw_self()->gtpu_list6);
     pgw_self()->gtpu_addr = gtp_local_addr_first(&pgw_self()->gtpu_list);
     pgw_self()->gtpu_addr6 = gtp_local_addr_first(&pgw_self()->gtpu_list6);
 
