@@ -88,7 +88,7 @@ void mme_s11_handle_create_session_response(
     rv = gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
     d_assert(rv == CORE_OK, return,);
 
-    d_trace(3, "[MME] Create Session Response : MME[0x%x] <-- SGW[0x%x]\n",
+    d_trace(3, "[MME] Create Session Response : MME[%d] <-- SGW[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
@@ -119,7 +119,7 @@ void mme_s11_handle_modify_bearer_response(
     d_assert(mme_ue, return, "Null param");
     d_assert(rsp, return, "Null param");
 
-    d_trace(3, "[MME] Modify Bearer Response : MME[0x%x] <-- SGW[0x%x]\n",
+    d_trace(3, "[MME] Modify Bearer Response : MME[%d] <-- SGW[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
@@ -160,7 +160,7 @@ void mme_s11_handle_delete_session_response(
         return;
     }
 
-    d_trace(3, "[MME] Delete Session Response : MME[0x%x] <-- SGW[0x%x]\n",
+    d_trace(3, "[MME] Delete Session Response : MME[%d] <-- SGW[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
@@ -221,7 +221,7 @@ void mme_s11_handle_create_bearer_request(
     d_assert(mme_ue, return, "Null param");
     d_assert(req, return, "Null param");
 
-    d_trace(3, "[MME] Create Bearer Request : MME[0x%x] <-- SGW[0x%x]\n",
+    d_trace(3, "[MME] Create Bearer Request : MME[%d] <-- SGW[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     if (req->linked_eps_bearer_id.presence == 0)
@@ -311,8 +311,7 @@ void mme_s11_handle_release_access_bearers_response(
         return;
     }
 
-    d_trace(3, "[MME] Release Access Bearers Response : "
-            "MME[0x%x] <-- SGW[0x%x]\n",
+    d_trace(3, "[MME] Release Access Bearers Response : MME[%d] <-- SGW[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
@@ -336,7 +335,7 @@ void mme_s11_handle_downlink_data_notification(
     d_assert(mme_ue, return, "Null param");
     d_assert(noti, return, "Null param");
 
-    d_trace(3, "[MME] Downlink Data Notification : MME[0x%x] <-- SGW[0x%x]\n",
+    d_trace(3, "[MME] Downlink Data Notification : MME[%d] <-- SGW[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     /* Build Downlink data notification ack */
@@ -380,7 +379,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     }
 
     d_trace(3, "[MME] Create Indirect Data Forwarding Tunnel Response : "
-            "MME[0x%x] <-- SGW[0x%x]\n",
+            "MME[%d] <-- SGW[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
@@ -444,7 +443,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     }
 
     d_trace(3, "[MME] Delete Indirect Data Forwarding Tunnel Response : "
-            "MME[0x%x] <-- SGW[0x%x]\n",
+            "MME[%d] <-- SGW[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);

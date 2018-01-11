@@ -273,7 +273,7 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
-    d_trace(3, "[SGW] Modify Bearer Reqeust : MME[0x%x] --> SGW[0x%x]\n",
+    d_trace(3, "[SGW] Modify Bearer Reqeust : MME[%d] --> SGW[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
@@ -316,7 +316,7 @@ void sgw_s11_handle_delete_session_request(gtp_xact_t *s11_xact,
     rv = gtp_xact_commit(s5c_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
-    d_trace(3, "[SGW] Delete Session Reqeust : SGW[0x%x] --> PGW[%x]\n",
+    d_trace(3, "[SGW] Delete Session Reqeust : SGW[0x%x] --> PGW[0x%x]\n",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
@@ -523,8 +523,7 @@ void sgw_s11_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
     rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
-    d_trace(3, "[SGW] Release Access Bearers Reqeust : "
-        "MME[0x%x] --> SGW[0x%x]\n",
+    d_trace(3, "[SGW] Release Access Bearers Reqeust : MME[%d] --> SGW[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
@@ -568,15 +567,14 @@ void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
-    d_trace(3, "[SGW] Downlink Data Notification : SGW[0x%x] --> MME[0x%x]\n",
+    d_trace(3, "[SGW] Downlink Data Notification : SGW[%d] --> MME[%d]\n",
             sgw_ue->sgw_s11_teid, sgw_ue->mme_s11_teid);
 }
 
 void sgw_s11_handle_downlink_data_notification_ack(sgw_ue_t *sgw_ue,
         gtp_downlink_data_notification_acknowledge_t *ack)
 {
-    d_trace(3, "[SGW] Downlink Data Notification Ack: "
-            "MME[0x%x] --> SGW[0x%x]\n",
+    d_trace(3, "[SGW] Downlink Data Notification Ack: MME[%d] --> SGW[%d]\n",
             sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
@@ -729,8 +727,7 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
     d_trace(3, "[SGW] Create Indirect Data Forwarding Tunnel Response : "
-        "MME[0x%x] --> SGW[0x%x]\n",
-        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+        "MME[%d] --> SGW[%d]\n", sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
 void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
@@ -802,6 +799,5 @@ void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
     d_trace(3, "[SGW] Delete Indirect Data Forwarding Tunnel Response : "
-        "MME[0x%x] --> SGW[0x%x]\n",
-        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+        "MME[%d] --> SGW[%d]\n", sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
