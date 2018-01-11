@@ -80,7 +80,7 @@ status_t emm_handle_attach_request(
             EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED,
             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
             S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT);
-        return CORE_ERROR;
+        return CORE_OK;
     }
 
     /* Store UE specific information */
@@ -313,9 +313,8 @@ status_t emm_handle_identity_response(
             {
                 /* Send TAU reject */
                 nas_send_tau_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-
-                return CORE_ERROR;
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
+                        S1AP_UE_CTX_REL_NO_ACTION);
             }
         }
     }
@@ -335,9 +334,8 @@ status_t emm_handle_identity_response(
             else
             {
                 nas_send_service_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-
-                return CORE_ERROR;
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
+                        S1AP_UE_CTX_REL_NO_ACTION);
             }
         }
     }
@@ -444,9 +442,8 @@ status_t emm_handle_service_request(
             else
             {
                 nas_send_service_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-
-                return CORE_ERROR;
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
+                        S1AP_UE_CTX_REL_NO_ACTION);
             }
         }
     }
@@ -509,8 +506,10 @@ status_t emm_handle_tau_request(
     if (served_tai_index < 0)
     {
         /* Send TAU reject */
-        nas_send_tau_reject(mme_ue, EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
-        return CORE_ERROR;
+        nas_send_tau_reject(mme_ue,
+            EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED,
+            S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT);
+        return CORE_OK;
     }
 
     /* Store UE specific information */
@@ -599,9 +598,8 @@ status_t emm_handle_tau_request(
             {
                 /* Send TAU reject */
                 nas_send_tau_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-
-                return CORE_ERROR;
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
+                        S1AP_UE_CTX_REL_NO_ACTION);
             }
         }
     }

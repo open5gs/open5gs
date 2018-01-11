@@ -381,7 +381,8 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
     return CORE_OK;
 }
 
-status_t nas_send_tau_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
+status_t nas_send_tau_reject(mme_ue_t *mme_ue,
+        nas_emm_cause_t emm_cause, c_uint8_t ue_ctx_rel_action)
 {
     status_t rv;
     enb_ue_t *enb_ue = NULL;
@@ -404,19 +405,19 @@ status_t nas_send_tau_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     d_assert(rv == CORE_OK, return CORE_ERROR, "nas dl send error");
 
-
     /* FIXME : delay required before sending UE context release to make sure 
      * that UE receive DL NAS ? */
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = S1ap_CauseNas_normal_release;
     rv = s1ap_send_ue_context_release_commmand(
-                enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
+                enb_ue, &cause, ue_ctx_rel_action, 0);
     d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
 
     return CORE_OK;
 }
 
-status_t nas_send_service_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
+status_t nas_send_service_reject(mme_ue_t *mme_ue,
+        nas_emm_cause_t emm_cause, c_uint8_t ue_ctx_rel_action)
 {
     status_t rv;
     enb_ue_t *enb_ue = NULL;

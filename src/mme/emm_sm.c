@@ -69,6 +69,7 @@ void emm_state_detached(fsm_t *s, event_t *e)
                         mme_ue, &message->emm.service_request);
                 if (rv != CORE_OK)
                 {
+                    d_error("emm_handle_service_request() failed");
                     FSM_TRAN(s, emm_state_exception);
                     break;
                 }
@@ -106,6 +107,7 @@ void emm_state_detached(fsm_t *s, event_t *e)
                             mme_ue, &message->emm.attach_request);
                     if (rv != CORE_OK)
                     {
+                        d_error("emm_handle_attach_request() failed");
                         FSM_TRAN(s, emm_state_exception);
                         break;
                     }
@@ -134,6 +136,7 @@ void emm_state_detached(fsm_t *s, event_t *e)
                             mme_ue, &message->emm.tracking_area_update_request);
                     if (rv != CORE_OK)
                     {
+                        d_error("emm_handle_tau_request() failed");
                         FSM_TRAN(s, emm_state_exception);
                         break;
                     }
@@ -225,6 +228,7 @@ void emm_state_identity(fsm_t *s, event_t *e)
                             &message->emm.identity_response);
                     if (rv != CORE_OK)
                     {
+                        d_error("emm_handle_identity_response failed()");
                         FSM_TRAN(s, emm_state_exception);
                         break;
                     }
@@ -497,6 +501,7 @@ void emm_state_default_esm(fsm_t *s, event_t *e)
                             mme_ue, &message->emm.attach_complete);
                     if (rv != CORE_OK)
                     {
+                        d_error("emm_handle_attach_complete() failed");
                         FSM_TRAN(s, emm_state_exception);
                         break;
                     }
@@ -578,6 +583,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
                         mme_ue, &message->emm.service_request);
                 if (rv != CORE_OK)
                 {
+                    d_error("emm_handle_service_request() failed");
                     FSM_TRAN(s, emm_state_exception);
                     break;
                 }
@@ -615,6 +621,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
                             mme_ue, &message->emm.attach_request);
                     if (rv != CORE_OK)
                     {
+                        d_error("emm_handle_attach_request() failed");
                         FSM_TRAN(s, emm_state_exception);
                         break;
                     }
@@ -655,6 +662,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
                             mme_ue, &message->emm.tracking_area_update_request);
                     if (rv != CORE_OK)
                     {
+                        d_error("emm_handle_tau_request() failed");
                         FSM_TRAN(s, emm_state_exception);
                         break;
                     }
