@@ -344,7 +344,7 @@ void s1ap_handle_initial_context_setup_failure(
         cause.present = S1ap_Cause_PR_nas;
         cause.choice.nas = S1ap_CauseNas_normal_release;
         rv = s1ap_send_ue_context_release_commmand(
-                enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
+                enb_ue, &cause, S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
         d_assert(rv == CORE_OK, return, "s1ap send error");
     }
 }
@@ -489,8 +489,8 @@ void s1ap_handle_ue_context_release_request(
             {
                 cause.present = S1ap_Cause_PR_nas;
                 cause.choice.nas = S1ap_CauseNas_normal_release;
-                rv = s1ap_send_ue_context_release_commmand(
-                        enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
+                rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause,
+                        S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
                 d_assert(rv == CORE_OK, return, "s1ap send error");
             }
 
