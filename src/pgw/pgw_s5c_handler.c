@@ -119,8 +119,8 @@ void pgw_s5c_handle_create_session_request(
     memcpy(&sess->e_cgi.plmn_id, &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
     sess->e_cgi.cell_id = uli.e_cgi.cell_id;
 
-    d_trace(3, "[GTP] Create Session Reqeust : "
-            "SGW[%d] --> PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+    d_trace(3, "[PGW] Create Session Reqeust : SGW[0x%x] --> PGW[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 void pgw_s5c_handle_delete_session_request(
@@ -194,6 +194,6 @@ void pgw_s5c_handle_create_bearer_response(
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
     
-    d_trace(3, "[GTP] Create Bearer Response : "
-            "SGW[%d] --> PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+    d_trace(3, "[PGW] Create Bearer Response : SGW[0x%x] --> PGW[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }

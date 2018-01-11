@@ -140,8 +140,8 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
-    d_trace(3, "[GTP] Create Session Response : "
-            "SGW[%d] <-- PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+    d_trace(3, "[SGW] Create Session Response : SGW[0x%x] <-- PGW[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 void sgw_s5c_handle_delete_session_response(gtp_xact_t *s5c_xact,
@@ -176,8 +176,8 @@ void sgw_s5c_handle_delete_session_response(gtp_xact_t *s5c_xact,
     /* Remove a pgw session */
     if (sess)
     {
-        d_trace(3, "[GTP] Delete Session Response : "
-            "SGW[%d] --> PGW[%d]\n", sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+        d_trace(3, "[SGW] Delete Session Response : SGW[0x%x] --> PGW[0x%x]\n",
+                sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
         /* backup sgw_s5c_teid in session context */
         mme_s11_teid = sgw_ue->mme_s11_teid;
@@ -309,7 +309,7 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
     rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
-    d_trace(3, "[GTP] Create Bearer Request : SGW[%d] <-- PGW[%d]\n",
+    d_trace(3, "[SGW] Create Bearer Request : SGW[0x%x] <-- PGW[0x%x]\n",
             s5u_tunnel->local_teid, s5u_tunnel->remote_teid);
 }
 
