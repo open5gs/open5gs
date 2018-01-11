@@ -410,6 +410,7 @@ void s1ap_handle_ue_context_release_request(
 
     enb_ue_t *enb_ue = NULL;
     S1ap_UEContextReleaseRequest_IEs_t *ies = NULL;
+    S1ap_Cause_t cause;
 
     ies = &message->s1ap_UEContextReleaseRequest_IEs;
     d_assert(ies, return, "Null param");
@@ -440,8 +441,6 @@ void s1ap_handle_ue_context_release_request(
                 }
                 else
                 {
-                    S1ap_Cause_t cause;
-
                     cause.present = S1ap_Cause_PR_nas;
                     cause.choice.nas = S1ap_CauseNas_normal_release;
                     rv = s1ap_send_ue_context_release_commmand(
@@ -458,18 +457,27 @@ void s1ap_handle_ue_context_release_request(
         }
         case S1ap_Cause_PR_transport:
         {
-            S1ap_Cause_t cause;
+            mme_ue_t *mme_ue = enb_ue->mme_ue;
 
             d_warn("[S1AP] UE Context Release Request[Transport Cause: %d]",
                     ies->cause.choice.transport,
                     enb_ue->enb_ue_s1ap_id,
                     CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-            cause.present = S1ap_Cause_PR_nas;
-            cause.choice.nas = S1ap_CauseNas_normal_release;
-            rv = s1ap_send_ue_context_release_commmand(
-                    enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
-            d_assert(rv == CORE_OK, return, "s1ap send error");
+            if (mme_ue && MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_delete_all_sessions failed");
+            }
+            else
+            {
+                cause.present = S1ap_Cause_PR_nas;
+                cause.choice.nas = S1ap_CauseNas_normal_release;
+                rv = s1ap_send_ue_context_release_commmand(
+                        enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
+                d_assert(rv == CORE_OK, return, "s1ap send error");
+            }
 
             break;
         }
