@@ -311,7 +311,9 @@ void s1ap_handle_initial_context_setup_response(
 void s1ap_handle_initial_context_setup_failure(
         mme_enb_t *enb, s1ap_message_t *message)
 {
+    status_t rv;
     char buf[CORE_ADDRSTRLEN];
+    S1ap_Cause_t cause;
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
@@ -331,7 +333,20 @@ void s1ap_handle_initial_context_setup_failure(
             enb_ue->enb_ue_s1ap_id,
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-    mme_ue_remove(mme_ue);
+    if (MME_HAVE_SGW_S11_PATH(mme_ue))
+    {
+        rv = mme_gtp_send_delete_all_sessions(mme_ue);
+        d_assert(rv == CORE_OK, return,
+            "mme_gtp_send_delete_all_sessions failed");
+    }
+    else
+    {
+        cause.present = S1ap_Cause_PR_nas;
+        cause.choice.nas = S1ap_CauseNas_normal_release;
+        rv = s1ap_send_ue_context_release_commmand(
+                enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
+        d_assert(rv == CORE_OK, return, "s1ap send error");
+    }
 }
 
 void s1ap_handle_e_rab_setup_response(
