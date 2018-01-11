@@ -464,7 +464,7 @@ void s1ap_handle_ue_context_release_request(
                     enb_ue->enb_ue_s1ap_id,
                     CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-            if (mme_ue && MME_HAVE_SGW_S11_PATH(mme_ue))
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 rv = mme_gtp_send_delete_all_sessions(mme_ue);
                 d_assert(rv == CORE_OK, return,
