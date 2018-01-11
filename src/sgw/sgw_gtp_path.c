@@ -90,14 +90,14 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     {
         pkbuf_t *echo_rsp;
 
-        d_trace(3, "Received echo-req\n");
+        d_trace(5, "ECHO-REQ received\n");
         echo_rsp = gtp_handle_echo_req(pkbuf);
         if (echo_rsp)
         {
             ssize_t sent;
 
             /* Echo reply */
-            d_trace(3, "Send echo-rsp to peer\n");
+            d_trace(5, "Send ECHO-RSP to PEER\n");
 
             sent = core_sendto(sock,
                     echo_rsp->payload, echo_rsp->len, 0, &from);
