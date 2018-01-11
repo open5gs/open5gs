@@ -139,7 +139,8 @@ void mme_s11_handle_modify_bearer_response(
         cause.present = S1ap_Cause_PR_nas;
         cause.choice.nas = S1ap_CauseNas_normal_release;
 
-        rv = s1ap_send_ue_context_release_commmand(source_ue, &cause, 300);
+        rv = s1ap_send_ue_context_release_commmand(
+                source_ue, &cause, S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
         d_assert(rv == CORE_OK, return, "s1ap send error");
     );
 }
@@ -319,7 +320,8 @@ void mme_s11_handle_release_access_bearers_response(
 
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = S1ap_CauseNas_normal_release;
-    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause, 0);
+    rv = s1ap_send_ue_context_release_commmand(
+                enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
     d_assert(rv == CORE_OK,, "s1ap send error");
 }
 

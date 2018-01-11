@@ -417,8 +417,9 @@ void s1ap_handle_ue_context_release_request(
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
 
-    d_trace(3, "[S1AP] UE Context Release Request : "
+    d_trace(3, "[S1AP] UE Context Release Request[%d:%d] : "
             "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+            ies->cause.present, ies->cause.choice.radioNetwork,
             enb_ue->mme_ue_s1ap_id,
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
@@ -444,7 +445,7 @@ void s1ap_handle_ue_context_release_request(
                     cause.present = S1ap_Cause_PR_nas;
                     cause.choice.nas = S1ap_CauseNas_normal_release;
                     rv = s1ap_send_ue_context_release_commmand(
-                            enb_ue, &cause, 0);
+                            enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
                     d_assert(rv == CORE_OK, return, "s1ap send error");
                 }
             }
@@ -458,27 +459,16 @@ void s1ap_handle_ue_context_release_request(
         case S1ap_Cause_PR_transport:
         {
             S1ap_Cause_t cause;
-            const char *cause_string = NULL;
 
-            if (ies->cause.choice.transport ==
-                    S1ap_CauseTransport_transport_resource_unavailable)
-                cause_string = "Transport Resource Unavailable";
-            else if (ies->cause.choice.transport ==
-                    S1ap_CauseTransport_unspecified)
-                cause_string = "Unspecified";
-            else
-                cause_string = "Unknown";
-               
-
-            d_warn("[S1AP] UE Context Release Request(Transport Cause: %s[%d])",
-                    cause_string, ies->cause.choice.transport,
+            d_warn("[S1AP] UE Context Release Request[Transport Cause: %d]",
+                    ies->cause.choice.transport,
                     enb_ue->enb_ue_s1ap_id,
                     CORE_ADDR(enb->addr, buf), enb->enb_id);
 
             cause.present = S1ap_Cause_PR_nas;
             cause.choice.nas = S1ap_CauseNas_normal_release;
             rv = s1ap_send_ue_context_release_commmand(
-                    enb_ue, &cause, 0);
+                    enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
             d_assert(rv == CORE_OK, return, "s1ap send error");
 
             break;
@@ -505,11 +495,9 @@ void s1ap_handle_ue_context_release_complete(
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
 
+    c_uint8_t ue_ctx_rel_action = 0;
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
-    mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
-    int need_to_delete_indirect_tunnel = 0;
     S1ap_UEContextReleaseComplete_IEs_t *ies = NULL;
 
     ies = &message->s1ap_UEContextReleaseComplete_IEs;
@@ -523,40 +511,36 @@ void s1ap_handle_ue_context_release_complete(
             enb_ue->mme_ue_s1ap_id,
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
+    ue_ctx_rel_action = enb_ue->ue_ctx_rel_action;
+    enb_ue->ue_ctx_rel_action = S1AP_UE_CTX_REL_INVALID_ACTION;
+    mme_ue = enb_ue->mme_ue;
+
     enb_ue_remove(enb_ue);
 
-    mme_ue = enb_ue->mme_ue;
     if (mme_ue)
     {
-        sess = mme_sess_first(mme_ue);
-        while(sess)
+        switch (ue_ctx_rel_action)
         {
-            bearer = mme_bearer_first(sess);
-            while(bearer)
+            case S1AP_UE_CTX_REL_NO_ACTION:
             {
-                if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
-                    MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
-                {
-                    need_to_delete_indirect_tunnel = 1;
-                }
-
-                bearer = mme_bearer_next(bearer);
+                break;
             }
-            sess = mme_sess_next(sess);
-        }
-
-        if (need_to_delete_indirect_tunnel)
-        {
-            rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
-                mme_ue);
-            d_assert(rv == CORE_OK, return, "gtp send error");
-        }
-        else
-        {
-            if (!FSM_CHECK(&mme_ue->sm, emm_state_detached) &&
-                !FSM_CHECK(&mme_ue->sm, emm_state_attached))
+            case S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT:
             {
                 mme_ue_remove(mme_ue);
+                break;
+            }
+            case S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL:
+            {
+                rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
+                    mme_ue);
+                d_assert(rv == CORE_OK, return, "gtp send error");
+                break;
+            }
+            default:
+            {
+                d_assert(0, return, "Invalid action(%d)", ue_ctx_rel_action);
+                break;
             }
         }
     }
@@ -914,7 +898,8 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     cause.present = S1ap_Cause_PR_radioNetwork;
     cause.choice.nas = S1ap_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system;
 
-    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause, 0);
+    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause,
+            S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 0);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 
     d_trace(3, "[S1AP] Handover Failure : "
@@ -957,7 +942,8 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     cause.present = S1ap_Cause_PR_radioNetwork;
     cause.choice.nas = S1ap_CauseRadioNetwork_handover_cancelled;
 
-    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause, 300);
+    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause,
+            S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 
     d_trace(3, "[S1AP] Handover Cancel : "

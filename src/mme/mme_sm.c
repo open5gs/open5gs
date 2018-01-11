@@ -336,7 +336,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 rv = nas_send_attach_reject(mme_ue,
                     S1ap_CauseNas_authentication_failure,
                     EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
-                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+                    S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT);
                 d_assert(rv == CORE_OK,,
                         "nas_send_attach_reject failed");
 

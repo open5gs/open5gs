@@ -235,13 +235,17 @@ status_t s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 }
 
 status_t s1ap_send_ue_context_release_commmand(
-        enb_ue_t *enb_ue, S1ap_Cause_t *cause, c_uint32_t delay)
+    enb_ue_t *enb_ue, S1ap_Cause_t *cause, c_uint8_t action, c_uint32_t delay)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
     pkbuf_t *s1apbuf = NULL;
 
+    d_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION, return CORE_ERROR,
+            "Should give valid action for UE Context Release Command");
+
     d_assert(enb_ue, return CORE_ERROR, "Null param");
+    enb_ue->ue_ctx_rel_action = action;
     d_assert(cause, return CORE_ERROR, "Null param");
     enb = enb_ue->enb;
     d_assert(enb, return CORE_ERROR, "Null param");

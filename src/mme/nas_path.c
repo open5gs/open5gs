@@ -101,7 +101,8 @@ status_t nas_send_attach_accept(mme_ue_t *mme_ue)
 
 status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     e_S1ap_CauseNas s1ap_cause_nas,
-    nas_emm_cause_t emm_cause, nas_esm_cause_t esm_cause)
+    nas_emm_cause_t emm_cause, nas_esm_cause_t esm_cause,
+    c_uint8_t ue_ctx_rel_action)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
@@ -134,7 +135,8 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
 
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = s1ap_cause_nas;;
-    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause, 0);
+    rv = s1ap_send_ue_context_release_commmand(
+            enb_ue, &cause, ue_ctx_rel_action, 0);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
@@ -201,7 +203,8 @@ status_t nas_send_detach_accept(mme_ue_t *mme_ue)
     /* FIXME : delay is needed */
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = S1ap_CauseNas_detach;
-    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause, 0);
+    rv = s1ap_send_ue_context_release_commmand(
+            enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
     d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
 
     return CORE_OK;
@@ -358,7 +361,8 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
          * that UE receive DL NAS ? */
         cause.present = S1ap_Cause_PR_nas;
         cause.choice.nas = S1ap_CauseNas_normal_release;
-        rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause, 0);
+        rv = s1ap_send_ue_context_release_commmand(
+                enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
         d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
     }
     else
@@ -405,7 +409,8 @@ status_t nas_send_tau_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
      * that UE receive DL NAS ? */
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = S1ap_CauseNas_normal_release;
-    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause, 0);
+    rv = s1ap_send_ue_context_release_commmand(
+                enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
     d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
 
     return CORE_OK;
@@ -438,7 +443,8 @@ status_t nas_send_service_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
      * that UE receive DL NAS ? */
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = S1ap_CauseNas_normal_release;
-    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause, 0);
+    rv = s1ap_send_ue_context_release_commmand(
+                enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
     d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
 
     return CORE_OK;

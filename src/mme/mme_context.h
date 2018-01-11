@@ -159,9 +159,17 @@ struct _enb_ue_t {
      * 
      * Save TAI and ECGI. And then, this will copy 'mme_ue_t' context later */
     struct {
-        tai_t           tai;
-        e_cgi_t         e_cgi;
+        tai_t       tai;
+        e_cgi_t     e_cgi;
     } nas;
+
+    /* Store by UE Context Release Command
+     * Retrieve by UE Context Release Complete */
+#define S1AP_UE_CTX_REL_INVALID_ACTION                      0
+#define S1AP_UE_CTX_REL_NO_ACTION                           1
+#define S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT               2
+#define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              3
+    c_uint8_t      ue_ctx_rel_action;
 
     /* Related Context */
     mme_enb_t       *enb;

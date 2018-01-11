@@ -515,7 +515,7 @@ void emm_state_default_esm(fsm_t *s, event_t *e)
                     cause.choice.nas = S1ap_CauseNas_normal_release;
 
                     rv = s1ap_send_ue_context_release_commmand(
-                            enb_ue, &cause, 0);
+                            enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
                     d_assert(rv == CORE_OK, return, "s1ap send error");
                     FSM_TRAN(s, &emm_state_attached);
                     break;

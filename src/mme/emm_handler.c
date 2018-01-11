@@ -78,7 +78,8 @@ status_t emm_handle_attach_request(
         nas_send_attach_reject(mme_ue,
             S1ap_CauseNas_unspecified,
             EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED,
-            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
+            S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT);
         return CORE_ERROR;
     }
 

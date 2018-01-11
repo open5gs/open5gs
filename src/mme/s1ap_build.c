@@ -519,8 +519,9 @@ status_t s1ap_build_ue_context_release_commmand(
 
     d_assert(s1apbuf && encoded >= 0, return CORE_ERROR,);
 
-    d_trace(3, "[S1AP] UE Context Release Command : "
+    d_trace(3, "[S1AP] UE Context Release Command[%d:%d] : "
             "UE[mME-UE-S1AP-ID(%d)] <-- eNB[%s:%d]\n",
+            ies->cause.present, ies->cause.choice.radioNetwork,
             enb_ue->mme_ue_s1ap_id,
             CORE_ADDR(enb_ue->enb->addr, buf), enb_ue->enb->enb_id);
 
