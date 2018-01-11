@@ -164,6 +164,14 @@ static int s1ap_decode_initiating(s1ap_message_t *message,
                     s1ap_xer__print2sp, message);
             break;
 
+        case S1ap_ProcedureCode_id_ErrorIndication: 
+            ret = s1ap_decode_s1ap_errorindicationies(
+                    &message->s1ap_ErrorIndicationIEs, 
+                    &initiating_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_errorindication,
+                    s1ap_xer__print2sp, message);
+            break;
         default: 
             d_error("Unknown procedure ID (%d) for initiating message", 
                     (int)initiating_p->procedureCode);

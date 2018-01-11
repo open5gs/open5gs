@@ -130,6 +130,11 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
                     &message->s1ap_NASNonDeliveryIndication_IEs);
             break;
 
+        case S1ap_ProcedureCode_id_ErrorIndication: 
+            s1ap_free_s1ap_errorindicationies(
+                    &message->s1ap_ErrorIndicationIEs);
+            break;
+
         default:
             d_warn("Unknown procedure ID (%d) for initiating message\n", 
                     (int)message->procedureCode);
