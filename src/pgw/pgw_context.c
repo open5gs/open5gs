@@ -929,6 +929,7 @@ pgw_sess_t *pgw_sess_add(
 {
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *bearer = NULL;
+    pgw_subnet_t *subnet6 = NULL;
 
     index_alloc(&pgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
@@ -966,7 +967,11 @@ pgw_sess_t *pgw_sess_add(
         d_assert(sess->ipv6, pgw_sess_remove(sess); return NULL, 
                 "Can't allocate IPv6 Pool");
 
-        sess->pdn.paa.len = pgw_ue_ip_prefixlen(sess->ipv6);
+        subnet6 = sess->ipv6->subnet;
+        d_assert(subnet6, pgw_sess_remove(sess); return NULL, 
+                "No IPv6 subnet");
+
+        sess->pdn.paa.len = subnet6->prefixlen;
         memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, IPV6_LEN);
     }
     else if (pdn_type == GTP_PDN_TYPE_IPV4V6)
@@ -978,8 +983,12 @@ pgw_sess_t *pgw_sess_add(
         d_assert(sess->ipv6, pgw_sess_remove(sess); return NULL, 
                 "Can't allocate IPv6 Pool");
 
+        subnet6 = sess->ipv6->subnet;
+        d_assert(subnet6, pgw_sess_remove(sess); return NULL, 
+                "No IPv6 subnet");
+
         sess->pdn.paa.both.addr = sess->ipv4->addr[0];
-        sess->pdn.paa.both.len = pgw_ue_ip_prefixlen(sess->ipv6);
+        sess->pdn.paa.both.len = subnet6->prefixlen;
         memcpy(sess->pdn.paa.both.addr6, sess->ipv6->addr, IPV6_LEN);
     }
     else
@@ -1500,17 +1509,6 @@ status_t pgw_ue_ip_free(pgw_ue_ip_t *ue_ip)
     pool_free_node(&subnet->pool, ue_ip);
 
     return CORE_OK;
-}
-
-c_uint8_t pgw_ue_ip_prefixlen(pgw_ue_ip_t *ue_ip)
-{
-    pgw_subnet_t *subnet = NULL;
-
-    d_assert(ue_ip, return -1,);
-    subnet = ue_ip->subnet;
-    d_assert(subnet, return -1,);
-
-    return subnet->prefixlen;
 }
 
 pgw_dev_t *pgw_dev_add(const char *ifname)

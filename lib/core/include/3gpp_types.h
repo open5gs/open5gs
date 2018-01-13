@@ -136,14 +136,18 @@ ED2(c_uint8_t spare:5;,
 
         /* GTP_PDN_TYPE_IPV6 */
         struct {
+            /* the IPv6 Prefix Length */
             c_uint8_t len;
+            /* IPv6 Prefix and Interface Identifier */
             c_uint8_t addr6[IPV6_LEN];
         };
 
         /* GTP_PDN_TYPE_BOTH */
         struct {
             struct {
+                /* the IPv6 Prefix Length */
                 c_uint8_t len;
+                /* IPv6 Prefix and Interface Identifier */
                 c_uint8_t addr6[IPV6_LEN];
             };
             c_uint32_t addr;      

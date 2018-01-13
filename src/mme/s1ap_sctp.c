@@ -72,7 +72,7 @@ status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
     size = core_sctp_recvmsg(id, pkbuf->payload, MAX_SDU_LEN, NULL, NULL, NULL);
     if (size <= 0)
     {
-        printf("asdklfjaklsdjfasdf\n");
+        d_error("s1ap_recv() failed");
         return CORE_ERROR;
     }
 

@@ -17,7 +17,8 @@ c_uint16_t in_cksum(c_uint16_t *addr, int len);
 static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf);
 static status_t pgw_gtp_handle_slaac(pgw_sess_t *sess, pkbuf_t *recvbuf);
 static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf);
-static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess);
+static status_t pgw_gtp_send_router_advertisement(
+        pgw_sess_t *sess, c_uint8_t *ip6_dst);
 
 static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
 {
@@ -343,7 +344,8 @@ static status_t pgw_gtp_handle_slaac(pgw_sess_t *sess, pkbuf_t *recvbuf)
             {
                 if (sess->ipv6)
                 {
-                    rv = pgw_gtp_send_router_advertisement(sess);
+                    rv = pgw_gtp_send_router_advertisement(
+                            sess, ip6_h->ip6_src.s6_addr);
                     d_assert(rv == CORE_OK,,"send router advertisement failed");
                 }
                 return PGW_GTP_HANDLED;
@@ -388,7 +390,8 @@ static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf)
     return rv;
 }
 
-static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
+static status_t pgw_gtp_send_router_advertisement(
+        pgw_sess_t *sess, c_uint8_t *ip6_dst)
 {
     status_t rv;
     pkbuf_t *pkbuf = NULL;
@@ -443,13 +446,13 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
 
     prefix->nd_opt_pi_type = ND_OPT_PREFIX_INFORMATION;
     prefix->nd_opt_pi_len = 4; /* 32bytes */
-    prefix->nd_opt_pi_prefix_len = pgw_ue_ip_prefixlen(sess->ipv6);
+    prefix->nd_opt_pi_prefix_len = subnet->prefixlen;
     prefix->nd_opt_pi_flags_reserved =
         ND_OPT_PI_FLAG_ONLINK|ND_OPT_PI_FLAG_AUTO;
     prefix->nd_opt_pi_valid_time = htonl(0xffffffff); /* Infinite */
     prefix->nd_opt_pi_preferred_time = htonl(0xffffffff); /* Infinite */
     memcpy(prefix->nd_opt_pi_prefix.s6_addr,
-            sess->ipv6->addr, prefix->nd_opt_pi_prefix_len);
+            subnet->sub.sub, sizeof prefix->nd_opt_pi_prefix.s6_addr);
 
     /* For IPv6 Pseudo-Header */
     plen = htons(sizeof *advert_h + sizeof *prefix);
@@ -457,8 +460,8 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
 
     memcpy(p, src_ipsub.sub, sizeof src_ipsub.sub);
     p += sizeof src_ipsub.sub;
-    memcpy(p, ue_ip->addr, sizeof ue_ip->addr);
-    p += sizeof ue_ip->addr;
+    memcpy(p, ip6_dst, IPV6_LEN);
+    p += IPV6_LEN;
     p += 2; memcpy(p, &plen, 2); p += 2;
     p += 3; *p = nxt; p += 1;
     advert_h->nd_ra_cksum = in_cksum((c_uint16_t *)pkbuf->payload, pkbuf->len);
@@ -468,7 +471,7 @@ static status_t pgw_gtp_send_router_advertisement(pgw_sess_t *sess)
     ip6_h->ip6_nxt = nxt;  /* ICMPv6 */
     ip6_h->ip6_hlim = 0xff;
     memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
-    memcpy(ip6_h->ip6_dst.s6_addr, ue_ip->addr, sizeof ue_ip->addr);
+    memcpy(ip6_h->ip6_dst.s6_addr, ip6_dst, IPV6_LEN);
     
     rv = pgw_gtp_send_to_bearer(bearer, pkbuf);
     d_assert(rv == CORE_OK,, "pgw_gtp_send_to_bearer() faild");
