@@ -199,6 +199,22 @@ void mme_s11_handle_delete_session_response(
             d_assert(rv == CORE_OK, return,
                 "nas_send_deactivate_bearer_context_request failed");
         }
+        else if (FSM_CHECK(&bearer->sm, esm_state_active))
+        {
+            GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
+                S1ap_Cause_t cause;
+                enb_ue_t *enb_ue = NULL;
+
+                enb_ue = mme_ue->enb_ue;
+                d_assert(enb_ue, return, );
+
+                cause.present = S1ap_Cause_PR_nas;
+                cause.choice.nas = S1ap_CauseNas_normal_release;
+                rv = s1ap_send_ue_context_release_commmand(
+                    enb_ue, &cause, S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
+                d_assert(rv == CORE_OK, return, "s1ap send error");
+            );
+        }
         else
         {
             d_assert(0,, "Invalid ESM state");

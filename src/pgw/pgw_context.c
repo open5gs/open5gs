@@ -1124,6 +1124,11 @@ pgw_sess_t *pgw_sess_add_by_message(gtp_message_t *message)
     }
 
     apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
+
+    d_trace(3, "pgw_sess_add_by_message() [APN:%s, PDN:%d, EDI:%d]\n",
+            apn, req->pdn_type.u8,
+            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+
     sess = pgw_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
     if (!sess)
     {
