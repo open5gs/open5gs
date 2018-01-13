@@ -1587,7 +1587,7 @@ status_t mme_enb_remove(mme_enb_t *enb)
     if (enb->sock_type == SOCK_STREAM)
         s1ap_delete(enb->sock);
 #endif
-    core_free(enb->addr);
+    CORE_FREE(enb->addr);
 
     index_free(&mme_enb_pool, enb);
 
@@ -1871,8 +1871,8 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
             (S1ap_UERadioCapability_t *)mme_ue->radio_capa;
 
         if (radio_capa->buf)
-            core_free(radio_capa->buf);
-        core_free(mme_ue->radio_capa);
+            CORE_FREE(radio_capa->buf);
+        CORE_FREE(mme_ue->radio_capa);
     }
 
     /* Clear Transparent Container */

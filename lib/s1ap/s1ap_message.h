@@ -14,7 +14,7 @@ extern "C" {
         d_assert((__dATA), , "Null param"); \
         if ((__dATA)->buf) \
         { \
-            core_free((__dATA)->buf); \
+            CORE_FREE((__dATA)->buf); \
             (__dATA)->buf = NULL; \
             (__dATA)->size = 0; \
         } \

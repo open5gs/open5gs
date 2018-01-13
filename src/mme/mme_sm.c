@@ -137,7 +137,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             else
                 enb = mme_enb_find_by_addr(addr);
 #endif
-            core_free(addr);
+            CORE_FREE(addr);
 
             if (enb)
             {
@@ -170,7 +170,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(pkbuf, break, "Null param");
 
             enb = mme_enb_find_by_addr(addr);
-            core_free(addr);
+            CORE_FREE(addr);
 
             d_assert(enb, pkbuf_free(pkbuf); break, "No eNB context");
             d_assert(FSM_STATE(&enb->sm), pkbuf_free(pkbuf); break,

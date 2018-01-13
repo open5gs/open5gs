@@ -548,18 +548,20 @@ void *core_malloc(size_t size)
     return p->payload;
 }
 
-void core_free(void *ptr)
+status_t core_free(void *ptr)
 {
     c_uint16_t headroom = sizeof(pkbuf_t *);
     pkbuf_t *p = NULL;
 
     if (!ptr) 
-        return;
+        return CORE_OK;
 
     memcpy(&p, ptr - headroom, headroom);
-    d_assert(p, return, "Null param");
+    d_assert(p, return CORE_ERROR, "Null param");
 
     pkbuf_free(p);
+
+    return CORE_OK;
 }
 
 void *core_calloc(size_t nmemb, size_t size)

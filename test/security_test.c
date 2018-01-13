@@ -214,7 +214,7 @@ static void security_test6(abts_case *tc, void *data)
 
     aes_cmac_calculate(mact, CORE_HEX(_ik, strlen(_ik), ik), m, m_len);
 
-    core_free(m);
+    CORE_FREE(m);
 
     ABTS_TRUE(tc, memcmp(mact, CORE_HEX(_mact, strlen(_mact), tmp), 4) == 0);
 

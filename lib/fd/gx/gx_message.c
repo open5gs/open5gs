@@ -20,7 +20,9 @@ void gx_message_free(gx_message_t *gx_message)
             flow_t *flow = &pcc_rule->flow[j];
 
             if (flow->description)
-                core_free(flow->description);
+            {
+                CORE_FREE(flow->description);
+            }
             else
                 d_assert(0,, "Null param");
         }

@@ -1046,7 +1046,7 @@ static void s1ap_encode_xer_print_message(
 
         printf("%s\n", message_string);
 
-        core_free(message_string);
+        CORE_FREE(message_string);
     }
 }
 

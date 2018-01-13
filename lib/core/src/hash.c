@@ -101,12 +101,12 @@ CORE_DECLARE(void) hash_destroy(hash_t *ht)
     {
         next_he = he->next;
 
-        core_free(he);
+        CORE_FREE(he);
         he = next_he;
     }
 
-    core_free(ht->array);
-    core_free(ht);
+    CORE_FREE(ht->array);
+    CORE_FREE(ht);
 }
 
 /*
@@ -188,7 +188,7 @@ static void expand_array(hash_t *ht)
         hi->this->next = new_array[i];
         new_array[i] = hi->this;
     }
-    core_free(ht->array);
+    CORE_FREE(ht->array);
     ht->array = new_array;
     ht->max = new_max;
 }

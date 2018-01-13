@@ -227,8 +227,8 @@ void s1ap_handle_ue_capability_info_indication(
             radio_capa = (S1ap_UERadioCapability_t *)mme_ue->radio_capa;
 
             if (radio_capa->buf)
-                core_free(radio_capa->buf);
-            core_free(mme_ue->radio_capa);
+                CORE_FREE(radio_capa->buf);
+            CORE_FREE(mme_ue->radio_capa);
         }
         /* Save UE radio capability */ 
         mme_ue->radio_capa = core_calloc(1, sizeof(S1ap_UERadioCapability_t));

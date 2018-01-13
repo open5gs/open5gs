@@ -72,21 +72,21 @@ status_t gtp_f_teid_to_sockaddr(
     else if (f_teid->ipv4)
     {
         addr->sin.sin_addr.s_addr = f_teid->addr;
-        core_free(addr6);
+        CORE_FREE(addr6);
 
         *list = addr;
     }
     else if (f_teid->ipv6)
     {
         memcpy(addr6->sin6.sin6_addr.s6_addr, f_teid->addr6, IPV6_LEN);
-        core_free(addr);
+        CORE_FREE(addr);
 
         *list = addr6;
     }
     else
     {
-        core_free(addr);
-        core_free(addr6);
+        CORE_FREE(addr);
+        CORE_FREE(addr6);
         d_assert(0, return CORE_ERROR,);
     }
 

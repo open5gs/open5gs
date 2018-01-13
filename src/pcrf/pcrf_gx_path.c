@@ -60,11 +60,11 @@ static void state_cleanup(
         pcrf_sess_set_ipv6(sess_data->addr6, NULL);
 
     if (sess_data->gx_sid)
-        core_free(sess_data->gx_sid);
+        CORE_FREE(sess_data->gx_sid);
     if (sess_data->rx_sid)
-        core_free(sess_data->rx_sid);
+        CORE_FREE(sess_data->rx_sid);
     if (sess_data->peer_host)
-        core_free(sess_data->peer_host);
+        CORE_FREE(sess_data->peer_host);
 
     pool_free_node(&pcrf_gx_sess_pool, sess_data);
 }
@@ -133,7 +133,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         d_assert(ret == 0, return EINVAL,);
 
         if (sess_data->peer_host)
-            core_free(sess_data->peer_host);
+            CORE_FREE(sess_data->peer_host);
         sess_data->peer_host =
             (os0_t)core_strdup((char *)hdr->avp_value->os.data);
         d_assert(sess_data->peer_host, return CORE_ERROR,);
@@ -988,7 +988,7 @@ status_t pcrf_sess_gx_associate_rx(c_uint8_t *gx_sid, c_uint8_t *rx_sid)
     d_assert(sess_data, return CORE_ERROR,);
 
     if (sess_data->rx_sid)
-        core_free(sess_data->rx_sid);
+        CORE_FREE(sess_data->rx_sid);
     sess_data->rx_sid = (os0_t)core_strdup((char *)rx_sid);
     d_assert(sess_data->rx_sid, return CORE_ERROR,);
 

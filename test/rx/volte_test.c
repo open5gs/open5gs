@@ -187,8 +187,7 @@ static void volte_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
-            16777373, 1, 5, 1);
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf, 1, 1, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -221,7 +220,7 @@ static void volte_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 33554492, 1, 6, 2);
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 6, 2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

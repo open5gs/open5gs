@@ -413,7 +413,7 @@ void snow_3g_f8(u8 *key, u32 count, u32 bearer, u32 dir, u8 *data, u32 length)
 		data[4*i+3] ^= (u8) (KS[i] ) & 0xff;
 	}
 	
-	core_free(KS);
+	CORE_FREE(KS);
 	
 	/* zero last bits of data in case its length is not byte-aligned 
 	   this is an addition to the C reference code, which did not handle it */

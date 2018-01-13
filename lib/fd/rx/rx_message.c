@@ -21,7 +21,9 @@ void rx_message_free(rx_message_t *rx_message)
             flow_t *flow = &media_component->flow[j];
 
             if (flow->description)
-                core_free(flow->description);
+            {
+                CORE_FREE(flow->description);
+            }
             else
                 d_assert(0,, "Null param");
         }

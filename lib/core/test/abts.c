@@ -217,12 +217,12 @@ static void abts_free(abts_suite *suite)
     while (ptr != NULL) {
         next_ptr = ptr->next;
 
-        core_free((void*)ptr->name);
-        core_free(ptr);
+        CORE_FREE((void*)ptr->name);
+        CORE_FREE(ptr);
         ptr = next_ptr;
     }
 
-    core_free(suite);
+    CORE_FREE(suite);
 }
 
 void abts_log_message(const char *fmt, ...)
@@ -473,7 +473,7 @@ int main(int argc, const char *const argv[]) {
 
     abts_free(suite);
 
-    core_free(testlist);
+    CORE_FREE(testlist);
     return rv;
 }
 

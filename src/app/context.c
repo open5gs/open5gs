@@ -35,7 +35,7 @@ status_t context_final()
     if (self.config.document)
     {
         yaml_document_delete(self.config.document);
-        core_free(self.config.document);
+        CORE_FREE(self.config.document);
     }
 
     context_initialized = 0;
@@ -67,7 +67,7 @@ status_t context_read_file()
     if (!yaml_parser_load(&parser, document))
     {
         d_fatal("Failed to parse configuration file '%s'", config->path);
-        core_free(document);
+        CORE_FREE(document);
         return CORE_ERROR;
     }
 

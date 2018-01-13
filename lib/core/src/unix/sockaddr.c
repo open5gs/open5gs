@@ -21,7 +21,7 @@ status_t core_freeaddrinfo(c_sockaddr_t *sa_list)
     while(addr)
     {
         next = addr->next;
-        core_free(addr);
+        CORE_FREE(addr);
         addr = next;
     }
 
@@ -109,7 +109,7 @@ status_t core_filteraddrinfo(c_sockaddr_t **sa_list, int family)
                 prev->next = addr->next;
             else
                 *sa_list = addr->next;
-            core_free(addr);
+            CORE_FREE(addr);
 
         }
         else

@@ -109,7 +109,7 @@ static void test_read(abts_case *tc, void *data)
     ABTS_SIZE_EQUAL(tc, strlen(TESTSTR), nbytes);
     ABTS_STR_EQUAL(tc, TESTSTR, str);
 
-    core_free(str);
+    CORE_FREE(str);
 
     file_close(filetest);
 }
@@ -289,7 +289,7 @@ static void test_seek(abts_case *tc, void *data)
     ABTS_SIZE_EQUAL(tc, 5, nbytes);
     ABTS_STR_EQUAL(tc, TESTSTR + strlen(TESTSTR) - 5, str);
 
-    core_free(str);
+    CORE_FREE(str);
 
     file_close(filetest);
 }
@@ -329,7 +329,7 @@ static void test_gets(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_EOF, rv);
     ABTS_STR_EQUAL(tc, "", str);
 
-    core_free(str);
+    CORE_FREE(str);
     file_close(f);
 }
 
@@ -476,7 +476,7 @@ static void file_contents_equal(abts_case *tc,
 
     CORE_ASSERT_OK(tc, "close file", file_close(f));
 
-    core_free(actual);
+    CORE_FREE(actual);
 }
 
 #define LINE1 "this is a line of text\n"

@@ -33,7 +33,7 @@ int get_asn1c_environment_version(void);	/* Run-time version */
 #define	CALLOC(nmemb, size)	core_calloc(nmemb, size)
 #define	MALLOC(size)		core_malloc(size)
 #define	REALLOC(oldptr, size)	core_realloc(oldptr, size)
-#define	FREEMEM(ptr)		core_free(ptr)
+#define	FREEMEM(ptr)		CORE_FREE(ptr)
 #endif
 
 #define	asn_debug_indent	0

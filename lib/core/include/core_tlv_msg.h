@@ -105,7 +105,7 @@ typedef struct _tlv_int32_t {
         d_assert((__dATA), , "Null param"); \
         if ((__dATA)->data) \
         { \
-            core_free((__dATA)->data); \
+            CORE_FREE((__dATA)->data); \
             (__dATA)->data = NULL; \
             (__dATA)->len = 0; \
             (__dATA)->presence = 0; \

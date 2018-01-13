@@ -314,7 +314,7 @@ static void s1ap_decode_xer_print_message(
         func(cb, message_string, message_p);
 
         printf("%s\n", message_string);
-        core_free(message_string);
+        CORE_FREE(message_string);
     }
 }
 

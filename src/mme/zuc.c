@@ -323,7 +323,7 @@ void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION,
         i--;
 		C[i] &= 0x100 - (1<<lastbits);
 	
-	core_free(z);
+	CORE_FREE(z);
 }
 /* end of EEA3.c */
 
@@ -389,6 +389,6 @@ void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	T ^= GET_WORD(z,LENGTH);
 	
 	*MAC = T ^ z[L-1];
-	core_free(z);
+	CORE_FREE(z);
 }
 /* end of EIA3.c */

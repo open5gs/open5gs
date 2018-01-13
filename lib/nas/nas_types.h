@@ -12,7 +12,7 @@ extern "C" {
         d_assert((__dATA), , "Null param"); \
         if ((__dATA)->buffer) \
         { \
-            core_free((__dATA)->buffer); \
+            CORE_FREE((__dATA)->buffer); \
             (__dATA)->buffer = NULL; \
             (__dATA)->length = 0; \
         } \

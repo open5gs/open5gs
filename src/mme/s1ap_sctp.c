@@ -106,7 +106,7 @@ static int s1ap_accept_handler(sock_id id, void *data)
         event_set_param2(&e, (c_uintptr_t)addr);
         if (mme_event_send(&e) != CORE_OK)
         {
-            core_free(addr);
+            CORE_FREE(addr);
         }
 
         return 0;
@@ -169,7 +169,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
             if (mme_event_send(&e) != CORE_OK)
             {
                 d_error("Event MME_EVT_S1AP_LO_CONNREFUSED failed");
-                core_free(addr);
+                CORE_FREE(addr);
             }
 
             return 0;
@@ -201,7 +201,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
     if (rv != CORE_OK)
     {
         pkbuf_free(pkbuf);
-        core_free(addr);
+        CORE_FREE(addr);
     }
     
     return 0;

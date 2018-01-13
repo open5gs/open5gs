@@ -5,7 +5,7 @@ static void pkbuf_test1(abts_case *tc, void *data)
 {
     char *ptr = core_malloc(256);
     ABTS_PTR_NOTNULL(tc, ptr);
-    core_free(ptr);
+    CORE_FREE(ptr);
 }
 
 static void pkbuf_test2(abts_case *tc, void *data)
@@ -17,14 +17,14 @@ static void pkbuf_test2(abts_case *tc, void *data)
         ABTS_INT_EQUAL(tc, 0, ptr[i]);
     }
     ABTS_PTR_NOTNULL(tc, ptr);
-    core_free(ptr);
+    CORE_FREE(ptr);
 }
 
 static void pkbuf_test3(abts_case *tc, void *data)
 {
     char *ptr = core_realloc(0, 10);
     ABTS_PTR_NOTNULL(tc, ptr);
-    core_free(ptr);
+    CORE_FREE(ptr);
 
     ptr = core_malloc(20);
     ABTS_PTR_NOTNULL(tc, ptr);
@@ -49,7 +49,7 @@ static void pkbuf_test4(abts_case *tc, void *data)
             SIZEOF_VOIDP);
     ABTS_TRUE(tc, p != q);
     ABTS_TRUE(tc, memcmp(p, q, 10) == 0);
-    core_free(p);
+    CORE_FREE(p);
 }
 
 

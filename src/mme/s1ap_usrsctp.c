@@ -374,7 +374,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                             event_set_param2(&e, (c_uintptr_t)addr);
                             if (mme_event_send(&e) != CORE_OK)
                             {
-                                core_free(addr);
+                                CORE_FREE(addr);
                             }
                         }
                         else if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
@@ -388,7 +388,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                             event_set_param2(&e, (c_uintptr_t)addr);
                             if (mme_event_send(&e) != CORE_OK)
                             {
-                                core_free(addr);
+                                CORE_FREE(addr);
                             }
                         }
 
@@ -412,7 +412,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                         event_set_param2(&e, (c_uintptr_t)addr);
                         if (mme_event_send(&e) != CORE_OK)
                         {
-                            core_free(addr);
+                            CORE_FREE(addr);
                         }
                         break;
                     }
@@ -444,7 +444,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
             if (mme_event_send(&e) != CORE_OK)
             {
                 pkbuf_free(pkbuf);
-                core_free(addr);
+                CORE_FREE(addr);
             }
         }
         else

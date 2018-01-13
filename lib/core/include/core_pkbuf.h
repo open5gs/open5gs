@@ -7,7 +7,7 @@
  */
 
 #include "core.h"
-#include "core_errno.h"
+#include "core_debug.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -187,7 +187,8 @@ CORE_DECLARE(status_t) pkbuf_tobuf_partial(pkbuf_t *pkbuf,
 
 /* memory handling library like OS-function(malloc,free) */
 CORE_DECLARE(void *) core_malloc(size_t size);
-CORE_DECLARE(void) core_free(void *ptr);
+#define CORE_FREE(__pTR)   d_assert(core_free(__pTR) == CORE_OK,,);
+CORE_DECLARE(status_t) core_free(void *ptr);
 CORE_DECLARE(void *) core_calloc(size_t nmemb, size_t size);
 CORE_DECLARE(void *) core_realloc(void *ptr, size_t size);
 

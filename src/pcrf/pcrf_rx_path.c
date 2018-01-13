@@ -43,9 +43,9 @@ static void state_cleanup(
     d_assert(sess_data, return,);
 
     if (sess_data->rx_sid)
-        core_free((char *)sess_data->rx_sid);
+        CORE_FREE((char *)sess_data->rx_sid);
     if (sess_data->gx_sid)
-        core_free((char *)sess_data->gx_sid);
+        CORE_FREE((char *)sess_data->gx_sid);
 
     pool_free_node(&pcrf_rx_sess_pool, sess_data);
 }
@@ -294,7 +294,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
     /* Store Gx Session-Id in this session */
     if (sess_data->gx_sid)
-        core_free(sess_data->gx_sid);
+        CORE_FREE(sess_data->gx_sid);
     sess_data->gx_sid = (os0_t)core_strdup((char *)gx_sid);
     d_assert(sess_data->gx_sid, goto out,);
 

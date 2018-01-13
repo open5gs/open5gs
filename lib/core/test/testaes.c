@@ -126,8 +126,8 @@ static void aes_test2(abts_case *tc, void *data)
         rc = memcmp(tmp, test_vector[i].decipher_output, 16);
         ABTS_INT_EQUAL(tc, 0, rc);
 
-        core_free(test_vector[i].key);
-        core_free(test_vector[i].rk);
+        CORE_FREE(test_vector[i].key);
+        CORE_FREE(test_vector[i].rk);
     }
 }
 

@@ -77,7 +77,7 @@ msgq_id msgq_create(int qdepth, int msgsize, int opt)
     return (msgq_id)md;
 
 error_final:
-    if (md->pool) core_free(md->pool);
+    if (md->pool) CORE_FREE(md->pool);
     if (md->mut_c) mutex_delete(md->mut_c);
     if (md->mut_r) mutex_delete(md->mut_r);
     if (md->mut_w) mutex_delete(md->mut_w);
@@ -94,7 +94,7 @@ status_t msgq_delete(msgq_id id)
 
     d_assert(md != NULL, return CORE_ERROR, "param 'id' is null");
 
-    if (md->pool) core_free(md->pool);
+    if (md->pool) CORE_FREE(md->pool);
     if (md->mut_c) mutex_delete(md->mut_c);
     if (md->mut_r) mutex_delete(md->mut_r);
     if (md->mut_w) mutex_delete(md->mut_w);
