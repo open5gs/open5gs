@@ -80,7 +80,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 case NAS_ESM_INFORMATION_RESPONSE:
                 {
                     d_trace(3, "[NAS] ESM information response : "
-                            "UE[%s] --> ESM[%d]\n", 
+                            "UE[%s] --> ESM[PTI:%d]\n", 
                             mme_ue->imsi_bcd, sess->pti);
                     rv = esm_handle_information_response(
                             sess, &message->esm.esm_information_response);
@@ -94,7 +94,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
                 {
                     d_trace(3, "[NAS] Activate default EPS bearer "
-                            "context accept : UE[%s] --> ESM[%d]\n", 
+                            "context accept : UE[%s] --> ESM[EBI:%d]\n", 
                             mme_ue->imsi_bcd, bearer->ebi);
 
                     if (MME_HAVE_ENB_S1U_PATH(bearer))
@@ -110,7 +110,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
                 {
                     d_trace(3, "[NAS] Activate dedicated EPS bearer "
-                            "context accept : UE[%s] --> ESM[%d]\n", 
+                            "context accept : UE[%s] --> ESM[EBI:%d]\n", 
                             mme_ue->imsi_bcd, bearer->ebi);
 
                     if (MME_HAVE_ENB_S1U_PATH(bearer))

@@ -172,8 +172,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
             enb = mme_enb_find_by_addr(addr);
             core_free(addr);
 
-            d_assert(enb, break, "No eNB context");
-            d_assert(FSM_STATE(&enb->sm), break, "No S1AP State Machine");
+            d_assert(enb, pkbuf_free(pkbuf); break, "No eNB context");
+            d_assert(FSM_STATE(&enb->sm), pkbuf_free(pkbuf); break,
+                    "No S1AP State Machine");
 
             d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
@@ -199,7 +200,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(pkbuf, break,);
 
             timer = event_get_param3(e);
-            d_assert(timer, pkbuf_free(pkbuf);break,);
+            d_assert(timer, pkbuf_free(pkbuf); break,);
 
             rv = s1ap_send_to_enb(enb, pkbuf);
             d_assert(rv == CORE_OK, pkbuf_free(pkbuf),);
@@ -228,7 +229,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 if (!mme_ue)
                 {
                     mme_ue = mme_ue_add(enb_ue);
-                    d_assert(mme_ue, break, "Null param");
+                    d_assert(mme_ue, pkbuf_free(pkbuf); break, "Null param");
                 }
                 else
                 {
@@ -248,15 +249,15 @@ void mme_state_operational(fsm_t *s, event_t *e)
                         h.ciphered = 0;
                         d_assert(
                             nas_security_decode(mme_ue, h, pkbuf) == CORE_OK,
-                            pkbuf_free(pkbuf);return, 
+                            pkbuf_free(pkbuf); return, 
                             "nas_security_decode failed");
                     }
                 }
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
 
-            d_assert(mme_ue, pkbuf_free(pkbuf);break, "No MME UE context");
-            d_assert(FSM_STATE(&mme_ue->sm), pkbuf_free(pkbuf);break, 
+            d_assert(mme_ue, pkbuf_free(pkbuf); break, "No MME UE context");
+            d_assert(FSM_STATE(&mme_ue->sm), pkbuf_free(pkbuf); break, 
                     "No EMM State Machine");
 
             /* Set event */
@@ -270,7 +271,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
             }
 
             pkbuf_free(pkbuf);
-
             break;
         }
         case MME_EVT_EMM_T3413:
@@ -299,7 +299,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     pkbuf_free(pkbuf); break, "Can't decode NAS_ESM");
 
             bearer = mme_bearer_find_or_add_by_message(mme_ue, &message);
-            d_assert(bearer, break, "No Bearer context");
+            d_assert(bearer, pkbuf_free(pkbuf); break, "No Bearer context");
 
             event_set_param1(e, (c_uintptr_t)bearer->index);
             event_set_param3(e, (c_uintptr_t)&message);
@@ -308,7 +308,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             if (FSM_CHECK(&bearer->sm, esm_state_session_exception))
             {
                 mme_sess_t *sess = bearer->sess;
-                d_assert(sess, break, "Null param");
+                d_assert(sess, pkbuf_free(pkbuf); break, "Null param");
                 mme_sess_remove(sess);
             }
             else if (FSM_CHECK(&bearer->sm, esm_state_bearer_exception))

@@ -2481,36 +2481,21 @@ mme_bearer_t* mme_bearer_find_or_add_by_message(
     d_assert(mme_ue, return NULL,);
     d_assert(message, return NULL,);
 
-    if (message->esm.h.message_type == NAS_PDN_DISCONNECT_REQUEST)
-    {
-        nas_pdn_disconnect_request_t *pdn_disconnect_request = 
-            &message->esm.pdn_disconnect_request;
-        nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity =
-            &pdn_disconnect_request->linked_eps_bearer_identity;
-
-        bearer = mme_bearer_find_by_ue_ebi(mme_ue,
-                linked_eps_bearer_identity->eps_bearer_identity);
-        d_assert(bearer, return NULL,
-                "Invalid pti(%d) and ebi(%d)\n", pti, ebi);
-        sess = bearer->sess;
-        d_assert(sess, return NULL, "Null param");
-        sess->pti = pti;
-
-        return bearer;
-    }
-
     pti = message->esm.h.procedure_transaction_identity;
     ebi = message->esm.h.eps_bearer_identity;
+
+    d_trace(3, "mme_bearer_find_or_add_by_message() [PTI:%d, EBI:%d]\n",
+            pti, ebi);
 
     if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
     {
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
-        d_assert(bearer, return NULL,);
+        d_assert(bearer, return NULL, "No Bearer : [EBI:%d]", ebi);
         return bearer;
     }
         
     d_assert(pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-            return NULL, );
+            return NULL, "Invalid param : [PTI:%d, EBI:%d]", pti, ebi);
 
     if (message->esm.h.message_type == NAS_PDN_CONNECTIVITY_REQUEST)
     {
@@ -2528,16 +2513,35 @@ mme_bearer_t* mme_bearer_find_or_add_by_message(
         else
             sess->pti = pti;
 
-        d_assert(sess, return NULL,);
+        d_assert(sess, return NULL, "No Session : [PTI:%d]", pti);
+    }
+    else if (message->esm.h.message_type == NAS_PDN_DISCONNECT_REQUEST)
+    {
+        nas_pdn_disconnect_request_t *pdn_disconnect_request = 
+            &message->esm.pdn_disconnect_request;
+        nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity =
+            &pdn_disconnect_request->linked_eps_bearer_identity;
+
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue,
+                linked_eps_bearer_identity->eps_bearer_identity);
+        d_assert(bearer, return NULL,
+                "No Bearer : [Linked-EBI:%d, PTI:%d, EBI:%d]",
+                linked_eps_bearer_identity->eps_bearer_identity,
+                pti, ebi);
+        sess = bearer->sess;
+        d_assert(sess, return NULL, "No Session : [PTI:%d]", pti);
+        sess->pti = pti;
+
+        return bearer;
     }
     else
     {
         sess = mme_sess_find_by_pti(mme_ue, pti);
-        d_assert(sess, return NULL,);
+        d_assert(sess, return NULL, "No Session : [PTI:%d]", pti);
     }
 
     bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return NULL,);
+    d_assert(bearer, return NULL, "No Bearer : [EBI:%d]", ebi);
     return bearer;
 }
 
