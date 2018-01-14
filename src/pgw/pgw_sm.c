@@ -204,9 +204,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                 }
                 case GX_CMD_RE_AUTH:
                 {
-#if 0
-                    pgw_gx_handle_re_auth_request( sess, gx_message);
-#endif
+                    pgw_gx_handle_re_auth_request(sess, gx_message);
                     break;
                 }
                 default:
