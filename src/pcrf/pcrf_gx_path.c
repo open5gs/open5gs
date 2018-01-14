@@ -39,6 +39,7 @@ static struct disp_hdl *hdl_gx_ccr = NULL;
 
 pool_declare(pcrf_gx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
 
+static status_t encode_pcc_rule_install(struct msg *msg, pcc_rule_t *pcc_rule);
 static void pcrf_gx_raa_cb(void *data, struct msg **msg);
 
 static __inline__ struct sess_state *new_state(os0_t sid)
@@ -93,16 +94,15 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
     status_t rv;
-    int ret = 0;
+    int ret = 0, i;
 
 	struct msg *ans, *qry;
-    struct avp *avpch1, *avpch2, *avpch3, *avpch4;
+    struct avp *avpch1, *avpch2;
     struct avp_hdr *hdr;
     union avp_value val;
     struct sess_state *sess_data = NULL;
 
     gx_message_t gx_message;
-    int i, j;
 
     c_uint32_t cc_request_number = 0;
     c_uint32_t result_code = FD_DIAMETER_MISSING_AVP;
@@ -312,7 +312,8 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    rv = pcrf_db_pdn_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
+    /* Retrieve QoS Data from Database */
+    rv = pcrf_db_qos_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
     if (rv != CORE_OK)
     {
         d_error("Cannot get data for IMSI(%s)+APN(%s)'\n",
@@ -323,179 +324,14 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
     if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
-        /* Set Charging-Rule-Install */
-        int charging_rule_install = 0;
-
         for (i = 0; i < gx_message.num_of_pcc_rule; i++)
         {
             pcc_rule_t *pcc_rule = &gx_message.pcc_rule[i];
             if (pcc_rule->num_of_flow)
-                charging_rule_install = 1;
-        }
-
-        if (charging_rule_install)
-        {
-            ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
-            d_assert(ret == 0, return EINVAL,);
-        }
-
-        for (i = 0; i < gx_message.num_of_pcc_rule; i++)
-        {
-            pcc_rule_t *pcc_rule = &gx_message.pcc_rule[i];
-
-            ret = fd_msg_avp_new(gx_charging_rule_definition, 0, &avpch1);
-            d_assert(ret == 0, return EINVAL,);
-            ret = fd_msg_avp_new(gx_charging_rule_name, 0, &avpch2);
-            d_assert(ret == 0, return EINVAL,);
-            /* Charing-Rule-Name is automatically configured by order */
-            sprintf(pcc_rule->name, "%s%d", sess_data->apn, i+1);
-            val.os.data = (c_uint8_t *)pcc_rule->name;
-            val.os.len = strlen(pcc_rule->name);
-            ret = fd_msg_avp_setvalue(avpch2, &val);
-            d_assert(ret == 0, return EINVAL,);
-            ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
-            d_assert(ret == 0, return EINVAL,);
-
-            for (j = 0; j < pcc_rule->num_of_flow; j++)
             {
-                flow_t *flow = &pcc_rule->flow[j];
-
-                ret = fd_msg_avp_new(gx_flow_information, 0, &avpch2);
-                d_assert(ret == 0, return EINVAL,);
-
-                ret = fd_msg_avp_new(gx_flow_direction, 0, &avpch3); 
-                d_assert(ret == 0, return EINVAL,);
-                val.i32 = flow->direction;
-                ret = fd_msg_avp_setvalue(avpch3, &val);
-                d_assert(ret == 0, return EINVAL,);
-                ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
-                d_assert(ret == 0, return EINVAL,);
-
-                ret = fd_msg_avp_new(gx_flow_description, 0, &avpch3); 
-                d_assert(ret == 0, return EINVAL,);
-                val.os.data = (c_uint8_t *)flow->description;
-                val.os.len = strlen(flow->description);
-                ret = fd_msg_avp_setvalue(avpch3, &val);
-                d_assert(ret == 0, return EINVAL,);
-                ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
-                d_assert(ret == 0, return EINVAL,);
-
-                ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
-                d_assert(ret == 0, return EINVAL,);
+                rv = encode_pcc_rule_install(ans, pcc_rule);
+                d_assert(rv == CORE_OK, return EINVAL,);
             }
-
-            ret = fd_msg_avp_new(gx_flow_status, 0, &avpch2);
-            d_assert(ret == 0, return EINVAL,);
-            val.i32 = GX_FLOW_STATUS_ENABLED;
-            ret = fd_msg_avp_setvalue(avpch2, &val);
-            d_assert(ret == 0, return EINVAL,);
-            ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
-            d_assert(ret == 0, return EINVAL,);
-
-            ret = fd_msg_avp_new(gx_qos_information, 0, &avpch2);
-            d_assert(ret == 0, return EINVAL,);
-
-            ret = fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch3);
-            d_assert(ret == 0, return EINVAL,);
-            val.u32 = pcc_rule->qos.qci;
-            ret = fd_msg_avp_setvalue (avpch3, &val);
-            d_assert(ret == 0, return EINVAL,);
-            ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
-            d_assert(ret == 0, return EINVAL,);
-
-            ret = fd_msg_avp_new(gx_allocation_retention_priority, 0, &avpch3);
-            d_assert(ret == 0, return EINVAL,);
-
-            ret = fd_msg_avp_new(gx_priority_level, 0, &avpch4);
-            d_assert(ret == 0, return EINVAL,);
-            val.u32 = pcc_rule->qos.arp.priority_level;
-            ret = fd_msg_avp_setvalue (avpch4, &val);
-            d_assert(ret == 0, return EINVAL,);
-            ret = fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4);
-            d_assert(ret == 0, return EINVAL,);
-
-            ret = fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch4);
-            d_assert(ret == 0, return EINVAL,);
-            val.u32 = pcc_rule->qos.arp.pre_emption_capability;
-            ret = fd_msg_avp_setvalue (avpch4, &val);
-            d_assert(ret == 0, return EINVAL,);
-            ret = fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4);
-            d_assert(ret == 0, return EINVAL,);
-
-            ret = fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch4);
-            d_assert(ret == 0, return EINVAL,);
-            val.u32 = pcc_rule->qos.arp.pre_emption_vulnerability;
-            ret = fd_msg_avp_setvalue (avpch4, &val);
-            d_assert(ret == 0, return EINVAL,);
-            ret = fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4);
-            d_assert(ret == 0, return EINVAL,);
-
-            ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
-            d_assert(ret == 0, return EINVAL,);
-
-            if (pcc_rule->qos.mbr.uplink)
-            {
-                ret = fd_msg_avp_new(gx_max_requested_bandwidth_ul, 0, &avpch3);
-                d_assert(ret == 0, return EINVAL,);
-                val.u32 = pcc_rule->qos.mbr.uplink;
-                ret = fd_msg_avp_setvalue (avpch3, &val);
-                d_assert(ret == 0, return EINVAL,);
-                ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
-                d_assert(ret == 0, return EINVAL,);
-            }
-
-            if (pcc_rule->qos.mbr.downlink)
-            {
-                ret = fd_msg_avp_new(gx_max_requested_bandwidth_dl, 0, &avpch3);
-                d_assert(ret == 0, return EINVAL,);
-                val.u32 = pcc_rule->qos.mbr.downlink;
-                ret = fd_msg_avp_setvalue (avpch3, &val);
-                d_assert(ret == 0, return EINVAL,);
-                ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
-                d_assert(ret == 0, return EINVAL,);
-            }
-
-            if (pcc_rule->qos.gbr.uplink)
-            {
-                ret = fd_msg_avp_new(gx_guaranteed_bitrate_ul, 0, &avpch3);
-                d_assert(ret == 0, return EINVAL,);
-                val.u32 = pcc_rule->qos.gbr.uplink;
-                ret = fd_msg_avp_setvalue (avpch3, &val);
-                d_assert(ret == 0, return EINVAL,);
-                ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
-                d_assert(ret == 0, return EINVAL,);
-            }
-
-            if (pcc_rule->qos.gbr.downlink)
-            {
-                ret = fd_msg_avp_new(gx_guaranteed_bitrate_dl, 0, &avpch3);
-                d_assert(ret == 0, return EINVAL,);
-                val.u32 = pcc_rule->qos.gbr.downlink;
-                ret = fd_msg_avp_setvalue (avpch3, &val);
-                d_assert(ret == 0, return EINVAL,);
-                ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
-                d_assert(ret == 0, return EINVAL,);
-            }
-
-            ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
-            d_assert(ret == 0, return EINVAL,);
-
-            ret = fd_msg_avp_new(gx_precedence, 0, &avpch2);
-            d_assert(ret == 0, return EINVAL,);
-            val.u32 = i + 1; /* Precendence is automatically configured by order */
-            ret = fd_msg_avp_setvalue (avpch2, &val);
-            d_assert(ret == 0, return EINVAL,);
-            ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
-            d_assert(ret == 0, return EINVAL,);
-
-            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
-            d_assert(ret == 0, return EINVAL,);
-        }
-        
-        if (charging_rule_install)
-        {
-            ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-            d_assert(ret == 0, return EINVAL,);
         }
 
         /* Set QoS-Information */
@@ -678,7 +514,8 @@ out:
 status_t pcrf_gx_send_rar(
         c_uint8_t *gx_sid, c_uint8_t *rx_sid, rx_message_t *rx_message)
 {
-    int ret;
+    status_t rv;
+    int ret = 0, i;
 
     struct msg *req = NULL;
     struct avp *avp;
@@ -691,9 +528,14 @@ status_t pcrf_gx_send_rar(
     int new;
     size_t sidlen;
 
+    gx_message_t gx_message;
+
     d_assert(gx_sid, return CORE_ERROR,);
     d_assert(rx_sid, return CORE_ERROR,);
     d_assert(rx_message, return CORE_ERROR,);
+
+    /* Initialize Message */
+    memset(&gx_message, 0, sizeof(gx_message_t));
 
     /* Set default error result code */
     rx_message->result_code = RX_DIAMETER_TEMPORARY_NETWORK_FAILURE;
@@ -737,9 +579,38 @@ status_t pcrf_gx_send_rar(
         d_error("No session data");
         ret = fd_msg_free(req);
         d_assert(ret == 0,,);
-        rx_message->result_code = RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
+        rx_message->result_code = FD_DIAMETER_UNKNOWN_SESSION_ID;
         return CORE_ERROR;
     }
+
+    /* Retrieve QoS Data from Database */
+    rv = pcrf_db_qos_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
+    if (rv != CORE_OK)
+    {
+        d_error("Cannot get data for IMSI(%s)+APN(%s)'\n",
+                sess_data->imsi_bcd, sess_data->apn);
+        rx_message->result_code = RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
+        goto out;
+    }
+
+    /* Find PCC Rule based on QCI and Media-Type */
+    pcc_rule_t *pcc_rule = NULL;
+    for (i = 0; i < gx_message.num_of_pcc_rule; i++)
+    {
+//        pcc_rule = &gx_message.pcc_rule[i];
+    }
+
+    /* if PCC Rule is existed, encode PCC Rule */
+    if (pcc_rule == NULL)
+    {
+        d_error("No PCC Rule");
+        rx_message->result_code = RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
+        goto out;
+    }
+
+    /* Encode PCC Rule */
+    rv = encode_pcc_rule_install(req, pcc_rule);
+    d_assert(rv == CORE_OK, return EINVAL,);
 
     /* Save Rx Session-Id */
     if (sess_data->rx_sid)
@@ -815,7 +686,18 @@ status_t pcrf_gx_send_rar(
     /* Set no error */
     rx_message->result_code = ER_DIAMETER_SUCCESS;
 
+    gx_message_free(&gx_message);
+
     return CORE_OK;
+
+out:
+    /* Store this value in the session */
+    ret = fd_sess_state_store(pcrf_gx_reg, session, &sess_data);
+    d_assert(sess_data == NULL,,);
+
+    gx_message_free(&gx_message);
+
+    return CORE_ERROR;
 }
 
 static void pcrf_gx_raa_cb(void *data, struct msg **msg)
@@ -1018,4 +900,168 @@ void pcrf_gx_final(void)
             pool_used(&pcrf_gx_sess_pool), pool_size(&pcrf_gx_sess_pool));
 
     pool_final(&pcrf_gx_sess_pool);
+}
+
+static status_t encode_pcc_rule_install(struct msg *msg, pcc_rule_t *pcc_rule)
+{
+    struct avp *avp, *avpch1, *avpch2, *avpch3, *avpch4;
+    union avp_value val;
+    int ret = 0, i;
+
+    d_assert(msg, return CORE_ERROR,);
+    d_assert(pcc_rule, return CORE_ERROR,);
+
+    ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    ret = fd_msg_avp_new(gx_charging_rule_definition, 0, &avpch1);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_new(gx_charging_rule_name, 0, &avpch2);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.os.data = (c_uint8_t *)pcc_rule->name;
+    val.os.len = strlen(pcc_rule->name);
+    ret = fd_msg_avp_setvalue(avpch2, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    for (i = 0; i < pcc_rule->num_of_flow; i++)
+    {
+        flow_t *flow = &pcc_rule->flow[i];
+
+        ret = fd_msg_avp_new(gx_flow_information, 0, &avpch2);
+        d_assert(ret == 0, return CORE_ERROR,);
+
+        ret = fd_msg_avp_new(gx_flow_direction, 0, &avpch3); 
+        d_assert(ret == 0, return CORE_ERROR,);
+        val.i32 = flow->direction;
+        ret = fd_msg_avp_setvalue(avpch3, &val);
+        d_assert(ret == 0, return CORE_ERROR,);
+        ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
+        d_assert(ret == 0, return CORE_ERROR,);
+
+        ret = fd_msg_avp_new(gx_flow_description, 0, &avpch3); 
+        d_assert(ret == 0, return CORE_ERROR,);
+        val.os.data = (c_uint8_t *)flow->description;
+        val.os.len = strlen(flow->description);
+        ret = fd_msg_avp_setvalue(avpch3, &val);
+        d_assert(ret == 0, return CORE_ERROR,);
+        ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
+        d_assert(ret == 0, return CORE_ERROR,);
+
+        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+        d_assert(ret == 0, return CORE_ERROR,);
+    }
+
+    ret = fd_msg_avp_new(gx_flow_status, 0, &avpch2);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.i32 = GX_FLOW_STATUS_ENABLED;
+    ret = fd_msg_avp_setvalue(avpch2, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    ret = fd_msg_avp_new(gx_qos_information, 0, &avpch2);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    ret = fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch3);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.u32 = pcc_rule->qos.qci;
+    ret = fd_msg_avp_setvalue (avpch3, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    ret = fd_msg_avp_new(gx_allocation_retention_priority, 0, &avpch3);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    ret = fd_msg_avp_new(gx_priority_level, 0, &avpch4);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.u32 = pcc_rule->qos.arp.priority_level;
+    ret = fd_msg_avp_setvalue (avpch4, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    ret = fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch4);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.u32 = pcc_rule->qos.arp.pre_emption_capability;
+    ret = fd_msg_avp_setvalue (avpch4, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    ret = fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch4);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.u32 = pcc_rule->qos.arp.pre_emption_vulnerability;
+    ret = fd_msg_avp_setvalue (avpch4, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add (avpch3, MSG_BRW_LAST_CHILD, avpch4);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    if (pcc_rule->qos.mbr.uplink)
+    {
+        ret = fd_msg_avp_new(gx_max_requested_bandwidth_ul, 0, &avpch3);
+        d_assert(ret == 0, return CORE_ERROR,);
+        val.u32 = pcc_rule->qos.mbr.uplink;
+        ret = fd_msg_avp_setvalue (avpch3, &val);
+        d_assert(ret == 0, return CORE_ERROR,);
+        ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
+        d_assert(ret == 0, return CORE_ERROR,);
+    }
+
+    if (pcc_rule->qos.mbr.downlink)
+    {
+        ret = fd_msg_avp_new(gx_max_requested_bandwidth_dl, 0, &avpch3);
+        d_assert(ret == 0, return CORE_ERROR,);
+        val.u32 = pcc_rule->qos.mbr.downlink;
+        ret = fd_msg_avp_setvalue (avpch3, &val);
+        d_assert(ret == 0, return CORE_ERROR,);
+        ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
+        d_assert(ret == 0, return CORE_ERROR,);
+    }
+
+    if (pcc_rule->qos.gbr.uplink)
+    {
+        ret = fd_msg_avp_new(gx_guaranteed_bitrate_ul, 0, &avpch3);
+        d_assert(ret == 0, return CORE_ERROR,);
+        val.u32 = pcc_rule->qos.gbr.uplink;
+        ret = fd_msg_avp_setvalue (avpch3, &val);
+        d_assert(ret == 0, return CORE_ERROR,);
+        ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
+        d_assert(ret == 0, return CORE_ERROR,);
+    }
+
+    if (pcc_rule->qos.gbr.downlink)
+    {
+        ret = fd_msg_avp_new(gx_guaranteed_bitrate_dl, 0, &avpch3);
+        d_assert(ret == 0, return CORE_ERROR,);
+        val.u32 = pcc_rule->qos.gbr.downlink;
+        ret = fd_msg_avp_setvalue (avpch3, &val);
+        d_assert(ret == 0, return CORE_ERROR,);
+        ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
+        d_assert(ret == 0, return CORE_ERROR,);
+    }
+
+    ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    ret = fd_msg_avp_new(gx_precedence, 0, &avpch2);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.u32 = pcc_rule->precedence;
+    ret = fd_msg_avp_setvalue (avpch2, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
+    d_assert(ret == 0, return CORE_ERROR,);
+    
+    ret = fd_msg_avp_add(msg, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    return CORE_OK;
 }

@@ -9,7 +9,7 @@ void gx_message_free(gx_message_t *gx_message)
 {
     int i, j;
 
-    d_assert(gx_message, return, "Null param");
+    d_assert(gx_message, return,);
 
     for (i = 0; i < gx_message->num_of_pcc_rule; i++)
     {

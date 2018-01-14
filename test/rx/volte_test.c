@@ -236,8 +236,9 @@ static void volte_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send AA-Request */
-    pcscf_rx_send_aar("45.45.0.2");
+    pcscf_rx_send_aar("45.45.0.3");
 
+#if 0
     /* Send PDN disconnectivity request */
     rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -276,6 +277,7 @@ static void volte_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
+#endif
 
     core_sleep(time_from_msec(1000));
 

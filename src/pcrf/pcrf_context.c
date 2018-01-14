@@ -377,7 +377,7 @@ status_t pcrf_db_final()
     return CORE_OK;
 }
 
-status_t pcrf_db_pdn_data(
+status_t pcrf_db_qos_data(
     c_int8_t *imsi_bcd, c_int8_t *apn, gx_message_t *gx_message)
 {
     status_t rv = CORE_OK;
@@ -746,6 +746,10 @@ status_t pcrf_db_pdn_data(
                                     pcc_rule->num_of_flow = flow_index;
                                 }
                             }
+                            /* Charing-Rule-Name is automatically configured */
+                            snprintf(pcc_rule->name, sizeof pcc_rule->name,
+                                    "%s%d", apn, pcc_rule_index+1);
+                            pcc_rule->precedence = pcc_rule_index+1;
                             pcc_rule_index++;
                         }
                         gx_message->num_of_pcc_rule = pcc_rule_index;

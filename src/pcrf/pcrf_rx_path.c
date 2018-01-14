@@ -69,7 +69,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     struct avp *avpch1, *avpch2, *avpch3;
     struct avp_hdr *hdr;
     union avp_value val;
-    struct sess_state *sess_data = NULL;
+    struct sess_state *sess_data = NULL, *svg = NULL;
     size_t sidlen;
 
     rx_message_t rx_message;
@@ -369,6 +369,7 @@ out:
     }
     
     /* Store this value in the session */
+    svg = sess_data;
     ret = fd_sess_state_store(pcrf_rx_reg, sess, &sess_data);
     d_assert(ret == 0,,);
     d_assert(sess_data == NULL,,);
@@ -376,7 +377,7 @@ out:
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
 
-    state_cleanup(sess_data, NULL, NULL);
+    state_cleanup(svg, NULL, NULL);
     rx_message_free(&rx_message);
 
     return 0;
