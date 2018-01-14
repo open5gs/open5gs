@@ -14,7 +14,7 @@
 #include "pgw_s5c_handler.h"
 
 void pgw_s5c_handle_create_session_request(
-        gtp_xact_t *xact, pgw_sess_t *sess, gtp_create_session_request_t *req)
+        pgw_sess_t *sess, gtp_xact_t *xact, gtp_create_session_request_t *req)
 {
     status_t rv;
     gtp_f_teid_t *sgw_s5c_teid, *sgw_s5u_teid;
@@ -124,12 +124,12 @@ void pgw_s5c_handle_create_session_request(
 }
 
 void pgw_s5c_handle_delete_session_request(
-        gtp_xact_t *xact, pgw_sess_t *sess, gtp_delete_session_request_t *req)
+        pgw_sess_t *sess, gtp_xact_t *xact, gtp_delete_session_request_t *req)
 {
 }
 
 void pgw_s5c_handle_create_bearer_response(
-        gtp_xact_t *xact, pgw_sess_t *sess, gtp_create_bearer_response_t *req)
+        pgw_sess_t *sess, gtp_xact_t *xact, gtp_create_bearer_response_t *req)
 {
     status_t rv;
     gtp_f_teid_t *sgw_s5u_teid, *pgw_s5u_teid;

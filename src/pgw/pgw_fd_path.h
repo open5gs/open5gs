@@ -14,7 +14,7 @@ typedef struct _gtp_xact_t gtp_xact_t;
 CORE_DECLARE(status_t) pgw_fd_init(void);
 CORE_DECLARE(void) pgw_fd_final(void);
 
-CORE_DECLARE(void) pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
+CORE_DECLARE(void) pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
         pkbuf_t *gtpbuf, c_uint32_t cc_request_type);
 
 #ifdef __cplusplus

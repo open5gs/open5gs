@@ -111,19 +111,19 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             {
                 case GTP_CREATE_SESSION_REQUEST_TYPE:
                     pgw_s5c_handle_create_session_request(
-                        xact, sess, &message->create_session_request);
-                    pgw_gx_send_ccr(xact, sess, copybuf,
+                        sess, xact, &message->create_session_request);
+                    pgw_gx_send_ccr(sess, xact, copybuf,
                         GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
                     break;
                 case GTP_DELETE_SESSION_REQUEST_TYPE:
                     pgw_s5c_handle_delete_session_request(
-                        xact, sess, &message->delete_session_request);
-                    pgw_gx_send_ccr(xact, sess, copybuf,
+                        sess, xact, &message->delete_session_request);
+                    pgw_gx_send_ccr(sess, xact, copybuf,
                         GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
                     break;
                 case GTP_CREATE_BEARER_RESPONSE_TYPE:
                     pgw_s5c_handle_create_bearer_response(
-                        xact, sess, &message->create_bearer_response);
+                        sess, xact, &message->create_bearer_response);
                     pkbuf_free(copybuf);
                     break;
                 default:
@@ -141,18 +141,10 @@ void pgw_state_operational(fsm_t *s, event_t *e)
         }
         case PGW_EVT_GX_MESSAGE:
         {
-            index_t xact_index = event_get_param1(e);
-            gtp_xact_t *xact = NULL;
-            index_t sess_index = event_get_param2(e);
+            index_t sess_index = event_get_param1(e);
             pgw_sess_t *sess = NULL;
-            pkbuf_t *gxbuf = (pkbuf_t *)event_get_param3(e);
+            pkbuf_t *gxbuf = (pkbuf_t *)event_get_param2(e);
             gx_message_t *gx_message = NULL;
-            pkbuf_t *gtpbuf = (pkbuf_t *)event_get_param4(e);
-            gtp_message_t *message = NULL;
-
-            d_assert(xact_index, return, "Null param");
-            xact = gtp_xact_find(xact_index);
-            d_assert(xact, return, "Null param");
 
             d_assert(sess_index, return, "Null param");
             sess = pgw_sess_find(sess_index);
@@ -162,16 +154,26 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             gx_message = gxbuf->payload;
             d_assert(gx_message, return, "Null param");
 
-            d_assert(gtpbuf, return, "Null param");
-            message = gtpbuf->payload;
-
             switch(gx_message->cmd_code)
             {
                 case GX_CMD_CODE_CREDIT_CONTROL:
                 {
+                    index_t xact_index = event_get_param3(e);
+                    gtp_xact_t *xact = NULL;
+
+                    pkbuf_t *gtpbuf = (pkbuf_t *)event_get_param4(e);
+                    gtp_message_t *message = NULL;
+
+                    d_assert(xact_index, return, "Null param");
+                    xact = gtp_xact_find(xact_index);
+                    d_assert(xact, return, "Null param");
+
+                    d_assert(gtpbuf, return, "Null param");
+                    message = gtpbuf->payload;
+
                     if (gx_message->result_code != ER_DIAMETER_SUCCESS)
                     {
-                        d_error("Not implemented(%d)", gx_message->result_code);
+                        d_error("Diameter Error(%d)", gx_message->result_code);
                         break;
                     }
                     switch(gx_message->cc_request_type)
@@ -179,14 +181,14 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                         case GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
                         {
                             pgw_gx_handle_cca_initial_request(
-                                    xact, sess, gx_message,
+                                    sess, gx_message, xact, 
                                     &message->create_session_request);
                             break;
                         }
                         case GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
                         {
                             pgw_gx_handle_cca_termination_request(
-                                    xact, sess, gx_message,
+                                    sess, gx_message, xact,
                                     &message->delete_session_request);
                             break;
                         }
@@ -196,7 +198,15 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                             break;
                         }
                     }
-                    gx_message_free(gx_message);
+
+                    pkbuf_free(gtpbuf);
+                    break;
+                }
+                case GX_CMD_RE_AUTH:
+                {
+#if 0
+                    pgw_gx_handle_re_auth_request( sess, gx_message);
+#endif
                     break;
                 }
                 default:
@@ -206,8 +216,8 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                 }
             }
 
+            gx_message_free(gx_message);
             pkbuf_free(gxbuf);
-            pkbuf_free(gtpbuf);
             break;
         }
         default:

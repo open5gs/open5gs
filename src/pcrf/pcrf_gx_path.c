@@ -39,7 +39,8 @@ static struct disp_hdl *hdl_gx_ccr = NULL;
 
 pool_declare(pcrf_gx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
 
-static status_t encode_pcc_rule_install(struct msg *msg, pcc_rule_t *pcc_rule);
+static status_t encode_pcc_rule_definition(
+        struct avp *avp, pcc_rule_t *pcc_rule);
 static void pcrf_gx_raa_cb(void *data, struct msg **msg);
 
 static __inline__ struct sess_state *new_state(os0_t sid)
@@ -324,14 +325,30 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
     if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
+        int charging_rule_install = 0;
+
         for (i = 0; i < gx_message.num_of_pcc_rule; i++)
         {
             pcc_rule_t *pcc_rule = &gx_message.pcc_rule[i];
             if (pcc_rule->num_of_flow)
             {
-                rv = encode_pcc_rule_install(ans, pcc_rule);
+                if (charging_rule_install == 0)
+                {
+                    ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
+                    d_assert(ret == 0, return CORE_ERROR,);
+
+                    charging_rule_install = 1;
+                }
+
+                rv = encode_pcc_rule_definition(avp, pcc_rule);
                 d_assert(rv == CORE_OK, return EINVAL,);
             }
+        }
+
+        if (charging_rule_install)
+        {
+            ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+            d_assert(ret == 0, return CORE_ERROR,);
         }
 
         /* Set QoS-Information */
@@ -526,6 +543,7 @@ status_t pcrf_gx_send_rar(
     size_t sidlen;
 
     gx_message_t gx_message;
+    int charging_rule_install = 0;
 
     d_assert(gx_sid, return CORE_ERROR,);
     d_assert(rx_sid, return CORE_ERROR,);
@@ -678,11 +696,22 @@ status_t pcrf_gx_send_rar(
             pcc_rule->num_of_flow++;
         }
 
-        /* Encode PCC Rule */
-        rv = encode_pcc_rule_install(req, pcc_rule);
+        if (charging_rule_install == 0)
+        {
+            ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
+            d_assert(ret == 0, return CORE_ERROR,);
+            charging_rule_install = 1;
+        }
+
+        rv = encode_pcc_rule_definition(avp, pcc_rule);
         d_assert(rv == CORE_OK, return EINVAL,);
     }
 
+    if (charging_rule_install == 1)
+    {
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        d_assert(ret == 0, return CORE_ERROR,);
+    }
 
     /* Save Rx Session-Id */
     if (sess_data->rx_sid)
@@ -971,17 +1000,15 @@ void pcrf_gx_final(void)
     pool_final(&pcrf_gx_sess_pool);
 }
 
-static status_t encode_pcc_rule_install(struct msg *msg, pcc_rule_t *pcc_rule)
+static status_t encode_pcc_rule_definition(
+        struct avp *avp, pcc_rule_t *pcc_rule)
 {
-    struct avp *avp, *avpch1, *avpch2, *avpch3, *avpch4;
+    struct avp *avpch1, *avpch2, *avpch3, *avpch4;
     union avp_value val;
     int ret = 0, i;
 
-    d_assert(msg, return CORE_ERROR,);
+    d_assert(avp, return CORE_ERROR,);
     d_assert(pcc_rule, return CORE_ERROR,);
-
-    ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
-    d_assert(ret == 0, return CORE_ERROR,);
 
     ret = fd_msg_avp_new(gx_charging_rule_definition, 0, &avpch1);
     d_assert(ret == 0, return CORE_ERROR,);
@@ -1129,8 +1156,5 @@ static status_t encode_pcc_rule_install(struct msg *msg, pcc_rule_t *pcc_rule)
     ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
     d_assert(ret == 0, return CORE_ERROR,);
     
-    ret = fd_msg_avp_add(msg, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return CORE_ERROR,);
-
     return CORE_OK;
 }

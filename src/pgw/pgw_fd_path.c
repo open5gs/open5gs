@@ -28,6 +28,8 @@ struct sess_state {
 
 pool_declare(pgw_gx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
 
+static status_t decode_pcc_rule_definition(
+        pcc_rule_t *pcc_rule, struct avp *avpch1, int *perror);
 static void pgw_gx_cca_cb(void *data, struct msg **msg);
 
 void state_cleanup(
@@ -36,7 +38,7 @@ void state_cleanup(
     pool_free_node(&pgw_gx_sess_pool, sess_data);
 }
 
-void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
+void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
         pkbuf_t *gtpbuf, c_uint32_t cc_request_type)
 {
     int ret;
@@ -415,12 +417,13 @@ void pgw_gx_send_ccr(gtp_xact_t *xact, pgw_sess_t *sess,
 
 static void pgw_gx_cca_cb(void *data, struct msg **msg)
 {
+    status_t rv;
     int ret;
 
     struct sess_state *sess_data = NULL;
     struct timespec ts;
     struct session *session;
-    struct avp *avp, *avpch1, *avpch2, *avpch3, *avpch4;
+    struct avp *avp, *avpch1, *avpch2;
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
@@ -568,197 +571,10 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                     pcc_rule_t *pcc_rule = 
                         &gx_message->pcc_rule[gx_message->num_of_pcc_rule];
 
-                    ret = fd_msg_browse(avpch1,
-                            MSG_BRW_FIRST_CHILD, &avpch2, NULL);
-                    d_assert(ret == 0, return,);
-                    while(avpch2)
-                    {
-                        ret = fd_msg_avp_hdr(avpch2, &hdr);
-                        d_assert(ret == 0, return,);
-                        switch(hdr->avp_code)
-                        {
-                            case GX_AVP_CODE_CHARGING_RULE_NAME:
-                            {
-                                core_cpystrn(pcc_rule->name,
-                                    (char*)hdr->avp_value->os.data,
-                                    c_min(hdr->avp_value->os.len,
-                                        MAX_PCC_RULE_NAME_LEN)+1);
-                                break;
-                            }
-                            case GX_AVP_CODE_FLOW_INFORMATION:
-                            {
-                                flow_t *flow =
-                                    &pcc_rule->flow[pcc_rule->num_of_flow];
-
-                                ret = fd_avp_search_avp(avpch2,
-                                        gx_flow_direction, &avpch3);
-                                d_assert(ret == 0, return,);
-                                if (avpch3)
-                                {
-                                    ret = fd_msg_avp_hdr( avpch3, &hdr);
-                                    d_assert(ret == 0, return,);
-                                    flow->direction = hdr->avp_value->i32;
-                                }
-
-                                ret = fd_avp_search_avp(avpch2,
-                                        gx_flow_description, &avpch3);
-                                d_assert(ret == 0, return,);
-                                if (avpch3)
-                                {
-                                    ret = fd_msg_avp_hdr(avpch3, &hdr);
-                                    d_assert(ret == 0, return,);
-                                    flow->description =
-                                        core_malloc(hdr->avp_value->os.len+1);
-                                    core_cpystrn(flow->description,
-                                        (char*)hdr->avp_value->os.data,
-                                        hdr->avp_value->os.len+1);
-                                }
-
-                                pcc_rule->num_of_flow++;
-                                break;
-                            }
-                            case GX_AVP_CODE_FLOW_STATUS:
-                            {
-                                pcc_rule->flow_status = hdr->avp_value->i32;
-                                break;
-                            }
-                            case GX_AVP_CODE_QOS_INFORMATION:
-                            {
-                                ret = fd_avp_search_avp(avpch2,
-                                    gx_qos_class_identifier, &avpch3);
-                                d_assert(ret == 0, return,);
-                                if (avpch3)
-                                {
-                                    ret = fd_msg_avp_hdr(avpch3, &hdr);
-                                    d_assert(ret == 0, return,);
-                                    pcc_rule->qos.qci = hdr->avp_value->u32;
-                                }
-                                else
-                                {
-                                    d_error("no_QCI");
-                                    error++;
-                                }
-
-                                ret = fd_avp_search_avp(avpch2,
-                                    gx_allocation_retention_priority, &avpch3);
-                                d_assert(ret == 0, return,);
-                                if (avpch3)
-                                {
-                                    ret = fd_avp_search_avp(avpch3,
-                                        gx_priority_level, &avpch4);
-                                    d_assert(ret == 0, return,);
-                                    if (avpch4)
-                                    {
-                                        ret = fd_msg_avp_hdr(avpch4, &hdr);
-                                        d_assert(ret == 0, return,);
-                                        pcc_rule->qos.arp.priority_level =
-                                            hdr->avp_value->u32;
-                                    }
-                                    else
-                                    {
-                                        d_error("no_Priority-Level");
-                                        error++;
-                                    }
-
-                                    ret = fd_avp_search_avp(avpch3,
-                                        gx_pre_emption_capability, &avpch4);
-                                    d_assert(ret == 0, return,);
-                                    if (avpch4)
-                                    {
-                                        ret = fd_msg_avp_hdr(avpch4, &hdr);
-                                        d_assert(ret == 0, return,);
-                                        pcc_rule->qos.arp.
-                                            pre_emption_capability =
-                                                hdr->avp_value->u32;
-                                    }
-                                    else
-                                    {
-                                        d_error("no_Preemption-Capability");
-                                        error++;
-                                    }
-
-                                    ret = fd_avp_search_avp(avpch3,
-                                            gx_pre_emption_vulnerability,
-                                            &avpch4);
-                                    d_assert(ret == 0, return,);
-                                    if (avpch4)
-                                    {
-                                        ret = fd_msg_avp_hdr(avpch4, &hdr);
-                                        d_assert(ret == 0, return,);
-                                        pcc_rule->qos.arp.
-                                            pre_emption_vulnerability =
-                                                hdr->avp_value->u32;
-                                    }
-                                    else
-                                    {
-                                        d_error("no_Preemption-Vulnerability");
-                                        error++;
-                                    }
-                                }
-                                else
-                                {
-                                    d_error("no_ARP");
-                                    error++;
-                                }
-
-                                ret = fd_avp_search_avp(avpch2,
-                                        gx_max_requested_bandwidth_ul, &avpch3);
-                                d_assert(ret == 0, return,);
-                                if (avpch3)
-                                {
-                                    ret = fd_msg_avp_hdr(avpch3, &hdr);
-                                    d_assert(ret == 0, return,);
-                                    pcc_rule->qos.mbr.uplink =
-                                        hdr->avp_value->u32;
-                                }
-                                ret = fd_avp_search_avp(avpch2,
-                                    gx_max_requested_bandwidth_dl, &avpch3);
-                                d_assert(ret == 0, return,);
-                                if (avpch3)
-                                {
-                                    ret = fd_msg_avp_hdr(avpch3, &hdr);
-                                    d_assert(ret == 0, return,);
-                                    pcc_rule->qos.mbr.downlink =
-                                        hdr->avp_value->u32;
-                                }
-                                ret = fd_avp_search_avp(avpch2,
-                                        gx_guaranteed_bitrate_ul, &avpch3);
-                                d_assert(ret == 0, return,);
-                                if (avpch3)
-                                {
-                                    ret = fd_msg_avp_hdr(avpch3, &hdr);
-                                    d_assert(ret == 0, return,);
-                                    pcc_rule->qos.gbr.uplink =
-                                        hdr->avp_value->u32;
-                                }
-                                ret = fd_avp_search_avp(avpch2,
-                                    gx_guaranteed_bitrate_dl, &avpch3);
-                                d_assert(ret == 0, return,);
-                                if (avpch3)
-                                {
-                                    ret = fd_msg_avp_hdr(avpch3, &hdr);
-                                    d_assert(ret == 0, return,);
-                                    pcc_rule->qos.gbr.downlink =
-                                        hdr->avp_value->u32;
-                                }
-                                break;
-                            }
-                            case GX_AVP_CODE_PRECEDENCE:
-                            {
-                                pcc_rule->precedence = hdr->avp_value->i32;
-                                break;
-                            }
-                            default:
-                            {
-                                d_error("Not implemented(%d)", hdr->avp_code);
-                                break;
-                            }
-                        }
-                        fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
-                    }
+                    rv = decode_pcc_rule_definition(pcc_rule, avpch1, &error);
+                    d_assert(rv == CORE_OK, return,);
 
                     gx_message->num_of_pcc_rule++;
-
                     break;
                 }
                 default:
@@ -810,31 +626,31 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         d_assert(ret == 0, return,);
         if (avpch1)
         {
-            ret = fd_avp_search_avp(avpch1, gx_priority_level, &avpch4);
+            ret = fd_avp_search_avp(avpch1, gx_priority_level, &avpch2);
             d_assert(ret == 0, return,);
-            if (avpch4)
+            if (avpch2)
             {
-                ret = fd_msg_avp_hdr(avpch4, &hdr);
+                ret = fd_msg_avp_hdr(avpch2, &hdr);
                 d_assert(ret == 0, return,);
                 gx_message->pdn.qos.arp.priority_level = hdr->avp_value->u32;
             }
 
-            ret = fd_avp_search_avp(avpch1, gx_pre_emption_capability, &avpch4);
+            ret = fd_avp_search_avp(avpch1, gx_pre_emption_capability, &avpch2);
             d_assert(ret == 0, return,);
-            if (avpch4)
+            if (avpch2)
             {
-                ret = fd_msg_avp_hdr(avpch4, &hdr);
+                ret = fd_msg_avp_hdr(avpch2, &hdr);
                 d_assert(ret == 0, return,);
                 gx_message->pdn.qos.arp.pre_emption_capability =
                     hdr->avp_value->u32;
             }
 
             ret = fd_avp_search_avp(avpch1,
-                        gx_pre_emption_vulnerability, &avpch4);
+                        gx_pre_emption_vulnerability, &avpch2);
             d_assert(ret == 0, return,);
-            if (avpch4)
+            if (avpch2)
             {
-                ret = fd_msg_avp_hdr(avpch4, &hdr);
+                ret = fd_msg_avp_hdr(avpch2, &hdr);
                 d_assert(ret == 0, return,);
                 gx_message->pdn.qos.arp.pre_emption_vulnerability =
                     hdr->avp_value->u32;
@@ -846,11 +662,18 @@ out:
     if (!error)
     {
         event_set(&e, PGW_EVT_GX_MESSAGE);
-        event_set_param1(&e, (c_uintptr_t)xact->index);
-        event_set_param2(&e, (c_uintptr_t)sess->index);
-        event_set_param3(&e, (c_uintptr_t)gxbuf);
+        event_set_param1(&e, (c_uintptr_t)sess->index);
+        event_set_param2(&e, (c_uintptr_t)gxbuf);
+        event_set_param3(&e, (c_uintptr_t)xact->index);
         event_set_param4(&e, (c_uintptr_t)gtpbuf);
         pgw_event_send(&e);
+    }
+    else
+    {
+        gx_message_free(gx_message);
+        pkbuf_free(gxbuf);
+
+        pkbuf_free(gtpbuf);
     }
 
     /* Free the message */
@@ -920,41 +743,97 @@ static int pgw_gx_fb_cb(struct msg **msg, struct avp *avp,
 }
 
 static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp, 
-        struct session *sess, void *opaque, enum disp_action *act)
+        struct session *session, void *opaque, enum disp_action *act)
 {
-    int ret;
-#if 0
     status_t rv;
-#endif
+    int ret;
 
-	struct msg *ans;
-#if 0
 	struct msg *ans, *qry;
-    struct avp *avpch1, *avpch2, *avpch3, *avpch4;
+    struct avp *avpch1;
     struct avp_hdr *hdr;
-#endif
     union avp_value val;
     struct sess_state *sess_data = NULL;
+
+    event_t e;
+    c_uint16_t gxbuf_len = 0;
+    pkbuf_t *gxbuf = NULL;
+    pgw_sess_t *sess = NULL;
+    gx_message_t *gx_message = NULL;
 
     c_uint32_t result_code = FD_DIAMETER_UNKNOWN_SESSION_ID;
 	
     d_assert(msg, return EINVAL,);
 
+    gxbuf_len = sizeof(gx_message_t);
+    d_assert(gxbuf_len < 8192, return EINVAL,
+            "Not supported size:%d", gxbuf_len);
+    gxbuf = pkbuf_alloc(0, gxbuf_len);
+    d_assert(gxbuf, return EINVAL, "Null param");
+    gx_message = gxbuf->payload;
+    d_assert(gx_message, return EINVAL, "Null param");
+
+    d_trace(3, "[Gx] Re-Auth-Request : PGW <-- PCRF\n");
+
+    /* Set Credit Control Command */
+    memset(gx_message, 0, gxbuf_len);
+    gx_message->cmd_code = GX_CMD_RE_AUTH;
+
 	/* Create answer header */
-#if 0
 	qry = *msg;
-#endif
 	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
     d_assert(ret == 0, return EINVAL,);
     ans = *msg;
 
-    ret = fd_sess_state_retrieve(pgw_gx_reg, sess, &sess_data);
+    ret = fd_sess_state_retrieve(pgw_gx_reg, session, &sess_data);
     d_assert(ret == 0, return EINVAL,);
     if (!sess_data)
     {
         d_error("No Session Data");
         goto out;
     }
+
+    /* Get Session Information */
+    sess = sess_data->sess;
+    d_assert(sess, return EINVAL,);
+
+    ret = fd_msg_search_avp(qry, gx_charging_rule_install, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    if (avp)
+    {
+        ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
+        d_assert(ret == 0, return EINVAL,);
+        while(avpch1)
+        {
+            ret = fd_msg_avp_hdr(avpch1, &hdr);
+            d_assert(ret == 0, return EINVAL,);
+            switch(hdr->avp_code)
+            {
+                case GX_AVP_CODE_CHARGING_RULE_DEFINITION:
+                {
+                    pcc_rule_t *pcc_rule = 
+                        &gx_message->pcc_rule[gx_message->num_of_pcc_rule];
+
+                    rv = decode_pcc_rule_definition(pcc_rule, avpch1, NULL);
+                    d_assert(rv == CORE_OK, return EINVAL,);
+
+                    gx_message->num_of_pcc_rule++;
+                    break;
+                }
+                default:
+                {
+                    d_error("Not supported(%d)", hdr->avp_code);
+                    break;
+                }
+            }
+            fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
+        }
+    }
+
+    /* Send Gx Event to PGW State Machine */
+    event_set(&e, PGW_EVT_GX_MESSAGE);
+    event_set_param1(&e, (c_uintptr_t)sess->index);
+    event_set_param2(&e, (c_uintptr_t)gxbuf);
+    pgw_event_send(&e);
 
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
@@ -970,13 +849,13 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     d_assert(ret == 0, return EINVAL,);
 
     /* Store this value in the session */
-    ret = fd_sess_state_store(pgw_gx_reg, sess, &sess_data);
+    ret = fd_sess_state_store(pgw_gx_reg, session, &sess_data);
     d_assert(ret == 0, return EINVAL,);
     d_assert(sess_data == NULL,,);
 
 	/* Send the answer */
 	ret = fd_msg_send(msg, NULL, NULL);
-    d_assert(ret == 0, return EINVAL,);
+    d_assert(ret == 0,,);
 
 	/* Add this value to the stats */
 	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
@@ -999,12 +878,15 @@ out:
     }
 
     /* Store this value in the session */
-    ret = fd_sess_state_store(pgw_gx_reg, sess, &sess_data);
+    ret = fd_sess_state_store(pgw_gx_reg, session, &sess_data);
     d_assert(ret == 0, return EINVAL,);
     d_assert(sess_data == NULL,,);
 
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
+
+    gx_message_free(gx_message);
+    pkbuf_free(gxbuf);
 
     return 0;
 }
@@ -1067,4 +949,194 @@ void pgw_fd_final(void)
             pool_used(&pgw_gx_sess_pool), pool_size(&pgw_gx_sess_pool));
 
     pool_final(&pgw_gx_sess_pool);
+}
+
+static status_t decode_pcc_rule_definition(
+        pcc_rule_t *pcc_rule, struct avp *avpch1, int *perror)
+{
+    int ret = 0, error = 0;
+    struct avp *avpch2, *avpch3, *avpch4;
+    struct avp_hdr *hdr;
+
+    d_assert(pcc_rule, return CORE_ERROR,);
+    d_assert(avpch1, return CORE_ERROR,);
+
+    ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
+    d_assert(ret == 0, return CORE_ERROR,);
+    while(avpch2)
+    {
+        ret = fd_msg_avp_hdr(avpch2, &hdr);
+        d_assert(ret == 0, return CORE_ERROR,);
+        switch(hdr->avp_code)
+        {
+            case GX_AVP_CODE_CHARGING_RULE_NAME:
+            {
+                core_cpystrn(pcc_rule->name, (char*)hdr->avp_value->os.data,
+                    c_min(hdr->avp_value->os.len, MAX_PCC_RULE_NAME_LEN)+1);
+                break;
+            }
+            case GX_AVP_CODE_FLOW_INFORMATION:
+            {
+                flow_t *flow =
+                    &pcc_rule->flow[pcc_rule->num_of_flow];
+
+                ret = fd_avp_search_avp(avpch2, gx_flow_direction, &avpch3);
+                d_assert(ret == 0, return CORE_ERROR,);
+                if (avpch3)
+                {
+                    ret = fd_msg_avp_hdr( avpch3, &hdr);
+                    d_assert(ret == 0, return CORE_ERROR,);
+                    flow->direction = hdr->avp_value->i32;
+                }
+
+                ret = fd_avp_search_avp(avpch2, gx_flow_description, &avpch3);
+                d_assert(ret == 0, return CORE_ERROR,);
+                if (avpch3)
+                {
+                    ret = fd_msg_avp_hdr(avpch3, &hdr);
+                    d_assert(ret == 0, return CORE_ERROR,);
+                    flow->description = core_malloc(hdr->avp_value->os.len+1);
+                    core_cpystrn(flow->description,
+                        (char*)hdr->avp_value->os.data,
+                        hdr->avp_value->os.len+1);
+                }
+
+                pcc_rule->num_of_flow++;
+                break;
+            }
+            case GX_AVP_CODE_FLOW_STATUS:
+            {
+                pcc_rule->flow_status = hdr->avp_value->i32;
+                break;
+            }
+            case GX_AVP_CODE_QOS_INFORMATION:
+            {
+                ret = fd_avp_search_avp(avpch2,
+                    gx_qos_class_identifier, &avpch3);
+                d_assert(ret == 0, return CORE_ERROR,);
+                if (avpch3)
+                {
+                    ret = fd_msg_avp_hdr(avpch3, &hdr);
+                    d_assert(ret == 0, return CORE_ERROR,);
+                    pcc_rule->qos.qci = hdr->avp_value->u32;
+                }
+                else
+                {
+                    d_error("no_QCI");
+                    error++;
+                }
+
+                ret = fd_avp_search_avp(avpch2,
+                    gx_allocation_retention_priority, &avpch3);
+                d_assert(ret == 0, return CORE_ERROR,);
+                if (avpch3)
+                {
+                    ret = fd_avp_search_avp(avpch3, gx_priority_level, &avpch4);
+                    d_assert(ret == 0, return CORE_ERROR,);
+                    if (avpch4)
+                    {
+                        ret = fd_msg_avp_hdr(avpch4, &hdr);
+                        d_assert(ret == 0, return CORE_ERROR,);
+                        pcc_rule->qos.arp.priority_level = hdr->avp_value->u32;
+                    }
+                    else
+                    {
+                        d_error("no_Priority-Level");
+                        error++;
+                    }
+
+                    ret = fd_avp_search_avp(avpch3,
+                        gx_pre_emption_capability, &avpch4);
+                    d_assert(ret == 0, return CORE_ERROR,);
+                    if (avpch4)
+                    {
+                        ret = fd_msg_avp_hdr(avpch4, &hdr);
+                        d_assert(ret == 0, return CORE_ERROR,);
+                        pcc_rule->qos.arp.pre_emption_capability =
+                                hdr->avp_value->u32;
+                    }
+                    else
+                    {
+                        d_error("no_Preemption-Capability");
+                        error++;
+                    }
+
+                    ret = fd_avp_search_avp(avpch3,
+                            gx_pre_emption_vulnerability, &avpch4);
+                    d_assert(ret == 0, return CORE_ERROR,);
+                    if (avpch4)
+                    {
+                        ret = fd_msg_avp_hdr(avpch4, &hdr);
+                        d_assert(ret == 0, return CORE_ERROR,);
+                        pcc_rule->qos.arp.pre_emption_vulnerability =
+                                hdr->avp_value->u32;
+                    }
+                    else
+                    {
+                        d_error("no_Preemption-Vulnerability");
+                        error++;
+                    }
+                }
+                else
+                {
+                    d_error("no_ARP");
+                    error++;
+                }
+
+                ret = fd_avp_search_avp(avpch2,
+                        gx_max_requested_bandwidth_ul, &avpch3);
+                d_assert(ret == 0, return CORE_ERROR,);
+                if (avpch3)
+                {
+                    ret = fd_msg_avp_hdr(avpch3, &hdr);
+                    d_assert(ret == 0, return CORE_ERROR,);
+                    pcc_rule->qos.mbr.uplink = hdr->avp_value->u32;
+                }
+                ret = fd_avp_search_avp(avpch2,
+                    gx_max_requested_bandwidth_dl, &avpch3);
+                d_assert(ret == 0, return CORE_ERROR,);
+                if (avpch3)
+                {
+                    ret = fd_msg_avp_hdr(avpch3, &hdr);
+                    d_assert(ret == 0, return CORE_ERROR,);
+                    pcc_rule->qos.mbr.downlink = hdr->avp_value->u32;
+                }
+                ret = fd_avp_search_avp(avpch2,
+                        gx_guaranteed_bitrate_ul, &avpch3);
+                d_assert(ret == 0, return CORE_ERROR,);
+                if (avpch3)
+                {
+                    ret = fd_msg_avp_hdr(avpch3, &hdr);
+                    d_assert(ret == 0, return CORE_ERROR,);
+                    pcc_rule->qos.gbr.uplink = hdr->avp_value->u32;
+                }
+                ret = fd_avp_search_avp(avpch2,
+                    gx_guaranteed_bitrate_dl, &avpch3);
+                d_assert(ret == 0, return CORE_ERROR,);
+                if (avpch3)
+                {
+                    ret = fd_msg_avp_hdr(avpch3, &hdr);
+                    d_assert(ret == 0, return CORE_ERROR,);
+                    pcc_rule->qos.gbr.downlink = hdr->avp_value->u32;
+                }
+                break;
+            }
+            case GX_AVP_CODE_PRECEDENCE:
+            {
+                pcc_rule->precedence = hdr->avp_value->i32;
+                break;
+            }
+            default:
+            {
+                d_error("Not implemented(%d)", hdr->avp_code);
+                break;
+            }
+        }
+        fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
+    }
+
+    if (perror)
+        *perror = error;
+
+    return CORE_OK;
 }

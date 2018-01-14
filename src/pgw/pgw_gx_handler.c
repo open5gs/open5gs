@@ -9,8 +9,8 @@
 #include "pgw_ipfw.h"
 
 void pgw_gx_handle_cca_initial_request(
-        gtp_xact_t *xact, pgw_sess_t *sess,
-        gx_message_t *gx_message, gtp_create_session_request_t *req)
+        pgw_sess_t *sess, gx_message_t *gx_message,
+        gtp_xact_t *xact, gtp_create_session_request_t *req)
 {
     status_t rv;
     gtp_header_t h;
@@ -18,9 +18,9 @@ void pgw_gx_handle_cca_initial_request(
     int i = 0, j  = 0;
     pgw_bearer_t *bearer = NULL;
 
-    d_assert(xact, return, "Null param");
     d_assert(sess, return, "Null param");
     d_assert(gx_message, return, "Null param");
+    d_assert(xact, return, "Null param");
     d_assert(req, return, "Null param");
 
     /* Send Create Session Request with Creating Default Bearer */
@@ -103,8 +103,8 @@ void pgw_gx_handle_cca_initial_request(
 }
 
 void pgw_gx_handle_cca_termination_request(
-        gtp_xact_t *xact, pgw_sess_t *sess,
-        gx_message_t *gx_message, gtp_delete_session_request_t *req)
+        pgw_sess_t *sess, gx_message_t *gx_message,
+        gtp_xact_t *xact, gtp_delete_session_request_t *req)
 {
     status_t rv;
     gtp_header_t h;
