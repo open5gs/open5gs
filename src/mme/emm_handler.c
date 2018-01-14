@@ -354,8 +354,8 @@ status_t emm_handle_detach_request(
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[NAS] Detach request : UE_IMSI[%s] --> EMM\n", 
-            mme_ue->imsi_bcd);
+    d_trace(3, "[NAS] Detach request[0x%x] : UE_IMSI[%s] --> EMM\n", 
+            detach_request->detach_type, mme_ue->imsi_bcd);
 
     switch (detach_request->detach_type.detach_type)
     {
