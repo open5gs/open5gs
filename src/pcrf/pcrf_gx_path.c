@@ -15,9 +15,10 @@
 struct sess_state {
     c_uint32_t  cc_request_type;    /* CC-Request-Type */
 
-    os0_t       gx_sid;             /* Gx Session-Id */
-    os0_t       rx_sid;             /* Rx Session-Id */
     os0_t       peer_host;          /* Peer Host */
+
+    c_int8_t    *imsi_bcd;
+    c_int8_t    *apn;
 
 ED3(c_uint8_t   ipv4:1;,
     c_uint8_t   ipv6:1;,
@@ -25,7 +26,10 @@ ED3(c_uint8_t   ipv4:1;,
     c_uint32_t  addr;               /* Framed-IPv4-Address */
     c_uint8_t   addr6[IPV6_LEN];    /* Framed-IPv6-Prefix */
 
-    struct timespec ts;             /* Time of sending the message */
+    os0_t       gx_sid;             /* Gx Session-Id */
+    os0_t       rx_sid;             /* Rx Session-Id */
+
+    struct      timespec ts;             /* Time of sending the message */
 };
 
 static struct session_handler *pcrf_gx_reg = NULL;
@@ -54,6 +58,14 @@ static void state_cleanup(
 {
     d_assert(sess_data, return,);
 
+    if (sess_data->peer_host)
+        CORE_FREE(sess_data->peer_host);
+
+    if (sess_data->imsi_bcd)
+        CORE_FREE(sess_data->imsi_bcd);
+    if (sess_data->apn)
+        CORE_FREE(sess_data->apn);
+
     if (sess_data->ipv4)
         pcrf_sess_set_ipv4(&sess_data->addr, NULL);
     if (sess_data->ipv6)
@@ -63,8 +75,6 @@ static void state_cleanup(
         CORE_FREE(sess_data->gx_sid);
     if (sess_data->rx_sid)
         CORE_FREE(sess_data->rx_sid);
-    if (sess_data->peer_host)
-        CORE_FREE(sess_data->peer_host);
 
     pool_free_node(&pcrf_gx_sess_pool, sess_data);
 }
@@ -91,8 +101,6 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     struct sess_state *sess_data = NULL;
 
     gx_message_t gx_message;
-    c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
-    c_int8_t apn[MAX_APN_LEN+1];
     int i, j;
 
     c_uint32_t cc_request_number = 0;
@@ -234,37 +242,80 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Get IMSI + APN */
     ret = fd_msg_search_avp(qry, gx_subscription_id, &avp);
     d_assert(ret == 0, return EINVAL,);
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    d_assert(ret == 0, return EINVAL,);
-    ret = fd_avp_search_avp(avp, gx_subscription_id_type, &avpch1);
-    d_assert(ret == 0, return EINVAL,);
-    ret = fd_msg_avp_hdr(avpch1, &hdr);
-    d_assert(ret == 0, return EINVAL,);
-    if (hdr->avp_value->i32 != GX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI)
+    if (avp)
     {
-        d_error("Not implemented Subscription-Id-Type(%d)",
-                hdr->avp_value->i32);
-        result_code = FD_DIAMETER_AVP_UNSUPPORTED;
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return EINVAL,);
+        ret = fd_avp_search_avp(avp, gx_subscription_id_type, &avpch1);
+        d_assert(ret == 0, return EINVAL,);
+        if (avpch1)
+        {
+            ret = fd_msg_avp_hdr(avpch1, &hdr);
+            d_assert(ret == 0, return EINVAL,);
+            if (hdr->avp_value->i32 != GX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI)
+            {
+                d_error("Not implemented Subscription-Id-Type(%d)",
+                        hdr->avp_value->i32);
+                result_code = FD_DIAMETER_AVP_UNSUPPORTED;
+                goto out;
+            }
+        }
+        else
+        {
+            d_error("no_Subscription-Id-Type");
+            result_code = FD_DIAMETER_MISSING_AVP;
+            goto out;
+        }
+        ret = fd_avp_search_avp(avp, gx_subscription_id_data, &avpch1);
+        d_assert(ret == 0, return EINVAL,);
+        if (avpch1)
+        {
+            ret = fd_msg_avp_hdr(avpch1, &hdr);
+            d_assert(ret == 0, return EINVAL,);
+            if (sess_data->imsi_bcd)
+                CORE_FREE(sess_data->imsi_bcd);
+            sess_data->imsi_bcd = core_strdup((char *)hdr->avp_value->os.data);
+            d_assert(sess_data->imsi_bcd, return CORE_ERROR,);
+        }
+        else
+        {
+            d_error("no_Subscription-Id-Data");
+            result_code = FD_DIAMETER_MISSING_AVP;
+            goto out;
+        }
+    }
+
+    if (sess_data->imsi_bcd == NULL)
+    {
+        d_error("no_Subscription-Id");
+        result_code = FD_DIAMETER_MISSING_AVP;
         goto out;
     }
-    ret = fd_avp_search_avp(avp, gx_subscription_id_data, &avpch1);
-    d_assert(ret == 0, return EINVAL,);
-    ret = fd_msg_avp_hdr(avpch1, &hdr);
-    d_assert(ret == 0, return EINVAL,);
-    core_cpystrn(imsi_bcd, (char*)hdr->avp_value->os.data, 
-        c_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
 
     ret = fd_msg_search_avp(qry, gx_called_station_id, &avp);
     d_assert(ret == 0, return EINVAL,);
-    ret = fd_msg_avp_hdr(avp, &hdr);
-    d_assert(ret == 0, return EINVAL,);
-    core_cpystrn(apn, (char*)hdr->avp_value->os.data, 
-        c_min(hdr->avp_value->os.len, MAX_APN_LEN)+1);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return EINVAL,);
+        if (sess_data->apn)
+            CORE_FREE(sess_data->apn);
+        sess_data->apn = core_strdup((char *)hdr->avp_value->os.data);
+        d_assert(sess_data->apn, return CORE_ERROR,);
+    }
 
-    rv = pcrf_db_pdn_data(imsi_bcd, apn, &gx_message);
+    if (sess_data->apn == NULL)
+    {
+        d_error("no_Called-Station-Id");
+        result_code = FD_DIAMETER_MISSING_AVP;
+        goto out;
+    }
+
+    rv = pcrf_db_pdn_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
     if (rv != CORE_OK)
     {
-        d_error("Cannot get data for IMSI(%s)+APN(%s)'\n", imsi_bcd, apn);
+        d_error("Cannot get data for IMSI(%s)+APN(%s)'\n",
+                sess_data->imsi_bcd, sess_data->apn);
         result_code = FD_DIAMETER_UNKNOWN_SESSION_ID;
         goto out;
     }
@@ -296,7 +347,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
             ret = fd_msg_avp_new(gx_charging_rule_name, 0, &avpch2);
             d_assert(ret == 0, return EINVAL,);
             /* Charing-Rule-Name is automatically configured by order */
-            sprintf(pcc_rule->name, "%s%d", apn, i+1);
+            sprintf(pcc_rule->name, "%s%d", sess_data->apn, i+1);
             val.os.data = (c_uint8_t *)pcc_rule->name;
             val.os.len = strlen(pcc_rule->name);
             ret = fd_msg_avp_setvalue(avpch2, &val);
@@ -715,27 +766,9 @@ void pcrf_gx_send_rar(c_uint8_t *gx_sid)
     d_assert(ret == 0, return,);
 
     /* Set the Re-Auth-Request-Type */
-    ret = fd_msg_avp_new(gx_re_auth_request_type, 0, &avp);
+    ret = fd_msg_avp_new(fd_re_auth_request_type, 0, &avp);
     d_assert(ret == 0, return,);
-    val.i32 = 0;
-    ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
-
-    /* Set the Specific-Action */
-    ret = fd_msg_avp_new(gx_specific_action, 0, &avp);
-    d_assert(ret == 0, return,);
-    val.i32 = 0;
-    ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
-    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
-
-    /* Set the Abort-Cause */
-    ret = fd_msg_avp_new(gx_abort_cause, 0, &avp);
-    d_assert(ret == 0, return,);
-    val.i32 = 0;
+    val.i32 = FD_RE_AUTH_REQUEST_TYPE_AUTHORIZE_ONLY;
     ret = fd_msg_avp_setvalue(avp, &val);
     d_assert(ret == 0, return,);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);

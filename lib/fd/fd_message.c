@@ -16,6 +16,7 @@ struct dict_object *fd_user_name = NULL;
 struct dict_object *fd_auth_session_state = NULL;
 struct dict_object *fd_auth_application_id = NULL;
 struct dict_object *fd_auth_request_type = NULL;
+struct dict_object *fd_re_auth_request_type = NULL;
 struct dict_object *fd_result_code = NULL;
 struct dict_object *fd_experimental_result = NULL;
 struct dict_object *fd_experimental_result_code = NULL;
@@ -42,6 +43,7 @@ int fd_message_init()
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Auth-Session-State", &fd_auth_session_state);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Auth-Application-Id", &fd_auth_application_id);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Auth-Request-Type", &fd_auth_request_type);
+    CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Re-Auth-Request-Type", &fd_re_auth_request_type);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Result-Code", &fd_result_code);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Experimental-Result", &fd_experimental_result);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Experimental-Result-Code", &fd_experimental_result_code);

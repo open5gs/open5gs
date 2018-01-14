@@ -292,6 +292,8 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     rv = pcrf_sess_gx_associate_rx(gx_sid, rx_sid);
     d_assert(rv == CORE_OK, goto out, "Cannot Associate Gx/Rx Session");
 
+    pcrf_gx_send_rar(gx_sid);
+
     /* Store Gx Session-Id in this session */
     if (sess_data->gx_sid)
         CORE_FREE(sess_data->gx_sid);
@@ -336,8 +338,6 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
     rx_message_free(&rx_message);
     
-    pcrf_gx_send_rar(gx_sid);
-
     return 0;
 
 out:

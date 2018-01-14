@@ -55,9 +55,6 @@ struct dict_object *gx_flow_description = NULL;
 struct dict_object *gx_flow_status = NULL;
 struct dict_object *gx_precedence = NULL;
 struct dict_object *gx_flows = NULL;
-struct dict_object *gx_re_auth_request_type = NULL;
-struct dict_object *gx_specific_action = NULL;
-struct dict_object *gx_abort_cause = NULL;
 struct dict_object *gx_media_component_description = NULL;
 struct dict_object *gx_media_component_number = NULL;
 struct dict_object *gx_media_type = NULL;
@@ -125,9 +122,6 @@ int gx_dict_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Precedence", &gx_precedence);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flows", &gx_flows);
 
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Re-Auth-Request-Type", &gx_re_auth_request_type);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Specific-Action", &gx_specific_action);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Abort-Cause", &gx_abort_cause);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Description", &gx_media_component_description);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Number", &gx_media_component_number);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Type", &gx_media_type);

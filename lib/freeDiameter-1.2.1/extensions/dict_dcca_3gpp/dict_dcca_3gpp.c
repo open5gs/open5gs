@@ -11400,12 +11400,16 @@ static int dict_dcca_3gpp_entry(char * conffile)
     struct dict_object * cmd;
     struct local_rules_definition rules[] =
     {
+#if 0 /* modified by acetcom */
       {  { .avp_vendor = 10415, .avp_name = "Specific-Action" }, RULE_REQUIRED, -1, 1 },
+#endif
       {  { .avp_vendor = 10415, .avp_name = "Access-Network-Charging-Identifier" }, RULE_OPTIONAL, -1, -1 },
       {  { .avp_vendor = 10415, .avp_name = "Access-Network-Charging-Address" }, RULE_OPTIONAL, -1, 1 },
       {  { .avp_vendor = 10415, .avp_name = "Flows" }, RULE_OPTIONAL, -1, -1 },
       {  {                      .avp_name = "Subscription-Id" }, RULE_OPTIONAL, -1, -1 },
+#if 0 /* modified by acetcom */
       {  { .avp_vendor = 10415, .avp_name = "Abort-Cause" }, RULE_REQUIRED, -1, 1 },
+#endif
       {  { .avp_vendor = 10415, .avp_name = "IP-CAN-Type" }, RULE_OPTIONAL, -1, 1 },
       {  { .avp_vendor = 10415, .avp_name = "RAT-Type" }, RULE_OPTIONAL, -1, 1 },
       {  { .avp_vendor = 10415, .avp_name = "Sponsored-Connectivity-Data" }, RULE_OPTIONAL, -1, 1 }
