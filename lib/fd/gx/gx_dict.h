@@ -86,10 +86,6 @@ extern struct dict_object *gx_charging_rule_name;
 extern struct dict_object *gx_flow_information;
 extern struct dict_object *gx_flow_direction;
 extern struct dict_object *gx_flow_description;
-#define GX_FLOW_STATUS_ENABLED_UPLINK       0
-#define GX_FLOW_STATUS_ENABLED_DOWNLINK     1
-#define GX_FLOW_STATUS_ENABLED              2
-#define GX_FLOW_STATUS_DISABLED             3
 extern struct dict_object *gx_flow_status;
 extern struct dict_object *gx_precedence;
 extern struct dict_object *gx_flows;

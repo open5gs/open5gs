@@ -214,6 +214,10 @@ typedef struct _pcc_rule_t {
     c_int8_t name[MAX_PCC_RULE_NAME_LEN+1];
     flow_t flow[MAX_NUM_OF_FLOW];
     int num_of_flow;
+#define GX_FLOW_STATUS_ENABLED_UPLINK       0
+#define GX_FLOW_STATUS_ENABLED_DOWNLINK     1
+#define GX_FLOW_STATUS_ENABLED              2
+#define GX_FLOW_STATUS_DISABLED             3
     c_int8_t flow_status;
     c_uint32_t precedence;
         

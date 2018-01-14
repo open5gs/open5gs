@@ -515,13 +515,10 @@ status_t pcrf_gx_send_rar(
         c_uint8_t *gx_sid, c_uint8_t *rx_sid, rx_message_t *rx_message)
 {
     status_t rv;
-    int ret = 0, i;
+    int ret = 0, i, j;
 
     struct msg *req = NULL;
     struct avp *avp;
-#if 0
-    struct avp *avpch1, *avpch2;
-#endif
     union avp_value val;
     struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
@@ -593,24 +590,99 @@ status_t pcrf_gx_send_rar(
         goto out;
     }
 
-    /* Find PCC Rule based on QCI and Media-Type */
-    pcc_rule_t *pcc_rule = NULL;
-    for (i = 0; i < gx_message.num_of_pcc_rule; i++)
+    /* Match Media-Component with PCC Rule */
+    for (i = 0; i < rx_message->num_of_media_component; i++)
     {
-//        pcc_rule = &gx_message.pcc_rule[i];
+        pcc_rule_t *pcc_rule = NULL;
+        c_uint8_t qci = 0;
+        rx_media_component_t *media_component = &rx_message->media_component[i];
+
+        switch(media_component->media_type)
+        {
+            case RX_MEDIA_TYPE_AUDIO:
+            {
+                qci = PDN_QCI_1;
+                break;
+            }
+            default:
+            {
+                d_error("Not implemented : [Media-Type:%d]",
+                        media_component->media_type);
+                rx_message->result_code = 
+                    RX_DIAMETER_INVALID_SERVICE_INFORMATION;
+                goto out;
+            }
+        }
+        
+        for (j = 0; j < gx_message.num_of_pcc_rule; j++)
+        {
+            pcc_rule = &gx_message.pcc_rule[j];
+            if (pcc_rule->qos.qci == qci)
+            {
+                break;
+            }
+        }
+
+        if (!pcc_rule)
+        {
+            d_error("No PCC Rule : [QCI:%d]", qci);
+            rx_message->result_code = 
+                RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
+            goto out;
+        }
+
+        if (pcc_rule->num_of_flow)
+        {
+            d_error("CHECK WEBUI : PCC Rule Modification is NOT implemented");
+            d_error("Please remove Flow in PCC Rule");
+            rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
+            goto out;
+        }
+
+        for (j = 0; j < media_component->num_of_flow; j++)
+        {
+            int len;
+            flow_t *rx_flow = &media_component->flow[j];
+            flow_t *gx_flow = &pcc_rule->flow[j];
+
+            if (!strncmp(rx_flow->description,
+                        "permit out", strlen("permit out")))
+            {
+                gx_flow->direction = FLOW_DOWNLINK_ONLY;
+
+                len = strlen(rx_flow->description)+1;
+                gx_flow->description = core_malloc(len);
+                core_cpystrn(gx_flow->description, rx_flow->description, len);
+            }
+            else if (!strncmp(rx_flow->description,
+                        "permit in", strlen("permit in")))
+            {
+                gx_flow->direction = FLOW_UPLINK_ONLY;
+
+                /* 'permit in' should be changed 'permit out' in Gx Diameter */
+                len = strlen(rx_flow->description)+2;
+                gx_flow->description = core_malloc(len);
+                strcpy(gx_flow->description, "permit out");
+                strcat(gx_flow->description,
+                        &rx_flow->description[strlen("permit in")]);
+                d_assert(len == strlen(gx_flow->description)+1, goto out,);
+            }
+            else
+            {
+                d_error("Invalid Flow Descripton : [%s]", rx_flow->description);
+                rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
+                goto out;
+            }
+
+
+            pcc_rule->num_of_flow++;
+        }
+
+        /* Encode PCC Rule */
+        rv = encode_pcc_rule_install(req, pcc_rule);
+        d_assert(rv == CORE_OK, return EINVAL,);
     }
 
-    /* if PCC Rule is existed, encode PCC Rule */
-    if (pcc_rule == NULL)
-    {
-        d_error("No PCC Rule");
-        rx_message->result_code = RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
-        goto out;
-    }
-
-    /* Encode PCC Rule */
-    rv = encode_pcc_rule_install(req, pcc_rule);
-    d_assert(rv == CORE_OK, return EINVAL,);
 
     /* Save Rx Session-Id */
     if (sess_data->rx_sid)
@@ -708,9 +780,6 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     struct timespec ts;
     struct session *session;
     struct avp *avp, *avpch1;
-#if 0
-    struct avp *avp, *avpch1, *avpch2, *avpch3, *avpch4;
-#endif
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
@@ -955,7 +1024,7 @@ static status_t encode_pcc_rule_install(struct msg *msg, pcc_rule_t *pcc_rule)
 
     ret = fd_msg_avp_new(gx_flow_status, 0, &avpch2);
     d_assert(ret == 0, return CORE_ERROR,);
-    val.i32 = GX_FLOW_STATUS_ENABLED;
+    val.i32 = pcc_rule->flow_status;
     ret = fd_msg_avp_setvalue(avpch2, &val);
     d_assert(ret == 0, return CORE_ERROR,);
     ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
