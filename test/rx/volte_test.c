@@ -238,7 +238,29 @@ static void volte_test1(abts_case *tc, void *data)
     /* Send AA-Request */
     pcscf_rx_send_aar("45.45.0.3");
 
-#if 0
+    /* Receive E-RAB Setup Request +
+     * Activate dedicated EPS bearer context request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Send E-RAB Setup Response */
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 7, 3);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
+    /* Send Activate dedicated EPS bearer context accept */
+    rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
     /* Send PDN disconnectivity request */
     rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -277,9 +299,6 @@ static void volte_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
-#endif
-
-    core_sleep(time_from_msec(1000));
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));

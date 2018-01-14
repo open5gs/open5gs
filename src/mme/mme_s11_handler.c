@@ -244,7 +244,7 @@ void mme_s11_handle_create_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
 {
     status_t rv;
-    mme_bearer_t *bearer = NULL;
+    mme_bearer_t *bearer = NULL, *default_bearer = NULL;
     mme_sess_t *sess = NULL;
 
     gtp_f_teid_t *sgw_s1u_teid = NULL;
@@ -321,6 +321,21 @@ void mme_s11_handle_create_bearer_request(
 
     /* Save Transaction. will be handled after EMM-attached */
     bearer->xact = xact;
+
+    /* Before Activate DEDICATED bearer, we'll check DEFAULT bearer status */
+    default_bearer = mme_default_bearer_in_sess(sess);
+    d_assert(default_bearer, return,);
+
+    if (/* Check if Activate Default Bearer Accept is received */
+        FSM_CHECK(&default_bearer->sm, esm_state_active) &&
+        /* Check if Initial Context Setup Response or 
+         *          E-RAB Setup Response is received */
+        MME_HAVE_ENB_S1U_PATH(default_bearer))
+    {
+        rv = nas_send_activate_dedicated_bearer_context_request(bearer);
+        d_assert(rv == CORE_OK, return,
+            "nas_send_activate_dedicated_bearer_context failed");
+    }
 }
 
 void mme_s11_handle_release_access_bearers_response(
