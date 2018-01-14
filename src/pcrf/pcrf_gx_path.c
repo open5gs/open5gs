@@ -8,6 +8,7 @@
 #include "fd/fd_lib.h"
 #include "fd/gx/gx_dict.h"
 #include "fd/gx/gx_message.h"
+#include "fd/rx/rx_message.h"
 
 #include "pcrf_context.h"
 #include "pcrf_fd_path.h"
@@ -674,7 +675,8 @@ out:
     return 0;
 }
 
-void pcrf_gx_send_rar(c_uint8_t *gx_sid)
+status_t pcrf_gx_send_rar(
+        c_uint8_t *gx_sid, c_uint8_t *rx_sid, rx_message_t *rx_message)
 {
     int ret;
 
@@ -689,93 +691,106 @@ void pcrf_gx_send_rar(c_uint8_t *gx_sid)
     int new;
     size_t sidlen;
 
-    d_assert(gx_sid, return,);
+    d_assert(gx_sid, return CORE_ERROR,);
+    d_assert(rx_sid, return CORE_ERROR,);
+    d_assert(rx_message, return CORE_ERROR,);
+
+    /* Set default error result code */
+    rx_message->result_code = RX_DIAMETER_TEMPORARY_NETWORK_FAILURE;
 
     /* Create the request */
     ret = fd_msg_new(gx_cmd_rar, MSGFL_ALLOC_ETEID, &req);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     {
         struct msg_hdr * h;
         ret = fd_msg_hdr( req, &h );
-        d_assert(ret == 0, return,);
+        d_assert(ret == 0, return CORE_ERROR,);
         h->msg_appl = GX_APPLICATION_ID;
     }
 
     /* Retrieve session by Session-Id */
     sidlen = strlen((char *)gx_sid);
     ret = fd_sess_fromsid_msg((os0_t)gx_sid, sidlen, &session, &new);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     if (new)
     {
         d_error("No session data");
         ret = fd_msg_free(req);
         d_assert(ret == 0,,);
-        return;
+        rx_message->result_code = RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
+        return CORE_ERROR;
     }
 
     /* Add Session-Id to the message */
     ret = fd_message_session_id_set(req, (os0_t)gx_sid, sidlen);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
 
     /* Save the session associated with the message */
     ret = fd_msg_sess_set(req, session);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
 
     /* Retrieve session state in this session */
     ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     if (sess_data == NULL)
     {
         d_error("No session data");
         ret = fd_msg_free(req);
         d_assert(ret == 0,,);
-        return;
+        rx_message->result_code = RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
+        return CORE_ERROR;
     }
+
+    /* Save Rx Session-Id */
+    if (sess_data->rx_sid)
+        CORE_FREE(sess_data->rx_sid);
+    sess_data->rx_sid = (os0_t)core_strdup((char *)rx_sid);
+    d_assert(sess_data->rx_sid, return CORE_ERROR,);
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     
     /* Set the Destination-Realm AVP */
     ret = fd_msg_avp_new(fd_destination_realm, 0, &avp);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
     val.os.len  = strlen(fd_g_config->cnf_diamrlm);
     ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
 
     /* Set the Destination-Host AVP */
     ret = fd_msg_avp_new(fd_destination_host, 0, &avp);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     val.os.data = sess_data->peer_host;
     val.os.len  = strlen((char *)sess_data->peer_host);
     ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
 
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     val.i32 = GX_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
 
     /* Set the Re-Auth-Request-Type */
     ret = fd_msg_avp_new(fd_re_auth_request_type, 0, &avp);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     val.i32 = FD_RE_AUTH_REQUEST_TYPE_AUTHORIZE_ONLY;
     ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
 
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
     
     /* Keep a pointer to the session data for debug purpose, 
      * in real life we would not need it */
@@ -783,12 +798,12 @@ void pcrf_gx_send_rar(c_uint8_t *gx_sid)
     
     /* Store this value in the session */
     ret = fd_sess_state_store(pcrf_gx_reg, session, &sess_data);
-    d_assert(ret == 0, return,);
-    d_assert(sess_data == NULL, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
+    d_assert(sess_data == NULL, return CORE_ERROR,);
     
     /* Send the request */
     ret = fd_msg_send(&req, pcrf_gx_raa_cb, svg);
-    d_assert(ret == 0, return,);
+    d_assert(ret == 0, return CORE_ERROR,);
 
     /* Increment the counter */
     d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
@@ -796,6 +811,11 @@ void pcrf_gx_send_rar(c_uint8_t *gx_sid)
     d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,, );
 
     d_trace(3, "[Gx] Re-Auth-Request : PCRF --> PGW\n");
+
+    /* Set no error */
+    rx_message->result_code = ER_DIAMETER_SUCCESS;
+
+    return CORE_OK;
 }
 
 static void pcrf_gx_raa_cb(void *data, struct msg **msg)
@@ -998,36 +1018,4 @@ void pcrf_gx_final(void)
             pool_used(&pcrf_gx_sess_pool), pool_size(&pcrf_gx_sess_pool));
 
     pool_final(&pcrf_gx_sess_pool);
-}
-
-status_t pcrf_sess_gx_associate_rx(c_uint8_t *gx_sid, c_uint8_t *rx_sid)
-{
-    struct session *sess = NULL;
-    struct sess_state *sess_data = NULL;
-    int ret;
-    size_t sidlen = 0;
-    int new;
-
-    d_assert(gx_sid, return CORE_ERROR,);
-    d_assert(rx_sid, return CORE_ERROR,);
-
-    sidlen = strlen((char *)gx_sid); 
-    ret = fd_sess_fromsid((os0_t)gx_sid, sidlen, &sess, &new);
-    d_assert(ret == 0, return CORE_ERROR,);
-    d_assert(new == 0, return CORE_ERROR,);
-
-    ret = fd_sess_state_retrieve(pcrf_gx_reg, sess, &sess_data);
-    d_assert(ret == 0, return CORE_ERROR,);
-    d_assert(sess_data, return CORE_ERROR,);
-
-    if (sess_data->rx_sid)
-        CORE_FREE(sess_data->rx_sid);
-    sess_data->rx_sid = (os0_t)core_strdup((char *)rx_sid);
-    d_assert(sess_data->rx_sid, return CORE_ERROR,);
-
-    ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
-    d_assert(ret == 0, return CORE_ERROR,);
-    d_assert(sess_data == NULL, return CORE_ERROR,);
-
-    return CORE_OK;
 }

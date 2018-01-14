@@ -25,8 +25,13 @@ extern struct dict_object *fd_origin_realm;
 extern struct dict_object *fd_destination_host;
 extern struct dict_object *fd_destination_realm;
 extern struct dict_object *fd_user_name;
+#define FD_AUTH_SESSION_STATE_MAINTAINED                0
+#define FD_AUTH_SESSION_NO_STATE_MAINTAINED             1
 extern struct dict_object *fd_auth_session_state;
 extern struct dict_object *fd_auth_application_id;
+#define FD_AUTH_REQUEST_TYPE_AUTHENTICATE_ONLY          1
+#define FD_AUTH_REQUEST_TYPE_AUTHORIZE_ONLY             2
+#define FD_AUTH_REQUEST_TYPE_AUTHORIZE_AUTHENTICATE     3
 extern struct dict_object *fd_auth_request_type;
 #define FD_RE_AUTH_REQUEST_TYPE_AUTHORIZE_ONLY          0
 #define FD_RE_AUTH_REQUEST_TYPE_AUTHORIZE_AUTHENTICATE  1

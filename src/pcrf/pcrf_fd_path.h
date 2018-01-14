@@ -8,6 +8,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 struct sess_state;
+typedef struct _rx_message_t rx_message_t;
 
 CORE_DECLARE(status_t) pcrf_fd_init(void);
 CORE_DECLARE(void) pcrf_fd_final(void);
@@ -17,9 +18,8 @@ CORE_DECLARE(void) pcrf_gx_final(void);
 CORE_DECLARE(status_t) pcrf_rx_init(void);
 CORE_DECLARE(void) pcrf_rx_final(void);
 
-CORE_DECLARE(status_t) pcrf_sess_gx_associate_rx(
-        c_uint8_t *gx_sid, c_uint8_t *rx_sid);
-CORE_DECLARE(void) pcrf_gx_send_rar(c_uint8_t *gx_sid);
+CORE_DECLARE(status_t) pcrf_gx_send_rar(
+        c_uint8_t *gx_sid, c_uint8_t *rx_sid, rx_message_t *rx_message);
 
 #ifdef __cplusplus
 }

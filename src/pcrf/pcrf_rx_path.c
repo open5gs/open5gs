@@ -288,11 +288,14 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
         fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
     }
 
-    /* Associate Gx-session with Rx-session */
-    rv = pcrf_sess_gx_associate_rx(gx_sid, rx_sid);
-    d_assert(rv == CORE_OK, goto out, "Cannot Associate Gx/Rx Session");
-
-    pcrf_gx_send_rar(gx_sid);
+    /* Send Re-Auth Request */
+    rv = pcrf_gx_send_rar(gx_sid, rx_sid, &rx_message);
+    if (rv != CORE_OK)
+    {
+        result_code = rx_message.result_code;
+        d_error("pcrf_gx_send_rar() failed");
+        goto out;
+    }
 
     /* Store Gx Session-Id in this session */
     if (sess_data->gx_sid)
