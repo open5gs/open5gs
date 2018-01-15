@@ -1167,6 +1167,8 @@ pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess)
     index_alloc(&pgw_bearer_pool, &bearer);
     d_assert(bearer, return NULL, "Bearer context allocation failed");
 
+    bearer->name = NULL;
+
     list_init(&bearer->pf_list);
 
     bearer->pgw_s5u_teid = bearer->index;
@@ -1183,6 +1185,9 @@ status_t pgw_bearer_remove(pgw_bearer_t *bearer)
     d_assert(bearer->sess, return CORE_ERROR, "Null param");
 
     list_remove(&bearer->sess->bearer_list, bearer);
+
+    if (bearer->name)
+        CORE_FREE(bearer->name);
 
     pgw_pf_remove_all(bearer);
 

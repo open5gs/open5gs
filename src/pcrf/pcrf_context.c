@@ -747,7 +747,16 @@ status_t pcrf_db_qos_data(
                                 }
                             }
                             /* Charing-Rule-Name is automatically configured */
-                            snprintf(pcc_rule->name, sizeof pcc_rule->name,
+                            if (pcc_rule->name)
+                            {
+                                d_error("PCC Rule Name has already "
+                                        "been defined");
+                                CORE_FREE(pcc_rule->name);
+                            }
+                            pcc_rule->name = core_calloc(
+                                    1, MAX_PCC_RULE_NAME_LEN);
+                            d_assert(pcc_rule->name, goto out,);
+                            snprintf(pcc_rule->name, MAX_PCC_RULE_NAME_LEN,
                                     "%s%d", apn, pcc_rule_index+1);
                             pcc_rule->precedence = pcc_rule_index+1;
                             pcc_rule->flow_status = GX_FLOW_STATUS_ENABLED;

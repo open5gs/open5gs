@@ -971,8 +971,13 @@ static status_t decode_pcc_rule_definition(
         {
             case GX_AVP_CODE_CHARGING_RULE_NAME:
             {
-                core_cpystrn(pcc_rule->name, (char*)hdr->avp_value->os.data,
-                    c_min(hdr->avp_value->os.len, MAX_PCC_RULE_NAME_LEN)+1);
+                if (pcc_rule->name)
+                {
+                    d_error("PCC Rule Name has already been defined");
+                    CORE_FREE(pcc_rule->name);
+                }
+                pcc_rule->name = core_strdup((char*)hdr->avp_value->os.data);
+                d_assert(pcc_rule->name, return CORE_ERROR,);
                 break;
             }
             case GX_AVP_CODE_FLOW_INFORMATION:

@@ -146,11 +146,11 @@ typedef struct _pgw_bearer_t {
 
     c_uint8_t       ebi;
 
-    c_uint32_t      pgw_s5u_teid; /* PGW_S5U is derived from INDEX */
-    c_uint32_t      sgw_s5u_teid; /* SGW_S5U is received from SGW */
+    c_uint32_t      pgw_s5u_teid;   /* PGW_S5U is derived from INDEX */
+    c_uint32_t      sgw_s5u_teid;   /* SGW_S5U is received from SGW */
 
-    /* QoS Infomration */
-    qos_t           qos;
+    c_int8_t        *name;          /* PCC Rule Name */
+    qos_t           qos;            /* QoS Infomration */
 
     /* Packet Filter Identifier Generator(1~15) */
     c_uint8_t       pf_identifier;

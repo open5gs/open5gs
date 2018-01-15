@@ -313,7 +313,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             }
             else if (FSM_CHECK(&bearer->sm, esm_state_bearer_exception))
             {
-                mme_bearer_remove(bearer);
+                d_assert(0, pkbuf_free(pkbuf); break, "Not implemented");
             }
 
             pkbuf_free(pkbuf);

@@ -217,7 +217,8 @@ status_t pgw_s5c_build_create_bearer_request(
     memset(&bearer_qos, 0, sizeof(bearer_qos));
     bearer_qos.qci = bearer->qos.qci;
     bearer_qos.priority_level = bearer->qos.arp.priority_level;
-    bearer_qos.pre_emption_capability = bearer->qos.arp.pre_emption_capability;
+    bearer_qos.pre_emption_capability = 
+        bearer->qos.arp.pre_emption_capability;
     bearer_qos.pre_emption_vulnerability =
         bearer->qos.arp.pre_emption_vulnerability;
     bearer_qos.dl_mbr = bearer->qos.mbr.downlink;

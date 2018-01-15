@@ -47,7 +47,6 @@ extern "C" {
 
 #define MAX_APN_LEN             100
 #define MAX_PCO_LEN             251
-#define MAX_PCC_RULE_NAME_LEN   128
 
 #define NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
@@ -211,7 +210,8 @@ typedef struct _flow_t {
 /**********************************
  * PCC Rule Structure            */
 typedef struct _pcc_rule_t {
-    c_int8_t name[MAX_PCC_RULE_NAME_LEN+1];
+#define MAX_PCC_RULE_NAME_LEN               256
+    c_int8_t *name;
     flow_t flow[MAX_NUM_OF_FLOW];
     int num_of_flow;
 #define GX_FLOW_STATUS_ENABLED_UPLINK       0
