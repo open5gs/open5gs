@@ -210,10 +210,16 @@ typedef struct _flow_t {
 /**********************************
  * PCC Rule Structure            */
 typedef struct _pcc_rule_t {
+#define PCC_RULE_TYPE_INSTALL               1
+#define PCC_RULE_TYPE_REMOVE                2
+    c_uint8_t type;
+
 #define MAX_PCC_RULE_NAME_LEN               256
     c_int8_t *name;
+
     flow_t flow[MAX_NUM_OF_FLOW];
     int num_of_flow;
+
 #define GX_FLOW_STATUS_ENABLED_UPLINK       0
 #define GX_FLOW_STATUS_ENABLED_DOWNLINK     1
 #define GX_FLOW_STATUS_ENABLED              2

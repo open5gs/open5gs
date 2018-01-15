@@ -1244,6 +1244,25 @@ pgw_bearer_t* pgw_bearer_find_by_ebi(pgw_sess_t *sess, c_uint8_t ebi)
     return bearer;
 }
 
+pgw_bearer_t* pgw_bearer_find_by_name(pgw_sess_t *sess, c_int8_t *name)
+{
+    pgw_bearer_t *bearer = NULL;
+    
+    d_assert(sess, return NULL, "Null param");
+    d_assert(name, return NULL, "Null param");
+
+    bearer = pgw_bearer_first(sess);
+    while (bearer)
+    {
+        if (bearer->name && strcmp(bearer->name, name) == 0)
+            return bearer;
+
+        bearer = pgw_bearer_next(bearer);
+    }
+
+    return NULL;
+}
+
 pgw_bearer_t* pgw_bearer_find_by_qci_arp(pgw_sess_t *sess, 
                                 c_uint8_t qci,
                                 c_uint8_t priority_level,

@@ -10,6 +10,13 @@ extern "C" {
 
 #define GX_APPLICATION_ID 16777238
 
+#define GX_AVP_CODE_RE_AUTH_REQUEST_TYPE            (285)
+#define GX_AVP_CODE_CC_REQUEST_NUMBER               (415)
+#define GX_AVP_CODE_CC_REQUEST_TYPE                 (416)
+#define GX_AVP_CODE_DEFAULT_EPS_BEARER_QOS          (1049)
+#define GX_AVP_CODE_SUPPORTED_FEATURES              (628)
+#define GX_AVP_CODE_CHARGING_RULE_INSTALL           (1001)
+#define GX_AVP_CODE_CHARGING_RULE_REMOVE            (1002)
 #define GX_AVP_CODE_CHARGING_RULE_DEFINITION        (1003)
 #define GX_AVP_CODE_CHARGING_RULE_NAME              (1005)
 #define GX_AVP_CODE_FLOW_INFORMATION                (1058)

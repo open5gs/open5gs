@@ -554,39 +554,6 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         error++;
     }
 
-    ret = fd_msg_search_avp(*msg, gx_charging_rule_install, &avp);
-    d_assert(ret == 0, return,);
-    if (avp)
-    {
-        ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
-        d_assert(ret == 0, return,);
-        while(avpch1)
-        {
-            ret = fd_msg_avp_hdr(avpch1, &hdr);
-            d_assert(ret == 0, return,);
-            switch(hdr->avp_code)
-            {
-                case GX_AVP_CODE_CHARGING_RULE_DEFINITION:
-                {
-                    pcc_rule_t *pcc_rule = 
-                        &gx_message->pcc_rule[gx_message->num_of_pcc_rule];
-
-                    rv = decode_pcc_rule_definition(pcc_rule, avpch1, &error);
-                    d_assert(rv == CORE_OK, return,);
-
-                    gx_message->num_of_pcc_rule++;
-                    break;
-                }
-                default:
-                {
-                    d_error("Not supported(%d)", hdr->avp_code);
-                    break;
-                }
-            }
-            fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
-        }
-    }
-
     ret = fd_msg_search_avp(*msg, gx_qos_information, &avp);
     d_assert(ret == 0, return,);
     if (avp)
@@ -656,6 +623,72 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                     hdr->avp_value->u32;
             }
         }
+    }
+
+    ret = fd_msg_browse(*msg, MSG_BRW_FIRST_CHILD, &avp, NULL);
+    d_assert(ret == 0, return,);
+    while(avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
+        switch(hdr->avp_code)
+        {
+            case AC_SESSION_ID:
+            case AC_ORIGIN_HOST:
+            case AC_ORIGIN_REALM:
+            case AC_DESTINATION_REALM:
+            case AC_RESULT_CODE:
+            case AC_ROUTE_RECORD:
+            case AC_PROXY_INFO:
+            case AC_AUTH_APPLICATION_ID:
+                break;
+            case GX_AVP_CODE_CC_REQUEST_TYPE:
+            case GX_AVP_CODE_CC_REQUEST_NUMBER:
+            case GX_AVP_CODE_SUPPORTED_FEATURES:
+                break;
+            case GX_AVP_CODE_QOS_INFORMATION:
+            case GX_AVP_CODE_DEFAULT_EPS_BEARER_QOS:
+                break;
+            case GX_AVP_CODE_CHARGING_RULE_INSTALL:
+            {
+                ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
+                d_assert(ret == 0, return,);
+                while(avpch1)
+                {
+                    ret = fd_msg_avp_hdr(avpch1, &hdr);
+                    d_assert(ret == 0, return,);
+                    switch(hdr->avp_code)
+                    {
+                        case GX_AVP_CODE_CHARGING_RULE_DEFINITION:
+                        {
+                            pcc_rule_t *pcc_rule = &gx_message->pcc_rule
+                                [gx_message->num_of_pcc_rule];
+
+                            rv = decode_pcc_rule_definition(
+                                    pcc_rule, avpch1, &error);
+                            d_assert(rv == CORE_OK, return,);
+
+                            pcc_rule->type = PCC_RULE_TYPE_INSTALL;
+                            gx_message->num_of_pcc_rule++;
+                            break;
+                        }
+                        default:
+                        {
+                            d_error("Not supported(%d)", hdr->avp_code);
+                            break;
+                        }
+                    }
+                    fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
+                }
+                break;
+            }
+            default:
+            {
+                d_warn("Not supported(%d)", hdr->avp_code);
+                break;
+            }
+        }
+        fd_msg_browse(avp, MSG_BRW_NEXT, &avp, NULL);
     }
 
 out:
@@ -796,37 +829,65 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     sess = sess_data->sess;
     d_assert(sess, return EINVAL,);
 
-    ret = fd_msg_search_avp(qry, gx_charging_rule_install, &avp);
+    ret = fd_msg_browse(qry, MSG_BRW_FIRST_CHILD, &avp, NULL);
     d_assert(ret == 0, return EINVAL,);
-    if (avp)
+    while(avp)
     {
-        ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
+        ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return EINVAL,);
-        while(avpch1)
+        switch(hdr->avp_code)
         {
-            ret = fd_msg_avp_hdr(avpch1, &hdr);
-            d_assert(ret == 0, return EINVAL,);
-            switch(hdr->avp_code)
+            case AC_SESSION_ID:
+            case AC_ORIGIN_HOST:
+            case AC_ORIGIN_REALM:
+            case AC_DESTINATION_REALM:
+            case AC_DESTINATION_HOST:
+            case AC_ROUTE_RECORD:
+            case AC_PROXY_INFO:
+            case AC_AUTH_APPLICATION_ID:
+                break;
+            case GX_AVP_CODE_RE_AUTH_REQUEST_TYPE:
+                break;
+            case GX_AVP_CODE_CHARGING_RULE_INSTALL:
             {
-                case GX_AVP_CODE_CHARGING_RULE_DEFINITION:
+                ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
+                d_assert(ret == 0, return EINVAL,);
+                while(avpch1)
                 {
-                    pcc_rule_t *pcc_rule = 
-                        &gx_message->pcc_rule[gx_message->num_of_pcc_rule];
+                    ret = fd_msg_avp_hdr(avpch1, &hdr);
+                    d_assert(ret == 0, return EINVAL,);
+                    switch(hdr->avp_code)
+                    {
+                        case GX_AVP_CODE_CHARGING_RULE_DEFINITION:
+                        {
+                            pcc_rule_t *pcc_rule = &gx_message->pcc_rule
+                                [gx_message->num_of_pcc_rule];
 
-                    rv = decode_pcc_rule_definition(pcc_rule, avpch1, NULL);
-                    d_assert(rv == CORE_OK, return EINVAL,);
+                            rv = decode_pcc_rule_definition(
+                                    pcc_rule, avpch1, NULL);
+                            d_assert(rv == CORE_OK, return EINVAL,);
 
-                    gx_message->num_of_pcc_rule++;
-                    break;
+                            pcc_rule->type = PCC_RULE_TYPE_INSTALL;
+                            gx_message->num_of_pcc_rule++;
+                            break;
+                        }
+                        default:
+                        {
+                            d_error("Not supported(%d)", hdr->avp_code);
+                            break;
+                        }
+                    }
+                    fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
                 }
-                default:
-                {
-                    d_error("Not supported(%d)", hdr->avp_code);
-                    break;
-                }
+                break;
             }
-            fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
+            default:
+            {
+                d_warn("Not supported(%d)", hdr->avp_code);
+                break;
+            }
         }
+        fd_msg_browse(avp, MSG_BRW_NEXT, &avp, NULL);
     }
 
     /* Send Gx Event to PGW State Machine */

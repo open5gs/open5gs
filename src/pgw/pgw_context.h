@@ -232,6 +232,8 @@ CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_pgw_s5u_teid(
                                 c_uint32_t pgw_s5u_teid);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_ebi(
                                 pgw_sess_t *sess, c_uint8_t ebi);
+CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_name(
+                                pgw_sess_t *sess, c_int8_t *name);
 CORE_DECLARE(pgw_bearer_t*) pgw_bearer_find_by_qci_arp(pgw_sess_t *sess, 
                                 c_uint8_t qci,
                                 c_uint8_t priority_level,
