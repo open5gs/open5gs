@@ -9,6 +9,10 @@ struct dict_object *rx_application = NULL;
 
 struct dict_object *rx_cmd_aar = NULL;
 struct dict_object *rx_cmd_aaa = NULL;
+struct dict_object *rx_cmd_asr = NULL;
+struct dict_object *rx_cmd_asa = NULL;
+struct dict_object *rx_cmd_str = NULL;
+struct dict_object *rx_cmd_sta = NULL;
 
 struct dict_object *rx_media_component_description = NULL;
 struct dict_object *rx_media_component_number = NULL;
@@ -33,6 +37,8 @@ struct dict_object *rx_framed_ip_address = NULL;
 struct dict_object *rx_framed_ipv6_prefix = NULL;
 struct dict_object *rx_ip_can_type = NULL;
 struct dict_object *rx_rat_type = NULL;
+struct dict_object *rx_abort_cause = NULL;
+struct dict_object *rx_termination_cause = NULL;
 
 int rx_dict_init(void)
 {
@@ -42,6 +48,10 @@ int rx_dict_init(void)
 
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "AA-Request", &rx_cmd_aar);
     CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "AA-Answer", &rx_cmd_aaa);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Abort-Session-Request", &rx_cmd_asr);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Abort-Session-Answer", &rx_cmd_asa);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Session-Termination-Request", &rx_cmd_str);
+    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Session-Termination-Answer", &rx_cmd_sta);
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Description", &rx_media_component_description);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Number", &rx_media_component_number);
@@ -66,6 +76,8 @@ int rx_dict_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IPv6-Prefix", &rx_framed_ipv6_prefix);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IP-CAN-Type", &rx_ip_can_type);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RAT-Type", &rx_rat_type);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Abort-Cause", &rx_abort_cause);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Termination-Cause", &rx_termination_cause);
 
     return 0;
 }

@@ -28,6 +28,7 @@ struct sess_state {
 pool_declare(pcscf_rx_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 
 static void pcscf_rx_aaa_cb(void *data, struct msg **msg);
+static void pcscf_rx_sta_cb(void *data, struct msg **msg);
 
 static __inline__ struct sess_state *new_state(os0_t sid)
 {
@@ -43,8 +44,7 @@ static __inline__ struct sess_state *new_state(os0_t sid)
     return new;
 }
 
-void pcscf_rx_sess_cleanup(
-        struct sess_state *sess_data, os0_t sid, void * opaque)
+static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
     if (sess_data->rx_sid)
         CORE_FREE(sess_data->rx_sid);
@@ -498,6 +498,246 @@ out:
     return;
 }
 
+void pcscf_rx_send_str(c_int8_t *rx_sid)
+{
+    status_t rv;
+    int ret;
+
+    struct msg *req = NULL;
+    struct avp *avp;
+    struct avp *avpch1, *avpch2;
+    union avp_value val;
+    struct sess_state *sess_data = NULL, *svg;
+    struct session *session = NULL;
+    int new;
+
+    d_assert(rx_sid, return,);
+
+    /* Create the request */
+    ret = fd_msg_new(rx_cmd_str, MSGFL_ALLOC_ETEID, &req);
+    d_assert(ret == 0, return,);
+    {
+        struct msg_hdr * h;
+        ret = fd_msg_hdr( req, &h );
+        d_assert(ret == 0, return,);
+        h->msg_appl = RX_APPLICATION_ID;
+    }
+
+    /* Retrieve session by Session-Id */
+    size_t sidlen = strlen(rx_sid);
+    ret = fd_sess_fromsid_msg((os0_t)(rx_sid), sidlen, &session, &new);
+    d_assert(ret == 0, return,);
+    d_assert(new == 0, return,);
+
+    /* Add Session-Id to the message */
+    ret = fd_message_session_id_set(req, (os0_t)(rx_sid), sidlen);
+    d_assert(ret == 0, return,);
+    /* Save the session associated with the message */
+    ret = fd_msg_sess_set(req, session);
+
+    /* Retrieve session state in this session */
+    ret = fd_sess_state_retrieve(pcscf_rx_reg, session, &sess_data);
+    d_assert(sess_data, return,);
+    
+    /* Set Origin-Host & Origin-Realm */
+    ret = fd_msg_add_origin(req, 0);
+    d_assert(ret == 0, return,);
+    
+    /* Set the Destination-Realm AVP */
+    ret = fd_msg_avp_new(fd_destination_realm, 0, &avp);
+    d_assert(ret == 0, return,);
+    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
+
+    /* Set the Auth-Application-Id AVP */
+    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    d_assert(ret == 0, return,);
+    val.i32 = RX_APPLICATION_ID;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
+
+    /* Set the Termination-Cause AVP */
+    ret = fd_msg_avp_new(rx_termination_cause, 0, &avp);
+    d_assert(ret == 0, return,);
+    val.i32 = RX_TERMINATION_CAUSE_DIAMETER_LOGOUT;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return,);
+
+    /* Keep a pointer to the session data for debug purpose, 
+     * in real life we would not need it */
+    svg = sess_data;
+    
+    /* Store this value in the session */
+    ret = fd_sess_state_store(pcscf_rx_reg, session, &sess_data);
+    d_assert(ret == 0, return,);
+    d_assert(sess_data == NULL,,);
+    
+    /* Send the request */
+    ret = fd_msg_send(&req, pcscf_rx_sta_cb, svg);
+    d_assert(ret == 0,,);
+
+    /* Increment the counter */
+    d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
+    fd_logger_self()->stats.nb_sent++;
+    d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
+}
+
+static void pcscf_rx_sta_cb(void *data, struct msg **msg)
+{
+    int ret;
+
+    struct sess_state *sess_data = NULL;
+    struct timespec ts;
+    struct session *session;
+    struct avp *avp, *avpch1;
+    struct avp_hdr *hdr;
+    unsigned long dur;
+    int error = 0;
+    int new;
+    c_int32_t result_code = 0;
+
+    ret = clock_gettime(CLOCK_REALTIME, &ts);
+    d_assert(ret == 0, return,);
+
+    /* Search the session, retrieve its data */
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
+    d_assert(ret == 0, return,);
+    d_assert(new == 0, return, );
+    
+    ret = fd_sess_state_retrieve(pcscf_rx_reg, session, &sess_data);
+    d_assert(ret == 0, return,);
+    d_assert(sess_data && (void *)sess_data == data, return, );
+
+    /* Value of Result Code */
+    ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
+    d_assert(ret == 0, return,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
+        result_code = hdr->avp_value->i32;
+        d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
+    }
+    else
+    {
+        ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
+        d_assert(ret == 0, return,);
+        if (avp)
+        {
+            ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch1);
+            d_assert(ret == 0, return,);
+            if (avpch1)
+            {
+                ret = fd_msg_avp_hdr(avpch1, &hdr);
+                d_assert(ret == 0, return,);
+                result_code = hdr->avp_value->i32;
+                d_trace(3, "Experimental Result Code: %d\n",
+                        result_code);
+            }
+        }
+        else
+        {
+            d_error("no Result-Code");
+            error++;
+        }
+    }
+
+    /* Value of Origin-Host */
+    ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
+    d_assert(ret == 0, return,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
+        d_trace(3, "From '%.*s' ",
+                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+    }
+    else
+    {
+        d_error("no_Origin-Host ");
+        error++;
+    }
+
+    /* Value of Origin-Realm */
+    ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
+    d_assert(ret == 0, return,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
+        d_trace(3, "('%.*s') ",
+                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+    }
+    else
+    {
+        d_error("no_Origin-Realm ");
+        error++;
+    }
+
+    if (result_code != ER_DIAMETER_SUCCESS)
+    {
+        d_warn("ERROR DIAMETER Result Code(%d)", result_code);
+        error++;
+        goto out;
+    }
+
+out:
+    /* Free the message */
+    d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,, );
+    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
+        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    if (fd_logger_self()->stats.nb_recv)
+    {
+        /* Ponderate in the avg */
+        fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
+            fd_logger_self()->stats.nb_recv + dur) /
+            (fd_logger_self()->stats.nb_recv + 1);
+        /* Min, max */
+        if (dur < fd_logger_self()->stats.shortest)
+            fd_logger_self()->stats.shortest = dur;
+        if (dur > fd_logger_self()->stats.longest)
+            fd_logger_self()->stats.longest = dur;
+    }
+    else
+    {
+        fd_logger_self()->stats.shortest = dur;
+        fd_logger_self()->stats.longest = dur;
+        fd_logger_self()->stats.avg = dur;
+    }
+    if (error)
+        fd_logger_self()->stats.nb_errs++;
+    else 
+        fd_logger_self()->stats.nb_recv++;
+
+    d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,, );
+    
+    /* Display how long it took */
+    if (ts.tv_nsec > sess_data->ts.tv_nsec)
+        d_trace(3, "in %d.%06ld sec\n", 
+                (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    else
+        d_trace(3, "in %d.%06ld sec\n", 
+                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+
+    state_cleanup(sess_data, NULL, NULL);
+    
+    ret = fd_msg_free(*msg);
+    d_assert(ret == 0,,);
+    *msg = NULL;
+
+    return;
+}
+
 void pcscf_fd_config()
 {
     memset(&fd_config, 0, sizeof(fd_config_t));
@@ -543,8 +783,7 @@ status_t pcscf_fd_init(void)
 	ret = rx_dict_init();
     d_assert(ret == 0, return CORE_ERROR,);
 
-	ret = fd_sess_handler_create(&pcscf_rx_reg, pcscf_rx_sess_cleanup,
-                NULL, NULL);
+	ret = fd_sess_handler_create(&pcscf_rx_reg, state_cleanup, NULL, NULL);
     d_assert(ret == 0, return CORE_ERROR,);
 
 	/* Advertise the support for the application in the peer */

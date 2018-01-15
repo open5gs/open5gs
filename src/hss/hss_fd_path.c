@@ -681,18 +681,18 @@ status_t hss_fd_init(void)
 	memset(&data, 0, sizeof(data));
 	data.app = s6a_application;
 	
-	/* fallback CB if command != unexpected message received */
+	/* Fallback CB if command != unexpected message received */
 	ret = fd_disp_register(hss_s6a_fb_cb, DISP_HOW_APPID, &data, NULL,
                 &hdl_s6a_fb);
     d_assert(ret == 0, return CORE_ERROR,);
 	
-	/* specific handler for Authentication-Information-Request */
+	/* Specific handler for Authentication-Information-Request */
 	data.command = s6a_cmd_air;
 	ret = fd_disp_register(hss_s6a_air_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_s6a_air);
     d_assert(ret == 0, return CORE_ERROR,);
 
-	/* specific handler for Location-Update-Request */
+	/* Specific handler for Location-Update-Request */
 	data.command = s6a_cmd_ulr;
 	ret = fd_disp_register(hss_s6a_ulr_cb, DISP_HOW_CC, &data, NULL, 
                 &hdl_s6a_ulr);

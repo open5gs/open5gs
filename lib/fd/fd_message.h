@@ -14,8 +14,10 @@ extern "C" {
 #define FD_AVP_CODE_FRAME_IPV6_PREFIX                   97 
 
 /* Result-Code AVP */
+#define FD_DIAMETER_UNKNOWN_PEER                        3010
 #define FD_DIAMETER_AVP_UNSUPPORTED                     5001
 #define FD_DIAMETER_UNKNOWN_SESSION_ID                  5002
+#define FD_DIAMETER_AUTHORIZATION_REJECTED              5003
 #define FD_DIAMETER_MISSING_AVP                         5004
 #define FD_DIAMETER_INVALID_AVP_VALUE                   5005
 

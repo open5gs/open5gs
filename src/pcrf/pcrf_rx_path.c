@@ -21,6 +21,7 @@ struct sess_state {
 static struct session_handler *pcrf_rx_reg = NULL;
 static struct disp_hdl *hdl_rx_fb = NULL; 
 static struct disp_hdl *hdl_rx_aar = NULL; 
+static struct disp_hdl *hdl_rx_str = NULL; 
 
 pool_declare(pcrf_rx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
 
@@ -37,8 +38,7 @@ static __inline__ struct sess_state *new_state(os0_t sid)
     return new;
 }
 
-static void state_cleanup(
-        struct sess_state *sess_data, os0_t sid, void *opaque)
+static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
     d_assert(sess_data, return,);
 
@@ -69,13 +69,10 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     struct avp *avpch1, *avpch2, *avpch3;
     struct avp_hdr *hdr;
     union avp_value val;
-    struct sess_state *sess_data = NULL, *svg = NULL;
+    struct sess_state *sess_data = NULL;
     size_t sidlen;
 
     rx_message_t rx_message;
-#if 0
-    int i, j;
-#endif
 
     char buf[CORE_ADDRSTRLEN];
     os0_t rx_sid = NULL;
@@ -98,6 +95,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
     /* Initialize Message */
     memset(&rx_message, 0, sizeof(rx_message_t));
+    rx_message.cmd_code = RX_CMD_CODE_AA;
 
 	/* Create answer header */
 	qry = *msg;
@@ -298,9 +296,8 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Store Gx Session-Id in this session */
-    if (sess_data->gx_sid)
-        CORE_FREE(sess_data->gx_sid);
-    sess_data->gx_sid = (os0_t)core_strdup((char *)gx_sid);
+    if (!sess_data->gx_sid)
+        sess_data->gx_sid = (os0_t)core_strdup((char *)gx_sid);
     d_assert(sess_data->gx_sid, goto out,);
 
     /* Set IP-Can-Type */
@@ -368,16 +365,153 @@ out:
         d_assert(ret == 0, return EINVAL,);
     }
     
-    /* Store this value in the session */
-    svg = sess_data;
-    ret = fd_sess_state_store(pcrf_rx_reg, sess, &sess_data);
-    d_assert(ret == 0,,);
-    d_assert(sess_data == NULL,,);
-
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
 
-    state_cleanup(svg, NULL, NULL);
+    state_cleanup(sess_data, NULL, NULL);
+    rx_message_free(&rx_message);
+
+    return 0;
+}
+
+static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp, 
+        struct session *sess, void *opaque, enum disp_action *act)
+{
+//    status_t rv;
+    int ret;
+
+	struct msg *ans, *qry;
+#if 0
+    struct avp *avpch1;
+#endif
+    struct avp_hdr *hdr;
+    union avp_value val;
+    struct sess_state *sess_data = NULL;
+
+    rx_message_t rx_message;
+
+    c_uint32_t result_code = RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
+	
+    d_assert(msg, return EINVAL,);
+    d_assert(sess, return EINVAL,);
+
+    ret = fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data);
+    d_assert(ret == 0, return EINVAL,);
+    d_assert(sess_data, return EINVAL,);
+    d_assert(sess_data->rx_sid, return EINVAL,);
+    d_assert(sess_data->gx_sid, return EINVAL,);
+
+    /* Initialize Message */
+    memset(&rx_message, 0, sizeof(rx_message_t));
+    rx_message.cmd_code = RX_CMD_CODE_SESSION_TERMINATION;
+
+	/* Create answer header */
+	qry = *msg;
+	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    d_assert(ret == 0, return EINVAL,);
+    ans = *msg;
+
+    /* Set the Auth-Application-Id AVP */
+    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    val.i32 = RX_APPLICATION_ID;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
+
+    /* Set the Auth-Request-Type AVP */
+    ret = fd_msg_avp_new(fd_auth_request_type, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    val.i32 = 1;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
+
+    /* Get Termination-Cause */
+    ret = fd_msg_search_avp(qry, rx_termination_cause, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    if (avp)
+    {
+        c_uint32_t termination_cause = 0;
+
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return EINVAL,);
+        termination_cause = hdr->avp_value->i32;
+        switch(termination_cause)
+        {
+            case RX_TERMINATION_CAUSE_DIAMETER_LOGOUT:
+                break;
+            default:
+                d_error("Termination-Cause Error : [%d]", termination_cause);
+                break;
+        }
+    }
+    else
+    {
+        d_error("no_Termination-Cause");
+    }
+
+    /* Send Re-Auth Request */
+#if 0
+    rv = pcrf_gx_send_rar(gx_sid, rx_sid, &rx_message);
+    if (rv != CORE_OK)
+    {
+        result_code = rx_message.result_code;
+        d_error("pcrf_gx_send_rar() failed");
+        goto out;
+    }
+#endif
+
+	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
+    d_assert(ret == 0, return EINVAL,);
+
+	/* Send the answer */
+	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0,,);
+
+	/* Add this value to the stats */
+	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
+	fd_logger_self()->stats.nb_echoed++;
+	d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
+
+    state_cleanup(sess_data, NULL, NULL);
+    rx_message_free(&rx_message);
+    
+    return 0;
+
+//out:
+    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED)
+    {
+        ret = fd_msg_rescode_set(ans,
+                    "DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
+        d_assert(ret == 0, return EINVAL,);
+    }
+    else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID)
+    {
+        ret = fd_msg_rescode_set(ans,
+                    "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+        d_assert(ret == 0, return EINVAL,);
+    }
+    else if (result_code == FD_DIAMETER_MISSING_AVP)
+    {
+        ret = fd_msg_rescode_set(ans,
+                    "DIAMETER_MISSING_AVP", NULL, NULL, 1);
+        d_assert(ret == 0, return EINVAL,);
+    }
+    else
+    {
+        ret = fd_msg_rescode_set(ans,
+                    "DIAMETER_MISSING_AVP", NULL, NULL, 1);
+        d_assert(ret == 0, return EINVAL,);
+    }
+    
+	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0,,);
+
+    state_cleanup(sess_data, NULL, NULL);
     rx_message_free(&rx_message);
 
     return 0;
@@ -401,13 +535,21 @@ status_t pcrf_rx_init(void)
 	memset(&data, 0, sizeof(data));
 	data.app = rx_application;
 	
+	/* Fallback CB if command != unexpected message received */
 	ret = fd_disp_register(pcrf_rx_fb_cb, DISP_HOW_APPID, &data, NULL,
                 &hdl_rx_fb);
     d_assert(ret == 0, return CORE_ERROR,);
 	
+	/* Specific handler for AA-Request */
 	data.command = rx_cmd_aar;
 	ret = fd_disp_register(pcrf_rx_aar_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_rx_aar);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+	/* Specific handler for STR-Request */
+	data.command = rx_cmd_str;
+	ret = fd_disp_register(pcrf_rx_str_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_rx_str);
     d_assert(ret == 0, return CORE_ERROR,);
 
 	/* Advertise the support for the application in the peer */
@@ -428,6 +570,8 @@ void pcrf_rx_final(void)
 		(void) fd_disp_unregister(&hdl_rx_fb, NULL);
 	if (hdl_rx_aar)
 		(void) fd_disp_unregister(&hdl_rx_aar, NULL);
+	if (hdl_rx_str)
+		(void) fd_disp_unregister(&hdl_rx_str, NULL);
 
     if (pool_used(&pcrf_rx_sess_pool))
         d_error("%d not freed in pcrf_rx_sess_pool[%d] of GX-SM",

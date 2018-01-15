@@ -23,8 +23,7 @@ pool_declare(mme_s6a_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
 static void mme_s6a_aia_cb(void *data, struct msg **msg);
 static void mme_s6a_ula_cb(void *data, struct msg **msg);
 
-void mme_s6a_sess_cleanup(
-        struct sess_state *sess_data, os0_t sid, void * opaque)
+static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
     pool_free_node(&mme_s6a_sess_pool, sess_data);
 }
@@ -441,7 +440,7 @@ out:
     d_assert(ret == 0,,);
     *msg = NULL;
 
-    mme_s6a_sess_cleanup(sess_data, NULL, NULL);
+    state_cleanup(sess_data, NULL, NULL);
     return;
 }
 
@@ -1087,7 +1086,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     d_assert(ret == 0,,);
     *msg = NULL;
 
-    mme_s6a_sess_cleanup(sess_data, NULL, NULL);
+    state_cleanup(sess_data, NULL, NULL);
     return;
 }
 
@@ -1107,7 +1106,7 @@ status_t mme_fd_init(void)
     d_assert(ret == CORE_OK, return CORE_ERROR,);
 
     /* Create handler for sessions */
-	ret = fd_sess_handler_create(&mme_s6a_reg, &mme_s6a_sess_cleanup,
+	ret = fd_sess_handler_create(&mme_s6a_reg, &state_cleanup,
                 NULL, NULL);
     d_assert(ret == CORE_OK, return CORE_ERROR,);
 

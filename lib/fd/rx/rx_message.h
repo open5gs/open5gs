@@ -31,6 +31,7 @@ typedef struct _rx_media_component_t {
 
 typedef struct _rx_message_t {
 #define RX_CMD_CODE_AA                                              265
+#define RX_CMD_CODE_SESSION_TERMINATION                             275
     c_uint16_t          cmd_code;
 
 /* Experimental-Result-Codes */

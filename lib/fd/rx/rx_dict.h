@@ -28,6 +28,10 @@ extern struct dict_object *rx_application;
 
 extern struct dict_object *rx_cmd_aar;
 extern struct dict_object *rx_cmd_aaa;
+extern struct dict_object *rx_cmd_asr;
+extern struct dict_object *rx_cmd_asa;
+extern struct dict_object *rx_cmd_str;
+extern struct dict_object *rx_cmd_sta;
 
 extern struct dict_object *rx_media_component_description;
 extern struct dict_object *rx_media_component_number;
@@ -79,6 +83,21 @@ extern struct dict_object *rx_ip_can_type;
 #define RX_RAT_TYPE_UMB                 2002
 #define RX_RAT_TYPE_EHRPD               2003
 extern struct dict_object *rx_rat_type;
+#define RX_ABORT_CAUSE_BEARER_RELEASED                          1
+#define RX_ABORT_CAUSE_INSUFFICIENT_SERVER_RESOURCES            2
+#define RX_ABORT_CAUSE_INSUFFICIENT_BEARER_RESOURCES            3
+#define RX_ABORT_CAUSE_PS_TO_CS_HANDOVER                        4
+#define RX_ABORT_CAUSE_SPONSORED_DATA_CONNECTIVITY_ DISALLOWED  5
+extern struct dict_object *rx_abort_cause;
+#define RX_TERMINATION_CAUSE_DIAMETER_LOGOUT                    1
+#define RX_TERMINATION_CAUSE_DIAMETER_SERVICE_NOT_PROVIDED      2
+#define RX_TERMINATION_CAUSE_DIAMETER_BAD_ANSWER                3
+#define RX_TERMINATION_CAUSE_DIAMETER_DIAMETER_ADMINISTRATIVE   4
+#define RX_TERMINATION_CAUSE_DIAMETER_LINK_BROKEN               5
+#define RX_TERMINATION_CAUSE_DIAMETER_AUTH_EXPIRED              6
+#define RX_TERMINATION_CAUSE_DIAMETER_USER_MOVED                7 
+#define RX_TERMINATION_CAUSE_DIAMETER_SESSION_TIMEOUT           8
+extern struct dict_object *rx_termination_cause;
 
 int rx_dict_init(void);
 

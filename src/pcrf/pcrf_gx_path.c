@@ -56,8 +56,7 @@ static __inline__ struct sess_state *new_state(os0_t sid)
     return new;
 }
 
-static void state_cleanup(
-        struct sess_state *sess_data, os0_t sid, void *opaque)
+static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
     d_assert(sess_data, return,);
 
@@ -553,7 +552,7 @@ status_t pcrf_gx_send_rar(
     memset(&gx_message, 0, sizeof(gx_message_t));
 
     /* Set default error result code */
-    rx_message->result_code = RX_DIAMETER_TEMPORARY_NETWORK_FAILURE;
+    rx_message->result_code = FD_DIAMETER_UNKNOWN_SESSION_ID;
 
     /* Create the request */
     ret = fd_msg_new(gx_cmd_rar, MSGFL_ALLOC_ETEID, &req);
@@ -574,7 +573,7 @@ status_t pcrf_gx_send_rar(
         d_error("No session data");
         ret = fd_msg_free(req);
         d_assert(ret == 0,,);
-        rx_message->result_code = RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
+        rx_message->result_code = FD_DIAMETER_UNKNOWN_PEER;
         return CORE_ERROR;
     }
 
@@ -604,7 +603,7 @@ status_t pcrf_gx_send_rar(
     {
         d_error("Cannot get data for IMSI(%s)+APN(%s)'\n",
                 sess_data->imsi_bcd, sess_data->apn);
-        rx_message->result_code = RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
+        rx_message->result_code = FD_DIAMETER_AUTHORIZATION_REJECTED;
         goto out;
     }
 
@@ -626,8 +625,7 @@ status_t pcrf_gx_send_rar(
             {
                 d_error("Not implemented : [Media-Type:%d]",
                         media_component->media_type);
-                rx_message->result_code = 
-                    RX_DIAMETER_INVALID_SERVICE_INFORMATION;
+                rx_message->result_code = FD_DIAMETER_INVALID_AVP_VALUE;
                 goto out;
             }
         }
@@ -714,9 +712,8 @@ status_t pcrf_gx_send_rar(
     }
 
     /* Save Rx Session-Id */
-    if (sess_data->rx_sid)
-        CORE_FREE(sess_data->rx_sid);
-    sess_data->rx_sid = (os0_t)core_strdup((char *)rx_sid);
+    if (!sess_data->rx_sid)
+        sess_data->rx_sid = (os0_t)core_strdup((char *)rx_sid);
     d_assert(sess_data->rx_sid, return CORE_ERROR,);
 
     /* Set Origin-Host & Origin-Realm */
