@@ -20,20 +20,39 @@ static struct session_handler *pcscf_rx_reg = NULL;
 static fd_config_t fd_config;
 
 struct sess_state {
-    struct timespec ts; /* Time of sending the message */
+    os0_t       rx_sid;         /* Rx Session-Id */
+
+    struct timespec ts;         /* Time of sending the message */
 };
 
 pool_declare(pcscf_rx_sess_pool, struct sess_state, MAX_NUM_SESSION_STATE);
 
 static void pcscf_rx_aaa_cb(void *data, struct msg **msg);
 
+static __inline__ struct sess_state *new_state(os0_t sid)
+{
+    struct sess_state *new = NULL;
+
+    pool_alloc_node(&pcscf_rx_sess_pool, &new);
+    d_assert(new, return NULL,);
+    memset(new, 0, sizeof *new);
+
+    new->rx_sid = (os0_t)core_strdup((char *)sid);
+    d_assert(new->rx_sid, return NULL,);
+
+    return new;
+}
+
 void pcscf_rx_sess_cleanup(
         struct sess_state *sess_data, os0_t sid, void * opaque)
 {
+    if (sess_data->rx_sid)
+        CORE_FREE(sess_data->rx_sid);
+
     pool_free_node(&pcscf_rx_sess_pool, sess_data);
 }
 
-void pcscf_rx_send_aar(const char *ip)
+void pcscf_rx_send_aar(c_int8_t **rx_sid, const char *ip)
 {
     status_t rv;
     int ret;
@@ -44,18 +63,17 @@ void pcscf_rx_send_aar(const char *ip)
     union avp_value val;
     struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
+    int new;
 
     paa_t paa;
     ipsubnet_t ipsub;
+
+    d_assert(rx_sid, return,);
 
     d_assert(ip, return,);
     rv = core_ipsubnet(&ipsub, ip, NULL);
     d_assert(rv == CORE_OK, return,);
 
-    /* Create the random value to store with the session */
-    pool_alloc_node(&pcscf_rx_sess_pool, &sess_data);
-    d_assert(sess_data, return,);
-    
     /* Create the request */
     ret = fd_msg_new(rx_cmd_aar, MSGFL_ALLOC_ETEID, &req);
     d_assert(ret == 0, return,);
@@ -65,15 +83,51 @@ void pcscf_rx_send_aar(const char *ip)
         d_assert(ret == 0, return,);
         h->msg_appl = RX_APPLICATION_ID;
     }
-    
-    /* Create a new session */
-    #define RX_APP_SID_OPT  "app_rx"
-    ret = fd_msg_new_session(req, (os0_t)RX_APP_SID_OPT, 
-            CONSTSTRLEN(RX_APP_SID_OPT));
-    d_assert(ret == 0, return,);
-    ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
-    d_assert(ret == 0, return,);
 
+    /* Find Diameter Rx Session */
+    if (*rx_sid)
+    {
+        /* Retrieve session by Session-Id */
+        size_t sidlen = strlen(*rx_sid);
+		ret = fd_sess_fromsid_msg((os0_t)(*rx_sid), sidlen, &session, &new);
+        d_assert(ret == 0, return,);
+        d_assert(new == 0, return,);
+
+        /* Add Session-Id to the message */
+        ret = fd_message_session_id_set(req, (os0_t)(*rx_sid), sidlen);
+        d_assert(ret == 0, return,);
+        /* Save the session associated with the message */
+        ret = fd_msg_sess_set(req, session);
+    }
+    else
+    {
+        /* Create a new session */
+        #define RX_APP_SID_OPT  "app_rx"
+        ret = fd_msg_new_session(req, (os0_t)RX_APP_SID_OPT, 
+                CONSTSTRLEN(RX_APP_SID_OPT));
+        d_assert(ret == 0, return,);
+        ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
+        d_assert(ret == 0, return,);
+    }
+
+    /* Retrieve session state in this session */
+    ret = fd_sess_state_retrieve(pcscf_rx_reg, session, &sess_data);
+    if (!sess_data)
+    {
+        os0_t sid;
+        size_t sidlen;
+
+        ret = fd_sess_getsid(session, &sid, &sidlen);
+        d_assert(ret == 0, return,);
+
+        /* Allocate new session state memory */
+        sess_data = new_state(sid);
+        d_assert(sess_data, return,);
+
+        /* Save Session-Id to PGW Session Context */
+        *rx_sid = (c_int8_t *)sess_data->rx_sid;
+    }
+    
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
     d_assert(ret == 0, return,);
@@ -282,6 +336,7 @@ void pcscf_rx_send_aar(const char *ip)
     /* Store this value in the session */
     ret = fd_sess_state_store(pcscf_rx_reg, session, &sess_data);
     d_assert(ret == 0, return,);
+    d_assert(sess_data == NULL,,);
     
     /* Send the request */
     ret = fd_msg_send(&req, pcscf_rx_aaa_cb, svg);
@@ -300,11 +355,7 @@ static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
     struct sess_state *sess_data = NULL;
     struct timespec ts;
     struct session *session;
-#if 0
-    struct avp *avp, *avpch1, *avpch2, *avpch3, *avpch4;
-#else
     struct avp *avp, *avpch1;
-#endif
     struct avp_hdr *hdr;
     unsigned long dur;
     int error = 0;
@@ -435,12 +486,15 @@ out:
         d_trace(3, "in %d.%06ld sec\n", 
                 (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+
+    ret = fd_sess_state_store(pcscf_rx_reg, session, &sess_data);
+    d_assert(ret == 0, return,);
+    d_assert(sess_data == NULL, return,);
     
     ret = fd_msg_free(*msg);
     d_assert(ret == 0,,);
     *msg = NULL;
 
-    pcscf_rx_sess_cleanup(sess_data, NULL, NULL);
     return;
 }
 

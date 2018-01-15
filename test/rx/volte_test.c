@@ -23,6 +23,7 @@ static void volte_test1(abts_case *tc, void *data)
     s1ap_message_t message;
     int i;
     int msgindex = 0;
+    c_int8_t *rx_sid = NULL;
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -236,7 +237,7 @@ static void volte_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send AA-Request */
-    pcscf_rx_send_aar("45.45.0.3");
+    pcscf_rx_send_aar(&rx_sid, "45.45.0.3");
 
     /* Receive E-RAB Setup Request +
      * Activate dedicated EPS bearer context request */

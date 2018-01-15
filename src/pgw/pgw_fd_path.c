@@ -18,11 +18,15 @@ static struct disp_hdl *hdl_gx_fb = NULL;
 static struct disp_hdl *hdl_gx_rar = NULL; 
 
 struct sess_state {
-    gtp_xact_t *xact;
+    os0_t       gx_sid;             /* Gx Session-Id */
+
     pgw_sess_t *sess;
+    gtp_xact_t *xact;
     pkbuf_t *gtpbuf;
+
     c_uint32_t cc_request_type;
     c_uint32_t cc_request_number;
+
     struct timespec ts; /* Time of sending the message */
 };
 
@@ -32,9 +36,25 @@ static status_t decode_pcc_rule_definition(
         pcc_rule_t *pcc_rule, struct avp *avpch1, int *perror);
 static void pgw_gx_cca_cb(void *data, struct msg **msg);
 
-void state_cleanup(
-        struct sess_state *sess_data, os0_t sid, void * opaque)
+static __inline__ struct sess_state *new_state(os0_t sid)
 {
+    struct sess_state *new = NULL;
+
+    pool_alloc_node(&pgw_gx_sess_pool, &new);
+    d_assert(new, return NULL,);
+    memset(new, 0, sizeof *new);
+
+    new->gx_sid = (os0_t)core_strdup((char *)sid);
+    d_assert(new->gx_sid, return NULL,);
+
+    return new;
+}
+
+void state_cleanup(struct sess_state *sess_data, os0_t sid, void * opaque)
+{
+    if (sess_data->gx_sid)
+        CORE_FREE(sess_data->gx_sid);
+
     pool_free_node(&pgw_gx_sess_pool, sess_data);
 }
 
@@ -63,6 +83,7 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
     ret = fd_msg_new(gx_cmd_ccr, MSGFL_ALLOC_ETEID, &req);
     d_assert(ret == 0, return,);
 
+    /* Find Diameter Gx Session */
     if (sess->gx_sid)
     {
         /* Retrieve session by Session-Id */
@@ -72,14 +93,13 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
         d_assert(new == 0, return,);
 
         /* Add Session-Id to the message */
-        ret = fd_message_session_id_set( req, (os0_t)sess->gx_sid, sidlen);
+        ret = fd_message_session_id_set(req, (os0_t)sess->gx_sid, sidlen);
         d_assert(ret == 0, return,);
         /* Save the session associated with the message */
         ret = fd_msg_sess_set(req, session);
     }
     else
     {
-        size_t sidlen;
         /* Create a new session */
         #define GX_APP_SID_OPT  "app_gx"
         ret = fd_msg_new_session(req, (os0_t)GX_APP_SID_OPT, 
@@ -87,26 +107,29 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
         d_assert(ret == 0, return,);
         ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
         d_assert(ret == 0, return,);
-
-        /* Store Session-Id in PGW Session Context */
-        ret = fd_sess_getsid(session, (os0_t *)&sess->gx_sid, &sidlen);
-        d_assert(ret == 0, return,);
-        d_assert(sidlen == strlen(sess->gx_sid), return,);
     }
 
     /* Retrieve session state in this session */
     ret = fd_sess_state_retrieve(pgw_gx_reg, session, &sess_data);
     if (!sess_data)
     {
+        os0_t sid;
+        size_t sidlen;
+
+        ret = fd_sess_getsid(session, &sid, &sidlen);
+        d_assert(ret == 0, return,);
+
         /* Allocate new session state memory */
-        pool_alloc_node(&pgw_gx_sess_pool, &sess_data);
+        sess_data = new_state(sid);
         d_assert(sess_data, return,);
-        memset(sess_data, 0, sizeof *sess_data);
+
+        /* Save Session-Id to PGW Session Context */
+        sess->gx_sid = (c_int8_t *)sess_data->gx_sid;
     }
 
     /* Update session state */
-    sess_data->xact = xact;
     sess_data->sess = sess;
+    sess_data->xact = xact;
     sess_data->gtpbuf = gtpbuf;
 
     sess_data->cc_request_type = cc_request_type;
