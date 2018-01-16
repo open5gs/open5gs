@@ -265,6 +265,27 @@ static void volte_test1(abts_case *tc, void *data)
     /* Send Session-Termination-Request */
     pcscf_rx_send_str(rx_sid);
 
+    /* Receive E-RAB Release Command +
+     * Dectivate EPS bearer context request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+#if 0
+    /* Send E-RAB Release Response */
+    rv = tests1ap_build_e_rab_release_response(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Deactivate EPS bearer context accept */
+    rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+#endif
+
     core_sleep(time_from_msec(1000));
 #if 0
     /* Send PDN disconnectivity request */

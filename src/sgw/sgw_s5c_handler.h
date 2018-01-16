@@ -15,6 +15,8 @@ CORE_DECLARE(void) sgw_s5c_handle_delete_session_response(gtp_xact_t *s5c_xact,
         sgw_sess_t *sess, gtp_message_t *gtp_message);
 CORE_DECLARE(void) sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
         sgw_sess_t *sess, gtp_message_t *gtp_message);
+CORE_DECLARE(void) sgw_s5c_handle_delete_bearer_request(gtp_xact_t *s5c_xact, 
+    sgw_sess_t *sess, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }

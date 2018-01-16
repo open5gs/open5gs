@@ -188,6 +188,19 @@ static status_t bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
             bearer = pgw_bearer_find_by_name(sess, pcc_rule->name);
             d_assert(bearer, return CORE_ERROR,);
 
+            memset(&h, 0, sizeof(gtp_header_t));
+            h.type = GTP_DELETE_BEARER_REQUEST_TYPE;
+            h.teid = sess->sgw_s5c_teid;
+
+            rv = pgw_s5c_build_delete_bearer_request(&pkbuf, h.type, bearer);
+            d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+
+            xact = gtp_xact_local_create(sess->gnode, &h, pkbuf);
+            d_assert(xact, return CORE_ERROR, "Null param");
+
+            rv = gtp_xact_commit(xact);
+            d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+
             return CORE_OK;
         }
         else

@@ -17,6 +17,8 @@ CORE_DECLARE(void) mme_s11_handle_delete_session_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_session_response_t *rsp);
 CORE_DECLARE(void) mme_s11_handle_create_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *rsp);
+CORE_DECLARE(void) mme_s11_handle_delete_bearer_request(
+        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_bearer_request_t *rsp);
 
 CORE_DECLARE(void) mme_s11_handle_release_access_bearers_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue,

@@ -240,6 +240,7 @@ void mme_s11_handle_delete_session_response(
         d_assert(0,, "Invalid EMM state");
 
 }
+
 void mme_s11_handle_create_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
 {
@@ -336,6 +337,67 @@ void mme_s11_handle_create_bearer_request(
         d_assert(rv == CORE_OK, return,
             "nas_send_activate_dedicated_bearer_context failed");
     }
+}
+
+void mme_s11_handle_delete_bearer_request(
+        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_bearer_request_t *req)
+{
+    status_t rv;
+    mme_bearer_t *bearer = NULL;
+
+    d_assert(xact, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
+    d_assert(req, return, "Null param");
+
+    d_trace(3, "[MME] Delete Bearer Request : MME[%d] <-- SGW[%d]\n",
+            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    if (req->linked_eps_bearer_id.presence == 1)
+    {
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, req->linked_eps_bearer_id.u8);
+        d_assert(bearer, return, 
+                "No Bearer Context(EBI:%d)", req->linked_eps_bearer_id.u8);
+    }
+    else if (req->eps_bearer_ids.presence == 1)
+    {
+        bearer = mme_bearer_find_by_ue_ebi(
+                mme_ue, req->eps_bearer_ids.u8);
+        d_assert(bearer, return, 
+                "No Bearer Context(EBI:%d)", req->eps_bearer_ids.u8);
+    }
+    else
+    {
+        d_error("No Linked EBI or EPS Bearer ID");
+        return;
+    }
+
+    /* Save Transaction. will be handled after EMM-attached */
+    bearer->xact = xact;
+
+    if (/* Check if Activate Default/Dedicated Bearer Accept is received */
+        FSM_CHECK(&bearer->sm, esm_state_active) &&
+        /* Check if Initial Context Setup Response or 
+         *          E-RAB Setup Response is received */
+        MME_HAVE_ENB_S1U_PATH(bearer))
+    {
+        rv = nas_send_deactivate_bearer_context_request(bearer);
+        d_assert(rv == CORE_OK, return,
+            "nas_send_deactivate_bearer_context_request failed");
+    }
+    else
+    {
+        if (!FSM_CHECK(&bearer->sm, esm_state_active))
+        {
+            d_assert(0,, "Invalid Bearer State");
+        }
+        else if (!MME_HAVE_ENB_S1U_PATH(bearer))
+        {
+            d_assert(0,, "No ENB S1U PATH");
+        }
+        else
+            d_assert(0,,);
+    }
+
 }
 
 void mme_s11_handle_release_access_bearers_response(

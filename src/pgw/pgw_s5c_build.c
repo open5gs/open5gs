@@ -348,6 +348,45 @@ status_t pgw_s5c_build_create_bearer_request(
     return CORE_OK;
 }
 
+status_t pgw_s5c_build_delete_bearer_request(
+        pkbuf_t **pkbuf, c_uint8_t type, pgw_bearer_t *bearer)
+{
+    status_t rv;
+    pgw_sess_t *sess = NULL;
+    pgw_bearer_t *linked_bearer = NULL;
+
+    gtp_message_t gtp_message;
+    gtp_delete_bearer_request_t *req = NULL;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return CORE_ERROR, "Null param");
+    linked_bearer = pgw_default_bearer_in_sess(sess);
+    d_assert(linked_bearer, return CORE_ERROR, "Null param");
+
+    req = &gtp_message.delete_bearer_request;
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+ 
+    if (bearer->ebi == linked_bearer->ebi)
+    {
+        /* Linked EBI */
+        req->linked_eps_bearer_id.presence = 1;
+        req->linked_eps_bearer_id.u8 = bearer->ebi;
+    }
+    else
+    {
+        /* Bearer EBI */
+        req->eps_bearer_ids.presence = 1;
+        req->eps_bearer_ids.u8 = bearer->ebi;
+    }
+
+    gtp_message.h.type = type;
+    rv = gtp_build_msg(pkbuf, &gtp_message);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+
+    return CORE_OK;
+}
+
 static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
 {
     status_t rv;

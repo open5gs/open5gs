@@ -313,3 +313,44 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
             s5u_tunnel->local_teid, s5u_tunnel->remote_teid);
 }
 
+void sgw_s5c_handle_delete_bearer_request(gtp_xact_t *s5c_xact, 
+    sgw_sess_t *sess, gtp_message_t *gtp_message)
+{
+    status_t rv;
+    gtp_xact_t *s11_xact = NULL;
+    gtp_delete_bearer_request_t *req = NULL;
+    pkbuf_t *pkbuf = NULL;
+    sgw_ue_t *sgw_ue = NULL;
+
+    d_assert(sess, return, "Null param");
+    sgw_ue = sess->sgw_ue;
+    d_assert(sgw_ue, return, "Null param");
+    d_assert(s5c_xact, return, "Null param");
+    d_assert(gtp_message, return, "Null param");
+
+    req = &gtp_message->delete_bearer_request;
+
+    if (req->linked_eps_bearer_id.presence == 0 &&
+        req->eps_bearer_ids.presence == 0)
+    {
+        d_error("No Linked EBI or EPS Bearer ID");
+        return;
+    }
+
+    gtp_message->h.type = GTP_DELETE_BEARER_REQUEST_TYPE;
+    gtp_message->h.teid = sgw_ue->mme_s11_teid;
+
+    rv = gtp_build_msg(&pkbuf, gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    s11_xact = gtp_xact_local_create(sgw_ue->gnode, &gtp_message->h, pkbuf);
+    d_assert(s11_xact, return, "Null param");
+
+    gtp_xact_associate(s5c_xact, s11_xact);
+
+    rv = gtp_xact_commit(s11_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    d_trace(3, "[SGW] Delete Bearer Request : SGW <-- PGW\n");
+}
+

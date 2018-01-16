@@ -16,6 +16,8 @@ CORE_DECLARE(status_t) pgw_s5c_build_delete_session_response(
 
 CORE_DECLARE(status_t) pgw_s5c_build_create_bearer_request(
         pkbuf_t **pkbuf, c_uint8_t type, pgw_bearer_t *bearer);
+CORE_DECLARE(status_t) pgw_s5c_build_delete_bearer_request(
+        pkbuf_t **pkbuf, c_uint8_t type, pgw_bearer_t *bearer);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
