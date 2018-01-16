@@ -185,8 +185,10 @@ static status_t bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
         }
         else if (pcc_rule->type == PCC_RULE_TYPE_REMOVE)
         {
-            d_warn("Not implmeneted");
-            return CORE_ERROR;
+            bearer = pgw_bearer_find_by_name(sess, pcc_rule->name);
+            d_assert(bearer, return CORE_ERROR,);
+
+            return CORE_OK;
         }
         else
             d_assert(0, return CORE_ERROR, "Invalid type(%d)", pcc_rule->type);

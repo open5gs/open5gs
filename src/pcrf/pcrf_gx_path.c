@@ -13,9 +13,16 @@
 #include "pcrf_context.h"
 #include "pcrf_fd_path.h"
 
-struct sess_state {
-    c_uint32_t  cc_request_type;    /* CC-Request-Type */
+struct rx_sess_state {
+    os0_t       sid;                            /* Rx Session-Id */
+    c_int8_t    *name[MAX_NUM_OF_PCC_RULE];     /* PCC Rule Name */
+    int         num_of_name;
+};
 
+struct sess_state {
+    os0_t       sid;                /* Gx Session-Id */
+
+    c_uint32_t  cc_request_type;    /* CC-Request-Type */
     os0_t       peer_host;          /* Peer Host */
 
     c_int8_t    *imsi_bcd;
@@ -27,10 +34,11 @@ ED3(c_uint8_t   ipv4:1;,
     c_uint32_t  addr;               /* Framed-IPv4-Address */
     c_uint8_t   addr6[IPV6_LEN];    /* Framed-IPv6-Prefix */
 
-    os0_t       gx_sid;             /* Gx Session-Id */
-    os0_t       rx_sid;             /* Rx Session-Id */
+#define MAX_NUM_OF_RX_SESSION_STATE 16
+    struct rx_sess_state rx[MAX_NUM_OF_RX_SESSION_STATE];
+    int num_of_rx;
 
-    struct      timespec ts;             /* Time of sending the message */
+    struct timespec ts;             /* Time of sending the message */
 };
 
 static struct session_handler *pcrf_gx_reg = NULL;
@@ -50,14 +58,16 @@ static __inline__ struct sess_state *new_state(os0_t sid)
     d_assert(new, return NULL,);
     memset(new, 0, sizeof *new);
 
-    new->gx_sid = (os0_t)core_strdup((char *)sid);
-    d_assert(new->gx_sid, return NULL,);
+    new->sid = (os0_t)core_strdup((char *)sid);
+    d_assert(new->sid, return NULL,);
 
     return new;
 }
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
+    int i, j;
+
     d_assert(sess_data, return,);
 
     if (sess_data->peer_host)
@@ -73,10 +83,22 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     if (sess_data->ipv6)
         pcrf_sess_set_ipv6(sess_data->addr6, NULL);
 
-    if (sess_data->gx_sid)
-        CORE_FREE(sess_data->gx_sid);
-    if (sess_data->rx_sid)
-        CORE_FREE(sess_data->rx_sid);
+    if (sess_data->sid)
+        CORE_FREE(sess_data->sid);
+
+    for (i = 0; i < sess_data->num_of_rx; i++)
+    {
+        struct rx_sess_state *rx_sess_data = &sess_data->rx[i];
+
+        for (j = 0; j < rx_sess_data->num_of_name; j++)
+        {
+            d_assert(rx_sess_data->name[j],,);
+            CORE_FREE(rx_sess_data->name[j]);
+        }
+
+        if (rx_sess_data->sid)
+            CORE_FREE(rx_sess_data->sid);
+    }
 
     pool_free_node(&pcrf_gx_sess_pool, sess_data);
 }
@@ -190,7 +212,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         memcpy(&sess_data->addr, hdr->avp_value->os.data,
                 sizeof sess_data->addr);
-        pcrf_sess_set_ipv4(&sess_data->addr, sess_data->gx_sid);
+        pcrf_sess_set_ipv4(&sess_data->addr, sess_data->sid);
         sess_data->ipv4 = 1;
     }
 
@@ -209,7 +231,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         d_assert(paa->len == IPV6_LEN * 8 /* 128bit */, return EINVAL,
                 "Invalid Framed-IPv6-Prefix Length:%d", paa->len);
         memcpy(sess_data->addr6, paa->addr6, sizeof sess_data->addr6);
-        pcrf_sess_set_ipv6(sess_data->addr6, sess_data->gx_sid);
+        pcrf_sess_set_ipv6(sess_data->addr6, sess_data->sid);
         sess_data->ipv6 = 1;
     }
 
@@ -534,15 +556,15 @@ status_t pcrf_gx_send_rar(
     int ret = 0, i, j;
 
     struct msg *req = NULL;
-    struct avp *avp;
+    struct avp *avp, *avpch1;
     union avp_value val;
     struct sess_state *sess_data = NULL, *svg;
+    struct rx_sess_state *rx_sess_data = NULL;
     struct session *session = NULL;
     int new;
     size_t sidlen;
 
     gx_message_t gx_message;
-    int charging_rule_install = 0;
 
     d_assert(gx_sid, return CORE_ERROR,);
     d_assert(rx_sid, return CORE_ERROR,);
@@ -597,124 +619,190 @@ status_t pcrf_gx_send_rar(
         return CORE_ERROR;
     }
 
-    /* Retrieve QoS Data from Database */
-    rv = pcrf_db_qos_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
-    if (rv != CORE_OK)
+    /* Find RX session state */
+    rx_sess_data = &sess_data->rx[sess_data->num_of_rx];
+    for (i = 0; i < sess_data->num_of_rx; i++)
     {
-        d_error("Cannot get data for IMSI(%s)+APN(%s)'\n",
-                sess_data->imsi_bcd, sess_data->apn);
-        rx_message->result_code = FD_DIAMETER_AUTHORIZATION_REJECTED;
-        goto out;
+        if (strcmp((char *)sess_data->rx[i].sid, (char*)rx_sid) == 0)
+        {
+            rx_sess_data = &sess_data->rx[i];
+            break;
+        }
     }
 
-    /* Match Media-Component with PCC Rule */
-    for (i = 0; i < rx_message->num_of_media_component; i++)
+    if (rx_message->cmd_code == RX_CMD_CODE_AA)
     {
-        pcc_rule_t *pcc_rule = NULL;
-        c_uint8_t qci = 0;
-        rx_media_component_t *media_component = &rx_message->media_component[i];
+        int charging_rule_install = 0;
 
-        switch(media_component->media_type)
+        if (!rx_sess_data->sid)
         {
-            case RX_MEDIA_TYPE_AUDIO:
+            rx_sess_data->sid = (os0_t)core_strdup((char *)rx_sid);
+            sess_data->num_of_rx++;
+        }
+        d_assert(rx_sess_data->sid, return CORE_ERROR,);
+
+        /* Retrieve QoS Data from Database */
+        rv = pcrf_db_qos_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
+        if (rv != CORE_OK)
+        {
+            d_error("Cannot get data for IMSI(%s)+APN(%s)'\n",
+                    sess_data->imsi_bcd, sess_data->apn);
+            rx_message->result_code =
+                RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
+            goto out;
+        }
+
+        /* Match Media-Component with PCC Rule */
+        for (i = 0; i < rx_message->num_of_media_component; i++)
+        {
+            pcc_rule_t *pcc_rule = NULL;
+            c_uint8_t qci = 0;
+            rx_media_component_t *media_component =
+                &rx_message->media_component[i];
+
+            switch(media_component->media_type)
             {
-                qci = PDN_QCI_1;
-                break;
+                case RX_MEDIA_TYPE_AUDIO:
+                {
+                    qci = PDN_QCI_1;
+                    break;
+                }
+                default:
+                {
+                    d_error("Not implemented : [Media-Type:%d]",
+                            media_component->media_type);
+                    rx_message->result_code = FD_DIAMETER_INVALID_AVP_VALUE;
+                    goto out;
+                }
             }
-            default:
+            
+            for (j = 0; j < gx_message.num_of_pcc_rule; j++)
             {
-                d_error("Not implemented : [Media-Type:%d]",
-                        media_component->media_type);
-                rx_message->result_code = FD_DIAMETER_INVALID_AVP_VALUE;
+                pcc_rule = &gx_message.pcc_rule[j];
+                if (pcc_rule->qos.qci == qci)
+                {
+                    break;
+                }
+            }
+
+            if (!pcc_rule)
+            {
+                d_error("No PCC Rule : [QCI:%d]", qci);
+                rx_message->result_code = 
+                    RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
                 goto out;
             }
-        }
-        
-        for (j = 0; j < gx_message.num_of_pcc_rule; j++)
-        {
-            pcc_rule = &gx_message.pcc_rule[j];
-            if (pcc_rule->qos.qci == qci)
+
+            if (pcc_rule->num_of_flow)
             {
-                break;
-            }
-        }
-
-        if (!pcc_rule)
-        {
-            d_error("No PCC Rule : [QCI:%d]", qci);
-            rx_message->result_code = 
-                RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
-            goto out;
-        }
-
-        if (pcc_rule->num_of_flow)
-        {
-            d_error("CHECK WEBUI : PCC Rule Modification is NOT implemented");
-            d_error("Please remove Flow in PCC Rule");
-            rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
-            goto out;
-        }
-
-        for (j = 0; j < media_component->num_of_flow; j++)
-        {
-            int len;
-            flow_t *rx_flow = &media_component->flow[j];
-            flow_t *gx_flow = &pcc_rule->flow[j];
-
-            if (!strncmp(rx_flow->description,
-                        "permit out", strlen("permit out")))
-            {
-                gx_flow->direction = FLOW_DOWNLINK_ONLY;
-
-                len = strlen(rx_flow->description)+1;
-                gx_flow->description = core_malloc(len);
-                core_cpystrn(gx_flow->description, rx_flow->description, len);
-            }
-            else if (!strncmp(rx_flow->description,
-                        "permit in", strlen("permit in")))
-            {
-                gx_flow->direction = FLOW_UPLINK_ONLY;
-
-                /* 'permit in' should be changed 'permit out' in Gx Diameter */
-                len = strlen(rx_flow->description)+2;
-                gx_flow->description = core_malloc(len);
-                strcpy(gx_flow->description, "permit out");
-                strcat(gx_flow->description,
-                        &rx_flow->description[strlen("permit in")]);
-                d_assert(len == strlen(gx_flow->description)+1, goto out,);
-            }
-            else
-            {
-                d_error("Invalid Flow Descripton : [%s]", rx_flow->description);
+                d_error("CHECK WEBUI : PCC Rule Modification is NOT implemented");
+                d_error("Please remove Flow in PCC Rule");
                 rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
                 goto out;
             }
 
+            for (j = 0; j < media_component->num_of_flow; j++)
+            {
+                int len;
+                flow_t *rx_flow = &media_component->flow[j];
+                flow_t *gx_flow = &pcc_rule->flow[j];
 
-            pcc_rule->num_of_flow++;
+                if (!strncmp(rx_flow->description,
+                            "permit out", strlen("permit out")))
+                {
+                    gx_flow->direction = FLOW_DOWNLINK_ONLY;
+
+                    len = strlen(rx_flow->description)+1;
+                    gx_flow->description = core_malloc(len);
+                    core_cpystrn(gx_flow->description,
+                            rx_flow->description, len);
+                }
+                else if (!strncmp(rx_flow->description,
+                            "permit in", strlen("permit in")))
+                {
+                    gx_flow->direction = FLOW_UPLINK_ONLY;
+
+                    /* 'permit in' should be changed
+                     * 'permit out' in Gx Diameter */
+                    len = strlen(rx_flow->description)+2;
+                    gx_flow->description = core_malloc(len);
+                    strcpy(gx_flow->description, "permit out");
+                    strcat(gx_flow->description,
+                            &rx_flow->description[strlen("permit in")]);
+                    d_assert(len == strlen(gx_flow->description)+1, goto out,);
+                }
+                else
+                {
+                    d_error("Invalid Flow Descripton : [%s]",
+                            rx_flow->description);
+                    rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
+                    goto out;
+                }
+
+                pcc_rule->num_of_flow++;
+            }
+
+            if (charging_rule_install == 0)
+            {
+                ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
+                d_assert(ret == 0, return CORE_ERROR,);
+                charging_rule_install = 1;
+            }
+
+            rv = encode_pcc_rule_definition(avp, pcc_rule);
+            d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+            /* Store PCC Rule Name in Rx session state */
+            rx_sess_data->name[rx_sess_data->num_of_name]
+                    = core_strdup(pcc_rule->name);
+            d_assert(rx_sess_data->name[rx_sess_data->num_of_name],
+                    return CORE_ERROR,);
+            rx_sess_data->num_of_name++;
         }
 
-        if (charging_rule_install == 0)
+        if (charging_rule_install == 1)
         {
-            ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
+            ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
             d_assert(ret == 0, return CORE_ERROR,);
-            charging_rule_install = 1;
         }
 
-        rv = encode_pcc_rule_definition(avp, pcc_rule);
-        d_assert(rv == CORE_OK, return EINVAL,);
     }
-
-    if (charging_rule_install == 1)
+    else if (rx_message->cmd_code == RX_CMD_CODE_SESSION_TERMINATION)
     {
-        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-        d_assert(ret == 0, return CORE_ERROR,);
-    }
+        int charging_rule_remove = 0;
 
-    /* Save Rx Session-Id */
-    if (!sess_data->rx_sid)
-        sess_data->rx_sid = (os0_t)core_strdup((char *)rx_sid);
-    d_assert(sess_data->rx_sid, return CORE_ERROR,);
+        d_assert(rx_sess_data->sid, return CORE_ERROR,);
+
+        for (i = 0; i < rx_sess_data->num_of_name; i++)
+        {
+            d_assert(rx_sess_data->name[i],,);
+
+            if (charging_rule_remove == 0)
+            {
+                ret = fd_msg_avp_new(gx_charging_rule_remove, 0, &avp);
+                d_assert(ret == 0, return CORE_ERROR,);
+                charging_rule_remove = 1;
+            }
+
+            ret = fd_msg_avp_new(gx_charging_rule_name, 0, &avpch1);
+            d_assert(ret == 0, return CORE_ERROR,);
+            val.os.data = (c_uint8_t *)rx_sess_data->name[i];
+            val.os.len = strlen(rx_sess_data->name[i]);
+            ret = fd_msg_avp_setvalue(avpch1, &val);
+            d_assert(ret == 0, return CORE_ERROR,);
+            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
+            d_assert(ret == 0, return CORE_ERROR,);
+        }
+
+        if (charging_rule_remove == 1)
+        {
+            ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+            d_assert(ret == 0, return CORE_ERROR,);
+        }
+    }
+    else
+        d_assert(0, return CORE_ERROR,
+                "Invalid Command Code(%d)", rx_message->cmd_code);
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);

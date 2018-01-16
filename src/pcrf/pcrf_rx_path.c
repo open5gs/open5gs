@@ -377,7 +377,7 @@ out:
 static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
-//    status_t rv;
+    status_t rv;
     int ret;
 
 	struct msg *ans, *qry;
@@ -454,15 +454,13 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Send Re-Auth Request */
-#if 0
-    rv = pcrf_gx_send_rar(gx_sid, rx_sid, &rx_message);
+    rv = pcrf_gx_send_rar(sess_data->gx_sid, sess_data->rx_sid, &rx_message);
     if (rv != CORE_OK)
     {
         result_code = rx_message.result_code;
         d_error("pcrf_gx_send_rar() failed");
         goto out;
     }
-#endif
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
@@ -482,7 +480,7 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     
     return 0;
 
-//out:
+out:
     if (result_code == FD_DIAMETER_AVP_UNSUPPORTED)
     {
         ret = fd_msg_rescode_set(ans,

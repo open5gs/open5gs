@@ -46,6 +46,7 @@ struct dict_object *gx_3gpp_ms_timezone = NULL;
 struct dict_object *gx_event_trigger = NULL;
 struct dict_object *gx_bearer_control_mode = NULL;
 struct dict_object *gx_charging_rule_install = NULL;
+struct dict_object *gx_charging_rule_remove = NULL;
 struct dict_object *gx_charging_rule_definition = NULL;
 struct dict_object *gx_charging_rule_base_name = NULL;
 struct dict_object *gx_charging_rule_name = NULL;
@@ -112,6 +113,7 @@ int gx_dict_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Bearer-Control-Mode", &gx_bearer_control_mode);
 
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Install", &gx_charging_rule_install);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Remove", &gx_charging_rule_remove);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Definition", &gx_charging_rule_definition);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Base-Name", &gx_charging_rule_base_name);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Name", &gx_charging_rule_name);

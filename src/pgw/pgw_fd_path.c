@@ -904,6 +904,39 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
                 }
                 break;
             }
+            case GX_AVP_CODE_CHARGING_RULE_REMOVE:
+            {
+                ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
+                d_assert(ret == 0, return EINVAL,);
+                while(avpch1)
+                {
+                    ret = fd_msg_avp_hdr(avpch1, &hdr);
+                    d_assert(ret == 0, return EINVAL,);
+                    switch(hdr->avp_code)
+                    {
+                        case GX_AVP_CODE_CHARGING_RULE_NAME:
+                        {
+                            pcc_rule_t *pcc_rule = &gx_message->pcc_rule
+                                [gx_message->num_of_pcc_rule];
+
+                            pcc_rule->name = 
+                                core_strdup((char*)hdr->avp_value->os.data);
+                            d_assert(pcc_rule->name, return CORE_ERROR,);
+
+                            pcc_rule->type = PCC_RULE_TYPE_REMOVE;
+                            gx_message->num_of_pcc_rule++;
+                            break;
+                        }
+                        default:
+                        {
+                            d_error("Not supported(%d)", hdr->avp_code);
+                            break;
+                        }
+                    }
+                    fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
+                }
+                break;
+            }
             default:
             {
                 d_warn("Not supported(%d)", hdr->avp_code);

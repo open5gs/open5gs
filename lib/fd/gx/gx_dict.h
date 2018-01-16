@@ -87,6 +87,7 @@ extern struct dict_object *gx_3gpp_ms_timezone;
 extern struct dict_object *gx_event_trigger;
 extern struct dict_object *gx_bearer_control_mode;
 extern struct dict_object *gx_charging_rule_install;
+extern struct dict_object *gx_charging_rule_remove;
 extern struct dict_object *gx_charging_rule_definition;
 extern struct dict_object *gx_charging_rule_base_name;
 extern struct dict_object *gx_charging_rule_name;
