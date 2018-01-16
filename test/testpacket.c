@@ -1108,8 +1108,9 @@ status_t tests1ap_build_e_rab_release_response(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
         "2007001d0000"
-        "0300004005c08000 0108000840030001 000045400600000f 40010c",
-        "",
+        "0300004005c00000 0001000840030001 000045400600000f 40010c",
+        "2007001d0000"
+        "0300004005c00000 0001000840030001 000045400600000f 40010e",
         "",
 
         "",
@@ -1123,7 +1124,7 @@ status_t tests1ap_build_e_rab_release_response(pkbuf_t **pkbuf, int i)
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         33,
-        0,
+        33,
         0,
 
         0,
@@ -1251,9 +1252,11 @@ status_t tests1ap_build_deactivate_bearer_accept(
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
         "000d40370000"
-        "0500000005c08000 0108000800030001 00001a000a09274c b2ebbd056200ce00"
+        "0500000005c00000 0001000800030001 00001a000a09274c b2ebbd056200ce00"
         "6440080055f50100 19d0100043400600 55f5011022",
-        "",
+        "000d40370000"
+        "0500000005c00000 0001000800030001 00001a000a09273e c7610a057200ce00"
+        "6440080055f50100 19d0100043400600 55f5011022",
         "",
 
         "",
@@ -1267,7 +1270,7 @@ status_t tests1ap_build_deactivate_bearer_accept(
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         59,
-        0,
+        59,
         0,
 
         0,

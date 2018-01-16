@@ -126,8 +126,14 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                         sess, xact, &message->create_bearer_response);
                     pkbuf_free(copybuf);
                     break;
+                case GTP_DELETE_BEARER_RESPONSE_TYPE:
+                    pgw_s5c_handle_delete_bearer_response(
+                        sess, xact, &message->delete_bearer_response);
+                    pkbuf_free(copybuf);
+                    break;
                 default:
                     d_warn("Not implmeneted(type:%d)", message->h.type);
+                    pkbuf_free(copybuf);
                     break;
             }
             pkbuf_free(recvbuf);

@@ -288,6 +288,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
             nas_message_t message;
             mme_ue_t *mme_ue = NULL;
             mme_bearer_t *bearer = NULL;
+            mme_bearer_t *default_bearer = NULL;
+            mme_sess_t *sess = NULL;
             pkbuf_t *pkbuf = NULL;
 
             mme_ue = mme_ue_find(event_get_param1(e));
@@ -300,20 +302,38 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             bearer = mme_bearer_find_or_add_by_message(mme_ue, &message);
             d_assert(bearer, pkbuf_free(pkbuf); break, "No Bearer context");
+            sess = bearer->sess;
+            d_assert(sess, pkbuf_free(pkbuf); break, "Null param");
+            default_bearer = mme_default_bearer_in_sess(sess);
+            d_assert(default_bearer, pkbuf_free(pkbuf); break, "Null param");
 
             event_set_param1(e, (c_uintptr_t)bearer->index);
             event_set_param3(e, (c_uintptr_t)&message);
 
             fsm_dispatch(&bearer->sm, (fsm_event_t*)e);
-            if (FSM_CHECK(&bearer->sm, esm_state_session_exception))
+            if (FSM_CHECK(&bearer->sm, esm_state_bearer_deactivated) ||
+                FSM_CHECK(&bearer->sm, esm_state_exception))
             {
-                mme_sess_t *sess = bearer->sess;
-                d_assert(sess, pkbuf_free(pkbuf); break, "Null param");
-                mme_sess_remove(sess);
+                if (default_bearer->ebi == bearer->ebi)
+                {
+                    /* if the bearer is a default bearer,
+                     * remove all session context linked the default bearer */
+                    mme_sess_remove(sess);
+                }
+                else
+                {
+                    /* if the bearer is not a default bearer,
+                     * just remove the bearer context */
+                    mme_bearer_remove(bearer);
+                }
             }
-            else if (FSM_CHECK(&bearer->sm, esm_state_bearer_exception))
+            else if (FSM_CHECK(&bearer->sm, esm_state_pdn_did_disconnect))
             {
-                d_assert(0, pkbuf_free(pkbuf); break, "Not implemented");
+                d_assert(default_bearer->ebi == bearer->ebi,
+                        pkbuf_free(pkbuf); break,
+                        "Bearer[%d] is not Default Bearer",
+                        default_bearer->ebi, bearer->ebi);
+                mme_sess_remove(sess);
             }
 
             pkbuf_free(pkbuf);

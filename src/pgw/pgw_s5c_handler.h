@@ -15,6 +15,8 @@ CORE_DECLARE(void) pgw_s5c_handle_delete_session_request(
         pgw_sess_t *sess, gtp_xact_t *xact, gtp_delete_session_request_t *req);
 CORE_DECLARE(void) pgw_s5c_handle_create_bearer_response(
         pgw_sess_t *sess, gtp_xact_t *xact, gtp_create_bearer_response_t *req);
+CORE_DECLARE(void) pgw_s5c_handle_delete_bearer_response(
+        pgw_sess_t *sess, gtp_xact_t *xact, gtp_delete_bearer_response_t *req);
 
 #ifdef __cplusplus
 }

@@ -25,7 +25,7 @@ void emm_state_detached(fsm_t *s, event_t *e);
 void emm_state_identity(fsm_t *s, event_t *e);
 void emm_state_authentication(fsm_t *s, event_t *e);
 void emm_state_security_mode(fsm_t *s, event_t *e);
-void emm_state_default_esm(fsm_t *s, event_t *e);
+void emm_state_initial_context_setup(fsm_t *s, event_t *e);
 void emm_state_attached(fsm_t *s, event_t *e);
 void emm_state_exception(fsm_t *s, event_t *e);
 
@@ -33,9 +33,10 @@ void esm_state_initial(fsm_t *s, event_t *e);
 void esm_state_final(fsm_t *s, event_t *e);
 void esm_state_inactive(fsm_t *s, event_t *e);
 void esm_state_active(fsm_t *s, event_t *e);
-void esm_state_disconnect(fsm_t *s, event_t *e);
-void esm_state_session_exception(fsm_t *s, event_t *e);
-void esm_state_bearer_exception(fsm_t *s, event_t *e);
+void esm_state_pdn_will_disconnect(fsm_t *s, event_t *e);
+void esm_state_pdn_did_disconnect(fsm_t *s, event_t *e);
+void esm_state_bearer_deactivated(fsm_t *s, event_t *e);
+void esm_state_exception(fsm_t *s, event_t *e);
 
 #define mme_sm_print(__pe) \
     d_print("%s(): %s\n", __func__, mme_event_get_name(__pe))

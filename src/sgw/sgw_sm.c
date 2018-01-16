@@ -106,6 +106,10 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                     sgw_s11_handle_create_bearer_response(xact, sgw_ue,
                             &message);
                     break;
+                case GTP_DELETE_BEARER_RESPONSE_TYPE:
+                    sgw_s11_handle_delete_bearer_response(xact, sgw_ue,
+                            &message);
+                    break;
                 case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
                     sgw_s11_handle_release_access_bearers_request(xact, sgw_ue,
                         &message.release_access_bearers_request);

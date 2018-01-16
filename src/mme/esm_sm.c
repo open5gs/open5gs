@@ -72,7 +72,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                             bearer, &message->esm.pdn_connectivity_request);
                     if (rv != CORE_OK)
                     {
-                        FSM_TRAN(s, esm_state_session_exception);
+                        FSM_TRAN(s, esm_state_exception);
                         break;
                     }
                     break;
@@ -86,7 +86,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                             sess, &message->esm.esm_information_response);
                     if (rv != CORE_OK)
                     {
-                        FSM_TRAN(s, esm_state_session_exception);
+                        FSM_TRAN(s, esm_state_exception);
                         break;
                     }
                     break;
@@ -124,7 +124,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 }
                 default:
                 {
-                    d_warn("Not implemented(type:%d)", 
+                    d_error("Unknown message(type:%d)", 
                             message->esm.h.message_type);
                     break;
                 }
@@ -178,11 +178,14 @@ void esm_state_active(fsm_t *s, event_t *e)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
+                    d_trace(3, "[NAS] PDN connectivity request : "
+                            "UE[%s] --> ESM[EBI:%d]\n", 
+                            mme_ue->imsi_bcd, bearer->ebi);
                     rv = esm_handle_pdn_connectivity_request(
                             bearer, &message->esm.pdn_connectivity_request);
                     if (rv != CORE_OK)
                     {
-                        FSM_TRAN(s, esm_state_session_exception);
+                        FSM_TRAN(s, esm_state_exception);
                         break;
                     }
 
@@ -191,6 +194,9 @@ void esm_state_active(fsm_t *s, event_t *e)
                 }
                 case NAS_PDN_DISCONNECT_REQUEST:
                 {
+                    d_trace(3, "[NAS] PDN disconnect request : "
+                            "UE[%s] --> ESM[EBI:%d]\n", 
+                            mme_ue->imsi_bcd, bearer->ebi);
                     if (MME_HAVE_SGW_S1U_PATH(sess))
                     {
                         rv = mme_gtp_send_delete_session_request(sess);
@@ -199,14 +205,27 @@ void esm_state_active(fsm_t *s, event_t *e)
                     }
                     else
                     {
-                        mme_sess_remove(sess);
+                        rv = nas_send_deactivate_bearer_context_request(bearer);
+                        d_assert(rv == CORE_OK, return,
+                        "nas_send_deactivate_bearer_context_request failed");
                     }
-                    FSM_TRAN(s, esm_state_disconnect);
+                    FSM_TRAN(s, esm_state_pdn_will_disconnect);
+                    break;
+                }
+                case NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
+                {
+                    d_trace(3, "[NAS] Deactivate EPS bearer context accept : "
+                        "UE[%s] --> ESM[EBI:%d] in ACTIVE state\n", 
+                        mme_ue->imsi_bcd, bearer->ebi);
+                    rv = mme_gtp_send_delete_bearer_response(bearer);
+                    d_assert(rv == CORE_OK, return,
+                            "mme_gtp_send_delete_session_request error");
+                    FSM_TRAN(s, esm_state_bearer_deactivated);
                     break;
                 }
                 default:
                 {
-                    d_warn("Not implemented(type:%d)", 
+                    d_error("Unknown message(type:%d)", 
                             message->esm.h.message_type);
                     break;
                 }
@@ -222,7 +241,7 @@ void esm_state_active(fsm_t *s, event_t *e)
     }
 }
 
-void esm_state_disconnect(fsm_t *s, event_t *e)
+void esm_state_pdn_will_disconnect(fsm_t *s, event_t *e)
 {
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -257,9 +276,18 @@ void esm_state_disconnect(fsm_t *s, event_t *e)
 
             switch(message->esm.h.message_type)
             {
+                case NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
+                {
+                    d_trace(3, "[NAS] Deactivate EPS bearer context accept : "
+                        "UE[%s] --> ESM[EBI:%d] in PDN WILL DISCONNECT state\n", 
+                        mme_ue->imsi_bcd, bearer->ebi);
+                    FSM_TRAN(s, esm_state_pdn_did_disconnect);
+                    break;
+                }
                 default:
                 {
-                    FSM_TRAN(s, esm_state_session_exception);
+                    d_error("Unknown message(type:%d)", 
+                            message->esm.h.message_type);
                     break;
                 }
             }
@@ -274,7 +302,7 @@ void esm_state_disconnect(fsm_t *s, event_t *e)
     }
 }
 
-void esm_state_session_exception(fsm_t *s, event_t *e)
+void esm_state_pdn_did_disconnect(fsm_t *s, event_t *e)
 {
     mme_sm_trace(3, e);
 
@@ -296,7 +324,29 @@ void esm_state_session_exception(fsm_t *s, event_t *e)
     }
 }
 
-void esm_state_bearer_exception(fsm_t *s, event_t *e)
+void esm_state_bearer_deactivated(fsm_t *s, event_t *e)
+{
+    mme_sm_trace(3, e);
+
+    switch (event_get(e))
+    {
+        case FSM_ENTRY_SIG:
+        {
+            break;
+        }
+        case FSM_EXIT_SIG:
+        {
+            break;
+        }
+        default:
+        {
+            d_error("Unknown event %s", mme_event_get_name(e));
+            break;
+        }
+    }
+}
+
+void esm_state_exception(fsm_t *s, event_t *e)
 {
     mme_sm_trace(3, e);
 

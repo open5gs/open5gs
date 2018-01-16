@@ -94,7 +94,7 @@ void mme_s11_handle_create_session_response(
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
+    if (FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup))
     {
         rv = nas_send_attach_accept(mme_ue);
         d_assert(rv == CORE_OK, return, "nas_send_attach_accept failed");
@@ -193,7 +193,7 @@ void mme_s11_handle_delete_session_response(
 
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
 
-        if (FSM_CHECK(&bearer->sm, esm_state_disconnect))
+        if (FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
         {
             rv = nas_send_deactivate_bearer_context_request(bearer);
             d_assert(rv == CORE_OK, return,
@@ -220,7 +220,7 @@ void mme_s11_handle_delete_session_response(
             d_assert(0,, "Invalid ESM state");
         }
     }
-    else if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
+    else if (FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup))
     {
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
             S1ap_Cause_t cause;

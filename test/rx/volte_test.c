@@ -272,19 +272,17 @@ static void volte_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-#if 0
     /* Send E-RAB Release Response */
-    rv = tests1ap_build_e_rab_release_response(&sendbuf, msgindex);
+    rv = tests1ap_build_e_rab_release_response(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Deactivate EPS bearer context accept */
-    rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex);
+    rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-#endif
 
     core_sleep(time_from_msec(1000));
 #if 0

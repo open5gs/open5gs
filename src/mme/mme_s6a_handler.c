@@ -41,7 +41,7 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue, s6a_ula_message_t *ula_message)
     memcpy(&mme_ue->subscription_data,
             subscription_data, sizeof(s6a_subscription_data_t));
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_default_esm))
+    if (FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup))
     {
         if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
         {

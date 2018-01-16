@@ -116,7 +116,8 @@ void emm_state_detached(fsm_t *s, event_t *e)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
+                            FSM_TRAN(&mme_ue->sm,
+                                    &emm_state_initial_context_setup);
                         }
                         else
                         {
@@ -237,7 +238,8 @@ void emm_state_identity(fsm_t *s, event_t *e)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
+                            FSM_TRAN(&mme_ue->sm,
+                                    &emm_state_initial_context_setup);
                         }
                         else
                         {
@@ -437,7 +439,7 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                     }
 
                     mme_s6a_send_ulr(mme_ue);
-                    FSM_TRAN(s, &emm_state_default_esm);
+                    FSM_TRAN(s, &emm_state_initial_context_setup);
                     break;
                 }
                 case NAS_EMM_STATUS:
@@ -463,7 +465,7 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
     }
 }
 
-void emm_state_default_esm(fsm_t *s, event_t *e)
+void emm_state_initial_context_setup(fsm_t *s, event_t *e)
 {
     status_t rv;
     mme_ue_t *mme_ue = NULL;
@@ -630,7 +632,8 @@ void emm_state_attached(fsm_t *s, event_t *e)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            FSM_TRAN(&mme_ue->sm, &emm_state_default_esm);
+                            FSM_TRAN(&mme_ue->sm,
+                                    &emm_state_initial_context_setup);
                         }
                         else
                         {
