@@ -176,8 +176,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(FSM_STATE(&enb->sm), pkbuf_free(pkbuf); break,
                     "No S1AP State Machine");
 
-            d_assert(s1ap_decode_pdu(&message, pkbuf) == CORE_OK,
-                    pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
+            rv = s1ap_decode_pdu(&message, pkbuf);
+            if (rv != CORE_OK)
+            {
+                d_print_hex(pkbuf->payload, pkbuf->len);
+                d_assert(0, pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
+            }
 
             event_set_param1(e, (c_uintptr_t)enb->index);
             event_set_param4(e, (c_uintptr_t)&message);
