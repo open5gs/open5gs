@@ -7,7 +7,18 @@ extern "C" {
 
 #include "3gpp_types.h"
 
+typedef struct _rx_media_sub_component_t {
+    c_uint32_t          flow_number;
+#define RX_FLOW_USAGE_NO_INFORMATION        0
+#define RX_FLOW_USAGE_RTCP                  1
+#define RX_FLOW_USAGE_AF_SIGNALLING         2
+    c_uint32_t          flow_usage;
+    flow_t              flow[MAX_NUM_OF_FLOW];
+    int                 num_of_flow;
+} rx_media_sub_component_t;
+
 typedef struct _rx_media_component_t {
+    c_uint32_t          media_component_number;
 #define RX_MEDIA_TYPE_AUDIO             0
 #define RX_MEDIA_TYPE_VIDEO             1
 #define RX_MEDIA_TYPE_DATA              2
@@ -21,12 +32,9 @@ typedef struct _rx_media_component_t {
     bitrate_t           mbr;  /* Maxmimum Bit Rate (MBR) */
     bitrate_t           gbr;  /* Guaranteed Bit Rate (GBR) */
 
-#define RX_FLOW_USAGE_NO_INFORMATION        0
-#define RX_FLOW_USAGE_RTCP                  1
-#define RX_FLOW_USAGE_AF_SIGNALLING         2
-    c_uint32_t          flow_usage;
-    flow_t              flow[MAX_NUM_OF_FLOW];
-    int                 num_of_flow;
+#define MAX_NUM_OF_MEDIA_SUB_COMPONENT            8
+    rx_media_sub_component_t sub[MAX_NUM_OF_MEDIA_SUB_COMPONENT];
+    int                 num_of_sub;
 } rx_media_component_t;
 
 typedef struct _rx_message_t {

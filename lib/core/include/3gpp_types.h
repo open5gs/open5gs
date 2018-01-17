@@ -220,10 +220,11 @@ typedef struct _pcc_rule_t {
     flow_t flow[MAX_NUM_OF_FLOW];
     int num_of_flow;
 
-#define GX_FLOW_STATUS_ENABLED_UPLINK       0
-#define GX_FLOW_STATUS_ENABLED_DOWNLINK     1
-#define GX_FLOW_STATUS_ENABLED              2
-#define GX_FLOW_STATUS_DISABLED             3
+#define FLOW_STATUS_ENABLED_UPLINK          0
+#define FLOW_STATUS_ENABLED_DOWNLINK        1
+#define FLOW_STATUS_ENABLED                 2
+#define FLOW_STATUS_DISABLED                3
+#define FLOW_STATUS_REMOVE                  4
     c_int8_t flow_status;
     c_uint32_t precedence;
         

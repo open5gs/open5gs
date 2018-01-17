@@ -7,7 +7,7 @@
 
 void rx_message_free(rx_message_t *rx_message)
 {
-    int i, j;
+    int i, j, k;
 
     d_assert(rx_message, return, "Null param");
 
@@ -16,16 +16,21 @@ void rx_message_free(rx_message_t *rx_message)
         rx_media_component_t *media_component =
             &rx_message->media_component[i];
 
-        for (j = 0; j < media_component->num_of_flow; j++)
+        for (j = 0; j < media_component->num_of_sub; j++)
         {
-            flow_t *flow = &media_component->flow[j];
+            rx_media_sub_component_t *sub = &media_component->sub[j];
 
-            if (flow->description)
+            for (k = 0; k < sub->num_of_flow; k++)
             {
-                CORE_FREE(flow->description);
+                flow_t *flow = &sub->flow[k];
+
+                if (flow->description)
+                {
+                    CORE_FREE(flow->description);
+                }
+                else
+                    d_assert(0,, "Null param");
             }
-            else
-                d_assert(0,, "Null param");
         }
     }
 }

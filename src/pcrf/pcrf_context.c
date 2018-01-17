@@ -759,7 +759,7 @@ status_t pcrf_db_qos_data(
                             snprintf(pcc_rule->name, MAX_PCC_RULE_NAME_LEN,
                                     "%s%d", apn, pcc_rule_index+1);
                             pcc_rule->precedence = pcc_rule_index+1;
-                            pcc_rule->flow_status = GX_FLOW_STATUS_ENABLED;
+                            pcc_rule->flow_status = FLOW_STATUS_ENABLED;
                             pcc_rule_index++;
                         }
                         gx_message->num_of_pcc_rule = pcc_rule_index;

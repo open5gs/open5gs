@@ -553,7 +553,7 @@ status_t pcrf_gx_send_rar(
         c_uint8_t *gx_sid, c_uint8_t *rx_sid, rx_message_t *rx_message)
 {
     status_t rv;
-    int ret = 0, i, j;
+    int ret = 0, i, j, k;
 
     struct msg *req = NULL;
     struct avp *avp, *avpch1;
@@ -565,6 +565,7 @@ status_t pcrf_gx_send_rar(
     size_t sidlen;
 
     gx_message_t gx_message;
+    int charging_rule = 0;
 
     d_assert(gx_sid, return CORE_ERROR,);
     d_assert(rx_sid, return CORE_ERROR,);
@@ -632,8 +633,6 @@ status_t pcrf_gx_send_rar(
 
     if (rx_message->cmd_code == RX_CMD_CODE_AA)
     {
-        int charging_rule_install = 0;
-
         if (!rx_sess_data->sid)
         {
             rx_sess_data->sid = (os0_t)core_strdup((char *)rx_sid);
@@ -659,6 +658,11 @@ status_t pcrf_gx_send_rar(
             c_uint8_t qci = 0;
             rx_media_component_t *media_component =
                 &rx_message->media_component[i];
+
+            if (media_component->media_component_number == 0)
+            {
+                continue;
+            }
 
             switch(media_component->media_type)
             {
@@ -687,7 +691,8 @@ status_t pcrf_gx_send_rar(
 
             if (!pcc_rule)
             {
-                d_error("No PCC Rule : [QCI:%d]", qci);
+                d_error("CHECK WEBUI : No PCC Rule [QCI:%d]", qci);
+                d_error("Please add PCC Rule using WEBUI");
                 rx_message->result_code = 
                     RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
                 goto out;
@@ -695,58 +700,80 @@ status_t pcrf_gx_send_rar(
 
             if (pcc_rule->num_of_flow)
             {
-                d_error("CHECK WEBUI : PCC Rule Modification is NOT implemented");
-                d_error("Please remove Flow in PCC Rule");
-                rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
-                goto out;
+                d_warn("STATIC dedicated bearer has already been activated");
+                d_warn("EPC will initiate modify dedicated bearer");
+
+                for (j = 0; j < pcc_rule->num_of_flow; j++)
+                {
+                    flow_t *flow = &pcc_rule->flow[j];
+
+                    if (flow->description)
+                    {
+                        CORE_FREE(flow->description);
+                    }
+                    else
+                        d_assert(0,, "Null param");
+                }
+
+                pcc_rule->num_of_flow = 0;
             }
 
-            for (j = 0; j < media_component->num_of_flow; j++)
+            for (j = 0; j < media_component->num_of_sub; j++)
             {
-                int len;
-                flow_t *rx_flow = &media_component->flow[j];
-                flow_t *gx_flow = &pcc_rule->flow[j];
+                rx_media_sub_component_t *sub = &media_component->sub[j];
 
-                if (!strncmp(rx_flow->description,
-                            "permit out", strlen("permit out")))
+                if (sub->flow_number == 0)
                 {
-                    gx_flow->direction = FLOW_DOWNLINK_ONLY;
-
-                    len = strlen(rx_flow->description)+1;
-                    gx_flow->description = core_malloc(len);
-                    core_cpystrn(gx_flow->description,
-                            rx_flow->description, len);
-                }
-                else if (!strncmp(rx_flow->description,
-                            "permit in", strlen("permit in")))
-                {
-                    gx_flow->direction = FLOW_UPLINK_ONLY;
-
-                    /* 'permit in' should be changed
-                     * 'permit out' in Gx Diameter */
-                    len = strlen(rx_flow->description)+2;
-                    gx_flow->description = core_malloc(len);
-                    strcpy(gx_flow->description, "permit out");
-                    strcat(gx_flow->description,
-                            &rx_flow->description[strlen("permit in")]);
-                    d_assert(len == strlen(gx_flow->description)+1, goto out,);
-                }
-                else
-                {
-                    d_error("Invalid Flow Descripton : [%s]",
-                            rx_flow->description);
-                    rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
-                    goto out;
+                    continue;
                 }
 
-                pcc_rule->num_of_flow++;
+                for (k = 0; k < sub->num_of_flow; k++)
+                {
+                    int len;
+                    flow_t *gx_flow = &pcc_rule->flow[pcc_rule->num_of_flow];
+                    flow_t *rx_flow = &sub->flow[k];
+
+                    if (!strncmp(rx_flow->description,
+                                "permit out", strlen("permit out")))
+                    {
+                        gx_flow->direction = FLOW_DOWNLINK_ONLY;
+
+                        len = strlen(rx_flow->description)+1;
+                        gx_flow->description = core_malloc(len);
+                        core_cpystrn(gx_flow->description,
+                                rx_flow->description, len);
+                    }
+                    else if (!strncmp(rx_flow->description,
+                                "permit in", strlen("permit in")))
+                    {
+                        gx_flow->direction = FLOW_UPLINK_ONLY;
+
+                        /* 'permit in' should be changed
+                         * 'permit out' in Gx Diameter */
+                        len = strlen(rx_flow->description)+2;
+                        gx_flow->description = core_malloc(len);
+                        strcpy(gx_flow->description, "permit out");
+                        strcat(gx_flow->description,
+                                &rx_flow->description[strlen("permit in")]);
+                        d_assert(len == strlen(gx_flow->description)+1, goto out,);
+                    }
+                    else
+                    {
+                        d_error("Invalid Flow Descripton : [%s]",
+                                rx_flow->description);
+                        rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
+                        goto out;
+                    }
+
+                    pcc_rule->num_of_flow++;
+                }
             }
 
-            if (charging_rule_install == 0)
+            if (charging_rule == 0)
             {
                 ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
                 d_assert(ret == 0, return CORE_ERROR,);
-                charging_rule_install = 1;
+                charging_rule = 1;
             }
 
             rv = encode_pcc_rule_definition(avp, pcc_rule);
@@ -760,7 +787,7 @@ status_t pcrf_gx_send_rar(
             rx_sess_data->num_of_name++;
         }
 
-        if (charging_rule_install == 1)
+        if (charging_rule == 1)
         {
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
             d_assert(ret == 0, return CORE_ERROR,);
@@ -769,19 +796,17 @@ status_t pcrf_gx_send_rar(
     }
     else if (rx_message->cmd_code == RX_CMD_CODE_SESSION_TERMINATION)
     {
-        int charging_rule_remove = 0;
-
         d_assert(rx_sess_data->sid, return CORE_ERROR,);
 
         for (i = 0; i < rx_sess_data->num_of_name; i++)
         {
             d_assert(rx_sess_data->name[i],,);
 
-            if (charging_rule_remove == 0)
+            if (charging_rule == 0)
             {
                 ret = fd_msg_avp_new(gx_charging_rule_remove, 0, &avp);
                 d_assert(ret == 0, return CORE_ERROR,);
-                charging_rule_remove = 1;
+                charging_rule = 1;
             }
 
             ret = fd_msg_avp_new(gx_charging_rule_name, 0, &avpch1);
@@ -794,7 +819,7 @@ status_t pcrf_gx_send_rar(
             d_assert(ret == 0, return CORE_ERROR,);
         }
 
-        if (charging_rule_remove == 1)
+        if (charging_rule == 1)
         {
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
             d_assert(ret == 0, return CORE_ERROR,);
@@ -803,6 +828,12 @@ status_t pcrf_gx_send_rar(
     else
         d_assert(0, return CORE_ERROR,
                 "Invalid Command Code(%d)", rx_message->cmd_code);
+
+    if (charging_rule == 0)
+    {
+        rx_message->result_code = ER_DIAMETER_SUCCESS;
+        goto out;
+    }
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);

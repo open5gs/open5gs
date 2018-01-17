@@ -203,7 +203,11 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                     switch(hdr->avp_code)
                     {
                         case RX_AVP_CODE_MEDIA_COMPONENT_NUMBER:
+                        {
+                            media_component->media_component_number =
+                                hdr->avp_value->i32;
                             break;
+                        }
                         case RX_AVP_CODE_MEDIA_TYPE:
                         {
                             media_component->media_type = hdr->avp_value->i32;
@@ -219,8 +223,21 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                             media_component->mbr.uplink = hdr->avp_value->i32;
                             break;
                         }
+                        case RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_DL:
+                        {
+                            media_component->gbr.downlink = hdr->avp_value->i32;
+                            break;
+                        }
+                        case RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_UL:
+                        {
+                            media_component->gbr.uplink = hdr->avp_value->i32;
+                            break;
+                        }
                         case RX_AVP_CODE_MEDIA_SUB_COMPONENT:
                         {
+                            rx_media_sub_component_t *sub = &media_component->
+                                sub[media_component->num_of_sub];
+
                             ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD,
                                     &avpch3, NULL);
                             d_assert(ret == 0, return EINVAL,);
@@ -231,17 +248,19 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                 switch(hdr->avp_code)
                                 {
                                     case RX_AVP_CODE_FLOW_NUMBER:
+                                        sub->flow_number =
+                                            hdr->avp_value->i32;
                                         break;
                                     case RX_AVP_CODE_FLOW_USAGE:
                                     {
-                                        media_component->flow_usage =
+                                        sub->flow_usage =
                                             hdr->avp_value->i32;
                                         break;
                                     }
                                     case RX_AVP_CODE_FLOW_DESCRIPTION:
                                     {
-                                        flow_t *flow = &media_component->flow
-                                            [media_component->num_of_flow];
+                                        flow_t *flow = &sub->flow
+                                            [sub->num_of_flow];
 
                                         flow->description = core_malloc(
                                                 hdr->avp_value->os.len+1);
@@ -249,7 +268,8 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                             flow->description,
                                             (char*)hdr->avp_value->os.data,
                                             hdr->avp_value->os.len+1);
-                                        media_component->num_of_flow++;
+
+                                        sub->num_of_flow++;
                                         break;
                                     }
                                     default:
@@ -262,6 +282,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                                 fd_msg_browse(avpch3, MSG_BRW_NEXT, &avpch3, NULL);
                             }
 
+                            media_component->num_of_sub++;
                             break;
                         }
                         default:
@@ -291,8 +312,11 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     if (rv != CORE_OK)
     {
         result_code = rx_message.result_code;
-        d_error("pcrf_gx_send_rar() failed");
-        goto out;
+        if (result_code != ER_DIAMETER_SUCCESS)
+        {
+            d_error("pcrf_gx_send_rar() failed");
+            goto out;
+        }
     }
 
     /* Store Gx Session-Id in this session */

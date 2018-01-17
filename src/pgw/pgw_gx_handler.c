@@ -102,6 +102,7 @@ static status_t bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
         pgw_bearer_t *bearer = NULL;
 
         pcc_rule_t *pcc_rule = &gx_message->pcc_rule[i];
+        int bearer_created = 0;
 
         d_assert(pcc_rule, return CORE_ERROR,);
         if (pcc_rule->name == NULL)
@@ -117,38 +118,37 @@ static status_t bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
                         pcc_rule->qos.arp.priority_level,
                         pcc_rule->qos.arp.pre_emption_capability,
                         pcc_rule->qos.arp.pre_emption_vulnerability);
-            if (bearer)
+            if (!bearer)
             {
-                d_error("CHECK WEBUI : "
-                        "PCC Rule Modification is NOT implemented");
-                d_error("Please remove Flow in PCC Rule "
-                        "[QCI:%d, ARP:%d,%d,%d]",
+                bearer = pgw_bearer_add(sess);
+                d_assert(bearer, return CORE_ERROR, "Null param");
+
+                bearer->name = core_strdup(pcc_rule->name);
+                d_assert(bearer->name, return CORE_ERROR,);
+
+                memcpy(&bearer->qos, &pcc_rule->qos, sizeof(qos_t));
+                d_assert(pcc_rule->num_of_flow, return CORE_ERROR,
+                        "No Flow! [QCI:%d, ARP:%d,%d,%d]",
                         pcc_rule->qos.qci,
                         pcc_rule->qos.arp.priority_level,
                         pcc_rule->qos.arp.pre_emption_capability,
                         pcc_rule->qos.arp.pre_emption_vulnerability);
 
-                return CORE_ERROR;
+                bearer_created = 1;
             }
-
-            bearer = pgw_bearer_find_by_name(sess, pcc_rule->name);
-            if (bearer)
+            else
             {
-                d_error("CHECK WEBUI : "
-                        "PCC Rule Modification is NOT implemented");
-                d_error("Please remove Flow in PCC Rule [Name:%d]",
-                        pcc_rule->name);
+                d_assert(strcmp(bearer->name, pcc_rule->name) == 0,
+                        return CORE_ERROR,
+                        "PCC Rule Name Mismatched! [%s:%s]",
+                        bearer->name, pcc_rule->name);
 
-                return CORE_ERROR;
+                if (pcc_rule->num_of_flow)
+                {
+                    /* Remove all previous flow */
+                    pgw_pf_remove_all(bearer);
+                }
             }
-
-            bearer = pgw_bearer_add(sess);
-            d_assert(bearer, return CORE_ERROR, "Null param");
-
-            bearer->name = core_strdup(pcc_rule->name);
-            d_assert(bearer->name, return CORE_ERROR,);
-
-            memcpy(&bearer->qos, &pcc_rule->qos, sizeof(qos_t));
 
             for (j = 0; j < pcc_rule->num_of_flow; j++)
             {
@@ -171,11 +171,23 @@ static status_t bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
             }
 
             memset(&h, 0, sizeof(gtp_header_t));
-            h.type = GTP_CREATE_BEARER_REQUEST_TYPE;
-            h.teid = sess->sgw_s5c_teid;
 
-            rv = pgw_s5c_build_create_bearer_request(&pkbuf, h.type, bearer);
-            d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+            if (bearer_created == 1)
+            {
+                h.type = GTP_CREATE_BEARER_REQUEST_TYPE;
+                h.teid = sess->sgw_s5c_teid;
+
+                rv = pgw_s5c_build_create_bearer_request(&pkbuf, h.type, bearer);
+                d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+            }
+            else
+            {
+                h.type = GTP_UPDATE_BEARER_REQUEST_TYPE;
+                h.teid = sess->sgw_s5c_teid;
+
+                rv = pgw_s5c_build_update_bearer_request(&pkbuf, h.type, bearer);
+                d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+            }
 
             xact = gtp_xact_local_create(sess->gnode, &h, pkbuf);
             d_assert(xact, return CORE_ERROR, "Null param");
