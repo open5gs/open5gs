@@ -3,8 +3,8 @@
 bin_PROGRAMS = testvolte
 
 testvolte_SOURCES = \
-	abts.h abts_tests.h testutil.h \
-	abts.c testutil.c testpacket.h testpacket.c testapp.h testapp.c \
+	abts.c ../testpacket.c \
+	testutil.c testapp.h testapp.c \
 	pcscf_fd_path.c volte_test.c \
 	$(NULL)
 
@@ -18,6 +18,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/lib/s1ap/asn1c \
 	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
+	-I$(top_srcdir)/test \
 	@MONGOC_CFLAGS@ \
 	$(NULL)
 
