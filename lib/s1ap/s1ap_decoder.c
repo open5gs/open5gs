@@ -218,6 +218,15 @@ static int s1ap_decode_successfull_outcome(s1ap_message_t *message,
                     s1ap_xer__print2sp, message);
             break;
 
+        case S1ap_ProcedureCode_id_E_RABModify: 
+            ret = s1ap_decode_s1ap_e_rabmodifyresponseies(
+                    &message->s1ap_E_RABModifyResponseIEs, 
+                    &successfullOutcome_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_e_rabmodifyresponse,
+                    s1ap_xer__print2sp, message);
+            break;
+
         case S1ap_ProcedureCode_id_E_RABRelease: 
             ret = s1ap_decode_s1ap_e_rabreleaseresponseies(
                     &message->s1ap_E_RABReleaseResponseIEs, 

@@ -137,6 +137,10 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                             s1ap_handle_e_rab_setup_response(enb, message);
                             break;
                         }
+                        case S1ap_ProcedureCode_id_E_RABModify :
+                        {
+                            break;
+                        }
                         case S1ap_ProcedureCode_id_E_RABRelease :
                         {
                             break;

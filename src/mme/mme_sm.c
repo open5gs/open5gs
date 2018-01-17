@@ -431,6 +431,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     mme_s11_handle_create_bearer_request(
                         xact, mme_ue, &message.create_bearer_request);
                     break;
+                case GTP_UPDATE_BEARER_REQUEST_TYPE:
+                    mme_s11_handle_update_bearer_request(
+                        xact, mme_ue, &message.update_bearer_request);
+                    break;
                 case GTP_DELETE_BEARER_REQUEST_TYPE:
                     mme_s11_handle_delete_bearer_request(
                         xact, mme_ue, &message.delete_bearer_request);

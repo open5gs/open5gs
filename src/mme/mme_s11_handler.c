@@ -339,6 +339,106 @@ void mme_s11_handle_create_bearer_request(
     }
 }
 
+void mme_s11_handle_update_bearer_request(
+        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_update_bearer_request_t *req)
+{
+    status_t rv;
+    mme_bearer_t *bearer = NULL;
+    gtp_bearer_qos_t bearer_qos;
+
+    d_assert(xact, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
+    d_assert(req, return, "Null param");
+
+    d_trace(3, "[MME] Update Bearer Request : MME[%d] <-- SGW[%d]\n",
+            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    if (req->bearer_contexts.presence == 0)
+    {
+        d_error("No Bearer");
+        return;
+    }
+    if (req->bearer_contexts.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return;
+    }
+
+    bearer = mme_bearer_find_by_ue_ebi(mme_ue,
+            req->bearer_contexts.eps_bearer_id.u8);
+    d_assert(bearer, return, 
+            "No Bearer Context(EBI:%d)", req->bearer_contexts.eps_bearer_id.u8);
+
+    /* Save Transaction. will be handled after EMM-attached */
+    bearer->xact = xact;
+
+    if (/* Check if Activate Default/Dedicated Bearer Accept is received */
+        FSM_CHECK(&bearer->sm, esm_state_active) &&
+        /* Check if Initial Context Setup Response or 
+         *          E-RAB Setup Response is received */
+        MME_HAVE_ENB_S1U_PATH(bearer))
+    {
+        if (req->bearer_contexts.bearer_level_qos.presence == 1)
+        {
+            /* Bearer QoS */
+            d_assert(gtp_parse_bearer_qos(&bearer_qos,
+                &req->bearer_contexts.bearer_level_qos) ==
+                req->bearer_contexts.bearer_level_qos.len, return,);
+            bearer->qos.qci = bearer_qos.qci;
+            bearer->qos.arp.priority_level = bearer_qos.priority_level;
+            bearer->qos.arp.pre_emption_capability =
+                            bearer_qos.pre_emption_capability;
+            bearer->qos.arp.pre_emption_vulnerability =
+                            bearer_qos.pre_emption_vulnerability;
+            bearer->qos.mbr.downlink = bearer_qos.dl_mbr;
+            bearer->qos.mbr.uplink = bearer_qos.ul_mbr;
+            bearer->qos.gbr.downlink = bearer_qos.dl_gbr;
+            bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
+        }
+
+        if (req->bearer_contexts.tft.presence == 1)
+        {
+            /* Save Bearer TFT */
+            TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
+        }
+
+        if (req->bearer_contexts.bearer_level_qos.presence == 1 ||
+            req->bearer_contexts.tft.presence == 1)
+        {
+            rv = nas_send_modify_bearer_context_request(
+                    bearer, 
+                    req->bearer_contexts.bearer_level_qos.presence,
+                    req->bearer_contexts.tft.presence);
+            d_assert(rv == CORE_OK, return,
+                "nas_send_deactivate_bearer_context_request failed");
+        }
+        else
+        {
+            d_warn("ignore Update Bearer Request : "
+                    "Both QoS and TFT is NULL");
+#if 0
+            rv = mme_gtp_send_update_bearer_response(bearer);
+            d_assert(rv == CORE_OK, return,
+                    "mme_gtp_send_delete_session_request error");
+#endif
+        }
+    }
+    else
+    {
+        if (!FSM_CHECK(&bearer->sm, esm_state_active))
+        {
+            d_assert(0,, "Invalid Bearer State");
+        }
+        else if (!MME_HAVE_ENB_S1U_PATH(bearer))
+        {
+            d_assert(0,, "No ENB S1U PATH");
+        }
+        else
+            d_assert(0,,);
+    }
+
+}
+
 void mme_s11_handle_delete_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_bearer_request_t *req)
 {

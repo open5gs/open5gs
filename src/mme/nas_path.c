@@ -305,6 +305,41 @@ status_t nas_send_activate_dedicated_bearer_context_request(
     return CORE_OK;
 }
 
+status_t nas_send_modify_bearer_context_request(
+        mme_bearer_t *bearer, int qos_presence, int tft_presence)
+{
+    status_t rv;
+    pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    rv = esm_build_modify_bearer_context_request(
+            &esmbuf, bearer, qos_presence, tft_presence);
+    d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
+
+    d_trace(3, "[NAS] Modify bearer context request : EMM <-- ESM\n");
+
+    if (qos_presence == 1)
+    {
+        rv = s1ap_build_e_rab_modify_request(&s1apbuf, bearer, esmbuf);
+        d_assert(rv == CORE_OK && s1apbuf, 
+                pkbuf_free(esmbuf); return CORE_ERROR, "s1ap build error");
+
+        rv = nas_send_to_enb(mme_ue, s1apbuf);
+        d_assert(rv == CORE_OK, return CORE_ERROR, "nas send error");
+    }
+    else
+    {
+        rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
+        d_assert(rv == CORE_OK, return CORE_ERROR, "nas send failed");
+    }
+
+    return CORE_OK;
+}
+
 status_t nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
 {
     status_t rv;

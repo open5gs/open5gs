@@ -237,7 +237,7 @@ static void volte_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send AA-Request */
-    pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 1, 1);
+    pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 0, 1);
 
     /* Receive E-RAB Setup Request +
      * Activate dedicated EPS bearer context request */
@@ -264,6 +264,27 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Send AA-Request without Flow */
     pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 1, 0);
+
+    /* Receive E-RAB Modify Request +
+     * Modify EPS bearer context request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Send E-RAB Modify Response */
+    rv = tests1ap_build_e_rab_modify_response(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
+    /* Send Modify EPS bearer context accept */
+    rv = tests1ap_build_modify_bearer_accept(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(1000));
 

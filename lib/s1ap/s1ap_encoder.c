@@ -29,6 +29,8 @@ static inline int s1ap_encode_e_rab_setup_request(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_e_rab_setup_response(
         s1ap_message_t *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_e_rab_modify_request(
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_e_rab_release_command(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_ue_context_release_command(
@@ -132,6 +134,13 @@ static inline int s1ap_encode_initiating_message(
                     s1ap_xer_print_s1ap_e_rabsetuprequest, 
                     s1ap_xer__print2sp, message_p);
             ret = s1ap_encode_e_rab_setup_request(message_p, pkbuf);
+            break;
+
+        case S1ap_ProcedureCode_id_E_RABModify:
+            s1ap_encode_xer_print_message(
+                    s1ap_xer_print_s1ap_e_rabmodifyrequest, 
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_e_rab_modify_request(message_p, pkbuf);
             break;
 
         case S1ap_ProcedureCode_id_E_RABRelease:
@@ -586,6 +595,44 @@ static inline int s1ap_encode_e_rab_setup_response(
 
     return enc_ret.encoded;
 }
+
+static inline int s1ap_encode_e_rab_modify_request(
+        s1ap_message_t *message_p, pkbuf_t *pkbuf)
+{
+    asn_enc_rval_t enc_ret = {0};
+
+    S1AP_PDU_t pdu;
+    S1ap_E_RABModifyRequest_t req;
+    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_E_RABModifyRequest;
+
+    memset(&req, 0, sizeof(S1ap_E_RABModifyRequest_t));
+    if (s1ap_encode_s1ap_e_rabmodifyrequesties(
+            &req, &message_p->s1ap_E_RABModifyRequestIEs) < 0) 
+    {
+        d_error("Encoding of %s failed", td->name);
+        return -1;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage.procedureCode = message_p->procedureCode;
+    pdu.choice.initiatingMessage.criticality = S1ap_Criticality_reject;
+    ANY_fromType_aper(&pdu.choice.initiatingMessage.value, td, &req);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &req);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", td->name);
+    }
+
+    return enc_ret.encoded;
+}
+
 
 static inline int s1ap_encode_e_rab_release_command(
         s1ap_message_t *message_p, pkbuf_t *pkbuf)

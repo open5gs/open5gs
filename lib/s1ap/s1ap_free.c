@@ -70,6 +70,11 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
                     &message->s1ap_E_RABSetupRequestIEs);
             break;
 
+        case S1ap_ProcedureCode_id_E_RABModify: 
+            s1ap_free_s1ap_e_rabmodifyrequesties(
+                &message->s1ap_E_RABModifyRequestIEs);
+            break;
+
         case S1ap_ProcedureCode_id_E_RABRelease:
             s1ap_free_s1ap_e_rabreleasecommandies(
                     &message->s1ap_E_RABReleaseCommandIEs);
@@ -161,6 +166,11 @@ static inline int s1ap_free_successfull_outcome(s1ap_message_t *message)
         case S1ap_ProcedureCode_id_E_RABSetup: 
             s1ap_free_s1ap_e_rabsetupresponseies(
                 &message->s1ap_E_RABSetupResponseIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_E_RABModify: 
+            s1ap_free_s1ap_e_rabmodifyresponseies(
+                &message->s1ap_E_RABModifyResponseIEs);
             break;
 
         case S1ap_ProcedureCode_id_E_RABRelease:

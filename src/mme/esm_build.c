@@ -234,6 +234,61 @@ status_t esm_build_activate_dedicated_bearer_context_request(
     return CORE_OK;
 }
 
+status_t esm_build_modify_bearer_context_request(
+        pkbuf_t **pkbuf, mme_bearer_t *bearer, int qos_presence, int tft_presence)
+{
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+
+    nas_message_t message;
+    nas_modify_eps_bearer_context_request_t 
+        *modify_eps_bearer_context_request = 
+            &message.esm.modify_eps_bearer_context_request;
+    nas_eps_quality_of_service_t *new_eps_qos =
+        &modify_eps_bearer_context_request->new_eps_qos;
+    nas_traffic_flow_template_t *tft = 
+        &modify_eps_bearer_context_request->tft;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    sess = bearer->sess;
+    d_assert(sess, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+       NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.esm.h.eps_bearer_identity = bearer->ebi;
+    message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
+    message.esm.h.procedure_transaction_identity = sess->pti;
+    message.esm.h.message_type = NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST;
+
+    if (qos_presence == 1)
+    {
+        modify_eps_bearer_context_request->presencemask |=
+            NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NEW_EPS_QOS_PRESENT;
+        eps_qos_build(new_eps_qos, bearer->qos.qci,
+                bearer->qos.mbr.downlink, bearer->qos.mbr.uplink,
+                bearer->qos.gbr.downlink, bearer->qos.gbr.uplink);
+    }
+
+    if (tft_presence == 1)
+    {
+        modify_eps_bearer_context_request->presencemask |=
+            NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_TFT_PRESENT;
+        tft->length = bearer->tft.len;
+        d_assert(tft->length, return CORE_ERROR, "No TFT Len");
+        d_assert(bearer->tft.data, return CORE_ERROR, "Null param");
+        memcpy(tft->buffer, bearer->tft.data, tft->length);
+    }
+
+    d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
+            *pkbuf, return CORE_ERROR,);
+
+    return CORE_OK;
+}
+
 status_t esm_build_deactivate_bearer_context_request(
         pkbuf_t **pkbuf, mme_bearer_t *bearer, nas_esm_cause_t esm_cause)
 {
@@ -258,8 +313,7 @@ status_t esm_build_deactivate_bearer_context_request(
     message.esm.h.eps_bearer_identity = bearer->ebi;
     message.esm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_ESM;
     message.esm.h.procedure_transaction_identity = sess->pti;
-    message.esm.h.message_type = 
-        NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST;
+    message.esm.h.message_type = NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST;
 
     deactivate_eps_bearer_context_request->esm_cause = esm_cause;
 

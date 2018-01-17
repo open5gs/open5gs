@@ -171,6 +171,10 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                     sgw_s5c_handle_create_bearer_request(xact, sess,
                             &message);
                     break;
+                case GTP_UPDATE_BEARER_REQUEST_TYPE:
+                    sgw_s5c_handle_update_bearer_request(xact, sess,
+                            &message);
+                    break;
                 case GTP_DELETE_BEARER_REQUEST_TYPE:
                     sgw_s5c_handle_delete_bearer_request(xact, sess,
                             &message);

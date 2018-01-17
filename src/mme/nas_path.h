@@ -33,6 +33,8 @@ CORE_DECLARE(status_t) nas_send_activate_default_bearer_context_request(
     mme_bearer_t *bearer);
 CORE_DECLARE(status_t) nas_send_activate_dedicated_bearer_context_request(
     mme_bearer_t *bearer);
+CORE_DECLARE(status_t) nas_send_modify_bearer_context_request(
+        mme_bearer_t *bearer, int qos_presence, int tft_presence);
 CORE_DECLARE(status_t) nas_send_deactivate_bearer_context_request(
     mme_bearer_t *bearer);
 
