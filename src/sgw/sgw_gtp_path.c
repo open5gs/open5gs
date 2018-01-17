@@ -147,6 +147,8 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                 /* If there is buffered packet, send it first */
                 for (i = 0; i < bearer->num_buffered_pkt; i++)
                 {
+                    gtp_header_t *gtp_h = NULL;
+
                     gtp_h = (gtp_header_t *)bearer->buffered_pkts[i]->payload;
                     gtp_h->teid =  htonl(s1u_tunnel->remote_teid);
 
