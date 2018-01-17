@@ -698,6 +698,7 @@ status_t pcrf_gx_send_rar(
                 goto out;
             }
 
+            /* Check WEBUI static dedicated bearer */
             if (pcc_rule->num_of_flow)
             {
                 d_warn("STATIC dedicated bearer has already been activated");
@@ -716,6 +717,40 @@ status_t pcrf_gx_send_rar(
                 }
 
                 pcc_rule->num_of_flow = 0;
+            }
+
+            /* Update QoS parameter */
+            if (media_component->mbr.uplink)
+            {
+                if (pcc_rule->qos.mbr.uplink)
+                    pcc_rule->qos.mbr.uplink =
+                        c_min(pcc_rule->qos.mbr.uplink, media_component->mbr.uplink);
+                else
+                    pcc_rule->qos.mbr.uplink = media_component->mbr.uplink;
+            }
+            if (media_component->mbr.downlink)
+            {
+                if (pcc_rule->qos.mbr.downlink)
+                    pcc_rule->qos.mbr.downlink =
+                        c_min(pcc_rule->qos.mbr.downlink, media_component->mbr.downlink);
+                else
+                    pcc_rule->qos.mbr.downlink = media_component->mbr.downlink;
+            }
+            if (media_component->gbr.uplink)
+            {
+                if (pcc_rule->qos.gbr.uplink)
+                    pcc_rule->qos.gbr.uplink =
+                        c_min(pcc_rule->qos.gbr.uplink, media_component->gbr.uplink);
+                else
+                    pcc_rule->qos.gbr.uplink = media_component->gbr.uplink;
+            }
+            if (media_component->gbr.downlink)
+            {
+                if (pcc_rule->qos.gbr.downlink)
+                    pcc_rule->qos.gbr.downlink =
+                        c_min(pcc_rule->qos.gbr.downlink, media_component->gbr.downlink);
+                else
+                    pcc_rule->qos.gbr.downlink = media_component->gbr.downlink;
             }
 
             for (j = 0; j < media_component->num_of_sub; j++)

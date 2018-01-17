@@ -103,6 +103,8 @@ static status_t bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
 
         pcc_rule_t *pcc_rule = &gx_message->pcc_rule[i];
         int bearer_created = 0;
+        int qos_presence = 0;
+        int tft_presence = 0;
 
         d_assert(pcc_rule, return CORE_ERROR,);
         if (pcc_rule->name == NULL)
@@ -147,6 +149,21 @@ static status_t bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
                 {
                     /* Remove all previous flow */
                     pgw_pf_remove_all(bearer);
+
+                    /* Update Bearer Request will encode updated TFT */
+                    tft_presence = 1;
+                }
+
+                if (bearer->qos.mbr.downlink != pcc_rule->qos.mbr.downlink ||
+                    bearer->qos.mbr.uplink != pcc_rule->qos.mbr.uplink ||
+                    bearer->qos.gbr.downlink != pcc_rule->qos.gbr.downlink ||
+                    bearer->qos.gbr.uplink != pcc_rule->qos.gbr.uplink)
+                {
+                    /* Update QoS parameter */
+                    memcpy(&bearer->qos, &pcc_rule->qos, sizeof(qos_t));
+
+                    /* Update Bearer Request will encode updated QoS parameter */
+                    qos_presence = 1;
                 }
             }
 
@@ -185,7 +202,8 @@ static status_t bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
                 h.type = GTP_UPDATE_BEARER_REQUEST_TYPE;
                 h.teid = sess->sgw_s5c_teid;
 
-                rv = pgw_s5c_build_update_bearer_request(&pkbuf, h.type, bearer);
+                rv = pgw_s5c_build_update_bearer_request(
+                        &pkbuf, h.type, bearer, qos_presence, tft_presence);
                 d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
             }
 

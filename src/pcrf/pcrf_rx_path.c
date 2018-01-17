@@ -75,7 +75,6 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     rx_message_t rx_message;
 
     char buf[CORE_ADDRSTRLEN];
-    os0_t rx_sid = NULL;
     os0_t gx_sid = NULL;
     c_uint32_t result_code = RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 	
@@ -86,10 +85,11 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     d_assert(ret == 0, return EINVAL,);
     if (!sess_data)
     {
-        ret = fd_sess_getsid(sess, &rx_sid, &sidlen);
+        os0_t sid = NULL;
+        ret = fd_sess_getsid(sess, &sid, &sidlen);
         d_assert(ret == 0, return EINVAL,);
 
-        sess_data = new_state(rx_sid);
+        sess_data = new_state(sid);
         d_assert(sess_data, return EINVAL,);
     }
 
@@ -308,7 +308,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Send Re-Auth Request */
-    rv = pcrf_gx_send_rar(gx_sid, rx_sid, &rx_message);
+    rv = pcrf_gx_send_rar(gx_sid, sess_data->rx_sid, &rx_message);
     if (rv != CORE_OK)
     {
         result_code = rx_message.result_code;

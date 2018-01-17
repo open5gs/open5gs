@@ -237,7 +237,7 @@ static void volte_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send AA-Request */
-    pcscf_rx_send_aar(&rx_sid, "45.45.0.3");
+    pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 1, 1);
 
     /* Receive E-RAB Setup Request +
      * Activate dedicated EPS bearer context request */
@@ -262,6 +262,12 @@ static void volte_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+    /* Send AA-Request without Flow */
+    pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 1, 0);
+
+    core_sleep(time_from_msec(1000));
+
+#if 0
     /* Send Session-Termination-Request */
     pcscf_rx_send_str(rx_sid);
 
@@ -278,15 +284,16 @@ static void volte_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+    core_sleep(time_from_msec(300));
+
     /* Deactivate EPS bearer context accept */
     rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    core_sleep(time_from_msec(1000));
+    core_sleep(time_from_msec(300));
 
-#if 0
     /* Send PDN disconnectivity request */
     rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
