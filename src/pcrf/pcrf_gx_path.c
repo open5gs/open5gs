@@ -14,9 +14,13 @@
 #include "pcrf_fd_path.h"
 
 struct rx_sess_state {
+    lnode_t     node;
+
     os0_t       sid;                            /* Rx Session-Id */
     c_int8_t    *name[MAX_NUM_OF_PCC_RULE];     /* PCC Rule Name */
     int         num_of_name;
+
+    struct sess_state *gx;
 };
 
 struct sess_state {
@@ -34,9 +38,7 @@ ED3(c_uint8_t   ipv4:1;,
     c_uint32_t  addr;               /* Framed-IPv4-Address */
     c_uint8_t   addr6[IPV6_LEN];    /* Framed-IPv6-Prefix */
 
-#define MAX_NUM_OF_RX_SESSION_STATE 16
-    struct rx_sess_state rx[MAX_NUM_OF_RX_SESSION_STATE];
-    int num_of_rx;
+    list_t      rx_list;
 
     struct timespec ts;             /* Time of sending the message */
 };
@@ -46,6 +48,8 @@ static struct disp_hdl *hdl_gx_fb = NULL;
 static struct disp_hdl *hdl_gx_ccr = NULL; 
 
 pool_declare(pcrf_gx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
+pool_declare(pcrf_gx_rx_sess_pool,
+        struct rx_sess_state, MAX_POOL_OF_DIAMETER_SESS);
 
 static status_t encode_pcc_rule_definition(
         struct avp *avp, pcc_rule_t *pcc_rule);
@@ -54,6 +58,9 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg);
 static __inline__ struct sess_state *new_state(os0_t sid)
 {
     struct sess_state *new = NULL;
+
+    d_assert(sid, return NULL,);
+
     pool_alloc_node(&pcrf_gx_sess_pool, &new);
     d_assert(new, return NULL,);
     memset(new, 0, sizeof *new);
@@ -61,13 +68,95 @@ static __inline__ struct sess_state *new_state(os0_t sid)
     new->sid = (os0_t)core_strdup((char *)sid);
     d_assert(new->sid, return NULL,);
 
+    list_init(&new->rx_list);
+
     return new;
+}
+
+static struct rx_sess_state *add_rx_state(struct sess_state *gx, os0_t sid)
+{
+    struct rx_sess_state *new = NULL;
+
+    d_assert(gx, return NULL,);
+    d_assert(sid, return NULL,);
+
+    pool_alloc_node(&pcrf_gx_rx_sess_pool, &new);
+    d_assert(new, return NULL,);
+    memset(new, 0, sizeof *new);
+
+    new->sid = (os0_t)core_strdup((char *)sid);
+    d_assert(new->sid, return NULL,);
+
+    new->gx = gx;
+
+    list_append(&gx->rx_list, new);
+
+    return new;
+}
+
+static status_t remove_rx_state(struct rx_sess_state *rx_sess_data)
+{
+    struct sess_state *gx = NULL;
+    int i;
+
+    d_assert(rx_sess_data, return CORE_ERROR,);
+    gx = rx_sess_data->gx;
+
+    for (i = 0; i < rx_sess_data->num_of_name; i++)
+    {
+        d_assert(rx_sess_data->name[i],,);
+        CORE_FREE(rx_sess_data->name[i]);
+    }
+
+    if (rx_sess_data->sid)
+        CORE_FREE(rx_sess_data->sid);
+
+    list_remove(&gx->rx_list, rx_sess_data);
+    pool_free_node(&pcrf_gx_rx_sess_pool, rx_sess_data);
+
+    return CORE_OK;
+}
+
+static status_t remove_rx_state_all(struct sess_state *gx)
+{
+    struct rx_sess_state *rx_sess_data = NULL, *next_rx_sess_data = NULL;
+
+    d_assert(gx, return CORE_ERROR,);
+
+    rx_sess_data = list_first(&gx->rx_list);
+    while(rx_sess_data)
+    {
+        next_rx_sess_data = list_next(rx_sess_data);
+
+        remove_rx_state(rx_sess_data);
+
+        rx_sess_data = next_rx_sess_data;
+    }
+
+    return CORE_OK;
+}
+
+static struct rx_sess_state *find_rx_state(struct sess_state *gx, os0_t sid)
+{
+    struct rx_sess_state *rx_sess_data = NULL;
+
+    d_assert(gx, return NULL,);
+    d_assert(sid, return NULL,);
+
+    rx_sess_data = list_first(&gx->rx_list);
+    while(rx_sess_data)
+    {
+        if (!strcmp((char *)rx_sess_data->sid, (char *)sid))
+            return rx_sess_data;
+
+        rx_sess_data = list_next(rx_sess_data);
+    }
+
+    return NULL;
 }
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
-    int i, j;
-
     d_assert(sess_data, return,);
 
     if (sess_data->peer_host)
@@ -86,20 +175,8 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     if (sess_data->sid)
         CORE_FREE(sess_data->sid);
 
-    for (i = 0; i < sess_data->num_of_rx; i++)
-    {
-        struct rx_sess_state *rx_sess_data = &sess_data->rx[i];
-
-        for (j = 0; j < rx_sess_data->num_of_name; j++)
-        {
-            d_assert(rx_sess_data->name[j],,);
-            CORE_FREE(rx_sess_data->name[j]);
-        }
-
-        if (rx_sess_data->sid)
-            CORE_FREE(rx_sess_data->sid);
-    }
-
+    remove_rx_state_all(sess_data);
+    
     pool_free_node(&pcrf_gx_sess_pool, sess_data);
 }
 
@@ -621,24 +698,14 @@ status_t pcrf_gx_send_rar(
     }
 
     /* Find RX session state */
-    rx_sess_data = &sess_data->rx[sess_data->num_of_rx];
-    for (i = 0; i < sess_data->num_of_rx; i++)
-    {
-        if (strcmp((char *)sess_data->rx[i].sid, (char*)rx_sid) == 0)
-        {
-            rx_sess_data = &sess_data->rx[i];
-            break;
-        }
-    }
-
+    rx_sess_data = find_rx_state(sess_data, rx_sid);
     if (rx_message->cmd_code == RX_CMD_CODE_AA)
     {
-        if (!rx_sess_data->sid)
+        if (!rx_sess_data)
         {
-            rx_sess_data->sid = (os0_t)core_strdup((char *)rx_sid);
-            sess_data->num_of_rx++;
+            rx_sess_data = add_rx_state(sess_data, rx_sid);
+            d_assert(rx_sess_data, return CORE_ERROR,);
         }
-        d_assert(rx_sess_data->sid, return CORE_ERROR,);
 
         /* Retrieve QoS Data from Database */
         rv = pcrf_db_qos_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
@@ -831,7 +898,7 @@ status_t pcrf_gx_send_rar(
     }
     else if (rx_message->cmd_code == RX_CMD_CODE_SESSION_TERMINATION)
     {
-        d_assert(rx_sess_data->sid, return CORE_ERROR,);
+        d_assert(rx_sess_data, return CORE_ERROR,);
 
         for (i = 0; i < rx_sess_data->num_of_name; i++)
         {
@@ -859,6 +926,8 @@ status_t pcrf_gx_send_rar(
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
             d_assert(ret == 0, return CORE_ERROR,);
         }
+
+        remove_rx_state(rx_sess_data);
     }
     else
         d_assert(0, return CORE_ERROR,
@@ -1102,6 +1171,7 @@ status_t pcrf_gx_init(void)
 	struct disp_when data;
 
     pool_init(&pcrf_gx_sess_pool, MAX_POOL_OF_DIAMETER_SESS);
+    pool_init(&pcrf_gx_rx_sess_pool, MAX_POOL_OF_DIAMETER_SESS);
 
 	/* Install objects definitions for this application */
 	ret = gx_dict_init();
@@ -1145,10 +1215,16 @@ void pcrf_gx_final(void)
     if (pool_used(&pcrf_gx_sess_pool))
         d_error("%d not freed in pcrf_gx_sess_pool[%d] of GX-SM",
                 pool_used(&pcrf_gx_sess_pool), pool_size(&pcrf_gx_sess_pool));
-    d_trace(3, "%d not freed in pcrf_gx_sess_pool[%d] of GX-SM\n",
+    d_trace(5, "%d not freed in pcrf_gx_sess_pool[%d] of GX-SM\n",
             pool_used(&pcrf_gx_sess_pool), pool_size(&pcrf_gx_sess_pool));
+    if (pool_used(&pcrf_gx_rx_sess_pool))
+        d_error("%d not freed in pcrf_gx_rx_sess_pool[%d] of GX-SM",
+            pool_used(&pcrf_gx_rx_sess_pool), pool_size(&pcrf_gx_rx_sess_pool));
+    d_trace(5, "%d not freed in pcrf_gx_rx_sess_pool[%d] of GX-SM\n",
+            pool_used(&pcrf_gx_rx_sess_pool), pool_size(&pcrf_gx_rx_sess_pool));
 
     pool_final(&pcrf_gx_sess_pool);
+    pool_final(&pcrf_gx_rx_sess_pool);
 }
 
 static status_t encode_pcc_rule_definition(
