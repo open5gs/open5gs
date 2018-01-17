@@ -447,9 +447,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     mme_s11_handle_downlink_data_notification(
                         xact, mme_ue, &message.downlink_data_notification);
 
-                    s1ap_handle_paging(mme_ue);
-                    /* Start T3413 */
-                    tm_start(mme_ue->t3413);
+                    if (mme_ue->enb_ue == NULL)
+                    {
+                        s1ap_handle_paging(mme_ue);
+                        /* Start T3413 */
+                        tm_start(mme_ue->t3413);
+                    }
                     break;
                 case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
                     mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
