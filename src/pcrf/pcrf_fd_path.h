@@ -20,6 +20,8 @@ CORE_DECLARE(void) pcrf_rx_final(void);
 
 CORE_DECLARE(status_t) pcrf_gx_send_rar(
         c_uint8_t *gx_sid, c_uint8_t *rx_sid, rx_message_t *rx_message);
+CORE_DECLARE(status_t) pcrf_rx_send_asr(
+        c_uint8_t *rx_sid, c_uint32_t abort_cause);
 
 #ifdef __cplusplus
 }

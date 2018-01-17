@@ -14,8 +14,13 @@
 #include "pcrf_fd_path.h"
 
 struct sess_state {
-    os0_t    rx_sid;            /* Rx Session-Id */
-    os0_t    gx_sid;            /* Gx Session-Id */
+    os0_t   rx_sid;             /* Rx Session-Id */
+    os0_t   gx_sid;             /* Gx Session-Id */
+
+    os0_t   peer_host;          /* Peer Host */
+    int     abort_cause;
+
+    struct timespec ts;         /* Time of sending the message */
 };
 
 static struct session_handler *pcrf_rx_reg = NULL;
@@ -24,6 +29,8 @@ static struct disp_hdl *hdl_rx_aar = NULL;
 static struct disp_hdl *hdl_rx_str = NULL; 
 
 pool_declare(pcrf_rx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
+
+static void pcrf_rx_asa_cb(void *data, struct msg **msg);
 
 static __inline__ struct sess_state *new_state(os0_t sid)
 {
@@ -46,6 +53,9 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
         CORE_FREE((char *)sess_data->rx_sid);
     if (sess_data->gx_sid)
         CORE_FREE((char *)sess_data->gx_sid);
+
+    if (sess_data->peer_host)
+        CORE_FREE(sess_data->peer_host);
 
     pool_free_node(&pcrf_rx_sess_pool, sess_data);
 }
@@ -176,6 +186,14 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
         {
             case AC_SESSION_ID:
             case AC_ORIGIN_HOST:
+            {
+                if (sess_data->peer_host)
+                    CORE_FREE(sess_data->peer_host);
+                sess_data->peer_host =
+                    (os0_t)core_strdup((char *)hdr->avp_value->os.data);
+                d_assert(sess_data->peer_host, return CORE_ERROR,);
+                break;
+            }
             case AC_ORIGIN_REALM:
             case AC_DESTINATION_REALM:
             case AC_ROUTE_RECORD:
@@ -398,6 +416,262 @@ out:
     return 0;
 }
 
+status_t pcrf_rx_send_asr(c_uint8_t *rx_sid, c_uint32_t abort_cause)
+{
+    int ret;
+
+    struct msg *req = NULL;
+    struct avp *avp;
+    union avp_value val;
+    struct sess_state *sess_data = NULL, *svg;
+    struct session *session = NULL;
+    int new;
+    size_t sidlen;
+
+    d_assert(rx_sid, return CORE_ERROR,);
+
+    /* Create the request */
+    ret = fd_msg_new(rx_cmd_asr, MSGFL_ALLOC_ETEID, &req);
+    d_assert(ret == 0, return CORE_ERROR,);
+    {
+        struct msg_hdr * h;
+        ret = fd_msg_hdr( req, &h );
+        d_assert(ret == 0, return CORE_ERROR,);
+        h->msg_appl = RX_APPLICATION_ID;
+    }
+
+    /* Retrieve session by Session-Id */
+    sidlen = strlen((char *)rx_sid);
+    ret = fd_sess_fromsid_msg((os0_t)(rx_sid), sidlen, &session, &new);
+    d_assert(ret == 0, return CORE_ERROR,);
+    d_assert(new == 0, return CORE_ERROR,);
+
+    /* Add Session-Id to the message */
+    ret = fd_message_session_id_set(req, (os0_t)(rx_sid), sidlen);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    /* Save the session associated with the message */
+    ret = fd_msg_sess_set(req, session);
+
+    /* Retrieve session state in this session */
+    ret = fd_sess_state_retrieve(pcrf_rx_reg, session, &sess_data);
+    d_assert(sess_data, return CORE_ERROR,);
+
+    sess_data->abort_cause = abort_cause;
+    
+    /* Set Origin-Host & Origin-Realm */
+    ret = fd_msg_add_origin(req, 0);
+    d_assert(ret == 0, return CORE_ERROR,);
+    
+    /* Set the Destination-Realm AVP */
+    ret = fd_msg_avp_new(fd_destination_realm, 0, &avp);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
+    val.os.len  = strlen(fd_g_config->cnf_diamrlm);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    /* Set the Destination-Host AVP */
+    ret = fd_msg_avp_new(fd_destination_host, 0, &avp);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.os.data = sess_data->peer_host;
+    val.os.len  = strlen((char *)sess_data->peer_host);
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    /* Set the Auth-Application-Id AVP */
+    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.i32 = RX_APPLICATION_ID;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    /* Set the Abort-Cause AVP */
+    ret = fd_msg_avp_new(rx_abort_cause, 0, &avp);
+    d_assert(ret == 0, return CORE_ERROR,);
+    val.i32 = sess_data->abort_cause;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return CORE_ERROR,);
+    ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+    /* Keep a pointer to the session data for debug purpose, 
+     * in real life we would not need it */
+    svg = sess_data;
+    
+    /* Store this value in the session */
+    ret = fd_sess_state_store(pcrf_rx_reg, session, &sess_data);
+    d_assert(ret == 0, return CORE_ERROR,);
+    d_assert(sess_data == NULL,,);
+    
+    /* Send the request */
+    ret = fd_msg_send(&req, pcrf_rx_asa_cb, svg);
+    d_assert(ret == 0,,);
+
+    /* Increment the counter */
+    d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
+    fd_logger_self()->stats.nb_sent++;
+    d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
+
+    return CORE_OK;
+}
+
+static void pcrf_rx_asa_cb(void *data, struct msg **msg)
+{
+    int ret;
+
+    struct sess_state *sess_data = NULL;
+    struct timespec ts;
+    struct session *session;
+    struct avp *avp, *avpch1;
+    struct avp_hdr *hdr;
+    unsigned long dur;
+    int error = 0;
+    int new;
+    c_int32_t result_code = 0;
+
+    ret = clock_gettime(CLOCK_REALTIME, &ts);
+    d_assert(ret == 0, return,);
+
+    /* Search the session, retrieve its data */
+    ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
+    d_assert(ret == 0, return,);
+    d_assert(new == 0, return, );
+    
+    ret = fd_sess_state_retrieve(pcrf_rx_reg, session, &sess_data);
+    d_assert(ret == 0, return,);
+    d_assert(sess_data && (void *)sess_data == data, return, );
+
+    /* Value of Result Code */
+    ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
+    d_assert(ret == 0, return,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
+        result_code = hdr->avp_value->i32;
+        d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
+    }
+    else
+    {
+        ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
+        d_assert(ret == 0, return,);
+        if (avp)
+        {
+            ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch1);
+            d_assert(ret == 0, return,);
+            if (avpch1)
+            {
+                ret = fd_msg_avp_hdr(avpch1, &hdr);
+                d_assert(ret == 0, return,);
+                result_code = hdr->avp_value->i32;
+                d_trace(3, "Experimental Result Code: %d\n",
+                        result_code);
+            }
+        }
+        else
+        {
+            d_error("no Result-Code");
+            error++;
+        }
+    }
+
+    /* Value of Origin-Host */
+    ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
+    d_assert(ret == 0, return,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
+        d_trace(3, "From '%.*s' ",
+                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+    }
+    else
+    {
+        d_error("no_Origin-Host ");
+        error++;
+    }
+
+    /* Value of Origin-Realm */
+    ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
+    d_assert(ret == 0, return,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return,);
+        d_trace(3, "('%.*s') ",
+                (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
+    }
+    else
+    {
+        d_error("no_Origin-Realm ");
+        error++;
+    }
+
+    if (result_code != ER_DIAMETER_SUCCESS)
+    {
+        d_warn("ERROR DIAMETER Result Code(%d)", result_code);
+        error++;
+        goto out;
+    }
+
+out:
+    /* Free the message */
+    d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,, );
+    dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
+        ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    if (fd_logger_self()->stats.nb_recv)
+    {
+        /* Ponderate in the avg */
+        fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
+            fd_logger_self()->stats.nb_recv + dur) /
+            (fd_logger_self()->stats.nb_recv + 1);
+        /* Min, max */
+        if (dur < fd_logger_self()->stats.shortest)
+            fd_logger_self()->stats.shortest = dur;
+        if (dur > fd_logger_self()->stats.longest)
+            fd_logger_self()->stats.longest = dur;
+    }
+    else
+    {
+        fd_logger_self()->stats.shortest = dur;
+        fd_logger_self()->stats.longest = dur;
+        fd_logger_self()->stats.avg = dur;
+    }
+    if (error)
+        fd_logger_self()->stats.nb_errs++;
+    else 
+        fd_logger_self()->stats.nb_recv++;
+
+    d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,, );
+    
+    /* Display how long it took */
+    if (ts.tv_nsec > sess_data->ts.tv_nsec)
+        d_trace(3, "in %d.%06ld sec\n", 
+                (int)(ts.tv_sec - sess_data->ts.tv_sec),
+                (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+    else
+        d_trace(3, "in %d.%06ld sec\n", 
+                (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
+                (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
+
+    ret = fd_sess_state_store(pcrf_rx_reg, session, &sess_data);
+    d_assert(ret == 0, return,);
+    d_assert(sess_data == NULL, return,);
+    
+    ret = fd_msg_free(*msg);
+    d_assert(ret == 0,,);
+    *msg = NULL;
+
+    return;
+}
+
 static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp, 
         struct session *sess, void *opaque, enum disp_action *act)
 {
@@ -405,9 +679,6 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     int ret;
 
 	struct msg *ans, *qry;
-#if 0
-    struct avp *avpch1;
-#endif
     struct avp_hdr *hdr;
     union avp_value val;
     struct sess_state *sess_data = NULL;
@@ -477,13 +748,16 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
         d_error("no_Termination-Cause");
     }
 
-    /* Send Re-Auth Request */
-    rv = pcrf_gx_send_rar(sess_data->gx_sid, sess_data->rx_sid, &rx_message);
-    if (rv != CORE_OK)
+    if (!sess_data->abort_cause)
     {
-        result_code = rx_message.result_code;
-        d_error("pcrf_gx_send_rar() failed");
-        goto out;
+        /* Send Re-Auth Request if Abort-Session-Request is not initaited */
+        rv = pcrf_gx_send_rar(sess_data->gx_sid, sess_data->rx_sid, &rx_message);
+        if (rv != CORE_OK)
+        {
+            result_code = rx_message.result_code;
+            d_error("pcrf_gx_send_rar() failed");
+            goto out;
+        }
     }
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
@@ -554,10 +828,10 @@ status_t pcrf_rx_init(void)
 	ret = fd_sess_handler_create(&pcrf_rx_reg, state_cleanup, NULL, NULL);
     d_assert(ret == 0, return CORE_ERROR,);
 
+	/* Fallback CB if command != unexpected message received */
 	memset(&data, 0, sizeof(data));
 	data.app = rx_application;
 	
-	/* Fallback CB if command != unexpected message received */
 	ret = fd_disp_register(pcrf_rx_fb_cb, DISP_HOW_APPID, &data, NULL,
                 &hdl_rx_fb);
     d_assert(ret == 0, return CORE_ERROR,);
@@ -598,7 +872,7 @@ void pcrf_rx_final(void)
     if (pool_used(&pcrf_rx_sess_pool))
         d_error("%d not freed in pcrf_rx_sess_pool[%d] of GX-SM",
                 pool_used(&pcrf_rx_sess_pool), pool_size(&pcrf_rx_sess_pool));
-    d_trace(3, "%d not freed in pcrf_rx_sess_pool[%d] of GX-SM\n",
+    d_trace(5, "%d not freed in pcrf_rx_sess_pool[%d] of GX-SM\n",
             pool_used(&pcrf_rx_sess_pool), pool_size(&pcrf_rx_sess_pool));
 
     pool_final(&pcrf_rx_sess_pool);

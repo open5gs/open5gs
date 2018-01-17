@@ -7,6 +7,7 @@
 
 #include "fd/fd_lib.h"
 #include "fd/gx/gx_dict.h"
+#include "fd/rx/rx_dict.h"
 #include "fd/gx/gx_message.h"
 #include "fd/rx/rx_message.h"
 
@@ -421,21 +422,22 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
+    if (sess_data->cc_request_type == GX_CC_REQUEST_TYPE_INITIAL_REQUEST ||
+        sess_data->cc_request_type == GX_CC_REQUEST_TYPE_UPDATE_REQUEST)
     {
-        int charging_rule_install = 0;
+        int charging_rule = 0;
 
         for (i = 0; i < gx_message.num_of_pcc_rule; i++)
         {
             pcc_rule_t *pcc_rule = &gx_message.pcc_rule[i];
             if (pcc_rule->num_of_flow)
             {
-                if (charging_rule_install == 0)
+                if (charging_rule == 0)
                 {
                     ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
                     d_assert(ret == 0, return CORE_ERROR,);
 
-                    charging_rule_install = 1;
+                    charging_rule = 1;
                 }
 
                 rv = encode_pcc_rule_definition(avp, pcc_rule);
@@ -443,7 +445,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
             }
         }
 
-        if (charging_rule_install)
+        if (charging_rule)
         {
             ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
             d_assert(ret == 0, return CORE_ERROR,);
@@ -550,6 +552,23 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
         d_assert(ret == 0, return EINVAL,);
+    }
+    else if (sess_data->cc_request_type ==
+            GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
+    {
+        struct rx_sess_state *rx_sess_data = NULL, *next_rx_sess_data = NULL;
+        rx_sess_data = list_first(&sess_data->rx_list);
+        while(rx_sess_data)
+        {
+            next_rx_sess_data = list_next(rx_sess_data);
+
+            rv = pcrf_rx_send_asr(
+                    rx_sess_data->sid, RX_ABORT_CAUSE_BEARER_RELEASED);
+            d_assert(rv == CORE_OK,,);
+
+            remove_rx_state(rx_sess_data);
+            rx_sess_data = next_rx_sess_data;
+        }
     }
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */

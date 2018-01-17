@@ -23,7 +23,7 @@ static void volte_test1(abts_case *tc, void *data)
     s1ap_message_t message;
     int i;
     int msgindex = 0;
-    c_int8_t *rx_sid = NULL;
+    c_uint8_t *rx_sid = NULL;
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -359,7 +359,7 @@ static void volte_test2(abts_case *tc, void *data)
     s1ap_message_t message;
     int i;
     int msgindex = 0;
-    c_int8_t *rx_sid = NULL;
+    c_uint8_t *rx_sid = NULL;
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;

@@ -17,10 +17,12 @@
 #define MAX_NUM_SESSION_STATE 32
 
 static struct session_handler *pcscf_rx_reg = NULL;
+static struct disp_hdl *hdl_rx_fb = NULL; 
+static struct disp_hdl *hdl_rx_asr = NULL; 
 static fd_config_t fd_config;
 
 struct sess_state {
-    os0_t       rx_sid;         /* Rx Session-Id */
+    os0_t       sid;            /* Rx Session-Id */
 
     struct timespec ts;         /* Time of sending the message */
 };
@@ -38,21 +40,30 @@ static __inline__ struct sess_state *new_state(os0_t sid)
     d_assert(new, return NULL,);
     memset(new, 0, sizeof *new);
 
-    new->rx_sid = (os0_t)core_strdup((char *)sid);
-    d_assert(new->rx_sid, return NULL,);
+    new->sid = (os0_t)core_strdup((char *)sid);
+    d_assert(new->sid, return NULL,);
 
     return new;
 }
 
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
-    if (sess_data->rx_sid)
-        CORE_FREE(sess_data->rx_sid);
+    if (sess_data->sid)
+        CORE_FREE(sess_data->sid);
 
     pool_free_node(&pcscf_rx_sess_pool, sess_data);
 }
 
-void pcscf_rx_send_aar(c_int8_t **rx_sid, const char *ip,
+static int pcscf_rx_fb_cb(struct msg **msg, struct avp *avp, 
+        struct session *sess, void *opaque, enum disp_action *act)
+{
+	/* This CB should never be called */
+	d_warn("Unexpected message received!");
+	
+	return ENOTSUP;
+}
+
+void pcscf_rx_send_aar(c_uint8_t **rx_sid, const char *ip,
         int qos_presence, int flow_presence)
 {
     status_t rv;
@@ -89,13 +100,13 @@ void pcscf_rx_send_aar(c_int8_t **rx_sid, const char *ip,
     if (*rx_sid)
     {
         /* Retrieve session by Session-Id */
-        size_t sidlen = strlen(*rx_sid);
-		ret = fd_sess_fromsid_msg((os0_t)(*rx_sid), sidlen, &session, &new);
+        size_t sidlen = strlen((char *)*rx_sid);
+		ret = fd_sess_fromsid_msg(*rx_sid, sidlen, &session, &new);
         d_assert(ret == 0, return,);
         d_assert(new == 0, return,);
 
         /* Add Session-Id to the message */
-        ret = fd_message_session_id_set(req, (os0_t)(*rx_sid), sidlen);
+        ret = fd_message_session_id_set(req, *rx_sid, sidlen);
         d_assert(ret == 0, return,);
         /* Save the session associated with the message */
         ret = fd_msg_sess_set(req, session);
@@ -126,7 +137,7 @@ void pcscf_rx_send_aar(c_int8_t **rx_sid, const char *ip,
         d_assert(sess_data, return,);
 
         /* Save Session-Id to PGW Session Context */
-        *rx_sid = (c_int8_t *)sess_data->rx_sid;
+        *rx_sid = sess_data->sid;
     }
     
     /* Set Origin-Host & Origin-Realm */
@@ -505,7 +516,78 @@ out:
     return;
 }
 
-void pcscf_rx_send_str(c_int8_t *rx_sid)
+static int pcscf_rx_asr_cb( struct msg **msg, struct avp *avp, 
+        struct session *sess, void *opaque, enum disp_action *act)
+{
+    status_t rv;
+    int ret;
+
+	struct msg *ans, *qry;
+    struct avp *avpch1, *avpch2, *avpch3;
+    struct avp_hdr *hdr;
+    union avp_value val;
+    struct sess_state *sess_data = NULL;
+    os0_t sid;
+    size_t sidlen;
+
+    d_assert(msg, return EINVAL,);
+    d_assert(sess, return EINVAL,);
+
+    ret = fd_sess_state_retrieve(pcscf_rx_reg, sess, &sess_data);
+    d_assert(ret == 0, return EINVAL,);
+    d_assert(sess_data, return EINVAL,);
+
+	/* Create answer header */
+	qry = *msg;
+	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    d_assert(ret == 0, return EINVAL,);
+    ans = *msg;
+
+    /* Set the Auth-Application-Id AVP */
+    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    val.i32 = RX_APPLICATION_ID;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
+
+    /* Set the Auth-Request-Type AVP */
+    ret = fd_msg_avp_new(fd_auth_request_type, 0, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    val.i32 = 1;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    d_assert(ret == 0, return EINVAL,);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    d_assert(ret == 0, return EINVAL,);
+
+	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
+	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
+    d_assert(ret == 0, return EINVAL,);
+
+    /* Store this value in the session */
+    sid = sess_data->sid;
+    d_assert(sid,,);
+
+    ret = fd_sess_state_store(pcscf_rx_reg, sess, &sess_data);
+    d_assert(ret == 0,,);
+    d_assert(sess_data == NULL,,);
+
+	/* Send the answer */
+	ret = fd_msg_send(msg, NULL, NULL);
+    d_assert(ret == 0,,);
+
+	/* Add this value to the stats */
+	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
+	fd_logger_self()->stats.nb_echoed++;
+	d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
+
+    pcscf_rx_send_str(sid);
+
+    return 0;
+}
+
+void pcscf_rx_send_str(c_uint8_t *rx_sid)
 {
     status_t rv;
     int ret;
@@ -531,19 +613,20 @@ void pcscf_rx_send_str(c_int8_t *rx_sid)
     }
 
     /* Retrieve session by Session-Id */
-    size_t sidlen = strlen(rx_sid);
-    ret = fd_sess_fromsid_msg((os0_t)(rx_sid), sidlen, &session, &new);
+    size_t sidlen = strlen((char*)rx_sid);
+    ret = fd_sess_fromsid_msg(rx_sid, sidlen, &session, &new);
     d_assert(ret == 0, return,);
     d_assert(new == 0, return,);
 
     /* Add Session-Id to the message */
-    ret = fd_message_session_id_set(req, (os0_t)(rx_sid), sidlen);
+    ret = fd_message_session_id_set(req, rx_sid, sidlen);
     d_assert(ret == 0, return,);
     /* Save the session associated with the message */
     ret = fd_msg_sess_set(req, session);
 
     /* Retrieve session state in this session */
     ret = fd_sess_state_retrieve(pcscf_rx_reg, session, &sess_data);
+    d_assert(ret == 0, return,);
     d_assert(sess_data, return,);
     
     /* Set Origin-Host & Origin-Realm */
@@ -780,6 +863,8 @@ void pcscf_fd_config()
 status_t pcscf_fd_init(void)
 {
     int ret;
+	struct disp_when data;
+
     pool_init(&pcscf_rx_sess_pool, MAX_NUM_SESSION_STATE);
 
     pcscf_fd_config();
@@ -787,10 +872,26 @@ status_t pcscf_fd_init(void)
     ret = fd_init(FD_MODE_CLIENT, NULL, &fd_config);
     d_assert(ret == 0, return CORE_ERROR,);
 
+	/* Install objects definitions for this application */
 	ret = rx_dict_init();
     d_assert(ret == 0, return CORE_ERROR,);
 
+    /* Create handler for sessions */
 	ret = fd_sess_handler_create(&pcscf_rx_reg, state_cleanup, NULL, NULL);
+    d_assert(ret == 0, return CORE_ERROR,);
+
+	/* Fallback CB if command != unexpected message received */
+	memset(&data, 0, sizeof(data));
+	data.app = rx_application;
+
+	ret = fd_disp_register(pcscf_rx_fb_cb, DISP_HOW_APPID, &data, NULL,
+                &hdl_rx_fb);
+    d_assert(ret == 0, return CORE_ERROR,);
+	
+	/* Specific handler for Abort-Session-Request */
+	data.command = rx_cmd_asr;
+	ret = fd_disp_register(pcscf_rx_asr_cb, DISP_HOW_CC, &data, NULL,
+                &hdl_rx_asr);
     d_assert(ret == 0, return CORE_ERROR,);
 
 	/* Advertise the support for the application in the peer */
@@ -806,12 +907,17 @@ void pcscf_fd_final(void)
 	ret = fd_sess_handler_destroy(&pcscf_rx_reg, NULL);
     d_assert(ret == 0,,);
 
+	if (hdl_rx_fb)
+		(void) fd_disp_unregister(&hdl_rx_fb, NULL);
+	if (hdl_rx_asr)
+		(void) fd_disp_unregister(&hdl_rx_asr, NULL);
+
     fd_final();
 
     if (pool_used(&pcscf_rx_sess_pool))
         d_error("%d not freed in pcscf_rx_sess_pool[%d] of S6A-SM",
                 pool_used(&pcscf_rx_sess_pool), pool_size(&pcscf_rx_sess_pool));
-    d_trace(3, "%d not freed in pcscf_rx_sess_pool[%d] of S6A-SM\n",
+    d_trace(5, "%d not freed in pcscf_rx_sess_pool[%d] of S6A-SM\n",
             pool_used(&pcscf_rx_sess_pool), pool_size(&pcscf_rx_sess_pool));
 
     pool_final(&pcscf_rx_sess_pool);
