@@ -1129,7 +1129,7 @@ void mme_fd_final(void)
     if (pool_used(&mme_s6a_sess_pool))
         d_error("%d not freed in mme_s6a_sess_pool[%d] of GX-SM",
                 pool_used(&mme_s6a_sess_pool), pool_size(&mme_s6a_sess_pool));
-    d_trace(3, "%d not freed in mme_s6a_sess_pool[%d] of GX-SM\n",
+    d_trace(5, "%d not freed in mme_s6a_sess_pool[%d] of GX-SM\n",
             pool_used(&mme_s6a_sess_pool), pool_size(&mme_s6a_sess_pool));
 
     pool_final(&mme_s6a_sess_pool);

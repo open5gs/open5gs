@@ -16,7 +16,8 @@ int fd_init(int mode, const char *conffile, fd_config_t *fd_config)
     int ret;
 
     gnutls_global_set_log_function(fd_gnutls_log_func);
-    gnutls_global_set_log_level(TRACE_MODULE);
+    if (TRACE_MODULE >= 5)
+        gnutls_global_set_log_level(TRACE_MODULE);
 
     ret = fd_log_handler_register(fd_log_func);
     if (ret != 0) 
@@ -98,7 +99,7 @@ static void fd_log_func(int printlevel, const char *format, va_list ap)
             d_trace(5, "freeDiameter[%d]: %s\n", printlevel, buffer);
             break;  
 	    case FD_LOG_NOTICE:
-            d_trace(3, "freeDiameter[%d]: %s\n", printlevel, buffer);
+            d_trace(5, "freeDiameter[%d]: %s\n", printlevel, buffer);
             break;
 	    case FD_LOG_ERROR:
             d_error("%s", buffer);

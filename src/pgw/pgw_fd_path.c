@@ -1062,7 +1062,7 @@ void pgw_fd_final(void)
     if (pool_used(&pgw_gx_sess_pool))
         d_error("%d not freed in pgw_gx_sess_pool[%d] of GX-SM",
                 pool_used(&pgw_gx_sess_pool), pool_size(&pgw_gx_sess_pool));
-    d_trace(3, "%d not freed in pgw_gx_sess_pool[%d] of GX-SM\n",
+    d_trace(5, "%d not freed in pgw_gx_sess_pool[%d] of GX-SM\n",
             pool_used(&pgw_gx_sess_pool), pool_size(&pgw_gx_sess_pool));
 
     pool_final(&pgw_gx_sess_pool);

@@ -319,9 +319,9 @@ status_t pcrf_context_setup_trace_module()
 
     if (diameter)
     {
-        if (diameter <= 1) fd_g_debug_lvl = FD_LOG_ERROR;
-        else if (diameter <= 3) fd_g_debug_lvl = FD_LOG_NOTICE;
-        else if (diameter <= 5) fd_g_debug_lvl = FD_LOG_DEBUG;
+        if (diameter <= 3) fd_g_debug_lvl = FD_LOG_ERROR;
+        else if (diameter <= 5) fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (diameter <= 7) fd_g_debug_lvl = FD_LOG_DEBUG;
         else fd_g_debug_lvl = FD_LOG_ANNOYING;
 
         extern int _pcrf_fd_path;
