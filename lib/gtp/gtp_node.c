@@ -18,13 +18,11 @@ status_t gtp_node_init(void)
 }
 status_t gtp_node_final(void)
 {
-    if (pool_size(&gtp_node_pool) != pool_avail(&gtp_node_pool))
+    if (pool_used(&gtp_node_pool))
         d_error("%d not freed in gtp_node_pool[%d]",
-            pool_size(&gtp_node_pool) - pool_avail(&gtp_node_pool),
-            pool_size(&gtp_node_pool));
-    d_trace(3, "%d not freed in gtp_node_pool[%d]\n",
-            pool_size(&gtp_node_pool) - pool_avail(&gtp_node_pool),
-            pool_size(&gtp_node_pool));
+            pool_used(&gtp_node_pool), pool_size(&gtp_node_pool));
+    d_trace(5, "%d not freed in gtp_node_pool[%d]\n",
+            pool_used(&gtp_node_pool), pool_size(&gtp_node_pool));
     pool_final(&gtp_node_pool);
 
     return CORE_OK;

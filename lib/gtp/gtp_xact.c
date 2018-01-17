@@ -61,14 +61,11 @@ status_t gtp_xact_final(void)
     d_assert(gtp_xact_initialized == 1, return CORE_ERROR,
         "GTP Transaction context already has been finalized");
 
-    if (pool_size(&gtp_xact_pool) != pool_avail(&gtp_xact_pool))
+    if (pool_used(&gtp_xact_pool))
         d_error("%d not freed in gtp_xact_pool[%d] of GTP Transaction",
-                pool_size(&gtp_xact_pool) - pool_avail(&gtp_xact_pool),
-                pool_size(&gtp_xact_pool));
-
-    d_trace(3, "%d not freed in gtp_xact_pool[%d] of GTP Transaction\n",
-            pool_size(&gtp_xact_pool) - pool_avail(&gtp_xact_pool),
-            pool_size(&gtp_xact_pool));
+                pool_used(&gtp_xact_pool), pool_size(&gtp_xact_pool));
+    d_trace(5, "%d not freed in gtp_xact_pool[%d] of GTP Transaction\n",
+            pool_used(&gtp_xact_pool), pool_size(&gtp_xact_pool));
     index_final(&gtp_xact_pool);
 
     gtp_xact_initialized = 0;
@@ -116,7 +113,7 @@ gtp_xact_t *gtp_xact_local_create(
     rv = gtp_xact_update_tx(xact, hdesc, pkbuf);
     d_assert(rv == CORE_OK, return NULL, "Update Tx failed");
 
-    d_trace(3, "[%d] %s Create  peer [%s]:%d\n",
+    d_trace(5, "[%d] %s Create  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             CORE_ADDR(sock_remote_addr(gnode->sock), buf),
@@ -160,7 +157,7 @@ gtp_xact_t *gtp_xact_remote_create(gtp_node_t *gnode, c_uint32_t sqn)
     list_append(xact->org == GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
 
-    d_trace(3, "[%d] %s Create  peer [%s]:%d\n",
+    d_trace(5, "[%d] %s Create  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             CORE_ADDR(sock_remote_addr(gnode->sock), buf),
@@ -199,7 +196,7 @@ status_t gtp_xact_update_tx(gtp_xact_t *xact,
     d_assert(hdesc, return CORE_ERROR, "Null param");
     d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[%d] %s UPD TX-%d  peer [%s]:%d\n",
+    d_trace(5, "[%d] %s UPD TX-%d  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             hdesc->type,
@@ -292,7 +289,7 @@ status_t gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type)
     char buf[CORE_ADDRSTRLEN];
     gtp_xact_stage_t stage;
 
-    d_trace(3, "[%d] %s UPD RX-%d  peer [%s]:%d\n",
+    d_trace(5, "[%d] %s UPD RX-%d  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             type,
@@ -497,7 +494,7 @@ status_t gtp_xact_commit(gtp_xact_t *xact)
     d_assert(xact, return CORE_ERROR, "Null param");
     d_assert(xact->gnode, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[%d] %s Commit  peer [%s]:%d\n",
+    d_trace(5, "[%d] %s Commit  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),
@@ -617,7 +614,7 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
 
     if (event == g_response_event)
     {
-        d_trace(3, "[%d] %s Response Timeout "
+        d_trace(5, "[%d] %s Response Timeout "
                 "for step %d type %d peer [%s]:%d\n",
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
@@ -652,7 +649,7 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
     }
     else if (event == g_holding_event)
     {
-        d_trace(3, "[%d] %s Holding Timeout "
+        d_trace(5, "[%d] %s Holding Timeout "
                 "for step %d type %d peer [%s]:%d\n",
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
@@ -667,7 +664,7 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
         }
         else
         {
-            d_trace(3, "[%d] %s Delete Transaction "
+            d_trace(5, "[%d] %s Delete Transaction "
                     "for step %d type %d peer [%s]:%d\n",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
@@ -700,7 +697,7 @@ status_t gtp_xact_receive(
         new = gtp_xact_remote_create(gnode, h->sqn);
     d_assert(new, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[%d] %s Receive peer [%s]:%d\n",
+    d_trace(5, "[%d] %s Receive peer [%s]:%d\n",
             new->xid,
             new->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             CORE_ADDR(sock_remote_addr(gnode->sock), buf),
@@ -808,7 +805,7 @@ gtp_xact_t *gtp_xact_find_by_xid(
 
     if (xact)
     {
-        d_trace(3, "[%d] %s Find    peer [%s]:%d\n",
+        d_trace(5, "[%d] %s Find    peer [%s]:%d\n",
                 xact->xid,
                 xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
                 CORE_ADDR(sock_remote_addr(gnode->sock), buf),
@@ -849,7 +846,7 @@ static status_t gtp_xact_delete(gtp_xact_t *xact)
     d_assert(xact, , "Null param");
     d_assert(xact->gnode, , "Null param");
 
-    d_trace(3, "[%d] %s Delete  peer [%s]:%d\n",
+    d_trace(5, "[%d] %s Delete  peer [%s]:%d\n",
             xact->xid,
             xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
             CORE_ADDR(sock_remote_addr(xact->gnode->sock), buf),

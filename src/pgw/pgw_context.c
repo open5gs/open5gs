@@ -84,7 +84,7 @@ status_t pgw_context_final()
     if (index_used(&pgw_sess_pool))
         d_error("%d not freed in pgw_sess_pool[%d] in PGW-Context",
                 index_used(&pgw_sess_pool), index_size(&pgw_sess_pool));
-    d_trace(3, "%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
+    d_trace(5, "%d not freed in pgw_sess_pool[%d] in PGW-Context\n",
             index_used(&pgw_sess_pool), index_size(&pgw_sess_pool));
 
     pgw_dev_remove_all();
@@ -1669,7 +1669,7 @@ status_t pgw_subnet_remove(pgw_subnet_t *subnet)
         d_warn("%d not freed in ue_ip_pool[%d] in PGW-Context",
                 pool_used(&subnet->pool), pool_size(&subnet->pool));
     }
-    d_trace(3, "%d not freed in ue_ip_pool[%d] in PGW-Context\n",
+    d_trace(5, "%d not freed in ue_ip_pool[%d] in PGW-Context\n",
             pool_used(&subnet->pool), pool_size(&subnet->pool));
     pool_final(&subnet->pool);
 
