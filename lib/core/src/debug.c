@@ -523,7 +523,11 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
         }
         case D_MSG_TYPE_TRACE:
         {
-            n = vsprintf(fstr, fmt, args);
+            vsprintf(str, fmt, args);
+
+            n = sprintf(fstr, "["TIME_FMT_STR"] %s",
+                    te.tm_mon + 1, te.tm_mday, te.tm_hour,
+                    te.tm_min, te.tm_sec, te.tm_usec/1000, str);
 
             if (g_msg_to & D_MSG_TO_STDOUT)
             {
