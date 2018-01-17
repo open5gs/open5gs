@@ -165,6 +165,13 @@ static status_t bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
                     /* Update Bearer Request will encode updated QoS parameter */
                     qos_presence = 1;
                 }
+
+                if (tft_presence == 0 && qos_presence == 0)
+                {
+                    d_warn("[IGNORE] Update Bearer Request : "
+                            "Both QoS and TFT is NULL");
+                    continue;
+                }
             }
 
             for (j = 0; j < pcc_rule->num_of_flow; j++)

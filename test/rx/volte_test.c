@@ -306,7 +306,7 @@ static void volte_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
-    /* Deactivate EPS bearer context accept */
+    /* Send Deactivate EPS bearer context accept */
     rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -314,9 +314,8 @@ static void volte_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
-#if 0
     /* Send PDN disconnectivity request */
-    rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex);
+    rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -334,14 +333,17 @@ static void volte_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    /* Deactivate EPS bearer context accept */
-    rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex);
+    core_sleep(time_from_msec(300));
+
+    /* Send Deactivate EPS bearer context accept */
+    rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex+2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
 
+#if 0
     /* Send INVALID PDN Connectivity Request */
     rv = tests1ap_build_pdn_connectivity_request(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

@@ -184,13 +184,14 @@ status_t nas_send_detach_accept(mme_ue_t *mme_ue)
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL;
     S1ap_Cause_t cause;
+    c_uint8_t ue_ctx_rel_action = S1AP_UE_CTX_REL_NO_ACTION;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     /* reply with detach accept */
-    if ((mme_ue->detach_type.switch_off & 0x1) == 0)
+    if (mme_ue->detach_type.switch_off == 0)
     {
         rv = emm_build_detach_accept(&emmbuf, mme_ue);
         d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR,
@@ -199,12 +200,16 @@ status_t nas_send_detach_accept(mme_ue_t *mme_ue)
         rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
         d_assert(rv == CORE_OK, return CORE_ERROR, "nas send failed");
     }
+    else
+    {
+        ue_ctx_rel_action = S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT;
+    }
 
     /* FIXME : delay is needed */
     cause.present = S1ap_Cause_PR_nas;
     cause.choice.nas = S1ap_CauseNas_detach;
     rv = s1ap_send_ue_context_release_commmand(
-            enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
+            enb_ue, &cause, ue_ctx_rel_action, 0);
     d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
 
     return CORE_OK;
