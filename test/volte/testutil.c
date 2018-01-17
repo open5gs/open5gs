@@ -17,6 +17,7 @@
 #include "core_general.h"
 #include "core_debug.h"
 #include "core_semaphore.h"
+#include "core_file.h"
 #include "fd/fd_lib.h"
 
 #include "app/app.h"
@@ -51,16 +52,30 @@ void test_terminate(void)
     core_terminate();
 }
 
-status_t test_initialize(char *config_path)
+status_t test_initialize(int argc, const char *const argv[], char *config_path)
 {
     status_t rv;
+    char dir[C_PATH_MAX];
+    char conf[C_PATH_MAX];
+
+    if (config_path)
+    {
+        strcpy(conf, config_path);
+    }
+    else
+    {
+        path_remove_last_component(dir, argv[0]);
+        if (strstr(dir, ".libs"))
+            path_remove_last_component(dir, dir);
+        sprintf(conf, "%s/open-ims.conf", dir);
+    }
 
     fd_logger_register(test_fd_logger_handler);
 
     atexit(test_terminate);
 
     core_initialize();
-    rv = test_app_initialize(config_path, NULL);
+    rv = test_app_initialize(conf, NULL);
     if (rv != CORE_OK)
     {
         d_error("test_app_initialize() failed");

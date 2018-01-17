@@ -45,7 +45,7 @@ void test_terminate(void)
     core_terminate();
 }
 
-status_t test_initialize(char *config_path)
+status_t test_initialize(int argc, const char *const argv[], char *config_path)
 {
     status_t rv;
 

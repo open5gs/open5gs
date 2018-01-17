@@ -1,14 +1,14 @@
 ## Process this file with automake to produce Makefile.in.
 
-bin_PROGRAMS = testrx
+bin_PROGRAMS = testvolte
 
-testrx_SOURCES = \
+testvolte_SOURCES = \
 	abts.h abts_tests.h testutil.h \
 	abts.c testutil.c testpacket.h testpacket.c testapp.h testapp.c \
 	pcscf_fd_path.c volte_test.c \
 	$(NULL)
 
-testrx_LDADD = \
+testvolte_LDADD = \
     $(top_srcdir)/src/libepc.la \
 	$(NULL)
 

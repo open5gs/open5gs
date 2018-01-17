@@ -466,7 +466,7 @@ AC_CONFIG_FILES([support/logrotate/Makefile])
 AC_CONFIG_FILES([support/newsyslog/nextepc.conf])
 AC_CONFIG_FILES([support/newsyslog/Makefile])
 AC_CONFIG_FILES([support/Makefile])
-AC_CONFIG_FILES([test/rx/Makefile])
+AC_CONFIG_FILES([test/volte/Makefile])
 AC_CONFIG_FILES([test/Makefile])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

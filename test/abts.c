@@ -473,7 +473,7 @@ int main(int argc, const char *const argv[]) {
         list_provided = 1;
     }
 
-    rv = test_initialize((char*)config_path);
+    rv = test_initialize(argc, argv, (char*)config_path);
     if (rv != CORE_OK) 
         return EXIT_FAILURE;
 

@@ -55,7 +55,7 @@ void core_assert_ok(abts_case* tc, const char *context,
 #define CORE_ASSERT_OK(tc, ctxt, rv) \
              core_assert_ok(tc, ctxt, rv, __LINE__)
 
-status_t test_initialize(char *config_path);
+status_t test_initialize(int argc, const char *const argv[], char *config_path);
 
 abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
