@@ -286,7 +286,7 @@ static void volte_test1(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    core_sleep(time_from_msec(1000));
+    core_sleep(time_from_msec(300));
 
     /* Send Session-Termination-Request */
     pcscf_rx_send_str(rx_sid);
@@ -394,7 +394,20 @@ static void volte_test2(abts_case *tc, void *data)
             "\"arp\" : {"
               "\"priority_level\" : 3,"
               "\"pre_emption_vulnerability\" : 0,"
-              "\"pre_emption_capability\" : 0 } }"
+              "\"pre_emption_capability\" : 0 } },"
+          "\"flow\" : ["
+          "{ \"direction\" : 2,"
+            "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/32 23454\","
+            "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
+          "{ \"direction\" : 1,"
+            "\"description\" : \"permit out udp from any 50020 to 10.200.136.98/32 1-65535\","
+            "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
+          "{ \"direction\" : 2,"
+            "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/32 23455\","
+            "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2f\" } },"
+          "{ \"direction\" : 1,"
+            "\"description\" : \"permit out udp from any 50021 to 10.200.136.98/32 1-65535\","
+            "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd2e\" } } ]"
         "} ],"
         "\"ambr\" : {"
           "\"downlink\" : { \"$numberLong\" : \"35840\" },"
@@ -570,17 +583,20 @@ static void volte_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    core_sleep(time_from_msec(300));
-
-    /* Send AA-Request */
-    pcscf_rx_send_aar(&rx_sid, "45.45.0.5", 1, 1);
-
     /* Receive E-RAB Setup Request +
      * Activate dedicated EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rv = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
+
+    /* Send Activate dedicated EPS bearer context accept */
+    rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
 
     /* Send E-RAB Setup Response */
     rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 7, 3);
@@ -590,8 +606,18 @@ static void volte_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
-    /* Send Activate dedicated EPS bearer context accept */
-    rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
+    /* Send AA-Request */
+    pcscf_rx_send_aar(&rx_sid, "45.45.0.5", 0, 1);
+
+    /* Receive E-RAB Setup Request +
+     * Activate dedicated EPS bearer context request */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Send Modify EPS bearer context accept */
+    rv = tests1ap_build_modify_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -604,6 +630,7 @@ static void volte_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+#if 0
     /* Receive E-RAB Release Command +
      * Deactivate EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
@@ -625,6 +652,7 @@ static void volte_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
+#endif
     core_sleep(time_from_msec(300));
 
     /********** Remove Subscriber in Database */

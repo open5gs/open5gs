@@ -787,8 +787,8 @@ status_t pcrf_gx_send_rar(
             /* Check WEBUI static dedicated bearer */
             if (pcc_rule->num_of_flow)
             {
-                d_warn("STATIC dedicated bearer has already been activated");
-                d_warn("EPC will initiate modify dedicated bearer");
+                d_warn("Dedicated bearer has already been activated by WEBUI");
+                d_warn("Modify dedicated bearer is initiated by IMS");
 
                 for (j = 0; j < pcc_rule->num_of_flow; j++)
                 {
