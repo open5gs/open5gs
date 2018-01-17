@@ -561,6 +561,19 @@ static int pcscf_rx_asr_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     d_assert(ret == 0, return EINVAL,);
 
+    /* Get Abort-Cause */
+    ret = fd_msg_search_avp(qry, rx_abort_cause, &avp);
+    d_assert(ret == 0, return EINVAL,);
+    if (avp)
+    {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        d_assert(ret == 0, return EINVAL,);
+    }
+    else
+    {
+        d_error("no_Abort-Cause ");
+    }
+
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
     d_assert(ret == 0, return EINVAL,);
