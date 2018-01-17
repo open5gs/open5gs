@@ -17,6 +17,8 @@ CORE_DECLARE(void) sgw_s11_handle_delete_session_request(gtp_xact_t *s11_xact,
         sgw_ue_t *sgw_ue, gtp_message_t *gtp_message);
 CORE_DECLARE(void) sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact, 
         sgw_ue_t *sgw_ue, gtp_message_t *gtp_message);
+CORE_DECLARE(void) sgw_s11_handle_update_bearer_response(gtp_xact_t *s11_xact, 
+        sgw_ue_t *sgw_ue, gtp_message_t *gtp_message);
 CORE_DECLARE(void) sgw_s11_handle_delete_bearer_response(gtp_xact_t *s11_xact, 
         sgw_ue_t *sgw_ue, gtp_message_t *gtp_message);
 

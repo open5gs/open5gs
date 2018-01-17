@@ -1104,6 +1104,48 @@ status_t tests1ap_build_e_rab_setup_response(
     return CORE_OK;
 }
 
+status_t tests1ap_build_e_rab_modify_response(pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "2006"
+        "001b000003000040 0480000001000840 020001001f400600 002500010e",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        31,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
 status_t tests1ap_build_e_rab_release_response(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
@@ -1247,6 +1289,57 @@ status_t tests1ap_build_activate_dedicated_bearer_accept(
     return CORE_OK;
 }
 
+status_t tests1ap_build_modify_bearer_accept(
+        pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "000d"
+        "4035000005000000 0480000001000800 020001001a000a09 27a5c0d564067200"
+        "ca006440080064f0 430020a000004340 060064f043020a",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        57,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
 status_t tests1ap_build_deactivate_bearer_accept(
         pkbuf_t **pkbuf, int i)
 {
@@ -1255,7 +1348,7 @@ status_t tests1ap_build_deactivate_bearer_accept(
         "0500000005c00000 0001000800030001 00001a000a09274c b2ebbd056200ce00"
         "6440080055f50100 19d0100043400600 55f5011022",
         "000d40370000"
-        "0500000005c00000 0001000800030001 00001a000a09273e c7610a057200ce00"
+        "0500000005c00000 0001000800030001 00001a000a0927a9 a1b2bd057200ce00"
         "6440080055f50100 19d0100043400600 55f5011022",
         "",
 

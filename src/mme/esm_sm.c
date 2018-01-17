@@ -217,11 +217,10 @@ void esm_state_active(fsm_t *s, event_t *e)
                     d_trace(3, "[NAS] Modify EPS bearer context accept : "
                         "UE[%s] --> ESM[EBI:%d] in ACTIVE state\n", 
                         mme_ue->imsi_bcd, bearer->ebi);
-#if 0
+
                     rv = mme_gtp_send_update_bearer_response(bearer);
                     d_assert(rv == CORE_OK, return,
-                            "mme_gtp_send_delete_session_request error");
-#endif
+                            "mme_gtp_send_update_session_request error");
                     break;
                 }
                 case NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:

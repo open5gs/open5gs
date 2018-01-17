@@ -428,6 +428,79 @@ status_t mme_s11_build_create_bearer_response(
     return CORE_OK;
 }
 
+status_t mme_s11_build_update_bearer_response(
+        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
+{
+    status_t rv;
+    gtp_message_t gtp_message;
+    gtp_update_bearer_response_t *rsp = &gtp_message.update_bearer_response;
+
+    gtp_cause_t cause;
+    gtp_uli_t uli;
+    char uli_buf[GTP_MAX_ULI_LEN];
+    gtp_ue_timezone_t ue_timezone;
+    time_exp_t time_exp;
+
+    mme_ue_t *mme_ue = NULL;
+
+    d_assert(bearer, return CORE_ERROR, "Null param");
+    mme_ue = bearer->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+
+    /* Set Cause */
+    memset(&cause, 0, sizeof(cause));
+    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
+    rsp->cause.presence = 1;
+    rsp->cause.len = sizeof(cause);
+    rsp->cause.data = &cause;
+
+    /* Bearer Context : EBI */
+    rsp->bearer_contexts.presence = 1;
+    rsp->bearer_contexts.eps_bearer_id.presence = 1;
+    rsp->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
+
+    /* Bearer Context : Cause */
+    rsp->bearer_contexts.cause.presence = 1;
+    rsp->bearer_contexts.cause.len = sizeof(cause);
+    rsp->bearer_contexts.cause.data = &cause;
+
+    /* User Location Information(ULI) */
+    memset(&uli, 0, sizeof(gtp_uli_t));
+    uli.flags.e_cgi = 1;
+    uli.flags.tai = 1;
+    memcpy(&uli.tai.plmn_id, &mme_ue->tai.plmn_id, sizeof(uli.tai.plmn_id));
+    uli.tai.tac = mme_ue->tai.tac;
+    memcpy(&uli.e_cgi.plmn_id, &mme_ue->e_cgi.plmn_id, 
+            sizeof(uli.e_cgi.plmn_id));
+    uli.e_cgi.cell_id = mme_ue->e_cgi.cell_id;
+    rsp->user_location_information.presence = 1;
+    gtp_build_uli(&rsp->user_location_information, &uli, 
+            uli_buf, GTP_MAX_ULI_LEN);
+
+    /* UE Time Zone */
+    memset(&ue_timezone, 0, sizeof(ue_timezone));
+    time_exp_lt(&time_exp, time_now());
+    if (time_exp.tm_gmtoff > 0)
+        ue_timezone.sign = 0;
+    else
+        ue_timezone.sign = 1;
+    /* quarters of an hour */
+    ue_timezone.gmtoff = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
+    ue_timezone.daylight_saving_time = 
+        GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
+    rsp->ue_time_zone.presence = 1;
+    rsp->ue_time_zone.data = &ue_timezone;
+    rsp->ue_time_zone.len = sizeof(ue_timezone);
+
+    gtp_message.h.type = type;
+    rv = gtp_build_msg(pkbuf, &gtp_message);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+
+    return CORE_OK;
+}
+
 status_t mme_s11_build_delete_bearer_response(
         pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
 {

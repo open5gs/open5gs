@@ -53,11 +53,15 @@ CORE_DECLARE(status_t) tests1ap_build_e_rab_setup_response(
         pkbuf_t **pkbuf, 
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         c_uint8_t ebi, c_uint32_t teid);
+CORE_DECLARE(status_t) tests1ap_build_e_rab_modify_response(
+        pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_e_rab_release_response(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_activate_default_bearer_accept(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_activate_dedicated_bearer_accept(
+        pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_modify_bearer_accept(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_deactivate_bearer_accept(
         pkbuf_t **pkbuf, int i);

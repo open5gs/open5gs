@@ -198,6 +198,33 @@ void pgw_s5c_handle_create_bearer_response(
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
+void pgw_s5c_handle_update_bearer_response(
+        pgw_sess_t *sess, gtp_xact_t *xact, gtp_update_bearer_response_t *req)
+{
+    status_t rv;
+
+    d_assert(xact, return, "Null param");
+    d_assert(sess, return, "Null param");
+    d_assert(req, return, "Null param");
+
+    if (req->bearer_contexts.presence == 0)
+    {
+        d_error("No Bearer");
+        return;
+    }
+    if (req->bearer_contexts.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return;
+    }
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+    
+    d_trace(3, "[PGW] Update Bearer Response : SGW[0x%x] --> PGW[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+}
+
 void pgw_s5c_handle_delete_bearer_response(
         pgw_sess_t *sess, gtp_xact_t *xact, gtp_delete_bearer_response_t *req)
 {

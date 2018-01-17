@@ -414,13 +414,11 @@ void mme_s11_handle_update_bearer_request(
         }
         else
         {
-            d_warn("ignore Update Bearer Request : "
+            d_warn("[IGNORE] Update Bearer Request : "
                     "Both QoS and TFT is NULL");
-#if 0
             rv = mme_gtp_send_update_bearer_response(bearer);
             d_assert(rv == CORE_OK, return,
                     "mme_gtp_send_delete_session_request error");
-#endif
         }
     }
     else

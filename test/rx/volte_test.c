@@ -288,7 +288,6 @@ static void volte_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(1000));
 
-#if 0
     /* Send Session-Termination-Request */
     pcscf_rx_send_str(rx_sid);
 
@@ -315,6 +314,7 @@ static void volte_test1(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+#if 0
     /* Send PDN disconnectivity request */
     rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

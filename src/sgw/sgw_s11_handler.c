@@ -459,6 +459,59 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
+void sgw_s11_handle_update_bearer_response(gtp_xact_t *s11_xact,
+    sgw_ue_t *sgw_ue, gtp_message_t *gtp_message)
+{
+    status_t rv;
+    pkbuf_t *pkbuf = NULL;
+    gtp_xact_t *s5c_xact = NULL;
+    sgw_sess_t *sess = NULL;
+    sgw_bearer_t *bearer = NULL;
+    gtp_update_bearer_response_t *req = NULL;
+
+    d_assert(s11_xact, return, "Null param");
+    d_assert(sgw_ue, return, "Null param");
+    d_assert(gtp_message, return, "Null param");
+    s5c_xact = s11_xact->assoc_xact;
+    d_assert(s5c_xact, return, "Null param");
+
+    req = &gtp_message->update_bearer_response;
+    d_assert(req, return, "Null param");
+
+    if (req->bearer_contexts.presence == 0)
+    {
+        d_error("No Bearer");
+        return;
+    }
+    if (req->bearer_contexts.eps_bearer_id.presence == 0)
+    {
+        d_error("No EPS Bearer ID");
+        return;
+    }
+
+    bearer = sgw_bearer_find_by_ue_ebi(
+            sgw_ue, req->bearer_contexts.eps_bearer_id.u8);
+    d_assert(bearer, return, "No Bearer Context[EBI:%d]",
+            req->bearer_contexts.eps_bearer_id);
+    sess = bearer->sess;
+    d_assert(sess, return, "Null param");
+
+    gtp_message->h.type = GTP_UPDATE_BEARER_RESPONSE_TYPE;
+    gtp_message->h.teid = sess->pgw_s5c_teid;
+
+    rv = gtp_build_msg(&pkbuf, gtp_message);
+    d_assert(rv == CORE_OK, return, "gtp build failed");
+
+    rv = gtp_xact_update_tx(s5c_xact, &gtp_message->h, pkbuf);
+    d_assert(s5c_xact, return, "Null param");
+
+    rv = gtp_xact_commit(s5c_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
+
+    d_trace(3, "[SGW] Update Bearer Response : SGW[0x%x] --> PGW[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+}
+
 void sgw_s11_handle_delete_bearer_response(gtp_xact_t *s11_xact,
     sgw_ue_t *sgw_ue, gtp_message_t *gtp_message)
 {

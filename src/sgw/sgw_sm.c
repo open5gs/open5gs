@@ -106,6 +106,10 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                     sgw_s11_handle_create_bearer_response(xact, sgw_ue,
                             &message);
                     break;
+                case GTP_UPDATE_BEARER_RESPONSE_TYPE:
+                    sgw_s11_handle_update_bearer_response(xact, sgw_ue,
+                            &message);
+                    break;
                 case GTP_DELETE_BEARER_RESPONSE_TYPE:
                     sgw_s11_handle_delete_bearer_response(xact, sgw_ue,
                             &message);
