@@ -18,7 +18,12 @@ struct sess_state {
     os0_t   gx_sid;             /* Gx Session-Id */
 
     os0_t   peer_host;          /* Peer Host */
+
+#define SESSION_ABORTED         1
+    int     state;
+
     int     abort_cause;
+    int     termination_cause;
 
     struct timespec ts;         /* Time of sending the message */
 };
@@ -475,6 +480,8 @@ status_t pcrf_rx_send_asr(c_uint8_t *rx_sid, c_uint32_t abort_cause)
     ret = fd_sess_state_retrieve(pcrf_rx_reg, session, &sess_data);
     d_assert(sess_data, return CORE_ERROR,);
 
+    /* Update State */
+    sess_data->state = SESSION_ABORTED;
     sess_data->abort_cause = abort_cause;
     
     /* Set Origin-Host & Origin-Realm */
@@ -691,17 +698,16 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     d_assert(ret == 0, return EINVAL,);
     if (avp)
     {
-        c_uint32_t termination_cause = 0;
-
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return EINVAL,);
-        termination_cause = hdr->avp_value->i32;
-        switch(termination_cause)
+        sess_data->termination_cause = hdr->avp_value->i32;
+        switch(sess_data->termination_cause)
         {
             case RX_TERMINATION_CAUSE_DIAMETER_LOGOUT:
                 break;
             default:
-                d_error("Termination-Cause Error : [%d]", termination_cause);
+                d_error("Termination-Cause Error : [%d]",
+                        sess_data->termination_cause);
                 break;
         }
     }
@@ -710,7 +716,7 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
         d_error("no_Termination-Cause");
     }
 
-    if (!sess_data->abort_cause)
+    if (sess_data->state != SESSION_ABORTED)
     {
         /* Send Re-Auth Request if Abort-Session-Request is not initaited */
         rv = pcrf_gx_send_rar(sess_data->gx_sid, sess_data->rx_sid, &rx_message);

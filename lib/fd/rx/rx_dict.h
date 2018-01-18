@@ -87,11 +87,11 @@ extern struct dict_object *rx_ip_can_type;
 #define RX_RAT_TYPE_UMB                 2002
 #define RX_RAT_TYPE_EHRPD               2003
 extern struct dict_object *rx_rat_type;
-#define RX_ABORT_CAUSE_BEARER_RELEASED                          1
-#define RX_ABORT_CAUSE_INSUFFICIENT_SERVER_RESOURCES            2
-#define RX_ABORT_CAUSE_INSUFFICIENT_BEARER_RESOURCES            3
-#define RX_ABORT_CAUSE_PS_TO_CS_HANDOVER                        4
-#define RX_ABORT_CAUSE_SPONSORED_DATA_CONNECTIVITY_ DISALLOWED  5
+#define RX_ABORT_CAUSE_BEARER_RELEASED                          0
+#define RX_ABORT_CAUSE_INSUFFICIENT_SERVER_RESOURCES            1
+#define RX_ABORT_CAUSE_INSUFFICIENT_BEARER_RESOURCES            2
+#define RX_ABORT_CAUSE_PS_TO_CS_HANDOVER                        3
+#define RX_ABORT_CAUSE_SPONSORED_DATA_CONNECTIVITY_ DISALLOWED  4
 extern struct dict_object *rx_abort_cause;
 #define RX_TERMINATION_CAUSE_DIAMETER_LOGOUT                    1
 #define RX_TERMINATION_CAUSE_DIAMETER_SERVICE_NOT_PROVIDED      2
