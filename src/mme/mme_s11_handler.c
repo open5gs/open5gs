@@ -169,6 +169,8 @@ void mme_s11_handle_delete_session_response(
 
     if (FSM_CHECK(&mme_ue->sm, emm_state_authentication))
     {
+        d_trace(3,
+                "[MME] Delete Session Response in emm_state_authentication\n");
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
             CLEAR_SGW_S11_PATH(mme_ue);
             mme_s6a_send_air(mme_ue, NULL);
@@ -178,6 +180,7 @@ void mme_s11_handle_delete_session_response(
     }
     else if (FSM_CHECK(&mme_ue->sm, emm_state_detached))
     {
+        d_trace(3, "[MME] Delete Session Response in emm_state_detached\n");
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
             CLEAR_SGW_S11_PATH(mme_ue);
             rv = nas_send_detach_accept(mme_ue);
@@ -191,16 +194,20 @@ void mme_s11_handle_delete_session_response(
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
         d_assert(bearer, return, "Null param");
 
-        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
-
         if (FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
         {
+            d_trace(3, "[MME] Delete Session Response"
+                    "in emm_state_detached and esm_state_pdn_will_disconnect\n");
+            GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
+
             rv = nas_send_deactivate_bearer_context_request(bearer);
             d_assert(rv == CORE_OK, return,
                 "nas_send_deactivate_bearer_context_request failed");
         }
         else if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
+            d_trace(3, "[MME] Delete Session Response"
+                    "in emm_state_detached and esm_state_active\n");
             GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
                 S1ap_Cause_t cause;
                 enb_ue_t *enb_ue = NULL;
@@ -222,6 +229,8 @@ void mme_s11_handle_delete_session_response(
     }
     else if (FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup))
     {
+        d_trace(3, "[MME] Delete Session Response "
+                    "in emm_state_initial_context_setup\n");
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
             S1ap_Cause_t cause;
             enb_ue_t *enb_ue = NULL;
