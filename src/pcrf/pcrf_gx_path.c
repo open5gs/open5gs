@@ -18,8 +18,9 @@ struct rx_sess_state {
     lnode_t     node;
 
     os0_t       sid;                            /* Rx Session-Id */
-    c_int8_t    *name[MAX_NUM_OF_PCC_RULE];     /* PCC Rule Name */
-    int         num_of_name;
+
+    pcc_rule_t  pcc_rule[MAX_NUM_OF_PCC_RULE];
+    int         num_of_pcc_rule;
 
     struct sess_state *gx;
 };
@@ -52,9 +53,16 @@ pool_declare(pcrf_gx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
 pool_declare(pcrf_gx_rx_sess_pool,
         struct rx_sess_state, MAX_POOL_OF_DIAMETER_SESS);
 
-static status_t encode_pcc_rule_definition(
-        struct avp *avp, pcc_rule_t *pcc_rule);
 static void pcrf_gx_raa_cb(void *data, struct msg **msg);
+
+static status_t encode_pcc_rule_definition(
+        struct avp *avp, pcc_rule_t *pcc_rule, int flow_presence);
+static int matched_flow(
+        pcc_rule_t *pcc_rule, rx_media_component_t *media_component);
+static status_t install_flow(
+        pcc_rule_t *pcc_rule, rx_media_component_t *media_component);
+static status_t update_qos(
+        pcc_rule_t *pcc_rule, rx_media_component_t *media_component);
 
 static __inline__ struct sess_state *new_state(os0_t sid)
 {
@@ -103,10 +111,9 @@ static status_t remove_rx_state(struct rx_sess_state *rx_sess_data)
     d_assert(rx_sess_data, return CORE_ERROR,);
     gx = rx_sess_data->gx;
 
-    for (i = 0; i < rx_sess_data->num_of_name; i++)
+    for (i = 0; i < rx_sess_data->num_of_pcc_rule; i++)
     {
-        d_assert(rx_sess_data->name[i],,);
-        CORE_FREE(rx_sess_data->name[i]);
+        PCC_RULE_FREE(&rx_sess_data->pcc_rule[i]);
     }
 
     if (rx_sess_data->sid)
@@ -207,6 +214,8 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     c_uint32_t cc_request_number = 0;
     c_uint32_t result_code = FD_DIAMETER_MISSING_AVP;
 	
+    d_trace(3, "[PCRF] Credit-Control-Request : PGW --> PCRF\n");
+
     d_assert(msg, return EINVAL,);
 
     ret = fd_sess_state_retrieve(pcrf_gx_reg, sess, &sess_data);
@@ -440,7 +449,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
                     charging_rule = 1;
                 }
 
-                rv = encode_pcc_rule_definition(avp, pcc_rule);
+                rv = encode_pcc_rule_definition(avp, pcc_rule, 1);
                 d_assert(rv == CORE_OK, return EINVAL,);
             }
         }
@@ -649,7 +658,8 @@ status_t pcrf_gx_send_rar(
         c_uint8_t *gx_sid, c_uint8_t *rx_sid, rx_message_t *rx_message)
 {
     status_t rv;
-    int ret = 0, i, j, k;
+    int ret = 0, i, j;
+    int count = 0;
 
     struct msg *req = NULL;
     struct avp *avp, *avpch1;
@@ -666,6 +676,8 @@ status_t pcrf_gx_send_rar(
     d_assert(gx_sid, return CORE_ERROR,);
     d_assert(rx_sid, return CORE_ERROR,);
     d_assert(rx_message, return CORE_ERROR,);
+
+    d_trace(3, "[PCRF] Re-Auth-Request : PCRF -> PGW\n");
 
     /* Initialize Message */
     memset(&gx_message, 0, sizeof(gx_message_t));
@@ -740,7 +752,9 @@ status_t pcrf_gx_send_rar(
         /* Match Media-Component with PCC Rule */
         for (i = 0; i < rx_message->num_of_media_component; i++)
         {
+            int flow_presence = 0;
             pcc_rule_t *pcc_rule = NULL;
+            pcc_rule_t *db_pcc_rule = NULL;
             c_uint8_t qci = 0;
             rx_media_component_t *media_component =
                 &rx_message->media_component[i];
@@ -768,127 +782,108 @@ status_t pcrf_gx_send_rar(
             
             for (j = 0; j < gx_message.num_of_pcc_rule; j++)
             {
-                pcc_rule = &gx_message.pcc_rule[j];
-                if (pcc_rule->qos.qci == qci)
+                if (gx_message.pcc_rule[j].qos.qci == qci)
                 {
+                    db_pcc_rule = &gx_message.pcc_rule[j];
                     break;
                 }
             }
 
-            if (!pcc_rule)
+            if (!db_pcc_rule)
             {
-                d_error("CHECK WEBUI : No PCC Rule [QCI:%d]", qci);
+                d_error("CHECK WEBUI : No PCC Rule in DB [QCI:%d]", qci);
                 d_error("Please add PCC Rule using WEBUI");
                 rx_message->result_code = 
                     RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
                 goto out;
             }
 
-            /* Check WEBUI static dedicated bearer */
-            if (pcc_rule->num_of_flow)
+            for (j = 0; j < rx_sess_data->num_of_pcc_rule; j++)
             {
-                d_warn("Dedicated bearer has already been activated by WEBUI");
-                d_warn("Modify dedicated bearer is initiated by IMS");
-
-                for (j = 0; j < pcc_rule->num_of_flow; j++)
+                if (rx_sess_data->pcc_rule[j].qos.qci == qci)
                 {
-                    flow_t *flow = &pcc_rule->flow[j];
+                    pcc_rule = &rx_sess_data->pcc_rule[j];
+                    break;
+                }
+            }
 
-                    if (flow->description)
-                    {
-                        CORE_FREE(flow->description);
-                    }
-                    else
-                        d_assert(0,, "Null param");
+            if (!pcc_rule)
+            {
+                pcc_rule = 
+                    &rx_sess_data->pcc_rule[rx_sess_data->num_of_pcc_rule];
+
+                /* Device PCC Rule Info from DB Profile */
+                pcc_rule->name = core_strdup(db_pcc_rule->name);
+                d_assert(pcc_rule->name, return CORE_ERROR,);
+
+                memcpy(&pcc_rule->qos, &db_pcc_rule->qos, sizeof(qos_t));
+
+                pcc_rule->flow_status = db_pcc_rule->flow_status;
+                pcc_rule->precedence = db_pcc_rule->precedence;
+
+                /* Install Flow */
+                flow_presence = 1;
+                rv = install_flow(pcc_rule, media_component);
+                if (rv != CORE_OK)
+                {
+                    rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
+                    d_error("install_flow() failed");
+                    goto out;
                 }
 
-                pcc_rule->num_of_flow = 0;
+                rx_sess_data->num_of_pcc_rule++;
             }
+            else
+            {
+                d_assert(strcmp(pcc_rule->name, db_pcc_rule->name) == 0,
+                        return CORE_ERROR, "Mismatch Rule Name [%s:%s]",
+                        pcc_rule->name, db_pcc_rule->name);
 
-            /* Update QoS parameter */
-            if (media_component->mbr.uplink)
-            {
-                if (pcc_rule->qos.mbr.uplink)
-                    pcc_rule->qos.mbr.uplink =
-                        c_min(pcc_rule->qos.mbr.uplink, media_component->mbr.uplink);
-                else
-                    pcc_rule->qos.mbr.uplink = media_component->mbr.uplink;
-            }
-            if (media_component->mbr.downlink)
-            {
-                if (pcc_rule->qos.mbr.downlink)
-                    pcc_rule->qos.mbr.downlink =
-                        c_min(pcc_rule->qos.mbr.downlink, media_component->mbr.downlink);
-                else
-                    pcc_rule->qos.mbr.downlink = media_component->mbr.downlink;
-            }
-            if (media_component->gbr.uplink)
-            {
-                if (pcc_rule->qos.gbr.uplink)
-                    pcc_rule->qos.gbr.uplink =
-                        c_min(pcc_rule->qos.gbr.uplink, media_component->gbr.uplink);
-                else
-                    pcc_rule->qos.gbr.uplink = media_component->gbr.uplink;
-            }
-            if (media_component->gbr.downlink)
-            {
-                if (pcc_rule->qos.gbr.downlink)
-                    pcc_rule->qos.gbr.downlink =
-                        c_min(pcc_rule->qos.gbr.downlink, media_component->gbr.downlink);
-                else
-                    pcc_rule->qos.gbr.downlink = media_component->gbr.downlink;
-            }
-
-            for (j = 0; j < media_component->num_of_sub; j++)
-            {
-                rx_media_sub_component_t *sub = &media_component->sub[j];
-
-                if (sub->flow_number == 0)
+                /* Check Flow */
+                count = matched_flow(pcc_rule, media_component);
+                if (count == -1)
                 {
-                    continue;
+                    rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
+                    d_error("matched_flow() failed");
+                    goto out;
                 }
 
-                for (k = 0; k < sub->num_of_flow; k++)
+                if (pcc_rule->num_of_flow != count)
                 {
-                    int len;
-                    flow_t *gx_flow = &pcc_rule->flow[pcc_rule->num_of_flow];
-                    flow_t *rx_flow = &sub->flow[k];
-
-                    if (!strncmp(rx_flow->description,
-                                "permit out", strlen("permit out")))
+                    /* Re-install Flow */
+                    flow_presence = 1;
+                    rv = install_flow(pcc_rule, media_component);
+                    if (rv != CORE_OK)
                     {
-                        gx_flow->direction = FLOW_DOWNLINK_ONLY;
-
-                        len = strlen(rx_flow->description)+1;
-                        gx_flow->description = core_malloc(len);
-                        core_cpystrn(gx_flow->description,
-                                rx_flow->description, len);
-                    }
-                    else if (!strncmp(rx_flow->description,
-                                "permit in", strlen("permit in")))
-                    {
-                        gx_flow->direction = FLOW_UPLINK_ONLY;
-
-                        /* 'permit in' should be changed
-                         * 'permit out' in Gx Diameter */
-                        len = strlen(rx_flow->description)+2;
-                        gx_flow->description = core_malloc(len);
-                        strcpy(gx_flow->description, "permit out");
-                        strcat(gx_flow->description,
-                                &rx_flow->description[strlen("permit in")]);
-                        d_assert(len == strlen(gx_flow->description)+1, goto out,);
-                    }
-                    else
-                    {
-                        d_error("Invalid Flow Descripton : [%s]",
-                                rx_flow->description);
-                        rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
+                        rx_message->result_code = 
+                            RX_DIAMETER_FILTER_RESTRICTIONS;
+                        d_error("install_flow() failed");
                         goto out;
                     }
 
-                    pcc_rule->num_of_flow++;
                 }
+
             }
+
+            /* Update QoS */
+            rv = update_qos(pcc_rule, media_component);
+            if (rv != CORE_OK)
+            {
+                rx_message->result_code =
+                    RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
+                d_error("update_qos() failed");
+                goto out;
+            }
+
+            /* if we failed to get QoS from IMS, apply WEBUI QoS */
+            if (pcc_rule->qos.mbr.downlink == 0)
+                pcc_rule->qos.mbr.downlink = db_pcc_rule->qos.mbr.downlink;
+            if (pcc_rule->qos.mbr.uplink == 0)
+                pcc_rule->qos.mbr.uplink = db_pcc_rule->qos.mbr.uplink;
+            if (pcc_rule->qos.gbr.downlink == 0)
+                pcc_rule->qos.gbr.downlink = db_pcc_rule->qos.gbr.downlink;
+            if (pcc_rule->qos.gbr.uplink == 0)
+                pcc_rule->qos.gbr.uplink = db_pcc_rule->qos.gbr.uplink;
 
             if (charging_rule == 0)
             {
@@ -897,15 +892,8 @@ status_t pcrf_gx_send_rar(
                 charging_rule = 1;
             }
 
-            rv = encode_pcc_rule_definition(avp, pcc_rule);
+            rv = encode_pcc_rule_definition(avp, pcc_rule, flow_presence);
             d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-            /* Store PCC Rule Name in Rx session state */
-            rx_sess_data->name[rx_sess_data->num_of_name]
-                    = core_strdup(pcc_rule->name);
-            d_assert(rx_sess_data->name[rx_sess_data->num_of_name],
-                    return CORE_ERROR,);
-            rx_sess_data->num_of_name++;
         }
 
         if (charging_rule == 1)
@@ -919,9 +907,9 @@ status_t pcrf_gx_send_rar(
     {
         d_assert(rx_sess_data, return CORE_ERROR,);
 
-        for (i = 0; i < rx_sess_data->num_of_name; i++)
+        for (i = 0; i < rx_sess_data->num_of_pcc_rule; i++)
         {
-            d_assert(rx_sess_data->name[i],,);
+            d_assert(rx_sess_data->pcc_rule[i].name,,);
 
             if (charging_rule == 0)
             {
@@ -932,8 +920,8 @@ status_t pcrf_gx_send_rar(
 
             ret = fd_msg_avp_new(gx_charging_rule_name, 0, &avpch1);
             d_assert(ret == 0, return CORE_ERROR,);
-            val.os.data = (c_uint8_t *)rx_sess_data->name[i];
-            val.os.len = strlen(rx_sess_data->name[i]);
+            val.os.data = (c_uint8_t *)rx_sess_data->pcc_rule[i].name;
+            val.os.len = strlen(rx_sess_data->pcc_rule[i].name);
             ret = fd_msg_avp_setvalue(avpch1, &val);
             d_assert(ret == 0, return CORE_ERROR,);
             ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
@@ -1021,8 +1009,6 @@ status_t pcrf_gx_send_rar(
     fd_logger_self()->stats.nb_sent++;
     d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,, );
 
-    d_trace(3, "[Gx] Re-Auth-Request : PCRF --> PGW\n");
-
     /* Set no error */
     rx_message->result_code = ER_DIAMETER_SUCCESS;
 
@@ -1055,6 +1041,8 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     
     c_uint32_t result_code;
 
+    d_trace(3, "[PCRF] Re-Auth-Answer : PGW --> PCRF\n");
+
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     d_assert(ret == 0, return,);
 
@@ -1066,8 +1054,6 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
     d_assert(ret == 0, return,);
     d_assert(sess_data && (void *)sess_data == data, return, );
-
-    d_trace(3, "[Gx] Re-Auth-Answer : PGW --> PCRF\n");
 
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
@@ -1247,7 +1233,7 @@ void pcrf_gx_final(void)
 }
 
 static status_t encode_pcc_rule_definition(
-        struct avp *avp, pcc_rule_t *pcc_rule)
+        struct avp *avp, pcc_rule_t *pcc_rule, int flow_presence)
 {
     struct avp *avpch1, *avpch2, *avpch3, *avpch4;
     union avp_value val;
@@ -1267,32 +1253,35 @@ static status_t encode_pcc_rule_definition(
     ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
     d_assert(ret == 0, return CORE_ERROR,);
 
-    for (i = 0; i < pcc_rule->num_of_flow; i++)
+    if (flow_presence == 1)
     {
-        flow_t *flow = &pcc_rule->flow[i];
+        for (i = 0; i < pcc_rule->num_of_flow; i++)
+        {
+            flow_t *flow = &pcc_rule->flow[i];
 
-        ret = fd_msg_avp_new(gx_flow_information, 0, &avpch2);
-        d_assert(ret == 0, return CORE_ERROR,);
+            ret = fd_msg_avp_new(gx_flow_information, 0, &avpch2);
+            d_assert(ret == 0, return CORE_ERROR,);
 
-        ret = fd_msg_avp_new(gx_flow_direction, 0, &avpch3); 
-        d_assert(ret == 0, return CORE_ERROR,);
-        val.i32 = flow->direction;
-        ret = fd_msg_avp_setvalue(avpch3, &val);
-        d_assert(ret == 0, return CORE_ERROR,);
-        ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
-        d_assert(ret == 0, return CORE_ERROR,);
+            ret = fd_msg_avp_new(gx_flow_direction, 0, &avpch3); 
+            d_assert(ret == 0, return CORE_ERROR,);
+            val.i32 = flow->direction;
+            ret = fd_msg_avp_setvalue(avpch3, &val);
+            d_assert(ret == 0, return CORE_ERROR,);
+            ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
+            d_assert(ret == 0, return CORE_ERROR,);
 
-        ret = fd_msg_avp_new(gx_flow_description, 0, &avpch3); 
-        d_assert(ret == 0, return CORE_ERROR,);
-        val.os.data = (c_uint8_t *)flow->description;
-        val.os.len = strlen(flow->description);
-        ret = fd_msg_avp_setvalue(avpch3, &val);
-        d_assert(ret == 0, return CORE_ERROR,);
-        ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
-        d_assert(ret == 0, return CORE_ERROR,);
+            ret = fd_msg_avp_new(gx_flow_description, 0, &avpch3); 
+            d_assert(ret == 0, return CORE_ERROR,);
+            val.os.data = (c_uint8_t *)flow->description;
+            val.os.len = strlen(flow->description);
+            ret = fd_msg_avp_setvalue(avpch3, &val);
+            d_assert(ret == 0, return CORE_ERROR,);
+            ret = fd_msg_avp_add(avpch2, MSG_BRW_LAST_CHILD, avpch3);
+            d_assert(ret == 0, return CORE_ERROR,);
 
-        ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
-        d_assert(ret == 0, return CORE_ERROR,);
+            ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
+            d_assert(ret == 0, return CORE_ERROR,);
+        }
     }
 
     ret = fd_msg_avp_new(gx_flow_status, 0, &avpch2);
@@ -1402,5 +1391,324 @@ static status_t encode_pcc_rule_definition(
     ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch1);
     d_assert(ret == 0, return CORE_ERROR,);
     
+    return CORE_OK;
+}
+
+static status_t flow_rx_to_gx(flow_t *rx_flow, flow_t *gx_flow)
+{
+    int len;
+
+    d_assert(rx_flow, return CORE_ERROR,);
+    d_assert(gx_flow, return CORE_ERROR,);
+
+    if (!strncmp(rx_flow->description,
+                "permit out", strlen("permit out")))
+    {
+        gx_flow->direction = FLOW_DOWNLINK_ONLY;
+
+        len = strlen(rx_flow->description)+1;
+        gx_flow->description = core_malloc(len);
+        core_cpystrn(gx_flow->description, rx_flow->description, len);
+    }
+    else if (!strncmp(rx_flow->description,
+                "permit in", strlen("permit in")))
+    {
+        gx_flow->direction = FLOW_UPLINK_ONLY;
+
+        /* 'permit in' should be changed
+         * 'permit out' in Gx Diameter */
+        len = strlen(rx_flow->description)+2;
+        gx_flow->description = core_malloc(len);
+        strcpy(gx_flow->description, "permit out");
+        strcat(gx_flow->description,
+                &rx_flow->description[strlen("permit in")]);
+        d_assert(len == strlen(gx_flow->description)+1, return CORE_ERROR,);
+    }
+    else
+    {
+        d_error("Invalid Flow Descripton : [%s]", rx_flow->description);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
+
+static int matched_flow(
+        pcc_rule_t *pcc_rule, rx_media_component_t *media_component)
+{
+    status_t rv;
+    int i, j, k;
+    int matched = 0;
+    int new = 0;
+
+    d_assert(pcc_rule, return CORE_ERROR,);
+    d_assert(media_component, return CORE_ERROR,);
+
+    for (i = 0; i < media_component->num_of_sub; i++)
+    {
+        rx_media_sub_component_t *sub = &media_component->sub[i];
+
+        if (sub->flow_number == 0)
+        {
+            continue;
+        }
+
+        for (j = 0; j < sub->num_of_flow; j++)
+        {
+            new++;
+        }
+    }
+
+    if (new == 0)
+    {
+        /* No new flow in Media-Component */
+        return pcc_rule->num_of_flow;
+    }
+
+    for (i = 0; i < media_component->num_of_sub; i++)
+    {
+        rx_media_sub_component_t *sub = &media_component->sub[i];
+
+        if (sub->flow_number == 0)
+        {
+            continue;
+        }
+
+        for (j = 0; j < sub->num_of_flow; j++)
+        {
+            flow_t gx_flow;
+            flow_t *rx_flow = &sub->flow[j];
+
+            rv = flow_rx_to_gx(rx_flow, &gx_flow);
+            if (rv != CORE_OK)
+            {
+                d_error("flow reformatting error");
+                return CORE_ERROR;
+            }
+
+            for (k = 0; k < pcc_rule->num_of_flow; k++)
+            {
+                if (gx_flow.direction == pcc_rule->flow[k].direction &&
+                    !strcmp(gx_flow.description, pcc_rule->flow[k].description))
+                {
+                    matched++;
+                    break;
+                }
+            }
+
+            FLOW_FREE(&gx_flow);
+        }
+    }
+
+    return matched;
+}
+
+static status_t install_flow(
+        pcc_rule_t *pcc_rule, rx_media_component_t *media_component)
+{
+    status_t rv;
+    int i, j;
+
+    d_assert(pcc_rule, return CORE_ERROR,);
+    d_assert(media_component, return CORE_ERROR,);
+
+    /* Remove Flow from PCC Rule */
+    for (i = 0; i < pcc_rule->num_of_flow; i++)
+    {
+        FLOW_FREE(&pcc_rule->flow[i]);
+    }
+    pcc_rule->num_of_flow = 0;
+
+    for (i = 0; i < media_component->num_of_sub; i++)
+    {
+        rx_media_sub_component_t *sub = &media_component->sub[i];
+
+        if (sub->flow_number == 0)
+        {
+            continue;
+        }
+
+        /* Copy Flow to PCC Rule */
+        for (j = 0; j < sub->num_of_flow; j++)
+        {
+            flow_t *rx_flow = &sub->flow[j];
+            flow_t *gx_flow = &pcc_rule->flow[pcc_rule->num_of_flow];
+
+            rv = flow_rx_to_gx(rx_flow, gx_flow);
+            if (rv != CORE_OK)
+            {
+                d_error("flow reformatting error");
+                return CORE_ERROR;
+            }
+
+            pcc_rule->num_of_flow++;
+        }
+    }
+
+    return CORE_OK;
+}
+
+static status_t update_qos(
+        pcc_rule_t *pcc_rule, rx_media_component_t *media_component)
+{
+    status_t rv;
+    int i, j;
+
+    d_assert(pcc_rule, return CORE_ERROR,);
+    d_assert(media_component, return CORE_ERROR,);
+
+    pcc_rule->qos.mbr.downlink = 0;
+    pcc_rule->qos.mbr.uplink = 0;
+    pcc_rule->qos.gbr.downlink = 0;
+    pcc_rule->qos.gbr.uplink = 0;
+
+    for (i = 0; i < media_component->num_of_sub; i++)
+    {
+        rx_media_sub_component_t *sub = &media_component->sub[i];
+
+        if (sub->flow_number == 0)
+        {
+            continue;
+        }
+
+        for (j = 0; j < sub->num_of_flow; j++)
+        {
+            flow_t gx_flow;
+            flow_t *rx_flow = &sub->flow[j];
+
+            rv = flow_rx_to_gx(rx_flow, &gx_flow);
+            if (rv != CORE_OK)
+            {
+                d_error("flow reformatting error");
+                return CORE_ERROR;
+            }
+
+            if (gx_flow.direction == FLOW_DOWNLINK_ONLY)
+            {
+                if (sub->flow_usage == RX_FLOW_USAGE_RTCP)
+                {
+                    if (media_component->rr_bandwidth && 
+                        media_component->rs_bandwidth)
+                    {
+                        pcc_rule->qos.mbr.downlink +=
+                            (media_component->rr_bandwidth +
+                            media_component->rs_bandwidth);
+                    }
+                    else if (media_component->max_requested_bandwidth_dl)
+                    {
+                        if (media_component->rr_bandwidth && 
+                            !media_component->rs_bandwidth)
+                        {
+                            pcc_rule->qos.mbr.downlink +=
+                                c_max(0.05 *
+                                    media_component->max_requested_bandwidth_dl,
+                                    media_component->rr_bandwidth);
+                        }
+                        if (!media_component->rr_bandwidth && 
+                            media_component->rs_bandwidth)
+                        {
+                            pcc_rule->qos.mbr.downlink +=
+                                c_max(0.05 *
+                                    media_component->max_requested_bandwidth_dl,
+                                    media_component->rs_bandwidth);
+                        }
+                        if (!media_component->rr_bandwidth && 
+                            !media_component->rs_bandwidth)
+                        {
+                            pcc_rule->qos.mbr.downlink +=
+                                0.05 *
+                                    media_component->max_requested_bandwidth_dl;
+                        }
+                    }
+                }
+                else
+                {
+                    if (gx_flow.description)
+                    {
+                        pcc_rule->qos.mbr.downlink +=
+                            media_component->max_requested_bandwidth_dl;
+                        pcc_rule->qos.gbr.downlink +=
+                            media_component->min_requested_bandwidth_dl;
+                    }
+                }
+            }
+            else if (gx_flow.direction == FLOW_UPLINK_ONLY)
+            {
+                if (sub->flow_usage == RX_FLOW_USAGE_RTCP)
+                {
+                    if (media_component->rr_bandwidth && 
+                        media_component->rs_bandwidth)
+                    {
+                        pcc_rule->qos.mbr.uplink +=
+                            (media_component->rr_bandwidth +
+                            media_component->rs_bandwidth);
+                    }
+                    else if (media_component->max_requested_bandwidth_ul)
+                    {
+                        if (media_component->rr_bandwidth && 
+                            !media_component->rs_bandwidth)
+                        {
+                            pcc_rule->qos.mbr.uplink +=
+                                c_max(0.05 *
+                                    media_component->max_requested_bandwidth_ul,
+                                    media_component->rr_bandwidth);
+                        }
+                        if (!media_component->rr_bandwidth && 
+                            media_component->rs_bandwidth)
+                        {
+                            pcc_rule->qos.mbr.uplink +=
+                                c_max(0.05 *
+                                    media_component->max_requested_bandwidth_ul,
+                                    media_component->rs_bandwidth);
+                        }
+                        if (!media_component->rr_bandwidth && 
+                            !media_component->rs_bandwidth)
+                        {
+                            pcc_rule->qos.mbr.uplink +=
+                                0.05 *
+                                    media_component->max_requested_bandwidth_ul;
+                        }
+                    }
+                }
+                else
+                {
+                    if (gx_flow.description)
+                    {
+                        pcc_rule->qos.mbr.uplink +=
+                            media_component->max_requested_bandwidth_ul;
+                        pcc_rule->qos.gbr.uplink +=
+                            media_component->min_requested_bandwidth_ul;
+                    }
+                }
+            }
+            else
+                d_assert(0, return CORE_ERROR,
+                        "Invalid Direction(%d)", gx_flow.direction);
+
+            FLOW_FREE(&gx_flow);
+        }
+    }
+
+    if (pcc_rule->qos.mbr.downlink == 0)
+    {
+        pcc_rule->qos.mbr.downlink +=
+            media_component->max_requested_bandwidth_dl;
+        pcc_rule->qos.mbr.downlink +=
+            (media_component->rr_bandwidth + media_component->rs_bandwidth);
+    }
+
+    if (pcc_rule->qos.mbr.uplink == 0)
+    {
+        pcc_rule->qos.mbr.uplink +=
+            media_component->max_requested_bandwidth_ul;
+        pcc_rule->qos.mbr.uplink +=
+            (media_component->rr_bandwidth + media_component->rs_bandwidth);
+    }
+
+    if (pcc_rule->qos.gbr.downlink == 0)
+        pcc_rule->qos.gbr.downlink = pcc_rule->qos.mbr.downlink;
+    if (pcc_rule->qos.gbr.uplink == 0)
+        pcc_rule->qos.gbr.uplink = pcc_rule->qos.mbr.uplink;
+
     return CORE_OK;
 }

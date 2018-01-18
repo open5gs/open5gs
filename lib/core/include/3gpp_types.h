@@ -207,6 +207,16 @@ typedef struct _flow_t {
     c_int8_t *description;
 } flow_t;
 
+#define FLOW_FREE(__fLOW) \
+    do { \
+        if ((__fLOW)->description) \
+        { \
+            CORE_FREE((__fLOW)->description); \
+        } \
+        else \
+            d_assert(0,, "Null param"); \
+    } while(0)
+
 /**********************************
  * PCC Rule Structure            */
 typedef struct _pcc_rule_t {
@@ -230,6 +240,24 @@ typedef struct _pcc_rule_t {
         
     qos_t  qos;
 } pcc_rule_t;
+
+#define PCC_RULE_FREE(__pCCrULE) \
+    do { \
+        int __pCCrULE_iNDEX; \
+        d_assert((__pCCrULE), break,); \
+        if ((__pCCrULE)->name) \
+        { \
+            CORE_FREE((__pCCrULE)->name); \
+        } \
+        else \
+            d_assert(0,, "Null param"); \
+        for (__pCCrULE_iNDEX = 0; \
+            __pCCrULE_iNDEX < (__pCCrULE)->num_of_flow; __pCCrULE_iNDEX++) \
+        { \
+            FLOW_FREE(&((__pCCrULE)->flow[__pCCrULE_iNDEX])); \
+        } \
+        (__pCCrULE)->num_of_flow = 0; \
+    } while(0)
 
 /**********************************
  * PDN Structure                 */

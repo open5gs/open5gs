@@ -237,7 +237,7 @@ static void volte_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send AA-Request */
-    pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 0, 1);
+    pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 1, 1);
 
     /* Receive E-RAB Setup Request +
      * Activate dedicated EPS bearer context request */
@@ -263,7 +263,7 @@ static void volte_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send AA-Request without Flow */
-    pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 1, 0);
+    pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 2, 1);
 
     /* Receive E-RAB Modify Request +
      * Modify EPS bearer context request */
@@ -609,8 +609,8 @@ static void volte_test2(abts_case *tc, void *data)
     /* Send AA-Request */
     pcscf_rx_send_aar(&rx_sid, "45.45.0.5", 0, 1);
 
-    /* Receive E-RAB Setup Request +
-     * Activate dedicated EPS bearer context request */
+    /* Receive downlink NAS transport +
+     * Modify EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rv = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -630,7 +630,6 @@ static void volte_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-#if 0
     /* Receive E-RAB Release Command +
      * Deactivate EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
@@ -652,7 +651,6 @@ static void volte_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-#endif
     core_sleep(time_from_msec(300));
 
     /********** Remove Subscriber in Database */

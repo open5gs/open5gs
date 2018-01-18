@@ -64,7 +64,7 @@ static int pcscf_rx_fb_cb(struct msg **msg, struct avp *avp,
 }
 
 void pcscf_rx_send_aar(c_uint8_t **rx_sid, const char *ip,
-        int qos_presence, int flow_presence)
+        int qos_type, int flow_presence)
 {
     status_t rv;
     int ret;
@@ -239,7 +239,7 @@ void pcscf_rx_send_aar(c_uint8_t **rx_sid, const char *ip,
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
     d_assert(ret == 0, return,);
 
-    if (qos_presence)
+    if (qos_type == 1)
     {
         ret = fd_msg_avp_new(rx_max_requested_bandwidth_dl, 0, &avpch1);
         d_assert(ret == 0, return,);
@@ -251,7 +251,57 @@ void pcscf_rx_send_aar(c_uint8_t **rx_sid, const char *ip,
 
         ret = fd_msg_avp_new(rx_max_requested_bandwidth_ul, 0, &avpch1);
         d_assert(ret == 0, return,);
-        val.i32 = 32000;
+        val.i32 = 96000;
+        ret = fd_msg_avp_setvalue (avpch1, &val);
+        d_assert(ret == 0, return,);
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        d_assert(ret == 0, return,);
+
+        ret = fd_msg_avp_new(rx_rr_bandwidth, 0, &avpch1);
+        d_assert(ret == 0, return,);
+        val.i32 = 2400;
+        ret = fd_msg_avp_setvalue (avpch1, &val);
+        d_assert(ret == 0, return,);
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        d_assert(ret == 0, return,);
+
+        ret = fd_msg_avp_new(rx_rs_bandwidth, 0, &avpch1);
+        d_assert(ret == 0, return,);
+        val.i32 = 2400;
+        ret = fd_msg_avp_setvalue (avpch1, &val);
+        d_assert(ret == 0, return,);
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        d_assert(ret == 0, return,);
+    }
+    else if (qos_type == 2)
+    {
+        ret = fd_msg_avp_new(rx_max_requested_bandwidth_dl, 0, &avpch1);
+        d_assert(ret == 0, return,);
+        val.i32 = 96000;
+        ret = fd_msg_avp_setvalue (avpch1, &val);
+        d_assert(ret == 0, return,);
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        d_assert(ret == 0, return,);
+
+        ret = fd_msg_avp_new(rx_max_requested_bandwidth_ul, 0, &avpch1);
+        d_assert(ret == 0, return,);
+        val.i32 = 96000;
+        ret = fd_msg_avp_setvalue (avpch1, &val);
+        d_assert(ret == 0, return,);
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        d_assert(ret == 0, return,);
+
+        ret = fd_msg_avp_new(rx_min_requested_bandwidth_dl, 0, &avpch1);
+        d_assert(ret == 0, return,);
+        val.i32 = 88000;
+        ret = fd_msg_avp_setvalue (avpch1, &val);
+        d_assert(ret == 0, return,);
+        ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
+        d_assert(ret == 0, return,);
+
+        ret = fd_msg_avp_new(rx_min_requested_bandwidth_ul, 0, &avpch1);
+        d_assert(ret == 0, return,);
+        val.i32 = 88000;
         ret = fd_msg_avp_setvalue (avpch1, &val);
         d_assert(ret == 0, return,);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);

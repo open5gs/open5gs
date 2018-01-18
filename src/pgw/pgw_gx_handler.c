@@ -154,10 +154,14 @@ static status_t bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
                     tft_presence = 1;
                 }
 
-                if (bearer->qos.mbr.downlink != pcc_rule->qos.mbr.downlink ||
-                    bearer->qos.mbr.uplink != pcc_rule->qos.mbr.uplink ||
-                    bearer->qos.gbr.downlink != pcc_rule->qos.gbr.downlink ||
-                    bearer->qos.gbr.uplink != pcc_rule->qos.gbr.uplink)
+                if ((pcc_rule->qos.mbr.downlink &&
+                    bearer->qos.mbr.downlink != pcc_rule->qos.mbr.downlink) ||
+                    (pcc_rule->qos.mbr.uplink &&
+                     bearer->qos.mbr.uplink != pcc_rule->qos.mbr.uplink) ||
+                    (pcc_rule->qos.gbr.downlink &&
+                    bearer->qos.gbr.downlink != pcc_rule->qos.gbr.downlink) ||
+                    (pcc_rule->qos.gbr.uplink &&
+                    bearer->qos.gbr.uplink != pcc_rule->qos.gbr.uplink))
                 {
                     /* Update QoS parameter */
                     memcpy(&bearer->qos, &pcc_rule->qos, sizeof(qos_t));

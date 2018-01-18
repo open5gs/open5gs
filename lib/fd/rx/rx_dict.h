@@ -17,6 +17,8 @@ extern "C" {
 #define RX_AVP_CODE_MEDIA_TYPE                      (520)
 #define RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_DL      (515)
 #define RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_UL      (516)
+#define RX_AVP_CODE_RR_BANDWIDTH                    (521)
+#define RX_AVP_CODE_RS_BANDWIDTH                    (522)
 #define RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_DL      (534)
 #define RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_UL      (535)
 #define RX_AVP_CODE_MEDIA_COMPONENT_NUMBER          (518)

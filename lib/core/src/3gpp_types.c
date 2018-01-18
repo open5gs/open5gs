@@ -2,6 +2,7 @@
 
 #include "core_debug.h"
 #include "core_lib.h"
+#include "core_pkbuf.h"
 
 #include "3gpp_types.h"
 

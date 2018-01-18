@@ -29,8 +29,12 @@ typedef struct _rx_media_component_t {
 #define RX_MEDIA_TYPE_OTHER             0xFFFFFFFF
     c_uint32_t          media_type;
 
-    bitrate_t           mbr;  /* Maxmimum Bit Rate (MBR) */
-    bitrate_t           gbr;  /* Guaranteed Bit Rate (GBR) */
+    c_uint64_t          max_requested_bandwidth_dl; 
+    c_uint64_t          max_requested_bandwidth_ul;
+    c_uint64_t          min_requested_bandwidth_dl; 
+    c_uint64_t          min_requested_bandwidth_ul;
+    c_uint64_t          rr_bandwidth;
+    c_uint64_t          rs_bandwidth;
 
 #define MAX_NUM_OF_MEDIA_SUB_COMPONENT            8
     rx_media_sub_component_t sub[MAX_NUM_OF_MEDIA_SUB_COMPONENT];
