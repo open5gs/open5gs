@@ -29,6 +29,7 @@ logger:
 #
 #
 parameter:
+    no_ipv6: true
 
 mme:
     freeDiameter: mme.conf
