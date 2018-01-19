@@ -84,17 +84,22 @@ void emm_state_detached(fsm_t *s, event_t *e)
                     }
                     else
                     {
-                        d_error("No Security Context");
-                        nas_send_service_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
-                        FSM_TRAN(s, &emm_state_exception);
+                        if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                        {
+                            mme_s6a_send_air(mme_ue, NULL);
+                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                        }
+                        else
+                        {
+                            d_error("No Session");
+                            nas_send_service_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                            FSM_TRAN(s, &emm_state_exception);
+                        }
                     }
                 }
                 else
                 {
-                    d_warn("Unknown UE");
-                    nas_send_service_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                    FSM_TRAN(s, emm_state_exception);
+                    FSM_TRAN(&mme_ue->sm, &emm_state_identity);
                 }
                 break;
             }
@@ -167,19 +172,23 @@ void emm_state_detached(fsm_t *s, event_t *e)
                         }
                         else
                         {
-                            /* Send TAU reject */
-                            d_error("No Security Context");
-                            nas_send_tau_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
-                            FSM_TRAN(s, emm_state_exception);
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                mme_s6a_send_air(mme_ue, NULL);
+                                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                            }
+                            else
+                            {
+                                /* Send TAU reject */
+                                d_error("No Session");
+                                nas_send_tau_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                                FSM_TRAN(s, emm_state_exception);
+                            }
                         }
                     }
                     else
                     {
-                        /* Send TAU reject */
-                        d_error("Unknown UE");
-                        nas_send_tau_reject(mme_ue, 
-                            EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                        FSM_TRAN(s, emm_state_exception);
+                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
                     }
                     break;
                 }
@@ -264,12 +273,54 @@ void emm_state_identity(fsm_t *s, event_t *e)
                         }
                     }
                     else if (mme_ue->nas_eps.type ==
-                                MME_EPS_TYPE_SERVICE_REQUEST ||
-                            mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
+                                MME_EPS_TYPE_SERVICE_REQUEST)
                     {
-                        d_assert(0,,
-                                "Invalid EPS Type : %d", mme_ue->nas_eps.type);
-                        FSM_TRAN(s, &emm_state_exception);
+                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        {
+                            rv = s1ap_send_initial_context_setup_request(
+                                    mme_ue);
+                            d_assert(rv == CORE_OK,, "s1ap send error");
+                            FSM_TRAN(&mme_ue->sm, &emm_state_attached);
+                        }
+                        else
+                        {
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                mme_s6a_send_air(mme_ue, NULL);
+                                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                            }
+                            else
+                            {
+                                d_error("No Session");
+                                nas_send_service_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                                FSM_TRAN(s, &emm_state_exception);
+                            }
+                        }
+                    }
+                    else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
+                    {
+                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        {
+                            /* Send TAU Accept */
+                            rv = nas_send_tau_accept(mme_ue);
+                            d_assert(rv == CORE_OK,, "send send failed");
+                            FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+                        }
+                        else
+                        {
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                mme_s6a_send_air(mme_ue, NULL);
+                                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                            }
+                            else
+                            {
+                                /* Send TAU reject */
+                                d_error("No Session");
+                                nas_send_tau_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                                FSM_TRAN(s, emm_state_exception);
+                            }
+                        }
                     }
                     break;
                 }
@@ -617,7 +668,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
                 if (rv != CORE_OK)
                 {
                     d_error("emm_handle_service_request() failed "
-                            "in emm_state_attached");
+                            "in emm_state_detached");
                     FSM_TRAN(s, emm_state_exception);
                     break;
                 }
@@ -631,17 +682,22 @@ void emm_state_attached(fsm_t *s, event_t *e)
                     }
                     else
                     {
-                        d_error("No Secuity Context");
-                        nas_send_service_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
-                        FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                        if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                        {
+                            mme_s6a_send_air(mme_ue, NULL);
+                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                        }
+                        else
+                        {
+                            d_error("No Session");
+                            nas_send_service_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                            FSM_TRAN(s, &emm_state_exception);
+                        }
                     }
                 }
                 else
                 {
-                    d_error("Unknown UE");
-                    nas_send_service_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                    FSM_TRAN(s, emm_state_exception);
+                    FSM_TRAN(&mme_ue->sm, &emm_state_identity);
                 }
                 break;
             }
@@ -728,19 +784,23 @@ void emm_state_attached(fsm_t *s, event_t *e)
                         }
                         else
                         {
-                            /* Send TAU reject */
-                            d_error("No Security Context");
-                            nas_send_tau_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
-                            FSM_TRAN(s, emm_state_exception);
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                mme_s6a_send_air(mme_ue, NULL);
+                                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                            }
+                            else
+                            {
+                                /* Send TAU reject */
+                                d_error("No Session");
+                                nas_send_tau_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                                FSM_TRAN(s, emm_state_exception);
+                            }
                         }
                     }
                     else
                     {
-                        /* Send TAU reject */
-                        d_error("Unknown UE");
-                        nas_send_tau_reject(mme_ue, 
-                            EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                        FSM_TRAN(s, emm_state_exception);
+                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
                     }
                     break;
                 }

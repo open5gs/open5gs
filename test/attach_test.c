@@ -1338,8 +1338,9 @@ static void attach_test5(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
-    mme_self()->mme_ue_s1ap_id = 0;
+    mme_self()->mme_ue_s1ap_id = 1;
 
+#if 0
     /* Send Service request */
     rv = tests1ap_build_service_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -1363,6 +1364,7 @@ static void attach_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+#endif
 
     /***********************************************************************
      * Attach Request : Known IMSI, Integrity Protected, No Security Context
@@ -1455,6 +1457,7 @@ static void attach_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
+#if 0
     /* Receive UE Context Release Command */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rv = tests1ap_enb_read(sock, recvbuf);
@@ -1484,6 +1487,7 @@ static void attach_test5(abts_case *tc, void *data)
     rv = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
+#endif
 
     core_sleep(time_from_msec(300));
 
