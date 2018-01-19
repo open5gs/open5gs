@@ -151,9 +151,7 @@ status_t nas_security_decode(mme_ue_t *mme_ue,
         if (memcmp(mac + 2, pkbuf->payload + 2, 2) != 0)
         {
             d_error("NAS MAC verification failed");
-#if 0
             mme_ue->mac_failed = 1;
-#endif
         }
 
         return CORE_OK;
@@ -217,9 +215,7 @@ status_t nas_security_decode(mme_ue_t *mme_ue,
             {
                 d_warn("NAS MAC verification failed(0x%x != 0x%x)",
                         ntohl(h->message_authentication_code), ntohl(mac32));
-#if 0
                 mme_ue->mac_failed = 1;
-#endif
             }
         }
 
