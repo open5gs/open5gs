@@ -501,7 +501,16 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                     }
 
                     mme_s6a_send_ulr(mme_ue);
-                    FSM_TRAN(s, &emm_state_initial_context_setup);
+                    if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
+                    {
+                        FSM_TRAN(s, &emm_state_initial_context_setup);
+                    }
+                    else if (mme_ue->nas_eps.type ==
+                            MME_EPS_TYPE_SERVICE_REQUEST ||
+                            mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
+                    {
+                        FSM_TRAN(s, &emm_state_attached);
+                    }
                     break;
                 }
                 case NAS_SECURITY_MODE_REJECT:
