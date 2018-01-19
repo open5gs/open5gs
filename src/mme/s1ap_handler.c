@@ -443,10 +443,11 @@ void s1ap_handle_ue_context_release_request(
     {
         case S1ap_Cause_PR_radioNetwork:
         {
+            mme_ue_t *mme_ue = enb_ue->mme_ue;
+
             if (ies->cause.choice.radioNetwork
                     == S1ap_CauseRadioNetwork_user_inactivity)
             {
-                mme_ue_t *mme_ue = enb_ue->mme_ue;
                 d_assert(mme_ue, return,);
 
                 if (MME_HAVE_SGW_S11_PATH(mme_ue))
@@ -465,8 +466,26 @@ void s1ap_handle_ue_context_release_request(
             }
             else
             {
-                d_warn("Not implmented (radioNetwork cause : %d)",
-                        ies->cause.choice.radioNetwork);
+                d_error("[S1AP] UE Context Release Request"
+                        "[RadioNetwork Cause: %d] : "
+                        "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+                        ies->cause.choice.radioNetwork,
+                        enb_ue->enb_ue_s1ap_id,
+                        CORE_ADDR(enb->addr, buf), enb->enb_id);
+                if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                {
+                    rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                    d_assert(rv == CORE_OK, return,
+                        "mme_gtp_send_delete_all_sessions failed");
+                }
+                else
+                {
+                    cause.present = S1ap_Cause_PR_nas;
+                    cause.choice.nas = S1ap_CauseNas_normal_release;
+                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause,
+                            S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
+                    d_assert(rv == CORE_OK, return, "s1ap send error");
+                }
             }
             break;
         }
@@ -474,7 +493,9 @@ void s1ap_handle_ue_context_release_request(
         {
             mme_ue_t *mme_ue = enb_ue->mme_ue;
 
-            d_warn("[S1AP] UE Context Release Request[Transport Cause: %d]",
+            d_error("[S1AP] UE Context Release Request"
+                    "[Transport Cause: %d] : "
+                    "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
                     ies->cause.choice.transport,
                     enb_ue->enb_ue_s1ap_id,
                     CORE_ADDR(enb->addr, buf), enb->enb_id);
