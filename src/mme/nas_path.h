@@ -17,8 +17,7 @@ CORE_DECLARE(status_t) nas_send_to_downlink_nas_transport(
 
 CORE_DECLARE(status_t) nas_send_attach_accept(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) nas_send_attach_reject(mme_ue_t *mme_ue,
-    e_S1ap_CauseNas s1ap_cause_nas, nas_emm_cause_t emm_cause,
-    nas_esm_cause_t esm_cause, c_uint8_t ue_ctx_rel_action);
+    nas_emm_cause_t emm_cause, nas_esm_cause_t esm_cause);
 
 CORE_DECLARE(status_t) nas_send_authentication_request(
         mme_ue_t *mme_ue, e_utran_vector_t *e_utran_vector);
@@ -39,11 +38,11 @@ CORE_DECLARE(status_t) nas_send_deactivate_bearer_context_request(
     mme_bearer_t *bearer);
 
 CORE_DECLARE(status_t) nas_send_tau_accept(mme_ue_t *mme_ue);
-CORE_DECLARE(status_t) nas_send_tau_reject(mme_ue_t *mme_ue, 
-    nas_esm_cause_t emm_cause, c_uint8_t ue_ctx_rel_action);
+CORE_DECLARE(status_t) nas_send_tau_reject(
+        mme_ue_t *mme_ue, nas_esm_cause_t emm_cause);
 
-CORE_DECLARE(status_t) nas_send_service_reject(mme_ue_t *mme_ue, 
-        nas_emm_cause_t emm_cause, c_uint8_t ue_ctx_rel_action);
+CORE_DECLARE(status_t) nas_send_service_reject(
+        mme_ue_t *mme_ue, nas_emm_cause_t emm_cause);
 
 #ifdef __cplusplus
 }

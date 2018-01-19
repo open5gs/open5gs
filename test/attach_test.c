@@ -693,7 +693,7 @@ static void attach_test2(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /*****************************************************************
-     * Attach Request : IMSI, Integrity Protected, MAC Failed
+     * Attach Request : Unknown IMSI, Integrity Protected
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     core_sleep(time_from_msec(300));
 

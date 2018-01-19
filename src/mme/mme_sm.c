@@ -373,13 +373,23 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
             {
+                S1ap_Cause_t cause;
+                enb_ue_t *enb_ue = NULL;
+
                 rv = nas_send_attach_reject(mme_ue,
-                    S1ap_CauseNas_authentication_failure,
                     EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
-                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                    S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT);
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                 d_assert(rv == CORE_OK,,
                         "nas_send_attach_reject failed");
+
+                enb_ue = mme_ue->enb_ue;
+                d_assert(enb_ue, break, "No ENB UE context");
+
+                cause.present = S1ap_Cause_PR_nas;
+                cause.choice.nas = S1ap_CauseNas_authentication_failure;
+                rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause,
+                        S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
+                d_assert(rv == CORE_OK,, "s1ap send error");
 
                 pkbuf_free(s6abuf);
                 break;

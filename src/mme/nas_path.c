@@ -100,22 +100,13 @@ status_t nas_send_attach_accept(mme_ue_t *mme_ue)
 }
 
 status_t nas_send_attach_reject(mme_ue_t *mme_ue,
-    e_S1ap_CauseNas s1ap_cause_nas,
-    nas_emm_cause_t emm_cause, nas_esm_cause_t esm_cause,
-    c_uint8_t ue_ctx_rel_action)
+    nas_emm_cause_t emm_cause, nas_esm_cause_t esm_cause)
 {
     status_t rv;
-    mme_enb_t *enb = NULL;
-    enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
     pkbuf_t *esmbuf = NULL, *emmbuf = NULL;
-    S1ap_Cause_t cause;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return CORE_ERROR, "Null param");
 
     sess = mme_sess_first(mme_ue);
     if (sess)
@@ -132,12 +123,6 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     d_assert(rv == CORE_OK,
             esmbuf ? pkbuf_free(esmbuf) : 1; return CORE_ERROR,
             "nas send error");
-
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = s1ap_cause_nas;;
-    rv = s1ap_send_ue_context_release_commmand(
-            enb_ue, &cause, ue_ctx_rel_action, 0);
-    d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
 }
@@ -421,72 +406,36 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
     return CORE_OK;
 }
 
-status_t nas_send_tau_reject(mme_ue_t *mme_ue,
-        nas_emm_cause_t emm_cause, c_uint8_t ue_ctx_rel_action)
+status_t nas_send_tau_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
 {
     status_t rv;
-    enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL;
-    S1ap_Cause_t cause;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     /* Build TAU reject */
-    if (emm_build_tau_reject(&emmbuf, emm_cause, mme_ue) != CORE_OK)
-    {
-        d_error("emm_build_tau_reject error");
-        pkbuf_free(emmbuf);
-        return CORE_ERROR;
-    }
+    rv = emm_build_tau_reject(&emmbuf, emm_cause, mme_ue);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
 
-    /* Send Dl NAS to UE */
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     d_assert(rv == CORE_OK, return CORE_ERROR, "nas dl send error");
-
-    /* FIXME : delay required before sending UE context release to make sure 
-     * that UE receive DL NAS ? */
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_normal_release;
-    rv = s1ap_send_ue_context_release_commmand(
-                enb_ue, &cause, ue_ctx_rel_action, 0);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
 
     return CORE_OK;
 }
 
-status_t nas_send_service_reject(mme_ue_t *mme_ue,
-        nas_emm_cause_t emm_cause, c_uint8_t ue_ctx_rel_action)
+status_t nas_send_service_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
 {
     status_t rv;
-    enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL;
-    S1ap_Cause_t cause;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     /* Build Service Reject */
-    if (emm_build_service_reject(&emmbuf, emm_cause, mme_ue) != CORE_OK)
-    {
-        d_error("emm_build_service_reject error");
-        pkbuf_free(emmbuf);
-        return CORE_ERROR;
-    }
+    rv = emm_build_service_reject(&emmbuf, emm_cause, mme_ue);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
 
-    /* Send Dl NAS to UE */
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     d_assert(rv == CORE_OK, return CORE_ERROR, "nas dl send error");
-
-    /* FIXME : delay required before sending UE context release to make sure 
-     * that UE receive DL NAS ? */
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_normal_release;
-    rv = s1ap_send_ue_context_release_commmand(
-                enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
 
     return CORE_OK;
 }

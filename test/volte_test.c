@@ -445,7 +445,7 @@ static void volte_test2(abts_case *tc, void *data)
     bson_destroy(doc);
 
     /***********************************************************************
-     * Attach Request : Known IMSI, Integrity Protected, No Security Context
+     * Attach Request : Known IMSI, Integrity Protected, MAC failed
      * Send Initial-UE Message + Attach Request + PDN Connectivity        */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
