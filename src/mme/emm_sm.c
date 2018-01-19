@@ -91,7 +91,7 @@ void emm_state_detached(fsm_t *s, event_t *e)
                 }
                 else
                 {
-                    d_error("Unknown UE");
+                    d_warn("Unknown UE");
                     nas_send_service_reject(mme_ue, 
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                     FSM_TRAN(s, emm_state_exception);
