@@ -452,6 +452,14 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                     FSM_TRAN(s, &emm_state_initial_context_setup);
                     break;
                 }
+                case NAS_SECURITY_MODE_REJECT:
+                {
+                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
+                            "UE[%s] --> EMM\n", mme_ue->imsi_bcd,
+                            message->emm.security_mode_reject.emm_cause);
+                    FSM_TRAN(s, &emm_state_exception);
+                    break;
+                }
                 case NAS_EMM_STATUS:
                 {
                     d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
@@ -530,6 +538,9 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                     S1ap_Cause_t cause;
                     enb_ue_t *enb_ue = mme_ue->enb_ue;
 
+                    d_trace(3, "[NAS] Tracking area update complete : "
+                            "UE[%s] --> EMM\n",
+                            mme_ue->imsi_bcd);
                     d_assert(enb_ue, return, "Null param");
 
                     cause.present = S1ap_Cause_PR_nas;
