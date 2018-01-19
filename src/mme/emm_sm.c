@@ -79,23 +79,22 @@ void emm_state_detached(fsm_t *s, event_t *e)
                 {
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
-                        /* Nothing */
+                        rv = s1ap_send_initial_context_setup_request(mme_ue);
+                        d_assert(rv == CORE_OK,, "s1ap send error");
                     }
                     else
                     {
-                        if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                        {
-                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
-                        }
-                        else
-                        {
-                            FSM_TRAN(&mme_ue->sm, &emm_state_detached);
-                        }
+                        d_error("No Security Context");
+                        nas_send_service_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
+                        FSM_TRAN(s, &emm_state_exception);
                     }
                 }
                 else
                 {
-                    FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                    d_error("Unknown UE");
+                    nas_send_service_reject(mme_ue, 
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    FSM_TRAN(s, emm_state_exception);
                 }
                 break;
             }
@@ -118,18 +117,31 @@ void emm_state_detached(fsm_t *s, event_t *e)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            FSM_TRAN(&mme_ue->sm,
-                                    &emm_state_initial_context_setup);
+                            rv = nas_send_emm_to_esm(
+                                    mme_ue, &mme_ue->pdn_connectivity_request);
+                            d_assert(rv == CORE_OK,,
+                                    "nas_send_emm_to_esm failed");
+                            FSM_TRAN(s, &emm_state_initial_context_setup);
                         }
                         else
                         {
-                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                                d_assert(rv == CORE_OK, ,, "gtp send failed");
+                            }
+                            else
+                            {
+                                mme_s6a_send_air(mme_ue, NULL);
+                            }
+                            FSM_TRAN(s, &emm_state_authentication);
                         }
                     }
                     else
                     {
-                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                        FSM_TRAN(s, &emm_state_identity);
                     }
+    
                     break;
                 }
 
@@ -149,24 +161,25 @@ void emm_state_detached(fsm_t *s, event_t *e)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            /* Nothing */
+                            /* Send TAU Accept */
+                            rv = nas_send_tau_accept(mme_ue);
+                            d_assert(rv == CORE_OK,, "send send failed");
                         }
                         else
                         {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                FSM_TRAN(&mme_ue->sm,
-                                        &emm_state_authentication);
-                            }
-                            else
-                            {
-                                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
-                            }
+                            /* Send TAU reject */
+                            d_error("No Security Context");
+                            nas_send_tau_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
+                            FSM_TRAN(s, emm_state_exception);
                         }
                     }
                     else
                     {
-                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                        /* Send TAU reject */
+                        d_error("Unknown UE");
+                        nas_send_tau_reject(mme_ue, 
+                            EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                        FSM_TRAN(s, emm_state_exception);
                     }
                     break;
                 }
@@ -254,22 +267,9 @@ void emm_state_identity(fsm_t *s, event_t *e)
                                 MME_EPS_TYPE_SERVICE_REQUEST ||
                             mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
                     {
-                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        {
-                            /* Nothing */
-                        }
-                        else
-                        {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                FSM_TRAN(&mme_ue->sm,
-                                        &emm_state_authentication);
-                            }
-                            else
-                            {
-                                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
-                            }
-                        }
+                        d_assert(0,,
+                                "Invalid EPS Type : %d", mme_ue->nas_eps.type);
+                        FSM_TRAN(s, &emm_state_exception);
                     }
                     break;
                 }
@@ -344,8 +344,8 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                     {
                         status_t rv;
 
-                        d_warn("[NAS] Authentication failure [IMSI:%s] "
-                                "UE[%s] --> EMM\n", mme_ue->imsi_bcd);
+                        d_warn("[NAS] Authentication failure [IMSI:%s]",
+                                mme_ue->imsi_bcd);
 
                         rv = nas_send_authentication_reject(mme_ue);
                         d_assert(rv == CORE_OK,, "nas send error");
@@ -533,6 +533,7 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                     FSM_TRAN(s, &emm_state_attached);
                     break;
                 }
+#if 0 /* This should be removed */
                 case NAS_TRACKING_AREA_UPDATE_COMPLETE:
                 {
                     status_t rv;
@@ -553,6 +554,7 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                     FSM_TRAN(s, &emm_state_attached);
                     break;
                 }
+#endif
                 case NAS_EMM_STATUS:
                 {
                     d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
@@ -624,23 +626,22 @@ void emm_state_attached(fsm_t *s, event_t *e)
                 {
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                     {
-                        /* Nothing */
+                        rv = s1ap_send_initial_context_setup_request(mme_ue);
+                        d_assert(rv == CORE_OK,, "s1ap send error");
                     }
                     else
                     {
-                        if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                        {
-                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
-                        }
-                        else
-                        {
-                            FSM_TRAN(&mme_ue->sm, &emm_state_detached);
-                        }
+                        d_error("No Secuity Context");
+                        nas_send_service_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
+                        FSM_TRAN(&mme_ue->sm, &emm_state_exception);
                     }
                 }
                 else
                 {
-                    FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                    d_error("Unknown UE");
+                    nas_send_service_reject(mme_ue, 
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    FSM_TRAN(s, emm_state_exception);
                 }
                 break;
             }
@@ -663,17 +664,29 @@ void emm_state_attached(fsm_t *s, event_t *e)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            FSM_TRAN(&mme_ue->sm,
-                                    &emm_state_initial_context_setup);
+                            rv = nas_send_emm_to_esm(
+                                    mme_ue, &mme_ue->pdn_connectivity_request);
+                            d_assert(rv == CORE_OK,,
+                                    "nas_send_emm_to_esm failed");
+                            FSM_TRAN(s, &emm_state_initial_context_setup);
                         }
                         else
                         {
-                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                                d_assert(rv == CORE_OK, ,, "gtp send failed");
+                            }
+                            else
+                            {
+                                mme_s6a_send_air(mme_ue, NULL);
+                            }
+                            FSM_TRAN(s, &emm_state_authentication);
                         }
                     }
                     else
                     {
-                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                        FSM_TRAN(s, &emm_state_identity);
                     }
                     break;
                 }
@@ -709,24 +722,25 @@ void emm_state_attached(fsm_t *s, event_t *e)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            /* Nothing */
+                            /* Send TAU Accept */
+                            rv = nas_send_tau_accept(mme_ue);
+                            d_assert(rv == CORE_OK,, "send send failed");
                         }
                         else
                         {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                FSM_TRAN(&mme_ue->sm,
-                                        &emm_state_authentication);
-                            }
-                            else
-                            {
-                                FSM_TRAN(&mme_ue->sm, &emm_state_detached);
-                            }
+                            /* Send TAU reject */
+                            d_error("No Security Context");
+                            nas_send_tau_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
+                            FSM_TRAN(s, emm_state_exception);
                         }
                     }
                     else
                     {
-                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                        /* Send TAU reject */
+                        d_error("Unknown UE");
+                        nas_send_tau_reject(mme_ue, 
+                            EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                        FSM_TRAN(s, emm_state_exception);
                     }
                     break;
                 }

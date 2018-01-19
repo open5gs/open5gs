@@ -21,7 +21,6 @@
 status_t emm_handle_attach_request(
         mme_ue_t *mme_ue, nas_attach_request_t *attach_request)
 {
-    status_t rv;
     int served_tai_index = 0;
 
     enb_ue_t *enb_ue = NULL;
@@ -47,6 +46,7 @@ status_t emm_handle_attach_request(
      *
      * TAU_REQUEST
      *   Clear Paging Timer and Message
+     *   Update KeNB
      *
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
@@ -150,27 +150,6 @@ status_t emm_handle_attach_request(
 
     NAS_STORE_DATA(&mme_ue->pdn_connectivity_request, esm_message_container);
 
-    if (MME_UE_HAVE_IMSI(mme_ue))
-    {
-        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        {
-            rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
-            d_assert(rv == CORE_OK,, "nas_send_emm_to_esm failed");
-        }
-        else
-        {
-            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-            {
-                rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                d_assert(rv == CORE_OK, return CORE_ERROR, "gtp send failed");
-            }
-            else
-            {
-                mme_s6a_send_air(mme_ue, NULL);
-            }
-        }
-    }
-    
     return CORE_OK;
 }
 
@@ -396,8 +375,6 @@ status_t emm_handle_detach_request(
 status_t emm_handle_service_request(
         mme_ue_t *mme_ue, nas_service_request_t *service_request)
 {
-    status_t rv;
-
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     /*
@@ -408,6 +385,7 @@ status_t emm_handle_service_request(
      *
      * TAU_REQUEST
      *   Clear Paging Timer and Message
+     *   Update KeNB
      *
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
@@ -424,35 +402,12 @@ status_t emm_handle_service_request(
     /* Set EPS Update Type */
     mme_ue->nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST;
 
-    if (MME_UE_HAVE_IMSI(mme_ue))
-    {
-        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        {
-            rv = s1ap_send_initial_context_setup_request(mme_ue);
-            d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
-        }
-        else
-        {
-            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-            {
-                mme_s6a_send_air(mme_ue, NULL);
-            }
-            else
-            {
-                nas_send_service_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                return CORE_ERROR;
-            }
-        }
-    }
-
     return CORE_OK;
 }
 
 status_t emm_handle_tau_request(
         mme_ue_t *mme_ue, nas_tracking_area_update_request_t *tau_request)
 {
-    status_t rv;
     int served_tai_index = 0;
 
     nas_eps_update_type_t *eps_update_type =
@@ -473,12 +428,19 @@ status_t emm_handle_tau_request(
      *
      * TAU_REQUEST
      *   Clear Paging Timer and Message
+     *   Update KeNB
      *
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
      *   Update KeNB
      */
     CLEAR_PAGING_INFO(mme_ue);
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+    {
+        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+        mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+        mme_ue->nhcc = 1;
+    }
 
     /* Set EPS Update Type */
     memcpy(&mme_ue->nas_eps.update, eps_update_type,
@@ -561,32 +523,6 @@ status_t emm_handle_tau_request(
                     eps_mobile_identity->imsi.type);
             
             return CORE_OK;
-        }
-    }
-
-    if (MME_UE_HAVE_IMSI(mme_ue))
-    {
-        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        {
-            /* Send TAU Accept */
-            rv = nas_send_tau_accept(mme_ue);
-            d_assert(rv == CORE_OK,
-                    return CORE_ERROR, "nas_send_tau_accept failed");
-        }
-        else
-        {
-            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-            {
-                /* Re-authentication */
-                mme_s6a_send_air(mme_ue, NULL);
-            }
-            else
-            {
-                /* Send TAU reject */
-                nas_send_tau_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                return CORE_ERROR;
-            }
         }
     }
 
