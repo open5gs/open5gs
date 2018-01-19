@@ -46,7 +46,6 @@ status_t emm_handle_attach_request(
      *
      * TAU_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
@@ -385,7 +384,6 @@ status_t emm_handle_service_request(
      *
      * TAU_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
@@ -428,19 +426,12 @@ status_t emm_handle_tau_request(
      *
      * TAU_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
      *   Update KeNB
      */
     CLEAR_PAGING_INFO(mme_ue);
-    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-    {
-        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
-        mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
-        mme_ue->nhcc = 1;
-    }
 
     /* Set EPS Update Type */
     memcpy(&mme_ue->nas_eps.update, eps_update_type,
