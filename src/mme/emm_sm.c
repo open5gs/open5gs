@@ -344,11 +344,12 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                     {
                         status_t rv;
 
-                        d_error("authentication failed");
+                        d_warn("[NAS] Authentication failure [IMSI:%s] "
+                                "UE[%s] --> EMM\n", mme_ue->imsi_bcd);
 
                         rv = nas_send_authentication_reject(mme_ue);
                         d_assert(rv == CORE_OK,, "nas send error");
-                        FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+                        FSM_TRAN(&mme_ue->sm, &emm_state_exception);
                     }
                     else
                     {
@@ -454,7 +455,7 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                 }
                 case NAS_SECURITY_MODE_REJECT:
                 {
-                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
+                    d_warn("[NAS] Security mode reject [IMSI:%s,Cause:%d] "
                             "UE[%s] --> EMM\n", mme_ue->imsi_bcd,
                             message->emm.security_mode_reject.emm_cause);
                     FSM_TRAN(s, &emm_state_exception);
