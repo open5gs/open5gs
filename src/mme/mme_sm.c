@@ -271,7 +271,23 @@ void mme_state_operational(fsm_t *s, event_t *e)
             fsm_dispatch(&mme_ue->sm, (fsm_event_t*)e);
             if (FSM_CHECK(&mme_ue->sm, emm_state_exception))
             {
-                mme_ue_remove(mme_ue);
+                if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                {
+                    rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                    d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break,
+                            "gtp send failed");
+                }
+                else
+                {
+                    S1ap_Cause_t cause;
+
+                    cause.present = S1ap_Cause_PR_nas;
+                    cause.choice.nas = S1ap_CauseNas_normal_release;
+                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause,
+                            S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
+                    d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break,
+                            "s1ap send failed");
+                }
             }
 
             pkbuf_free(pkbuf);

@@ -570,6 +570,7 @@ static void attach_test2(abts_case *tc, void *data)
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     core_sleep(time_from_msec(300));
 
+    mme_self()->mme_ue_s1ap_id = 0;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -634,11 +635,19 @@ static void attach_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    /* Send EMM Status */
-    rv = tests1ap_build_emm_status(&sendbuf, msgindex);
+    /* Send Attach Complete + Activate default EPS bearer cotext accept */
+    rv = tests1ap_build_attach_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive EMM information */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    core_sleep(time_from_msec(300));
 
     /*****************************************************************
      * Attach Request : IMSI, Integrity Protected, MAC Matched
@@ -1146,6 +1155,7 @@ static void attach_test4(abts_case *tc, void *data)
      * Send Initial-UE Message + Attach Request + PDN Connectivity        */
     core_sleep(time_from_msec(300));
 
+    mme_self()->mme_ue_s1ap_id = 0;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -1181,8 +1191,6 @@ static void attach_test4(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-    core_sleep(time_from_msec(300));
-
 #if 0
     rv = testgtpu_build_slacc_rs(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -1194,6 +1202,26 @@ static void attach_test4(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 #endif
+
+    /* Send EMM Status */
+    rv = tests1ap_build_emm_status(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive UE Context Release Command */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Send UE Context Release Complete */
+    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
     ABTS_PTR_NOTNULL(tc, doc);

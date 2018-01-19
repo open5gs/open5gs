@@ -271,8 +271,11 @@ void emm_state_identity(fsm_t *s, event_t *e)
                 }
                 case NAS_EMM_STATUS:
                 {
-                    emm_handle_emm_status(mme_ue, &message->emm.emm_status);
-                    FSM_TRAN(s, &emm_state_detached);
+                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
+                            "in emm_state_identity",
+                            mme_ue->imsi_bcd,
+                            message->emm.emm_status.emm_cause);
+                    FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
                 default:
@@ -363,8 +366,11 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                 }
                 case NAS_EMM_STATUS:
                 {
-                    emm_handle_emm_status(mme_ue, &message->emm.emm_status);
-                    FSM_TRAN(s, &emm_state_detached);
+                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
+                            "in emm_state_authentication",
+                            mme_ue->imsi_bcd,
+                            message->emm.emm_status.emm_cause);
+                    FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
                 default:
@@ -444,8 +450,11 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                 }
                 case NAS_EMM_STATUS:
                 {
-                    emm_handle_emm_status(mme_ue, &message->emm.emm_status);
-                    FSM_TRAN(s, &emm_state_detached);
+                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
+                            "in emm_state_security_mode",
+                            mme_ue->imsi_bcd,
+                            message->emm.emm_status.emm_cause);
+                    FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
                 default:
@@ -529,8 +538,11 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                 }
                 case NAS_EMM_STATUS:
                 {
-                    emm_handle_emm_status(mme_ue, &message->emm.emm_status);
-                    FSM_TRAN(s, &emm_state_detached);
+                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
+                            "in emm_state_initial_context_setup",
+                            mme_ue->imsi_bcd,
+                            message->emm.emm_status.emm_cause);
+                    FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
                 default:
@@ -648,8 +660,11 @@ void emm_state_attached(fsm_t *s, event_t *e)
                 }
                 case NAS_EMM_STATUS:
                 {
-                    emm_handle_emm_status(mme_ue, &message->emm.emm_status);
-                    FSM_TRAN(s, &emm_state_detached);
+                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
+                            "in emm_state_attached",
+                            mme_ue->imsi_bcd,
+                            message->emm.emm_status.emm_cause);
+                    FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
                 case NAS_DETACH_REQUEST:

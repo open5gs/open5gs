@@ -150,7 +150,7 @@ status_t nas_security_decode(mme_ue_t *mme_ue,
 
         if (memcmp(mac + 2, pkbuf->payload + 2, 2) != 0)
         {
-            d_error("NAS MAC verification failed");
+            d_warn("NAS MAC verification failed");
             mme_ue->mac_failed = 1;
         }
 

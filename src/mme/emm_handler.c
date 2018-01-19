@@ -451,16 +451,6 @@ status_t emm_handle_service_request(
     return CORE_OK;
 }
 
-status_t emm_handle_emm_status(mme_ue_t *mme_ue, nas_emm_status_t *emm_status)
-{
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
-
-    d_warn("[NAS] EMM status(%d) : UE[%s] --> EMM", 
-            emm_status->emm_cause, mme_ue->imsi_bcd);
-
-    return CORE_OK;
-}
-
 status_t emm_handle_tau_request(
         mme_ue_t *mme_ue, nas_tracking_area_update_request_t *tau_request)
 {

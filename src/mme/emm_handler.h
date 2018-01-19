@@ -23,8 +23,6 @@ CORE_DECLARE(status_t) emm_handle_detach_request(
 CORE_DECLARE(status_t) emm_handle_service_request(
     mme_ue_t *mme_ue, nas_service_request_t *service_request);
 
-CORE_DECLARE(status_t) emm_handle_emm_status(
-    mme_ue_t *mme_ue, nas_emm_status_t *emm_status);
 CORE_DECLARE(status_t) emm_handle_tau_request(
     mme_ue_t *mme_ue, nas_tracking_area_update_request_t *tau_request);
 
