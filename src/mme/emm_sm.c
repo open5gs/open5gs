@@ -304,7 +304,7 @@ void emm_state_identity(fsm_t *s, event_t *e)
                             /* Send TAU Accept */
                             rv = nas_send_tau_accept(mme_ue);
                             d_assert(rv == CORE_OK,, "send send failed");
-                            FSM_TRAN(&mme_ue->sm, &emm_state_detached);
+                            FSM_TRAN(&mme_ue->sm, &emm_state_attached);
                         }
                         else
                         {
