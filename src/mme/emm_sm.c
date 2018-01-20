@@ -84,22 +84,17 @@ void emm_state_detached(fsm_t *s, event_t *e)
                     }
                     else
                     {
-                        if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                        {
-                            mme_s6a_send_air(mme_ue, NULL);
-                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
-                        }
-                        else
-                        {
-                            d_error("No Session");
-                            nas_send_service_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                            FSM_TRAN(s, &emm_state_exception);
-                        }
+                        d_warn("NAS MAC Failure in emm_state_detached");
+                        nas_send_service_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
+                        FSM_TRAN(s, &emm_state_exception);
                     }
                 }
                 else
                 {
-                    FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                    d_warn("Unknown UE in emm_state_detached");
+                    nas_send_service_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    FSM_TRAN(s, &emm_state_exception);
                 }
                 break;
             }
@@ -166,29 +161,22 @@ void emm_state_detached(fsm_t *s, event_t *e)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            /* Send TAU Accept */
                             rv = nas_send_tau_accept(mme_ue);
                             d_assert(rv == CORE_OK,, "send send failed");
                         }
                         else
                         {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                mme_s6a_send_air(mme_ue, NULL);
-                                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
-                            }
-                            else
-                            {
-                                /* Send TAU reject */
-                                d_error("No Session");
-                                nas_send_tau_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                                FSM_TRAN(s, emm_state_exception);
-                            }
+                            d_error("NAS MAC Failure in emm_state_detached");
+                            nas_send_tau_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
+                            FSM_TRAN(s, emm_state_exception);
                         }
                     }
                     else
                     {
-                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
+                        d_error("Unknown UE in emm_state_detached");
+                        nas_send_tau_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                        FSM_TRAN(s, emm_state_exception);
                     }
                     break;
                 }
@@ -291,8 +279,10 @@ void emm_state_identity(fsm_t *s, event_t *e)
                             }
                             else
                             {
-                                d_error("No Session");
-                                nas_send_service_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                                d_error("No PDN connection "
+                                        "in esm_state_identity");
+                                nas_send_service_reject(mme_ue,
+                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                                 FSM_TRAN(s, &emm_state_exception);
                             }
                         }
@@ -301,7 +291,6 @@ void emm_state_identity(fsm_t *s, event_t *e)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            /* Send TAU Accept */
                             rv = nas_send_tau_accept(mme_ue);
                             d_assert(rv == CORE_OK,, "send send failed");
                             FSM_TRAN(&mme_ue->sm, &emm_state_attached);
@@ -315,9 +304,10 @@ void emm_state_identity(fsm_t *s, event_t *e)
                             }
                             else
                             {
-                                /* Send TAU reject */
-                                d_error("No Session");
-                                nas_send_tau_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                                d_error("No PDN connection "
+                                        "in esm_state_identity");
+                                nas_send_tau_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                                 FSM_TRAN(s, emm_state_exception);
                             }
                         }
@@ -698,7 +688,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
                         }
                         else
                         {
-                            d_error("No Session");
+                            d_warn("No PDN Connection in emm_state_attached");
                             nas_send_service_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                             FSM_TRAN(s, &emm_state_exception);
                         }
@@ -706,6 +696,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
                 }
                 else
                 {
+                    d_warn("Unknown UE in emm_state_attached");
                     FSM_TRAN(&mme_ue->sm, &emm_state_identity);
                 }
                 break;
@@ -787,9 +778,8 @@ void emm_state_attached(fsm_t *s, event_t *e)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            /* Send TAU Accept */
                             rv = nas_send_tau_accept(mme_ue);
-                            d_assert(rv == CORE_OK,, "send send failed");
+                            d_assert(rv == CORE_OK,, "nas send failed");
                         }
                         else
                         {
@@ -800,8 +790,8 @@ void emm_state_attached(fsm_t *s, event_t *e)
                             }
                             else
                             {
-                                /* Send TAU reject */
-                                d_error("No Session");
+                                d_warn("No PDN Connection "
+                                        "in emm_state_attached");
                                 nas_send_tau_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                                 FSM_TRAN(s, emm_state_exception);
                             }
@@ -809,6 +799,7 @@ void emm_state_attached(fsm_t *s, event_t *e)
                     }
                     else
                     {
+                        d_warn("Unknown UE in emm_state_attached");
                         FSM_TRAN(&mme_ue->sm, &emm_state_identity);
                     }
                     break;
