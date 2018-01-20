@@ -48,7 +48,12 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue, s6a_ula_message_t *ula_message)
             rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
             d_assert(rv == CORE_OK,, "nas_send_emm_to_esm failed");
         }
-        else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
+        else
+            d_assert(0,, "Invalid Type(%d)", mme_ue->nas_eps.type);
+    }
+    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    {
+        if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
         {
             rv = nas_send_tau_accept(mme_ue);
             d_assert(rv == CORE_OK, return, "nas send failed");
