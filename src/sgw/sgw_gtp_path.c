@@ -115,9 +115,14 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         d_trace(50, "Recv GPDU (teid = 0x%x)\n", teid);
 
         tunnel = sgw_tunnel_find_by_teid(teid);
-        d_assert(tunnel, return -1, "No TEID(0x%x)", teid);
+        if (!tunnel)
+        {
+            d_error("No TEID(0x%x)", teid);
+            pkbuf_free(pkbuf);
+            return 0;
+        }
         bearer = tunnel->bearer;
-        d_assert(bearer, return -1, "Null param");
+        d_assert(bearer, pkbuf_free(pkbuf); return 0, "Null param");
 
         /* Convert TEID */
         if (tunnel->interface_type == 
@@ -131,7 +136,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
             d_trace(50, "Recv GPDU (teid = 0x%x) from eNB\n", teid);
 
             s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
-            d_assert(s5u_tunnel, return -1, "Null param");
+            d_assert(s5u_tunnel, pkbuf_free(pkbuf); return 0, "Null param");
             gtp_h->teid = htonl(s5u_tunnel->remote_teid);
             gtp_send(s5u_tunnel->gnode, pkbuf);
         }
@@ -141,7 +146,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
             d_trace(50, "Recv GPDU (teid = 0x%x) from PGW\n", teid);
 
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
-            d_assert(s1u_tunnel, return -1, "Null param");
+            d_assert(s1u_tunnel, pkbuf_free(pkbuf); return 0, "Null param");
             if (s1u_tunnel->remote_teid)
             {
                 /* If there is buffered packet, send it first */
@@ -189,7 +194,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                         {
                             d_error("sgw_event_send error");
                             pkbuf_free(pkbuf);
-                            return -1;
+                            return 0;
                         }
 
                         SGW_SET_UE_STATE(sgw_ue, SGW_DL_NOTI_SENT);

@@ -91,7 +91,7 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
     {
         d_error("pgw_event_send error");
         pkbuf_free(pkbuf);
-        return -1;
+        return 0;
     }
 
     return 0;
