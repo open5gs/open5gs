@@ -1651,7 +1651,7 @@ pgw_subnet_t *pgw_subnet_add(
     subnet->family = subnet->gw.family;
     subnet->prefixlen = atoi(mask_or_numbits);
 
-    pool_init(&subnet->pool, MAX_POOL_OF_UE);
+    pool_init(&subnet->pool, MAX_POOL_OF_SESS);
 
     list_append(&self.subnet_list, subnet);
 

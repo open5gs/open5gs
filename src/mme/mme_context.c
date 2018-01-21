@@ -60,10 +60,12 @@ status_t mme_context_init()
     list_init(&self.pgw_list);
 
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
+
     index_init(&mme_ue_pool, MAX_POOL_OF_UE);
     index_init(&enb_ue_pool, MAX_POOL_OF_UE);
     index_init(&mme_sess_pool, MAX_POOL_OF_SESS);
     index_init(&mme_bearer_pool, MAX_POOL_OF_BEARER);
+    pool_init(&self.m_tmsi, MAX_POOL_OF_UE);
 
     self.enb_sock_hash = hash_make();
     self.enb_addr_hash = hash_make();
@@ -88,6 +90,14 @@ status_t mme_context_final()
     mme_enb_remove_all();
     mme_ue_remove_all();
 
+    if (pool_used(&self.m_tmsi))
+    {
+        d_error("%d not freed in M-TMSI pool[%d] in MME-Context",
+                pool_used(&self.m_tmsi), pool_size(&self.m_tmsi));
+    }
+    d_trace(5, "%d not freed in M-TMSI pool[%d] in MME-Context\n",
+            pool_used(&self.m_tmsi), pool_size(&self.m_tmsi));
+
     d_assert(self.enb_sock_hash, , "Null param");
     hash_destroy(self.enb_sock_hash);
     d_assert(self.enb_addr_hash, , "Null param");
@@ -102,6 +112,7 @@ status_t mme_context_final()
     d_assert(self.guti_ue_hash, , "Null param");
     hash_destroy(self.guti_ue_hash);
 
+    pool_final(&self.m_tmsi);
     index_final(&mme_bearer_pool);
     index_final(&mme_sess_pool);
     index_final(&mme_ue_pool);
@@ -1859,8 +1870,11 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     fsm_clear(&mme_ue->sm);
 
     /* Clear hash table */
-    if (mme_ue->guti.m_tmsi != 0)
+    if (mme_ue->m_tmsi)
+    {
         hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
+        d_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == CORE_OK,,);
+    }
     if (mme_ue->imsi_len != 0)
         hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, NULL);
     
@@ -2114,23 +2128,23 @@ static status_t mme_ue_new_guti(mme_ue_t *mme_ue)
     d_assert(served_gummei->num_of_mme_code > 0,
             return CORE_ERROR, "Invalid param");
 
-    if (mme_ue->guti.m_tmsi != 0)
+    if (mme_ue->m_tmsi)
     {
         /* MME has a VALID GUIT
          * As such, we need to remove previous GUTI in hash table */
         hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
+        d_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == CORE_OK,,);
     }
 
     memset(&mme_ue->guti, 0, sizeof(guti_t));
 
-    /* FIXME : How to generate GUTI?
-     * At this point, I'll use first(0-index) Served GUMMEI in MME_CONTEXT */
     memcpy(&mme_ue->guti.plmn_id, &served_gummei->plmn_id[0], PLMN_ID_LEN);
     mme_ue->guti.mme_gid = served_gummei->mme_gid[0];
     mme_ue->guti.mme_code = served_gummei->mme_code[0];
 
-    mme_ue->guti.m_tmsi = NEXT_ID(self.old_m_tmsi, 1, 0xffffffff);
-
+    mme_ue->m_tmsi = mme_m_tmsi_alloc();
+    d_assert(mme_ue->m_tmsi, return CORE_ERROR,);
+    mme_ue->guti.m_tmsi = *(mme_ue->m_tmsi);
     hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), mme_ue);
 
     return CORE_OK;
@@ -2688,26 +2702,29 @@ int mme_find_served_tai(tai_t *tai)
 status_t mme_m_tmsi_pool_generate()
 {
     status_t rv;
-    int i;
+    int i, j;
 
     d_trace(1, "M-TMSI Pool try to generate...\n");
     for (i = 0; i < MAX_POOL_OF_UE; i++)
     {
         mme_m_tmsi_t *m_tmsi = NULL;
+        int conflict = 0;
 
         m_tmsi = &self.m_tmsi.pool[i];
         rv = core_generate_random_bytes((c_uint8_t *)m_tmsi, sizeof(*m_tmsi));
         d_assert(rv == CORE_OK, return CORE_ERROR, "Cannot generate random");
-
+        for (j = 0; j < i; j++)
+        {
+            if (*m_tmsi == self.m_tmsi.pool[j])
+            {
+                conflict = 1;
+                break;
+            }
+        }
+        if (conflict == 1) continue;
     }
+    self.m_tmsi.size = i;
     d_trace(1, "M-TMSI Pool generate...done\n");
-
-#if 0
-    for (i = 0; i < 10; i++)
-    {
-        printf("%x\n", self.m_tmsi.pool[i]);
-    }
-#endif
 
     return CORE_OK;
 }

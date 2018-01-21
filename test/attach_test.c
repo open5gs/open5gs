@@ -25,6 +25,9 @@ static void attach_test1(abts_case *tc, void *data)
     s1ap_message_t message;
     int i;
     int msgindex = 0;
+    enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+    c_uint32_t m_tmsi = 0;
 
     c_uint8_t tmp[MAX_SDU_LEN];
     char *_authentication_request = 
@@ -281,12 +284,27 @@ static void attach_test1(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 #endif
 
+    /* Retreive M-TMSI */
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(16777373);
+    d_assert(enb_ue, goto out,);
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, goto out,);
+    m_tmsi = mme_ue->guti.m_tmsi;
+
     /*****************************************************************
      * Attach Request : Known GUTI, Integrity Protected, MAC Matched
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     core_sleep(time_from_msec(300));
 
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
+    /* Update M-TMSI */
+    m_tmsi = htonl(m_tmsi);
+    memcpy(sendbuf->payload + 37, &m_tmsi, 4);
+    /* Update NAS MAC */
+    void snow_3g_f9(c_uint8_t* key, c_uint32_t count, c_uint32_t fresh,
+            c_uint32_t dir, c_uint8_t *data, c_uint64_t length, c_uint8_t *out);
+    snow_3g_f9(mme_ue->knas_int, 7, 0, 0,
+            sendbuf->payload + 25, (109 << 3), sendbuf->payload+21);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -392,6 +410,28 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
+    /* eNB disonncect from MME */
+    rv = tests1ap_enb_close(sock);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* eNB disonncect from SGW */
+    rv = testgtpu_enb_close(gtpu);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    return;
+
+out:
+    /********** Remove Subscriber in Database */
+    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_remove(collection, 
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
+    bson_destroy(doc);
+
+    mongoc_collection_destroy(collection);
 
     core_sleep(time_from_msec(300));
 
@@ -972,15 +1012,14 @@ static void attach_test3(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->payload+43, tmp+43, 3) == 0);
     pkbuf_free(recvbuf);
 
+    /* Retreive M-TMSI */
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(33554632);
     d_assert(enb_ue, goto out,);
     mme_ue = enb_ue->mme_ue;
     d_assert(mme_ue, goto out,);
     m_tmsi = mme_ue->guti.m_tmsi;
 
-    /* Send UE Release Request */
-    core_sleep(time_from_msec(300));
-
+    /* Send Initial UE Message + Attach Request */
     rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);

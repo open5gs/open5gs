@@ -112,8 +112,8 @@ typedef struct _mme_context_t {
 
     /* Generator for unique identification */
     c_uint32_t      mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
-    c_uint32_t      old_m_tmsi;                 /* m_tmsi generator */
 
+    /* M-TMSI Pool */
     struct {
         int head, tail;
         int size, avail;
@@ -207,6 +207,7 @@ struct _mme_ue_t {
     c_uint8_t       imsi[MAX_IMSI_LEN];
     int             imsi_len;
     c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    mme_m_tmsi_t    *m_tmsi;
     guti_t          guti;
 
     c_uint32_t      mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
