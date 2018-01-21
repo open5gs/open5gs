@@ -6,7 +6,7 @@
 #include "nas/nas_message.h"
 
 #include "hss/milenage.h"
-#include "hss/hss_kdf.h"
+#include "hss/hss_auc.h"
 #include "mme/nas_security.h"
 
 #include "testutil.h"
@@ -101,7 +101,7 @@ static void security_test3(abts_case *tc, void *data)
     c_uint8_t kasme[32];
     c_uint8_t tmp[32];
 
-    hss_kdf_kasme(
+    hss_auc_kasme(
         CORE_HEX(_ck, strlen(_ck), ck),
         CORE_HEX(_ik, strlen(_ik), ik),
         CORE_HEX(_plmn_id, strlen(_plmn_id), plmn_id),

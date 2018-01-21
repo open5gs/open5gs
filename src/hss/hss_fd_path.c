@@ -10,7 +10,7 @@
 #include "fd/s6a/s6a_message.h"
 
 #include "hss_context.h"
-#include "hss_kdf.h"
+#include "hss_auc.h"
 #include "milenage.h"
 
 /* handler for fallback cb */
@@ -105,7 +105,7 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
         {
             ret = fd_msg_avp_hdr(avpch, &hdr);
             d_assert(ret == 0, return EINVAL,);
-            hss_kdf_sqn(opc, auth_info.k, hdr->avp_value->os.data, sqn, mac_s);
+            hss_auc_sqn(opc, auth_info.k, hdr->avp_value->os.data, sqn, mac_s);
             if (memcmp(mac_s, hdr->avp_value->os.data +
                         RAND_LEN + HSS_SQN_LEN, MAC_S_LEN) == 0)
             {
@@ -156,7 +156,7 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
     milenage_generate(opc, auth_info.amf, auth_info.k,
         core_uint64_to_buffer(auth_info.sqn, HSS_SQN_LEN, sqn), auth_info.rand,
         autn, ik, ck, ak, xres, &xres_len);
-    hss_kdf_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
+    hss_auc_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
     /* Set the Authentication-Info */
     ret = fd_msg_avp_new(s6a_authentication_info, 0, &avp);
