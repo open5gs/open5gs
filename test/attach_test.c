@@ -1297,6 +1297,9 @@ static void attach_test5(abts_case *tc, void *data)
     s1ap_message_t message;
     int i;
     int msgindex = 12;
+    enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+    c_uint32_t m_tmsi = 0;
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -1490,9 +1493,16 @@ static void attach_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
+    /* Retreive M-TMSI */
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(2);
+    d_assert(enb_ue, goto out,);
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, goto out,);
+    m_tmsi = mme_ue->guti.m_tmsi;
+
     /* Send Service request */
     rv = tests1ap_build_service_request(&sendbuf,
-            0x40072e, 4, 0xda67, 0x12345678);
+            0x40072e, 4, 0xda67, m_tmsi);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -1517,6 +1527,7 @@ static void attach_test5(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+out:
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456937"));
     ABTS_PTR_NOTNULL(tc, doc);

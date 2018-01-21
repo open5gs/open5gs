@@ -85,7 +85,8 @@ void emm_state_detached(fsm_t *s, event_t *e)
                     else
                     {
                         d_warn("NAS MAC Failure in emm_state_detached");
-                        nas_send_service_reject(mme_ue, EMM_CAUSE_MAC_FAILURE);
+                        nas_send_service_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                         FSM_TRAN(s, &emm_state_exception);
                     }
                 }
@@ -274,8 +275,25 @@ void emm_state_identity(fsm_t *s, event_t *e)
                         {
                             if (MME_HAVE_SGW_S11_PATH(mme_ue))
                             {
-                                mme_s6a_send_air(mme_ue, NULL);
-                                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                                S1ap_Cause_t cause;
+                                enb_ue_t *enb_ue = NULL;
+
+                                d_warn("Have PDN Connection "
+                                        "in emm_state_attached");
+                                nas_send_service_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+
+                                enb_ue = mme_ue->enb_ue;
+                                d_assert(enb_ue, break, "No ENB UE context");
+
+                                cause.present = S1ap_Cause_PR_nas;
+                                cause.choice.nas = S1ap_CauseNas_normal_release;
+                                rv = s1ap_send_ue_context_release_commmand(
+                                        enb_ue, &cause,
+                                        S1AP_UE_CTX_REL_NO_ACTION, 0);
+                                d_assert(rv == CORE_OK, break,
+                                        "s1ap send failed");
+                                FSM_TRAN(s, &emm_state_attached);
                             }
                             else
                             {
@@ -683,13 +701,28 @@ void emm_state_attached(fsm_t *s, event_t *e)
                     {
                         if (MME_HAVE_SGW_S11_PATH(mme_ue))
                         {
-                            mme_s6a_send_air(mme_ue, NULL);
-                            FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                            S1ap_Cause_t cause;
+                            enb_ue_t *enb_ue = NULL;
+
+                            d_warn("Have PDN Connection in emm_state_attached");
+                            nas_send_service_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+
+                            enb_ue = mme_ue->enb_ue;
+                            d_assert(enb_ue, break, "No ENB UE context");
+
+                            cause.present = S1ap_Cause_PR_nas;
+                            cause.choice.nas = S1ap_CauseNas_normal_release;
+                            rv = s1ap_send_ue_context_release_commmand(
+                                    enb_ue, &cause,
+                                    S1AP_UE_CTX_REL_NO_ACTION, 0);
+                            d_assert(rv == CORE_OK, break, "s1ap send failed");
                         }
                         else
                         {
                             d_warn("No PDN Connection in emm_state_attached");
-                            nas_send_service_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                            nas_send_service_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                             FSM_TRAN(s, &emm_state_exception);
                         }
                     }
