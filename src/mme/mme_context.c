@@ -2719,7 +2719,7 @@ status_t mme_m_tmsi_pool_generate()
             if (*m_tmsi == self.m_tmsi.pool[j])
             {
                 conflict = 1;
-                d_trace(3, "[M-TMSI CONFLICT]  %d:0x%x == %d:0x%x\n",
+                d_warn("[M-TMSI CONFLICT]  %d:0x%x == %d:0x%x",
                         index, *m_tmsi, j, self.m_tmsi.pool[j]);
                 break;
             }
