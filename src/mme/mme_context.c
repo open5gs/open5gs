@@ -2129,7 +2129,7 @@ static status_t mme_ue_new_guti(mme_ue_t *mme_ue)
     mme_ue->guti.mme_gid = served_gummei->mme_gid[0];
     mme_ue->guti.mme_code = served_gummei->mme_code[0];
 
-    mme_ue->guti.m_tmsi = NEXT_ID(self.m_tmsi, 1, 0xffffffff);
+    mme_ue->guti.m_tmsi = NEXT_ID(self.old_m_tmsi, 1, 0xffffffff);
 
     hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), mme_ue);
 
@@ -2684,3 +2684,49 @@ int mme_find_served_tai(tai_t *tai)
 
     return -1;
 }
+
+status_t mme_m_tmsi_pool_generate()
+{
+    status_t rv;
+    int i;
+
+    d_trace(1, "M-TMSI Pool try to generate...\n");
+    for (i = 0; i < MAX_POOL_OF_UE; i++)
+    {
+        mme_m_tmsi_t *m_tmsi = NULL;
+
+        m_tmsi = &self.m_tmsi.pool[i];
+        rv = core_generate_random_bytes((c_uint8_t *)m_tmsi, sizeof(*m_tmsi));
+        d_assert(rv == CORE_OK, return CORE_ERROR, "Cannot generate random");
+
+    }
+    d_trace(1, "M-TMSI Pool generate...done\n");
+
+#if 0
+    for (i = 0; i < 10; i++)
+    {
+        printf("%x\n", self.m_tmsi.pool[i]);
+    }
+#endif
+
+    return CORE_OK;
+}
+
+mme_m_tmsi_t *mme_m_tmsi_alloc()
+{
+    mme_m_tmsi_t *m_tmsi = NULL;
+
+    pool_alloc_node(&self.m_tmsi, &m_tmsi);
+    d_assert(m_tmsi, return NULL,);
+
+    return m_tmsi;
+}
+
+status_t mme_m_tmsi_free(mme_m_tmsi_t *m_tmsi)
+{
+    d_assert(m_tmsi, return CORE_ERROR,);
+    pool_free_node(&self.m_tmsi, m_tmsi);
+
+    return CORE_OK;
+}
+

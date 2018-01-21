@@ -994,61 +994,21 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
     return CORE_OK;
 }
 
-status_t tests1ap_build_service_request(pkbuf_t **pkbuf, int i)
+status_t tests1ap_build_service_request(pkbuf_t **pkbuf,
+        c_uint32_t enb_ue_s1ap_id, c_uint8_t seq,
+        c_uint16_t mac, c_uint32_t m_tmsi)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "",
-        "",
-        "",
-
-        "",
-        "",
-        "",
-
         "000c"
-        "4037000006000800 020004001a000504 c704d4b800430006 0000f1102b670064"
-        "40080000f11054f6 4010008640014000 6000060040000000 03",
-        "",
-        "",
-
-        "",
-        "",
-        "",
-
-
-        "000c"
-        "4038000006000800 0340072c001a0005 04c7119551004300 060000f110303900"
-        "6440080000f11007 87b8000086400140 0060000600400000 0001",
-        "000c"
-        "4038000006000800 0340072e001a0005 04c704da67004300 060000f110303900"
-        "6440080000f11007 87b8000086400140 0060000600400000 0001",
-        "000c"
-        "4038000006000800 0340072f001a0005 04c70528f1004300 060000f110303900"
+        "4038000006000800 03400700001a0005 04c7049551004300 060000f110303900"
         "6440080000f11007 87b8000086400140 0060000600400000 0001",
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        0,
-        0,
-        0,
-
-        0,
-        0,
-        0,
-
-        59,
-        0,
-        0,
-
-        0,
-        0,
-        0,
-
-        60,
-        60,
         60,
     };
     char hexbuf[MAX_SDU_LEN];
+    int i = 0;
     
     *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if (!(*pkbuf)) return CORE_ERROR;
@@ -1056,6 +1016,14 @@ status_t tests1ap_build_service_request(pkbuf_t **pkbuf, int i)
     (*pkbuf)->len = len[i];
     memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
             (*pkbuf)->len);
+
+    enb_ue_s1ap_id = htonl(enb_ue_s1ap_id << 8);
+    memcpy((*pkbuf)->payload + 11, &enb_ue_s1ap_id, 3);
+    mac = htons(mac);
+    memcpy((*pkbuf)->payload + 20, &seq, 1);
+    memcpy((*pkbuf)->payload + 21, &mac, 2);
+    m_tmsi = htonl(m_tmsi);
+    memcpy((*pkbuf)->payload + 56, &m_tmsi, 4);
 
     return CORE_OK;
 }

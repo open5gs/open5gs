@@ -35,6 +35,9 @@ status_t mme_initialize()
     rv = mme_context_setup_trace_module();
     if (rv != CORE_OK) return rv;
 
+    rv = mme_m_tmsi_pool_generate();
+    if (rv != CORE_OK) return rv;
+
     rv = mme_fd_init();
     if (rv != CORE_OK) return CORE_ERROR;
 

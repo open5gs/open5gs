@@ -104,7 +104,6 @@ static void handover_test1(abts_case *tc, void *data)
     "}";
 
     mme_self()->mme_ue_s1ap_id = 16777689;
-    mme_self()->m_tmsi = 0x0400031f;
 
     /* Two eNB connects to MME */
     rv = tests1ap_enb_connect(&sock1);
@@ -425,7 +424,6 @@ static void handover_test2(abts_case *tc, void *data)
     "}";
 
     mme_self()->mme_ue_s1ap_id = 33554627;
-    mme_self()->m_tmsi = 0x010003e7;
 
     /* Two eNB connects to MME */
     rv = tests1ap_enb_connect(&sock1);

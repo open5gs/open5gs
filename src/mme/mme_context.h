@@ -42,6 +42,8 @@ typedef struct _gtp_xact_t gtp_xact_t;
 
 typedef struct _fd_config_t fd_config_t;
 
+typedef c_uint32_t mme_m_tmsi_t;
+
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
@@ -110,7 +112,14 @@ typedef struct _mme_context_t {
 
     /* Generator for unique identification */
     c_uint32_t      mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
-    c_uint32_t      m_tmsi;                 /* m_tmsi generator */
+    c_uint32_t      old_m_tmsi;                 /* m_tmsi generator */
+
+    struct {
+        int head, tail;
+        int size, avail;
+        mutex_id mut;
+        mme_m_tmsi_t *free[MAX_POOL_OF_SESS], pool[MAX_POOL_OF_SESS];
+    } m_tmsi;
 
     hash_t          *enb_sock_hash;         /* hash table for ENB Socket */
     hash_t          *enb_addr_hash;         /* hash table for ENB Address */
@@ -466,7 +475,8 @@ CORE_DECLARE(status_t)      enb_ue_switch_to_enb(enb_ue_t *enb_ue,
 CORE_DECLARE(enb_ue_t*)     enb_ue_find(index_t index);
 CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_enb_ue_s1ap_id(mme_enb_t *enb, 
                                 c_uint32_t enb_ue_s1ap_id);
-CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id);
+CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(
+                                c_uint32_t mme_ue_s1ap_id);
 CORE_DECLARE(enb_ue_t*)     enb_ue_first_in_enb(mme_enb_t *enb);
 CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *enb_ue);
 
@@ -529,6 +539,10 @@ CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(
 CORE_DECLARE(pdn_t*)        mme_default_pdn(mme_ue_t *mme_ue);
 
 CORE_DECLARE(int)           mme_find_served_tai(tai_t *tai);
+
+CORE_DECLARE(status_t)     mme_m_tmsi_pool_generate();
+CORE_DECLARE(mme_m_tmsi_t *) mme_m_tmsi_alloc();
+CORE_DECLARE(status_t)      mme_m_tmsi_free(mme_m_tmsi_t *tmsi);
 
 #ifdef __cplusplus
 }

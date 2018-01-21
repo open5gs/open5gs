@@ -752,6 +752,9 @@ static void attach_test3(abts_case *tc, void *data)
     s1ap_message_t message;
     int i;
     int msgindex = 6;
+    enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+    c_uint32_t m_tmsi = 0;
 
     c_uint8_t tmp[MAX_SDU_LEN];
     char *_authentication_request =
@@ -875,14 +878,12 @@ static void attach_test3(abts_case *tc, void *data)
     } while (count == 0);
     bson_destroy(doc);
 
-    mme_self()->mme_ue_s1ap_id = 33554631;
-    mme_self()->m_tmsi = 2;
-
     /*****************************************************************
      * Attach Request : Known IMSI, Plain NAS message
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     core_sleep(time_from_msec(300));
 
+    mme_self()->mme_ue_s1ap_id = 33554631;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
@@ -971,6 +972,12 @@ static void attach_test3(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->payload+43, tmp+43, 3) == 0);
     pkbuf_free(recvbuf);
 
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(33554632);
+    d_assert(enb_ue, goto out,);
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, goto out,);
+    m_tmsi = mme_ue->guti.m_tmsi;
+
     /* Send UE Release Request */
     core_sleep(time_from_msec(300));
 
@@ -998,7 +1005,7 @@ static void attach_test3(abts_case *tc, void *data)
     /* Send Service Request */
     core_sleep(time_from_msec(300));
 
-    rv = tests1ap_build_service_request(&sendbuf, msgindex);
+    rv = tests1ap_build_service_request(&sendbuf, 0x000400, 4, 0xd4b8, m_tmsi);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -1019,13 +1026,14 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
-            33554631, 4, 5, 1);
+            33554632, 4, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
 
+out:
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456797"));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection,
@@ -1338,11 +1346,10 @@ static void attach_test5(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
-    mme_self()->mme_ue_s1ap_id = 1;
-
-#if 0
     /* Send Service request */
-    rv = tests1ap_build_service_request(&sendbuf, msgindex);
+    mme_self()->mme_ue_s1ap_id = 0;
+    rv = tests1ap_build_service_request(&sendbuf,
+            0x40072c, 17, 0x9551, 0x12345678);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -1364,7 +1371,6 @@ static void attach_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-#endif
 
     /***********************************************************************
      * Attach Request : Known IMSI, Integrity Protected, No Security Context
@@ -1446,7 +1452,8 @@ static void attach_test5(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Service request */
-    rv = tests1ap_build_service_request(&sendbuf, msgindex+1);
+    rv = tests1ap_build_service_request(&sendbuf,
+            0x40072e, 4, 0xda67, 0x12345678);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -1463,31 +1470,11 @@ static void attach_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-#if 0
     /* Send UE Context Release Complete */
     rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    /* Send Service request */
-    rv = tests1ap_build_service_request(&sendbuf, msgindex+2);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    rv = tests1ap_enb_send(sock, sendbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    /* Receive Service Reject */
-    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    pkbuf_free(recvbuf);
-
-    /* Receive UE Context Release Command */
-    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    pkbuf_free(recvbuf);
-#endif
 
     core_sleep(time_from_msec(300));
 
