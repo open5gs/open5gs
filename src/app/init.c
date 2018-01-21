@@ -47,7 +47,9 @@ status_t app_will_initialize(const char *config_path, const char *log_path)
     {
         rv = context_db_init(context_self()->db_uri);
         if (rv != CORE_OK) return rv;
+        d_print("  MongoDB URI : '%s'\n", context_self()->db_uri);
     }
+    d_print("  Configuration : '%s'\n", context_self()->config.path);
 
     return rv;
 }
@@ -144,12 +146,12 @@ static status_t app_logger_init()
                 context_self()->logger.console);
             return rv;
         }
-        d_print("  Console Logging '%d'\n", context_self()->logger.console);
+        d_print("  Console Logging : '%d'\n", context_self()->logger.console);
     }
     if (context_self()->logger.syslog)
     {
         d_msg_syslog_init(context_self()->logger.syslog);
-        d_print("  Syslog Logging '%s'\n", context_self()->logger.syslog);
+        d_print("  Syslog Logging : '%s'\n", context_self()->logger.syslog);
     }
     if (context_self()->logger.network.file &&
         context_self()->logger.network.unix_domain)
@@ -165,7 +167,7 @@ static status_t app_logger_init()
                 context_self()->logger.network.file);
             return rv;
         }
-        d_print("  Network Logging '%s' on %s\n",
+        d_print("  Network Logging : '%s' on %s\n",
                 context_self()->logger.network.file,
                 context_self()->logger.network.unix_domain);
     }
@@ -181,7 +183,7 @@ static status_t app_logger_init()
                 context_self()->logger.file);
             return rv;
         }
-        d_print("  File Logging '%s'\n", context_self()->logger.file);
+        d_print("  File Logging : '%s'\n", context_self()->logger.file);
     }
 
     return CORE_OK;
