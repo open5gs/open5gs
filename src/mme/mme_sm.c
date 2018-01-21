@@ -279,11 +279,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 }
                 else
                 {
-                    S1ap_Cause_t cause;
-
-                    cause.present = S1ap_Cause_PR_nas;
-                    cause.choice.nas = S1ap_CauseNas_normal_release;
-                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause,
+                    rv = s1ap_send_ue_context_release_command(enb_ue,
+                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
                     d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break,
                             "s1ap send failed");
@@ -373,7 +370,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
             {
-                S1ap_Cause_t cause;
                 enb_ue_t *enb_ue = NULL;
 
                 rv = nas_send_attach_reject(mme_ue,
@@ -385,9 +381,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 enb_ue = mme_ue->enb_ue;
                 d_assert(enb_ue, break, "No ENB UE context");
 
-                cause.present = S1ap_Cause_PR_nas;
-                cause.choice.nas = S1ap_CauseNas_authentication_failure;
-                rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause,
+                rv = s1ap_send_ue_context_release_command(enb_ue,
+                        S1ap_Cause_PR_nas, S1ap_CauseNas_authentication_failure,
                         S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
                 d_assert(rv == CORE_OK,, "s1ap send error");
 

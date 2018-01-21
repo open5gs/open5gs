@@ -313,7 +313,6 @@ void s1ap_handle_initial_context_setup_failure(
 {
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
-    S1ap_Cause_t cause;
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
@@ -341,10 +340,9 @@ void s1ap_handle_initial_context_setup_failure(
     }
     else
     {
-        cause.present = S1ap_Cause_PR_nas;
-        cause.choice.nas = S1ap_CauseNas_normal_release;
-        rv = s1ap_send_ue_context_release_commmand(
-                enb_ue, &cause, S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
+        rv = s1ap_send_ue_context_release_command(enb_ue,
+                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
         d_assert(rv == CORE_OK, return, "s1ap send error");
     }
 }
@@ -425,7 +423,6 @@ void s1ap_handle_ue_context_release_request(
 
     enb_ue_t *enb_ue = NULL;
     S1ap_UEContextReleaseRequest_IEs_t *ies = NULL;
-    S1ap_Cause_t cause;
 
     ies = &message->s1ap_UEContextReleaseRequest_IEs;
     d_assert(ies, return, "Null param");
@@ -457,10 +454,9 @@ void s1ap_handle_ue_context_release_request(
                 }
                 else
                 {
-                    cause.present = S1ap_Cause_PR_nas;
-                    cause.choice.nas = S1ap_CauseNas_normal_release;
-                    rv = s1ap_send_ue_context_release_commmand(
-                            enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
+                    rv = s1ap_send_ue_context_release_command(enb_ue, 
+                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                            S1AP_UE_CTX_REL_NO_ACTION, 0);
                     d_assert(rv == CORE_OK, return, "s1ap send error");
                 }
             }
@@ -480,9 +476,8 @@ void s1ap_handle_ue_context_release_request(
                 }
                 else
                 {
-                    cause.present = S1ap_Cause_PR_nas;
-                    cause.choice.nas = S1ap_CauseNas_normal_release;
-                    rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause,
+                    rv = s1ap_send_ue_context_release_command(enb_ue,
+                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
                     d_assert(rv == CORE_OK, return, "s1ap send error");
                 }
@@ -508,9 +503,8 @@ void s1ap_handle_ue_context_release_request(
             }
             else
             {
-                cause.present = S1ap_Cause_PR_nas;
-                cause.choice.nas = S1ap_CauseNas_normal_release;
-                rv = s1ap_send_ue_context_release_commmand(enb_ue, &cause,
+                rv = s1ap_send_ue_context_release_command(enb_ue,
+                        S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
                 d_assert(rv == CORE_OK, return, "s1ap send error");
             }
@@ -637,8 +631,6 @@ void s1ap_handle_path_switch_request(
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    S1ap_Cause_t cause;
-
     S1ap_PathSwitchRequestIEs_t *ies = NULL;
     S1ap_EUTRAN_CGI_t *eutran_cgi;
 	S1ap_PLMNidentity_t *pLMNidentity = NULL;
@@ -683,11 +675,10 @@ void s1ap_handle_path_switch_request(
                 ies->sourceMME_UE_S1AP_ID,
                 CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-        cause.present = S1ap_Cause_PR_radioNetwork;
-        cause.choice.radioNetwork = 
-            S1ap_CauseRadioNetwork_unknown_mme_ue_s1ap_id;
         s1ap_send_path_switch_failure(enb, ies->eNB_UE_S1AP_ID,
-                ies->sourceMME_UE_S1AP_ID, &cause);
+                ies->sourceMME_UE_S1AP_ID,
+                S1ap_Cause_PR_radioNetwork,
+                S1ap_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
         return;
     }
 
@@ -701,10 +692,9 @@ void s1ap_handle_path_switch_request(
     }
     else
     {
-        cause.present = S1ap_Cause_PR_nas;
-        cause.choice.radioNetwork = S1ap_CauseNas_authentication_failure;
         s1ap_send_path_switch_failure(enb, ies->eNB_UE_S1AP_ID,
-                ies->sourceMME_UE_S1AP_ID, &cause);
+                ies->sourceMME_UE_S1AP_ID,
+                S1ap_Cause_PR_nas, S1ap_CauseNas_authentication_failure);
         return;
     }
 
@@ -919,7 +909,6 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     char buf[CORE_ADDRSTRLEN];
 
     S1ap_HandoverFailureIEs_t *ies = NULL;
-    S1ap_Cause_t cause;
     enb_ue_t *target_ue = NULL;
     enb_ue_t *source_ue = NULL;
 
@@ -939,11 +928,10 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     rv = s1ap_send_handover_preparation_failure(source_ue, &ies->cause);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 
-    cause.present = S1ap_Cause_PR_radioNetwork;
-    cause.choice.nas = S1ap_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system;
-
-    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause,
-            S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 0);
+    rv = s1ap_send_ue_context_release_command(
+        target_ue, S1ap_Cause_PR_radioNetwork,
+        S1ap_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system,
+        S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 0);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 
     d_trace(3, "[S1AP] Handover Failure : "
@@ -961,7 +949,6 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     enb_ue_t *target_ue = NULL;
 
     S1ap_HandoverCancelIEs_t *ies = NULL;
-    S1ap_Cause_t cause;
 
     d_assert(enb, return,);
 
@@ -983,10 +970,9 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     rv = s1ap_send_handover_cancel_ack(source_ue);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
-    cause.present = S1ap_Cause_PR_radioNetwork;
-    cause.choice.nas = S1ap_CauseRadioNetwork_handover_cancelled;
-
-    rv = s1ap_send_ue_context_release_commmand(target_ue, &cause,
+    rv = s1ap_send_ue_context_release_command(
+            target_ue, S1ap_Cause_PR_radioNetwork,
+            S1ap_CauseRadioNetwork_handover_cancelled,
             S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 

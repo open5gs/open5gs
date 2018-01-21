@@ -10,8 +10,6 @@
 #include "s1ap_build.h"
 #include "s1ap_conv.h"
 
-static void s1ap_build_cause(S1ap_Cause_t *dst, S1ap_Cause_t *src);
-
 status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 {
     int erval;
@@ -81,7 +79,8 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 }
 
 
-status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
+status_t s1ap_build_setup_failure(
+        pkbuf_t **pkbuf, S1ap_Cause_PR group, long cause)
 {
     int erval;
 
@@ -91,7 +90,8 @@ status_t s1ap_build_setup_failure(pkbuf_t **pkbuf, S1ap_Cause_t cause)
     memset(&message, 0, sizeof(s1ap_message_t));
 
     ies = &message.s1ap_S1SetupFailureIEs;
-    ies->cause = cause;
+    ies->cause.present = group;
+    ies->cause.choice.radioNetwork = cause;
 
     message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
     message.direction = S1AP_PDU_PR_unsuccessfulOutcome;
@@ -495,7 +495,8 @@ status_t s1ap_build_e_rab_modify_request(
 }
 
 status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
-        mme_bearer_t *bearer, pkbuf_t *esmbuf, S1ap_Cause_t *cause)
+        mme_bearer_t *bearer, pkbuf_t *esmbuf, 
+        S1ap_Cause_PR group, long cause)
 {
     char buf[CORE_ADDRSTRLEN];
 
@@ -534,7 +535,8 @@ status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
 
     e_rab = (S1ap_E_RABItem_t *)core_calloc(1, sizeof(S1ap_E_RABItem_t));
     e_rab->e_RAB_ID = bearer->ebi;
-    s1ap_build_cause(&e_rab->cause, cause);
+    e_rab->cause.present = group;
+    e_rab->cause.choice.radioNetwork = cause;
 
     ies->presenceMask |= S1AP_E_RABRELEASECOMMANDIES_NAS_PDU_PRESENT;
     nasPdu = &ies->nas_pdu;
@@ -562,8 +564,8 @@ status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
     return CORE_OK;
 }
 
-status_t s1ap_build_ue_context_release_commmand(
-            pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1ap_Cause_t *cause)
+status_t s1ap_build_ue_context_release_command(
+    pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1ap_Cause_PR group, long cause)
 {
     char buf[CORE_ADDRSTRLEN];
 
@@ -573,7 +575,6 @@ status_t s1ap_build_ue_context_release_commmand(
             &message.s1ap_UEContextReleaseCommand_IEs;
 
     d_assert(enb_ue, return CORE_ERROR, "Null param");
-    d_assert(cause, return CORE_ERROR, "Null param");
 
     memset(&message, 0, sizeof(s1ap_message_t));
 
@@ -598,7 +599,8 @@ status_t s1ap_build_ue_context_release_commmand(
         ies->uE_S1AP_IDs.choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     }
 
-    s1ap_build_cause(&ies->cause, cause);
+    ies->cause.present = group;
+    ies->cause.choice.radioNetwork = cause;
 
     message.procedureCode = S1ap_ProcedureCode_id_UEContextRelease;
     message.direction = S1AP_PDU_PR_initiatingMessage;
@@ -725,7 +727,8 @@ status_t s1ap_build_path_switch_ack(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
 }
 
 status_t s1ap_build_path_switch_failure(pkbuf_t **s1apbuf,
-    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id, S1ap_Cause_t *cause)
+    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
+    S1ap_Cause_PR group, long cause)
 {
     int encoded;
     s1ap_message_t message;
@@ -736,8 +739,8 @@ status_t s1ap_build_path_switch_failure(pkbuf_t **s1apbuf,
 
     ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
     ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
-
-    s1ap_build_cause(&ies->cause, cause);
+    ies->cause.present = group;
+    ies->cause.choice.radioNetwork = cause;
 
     message.procedureCode = S1ap_ProcedureCode_id_PathSwitchRequest;
     message.direction = S1AP_PDU_PR_unsuccessfulOutcome;
@@ -867,11 +870,16 @@ status_t s1ap_build_handover_preparation_failure(
     S1ap_HandoverPreparationFailureIEs_t *ies =
         &message.s1ap_HandoverPreparationFailureIEs;
 
+    d_assert(s1apbuf, return CORE_ERROR,);
+    d_assert(source_ue, return CORE_ERROR,);
+    d_assert(cause, return CORE_ERROR,);
+
     memset(&message, 0, sizeof(s1ap_message_t));
 
     ies->mme_ue_s1ap_id = source_ue->mme_ue_s1ap_id;
     ies->eNB_UE_S1AP_ID = source_ue->enb_ue_s1ap_id;
-    s1ap_build_cause(&ies->cause, cause);
+    ies->cause.present = cause->present;
+    ies->cause.choice.radioNetwork = cause->choice.radioNetwork;
 
     message.procedureCode = S1ap_ProcedureCode_id_HandoverPreparation;
     message.direction = S1AP_PDU_PR_unsuccessfulOutcome;
@@ -916,7 +924,8 @@ status_t s1ap_build_handover_request(
 
     ies->mme_ue_s1ap_id = target_ue->mme_ue_s1ap_id;
     ies->handoverType = required->handoverType;
-    s1ap_build_cause(&ies->cause, &required->cause);
+    ies->cause.present = required->cause.present;
+    ies->cause.choice.radioNetwork = required->cause.choice.radioNetwork;
 
     asn_uint642INTEGER(
             &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, 
@@ -1112,33 +1121,3 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
 
     return CORE_OK;
 }
-
-static void s1ap_build_cause(S1ap_Cause_t *dst, S1ap_Cause_t *src)
-{
-    d_assert(src, return, "Null param");
-    d_assert(dst, return, "Null param");
-
-    dst->present = src->present;
-    switch(dst->present)
-    {
-        case S1ap_Cause_PR_radioNetwork:
-            dst->choice.radioNetwork = src->choice.radioNetwork;
-            break;
-        case S1ap_Cause_PR_transport:
-            dst->choice.transport = src->choice.transport;
-            break;
-        case S1ap_Cause_PR_nas:
-            dst->choice.nas = src->choice.nas;
-            break;
-        case S1ap_Cause_PR_protocol:
-            dst->choice.protocol = src->choice.protocol;
-            break;
-        case S1ap_Cause_PR_misc:
-            dst->choice.misc = src->choice.misc;
-            break;
-        default:
-            d_error("Invalid src type : %d", dst->present);
-            break;
-    }
-}
-

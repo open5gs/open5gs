@@ -234,8 +234,9 @@ status_t s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
     return CORE_OK;
 }
 
-status_t s1ap_send_ue_context_release_commmand(
-    enb_ue_t *enb_ue, S1ap_Cause_t *cause, c_uint8_t action, c_uint32_t delay)
+status_t s1ap_send_ue_context_release_command(
+    enb_ue_t *enb_ue, S1ap_Cause_PR group, long cause,
+    c_uint8_t action, c_uint32_t delay)
 {
     status_t rv;
     mme_enb_t *enb = NULL;
@@ -246,11 +247,10 @@ status_t s1ap_send_ue_context_release_commmand(
 
     d_assert(enb_ue, return CORE_ERROR, "Null param");
     enb_ue->ue_ctx_rel_action = action;
-    d_assert(cause, return CORE_ERROR, "Null param");
     enb = enb_ue->enb;
     d_assert(enb, return CORE_ERROR, "Null param");
 
-    rv = s1ap_build_ue_context_release_commmand(&s1apbuf, enb_ue, cause);
+    rv = s1ap_build_ue_context_release_command(&s1apbuf, enb_ue, group, cause);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_delayed_send_to_enb(enb, s1apbuf, delay);
@@ -276,16 +276,16 @@ status_t s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
 }
 
 status_t s1ap_send_path_switch_failure(mme_enb_t *enb,
-    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id, S1ap_Cause_t *cause)
+    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
+    S1ap_Cause_PR group, long cause)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
 
-    d_assert(cause, return CORE_ERROR, "Null param");
     d_assert(enb, return CORE_ERROR, "Null param");
 
     rv = s1ap_build_path_switch_failure(&s1apbuf,
-            enb_ue_s1ap_id, mme_ue_s1ap_id, cause);
+            enb_ue_s1ap_id, mme_ue_s1ap_id, group, cause);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_send_to_enb(enb, s1apbuf);
@@ -323,6 +323,7 @@ status_t s1ap_send_handover_preparation_failure(
     mme_enb_t *enb = NULL;
 
     d_assert(source_ue, return CORE_ERROR,);
+    d_assert(cause, return CORE_ERROR,);
     enb = source_ue->enb;
     d_assert(enb, return CORE_ERROR,);
 

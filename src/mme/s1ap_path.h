@@ -34,12 +34,14 @@ CORE_DECLARE(status_t) s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf);
 
 CORE_DECLARE(status_t) s1ap_send_initial_context_setup_request(
         mme_ue_t *mme_ue);
-CORE_DECLARE(status_t) s1ap_send_ue_context_release_commmand(
-    enb_ue_t *enb_ue, S1ap_Cause_t *cause, c_uint8_t action, c_uint32_t delay);
+CORE_DECLARE(status_t) s1ap_send_ue_context_release_command(
+    enb_ue_t *enb_ue, S1ap_Cause_PR group, long cause,
+    c_uint8_t action, c_uint32_t delay);
 
 CORE_DECLARE(status_t) s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) s1ap_send_path_switch_failure(mme_enb_t *enb,
-    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id, S1ap_Cause_t *cause);
+    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
+    S1ap_Cause_PR group, long cause);
 
 CORE_DECLARE(status_t) s1ap_send_handover_command(enb_ue_t *source_ue);
 CORE_DECLARE(status_t) s1ap_send_handover_preparation_failure(

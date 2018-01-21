@@ -112,7 +112,6 @@ void mme_s11_handle_modify_bearer_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_modify_bearer_response_t *rsp)
 {
     status_t rv;
-    S1ap_Cause_t cause;
     enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
     d_assert(xact, return, "Null param");
@@ -136,11 +135,9 @@ void mme_s11_handle_modify_bearer_response(
         source_ue = target_ue->source_ue;
         d_assert(source_ue, return, "Null param");
 
-        cause.present = S1ap_Cause_PR_nas;
-        cause.choice.nas = S1ap_CauseNas_normal_release;
-
-        rv = s1ap_send_ue_context_release_commmand(
-                source_ue, &cause, S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
+        rv = s1ap_send_ue_context_release_command(source_ue,
+                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
         d_assert(rv == CORE_OK, return, "s1ap send error");
     );
 }
@@ -202,16 +199,14 @@ void mme_s11_handle_delete_session_response(
         else if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
             GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
-                S1ap_Cause_t cause;
                 enb_ue_t *enb_ue = NULL;
 
                 enb_ue = mme_ue->enb_ue;
                 d_assert(enb_ue, return, );
 
-                cause.present = S1ap_Cause_PR_nas;
-                cause.choice.nas = S1ap_CauseNas_normal_release;
-                rv = s1ap_send_ue_context_release_commmand(
-                    enb_ue, &cause, S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
+                rv = s1ap_send_ue_context_release_command(enb_ue,
+                        S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
                 d_assert(rv == CORE_OK, return, "s1ap send error");
             );
         }
@@ -224,16 +219,14 @@ void mme_s11_handle_delete_session_response(
              FSM_CHECK(&mme_ue->sm, emm_state_exception))
     {
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
-            S1ap_Cause_t cause;
             enb_ue_t *enb_ue = NULL;
 
             enb_ue = mme_ue->enb_ue;
             d_assert(enb_ue, return, );
 
-            cause.present = S1ap_Cause_PR_nas;
-            cause.choice.nas = S1ap_CauseNas_normal_release;
-            rv = s1ap_send_ue_context_release_commmand(
-                    enb_ue, &cause, S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
+            rv = s1ap_send_ue_context_release_command(enb_ue,
+                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
             d_assert(rv == CORE_OK, return, "s1ap send error");
         );
     }
@@ -505,7 +498,6 @@ void mme_s11_handle_release_access_bearers_response(
 {
     status_t rv;
     enb_ue_t *enb_ue = NULL;
-    S1ap_Cause_t cause;
 
     d_assert(xact, return, "Null param");
     d_assert(mme_ue, return, "Null param");
@@ -526,10 +518,9 @@ void mme_s11_handle_release_access_bearers_response(
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
 
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_normal_release;
-    rv = s1ap_send_ue_context_release_commmand(
-                enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
+    rv = s1ap_send_ue_context_release_command(enb_ue,
+            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+            S1AP_UE_CTX_REL_NO_ACTION, 0);
     d_assert(rv == CORE_OK,, "s1ap send error");
 }
 

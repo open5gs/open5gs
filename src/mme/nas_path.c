@@ -168,7 +168,6 @@ status_t nas_send_detach_accept(mme_ue_t *mme_ue)
     status_t rv;
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL;
-    S1ap_Cause_t cause;
     c_uint8_t ue_ctx_rel_action = S1AP_UE_CTX_REL_NO_ACTION;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
@@ -190,11 +189,8 @@ status_t nas_send_detach_accept(mme_ue_t *mme_ue)
         ue_ctx_rel_action = S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT;
     }
 
-    /* FIXME : delay is needed */
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_detach;
-    rv = s1ap_send_ue_context_release_commmand(
-            enb_ue, &cause, ue_ctx_rel_action, 0);
+    rv = s1ap_send_ue_context_release_command(enb_ue,
+            S1ap_Cause_PR_nas, S1ap_CauseNas_detach, ue_ctx_rel_action, 0);
     d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
 
     return CORE_OK;
@@ -334,7 +330,6 @@ status_t nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
 {
     status_t rv;
     pkbuf_t *esmbuf = NULL, *s1apbuf = NULL;
-    S1ap_Cause_t cause;
     mme_ue_t *mme_ue = NULL;
 
     d_assert(bearer, return CORE_ERROR, "Null param");
@@ -347,9 +342,8 @@ status_t nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
 
     d_trace(3, "[NAS] Deactivate bearer context request : EMM <-- ESM\n");
 
-    cause.present = S1ap_Cause_PR_nas;
-    cause.choice.nas = S1ap_CauseNas_normal_release;
-    rv = s1ap_build_e_rab_release_command(&s1apbuf, bearer, esmbuf, &cause);
+    rv = s1ap_build_e_rab_release_command(&s1apbuf, bearer, esmbuf,
+            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(esmbuf); return CORE_ERROR, "s1ap build error");
 
@@ -369,7 +363,6 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
 
     if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
     {
-        S1ap_Cause_t cause;
         enb_ue = mme_ue->enb_ue;
 
         d_assert(enb_ue, return CORE_ERROR, "Null param");
@@ -382,12 +375,9 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
         rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK;
         d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
      
-        /* FIXME : delay required before sending UE context release to make sure 
-         * that UE receive DL NAS ? */
-        cause.present = S1ap_Cause_PR_nas;
-        cause.choice.nas = S1ap_CauseNas_normal_release;
-        rv = s1ap_send_ue_context_release_commmand(
-                enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
+        rv = s1ap_send_ue_context_release_command(enb_ue,
+                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_NO_ACTION, 0);
         d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
     }
     else

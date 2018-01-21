@@ -275,7 +275,6 @@ void emm_state_identity(fsm_t *s, event_t *e)
                         {
                             if (MME_HAVE_SGW_S11_PATH(mme_ue))
                             {
-                                S1ap_Cause_t cause;
                                 enb_ue_t *enb_ue = NULL;
 
                                 d_warn("Have PDN Connection "
@@ -286,10 +285,9 @@ void emm_state_identity(fsm_t *s, event_t *e)
                                 enb_ue = mme_ue->enb_ue;
                                 d_assert(enb_ue, break, "No ENB UE context");
 
-                                cause.present = S1ap_Cause_PR_nas;
-                                cause.choice.nas = S1ap_CauseNas_normal_release;
-                                rv = s1ap_send_ue_context_release_commmand(
-                                        enb_ue, &cause,
+                                rv = s1ap_send_ue_context_release_command(
+                                        enb_ue, S1ap_Cause_PR_nas,
+                                        S1ap_CauseNas_normal_release,
                                         S1AP_UE_CTX_REL_NO_ACTION, 0);
                                 d_assert(rv == CORE_OK, break,
                                         "s1ap send failed");
@@ -605,7 +603,6 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                 case NAS_TRACKING_AREA_UPDATE_COMPLETE:
                 {
                     status_t rv;
-                    S1ap_Cause_t cause;
                     enb_ue_t *enb_ue = mme_ue->enb_ue;
 
                     d_trace(3, "[NAS] Tracking area update complete : "
@@ -613,11 +610,9 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                             mme_ue->imsi_bcd);
                     d_assert(enb_ue, return, "Null param");
 
-                    cause.present = S1ap_Cause_PR_nas;
-                    cause.choice.nas = S1ap_CauseNas_normal_release;
-
-                    rv = s1ap_send_ue_context_release_commmand(
-                            enb_ue, &cause, S1AP_UE_CTX_REL_NO_ACTION, 0);
+                    rv = s1ap_send_ue_context_release_command(enb_ue,
+                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                            S1AP_UE_CTX_REL_NO_ACTION, 0);
                     d_assert(rv == CORE_OK, return, "s1ap send error");
                     FSM_TRAN(s, &emm_state_attached);
                     break;
@@ -701,7 +696,6 @@ void emm_state_attached(fsm_t *s, event_t *e)
                     {
                         if (MME_HAVE_SGW_S11_PATH(mme_ue))
                         {
-                            S1ap_Cause_t cause;
                             enb_ue_t *enb_ue = NULL;
 
                             d_warn("Have PDN Connection in emm_state_attached");
@@ -711,11 +705,9 @@ void emm_state_attached(fsm_t *s, event_t *e)
                             enb_ue = mme_ue->enb_ue;
                             d_assert(enb_ue, break, "No ENB UE context");
 
-                            cause.present = S1ap_Cause_PR_nas;
-                            cause.choice.nas = S1ap_CauseNas_normal_release;
-                            rv = s1ap_send_ue_context_release_commmand(
-                                    enb_ue, &cause,
-                                    S1AP_UE_CTX_REL_NO_ACTION, 0);
+                            rv = s1ap_send_ue_context_release_command(enb_ue, 
+                                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                                S1AP_UE_CTX_REL_NO_ACTION, 0);
                             d_assert(rv == CORE_OK, break, "s1ap send failed");
                         }
                         else
