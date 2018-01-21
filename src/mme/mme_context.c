@@ -2704,7 +2704,7 @@ status_t mme_m_tmsi_pool_generate()
     status_t rv;
     int i, j;
 
-    d_trace(1, "M-TMSI Pool try to generate...\n");
+    d_trace(3, "M-TMSI Pool try to generate...\n");
     for (i = 0; i < MAX_POOL_OF_UE; i++)
     {
         mme_m_tmsi_t *m_tmsi = NULL;
@@ -2724,7 +2724,7 @@ status_t mme_m_tmsi_pool_generate()
         if (conflict == 1) continue;
     }
     self.m_tmsi.size = i;
-    d_trace(1, "M-TMSI Pool generate...done\n");
+    d_trace(3, "M-TMSI Pool generate...done\n");
 
     return CORE_OK;
 }
