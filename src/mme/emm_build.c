@@ -406,7 +406,7 @@ status_t emm_build_service_reject(pkbuf_t **emmbuf, nas_emm_cause_t emm_cause,
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[EMM] Service reject\n");
-    d_trace(3, "    IMSI[%s] Cause[%d]\n", mme_ue->imsi_bcd, emm_cause);
+    d_trace(3, "    Cause[%d]\n", emm_cause);
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
