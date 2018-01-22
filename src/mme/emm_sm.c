@@ -146,6 +146,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                     if (!MME_UE_HAVE_IMSI(mme_ue))
                     {
                         d_error("No IMSI");
+                        FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
