@@ -174,22 +174,28 @@ void emm_state_detached(fsm_t *s, event_t *e)
                         }
                         else
                         {
-                            d_error("NAS MAC Failure in emm_state_detached");
-                            rv = nas_send_tau_reject(
-                                    mme_ue, EMM_CAUSE_MAC_FAILURE);
-                            d_assert(rv == CORE_OK,,
-                                    "nas_send_tau_reject() failed");
-                            FSM_TRAN(s, emm_state_exception);
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                mme_s6a_send_air(mme_ue, NULL);
+                                FSM_TRAN(&mme_ue->sm,
+                                        &emm_state_authentication);
+                            }
+                            else
+                            {
+                                d_warn("No PDN Connection "
+                                        "in emm_state_detached");
+                                rv = nas_send_tau_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                                d_assert(rv == CORE_OK,,
+                                        "nas_send_tau_reject() failed");
+                                FSM_TRAN(s, emm_state_exception);
+                            }
                         }
                     }
                     else
                     {
-                        d_error("Unknown UE in emm_state_detached");
-                        rv = nas_send_tau_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                        d_assert(rv == CORE_OK,,
-                                "nas_send_tau_reject() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        d_warn("Unknown UE in emm_state_detached");
+                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
                     }
                     break;
                 }
@@ -289,12 +295,42 @@ void emm_state_identity(fsm_t *s, event_t *e)
                             FSM_TRAN(s, &emm_state_authentication);
                         }
                     }
+                    else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
+                    {
+                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+                        {
+                            rv = nas_send_tau_accept(mme_ue);
+                            d_assert(rv == CORE_OK,,
+                                    "nas_send_tau_accept() failed");
+                            FSM_TRAN(&mme_ue->sm, &emm_state_attached);
+                        }
+                        else
+                        {
+                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                            {
+                                mme_s6a_send_air(mme_ue, NULL);
+                                FSM_TRAN(&mme_ue->sm,
+                                        &emm_state_authentication);
+                            }
+                            else
+                            {
+                                d_warn("No PDN Connection "
+                                        "in emm_state_identity");
+                                rv = nas_send_tau_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                                d_assert(rv == CORE_OK,,
+                                        "nas_send_tau_reject() failed");
+                                FSM_TRAN(s, emm_state_exception);
+                            }
+                        }
+                    }
                     else if (mme_ue->nas_eps.type ==
                                 MME_EPS_TYPE_SERVICE_REQUEST)
                     {
                         if (SECURITY_CONTEXT_IS_VALID(mme_ue))
                         {
-                            rv = s1ap_send_initial_context_setup_request(mme_ue);
+                            rv = s1ap_send_initial_context_setup_request(
+                                    mme_ue);
                             d_assert(rv == CORE_OK,,
                             "s1ap_send_initial_context_setup_request() failed");
                             FSM_TRAN(&mme_ue->sm, &emm_state_attached);
@@ -306,7 +342,7 @@ void emm_state_identity(fsm_t *s, event_t *e)
                                 enb_ue_t *enb_ue = NULL;
 
                                 d_warn("Have PDN Connection "
-                                        "in emm_state_attached");
+                                        "in emm_state_identity");
                                 rv = nas_send_service_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                                 d_assert(rv == CORE_OK,,
@@ -325,7 +361,7 @@ void emm_state_identity(fsm_t *s, event_t *e)
                             else
                             {
                                 d_warn("No PDN Connection "
-                                        "in emm_state_attached");
+                                        "in emm_state_identity");
                                 rv = nas_send_service_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                                 d_assert(rv == CORE_OK,,
@@ -334,34 +370,10 @@ void emm_state_identity(fsm_t *s, event_t *e)
                             }
                         }
                     }
-                    else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
-                    {
-                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        {
-                            rv = nas_send_tau_accept(mme_ue);
-                            d_assert(rv == CORE_OK,,
-                                    "nas_send_tau_accept() failed");
-                            FSM_TRAN(&mme_ue->sm, &emm_state_attached);
-                        }
-                        else
-                        {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                mme_s6a_send_air(mme_ue, NULL);
-                                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
-                            }
-                            else
-                            {
-                                d_warn("No PDN Connection "
-                                        "in emm_state_attached");
-                                rv = nas_send_tau_reject(
-                                    mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                                d_assert(rv == CORE_OK,,
-                                        "nas_send_tau_reject() failed");
-                                FSM_TRAN(s, emm_state_exception);
-                            }
-                        }
-                    }
+                    else
+                        d_assert(0,, "Invalid NAS_EPS type[%d]",
+                                mme_ue->nas_eps.type);
+
                     break;
                 }
                 case NAS_EMM_STATUS:
