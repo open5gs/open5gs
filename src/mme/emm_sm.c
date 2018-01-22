@@ -59,7 +59,11 @@ void emm_state_attached(fsm_t *s, event_t *e)
 static void emm_state_detached_attached(fsm_t *s, event_t *e)
 {
     status_t rv;
-    mme_ue_t *mme_ue = mme_ue_find(event_get_param1(e));
+
+    enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+        
+    mme_ue = mme_ue_find(event_get_param1(e));
     d_assert(mme_ue, return, "Null param");
 
     switch (event_get(e))
@@ -102,8 +106,6 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
 
                 if (!SECURITY_CONTEXT_IS_VALID(mme_ue))
                 {
-                    enb_ue_t *enb_ue = NULL;
-
                     d_warn("No Security Context");
                     rv = nas_send_service_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
@@ -118,6 +120,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                         S1AP_UE_CTX_REL_NO_ACTION, 0);
                     d_assert(rv == CORE_OK,,
                     "s1ap_send_ue_context_release_command() failed");
+                    return;
                 }
 
                 rv = s1ap_send_initial_context_setup_request(mme_ue);
@@ -176,6 +179,20 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
 
                     break;
                 }
+                case NAS_TRACKING_AREA_UPDATE_COMPLETE:
+                {
+                    d_trace(3, "[NAS] Tracking area update complete : "
+                            "UE[%s] --> EMM\n", mme_ue->imsi_bcd);
+
+                    enb_ue = mme_ue->enb_ue;
+                    d_assert(enb_ue, return, "Null param");
+
+                    rv = s1ap_send_ue_context_release_command(enb_ue,
+                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                            S1AP_UE_CTX_REL_NO_ACTION, 0);
+                    d_assert(rv == CORE_OK, return, "s1ap send error");
+                    return;
+                }
                 case NAS_EMM_STATUS:
                 {
                     d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
@@ -213,13 +230,14 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                     pkbuf_free(mme_ue->last_paging_msg);
                     mme_ue->last_paging_msg = NULL;
                 }
-                return;
             }
-
-            mme_ue->max_paging_retry++;
-            s1ap_handle_paging(mme_ue);
-            /* Start T3413 */
-            tm_start(mme_ue->t3413);
+            else
+            {
+                mme_ue->max_paging_retry++;
+                s1ap_handle_paging(mme_ue);
+                /* Start T3413 */
+                tm_start(mme_ue->t3413);
+            }
             return;
         }
         default:
@@ -294,8 +312,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
             break;
         }
         default:
-            d_assert(0, return, "Invalid NAS_EPS Type[%d]",
-                    mme_ue->nas_eps.type);
+            d_assert(0,, "Invalid EPS-Type[%d]", mme_ue->nas_eps.type);
             break;
     }
 }
@@ -461,6 +478,9 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                     {
                         FSM_TRAN(s, &emm_state_attached);
                     }
+                    else
+                        d_assert(0,, "Invalid EPS-Type[%d]",
+                                mme_ue->nas_eps.type);
                     break;
                 }
                 case NAS_SECURITY_MODE_REJECT:
@@ -543,25 +563,6 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                     FSM_TRAN(s, &emm_state_attached);
                     break;
                 }
-#if 0 /* TAU_COMPLETE should not be handled in this state */
-                case NAS_TRACKING_AREA_UPDATE_COMPLETE:
-                {
-                    status_t rv;
-                    enb_ue_t *enb_ue = mme_ue->enb_ue;
-
-                    d_trace(3, "[NAS] Tracking area update complete : "
-                            "UE[%s] --> EMM\n",
-                            mme_ue->imsi_bcd);
-                    d_assert(enb_ue, return, "Null param");
-
-                    rv = s1ap_send_ue_context_release_command(enb_ue,
-                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                            S1AP_UE_CTX_REL_NO_ACTION, 0);
-                    d_assert(rv == CORE_OK, return, "s1ap send error");
-                    FSM_TRAN(s, &emm_state_attached);
-                    break;
-                }
-#endif
                 case NAS_EMM_STATUS:
                 {
                     d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "

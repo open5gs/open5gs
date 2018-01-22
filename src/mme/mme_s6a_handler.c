@@ -46,7 +46,7 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue, s6a_ula_message_t *ula_message)
         if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
         {
             rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
-            d_assert(rv == CORE_OK,, "nas_send_emm_to_esm failed");
+            d_assert(rv == CORE_OK,, "nas_send_emm_to_esm() failed");
         }
         else
             d_assert(0,, "Invalid Type(%d)", mme_ue->nas_eps.type);
@@ -56,16 +56,12 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue, s6a_ula_message_t *ula_message)
         if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
         {
             rv = nas_send_tau_accept(mme_ue);
-            d_assert(rv == CORE_OK, return, "nas send failed");
-        }
-        else if (mme_ue->nas_eps.type == MME_EPS_TYPE_SERVICE_REQUEST)
-        {
-            rv = s1ap_send_initial_context_setup_request(mme_ue);
-            d_assert(rv == CORE_OK, return, "s1ap send failed");
+            d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
         }
         else
-            d_assert(0,, "Invalid Type(%d)", mme_ue->nas_eps.type);
+            d_assert(0,, "Invalid EPS-Type[%d]", mme_ue->nas_eps.type);
     }
     else
-        d_assert(0,, "Invaild EMM state");
+        d_assert(0,, "Invaild EMM state for EPS-Type[%d]",
+                mme_ue->nas_eps.type);
 }
