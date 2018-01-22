@@ -217,8 +217,6 @@ status_t emm_handle_attach_complete(
 status_t emm_handle_identity_response(
         mme_ue_t *mme_ue, nas_identity_response_t *identity_response)
 {
-    status_t rv;
-
     nas_mobile_identity_t *mobile_identity = NULL;
     enb_ue_t *enb_ue = NULL;
 
@@ -244,76 +242,6 @@ status_t emm_handle_identity_response(
     else
     {
         d_warn("Not supported Identity type(%d)", mobile_identity->imsi.type);
-    }
-
-    d_assert(MME_UE_HAVE_IMSI(mme_ue),
-            return CORE_ERROR, "No IMSI in IDENTITY_RESPONSE");
-
-    if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
-    {
-        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        {
-            rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
-            d_assert(rv == CORE_OK,
-                    return CORE_ERROR, "nas_send_emm_to_esm failed");
-        }
-        else
-        {
-            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-            {
-                rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                d_assert(rv == CORE_OK, return CORE_ERROR, "gtp send failed");
-            }
-            else
-            {
-                mme_s6a_send_air(mme_ue, NULL);
-            }
-        }
-    }
-    else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
-    {
-        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        {
-            /* Send TAU accept */
-            rv = nas_send_tau_accept(mme_ue);
-            d_assert(rv == CORE_OK,
-                    return CORE_ERROR, "nas_send_tau_accept failed");
-        }
-        else
-        {
-            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-            {
-                mme_s6a_send_air(mme_ue, NULL);
-            }
-            else
-            {
-                /* Send TAU reject */
-                nas_send_tau_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                return CORE_ERROR;
-            }
-        }
-    }
-    else if (mme_ue->nas_eps.type == MME_EPS_TYPE_SERVICE_REQUEST)
-    {
-        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-        {
-            rv = s1ap_send_initial_context_setup_request(mme_ue);
-            d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
-        }
-        else
-        {
-            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-            {
-                mme_s6a_send_air(mme_ue, NULL);
-            }
-            else
-            {
-                nas_send_service_reject(mme_ue, 
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                return CORE_ERROR;
-            }
-        }
     }
 
     return CORE_OK;
