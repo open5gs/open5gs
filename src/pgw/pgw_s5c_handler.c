@@ -31,6 +31,7 @@ void pgw_s5c_handle_create_session_request(
     bearer = pgw_default_bearer_in_sess(sess);
     d_assert(bearer, return, "Null param");
 
+    d_trace(3, "[PGW] Create Session Reqeust\n");
     if (req->imsi.presence == 0)
     {
         d_error("No IMSI");
@@ -71,6 +72,9 @@ void pgw_s5c_handle_create_session_request(
     sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
     d_assert(sgw_s5c_teid, return, "Null param");
     sess->sgw_s5c_teid = ntohl(sgw_s5c_teid->teid);
+
+    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     /* Control Plane(DL) : SGW-S5U */
     sgw_s5u_teid = req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data;
@@ -118,14 +122,16 @@ void pgw_s5c_handle_create_session_request(
     sess->tai.tac = uli.tai.tac;
     memcpy(&sess->e_cgi.plmn_id, &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
     sess->e_cgi.cell_id = uli.e_cgi.cell_id;
-
-    d_trace(3, "[PGW] Create Session Reqeust : SGW[0x%x] --> PGW[0x%x]\n",
-            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 void pgw_s5c_handle_delete_session_request(
         pgw_sess_t *sess, gtp_xact_t *xact, gtp_delete_session_request_t *req)
 {
+    d_assert(sess, return, "Null param");
+
+    d_trace(3, "[PGW] Delete Session Request\n");
+    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 void pgw_s5c_handle_create_bearer_response(
@@ -140,6 +146,9 @@ void pgw_s5c_handle_create_bearer_response(
     d_assert(sess, return, "Null param");
     d_assert(req, return, "Null param");
 
+    d_trace(3, "[PGW] Create Bearer Response\n");
+    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     if (req->bearer_contexts.presence == 0)
     {
         d_error("No Bearer");
@@ -207,6 +216,9 @@ void pgw_s5c_handle_update_bearer_response(
     d_assert(sess, return, "Null param");
     d_assert(req, return, "Null param");
 
+    d_trace(3, "[PGW] Update Bearer Request\n");
+    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     if (req->bearer_contexts.presence == 0)
     {
         d_error("No Bearer");
@@ -235,6 +247,9 @@ void pgw_s5c_handle_delete_bearer_response(
     d_assert(sess, return, "Null param");
     d_assert(req, return, "Null param");
 
+    d_trace(3, "[PGW] Delete Bearer Request\n");
+    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     if (req->bearer_contexts.presence == 0)
     {
         d_error("No Bearer");

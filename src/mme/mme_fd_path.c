@@ -45,6 +45,8 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
 
     d_assert(mme_ue, return, "Null param");
 
+    d_trace(3, "[MME] Authentication-Information-Request\n");
+
     /* Clear Security Context */
     CLEAR_SECURITY_CONTEXT(mme_ue);
     
@@ -170,9 +172,6 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
     d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,, );
     fd_logger_self()->stats.nb_sent++;
     d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,, );
-
-    d_trace(3, "[S6A] Authentication-Information-Request : UE[%s] --> HSS\n", 
-            mme_ue->imsi_bcd);
 }
 
 /* MME received Authentication Information Answer from HSS */
@@ -197,6 +196,8 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     s6a_aia_message_t *aia_message = NULL;
     c_uint16_t s6abuf_len = 0;
     e_utran_vector_t *e_utran_vector = NULL;
+
+    d_trace(3, "[MME] Authentication-Information-Answer\n");
     
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     d_assert(ret == 0, return,);
@@ -219,8 +220,6 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     d_assert(s6abuf, return, "Null param");
     s6a_message = s6abuf->payload;
     d_assert(s6a_message, return, "Null param");
-
-    d_trace(3, "[S6A] Authentication-Information-Answer : UE <-- HSS\n");
 
     /* Set Authentication-Information Command */
     memset(s6a_message, 0, s6abuf_len);
@@ -456,6 +455,8 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     struct session *session = NULL;
 
     d_assert(mme_ue, return, "Null Param");
+
+    d_trace(3, "[MME] Update-Location-Request\n");
     
     /* Create the random value to store with the session */
     pool_alloc_node(&mme_s6a_sess_pool, &sess_data);
@@ -569,9 +570,6 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,, );
     fd_logger_self()->stats.nb_sent++;
     d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,, );
-
-    d_trace(3, "[S6A] Update-Location-Request : UE[%s] --> HSS\n", 
-            mme_ue->imsi_bcd);
 }
 
 /* MME received Update Location Answer from HSS */
@@ -597,6 +595,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     s6a_subscription_data_t *subscription_data = NULL;
     c_uint16_t s6abuf_len = 0;
 
+    d_trace(3, "[MME] Update-Location-Answer\n");
+
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     d_assert(ret == 0, return,);
 
@@ -618,8 +618,6 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     d_assert(s6abuf, return, "Null param");
     s6a_message = s6abuf->payload;
     d_assert(s6a_message, return, "Null param");
-
-    d_trace(3, "[S6A] Update-Location-Answer : UE <-- HSS\n");
 
     /* Set Authentication-Information Command */
     memset(s6a_message, 0, s6abuf_len);

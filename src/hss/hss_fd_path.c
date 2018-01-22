@@ -62,6 +62,8 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
     c_uint32_t result_code = 0;
 	
     d_assert(msg, return EINVAL,);
+
+    d_trace(3, "[HSS] Authentication-Information-Request\n");
 	
 	/* Create answer header */
 	qry = *msg;
@@ -225,6 +227,8 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
 	/* Send the answer */
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
+
+    d_trace(3, "[HSS] Authentication-Information-Answer\n");
 	
 	/* Add this value to the stats */
 	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
@@ -275,6 +279,8 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     struct sockaddr_in6 sin6;
 
     d_assert(msg, return EINVAL,);
+
+    d_trace(3, "[HSS] Update-Location-Request\n");
 	
 	/* Create answer header */
 	qry = *msg;
@@ -634,6 +640,8 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 	/* Send the answer */
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
+
+    d_trace(3, "[HSS] Update-Location-Answer\n");
 	
 	/* Add this value to the stats */
 	d_assert( pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);

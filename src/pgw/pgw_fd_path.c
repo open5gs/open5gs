@@ -79,6 +79,8 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
     message = gtpbuf->payload;
     d_assert(message, return, );
 
+    d_trace(3, "[PGW] Credit-Control-Request\n");
+
     /* Create the request */
     ret = fd_msg_new(gx_cmd_ccr, MSGFL_ALLOC_ETEID, &req);
     d_assert(ret == 0, return,);
@@ -433,9 +435,6 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
     d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
     fd_logger_self()->stats.nb_sent++;
     d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
-
-    d_trace(3, "[Gx] Credit-Control-Request : PGW[%d] --> PCRF\n", 
-            sess->pgw_s5c_teid);
 }
 
 static void pgw_gx_cca_cb(void *data, struct msg **msg)
@@ -458,6 +457,8 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     pkbuf_t *gxbuf = NULL, *gtpbuf = NULL;
     gx_message_t *gx_message = NULL;
     c_uint16_t gxbuf_len = 0;
+
+    d_trace(3, "[PGW] Credit-Control-Answer\n");
     
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     d_assert(ret == 0, return,);
@@ -484,8 +485,6 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     d_assert(gxbuf, return, "Null param");
     gx_message = gxbuf->payload;
     d_assert(gx_message, return, "Null param");
-
-    d_trace(3, "[Gx] Credit-Control-Answer : PGW <-- PCRF\n");
 
     /* Set Credit Control Command */
     memset(gx_message, 0, gxbuf_len);
@@ -820,6 +819,8 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
 	
     d_assert(msg, return EINVAL,);
 
+    d_trace(3, "[PGW] Re-Auth-Request\n");
+
     gxbuf_len = sizeof(gx_message_t);
     d_assert(gxbuf_len < 8192, return EINVAL,
             "Not supported size:%d", gxbuf_len);
@@ -827,8 +828,6 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     d_assert(gxbuf, return EINVAL, "Null param");
     gx_message = gxbuf->payload;
     d_assert(gx_message, return EINVAL, "Null param");
-
-    d_trace(3, "[Gx] Re-Auth-Request : PGW <-- PCRF\n");
 
     /* Set Credit Control Command */
     memset(gx_message, 0, gxbuf_len);
@@ -973,6 +972,8 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
 	/* Send the answer */
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
+
+    d_trace(3, "[PGW] Re-Auth-Answer\n");
 
 	/* Add this value to the stats */
 	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);

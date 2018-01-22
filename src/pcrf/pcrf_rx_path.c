@@ -93,7 +93,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     os0_t gx_sid = NULL;
     c_uint32_t result_code = RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 
-    d_trace(3, "[PCRF] AA-Request : PCRF <-- P-CSCF\n");
+    d_trace(3, "[PCRF] AA-Request\n");
 	
     d_assert(msg, return EINVAL,);
     d_assert(sess, return EINVAL,);
@@ -394,6 +394,8 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
 
+    d_trace(3, "[PCRF] AA-Answer\n");
+
 	/* Add this value to the stats */
 	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
 	fd_logger_self()->stats.nb_echoed++;
@@ -451,7 +453,7 @@ status_t pcrf_rx_send_asr(c_uint8_t *rx_sid, c_uint32_t abort_cause)
 
     d_assert(rx_sid, return CORE_ERROR,);
 
-    d_trace(3, "[PCRF] Abort-Session-Request : PCRF --> P-CSCF\n");
+    d_trace(3, "[PCRF] Abort-Session-Request\n");
 
     /* Create the request */
     ret = fd_msg_new(rx_cmd_asr, MSGFL_ALLOC_ETEID, &req);
@@ -557,7 +559,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     int new;
     c_int32_t result_code = 0;
 
-    d_trace(3, "[PCRF] Abort-Session-Answer : PCRF <-- P-CSCF\n");
+    d_trace(3, "[PCRF] Abort-Session-Answer\n");
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
@@ -654,7 +656,7 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
 
     c_uint32_t result_code = RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 
-    d_trace(3, "[PCRF] Session-Termination-Request : PCRF <-- P-CSCF\n");
+    d_trace(3, "[PCRF] Session-Termination-Request\n");
 	
     d_assert(msg, return EINVAL,);
     d_assert(sess, return EINVAL,);
@@ -736,6 +738,8 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
 
+    d_trace(3, "[PCRF] Session-Termination-Answer\n");
+
 	/* Add this value to the stats */
 	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
 	fd_logger_self()->stats.nb_echoed++;
@@ -774,6 +778,7 @@ out:
     
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
+    d_trace(3, "[PCRF] Session-Termination-Answer\n");
 
     state_cleanup(sess_data, NULL, NULL);
     rx_message_free(&rx_message);

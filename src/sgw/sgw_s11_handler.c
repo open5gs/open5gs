@@ -38,6 +38,7 @@ void sgw_s11_handle_create_session_request(
 
     req = &gtp_message->create_session_request;
 
+    d_trace(3, "[SGW] Create Session Reqeust\n");
     if (req->bearer_contexts_to_be_created.presence == 0)
     {
         d_error("No Bearer");
@@ -106,6 +107,11 @@ void sgw_s11_handle_create_session_request(
     req->sender_f_teid_for_control_plane.data = &sgw_s5c_teid;
     req->sender_f_teid_for_control_plane.len = len;
 
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
     pgw_s5c_teid = req->pgw_s5_s8_address_for_control_plane_or_pmip.data;
     d_assert(pgw_s5c_teid, return, "Null param");
 
@@ -160,9 +166,6 @@ void sgw_s11_handle_create_session_request(
 
     rv = gtp_xact_commit(s5c_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Create Session Reqeust : SGW[0x%x] --> PGW[0x%x]\n",
-            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
@@ -185,6 +188,9 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     d_assert(sgw_ue, return, "Null param");
     d_assert(req, return, "Null param");
 
+    d_trace(3, "[SGW] Modify Bearer Reqeust\n");
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
     if (req->bearer_contexts_to_be_modified.presence == 0)
     {
         d_error("No Bearer");
@@ -272,9 +278,6 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
 
     rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Modify Bearer Reqeust : MME[%d] --> SGW[%d]\n",
-        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
 void sgw_s11_handle_delete_session_request(gtp_xact_t *s11_xact,
@@ -293,6 +296,7 @@ void sgw_s11_handle_delete_session_request(gtp_xact_t *s11_xact,
     req = &gtp_message->delete_session_request;
     d_assert(req, return, "Null param");
 
+    d_trace(3, "[SGW] Delete Session Reqeust\n");
     if (req->linked_eps_bearer_id.presence == 0)
     {
         d_error("No EPS Bearer ID");
@@ -301,6 +305,10 @@ void sgw_s11_handle_delete_session_request(gtp_xact_t *s11_xact,
 
     sess = sgw_sess_find_by_ebi(sgw_ue, req->linked_eps_bearer_id.u8);
     d_assert(sess, return, "Null param");
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     gtp_message->h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
     gtp_message->h.teid = sess->pgw_s5c_teid;
@@ -315,9 +323,6 @@ void sgw_s11_handle_delete_session_request(gtp_xact_t *s11_xact,
 
     rv = gtp_xact_commit(s5c_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Delete Session Reqeust : SGW[0x%x] --> PGW[0x%x]\n",
-            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
@@ -344,6 +349,7 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     s5c_xact = s11_xact->assoc_xact;
     d_assert(s5c_xact, return, "Null param");
 
+    d_trace(3, "[SGW] Cerate Bearer Reqeust\n");
     req = &gtp_message->create_bearer_response;
     d_assert(req, return, "Null param");
 
@@ -387,6 +393,11 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     d_assert(s5u_tunnel, return, "Null param");
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
+
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     /* Set EBI */
     bearer->ebi = req->bearer_contexts.eps_bearer_id.u8;
@@ -454,9 +465,6 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
 
     rv = gtp_xact_commit(s5c_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Create Bearer Response : SGW[0x%x] --> PGW[0x%x]\n",
-            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 void sgw_s11_handle_update_bearer_response(gtp_xact_t *s11_xact,
@@ -478,6 +486,7 @@ void sgw_s11_handle_update_bearer_response(gtp_xact_t *s11_xact,
     req = &gtp_message->update_bearer_response;
     d_assert(req, return, "Null param");
 
+    d_trace(3, "[SGW] Update Bearer Reqeust\n");
     if (req->bearer_contexts.presence == 0)
     {
         d_error("No Bearer");
@@ -496,6 +505,11 @@ void sgw_s11_handle_update_bearer_response(gtp_xact_t *s11_xact,
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
 
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
     gtp_message->h.type = GTP_UPDATE_BEARER_RESPONSE_TYPE;
     gtp_message->h.teid = sess->pgw_s5c_teid;
 
@@ -507,9 +521,6 @@ void sgw_s11_handle_update_bearer_response(gtp_xact_t *s11_xact,
 
     rv = gtp_xact_commit(s5c_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Update Bearer Response : SGW[0x%x] --> PGW[0x%x]\n",
-            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 void sgw_s11_handle_delete_bearer_response(gtp_xact_t *s11_xact,
@@ -531,6 +542,7 @@ void sgw_s11_handle_delete_bearer_response(gtp_xact_t *s11_xact,
     req = &gtp_message->delete_bearer_response;
     d_assert(req, return, "Null param");
 
+    d_trace(3, "[SGW] Delete Bearer Response\n");
     if (req->bearer_contexts.presence == 0)
     {
         d_error("No Bearer");
@@ -549,6 +561,11 @@ void sgw_s11_handle_delete_bearer_response(gtp_xact_t *s11_xact,
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
 
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
     gtp_message->h.type = GTP_DELETE_BEARER_RESPONSE_TYPE;
     gtp_message->h.teid = sess->pgw_s5c_teid;
 
@@ -560,9 +577,6 @@ void sgw_s11_handle_delete_bearer_response(gtp_xact_t *s11_xact,
 
     rv = gtp_xact_commit(s5c_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Delete Bearer Response : SGW[0x%x] --> PGW[0x%x]\n",
-            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     sgw_bearer_remove(bearer);
 }
@@ -584,6 +598,9 @@ void sgw_s11_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
     d_assert(s11_xact, return, "Null param");
     d_assert(req, return, "Null param");
 
+    d_trace(3, "[SGW] Release Access Bearers Request\n");
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
     /* Set UE state to S1UE_INACTIVE */
     SGW_SET_UE_STATE(sgw_ue, SGW_S1U_INACTIVE);
     /* ReSet UE state to S1UE_INACTIVE */
@@ -630,9 +647,6 @@ void sgw_s11_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
 
     rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Release Access Bearers Reqeust : MME[%d] --> SGW[%d]\n",
-        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
 void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
@@ -650,6 +664,10 @@ void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
 
     sgw_ue = bearer->sgw_ue;
     d_assert(sgw_ue, return, "Null param");
+
+    d_trace(3, "[SGW] Downlink Data Notification\n");
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     /* Build downlink notification message */
     noti = &gtp_message.downlink_data_notification;
@@ -674,16 +692,15 @@ void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
 
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Downlink Data Notification : SGW[%d] --> MME[%d]\n",
-            sgw_ue->sgw_s11_teid, sgw_ue->mme_s11_teid);
 }
 
 void sgw_s11_handle_downlink_data_notification_ack(sgw_ue_t *sgw_ue,
         gtp_downlink_data_notification_acknowledge_t *ack)
 {
-    d_trace(3, "[SGW] Downlink Data Notification Ack: MME[%d] --> SGW[%d]\n",
-            sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+    d_assert(sgw_ue, return, "Null param");
+    d_trace(3, "[SGW] Downlink Data Notification Acknowledge\n");
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
 void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
@@ -711,6 +728,10 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
     d_assert(sgw_ue, return, "Null param");
     d_assert(s11_xact, return, "Null param");
     d_assert(req, return, "Null param");
+
+    d_trace(3, "[SGW] Create Indirect Data Forwarding Tunnel Request\n");
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     rsp = &gtp_message.create_indirect_data_forwarding_tunnel_response;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -833,9 +854,6 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
     rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Create Indirect Data Forwarding Tunnel Response : "
-        "MME[%d] --> SGW[%d]\n", sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
 void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
@@ -854,6 +872,10 @@ void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
 
     d_assert(sgw_ue, return, "Null param");
     d_assert(s11_xact, return, "Null param");
+
+    d_trace(3, "[SGW] Delete Indirect Data Forwarding Tunnel Request\n");
+    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     /* Delete Indirect Tunnel */
     sess = sgw_sess_first(sgw_ue);
@@ -905,7 +927,4 @@ void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
 
     rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Delete Indirect Data Forwarding Tunnel Response : "
-        "MME[%d] --> SGW[%d]\n", sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }

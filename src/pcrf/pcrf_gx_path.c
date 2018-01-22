@@ -214,7 +214,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     c_uint32_t cc_request_number = 0;
     c_uint32_t result_code = FD_DIAMETER_MISSING_AVP;
 	
-    d_trace(3, "[PCRF] Credit-Control-Request : PGW --> PCRF\n");
+    d_trace(3, "[PCRF] Credit-Control-Request\n");
 
     d_assert(msg, return EINVAL,);
 
@@ -600,6 +600,8 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 	ret = fd_msg_send(msg, NULL, NULL);
     d_assert(ret == 0,,);
 
+    d_trace(3, "[PCRF] Credit-Control-Answer\n");
+
 	/* Add this value to the stats */
 	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
 	fd_logger_self()->stats.nb_echoed++;
@@ -677,7 +679,7 @@ status_t pcrf_gx_send_rar(
     d_assert(rx_sid, return CORE_ERROR,);
     d_assert(rx_message, return CORE_ERROR,);
 
-    d_trace(3, "[PCRF] Re-Auth-Request : PCRF -> PGW\n");
+    d_trace(3, "[PCRF] Re-Auth-Request\n");
 
     /* Initialize Message */
     memset(&gx_message, 0, sizeof(gx_message_t));
@@ -1041,7 +1043,7 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     
     c_uint32_t result_code;
 
-    d_trace(3, "[PCRF] Re-Auth-Answer : PGW --> PCRF\n");
+    d_trace(3, "[PCRF] Re-Auth-Answer\n");
 
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     d_assert(ret == 0, return,);
