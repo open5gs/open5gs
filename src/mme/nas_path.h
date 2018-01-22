@@ -19,6 +19,8 @@ CORE_DECLARE(status_t) nas_send_attach_accept(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) nas_send_attach_reject(mme_ue_t *mme_ue,
     nas_emm_cause_t emm_cause, nas_esm_cause_t esm_cause);
 
+CORE_DECLARE(status_t) nas_send_identity_request(mme_ue_t *mme_ue);
+
 CORE_DECLARE(status_t) nas_send_authentication_request(
         mme_ue_t *mme_ue, e_utran_vector_t *e_utran_vector);
 CORE_DECLARE(status_t) nas_send_authentication_reject(mme_ue_t *mme_ue);

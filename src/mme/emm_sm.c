@@ -34,33 +34,48 @@ void emm_state_final(fsm_t *s, event_t *e)
     mme_sm_trace(3, e);
 }
 
+static void emm_state_detached_attached(fsm_t *s, event_t *e);
+
 void emm_state_detached(fsm_t *s, event_t *e)
 {
-    status_t rv;
-    mme_ue_t *mme_ue = NULL;
-
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
     mme_sm_trace(3, e);
 
-    mme_ue = mme_ue_find(event_get_param1(e));
+    emm_state_detached_attached(s, e);
+}
+
+void emm_state_attached(fsm_t *s, event_t *e)
+{
+    d_assert(s, return, "Null param");
+    d_assert(e, return, "Null param");
+
+    mme_sm_trace(3, e);
+
+    emm_state_detached_attached(s, e);
+}
+
+static void emm_state_detached_attached(fsm_t *s, event_t *e)
+{
+    status_t rv;
+    mme_ue_t *mme_ue = mme_ue_find(event_get_param1(e));
     d_assert(mme_ue, return, "Null param");
 
     switch (event_get(e))
     {
         case FSM_ENTRY_SIG:
         {
-            break;
+            return;
         }
         case FSM_EXIT_SIG:
         {
-            break;
+            return;
         }
         case MME_EVT_EMM_MESSAGE:
         {
             nas_message_t *message = (nas_message_t *)event_get_param4(e);
-            d_assert(message, break, "Null param");
+            d_assert(message, return, "Null param");
 
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
@@ -69,189 +84,47 @@ void emm_state_detached(fsm_t *s, event_t *e)
                         mme_ue, &message->emm.service_request);
                 if (rv != CORE_OK)
                 {
-                    d_error("emm_handle_service_request() failed "
-                            "in emm_state_detached");
+                    d_error("emm_handle_service_request() failed");
                     FSM_TRAN(s, emm_state_exception);
-                    break;
+                    return;
                 }
 
-                if (MME_UE_HAVE_IMSI(mme_ue))
+                if (!MME_UE_HAVE_IMSI(mme_ue))
                 {
-                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                    {
-                        rv = s1ap_send_initial_context_setup_request(mme_ue);
-                        d_assert(rv == CORE_OK,,
-                            "s1ap_send_initial_context_setup_request() failed");
-                    }
-                    else
-                    {
-                        d_warn("NAS MAC Failure in emm_state_detached");
-                        rv = nas_send_service_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                        d_assert(rv == CORE_OK,,
-                                "nas_send_service_reject() failed");
-                        FSM_TRAN(s, &emm_state_exception);
-                    }
-                }
-                else
-                {
-                    d_warn("Unknown UE in emm_state_detached");
+                    d_warn("Unknown UE");
                     rv = nas_send_service_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                    d_assert(rv == CORE_OK,,
+                    d_assert(rv == CORE_OK, return,
                             "nas_send_service_reject() failed");
                     FSM_TRAN(s, &emm_state_exception);
-                }
-                break;
-            }
-
-            switch(message->emm.h.message_type)
-            {
-                case NAS_ATTACH_REQUEST:
-                {
-                    rv = emm_handle_attach_request(
-                            mme_ue, &message->emm.attach_request);
-                    if (rv != CORE_OK)
-                    {
-                        d_error("emm_handle_attach_request() failed "
-                                "in emm_state_detached");
-                        FSM_TRAN(s, emm_state_exception);
-                        break;
-                    }
-
-                    if (MME_UE_HAVE_IMSI(mme_ue))
-                    {
-                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        {
-                            rv = nas_send_emm_to_esm(
-                                    mme_ue, &mme_ue->pdn_connectivity_request);
-                            d_assert(rv == CORE_OK,,
-                                    "nas_send_emm_to_esm() failed");
-                            FSM_TRAN(s, &emm_state_initial_context_setup);
-                        }
-                        else
-                        {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                                d_assert(rv == CORE_OK,,
-                                "mme_gtp_send_delete_all_sessions() failed");
-                            }
-                            else
-                            {
-                                mme_s6a_send_air(mme_ue, NULL);
-                            }
-                            FSM_TRAN(s, &emm_state_authentication);
-                        }
-                    }
-                    else
-                    {
-                        FSM_TRAN(s, &emm_state_identity);
-                    }
-    
-                    break;
+                    return;
                 }
 
-                case NAS_TRACKING_AREA_UPDATE_REQUEST:
+                if (!SECURITY_CONTEXT_IS_VALID(mme_ue))
                 {
-                    rv = emm_handle_tau_request(
-                            mme_ue, &message->emm.tracking_area_update_request);
-                    if (rv != CORE_OK)
-                    {
-                        d_error("emm_handle_tau_request() failed"
-                                "in emm_state_detached");
-                        FSM_TRAN(s, emm_state_exception);
-                        break;
-                    }
+                    enb_ue_t *enb_ue = NULL;
 
-                    if (MME_UE_HAVE_IMSI(mme_ue))
-                    {
-                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        {
-                            rv = nas_send_tau_accept(mme_ue);
-                            d_assert(rv == CORE_OK,,
-                                    "nas_send_tau_accept() failed");
-                        }
-                        else
-                        {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                mme_s6a_send_air(mme_ue, NULL);
-                                FSM_TRAN(&mme_ue->sm,
-                                        &emm_state_authentication);
-                            }
-                            else
-                            {
-                                d_warn("No PDN Connection "
-                                        "in emm_state_detached");
-                                rv = nas_send_tau_reject(mme_ue,
+                    d_warn("No Security Context");
+                    rv = nas_send_service_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                                d_assert(rv == CORE_OK,,
-                                        "nas_send_tau_reject() failed");
-                                FSM_TRAN(s, emm_state_exception);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        d_warn("Unknown UE in emm_state_detached");
-                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
-                    }
-                    break;
+                    d_assert(rv == CORE_OK, return,
+                        "nas_send_service_reject() failed");
+
+                    enb_ue = mme_ue->enb_ue;
+                    d_assert(enb_ue, return, "No ENB UE context");
+
+                    rv = s1ap_send_ue_context_release_command(enb_ue, 
+                        S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_NO_ACTION, 0);
+                    d_assert(rv == CORE_OK,,
+                    "s1ap_send_ue_context_release_command() failed");
                 }
 
-                default:
-                {
-                    d_warn("Unknown message type = %d", 
-                            message->emm.h.message_type);
-                    break;
-                }
+                rv = s1ap_send_initial_context_setup_request(mme_ue);
+                d_assert(rv == CORE_OK, return,
+                    "s1ap_send_initial_context_setup_request() failed");
+                return;
             }
-            break;
-        }
-        default:
-        {
-            d_error("Unknown event %s", mme_event_get_name(e));
-            break;
-        }
-    }
-}
-
-void emm_state_identity(fsm_t *s, event_t *e)
-{
-    status_t rv;
-    mme_ue_t *mme_ue = NULL;
-
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
-
-    mme_sm_trace(3, e);
-
-    mme_ue = mme_ue_find(event_get_param1(e));
-    d_assert(mme_ue, return, "Null param");
-
-    switch (event_get(e))
-    {
-        case FSM_ENTRY_SIG:
-        {
-            pkbuf_t *emmbuf = NULL;
-
-            rv = emm_build_identity_request(&emmbuf, mme_ue);
-            d_assert(rv == CORE_OK && emmbuf, break, "emm build error");
-
-            rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
-            d_assert(rv == CORE_OK && emmbuf, break, "emm send error");
-
-            break;
-        }
-        case FSM_EXIT_SIG:
-        {
-            break;
-        }
-        case MME_EVT_EMM_MESSAGE:
-        {
-            nas_message_t *message = (nas_message_t *)event_get_param4(e);
-            d_assert(message, break, "Null param");
 
             switch(message->emm.h.message_type)
             {
@@ -262,143 +135,168 @@ void emm_state_identity(fsm_t *s, event_t *e)
                     if (rv != CORE_OK)
                     {
                         d_error("emm_handle_identity_response failed() "
-                                "in emm_state_identity");
+                                "in emm_state_attched");
                         FSM_TRAN(s, emm_state_exception);
-                        break;
+                        return;
                     }
 
-                    d_assert(MME_UE_HAVE_IMSI(mme_ue),
-                            break, "No IMSI in IDENTITY_RESPONSE");
-
-                    if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
+                    if (!MME_UE_HAVE_IMSI(mme_ue))
                     {
-                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        {
-                            rv = nas_send_emm_to_esm(
-                                    mme_ue, &mme_ue->pdn_connectivity_request);
-                            d_assert(rv == CORE_OK,,
-                                    "nas_send_emm_to_esm() failed");
-                            FSM_TRAN(s, &emm_state_initial_context_setup);
-                        }
-                        else
-                        {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                                d_assert(rv == CORE_OK,,
-                                "mme_gtp_send_delete_all_sessions() failed");
-                            }
-                            else
-                            {
-                                mme_s6a_send_air(mme_ue, NULL);
-                            }
-                            FSM_TRAN(s, &emm_state_authentication);
-                        }
+                        d_error("No IMSI");
+                        return;
                     }
-                    else if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
+
+                    break;
+                }
+                case NAS_ATTACH_REQUEST:
+                {
+                    rv = emm_handle_attach_request(
+                            mme_ue, &message->emm.attach_request);
+                    if (rv != CORE_OK)
                     {
-                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        {
-                            rv = nas_send_tau_accept(mme_ue);
-                            d_assert(rv == CORE_OK,,
-                                    "nas_send_tau_accept() failed");
-                            FSM_TRAN(&mme_ue->sm, &emm_state_attached);
-                        }
-                        else
-                        {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                mme_s6a_send_air(mme_ue, NULL);
-                                FSM_TRAN(&mme_ue->sm,
-                                        &emm_state_authentication);
-                            }
-                            else
-                            {
-                                d_warn("No PDN Connection "
-                                        "in emm_state_identity");
-                                rv = nas_send_tau_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                                d_assert(rv == CORE_OK,,
-                                        "nas_send_tau_reject() failed");
-                                FSM_TRAN(s, emm_state_exception);
-                            }
-                        }
+                        d_error("emm_handle_attach_request() failed "
+                                "in emm_state_attached");
+                        FSM_TRAN(s, emm_state_exception);
+                        return;
                     }
-                    else if (mme_ue->nas_eps.type ==
-                                MME_EPS_TYPE_SERVICE_REQUEST)
+
+                    break;
+                }
+                case NAS_TRACKING_AREA_UPDATE_REQUEST:
+                {
+                    rv = emm_handle_tau_request(
+                            mme_ue, &message->emm.tracking_area_update_request);
+                    if (rv != CORE_OK)
                     {
-                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        {
-                            rv = s1ap_send_initial_context_setup_request(
-                                    mme_ue);
-                            d_assert(rv == CORE_OK,,
-                            "s1ap_send_initial_context_setup_request() failed");
-                            FSM_TRAN(&mme_ue->sm, &emm_state_attached);
-                        }
-                        else
-                        {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                enb_ue_t *enb_ue = NULL;
-
-                                d_warn("Have PDN Connection "
-                                        "in emm_state_identity");
-                                rv = nas_send_service_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                                d_assert(rv == CORE_OK,,
-                                    "nas_send_service_reject() failed");
-
-                                enb_ue = mme_ue->enb_ue;
-                                d_assert(enb_ue, break, "No ENB UE context");
-
-                                rv = s1ap_send_ue_context_release_command(enb_ue, 
-                                    S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                                    S1AP_UE_CTX_REL_NO_ACTION, 0);
-                                d_assert(rv == CORE_OK,,
-                            "s1ap_send_ue_context_release_command() failed");
-                                FSM_TRAN(s, &emm_state_attached);
-                            }
-                            else
-                            {
-                                d_warn("No PDN Connection "
-                                        "in emm_state_identity");
-                                rv = nas_send_service_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                                d_assert(rv == CORE_OK,,
-                                    "nas_send_service_reject() failed");
-                                FSM_TRAN(s, &emm_state_exception);
-                            }
-                        }
+                        d_error("emm_handle_tau_request() failed "
+                                "in emm_state_attached");
+                        FSM_TRAN(s, emm_state_exception);
+                        return;
                     }
-                    else
-                        d_assert(0,, "Invalid NAS_EPS type[%d]",
-                                mme_ue->nas_eps.type);
 
                     break;
                 }
                 case NAS_EMM_STATUS:
                 {
                     d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
-                            "in emm_state_identity",
+                            "in emm_state_attached",
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
                     FSM_TRAN(s, &emm_state_exception);
-                    break;
+                    return;
+                }
+                case NAS_DETACH_REQUEST:
+                {
+                    emm_handle_detach_request(
+                            mme_ue, &message->emm.detach_request_from_ue);
+                    FSM_TRAN(s, &emm_state_detached);
+                    return;
                 }
                 default:
                 {
                     d_warn("Unknown message(type:%d)", 
                             message->emm.h.message_type);
-                    break;
+                    return;
+                }
+            }
+            break;
+        }
+        case MME_EVT_EMM_T3413:
+        {
+            if (mme_ue->max_paging_retry >= MAX_NUM_OF_PAGING)
+            {
+                /* Paging failed */
+                d_warn("Paging to UE(%s) failed. Stop paging",
+                        mme_ue->imsi_bcd);
+                if (mme_ue->last_paging_msg)
+                {
+                    pkbuf_free(mme_ue->last_paging_msg);
+                    mme_ue->last_paging_msg = NULL;
+                }
+                return;
+            }
+
+            mme_ue->max_paging_retry++;
+            s1ap_handle_paging(mme_ue);
+            /* Start T3413 */
+            tm_start(mme_ue->t3413);
+            return;
+        }
+        default:
+        {
+            d_error("Unknown event %s", mme_event_get_name(e));
+            return;
+        }
+    }
+
+    if (!MME_UE_HAVE_IMSI(mme_ue))
+    {
+        rv = nas_send_identity_request(mme_ue);
+        d_assert(rv == CORE_OK, return, "nas_send_identity_request() failed");
+        return;
+    }
+
+    switch(mme_ue->nas_eps.type)
+    {
+        case MME_EPS_TYPE_ATTACH_REQUEST:
+        {
+            if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+            {
+                rv = nas_send_emm_to_esm(mme_ue,
+                        &mme_ue->pdn_connectivity_request);
+                d_assert(rv == CORE_OK,,
+                        "nas_send_emm_to_esm() failed");
+                FSM_TRAN(s, &emm_state_initial_context_setup);
+            }
+            else
+            {
+                if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                {
+                    rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                    d_assert(rv == CORE_OK,,
+                        "mme_gtp_send_delete_all_sessions() failed");
+                }
+                else
+                {
+                    mme_s6a_send_air(mme_ue, NULL);
+                }
+                FSM_TRAN(s, &emm_state_authentication);
+            }
+            break;
+        }
+        case MME_EPS_TYPE_TAU_REQUEST:
+        {
+            if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+            {
+                rv = nas_send_tau_accept(mme_ue);
+                d_assert(rv == CORE_OK,,
+                        "nas_send_tau_accept() failed");
+                FSM_TRAN(&mme_ue->sm, &emm_state_attached);
+            }
+            else
+            {
+                if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                {
+                    mme_s6a_send_air(mme_ue, NULL);
+                    FSM_TRAN(&mme_ue->sm,
+                            &emm_state_authentication);
+                }
+                else
+                {
+                    d_warn("No PDN Connection");
+                    rv = nas_send_tau_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    d_assert(rv == CORE_OK,,
+                            "nas_send_tau_reject() failed");
+                    FSM_TRAN(s, emm_state_exception);
                 }
             }
             break;
         }
         default:
-        {
-            d_error("Unknown event %s", mme_event_get_name(e));
+            d_assert(0, return, "Invalid NAS_EPS Type[%d]",
+                    mme_ue->nas_eps.type);
             break;
-        }
     }
 }
 
@@ -680,241 +578,6 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                     break;
                 }
             }
-            break;
-        }
-        default:
-        {
-            d_error("Unknown event %s", mme_event_get_name(e));
-            break;
-        }
-    }
-}
-
-void emm_state_attached(fsm_t *s, event_t *e)
-{
-    status_t rv;
-    mme_ue_t *mme_ue = NULL;
-
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
-
-    mme_sm_trace(3, e);
-
-    mme_ue = mme_ue_find(event_get_param1(e));
-    d_assert(mme_ue, return, "Null param");
-
-    switch (event_get(e))
-    {
-        case FSM_ENTRY_SIG:
-        {
-            break;
-        }
-        case FSM_EXIT_SIG:
-        {
-            break;
-        }
-        case MME_EVT_EMM_MESSAGE:
-        {
-            nas_message_t *message = (nas_message_t *)event_get_param4(e);
-            d_assert(message, break, "Null param");
-
-            if (message->emm.h.security_header_type
-                    == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
-            {
-                rv = emm_handle_service_request(
-                        mme_ue, &message->emm.service_request);
-                if (rv != CORE_OK)
-                {
-                    d_error("emm_handle_service_request() failed "
-                            "in emm_state_detached");
-                    FSM_TRAN(s, emm_state_exception);
-                    break;
-                }
-
-                if (MME_UE_HAVE_IMSI(mme_ue))
-                {
-                    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                    {
-                        rv = s1ap_send_initial_context_setup_request(mme_ue);
-                        d_assert(rv == CORE_OK,,
-                            "s1ap_send_initial_context_setup_request() failed");
-                    }
-                    else
-                    {
-                        if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                        {
-                            enb_ue_t *enb_ue = NULL;
-
-                            d_warn("Have PDN Connection in emm_state_attached");
-                            rv = nas_send_service_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                            d_assert(rv == CORE_OK,,
-                                "nas_send_service_reject() failed");
-
-                            enb_ue = mme_ue->enb_ue;
-                            d_assert(enb_ue, break, "No ENB UE context");
-
-                            rv = s1ap_send_ue_context_release_command(enb_ue, 
-                                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                                S1AP_UE_CTX_REL_NO_ACTION, 0);
-                            d_assert(rv == CORE_OK,,
-                            "s1ap_send_ue_context_release_command() failed");
-                        }
-                        else
-                        {
-                            d_warn("No PDN Connection in emm_state_attached");
-                            rv = nas_send_service_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                            d_assert(rv == CORE_OK,,
-                                "nas_send_service_reject() failed");
-                            FSM_TRAN(s, &emm_state_exception);
-                        }
-                    }
-                }
-                else
-                {
-                    d_warn("Unknown UE in emm_state_attached");
-                    FSM_TRAN(&mme_ue->sm, &emm_state_identity);
-                }
-                break;
-            }
-
-            switch(message->emm.h.message_type)
-            {
-                case NAS_ATTACH_REQUEST:
-                {
-                    rv = emm_handle_attach_request(
-                            mme_ue, &message->emm.attach_request);
-                    if (rv != CORE_OK)
-                    {
-                        d_error("emm_handle_attach_request() failed "
-                                "in emm_state_attached");
-                        FSM_TRAN(s, emm_state_exception);
-                        break;
-                    }
-
-                    if (MME_UE_HAVE_IMSI(mme_ue))
-                    {
-                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        {
-                            rv = nas_send_emm_to_esm(
-                                    mme_ue, &mme_ue->pdn_connectivity_request);
-                            d_assert(rv == CORE_OK,,
-                                    "nas_send_emm_to_esm() failed");
-                            FSM_TRAN(s, &emm_state_initial_context_setup);
-                        }
-                        else
-                        {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                                d_assert(rv == CORE_OK,,
-                                "mme_gtp_send_delete_all_sessions() failed");
-                            }
-                            else
-                            {
-                                mme_s6a_send_air(mme_ue, NULL);
-                            }
-                            FSM_TRAN(s, &emm_state_authentication);
-                        }
-                    }
-                    else
-                    {
-                        FSM_TRAN(s, &emm_state_identity);
-                    }
-                    break;
-                }
-                case NAS_EMM_STATUS:
-                {
-                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
-                            "in emm_state_attached",
-                            mme_ue->imsi_bcd,
-                            message->emm.emm_status.emm_cause);
-                    FSM_TRAN(s, &emm_state_exception);
-                    break;
-                }
-                case NAS_DETACH_REQUEST:
-                {
-                    emm_handle_detach_request(
-                            mme_ue, &message->emm.detach_request_from_ue);
-                    FSM_TRAN(s, &emm_state_detached);
-                    break;
-                }
-                case NAS_TRACKING_AREA_UPDATE_REQUEST:
-                {
-                    rv = emm_handle_tau_request(
-                            mme_ue, &message->emm.tracking_area_update_request);
-                    if (rv != CORE_OK)
-                    {
-                        d_error("emm_handle_tau_request() failed "
-                                "in emm_state_attached");
-                        FSM_TRAN(s, emm_state_exception);
-                        break;
-                    }
-
-                    if (MME_UE_HAVE_IMSI(mme_ue))
-                    {
-                        if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-                        {
-                            rv = nas_send_tau_accept(mme_ue);
-                            d_assert(rv == CORE_OK,,
-                                    "nas_send_tau_accept() failed");
-                        }
-                        else
-                        {
-                            if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                            {
-                                mme_s6a_send_air(mme_ue, NULL);
-                                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
-                            }
-                            else
-                            {
-                                d_warn("No PDN Connection "
-                                        "in emm_state_attached");
-                                rv = nas_send_tau_reject(
-                                    mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                                d_assert(rv == CORE_OK,,
-                                        "nas_send_tau_reject() failed");
-                                FSM_TRAN(s, emm_state_exception);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        d_warn("Unknown UE in emm_state_attached");
-                        FSM_TRAN(&mme_ue->sm, &emm_state_identity);
-                    }
-                    break;
-                }
-                default:
-                {
-                    d_warn("Unknown message(type:%d)", 
-                            message->emm.h.message_type);
-                    break;
-                }
-            }
-            break;
-        }
-        case MME_EVT_EMM_T3413:
-        {
-            if (mme_ue->max_paging_retry >= MAX_NUM_OF_PAGING)
-            {
-                /* Paging failed */
-                d_warn("Paging to UE(%s) failed. Stop paging",
-                        mme_ue->imsi_bcd);
-                if (mme_ue->last_paging_msg)
-                {
-                    pkbuf_free(mme_ue->last_paging_msg);
-                    mme_ue->last_paging_msg = NULL;
-                }
-                break;
-            }
-
-            mme_ue->max_paging_retry++;
-            s1ap_handle_paging(mme_ue);
-            /* Start T3413 */
-            tm_start(mme_ue->t3413);
-
             break;
         }
         default:

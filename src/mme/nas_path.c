@@ -127,6 +127,23 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     return rv;
 }
 
+status_t nas_send_identity_request(mme_ue_t *mme_ue)
+{
+    status_t rv;
+    pkbuf_t *emmbuf = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    rv = emm_build_identity_request(&emmbuf, mme_ue);
+    d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR,
+            "nas_build_detach_accept failed"); 
+
+    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    d_assert(rv == CORE_OK,, "nas send failed");
+
+    return rv;
+}
+
 status_t nas_send_authentication_request(
         mme_ue_t *mme_ue, e_utran_vector_t *e_utran_vector)
 {
