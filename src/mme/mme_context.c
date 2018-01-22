@@ -1486,10 +1486,16 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_emm_sm, nas);
         extern int _esm_sm;
         d_trace_level(&_esm_sm, nas);
+        extern int _emm_build;
+        d_trace_level(&_emm_build, nas);
+        extern int _esm_build;
+        d_trace_level(&_esm_build, nas);
         extern int _emm_handler;
         d_trace_level(&_emm_handler, nas);
         extern int _esm_handler;
         d_trace_level(&_esm_handler, nas);
+        extern int _nas_path;
+        d_trace_level(&_nas_path, nas);
         extern int _nas_decoder;
         d_trace_level(&_nas_decoder, nas);
         extern int _nas_encoder;

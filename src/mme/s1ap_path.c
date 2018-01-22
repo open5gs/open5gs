@@ -70,10 +70,15 @@ static status_t s1ap_delete_list(list_t *list)
 
 status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
 {
-    status_t rv = CORE_ERROR;
-    d_assert(enb,,);
-    d_assert(pkbuf,,);
-    d_assert(enb->sock,,);
+    char buf[CORE_ADDRSTRLEN];
+    status_t rv;
+
+    d_assert(enb, return CORE_ERROR,);
+    d_assert(pkbuf, return CORE_ERROR,);
+    d_assert(enb->sock, return CORE_ERROR,);
+
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
 
     rv = s1ap_send(enb->sock, pkbuf,
             enb->sock_type == SOCK_STREAM ? NULL : enb->addr);
@@ -83,7 +88,7 @@ status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
         pkbuf_free(pkbuf);
     }
 
-    return rv;
+    return CORE_OK;;
 }
 
 status_t s1ap_delayed_send_to_enb(
@@ -250,12 +255,18 @@ status_t s1ap_send_ue_context_release_command(
     enb = enb_ue->enb;
     d_assert(enb, return CORE_ERROR, "Null param");
 
+    d_trace(3, "[MME] UE Context release command\n");
+    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+    d_trace(3, "    Group[%d] Cause[%d] Action[%d] Delay[%d]\n",
+            group, cause, action, delay);
+
     rv = s1ap_build_ue_context_release_command(&s1apbuf, enb_ue, group, cause);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_delayed_send_to_enb(enb, s1apbuf, delay);
     d_assert(rv == CORE_OK,, "s1ap send error");
-    
+
     return CORE_OK;
 }
 
@@ -368,6 +379,8 @@ status_t s1ap_send_handover_request(
     mme_enb_t *target_enb = NULL;
     enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
+    d_trace(3, "[MME] Handover request\n");
+
     d_assert(mme_ue, return CORE_ERROR,);
     source_ue = mme_ue->enb_ue;
     d_assert(source_ue, return CORE_ERROR,);
@@ -401,6 +414,11 @@ status_t s1ap_send_handover_request(
 
     target_ue = enb_ue_add(target_enb);
     d_assert(target_ue, return CORE_ERROR,);
+
+    d_trace(3, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
+    d_trace(3, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     rv = source_ue_associate_target_ue(source_ue, target_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR,);

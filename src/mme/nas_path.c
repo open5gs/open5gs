@@ -108,6 +108,9 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
+    d_trace(3, "[EMM] Attach reject\n");
+    d_trace(3, "    IMSI[%s] Cause[%d]\n", mme_ue->imsi_bcd, emm_cause);
+
     sess = mme_sess_first(mme_ue);
     if (sess)
     {
@@ -153,6 +156,9 @@ status_t nas_send_authentication_request(
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     d_assert(e_utran_vector, return CORE_ERROR, "Null param");
 
+    d_trace(3, "[EMM] Authentication request\n");
+    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+
     rv = emm_build_authentication_request(&emmbuf, e_utran_vector);
     d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR,
             "nas_build_detach_accept failed"); 
@@ -169,6 +175,9 @@ status_t nas_send_authentication_reject(mme_ue_t *mme_ue)
     pkbuf_t *emmbuf = NULL;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    d_trace(3, "[EMM] Authentication reject\n");
+    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
     rv = emm_build_authentication_reject(&emmbuf);
     d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR,
@@ -295,9 +304,6 @@ status_t nas_send_activate_dedicated_bearer_context_request(
     rv = esm_build_activate_dedicated_bearer_context_request(&esmbuf, bearer);
     d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
 
-    d_trace(3, "[NAS] Activate dedicated bearer context request : "
-            "EMM <-- ESM\n");
-
     rv = s1ap_build_e_rab_setup_request(&s1apbuf, bearer, esmbuf);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(esmbuf); return CORE_ERROR, "s1ap build error");
@@ -322,8 +328,6 @@ status_t nas_send_modify_bearer_context_request(
     rv = esm_build_modify_bearer_context_request(
             &esmbuf, bearer, qos_presence, tft_presence);
     d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
-
-    d_trace(3, "[NAS] Modify bearer context request : EMM <-- ESM\n");
 
     if (qos_presence == 1)
     {
@@ -356,8 +360,6 @@ status_t nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
     rv = esm_build_deactivate_bearer_context_request(
             &esmbuf, bearer, ESM_CAUSE_REGULAR_DEACTIVATION);
     d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
-
-    d_trace(3, "[NAS] Deactivate bearer context request : EMM <-- ESM\n");
 
     rv = s1ap_build_e_rab_release_command(&s1apbuf, bearer, esmbuf,
             S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release);

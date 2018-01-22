@@ -28,6 +28,8 @@ status_t emm_build_attach_accept(
     d_assert(mme_ue->enb_ue, return CORE_ERROR, "Null param");
     d_assert(esmbuf, return CORE_ERROR, "Null param");
 
+    d_trace(3, "[EMM] Attach accept\n");
+
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
        NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
@@ -59,6 +61,9 @@ status_t emm_build_attach_accept(
     guti->guti.mme_gid = mme_ue->guti.mme_gid;
     guti->guti.mme_code = mme_ue->guti.mme_code;
     guti->guti.m_tmsi = mme_ue->guti.m_tmsi;
+    d_trace(3, "    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]\n",
+            guti->guti.mme_gid, guti->guti.mme_code, guti->guti.m_tmsi,
+            mme_ue->imsi_bcd);
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_EMM_CAUSE_PRESENT;
     attach_accept->emm_cause = EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE;
@@ -129,6 +134,8 @@ status_t emm_build_identity_request(
     message.emm.h.message_type = NAS_IDENTITY_REQUEST;
 
     /* Request IMSI */
+    d_trace(3, "[EMM] Identity request\n");
+    d_trace(3, "    Identity Type 2 : IMSI\n");
     identity_request->identity_type.type = NAS_IDENTITY_TYPE_2_IMSI;
 
     rv = nas_plain_encode(emmbuf, &message);
@@ -197,6 +204,9 @@ status_t emm_build_security_mode_command(
         &security_mode_command->replayed_ue_security_capabilities;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    d_trace(3, "[EMM] Security mode command\n");
+    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -270,6 +280,9 @@ status_t emm_build_detach_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
         NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
+    d_trace(3, "[EMM] Detach accept\n");
+    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_DETACH_ACCEPT;
 
@@ -285,6 +298,11 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     nas_tracking_area_update_accept_t *tau_accept = 
         &message.emm.tracking_area_update_accept;
     int served_tai_index = 0;
+
+    d_assert(mme_ue, return CORE_ERROR,);
+
+    d_trace(3, "[EMM] Tracking area update accept\n");
+    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -363,6 +381,11 @@ status_t emm_build_tau_reject(pkbuf_t **emmbuf, nas_emm_cause_t emm_cause,
     nas_tracking_area_update_reject_t *tau_reject = 
         &message.emm.tracking_area_update_reject;
 
+    d_assert(mme_ue, return CORE_ERROR,);
+
+    d_trace(3, "[EMM] Tracking area update reject\n");
+    d_trace(3, "    IMSI[%s] Cause[%d]\n", mme_ue->imsi_bcd, emm_cause);
+
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_TRACKING_AREA_UPDATE_REJECT;
@@ -381,6 +404,9 @@ status_t emm_build_service_reject(pkbuf_t **emmbuf, nas_emm_cause_t emm_cause,
     nas_service_reject_t *service_reject = &message.emm.service_reject;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    d_trace(3, "[EMM] Service reject\n");
+    d_trace(3, "    IMSI[%s] Cause[%d]\n", mme_ue->imsi_bcd, emm_cause);
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;

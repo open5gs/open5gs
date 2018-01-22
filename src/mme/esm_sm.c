@@ -68,6 +68,9 @@ void esm_state_inactive(fsm_t *s, event_t *e)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
+                    d_trace(3, "[ESM] PDN Connectivity request\n");
+                    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     rv = esm_handle_pdn_connectivity_request(
                             bearer, &message->esm.pdn_connectivity_request);
                     if (rv != CORE_OK)
@@ -79,9 +82,9 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 }
                 case NAS_ESM_INFORMATION_RESPONSE:
                 {
-                    d_trace(3, "[NAS] ESM information response : "
-                            "UE[%s] --> ESM[PTI:%d]\n", 
-                            mme_ue->imsi_bcd, sess->pti);
+                    d_trace(3, "[ESM] ESM information response\n");
+                    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     rv = esm_handle_information_response(
                             sess, &message->esm.esm_information_response);
                     if (rv != CORE_OK)
@@ -93,10 +96,10 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 }
                 case NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
                 {
-                    d_trace(3, "[NAS] Activate default EPS bearer "
-                            "context accept : UE[%s] --> ESM[EBI:%d]\n", 
-                            mme_ue->imsi_bcd, bearer->ebi);
-
+                    d_trace(3, "[ESM] Activate default EPS bearer "
+                            "context accept\n");
+                    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     if (MME_HAVE_ENB_S1U_PATH(bearer))
                     {
                         rv = mme_gtp_send_modify_bearer_request(bearer, 0);
@@ -109,9 +112,10 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 }
                 case NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
                 {
-                    d_trace(3, "[NAS] Activate dedicated EPS bearer "
-                            "context accept : UE[%s] --> ESM[EBI:%d]\n", 
-                            mme_ue->imsi_bcd, bearer->ebi);
+                    d_trace(3, "[ESM] Activate dedicated EPS bearer "
+                            "context accept\n");
+                    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
                     if (MME_HAVE_ENB_S1U_PATH(bearer))
                     {
@@ -178,9 +182,9 @@ void esm_state_active(fsm_t *s, event_t *e)
             {
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
-                    d_trace(3, "[NAS] PDN connectivity request : "
-                            "UE[%s] --> ESM[EBI:%d]\n", 
-                            mme_ue->imsi_bcd, bearer->ebi);
+                    d_trace(3, "[ESM] PDN Connectivity request\n");
+                    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     rv = esm_handle_pdn_connectivity_request(
                             bearer, &message->esm.pdn_connectivity_request);
                     if (rv != CORE_OK)

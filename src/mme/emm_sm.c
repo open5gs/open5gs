@@ -84,6 +84,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
             {
+                d_trace(3, "[EMM] Service request\n");
                 rv = emm_handle_service_request(
                         mme_ue, &message->emm.service_request);
                 if (rv != CORE_OK)
@@ -106,7 +107,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
 
                 if (!SECURITY_CONTEXT_IS_VALID(mme_ue))
                 {
-                    d_warn("No Security Context");
+                    d_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                     rv = nas_send_service_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                     d_assert(rv == CORE_OK, return,
@@ -119,7 +120,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                         S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_NO_ACTION, 0);
                     d_assert(rv == CORE_OK,,
-                    "s1ap_send_ue_context_release_command() failed");
+                        "s1ap_send_ue_context_release_command() failed");
                     return;
                 }
 
@@ -133,6 +134,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
             {
                 case NAS_IDENTITY_RESPONSE:
                 {
+                    d_trace(3, "[EMM] Identity response\n");
                     rv = emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
                     if (rv != CORE_OK)
@@ -150,10 +152,12 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                         return;
                     }
 
+                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
                     break;
                 }
                 case NAS_ATTACH_REQUEST:
                 {
+                    d_trace(3, "[EMM] Attach request\n", mme_ue->imsi_bcd);
                     rv = emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
                     if (rv != CORE_OK)
@@ -163,11 +167,11 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                         FSM_TRAN(s, emm_state_exception);
                         return;
                     }
-
                     break;
                 }
                 case NAS_TRACKING_AREA_UPDATE_REQUEST:
                 {
+                    d_trace(3, "[EMM] Tracking area update request\n");
                     rv = emm_handle_tau_request(
                             mme_ue, &message->emm.tracking_area_update_request);
                     if (rv != CORE_OK)
@@ -182,8 +186,8 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                 }
                 case NAS_TRACKING_AREA_UPDATE_COMPLETE:
                 {
-                    d_trace(3, "[NAS] Tracking area update complete : "
-                            "UE[%s] --> EMM\n", mme_ue->imsi_bcd);
+                    d_trace(3, "[EMM] Tracking area update complete\n");
+                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
                     enb_ue = mme_ue->enb_ue;
                     d_assert(enb_ue, return, "Null param");
@@ -196,8 +200,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                 }
                 case NAS_EMM_STATUS:
                 {
-                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
-                            "in emm_state_attached",
+                    d_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
                     FSM_TRAN(s, &emm_state_exception);
@@ -205,6 +208,8 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                 }
                 case NAS_DETACH_REQUEST:
                 {
+                    d_trace(3, "[EMM] Detach request\n");
+                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
                     emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
                     FSM_TRAN(s, &emm_state_detached);
@@ -212,8 +217,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                 }
                 default:
                 {
-                    d_warn("Unknown message(type:%d)", 
-                            message->emm.h.message_type);
+                    d_warn("Unknown message[%d]", message->emm.h.message_type);
                     return;
                 }
             }
@@ -224,7 +228,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
             if (mme_ue->max_paging_retry >= MAX_NUM_OF_PAGING)
             {
                 /* Paging failed */
-                d_warn("Paging to UE(%s) failed. Stop paging",
+                d_warn("[EMM] Paging to IMSI[%s] failed. Stop paging",
                         mme_ue->imsi_bcd);
                 if (mme_ue->last_paging_msg)
                 {
@@ -243,7 +247,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
         }
         default:
         {
-            d_error("Unknown event %s", mme_event_get_name(e));
+            d_error("Unknown event[%s]", mme_event_get_name(e));
             return;
         }
     }
@@ -263,8 +267,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
             {
                 rv = nas_send_emm_to_esm(mme_ue,
                         &mme_ue->pdn_connectivity_request);
-                d_assert(rv == CORE_OK,,
-                        "nas_send_emm_to_esm() failed");
+                d_assert(rv == CORE_OK,, "nas_send_emm_to_esm() failed");
                 FSM_TRAN(s, &emm_state_initial_context_setup);
             }
             else
@@ -288,8 +291,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
             if (SECURITY_CONTEXT_IS_VALID(mme_ue))
             {
                 rv = nas_send_tau_accept(mme_ue);
-                d_assert(rv == CORE_OK,,
-                        "nas_send_tau_accept() failed");
+                d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
                 FSM_TRAN(&mme_ue->sm, &emm_state_attached);
             }
             else
@@ -297,23 +299,21 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                 if (MME_HAVE_SGW_S11_PATH(mme_ue))
                 {
                     mme_s6a_send_air(mme_ue, NULL);
-                    FSM_TRAN(&mme_ue->sm,
-                            &emm_state_authentication);
+                    FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
                 }
                 else
                 {
-                    d_warn("No PDN Connection");
+                    d_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
                     rv = nas_send_tau_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                    d_assert(rv == CORE_OK,,
-                            "nas_send_tau_reject() failed");
+                    d_assert(rv == CORE_OK,, "nas_send_tau_reject() failed");
                     FSM_TRAN(s, emm_state_exception);
                 }
             }
             break;
         }
         default:
-            d_assert(0,, "Invalid EPS-Type[%d]", mme_ue->nas_eps.type);
+            d_assert(0,, "Invalid NAS-EPS[%d]", mme_ue->nas_eps.type);
             break;
     }
 }
@@ -356,15 +356,15 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                             &authentication_response->
                                 authentication_response_parameter;
 
+                    d_trace(3, "[EMM] Authentication response\n");
+                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+
                     if (authentication_response_parameter->length != 
                             mme_ue->xres_len ||
                         memcmp(authentication_response_parameter->res,
                             mme_ue->xres, mme_ue->xres_len) != 0)
                     {
                         status_t rv;
-
-                        d_warn("[NAS] Authentication failure [IMSI:%s]",
-                                mme_ue->imsi_bcd);
 
                         rv = nas_send_authentication_reject(mme_ue);
                         d_assert(rv == CORE_OK,, "nas send error");
@@ -385,13 +385,15 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                             &authentication_failure->
                                 authentication_failure_parameter;
 
+                    d_trace(3, "[EMM] Authentication failure\n");
+                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+
                     mme_s6a_send_air(mme_ue, authentication_failure_parameter);
                     break;
                 }
                 case NAS_EMM_STATUS:
                 {
-                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
-                            "in emm_state_authentication",
+                    d_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
                     FSM_TRAN(s, &emm_state_exception);
@@ -399,8 +401,7 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                 }
                 default:
                 {
-                    d_warn("Unknown message(type:%d)", 
-                            message->emm.h.message_type);
+                    d_warn("Unknown message[%d]", message->emm.h.message_type);
                     break;
                 }
             }
@@ -408,7 +409,7 @@ void emm_state_authentication(fsm_t *s, event_t *e)
         }
         default:
         {
-            d_error("Unknown event %s", mme_event_get_name(e));
+            d_error("Unknown event[%s]", mme_event_get_name(e));
             break;
         }
     }
@@ -439,8 +440,6 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
             rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
             d_assert(rv == CORE_OK && emmbuf, break, "emm send error");
 
-            d_trace(3, "[NAS] Security mode command : UE[%s] <-- EMM\n", 
-                    mme_ue->imsi_bcd);
             break;
         }
         case FSM_EXIT_SIG:
@@ -456,8 +455,8 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
             {
                 case NAS_SECURITY_MODE_COMPLETE:
                 {
-                    d_trace(3, "[NAS] Security mode complete : "
-                            "UE[%s] --> EMM\n", mme_ue->imsi_bcd);
+                    d_trace(3, "[EMM] Security mode complete\n");
+                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
                     /* Update Kenb */
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
@@ -480,22 +479,21 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                         FSM_TRAN(s, &emm_state_attached);
                     }
                     else
-                        d_assert(0,, "Invalid EPS-Type[%d]",
+                        d_assert(0,, "Invalid NAS_EPS[%d]",
                                 mme_ue->nas_eps.type);
                     break;
                 }
                 case NAS_SECURITY_MODE_REJECT:
                 {
-                    d_warn("[NAS] Security mode reject [IMSI:%s,Cause:%d] "
-                            "UE[%s] --> EMM\n", mme_ue->imsi_bcd,
+                    d_warn("[EMM] Security mode reject : IMSI[%s] Cause[%d]",
+                            mme_ue->imsi_bcd,
                             message->emm.security_mode_reject.emm_cause);
                     FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
                 case NAS_EMM_STATUS:
                 {
-                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
-                            "in emm_state_security_mode",
+                    d_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
                     FSM_TRAN(s, &emm_state_exception);
@@ -503,8 +501,7 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                 }
                 default:
                 {
-                    d_warn("Unknown message(type:%d)", 
-                            message->emm.h.message_type);
+                    d_warn("Unknown message[%d]", message->emm.h.message_type);
                     break;
                 }
             }
@@ -512,7 +509,7 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
         }
         default:
         {
-            d_error("Unknown event %s", mme_event_get_name(e));
+            d_error("Unknown event[%s]", mme_event_get_name(e));
             break;
         }
     }
@@ -550,8 +547,8 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
             {
                 case NAS_ATTACH_COMPLETE:
                 {
-                    d_trace(3, "[NAS] Attach complete : UE[%s] --> EMM\n",
-                            mme_ue->imsi_bcd);
+                    d_trace(3, "[EMM] Attach complete\n");
+                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
                     rv = emm_handle_attach_complete(
                             mme_ue, &message->emm.attach_complete);
                     if (rv != CORE_OK)
@@ -566,8 +563,7 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                 }
                 case NAS_EMM_STATUS:
                 {
-                    d_warn("[NAS] EMM STATUS [IMSI:%s,Cause:%d] "
-                            "in emm_state_initial_context_setup",
+                    d_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
                     FSM_TRAN(s, &emm_state_exception);
@@ -575,7 +571,7 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                 }
                 default:
                 {
-                    d_warn("Unknown message(type:%d)", 
+                    d_warn("Unknown message[%d]", 
                             message->emm.h.message_type);
                     break;
                 }
@@ -584,7 +580,7 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
         }
         default:
         {
-            d_error("Unknown event %s", mme_event_get_name(e));
+            d_error("Unknown event[%s]", mme_event_get_name(e));
             break;
         }
     }
@@ -606,7 +602,7 @@ void emm_state_exception(fsm_t *s, event_t *e)
         }
         default:
         {
-            d_error("Unknown event %s", mme_event_get_name(e));
+            d_error("Unknown event[%s]", mme_event_get_name(e));
             break;
         }
     }

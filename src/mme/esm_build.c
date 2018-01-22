@@ -21,6 +21,10 @@ status_t esm_build_pdn_connectivity_reject(
     mme_ue = sess->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
+    d_trace(3, "[ESM] PDN connectivity reject\n");
+    d_trace(3, "    IMSI[%s] PTI[%d] Cause[%d]\n",
+            mme_ue->imsi_bcd, sess->pti, esm_cause);
+
     memset(&message, 0, sizeof(message));
     if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
     {
@@ -60,6 +64,10 @@ status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
     d_assert(sess, return CORE_ERROR, "Null param");
     mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    d_trace(3, "[ESM] ESM information request\n");
+    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -109,6 +117,10 @@ status_t esm_build_activate_default_bearer_context_request(
     d_assert(mme_bearer_next(bearer) == NULL,
             return CORE_ERROR, "there is dedicated bearer");
 
+    d_trace(3, "[ESM] Activate default bearer context request\n");
+    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+
     memset(&message, 0, sizeof(message));
     if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
     {
@@ -131,17 +143,20 @@ status_t esm_build_activate_default_bearer_context_request(
     access_point_name->length = strlen(pdn->apn);
     core_cpystrn(access_point_name->apn, pdn->apn,
             c_min(access_point_name->length, MAX_APN_LEN) + 1);
+    d_trace(3, "    APN[%s]\n", pdn->apn);
 
     pdn_address->pdn_type = pdn->paa.pdn_type;
     if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4)
     {
         pdn_address->addr = pdn->paa.addr;
         pdn_address->length = NAS_PDN_ADDRESS_IPV4_LEN;
+        d_trace(3, "    IPv4\n");
     }
     else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV6)
     {
         memcpy(pdn_address->addr6, pdn->paa.addr6+(IPV6_LEN>>1), IPV6_LEN>>1);
         pdn_address->length = NAS_PDN_ADDRESS_IPV6_LEN;
+        d_trace(3, "    IPv6\n");
     }
     else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4V6)
     {
@@ -149,6 +164,7 @@ status_t esm_build_activate_default_bearer_context_request(
         memcpy(pdn_address->both.addr6,
                 pdn->paa.both.addr6+(IPV6_LEN>>1), IPV6_LEN>>1);
         pdn_address->length = NAS_PDN_ADDRESS_IPV4V6_LEN;
+        d_trace(3, "    IPv4v6\n");
     }
     else
         d_assert(0, return CORE_ERROR,
@@ -208,6 +224,10 @@ status_t esm_build_activate_dedicated_bearer_context_request(
     linked_bearer = mme_linked_bearer(bearer); 
     d_assert(linked_bearer, return CORE_ERROR, "Null param");
 
+    d_trace(3, "[ESM] Activate dedicated bearer context request\n");
+    d_trace(3, "    IMSI[%s] EBI[%d] Linked-EBI[%d]\n",
+            mme_ue->imsi_bcd, bearer->ebi, linked_bearer->ebi);
+
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
        NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
@@ -254,6 +274,10 @@ status_t esm_build_modify_bearer_context_request(
     d_assert(sess, return CORE_ERROR, "Null param");
     mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    d_trace(3, "[ESM] Modify bearer context request\n");
+    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -305,6 +329,11 @@ status_t esm_build_deactivate_bearer_context_request(
     d_assert(sess, return CORE_ERROR, "Null param");
     mme_ue = bearer->mme_ue;
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    d_trace(3, "[ESM] Deactivate bearer context request\n");
+    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+    d_trace(3, "    Cause[%d]\n", esm_cause);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 

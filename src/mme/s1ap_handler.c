@@ -32,7 +32,10 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_S1SetupRequestIEs;
     d_assert(ies, return, "Null param");
 
+    d_trace(3, "[MME] S1-Setup request\n");
+
     s1ap_ENB_ID_to_uint32(&ies->global_ENB_ID.eNB_ID, &enb_id);
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n", CORE_ADDR(enb->addr, buf), enb_id);
 
     /* Parse Supported TA */
     enb->num_of_supported_ta_list = 0;
@@ -55,10 +58,17 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
             enb->supported_ta_list[enb->num_of_supported_ta_list].tac = 
                 ntohs(enb->supported_ta_list
                         [enb->num_of_supported_ta_list].tac);
+            d_trace(3, "    TAC[%d]\n",
+                    enb->supported_ta_list[enb->num_of_supported_ta_list].tac);
 
             memcpy(&enb->supported_ta_list
                         [enb->num_of_supported_ta_list].plmn_id,
                     pLMNidentity->buf, sizeof(plmn_id_t));
+            d_trace(3, "    PLMN_ID[MCC:%d MNC:%d]\n",
+                plmn_id_mcc(&enb->supported_ta_list
+                    [enb->num_of_supported_ta_list].plmn_id),
+                plmn_id_mnc(&enb->supported_ta_list
+                    [enb->num_of_supported_ta_list].plmn_id));
             enb->num_of_supported_ta_list++;
         }
     }
@@ -69,8 +79,8 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     }
 
     d_assert(enb->sock, return,);
-    d_trace(3, "[S1AP] S1SetupRequest : eNB[%s:%d] --> MME\n",
-        CORE_ADDR(enb->addr, buf), enb_id);
+
+    d_trace(3, "[MME] S1-Setup response\n");
 
     d_assert(mme_enb_set_enb_id(enb, enb_id) == CORE_OK,
             return, "hash add error");
@@ -80,8 +90,6 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK, , "send error");
 
     d_assert(enb->sock, return,);
-    d_trace(3, "[S1AP] S1SetupResponse: eNB[%s:%d] <-- MME\n",
-        CORE_ADDR(enb->addr, buf), enb_id);
 }
 
 void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
@@ -100,6 +108,10 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 
     ies = &message->s1ap_InitialUEMessage_IEs;
     d_assert(ies, return, "Null param");
+
+    d_trace(3, "[MME] Initial UE Message\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
 
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     if (!enb_ue)
@@ -137,6 +149,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             }
             else
             {
+                d_trace(3, "    S_TMSI[G:%d,C:%d,M_TMSI:0x%x]\n",
+                        guti.mme_gid, guti.mme_code, guti.m_tmsi);
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
         }
@@ -167,10 +181,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     enb_ue->nas.e_cgi.cell_id = (ntohl(enb_ue->nas.e_cgi.cell_id) >> 4);
 
     d_assert(enb->sock, enb_ue_remove(enb_ue); return,);
-    d_trace(3, "[S1AP] InitialUEMessage : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            enb_ue->enb_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    d_trace(3, "    ENB_UE_S1AP_ID[%d] TAC[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->nas.tai.tac);
 
     d_assert(s1ap_send_to_nas(enb_ue, &ies->nas_pdu) == CORE_OK,,
             "s1ap_send_to_nas failed");
@@ -187,13 +199,15 @@ void s1ap_handle_uplink_nas_transport(
     ies = &message->s1ap_UplinkNASTransport_IEs;
     d_assert(ies, return, "Null param");
 
+    d_trace(3, "[MME] Uplink NAS transport\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
 
-    d_trace(3, "[S1AP] uplinkNASTransport : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            enb_ue->enb_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     d_assert(s1ap_send_to_nas(enb_ue, &ies->nas_pdu) == CORE_OK,,
             "s1ap_send_to_nas failed");
@@ -210,8 +224,15 @@ void s1ap_handle_ue_capability_info_indication(
     ies = &message->s1ap_UECapabilityInfoIndicationIEs;
     d_assert(ies, return, "Null param");
 
+    d_trace(3, "[MME] UE capability info indication\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+
+    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     if (enb_ue->mme_ue)
     {
@@ -242,11 +263,6 @@ void s1ap_handle_ue_capability_info_indication(
                 radio_capa->size);
         memcpy(radio_capa->buf, ue_radio_capa->buf, radio_capa->size);
     }
-
-    d_trace(3, "[S1AP] UE Capability Info Indication : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            enb_ue->enb_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_initial_context_setup_response(
@@ -263,15 +279,17 @@ void s1ap_handle_initial_context_setup_response(
     ies = &message->s1ap_InitialContextSetupResponseIEs;
     d_assert(ies, return, "Null param");
 
+    d_trace(3, "[MME] Initial context setup response\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
     mme_ue = enb_ue->mme_ue;
     d_assert(mme_ue, return,);
 
-    d_trace(3, "[S1AP] Initial Context Setup Response : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            enb_ue->enb_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     for (i = 0; i < ies->e_RABSetupListCtxtSURes.
             s1ap_E_RABSetupItemCtxtSURes.count; i++)
@@ -294,6 +312,8 @@ void s1ap_handle_initial_context_setup_response(
         rv = s1ap_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         d_assert(rv == CORE_OK, return,);
+
+        d_trace(3, "    EBI[%d]\n", bearer->ebi);
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
@@ -326,10 +346,9 @@ void s1ap_handle_initial_context_setup_failure(
     mme_ue = enb_ue->mme_ue;
     d_assert(mme_ue, return,);
 
-    d_warn("[S1AP] Initial Context Setup Failure(%ld:%ld) : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            ies->cause.present, ies->cause.choice.radioNetwork,
-            enb_ue->enb_ue_s1ap_id,
+    d_error("[MME] Initial context setup failure : "
+            "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] ENB[%s:%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
     if (MME_HAVE_SGW_S11_PATH(mme_ue))
@@ -364,15 +383,17 @@ void s1ap_handle_e_rab_setup_response(
     ies = &message->s1ap_E_RABSetupResponseIEs;
     d_assert(ies, return, "Null param");
 
+    d_trace(3, "[MME] E-RAB setup response\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
     mme_ue = enb_ue->mme_ue;
     d_assert(mme_ue, return,);
 
-    d_trace(3, "[S1AP] E-RAB Setup Response : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            enb_ue->enb_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     for (i = 0; i < ies->e_RABSetupListBearerSURes.
             s1ap_E_RABSetupItemBearerSURes.count; i++)
@@ -394,12 +415,15 @@ void s1ap_handle_e_rab_setup_response(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         d_assert(rv == CORE_OK, return,);
 
+        d_trace(3, "    EBI[%d]\n", bearer->ebi);
+
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
             status_t rv;
 
             mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
-            d_assert(bearer, return, "Null param");
+            d_assert(linked_bearer, return, "Null param");
+            d_trace(3, "    Linked-EBI[%d]\n", linked_bearer->ebi);
 
             if (bearer->ebi == linked_bearer->ebi)
             {
@@ -427,14 +451,17 @@ void s1ap_handle_ue_context_release_request(
     ies = &message->s1ap_UEContextReleaseRequest_IEs;
     d_assert(ies, return, "Null param");
 
+    d_trace(3, "[MME] UE Context release request\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
 
-    d_trace(3, "[S1AP] UE Context Release Request[%d:%d] : "
-            "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            ies->cause.present, ies->cause.choice.radioNetwork,
-            enb_ue->mme_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+    d_trace(3, "    Cause[Group:%d Cause:%d]\n",
+            ies->cause.present, ies->cause.choice.radioNetwork);
 
     switch(ies->cause.present)
     {
@@ -462,11 +489,11 @@ void s1ap_handle_ue_context_release_request(
             }
             else
             {
-                d_error("[S1AP] UE Context Release Request"
-                        "[RadioNetwork Cause: %d] : "
-                        "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+                d_error("[MME] UE Context release request : "
+                        "RadioNetwork Cause[%d] "
+                        "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] ENB[%s:%d]\n",
                         ies->cause.choice.radioNetwork,
-                        enb_ue->enb_ue_s1ap_id,
+                        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
                         CORE_ADDR(enb->addr, buf), enb->enb_id);
                 if (MME_HAVE_SGW_S11_PATH(mme_ue))
                 {
@@ -488,13 +515,12 @@ void s1ap_handle_ue_context_release_request(
         {
             mme_ue_t *mme_ue = enb_ue->mme_ue;
 
-            d_error("[S1AP] UE Context Release Request"
-                    "[Transport Cause: %d] : "
-                    "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-                    ies->cause.choice.transport,
-                    enb_ue->enb_ue_s1ap_id,
+            d_error("[MME] UE Context release request : "
+                    "Transport Cause[%d] "
+                    "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] ENB[%s:%d]\n",
+                    ies->cause.choice.radioNetwork,
+                    enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
                     CORE_ADDR(enb->addr, buf), enb->enb_id);
-
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 rv = mme_gtp_send_delete_all_sessions(mme_ue);
@@ -541,13 +567,15 @@ void s1ap_handle_ue_context_release_complete(
     ies = &message->s1ap_UEContextReleaseComplete_IEs;
     d_assert(ies, return, "Null param");
 
+    d_trace(3, "[MME] UE Context release complete\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
 
-    d_trace(3, "[S1AP] UE Context Release Complete : "
-            "UE[mME-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            enb_ue->mme_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     ue_ctx_rel_action = enb_ue->ue_ctx_rel_action;
     enb_ue->ue_ctx_rel_action = S1AP_UE_CTX_REL_INVALID_ACTION;
@@ -561,15 +589,18 @@ void s1ap_handle_ue_context_release_complete(
         {
             case S1AP_UE_CTX_REL_NO_ACTION:
             {
+                d_trace(3, "    No Action\n");
                 break;
             }
             case S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT:
             {
+                d_trace(3, "    Action: UE(mme) context\n");
                 mme_ue_remove(mme_ue);
                 break;
             }
             case S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL:
             {
+                d_trace(3, "    Action: Delete indirect tunnel\n");
                 rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
                     mme_ue);
                 d_assert(rv == CORE_OK, return, "gtp send error");
@@ -577,7 +608,7 @@ void s1ap_handle_ue_context_release_complete(
             }
             default:
             {
-                d_assert(0, return, "Invalid action(%d)", ue_ctx_rel_action);
+                d_assert(0, return, "Invalid action[%d]", ue_ctx_rel_action);
                 break;
             }
         }
@@ -647,6 +678,10 @@ void s1ap_handle_path_switch_request(
     ies = &message->s1ap_PathSwitchRequestIEs;
     d_assert(ies, return, "Null param");
 
+    d_trace(3, "[MME] Path switch request\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     eutran_cgi = &ies->eutran_cgi;
     d_assert(eutran_cgi, return,);
     pLMNidentity = &eutran_cgi->pLMNidentity;
@@ -681,6 +716,9 @@ void s1ap_handle_path_switch_request(
                 S1ap_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
         return;
     }
+
+    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     mme_ue = enb_ue->mme_ue;
     d_assert(mme_ue, return, "Null param");
@@ -750,11 +788,6 @@ void s1ap_handle_path_switch_request(
 
     /* Switch to enb */
     enb_ue_switch_to_enb(enb_ue, enb);
-
-    d_trace(3, "[S1AP] PathSwitchRequest : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            enb_ue->enb_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
@@ -772,6 +805,10 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_HandoverRequiredIEs;
     d_assert(ies, return,);
 
+    d_trace(3, "[MME] Handover required\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(source_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
@@ -780,6 +817,9 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(source_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
             source_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
+
+    d_trace(3, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
 
     mme_ue = source_ue->mme_ue;
     d_assert(mme_ue, return,);
@@ -801,11 +841,6 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
 
     rv = s1ap_send_handover_request(mme_ue, ies);
     d_assert(rv == CORE_OK,, "s1ap send error");
-
-    d_trace(3, "[S1AP] Handover Required : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            source_ue->enb_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
@@ -825,6 +860,10 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_HandoverRequestAcknowledgeIEs;
     d_assert(ies, return,);
 
+    d_trace(3, "[MME] Handover request acknowledge\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     target_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(target_ue, return,
             "Cannot find UE for MME-UE-S1AP-ID[%d] and eNB[%s:%d]",
@@ -837,6 +876,11 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(source_ue, return,);
     mme_ue = source_ue->mme_ue;
     d_assert(mme_ue, return,);
+
+    d_trace(3, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
+    d_trace(3, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     for (i = 0; i < ies->e_RABAdmittedList.s1ap_E_RABAdmittedItem.count; i++)
     {
@@ -896,11 +940,6 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
         rv = s1ap_send_handover_command(source_ue);
         d_assert(rv == CORE_OK, return, "gtp send failed");
     }
-
-    d_trace(3, "[S1AP] Handover Request Ack : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            target_ue->enb_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
@@ -917,6 +956,10 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_HandoverFailureIEs;
     d_assert(ies, return,);
 
+    d_trace(3, "[MME] Handover failure\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     target_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(target_ue, return,
             "Cannot find UE for MME-UE-S1AP-ID[%d] and eNB[%s:%d]",
@@ -925,6 +968,12 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
 
     source_ue = target_ue->source_ue;
     d_assert(source_ue, return,);
+
+    d_trace(3, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
+    d_trace(3, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
+
     rv = s1ap_send_handover_preparation_failure(source_ue, &ies->cause);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 
@@ -933,11 +982,6 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
         S1ap_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system,
         S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 0);
     d_assert(rv == CORE_OK, return, "s1ap send error");
-
-    d_trace(3, "[S1AP] Handover Failure : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
-            target_ue->enb_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
@@ -955,6 +999,10 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_HandoverCancelIEs;
     d_assert(ies, return,);
 
+    d_trace(3, "[MME] Handover cancel\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(source_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
@@ -967,6 +1015,11 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     target_ue = source_ue->target_ue;
     d_assert(target_ue, return,);
 
+    d_trace(3, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
+    d_trace(3, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
+
     rv = s1ap_send_handover_cancel_ack(source_ue);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
@@ -976,7 +1029,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
             S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 
-    d_trace(3, "[S1AP] Handover Cancel : "
+    d_trace(3, "[MME] Handover Cancel : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
             source_ue->enb_ue_s1ap_id,
             CORE_ADDR(enb->addr, buf), enb->enb_id);
@@ -996,6 +1049,10 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_ENBStatusTransferIEs;
     d_assert(ies, return,);
 
+    d_trace(3, "[MME] ENB status transfer\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(source_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
@@ -1007,6 +1064,11 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
 
     target_ue = source_ue->target_ue;
     d_assert(target_ue, return,);
+
+    d_trace(3, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
+    d_trace(3, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     rv = s1ap_send_mme_status_transfer(target_ue, ies);
     d_assert(rv == CORE_OK,,);
@@ -1035,6 +1097,10 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
     ies = &message->s1ap_HandoverNotifyIEs;
     d_assert(ies, return,);
 
+    d_trace(3, "[MME] Handover notification\n");
+    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
     eutran_cgi = &ies->eutran_cgi;
     d_assert(eutran_cgi, return,);
     pLMNidentity = &eutran_cgi->pLMNidentity;
@@ -1062,6 +1128,11 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(source_ue, return,);
     mme_ue = source_ue->mme_ue;
     d_assert(mme_ue, return,);
+
+    d_trace(3, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
+    d_trace(3, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     mme_ue_associate_enb_ue(mme_ue, target_ue);
 
