@@ -28,7 +28,7 @@ status_t tun_open(sock_id *new, char *ifname, int is_tap)
     fd = open(dev, O_RDWR);
     if (fd < 0)
     {
-        d_error("Can not open %s",dev);
+        d_error("open() failed(%d:%s) : dev[%s]", errno, strerror(errno), dev);
         return -1;
     }
 #else
@@ -68,7 +68,8 @@ status_t tun_open(sock_id *new, char *ifname, int is_tap)
     rc = ioctl(sock->fd, TUNSETIFF, (void *)&ifr);
     if (rc < 0)
     {
-        d_error("iotcl error(dev:%s flags = %d)", ifname, flags);
+        d_error("ioctl() failed(%d:%s) : dev[%s] flags[0x%x]",
+                errno, strerror(errno), ifname, flags);
         goto cleanup;
     }
 #endif
@@ -132,8 +133,8 @@ status_t tun_set_ipv4(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
 	(void)memcpy(&ifa.ifra_mask, &mask, sizeof(ifa.ifra_mask));
 
 	if (ioctl(fd, SIOCAIFADDR, &ifa) == -1) {
-		d_error("Can't IP address(dev:%s err:%s)",
-                sock->ifname, strerror(errno));
+		d_error("Can't IP address(%d:%s) : dev[%s]",
+                errno, strerror(errno), sock->ifname);
 		return CORE_ERROR;
 	}
 
@@ -142,7 +143,7 @@ status_t tun_set_ipv4(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
     fd = socket(PF_ROUTE, SOCK_RAW, 0);
     if (fd < 0)
     {
-        d_error("Can't open PF_ROUTE(%s)", strerror(errno));
+        d_error("Can't open PF_ROUTE(%d:%s)", errno, strerror(errno));
         return CORE_ERROR;
     }
 
@@ -184,7 +185,7 @@ status_t tun_set_ipv4(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
     rtm->rtm_msglen = len;
     if (write(fd, buf, len) < 0)
     {
-        d_error("Can't add routing(%s)", strerror(errno));
+        d_error("Can't add routing(%d:%s)", errno, strerror(errno));
         return CORE_ERROR;
     }
 
@@ -252,8 +253,8 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
     ifa.ifra_lifetime.ia6t_pltime = ND6_INFINITE_LIFETIME;
 
 	if (ioctl(fd, SIOCAIFADDR_IN6, &ifa) == -1) {
-		d_error("Can't IP address(dev:%s err:%s)",
-                sock->ifname, strerror(errno));
+		d_error("Can't IP address(%d:%s) : dev[%s]",
+                errno, strerror(errno), sock->ifname);
 		return CORE_ERROR;
 	}
 
@@ -262,7 +263,7 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
     fd = socket(PF_ROUTE, SOCK_RAW, 0);
     if (fd < 0)
     {
-        d_error("Can't open PF_ROUTE(%s)", strerror(errno));
+        d_error("Can't open PF_ROUTE(%d:%s)", errno, strerror(errno));
         return CORE_ERROR;
     }
 
@@ -287,7 +288,7 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
     rtm->rtm_msglen = len;
     if (write(fd, buf, len) < 0)
     {
-        d_error("Can't add routing(%s)", strerror(errno));
+        d_error("Can't add routing(%d:%s)", errno, strerror(errno));
         return CORE_ERROR;
     }
 
@@ -330,7 +331,7 @@ status_t tun_set_ipv6(sock_id id, ipsubnet_t *ipaddr, ipsubnet_t *ipsub)
     rtm->rtm_msglen = len;
     if (write(fd, buf, len) < 0)
     {
-        d_error("Can't add routing(%s)", strerror(errno));
+        d_error("Can't add routing(%d:%s)", errno, strerror(errno));
         return CORE_ERROR;
     }
 #endif
