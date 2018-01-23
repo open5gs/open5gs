@@ -546,7 +546,8 @@ f.close()
 
 f = open(outdir + 'gtp_message.c', 'w')
 output_header_to_file(f)
-f.write("""#include "core_debug.h"
+f.write("""#define TRACE_MODULE _gtp_message
+#include "core_debug.h"
 #include "gtp_message.h"
 
 """)
@@ -621,6 +622,9 @@ f.write("""status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
 
+    d_trace(50, "[GTPv2] RECV : ");
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
+
     h = pkbuf->payload;
     d_assert(h, return CORE_ERROR, "Null param");
     
@@ -677,6 +681,12 @@ for (k, v) in sorted_msg_list:
 f.write("""        default:
             d_warn("Not implmeneted(type:%d)", gtp_message->h.type);
             break;
+    }
+
+    if ((*pkbuf) && (*pkbuf)->payload)
+    {
+        d_trace(50, "[GTPv2] SEND : ");
+        d_trace_hex(50, (*pkbuf)->payload, (*pkbuf)->len);
     }
 
     return rv;

@@ -39,7 +39,7 @@ static int _gtpv1_tun_recv_cb(sock_id sock, void *data)
 
     recvbuf->len = n;
 
-    d_trace(50, "PDU received from TunTap\n");
+    d_trace(50, "[TUN] RECV : ");
     d_trace_hex(50, recvbuf->payload, recvbuf->len);
 
     /* Find the bearer by packet filter */
@@ -81,9 +81,6 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
         return -1;
     }
 
-    d_trace(10, "S5-C PDU received from PGW\n");
-    d_trace_hex(10, pkbuf->payload, pkbuf->len);
-
     event_set(&e, PGW_EVT_S5C_MESSAGE);
     event_set_param1(&e, (c_uintptr_t)pkbuf);
     rv = pgw_event_send(&e);
@@ -123,11 +120,10 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     }
 
     d_assert(pkbuf, return 0,);
-    d_trace(50, "S5-U PDU received from SGW\n");
+    d_assert(pkbuf->payload, goto cleanup,);
+    d_trace(50, "[PGW] RECV : ");
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
-
-    d_assert(pkbuf->payload, goto cleanup,);
     gtp_h = pkbuf->payload;
     if (gtp_h->flags & GTPU_FLAGS_S) size += 4;
     teid = ntohl(gtp_h->teid);
@@ -383,8 +379,9 @@ static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf)
     gtp_h->teid = htonl(bearer->sgw_s5u_teid);
 
     /* Send to SGW */
-    d_trace(50, "Send S5U PDU (teid = 0x%x) to SGW\n",
-            bearer->sgw_s5u_teid);
+    d_trace(50, "[PGW] SEND : ");
+    d_trace_hex(50, sendbuf->payload, sendbuf->len);
+
     rv =  gtp_send(bearer->gnode, sendbuf);
 
     return rv;

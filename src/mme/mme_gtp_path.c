@@ -27,7 +27,7 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
         return -1;
     }
 
-    d_trace(50, "[GTPv2] Receive : ");
+    d_trace(50, "[GTPv2] RECV : ");
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S11_MESSAGE);

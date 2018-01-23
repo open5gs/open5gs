@@ -892,20 +892,24 @@ status_t pgw_context_setup_trace_module()
         d_trace_level(&_pgw_s5c_build, gtpv2);
         extern int _pgw_s5c_handler;
         d_trace_level(&_pgw_s5c_handler, gtpv2);
+
         extern int _gtp_node;
         d_trace_level(&_gtp_node, gtpv2);
+        extern int _gtp_message;
+        d_trace_level(&_gtp_message, gtpv2);
         extern int _gtp_path;
         d_trace_level(&_gtp_path, gtpv2);
-        extern int _pgw_gtp_path;
-        d_trace_level(&_pgw_gtp_path, gtpv2);
-        extern int _tlv_msg;
-        d_trace_level(&_tlv_msg, gtpv2);
         extern int _gtp_xact;
         d_trace_level(&_gtp_xact, gtpv2);
+
+        extern int _tlv_msg;
+        d_trace_level(&_tlv_msg, gtpv2);
     }
 
     if (gtp)
     {
+        extern int _pgw_gtp_path;
+        d_trace_level(&_pgw_gtp_path, gtpv2);
         extern int _pgw_ipfw;
         d_trace_level(&_pgw_ipfw, gtp);
     }

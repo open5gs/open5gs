@@ -26,10 +26,11 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-09-14 13:57:05.211841 by acetcom
+ * Created on: 2018-01-23 16:32:53.073144 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
+#define TRACE_MODULE _gtp_message
 #include "core_debug.h"
 #include "gtp_message.h"
 
@@ -2778,6 +2779,9 @@ status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
     d_assert(pkbuf, return CORE_ERROR, "Null param");
     d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
 
+    d_trace(50, "[GTPv2] RECV : ");
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
+
     h = pkbuf->payload;
     d_assert(h, return CORE_ERROR, "Null param");
     
@@ -3050,6 +3054,12 @@ status_t gtp_build_msg(pkbuf_t **pkbuf, gtp_message_t *gtp_message)
         default:
             d_warn("Not implmeneted(type:%d)", gtp_message->h.type);
             break;
+    }
+
+    if ((*pkbuf) && (*pkbuf)->payload)
+    {
+        d_trace(50, "[GTPv2] SEND : ");
+        d_trace_hex(50, (*pkbuf)->payload, (*pkbuf)->len);
     }
 
     return rv;

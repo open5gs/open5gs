@@ -480,20 +480,24 @@ status_t sgw_context_setup_trace_module()
         d_trace_level(&_sgw_s11_handler, gtpv2);
         extern int _sgw_s11_handler;
         d_trace_level(&_sgw_s11_handler, gtpv2);
+
         extern int _gtp_node;
         d_trace_level(&_gtp_node, gtpv2);
+        extern int _gtp_message;
+        d_trace_level(&_gtp_message, gtpv2);
         extern int _gtp_path;
         d_trace_level(&_gtp_path, gtpv2);
-        extern int _sgw_path;
-        d_trace_level(&_sgw_path, gtpv2);
-        extern int _tlv_msg;
-        d_trace_level(&_tlv_msg, gtpv2);
         extern int _gtp_xact;
         d_trace_level(&_gtp_xact, gtpv2);
+
+        extern int _tlv_msg;
+        d_trace_level(&_tlv_msg, gtpv2);
     }
 
     if (gtp)
     {
+        extern int _sgw_gtp_path;
+        d_trace_level(&_sgw_gtp_path, gtp);
     }
 
     return CORE_OK;

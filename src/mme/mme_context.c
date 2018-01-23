@@ -1533,16 +1533,20 @@ status_t mme_context_setup_trace_module()
     {
         extern int _mme_s11_handler;
         d_trace_level(&_mme_s11_handler, gtpv2);
-        extern int _gtp_node;
-        d_trace_level(&_gtp_node, gtpv2);
-        extern int _gtp_path;
-        d_trace_level(&_gtp_path, gtpv2);
         extern int _mme_gtp_path;
         d_trace_level(&_mme_gtp_path, gtpv2);
-        extern int _tlv_msg;
-        d_trace_level(&_tlv_msg, gtpv2);
+
+        extern int _gtp_node;
+        d_trace_level(&_gtp_node, gtpv2);
+        extern int _gtp_message;
+        d_trace_level(&_gtp_message, gtpv2);
+        extern int _gtp_path;
+        d_trace_level(&_gtp_path, gtpv2);
         extern int _gtp_xact;
         d_trace_level(&_gtp_xact, gtpv2);
+
+        extern int _tlv_msg;
+        d_trace_level(&_tlv_msg, gtpv2);
     }
 
     return CORE_OK;

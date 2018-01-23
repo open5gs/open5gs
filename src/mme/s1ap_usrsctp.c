@@ -174,7 +174,7 @@ status_t s1ap_send(sock_id id, pkbuf_t *pkbuf, c_sockaddr_t *addr)
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
             SCTP_SENDV_SNDINFO, 0);
 
-    d_trace(50, "[S1AP] Sent %d bytes : ", sent);
+    d_trace(50, "[S1AP] SEND[%d] : ", sent);
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
@@ -436,6 +436,9 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
 
             pkbuf->len = datalen;
             memcpy(pkbuf->payload, data, pkbuf->len);
+
+            d_trace(50, "[S1AP] RECV : ");
+            d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
             event_set(&e, MME_EVT_S1AP_MESSAGE);
             event_set_param1(&e, (c_uintptr_t)sock);

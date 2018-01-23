@@ -53,7 +53,7 @@ status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf, c_sockaddr_t *addr)
 
     sent = core_sctp_sendmsg(sock, pkbuf->payload, pkbuf->len,
             addr, SCTP_S1AP_PPID, 0);
-    d_trace(50, "[S1AP] Sent %d bytes : ", sent);
+    d_trace(50, "[S1AP] SEND[%d] : ", sent);
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
@@ -186,7 +186,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
 
     pkbuf->len = size;
 
-    d_trace(50, "[S1AP] Receive : ");
+    d_trace(50, "[S1AP] RECV : ");
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     addr = core_calloc(1, sizeof(c_sockaddr_t));

@@ -1,4 +1,4 @@
-#define TRACE_MODULE _sgw_path
+#define TRACE_MODULE _sgw_gtp_path
 #include "core_debug.h"
 #include "core_pkbuf.h"
 
@@ -37,17 +37,13 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
 
     if (SGW_S5C_TEID(teid))
     {
-        d_trace(50, "[GTPv2-S5C] Receive : ");
         event_set(&e, SGW_EVT_S5C_MESSAGE);
     }
     else
     {
-        d_trace(50, "[GTPv2-S11] Receive : ");
         event_set(&e, SGW_EVT_S11_MESSAGE);
     }
     event_set_param1(&e, (c_uintptr_t)pkbuf);
-
-    d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     rv = sgw_event_send(&e);
     if (rv != CORE_OK)
@@ -82,7 +78,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         return -1;
     }
 
-    d_trace(50, "[GTP] Receive : ");
+    d_trace(50, "[SGW] RECV : ");
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     gtp_h = (gtp_header_t *)pkbuf->payload;
@@ -90,14 +86,14 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     {
         pkbuf_t *echo_rsp;
 
-        d_trace(3, "Recive ECHO-REQ\n");
+        d_trace(3, "[SGW] RECV : ECHO-REQ\n");
         echo_rsp = gtp_handle_echo_req(pkbuf);
         if (echo_rsp)
         {
             ssize_t sent;
 
             /* Echo reply */
-            d_trace(3, "Send ECHO-RSP\n");
+            d_trace(3, "[SGW] SEND : ECHO-RSP\n");
 
             sent = core_sendto(sock,
                     echo_rsp->payload, echo_rsp->len, 0, &from);
@@ -112,7 +108,12 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                 gtp_h->type == GTPU_MSGTYPE_END_MARKER)
     {
         teid = ntohl(gtp_h->teid);
-        d_trace(50, "[GTP-U] Receive TEID[0x%x]\n", teid);
+        if (gtp_h->type == GTPU_MSGTYPE_GPDU)
+            d_trace(3, "[SGW] RECV : GPDU\n");
+        else if (gtp_h->type == GTPU_MSGTYPE_END_MARKER)
+            d_trace(3, "[SGW] RECV : End Marker\n");
+
+        d_trace(5, "    TEID[0x%x]\n", teid);
 
         tunnel = sgw_tunnel_find_by_teid(teid);
         if (!tunnel)
@@ -133,20 +134,22 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                 GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING)
         {
             sgw_tunnel_t *s5u_tunnel = NULL;
-            d_trace(50, "[GTP-S1U] Receive TEID[0x%x]\n", teid);
 
             s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
             d_assert(s5u_tunnel, pkbuf_free(pkbuf); return 0, "Null param");
             gtp_h->teid = htonl(s5u_tunnel->remote_teid);
+            d_trace(3, "[SGW] SEND : GPDU\n");
+            d_trace(5, "    S1U-Remote-TEID[0x%x]\n", s5u_tunnel->remote_teid);
             gtp_send(s5u_tunnel->gnode, pkbuf);
         }
         else if (tunnel->interface_type == GTP_F_TEID_S5_S8_SGW_GTP_U)
         {
             sgw_tunnel_t *s1u_tunnel = NULL;
-            d_trace(50, "[GTP-S5U] Receive TEID[0x%x]\n", teid);
 
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
             d_assert(s1u_tunnel, pkbuf_free(pkbuf); return 0, "Null param");
+            d_trace(3, "[SGW] SEND : GPDU\n");
+            d_trace(5, "    S5U-Remote-TEID[0x%x]\n", s1u_tunnel->remote_teid);
             if (s1u_tunnel->remote_teid)
             {
                 /* If there is buffered packet, send it first */
@@ -182,11 +185,13 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 
                 if ((SGW_GET_UE_STATE(sgw_ue) & SGW_S1U_INACTIVE))
                 {
+                    d_trace(7, "    SGW-S1U Inactive\n");
                     if ( !(SGW_GET_UE_STATE(sgw_ue) & SGW_DL_NOTI_SENT))
                     {
                         event_t e;
                         status_t rv;
 
+                        d_trace(7, "    EVENT DL Data Notification\n");
                         event_set(&e, SGW_EVT_LO_DLDATA_NOTI);
                         event_set_param1(&e, (c_uintptr_t)bearer->index);
                         rv = sgw_event_send(&e);
@@ -278,6 +283,8 @@ status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
     d_assert(bearer, return CORE_ERROR,);
     s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
     d_assert(s1u_tunnel, return CORE_ERROR,);
+
+    d_trace(3, "[SGW] SEND : End Marker\n");
 
     pkbuf = pkbuf_alloc(0, 100 /* enough for END_MARKER; use smaller buffer */);
     d_assert(pkbuf, return CORE_ERROR,);
