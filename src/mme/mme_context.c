@@ -1452,11 +1452,26 @@ status_t mme_context_parse_config()
 
 status_t mme_context_setup_trace_module()
 {
+    int app = context_self()->logger.trace.app;
     int s1ap = context_self()->logger.trace.s1ap;
     int nas = context_self()->logger.trace.nas;
     int diameter = context_self()->logger.trace.diameter;
-    int gtp = context_self()->logger.trace.gtp;
-    int others = context_self()->logger.trace.others;
+    int gtpv2 = context_self()->logger.trace.gtpv2;
+
+    if (app)
+    {
+        extern int _mutex;
+        d_trace_level(&_mutex, app);
+        extern int _pkbuf;
+        d_trace_level(&_pkbuf, app);
+
+        extern int _context;
+        d_trace_level(&_context, app);
+        extern int _mme_context;
+        d_trace_level(&_mme_context, app);
+        extern int _mme_sm;
+        d_trace_level(&_mme_sm, app);
+    }
 
     if (s1ap)
     {
@@ -1514,35 +1529,20 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_fd_logger, diameter);
     }
 
-    if (gtp)
+    if (gtpv2)
     {
         extern int _mme_s11_handler;
-        d_trace_level(&_mme_s11_handler, gtp);
+        d_trace_level(&_mme_s11_handler, gtpv2);
         extern int _gtp_node;
-        d_trace_level(&_gtp_node, gtp);
+        d_trace_level(&_gtp_node, gtpv2);
         extern int _gtp_path;
-        d_trace_level(&_gtp_path, gtp);
+        d_trace_level(&_gtp_path, gtpv2);
         extern int _mme_gtp_path;
-        d_trace_level(&_mme_gtp_path, gtp);
+        d_trace_level(&_mme_gtp_path, gtpv2);
         extern int _tlv_msg;
-        d_trace_level(&_tlv_msg, gtp);
+        d_trace_level(&_tlv_msg, gtpv2);
         extern int _gtp_xact;
-        d_trace_level(&_gtp_xact, gtp);
-    }
-
-    if (others)
-    {
-        extern int _mutex;
-        d_trace_level(&_mutex, others);
-        extern int _pkbuf;
-        d_trace_level(&_pkbuf, others);
-
-        extern int _context;
-        d_trace_level(&_context, others);
-        extern int _mme_context;
-        d_trace_level(&_mme_context, others);
-        extern int _mme_sm;
-        d_trace_level(&_mme_sm, others);
+        d_trace_level(&_gtp_xact, gtpv2);
     }
 
     return CORE_OK;

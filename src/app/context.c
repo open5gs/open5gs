@@ -171,7 +171,12 @@ status_t context_parse_config()
                     {
                         const char *trace_key = yaml_iter_key(&trace_iter);
                         d_assert(trace_key, return CORE_ERROR,);
-                        if (!strcmp(trace_key, "s1ap"))
+                        if (!strcmp(trace_key, "app"))
+                        {
+                            const char *v = yaml_iter_value(&trace_iter);
+                            if (v) self.logger.trace.app = atoi(v);
+                        }
+                        else if (!strcmp(trace_key, "s1ap"))
                         {
                             const char *v = yaml_iter_value(&trace_iter);
                             if (v) self.logger.trace.s1ap = atoi(v);
@@ -186,15 +191,15 @@ status_t context_parse_config()
                             const char *v = yaml_iter_value(&trace_iter);
                             if (v) self.logger.trace.diameter = atoi(v);
                         }
+                        else if (!strcmp(trace_key, "gtpv2"))
+                        {
+                            const char *v = yaml_iter_value(&trace_iter);
+                            if (v) self.logger.trace.gtpv2 = atoi(v);
+                        }
                         else if (!strcmp(trace_key, "gtp"))
                         {
                             const char *v = yaml_iter_value(&trace_iter);
                             if (v) self.logger.trace.gtp = atoi(v);
-                        }
-                        else if (!strcmp(trace_key, "others"))
-                        {
-                            const char *v = yaml_iter_value(&trace_iter);
-                            if (v) self.logger.trace.others = atoi(v);
                         }
                         else
                             d_warn("unknown key `%s`", trace_key);

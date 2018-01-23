@@ -314,8 +314,21 @@ status_t pcrf_context_parse_config()
 
 status_t pcrf_context_setup_trace_module()
 {
+    int app = context_self()->logger.trace.app;
     int diameter = context_self()->logger.trace.diameter;
-    int others = context_self()->logger.trace.others;
+
+    if (app)
+    {
+        extern int _mutex;
+        d_trace_level(&_mutex, app);
+        extern int _pkbuf;
+        d_trace_level(&_pkbuf, app);
+
+        extern int _context;
+        d_trace_level(&_context, app);
+        extern int _pcrf_context;
+        d_trace_level(&_pcrf_context, app);
+    }
 
     if (diameter)
     {
@@ -329,19 +342,6 @@ status_t pcrf_context_setup_trace_module()
         d_trace_level(&_fd_init, diameter);
         extern int _fd_logger;
         d_trace_level(&_fd_logger, diameter);
-    }
-
-    if (others)
-    {
-        extern int _mutex;
-        d_trace_level(&_mutex, others);
-        extern int _pkbuf;
-        d_trace_level(&_pkbuf, others);
-
-        extern int _context;
-        d_trace_level(&_context, others);
-        extern int _pcrf_context;
-        d_trace_level(&_pcrf_context, others);
     }
 
     return CORE_OK;

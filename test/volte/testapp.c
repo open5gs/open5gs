@@ -26,15 +26,15 @@ status_t test_app_initialize(const char *config_path, const char *log_path)
 {
     pid_t pid;
     status_t rv;
-    int others = 0;
+    int app = 0;
 
     rv = app_will_initialize(config_path, log_path);
     if (rv != CORE_OK) return rv;
 
-    others = context_self()->logger.trace.others;
-    if (others)
+    app = context_self()->logger.trace.app;
+    if (app)
     {
-        d_trace_level(&_testapp, others);
+        d_trace_level(&_testapp, app);
     }
 
 

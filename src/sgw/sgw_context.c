@@ -455,40 +455,45 @@ status_t sgw_context_parse_config()
 
 status_t sgw_context_setup_trace_module()
 {
+    int app = context_self()->logger.trace.app;
+    int gtpv2 = context_self()->logger.trace.gtpv2;
     int gtp = context_self()->logger.trace.gtp;
-    int others = context_self()->logger.trace.others;
+
+    if (app)
+    {
+        extern int _mutex;
+        d_trace_level(&_mutex, app);
+        extern int _pkbuf;
+        d_trace_level(&_pkbuf, app);
+
+        extern int _context;
+        d_trace_level(&_context, app);
+        extern int _sgw_context;
+        d_trace_level(&_sgw_context, app);
+    }
+
+    if (gtpv2)
+    {
+        extern int _sgw_sm;
+        d_trace_level(&_sgw_sm, gtpv2);
+        extern int _sgw_s11_handler;
+        d_trace_level(&_sgw_s11_handler, gtpv2);
+        extern int _sgw_s11_handler;
+        d_trace_level(&_sgw_s11_handler, gtpv2);
+        extern int _gtp_node;
+        d_trace_level(&_gtp_node, gtpv2);
+        extern int _gtp_path;
+        d_trace_level(&_gtp_path, gtpv2);
+        extern int _sgw_path;
+        d_trace_level(&_sgw_path, gtpv2);
+        extern int _tlv_msg;
+        d_trace_level(&_tlv_msg, gtpv2);
+        extern int _gtp_xact;
+        d_trace_level(&_gtp_xact, gtpv2);
+    }
 
     if (gtp)
     {
-        extern int _sgw_sm;
-        d_trace_level(&_sgw_sm, gtp);
-        extern int _sgw_s11_handler;
-        d_trace_level(&_sgw_s11_handler, gtp);
-        extern int _sgw_s11_handler;
-        d_trace_level(&_sgw_s11_handler, gtp);
-        extern int _gtp_node;
-        d_trace_level(&_gtp_node, gtp);
-        extern int _gtp_path;
-        d_trace_level(&_gtp_path, gtp);
-        extern int _sgw_path;
-        d_trace_level(&_sgw_path, gtp);
-        extern int _tlv_msg;
-        d_trace_level(&_tlv_msg, gtp);
-        extern int _gtp_xact;
-        d_trace_level(&_gtp_xact, gtp);
-    }
-
-    if (others)
-    {
-        extern int _mutex;
-        d_trace_level(&_mutex, others);
-        extern int _pkbuf;
-        d_trace_level(&_pkbuf, others);
-
-        extern int _context;
-        d_trace_level(&_context, others);
-        extern int _sgw_context;
-        d_trace_level(&_sgw_context, others);
     }
 
     return CORE_OK;

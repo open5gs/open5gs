@@ -19,7 +19,7 @@ static status_t app_logger_stop();
 status_t app_will_initialize(const char *config_path, const char *log_path)
 {
     status_t rv;
-    int others = 0;
+    int app = 0;
 
     context_init();
 
@@ -33,10 +33,10 @@ status_t app_will_initialize(const char *config_path, const char *log_path)
     rv = context_parse_config();
     if (rv != CORE_OK) return rv;
 
-    others = context_self()->logger.trace.others;
-    if (others)
+    app = context_self()->logger.trace.app;
+    if (app)
     {
-        d_trace_level(&_app_init, others);
+        d_trace_level(&_app_init, app);
     }
     
     context_self()->logger.path = log_path;

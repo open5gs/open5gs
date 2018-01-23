@@ -402,8 +402,8 @@ for (k, v) in sorted_type_list:
         f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    memcpy(%s, pkbuf->payload - 1, 1);\n\n" % v_lower(k))
-        f.write("    d_trace(5, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(5, pkbuf->payload - 1, 1);\n\n");
+        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
+        f.write("    d_trace_hex(25, pkbuf->payload - 1, 1);\n\n");
         f.write("    return 0;\n")
         f.write("}\n\n")
         f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
@@ -411,8 +411,8 @@ for (k, v) in sorted_type_list:
         f.write("    c_uint16_t size = sizeof(nas_%s_t);\n\n" % v_lower(k))
         f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
         f.write("    memcpy(pkbuf->payload - size, %s, size);\n\n" % v_lower(k))
-        f.write("    d_trace(5, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(5, pkbuf->payload - size, size);\n\n");
+        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
+        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
     elif type_list[k]["format"] == "TV" or type_list[k]["format"] == "V":
@@ -426,8 +426,8 @@ for (k, v) in sorted_type_list:
         f.write("    memcpy(%s, pkbuf->payload - size, size);\n\n" % v_lower(k))
         if "decode" in type_list[k]:
             f.write("%s" % type_list[k]["decode"])
-        f.write("    d_trace(5, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(5, pkbuf->payload - size, size);\n\n");
+        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
+        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
         f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
@@ -442,8 +442,8 @@ for (k, v) in sorted_type_list:
             f.write("%s" % type_list[k]["encode"])
         f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
         f.write("    memcpy(pkbuf->payload - size, &target, size);\n\n")
-        f.write("    d_trace(5, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(5, pkbuf->payload - size, size);\n\n");
+        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
+        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
     elif type_list[k]["format"] == "LV-E" or type_list[k]["format"] == "TLV-E":
@@ -455,8 +455,8 @@ for (k, v) in sorted_type_list:
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
         f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
         f.write("    %s->buffer = pkbuf->payload - size + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
-        f.write("    d_trace(5, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(5, %s->buffer, %s->length);\n\n" % (v_lower(k), v_lower(k)));
+        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
+        f.write("    d_trace_hex(25, %s->buffer, %s->length);\n\n" % (v_lower(k), v_lower(k)));
         f.write("    return size;\n")
         f.write("}\n\n")
         f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
@@ -472,8 +472,8 @@ for (k, v) in sorted_type_list:
         f.write("    size = %s->length;\n" % v_lower(k))
         f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
         f.write("    memcpy(pkbuf->payload - size, %s->buffer, size);\n\n" % v_lower(k))
-        f.write("    d_trace(5, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(5, pkbuf->payload - size, size);\n\n");
+        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
+        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
         f.write("    return %s->length + sizeof(%s->length);\n" % (v_lower(k), v_lower(k)))
         f.write("}\n\n");
     else:
@@ -487,8 +487,8 @@ for (k, v) in sorted_type_list:
         f.write("    memcpy(%s, pkbuf->payload - size, size);\n\n" % v_lower(k))
         if "decode" in type_list[k]:
             f.write("%s" % type_list[k]["decode"])
-        f.write("    d_trace(5, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(5, pkbuf->payload - size, size);\n\n");
+        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
+        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
         f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
@@ -500,8 +500,8 @@ for (k, v) in sorted_type_list:
             f.write("%s" % type_list[k]["encode"])
         f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
         f.write("    memcpy(pkbuf->payload - size, &target, size);\n\n")
-        f.write("    d_trace(5, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(5, pkbuf->payload - size, size);\n\n");
+        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
+        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n");
 f.close()
@@ -674,7 +674,7 @@ for (k, v) in sorted_msg_list:
         f.write("    nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     f.write("    c_int32_t decoded = 0;\n")
     f.write("    c_int32_t size = 0;\n\n")
-    f.write("    d_trace(3, \"[NAS] Decode %s\\n\");\n\n" % v_upper(k))
+    f.write("    d_trace(25, \"[NAS] Decode %s\\n\");\n\n" % v_upper(k))
 
     for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "M"]:
         f.write("    size = nas_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
@@ -864,7 +864,7 @@ for (k, v) in sorted_msg_list:
         f.write("    nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     f.write("    c_int32_t encoded = 0;\n")
     f.write("    c_int32_t size = 0;\n\n")
-    f.write("    d_trace(3, \"[NAS] Encode %s\\n\");\n\n" % v_upper(k))
+    f.write("    d_trace(25, \"[NAS] Encode %s\\n\");\n\n" % v_upper(k))
 
     for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "M"]:
         f.write("    size = nas_encode_%s(pkbuf, &%s->%s);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))

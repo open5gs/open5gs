@@ -37,11 +37,12 @@ typedef struct _context_t {
         const char *file;
 
         struct {
+            int app;
             int s1ap;
             int nas;
+            int gtpv2;
             int gtp;
             int diameter;
-            int others;
         } trace;
     } logger;
 

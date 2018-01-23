@@ -26,7 +26,7 @@
 /*******************************************************************************
  * This file had been created by gtpv2c_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2017-12-10 14:27:23.972133 by acetcom
+ * Created on: 2018-01-23 15:58:42.874567 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -41,7 +41,7 @@ c_int32_t nas_decode_attach_request(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ATTACH_REQUEST\n");
+    d_trace(25, "[NAS] Decode ATTACH_REQUEST\n");
 
     size = nas_decode_eps_attach_type(&attach_request->eps_attach_type, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -200,7 +200,7 @@ c_int32_t nas_decode_attach_accept(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ATTACH_ACCEPT\n");
+    d_trace(25, "[NAS] Decode ATTACH_ACCEPT\n");
 
     size = nas_decode_eps_attach_result(&attach_accept->eps_attach_result, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -323,7 +323,7 @@ c_int32_t nas_decode_attach_complete(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ATTACH_COMPLETE\n");
+    d_trace(25, "[NAS] Decode ATTACH_COMPLETE\n");
 
     size = nas_decode_esm_message_container(&attach_complete->esm_message_container, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -338,7 +338,7 @@ c_int32_t nas_decode_attach_reject(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ATTACH_REJECT\n");
+    d_trace(25, "[NAS] Decode ATTACH_REJECT\n");
 
     size = nas_decode_emm_cause(&attach_reject->emm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -395,7 +395,7 @@ c_int32_t nas_decode_detach_request_from_ue(nas_message_t *message, pkbuf_t *pkb
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode DETACH_REQUEST\n");
+    d_trace(25, "[NAS] Decode DETACH_REQUEST\n");
 
     size = nas_decode_detach_type(&detach_request_from_ue->detach_type, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -414,7 +414,7 @@ c_int32_t nas_decode_detach_request_to_ue(nas_message_t *message, pkbuf_t *pkbuf
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode DETACH_REQUEST\n");
+    d_trace(25, "[NAS] Decode DETACH_REQUEST\n");
 
     size = nas_decode_detach_type(&detach_request_to_ue->detach_type, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -453,7 +453,7 @@ c_int32_t nas_decode_tracking_area_update_request(nas_message_t *message, pkbuf_
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode TRACKING_AREA_UPDATE_REQUEST\n");
+    d_trace(25, "[NAS] Decode TRACKING_AREA_UPDATE_REQUEST\n");
 
     size = nas_decode_eps_update_type(&tracking_area_update_request->eps_update_type, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -640,7 +640,7 @@ c_int32_t nas_decode_tracking_area_update_accept(nas_message_t *message, pkbuf_t
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode TRACKING_AREA_UPDATE_ACCEPT\n");
+    d_trace(25, "[NAS] Decode TRACKING_AREA_UPDATE_ACCEPT\n");
 
     size = nas_decode_eps_update_result(&tracking_area_update_accept->eps_update_result, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -775,7 +775,7 @@ c_int32_t nas_decode_tracking_area_update_reject(nas_message_t *message, pkbuf_t
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode TRACKING_AREA_UPDATE_REJECT\n");
+    d_trace(25, "[NAS] Decode TRACKING_AREA_UPDATE_REJECT\n");
 
     size = nas_decode_emm_cause(&tracking_area_update_reject->emm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -820,7 +820,7 @@ c_int32_t nas_decode_extended_service_request(nas_message_t *message, pkbuf_t *p
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode EXTENDED_SERVICE_REQUEST\n");
+    d_trace(25, "[NAS] Decode EXTENDED_SERVICE_REQUEST\n");
 
     size = nas_decode_service_type(&extended_service_request->service_type, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -875,7 +875,7 @@ c_int32_t nas_decode_service_request(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode SERVICE_REQUEST\n");
+    d_trace(25, "[NAS] Decode SERVICE_REQUEST\n");
 
     size = nas_decode_ksi_and_sequence_number(&service_request->ksi_and_sequence_number, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -894,7 +894,7 @@ c_int32_t nas_decode_service_reject(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode SERVICE_REJECT\n");
+    d_trace(25, "[NAS] Decode SERVICE_REJECT\n");
 
     size = nas_decode_emm_cause(&service_reject->emm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -933,7 +933,7 @@ c_int32_t nas_decode_guti_reallocation_command(nas_message_t *message, pkbuf_t *
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode GUTI_REALLOCATION_COMMAND\n");
+    d_trace(25, "[NAS] Decode GUTI_REALLOCATION_COMMAND\n");
 
     size = nas_decode_eps_mobile_identity(&guti_reallocation_command->guti, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -972,7 +972,7 @@ c_int32_t nas_decode_authentication_request(nas_message_t *message, pkbuf_t *pkb
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode AUTHENTICATION_REQUEST\n");
+    d_trace(25, "[NAS] Decode AUTHENTICATION_REQUEST\n");
 
     size = nas_decode_key_set_identifier(&authentication_request->nas_key_set_identifierasme, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -995,7 +995,7 @@ c_int32_t nas_decode_authentication_response(nas_message_t *message, pkbuf_t *pk
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode AUTHENTICATION_RESPONSE\n");
+    d_trace(25, "[NAS] Decode AUTHENTICATION_RESPONSE\n");
 
     size = nas_decode_authentication_response_parameter(&authentication_response->authentication_response_parameter, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1010,7 +1010,7 @@ c_int32_t nas_decode_identity_request(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode IDENTITY_REQUEST\n");
+    d_trace(25, "[NAS] Decode IDENTITY_REQUEST\n");
 
     size = nas_decode_identity_type_2(&identity_request->identity_type, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1025,7 +1025,7 @@ c_int32_t nas_decode_identity_response(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode IDENTITY_RESPONSE\n");
+    d_trace(25, "[NAS] Decode IDENTITY_RESPONSE\n");
 
     size = nas_decode_mobile_identity(&identity_response->mobile_identity, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1040,7 +1040,7 @@ c_int32_t nas_decode_authentication_failure(nas_message_t *message, pkbuf_t *pkb
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode AUTHENTICATION_FAILURE\n");
+    d_trace(25, "[NAS] Decode AUTHENTICATION_FAILURE\n");
 
     size = nas_decode_emm_cause(&authentication_failure->emm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1079,7 +1079,7 @@ c_int32_t nas_decode_security_mode_command(nas_message_t *message, pkbuf_t *pkbu
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode SECURITY_MODE_COMMAND\n");
+    d_trace(25, "[NAS] Decode SECURITY_MODE_COMMAND\n");
 
     size = nas_decode_security_algorithms(&security_mode_command->selected_nas_security_algorithms, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1138,7 +1138,7 @@ c_int32_t nas_decode_security_mode_complete(nas_message_t *message, pkbuf_t *pkb
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode SECURITY_MODE_COMPLETE\n");
+    d_trace(25, "[NAS] Decode SECURITY_MODE_COMPLETE\n");
 
     while(pkbuf->len > 0) 
     {
@@ -1173,7 +1173,7 @@ c_int32_t nas_decode_security_mode_reject(nas_message_t *message, pkbuf_t *pkbuf
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode SECURITY_MODE_REJECT\n");
+    d_trace(25, "[NAS] Decode SECURITY_MODE_REJECT\n");
 
     size = nas_decode_emm_cause(&security_mode_reject->emm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1188,7 +1188,7 @@ c_int32_t nas_decode_emm_status(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode EMM_STATUS\n");
+    d_trace(25, "[NAS] Decode EMM_STATUS\n");
 
     size = nas_decode_emm_cause(&emm_status->emm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1203,7 +1203,7 @@ c_int32_t nas_decode_emm_information(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode EMM_INFORMATION\n");
+    d_trace(25, "[NAS] Decode EMM_INFORMATION\n");
 
     while(pkbuf->len > 0) 
     {
@@ -1262,7 +1262,7 @@ c_int32_t nas_decode_downlink_nas_transport(nas_message_t *message, pkbuf_t *pkb
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode DOWNLINK_NAS_TRANSPORT\n");
+    d_trace(25, "[NAS] Decode DOWNLINK_NAS_TRANSPORT\n");
 
     size = nas_decode_message_container(&downlink_nas_transport->nas_message_container, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1277,7 +1277,7 @@ c_int32_t nas_decode_uplink_nas_transport(nas_message_t *message, pkbuf_t *pkbuf
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode UPLINK_NAS_TRANSPORT\n");
+    d_trace(25, "[NAS] Decode UPLINK_NAS_TRANSPORT\n");
 
     size = nas_decode_message_container(&uplink_nas_transport->nas_message_container, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1292,7 +1292,7 @@ c_int32_t nas_decode_cs_service_notification(nas_message_t *message, pkbuf_t *pk
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode CS_SERVICE_NOTIFICATION\n");
+    d_trace(25, "[NAS] Decode CS_SERVICE_NOTIFICATION\n");
 
     size = nas_decode_paging_identity(&cs_service_notification->paging_identity, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1349,7 +1349,7 @@ c_int32_t nas_decode_uplink_generic_nas_transport(nas_message_t *message, pkbuf_
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode UPLINK_GENERIC_NAS_TRANSPORT\n");
+    d_trace(25, "[NAS] Decode UPLINK_GENERIC_NAS_TRANSPORT\n");
 
     size = nas_decode_generic_message_container_type(&uplink_generic_nas_transport->generic_message_container_type, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1392,7 +1392,7 @@ c_int32_t nas_decode_downlink_generic_nas_transport(nas_message_t *message, pkbu
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode DOWNLINK_GENERIC_NAS_TRANSPORT\n");
+    d_trace(25, "[NAS] Decode DOWNLINK_GENERIC_NAS_TRANSPORT\n");
 
     size = nas_decode_generic_message_container_type(&downlink_generic_nas_transport->generic_message_container_type, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1435,7 +1435,7 @@ c_int32_t nas_decode_activate_default_eps_bearer_context_request(nas_message_t *
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST\n");
+    d_trace(25, "[NAS] Decode ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST\n");
 
     size = nas_decode_eps_quality_of_service(&activate_default_eps_bearer_context_request->eps_qos, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1566,7 +1566,7 @@ c_int32_t nas_decode_activate_default_eps_bearer_context_accept(nas_message_t *m
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT\n");
+    d_trace(25, "[NAS] Decode ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT\n");
 
     while(pkbuf->len > 0) 
     {
@@ -1607,7 +1607,7 @@ c_int32_t nas_decode_activate_default_eps_bearer_context_reject(nas_message_t *m
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT\n");
+    d_trace(25, "[NAS] Decode ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT\n");
 
     size = nas_decode_esm_cause(&activate_default_eps_bearer_context_reject->esm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1652,7 +1652,7 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_request(nas_message_t
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST\n");
+    d_trace(25, "[NAS] Decode ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST\n");
 
     size = nas_decode_linked_eps_bearer_identity(&activate_dedicated_eps_bearer_context_request->linked_eps_bearer_identity, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1747,7 +1747,7 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_accept(nas_message_t 
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT\n");
+    d_trace(25, "[NAS] Decode ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT\n");
 
     while(pkbuf->len > 0) 
     {
@@ -1794,7 +1794,7 @@ c_int32_t nas_decode_activate_dedicated_eps_bearer_context_reject(nas_message_t 
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT\n");
+    d_trace(25, "[NAS] Decode ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT\n");
 
     size = nas_decode_esm_cause(&activate_dedicated_eps_bearer_context_reject->esm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -1845,7 +1845,7 @@ c_int32_t nas_decode_modify_eps_bearer_context_request(nas_message_t *message, p
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode MODIFY_EPS_BEARER_CONTEXT_REQUEST\n");
+    d_trace(25, "[NAS] Decode MODIFY_EPS_BEARER_CONTEXT_REQUEST\n");
 
     while(pkbuf->len > 0) 
     {
@@ -1946,7 +1946,7 @@ c_int32_t nas_decode_modify_eps_bearer_context_accept(nas_message_t *message, pk
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode MODIFY_EPS_BEARER_CONTEXT_ACCEPT\n");
+    d_trace(25, "[NAS] Decode MODIFY_EPS_BEARER_CONTEXT_ACCEPT\n");
 
     while(pkbuf->len > 0) 
     {
@@ -1993,7 +1993,7 @@ c_int32_t nas_decode_modify_eps_bearer_context_reject(nas_message_t *message, pk
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode MODIFY_EPS_BEARER_CONTEXT_REJECT\n");
+    d_trace(25, "[NAS] Decode MODIFY_EPS_BEARER_CONTEXT_REJECT\n");
 
     size = nas_decode_esm_cause(&modify_eps_bearer_context_reject->esm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -2044,7 +2044,7 @@ c_int32_t nas_decode_deactivate_eps_bearer_context_request(nas_message_t *messag
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST\n");
+    d_trace(25, "[NAS] Decode DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST\n");
 
     size = nas_decode_esm_cause(&deactivate_eps_bearer_context_request->esm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -2107,7 +2107,7 @@ c_int32_t nas_decode_deactivate_eps_bearer_context_accept(nas_message_t *message
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT\n");
+    d_trace(25, "[NAS] Decode DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT\n");
 
     while(pkbuf->len > 0) 
     {
@@ -2148,7 +2148,7 @@ c_int32_t nas_decode_pdn_connectivity_request(nas_message_t *message, pkbuf_t *p
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode PDN_CONNECTIVITY_REQUEST\n");
+    d_trace(25, "[NAS] Decode PDN_CONNECTIVITY_REQUEST\n");
 
     size = nas_decode_request_type(&pdn_connectivity_request->request_type, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -2223,7 +2223,7 @@ c_int32_t nas_decode_pdn_connectivity_reject(nas_message_t *message, pkbuf_t *pk
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode PDN_CONNECTIVITY_REJECT\n");
+    d_trace(25, "[NAS] Decode PDN_CONNECTIVITY_REJECT\n");
 
     size = nas_decode_esm_cause(&pdn_connectivity_reject->esm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -2286,7 +2286,7 @@ c_int32_t nas_decode_pdn_disconnect_request(nas_message_t *message, pkbuf_t *pkb
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode PDN_DISCONNECT_REQUEST\n");
+    d_trace(25, "[NAS] Decode PDN_DISCONNECT_REQUEST\n");
 
     size = nas_decode_linked_eps_bearer_identity(&pdn_disconnect_request->linked_eps_bearer_identity, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -2331,7 +2331,7 @@ c_int32_t nas_decode_pdn_disconnect_reject(nas_message_t *message, pkbuf_t *pkbu
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode PDN_DISCONNECT_REJECT\n");
+    d_trace(25, "[NAS] Decode PDN_DISCONNECT_REJECT\n");
 
     size = nas_decode_esm_cause(&pdn_disconnect_reject->esm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -2376,7 +2376,7 @@ c_int32_t nas_decode_bearer_resource_allocation_request(nas_message_t *message, 
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode BEARER_RESOURCE_ALLOCATION_REQUEST\n");
+    d_trace(25, "[NAS] Decode BEARER_RESOURCE_ALLOCATION_REQUEST\n");
 
     size = nas_decode_linked_eps_bearer_identity(&bearer_resource_allocation_request->linked_eps_bearer_identity, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -2441,7 +2441,7 @@ c_int32_t nas_decode_bearer_resource_allocation_reject(nas_message_t *message, p
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode BEARER_RESOURCE_ALLOCATION_REJECT\n");
+    d_trace(25, "[NAS] Decode BEARER_RESOURCE_ALLOCATION_REJECT\n");
 
     size = nas_decode_esm_cause(&bearer_resource_allocation_reject->esm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -2504,7 +2504,7 @@ c_int32_t nas_decode_bearer_resource_modification_request(nas_message_t *message
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode BEARER_RESOURCE_MODIFICATION_REQUEST\n");
+    d_trace(25, "[NAS] Decode BEARER_RESOURCE_MODIFICATION_REQUEST\n");
 
     size = nas_decode_linked_eps_bearer_identity(&bearer_resource_modification_request->eps_bearer_identity_for_packet_filter, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -2583,7 +2583,7 @@ c_int32_t nas_decode_bearer_resource_modification_reject(nas_message_t *message,
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode BEARER_RESOURCE_MODIFICATION_REJECT\n");
+    d_trace(25, "[NAS] Decode BEARER_RESOURCE_MODIFICATION_REJECT\n");
 
     size = nas_decode_esm_cause(&bearer_resource_modification_reject->esm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
@@ -2646,7 +2646,7 @@ c_int32_t nas_decode_esm_information_response(nas_message_t *message, pkbuf_t *p
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ESM_INFORMATION_RESPONSE\n");
+    d_trace(25, "[NAS] Decode ESM_INFORMATION_RESPONSE\n");
 
     while(pkbuf->len > 0) 
     {
@@ -2693,7 +2693,7 @@ c_int32_t nas_decode_esm_status(nas_message_t *message, pkbuf_t *pkbuf)
     c_int32_t decoded = 0;
     c_int32_t size = 0;
 
-    d_trace(3, "[NAS] Decode ESM_STATUS\n");
+    d_trace(25, "[NAS] Decode ESM_STATUS\n");
 
     size = nas_decode_esm_cause(&esm_status->esm_cause, pkbuf);
     d_assert(size >= 0, return -1, "decode failed");
