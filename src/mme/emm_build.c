@@ -38,7 +38,7 @@ status_t emm_build_attach_accept(
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_ATTACH_ACCEPT;
 
-    eps_attach_result->result = NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH;
+    eps_attach_result->result = mme_ue->nas_eps.attach.attach_type;
     t3412_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     t3412_value->value = 9;
 
@@ -65,8 +65,10 @@ status_t emm_build_attach_accept(
             guti->guti.mme_gid, guti->guti.mme_code, guti->guti.m_tmsi,
             mme_ue->imsi_bcd);
 
+#if 0 /* Remove it */
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_EMM_CAUSE_PRESENT;
     attach_accept->emm_cause = EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE;
+#endif
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_T3402_VALUE_PRESENT;
     t3402_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     t3402_value->value = 12;
@@ -76,8 +78,6 @@ status_t emm_build_attach_accept(
     attach_accept->presencemask |= 
         NAS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     eps_network_feature_support->length = 1;
-    eps_network_feature_support->esr_ps = 1;
-    eps_network_feature_support->epc_lcs = 1;
     eps_network_feature_support->ims_vops = 1;
 
     rv = nas_security_encode(emmbuf, mme_ue, &message);
