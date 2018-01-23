@@ -845,7 +845,7 @@ void pcrf_rx_final(void)
     if (pool_used(&pcrf_rx_sess_pool))
         d_error("%d not freed in pcrf_rx_sess_pool[%d] of GX-SM",
                 pool_used(&pcrf_rx_sess_pool), pool_size(&pcrf_rx_sess_pool));
-    d_trace(7, "%d not freed in pcrf_rx_sess_pool[%d] of GX-SM\n",
+    d_trace(9, "%d not freed in pcrf_rx_sess_pool[%d] of GX-SM\n",
             pool_used(&pcrf_rx_sess_pool), pool_size(&pcrf_rx_sess_pool));
 
     pool_final(&pcrf_rx_sess_pool);

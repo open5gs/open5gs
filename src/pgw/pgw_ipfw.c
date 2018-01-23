@@ -228,7 +228,7 @@ static status_t decode_ipv6_header(
     return CORE_OK;
 }
 
-pgw_bearer_t*pgw_bearer_find_by_packet(pkbuf_t *pkt)
+pgw_bearer_t *pgw_bearer_find_by_packet(pkbuf_t *pkt)
 {
     hash_index_t *hi = NULL;
     struct ip *ip_h =  NULL;
@@ -271,10 +271,10 @@ pgw_bearer_t*pgw_bearer_find_by_packet(pkbuf_t *pkt)
     else
         d_error("Invalid IP version = %d\n", ip_h->ip_v);
 
-    d_trace(50, "PROTO:%d SRC:%08x %08x %08x %08x\n",
+    d_trace(9, "PROTO:%d SRC:%08x %08x %08x %08x\n",
             proto, ntohl(src_addr[0]), ntohl(src_addr[1]),
             ntohl(src_addr[2]), ntohl(src_addr[3]));
-    d_trace(50, "HLEN:%d  DST:%08x %08x %08x %08x\n",
+    d_trace(9, "HLEN:%d  DST:%08x %08x %08x %08x\n",
             ip_hlen, ntohl(dst_addr[0]), ntohl(dst_addr[1]),
             ntohl(dst_addr[2]), ntohl(dst_addr[3]));
 
@@ -290,9 +290,9 @@ pgw_bearer_t*pgw_bearer_find_by_packet(pkbuf_t *pkt)
         d_assert(sess, return NULL,);
 
         if (sess->ipv4)
-            d_trace(50, "PAA IPv4:%s\n", INET_NTOP(&sess->ipv4->addr, buf));
+            d_trace(9, "PAA IPv4:%s\n", INET_NTOP(&sess->ipv4->addr, buf));
         if (sess->ipv6)
-            d_trace(50, "PAA IPv6:%s\n", INET6_NTOP(&sess->ipv6->addr, buf));
+            d_trace(9, "PAA IPv6:%s\n", INET6_NTOP(&sess->ipv6->addr, buf));
 
         if ((sess->ipv4 && memcmp(dst_addr, sess->ipv4->addr, addr_len) == 0) ||
             (sess->ipv6 && memcmp(dst_addr, sess->ipv6->addr, addr_len) == 0))
@@ -323,13 +323,13 @@ pgw_bearer_t*pgw_bearer_find_by_packet(pkbuf_t *pkt)
                     c_uint32_t src_mask[4];
                     c_uint32_t dst_mask[4];
 
-                    d_trace(50, "DIR:%d PROTO:%d SRC:%d-%d DST:%d-%d\n",
+                    d_trace(9, "DIR:%d PROTO:%d SRC:%d-%d DST:%d-%d\n",
                             pf->direction, pf->rule.proto,
                             pf->rule.port.local.low,
                             pf->rule.port.local.high,
                             pf->rule.port.remote.low,
                             pf->rule.port.remote.high);
-                    d_trace(50, "SRC:%08x %08x %08x %08x/%08x %08x %08x %08x\n",
+                    d_trace(9, "SRC:%08x %08x %08x %08x/%08x %08x %08x %08x\n",
                             ntohl(pf->rule.ip.local.addr[0]),
                             ntohl(pf->rule.ip.local.addr[1]),
                             ntohl(pf->rule.ip.local.addr[2]),
@@ -338,7 +338,7 @@ pgw_bearer_t*pgw_bearer_find_by_packet(pkbuf_t *pkt)
                             ntohl(pf->rule.ip.local.mask[1]),
                             ntohl(pf->rule.ip.local.mask[2]),
                             ntohl(pf->rule.ip.local.mask[3]));
-                    d_trace(50, "DST:%08x %08x %08x %08x/%08x %08x %08x %08x\n",
+                    d_trace(9, "DST:%08x %08x %08x %08x/%08x %08x %08x %08x\n",
                             ntohl(pf->rule.ip.remote.addr[0]),
                             ntohl(pf->rule.ip.remote.addr[1]),
                             ntohl(pf->rule.ip.remote.addr[2]),
@@ -465,7 +465,7 @@ pgw_bearer_t*pgw_bearer_find_by_packet(pkbuf_t *pkt)
                 if (pf)
                 {
                     bearer = pf->bearer;
-                    d_trace(50,"FOUND Bearer EBI = %d\n", bearer->ebi);
+                    d_trace(5, "FOUND Bearer EBI = %d\n", bearer->ebi);
                     break;
                 }
 

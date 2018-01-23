@@ -21,7 +21,7 @@ status_t gtp_node_final(void)
     if (pool_used(&gtp_node_pool))
         d_error("%d not freed in gtp_node_pool[%d]",
             pool_used(&gtp_node_pool), pool_size(&gtp_node_pool));
-    d_trace(7, "%d not freed in gtp_node_pool[%d]\n",
+    d_trace(9, "%d not freed in gtp_node_pool[%d]\n",
             pool_used(&gtp_node_pool), pool_size(&gtp_node_pool));
     pool_final(&gtp_node_pool);
 

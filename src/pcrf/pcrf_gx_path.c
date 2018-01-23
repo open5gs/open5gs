@@ -1153,11 +1153,11 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
-        d_trace(7, "in %d.%06ld sec\n", 
+        d_trace(15, "in %d.%06ld sec\n", 
                 (int)(ts.tv_sec - sess_data->ts.tv_sec),
                 (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
     else
-        d_trace(7, "in %d.%06ld sec\n", 
+        d_trace(15, "in %d.%06ld sec\n", 
                 (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
 
@@ -1222,12 +1222,12 @@ void pcrf_gx_final(void)
     if (pool_used(&pcrf_gx_sess_pool))
         d_error("%d not freed in pcrf_gx_sess_pool[%d] of GX-SM",
                 pool_used(&pcrf_gx_sess_pool), pool_size(&pcrf_gx_sess_pool));
-    d_trace(7, "%d not freed in pcrf_gx_sess_pool[%d] of GX-SM\n",
+    d_trace(9, "%d not freed in pcrf_gx_sess_pool[%d] of GX-SM\n",
             pool_used(&pcrf_gx_sess_pool), pool_size(&pcrf_gx_sess_pool));
     if (pool_used(&pcrf_gx_rx_sess_pool))
         d_error("%d not freed in pcrf_gx_rx_sess_pool[%d] of GX-SM",
             pool_used(&pcrf_gx_rx_sess_pool), pool_size(&pcrf_gx_rx_sess_pool));
-    d_trace(7, "%d not freed in pcrf_gx_rx_sess_pool[%d] of GX-SM\n",
+    d_trace(9, "%d not freed in pcrf_gx_rx_sess_pool[%d] of GX-SM\n",
             pool_used(&pcrf_gx_rx_sess_pool), pool_size(&pcrf_gx_rx_sess_pool));
 
     pool_final(&pcrf_gx_sess_pool);

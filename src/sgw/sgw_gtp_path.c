@@ -185,13 +185,13 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 
                 if ((SGW_GET_UE_STATE(sgw_ue) & SGW_S1U_INACTIVE))
                 {
-                    d_trace(7, "    SGW-S1U Inactive\n");
+                    d_trace(9, "    SGW-S1U Inactive\n");
                     if ( !(SGW_GET_UE_STATE(sgw_ue) & SGW_DL_NOTI_SENT))
                     {
                         event_t e;
                         status_t rv;
 
-                        d_trace(7, "    EVENT DL Data Notification\n");
+                        d_trace(9, "    EVENT DL Data Notification\n");
                         event_set(&e, SGW_EVT_LO_DLDATA_NOTI);
                         event_set_param1(&e, (c_uintptr_t)bearer->index);
                         rv = sgw_event_send(&e);

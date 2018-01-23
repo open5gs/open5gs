@@ -10,6 +10,7 @@
 #include "pgw_context.h"
 #include "pgw_event.h"
 #include "pgw_gtp_path.h"
+#include "pgw_ipfw.h"
 
 #define PGW_GTP_HANDLED     1
 

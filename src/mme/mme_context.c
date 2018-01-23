@@ -95,7 +95,7 @@ status_t mme_context_final()
         d_error("%d not freed in M-TMSI pool[%d] in MME-Context",
                 pool_used(&self.m_tmsi), pool_size(&self.m_tmsi));
     }
-    d_trace(7, "%d not freed in M-TMSI pool[%d] in MME-Context\n",
+    d_trace(9, "%d not freed in M-TMSI pool[%d] in MME-Context\n",
             pool_used(&self.m_tmsi), pool_size(&self.m_tmsi));
 
     d_assert(self.enb_sock_hash, , "Null param");
@@ -2009,11 +2009,11 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                     mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
                     if (mme_ue)
                     {
-                        d_trace(7, "known UE by IMSI[%s]\n", imsi_bcd);
+                        d_trace(9, "known UE by IMSI[%s]\n", imsi_bcd);
                     }
                     else
                     {
-                        d_trace(7, "Unknown UE by IMSI[%s]\n", imsi_bcd);
+                        d_trace(9, "Unknown UE by IMSI[%s]\n", imsi_bcd);
                     }
                     break;
                 }
@@ -2031,7 +2031,7 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                     mme_ue = mme_ue_find_by_guti(&guti);
                     if (mme_ue)
                     {
-                        d_trace(7, "Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
+                        d_trace(9, "Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
                                 guti.mme_gid,
                                 guti.mme_code,
                                 guti.m_tmsi);
@@ -2083,7 +2083,7 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                     mme_ue = mme_ue_find_by_guti(&guti);
                     if (mme_ue)
                     {
-                        d_trace(7, "Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
+                        d_trace(9, "Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
                                 guti.mme_gid,
                                 guti.mme_code,
                                 guti.m_tmsi);
@@ -2509,7 +2509,7 @@ mme_bearer_t* mme_bearer_find_or_add_by_message(
     pti = message->esm.h.procedure_transaction_identity;
     ebi = message->esm.h.eps_bearer_identity;
 
-    d_trace(7, "mme_bearer_find_or_add_by_message() [PTI:%d, EBI:%d]\n",
+    d_trace(9, "mme_bearer_find_or_add_by_message() [PTI:%d, EBI:%d]\n",
             pti, ebi);
 
     if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
@@ -2710,7 +2710,7 @@ status_t mme_m_tmsi_pool_generate()
     int i, j;
     int index = 0;
 
-    d_trace(7, "M-TMSI Pool try to generate...\n");
+    d_trace(5, "M-TMSI Pool try to generate...\n");
     for (i = 0; index < MAX_POOL_OF_UE; i++)
     {
         mme_m_tmsi_t *m_tmsi = NULL;
@@ -2733,7 +2733,7 @@ status_t mme_m_tmsi_pool_generate()
         index++;
     }
     self.m_tmsi.size = index;
-    d_trace(7, "M-TMSI Pool generate...done\n");
+    d_trace(5, "M-TMSI Pool generate...done\n");
 
     return CORE_OK;
 }

@@ -546,8 +546,8 @@ sgw_ue_t *sgw_ue_add_by_message(gtp_message_t *message)
         return NULL;
     }
 
-    d_trace(7, "sgw_ue_add_by_message() - IMSI ");
-    d_trace_hex(7, req->imsi.data, req->imsi.len);
+    d_trace(9, "sgw_ue_add_by_message() - IMSI ");
+    d_trace_hex(9, req->imsi.data, req->imsi.len);
 
     sgw_ue = sgw_ue_find_by_imsi(req->imsi.data, req->imsi.len);
     if (!sgw_ue)
