@@ -69,7 +69,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
                     d_trace(3, "[ESM] PDN Connectivity request\n");
-                    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
                             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     rv = esm_handle_pdn_connectivity_request(
                             bearer, &message->esm.pdn_connectivity_request);
@@ -83,7 +83,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 case NAS_ESM_INFORMATION_RESPONSE:
                 {
                     d_trace(3, "[ESM] ESM information response\n");
-                    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
                             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     rv = esm_handle_information_response(
                             sess, &message->esm.esm_information_response);
@@ -98,7 +98,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 {
                     d_trace(3, "[ESM] Activate default EPS bearer "
                             "context accept\n");
-                    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
                             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     if (MME_HAVE_ENB_S1U_PATH(bearer))
                     {
@@ -114,7 +114,7 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                 {
                     d_trace(3, "[ESM] Activate dedicated EPS bearer "
                             "context accept\n");
-                    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
                             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
                     if (MME_HAVE_ENB_S1U_PATH(bearer))
@@ -183,7 +183,7 @@ void esm_state_active(fsm_t *s, event_t *e)
                 case NAS_PDN_CONNECTIVITY_REQUEST:
                 {
                     d_trace(3, "[ESM] PDN Connectivity request\n");
-                    d_trace(3, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
                             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     rv = esm_handle_pdn_connectivity_request(
                             bearer, &message->esm.pdn_connectivity_request);

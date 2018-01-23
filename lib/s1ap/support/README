@@ -8,7 +8,7 @@ user@host ~/Documents/git/nextepc/lib/s1ap/support$ \
 
 * EUROCOM S1AP-IEs support files
 user@host ~/Documents/git/nextepc/lib/s1ap/support$ \
-    python asn1tostruct.py -f S1AP-PDU.asn -o ..
+    python asn1tostruct.py -f fix-a90.asn -o ..
 
 * Use AuthenticEshkinKot's fork for asn1c
 user@host ~/Documents/git$ \

@@ -42,7 +42,7 @@ status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             &pdn_connectivity_request->esm_information_transfer_flag;
         security_protected_required = 
                 esm_information_transfer_flag->security_protected_required;
-        d_trace(3, "    EIT(ESM information transfer)[%d]\n",
+        d_trace(5, "    EIT(ESM information transfer)[%d]\n",
                 security_protected_required);
     }
 
@@ -87,7 +87,7 @@ status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 
     if (sess->pdn)
     {
-        d_trace(3, "    APN[%s]\n", sess->pdn->apn);
+        d_trace(5, "    APN[%s]\n", sess->pdn->apn);
         rv = mme_gtp_send_create_session_request(sess);
         d_assert(rv == CORE_OK, return CORE_ERROR, "gtp send failed");
     }
@@ -130,7 +130,7 @@ status_t esm_handle_information_response(mme_sess_t *sess,
 
     if (sess->pdn)
     {
-        d_trace(3, "    APN[%s]\n", sess->pdn->apn);
+        d_trace(5, "    APN[%s]\n", sess->pdn->apn);
         if (MME_HAVE_SGW_S11_PATH(mme_ue))
         {
             rv = nas_send_attach_accept(mme_ue);

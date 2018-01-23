@@ -1506,11 +1506,6 @@ status_t mme_context_setup_trace_module()
 
     if (diameter)
     {
-        if (diameter <= 3) fd_g_debug_lvl = FD_LOG_ERROR;
-        else if (diameter <= 5) fd_g_debug_lvl = FD_LOG_NOTICE;
-        else if (diameter <= 7) fd_g_debug_lvl = FD_LOG_DEBUG;
-        else fd_g_debug_lvl = FD_LOG_ANNOYING;
-
         extern int _mme_fd_path;
         d_trace_level(&_mme_fd_path, diameter);
         extern int _fd_init;
@@ -1527,8 +1522,8 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_gtp_node, gtp);
         extern int _gtp_path;
         d_trace_level(&_gtp_path, gtp);
-        extern int _mme_s11_path;
-        d_trace_level(&_mme_s11_path, gtp);
+        extern int _mme_gtp_path;
+        d_trace_level(&_mme_gtp_path, gtp);
         extern int _tlv_msg;
         d_trace_level(&_tlv_msg, gtp);
         extern int _gtp_xact;

@@ -107,9 +107,9 @@ void sgw_s11_handle_create_session_request(
     req->sender_f_teid_for_control_plane.data = &sgw_s5c_teid;
     req->sender_f_teid_for_control_plane.len = len;
 
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     pgw_s5c_teid = req->pgw_s5_s8_address_for_control_plane_or_pmip.data;
@@ -189,7 +189,7 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     d_assert(req, return, "Null param");
 
     d_trace(3, "[SGW] Modify Bearer Reqeust\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
     if (req->bearer_contexts_to_be_modified.presence == 0)
     {
@@ -305,9 +305,9 @@ void sgw_s11_handle_delete_session_request(gtp_xact_t *s11_xact,
 
     sess = sgw_sess_find_by_ebi(sgw_ue, req->linked_eps_bearer_id.u8);
     d_assert(sess, return, "Null param");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     gtp_message->h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
@@ -394,9 +394,9 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
 
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     /* Set EBI */
@@ -505,9 +505,9 @@ void sgw_s11_handle_update_bearer_response(gtp_xact_t *s11_xact,
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
 
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     gtp_message->h.type = GTP_UPDATE_BEARER_RESPONSE_TYPE;
@@ -561,9 +561,9 @@ void sgw_s11_handle_delete_bearer_response(gtp_xact_t *s11_xact,
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
 
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     gtp_message->h.type = GTP_DELETE_BEARER_RESPONSE_TYPE;
@@ -599,7 +599,7 @@ void sgw_s11_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
     d_assert(req, return, "Null param");
 
     d_trace(3, "[SGW] Release Access Bearers Request\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
     /* Set UE state to S1UE_INACTIVE */
     SGW_SET_UE_STATE(sgw_ue, SGW_S1U_INACTIVE);
@@ -666,7 +666,7 @@ void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     d_assert(sgw_ue, return, "Null param");
 
     d_trace(3, "[SGW] Downlink Data Notification\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     /* Build downlink notification message */
@@ -699,7 +699,7 @@ void sgw_s11_handle_downlink_data_notification_ack(sgw_ue_t *sgw_ue,
 {
     d_assert(sgw_ue, return, "Null param");
     d_trace(3, "[SGW] Downlink Data Notification Acknowledge\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 }
 
@@ -730,7 +730,7 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
     d_assert(req, return, "Null param");
 
     d_trace(3, "[SGW] Create Indirect Data Forwarding Tunnel Request\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     rsp = &gtp_message.create_indirect_data_forwarding_tunnel_response;
@@ -874,7 +874,7 @@ void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
     d_assert(s11_xact, return, "Null param");
 
     d_trace(3, "[SGW] Delete Indirect Data Forwarding Tunnel Request\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
     /* Delete Indirect Tunnel */

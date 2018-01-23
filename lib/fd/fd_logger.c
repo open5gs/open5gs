@@ -124,37 +124,37 @@ static void * fd_stats_worker(void * arg)
 		CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &now), );
 		
 		/* Now, display everything */
-		d_trace(3, "------- fd statistics ---------\n");
+		d_trace(7, "------- fd statistics ---------\n");
 		if (now.tv_nsec >= start.tv_nsec) 
         {
-			d_trace(3, " Executing for: %d.%06ld sec\n",
+			d_trace(7, " Executing for: %d.%06ld sec\n",
 					(int)(now.tv_sec - start.tv_sec),
 					(long)(now.tv_nsec - start.tv_nsec) / 1000);
 		} 
         else 
         {
-			d_trace(3, " Executing for: %d.%06ld sec\n",
+			d_trace(7, " Executing for: %d.%06ld sec\n",
 					(int)(now.tv_sec - 1 - start.tv_sec),
 					(long)(now.tv_nsec + 1000000000 - start.tv_nsec) / 1000);
 		}
 		
         if (self.mode & FD_MODE_SERVER) {
-            d_trace(3, " Server: %llu message(s) echoed\n", 
+            d_trace(7, " Server: %llu message(s) echoed\n", 
                     copy.nb_echoed);
         }
         if (self.mode & FD_MODE_CLIENT) {
-            d_trace(3, " Client:\n");
-            d_trace(3, "   %llu message(s) sent\n", copy.nb_sent);
-            d_trace(3, "   %llu error(s) received\n", copy.nb_errs);
-            d_trace(3, "   %llu answer(s) received\n", copy.nb_recv);
-            d_trace(3, "     fastest: %ld.%06ld sec.\n", 
+            d_trace(7, " Client:\n");
+            d_trace(7, "   %llu message(s) sent\n", copy.nb_sent);
+            d_trace(7, "   %llu error(s) received\n", copy.nb_errs);
+            d_trace(7, "   %llu answer(s) received\n", copy.nb_recv);
+            d_trace(7, "     fastest: %ld.%06ld sec.\n", 
                     copy.shortest / 1000000, copy.shortest % 1000000);
-            d_trace(3, "     slowest: %ld.%06ld sec.\n", 
+            d_trace(7, "     slowest: %ld.%06ld sec.\n", 
                     copy.longest / 1000000, copy.longest % 1000000);
-            d_trace(3, "     Average: %ld.%06ld sec.\n", 
+            d_trace(7, "     Average: %ld.%06ld sec.\n", 
                     copy.avg / 1000000, copy.avg % 1000000);
         }
-		d_trace(3, "-------------------------------------\n");
+		d_trace(7, "-------------------------------------\n");
 	}
 	
 	return NULL; /* never called */

@@ -75,7 +75,7 @@ void mme_s11_handle_create_session_response(
     sgw_s11_teid = rsp->sender_f_teid_for_control_plane.data;
     mme_ue->sgw_s11_teid = ntohl(sgw_s11_teid->teid);
 
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     memcpy(&pdn->paa, rsp->pdn_address_allocation.data,
@@ -121,7 +121,7 @@ void mme_s11_handle_modify_bearer_response(
     d_assert(rsp, return, "Null param");
 
     d_trace(3, "[MME] Modify Bearer Response\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
@@ -161,7 +161,7 @@ void mme_s11_handle_delete_session_response(
         d_error("No Cause");
         return;
     }
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
@@ -285,7 +285,7 @@ void mme_s11_handle_create_bearer_request(
         return;
     }
 
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     sess = mme_sess_find_by_ebi(mme_ue, req->linked_eps_bearer_id.u8);
@@ -360,7 +360,7 @@ void mme_s11_handle_update_bearer_request(
         d_error("No EPS Bearer ID");
         return;
     }
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     bearer = mme_bearer_find_by_ue_ebi(mme_ue,
@@ -465,7 +465,7 @@ void mme_s11_handle_delete_bearer_request(
         d_error("No Linked EBI or EPS Bearer ID");
         return;
     }
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     /* Save Transaction. will be handled after EMM-attached */
@@ -517,7 +517,7 @@ void mme_s11_handle_release_access_bearers_response(
         d_error("No Cause");
         return;
     }
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
@@ -542,7 +542,7 @@ void mme_s11_handle_downlink_data_notification(
     d_assert(noti, return, "Null param");
 
     d_trace(3, "[MME] Downlink Data Notification\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     /* Build Downlink data notification ack */
@@ -585,7 +585,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         d_error("No Cause");
         return;
     }
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
@@ -648,7 +648,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
         d_error("No Cause");
         return;
     }
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);

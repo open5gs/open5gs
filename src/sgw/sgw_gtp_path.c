@@ -37,17 +37,17 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
 
     if (SGW_S5C_TEID(teid))
     {
-        d_trace(10, "S5C PDU received from PGW\n");
+        d_trace(50, "[GTPv2-S5C] Receive : ");
         event_set(&e, SGW_EVT_S5C_MESSAGE);
     }
     else
     {
-        d_trace(10, "S11 PDU received from MME\n");
+        d_trace(50, "[GTPv2-S11] Receive : ");
         event_set(&e, SGW_EVT_S11_MESSAGE);
     }
     event_set_param1(&e, (c_uintptr_t)pkbuf);
 
-    d_trace_hex(10, pkbuf->payload, pkbuf->len);
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     rv = sgw_event_send(&e);
     if (rv != CORE_OK)
@@ -82,7 +82,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         return -1;
     }
 
-    d_trace(50, "GTP-U PDU received\n");
+    d_trace(50, "[GTP] Receive : ");
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     gtp_h = (gtp_header_t *)pkbuf->payload;
@@ -90,14 +90,14 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     {
         pkbuf_t *echo_rsp;
 
-        d_trace(5, "ECHO-REQ received\n");
+        d_trace(3, "Recive ECHO-REQ\n");
         echo_rsp = gtp_handle_echo_req(pkbuf);
         if (echo_rsp)
         {
             ssize_t sent;
 
             /* Echo reply */
-            d_trace(5, "Send ECHO-RSP to PEER\n");
+            d_trace(3, "Send ECHO-RSP\n");
 
             sent = core_sendto(sock,
                     echo_rsp->payload, echo_rsp->len, 0, &from);
@@ -112,7 +112,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                 gtp_h->type == GTPU_MSGTYPE_END_MARKER)
     {
         teid = ntohl(gtp_h->teid);
-        d_trace(50, "Recv GPDU (teid = 0x%x)\n", teid);
+        d_trace(50, "[GTP-U] Receive TEID[0x%x]\n", teid);
 
         tunnel = sgw_tunnel_find_by_teid(teid);
         if (!tunnel)
@@ -133,7 +133,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                 GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING)
         {
             sgw_tunnel_t *s5u_tunnel = NULL;
-            d_trace(50, "Recv GPDU (teid = 0x%x) from eNB\n", teid);
+            d_trace(50, "[GTP-S1U] Receive TEID[0x%x]\n", teid);
 
             s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
             d_assert(s5u_tunnel, pkbuf_free(pkbuf); return 0, "Null param");
@@ -143,7 +143,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         else if (tunnel->interface_type == GTP_F_TEID_S5_S8_SGW_GTP_U)
         {
             sgw_tunnel_t *s1u_tunnel = NULL;
-            d_trace(50, "Recv GPDU (teid = 0x%x) from PGW\n", teid);
+            d_trace(50, "[GTP-S5U] Receive TEID[0x%x]\n", teid);
 
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
             d_assert(s1u_tunnel, pkbuf_free(pkbuf); return 0, "Null param");

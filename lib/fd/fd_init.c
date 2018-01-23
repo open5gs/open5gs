@@ -15,10 +15,18 @@ int fd_init(int mode, const char *conffile, fd_config_t *fd_config)
 {
     int ret;
 
+    if (TRACE_MODULE >= 25)
+        gnutls_global_set_log_level(TRACE_MODULE-24);
     gnutls_global_set_log_function(fd_gnutls_log_func);
-    if (TRACE_MODULE >= 5)
-        gnutls_global_set_log_level(TRACE_MODULE);
 
+    if (TRACE_MODULE >= 25 && TRACE_MODULE < 27)
+        fd_g_debug_lvl = FD_LOG_NOTICE;
+    else if (TRACE_MODULE >= 27 && TRACE_MODULE < 29)
+        fd_g_debug_lvl = FD_LOG_DEBUG;
+    else if (TRACE_MODULE >= 29)
+        fd_g_debug_lvl = FD_LOG_ANNOYING;
+    else
+        fd_g_debug_lvl = FD_LOG_ERROR;
     ret = fd_log_handler_register(fd_log_func);
     if (ret != 0) 
     {
@@ -75,7 +83,7 @@ void fd_final()
 
 static void fd_gnutls_log_func(int level, const char *str)
 {
-    d_trace(level, "gnutls[%d]: %s", level, str);
+    d_trace(25-level, "gnutls[%d]: %s", level, str);
 }
 
 static void fd_log_func(int printlevel, const char *format, va_list ap)
@@ -93,13 +101,13 @@ static void fd_log_func(int printlevel, const char *format, va_list ap)
     switch(printlevel) 
     {
 	    case FD_LOG_ANNOYING: 
-            d_trace(5, "freeDiameter[%d]: %s\n", printlevel, buffer);
+            d_trace(29, "freeDiameter[%d]: %s\n", printlevel, buffer);
             break;  
 	    case FD_LOG_DEBUG:
-            d_trace(5, "freeDiameter[%d]: %s\n", printlevel, buffer);
+            d_trace(27, "freeDiameter[%d]: %s\n", printlevel, buffer);
             break;  
 	    case FD_LOG_NOTICE:
-            d_trace(5, "freeDiameter[%d]: %s\n", printlevel, buffer);
+            d_trace(25, "freeDiameter[%d]: %s\n", printlevel, buffer);
             break;
 	    case FD_LOG_ERROR:
             d_error("%s", buffer);

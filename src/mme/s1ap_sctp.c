@@ -53,8 +53,8 @@ status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf, c_sockaddr_t *addr)
 
     sent = core_sctp_sendmsg(sock, pkbuf->payload, pkbuf->len,
             addr, SCTP_S1AP_PPID, 0);
-    d_trace(10,"Sent %d->%d bytes\n", pkbuf->len, sent);
-    d_trace_hex(10, pkbuf->payload, pkbuf->len);
+    d_trace(50, "[S1AP] Sent %d bytes : ", sent);
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
         d_error("core_sctp_sendmsg error (%d:%s)", errno, strerror(errno));
@@ -186,8 +186,8 @@ int s1ap_recv_handler(sock_id sock, void *data)
 
     pkbuf->len = size;
 
-    d_trace(10, "S1AP_PDU is received from eNB-Inf\n");
-    d_trace_hex(10, pkbuf->payload, pkbuf->len);
+    d_trace(50, "[S1AP] Receive : ");
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     addr = core_calloc(1, sizeof(c_sockaddr_t));
     d_assert(addr, return -1,);

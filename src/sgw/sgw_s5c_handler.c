@@ -81,9 +81,9 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
                 presence = 0;
     
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     /* Receive Data Plane(UL) : PGW-S5U */
@@ -181,9 +181,9 @@ void sgw_s5c_handle_delete_session_response(gtp_xact_t *s5c_xact,
     {
         d_trace(3, "[SGW] Delete Session Response\n",
                 sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-        d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-        d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+        d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
         /* backup sgw_s5c_teid in session context */
@@ -242,9 +242,9 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
 
     d_trace(3, "[SGW] Create Bearer Request\n",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     if (req->linked_eps_bearer_id.presence == 0)
     {
@@ -340,9 +340,9 @@ void sgw_s5c_handle_update_bearer_request(gtp_xact_t *s5c_xact,
 
     d_trace(3, "[SGW] Update Bearer Request\n",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     req = &gtp_message->update_bearer_request;
@@ -394,9 +394,9 @@ void sgw_s5c_handle_delete_bearer_request(gtp_xact_t *s5c_xact,
 
     d_trace(3, "[SGW] Delete Bearer Request\n",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     if (req->linked_eps_bearer_id.presence == 0 &&
         req->eps_bearer_ids.presence == 0)

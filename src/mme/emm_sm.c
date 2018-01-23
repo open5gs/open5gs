@@ -152,7 +152,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                         return;
                     }
 
-                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
                     break;
                 }
                 case NAS_ATTACH_REQUEST:
@@ -187,7 +187,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                 case NAS_TRACKING_AREA_UPDATE_COMPLETE:
                 {
                     d_trace(3, "[EMM] Tracking area update complete\n");
-                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
                     enb_ue = mme_ue->enb_ue;
                     d_assert(enb_ue, return, "Null param");
@@ -209,7 +209,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                 case NAS_DETACH_REQUEST:
                 {
                     d_trace(3, "[EMM] Detach request\n");
-                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
                     emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
                     FSM_TRAN(s, &emm_state_detached);
@@ -357,7 +357,7 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                                 authentication_response_parameter;
 
                     d_trace(3, "[EMM] Authentication response\n");
-                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
                     if (authentication_response_parameter->length != 
                             mme_ue->xres_len ||
@@ -386,7 +386,7 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                                 authentication_failure_parameter;
 
                     d_trace(3, "[EMM] Authentication failure\n");
-                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
                     mme_s6a_send_air(mme_ue, authentication_failure_parameter);
                     break;
@@ -456,7 +456,7 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                 case NAS_SECURITY_MODE_COMPLETE:
                 {
                     d_trace(3, "[EMM] Security mode complete\n");
-                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
                     /* Update Kenb */
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
@@ -548,7 +548,7 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                 case NAS_ATTACH_COMPLETE:
                 {
                     d_trace(3, "[EMM] Attach complete\n");
-                    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
                     rv = emm_handle_attach_complete(
                             mme_ue, &message->emm.attach_complete);
                     if (rv != CORE_OK)

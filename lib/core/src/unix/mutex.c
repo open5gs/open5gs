@@ -22,7 +22,7 @@ status_t mutex_final(void)
         d_error("%d not freed in mutex_pool[%d]",
                 pool_size(&mutex_pool) - pool_avail(&mutex_pool),
                 pool_size(&mutex_pool));
-    d_trace(5, "%d not freed in mutex_pool[%d]\n",
+    d_trace(7, "%d not freed in mutex_pool[%d]\n",
             pool_size(&mutex_pool) - pool_avail(&mutex_pool),
             pool_size(&mutex_pool));
     pool_final(&mutex_pool);

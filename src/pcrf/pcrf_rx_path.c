@@ -574,7 +574,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return,);
         result_code = hdr->avp_value->i32;
-        d_trace(3, "Result Code: %d\n", hdr->avp_value->i32);
+        d_trace(5, "    Result Code: %d\n", hdr->avp_value->i32);
     }
     else
     {
@@ -589,7 +589,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 d_assert(ret == 0, return,);
                 result_code = hdr->avp_value->i32;
-                d_trace(3, "Experimental Result Code: %d\n",
+                d_trace(5, "    Experimental Result Code: %d\n",
                         result_code);
             }
         }
@@ -606,7 +606,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return,);
-        d_trace(3, "From '%.*s' ",
+        d_trace(5, "    From '%.*s' ",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else
@@ -621,7 +621,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return,);
-        d_trace(3, "('%.*s') ",
+        d_trace(5, "('%.*s') ",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else
@@ -845,7 +845,7 @@ void pcrf_rx_final(void)
     if (pool_used(&pcrf_rx_sess_pool))
         d_error("%d not freed in pcrf_rx_sess_pool[%d] of GX-SM",
                 pool_used(&pcrf_rx_sess_pool), pool_size(&pcrf_rx_sess_pool));
-    d_trace(5, "%d not freed in pcrf_rx_sess_pool[%d] of GX-SM\n",
+    d_trace(7, "%d not freed in pcrf_rx_sess_pool[%d] of GX-SM\n",
             pool_used(&pcrf_rx_sess_pool), pool_size(&pcrf_rx_sess_pool));
 
     pool_final(&pcrf_rx_sess_pool);

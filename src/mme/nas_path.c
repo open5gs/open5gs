@@ -109,7 +109,7 @@ status_t nas_send_attach_reject(mme_ue_t *mme_ue,
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[EMM] Attach reject\n");
-    d_trace(3, "    IMSI[%s] Cause[%d]\n", mme_ue->imsi_bcd, emm_cause);
+    d_trace(5, "    IMSI[%s] Cause[%d]\n", mme_ue->imsi_bcd, emm_cause);
 
     sess = mme_sess_first(mme_ue);
     if (sess)
@@ -157,7 +157,7 @@ status_t nas_send_authentication_request(
     d_assert(e_utran_vector, return CORE_ERROR, "Null param");
 
     d_trace(3, "[EMM] Authentication request\n");
-    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
     rv = emm_build_authentication_request(&emmbuf, e_utran_vector);
     d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR,
@@ -177,7 +177,7 @@ status_t nas_send_authentication_reject(mme_ue_t *mme_ue)
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[EMM] Authentication reject\n");
-    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
     rv = emm_build_authentication_reject(&emmbuf);
     d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR,

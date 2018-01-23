@@ -22,7 +22,7 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_uint8_t *v = (tlv_uint8_t *)msg;
 
-            d_trace(5, "V_1B:%02x", v->u8);
+            d_trace(25, "V_1B:%02x", v->u8);
 
             if (parent_tlv)
                 tlv = tlv_embed(parent_tlv, 
@@ -37,7 +37,7 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_uint16_t *v = (tlv_uint16_t *)msg;
 
-            d_trace(5, "V_2B:%04x", v->u16);
+            d_trace(25, "V_2B:%04x", v->u16);
 
             v->u16 = htons(v->u16);
 
@@ -55,7 +55,7 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_uint24_t *v = (tlv_uint24_t *)msg;
 
-            d_trace(5, "V_3B:%06x", v->u24);
+            d_trace(25, "V_3B:%06x", v->u24);
 
             v->u24 = v->u24 << 8;
             v->u24 = htonl(v->u24);
@@ -74,7 +74,7 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_uint32_t *v = (tlv_uint32_t *)msg;
 
-            d_trace(5, "V_4B:%08x", v->u32);
+            d_trace(25, "V_4B:%08x", v->u32);
 
             v->u32 = htonl(v->u32);
 
@@ -90,8 +90,8 @@ static tlv_t* _tlv_add_leaf(
         {
             tlv_octet_t *v = (tlv_octet_t *)msg;
 
-            d_trace(5, "V_FSTR: ", v->data);
-            d_trace_hex(5, v->data, v->len);
+            d_trace(25, "V_FSTR: ", v->data);
+            d_trace_hex(25, v->data, v->len);
 
             if (parent_tlv)
                 tlv = tlv_embed(parent_tlv, 
@@ -108,8 +108,8 @@ static tlv_t* _tlv_add_leaf(
 
             d_assert(v->len > 0, return NULL, "Length is zero");
 
-            d_trace(5, "V_VSTR: ", v->data);
-            d_trace_hex(5, v->data, v->len);
+            d_trace(25, "V_VSTR: ", v->data);
+            d_trace_hex(25, v->data, v->len);
 
             if (parent_tlv)
                 tlv = tlv_embed(parent_tlv, 
@@ -122,7 +122,7 @@ static tlv_t* _tlv_add_leaf(
         }
         case TLV_NULL:
         {
-            d_trace(5, "V_NULL" );
+            d_trace(25, "V_NULL" );
 
             if (parent_tlv)
                 tlv = tlv_embed(parent_tlv, 
@@ -179,7 +179,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
 
                 if (desc->ctype == TLV_COMPOUND)
                 {
-                    d_trace(5, "\nBUILD %sC#%d [%s] T:%d I:%d (vsz=%d) off:%p ",
+                    d_trace(25, "\nBUILD %sC#%d [%s] T:%d I:%d (vsz=%d) off:%p ",
                             indent, i, desc->name, desc->type, desc->instance, 
                             desc->vsize, p + offset2);
 
@@ -197,7 +197,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
                 }
                 else
                 {
-                    d_trace(5, "\nBUILD %sL#%d [%s] T:%d L:%d I:%d "
+                    d_trace(25, "\nBUILD %sL#%d [%s] T:%d L:%d I:%d "
                             "(cls:%d vsz:%d) off:%p ",
                             indent, i, desc->name, desc->type, desc->length, 
                             desc->instance, desc->ctype, desc->vsize, 
@@ -224,7 +224,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
             {
                 if (desc->ctype == TLV_COMPOUND)
                 {
-                    d_trace(5, "\nBUILD %sC#%d [%s] T:%d I:%d (vsz=%d) off:%p ",
+                    d_trace(25, "\nBUILD %sC#%d [%s] T:%d I:%d (vsz=%d) off:%p ",
                             indent, i, desc->name, desc->type, desc->instance, 
                             desc->vsize, p + offset);
 
@@ -242,7 +242,7 @@ static c_uint32_t _tlv_add_compound(tlv_t **root, tlv_t *parent_tlv,
                 }
                 else
                 {
-                    d_trace(5, "\nBUILD %sL#%d [%s] T:%d L:%d I:%d "
+                    d_trace(25, "\nBUILD %sL#%d [%s] T:%d L:%d I:%d "
                             "(cls:%d vsz:%d) off:%p ",
                             indent, i, desc->name, desc->type, desc->length, 
                             desc->instance, desc->ctype, desc->vsize, 
@@ -277,8 +277,8 @@ status_t tlv_build_msg(pkbuf_t **pkbuf, tlv_desc_t *desc, void *msg, int mode)
     d_assert(desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
     
-    d_trace(5, "\n");
-    d_trace(3, "[GTP] Build %s\n", desc->name);
+    d_trace(25, "\n");
+    d_trace(25, "[GTP] Build %s\n", desc->name);
 
     r = _tlv_add_compound(&root, NULL, desc, msg, 0);
     d_assert(r > 0 && root, tlv_free_all(root); return CORE_ERROR,
@@ -309,12 +309,12 @@ static tlv_desc_t* _tlv_find_desc(c_uint8_t *desc_index,
     d_assert(parent_desc, return NULL, "Null param");
     d_assert(tlv, return NULL, "Null param");
 
-    d_trace(5, "_tlv_find_desc:T(%d), I(%d) - ", tlv->type, tlv->instance);
+    d_trace(25, "_tlv_find_desc:T(%d), I(%d) - ", tlv->type, tlv->instance);
 
     for (i = 0, desc = parent_desc->child_descs[i]; desc != NULL;
             i++, desc = parent_desc->child_descs[i])
     {
-        d_trace(5, "%d, ", desc->type);
+        d_trace(25, "%d, ", desc->type);
 
         if (desc->type == tlv->type && desc->instance == tlv->instance)
         {
@@ -337,7 +337,7 @@ static tlv_desc_t* _tlv_find_desc(c_uint8_t *desc_index,
         prev_desc = desc;
     }
 
-    d_trace(5, "\n");
+    d_trace(25, "\n");
     
     return desc;
 }
@@ -361,7 +361,7 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
                 return CORE_ERROR;
             }
             v->u8 = *(c_uint8_t*)(tlv->value);
-            d_trace(5, "V_1B:%02x", v->u8);
+            d_trace(25, "V_1B:%02x", v->u8);
             break;
         }
         case TLV_UINT16:
@@ -376,7 +376,7 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
             }
             v->u16 = ((((c_uint8_t*)tlv->value)[0]<< 8)&0xff00) |
                    ((((c_uint8_t*)tlv->value)[1]    )&0x00ff);
-            d_trace(5, "V_2B:%02x", v->u16);
+            d_trace(25, "V_2B:%02x", v->u16);
             break;
         }
         case TLV_UINT24:
@@ -392,7 +392,7 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
             v->u24 = ((((c_uint8_t*)tlv->value)[0]<<16)&0x00ff0000) |
                    ((((c_uint8_t*)tlv->value)[1]<< 8)&0x0000ff00) |
                    ((((c_uint8_t*)tlv->value)[2]    )&0x000000ff);
-            d_trace(5, "V_3B:%06x", v->u24);
+            d_trace(25, "V_3B:%06x", v->u24);
             break;
         }
         case TLV_UINT32:
@@ -409,7 +409,7 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
                    ((((c_uint8_t*)tlv->value)[1]<<16)&0x00ff0000) |
                    ((((c_uint8_t*)tlv->value)[2]<< 8)&0x0000ff00) |
                    ((((c_uint8_t*)tlv->value)[3]    )&0x000000ff);
-            d_trace(5, "V_4B:%08x", v->u32);
+            d_trace(25, "V_4B:%08x", v->u32);
             break;
         }
         case TLV_FIXED_STR:
@@ -426,8 +426,8 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
             v->data = tlv->value;
             v->len = tlv->length;
 
-            d_trace(5, "V_FSTR: ", v->data);
-            d_trace_hex(5, v->data, v->len);
+            d_trace(25, "V_FSTR: ", v->data);
+            d_trace_hex(25, v->data, v->len);
             break;
         }
         case TLV_VAR_STR:
@@ -437,8 +437,8 @@ static status_t _tlv_parse_leaf(void *msg, tlv_desc_t *desc, tlv_t *tlv)
             v->data = tlv->value;
             v->len = tlv->length;
 
-            d_trace(5, "V_VSTR: ", v->data);
-            d_trace_hex(5, v->data, v->len);
+            d_trace(25, "V_VSTR: ", v->data);
+            d_trace_hex(25, v->data, v->len);
             break;
         }
         case TLV_NULL:
@@ -520,7 +520,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
                 return CORE_ERROR;
             }
 
-            d_trace(5, "\nPARSE %sC#%d [%s] T:%d I:%d (vsz=%d) off:%p ",
+            d_trace(25, "\nPARSE %sC#%d [%s] T:%d I:%d (vsz=%d) off:%p ",
                     indent, i++, desc->name, desc->type, desc->instance, 
                     desc->vsize, p + offset);
 
@@ -538,7 +538,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
         }
         else
         {
-            d_trace(5, "\nPARSE %sL#%d [%s] T:%d L:%d I:%d "
+            d_trace(25, "\nPARSE %sL#%d [%s] T:%d L:%d I:%d "
                     "(cls:%d vsz:%d) off:%p ",
                     indent, i++, desc->name, desc->type, desc->length, 
                     desc->instance, desc->ctype, desc->vsize, p + offset);
@@ -555,7 +555,7 @@ static status_t _tlv_parse_compound(void *msg, tlv_desc_t *parent_desc,
 
         tlv = tlv->next;
     }
-    d_trace(5, "\n");
+    d_trace(25, "\n");
 
     return CORE_OK;
 }
@@ -574,8 +574,8 @@ status_t tlv_parse_msg(void *msg, tlv_desc_t *desc, pkbuf_t *pkbuf, int mode)
     d_assert(desc->child_descs[0], return CORE_ERROR,
             "TLV message descriptor has no members");
 
-    d_trace(5, "\n");
-    d_trace(3, "[GTP] Parse %s\n", desc->name);
+    d_trace(25, "\n");
+    d_trace(25, "[GTP] Parse %s\n", desc->name);
 
     root = tlv_parse_block(pkbuf->len, pkbuf->payload, mode);
     if (root == NULL)

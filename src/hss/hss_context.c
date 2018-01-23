@@ -311,11 +311,6 @@ status_t hss_context_setup_trace_module()
 
     if (diameter)
     {
-        if (diameter <= 3) fd_g_debug_lvl = FD_LOG_ERROR;
-        else if (diameter <= 5) fd_g_debug_lvl = FD_LOG_NOTICE;
-        else if (diameter <= 7) fd_g_debug_lvl = FD_LOG_DEBUG;
-        else fd_g_debug_lvl = FD_LOG_ANNOYING;
-
         extern int _hss_fd_path;
         d_trace_level(&_hss_fd_path, diameter);
         extern int _fd_init;
@@ -395,7 +390,7 @@ status_t hss_db_auth_info(
 
     if (!mongoc_cursor_next(cursor, &document))
     {
-        d_trace(3, "Cannot find IMSI in DB : %s\n", imsi_bcd);
+        d_warn("Cannot find IMSI in DB : %s", imsi_bcd);
 
         rv = CORE_ERROR;
         goto out;

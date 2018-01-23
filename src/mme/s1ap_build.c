@@ -39,7 +39,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
             s1ap_buffer_to_OCTET_STRING(
                     &served_gummei->plmn_id[j], PLMN_ID_LEN, plmnIdentity);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedPLMNs, plmnIdentity);
-            d_trace(3, "    PLMN_ID[MCC:%d MNC:%d]\n",
+            d_trace(5, "    PLMN_ID[MCC:%d MNC:%d]\n",
                 plmn_id_mcc(&served_gummei->plmn_id[j]),
                 plmn_id_mnc(&served_gummei->plmn_id[j]));
         }
@@ -51,7 +51,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
             s1ap_uint16_to_OCTET_STRING(
                 served_gummei->mme_gid[j], mmeGroupId);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedGroupIDs, mmeGroupId);
-            d_trace(3, "    MME Group[%d]\n", served_gummei->mme_gid[j]);
+            d_trace(5, "    MME Group[%d]\n", served_gummei->mme_gid[j]);
         }
 
         for (j = 0; j < served_gummei->num_of_mme_code; j++)
@@ -61,7 +61,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
             s1ap_uint8_to_OCTET_STRING(
                 served_gummei->mme_code[j], mmeCode);
             ASN_SEQUENCE_ADD(&servedGUMMEI->servedMMECs, mmeCode);
-            d_trace(3, "    MME Code[%d]\n", served_gummei->mme_code[j]);
+            d_trace(5, "    MME Code[%d]\n", served_gummei->mme_code[j]);
         }
         ASN_SEQUENCE_ADD(&ies->servedGUMMEIs, servedGUMMEI);
     }
@@ -128,7 +128,7 @@ status_t s1ap_build_downlink_nas_transport(
     memset(&message, 0, sizeof(s1ap_message_t));
     
     d_trace(3, "[MME] Downlink NAS transport\n");
-    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
@@ -174,7 +174,7 @@ status_t s1ap_build_initial_context_setup_request(
     d_assert(subscription_data, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Initial context setup request\n");
-    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     memset(&message, 0, sizeof(s1ap_message_t));
@@ -200,7 +200,7 @@ status_t s1ap_build_initial_context_setup_request(
             e_rab->e_RAB_ID = bearer->ebi;
             e_rab->e_RABlevelQoSParameters.qCI = bearer->qos.qci;
 
-            d_trace(3, "    EBI[%d] QCI[%d]\n", bearer->ebi, bearer->qos.qci);
+            d_trace(5, "    EBI[%d] QCI[%d]\n", bearer->ebi, bearer->qos.qci);
 
             e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
                 priorityLevel = bearer->qos.arp.priority_level;
@@ -334,7 +334,7 @@ status_t s1ap_build_e_rab_setup_request(
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] E-RAB setup request\n");
-    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     memset(&message, 0, sizeof(s1ap_message_t));
@@ -347,7 +347,7 @@ status_t s1ap_build_e_rab_setup_request(
     e_rab->e_RAB_ID = bearer->ebi;
     e_rab->e_RABlevelQoSParameters.qCI = bearer->qos.qci;
 
-    d_trace(3, "    EBI[%d] QCI[%d]\n", bearer->ebi, bearer->qos.qci);
+    d_trace(5, "    EBI[%d] QCI[%d]\n", bearer->ebi, bearer->qos.qci);
 
     e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
         priorityLevel = bearer->qos.arp.priority_level;
@@ -427,7 +427,7 @@ status_t s1ap_build_e_rab_modify_request(
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] E-RAB modify request\n");
-    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     memset(&message, 0, sizeof(s1ap_message_t));
@@ -440,7 +440,7 @@ status_t s1ap_build_e_rab_modify_request(
     e_rab->e_RAB_ID = bearer->ebi;
     e_rab->e_RABLevelQoSParameters.qCI = bearer->qos.qci;
 
-    d_trace(3, "    EBI[%d] QCI[%d]\n", bearer->ebi, bearer->qos.qci);
+    d_trace(5, "    EBI[%d] QCI[%d]\n", bearer->ebi, bearer->qos.qci);
 
     e_rab->e_RABLevelQoSParameters.allocationRetentionPriority.
         priorityLevel = bearer->qos.arp.priority_level;
@@ -518,7 +518,7 @@ status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
     d_assert(subscription_data, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] E-RAB release request\n");
-    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     memset(&message, 0, sizeof(s1ap_message_t));
@@ -540,7 +540,7 @@ status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
     e_rab->cause.present = group;
     e_rab->cause.choice.radioNetwork = cause;
 
-    d_trace(3, "    EBI[%d] Gruop[%d] Cause[%d]\n", bearer->ebi, group, cause);
+    d_trace(5, "    EBI[%d] Gruop[%d] Cause[%d]\n", bearer->ebi, group, cause);
 
     ies->presenceMask |= S1AP_E_RABRELEASECOMMANDIES_NAS_PDU_PRESENT;
     nasPdu = &ies->nas_pdu;
@@ -651,7 +651,7 @@ status_t s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
     s1ap_uint32_to_OCTET_STRING(mme_ue->guti.m_tmsi, 
             &ies->uePagingID.choice.s_TMSI.m_TMSI);
 
-    d_trace(3, "    MME_CODE[%d] M_TMSI[0x%x]\n",
+    d_trace(5, "    MME_CODE[%d] M_TMSI[0x%x]\n",
             mme_ue->guti.mme_code, mme_ue->guti.m_tmsi);
 
     /* FIXME : fixed to ps */
@@ -689,7 +689,7 @@ status_t s1ap_build_path_switch_ack(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Path switch acknowledge\n");
-    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     memset(&message, 0, sizeof(s1ap_message_t));
@@ -729,9 +729,9 @@ status_t s1ap_build_path_switch_failure(pkbuf_t **s1apbuf,
     memset(&message, 0, sizeof(s1ap_message_t));
 
     d_trace(3, "[MME] Path switch failure\n");
-    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue_s1ap_id, mme_ue_s1ap_id);
-    d_trace(3, "    Group[%d] Cause[%d]\n", group, cause);
+    d_trace(5, "    Group[%d] Cause[%d]\n", group, cause);
 
     ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
     ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
@@ -773,7 +773,7 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
     ies->eNB_UE_S1AP_ID = source_ue->enb_ue_s1ap_id;
     ies->handoverType = source_ue->handover_type;
 
-    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
 
     sess = mme_sess_first(mme_ue);
@@ -872,9 +872,9 @@ status_t s1ap_build_handover_preparation_failure(
     ies->cause.present = cause->present;
     ies->cause.choice.radioNetwork = cause->choice.radioNetwork;
 
-    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    d_trace(3, "    Group[%d] Cause[%d]\n",
+    d_trace(5, "    Group[%d] Cause[%d]\n",
             cause->present, cause->choice.radioNetwork);
 
     message.procedureCode = S1ap_ProcedureCode_id_HandoverPreparation;
@@ -1039,7 +1039,7 @@ status_t s1ap_build_handover_cancel_ack(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
     ies->mme_ue_s1ap_id = source_ue->mme_ue_s1ap_id;
     ies->eNB_UE_S1AP_ID = source_ue->enb_ue_s1ap_id;
 
-    d_trace(3, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
 
     message.procedureCode = S1ap_ProcedureCode_id_HandoverCancel;
@@ -1072,7 +1072,7 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
     mme_ies->mme_ue_s1ap_id = target_ue->mme_ue_s1ap_id;
     mme_ies->eNB_UE_S1AP_ID = target_ue->enb_ue_s1ap_id;
 
-    d_trace(3, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     for (i = 0; i < enb_ies->eNB_StatusTransfer_TransparentContainer.

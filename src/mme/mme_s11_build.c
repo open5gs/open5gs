@@ -42,7 +42,7 @@ status_t mme_s11_build_create_session_request(
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Create Session Request\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -247,7 +247,7 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Modifty Bearer Request\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -311,7 +311,7 @@ status_t mme_s11_build_delete_session_request(
     d_assert(bearer, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Delete Session Request\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -366,7 +366,7 @@ status_t mme_s11_build_create_bearer_response(
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     
     d_trace(3, "[MME] Create Bearer Response\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -463,7 +463,7 @@ status_t mme_s11_build_update_bearer_response(
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Update Bearer Response\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -540,7 +540,7 @@ status_t mme_s11_build_delete_bearer_response(
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Delete Bearer Response\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -667,7 +667,7 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Create Indirect Data Forwarding Tunnel Request\n");
-    d_trace(3, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     gtp_bearers_in_create_indirect_tunnel_request(&bearers, req);

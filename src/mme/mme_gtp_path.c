@@ -1,4 +1,4 @@
-#define TRACE_MODULE _mme_s11_path
+#define TRACE_MODULE _mme_gtp_path
 #include "core_debug.h"
 #include "core_pkbuf.h"
 
@@ -27,8 +27,8 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
         return -1;
     }
 
-    d_trace(10, "S11_PDU is received from SGW\n");
-    d_trace_hex(10, pkbuf->payload, pkbuf->len);
+    d_trace(50, "[GTPv2] Receive : ");
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
 
     event_set(&e, MME_EVT_S11_MESSAGE);
     event_set_param1(&e, (c_uintptr_t)pkbuf);

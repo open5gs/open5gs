@@ -77,7 +77,7 @@ status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
     d_assert(pkbuf, return CORE_ERROR,);
     d_assert(enb->sock, return CORE_ERROR,);
 
-    d_trace(3, "    IP[%s] ENB_ID[%d]\n",
+    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
     rv = s1ap_send(enb->sock, pkbuf,
@@ -256,9 +256,9 @@ status_t s1ap_send_ue_context_release_command(
     d_assert(enb, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] UE Context release command\n");
-    d_trace(3, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
-    d_trace(3, "    Group[%d] Cause[%d] Action[%d] Delay[%d]\n",
+    d_trace(5, "    Group[%d] Cause[%d] Action[%d] Delay[%d]\n",
             group, cause, action, delay);
 
     rv = s1ap_build_ue_context_release_command(&s1apbuf, enb_ue, group, cause);
@@ -415,9 +415,9 @@ status_t s1ap_send_handover_request(
     target_ue = enb_ue_add(target_enb);
     d_assert(target_ue, return CORE_ERROR,);
 
-    d_trace(3, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    d_trace(3, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     rv = source_ue_associate_target_ue(source_ue, target_ue);

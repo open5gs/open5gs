@@ -113,7 +113,7 @@ status_t emm_handle_attach_request(
                 imsi_bcd);
             mme_ue_set_imsi(mme_ue, imsi_bcd);
 
-            d_trace(3, "    IMSI[%s]\n", imsi_bcd);
+            d_trace(5, "    IMSI[%s]\n", imsi_bcd);
 
             break;
         }
@@ -128,7 +128,7 @@ status_t emm_handle_attach_request(
             guti.mme_code = nas_guti->mme_code;
             guti.m_tmsi = nas_guti->m_tmsi;
 
-            d_trace(3, "    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]\n",
+            d_trace(5, "    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]\n",
                     guti.mme_gid,
                     guti.mme_code,
                     guti.m_tmsi,
@@ -205,7 +205,7 @@ status_t emm_handle_attach_complete(
     d_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK,,);
 
     d_trace(3, "[EMM] EMM information\n");
-    d_trace(3, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
     return CORE_OK;
 }
@@ -258,11 +258,11 @@ status_t emm_handle_detach_request(
     {
         /* 0 0 1 : EPS detach */
         case NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
-            d_trace(3, "    EPS Detach\n");
+            d_trace(5, "    EPS Detach\n");
             break;
         /* 0 1 0 : IMSI detach */
         case NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
-            d_trace(3, "    IMSI Detach\n");
+            d_trace(5, "    IMSI Detach\n");
             break;
         case 6: /* 1 1 0 : reserved */
         case 7: /* 1 1 1 : reserved */
@@ -271,7 +271,7 @@ status_t emm_handle_detach_request(
             break;
         /* 0 1 1 : combined EPS/IMSI detach */
         case NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
-            d_trace(3, "    Combined EPS/IMSI Detach\n");
+            d_trace(5, "    Combined EPS/IMSI Detach\n");
         default: /* all other values */
             break;
     }
@@ -423,7 +423,7 @@ status_t emm_handle_tau_request(
             guti.mme_code = nas_guti->mme_code;
             guti.m_tmsi = nas_guti->m_tmsi;
 
-            d_trace(3, "    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]\n",
+            d_trace(5, "    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]\n",
                     guti.mme_gid,
                     guti.mme_code,
                     guti.m_tmsi,

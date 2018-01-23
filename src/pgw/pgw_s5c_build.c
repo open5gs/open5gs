@@ -34,7 +34,7 @@ status_t pgw_s5c_build_create_session_response(
     d_assert(req, return CORE_ERROR, "Null param");
 
     d_trace(3, "[PGW] Create Session Response\n");
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     bearer = pgw_default_bearer_in_sess(sess);
@@ -137,7 +137,7 @@ status_t pgw_s5c_build_delete_session_response(
     d_assert(req, return CORE_ERROR, "Null param");
 
     d_trace(3, "[PGW] Delete Session Response\n");
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     /* prepare cause */
@@ -313,7 +313,7 @@ status_t pgw_s5c_build_create_bearer_request(
     d_assert(linked_bearer, return CORE_ERROR, "Null param");
 
     d_trace(3, "[PGW] Create Bearer Request\n");
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     req = &gtp_message.create_bearer_request;
@@ -392,7 +392,7 @@ status_t pgw_s5c_build_update_bearer_request(
     d_assert(linked_bearer, return CORE_ERROR, "Null param");
 
     d_trace(3, "[PGW] Update Bearer Request\n");
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     req = &gtp_message.update_bearer_request;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -455,7 +455,7 @@ status_t pgw_s5c_build_delete_bearer_request(
     d_assert(linked_bearer, return CORE_ERROR, "Null param");
 
     d_trace(3, "[PGW] Delete Bearer Request\n");
-    d_trace(3, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     req = &gtp_message.delete_bearer_request;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
