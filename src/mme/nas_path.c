@@ -380,7 +380,7 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         enb_ue = mme_ue->enb_ue;
 

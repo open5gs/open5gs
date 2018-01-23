@@ -24,7 +24,7 @@ void emm_state_initial(fsm_t *s, event_t *e)
 
     mme_sm_trace(3, e);
 
-    FSM_TRAN(s, &emm_state_detached);
+    FSM_TRAN(s, &emm_state_de_registered);
 }
 
 void emm_state_final(fsm_t *s, event_t *e)
@@ -34,29 +34,29 @@ void emm_state_final(fsm_t *s, event_t *e)
     mme_sm_trace(3, e);
 }
 
-static void emm_state_detached_attached(fsm_t *s, event_t *e);
+static void common_register_state(fsm_t *s, event_t *e);
 
-void emm_state_detached(fsm_t *s, event_t *e)
+void emm_state_de_registered(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
     mme_sm_trace(3, e);
 
-    emm_state_detached_attached(s, e);
+    common_register_state(s, e);
 }
 
-void emm_state_attached(fsm_t *s, event_t *e)
+void emm_state_registered(fsm_t *s, event_t *e)
 {
     d_assert(s, return, "Null param");
     d_assert(e, return, "Null param");
 
     mme_sm_trace(3, e);
 
-    emm_state_detached_attached(s, e);
+    common_register_state(s, e);
 }
 
-static void emm_state_detached_attached(fsm_t *s, event_t *e)
+static void common_register_state(fsm_t *s, event_t *e)
 {
     status_t rv;
 
@@ -139,8 +139,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                             &message->emm.identity_response);
                     if (rv != CORE_OK)
                     {
-                        d_error("emm_handle_identity_response failed() "
-                                "in emm_state_attched");
+                        d_error("emm_handle_identity_response() failed");
                         FSM_TRAN(s, emm_state_exception);
                         return;
                     }
@@ -162,8 +161,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                             mme_ue, &message->emm.attach_request);
                     if (rv != CORE_OK)
                     {
-                        d_error("emm_handle_attach_request() failed "
-                                "in emm_state_attached");
+                        d_error("emm_handle_attach_request() failed");
                         FSM_TRAN(s, emm_state_exception);
                         return;
                     }
@@ -176,8 +174,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                             mme_ue, &message->emm.tracking_area_update_request);
                     if (rv != CORE_OK)
                     {
-                        d_error("emm_handle_tau_request() failed "
-                                "in emm_state_attached");
+                        d_error("emm_handle_tau_request() failed");
                         FSM_TRAN(s, emm_state_exception);
                         return;
                     }
@@ -212,7 +209,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
                     d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
                     emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
-                    FSM_TRAN(s, &emm_state_detached);
+                    FSM_TRAN(s, &emm_state_de_registered);
                     return;
                 }
                 default:
@@ -292,7 +289,7 @@ static void emm_state_detached_attached(fsm_t *s, event_t *e)
             {
                 rv = nas_send_tau_accept(mme_ue);
                 d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
-                FSM_TRAN(&mme_ue->sm, &emm_state_attached);
+                FSM_TRAN(&mme_ue->sm, &emm_state_registered);
             }
             else
             {
@@ -476,7 +473,7 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                             MME_EPS_TYPE_SERVICE_REQUEST ||
                             mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
                     {
-                        FSM_TRAN(s, &emm_state_attached);
+                        FSM_TRAN(s, &emm_state_registered);
                     }
                     else
                         d_assert(0,, "Invalid NAS_EPS[%d]",
@@ -558,7 +555,7 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                         FSM_TRAN(s, emm_state_exception);
                         break;
                     }
-                    FSM_TRAN(s, &emm_state_attached);
+                    FSM_TRAN(s, &emm_state_registered);
                     break;
                 }
                 case NAS_EMM_STATUS:

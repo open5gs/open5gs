@@ -51,7 +51,7 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue, s6a_ula_message_t *ula_message)
         else
             d_assert(0,, "Invalid Type(%d)", mme_ue->nas_eps.type);
     }
-    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    else if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
         {

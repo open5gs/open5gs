@@ -21,12 +21,12 @@ void s1ap_state_exception(fsm_t *s, event_t *e);
 
 void emm_state_initial(fsm_t *s, event_t *e);
 void emm_state_final(fsm_t *s, event_t *e);
-void emm_state_detached(fsm_t *s, event_t *e);
+void emm_state_de_registered(fsm_t *s, event_t *e);
 void emm_state_identity(fsm_t *s, event_t *e);
 void emm_state_authentication(fsm_t *s, event_t *e);
 void emm_state_security_mode(fsm_t *s, event_t *e);
 void emm_state_initial_context_setup(fsm_t *s, event_t *e);
-void emm_state_attached(fsm_t *s, event_t *e);
+void emm_state_registered(fsm_t *s, event_t *e);
 void emm_state_exception(fsm_t *s, event_t *e);
 
 void esm_state_initial(fsm_t *s, event_t *e);

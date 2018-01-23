@@ -26,7 +26,7 @@ status_t esm_build_pdn_connectivity_reject(
             mme_ue->imsi_bcd, sess->pti, esm_cause);
 
     memset(&message, 0, sizeof(message));
-    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         message.h.security_header_type = 
            NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
@@ -39,7 +39,7 @@ status_t esm_build_pdn_connectivity_reject(
 
     pdn_connectivity_reject->esm_cause = esm_cause;
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
                 *pkbuf, return CORE_ERROR,);
@@ -122,7 +122,7 @@ status_t esm_build_activate_default_bearer_context_request(
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
-    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         message.h.security_header_type = 
            NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
@@ -186,7 +186,7 @@ status_t esm_build_activate_default_bearer_context_request(
                 sess->pgw_pco.data, protocol_configuration_options->length);
     }
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
                 *pkbuf, return CORE_ERROR,);

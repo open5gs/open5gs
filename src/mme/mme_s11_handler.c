@@ -101,7 +101,7 @@ void mme_s11_handle_create_session_response(
         rv = nas_send_attach_accept(mme_ue);
         d_assert(rv == CORE_OK, return, "nas_send_attach_accept failed");
     }
-    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    else if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         rv = nas_send_activate_default_bearer_context_request(bearer);
         d_assert(rv == CORE_OK, return, "nas send failed");
@@ -176,7 +176,7 @@ void mme_s11_handle_delete_session_response(
 
         mme_sess_remove(sess);
     }
-    else if (FSM_CHECK(&mme_ue->sm, emm_state_detached))
+    else if (FSM_CHECK(&mme_ue->sm, emm_state_de_registered))
     {
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
             CLEAR_SGW_S11_PATH(mme_ue);
@@ -186,7 +186,7 @@ void mme_s11_handle_delete_session_response(
 
         mme_sess_remove(sess);
     }
-    else if (FSM_CHECK(&mme_ue->sm, emm_state_attached))
+    else if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
         d_assert(bearer, return, "Null param");
