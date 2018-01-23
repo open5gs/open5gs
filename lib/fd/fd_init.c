@@ -101,13 +101,16 @@ static void fd_log_func(int printlevel, const char *format, va_list ap)
     switch(printlevel) 
     {
 	    case FD_LOG_ANNOYING: 
-            printf("freeDiameter[%d]: %s\n", printlevel, buffer);
+            if (TRACE_MODULE >= 29)
+                printf("freeDiameter[%d]: %s\n", printlevel, buffer);
             break;  
 	    case FD_LOG_DEBUG:
-            printf("freeDiameter[%d]: %s\n", printlevel, buffer);
+            if (TRACE_MODULE >= 27)
+                printf("freeDiameter[%d]: %s\n", printlevel, buffer);
             break;  
 	    case FD_LOG_NOTICE:
-            printf("freeDiameter[%d]: %s\n", printlevel, buffer);
+            if (TRACE_MODULE >= 25)
+                printf("freeDiameter[%d]: %s\n", printlevel, buffer);
             break;
 	    case FD_LOG_ERROR:
             d_error("%s", buffer);
