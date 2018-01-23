@@ -97,7 +97,7 @@ status_t sctp_server(sock_id *new, int type, c_sockaddr_t *sa_list)
         {
             if (s1ap_usrsctp_bind(*new, addr) == CORE_OK)
             {
-                d_trace(3, "sctp_server [%s]:%d\n",
+                d_trace(7, "sctp_server [%s]:%d\n",
                         CORE_ADDR(addr, buf), CORE_PORT(addr));
                 break;
             }
@@ -136,7 +136,7 @@ status_t sctp_client(sock_id *new, int type, c_sockaddr_t *sa_list)
         {
             if (s1ap_usrsctp_connect(*new, addr) == CORE_OK)
             {
-                d_trace(3, "sctp_client [%s]:%d\n",
+                d_trace(7, "sctp_client [%s]:%d\n",
                         CORE_ADDR(addr, buf), CORE_PORT(addr));
                 break;
             }
@@ -174,8 +174,8 @@ status_t s1ap_send(sock_id id, pkbuf_t *pkbuf, c_sockaddr_t *addr)
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
             SCTP_SENDV_SNDINFO, 0);
 
-    d_trace(10,"Sent %d->%d bytes\n", pkbuf->len, sent);
-    d_trace_hex(10, pkbuf->payload, pkbuf->len);
+    d_trace(50, "[S1AP] Sent %d bytes : ", sent);
+    d_trace_hex(50, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
         d_error("sent : %d, pkbuf->len : %d\n", sent, pkbuf->len);
@@ -292,7 +292,7 @@ static status_t s1ap_usrsctp_bind(sock_id id, c_sockaddr_t *sa)
         return CORE_ERROR;
     }
 
-    d_trace(3, "usrsctp_bind [%s]:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
+    d_trace(7, "usrsctp_bind [%s]:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
 
     return CORE_OK;
 }
@@ -315,7 +315,7 @@ static status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa)
         return CORE_ERROR;
     }
 
-    d_trace(3, "usrsctp_connect [%s]:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
+    d_trace(7, "usrsctp_connect [%s]:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
 
     return CORE_OK;
 }
@@ -354,7 +354,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                 switch(not->sn_header.sn_type) 
                 {
                     case SCTP_ASSOC_CHANGE :
-                        d_trace(3, "SCTP_ASSOC_CHANGE"
+                        d_trace(7, "SCTP_ASSOC_CHANGE"
                                 "(type:0x%x, flags:0x%x, state:0x%x)\n", 
                                 not->sn_assoc_change.sac_type,
                                 not->sn_assoc_change.sac_flags,
