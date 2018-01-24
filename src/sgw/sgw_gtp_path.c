@@ -58,6 +58,7 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
 
 static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 {
+    char buf[CORE_ADDRSTRLEN];
     status_t rv;
     pkbuf_t *pkbuf = NULL;
     c_sockaddr_t from;
@@ -86,14 +87,16 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     {
         pkbuf_t *echo_rsp;
 
-        d_trace(3, "[SGW] RECV : ECHO-REQ\n");
+        d_trace(3, "[SGW] RECV Echo Request from [%s]\n",
+                CORE_ADDR(&from, buf));
         echo_rsp = gtp_handle_echo_req(pkbuf);
         if (echo_rsp)
         {
             ssize_t sent;
 
             /* Echo reply */
-            d_trace(3, "[SGW] SEND : ECHO-RSP\n");
+            d_trace(3, "[SGW] SEND Echo Response to [%s]\n",
+                    CORE_ADDR(&from, buf));
 
             sent = core_sendto(sock,
                     echo_rsp->payload, echo_rsp->len, 0, &from);
@@ -109,11 +112,11 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     {
         teid = ntohl(gtp_h->teid);
         if (gtp_h->type == GTPU_MSGTYPE_GPDU)
-            d_trace(3, "[SGW] RECV : GPDU\n");
+            d_trace(3, "[SGW] RECV GPU-U from [%s] : TEID[0x%x]\n",
+                    CORE_ADDR(&from, buf), teid);
         else if (gtp_h->type == GTPU_MSGTYPE_END_MARKER)
-            d_trace(3, "[SGW] RECV : End Marker\n");
-
-        d_trace(5, "    TEID[0x%x]\n", teid);
+            d_trace(3, "[SGW] RECV End Marker from [%s] : TEID[0x%x]\n",
+                    CORE_ADDR(&from, buf), teid);
 
         tunnel = sgw_tunnel_find_by_teid(teid);
         if (!tunnel)
@@ -136,11 +139,34 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
             sgw_tunnel_t *s5u_tunnel = NULL;
 
             s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
-            d_assert(s5u_tunnel, pkbuf_free(pkbuf); return 0, "Null param");
+            d_assert(s5u_tunnel, pkbuf_free(pkbuf); return 0,);
+            d_assert(s5u_tunnel->gnode, pkbuf_free(pkbuf); return 0,);
+            d_assert(s5u_tunnel->gnode->sock, pkbuf_free(pkbuf); return 0,);
+            d_trace(3, "[SGW] SEND GPU-U to PGW[%s]: TEID[0x%x]\n",
+                CORE_ADDR(sock_remote_addr(s5u_tunnel->gnode->sock), buf),
+                s5u_tunnel->remote_teid);
+
             gtp_h->teid = htonl(s5u_tunnel->remote_teid);
-            d_trace(3, "[SGW] SEND : GPDU\n");
-            d_trace(5, "    S1U-Remote-TEID[0x%x]\n", s5u_tunnel->remote_teid);
             gtp_send(s5u_tunnel->gnode, pkbuf);
+        }
+        else if (tunnel->interface_type ==
+                    GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
+                tunnel->interface_type ==
+                    GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING)
+        {
+            sgw_tunnel_t *indirect_tunnel = NULL;
+
+            indirect_tunnel = sgw_tunnel_find_by_interface_type(bearer,
+                    tunnel->interface_type);
+            d_assert(indirect_tunnel, pkbuf_free(pkbuf); return 0,);
+            d_assert(indirect_tunnel->gnode, pkbuf_free(pkbuf); return 0,);
+            d_assert(indirect_tunnel->gnode->sock, pkbuf_free(pkbuf); return 0,);
+            d_trace(3, "[SGW] SEND GPU-U to Indirect Tunnel[%s]: TEID[0x%x]\n",
+                CORE_ADDR(sock_remote_addr(indirect_tunnel->gnode->sock), buf),
+                indirect_tunnel->remote_teid);
+
+            gtp_h->teid = htonl(indirect_tunnel->remote_teid);
+            gtp_send(indirect_tunnel->gnode, pkbuf);
         }
         else if (tunnel->interface_type == GTP_F_TEID_S5_S8_SGW_GTP_U)
         {
@@ -148,8 +174,12 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
             d_assert(s1u_tunnel, pkbuf_free(pkbuf); return 0, "Null param");
-            d_trace(3, "[SGW] SEND : GPDU\n");
-            d_trace(5, "    S5U-Remote-TEID[0x%x]\n", s1u_tunnel->remote_teid);
+            d_assert(s1u_tunnel->gnode, pkbuf_free(pkbuf); return 0,);
+            d_assert(s1u_tunnel->gnode->sock, pkbuf_free(pkbuf); return 0,);
+            d_trace(3, "[SGW] SEND GPU-U to ENB[%s]: TEID[0x%x]\n",
+                CORE_ADDR(sock_remote_addr(s1u_tunnel->gnode->sock), buf),
+                s1u_tunnel->remote_teid);
+
             if (s1u_tunnel->remote_teid)
             {
                 /* If there is buffered packet, send it first */
@@ -275,6 +305,7 @@ status_t sgw_gtp_close()
 
 status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
 {
+    char buf[CORE_ADDRSTRLEN];
     status_t rv;
     pkbuf_t *pkbuf = NULL;
     gtp_header_t *h = NULL;
@@ -283,8 +314,11 @@ status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
     d_assert(bearer, return CORE_ERROR,);
     s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
     d_assert(s1u_tunnel, return CORE_ERROR,);
-
-    d_trace(3, "[SGW] SEND : End Marker\n");
+    d_assert(s1u_tunnel->gnode, return CORE_ERROR,);
+    d_assert(s1u_tunnel->gnode->sock, return CORE_ERROR,);
+    d_trace(3, "[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]\n",
+        CORE_ADDR(sock_remote_addr(s1u_tunnel->gnode->sock), buf),
+        s1u_tunnel->remote_teid);
 
     pkbuf = pkbuf_alloc(0, 100 /* enough for END_MARKER; use smaller buffer */);
     d_assert(pkbuf, return CORE_ERROR,);

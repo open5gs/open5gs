@@ -270,8 +270,6 @@ pkbuf_t *gtp_handle_echo_req(pkbuf_t *pkb)
     }
 
 
-    d_trace(50, "gtp_handle_without_teid(ECHO_REQ)\n");
-
     pkb_resp = pkbuf_alloc(0, 100 /* enough for ECHO_RSP; use smaller buffer */);
     d_assert(pkb_resp, return NULL, "Can't allocate pkbuf");
     gtph_resp = (gtp_header_t *)pkb_resp->payload;

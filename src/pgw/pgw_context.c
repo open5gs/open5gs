@@ -909,7 +909,7 @@ status_t pgw_context_setup_trace_module()
     if (gtp)
     {
         extern int _pgw_gtp_path;
-        d_trace_level(&_pgw_gtp_path, gtpv2);
+        d_trace_level(&_pgw_gtp_path, gtp);
         extern int _pgw_ipfw;
         d_trace_level(&_pgw_ipfw, gtp);
     }

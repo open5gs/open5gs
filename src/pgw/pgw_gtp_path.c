@@ -129,6 +129,8 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
     if (gtp_h->flags & GTPU_FLAGS_S) size += 4;
     teid = ntohl(gtp_h->teid);
 
+    d_trace(3, "[PGW] RECV GPU-U from SGW : TEID[0x%x]\n", teid);
+
     /* Remove GTP header and send packets to TUN interface */
     d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, goto cleanup,);
 
@@ -339,6 +341,7 @@ static status_t pgw_gtp_handle_slaac(pgw_sess_t *sess, pkbuf_t *recvbuf)
                 (struct icmp6_hdr *)(recvbuf->payload + sizeof(struct ip6_hdr));
             if (icmp_h->icmp6_type == ND_ROUTER_SOLICIT)
             {
+                d_trace(5, "[PGW] RECV Router Solict\n");
                 if (sess->ipv6)
                 {
                     rv = pgw_gtp_send_router_advertisement(
@@ -355,8 +358,13 @@ static status_t pgw_gtp_handle_slaac(pgw_sess_t *sess, pkbuf_t *recvbuf)
 
 static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf)
 {
+    char buf[CORE_ADDRSTRLEN];
     status_t rv;
     gtp_header_t *gtp_h = NULL;
+
+    d_assert(bearer, pkbuf_free(sendbuf); return CORE_ERROR,);
+    d_assert(bearer->gnode, pkbuf_free(sendbuf); return CORE_ERROR,);
+    d_assert(bearer->gnode->sock, pkbuf_free(sendbuf); return CORE_ERROR,);
 
     /* Add GTP-U header */
     rv = pkbuf_header(sendbuf, GTPV1U_HEADER_LEN);
@@ -383,6 +391,9 @@ static status_t pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, pkbuf_t *sendbuf)
     d_trace(50, "[PGW] SEND : ");
     d_trace_hex(50, sendbuf->payload, sendbuf->len);
 
+    d_trace(3, "[PGW] SEND GPU-U to SGW[%s] : TEID[0x%x]\n",
+        CORE_ADDR(sock_remote_addr(bearer->gnode->sock), buf),
+        bearer->sgw_s5u_teid);
     rv =  gtp_send(bearer->gnode, sendbuf);
 
     return rv;
