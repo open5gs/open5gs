@@ -65,10 +65,6 @@ status_t emm_build_attach_accept(
             guti->guti.mme_gid, guti->guti.mme_code, guti->guti.m_tmsi,
             mme_ue->imsi_bcd);
 
-#if 0 /* Remove it */
-    attach_accept->presencemask |= NAS_ATTACH_ACCEPT_EMM_CAUSE_PRESENT;
-    attach_accept->emm_cause = EMM_CAUSE_CS_DOMAIN_NOT_AVAILABLE;
-#endif
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_T3402_VALUE_PRESENT;
     t3402_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     t3402_value->value = 12;

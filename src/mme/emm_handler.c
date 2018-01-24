@@ -64,7 +64,7 @@ status_t emm_handle_attach_request(
     memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
             sizeof(nas_eps_attach_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
-    d_trace(7, "    ATTACH_TYPE[%d]\n", eps_attach_type->attach_type);
+    d_trace(9, "    ATTACH_TYPE[%d]\n", eps_attach_type->attach_type);
 
     /* Copy TAI and ECGI from enb_ue */
     memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));

@@ -135,7 +135,7 @@ static int network_handler(const char *path)
     struct timeval timer_val;
     struct sockaddr_un svaddr;
     file_t *file = NULL;
-    char g_buffer[1024];
+    char g_buffer[HUGE_STRING_LEN];
 
     us = socket(AF_UNIX, SOCK_DGRAM, 0);
     if (us < 0)
@@ -472,7 +472,7 @@ void d_trace_off(int *mod_name)
 
 int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
 {
-    char str[384] = {0}, fstr[HUGE_STRING_LEN] = {0}, *ac_str;
+    char str[HUGE_STRING_LEN] = {0}, fstr[HUGE_STRING_LEN] = {0}, *ac_str;
     time_exp_t te;
     size_t n;
     char *lv_str[5] = {"NONE", "FATL", "ERRR", "WARN", "INFO"};
