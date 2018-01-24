@@ -1087,7 +1087,6 @@ static void s1ap_encode_xer_print_message(
     if (g_trace_mask && TRACE_MODULE >= 25)
     {
         char message_string[HUGE_STRING_LEN];
-        d_assert(message_string, return,);
         s1ap_string_total_size = 0;
 
         func(cb, message_string, message_p);
