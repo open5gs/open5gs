@@ -1,3 +1,21 @@
+nextepc (0.3.2~zesty) zesty; urgency=medium
+
+  * VoLTE Support
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 24 Jan 2018 08:06:32 +0000
+
+nextepc (0.3.2~xenial) xenial; urgency=medium
+
+  * VoLTE Support
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 24 Jan 2018 08:03:41 +0000
+
+nextepc (0.3.2~artful) artful; urgency=medium
+
+  * VoLTE Support
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 24 Jan 2018 08:00:24 +0000
+
 nextepc (0.3.1-1~zesty) zesty; urgency=medium
 
   * IPv6 Support (Linux Only)
