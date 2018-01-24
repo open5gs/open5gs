@@ -15,18 +15,21 @@ int fd_init(int mode, const char *conffile, fd_config_t *fd_config)
 {
     int ret;
 
-    if (TRACE_MODULE >= 25)
-        gnutls_global_set_log_level(TRACE_MODULE-24);
-    gnutls_global_set_log_function(fd_gnutls_log_func);
+    fd_g_debug_lvl = FD_LOG_ERROR;
+    if (g_trace_mask)
+    {
+        if (TRACE_MODULE >= 25)
+            gnutls_global_set_log_level(TRACE_MODULE-24);
 
-    if (TRACE_MODULE >= 25 && TRACE_MODULE < 27)
-        fd_g_debug_lvl = FD_LOG_NOTICE;
-    else if (TRACE_MODULE >= 27 && TRACE_MODULE < 29)
-        fd_g_debug_lvl = FD_LOG_DEBUG;
-    else if (TRACE_MODULE >= 29)
-        fd_g_debug_lvl = FD_LOG_ANNOYING;
-    else
-        fd_g_debug_lvl = FD_LOG_ERROR;
+        if (TRACE_MODULE >= 25 && TRACE_MODULE < 27)
+            fd_g_debug_lvl = FD_LOG_NOTICE;
+        else if (TRACE_MODULE >= 27 && TRACE_MODULE < 29)
+            fd_g_debug_lvl = FD_LOG_DEBUG;
+        else if (TRACE_MODULE >= 29)
+            fd_g_debug_lvl = FD_LOG_ANNOYING;
+    }
+
+    gnutls_global_set_log_function(fd_gnutls_log_func);
     ret = fd_log_handler_register(fd_log_func);
     if (ret != 0) 
     {
