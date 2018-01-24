@@ -322,4 +322,4 @@ pgw:
 #
 
 pcrf:
-    freeDiameter: "pcrf.conf"
+    freeDiameter: pcrf.conf

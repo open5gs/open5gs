@@ -18,7 +18,7 @@ static char *compile_time = __DATE__ " " __TIME__;
 
 static void show_version()
 {
-    printf("NextEPC daemon v%s[Test #1] - %s\n",
+    printf("NextEPC daemon v%s - %s\n",
             PACKAGE_VERSION, compile_time);
 }
 

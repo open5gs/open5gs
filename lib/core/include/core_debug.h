@@ -83,6 +83,10 @@ CORE_DECLARE(int) d_msg(int tp, int lv, c_time_t t, char *fn, int ln,
     (!g_trace_mask || TRACE_MODULE < __level ? 0 : \
         d_msg(D_MSG_TYPE_TRACE, 0, time_now(), NULL, 0, fmt, ## __VA_ARGS__))
 
+#define d_trace2(__level, fmt, ...) \
+    (!g_trace_mask || TRACE_MODULE < __level ? 0 : \
+        d_msg(D_MSG_TYPE_RAW, 0, 0, NULL, 0, fmt, ## __VA_ARGS__))
+
 /**
  * Use for trace binary buffer as printable hex string .
  * Trace message shall be shown only if trace level is set equal or higher

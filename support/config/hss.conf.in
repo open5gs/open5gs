@@ -5,8 +5,10 @@ db_uri: mongodb://localhost/nextepc
 logger:
     file: @LOCALSTATE_DIR@/log/nextepc/hss.log
     trace: 
+        app: 1
         diameter: 1
-        others: 1
+
+parameter:
 
 hss:
     freeDiameter: hss.conf

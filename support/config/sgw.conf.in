@@ -3,8 +3,9 @@
 logger:
     file: @LOCALSTATE_DIR@/log/nextepc/sgw.log
     trace: 
+        app: 1
+        gtpv2: 1
         gtp: 1
-        others: 1
 
 parameter:
     no_ipv6: true
