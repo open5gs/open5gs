@@ -341,7 +341,7 @@ static status_t pgw_gtp_handle_slaac(pgw_sess_t *sess, pkbuf_t *recvbuf)
                 (struct icmp6_hdr *)(recvbuf->payload + sizeof(struct ip6_hdr));
             if (icmp_h->icmp6_type == ND_ROUTER_SOLICIT)
             {
-                d_trace(5, "[PGW] RECV Router Solict\n");
+                d_trace(5, "[PGW]      Router Solict\n");
                 if (sess->ipv6)
                 {
                     rv = pgw_gtp_send_router_advertisement(
@@ -484,6 +484,8 @@ static status_t pgw_gtp_send_router_advertisement(
     
     rv = pgw_gtp_send_to_bearer(bearer, pkbuf);
     d_assert(rv == CORE_OK,, "pgw_gtp_send_to_bearer() faild");
+
+    d_trace(5, "[PGW]      Router Advertisement\n");
 
     pkbuf_free(pkbuf);
     return rv;
