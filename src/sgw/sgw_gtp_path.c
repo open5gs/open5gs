@@ -129,12 +129,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         d_assert(bearer, pkbuf_free(pkbuf); return 0, "Null param");
 
         /* Convert TEID */
-        if (tunnel->interface_type == 
-                GTP_F_TEID_S1_U_SGW_GTP_U ||
-            tunnel->interface_type ==
-                GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
-            tunnel->interface_type ==
-                GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING)
+        if (tunnel->interface_type == GTP_F_TEID_S1_U_SGW_GTP_U)
         {
             sgw_tunnel_t *s5u_tunnel = NULL;
 
