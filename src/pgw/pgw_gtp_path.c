@@ -149,8 +149,8 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 
     if (!subnet)
     {
-        d_print_hex(pkbuf->payload, pkbuf->len);
-        d_warn("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
+        d_trace_hex(9, pkbuf->payload, pkbuf->len);
+        d_trace(9, "[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p\n",
                 ip_h->ip_v, sess->ipv4, sess->ipv6);
         goto cleanup;
     }

@@ -169,14 +169,15 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
 
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
             d_assert(s1u_tunnel, pkbuf_free(pkbuf); return 0, "Null param");
-            d_assert(s1u_tunnel->gnode, pkbuf_free(pkbuf); return 0,);
-            d_assert(s1u_tunnel->gnode->sock, pkbuf_free(pkbuf); return 0,);
-            d_trace(3, "[SGW] SEND GPU-U to ENB[%s]: TEID[0x%x]\n",
-                CORE_ADDR(sock_remote_addr(s1u_tunnel->gnode->sock), buf),
-                s1u_tunnel->remote_teid);
 
             if (s1u_tunnel->remote_teid)
             {
+                d_assert(s1u_tunnel->gnode, pkbuf_free(pkbuf); return 0,);
+                d_assert(s1u_tunnel->gnode->sock, pkbuf_free(pkbuf); return 0,);
+                d_trace(3, "[SGW] SEND GPU-U to ENB[%s]: TEID[0x%x]\n",
+                    CORE_ADDR(sock_remote_addr(s1u_tunnel->gnode->sock), buf),
+                    s1u_tunnel->remote_teid);
+
                 /* If there is buffered packet, send it first */
                 for (i = 0; i < bearer->num_buffered_pkt; i++)
                 {
@@ -206,17 +207,20 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                 d_assert(bearer->sess->sgw_ue, pkbuf_free(pkbuf); return 0,
                         "SGW_UE  is NULL");
 
+                d_trace(3, "[SGW] SEND GPU-U to ENB : STATE[0x%x]\n",
+                        SGW_GET_UE_STATE(sgw_ue));
+
                 sgw_ue = bearer->sess->sgw_ue;
 
                 if ((SGW_GET_UE_STATE(sgw_ue) & SGW_S1U_INACTIVE))
                 {
-                    d_trace(9, "    SGW-S1U Inactive\n");
+                    d_trace(5, "    SGW-S1U Inactive\n");
                     if ( !(SGW_GET_UE_STATE(sgw_ue) & SGW_DL_NOTI_SENT))
                     {
                         event_t e;
                         status_t rv;
 
-                        d_trace(9, "    EVENT DL Data Notification\n");
+                        d_trace(5, "    EVENT DL Data Notification\n");
                         event_set(&e, SGW_EVT_LO_DLDATA_NOTI);
                         event_set_param1(&e, (c_uintptr_t)bearer->index);
                         rv = sgw_event_send(&e);

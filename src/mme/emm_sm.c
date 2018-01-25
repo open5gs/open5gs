@@ -186,6 +186,7 @@ static void common_register_state(fsm_t *s, event_t *e)
                     d_trace(3, "[EMM] Tracking area update complete\n");
                     d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
+#if 0 /* UE will send UE context release request */
                     enb_ue = mme_ue->enb_ue;
                     d_assert(enb_ue, return, "Null param");
 
@@ -193,6 +194,7 @@ static void common_register_state(fsm_t *s, event_t *e)
                             S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_NO_ACTION, 0);
                     d_assert(rv == CORE_OK, return, "s1ap send error");
+#endif
                     return;
                 }
                 case NAS_EMM_STATUS:

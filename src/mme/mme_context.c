@@ -2710,7 +2710,7 @@ status_t mme_m_tmsi_pool_generate()
     int i, j;
     int index = 0;
 
-    d_trace(5, "M-TMSI Pool try to generate...\n");
+    d_trace(9, "M-TMSI Pool try to generate...\n");
     for (i = 0; index < MAX_POOL_OF_UE; i++)
     {
         mme_m_tmsi_t *m_tmsi = NULL;
@@ -2719,21 +2719,27 @@ status_t mme_m_tmsi_pool_generate()
         m_tmsi = &self.m_tmsi.pool[index];
         rv = core_generate_random_bytes((c_uint8_t *)m_tmsi, sizeof(*m_tmsi));
         d_assert(rv == CORE_OK, return CORE_ERROR, "Cannot generate random");
+
+        /* for mapped-GUTI */
+        *m_tmsi |= 0xc0000000;
+        *m_tmsi &= 0xff00ffff;
+
         for (j = 0; j < index; j++)
         {
             if (*m_tmsi == self.m_tmsi.pool[j])
             {
                 conflict = 1;
-                d_warn("[M-TMSI CONFLICT]  %d:0x%x == %d:0x%x",
+                d_trace(11, "[M-TMSI CONFLICT]  %d:0x%x == %d:0x%x\n",
                         index, *m_tmsi, j, self.m_tmsi.pool[j]);
                 break;
             }
         }
         if (conflict == 1) continue;
+
         index++;
     }
     self.m_tmsi.size = index;
-    d_trace(5, "M-TMSI Pool generate...done\n");
+    d_trace(9, "M-TMSI Pool generate...done\n");
 
     return CORE_OK;
 }
