@@ -207,7 +207,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                 d_assert(bearer->sess->sgw_ue, pkbuf_free(pkbuf); return 0,
                         "SGW_UE  is NULL");
 
-                d_trace(3, "[SGW] SEND GPU-U to ENB : STATE[0x%x]\n",
+                d_trace(3, "[SGW] S1U PATH deactivated : STATE[0x%x]\n",
                         SGW_GET_UE_STATE(sgw_ue));
 
                 sgw_ue = bearer->sess->sgw_ue;
