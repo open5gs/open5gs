@@ -60,6 +60,12 @@ status_t emm_handle_attach_request(
         mme_ue->nhcc = 1;
     }
 
+    d_trace(5, "    KSI[%d]\n", eps_attach_type->nas_key_set_identifier);
+    if (eps_attach_type->nas_key_set_identifier == 7)
+    {
+        CLEAR_SECURITY_CONTEXT(mme_ue);
+    }
+
     /* Set EPS Attach Type */
     memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
             sizeof(nas_eps_attach_type_t));
