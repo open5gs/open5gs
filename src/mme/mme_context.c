@@ -2152,6 +2152,8 @@ static status_t mme_ue_new_guti(mme_ue_t *mme_ue)
     mme_ue->guti.m_tmsi = *(mme_ue->m_tmsi);
     hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), mme_ue);
 
+    mme_ue->new_guti = 1;
+
     return CORE_OK;
 }
 
