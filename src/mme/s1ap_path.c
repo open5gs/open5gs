@@ -417,8 +417,8 @@ status_t s1ap_send_handover_request(
 
     d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
-            target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
+    d_trace(5, "    Target : ENB_UE_S1AP_ID[Unknown] MME_UE_S1AP_ID[%d]\n",
+            target_ue->mme_ue_s1ap_id);
 
     rv = source_ue_associate_target_ue(source_ue, target_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR,);

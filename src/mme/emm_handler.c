@@ -328,6 +328,12 @@ status_t emm_handle_service_request(
     /* Set EPS Update Type */
     mme_ue->nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST;
 
+    d_trace(5, "    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]\n",
+            mme_ue->guti.mme_gid,
+            mme_ue->guti.mme_code,
+            mme_ue->guti.m_tmsi,
+            MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown");
+
     return CORE_OK;
 }
 

@@ -149,8 +149,20 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             }
             else
             {
-                d_trace(5, "    S_TMSI[G:%d,C:%d,M_TMSI:0x%x]\n",
-                        guti.mme_gid, guti.mme_code, guti.m_tmsi);
+                d_trace(5, "    S_TMSI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]\n",
+                        mme_ue->guti.mme_gid,
+                        mme_ue->guti.mme_code,
+                        mme_ue->guti.m_tmsi,
+                        MME_UE_HAVE_IMSI(mme_ue) 
+                            ? mme_ue->imsi_bcd : "Unknown");
+                if (mme_ue->enb_ue)
+                {
+                    d_warn("Implicitly S1 released");
+                    d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                            mme_ue->enb_ue->enb_ue_s1ap_id, 
+                            mme_ue->enb_ue->mme_ue_s1ap_id);
+                    enb_ue_remove(mme_ue->enb_ue);
+                }
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
         }
@@ -181,8 +193,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     enb_ue->nas.e_cgi.cell_id = (ntohl(enb_ue->nas.e_cgi.cell_id) >> 4);
 
     d_assert(enb->sock, enb_ue_remove(enb_ue); return,);
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] TAC[%d]\n",
-            enb_ue->enb_ue_s1ap_id, enb_ue->nas.tai.tac);
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d]\n",
+        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, enb_ue->nas.tai.tac);
 
     d_assert(s1ap_send_to_nas(enb_ue, &ies->nas_pdu) == CORE_OK,,
             "s1ap_send_to_nas failed");

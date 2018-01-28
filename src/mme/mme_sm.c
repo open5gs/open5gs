@@ -257,6 +257,14 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             "nas_security_decode failed");
                     }
                 }
+                if (mme_ue->enb_ue)
+                {
+                    d_warn("Implicitly S1 released");
+                    d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                            mme_ue->enb_ue->enb_ue_s1ap_id, 
+                            mme_ue->enb_ue->mme_ue_s1ap_id);
+                    enb_ue_remove(mme_ue->enb_ue);
+                }
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
 
