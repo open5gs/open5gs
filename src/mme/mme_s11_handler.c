@@ -139,7 +139,8 @@ void mme_s11_handle_modify_bearer_response(
         d_assert(source_ue, return, "Null param");
 
         rv = s1ap_send_ue_context_release_command(source_ue,
-                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                S1ap_Cause_PR_radioNetwork,
+                S1ap_CauseRadioNetwork_successful_handover,
                 S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
         d_assert(rv == CORE_OK, return, "s1ap send error");
     );

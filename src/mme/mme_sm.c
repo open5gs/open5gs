@@ -373,7 +373,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 enb_ue_t *enb_ue = NULL;
 
                 rv = nas_send_attach_reject(mme_ue,
-                    EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
+                    EMM_CAUSE_IMSI_UNKNOWN_IN_HSS,
                     ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                 d_assert(rv == CORE_OK,,
                         "nas_send_attach_reject failed");
@@ -382,7 +382,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 d_assert(enb_ue, break, "No ENB UE context");
 
                 rv = s1ap_send_ue_context_release_command(enb_ue,
-                        S1ap_Cause_PR_nas, S1ap_CauseNas_authentication_failure,
+                        S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
                 d_assert(rv == CORE_OK,, "s1ap send error");
 
