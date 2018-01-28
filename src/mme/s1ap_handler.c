@@ -155,6 +155,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                         mme_ue->guti.m_tmsi,
                         MME_UE_HAVE_IMSI(mme_ue) 
                             ? mme_ue->imsi_bcd : "Unknown");
+#if 0  /* FIXME : how can we release S1(enb_ue_t) context ? */
                 if (mme_ue->enb_ue)
                 {
                     d_warn("Implicitly S1 released");
@@ -163,6 +164,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                             mme_ue->enb_ue->mme_ue_s1ap_id);
                     enb_ue_remove(mme_ue->enb_ue);
                 }
+#endif
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
         }

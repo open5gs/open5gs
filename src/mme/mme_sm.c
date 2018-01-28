@@ -257,6 +257,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             "nas_security_decode failed");
                     }
                 }
+#if 0  /* FIXME : how can we release S1(enb_ue_t) context ? */
                 if (mme_ue->enb_ue)
                 {
                     d_warn("Implicitly S1 released");
@@ -265,6 +266,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             mme_ue->enb_ue->mme_ue_s1ap_id);
                     enb_ue_remove(mme_ue->enb_ue);
                 }
+#endif
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
 
