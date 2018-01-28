@@ -250,13 +250,8 @@ status_t emm_handle_identity_response(
 status_t emm_handle_detach_request(
         mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
 {
-    status_t rv;
-    enb_ue_t *enb_ue = NULL;
-
     d_assert(detach_request, return CORE_ERROR, "Null param");
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     switch (detach_request->detach_type.detach_type)
     {
@@ -279,22 +274,11 @@ status_t emm_handle_detach_request(
         default: /* all other values */
             break;
     }
+    if (detach_request->detach_type.switch_off)
+        d_trace(5, "    Switch-Off\n");
 
     /* Save detach type */
     mme_ue->detach_type = detach_request->detach_type;
-
-    if (MME_HAVE_SGW_S11_PATH(mme_ue))
-    {
-        rv = mme_gtp_send_delete_all_sessions(mme_ue);
-        d_assert(rv == CORE_OK, return CORE_ERROR,
-            "mme_gtp_send_delete_all_sessions failed");
-    }
-    else
-    {
-        rv = nas_send_detach_accept(mme_ue);
-        d_assert(rv == CORE_OK, return CORE_ERROR,
-            "nas_send_detach_accept failed");
-    }
 
     return CORE_OK;
 }

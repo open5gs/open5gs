@@ -182,7 +182,7 @@ void mme_s11_handle_delete_session_response(
         GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
             CLEAR_SGW_S11_PATH(mme_ue);
             rv = nas_send_detach_accept(mme_ue);
-            d_assert(rv == CORE_OK, return, "nas_send_detach_accept failed");
+            d_assert(rv == CORE_OK,, "nas_send_detach_accept failed");
         );
 
         mme_sess_remove(sess);
@@ -197,11 +197,12 @@ void mme_s11_handle_delete_session_response(
             GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
 
             rv = nas_send_deactivate_bearer_context_request(bearer);
-            d_assert(rv == CORE_OK, return,
+            d_assert(rv == CORE_OK,,
                 "nas_send_deactivate_bearer_context_request failed");
         }
         else if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
+#if 0
             GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
                 enb_ue_t *enb_ue = NULL;
 
@@ -213,9 +214,14 @@ void mme_s11_handle_delete_session_response(
                         S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
                 d_assert(rv == CORE_OK, return, "s1ap send error");
             );
+#else
+            GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
+            d_assert(0,, "Invalid ESM state");
+#endif
         }
         else
         {
+            GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
             d_assert(0,, "Invalid ESM state");
         }
     }
@@ -231,11 +237,14 @@ void mme_s11_handle_delete_session_response(
             rv = s1ap_send_ue_context_release_command(enb_ue,
                 S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                 S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
-            d_assert(rv == CORE_OK, return, "s1ap send error");
+            d_assert(rv == CORE_OK,, "s1ap send error");
         );
     }
     else
+    {
+        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
         d_assert(0,, "Invalid EMM state");
+    }
 
 }
 

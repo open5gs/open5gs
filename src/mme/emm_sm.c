@@ -99,7 +99,7 @@ static void common_register_state(fsm_t *s, event_t *e)
                     d_warn("Unknown UE");
                     rv = nas_send_service_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                    d_assert(rv == CORE_OK, return,
+                    d_assert(rv == CORE_OK,,
                             "nas_send_service_reject() failed");
                     FSM_TRAN(s, &emm_state_exception);
                     return;
@@ -110,7 +110,7 @@ static void common_register_state(fsm_t *s, event_t *e)
                     d_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                     rv = nas_send_service_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                    d_assert(rv == CORE_OK, return,
+                    d_assert(rv == CORE_OK,,
                         "nas_send_service_reject() failed");
 
                     enb_ue = mme_ue->enb_ue;
@@ -199,8 +199,26 @@ static void common_register_state(fsm_t *s, event_t *e)
                 {
                     d_trace(3, "[EMM] Detach request\n");
                     d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
-                    emm_handle_detach_request(
+                    rv = emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
+                    if (rv != CORE_OK)
+                    {
+                        d_error("emm_handle_attach_request() failed");
+                        FSM_TRAN(s, emm_state_exception);
+                        return;
+                    }
+                    if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                    {
+                        rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                        d_assert(rv == CORE_OK,,
+                            "mme_gtp_send_delete_all_sessions failed");
+                    }
+                    else
+                    {
+                        rv = nas_send_detach_accept(mme_ue);
+                        d_assert(rv == CORE_OK,,
+                            "nas_send_detach_accept failed");
+                    }
                     FSM_TRAN(s, &emm_state_de_registered);
                     return;
                 }
