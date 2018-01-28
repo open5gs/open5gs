@@ -309,8 +309,6 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     /* Set T3412 */
     tau_accept->presencemask |= 
         NAS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_PRESENT ;
-
-    /* FIXME: Use the  value from  configuration */
     tau_accept->t3412_value.unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     tau_accept->t3412_value.value = 9;
 
@@ -329,7 +327,6 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     /* Set EPS bearer context status */
     tau_accept->presencemask |= 
         NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_BEARER_CONTEXT_STATUS_PRESENT;
-
     tau_accept->eps_bearer_context_status.length = 2;
     tau_accept->eps_bearer_context_status.ebi5 = 
         (mme_bearer_find_by_ue_ebi(mme_ue, 5) ? 1 : 0);
@@ -342,26 +339,19 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     /* Set T3402 */
     tau_accept->presencemask |= 
         NAS_TRACKING_AREA_UPDATE_ACCEPT_T3402_VALUE_PRESENT;
-
-    /* FIXME: Use the  value from  configuration */
     tau_accept->t3402_value.unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     tau_accept->t3402_value.value = 12;
 
     /* Set T3423 */
     tau_accept->presencemask |= 
         NAS_TRACKING_AREA_UPDATE_ACCEPT_T3423_VALUE_PRESENT;
-
-    /* FIXME: Use the  value from  configuration */
     tau_accept->t3423_value.unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     tau_accept->t3423_value.value = 9;
 
     /* Set EPS network feature support */
     tau_accept->presencemask |= 
         NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
-
     tau_accept->eps_network_feature_support.length = 1;
-    tau_accept->eps_network_feature_support.esr_ps = 1;
-    tau_accept->eps_network_feature_support.epc_lcs = 1;
     tau_accept->eps_network_feature_support.ims_vops = 1;
 
     d_assert(nas_security_encode(emmbuf, mme_ue, &message) == CORE_OK && 

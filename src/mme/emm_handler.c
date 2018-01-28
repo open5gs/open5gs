@@ -38,6 +38,9 @@ status_t emm_handle_attach_request(
     d_assert(esm_message_container, return CORE_ERROR, "Null param");
     d_assert(esm_message_container->length, return CORE_ERROR, "Null param");
 
+    d_trace(5, "    KSI[%d]\n", eps_attach_type->nas_key_set_identifier);
+    if (eps_attach_type->nas_key_set_identifier == NAS_KSI_NO_KEY_IS_AVAILABLE)
+        CLEAR_SECURITY_CONTEXT(mme_ue);
     /*
      * ATTACH_REQUEST
      *   Clear EBI generator
@@ -58,12 +61,6 @@ status_t emm_handle_attach_request(
         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
         mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
         mme_ue->nhcc = 1;
-    }
-
-    d_trace(5, "    KSI[%d]\n", eps_attach_type->nas_key_set_identifier);
-    if (eps_attach_type->nas_key_set_identifier == 7)
-    {
-        CLEAR_SECURITY_CONTEXT(mme_ue);
     }
 
     /* Set EPS Attach Type */

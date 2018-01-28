@@ -346,11 +346,13 @@ void s1ap_handle_initial_context_setup_failure(
     mme_ue = enb_ue->mme_ue;
     d_assert(mme_ue, return,);
 
-    d_error("[MME] Initial context setup failure : "
-            "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] ENB[%s:%d]\n",
-            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
+    d_warn("[MME] Initial context setup failure");
+    d_warn("    IP[%s] ENB_ID[%d]",
             CORE_ADDR(enb->addr, buf), enb->enb_id);
-
+    d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+    d_warn("    Cause[Group:%d Cause:%d]",
+            ies->cause.present, ies->cause.choice.radioNetwork);
     if (MME_HAVE_SGW_S11_PATH(mme_ue))
     {
         rv = mme_gtp_send_delete_all_sessions(mme_ue);
@@ -489,12 +491,13 @@ void s1ap_handle_ue_context_release_request(
             }
             else
             {
-                d_error("[MME] UE Context release request : "
-                        "RadioNetwork Cause[%d] "
-                        "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] ENB[%s:%d]\n",
-                        ies->cause.choice.radioNetwork,
-                        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
+                d_warn("[MME] UE Context release request");
+                d_warn("    IP[%s] ENB_ID[%d]",
                         CORE_ADDR(enb->addr, buf), enb->enb_id);
+                d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+                d_warn("    Cause[RADIO_NETWORK Cause:%d]",
+                        ies->cause.choice.radioNetwork);
                 if (MME_HAVE_SGW_S11_PATH(mme_ue))
                 {
                     rv = mme_gtp_send_delete_all_sessions(mme_ue);
@@ -515,12 +518,13 @@ void s1ap_handle_ue_context_release_request(
         {
             mme_ue_t *mme_ue = enb_ue->mme_ue;
 
-            d_error("[MME] UE Context release request : "
-                    "Transport Cause[%d] "
-                    "ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] ENB[%s:%d]\n",
-                    ies->cause.choice.radioNetwork,
-                    enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id,
+            d_warn("[MME] UE Context release request");
+            d_warn("    IP[%s] ENB_ID[%d]",
                     CORE_ADDR(enb->addr, buf), enb->enb_id);
+            d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                    enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+            d_warn("    Cause[TRANSPORT Cause:%d]",
+                    ies->cause.choice.radioNetwork);
             if (MME_HAVE_SGW_S11_PATH(mme_ue))
             {
                 rv = mme_gtp_send_delete_all_sessions(mme_ue);

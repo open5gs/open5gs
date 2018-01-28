@@ -28,6 +28,8 @@ extern "C" {
         memcpy((__dST)->buffer, (__sRC)->buffer, (__dST)->length); \
     } while(0)
 
+#define NAS_KSI_NO_KEY_IS_AVAILABLE             0x7
+
 /* 9.9.2.0 Additional information
  * O TLV 3-n */
 #define NAX_MAX_ADDITIONAL_INFORMATION_LEN 255

@@ -194,7 +194,6 @@ status_t nas_send_detach_accept(mme_ue_t *mme_ue)
     status_t rv;
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *emmbuf = NULL;
-    c_uint8_t ue_ctx_rel_action = S1AP_UE_CTX_REL_NO_ACTION;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
@@ -210,13 +209,10 @@ status_t nas_send_detach_accept(mme_ue_t *mme_ue)
         rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
         d_assert(rv == CORE_OK, return CORE_ERROR, "nas send failed");
     }
-    else
-    {
-        ue_ctx_rel_action = S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT;
-    }
 
     rv = s1ap_send_ue_context_release_command(enb_ue,
-            S1ap_Cause_PR_nas, S1ap_CauseNas_detach, ue_ctx_rel_action, 0);
+            S1ap_Cause_PR_nas, S1ap_CauseNas_detach,
+            S1AP_UE_CTX_REL_NO_ACTION, 0);
     d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
 
     return CORE_OK;
