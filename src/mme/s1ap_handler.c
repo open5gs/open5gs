@@ -363,7 +363,6 @@ void s1ap_handle_initial_context_setup_failure(
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
     mme_ue = enb_ue->mme_ue;
-    d_assert(mme_ue, return,);
 
     d_trace(3, "[MME] Initial context setup failure\n");
     d_trace(5, "    IP[%s] ENB_ID[%d]\n",
@@ -373,7 +372,7 @@ void s1ap_handle_initial_context_setup_failure(
     d_trace(5, "    Cause[Group:%d Cause:%d]\n",
             ies->cause.present, ies->cause.choice.radioNetwork);
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
+    if (mme_ue && FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         d_trace(5, "    Registered State\n");
 
@@ -423,7 +422,7 @@ void s1ap_handle_initial_context_setup_failure(
     }
     else
     {
-        d_trace(5, "    NOT Registered State\n");
+        d_trace(5, "    NOT Registered State[MME_UE:%p]\n", mme_ue);
         if (MME_HAVE_SGW_S11_PATH(mme_ue))
         {
             d_trace(5, "    WITH Delete Sesson\n");
@@ -522,6 +521,8 @@ void s1ap_handle_ue_context_release_request(
     char buf[CORE_ADDRSTRLEN];
 
     enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+
     S1ap_UEContextReleaseRequest_IEs_t *ies = NULL;
 
     ies = &message->s1ap_UEContextReleaseRequest_IEs;
@@ -532,7 +533,8 @@ void s1ap_handle_ue_context_release_request(
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
-    d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
+    d_assert(enb_ue, return, "No ENB UE Context[%d]", ies->mme_ue_s1ap_id);
+    mme_ue = enb_ue->mme_ue;
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
@@ -543,13 +545,9 @@ void s1ap_handle_ue_context_release_request(
     {
         case S1ap_Cause_PR_radioNetwork:
         {
-            mme_ue_t *mme_ue = enb_ue->mme_ue;
-
             if (ies->cause.choice.radioNetwork
                     == S1ap_CauseRadioNetwork_user_inactivity)
             {
-                d_assert(mme_ue, return,);
-
                 if (MME_HAVE_SGW_S11_PATH(mme_ue))
                 {
                     rv = mme_gtp_send_release_access_bearers_request(mme_ue);
@@ -562,85 +560,50 @@ void s1ap_handle_ue_context_release_request(
                             S1AP_UE_CTX_REL_NO_ACTION, 0);
                     d_assert(rv == CORE_OK, return, "s1ap send error");
                 }
-            }
-            else
-            {
-                if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
-                {
-                    d_trace(5, "    Registered State\n");
-                    rv = s1ap_send_ue_context_release_command(enb_ue,
-                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                            S1AP_UE_CTX_REL_NO_ACTION, 0);
-                    d_assert(rv == CORE_OK, return, "s1ap send error");
-                }
-                else
-                {
-                    d_trace(5, "    NOT Registered State\n");
-                    if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                    {
-                        d_trace(5, "    WITH Delete Sesson\n");
-                        rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                        d_assert(rv == CORE_OK,,
-                            "mme_gtp_send_delete_all_sessions failed");
-                    }
-                    else
-                    {
-                        d_trace(5, "    WITHOUT Delete Sesson\n");
-                        rv = s1ap_send_ue_context_release_command(enb_ue,
-                                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                                S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
-                        d_assert(rv == CORE_OK,, "s1ap send error");
-                    }
-                }
+                return;
             }
             break;
         }
         case S1ap_Cause_PR_transport:
-        {
-            mme_ue_t *mme_ue = enb_ue->mme_ue;
-
-            if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
-            {
-                d_trace(5, "    Registered State\n");
-                rv = s1ap_send_ue_context_release_command(enb_ue,
-                        S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_NO_ACTION, 0);
-                d_assert(rv == CORE_OK,, "s1ap send error");
-            }
-            else
-            {
-                d_trace(5, "    NOT Registered State\n");
-                if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                {
-                    d_trace(5, "    WITH Delete Sesson\n");
-                    rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                    d_assert(rv == CORE_OK,,
-                        "mme_gtp_send_delete_all_sessions failed");
-                }
-                else
-                {
-                    d_trace(5, "    WITHOUT Delete Sesson\n");
-                    rv = s1ap_send_ue_context_release_command(enb_ue,
-                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                            S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
-                    d_assert(rv == CORE_OK,, "s1ap send error");
-                }
-            }
             break;
-        }
         case S1ap_Cause_PR_nas:
-            d_warn("Not implmented (nas cause : %d)", ies->cause.choice.nas);
+            d_warn("NAS-Cause[%d]", ies->cause.choice.nas);
             break;
         case S1ap_Cause_PR_protocol:
-            d_warn("Not implmented (protocol cause : %d)",
-                    ies->cause.choice.protocol);
             break;
         case S1ap_Cause_PR_misc:
-            d_warn("Not implmented (misc cause : %d)", ies->cause.choice.misc);
             break;
         default:
-            d_warn("Invalid cause type : %d", ies->cause.present);
+            d_warn("Invalid cause group[%d]", ies->cause.present);
             break;
+    }
+
+    if (mme_ue && FSM_CHECK(&mme_ue->sm, emm_state_registered))
+    {
+        d_trace(5, "    Registered State\n");
+        rv = s1ap_send_ue_context_release_command(enb_ue,
+                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_NO_ACTION, 0);
+        d_assert(rv == CORE_OK, return, "s1ap send error");
+    }
+    else
+    {
+        d_trace(5, "    NOT Registered State[MME_UE:%p]\n", mme_ue);
+        if (MME_HAVE_SGW_S11_PATH(mme_ue))
+        {
+            d_trace(5, "    WITH Delete Sesson\n");
+            rv = mme_gtp_send_delete_all_sessions(mme_ue);
+            d_assert(rv == CORE_OK,,
+                "mme_gtp_send_delete_all_sessions failed");
+        }
+        else
+        {
+            d_trace(5, "    WITHOUT Delete Sesson\n");
+            rv = s1ap_send_ue_context_release_command(enb_ue,
+                    S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                    S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
+            d_assert(rv == CORE_OK,, "s1ap send error");
+        }
     }
 }
 
