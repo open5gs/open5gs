@@ -372,6 +372,7 @@ void s1ap_handle_initial_context_setup_failure(
     d_trace(5, "    Cause[Group:%d Cause:%d]\n",
             ies->cause.present, ies->cause.choice.radioNetwork);
 
+    d_assert(mme_ue,,);
     if (mme_ue && FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         d_trace(5, "    Registered State\n");
@@ -422,7 +423,8 @@ void s1ap_handle_initial_context_setup_failure(
     }
     else
     {
-        d_trace(5, "    NOT Registered State[MME_UE:%p]\n", mme_ue);
+        d_trace(5, "    NOT Registered State\n");
+        d_assert(mme_ue,,);
         if (MME_HAVE_SGW_S11_PATH(mme_ue))
         {
             d_trace(5, "    WITH Delete Sesson\n");
@@ -548,6 +550,7 @@ void s1ap_handle_ue_context_release_request(
             if (ies->cause.choice.radioNetwork
                     == S1ap_CauseRadioNetwork_user_inactivity)
             {
+                d_assert(mme_ue,,);
                 if (MME_HAVE_SGW_S11_PATH(mme_ue))
                 {
                     rv = mme_gtp_send_release_access_bearers_request(mme_ue);
@@ -578,6 +581,7 @@ void s1ap_handle_ue_context_release_request(
             break;
     }
 
+    d_assert(mme_ue,,);
     if (mme_ue && FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         d_trace(5, "    Registered State\n");
@@ -588,7 +592,8 @@ void s1ap_handle_ue_context_release_request(
     }
     else
     {
-        d_trace(5, "    NOT Registered State[MME_UE:%p]\n", mme_ue);
+        d_trace(5, "    NOT Registered State\n");
+        d_assert(mme_ue,,);
         if (MME_HAVE_SGW_S11_PATH(mme_ue))
         {
             d_trace(5, "    WITH Delete Sesson\n");
