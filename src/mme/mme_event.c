@@ -23,7 +23,9 @@ char* mme_event_get_name(event_t *e)
         case MME_EVT_S1AP_LO_ACCEPT:
             return "MME_EVT_S1AP_LO_ACCEPT";
         case MME_EVT_S1AP_LO_CONNREFUSED:
-            return"MME_EVT_S1AP_LO_CONNREFUSED";
+            return "MME_EVT_S1AP_LO_CONNREFUSED";
+        case MME_EVT_S1AP_S1_HOLDING_TIMER:
+            return "MME_EVT_S1AP_S1_HOLDING_TIMER";
 
         case MME_EVT_EMM_MESSAGE:
             return "MME_EVT_EMM_MESSAGE";

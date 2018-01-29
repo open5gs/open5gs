@@ -75,7 +75,8 @@ status_t mme_context_init()
     self.guti_ue_hash = hash_make();
 
     /* Timer value */
-    self.t3413_value = 2; /* Paging retry Timer: 2 secs */
+    self.t3413_value = 2;               /* Paging retry timer: 2 secs */
+    self.s1_holding_timer_value = 30;   /* S1 holding timer: 30 secs */
 
     context_initialized = 1;
 
@@ -1718,6 +1719,12 @@ enb_ue_t* enb_ue_add(mme_enb_t *enb)
             sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
     list_append(&enb->enb_ue_list, enb_ue);
 
+    /* Create S1 holding timer */
+    enb_ue->holding_timer = timer_create(&self.tm_service,
+            MME_EVT_S1AP_S1_HOLDING_TIMER, self.s1_holding_timer_value * 1000);
+    d_assert(enb_ue->holding_timer, return NULL, "Null param");
+    timer_set_param1(enb_ue->holding_timer, enb_ue->index);
+
     return enb_ue;
 
 }
@@ -1730,9 +1737,18 @@ unsigned int enb_ue_count()
 
 status_t enb_ue_remove(enb_ue_t *enb_ue)
 {
+    status_t rv;
+
     d_assert(self.mme_ue_s1ap_id_hash, return CORE_ERROR, "Null param");
     d_assert(enb_ue, return CORE_ERROR, "Null param");
     d_assert(enb_ue->enb, return CORE_ERROR, "Null param");
+
+    /* De-associate S1 with NAS/EMM */
+    rv = enb_ue_deassociate(enb_ue);
+    d_assert(rv == CORE_OK,,);
+
+    /* Delete All Timers */
+    tm_delete(enb_ue->holding_timer);
 
     list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
     hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
@@ -1840,7 +1856,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 
     mme_self()->sgw = list_next(mme_self()->sgw);
 
-    /* Create t3413 timer */
+    /* Create paging retry timer */
     mme_ue->t3413 = timer_create(&self.tm_service, MME_EVT_EMM_T3413,
             self.t3413_value * 1000);
     d_assert(mme_ue->t3413, return NULL, "Null param");
@@ -1855,6 +1871,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 
 status_t mme_ue_remove(mme_ue_t *mme_ue)
 {
+    status_t rv;
     event_t e;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
@@ -1894,6 +1911,9 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
 
     /* Delete All Timers */
     tm_delete(mme_ue->t3413);
+
+    rv = mme_ue_deassociate(mme_ue);
+    d_assert(rv == CORE_OK,,);
 
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
@@ -2172,17 +2192,19 @@ status_t mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
     return CORE_OK;
 }
 
-status_t mme_ue_deassociate_enb_ue(enb_ue_t *enb_ue)
+status_t enb_ue_deassociate(enb_ue_t *enb_ue)
 {
-    mme_ue_t *mme_ue = NULL;
-
     d_assert(enb_ue, return CORE_ERROR, "Null param");
-    mme_ue = enb_ue->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
-
-    mme_ue->enb_ue = NULL;
     enb_ue->mme_ue = NULL;
+    
+    return CORE_OK;
+}
 
+status_t mme_ue_deassociate(mme_ue_t *mme_ue)
+{
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    mme_ue->enb_ue = NULL;
+    
     return CORE_OK;
 }
 

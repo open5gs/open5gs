@@ -108,7 +108,8 @@ typedef struct _mme_context_t {
     c_uint8_t       relative_capacity;
 
     /* Timer value */
-    c_uint32_t      t3413_value;            /* Paging retry timer */
+    c_uint32_t      t3413_value;            /* Paging retry timer value */
+    c_uint32_t      s1_holding_timer_value; /* S1 holding timer value */
 
     /* Generator for unique identification */
     c_uint32_t      mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
@@ -179,6 +180,23 @@ struct _enb_ue_t {
 #define S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT               2
 #define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              3
     c_uint8_t      ue_ctx_rel_action;
+
+    /* 
+     * S1 holding timer
+     *
+     * When eNodeB sends Attach Request, TAU Request, Service Request repeatly,
+     * S1(enb_ue_t) context is repeatly created. 
+     *
+     * NAS(mme_ue_t) context is associated with last created S1(enb_ue_t)
+     * context, and older S1(enb_ue_t) context might not be freed.
+     *
+     * If NAS(mme_ue_t) has already been associated with
+     * older S1(enb_ue_t) context, the holding timer(30secs) is started.
+     * Newly associated S1(enb_ue_t) context holding timer is stopped.
+     *
+     * If the holding timer expires, S1(enb_ue_t) context will be deleted.
+     */
+    tm_block_id     holding_timer;
 
     /* Related Context */
     mme_enb_t       *enb;
@@ -509,19 +527,16 @@ CORE_DECLARE(status_t)      mme_ue_set_imsi(
  *
  * o RECV Initial Context Setup Failure in EMM Registered State
  * ### MME_UE_DEASSOCIATE_ENB_UE() ###
- * ### MME_UE_ECM_IDLE() ###
  * ### ENB_UE_REMOVE() ###
+ * ### MME_UE_DEASSOCIATE() ###
  *
  * o SEND UE Context Release Command with NO_ACTION
  *   - RECV UE Context Release Complete
- * ### MME_UE_DEASSOCIATE_ENB_UE() ###
- * ### MME_UE_ECM_IDLE() ###
  * ### ENB_UE_REMOVE() ###
+ * ### MME_UE_DEASSOCIATE() ###
  *
  * o SEND UE Context Release Command with REMOVE_MME_UE_CONTEXT
  *   - RECV UE Context Release Complete
- * ### MME_UE_DEASSOCIATE_ENB_UE() ###
- * ### MME_UE_ECM_IDLE() ###
  * ### ENB_UE_REMOVE() ###
  * ### MME_UE_REMOVE() ###
  *
@@ -553,7 +568,8 @@ CORE_DECLARE(status_t)      mme_ue_set_imsi(
  */
 CORE_DECLARE(status_t)      mme_ue_associate_enb_ue(
                                 mme_ue_t *mme_ue, enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      mme_ue_deassociate_enb_ue(enb_ue_t *enb_ue);
+CORE_DECLARE(status_t)      enb_ue_deassociate(enb_ue_t *enb_ue);
+CORE_DECLARE(status_t)      mme_ue_deassociate(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t)      source_ue_associate_target_ue(
                                 enb_ue_t *source_ue, enb_ue_t *target_ue);
 CORE_DECLARE(status_t)      source_ue_deassociate_target_ue(enb_ue_t *enb_ue);

@@ -156,16 +156,21 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                         mme_ue->guti.m_tmsi,
                         MME_UE_HAVE_IMSI(mme_ue) 
                             ? mme_ue->imsi_bcd : "Unknown");
-#if 0  /* FIXME : how can we release S1(enb_ue_t) context ? */
+
+                /* If NAS(mme_ue_t) has already been associated with
+                 * older S1(enb_ue_t) context, the holding timer(30secs)
+                 * is started. Newly associated S1(enb_ue_t) context 
+                 * holding timer is stopped.  */
                 if (mme_ue->enb_ue)
                 {
-                    d_warn("Implicitly S1 released");
+                    d_warn("Start S1 holding timer");
                     d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                            mme_ue->enb_ue->enb_ue_s1ap_id, 
-                            mme_ue->enb_ue->mme_ue_s1ap_id);
-                    enb_ue_remove(mme_ue->enb_ue);
+                        mme_ue->enb_ue->enb_ue_s1ap_id, 
+                        mme_ue->enb_ue->mme_ue_s1ap_id);
+                    tm_start(mme_ue->enb_ue->holding_timer);
                 }
-#endif
+                tm_stop(enb_ue->holding_timer);
+
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
         }
@@ -392,12 +397,11 @@ void s1ap_handle_initial_context_setup_failure(
 
 #if 1 /* Implicit Release */
         d_trace(5, "    Implicit Release\n");
-        rv = mme_ue_deassociate_enb_ue(enb_ue);
-        d_assert(rv == CORE_OK,, "mme_ue_deassociate_enb_ue() failed");
-
         rv = enb_ue_remove(enb_ue);
         d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
 
+        rv = mme_ue_deassociate(mme_ue);
+        d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
 #else  /* Explicit Release */
 
         d_trace(5, "    Explicit Release\n");
@@ -669,19 +673,17 @@ void s1ap_handle_ue_context_release_complete(
         case S1AP_UE_CTX_REL_NO_ACTION:
         {
             d_trace(5, "    No Action\n");
-            rv = mme_ue_deassociate_enb_ue(enb_ue);
-            d_assert(rv == CORE_OK,, "mme_ue_deassociate_enb_ue() failed");
-
             rv = enb_ue_remove(enb_ue);
+            d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
+
+            d_assert(mme_ue,,);
+            rv = mme_ue_deassociate(mme_ue);
             d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
             break;
         }
         case S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT:
         {
             d_trace(5, "    Action: UE(mme) context\n");
-            rv = mme_ue_deassociate_enb_ue(enb_ue);
-            d_assert(rv == CORE_OK,, "mme_ue_deassociate_enb_ue() failed");
-
             rv = enb_ue_remove(enb_ue);
             d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
 

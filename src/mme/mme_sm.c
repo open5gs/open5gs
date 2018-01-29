@@ -212,6 +212,36 @@ void mme_state_operational(fsm_t *s, event_t *e)
             tm_delete(timer);
             break;
         }
+        case MME_EVT_S1AP_S1_HOLDING_TIMER:
+        {
+            enb_ue_t *enb_ue = NULL;
+            mme_ue_t *mme_ue = NULL;
+
+            enb_ue = enb_ue_find(event_get_param1(e));
+            d_assert(enb_ue, break, "No ENB UE context");
+            d_warn("Implicit S1 release");
+            d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+            mme_ue = enb_ue->mme_ue;
+            d_assert(mme_ue, break, "No MME UE context");
+            d_warn("Associated NAS/EMM");
+            d_warn("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]",
+                    mme_ue->guti.mme_gid,
+                    mme_ue->guti.mme_code,
+                    mme_ue->guti.m_tmsi,
+                    MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown");
+            if (mme_ue->enb_ue)
+                d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                    mme_ue->enb_ue->enb_ue_s1ap_id,
+                    mme_ue->enb_ue->mme_ue_s1ap_id);
+            else
+                d_warn("    No Associated S1");
+
+            rv = enb_ue_remove(enb_ue);
+            d_assert(rv == CORE_OK,,);
+            break;
+        }
         case MME_EVT_EMM_MESSAGE:
         {
             nas_message_t message;
@@ -257,16 +287,21 @@ void mme_state_operational(fsm_t *s, event_t *e)
                             "nas_security_decode failed");
                     }
                 }
-#if 0  /* FIXME : how can we release S1(enb_ue_t) context ? */
+
+                /* If NAS(mme_ue_t) has already been associated with
+                 * older S1(enb_ue_t) context, the holding timer(30secs)
+                 * is started. Newly associated S1(enb_ue_t) context 
+                 * holding timer is stopped.  */
                 if (mme_ue->enb_ue)
                 {
-                    d_warn("Implicitly S1 released");
+                    d_warn("Start S1 holding timer");
                     d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                            mme_ue->enb_ue->enb_ue_s1ap_id, 
-                            mme_ue->enb_ue->mme_ue_s1ap_id);
-                    enb_ue_remove(mme_ue->enb_ue);
+                        mme_ue->enb_ue->enb_ue_s1ap_id, 
+                        mme_ue->enb_ue->mme_ue_s1ap_id);
+                    tm_start(mme_ue->enb_ue->holding_timer);
                 }
-#endif
+                tm_stop(enb_ue->holding_timer);
+
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
             else
