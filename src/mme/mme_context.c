@@ -1834,6 +1834,45 @@ enb_ue_t* enb_ue_next_in_enb(enb_ue_t *enb_ue)
     return list_next(enb_ue);
 }
 
+static status_t mme_ue_new_guti(mme_ue_t *mme_ue)
+{
+    served_gummei_t *served_gummei = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Invalid param");
+    d_assert(mme_self()->max_num_of_served_gummei > 0,
+            return CORE_ERROR, "Invalid param");
+
+    served_gummei = &mme_self()->served_gummei[0];
+
+    d_assert(served_gummei->num_of_plmn_id > 0,
+            return CORE_ERROR, "Invalid param");
+    d_assert(served_gummei->num_of_mme_gid > 0,
+            return CORE_ERROR, "Invalid param");
+    d_assert(served_gummei->num_of_mme_code > 0,
+            return CORE_ERROR, "Invalid param");
+
+    if (mme_ue->m_tmsi)
+    {
+        /* MME has a VALID GUIT
+         * As such, we need to remove previous GUTI in hash table */
+        hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
+        d_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == CORE_OK,,);
+    }
+
+    memset(&mme_ue->guti, 0, sizeof(guti_t));
+
+    memcpy(&mme_ue->guti.plmn_id, &served_gummei->plmn_id[0], PLMN_ID_LEN);
+    mme_ue->guti.mme_gid = served_gummei->mme_gid[0];
+    mme_ue->guti.mme_code = served_gummei->mme_code[0];
+
+    mme_ue->m_tmsi = mme_m_tmsi_alloc();
+    d_assert(mme_ue->m_tmsi, return CORE_ERROR,);
+    mme_ue->guti.m_tmsi = *(mme_ue->m_tmsi);
+    hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), mme_ue);
+
+    return CORE_OK;
+}
+
 mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 {
     mme_ue_t *mme_ue = NULL;
@@ -1847,6 +1886,9 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     list_init(&mme_ue->sess_list);
 
     mme_ue->mme_s11_teid = mme_ue->index;
+
+    /* Create New GUTI */
+    mme_ue_new_guti(mme_ue);
 
     /* Setup SGW with round-robin manner */
     if (mme_self()->sgw == NULL)
@@ -2125,48 +2167,6 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
     return mme_ue;
 }
 
-/* At this point, I'm not sure whether this function is exported or not */
-static status_t mme_ue_new_guti(mme_ue_t *mme_ue)
-{
-    served_gummei_t *served_gummei = NULL;
-
-    d_assert(mme_ue, return CORE_ERROR, "Invalid param");
-    d_assert(mme_self()->max_num_of_served_gummei > 0,
-            return CORE_ERROR, "Invalid param");
-
-    served_gummei = &mme_self()->served_gummei[0];
-
-    d_assert(served_gummei->num_of_plmn_id > 0,
-            return CORE_ERROR, "Invalid param");
-    d_assert(served_gummei->num_of_mme_gid > 0,
-            return CORE_ERROR, "Invalid param");
-    d_assert(served_gummei->num_of_mme_code > 0,
-            return CORE_ERROR, "Invalid param");
-
-    if (mme_ue->m_tmsi)
-    {
-        /* MME has a VALID GUIT
-         * As such, we need to remove previous GUTI in hash table */
-        hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
-        d_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == CORE_OK,,);
-    }
-
-    memset(&mme_ue->guti, 0, sizeof(guti_t));
-
-    memcpy(&mme_ue->guti.plmn_id, &served_gummei->plmn_id[0], PLMN_ID_LEN);
-    mme_ue->guti.mme_gid = served_gummei->mme_gid[0];
-    mme_ue->guti.mme_code = served_gummei->mme_code[0];
-
-    mme_ue->m_tmsi = mme_m_tmsi_alloc();
-    d_assert(mme_ue->m_tmsi, return CORE_ERROR,);
-    mme_ue->guti.m_tmsi = *(mme_ue->m_tmsi);
-    hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), mme_ue);
-
-    mme_ue->new_guti = 1;
-
-    return CORE_OK;
-}
-
 status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_int8_t *imsi_bcd)
 {
     d_assert(mme_ue && imsi_bcd, return CORE_ERROR, "Invalid param");
@@ -2176,7 +2176,7 @@ status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_int8_t *imsi_bcd)
 
     hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
-    mme_ue_new_guti(mme_ue);
+    mme_ue->guti_present = 1;
 
     return CORE_OK;
 }

@@ -54,10 +54,10 @@ status_t emm_build_attach_accept(
     attach_accept->esm_message_container.length = esmbuf->len;
 
     d_trace(5, "    %s GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]\n",
-            mme_ue->new_guti ? "# NEW #" : "# Not Changed #",
+            mme_ue->guti_present ? "# Present #" : "# Not Present #",
             mme_ue->guti.mme_gid, mme_ue->guti.mme_code,
             mme_ue->guti.m_tmsi, mme_ue->imsi_bcd);
-    if (mme_ue->new_guti)
+    if (mme_ue->guti_present)
     {
         attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
         guti->length = sizeof(nas_eps_mobile_identity_guti_t);
@@ -68,7 +68,7 @@ status_t emm_build_attach_accept(
         guti->guti.mme_code = mme_ue->guti.mme_code;
         guti->guti.m_tmsi = mme_ue->guti.m_tmsi;
     }
-    mme_ue->new_guti = 0;
+    mme_ue->guti_present = 0;
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_T3402_VALUE_PRESENT;
     t3402_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;

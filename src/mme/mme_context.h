@@ -225,9 +225,10 @@ struct _mme_ue_t {
     c_uint8_t       imsi[MAX_IMSI_LEN];
     int             imsi_len;
     c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
+
     mme_m_tmsi_t    *m_tmsi;
     guti_t          guti;
-    int             new_guti;
+    int             guti_present;
 
     c_uint32_t      mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
     c_uint32_t      sgw_s11_teid;   /* SGW-S11-TEID is received from SGW */
