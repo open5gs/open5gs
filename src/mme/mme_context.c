@@ -1460,13 +1460,6 @@ status_t mme_context_setup_trace_module()
 
     if (app)
     {
-        extern int _mutex;
-        d_trace_level(&_mutex, app);
-        extern int _pkbuf;
-        d_trace_level(&_pkbuf, app);
-
-        extern int _context;
-        d_trace_level(&_context, app);
         extern int _mme_context;
         d_trace_level(&_mme_context, app);
         extern int _mme_sm;
@@ -1882,7 +1875,7 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     /* Clear the saved PDN Connectivity Request */
     NAS_CLEAR_DATA(&mme_ue->pdn_connectivity_request);
 
-    /* Clear Paging info : t3413, last_paing_msg */
+    /* Clear Paging info : stop t3413, last_paing_msg */
     CLEAR_PAGING_INFO(mme_ue);
 
     /* Free UeRadioCapability */
@@ -1898,6 +1891,9 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
 
     /* Clear Transparent Container */
     S1AP_CLEAR_DATA(&mme_ue->container);
+
+    /* Delete All Timers */
+    tm_delete(mme_ue->t3413);
 
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);

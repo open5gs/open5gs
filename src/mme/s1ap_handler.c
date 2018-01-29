@@ -390,7 +390,7 @@ void s1ap_handle_initial_context_setup_failure(
                 "nas_send_service_reject() failed");
 #endif
 
-#if 1 /* Implicitly Detach */
+#if 1 /* Implicit Release */
         d_trace(5, "    Implicit Release\n");
         rv = mme_ue_deassociate_enb_ue(enb_ue);
         d_assert(rv == CORE_OK,, "mme_ue_deassociate_enb_ue() failed");
@@ -398,7 +398,7 @@ void s1ap_handle_initial_context_setup_failure(
         rv = enb_ue_remove(enb_ue);
         d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
 
-#else  /* Explicitly Detach */
+#else  /* Explicit Release */
 
         d_trace(5, "    Explicit Release\n");
 #if 1 /* NAS Cause : Detach */

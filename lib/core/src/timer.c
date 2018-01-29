@@ -44,6 +44,13 @@ status_t tm_init(void)
 
 status_t tm_final(void)
 {
+    if (pool_size(&timer_pool) != pool_avail(&timer_pool))
+        d_error("%d not freed in timer_pool[%d]",
+                pool_size(&timer_pool) - pool_avail(&timer_pool),
+                pool_size(&timer_pool));
+    d_trace(9, "%d not freed in timer_pool[%d]\n",
+            pool_size(&timer_pool) - pool_avail(&timer_pool),
+            pool_size(&timer_pool));
     pool_final(&timer_pool);
     return CORE_OK;
 }

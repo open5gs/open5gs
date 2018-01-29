@@ -863,13 +863,6 @@ status_t pgw_context_setup_trace_module()
 
     if (app)
     {
-        extern int _mutex;
-        d_trace_level(&_mutex, app);
-        extern int _pkbuf;
-        d_trace_level(&_pkbuf, app);
-
-        extern int _context;
-        d_trace_level(&_context, app);
         extern int _pgw_context;
         d_trace_level(&_pgw_context, app);
     }

@@ -79,6 +79,26 @@ status_t context_read_file()
     return CORE_OK;
 }
 
+status_t context_setup_trace_module()
+{
+    int app = context_self()->logger.trace.app;
+
+    if (app)
+    {
+        extern int _mutex;
+        d_trace_level(&_mutex, app);
+        extern int _pkbuf;
+        d_trace_level(&_pkbuf, app);
+        extern int _timer;
+        d_trace_level(&_timer, app);
+
+        extern int _context;
+        d_trace_level(&_context, app);
+    }
+
+    return CORE_OK;
+}
+
 static status_t context_prepare()
 {
     self.logger.console = -1;

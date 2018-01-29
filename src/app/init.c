@@ -33,6 +33,9 @@ status_t app_will_initialize(const char *config_path, const char *log_path)
     rv = context_parse_config();
     if (rv != CORE_OK) return rv;
 
+    rv = context_setup_trace_module();
+    if (rv != CORE_OK) return rv;
+
     app = context_self()->logger.trace.app;
     if (app)
     {

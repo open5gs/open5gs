@@ -69,6 +69,7 @@ CORE_DECLARE(context_t*)    context_self(void);
 
 CORE_DECLARE(status_t)      context_read_file(void);
 CORE_DECLARE(status_t)      context_parse_config(void);
+CORE_DECLARE(status_t)      context_setup_trace_module(void);
 
 CORE_DECLARE(status_t)      context_db_init(const char *db_uri);
 CORE_DECLARE(status_t)      context_db_final(void);
