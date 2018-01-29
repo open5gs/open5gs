@@ -424,11 +424,10 @@ status_t s1ap_send_handover_request(
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     rv = s1ap_build_handover_request(&s1apbuf, mme_ue, target_ue, ies);
-    d_assert(rv == CORE_OK && s1apbuf,
-            enb_ue_remove(target_ue); return CORE_ERROR, "s1ap build error");
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_send_to_enb(target_enb, s1apbuf);
-    d_assert(rv == CORE_OK, enb_ue_remove(target_ue), "s1ap send error");
+    d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
 }

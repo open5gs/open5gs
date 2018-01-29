@@ -285,7 +285,11 @@ struct _mme_ue_t {
     c_uint8_t       ebi; /* EPS Bearer ID generator */
     list_t          sess_list;
 
-    /* eNB UE context */
+#define MME_UE_ECM_IDLE(__mME) \
+    ((__mME) && ((__mME)->enb_ue == NULL))
+#define MME_UE_ECM_CONNECTED(__mME) \
+    ((__mME) && ((__mME)->enb_ue != NULL))
+    /* S1 UE context */
     enb_ue_t        *enb_ue;
 
     /* Save PDN Connectivity Request */
@@ -495,6 +499,58 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_teid(c_uint32_t teid);
 CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_message(nas_message_t *message);
 CORE_DECLARE(status_t)      mme_ue_set_imsi(
                                 mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
+
+/* 
+ * o RECV Initial UE-Message : S-TMSI
+ * o RECV Attach Request : IMSI, GUTI
+ * o RECV TAU Request : GUTI
+ * ### MME_UE_ASSOCIATE_ENB_UE() ###
+ * ### MME_UE_ECM_CONNECTED() ###
+ *
+ * o RECV Initial Context Setup Failure in EMM Registered State
+ * ### MME_UE_DEASSOCIATE_ENB_UE() ###
+ * ### MME_UE_ECM_IDLE() ###
+ * ### ENB_UE_REMOVE() ###
+ *
+ * o SEND UE Context Release Command with NO_ACTION
+ *   - RECV UE Context Release Complete
+ * ### MME_UE_DEASSOCIATE_ENB_UE() ###
+ * ### MME_UE_ECM_IDLE() ###
+ * ### ENB_UE_REMOVE() ###
+ *
+ * o SEND UE Context Release Command with REMOVE_MME_UE_CONTEXT
+ *   - RECV UE Context Release Complete
+ * ### MME_UE_DEASSOCIATE_ENB_UE() ###
+ * ### MME_UE_ECM_IDLE() ###
+ * ### ENB_UE_REMOVE() ###
+ * ### MME_UE_REMOVE() ###
+ *
+ *
+ * o RECV Handover Required
+ * ### SOURCE_UE_ASSOCIATE_TARGET_UE() ####
+ *   - SEND Handover Request
+ *
+ * o RECV Handover Notify
+ * ### MME_UE_ASSOCIATE_ENB_UE(TARGET) ###
+ * ### MME_UE_ECM_CONNECTED(TARGET) ###
+ *   - Modify Bearer Request/Response
+ *   - UE Context Release Command/Complete
+ * ### SOURCE_UE_DEASSOCIATE_TARGET_UE() ####
+ * ### ENB_UE_REMOVE() ####
+ *   - Delete Indirect Data Forwarding Tunnel Request/Response
+ *
+ * o RECV Handover Cancel
+ *   - UE Context Release Command/Complete
+ * ### SOURCE_UE_DEASSOCIATE_TARGET_UE() ####
+ * ### ENB_UE_REMOVE() ####
+ *   - Delete Indirect Data Forwarding Tunnel Request/Response
+ *
+ * o RECV Handover Failure
+ *   - UE Context Release Command/Complete
+ * ### SOURCE_UE_DEASSOCIATE_TARGET_UE() ####
+ * ### ENB_UE_REMOVE() ####
+ *   - Delete Indirect Data Forwarding Tunnel Request/Response
+ */
 CORE_DECLARE(status_t)      mme_ue_associate_enb_ue(
                                 mme_ue_t *mme_ue, enb_ue_t *enb_ue);
 CORE_DECLARE(status_t)      mme_ue_deassociate_enb_ue(enb_ue_t *enb_ue);

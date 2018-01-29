@@ -105,6 +105,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 	S1ap_CellIdentity_t	*cell_ID = NULL;
 
     d_assert(enb, return, "Null param");
+    d_assert(enb->sock, return, "Null param");
 
     ies = &message->s1ap_InitialUEMessage_IEs;
     d_assert(ies, return, "Null param");
@@ -194,7 +195,6 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             sizeof(enb_ue->nas.e_cgi.cell_id));
     enb_ue->nas.e_cgi.cell_id = (ntohl(enb_ue->nas.e_cgi.cell_id) >> 4);
 
-    d_assert(enb->sock, enb_ue_remove(enb_ue); return,);
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d]\n",
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, enb_ue->nas.tai.tac);
 
@@ -371,16 +371,51 @@ void s1ap_handle_initial_context_setup_failure(
     if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         d_trace(5, "    Registered State\n");
+
+        /*
+         * 19.2.2.3 in Spec 36.300
+         *
+         * In case of failure, eNB and MME behaviours are not mandated.
+         *
+         * Both implicit release (local release at each node) and
+         * explicit release (MME-initiated UE Context Release procedure)
+         * may in principle be adopted. The eNB should ensure
+         * that no hanging resources remain at the eNB.
+         */
+
+#if 0 /* FIXME : Does it needed? */
         rv = nas_send_service_reject(mme_ue,
             EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
         d_assert(rv == CORE_OK,,
                 "nas_send_service_reject() failed");
+#endif
 
+#if 1 /* Implicitly Detach */
+        d_trace(5, "    Implicit Release\n");
+        rv = mme_ue_deassociate_enb_ue(enb_ue);
+        d_assert(rv == CORE_OK,, "mme_ue_deassociate_enb_ue() failed");
+
+        rv = enb_ue_remove(enb_ue);
+        d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
+
+#else  /* Explicitly Detach */
+
+        d_trace(5, "    Explicit Release\n");
+#if 1 /* NAS Cause : Detach */
         d_trace(5, "    NAS-CAUSE: DETACH\n");
         rv = s1ap_send_ue_context_release_command(enb_ue,
                 S1ap_Cause_PR_nas, S1ap_CauseNas_detach,
                 S1AP_UE_CTX_REL_NO_ACTION, 0);
         d_assert(rv == CORE_OK,, "s1ap send error");
+#else /* NAS Cause : Normal Release */
+        d_trace(5, "    NAS-CAUSE: Normal Release\n");
+        rv = s1ap_send_ue_context_release_command(enb_ue,
+                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_NO_ACTION, 0);
+        d_assert(rv == CORE_OK,, "s1ap send error");
+#endif
+
+#endif
     }
     else
     {
@@ -611,7 +646,6 @@ void s1ap_handle_ue_context_release_complete(
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
 
-    c_uint8_t ue_ctx_rel_action = 0;
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
     S1ap_UEContextReleaseComplete_IEs_t *ies = NULL;
@@ -625,44 +659,60 @@ void s1ap_handle_ue_context_release_complete(
 
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
+    mme_ue = enb_ue->mme_ue;
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    ue_ctx_rel_action = enb_ue->ue_ctx_rel_action;
-    enb_ue->ue_ctx_rel_action = S1AP_UE_CTX_REL_INVALID_ACTION;
-    mme_ue = enb_ue->mme_ue;
-
-    enb_ue_remove(enb_ue);
-
-    if (mme_ue)
+    switch (enb_ue->ue_ctx_rel_action)
     {
-        switch (ue_ctx_rel_action)
+        case S1AP_UE_CTX_REL_NO_ACTION:
         {
-            case S1AP_UE_CTX_REL_NO_ACTION:
-            {
-                d_trace(5, "    No Action\n");
-                break;
-            }
-            case S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT:
-            {
-                d_trace(5, "    Action: UE(mme) context\n");
-                mme_ue_remove(mme_ue);
-                break;
-            }
-            case S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL:
-            {
-                d_trace(5, "    Action: Delete indirect tunnel\n");
-                rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
-                    mme_ue);
-                d_assert(rv == CORE_OK, return, "gtp send error");
-                break;
-            }
-            default:
-            {
-                d_assert(0, return, "Invalid action[%d]", ue_ctx_rel_action);
-                break;
-            }
+            d_trace(5, "    No Action\n");
+            rv = mme_ue_deassociate_enb_ue(enb_ue);
+            d_assert(rv == CORE_OK,, "mme_ue_deassociate_enb_ue() failed");
+
+            rv = enb_ue_remove(enb_ue);
+            d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
+            break;
+        }
+        case S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT:
+        {
+            d_trace(5, "    Action: UE(mme) context\n");
+            rv = mme_ue_deassociate_enb_ue(enb_ue);
+            d_assert(rv == CORE_OK,, "mme_ue_deassociate_enb_ue() failed");
+
+            rv = enb_ue_remove(enb_ue);
+            d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
+
+            d_assert(mme_ue,,);
+            rv = mme_ue_remove(mme_ue);
+            d_assert(rv == CORE_OK,, "mme_ue_remove() failed");
+            break;
+        }
+        case S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL:
+        {
+            d_trace(5, "    Action: Delete indirect tunnel\n");
+
+            rv = source_ue_deassociate_target_ue(enb_ue);
+            d_assert(rv == CORE_OK,,
+                    "source_ue_deassociate_target_ue() failed");
+
+            rv = enb_ue_remove(enb_ue);
+            d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
+
+            d_assert(mme_ue,,);
+            rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
+                mme_ue);
+            d_assert(rv == CORE_OK,,
+                "mme_gtp_send_delete_indirect_data_forwarding_tunnel_request()"
+                "failed");
+            break;
+        }
+        default:
+        {
+            d_assert(0,, "Invalid Action[%d]", enb_ue->ue_ctx_rel_action);
+            break;
         }
     }
 }

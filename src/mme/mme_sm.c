@@ -269,6 +269,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
 #endif
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
+            else
 
             d_assert(mme_ue, pkbuf_free(pkbuf); break, "No MME UE context");
             d_assert(FSM_STATE(&mme_ue->sm), pkbuf_free(pkbuf); break, 
@@ -478,7 +479,21 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     mme_s11_handle_downlink_data_notification(
                         xact, mme_ue, &message.downlink_data_notification);
 
-                    if (mme_ue->enb_ue == NULL)
+/*
+ * 5.3.4.2 in Spec 23.401
+ * Under certain conditions, the current UE triggered Service Request 
+ * procedure can cause unnecessary Downlink Packet Notification messages 
+ * which increase the load of the MME.
+ *
+ * This can occur when uplink data sent in step 6 causes a response 
+ * on the downlink which arrives at the Serving GW before the Modify Bearer 
+ * Request message, step 8. This data cannot be forwarded from the Serving GW 
+ * to the eNodeB and hence it triggers a Downlink Data Notification message.
+ *
+ * If the MME receives a Downlink Data Notification after step 2 and 
+ * before step 9, the MME shall not send S1 interface paging messages
+ */
+                    if (MME_UE_ECM_IDLE(mme_ue))
                     {
                         s1ap_handle_paging(mme_ue);
                         /* Start T3413 */
