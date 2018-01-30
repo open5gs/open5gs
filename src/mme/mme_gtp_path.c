@@ -194,8 +194,6 @@ status_t mme_gtp_send_delete_session_request(mme_sess_t *sess)
     rv = gtp_xact_commit(xact);
     d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
 
-    GTP_COUNTER_INCREMENT(mme_ue, GTP_COUNTER_DELETE_SESSION);
-
     return CORE_OK;
 }
 

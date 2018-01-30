@@ -2374,6 +2374,21 @@ mme_sess_t* mme_sess_next(mme_sess_t *sess)
     return list_next(sess);
 }
 
+unsigned int  mme_sess_count(mme_ue_t *mme_ue)
+{
+    unsigned int count = 0;
+    mme_sess_t *sess = NULL;
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        sess = mme_sess_next(sess);
+        count++;
+    }
+
+    return count;
+}
+
 mme_bearer_t* mme_bearer_add(mme_sess_t *sess)
 {
     event_t e;

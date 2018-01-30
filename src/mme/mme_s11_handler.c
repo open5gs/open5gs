@@ -116,16 +116,16 @@ void mme_s11_handle_modify_bearer_response(
     status_t rv;
     enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
-    d_assert(xact, return, "Null param");
     d_assert(mme_ue, return, "Null param");
-    d_assert(rsp, return, "Null param");
+    d_assert(xact, goto cleanup, "Null param");
+    d_assert(rsp, goto cleanup, "Null param");
 
     d_trace(3, "[MME] Modify Bearer Response\n");
     d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
+    d_assert(rv == CORE_OK, goto cleanup, "xact_commit error");
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,
         rv = s1ap_send_path_switch_ack(mme_ue);
@@ -144,6 +144,12 @@ void mme_s11_handle_modify_bearer_response(
                 S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
         d_assert(rv == CORE_OK, return, "s1ap send error");
     );
+
+    return;
+
+cleanup:
+    GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,);
+    GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY,);
 }
 
 void mme_s11_handle_delete_session_response(
@@ -152,100 +158,84 @@ void mme_s11_handle_delete_session_response(
     status_t rv;
     mme_sess_t *sess = NULL;
 
-    d_assert(rsp, return, "Null param");
+    d_assert(mme_ue, return, "Null param");
+    d_assert(xact, return, "Null param");
     sess = GTP_XACT_RETRIEVE_SESSION(xact);
     d_assert(sess, return, "Null param");
+    d_assert(rsp, goto cleanup, "Null param");
 
     d_trace(3, "[MME] Delete Session Response\n");
     if (rsp->cause.presence == 0)
     {
         d_error("No Cause");
-        return;
+        goto cleanup;
     }
     d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
+    d_assert(rv == CORE_OK, goto cleanup, "xact_commit error");
 
     if (FSM_CHECK(&mme_ue->sm, emm_state_authentication))
     {
-        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
-            CLEAR_SGW_S11_PATH(mme_ue);
+        if (mme_sess_count(mme_ue) == 1) /* Last Session */
+        {
             mme_s6a_send_air(mme_ue, NULL);
-        );
-
-        mme_sess_remove(sess);
+        }
     }
     else if (FSM_CHECK(&mme_ue->sm, emm_state_de_registered))
     {
-        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
-            CLEAR_SGW_S11_PATH(mme_ue);
+        if (mme_sess_count(mme_ue) == 1) /* Last Session */
+        {
             rv = nas_send_detach_accept(mme_ue);
             d_assert(rv == CORE_OK,, "nas_send_detach_accept failed");
-        );
-
-        mme_sess_remove(sess);
+        }
     }
     else if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-        d_assert(bearer, return, "Null param");
+        d_assert(bearer, goto cleanup, "Null param");
 
         if (FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
         {
-            GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
-
             rv = nas_send_deactivate_bearer_context_request(bearer);
             d_assert(rv == CORE_OK,,
                 "nas_send_deactivate_bearer_context_request failed");
-        }
-        else if (FSM_CHECK(&bearer->sm, esm_state_active))
-        {
-#if 0
-            GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
-                enb_ue_t *enb_ue = NULL;
-
-                enb_ue = mme_ue->enb_ue;
-                d_assert(enb_ue, return, );
-
-                rv = s1ap_send_ue_context_release_command(enb_ue,
-                        S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
-                d_assert(rv == CORE_OK, return, "s1ap send error");
-            );
-#else
-            GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
-            d_assert(0,, "Invalid ESM state");
-#endif
+            
+            /*
+             * mme_sess_remove() should be called.
+             *
+             * Session will be removed
+             * if Deactivate bearer context accept is received */
+            return;
         }
         else
-        {
-            GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
             d_assert(0,, "Invalid ESM state");
-        }
     }
     else if (FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup) ||
              FSM_CHECK(&mme_ue->sm, emm_state_exception))
     {
-        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,
+        if (mme_sess_count(mme_ue) == 1) /* Last Session */
+        {
             enb_ue_t *enb_ue = NULL;
 
             enb_ue = mme_ue->enb_ue;
-            d_assert(enb_ue, return, );
+            d_assert(enb_ue, goto cleanup, );
 
             rv = s1ap_send_ue_context_release_command(enb_ue,
                 S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                 S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
             d_assert(rv == CORE_OK,, "s1ap send error");
-        );
+        }
     }
     else
-    {
-        GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_DELETE_SESSION,); 
         d_assert(0,, "Invalid EMM state");
-    }
 
+cleanup:
+    if (mme_sess_count(mme_ue) == 1) /* Last Session */
+        CLEAR_SGW_S11_PATH(mme_ue);
+
+    mme_sess_remove(sess);
 }
 
 void mme_s11_handle_create_bearer_request(

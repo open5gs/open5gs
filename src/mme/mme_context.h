@@ -364,7 +364,9 @@ struct _mme_ue_t {
 
 #define MAX_NUM_OF_GTP_COUNTER                                  16
 
+#if 0  /* Deprecated */
 #define GTP_COUNTER_DELETE_SESSION                              0
+#endif
 #define GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH                1
 #define GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY            2
     struct {
@@ -591,6 +593,7 @@ CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_apn(
                                 mme_ue_t *mme_ue, c_int8_t *apn);
 CORE_DECLARE(mme_sess_t*)   mme_sess_first(mme_ue_t *mme_ue);
 CORE_DECLARE(mme_sess_t*)   mme_sess_next(mme_sess_t *sess);
+CORE_DECLARE(unsigned int)  mme_sess_count(mme_ue_t *mme_ue);
 
 CORE_DECLARE(mme_bearer_t*) mme_bearer_add(mme_sess_t *sess);
 CORE_DECLARE(status_t)      mme_bearer_remove(mme_bearer_t *bearer);
