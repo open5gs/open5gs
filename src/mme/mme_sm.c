@@ -217,6 +217,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
             enb_ue_t *enb_ue = NULL;
             mme_ue_t *mme_ue = NULL;
 
+            d_assert(0, break, "Deprecated");
+
             enb_ue = enb_ue_find(event_get_param1(e));
             d_assert(enb_ue, break, "No ENB UE context");
             d_warn("Implicit S1 release");
@@ -288,6 +290,18 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     }
                 }
 
+#if 1
+                /* If NAS(mme_ue_t) has already been associated with
+                 * older S1(enb_ue_t) context, remove older S1 context. */
+                if (mme_ue->enb_ue)
+                {
+                    d_warn("Implicit S1 release");
+                    d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+                    rv = enb_ue_remove(mme_ue->enb_ue);
+                    d_assert(rv == CORE_OK,,);
+                }
+#else
                 /* If NAS(mme_ue_t) has already been associated with
                  * older S1(enb_ue_t) context, the holding timer(30secs)
                  * is started. Newly associated S1(enb_ue_t) context 
@@ -301,10 +315,10 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     tm_start(mme_ue->enb_ue->holding_timer);
                 }
                 tm_stop(enb_ue->holding_timer);
+#endif
 
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
-            else
 
             d_assert(mme_ue, pkbuf_free(pkbuf); break, "No MME UE context");
             d_assert(FSM_STATE(&mme_ue->sm), pkbuf_free(pkbuf); break, 
