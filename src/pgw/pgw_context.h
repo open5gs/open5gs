@@ -108,8 +108,7 @@ typedef struct _pgw_subnet_t {
 } pgw_subnet_t;
 
 typedef struct _pgw_sess_t {
-    lnode_t         node;       /* FIXME : remove it */
-    index_t         index;      /**< An index of this node */
+    index_t         index;          /**< An index of this node */
 
     c_uint32_t      pgw_s5c_teid;   /* PGW-S5C-TEID is derived from INDEX */
     c_uint32_t      sgw_s5c_teid;   /* SGW-S5C-TEID is received from SGW */

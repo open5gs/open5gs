@@ -133,7 +133,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 
             memset(&guti, 0, sizeof(guti_t));
 
-            /* FIXME : Use the first configured plmn_id and mme group id */
+            /* Use the first configured plmn_id and mme group id */
             memcpy(&guti.plmn_id, &served_gummei->plmn_id[0], PLMN_ID_LEN);
             guti.mme_gid = served_gummei->mme_gid[0];
 
@@ -158,7 +158,6 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                         MME_UE_HAVE_IMSI(mme_ue) 
                             ? mme_ue->imsi_bcd : "Unknown");
 
-#if 1
                 /* If NAS(mme_ue_t) has already been associated with
                  * older S1(enb_ue_t) context, remove older S1 context. */
                 if (mme_ue->enb_ue)
@@ -169,22 +168,6 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                     rv = enb_ue_remove(mme_ue->enb_ue);
                     d_assert(rv == CORE_OK,,);
                 }
-#else
-                /* If NAS(mme_ue_t) has already been associated with
-                 * older S1(enb_ue_t) context, the holding timer(30secs)
-                 * is started. Newly associated S1(enb_ue_t) context 
-                 * holding timer is stopped.  */
-                if (mme_ue->enb_ue)
-                {
-                    d_warn("Start S1 holding timer");
-                    d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                        mme_ue->enb_ue->enb_ue_s1ap_id, 
-                        mme_ue->enb_ue->mme_ue_s1ap_id);
-                    tm_start(mme_ue->enb_ue->holding_timer);
-                }
-                tm_stop(enb_ue->holding_timer);
-#endif
-
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
         }
@@ -560,36 +543,12 @@ void s1ap_handle_ue_context_release_request(
     switch(ies->cause.present)
     {
         case S1ap_Cause_PR_radioNetwork:
-        {
-            if (ies->cause.choice.radioNetwork
-                    == S1ap_CauseRadioNetwork_user_inactivity)
-            {
-                d_assert(mme_ue,,);
-                if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                {
-                    rv = mme_gtp_send_release_access_bearers_request(mme_ue);
-                    d_assert(rv == CORE_OK, return, "gtp send failed");
-                }
-                else
-                {
-                    rv = s1ap_send_ue_context_release_command(enb_ue, 
-                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                            S1AP_UE_CTX_REL_NO_ACTION, 0);
-                    d_assert(rv == CORE_OK, return, "s1ap send error");
-                }
-                return;
-            }
-            break;
-        }
         case S1ap_Cause_PR_transport:
+        case S1ap_Cause_PR_protocol:
+        case S1ap_Cause_PR_misc:
             break;
         case S1ap_Cause_PR_nas:
             d_warn("NAS-Cause[%d]", ies->cause.choice.nas);
-            break;
-        case S1ap_Cause_PR_protocol:
-            break;
-        case S1ap_Cause_PR_misc:
-            break;
         default:
             d_warn("Invalid cause group[%d]", ies->cause.present);
             break;
@@ -599,15 +558,22 @@ void s1ap_handle_ue_context_release_request(
     if (mme_ue && FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         d_trace(5, "    Registered State\n");
-        rv = s1ap_send_ue_context_release_command(enb_ue,
-                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_NO_ACTION, 0);
-        d_assert(rv == CORE_OK, return, "s1ap send error");
+        if (MME_HAVE_SGW_S11_PATH(mme_ue))
+        {
+            rv = mme_gtp_send_release_access_bearers_request(mme_ue);
+            d_assert(rv == CORE_OK, return, "gtp send failed");
+        }
+        else
+        {
+            rv = s1ap_send_ue_context_release_command(enb_ue, 
+                    S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                    S1AP_UE_CTX_REL_NO_ACTION, 0);
+            d_assert(rv == CORE_OK, return, "s1ap send error");
+        }
     }
     else
     {
         d_trace(5, "    NOT Registered State\n");
-        d_assert(mme_ue,,);
         if (MME_HAVE_SGW_S11_PATH(mme_ue))
         {
             d_trace(5, "    WITH Delete Sesson\n");

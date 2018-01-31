@@ -76,7 +76,6 @@ status_t mme_context_init()
 
     /* Timer value */
     self.t3413_value = 2;               /* Paging retry timer: 2 secs */
-    self.s1_holding_timer_value = 30;   /* S1 holding timer: 30 secs */
 
     context_initialized = 1;
 
@@ -1719,12 +1718,6 @@ enb_ue_t* enb_ue_add(mme_enb_t *enb)
             sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
     list_append(&enb->enb_ue_list, enb_ue);
 
-    /* Create S1 holding timer */
-    enb_ue->holding_timer = timer_create(&self.tm_service,
-            MME_EVT_S1AP_S1_HOLDING_TIMER, self.s1_holding_timer_value * 1000);
-    d_assert(enb_ue->holding_timer, return NULL, "Null param");
-    timer_set_param1(enb_ue->holding_timer, enb_ue->index);
-
     return enb_ue;
 
 }
@@ -1746,9 +1739,6 @@ status_t enb_ue_remove(enb_ue_t *enb_ue)
     /* De-associate S1 with NAS/EMM */
     rv = enb_ue_deassociate(enb_ue);
     d_assert(rv == CORE_OK,,);
-
-    /* Delete All Timers */
-    tm_delete(enb_ue->holding_timer);
 
     list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
     hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
@@ -1861,6 +1851,7 @@ static status_t mme_ue_new_guti(mme_ue_t *mme_ue)
 
     memset(&mme_ue->guti, 0, sizeof(guti_t));
 
+    /* Use the first configured plmn_id and mme group id */
     memcpy(&mme_ue->guti.plmn_id, &served_gummei->plmn_id[0], PLMN_ID_LEN);
     mme_ue->guti.mme_gid = served_gummei->mme_gid[0];
     mme_ue->guti.mme_code = served_gummei->mme_code[0];
