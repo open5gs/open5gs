@@ -27,7 +27,8 @@ CORE_DECLARE(void) sgw_s11_handle_release_access_bearers_request(
         gtp_release_access_bearers_request_t *req);
 CORE_DECLARE(void) sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer);
 CORE_DECLARE(void) sgw_s11_handle_downlink_data_notification_ack(
-        sgw_ue_t *sgw_ue, gtp_downlink_data_notification_acknowledge_t *ack);
+        gtp_xact_t *s11_xact, sgw_ue_t *sgw_ue,
+        gtp_downlink_data_notification_acknowledge_t *ack);
 
 CORE_DECLARE(void) sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
         gtp_xact_t *s11_xact, sgw_ue_t *sgw_ue,

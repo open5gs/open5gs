@@ -119,7 +119,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                         &message.release_access_bearers_request);
                     break;
                 case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
-                    sgw_s11_handle_downlink_data_notification_ack(sgw_ue,
+                    sgw_s11_handle_downlink_data_notification_ack(xact, sgw_ue,
                         &message.downlink_data_notification_acknowledge);
                     break;
                 case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:

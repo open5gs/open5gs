@@ -694,13 +694,20 @@ void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
-void sgw_s11_handle_downlink_data_notification_ack(sgw_ue_t *sgw_ue,
+void sgw_s11_handle_downlink_data_notification_ack(
+        gtp_xact_t *s11_xact, sgw_ue_t *sgw_ue,
         gtp_downlink_data_notification_acknowledge_t *ack)
 {
+    status_t rv;
     d_assert(sgw_ue, return, "Null param");
+    d_assert(s11_xact, return, "Null param");
+
     d_trace(3, "[SGW] Downlink Data Notification Acknowledge\n");
     d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+
+    rv = gtp_xact_commit(s11_xact);
+    d_assert(rv == CORE_OK, return, "xact_commit error");
 }
 
 void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
