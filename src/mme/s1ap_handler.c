@@ -392,29 +392,27 @@ void s1ap_handle_initial_context_setup_failure(
                 "nas_send_service_reject() failed");
 #endif
 
-#if 1 /* Implicit Release */
+#if 1 /* Explicit Release */
+
+        d_trace(5, "    Explicit Release\n");
+        rv = s1ap_send_ue_context_release_command(enb_ue,
+                S1ap_Cause_PR_nas,
+#if 1 /* NAS Cause: Normal Relase */
+                S1ap_CauseNas_normal_release,
+#else /* NAS Cause : Detach */
+                S1ap_CauseNas_detach,
+#endif
+                S1AP_UE_CTX_REL_NO_ACTION, 0);
+        d_assert(rv == CORE_OK,, "s1ap send error");
+
+#else  /* Implicit Release */
+
         d_trace(5, "    Implicit Release\n");
         rv = enb_ue_remove(enb_ue);
         d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
 
         rv = mme_ue_deassociate(mme_ue);
-        d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
-#else  /* Explicit Release */
-
-        d_trace(5, "    Explicit Release\n");
-#if 0 /* NAS Cause : Detach */
-        d_trace(5, "    NAS-CAUSE: DETACH\n");
-        rv = s1ap_send_ue_context_release_command(enb_ue,
-                S1ap_Cause_PR_nas, S1ap_CauseNas_detach,
-                S1AP_UE_CTX_REL_NO_ACTION, 0);
-        d_assert(rv == CORE_OK,, "s1ap send error");
-#else /* NAS Cause : Normal Release */
-        d_trace(5, "    NAS-CAUSE: Normal Release\n");
-        rv = s1ap_send_ue_context_release_command(enb_ue,
-                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_NO_ACTION, 0);
-        d_assert(rv == CORE_OK,, "s1ap send error");
-#endif
+        d_assert(rv == CORE_OK,, "mme_ue_deassociate() failed");
 
 #endif
     }
@@ -626,7 +624,7 @@ void s1ap_handle_ue_context_release_complete(
 
             d_assert(mme_ue,,);
             rv = mme_ue_deassociate(mme_ue);
-            d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
+            d_assert(rv == CORE_OK,, "mme_ue_deassociate() failed");
             break;
         }
         case S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT:
