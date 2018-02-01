@@ -299,7 +299,6 @@ static void common_register_state(fsm_t *s, event_t *e)
             {
                 rv = nas_send_tau_accept(mme_ue);
                 d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
-                FSM_TRAN(&mme_ue->sm, &emm_state_registered);
             }
             else
             {

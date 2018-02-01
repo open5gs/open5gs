@@ -390,47 +390,9 @@ status_t nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
 
 status_t nas_send_tau_accept(mme_ue_t *mme_ue)
 {
-#if OLD_TAU_ACCEPT
-    status_t rv;
-    enb_ue_t *enb_ue = NULL;
-    pkbuf_t *s1apbuf = NULL, *emmbuf = NULL;
-
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
-
-    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
-    {
-        enb_ue = mme_ue->enb_ue;
-
-        d_assert(enb_ue, return CORE_ERROR, "Null param");
-
-        /* Build TAU accept */
-        rv = emm_build_tau_accept(&emmbuf, mme_ue);
-        d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
-
-        /* Send Dl NAS to UE */
-        rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
-        d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
-     
-        rv = s1ap_send_ue_context_release_command(enb_ue,
-                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_NO_ACTION, 0);
-        d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
-    }
-    else
-    {
-        rv = emm_build_tau_accept(&emmbuf, mme_ue);
-        d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
-
-        rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, emmbuf);
-        d_assert(rv == CORE_OK && s1apbuf, 
-                pkbuf_free(emmbuf); return CORE_ERROR, "s1ap build error");
-
-        rv = nas_send_to_enb(mme_ue, s1apbuf);
-        d_assert(rv == CORE_OK, return CORE_ERROR, "nas send error");
-    }
-#else /* Change new code */
     status_t rv;
     pkbuf_t *emmbuf = NULL;
+    int bearer_establishment_requested = 0;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
@@ -439,7 +401,31 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
-#endif
+
+    if (ECM_CONNECTED(mme_ue))
+    {
+        d_trace(5, "    ECM-Connected\n");
+        bearer_establishment_requested = 1;
+    }
+
+    if (mme_ue->nas_eps.update.active_flag)
+    {
+        d_trace(5, "    Active flag\n");
+        bearer_establishment_requested = 1;
+    }
+
+    if (bearer_establishment_requested == 0)
+    {
+        enb_ue_t *enb_ue = NULL;
+
+        enb_ue = mme_ue->enb_ue;
+        d_assert(enb_ue, return CORE_ERROR,);
+
+        rv = s1ap_send_ue_context_release_command(enb_ue,
+                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_NO_ACTION, 0);
+        d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
+    }
 
     return CORE_OK;
 }
