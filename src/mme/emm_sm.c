@@ -118,7 +118,7 @@ static void common_register_state(fsm_t *s, event_t *e)
 
                     rv = s1ap_send_ue_context_release_command(enb_ue, 
                         S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_NO_ACTION, 0);
+                        S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);
                     d_assert(rv == CORE_OK,,
                         "s1ap_send_ue_context_release_command() failed");
                     return;

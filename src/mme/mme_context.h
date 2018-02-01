@@ -175,8 +175,9 @@ struct _enb_ue_t {
      * Retrieve by UE Context Release Complete */
 #define S1AP_UE_CTX_REL_INVALID_ACTION                      0
 #define S1AP_UE_CTX_REL_NO_ACTION                           1
-#define S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT               2
-#define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              3
+#define S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT               2
+#define S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT               3
+#define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              4
     c_uint8_t      ue_ctx_rel_action;
 
     /* Related Context */

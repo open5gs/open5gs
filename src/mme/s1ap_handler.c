@@ -159,15 +159,17 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                             ? mme_ue->imsi_bcd : "Unknown");
 
                 /* If NAS(mme_ue_t) has already been associated with
-                 * older S1(enb_ue_t) context, remove older S1 context. */
+                 * older S1(enb_ue_t) context, send UE context release command
+                 * to older S1 context. */
                 if (mme_ue->enb_ue)
                 {
-                    d_warn("Implicit S1 release");
-                    d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                    d_trace(5, "OLD ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
                         mme_ue->enb_ue->enb_ue_s1ap_id,
                         mme_ue->enb_ue->mme_ue_s1ap_id);
-                    rv = enb_ue_remove(mme_ue->enb_ue);
-                    d_assert(rv == CORE_OK,,);
+                    rv = s1ap_send_ue_context_release_command(mme_ue->enb_ue, 
+                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                            S1AP_UE_CTX_REL_NO_ACTION, 0);
+                    d_assert(rv == CORE_OK, return, "s1ap send error");
                 }
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
@@ -406,7 +408,7 @@ void s1ap_handle_initial_context_setup_failure(
 #else /* NAS Cause : Detach */
                 S1ap_CauseNas_detach,
 #endif
-                S1AP_UE_CTX_REL_NO_ACTION, 0);
+                S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);
         d_assert(rv == CORE_OK,, "s1ap send error");
 
 #else  /* Implicit Release */
@@ -574,7 +576,7 @@ void s1ap_handle_ue_context_release_request(
             d_trace(5, "    ECM-Idle\n");
             rv = s1ap_send_ue_context_release_command(enb_ue, 
                     S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_NO_ACTION, 0);
+                    S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);
             d_assert(rv == CORE_OK, return, "s1ap send error");
         }
     }
@@ -630,6 +632,13 @@ void s1ap_handle_ue_context_release_complete(
             d_trace(5, "    No Action\n");
             rv = enb_ue_remove(enb_ue);
             d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
+            break;
+        }
+        case S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT:
+        {
+            d_trace(5, "    Action: Unlink UE(mme) context\n");
+            rv = enb_ue_remove(enb_ue);
+            d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
 
             d_assert(mme_ue,,);
             rv = mme_ue_deassociate(mme_ue);
@@ -638,7 +647,7 @@ void s1ap_handle_ue_context_release_complete(
         }
         case S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT:
         {
-            d_trace(5, "    Action: UE(mme) context\n");
+            d_trace(5, "    Action: Remove UE(mme) context\n");
             rv = enb_ue_remove(enb_ue);
             d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
 
