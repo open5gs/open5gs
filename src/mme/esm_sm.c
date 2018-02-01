@@ -100,13 +100,17 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                             "context accept\n");
                     d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
                             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+                    /* Check if Initial Context Setup Response or 
+                     *          E-RAB Setup Response is received */
                     if (MME_HAVE_ENB_S1U_PATH(bearer))
                     {
                         rv = mme_gtp_send_modify_bearer_request(bearer, 0);
-                        d_assert(rv == CORE_OK, return, "gtp send failed");
+                        d_assert(rv == CORE_OK,, "gtp send failed");
                     }
 
-                    esm_handle_activate_default_bearer_accept(bearer);
+                    rv = nas_send_activate_all_dedicated_bearers(bearer);
+                    d_assert(rv == CORE_OK,, "nas send failed");
+
                     FSM_TRAN(s, esm_state_active);
                     break;
                 }
@@ -116,11 +120,12 @@ void esm_state_inactive(fsm_t *s, event_t *e)
                             "context accept\n");
                     d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
                             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-
+                    /* Check if Initial Context Setup Response or 
+                     *          E-RAB Setup Response is received */
                     if (MME_HAVE_ENB_S1U_PATH(bearer))
                     {
                         rv = mme_gtp_send_create_bearer_response(bearer);
-                        d_assert(rv == CORE_OK, return, "gtp send failed");
+                        d_assert(rv == CORE_OK,, "gtp send failed");
                     }
 
                     FSM_TRAN(s, esm_state_active);

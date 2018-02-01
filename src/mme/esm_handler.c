@@ -153,21 +153,3 @@ status_t esm_handle_information_response(mme_sess_t *sess,
 
     return CORE_OK;
 }
-
-void esm_handle_activate_default_bearer_accept(mme_bearer_t *bearer)
-{
-    status_t rv;
-
-    d_assert(bearer, return, "Null param");
-
-    mme_bearer_t *dedicated_bearer = mme_bearer_next(bearer);
-    while(dedicated_bearer)
-    {
-        rv = nas_send_activate_dedicated_bearer_context_request(
-                dedicated_bearer);
-        d_assert(rv == CORE_OK, return,
-            "nas_send_activate_dedicated_bearer_context failed");
-
-        dedicated_bearer = mme_bearer_next(dedicated_bearer);
-    }
-}

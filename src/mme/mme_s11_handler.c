@@ -132,7 +132,7 @@ void mme_s11_handle_modify_bearer_response(
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,
         rv = s1ap_send_path_switch_ack(mme_ue);
-        d_assert(rv == CORE_OK, return, "s1ap send error");
+        d_assert(rv == CORE_OK,, "s1ap send error");
     );
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY,
@@ -145,7 +145,7 @@ void mme_s11_handle_modify_bearer_response(
                 S1ap_Cause_PR_radioNetwork,
                 S1ap_CauseRadioNetwork_successful_handover,
                 S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
-        d_assert(rv == CORE_OK, return, "s1ap send error");
+        d_assert(rv == CORE_OK,, "s1ap send error");
     );
 
     return;

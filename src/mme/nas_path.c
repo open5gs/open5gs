@@ -310,6 +310,26 @@ status_t nas_send_activate_dedicated_bearer_context_request(
     return CORE_OK;
 }
 
+status_t nas_send_activate_all_dedicated_bearers(mme_bearer_t *default_bearer)
+{
+    status_t rv;
+
+    d_assert(default_bearer, return CORE_ERROR, "Null param");
+
+    mme_bearer_t *dedicated_bearer = mme_bearer_next(default_bearer);
+    while(dedicated_bearer)
+    {
+        rv = nas_send_activate_dedicated_bearer_context_request(
+                dedicated_bearer);
+        d_assert(rv == CORE_OK, return CORE_ERROR,
+            "nas_send_activate_dedicated_bearer_context failed");
+
+        dedicated_bearer = mme_bearer_next(dedicated_bearer);
+    }
+
+    return CORE_OK;
+}
+
 status_t nas_send_modify_bearer_context_request(
         mme_bearer_t *bearer, int qos_presence, int tft_presence)
 {
