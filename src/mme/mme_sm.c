@@ -212,38 +212,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
             tm_delete(timer);
             break;
         }
-        case MME_EVT_S1AP_S1_HOLDING_TIMER:
-        {
-            enb_ue_t *enb_ue = NULL;
-            mme_ue_t *mme_ue = NULL;
-
-            d_assert(0, break, "Deprecated");
-
-            enb_ue = enb_ue_find(event_get_param1(e));
-            d_assert(enb_ue, break, "No ENB UE context");
-            d_warn("Implicit S1 release");
-            d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
-
-            mme_ue = enb_ue->mme_ue;
-            d_assert(mme_ue, break, "No MME UE context");
-            d_warn("Associated NAS/EMM");
-            d_warn("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]",
-                    mme_ue->guti.mme_gid,
-                    mme_ue->guti.mme_code,
-                    mme_ue->guti.m_tmsi,
-                    MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown");
-            if (mme_ue->enb_ue)
-                d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                    mme_ue->enb_ue->enb_ue_s1ap_id,
-                    mme_ue->enb_ue->mme_ue_s1ap_id);
-            else
-                d_warn("    No Associated S1");
-
-            rv = enb_ue_remove(enb_ue);
-            d_assert(rv == CORE_OK,,);
-            break;
-        }
         case MME_EVT_EMM_MESSAGE:
         {
             nas_message_t message;
@@ -295,13 +263,22 @@ void mme_state_operational(fsm_t *s, event_t *e)
                  * to older S1 context. */
                 if (mme_ue->enb_ue)
                 {
+#if NOT_WORKING
                     d_trace(5, "OLD ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
                         mme_ue->enb_ue->enb_ue_s1ap_id,
                         mme_ue->enb_ue->mme_ue_s1ap_id);
                     rv = s1ap_send_ue_context_release_command(mme_ue->enb_ue, 
                             S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_NO_ACTION, 0);
-                    d_assert(rv == CORE_OK, return, "s1ap send error");
+                    d_assert(rv == CORE_OK,, "s1ap send error");
+#else
+                    d_warn("Implicit S1 release");
+                    d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                          mme_ue->enb_ue->enb_ue_s1ap_id,
+                          mme_ue->enb_ue->mme_ue_s1ap_id);
+                    rv = enb_ue_remove(mme_ue->enb_ue);
+                    d_assert(rv == CORE_OK,,);
+#endif
                 }
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }

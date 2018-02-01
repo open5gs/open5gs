@@ -163,6 +163,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                  * to older S1 context. */
                 if (mme_ue->enb_ue)
                 {
+#if NOT_WORKING
                     d_trace(5, "OLD ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
                         mme_ue->enb_ue->enb_ue_s1ap_id,
                         mme_ue->enb_ue->mme_ue_s1ap_id);
@@ -170,6 +171,14 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                             S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_NO_ACTION, 0);
                     d_assert(rv == CORE_OK, return, "s1ap send error");
+#else
+                    d_warn("Implicit S1 release");
+                    d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                          mme_ue->enb_ue->enb_ue_s1ap_id,
+                          mme_ue->enb_ue->mme_ue_s1ap_id);
+                    rv = enb_ue_remove(mme_ue->enb_ue);
+                    d_assert(rv == CORE_OK,,);
+#endif
                 }
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
