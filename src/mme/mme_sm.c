@@ -298,8 +298,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     d_trace(5, "OLD ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
                         mme_ue->enb_ue->enb_ue_s1ap_id,
                         mme_ue->enb_ue->mme_ue_s1ap_id);
-                    rv = enb_ue_remove(mme_ue->enb_ue);
-                    d_assert(rv == CORE_OK,,);
                     rv = s1ap_send_ue_context_release_command(mme_ue->enb_ue, 
                             S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_NO_ACTION, 0);
@@ -568,8 +566,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
  * If the MME receives a Downlink Data Notification after step 2 and 
  * before step 9, the MME shall not send S1 interface paging messages
  */
-                    if (ECM_IDLE(mme_ue) ||
-                        mme_ue->nas_eps.type != MME_EPS_TYPE_SERVICE_REQUEST)
+                    if (ECM_IDLE(mme_ue))
                     {
                         s1ap_handle_paging(mme_ue);
                         /* Start T3413 */
