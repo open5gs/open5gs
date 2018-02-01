@@ -200,7 +200,8 @@ status_t s1ap_build_initial_context_setup_request(
             e_rab->e_RAB_ID = bearer->ebi;
             e_rab->e_RABlevelQoSParameters.qCI = bearer->qos.qci;
 
-            d_trace(5, "    EBI[%d] QCI[%d]\n", bearer->ebi, bearer->qos.qci);
+            d_trace(5, "    EBI[%d] QCI[%d] SGW-S1U-TEID[%d]\n",
+                    bearer->ebi, bearer->qos.qci, bearer->sgw_s1u_teid);
 
             e_rab->e_RABlevelQoSParameters.allocationRetentionPriority.
                 priorityLevel = bearer->qos.arp.priority_level;
@@ -385,6 +386,7 @@ status_t s1ap_build_e_rab_setup_request(
             &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
     s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
+    d_trace(5, "    SGW-S1U-TEID[%d]\n", bearer->sgw_s1u_teid);
 
     nasPdu = &e_rab->nAS_PDU;
     nasPdu->size = esmbuf->len;
@@ -803,6 +805,7 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
                     core_calloc(1, sizeof(S1ap_GTP_TEID_t));
                 s1ap_uint32_to_OCTET_STRING(
                         bearer->sgw_dl_teid, e_rab->dL_gTP_TEID);
+                d_trace(5, "    SGW-DL-TEID[%d]\n", bearer->sgw_dl_teid);
             }
 
             if (MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
@@ -818,6 +821,7 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
                     core_calloc(1, sizeof(S1ap_GTP_TEID_t));
                 s1ap_uint32_to_OCTET_STRING(
                         bearer->sgw_ul_teid, e_rab->uL_S1ap_GTP_TEID);
+                d_trace(5, "    SGW-UL-TEID[%d]\n", bearer->sgw_dl_teid);
             }
 
             if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
@@ -974,6 +978,7 @@ status_t s1ap_build_handover_request(
                     &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress);
             d_assert(rv == CORE_OK, return CORE_ERROR,);
             s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
+            d_trace(5, "    SGW-S1U-TEID[%d]\n", bearer->sgw_s1u_teid);
 
             ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListHOReq, e_rab);
 

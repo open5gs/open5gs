@@ -30,15 +30,17 @@ status_t pgw_s5c_build_create_session_response(
     c_uint8_t pco_buf[MAX_PCO_LEN];
     c_int16_t pco_len;
 
+    d_trace(3, "[PGW] Create Session Response\n");
+
     d_assert(sess, return CORE_ERROR, "Null param");
     d_assert(req, return CORE_ERROR, "Null param");
-
-    d_trace(3, "[PGW] Create Session Response\n");
-    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
-            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-
     bearer = pgw_default_bearer_in_sess(sess);
     d_assert(bearer, return CORE_ERROR, "Null param");
+
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+    d_trace(5, "    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]\n",
+            bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
     rsp = &gtp_message.create_session_response;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -120,7 +122,7 @@ status_t pgw_s5c_build_create_session_response(
 }
 
 status_t pgw_s5c_build_delete_session_response(
-        pkbuf_t **pkbuf, c_uint8_t type, pgw_sess_t *sess,
+        pkbuf_t **pkbuf, c_uint8_t type,
         gx_message_t *gx_message, gtp_delete_session_request_t *req)
 {
     status_t rv;
@@ -132,13 +134,8 @@ status_t pgw_s5c_build_delete_session_response(
     c_uint8_t pco_buf[MAX_PCO_LEN];
     c_int16_t pco_len;
     
-    d_assert(sess, return CORE_ERROR, "Null param");
     d_assert(gx_message, return CORE_ERROR, "Null param");
     d_assert(req, return CORE_ERROR, "Null param");
-
-    d_trace(3, "[PGW] Delete Session Response\n");
-    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
-            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     /* prepare cause */
     memset(&cause, 0, sizeof(cause));

@@ -75,9 +75,6 @@ void mme_s11_handle_create_session_response(
     sgw_s11_teid = rsp->sender_f_teid_for_control_plane.data;
     mme_ue->sgw_s11_teid = ntohl(sgw_s11_teid->teid);
 
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
-
     memcpy(&pdn->paa, rsp->pdn_address_allocation.data,
             rsp->pdn_address_allocation.len);
 
@@ -90,6 +87,12 @@ void mme_s11_handle_create_session_response(
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data;
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
+
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+    d_trace(5, "    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]\n",
+        bearer->enb_s1u_teid, bearer->sgw_s1u_teid);
+
     rv = gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
     d_assert(rv == CORE_OK, return,);
 

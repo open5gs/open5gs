@@ -59,6 +59,10 @@ void pgw_gx_handle_cca_termination_request(
     /* backup sgw_s5c_teid in session context */
     sgw_s5c_teid = sess->sgw_s5c_teid;
 
+    d_trace(3, "[PGW] Delete Session Response\n");
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
     /* Remove a pgw session */
     pgw_sess_remove(sess);
 
@@ -67,7 +71,7 @@ void pgw_gx_handle_cca_termination_request(
     h.teid = sgw_s5c_teid;
 
     rv = pgw_s5c_build_delete_session_response(
-            &pkbuf, h.type, sess, gx_message, req);
+            &pkbuf, h.type, gx_message, req);
     d_assert(rv == CORE_OK, return, "S11 build error");
 
     rv = gtp_xact_update_tx(xact, &h, pkbuf);

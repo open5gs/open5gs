@@ -330,7 +330,8 @@ void s1ap_handle_initial_context_setup_response(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         d_assert(rv == CORE_OK, return,);
 
-        d_trace(5, "    EBI[%d]\n", bearer->ebi);
+        d_trace(5, "    EBI[%d] ENB-S1U-TEID[%d]\n",
+                bearer->ebi, bearer->enb_s1u_teid);
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {

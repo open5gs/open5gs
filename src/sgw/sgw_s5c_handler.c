@@ -80,16 +80,21 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     sess->pgw_s5c_teid = ntohl(pgw_s5c_teid->teid);
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
                 presence = 0;
-    
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
-        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
-        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     /* Receive Data Plane(UL) : PGW-S5U */
     pgw_s5u_teid = rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data;
     d_assert(pgw_s5u_teid, return, "Null param");
     s5u_tunnel->remote_teid = ntohl(pgw_s5u_teid->teid);
+    
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+    d_trace(5, "    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]\n",
+        s1u_tunnel->remote_teid, s1u_tunnel->local_teid);
+    d_trace(5, "    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]\n",
+        s5u_tunnel->local_teid, s5u_tunnel->remote_teid);
+
     pgw = gtp_find_node(&sgw_self()->pgw_s5u_list, pgw_s5u_teid);
     if (!pgw)
     {
@@ -418,7 +423,5 @@ void sgw_s5c_handle_delete_bearer_request(gtp_xact_t *s5c_xact,
 
     rv = gtp_xact_commit(s11_xact);
     d_assert(rv == CORE_OK, return, "xact_commit error");
-
-    d_trace(3, "[SGW] Delete Bearer Request : SGW <-- PGW\n");
 }
 

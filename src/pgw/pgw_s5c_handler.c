@@ -73,13 +73,16 @@ void pgw_s5c_handle_create_session_request(
     d_assert(sgw_s5c_teid, return, "Null param");
     sess->sgw_s5c_teid = ntohl(sgw_s5c_teid->teid);
 
-    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
-            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-
     /* Control Plane(DL) : SGW-S5U */
     sgw_s5u_teid = req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data;
     d_assert(sgw_s5u_teid, return, "Null param");
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
+
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+    d_trace(5, "    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]\n",
+            bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
+
     sgw = gtp_find_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
     if (!sgw)
     {

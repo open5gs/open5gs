@@ -111,6 +111,8 @@ void sgw_s11_handle_create_session_request(
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
     d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+    d_trace(5, "    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]\n",
+        s5u_tunnel->local_teid, s5u_tunnel->remote_teid);
 
     pgw_s5c_teid = req->pgw_s5_s8_address_for_control_plane_or_pmip.data;
     d_assert(pgw_s5c_teid, return, "Null param");
@@ -189,8 +191,6 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     d_assert(req, return, "Null param");
 
     d_trace(3, "[SGW] Modify Bearer Reqeust\n");
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
-        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
     if (req->bearer_contexts_to_be_modified.presence == 0)
     {
         d_error("No Bearer");
@@ -234,6 +234,12 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     /* Data Plane(DL) : eNB-S1U */
     enb_s1u_teid = req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data;
     s1u_tunnel->remote_teid = ntohl(enb_s1u_teid->teid);
+
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+    d_trace(5, "    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]\n",
+        s1u_tunnel->remote_teid, s1u_tunnel->local_teid);
+
     enb = gtp_find_node(&sgw_self()->enb_s1u_list, enb_s1u_teid);
     if (!enb)
     {
@@ -394,17 +400,22 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     sess = bearer->sess;
     d_assert(sess, return, "Null param");
 
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
-        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
-        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-
     /* Set EBI */
     bearer->ebi = req->bearer_contexts.eps_bearer_id.u8;
 
     /* Data Plane(DL) : eNB-S1U */
     enb_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;
     s1u_tunnel->remote_teid = ntohl(enb_s1u_teid->teid);
+
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+    d_trace(5, "    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]\n",
+        s1u_tunnel->remote_teid, s1u_tunnel->local_teid);
+    d_trace(5, "    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]\n",
+        s5u_tunnel->local_teid, s5u_tunnel->remote_teid);
+
     enb = gtp_find_node(&sgw_self()->enb_s1u_list, enb_s1u_teid);
     if (!enb)
     {
@@ -778,7 +789,8 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             enb = gtp_find_node(&sgw_self()->enb_s1u_list, req_teid);
             if (!enb)
             {
-                enb = gtp_add_node_with_teid(&sgw_self()->enb_s1u_list, req_teid,
+                enb = gtp_add_node_with_teid(
+                    &sgw_self()->enb_s1u_list, req_teid,
                     sgw_self()->gtpu_port,
                     context_self()->parameter.no_ipv4,
                     context_self()->parameter.no_ipv6,
@@ -800,6 +812,9 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             rsp_bearers[i]->s4_u_sgsn_f_teid.presence = 1;
             rsp_bearers[i]->s4_u_sgsn_f_teid.data = &rsp_dl_teid[i];
             rsp_bearers[i]->s4_u_sgsn_f_teid.len = len;
+
+            d_trace(5, "    SGW_DL_TEID[%d] ENB_DL_TEID[%d]\n",
+                    tunnel->local_teid, tunnel->remote_teid);
         }
 
         if (req_bearers[i]->s12_rnc_f_teid.presence)
@@ -838,6 +853,8 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             rsp_bearers[i]->s2b_u_epdg_f_teid_5.presence = 1;
             rsp_bearers[i]->s2b_u_epdg_f_teid_5.data = &rsp_ul_teid[i];
             rsp_bearers[i]->s2b_u_epdg_f_teid_5.len = len;
+            d_trace(5, "    SGW_UL_TEID[%d] ENB_UL_TEID[%d]\n",
+                    tunnel->local_teid, tunnel->remote_teid);
         }
 
         if (req_bearers[i]->s1_u_enodeb_f_teid.presence ||

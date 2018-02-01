@@ -249,6 +249,8 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
     d_trace(3, "[MME] Modifty Bearer Request\n");
     d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+    d_trace(5, "    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]\n",
+        bearer->enb_s1u_teid, bearer->sgw_s1u_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 

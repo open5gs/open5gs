@@ -95,8 +95,7 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             {
                 sess = pgw_sess_find_by_teid(message->h.teid);
             }
-            d_assert(sess,
-                    pkbuf_free(recvbuf); pkbuf_free(copybuf); break,
+            d_assert(sess, pkbuf_free(recvbuf); pkbuf_free(copybuf); break,
                     "No Session Context");
 
             rv = gtp_xact_receive(sess->gnode, &message->h, &xact);

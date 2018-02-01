@@ -1472,6 +1472,8 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_s1ap_sm, s1ap);
         extern int _s1ap_build;
         d_trace_level(&_s1ap_build, s1ap);
+        extern int _s1ap_conv;
+        d_trace_level(&_s1ap_conv, s1ap);
         extern int _s1ap_handler;
         d_trace_level(&_s1ap_handler, s1ap);
         extern int _s1ap_sctp;

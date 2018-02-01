@@ -1,6 +1,7 @@
 #define TRACE_MODULE _s1ap_conv
 
 #include "core_debug.h"
+#include "core_network.h"
 
 #include "3gpp_types.h"
 #include "s1ap_conv.h"
@@ -111,6 +112,8 @@ void s1ap_ENB_ID_to_uint32(S1ap_ENB_ID_t *eNB_ID, c_uint32_t *uint32)
 
 status_t s1ap_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ip_t *ip)
 {
+    char buf[CORE_ADDRSTRLEN], buf2[CORE_ADDRSTRLEN];
+
     d_assert(bit_string, return CORE_ERROR,);
     d_assert(ip, return CORE_ERROR,);
 
@@ -120,16 +123,20 @@ status_t s1ap_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ip_t *ip)
         ip->ipv6 = 1;
         memcpy(&ip->both.addr, bit_string->buf, IPV4_LEN);
         memcpy(&ip->both.addr6, bit_string->buf+IPV4_LEN, IPV6_LEN);
+        d_trace(5, "    IPv4[%s] IPv6[%s]\n",
+            INET_NTOP(&ip->both.addr, buf), INET6_NTOP(&ip->both.addr6, buf2));
     }
     else if (bit_string->size == IPV4_LEN)
     {
         ip->ipv4 = 1;
         memcpy(&ip->addr, bit_string->buf, IPV4_LEN);
+        d_trace(5, "    IPv4[%s]\n", INET_NTOP(&ip->addr, buf));
     }
     else if (bit_string->size == IPV6_LEN)
     {
         ip->ipv6 = 1;
         memcpy(&ip->addr6, bit_string->buf, IPV6_LEN);
+        d_trace(5, "    IPv6[%s]\n", INET_NTOP(&ip->addr6, buf));
     }
     else
         d_assert(0, return CORE_ERROR, "Invalid Length(%d)", bit_string->size);
@@ -140,6 +147,8 @@ status_t s1ap_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ip_t *ip)
 }
 status_t s1ap_ip_to_BIT_STRING(ip_t *ip, BIT_STRING_t *bit_string)
 {
+    char buf[CORE_ADDRSTRLEN], buf2[CORE_ADDRSTRLEN];
+
     d_assert(ip, return CORE_ERROR,);
     d_assert(bit_string, return CORE_ERROR,);
 
@@ -149,18 +158,22 @@ status_t s1ap_ip_to_BIT_STRING(ip_t *ip, BIT_STRING_t *bit_string)
         bit_string->buf = core_calloc(bit_string->size, sizeof(c_uint8_t));
         memcpy(bit_string->buf, &ip->both.addr, IPV4_LEN);
         memcpy(bit_string->buf+IPV4_LEN, &ip->both.addr6, IPV6_LEN);
+        d_trace(5, "    IPv4[%s] IPv6[%s]\n",
+            INET_NTOP(&ip->both.addr, buf), INET6_NTOP(&ip->both.addr6, buf2));
     }
     else if (ip->ipv4)
     {
         bit_string->size = IPV4_LEN;
         bit_string->buf = core_calloc(bit_string->size, sizeof(c_uint8_t));
         memcpy(bit_string->buf, &ip->addr, IPV4_LEN);
+        d_trace(5, "    IPv4[%s]\n", INET_NTOP(&ip->addr, buf));
     }
     else if (ip->ipv6)
     {
         bit_string->size = IPV6_LEN;
         bit_string->buf = core_calloc(bit_string->size, sizeof(c_uint8_t));
         memcpy(bit_string->buf, &ip->addr6, IPV6_LEN);
+        d_trace(5, "    IPv6[%s]\n", INET_NTOP(&ip->addr6, buf));
     }
     else
         d_assert(0, return CORE_ERROR,);
