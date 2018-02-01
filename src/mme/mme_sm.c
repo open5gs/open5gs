@@ -564,7 +564,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
  * If the MME receives a Downlink Data Notification after step 2 and 
  * before step 9, the MME shall not send S1 interface paging messages
  */
-                    if (ECM_IDLE(mme_ue))
+                    if (mme_ue->enb_ue == NULL)
                     {
                         s1ap_handle_paging(mme_ue);
                         /* Start T3413 */
