@@ -945,7 +945,8 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
 
         "2017"
         "0012000002000040 05c0020000c80008 40020002",
-        "",
+        "2017"
+        "0012000002000040 05c0020000ca0008 40020026",
         "2017001200000200 004005c000000001 00084002001f",
 
         "2017"
@@ -971,7 +972,7 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
         0,
 
         22,
-        0,
+        22,
         22,
 
         22,
@@ -1024,6 +1025,42 @@ status_t tests1ap_build_service_request(pkbuf_t **pkbuf,
     memcpy((*pkbuf)->payload + 21, &mac, 2);
     m_tmsi = htonl(m_tmsi);
     memcpy((*pkbuf)->payload + 56, &m_tmsi, 4);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_tau_request(pkbuf_t **pkbuf,
+        c_uint32_t enb_ue_s1ap_id, c_uint8_t seq,
+        c_uint32_t mac, c_uint32_t m_tmsi)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "000c"
+        "406d000006000800 020035001a003b3a 1797c955d80a0748 010bf600f1100002"
+        "01d900a79e5805f0 f0c040005200f110 30395c1004570220 003103e561249011"
+        "033358a25d0103d0 e0c1004300060000 f110303900644008 0000f1100002cf90"
+        "0086400130006000 060040d900a79e",
+
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        113,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    int i = 0;
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    enb_ue_s1ap_id = htonl(enb_ue_s1ap_id << 8);
+    memcpy((*pkbuf)->payload + 11, &enb_ue_s1ap_id, 3);
+    mac = htonl(mac);
+    memcpy((*pkbuf)->payload + 19, &mac, 4);
+    memcpy((*pkbuf)->payload + 23, &seq, 1);
+    m_tmsi = htonl(m_tmsi);
+    memcpy((*pkbuf)->payload + 109, &m_tmsi, 4);
 
     return CORE_OK;
 }

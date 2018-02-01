@@ -164,7 +164,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                 {
                     d_warn("Implicit S1 release");
                     d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-                        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+                        mme_ue->enb_ue->enb_ue_s1ap_id,
+                        mme_ue->enb_ue->mme_ue_s1ap_id);
                     rv = enb_ue_remove(mme_ue->enb_ue);
                     d_assert(rv == CORE_OK,,);
                 }

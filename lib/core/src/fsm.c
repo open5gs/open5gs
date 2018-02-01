@@ -43,10 +43,16 @@ void fsm_dispatch(void *s, void *_e)
     fsm_t *fsm = s;
     event_t *e = _e;
     fsm_handler_t tmp = fsm->state;
+#if OLD_FSM_DISPATCH
     fsm->state = (fsm_handler_t)0;
+#endif
 
     (*tmp)(s, e);
+#if OLD_FSM_DISPATCH
     if (fsm->state != NULL)
+#else
+    if (fsm->state != tmp)
+#endif
     {
         if (e)
         {
@@ -64,13 +70,19 @@ void fsm_dispatch(void *s, void *_e)
         }
         else
         {
+#if OLD_FSM_DISPATCH
             (*tmp)(s, &entry_event);
+#else
+            (*fsm->state)(s, &entry_event);
+#endif
         }
     }
+#if OLD_FSM_DISPATCH
     else
     {
         fsm->state = tmp;
     }
+#endif
 }
 
 void fsm_final(void *s, void *_e)

@@ -387,7 +387,7 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
         d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
 
         /* Send Dl NAS to UE */
-        rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == CORE_OK;
+        rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
         d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
      
         rv = s1ap_send_ue_context_release_command(enb_ue,

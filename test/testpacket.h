@@ -46,6 +46,9 @@ CORE_DECLARE(status_t) tests1ap_build_ue_context_release_complete(
 CORE_DECLARE(status_t) tests1ap_build_service_request(pkbuf_t **pkbuf,
         c_uint32_t enb_ue_s1ap_id, c_uint8_t seq,
         c_uint16_t mac, c_uint32_t m_tmsi);
+CORE_DECLARE(status_t) tests1ap_build_tau_request(pkbuf_t **pkbuf,
+        c_uint32_t enb_ue_s1ap_id, c_uint8_t seq,
+        c_uint32_t mac, c_uint32_t m_tmsi);
 CORE_DECLARE(status_t) tests1ap_build_pdn_connectivity_request(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_pdn_disconnectivity_request(
