@@ -30,7 +30,6 @@ void mme_s6a_handle_aia(mme_ue_t *mme_ue, s6a_aia_message_t *aia_message)
 
 void mme_s6a_handle_ula(mme_ue_t *mme_ue, s6a_ula_message_t *ula_message)
 {
-    status_t rv;
     s6a_subscription_data_t *subscription_data = NULL;
 
     d_assert(mme_ue, return, "Null param");
@@ -40,28 +39,4 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue, s6a_ula_message_t *ula_message)
 
     memcpy(&mme_ue->subscription_data,
             subscription_data, sizeof(s6a_subscription_data_t));
-
-    if (FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup))
-    {
-        if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
-        {
-            rv = nas_send_emm_to_esm(mme_ue, &mme_ue->pdn_connectivity_request);
-            d_assert(rv == CORE_OK,, "nas_send_emm_to_esm() failed");
-        }
-        else
-            d_assert(0,, "Invalid Type(%d)", mme_ue->nas_eps.type);
-    }
-    else if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
-    {
-        if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
-        {
-            rv = nas_send_tau_accept(mme_ue);
-            d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
-        }
-        else
-            d_assert(0,, "Invalid EPS-Type[%d]", mme_ue->nas_eps.type);
-    }
-    else
-        d_assert(0,, "Invaild EMM state for EPS-Type[%d]",
-                mme_ue->nas_eps.type);
 }

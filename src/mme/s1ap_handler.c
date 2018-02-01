@@ -562,14 +562,16 @@ void s1ap_handle_ue_context_release_request(
     d_assert(mme_ue,,);
     if (mme_ue && FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
-        d_trace(5, "    Registered State\n");
-        if (MME_HAVE_SGW_S11_PATH(mme_ue))
+        d_trace(5, "    EMM-Registered\n");
+        if (ECM_CONNECTED(mme_ue))
         {
+            d_trace(5, "    ECM-Connected\n");
             rv = mme_gtp_send_release_access_bearers_request(mme_ue);
             d_assert(rv == CORE_OK, return, "gtp send failed");
         }
         else
         {
+            d_trace(5, "    ECM-Idle\n");
             rv = s1ap_send_ue_context_release_command(enb_ue, 
                     S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_NO_ACTION, 0);
@@ -578,7 +580,7 @@ void s1ap_handle_ue_context_release_request(
     }
     else
     {
-        d_trace(5, "    NOT Registered State\n");
+        d_trace(5, "    NOT EMM-Registered\n");
         if (MME_HAVE_SGW_S11_PATH(mme_ue))
         {
             d_trace(5, "    WITH Delete Sesson\n");

@@ -444,11 +444,49 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 case S6A_CMD_CODE_UPDATE_LOCATION:
                 {
                     mme_s6a_handle_ula(mme_ue, &s6a_message->ula_message);
+
+                    if (FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup))
+                    {
+                        if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
+                        {
+                            rv = nas_send_emm_to_esm(mme_ue,
+                                    &mme_ue->pdn_connectivity_request);
+                            d_assert(rv == CORE_OK,,
+                                    "nas_send_emm_to_esm() failed");
+                        }
+                        else
+                            d_assert(0,, "Invalid Type[%d]",
+                                    mme_ue->nas_eps.type);
+                    }
+                    else if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
+                    {
+                        if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
+                        {
+                            rv = nas_send_tau_accept(mme_ue);
+                            d_assert(rv == CORE_OK,,
+                                    "nas_send_tau_accept() failed");
+                        }
+                        else if (mme_ue->nas_eps.type ==
+                            MME_EPS_TYPE_SERVICE_REQUEST)
+                        {
+                            rv = s1ap_send_initial_context_setup_request(
+                                    mme_ue);
+                            d_assert(rv == CORE_OK,,
+                                "s1ap_send_initial_context_setup_request()"
+                                "failed");
+                        }
+                        else
+                            d_assert(0,, "Invalid EPS-Type[%d]",
+                                    mme_ue->nas_eps.type);
+                    }
+                    else
+                        d_assert(0,, "Invaild EMM state for EPS-Type[%d]",
+                                    mme_ue->nas_eps.type);
                     break;
                 }
                 default:
                 {
-                    d_error("Invalid type(%d)", event_get_param2(e));
+                    d_error("Invalid Type[%d]", event_get_param2(e));
                     break;
                 }
             }
@@ -526,7 +564,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
  * If the MME receives a Downlink Data Notification after step 2 and 
  * before step 9, the MME shall not send S1 interface paging messages
  */
-                    if (mme_ue->enb_ue == NULL)
+                    if (ECM_IDLE(mme_ue))
                     {
                         s1ap_handle_paging(mme_ue);
                         /* Start T3413 */

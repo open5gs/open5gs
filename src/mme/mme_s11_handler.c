@@ -515,16 +515,20 @@ void mme_s11_handle_release_access_bearers_response(
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return, "Null param");
 
+    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    rv = gtp_xact_commit(xact);
+    d_assert(rv == CORE_OK,, "xact_commit error");
+
     if (rsp->cause.presence == 0)
     {
         d_error("No Cause");
         return;
     }
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
-            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
+    rv = ECM_STATE_TO_IDLE(mme_ue);
+    d_assert(rv == CORE_OK,, "ECM_STATE_TO_IDLE failed");
 
     rv = s1ap_send_ue_context_release_command(enb_ue,
             S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,

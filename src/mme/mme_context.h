@@ -401,6 +401,11 @@ typedef struct _mme_sess_t {
 
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \
     ((__bEARER) && ((__bEARER)->enb_s1u_teid))
+#define CLEAR_ENB_S1U_PATH(__bEARER) \
+    do { \
+        d_assert((__bEARER), break, "Null param"); \
+        (__bEARER)->enb_s1u_teid = 0; \
+    } while(0)
 
 #define MME_HAVE_ENB_DL_INDIRECT_TUNNEL(__bEARER) \
     ((__bEARER) && ((__bEARER)->enb_dl_teid))
@@ -472,6 +477,15 @@ CORE_DECLARE(hash_index_t *) mme_enb_first();
 CORE_DECLARE(hash_index_t *) mme_enb_next(hash_index_t *hi);
 CORE_DECLARE(mme_enb_t *)    mme_enb_this(hash_index_t *hi);
 CORE_DECLARE(int)           mme_enb_sock_type(sock_id sock);
+
+#define ECM_IDLE(__mME)             \
+    (ecm_state_is_idle(__mME) == 1)
+#define ECM_CONNECTED(__mME)        \
+    (ecm_state_is_idle(__mME) == 0)
+#define ECM_STATE_TO_IDLE(__mME)    \
+    ecm_state_set_idle(__mME)
+CORE_DECLARE(int)           ecm_state_is_idle(mme_ue_t *mme_ue);
+CORE_DECLARE(status_t)      ecm_state_set_idle(mme_ue_t *mme_ue);
 
 CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
 CORE_DECLARE(unsigned int)  enb_ue_count();
