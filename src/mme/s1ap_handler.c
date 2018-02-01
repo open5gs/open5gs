@@ -536,7 +536,8 @@ void s1ap_handle_ue_context_release_request(
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
-    d_assert(enb_ue, return, "No ENB UE Context[%d]", ies->mme_ue_s1ap_id);
+    d_assert(enb_ue, return, "No ENB UE Context : MME_UE_S1AP_ID[%d]",
+            ies->mme_ue_s1ap_id);
     mme_ue = enb_ue->mme_ue;
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
