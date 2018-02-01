@@ -387,6 +387,8 @@ void s1ap_handle_initial_context_setup_failure(
          * that no hanging resources remain at the eNB.
          */
 
+#if 0 /* NOTHING TO DO */
+
 #if 0 /* FIXME : Does it needed? */
         rv = nas_send_service_reject(mme_ue,
             EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
@@ -415,6 +417,8 @@ void s1ap_handle_initial_context_setup_failure(
 
         rv = mme_ue_deassociate(mme_ue);
         d_assert(rv == CORE_OK,, "mme_ue_deassociate() failed");
+
+#endif
 
 #endif
     }

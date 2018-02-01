@@ -931,6 +931,8 @@ pgw_sess_t *pgw_sess_add(
     index_alloc(&pgw_sess_pool, &sess);
     d_assert(sess, return NULL, "Null param");
 
+    sess->gnode = NULL;
+
     sess->pgw_s5c_teid = sess->index;  /* derived from an index */
 
     /* Set IMSI */
@@ -1171,6 +1173,8 @@ pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess)
     bearer->pgw_s5u_teid = bearer->index;
     
     bearer->sess = sess;
+    bearer->gnode = NULL;
+
     list_append(&sess->bearer_list, bearer);
 
     return bearer;

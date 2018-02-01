@@ -670,6 +670,7 @@ sgw_sess_t *sgw_sess_add(
     core_cpystrn(sess->pdn.apn, apn, MAX_APN_LEN+1);
 
     sess->sgw_ue = sgw_ue;
+    sess->gnode = NULL;
 
     list_init(&sess->bearer_list);
 
@@ -908,6 +909,7 @@ sgw_tunnel_t* sgw_tunnel_add(sgw_bearer_t *bearer, c_uint8_t interface_type)
     tunnel->local_teid = tunnel->index;
 
     tunnel->bearer = bearer;
+    tunnel->gnode = NULL;
 
     list_append(&bearer->tunnel_list, tunnel);
 

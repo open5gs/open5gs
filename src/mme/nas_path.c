@@ -370,6 +370,7 @@ status_t nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
 
 status_t nas_send_tau_accept(mme_ue_t *mme_ue)
 {
+#if OLD_TAU_ACCEPT
     status_t rv;
     enb_ue_t *enb_ue = NULL;
     pkbuf_t *s1apbuf = NULL, *emmbuf = NULL;
@@ -407,6 +408,18 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
         rv = nas_send_to_enb(mme_ue, s1apbuf);
         d_assert(rv == CORE_OK, return CORE_ERROR, "nas send error");
     }
+#else /* Change new code */
+    status_t rv;
+    pkbuf_t *emmbuf = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    rv = emm_build_tau_accept(&emmbuf, mme_ue);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
+
+    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
+#endif
 
     return CORE_OK;
 }

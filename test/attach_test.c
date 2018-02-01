@@ -1085,19 +1085,6 @@ static void attach_test3(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-    /* Receive UE Context Release Command */
-    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = tests1ap_enb_read(sock, recvbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    pkbuf_free(recvbuf);
-
-    /* Send UE Release Complete */
-    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+1);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-    rv = tests1ap_enb_send(sock, sendbuf);
-    ABTS_INT_EQUAL(tc, CORE_OK, rv);
-
-    core_sleep(time_from_msec(300));
 out:
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456797"));
     ABTS_PTR_NOTNULL(tc, doc);
