@@ -275,7 +275,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                 /* If NAS(mme_ue_t) has already been associated with
                  * older S1(enb_ue_t) context */
-                if (mme_ue->enb_ue)
+                if (mme_ue->enb_ue && mme_ue->enb_ue->mme_ue)
                 {
 #if SEND_UE_CTX_REL_CMD_IMMEDIATELY
                    /* Send UE context release command to 
