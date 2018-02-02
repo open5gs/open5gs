@@ -1240,14 +1240,29 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
 
     mme_ue_associate_enb_ue(mme_ue, target_ue);
 
-    memcpy(&mme_ue->tai.plmn_id, pLMNidentity->buf, 
-            sizeof(mme_ue->tai.plmn_id));
-    memcpy(&mme_ue->tai.tac, tAC->buf, sizeof(mme_ue->tai.tac));
-    mme_ue->tai.tac = ntohs(mme_ue->tai.tac);
-    memcpy(&mme_ue->e_cgi.plmn_id, pLMNidentity->buf, 
-            sizeof(mme_ue->e_cgi.plmn_id));
-    memcpy(&mme_ue->e_cgi.cell_id, cell_ID->buf, sizeof(mme_ue->e_cgi.cell_id));
-    mme_ue->e_cgi.cell_id = (ntohl(mme_ue->e_cgi.cell_id) >> 4);
+    memcpy(&target_ue->nas.tai.plmn_id, pLMNidentity->buf, 
+            sizeof(target_ue->nas.tai.plmn_id));
+    memcpy(&target_ue->nas.tai.tac, tAC->buf, sizeof(target_ue->nas.tai.tac));
+    target_ue->nas.tai.tac = ntohs(target_ue->nas.tai.tac);
+
+    memcpy(&target_ue->nas.e_cgi.plmn_id, pLMNidentity->buf, 
+            sizeof(target_ue->nas.e_cgi.plmn_id));
+    memcpy(&target_ue->nas.e_cgi.cell_id, cell_ID->buf,
+            sizeof(target_ue->nas.e_cgi.cell_id));
+    target_ue->nas.e_cgi.cell_id = (ntohl(target_ue->nas.e_cgi.cell_id) >> 4);
+
+    d_trace(5, "    OLD TAI[PLMN_ID:0x%x,TAC:%d]\n",
+            mme_ue->tai.plmn_id, mme_ue->tai.tac);
+    d_trace(5, "    OLD E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
+            mme_ue->e_cgi.plmn_id, mme_ue->e_cgi.cell_id);
+    d_trace(5, "    TAI[PLMN_ID:0x%x,TAC:%d]\n",
+            target_ue->nas.tai.plmn_id, target_ue->nas.tai.tac);
+    d_trace(5, "    E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
+            target_ue->nas.e_cgi.plmn_id, target_ue->nas.e_cgi.cell_id);
+
+    /* Copy TAI and ECGI from enb_ue */
+    memcpy(&mme_ue->tai, &target_ue->nas.tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &target_ue->nas.e_cgi, sizeof(e_cgi_t));
 
     sess = mme_sess_first(mme_ue);
     while(sess)

@@ -415,20 +415,6 @@ status_t s1ap_send_handover_request(
     target_ue = enb_ue_add(target_enb);
     d_assert(target_ue, return CORE_ERROR,);
 
-    /* Context transfer from Source to Target */
-    memcpy(&target_ue->nas.tai, &source_ue->nas.tai, sizeof(tai_t));
-    memcpy(&target_ue->nas.e_cgi, &source_ue->nas.e_cgi, sizeof(e_cgi_t));
-
-    d_trace(5, "    Source TAI[PLMN_ID:0x%x,TAC:%d]\n",
-            source_ue->nas.tai.plmn_id, source_ue->nas.tai.tac);
-    d_trace(5, "    Target TAI[PLMN_ID:0x%x,TAC:%d]\n",
-            target_ue->nas.tai.plmn_id, target_ue->nas.tai.tac);
-
-    d_trace(5, "    Source E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
-            source_ue->nas.e_cgi.plmn_id, source_ue->nas.e_cgi.cell_id);
-    d_trace(5, "    Target E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
-            target_ue->nas.e_cgi.plmn_id, target_ue->nas.e_cgi.cell_id);
-
     d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
     d_trace(5, "    Target : ENB_UE_S1AP_ID[Unknown] MME_UE_S1AP_ID[%d]\n",
