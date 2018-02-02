@@ -396,23 +396,29 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
-    rv = emm_build_tau_accept(&emmbuf, mme_ue);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
-
-    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
-    d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
-
+    d_trace(3, "[EMM] Tracking area update accept\n");
+    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
     if (ECM_CONNECTED(mme_ue))
     {
         d_trace(5, "    ECM-Connected\n");
         bearer_establishment_requested = 1;
     }
+    else
+        d_trace(5, "    ECM-Idle\n");
 
     if (mme_ue->nas_eps.update.active_flag)
     {
         d_trace(5, "    Active flag\n");
         bearer_establishment_requested = 1;
     }
+    else
+        d_trace(5, "    No Active flag\n");
+
+    rv = emm_build_tau_accept(&emmbuf, mme_ue);
+    d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
+
+    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
 
     if (bearer_establishment_requested == 0)
     {

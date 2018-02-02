@@ -42,7 +42,12 @@ status_t emm_build_attach_accept(
     t3412_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     t3412_value->value = 9;
 
+    d_trace(5, "    TAI[PLMN_ID:0x%x,TAC:%d]\n",
+            mme_ue->tai.plmn_id, mme_ue->tai.tac);
+    d_trace(5, "    E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
+            mme_ue->e_cgi.plmn_id, mme_ue->e_cgi.cell_id);
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
+    d_trace(5, "    SERVED_TAI_INDEX[%d]\n", served_tai_index);
     d_assert(served_tai_index >= 0 &&
             served_tai_index < MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,
             "Cannot find Served TAI. Check 'mme.tai' configuration");
@@ -302,9 +307,6 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 
     d_assert(mme_ue, return CORE_ERROR,);
 
-    d_trace(3, "[EMM] Tracking area update accept\n");
-    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
-
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_TRACKING_AREA_UPDATE_ACCEPT;
@@ -321,7 +323,12 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     tau_accept->presencemask |= 
         NAS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_PRESENT;
 
+    d_trace(5, "    TAI[PLMN_ID:0x%x,TAC:%d]\n",
+            mme_ue->tai.plmn_id, mme_ue->tai.tac);
+    d_trace(5, "    E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
+            mme_ue->e_cgi.plmn_id, mme_ue->e_cgi.cell_id);
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
+    d_trace(5, "    SERVED_TAI_INDEX[%d]\n", served_tai_index);
     d_assert(served_tai_index >= 0 &&
             served_tai_index < MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,
             "Cannot find Served TAI. Check 'mme.tai' configuration");

@@ -69,6 +69,15 @@ status_t emm_handle_attach_request(
     mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
     d_trace(9, "    ATTACH_TYPE[%d]\n", eps_attach_type->attach_type);
 
+    d_trace(5, "    OLD TAI[PLMN_ID:0x%x,TAC:%d]\n",
+            mme_ue->tai.plmn_id, mme_ue->tai.tac);
+    d_trace(5, "    OLD E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
+            mme_ue->e_cgi.plmn_id, mme_ue->e_cgi.cell_id);
+    d_trace(5, "    TAI[PLMN_ID:0x%x,TAC:%d]\n",
+            enb_ue->nas.tai.plmn_id, enb_ue->nas.tai.tac);
+    d_trace(5, "    E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
+            enb_ue->nas.e_cgi.plmn_id, enb_ue->nas.e_cgi.cell_id);
+
     /* Copy TAI and ECGI from enb_ue */
     memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
@@ -78,11 +87,14 @@ status_t emm_handle_attach_request(
     if (served_tai_index < 0)
     {
         /* Send Attach Reject */
+        d_warn("Cannot find Served TAI[PLMN_ID:0x%x,TAC:%d]",
+            mme_ue->tai.plmn_id, mme_ue->tai.tac);
         nas_send_attach_reject(mme_ue,
             EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED,
             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
         return CORE_ERROR;
     }
+    d_trace(5, "    SERVED_TAI_INDEX[%d]\n", served_tai_index);
 
     /* Store UE specific information */
     if (attach_request->presencemask &
@@ -356,6 +368,27 @@ status_t emm_handle_tau_request(
             sizeof(nas_eps_update_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
 
+    if (ECM_CONNECTED(mme_ue))
+        d_trace(5, "    ECM-Connected\n");
+    else
+        d_trace(5, "    ECM-Idle\n");
+
+    if (mme_ue->nas_eps.update.active_flag)
+        d_trace(5, "    Active flag[UPD:0x%x]\n",
+                mme_ue->nas_eps.update.active_flag);
+    else
+        d_trace(5, "    No Active flag[UPD:0x%x]\n",
+                mme_ue->nas_eps.update.active_flag);
+
+    d_trace(5, "    OLD TAI[PLMN_ID:0x%x,TAC:%d]\n",
+            mme_ue->tai.plmn_id, mme_ue->tai.tac);
+    d_trace(5, "    OLD E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
+            mme_ue->e_cgi.plmn_id, mme_ue->e_cgi.cell_id);
+    d_trace(5, "    TAI[PLMN_ID:0x%x,TAC:%d]\n",
+            enb_ue->nas.tai.plmn_id, enb_ue->nas.tai.tac);
+    d_trace(5, "    E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
+            enb_ue->nas.e_cgi.plmn_id, enb_ue->nas.e_cgi.cell_id);
+
     /* Copy TAI and ECGI from enb_ue */
     memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
@@ -365,9 +398,12 @@ status_t emm_handle_tau_request(
     if (served_tai_index < 0)
     {
         /* Send TAU reject */
+        d_warn("Cannot find Served TAI[PLMN_ID:0x%x,TAC:%d]",
+            mme_ue->tai.plmn_id, mme_ue->tai.tac);
         nas_send_tau_reject(mme_ue, EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
         return CORE_ERROR;
     }
+    d_trace(5, "    SERVED_TAI_INDEX[%d]\n", served_tai_index);
 
     /* Store UE specific information */
     if (tau_request->presencemask &
