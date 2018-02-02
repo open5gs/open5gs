@@ -109,6 +109,7 @@ typedef struct _mme_context_t {
 
     /* Timer value */
     c_uint32_t      t3413_value;            /* Paging retry timer value */
+    c_uint32_t      s1_holding_timer_value; /* S1 holding timer value */
 
     /* Generator for unique identification */
     c_uint32_t      mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
@@ -179,6 +180,24 @@ struct _enb_ue_t {
 #define S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT               3
 #define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              4
     c_uint8_t      ue_ctx_rel_action;
+
+    /* 
+     * S1 holding timer
+     *
+     * When eNodeB sends Attach Request, TAU Request, Service Request repeatly,
+     * S1(enb_ue_t) context is repeatly created. 
+     *
+     * NAS(mme_ue_t) context is associated with last created S1(enb_ue_t)
+     * context, and older S1(enb_ue_t) context might not be freed.
+     *
+     * If NAS(mme_ue_t) has already been associated with
+     * older S1(enb_ue_t) context, the holding timer(30secs) is started.
+     * Newly associated S1(enb_ue_t) context holding timer is stopped.
+     *
+     * If the holding timer expires,
+     * S1(enb_ue_t) context will be implicitly deleted.
+     */
+    tm_block_id     holding_timer;
 
     /* Related Context */
     mme_enb_t       *enb;

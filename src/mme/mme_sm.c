@@ -213,6 +213,20 @@ void mme_state_operational(fsm_t *s, event_t *e)
             tm_delete(timer);
             break;
         }
+        case MME_EVT_S1AP_S1_HOLDING_TIMER:
+        {
+            enb_ue_t *enb_ue = NULL;
+
+            enb_ue = enb_ue_find(event_get_param1(e));
+            d_assert(enb_ue, break, "No ENB UE context");
+            d_warn("Implicit S1 release");
+            d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+            rv = enb_ue_remove(enb_ue);
+            d_assert(rv == CORE_OK,,);
+            break;
+        }
         case MME_EVT_EMM_MESSAGE:
         {
             nas_message_t message;
@@ -260,27 +274,46 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 }
 
                 /* If NAS(mme_ue_t) has already been associated with
-                 * older S1(enb_ue_t) context, send UE context release command
-                 * to older S1 context. */
+                 * older S1(enb_ue_t) context */
                 if (mme_ue->enb_ue)
                 {
-#if NOT_WORKING
+#if SEND_UE_CTX_REL_CMD_IMMEDIATELY
+                   /* Send UE context release command to 
+                    * older S1 context immediately. */
                     d_trace(5, "OLD ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
                         mme_ue->enb_ue->enb_ue_s1ap_id,
                         mme_ue->enb_ue->mme_ue_s1ap_id);
                     rv = s1ap_send_ue_context_release_command(mme_ue->enb_ue, 
                             S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_NO_ACTION, 0);
-                    d_assert(rv == CORE_OK,, "s1ap send error");
-#else
+                    d_assert(rv == CORE_OK, return, "s1ap send error");
+#elif IMPLICIT_S1_RELEASE
+                   /* Implcit S1 release */
                     d_warn("Implicit S1 release");
                     d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                           mme_ue->enb_ue->enb_ue_s1ap_id,
                           mme_ue->enb_ue->mme_ue_s1ap_id);
                     rv = enb_ue_remove(mme_ue->enb_ue);
                     d_assert(rv == CORE_OK,,);
+
+#else /* Use Holding Timer */
+
+                    /* Previous S1(enb_ue_t) context the holding timer(30secs)
+                     * is started.
+                     * Newly associated S1(enb_ue_t) context holding timer
+                     * is stopped. */
+                    d_trace(5, "Start S1 Holding Timer\n");
+                    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+                            mme_ue->enb_ue->enb_ue_s1ap_id, 
+                            mme_ue->enb_ue->mme_ue_s1ap_id);
+                    tm_start(mme_ue->enb_ue->holding_timer);
+
+                    /* De-associate S1 with NAS/EMM */
+                    rv = enb_ue_deassociate(mme_ue->enb_ue);
+                    d_assert(rv == CORE_OK,,);
 #endif
                 }
+                tm_stop(enb_ue->holding_timer);
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
 

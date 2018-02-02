@@ -160,11 +160,12 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                             ? mme_ue->imsi_bcd : "Unknown");
 
                 /* If NAS(mme_ue_t) has already been associated with
-                 * older S1(enb_ue_t) context, send UE context release command
-                 * to older S1 context. */
+                 * older S1(enb_ue_t) context */
                 if (mme_ue->enb_ue)
                 {
-#if NOT_WORKING
+#if SEND_UE_CTX_REL_CMD_IMMEDIATELY
+                   /* Send UE context release command to 
+                    * older S1 context immediately. */
                     d_trace(5, "OLD ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
                         mme_ue->enb_ue->enb_ue_s1ap_id,
                         mme_ue->enb_ue->mme_ue_s1ap_id);
@@ -172,15 +173,34 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                             S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                             S1AP_UE_CTX_REL_NO_ACTION, 0);
                     d_assert(rv == CORE_OK, return, "s1ap send error");
-#else
+#elif IMPLICIT_S1_RELEASE
+                   /* Implcit S1 release */
                     d_warn("Implicit S1 release");
                     d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                           mme_ue->enb_ue->enb_ue_s1ap_id,
                           mme_ue->enb_ue->mme_ue_s1ap_id);
                     rv = enb_ue_remove(mme_ue->enb_ue);
                     d_assert(rv == CORE_OK,,);
+
+#else /* Use Holding Timer */
+
+                    /* Previous S1(enb_ue_t) context the holding timer(30secs)
+                     * is started.
+                     * Newly associated S1(enb_ue_t) context holding timer
+                     * is stopped. */
+                    d_trace(5, "Start S1 Holding Timer\n");
+                    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+                            mme_ue->enb_ue->enb_ue_s1ap_id, 
+                            mme_ue->enb_ue->mme_ue_s1ap_id);
+
+                    /* De-associate S1 with NAS/EMM */
+                    rv = enb_ue_deassociate(mme_ue->enb_ue);
+                    d_assert(rv == CORE_OK,,);
+
+                    tm_start(mme_ue->enb_ue->holding_timer);
 #endif
                 }
+                tm_stop(enb_ue->holding_timer);
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
         }
@@ -538,7 +558,6 @@ void s1ap_handle_ue_context_release_request(
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
     d_assert(enb_ue, return, "No ENB UE Context : MME_UE_S1AP_ID[%d]",
             ies->mme_ue_s1ap_id);
-    mme_ue = enb_ue->mme_ue;
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
@@ -559,31 +578,42 @@ void s1ap_handle_ue_context_release_request(
             break;
     }
 
-    d_assert(mme_ue,,);
-    if (mme_ue && FSM_CHECK(&mme_ue->sm, emm_state_registered))
+    mme_ue = enb_ue->mme_ue;
+    if (mme_ue)
     {
-        d_trace(5, "    EMM-Registered\n");
-        if (ECM_CONNECTED(mme_ue))
+        if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
         {
-            d_trace(5, "    ECM-Connected\n");
-            rv = mme_gtp_send_release_access_bearers_request(mme_ue);
-            d_assert(rv == CORE_OK, return, "gtp send failed");
+            d_trace(5, "    EMM-Registered\n");
+            if (ECM_CONNECTED(mme_ue))
+            {
+                d_trace(5, "    ECM-Connected\n");
+                rv = mme_gtp_send_release_access_bearers_request(mme_ue);
+                d_assert(rv == CORE_OK, return, "gtp send failed");
+            }
+            else
+            {
+                d_trace(5, "    ECM-Idle\n");
+                rv = s1ap_send_ue_context_release_command(enb_ue, 
+                        S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);
+                d_assert(rv == CORE_OK, return, "s1ap send error");
+            }
         }
         else
         {
-            d_trace(5, "    ECM-Idle\n");
-            rv = s1ap_send_ue_context_release_command(enb_ue, 
-                    S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);
-            d_assert(rv == CORE_OK, return, "s1ap send error");
+            d_trace(5, "    NOT EMM-Registered\n");
+            rv = mme_send_ue_context_release_command(mme_ue, enb_ue);
+            d_assert(rv == CORE_OK,,
+                    "mme_send_ue_context_release_command failed");
         }
     }
     else
     {
-        d_trace(5, "    NOT EMM-Registered\n");
-        rv = mme_send_ue_context_release_command(mme_ue, enb_ue);
-        d_assert(rv == CORE_OK,,
-                "mme_send_ue_context_release_command failed");
+        d_trace(5, "    S1 Context Not Associated\n");
+        rv = s1ap_send_ue_context_release_command(enb_ue, 
+                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_NO_ACTION, 0);
+        d_assert(rv == CORE_OK, return, "s1ap send error");
     }
 }
 
