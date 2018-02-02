@@ -1810,19 +1810,12 @@ status_t enb_ue_remove(enb_ue_t *enb_ue)
 
 status_t enb_ue_remove_in_enb(mme_enb_t *enb)
 {
-    status_t rv;
     enb_ue_t *enb_ue = NULL, *next_enb_ue = NULL;
     
     enb_ue = enb_ue_first_in_enb(enb);
     while (enb_ue)
     {
         next_enb_ue = enb_ue_next_in_enb(enb_ue);
-
-        if (enb_ue->mme_ue)
-        {
-            rv = mme_ue_deassociate(enb_ue->mme_ue);
-            d_assert(rv == CORE_OK,,);
-        }
 
         enb_ue_remove(enb_ue);
 
