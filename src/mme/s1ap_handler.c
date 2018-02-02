@@ -677,11 +677,31 @@ void s1ap_handle_ue_context_release_complete(
             d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
 
             d_assert(mme_ue,,);
-            rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
-                mme_ue);
-            d_assert(rv == CORE_OK,,
-                "mme_gtp_send_delete_indirect_data_forwarding_tunnel_request()"
-                "failed");
+            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            {
+                rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(mme_ue);
+                d_assert(rv == CORE_OK,, "mme_gtp_send_delete_indirect_data_"
+                    "forwarding_tunnel_request() failed");
+            }
+            else
+            {
+                mme_sess_t *sess = NULL;
+                mme_bearer_t *bearer = NULL;
+
+                d_warn("GTP-C(S11) has already been deleted");
+                sess = mme_sess_first(mme_ue);
+                while(sess)
+                {
+                    bearer = mme_bearer_first(sess);
+                    while(bearer)
+                    {
+                        CLEAR_INDIRECT_TUNNEL(bearer);
+
+                        bearer = mme_bearer_next(bearer);
+                    }
+                    sess = mme_sess_next(sess);
+                }
+            }
             break;
         }
         default:

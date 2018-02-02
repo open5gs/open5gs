@@ -1073,8 +1073,8 @@ static void attach_test3(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send TAU Request */
-    rv = tests1ap_build_tau_request(&sendbuf,
-            0x002600, 8, 0x972dc6f8, m_tmsi);
+    rv = tests1ap_build_tau_request(&sendbuf, 0,
+            0, 0x002600, m_tmsi, 8, 0x972dc6f8, mme_ue->knas_int);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

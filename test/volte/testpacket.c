@@ -6,6 +6,7 @@
 #include "mme/s1ap_build.h"
 #include "mme/s1ap_conv.h"
 #include "mme/s1ap_path.h"
+#include "mme/snow_3g.h"
 
 #include "gtp/gtp_message.h"
 #include "gtp/gtp_conv.h"
@@ -1029,23 +1030,32 @@ status_t tests1ap_build_service_request(pkbuf_t **pkbuf,
     return CORE_OK;
 }
 
-status_t tests1ap_build_tau_request(pkbuf_t **pkbuf,
-        c_uint32_t enb_ue_s1ap_id, c_uint8_t seq,
-        c_uint32_t mac, c_uint32_t m_tmsi)
+status_t tests1ap_build_tau_request(pkbuf_t **pkbuf, int i,
+        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
+        c_uint32_t m_tmsi, c_uint8_t seq, c_uint32_t mac, c_uint8_t *knas_int)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        /* Initial UE Message */
         "000c"
         "406d000006000800 020035001a003b3a 1797c955d80a0748 010bf600f1100002"
         "01d900a79e5805f0 f0c040005200f110 30395c1004570220 003103e561249011"
         "033358a25d0103d0 e0c1004300060000 f110303900644008 0000f1100002cf90"
         "0086400130006000 060040d900a79e",
+        /* Uplink NAS Transport */
+        "000d" 
+        "4063000005000000 0200030008000200 01001a003a39178a c93785030748010b"
+        "f600f110000201d6 004ae05805f070c0 40185200f110303a 5c0a005702200031"
+        "03e5e03490110357 58a65d0100e0c100 6440080000f11000 02cf900043400600"
+        "00f1103039",
+        "",
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         113,
+        103,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
-    int i = 0;
     
     *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if (!(*pkbuf)) return CORE_ERROR;
@@ -1054,13 +1064,36 @@ status_t tests1ap_build_tau_request(pkbuf_t **pkbuf,
     memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
             (*pkbuf)->len);
 
-    enb_ue_s1ap_id = htonl(enb_ue_s1ap_id << 8);
-    memcpy((*pkbuf)->payload + 11, &enb_ue_s1ap_id, 3);
-    mac = htonl(mac);
-    memcpy((*pkbuf)->payload + 19, &mac, 4);
-    memcpy((*pkbuf)->payload + 23, &seq, 1);
-    m_tmsi = htonl(m_tmsi);
-    memcpy((*pkbuf)->payload + 109, &m_tmsi, 4);
+    if (i == 0)
+    {
+        enb_ue_s1ap_id = htonl(enb_ue_s1ap_id << 8);
+        memcpy((*pkbuf)->payload + 11, &enb_ue_s1ap_id, 3);
+        mac = htonl(mac);
+        memcpy((*pkbuf)->payload + 19, &mac, 4);
+        memcpy((*pkbuf)->payload + 23, &seq, 1);
+        m_tmsi = htonl(m_tmsi);
+        memcpy((*pkbuf)->payload + 109, &m_tmsi, 4);
+    }
+    else if (i == 1)
+    {
+        d_assert(knas_int, return CORE_ERROR,);
+
+        mme_ue_s1ap_id = htonl(mme_ue_s1ap_id << 8);
+        memcpy((*pkbuf)->payload + 11, &mme_ue_s1ap_id, 3);
+        enb_ue_s1ap_id = htonl(enb_ue_s1ap_id << 8);
+        memcpy((*pkbuf)->payload + 17, &enb_ue_s1ap_id, 3);
+
+        memcpy((*pkbuf)->payload + 29, &seq, 1);
+
+        m_tmsi = htonl(m_tmsi);
+        memcpy((*pkbuf)->payload + 41, &m_tmsi, 4);
+
+        snow_3g_f9(knas_int, seq, (0 << 27), 0,
+                (*pkbuf)->payload + 29, (52 << 3),
+                (*pkbuf)->payload + 25);
+    }
+    else
+        d_assert(0,,);
 
     return CORE_OK;
 }

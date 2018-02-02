@@ -347,6 +347,9 @@ static void handover_test2(abts_case *tc, void *data)
     s1ap_message_t message;
     int i;
     int msgindex = 10;
+    enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
+    c_uint32_t m_tmsi = 0;
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -571,6 +574,13 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
+    /* Retreive M-TMSI */
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(33554628);
+    d_assert(enb_ue, goto out,);
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, goto out,);
+    m_tmsi = mme_ue->guti.m_tmsi;
+
     /* Receive E-RAB Setup Request + 
      * Activate dedicated EPS bearer context request */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
@@ -645,6 +655,19 @@ static void handover_test2(abts_case *tc, void *data)
     /* Receive End Mark */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rv = testgtpu_enb_read(gtpu, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Send Tracking Area Update Request */
+    rv = tests1ap_build_tau_request(&sendbuf, 1,
+            0x000300, 0x000800, m_tmsi, 4, 0, mme_ue->knas_int);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock2, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive Tracking Area Update Accept */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock2, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
@@ -780,6 +803,7 @@ static void handover_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+out:
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));
     ABTS_PTR_NOTNULL(tc, doc);
