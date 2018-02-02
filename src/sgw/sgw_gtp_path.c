@@ -121,7 +121,12 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
         tunnel = sgw_tunnel_find_by_teid(teid);
         if (!tunnel)
         {
-            d_error("No TEID(0x%x)", teid);
+            if (gtp_h->type == GTPU_MSGTYPE_GPDU)
+                d_warn("[SGW] RECV GPU-U from [%s] : No TEID[0x%x]",
+                        CORE_ADDR(&from, buf), teid);
+            else if (gtp_h->type == GTPU_MSGTYPE_END_MARKER)
+                d_warn("[SGW] RECV End Marker from [%s] : No TEID[0x%x]",
+                        CORE_ADDR(&from, buf), teid);
             pkbuf_free(pkbuf);
             return 0;
         }
@@ -215,7 +220,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                 if ((SGW_GET_UE_STATE(sgw_ue) & SGW_S1U_INACTIVE))
                 {
                     d_trace(5, "    SGW-S1U Inactive\n");
-                    if ( !(SGW_GET_UE_STATE(sgw_ue) & SGW_DL_NOTI_SENT))
+                    if (!(SGW_GET_UE_STATE(sgw_ue) & SGW_DL_NOTI_SENT))
                     {
                         event_t e;
                         status_t rv;
@@ -245,8 +250,8 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                 else
                 {
                     /* UE is S1U_ACTIVE state but there is no s1u teid */
-                    d_warn("UE is ACITVE but there is no matched "
-                            "s1u_teid(tedid = 0x%x)",teid);
+                    d_warn("[SGW] UE is ACITVE but there is no matched "
+                            "ENB_S1U_TEID[%d]", teid);
 
                     /* Just drop it */
                 }
