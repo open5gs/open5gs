@@ -250,7 +250,7 @@ static int _gtpv1_u_recv_cb(sock_id sock, void *data)
                 else
                 {
                     /* UE is S1U_ACTIVE state but there is no s1u teid */
-                    d_warn("[SGW] UE is ACITVE but there is no matched "
+                    d_trace(5, "[SGW] UE is ACITVE but there is no matched "
                             "ENB_S1U_TEID[%d]", teid);
 
                     /* Just drop it */
