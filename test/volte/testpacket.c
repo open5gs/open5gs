@@ -893,7 +893,8 @@ status_t tests1ap_build_detach_request(pkbuf_t **pkbuf, int i)
 status_t tests1ap_build_ue_context_release_request(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "",
+        "0012"
+        "4018000003000000 05c00100009d0008 0002000100024002 0280",
         "",
         "",
 
@@ -909,7 +910,7 @@ status_t tests1ap_build_ue_context_release_request(pkbuf_t **pkbuf, int i)
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        0,
+        28,
         0,
         0,
 
@@ -940,7 +941,7 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
         "2017001300000200 004005c000000001 00084003400001",
         "2017001200000200 004005c00100009f 000840020003",
 
-        "",
+        "2017001300000200 004005c00100009d 00084003400001",
         "",
         "",
 
@@ -968,7 +969,7 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
         23,
         22,
 
-        0,
+        23,
         0,
         0,
 

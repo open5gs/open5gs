@@ -296,7 +296,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     rv = enb_ue_remove(mme_ue->enb_ue);
                     d_assert(rv == CORE_OK,,);
 
-#else /* Use Holding Timer */
+#else /* S1_HOLDING_TIMER */
 
                     /* Previous S1(enb_ue_t) context the holding timer(30secs)
                      * is started.

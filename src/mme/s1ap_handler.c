@@ -182,7 +182,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                     rv = enb_ue_remove(mme_ue->enb_ue);
                     d_assert(rv == CORE_OK,,);
 
-#else /* Use Holding Timer */
+#else /* S1_HOLDING_TIMER */
 
                     /* Previous S1(enb_ue_t) context the holding timer(30secs)
                      * is started.
