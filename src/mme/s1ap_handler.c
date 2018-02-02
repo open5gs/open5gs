@@ -14,6 +14,7 @@
 #include "s1ap_build.h"
 #include "s1ap_handler.h"
 
+#include "mme_path.h"
 #include "mme_sm.h"
 
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
@@ -385,7 +386,7 @@ void s1ap_handle_initial_context_setup_failure(
     d_assert(mme_ue,,);
     if (mme_ue && FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
-        d_trace(5, "    Registered State\n");
+        d_trace(5, "    EMM-Registered\n");
 
         /*
          * 19.2.2.3 in Spec 36.300
@@ -435,23 +436,11 @@ void s1ap_handle_initial_context_setup_failure(
     }
     else
     {
-        d_trace(5, "    NOT Registered State\n");
+        d_trace(5, "    NOT EMM-Registered\n");
         d_assert(mme_ue,,);
-        if (MME_HAVE_SGW_S11_PATH(mme_ue))
-        {
-            d_trace(5, "    WITH Delete Sesson\n");
-            rv = mme_gtp_send_delete_all_sessions(mme_ue);
-            d_assert(rv == CORE_OK,,
-                "mme_gtp_send_delete_all_sessions failed");
-        }
-        else
-        {
-            d_trace(5, "    WITHOUT Delete Sesson\n");
-            rv = s1ap_send_ue_context_release_command(enb_ue,
-                    S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
-            d_assert(rv == CORE_OK,, "s1ap send error");
-        }
+        rv = mme_send_ue_context_release_command(mme_ue, enb_ue);
+        d_assert(rv == CORE_OK,,
+                "mme_send_ue_context_release_command failed");
     }
 }
 
@@ -592,21 +581,9 @@ void s1ap_handle_ue_context_release_request(
     else
     {
         d_trace(5, "    NOT EMM-Registered\n");
-        if (MME_HAVE_SGW_S11_PATH(mme_ue))
-        {
-            d_trace(5, "    WITH Delete Sesson\n");
-            rv = mme_gtp_send_delete_all_sessions(mme_ue);
-            d_assert(rv == CORE_OK,,
-                "mme_gtp_send_delete_all_sessions failed");
-        }
-        else
-        {
-            d_trace(5, "    WITHOUT Delete Sesson\n");
-            rv = s1ap_send_ue_context_release_command(enb_ue,
-                    S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
-            d_assert(rv == CORE_OK,, "s1ap send error");
-        }
+        rv = mme_send_ue_context_release_command(mme_ue, enb_ue);
+        d_assert(rv == CORE_OK,,
+                "mme_send_ue_context_release_command failed");
     }
 }
 

@@ -16,6 +16,7 @@
 #include "nas_path.h"
 #include "s1ap_path.h"
 #include "mme_gtp_path.h"
+#include "mme_path.h"
 #include "mme_sm.h"
 
 void emm_state_initial(fsm_t *s, event_t *e)
@@ -207,18 +208,10 @@ static void common_register_state(fsm_t *s, event_t *e)
                         FSM_TRAN(s, emm_state_exception);
                         return;
                     }
-                    if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                    {
-                        rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                        d_assert(rv == CORE_OK,,
-                            "mme_gtp_send_delete_all_sessions failed");
-                    }
-                    else
-                    {
-                        rv = nas_send_detach_accept(mme_ue);
-                        d_assert(rv == CORE_OK,,
-                            "nas_send_detach_accept failed");
-                    }
+
+                    rv = mme_send_detach_accept(mme_ue);
+                    d_assert(rv == CORE_OK,, "mme_send_detach_accept failed");
+
                     FSM_TRAN(s, &emm_state_de_registered);
                     return;
                 }
@@ -326,6 +319,7 @@ static void common_register_state(fsm_t *s, event_t *e)
 
 void emm_state_authentication(fsm_t *s, event_t *e)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
 
     d_assert(s, return, "Null param");
@@ -370,8 +364,6 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                         memcmp(authentication_response_parameter->res,
                             mme_ue->xres, mme_ue->xres_len) != 0)
                     {
-                        status_t rv;
-
                         rv = nas_send_authentication_reject(mme_ue);
                         d_assert(rv == CORE_OK,, "nas send error");
                         FSM_TRAN(&mme_ue->sm, &emm_state_exception);
@@ -405,6 +397,25 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                     FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
+                case NAS_DETACH_REQUEST:
+                {
+                    d_trace(3, "[EMM] Detach request\n");
+                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    rv = emm_handle_detach_request(
+                            mme_ue, &message->emm.detach_request_from_ue);
+                    if (rv != CORE_OK)
+                    {
+                        d_error("emm_handle_attach_request() failed");
+                        FSM_TRAN(s, emm_state_exception);
+                        return;
+                    }
+
+                    rv = mme_send_detach_accept(mme_ue);
+                    d_assert(rv == CORE_OK,, "mme_send_detach_accept failed");
+
+                    FSM_TRAN(s, &emm_state_de_registered);
+                    break;
+                }
                 default:
                 {
                     d_warn("Unknown message[%d]", message->emm.h.message_type);
@@ -423,6 +434,7 @@ void emm_state_authentication(fsm_t *s, event_t *e)
 
 void emm_state_security_mode(fsm_t *s, event_t *e)
 {
+    status_t rv;
     mme_ue_t *mme_ue = NULL;
 
     d_assert(s, return, "Null param");
@@ -437,7 +449,6 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
     {
         case FSM_ENTRY_SIG:
         {
-            status_t rv;
             pkbuf_t *emmbuf = NULL;
 
             rv = emm_build_security_mode_command(&emmbuf, mme_ue);
@@ -503,6 +514,25 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
                     FSM_TRAN(s, &emm_state_exception);
+                    break;
+                }
+                case NAS_DETACH_REQUEST:
+                {
+                    d_trace(3, "[EMM] Detach request\n");
+                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    rv = emm_handle_detach_request(
+                            mme_ue, &message->emm.detach_request_from_ue);
+                    if (rv != CORE_OK)
+                    {
+                        d_error("emm_handle_attach_request() failed");
+                        FSM_TRAN(s, emm_state_exception);
+                        return;
+                    }
+
+                    rv = mme_send_detach_accept(mme_ue);
+                    d_assert(rv == CORE_OK,, "mme_send_detach_accept failed");
+
+                    FSM_TRAN(s, &emm_state_de_registered);
                     break;
                 }
                 default:
@@ -573,6 +603,25 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
                     FSM_TRAN(s, &emm_state_exception);
+                    break;
+                }
+                case NAS_DETACH_REQUEST:
+                {
+                    d_trace(3, "[EMM] Detach request\n");
+                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    rv = emm_handle_detach_request(
+                            mme_ue, &message->emm.detach_request_from_ue);
+                    if (rv != CORE_OK)
+                    {
+                        d_error("emm_handle_attach_request() failed");
+                        FSM_TRAN(s, emm_state_exception);
+                        return;
+                    }
+
+                    rv = mme_send_detach_accept(mme_ue);
+                    d_assert(rv == CORE_OK,, "mme_send_detach_accept failed");
+
+                    FSM_TRAN(s, &emm_state_de_registered);
                     break;
                 }
                 default:

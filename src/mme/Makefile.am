@@ -11,7 +11,7 @@ libmme_la_SOURCES = \
 	emm_handler.h emm_build.h \
 	esm_handler.h esm_build.h \
 	mme_gtp_path.h mme_s11_build.h mme_s11_handler.h \
-	mme_sm.h \
+	mme_sm.h mme_path.h \
 	mme_kdf.c kasumi.c snow_3g.c zuc.c \
     mme_init.c mme_event.c mme_context.c \
 	s1ap_sm.c s1ap_build.c s1ap_handler.c s1ap_conv.c s1ap_path.c \
@@ -20,7 +20,7 @@ libmme_la_SOURCES = \
 	emm_sm.c emm_handler.c emm_build.c \
 	esm_sm.c esm_handler.c esm_build.c \
 	mme_gtp_path.c mme_s11_build.c mme_s11_handler.c \
-	mme_sm.c \
+	mme_sm.c mme_path.c \
 	$(NULL)
 
 if USRSCTP

@@ -19,6 +19,7 @@
 #include "mme_s11_handler.h"
 #include "mme_fd_path.h"
 #include "mme_s6a_handler.h"
+#include "mme_path.h"
 
 void mme_state_initial(fsm_t *s, event_t *e)
 {
@@ -294,20 +295,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
             fsm_dispatch(&mme_ue->sm, (fsm_event_t*)e);
             if (FSM_CHECK(&mme_ue->sm, emm_state_exception))
             {
-                if (MME_HAVE_SGW_S11_PATH(mme_ue))
-                {
-                    rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                    d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break,
-                            "gtp send failed");
-                }
-                else
-                {
-                    rv = s1ap_send_ue_context_release_command(enb_ue,
-                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                            S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
-                    d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break,
-                            "s1ap send failed");
-                }
+                rv = mme_send_ue_context_release_command(mme_ue, enb_ue);
+                d_assert(rv == CORE_OK,,
+                        "mme_send_ue_context_release_command failed");
             }
 
             pkbuf_free(pkbuf);
