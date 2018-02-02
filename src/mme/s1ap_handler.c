@@ -684,7 +684,7 @@ void s1ap_handle_ue_context_release_complete(
             d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
 
             d_assert(mme_ue,,);
-            if (MME_HAVE_SGW_S11_PATH(mme_ue))
+            if (SESSION_CONTEXT_IS_VALID(mme_ue))
             {
                 rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(mme_ue);
                 d_assert(rv == CORE_OK,, "mme_gtp_send_delete_indirect_data_"

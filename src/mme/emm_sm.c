@@ -272,7 +272,7 @@ static void common_register_state(fsm_t *s, event_t *e)
             }
             else
             {
-                if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                if (SESSION_CONTEXT_IS_VALID(mme_ue))
                 {
                     rv = mme_gtp_send_delete_all_sessions(mme_ue);
                     d_assert(rv == CORE_OK,,
@@ -295,7 +295,7 @@ static void common_register_state(fsm_t *s, event_t *e)
             }
             else
             {
-                if (MME_HAVE_SGW_S11_PATH(mme_ue))
+                if (SESSION_CONTEXT_IS_VALID(mme_ue))
                 {
                     mme_s6a_send_air(mme_ue, NULL);
                     FSM_TRAN(&mme_ue->sm, &emm_state_authentication);

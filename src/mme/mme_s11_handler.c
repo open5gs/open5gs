@@ -236,7 +236,7 @@ void mme_s11_handle_delete_session_response(
 
 cleanup:
     if (mme_sess_count(mme_ue) == 1) /* Last Session */
-        CLEAR_SGW_S11_PATH(mme_ue);
+        CLEAR_SESSION_CONTEXT(mme_ue);
 
     mme_sess_remove(sess);
 }

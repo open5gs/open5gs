@@ -11,7 +11,7 @@ status_t mme_send_detach_accept(mme_ue_t *mme_ue)
 
     d_assert(mme_ue, return CORE_ERROR,);
 
-    if (MME_HAVE_SGW_S11_PATH(mme_ue))
+    if (SESSION_CONTEXT_IS_VALID(mme_ue))
     {
         rv = mme_gtp_send_delete_all_sessions(mme_ue);
         d_assert(rv == CORE_OK,,
@@ -33,7 +33,7 @@ status_t mme_send_ue_context_release_command(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
 
     d_assert(enb_ue, return CORE_ERROR,);
 
-    if (MME_HAVE_SGW_S11_PATH(mme_ue))
+    if (SESSION_CONTEXT_IS_VALID(mme_ue))
     {
         rv = mme_gtp_send_delete_all_sessions(mme_ue);
         d_assert(rv == CORE_OK,,

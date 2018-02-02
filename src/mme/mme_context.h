@@ -381,10 +381,10 @@ struct _mme_ue_t {
     ((__sESS) && (mme_bearer_first(__sESS)) && \
      ((mme_default_bearer_in_sess(__sESS)->sgw_s1u_teid)))
 
-#define MME_HAVE_SGW_S11_PATH(__mME) \
+#define SESSION_CONTEXT_IS_VALID(__mME) \
      ((__mME) && ((__mME)->sgw_s11_teid))
 
-#define CLEAR_SGW_S11_PATH(__mME) \
+#define CLEAR_SESSION_CONTEXT(__mME) \
     do { \
         d_assert((__mME), break, "Null param"); \
         (__mME)->sgw_s11_teid = 0; \
