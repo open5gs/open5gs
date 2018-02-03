@@ -161,7 +161,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 
                 /* If NAS(mme_ue_t) has already been associated with
                  * older S1(enb_ue_t) context */
-                if (mme_ue->enb_ue && mme_ue->enb_ue->mme_ue)
+                if (mme_ue->enb_ue)
                 {
 #if SEND_UE_CTX_REL_CMD_IMMEDIATELY
                    /* Send UE context release command to 
