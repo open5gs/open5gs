@@ -61,8 +61,8 @@ static void common_register_state(fsm_t *s, event_t *e)
 {
     status_t rv;
 
-    enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
         
     mme_ue = mme_ue_find(event_get_param1(e));
     d_assert(mme_ue, return, "Null param");
@@ -79,8 +79,11 @@ static void common_register_state(fsm_t *s, event_t *e)
         }
         case MME_EVT_EMM_MESSAGE:
         {
-            nas_message_t *message = (nas_message_t *)event_get_param4(e);
+            nas_message_t *message = (nas_message_t *)event_get_param5(e);
             d_assert(message, return, "Null param");
+
+            enb_ue = mme_ue->enb_ue;
+            d_assert(enb_ue, return, "Null param");
 
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
@@ -113,9 +116,6 @@ static void common_register_state(fsm_t *s, event_t *e)
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                     d_assert(rv == CORE_OK,,
                         "nas_send_service_reject() failed");
-
-                    enb_ue = mme_ue->enb_ue;
-                    d_assert(enb_ue, return, "No ENB UE context");
 
                     rv = s1ap_send_ue_context_release_command(enb_ue, 
                         S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
@@ -209,8 +209,9 @@ static void common_register_state(fsm_t *s, event_t *e)
                         return;
                     }
 
-                    rv = mme_send_detach_accept(mme_ue);
-                    d_assert(rv == CORE_OK,, "mme_send_detach_accept failed");
+                    rv = mme_send_delete_session_or_detach(mme_ue);
+                    d_assert(rv == CORE_OK,,
+                            "mme_send_delete_session_or_detach() failed");
 
                     FSM_TRAN(s, &emm_state_de_registered);
                     return;
@@ -259,6 +260,9 @@ static void common_register_state(fsm_t *s, event_t *e)
         return;
     }
 
+    enb_ue = mme_ue->enb_ue;
+    d_assert(enb_ue, return, "Null param");
+
     switch(mme_ue->nas_eps.type)
     {
         case MME_EPS_TYPE_ATTACH_REQUEST:
@@ -272,7 +276,7 @@ static void common_register_state(fsm_t *s, event_t *e)
             }
             else
             {
-                if (SESSION_CONTEXT_IS_VALID(mme_ue))
+                if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
                 {
                     rv = mme_gtp_send_delete_all_sessions(mme_ue);
                     d_assert(rv == CORE_OK,,
@@ -288,27 +292,57 @@ static void common_register_state(fsm_t *s, event_t *e)
         }
         case MME_EPS_TYPE_TAU_REQUEST:
         {
-            if (SECURITY_CONTEXT_IS_VALID(mme_ue))
+            S1ap_ProcedureCode_t procedureCode =
+                (S1ap_ProcedureCode_t)event_get_param2(e);
+
+            if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
+            {
+                d_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
+                rv = nas_send_tau_reject(mme_ue,
+                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                d_assert(rv == CORE_OK,, "nas_send_tau_reject() failed");
+                FSM_TRAN(s, emm_state_exception);
+                break;
+            }
+
+            if (!SECURITY_CONTEXT_IS_VALID(mme_ue))
+            {
+                mme_s6a_send_air(mme_ue, NULL);
+                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                break;
+            }
+
+            if (procedureCode == S1ap_ProcedureCode_id_initialUEMessage)
             {
                 rv = nas_send_tau_accept(mme_ue);
                 d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
+                d_trace(5, "    Initial UE Message\n");
+
+                rv = mme_send_release_access_bearer_or_ue_context_release(
+                        mme_ue, enb_ue);
+                d_assert(rv == CORE_OK,, "mme_send_release_access_bearer_or_"
+                        "ue_context_release() failed");
             }
-            else
+            else if (procedureCode == S1ap_ProcedureCode_id_uplinkNASTransport)
             {
-                if (SESSION_CONTEXT_IS_VALID(mme_ue))
+                if (BEARER_CONTEXT_IS_ACTIVE(mme_ue))
                 {
-                    mme_s6a_send_air(mme_ue, NULL);
-                    FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                    rv = nas_send_tau_accept(mme_ue);
+                    d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
+                    d_trace(5, "    Uplink NAS Trasnport\n");
                 }
                 else
                 {
-                    d_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
+                    d_warn("No Bearer Context : UE[%s]", mme_ue->imsi_bcd);
                     rv = nas_send_tau_reject(mme_ue,
-                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                        EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED);
                     d_assert(rv == CORE_OK,, "nas_send_tau_reject() failed");
                     FSM_TRAN(s, emm_state_exception);
                 }
             }
+            else
+                d_assert(0,, "Invalid S1AP Procedure Code[%ld]",
+                        procedureCode);
             break;
         }
         default:
@@ -342,7 +376,7 @@ void emm_state_authentication(fsm_t *s, event_t *e)
         }
         case MME_EVT_EMM_MESSAGE:
         {
-            nas_message_t *message = (nas_message_t *)event_get_param4(e);
+            nas_message_t *message = (nas_message_t *)event_get_param5(e);
             d_assert(message, break, "Null param");
 
             switch(message->emm.h.message_type)
@@ -410,8 +444,9 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                         return;
                     }
 
-                    rv = mme_send_detach_accept(mme_ue);
-                    d_assert(rv == CORE_OK,, "mme_send_detach_accept failed");
+                    rv = mme_send_delete_session_or_detach(mme_ue);
+                    d_assert(rv == CORE_OK,,
+                            "mme_send_delete_session_or_detach() failed");
 
                     FSM_TRAN(s, &emm_state_de_registered);
                     break;
@@ -465,7 +500,7 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
         }
         case MME_EVT_EMM_MESSAGE:
         {
-            nas_message_t *message = (nas_message_t *)event_get_param4(e);
+            nas_message_t *message = (nas_message_t *)event_get_param5(e);
             d_assert(message, break, "Null param");
 
             switch(message->emm.h.message_type)
@@ -529,8 +564,9 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                         return;
                     }
 
-                    rv = mme_send_detach_accept(mme_ue);
-                    d_assert(rv == CORE_OK,, "mme_send_detach_accept failed");
+                    rv = mme_send_delete_session_or_detach(mme_ue);
+                    d_assert(rv == CORE_OK,,
+                            "mme_send_delete_session_or_detach() failed");
 
                     FSM_TRAN(s, &emm_state_de_registered);
                     break;
@@ -576,7 +612,7 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
         }
         case MME_EVT_EMM_MESSAGE:
         {
-            nas_message_t *message = (nas_message_t *)event_get_param4(e);
+            nas_message_t *message = (nas_message_t *)event_get_param5(e);
             d_assert(message, break, "Null param");
 
             switch(message->emm.h.message_type)
@@ -618,8 +654,9 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                         return;
                     }
 
-                    rv = mme_send_detach_accept(mme_ue);
-                    d_assert(rv == CORE_OK,, "mme_send_detach_accept failed");
+                    rv = mme_send_delete_session_or_detach(mme_ue);
+                    d_assert(rv == CORE_OK,,
+                            "mme_send_delete_session_or_detach() failed");
 
                     FSM_TRAN(s, &emm_state_de_registered);
                     break;

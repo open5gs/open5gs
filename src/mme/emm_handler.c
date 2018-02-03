@@ -368,7 +368,7 @@ status_t emm_handle_tau_request(
             sizeof(nas_eps_update_type_t));
     mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
 
-    if (MME_BEARER_ACTIVE(mme_ue))
+    if (BEARER_CONTEXT_IS_ACTIVE(mme_ue))
         d_trace(5, "    Bearer-Active\n");
     else
         d_trace(5, "    Bearer-Inactive\n");

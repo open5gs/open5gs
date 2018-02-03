@@ -131,7 +131,7 @@ status_t esm_handle_information_response(mme_sess_t *sess,
     if (sess->pdn)
     {
         d_trace(5, "    APN[%s]\n", sess->pdn->apn);
-        if (SESSION_CONTEXT_IS_VALID(mme_ue))
+        if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
         {
             rv = nas_send_attach_accept(mme_ue);
             d_assert(rv == CORE_OK, return CORE_ERROR, "nas send failed");

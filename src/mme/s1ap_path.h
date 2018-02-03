@@ -29,7 +29,8 @@ CORE_DECLARE(status_t) s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkb);
 CORE_DECLARE(status_t) s1ap_delayed_send_to_enb(mme_enb_t *enb,
         pkbuf_t *pkbuf, c_uint32_t duration);
 CORE_DECLARE(status_t) s1ap_send_to_nas(
-        enb_ue_t *enb_ue, S1ap_NAS_PDU_t *nasPdu);
+        enb_ue_t *enb_ue,
+        S1ap_ProcedureCode_t procedureCode, S1ap_NAS_PDU_t *nasPdu);
 CORE_DECLARE(status_t) s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf);
 
 CORE_DECLARE(status_t) s1ap_send_initial_context_setup_request(

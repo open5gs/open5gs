@@ -236,7 +236,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             enb_ue = enb_ue_find(event_get_param1(e));
             d_assert(enb_ue, break, "No ENB UE context");
-            pkbuf = (pkbuf_t *)event_get_param3(e);
+            pkbuf = (pkbuf_t *)event_get_param4(e);
             d_assert(pkbuf, break, "Null param");
             d_assert(nas_emm_decode(&message, pkbuf) == CORE_OK,
                     pkbuf_free(pkbuf); break, "Can't decode NAS_EMM");
@@ -259,7 +259,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                      *
                      * Now, We will check the MAC in the NAS message*/
                     nas_security_header_type_t h;
-                    h.type = (c_uint8_t)event_get_param2(e);
+                    h.type = (c_uint8_t)event_get_param3(e);
                     if (h.integrity_protected)
                     {
                         /* Decryption was performed in S1AP handler.
@@ -321,16 +321,16 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(FSM_STATE(&mme_ue->sm), pkbuf_free(pkbuf); break, 
                     "No EMM State Machine");
 
-            /* Set event */
-            event_set_param1(e, (c_uintptr_t)mme_ue->index);/* mme_ue index */
-            event_set_param4(e, (c_uintptr_t)&message);
+            event_set_param1(e, (c_uintptr_t)mme_ue->index);
+            event_set_param5(e, (c_uintptr_t)&message);
 
             fsm_dispatch(&mme_ue->sm, (fsm_event_t*)e);
             if (FSM_CHECK(&mme_ue->sm, emm_state_exception))
             {
-                rv = mme_send_ue_context_release_command(mme_ue, enb_ue);
+                rv = mme_send_delete_session_or_ue_context_release(
+                        mme_ue, enb_ue);
                 d_assert(rv == CORE_OK,,
-                        "mme_send_ue_context_release_command failed");
+                        "mme_send_delete_session_or_ue_context_release() failed");
             }
 
             pkbuf_free(pkbuf);
@@ -566,7 +566,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
  * If the MME receives a Downlink Data Notification after step 2 and 
  * before step 9, the MME shall not send S1 interface paging messages
  */
-                    if (MME_BEARER_INACTIVE(mme_ue))
+                    if (ECM_IDLE(mme_ue) ||
+                        !BEARER_CONTEXT_IS_ACTIVE(mme_ue))
                     {
                         s1ap_handle_paging(mme_ue);
                         /* Start T3413 */

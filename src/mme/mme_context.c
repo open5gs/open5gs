@@ -2608,9 +2608,7 @@ mme_bearer_t* mme_bearer_next(mme_bearer_t *bearer)
 int mme_bearer_is_inactive(mme_ue_t *mme_ue)
 {
     mme_sess_t *sess = NULL;
-    d_assert(mme_ue, return CORE_ERROR,);
-
-    if (mme_ue->enb_ue == NULL) return 1;
+    d_assert(mme_ue, return 1,);
 
     sess = mme_sess_first(mme_ue);
     while(sess)

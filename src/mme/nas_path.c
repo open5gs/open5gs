@@ -392,40 +392,17 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
 {
     status_t rv;
     pkbuf_t *emmbuf = NULL;
-    int bearer_establishment_requested = 0;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[EMM] Tracking area update accept\n");
     d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
-    if (MME_BEARER_ACTIVE(mme_ue))
-        bearer_establishment_requested = 1;
-
-    if (mme_ue->nas_eps.update.active_flag)
-        bearer_establishment_requested = 1;
-
-    d_trace(5, "    Bearer Establiashment Requested[%d]\n",
-        bearer_establishment_requested);
-
     rv = emm_build_tau_accept(&emmbuf, mme_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
-
-    if (bearer_establishment_requested == 0)
-    {
-        enb_ue_t *enb_ue = NULL;
-
-        enb_ue = mme_ue->enb_ue;
-        d_assert(enb_ue, return CORE_ERROR,);
-
-        rv = s1ap_send_ue_context_release_command(enb_ue,
-                S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);
-        d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
-    }
 
     return CORE_OK;
 }

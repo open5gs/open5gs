@@ -527,7 +527,7 @@ void mme_s11_handle_release_access_bearers_response(
         return;
     }
 
-    rv = MME_BEARER_SET_INACTIVE(mme_ue);
+    rv = CLEAR_BEARER_CONTEXT(mme_ue);
     d_assert(rv == CORE_OK,, "MME_BEARER_SET_INACTIVE failed");
 
     rv = s1ap_send_ue_context_release_command(enb_ue,

@@ -304,9 +304,9 @@ struct _mme_ue_t {
     c_uint8_t       ebi; /* EPS Bearer ID generator */
     list_t          sess_list;
 
-#define MME_UE_ECM_IDLE(__mME) \
+#define ECM_IDLE(__mME) \
     ((__mME) && ((__mME)->enb_ue == NULL))
-#define MME_UE_ECM_CONNECTED(__mME) \
+#define ECM_CONNECTED(__mME) \
     ((__mME) && ((__mME)->enb_ue != NULL))
     /* S1 UE context */
     enb_ue_t        *enb_ue;
@@ -381,7 +381,7 @@ struct _mme_ue_t {
     ((__sESS) && (mme_bearer_first(__sESS)) && \
      ((mme_default_bearer_in_sess(__sESS)->sgw_s1u_teid)))
 
-#define SESSION_CONTEXT_IS_VALID(__mME) \
+#define SESSION_CONTEXT_IS_AVAILABLE(__mME) \
      ((__mME) && ((__mME)->sgw_s11_teid))
 
 #define CLEAR_SESSION_CONTEXT(__mME) \
@@ -419,11 +419,9 @@ typedef struct _mme_sess_t {
     tlv_octet_t     pgw_pco;
 } mme_sess_t;
 
-#define MME_BEARER_INACTIVE(__mME)       \
-    (mme_bearer_is_inactive(__mME) == 1)
-#define MME_BEARER_ACTIVE(__mME)         \
+#define BEARER_CONTEXT_IS_ACTIVE(__mME)  \
     (mme_bearer_is_inactive(__mME) == 0)
-#define MME_BEARER_SET_INACTIVE(__mME)   \
+#define CLEAR_BEARER_CONTEXT(__mME)   \
     mme_bearer_set_inactive(__mME)
 
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \

@@ -9,8 +9,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) mme_send_detach_accept(mme_ue_t *mme_ue);
-CORE_DECLARE(status_t) mme_send_ue_context_release_command(
+CORE_DECLARE(status_t) mme_send_delete_session_or_detach(mme_ue_t *mme_ue);
+CORE_DECLARE(status_t) mme_send_delete_session_or_ue_context_release(
+        mme_ue_t *mme_ue, enb_ue_t *enb_ue);
+CORE_DECLARE(status_t) mme_send_release_access_bearer_or_ue_context_release(
         mme_ue_t *mme_ue, enb_ue_t *enb_ue);
 
 #ifdef __cplusplus

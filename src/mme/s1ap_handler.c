@@ -233,8 +233,9 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d]\n",
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, enb_ue->nas.tai.tac);
 
-    d_assert(s1ap_send_to_nas(enb_ue, &ies->nas_pdu) == CORE_OK,,
-            "s1ap_send_to_nas failed");
+    d_assert(s1ap_send_to_nas(enb_ue,
+        S1ap_ProcedureCode_id_initialUEMessage, &ies->nas_pdu) == CORE_OK,,
+        "s1ap_send_to_nas failed");
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -258,8 +259,9 @@ void s1ap_handle_uplink_nas_transport(
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    d_assert(s1ap_send_to_nas(enb_ue, &ies->nas_pdu) == CORE_OK,,
-            "s1ap_send_to_nas failed");
+    d_assert(s1ap_send_to_nas(enb_ue,
+        S1ap_ProcedureCode_id_uplinkNASTransport, &ies->nas_pdu) == CORE_OK,,
+        "s1ap_send_to_nas failed");
 }
 
 void s1ap_handle_ue_capability_info_indication(
@@ -458,9 +460,9 @@ void s1ap_handle_initial_context_setup_failure(
     {
         d_trace(5, "    NOT EMM-Registered\n");
         d_assert(mme_ue,,);
-        rv = mme_send_ue_context_release_command(mme_ue, enb_ue);
+        rv = mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
         d_assert(rv == CORE_OK,,
-                "mme_send_ue_context_release_command failed");
+                "mme_send_delete_session_or_ue_context_release() failed");
     }
 }
 
@@ -600,27 +602,17 @@ void s1ap_handle_ue_context_release_request(
         if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
         {
             d_trace(5, "    EMM-Registered\n");
-            if (MME_BEARER_ACTIVE(mme_ue))
-            {
-                d_trace(5, "    Bearer-Active\n");
-                rv = mme_gtp_send_release_access_bearers_request(mme_ue);
-                d_assert(rv == CORE_OK, return, "gtp send failed");
-            }
-            else
-            {
-                d_trace(5, "    Bearer-Inactive\n");
-                rv = s1ap_send_ue_context_release_command(enb_ue, 
-                        S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                        S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);
-                d_assert(rv == CORE_OK, return, "s1ap send error");
-            }
+            rv = mme_send_release_access_bearer_or_ue_context_release(
+                    mme_ue, enb_ue);
+            d_assert(rv == CORE_OK,, "mme_send_release_access_bearer_or_"
+                    "ue_context_release() failed");
         }
         else
         {
             d_trace(5, "    NOT EMM-Registered\n");
-            rv = mme_send_ue_context_release_command(mme_ue, enb_ue);
+            rv = mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
             d_assert(rv == CORE_OK,,
-                    "mme_send_ue_context_release_command failed");
+                    "mme_send_delete_session_or_ue_context_release() failed");
         }
     }
     else
@@ -629,7 +621,7 @@ void s1ap_handle_ue_context_release_request(
         rv = s1ap_send_ue_context_release_command(enb_ue, 
                 S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                 S1AP_UE_CTX_REL_NO_ACTION, 0);
-        d_assert(rv == CORE_OK, return, "s1ap send error");
+        d_assert(rv == CORE_OK,, "s1ap send error");
     }
 }
 
@@ -700,7 +692,7 @@ void s1ap_handle_ue_context_release_complete(
             d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
 
             d_assert(mme_ue,,);
-            if (SESSION_CONTEXT_IS_VALID(mme_ue))
+            if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
             {
                 rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(mme_ue);
                 d_assert(rv == CORE_OK,, "mme_gtp_send_delete_indirect_data_"
