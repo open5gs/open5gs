@@ -25,7 +25,6 @@ status_t emm_build_attach_accept(
         &attach_accept->eps_network_feature_support;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    d_assert(mme_ue->enb_ue, return CORE_ERROR, "Null param");
     d_assert(esmbuf, return CORE_ERROR, "Null param");
 
     d_trace(3, "[EMM] Attach accept\n");

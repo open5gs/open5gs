@@ -275,19 +275,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
                 /* If NAS(mme_ue_t) has already been associated with
                  * older S1(enb_ue_t) context */
-                if (mme_ue->enb_ue)
+                if (ECM_CONNECTED(mme_ue))
                 {
-#if SEND_UE_CTX_REL_CMD_IMMEDIATELY
-                   /* Send UE context release command to 
-                    * older S1 context immediately. */
-                    d_trace(5, "OLD ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
-                        mme_ue->enb_ue->enb_ue_s1ap_id,
-                        mme_ue->enb_ue->mme_ue_s1ap_id);
-                    rv = s1ap_send_ue_context_release_command(mme_ue->enb_ue, 
-                            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                            S1AP_UE_CTX_REL_NO_ACTION, 0);
-                    d_assert(rv == CORE_OK, return, "s1ap send error");
-#elif IMPLICIT_S1_RELEASE
+#if IMPLICIT_S1_RELEASE
                    /* Implcit S1 release */
                     d_warn("Implicit S1 release");
                     d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",

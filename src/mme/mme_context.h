@@ -304,10 +304,10 @@ struct _mme_ue_t {
     c_uint8_t       ebi; /* EPS Bearer ID generator */
     list_t          sess_list;
 
-#define ECM_IDLE(__mME) \
-    ((__mME) && ((__mME)->enb_ue == NULL))
 #define ECM_CONNECTED(__mME) \
-    ((__mME) && ((__mME)->enb_ue != NULL))
+    ((__mME) && ((__mME)->enb_ue != NULL) && \
+     enb_ue_find((__mME)->enb_ue->index))
+#define ECM_IDLE(__mME) (!ECM_CONNECTED(__mME))
     /* S1 UE context */
     enb_ue_t        *enb_ue;
 
