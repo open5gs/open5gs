@@ -527,8 +527,8 @@ void mme_s11_handle_release_access_bearers_response(
         return;
     }
 
-    rv = ECM_STATE_TO_IDLE(mme_ue);
-    d_assert(rv == CORE_OK,, "ECM_STATE_TO_IDLE failed");
+    rv = MME_BEARER_SET_INACTIVE(mme_ue);
+    d_assert(rv == CORE_OK,, "MME_BEARER_SET_INACTIVE failed");
 
     rv = s1ap_send_ue_context_release_command(enb_ue,
             S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,

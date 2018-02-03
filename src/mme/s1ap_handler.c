@@ -600,15 +600,15 @@ void s1ap_handle_ue_context_release_request(
         if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
         {
             d_trace(5, "    EMM-Registered\n");
-            if (ECM_CONNECTED(mme_ue))
+            if (MME_BEARER_ACTIVE(mme_ue))
             {
-                d_trace(5, "    ECM-Connected\n");
+                d_trace(5, "    Bearer-Active\n");
                 rv = mme_gtp_send_release_access_bearers_request(mme_ue);
                 d_assert(rv == CORE_OK, return, "gtp send failed");
             }
             else
             {
-                d_trace(5, "    ECM-Idle\n");
+                d_trace(5, "    Bearer-Inactive\n");
                 rv = s1ap_send_ue_context_release_command(enb_ue, 
                         S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);

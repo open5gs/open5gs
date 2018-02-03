@@ -1703,53 +1703,6 @@ int mme_enb_sock_type(sock_id sock)
     return SOCK_STREAM;
 }
 
-int ecm_state_is_idle(mme_ue_t *mme_ue)
-{
-    mme_sess_t *sess = NULL;
-    d_assert(mme_ue, return CORE_ERROR,);
-
-    if (mme_ue->enb_ue == NULL) return 1;
-
-    sess = mme_sess_first(mme_ue);
-    while(sess)
-    {
-        mme_bearer_t *bearer = mme_bearer_first(sess);
-        while(bearer)
-        {
-            if (MME_HAVE_ENB_S1U_PATH(bearer))
-            {
-                return 0;
-            }
-
-            bearer = mme_bearer_next(bearer);
-        }
-        sess = mme_sess_next(sess);
-    }
-
-    return 1;
-}
-
-status_t ecm_state_set_idle(mme_ue_t *mme_ue)
-{
-    mme_sess_t *sess = NULL;
-    d_assert(mme_ue, return CORE_ERROR,);
-
-    sess = mme_sess_first(mme_ue);
-    while(sess)
-    {
-        mme_bearer_t *bearer = mme_bearer_first(sess);
-        while(bearer)
-        {
-            CLEAR_ENB_S1U_PATH(bearer);
-
-            bearer = mme_bearer_next(bearer);
-        }
-        sess = mme_sess_next(sess);
-    }
-
-    return CORE_OK;
-}
-
 /** enb_ue_context handling function */
 enb_ue_t* enb_ue_add(mme_enb_t *enb)
 {
@@ -2650,6 +2603,53 @@ mme_bearer_t* mme_bearer_first(mme_sess_t *sess)
 mme_bearer_t* mme_bearer_next(mme_bearer_t *bearer)
 {
     return list_next(bearer);
+}
+
+int mme_bearer_is_inactive(mme_ue_t *mme_ue)
+{
+    mme_sess_t *sess = NULL;
+    d_assert(mme_ue, return CORE_ERROR,);
+
+    if (mme_ue->enb_ue == NULL) return 1;
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        mme_bearer_t *bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            if (MME_HAVE_ENB_S1U_PATH(bearer))
+            {
+                return 0;
+            }
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
+
+    return 1;
+}
+
+status_t mme_bearer_set_inactive(mme_ue_t *mme_ue)
+{
+    mme_sess_t *sess = NULL;
+    d_assert(mme_ue, return CORE_ERROR,);
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        mme_bearer_t *bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            CLEAR_ENB_S1U_PATH(bearer);
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
+
+    return CORE_OK;
 }
 
 status_t mme_pdn_remove_all(mme_ue_t *mme_ue)

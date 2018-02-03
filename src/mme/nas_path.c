@@ -399,7 +399,7 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
     d_trace(3, "[EMM] Tracking area update accept\n");
     d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
-    if (ECM_CONNECTED(mme_ue))
+    if (MME_BEARER_ACTIVE(mme_ue))
         bearer_establishment_requested = 1;
 
     if (mme_ue->nas_eps.update.active_flag)

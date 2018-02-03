@@ -419,6 +419,13 @@ typedef struct _mme_sess_t {
     tlv_octet_t     pgw_pco;
 } mme_sess_t;
 
+#define MME_BEARER_INACTIVE(__mME)       \
+    (mme_bearer_is_inactive(__mME) == 1)
+#define MME_BEARER_ACTIVE(__mME)         \
+    (mme_bearer_is_inactive(__mME) == 0)
+#define MME_BEARER_SET_INACTIVE(__mME)   \
+    mme_bearer_set_inactive(__mME)
+
 #define MME_HAVE_ENB_S1U_PATH(__bEARER) \
     ((__bEARER) && ((__bEARER)->enb_s1u_teid))
 #define CLEAR_ENB_S1U_PATH(__bEARER) \
@@ -497,15 +504,6 @@ CORE_DECLARE(hash_index_t *) mme_enb_first();
 CORE_DECLARE(hash_index_t *) mme_enb_next(hash_index_t *hi);
 CORE_DECLARE(mme_enb_t *)    mme_enb_this(hash_index_t *hi);
 CORE_DECLARE(int)           mme_enb_sock_type(sock_id sock);
-
-#define ECM_IDLE(__mME)             \
-    (ecm_state_is_idle(__mME) == 1)
-#define ECM_CONNECTED(__mME)        \
-    (ecm_state_is_idle(__mME) == 0)
-#define ECM_STATE_TO_IDLE(__mME)    \
-    ecm_state_set_idle(__mME)
-CORE_DECLARE(int)           ecm_state_is_idle(mme_ue_t *mme_ue);
-CORE_DECLARE(status_t)      ecm_state_set_idle(mme_ue_t *mme_ue);
 
 CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
 CORE_DECLARE(unsigned int)  enb_ue_count();
@@ -623,6 +621,9 @@ CORE_DECLARE(mme_bearer_t*) mme_default_bearer_in_sess(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_linked_bearer(mme_bearer_t *bearer);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_first(mme_sess_t *sess);
 CORE_DECLARE(mme_bearer_t*) mme_bearer_next(mme_bearer_t *bearer);
+
+CORE_DECLARE(int)           mme_bearer_is_inactive(mme_ue_t *mme_ue);
+CORE_DECLARE(status_t)      mme_bearer_set_inactive(mme_ue_t *mme_ue);
 
 CORE_DECLARE(pdn_t*)        mme_pdn_add(mme_ue_t *mme_ue, c_int8_t *apn);
 CORE_DECLARE(status_t)      mme_pdn_remove_all(mme_ue_t *mme_ue);
