@@ -375,10 +375,10 @@ status_t emm_handle_tau_request(
 
     if (mme_ue->nas_eps.update.active_flag)
         d_trace(5, "    Active flag[UPD:0x%x]\n",
-                mme_ue->nas_eps.update.active_flag);
+                mme_ue->nas_eps.update);
     else
         d_trace(5, "    No Active flag[UPD:0x%x]\n",
-                mme_ue->nas_eps.update.active_flag);
+                mme_ue->nas_eps.update);
 
     d_trace(5, "    OLD TAI[PLMN_ID:0x%x,TAC:%d]\n",
             mme_ue->tai.plmn_id, mme_ue->tai.tac);

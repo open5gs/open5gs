@@ -548,16 +548,32 @@ void s1ap_handle_ue_context_release_request(
 
     S1ap_UEContextReleaseRequest_IEs_t *ies = NULL;
 
+    d_assert(enb, return,);
+    d_assert(message, return,);
+
     ies = &message->s1ap_UEContextReleaseRequest_IEs;
-    d_assert(ies, return, "Null param");
+    d_assert(ies, return,);
 
     d_trace(3, "[MME] UE Context release request\n");
     d_trace(5, "    IP[%s] ENB_ID[%d]\n",
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
-    d_assert(enb_ue, return, "No ENB UE Context : MME_UE_S1AP_ID[%d]",
-            ies->mme_ue_s1ap_id);
+    if (!enb_ue)
+    {
+        d_assert(0,,);
+        d_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]", ies->mme_ue_s1ap_id);
+        rv = s1ap_send_error_indication(enb, 
+                S1AP_ERRORINDICATIONIES_MME_UE_S1AP_ID_PRESENT |
+                S1AP_ERRORINDICATIONIES_ENB_UE_S1AP_ID_PRESENT |
+                S1AP_ERRORINDICATIONIES_CAUSE_PRESENT,
+                ies->eNB_UE_S1AP_ID,
+                ies->mme_ue_s1ap_id, 
+                S1ap_Cause_PR_radioNetwork,
+                S1ap_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        d_assert(rv == CORE_OK, return, "s1ap send error");
+        return;
+    }
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);

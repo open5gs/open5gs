@@ -46,6 +46,11 @@ CORE_DECLARE(status_t) s1ap_build_handover_cancel_ack(
 CORE_DECLARE(status_t) s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
         enb_ue_t *target_ue, S1ap_ENBStatusTransferIEs_t *enb_ies);
 
+CORE_DECLARE(status_t) s1ap_build_error_indication(
+        pkbuf_t **s1apbuf, c_uint16_t presenceMask,
+        c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
+        S1ap_Cause_PR group, long cause);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

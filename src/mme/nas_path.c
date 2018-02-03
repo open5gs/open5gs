@@ -398,21 +398,15 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
 
     d_trace(3, "[EMM] Tracking area update accept\n");
     d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+
     if (ECM_CONNECTED(mme_ue))
-    {
-        d_trace(5, "    ECM-Connected\n");
         bearer_establishment_requested = 1;
-    }
-    else
-        d_trace(5, "    ECM-Idle\n");
 
     if (mme_ue->nas_eps.update.active_flag)
-    {
-        d_trace(5, "    Active flag\n");
         bearer_establishment_requested = 1;
-    }
-    else
-        d_trace(5, "    No Active flag\n");
+
+    d_trace(5, "    Bearer Establiashment Requested[%d]\n",
+        bearer_establishment_requested);
 
     rv = emm_build_tau_accept(&emmbuf, mme_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");

@@ -1108,3 +1108,41 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
 
     return CORE_OK;
 }
+
+status_t s1ap_build_error_indication(
+        pkbuf_t **s1apbuf, c_uint16_t presenceMask,
+        c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
+        S1ap_Cause_PR group, long cause)
+{
+    int encoded;
+    s1ap_message_t message;
+    S1ap_ErrorIndicationIEs_t *ies = &message.s1ap_ErrorIndicationIEs;
+
+    d_assert(presenceMask, return CORE_ERROR,
+            "Invalid PresenceMask[0x%x]", presenceMask);
+    
+    d_trace(3, "[MME] Error Indication\n");
+
+    memset(&message, 0, sizeof(s1ap_message_t));
+
+    ies->presenceMask = presenceMask;
+    ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
+    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
+    ies->cause.present = group;
+    ies->cause.choice.radioNetwork = cause;
+
+    d_trace(5, "    PresenceMask[0x%x]\n", presenceMask);
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue_s1ap_id, mme_ue_s1ap_id);
+    d_trace(5, "    Group[%d] Cause[%d]\n", group, cause);
+
+    message.procedureCode = S1ap_ProcedureCode_id_ErrorIndication;
+    message.direction = S1AP_PDU_PR_initiatingMessage;
+
+    encoded = s1ap_encode_pdu(s1apbuf, &message);
+    s1ap_free_pdu(&message);
+
+    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+
+    return CORE_OK;
+}

@@ -452,3 +452,23 @@ status_t s1ap_send_mme_status_transfer(
 
     return rv;
 }
+
+status_t s1ap_send_error_indication(
+        mme_enb_t *enb, c_uint16_t presenceMask,
+        c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
+        S1ap_Cause_PR group, long cause)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL;
+
+    d_assert(enb, return CORE_ERROR,);
+
+    rv = s1ap_build_error_indication(&s1apbuf,
+            presenceMask, enb_ue_s1ap_id, mme_ue_s1ap_id, group, cause);
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+
+    rv = s1ap_send_to_enb(enb, s1apbuf);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+
+    return rv;
+}

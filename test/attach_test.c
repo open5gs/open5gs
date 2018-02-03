@@ -315,7 +315,14 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-#if 1 /* S1_HOLDING_TIMER */
+#if IMPLICIT_S1_RELEASE
+    /* Send UE Context Release Request */
+    rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+#else /* S1_HOLDING_TIMER */
     /* Send UE Context Release Request */
     rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
