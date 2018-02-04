@@ -212,10 +212,15 @@ struct _mme_ue_t {
 #define MME_EPS_TYPE_ATTACH_REQUEST                 1
 #define MME_EPS_TYPE_TAU_REQUEST                    2
 #define MME_EPS_TYPE_SERVICE_REQUEST                3
+#define MME_EPS_TYPE_DETACH_REQUEST_FROM_UE         4 
+#define MME_EPS_TYPE_DETACH_REQUEST_TO_UE           5 
         c_uint8_t   type;
+        c_uint8_t   ksi;
         union {
             nas_eps_attach_type_t attach;
             nas_eps_update_type_t update;
+            nas_detach_type_t detach;
+            c_uint8_t data;
         };
     } nas_eps;
 
@@ -240,12 +245,15 @@ struct _mme_ue_t {
 
 #define SECURITY_CONTEXT_IS_VALID(__mME) \
     ((__mME) && \
-    ((__mME)->security_context_available == 1) && ((__mME)->mac_failed == 0))
+    ((__mME)->security_context_available == 1) && \
+     ((__mME)->mac_failed == 0) && \
+     ((__mME)->nas_eps.ksi != NAS_KSI_NO_KEY_IS_AVAILABLE))
 #define CLEAR_SECURITY_CONTEXT(__mME) \
     do { \
         d_assert((__mME), break, "Null param"); \
         (__mME)->security_context_available = 0; \
         (__mME)->mac_failed = 0; \
+        (__mME)->nas_eps.ksi = 0; \
     } while(0)
     int             security_context_available;
     int             mac_failed;
@@ -334,9 +342,6 @@ struct _mme_ue_t {
 
     /* UE Radio Capability */
     void            *radio_capa;
-
-    /* Detach Request */
-    nas_detach_type_t detach_type;
 
     /* S1AP Transparent Container */
     OCTET_STRING_t container;

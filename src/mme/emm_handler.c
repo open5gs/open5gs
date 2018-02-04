@@ -38,9 +38,13 @@ status_t emm_handle_attach_request(
     d_assert(esm_message_container, return CORE_ERROR, "Null param");
     d_assert(esm_message_container->length, return CORE_ERROR, "Null param");
 
-    d_trace(5, "    KSI[%d]\n", eps_attach_type->nas_key_set_identifier);
-    if (eps_attach_type->nas_key_set_identifier == NAS_KSI_NO_KEY_IS_AVAILABLE)
-        CLEAR_SECURITY_CONTEXT(mme_ue);
+    /* Set EPS Attach Type */
+    memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
+            sizeof(nas_eps_attach_type_t));
+    mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
+    mme_ue->nas_eps.ksi = eps_attach_type->nas_key_set_identifier;
+    d_trace(5, "    NAS_EPS TYPE[%d] KSI[%d] ATTACH[0x%x]\n",
+            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi, mme_ue->nas_eps.data);
     /*
      * ATTACH_REQUEST
      *   Clear EBI generator
@@ -62,12 +66,6 @@ status_t emm_handle_attach_request(
         mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
         mme_ue->nhcc = 1;
     }
-
-    /* Set EPS Attach Type */
-    memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
-            sizeof(nas_eps_attach_type_t));
-    mme_ue->nas_eps.type = MME_EPS_TYPE_ATTACH_REQUEST;
-    d_trace(9, "    ATTACH_TYPE[%d]\n", eps_attach_type->attach_type);
 
     d_trace(5, "    OLD TAI[PLMN_ID:0x%x,TAC:%d]\n",
             mme_ue->tai.plmn_id, mme_ue->tai.tac);
@@ -262,8 +260,19 @@ status_t emm_handle_identity_response(
 status_t emm_handle_detach_request(
         mme_ue_t *mme_ue, nas_detach_request_from_ue_t *detach_request)
 {
+    nas_detach_type_t *detach_type = NULL;
+
     d_assert(detach_request, return CORE_ERROR, "Null param");
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    detach_type = &detach_request->detach_type;
+
+    /* Set EPS Attach Type */
+    memcpy(&mme_ue->nas_eps.detach, detach_type, sizeof(nas_detach_type_t));
+    mme_ue->nas_eps.type = MME_EPS_TYPE_DETACH_REQUEST_FROM_UE;
+    mme_ue->nas_eps.ksi = detach_type->nas_key_set_identifier;
+    d_trace(5, "    NAS_EPS TYPE[%d] KSI[%d] DETACH[0x%x]\n",
+            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi, mme_ue->nas_eps.data);
 
     switch (detach_request->detach_type.detach_type)
     {
@@ -289,16 +298,22 @@ status_t emm_handle_detach_request(
     if (detach_request->detach_type.switch_off)
         d_trace(5, "    Switch-Off\n");
 
-    /* Save detach type */
-    mme_ue->detach_type = detach_request->detach_type;
-
     return CORE_OK;
 }
 
 status_t emm_handle_service_request(
         mme_ue_t *mme_ue, nas_service_request_t *service_request)
 {
+    nas_ksi_and_sequence_number_t *ksi_and_sequence_number =
+                    &service_request->ksi_and_sequence_number;
+
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    /* Set EPS Update Type */
+    mme_ue->nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST;
+    mme_ue->nas_eps.ksi = ksi_and_sequence_number->ksi;
+    d_trace(5, "    NAS_EPS TYPE[%d] KSI[%d]\n",
+            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi);
 
     /*
      * ATTACH_REQUEST
@@ -320,9 +335,6 @@ status_t emm_handle_service_request(
         mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
         mme_ue->nhcc = 1;
     }
-
-    /* Set EPS Update Type */
-    mme_ue->nas_eps.type = MME_EPS_TYPE_SERVICE_REQUEST;
 
     d_trace(5, "    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]\n",
             mme_ue->guti.mme_gid,
@@ -348,6 +360,15 @@ status_t emm_handle_tau_request(
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
+    /* Set EPS Update Type */
+    memcpy(&mme_ue->nas_eps.update, eps_update_type,
+            sizeof(nas_eps_update_type_t));
+    mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
+    mme_ue->nas_eps.ksi = eps_update_type->nas_key_set_identifier;
+    d_trace(5, "    NAS_EPS TYPE[%d] KSI[%d] UPDATE[0x%x]\n",
+            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi,
+            mme_ue->nas_eps.data);
+    
     /*
      * ATTACH_REQUEST
      *   Clear EBI generator
@@ -363,22 +384,15 @@ status_t emm_handle_tau_request(
      */
     CLEAR_PAGING_INFO(mme_ue);
 
-    /* Set EPS Update Type */
-    memcpy(&mme_ue->nas_eps.update, eps_update_type,
-            sizeof(nas_eps_update_type_t));
-    mme_ue->nas_eps.type = MME_EPS_TYPE_TAU_REQUEST;
-
     if (BEARER_CONTEXT_IS_ACTIVE(mme_ue))
         d_trace(5, "    Bearer-Active\n");
     else
         d_trace(5, "    Bearer-Inactive\n");
 
     if (mme_ue->nas_eps.update.active_flag)
-        d_trace(5, "    Active flag[UPD:0x%x]\n",
-                mme_ue->nas_eps.update);
+        d_trace(5, "    Active flag\n");
     else
-        d_trace(5, "    No Active flag[UPD:0x%x]\n",
-                mme_ue->nas_eps.update);
+        d_trace(5, "    No Active flag\n");
 
     d_trace(5, "    OLD TAI[PLMN_ID:0x%x,TAC:%d]\n",
             mme_ue->tai.plmn_id, mme_ue->tai.tac);

@@ -200,7 +200,7 @@ status_t nas_send_detach_accept(mme_ue_t *mme_ue)
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     /* reply with detach accept */
-    if (mme_ue->detach_type.switch_off == 0)
+    if (mme_ue->nas_eps.detach.switch_off == 0)
     {
         rv = emm_build_detach_accept(&emmbuf, mme_ue);
         d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR,
