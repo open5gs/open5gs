@@ -359,9 +359,11 @@ void s1ap_handle_initial_context_setup_response(
 
         if (FSM_CHECK(&bearer->sm, esm_state_active))
         {
+            d_trace(5, "    NAS_EPS Type[%d]\n", mme_ue->nas_eps.type);
             int uli_presence = 0;
             if (mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST)
             {
+                d_trace(5, "    ### ULI PRESENT ###\n");
                 uli_presence = 1;
             }
             rv = mme_gtp_send_modify_bearer_request(bearer, uli_presence);

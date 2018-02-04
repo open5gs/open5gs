@@ -660,7 +660,7 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Send Tracking Area Update Request */
     rv = tests1ap_build_tau_request(&sendbuf, 1,
-            0x000300, 0x000800, m_tmsi, 4, 0, mme_ue->knas_int);
+            0x000300, 0x000800, 0, m_tmsi, 4, 0, mme_ue->knas_int);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

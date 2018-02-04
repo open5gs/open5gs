@@ -948,7 +948,7 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
         "2017"
         "0012000002000040 05c0020000c80008 40020002",
         "2017"
-        "0012000002000040 05c0020000ca0008 40020026",
+        "0012000002000040 05c0020000cb0008 40020026",
         "2017001200000200 004005c000000001 00084002001f",
 
         "2017"
@@ -1032,15 +1032,15 @@ status_t tests1ap_build_service_request(pkbuf_t **pkbuf,
 }
 
 status_t tests1ap_build_tau_request(pkbuf_t **pkbuf, int i,
-        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
-        c_uint32_t m_tmsi, c_uint8_t seq, c_uint32_t mac, c_uint8_t *knas_int)
+    c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id, c_uint8_t active_flag,
+    c_uint32_t m_tmsi, c_uint8_t seq, c_uint32_t mac, c_uint8_t *knas_int)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
         /* Initial UE Message */
         "000c"
         "406d000006000800 020035001a003b3a 1797c955d80a0748 010bf600f1100002"
         "01d900a79e5805f0 f0c040005200f110 30395c1004570220 003103e561249011"
-        "033358a25d0103d0 e0c1004300060000 f110303900644008 0000f1100002cf90"
+        "033358a25d0103d0 e0c1004300060000 f110303900644008 0000f11054f64010"
         "0086400130006000 060040d900a79e",
         /* Uplink NAS Transport */
         "000d" 
@@ -1069,6 +1069,11 @@ status_t tests1ap_build_tau_request(pkbuf_t **pkbuf, int i,
     {
         enb_ue_s1ap_id = htonl(enb_ue_s1ap_id << 8);
         memcpy((*pkbuf)->payload + 11, &enb_ue_s1ap_id, 3);
+        if (active_flag)
+        {
+            char *active_buf = (*pkbuf)->payload + 26;
+            *active_buf |= 0x08;
+        }
         mac = htonl(mac);
         memcpy((*pkbuf)->payload + 19, &mac, 4);
         memcpy((*pkbuf)->payload + 23, &seq, 1);

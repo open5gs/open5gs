@@ -1100,7 +1100,7 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
-            33554632, 4, 5, 1);
+            33554633, 4, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -1109,7 +1109,29 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Send TAU Request */
     rv = tests1ap_build_tau_request(&sendbuf, 0,
-            0, 0x002600, m_tmsi, 8, 0x972dc6f8, mme_ue->knas_int);
+            0, 0x003600, 1, m_tmsi, 7, 0xe73ce7c, mme_ue->knas_int);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive TAU Accept */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
+    /* Send Initial Context Setup Response */
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
+            33554634, 54, 5, 1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
+    /* Send TAU Request */
+    rv = tests1ap_build_tau_request(&sendbuf, 0,
+            0, 0x002600, 0, m_tmsi, 8, 0x972dc6f8, mme_ue->knas_int);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

@@ -340,7 +340,7 @@ status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
     h->teid =  htonl(s1u_tunnel->remote_teid);
     
     rv = gtp_send(s1u_tunnel->gnode, pkbuf);
-    d_assert(rv == CORE_OK, , "gtp send failed");
+    d_assert(rv == CORE_OK,, "gtp send failed");
     pkbuf_free(pkbuf);
 
     return rv;
