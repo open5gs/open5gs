@@ -19,8 +19,6 @@ status_t emm_build_attach_accept(
     nas_gprs_timer_t *t3412_value = &attach_accept->t3412_value;
     int served_tai_index = 0;
     nas_eps_mobile_identity_t *guti = &attach_accept->guti;
-    nas_gprs_timer_t *t3402_value = &attach_accept->t3402_value;
-    nas_gprs_timer_t *t3423_value = &attach_accept->t3423_value;
     nas_eps_network_feature_support_t *eps_network_feature_support =
         &attach_accept->eps_network_feature_support;
 
@@ -37,6 +35,7 @@ status_t emm_build_attach_accept(
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_ATTACH_ACCEPT;
 
+    /* Set T3412 */
     eps_attach_result->result = mme_ue->nas_eps.attach.attach_type;
     t3412_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     t3412_value->value = 9;
@@ -74,12 +73,17 @@ status_t emm_build_attach_accept(
     }
     mme_ue->guti_present = 0;
 
+#if 0 /* Need not to include T3402 */
+    /* Set T3402 */
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_T3402_VALUE_PRESENT;
-    t3402_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
-    t3402_value->value = 12;
+    attach_accept->t3402_value.unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
+    attach_accept->t3402_value.value = 12;
+#endif
+
+    /* Set T3423 */
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_T3423_VALUE_PRESENT;
-    t3423_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    t3423_value->value = 9;
+    attach_accept->t3423_value.unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
+    attach_accept->t3423_value.value = 9;
     attach_accept->presencemask |= 
         NAS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     eps_network_feature_support->length = 1;
@@ -347,11 +351,13 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
         (mme_bearer_find_by_ue_ebi(mme_ue, 7) ? 1 : 0);
     /* FIXME : Need to set other ebi */
 
+#if 0 /* Need not to include T3402 */
     /* Set T3402 */
     tau_accept->presencemask |= 
         NAS_TRACKING_AREA_UPDATE_ACCEPT_T3402_VALUE_PRESENT;
     tau_accept->t3402_value.unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     tau_accept->t3402_value.value = 12;
+#endif
 
     /* Set T3423 */
     tau_accept->presencemask |= 
