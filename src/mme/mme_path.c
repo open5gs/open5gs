@@ -44,7 +44,7 @@ status_t mme_send_delete_session_or_ue_context_release(
     {
         rv = s1ap_send_ue_context_release_command(enb_ue,
                 S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT, 0);
+                S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
         d_assert(rv == CORE_OK,, "s1ap send error");
     }
 
@@ -67,7 +67,7 @@ status_t mme_send_release_access_bearer_or_ue_context_release(
     {
         rv = s1ap_send_ue_context_release_command(enb_ue,
                 S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);
+                S1AP_UE_CTX_REL_S1_NORMAL_RELEASE, 0);
         d_assert(rv == CORE_OK,, "s1ap send error");
     }
 

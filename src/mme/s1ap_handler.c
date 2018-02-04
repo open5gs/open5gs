@@ -649,9 +649,9 @@ void s1ap_handle_ue_context_release_complete(
             d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
             break;
         }
-        case S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT:
+        case S1AP_UE_CTX_REL_S1_NORMAL_RELEASE:
         {
-            d_trace(5, "    Action: Unlink UE(mme) context\n");
+            d_trace(5, "    Action: S1 normal release\n");
             rv = enb_ue_remove(enb_ue);
             d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
 
@@ -660,9 +660,9 @@ void s1ap_handle_ue_context_release_complete(
             d_assert(rv == CORE_OK,, "mme_ue_deassociate() failed");
             break;
         }
-        case S1AP_UE_CTX_REL_REMOVE_MME_UE_CONTEXT:
+        case S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE:
         {
-            d_trace(5, "    Action: Remove UE(mme) context\n");
+            d_trace(5, "    Action: UE context remove()\n");
             rv = enb_ue_remove(enb_ue);
             d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
 
