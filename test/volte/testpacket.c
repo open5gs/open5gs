@@ -17,14 +17,17 @@
 
 extern int test_only_control_plane;
 
-#define TEST_ENB_ADDR "127.0.0.5"
+#define TEST_ENB1_ADDR "127.0.0.5"
+#define TEST_ENB2_ADDR "127.0.0.4"
 #if LINUX == 1
-#define TEST_ENB_ADDR6 "fe80::1%lo"
+#define TEST_ENB1_ADDR6 "fe80::1%lo"
 #else
-#define TEST_ENB_ADDR6 "fe80::1%lo0"
+#define TEST_ENB1_ADDR6 "fe80::1%lo0"
 #endif
-static c_sockaddr_t *test_enb_addr = NULL;
-static c_sockaddr_t *test_enb_addr6 = NULL;
+static c_sockaddr_t *test_enb1_addr = NULL;
+static c_sockaddr_t *test_enb1_addr6 = NULL;
+static c_sockaddr_t *test_enb2_addr = NULL;
+static c_sockaddr_t *test_enb2_addr6 = NULL;
 
 static list_t s1ap_list;
 static list_t s1ap_list6;
@@ -33,17 +36,21 @@ status_t testpacket_init()
 {
     status_t rv;
 
-    rv = core_getaddrinfo(&test_enb_addr,
-            AF_INET, TEST_ENB_ADDR, GTPV1_U_UDP_PORT, 0);
+    rv = core_getaddrinfo(&test_enb1_addr,
+            AF_INET, TEST_ENB1_ADDR, GTPV1_U_UDP_PORT, 0);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
 /* There is no default link-local address,
  * If you want to test it, you need set the IPv6 address in some interface */
 #if LINUX != 1 
-    rv = core_getaddrinfo(&test_enb_addr6,
-            AF_INET6, TEST_ENB_ADDR6, GTPV1_U_UDP_PORT, 0);
+    rv = core_getaddrinfo(&test_enb1_addr6,
+            AF_INET6, TEST_ENB1_ADDR6, GTPV1_U_UDP_PORT, 0);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 #endif
+
+    rv = core_getaddrinfo(&test_enb2_addr,
+            AF_INET, TEST_ENB2_ADDR, GTPV1_U_UDP_PORT, 0);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     list_init(&s1ap_list);
     list_init(&s1ap_list6);
@@ -56,15 +63,22 @@ status_t testpacket_init()
 
 status_t testpacket_final()
 {
-    if (test_enb_addr)
+    if (test_enb1_addr)
     {
-        core_freeaddrinfo(test_enb_addr);
-        test_enb_addr = NULL;
+        core_freeaddrinfo(test_enb1_addr);
+        test_enb1_addr = NULL;
     }
-    if (test_enb_addr6)
+
+    if (test_enb1_addr6)
     {
-        core_freeaddrinfo(test_enb_addr6);
-        test_enb_addr6 = NULL;
+        core_freeaddrinfo(test_enb1_addr6);
+        test_enb1_addr6 = NULL;
+    }
+
+    if (test_enb2_addr)
+    {
+        core_freeaddrinfo(test_enb2_addr);
+        test_enb2_addr = NULL;
     }
 
     sock_remove_all_nodes(&s1ap_list);
@@ -705,7 +719,7 @@ status_t tests1ap_build_initial_context_setup_response(
         core_calloc(1, sizeof(S1ap_E_RABSetupItemCtxtSURes_t));
     e_rab->e_RAB_ID = ebi;
 
-    rv = gtp_sockaddr_to_f_teid(test_enb_addr, test_enb_addr6, &f_teid, &len);
+    rv = gtp_sockaddr_to_f_teid(test_enb1_addr, test_enb1_addr6, &f_teid, &len);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
     rv = gtp_f_teid_to_ip(&f_teid, &ip);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
@@ -1230,7 +1244,7 @@ status_t tests1ap_build_e_rab_setup_response(
         core_calloc(1, sizeof(S1ap_E_RABSetupItemBearerSURes_t));
     e_rab->e_RAB_ID = ebi;
  
-    rv = gtp_sockaddr_to_f_teid(test_enb_addr, test_enb_addr6, &f_teid, &len);
+    rv = gtp_sockaddr_to_f_teid(test_enb1_addr, test_enb1_addr6, &f_teid, &len);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
     rv = gtp_f_teid_to_ip(&f_teid, &ip);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
@@ -1540,7 +1554,7 @@ status_t tests1ap_build_deactivate_bearer_accept(
 }
 
 status_t tests1ap_build_path_switch_request(
-        pkbuf_t **pkbuf, 
+        pkbuf_t **pkbuf, int target,
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         int num_of_bearer, c_uint8_t ebi, c_uint32_t teid)
 {
@@ -1577,8 +1591,12 @@ status_t tests1ap_build_path_switch_request(
             core_calloc(1, sizeof(S1ap_E_RABToBeSwitchedDLItem_t));
         e_rab->e_RAB_ID = ebi+i;
 
-        rv = gtp_sockaddr_to_f_teid(
-                test_enb_addr, test_enb_addr6, &f_teid, &len);
+        if (target == 0)
+            rv = gtp_sockaddr_to_f_teid(
+                    test_enb1_addr, test_enb1_addr6, &f_teid, &len);
+        else
+            rv = gtp_sockaddr_to_f_teid(
+                    test_enb2_addr, NULL, &f_teid, &len);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
         rv = gtp_f_teid_to_ip(&f_teid, &ip);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
@@ -1710,7 +1728,7 @@ status_t tests1ap_build_handover_required(
 }
 
 CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
-        pkbuf_t **pkbuf, 
+        pkbuf_t **pkbuf, int target,
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         int num_of_bearer, c_uint8_t ebi, c_uint32_t teid)
 {
@@ -1748,8 +1766,12 @@ CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
             core_calloc(1, sizeof(S1ap_E_RABAdmittedItem_t));
         e_rab->e_RAB_ID = ebi+i;
 
-        rv = gtp_sockaddr_to_f_teid(
-                test_enb_addr, test_enb_addr6, &f_teid, &len);
+        if (target == 0)
+            rv = gtp_sockaddr_to_f_teid(
+                    test_enb1_addr, test_enb1_addr6, &f_teid, &len);
+        else
+            rv = gtp_sockaddr_to_f_teid(
+                    test_enb2_addr, NULL, &f_teid, &len);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
         rv = gtp_f_teid_to_ip(&f_teid, &ip);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
@@ -2010,18 +2032,37 @@ status_t testgtpu_enb_connect(sock_id *new)
     family = AF_INET6;
     if (context_self()->parameter.no_ipv6) family = AF_INET;
     else if (context_self()->parameter.prefer_ipv4) family = AF_INET;
-    else if (test_enb_addr6 == NULL) family = AF_INET;
+    else if (test_enb1_addr6 == NULL) family = AF_INET;
 
     rv = udp_socket(new, family);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    if (family == AF_INET) addr = test_enb_addr;
-    else if (family == AF_INET6) addr = test_enb_addr6;
+    if (family == AF_INET) addr = test_enb1_addr;
+    else if (family == AF_INET6) addr = test_enb1_addr6;
     else
         d_assert(0, return CORE_ERROR,);
 
     d_assert(addr, return CORE_ERROR,);
     rv = sock_bind(*new, addr);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    return CORE_OK;
+}
+
+status_t testgtpu_enb2_connect(sock_id *new)
+{
+    status_t rv;
+    int family = AF_UNSPEC;
+
+    if (test_only_control_plane) return CORE_OK;
+
+    family = AF_INET;
+
+    rv = udp_socket(new, family);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    d_assert(test_enb2_addr, return CORE_ERROR,);
+    rv = sock_bind(*new, test_enb2_addr);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;

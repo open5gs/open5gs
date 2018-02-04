@@ -15,7 +15,7 @@ static void handover_test1(abts_case *tc, void *data)
 {
     status_t rv;
     sock_id sock1, sock2;
-    sock_id gtpu;
+    sock_id gtpu1, gtpu2;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -113,7 +113,10 @@ static void handover_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* eNB connects to SGW */
-    rv = testgtpu_enb_connect(&gtpu);
+    rv = testgtpu_enb_connect(&gtpu1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = testgtpu_enb2_connect(&gtpu2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* S1-Setup Reqeust/Response for Source eNB */
@@ -263,7 +266,7 @@ static void handover_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 
     /* Send Path Switch Request */
-    rv = tests1ap_build_path_switch_request(&sendbuf, 16777690, 1, 2, 5, 1);
+    rv = tests1ap_build_path_switch_request(&sendbuf, 1, 16777690, 1, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -278,31 +281,31 @@ static void handover_test1(abts_case *tc, void *data)
 
     /* Receive End Mark */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = testgtpu_enb_read(gtpu, recvbuf);
+    rv = testgtpu_enb_read(gtpu1, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Receive End Mark */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = testgtpu_enb_read(gtpu, recvbuf);
+    rv = testgtpu_enb_read(gtpu1, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Send Path Switch Request */
-    rv = tests1ap_build_path_switch_request(&sendbuf, 16777690, 2, 2, 5, 1);
+    rv = tests1ap_build_path_switch_request(&sendbuf, 0, 16777690, 2, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* Receive End Mark */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = testgtpu_enb_read(gtpu, recvbuf);
+    rv = testgtpu_enb_read(gtpu2, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Receive End Mark */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = testgtpu_enb_read(gtpu, recvbuf);
+    rv = testgtpu_enb_read(gtpu2, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
@@ -331,7 +334,10 @@ static void handover_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* eNB disonncect from SGW */
-    rv = testgtpu_enb_close(gtpu);
+    rv = testgtpu_enb_close(gtpu1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = testgtpu_enb_close(gtpu2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
@@ -341,7 +347,7 @@ static void handover_test2(abts_case *tc, void *data)
 {
     status_t rv;
     sock_id sock1, sock2;
-    sock_id gtpu;
+    sock_id gtpu1, gtpu2;
     pkbuf_t *sendbuf;
     pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -436,7 +442,10 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* eNB connects to SGW */
-    rv = testgtpu_enb_connect(&gtpu);
+    rv = testgtpu_enb_connect(&gtpu1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = testgtpu_enb2_connect(&gtpu2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* S1-Setup Reqeust/Response for Source eNB */
@@ -617,7 +626,7 @@ static void handover_test2(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Handover Request Ack */
-    rv = tests1ap_build_handover_request_ack(&sendbuf, 33554629, 8, 2, 5, 1);
+    rv = tests1ap_build_handover_request_ack(&sendbuf, 1, 33554629, 8, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -648,13 +657,13 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive End Mark */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = testgtpu_enb_read(gtpu, recvbuf);
+    rv = testgtpu_enb_read(gtpu1, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Receive End Mark */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = testgtpu_enb_read(gtpu, recvbuf);
+    rv = testgtpu_enb_read(gtpu1, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
@@ -698,7 +707,7 @@ static void handover_test2(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Handover Request Ack */
-    rv = tests1ap_build_handover_request_ack(&sendbuf, 33554630, 13, 2, 5, 1);
+    rv = tests1ap_build_handover_request_ack(&sendbuf, 0, 33554630, 13, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -729,13 +738,13 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive End Mark */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = testgtpu_enb_read(gtpu, recvbuf);
+    rv = testgtpu_enb_read(gtpu2, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
     /* Receive End Mark */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-    rv = testgtpu_enb_read(gtpu, recvbuf);
+    rv = testgtpu_enb_read(gtpu2, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
@@ -766,7 +775,7 @@ static void handover_test2(abts_case *tc, void *data)
     pkbuf_free(recvbuf);
 
     /* Send Handover Request Ack */
-    rv = tests1ap_build_handover_request_ack(&sendbuf, 33554631, 9, 2, 5, 1);
+    rv = tests1ap_build_handover_request_ack(&sendbuf, 0, 33554631, 9, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -821,7 +830,10 @@ out:
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     /* eNB disonncect from SGW */
-    rv = testgtpu_enb_close(gtpu);
+    rv = testgtpu_enb_close(gtpu1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    rv = testgtpu_enb_close(gtpu2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));

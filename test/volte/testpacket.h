@@ -70,12 +70,12 @@ CORE_DECLARE(status_t) tests1ap_build_modify_bearer_accept(
 CORE_DECLARE(status_t) tests1ap_build_deactivate_bearer_accept(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_path_switch_request(
-        pkbuf_t **pkbuf, 
+        pkbuf_t **pkbuf, int target, 
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         int num_of_bearer, c_uint8_t ebi, c_uint32_t teid);
 CORE_DECLARE(status_t) tests1ap_build_handover_required(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
-        pkbuf_t **pkbuf, 
+        pkbuf_t **pkbuf, int target,
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         int num_of_bearer, c_uint8_t ebi, c_uint32_t teid);
 CORE_DECLARE(status_t) tests1ap_build_handover_request_ack_static(
@@ -86,6 +86,7 @@ CORE_DECLARE(status_t) tests1ap_build_handover_notify(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_handover_cancel(pkbuf_t **pkbuf, int i);
 
 CORE_DECLARE(status_t) testgtpu_enb_connect(sock_id *new);
+CORE_DECLARE(status_t) testgtpu_enb2_connect(sock_id *new);
 CORE_DECLARE(status_t) testgtpu_enb_close(sock_id sock);
 CORE_DECLARE(status_t) testgtpu_enb_read(sock_id sock, pkbuf_t *recvbuf);
 CORE_DECLARE(status_t) testgtpu_enb_send(pkbuf_t *sendbuf);

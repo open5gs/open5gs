@@ -307,19 +307,17 @@ status_t sgw_gtp_close()
     return CORE_OK;
 }
 
-status_t sgw_gtp_send_end_marker(sgw_bearer_t *bearer)
+status_t sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel)
 {
     char buf[CORE_ADDRSTRLEN];
     status_t rv;
     pkbuf_t *pkbuf = NULL;
     gtp_header_t *h = NULL;
-    sgw_tunnel_t *s1u_tunnel = NULL;
 
-    d_assert(bearer, return CORE_ERROR,);
-    s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
     d_assert(s1u_tunnel, return CORE_ERROR,);
     d_assert(s1u_tunnel->gnode, return CORE_ERROR,);
     d_assert(s1u_tunnel->gnode->sock, return CORE_ERROR,);
+
     d_trace(3, "[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]\n",
         CORE_ADDR(sock_remote_addr(s1u_tunnel->gnode->sock), buf),
         s1u_tunnel->remote_teid);

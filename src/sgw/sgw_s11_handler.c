@@ -174,6 +174,8 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     sgw_ue_t *sgw_ue, gtp_modify_bearer_request_t *req)
 {
     status_t rv;
+    char buf[CORE_ADDRSTRLEN];
+
     c_uint16_t decoded;
     gtp_node_t *enb = NULL;
     sgw_bearer_t *bearer = NULL;
@@ -213,24 +215,6 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
     d_assert(s1u_tunnel, return, "No S1U Tunnel Context");
 
-    /* Set User Location Information */
-    if (req->user_location_information.presence == 1)
-    {
-        decoded = gtp_parse_uli(&uli, &req->user_location_information);
-        d_assert(req->user_location_information.len == decoded, return,);
-        memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
-        bearer->tai.tac = uli.tai.tac;
-        memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
-        if (bearer->e_cgi.cell_id != uli.e_cgi.cell_id)
-        {
-            rv = sgw_gtp_send_end_marker(bearer);
-            if (rv != CORE_OK)
-                d_error("gtp send end marker failed");
-
-            bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
-        }
-    }
-
     /* Data Plane(DL) : eNB-S1U */
     enb_s1u_teid = req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data;
     s1u_tunnel->remote_teid = ntohl(enb_s1u_teid->teid);
@@ -250,13 +234,70 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
             context_self()->parameter.prefer_ipv4);
         d_assert(enb, return,);
 
-#if 1   
-        rv = gtp_client(enb);
-#else   /* Exmaple code for GTP code */
+#if UNBOUNDED_UDP_SOCKET
         rv = gtp_connect(sgw_self()->gtpu_sock, sgw_self()->gtpu_sock6, enb);
+#else
+        rv = gtp_client(enb);
 #endif
         d_assert(rv == CORE_OK, return,);
     }
+
+#if ULI_END_MARKER
+    /* if ULI's Cell ID changes, End Marker is sent out or not */
+    if (req->user_location_information.presence == 1)
+    {
+        /* Set User Location Information */
+        decoded = gtp_parse_uli(&uli, &req->user_location_information);
+        d_assert(req->user_location_information.len == decoded, return,);
+        memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+        bearer->tai.tac = uli.tai.tac;
+        memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
+                sizeof(uli.e_cgi.plmn_id));
+        d_trace(5, "    ULI Presence: CellID[OLD:0x%x, NEW:0x%x]\n",
+            bearer->e_cgi.cell_id, uli.e_cgi.cell_id);
+        if (bearer->e_cgi.cell_id != uli.e_cgi.cell_id)
+        {
+            d_trace(3, "[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]\n",
+                CORE_ADDR(sock_remote_addr(s1u_tunnel->gnode->sock), buf),
+                s1u_tunnel->remote_teid);
+            rv = sgw_gtp_send_end_marker(s1u_tunnel);
+            if (rv != CORE_OK)
+                d_error("gtp send end marker failed");
+
+            bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
+        }
+    }
+#else /* GNODE_END_MARKER */
+    /* if GTP Node changes, End Marker is sent out or not */
+    if (req->user_location_information.presence == 1)
+    {
+        /* Set User Location Information */
+        decoded = gtp_parse_uli(&uli, &req->user_location_information);
+        d_assert(req->user_location_information.len == decoded, return,);
+        memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+        bearer->tai.tac = uli.tai.tac;
+        memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
+                sizeof(uli.e_cgi.plmn_id));
+        bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
+        d_trace(5, "    TAI[PLMN_ID:0x%x,TAC:%d]\n",
+                bearer->tai.plmn_id, bearer->tai.tac);
+        d_trace(5, "    E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
+                bearer->e_cgi.plmn_id, bearer->e_cgi.cell_id);
+    }
+
+    if (s1u_tunnel->gnode && s1u_tunnel->gnode != enb)
+    {
+        d_assert(s1u_tunnel->gnode->sock, return,);
+
+        d_trace(3, "[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]",
+            CORE_ADDR(sock_remote_addr(s1u_tunnel->gnode->sock), buf),
+            s1u_tunnel->remote_teid);
+        rv = sgw_gtp_send_end_marker(s1u_tunnel);
+        if (rv != CORE_OK)
+            d_error("gtp send end marker failed");
+    }
+#endif
+
     /* Setup GTP Node */
     SETUP_GTP_NODE(s1u_tunnel, enb);
 
