@@ -454,7 +454,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     {
                         if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
                         {
-                            rv = nas_send_tau_accept(mme_ue);
+                            rv = nas_send_tau_accept(mme_ue,
+                                    S1ap_ProcedureCode_id_InitialContextSetup);
                             d_assert(rv == CORE_OK,,
                                     "nas_send_tau_accept() failed");
                         }

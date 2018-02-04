@@ -583,7 +583,9 @@ status_t s1ap_build_ue_context_release_command(
         return CORE_ERROR;
     }
 
+#if 0 /* ENB_UE_S1AP_ID could be allocated with 0 from eNodeB */
     if (enb_ue->enb_ue_s1ap_id)
+#endif
     {
         ies->uE_S1AP_IDs.present = S1ap_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
         ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.mME_UE_S1AP_ID = 
@@ -592,11 +594,13 @@ status_t s1ap_build_ue_context_release_command(
             enb_ue->enb_ue_s1ap_id;
         ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.iE_Extensions = NULL;
     }
+#if 0
     else
     {
         ies->uE_S1AP_IDs.present = S1ap_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
         ies->uE_S1AP_IDs.choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     }
+#endif
 
     ies->cause.present = group;
     ies->cause.choice.radioNetwork = cause;

@@ -388,7 +388,8 @@ status_t nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
     return CORE_OK;
 }
 
-status_t nas_send_tau_accept(mme_ue_t *mme_ue)
+status_t nas_send_tau_accept(
+        mme_ue_t *mme_ue, S1ap_ProcedureCode_t procedureCode)
 {
     status_t rv;
     pkbuf_t *emmbuf = NULL;
@@ -401,10 +402,26 @@ status_t nas_send_tau_accept(mme_ue_t *mme_ue)
     rv = emm_build_tau_accept(&emmbuf, mme_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
-    d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
+    if (procedureCode == S1ap_ProcedureCode_id_InitialContextSetup)
+    {
+        pkbuf_t *s1apbuf = NULL;
+        rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, emmbuf);
+        d_assert(rv == CORE_OK && s1apbuf,
+            pkbuf_free(emmbuf); return CORE_ERROR, "s1ap build error");
 
-    return CORE_OK;
+        rv = nas_send_to_enb(mme_ue, s1apbuf);
+        d_assert(rv == CORE_OK,, "nas send error");
+    }
+    else if (procedureCode == S1ap_ProcedureCode_id_downlinkNASTransport)
+    {
+        rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+        d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");
+    }
+    else
+        d_assert(0, pkbuf_free(emmbuf); return CORE_ERROR,
+                "Invalid Procedure Code[%d]", procedureCode);
+
+    return rv;
 }
 
 status_t nas_send_tau_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)

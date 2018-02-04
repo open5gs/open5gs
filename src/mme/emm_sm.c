@@ -295,13 +295,6 @@ static void common_register_state(fsm_t *s, event_t *e)
             S1ap_ProcedureCode_t procedureCode =
                 (S1ap_ProcedureCode_t)event_get_param2(e);
 
-            if (procedureCode == S1ap_ProcedureCode_id_initialUEMessage)
-                d_trace(5, "    Iniital UE Message\n");
-            else if (procedureCode == S1ap_ProcedureCode_id_uplinkNASTransport)
-                d_trace(5, "    Uplink NAS Transport\n");
-            else
-                d_assert(0,, "Invalid Procedure Code[%d]", procedureCode);
-
             if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
             {
                 d_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
@@ -319,37 +312,36 @@ static void common_register_state(fsm_t *s, event_t *e)
                 break;
             }
 
-            if (mme_ue->nas_eps.update.active_flag)
+            if (procedureCode == S1ap_ProcedureCode_id_initialUEMessage)
             {
-                if (BEARER_CONTEXT_IS_ACTIVE(mme_ue))
+                d_trace(5, "    Iniital UE Message\n");
+                if (mme_ue->nas_eps.update.active_flag)
                 {
-                    rv = nas_send_tau_accept(mme_ue);
+                    rv = nas_send_tau_accept(mme_ue,
+                            S1ap_ProcedureCode_id_InitialContextSetup);
                     d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
                 }
                 else
                 {
-                    d_warn("Active Flag, But No Bearer Context : UE[%s]",
-                        mme_ue->imsi_bcd);
-                    rv = nas_send_tau_reject(mme_ue,
-                        EMM_CAUSE_NO_EPS_BEARER_CONTEXT_ACTIVATED);
-                    d_assert(rv == CORE_OK,, "nas_send_tau_reject() failed");
-                    FSM_TRAN(s, emm_state_exception);
-                }
-            }
-            else
-            {
-                rv = nas_send_tau_accept(mme_ue);
-                d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
+                    rv = nas_send_tau_accept(mme_ue,
+                            S1ap_ProcedureCode_id_downlinkNASTransport);
+                    d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
 
-                if (procedureCode == S1ap_ProcedureCode_id_initialUEMessage ||
-                    !BEARER_CONTEXT_IS_ACTIVE(mme_ue))
-                {
                     rv = mme_send_release_access_bearer_or_ue_context_release(
                             mme_ue, enb_ue);
                     d_assert(rv == CORE_OK,, "mme_send_release_access_bearer"
                             "_or_ue_context_release() failed");
                 }
             }
+            else if (procedureCode == S1ap_ProcedureCode_id_uplinkNASTransport)
+            {
+                d_trace(5, "    Uplink NAS Transport\n");
+                rv = nas_send_tau_accept(mme_ue,
+                        S1ap_ProcedureCode_id_downlinkNASTransport);
+                d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
+            }
+            else
+                d_assert(0,, "Invalid Procedure Code[%d]", procedureCode);
             break;
         }
         default:
