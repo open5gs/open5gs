@@ -29,7 +29,7 @@ const struct testlist {
     {testaes},
     {testsha2},
     {testsock},
-#if USE_USRSCTP != 1
+#ifndef DARWIN
     {testsctp},
 #endif
     {testtime},

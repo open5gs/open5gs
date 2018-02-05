@@ -12,6 +12,9 @@ testepc_SOURCES = \
 	security_test.c s1setup_test.c attach_test.c volte_test.c handover_test.c \
 	$(NULL)
 
+check-local: testepc
+	./testepc -f sample.conf
+
 testvolte_SOURCES = \
 	abts.h abts.c testpacket.h testpacket.c \
 	volte/testutil.h volte/testutil.c \
@@ -47,6 +50,7 @@ DEFS = \
    -DFD_EXT_DIR=\"$(abs_top_builddir)/lib/@FREEDIAMETER_DIR@/extensions\" \
    $(NULL)
 
+TESTS = testvolte
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = core *.stackdump
