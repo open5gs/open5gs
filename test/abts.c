@@ -15,7 +15,6 @@
  */
 
 #include "abts.h"
-#include "abts_tests.h"
 #include "testutil.h"
 
 #include "core_debug.h"
@@ -31,6 +30,7 @@ static int list_tests = 0;
 int test_only_control_plane = 0;
 
 const char **testlist = NULL;
+extern const struct testlist alltests[];
 
 static int find_test_name(const char *testname) {
     int i;
@@ -487,7 +487,7 @@ int main(int argc, const char *const argv[]) {
         }
     }
 
-    for (i = 0; i < (sizeof(alltests) / sizeof(struct testlist *)); i++) {
+    for (i = 0; alltests[i].func; i++) {
         suite = alltests[i].func(suite);
     }
 

@@ -25,6 +25,18 @@
 #include "abts.h"
 #include "testutil.h"
 
+const struct testlist alltests[] = {
+    {test_s1ap_message},
+    {test_nas_message},
+    {test_gtp_message},
+    {test_security},
+    {test_s1setup},
+    {test_attach},
+    {test_volte},
+    {test_handover},
+    {NULL},
+};
+
 static int connected_count = 0;
 static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg, 
     struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 

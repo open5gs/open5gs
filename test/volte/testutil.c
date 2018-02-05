@@ -31,6 +31,11 @@
 
 #include "pcscf_fd_path.h"
 
+const struct testlist alltests[] = {
+    {test_volte},
+    {NULL},
+};
+
 static int connected_count = 0;
 static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg, 
     struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
@@ -67,7 +72,7 @@ status_t test_initialize(int argc, const char *const argv[], char *config_path)
         path_remove_last_component(dir, argv[0]);
         if (strstr(dir, ".libs"))
             path_remove_last_component(dir, dir);
-        sprintf(conf, "%s/open-ims.conf", dir);
+        sprintf(conf, "%s/volte/open-ims.conf", dir);
     }
 
     fd_logger_register(test_fd_logger_handler);

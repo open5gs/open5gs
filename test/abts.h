@@ -60,6 +60,10 @@ struct abts_case {
 };
 typedef struct abts_case abts_case;
 
+struct testlist {
+    abts_suite *(*func)(abts_suite *suite);
+};
+
 typedef void (*test_func)(abts_case *tc, void *data);
 
 #define ADD_SUITE(suite) abts_add_suite(suite, __FILE__);

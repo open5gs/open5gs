@@ -1,17 +1,26 @@
 ## Process this file with automake to produce Makefile.in.
 
-SUBDIRS = volte
-
-bin_PROGRAMS = testepc
+bin_PROGRAMS = testepc testvolte
 
 testepc_SOURCES = \
-	abts.h abts_tests.h testutil.h \
-	abts.c testutil.c testpacket.h testpacket.c \
+	abts.h abts.c testpacket.h testpacket.c \
+	testutil.h testutil.c \
 	s1ap_message_test.c nas_message_test.c gtp_message_test.c \
 	security_test.c s1setup_test.c attach_test.c volte_test.c handover_test.c \
 	$(NULL)
 
-testepc_LDADD = \
+testvolte_SOURCES = \
+	abts.h abts.c testpacket.h testpacket.c \
+	volte/testutil.h volte/testutil.c \
+	volte/testapp.h volte/testapp.c volte/pcscf_fd_path.c \
+	volte/volte_test.c \
+	$(NULL)
+
+LDADD = \
+    $(top_srcdir)/src/libepc.la \
+	$(NULL)
+
+DEPENDENCIES = \
     $(top_srcdir)/src/libepc.la \
 	$(NULL)
 
