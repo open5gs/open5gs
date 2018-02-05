@@ -53,4 +53,4 @@ DEFS = \
 TESTS = testvolte
 
 MAINTAINERCLEANFILES = Makefile.in 
-MOSTLYCLEANFILES = core *.stackdump
+MOSTLYCLEANFILES = core *.stackdump testepc.log testepc.trs
