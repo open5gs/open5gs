@@ -2,6 +2,9 @@
 
 bin_PROGRAMS = testepc testvolte
 
+configdir = ${sysconfdir}/nextepc/test
+config_DATA = sample.conf sample-volte.conf
+
 testepc_SOURCES = \
 	abts.h abts.c testpacket.h testpacket.c \
 	testutil.h testutil.c \
@@ -38,6 +41,12 @@ AM_CFLAGS = \
 	-Wno-unused-function -Wno-unused-variable \
 	@OSCPPFLAGS@ \
 	$(NULL)
+
+DEFS = \
+   @DEFS@ \
+   -DFD_EXT_DIR=\"$(abs_top_builddir)/lib/@FREEDIAMETER_DIR@/extensions\" \
+   $(NULL)
+
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = core *.stackdump

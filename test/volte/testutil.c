@@ -72,7 +72,7 @@ status_t test_initialize(int argc, const char *const argv[], char *config_path)
         path_remove_last_component(dir, argv[0]);
         if (strstr(dir, ".libs"))
             path_remove_last_component(dir, dir);
-        sprintf(conf, "%s/volte/open-ims.conf", dir);
+        sprintf(conf, "%s/sample-volte.conf", dir);
     }
 
     fd_logger_register(test_fd_logger_handler);

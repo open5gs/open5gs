@@ -35,7 +35,7 @@ m4
 
 # executables
 lib/core/test/testcore
-test/volte/testvolte
+test/testvolte
 test/testepc
 nextepc-mmed
 nextepc-pcrfd

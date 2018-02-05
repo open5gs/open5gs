@@ -902,20 +902,29 @@ void pcscf_fd_config()
     fd_config.cnf_flags.no_sctp = 1;
     fd_config.cnf_addr = "127.0.0.1";
 
-    fd_config.ext[fd_config.num_of_ext].module = "dbg_msg_dumps.so";
+    printf("%s\n", FD_EXT_DIR);
+
+    fd_config.ext[fd_config.num_of_ext].module =
+        FD_EXT_DIR "/dbg_msg_dumps/.libs/dbg_msg_dumps.so";
     fd_config.ext[fd_config.num_of_ext].conf = "0x8888";
     fd_config.num_of_ext++;
-    fd_config.ext[fd_config.num_of_ext].module = "dict_rfc5777.so";
+    fd_config.ext[fd_config.num_of_ext].module =
+        FD_EXT_DIR "/dict_rfc5777/.libs/dict_rfc5777.so";
     fd_config.num_of_ext++;
-    fd_config.ext[fd_config.num_of_ext].module = "dict_mip6i.so";
+    fd_config.ext[fd_config.num_of_ext].module =
+        FD_EXT_DIR "/dict_mip6i/.libs/dict_mip6i.so";
     fd_config.num_of_ext++;
-    fd_config.ext[fd_config.num_of_ext].module = "dict_nasreq.so";
+    fd_config.ext[fd_config.num_of_ext].module =
+        FD_EXT_DIR "/dict_nasreq/.libs/dict_nasreq.so";
     fd_config.num_of_ext++;
-    fd_config.ext[fd_config.num_of_ext].module = "dict_nas_mipv6.so";
+    fd_config.ext[fd_config.num_of_ext].module =
+        FD_EXT_DIR "/dict_nas_mipv6/.libs/dict_nas_mipv6.so";
     fd_config.num_of_ext++;
-    fd_config.ext[fd_config.num_of_ext].module = "dict_dcca.so";
+    fd_config.ext[fd_config.num_of_ext].module =
+        FD_EXT_DIR "/dict_dcca/.libs/dict_dcca.so";
     fd_config.num_of_ext++;
-    fd_config.ext[fd_config.num_of_ext].module = "dict_dcca_3gpp.so";
+    fd_config.ext[fd_config.num_of_ext].module =
+        FD_EXT_DIR "/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so";
     fd_config.num_of_ext++;
 
     fd_config.conn[fd_config.num_of_conn].identity = "pcrf.open-ims.test";

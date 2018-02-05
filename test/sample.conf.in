@@ -1,0 +1,128 @@
+db_uri: mongodb://localhost/nextepc
+
+logger:
+    trace: 
+        app: 1
+        s1ap: 1
+        nas: 1
+        diameter: 1
+        gtpv2: 1
+        gtp: 1
+
+parameter:
+    no_ipv6: true
+
+mme:
+    freeDiameter:
+      identity: mme.localdomain
+      realm: localdomain
+      no_sctp: true
+      listen_on: 127.0.0.2
+      load_extension:
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
+          conf: 0x8888
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_rfc5777/.libs/dict_rfc5777.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_mip6i/.libs/dict_mip6i.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nasreq/.libs/dict_nasreq.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca/.libs/dict_dcca.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_s6a/.libs/dict_s6a.so
+      connect:
+        - identity: hss.localdomain
+          addr: 127.0.0.4
+
+    s1ap:
+    gtpc:
+    gummei: 
+      plmn_id:
+        mcc: 001
+        mnc: 01
+      mme_gid: 2
+      mme_code: 1
+    tai:
+      plmn_id:
+        mcc: 001
+        mnc: 01
+      tac: 12345
+    security:
+        integrity_order : [ EIA1, EIA2, EIA0 ]
+        ciphering_order : [ EEA0, EEA1, EEA2 ]
+
+hss:
+    freeDiameter:
+      identity: hss.localdomain
+      realm: localdomain
+      no_sctp: true
+      listen_on: 127.0.0.4
+      load_extension:
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
+          conf: 0x8888
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_rfc5777/.libs/dict_rfc5777.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_mip6i/.libs/dict_mip6i.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nasreq/.libs/dict_nasreq.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca/.libs/dict_dcca.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_s6a/.libs/dict_s6a.so
+      connect:
+        - identity: mme.localdomain
+          addr: 127.0.0.2
+
+sgw:
+    gtpc:
+      addr: 127.0.0.2
+    gtpu:
+
+pgw:
+    freeDiameter:
+      identity: pgw.localdomain
+      realm: localdomain
+      no_sctp: true
+      listen_on: 127.0.0.3
+      load_extension:
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
+          conf: 0x8888
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_rfc5777/.libs/dict_rfc5777.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_mip6i/.libs/dict_mip6i.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nasreq/.libs/dict_nasreq.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca/.libs/dict_dcca.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
+      connect:
+        - identity: pcrf.localdomain
+          addr: 127.0.0.5
+
+    gtpc:
+      addr:
+        - 127.0.0.3
+        - ::1
+    gtpu:
+      - addr: 127.0.0.3
+      - addr: ::1
+    ue_pool:
+      - addr: 45.45.0.1/16
+      - addr: cafe::1/64
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 2001:4860:4860::8888
+      - 2001:4860:4860::8844
+pcrf:
+    freeDiameter:
+      identity: pcrf.localdomain
+      realm: localdomain
+      no_sctp: true
+      listen_on: 127.0.0.5
+      load_extension:
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
+          conf: 0x8888
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_rfc5777/.libs/dict_rfc5777.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_mip6i/.libs/dict_mip6i.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nasreq/.libs/dict_nasreq.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca/.libs/dict_dcca.so
+        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
+      connect:
+        - identity: pgw.localdomain
+          addr: 127.0.0.3
