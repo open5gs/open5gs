@@ -262,6 +262,6 @@ LoadExtension = "dict_s6a.so";
 # Examples:
 #ConnectPeer = "aaa.wide.ad.jp";
 #ConnectPeer = "old.diameter.serv" { TcTimer = 60; TLS_old_method; No_SCTP; Port=3868; } ;
-ConnectPeer = "mme.localdomain" { ConnectTo = "127.0.0.3"; No_TLS; };
+ConnectPeer = "mme.localdomain" { ConnectTo = "127.0.0.2"; No_TLS; };
 
 ##############################################################

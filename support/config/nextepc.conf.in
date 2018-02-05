@@ -45,10 +45,15 @@ mme:
 #    s1ap:
 #      addr: 0.0.0.0
 #
-#  o S1AP Server(127.0.0.3:36412, [fe80::3%@LO_DEV@]:36412)
+#  o S1AP Server(127.0.0.1:36412, [::1]:36412)
 #    s1ap:
-#      - addr: 127.0.0.3
-#      - addr: fe80::3%@LO_DEV@
+#      - addr: 127.0.0.1
+#      - addr: ::1
+
+#  o S1AP Server(different port)
+#    s1ap:
+#      - addr: 127.0.0.1
+#        port: 36413
 #
 #  o S1AP Server(address avaiable in `eth0` interface)
 #    s1ap:
@@ -165,7 +170,7 @@ sgw:
 #        - fe80::2%@LO_DEV@
 #      - addr
 #        - 127.0.0.12
-#        - fec0::12%@LO_DEV@
+#        - fe80::12%@LO_DEV@
 #      - name: sgw3.nextepc.org
 #
 #  ------------------------ SGW --------------------------
@@ -201,49 +206,49 @@ pgw:
 #  o Only first node is attempted. Others are ignored.
 #  o if HSS provide PGW addresss(per-UE), DB overwrites YAML-configuration.
 #
-#  o Two PGW are defined. 127.0.0.1:2123 is attempted. [::1]:2123 is ignored.
+#  o Two PGW are defined. 127.0.0.3:2123 is attempted. [fe80::3%@LO_DEV@]:2123 is ignored.
 #    gtpc:
-#      - addr: 127.0.0.1
-#      - addr: ::1
+#      - addr: 127.0.0.3
+#      - addr: fe80::3%@LO_DEV@
 #
-#  o One PGW is defined. if prefer_ipv4 is not true, [::1] is selected.
+#  o One PGW is defined. if prefer_ipv4 is not true, [fe80::3%@LO_DEV@] is selected.
 #    gtpc:
 #      - addr: 
-#        - 127.0.0.1
-#        - ::1
+#        - 127.0.0.3
+#        - fe80::3%@LO_DEV@
 #
 #  ------------------------ PGW --------------------------
 #
-#  o GTP-C Server(127.0.0.1:2123, [::1]:2123)
+#  o GTP-C Server(127.0.0.3:2123, [fe80::3%@LO_DEV@]:2123)
 #    gtpc:
 #      addr:
-#        - 127.0.0.1
-#        - ::1
+#        - 127.0.0.3
+#        - fe80::3%@LO_DEV@
 #
-#  o On PGW, Same configuration(127.0.0.1:2123, [::1]:2123) as below.
+#  o On PGW, Same configuration(127.0.0.3:2123, [fe80::3%@LO_DEV@]:2123) as below.
 #    gtpc:
-#      - addr: 127.0.0.1
-#      - addr: ::1
+#      - addr: 127.0.0.3
+#      - addr: fe80::3%@LO_DEV@
 #
     gtpc:
       addr:
-        - 127.0.0.1
+        - 127.0.0.3
         - ::1
 
 #
 #  <GTP-U Server>>
 #
-#  o GTP-U Server(127.0.0.1:2152, [::1]:2152)
+#  o GTP-U Server(127.0.0.3:2152, [::1]:2152)
 #    gtpu:
-#      - addr: 127.0.0.1
+#      - addr: 127.0.0.3
 #      - addr: ::1
 #
-#  o Same configuration(127.0.0.1:2152, [::1]:2152) as below.
+#  o Same configuration(127.0.0.3:2152, [::1]:2152) as below.
 #    gtpu:
 #      name: localhost
 #
     gtpu:
-      - addr: 127.0.0.1
+      - addr: 127.0.0.3
       - addr: ::1
 
 #

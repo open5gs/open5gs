@@ -16,10 +16,10 @@ pgw:
     freeDiameter: pgw.conf
     gtpc:
       addr:
-        - 127.0.0.1
+        - 127.0.0.3
         - ::1
     gtpu:
-      - addr: 127.0.0.1
+      - addr: 127.0.0.3
       - addr: ::1
     ue_pool:
       - addr: 45.45.0.1/16
