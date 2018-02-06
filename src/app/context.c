@@ -58,7 +58,8 @@ status_t context_read_file()
     d_assert(config->path, return CORE_ERROR,);
 
     file = fopen(config->path, "rb");
-    d_assert(file, return CORE_ERROR,);
+    d_assert(file, return CORE_ERROR,
+            "Failed to read configuration file `%s`", config->path);
 
     d_assert(yaml_parser_initialize(&parser), return CORE_ERROR,);
     yaml_parser_set_input_file(&parser, file);

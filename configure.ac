@@ -17,6 +17,7 @@ CORE_CONFIG_NICE(config.nice)
 
 dnl Must come before AM_INIT_AUTOMAKE.
 AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_TESTDIR(test)
 AM_INIT_AUTOMAKE([1.10 -Wall -Werror foreign subdir-objects])
 
 # Where to generate output; srcdir location.

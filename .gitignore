@@ -5,6 +5,7 @@
 *.la
 *.conf
 .deps
+.dirstamp
 .libs
 
 # generated files
@@ -33,6 +34,13 @@ Makefile
 Makefile.in
 m4
 
+# autotest
+test/package.m4
+test/atconfig
+test/testsuite
+test/testsuite.dir/
+test/testsuite.log
+
 # executables
 lib/core/test/testcore
 test/testvolte
@@ -58,3 +66,7 @@ debian/nextepc-sgw
 debian/nextepc-pgw
 debian/nextepc-pcrf
 debian/nextepc-hss
+
+# webui
+webui/.next/
+webui/node_modules/

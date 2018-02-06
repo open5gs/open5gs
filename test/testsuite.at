@@ -1,0 +1,34 @@
+AT_INIT
+AT_BANNER([NextEPC Amazing Tests.])
+
+
+AT_SETUP([basic])
+AT_KEYWORDS([basic])
+AT_CHECK_UNQUOTED(
+    [$abs_top_builddir/test/testepc -f $abs_top_builddir/test/sample.conf],
+    [0], [dnl
+  MongoDB URI : 'mongodb://localhost/nextepc'
+  Configuration : '$abs_top_builddir/test/sample.conf'
+s1ap_message_test   :  SUCCESS
+nas_message_test    :  SUCCESS
+gtp_message_test    :  SUCCESS
+security_test       :  SUCCESS
+s1setup_test        :  SUCCESS
+attach_test         :  SUCCESS
+volte_test          :  SUCCESS
+handover_test       :  SUCCESS
+All tests passed.
+])
+AT_CLEANUP
+
+AT_SETUP([volte])
+AT_KEYWORDS([volte])
+AT_CHECK_UNQUOTED(
+    [$abs_top_builddir/test/testvolte -f $abs_top_builddir/test/sample-volte.conf],
+    [0], [dnl
+  MongoDB URI : 'mongodb://localhost/nextepc'
+  Configuration : '$abs_top_builddir/test/sample-volte.conf'
+volte_test          :  SUCCESS
+All tests passed.
+])
+AT_CLEANUP

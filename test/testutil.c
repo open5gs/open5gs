@@ -50,10 +50,10 @@ static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg,
 
 void test_terminate(void)
 {
-    d_trace_global_on();
-
     testpacket_final();
     app_terminate();
+
+    d_trace_global_on();
     core_terminate();
 }
 

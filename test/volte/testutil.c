@@ -49,11 +49,11 @@ static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg,
 
 void test_terminate(void)
 {
-    d_trace_global_on();
-
     pcscf_fd_final();
     testpacket_final();
     test_app_terminate();
+
+    d_trace_global_on();
     core_terminate();
 }
 

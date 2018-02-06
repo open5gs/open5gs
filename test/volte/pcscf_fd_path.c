@@ -902,8 +902,6 @@ void pcscf_fd_config()
     fd_config.cnf_flags.no_sctp = 1;
     fd_config.cnf_addr = "127.0.0.1";
 
-    printf("%s\n", FD_EXT_DIR);
-
     fd_config.ext[fd_config.num_of_ext].module =
         FD_EXT_DIR "/dbg_msg_dumps/.libs/dbg_msg_dumps.so";
     fd_config.ext[fd_config.num_of_ext].conf = "0x8888";
