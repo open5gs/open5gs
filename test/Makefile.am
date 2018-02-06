@@ -54,9 +54,9 @@ TESTSUITE = $(srcdir)/testsuite
 check-local: atconfig $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 
-installcheck-local: atconfig $(TESTSUITE)
-	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' \
-		$(TESTSUITEFLAGS)
+#installcheck-local: atconfig $(TESTSUITE)
+#	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' \
+#		$(TESTSUITEFLAGS)
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || \
