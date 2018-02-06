@@ -38,7 +38,8 @@ export DEBEMAIL='acetcom@gmail.com'
   $ dput ppa:acetcom/nextepc *.source.changes
 
 
-Docker Tun IPv6
+Docker Tun Configuration
 ===========================================
-* sysctl -w net.ipv6.conf.all.disable_ipv6=0
+* sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
+* sudo chmod 666 /dev/net/tun
 
