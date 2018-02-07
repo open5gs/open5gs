@@ -244,7 +244,8 @@ void s1ap_handle_uplink_nas_transport(
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
-    d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+    d_assert(enb_ue, return, "No UE Context[ENB_UE_S1AP_ID:%d]",
+            ies->eNB_UE_S1AP_ID);
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);

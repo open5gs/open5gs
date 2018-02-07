@@ -409,11 +409,14 @@ status_t tests1ap_build_authentication_failure(pkbuf_t **pkbuf, int i)
         "",
         "",
 
-        "",
-        "",
         "000d"
-        "403d000005000000 0200030008000200 21001a001413075c 15300e 61640edcfb"
+        "403d000005000000 0200030008000200 21001a001413075c 15300e61640edcfb"
         "605d25911423ee1f 9e006440080000f1 100019b010004340 060000f1100001",
+        "000d"
+        "402e000005000000 0200030008000300 2100001a00040307 5c14006440080000"
+        "f1101a2d10100043 40060000f1100001",
+        "",
+
 
         "",
         "",
@@ -430,9 +433,9 @@ status_t tests1ap_build_authentication_failure(pkbuf_t **pkbuf, int i)
         0,
         0,
 
-        0,
-        0,
         65,
+        50,
+        0,
 
         0,
         0,
@@ -957,7 +960,7 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
 
         "2017001300000200 004005c00100009d 00084003400001",
         "",
-        "",
+        "2017001300000200 004005c000000003 00084003400021",
 
         "2017"
         "0012000002000040 05c0020000c80008 40020002",
@@ -985,7 +988,7 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
 
         23,
         0,
-        0,
+        23,
 
         22,
         22,

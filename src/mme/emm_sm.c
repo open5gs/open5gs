@@ -417,9 +417,33 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                                 authentication_failure_parameter;
 
                     d_trace(3, "[EMM] Authentication failure\n");
-                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    d_trace(5, "    IMSI[%s] EMM_CAUSE[%d]\n", mme_ue->imsi_bcd,
+                            authentication_failure->emm_cause);
 
-                    mme_s6a_send_air(mme_ue, authentication_failure_parameter);
+                    switch(authentication_failure->emm_cause)
+                    {
+                        case EMM_CAUSE_MAC_FAILURE:
+                            d_error("Authentication failure(MAC failure)");
+                            break;
+                        case EMM_CAUSE_NON_EPS_AUTHENTICATION_UNACCEPTABLE:
+                            d_error("Authentication failure"
+                                    "(Non-EPS authentication unacceptable)");
+                            break;
+                        case EMM_CAUSE_SYNCH_FAILURE:
+                            d_warn("Authentication failure(Synch failure)");
+                            mme_s6a_send_air(mme_ue,
+                                    authentication_failure_parameter);
+                            return;
+                        default:
+                            d_error("Unknown EMM_CAUSE{%d] in Authentication"
+                                    " failure",
+                                    authentication_failure->emm_cause);
+                            break;
+                    }
+
+                    rv = nas_send_authentication_reject(mme_ue);
+                    d_assert(rv == CORE_OK,, "nas send error");
+                    FSM_TRAN(&mme_ue->sm, &emm_state_exception);
                     break;
                 }
                 case NAS_EMM_STATUS:
