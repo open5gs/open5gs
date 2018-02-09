@@ -270,7 +270,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return,);
-        d_trace(5, "    From '%.*s' ",
+        d_trace(5, "    From '%.*s'\n",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else
@@ -286,7 +286,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return,);
-        d_trace(5, "('%.*s') ",
+        d_trace(5, "         ('%.*s')\n",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else
@@ -668,7 +668,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return,);
-        d_trace(5, "    From '%.*s' ",
+        d_trace(5, "    From '%.*s'\n",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else
@@ -684,7 +684,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return,);
-        d_trace(5, "('%.*s') ",
+        d_trace(5, "         ('%.*s')\n",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else

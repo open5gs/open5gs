@@ -606,7 +606,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return,);
-        d_trace(5, "    From '%.*s' ",
+        d_trace(5, "    From '%.*s'\n",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else
@@ -621,7 +621,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
         d_assert(ret == 0, return,);
-        d_trace(5, "('%.*s') ",
+        d_trace(5, "         ('%.*s')\n",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else

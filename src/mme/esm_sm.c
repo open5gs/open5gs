@@ -203,9 +203,9 @@ void esm_state_active(fsm_t *s, event_t *e)
                 }
                 case NAS_PDN_DISCONNECT_REQUEST:
                 {
-                    d_trace(3, "[NAS] PDN disconnect request : "
-                            "UE[%s] --> ESM[EBI:%d]\n", 
-                            mme_ue->imsi_bcd, bearer->ebi);
+                    d_trace(3, "[ESM] PDN disconnect request\n");
+                    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     if (MME_HAVE_SGW_S1U_PATH(sess))
                     {
                         rv = mme_gtp_send_delete_session_request(sess);
@@ -223,9 +223,9 @@ void esm_state_active(fsm_t *s, event_t *e)
                 }
                 case NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT:
                 {
-                    d_trace(3, "[NAS] Modify EPS bearer context accept : "
-                        "UE[%s] --> ESM[EBI:%d] in ACTIVE state\n", 
-                        mme_ue->imsi_bcd, bearer->ebi);
+                    d_trace(3, "[ESM] Modify EPS bearer context accept\n");
+                    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
                     rv = mme_gtp_send_update_bearer_response(bearer);
                     d_assert(rv == CORE_OK, return,
@@ -234,9 +234,10 @@ void esm_state_active(fsm_t *s, event_t *e)
                 }
                 case NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
                 {
-                    d_trace(3, "[NAS] Deactivate EPS bearer context accept : "
-                        "UE[%s] --> ESM[EBI:%d] in ACTIVE state\n", 
-                        mme_ue->imsi_bcd, bearer->ebi);
+                    d_trace(3, "[ESM] [A] Deactivate EPS bearer "
+                            "context accept\n");
+                    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     rv = mme_gtp_send_delete_bearer_response(bearer);
                     d_assert(rv == CORE_OK, return,
                             "mme_gtp_send_delete_session_request error");
@@ -298,9 +299,10 @@ void esm_state_pdn_will_disconnect(fsm_t *s, event_t *e)
             {
                 case NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
                 {
-                    d_trace(3, "[NAS] Deactivate EPS bearer context accept : "
-                        "UE[%s] --> ESM[EBI:%d] in PDN WILL DISCONNECT state\n", 
-                        mme_ue->imsi_bcd, bearer->ebi);
+                    d_trace(3, "[ESM] [D] Deactivate EPS bearer "
+                            "context accept\n");
+                    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+                            mme_ue->imsi_bcd, sess->pti, bearer->ebi);
                     FSM_TRAN(s, esm_state_pdn_did_disconnect);
                     break;
                 }
