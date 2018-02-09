@@ -206,10 +206,10 @@ void mme_s11_handle_delete_session_response(
                 "nas_send_deactivate_bearer_context_request failed");
             
             /*
-             * mme_sess_remove() should be called.
+             * mme_sess_remove() should not be called here.
              *
-             * Session will be removed
-             * if Deactivate bearer context accept is received */
+             * Session will be removed if Deactivate bearer context 
+             * accept is received */
             CLEAR_SGW_S1U_PATH(sess);
             return;
         }
