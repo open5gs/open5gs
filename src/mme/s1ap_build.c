@@ -519,7 +519,7 @@ status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
     subscription_data = &mme_ue->subscription_data;
     d_assert(subscription_data, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[MME] E-RAB release request\n");
+    d_trace(3, "[MME] E-RAB release command\n");
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 

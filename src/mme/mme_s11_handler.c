@@ -210,6 +210,7 @@ void mme_s11_handle_delete_session_response(
              *
              * Session will be removed
              * if Deactivate bearer context accept is received */
+            CLEAR_SGW_S1U_PATH(sess);
             return;
         }
         else
