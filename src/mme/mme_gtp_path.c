@@ -9,6 +9,7 @@
 #include "mme_event.h"
 #include "mme_gtp_path.h"
 #include "mme_s11_build.h"
+#include "mme_sm.h"
 
 static int _gtpv2_c_recv_cb(sock_id sock, void *data)
 {
@@ -210,9 +211,19 @@ status_t mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
 
         if (MME_HAVE_SGW_S1U_PATH(sess))
         {
-            rv = mme_gtp_send_delete_session_request(sess);
-            d_assert(rv == CORE_OK, return CORE_ERROR,
-                    "mme_gtp_send_delete_session_request error");
+            mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
+            d_assert(bearer,, "Null param");
+
+            if (bearer && FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
+            {
+                d_warn("PDN will disconnect[EBI:%d]", bearer->ebi);
+            }
+            else
+            {
+                rv = mme_gtp_send_delete_session_request(sess);
+                d_assert(rv == CORE_OK, return CORE_ERROR,
+                        "mme_gtp_send_delete_session_request error");
+            }
         }
         else
         {
