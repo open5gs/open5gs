@@ -40,6 +40,7 @@ export DEBEMAIL='acetcom@gmail.com'
 
 Docker Tun Configuration
 ===========================================
+* sudo apt-get install udev
 * sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
 * sudo chmod 666 /dev/net/tun
 

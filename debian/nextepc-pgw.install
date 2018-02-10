@@ -3,5 +3,5 @@ etc/nextepc/freeDiameter/pgw.conf
 etc/nextepc/freeDiameter/pgw.cert.pem
 etc/nextepc/freeDiameter/pgw.key.pem
 etc/nextepc/pgw.conf
-support/network/nextepc etc/network/interfaces.d
+support/network/99-nextepc.* etc/systemd/network
 support/systemd/nextepc-pgwd.service lib/systemd/system

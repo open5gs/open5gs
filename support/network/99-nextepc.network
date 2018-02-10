@@ -1,0 +1,6 @@
+[Match]
+Name=pgwtun
+
+[Network]
+Address=45.45.0.1/16
+Address=cafe::1/64
