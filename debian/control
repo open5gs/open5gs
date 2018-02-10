@@ -68,6 +68,7 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
+         udev,
          nextepc-core (= ${binary:Version})
 Description: Open Source based 3GPP EPC PGW (Packet Data Network Gateway)
  NextEPC is a C-language Open Source implementation of the 3GPP Evolved
