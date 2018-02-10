@@ -25,7 +25,11 @@ status_t app_initialize(const char *config_path, const char *log_path)
 
     d_trace(1, "HSS try to initialize\n");
     rv = hss_initialize();
-    d_assert(rv == CORE_OK, return rv, "Failed to intialize HSS");
+    if (rv != CORE_OK)
+    {
+        d_error("Failed to intialize HSS");
+        return rv;
+    }
     d_trace(1, "HSS initialize...done\n");
 
     rv = app_did_initialize();

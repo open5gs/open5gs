@@ -25,7 +25,11 @@ status_t app_initialize(const char *config_path, const char *log_path)
 
     d_trace(1, "SGW try to initialize\n");
     rv = sgw_initialize();
-    d_assert(rv == CORE_OK, return rv, "Failed to intialize SGW");
+    if (rv != CORE_OK)
+    {
+        d_error("Failed to intialize SGW");
+        return rv;
+    }
     d_trace(1, "SGW initialize...done\n");
 
     rv = app_did_initialize();

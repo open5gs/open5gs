@@ -25,7 +25,11 @@ status_t app_initialize(const char *config_path, const char *log_path)
 
     d_trace(1, "MME try to initialize\n");
     rv = mme_initialize();
-    d_assert(rv == CORE_OK, return rv, "Failed to intialize MME");
+    if (rv != CORE_OK)
+    {
+        d_error("Failed to intialize MME");
+        return rv;
+    }
     d_trace(1, "MME initialize...done\n");
 
     rv = app_did_initialize();
