@@ -74,6 +74,7 @@ dnl Checks CC and freinds
 AC_PROG_MAKE_SET
 AC_PROG_MKDIR_P
 AC_PROG_CC
+AM_PROG_CC_C_O
 AC_PROG_INSTALL
 AM_PROG_AR
 LT_INIT([pic-only disable-static])
