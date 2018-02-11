@@ -27,6 +27,8 @@ case "$1" in
 	if [ ! -L /etc/systemd/system/multi-user.target.wants/systemd-networkd.service ]; then
 		systemctl enable systemd-networkd
 	fi
+	systemctl restart systemd-udevd
+	systemctl restart systemd-networkd
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

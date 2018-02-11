@@ -1,7 +1,5 @@
 [Unit]
 Description=NextEPC P-GW Daemon
-Requires=systemd-udevd.service
-Requires=systemd-networkd.service
 After=networking.service
 
 [Service]

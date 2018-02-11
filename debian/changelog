@@ -1,3 +1,39 @@
+nextepc (0.3.3-2~xenial) xenial; urgency=medium
+
+  * Minor bug fixes
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 16:08:14 +0000
+
+nextepc (0.3.3-2~artful) artful; urgency=medium
+
+  * Minor bug fixes
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 16:05:44 +0000
+
+nextepc (0.3.3-1~xenial) xenial; urgency=medium
+
+  * Minor bug fixes
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 15:39:37 +0000
+
+nextepc (0.3.3-1~artful) artful; urgency=medium
+
+  * Minor bug fixes
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 15:33:57 +0000
+
+nextepc (0.3.3~artful) artful; urgency=medium
+
+  * Minor bug fixes
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 15:05:08 +0000
+
+nextepc (0.3.3~xenial) xenial; urgency=medium
+
+  * Minor bug fixes
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 15:00:24 +0000
+
 nextepc (0.3.2~zesty) zesty; urgency=medium
 
   * VoLTE Support
