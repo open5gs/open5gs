@@ -108,21 +108,12 @@ Note that this guide is based on Ubuntu 16.04.3(Zenial) Distribution.
 
 ## Prerequisites
 
-NextEPC requires MongoDB and IPv6-enabled TUN device. If you have previously installed NextEPC according to the [Installation Guide](http://nextepc.org/guides/1-installation), they was configured at that time. So, you can skip this step.
+NextEPC requires MongoDB and TUN device. If you have previously installed NextEPC according to the [Installation Guide](http://nextepc.org/guides/1-installation), they was configured at that time. So, you can skip this step.
 
 Install Mongo DB with Package Manager.
 ```bash
 sudo apt-get -y install mongodb
 sudo systemctl start mongodb (if '/usr/bin/mongod' is not running)
-```
-
-Next, you need to check *IPv6 Kernel Configuration*. If IPv6 is disabled, you should change the kernel configuration.
-```bash
-sysctl -n net.ipv6.conf.all.disable_ipv6
-
-(if the output is 0 and IPv6 is enabled, skip the followings)
-sudo sh -c "echo 'net.ipv6.conf.all.disable_ipv6=0' >> /etc/sysctl.d/30-nextepc.conf"
-sudo sysctl -p /etc/sysctl.d/30-nextepc.conf
 ```
 
 To run NextEPC with least privilege, TUN device permission should be a `crw-rw-rw-`(666). Otherwise, you need to run nextepc daemon with root privilege. If the permission is not `crw-rw-rw-`(666), you may need to install `udev` package.  Nevertheless, if the permssions do not change , you can run nextepc with root privileges or change the permission using `chmod 666 /dev/net/tun`.
@@ -134,13 +125,37 @@ sudo apt-get install udev
 sudo systemctl start systemd-udevd (if '/lib/systemd/systemd-udevd' is not running)
 ```
 
-Create the TUN configuration file.
+Write the configuration file for the TUN deivce.
 ```bash
 sudo sh -c "cat << EOF > /etc/systemd/network/99-nextepc.netdev
 [NetDev]
 Name=pgwtun
 Kind=tun
 EOF"
+```
+
+Craete the TUN device. Interface name will be `pgwtun`.
+```
+sudo systemctl enable systemd-networkd
+sudo systemctl restart systemd-networkd
+
+sudo apt-get -y install net-tools
+ifconfig pgwtun
+```
+
+Then, you need to check *IPv6 Kernel Configuration*. Although you can skip this process, we recommend that you set this up to support IPv6-enabled UE.
+
+```bash
+sysctl -n net.ipv6.conf.pgwtun.disable_ipv6
+
+(if the output is 0 and IPv6 is enabled, skip the followings)
+sudo sh -c "echo 'net.ipv6.conf.pgwtun.disable_ipv6=0' > /etc/sysctl.d/30-nextepc.conf"
+sudo sysctl -p /etc/sysctl.d/30-nextepc.conf
+```
+
+You are now ready to set the IP address on TUN device. If IPv6 is disabled for TUN device, please remove `Address=cafe::1/64` from below.
+
+```
 sudo sh -c "cat << EOF > /etc/systemd/network/99-nextepc.network
 [Match]
 Name=pgwtun
@@ -150,13 +165,12 @@ Address=cafe::1/64
 EOF"
 ```
 
-Now register the TUN device in `systemd-networkd` as shown below.
-```bash
-sudo systemctl enable systemd-networkd
+Check the TUN(pgwtun) device again.
+```
 sudo systemctl restart systemd-networkd
-sudo apt-get -y install net-tools
 ifconfig pgwtun
 ```
+
 
 ## MME, SGW, PGW, HSS, and PCRF
 
