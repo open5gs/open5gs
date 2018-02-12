@@ -376,3 +376,69 @@ Using Web UI, you can add a subscriber without a Mongo DB client.
 
 This addition affects immediately NextEPC without restaring any daemon.
 
+## Appendix 
+
+When you install NextEPC for the first time, the default configuration looks like this:
+
+### Network
+
+```
+* MME
+  S1AP: listen on all address avaiable in system
+  GTP-C: listen on the first IP address in system
+  DIAMETER: 127.0.0.2 (No TLS)
+
+* SGW
+  GTP-C: 127.0.0.2
+  GTP-U: listen on the first IP address in system
+
+* PGW
+  GTP-C: Both 127.0.0.3 and [::1]
+  GTP-U: Both 127.0.0.3 and [::1]
+  DIAMETER: 127.0.0.3 (No TLS)
+
+* HSS
+  DIAMETER: 127.0.0.4 (No TLS)
+
+* PCRF
+  DIAMETER: 127.0.0.5 (No TLS)
+```
+
+### GUMMEI, PLMN and TAC
+
+```
+* GUMMEI
+  PLMN ID - MNC: 001, MCC: 01
+  MME Group : 2
+  MME Code : 1
+
+* TAI
+  PLMN ID - MNC: 001, MCC: 01
+  TAC : 12345
+```
+
+### Security
+
+```
+* Integrity : EIA1 - Snow 3G
+* Ciphering : EEA0 - Nothing
+```
+
+### UE Network
+
+```
+* IPv4 : 45.45.0.1/16
+* IPv6 : cafe::1/64
+```
+
+### DNS
+
+```
+* IPv4
+  Primary : 8.8.8.8 
+  Secondary : 8.8.4.4
+
+* IPv6
+  Primary : 2001:4860:4860::8888
+  Secondary : 2001:4860:4860::8844
+```
