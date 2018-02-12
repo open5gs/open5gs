@@ -21,7 +21,7 @@ set -e
 case "$1" in
     configure)
 	if test "x`sysctl -n net.ipv6.conf.all.disable_ipv6`" = x1; then
-		echo "net.ipv6.conf.all.disable_ipv6=0" >> /etc/sysctl.d/30-nextepc.conf
+		echo "net.ipv6.conf.all.disable_ipv6=0" > /etc/sysctl.d/30-nextepc.conf
 		sysctl -p /etc/sysctl.d/30-nextepc.conf
 	fi
 	if [ ! -L /etc/systemd/system/multi-user.target.wants/systemd-networkd.service ]; then
