@@ -16,7 +16,7 @@ NextEPC contains the PCRF (Policy and Charging Rules Function), which controls t
 Installation 
 ============
 
-This post will guide you on how to get installed **NextEPC** with your environment. To date, NextEPC has been tested on GNU/Linux distributions(Debian, Ubuntu, CentOS, Fedora, OpenSUSE), FreeBSD, and Mac OS X.
+This post will guide you on how to get installed **NextEPC** with your environment. To date, NextEPC has been tested on GNU/Linux distributions(Debian, Ubuntu, CentOS, Fedora), FreeBSD, and Mac OS X.
 
 
 
@@ -90,7 +90,7 @@ sudo rm -Rf /var/log/nextepc
 ```
 
 
-## CentOS, Fedora, OpenSUSE, FreeBSD, and Mac OS X
+## CentOS, Fedora, FreeBSD, and Mac OS X
 
 For these OS, you should build NextEPC from the code. First clone this [repository](https://github.com/acetcom/nextepc.git) and then follow instructions described in the [documentation](http://nextepc.org/docs/). 
 
@@ -155,7 +155,7 @@ sudo sysctl -p /etc/sysctl.d/30-nextepc.conf
 
 You are now ready to set the IP address on TUN device. If IPv6 is disabled for TUN device, please remove `Address=cafe::1/64` from below.
 
-```
+```bash
 sudo sh -c "cat << EOF > /etc/systemd/network/99-nextepc.network
 [Match]
 Name=pgwtun
