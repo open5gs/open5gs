@@ -1,4 +1,14 @@
-Debian Pakcage 
+NextEPC docker
+===========================================
+
+* docker build -t nextepc .
+* docker run --net=host --hostname nextepc -ti --name nextepc --privileged --cap-add=SYS_ADMIN -e "container=docker" -v /sys/fs/cgroup:/sys/fs/cgroup -v $PWD:/mnt nextepc /sbin/init
+* docker exec -it /bin/bash
+* sudo apt-get install curl sudo
+* curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+* curl -sL http://nextepc.org/static/webui/install | sudo -E bash -
+
+For Debian Package Release
 ===========================================
 
 * Ubuntu Docker Setup
@@ -36,11 +46,3 @@ export DEBEMAIL='acetcom@gmail.com'
 
 * Upload LaunchPad
   $ dput ppa:acetcom/nextepc *.source.changes
-
-
-Docker Tun Configuration
-===========================================
-* sudo apt-get install udev
-* sudo sysctl -w net.ipv6.conf.all.disable_ipv6=0
-* sudo chmod 666 /dev/net/tun
-
