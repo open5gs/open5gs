@@ -116,7 +116,7 @@ sudo apt-get -y install mongodb
 sudo systemctl start mongodb (if '/usr/bin/mongod' is not running)
 ```
 
-To run NextEPC with least privilege, TUN device permission should be a `crw-rw-rw-`(666). Otherwise, you need to run nextepc daemon with root privilege. If the permission is not `crw-rw-rw-`(666), you may need to install `udev` package.  Nevertheless, if the permssions do not change , you can run nextepc with root privileges or change the permission using `chmod 666 /dev/net/tun`.
+To run NextEPC with least privilege, TUN device permission should be a `crw-rw-rw-`(666). Otherwise, you need to run nextepc daemon with root privilege. If the permission is not `crw-rw-rw-`(666), you may need to install `udev` package.  Nevertheless, if the permission do not change , you can run nextepc with root privileges or change the permission using `chmod 666 /dev/net/tun`.
 
 ```bash
 ls -al /dev/net/tun
@@ -315,7 +315,7 @@ sudo ip route add 45.45.0.0/16 via <PGW IP address>
 sudo ip route add cafe::0/64 via <PGW IP address>
 ```
 
-If you have no NAT router, there is another option for you. `iptables` can solve the problem. You execute the following command in NextEPC installed host.
+If you have no NAT router, there is another option for you. `iptables` can solve the problem. You execute the following command in NextEPC installed host. The `eth0` shown below is just an example. Do not miss out on modifying your interface name(e.g `enp0s25` `wls3`).
 
 ```bash
 sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
