@@ -315,7 +315,7 @@ sudo ip route add 45.45.0.0/16 via <PGW IP address>
 sudo ip route add cafe::0/64 via <PGW IP address>
 ```
 
-If you have no NAT router, there is another option for you. `iptables` can solve the problem. You execute the following command in NextEPC installed host. The `eth0` shown below is just an example. Do not miss out on modifying your interface name(e.g `enp0s25` `wls3`).
+If you have no NAT router, there is another option for you. `iptables` can solve the problem. You execute the following command in NextEPC installed host. The `eth0` shown below is just an example. Do not miss out on modifying your interface name(e.g `enp0s25`, `wls3`).
 
 ```bash
 sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
