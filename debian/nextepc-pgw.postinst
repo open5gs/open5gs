@@ -24,7 +24,7 @@ case "$1" in
 		echo "net.ipv6.conf.all.disable_ipv6=0" > /etc/sysctl.d/30-nextepc.conf
 		sysctl -p /etc/sysctl.d/30-nextepc.conf
 	fi
-	if [ ! -L /etc/systemd/system/multi-user.target.wants/systemd-networkd.service ]; then
+	if test "x`systemctl is-enabled systemd-networkd`" = xdisabled; then
 		systemctl enable systemd-networkd
 	fi
 	deb-systemd-invoke restart systemd-networkd
