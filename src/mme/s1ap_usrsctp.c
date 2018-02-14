@@ -396,8 +396,9 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                     case SCTP_PEER_ADDR_CHANGE:
                         break;
                     case SCTP_SEND_FAILED :
-                        d_error("SCTP_SEND_FAILED"
+                        d_error("flags:0x%x - SCTP_SEND_FAILED"
                                 "(type:0x%x, flags:0x%x, error:0x%x)\n", 
+                                flags,
                                 not->sn_send_failed_event.ssfe_type,
                                 not->sn_send_failed_event.ssfe_flags,
                                 not->sn_send_failed_event.ssfe_error);
@@ -414,6 +415,16 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                         {
                             CORE_FREE(addr);
                         }
+                        break;
+                    }
+                    case SCTP_REMOTE_ERROR:
+                    {
+                        d_warn("flags:0x%x - SCTP_REMOTE_ERROR"
+                                "(type:0x%x, flags:0x%x, error:0x%x)\n",
+                                flags,
+                                not->sn_remote_error.sre_type,
+                                not->sn_remote_error.sre_flags,
+                                not->sn_remote_error.sre_error);
                         break;
                     }
                     default :
