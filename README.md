@@ -69,7 +69,7 @@ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 curl -sL http://nextepc.org/static/webui/install | sudo -E bash -
 ```
 
-The service name is *nextepc-webui*. You must run it manually after installation. And then, the web server will be running on _http://localhost:3000_.
+The service name is *nextepc-webui*, and it will be running on _http://localhost:3000_.
 
 ```bash
 sudo systemctl start nextepc-webui
