@@ -46,3 +46,8 @@ export DEBEMAIL='acetcom@gmail.com'
 
 * Upload LaunchPad
   $ dput ppa:acetcom/nextepc *.source.changes
+
+For Mac OS X (SCTP-patch)
+===========================================
+* /Applications/Docker.app/Contents/Resources/moby
+Update linuxkit-kernel, vmlinuz64

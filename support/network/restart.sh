@@ -6,6 +6,10 @@ if [ "$SYSTEM" = "Linux" ]; then
     if ! grep "pgwtun" /proc/net/dev > /dev/null; then
         ip tuntap add name pgwtun mode tun
     fi
+	if test "x`sysctl -n net.ipv6.conf.pgwtun.disable_ipv6`" = x1; then
+		echo "net.ipv6.conf.pgwtun.disable_ipv6=0" > /etc/sysctl.d/30-nextepc.conf
+		sysctl -p /etc/sysctl.d/30-nextepc.conf
+	fi
     ip addr del 45.45.0.1/16 dev pgwtun 2> /dev/null
     ip addr add 45.45.0.1/16 dev pgwtun
     ip addr del cafe::1/64 dev pgwtun 2> /dev/null
