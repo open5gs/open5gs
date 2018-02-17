@@ -1,6 +1,11 @@
-NextEPC docker
+WebUI & MongoDB
+===========================================
+* docker-compose up
+
+Ubuntu Package
 ===========================================
 
+* cd sample
 * docker build -t nextepc .
 * docker run --net=host --hostname nextepc -ti --name nextepc --privileged --cap-add=SYS_ADMIN -e "container=docker" -v /sys/fs/cgroup:/sys/fs/cgroup -v $PWD:/mnt nextepc /sbin/init
 * docker exec -it /bin/bash
