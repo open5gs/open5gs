@@ -1,0 +1,21 @@
+version: '3'
+
+services:
+  webui:
+    build: ./webui
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+    environment:
+      DB_URI: mongodb://mongodb/nextepc
+
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - db-data:/data/db
+
+volumes:
+  db-data:
