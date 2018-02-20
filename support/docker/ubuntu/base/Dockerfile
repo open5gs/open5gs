@@ -30,4 +30,4 @@ RUN	apt-get update && \
         pkg-config && \
     apt-get clean
 
-COPY nextepc /etc/network/interfaces.d/
+COPY setup.sh /root

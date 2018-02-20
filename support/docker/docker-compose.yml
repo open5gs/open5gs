@@ -64,7 +64,7 @@ services:
     volumes:
       - home:/home/${USER}
     hostname: nextepc-dev
-    command: /bin/bash -c "chmod 666 /dev/net/tun; /etc/init.d/networking start; su acetcom"
+    command: /bin/bash -c "chmod 666 /dev/net/tun; /root/setup.sh; su acetcom"
 
 volumes:
   mongodb: {}
