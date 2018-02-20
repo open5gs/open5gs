@@ -14,5 +14,10 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
       - net.ipv6.conf.all.forwarding=1
+    volumes:
+      - config:/etc/nextepc
     hostname: nextepc-run
-    command: /bin/bash -c "/root/setup.sh; /usr/local/bin/nextepc-epcd"
+    command: /bin/bash -c "/root/setup.sh; /usr/bin/nextepc-epcd"
+
+volumes:
+  config: {}

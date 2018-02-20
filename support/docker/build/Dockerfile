@@ -9,7 +9,12 @@ WORKDIR /tmp
 
 RUN	git clone https://github.com/acetcom/nextepc
 RUN	cd nextepc && \
-    autoreconf -iv && \
-    ./configure && \
+    autoreconf -f -i && \
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var && \
     make -j `nproc` && \
     make install
+
+WORKDIR /root
