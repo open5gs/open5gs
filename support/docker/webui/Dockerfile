@@ -1,9 +1,10 @@
 FROM node:carbon
 
-ENV PACKAGE nextepc
-ENV VERSION 0.3.3
+MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
-RUN apt-get -y install curl
+ARG PACKAGE=nextepc
+ARG VERSION=0.3.3
+
 RUN set -e; \
     cd /usr/src; \
     rm -rf ./$PACKAGE; \

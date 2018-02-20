@@ -1,0 +1,9 @@
+auto pgwtun
+iface pgwtun inet static
+    address 45.45.0.1
+    netmask 255.255.0.0
+    pre-up ip tuntap add name pgwtun mode tun
+    post-down ip tuntap del name pgwtun mode tun
+iface pgwtun inet6 static
+    address cafe::1
+    netmask 64

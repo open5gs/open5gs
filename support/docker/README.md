@@ -1,35 +1,44 @@
-WebUI & MongoDB
+Docker running example
 ===========================================
-* docker-compose up
+* Create default-image with ubuntu-xenial
+  $ docker-compose up -d
 
-Ubuntu Package
-===========================================
+* Remove dangling container if the status is exited
+  $ docker rm $(docker ps -qa --no-trunc --filter "status=exited")
 
-* cd sample
-* docker build -t nextepc .
-* docker run --net=host --hostname nextepc -ti --name nextepc --privileged --cap-add=SYS_ADMIN -e "container=docker" -v /sys/fs/cgroup:/sys/fs/cgroup -v $PWD:/mnt nextepc /sbin/init
-* docker exec -it /bin/bash
-* sudo apt-get install curl sudo
-* curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-* curl -sL http://nextepc.org/static/webui/install | sudo -E bash -
+* Development 
+  $ docker-compose run --rm dev
+
+* Runtime
+  $ docker-compose -f docker-compose.yml -f docker-compose.run.yml \
+    run --rm run
+
+* Test
+  $ docker-compose -f docker-compose.yml -f docker-compose.test.yml \
+    run --rm test
+
+* Test with ubuntu-artful
+  $ TAG=artful docker-compose up -d
+  $ TAG=artful docker-compose -f docker-compose.yml -f docker-compose.test.yml \
+    run --rm test
+
+* Development with centos:latest(TODO)
+  $ DIST=centos docker-compose up -d
+  $ DIST=centos docker-compose run --rm dev
+
+* Runtime with debian-jessie(TODO)
+  $ DIST=debian TAG=jessie docker-compose up -d
+  $ DIST=debian TAG=jessie docker-compose \
+    -f docker-compose.yml -f docker-compose.run.yml run --rm run
+
+* All Test with All Environment(TODO)
+  $ ./check.sh
 
 For Debian Package Release
 ===========================================
 
-* Ubuntu Docker Setup
-
-  $ docker run -p 4000:3000 --hostname build -ti --name build --privileged --cap-add=SYS_ADMIN -e "container=docker" -v /sys/fs/cgroup:/sys/fs/cgroup -v $PWD:/mnt ubuntu /sbin/init
-  $ docker exec -it ubuntu /bin/login
-
-* Access Source Repository
-  $ sudo apt-get install sudo vim dpkg-dev git
-  $ git clone https://github.com/acetcom/nextepc
-  $ git checkout new_branch
-
-* Check Pakcage
-  $ dpkg-buildpackage
-  $ sudo apt-get install ....
-  $ dpkg-buildpackage
+* Run Docker
+  $ docker-compose run --rm dev
 
 * Setup Debian Environment
 export DEBFULLNAME='Sukchan Lee'
@@ -42,12 +51,11 @@ export DEBEMAIL='acetcom@gmail.com'
   $ gpg --import public.asc
 
 * Update debian/changelog
-  $ sudo apt-get install devscripts
   $ dch -i
 
-* Test OBS
+* Generate Package 
+  $ dpkg-buildpackage
   $ debuild -S
-  - Upload *.dsc and *.tar.gz to https://build.opensuse.org/package/show/home:acetcom/nextepc
 
 * Upload LaunchPad
   $ dput ppa:acetcom/nextepc *.source.changes

@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  run:
+#    network_mode: "host"
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-build
+    depends_on:
+      - mongodb
+      - build
+    environment:
+      DB_URI: mongodb://mongodb/nextepc
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
+    hostname: nextepc-run
+    command: /bin/bash -c "/etc/init.d/networking start; sed 's|localhost|mongodb|' /usr/local/etc/nextepc/nextepc.conf > /tmp/nextepc.conf; mv -f /tmp/nextepc.conf /usr/local/etc/nextepc/; /usr/local/bin/nextepc-epcd"

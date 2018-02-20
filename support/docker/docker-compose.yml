@@ -1,8 +1,20 @@
 version: '3'
 
 services:
+  mongodb:
+    image: mongo
+    container_name: nextepc-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/db
+
   webui:
-    build: ./webui
+    build: webui
+    image: ${USER}/nextepc-webui
+    container_name: nextepc-webui
+    depends_on:
+      - mongodb
     ports:
       - "3000:3000"
     depends_on:
@@ -10,12 +22,50 @@ services:
     environment:
       DB_URI: mongodb://mongodb/nextepc
 
-  mongodb:
-    image: mongo
-    ports:
-      - "27017:27017"
+  base:
+    build:
+      context: ./${DIST-ubuntu}/base
+      args:
+        tag: ${TAG-latest}
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-base
+    command: /bin/bash -c "echo 'base' services"
+
+  build:
+    build:
+      context: ./build
+      args:
+        dist: ${DIST-ubuntu}
+        tag: ${TAG-latest}
+        username: ${USER}
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-build
+    depends_on:
+      - base
+    command: /bin/bash -c "echo 'build' services"
+
+  dev:
+    build:
+      context: ./${DIST-ubuntu}/dev
+      args:
+        tag: ${TAG-latest}
+        username: ${USER}
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-dev
+    depends_on:
+      - mongodb
+      - base
+    environment:
+      DB_URI: mongodb://mongodb/nextepc
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
     volumes:
-      - db-data:/data/db
+      - home:/home/${USER}
+    hostname: nextepc-dev
+    command: /bin/bash -c "chmod 666 /dev/net/tun; /etc/init.d/networking start; su acetcom"
 
 volumes:
-  db-data:
+  mongodb: {}
+  home: {}
