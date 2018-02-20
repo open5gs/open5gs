@@ -14,6 +14,5 @@ services:
       - "/dev/net/tun:/dev/net/tun"
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
-      - net.ipv6.conf.all.forwarding=1
     hostname: nextepc-test
     command: /bin/bash -c "/root/setup.sh; sed 's|localhost|mongodb|' /usr/local/etc/nextepc/nextepc.conf > /tmp/nextepc.conf; mv -f /tmp/nextepc.conf /usr/local/etc/nextepc/; cd nextepc; ./test/testepc"
