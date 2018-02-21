@@ -1,7 +1,7 @@
 ARG dist=ubuntu
 ARG tag=latest
 ARG username=acetcom
-FROM ${username}/${dist}-${tag}-build
+FROM ${username}/${dist}-${tag}-base
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 

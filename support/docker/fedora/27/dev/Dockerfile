@@ -1,7 +1,7 @@
 ARG dist=fedora
 ARG tag=latest
 ARG username=acetcom
-FROM ${username}/${dist}-${tag}-build
+FROM ${username}/${dist}-${tag}-dev
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
