@@ -4,7 +4,7 @@ FROM ${dist}:${tag}
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
-RUN	dnf -y install \
+RUN dnf -y install \
         autoconf \
         libtool \
         gcc \

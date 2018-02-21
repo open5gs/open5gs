@@ -4,7 +4,7 @@ FROM ${dist}:${tag}
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
-RUN	apt-get update && \
+RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         autoconf \

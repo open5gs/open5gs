@@ -14,7 +14,7 @@ Docker running example
   $ docker-compose \
     -f docker-compose.yml -f docker-compose.test.yml run test
 
-* Test(ubuntu-artful)
+* Test(ubuntu:artful)
   $ TAG=artful docker-compose build
   $ TAG=artful docker-compose \
     -f docker-compose.yml -f docker-compose.test.yml run test
@@ -23,7 +23,7 @@ Docker running example
   $ DIST=fedora docker-compose build
   $ DIST=fedora docker-compose run dev
 
-* TODO - Runtime(debian-jessie)
+* Runtime(debian:jessie)
   $ DIST=debian TAG=jessie docker-compose build
   $ DIST=debian TAG=jessie docker-compose 
     -f docker-compose.yml -f docker-compose.run.yml run run

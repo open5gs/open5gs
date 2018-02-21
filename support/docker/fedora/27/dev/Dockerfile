@@ -5,7 +5,7 @@ FROM ${username}/${dist}-${tag}-build
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
-RUN	dnf -y install \
+RUN dnf -y install \
         cscope \
         vim \
         sudo \
@@ -13,7 +13,7 @@ RUN	dnf -y install \
         net-tools
 
 ARG username=acetcom
-RUN	useradd -m --uid=1000 ${username} && \
+RUN useradd -m --uid=1000 ${username} && \
     echo "${username} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${username} && \
     chmod 0440 /etc/sudoers.d/${username}
 

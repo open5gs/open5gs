@@ -5,7 +5,7 @@ FROM ${username}/${dist}-${tag}-build
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
-RUN	yum -y install \
+RUN yum -y install \
         cscope \
         vim \
         sudo \
@@ -13,7 +13,7 @@ RUN	yum -y install \
         net-tools
 
 ARG username=acetcom
-RUN	useradd -m --uid=1000 ${username} && \
+RUN useradd -m --uid=1000 ${username} && \
     echo "${username} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${username} && \
     chmod 0440 /etc/sudoers.d/${username}
 

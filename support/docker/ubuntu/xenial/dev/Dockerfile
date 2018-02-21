@@ -5,7 +5,7 @@ FROM ${username}/${dist}-${tag}-build
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
-RUN	apt-get update && \
+RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         debhelper \
@@ -21,7 +21,7 @@ RUN	apt-get update && \
     apt-get clean
 
 ARG username=acetcom
-RUN	useradd -m --uid=1000 ${username} && \
+RUN useradd -m --uid=1000 ${username} && \
     echo "${username} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${username} && \
     chmod 0440 /etc/sudoers.d/${username}
 
