@@ -12,6 +12,8 @@ RUN dnf -y install \
         iputils \
         net-tools
 
+COPY setup.sh /root
+
 ARG username=acetcom
 RUN useradd -m --uid=1000 ${username} && \
     echo "${username} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${username} && \

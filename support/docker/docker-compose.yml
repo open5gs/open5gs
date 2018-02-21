@@ -53,7 +53,7 @@ services:
     image: ${USER}/${DIST-ubuntu}-${TAG-latest}-dev
     depends_on:
       - mongodb
-      - build
+      - base
     environment:
       DB_URI: mongodb://mongodb/nextepc
     cap_add:

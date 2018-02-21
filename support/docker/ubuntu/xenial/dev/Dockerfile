@@ -20,6 +20,8 @@ RUN apt-get update && \
         net-tools && \
     apt-get clean
 
+COPY setup.sh /root
+
 ARG username=acetcom
 RUN useradd -m --uid=1000 ${username} && \
     echo "${username} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${username} && \
