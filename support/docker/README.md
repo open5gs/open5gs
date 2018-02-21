@@ -1,44 +1,44 @@
 Docker running example
 ===========================================
-* Create default-image with ubuntu-xenial
-  $ docker-compose up -d
-
-* Remove dangling container if the status is exited
-  $ docker rm $(docker ps -qa --no-trunc --filter "status=exited")
+* Build Image
+  $ docker-compose build
 
 * Development 
-  $ docker-compose run --rm dev
+  $ docker-compose run dev
 
 * Runtime
-  $ docker-compose -f docker-compose.yml -f docker-compose.run.yml \
-    run --rm run
+  $ docker-compose \
+    -f docker-compose.yml -f docker-compose.run.yml run run
 
 * Test
-  $ docker-compose -f docker-compose.yml -f docker-compose.test.yml \
-    run --rm test
+  $ docker-compose \
+    -f docker-compose.yml -f docker-compose.test.yml run test
 
-* Test with ubuntu-artful
-  $ TAG=artful docker-compose up -d
-  $ TAG=artful docker-compose -f docker-compose.yml -f docker-compose.test.yml \
-    run --rm test
+* Test(ubuntu-artful)
+  $ TAG=artful docker-compose build
+  $ TAG=artful docker-compose \
+    -f docker-compose.yml -f docker-compose.test.yml run test
 
-* Development with centos:latest(TODO)
-  $ DIST=centos docker-compose up -d
-  $ DIST=centos docker-compose run --rm dev
+* TODO - Development(centos:latest)
+  $ DIST=centos docker-compose build
+  $ DIST=centos docker-compose run dev
 
-* Runtime with debian-jessie(TODO)
-  $ DIST=debian TAG=jessie docker-compose up -d
-  $ DIST=debian TAG=jessie docker-compose \
-    -f docker-compose.yml -f docker-compose.run.yml run --rm run
+* TODO - Runtime(debian-jessie)
+  $ DIST=debian TAG=jessie docker-compose build
+  $ DIST=debian TAG=jessie docker-compose 
+    -f docker-compose.yml -f docker-compose.run.yml run run
 
 * All Test with All Environment(TODO)
   $ ./check.sh
+
+* Run WebUI 
+  $ docker-compose up -d
 
 For Debian Package Release
 ===========================================
 
 * Run Docker
-  $ docker-compose run --rm dev
+  $ docker-compose run dev
 
 * Setup Debian Environment
 export DEBFULLNAME='Sukchan Lee'
@@ -50,15 +50,13 @@ export DEBEMAIL='acetcom@gmail.com'
   $ gpg --export > public.asc'
   $ gpg --import public.asc
 
-* Update debian/changelog
-  $ dch -i
-
-* Generate Package 
-  $ dpkg-buildpackage
-  $ debuild -S
-
 * Upload LaunchPad
+  $ dch -i
+  $ debuild -S
   $ dput ppa:acetcom/nextepc *.source.changes
+
+* Build pckage
+  $ dpkg-buildpackage
 
 For Mac OS X (SCTP-patch)
 ===========================================
