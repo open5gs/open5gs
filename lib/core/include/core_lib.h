@@ -114,6 +114,26 @@ CORE_DECLARE(void *) core_buffer_to_bcd(c_uint8_t *in, int in_len, void *out);
  */
 CORE_DECLARE(char *)core_cpystrn(char *dst, const char *src, size_t dst_size);
 
+/**
+ * Get the value of an environment variable
+ * @param value the returned value, allocated from @a pool
+ * @param envvar the name of the environment variable
+ */
+CORE_DECLARE(char *) core_env_get(const char *envvar);
+
+/**
+ * Set the value of an environment variable
+ * @param envvar the name of the environment variable
+ * @param value the value to set
+ */
+CORE_DECLARE(status_t) core_env_set(const char *envvar, const char *value);
+
+/**
+ * Delete a variable from the environment
+ * @param envvar the name of the environment variable
+ */
+CORE_DECLARE(status_t) core_env_delete(const char *envvar);
+
 /** @} */
 
 #ifdef __cplusplus

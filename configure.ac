@@ -379,24 +379,15 @@ AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(\
     atexit \
     gettimeofday \
-    inet_ntop \
-    inet_pton \
-    inet_aton \
     memmove \
-    sigaction \
-    sigwait \
-    sigsuspend \
-    stpcpy \
-    strcasecmp \
-    strtoul \
-    stricmp \
     strerror \
+    inet_ntop inet_pton inet_aton \
+    sigaction sigwait sigsuspend \
+    stpcpy strcasecmp strtoul stricmp \
     writev \
-    utime \
-    utimes \
-    sem_timedwait \
-    pthread_yield \
-    sched_yield \
+    utime utimes sem_timedwait \
+    pthread_yield sched_yield \
+    getenv putenv setenv unsetenv \
 )
 
 AC_SEARCH_LIBS(gethostbyname, nsl)

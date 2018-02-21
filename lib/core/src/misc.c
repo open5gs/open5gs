@@ -143,3 +143,56 @@ char *core_cpystrn(char *dst, const char *src, size_t dst_size)
 
     return (d);
 }
+
+char *core_env_get(const char *envvar)
+{
+#ifdef HAVE_GETENV
+    return getenv(envvar);
+#else
+    return NULL;
+#endif
+}
+
+
+status_t core_env_set(const char *envvar, const char *value)
+{
+#if defined(HAVE_SETENV)
+
+    if (0 > setenv(envvar, value, 1))
+        return CORE_ENOMEM;
+    return CORE_OK;
+
+#elif defined(HAVE_PUTENV)
+
+    char buf[HUGE_STRING_LEN];
+
+    if (snprintf(buf, HUGE_STRING_LEN, "%s=%s", envvar, value) < 0)
+        return CORE_ENOMEM; 
+    if (0 > putenv(buf))
+        return CORE_ENOMEM;
+    return CORE_OK;
+
+#else
+    return CORE_ENOTIMPL;
+#endif
+}
+
+
+status_t core_env_delete(const char *envvar)
+{
+#ifdef HAVE_UNSETENV
+
+    unsetenv(envvar);
+    return CORE_OK;
+
+#else
+    /* hint: some platforms allow envvars to be unset via
+     *       putenv("varname")...  that isn't Single Unix spec,
+     *       but if your platform doesn't have unsetenv() it is
+     *       worth investigating and potentially adding a
+     *       configure check to decide when to use that form of
+     *       putenv() here
+     */
+    return CORE_ENOTIMPL;
+#endif
+}
