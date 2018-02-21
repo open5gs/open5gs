@@ -15,4 +15,4 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
     hostname: nextepc-test
-    command: /bin/bash -c "/root/setup.sh; sed 's|localhost|mongodb|' /usr/local/etc/nextepc/nextepc.conf > /tmp/nextepc.conf; mv -f /tmp/nextepc.conf /usr/local/etc/nextepc/; cd nextepc; ./test/testepc"
+    command: /bin/bash -c "/root/setup.sh; /usr/bin/testepc"

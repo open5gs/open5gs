@@ -16,6 +16,7 @@ RUN	apt-get update && \
         devscripts \
         dh-autoreconf \
         dh-systemd \
+        fakeroot \
         libsctp-dev \
         libgnutls28-dev \
         libgcrypt-dev \

@@ -62,6 +62,7 @@ services:
       - net.ipv6.conf.all.disable_ipv6=0
     volumes:
       - home:/home/${USER}
+      - ${HOME}:/mnt
     hostname: nextepc-dev
     command: /bin/bash -c "chmod 666 /dev/net/tun; /root/setup.sh; su acetcom"
 
