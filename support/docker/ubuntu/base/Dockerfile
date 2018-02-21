@@ -7,16 +7,12 @@ RUN	apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         autoconf \
+        automake \
         libtool \
         gcc \
         flex \
         bison \
         git \
-        debhelper \
-        devscripts \
-        dh-autoreconf \
-        dh-systemd \
-        fakeroot \
         libsctp-dev \
         libgnutls28-dev \
         libgcrypt-dev \
@@ -25,9 +21,9 @@ RUN	apt-get update && \
         libbson-dev \
         libyaml-dev \
         build-essential \
+        iproute2 \
         ca-certificates \
         netbase \
-        ifupdown \
         pkg-config && \
     apt-get clean
 

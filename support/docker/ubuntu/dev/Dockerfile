@@ -7,10 +7,14 @@ MAINTAINER Sukchan Lee <acetcom@gmail.com>
 RUN	apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
+        debhelper \
+        devscripts \
+        dh-autoreconf \
+        dh-systemd \
+        fakeroot \
         cscope \
         vim \
         sudo \
-        iproute2 \
         iputils-ping \
         net-tools && \
     apt-get clean
