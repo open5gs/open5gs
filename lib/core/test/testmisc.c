@@ -137,6 +137,54 @@ static void misc_test7(abts_case *tc, void *data)
     ABTS_TRUE(tc, strcmp("001010123456819", out) == 0);
 }
 
+#define TEST_ENVVAR_NAME "core_test_envvar"
+#define TEST_ENVVAR2_NAME "core_test_envvar2"
+#define TEST_ENVVAR_VALUE "Just a value that we'll check"
+
+static void misc_test8(abts_case *tc, void *data)
+{
+    char *value;
+    status_t rv;
+
+    rv = core_env_set(TEST_ENVVAR_NAME, TEST_ENVVAR_VALUE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    value = core_env_get(TEST_ENVVAR_NAME);
+    ABTS_PTR_NOTNULL(tc, value);
+    ABTS_STR_EQUAL(tc, TEST_ENVVAR_VALUE, value);
+
+    rv = core_env_delete(TEST_ENVVAR_NAME);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    value = core_env_get(TEST_ENVVAR_NAME);
+    ABTS_PTR_NULL(tc, value);
+
+    rv = core_env_set(TEST_ENVVAR_NAME, "");
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    value = core_env_get(TEST_ENVVAR_NAME);
+    ABTS_PTR_NOTNULL(tc, value);
+    ABTS_STR_EQUAL(tc, "", value);
+
+    rv = core_env_delete(TEST_ENVVAR_NAME);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    value = core_env_get(TEST_ENVVAR_NAME);
+    ABTS_PTR_NULL(tc, value);
+
+    rv = core_env_set(TEST_ENVVAR2_NAME, TEST_ENVVAR_VALUE);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    value = core_env_get(TEST_ENVVAR2_NAME);
+    ABTS_PTR_NOTNULL(tc, value);
+    ABTS_STR_EQUAL(tc, TEST_ENVVAR_VALUE, value);
+    value = core_env_get(TEST_ENVVAR_NAME);
+    ABTS_PTR_NULL(tc, value);
+    value = core_env_get(TEST_ENVVAR2_NAME);
+    ABTS_PTR_NOTNULL(tc, value);
+    ABTS_STR_EQUAL(tc, TEST_ENVVAR_VALUE, value);
+
+    rv = core_env_delete(TEST_ENVVAR2_NAME);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    value = core_env_get(TEST_ENVVAR2_NAME);
+    ABTS_PTR_NULL(tc, value);
+}
+
 abts_suite *testmisc(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -148,6 +196,7 @@ abts_suite *testmisc(abts_suite *suite)
     abts_run_test(suite, misc_test5, NULL);
     abts_run_test(suite, misc_test6, NULL);
     abts_run_test(suite, misc_test7, NULL);
+    abts_run_test(suite, misc_test8, NULL);
 
     return suite;
 }

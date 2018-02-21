@@ -3,6 +3,7 @@
 #include "core_debug.h"
 #include "core_thread.h"
 #include "core_file.h"
+#include "core_lib.h"
 
 #include "context.h"
 
@@ -48,6 +49,10 @@ status_t app_will_initialize(const char *config_path, const char *log_path)
 
     if (context_self()->db_uri)
     {
+        /* Override configuration if DB_URI environment variable is existed */
+        if (core_env_get("DB_URI"))
+            context_self()->db_uri = core_env_get("DB_URI");
+
         rv = context_db_init(context_self()->db_uri);
         if (rv != CORE_OK) return rv;
         d_print("  MongoDB URI : '%s'\n", context_self()->db_uri);
