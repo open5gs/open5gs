@@ -24,8 +24,9 @@ services:
 
   base:
     build:
-      context: ./${DIST-ubuntu}/base
+      context: ./${DIST-ubuntu}/${TAG-latest}/base
       args:
+        dist: ${DIST-ubuntu}
         tag: ${TAG-latest}
     image: ${USER}/${DIST-ubuntu}-${TAG-latest}-base
     command: /bin/bash -c "echo 'base' services"
@@ -44,14 +45,15 @@ services:
 
   dev:
     build:
-      context: ./${DIST-ubuntu}/dev
+      context: ./${DIST-ubuntu}/${TAG-latest}/dev
       args:
+        dist: ${DIST-ubuntu}
         tag: ${TAG-latest}
         username: ${USER}
     image: ${USER}/${DIST-ubuntu}-${TAG-latest}-dev
     depends_on:
       - mongodb
-      - base
+      - build
     environment:
       DB_URI: mongodb://mongodb/nextepc
     cap_add:

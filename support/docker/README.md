@@ -19,16 +19,16 @@ Docker running example
   $ TAG=artful docker-compose \
     -f docker-compose.yml -f docker-compose.test.yml run test
 
-* TODO - Development(centos:latest)
-  $ DIST=centos docker-compose build
-  $ DIST=centos docker-compose run dev
+* Development(fedora:latest)
+  $ DIST=fedora docker-compose build
+  $ DIST=fedora docker-compose run dev
 
 * TODO - Runtime(debian-jessie)
   $ DIST=debian TAG=jessie docker-compose build
   $ DIST=debian TAG=jessie docker-compose 
     -f docker-compose.yml -f docker-compose.run.yml run run
 
-* All Test with All Environment(TODO)
+* All Test with All Environment
   $ ./check.sh
 
 * Run WebUI 
@@ -45,9 +45,9 @@ export DEBFULLNAME='Sukchan Lee'
 export DEBEMAIL='acetcom@gmail.com'
 
 * Transfer GPG key
-  $ gpg --export-secret-keys --armor --output private.asc'
+  $ gpg --export-secret-keys --armor --output private.asc
   $ gpg --import private.asc
-  $ gpg --export > public.asc'
+  $ gpg --export > public.asc
   $ gpg --import public.asc
 
 * Upload LaunchPad

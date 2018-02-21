@@ -5,13 +5,14 @@ FROM ${username}/${dist}-${tag}-base
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
-WORKDIR /tmp
+WORKDIR /root
+COPY setup.sh /root
 
 ARG USER=acetcom
 ARG REPO=nextepc
 ARG BRANCH=master
 RUN	git clone https://github.com/$USER/$REPO
-ADD https://api.github.com/repos/$USER/$REPO/git/refs/heads/$BRANCH /tmp/version.json
+ADD https://api.github.com/repos/$USER/$REPO/git/refs/heads/$BRANCH /root/nextepc-ver.json
 
 RUN	cd nextepc && \
 	git fetch && git checkout -f -B master origin/master && \
@@ -21,5 +22,3 @@ RUN	cd nextepc && \
         --sysconfdir=/etc \
         --localstatedir=/var && \
     make -j `nproc` install
-
-WORKDIR /root

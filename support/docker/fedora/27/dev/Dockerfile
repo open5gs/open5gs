@@ -1,23 +1,16 @@
+ARG dist=fedora
 ARG tag=latest
 ARG username=acetcom
-FROM ${username}/ubuntu-${tag}-base
+FROM ${username}/${dist}-${tag}-build
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
-RUN	apt-get update && \
-    apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends \
-        debhelper \
-        devscripts \
-        dh-autoreconf \
-        dh-systemd \
-        fakeroot \
+RUN	dnf -y install \
         cscope \
         vim \
         sudo \
-        iputils-ping \
-        net-tools && \
-    apt-get clean
+        iputils \
+        net-tools
 
 ARG username=acetcom
 RUN	useradd -m --uid=1000 ${username} && \
