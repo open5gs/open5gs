@@ -13,6 +13,8 @@ extern "C" {
 #define TLV_MAX_MORE 8
 #define TLV_1_OR_MORE(__v) __v[TLV_MAX_MORE]
 
+#define TLV_MAX_CHILD_DESC 128
+
 typedef enum {
     TLV_UINT8,
     TLV_UINT16,
@@ -37,7 +39,7 @@ typedef struct _tlv_desc_t {
     c_uint16_t length;
     c_uint8_t  instance;
     c_uint16_t vsize;
-    void *child_descs[];
+    void *child_descs[TLV_MAX_CHILD_DESC];
 } tlv_desc_t;
 
 extern tlv_desc_t tlv_desc_more1;
