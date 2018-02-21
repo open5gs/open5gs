@@ -1,7 +1,7 @@
 ARG dist=centos
 ARG tag=latest
 ARG username=acetcom
-FROM ${username}/${dist}-${tag}-dev
+FROM ${username}/${dist}-${tag}-base
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
