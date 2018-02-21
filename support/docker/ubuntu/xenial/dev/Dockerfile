@@ -12,6 +12,7 @@ RUN apt-get update && \
         devscripts \
         dh-autoreconf \
         dh-systemd \
+        manpages-dev \
         fakeroot \
         cscope \
         vim \
