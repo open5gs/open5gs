@@ -58,6 +58,10 @@ static inline int s1ap_encode_mme_status_transfer(
 
 static inline int s1ap_encode_error_indication(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_reset(
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
+static inline int s1ap_encode_reset_ack(
+    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 
 static void s1ap_encode_xer_print_message(
     asn_enc_rval_t (*func)(asn_app_consume_bytes_f *cb,
@@ -191,6 +195,12 @@ static inline int s1ap_encode_initiating_message(
             ret = s1ap_encode_error_indication(message_p, pkbuf);
             break;
 
+        case S1ap_ProcedureCode_id_Reset:
+            s1ap_encode_xer_print_message(s1ap_xer_print_s1ap_reset,
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_reset(message_p, pkbuf);
+            break;
+
         default:
             d_warn("Unknown procedure ID (%d) for initiating message_p\n", 
                     (int)message_p->procedureCode);
@@ -253,6 +263,12 @@ static inline int s1ap_encode_successfull_outcome(
                     s1ap_xer_print_s1ap_handovercancelacknowledge,
                     s1ap_xer__print2sp, message_p);
             ret = s1ap_encode_handover_cancel_ack(message_p, pkbuf);
+            break;
+
+        case S1ap_ProcedureCode_id_Reset:
+            s1ap_encode_xer_print_message(s1ap_xer_print_s1ap_resetacknowledge,
+                    s1ap_xer__print2sp, message_p);
+            ret = s1ap_encode_reset_ack(message_p, pkbuf);
             break;
 
         default:
@@ -1115,6 +1131,79 @@ static inline int s1ap_encode_error_indication(
                     &pdu, pkbuf->payload, MAX_SDU_LEN);
 
     ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &error);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", td->name);
+    }
+
+    return enc_ret.encoded;
+}
+
+static inline int s1ap_encode_reset(s1ap_message_t *message_p, pkbuf_t *pkbuf)
+{
+    asn_enc_rval_t enc_ret = {0};
+
+    S1AP_PDU_t pdu;
+    S1ap_Reset_t reset;
+    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_Reset;
+
+    memset(&reset, 0, sizeof(S1ap_Reset_t));
+    if (s1ap_encode_s1ap_reseties(
+                &reset, &message_p->s1ap_ResetIEs) < 0) 
+    {
+        d_error("Encoding of %s failed", td->name);
+        return -1;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage.procedureCode = message_p->procedureCode;
+    pdu.choice.initiatingMessage.criticality = S1ap_Criticality_reject;
+    ANY_fromType_aper(&pdu.choice.initiatingMessage.value, td, &reset);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &reset);
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of %s failed", td->name);
+    }
+
+    return enc_ret.encoded;
+}
+
+static inline int s1ap_encode_reset_ack(
+        s1ap_message_t *message_p, pkbuf_t *pkbuf)
+{
+    asn_enc_rval_t enc_ret = {0};
+
+    S1AP_PDU_t pdu;
+    S1ap_ResetAcknowledge_t ack;
+    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_ResetAcknowledge;
+
+    memset(&ack, 0, sizeof(S1ap_ResetAcknowledge_t));
+    if (s1ap_encode_s1ap_resetacknowledgeies(
+                &ack, &message_p->s1ap_ResetAcknowledgeIEs) < 0) 
+    {
+        d_error("Encoding of %s failed", td->name);
+        return -1;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome.procedureCode = message_p->procedureCode;
+    pdu.choice.successfulOutcome.criticality = S1ap_Criticality_reject;
+    ANY_fromType_aper(&pdu.choice.successfulOutcome.value, td, &ack);
+
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &ack);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
 
     if (enc_ret.encoded < 0)

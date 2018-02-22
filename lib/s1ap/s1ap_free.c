@@ -140,6 +140,11 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
                     &message->s1ap_ErrorIndicationIEs);
             break;
 
+        case S1ap_ProcedureCode_id_Reset: 
+            s1ap_free_s1ap_reseties(
+                    &message->s1ap_ResetIEs);
+            break;
+
         default:
             d_warn("Unknown procedure ID (%d) for initiating message\n", 
                     (int)message->procedureCode);
@@ -201,6 +206,11 @@ static inline int s1ap_free_successfull_outcome(s1ap_message_t *message)
         case S1ap_ProcedureCode_id_HandoverPreparation: 
             s1ap_free_s1ap_handovercommandies(
                     &message->s1ap_HandoverCommandIEs);
+            break;
+
+        case S1ap_ProcedureCode_id_Reset: 
+            s1ap_free_s1ap_resetacknowledgeies(
+                    &message->s1ap_ResetAcknowledgeIEs);
             break;
 
         default:
