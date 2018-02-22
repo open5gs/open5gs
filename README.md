@@ -29,6 +29,7 @@ To get the latest Ubuntu version, please visit the official Ubuntu website: [htt
 The NextEPC package is available on the recent versions of Ubuntu.
 
 ```bash
+sudo apt-get update
 sudo apt-get -y install software-properties-common
 sudo add-apt-repository ppa:acetcom/nextepc
 sudo apt-get update
