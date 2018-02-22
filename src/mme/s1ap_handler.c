@@ -25,6 +25,8 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     pkbuf_t *s1apbuf = NULL;
     c_uint32_t enb_id;
     int i, j;
+    S1ap_Cause_PR group = S1ap_Cause_PR_NOTHING;
+    long cause = 0;
 
     d_assert(enb, return, "Null param");
     d_assert(enb->sock, return, "Null param");
@@ -37,6 +39,8 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 
     s1ap_ENB_ID_to_uint32(&ies->global_ENB_ID.eNB_ID, &enb_id);
     d_trace(5, "    IP[%s] ENB_ID[%d]\n", CORE_ADDR(enb->addr, buf), enb_id);
+
+    mme_enb_set_enb_id(enb, enb_id);
 
     /* Parse Supported TA */
     enb->num_of_supported_ta_list = 0;
@@ -59,38 +63,66 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
             enb->supported_ta_list[enb->num_of_supported_ta_list].tac = 
                 ntohs(enb->supported_ta_list
                         [enb->num_of_supported_ta_list].tac);
-            d_trace(5, "    TAC[%d]\n",
-                    enb->supported_ta_list[enb->num_of_supported_ta_list].tac);
-
             memcpy(&enb->supported_ta_list
                         [enb->num_of_supported_ta_list].plmn_id,
                     pLMNidentity->buf, sizeof(plmn_id_t));
-            d_trace(5, "    PLMN_ID[MCC:%d MNC:%d]\n",
+            d_trace(5, "    PLMN_ID[MCC:%d MNC:%d] TAC[%d]\n",
                 plmn_id_mcc(&enb->supported_ta_list
                     [enb->num_of_supported_ta_list].plmn_id),
                 plmn_id_mnc(&enb->supported_ta_list
-                    [enb->num_of_supported_ta_list].plmn_id));
+                    [enb->num_of_supported_ta_list].plmn_id),
+                enb->supported_ta_list[enb->num_of_supported_ta_list].tac);
             enb->num_of_supported_ta_list++;
         }
     }
 
     if (enb->num_of_supported_ta_list == 0)
     {
-        d_error("No supported TA exist in s1stup_req messages");
+        d_warn("S1-Setup failure:");
+        d_warn("    No supported TA exist in S1-Setup request");
+        group = S1ap_Cause_PR_misc;
+        cause = S1ap_CauseMisc_unspecified;
+    }
+    else
+    {
+        int served_tai_index = -1;
+        for (i = 0; i < enb->num_of_supported_ta_list; i++)
+        {
+            served_tai_index = 
+                mme_find_served_tai(&enb->supported_ta_list[i]);
+            if (served_tai_index >= 0 &&
+                served_tai_index < MAX_NUM_OF_SERVED_TAI)
+            {
+                d_trace(5, "    SERVED_TAI_INDEX[%d]\n", served_tai_index);
+                break;
+            }
+        }
+
+        if (served_tai_index < 0)
+        {
+            d_warn("S1-Setup failure:");
+            d_warn("    Cannot find Served TAI. Check 'mme.tai' configuration");
+            group = S1ap_Cause_PR_misc;
+            cause = S1ap_CauseMisc_unknown_PLMN;
+        }
     }
 
-    d_assert(enb->sock, return,);
+    if (group == S1ap_Cause_PR_NOTHING)
+    {
+        d_trace(3, "[MME] S1-Setup response\n");
+        d_assert(s1ap_build_setup_rsp(&s1apbuf) == CORE_OK, 
+                return, "s1ap_build_setup_rsp() failed");
+    }
+    else
+    {
+        d_trace(3, "[MME] S1-Setup failure\n");
+        d_assert(s1ap_build_setup_failure(
+                &s1apbuf, group, cause, S1ap_TimeToWait_v10s) == CORE_OK, 
+                return, "s1ap_build_setup_failure() failed");
+    }
 
-    d_trace(3, "[MME] S1-Setup response\n");
-
-    d_assert(mme_enb_set_enb_id(enb, enb_id) == CORE_OK,
-            return, "hash add error");
-
-    d_assert(s1ap_build_setup_rsp(&s1apbuf) == CORE_OK, 
-            return, "build error");
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK, , "send error");
-
-    d_assert(enb->sock, return,);
+    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,,
+            "s1ap_send_to_enb() failed");
 }
 
 void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)

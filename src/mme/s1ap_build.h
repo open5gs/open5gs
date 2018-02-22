@@ -10,7 +10,7 @@ extern "C" {
 
 CORE_DECLARE(status_t) s1ap_build_setup_rsp(pkbuf_t **pkbuf);
 CORE_DECLARE(status_t) s1ap_build_setup_failure(
-    pkbuf_t **pkbuf, S1ap_Cause_PR group, long cause);
+    pkbuf_t **pkbuf, S1ap_Cause_PR group, long cause, long time_to_wait);
 CORE_DECLARE(status_t) s1ap_build_downlink_nas_transport(
     pkbuf_t **s1apbuf, enb_ue_t *enb_ue, pkbuf_t *emmbuf);
 CORE_DECLARE(status_t) s1ap_build_initial_context_setup_request(

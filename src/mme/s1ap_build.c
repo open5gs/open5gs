@@ -85,7 +85,7 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 
 
 status_t s1ap_build_setup_failure(
-        pkbuf_t **pkbuf, S1ap_Cause_PR group, long cause)
+        pkbuf_t **pkbuf, S1ap_Cause_PR group, long cause, long time_to_wait)
 {
     int erval;
 
@@ -97,6 +97,14 @@ status_t s1ap_build_setup_failure(
     ies = &message.s1ap_S1SetupFailureIEs;
     ies->cause.present = group;
     ies->cause.choice.radioNetwork = cause;
+    d_trace(5, "    Gruop[%d] Cause[%d] TimeToWait[%ld]\n",
+            group, cause, time_to_wait);
+
+    if (time_to_wait > -1)
+    {
+        ies->presenceMask |= S1AP_S1SETUPFAILUREIES_TIMETOWAIT_PRESENT;
+        ies->timeToWait = time_to_wait;
+    }
 
     message.procedureCode = S1ap_ProcedureCode_id_S1Setup;
     message.direction = S1AP_PDU_PR_unsuccessfulOutcome;
