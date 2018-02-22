@@ -10,6 +10,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         debhelper \
         devscripts \
+        dput \
         dh-autoreconf \
         dh-systemd \
         manpages-dev \
