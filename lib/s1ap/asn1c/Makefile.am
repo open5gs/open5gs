@@ -6,7 +6,7 @@ ASN_MODULE_SOURCES=	\
 	E-RAB-IE-ContainerList.c	\
 	S1ap-HandoverRequired.c	\
 	S1ap-HandoverCommand.c	\
-	S1ap-E-RABDataForwardingList.c	\
+	S1ap-E-RABSubjecttoDataForwardingList.c	\
 	S1ap-E-RABDataForwardingItem.c	\
 	S1ap-HandoverPreparationFailure.c	\
 	S1ap-HandoverRequest.c	\
@@ -111,7 +111,7 @@ ASN_MODULE_SOURCES=	\
 	S1ap-UplinkNonUEAssociatedLPPaTransport.c	\
 	S1ap-AreaScopeOfMDT.c	\
 	S1ap-AllocationAndRetentionPriority.c	\
-	S1ap-Bearers-SubjectToStatusTransfer-List.c	\
+	S1ap-Bearers-SubjectToStatusTransferList.c	\
 	S1ap-Bearers-SubjectToStatusTransfer-Item.c	\
 	S1ap-BitRate.c	\
 	S1ap-BPLMNs.c	\
@@ -376,7 +376,7 @@ ASN_MODULE_INCLUDES=	\
 	ProtocolError-IE-ContainerList.h	\
 	S1ap-HandoverRequired.h	\
 	S1ap-HandoverCommand.h	\
-	S1ap-E-RABDataForwardingList.h	\
+	S1ap-E-RABSubjecttoDataForwardingList.h	\
 	S1ap-E-RABDataForwardingItem.h	\
 	S1ap-HandoverPreparationFailure.h	\
 	S1ap-HandoverRequest.h	\
@@ -481,7 +481,7 @@ ASN_MODULE_INCLUDES=	\
 	S1ap-UplinkNonUEAssociatedLPPaTransport.h	\
 	S1ap-AreaScopeOfMDT.h	\
 	S1ap-AllocationAndRetentionPriority.h	\
-	S1ap-Bearers-SubjectToStatusTransfer-List.h	\
+	S1ap-Bearers-SubjectToStatusTransferList.h	\
 	S1ap-Bearers-SubjectToStatusTransfer-Item.h	\
 	S1ap-BitRate.h	\
 	S1ap-BPLMNs.h	\

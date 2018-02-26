@@ -30,8 +30,8 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2018-01-23 14:40:35.346509 by acetcom
- * from ['fix-a90.asn']
+ * Created on: 2018-02-26 14:41:33.957959 by acetcom
+ * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_decoder
 #include "core_debug.h"
@@ -4359,20 +4359,20 @@ int s1ap_decode_s1ap_handovercommandies(
                 }
             } break;
             /* Optional field */
-            case S1ap_ProtocolIE_ID_id_E_RABDataForwardingList:
+            case S1ap_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList:
             {
-                S1ap_E_RABDataForwardingList_t *s1apERABDataForwardingList_p = NULL;
+                S1ap_E_RABSubjecttoDataForwardingList_t *s1apERABSubjecttoDataForwardingList_p = NULL;
 
-                ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABDataForwardingList, (void**)&s1apERABDataForwardingList_p);
-                if (s1ap_decode_s1ap_e_rabdataforwardinglist(&s1ap_HandoverCommandIEs->e_RABDataForwardingList, s1apERABDataForwardingList_p) < 0)
+                ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, (void**)&s1apERABSubjecttoDataForwardingList_p);
+                if (s1ap_decode_s1ap_e_rabsubjecttodataforwardinglist(&s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p) < 0)
                 {
-                    d_error("Decoding of encapsulated IE s1apERABDataForwardingList failed");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
+                    d_error("Decoding of encapsulated IE s1apERABSubjecttoDataForwardingList failed");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverCommand, s1ap_HandoverCommand_p);
                     return -1;
                 }
-                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
-                s1ap_HandoverCommandIEs->presenceMask |= S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT;
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
+                s1ap_HandoverCommandIEs->presenceMask |= S1AP_HANDOVERCOMMANDIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT;
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_E_RABtoReleaseListHOCmd:
@@ -5597,20 +5597,20 @@ int s1ap_decode_s1ap_downlinks1cdma2000tunnelingies(
                 }
             } break;
             /* Optional field */
-            case S1ap_ProtocolIE_ID_id_E_RABDataForwardingList:
+            case S1ap_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList:
             {
-                S1ap_E_RABDataForwardingList_t *s1apERABDataForwardingList_p = NULL;
+                S1ap_E_RABSubjecttoDataForwardingList_t *s1apERABSubjecttoDataForwardingList_p = NULL;
 
-                ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABDataForwardingList, (void**)&s1apERABDataForwardingList_p);
-                if (s1ap_decode_s1ap_e_rabdataforwardinglist(&s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABDataForwardingList, s1apERABDataForwardingList_p) < 0)
+                ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, (void**)&s1apERABSubjecttoDataForwardingList_p);
+                if (s1ap_decode_s1ap_e_rabsubjecttodataforwardinglist(&s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p) < 0)
                 {
-                    d_error("Decoding of encapsulated IE s1apERABDataForwardingList failed");
-                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
+                    d_error("Decoding of encapsulated IE s1apERABSubjecttoDataForwardingList failed");
+                    ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
                     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_DownlinkS1cdma2000tunneling, s1ap_DownlinkS1cdma2000tunneling_p);
                     return -1;
                 }
-                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingList, s1apERABDataForwardingList_p);
-                s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask |= S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABDATAFORWARDINGLIST_PRESENT;
+                ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, s1apERABSubjecttoDataForwardingList_p);
+                s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask |= S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT;
             } break;
             /* Optional field */
             case S1ap_ProtocolIE_ID_id_cdma2000HOStatus:
@@ -7493,31 +7493,31 @@ int s1ap_decode_s1ap_e_rabtobesetuplistbearersureq(
     return decoded;
 }
 
-int s1ap_decode_s1ap_e_rabdataforwardinglist(
-    S1ap_E_RABDataForwardingList_IEs_t *s1ap_E_RABDataForwardingListIEs,
-    S1ap_E_RABDataForwardingList_t *s1ap_E_RABDataForwardingList) {
+int s1ap_decode_s1ap_e_rabsubjecttodataforwardinglist(
+    S1ap_E_RABSubjecttoDataForwardingList_IEs_t *s1ap_E_RABSubjecttoDataForwardingListIEs,
+    S1ap_E_RABSubjecttoDataForwardingList_t *s1ap_E_RABSubjecttoDataForwardingList) {
 
     int i, decoded = 0;
     int tempDecoded = 0;
 
-    d_assert(s1ap_E_RABDataForwardingList, return -1, "Null param");
-    d_assert(s1ap_E_RABDataForwardingListIEs, return -1, "Null param");
+    d_assert(s1ap_E_RABSubjecttoDataForwardingList, return -1, "Null param");
+    d_assert(s1ap_E_RABSubjecttoDataForwardingListIEs, return -1, "Null param");
 
-    for (i = 0; i < s1ap_E_RABDataForwardingList->list.count; i++) {
-        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABDataForwardingList->list.array[i];
+    for (i = 0; i < s1ap_E_RABSubjecttoDataForwardingList->list.count; i++) {
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_E_RABSubjecttoDataForwardingList->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_E_RABDataForwardingItem:
             {
                 S1ap_E_RABDataForwardingItem_t *s1apERABDataForwardingItem_p = NULL;
                 tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_E_RABDataForwardingItem, (void**)&s1apERABDataForwardingItem_p);
                 if (tempDecoded < 0 || s1apERABDataForwardingItem_p == NULL) {
-                    d_error("Decoding of IE e_RABDataForwardingItem for message S1ap_E_RABDataForwardingList failed");
+                    d_error("Decoding of IE e_RABDataForwardingItem for message S1ap_E_RABSubjecttoDataForwardingList failed");
                     if (s1apERABDataForwardingItem_p)
                         ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingItem, s1apERABDataForwardingItem_p);
                     return -1;
                 }
                 decoded += tempDecoded;
-                ASN_SEQUENCE_ADD(&s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem, s1apERABDataForwardingItem_p);
+                ASN_SEQUENCE_ADD(&s1ap_E_RABSubjecttoDataForwardingListIEs->s1ap_E_RABDataForwardingItem, s1apERABDataForwardingItem_p);
             } break;
             default:
                 d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);
@@ -7629,31 +7629,31 @@ int s1ap_decode_s1ap_e_rabtobeswitchedullist(
     return decoded;
 }
 
-int s1ap_decode_s1ap_bearers_subjecttostatustransfer_list(
-    S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs,
-    S1ap_Bearers_SubjectToStatusTransfer_List_t *s1ap_Bearers_SubjectToStatusTransfer_List) {
+int s1ap_decode_s1ap_bearers_subjecttostatustransferlist(
+    S1ap_Bearers_SubjectToStatusTransferList_IEs_t *s1ap_Bearers_SubjectToStatusTransferListIEs,
+    S1ap_Bearers_SubjectToStatusTransferList_t *s1ap_Bearers_SubjectToStatusTransferList) {
 
     int i, decoded = 0;
     int tempDecoded = 0;
 
-    d_assert(s1ap_Bearers_SubjectToStatusTransfer_List, return -1, "Null param");
-    d_assert(s1ap_Bearers_SubjectToStatusTransfer_ListIEs, return -1, "Null param");
+    d_assert(s1ap_Bearers_SubjectToStatusTransferList, return -1, "Null param");
+    d_assert(s1ap_Bearers_SubjectToStatusTransferListIEs, return -1, "Null param");
 
-    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_List->list.count; i++) {
-        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_Bearers_SubjectToStatusTransfer_List->list.array[i];
+    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransferList->list.count; i++) {
+        S1ap_IE_t *ie_p = (S1ap_IE_t *)s1ap_Bearers_SubjectToStatusTransferList->list.array[i];
         switch (ie_p->id) {
             case S1ap_ProtocolIE_ID_id_Bearers_SubjectToStatusTransfer_Item:
             {
                 S1ap_Bearers_SubjectToStatusTransfer_Item_t *s1apBearersSubjectToStatusTransferItem_p = NULL;
                 tempDecoded = ANY_to_type_aper(&ie_p->value, &asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, (void**)&s1apBearersSubjectToStatusTransferItem_p);
                 if (tempDecoded < 0 || s1apBearersSubjectToStatusTransferItem_p == NULL) {
-                    d_error("Decoding of IE bearers_SubjectToStatusTransfer_Item for message S1ap_Bearers_SubjectToStatusTransfer_List failed");
+                    d_error("Decoding of IE bearers_SubjectToStatusTransfer_Item for message S1ap_Bearers_SubjectToStatusTransferList failed");
                     if (s1apBearersSubjectToStatusTransferItem_p)
                         ASN_STRUCT_FREE(asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1apBearersSubjectToStatusTransferItem_p);
                     return -1;
                 }
                 decoded += tempDecoded;
-                ASN_SEQUENCE_ADD(&s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item, s1apBearersSubjectToStatusTransferItem_p);
+                ASN_SEQUENCE_ADD(&s1ap_Bearers_SubjectToStatusTransferListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item, s1apBearersSubjectToStatusTransferItem_p);
             } break;
             default:
                 d_warn("Unknown protocol IE id (%d) for message s1ap_uplinkueassociatedlppatransport_ies", (int)ie_p->id);

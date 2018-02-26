@@ -272,11 +272,11 @@ f.write("} %s_message_t;\n\n" % (fileprefix))
 for key in iesDefs:
     if key in ieofielist.values():
         continue
+
     structName = re.sub('ies', '', key)
     asn1cStruct = re.sub('-', '_', re.sub('IEs', '', re.sub('-IEs', '', key)))
-    asn1cStruct = re.sub('Item', 'List', asn1cStruct)
     keylowerunderscore = re.sub('-', '_', key.lower())
-    firstlower = re.sub('Item', 'List', re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct)))
+    firstlower = re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct))
     f.write("/** \\brief Decode function for %s ies.\n" % (key))
     if len(iesDefs[key]["ies"]) != 0:
         f.write(" * \\param %s Pointer to ASN1 structure in which data will be stored\n" % (lowerFirstCamelWord(re.sub('-', '_', key))))
@@ -308,9 +308,13 @@ for key in iesDefs:
 for key in iesDefs:
     if key not in ieofielist.values():
         continue
-    asn1cStruct = re.sub('-', '_', re.sub('IEs', '', key))
-    asn1cStruct = re.sub('Item', 'List', asn1cStruct)
-    firstlower = re.sub('Item', 'List', re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct)))
+
+    for (i, j) in ieofielist.items():
+        if j == key:
+            break
+
+    asn1cStruct = re.sub('-', '_', re.sub('IEs', '', i))
+    firstlower = re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct))
     f.write("/** \\brief Encode function for %s ies.\n" % (key))
     f.write(" *  \\param %s Pointer to the ASN1 structure.\n" % (firstlower))
     f.write(" *  \\param %s Pointer to the IES structure.\n" % (lowerFirstCamelWord(re.sub('-', '_', key))))
@@ -332,20 +336,23 @@ for key in iesDefs:
     f.write("    %s_IEs_t *%sIEs);\n\n" % (asn1cStruct, firstlower))
 
 for key in iesDefs:
-    asn1cStruct = re.sub('-', '_', re.sub('IEs', '', re.sub('-IEs', '', key)))
-    asn1cStruct = re.sub('Item', 'List', asn1cStruct)
-    firstlower = re.sub('Item', 'List', re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct)))
-
     if key in ieofielist.values():
+        for (i, j) in ieofielist.items():
+           if j == key:
+                break
+        asn1cStruct = re.sub('-', '_', re.sub('IEs', '', re.sub('-IEs', '', i)))
+        firstlower = re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct))
         f.write("/** \\brief Display %s encapsulated IE using XER encoding.\n" % (asn1cStruct))
-        f.write(" *  \\param %s Pointer to the IES structure.\n" % (lowerFirstCamelWord(re.sub('-', '_', key))))
+        f.write(" *  \\param %s Pointer to the IES structure.\n" % (lowerFirstCamelWord(re.sub('-', '_', i))))
         f.write(" *  \\param file File descriptor to write output.\n")
         f.write(" **/\n")
-        f.write("asn_enc_rval_t %s_xer_print_%s(\n" % (fileprefix, re.sub('item', 'list', firstlower.lower())))
+        f.write("asn_enc_rval_t %s_xer_print_%s(\n" % (fileprefix, firstlower.lower()))
         f.write("    asn_app_consume_bytes_f *cb,\n")
         f.write("    void *app_key,\n")
-        f.write("    %s_IEs_t *%sIEs);\n\n" % (re.sub('item', 'list', asn1cStruct), firstlower))
+        f.write("    %s_IEs_t *%sIEs);\n\n" % (asn1cStruct, firstlower))
     else:
+        asn1cStruct = re.sub('-', '_', re.sub('IEs', '', re.sub('-IEs', '', key)))
+        firstlower = re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct))
         f.write("/** \\brief Display %s message using XER encoding.\n" % (asn1cStruct))
         f.write(" *  \\param message_p Pointer to root message.\n")
         f.write(" *  \\param file File descriptor to write output.\n")
@@ -373,13 +380,12 @@ for key in iesDefs:
     asn1cStruct = re.sub('-', '_', re.sub('IEs', '', key))
     if asn1cStruct.rfind('_') == len(asn1cStruct) - 1:
         asn1cStruct = asn1cStruct[:-1]
-    asn1cStruct = re.sub('Item', 'List', asn1cStruct)
     ielistname = re.sub('UE', 'ue', asn1cStruct)
     ielistnamefirstlower = ielistname[:1].lower() + ielistname[1:]
     asn1cStructfirstlower = asn1cStruct[:1].lower() + asn1cStruct[1:]
     keyName = re.sub('-', '_', key)
     keyupperunderscore = keyName.upper()
-    firstlower = re.sub('Item', 'List', re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct)))
+    firstlower = re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct))
 
     iesaccess = ""
     if key not in ieofielist.values():
@@ -467,7 +473,11 @@ for key in iesDefs:
     if key not in ieofielist.values():
         continue
 
-    keyname = re.sub('IEs', '', re.sub('Item', 'List', key))
+    for (i, j) in ieofielist.items():
+        if j == key:
+            break
+
+    keyname = re.sub('IEs', '', i)
 
     f.write("int %s_decode_%s(\n" % (fileprefix, re.sub('-', '_', keyname).lower()))
     f.write("    %s_IEs_t *%sIEs,\n" % (re.sub('-', '_', keyname), lowerFirstCamelWord(re.sub('-', '_', keyname))))
@@ -517,11 +527,10 @@ for key in iesDefs:
 
     structName = re.sub('ies', '', key)
     asn1cStruct = re.sub('-', '_', re.sub('IEs', '', key))
-    asn1cStruct = re.sub('Item', 'List', asn1cStruct)
     if asn1cStruct.rfind('_') == len(asn1cStruct) - 1:
         asn1cStruct = asn1cStruct[:-1]
     asn1cStructfirstlower = asn1cStruct[:1].lower() + asn1cStruct[1:]
-    firstwordlower = re.sub('Item', 'List', re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct)))
+    firstwordlower = re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct))
 
     iesaccess = ""
     if key not in ieofielist.values():
@@ -605,13 +614,12 @@ for (key, value) in iesDefs.items():
 
     ie = value["ies"][0]
     ietypeunderscore = re.sub('-', '_', ie[2])
-    asn1cStruct = re.sub('-', '_', re.sub('IEs', '', re.sub('-IEs', '', key)))
-    asn1cStruct = re.sub('Item', 'List', asn1cStruct)
-    firstwordlower = re.sub('Item', 'List', re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct)))
 
     for (i, j) in ieofielist.items():
         if j == key:
             break
+    asn1cStruct = re.sub('-', '_', re.sub('IEs', '', re.sub('-IEs', '', i)))
+    firstwordlower = re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct))
     f.write("int %s_encode_%s(\n" % (fileprefix, re.sub('-', '_', i).lower()))
     f.write("    %s_t *%s,\n" % (asn1cStruct, firstwordlower))
     f.write("    %s_IEs_t *%sIEs) {\n\n" % (re.sub('-', '_', i), lowerFirstCamelWord(re.sub('-', '_', i))))
@@ -671,13 +679,12 @@ for key in iesDefs:
     asn1cStruct = re.sub('-', '_', re.sub('IEs', '', key))
     if asn1cStruct.rfind('_') == len(asn1cStruct) - 1:
         asn1cStruct = asn1cStruct[:-1]
-    asn1cStruct = re.sub('Item', 'List', asn1cStruct)
     ielistname = re.sub('UE', 'ue', asn1cStruct)
     ielistnamefirstlower = ielistname[:1].lower() + ielistname[1:]
     asn1cStructfirstlower = asn1cStruct[:1].lower() + asn1cStruct[1:]
     keyName = re.sub('-', '_', key)
     keyupperunderscore = keyName.upper()
-    firstlower = re.sub('Item', 'List', re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct)))
+    firstlower = re.sub('enb', 'eNB', lowerFirstCamelWord(asn1cStruct))
 
     f.write("void %s_free_%s(\n" % (fileprefix, re.sub('-', '_', structName.lower())))
     f.write("    %s_t *%s)\n" % (re.sub('-', '_', key), lowerFirstCamelWord(re.sub('-', '_', key))))
@@ -705,7 +712,11 @@ for key in iesDefs:
     if key not in ieofielist.values():
         continue
 
-    keyname = re.sub('IEs', '', re.sub('Item', 'List', key))
+    for (i, j) in ieofielist.items():
+        if j == key:
+            break
+
+    keyname = re.sub('IEs', '', i)
 
     f.write("void %s_free_%s(\n" % (fileprefix, re.sub('-', '_', keyname).lower()))
     f.write("    %s_IEs_t *%sIEs)\n" % (re.sub('-', '_', keyname), lowerFirstCamelWord(re.sub('-', '_', keyname))))
@@ -800,8 +811,11 @@ for (key, value) in iesDefs.items():
     f.write("    asn_app_consume_bytes_f *cb,\n")
     f.write("    void *app_key,\n")
     if key in ieofielist.values():
-        iesStructName = lowerFirstCamelWord(re.sub('Item', 'List', re.sub('-', '_', key)))
-        f.write("    %s_IEs_t *%s) {\n\n" % (re.sub('IEs', '', re.sub('Item', 'List', re.sub('-', '_', key))), iesStructName))
+        for (i, j) in ieofielist.items():
+           if j == key:
+                break
+        iesStructName = lowerFirstCamelWord(re.sub('-', '_', i))
+        f.write("    %s_IEs_t *%s) {\n\n" % (re.sub('IEs', '', re.sub('-', '_', i)), iesStructName))
         f.write("    int i;\n")
         f.write("    asn_enc_rval_t er;\n")
     else:

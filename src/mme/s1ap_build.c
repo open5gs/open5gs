@@ -839,7 +839,7 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
             if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
                 MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
             {
-                ASN_SEQUENCE_ADD(&ies->e_RABDataForwardingList, e_rab);
+                ASN_SEQUENCE_ADD(&ies->e_RABSubjecttoDataForwardingList, e_rab);
             }
 
             bearer = mme_bearer_next(bearer);
@@ -847,10 +847,11 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
         sess = mme_sess_next(sess);
     }
 
-    if (ies->e_RABDataForwardingList.s1ap_E_RABDataForwardingItem.count)
+    if (ies->e_RABSubjecttoDataForwardingList.
+            s1ap_E_RABDataForwardingItem.count)
     {
         ies->presenceMask |=
-            S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT;
+            S1AP_HANDOVERCOMMANDIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT;
     }
 
     s1ap_buffer_to_OCTET_STRING(mme_ue->container.buf, mme_ue->container.size, 

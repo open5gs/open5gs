@@ -30,8 +30,8 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2018-01-23 14:40:35.417418 by acetcom
- * from ['fix-a90.asn']
+ * Created on: 2018-02-26 14:41:34.014243 by acetcom
+ * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
@@ -95,12 +95,12 @@ cb_failed:
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabfailedtosetuplisthoreqack(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABFailedtoSetupListHOReqAck_IEs_t *s1ap_E_RABFailedtoSetupListHOReqAckIEs) {
+    S1ap_E_RABFailedtoSetupListHOReqAck_IEs_t *s1ap_E_RABFailedtoSetupListHOReqAck) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, s1ap_E_RABFailedtoSetupListHOReqAckIEs->s1ap_E_RABFailedtoSetupItemHOReqAck.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABFailedtoSetupListHOReqAck->s1ap_E_RABFailedtoSetupItemHOReqAck.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABFailedToSetupItemHOReqAck, s1ap_E_RABFailedtoSetupListHOReqAck->s1ap_E_RABFailedtoSetupItemHOReqAck.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -129,12 +129,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_deactivatetrace(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabreleaselistbearerrelcomp(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABReleaseListBearerRelComp_IEs_t *s1ap_E_RABReleaseListBearerRelCompIEs) {
+    S1ap_E_RABReleaseListBearerRelComp_IEs_t *s1ap_E_RABReleaseListBearerRelComp) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, s1ap_E_RABReleaseListBearerRelCompIEs->s1ap_E_RABReleaseItemBearerRelComp.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABReleaseListBearerRelComp->s1ap_E_RABReleaseItemBearerRelComp.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABReleaseItemBearerRelComp, s1ap_E_RABReleaseListBearerRelComp->s1ap_E_RABReleaseItemBearerRelComp.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -210,12 +210,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uplinknonueassociatedlppatransport(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplisthoreq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSetupListHOReq_IEs_t *s1ap_E_RABToBeSetupListHOReqIEs) {
+    S1ap_E_RABToBeSetupListHOReq_IEs_t *s1ap_E_RABToBeSetupListHOReq) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSetupItemHOReq, s1ap_E_RABToBeSetupListHOReqIEs->s1ap_E_RABToBeSetupItemHOReq.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABToBeSetupListHOReq->s1ap_E_RABToBeSetupItemHOReq.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSetupItemHOReq, s1ap_E_RABToBeSetupListHOReq->s1ap_E_RABToBeSetupItemHOReq.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -315,12 +315,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverpreparationfailure(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobemodifiedlistbearermodreq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeModifiedListBearerModReq_IEs_t *s1ap_E_RABToBeModifiedListBearerModReqIEs) {
+    S1ap_E_RABToBeModifiedListBearerModReq_IEs_t *s1ap_E_RABToBeModifiedListBearerModReq) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, s1ap_E_RABToBeModifiedListBearerModReqIEs->s1ap_E_RABToBeModifiedItemBearerModReq.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABToBeModifiedListBearerModReq->s1ap_E_RABToBeModifiedItemBearerModReq.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABToBeModifiedItemBearerModReq, s1ap_E_RABToBeModifiedListBearerModReq->s1ap_E_RABToBeModifiedItemBearerModReq.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -352,12 +352,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecontextreleaserequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabadmittedlist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABAdmittedList_IEs_t *s1ap_E_RABAdmittedListIEs) {
+    S1ap_E_RABAdmittedList_IEs_t *s1ap_E_RABAdmittedList) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABAdmittedItem, s1ap_E_RABAdmittedListIEs->s1ap_E_RABAdmittedItem.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABAdmittedList->s1ap_E_RABAdmittedItem.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABAdmittedItem, s1ap_E_RABAdmittedList->s1ap_E_RABAdmittedItem.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -496,12 +496,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_uecapabilityinfoindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistbearersureq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSetupListBearerSUReq_IEs_t *s1ap_E_RABToBeSetupListBearerSUReqIEs) {
+    S1ap_E_RABToBeSetupListBearerSUReq_IEs_t *s1ap_E_RABToBeSetupListBearerSUReq) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABToBeSetupListBearerSUReq->s1ap_E_RABToBeSetupItemBearerSUReq.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSetupItemBearerSUReq, s1ap_E_RABToBeSetupListBearerSUReq->s1ap_E_RABToBeSetupItemBearerSUReq.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -509,12 +509,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistbearersureq(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabdataforwardinglist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABDataForwardingList_IEs_t *s1ap_E_RABDataForwardingListIEs) {
+    S1ap_E_RABSubjecttoDataForwardingList_IEs_t *s1ap_E_RABSubjecttoDataForwardingList) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABDataForwardingItem, s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABSubjecttoDataForwardingList->s1ap_E_RABDataForwardingItem.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABDataForwardingItem, s1ap_E_RABSubjecttoDataForwardingList->s1ap_E_RABDataForwardingItem.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -870,12 +870,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handoverrequired(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitcheddllist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSwitchedDLList_IEs_t *s1ap_E_RABToBeSwitchedDLListIEs) {
+    S1ap_E_RABToBeSwitchedDLList_IEs_t *s1ap_E_RABToBeSwitchedDLList) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSwitchedDLItem, s1ap_E_RABToBeSwitchedDLListIEs->s1ap_E_RABToBeSwitchedDLItem.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABToBeSwitchedDLList->s1ap_E_RABToBeSwitchedDLItem.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSwitchedDLItem, s1ap_E_RABToBeSwitchedDLList->s1ap_E_RABToBeSwitchedDLItem.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -1002,12 +1002,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifyrequest(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistctxtsures(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABSetupListCtxtSURes_IEs_t *s1ap_E_RABSetupListCtxtSUResIEs) {
+    S1ap_E_RABSetupListCtxtSURes_IEs_t *s1ap_E_RABSetupListCtxtSURes) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABSetupItemCtxtSURes, s1ap_E_RABSetupListCtxtSUResIEs->s1ap_E_RABSetupItemCtxtSURes.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABSetupListCtxtSURes->s1ap_E_RABSetupItemCtxtSURes.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABSetupItemCtxtSURes, s1ap_E_RABSetupListCtxtSURes->s1ap_E_RABSetupItemCtxtSURes.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -1015,12 +1015,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistctxtsures(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobeswitchedullist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSwitchedULList_IEs_t *s1ap_E_RABToBeSwitchedULListIEs) {
+    S1ap_E_RABToBeSwitchedULList_IEs_t *s1ap_E_RABToBeSwitchedULList) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSwitchedULItem, s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABToBeSwitchedULList->s1ap_E_RABToBeSwitchedULItem.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSwitchedULItem, s1ap_E_RABToBeSwitchedULList->s1ap_E_RABToBeSwitchedULItem.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -1073,12 +1073,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_reset(
 asn_enc_rval_t s1ap_xer_print_s1ap_bearers_subjecttostatustransfer_list(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs) {
+    S1ap_Bearers_SubjectToStatusTransferList_IEs_t *s1ap_Bearers_SubjectToStatusTransferList) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransferList->s1ap_Bearers_SubjectToStatusTransfer_Item.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1ap_Bearers_SubjectToStatusTransferList->s1ap_Bearers_SubjectToStatusTransfer_Item.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -1086,12 +1086,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_bearers_subjecttostatustransfer_list(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rablist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABList_IEs_t *s1ap_E_RABListIEs) {
+    S1ap_E_RABList_IEs_t *s1ap_E_RABList) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABListIEs->s1ap_E_RABItem.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABItem, s1ap_E_RABListIEs->s1ap_E_RABItem.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABList->s1ap_E_RABItem.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABItem, s1ap_E_RABList->s1ap_E_RABItem.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -1343,8 +1343,8 @@ asn_enc_rval_t s1ap_xer_print_s1ap_handovercommand(
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_HandoverCommandIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_HandoverType, &s1ap_HandoverCommandIEs->handoverType, cb, app_key, 2);
     /* Optional field */
-    if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT)
-        s1ap_xer_print_s1ap_e_rabdataforwardinglist(cb, app_key, &s1ap_HandoverCommandIEs->e_RABDataForwardingList);
+    if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT)
+        s1ap_xer_print_s1ap_e_rabsubjecttodataforwardinglist(cb, app_key, &s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList);
     /* Optional field */
     if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABTORELEASELISTHOCMD_PRESENT)
         s1ap_xer_print_s1ap_e_rablist(cb, app_key, &s1ap_HandoverCommandIEs->e_RABtoReleaseListHOCmd);
@@ -1412,12 +1412,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_errorindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_tailist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_TAIList_IEs_t *s1ap_TAIListIEs) {
+    S1ap_TAIList_IEs_t *s1ap_TAIList) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_TAIListIEs->s1ap_TAIItem.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_TAIItem, s1ap_TAIListIEs->s1ap_TAIItem.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_TAIList->s1ap_TAIItem.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_TAIItem, s1ap_TAIList->s1ap_TAIItem.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -1707,8 +1707,8 @@ asn_enc_rval_t s1ap_xer_print_s1ap_downlinks1cdma2000tunneling(
     xer_encode_local(&asn_DEF_S1ap_MME_UE_S1AP_ID, &s1ap_DownlinkS1cdma2000tunnelingIEs->mme_ue_s1ap_id, cb, app_key, 2);
     xer_encode_local(&asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_DownlinkS1cdma2000tunnelingIEs->eNB_UE_S1AP_ID, cb, app_key, 2);
     /* Optional field */
-    if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABDATAFORWARDINGLIST_PRESENT)
-        s1ap_xer_print_s1ap_e_rabdataforwardinglist(cb, app_key, &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABDataForwardingList);
+    if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT)
+        s1ap_xer_print_s1ap_e_rabsubjecttodataforwardinglist(cb, app_key, &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList);
     /* Optional field */
     if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_CDMA2000HOSTATUS_PRESENT)
         xer_encode_local(&asn_DEF_S1ap_Cdma2000HOStatus, &s1ap_DownlinkS1cdma2000tunnelingIEs->cdma2000HOStatus, cb, app_key, 2);
@@ -1743,12 +1743,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_overloadstop(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistbearersures(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABSetupListBearerSURes_IEs_t *s1ap_E_RABSetupListBearerSUResIEs) {
+    S1ap_E_RABSetupListBearerSURes_IEs_t *s1ap_E_RABSetupListBearerSURes) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABSetupItemBearerSURes, s1ap_E_RABSetupListBearerSUResIEs->s1ap_E_RABSetupItemBearerSURes.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABSetupListBearerSURes->s1ap_E_RABSetupItemBearerSURes.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABSetupItemBearerSURes, s1ap_E_RABSetupListBearerSURes->s1ap_E_RABSetupItemBearerSURes.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -1756,12 +1756,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabsetuplistbearersures(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifylistbearermodres(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABModifyListBearerModRes_IEs_t *s1ap_E_RABModifyListBearerModResIEs) {
+    S1ap_E_RABModifyListBearerModRes_IEs_t *s1ap_E_RABModifyListBearerModRes) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABModifyItemBearerModRes, s1ap_E_RABModifyListBearerModResIEs->s1ap_E_RABModifyItemBearerModRes.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABModifyListBearerModRes->s1ap_E_RABModifyItemBearerModRes.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABModifyItemBearerModRes, s1ap_E_RABModifyListBearerModRes->s1ap_E_RABModifyItemBearerModRes.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -1769,12 +1769,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_e_rabmodifylistbearermodres(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabtobesetuplistctxtsureq(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABToBeSetupListCtxtSUReq_IEs_t *s1ap_E_RABToBeSetupListCtxtSUReqIEs) {
+    S1ap_E_RABToBeSetupListCtxtSUReq_IEs_t *s1ap_E_RABToBeSetupListCtxtSUReq) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, s1ap_E_RABToBeSetupListCtxtSUReqIEs->s1ap_E_RABToBeSetupItemCtxtSUReq.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABToBeSetupListCtxtSUReq->s1ap_E_RABToBeSetupItemCtxtSUReq.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABToBeSetupItemCtxtSUReq, s1ap_E_RABToBeSetupListCtxtSUReq->s1ap_E_RABToBeSetupItemCtxtSUReq.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }
@@ -1834,12 +1834,12 @@ asn_enc_rval_t s1ap_xer_print_s1ap_tracefailureindication(
 asn_enc_rval_t s1ap_xer_print_s1ap_e_rabinformationlist(
     asn_app_consume_bytes_f *cb,
     void *app_key,
-    S1ap_E_RABInformationList_IEs_t *s1ap_E_RABInformationListIEs) {
+    S1ap_E_RABInformationList_IEs_t *s1ap_E_RABInformationList) {
 
     int i;
     asn_enc_rval_t er;
-    for (i = 0; i < s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.count; i++) {
-        er = xer_encode(&asn_DEF_S1ap_E_RABInformationListItem, s1ap_E_RABInformationListIEs->s1ap_E_RABInformationList.array[i], XER_F_BASIC, cb, app_key);
+    for (i = 0; i < s1ap_E_RABInformationList->s1ap_E_RABInformationList.count; i++) {
+        er = xer_encode(&asn_DEF_S1ap_E_RABInformationListItem, s1ap_E_RABInformationList->s1ap_E_RABInformationList.array[i], XER_F_BASIC, cb, app_key);
     }
     ASN__ENCODED_OK(er);
 }

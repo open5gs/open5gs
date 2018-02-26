@@ -30,8 +30,8 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2018-01-23 14:40:35.386967 by acetcom
- * from ['fix-a90.asn']
+ * Created on: 2018-02-26 14:41:33.981027 by acetcom
+ * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_encoder
 #include "core_debug.h"
@@ -2568,21 +2568,21 @@ int s1ap_encode_s1ap_handovercommandies(
     ASN_SEQUENCE_ADD(&s1ap_HandoverCommand->protocolIEs.list, ie);
 
     /* Optional field */
-    if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABDATAFORWARDINGLIST_PRESENT) {
-        S1ap_E_RABDataForwardingList_t e_RABDataForwardingList;
+    if (s1ap_HandoverCommandIEs->presenceMask & S1AP_HANDOVERCOMMANDIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT) {
+        S1ap_E_RABSubjecttoDataForwardingList_t e_RABSubjecttoDataForwardingList;
 
-        memset(&e_RABDataForwardingList, 0, sizeof(S1ap_E_RABDataForwardingList_t));
+        memset(&e_RABSubjecttoDataForwardingList, 0, sizeof(S1ap_E_RABSubjecttoDataForwardingList_t));
 
-        if (s1ap_encode_s1ap_e_rabdataforwardinglist(&e_RABDataForwardingList, &s1ap_HandoverCommandIEs->e_RABDataForwardingList) < 0) return -1;
-        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABDataForwardingList,
+        if (s1ap_encode_s1ap_e_rabsubjecttodataforwardinglist(&e_RABSubjecttoDataForwardingList, &s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList) < 0) return -1;
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList,
                             S1ap_Criticality_ignore,
-                            &asn_DEF_S1ap_E_RABDataForwardingList,
-                            &e_RABDataForwardingList)) == NULL) {
+                            &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList,
+                            &e_RABSubjecttoDataForwardingList)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_HandoverCommand->protocolIEs.list, ie);
         /* Free any dynamic allocation that is no more used */
-        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABDataForwardingList, &e_RABDataForwardingList);
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, &e_RABSubjecttoDataForwardingList);
 
     }
 
@@ -3308,21 +3308,21 @@ int s1ap_encode_s1ap_downlinks1cdma2000tunnelingies(
     ASN_SEQUENCE_ADD(&s1ap_DownlinkS1cdma2000tunneling->protocolIEs.list, ie);
 
     /* Optional field */
-    if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABDATAFORWARDINGLIST_PRESENT) {
-        S1ap_E_RABDataForwardingList_t e_RABDataForwardingList;
+    if (s1ap_DownlinkS1cdma2000tunnelingIEs->presenceMask & S1AP_DOWNLINKS1CDMA2000TUNNELINGIES_E_RABSUBJECTTODATAFORWARDINGLIST_PRESENT) {
+        S1ap_E_RABSubjecttoDataForwardingList_t e_RABSubjecttoDataForwardingList;
 
-        memset(&e_RABDataForwardingList, 0, sizeof(S1ap_E_RABDataForwardingList_t));
+        memset(&e_RABSubjecttoDataForwardingList, 0, sizeof(S1ap_E_RABSubjecttoDataForwardingList_t));
 
-        if (s1ap_encode_s1ap_e_rabdataforwardinglist(&e_RABDataForwardingList, &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABDataForwardingList) < 0) return -1;
-        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABDataForwardingList,
+        if (s1ap_encode_s1ap_e_rabsubjecttodataforwardinglist(&e_RABSubjecttoDataForwardingList, &s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList) < 0) return -1;
+        if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList,
                             S1ap_Criticality_ignore,
-                            &asn_DEF_S1ap_E_RABDataForwardingList,
-                            &e_RABDataForwardingList)) == NULL) {
+                            &asn_DEF_S1ap_E_RABSubjecttoDataForwardingList,
+                            &e_RABSubjecttoDataForwardingList)) == NULL) {
             return -1;
         }
         ASN_SEQUENCE_ADD(&s1ap_DownlinkS1cdma2000tunneling->protocolIEs.list, ie);
         /* Free any dynamic allocation that is no more used */
-        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABDataForwardingList, &e_RABDataForwardingList);
+        ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_E_RABSubjecttoDataForwardingList, &e_RABSubjecttoDataForwardingList);
 
     }
 
@@ -4398,24 +4398,24 @@ int s1ap_encode_s1ap_e_rabtobesetuplistbearersureq(
     return 0;
 }
 
-int s1ap_encode_s1ap_e_rabdataforwardinglist(
-    S1ap_E_RABDataForwardingList_t *s1ap_E_RABDataForwardingList,
-    S1ap_E_RABDataForwardingList_IEs_t *s1ap_E_RABDataForwardingListIEs) {
+int s1ap_encode_s1ap_e_rabsubjecttodataforwardinglist(
+    S1ap_E_RABSubjecttoDataForwardingList_t *s1ap_E_RABSubjecttoDataForwardingList,
+    S1ap_E_RABSubjecttoDataForwardingList_IEs_t *s1ap_E_RABSubjecttoDataForwardingListIEs) {
 
     int i;
     S1ap_IE_t *ie;
 
-    d_assert(s1ap_E_RABDataForwardingList, return -1, "Null param");
-    d_assert(s1ap_E_RABDataForwardingListIEs, return -1, "Null param");
+    d_assert(s1ap_E_RABSubjecttoDataForwardingList, return -1, "Null param");
+    d_assert(s1ap_E_RABSubjecttoDataForwardingListIEs, return -1, "Null param");
 
-    for (i = 0; i < s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.count; i++) {
+    for (i = 0; i < s1ap_E_RABSubjecttoDataForwardingListIEs->s1ap_E_RABDataForwardingItem.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_E_RABDataForwardingItem,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_E_RABDataForwardingItem,
-                            s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array[i])) == NULL) {
+                            s1ap_E_RABSubjecttoDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array[i])) == NULL) {
             return -1;
         }
-        ASN_SEQUENCE_ADD(&s1ap_E_RABDataForwardingList->list, ie);
+        ASN_SEQUENCE_ADD(&s1ap_E_RABSubjecttoDataForwardingList->list, ie);
     }
     return 0;
 }
@@ -4486,24 +4486,24 @@ int s1ap_encode_s1ap_e_rabtobeswitchedullist(
     return 0;
 }
 
-int s1ap_encode_s1ap_bearers_subjecttostatustransfer_list(
-    S1ap_Bearers_SubjectToStatusTransfer_List_t *s1ap_Bearers_SubjectToStatusTransfer_List,
-    S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs) {
+int s1ap_encode_s1ap_bearers_subjecttostatustransferlist(
+    S1ap_Bearers_SubjectToStatusTransferList_t *s1ap_Bearers_SubjectToStatusTransferList,
+    S1ap_Bearers_SubjectToStatusTransferList_IEs_t *s1ap_Bearers_SubjectToStatusTransferListIEs) {
 
     int i;
     S1ap_IE_t *ie;
 
-    d_assert(s1ap_Bearers_SubjectToStatusTransfer_List, return -1, "Null param");
-    d_assert(s1ap_Bearers_SubjectToStatusTransfer_ListIEs, return -1, "Null param");
+    d_assert(s1ap_Bearers_SubjectToStatusTransferList, return -1, "Null param");
+    d_assert(s1ap_Bearers_SubjectToStatusTransferListIEs, return -1, "Null param");
 
-    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.count; i++) {
+    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransferListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.count; i++) {
         if ((ie = s1ap_new_ie(S1ap_ProtocolIE_ID_id_Bearers_SubjectToStatusTransfer_Item,
                             S1ap_Criticality_ignore,
                             &asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item,
-                            s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array[i])) == NULL) {
+                            s1ap_Bearers_SubjectToStatusTransferListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array[i])) == NULL) {
             return -1;
         }
-        ASN_SEQUENCE_ADD(&s1ap_Bearers_SubjectToStatusTransfer_List->list, ie);
+        ASN_SEQUENCE_ADD(&s1ap_Bearers_SubjectToStatusTransferList->list, ie);
     }
     return 0;
 }

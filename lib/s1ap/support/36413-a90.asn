@@ -893,7 +893,7 @@ FROM S1AP-Containers
         id-E-RABSetupItemCtxtSURes,
         id-E-RABSetupListBearerSURes,
         id-E-RABSetupListCtxtSURes,
-        id-E-RABDataForwardingList,
+        id-E-RABSubjecttoDataForwardingList,
         id-E-RABToBeModifiedItemBearerModReq,
         id-E-RABToBeModifiedListBearerModReq,
         id-E-RABToBeReleasedList,
@@ -1056,7 +1056,7 @@ HandoverCommandIEs S1AP-PROTOCOL-IES ::= {
         { ID id-HandoverType                                                        CRITICALITY reject        TYPE HandoverType                                                                                         PRESENCE mandatory        } |
         { ID id-NASSecurityParametersfromE-UTRAN                CRITICALITY reject        TYPE NASSecurityParametersfromE-UTRAN                                        PRESENCE conditional
         -- This IE shall be present if HandoverType IE is set to value "LTEtoUTRAN" or "LTEtoGERAN" --                        }|
-        { ID id-E-RABDataForwardingList                CRITICALITY ignore        TYPE E-RABDataForwardingList                                         PRESENCE optional        } |
+        { ID id-E-RABSubjecttoDataForwardingList                CRITICALITY ignore        TYPE E-RABSubjecttoDataForwardingList                                         PRESENCE optional        } |
         { ID id-E-RABtoReleaseListHOCmd                                        CRITICALITY ignore        TYPE E-RABList                                                                                                 PRESENCE optional        } |
         { ID id-Target-ToSource-TransparentContainer        CRITICALITY        reject        TYPE Target-ToSource-TransparentContainer                        PRESENCE mandatory }|
         { ID id-Target-ToSource-TransparentContainer-Secondary        CRITICALITY        reject        TYPE Target-ToSource-TransparentContainer                        PRESENCE optional }|
@@ -1065,7 +1065,7 @@ HandoverCommandIEs S1AP-PROTOCOL-IES ::= {
 }
 
 
-E-RABDataForwardingList ::= E-RAB-IE-ContainerList { {E-RABDataForwardingItemIEs} }
+E-RABSubjecttoDataForwardingList ::= E-RAB-IE-ContainerList { {E-RABDataForwardingItemIEs} }
 
 
 E-RABDataForwardingItemIEs S1AP-PROTOCOL-IES ::= {
@@ -2642,7 +2642,7 @@ DownlinkS1cdma2000tunneling ::= SEQUENCE {
 DownlinkS1cdma2000tunnelingIEs S1AP-PROTOCOL-IES ::= {
         { ID id-MME-UE-S1AP-ID                                CRITICALITY reject        TYPE MME-UE-S1AP-ID                                PRESENCE mandatory        } |
         { ID id-eNB-UE-S1AP-ID                                CRITICALITY reject        TYPE ENB-UE-S1AP-ID                                PRESENCE mandatory        } |
-        { ID id-E-RABDataForwardingList                CRITICALITY ignore        TYPE E-RABDataForwardingList                                         PRESENCE optional        } |
+        { ID id-E-RABSubjecttoDataForwardingList                CRITICALITY ignore        TYPE E-RABSubjecttoDataForwardingList                                         PRESENCE optional        } |
         { ID id-cdma2000HOStatus                                CRITICALITY ignore        TYPE Cdma2000HOStatus                         PRESENCE optional        } |
         { ID id-cdma2000RATType                                CRITICALITY reject        TYPE Cdma2000RATType                         PRESENCE mandatory        } |
         { ID id-cdma2000PDU                                        CRITICALITY reject        TYPE Cdma2000PDU                                 PRESENCE mandatory        },
@@ -3441,7 +3441,7 @@ AllocationAndRetentionPriority-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
 -- B
 
 
-Bearers-SubjectToStatusTransfer-List ::= SEQUENCE (SIZE(1.. maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { { Bearers-SubjectToStatusTransfer-ItemIEs } }
+Bearers-SubjectToStatusTransferList ::= SEQUENCE (SIZE(1.. maxNrOfE-RABs)) OF ProtocolIE-SingleContainer { { Bearers-SubjectToStatusTransfer-ItemIEs } }
 
 
 Bearers-SubjectToStatusTransfer-ItemIEs S1AP-PROTOCOL-IES ::= {
@@ -3977,7 +3977,7 @@ GUMMEIList::= SEQUENCE (SIZE (1.. maxnoofMMECs)) OF GUMMEI
 
 
 ENB-StatusTransfer-TransparentContainer                ::= SEQUENCE {
-        bearers-SubjectToStatusTransferList                Bearers-SubjectToStatusTransfer-List,
+        bearers-SubjectToStatusTransferList                Bearers-SubjectToStatusTransferList,
         iE-Extensions                        ProtocolExtensionContainer { {ENB-StatusTransfer-TransparentContainer-ExtIEs} } OPTIONAL,
         ...
 }
@@ -5305,7 +5305,7 @@ ProtocolIE-ID                ::= INTEGER {
         id-SourceID(3),
         id-TargetID(4),
         id-eNB-UE-S1AP-ID(8),
-        id-E-RABDataForwardingList(12),
+        id-E-RABSubjecttoDataForwardingList(12),
         id-E-RABtoReleaseListHOCmd(13),
         id-E-RABDataForwardingItem(14),
         id-E-RABReleaseItemBearerRelComp(15),
@@ -5612,7 +5612,7 @@ id-Cause                                                                        
 id-SourceID                                                                        ProtocolIE-ID ::= 3
 id-TargetID                                                                        ProtocolIE-ID ::= 4
 id-eNB-UE-S1AP-ID                                                        ProtocolIE-ID ::= 8
-id-E-RABDataForwardingList                        ProtocolIE-ID ::= 12
+id-E-RABSubjecttoDataForwardingList                        ProtocolIE-ID ::= 12
 id-E-RABtoReleaseListHOCmd                                        ProtocolIE-ID ::= 13
 id-E-RABDataForwardingItem                                        ProtocolIE-ID ::= 14
 id-E-RABReleaseItemBearerRelComp                        ProtocolIE-ID ::= 15

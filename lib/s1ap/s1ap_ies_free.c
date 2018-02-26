@@ -30,8 +30,8 @@
 /*******************************************************************************
  * This file had been created by asn1tostruct.py script v1.0.2
  * Please do not modify this file but regenerate it via script.
- * Created on: 2018-01-23 14:40:35.404446 by acetcom
- * from ['fix-a90.asn']
+ * Created on: 2018-02-26 14:41:34.001965 by acetcom
+ * from ['S1AP-PDU.asn']
  ******************************************************************************/
 #define TRACE_MODULE _s1ap_ies_free
 #include "core_debug.h"
@@ -568,7 +568,7 @@ void s1ap_free_s1ap_handovercommandies(
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_HandoverCommandIEs->eNB_UE_S1AP_ID);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_HandoverType, &s1ap_HandoverCommandIEs->handoverType);
             /* Optional field */
-    s1ap_free_s1ap_e_rabdataforwardinglist(&s1ap_HandoverCommandIEs->e_RABDataForwardingList);
+    s1ap_free_s1ap_e_rabsubjecttodataforwardinglist(&s1ap_HandoverCommandIEs->e_RABSubjecttoDataForwardingList);
             /* Optional field */
     s1ap_free_s1ap_e_rablist(&s1ap_HandoverCommandIEs->e_RABtoReleaseListHOCmd);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Target_ToSource_TransparentContainer, &s1ap_HandoverCommandIEs->target_ToSource_TransparentContainer);
@@ -724,7 +724,7 @@ void s1ap_free_s1ap_downlinks1cdma2000tunnelingies(
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_MME_UE_S1AP_ID, &s1ap_DownlinkS1cdma2000tunnelingIEs->mme_ue_s1ap_id);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_ENB_UE_S1AP_ID, &s1ap_DownlinkS1cdma2000tunnelingIEs->eNB_UE_S1AP_ID);
             /* Optional field */
-    s1ap_free_s1ap_e_rabdataforwardinglist(&s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABDataForwardingList);
+    s1ap_free_s1ap_e_rabsubjecttodataforwardinglist(&s1ap_DownlinkS1cdma2000tunnelingIEs->e_RABSubjecttoDataForwardingList);
             /* Optional field */
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000HOStatus, &s1ap_DownlinkS1cdma2000tunnelingIEs->cdma2000HOStatus);
     ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1ap_Cdma2000RATType, &s1ap_DownlinkS1cdma2000tunnelingIEs->cdma2000RATType);
@@ -1013,18 +1013,18 @@ void s1ap_free_s1ap_e_rabtobesetuplistbearersureq(
        FREEMEM(s1ap_E_RABToBeSetupListBearerSUReqIEs->s1ap_E_RABToBeSetupItemBearerSUReq.array);
 }
 
-void s1ap_free_s1ap_e_rabdataforwardinglist(
-    S1ap_E_RABDataForwardingList_IEs_t *s1ap_E_RABDataForwardingListIEs)
+void s1ap_free_s1ap_e_rabsubjecttodataforwardinglist(
+    S1ap_E_RABSubjecttoDataForwardingList_IEs_t *s1ap_E_RABSubjecttoDataForwardingListIEs)
 {
     int i = 0;
 
-    for (i = 0; i < s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.count; i++)
+    for (i = 0; i < s1ap_E_RABSubjecttoDataForwardingListIEs->s1ap_E_RABDataForwardingItem.count; i++)
     {
-        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingItem, s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array[i]);
+        ASN_STRUCT_FREE(asn_DEF_S1ap_E_RABDataForwardingItem, s1ap_E_RABSubjecttoDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array[i]);
     }
 
-    if (s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array)
-       FREEMEM(s1ap_E_RABDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array);
+    if (s1ap_E_RABSubjecttoDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array)
+       FREEMEM(s1ap_E_RABSubjecttoDataForwardingListIEs->s1ap_E_RABDataForwardingItem.array);
 }
 
 void s1ap_free_s1ap_e_rabtobeswitcheddllist(
@@ -1069,18 +1069,18 @@ void s1ap_free_s1ap_e_rabtobeswitchedullist(
        FREEMEM(s1ap_E_RABToBeSwitchedULListIEs->s1ap_E_RABToBeSwitchedULItem.array);
 }
 
-void s1ap_free_s1ap_bearers_subjecttostatustransfer_list(
-    S1ap_Bearers_SubjectToStatusTransfer_List_IEs_t *s1ap_Bearers_SubjectToStatusTransfer_ListIEs)
+void s1ap_free_s1ap_bearers_subjecttostatustransferlist(
+    S1ap_Bearers_SubjectToStatusTransferList_IEs_t *s1ap_Bearers_SubjectToStatusTransferListIEs)
 {
     int i = 0;
 
-    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.count; i++)
+    for (i = 0; i < s1ap_Bearers_SubjectToStatusTransferListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.count; i++)
     {
-        ASN_STRUCT_FREE(asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array[i]);
+        ASN_STRUCT_FREE(asn_DEF_S1ap_Bearers_SubjectToStatusTransfer_Item, s1ap_Bearers_SubjectToStatusTransferListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array[i]);
     }
 
-    if (s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array)
-       FREEMEM(s1ap_Bearers_SubjectToStatusTransfer_ListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array);
+    if (s1ap_Bearers_SubjectToStatusTransferListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array)
+       FREEMEM(s1ap_Bearers_SubjectToStatusTransferListIEs->s1ap_Bearers_SubjectToStatusTransfer_Item.array);
 }
 
 void s1ap_free_s1ap_e_rablist(
