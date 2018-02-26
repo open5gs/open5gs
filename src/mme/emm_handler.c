@@ -195,7 +195,7 @@ status_t emm_handle_attach_complete(
         NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
     universal_time_and_local_time_zone->year = 
                 NAS_TIME_TO_BCD(time_exp.tm_year % 100);
-    universal_time_and_local_time_zone->mon = NAS_TIME_TO_BCD(time_exp.tm_mon);
+    universal_time_and_local_time_zone->mon = NAS_TIME_TO_BCD(time_exp.tm_mon+1);
     universal_time_and_local_time_zone->mday = 
                 NAS_TIME_TO_BCD(time_exp.tm_mday);
     universal_time_and_local_time_zone->hour = 
