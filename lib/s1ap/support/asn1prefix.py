@@ -120,6 +120,7 @@ for line in in_file:
     line = line.replace('GW-S1ap-TransportLayerAddress', 'GW-TransportLayerAddress')
     line = line.replace('SourceMME-S1ap-S1ap-GUMMEI', 'SourceMME-GUMMEI')
     line = line.replace('SourceMME-S1ap-GUMMEI', 'SourceMME-GUMMEI')
+    line = line.replace('S1ap-S1ap-ProtocolIE-ID', 'S1ap-ProtocolIE-ID')
     out_file.write(line)
 
 in_file.close()

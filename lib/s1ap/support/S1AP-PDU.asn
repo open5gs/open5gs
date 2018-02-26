@@ -722,6 +722,7 @@ FROM S1AP-CommonDataTypes
         S1ap-ExtendedRepetitionPeriod,
         S1ap-GTP-TEID,
         S1ap-GUMMEI,
+        S1ap-GUMMEIType,
         S1ap-HandoverRestrictionList,
         S1ap-HandoverType,
         S1ap-LAI,
@@ -847,6 +848,7 @@ FROM S1AP-Containers
         id-eNB-UE-S1AP-ID, 
         id-GERANtoLTEHOInformationRes,
         id-GUMMEI-ID,
+        id-GUMMEIType,
         id-HandoverRestrictionList,
         id-HandoverType,
         id-InitialContextSetup,
@@ -2233,7 +2235,8 @@ S1ap-InitialUEMessage-IEs S1AP-PROTOCOL-IES ::= {
         { ID id-GUMMEI-ID                                        CRITICALITY reject        TYPE S1ap-GUMMEI                                                        PRESENCE optional} |
         { ID id-CellAccessMode                                CRITICALITY reject        TYPE S1ap-CellAccessMode                                        PRESENCE optional} |
         { ID id-GW-TransportLayerAddress        CRITICALITY ignore        TYPE S1ap-TransportLayerAddress                        PRESENCE optional} |
-        { ID id-RelayNode-Indicator                        CRITICALITY reject        TYPE S1ap-RelayNode-Indicator                        PRESENCE optional},
+        { ID id-RelayNode-Indicator                        CRITICALITY reject        TYPE S1ap-RelayNode-Indicator                        PRESENCE optional} |
+        { ID id-GUMMEIType					CRITICALITY ignore	TYPE S1ap-GUMMEIType						PRESENCE optional},
         ...
 }
 
@@ -4183,6 +4186,11 @@ S1ap-GUMMEI-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
         ...
 }
 
+S1ap-GUMMEIType ::= ENUMERATED {
+	native,
+	mapped,
+	...
+}
 
 S1ap-GWContextReleaseIndication ::= ENUMERATED {
         true,
@@ -5440,7 +5448,8 @@ S1ap-ProtocolIE-ID                ::= INTEGER {
         id-MMERelaySupportIndicator(163),
         id-GWContextReleaseIndication(164),
         id-ManagementBasedMDTAllowed(165),
-        id-PrivacyIndicator(166)
+        id-PrivacyIndicator(166),
+        id-GUMMEIType(170)
 
 } (0..65535)
 
@@ -5747,6 +5756,7 @@ id-MMERelaySupportIndicator                                                S1ap-
 id-GWContextReleaseIndication                                        S1ap-ProtocolIE-ID ::= 164
 id-ManagementBasedMDTAllowed                                        S1ap-ProtocolIE-ID ::= 165
 id-PrivacyIndicator                                                                S1ap-ProtocolIE-ID ::= 166
+id-GUMMEIType										S1ap-ProtocolIE-ID ::= 170
 
 
 END

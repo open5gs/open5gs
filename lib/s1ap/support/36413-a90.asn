@@ -722,6 +722,7 @@ FROM S1AP-CommonDataTypes
         ExtendedRepetitionPeriod,
         GTP-TEID,
         GUMMEI,
+        GUMMEIType,
         HandoverRestrictionList,
         HandoverType,
         LAI,
@@ -847,6 +848,7 @@ FROM S1AP-Containers
         id-eNB-UE-S1AP-ID, 
         id-GERANtoLTEHOInformationRes,
         id-GUMMEI-ID,
+        id-GUMMEIType,
         id-HandoverRestrictionList,
         id-HandoverType,
         id-InitialContextSetup,
@@ -2233,7 +2235,8 @@ InitialUEMessage-IEs S1AP-PROTOCOL-IES ::= {
         { ID id-GUMMEI-ID                                        CRITICALITY reject        TYPE GUMMEI                                                        PRESENCE optional} |
         { ID id-CellAccessMode                                CRITICALITY reject        TYPE CellAccessMode                                        PRESENCE optional} |
         { ID id-GW-TransportLayerAddress        CRITICALITY ignore        TYPE TransportLayerAddress                        PRESENCE optional} |
-        { ID id-RelayNode-Indicator                        CRITICALITY reject        TYPE RelayNode-Indicator                        PRESENCE optional},
+        { ID id-RelayNode-Indicator                        CRITICALITY reject        TYPE RelayNode-Indicator                        PRESENCE optional} |
+        { ID id-GUMMEIType					CRITICALITY ignore	TYPE GUMMEIType						PRESENCE optional},
         ...
 }
 
@@ -4183,6 +4186,11 @@ GUMMEI-ExtIEs S1AP-PROTOCOL-EXTENSION ::= {
         ...
 }
 
+GUMMEIType ::= ENUMERATED {
+	native,
+	mapped,
+	...
+}
 
 GWContextReleaseIndication ::= ENUMERATED {
         true,
@@ -5440,7 +5448,8 @@ ProtocolIE-ID                ::= INTEGER {
         id-MMERelaySupportIndicator(163),
         id-GWContextReleaseIndication(164),
         id-ManagementBasedMDTAllowed(165),
-        id-PrivacyIndicator(166)
+        id-PrivacyIndicator(166),
+        id-GUMMEIType(170)
 
 } (0..65535)
 
@@ -5747,6 +5756,7 @@ id-MMERelaySupportIndicator                                                Proto
 id-GWContextReleaseIndication                                        ProtocolIE-ID ::= 164
 id-ManagementBasedMDTAllowed                                        ProtocolIE-ID ::= 165
 id-PrivacyIndicator                                                                ProtocolIE-ID ::= 166
+id-GUMMEIType										S1ap-ProtocolIE-ID ::= 170
 
 
 END
