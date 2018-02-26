@@ -214,13 +214,17 @@ status_t emm_handle_attach_complete(
         NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
     network_daylight_saving_time->length = 1;
 
-
-    emm_information->presencemask |= NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_TYPE;
-    memcpy(&emm_information->full_name_for_network, &mme_self()->full_name, sizeof(nas_network_name_t));
-
-    emm_information->presencemask |= NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_TYPE;
-    memcpy(&emm_information->short_name_for_network, &mme_self()->short_name, sizeof(nas_network_name_t));
-                    
+    if(mme_self()->full_name.length) 
+    {
+	emm_information->presencemask |= NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_TYPE;
+	memcpy(&emm_information->full_name_for_network, &mme_self()->full_name, sizeof(nas_network_name_t));
+    }
+    
+    if(mme_self()->short_name.length)
+    {
+	emm_information->presencemask |= NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_TYPE;
+	memcpy(&emm_information->short_name_for_network, &mme_self()->short_name, sizeof(nas_network_name_t));
+    }                
 
     rv = nas_security_encode(&emmbuf, mme_ue, &message);
     d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR, "emm build error");
