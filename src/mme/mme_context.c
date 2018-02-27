@@ -1211,7 +1211,7 @@ status_t mme_context_parse_config()
                         }
                     }
                 }
-		else if(!strcmp(mme_key, "network_name"))
+                else if(!strcmp(mme_key, "network_name"))
                 {
                     yaml_iter_t network_name_iter;
                     yaml_iter_recurse(&mme_iter, &network_name_iter);
@@ -1224,15 +1224,18 @@ status_t mme_context_parse_config()
                                     return CORE_ERROR,);
                         if (!strcmp(network_name_key, "full"))
                         {  
-                            nas_network_name_t *network_full_name = &self.full_name;
-                            const char *c_network_name = yaml_iter_value(&network_name_iter);
+                            nas_network_name_t *network_full_name =
+                                &self.full_name;
+                            const char *c_network_name =
+                                yaml_iter_value(&network_name_iter);
                             c_uint8_t size = strlen(c_network_name);
                             c_uint8_t i;
                             for(i = 0;i<size;i++)
                             {
                                 /* Workaround to convert the ASCII to USC-2 */
                                 network_full_name->name[i*2] = 0;
-                                network_full_name->name[(i*2)+1] = c_network_name[i];
+                                network_full_name->name[(i*2)+1] =
+                                    c_network_name[i];
 
                             }
                                 network_full_name->length = size*2+1;
@@ -1240,15 +1243,18 @@ status_t mme_context_parse_config()
                         }
                         else if (!strcmp(network_name_key, "short"))
                         {
-                            nas_network_name_t *network_short_name = &self.short_name;
-                            const char *c_network_name = yaml_iter_value(&network_name_iter);
+                            nas_network_name_t *network_short_name =
+                                &self.short_name;
+                            const char *c_network_name =
+                                yaml_iter_value(&network_name_iter);
                             c_uint8_t size = strlen(c_network_name);
                             c_uint8_t i;
                             for(i = 0;i<size;i++)
                             {
                                 /* Workaround to convert the ASCII to USC-2 */
                                 network_short_name->name[i*2] = 0;
-                                network_short_name->name[(i*2)+1] = c_network_name[i];
+                                network_short_name->name[(i*2)+1] =
+                                    c_network_name[i];
 
                             }
                             network_short_name->length = size*2+1;

@@ -195,7 +195,8 @@ status_t emm_handle_attach_complete(
         NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
     universal_time_and_local_time_zone->year = 
                 NAS_TIME_TO_BCD(time_exp.tm_year % 100);
-    universal_time_and_local_time_zone->mon = NAS_TIME_TO_BCD(time_exp.tm_mon+1);
+    universal_time_and_local_time_zone->mon =
+                NAS_TIME_TO_BCD(time_exp.tm_mon+1);
     universal_time_and_local_time_zone->mday = 
                 NAS_TIME_TO_BCD(time_exp.tm_mday);
     universal_time_and_local_time_zone->hour = 
@@ -216,14 +217,18 @@ status_t emm_handle_attach_complete(
 
     if(mme_self()->full_name.length) 
     {
-	emm_information->presencemask |= NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT;
-	memcpy(&emm_information->full_name_for_network, &mme_self()->full_name, sizeof(nas_network_name_t));
+        emm_information->presencemask |=
+            NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT;
+        memcpy(&emm_information->full_name_for_network,
+            &mme_self()->full_name, sizeof(nas_network_name_t));
     }
     
     if(mme_self()->short_name.length)
     {
-	emm_information->presencemask |= NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_PRESENT;
-	memcpy(&emm_information->short_name_for_network, &mme_self()->short_name, sizeof(nas_network_name_t));
+        emm_information->presencemask |=
+            NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_PRESENT;
+        memcpy(&emm_information->short_name_for_network,
+            &mme_self()->short_name, sizeof(nas_network_name_t));
     }                
 
     rv = nas_security_encode(&emmbuf, mme_ue, &message);
