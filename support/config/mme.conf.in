@@ -31,7 +31,6 @@ mme:
         ciphering_order : [ EEA0, EEA1, EEA2 ]
     network_name:
         full: NextEPC
-        short: NEPC
 
 sgw:
     gtpc:

@@ -216,13 +216,13 @@ status_t emm_handle_attach_complete(
 
     if(mme_self()->full_name.length) 
     {
-	emm_information->presencemask |= NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_TYPE;
+	emm_information->presencemask |= NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT;
 	memcpy(&emm_information->full_name_for_network, &mme_self()->full_name, sizeof(nas_network_name_t));
     }
     
     if(mme_self()->short_name.length)
     {
-	emm_information->presencemask |= NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_TYPE;
+	emm_information->presencemask |= NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_PRESENT;
 	memcpy(&emm_information->short_name_for_network, &mme_self()->short_name, sizeof(nas_network_name_t));
     }                
 
