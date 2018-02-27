@@ -132,6 +132,11 @@ typedef struct _mme_context_t {
     /* System */
     msgq_id         queue_id;       /* Queue for processing MME control plane */
     tm_service_t    tm_service;     /* Timer Service */
+    
+    /* Network Name */    
+    nas_network_name_t short_name; /* Network short name */
+    nas_network_name_t full_name; /* Network Full Name */
+                        
 } mme_context_t;
 
 typedef struct _mme_enb_t {
