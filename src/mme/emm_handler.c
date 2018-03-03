@@ -112,9 +112,14 @@ status_t emm_handle_attach_request(
     memcpy(&mme_ue->ue_network_capability, 
             &attach_request->ue_network_capability,
             sizeof(attach_request->ue_network_capability));
-    memcpy(&mme_ue->ms_network_capability, 
-            &attach_request->ms_network_capability,
-            sizeof(attach_request->ms_network_capability));
+
+    if (attach_request->presencemask &
+            NAS_ATTACH_REQUEST_MS_NETWORK_CAPABILITY_PRESENT)
+    {
+        memcpy(&mme_ue->ms_network_capability, 
+                &attach_request->ms_network_capability,
+                sizeof(attach_request->ms_network_capability));
+    }
 
     switch(eps_mobile_identity->imsi.type)
     {

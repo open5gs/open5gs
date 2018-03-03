@@ -252,12 +252,6 @@ status_t emm_build_security_mode_command(
     nas_key_set_identifier->tsc = 0;
     nas_key_set_identifier->nas_key_set_identifier = 0;
 
-    replayed_ue_security_capabilities->length =
-        sizeof(replayed_ue_security_capabilities->eea) +
-        sizeof(replayed_ue_security_capabilities->eia) +
-        sizeof(replayed_ue_security_capabilities->uea) +
-        sizeof(replayed_ue_security_capabilities->uia) +
-        sizeof(replayed_ue_security_capabilities->gea);
     replayed_ue_security_capabilities->eea = mme_ue->ue_network_capability.eea;
     replayed_ue_security_capabilities->eia = mme_ue->ue_network_capability.eia;
     replayed_ue_security_capabilities->uea = mme_ue->ue_network_capability.uea;
@@ -265,6 +259,35 @@ status_t emm_build_security_mode_command(
     replayed_ue_security_capabilities->gea = 
         (mme_ue->ms_network_capability.gea1 << 6) | 
         mme_ue->ms_network_capability.extended_gea;
+
+    replayed_ue_security_capabilities->length =
+        sizeof(replayed_ue_security_capabilities->eea) +
+        sizeof(replayed_ue_security_capabilities->eia);
+    if (replayed_ue_security_capabilities->uea)
+        replayed_ue_security_capabilities->length =
+            sizeof(replayed_ue_security_capabilities->eea) +
+            sizeof(replayed_ue_security_capabilities->eia) +
+            sizeof(replayed_ue_security_capabilities->uea);
+    if (replayed_ue_security_capabilities->uia)
+        replayed_ue_security_capabilities->length =
+            sizeof(replayed_ue_security_capabilities->eea) +
+            sizeof(replayed_ue_security_capabilities->eia) +
+            sizeof(replayed_ue_security_capabilities->uea) +
+            sizeof(replayed_ue_security_capabilities->uia);
+    if (replayed_ue_security_capabilities->gea)
+        replayed_ue_security_capabilities->length =
+            sizeof(replayed_ue_security_capabilities->eea) +
+            sizeof(replayed_ue_security_capabilities->eia) +
+            sizeof(replayed_ue_security_capabilities->uea) +
+            sizeof(replayed_ue_security_capabilities->uia) +
+            sizeof(replayed_ue_security_capabilities->gea);
+    d_trace(5, "    SEC[LEN:%d EEA:0x%x EIA:0x%x UEA:0x%x UIA:0x%x GEA:0x%x]\n",
+            replayed_ue_security_capabilities->length,
+            replayed_ue_security_capabilities->eea,
+            replayed_ue_security_capabilities->eia,
+            replayed_ue_security_capabilities->uea,
+            replayed_ue_security_capabilities->uia,
+            replayed_ue_security_capabilities->gea);
 
     mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_ue->selected_int_algorithm,
             mme_ue->kasme, mme_ue->knas_int);
