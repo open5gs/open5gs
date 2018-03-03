@@ -263,12 +263,8 @@ status_t emm_build_security_mode_command(
     replayed_ue_security_capabilities->length =
         sizeof(replayed_ue_security_capabilities->eea) +
         sizeof(replayed_ue_security_capabilities->eia);
-    if (replayed_ue_security_capabilities->uea)
-        replayed_ue_security_capabilities->length =
-            sizeof(replayed_ue_security_capabilities->eea) +
-            sizeof(replayed_ue_security_capabilities->eia) +
-            sizeof(replayed_ue_security_capabilities->uea);
-    if (replayed_ue_security_capabilities->uia)
+    if (replayed_ue_security_capabilities->uea ||
+        replayed_ue_security_capabilities->uia)
         replayed_ue_security_capabilities->length =
             sizeof(replayed_ue_security_capabilities->eea) +
             sizeof(replayed_ue_security_capabilities->eia) +
