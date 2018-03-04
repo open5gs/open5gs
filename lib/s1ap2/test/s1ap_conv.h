@@ -17,12 +17,12 @@ CORE_DECLARE(void) s1ap_uint32_to_OCTET_STRING(
 CORE_DECLARE(void) s1ap_buffer_to_OCTET_STRING(
         void *buf, int size, S1AP_TBCD_STRING_t *tbcd_string);
 
-#if 0
 CORE_DECLARE(void) s1ap_uint32_to_ENB_ID(
-        S1ap_ENB_ID_PR present, c_uint32_t enb_id, S1ap_ENB_ID_t *eNB_ID);
+        S1AP_ENB_ID_PR present, c_uint32_t enb_id, S1AP_ENB_ID_t *eNB_ID);
 CORE_DECLARE(void) s1ap_ENB_ID_to_uint32(
-        S1ap_ENB_ID_t *eNB_ID, c_uint32_t *uint32);
+        S1AP_ENB_ID_t *eNB_ID, c_uint32_t *uint32);
 
+#if 0
 CORE_DECLARE(status_t) s1ap_BIT_STRING_to_ip(
         BIT_STRING_t *bit_string, ip_t *ip);
 CORE_DECLARE(status_t) s1ap_ip_to_BIT_STRING(

@@ -43,14 +43,13 @@ void s1ap_buffer_to_OCTET_STRING(
     memcpy(tbcd_string->buf, buf, size);
 }
 
-#if 0
 void s1ap_uint32_to_ENB_ID(
-    S1ap_ENB_ID_PR present, c_uint32_t enb_id, S1ap_ENB_ID_t *eNB_ID)
+    S1AP_ENB_ID_PR present, c_uint32_t enb_id, S1AP_ENB_ID_t *eNB_ID)
 {
     d_assert(eNB_ID, return, "Null param");
 
     eNB_ID->present = present;
-    if (present == S1ap_ENB_ID_PR_macroENB_ID)
+    if (present == ENB_ID_PR_macroENB_ID)
     {
         BIT_STRING_t *bit_string = &eNB_ID->choice.macroENB_ID;
         d_assert(bit_string, return, "Null param");
@@ -64,7 +63,7 @@ void s1ap_uint32_to_ENB_ID(
 
         bit_string->bits_unused = 4;
     } 
-    else if (present == S1ap_ENB_ID_PR_homeENB_ID)
+    else if (present == ENB_ID_PR_homeENB_ID)
     {
         BIT_STRING_t *bit_string = &eNB_ID->choice.homeENB_ID;
         d_assert(bit_string, return, "Null param");
@@ -86,12 +85,12 @@ void s1ap_uint32_to_ENB_ID(
 
 }
 
-void s1ap_ENB_ID_to_uint32(S1ap_ENB_ID_t *eNB_ID, c_uint32_t *uint32)
+void s1ap_ENB_ID_to_uint32(S1AP_ENB_ID_t *eNB_ID, c_uint32_t *uint32)
 {
     d_assert(uint32, return, "Null param");
     d_assert(eNB_ID, return, "Null param");
 
-    if (eNB_ID->present == S1ap_ENB_ID_PR_homeENB_ID)
+    if (eNB_ID->present == ENB_ID_PR_homeENB_ID)
     {
         c_uint8_t *buf = eNB_ID->choice.homeENB_ID.buf;
         d_assert(buf, return, "Null param");
@@ -99,7 +98,7 @@ void s1ap_ENB_ID_to_uint32(S1ap_ENB_ID_t *eNB_ID, c_uint32_t *uint32)
             ((buf[3] & 0xf0) >> 4);
 
     } 
-    else if (eNB_ID->present == S1ap_ENB_ID_PR_macroENB_ID)
+    else if (eNB_ID->present == ENB_ID_PR_macroENB_ID)
     {
         c_uint8_t *buf = eNB_ID->choice.macroENB_ID.buf;
         d_assert(buf, return, "Null param");
@@ -111,6 +110,7 @@ void s1ap_ENB_ID_to_uint32(S1ap_ENB_ID_t *eNB_ID, c_uint32_t *uint32)
     }
 }
 
+#if 0
 status_t s1ap_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ip_t *ip)
 {
     char buf[CORE_ADDRSTRLEN], buf2[CORE_ADDRSTRLEN];

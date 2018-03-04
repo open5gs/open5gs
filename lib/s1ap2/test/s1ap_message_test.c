@@ -30,6 +30,10 @@ static void s1ap_message_test1(abts_case *tc, void *data)
     s1ap_message_t message;
     struct S1AP_InitiatingMessage *initiatingMessage;
     S1AP_S1SetupRequest_t *pdu;
+    S1AP_Global_ENB_ID_t *Global_ENB_ID;
+    S1AP_ENBname_t *ENBname;
+    S1AP_SupportedTAs_t	*SupportedTAs;
+    S1AP_PagingDRX_t *PagingDRX;
     int i;
     int result;
     char hexbuf[MAX_SDU_LEN];
@@ -43,52 +47,136 @@ static void s1ap_message_test1(abts_case *tc, void *data)
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
 
-    initiatingMessage = message.choice.initiatingMessage;
-    pdu = &initiatingMessage->value.choice.S1SetupRequest;
-
     asn_fprint(stdout, &asn_DEF_S1AP_S1AP_PDU, &message);
+
+    initiatingMessage = message.choice.initiatingMessage;
+    printf("procedireCode : %ld\n", initiatingMessage->procedureCode);
+    printf("criticalty : %ld\n", initiatingMessage->criticality);
+    pdu = &initiatingMessage->value.choice.S1SetupRequest;
 
     for (i = 0; i < pdu->protocolIEs.list.count; i++)
     {
-        S1AP_S1SetupRequestIEs_t *ie = 
-            pdu->protocolIEs.list.array[i];
-        switch(ie->value.present)
+        S1AP_S1SetupRequestIEs_t *ie = pdu->protocolIEs.list.array[i];
+        switch(ie->id)
         {
-            case S1SetupResponseIEs__value_PR_MMEname:
-            {
-                S1AP_Global_ENB_ID_t *Global_ENB_ID =
-                    &ie->value.choice.Global_ENB_ID;
-                asn_fprint(stdout, &asn_DEF_S1AP_Global_ENB_ID, Global_ENB_ID);
+            case S1AP_ProtocolIE_ID_S1AP_id_Global_ENB_ID:
+                Global_ENB_ID = &ie->value.choice.Global_ENB_ID;
                 break;
-            }
-            case S1SetupResponseIEs__value_PR_ServedGUMMEIs:
-            {
-                S1AP_ENBname_t *ENBname = 
-                    &ie->value.choice.ENBname;
-                asn_fprint(stdout, &asn_DEF_S1AP_ENBname, ENBname);
+            case S1AP_ProtocolIE_ID_S1AP_id_eNBname:
+                ENBname = &ie->value.choice.ENBname;
                 break;
-            }
-            case S1SetupResponseIEs__value_PR_RelativeMMECapacity:
-            {
-                S1AP_SupportedTAs_t	*SupportedTAs =
-                    &ie->value.choice.SupportedTAs;
-                asn_fprint(stdout, &asn_DEF_S1AP_SupportedTAs, SupportedTAs);
+            case S1AP_ProtocolIE_ID_S1AP_id_SupportedTAs:
+                SupportedTAs = &ie->value.choice.SupportedTAs;
                 break;
-            }
-            case S1SetupResponseIEs__value_PR_MMERelaySupportIndicator:
-            {
-                S1AP_PagingDRX_t *PagingDRX =
-                    &ie->value.choice.PagingDRX;
-                asn_fprint(stdout, &asn_DEF_S1AP_PagingDRX, PagingDRX);
+            case S1AP_ProtocolIE_ID_S1AP_id_DefaultPagingDRX:
+                PagingDRX = &ie->value.choice.PagingDRX;
                 break;
-            }
             default:
                 d_warn("Unknown Procotol ID[%d]\n", ie->id);
                 break;
         }
     }
 
+    asn_fprint(stdout, &asn_DEF_S1AP_Global_ENB_ID, Global_ENB_ID);
+    asn_fprint(stdout, &asn_DEF_S1AP_ENBname, ENBname);
+    asn_fprint(stdout, &asn_DEF_S1AP_SupportedTAs, SupportedTAs);
+    asn_fprint(stdout, &asn_DEF_S1AP_PagingDRX, PagingDRX);
+
+#if 0
+    asn_enc_rval_t enc_ret = {0};
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_S1AP_PDU, NULL,
+                    &message, pkbuf->payload, MAX_SDU_LEN);
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of failed");
+    }
+    else
+    {
+        d_info("Success = %d\n", enc_ret.encoded);
+    }
+#endif
+
     s1ap_free_pdu(&message);
+
+    pkbuf_free(pkbuf);
+}
+
+static void s1ap_message_test2(abts_case *tc, void *data)
+{
+    pkbuf_t *pkbuf;
+    s1ap_message_t message;
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *InitiatingMessage;
+    S1AP_S1SetupRequestIEs_t *ie;
+    S1AP_S1SetupRequest_t *S1SetupRequest;
+    S1AP_Global_ENB_ID_t *Global_ENB_ID;
+    S1AP_ENBname_t *ENBname;
+    S1AP_SupportedTAs_t	SupportedTAs;
+    S1AP_PagingDRX_t PagingDRX;
+    int i;
+    int result;
+    asn_enc_rval_t enc_ret = {0};
+    char hexbuf[MAX_SDU_LEN];
+    c_uint32_t enb_id = 0x54f64;
+    int tac = 12345;
+    plmn_id_t plmn_id;
+
+    pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = core_calloc(
+            1, sizeof(S1AP_InitiatingMessage_t));
+    InitiatingMessage = pdu.choice.initiatingMessage;
+    InitiatingMessage->procedureCode = S1AP_ProcedureCode_S1AP_id_S1Setup;
+    InitiatingMessage->criticality = S1AP_Criticality_ignore;
+
+    InitiatingMessage->value.present =
+        InitiatingMessage__value_PR_S1SetupRequest;
+    S1SetupRequest = &InitiatingMessage->value.choice.S1SetupRequest;
+
+    ie = core_calloc(1, sizeof(S1AP_S1SetupRequestIEs_t));
+    ie->id = S1AP_ProtocolIE_ID_S1AP_id_Global_ENB_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1SetupRequestIEs__value_PR_Global_ENB_ID;
+
+    Global_ENB_ID = &ie->value.choice.Global_ENB_ID;
+    plmn_id_build(&plmn_id, 1, 1, 2);
+    s1ap_uint32_to_ENB_ID(ENB_ID_PR_macroENB_ID,
+            enb_id, &Global_ENB_ID->eNB_ID);
+    s1ap_buffer_to_OCTET_STRING(
+            &plmn_id, PLMN_ID_LEN, &Global_ENB_ID->pLMNidentity);
+    ASN_SEQUENCE_ADD(&S1SetupRequest->protocolIEs, ie);
+
+    ie = core_calloc(1, sizeof(S1AP_S1SetupRequestIEs_t));
+    ie->id = S1AP_ProtocolIE_ID_S1AP_id_eNBname;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1SetupRequestIEs__value_PR_ENBname;
+
+    ENBname = &ie->value.choice.ENBname;
+    s1ap_buffer_to_OCTET_STRING("ACETCOM", strlen("ACETCOM"), ENBname);
+    ASN_SEQUENCE_ADD(&S1SetupRequest->protocolIEs, ie);
+    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_S1AP_PDU, NULL,
+                    &pdu, pkbuf->payload, MAX_SDU_LEN);
+
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_S1AP_PDU, &pdu);
+
+    if (enc_ret.encoded < 0)
+    {
+        d_error("Encoding of failed");
+    }
+    else
+    {
+        d_info("Success = %d\n", enc_ret.encoded);
+    }
+
+#if 1
+    result = s1ap_decode_pdu(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+    asn_fprint(stdout, &asn_DEF_S1AP_S1AP_PDU, &message);
+    s1ap_free_pdu(&message);
+#endif
 
     pkbuf_free(pkbuf);
 }
@@ -432,8 +520,8 @@ abts_suite *test_s1ap_message(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, s1ap_message_test1, NULL);
-#if 0
     abts_run_test(suite, s1ap_message_test2, NULL);
+#if 0
     abts_run_test(suite, s1ap_message_test3, NULL);
     abts_run_test(suite, s1ap_message_test4, NULL);
     abts_run_test(suite, s1ap_message_test5, NULL);
