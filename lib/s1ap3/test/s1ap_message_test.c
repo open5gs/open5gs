@@ -277,7 +277,7 @@ static void s1ap_message_test4(abts_case *tc, void *data)
 
     result = s1ap_decode_pdu(&message, pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
-#if 0
+#if 1
     asn_fprint(stdout, &asn_DEF_S1AP_S1AP_PDU, &message);
 #endif
 

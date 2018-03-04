@@ -103,7 +103,12 @@ status_t s1ap_build_setup_failure(
     d_trace(5, "    Group[%d] Cause[%d] TimeToWait[%ld]\n",
             group, cause, time_to_wait);
 
-    unsuccessfulOutcome = core_calloc(1, sizeof(S1AP_UnsuccessfulOutcome_t));
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_PDU_PR_unsuccessfulOutcome;
+    pdu.choice.unsuccessfulOutcome = 
+        core_calloc(1, sizeof(S1AP_UnsuccessfulOutcome_t));
+
+    unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
     unsuccessfulOutcome->procedureCode = S1AP_ProcedureCode_S1AP_id_S1Setup;
     unsuccessfulOutcome->criticality = S1AP_Criticality_reject;
     unsuccessfulOutcome->value.present =
@@ -111,31 +116,32 @@ status_t s1ap_build_setup_failure(
 
     S1SetupFailure = &unsuccessfulOutcome->value.choice.S1SetupFailure;
 
-    ie = core_calloc(1, sizeof(S1AP_S1SetupRequestIEs_t));
+    ie = core_calloc(1, sizeof(S1AP_S1SetupFailureIEs_t));
+    ASN_SEQUENCE_ADD(&S1SetupFailure->protocolIEs, ie);
+
     ie->id = S1AP_ProtocolIE_ID_S1AP_id_Cause;
     ie->criticality = S1AP_Criticality_ignore;
     ie->value.present = S1SetupFailureIEs__value_PR_Cause;
-    ASN_SEQUENCE_ADD(&S1SetupFailure->protocolIEs, ie);
 
     Cause = &ie->value.choice.Cause;
-    Cause->present = group;
-    Cause->choice.radioNetwork = cause;
 
     if (time_to_wait > -1)
     {
-        ie = core_calloc(1, sizeof(S1AP_S1SetupRequestIEs_t));
+        ie = core_calloc(1, sizeof(S1AP_S1SetupFailureIEs_t));
+        ASN_SEQUENCE_ADD(&S1SetupFailure->protocolIEs, ie);
+
         ie->id = S1AP_ProtocolIE_ID_S1AP_id_TimeToWait;
         ie->criticality = S1AP_Criticality_ignore;
         ie->value.present = S1SetupFailureIEs__value_PR_TimeToWait;
-        ASN_SEQUENCE_ADD(&S1SetupFailure->protocolIEs, ie);
 
         TimeToWait = &ie->value.choice.TimeToWait;
-        *TimeToWait = time_to_wait;
     }
 
-    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
-    pdu.present = S1AP_PDU_PR_unsuccessfulOutcome;
-    pdu.choice.unsuccessfulOutcome = unsuccessfulOutcome;
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
+
+    if (TimeToWait)
+        *TimeToWait = time_to_wait;
 
     rv = s1ap_encode_pdu(pkbuf, &pdu);
     s1ap_free_pdu(&pdu);
