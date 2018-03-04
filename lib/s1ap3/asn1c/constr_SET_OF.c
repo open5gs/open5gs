@@ -1136,7 +1136,7 @@ SET_OF_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 
 	if(ct && ct->effective_bits >= 0) {
 		/* X.691, #19.5: No length determinant */
-		nelems = aper_get_nsnnwn(pd, ct->upper_bound - ct->lower_bound);
+		nelems = aper_get_nsnnwn(pd, ct->upper_bound - ct->lower_bound + 1);
 		ASN_DEBUG("Preparing to fetch %ld+%ld elements from %s",
 		          (long)nelems, ct->lower_bound, td->name);
 		if(nelems < 0)  ASN__DECODE_STARVED;

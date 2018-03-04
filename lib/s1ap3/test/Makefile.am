@@ -3,16 +3,17 @@
 bin_PROGRAMS = tests1ap
 
 tests1ap_SOURCES = \
-    abts.c abts.h abts_tests.h testutil.c testutil.h s1ap_conv.c \
+    abts.c abts.h abts_tests.h testutil.c testutil.h \
+	s1ap_conv.h s1ap_conv.c s1ap_build.h s1ap_build.c \
 	s1ap_message_test.c
 
 tests1ap_LDADD = \
-    $(top_srcdir)/lib/s1ap2/libs1ap.la
+    $(top_srcdir)/lib/s1ap3/libs1ap.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/s1ap2/asn1c \
-    -I$(top_srcdir)/lib/s1ap2 \
+    -I$(top_srcdir)/lib/s1ap3/asn1c \
+    -I$(top_srcdir)/lib/s1ap3 \
 	$(NULL)
 
 AM_CFLAGS = \

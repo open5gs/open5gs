@@ -29,6 +29,9 @@ user@host ~/Documents/git/nextepc/lib/s1ap/s1ap/asn1c$ \
 user@host ~/Documents/git/nextepc/lib/s1ap/asn1c$ \
     git diff asn_internal.h
 
+user@host ~/Documents/git/nextepc/lib/s1ap/asn1c$ \
+    git diff constr_SET_OF.c 
+
 Remove unnecessary files
 ===========================================
 user@host ~/Documents/git/nextepc/lib/s1ap/s1ap/asn1c$ \
