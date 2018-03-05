@@ -20,9 +20,9 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_MMEPagingTarget_PR {
-	MMEPagingTarget_PR_NOTHING,	/* No components present */
-	MMEPagingTarget_PR_global_ENB_ID,
-	MMEPagingTarget_PR_tAI
+	S1AP_MMEPagingTarget_PR_NOTHING,	/* No components present */
+	S1AP_MMEPagingTarget_PR_global_ENB_ID,
+	S1AP_MMEPagingTarget_PR_tAI
 	/* Extensions may appear below */
 	
 } S1AP_MMEPagingTarget_PR;

@@ -118,16 +118,16 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_UnsuccessfulOutcome__value_PR {
-	UnsuccessfulOutcome__value_PR_NOTHING,	/* No components present */
-	UnsuccessfulOutcome__value_PR_HandoverPreparationFailure,
-	UnsuccessfulOutcome__value_PR_HandoverFailure,
-	UnsuccessfulOutcome__value_PR_PathSwitchRequestFailure,
-	UnsuccessfulOutcome__value_PR_InitialContextSetupFailure,
-	UnsuccessfulOutcome__value_PR_S1SetupFailure,
-	UnsuccessfulOutcome__value_PR_UEContextModificationFailure,
-	UnsuccessfulOutcome__value_PR_ENBConfigurationUpdateFailure,
-	UnsuccessfulOutcome__value_PR_MMEConfigurationUpdateFailure,
-	UnsuccessfulOutcome__value_PR_UEContextResumeFailure
+	S1AP_UnsuccessfulOutcome__value_PR_NOTHING,	/* No components present */
+	S1AP_UnsuccessfulOutcome__value_PR_HandoverPreparationFailure,
+	S1AP_UnsuccessfulOutcome__value_PR_HandoverFailure,
+	S1AP_UnsuccessfulOutcome__value_PR_PathSwitchRequestFailure,
+	S1AP_UnsuccessfulOutcome__value_PR_InitialContextSetupFailure,
+	S1AP_UnsuccessfulOutcome__value_PR_S1SetupFailure,
+	S1AP_UnsuccessfulOutcome__value_PR_UEContextModificationFailure,
+	S1AP_UnsuccessfulOutcome__value_PR_ENBConfigurationUpdateFailure,
+	S1AP_UnsuccessfulOutcome__value_PR_MMEConfigurationUpdateFailure,
+	S1AP_UnsuccessfulOutcome__value_PR_UEContextResumeFailure
 } S1AP_UnsuccessfulOutcome__value_PR;
 
 /* S1AP_UnsuccessfulOutcome */

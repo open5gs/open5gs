@@ -25,12 +25,12 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_Cause_PR {
-	Cause_PR_NOTHING,	/* No components present */
-	Cause_PR_radioNetwork,
-	Cause_PR_transport,
-	Cause_PR_nas,
-	Cause_PR_protocol,
-	Cause_PR_misc
+	S1AP_Cause_PR_NOTHING,	/* No components present */
+	S1AP_Cause_PR_radioNetwork,
+	S1AP_Cause_PR_transport,
+	S1AP_Cause_PR_nas,
+	S1AP_Cause_PR_protocol,
+	S1AP_Cause_PR_misc
 	/* Extensions may appear below */
 	
 } S1AP_Cause_PR;

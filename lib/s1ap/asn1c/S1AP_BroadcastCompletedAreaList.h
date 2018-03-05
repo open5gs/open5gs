@@ -20,10 +20,10 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_BroadcastCompletedAreaList_PR {
-	BroadcastCompletedAreaList_PR_NOTHING,	/* No components present */
-	BroadcastCompletedAreaList_PR_cellID_Broadcast,
-	BroadcastCompletedAreaList_PR_tAI_Broadcast,
-	BroadcastCompletedAreaList_PR_emergencyAreaID_Broadcast
+	S1AP_BroadcastCompletedAreaList_PR_NOTHING,	/* No components present */
+	S1AP_BroadcastCompletedAreaList_PR_cellID_Broadcast,
+	S1AP_BroadcastCompletedAreaList_PR_tAI_Broadcast,
+	S1AP_BroadcastCompletedAreaList_PR_emergencyAreaID_Broadcast
 	/* Extensions may appear below */
 	
 } S1AP_BroadcastCompletedAreaList_PR;

@@ -21,11 +21,11 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_SONInformation_PR {
-	SONInformation_PR_NOTHING,	/* No components present */
-	SONInformation_PR_sONInformationRequest,
-	SONInformation_PR_sONInformationReply,
+	S1AP_SONInformation_PR_NOTHING,	/* No components present */
+	S1AP_SONInformation_PR_sONInformationRequest,
+	S1AP_SONInformation_PR_sONInformationReply,
 	/* Extensions may appear below */
-	SONInformation_PR_sONInformation_Extension
+	S1AP_SONInformation_PR_sONInformation_Extension
 } S1AP_SONInformation_PR;
 
 /* Forward declarations */

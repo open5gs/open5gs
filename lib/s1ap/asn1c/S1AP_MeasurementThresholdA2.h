@@ -22,9 +22,9 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_MeasurementThresholdA2_PR {
-	MeasurementThresholdA2_PR_NOTHING,	/* No components present */
-	MeasurementThresholdA2_PR_threshold_RSRP,
-	MeasurementThresholdA2_PR_threshold_RSRQ
+	S1AP_MeasurementThresholdA2_PR_NOTHING,	/* No components present */
+	S1AP_MeasurementThresholdA2_PR_threshold_RSRP,
+	S1AP_MeasurementThresholdA2_PR_threshold_RSRQ
 	/* Extensions may appear below */
 	
 } S1AP_MeasurementThresholdA2_PR;

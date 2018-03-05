@@ -26,7 +26,7 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_PrivateMessageIEs__value_PR {
-	PrivateMessageIEs__value_PR_NOTHING	/* No components present */
+	S1AP_PrivateMessageIEs__value_PR_NOTHING	/* No components present */
 	
 } S1AP_PrivateMessageIEs__value_PR;
 

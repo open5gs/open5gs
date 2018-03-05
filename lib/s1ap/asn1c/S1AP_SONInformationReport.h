@@ -20,8 +20,8 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_SONInformationReport_PR {
-	SONInformationReport_PR_NOTHING,	/* No components present */
-	SONInformationReport_PR_rLFReportInformation
+	S1AP_SONInformationReport_PR_NOTHING,	/* No components present */
+	S1AP_SONInformationReport_PR_rLFReportInformation
 	/* Extensions may appear below */
 	
 } S1AP_SONInformationReport_PR;

@@ -42,7 +42,7 @@ CORE_DECLARE(status_t) nas_send_deactivate_bearer_context_request(
     mme_bearer_t *bearer);
 
 CORE_DECLARE(status_t) nas_send_tau_accept(
-        mme_ue_t *mme_ue, S1ap_ProcedureCode_t procedureCode);
+        mme_ue_t *mme_ue, S1AP_ProcedureCode_t procedureCode);
 CORE_DECLARE(status_t) nas_send_tau_reject(
         mme_ue_t *mme_ue, nas_esm_cause_t emm_cause);
 

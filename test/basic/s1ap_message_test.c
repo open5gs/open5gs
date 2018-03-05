@@ -94,6 +94,7 @@ static void s1ap_message_test3(abts_case *tc, void *data)
     pkbuf_free(pkbuf);
 }
 
+#if 0
 static void s1ap_message_test4(abts_case *tc, void *data)
 {
     s1ap_message_t message;
@@ -172,17 +173,20 @@ static void s1ap_message_test6(abts_case *tc, void *data)
 
     pkbuf_free(s1apbuf);
 }
+#endif
 
 abts_suite *test_s1ap_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, s1ap_message_test1, NULL);
+#if 0
     abts_run_test(suite, s1ap_message_test2, NULL);
     abts_run_test(suite, s1ap_message_test3, NULL);
     abts_run_test(suite, s1ap_message_test4, NULL);
     abts_run_test(suite, s1ap_message_test5, NULL);
     abts_run_test(suite, s1ap_message_test6, NULL);
+#endif
 
     return suite;
 }

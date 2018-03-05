@@ -21,9 +21,9 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_UE_S1AP_IDs_PR {
-	UE_S1AP_IDs_PR_NOTHING,	/* No components present */
-	UE_S1AP_IDs_PR_uE_S1AP_ID_pair,
-	UE_S1AP_IDs_PR_mME_UE_S1AP_ID
+	S1AP_UE_S1AP_IDs_PR_NOTHING,	/* No components present */
+	S1AP_UE_S1AP_IDs_PR_uE_S1AP_ID_pair,
+	S1AP_UE_S1AP_IDs_PR_mME_UE_S1AP_ID
 	/* Extensions may appear below */
 	
 } S1AP_UE_S1AP_IDs_PR;

@@ -21,12 +21,12 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_ENB_ID_PR {
-	ENB_ID_PR_NOTHING,	/* No components present */
-	ENB_ID_PR_macroENB_ID,
-	ENB_ID_PR_homeENB_ID,
+	S1AP_ENB_ID_PR_NOTHING,	/* No components present */
+	S1AP_ENB_ID_PR_macroENB_ID,
+	S1AP_ENB_ID_PR_homeENB_ID,
 	/* Extensions may appear below */
-	ENB_ID_PR_short_macroENB_ID,
-	ENB_ID_PR_long_macroENB_ID
+	S1AP_ENB_ID_PR_short_macroENB_ID,
+	S1AP_ENB_ID_PR_long_macroENB_ID
 } S1AP_ENB_ID_PR;
 
 /* S1AP_ENB-ID */

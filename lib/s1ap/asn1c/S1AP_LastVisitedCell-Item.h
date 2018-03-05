@@ -21,10 +21,10 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_LastVisitedCell_Item_PR {
-	LastVisitedCell_Item_PR_NOTHING,	/* No components present */
-	LastVisitedCell_Item_PR_e_UTRAN_Cell,
-	LastVisitedCell_Item_PR_uTRAN_Cell,
-	LastVisitedCell_Item_PR_gERAN_Cell
+	S1AP_LastVisitedCell_Item_PR_NOTHING,	/* No components present */
+	S1AP_LastVisitedCell_Item_PR_e_UTRAN_Cell,
+	S1AP_LastVisitedCell_Item_PR_uTRAN_Cell,
+	S1AP_LastVisitedCell_Item_PR_gERAN_Cell
 	/* Extensions may appear below */
 	
 } S1AP_LastVisitedCell_Item_PR;

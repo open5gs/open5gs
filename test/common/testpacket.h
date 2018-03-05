@@ -19,7 +19,7 @@ CORE_DECLARE(status_t) tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf);
 CORE_DECLARE(status_t) tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf);
 
 CORE_DECLARE(status_t) tests1ap_build_setup_req(
-        pkbuf_t **pkbuf, S1ap_ENB_ID_PR present, c_uint32_t enb_id);
+        pkbuf_t **pkbuf, S1AP_ENB_ID_PR present, c_uint32_t enb_id);
 CORE_DECLARE(status_t) tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_identity_response(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_authentication_response(

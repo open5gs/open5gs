@@ -20,11 +20,11 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_MDTMode_PR {
-	MDTMode_PR_NOTHING,	/* No components present */
-	MDTMode_PR_immediateMDT,
-	MDTMode_PR_loggedMDT,
+	S1AP_MDTMode_PR_NOTHING,	/* No components present */
+	S1AP_MDTMode_PR_immediateMDT,
+	S1AP_MDTMode_PR_loggedMDT,
 	/* Extensions may appear below */
-	MDTMode_PR_mDTMode_Extension
+	S1AP_MDTMode_PR_mDTMode_Extension
 } S1AP_MDTMode_PR;
 
 /* Forward declarations */

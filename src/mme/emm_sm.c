@@ -118,7 +118,7 @@ static void common_register_state(fsm_t *s, event_t *e)
                         "nas_send_service_reject() failed");
 
                     rv = s1ap_send_ue_context_release_command(enb_ue, 
-                        S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_S1_NORMAL_RELEASE, 0);
                     d_assert(rv == CORE_OK,,
                         "s1ap_send_ue_context_release_command() failed");
@@ -292,8 +292,8 @@ static void common_register_state(fsm_t *s, event_t *e)
         }
         case MME_EPS_TYPE_TAU_REQUEST:
         {
-            S1ap_ProcedureCode_t procedureCode =
-                (S1ap_ProcedureCode_t)event_get_param2(e);
+            S1AP_ProcedureCode_t procedureCode =
+                (S1AP_ProcedureCode_t)event_get_param2(e);
 
             if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
             {
@@ -312,19 +312,19 @@ static void common_register_state(fsm_t *s, event_t *e)
                 break;
             }
 
-            if (procedureCode == S1ap_ProcedureCode_id_initialUEMessage)
+            if (procedureCode == S1AP_ProcedureCode_id_initialUEMessage)
             {
                 d_trace(5, "    Iniital UE Message\n");
                 if (mme_ue->nas_eps.update.active_flag)
                 {
                     rv = nas_send_tau_accept(mme_ue,
-                            S1ap_ProcedureCode_id_InitialContextSetup);
+                            S1AP_ProcedureCode_id_InitialContextSetup);
                     d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
                 }
                 else
                 {
                     rv = nas_send_tau_accept(mme_ue,
-                            S1ap_ProcedureCode_id_downlinkNASTransport);
+                            S1AP_ProcedureCode_id_downlinkNASTransport);
                     d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
 
                     rv = mme_send_release_access_bearer_or_ue_context_release(
@@ -333,11 +333,11 @@ static void common_register_state(fsm_t *s, event_t *e)
                             "_or_ue_context_release() failed");
                 }
             }
-            else if (procedureCode == S1ap_ProcedureCode_id_uplinkNASTransport)
+            else if (procedureCode == S1AP_ProcedureCode_id_uplinkNASTransport)
             {
                 d_trace(5, "    Uplink NAS Transport\n");
                 rv = nas_send_tau_accept(mme_ue,
-                        S1ap_ProcedureCode_id_downlinkNASTransport);
+                        S1AP_ProcedureCode_id_downlinkNASTransport);
                 d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
             }
             else

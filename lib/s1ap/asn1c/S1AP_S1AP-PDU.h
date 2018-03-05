@@ -20,10 +20,10 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_S1AP_PDU_PR {
-	S1AP_PDU_PR_NOTHING,	/* No components present */
-	S1AP_PDU_PR_initiatingMessage,
-	S1AP_PDU_PR_successfulOutcome,
-	S1AP_PDU_PR_unsuccessfulOutcome
+	S1AP_S1AP_PDU_PR_NOTHING,	/* No components present */
+	S1AP_S1AP_PDU_PR_initiatingMessage,
+	S1AP_S1AP_PDU_PR_successfulOutcome,
+	S1AP_S1AP_PDU_PR_unsuccessfulOutcome
 	/* Extensions may appear below */
 	
 } S1AP_S1AP_PDU_PR;

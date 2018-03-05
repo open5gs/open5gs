@@ -21,11 +21,11 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_RIMRoutingAddress_PR {
-	RIMRoutingAddress_PR_NOTHING,	/* No components present */
-	RIMRoutingAddress_PR_gERAN_Cell_ID,
+	S1AP_RIMRoutingAddress_PR_NOTHING,	/* No components present */
+	S1AP_RIMRoutingAddress_PR_gERAN_Cell_ID,
 	/* Extensions may appear below */
-	RIMRoutingAddress_PR_targetRNC_ID,
-	RIMRoutingAddress_PR_eHRPD_Sector_ID
+	S1AP_RIMRoutingAddress_PR_targetRNC_ID,
+	S1AP_RIMRoutingAddress_PR_eHRPD_Sector_ID
 } S1AP_RIMRoutingAddress_PR;
 
 /* Forward declarations */

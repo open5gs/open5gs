@@ -211,7 +211,7 @@ status_t nas_send_detach_accept(mme_ue_t *mme_ue)
     }
 
     rv = s1ap_send_ue_context_release_command(enb_ue,
-            S1ap_Cause_PR_nas, S1ap_CauseNas_detach,
+            S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
             S1AP_UE_CTX_REL_S1_NORMAL_RELEASE, 0);
     d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
 
@@ -378,7 +378,7 @@ status_t nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
     d_assert(rv == CORE_OK && esmbuf, return CORE_ERROR, "esm build error");
 
     rv = s1ap_build_e_rab_release_command(&s1apbuf, bearer, esmbuf,
-            S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release);
+            S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release);
     d_assert(rv == CORE_OK && s1apbuf, 
             pkbuf_free(esmbuf); return CORE_ERROR, "s1ap build error");
 
@@ -389,7 +389,7 @@ status_t nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
 }
 
 status_t nas_send_tau_accept(
-        mme_ue_t *mme_ue, S1ap_ProcedureCode_t procedureCode)
+        mme_ue_t *mme_ue, S1AP_ProcedureCode_t procedureCode)
 {
     status_t rv;
     pkbuf_t *emmbuf = NULL;
@@ -402,7 +402,7 @@ status_t nas_send_tau_accept(
     rv = emm_build_tau_accept(&emmbuf, mme_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR, "emm build error");
 
-    if (procedureCode == S1ap_ProcedureCode_id_InitialContextSetup)
+    if (procedureCode == S1AP_ProcedureCode_id_InitialContextSetup)
     {
         pkbuf_t *s1apbuf = NULL;
         rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, emmbuf);
@@ -412,7 +412,7 @@ status_t nas_send_tau_accept(
         rv = nas_send_to_enb(mme_ue, s1apbuf);
         d_assert(rv == CORE_OK,, "nas send error");
     }
-    else if (procedureCode == S1ap_ProcedureCode_id_downlinkNASTransport)
+    else if (procedureCode == S1AP_ProcedureCode_id_downlinkNASTransport)
     {
         rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
         d_assert(rv == CORE_OK,, "nas_send_to_downlink_nas_transport");

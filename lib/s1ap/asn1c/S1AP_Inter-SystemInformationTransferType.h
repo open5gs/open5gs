@@ -20,8 +20,8 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_Inter_SystemInformationTransferType_PR {
-	Inter_SystemInformationTransferType_PR_NOTHING,	/* No components present */
-	Inter_SystemInformationTransferType_PR_rIMTransfer
+	S1AP_Inter_SystemInformationTransferType_PR_NOTHING,	/* No components present */
+	S1AP_Inter_SystemInformationTransferType_PR_rIMTransfer
 	/* Extensions may appear below */
 	
 } S1AP_Inter_SystemInformationTransferType_PR;

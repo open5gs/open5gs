@@ -21,9 +21,9 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_UEPagingID_PR {
-	UEPagingID_PR_NOTHING,	/* No components present */
-	UEPagingID_PR_s_TMSI,
-	UEPagingID_PR_iMSI
+	S1AP_UEPagingID_PR_NOTHING,	/* No components present */
+	S1AP_UEPagingID_PR_s_TMSI,
+	S1AP_UEPagingID_PR_iMSI
 	/* Extensions may appear below */
 	
 } S1AP_UEPagingID_PR;

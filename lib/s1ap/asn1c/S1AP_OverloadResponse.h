@@ -21,8 +21,8 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_OverloadResponse_PR {
-	OverloadResponse_PR_NOTHING,	/* No components present */
-	OverloadResponse_PR_overloadAction
+	S1AP_OverloadResponse_PR_NOTHING,	/* No components present */
+	S1AP_OverloadResponse_PR_overloadAction
 	/* Extensions may appear below */
 	
 } S1AP_OverloadResponse_PR;

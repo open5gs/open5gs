@@ -20,10 +20,10 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_WarningAreaList_PR {
-	WarningAreaList_PR_NOTHING,	/* No components present */
-	WarningAreaList_PR_cellIDList,
-	WarningAreaList_PR_trackingAreaListforWarning,
-	WarningAreaList_PR_emergencyAreaIDList
+	S1AP_WarningAreaList_PR_NOTHING,	/* No components present */
+	S1AP_WarningAreaList_PR_cellIDList,
+	S1AP_WarningAreaList_PR_trackingAreaListforWarning,
+	S1AP_WarningAreaList_PR_emergencyAreaIDList
 	/* Extensions may appear below */
 	
 } S1AP_WarningAreaList_PR;

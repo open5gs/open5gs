@@ -22,9 +22,9 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_PrivateIE_ID_PR {
-	PrivateIE_ID_PR_NOTHING,	/* No components present */
-	PrivateIE_ID_PR_local,
-	PrivateIE_ID_PR_global
+	S1AP_PrivateIE_ID_PR_NOTHING,	/* No components present */
+	S1AP_PrivateIE_ID_PR_local,
+	S1AP_PrivateIE_ID_PR_global
 } S1AP_PrivateIE_ID_PR;
 
 /* S1AP_PrivateIE-ID */

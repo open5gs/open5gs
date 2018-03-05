@@ -8,12 +8,12 @@ tests1ap_SOURCES = \
 	s1ap_message_test.c
 
 tests1ap_LDADD = \
-    $(top_srcdir)/lib/s1ap3/libs1ap.la
+    $(top_srcdir)/lib/s1ap/libs1ap.la
 
 AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/core/include \
-    -I$(top_srcdir)/lib/s1ap3/asn1c \
-    -I$(top_srcdir)/lib/s1ap3 \
+    -I$(top_srcdir)/lib/s1ap/asn1c \
+    -I$(top_srcdir)/lib/s1ap \
 	$(NULL)
 
 AM_CFLAGS = \

@@ -21,8 +21,8 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_LastVisitedGERANCellInformation_PR {
-	LastVisitedGERANCellInformation_PR_NOTHING,	/* No components present */
-	LastVisitedGERANCellInformation_PR_undefined
+	S1AP_LastVisitedGERANCellInformation_PR_NOTHING,	/* No components present */
+	S1AP_LastVisitedGERANCellInformation_PR_undefined
 	/* Extensions may appear below */
 	
 } S1AP_LastVisitedGERANCellInformation_PR;

@@ -21,12 +21,12 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_AreaScopeOfMDT_PR {
-	AreaScopeOfMDT_PR_NOTHING,	/* No components present */
-	AreaScopeOfMDT_PR_cellBased,
-	AreaScopeOfMDT_PR_tABased,
-	AreaScopeOfMDT_PR_pLMNWide,
+	S1AP_AreaScopeOfMDT_PR_NOTHING,	/* No components present */
+	S1AP_AreaScopeOfMDT_PR_cellBased,
+	S1AP_AreaScopeOfMDT_PR_tABased,
+	S1AP_AreaScopeOfMDT_PR_pLMNWide,
 	/* Extensions may appear below */
-	AreaScopeOfMDT_PR_tAIBased
+	S1AP_AreaScopeOfMDT_PR_tAIBased
 } S1AP_AreaScopeOfMDT_PR;
 
 /* Forward declarations */

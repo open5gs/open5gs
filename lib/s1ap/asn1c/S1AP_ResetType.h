@@ -21,9 +21,9 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_ResetType_PR {
-	ResetType_PR_NOTHING,	/* No components present */
-	ResetType_PR_s1_Interface,
-	ResetType_PR_partOfS1_Interface
+	S1AP_ResetType_PR_NOTHING,	/* No components present */
+	S1AP_ResetType_PR_s1_Interface,
+	S1AP_ResetType_PR_partOfS1_Interface
 	/* Extensions may appear below */
 	
 } S1AP_ResetType_PR;

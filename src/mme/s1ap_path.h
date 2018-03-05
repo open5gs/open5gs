@@ -30,35 +30,35 @@ CORE_DECLARE(status_t) s1ap_delayed_send_to_enb(mme_enb_t *enb,
         pkbuf_t *pkbuf, c_uint32_t duration);
 CORE_DECLARE(status_t) s1ap_send_to_nas(
         enb_ue_t *enb_ue,
-        S1ap_ProcedureCode_t procedureCode, S1ap_NAS_PDU_t *nasPdu);
+        S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu);
 CORE_DECLARE(status_t) s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf);
 
 CORE_DECLARE(status_t) s1ap_send_initial_context_setup_request(
         mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) s1ap_send_ue_context_release_command(
-    enb_ue_t *enb_ue, S1ap_Cause_PR group, long cause,
+    enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
     c_uint8_t action, c_uint32_t delay);
 
 CORE_DECLARE(status_t) s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) s1ap_send_path_switch_failure(mme_enb_t *enb,
     c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
-    S1ap_Cause_PR group, long cause);
+    S1AP_Cause_PR group, long cause);
 
 CORE_DECLARE(status_t) s1ap_send_handover_command(enb_ue_t *source_ue);
 CORE_DECLARE(status_t) s1ap_send_handover_preparation_failure(
-        enb_ue_t *source_ue, S1ap_Cause_t *cause);
+        enb_ue_t *source_ue, S1AP_Cause_t *cause);
 
 CORE_DECLARE(status_t) s1ap_send_handover_request(
-        mme_ue_t *mme_ue, S1ap_HandoverRequiredIEs_t *required);
+        mme_ue_t *mme_ue, S1AP_HandoverRequiredIEs_t *required);
 
 CORE_DECLARE(status_t) s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
 
 CORE_DECLARE(status_t) s1ap_send_mme_status_transfer(
-        enb_ue_t *target_ue, S1ap_ENBStatusTransferIEs_t *ies);
+        enb_ue_t *target_ue, S1AP_ENBStatusTransferIEs_t *ies);
 CORE_DECLARE(status_t) s1ap_send_error_indication(
         mme_enb_t *enb, c_uint16_t presenceMask,
         c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
-        S1ap_Cause_PR group, long cause);
+        S1AP_Cause_PR group, long cause);
 
 #ifdef __cplusplus
 }

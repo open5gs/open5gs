@@ -56,495 +56,495 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_E_RABDataForwardingItem_ExtIEs__extensionValue_PR {
-	E_RABDataForwardingItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABDataForwardingItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABDataForwardingItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABToBeSetupItemHOReq_ExtIEs__extensionValue_PR {
-	E_RABToBeSetupItemHOReq_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	E_RABToBeSetupItemHOReq_ExtIEs__extensionValue_PR_Data_Forwarding_Not_Possible,
-	E_RABToBeSetupItemHOReq_ExtIEs__extensionValue_PR_BearerType
+	S1AP_E_RABToBeSetupItemHOReq_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_E_RABToBeSetupItemHOReq_ExtIEs__extensionValue_PR_Data_Forwarding_Not_Possible,
+	S1AP_E_RABToBeSetupItemHOReq_ExtIEs__extensionValue_PR_BearerType
 } S1AP_E_RABToBeSetupItemHOReq_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABAdmittedItem_ExtIEs__extensionValue_PR {
-	E_RABAdmittedItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABAdmittedItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABAdmittedItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABFailedToSetupItemHOReqAckExtIEs__extensionValue_PR {
-	E_RABFailedToSetupItemHOReqAckExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABFailedToSetupItemHOReqAckExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABFailedToSetupItemHOReqAckExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABToBeSwitchedDLItem_ExtIEs__extensionValue_PR {
-	E_RABToBeSwitchedDLItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABToBeSwitchedDLItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABToBeSwitchedDLItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABToBeSwitchedULItem_ExtIEs__extensionValue_PR {
-	E_RABToBeSwitchedULItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABToBeSwitchedULItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABToBeSwitchedULItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR {
-	E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR_Correlation_ID,
-	E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR_BearerType
+	S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR_Correlation_ID,
+	S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR_BearerType
 } S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABSetupItemBearerSUResExtIEs__extensionValue_PR {
-	E_RABSetupItemBearerSUResExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABSetupItemBearerSUResExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABSetupItemBearerSUResExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABToBeModifyItemBearerModReqExtIEs__extensionValue_PR {
-	E_RABToBeModifyItemBearerModReqExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	E_RABToBeModifyItemBearerModReqExtIEs__extensionValue_PR_TransportInformation
+	S1AP_E_RABToBeModifyItemBearerModReqExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_E_RABToBeModifyItemBearerModReqExtIEs__extensionValue_PR_TransportInformation
 } S1AP_E_RABToBeModifyItemBearerModReqExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABModifyItemBearerModResExtIEs__extensionValue_PR {
-	E_RABModifyItemBearerModResExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABModifyItemBearerModResExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABModifyItemBearerModResExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABReleaseItemBearerRelCompExtIEs__extensionValue_PR {
-	E_RABReleaseItemBearerRelCompExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABReleaseItemBearerRelCompExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABReleaseItemBearerRelCompExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR {
-	E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR_Correlation_ID,
-	E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR_BearerType
+	S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR_Correlation_ID,
+	S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR_BearerType
 } S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABSetupItemCtxtSUResExtIEs__extensionValue_PR {
-	E_RABSetupItemCtxtSUResExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABSetupItemCtxtSUResExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABSetupItemCtxtSUResExtIEs__extensionValue_PR;
 typedef enum S1AP_TAIItemExtIEs__extensionValue_PR {
-	TAIItemExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_TAIItemExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_TAIItemExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABToBeModifiedItemBearerModInd_ExtIEs__extensionValue_PR {
-	E_RABToBeModifiedItemBearerModInd_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABToBeModifiedItemBearerModInd_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABToBeModifiedItemBearerModInd_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABNotToBeModifiedItemBearerModInd_ExtIEs__extensionValue_PR {
-	E_RABNotToBeModifiedItemBearerModInd_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABNotToBeModifiedItemBearerModInd_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABNotToBeModifiedItemBearerModInd_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CSGMembershipInfo_ExtIEs__extensionValue_PR {
-	CSGMembershipInfo_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CSGMembershipInfo_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CSGMembershipInfo_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABModifyItemBearerModConfExtIEs__extensionValue_PR {
-	E_RABModifyItemBearerModConfExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABModifyItemBearerModConfExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABModifyItemBearerModConfExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABFailedToResumeItemResumeReq_ExtIEs__extensionValue_PR {
-	E_RABFailedToResumeItemResumeReq_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABFailedToResumeItemResumeReq_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABFailedToResumeItemResumeReq_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABFailedToResumeItemResumeRes_ExtIEs__extensionValue_PR {
-	E_RABFailedToResumeItemResumeRes_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABFailedToResumeItemResumeRes_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABFailedToResumeItemResumeRes_ExtIEs__extensionValue_PR;
 typedef enum S1AP_Additional_GUTI_ExtIEs__extensionValue_PR {
-	Additional_GUTI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_Additional_GUTI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_Additional_GUTI_ExtIEs__extensionValue_PR;
 typedef enum S1AP_AllocationAndRetentionPriority_ExtIEs__extensionValue_PR {
-	AllocationAndRetentionPriority_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_AllocationAndRetentionPriority_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_AllocationAndRetentionPriority_ExtIEs__extensionValue_PR;
 typedef enum S1AP_InformationForCECapableUEs_ExtIEs__extensionValue_PR {
-	InformationForCECapableUEs_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_InformationForCECapableUEs_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_InformationForCECapableUEs_ExtIEs__extensionValue_PR;
 typedef enum S1AP_AssistanceDataForPaging_ExtIEs__extensionValue_PR {
-	AssistanceDataForPaging_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_AssistanceDataForPaging_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_AssistanceDataForPaging_ExtIEs__extensionValue_PR;
 typedef enum S1AP_AssistanceDataForRecommendedCells_ExtIEs__extensionValue_PR {
-	AssistanceDataForRecommendedCells_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_AssistanceDataForRecommendedCells_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_AssistanceDataForRecommendedCells_ExtIEs__extensionValue_PR;
 typedef enum S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR {
-	Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_COUNTValueExtended,
-	Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_ReceiveStatusOfULPDCPSDUsExtended,
-	Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_COUNTvaluePDCP_SNlength18,
-	Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_ReceiveStatusOfULPDCPSDUsPDCP_SNlength18
+	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_COUNTValueExtended,
+	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_ReceiveStatusOfULPDCPSDUsExtended,
+	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_COUNTvaluePDCP_SNlength18,
+	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_ReceiveStatusOfULPDCPSDUsPDCP_SNlength18
 } S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR;
 typedef enum S1AP_CancelledCellinEAI_Item_ExtIEs__extensionValue_PR {
-	CancelledCellinEAI_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CancelledCellinEAI_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CancelledCellinEAI_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CancelledCellinTAI_Item_ExtIEs__extensionValue_PR {
-	CancelledCellinTAI_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CancelledCellinTAI_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CancelledCellinTAI_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CellIdentifierAndCELevelForCECapableUEs_ExtIEs__extensionValue_PR {
-	CellIdentifierAndCELevelForCECapableUEs_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CellIdentifierAndCELevelForCECapableUEs_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CellIdentifierAndCELevelForCECapableUEs_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CellID_Broadcast_Item_ExtIEs__extensionValue_PR {
-	CellID_Broadcast_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CellID_Broadcast_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CellID_Broadcast_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CellID_Cancelled_Item_ExtIEs__extensionValue_PR {
-	CellID_Cancelled_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CellID_Cancelled_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CellID_Cancelled_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CellBasedMDT_ExtIEs__extensionValue_PR {
-	CellBasedMDT_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CellBasedMDT_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CellBasedMDT_ExtIEs__extensionValue_PR;
 typedef enum S1AP_Cdma2000OneXSRVCCInfo_ExtIEs__extensionValue_PR {
-	Cdma2000OneXSRVCCInfo_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_Cdma2000OneXSRVCCInfo_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_Cdma2000OneXSRVCCInfo_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CellType_ExtIEs__extensionValue_PR {
-	CellType_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CellType_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CellType_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CGI_ExtIEs__extensionValue_PR {
-	CGI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CGI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CGI_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CSG_IdList_Item_ExtIEs__extensionValue_PR {
-	CSG_IdList_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CSG_IdList_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CSG_IdList_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_COUNTvalue_ExtIEs__extensionValue_PR {
-	COUNTvalue_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_COUNTvalue_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_COUNTvalue_ExtIEs__extensionValue_PR;
 typedef enum S1AP_COUNTValueExtended_ExtIEs__extensionValue_PR {
-	COUNTValueExtended_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_COUNTValueExtended_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_COUNTValueExtended_ExtIEs__extensionValue_PR;
 typedef enum S1AP_COUNTvaluePDCP_SNlength18_ExtIEs__extensionValue_PR {
-	COUNTvaluePDCP_SNlength18_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_COUNTvaluePDCP_SNlength18_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_COUNTvaluePDCP_SNlength18_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CriticalityDiagnostics_ExtIEs__extensionValue_PR {
-	CriticalityDiagnostics_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CriticalityDiagnostics_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CriticalityDiagnostics_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CriticalityDiagnostics_IE_Item_ExtIEs__extensionValue_PR {
-	CriticalityDiagnostics_IE_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CriticalityDiagnostics_IE_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CriticalityDiagnostics_IE_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ServedDCNsItem_ExtIEs__extensionValue_PR {
-	ServedDCNsItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_ServedDCNsItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_ServedDCNsItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_DL_CP_SecurityInformation_ExtIEs__extensionValue_PR {
-	DL_CP_SecurityInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_DL_CP_SecurityInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_DL_CP_SecurityInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_EmergencyAreaID_Broadcast_Item_ExtIEs__extensionValue_PR {
-	EmergencyAreaID_Broadcast_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_EmergencyAreaID_Broadcast_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_EmergencyAreaID_Broadcast_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_EmergencyAreaID_Cancelled_Item_ExtIEs__extensionValue_PR {
-	EmergencyAreaID_Cancelled_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_EmergencyAreaID_Cancelled_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_EmergencyAreaID_Cancelled_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CompletedCellinEAI_Item_ExtIEs__extensionValue_PR {
-	CompletedCellinEAI_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CompletedCellinEAI_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CompletedCellinEAI_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_GERAN_Cell_ID_ExtIEs__extensionValue_PR {
-	GERAN_Cell_ID_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_GERAN_Cell_ID_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_GERAN_Cell_ID_ExtIEs__extensionValue_PR;
 typedef enum S1AP_GlobalENB_ID_ExtIEs__extensionValue_PR {
-	GlobalENB_ID_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_GlobalENB_ID_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_GlobalENB_ID_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ENB_StatusTransfer_TransparentContainer_ExtIEs__extensionValue_PR {
-	ENB_StatusTransfer_TransparentContainer_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_ENB_StatusTransfer_TransparentContainer_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_ENB_StatusTransfer_TransparentContainer_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABInformationListItem_ExtIEs__extensionValue_PR {
-	E_RABInformationListItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABInformationListItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABInformationListItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABItem_ExtIEs__extensionValue_PR {
-	E_RABItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABQoSParameters_ExtIEs__extensionValue_PR {
-	E_RABQoSParameters_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_E_RABQoSParameters_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_E_RABQoSParameters_ExtIEs__extensionValue_PR;
 typedef enum S1AP_EUTRAN_CGI_ExtIEs__extensionValue_PR {
-	EUTRAN_CGI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_EUTRAN_CGI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_EUTRAN_CGI_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ExpectedUEBehaviour_ExtIEs__extensionValue_PR {
-	ExpectedUEBehaviour_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_ExpectedUEBehaviour_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_ExpectedUEBehaviour_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ExpectedUEActivityBehaviour_ExtIEs__extensionValue_PR {
-	ExpectedUEActivityBehaviour_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_ExpectedUEActivityBehaviour_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_ExpectedUEActivityBehaviour_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ForbiddenTAs_Item_ExtIEs__extensionValue_PR {
-	ForbiddenTAs_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_ForbiddenTAs_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_ForbiddenTAs_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ForbiddenLAs_Item_ExtIEs__extensionValue_PR {
-	ForbiddenLAs_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_ForbiddenLAs_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_ForbiddenLAs_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR {
-	GBR_QosInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_GUMMEI_ExtIEs__extensionValue_PR {
-	GUMMEI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_GUMMEI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_GUMMEI_ExtIEs__extensionValue_PR;
 typedef enum S1AP_HandoverRestrictionList_ExtIEs__extensionValue_PR {
-	HandoverRestrictionList_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_HandoverRestrictionList_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_HandoverRestrictionList_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ImmediateMDT_ExtIEs__extensionValue_PR {
-	ImmediateMDT_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	ImmediateMDT_ExtIEs__extensionValue_PR_M3Configuration,
-	ImmediateMDT_ExtIEs__extensionValue_PR_M4Configuration,
-	ImmediateMDT_ExtIEs__extensionValue_PR_M5Configuration,
-	ImmediateMDT_ExtIEs__extensionValue_PR_MDT_Location_Info,
-	ImmediateMDT_ExtIEs__extensionValue_PR_M6Configuration,
-	ImmediateMDT_ExtIEs__extensionValue_PR_M7Configuration
+	S1AP_ImmediateMDT_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_ImmediateMDT_ExtIEs__extensionValue_PR_M3Configuration,
+	S1AP_ImmediateMDT_ExtIEs__extensionValue_PR_M4Configuration,
+	S1AP_ImmediateMDT_ExtIEs__extensionValue_PR_M5Configuration,
+	S1AP_ImmediateMDT_ExtIEs__extensionValue_PR_MDT_Location_Info,
+	S1AP_ImmediateMDT_ExtIEs__extensionValue_PR_M6Configuration,
+	S1AP_ImmediateMDT_ExtIEs__extensionValue_PR_M7Configuration
 } S1AP_ImmediateMDT_ExtIEs__extensionValue_PR;
 typedef enum S1AP_InformationOnRecommendedCellsAndENBsForPaging_ExtIEs__extensionValue_PR {
-	InformationOnRecommendedCellsAndENBsForPaging_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_InformationOnRecommendedCellsAndENBsForPaging_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_InformationOnRecommendedCellsAndENBsForPaging_ExtIEs__extensionValue_PR;
 typedef enum S1AP_LAI_ExtIEs__extensionValue_PR {
-	LAI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_LAI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_LAI_ExtIEs__extensionValue_PR;
 typedef enum S1AP_LastVisitedEUTRANCellInformation_ExtIEs__extensionValue_PR {
-	LastVisitedEUTRANCellInformation_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	LastVisitedEUTRANCellInformation_ExtIEs__extensionValue_PR_Time_UE_StayedInCell_EnhancedGranularity,
-	LastVisitedEUTRANCellInformation_ExtIEs__extensionValue_PR_Cause
+	S1AP_LastVisitedEUTRANCellInformation_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_LastVisitedEUTRANCellInformation_ExtIEs__extensionValue_PR_Time_UE_StayedInCell_EnhancedGranularity,
+	S1AP_LastVisitedEUTRANCellInformation_ExtIEs__extensionValue_PR_Cause
 } S1AP_LastVisitedEUTRANCellInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ListeningSubframePattern_ExtIEs__extensionValue_PR {
-	ListeningSubframePattern_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_ListeningSubframePattern_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_ListeningSubframePattern_ExtIEs__extensionValue_PR;
 typedef enum S1AP_LoggedMDT_ExtIEs__extensionValue_PR {
-	LoggedMDT_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_LoggedMDT_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_LoggedMDT_ExtIEs__extensionValue_PR;
 typedef enum S1AP_LoggedMBSFNMDT_ExtIEs__extensionValue_PR {
-	LoggedMBSFNMDT_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_LoggedMBSFNMDT_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_LoggedMBSFNMDT_ExtIEs__extensionValue_PR;
 typedef enum S1AP_M3Configuration_ExtIEs__extensionValue_PR {
-	M3Configuration_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_M3Configuration_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_M3Configuration_ExtIEs__extensionValue_PR;
 typedef enum S1AP_M4Configuration_ExtIEs__extensionValue_PR {
-	M4Configuration_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_M4Configuration_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_M4Configuration_ExtIEs__extensionValue_PR;
 typedef enum S1AP_M5Configuration_ExtIEs__extensionValue_PR {
-	M5Configuration_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_M5Configuration_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_M5Configuration_ExtIEs__extensionValue_PR;
 typedef enum S1AP_M6Configuration_ExtIEs__extensionValue_PR {
-	M6Configuration_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_M6Configuration_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_M6Configuration_ExtIEs__extensionValue_PR;
 typedef enum S1AP_M7Configuration_ExtIEs__extensionValue_PR {
-	M7Configuration_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_M7Configuration_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_M7Configuration_ExtIEs__extensionValue_PR;
 typedef enum S1AP_MDT_Configuration_ExtIEs__extensionValue_PR {
-	MDT_Configuration_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	MDT_Configuration_ExtIEs__extensionValue_PR_MDTPLMNList
+	S1AP_MDT_Configuration_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_MDT_Configuration_ExtIEs__extensionValue_PR_MDTPLMNList
 } S1AP_MDT_Configuration_ExtIEs__extensionValue_PR;
 typedef enum S1AP_MBSFN_ResultToLogInfo_ExtIEs__extensionValue_PR {
-	MBSFN_ResultToLogInfo_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_MBSFN_ResultToLogInfo_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_MBSFN_ResultToLogInfo_ExtIEs__extensionValue_PR;
 typedef enum S1AP_MutingPatternInformation_ExtIEs__extensionValue_PR {
-	MutingPatternInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_MutingPatternInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_MutingPatternInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_NB_IoT_Paging_eDRXInformation_ExtIEs__extensionValue_PR {
-	NB_IoT_Paging_eDRXInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_NB_IoT_Paging_eDRXInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_NB_IoT_Paging_eDRXInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_PagingAttemptInformation_ExtIEs__extensionValue_PR {
-	PagingAttemptInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_PagingAttemptInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_PagingAttemptInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_Paging_eDRXInformation_ExtIEs__extensionValue_PR {
-	Paging_eDRXInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_Paging_eDRXInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_Paging_eDRXInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_M1PeriodicReporting_ExtIEs__extensionValue_PR {
-	M1PeriodicReporting_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_M1PeriodicReporting_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_M1PeriodicReporting_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ProSeAuthorized_ExtIEs__extensionValue_PR {
-	ProSeAuthorized_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	ProSeAuthorized_ExtIEs__extensionValue_PR_ProSeUEtoNetworkRelaying
+	S1AP_ProSeAuthorized_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_ProSeAuthorized_ExtIEs__extensionValue_PR_ProSeUEtoNetworkRelaying
 } S1AP_ProSeAuthorized_ExtIEs__extensionValue_PR;
 typedef enum S1AP_RecommendedCellsForPaging_ExtIEs__extensionValue_PR {
-	RecommendedCellsForPaging_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_RecommendedCellsForPaging_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_RecommendedCellsForPaging_ExtIEs__extensionValue_PR;
 typedef enum S1AP_RecommendedCellsForPagingItem_ExtIEs__extensionValue_PR {
-	RecommendedCellsForPagingItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_RecommendedCellsForPagingItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_RecommendedCellsForPagingItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_RecommendedENBsForPaging_ExtIEs__extensionValue_PR {
-	RecommendedENBsForPaging_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_RecommendedENBsForPaging_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_RecommendedENBsForPaging_ExtIEs__extensionValue_PR;
 typedef enum S1AP_RecommendedENBItem_ExtIEs__extensionValue_PR {
-	RecommendedENBItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_RecommendedENBItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_RecommendedENBItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_RequestType_ExtIEs__extensionValue_PR {
-	RequestType_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_RequestType_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_RequestType_ExtIEs__extensionValue_PR;
 typedef enum S1AP_RIMTransfer_ExtIEs__extensionValue_PR {
-	RIMTransfer_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_RIMTransfer_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_RIMTransfer_ExtIEs__extensionValue_PR;
 typedef enum S1AP_RLFReportInformation_ExtIEs__extensionValue_PR {
-	RLFReportInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_RLFReportInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_RLFReportInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_SecurityContext_ExtIEs__extensionValue_PR {
-	SecurityContext_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_SecurityContext_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_SecurityContext_ExtIEs__extensionValue_PR;
 typedef enum S1AP_SONInformationReply_ExtIEs__extensionValue_PR {
-	SONInformationReply_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	SONInformationReply_ExtIEs__extensionValue_PR_TimeSynchronisationInfo,
-	SONInformationReply_ExtIEs__extensionValue_PR_MutingPatternInformation
+	S1AP_SONInformationReply_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_SONInformationReply_ExtIEs__extensionValue_PR_TimeSynchronisationInfo,
+	S1AP_SONInformationReply_ExtIEs__extensionValue_PR_MutingPatternInformation
 } S1AP_SONInformationReply_ExtIEs__extensionValue_PR;
 typedef enum S1AP_SONConfigurationTransfer_ExtIEs__extensionValue_PR {
-	SONConfigurationTransfer_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	SONConfigurationTransfer_ExtIEs__extensionValue_PR_X2TNLConfigurationInfo,
-	SONConfigurationTransfer_ExtIEs__extensionValue_PR_SynchronisationInformation
+	S1AP_SONConfigurationTransfer_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_SONConfigurationTransfer_ExtIEs__extensionValue_PR_X2TNLConfigurationInfo,
+	S1AP_SONConfigurationTransfer_ExtIEs__extensionValue_PR_SynchronisationInformation
 } S1AP_SONConfigurationTransfer_ExtIEs__extensionValue_PR;
 typedef enum S1AP_SynchronisationInformation_ExtIEs__extensionValue_PR {
-	SynchronisationInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_SynchronisationInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_SynchronisationInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_SourceeNB_ID_ExtIEs__extensionValue_PR {
-	SourceeNB_ID_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_SourceeNB_ID_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_SourceeNB_ID_ExtIEs__extensionValue_PR;
 typedef enum S1AP_SourceeNB_ToTargeteNB_TransparentContainer_ExtIEs__extensionValue_PR {
-	SourceeNB_ToTargeteNB_TransparentContainer_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	SourceeNB_ToTargeteNB_TransparentContainer_ExtIEs__extensionValue_PR_MobilityInformation,
-	SourceeNB_ToTargeteNB_TransparentContainer_ExtIEs__extensionValue_PR_UE_HistoryInformationFromTheUE
+	S1AP_SourceeNB_ToTargeteNB_TransparentContainer_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_SourceeNB_ToTargeteNB_TransparentContainer_ExtIEs__extensionValue_PR_MobilityInformation,
+	S1AP_SourceeNB_ToTargeteNB_TransparentContainer_ExtIEs__extensionValue_PR_UE_HistoryInformationFromTheUE
 } S1AP_SourceeNB_ToTargeteNB_TransparentContainer_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ServedGUMMEIsItem_ExtIEs__extensionValue_PR {
-	ServedGUMMEIsItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_ServedGUMMEIsItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_ServedGUMMEIsItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_SupportedTAs_Item_ExtIEs__extensionValue_PR {
-	SupportedTAs_Item_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	SupportedTAs_Item_ExtIEs__extensionValue_PR_RAT_Type
+	S1AP_SupportedTAs_Item_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_SupportedTAs_Item_ExtIEs__extensionValue_PR_RAT_Type
 } S1AP_SupportedTAs_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_TimeSynchronisationInfo_ExtIEs__extensionValue_PR {
-	TimeSynchronisationInfo_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	TimeSynchronisationInfo_ExtIEs__extensionValue_PR_MutingAvailabilityIndication
+	S1AP_TimeSynchronisationInfo_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_TimeSynchronisationInfo_ExtIEs__extensionValue_PR_MutingAvailabilityIndication
 } S1AP_TimeSynchronisationInfo_ExtIEs__extensionValue_PR;
 typedef enum S1AP_S_TMSI_ExtIEs__extensionValue_PR {
-	S_TMSI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_S_TMSI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_S_TMSI_ExtIEs__extensionValue_PR;
 typedef enum S1AP_TAIBasedMDT_ExtIEs__extensionValue_PR {
-	TAIBasedMDT_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_TAIBasedMDT_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_TAIBasedMDT_ExtIEs__extensionValue_PR;
 typedef enum S1AP_TAI_ExtIEs__extensionValue_PR {
-	TAI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_TAI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_TAI_ExtIEs__extensionValue_PR;
 typedef enum S1AP_TAI_Broadcast_Item_ExtIEs__extensionValue_PR {
-	TAI_Broadcast_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_TAI_Broadcast_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_TAI_Broadcast_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_TAI_Cancelled_Item_ExtIEs__extensionValue_PR {
-	TAI_Cancelled_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_TAI_Cancelled_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_TAI_Cancelled_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_TABasedMDT_ExtIEs__extensionValue_PR {
-	TABasedMDT_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_TABasedMDT_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_TABasedMDT_ExtIEs__extensionValue_PR;
 typedef enum S1AP_CompletedCellinTAI_Item_ExtIEs__extensionValue_PR {
-	CompletedCellinTAI_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_CompletedCellinTAI_Item_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_CompletedCellinTAI_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_TargeteNB_ID_ExtIEs__extensionValue_PR {
-	TargeteNB_ID_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_TargeteNB_ID_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_TargeteNB_ID_ExtIEs__extensionValue_PR;
 typedef enum S1AP_TargetRNC_ID_ExtIEs__extensionValue_PR {
-	TargetRNC_ID_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_TargetRNC_ID_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_TargetRNC_ID_ExtIEs__extensionValue_PR;
 typedef enum S1AP_TargeteNB_ToSourceeNB_TransparentContainer_ExtIEs__extensionValue_PR {
-	TargeteNB_ToSourceeNB_TransparentContainer_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_TargeteNB_ToSourceeNB_TransparentContainer_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_TargeteNB_ToSourceeNB_TransparentContainer_ExtIEs__extensionValue_PR;
 typedef enum S1AP_M1ThresholdEventA2_ExtIEs__extensionValue_PR {
-	M1ThresholdEventA2_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_M1ThresholdEventA2_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_M1ThresholdEventA2_ExtIEs__extensionValue_PR;
 typedef enum S1AP_TraceActivation_ExtIEs__extensionValue_PR {
-	TraceActivation_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	TraceActivation_ExtIEs__extensionValue_PR_MDT_Configuration
+	S1AP_TraceActivation_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_TraceActivation_ExtIEs__extensionValue_PR_MDT_Configuration
 } S1AP_TraceActivation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_Tunnel_Information_ExtIEs__extensionValue_PR {
-	Tunnel_Information_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_Tunnel_Information_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_Tunnel_Information_ExtIEs__extensionValue_PR;
 typedef enum S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR {
-	UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR;
 typedef enum S1AP_UE_S1AP_ID_pair_ExtIEs__extensionValue_PR {
-	UE_S1AP_ID_pair_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_UE_S1AP_ID_pair_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_UE_S1AP_ID_pair_ExtIEs__extensionValue_PR;
 typedef enum S1AP_UE_associatedLogicalS1_ConnectionItemExtIEs__extensionValue_PR {
-	UE_associatedLogicalS1_ConnectionItemExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_UE_associatedLogicalS1_ConnectionItemExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_UE_associatedLogicalS1_ConnectionItemExtIEs__extensionValue_PR;
 typedef enum S1AP_UESecurityCapabilities_ExtIEs__extensionValue_PR {
-	UESecurityCapabilities_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_UESecurityCapabilities_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_UESecurityCapabilities_ExtIEs__extensionValue_PR;
 typedef enum S1AP_UE_Sidelink_Aggregate_MaximumBitrates_ExtIEs__extensionValue_PR {
-	UE_Sidelink_Aggregate_MaximumBitrates_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_UE_Sidelink_Aggregate_MaximumBitrates_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_UE_Sidelink_Aggregate_MaximumBitrates_ExtIEs__extensionValue_PR;
 typedef enum S1AP_UL_CP_SecurityInformation_ExtIEs__extensionValue_PR {
-	UL_CP_SecurityInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_UL_CP_SecurityInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_UL_CP_SecurityInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_UserLocationInformation_ExtIEs__extensionValue_PR {
-	UserLocationInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_UserLocationInformation_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_UserLocationInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_V2XServicesAuthorized_ExtIEs__extensionValue_PR {
-	V2XServicesAuthorized_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_V2XServicesAuthorized_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_V2XServicesAuthorized_ExtIEs__extensionValue_PR;
 typedef enum S1AP_X2TNLConfigurationInfo_ExtIEs__extensionValue_PR {
-	X2TNLConfigurationInfo_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	X2TNLConfigurationInfo_ExtIEs__extensionValue_PR_ENBX2ExtTLAs,
-	X2TNLConfigurationInfo_ExtIEs__extensionValue_PR_ENBIndirectX2TransportLayerAddresses
+	S1AP_X2TNLConfigurationInfo_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
+	S1AP_X2TNLConfigurationInfo_ExtIEs__extensionValue_PR_ENBX2ExtTLAs,
+	S1AP_X2TNLConfigurationInfo_ExtIEs__extensionValue_PR_ENBIndirectX2TransportLayerAddresses
 } S1AP_X2TNLConfigurationInfo_ExtIEs__extensionValue_PR;
 typedef enum S1AP_ENBX2ExtTLA_ExtIEs__extensionValue_PR {
-	ENBX2ExtTLA_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
+	S1AP_ENBX2ExtTLA_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
 	
 } S1AP_ENBX2ExtTLA_ExtIEs__extensionValue_PR;
 

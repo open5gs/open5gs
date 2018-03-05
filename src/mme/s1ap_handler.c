@@ -17,6 +17,7 @@
 #include "mme_path.h"
 #include "mme_sm.h"
 
+#if 0
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 {
     char buf[CORE_ADDRSTRLEN];
@@ -750,9 +751,11 @@ void s1ap_handle_ue_context_release_complete(
         }
     }
 }
+#endif
 
 void s1ap_handle_paging(mme_ue_t *mme_ue)
 {
+#if 0
     pkbuf_t *s1apbuf = NULL;
     hash_index_t *hi = NULL;
     mme_enb_t *enb = NULL;
@@ -787,8 +790,10 @@ void s1ap_handle_paging(mme_ue_t *mme_ue)
             }
         }
     }
+#endif
 }
 
+#if 0
 void s1ap_handle_path_switch_request(
         mme_enb_t *enb, s1ap_message_t *message)
 {
@@ -1331,3 +1336,4 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
         sess = mme_sess_next(sess);
     }
 }
+#endif

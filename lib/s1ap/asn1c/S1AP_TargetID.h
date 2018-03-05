@@ -20,10 +20,10 @@ extern "C" {
 
 /* Dependencies */
 typedef enum S1AP_TargetID_PR {
-	TargetID_PR_NOTHING,	/* No components present */
-	TargetID_PR_targeteNB_ID,
-	TargetID_PR_targetRNC_ID,
-	TargetID_PR_cGI
+	S1AP_TargetID_PR_NOTHING,	/* No components present */
+	S1AP_TargetID_PR_targeteNB_ID,
+	S1AP_TargetID_PR_targetRNC_ID,
+	S1AP_TargetID_PR_cGI
 	/* Extensions may appear below */
 	
 } S1AP_TargetID_PR;
