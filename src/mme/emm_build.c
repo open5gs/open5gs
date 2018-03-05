@@ -255,7 +255,8 @@ status_t emm_build_security_mode_command(
     replayed_ue_security_capabilities->eea = mme_ue->ue_network_capability.eea;
     replayed_ue_security_capabilities->eia = mme_ue->ue_network_capability.eia;
     replayed_ue_security_capabilities->uea = mme_ue->ue_network_capability.uea;
-    replayed_ue_security_capabilities->uia = mme_ue->ue_network_capability.uia;
+    replayed_ue_security_capabilities->uia = 
+        mme_ue->ue_network_capability.uia & 0x7f;
     replayed_ue_security_capabilities->gea = 
         (mme_ue->ms_network_capability.gea1 << 6) | 
         mme_ue->ms_network_capability.extended_gea;
