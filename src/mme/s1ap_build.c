@@ -12,34 +12,64 @@
 
 status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 {
-#if 0
-    int erval;
+    status_t rv;
     int i, j;
 
-    s1ap_message_t message;
-    S1AP_S1SetupResponseIEs_t *ies = NULL;
-    S1AP_ServedGUMMEIsItem_t *servedGUMMEI;
-    S1AP_PLMNidentity_t *plmnIdentity;
-    S1AP_MME_Group_ID_t *mmeGroupId;
-    S1AP_MME_Code_t *mmeCode;
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_S1SetupResponse_t *S1SetupResponse = NULL;
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    S1AP_S1SetupResponseIEs_t *ie = NULL;
+    S1AP_ServedGUMMEIs_t *ServedGUMMEIs = NULL;
+    S1AP_RelativeMMECapacity_t *RelativeMMECapacity = NULL;
 
-    ies = &message.s1ap_S1SetupResponseIEs;
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = 
+        core_calloc(1, sizeof(S1AP_SuccessfulOutcome_t));
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode = S1AP_ProcedureCode_id_S1Setup;
+    successfulOutcome->criticality = S1AP_Criticality_reject;
+    successfulOutcome->value.present =
+        S1AP_SuccessfulOutcome__value_PR_S1SetupResponse;
+
+    S1SetupResponse = &successfulOutcome->value.choice.S1SetupResponse;
+
+    ie = core_calloc(1, sizeof(S1AP_S1SetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&S1SetupResponse->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_ServedGUMMEIs;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_S1SetupResponseIEs__value_PR_ServedGUMMEIs;
+
+    ServedGUMMEIs = &ie->value.choice.ServedGUMMEIs;
+
+    ie = core_calloc(1, sizeof(S1AP_S1SetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&S1SetupResponse->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_RelativeMMECapacity;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_S1SetupResponseIEs__value_PR_RelativeMMECapacity;
+
+    RelativeMMECapacity = &ie->value.choice.RelativeMMECapacity;
 
     for (i = 0; i < mme_self()->max_num_of_served_gummei; i++)
     {
-        servedGUMMEI = (S1AP_ServedGUMMEIsItem_t *)
+        S1AP_ServedGUMMEIsItem_t *ServedGUMMEIsItem = NULL;
+        ServedGUMMEIsItem = (S1AP_ServedGUMMEIsItem_t *)
             core_calloc(1, sizeof(S1AP_ServedGUMMEIsItem_t));
-        served_gummei_t *served_gummei = &mme_self()->served_gummei[i];
 
+        served_gummei_t *served_gummei = &mme_self()->served_gummei[i];
         for (j = 0; j < served_gummei->num_of_plmn_id; j++)
         {
-            plmnIdentity = (S1AP_PLMNidentity_t *)
+            S1AP_PLMNidentity_t *PLMNidentity = NULL;
+            PLMNidentity = (S1AP_PLMNidentity_t *)
                 core_calloc(1, sizeof(S1AP_PLMNidentity_t));
             s1ap_buffer_to_OCTET_STRING(
-                    &served_gummei->plmn_id[j], PLMN_ID_LEN, plmnIdentity);
-            ASN_SEQUENCE_ADD(&servedGUMMEI->servedPLMNs, plmnIdentity);
+                    &served_gummei->plmn_id[j], PLMN_ID_LEN, PLMNidentity);
+            ASN_SEQUENCE_ADD(
+                    &ServedGUMMEIsItem->servedPLMNs.list, PLMNidentity);
             d_trace(5, "    PLMN_ID[MCC:%d MNC:%d]\n",
                 plmn_id_mcc(&served_gummei->plmn_id[j]),
                 plmn_id_mnc(&served_gummei->plmn_id[j]));
@@ -47,40 +77,38 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 
         for (j = 0; j < served_gummei->num_of_mme_gid; j++)
         {
-            mmeGroupId = (S1AP_MME_Group_ID_t *)
+            S1AP_MME_Group_ID_t *MME_Group_ID = NULL;
+            MME_Group_ID = (S1AP_MME_Group_ID_t *)
                 core_calloc(1, sizeof(S1AP_MME_Group_ID_t));
             s1ap_uint16_to_OCTET_STRING(
-                served_gummei->mme_gid[j], mmeGroupId);
-            ASN_SEQUENCE_ADD(&servedGUMMEI->servedGroupIDs, mmeGroupId);
+                    served_gummei->mme_gid[j], MME_Group_ID);
+            ASN_SEQUENCE_ADD(
+                    &ServedGUMMEIsItem->servedGroupIDs.list, MME_Group_ID);
             d_trace(5, "    MME Group[%d]\n", served_gummei->mme_gid[j]);
         }
 
         for (j = 0; j < served_gummei->num_of_mme_code; j++)
         {
-            mmeCode = (S1AP_MME_Code_t *)
+            S1AP_MME_Code_t *MME_Code = NULL ;
+            MME_Code = (S1AP_MME_Code_t *)
                 core_calloc(1, sizeof(S1AP_MME_Code_t));
-            s1ap_uint8_to_OCTET_STRING(
-                served_gummei->mme_code[j], mmeCode);
-            ASN_SEQUENCE_ADD(&servedGUMMEI->servedMMECs, mmeCode);
+            s1ap_uint8_to_OCTET_STRING(served_gummei->mme_code[j], MME_Code);
+            ASN_SEQUENCE_ADD(&ServedGUMMEIsItem->servedMMECs.list, MME_Code);
             d_trace(5, "    MME Code[%d]\n", served_gummei->mme_code[j]);
         }
-        ASN_SEQUENCE_ADD(&ies->servedGUMMEIs, servedGUMMEI);
+        ASN_SEQUENCE_ADD(&ServedGUMMEIs->list, ServedGUMMEIsItem);
     }
 
-    ies->relativeMMECapacity = mme_self()->relative_capacity;
+    *RelativeMMECapacity = mme_self()->relative_capacity;
 
-    message.procedureCode = S1AP_ProcedureCode_id_S1Setup;
-    message.direction = S1AP_PDU_PR_successfulOutcome;
+    rv = s1ap_encode_pdu(pkbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    erval = s1ap_encode_pdu(pkbuf, &message);
-    s1ap_free_pdu(&message);
-
-    if (erval < 0)
+    if (rv != CORE_OK)
     {
-        d_error("s1ap_encode_error : (%d)", erval);
+        d_error("s1ap_encode_pdu() failed");
         return CORE_ERROR;
     }
-#endif
 
     return CORE_OK;
 }
@@ -88,38 +116,67 @@ status_t s1ap_build_setup_rsp(pkbuf_t **pkbuf)
 status_t s1ap_build_setup_failure(
         pkbuf_t **pkbuf, S1AP_Cause_PR group, long cause, long time_to_wait)
 {
-#if 0
-    int erval;
+    status_t rv;
 
-    s1ap_message_t message;
-    S1AP_S1SetupFailureIEs_t *ies = NULL;
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
+    S1AP_S1SetupFailure_t *S1SetupFailure = NULL;
 
-    memset(&message, 0, sizeof(s1ap_message_t));
-
-    ies = &message.s1ap_S1SetupFailureIEs;
-    ies->cause.present = group;
-    ies->cause.choice.radioNetwork = cause;
-    d_trace(5, "    Gruop[%d] Cause[%d] TimeToWait[%ld]\n",
+    S1AP_S1SetupFailureIEs_t *ie = NULL;
+    S1AP_Cause_t *Cause = NULL;
+    S1AP_TimeToWait_t *TimeToWait = NULL;
+    
+    d_trace(5, "    Group[%d] Cause[%d] TimeToWait[%ld]\n",
             group, cause, time_to_wait);
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
+    pdu.choice.unsuccessfulOutcome = 
+        core_calloc(1, sizeof(S1AP_UnsuccessfulOutcome_t));
+
+    unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
+    unsuccessfulOutcome->procedureCode = S1AP_ProcedureCode_id_S1Setup;
+    unsuccessfulOutcome->criticality = S1AP_Criticality_reject;
+    unsuccessfulOutcome->value.present =
+        S1AP_UnsuccessfulOutcome__value_PR_S1SetupFailure;
+
+    S1SetupFailure = &unsuccessfulOutcome->value.choice.S1SetupFailure;
+
+    ie = core_calloc(1, sizeof(S1AP_S1SetupFailureIEs_t));
+    ASN_SEQUENCE_ADD(&S1SetupFailure->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_Cause;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_S1SetupFailureIEs__value_PR_Cause;
+
+    Cause = &ie->value.choice.Cause;
 
     if (time_to_wait > -1)
     {
-        ies->presenceMask |= S1AP_S1SETUPFAILUREIES_TIMETOWAIT_PRESENT;
-        ies->timeToWait = time_to_wait;
+        ie = core_calloc(1, sizeof(S1AP_S1SetupFailureIEs_t));
+        ASN_SEQUENCE_ADD(&S1SetupFailure->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_TimeToWait;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present = S1AP_S1SetupFailureIEs__value_PR_TimeToWait;
+
+        TimeToWait = &ie->value.choice.TimeToWait;
     }
 
-    message.procedureCode = S1AP_ProcedureCode_id_S1Setup;
-    message.direction = S1AP_PDU_PR_unsuccessfulOutcome;
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
 
-    erval = s1ap_encode_pdu(pkbuf, &message);
-    s1ap_free_pdu(&message);
+    if (TimeToWait)
+        *TimeToWait = time_to_wait;
 
-    if (erval < 0)
+    rv = s1ap_encode_pdu(pkbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    if (rv != CORE_OK)
     {
-        d_error("s1ap_encode_error : (%d)", erval);
+        d_error("s1ap_encode_pdu() failed");
         return CORE_ERROR;
     }
-#endif
 
     return CORE_OK;
 }
