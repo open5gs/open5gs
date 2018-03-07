@@ -2235,6 +2235,54 @@ status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_int8_t *imsi_bcd)
     return CORE_OK;
 }
 
+int mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue)
+{
+    mme_sess_t *sess = NULL;
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        mme_bearer_t *bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            {
+                return 1;
+            }
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
+
+    return 0;
+}
+
+status_t mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue)
+{
+    mme_sess_t *sess = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR,);
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        mme_bearer_t *bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            CLEAR_INDIRECT_TUNNEL(bearer);
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
+
+    return CORE_OK;
+}
+
 status_t mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
 {
     d_assert(mme_ue, return CORE_ERROR, "Null param");

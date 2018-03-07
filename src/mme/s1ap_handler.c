@@ -716,7 +716,7 @@ void s1ap_handle_ue_context_release_complete(
             d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
 
             d_assert(mme_ue,,);
-            if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
+            if (mme_ue_have_indirect_tunnel(mme_ue))
             {
                 rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(mme_ue);
                 d_assert(rv == CORE_OK,, "mme_gtp_send_delete_indirect_data_"
@@ -724,22 +724,12 @@ void s1ap_handle_ue_context_release_complete(
             }
             else
             {
-                mme_sess_t *sess = NULL;
-                mme_bearer_t *bearer = NULL;
-
-                d_warn("GTP-C(S11) has already been deleted");
-                sess = mme_sess_first(mme_ue);
-                while(sess)
-                {
-                    bearer = mme_bearer_first(sess);
-                    while(bearer)
-                    {
-                        CLEAR_INDIRECT_TUNNEL(bearer);
-
-                        bearer = mme_bearer_next(bearer);
-                    }
-                    sess = mme_sess_next(sess);
-                }
+                d_warn("Check your eNodeB");
+                d_warn("  There is no INDIRECT TUNNEL");
+                d_warn("  Packet could be dropped during S1-Handover");
+                rv = mme_ue_clear_indirect_tunnel(mme_ue);
+                d_assert(rv == CORE_OK,,
+                        "mme_ue_clear_indirect_tunnel() failed");
             }
             break;
         }
@@ -1080,7 +1070,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     S1AP_STORE_DATA(
         &mme_ue->container, &ies->target_ToSource_TransparentContainer);
 
-    if (i > 0)
+    if (mme_ue_have_indirect_tunnel(mme_ue) == 1)
     {
         rv = mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
                 mme_ue);

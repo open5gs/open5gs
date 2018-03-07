@@ -613,6 +613,8 @@ static void handover_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+    /* Send ENB configuration transfer */
+#if 0
     rv = tests1ap_build_enb_configuration_transfer(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
@@ -620,6 +622,8 @@ static void handover_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+    goto out;
+#else
     /* Send Handover Required */
     rv = tests1ap_build_handover_required(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -818,6 +822,7 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
     core_sleep(time_from_msec(300));
+#endif
 
 out:
     /********** Remove Subscriber in Database */

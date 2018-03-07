@@ -548,6 +548,9 @@ CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_message(nas_message_t *message);
 CORE_DECLARE(status_t)      mme_ue_set_imsi(
                                 mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
 
+CORE_DECLARE(int)           mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue);
+CORE_DECLARE(status_t)      mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue);
+
 /* 
  * o RECV Initial UE-Message : S-TMSI
  * o RECV Attach Request : IMSI, GUTI
