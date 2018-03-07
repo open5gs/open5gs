@@ -1225,6 +1225,68 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(rv == CORE_OK,,);
 }
 
+void s1ap_handle_enb_configuration_transfer(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    status_t rv;
+    char buf[CORE_ADDRSTRLEN];
+
+    S1ap_ENBConfigurationTransferIEs_t *ies = NULL;
+
+    d_assert(enb, return,);
+
+    ies = &message->s1ap_ENBConfigurationTransferIEs;
+    d_assert(ies, return,);
+
+    d_trace(3, "[MME] ENB configuration transfer\n");
+    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
+    if (ies->presenceMask &
+        S1AP_ENBCONFIGURATIONTRANSFERIES_SONCONFIGURATIONTRANSFERECT_PRESENT)
+    {
+        S1ap_SONConfigurationTransfer_t *transfer =
+                &ies->sonConfigurationTransferECT;
+        mme_enb_t *target_enb = NULL;
+        c_uint32_t source_enb_id, target_enb_id;
+        c_uint16_t source_tac, target_tac;
+
+        s1ap_ENB_ID_to_uint32(
+                &transfer->sourceeNB_ID.global_S1ap_ENB_ID.eNB_ID,
+                &source_enb_id);
+        s1ap_ENB_ID_to_uint32(
+                &transfer->targeteNB_ID.global_S1ap_ENB_ID.eNB_ID,
+                &target_enb_id);
+
+        memcpy(&source_tac, transfer->sourceeNB_ID.selected_S1ap_TAI.tAC.buf,
+                sizeof(source_tac));
+        source_tac = ntohs(source_tac);
+        memcpy(&target_tac, transfer->targeteNB_ID.selected_S1ap_TAI.tAC.buf,
+                sizeof(target_tac));
+        target_tac = ntohs(target_tac);
+
+        d_trace(5, "    Source : ENB_ID[%s:%d], TAC[%d]\n",
+                transfer->sourceeNB_ID.global_S1ap_ENB_ID.eNB_ID.present == 
+                    S1ap_ENB_ID_PR_homeENB_ID ? "Home" : 
+                transfer->sourceeNB_ID.global_S1ap_ENB_ID.eNB_ID.present == 
+                    S1ap_ENB_ID_PR_macroENB_ID ? "Macro" : "Others",
+                source_enb_id, source_tac);
+        d_trace(5, "    Target : ENB_ID[%s:%d], TAC[%d]\n",
+                transfer->targeteNB_ID.global_S1ap_ENB_ID.eNB_ID.present == 
+                    S1ap_ENB_ID_PR_homeENB_ID ? "Home" : 
+                transfer->targeteNB_ID.global_S1ap_ENB_ID.eNB_ID.present == 
+                    S1ap_ENB_ID_PR_macroENB_ID ? "Macro" : "Others",
+                target_enb_id, target_tac);
+
+        target_enb = mme_enb_find_by_enb_id(target_enb_id);
+        d_assert(target_enb, return,
+                "Cannot find target eNB = %d", target_enb_id);
+
+        rv = s1ap_send_mme_configuration_transfer(target_enb, ies);
+        d_assert(rv == CORE_OK,,);
+    }
+}
+
 void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
 {
     status_t rv;

@@ -172,6 +172,7 @@ static int s1ap_decode_initiating(s1ap_message_t *message,
                     s1ap_xer_print_s1ap_errorindication,
                     s1ap_xer__print2sp, message);
             break;
+
         case S1ap_ProcedureCode_id_Reset: 
             ret = s1ap_decode_s1ap_reseties(
                     &message->s1ap_ResetIEs, 
@@ -180,6 +181,16 @@ static int s1ap_decode_initiating(s1ap_message_t *message,
                     s1ap_xer_print_s1ap_reset,
                     s1ap_xer__print2sp, message);
             break;
+
+        case S1ap_ProcedureCode_id_eNBConfigurationTransfer:
+            ret = s1ap_decode_s1ap_enbconfigurationtransferies(
+                    &message->s1ap_ENBConfigurationTransferIEs,
+                    &initiating_p->value);
+            s1ap_decode_xer_print_message(
+                    s1ap_xer_print_s1ap_enbconfigurationtransfer,
+                    s1ap_xer__print2sp, message);
+            break;
+
         default: 
             d_error("Unknown procedure ID (%d) for initiating message", 
                     (int)initiating_p->procedureCode);

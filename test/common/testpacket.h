@@ -82,6 +82,8 @@ CORE_DECLARE(status_t) tests1ap_build_handover_request_ack_static(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_enb_status_transfer(
         pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_enb_configuration_transfer(
+        pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_handover_notify(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_handover_cancel(pkbuf_t **pkbuf, int i);
 

@@ -613,6 +613,13 @@ static void handover_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_msec(300));
 
+    rv = tests1ap_build_enb_configuration_transfer(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock1, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    core_sleep(time_from_msec(300));
+
     /* Send Handover Required */
     rv = tests1ap_build_handover_required(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

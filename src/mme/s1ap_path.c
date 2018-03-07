@@ -455,6 +455,13 @@ status_t s1ap_send_mme_status_transfer(
     return rv;
 }
 
+status_t s1ap_send_mme_configuration_transfer(
+        mme_enb_t *target_enb, S1ap_ENBConfigurationTransferIEs_t *ies)
+{
+    d_warn("Not Implemented : MME Configuration Transfer");
+    return CORE_OK;
+}
+
 status_t s1ap_send_error_indication(
         mme_enb_t *enb, c_uint16_t presenceMask,
         c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,

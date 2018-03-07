@@ -107,6 +107,12 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                             s1ap_handle_enb_status_transfer(enb, message);
                             break;
                         }
+                        case S1ap_ProcedureCode_id_eNBConfigurationTransfer:
+                        {
+                            s1ap_handle_enb_configuration_transfer(
+                                    enb, message);
+                            break;
+                        }
                         case S1ap_ProcedureCode_id_HandoverNotification:
                         {
                             s1ap_handle_handover_notification(enb, message);
