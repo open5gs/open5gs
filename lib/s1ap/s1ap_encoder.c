@@ -55,8 +55,6 @@ static inline int s1ap_encode_handover_preparation_failure(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
 static inline int s1ap_encode_mme_status_transfer(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
-static inline int s1ap_encode_mme_configuration_transfer(
-    s1ap_message_t *message_p, pkbuf_t *pkbuf);
 
 static inline int s1ap_encode_error_indication(
     s1ap_message_t *message_p, pkbuf_t *pkbuf);
@@ -201,13 +199,6 @@ static inline int s1ap_encode_initiating_message(
             s1ap_encode_xer_print_message(s1ap_xer_print_s1ap_reset,
                     s1ap_xer__print2sp, message_p);
             ret = s1ap_encode_reset(message_p, pkbuf);
-            break;
-
-        case S1ap_ProcedureCode_id_eNBConfigurationTransfer:
-            s1ap_encode_xer_print_message(
-                    s1ap_xer_print_s1ap_mmeconfigurationtransfer,
-                    s1ap_xer__print2sp, message_p);
-            ret = s1ap_encode_mme_configuration_transfer(message_p, pkbuf);
             break;
 
         default:
@@ -1112,44 +1103,6 @@ static inline int s1ap_encode_mme_status_transfer(
 
     return enc_ret.encoded;
 }
-
-static inline int s1ap_encode_mme_configuration_transfer(
-    s1ap_message_t *message_p, pkbuf_t *pkbuf)
-{
-    asn_enc_rval_t enc_ret = {0};
-
-    S1AP_PDU_t pdu;
-    S1ap_MMEConfigurationTransfer_t transfer;
-    asn_TYPE_descriptor_t *td = &asn_DEF_S1ap_MMEConfigurationTransfer;
-
-    memset(&transfer, 0, sizeof(S1ap_MMEConfigurationTransfer_t));
-    if (s1ap_encode_s1ap_mmeconfigurationtransferies(
-                &transfer, &message_p->s1ap_MMEConfigurationTransferIEs) < 0) 
-    {
-        d_error("Encoding of %s failed", td->name);
-        return -1;
-    }
-
-    memset(&pdu, 0, sizeof (S1AP_PDU_t));
-    pdu.present = S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage.procedureCode = message_p->procedureCode;
-    pdu.choice.initiatingMessage.criticality = S1ap_Criticality_ignore;
-    ANY_fromType_aper(&pdu.choice.initiatingMessage.value, td, &transfer);
-
-    enc_ret = aper_encode_to_buffer(&asn_DEF_S1AP_PDU, 
-                    &pdu, pkbuf->payload, MAX_SDU_LEN);
-
-    ASN_STRUCT_FREE_CONTENTS_ONLY(*td, &transfer);
-    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_S1AP_PDU, &pdu);
-
-    if (enc_ret.encoded < 0)
-    {
-        d_error("Encoding of %s failed", td->name);
-    }
-
-    return enc_ret.encoded;
-}
-
 
 static inline int s1ap_encode_error_indication(
     s1ap_message_t *message_p, pkbuf_t *pkbuf)

@@ -150,11 +150,6 @@ static inline int s1ap_free_initiating_message(s1ap_message_t *message)
                     &message->s1ap_ENBConfigurationTransferIEs);
             break;
 
-        case S1ap_ProcedureCode_id_MMEConfigurationTransfer:
-            s1ap_free_s1ap_mmeconfigurationtransferies(
-                    &message->s1ap_MMEConfigurationTransferIEs);
-            break;
-
         default:
             d_warn("Unknown procedure ID (%d) for initiating message\n", 
                     (int)message->procedureCode);

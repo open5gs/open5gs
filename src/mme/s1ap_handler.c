@@ -1216,7 +1216,7 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
 }
 
 void s1ap_handle_enb_configuration_transfer(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, s1ap_message_t *message, pkbuf_t *pkbuf)
 {
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
@@ -1272,7 +1272,7 @@ void s1ap_handle_enb_configuration_transfer(
         d_assert(target_enb, return,
                 "Cannot find target eNB = %d", target_enb_id);
 
-        rv = s1ap_send_mme_configuration_transfer(target_enb, ies);
+        rv = s1ap_send_mme_configuration_transfer(target_enb, pkbuf);
         d_assert(rv == CORE_OK,,);
     }
 }

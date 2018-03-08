@@ -109,8 +109,11 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                         }
                         case S1ap_ProcedureCode_id_eNBConfigurationTransfer:
                         {
+                            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
+                            d_assert(pkbuf, break, "Null param");
+
                             s1ap_handle_enb_configuration_transfer(
-                                    enb, message);
+                                    enb, message, pkbuf);
                             break;
                         }
                         case S1ap_ProcedureCode_id_HandoverNotification:

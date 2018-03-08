@@ -56,7 +56,7 @@ CORE_DECLARE(status_t) s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
 CORE_DECLARE(status_t) s1ap_send_mme_status_transfer(
         enb_ue_t *target_ue, S1ap_ENBStatusTransferIEs_t *ies);
 CORE_DECLARE(status_t) s1ap_send_mme_configuration_transfer(
-        mme_enb_t *target_enb, S1ap_ENBConfigurationTransferIEs_t *ies);
+        mme_enb_t *target_enb, pkbuf_t *pkbuf);
 CORE_DECLARE(status_t) s1ap_send_error_indication(
         mme_enb_t *enb, c_uint16_t presenceMask,
         c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
