@@ -643,9 +643,6 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
 {
     status_t rv;
 
-    mme_sess_t *sess = NULL;
-    mme_bearer_t *bearer = NULL;
-
     d_assert(xact, return, "Null param");
     d_assert(mme_ue, return, "Null param");
     d_assert(rsp, return, "Null param");
@@ -660,18 +657,8 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
+    d_assert(rv == CORE_OK,, "xact_commit error");
 
-    sess = mme_sess_first(mme_ue);
-    while(sess)
-    {
-        bearer = mme_bearer_first(sess);
-        while(bearer)
-        {
-            CLEAR_INDIRECT_TUNNEL(bearer);
-
-            bearer = mme_bearer_next(bearer);
-        }
-        sess = mme_sess_next(sess);
-    }
+    rv = mme_ue_clear_indirect_tunnel(mme_ue);
+    d_assert(rv == CORE_OK,, "mme_ue_clear_indirect_tunnel() failed");
 }

@@ -459,6 +459,28 @@ status_t s1ap_send_mme_status_transfer(
     return rv;
 }
 
+status_t s1ap_send_mme_configuration_transfer(
+        mme_enb_t *target_enb, pkbuf_t *recvbuf)
+{
+    status_t rv;
+    char *payload;
+    pkbuf_t *sendbuf = NULL;
+
+    d_assert(target_enb, return CORE_ERROR,);
+    d_assert(recvbuf, return CORE_ERROR,);
+
+    sendbuf = pkbuf_copy(recvbuf);
+    d_assert(sendbuf, return CORE_ERROR,);
+
+    payload = sendbuf->payload;
+    payload[1] = S1AP_ProcedureCode_id_MMEConfigurationTransfer;
+    payload[8] = S1AP_ProtocolIE_ID_id_SONConfigurationTransferMCT;
+
+    rv = s1ap_send_to_enb(target_enb, sendbuf);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+    return CORE_OK;
+}
+
 status_t s1ap_send_error_indication(
         mme_enb_t *enb, c_uint16_t presenceMask,
         c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,

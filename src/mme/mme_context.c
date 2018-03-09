@@ -1211,6 +1211,57 @@ status_t mme_context_parse_config()
                         }
                     }
                 }
+                else if(!strcmp(mme_key, "network_name"))
+                {
+                    yaml_iter_t network_name_iter;
+                    yaml_iter_recurse(&mme_iter, &network_name_iter);
+
+                    while(yaml_iter_next(&network_name_iter))
+                    {
+                        const char *network_name_key =
+                        yaml_iter_key(&network_name_iter);
+                        d_assert(network_name_key,
+                                    return CORE_ERROR,);
+                        if (!strcmp(network_name_key, "full"))
+                        {  
+                            nas_network_name_t *network_full_name =
+                                &self.full_name;
+                            const char *c_network_name =
+                                yaml_iter_value(&network_name_iter);
+                            c_uint8_t size = strlen(c_network_name);
+                            c_uint8_t i;
+                            for(i = 0;i<size;i++)
+                            {
+                                /* Workaround to convert the ASCII to USC-2 */
+                                network_full_name->name[i*2] = 0;
+                                network_full_name->name[(i*2)+1] =
+                                    c_network_name[i];
+
+                            }
+                                network_full_name->length = size*2+1;
+                                network_full_name->coding_scheme = 1;
+                        }
+                        else if (!strcmp(network_name_key, "short"))
+                        {
+                            nas_network_name_t *network_short_name =
+                                &self.short_name;
+                            const char *c_network_name =
+                                yaml_iter_value(&network_name_iter);
+                            c_uint8_t size = strlen(c_network_name);
+                            c_uint8_t i;
+                            for(i = 0;i<size;i++)
+                            {
+                                /* Workaround to convert the ASCII to USC-2 */
+                                network_short_name->name[i*2] = 0;
+                                network_short_name->name[(i*2)+1] =
+                                    c_network_name[i];
+
+                            }
+                            network_short_name->length = size*2+1;
+                            network_short_name->coding_scheme = 1;
+                        }
+                    }
+                }
                 else
                     d_warn("unknown key `%s`", mme_key);
             }
@@ -2176,6 +2227,54 @@ status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_int8_t *imsi_bcd)
     hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
     mme_ue->guti_present = 1;
+
+    return CORE_OK;
+}
+
+int mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue)
+{
+    mme_sess_t *sess = NULL;
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        mme_bearer_t *bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            {
+                return 1;
+            }
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
+
+    return 0;
+}
+
+status_t mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue)
+{
+    mme_sess_t *sess = NULL;
+
+    d_assert(mme_ue, return CORE_ERROR,);
+
+    sess = mme_sess_first(mme_ue);
+    while(sess)
+    {
+        mme_bearer_t *bearer = mme_bearer_first(sess);
+        while(bearer)
+        {
+            CLEAR_INDIRECT_TUNNEL(bearer);
+
+            bearer = mme_bearer_next(bearer);
+        }
+        sess = mme_sess_next(sess);
+    }
 
     return CORE_OK;
 }

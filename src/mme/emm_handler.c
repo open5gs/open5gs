@@ -112,9 +112,14 @@ status_t emm_handle_attach_request(
     memcpy(&mme_ue->ue_network_capability, 
             &attach_request->ue_network_capability,
             sizeof(attach_request->ue_network_capability));
-    memcpy(&mme_ue->ms_network_capability, 
-            &attach_request->ms_network_capability,
-            sizeof(attach_request->ms_network_capability));
+
+    if (attach_request->presencemask &
+            NAS_ATTACH_REQUEST_MS_NETWORK_CAPABILITY_PRESENT)
+    {
+        memcpy(&mme_ue->ms_network_capability, 
+                &attach_request->ms_network_capability,
+                sizeof(attach_request->ms_network_capability));
+    }
 
     switch(eps_mobile_identity->imsi.type)
     {
@@ -195,7 +200,8 @@ status_t emm_handle_attach_complete(
         NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
     universal_time_and_local_time_zone->year = 
                 NAS_TIME_TO_BCD(time_exp.tm_year % 100);
-    universal_time_and_local_time_zone->mon = NAS_TIME_TO_BCD(time_exp.tm_mon);
+    universal_time_and_local_time_zone->mon =
+                NAS_TIME_TO_BCD(time_exp.tm_mon+1);
     universal_time_and_local_time_zone->mday = 
                 NAS_TIME_TO_BCD(time_exp.tm_mday);
     universal_time_and_local_time_zone->hour = 
@@ -213,6 +219,22 @@ status_t emm_handle_attach_complete(
     emm_information->presencemask |=
         NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
     network_daylight_saving_time->length = 1;
+
+    if(mme_self()->full_name.length) 
+    {
+        emm_information->presencemask |=
+            NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT;
+        memcpy(&emm_information->full_name_for_network,
+            &mme_self()->full_name, sizeof(nas_network_name_t));
+    }
+    
+    if(mme_self()->short_name.length)
+    {
+        emm_information->presencemask |=
+            NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_PRESENT;
+        memcpy(&emm_information->short_name_for_network,
+            &mme_self()->short_name, sizeof(nas_network_name_t));
+    }                
 
     rv = nas_security_encode(&emmbuf, mme_ue, &message);
     d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR, "emm build error");

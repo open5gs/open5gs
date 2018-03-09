@@ -143,6 +143,16 @@ mme:
         integrity_order : [ EIA1, EIA2, EIA0 ]
         ciphering_order : [ EEA0, EEA1, EEA2 ]
 
+#
+#  <Network Name>
+#    network_name:
+#        full: NextEPC
+#        short: Next
+#
+
+    network_name:
+        full: NextEPC
+
 hss:
     freeDiameter: hss.conf
 

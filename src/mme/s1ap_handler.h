@@ -45,6 +45,8 @@ CORE_DECLARE(void) s1ap_handle_handover_cancel(
 
 CORE_DECLARE(void) s1ap_handle_enb_status_transfer(
         mme_enb_t *enb, s1ap_message_t *message);
+CORE_DECLARE(void) s1ap_handle_enb_configuration_transfer(
+        mme_enb_t *enb, s1ap_message_t *message, pkbuf_t *pkbuf);
 CORE_DECLARE(void) s1ap_handle_handover_notification(
         mme_enb_t *enb, s1ap_message_t *message);
 
