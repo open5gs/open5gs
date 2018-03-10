@@ -11,7 +11,6 @@
 
 #define NUM_OF_TEST_DUPLICATED_ENB 4
 
-#if 0
 static void s1setup_test1(abts_case *tc, void *data)
 {
     status_t rv;
@@ -101,16 +100,13 @@ static void s1setup_test2(abts_case *tc, void *data)
 
     core_sleep(time_from_sec(1));
 }
-#endif
 
 abts_suite *test_s1setup(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-#if 0
     abts_run_test(suite, s1setup_test1, NULL);
     abts_run_test(suite, s1setup_test2, NULL);
-#endif
 
     return suite;
 }

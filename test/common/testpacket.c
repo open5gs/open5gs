@@ -117,57 +117,93 @@ status_t tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf)
     return s1ap_send(id, sendbuf, NULL);
 }
 
-#if 0
 status_t tests1ap_build_setup_req(
         pkbuf_t **pkbuf, S1AP_ENB_ID_PR present, c_uint32_t enb_id)
 {
-    int erval = -1;
+    status_t rv;
+
     int tac = 12345;
     plmn_id_t plmn_id;
 
-    s1ap_message_t message;
-    S1AP_S1SetupRequestIEs_t *ies;
-    S1AP_PLMNidentity_t *plmnIdentity;
-    S1AP_SupportedTAs_Item_t *supportedTA;
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_S1SetupRequest_t *S1SetupRequest = NULL;
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    S1AP_S1SetupRequestIEs_t *ie = NULL;
+    S1AP_Global_ENB_ID_t *Global_ENB_ID = NULL;
+    S1AP_SupportedTAs_t *SupportedTAs = NULL;
+    S1AP_SupportedTAs_Item_t *SupportedTAs_Item = NULL;
+    S1AP_PLMNidentity_t *PLMNidentity = NULL;
+    S1AP_PagingDRX_t *PagingDRX = NULL;
 
-    ies = &message.s1ap_S1SetupRequestIEs;
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_S1Setup;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_S1SetupRequest;
+
+    S1SetupRequest = &initiatingMessage->value.choice.S1SetupRequest;
+
+    ie = core_calloc(1, sizeof(S1AP_S1SetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&S1SetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_Global_ENB_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_S1SetupRequestIEs__value_PR_Global_ENB_ID;
+
+    Global_ENB_ID = &ie->value.choice.Global_ENB_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_S1SetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&S1SetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_SupportedTAs;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_S1SetupRequestIEs__value_PR_SupportedTAs;
+
+    SupportedTAs = &ie->value.choice.SupportedTAs;
+
+    ie = core_calloc(1, sizeof(S1AP_S1SetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&S1SetupRequest->protocolIEs, ie);
+    
+    ie->id = S1AP_ProtocolIE_ID_id_DefaultPagingDRX;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_S1SetupRequestIEs__value_PR_PagingDRX;
+
+    PagingDRX = &ie->value.choice.PagingDRX;
 
     plmn_id_build(&plmn_id, 1, 1, 2);
 
-    s1ap_uint32_to_ENB_ID(present, enb_id, &ies->global_ENB_ID.eNB_ID);
+    s1ap_uint32_to_ENB_ID(present, enb_id, &Global_ENB_ID->eNB_ID);
     s1ap_buffer_to_OCTET_STRING(
-            &plmn_id, PLMN_ID_LEN, &ies->global_ENB_ID.pLMNidentity);
+            &plmn_id, PLMN_ID_LEN, &Global_ENB_ID->pLMNidentity);
 
-    supportedTA = (S1AP_SupportedTAs_Item_t *)
+    SupportedTAs_Item = (S1AP_SupportedTAs_Item_t *)
         core_calloc(1, sizeof(S1AP_SupportedTAs_Item_t));
-    s1ap_uint16_to_OCTET_STRING(tac, &supportedTA->tAC);
-    plmnIdentity = (S1AP_PLMNidentity_t *)
+    s1ap_uint16_to_OCTET_STRING(tac, &SupportedTAs_Item->tAC);
+    PLMNidentity = (S1AP_PLMNidentity_t *)
         core_calloc(1, sizeof(S1AP_PLMNidentity_t));
     s1ap_buffer_to_OCTET_STRING(
-            &plmn_id, PLMN_ID_LEN, plmnIdentity);
-    ASN_SEQUENCE_ADD(&supportedTA->broadcastPLMNs, plmnIdentity);
+            &plmn_id, PLMN_ID_LEN, PLMNidentity);
+    ASN_SEQUENCE_ADD(&SupportedTAs_Item->broadcastPLMNs.list, PLMNidentity);
 
-    ASN_SEQUENCE_ADD(&ies->supportedTAs, supportedTA);
+    ASN_SEQUENCE_ADD(&SupportedTAs->list, SupportedTAs_Item);
 
-    ies->defaultPagingDRX = S1AP_PagingDRX_v64;
+    rv = s1ap_encode_pdu(pkbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    message.direction = S1AP_PDU_PR_initiatingMessage;
-    message.procedureCode = S1AP_ProcedureCode_id_S1Setup;
-
-    erval = s1ap_encode_pdu(pkbuf, &message);
-    s1ap_free_pdu(&message);
-
-    if (erval < 0)
+    if (rv != CORE_OK)
     {
-        d_error("s1ap_encode_error : (%d)", erval);
+        d_error("s1ap_encode_pdu() failed");
         return CORE_ERROR;
     }
 
     return CORE_OK;
 }
-#endif
 
 #define TESTS1AP_MAX_MESSAGE 32
 

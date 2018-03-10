@@ -184,38 +184,82 @@ status_t s1ap_build_setup_failure(
 status_t s1ap_build_downlink_nas_transport(
             pkbuf_t **s1apbuf, enb_ue_t *enb_ue, pkbuf_t *emmbuf)
 {
-#if 0
-    int encoded;
-    s1ap_message_t message;
-    S1AP_DownlinkNASTransport_IEs_t *ies = 
-        &message.s1ap_DownlinkNASTransport_IEs;
-    S1AP_NAS_PDU_t *nasPdu = &ies->nas_pdu;
+    status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_DownlinkNASTransport_t *DownlinkNASTransport = NULL;
+
+    S1AP_DownlinkNASTransport_IEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_NAS_PDU_t *NAS_PDU = NULL;
 
     d_assert(emmbuf, return CORE_ERROR, "Null param");
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
-    memset(&message, 0, sizeof(s1ap_message_t));
-    
     d_trace(3, "[MME] Downlink NAS transport\n");
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
 
-    nasPdu->size = emmbuf->len;
-    nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
-    memcpy(nasPdu->buf, emmbuf->payload, nasPdu->size);
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_downlinkNASTransport;
+    initiatingMessage->criticality = S1AP_Criticality_ignore;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_DownlinkNASTransport;
 
-    message.procedureCode = S1AP_ProcedureCode_id_downlinkNASTransport;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
+    DownlinkNASTransport =
+        &initiatingMessage->value.choice.DownlinkNASTransport;
 
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
+    ie = core_calloc(1, sizeof(S1AP_DownlinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&DownlinkNASTransport->protocolIEs, ie);
 
-    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_DownlinkNASTransport_IEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_DownlinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&DownlinkNASTransport->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_DownlinkNASTransport_IEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_DownlinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&DownlinkNASTransport->protocolIEs, ie);
+    
+    ie->id = S1AP_ProtocolIE_ID_id_NAS_PDU;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_DownlinkNASTransport_IEs__value_PR_NAS_PDU;
+
+    NAS_PDU = &ie->value.choice.NAS_PDU;
+
+    *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+
+    NAS_PDU->size = emmbuf->len;
+    NAS_PDU->buf = core_calloc(NAS_PDU->size, sizeof(c_uint8_t));
+    memcpy(NAS_PDU->buf, emmbuf->payload, NAS_PDU->size);
+
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
     pkbuf_free(emmbuf);
-#endif
+
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }

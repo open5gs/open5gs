@@ -19,9 +19,9 @@ CORE_DECLARE(status_t) s1ap_build_setup_rsp(pkbuf_t **pkbuf);
 CORE_DECLARE(status_t) s1ap_build_setup_failure(
     pkbuf_t **pkbuf, S1AP_Cause_PR group, long cause, long time_to_wait);
 
-#if 0
 CORE_DECLARE(status_t) s1ap_build_downlink_nas_transport(
     pkbuf_t **s1apbuf, enb_ue_t *enb_ue, pkbuf_t *emmbuf);
+#if 0
 CORE_DECLARE(status_t) s1ap_build_initial_context_setup_request(
     pkbuf_t **s1apbuf, mme_ue_t *mme_ue, pkbuf_t *emmbuf);
 CORE_DECLARE(status_t) s1ap_build_e_rab_setup_request(

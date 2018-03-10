@@ -64,12 +64,12 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
 
                     switch(initiatingMessage->procedureCode)
                     {
-#if 0
                         case S1AP_ProcedureCode_id_S1Setup :
                         {
                             s1ap_handle_s1_setup_request(enb, pdu);
                             break;
                         }
+#if 0
                         case S1AP_ProcedureCode_id_initialUEMessage :
                         {
                             s1ap_handle_initial_ue_message(enb, pdu);
