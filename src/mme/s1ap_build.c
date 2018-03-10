@@ -267,16 +267,20 @@ status_t s1ap_build_downlink_nas_transport(
 status_t s1ap_build_initial_context_setup_request(
             pkbuf_t **s1apbuf, mme_ue_t *mme_ue, pkbuf_t *emmbuf)
 {
-#if 0
     status_t rv;
 
-    int encoded;
-    s1ap_message_t message;
-    S1AP_InitialContextSetupRequestIEs_t *ies =
-            &message.s1ap_InitialContextSetupRequestIEs;
-    S1AP_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
-	struct S1AP_GBR_QosInformation *gbrQosInformation = NULL; /* OPTIONAL */
-    S1AP_NAS_PDU_t *nasPdu = NULL;
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_InitialContextSetupRequest_t *InitialContextSetupRequest = NULL;
+
+    S1AP_InitialContextSetupRequestIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_UEAggregateMaximumBitrate_t *UEAggregateMaximumBitrate = NULL;
+    S1AP_E_RABToBeSetupListCtxtSUReq_t *E_RABToBeSetupListCtxtSUReq = NULL;
+    S1AP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
+    S1AP_SecurityKey_t *SecurityKey = NULL;
+
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -289,19 +293,93 @@ status_t s1ap_build_initial_context_setup_request(
     d_assert(subscription_data, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Initial context setup request\n");
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_InitialContextSetup;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_InitialContextSetupRequest;
+
+    InitialContextSetupRequest =
+        &initiatingMessage->value.choice.InitialContextSetupRequest;
+
+    ie = core_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_InitialContextSetupRequestIEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_InitialContextSetupRequestIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_uEaggregateMaximumBitrate;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_InitialContextSetupRequestIEs__value_PR_UEAggregateMaximumBitrate;
+
+    UEAggregateMaximumBitrate = &ie->value.choice.UEAggregateMaximumBitrate;
+
+    ie = core_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupListCtxtSUReq;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+    S1AP_InitialContextSetupRequestIEs__value_PR_E_RABToBeSetupListCtxtSUReq;
+
+    E_RABToBeSetupListCtxtSUReq = &ie->value.choice.E_RABToBeSetupListCtxtSUReq;
+
+    ie = core_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_InitialContextSetupRequestIEs__value_PR_UESecurityCapabilities;
+
+    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+
+    ie = core_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_SecurityKey;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_InitialContextSetupRequestIEs__value_PR_SecurityKey;
+
+    SecurityKey = &ie->value.choice.SecurityKey;
+
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    memset(&message, 0, sizeof(s1ap_message_t));
-
-    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+    *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
     asn_uint642INTEGER(
-            &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, 
+            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateUL, 
             subscription_data->ambr.uplink);
     asn_uint642INTEGER(
-            &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL, 
+            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL, 
             subscription_data->ambr.downlink);
 
     sess = mme_sess_first(mme_ue);
@@ -310,8 +388,21 @@ status_t s1ap_build_initial_context_setup_request(
         bearer = mme_bearer_first(sess);
         while(bearer)
         {
-            e_rab = (S1AP_E_RABToBeSetupItemCtxtSUReq_t *)
-                core_calloc(1, sizeof(S1AP_E_RABToBeSetupItemCtxtSUReq_t));
+            S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t *item = NULL;
+            S1AP_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
+            S1AP_GBR_QosInformation_t *gbrQosInformation = NULL;
+            S1AP_NAS_PDU_t *nasPdu = NULL;
+
+            item = core_calloc(
+                    1, sizeof(S1AP_E_RABToBeSetupItemCtxtSUReqIEs_t));
+            ASN_SEQUENCE_ADD(&E_RABToBeSetupListCtxtSUReq->list, item);
+
+            item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupItemCtxtSUReq;
+            item->criticality = S1AP_Criticality_reject;
+            item->value.present = S1AP_E_RABToBeSetupItemCtxtSUReqIEs__value_PR_E_RABToBeSetupItemCtxtSUReq;
+
+            e_rab = &item->value.choice.E_RABToBeSetupItemCtxtSUReq;
+
             e_rab->e_RAB_ID = bearer->ebi;
             e_rab->e_RABlevelQoSParameters.qCI = bearer->qos.qci;
 
@@ -368,63 +459,65 @@ status_t s1ap_build_initial_context_setup_request(
                 e_rab->nAS_PDU = nasPdu;
             }
 
-            ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListCtxtSUReq, e_rab);
-
             bearer = mme_bearer_next(bearer);
         }
         sess = mme_sess_next(sess);
     }
 
-    ies->ueSecurityCapabilities.encryptionAlgorithms.size = 2;
-    ies->ueSecurityCapabilities.encryptionAlgorithms.buf = 
-        core_calloc(ies->ueSecurityCapabilities.encryptionAlgorithms.size, 
+    UESecurityCapabilities->encryptionAlgorithms.size = 2;
+    UESecurityCapabilities->encryptionAlgorithms.buf = 
+        core_calloc(UESecurityCapabilities->encryptionAlgorithms.size, 
                     sizeof(c_uint8_t));
-    ies->ueSecurityCapabilities.encryptionAlgorithms.bits_unused = 0;
-    ies->ueSecurityCapabilities.encryptionAlgorithms.buf[0] = 
+    UESecurityCapabilities->encryptionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->encryptionAlgorithms.buf[0] = 
         (mme_ue->ue_network_capability.eea << 1);
 
-    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.size = 2;
-    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf =
-        core_calloc(ies->ueSecurityCapabilities.
+    UESecurityCapabilities->integrityProtectionAlgorithms.size = 2;
+    UESecurityCapabilities->integrityProtectionAlgorithms.buf =
+        core_calloc(UESecurityCapabilities->
                         integrityProtectionAlgorithms.size, sizeof(c_uint8_t));
-    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.bits_unused = 0;
-    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf[0] =
+    UESecurityCapabilities->integrityProtectionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->integrityProtectionAlgorithms.buf[0] =
         (mme_ue->ue_network_capability.eia << 1);
 
-    ies->securityKey.size = SHA256_DIGEST_SIZE;
-    ies->securityKey.buf = 
-        core_calloc(ies->securityKey.size, sizeof(c_uint8_t));
-    ies->securityKey.bits_unused = 0;
-    memcpy(ies->securityKey.buf, mme_ue->kenb, ies->securityKey.size);
+    SecurityKey->size = SHA256_DIGEST_SIZE;
+    SecurityKey->buf = 
+        core_calloc(SecurityKey->size, sizeof(c_uint8_t));
+    SecurityKey->bits_unused = 0;
+    memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
 
     /* Set UeRadioCapability if exists */
     if (mme_ue->radio_capa)
     {
+        S1AP_UERadioCapability_t *UERadioCapability = NULL;
         S1AP_UERadioCapability_t *radio_capa = 
             (S1AP_UERadioCapability_t *)mme_ue->radio_capa;
 
-        ies->presenceMask |= 
-               S1AP_INITIALCONTEXTSETUPREQUESTIES_UERADIOCAPABILITY_PRESENT;
+        ie = core_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
 
-        ies->ueRadioCapability.size = radio_capa->size;
-        ies->ueRadioCapability.buf = 
-            core_calloc(ies->ueRadioCapability.size, sizeof(c_uint8_t));
-        memcpy(ies->ueRadioCapability.buf, radio_capa->buf, radio_capa->size);
+        ie->id = S1AP_ProtocolIE_ID_id_UERadioCapability;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present =
+            S1AP_InitialContextSetupRequestIEs__value_PR_UERadioCapability;
+
+        UERadioCapability = &ie->value.choice.UERadioCapability;
+
+        UERadioCapability->size = radio_capa->size;
+        UERadioCapability->buf = 
+            core_calloc(UERadioCapability->size, sizeof(c_uint8_t));
+        memcpy(UERadioCapability->buf, radio_capa->buf, radio_capa->size);
     }
 
-    message.procedureCode = S1AP_ProcedureCode_id_InitialContextSetup;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+    pkbuf_free(emmbuf);
 
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
-
-    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
-
-    if (emmbuf && emmbuf->len)
+    if (rv != CORE_OK)
     {
-        pkbuf_free(emmbuf);
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
     }
-#endif
 
     return CORE_OK;
 }

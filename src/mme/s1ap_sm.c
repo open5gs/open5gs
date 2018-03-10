@@ -69,7 +69,6 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                             s1ap_handle_s1_setup_request(enb, pdu);
                             break;
                         }
-#if 0
                         case S1AP_ProcedureCode_id_initialUEMessage :
                         {
                             s1ap_handle_initial_ue_message(enb, pdu);
@@ -86,6 +85,7 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, pdu);
                             break;
                         }
+#if 0
                         case S1AP_ProcedureCode_id_UEContextReleaseRequest:
                         {
                             s1ap_handle_ue_context_release_request(
@@ -137,13 +137,13 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
 
                     switch(successfulOutcome->procedureCode)
                     {
-#if 0
                         case S1AP_ProcedureCode_id_InitialContextSetup :
                         {
                             s1ap_handle_initial_context_setup_response(
                                     enb, pdu);
                             break;
                         }
+#if 0
                         case S1AP_ProcedureCode_id_E_RABSetup :
                         {
                             s1ap_handle_e_rab_setup_response(enb, pdu);

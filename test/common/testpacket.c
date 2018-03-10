@@ -730,35 +730,87 @@ status_t tests1ap_build_ue_capability_info_indication(pkbuf_t **pkbuf, int i)
     return CORE_OK;
 }
 
-#if 0
 status_t tests1ap_build_initial_context_setup_response(
         pkbuf_t **pkbuf, 
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         c_uint8_t ebi, c_uint32_t teid)
 {
-    int erval = -1;
-
     status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_InitialContextSetupResponse_t *InitialContextSetupResponse = NULL;
+
+    S1AP_InitialContextSetupResponseIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_E_RABSetupListCtxtSURes_t *E_RABSetupListCtxtSURes = NULL;
+
+    S1AP_E_RABSetupItemCtxtSUResIEs_t *item = NULL;
+    S1AP_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
+
     gtp_f_teid_t f_teid;
     ip_t ip;
     int len;
 
-    s1ap_message_t message;
-    S1AP_InitialContextSetupResponseIEs_t *ies = NULL;
-    S1AP_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = 
+        core_calloc(1, sizeof(S1AP_SuccessfulOutcome_t));
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode =
+        S1AP_ProcedureCode_id_InitialContextSetup;
+    successfulOutcome->criticality = S1AP_Criticality_reject;
+    successfulOutcome->value.present =
+        S1AP_SuccessfulOutcome__value_PR_InitialContextSetupResponse;
 
-    ies = &message.s1ap_InitialContextSetupResponseIEs;
+    InitialContextSetupResponse = 
+        &successfulOutcome->value.choice.InitialContextSetupResponse;
 
-    message.direction = S1AP_PDU_PR_successfulOutcome;
-    message.procedureCode = S1AP_ProcedureCode_id_InitialContextSetup;
+    ie = core_calloc(1, sizeof(S1AP_InitialContextSetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupResponse->protocolIEs, ie);
 
-    ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_InitialContextSetupResponseIEs__value_PR_MME_UE_S1AP_ID;
 
-    e_rab = (S1AP_E_RABSetupItemCtxtSURes_t *)
-        core_calloc(1, sizeof(S1AP_E_RABSetupItemCtxtSURes_t));
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_InitialContextSetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupResponse->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_InitialContextSetupResponseIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_InitialContextSetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupResponse->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABSetupListCtxtSURes;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_InitialContextSetupResponseIEs__value_PR_E_RABSetupListCtxtSURes;
+
+    E_RABSetupListCtxtSURes = &ie->value.choice.E_RABSetupListCtxtSURes;
+
+    *MME_UE_S1AP_ID = mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
+
+    item = core_calloc(1, sizeof(S1AP_E_RABSetupItemCtxtSUResIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABSetupListCtxtSURes->list, item);
+
+    item->id = S1AP_ProtocolIE_ID_id_E_RABSetupItemCtxtSURes;
+    item->criticality = S1AP_Criticality_ignore;
+    item->value.present =
+        S1AP_E_RABSetupItemCtxtSUResIEs__value_PR_E_RABSetupItemCtxtSURes;
+
+    e_rab = &item->value.choice.E_RABSetupItemCtxtSURes;
+
     e_rab->e_RAB_ID = ebi;
 
     rv = gtp_sockaddr_to_f_teid(test_enb1_addr, test_enb1_addr6, &f_teid, &len);
@@ -770,20 +822,17 @@ status_t tests1ap_build_initial_context_setup_response(
     d_assert(rv == CORE_OK, return CORE_ERROR,);
     s1ap_uint32_to_OCTET_STRING(teid, &e_rab->gTP_TEID);
 
-    ASN_SEQUENCE_ADD(&ies->e_RABSetupListCtxtSURes, e_rab);
+    rv = s1ap_encode_pdu(pkbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    erval = s1ap_encode_pdu(pkbuf, &message);
-    s1ap_free_pdu(&message);
-
-    if (erval < 0)
+    if (rv != CORE_OK)
     {
-        d_error("s1ap_encode_error : (%d)", erval);
+        d_error("s1ap_encode_pdu() failed");
         return CORE_ERROR;
     }
 
     return CORE_OK;
 }
-#endif
 
 status_t tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i)
 {

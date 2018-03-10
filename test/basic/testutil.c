@@ -31,8 +31,8 @@ const struct testlist alltests[] = {
     {test_gtp_message},
     {test_security},
     {test_s1setup},
-#if 0
     {test_attach},
+#if 0
     {test_volte},
     {test_handover},
 #endif
