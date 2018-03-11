@@ -233,11 +233,11 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i)
         "00000a005c0a0090 11034f18a6f15d01 00004300060000f1 1030390064400800"
         "00f110002343d000 86400130",
 
-        "000c405300000500 080003001100001a 002a2917acba67c4 8207410108091010"
+        "000c405200000500 0800020011001a 002a2917acba67c4 8207410108091010"
         "103254866205f0f0 000000000e023cd0 11d1270780000a00 000d00c100430006"
         "0000f11030390064 40080000f1109d67 aa500086400130",
 
-        "000c405300000500 080003002100001a 002a2917bcba67c4 8207410108091010"
+        "000c405200000500 0800020021001a 002a2917bcba67c4 8207410108091010"
         "000000003005f0f0 000000000e023cd0 11d1270780000a00 000d00c100430006"
         "0000f11030390064 40080000f1109d67 aa500086400130",
 
@@ -285,8 +285,8 @@ status_t tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i)
         160,
 
         108,
-        87,
-        87,
+        86,
+        86,
 
         80,
         0,
@@ -450,7 +450,7 @@ status_t tests1ap_build_authentication_failure(pkbuf_t **pkbuf, int i)
         "403d000005000000 0200030008000200 21001a001413075c 15300e61640edcfb"
         "605d25911423ee1f 9e006440080000f1 100019b010004340 060000f1100001",
         "000d"
-        "402e000005000000 0200030008000300 2100001a00040307 5c14006440080000"
+        "402d000005000000 0200030008000200 21001a00040307 5c14006440080000"
         "f1101a2d10100043 40060000f1100001",
         "",
 
@@ -471,7 +471,7 @@ status_t tests1ap_build_authentication_failure(pkbuf_t **pkbuf, int i)
         0,
 
         65,
-        50,
+        49,
         0,
 
         0,
@@ -1102,22 +1102,28 @@ status_t tests1ap_build_ue_context_release_complete(pkbuf_t **pkbuf, int i)
     return CORE_OK;
 }
 
-#if 0
 status_t tests1ap_build_service_request(pkbuf_t **pkbuf,
         c_uint32_t enb_ue_s1ap_id, c_uint8_t seq,
         c_uint16_t mac, c_uint32_t m_tmsi)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
         "000c"
+        "4037000006000800 020004001a0005 04c7049551004300 060000f110303900"
+        "6440080000f11007 87b8000086400140 0060000600400000 0001",
+
+        "000c"
         "4038000006000800 03400700001a0005 04c7049551004300 060000f110303900"
         "6440080000f11007 87b8000086400140 0060000600400000 0001",
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        59,
         60,
     };
     char hexbuf[MAX_SDU_LEN];
     int i = 0;
+
+    if (enb_ue_s1ap_id & 0x400000) i = 1;
     
     *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     if (!(*pkbuf)) return CORE_ERROR;
@@ -1127,16 +1133,15 @@ status_t tests1ap_build_service_request(pkbuf_t **pkbuf,
             (*pkbuf)->len);
 
     enb_ue_s1ap_id = htonl(enb_ue_s1ap_id << 8);
-    memcpy((*pkbuf)->payload + 11, &enb_ue_s1ap_id, 3);
+    memcpy((*pkbuf)->payload + 11, &enb_ue_s1ap_id, 2+i);
     mac = htons(mac);
-    memcpy((*pkbuf)->payload + 20, &seq, 1);
-    memcpy((*pkbuf)->payload + 21, &mac, 2);
+    memcpy((*pkbuf)->payload + 19+i, &seq, 1);
+    memcpy((*pkbuf)->payload + 20+i, &mac, 2);
     m_tmsi = htonl(m_tmsi);
-    memcpy((*pkbuf)->payload + 56, &m_tmsi, 4);
+    memcpy((*pkbuf)->payload + 55+i, &m_tmsi, 4);
 
     return CORE_OK;
 }
-#endif
 
 status_t tests1ap_build_tau_request(pkbuf_t **pkbuf, int i,
     c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id, c_uint8_t active_flag,

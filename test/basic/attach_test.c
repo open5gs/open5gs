@@ -479,7 +479,6 @@ out:
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 
-#if 0
 /**************************************************************
  * eNB : HOME
  * UE : IMSI 
@@ -796,7 +795,6 @@ static void attach_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FATAL);
     /* Send Authentication Authentication Failure */
     rv = tests1ap_build_authentication_failure(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -814,7 +812,6 @@ static void attach_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
     /* Send UE Context Release Complete */
     rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+2);
@@ -1649,19 +1646,16 @@ out:
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
-#endif
 
 abts_suite *test_attach(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, attach_test1, NULL);
-#if 0
     abts_run_test(suite, attach_test2, NULL);
     abts_run_test(suite, attach_test3, NULL);
     abts_run_test(suite, attach_test4, NULL);
     abts_run_test(suite, attach_test5, NULL);
-#endif
 
     return suite;
 }

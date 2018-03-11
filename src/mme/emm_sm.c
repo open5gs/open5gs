@@ -423,7 +423,7 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                     switch(authentication_failure->emm_cause)
                     {
                         case EMM_CAUSE_MAC_FAILURE:
-                            d_error("Authentication failure(MAC failure)");
+                            d_warn("Authentication failure(MAC failure)");
                             break;
                         case EMM_CAUSE_NON_EPS_AUTHENTICATION_UNACCEPTABLE:
                             d_error("Authentication failure"

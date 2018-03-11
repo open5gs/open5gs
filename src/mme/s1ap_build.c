@@ -250,10 +250,10 @@ status_t s1ap_build_downlink_nas_transport(
     NAS_PDU->size = emmbuf->len;
     NAS_PDU->buf = core_calloc(NAS_PDU->size, sizeof(c_uint8_t));
     memcpy(NAS_PDU->buf, emmbuf->payload, NAS_PDU->size);
+    pkbuf_free(emmbuf);
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);
-    pkbuf_free(emmbuf);
 
     if (rv != CORE_OK)
     {
@@ -457,6 +457,7 @@ status_t s1ap_build_initial_context_setup_request(
                 nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
                 memcpy(nasPdu->buf, emmbuf->payload, nasPdu->size);
                 e_rab->nAS_PDU = nasPdu;
+                pkbuf_free(emmbuf);
             }
 
             bearer = mme_bearer_next(bearer);
@@ -511,7 +512,6 @@ status_t s1ap_build_initial_context_setup_request(
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);
-    pkbuf_free(emmbuf);
 
     if (rv != CORE_OK)
     {
