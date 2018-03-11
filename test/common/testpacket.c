@@ -1220,13 +1220,13 @@ status_t tests1ap_build_pdn_connectivity_request(
         pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "000d40680000"
-        "0500000005c00000 0001000800030001 00001a003b3a277c 81dab50a0205d011"
+        "000d40640000"
+        "0500000002 0001000800020001 001a003b3a277c 81dab50a0205d011"
         "281208696e746572 6e6574036e673204 6d6e6574271a8080 2110010000108106"
         "0000000083060000 0000000d00000a00 006440080055f501 0019d01000434006"
         "0055f5011022",
-        "000d40680000"
-        "0500000005c00000 0001000800030001 00001a003b3a2710 3fdafa0a0209d011"
+        "000d40640000"
+        "0500000002 0001000800020001 001a003b3a2710 3fdafa0a0209d011"
         "281208706e746572 6e6574036e673204 6d6e6574271a8080 2110010000108106"
         "0000000083060000 0000000d00000a00 006440080055f501 0019d01000434006"
         "0055f5011022",
@@ -1270,11 +1270,11 @@ status_t tests1ap_build_pdn_disconnectivity_request(
         pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "000d40380000"
-        "0500000005c08000 0108000800030001 00001a000b0a2732 423c53040206d206"
+        "000d40370000"
+        "0500000005c08000 0108000800020001 001a000b0a2732 423c53040206d206"
         "006440080055f501 0019d01000434006 0055f5011022",
-        "000d40380000"
-        "0500000005c08000 0108000800030001 00001a000b0a2777 693066040206d206"
+        "000d40370000"
+        "0500000005c08000 0108000800020001 001a000b0a2777 693066040206d206"
         "006440080055f501 0019d01000434006 0055f5011022",
         "",
 
@@ -1288,8 +1288,8 @@ status_t tests1ap_build_pdn_disconnectivity_request(
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        60,
-        60,
+        59,
+        59,
         0,
 
         0,
@@ -1312,35 +1312,82 @@ status_t tests1ap_build_pdn_disconnectivity_request(
     return CORE_OK;
 }
 
-#if 0
 status_t tests1ap_build_e_rab_setup_response(
         pkbuf_t **pkbuf, 
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         c_uint8_t ebi, c_uint32_t teid)
 {
-    int erval = -1;
-
     status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_E_RABSetupResponse_t *E_RABSetupResponse = NULL;
+
+    S1AP_E_RABSetupResponseIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_E_RABSetupListBearerSURes_t *E_RABSetupListBearerSURes = NULL;
+
+    S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
+    S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
+
     gtp_f_teid_t f_teid;
     ip_t ip;
     int len;
 
-    s1ap_message_t message;
-    S1AP_E_RABSetupResponseIEs_t *ies = NULL;
-    S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = 
+        core_calloc(1, sizeof(S1AP_SuccessfulOutcome_t));
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode = S1AP_ProcedureCode_id_E_RABSetup;
+    successfulOutcome->criticality = S1AP_Criticality_reject;
+    successfulOutcome->value.present =
+        S1AP_SuccessfulOutcome__value_PR_E_RABSetupResponse;
 
-    ies = &message.s1ap_E_RABSetupResponseIEs;
+    E_RABSetupResponse = &successfulOutcome->value.choice.E_RABSetupResponse;
 
-    message.direction = S1AP_PDU_PR_successfulOutcome;
-    message.procedureCode = S1AP_ProcedureCode_id_E_RABSetup;
+    ie = core_calloc(1, sizeof(S1AP_E_RABSetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABSetupResponse->protocolIEs, ie);
 
-    ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_E_RABSetupResponseIEs__value_PR_MME_UE_S1AP_ID;
 
-    e_rab = (S1AP_E_RABSetupItemBearerSURes_t *)
-        core_calloc(1, sizeof(S1AP_E_RABSetupItemBearerSURes_t));
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_E_RABSetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABSetupResponse->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_E_RABSetupResponseIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_E_RABSetupResponseIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABSetupResponse->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABSetupListBearerSURes;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_E_RABSetupResponseIEs__value_PR_E_RABSetupListBearerSURes;
+
+    E_RABSetupListBearerSURes = &ie->value.choice.E_RABSetupListBearerSURes;
+
+    *MME_UE_S1AP_ID = mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
+
+    item = core_calloc(1, sizeof(S1AP_E_RABSetupItemBearerSUResIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABSetupListBearerSURes->list, item);
+
+    item->id = S1AP_ProtocolIE_ID_id_E_RABSetupItemBearerSURes;
+    item->criticality = S1AP_Criticality_ignore;
+    item->value.present =
+        S1AP_E_RABSetupItemBearerSUResIEs__value_PR_E_RABSetupItemBearerSURes;
+
+    e_rab = &item->value.choice.E_RABSetupItemBearerSURes;
     e_rab->e_RAB_ID = ebi;
  
     rv = gtp_sockaddr_to_f_teid(test_enb1_addr, test_enb1_addr6, &f_teid, &len);
@@ -1352,22 +1399,17 @@ status_t tests1ap_build_e_rab_setup_response(
     d_assert(rv == CORE_OK, return CORE_ERROR,);
     s1ap_uint32_to_OCTET_STRING(teid, &e_rab->gTP_TEID);
 
-    ies->presenceMask |= 
-           S1AP_E_RABSETUPRESPONSEIES_E_RABSETUPLISTBEARERSURES_PRESENT;
-    ASN_SEQUENCE_ADD(&ies->e_RABSetupListBearerSURes, e_rab);
+    rv = s1ap_encode_pdu(pkbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    erval = s1ap_encode_pdu(pkbuf, &message);
-    s1ap_free_pdu(&message);
-
-    if (erval < 0)
+    if (rv != CORE_OK)
     {
-        d_error("s1ap_encode_error : (%d)", erval);
+        d_error("s1ap_encode_pdu() failed");
         return CORE_ERROR;
     }
 
     return CORE_OK;
 }
-#endif
 
 status_t tests1ap_build_e_rab_modify_response(pkbuf_t **pkbuf, int i)
 {
@@ -1414,10 +1456,10 @@ status_t tests1ap_build_e_rab_modify_response(pkbuf_t **pkbuf, int i)
 status_t tests1ap_build_e_rab_release_response(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "2007001d0000"
-        "0300004005c00000 0001000840030001 000045400600000f 40010c",
-        "2007001d0000"
-        "0300004005c00000 0001000840030001 000045400600000f 40010e",
+        "200700190000"
+        "0300004002 0001000840020001 0045400600000f 40010c",
+        "200700190000"
+        "0300004002 0001000840020001 0045400600000f 40010e",
         "",
 
         "",
@@ -1430,8 +1472,8 @@ status_t tests1ap_build_e_rab_release_response(pkbuf_t **pkbuf, int i)
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        33,
-        33,
+        29,
+        29,
         0,
 
         0,
@@ -1458,8 +1500,8 @@ status_t tests1ap_build_activate_default_bearer_accept(
         pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "000d40370000"
-        "0500000005c08000 0107000800030001 00001a000a0927e7 f5bb400b6200c200"
+        "000d40360000"
+        "0500000005c08000 0107000800020001 001a000a0927e7 f5bb400b6200c200"
         "6440080055f50100 19d0100043400600 55f5011022",
         "",
         "",
@@ -1474,7 +1516,7 @@ status_t tests1ap_build_activate_default_bearer_accept(
 
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        59,
+        58,
         0,
         0,
 
@@ -1502,11 +1544,11 @@ status_t tests1ap_build_activate_dedicated_bearer_accept(
         pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "000d403700000500"
-        "000005c000000001 0008000300010000 1a000a0927078a5f 34037200c6006440"
+        "000d403600000500"
+        "000005c000000001 00080002000100 1a000a0927078a5f 34037200c6006440"
         "080000f1109d67aa 50004340060000f1 102b67",
-        "000d403700000500"
-        "000005c000000001 0008000300010000 1a000a0927c035da 96036200c6006440"
+        "000d403600000500"
+        "000005c000000001 00080002000100 1a000a0927c035da 96036200c6006440"
         "080000f1109d67aa 50004340060000f1 102b67",
         "",
 
@@ -1518,8 +1560,8 @@ status_t tests1ap_build_activate_dedicated_bearer_accept(
         "",
         "",
 
-        "000d403700000500"
-        "000005c00200003c 0008000300010000 1a000a0927a27f49 d6036200c6006440"
+        "000d403600000500"
+        "000005c00200003c 00080002000100 1a000a0927a27f49 d6036200c6006440"
         "080000f1109d67aa 50004340060000f1 102b67",
 
         "000d"
@@ -1527,8 +1569,8 @@ status_t tests1ap_build_activate_dedicated_bearer_accept(
         "00c6006440080000 f110001f20a00043 40060000f1103039",
     };
     c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        59,
-        59,
+        58,
+        58,
         0,
 
         0,
@@ -1539,7 +1581,7 @@ status_t tests1ap_build_activate_dedicated_bearer_accept(
         0,
         0,
 
-        59,
+        58,
         58,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -1609,14 +1651,14 @@ status_t tests1ap_build_deactivate_bearer_accept(
         pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = { 
-        "000d40370000"
-        "0500000005c00000 0001000800030001 00001a000a09274c b2ebbd056200ce00"
+        "000d40330000"
+        "0500000002 0001000800020001 001a000a09274c b2ebbd056200ce00"
         "6440080055f50100 19d0100043400600 55f5011022",
-        "000d40370000"
-        "0500000005c00000 0001000800030001 00001a000a0927a9 a1b2bd057200ce00"
+        "000d40330000"
+        "0500000002 0001000800020001 001a000a0927a9 a1b2bd057200ce00"
         "6440080055f50100 19d0100043400600 55f5011022",
-        "000d40370000"
-        "0500000005c00000 0001000800030001 00001a000a09277d 7f1f80056200ce00"
+        "000d40330000"
+        "0500000002 0001000800020001 001a000a09277d 7f1f80056200ce00"
         "6440080055f50100 19d0100043400600 55f5011022",
 
         "",

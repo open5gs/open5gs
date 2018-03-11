@@ -32,8 +32,8 @@ const struct testlist alltests[] = {
     {test_security},
     {test_s1setup},
     {test_attach},
-#if 0
     {test_volte},
+#if 0
     {test_handover},
 #endif
     {NULL},

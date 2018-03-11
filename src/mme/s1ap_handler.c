@@ -693,7 +693,6 @@ void s1ap_handle_initial_context_setup_failure(
     }
 }
 
-#if 0
 void s1ap_handle_e_rab_setup_response(
         mme_enb_t *enb, s1ap_message_t *message)
 {
@@ -701,36 +700,68 @@ void s1ap_handle_e_rab_setup_response(
     char buf[CORE_ADDRSTRLEN];
     int i;
 
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_E_RABSetupResponse_t *E_RABSetupResponse = NULL;
+
+    S1AP_E_RABSetupResponseIEs_t *ie = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_E_RABSetupListBearerSURes_t *E_RABSetupListBearerSURes = NULL;
+
     enb_ue_t *enb_ue = NULL;
-    S1AP_E_RABSetupResponseIEs_t *ies = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(enb, return, "Null param");
-    d_assert(message, return, "Null param");
+    d_assert(enb, return,);
+    d_assert(enb->sock, return,);
 
-    ies = &message->s1ap_E_RABSetupResponseIEs;
-    d_assert(ies, return, "Null param");
+    d_assert(message, return,);
+    successfulOutcome = message->choice.successfulOutcome;
+    d_assert(successfulOutcome, return,);
+    E_RABSetupResponse = &successfulOutcome->value.choice.E_RABSetupResponse;
+    d_assert(E_RABSetupResponse, return,);
 
     d_trace(3, "[MME] E-RAB setup response\n");
+
+    for (i = 0; i < E_RABSetupResponse->protocolIEs.list.count; i++)
+    {
+        ie = E_RABSetupResponse->protocolIEs.list.array[i];
+        switch(ie->id)
+        {
+            case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+                ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+                break;
+            case S1AP_ProtocolIE_ID_id_E_RABSetupListBearerSURes:
+                E_RABSetupListBearerSURes =
+                    &ie->value.choice.E_RABSetupListBearerSURes;
+                break;
+            default:
+                break;
+        }
+    }
+
     d_trace(5, "    IP[%s] ENB_ID[%d]\n",
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
-    d_assert(enb_ue, return, "No UE Context[%d]", ies->eNB_UE_S1AP_ID);
+    d_assert(ENB_UE_S1AP_ID, return,);
+    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
+    d_assert(enb_ue, return, "No UE Context[%d]", *ENB_UE_S1AP_ID);
     mme_ue = enb_ue->mme_ue;
     d_assert(mme_ue, return,);
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    for (i = 0; i < ies->e_RABSetupListBearerSURes.
-            s1ap_E_RABSetupItemBearerSURes.count; i++)
+    for (i = 0; i < E_RABSetupListBearerSURes->list.count; i++)
     {
-        mme_bearer_t *bearer = NULL;
+        S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
         S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
 
-        e_rab = (S1AP_E_RABSetupItemBearerSURes_t *)ies->
-            e_RABSetupListBearerSURes.s1ap_E_RABSetupItemBearerSURes.array[i];
+        mme_bearer_t *bearer = NULL;
+
+        item = (S1AP_E_RABSetupItemBearerSUResIEs_t *)
+            E_RABSetupListBearerSURes->list.array[i];
+        d_assert(item, return,);
+
+        e_rab = &item->value.choice.E_RABSetupItemBearerSURes;
         d_assert(e_rab, return, "Null param");
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
@@ -766,7 +797,6 @@ void s1ap_handle_e_rab_setup_response(
         }
     }
 }
-#endif
 
 void s1ap_handle_ue_context_release_request(
         mme_enb_t *enb, s1ap_message_t *message)
