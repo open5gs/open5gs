@@ -199,8 +199,6 @@ status_t s1ap_build_downlink_nas_transport(
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Downlink NAS transport\n");
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
-            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -243,6 +241,9 @@ status_t s1ap_build_downlink_nas_transport(
     ie->value.present = S1AP_DownlinkNASTransport_IEs__value_PR_NAS_PDU;
 
     NAS_PDU = &ie->value.choice.NAS_PDU;
+
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
@@ -992,25 +993,82 @@ status_t s1ap_build_ue_context_release_command(
 
 status_t s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
 {
-#if 0
-    int encoded;
-    s1ap_message_t message;
-    S1AP_PagingIEs_t *ies = &message.s1ap_PagingIEs;
+    status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_Paging_t *Paging = NULL;
+
+    S1AP_PagingIEs_t *ie = NULL;
+
+    S1AP_UEIdentityIndexValue_t *UEIdentityIndexValue = NULL;
+    S1AP_UEPagingID_t *UEPagingID = NULL;
+    S1AP_CNDomain_t *CNDomain = NULL;
+    S1AP_TAIList_t *TAIList = NULL;
+
+    S1AP_TAIItemIEs_t *item = NULL;
     S1AP_TAIItem_t *tai_item = NULL;
+
     c_uint16_t index_value;
     c_uint64_t ue_imsi_value = 0;
     int i = 0;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
-    memset(&message, 0, sizeof(s1ap_message_t));
-
     d_trace(3, "[MME] Paging\n");
 
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_Paging;
+    initiatingMessage->criticality = S1AP_Criticality_ignore;
+    initiatingMessage->value.present = S1AP_InitiatingMessage__value_PR_Paging;
+
+    Paging = &initiatingMessage->value.choice.Paging;
+
+    ie = core_calloc(1, sizeof(S1AP_PagingIEs_t));
+    ASN_SEQUENCE_ADD(&Paging->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UEIdentityIndexValue;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PagingIEs__value_PR_UEIdentityIndexValue;
+
+    UEIdentityIndexValue = &ie->value.choice.UEIdentityIndexValue;
+
+    ie = core_calloc(1, sizeof(S1AP_PagingIEs_t));
+    ASN_SEQUENCE_ADD(&Paging->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UEPagingID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PagingIEs__value_PR_UEPagingID;
+
+    UEPagingID = &ie->value.choice.UEPagingID;
+
+    ie = core_calloc(1, sizeof(S1AP_PagingIEs_t));
+    ASN_SEQUENCE_ADD(&Paging->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_CNDomain;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PagingIEs__value_PR_CNDomain;
+
+    CNDomain = &ie->value.choice.CNDomain;
+
+    ie = core_calloc(1, sizeof(S1AP_PagingIEs_t));
+    ASN_SEQUENCE_ADD(&Paging->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_TAIList;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PagingIEs__value_PR_TAIList;
+
+    TAIList = &ie->value.choice.TAIList;
+
     /* Set UE Identity Index value : IMSI mod 4096 */
-    ies->ueIdentityIndexValue.size = 2;
-    ies->ueIdentityIndexValue.buf = 
-        core_calloc(ies->ueIdentityIndexValue.size, sizeof(c_uint8_t));
+    UEIdentityIndexValue->size = 2;
+    UEIdentityIndexValue->buf = 
+        core_calloc(UEIdentityIndexValue->size, sizeof(c_uint8_t));
 
     /* Conver string to value */
     for (i = 0; i < strlen(mme_ue->imsi_bcd); i++)
@@ -1020,40 +1078,46 @@ status_t s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
 
     /* index(10bit) = ue_imsi_value mod 1024 */
     index_value = ue_imsi_value % 1024;
-    ies->ueIdentityIndexValue.buf[0] = index_value >> 2;
-    ies->ueIdentityIndexValue.buf[1] = (index_value & 0x3f) << 6;
-    ies->ueIdentityIndexValue.bits_unused = 6;
+    UEIdentityIndexValue->buf[0] = index_value >> 2;
+    UEIdentityIndexValue->buf[1] = (index_value & 0x3f) << 6;
+    UEIdentityIndexValue->bits_unused = 6;
 
     /* Set Paging Identity */
-    ies->uePagingID.present = S1AP_UEPagingID_PR_s_TMSI;
+    UEPagingID->present = S1AP_UEPagingID_PR_s_TMSI;
+    UEPagingID->choice.s_TMSI = 
+        core_calloc(1, sizeof(S1AP_S_TMSI_t));
     s1ap_uint8_to_OCTET_STRING(mme_ue->guti.mme_code, 
-            &ies->uePagingID.choice.s_TMSI.mMEC);
+            &UEPagingID->choice.s_TMSI->mMEC);
 
     s1ap_uint32_to_OCTET_STRING(mme_ue->guti.m_tmsi, 
-            &ies->uePagingID.choice.s_TMSI.m_TMSI);
+            &UEPagingID->choice.s_TMSI->m_TMSI);
 
     d_trace(5, "    MME_CODE[%d] M_TMSI[0x%x]\n",
             mme_ue->guti.mme_code, mme_ue->guti.m_tmsi);
 
-    /* FIXME : fixed to ps */
-    ies->cnDomain = S1AP_CNDomain_ps;
+    *CNDomain = S1AP_CNDomain_ps;
 
+    item = core_calloc(1, sizeof(S1AP_TAIItemIEs_t));
+    ASN_SEQUENCE_ADD(&TAIList->list, item);
 
-    tai_item  = core_calloc(1, sizeof(S1AP_TAIItem_t));
+    item->id = S1AP_ProtocolIE_ID_id_TAIItem;
+    item->criticality = S1AP_Criticality_ignore;
+    item->value.present = S1AP_TAIItemIEs__value_PR_TAIItem;
+
+    tai_item = &item->value.choice.TAIItem;
+
     s1ap_buffer_to_OCTET_STRING(&mme_ue->tai.plmn_id, sizeof(plmn_id_t),
             &tai_item->tAI.pLMNidentity);
     s1ap_uint16_to_OCTET_STRING(mme_ue->tai.tac, &tai_item->tAI.tAC);
 
-    ASN_SEQUENCE_ADD(&ies->taiList, tai_item);
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    message.procedureCode = S1AP_ProcedureCode_id_Paging;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
-
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
-
-    d_assert(s1apbuf && encoded >= 0, return CORE_ERROR,);
-#endif
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }
