@@ -783,15 +783,17 @@ status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
 status_t s1ap_build_ue_context_release_command(
     pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause)
 {
-#if 0
-    int encoded;
-    s1ap_message_t message;
-    S1AP_UEContextReleaseCommand_IEs_t *ies =
-            &message.s1ap_UEContextReleaseCommand_IEs;
+    status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_UEContextReleaseCommand_t *UEContextReleaseCommand = NULL;
+
+    S1AP_UEContextReleaseCommand_IEs_t *ie = NULL;
+    S1AP_UE_S1AP_IDs_t *UE_S1AP_IDs = NULL;
+    S1AP_Cause_t *Cause = NULL;
 
     d_assert(enb_ue, return CORE_ERROR, "Null param");
-
-    memset(&message, 0, sizeof(s1ap_message_t));
 
     if (enb_ue->mme_ue_s1ap_id == 0)
     {
@@ -799,36 +801,71 @@ status_t s1ap_build_ue_context_release_command(
         return CORE_ERROR;
     }
 
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_UEContextRelease;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_UEContextReleaseCommand;
+
+    UEContextReleaseCommand =
+        &initiatingMessage->value.choice.UEContextReleaseCommand;
+
+    ie = core_calloc(1, sizeof(S1AP_UEContextReleaseCommand_IEs_t));
+    ASN_SEQUENCE_ADD(&UEContextReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UE_S1AP_IDs;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UEContextReleaseCommand_IEs__value_PR_UE_S1AP_IDs;
+
+    UE_S1AP_IDs = &ie->value.choice.UE_S1AP_IDs;
+
+    ie = core_calloc(1, sizeof(S1AP_UEContextReleaseCommand_IEs_t));
+    ASN_SEQUENCE_ADD(&UEContextReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_Cause;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_UEContextReleaseCommand_IEs__value_PR_Cause;
+
+    Cause = &ie->value.choice.Cause;
+
 #if 0 /* ENB_UE_S1AP_ID could be allocated with 0 from eNodeB */
     if (enb_ue->enb_ue_s1ap_id)
 #endif
     {
-        ies->uE_S1AP_IDs.present = S1AP_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
-        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.mME_UE_S1AP_ID = 
+        UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair = 
+            core_calloc(1, sizeof(S1AP_UE_S1AP_ID_pair_t));
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->mME_UE_S1AP_ID = 
             enb_ue->mme_ue_s1ap_id;
-        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.eNB_UE_S1AP_ID = 
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->eNB_UE_S1AP_ID = 
             enb_ue->enb_ue_s1ap_id;
-        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.iE_Extensions = NULL;
     }
 #if 0
     else
     {
-        ies->uE_S1AP_IDs.present = S1AP_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
-        ies->uE_S1AP_IDs.choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+        UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
+        UE_S1AP_IDs->choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     }
 #endif
 
-    ies->cause.present = group;
-    ies->cause.choice.radioNetwork = cause;
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
 
-    message.procedureCode = S1AP_ProcedureCode_id_UEContextRelease;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
-
-    d_assert(s1apbuf && encoded >= 0, return CORE_ERROR,);
-#endif
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }

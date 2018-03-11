@@ -346,6 +346,9 @@ void s1ap_handle_uplink_nas_transport(
 
     enb_ue_t *enb_ue = NULL;
 
+    d_assert(enb, return,);
+    d_assert(enb->sock, return,);
+
     d_assert(message, return,);
     initiatingMessage = message->choice.initiatingMessage;
     d_assert(initiatingMessage, return,);
@@ -400,6 +403,9 @@ void s1ap_handle_ue_capability_info_indication(
     S1AP_UERadioCapability_t *UERadioCapability = NULL;
 
     enb_ue_t *enb_ue = NULL;
+
+    d_assert(enb, return,);
+    d_assert(enb->sock, return,);
 
     d_assert(message, return,);
     initiatingMessage = message->choice.initiatingMessage;
@@ -480,6 +486,9 @@ void s1ap_handle_initial_context_setup_response(
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
+
+    d_assert(enb, return,);
+    d_assert(enb->sock, return,);
 
     d_assert(message, return,);
     successfulOutcome = message->choice.successfulOutcome;
@@ -579,6 +588,9 @@ void s1ap_handle_initial_context_setup_failure(
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
+
+    d_assert(enb, return,);
+    d_assert(enb->sock, return,);
 
     d_assert(message, return,);
     unsuccessfulOutcome = message->choice.unsuccessfulOutcome;
@@ -754,50 +766,83 @@ void s1ap_handle_e_rab_setup_response(
         }
     }
 }
+#endif
 
 void s1ap_handle_ue_context_release_request(
         mme_enb_t *enb, s1ap_message_t *message)
 {
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
+    int i;
+
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_UEContextReleaseRequest_t *UEContextReleaseRequest = NULL;
+
+    S1AP_UEContextReleaseRequest_IEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_Cause_t *Cause = NULL;
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    S1AP_UEContextReleaseRequest_IEs_t *ies = NULL;
-
     d_assert(enb, return,);
-    d_assert(message, return,);
+    d_assert(enb->sock, return,);
 
-    ies = &message->s1ap_UEContextReleaseRequest_IEs;
-    d_assert(ies, return,);
+    d_assert(message, return,);
+    initiatingMessage = message->choice.initiatingMessage;
+    d_assert(initiatingMessage, return,);
+    UEContextReleaseRequest =
+        &initiatingMessage->value.choice.UEContextReleaseRequest;
+    d_assert(UEContextReleaseRequest, return,);
 
     d_trace(3, "[MME] UE Context release request\n");
+
+    for (i = 0; i < UEContextReleaseRequest->protocolIEs.list.count; i++)
+    {
+        ie = UEContextReleaseRequest->protocolIEs.list.array[i];
+        switch(ie->id)
+        {
+            case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+                MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+                break;
+            case S1AP_ProtocolIE_ID_id_Cause:
+                Cause = &ie->value.choice.Cause;
+                break;
+            default:
+                break;
+        }
+    }
+
     d_trace(5, "    IP[%s] ENB_ID[%d]\n",
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
+    d_assert(MME_UE_S1AP_ID, return,);
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
     if (!enb_ue)
     {
-        d_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]", ies->mme_ue_s1ap_id);
+        d_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]", *MME_UE_S1AP_ID);
+#if 0
         rv = s1ap_send_error_indication(enb, 
                 S1AP_ERRORINDICATIONIES_MME_UE_S1AP_ID_PRESENT |
                 S1AP_ERRORINDICATIONIES_ENB_UE_S1AP_ID_PRESENT |
                 S1AP_ERRORINDICATIONIES_CAUSE_PRESENT,
-                ies->eNB_UE_S1AP_ID,
-                ies->mme_ue_s1ap_id, 
+                enb_ue->enb_ue_s1ap_id,
+                enb_ue->mme_ue_s1ap_id,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
         d_assert(rv == CORE_OK, return, "s1ap send error");
+#endif
         return;
     }
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
-    d_trace(5, "    Cause[Group:%d Cause:%d]\n",
-            ies->cause.present, ies->cause.choice.radioNetwork);
 
-    switch(ies->cause.present)
+    d_assert(Cause, return,);
+    d_trace(5, "    Cause[Group:%d Cause:%d]\n",
+            Cause->present, Cause->choice.radioNetwork);
+
+    switch(Cause->present)
     {
         case S1AP_Cause_PR_radioNetwork:
         case S1AP_Cause_PR_transport:
@@ -805,9 +850,9 @@ void s1ap_handle_ue_context_release_request(
         case S1AP_Cause_PR_misc:
             break;
         case S1AP_Cause_PR_nas:
-            d_warn("NAS-Cause[%d]", ies->cause.choice.nas);
+            d_warn("NAS-Cause[%d]", Cause->choice.nas);
         default:
-            d_warn("Invalid cause group[%d]", ies->cause.present);
+            d_warn("Invalid cause group[%d]", Cause->present);
             break;
     }
 
@@ -845,20 +890,48 @@ void s1ap_handle_ue_context_release_complete(
 {
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
+    int i;
 
-    enb_ue_t *enb_ue = NULL;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_UEContextReleaseComplete_t *UEContextReleaseComplete = NULL;
+
+    S1AP_UEContextReleaseComplete_IEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+
     mme_ue_t *mme_ue = NULL;
-    S1AP_UEContextReleaseComplete_IEs_t *ies = NULL;
+    enb_ue_t *enb_ue = NULL;
 
-    ies = &message->s1ap_UEContextReleaseComplete_IEs;
-    d_assert(ies, return, "Null param");
+    d_assert(enb, return,);
+    d_assert(enb->sock, return,);
+
+    d_assert(message, return,);
+    successfulOutcome = message->choice.successfulOutcome;
+    d_assert(successfulOutcome, return,);
+    UEContextReleaseComplete =
+        &successfulOutcome->value.choice.UEContextReleaseComplete;
+    d_assert(UEContextReleaseComplete, return,);
 
     d_trace(3, "[MME] UE Context release complete\n");
+
+    for (i = 0; i < UEContextReleaseComplete->protocolIEs.list.count; i++)
+    {
+        ie = UEContextReleaseComplete->protocolIEs.list.array[i];
+        switch(ie->id)
+        {
+            case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+                MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+                break;
+            default:
+                break;
+        }
+    }
+
     d_trace(5, "    IP[%s] ENB_ID[%d]\n",
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
-    d_assert(enb_ue, return, "No UE Context[%d]", ies->mme_ue_s1ap_id);
+    d_assert(MME_UE_S1AP_ID, return,);
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
+    d_assert(enb_ue, return, "No UE Context[%d]", *MME_UE_S1AP_ID);
     mme_ue = enb_ue->mme_ue;
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
@@ -931,7 +1004,6 @@ void s1ap_handle_ue_context_release_complete(
         }
     }
 }
-#endif
 
 void s1ap_handle_paging(mme_ue_t *mme_ue)
 {
