@@ -1037,7 +1037,6 @@ void s1ap_handle_ue_context_release_complete(
 
 void s1ap_handle_paging(mme_ue_t *mme_ue)
 {
-#if 0
     pkbuf_t *s1apbuf = NULL;
     hash_index_t *hi = NULL;
     mme_enb_t *enb = NULL;
@@ -1072,7 +1071,6 @@ void s1ap_handle_paging(mme_ue_t *mme_ue)
             }
         }
     }
-#endif
 }
 
 #if 0
