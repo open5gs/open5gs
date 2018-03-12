@@ -193,6 +193,8 @@ status_t tests1ap_build_setup_req(
 
     ASN_SEQUENCE_ADD(&SupportedTAs->list, SupportedTAs_Item);
 
+    *PagingDRX = S1AP_PagingDRX_v64;
+
     rv = s1ap_encode_pdu(pkbuf, &pdu);
     s1ap_free_pdu(&pdu);
 

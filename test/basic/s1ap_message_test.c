@@ -159,6 +159,7 @@ static void s1ap_message_test6(abts_case *tc, void *data)
         ((char *)emmbuf->payload)[i] = 0xef;
 
     rv = s1ap_build_downlink_nas_transport(&s1apbuf, &enb_ue, emmbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(CORE_HEX(_result, strlen(_result), buffer),
             s1apbuf->payload, s1apbuf->len) == 0);
     pkbuf_free(s1apbuf);

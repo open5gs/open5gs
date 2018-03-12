@@ -70,6 +70,9 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     s1ap_ENB_ID_to_uint32(&Global_ENB_ID->eNB_ID, &enb_id);
     d_trace(5, "    IP[%s] ENB_ID[%d]\n", CORE_ADDR(enb->addr, buf), enb_id);
 
+    if (PagingDRX)
+        d_trace(5, "    PagingDRX[%ld]\n", *PagingDRX);
+
     mme_enb_set_enb_id(enb, enb_id);
 
     d_assert(SupportedTAs, return,);
