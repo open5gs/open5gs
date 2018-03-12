@@ -114,15 +114,12 @@ OPEN_TYPE_ber_get(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     if(*memb_ptr2) {
-        const asn_CHOICE_specifics_t *specs =
-            selected.type_descriptor->specifics;
         if(elm->flags & ATF_POINTER) {
             ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
             *memb_ptr2 = NULL;
         } else {
-            ASN_STRUCT_FREE_CONTENTS_ONLY(*selected.type_descriptor,
+            ASN_STRUCT_RESET(*selected.type_descriptor,
                                           inner_value);
-            memset(*memb_ptr2, 0, specs->struct_size);
         }
     }
     return rv;
@@ -236,15 +233,12 @@ OPEN_TYPE_xer_get(const asn_codec_ctx_t *opt_codec_ctx,
          * will have to be restarted.
          */
         if(*memb_ptr2) {
-            const asn_CHOICE_specifics_t *specs =
-                selected.type_descriptor->specifics;
             if(elm->flags & ATF_POINTER) {
                 ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
                 *memb_ptr2 = NULL;
             } else {
-                ASN_STRUCT_FREE_CONTENTS_ONLY(*selected.type_descriptor,
+                ASN_STRUCT_RESET(*selected.type_descriptor,
                                               inner_value);
-                memset(*memb_ptr2, 0, specs->struct_size);
             }
         }
         return rv;
@@ -352,15 +346,12 @@ OPEN_TYPE_uper_get(const asn_codec_ctx_t *opt_codec_ctx,
     case RC_WMORE:
     case RC_FAIL:
         if(*memb_ptr2) {
-            const asn_CHOICE_specifics_t *specs =
-                selected.type_descriptor->specifics;
             if(elm->flags & ATF_POINTER) {
                 ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
                 *memb_ptr2 = NULL;
             } else {
-                ASN_STRUCT_FREE_CONTENTS_ONLY(*selected.type_descriptor,
+                ASN_STRUCT_RESET(*selected.type_descriptor,
                                               inner_value);
-                memset(*memb_ptr2, 0, specs->struct_size);
             }
         }
     }
@@ -465,15 +456,12 @@ OPEN_TYPE_aper_get(const asn_codec_ctx_t *opt_codec_ctx,
     case RC_WMORE:
     case RC_FAIL:
         if(*memb_ptr2) {
-            const asn_CHOICE_specifics_t *specs =
-                selected.type_descriptor->specifics;
             if(elm->flags & ATF_POINTER) {
                 ASN_STRUCT_FREE(*selected.type_descriptor, inner_value);
                 *memb_ptr2 = NULL;
             } else {
-                ASN_STRUCT_FREE_CONTENTS_ONLY(*selected.type_descriptor,
+                ASN_STRUCT_RESET(*selected.type_descriptor,
                                               inner_value);
-                memset(*memb_ptr2, 0, specs->struct_size);
             }
         }
     }

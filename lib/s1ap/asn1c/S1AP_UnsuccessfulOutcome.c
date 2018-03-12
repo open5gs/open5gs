@@ -670,8 +670,6 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_4[] = {
 		"UEContextResumeFailure"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_4[] = { 8, 1, 2, 3, 4, 5, 6, 7, 0 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_4[] = { 8, 1, 2, 3, 4, 5, 6, 7, 0 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_4[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 0, 0, 8 }, /* HandoverPreparationFailure */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 1, -1, 7 }, /* HandoverFailure */
@@ -690,8 +688,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_4 = {
 	sizeof(((struct S1AP_UnsuccessfulOutcome__value *)0)->present),
 	asn_MAP_S1AP_value_tag2el_4,
 	9,	/* Count of tags in the map */
-	asn_MAP_S1AP_value_to_canonical_4,
-	asn_MAP_S1AP_value_from_canonical_4,
+	0, 0,
 	-1	/* Extensions start */
 };
 static /* Use -fall-defs-global to expose */

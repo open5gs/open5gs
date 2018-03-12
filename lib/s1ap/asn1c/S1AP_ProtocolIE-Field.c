@@ -22776,8 +22776,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_76[] = {
 		"PS-ServiceNotAvailable"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_76[] = { 0, 1, 10, 7, 8, 9, 12, 2, 5, 6, 11, 3, 4 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_76[] = { 0, 1, 7, 11, 12, 8, 9, 3, 4, 5, 2, 10, 6 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_76[] = { 0, 1, 10, 7, 8, 9, 2, 5, 6, 11, 12, 3, 4 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_76[] = { 0, 1, 6, 11, 12, 7, 8, 3, 4, 5, 2, 9, 10 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_76[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 }, /* ENB-UE-S1AP-ID */
@@ -22960,8 +22960,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_80[] = {
 		"CriticalityDiagnostics"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_80[] = { 0, 1, 6, 3, 2, 7, 4, 5 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_80[] = { 0, 1, 4, 3, 6, 7, 2, 5 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_80[] = { 0, 1, 3, 6, 2, 4, 5, 7 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_80[] = { 0, 1, 4, 2, 5, 6, 3, 7 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_80[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 }, /* ENB-UE-S1AP-ID */
@@ -23423,8 +23423,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_88[] = {
 		"EnhancedCoverageRestricted"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_88[] = { 0, 18, 13, 12, 5, 1, 14, 10, 21, 16, 24, 3, 15, 17, 19, 20, 22, 23, 4, 6, 7, 8, 9, 11, 2 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_88[] = { 0, 5, 24, 11, 18, 4, 19, 20, 21, 22, 7, 23, 3, 2, 6, 12, 9, 13, 1, 14, 15, 8, 16, 17, 10 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_88[] = { 0, 13, 18, 5, 12, 1, 10, 14, 16, 21, 24, 3, 4, 6, 7, 8, 9, 11, 15, 17, 19, 20, 22, 23, 2 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_88[] = { 0, 5, 24, 11, 12, 3, 13, 14, 15, 16, 6, 17, 4, 1, 7, 18, 8, 19, 2, 20, 21, 9, 22, 23, 10 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_88[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 0 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 13, 0, 1 }, /* CSG-Id */
@@ -23626,8 +23626,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_92[] = {
 		"CE-mode-B-SupportIndicator"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_92[] = { 0, 1, 5, 4, 7, 8, 3, 2, 6 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_92[] = { 0, 1, 7, 6, 3, 2, 8, 4, 5 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_92[] = { 0, 1, 5, 4, 7, 8, 2, 3, 6 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_92[] = { 0, 1, 6, 7, 3, 2, 8, 4, 5 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_92[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 }, /* ENB-UE-S1AP-ID */
@@ -24125,8 +24125,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_104[] = {
 		"RRC-Establishment-Cause"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_104[] = { 2, 0, 6, 11, 9, 7, 12, 3, 10, 8, 4, 5, 1 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_104[] = { 1, 12, 0, 7, 10, 11, 2, 5, 9, 4, 8, 3, 6 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_104[] = { 0, 2, 6, 11, 7, 9, 12, 1, 3, 4, 5, 8, 10 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_104[] = { 0, 7, 1, 8, 9, 10, 2, 4, 11, 5, 12, 3, 6 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_104[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* ENB-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 2, -1, 0 }, /* MME-UE-S1AP-ID */
@@ -24348,8 +24348,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_108[] = {
 		"EnhancedCoverageRestricted"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_108[] = { 0, 1, 12, 7, 9, 4, 6, 11, 8, 2, 10, 3, 5 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_108[] = { 0, 1, 9, 11, 5, 12, 6, 3, 8, 4, 10, 7, 2 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_108[] = { 0, 1, 7, 9, 12, 2, 3, 4, 5, 6, 8, 10, 11 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_108[] = { 0, 1, 5, 6, 7, 8, 9, 2, 10, 3, 11, 12, 4 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_108[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 }, /* ENB-UE-S1AP-ID */
@@ -26023,8 +26023,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_152[] = {
 		"EnhancedCoverageRestricted"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_152[] = { 1, 0, 9, 18, 5, 8, 24, 10, 11, 12, 15, 17, 21, 2, 14, 22, 16, 23, 3, 7, 6, 4, 19, 20, 13 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_152[] = { 1, 0, 13, 18, 21, 4, 20, 19, 5, 2, 7, 8, 9, 24, 14, 10, 16, 11, 3, 22, 23, 12, 15, 17, 6 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_152[] = { 0, 1, 9, 5, 18, 8, 10, 11, 12, 15, 17, 21, 24, 2, 3, 4, 6, 7, 13, 14, 16, 19, 20, 22, 23 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_152[] = { 0, 1, 13, 14, 15, 3, 16, 17, 5, 2, 6, 7, 8, 18, 19, 9, 20, 10, 4, 21, 22, 11, 23, 24, 12 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_152[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 2 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 1 }, /* ENB-UE-S1AP-ID */
@@ -26535,8 +26535,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_164[] = {
 		"NB-IoT-UEIdentityIndexValue"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_164[] = { 0, 10, 12, 7, 3, 6, 2, 4, 8, 9, 11, 5, 1 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_164[] = { 0, 12, 6, 4, 7, 11, 5, 3, 8, 9, 1, 10, 2 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_164[] = { 0, 10, 12, 7, 2, 3, 6, 4, 5, 8, 9, 11, 1 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_164[] = { 0, 12, 4, 5, 7, 8, 6, 3, 9, 10, 1, 11, 2 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_164[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 0, 0, 2 }, /* UEIdentityIndexValue */
     { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 10, -1, 1 }, /* Extended-UEIdentityIndexValue */
@@ -27179,8 +27179,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_180[] = {
 		"UESidelinkAggregateMaximumBitrate"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_180[] = { 0, 1, 3, 2, 7, 5, 9, 11, 12, 14, 10, 13, 6, 4, 8 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_180[] = { 0, 1, 3, 2, 13, 5, 12, 4, 14, 6, 10, 7, 8, 11, 9 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_180[] = { 0, 1, 3, 2, 5, 7, 9, 11, 12, 4, 6, 8, 10, 13, 14 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_180[] = { 0, 1, 3, 2, 9, 4, 10, 5, 11, 6, 12, 7, 8, 13, 14 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_180[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 2 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 1 }, /* ENB-UE-S1AP-ID */
@@ -27875,8 +27875,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_200[] = {
 		"EnhancedCoverageRestricted"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_200[] = { 0, 1, 4, 6, 2, 8, 5, 7, 3 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_200[] = { 0, 1, 4, 8, 2, 6, 3, 7, 5 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_200[] = { 0, 1, 4, 2, 6, 5, 7, 8, 3 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_200[] = { 0, 1, 3, 8, 2, 5, 4, 6, 7 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_200[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 2 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 1 }, /* ENB-UE-S1AP-ID */
@@ -28148,8 +28148,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_204[] = {
 		"Coverage-Level"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_204[] = { 0, 17, 15, 9, 6, 14, 1, 13, 8, 4, 10, 11, 18, 16, 12, 7, 3, 5, 2 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_204[] = { 0, 6, 18, 16, 9, 17, 4, 15, 8, 3, 10, 11, 14, 7, 5, 2, 13, 1, 12 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_204[] = { 0, 15, 17, 6, 9, 1, 13, 14, 4, 8, 10, 11, 16, 18, 2, 3, 5, 7, 12 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_204[] = { 0, 5, 14, 15, 8, 16, 3, 17, 9, 4, 10, 11, 18, 6, 7, 1, 12, 2, 13 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_204[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 2 }, /* ENB-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 15, -1, 1 }, /* UE-Usage-Type */
@@ -28323,8 +28323,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_208[] = {
 		"LHN-ID"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_208[] = { 0, 1, 5, 6, 2, 3, 4 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_208[] = { 0, 1, 4, 5, 6, 2, 3 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_208[] = { 0, 1, 5, 2, 6, 3, 4 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_208[] = { 0, 1, 3, 5, 6, 2, 4 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_208[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 }, /* ENB-UE-S1AP-ID */
@@ -29220,8 +29220,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_236[] = {
 		"NB-IoT-DefaultPagingDRX"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_236[] = { 3, 5, 6, 0, 4, 2, 1 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_236[] = { 3, 6, 5, 0, 4, 1, 2 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_236[] = { 3, 5, 6, 0, 2, 4, 1 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_236[] = { 3, 6, 4, 0, 5, 1, 2 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_236[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 3, 0, 2 }, /* PagingDRX */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 5, -1, 1 }, /* UE-RetentionInformation */
@@ -29383,8 +29383,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_240[] = {
 		"ServedDCNs"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_240[] = { 2, 3, 5, 4, 6, 1, 0 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_240[] = { 6, 5, 0, 1, 3, 2, 4 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_240[] = { 2, 3, 5, 1, 4, 6, 0 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_240[] = { 6, 3, 0, 1, 4, 2, 5 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_240[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 2, 0, 0 }, /* RelativeMMECapacity */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 3, 0, 1 }, /* MMERelaySupportIndicator */
@@ -30574,8 +30574,8 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_276[] = {
 		"EUTRANRoundTripDelayEstimationInfo"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_276[] = { 0, 1, 8, 3, 6, 7, 4, 2, 5 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_276[] = { 0, 1, 7, 3, 6, 8, 4, 5, 2 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_276[] = { 0, 1, 8, 3, 6, 7, 2, 4, 5 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_276[] = { 0, 1, 6, 3, 7, 8, 4, 5, 2 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_276[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 2 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 1 }, /* ENB-UE-S1AP-ID */

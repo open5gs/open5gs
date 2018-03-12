@@ -464,6 +464,15 @@ asn_decode(const asn_codec_ctx_t *opt_codec_ctx,
         return uper_decode_complete(opt_codec_ctx, td, sptr, buffer, size);
 #endif
 
+    case ATS_ALIGNED_BASIC_PER:
+    case ATS_ALIGNED_CANONICAL_PER:
+#ifdef  ASN_DISABLE_PER_SUPPORT
+        errno = ENOENT;
+        ASN__DECODE_FAILED;
+#else
+        return aper_decode_complete(opt_codec_ctx, td, sptr, buffer, size);
+#endif
+
     case ATS_BASIC_XER:
     case ATS_CANONICAL_XER:
         return xer_decode(opt_codec_ctx, td, sptr, buffer, size);
