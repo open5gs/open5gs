@@ -199,8 +199,6 @@ status_t s1ap_build_downlink_nas_transport(
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Downlink NAS transport\n");
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
-            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -244,16 +242,19 @@ status_t s1ap_build_downlink_nas_transport(
 
     NAS_PDU = &ie->value.choice.NAS_PDU;
 
+    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
     *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
     NAS_PDU->size = emmbuf->len;
     NAS_PDU->buf = core_calloc(NAS_PDU->size, sizeof(c_uint8_t));
     memcpy(NAS_PDU->buf, emmbuf->payload, NAS_PDU->size);
+    pkbuf_free(emmbuf);
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);
-    pkbuf_free(emmbuf);
 
     if (rv != CORE_OK)
     {
@@ -457,6 +458,7 @@ status_t s1ap_build_initial_context_setup_request(
                 nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
                 memcpy(nasPdu->buf, emmbuf->payload, nasPdu->size);
                 e_rab->nAS_PDU = nasPdu;
+                pkbuf_free(emmbuf);
             }
 
             bearer = mme_bearer_next(bearer);
@@ -511,7 +513,6 @@ status_t s1ap_build_initial_context_setup_request(
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);
-    pkbuf_free(emmbuf);
 
     if (rv != CORE_OK)
     {
@@ -525,14 +526,22 @@ status_t s1ap_build_initial_context_setup_request(
 status_t s1ap_build_e_rab_setup_request(
             pkbuf_t **s1apbuf, mme_bearer_t *bearer, pkbuf_t *esmbuf)
 {
-#if 0
     status_t rv;
-    int encoded;
-    s1ap_message_t message;
-    S1AP_E_RABSetupRequestIEs_t *ies = &message.s1ap_E_RABSetupRequestIEs;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_E_RABSetupRequest_t *E_RABSetupRequest = NULL;
+
+    S1AP_E_RABSetupRequestIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_E_RABToBeSetupListBearerSUReq_t *E_RABToBeSetupListBearerSUReq = NULL;
+
+    S1AP_E_RABToBeSetupItemBearerSUReqIEs_t *item = NULL;
     S1AP_E_RABToBeSetupItemBearerSUReq_t *e_rab = NULL;
-	struct S1AP_GBR_QosInformation *gbrQosInformation = NULL; /* OPTIONAL */
+    S1AP_GBR_QosInformation_t *gbrQosInformation = NULL;
     S1AP_NAS_PDU_t *nasPdu = NULL;
+
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
 
@@ -544,17 +553,64 @@ status_t s1ap_build_e_rab_setup_request(
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[MME] E-RAB setup request\n");
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_E_RABSetup;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_E_RABSetupRequest;
+
+    E_RABSetupRequest = &initiatingMessage->value.choice.E_RABSetupRequest;
+
+    ie = core_calloc(1, sizeof(S1AP_E_RABSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_E_RABSetupRequestIEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_E_RABSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_E_RABSetupRequestIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_E_RABSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupListBearerSUReq;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_E_RABSetupRequestIEs__value_PR_E_RABToBeSetupListBearerSUReq;
+
+    E_RABToBeSetupListBearerSUReq =
+        &ie->value.choice.E_RABToBeSetupListBearerSUReq;
+
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
-    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+    item = core_calloc(1, sizeof(S1AP_E_RABToBeSetupItemBearerSUReqIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABToBeSetupListBearerSUReq->list, item);
 
-    e_rab = (S1AP_E_RABToBeSetupItemBearerSUReq_t *)
-        core_calloc(1, sizeof(S1AP_E_RABToBeSetupItemBearerSUReq_t));
+    item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupItemBearerSUReq;
+    item->criticality = S1AP_Criticality_reject;
+    item->value.present =
+    S1AP_E_RABToBeSetupItemBearerSUReqIEs__value_PR_E_RABToBeSetupItemBearerSUReq;
+
+    e_rab = &item->value.choice.E_RABToBeSetupItemBearerSUReq;
+
     e_rab->e_RAB_ID = bearer->ebi;
     e_rab->e_RABlevelQoSParameters.qCI = bearer->qos.qci;
 
@@ -579,8 +635,7 @@ status_t s1ap_build_e_rab_setup_request(
         if (bearer->qos.gbr.uplink == 0)
             bearer->qos.gbr.uplink = MAX_BIT_RATE;
 
-        gbrQosInformation = 
-                core_calloc(1, sizeof(struct S1AP_GBR_QosInformation));
+        gbrQosInformation = core_calloc(1, sizeof(S1AP_GBR_QosInformation_t));
         asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateDL,
                 bearer->qos.mbr.downlink);
         asn_uint642INTEGER(&gbrQosInformation->e_RAB_MaximumBitrateUL,
@@ -602,19 +657,16 @@ status_t s1ap_build_e_rab_setup_request(
     nasPdu->size = esmbuf->len;
     nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
     memcpy(nasPdu->buf, esmbuf->payload, nasPdu->size);
-
-    ASN_SEQUENCE_ADD(&ies->e_RABToBeSetupListBearerSUReq, e_rab);
-
-    message.procedureCode = S1AP_ProcedureCode_id_E_RABSetup;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
-
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
-
-    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
-
     pkbuf_free(esmbuf);
-#endif
+
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }
@@ -713,12 +765,22 @@ status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
         mme_bearer_t *bearer, pkbuf_t *esmbuf, 
         S1AP_Cause_PR group, long cause)
 {
-#if 0
-    int encoded;
-    s1ap_message_t message;
-    S1AP_E_RABReleaseCommandIEs_t *ies = &message.s1ap_E_RABReleaseCommandIEs;
-    S1AP_E_RABItem_t *e_rab = NULL;
+    status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_E_RABReleaseCommand_t *E_RABReleaseCommand = NULL;
+
+    S1AP_E_RABReleaseCommandIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_UEAggregateMaximumBitrate_t *UEAggregateMaximumBitrate = NULL;
+    S1AP_E_RABList_t *E_RABList = NULL;
     S1AP_NAS_PDU_t *nasPdu = NULL;
+
+    S1AP_E_RABItemIEs_t *item = NULL;
+    S1AP_E_RABItem_t *e_rab = NULL;
+
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
     s6a_subscription_data_t *subscription_data = NULL;
@@ -734,48 +796,107 @@ status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
     d_assert(subscription_data, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] E-RAB release command\n");
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_E_RABRelease;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_E_RABReleaseCommand;
+
+    E_RABReleaseCommand = &initiatingMessage->value.choice.E_RABReleaseCommand;
+
+    ie = core_calloc(1, sizeof(S1AP_E_RABReleaseCommandIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_E_RABReleaseCommandIEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_E_RABReleaseCommandIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_E_RABReleaseCommandIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_E_RABReleaseCommandIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_uEaggregateMaximumBitrate;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_E_RABReleaseCommandIEs__value_PR_UEAggregateMaximumBitrate;
+
+    UEAggregateMaximumBitrate = &ie->value.choice.UEAggregateMaximumBitrate;
+
+    ie = core_calloc(1, sizeof(S1AP_E_RABReleaseCommandIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeReleasedList;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_E_RABReleaseCommandIEs__value_PR_E_RABList;
+
+    E_RABList = &ie->value.choice.E_RABList;
+
+    ie = core_calloc(1, sizeof(S1AP_E_RABReleaseCommandIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_NAS_PDU;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_E_RABReleaseCommandIEs__value_PR_NAS_PDU;
+
+    nasPdu = &ie->value.choice.NAS_PDU;
+
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
-    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
-
-    ies->presenceMask |= 
-           S1AP_E_RABRELEASECOMMANDIES_UEAGGREGATEMAXIMUMBITRATE_PRESENT;
     asn_uint642INTEGER(
-            &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateUL, 
+            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateUL, 
             subscription_data->ambr.uplink);
     asn_uint642INTEGER(
-            &ies->uEaggregateMaximumBitrate.uEaggregateMaximumBitRateDL, 
+            &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateDL, 
             subscription_data->ambr.downlink);
 
-    e_rab = (S1AP_E_RABItem_t *)core_calloc(1, sizeof(S1AP_E_RABItem_t));
+    item = core_calloc(1, sizeof(S1AP_E_RABItemIEs_t));
+    ASN_SEQUENCE_ADD(&E_RABList->list, item);
+
+    item->id = S1AP_ProtocolIE_ID_id_E_RABItem;
+    item->criticality = S1AP_Criticality_ignore;
+    item->value.present = S1AP_E_RABItemIEs__value_PR_E_RABItem;
+
+    e_rab = &item->value.choice.E_RABItem;
+
     e_rab->e_RAB_ID = bearer->ebi;
     e_rab->cause.present = group;
     e_rab->cause.choice.radioNetwork = cause;
 
     d_trace(5, "    EBI[%d] Gruop[%d] Cause[%d]\n", bearer->ebi, group, cause);
 
-    ies->presenceMask |= S1AP_E_RABRELEASECOMMANDIES_NAS_PDU_PRESENT;
-    nasPdu = &ies->nas_pdu;
     nasPdu->size = esmbuf->len;
     nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
     memcpy(nasPdu->buf, esmbuf->payload, nasPdu->size);
-
-    ASN_SEQUENCE_ADD(&ies->e_RABToBeReleasedList, e_rab);
-
-    message.procedureCode = S1AP_ProcedureCode_id_E_RABRelease;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
-
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
-
-    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
-
     pkbuf_free(esmbuf);
-#endif
+
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }
@@ -783,15 +904,17 @@ status_t s1ap_build_e_rab_release_command(pkbuf_t **s1apbuf,
 status_t s1ap_build_ue_context_release_command(
     pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause)
 {
-#if 0
-    int encoded;
-    s1ap_message_t message;
-    S1AP_UEContextReleaseCommand_IEs_t *ies =
-            &message.s1ap_UEContextReleaseCommand_IEs;
+    status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_UEContextReleaseCommand_t *UEContextReleaseCommand = NULL;
+
+    S1AP_UEContextReleaseCommand_IEs_t *ie = NULL;
+    S1AP_UE_S1AP_IDs_t *UE_S1AP_IDs = NULL;
+    S1AP_Cause_t *Cause = NULL;
 
     d_assert(enb_ue, return CORE_ERROR, "Null param");
-
-    memset(&message, 0, sizeof(s1ap_message_t));
 
     if (enb_ue->mme_ue_s1ap_id == 0)
     {
@@ -799,61 +922,153 @@ status_t s1ap_build_ue_context_release_command(
         return CORE_ERROR;
     }
 
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_UEContextRelease;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_UEContextReleaseCommand;
+
+    UEContextReleaseCommand =
+        &initiatingMessage->value.choice.UEContextReleaseCommand;
+
+    ie = core_calloc(1, sizeof(S1AP_UEContextReleaseCommand_IEs_t));
+    ASN_SEQUENCE_ADD(&UEContextReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UE_S1AP_IDs;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UEContextReleaseCommand_IEs__value_PR_UE_S1AP_IDs;
+
+    UE_S1AP_IDs = &ie->value.choice.UE_S1AP_IDs;
+
+    ie = core_calloc(1, sizeof(S1AP_UEContextReleaseCommand_IEs_t));
+    ASN_SEQUENCE_ADD(&UEContextReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_Cause;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_UEContextReleaseCommand_IEs__value_PR_Cause;
+
+    Cause = &ie->value.choice.Cause;
+
 #if 0 /* ENB_UE_S1AP_ID could be allocated with 0 from eNodeB */
     if (enb_ue->enb_ue_s1ap_id)
 #endif
     {
-        ies->uE_S1AP_IDs.present = S1AP_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
-        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.mME_UE_S1AP_ID = 
+        UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair = 
+            core_calloc(1, sizeof(S1AP_UE_S1AP_ID_pair_t));
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->mME_UE_S1AP_ID = 
             enb_ue->mme_ue_s1ap_id;
-        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.eNB_UE_S1AP_ID = 
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->eNB_UE_S1AP_ID = 
             enb_ue->enb_ue_s1ap_id;
-        ies->uE_S1AP_IDs.choice.uE_S1AP_ID_pair.iE_Extensions = NULL;
     }
 #if 0
     else
     {
-        ies->uE_S1AP_IDs.present = S1AP_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
-        ies->uE_S1AP_IDs.choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+        UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
+        UE_S1AP_IDs->choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     }
 #endif
 
-    ies->cause.present = group;
-    ies->cause.choice.radioNetwork = cause;
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
 
-    message.procedureCode = S1AP_ProcedureCode_id_UEContextRelease;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
-
-    d_assert(s1apbuf && encoded >= 0, return CORE_ERROR,);
-#endif
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }
 
 status_t s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
 {
-#if 0
-    int encoded;
-    s1ap_message_t message;
-    S1AP_PagingIEs_t *ies = &message.s1ap_PagingIEs;
+    status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_Paging_t *Paging = NULL;
+
+    S1AP_PagingIEs_t *ie = NULL;
+
+    S1AP_UEIdentityIndexValue_t *UEIdentityIndexValue = NULL;
+    S1AP_UEPagingID_t *UEPagingID = NULL;
+    S1AP_CNDomain_t *CNDomain = NULL;
+    S1AP_TAIList_t *TAIList = NULL;
+
+    S1AP_TAIItemIEs_t *item = NULL;
     S1AP_TAIItem_t *tai_item = NULL;
+
     c_uint16_t index_value;
     c_uint64_t ue_imsi_value = 0;
     int i = 0;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
-    memset(&message, 0, sizeof(s1ap_message_t));
-
     d_trace(3, "[MME] Paging\n");
 
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_Paging;
+    initiatingMessage->criticality = S1AP_Criticality_ignore;
+    initiatingMessage->value.present = S1AP_InitiatingMessage__value_PR_Paging;
+
+    Paging = &initiatingMessage->value.choice.Paging;
+
+    ie = core_calloc(1, sizeof(S1AP_PagingIEs_t));
+    ASN_SEQUENCE_ADD(&Paging->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UEIdentityIndexValue;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PagingIEs__value_PR_UEIdentityIndexValue;
+
+    UEIdentityIndexValue = &ie->value.choice.UEIdentityIndexValue;
+
+    ie = core_calloc(1, sizeof(S1AP_PagingIEs_t));
+    ASN_SEQUENCE_ADD(&Paging->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UEPagingID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PagingIEs__value_PR_UEPagingID;
+
+    UEPagingID = &ie->value.choice.UEPagingID;
+
+    ie = core_calloc(1, sizeof(S1AP_PagingIEs_t));
+    ASN_SEQUENCE_ADD(&Paging->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_CNDomain;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PagingIEs__value_PR_CNDomain;
+
+    CNDomain = &ie->value.choice.CNDomain;
+
+    ie = core_calloc(1, sizeof(S1AP_PagingIEs_t));
+    ASN_SEQUENCE_ADD(&Paging->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_TAIList;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PagingIEs__value_PR_TAIList;
+
+    TAIList = &ie->value.choice.TAIList;
+
     /* Set UE Identity Index value : IMSI mod 4096 */
-    ies->ueIdentityIndexValue.size = 2;
-    ies->ueIdentityIndexValue.buf = 
-        core_calloc(ies->ueIdentityIndexValue.size, sizeof(c_uint8_t));
+    UEIdentityIndexValue->size = 2;
+    UEIdentityIndexValue->buf = 
+        core_calloc(UEIdentityIndexValue->size, sizeof(c_uint8_t));
 
     /* Conver string to value */
     for (i = 0; i < strlen(mme_ue->imsi_bcd); i++)
@@ -863,40 +1078,46 @@ status_t s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
 
     /* index(10bit) = ue_imsi_value mod 1024 */
     index_value = ue_imsi_value % 1024;
-    ies->ueIdentityIndexValue.buf[0] = index_value >> 2;
-    ies->ueIdentityIndexValue.buf[1] = (index_value & 0x3f) << 6;
-    ies->ueIdentityIndexValue.bits_unused = 6;
+    UEIdentityIndexValue->buf[0] = index_value >> 2;
+    UEIdentityIndexValue->buf[1] = (index_value & 0x3f) << 6;
+    UEIdentityIndexValue->bits_unused = 6;
 
     /* Set Paging Identity */
-    ies->uePagingID.present = S1AP_UEPagingID_PR_s_TMSI;
+    UEPagingID->present = S1AP_UEPagingID_PR_s_TMSI;
+    UEPagingID->choice.s_TMSI = 
+        core_calloc(1, sizeof(S1AP_S_TMSI_t));
     s1ap_uint8_to_OCTET_STRING(mme_ue->guti.mme_code, 
-            &ies->uePagingID.choice.s_TMSI.mMEC);
+            &UEPagingID->choice.s_TMSI->mMEC);
 
     s1ap_uint32_to_OCTET_STRING(mme_ue->guti.m_tmsi, 
-            &ies->uePagingID.choice.s_TMSI.m_TMSI);
+            &UEPagingID->choice.s_TMSI->m_TMSI);
 
     d_trace(5, "    MME_CODE[%d] M_TMSI[0x%x]\n",
             mme_ue->guti.mme_code, mme_ue->guti.m_tmsi);
 
-    /* FIXME : fixed to ps */
-    ies->cnDomain = S1AP_CNDomain_ps;
+    *CNDomain = S1AP_CNDomain_ps;
 
+    item = core_calloc(1, sizeof(S1AP_TAIItemIEs_t));
+    ASN_SEQUENCE_ADD(&TAIList->list, item);
 
-    tai_item  = core_calloc(1, sizeof(S1AP_TAIItem_t));
+    item->id = S1AP_ProtocolIE_ID_id_TAIItem;
+    item->criticality = S1AP_Criticality_ignore;
+    item->value.present = S1AP_TAIItemIEs__value_PR_TAIItem;
+
+    tai_item = &item->value.choice.TAIItem;
+
     s1ap_buffer_to_OCTET_STRING(&mme_ue->tai.plmn_id, sizeof(plmn_id_t),
             &tai_item->tAI.pLMNidentity);
     s1ap_uint16_to_OCTET_STRING(mme_ue->tai.tac, &tai_item->tAI.tAC);
 
-    ASN_SEQUENCE_ADD(&ies->taiList, tai_item);
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    message.procedureCode = S1AP_ProcedureCode_id_Paging;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
-
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
-
-    d_assert(s1apbuf && encoded >= 0, return CORE_ERROR,);
-#endif
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }

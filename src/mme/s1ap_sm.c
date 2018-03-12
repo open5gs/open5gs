@@ -85,13 +85,13 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, pdu);
                             break;
                         }
-#if 0
                         case S1AP_ProcedureCode_id_UEContextReleaseRequest:
                         {
                             s1ap_handle_ue_context_release_request(
                                     enb, pdu);
                             break;
                         }
+#if 0
                         case S1AP_ProcedureCode_id_PathSwitchRequest:
                         {
                             s1ap_handle_path_switch_request(enb, pdu);
@@ -143,7 +143,6 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, pdu);
                             break;
                         }
-#if 0
                         case S1AP_ProcedureCode_id_E_RABSetup :
                         {
                             s1ap_handle_e_rab_setup_response(enb, pdu);
@@ -163,6 +162,7 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, pdu);
                             break;
                         }
+#if 0
                         case S1AP_ProcedureCode_id_HandoverResourceAllocation:
                         {
                             s1ap_handle_handover_request_ack(enb, pdu);
@@ -187,13 +187,13 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
 
                     switch(unsuccessfulOutcome->procedureCode)
                     {
-#if 0
                         case S1AP_ProcedureCode_id_InitialContextSetup :
                         {
                             s1ap_handle_initial_context_setup_failure(
                                     enb, pdu);
                             break;
                         }
+#if 0
                         case S1AP_ProcedureCode_id_HandoverResourceAllocation :
                         {
                             s1ap_handle_handover_failure(enb, pdu);

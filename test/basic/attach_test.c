@@ -296,19 +296,15 @@ static void attach_test1(abts_case *tc, void *data)
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
     core_sleep(time_from_msec(300));
 
-#if 1
-    goto out;
-#endif
-
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
     /* Update M-TMSI */
     m_tmsi = htonl(m_tmsi);
-    memcpy(sendbuf->payload + 37, &m_tmsi, 4);
+    memcpy(sendbuf->payload + 36, &m_tmsi, 4);
     /* Update NAS MAC */
     void snow_3g_f9(c_uint8_t* key, c_uint32_t count, c_uint32_t fresh,
             c_uint32_t dir, c_uint8_t *data, c_uint64_t length, c_uint8_t *out);
     snow_3g_f9(mme_ue->knas_int, 7, 0, 0,
-            sendbuf->payload + 25, (109 << 3), sendbuf->payload+21);
+            sendbuf->payload + 24, (109 << 3), sendbuf->payload+20);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -483,7 +479,6 @@ out:
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
 
-#if 0
 /**************************************************************
  * eNB : HOME
  * UE : IMSI 
@@ -800,7 +795,6 @@ static void attach_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FATAL);
     /* Send Authentication Authentication Failure */
     rv = tests1ap_build_authentication_failure(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -818,7 +812,6 @@ static void attach_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
     /* Send UE Context Release Complete */
     rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+2);
@@ -1653,19 +1646,16 @@ out:
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
-#endif
 
 abts_suite *test_attach(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, attach_test1, NULL);
-#if 0
     abts_run_test(suite, attach_test2, NULL);
     abts_run_test(suite, attach_test3, NULL);
     abts_run_test(suite, attach_test4, NULL);
     abts_run_test(suite, attach_test5, NULL);
-#endif
 
     return suite;
 }
