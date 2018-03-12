@@ -941,8 +941,7 @@ status_t s1ap_build_ue_context_release_command(
 
     ie->id = S1AP_ProtocolIE_ID_id_UE_S1AP_IDs;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present =
-        S1AP_UEContextReleaseCommand_IEs__value_PR_UE_S1AP_IDs;
+    ie->value.present = S1AP_UEContextReleaseCommand_IEs__value_PR_UE_S1AP_IDs;
 
     UE_S1AP_IDs = &ie->value.choice.UE_S1AP_IDs;
 
@@ -951,8 +950,7 @@ status_t s1ap_build_ue_context_release_command(
 
     ie->id = S1AP_ProtocolIE_ID_id_Cause;
     ie->criticality = S1AP_Criticality_ignore;
-    ie->value.present =
-        S1AP_UEContextReleaseCommand_IEs__value_PR_Cause;
+    ie->value.present = S1AP_UEContextReleaseCommand_IEs__value_PR_Cause;
 
     Cause = &ie->value.choice.Cause;
 
@@ -1666,41 +1664,93 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
 }
 
 status_t s1ap_build_error_indication(
-        pkbuf_t **s1apbuf, c_uint16_t presenceMask,
-        c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
-        S1AP_Cause_PR group, long cause)
+        pkbuf_t **s1apbuf,
+        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
+        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
+        S1AP_Cause_t *cause)
 {
-#if 0
-    int encoded;
-    s1ap_message_t message;
-    S1AP_ErrorIndicationIEs_t *ies = &message.s1ap_ErrorIndicationIEs;
+    status_t rv;
 
-    d_assert(presenceMask, return CORE_ERROR,
-            "Invalid PresenceMask[0x%x]", presenceMask);
-    
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_ErrorIndication_t *ErrorIndication = NULL;
+
+    S1AP_ErrorIndicationIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_Cause_t *Cause = NULL;
+
     d_trace(3, "[MME] Error Indication\n");
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
 
-    ies->presenceMask = presenceMask;
-    ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
-    ies->cause.present = group;
-    ies->cause.choice.radioNetwork = cause;
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_ErrorIndication;
+    initiatingMessage->criticality = S1AP_Criticality_ignore;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_ErrorIndication;
 
-    d_trace(5, "    PresenceMask[0x%x]\n", presenceMask);
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
-            enb_ue_s1ap_id, mme_ue_s1ap_id);
-    d_trace(5, "    Group[%d] Cause[%d]\n", group, cause);
+    ErrorIndication = &initiatingMessage->value.choice.ErrorIndication;
 
-    message.procedureCode = S1AP_ProcedureCode_id_ErrorIndication;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
+    if (mme_ue_s1ap_id)
+    {
+        ie = core_calloc(1, sizeof(S1AP_ErrorIndicationIEs_t));
+        ASN_SEQUENCE_ADD(&ErrorIndication->protocolIEs, ie);
 
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
+        ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present = S1AP_ErrorIndicationIEs__value_PR_MME_UE_S1AP_ID;
 
-    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
-#endif
+        MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+        *MME_UE_S1AP_ID = *mme_ue_s1ap_id;
+    d_trace(5, "    MME_UE_S1AP_ID[%d]\n", mme_ue_s1ap_id);
+    }
+
+    if (enb_ue_s1ap_id)
+    {
+        ie = core_calloc(1, sizeof(S1AP_ErrorIndicationIEs_t));
+        ASN_SEQUENCE_ADD(&ErrorIndication->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present = S1AP_ErrorIndicationIEs__value_PR_ENB_UE_S1AP_ID;
+
+        ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+        *ENB_UE_S1AP_ID = *enb_ue_s1ap_id;
+        d_trace(5, "    ENB_UE_S1AP_ID[%d]\n", enb_ue_s1ap_id);
+    }
+
+    if (cause)
+    {
+        ie = core_calloc(1, sizeof(S1AP_ErrorIndicationIEs_t));
+        ASN_SEQUENCE_ADD(&ErrorIndication->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_Cause;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present = S1AP_ErrorIndicationIEs__value_PR_Cause;
+
+        Cause = &ie->value.choice.Cause;
+
+        Cause->present = cause->present;
+        Cause->choice.radioNetwork = cause->choice.radioNetwork;
+
+        d_trace(5, "    Group[%d] Cause[%d]\n",
+                Cause->present, Cause->choice.radioNetwork);
+    }
+
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }

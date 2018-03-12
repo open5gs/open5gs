@@ -813,6 +813,7 @@ void s1ap_handle_ue_context_release_request(
 
     S1AP_UEContextReleaseRequest_IEs_t *ie = NULL;
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_Cause_t *Cause = NULL;
 
     enb_ue_t *enb_ue = NULL;
@@ -838,6 +839,9 @@ void s1ap_handle_ue_context_release_request(
             case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
                 MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
                 break;
+            case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+                ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+                break;
             case S1AP_ProtocolIE_ID_id_Cause:
                 Cause = &ie->value.choice.Cause;
                 break;
@@ -854,17 +858,9 @@ void s1ap_handle_ue_context_release_request(
     if (!enb_ue)
     {
         d_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]", *MME_UE_S1AP_ID);
-#if 0
         rv = s1ap_send_error_indication(enb, 
-                S1AP_ERRORINDICATIONIES_MME_UE_S1AP_ID_PRESENT |
-                S1AP_ERRORINDICATIONIES_ENB_UE_S1AP_ID_PRESENT |
-                S1AP_ERRORINDICATIONIES_CAUSE_PRESENT,
-                enb_ue->enb_ue_s1ap_id,
-                enb_ue->mme_ue_s1ap_id,
-                S1AP_Cause_PR_radioNetwork,
-                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+                MME_UE_S1AP_ID, ENB_UE_S1AP_ID, Cause);
         d_assert(rv == CORE_OK, return, "s1ap send error");
-#endif
         return;
     }
 
