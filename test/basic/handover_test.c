@@ -121,7 +121,7 @@ static void handover_test1(abts_case *tc, void *data)
 
     /* S1-Setup Reqeust/Response for Source eNB */
     rv = tests1ap_build_setup_req(
-            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64);
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -133,7 +133,7 @@ static void handover_test1(abts_case *tc, void *data)
 
     /* S1-Setup Reqeust/Response for Target eNB */
     rv = tests1ap_build_setup_req(
-            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f65);
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f65);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -343,6 +343,7 @@ static void handover_test1(abts_case *tc, void *data)
     core_sleep(time_from_msec(300));
 }
 
+#if 0
 static void handover_test2(abts_case *tc, void *data)
 {
     status_t rv;
@@ -450,7 +451,7 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* S1-Setup Reqeust/Response for Source eNB */
     rv = tests1ap_build_setup_req(
-            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x001f2);
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x001f2);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -462,7 +463,7 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* S1-Setup Reqeust/Response for Target eNB */
     rv = tests1ap_build_setup_req(
-            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x00043);
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x00043);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock2, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -850,13 +851,16 @@ out:
 
     core_sleep(time_from_msec(300));
 }
+#endif
 
 abts_suite *test_handover(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, handover_test1, NULL);
+#if 0
     abts_run_test(suite, handover_test2, NULL);
+#endif
 
     return suite;
 }

@@ -1124,11 +1124,17 @@ status_t s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
 
 status_t s1ap_build_path_switch_ack(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
 {
-#if 0
-    int encoded;
-    s1ap_message_t message;
-    S1AP_PathSwitchRequestAcknowledgeIEs_t *ies = 
-        &message.s1ap_PathSwitchRequestAcknowledgeIEs;
+    status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_PathSwitchRequestAcknowledge_t *PathSwitchRequestAcknowledge = NULL;
+
+    S1AP_PathSwitchRequestAcknowledgeIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_SecurityContext_t *SecurityContext = NULL;
+
     enb_ue_t *enb_ue = NULL;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
@@ -1136,31 +1142,74 @@ status_t s1ap_build_path_switch_ack(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
     d_assert(enb_ue, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] Path switch acknowledge\n");
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = 
+        core_calloc(1, sizeof(S1AP_SuccessfulOutcome_t));
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode = S1AP_ProcedureCode_id_PathSwitchRequest;
+    successfulOutcome->criticality = S1AP_Criticality_reject;
+    successfulOutcome->value.present =
+        S1AP_SuccessfulOutcome__value_PR_PathSwitchRequestAcknowledge;
+
+    PathSwitchRequestAcknowledge =
+        &successfulOutcome->value.choice.PathSwitchRequestAcknowledge;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_SecurityContext;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_SecurityContext;
+
+    SecurityContext = &ie->value.choice.SecurityContext;
+
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
-    ies->mme_ue_s1ap_id = enb_ue->mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
-
-    ies->securityContext.nextHopChainingCount = mme_ue->nhcc;
-    ies->securityContext.nextHopParameter.size = SHA256_DIGEST_SIZE;
-    ies->securityContext.nextHopParameter.buf = 
-        core_calloc(ies->securityContext.nextHopParameter.size,
+    SecurityContext->nextHopChainingCount = mme_ue->nhcc;
+    SecurityContext->nextHopParameter.size = SHA256_DIGEST_SIZE;
+    SecurityContext->nextHopParameter.buf = 
+        core_calloc(SecurityContext->nextHopParameter.size,
         sizeof(c_uint8_t));
-    ies->securityContext.nextHopParameter.bits_unused = 0;
-    memcpy(ies->securityContext.nextHopParameter.buf,
-            mme_ue->nh, ies->securityContext.nextHopParameter.size);
+    SecurityContext->nextHopParameter.bits_unused = 0;
+    memcpy(SecurityContext->nextHopParameter.buf,
+            mme_ue->nh, SecurityContext->nextHopParameter.size);
 
-    message.procedureCode = S1AP_ProcedureCode_id_PathSwitchRequest;
-    message.direction = S1AP_PDU_PR_successfulOutcome;
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
-
-    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
-#endif
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }
@@ -1169,32 +1218,80 @@ status_t s1ap_build_path_switch_failure(pkbuf_t **s1apbuf,
     c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
     S1AP_Cause_PR group, long cause)
 {
-#if 0
-    int encoded;
-    s1ap_message_t message;
-    S1AP_PathSwitchRequestFailureIEs_t *ies = 
-        &message.s1ap_PathSwitchRequestFailureIEs;
+    status_t rv;
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
+    S1AP_PathSwitchRequestFailure_t *PathSwitchRequestFailure = NULL;
+
+    S1AP_PathSwitchRequestFailureIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_Cause_t *Cause = NULL;
 
     d_trace(3, "[MME] Path switch failure\n");
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_unsuccessfulOutcome;
+    pdu.choice.unsuccessfulOutcome = 
+        core_calloc(1, sizeof(S1AP_UnsuccessfulOutcome_t));
+
+    unsuccessfulOutcome = pdu.choice.unsuccessfulOutcome;
+    unsuccessfulOutcome->procedureCode =
+        S1AP_ProcedureCode_id_PathSwitchRequest;
+    unsuccessfulOutcome->criticality = S1AP_Criticality_reject;
+    unsuccessfulOutcome->value.present =
+        S1AP_UnsuccessfulOutcome__value_PR_PathSwitchRequestFailure;
+
+    PathSwitchRequestFailure =
+        &unsuccessfulOutcome->value.choice.PathSwitchRequestFailure;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestFailureIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestFailure->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_PathSwitchRequestFailureIEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestFailureIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestFailure->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_PathSwitchRequestFailureIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestFailureIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequestFailure->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_Cause;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PathSwitchRequestFailureIEs__value_PR_Cause;
+
+    Cause = &ie->value.choice.Cause;
+
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue_s1ap_id, mme_ue_s1ap_id);
     d_trace(5, "    Group[%d] Cause[%d]\n", group, cause);
 
-    ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
-    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
-    ies->cause.present = group;
-    ies->cause.choice.radioNetwork = cause;
+    *MME_UE_S1AP_ID = mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
 
-    message.procedureCode = S1AP_ProcedureCode_id_PathSwitchRequest;
-    message.direction = S1AP_PDU_PR_unsuccessfulOutcome;
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    encoded = s1ap_encode_pdu(s1apbuf, &message);
-    s1ap_free_pdu(&message);
-
-    d_assert(s1apbuf && encoded >= 0,return CORE_ERROR,);
-#endif
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
 
     return CORE_OK;
 }

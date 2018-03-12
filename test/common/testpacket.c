@@ -1697,29 +1697,100 @@ status_t tests1ap_build_deactivate_bearer_accept(
     return CORE_OK;
 }
 
-#if 0
 status_t tests1ap_build_path_switch_request(
         pkbuf_t **pkbuf, int target,
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         int num_of_bearer, c_uint8_t ebi, c_uint32_t teid)
 {
-    int erval = -1;
-
     status_t rv;
     int i;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_PathSwitchRequest_t *PathSwitchRequest = NULL;
+
+    S1AP_PathSwitchRequestIEs_t *ie = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_E_RABToBeSwitchedDLList_t *E_RABToBeSwitchedDLList = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_EUTRAN_CGI_t *EUTRAN_CGI = NULL;
+    S1AP_TAI_t *TAI = NULL;
+    S1AP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
+
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    s1ap_message_t message;
-    S1AP_PathSwitchRequestIEs_t *ies =
-            &message.s1ap_PathSwitchRequestIEs;
-    S1AP_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
-    S1AP_EUTRAN_CGI_t *eutran_cgi = &ies->eutran_cgi;
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_PathSwitchRequest;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_PathSwitchRequest;
 
-    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
-    ies->sourceMME_UE_S1AP_ID = mme_ue_s1ap_id;
+    PathSwitchRequest = &initiatingMessage->value.choice.PathSwitchRequest;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_PathSwitchRequestIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABToBeSwitchedDLList;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_PathSwitchRequestIEs__value_PR_E_RABToBeSwitchedDLList;
+
+    E_RABToBeSwitchedDLList = &ie->value.choice.E_RABToBeSwitchedDLList;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_SourceMME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_PathSwitchRequestIEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_EUTRAN_CGI;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PathSwitchRequestIEs__value_PR_EUTRAN_CGI;
+
+    EUTRAN_CGI = &ie->value.choice.EUTRAN_CGI;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_TAI;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_PathSwitchRequestIEs__value_PR_TAI;
+
+    TAI = &ie->value.choice.TAI;
+
+    ie = core_calloc(1, sizeof(S1AP_PathSwitchRequestIEs_t));
+    ASN_SEQUENCE_ADD(&PathSwitchRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_PathSwitchRequestIEs__value_PR_UESecurityCapabilities;
+
+    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+
+    *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
+    *MME_UE_S1AP_ID = mme_ue_s1ap_id;
 
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(mme_ue_s1ap_id);
     d_assert(enb_ue, return CORE_ERROR,);
@@ -1728,12 +1799,23 @@ status_t tests1ap_build_path_switch_request(
 
     for (i = 0; i < num_of_bearer; i++)
     {
+        S1AP_E_RABToBeSwitchedDLItemIEs_t *item = NULL;
+        S1AP_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
+
         gtp_f_teid_t f_teid;
         ip_t ip;
         int len;
 
-        e_rab = (S1AP_E_RABToBeSwitchedDLItem_t *)
-            core_calloc(1, sizeof(S1AP_E_RABToBeSwitchedDLItem_t));
+        item = core_calloc( 1, sizeof(S1AP_E_RABToBeSwitchedDLItemIEs_t));
+        ASN_SEQUENCE_ADD(&E_RABToBeSwitchedDLList->list, item);
+
+        item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSwitchedDLItem;
+        item->criticality = S1AP_Criticality_reject;
+        item->value.present = 
+            S1AP_E_RABToBeSwitchedDLItemIEs__value_PR_E_RABToBeSwitchedDLItem;
+
+        e_rab = &item->value.choice.E_RABToBeSwitchedDLItem;
+
         e_rab->e_RAB_ID = ebi+i;
 
         if (target == 0)
@@ -1749,58 +1831,52 @@ status_t tests1ap_build_path_switch_request(
         rv = s1ap_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
         s1ap_uint32_to_OCTET_STRING(teid+i, &e_rab->gTP_TEID);
-
-        ASN_SEQUENCE_ADD(&ies->e_RABToBeSwitchedDLList, e_rab);
     }
 
     s1ap_buffer_to_OCTET_STRING(
-            &mme_ue->e_cgi.plmn_id, PLMN_ID_LEN, &ies->eutran_cgi.pLMNidentity);
-    eutran_cgi->cell_ID.size = 4;
-    eutran_cgi->cell_ID.buf =  core_calloc(
-         eutran_cgi->cell_ID.size, sizeof(c_uint8_t));
-    d_assert(eutran_cgi->cell_ID.buf, return CORE_ERROR,);
-    eutran_cgi->cell_ID.buf[0] = (mme_ue->e_cgi.cell_id >> 24);
-    eutran_cgi->cell_ID.buf[1] = (mme_ue->e_cgi.cell_id >> 16);
-    eutran_cgi->cell_ID.buf[2] = (mme_ue->e_cgi.cell_id >> 8);
-    eutran_cgi->cell_ID.buf[3] = (mme_ue->e_cgi.cell_id);
-    eutran_cgi->cell_ID.bits_unused = 4;
+            &mme_ue->e_cgi.plmn_id, PLMN_ID_LEN, &EUTRAN_CGI->pLMNidentity);
+    EUTRAN_CGI->cell_ID.size = 4;
+    EUTRAN_CGI->cell_ID.buf =  core_calloc(
+         EUTRAN_CGI->cell_ID.size, sizeof(c_uint8_t));
+    d_assert(EUTRAN_CGI->cell_ID.buf, return CORE_ERROR,);
+    EUTRAN_CGI->cell_ID.buf[0] = (mme_ue->e_cgi.cell_id >> 24);
+    EUTRAN_CGI->cell_ID.buf[1] = (mme_ue->e_cgi.cell_id >> 16);
+    EUTRAN_CGI->cell_ID.buf[2] = (mme_ue->e_cgi.cell_id >> 8);
+    EUTRAN_CGI->cell_ID.buf[3] = (mme_ue->e_cgi.cell_id);
+    EUTRAN_CGI->cell_ID.bits_unused = 4;
 
     s1ap_uint16_to_OCTET_STRING(
-            mme_ue->tai.tac, &ies->tai.tAC);
+            mme_ue->tai.tac, &TAI->tAC);
     s1ap_buffer_to_OCTET_STRING(
-            &mme_ue->tai.plmn_id, PLMN_ID_LEN, &ies->tai.pLMNidentity);
+            &mme_ue->tai.plmn_id, PLMN_ID_LEN, &TAI->pLMNidentity);
 
-    ies->ueSecurityCapabilities.encryptionAlgorithms.size = 2;
-    ies->ueSecurityCapabilities.encryptionAlgorithms.buf = 
-        core_calloc(ies->ueSecurityCapabilities.encryptionAlgorithms.size, 
+    UESecurityCapabilities->encryptionAlgorithms.size = 2;
+    UESecurityCapabilities->encryptionAlgorithms.buf = 
+        core_calloc(UESecurityCapabilities->encryptionAlgorithms.size, 
                     sizeof(c_uint8_t));
-    ies->ueSecurityCapabilities.encryptionAlgorithms.bits_unused = 0;
-    ies->ueSecurityCapabilities.encryptionAlgorithms.buf[0] = 
+    UESecurityCapabilities->encryptionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->encryptionAlgorithms.buf[0] = 
         (mme_ue->ue_network_capability.eea << 1);
 
-    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.size = 2;
-    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf =
-        core_calloc(ies->ueSecurityCapabilities.
+    UESecurityCapabilities->integrityProtectionAlgorithms.size = 2;
+    UESecurityCapabilities->integrityProtectionAlgorithms.buf =
+        core_calloc(UESecurityCapabilities->
                         integrityProtectionAlgorithms.size, sizeof(c_uint8_t));
-    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.bits_unused = 0;
-    ies->ueSecurityCapabilities.integrityProtectionAlgorithms.buf[0] =
+    UESecurityCapabilities->integrityProtectionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->integrityProtectionAlgorithms.buf[0] =
         (mme_ue->ue_network_capability.eia << 1);
 
-    message.procedureCode = S1AP_ProcedureCode_id_PathSwitchRequest;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
+    rv = s1ap_encode_pdu(pkbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    erval = s1ap_encode_pdu(pkbuf, &message);
-    s1ap_free_pdu(&message);
-
-    if (erval < 0)
+    if (rv != CORE_OK)
     {
-        d_error("s1ap_encode_error : (%d)", erval);
+        d_error("s1ap_encode_pdu() failed");
         return CORE_ERROR;
     }
 
     return CORE_OK;
 }
-#endif
 
 status_t tests1ap_build_handover_required(
         pkbuf_t **pkbuf, int i)

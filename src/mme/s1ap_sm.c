@@ -91,12 +91,12 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, pdu);
                             break;
                         }
-#if 0
                         case S1AP_ProcedureCode_id_PathSwitchRequest:
                         {
                             s1ap_handle_path_switch_request(enb, pdu);
                             break;
                         }
+#if 0
                         case S1AP_ProcedureCode_id_HandoverPreparation:
                         {
                             s1ap_handle_handover_required(enb, pdu);
