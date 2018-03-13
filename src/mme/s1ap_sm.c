@@ -110,25 +110,21 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                             s1ap_handle_handover_required(enb, pdu);
                             break;
                         }
-#if 0
                         case S1AP_ProcedureCode_id_HandoverCancel:
                         {
                             s1ap_handle_handover_cancel(enb, pdu);
                             break;
                         }
-#endif
                         case S1AP_ProcedureCode_id_eNBStatusTransfer:
                         {
                             s1ap_handle_enb_status_transfer(enb, pdu);
                             break;
                         }
-#if 0
                         case S1AP_ProcedureCode_id_HandoverNotification:
                         {
                             s1ap_handle_handover_notification(enb, pdu);
                             break;
                         }
-#endif
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d)",

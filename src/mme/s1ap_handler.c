@@ -1643,34 +1643,68 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
         S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 0);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 }
+#endif
 
 void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
 {
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
+    int i;
+
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_HandoverCancel_t *HandoverCancel = NULL;
+
+    S1AP_HandoverCancelIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_Cause_t *Cause = NULL;
 
     enb_ue_t *source_ue = NULL;
     enb_ue_t *target_ue = NULL;
 
-    S1AP_HandoverCancelIEs_t *ies = NULL;
-
     d_assert(enb, return,);
+    d_assert(enb->sock, return,);
 
-    ies = &message->s1ap_HandoverCancelIEs;
-    d_assert(ies, return,);
+    d_assert(message, return,);
+    initiatingMessage = message->choice.initiatingMessage;
+    d_assert(initiatingMessage, return,);
+    HandoverCancel = &initiatingMessage->value.choice.HandoverCancel;
+    d_assert(HandoverCancel, return,);
 
     d_trace(3, "[MME] Handover cancel\n");
+    for (i = 0; i < HandoverCancel->protocolIEs.list.count; i++)
+    {
+        ie = HandoverCancel->protocolIEs.list.array[i];
+        switch(ie->id)
+        {
+            case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+                MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+                break;
+            case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+                ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+                break;
+            case S1AP_ProtocolIE_ID_id_Cause:
+                Cause = &ie->value.choice.Cause;
+                break;
+            default:
+                break;
+        }
+    }
     d_trace(5, "    IP[%s] ENB_ID[%d]\n",
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-    source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(MME_UE_S1AP_ID, return,);
+    d_assert(ENB_UE_S1AP_ID, return,);
+    d_assert(Cause, return,);
+
+    source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
     d_assert(source_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
-            ies->eNB_UE_S1AP_ID,
+            *ENB_UE_S1AP_ID,
             CORE_ADDR(enb->addr, buf), enb->enb_id);
-    d_assert(source_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
+    d_assert(source_ue->mme_ue_s1ap_id == *MME_UE_S1AP_ID, return,
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
-            source_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
+            source_ue->mme_ue_s1ap_id, *MME_UE_S1AP_ID);
 
     target_ue = source_ue->target_ue;
     d_assert(target_ue, return,);
@@ -1694,7 +1728,6 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
             source_ue->enb_ue_s1ap_id,
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 }
-#endif
 
 void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
 {
@@ -1771,11 +1804,24 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(rv == CORE_OK,,);
 }
 
-#if 0
 void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
 {
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
+    int i;
+
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_HandoverNotify_t *HandoverNotify = NULL;
+
+    S1AP_HandoverNotifyIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_EUTRAN_CGI_t *EUTRAN_CGI = NULL;
+    S1AP_TAI_t *TAI = NULL;
+
+	S1AP_PLMNidentity_t *pLMNidentity = NULL;
+	S1AP_CellIdentity_t	*cell_ID = NULL;
+	S1AP_TAC_t *tAC = NULL;
 
     enb_ue_t *source_ue = NULL;
     enb_ue_t *target_ue = NULL;
@@ -1783,44 +1829,62 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
-    S1AP_HandoverNotifyIEs_t *ies = NULL;
-    S1AP_EUTRAN_CGI_t *eutran_cgi;
-	S1AP_PLMNidentity_t *PLMNidentity = NULL;
-	S1AP_CellIdentity_t	*cell_ID = NULL;
-    S1AP_TAI_t *tai;
-	S1AP_TAC_t *tAC = NULL;
-
     d_assert(enb, return,);
+    d_assert(enb->sock, return,);
 
-    ies = &message->s1ap_HandoverNotifyIEs;
-    d_assert(ies, return,);
+    d_assert(message, return,);
+    initiatingMessage = message->choice.initiatingMessage;
+    d_assert(initiatingMessage, return,);
+    HandoverNotify = &initiatingMessage->value.choice.HandoverNotify;
+    d_assert(HandoverNotify, return,);
 
     d_trace(3, "[MME] Handover notification\n");
+    for (i = 0; i < HandoverNotify->protocolIEs.list.count; i++)
+    {
+        ie = HandoverNotify->protocolIEs.list.array[i];
+        switch(ie->id)
+        {
+            case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+                MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+                break;
+            case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+                ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+                break;
+            case S1AP_ProtocolIE_ID_id_EUTRAN_CGI:
+                EUTRAN_CGI = &ie->value.choice.EUTRAN_CGI;
+                break;
+            case S1AP_ProtocolIE_ID_id_TAI:
+                TAI = &ie->value.choice.TAI;
+                break;
+            default:
+                break;
+        }
+    }
     d_trace(5, "    IP[%s] ENB_ID[%d]\n",
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-    eutran_cgi = &ies->eutran_cgi;
-    d_assert(eutran_cgi, return,);
-    PLMNidentity = &eutran_cgi->PLMNidentity;
-    d_assert(PLMNidentity && PLMNidentity->size == sizeof(plmn_id_t), return,);
-    cell_ID = &eutran_cgi->cell_ID;
+    d_assert(EUTRAN_CGI, return,);
+    pLMNidentity = &EUTRAN_CGI->pLMNidentity;
+    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    cell_ID = &EUTRAN_CGI->cell_ID;
     d_assert(cell_ID, return,);
 
-    tai = &ies->tai;
-    d_assert(tai, return,);
-    PLMNidentity = &tai->PLMNidentity;
-    d_assert(PLMNidentity && PLMNidentity->size == sizeof(plmn_id_t), return,);
-    tAC = &tai->tAC;
+    d_assert(TAI, return,);
+    pLMNidentity = &TAI->pLMNidentity;
+    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    tAC = &TAI->tAC;
     d_assert(tAC && tAC->size == sizeof(c_uint16_t), return,);
 
-    target_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, ies->eNB_UE_S1AP_ID);
+    d_assert(ENB_UE_S1AP_ID, return,);
+    d_assert(MME_UE_S1AP_ID, return,);
+    target_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
     d_assert(target_ue, return,
             "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
-            ies->eNB_UE_S1AP_ID,
+            *ENB_UE_S1AP_ID,
             CORE_ADDR(enb->addr, buf), enb->enb_id);
-    d_assert(target_ue->mme_ue_s1ap_id == ies->mme_ue_s1ap_id, return,
+    d_assert(target_ue->mme_ue_s1ap_id == *MME_UE_S1AP_ID, return,
             "Conflict MME-UE-S1AP-ID : %d != %d\n",
-            target_ue->mme_ue_s1ap_id, ies->mme_ue_s1ap_id);
+            target_ue->mme_ue_s1ap_id, *MME_UE_S1AP_ID);
 
     source_ue = target_ue->source_ue;
     d_assert(source_ue, return,);
@@ -1834,12 +1898,12 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
 
     mme_ue_associate_enb_ue(mme_ue, target_ue);
 
-    memcpy(&target_ue->nas.tai.plmn_id, PLMNidentity->buf, 
+    memcpy(&target_ue->nas.tai.plmn_id, pLMNidentity->buf, 
             sizeof(target_ue->nas.tai.plmn_id));
     memcpy(&target_ue->nas.tai.tac, tAC->buf, sizeof(target_ue->nas.tai.tac));
     target_ue->nas.tai.tac = ntohs(target_ue->nas.tai.tac);
 
-    memcpy(&target_ue->nas.e_cgi.plmn_id, PLMNidentity->buf, 
+    memcpy(&target_ue->nas.e_cgi.plmn_id, pLMNidentity->buf, 
             sizeof(target_ue->nas.e_cgi.plmn_id));
     memcpy(&target_ue->nas.e_cgi.cell_id, cell_ID->buf,
             sizeof(target_ue->nas.e_cgi.cell_id));
@@ -1878,4 +1942,3 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
         sess = mme_sess_next(sess);
     }
 }
-#endif

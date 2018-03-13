@@ -1930,7 +1930,7 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
             *enb_statustransfer_transparentContainer)
 {
     status_t rv;
-//    int i;
+    int i;
 
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -1939,10 +1939,8 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
     S1AP_MMEStatusTransferIEs_t *ie = NULL;
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
-#if 0
     S1AP_ENB_StatusTransfer_TransparentContainer_t
         *ENB_StatusTransfer_TransparentContainer = NULL;
-#endif
 
     d_assert(target_ue, return CORE_ERROR,);
     d_assert(enb_statustransfer_transparentContainer, return CORE_ERROR,);
@@ -1980,7 +1978,6 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
 
     ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
 
-#if 0
     ie = core_calloc(1, sizeof(S1AP_MMEStatusTransferIEs_t));
     ASN_SEQUENCE_ADD(&MMEStatusTransfer->protocolIEs, ie);
 
@@ -1991,7 +1988,6 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
 
     ENB_StatusTransfer_TransparentContainer =
         &ie->value.choice.ENB_StatusTransfer_TransparentContainer;
-#endif
 
     *MME_UE_S1AP_ID = target_ue->mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = target_ue->enb_ue_s1ap_id;
@@ -1999,28 +1995,15 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
     d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
-#if 0
-    for (i = 0; i < enb_ies->value.choice.
-            ENB_StatusTransfer_TransparentContainer.
+    for (i = 0; i < enb_statustransfer_transparentContainer->
             bearers_SubjectToStatusTransferList.list.count; i++)
     {
-        S1AP_Bearers_SubjectToStatusTransferList_IEs_t *mme_ie = NULL;
-        S1AP_Bearers_SubjectToStatusTransferList_t *mme_list = NULL;
-        S1AP_IE_t *enb_ie = NULL, *mme_ie = NULL;
-
-        enb_ie = (S1AP_IE_t *)enb_ies->
-            eNB_StatusTransfer_TransparentContainer.
-            bearers_SubjectToStatusTransferList.list.array[i];
-        d_assert(enb_ie, return CORE_ERROR, "Null param");
-
-        mme_ie = s1ap_copy_ie(enb_ie);
-        d_assert(mme_ie, return CORE_ERROR, "Null param");
-
-        ASN_SEQUENCE_ADD(&mme_ies->
-                eNB_StatusTransfer_TransparentContainer.
-                bearers_SubjectToStatusTransferList, mme_ie);
+        ASN_SEQUENCE_ADD(
+            &ENB_StatusTransfer_TransparentContainer->
+                bearers_SubjectToStatusTransferList.list,
+            enb_statustransfer_transparentContainer->
+                bearers_SubjectToStatusTransferList.list.array[i]);
     }
-#endif
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);
