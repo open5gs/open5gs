@@ -1949,12 +1949,27 @@ status_t tests1ap_build_handover_required(
     return CORE_OK;
 }
 
-#if 0
 CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
         pkbuf_t **pkbuf, int target,
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         int num_of_bearer, c_uint8_t ebi, c_uint32_t teid)
 {
+    status_t rv;
+    int i;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_HandoverRequestAcknowledge_t *HandoverRequestAcknowledge = NULL;
+
+    S1AP_HandoverRequestAcknowledgeIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_E_RABAdmittedList_t *E_RABAdmittedList = NULL;
+    S1AP_E_RABFailedtoSetupListHOReqAck_t
+        *E_RABFailedtoSetupListHOReqAck = NULL;
+    S1AP_Target_ToSource_TransparentContainer_t
+        *Target_ToSource_TransparentContainer = NULL;
+
     char hexbuf[MAX_SDU_LEN];
     char *payload =
         "00 80810bf900d8af40 00a0339057801f47 88009e81de2c20a4"
@@ -1962,31 +1977,83 @@ CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
         "f2214d6dfb82c194 0b10080000020040 bbfd55aeab41ad80 8fd50398381c08fd"
         "503983804d037868 baa016423342bc3a 18b58fa084ca833f a17970acfc10e84e"
         "0004f14550d00096 c88900";
-    int erval = -1;
 
-    status_t rv;
-    int i;
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = 
+        core_calloc(1, sizeof(S1AP_SuccessfulOutcome_t));
 
-    s1ap_message_t message;
-    S1AP_HandoverRequestAcknowledgeIEs_t *ies =
-            &message.s1ap_HandoverRequestAcknowledgeIEs;
-    S1AP_E_RABAdmittedItem_t *e_rab = NULL;
-    S1AP_Target_ToSource_TransparentContainer_t *container =
-        &ies->target_ToSource_TransparentContainer;
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode = S1AP_ProcedureCode_id_HandoverResourceAllocation;
+    successfulOutcome->criticality = S1AP_Criticality_reject;
+    successfulOutcome->value.present =
+        S1AP_SuccessfulOutcome__value_PR_HandoverRequestAcknowledge;
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    HandoverRequestAcknowledge =
+        &successfulOutcome->value.choice.HandoverRequestAcknowledge;
 
-    ies->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
-    ies->mme_ue_s1ap_id = mme_ue_s1ap_id;
+    ie = core_calloc(1, sizeof(S1AP_HandoverRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
 
-   for (i = 0; i < num_of_bearer; i++)
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_HandoverRequestAcknowledgeIEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_HandoverRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_HandoverRequestAcknowledgeIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = core_calloc(1, sizeof(S1AP_HandoverRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_E_RABAdmittedList;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_HandoverRequestAcknowledgeIEs__value_PR_E_RABAdmittedList;
+
+    E_RABAdmittedList = &ie->value.choice.E_RABAdmittedList;
+
+    ie = core_calloc(1, sizeof(S1AP_HandoverRequestAcknowledgeIEs_t));
+    ASN_SEQUENCE_ADD(&HandoverRequestAcknowledge->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_Target_ToSource_TransparentContainer;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_HandoverRequestAcknowledgeIEs__value_PR_Target_ToSource_TransparentContainer;
+
+    Target_ToSource_TransparentContainer =
+        &ie->value.choice.Target_ToSource_TransparentContainer;
+
+    *MME_UE_S1AP_ID = mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
+
+    for (i = 0; i < num_of_bearer; i++)
     {
+        S1AP_E_RABAdmittedItemIEs_t *item = NULL;
+        S1AP_E_RABAdmittedItem_t *e_rab = NULL;
+
         gtp_f_teid_t f_teid;
         ip_t ip;
         int len;
 
-        e_rab = (S1AP_E_RABAdmittedItem_t *)
-            core_calloc(1, sizeof(S1AP_E_RABAdmittedItem_t));
+        item = core_calloc(1, sizeof(S1AP_E_RABAdmittedItemIEs_t));
+        ASN_SEQUENCE_ADD(&E_RABAdmittedList->list, item);
+
+        item->id = S1AP_ProtocolIE_ID_id_E_RABAdmittedItem;
+        item->criticality = S1AP_Criticality_ignore;
+        item->value.present =
+            S1AP_E_RABAdmittedItemIEs__value_PR_E_RABAdmittedItem;
+
+        e_rab = &item->value.choice.E_RABAdmittedItem;
+
         e_rab->e_RAB_ID = ebi+i;
 
         if (target == 0)
@@ -2012,36 +2079,31 @@ CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
             core_calloc(1, sizeof(S1AP_GTP_TEID_t));
         s1ap_uint32_to_OCTET_STRING(teid+i+10, e_rab->dL_gTP_TEID);
 
-        e_rab->uL_S1AP_TransportLayerAddress =
+        e_rab->uL_TransportLayerAddress =
             (S1AP_TransportLayerAddress_t *)
             core_calloc(1, sizeof(S1AP_TransportLayerAddress_t));
-        rv = s1ap_ip_to_BIT_STRING(&ip, e_rab->uL_S1AP_TransportLayerAddress);
+        rv = s1ap_ip_to_BIT_STRING(&ip, e_rab->uL_TransportLayerAddress);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
-        e_rab->uL_S1AP_GTP_TEID = (S1AP_GTP_TEID_t *)
+        e_rab->uL_GTP_TEID = (S1AP_GTP_TEID_t *)
             core_calloc(1, sizeof(S1AP_GTP_TEID_t));
-        s1ap_uint32_to_OCTET_STRING(teid+i+20, e_rab->uL_S1AP_GTP_TEID);
-
-        ASN_SEQUENCE_ADD(&ies->e_RABAdmittedList, e_rab);
+        s1ap_uint32_to_OCTET_STRING(teid+i+20, e_rab->uL_GTP_TEID);
     }
 
     s1ap_buffer_to_OCTET_STRING(
-            CORE_HEX(payload, strlen(payload), hexbuf), 132, container);
+            CORE_HEX(payload, strlen(payload), hexbuf), 132,
+            Target_ToSource_TransparentContainer);
 
-    message.procedureCode = S1AP_ProcedureCode_id_HandoverResourceAllocation;
-    message.direction = S1AP_PDU_PR_successfulOutcome;
+    rv = s1ap_encode_pdu(pkbuf, &pdu);
+    s1ap_free_pdu(&pdu);
 
-    erval = s1ap_encode_pdu(pkbuf, &message);
-    s1ap_free_pdu(&message);
-
-    if (erval < 0)
+    if (rv != CORE_OK)
     {
-        d_error("s1ap_encode_error : (%d)", erval);
+        d_error("s1ap_encode_pdu() failed");
         return CORE_ERROR;
     }
 
     return CORE_OK;
 }
-#endif
 
 status_t tests1ap_build_handover_request_ack_static(
         pkbuf_t **pkbuf, int i)

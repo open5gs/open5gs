@@ -46,7 +46,7 @@ static asn_oer_constraints_t asn_OER_type_S1AP_BitRate_constr_1 CC_NOTUSED = {
 	{ 8, 1 }	/* (0..10000000000) */,
 	-1};
 asn_per_constraints_t asn_PER_type_S1AP_BitRate_constr_1 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 34, -1,  0,  10000000000 }	/* (0..10000000000) */,
+	{ APC_CONSTRAINED,	 34, -1,  0,  1000000000 }	/* (0..10000000000) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
