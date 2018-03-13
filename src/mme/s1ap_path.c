@@ -371,9 +371,15 @@ status_t s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
 
 
 status_t s1ap_send_handover_request(
-        mme_ue_t *mme_ue, S1AP_HandoverRequiredIEs_t *ies)
+        mme_ue_t *mme_ue,
+        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
+        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
+        S1AP_HandoverType_t *handovertype,
+        S1AP_Cause_t *cause,
+        S1AP_TargetID_t *targetid,
+        S1AP_Source_ToTarget_TransparentContainer_t
+            *source_totarget_transparentContainer)
 {
-#if 0
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
     S1AP_TargetID_t *targetID = NULL;
@@ -387,17 +393,15 @@ status_t s1ap_send_handover_request(
     d_assert(mme_ue, return CORE_ERROR,);
     source_ue = mme_ue->enb_ue;
     d_assert(source_ue, return CORE_ERROR,);
-    d_assert(ies, return CORE_ERROR,);
 
-    targetID = &ies->targetID;
-    d_assert(targetID, return CORE_ERROR,);
+    d_assert(targetid, return CORE_ERROR,);
 
-    switch(targetID->present)
+    switch(targetid->present)
     {
         case S1AP_TargetID_PR_targeteNB_ID:
         {
             s1ap_ENB_ID_to_uint32(
-                &targetID->choice.targeteNB_ID.global_S1AP_ENB_ID.eNB_ID,
+                &targetid->choice.targeteNB_ID->global_ENB_ID.eNB_ID,
                 &enb_id);
             break;
         }
@@ -426,20 +430,22 @@ status_t s1ap_send_handover_request(
     rv = source_ue_associate_target_ue(source_ue, target_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    rv = s1ap_build_handover_request(&s1apbuf, mme_ue, target_ue, ies);
+    rv = s1ap_build_handover_request(&s1apbuf, mme_ue, target_ue,
+            enb_ue_s1ap_id, mme_ue_s1ap_id,
+            handovertype, cause, targetid,
+            source_totarget_transparentContainer);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_send_to_enb(target_enb, s1apbuf);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
-#else
-    return CORE_OK;
-#endif
 }
 
 status_t s1ap_send_mme_status_transfer(
-        enb_ue_t *target_ue, S1AP_ENBStatusTransferIEs_t *ies)
+        enb_ue_t *target_ue,
+        S1AP_ENB_StatusTransfer_TransparentContainer_t
+            *enb_statustransfer_transparentContainer)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
@@ -450,7 +456,8 @@ status_t s1ap_send_mme_status_transfer(
     enb = target_ue->enb;
     d_assert(enb, return CORE_ERROR,);
 
-    rv = s1ap_build_mme_status_transfer(&s1apbuf, target_ue, ies);
+    rv = s1ap_build_mme_status_transfer(&s1apbuf, target_ue,
+            enb_statustransfer_transparentContainer);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_send_to_enb(enb, s1apbuf);

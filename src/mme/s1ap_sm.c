@@ -96,22 +96,33 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                             s1ap_handle_path_switch_request(enb, pdu);
                             break;
                         }
-#if 0
+                        case S1AP_ProcedureCode_id_eNBConfigurationTransfer:
+                        {
+                            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
+                            d_assert(pkbuf, break, "Null param");
+
+                            s1ap_handle_enb_configuration_transfer(
+                                    enb, pdu, pkbuf);
+                            break;
+                        }
                         case S1AP_ProcedureCode_id_HandoverPreparation:
                         {
                             s1ap_handle_handover_required(enb, pdu);
                             break;
                         }
+#if 0
                         case S1AP_ProcedureCode_id_HandoverCancel:
                         {
                             s1ap_handle_handover_cancel(enb, pdu);
                             break;
                         }
+#endif
                         case S1AP_ProcedureCode_id_eNBStatusTransfer:
                         {
                             s1ap_handle_enb_status_transfer(enb, pdu);
                             break;
                         }
+#if 0
                         case S1AP_ProcedureCode_id_HandoverNotification:
                         {
                             s1ap_handle_handover_notification(enb, pdu);
@@ -162,13 +173,11 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, pdu);
                             break;
                         }
-#if 0
                         case S1AP_ProcedureCode_id_HandoverResourceAllocation:
                         {
                             s1ap_handle_handover_request_ack(enb, pdu);
                             break;
                         }
-#endif
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d)",

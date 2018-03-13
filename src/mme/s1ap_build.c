@@ -1451,27 +1451,20 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
             S1AP_E_RABDataForwardingItemIEs_t *item = NULL;
             S1AP_E_RABDataForwardingItem_t *e_rab = NULL;
 
-            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
-                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
-            {
-                item = core_calloc(
-                        1, sizeof(S1AP_E_RABDataForwardingItemIEs_t));
-                ASN_SEQUENCE_ADD(&E_RABSubjecttoDataForwardingList->list, item);
+            item = core_calloc(
+                    1, sizeof(S1AP_E_RABDataForwardingItemIEs_t));
+            ASN_SEQUENCE_ADD(&E_RABSubjecttoDataForwardingList->list, item);
 
-                item->id = S1AP_ProtocolIE_ID_id_E_RABDataForwardingItem;
-                item->criticality = S1AP_Criticality_ignore;
-                item->value.present = S1AP_E_RABDataForwardingItemIEs__value_PR_E_RABDataForwardingItem;
+            item->id = S1AP_ProtocolIE_ID_id_E_RABDataForwardingItem;
+            item->criticality = S1AP_Criticality_ignore;
+            item->value.present = S1AP_E_RABDataForwardingItemIEs__value_PR_E_RABDataForwardingItem;
 
-                e_rab = &item->value.choice.E_RABDataForwardingItem;
+            e_rab = &item->value.choice.E_RABDataForwardingItem;
 
-                e_rab = (S1AP_E_RABDataForwardingItem_t *)
-                    core_calloc(1, sizeof(S1AP_E_RABDataForwardingItem_t));
-                e_rab->e_RAB_ID = bearer->ebi;
-            }
+            e_rab->e_RAB_ID = bearer->ebi;
 
             if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer))
             {
-                d_assert(e_rab, return CORE_ERROR,);
                 e_rab->dL_transportLayerAddress =
                     (S1AP_TransportLayerAddress_t *)
                     core_calloc(1, sizeof(S1AP_TransportLayerAddress_t));
@@ -1486,9 +1479,8 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
                 d_trace(5, "    SGW-DL-TEID[%d]\n", bearer->sgw_dl_teid);
             }
 
-            if (e_rab && MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            if (MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
             {
-                d_assert(e_rab, return CORE_ERROR,);
                 e_rab->uL_TransportLayerAddress =
                     (S1AP_TransportLayerAddress_t *)
                     core_calloc(1, sizeof(S1AP_TransportLayerAddress_t));
@@ -1611,7 +1603,13 @@ status_t s1ap_build_handover_preparation_failure(
 
 status_t s1ap_build_handover_request(
         pkbuf_t **s1apbuf, mme_ue_t *mme_ue, enb_ue_t *target_ue,
-        S1AP_HandoverRequiredIEs_t *required)
+        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
+        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
+        S1AP_HandoverType_t *handovertype,
+        S1AP_Cause_t *cause,
+        S1AP_TargetID_t *targetid,
+        S1AP_Source_ToTarget_TransparentContainer_t
+            *source_totarget_transparentContainer)
 {
     status_t rv;
 
@@ -1634,9 +1632,12 @@ status_t s1ap_build_handover_request(
     mme_bearer_t *bearer = NULL;
     s6a_subscription_data_t *subscription_data = NULL;
 
+    d_assert(handovertype, return CORE_ERROR,);
+    d_assert(cause, return CORE_ERROR,);
+    d_assert(source_totarget_transparentContainer, return CORE_ERROR,);
+
     d_assert(target_ue, return CORE_ERROR, "Null param");
     d_assert(mme_ue, return CORE_ERROR, "Null param");
-    d_assert(required, return CORE_ERROR, "Null param");
     subscription_data = &mme_ue->subscription_data;
     d_assert(subscription_data, return CORE_ERROR, "Null param");
 
@@ -1733,10 +1734,9 @@ status_t s1ap_build_handover_request(
     SecurityContext = &ie->value.choice.SecurityContext;
 
     *MME_UE_S1AP_ID = target_ue->mme_ue_s1ap_id;
-    *HandoverType = required->value.choice.HandoverType;
-    Cause->present = required->value.choice.Cause.present;
-    Cause->choice.radioNetwork =
-        required->value.choice.Cause.choice.radioNetwork;
+    *HandoverType = *handovertype;
+    Cause->present = cause->present;
+    Cause->choice.radioNetwork = cause->choice.radioNetwork;
 
     asn_uint642INTEGER(
             &UEAggregateMaximumBitrate->uEaggregateMaximumBitRateUL, 
@@ -1815,8 +1815,8 @@ status_t s1ap_build_handover_request(
     }
 
     s1ap_buffer_to_OCTET_STRING(
-            required->value.choice.Source_ToTarget_TransparentContainer.buf, 
-            required->value.choice.Source_ToTarget_TransparentContainer.size, 
+            source_totarget_transparentContainer->buf, 
+            source_totarget_transparentContainer->size, 
             Source_ToTarget_TransparentContainer);
 
     UESecurityCapabilities->encryptionAlgorithms.size = 2;
@@ -1925,10 +1925,12 @@ status_t s1ap_build_handover_cancel_ack(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
 }
 
 status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
-        enb_ue_t *target_ue, S1AP_ENBStatusTransferIEs_t *enb_ies)
+        enb_ue_t *target_ue,
+        S1AP_ENB_StatusTransfer_TransparentContainer_t
+            *enb_statustransfer_transparentContainer)
 {
     status_t rv;
-    int i;
+//    int i;
 
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -1943,7 +1945,7 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
 #endif
 
     d_assert(target_ue, return CORE_ERROR,);
-    d_assert(enb_ies, return CORE_ERROR,);
+    d_assert(enb_statustransfer_transparentContainer, return CORE_ERROR,);
     
     d_trace(3, "[MME] MME status transfer\n");
 
@@ -1978,6 +1980,7 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
 
     ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
 
+#if 0
     ie = core_calloc(1, sizeof(S1AP_MMEStatusTransferIEs_t));
     ASN_SEQUENCE_ADD(&MMEStatusTransfer->protocolIEs, ie);
 
@@ -1986,7 +1989,6 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
     ie->value.present =
     S1AP_MMEStatusTransferIEs__value_PR_ENB_StatusTransfer_TransparentContainer;
 
-#if 0
     ENB_StatusTransfer_TransparentContainer =
         &ie->value.choice.ENB_StatusTransfer_TransparentContainer;
 #endif
@@ -1997,11 +1999,11 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
     d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
+#if 0
     for (i = 0; i < enb_ies->value.choice.
             ENB_StatusTransfer_TransparentContainer.
             bearers_SubjectToStatusTransferList.list.count; i++)
     {
-#if 0
         S1AP_Bearers_SubjectToStatusTransferList_IEs_t *mme_ie = NULL;
         S1AP_Bearers_SubjectToStatusTransferList_t *mme_list = NULL;
         S1AP_IE_t *enb_ie = NULL, *mme_ie = NULL;
@@ -2017,8 +2019,8 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
         ASN_SEQUENCE_ADD(&mme_ies->
                 eNB_StatusTransfer_TransparentContainer.
                 bearers_SubjectToStatusTransferList, mme_ie);
-#endif
     }
+#endif
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);

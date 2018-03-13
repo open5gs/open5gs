@@ -44,17 +44,29 @@ CORE_DECLARE(status_t) s1ap_send_path_switch_failure(mme_enb_t *enb,
     c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
     S1AP_Cause_PR group, long cause);
 
+CORE_DECLARE(status_t) s1ap_send_mme_configuration_transfer(
+        mme_enb_t *target_enb, pkbuf_t *pkbuf);
+
 CORE_DECLARE(status_t) s1ap_send_handover_command(enb_ue_t *source_ue);
 CORE_DECLARE(status_t) s1ap_send_handover_preparation_failure(
         enb_ue_t *source_ue, S1AP_Cause_t *cause);
 
 CORE_DECLARE(status_t) s1ap_send_handover_request(
-        mme_ue_t *mme_ue, S1AP_HandoverRequiredIEs_t *required);
+        mme_ue_t *mme_ue,
+        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
+        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
+        S1AP_HandoverType_t *handovertype,
+        S1AP_Cause_t *cause,
+        S1AP_TargetID_t *targetid,
+        S1AP_Source_ToTarget_TransparentContainer_t
+            *source_totarget_transparentContainer);
 
 CORE_DECLARE(status_t) s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
 
 CORE_DECLARE(status_t) s1ap_send_mme_status_transfer(
-        enb_ue_t *target_ue, S1AP_ENBStatusTransferIEs_t *ies);
+        enb_ue_t *target_ue,
+        S1AP_ENB_StatusTransfer_TransparentContainer_t
+            *enb_statustransfer_transparentContainer);
 CORE_DECLARE(status_t) s1ap_send_error_indication(
         mme_enb_t *enb,
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
