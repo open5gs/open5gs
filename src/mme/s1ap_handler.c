@@ -859,7 +859,9 @@ void s1ap_handle_ue_context_release_request(
     {
         d_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]", *MME_UE_S1AP_ID);
         rv = s1ap_send_error_indication(enb, 
-                MME_UE_S1AP_ID, ENB_UE_S1AP_ID, Cause);
+                MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
         d_assert(rv == CORE_OK, return, "s1ap send error");
         return;
     }

@@ -2016,7 +2016,7 @@ status_t s1ap_build_error_indication(
         pkbuf_t **s1apbuf,
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
-        S1AP_Cause_t *cause)
+        S1AP_Cause_PR group, long cause)
 {
     status_t rv;
 
@@ -2074,23 +2074,20 @@ status_t s1ap_build_error_indication(
         d_trace(5, "    ENB_UE_S1AP_ID[%d]\n", enb_ue_s1ap_id);
     }
 
-    if (cause)
-    {
-        ie = core_calloc(1, sizeof(S1AP_ErrorIndicationIEs_t));
-        ASN_SEQUENCE_ADD(&ErrorIndication->protocolIEs, ie);
+    ie = core_calloc(1, sizeof(S1AP_ErrorIndicationIEs_t));
+    ASN_SEQUENCE_ADD(&ErrorIndication->protocolIEs, ie);
 
-        ie->id = S1AP_ProtocolIE_ID_id_Cause;
-        ie->criticality = S1AP_Criticality_ignore;
-        ie->value.present = S1AP_ErrorIndicationIEs__value_PR_Cause;
+    ie->id = S1AP_ProtocolIE_ID_id_Cause;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_ErrorIndicationIEs__value_PR_Cause;
 
-        Cause = &ie->value.choice.Cause;
+    Cause = &ie->value.choice.Cause;
 
-        Cause->present = cause->present;
-        Cause->choice.radioNetwork = cause->choice.radioNetwork;
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
 
-        d_trace(5, "    Group[%d] Cause[%d]\n",
-                Cause->present, Cause->choice.radioNetwork);
-    }
+    d_trace(5, "    Group[%d] Cause[%d]\n",
+            Cause->present, Cause->choice.radioNetwork);
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);

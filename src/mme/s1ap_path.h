@@ -71,7 +71,7 @@ CORE_DECLARE(status_t) s1ap_send_error_indication(
         mme_enb_t *enb,
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
-        S1AP_Cause_t *cause);
+        S1AP_Cause_PR group, long cause);
 
 #ifdef __cplusplus
 }
