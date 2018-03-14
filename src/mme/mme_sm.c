@@ -277,7 +277,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                  * older S1(enb_ue_t) context */
                 if (ECM_CONNECTED(mme_ue))
                 {
-#if IMPLICIT_S1_RELEASE
+#if 1 /* IMPLICIT_S1_RELEASE */
                    /* Implcit S1 release */
                     d_warn("Implicit S1 release");
                     d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
