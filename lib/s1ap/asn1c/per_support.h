@@ -25,7 +25,11 @@ typedef struct asn_per_constraint_s {
 	int  range_bits;		/* Full number of bits in the range */
 	int  effective_bits;		/* Effective bits */
 	long lower_bound;		/* "lb" value */
+#if 0 /* modified by acetcom */
 	long upper_bound;		/* "ub" value */
+#else
+	int64_t upper_bound;		/* "ub" value */
+#endif
 } asn_per_constraint_t;
 typedef struct asn_per_constraints_s {
 	asn_per_constraint_t value;

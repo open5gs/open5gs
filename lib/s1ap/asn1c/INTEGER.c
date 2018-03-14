@@ -324,6 +324,8 @@ INTEGER_st_prealloc(INTEGER_t *st, int min_size) {
 static enum xer_pbd_rval
 INTEGER__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
                          const void *chunk_buf, size_t chunk_size) {
+    const asn_INTEGER_specifics_t *specs =
+        (const asn_INTEGER_specifics_t *)td->specifics;
     INTEGER_t *st = (INTEGER_t *)sptr;
 	intmax_t dec_value;
 	intmax_t hex_value = 0;
@@ -505,7 +507,9 @@ INTEGER__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
 		/* The last symbol encountered was a digit. */
         switch(asn_strtoimax_lim(dec_value_start, &dec_value_end, &dec_value)) {
         case ASN_STRTOX_OK:
-            if(dec_value >= LONG_MIN && dec_value <= LONG_MAX) {
+            if(specs && specs->field_unsigned && dec_value <= ULONG_MAX) {
+                break;
+            } else if(dec_value >= LONG_MIN && dec_value <= LONG_MAX) {
                 break;
             } else {
                 /*
@@ -879,7 +883,7 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 
 				value += ct->lower_bound;
 				if((specs && specs->field_unsigned)
-				        ? asn_uint642INTEGER(st, value)
+				        ? asn_uint642INTEGER(st, (unsigned long)value)
 				        : asn_int642INTEGER(st, value))
 					ASN__DECODE_FAILED;
 				ASN_DEBUG("Got value %ld + low %ld",
@@ -1044,7 +1048,7 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
 				ASN__ENCODE_FAILED;
 		} else {
 			/* TODO: extend to >64 bits */
-			long v64 = v;
+			int64_t v64 = v;
 			int i, j;
 			int max_range_bytes = (ct->range_bits >> 3) +
 			                      (((ct->range_bits % 8) > 0) ? 1 : 0);
@@ -1056,7 +1060,7 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
 			}
 
 			for (j = sizeof(int64_t) -1; j != 0; j--) {
-				uint8_t val;
+				int64_t val;
 				val = v64 >> (j * 8);
 				if (val != 0)
 					break;
