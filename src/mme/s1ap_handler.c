@@ -1601,29 +1601,58 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     }
 }
 
-#if 0
 void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
 {
     status_t rv;
     char buf[CORE_ADDRSTRLEN];
+    int i;
 
-    S1AP_HandoverFailureIEs_t *ies = NULL;
+    S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
+    S1AP_HandoverFailure_t *HandoverFailure = NULL;
+
+    S1AP_HandoverFailureIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_Cause_t *Cause = NULL;
+
     enb_ue_t *target_ue = NULL;
     enb_ue_t *source_ue = NULL;
 
     d_assert(enb, return,);
+    d_assert(enb->sock, return,);
 
-    ies = &message->s1ap_HandoverFailureIEs;
-    d_assert(ies, return,);
+    d_assert(message, return,);
+    unsuccessfulOutcome = message->choice.unsuccessfulOutcome;
+    d_assert(unsuccessfulOutcome, return,);
+    HandoverFailure = &unsuccessfulOutcome->value.choice.HandoverFailure;
+    d_assert(HandoverFailure, return,);
 
     d_trace(3, "[MME] Handover failure\n");
+    for (i = 0; i < HandoverFailure->protocolIEs.list.count; i++)
+    {
+        ie = HandoverFailure->protocolIEs.list.array[i];
+        switch(ie->id)
+        {
+            case S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID:
+                MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+                break;
+            case S1AP_ProtocolIE_ID_id_Cause:
+                Cause = &ie->value.choice.Cause;
+                break;
+            default:
+                break;
+        }
+    }
+
     d_trace(5, "    IP[%s] ENB_ID[%d]\n",
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-    target_ue = enb_ue_find_by_mme_ue_s1ap_id(ies->mme_ue_s1ap_id);
+    d_assert(MME_UE_S1AP_ID, return,);
+    d_assert(Cause, return,);
+
+    target_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
     d_assert(target_ue, return,
             "Cannot find UE for MME-UE-S1AP-ID[%d] and eNB[%s:%d]",
-            ies->mme_ue_s1ap_id,
+            *MME_UE_S1AP_ID,
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
     source_ue = target_ue->source_ue;
@@ -1634,7 +1663,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
-    rv = s1ap_send_handover_preparation_failure(source_ue, &ies->cause);
+    rv = s1ap_send_handover_preparation_failure(source_ue, Cause);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 
     rv = s1ap_send_ue_context_release_command(
@@ -1643,7 +1672,6 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
         S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 0);
     d_assert(rv == CORE_OK, return, "s1ap send error");
 }
-#endif
 
 void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
 {

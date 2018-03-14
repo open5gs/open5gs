@@ -198,13 +198,11 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                                     enb, pdu);
                             break;
                         }
-#if 0
                         case S1AP_ProcedureCode_id_HandoverResourceAllocation :
                         {
                             s1ap_handle_handover_failure(enb, pdu);
                             break;
                         }
-#endif
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d)",
