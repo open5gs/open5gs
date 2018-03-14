@@ -315,7 +315,7 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-#if IMPLICIT_S1_RELEASE
+#if 1 /* IMPLICIT_S1_RELEASE */
     /* Send UE Context Release Request */
     rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

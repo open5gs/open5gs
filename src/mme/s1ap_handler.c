@@ -271,7 +271,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                  * older S1(enb_ue_t) context */
                 if (ECM_CONNECTED(mme_ue))
                 {
-#if IMPLICIT_S1_RELEASE
+#if 1  /* IMPLICIT_S1_RELEASE */
                    /* Implcit S1 release */
                     d_warn("Implicit S1 release");
                     d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
