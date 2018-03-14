@@ -1930,7 +1930,6 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
             *enb_statustransfer_transparentContainer)
 {
     status_t rv;
-    int i;
 
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -1995,15 +1994,11 @@ status_t s1ap_build_mme_status_transfer(pkbuf_t **s1apbuf,
     d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
-    for (i = 0; i < enb_statustransfer_transparentContainer->
-            bearers_SubjectToStatusTransferList.list.count; i++)
-    {
-        ASN_SEQUENCE_ADD(
-            &ENB_StatusTransfer_TransparentContainer->
-                bearers_SubjectToStatusTransferList.list,
-            enb_statustransfer_transparentContainer->
-                bearers_SubjectToStatusTransferList.list.array[i]);
-    }
+    rv = s1ap_copy_ie(
+            &asn_DEF_S1AP_ENB_StatusTransfer_TransparentContainer,
+            enb_statustransfer_transparentContainer,
+            ENB_StatusTransfer_TransparentContainer);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);

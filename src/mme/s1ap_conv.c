@@ -181,21 +181,31 @@ status_t s1ap_ip_to_BIT_STRING(ip_t *ip, BIT_STRING_t *bit_string)
     return CORE_OK;
 }
 
-#if 0
-S1AP_IE_t *s1ap_copy_ie(S1AP_IE_t *ie)
+status_t s1ap_copy_ie(const asn_TYPE_descriptor_t *td, void *src, void *dst)
 {
-    S1AP_IE_t *buff;
+    asn_enc_rval_t enc_ret = {0};
+    asn_dec_rval_t dec_ret = {0};
+    c_uint8_t buffer[MAX_SDU_LEN];
 
-    buff = core_malloc(sizeof (S1AP_IE_t));
-    d_assert(buff, return NULL,);
+    d_assert(td, return CORE_ERROR,);
+    d_assert(src, return CORE_ERROR,);
+    d_assert(dst, return CORE_ERROR,);
 
-    memset((void *)buff, 0, sizeof(S1AP_IE_t));
-    buff->id = ie->id;
-    buff->criticality = ie->criticality;
-    buff->value.size = ie->value.size;
-    buff->value.buf = core_calloc(1, buff->value.size);
-    memcpy(buff->value.buf, ie->value.buf, buff->value.size);
+    enc_ret = aper_encode_to_buffer(td, NULL, src, buffer, MAX_SDU_LEN);
+    if (enc_ret.encoded < 0)
+    {
+        d_error("aper_encode_to_buffer() failed[%d]", enc_ret.encoded);
+        return CORE_ERROR;
+    }
 
-    return buff;
+    dec_ret = aper_decode(NULL, td, (void **)&dst,
+            buffer, (enc_ret.encoded >> 3), 0, 0);
+
+    if (dec_ret.code != RC_OK) 
+    {
+        d_error("aper_decode() failed[%d]", dec_ret.code);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
 }
-#endif

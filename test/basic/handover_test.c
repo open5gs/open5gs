@@ -649,7 +649,6 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-#if 0
     /* Send eNB Status Transfer */
     rv = tests1ap_build_enb_status_transfer(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -661,7 +660,6 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_read(sock2, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
-#endif
 
     /* Send Handover Notify */
     rv = tests1ap_build_handover_notify(&sendbuf, 0);
@@ -732,7 +730,6 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-#if 0
     /* Send eNB Status Transfer */
     rv = tests1ap_build_enb_status_transfer(&sendbuf, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -744,7 +741,6 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_read(sock1, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
-#endif
 
     /* Send Handover Notify */
     rv = tests1ap_build_handover_notify(&sendbuf, 1);

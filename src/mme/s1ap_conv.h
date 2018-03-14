@@ -27,9 +27,9 @@ CORE_DECLARE(status_t) s1ap_BIT_STRING_to_ip(
 CORE_DECLARE(status_t) s1ap_ip_to_BIT_STRING(
         ip_t *ip, BIT_STRING_t *bit_string);
 
-#if 0
-CORE_DECLARE(S1AP_IE_t *) s1ap_copy_ie(S1AP_IE_t *ie);
-#endif
+CORE_DECLARE(status_t) s1ap_copy_ie(
+        const asn_TYPE_descriptor_t *td, void *src, void *dst);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
