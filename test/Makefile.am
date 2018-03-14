@@ -1,7 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 
-#bin_PROGRAMS = testepc testvolte
-bin_PROGRAMS = testepc
+bin_PROGRAMS = testepc testvolte
 
 configdir = ${sysconfdir}/nextepc/test
 config_DATA = sample.conf sample-volte.conf
@@ -14,12 +13,12 @@ testepc_SOURCES = \
 	basic/attach_test.c basic/volte_test.c basic/handover_test.c \
 	$(NULL)
 
-#testvolte_SOURCES = \
-#	common/abts.h common/abts.c \
-#	common/testpacket.h common/testpacket.c common/testutil.h \
-#	volte/testutil.c volte/testapp.h volte/testapp.c volte/pcscf_fd_path.c \
-#	volte/volte_test.c \
-#	$(NULL)
+testvolte_SOURCES = \
+	common/abts.h common/abts.c \
+	common/testpacket.h common/testpacket.c common/testutil.h \
+	volte/testutil.c volte/testapp.h volte/testapp.c volte/pcscf_fd_path.c \
+	volte/volte_test.c \
+	$(NULL)
 
 LDADD = \
     $(top_srcdir)/src/libepc.la \

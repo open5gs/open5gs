@@ -753,7 +753,7 @@ status_t s1ap_build_e_rab_modify_request(
     item = core_calloc(1, sizeof(S1AP_E_RABToBeModifiedItemBearerModReqIEs_t));
     ASN_SEQUENCE_ADD(&E_RABToBeModifiedListBearerModReq->list, item);
 
-    item->id = S1AP_ProtocolIE_ID_id_E_RABToBeSetupItemBearerSUReq;
+    item->id = S1AP_ProtocolIE_ID_id_E_RABToBeModifiedItemBearerModReq;
     item->criticality = S1AP_Criticality_reject;
     item->value.present = S1AP_E_RABToBeModifiedItemBearerModReqIEs__value_PR_E_RABToBeModifiedItemBearerModReq;
 
