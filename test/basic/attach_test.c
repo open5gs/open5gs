@@ -247,6 +247,13 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->payload+32, tmp+32, 20) == 0);
     pkbuf_free(recvbuf);
 
+#if TEST_INITIAL_CONTEXT_SETUP_FAILURE
+    /* Send Initial Context Setup Failure */
+    rv = tests1ap_build_initial_context_setup_failure(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+#endif
     core_sleep(time_from_msec(300));
 
     rv = testgtpu_build_slacc_rs(&sendbuf, 0);

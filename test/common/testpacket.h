@@ -36,6 +36,8 @@ CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_response(
         pkbuf_t **pkbuf, 
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         c_uint8_t ebi, c_uint32_t teid);
+CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_failure(
+        pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_emm_status(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_detach_request(pkbuf_t **pkbuf, int i);
@@ -74,6 +76,7 @@ CORE_DECLARE(status_t) tests1ap_build_path_switch_request(
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         int num_of_bearer, c_uint8_t ebi, c_uint32_t teid);
 CORE_DECLARE(status_t) tests1ap_build_handover_required(pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_handover_failure(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
         pkbuf_t **pkbuf, int target,
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,

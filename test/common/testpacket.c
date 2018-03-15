@@ -835,6 +835,31 @@ status_t tests1ap_build_initial_context_setup_response(
     return CORE_OK;
 }
 
+status_t tests1ap_build_initial_context_setup_failure(pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "4009 0015000003000040 0200020008400200 01000240020000",
+
+        "",
+        "",
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        25,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
 status_t tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {
@@ -1934,6 +1959,31 @@ status_t tests1ap_build_handover_required(
         0,
 
         0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    if (!(*pkbuf)) return CORE_ERROR;
+
+    (*pkbuf)->len = len[i];
+    memcpy((*pkbuf)->payload, CORE_HEX(payload[i], strlen(payload[i]), hexbuf),
+            (*pkbuf)->len);
+
+    return CORE_OK;
+}
+
+status_t tests1ap_build_handover_failure(pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "4001 0012000002000040 05c0020000c5 000240020000",
+
+        "",
+        "",
+    };
+    c_uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        22,
         0,
         0,
     };

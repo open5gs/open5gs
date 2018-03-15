@@ -637,6 +637,14 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
+#if TEST_HANDOVER_FAILURE
+    /* Send Handover Failure */
+    rv = tests1ap_build_handover_failure(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock1, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+#endif
+
     /* Send Handover Request Ack */
     rv = tests1ap_build_handover_request_ack(&sendbuf, 1, 33554629, 8, 2, 5, 1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
