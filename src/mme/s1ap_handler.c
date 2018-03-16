@@ -1273,6 +1273,7 @@ void s1ap_handle_enb_configuration_transfer(
         {
             d_warn("Cannot find target eNB-id[%d], TAC[%d]",
                     target_enb_id, target_tac);
+            return;
         }
 
         rv = s1ap_send_mme_configuration_transfer(target_enb, pkbuf);
