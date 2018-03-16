@@ -1269,8 +1269,11 @@ void s1ap_handle_enb_configuration_transfer(
                 target_enb_id, target_tac);
 
         target_enb = mme_enb_find_by_enb_id(target_enb_id);
-        d_assert(target_enb, return,
-                "Cannot find target eNB = %d", target_enb_id);
+        if (target_enb == NULL)
+        {
+            d_warn("Cannot find target eNB-id[%d], TAC[%d]",
+                    target_enb_id, target_tac);
+        }
 
         rv = s1ap_send_mme_configuration_transfer(target_enb, pkbuf);
         d_assert(rv == CORE_OK,,);
