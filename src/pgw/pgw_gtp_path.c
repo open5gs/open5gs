@@ -294,8 +294,15 @@ static status_t pgw_gtp_handle_multicast(pkbuf_t *recvbuf)
     ip_h = (struct ip *)recvbuf->payload;
     if (ip_h->ip_v == 6)
     {
+#if COMPILE_ERROR_IN_MAC_OS_X  /* Compiler error in Mac OS X platform */
         ip6_h = (struct ip6_hdr *)recvbuf->payload;
         if (IN6_IS_ADDR_MULTICAST(&ip6_h->ip6_dst))
+#else
+        struct in6_addr ip6_dst;
+        ip6_h = (struct ip6_hdr *)recvbuf->payload;
+        memcpy(&ip6_dst, &ip6_h->ip6_dst, sizeof(struct in6_addr));
+        if (IN6_IS_ADDR_MULTICAST(&ip6_dst))
+#endif
         {
             hash_index_t *hi = NULL;
 
