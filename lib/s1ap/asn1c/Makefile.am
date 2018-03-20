@@ -1143,8 +1143,10 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = \
 	${ASN_MODULE_CFLAGS} \
-	-Wall -Werror -Wno-parentheses-equality \
+	-Wno-overflow -Wno-format \
 	$(NULL)
+
+#	-Wall -Wno-parentheses-equality -Wno-overflow
 
 MAINTAINERCLEANFILES = Makefile.in 
 MOSTLYCLEANFILES = core *.stackdump
