@@ -470,7 +470,7 @@ status_t s1ap_send_mme_configuration_transfer(
         mme_enb_t *target_enb, pkbuf_t *recvbuf)
 {
     status_t rv;
-    char *payload;
+    unsigned char *payload;
     pkbuf_t *sendbuf = NULL;
 
     d_assert(target_enb, return CORE_ERROR,);
