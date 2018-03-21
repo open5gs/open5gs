@@ -10,6 +10,9 @@ status_t s1ap_encode_pdu(pkbuf_t **pkbuf, s1ap_message_t *message)
 
     d_assert(message, return CORE_ERROR,);
 
+    if (g_trace_mask && TRACE_MODULE >= 25)
+        asn_fprint(stdout, &asn_DEF_S1AP_S1AP_PDU, message);
+
     *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     d_assert(*pkbuf, return CORE_ERROR,);
 

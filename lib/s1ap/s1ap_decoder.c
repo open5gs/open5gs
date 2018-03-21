@@ -20,5 +20,8 @@ status_t s1ap_decode_pdu(s1ap_message_t *message, pkbuf_t *pkbuf)
         return CORE_ERROR;
     }
 
+    if (g_trace_mask && TRACE_MODULE >= 25)
+        asn_fprint(stdout, &asn_DEF_S1AP_S1AP_PDU, message);
+
     return CORE_OK;
 }
