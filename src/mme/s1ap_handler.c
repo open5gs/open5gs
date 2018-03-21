@@ -533,17 +533,17 @@ void s1ap_handle_initial_context_setup_response(
 
     for (i = 0; i < E_RABSetupListCtxtSURes->list.count; i++)
     {
-        S1AP_E_RABSetupItemCtxtSUResIEs_t *item = NULL;
+        S1AP_E_RABSetupItemCtxtSUResIEs_t *ie2 = NULL;
         S1AP_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
 
         mme_sess_t *sess = NULL;
         mme_bearer_t *bearer = NULL;
 
-        item = (S1AP_E_RABSetupItemCtxtSUResIEs_t *)
+        ie2 = (S1AP_E_RABSetupItemCtxtSUResIEs_t *)
             E_RABSetupListCtxtSURes->list.array[i];
-        d_assert(item, return,);
+        d_assert(ie2, return,);
 
-        e_rab = &item->value.choice.E_RABSetupItemCtxtSURes;
+        e_rab = &ie2->value.choice.E_RABSetupItemCtxtSURes;
         d_assert(e_rab, return, "Null param");
 
         sess = mme_sess_find_by_ebi(mme_ue, e_rab->e_RAB_ID);
@@ -755,16 +755,16 @@ void s1ap_handle_e_rab_setup_response(
 
     for (i = 0; i < E_RABSetupListBearerSURes->list.count; i++)
     {
-        S1AP_E_RABSetupItemBearerSUResIEs_t *item = NULL;
+        S1AP_E_RABSetupItemBearerSUResIEs_t *ie2 = NULL;
         S1AP_E_RABSetupItemBearerSURes_t *e_rab = NULL;
 
         mme_bearer_t *bearer = NULL;
 
-        item = (S1AP_E_RABSetupItemBearerSUResIEs_t *)
+        ie2 = (S1AP_E_RABSetupItemBearerSUResIEs_t *)
             E_RABSetupListBearerSURes->list.array[i];
-        d_assert(item, return,);
+        d_assert(ie2, return,);
 
-        e_rab = &item->value.choice.E_RABSetupItemBearerSURes;
+        e_rab = &ie2->value.choice.E_RABSetupItemBearerSURes;
         d_assert(e_rab, return, "Null param");
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
@@ -1236,16 +1236,16 @@ void s1ap_handle_path_switch_request(
     d_assert(E_RABToBeSwitchedDLList, return,);
     for (i = 0; i < E_RABToBeSwitchedDLList->list.count; i++)
     {
-        S1AP_E_RABToBeSwitchedDLItemIEs_t *item = NULL;
+        S1AP_E_RABToBeSwitchedDLItemIEs_t *ie2 = NULL;
         S1AP_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
 
         mme_bearer_t *bearer = NULL;
 
-        item = (S1AP_E_RABToBeSwitchedDLItemIEs_t *)
+        ie2 = (S1AP_E_RABToBeSwitchedDLItemIEs_t *)
             E_RABToBeSwitchedDLList->list.array[i];
-        d_assert(item, return,);
+        d_assert(ie2, return,);
 
-        e_rab = &item->value.choice.E_RABToBeSwitchedDLItem;
+        e_rab = &ie2->value.choice.E_RABToBeSwitchedDLItem;
         d_assert(e_rab, return, "Null param");
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
@@ -1541,15 +1541,15 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 
     for (i = 0; i < E_RABAdmittedList->list.count; i++)
     {
-        S1AP_E_RABAdmittedItemIEs_t *item = NULL;
+        S1AP_E_RABAdmittedItemIEs_t *ie2 = NULL;
         S1AP_E_RABAdmittedItem_t *e_rab = NULL;
 
         mme_bearer_t *bearer = NULL;
 
-        item = (S1AP_E_RABAdmittedItemIEs_t *)E_RABAdmittedList->list.array[i];
-        d_assert(item, return,);
+        ie2 = (S1AP_E_RABAdmittedItemIEs_t *)E_RABAdmittedList->list.array[i];
+        d_assert(ie2, return,);
 
-        e_rab = &item->value.choice.E_RABAdmittedItem;
+        e_rab = &ie2->value.choice.E_RABAdmittedItem;
         d_assert(e_rab, return,);
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
@@ -1972,3 +1972,126 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
         sess = mme_sess_next(sess);
     }
 }
+
+void s1ap_handle_s1_reset(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    status_t rv;
+    char buf[CORE_ADDRSTRLEN];
+    int i;
+
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_Reset_t *Reset = NULL;
+
+    S1AP_ResetIEs_t *ie = NULL;
+    S1AP_Cause_t *Cause = NULL;
+    S1AP_ResetType_t *ResetType = NULL;
+    S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface = NULL;
+
+    d_assert(enb, return,);
+    d_assert(enb->sock, return,);
+
+    d_assert(message, return,);
+    initiatingMessage = message->choice.initiatingMessage;
+    d_assert(initiatingMessage, return,);
+    Reset = &initiatingMessage->value.choice.Reset;
+    d_assert(Reset, return,);
+
+    d_trace(3, "[MME] Reset\n");
+
+    for (i = 0; i < Reset->protocolIEs.list.count; i++)
+    {
+        ie = Reset->protocolIEs.list.array[i];
+        switch(ie->id)
+        {
+            case S1AP_ProtocolIE_ID_id_Cause:
+                Cause = &ie->value.choice.Cause;
+                break;
+            case S1AP_ProtocolIE_ID_id_ResetType:
+                ResetType = &ie->value.choice.ResetType;
+                break;
+            default:
+                break;
+        }
+    }
+
+    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
+    d_assert(Cause, return,);
+    d_trace(5, "    Cause[Group:%d Cause:%d]\n",
+            Cause->present, Cause->choice.radioNetwork);
+
+    switch(Cause->present)
+    {
+        case S1AP_Cause_PR_radioNetwork:
+        case S1AP_Cause_PR_transport:
+        case S1AP_Cause_PR_protocol:
+        case S1AP_Cause_PR_misc:
+            break;
+        case S1AP_Cause_PR_nas:
+            d_warn("NAS-Cause[%d]", Cause->choice.nas);
+        default:
+            d_warn("Invalid cause group[%d]", Cause->present);
+            break;
+    }
+
+    d_assert(ResetType, return,);
+    switch(ResetType->present)
+    {
+        case S1AP_ResetType_PR_s1_Interface:
+        {
+            d_trace(5, "    S1AP_ResetType_PR_s1_Interface\n");
+            break;
+        }
+        case S1AP_ResetType_PR_partOfS1_Interface:
+        {
+            d_trace(5, "    S1AP_ResetType_PR_partOfS1_Interface\n");
+
+            partOfS1_Interface = ResetType->choice.partOfS1_Interface;
+            d_assert(partOfS1_Interface, return,);
+            for (i = 0; i < partOfS1_Interface->list.count; i++)
+            {
+                S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *ie2 = NULL;
+                S1AP_UE_associatedLogicalS1_ConnectionItem_t *item = NULL;
+
+                enb_ue_t *enb_ue = NULL;
+
+                ie2 = (S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *)
+                    partOfS1_Interface->list.array[i];
+                d_assert(ie2, return,);
+
+                item = &ie2->value.choice.UE_associatedLogicalS1_ConnectionItem;
+                d_assert(item, return,);
+                
+                d_trace(5, "    MME_UE_S1AP_ID[%d] ENB_UE_S1AP_ID[%d]\n",
+                        item->mME_UE_S1AP_ID ? *item->mME_UE_S1AP_ID : -1,
+                        item->eNB_UE_S1AP_ID ? *item->eNB_UE_S1AP_ID : -1);
+
+                if (item->mME_UE_S1AP_ID)
+                    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(
+                            *item->mME_UE_S1AP_ID);
+                else if (item->eNB_UE_S1AP_ID)
+                    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb,
+                            *item->eNB_UE_S1AP_ID);
+
+                if (enb_ue == NULL)
+                {
+                    d_warn("Cannot find S1 Context "
+                            "(MME_UE_S1AP_ID[%d] ENB_UE_S1AP_ID[%d])\n",
+                            item->mME_UE_S1AP_ID ? *item->mME_UE_S1AP_ID : -1,
+                            item->eNB_UE_S1AP_ID ? *item->eNB_UE_S1AP_ID : -1);
+                    continue;
+                }
+            }
+            break;
+        }
+        default:
+            d_warn("Invalid ResetType[%d]", ResetType->present);
+            break;
+    }
+
+    rv = s1ap_send_s1_reset_ack(enb, partOfS1_Interface);
+    d_assert(rv == CORE_OK,,);
+}
+

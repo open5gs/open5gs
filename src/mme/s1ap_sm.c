@@ -125,6 +125,11 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                             s1ap_handle_handover_notification(enb, pdu);
                             break;
                         }
+                        case S1AP_ProcedureCode_id_Reset:
+                        {
+                            s1ap_handle_s1_reset(enb, pdu);
+                            break;
+                        }
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d)",

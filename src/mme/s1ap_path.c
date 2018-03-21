@@ -508,3 +508,21 @@ status_t s1ap_send_error_indication(
 
     return rv;
 }
+
+status_t s1ap_send_s1_reset_ack(
+        mme_enb_t *enb,
+        S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL;
+
+    d_assert(enb, return CORE_ERROR,);
+
+    rv = s1ap_build_s1_reset_ack(&s1apbuf, partOfS1_Interface);
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+
+    rv = s1ap_send_to_enb(enb, s1apbuf);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+
+    return rv;
+}

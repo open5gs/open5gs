@@ -50,6 +50,8 @@ CORE_DECLARE(void) s1ap_handle_enb_configuration_transfer(
 CORE_DECLARE(void) s1ap_handle_handover_notification(
         mme_enb_t *enb, s1ap_message_t *message);
 
+CORE_DECLARE(void) s1ap_handle_s1_reset(
+        mme_enb_t *enb, s1ap_message_t *message);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

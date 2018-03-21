@@ -90,6 +90,8 @@ CORE_DECLARE(status_t) tests1ap_build_enb_configuration_transfer(
 CORE_DECLARE(status_t) tests1ap_build_handover_notify(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_handover_cancel(pkbuf_t **pkbuf, int i);
 
+CORE_DECLARE(status_t) tests1ap_build_s1_reset(pkbuf_t **pkbuf, int i);
+
 CORE_DECLARE(status_t) testgtpu_enb_connect(sock_id *new);
 CORE_DECLARE(status_t) testgtpu_enb2_connect(sock_id *new);
 CORE_DECLARE(status_t) testgtpu_enb_close(sock_id sock);
