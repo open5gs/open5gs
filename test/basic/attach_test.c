@@ -1614,7 +1614,6 @@ static void attach_test5(abts_case *tc, void *data)
     m_tmsi = mme_ue->guti.m_tmsi;
 
 #if 0
-#if 0
     rv = tests1ap_build_s1_reset(&sendbuf, 0);
 #elif 0
     rv = s1ap_build_s1_reset(&sendbuf,
@@ -1622,90 +1621,92 @@ static void attach_test5(abts_case *tc, void *data)
             S1AP_CauseRadioNetwork_release_due_to_eutran_generated_reason,
             NULL);
 #elif 0
-    S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id = NULL;
-    S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id = NULL;
+    {
+        S1AP_UE_associatedLogicalS1_ConnectionListRes_t
+            *partOfS1_Interface = NULL;
+        S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *ie = NULL;
+        S1AP_UE_associatedLogicalS1_ConnectionItem_t *item = NULL;
 
-#if 0
-    mme_ue_s1ap_id = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
-    d_assert(mme_ue_s1ap_id, goto out,);
-    *mme_ue_s1ap_id = 100;
+        partOfS1_Interface = core_calloc(1,
+                sizeof(S1AP_UE_associatedLogicalS1_ConnectionListRes_t));
+        d_assert(partOfS1_Interface, goto out,);
+
+        ie = core_calloc(1,
+                sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
+        ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
+        ie->criticality = S1AP_Criticality_reject;
+        ie->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
+
+        item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
+
+        item->mME_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        d_assert(item->mME_UE_S1AP_ID, goto out,);
+        *item->mME_UE_S1AP_ID = 100;
+        item->eNB_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
+        d_assert(item->eNB_UE_S1AP_ID, goto out,);
+        *item->eNB_UE_S1AP_ID = 4;
+
+        ie = core_calloc(1,
+                sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
+        ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
+        ie->criticality = S1AP_Criticality_reject;
+        ie->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
+
+        item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
+
+        item->mME_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        d_assert(item->mME_UE_S1AP_ID, goto out,);
+        *item->mME_UE_S1AP_ID = 2;
+        item->eNB_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
+        d_assert(item->eNB_UE_S1AP_ID, goto out,);
+        *item->eNB_UE_S1AP_ID = 3;
+
+        ie = core_calloc(1,
+                sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
+        ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
+        ie->criticality = S1AP_Criticality_reject;
+        ie->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
+
+        item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
+
+        item->mME_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        d_assert(item->mME_UE_S1AP_ID, goto out,);
+        *item->mME_UE_S1AP_ID = 44;
+
+        rv = s1ap_build_s1_reset(&sendbuf,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_release_due_to_eutran_generated_reason,
+                partOfS1_Interface);
+    }
 #else
-    enb_ue_s1ap_id = core_calloc(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
-    d_assert(enb_ue_s1ap_id, goto out,);
-    *enb_ue_s1ap_id = 4;
-#endif
-    rv = s1ap_build_s1_reset_partial(&sendbuf,
-            S1AP_Cause_PR_radioNetwork,
-            S1AP_CauseRadioNetwork_release_due_to_eutran_generated_reason,
-            mme_ue_s1ap_id, enb_ue_s1ap_id);
-#else
-    S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface = NULL;
-    S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *ie = NULL;
-    S1AP_UE_associatedLogicalS1_ConnectionItem_t *item = NULL;
+    {
+        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id = NULL;
 
-    partOfS1_Interface = core_calloc(1,
-            sizeof(S1AP_UE_associatedLogicalS1_ConnectionListRes_t));
-    d_assert(partOfS1_Interface, goto out,);
-
-    ie = core_calloc(1,
-            sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
-    ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
-    ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
-
-    item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
-
-    item->mME_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
-    d_assert(item->mME_UE_S1AP_ID, goto out,);
-    *item->mME_UE_S1AP_ID = 100;
-    item->eNB_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
-    d_assert(item->eNB_UE_S1AP_ID, goto out,);
-    *item->eNB_UE_S1AP_ID = 4;
-
-    ie = core_calloc(1,
-            sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
-    ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
-    ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
-
-    item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
-
-    item->mME_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
-    d_assert(item->mME_UE_S1AP_ID, goto out,);
-    *item->mME_UE_S1AP_ID = 2;
-    item->eNB_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
-    d_assert(item->eNB_UE_S1AP_ID, goto out,);
-    *item->eNB_UE_S1AP_ID = 3;
-
-    ie = core_calloc(1,
-            sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
-    ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
-    ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
-
-    item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
-
-    item->mME_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
-    d_assert(item->mME_UE_S1AP_ID, goto out,);
-    *item->mME_UE_S1AP_ID = 44;
-
-    rv = s1ap_build_s1_reset(&sendbuf,
-            S1AP_Cause_PR_radioNetwork,
-            S1AP_CauseRadioNetwork_release_due_to_eutran_generated_reason,
-            partOfS1_Interface);
+        mme_ue_s1ap_id = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        d_assert(mme_ue_s1ap_id, goto out,);
+        *mme_ue_s1ap_id = 2;
+        rv = s1ap_build_s1_reset_partial(&sendbuf,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_release_due_to_eutran_generated_reason,
+                mme_ue_s1ap_id, NULL);
+    }
 #endif
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    core_sleep(time_from_msec(1000));
-#else
+    /* Receive S1 Reset Acknowledge */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
     /* Send Service request */
     rv = tests1ap_build_service_request(&sendbuf,
             0x40072e, 4, 0xda67, m_tmsi);
@@ -1730,7 +1731,6 @@ static void attach_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
-#endif
 
     core_sleep(time_from_msec(300));
 

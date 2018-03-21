@@ -2042,6 +2042,9 @@ void s1ap_handle_s1_reset(
         case S1AP_ResetType_PR_s1_Interface:
         {
             d_trace(5, "    S1AP_ResetType_PR_s1_Interface\n");
+
+            rv = enb_ue_remove_in_enb(enb);
+            d_assert(rv == CORE_OK,,);
             break;
         }
         case S1AP_ResetType_PR_partOfS1_Interface:
@@ -2083,6 +2086,9 @@ void s1ap_handle_s1_reset(
                             item->eNB_UE_S1AP_ID ? *item->eNB_UE_S1AP_ID : -1);
                     continue;
                 }
+
+                rv = enb_ue_remove(enb_ue);
+                d_assert(rv == CORE_OK,,);
             }
             break;
         }
