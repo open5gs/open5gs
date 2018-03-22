@@ -1152,7 +1152,7 @@ MOSTLYCLEANFILES = core *.stackdump
 regen: regenerate-from-asn1-source
 
 regenerate-from-asn1-source:
-	ASN1C_PREFIX=S1AP_ ../../../../asn1c.brchiu/asn1c/asn1c -pdu=all -fcompound-names -findirect-choice -fno-include-deps ../support/r14.4.0/36413-e40.asn
+	ASN1C_PREFIX=S1AP_ ../../../../asn1c.velichkov/asn1c/asn1c -pdu=all -fcompound-names -findirect-choice -fno-include-deps ../support/r14.4.0/36413-e40.asn
 	rm -f S1AP_E-RAB-IE-ContainerPairList.c S1AP_ProtocolError-IE-ContainerList.c S1AP_ProtocolIE-ContainerPair.c S1AP_ProtocolIE-FieldPair.c S1AP_ProtocolIE-ContainerPairList.c
 	rm -f converter-example.mk converter-example.c pdu_collection.c
 	rm -f Makefile.am.asn1convert Makefile.am.libasncodec
