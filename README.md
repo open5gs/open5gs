@@ -88,5 +88,5 @@ Problem with NextEPC can be filed as [issues](https://github.com/acetcom/nextepc
 
 ## License
 
-NextEPC source files are made avaiable under the terms of the GNU Affero General Public License (GNU AGPLv3). See [this link](http://nextepc.org/docs/nextepc/4-license/) for details.
+NextEPC source files are made available under the terms of the GNU Affero General Public License (GNU AGPLv3). See [this link](http://nextepc.org/docs/nextepc/4-license/) for details.
 
