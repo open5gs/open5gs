@@ -119,7 +119,7 @@ uper_open_type_get_simple(const asn_codec_ctx_t *ctx,
 	if(rv.code == RC_OK) {
 		/* Check padding validity */
 		padding = spd.nbits - spd.nboff;
-                if ((padding < 8 ||
+                if (((padding > 0 && padding < 8) ||
 		/* X.691#10.1.3 */
 		(spd.nboff == 0 && spd.nbits == 8 && spd.buffer == buf)) &&
                     per_get_few_bits(&spd, padding) == 0) {
@@ -132,8 +132,7 @@ uper_open_type_get_simple(const asn_codec_ctx_t *ctx,
 			ASN_DEBUG("Too large padding %d in open type", (int)padding);
 			ASN__DECODE_FAILED;
 		} else {
-			ASN_DEBUG("Non-zero padding");
-			ASN__DECODE_FAILED;
+			ASN_DEBUG("No padding");
 		}
 	} else {
 		FREEMEM(buf);
@@ -449,7 +448,7 @@ aper_open_type_get_simple(const asn_codec_ctx_t *ctx,
 	if(rv.code == RC_OK) {
 		/* Check padding validity */
 		padding = spd.nbits - spd.nboff;
-                if ((padding < 8 ||
+                if (((padding > 0 && padding < 8) ||
 		/* X.691#10.1.3 */
 		(spd.nboff == 0 && spd.nbits == 8 && spd.buffer == buf)) &&
                     per_get_few_bits(&spd, padding) == 0) {
@@ -462,8 +461,7 @@ aper_open_type_get_simple(const asn_codec_ctx_t *ctx,
 			ASN_DEBUG("Too large padding %d in open type", (int)padding);
 			ASN__DECODE_FAILED;
 		} else {
-			ASN_DEBUG("Non-zero padding");
-			ASN__DECODE_FAILED;
+			ASN_DEBUG("No padding");
 		}
 	} else {
 		FREEMEM(buf);

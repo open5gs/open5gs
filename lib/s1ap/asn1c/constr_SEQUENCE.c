@@ -1623,10 +1623,10 @@ SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 		uint8_t *epres;		/* Presence of extension members */
 		asn_per_data_t epmd;
 
-		bmlength = uper_get_nslength(pd);
+		bmlength = aper_get_nslength(pd);
 		if(bmlength < 0) ASN__DECODE_STARVED;
 
-		ASN_DEBUG("Extensions %ld present in %s", bmlength, td->name);
+		ASN_DEBUG("Extensions %" ASN_PRI_SSIZE " present in %s", bmlength, td->name);
 
 		epres = (uint8_t *)MALLOC((bmlength + 15) >> 3);
 		if(!epres) ASN__DECODE_STARVED;
@@ -1668,7 +1668,7 @@ SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 			}
 
 			ASN_DEBUG("Decoding member %s in %s %p", elm->name, td->name, *memb_ptr2);
-			rv = uper_open_type_get(opt_codec_ctx, elm->type,
+			rv = aper_open_type_get(opt_codec_ctx, elm->type,
 			                        elm->encoding_constraints.per_constraints, memb_ptr2, pd);
 			if(rv.code != RC_OK) {
 				FREEMEM(epres);
@@ -1686,7 +1686,7 @@ SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 			case 0:
 				continue;
 			default:
-				if(uper_open_type_skip(opt_codec_ctx, pd)) {
+				if(aper_open_type_skip(opt_codec_ctx, pd)) {
 					FREEMEM(epres);
 					ASN__DECODE_STARVED;
 				}

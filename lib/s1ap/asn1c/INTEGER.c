@@ -507,7 +507,7 @@ INTEGER__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
 		/* The last symbol encountered was a digit. */
         switch(asn_strtoimax_lim(dec_value_start, &dec_value_end, &dec_value)) {
         case ASN_STRTOX_OK:
-            if(specs && specs->field_unsigned && dec_value <= ULONG_MAX) {
+            if(specs && specs->field_unsigned && (uintmax_t) dec_value <= ULONG_MAX) {
                 break;
             } else if(dec_value >= LONG_MIN && dec_value <= LONG_MAX) {
                 break;
