@@ -2,7 +2,7 @@
 #define _S1AP_MESSAGE_H__
 
 #include "core_pkbuf.h"
-#include "s1ap_ies_defs.h"
+#include "s1ap_asn1c.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,6 +29,8 @@ extern "C" {
         (__dST)->buf = core_calloc(1, sizeof((__dST)->size)); \
         memcpy((__dST)->buf, (__sRC)->buf, (__dST)->size); \
     } while(0)
+
+typedef struct S1AP_S1AP_PDU s1ap_message_t;
 
 CORE_DECLARE(int) s1ap_decode_pdu(s1ap_message_t *message, pkbuf_t *pkbuf);
 CORE_DECLARE(int) s1ap_encode_pdu(pkbuf_t **pkbuf, s1ap_message_t *message);

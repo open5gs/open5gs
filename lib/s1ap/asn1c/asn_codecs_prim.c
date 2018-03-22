@@ -10,10 +10,10 @@
  * Decode an always-primitive type.
  */
 asn_dec_rval_t
-ber_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
-	asn_TYPE_descriptor_t *td,
-	void **sptr, const void *buf_ptr, size_t size, int tag_mode) {
-	ASN__PRIMITIVE_TYPE_t *st = (ASN__PRIMITIVE_TYPE_t *)*sptr;
+ber_decode_primitive(const asn_codec_ctx_t *opt_codec_ctx,
+                     const asn_TYPE_descriptor_t *td, void **sptr,
+                     const void *buf_ptr, size_t size, int tag_mode) {
+    ASN__PRIMITIVE_TYPE_t *st = (ASN__PRIMITIVE_TYPE_t *)*sptr;
 	asn_dec_rval_t rval;
 	ber_tlv_len_t length = 0; /* =0 to avoid [incorrect] warning. */
 
@@ -81,11 +81,11 @@ ber_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
  * Encode an always-primitive type using DER.
  */
 asn_enc_rval_t
-der_encode_primitive(asn_TYPE_descriptor_t *td, void *sptr,
-	int tag_mode, ber_tlv_tag_t tag,
-	asn_app_consume_bytes_f *cb, void *app_key) {
-	asn_enc_rval_t erval;
-	ASN__PRIMITIVE_TYPE_t *st = (ASN__PRIMITIVE_TYPE_t *)sptr;
+der_encode_primitive(const asn_TYPE_descriptor_t *td, const void *sptr,
+                     int tag_mode, ber_tlv_tag_t tag,
+                     asn_app_consume_bytes_f *cb, void *app_key) {
+    asn_enc_rval_t erval;
+	const ASN__PRIMITIVE_TYPE_t *st = (const ASN__PRIMITIVE_TYPE_t *)sptr;
 
 	ASN_DEBUG("%s %s as a primitive type (tm=%d)",
 		cb?"Encoding":"Estimating", td->name, tag_mode);
@@ -115,9 +115,9 @@ der_encode_primitive(asn_TYPE_descriptor_t *td, void *sptr,
 }
 
 void
-ASN__PRIMITIVE_TYPE_free(asn_TYPE_descriptor_t *td, void *sptr,
-		int contents_only) {
-	ASN__PRIMITIVE_TYPE_t *st = (ASN__PRIMITIVE_TYPE_t *)sptr;
+ASN__PRIMITIVE_TYPE_free(const asn_TYPE_descriptor_t *td, void *sptr,
+                         enum asn_struct_free_method method) {
+    ASN__PRIMITIVE_TYPE_t *st = (ASN__PRIMITIVE_TYPE_t *)sptr;
 
 	if(!td || !sptr)
 		return;
@@ -127,8 +127,16 @@ ASN__PRIMITIVE_TYPE_free(asn_TYPE_descriptor_t *td, void *sptr,
 	if(st->buf)
 		FREEMEM(st->buf);
 
-	if(!contents_only)
-		FREEMEM(st);
+    switch(method) {
+    case ASFM_FREE_EVERYTHING:
+        FREEMEM(sptr);
+        break;
+    case ASFM_FREE_UNDERLYING:
+        break;
+    case ASFM_FREE_UNDERLYING_AND_RESET:
+        memset(sptr, 0, sizeof(ASN__PRIMITIVE_TYPE_t));
+        break;
+    }
 }
 
 
@@ -136,8 +144,8 @@ ASN__PRIMITIVE_TYPE_free(asn_TYPE_descriptor_t *td, void *sptr,
  * Local internal type passed around as an argument.
  */
 struct xdp_arg_s {
-	asn_TYPE_descriptor_t *type_descriptor;
-	void *struct_key;
+    const asn_TYPE_descriptor_t *type_descriptor;
+    void *struct_key;
 	xer_primitive_body_decoder_f *prim_body_decoder;
 	int decoded_something;
 	int want_more;
@@ -240,15 +248,12 @@ xer_decode__primitive_body(void *key, const void *chunk_buf, size_t chunk_size, 
 
 
 asn_dec_rval_t
-xer_decode_primitive(asn_codec_ctx_t *opt_codec_ctx,
-	asn_TYPE_descriptor_t *td,
-	void **sptr,
-	size_t struct_size,
-	const char *opt_mname,
-	const void *buf_ptr, size_t size,
-	xer_primitive_body_decoder_f *prim_body_decoder
-) {
-	const char *xml_tag = opt_mname ? opt_mname : td->xml_tag;
+xer_decode_primitive(const asn_codec_ctx_t *opt_codec_ctx,
+                     const asn_TYPE_descriptor_t *td, void **sptr,
+                     size_t struct_size, const char *opt_mname,
+                     const void *buf_ptr, size_t size,
+                     xer_primitive_body_decoder_f *prim_body_decoder) {
+    const char *xml_tag = opt_mname ? opt_mname : td->xml_tag;
 	asn_struct_ctx_t s_ctx;
 	struct xdp_arg_s s_arg;
 	asn_dec_rval_t rc;

@@ -35,7 +35,7 @@ void s1ap_uint32_to_OCTET_STRING(c_uint32_t uint32, OCTET_STRING_t *octet_string
 }
 
 void s1ap_buffer_to_OCTET_STRING(
-        void *buf, int size, S1ap_TBCD_STRING_t *tbcd_string)
+        void *buf, int size, S1AP_TBCD_STRING_t *tbcd_string)
 {
     tbcd_string->size = size;
     tbcd_string->buf = core_calloc(tbcd_string->size, sizeof(c_uint8_t));
@@ -44,12 +44,12 @@ void s1ap_buffer_to_OCTET_STRING(
 }
 
 void s1ap_uint32_to_ENB_ID(
-    S1ap_ENB_ID_PR present, c_uint32_t enb_id, S1ap_ENB_ID_t *eNB_ID)
+    S1AP_ENB_ID_PR present, c_uint32_t enb_id, S1AP_ENB_ID_t *eNB_ID)
 {
     d_assert(eNB_ID, return, "Null param");
 
     eNB_ID->present = present;
-    if (present == S1ap_ENB_ID_PR_macroENB_ID)
+    if (present == S1AP_ENB_ID_PR_macroENB_ID)
     {
         BIT_STRING_t *bit_string = &eNB_ID->choice.macroENB_ID;
         d_assert(bit_string, return, "Null param");
@@ -63,7 +63,7 @@ void s1ap_uint32_to_ENB_ID(
 
         bit_string->bits_unused = 4;
     } 
-    else if (present == S1ap_ENB_ID_PR_homeENB_ID)
+    else if (present == S1AP_ENB_ID_PR_homeENB_ID)
     {
         BIT_STRING_t *bit_string = &eNB_ID->choice.homeENB_ID;
         d_assert(bit_string, return, "Null param");
@@ -85,12 +85,12 @@ void s1ap_uint32_to_ENB_ID(
 
 }
 
-void s1ap_ENB_ID_to_uint32(S1ap_ENB_ID_t *eNB_ID, c_uint32_t *uint32)
+void s1ap_ENB_ID_to_uint32(S1AP_ENB_ID_t *eNB_ID, c_uint32_t *uint32)
 {
     d_assert(uint32, return, "Null param");
     d_assert(eNB_ID, return, "Null param");
 
-    if (eNB_ID->present == S1ap_ENB_ID_PR_homeENB_ID)
+    if (eNB_ID->present == S1AP_ENB_ID_PR_homeENB_ID)
     {
         c_uint8_t *buf = eNB_ID->choice.homeENB_ID.buf;
         d_assert(buf, return, "Null param");
@@ -98,7 +98,7 @@ void s1ap_ENB_ID_to_uint32(S1ap_ENB_ID_t *eNB_ID, c_uint32_t *uint32)
             ((buf[3] & 0xf0) >> 4);
 
     } 
-    else if (eNB_ID->present == S1ap_ENB_ID_PR_macroENB_ID)
+    else if (eNB_ID->present == S1AP_ENB_ID_PR_macroENB_ID)
     {
         c_uint8_t *buf = eNB_ID->choice.macroENB_ID.buf;
         d_assert(buf, return, "Null param");
@@ -181,19 +181,31 @@ status_t s1ap_ip_to_BIT_STRING(ip_t *ip, BIT_STRING_t *bit_string)
     return CORE_OK;
 }
 
-S1ap_IE_t *s1ap_copy_ie(S1ap_IE_t *ie)
+status_t s1ap_copy_ie(const asn_TYPE_descriptor_t *td, void *src, void *dst)
 {
-    S1ap_IE_t *buff;
+    asn_enc_rval_t enc_ret = {0};
+    asn_dec_rval_t dec_ret = {0};
+    c_uint8_t buffer[MAX_SDU_LEN];
 
-    buff = core_malloc(sizeof (S1ap_IE_t));
-    d_assert(buff, return NULL,);
+    d_assert(td, return CORE_ERROR,);
+    d_assert(src, return CORE_ERROR,);
+    d_assert(dst, return CORE_ERROR,);
 
-    memset((void *)buff, 0, sizeof(S1ap_IE_t));
-    buff->id = ie->id;
-    buff->criticality = ie->criticality;
-    buff->value.size = ie->value.size;
-    buff->value.buf = core_calloc(1, buff->value.size);
-    memcpy(buff->value.buf, ie->value.buf, buff->value.size);
+    enc_ret = aper_encode_to_buffer(td, NULL, src, buffer, MAX_SDU_LEN);
+    if (enc_ret.encoded < 0)
+    {
+        d_error("aper_encode_to_buffer() failed[%d]", enc_ret.encoded);
+        return CORE_ERROR;
+    }
 
-    return buff;
+    dec_ret = aper_decode(NULL, td, (void **)&dst,
+            buffer, (enc_ret.encoded >> 3), 0, 0);
+
+    if (dec_ret.code != RC_OK) 
+    {
+        d_error("aper_decode() failed[%d]", dec_ret.code);
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
 }

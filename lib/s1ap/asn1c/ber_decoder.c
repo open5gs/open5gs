@@ -27,10 +27,10 @@
  * The BER decoder of any type.
  */
 asn_dec_rval_t
-ber_decode(asn_codec_ctx_t *opt_codec_ctx,
-	asn_TYPE_descriptor_t *type_descriptor,
-	void **struct_ptr, const void *ptr, size_t size) {
-	asn_codec_ctx_t s_codec_ctx;
+ber_decode(const asn_codec_ctx_t *opt_codec_ctx,
+           const asn_TYPE_descriptor_t *type_descriptor, void **struct_ptr,
+           const void *ptr, size_t size) {
+    asn_codec_ctx_t s_codec_ctx;
 
 	/*
 	 * Stack checker requires that the codec context
@@ -51,7 +51,7 @@ ber_decode(asn_codec_ctx_t *opt_codec_ctx,
 	/*
 	 * Invoke type-specific decoder.
 	 */
-	return type_descriptor->ber_decoder(opt_codec_ctx, type_descriptor,
+	return type_descriptor->op->ber_decoder(opt_codec_ctx, type_descriptor,
 		struct_ptr,	/* Pointer to the destination structure */
 		ptr, size,	/* Buffer and its size */
 		0		/* Default tag mode is 0 */
@@ -62,11 +62,11 @@ ber_decode(asn_codec_ctx_t *opt_codec_ctx,
  * Check the set of <TL<TL<TL...>>> tags matches the definition.
  */
 asn_dec_rval_t
-ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
-		asn_TYPE_descriptor_t *td, asn_struct_ctx_t *opt_ctx,
-		const void *ptr, size_t size, int tag_mode, int last_tag_form,
-		ber_tlv_len_t *last_length, int *opt_tlv_form) {
-	ssize_t consumed_myself = 0;
+ber_check_tags(const asn_codec_ctx_t *opt_codec_ctx,
+               const asn_TYPE_descriptor_t *td, asn_struct_ctx_t *opt_ctx,
+               const void *ptr, size_t size, int tag_mode, int last_tag_form,
+               ber_tlv_len_t *last_length, int *opt_tlv_form) {
+    ssize_t consumed_myself = 0;
 	ssize_t tag_len;
 	ssize_t len_len;
 	ber_tlv_tag_t tlv_tag;
@@ -112,7 +112,7 @@ ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
 		td->name, (long)size, tag_mode, step, tagno);
 	/* assert(td->tags_count >= 1) May not be the case for CHOICE or ANY */
 
-	if(tag_mode == 0 && tagno == td->tags_count) {
+	if(tag_mode == 0 && tagno == (int)td->tags_count) {
 		/*
 		 * This must be the _untagged_ ANY type,
 		 * which outermost tag isn't known in advance.
@@ -134,9 +134,9 @@ ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
 			(long)(tag_len + len_len));
 		ADVANCE(tag_len + len_len);
 	} else {
-		assert(tagno < td->tags_count);	/* At least one loop */
+		assert(tagno < (int)td->tags_count);	/* At least one loop */
 	}
-	for((void)tagno; tagno < td->tags_count; tagno++, step++) {
+	for((void)tagno; tagno < (int)td->tags_count; tagno++, step++) {
 
 		/*
 		 * Fetch and process T from TLV.
@@ -186,7 +186,7 @@ ber_check_tags(asn_codec_ctx_t *opt_codec_ctx,
 		 * If this one is the last one, check that the tag form
 		 * matches the one given in descriptor.
 		 */
-		if(tagno < (td->tags_count - 1)) {
+		if(tagno < ((int)td->tags_count - 1)) {
 			if(tlv_constr == 0) {
 				ASN_DEBUG("tlv_constr = %d, expfail",
 					tlv_constr);

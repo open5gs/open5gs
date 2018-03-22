@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2003, 2004, 2005, 2006 Lev Walkin <vlm@lionet.info>.
+ * Copyright (c) 2003-2017 Lev Walkin <vlm@lionet.info>.
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
@@ -14,40 +14,54 @@
 static const ber_tlv_tag_t asn_DEF_OCTET_STRING_tags[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (4 << 2))
 };
-static const asn_OCTET_STRING_specifics_t asn_DEF_OCTET_STRING_specs = {
+asn_OCTET_STRING_specifics_t asn_SPC_OCTET_STRING_specs = {
 	sizeof(OCTET_STRING_t),
 	offsetof(OCTET_STRING_t, _asn_ctx),
 	ASN_OSUBV_STR
 };
-static const asn_per_constraints_t asn_DEF_OCTET_STRING_constraints = {
-	{ APC_CONSTRAINED, 8, 8, 0, 255 },
-	{ APC_SEMI_CONSTRAINED, -1, -1, 0, 0 },
-	0, 0
-};
-asn_TYPE_descriptor_t asn_DEF_OCTET_STRING = {
-	"OCTET STRING",		/* Canonical name */
-	"OCTET_STRING",		/* XML tag name */
+
+asn_TYPE_operation_t asn_OP_OCTET_STRING = {
 	OCTET_STRING_free,
-	OCTET_STRING_print,	/* non-ascii stuff, generally */
-	asn_generic_no_constraint,
+	OCTET_STRING_print,	/* OCTET STRING generally means a non-ascii sequence */
+	OCTET_STRING_compare,
 	OCTET_STRING_decode_ber,
 	OCTET_STRING_encode_der,
 	OCTET_STRING_decode_xer_hex,
 	OCTET_STRING_encode_xer,
+#ifdef	ASN_DISABLE_OER_SUPPORT
+	0,
+	0,
+#else
+	OCTET_STRING_decode_oer,
+	OCTET_STRING_encode_oer,
+#endif  /* ASN_DISABLE_OER_SUPPORT */
+#ifdef	ASN_DISABLE_PER_SUPPORT
+	0,
+	0,
+	0,
+	0,
+#else
 	OCTET_STRING_decode_uper,	/* Unaligned PER decoder */
 	OCTET_STRING_encode_uper,	/* Unaligned PER encoder */
 	OCTET_STRING_decode_aper,	/* Aligned PER decoder */
 	OCTET_STRING_encode_aper,	/* Aligned PER encoder */
-	0, /* Use generic outmost tag fetcher */
+#endif	/* ASN_DISABLE_PER_SUPPORT */
+	OCTET_STRING_random_fill,
+	0	/* Use generic outmost tag fetcher */
+};
+asn_TYPE_descriptor_t asn_DEF_OCTET_STRING = {
+	"OCTET STRING",		/* Canonical name */
+	"OCTET_STRING",		/* XML tag name */
+	&asn_OP_OCTET_STRING,
 	asn_DEF_OCTET_STRING_tags,
 	sizeof(asn_DEF_OCTET_STRING_tags)
 	  / sizeof(asn_DEF_OCTET_STRING_tags[0]),
 	asn_DEF_OCTET_STRING_tags,	/* Same as above */
 	sizeof(asn_DEF_OCTET_STRING_tags)
 	  / sizeof(asn_DEF_OCTET_STRING_tags[0]),
-	0,	/* No PER visible constraints */
+	{ 0, 0, asn_generic_no_constraint },
 	0, 0,	/* No members */
-	&asn_DEF_OCTET_STRING_specs
+	&asn_SPC_OCTET_STRING_specs
 };
 
 #undef	_CH_PHASE
@@ -113,14 +127,14 @@ asn_TYPE_descriptor_t asn_DEF_OCTET_STRING = {
  * No, I am not going to explain what the following stuff is.
  */
 struct _stack_el {
-	ber_tlv_len_t	left;	/* What's left to read (or -1) */
-	ber_tlv_len_t	got;	/* What was actually processed */
-	int	cont_level;	/* Depth of subcontainment */
-	int	want_nulls;	/* Want null "end of content" octets? */
-	int	bits_chopped;	/* Flag in BIT STRING mode */
-	ber_tlv_tag_t	tag;	/* For debugging purposes */
-	struct _stack_el *prev;
-	struct _stack_el *next;
+    ber_tlv_len_t left;     /* What's left to read (or -1) */
+    ber_tlv_len_t got;      /* What was actually processed */
+    unsigned cont_level;    /* Depth of subcontainment */
+    int want_nulls;         /* Want null "end of content" octets? */
+    int bits_chopped;       /* Flag in BIT STRING mode */
+    ber_tlv_tag_t tag;      /* For debugging purposes */
+    struct _stack_el *prev;
+    struct _stack_el *next;
 };
 struct _stack {
 	struct _stack_el *tail;
@@ -159,7 +173,7 @@ OS__add_stack_el(struct _stack *st) {
 }
 
 static struct _stack *
-_new_stack() {
+_new_stack(void) {
 	return (struct _stack *)CALLOC(1, sizeof(struct _stack));
 }
 
@@ -167,12 +181,12 @@ _new_stack() {
  * Decode OCTET STRING type.
  */
 asn_dec_rval_t
-OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
-	asn_TYPE_descriptor_t *td,
-	void **sptr, const void *buf_ptr, size_t size, int tag_mode) {
-	asn_OCTET_STRING_specifics_t *specs = td->specifics
-				? (asn_OCTET_STRING_specifics_t *)td->specifics
-				: &asn_DEF_OCTET_STRING_specs;
+OCTET_STRING_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
+                        const asn_TYPE_descriptor_t *td, void **sptr,
+                        const void *buf_ptr, size_t size, int tag_mode) {
+    const asn_OCTET_STRING_specifics_t *specs = td->specifics
+				? (const asn_OCTET_STRING_specifics_t *)td->specifics
+				: &asn_SPC_OCTET_STRING_specs;
 	BIT_STRING_t *st = (BIT_STRING_t *)*sptr;
 	asn_dec_rval_t rval;
 	asn_struct_ctx_t *ctx;
@@ -215,9 +229,7 @@ OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 			 * Complex operation, requires stack of expectations.
 			 */
 			ctx->ptr = _new_stack();
-			if(ctx->ptr) {
-				stck = (struct _stack *)ctx->ptr;
-			} else {
+			if(!ctx->ptr) {
 				RETURN(RC_FAIL);
 			}
 		} else {
@@ -246,11 +258,11 @@ OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 		ber_tlv_tag_t expected_tag;
 		ssize_t tl, ll, tlvl;
 				/* This one works even if (sel->left == -1) */
-		ssize_t Left = ((!sel||(size_t)sel->left >= size)
-					?(ssize_t)size:sel->left);
+		size_t Left = ((!sel||(size_t)sel->left >= size)
+					?size:(size_t)sel->left);
 
 
-		ASN_DEBUG("%p, s->l=%ld, s->wn=%ld, s->g=%ld\n", sel,
+		ASN_DEBUG("%p, s->l=%ld, s->wn=%ld, s->g=%ld\n", (void *)sel,
 			(long)(sel?sel->left:0),
 			(long)(sel?sel->want_nulls:0),
 			(long)(sel?sel->got:0)
@@ -335,7 +347,7 @@ OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 		case ASN_OSUBV_STR:
 		default:
 			if(sel) {
-				int level = sel->cont_level;
+				unsigned level = sel->cont_level;
 				if(level < td->all_tags_count) {
 					expected_tag = td->all_tags[level];
 					break;
@@ -398,7 +410,7 @@ OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 		sel->got += tlvl;
 		ADVANCE(tlvl);
 
-		ASN_DEBUG("+EXPECT2 got=%ld left=%ld, wn=%d, clvl=%d",
+		ASN_DEBUG("+EXPECT2 got=%ld left=%ld, wn=%d, clvl=%u",
 			(long)sel->got, (long)sel->left,
 			sel->want_nulls, sel->cont_level);
 
@@ -487,7 +499,7 @@ OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 
 	if(sel) {
 		ASN_DEBUG("3sel p=%p, wn=%d, l=%ld, g=%ld, size=%ld",
-			sel->prev, sel->want_nulls,
+			(void *)sel->prev, sel->want_nulls,
 			(long)sel->left, (long)sel->got, (long)size);
 		if(sel->prev || sel->want_nulls > 1 || sel->left > 0) {
 			RETURN(RC_WMORE);
@@ -497,9 +509,18 @@ OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
 	/*
 	 * BIT STRING-specific processing.
 	 */
-	if(type_variant == ASN_OSUBV_BIT && st->size) {
-		/* Finalize BIT STRING: zero out unused bits. */
-		st->buf[st->size-1] &= 0xff << st->bits_unused;
+	if(type_variant == ASN_OSUBV_BIT) {
+        if(st->size) {
+			if(st->bits_unused < 0 || st->bits_unused > 7) {
+				RETURN(RC_FAIL);
+			}
+			/* Finalize BIT STRING: zero out unused bits. */
+			st->buf[st->size-1] &= 0xff << st->bits_unused;
+		} else {
+			if(st->bits_unused) {
+				RETURN(RC_FAIL);
+			}
+		}
 	}
 
 	ASN_DEBUG("Took %ld bytes to encode %s: [%s]:%ld",
@@ -515,14 +536,14 @@ OCTET_STRING_decode_ber(asn_codec_ctx_t *opt_codec_ctx,
  * Encode OCTET STRING type using DER.
  */
 asn_enc_rval_t
-OCTET_STRING_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
-	int tag_mode, ber_tlv_tag_t tag,
-	asn_app_consume_bytes_f *cb, void *app_key) {
-	asn_enc_rval_t er;
-	asn_OCTET_STRING_specifics_t *specs = td->specifics
-				? (asn_OCTET_STRING_specifics_t *)td->specifics
-				: &asn_DEF_OCTET_STRING_specs;
-	BIT_STRING_t *st = (BIT_STRING_t *)sptr;
+OCTET_STRING_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
+                        int tag_mode, ber_tlv_tag_t tag,
+                        asn_app_consume_bytes_f *cb, void *app_key) {
+    asn_enc_rval_t er;
+	const asn_OCTET_STRING_specifics_t *specs = td->specifics
+				? (const asn_OCTET_STRING_specifics_t *)td->specifics
+				: &asn_SPC_OCTET_STRING_specs;
+	const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
 	enum asn_OS_Subvariant type_variant = specs->subvariant;
 	int fix_last_byte = 0;
 
@@ -560,7 +581,6 @@ OCTET_STRING_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
 		uint8_t b = st->bits_unused & 0x07;
 		if(b && st->size) fix_last_byte = 1;
 		ASN__CALLBACK(&b, 1);
-		er.encoded++;
 	}
 
 	/* Invoke callback for the main part of the buffer */
@@ -572,17 +592,16 @@ OCTET_STRING_encode_der(asn_TYPE_descriptor_t *td, void *sptr,
 		ASN__CALLBACK(&b, 1);
 	}
 
-	er.encoded += st->size;
 	ASN__ENCODED_OK(er);
 cb_failed:
 	ASN__ENCODE_FAILED;
 }
 
 asn_enc_rval_t
-OCTET_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
-	int ilevel, enum xer_encoder_flags_e flags,
-		asn_app_consume_bytes_f *cb, void *app_key) {
-	const char * const h2c = "0123456789ABCDEF";
+OCTET_STRING_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
+                        int ilevel, enum xer_encoder_flags_e flags,
+                        asn_app_consume_bytes_f *cb, void *app_key) {
+    const char * const h2c = "0123456789ABCDEF";
 	const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
 	asn_enc_rval_t er;
 	char scratch[16 * 3 + 4];
@@ -606,7 +625,6 @@ OCTET_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 		for(; buf < end; buf++) {
 			if(p >= scend) {
 				ASN__CALLBACK(scratch, p - scratch);
-				er.encoded += p - scratch;
 				p = scratch;
 			}
 			*p++ = h2c[(*buf >> 4) & 0x0F];
@@ -614,12 +632,10 @@ OCTET_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 		}
 
 		ASN__CALLBACK(scratch, p-scratch);	/* Dump the rest */
-		er.encoded += p - scratch;
 	} else {
 		for(i = 0; buf < end; buf++, i++) {
 			if(!(i % 16) && (i || st->size > 16)) {
 				ASN__CALLBACK(scratch, p-scratch);
-				er.encoded += (p-scratch);
 				p = scratch;
 				ASN__TEXT_INDENT(1, ilevel);
 			}
@@ -630,7 +646,6 @@ OCTET_STRING_encode_xer(asn_TYPE_descriptor_t *td, void *sptr,
 		if(p - scratch) {
 			p--;	/* Remove the tail space */
 			ASN__CALLBACK(scratch, p-scratch); /* Dump the rest */
-			er.encoded += p - scratch;
 			if(st->size > 16)
 				ASN__TEXT_INDENT(1, ilevel-1);
 		}
@@ -735,10 +750,10 @@ OCTET_STRING__handle_control_chars(void *struct_ptr, const void *chunk_buf, size
 }
 
 asn_enc_rval_t
-OCTET_STRING_encode_xer_utf8(asn_TYPE_descriptor_t *td, void *sptr,
-	int ilevel, enum xer_encoder_flags_e flags,
-		asn_app_consume_bytes_f *cb, void *app_key) {
-	const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
+OCTET_STRING_encode_xer_utf8(const asn_TYPE_descriptor_t *td, const void *sptr,
+                             int ilevel, enum xer_encoder_flags_e flags,
+                             asn_app_consume_bytes_f *cb, void *app_key) {
+    const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
 	asn_enc_rval_t er;
 	uint8_t *buf, *end;
 	uint8_t *ss;	/* Sequence start */
@@ -792,8 +807,8 @@ static ssize_t OCTET_STRING__convert_hexadecimal(void *sptr, const void *chunk_b
 	uint8_t *buf;
 
 	/* Reallocate buffer according to high cap estimation */
-	ssize_t _ns = st->size + (chunk_size + 1) / 2;
-	void *nptr = REALLOC(st->buf, _ns + 1);
+	size_t new_size = st->size + (chunk_size + 1) / 2;
+	void *nptr = REALLOC(st->buf, new_size + 1);
 	if(!nptr) return -1;
 	st->buf = (uint8_t *)nptr;
 	buf = st->buf + st->size;
@@ -850,7 +865,7 @@ static ssize_t OCTET_STRING__convert_hexadecimal(void *sptr, const void *chunk_b
 	}
 
 	st->size = buf - st->buf;	/* Adjust the buffer size */
-	assert(st->size <= _ns);
+	assert(st->size <= new_size);
 	st->buf[st->size] = 0;		/* Courtesy termination */
 
 	return (chunk_stop - (const char *)chunk_buf);	/* Converted size */
@@ -867,8 +882,8 @@ static ssize_t OCTET_STRING__convert_binary(void *sptr, const void *chunk_buf, s
 	uint8_t *buf;
 
 	/* Reallocate buffer according to high cap estimation */
-	ssize_t _ns = st->size + (chunk_size + 7) / 8;
-	void *nptr = REALLOC(st->buf, _ns + 1);
+	size_t new_size = st->size + (chunk_size + 7) / 8;
+	void *nptr = REALLOC(st->buf, new_size + 1);
 	if(!nptr) return -1;
 	st->buf = (uint8_t *)nptr;
 	buf = st->buf + st->size;
@@ -912,7 +927,7 @@ static ssize_t OCTET_STRING__convert_binary(void *sptr, const void *chunk_buf, s
 		st->bits_unused = bits_unused;
 	}
 
-	assert(st->size <= _ns);
+	assert(st->size <= new_size);
 	st->buf[st->size] = 0;		/* Courtesy termination */
 
 	return chunk_size;	/* Converted in full */
@@ -923,15 +938,12 @@ static ssize_t OCTET_STRING__convert_binary(void *sptr, const void *chunk_buf, s
  */
 static int
 OS__strtoent(int base, const char *buf, const char *end, int32_t *ret_value) {
+	const int32_t last_unicode_codepoint = 0x10ffff;
 	int32_t val = 0;
 	const char *p;
 
 	for(p = buf; p < end; p++) {
 		int ch = *p;
-
-		/* Strange huge value */
-		if((val * base + base) < 0)
-			return -1;
 
 		switch(ch) {
 		case 0x30: case 0x31: case 0x32: case 0x33: case 0x34: /*01234*/
@@ -952,6 +964,11 @@ OS__strtoent(int base, const char *buf, const char *end, int32_t *ret_value) {
 		default:
 			return -1;	/* Character set error */
 		}
+
+		/* Value exceeds the Unicode range. */
+		if(val > last_unicode_codepoint) {
+			return -1;
+		}
 	}
 
 	*ret_value = -1;
@@ -961,15 +978,17 @@ OS__strtoent(int base, const char *buf, const char *end, int32_t *ret_value) {
 /*
  * Convert from the plain UTF-8 format, expanding entity references: "2 &lt; 3"
  */
-static ssize_t OCTET_STRING__convert_entrefs(void *sptr, const void *chunk_buf, size_t chunk_size, int have_more) {
-	OCTET_STRING_t *st = (OCTET_STRING_t *)sptr;
+static ssize_t
+OCTET_STRING__convert_entrefs(void *sptr, const void *chunk_buf,
+                              size_t chunk_size, int have_more) {
+    OCTET_STRING_t *st = (OCTET_STRING_t *)sptr;
 	const char *p = (const char *)chunk_buf;
 	const char *pend = p + chunk_size;
 	uint8_t *buf;
 
 	/* Reallocate buffer */
-	ssize_t _ns = st->size + chunk_size;
-	void *nptr = REALLOC(st->buf, _ns + 1);
+	size_t new_size = st->size + chunk_size;
+	void *nptr = REALLOC(st->buf, new_size + 1);
 	if(!nptr) return -1;
 	st->buf = (uint8_t *)nptr;
 	buf = st->buf + st->size;
@@ -1092,7 +1111,7 @@ static ssize_t OCTET_STRING__convert_entrefs(void *sptr, const void *chunk_buf, 
 	}
 
 	st->size = buf - st->buf;
-	assert(st->size <= _ns);
+	assert(st->size <= new_size);
 	st->buf[st->size] = 0;		/* Courtesy termination */
 
 	return chunk_size;	/* Converted in full */
@@ -1102,19 +1121,17 @@ static ssize_t OCTET_STRING__convert_entrefs(void *sptr, const void *chunk_buf, 
  * Decode OCTET STRING from the XML element's body.
  */
 static asn_dec_rval_t
-OCTET_STRING__decode_xer(asn_codec_ctx_t *opt_codec_ctx,
-	asn_TYPE_descriptor_t *td, void **sptr,
-	const char *opt_mname, const void *buf_ptr, size_t size,
-	int (*opt_unexpected_tag_decoder)
-		(void *struct_ptr, const void *chunk_buf, size_t chunk_size),
-	ssize_t (*body_receiver)
-		(void *struct_ptr, const void *chunk_buf, size_t chunk_size,
-			int have_more)
-) {
-	OCTET_STRING_t *st = (OCTET_STRING_t *)*sptr;
-	asn_OCTET_STRING_specifics_t *specs = td->specifics
-				? (asn_OCTET_STRING_specifics_t *)td->specifics
-				: &asn_DEF_OCTET_STRING_specs;
+OCTET_STRING__decode_xer(
+    const asn_codec_ctx_t *opt_codec_ctx, const asn_TYPE_descriptor_t *td,
+    void **sptr, const char *opt_mname, const void *buf_ptr, size_t size,
+    int (*opt_unexpected_tag_decoder)(void *struct_ptr, const void *chunk_buf,
+                                      size_t chunk_size),
+    ssize_t (*body_receiver)(void *struct_ptr, const void *chunk_buf,
+                             size_t chunk_size, int have_more)) {
+    OCTET_STRING_t *st = (OCTET_STRING_t *)*sptr;
+	const asn_OCTET_STRING_specifics_t *specs = td->specifics
+				? (const asn_OCTET_STRING_specifics_t *)td->specifics
+				: &asn_SPC_OCTET_STRING_specs;
 	const char *xml_tag = opt_mname ? opt_mname : td->xml_tag;
 	asn_struct_ctx_t *ctx;		/* Per-structure parser context */
 	asn_dec_rval_t rval;		/* Return value from the decoder */
@@ -1162,10 +1179,11 @@ sta_failed:
  * Decode OCTET STRING from the hexadecimal data.
  */
 asn_dec_rval_t
-OCTET_STRING_decode_xer_hex(asn_codec_ctx_t *opt_codec_ctx,
-	asn_TYPE_descriptor_t *td, void **sptr,
-		const char *opt_mname, const void *buf_ptr, size_t size) {
-	return OCTET_STRING__decode_xer(opt_codec_ctx, td, sptr, opt_mname,
+OCTET_STRING_decode_xer_hex(const asn_codec_ctx_t *opt_codec_ctx,
+                            const asn_TYPE_descriptor_t *td, void **sptr,
+                            const char *opt_mname, const void *buf_ptr,
+                            size_t size) {
+    return OCTET_STRING__decode_xer(opt_codec_ctx, td, sptr, opt_mname,
 		buf_ptr, size, 0, OCTET_STRING__convert_hexadecimal);
 }
 
@@ -1173,10 +1191,11 @@ OCTET_STRING_decode_xer_hex(asn_codec_ctx_t *opt_codec_ctx,
  * Decode OCTET STRING from the binary (0/1) data.
  */
 asn_dec_rval_t
-OCTET_STRING_decode_xer_binary(asn_codec_ctx_t *opt_codec_ctx,
-	asn_TYPE_descriptor_t *td, void **sptr,
-		const char *opt_mname, const void *buf_ptr, size_t size) {
-	return OCTET_STRING__decode_xer(opt_codec_ctx, td, sptr, opt_mname,
+OCTET_STRING_decode_xer_binary(const asn_codec_ctx_t *opt_codec_ctx,
+                               const asn_TYPE_descriptor_t *td, void **sptr,
+                               const char *opt_mname, const void *buf_ptr,
+                               size_t size) {
+    return OCTET_STRING__decode_xer(opt_codec_ctx, td, sptr, opt_mname,
 		buf_ptr, size, 0, OCTET_STRING__convert_binary);
 }
 
@@ -1184,26 +1203,29 @@ OCTET_STRING_decode_xer_binary(asn_codec_ctx_t *opt_codec_ctx,
  * Decode OCTET STRING from the string (ASCII/UTF-8) data.
  */
 asn_dec_rval_t
-OCTET_STRING_decode_xer_utf8(asn_codec_ctx_t *opt_codec_ctx,
-	asn_TYPE_descriptor_t *td, void **sptr,
-		const char *opt_mname, const void *buf_ptr, size_t size) {
-	return OCTET_STRING__decode_xer(opt_codec_ctx, td, sptr, opt_mname,
+OCTET_STRING_decode_xer_utf8(const asn_codec_ctx_t *opt_codec_ctx,
+                             const asn_TYPE_descriptor_t *td, void **sptr,
+                             const char *opt_mname, const void *buf_ptr,
+                             size_t size) {
+    return OCTET_STRING__decode_xer(opt_codec_ctx, td, sptr, opt_mname,
 		buf_ptr, size,
 		OCTET_STRING__handle_control_chars,
 		OCTET_STRING__convert_entrefs);
 }
 
+#ifndef  ASN_DISABLE_PER_SUPPORT
+
 static int
 OCTET_STRING_per_get_characters(asn_per_data_t *po, uint8_t *buf,
 		size_t units, unsigned int bpc, unsigned int unit_bits,
-		long long lb, long long ub, asn_per_constraints_t *pc) {
+		long lb, long ub, const asn_per_constraints_t *pc) {
 	uint8_t *end = buf + units * bpc;
 
-	ASN_DEBUG("Expanding %d characters into (%lld..%lld):%d",
+	ASN_DEBUG("Expanding %d characters into (%ld..%ld):%d",
 		(int)units, lb, ub, unit_bits);
 
 	/* X.691: 27.5.4 */
-	if((unsigned long long)ub <= ((unsigned long long)2 << (unit_bits - 1))) {
+	if((unsigned long)ub <= ((unsigned long)2 << (unit_bits - 1))) {
 		/* Decode without translation */
 		lb = 0;
 	} else if(pc && pc->code2value) {
@@ -1218,7 +1240,7 @@ OCTET_STRING_per_get_characters(asn_per_data_t *po, uint8_t *buf,
 			value = pc->code2value(code);
 			if(value < 0) {
 				ASN_DEBUG("Code %d (0x%02x) is"
-					" not in map (%lld..%lld)",
+					" not in map (%ld..%ld)",
 					code, code, lb, ub);
 				return 1;	/* FATAL */
 			}
@@ -1238,11 +1260,11 @@ OCTET_STRING_per_get_characters(asn_per_data_t *po, uint8_t *buf,
 	}
 
 	for(; buf < end; buf += bpc) {
-		int code = per_get_few_bits(po, unit_bits);
-		int ch = code + lb;
+		int32_t code = per_get_few_bits(po, unit_bits);
+		int32_t ch = code + lb;
 		if(code < 0) return -1;	/* WMORE */
 		if(ch > ub) {
-			ASN_DEBUG("Code %d is out of range (%lld..%lld)",
+			ASN_DEBUG("Code %d is out of range (%ld..%ld)",
 				ch, lb, ub);
 			return 1;	/* FATAL */
 		}
@@ -1260,14 +1282,14 @@ OCTET_STRING_per_get_characters(asn_per_data_t *po, uint8_t *buf,
 static int
 OCTET_STRING_per_put_characters(asn_per_outp_t *po, const uint8_t *buf,
 		size_t units, unsigned int bpc, unsigned int unit_bits,
-		long long lb, long long ub, asn_per_constraints_t *pc) {
+		long lb, long ub, const asn_per_constraints_t *pc) {
 	const uint8_t *end = buf + units * bpc;
 
-	ASN_DEBUG("Squeezing %d characters into (%lld..%lld):%d (%d bpc)",
+	ASN_DEBUG("Squeezing %d characters into (%ld..%ld):%d (%d bpc)",
 		(int)units, lb, ub, unit_bits, bpc);
 
 	/* X.691: 27.5.4 */
-	if((unsigned long long)ub <= ((unsigned long long)2 << (unit_bits - 1))) {
+	if((unsigned long)ub <= ((unsigned long)2 << (unit_bits - 1))) {
 		/* Encode as is */
 		lb = 0;
 	} else if(pc && pc->value2code) {
@@ -1284,7 +1306,7 @@ OCTET_STRING_per_put_characters(asn_per_outp_t *po, const uint8_t *buf,
 			code = pc->value2code(value);
 			if(code < 0) {
 				ASN_DEBUG("Character %d (0x%02x) is"
-					" not in map (%lld..%lld)",
+					" not in map (%ld..%ld)",
 					*buf, *buf, lb, ub);
 				return -1;
 			}
@@ -1298,48 +1320,57 @@ OCTET_STRING_per_put_characters(asn_per_outp_t *po, const uint8_t *buf,
 		return per_put_many_bits(po, buf, unit_bits * units);
 	}
 
-	for(ub -= lb; buf < end; buf += bpc) {
-		int ch;
-		uint32_t value;
-		switch(bpc) {
-		case 1: value = *(const uint8_t *)buf; break;
-		case 2: value = (buf[0] << 8) | buf[1]; break;
-		case 4: value = (buf[0] << 24) | (buf[1] << 16)
-				| (buf[2] << 8) | buf[3]; break;
-		default: return -1;
-		}
-		ch = value - lb;
-		if(ch < 0 || ch > ub) {
-			ASN_DEBUG("Character %d (0x%02x)"
-			" is out of range (%lld..%lld)",
-				*buf, *buf, lb, ub + lb);
-			return -1;
-		}
-		if(per_put_few_bits(po, ch, unit_bits))
-			return -1;
-	}
+    for(ub -= lb; buf < end; buf += bpc) {
+        int ch;
+        uint32_t value;
+        switch(bpc) {
+        case 1:
+            value = *(const uint8_t *)buf;
+            break;
+        case 2:
+            value = (buf[0] << 8) | buf[1];
+            break;
+        case 4:
+            value = (buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3];
+            break;
+        default:
+            return -1;
+        }
+        ch = value - lb;
+        if(ch < 0 || ch > ub) {
+            ASN_DEBUG("Character %d (0x%02x) is out of range (%ld..%ld)", *buf,
+                      value, lb, ub + lb);
+            return -1;
+        }
+        if(per_put_few_bits(po, ch, unit_bits)) return -1;
+    }
 
-	return 0;
+    return 0;
 }
 
-asn_dec_rval_t
-OCTET_STRING_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
-	asn_TYPE_descriptor_t *td, asn_per_constraints_t *constraints,
-	void **sptr, asn_per_data_t *pd) {
+static asn_per_constraints_t asn_DEF_OCTET_STRING_constraints = {
+	{ APC_CONSTRAINED, 8, 8, 0, 255 },
+	{ APC_SEMI_CONSTRAINED, -1, -1, 0, 0 },
+	0, 0
+};
 
-	asn_OCTET_STRING_specifics_t *specs = td->specifics
-		? (asn_OCTET_STRING_specifics_t *)td->specifics
-		: &asn_DEF_OCTET_STRING_specs;
-	asn_per_constraints_t *pc = constraints ? constraints
-				: td->per_constraints;
-	asn_per_constraint_t *cval;
-	asn_per_constraint_t *csiz;
+asn_dec_rval_t
+OCTET_STRING_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
+                         const asn_TYPE_descriptor_t *td,
+                         const asn_per_constraints_t *constraints, void **sptr,
+                         asn_per_data_t *pd) {
+    const asn_OCTET_STRING_specifics_t *specs = td->specifics
+		? (const asn_OCTET_STRING_specifics_t *)td->specifics
+		: &asn_SPC_OCTET_STRING_specs;
+    const asn_per_constraints_t *pc =
+        constraints ? constraints : td->encoding_constraints.per_constraints;
+    const asn_per_constraint_t *cval;
+	const asn_per_constraint_t *csiz;
 	asn_dec_rval_t rval = { RC_OK, 0 };
-	BIT_STRING_t *st = (BIT_STRING_t *)*sptr;
+	OCTET_STRING_t *st = (OCTET_STRING_t *)*sptr;
 	ssize_t consumed_myself = 0;
 	int repeat;
 	enum {
-		OS__BPC_BIT	= 0,
 		OS__BPC_CHAR	= 1,
 		OS__BPC_U16	= 2,
 		OS__BPC_U32	= 4
@@ -1360,11 +1391,9 @@ OCTET_STRING_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 	switch(specs->subvariant) {
 	default:
 	case ASN_OSUBV_ANY:
+	case ASN_OSUBV_BIT:
 		ASN_DEBUG("Unrecognized subvariant %d", specs->subvariant);
 		RETURN(RC_FAIL);
-	case ASN_OSUBV_BIT:
-		canonical_unit_bits = unit_bits = 1;
-		bpc = OS__BPC_BIT;
 		break;
 	case ASN_OSUBV_STR:
 		canonical_unit_bits = unit_bits = 8;
@@ -1390,11 +1419,11 @@ OCTET_STRING_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 	 * Allocate the string.
 	 */
 	if(!st) {
-		st = (BIT_STRING_t *)(*sptr = CALLOC(1, specs->struct_size));
+		st = (OCTET_STRING_t *)(*sptr = CALLOC(1, specs->struct_size));
 		if(!st) RETURN(RC_FAIL);
 	}
 
-	ASN_DEBUG("PER Decoding %s size %lld .. %lld bits %d",
+	ASN_DEBUG("PER Decoding %s size %ld .. %ld bits %d",
 		csiz->flags & APC_EXTENSIBLE ? "extensible" : "non-extensible",
 		csiz->lower_bound, csiz->upper_bound, csiz->effective_bits);
 
@@ -1403,7 +1432,6 @@ OCTET_STRING_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 		if(inext < 0) RETURN(RC_WMORE);
 		if(inext) {
 			csiz = &asn_DEF_OCTET_STRING_constraints.size;
-			cval = &asn_DEF_OCTET_STRING_constraints.value;
 			unit_bits = canonical_unit_bits;
 		}
 	}
@@ -1425,14 +1453,14 @@ OCTET_STRING_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 	if(csiz->effective_bits == 0) {
 		int ret;
 		if(bpc) {
-			ASN_DEBUG("Encoding OCTET STRING size %lld",
+			ASN_DEBUG("Encoding OCTET STRING size %ld",
 				csiz->upper_bound);
 			ret = OCTET_STRING_per_get_characters(pd, st->buf,
 				csiz->upper_bound, bpc, unit_bits,
 				cval->lower_bound, cval->upper_bound, pc);
 			if(ret > 0) RETURN(RC_FAIL);
 		} else {
-			ASN_DEBUG("Encoding BIT STRING size %lld",
+			ASN_DEBUG("Encoding BIT STRING size %ld",
 				csiz->upper_bound);
 			ret = per_get_many_bits(pd, st->buf, 0,
 					    unit_bits * csiz->upper_bound);
@@ -1440,10 +1468,6 @@ OCTET_STRING_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 		if(ret < 0) RETURN(RC_WMORE);
 		consumed_myself += unit_bits * csiz->upper_bound;
 		st->buf[st->size] = 0;
-		if(bpc == 0) {
-			int ubs = (csiz->upper_bound & 0x7);
-			st->bits_unused = ubs ? 8 - ubs : 0;
-		}
 		RETURN(RC_OK);
 	}
 
@@ -1451,41 +1475,27 @@ OCTET_STRING_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 	do {
 		ssize_t raw_len;
 		ssize_t len_bytes;
-		ssize_t len_bits;
 		void *p;
 		int ret;
 
 		/* Get the PER length */
-		raw_len = uper_get_length(pd, csiz->effective_bits, &repeat);
+		raw_len = uper_get_length(pd, csiz->effective_bits, csiz->lower_bound,
+		                          &repeat);
 		if(raw_len < 0) RETURN(RC_WMORE);
-		raw_len += csiz->lower_bound;
+		if(raw_len == 0 && st->buf) break;
 
 		ASN_DEBUG("Got PER length eb %ld, len %ld, %s (%s)",
 			(long)csiz->effective_bits, (long)raw_len,
 			repeat ? "repeat" : "once", td->name);
-		if(bpc) {
-			len_bytes = raw_len * bpc;
-			len_bits = len_bytes * unit_bits;
-		} else {
-			len_bits = raw_len;
-			len_bytes = (len_bits + 7) >> 3;
-			if(len_bits & 0x7)
-				st->bits_unused = 8 - (len_bits & 0x7);
-			/* len_bits be multiple of 16K if repeat is set */
-		}
+        len_bytes = raw_len * bpc;
 		p = REALLOC(st->buf, st->size + len_bytes + 1);
 		if(!p) RETURN(RC_FAIL);
 		st->buf = (uint8_t *)p;
 
-		if(bpc) {
-			ret = OCTET_STRING_per_get_characters(pd,
-				&st->buf[st->size], raw_len, bpc, unit_bits,
-				cval->lower_bound, cval->upper_bound, pc);
-			if(ret > 0) RETURN(RC_FAIL);
-		} else {
-			ret = per_get_many_bits(pd, &st->buf[st->size],
-				0, len_bits);
-		}
+        ret = OCTET_STRING_per_get_characters(pd, &st->buf[st->size], raw_len,
+                                              bpc, unit_bits, cval->lower_bound,
+                                              cval->upper_bound, pc);
+        if(ret > 0) RETURN(RC_FAIL);
 		if(ret < 0) RETURN(RC_WMORE);
 		st->size += len_bytes;
 	} while(repeat);
@@ -1494,18 +1504,162 @@ OCTET_STRING_decode_uper(asn_codec_ctx_t *opt_codec_ctx,
 	return rval;
 }
 
-asn_dec_rval_t
-OCTET_STRING_decode_aper(asn_codec_ctx_t *opt_codec_ctx,
-	asn_TYPE_descriptor_t *td, asn_per_constraints_t *constraints,
-	void **sptr, asn_per_data_t *pd) {
+asn_enc_rval_t
+OCTET_STRING_encode_uper(const asn_TYPE_descriptor_t *td,
+                         const asn_per_constraints_t *constraints,
+                         const void *sptr, asn_per_outp_t *po) {
+    const asn_OCTET_STRING_specifics_t *specs = td->specifics
+		? (const asn_OCTET_STRING_specifics_t *)td->specifics
+		: &asn_SPC_OCTET_STRING_specs;
+	const asn_per_constraints_t *pc = constraints ? constraints
+				: td->encoding_constraints.per_constraints;
+	const asn_per_constraint_t *cval;
+	const asn_per_constraint_t *csiz;
+	const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
+	asn_enc_rval_t er = { 0, 0, 0 };
+	int inext = 0;		/* Lies not within extension root */
+	unsigned int unit_bits;
+	unsigned int canonical_unit_bits;
+	size_t size_in_units;
+	const uint8_t *buf;
+	int ret;
+	enum {
+		OS__BPC_CHAR	= 1,
+		OS__BPC_U16	= 2,
+		OS__BPC_U32	= 4
+	} bpc;	/* Bytes per character */
+	int ct_extensible;
 
-	asn_OCTET_STRING_specifics_t *specs = td->specifics
-		? (asn_OCTET_STRING_specifics_t *)td->specifics
-		: &asn_DEF_OCTET_STRING_specs;
-	asn_per_constraints_t *pc = constraints ? constraints
-				: td->per_constraints;
-	asn_per_constraint_t *cval;
-	asn_per_constraint_t *csiz;
+	if(!st || (!st->buf && st->size))
+		ASN__ENCODE_FAILED;
+
+	if(pc) {
+		cval = &pc->value;
+		csiz = &pc->size;
+	} else {
+		cval = &asn_DEF_OCTET_STRING_constraints.value;
+		csiz = &asn_DEF_OCTET_STRING_constraints.size;
+	}
+	ct_extensible = csiz->flags & APC_EXTENSIBLE;
+
+	switch(specs->subvariant) {
+	default:
+	case ASN_OSUBV_ANY:
+	case ASN_OSUBV_BIT:
+		ASN__ENCODE_FAILED;
+	case ASN_OSUBV_STR:
+		canonical_unit_bits = unit_bits = 8;
+		if(cval->flags & APC_CONSTRAINED)
+			unit_bits = cval->range_bits;
+		bpc = OS__BPC_CHAR;
+		size_in_units = st->size;
+		break;
+	case ASN_OSUBV_U16:
+		canonical_unit_bits = unit_bits = 16;
+		if(cval->flags & APC_CONSTRAINED)
+			unit_bits = cval->range_bits;
+		bpc = OS__BPC_U16;
+		size_in_units = st->size >> 1;
+		if(st->size & 1) {
+			ASN_DEBUG("%s string size is not modulo 2", td->name);
+			ASN__ENCODE_FAILED;
+		}
+		break;
+	case ASN_OSUBV_U32:
+		canonical_unit_bits = unit_bits = 32;
+		if(cval->flags & APC_CONSTRAINED)
+			unit_bits = cval->range_bits;
+		bpc = OS__BPC_U32;
+		size_in_units = st->size >> 2;
+		if(st->size & 3) {
+			ASN_DEBUG("%s string size is not modulo 4", td->name);
+			ASN__ENCODE_FAILED;
+		}
+		break;
+	}
+
+	ASN_DEBUG("Encoding %s into %" ASN_PRI_SIZE " units of %d bits"
+		" (%ld..%ld, effective %d)%s",
+		td->name, size_in_units, unit_bits,
+		csiz->lower_bound, csiz->upper_bound,
+		csiz->effective_bits, ct_extensible ? " EXT" : "");
+
+	/* Figure out whether size lies within PER visible constraint */
+
+    if(csiz->effective_bits >= 0) {
+        if((ssize_t)size_in_units < csiz->lower_bound
+           || (ssize_t)size_in_units > csiz->upper_bound) {
+            if(ct_extensible) {
+                csiz = &asn_DEF_OCTET_STRING_constraints.size;
+                unit_bits = canonical_unit_bits;
+                inext = 1;
+            } else {
+                ASN__ENCODE_FAILED;
+            }
+        }
+    } else {
+        inext = 0;
+    }
+
+    if(ct_extensible) {
+		/* Declare whether length is [not] within extension root */
+		if(per_put_few_bits(po, inext, 1))
+			ASN__ENCODE_FAILED;
+	}
+
+    if(csiz->effective_bits >= 0 && !inext) {
+        ASN_DEBUG("Encoding %" ASN_PRI_SIZE " bytes (%ld), length in %d bits", st->size,
+                  size_in_units - csiz->lower_bound, csiz->effective_bits);
+        ret = per_put_few_bits(po, size_in_units - csiz->lower_bound,
+                               csiz->effective_bits);
+        if(ret) ASN__ENCODE_FAILED;
+        ret = OCTET_STRING_per_put_characters(po, st->buf, size_in_units, bpc,
+                                              unit_bits, cval->lower_bound,
+                                              cval->upper_bound, pc);
+        if(ret) ASN__ENCODE_FAILED;
+        ASN__ENCODED_OK(er);
+    }
+
+    ASN_DEBUG("Encoding %" ASN_PRI_SIZE " bytes", st->size);
+
+    buf = st->buf;
+    ASN_DEBUG("Encoding %" ASN_PRI_SIZE " in units", size_in_units);
+    do {
+        int need_eom = 0;
+        ssize_t may_save = uper_put_length(po, size_in_units, &need_eom);
+        if(may_save < 0) ASN__ENCODE_FAILED;
+
+        ASN_DEBUG("Encoding %" ASN_PRI_SSIZE " of %" ASN_PRI_SIZE "%s", may_save, size_in_units,
+                  need_eom ? ",+EOM" : "");
+
+        ret = OCTET_STRING_per_put_characters(po, buf, may_save, bpc, unit_bits,
+                                              cval->lower_bound,
+                                              cval->upper_bound, pc);
+        if(ret) ASN__ENCODE_FAILED;
+
+        buf += may_save * bpc;
+        size_in_units -= may_save;
+        assert(!(may_save & 0x07) || !size_in_units);
+        if(need_eom && uper_put_length(po, 0, 0))
+            ASN__ENCODE_FAILED; /* End of Message length */
+    } while(size_in_units);
+
+    ASN__ENCODED_OK(er);
+}
+
+asn_dec_rval_t
+OCTET_STRING_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
+                         const asn_TYPE_descriptor_t *td,
+                         const asn_per_constraints_t *constraints,
+                         void **sptr, asn_per_data_t *pd) {
+
+	const asn_OCTET_STRING_specifics_t *specs = td->specifics
+		? (const asn_OCTET_STRING_specifics_t *)td->specifics
+		: &asn_SPC_OCTET_STRING_specs;
+	const asn_per_constraints_t *pc = constraints ? constraints
+				: td->encoding_constraints.per_constraints;
+	const asn_per_constraint_t *cval;
+	const asn_per_constraint_t *csiz;
 	asn_dec_rval_t rval = { RC_OK, 0 };
 	BIT_STRING_t *st = (BIT_STRING_t *)*sptr;
 	ssize_t consumed_myself = 0;
@@ -1531,18 +1685,20 @@ OCTET_STRING_decode_aper(asn_codec_ctx_t *opt_codec_ctx,
 
 	switch(specs->subvariant) {
 	default:
-// 	case ASN_OSUBV_ANY:
-// 		ASN_DEBUG("Unrecognized subvariant %d", specs->subvariant);
-// 		RETURN(RC_FAIL);
+/* 	case ASN_OSUBV_ANY:
+		ASN_DEBUG("Unrecognized subvariant %d", specs->subvariant);
+		RETURN(RC_FAIL);
+*/
 	case ASN_OSUBV_BIT:
 		canonical_unit_bits = unit_bits = 1;
 		bpc = OS__BPC_BIT;
 		break;
-    case ASN_OSUBV_ANY:
+	case ASN_OSUBV_ANY:
 	case ASN_OSUBV_STR:
 		canonical_unit_bits = unit_bits = 8;
-// 		if(cval->flags & APC_CONSTRAINED)
-// 			unit_bits = cval->range_bits;
+/* 		if(cval->flags & APC_CONSTRAINED)
+			unit_bits = cval->range_bits;
+*/
 		bpc = OS__BPC_CHAR;
 		break;
 	case ASN_OSUBV_U16:
@@ -1567,7 +1723,7 @@ OCTET_STRING_decode_aper(asn_codec_ctx_t *opt_codec_ctx,
 		if(!st) RETURN(RC_FAIL);
 	}
 
-	ASN_DEBUG("PER Decoding %s size %lld .. %lld bits %d",
+	ASN_DEBUG("PER Decoding %s size %ld .. %ld bits %d",
 		csiz->flags & APC_EXTENSIBLE ? "extensible" : "non-extensible",
 		csiz->lower_bound, csiz->upper_bound, csiz->effective_bits);
 
@@ -1602,14 +1758,14 @@ OCTET_STRING_decode_aper(asn_codec_ctx_t *opt_codec_ctx,
 				RETURN(RC_FAIL);
 		}
 		if(bpc) {
-			ASN_DEBUG("Decoding OCTET STRING size %lld",
+			ASN_DEBUG("Decoding OCTET STRING size %ld",
 				csiz->upper_bound);
 			ret = OCTET_STRING_per_get_characters(pd, st->buf,
 				csiz->upper_bound, bpc, unit_bits,
 				cval->lower_bound, cval->upper_bound, pc);
 			if(ret > 0) RETURN(RC_FAIL);
 		} else {
-			ASN_DEBUG("Decoding BIT STRING size %lld",
+			ASN_DEBUG("Decoding BIT STRING size %ld",
 				csiz->upper_bound);
 			ret = per_get_many_bits(pd, st->buf, 0,
 					    unit_bits * csiz->upper_bound);
@@ -1634,7 +1790,7 @@ OCTET_STRING_decode_aper(asn_codec_ctx_t *opt_codec_ctx,
 
 		/* Get the PER length */
 		if (csiz->upper_bound - csiz->lower_bound == 0)
-			// Indefinite length case
+			/* Indefinite length case */
 			raw_len = aper_get_length(pd, -1, csiz->effective_bits, &repeat);
 		else
 			raw_len = aper_get_length(pd, csiz->upper_bound - csiz->lower_bound + 1, csiz->effective_bits, &repeat);
@@ -1683,176 +1839,17 @@ OCTET_STRING_decode_aper(asn_codec_ctx_t *opt_codec_ctx,
 }
 
 asn_enc_rval_t
-OCTET_STRING_encode_uper(asn_TYPE_descriptor_t *td,
-        asn_per_constraints_t *constraints, void *sptr, asn_per_outp_t *po) {
+OCTET_STRING_encode_aper(const asn_TYPE_descriptor_t *td,
+                         const asn_per_constraints_t *constraints,
+                         const void *sptr, asn_per_outp_t *po) {
 
-	asn_OCTET_STRING_specifics_t *specs = td->specifics
-		? (asn_OCTET_STRING_specifics_t *)td->specifics
-		: &asn_DEF_OCTET_STRING_specs;
-	asn_per_constraints_t *pc = constraints ? constraints
-				: td->per_constraints;
-	asn_per_constraint_t *cval;
-	asn_per_constraint_t *csiz;
-	const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
-	asn_enc_rval_t er = { 0, 0, 0 };
-	int inext = 0;		/* Lies not within extension root */
-	unsigned int unit_bits;
-	unsigned int canonical_unit_bits;
-	unsigned int sizeinunits;
-	const uint8_t *buf;
-	int ret;
-	enum {
-		OS__BPC_BIT	= 0,
-		OS__BPC_CHAR	= 1,
-		OS__BPC_U16	= 2,
-		OS__BPC_U32	= 4
-	} bpc;	/* Bytes per character */
-	int ct_extensible;
-
-	if(!st || (!st->buf && st->size))
-		ASN__ENCODE_FAILED;
-
-	if(pc) {
-		cval = &pc->value;
-		csiz = &pc->size;
-	} else {
-		cval = &asn_DEF_OCTET_STRING_constraints.value;
-		csiz = &asn_DEF_OCTET_STRING_constraints.size;
-	}
-	ct_extensible = csiz->flags & APC_EXTENSIBLE;
-
-	switch(specs->subvariant) {
-	default:
-	case ASN_OSUBV_ANY:
-		ASN__ENCODE_FAILED;
-	case ASN_OSUBV_BIT:
-		canonical_unit_bits = unit_bits = 1;
-		bpc = OS__BPC_BIT;
-		sizeinunits = st->size * 8 - (st->bits_unused & 0x07);
-		ASN_DEBUG("BIT STRING of %d bytes, %d bits unused",
-				sizeinunits, st->bits_unused);
-		break;
-	case ASN_OSUBV_STR:
-		canonical_unit_bits = unit_bits = 8;
-		if(cval->flags & APC_CONSTRAINED)
-			unit_bits = cval->range_bits;
-		bpc = OS__BPC_CHAR;
-		sizeinunits = st->size;
-		break;
-	case ASN_OSUBV_U16:
-		canonical_unit_bits = unit_bits = 16;
-		if(cval->flags & APC_CONSTRAINED)
-			unit_bits = cval->range_bits;
-		bpc = OS__BPC_U16;
-		sizeinunits = st->size / 2;
-		break;
-	case ASN_OSUBV_U32:
-		canonical_unit_bits = unit_bits = 32;
-		if(cval->flags & APC_CONSTRAINED)
-			unit_bits = cval->range_bits;
-		bpc = OS__BPC_U32;
-		sizeinunits = st->size / 4;
-		break;
-	}
-
-	ASN_DEBUG("Encoding %s into %d units of %d bits"
-		" (%lld..%lld, effective %d)%s",
-		td->name, sizeinunits, unit_bits,
-		csiz->lower_bound, csiz->upper_bound,
-		csiz->effective_bits, ct_extensible ? " EXT" : "");
-
-	/* Figure out whether size lies within PER visible constraint */
-
-	if(csiz->effective_bits >= 0) {
-		if((int)sizeinunits < csiz->lower_bound
-		|| (int)sizeinunits > csiz->upper_bound) {
-			if(ct_extensible) {
-				cval = &asn_DEF_OCTET_STRING_constraints.value;
-				csiz = &asn_DEF_OCTET_STRING_constraints.size;
-				unit_bits = canonical_unit_bits;
-				inext = 1;
-			} else
-				ASN__ENCODE_FAILED;
-		}
-	} else {
-		inext = 0;
-	}
-
-	if(ct_extensible) {
-		/* Declare whether length is [not] within extension root */
-		if(per_put_few_bits(po, inext, 1))
-			ASN__ENCODE_FAILED;
-	}
-
-	/* X.691, #16.5: zero-length encoding */
-	/* X.691, #16.6: short fixed length encoding (up to 2 octets) */
-	/* X.691, #16.7: long fixed length encoding (up to 64K octets) */
-	if(csiz->effective_bits >= 0) {
-		ASN_DEBUG("Encoding %d bytes (%lld), length in %d bits",
-				st->size, sizeinunits - csiz->lower_bound,
-				csiz->effective_bits);
-		ret = per_put_few_bits(po, sizeinunits - csiz->lower_bound,
-				csiz->effective_bits);
-		if(ret) ASN__ENCODE_FAILED;
-		if(bpc) {
-			ret = OCTET_STRING_per_put_characters(po, st->buf,
-				sizeinunits, bpc, unit_bits,
-				cval->lower_bound, cval->upper_bound, pc);
-		} else {
-			ret = per_put_many_bits(po, st->buf,
-				sizeinunits * unit_bits);
-		}
-		if(ret) ASN__ENCODE_FAILED;
-		ASN__ENCODED_OK(er);
-	}
-
-	ASN_DEBUG("Encoding %d bytes", st->size);
-
-	if(sizeinunits == 0) {
-		if(uper_put_length(po, 0))
-			ASN__ENCODE_FAILED;
-		ASN__ENCODED_OK(er);
-	}
-
-	buf = st->buf;
-	while(sizeinunits) {
-		ssize_t maySave = uper_put_length(po, sizeinunits);
-		if(maySave < 0) ASN__ENCODE_FAILED;
-
-		ASN_DEBUG("Encoding %ld of %ld",
-			(long)maySave, (long)sizeinunits);
-
-		if(bpc) {
-			ret = OCTET_STRING_per_put_characters(po, buf,
-				maySave, bpc, unit_bits,
-				cval->lower_bound, cval->upper_bound, pc);
-		} else {
-			ret = per_put_many_bits(po, buf, maySave * unit_bits);
-		}
-		if(ret) ASN__ENCODE_FAILED;
-
-		if(bpc)
-			buf += maySave * bpc;
-		else
-			buf += maySave >> 3;
-		sizeinunits -= maySave;
-		assert(!(maySave & 0x07) || !sizeinunits);
-	}
-
-	ASN__ENCODED_OK(er);
-}
-
-asn_enc_rval_t
-OCTET_STRING_encode_aper(asn_TYPE_descriptor_t *td,
-        asn_per_constraints_t *constraints, void *sptr, asn_per_outp_t *po) {
-
-	asn_OCTET_STRING_specifics_t *specs = td->specifics
-	? (asn_OCTET_STRING_specifics_t *)td->specifics
-	: &asn_DEF_OCTET_STRING_specs;
-	asn_per_constraints_t *pc = constraints ? constraints
-	: td->per_constraints;
-	asn_per_constraint_t *cval;
-	asn_per_constraint_t *csiz;
+	const asn_OCTET_STRING_specifics_t *specs = td->specifics
+		? (const asn_OCTET_STRING_specifics_t *)td->specifics
+		: &asn_SPC_OCTET_STRING_specs;
+	const asn_per_constraints_t *pc = constraints ? constraints
+	: td->encoding_constraints.per_constraints;
+	const asn_per_constraint_t *cval;
+	const asn_per_constraint_t *csiz;
 	const BIT_STRING_t *st = (const BIT_STRING_t *)sptr;
 	asn_enc_rval_t er = { 0, 0, 0 };
 	int inext = 0;          /* Lies not within extension root */
@@ -1883,8 +1880,9 @@ OCTET_STRING_encode_aper(asn_TYPE_descriptor_t *td,
 
 	switch(specs->subvariant) {
 		default:
-			//         case ASN_OSUBV_ANY:
-			//                 ASN__ENCODE_FAILED;
+			/*         case ASN_OSUBV_ANY:
+			                 ASN__ENCODE_FAILED;
+			*/
 		case ASN_OSUBV_BIT:
 			canonical_unit_bits = unit_bits = 1;
 			bpc = OS__BPC_BIT;
@@ -1895,8 +1893,9 @@ OCTET_STRING_encode_aper(asn_TYPE_descriptor_t *td,
         case ASN_OSUBV_ANY:
 	case ASN_OSUBV_STR:
 		canonical_unit_bits = unit_bits = 8;
-// 		if(cval->flags & APC_CONSTRAINED)
-// 			unit_bits = 8;
+/* 		if(cval->flags & APC_CONSTRAINED)
+			unit_bits = 8;
+*/
 		bpc = OS__BPC_CHAR;
 		sizeinunits = st->size;
 		break;
@@ -1917,7 +1916,7 @@ OCTET_STRING_encode_aper(asn_TYPE_descriptor_t *td,
 	}
 
 	ASN_DEBUG("Encoding %s into %d units of %d bits"
-		" (%lld..%lld, effective %d)%s",
+		" (%ld..%ld, effective %d)%s",
 		td->name, sizeinunits, unit_bits,
 		csiz->lower_bound, csiz->upper_bound,
 		csiz->effective_bits, ct_extensible ? " EXT" : "");
@@ -1950,12 +1949,13 @@ OCTET_STRING_encode_aper(asn_TYPE_descriptor_t *td,
 	/* X.691, #16.6: short fixed length encoding (up to 2 octets) */
 	/* X.691, #16.7: long fixed length encoding (up to 64K octets) */
 	if(csiz->effective_bits >= 0) {
-		ASN_DEBUG("Encoding %d bytes (%lld), length in %d bits",
+		ASN_DEBUG("Encoding %lu bytes (%ld), length in %d bits",
 				st->size, sizeinunits - csiz->lower_bound,
 				csiz->effective_bits);
-		ret = per_put_few_bits(po, sizeinunits - csiz->lower_bound,
-				csiz->effective_bits);
-		if(ret) ASN__ENCODE_FAILED;
+		if (csiz->effective_bits > 0) {
+		        ret = aper_put_length(po, csiz->upper_bound - csiz->lower_bound + 1, sizeinunits - csiz->lower_bound);
+		        if(ret) ASN__ENCODE_FAILED;
+		}
 		if (st->size > 2) { /* X.691 #16 NOTE 1 */
 			if (aper_put_align(po) < 0)
 				ASN__ENCODE_FAILED;
@@ -1972,7 +1972,7 @@ OCTET_STRING_encode_aper(asn_TYPE_descriptor_t *td,
 		ASN__ENCODED_OK(er);
 	}
 
-	ASN_DEBUG("Encoding %d bytes", st->size);
+	ASN_DEBUG("Encoding %lu bytes", st->size);
 
 	if(sizeinunits == 0) {
 		if(aper_put_length(po, -1, 0))
@@ -2009,10 +2009,12 @@ OCTET_STRING_encode_aper(asn_TYPE_descriptor_t *td,
 	ASN__ENCODED_OK(er);
 }
 
+#endif  /* ASN_DISABLE_PER_SUPPORT */
+
 int
-OCTET_STRING_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-	asn_app_consume_bytes_f *cb, void *app_key) {
-	const char * const h2c = "0123456789ABCDEF";
+OCTET_STRING_print(const asn_TYPE_descriptor_t *td, const void *sptr,
+                   int ilevel, asn_app_consume_bytes_f *cb, void *app_key) {
+    const char * const h2c = "0123456789ABCDEF";
 	const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
 	char scratch[16 * 3 + 4];
 	char *p = scratch;
@@ -2052,9 +2054,10 @@ OCTET_STRING_print(asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
 }
 
 int
-OCTET_STRING_print_utf8(asn_TYPE_descriptor_t *td, const void *sptr,
-		int ilevel, asn_app_consume_bytes_f *cb, void *app_key) {
-	const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
+OCTET_STRING_print_utf8(const asn_TYPE_descriptor_t *td, const void *sptr,
+                        int ilevel, asn_app_consume_bytes_f *cb,
+                        void *app_key) {
+    const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
 
 	(void)td;	/* Unused argument */
 	(void)ilevel;	/* Unused argument */
@@ -2067,9 +2070,10 @@ OCTET_STRING_print_utf8(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 void
-OCTET_STRING_free(asn_TYPE_descriptor_t *td, void *sptr, int contents_only) {
+OCTET_STRING_free(const asn_TYPE_descriptor_t *td, void *sptr,
+                  enum asn_struct_free_method method) {
 	OCTET_STRING_t *st = (OCTET_STRING_t *)sptr;
-	asn_OCTET_STRING_specifics_t *specs;
+	const asn_OCTET_STRING_specifics_t *specs;
 	asn_struct_ctx_t *ctx;
 	struct _stack *stck;
 
@@ -2077,8 +2081,8 @@ OCTET_STRING_free(asn_TYPE_descriptor_t *td, void *sptr, int contents_only) {
 		return;
 
 	specs = td->specifics
-		    ? (asn_OCTET_STRING_specifics_t *)td->specifics
-		    : &asn_DEF_OCTET_STRING_specs;
+		    ? (const asn_OCTET_STRING_specifics_t *)td->specifics
+		    : &asn_SPC_OCTET_STRING_specs;
 	ctx = (asn_struct_ctx_t *)((char *)st + specs->ctx_offset);
 
 	ASN_DEBUG("Freeing %s as OCTET STRING", td->name);
@@ -2101,9 +2105,20 @@ OCTET_STRING_free(asn_TYPE_descriptor_t *td, void *sptr, int contents_only) {
 		FREEMEM(stck);
 	}
 
-	if(!contents_only) {
-		FREEMEM(st);
-	}
+    switch(method) {
+    case ASFM_FREE_EVERYTHING:
+        FREEMEM(sptr);
+        break;
+    case ASFM_FREE_UNDERLYING:
+        break;
+    case ASFM_FREE_UNDERLYING_AND_RESET:
+        memset(sptr, 0,
+               td->specifics
+                   ? ((const asn_OCTET_STRING_specifics_t *)(td->specifics))
+                         ->struct_size
+                   : sizeof(OCTET_STRING_t));
+        break;
+    }
 }
 
 /*
@@ -2147,11 +2162,12 @@ OCTET_STRING_fromBuf(OCTET_STRING_t *st, const char *str, int len) {
 }
 
 OCTET_STRING_t *
-OCTET_STRING_new_fromBuf(asn_TYPE_descriptor_t *td, const char *str, int len) {
-	asn_OCTET_STRING_specifics_t *specs = td->specifics
-				? (asn_OCTET_STRING_specifics_t *)td->specifics
-				: &asn_DEF_OCTET_STRING_specs;
-	OCTET_STRING_t *st;
+OCTET_STRING_new_fromBuf(const asn_TYPE_descriptor_t *td, const char *str,
+                         int len) {
+    const asn_OCTET_STRING_specifics_t *specs =
+        td->specifics ? (const asn_OCTET_STRING_specifics_t *)td->specifics
+                      : &asn_SPC_OCTET_STRING_specs;
+    OCTET_STRING_t *st;
 
 	st = (OCTET_STRING_t *)CALLOC(1, specs->struct_size);
 	if(st && str && OCTET_STRING_fromBuf(st, str, len)) {
@@ -2162,3 +2178,232 @@ OCTET_STRING_new_fromBuf(asn_TYPE_descriptor_t *td, const char *str, int len) {
 	return st;
 }
 
+/*
+ * Lexicographically compare the common prefix of both strings,
+ * and if it is the same return -1 for the smallest string.
+ */
+int
+OCTET_STRING_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
+                     const void *bptr) {
+    const asn_OCTET_STRING_specifics_t *specs = td->specifics;
+    const OCTET_STRING_t *a = aptr;
+    const OCTET_STRING_t *b = bptr;
+
+    assert(!specs || specs->subvariant != ASN_OSUBV_BIT);
+
+    if(a && b) {
+        size_t common_prefix_size = a->size <= b->size ? a->size : b->size;
+        int ret = memcmp(a->buf, b->buf, common_prefix_size);
+        if(ret == 0) {
+            /* Figure out which string with equal prefixes is longer. */
+            if(a->size < b->size) {
+                return -1;
+            } else if(a->size > b->size) {
+                return 1;
+            } else {
+                return 0;
+            }
+        } else {
+            return ret < 0 ? -1 : 1;
+        }
+    } else if(!a && !b) {
+        return 0;
+    } else if(!a) {
+        return -1;
+    } else {
+        return 1;
+    }
+
+}
+
+/*
+ * Biased function for randomizing character values around their limits.
+ */
+static uint32_t
+OCTET_STRING__random_char(unsigned long lb, unsigned long ub) {
+    assert(lb <= ub);
+    switch(asn_random_between(0, 16)) {
+    case 0:
+        if(lb < ub) return lb + 1;
+        /* Fall through */
+    case 1:
+        return lb;
+    case 2:
+        if(lb < ub) return ub - 1;
+        /* Fall through */
+    case 3:
+        return ub;
+    default:
+        return asn_random_between(lb, ub);
+    }
+}
+
+
+size_t
+OCTET_STRING_random_length_constrained(
+    const asn_TYPE_descriptor_t *td,
+    const asn_encoding_constraints_t *constraints, size_t max_length) {
+    const unsigned lengths[] = {0,     1,     2,     3,     4,     8,
+                                126,   127,   128,   16383, 16384, 16385,
+                                65534, 65535, 65536, 65537};
+    size_t rnd_len;
+
+    /* Figure out how far we should go */
+    rnd_len = lengths[asn_random_between(
+        0, sizeof(lengths) / sizeof(lengths[0]) - 1)];
+
+    if(!constraints || !constraints->per_constraints)
+        constraints = &td->encoding_constraints;
+    if(constraints->per_constraints) {
+        const asn_per_constraint_t *pc = &constraints->per_constraints->size;
+        if(pc->flags & APC_CONSTRAINED) {
+            long suggested_upper_bound = pc->upper_bound < (ssize_t)max_length
+                                             ? pc->upper_bound
+                                             : (ssize_t)max_length;
+            if(max_length <= (size_t)pc->lower_bound) {
+                return pc->lower_bound;
+            }
+            if(pc->flags & APC_EXTENSIBLE) {
+                switch(asn_random_between(0, 5)) {
+                case 0:
+                    if(pc->lower_bound > 0) {
+                        rnd_len = pc->lower_bound - 1;
+                        break;
+                    }
+                    /* Fall through */
+                case 1:
+                    rnd_len = pc->upper_bound + 1;
+                    break;
+                case 2:
+                    /* Keep rnd_len from the table */
+                    if(rnd_len <= max_length) {
+                        break;
+                    }
+                    /* Fall through */
+                default:
+                    rnd_len = asn_random_between(pc->lower_bound,
+                                                 suggested_upper_bound);
+                }
+            } else {
+                rnd_len =
+                    asn_random_between(pc->lower_bound, suggested_upper_bound);
+            }
+        } else {
+            rnd_len = asn_random_between(0, max_length);
+        }
+    } else if(rnd_len > max_length) {
+        rnd_len = asn_random_between(0, max_length);
+    }
+
+    return rnd_len;
+}
+
+asn_random_fill_result_t
+OCTET_STRING_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
+                         const asn_encoding_constraints_t *constraints,
+                         size_t max_length) {
+	const asn_OCTET_STRING_specifics_t *specs = td->specifics
+				? (const asn_OCTET_STRING_specifics_t *)td->specifics
+				: &asn_SPC_OCTET_STRING_specs;
+    asn_random_fill_result_t result_ok = {ARFILL_OK, 1};
+    asn_random_fill_result_t result_failed = {ARFILL_FAILED, 0};
+    asn_random_fill_result_t result_skipped = {ARFILL_SKIPPED, 0};
+    unsigned int unit_bytes = 1;
+    unsigned long clb = 0;  /* Lower bound on char */
+    unsigned long cub = 255;  /* Higher bound on char value */
+    uint8_t *buf;
+    uint8_t *bend;
+    uint8_t *b;
+    size_t rnd_len;
+    OCTET_STRING_t *st;
+
+    if(max_length == 0 && !*sptr) return result_skipped;
+
+    switch(specs->subvariant) {
+    default:
+    case ASN_OSUBV_ANY:
+        return result_failed;
+    case ASN_OSUBV_BIT:
+        /* Handled by BIT_STRING itself. */
+        return result_failed;
+    case ASN_OSUBV_STR:
+        unit_bytes = 1;
+        clb = 0;
+        cub = 255;
+        break;
+    case ASN_OSUBV_U16:
+        unit_bytes = 2;
+        clb = 0;
+        cub = 65535;
+        break;
+    case ASN_OSUBV_U32:
+        unit_bytes = 4;
+        clb = 0;
+        cub = 0x10FFFF;
+        break;
+    }
+
+    if(!constraints || !constraints->per_constraints)
+        constraints = &td->encoding_constraints;
+    if(constraints->per_constraints) {
+        const asn_per_constraint_t *pc = &constraints->per_constraints->value;
+        if(pc->flags & APC_SEMI_CONSTRAINED) {
+            clb = pc->lower_bound;
+        } else if(pc->flags & APC_CONSTRAINED) {
+            clb = pc->lower_bound;
+            cub = pc->upper_bound;
+        }
+    }
+
+    rnd_len =
+        OCTET_STRING_random_length_constrained(td, constraints, max_length);
+
+    buf = CALLOC(unit_bytes, rnd_len + 1);
+    if(!buf) return result_failed;
+
+    bend = &buf[unit_bytes * rnd_len];
+
+    switch(unit_bytes) {
+    case 1:
+        for(b = buf; b < bend; b += unit_bytes) {
+            *(uint8_t *)b = OCTET_STRING__random_char(clb, cub);
+        }
+        *(uint8_t *)b = 0;
+        break;
+    case 2:
+        for(b = buf; b < bend; b += unit_bytes) {
+            uint32_t code = OCTET_STRING__random_char(clb, cub);
+            b[0] = code >> 8;
+            b[1] = code;
+        }
+        *(uint16_t *)b = 0;
+        break;
+    case 4:
+        for(b = buf; b < bend; b += unit_bytes) {
+            uint32_t code = OCTET_STRING__random_char(clb, cub);
+            b[0] = code >> 24;
+            b[1] = code >> 16;
+            b[2] = code >> 8;
+            b[3] = code;
+        }
+        *(uint32_t *)b = 0;
+        break;
+    }
+
+    if(*sptr) {
+        st = *sptr;
+        FREEMEM(st->buf);
+    } else {
+        st = (OCTET_STRING_t *)(*sptr = CALLOC(1, specs->struct_size));
+        if(!st) {
+            FREEMEM(buf);
+            return result_failed;
+        }
+    }
+
+    st->buf = buf;
+    st->size = unit_bytes * rnd_len;
+
+    result_ok.length = st->size;
+    return result_ok;
+}

@@ -33,7 +33,7 @@ extern "C" {
 #define MAX_NUM_OF_FLOW             8   /* Num of Flow per PCC Rule */
 #define MAX_NUM_OF_PACKET_FILTER    16  /* Num of Packet Filter per Bearer */
 
-#define MAX_SDU_LEN             4096
+#define MAX_SDU_LEN             8192
 #define PLMN_ID_LEN             3
 
 #define BCD_TO_BUFFER_LEN(x)    (((x)+1)/2)

@@ -418,7 +418,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 d_assert(enb_ue, break, "No ENB UE context");
 
                 rv = s1ap_send_ue_context_release_command(enb_ue,
-                        S1ap_Cause_PR_nas, S1ap_CauseNas_normal_release,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
                 d_assert(rv == CORE_OK,, "s1ap send error");
 
@@ -455,7 +455,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                         if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
                         {
                             rv = nas_send_tau_accept(mme_ue,
-                                    S1ap_ProcedureCode_id_InitialContextSetup);
+                                    S1AP_ProcedureCode_id_InitialContextSetup);
                             d_assert(rv == CORE_OK,,
                                     "nas_send_tau_accept() failed");
                         }

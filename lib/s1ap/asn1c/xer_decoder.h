@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * Copyright (c) 2004-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
 #ifndef	_XER_DECODER_H_
@@ -15,23 +15,24 @@ struct asn_TYPE_descriptor_s;	/* Forward declaration */
 
 /*
  * The XER decoder of any ASN.1 type. May be invoked by the application.
+ * Decodes CANONICAL-XER and BASIC-XER.
  */
-asn_dec_rval_t xer_decode(struct asn_codec_ctx_s *opt_codec_ctx,
-	struct asn_TYPE_descriptor_s *type_descriptor,
-	void **struct_ptr,	/* Pointer to a target structure's pointer */
-	const void *buffer,	/* Data to be decoded */
-	size_t size		/* Size of data buffer */
-	);
+asn_dec_rval_t xer_decode(
+    const struct asn_codec_ctx_s *opt_codec_ctx,
+    const struct asn_TYPE_descriptor_s *type_descriptor,
+    void **struct_ptr,  /* Pointer to a target structure's pointer */
+    const void *buffer, /* Data to be decoded */
+    size_t size         /* Size of data buffer */
+);
 
 /*
  * Type of the type-specific XER decoder function.
  */
-typedef asn_dec_rval_t (xer_type_decoder_f)(asn_codec_ctx_t *opt_codec_ctx,
-		struct asn_TYPE_descriptor_s *type_descriptor,
-		void **struct_ptr,
-		const char *opt_mname,	/* Member name */
-		const void *buf_ptr, size_t size
-	);
+typedef asn_dec_rval_t(xer_type_decoder_f)(
+    const asn_codec_ctx_t *opt_codec_ctx,
+    const struct asn_TYPE_descriptor_s *type_descriptor, void **struct_ptr,
+    const char *opt_mname, /* Member name */
+    const void *buf_ptr, size_t size);
 
 /*******************************
  * INTERNALLY USEFUL FUNCTIONS *
@@ -43,17 +44,16 @@ typedef asn_dec_rval_t (xer_type_decoder_f)(asn_codec_ctx_t *opt_codec_ctx,
  * and others. This function should not be used by applications, as its API
  * is subject to changes.
  */
-asn_dec_rval_t xer_decode_general(asn_codec_ctx_t *opt_codec_ctx,
-	asn_struct_ctx_t *ctx,	/* Type decoder context */
-	void *struct_key,	/* Treated as opaque pointer */
-	const char *xml_tag,	/* Expected XML tag name */
-	const void *buf_ptr, size_t size,
-	int (*opt_unexpected_tag_decoder)
-		(void *struct_key, const void *chunk_buf, size_t chunk_size),
-	ssize_t (*body_receiver)
-		(void *struct_key, const void *chunk_buf, size_t chunk_size,
-			int have_more)
-	);
+asn_dec_rval_t xer_decode_general(
+    const asn_codec_ctx_t *opt_codec_ctx,
+    asn_struct_ctx_t *ctx, /* Type decoder context */
+    void *struct_key,      /* Treated as opaque pointer */
+    const char *xml_tag,   /* Expected XML tag name */
+    const void *buf_ptr, size_t size,
+    int (*opt_unexpected_tag_decoder)(void *struct_key, const void *chunk_buf,
+                                      size_t chunk_size),
+    ssize_t (*body_receiver)(void *struct_key, const void *chunk_buf,
+                             size_t chunk_size, int have_more));
 
 
 /*

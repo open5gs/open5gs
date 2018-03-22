@@ -40,28 +40,18 @@ ber_fetch_length(int _is_constructed, const void *bufptr, size_t size,
 		for(len = 0, buf++, skipped = 1;
 			oct && (++skipped <= size); buf++, oct--) {
 
-			len = (len << 8) | *buf;
-			if(len < 0
-			|| (len >> ((8 * sizeof(len)) - 8) && oct > 1)) {
-				/*
-				 * Too large length value.
-				 */
+			/* Verify that we won't overflow. */
+			if(!(len >> ((8 * sizeof(len)) - (8+1)))) {
+				len = (len << 8) | *buf;
+			} else {
+				/* Too large length value. */
 				return -1;
 			}
 		}
 
 		if(oct == 0) {
-			ber_tlv_len_t lenplusepsilon = (size_t)len + 1024;
-			/*
-			 * Here length may be very close or equal to 2G.
-			 * However, the arithmetics used in some decoders
-			 * may add some (small) quantities to the length,
-			 * to check the resulting value against some limits.
-			 * This may result in integer wrap-around, which
-			 * we try to avoid by checking it earlier here.
-			 */
-			if(lenplusepsilon < 0) {
-				/* Too large length value */
+			if(len < 0 || len > RSSIZE_MAX) {
+				/* Length value out of sane range. */
 				return -1;
 			}
 
@@ -75,7 +65,7 @@ ber_fetch_length(int _is_constructed, const void *bufptr, size_t size,
 }
 
 ssize_t
-ber_skip_length(asn_codec_ctx_t *opt_codec_ctx,
+ber_skip_length(const asn_codec_ctx_t *opt_codec_ctx,
 		int _is_constructed, const void *ptr, size_t size) {
 	ber_tlv_len_t vlen;	/* Length of V in TLV */
 	ssize_t tl;		/* Length of L in TLV */
@@ -133,7 +123,7 @@ ber_skip_length(asn_codec_ctx_t *opt_codec_ctx,
 
 		ptr = ((const char *)ptr) + tl + ll;
 		size -= tl + ll;
- 	}
+	}
 
 	/* UNREACHABLE */
 }
@@ -143,7 +133,7 @@ der_tlv_length_serialize(ber_tlv_len_t len, void *bufp, size_t size) {
 	size_t required_size;	/* Size of len encoding */
 	uint8_t *buf = (uint8_t *)bufp;
 	uint8_t *end;
-	size_t i;
+	int i;
 
 	if(len <= 127) {
 		/* Encoded in 1 octet */
@@ -154,7 +144,7 @@ der_tlv_length_serialize(ber_tlv_len_t len, void *bufp, size_t size) {
 	/*
 	 * Compute the size of the subsequent bytes.
 	 */
-	for(required_size = 1, i = 8; i < 8 * sizeof(len); i += 8) {
+	for(required_size = 1, i = 8; i < 8 * (int)sizeof(len); i += 8) {
 		if(len >> i)
 			required_size++;
 		else

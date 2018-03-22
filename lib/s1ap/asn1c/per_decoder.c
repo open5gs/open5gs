@@ -8,8 +8,10 @@
  * multiple of 8 bytes.
  */
 asn_dec_rval_t
-uper_decode_complete(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td, void **sptr, const void *buffer, size_t size) {
-	asn_dec_rval_t rval;
+uper_decode_complete(const asn_codec_ctx_t *opt_codec_ctx,
+                     const asn_TYPE_descriptor_t *td, void **sptr,
+                     const void *buffer, size_t size) {
+    asn_dec_rval_t rval;
 
 	rval = uper_decode(opt_codec_ctx, td, sptr, buffer, size, 0, 0);
 	if(rval.consumed) {
@@ -37,37 +39,10 @@ uper_decode_complete(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td, 
 }
 
 asn_dec_rval_t
-aper_decode_complete(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td, void **sptr, const void *buffer, size_t size) {
-	asn_dec_rval_t rval;
-
-	rval = aper_decode(opt_codec_ctx, td, sptr, buffer, size, 0, 0);
-	if(rval.consumed) {
-		/*
-		 * We've always given 8-aligned data,
-		 * so convert bits to integral bytes.
-		 */
-		rval.consumed += 7;
-		rval.consumed >>= 3;
-	} else if(rval.code == RC_OK) {
-		if(size) {
-			if(((const uint8_t *)buffer)[0] == 0) {
-				rval.consumed = 1;	/* 1 byte */
-			} else {
-				ASN_DEBUG("Expecting single zeroed byte");
-				rval.code = RC_FAIL;
-			}
-		} else {
-			/* Must contain at least 8 bits. */
-			rval.code = RC_WMORE;
-		}
-	}
-
-	return rval;
-}
-
-asn_dec_rval_t
-uper_decode(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td, void **sptr, const void *buffer, size_t size, int skip_bits, int unused_bits) {
-	asn_codec_ctx_t s_codec_ctx;
+uper_decode(const asn_codec_ctx_t *opt_codec_ctx,
+            const asn_TYPE_descriptor_t *td, void **sptr, const void *buffer,
+            size_t size, int skip_bits, int unused_bits) {
+    asn_codec_ctx_t s_codec_ctx;
 	asn_dec_rval_t rval;
 	asn_per_data_t pd;
 
@@ -103,9 +78,9 @@ uper_decode(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td, void **sp
 	/*
 	 * Invoke type-specific decoder.
 	 */
-	if(!td->uper_decoder)
+	if(!td->op->uper_decoder)
 		ASN__DECODE_FAILED;	/* PER is not compiled in */
-	rval = td->uper_decoder(opt_codec_ctx, td, 0, sptr, &pd);
+	rval = td->op->uper_decoder(opt_codec_ctx, td, 0, sptr, &pd);
 	if(rval.code == RC_OK) {
 		/* Return the number of consumed bits */
 		rval.consumed = ((pd.buffer - (const uint8_t *)buffer) << 3)
@@ -121,7 +96,40 @@ uper_decode(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td, void **sp
 }
 
 asn_dec_rval_t
-aper_decode(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td, void **sptr, const void *buffer, size_t size, int skip_bits, int unused_bits) {
+aper_decode_complete(const asn_codec_ctx_t *opt_codec_ctx,
+                     const asn_TYPE_descriptor_t *td, void **sptr,
+                     const void *buffer, size_t size) {
+	asn_dec_rval_t rval;
+
+	rval = aper_decode(opt_codec_ctx, td, sptr, buffer, size, 0, 0);
+	if(rval.consumed) {
+		/*
+		 * We've always given 8-aligned data,
+		 * so convert bits to integral bytes.
+		 */
+		rval.consumed += 7;
+		rval.consumed >>= 3;
+	} else if(rval.code == RC_OK) {
+		if(size) {
+			if(((const uint8_t *)buffer)[0] == 0) {
+				rval.consumed = 1;	/* 1 byte */
+			} else {
+				ASN_DEBUG("Expecting single zeroed byte");
+				rval.code = RC_FAIL;
+			}
+		} else {
+			/* Must contain at least 8 bits. */
+			rval.code = RC_WMORE;
+		}
+	}
+
+	return rval;
+}
+
+asn_dec_rval_t
+aper_decode(const asn_codec_ctx_t *opt_codec_ctx,
+            const asn_TYPE_descriptor_t *td, void **sptr, const void *buffer,
+            size_t size, int skip_bits, int unused_bits) {
 	asn_codec_ctx_t s_codec_ctx;
 	asn_dec_rval_t rval;
 	asn_per_data_t pd;
@@ -158,9 +166,9 @@ aper_decode(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td, void **sp
 	/*
 	 * Invoke type-specific decoder.
 	 */
-	if(!td->aper_decoder)
+	if(!td->op->aper_decoder)
 		ASN__DECODE_FAILED;	/* PER is not compiled in */
-		rval = td->aper_decoder(opt_codec_ctx, td, 0, sptr, &pd);
+		rval = td->op->aper_decoder(opt_codec_ctx, td, 0, sptr, &pd);
 	if(rval.code == RC_OK) {
 		/* Return the number of consumed bits */
 		rval.consumed = ((pd.buffer - (const uint8_t *)buffer) << 3)
@@ -174,3 +182,4 @@ aper_decode(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td, void **sp
 	}
 	return rval;
 }
+

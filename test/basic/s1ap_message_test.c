@@ -122,7 +122,7 @@ static void s1ap_message_test5(abts_case *tc, void *data)
     pkbuf_t *pkbuf;
     int result;
 
-    rv = tests1ap_build_setup_req(&pkbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64);
+    rv = tests1ap_build_setup_req(&pkbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64);
 
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_PTR_NOTNULL(tc, pkbuf);
@@ -138,12 +138,11 @@ static void s1ap_message_test5(abts_case *tc, void *data)
 
 static void s1ap_message_test6(abts_case *tc, void *data)
 {
-    pkbuf_t *s1apbuf = NULL;
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL, *emmbuf = NULL;
+    enb_ue_t enb_ue;
     int i;
     s1ap_message_t message;
-    S1ap_DownlinkNASTransport_IEs_t *ies = 
-        &message.s1ap_DownlinkNASTransport_IEs;
-    S1ap_NAS_PDU_t *nasPdu = &ies->nas_pdu;
     char buffer[1024];
     char *_result = 
     "000b4080 8c000003 00000002 00010008 00020001 001a0079 78efefef efefefef"
@@ -152,24 +151,17 @@ static void s1ap_message_test6(abts_case *tc, void *data)
     "efefefef efefefef efefefef efefefef efefefef efefefef efefefef efefefef"
     "efefefef efefefef efefefef efefefef ef";
 
-    memset(&message, 0, sizeof(s1ap_message_t));
+    enb_ue.mme_ue_s1ap_id = 1;
+    enb_ue.enb_ue_s1ap_id = 1;
 
-    ies->mme_ue_s1ap_id = 1;
-    ies->eNB_UE_S1AP_ID = 1;
+    emmbuf = pkbuf_alloc(0, 120);
+    for (i = 0; i < emmbuf->len; i++)
+        ((char *)emmbuf->payload)[i] = 0xef;
 
-    nasPdu->size = 120;
-    nasPdu->buf = core_calloc(nasPdu->size, sizeof(c_uint8_t));
-    for (i = 0; i < nasPdu->size; i++)
-        nasPdu->buf[i] = 0xef;
-
-    message.procedureCode = S1ap_ProcedureCode_id_downlinkNASTransport;
-    message.direction = S1AP_PDU_PR_initiatingMessage;
-
-    s1ap_encode_pdu(&s1apbuf, &message);
-    s1ap_free_pdu(&message);
+    rv = s1ap_build_downlink_nas_transport(&s1apbuf, &enb_ue, emmbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
     ABTS_TRUE(tc, memcmp(CORE_HEX(_result, strlen(_result), buffer),
             s1apbuf->payload, s1apbuf->len) == 0);
-
     pkbuf_free(s1apbuf);
 }
 

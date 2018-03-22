@@ -6,6 +6,7 @@
 
 #include "app/context.h"
 #include "mme/mme_context.h"
+#include "mme/s1ap_build.h"
 #include "s1ap/s1ap_message.h"
 
 #include "testutil.h"
@@ -108,7 +109,7 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
-            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64);
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -247,6 +248,13 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->payload+32, tmp+32, 20) == 0);
     pkbuf_free(recvbuf);
 
+#if TEST_INITIAL_CONTEXT_SETUP_FAILURE
+    /* Send Initial Context Setup Failure */
+    rv = tests1ap_build_initial_context_setup_failure(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+#endif
     core_sleep(time_from_msec(300));
 
     rv = testgtpu_build_slacc_rs(&sendbuf, 0);
@@ -299,12 +307,12 @@ static void attach_test1(abts_case *tc, void *data)
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
     /* Update M-TMSI */
     m_tmsi = htonl(m_tmsi);
-    memcpy(sendbuf->payload + 37, &m_tmsi, 4);
+    memcpy(sendbuf->payload + 36, &m_tmsi, 4);
     /* Update NAS MAC */
     void snow_3g_f9(c_uint8_t* key, c_uint32_t count, c_uint32_t fresh,
             c_uint32_t dir, c_uint8_t *data, c_uint64_t length, c_uint8_t *out);
     snow_3g_f9(mme_ue->knas_int, 7, 0, 0,
-            sendbuf->payload + 25, (109 << 3), sendbuf->payload+21);
+            sendbuf->payload + 24, (109 << 3), sendbuf->payload+20);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -588,7 +596,7 @@ static void attach_test2(abts_case *tc, void *data)
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
-            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x002343d);
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x002343d);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -795,7 +803,6 @@ static void attach_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_FATAL);
     /* Send Authentication Authentication Failure */
     rv = tests1ap_build_authentication_failure(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -813,7 +820,6 @@ static void attach_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_read(sock, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
-    d_log_set_level(D_MSG_TO_STDOUT, D_LOG_LEVEL_ERROR);
 
     /* Send UE Context Release Complete */
     rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+2);
@@ -941,7 +947,7 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
-            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64);
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -1269,7 +1275,7 @@ static void attach_test4(abts_case *tc, void *data)
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
-            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64);
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -1461,7 +1467,7 @@ static void attach_test5(abts_case *tc, void *data)
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
-            &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x787b0);
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x787b0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     rv = tests1ap_enb_send(sock, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -1607,6 +1613,100 @@ static void attach_test5(abts_case *tc, void *data)
     d_assert(mme_ue, goto out,);
     m_tmsi = mme_ue->guti.m_tmsi;
 
+#if 0
+    rv = tests1ap_build_s1_reset(&sendbuf, 0);
+#elif 0
+    rv = s1ap_build_s1_reset(&sendbuf,
+            S1AP_Cause_PR_radioNetwork,
+            S1AP_CauseRadioNetwork_release_due_to_eutran_generated_reason,
+            NULL);
+#elif 0
+    {
+        S1AP_UE_associatedLogicalS1_ConnectionListRes_t
+            *partOfS1_Interface = NULL;
+        S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *ie = NULL;
+        S1AP_UE_associatedLogicalS1_ConnectionItem_t *item = NULL;
+
+        partOfS1_Interface = core_calloc(1,
+                sizeof(S1AP_UE_associatedLogicalS1_ConnectionListRes_t));
+        d_assert(partOfS1_Interface, goto out,);
+
+        ie = core_calloc(1,
+                sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
+        ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
+        ie->criticality = S1AP_Criticality_reject;
+        ie->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
+
+        item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
+
+        item->mME_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        d_assert(item->mME_UE_S1AP_ID, goto out,);
+        *item->mME_UE_S1AP_ID = 100;
+        item->eNB_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
+        d_assert(item->eNB_UE_S1AP_ID, goto out,);
+        *item->eNB_UE_S1AP_ID = 4;
+
+        ie = core_calloc(1,
+                sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
+        ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
+        ie->criticality = S1AP_Criticality_reject;
+        ie->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
+
+        item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
+
+        item->mME_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        d_assert(item->mME_UE_S1AP_ID, goto out,);
+        *item->mME_UE_S1AP_ID = 2;
+        item->eNB_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
+        d_assert(item->eNB_UE_S1AP_ID, goto out,);
+        *item->eNB_UE_S1AP_ID = 3;
+
+        ie = core_calloc(1,
+                sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
+        ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_UE_associatedLogicalS1_ConnectionItem;
+        ie->criticality = S1AP_Criticality_reject;
+        ie->value.present = S1AP_UE_associatedLogicalS1_ConnectionItemRes__value_PR_UE_associatedLogicalS1_ConnectionItem;
+
+        item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
+
+        item->mME_UE_S1AP_ID = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        d_assert(item->mME_UE_S1AP_ID, goto out,);
+        *item->mME_UE_S1AP_ID = 44;
+
+        rv = s1ap_build_s1_reset(&sendbuf,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_release_due_to_eutran_generated_reason,
+                partOfS1_Interface);
+    }
+#else
+    {
+        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id = NULL;
+
+        mme_ue_s1ap_id = core_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        d_assert(mme_ue_s1ap_id, goto out,);
+        *mme_ue_s1ap_id = 2;
+        rv = s1ap_build_s1_reset_partial(&sendbuf,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_release_due_to_eutran_generated_reason,
+                mme_ue_s1ap_id, NULL);
+    }
+#endif
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive S1 Reset Acknowledge */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
     /* Send Service request */
     rv = tests1ap_build_service_request(&sendbuf,
             0x40072e, 4, 0xda67, m_tmsi);
@@ -1648,7 +1748,6 @@ out:
     rv = tests1ap_enb_close(sock);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 }
-
 
 abts_suite *test_attach(abts_suite *suite)
 {

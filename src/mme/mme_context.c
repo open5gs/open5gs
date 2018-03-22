@@ -1532,14 +1532,10 @@ status_t mme_context_setup_trace_module()
         d_trace_level(&_s1ap_sctp, s1ap);
         extern int _s1ap_path;
         d_trace_level(&_s1ap_path, s1ap);
-        extern int _s1ap_recv;
-        d_trace_level(&_s1ap_recv, s1ap);
-        extern int _s1ap_send;
-        d_trace_level(&_s1ap_send, s1ap);
-        extern int _s1ap_ies_decoder;
-        d_trace_level(&_s1ap_ies_decoder, s1ap);
-        extern int _s1ap_ies_encoder;
-        d_trace_level(&_s1ap_ies_encoder, s1ap);
+        extern int _s1ap_decoder;
+        d_trace_level(&_s1ap_decoder, s1ap);
+        extern int _s1ap_encoder;
+        d_trace_level(&_s1ap_encoder, s1ap);
     }
 
     if (nas)
@@ -1994,8 +1990,8 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     /* Free UeRadioCapability */
     if (mme_ue->radio_capa)
     {
-        S1ap_UERadioCapability_t *radio_capa = 
-            (S1ap_UERadioCapability_t *)mme_ue->radio_capa;
+        S1AP_UERadioCapability_t *radio_capa = 
+            (S1AP_UERadioCapability_t *)mme_ue->radio_capa;
 
         if (radio_capa->buf)
             CORE_FREE(radio_capa->buf);

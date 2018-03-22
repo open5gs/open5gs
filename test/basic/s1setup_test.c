@@ -29,7 +29,7 @@ static void s1setup_test1(abts_case *tc, void *data)
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
         rv = tests1ap_build_setup_req(
-                &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64);
+                &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
         rv = tests1ap_enb_send(sock[i], sendbuf);
@@ -75,7 +75,7 @@ static void s1setup_test2(abts_case *tc, void *data)
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
     {
         rv = tests1ap_build_setup_req(
-                &sendbuf, S1ap_ENB_ID_PR_macroENB_ID, 0x54f64+i);
+                &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64+i);
         ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
         rv = tests1ap_enb_send(sock[i], sendbuf);

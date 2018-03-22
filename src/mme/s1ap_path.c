@@ -135,7 +135,7 @@ status_t s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf)
 }
 
 status_t s1ap_send_to_nas(enb_ue_t *enb_ue,
-        S1ap_ProcedureCode_t procedureCode, S1ap_NAS_PDU_t *nasPdu)
+        S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu)
 {
     nas_security_header_t *sh = NULL;
     nas_security_header_type_t security_header_type;
@@ -242,7 +242,7 @@ status_t s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 }
 
 status_t s1ap_send_ue_context_release_command(
-    enb_ue_t *enb_ue, S1ap_Cause_PR group, long cause,
+    enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
     c_uint8_t action, c_uint32_t delay)
 {
     status_t rv;
@@ -290,7 +290,7 @@ status_t s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
 
 status_t s1ap_send_path_switch_failure(mme_enb_t *enb,
     c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
-    S1ap_Cause_PR group, long cause)
+    S1AP_Cause_PR group, long cause)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
@@ -328,7 +328,7 @@ status_t s1ap_send_handover_command(enb_ue_t *source_ue)
 }
 
 status_t s1ap_send_handover_preparation_failure(
-        enb_ue_t *source_ue, S1ap_Cause_t *cause)
+        enb_ue_t *source_ue, S1AP_Cause_t *cause)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
@@ -371,11 +371,18 @@ status_t s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
 
 
 status_t s1ap_send_handover_request(
-        mme_ue_t *mme_ue, S1ap_HandoverRequiredIEs_t *ies)
+        mme_ue_t *mme_ue,
+        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
+        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
+        S1AP_HandoverType_t *handovertype,
+        S1AP_Cause_t *cause,
+        S1AP_TargetID_t *targetid,
+        S1AP_Source_ToTarget_TransparentContainer_t
+            *source_totarget_transparentContainer)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
-    S1ap_TargetID_t *targetID = NULL;
+    S1AP_TargetID_t *targetID = NULL;
 
     c_uint32_t enb_id;
     mme_enb_t *target_enb = NULL;
@@ -386,17 +393,15 @@ status_t s1ap_send_handover_request(
     d_assert(mme_ue, return CORE_ERROR,);
     source_ue = mme_ue->enb_ue;
     d_assert(source_ue, return CORE_ERROR,);
-    d_assert(ies, return CORE_ERROR,);
 
-    targetID = &ies->targetID;
-    d_assert(targetID, return CORE_ERROR,);
+    d_assert(targetid, return CORE_ERROR,);
 
-    switch(targetID->present)
+    switch(targetid->present)
     {
-        case S1ap_TargetID_PR_targeteNB_ID:
+        case S1AP_TargetID_PR_targeteNB_ID:
         {
             s1ap_ENB_ID_to_uint32(
-                &targetID->choice.targeteNB_ID.global_S1ap_ENB_ID.eNB_ID,
+                &targetid->choice.targeteNB_ID->global_ENB_ID.eNB_ID,
                 &enb_id);
             break;
         }
@@ -425,7 +430,10 @@ status_t s1ap_send_handover_request(
     rv = source_ue_associate_target_ue(source_ue, target_ue);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    rv = s1ap_build_handover_request(&s1apbuf, mme_ue, target_ue, ies);
+    rv = s1ap_build_handover_request(&s1apbuf, mme_ue, target_ue,
+            enb_ue_s1ap_id, mme_ue_s1ap_id,
+            handovertype, cause, targetid,
+            source_totarget_transparentContainer);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_send_to_enb(target_enb, s1apbuf);
@@ -435,7 +443,9 @@ status_t s1ap_send_handover_request(
 }
 
 status_t s1ap_send_mme_status_transfer(
-        enb_ue_t *target_ue, S1ap_ENBStatusTransferIEs_t *ies)
+        enb_ue_t *target_ue,
+        S1AP_ENB_StatusTransfer_TransparentContainer_t
+            *enb_statustransfer_transparentContainer)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
@@ -446,7 +456,8 @@ status_t s1ap_send_mme_status_transfer(
     enb = target_ue->enb;
     d_assert(enb, return CORE_ERROR,);
 
-    rv = s1ap_build_mme_status_transfer(&s1apbuf, target_ue, ies);
+    rv = s1ap_build_mme_status_transfer(&s1apbuf, target_ue,
+            enb_statustransfer_transparentContainer);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_send_to_enb(enb, s1apbuf);
@@ -469,8 +480,8 @@ status_t s1ap_send_mme_configuration_transfer(
     d_assert(sendbuf, return CORE_ERROR,);
 
     payload = sendbuf->payload;
-    payload[1] = S1ap_ProcedureCode_id_MMEConfigurationTransfer;
-    payload[8] = S1ap_ProtocolIE_ID_id_SONConfigurationTransferMCT;
+    payload[1] = S1AP_ProcedureCode_id_MMEConfigurationTransfer;
+    payload[8] = S1AP_ProtocolIE_ID_id_SONConfigurationTransferMCT;
 
     rv = s1ap_send_to_enb(target_enb, sendbuf);
     d_assert(rv == CORE_OK,, "s1ap send error");
@@ -478,9 +489,10 @@ status_t s1ap_send_mme_configuration_transfer(
 }
 
 status_t s1ap_send_error_indication(
-        mme_enb_t *enb, c_uint16_t presenceMask,
-        c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
-        S1ap_Cause_PR group, long cause)
+        mme_enb_t *enb,
+        S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
+        S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
+        S1AP_Cause_PR group, long cause)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
@@ -488,7 +500,25 @@ status_t s1ap_send_error_indication(
     d_assert(enb, return CORE_ERROR,);
 
     rv = s1ap_build_error_indication(&s1apbuf,
-            presenceMask, enb_ue_s1ap_id, mme_ue_s1ap_id, group, cause);
+            mme_ue_s1ap_id, enb_ue_s1ap_id, group, cause);
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+
+    rv = s1ap_send_to_enb(enb, s1apbuf);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+
+    return rv;
+}
+
+status_t s1ap_send_s1_reset_ack(
+        mme_enb_t *enb,
+        S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL;
+
+    d_assert(enb, return CORE_ERROR,);
+
+    rv = s1ap_build_s1_reset_ack(&s1apbuf, partOfS1_Interface);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
     rv = s1ap_send_to_enb(enb, s1apbuf);

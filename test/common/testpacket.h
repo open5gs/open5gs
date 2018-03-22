@@ -19,7 +19,7 @@ CORE_DECLARE(status_t) tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf);
 CORE_DECLARE(status_t) tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf);
 
 CORE_DECLARE(status_t) tests1ap_build_setup_req(
-        pkbuf_t **pkbuf, S1ap_ENB_ID_PR present, c_uint32_t enb_id);
+        pkbuf_t **pkbuf, S1AP_ENB_ID_PR present, c_uint32_t enb_id);
 CORE_DECLARE(status_t) tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_identity_response(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_authentication_response(
@@ -36,6 +36,8 @@ CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_response(
         pkbuf_t **pkbuf, 
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         c_uint8_t ebi, c_uint32_t teid);
+CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_failure(
+        pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_emm_status(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_detach_request(pkbuf_t **pkbuf, int i);
@@ -74,6 +76,7 @@ CORE_DECLARE(status_t) tests1ap_build_path_switch_request(
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
         int num_of_bearer, c_uint8_t ebi, c_uint32_t teid);
 CORE_DECLARE(status_t) tests1ap_build_handover_required(pkbuf_t **pkbuf, int i);
+CORE_DECLARE(status_t) tests1ap_build_handover_failure(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
         pkbuf_t **pkbuf, int target,
         c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
@@ -86,6 +89,8 @@ CORE_DECLARE(status_t) tests1ap_build_enb_configuration_transfer(
         pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_handover_notify(pkbuf_t **pkbuf, int i);
 CORE_DECLARE(status_t) tests1ap_build_handover_cancel(pkbuf_t **pkbuf, int i);
+
+CORE_DECLARE(status_t) tests1ap_build_s1_reset(pkbuf_t **pkbuf, int i);
 
 CORE_DECLARE(status_t) testgtpu_enb_connect(sock_id *new);
 CORE_DECLARE(status_t) testgtpu_enb2_connect(sock_id *new);

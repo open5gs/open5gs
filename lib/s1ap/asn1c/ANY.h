@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2004 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * Copyright (c) 2004-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
 #ifndef ASN_TYPE_ANY_H
@@ -19,12 +19,26 @@ typedef struct ANY {
 } ANY_t;
 
 extern asn_TYPE_descriptor_t asn_DEF_ANY;
+extern asn_TYPE_operation_t asn_OP_ANY;
+extern asn_OCTET_STRING_specifics_t asn_SPC_ANY_specs;
 
 asn_struct_free_f ANY_free;
 asn_struct_print_f ANY_print;
 ber_type_decoder_f ANY_decode_ber;
 der_type_encoder_f ANY_encode_der;
 xer_type_encoder_f ANY_encode_xer;
+per_type_decoder_f ANY_decode_uper;
+per_type_encoder_f ANY_encode_uper;
+per_type_decoder_f ANY_decode_aper;
+per_type_encoder_f ANY_encode_aper;
+
+#define ANY_free         OCTET_STRING_free
+#define ANY_print        OCTET_STRING_print
+#define ANY_compare      OCTET_STRING_compare
+#define ANY_constraint   asn_generic_no_constraint
+#define ANY_decode_ber   OCTET_STRING_decode_ber
+#define ANY_encode_der   OCTET_STRING_encode_der
+#define ANY_decode_xer   OCTET_STRING_decode_xer_hex
 
 /******************************
  * Handy conversion routines. *

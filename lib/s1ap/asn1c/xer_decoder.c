@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004, 2005 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * Copyright (c) 2004-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
 #include <asn_application.h>
@@ -11,9 +11,10 @@
  * Decode the XER encoding of a given type.
  */
 asn_dec_rval_t
-xer_decode(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
-		void **struct_ptr, const void *buffer, size_t size) {
-	asn_codec_ctx_t s_codec_ctx;
+xer_decode(const asn_codec_ctx_t *opt_codec_ctx,
+           const asn_TYPE_descriptor_t *td, void **struct_ptr,
+           const void *buffer, size_t size) {
+    asn_codec_ctx_t s_codec_ctx;
 
 	/*
 	 * Stack checker requires that the codec context
@@ -34,7 +35,7 @@ xer_decode(asn_codec_ctx_t *opt_codec_ctx, asn_TYPE_descriptor_t *td,
 	/*
 	 * Invoke type-specific decoder.
 	 */
-	return td->xer_decoder(opt_codec_ctx, td, struct_ptr, 0, buffer, size);
+	return td->op->xer_decoder(opt_codec_ctx, td, struct_ptr, 0, buffer, size);
 }
 
 
@@ -85,8 +86,8 @@ xer_next_token(int *stateContext, const void *buffer, size_t size, pxer_chunk_ty
 		*ch_type = PXER_TEXT;
 		break;
 	case PXML_TAG:
-        *ch_type = PXER_WMORE;
-        return 0;	/* Want more */
+		*ch_type = PXER_WMORE;
+		return 0;	/* Want more */
 	case PXML_TAG_END:
 		*ch_type = PXER_TAG;
 		break;
@@ -201,7 +202,7 @@ xer_check_tag(const void *buf_ptr, int size, const char *need_tag) {
  * Generalized function for decoding the primitive values.
  */
 asn_dec_rval_t
-xer_decode_general(asn_codec_ctx_t *opt_codec_ctx,
+xer_decode_general(const asn_codec_ctx_t *opt_codec_ctx,
 	asn_struct_ctx_t *ctx,	/* Type decoder context */
 	void *struct_key,
 	const char *xml_tag,	/* Expected XML tag */

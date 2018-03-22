@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2004, 2006 Lev Walkin <vlm@lionet.info>. All rights reserved.
+ * Copyright (c) 2004-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
 #ifndef	ASN1_CONSTRAINTS_VALIDATOR_H
@@ -25,24 +25,23 @@ struct asn_TYPE_descriptor_s;		/* Forward declaration */
  * This function returns 0 in case all ASN.1 constraints are met
  * and -1 if one or more constraints were failed.
  */
-int
-asn_check_constraints(struct asn_TYPE_descriptor_s *type_descriptor,
-	const void *struct_ptr,	/* Target language's structure */
-	char *errbuf,		/* Returned error description */
-	size_t *errlen		/* Length of the error description */
-	);
+int asn_check_constraints(
+    const struct asn_TYPE_descriptor_s *type_descriptor,
+    const void *struct_ptr, /* Target language's structure */
+    char *errbuf,           /* Returned error description */
+    size_t *errlen          /* Length of the error description */
+);
 
 
 /*
  * Generic type for constraint checking callback,
  * associated with every type descriptor.
  */
-typedef int (asn_constr_check_f)(
-	struct asn_TYPE_descriptor_s *type_descriptor,
-	const void *struct_ptr,
-	asn_app_constraint_failed_f *optional_callback,	/* Log the error */
-	void *optional_app_key		/* Opaque key passed to a callback */
-	);
+typedef int(asn_constr_check_f)(
+    const struct asn_TYPE_descriptor_s *type_descriptor, const void *struct_ptr,
+    asn_app_constraint_failed_f *optional_callback, /* Log the error */
+    void *optional_app_key /* Opaque key passed to a callback */
+);
 
 /*******************************
  * INTERNALLY USEFUL FUNCTIONS *
