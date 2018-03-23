@@ -53,11 +53,11 @@ CORE_DECLARE(status_t) s1ap_send_handover_preparation_failure(
 
 CORE_DECLARE(status_t) s1ap_send_handover_request(
         mme_ue_t *mme_ue,
+        mme_enb_t *target_enb,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_HandoverType_t *handovertype,
         S1AP_Cause_t *cause,
-        S1AP_TargetID_t *targetid,
         S1AP_Source_ToTarget_TransparentContainer_t
             *source_totarget_transparentContainer);
 

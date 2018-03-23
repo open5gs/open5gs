@@ -1347,8 +1347,12 @@ void s1ap_handle_enb_configuration_transfer(
                 target_enb_id, target_tac);
 
         target_enb = mme_enb_find_by_enb_id(target_enb_id);
-        d_assert(target_enb, return,
-                "Cannot find target eNB = %d", target_enb_id);
+        if (target_enb == NULL)
+        {
+            d_error("Cannot find target eNB-id[%d] "
+                    "in eNB-Configuration-Transfer", target_enb_id);
+            return;
+        }
 
         rv = s1ap_send_mme_configuration_transfer(target_enb, pkbuf);
         d_assert(rv == CORE_OK,,);
@@ -1384,6 +1388,8 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
 
     enb_ue_t *source_ue = NULL;
     mme_ue_t *mme_ue = NULL;
+    mme_enb_t *target_enb = NULL;
+    c_uint32_t target_enb_id = 0;
 
     d_trace(3, "[MME] Handover required\n");
     for (i = 0; i < HandoverRequired->protocolIEs.list.count; i++)
@@ -1417,6 +1423,31 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
 
     d_trace(5, "    IP[%s] ENB_ID[%d]\n",
             CORE_ADDR(enb->addr, buf), enb->enb_id);
+
+    d_assert(TargetID, return,);
+    switch(TargetID->present)
+    {
+        case S1AP_TargetID_PR_targeteNB_ID:
+        {
+            s1ap_ENB_ID_to_uint32(
+                &TargetID->choice.targeteNB_ID->global_ENB_ID.eNB_ID,
+                &target_enb_id);
+            break;
+        }
+        default:
+        {
+            d_error("Not implemented(%d)", TargetID->present);
+            return;
+        }
+    }
+
+    target_enb = mme_enb_find_by_enb_id(target_enb_id);
+    if (target_enb == NULL)
+    {
+        d_error("Cannot find target eNB-id[%d] in Handover-Required",
+                target_enb_id);
+        return;
+    }
 
     d_assert(ENB_UE_S1AP_ID, return,);
     d_assert(MME_UE_S1AP_ID, return,);
@@ -1453,9 +1484,9 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     d_assert(HandoverType, return,);
     source_ue->handover_type = *HandoverType;
 
-    rv = s1ap_send_handover_request(mme_ue,
+    rv = s1ap_send_handover_request(mme_ue, target_enb,
             ENB_UE_S1AP_ID, MME_UE_S1AP_ID,
-            HandoverType, Cause, TargetID,
+            HandoverType, Cause,
             Source_ToTarget_TransparentContainer);
     d_assert(rv == CORE_OK,, "s1ap send error");
 }

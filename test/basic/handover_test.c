@@ -619,7 +619,7 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_enb_send(sock1, sendbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    /* Receive Handover Request */
+    /* Receive MME configuration transfer */
     recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
     rv = tests1ap_enb_read(sock2, recvbuf);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

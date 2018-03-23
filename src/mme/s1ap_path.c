@@ -372,50 +372,26 @@ status_t s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
 
 status_t s1ap_send_handover_request(
         mme_ue_t *mme_ue,
+        mme_enb_t *target_enb,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_HandoverType_t *handovertype,
         S1AP_Cause_t *cause,
-        S1AP_TargetID_t *targetid,
         S1AP_Source_ToTarget_TransparentContainer_t
             *source_totarget_transparentContainer)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
-    S1AP_TargetID_t *targetID = NULL;
 
-    c_uint32_t enb_id;
-    mme_enb_t *target_enb = NULL;
     enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
     d_trace(3, "[MME] Handover request\n");
+    
+    d_assert(target_enb, return CORE_ERROR, "Cannot find target eNB");
 
     d_assert(mme_ue, return CORE_ERROR,);
     source_ue = mme_ue->enb_ue;
     d_assert(source_ue, return CORE_ERROR,);
-
-    d_assert(targetid, return CORE_ERROR,);
-
-    switch(targetid->present)
-    {
-        case S1AP_TargetID_PR_targeteNB_ID:
-        {
-            s1ap_ENB_ID_to_uint32(
-                &targetid->choice.targeteNB_ID->global_ENB_ID.eNB_ID,
-                &enb_id);
-            break;
-        }
-        default:
-        {
-            d_error("Not implemented(%d)", targetID->present);
-            return CORE_ERROR;
-        }
-    }
-
-    target_enb = mme_enb_find_by_enb_id(enb_id);
-    d_assert(target_enb, return CORE_ERROR,
-            "Cannot find target eNB = %d", enb_id);
-
     d_assert(source_ue->target_ue == NULL, return CORE_ERROR,
             "Handover Required Duplicated");
 
@@ -432,7 +408,7 @@ status_t s1ap_send_handover_request(
 
     rv = s1ap_build_handover_request(&s1apbuf, mme_ue, target_ue,
             enb_ue_s1ap_id, mme_ue_s1ap_id,
-            handovertype, cause, targetid,
+            handovertype, cause,
             source_totarget_transparentContainer);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
