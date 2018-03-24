@@ -1166,6 +1166,65 @@ status_t s1ap_build_paging(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
     return CORE_OK;
 }
 
+status_t s1ap_build_mme_configuration_transfer(
+        pkbuf_t **s1apbuf, 
+        S1AP_SONConfigurationTransfer_t *son_configuration_transfer)
+{
+    status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_MMEConfigurationTransfer_t *MMEConfigurationTransfer = NULL;
+
+    S1AP_MMEConfigurationTransferIEs_t *ie = NULL;
+    S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer = NULL;
+
+    d_assert(s1apbuf, return CORE_ERROR,);
+    d_assert(son_configuration_transfer, return CORE_ERROR,);
+
+    d_trace(3, "[MME] MME Configuration Transfer\n");
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_MMEConfigurationTransfer;
+    initiatingMessage->criticality = S1AP_Criticality_ignore;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_MMEConfigurationTransfer;
+
+    MMEConfigurationTransfer =
+        &initiatingMessage->value.choice.MMEConfigurationTransfer;
+
+    ie = core_calloc(1, sizeof(S1AP_MMEConfigurationTransferIEs_t));
+    ASN_SEQUENCE_ADD(&MMEConfigurationTransfer->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_SONConfigurationTransferMCT;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_MMEConfigurationTransferIEs__value_PR_SONConfigurationTransfer;
+
+    SONConfigurationTransfer = &ie->value.choice.SONConfigurationTransfer;
+
+    rv = s1ap_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
+            son_configuration_transfer, SONConfigurationTransfer);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
+
 status_t s1ap_build_path_switch_ack(pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
 {
     status_t rv;

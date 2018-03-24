@@ -39,13 +39,14 @@ CORE_DECLARE(status_t) s1ap_send_ue_context_release_command(
     enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
     c_uint8_t action, c_uint32_t delay);
 
+CORE_DECLARE(status_t) s1ap_send_mme_configuration_transfer(
+        mme_enb_t *target_enb,
+        S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer);
+
 CORE_DECLARE(status_t) s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
 CORE_DECLARE(status_t) s1ap_send_path_switch_failure(mme_enb_t *enb,
     c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
     S1AP_Cause_PR group, long cause);
-
-CORE_DECLARE(status_t) s1ap_send_mme_configuration_transfer(
-        mme_enb_t *target_enb, pkbuf_t *pkbuf);
 
 CORE_DECLARE(status_t) s1ap_send_handover_command(enb_ue_t *source_ue);
 CORE_DECLARE(status_t) s1ap_send_handover_preparation_failure(

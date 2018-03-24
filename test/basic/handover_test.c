@@ -625,6 +625,18 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
     pkbuf_free(recvbuf);
 
+    /* Send ENB configuration transfer */
+    rv = tests1ap_build_enb_configuration_transfer(&sendbuf, 1);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    rv = tests1ap_enb_send(sock2, sendbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+
+    /* Receive MME configuration transfer */
+    recvbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    rv = tests1ap_enb_read(sock1, recvbuf);
+    ABTS_INT_EQUAL(tc, CORE_OK, rv);
+    pkbuf_free(recvbuf);
+
     /* Send Handover Required */
     rv = tests1ap_build_handover_required(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);

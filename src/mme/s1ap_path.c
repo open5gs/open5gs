@@ -272,6 +272,26 @@ status_t s1ap_send_ue_context_release_command(
     return CORE_OK;
 }
 
+status_t s1ap_send_mme_configuration_transfer(
+        mme_enb_t *target_enb,
+        S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer)
+{
+    status_t rv;
+    pkbuf_t *s1apbuf = NULL;
+
+    d_assert(target_enb, return CORE_ERROR,);
+    d_assert(SONConfigurationTransfer, return CORE_ERROR,);
+
+    rv = s1ap_build_mme_configuration_transfer(
+            &s1apbuf, SONConfigurationTransfer);
+    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+
+    rv = s1ap_send_to_enb(target_enb, s1apbuf);
+    d_assert(rv == CORE_OK,, "s1ap send error");
+
+    return rv;
+}
+
 status_t s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
 {
     status_t rv;
@@ -440,28 +460,6 @@ status_t s1ap_send_mme_status_transfer(
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
-}
-
-status_t s1ap_send_mme_configuration_transfer(
-        mme_enb_t *target_enb, pkbuf_t *recvbuf)
-{
-    status_t rv;
-    unsigned char *payload;
-    pkbuf_t *sendbuf = NULL;
-
-    d_assert(target_enb, return CORE_ERROR,);
-    d_assert(recvbuf, return CORE_ERROR,);
-
-    sendbuf = pkbuf_copy(recvbuf);
-    d_assert(sendbuf, return CORE_ERROR,);
-
-    payload = sendbuf->payload;
-    payload[1] = S1AP_ProcedureCode_id_MMEConfigurationTransfer;
-    payload[8] = S1AP_ProtocolIE_ID_id_SONConfigurationTransferMCT;
-
-    rv = s1ap_send_to_enb(target_enb, sendbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
-    return CORE_OK;
 }
 
 status_t s1ap_send_error_indication(

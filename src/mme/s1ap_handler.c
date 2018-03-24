@@ -1312,49 +1312,50 @@ void s1ap_handle_enb_configuration_transfer(
 
     if (SONConfigurationTransfer)
     {
-        S1AP_SONConfigurationTransfer_t *transfer = SONConfigurationTransfer;
+        S1AP_TargeteNB_ID_t *targeteNB_ID =
+            &SONConfigurationTransfer->targeteNB_ID;
+        S1AP_SourceeNB_ID_t *sourceeNB_ID =
+            &SONConfigurationTransfer->sourceeNB_ID;
+
         mme_enb_t *target_enb = NULL;
         c_uint32_t source_enb_id, target_enb_id;
         c_uint16_t source_tac, target_tac;
 
-        d_assert(transfer, return,);
-
         s1ap_ENB_ID_to_uint32(
-                &transfer->sourceeNB_ID.global_ENB_ID.eNB_ID,
-                &source_enb_id);
+                &sourceeNB_ID->global_ENB_ID.eNB_ID, &source_enb_id);
         s1ap_ENB_ID_to_uint32(
-                &transfer->targeteNB_ID.global_ENB_ID.eNB_ID,
-                &target_enb_id);
+                &targeteNB_ID->global_ENB_ID.eNB_ID, &target_enb_id);
 
-        memcpy(&source_tac, transfer->sourceeNB_ID.selected_TAI.tAC.buf,
+        memcpy(&source_tac, sourceeNB_ID->selected_TAI.tAC.buf,
                 sizeof(source_tac));
         source_tac = ntohs(source_tac);
-        memcpy(&target_tac, transfer->targeteNB_ID.selected_TAI.tAC.buf,
+        memcpy(&target_tac, targeteNB_ID->selected_TAI.tAC.buf,
                 sizeof(target_tac));
         target_tac = ntohs(target_tac);
 
         d_trace(5, "    Source : ENB_ID[%s:%d], TAC[%d]\n",
-                transfer->sourceeNB_ID.global_ENB_ID.eNB_ID.present == 
+                sourceeNB_ID->global_ENB_ID.eNB_ID.present == 
                     S1AP_ENB_ID_PR_homeENB_ID ? "Home" : 
-                transfer->sourceeNB_ID.global_ENB_ID.eNB_ID.present == 
+                sourceeNB_ID->global_ENB_ID.eNB_ID.present == 
                     S1AP_ENB_ID_PR_macroENB_ID ? "Macro" : "Others",
                 source_enb_id, source_tac);
         d_trace(5, "    Target : ENB_ID[%s:%d], TAC[%d]\n",
-                transfer->targeteNB_ID.global_ENB_ID.eNB_ID.present == 
+                targeteNB_ID->global_ENB_ID.eNB_ID.present == 
                     S1AP_ENB_ID_PR_homeENB_ID ? "Home" : 
-                transfer->targeteNB_ID.global_ENB_ID.eNB_ID.present == 
+                targeteNB_ID->global_ENB_ID.eNB_ID.present == 
                     S1AP_ENB_ID_PR_macroENB_ID ? "Macro" : "Others",
                 target_enb_id, target_tac);
 
         target_enb = mme_enb_find_by_enb_id(target_enb_id);
         if (target_enb == NULL)
         {
-            d_error("Cannot find target eNB-id[%d] "
+            d_warn("Cannot find target eNB-id[%d] "
                     "in eNB-Configuration-Transfer", target_enb_id);
             return;
         }
 
-        rv = s1ap_send_mme_configuration_transfer(target_enb, pkbuf);
+        rv = s1ap_send_mme_configuration_transfer(
+                target_enb, SONConfigurationTransfer);
         d_assert(rv == CORE_OK,,);
     }
 }
@@ -1444,7 +1445,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     target_enb = mme_enb_find_by_enb_id(target_enb_id);
     if (target_enb == NULL)
     {
-        d_error("Cannot find target eNB-id[%d] in Handover-Required",
+        d_warn("Cannot find target eNB-id[%d] in Handover-Required",
                 target_enb_id);
         return;
     }

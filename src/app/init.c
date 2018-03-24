@@ -79,7 +79,9 @@ void app_did_terminate(void)
 {
     if (context_self()->db_uri)
     {
+        d_trace(1, "DB-Client try to terminate\n");
         context_db_final();
+        d_trace(1, "DB-Client terminate...done\n");
     }
 
     app_logger_final();
