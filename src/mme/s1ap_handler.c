@@ -531,6 +531,7 @@ void s1ap_handle_initial_context_setup_response(
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
+    d_assert(E_RABSetupListCtxtSURes, return,);
     for (i = 0; i < E_RABSetupListCtxtSURes->list.count; i++)
     {
         S1AP_E_RABSetupItemCtxtSUResIEs_t *ie2 = NULL;
@@ -753,6 +754,7 @@ void s1ap_handle_e_rab_setup_response(
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
+    d_assert(E_RABSetupListBearerSURes, return,);
     for (i = 0; i < E_RABSetupListBearerSURes->list.count; i++)
     {
         S1AP_E_RABSetupItemBearerSUResIEs_t *ie2 = NULL;
