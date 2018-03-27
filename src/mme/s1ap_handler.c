@@ -1351,8 +1351,8 @@ void s1ap_handle_enb_configuration_transfer(
         target_enb = mme_enb_find_by_enb_id(target_enb_id);
         if (target_enb == NULL)
         {
-            d_warn("Cannot find target eNB-id[%d] "
-                    "in eNB-Configuration-Transfer", target_enb_id);
+            d_warn("eNB configuration transfer : cannot find target eNB-id[%d]",
+                    target_enb_id);
             return;
         }
 
@@ -1447,7 +1447,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     target_enb = mme_enb_find_by_enb_id(target_enb_id);
     if (target_enb == NULL)
     {
-        d_warn("Cannot find target eNB-id[%d] in Handover-Required",
+        d_warn("Handover required : cannot find target eNB-id[%d]",
                 target_enb_id);
         return;
     }
