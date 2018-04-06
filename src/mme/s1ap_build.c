@@ -466,6 +466,7 @@ status_t s1ap_build_initial_context_setup_request(
         sess = mme_sess_next(sess);
     }
 
+    d_trace(5, "    UESecurityCapability\n");
     UESecurityCapabilities->encryptionAlgorithms.size = 2;
     UESecurityCapabilities->encryptionAlgorithms.buf = 
         core_calloc(UESecurityCapabilities->encryptionAlgorithms.size, 
@@ -482,6 +483,7 @@ status_t s1ap_build_initial_context_setup_request(
     UESecurityCapabilities->integrityProtectionAlgorithms.buf[0] =
         (mme_ue->ue_network_capability.eia << 1);
 
+    d_trace(5, "    UESecurityKey\n");
     SecurityKey->size = SHA256_DIGEST_SIZE;
     SecurityKey->buf = 
         core_calloc(SecurityKey->size, sizeof(c_uint8_t));
@@ -495,6 +497,7 @@ status_t s1ap_build_initial_context_setup_request(
         S1AP_UERadioCapability_t *radio_capa = 
             (S1AP_UERadioCapability_t *)mme_ue->radio_capa;
 
+        d_trace(5, "    UERadioCapabiltiy\n");
         ie = core_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
         ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
 
@@ -511,9 +514,11 @@ status_t s1ap_build_initial_context_setup_request(
         memcpy(UERadioCapability->buf, radio_capa->buf, radio_capa->size);
     }
 
+    d_trace(5, "    Encode PDU\n");
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);
 
+    d_trace(5, "    Done\n");
     if (rv != CORE_OK)
     {
         d_error("s1ap_encode_pdu() failed");

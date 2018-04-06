@@ -628,7 +628,12 @@ void s1ap_handle_initial_context_setup_failure(
     d_assert(Cause, return,);
 
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    d_assert(enb_ue, return, "No UE Context[%d]", *ENB_UE_S1AP_ID);
+    if (enb_ue == NULL)
+    {
+        d_warn("Initial context setup failure : cannot find eNB-UE-S1AP-ID[%d]",
+                *ENB_UE_S1AP_ID);
+        return;
+    }
     mme_ue = enb_ue->mme_ue;
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
