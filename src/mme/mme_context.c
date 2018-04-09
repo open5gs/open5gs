@@ -1988,6 +1988,7 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     CLEAR_PAGING_INFO(mme_ue);
 
     /* Free UeRadioCapability */
+#if 0
     if (mme_ue->radio_capa)
     {
         S1AP_UERadioCapability_t *radio_capa = 
@@ -1997,6 +1998,9 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
             CORE_FREE(radio_capa->buf);
         CORE_FREE(mme_ue->radio_capa);
     }
+#else
+    S1AP_CLEAR_DATA(&mme_ue->ueRadioCapability);
+#endif
 
     /* Clear Transparent Container */
     S1AP_CLEAR_DATA(&mme_ue->container);

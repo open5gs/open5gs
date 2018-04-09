@@ -346,7 +346,11 @@ struct _mme_ue_t {
     c_uint32_t      max_paging_retry;
 
     /* UE Radio Capability */
+#if 0
     void            *radio_capa;
+#else
+    OCTET_STRING_t  ueRadioCapability;
+#endif
 
     /* S1AP Transparent Container */
     OCTET_STRING_t container;

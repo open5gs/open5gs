@@ -447,6 +447,7 @@ void s1ap_handle_ue_capability_info_indication(
 
     if (enb_ue->mme_ue)
     {
+#if 0
         S1AP_UERadioCapability_t *radio_capa = NULL;
         mme_ue_t *mme_ue = enb_ue->mme_ue;
 
@@ -470,6 +471,10 @@ void s1ap_handle_ue_capability_info_indication(
         d_assert(radio_capa->buf, return, "core_calloc error(size=%d)",
                 radio_capa->size);
         memcpy(radio_capa->buf, UERadioCapability->buf, radio_capa->size);
+#else
+        d_assert(UERadioCapability, return,);
+        S1AP_STORE_DATA(&enb_ue->mme_ue->ueRadioCapability, UERadioCapability);
+#endif
     }
 }
 
@@ -1626,8 +1631,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
         }
     }
 
-    S1AP_STORE_DATA(
-        &mme_ue->container, Target_ToSource_TransparentContainer);
+    S1AP_STORE_DATA(&mme_ue->container, Target_ToSource_TransparentContainer);
 
     if (mme_ue_have_indirect_tunnel(mme_ue) == 1)
     {
