@@ -26,7 +26,7 @@ extern "C" {
         d_assert((__dST),, "Null param") \
         S1AP_CLEAR_DATA(__dST); \
         (__dST)->size = (__sRC)->size; \
-        (__dST)->buf = core_calloc(1, sizeof((__dST)->size)); \
+        (__dST)->buf = core_calloc((__dST)->size, sizeof(c_uint8_t)); \
         memcpy((__dST)->buf, (__sRC)->buf, (__dST)->size); \
     } while(0)
 
