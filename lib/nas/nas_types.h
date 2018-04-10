@@ -24,7 +24,7 @@ extern "C" {
         d_assert((__dST),, "Null param") \
         NAS_CLEAR_DATA(__dST); \
         (__dST)->length = (__sRC)->length; \
-        (__dST)->buffer = core_calloc(1, sizeof((__dST)->length)); \
+        (__dST)->buffer = core_calloc((__dST)->length, sizeof(c_uint8_t)); \
         memcpy((__dST)->buffer, (__sRC)->buffer, (__dST)->length); \
     } while(0)
 

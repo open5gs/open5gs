@@ -121,7 +121,7 @@ typedef struct _tlv_int32_t {
         TLV_CLEAR_DATA(__dST); \
         (__dST)->presence = (__sRC)->presence; \
         (__dST)->len = (__sRC)->len; \
-        (__dST)->data = core_calloc(1, sizeof((__dST)->len)); \
+        (__dST)->data = core_calloc((__dST)->len, sizeof(c_uint8_t)); \
         memcpy((__dST)->data, (__sRC)->data, (__dST)->len); \
     } while(0)
 typedef struct _tlv_octet_t {
