@@ -413,6 +413,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                 d_assert(rv == CORE_OK,,
                         "nas_send_attach_reject failed");
+                d_warn("EMM_CAUSE : IMSI Unknown in HSS");
 
                 enb_ue = mme_ue->enb_ue;
                 d_assert(enb_ue, break, "No ENB UE context");
