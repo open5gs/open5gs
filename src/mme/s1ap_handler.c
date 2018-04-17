@@ -1066,7 +1066,11 @@ void s1ap_handle_paging(mme_ue_t *mme_ue)
                         &mme_ue->tai, sizeof(tai_t)))
             {
                 if (mme_ue->last_paging_msg)
+                {
                     s1apbuf = mme_ue->last_paging_msg;
+                    /* Save it for later use */
+                    mme_ue->last_paging_msg = pkbuf_copy(s1apbuf);
+                }
                 else
                 {
                     /* Buidl S1Ap Paging message */
