@@ -160,6 +160,7 @@ struct _enb_ue_t {
     index_t         index;  /* An index of this node */
 
     /* UE identity */
+#define INVALID_UE_S1AP_ID      0xffffffff /* Initial value of enb_ue_s1ap_id */
     c_uint32_t      enb_ue_s1ap_id; /* eNB-UE-S1AP-ID received from eNB */
     c_uint32_t      mme_ue_s1ap_id; /* MME-UE-S1AP-ID received from MME */
 

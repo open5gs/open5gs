@@ -1029,18 +1029,21 @@ status_t s1ap_build_ue_context_release_command(
 
     Cause = &ie->value.choice.Cause;
 
-#if UE_S1AP_IDs_PRESENT_mME_UE_S1AP_ID
-    UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
-    UE_S1AP_IDs->choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
-#else
-    UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
-    UE_S1AP_IDs->choice.uE_S1AP_ID_pair = 
-        core_calloc(1, sizeof(S1AP_UE_S1AP_ID_pair_t));
-    UE_S1AP_IDs->choice.uE_S1AP_ID_pair->mME_UE_S1AP_ID = 
-        enb_ue->mme_ue_s1ap_id;
-    UE_S1AP_IDs->choice.uE_S1AP_ID_pair->eNB_UE_S1AP_ID = 
-        enb_ue->enb_ue_s1ap_id;
-#endif
+    if (enb_ue->enb_ue_s1ap_id == INVALID_UE_S1AP_ID)
+    {
+        UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
+        UE_S1AP_IDs->choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+    }
+    else
+    {
+        UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair = 
+            core_calloc(1, sizeof(S1AP_UE_S1AP_ID_pair_t));
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->mME_UE_S1AP_ID = 
+            enb_ue->mme_ue_s1ap_id;
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->eNB_UE_S1AP_ID = 
+            enb_ue->enb_ue_s1ap_id;
+    }
 
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
