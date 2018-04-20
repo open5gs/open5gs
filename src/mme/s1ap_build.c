@@ -1459,6 +1459,7 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
         S1AP_SuccessfulOutcome__value_PR_HandoverCommand;
 
     HandoverCommand = &successfulOutcome->value.choice.HandoverCommand;
+    d_assert(HandoverCommand, return CORE_ERROR,);
 
     ie = core_calloc(1, sizeof(S1AP_HandoverCommandIEs_t));
     ASN_SEQUENCE_ADD(&HandoverCommand->protocolIEs, ie);
@@ -1487,28 +1488,6 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
 
     HandoverType = &ie->value.choice.HandoverType;
 
-    ie = core_calloc(1, sizeof(S1AP_HandoverCommandIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverCommand->protocolIEs, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList;
-    ie->criticality = S1AP_Criticality_ignore;
-    ie->value.present =
-        S1AP_HandoverCommandIEs__value_PR_E_RABSubjecttoDataForwardingList;
-
-    E_RABSubjecttoDataForwardingList =
-        &ie->value.choice.E_RABSubjecttoDataForwardingList;
-
-    ie = core_calloc(1, sizeof(S1AP_HandoverCommandIEs_t));
-    ASN_SEQUENCE_ADD(&HandoverCommand->protocolIEs, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_Target_ToSource_TransparentContainer;
-    ie->criticality = S1AP_Criticality_reject;
-    ie->value.present =
-        S1AP_HandoverCommandIEs__value_PR_Target_ToSource_TransparentContainer;
-
-    Target_ToSource_TransparentContainer =
-        &ie->value.choice.Target_ToSource_TransparentContainer;
-
     *MME_UE_S1AP_ID = source_ue->mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = source_ue->enb_ue_s1ap_id;
     *HandoverType = source_ue->handover_type;
@@ -1522,21 +1501,46 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
         bearer = mme_bearer_first(sess);
         while(bearer)
         {
-            S1AP_E_RABDataForwardingItemIEs_t *item = NULL;
             S1AP_E_RABDataForwardingItem_t *e_rab = NULL;
 
-            item = core_calloc(
-                    1, sizeof(S1AP_E_RABDataForwardingItemIEs_t));
-            ASN_SEQUENCE_ADD(&E_RABSubjecttoDataForwardingList->list, item);
+            if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer) ||
+                MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
+            {
+                S1AP_E_RABDataForwardingItemIEs_t *item = NULL;
 
-            item->id = S1AP_ProtocolIE_ID_id_E_RABDataForwardingItem;
-            item->criticality = S1AP_Criticality_ignore;
-            item->value.present = S1AP_E_RABDataForwardingItemIEs__value_PR_E_RABDataForwardingItem;
+                if (E_RABSubjecttoDataForwardingList == NULL)
+                {
+                    ie = core_calloc(1, sizeof(S1AP_HandoverCommandIEs_t));
+                    d_assert(ie, return CORE_ERROR,);
+                    ASN_SEQUENCE_ADD(&HandoverCommand->protocolIEs, ie);
 
-            e_rab = &item->value.choice.E_RABDataForwardingItem;
+                    ie->id = S1AP_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList;
+                    ie->criticality = S1AP_Criticality_ignore;
+                    ie->value.present =
+                        S1AP_HandoverCommandIEs__value_PR_E_RABSubjecttoDataForwardingList;
 
-            e_rab->e_RAB_ID = bearer->ebi;
+                    E_RABSubjecttoDataForwardingList =
+                        &ie->value.choice.E_RABSubjecttoDataForwardingList;
+                }
+                d_assert(E_RABSubjecttoDataForwardingList, return CORE_ERROR,);
 
+                item = core_calloc(
+                        1, sizeof(S1AP_E_RABDataForwardingItemIEs_t));
+                d_assert(item, return CORE_ERROR,);
+                ASN_SEQUENCE_ADD(&E_RABSubjecttoDataForwardingList->list, item);
+
+                item->id = S1AP_ProtocolIE_ID_id_E_RABDataForwardingItem;
+                item->criticality = S1AP_Criticality_ignore;
+                item->value.present =
+                    S1AP_E_RABDataForwardingItemIEs__value_PR_E_RABDataForwardingItem;
+
+                e_rab = &item->value.choice.E_RABDataForwardingItem;
+                d_assert(e_rab, return CORE_ERROR,);
+
+                e_rab->e_RAB_ID = bearer->ebi;
+            }
+
+            d_assert(e_rab, return CORE_ERROR,);
             if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer))
             {
                 e_rab->dL_transportLayerAddress =
@@ -1573,6 +1577,17 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
         }
         sess = mme_sess_next(sess);
     }
+
+    ie = core_calloc(1, sizeof(S1AP_HandoverCommandIEs_t));
+    ASN_SEQUENCE_ADD(&HandoverCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_Target_ToSource_TransparentContainer;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_HandoverCommandIEs__value_PR_Target_ToSource_TransparentContainer;
+
+    Target_ToSource_TransparentContainer =
+        &ie->value.choice.Target_ToSource_TransparentContainer;
 
     s1ap_buffer_to_OCTET_STRING(mme_ue->container.buf, mme_ue->container.size, 
             Target_ToSource_TransparentContainer);
