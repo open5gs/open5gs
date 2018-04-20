@@ -1543,9 +1543,9 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
                 e_rab->e_RAB_ID = bearer->ebi;
             }
 
-            d_assert(e_rab, return CORE_ERROR,);
             if (MME_HAVE_SGW_DL_INDIRECT_TUNNEL(bearer))
             {
+                d_assert(e_rab, return CORE_ERROR,);
                 e_rab->dL_transportLayerAddress =
                     (S1AP_TransportLayerAddress_t *)
                     core_calloc(1, sizeof(S1AP_TransportLayerAddress_t));
@@ -1562,6 +1562,7 @@ status_t s1ap_build_handover_command(pkbuf_t **s1apbuf, enb_ue_t *source_ue)
 
             if (MME_HAVE_SGW_UL_INDIRECT_TUNNEL(bearer))
             {
+                d_assert(e_rab, return CORE_ERROR,);
                 e_rab->uL_TransportLayerAddress =
                     (S1AP_TransportLayerAddress_t *)
                     core_calloc(1, sizeof(S1AP_TransportLayerAddress_t));
