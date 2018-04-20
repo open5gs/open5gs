@@ -1761,6 +1761,7 @@ enb_ue_t* enb_ue_add(mme_enb_t *enb)
     index_alloc(&enb_ue_pool, &enb_ue);
     d_assert(enb_ue, return NULL, "Null param");
 
+    enb_ue->enb_ue_s1ap_id = INVALID_UE_S1AP_ID;
     enb_ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
     enb_ue->enb = enb;
 

@@ -181,7 +181,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
             if (rv != CORE_OK)
             {
                 d_print_hex(pkbuf->payload, pkbuf->len);
-                d_assert(0, pkbuf_free(pkbuf); break, "Can't decode S1AP_PDU");
+                d_assert(0, 
+                        s1ap_free_pdu(&message); pkbuf_free(pkbuf); break,
+                        "Can't decode S1AP_PDU");
             }
 
             event_set_param1(e, (c_uintptr_t)enb->index);
