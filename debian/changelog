@@ -1,3 +1,15 @@
+nextepc (0.3.8~xenial) xenial; urgency=medium
+
+  * Bug Fixed 
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 29 Apr 2018 21:47:25 +0900
+
+nextepc (0.3.8~artful) artful; urgency=medium
+
+  * Bug Fixed 
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 29 Apr 2018 21:45:36 +0900
+
 nextepc (0.3.7~artful) artful; urgency=medium
 
   * Buf Fixed
