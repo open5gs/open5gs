@@ -66,8 +66,14 @@ services:
       - home:/home/${USER}
       - ${HOME}:/mnt
     hostname: nextepc-dev
-    command: /bin/bash -c "chmod 666 /dev/net/tun; /root/setup.sh; su acetcom"
-
+    user: ${USER}
+    entrypoint: /bin/bash -c "/bin/bash -c \"$${@}\""
+    command: |
+        /bin/bash -c "
+            sudo chmod 666 /dev/net/tun
+            sudo /root/setup.sh
+            /bin/bash || exit 0
+        "
 volumes:
   mongodb: {}
   home: {}

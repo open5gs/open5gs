@@ -18,6 +18,7 @@ RUN apt-get update && \
         libgnutls28-dev \
         libgcrypt-dev \
         libssl-dev \
+        libidn11-dev \
         libmongoc-dev \
         libbson-dev \
         libyaml-dev \
