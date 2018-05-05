@@ -1,3 +1,9 @@
+nextepc (0.3.8-1~bionic) bionic; urgency=medium
+
+  * Bug Fixed 
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 05 May 2018 22:37:45 +0900
+
 nextepc (0.3.8~bionic) bionic; urgency=medium
 
   * Bug Fixed 
