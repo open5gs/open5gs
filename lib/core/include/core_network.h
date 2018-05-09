@@ -194,6 +194,8 @@ CORE_DECLARE(status_t) tcp_client(sock_id *new, c_sockaddr_t *sa_list);
 /*
  * SCTP Socket
  */
+CORE_DECLARE(void) sctp_set_num_ostreams(int sctp_streams);
+
 CORE_DECLARE(status_t) sctp_socket(sock_id *new, int family, int type);
 CORE_DECLARE(status_t) sctp_server(sock_id *new,
         int type, c_sockaddr_t *sa_list);

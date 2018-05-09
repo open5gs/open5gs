@@ -11,6 +11,8 @@
 
 #include "context.h"
 
+#define DEFAULT_SCTP_STREAMS        30
+
 static context_t self;
 
 static int context_initialized = 0;
@@ -103,6 +105,7 @@ status_t context_setup_trace_module()
 static status_t context_prepare()
 {
     self.logger.console = -1;
+    self.parameter.sctp_streams = DEFAULT_SCTP_STREAMS;
 
     return CORE_OK;
 }
@@ -255,6 +258,11 @@ status_t context_parse_config()
                 {
                     self.parameter.no_pcrf =
                         yaml_iter_bool(&parameter_iter);
+                }
+                else if (!strcmp(parameter_key, "sctp_streams"))
+                {
+                    const char *v = yaml_iter_value(&parameter_iter);
+                    if (v) self.parameter.sctp_streams = atoi(v);
                 }
                 else if (!strcmp(parameter_key, "no_ipv4"))
                 {

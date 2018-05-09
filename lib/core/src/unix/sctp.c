@@ -12,7 +12,15 @@ static status_t set_paddrparams(sock_id id, c_uint32_t spp_hbinterval);
 static status_t set_rtoinfo(sock_id id,
         c_uint32_t srto_initial, c_uint32_t srto_min, c_uint32_t srto_max);
 static status_t set_initmsg(sock_id id,
+        c_uint32_t sinit_num_ostreams, c_uint32_t sinit_max_instreams,
         c_uint32_t sinit_max_attempts, c_uint32_t sinit_max_init_timeo);
+
+static int sctp_num_ostreams = -1;
+
+void sctp_set_num_ostreams(int sctp_streams)
+{
+    sctp_num_ostreams = sctp_streams;
+}
 
 status_t sctp_socket(sock_id *new, int family, int type)
 {
@@ -41,10 +49,11 @@ status_t sctp_socket(sock_id *new, int family, int type)
     /*
      * INITMSG
      * 
+     * max number of input streams : 65535
      * max attemtps : 4
      * max initial timeout : 8 secs
      */
-    rv = set_initmsg(*new, 4, 8000);
+    rv = set_initmsg(*new, sctp_num_ostreams, 65535, 4, 8000);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     return CORE_OK;
@@ -394,6 +403,7 @@ static status_t set_rtoinfo(sock_id id,
 }
 
 static status_t set_initmsg(sock_id id,
+        c_uint32_t sinit_num_ostreams, c_uint32_t sinit_max_instreams,
         c_uint32_t sinit_max_attempts, c_uint32_t sinit_max_init_timeo)
 {
     sock_t *sock = (sock_t *)id;
@@ -401,7 +411,8 @@ static status_t set_initmsg(sock_id id,
     socklen_t socklen;
 
     d_assert(id, return CORE_ERROR,);
-
+    d_assert(sinit_num_ostreams > 1, return CORE_ERROR,
+            "Invalid SCTP number of output streams = %d\n", sctp_num_ostreams);
 
     memset(&initmsg, 0, sizeof(initmsg));
     socklen = sizeof(initmsg);
@@ -419,6 +430,8 @@ static status_t set_initmsg(sock_id id,
                 initmsg.sinit_max_attempts,
                 initmsg.sinit_max_init_timeo);
 
+    initmsg.sinit_num_ostreams = sinit_num_ostreams;
+    initmsg.sinit_max_instreams = sinit_max_instreams;
     initmsg.sinit_max_attempts = sinit_max_attempts;
     initmsg.sinit_max_init_timeo = sinit_max_init_timeo;
 
