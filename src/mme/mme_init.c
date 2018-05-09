@@ -7,6 +7,7 @@
 
 #include "gtp/gtp_xact.h"
 
+#include "app/context.h"
 #include "mme_event.h"
 
 #include "mme_fd_path.h"
@@ -42,7 +43,9 @@ status_t mme_initialize()
     if (rv != CORE_OK) return CORE_ERROR;
 
 #define USRSCTP_LOCAL_UDP_PORT 9899
-    rv = s1ap_init(USRSCTP_LOCAL_UDP_PORT);
+    rv = s1ap_init(
+            context_self()->parameter.sctp_streams,
+            USRSCTP_LOCAL_UDP_PORT);
     if (rv != CORE_OK) return rv;
 
     rv = thread_create(&sm_thread, NULL, sm_main, NULL);

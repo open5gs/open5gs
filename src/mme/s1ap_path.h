@@ -10,7 +10,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) s1ap_init(c_uint16_t port);
+CORE_DECLARE(status_t) s1ap_init(int sctp_streams, c_uint16_t port);
 CORE_DECLARE(status_t) s1ap_final();
 
 CORE_DECLARE(status_t) s1ap_open();

@@ -37,7 +37,9 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
 static c_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store);
 static void debug_printf(const char *format, ...);
 
-status_t s1ap_init(c_uint16_t port)
+static int sctp_num_ostreams = -1;
+
+status_t s1ap_init(int sctp_streams, c_uint16_t port)
 {
     usrsctp_init(port, NULL, debug_printf);
 #ifdef SCTP_DEBUG
@@ -45,6 +47,7 @@ status_t s1ap_init(c_uint16_t port)
 #endif
     usrsctp_sysctl_set_sctp_blackhole(2);
     usrsctp_sysctl_set_sctp_enable_sack_immediately(1);
+    sctp_num_ostreams = sctp_streams;
 
     return CORE_OK;
 }
@@ -238,6 +241,8 @@ static status_t s1ap_usrsctp_socket(sock_id *new,
         SCTP_ADAPTATION_INDICATION,
         SCTP_PARTIAL_DELIVERY_EVENT
     };
+    struct sctp_initmsg initmsg;
+    socklen_t socklen;
     int i;
 
     if (!(sock = usrsctp_socket(family, type, IPPROTO_SCTP,
@@ -267,6 +272,50 @@ static status_t s1ap_usrsctp_socket(sock_id *new,
             return CORE_ERROR;
         }
     }
+
+    memset(&initmsg, 0, sizeof(struct sctp_initmsg));
+    socklen = sizeof(struct sctp_initmsg);
+    if (usrsctp_getsockopt(sock, IPPROTO_SCTP, SCTP_INITMSG, &initmsg, &socklen) != 0) 
+    {
+        d_error("getsockopt for SCTP_INITMSG failed(%d:%s)",
+                errno, strerror( errno ));
+        return CORE_ERROR;
+    }
+
+    d_trace(3, "Old INITMSG (numout:%d maxin:%d maxattempt:%d maxinit_to:%d)\n",
+                initmsg.sinit_num_ostreams,
+                initmsg.sinit_max_instreams,
+                initmsg.sinit_max_attempts,
+                initmsg.sinit_max_init_timeo);
+
+    /*
+     * INITMSG
+     * 
+     * max number of input streams : 65535
+     * max attemtps : 4
+     * max initial timeout : 8 secs
+     */
+    d_assert(sctp_num_ostreams > 1, return CORE_ERROR,
+            "Invalid SCTP number of output streams = %d\n", sctp_num_ostreams);
+
+    initmsg.sinit_num_ostreams = sctp_num_ostreams;
+    initmsg.sinit_max_instreams = 65535;
+    initmsg.sinit_max_attempts = 4;
+    initmsg.sinit_max_init_timeo = 8000;
+
+    if (usrsctp_setsockopt(sock, IPPROTO_SCTP, SCTP_INITMSG,
+                            &initmsg, sizeof(initmsg)) != 0) 
+    {
+        d_error("setsockopt for SCTP_INITMSG failed(%d:%s)",
+                errno, strerror( errno ));
+        return CORE_ERROR;
+    }
+
+    d_trace(3,"New INITMSG (numout:%d maxin:%d maxattempt:%d maxinit_to:%d)\n",
+                initmsg.sinit_num_ostreams,
+                initmsg.sinit_max_instreams,
+                initmsg.sinit_max_attempts,
+                initmsg.sinit_max_init_timeo);
 
     *new = (sock_id)sock;
 

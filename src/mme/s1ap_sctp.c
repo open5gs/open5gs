@@ -9,8 +9,9 @@
 
 static int s1ap_accept_handler(sock_id sock, void *data);
 
-status_t s1ap_init(c_uint16_t port)
+status_t s1ap_init(int sctp_streams, c_uint16_t port)
 {
+    sctp_set_num_ostreams(sctp_streams);
     return CORE_OK;
 }
 

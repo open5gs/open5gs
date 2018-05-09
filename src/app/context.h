@@ -54,6 +54,7 @@ typedef struct _context_t {
         int no_pcrf;
 
         /* Network */
+        int sctp_streams;
         int no_ipv4;
         int no_ipv6;
         int prefer_ipv4;
