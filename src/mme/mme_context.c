@@ -1761,6 +1761,17 @@ enb_ue_t* enb_ue_add(mme_enb_t *enb)
     index_alloc(&enb_ue_pool, &enb_ue);
     d_assert(enb_ue, return NULL, "Null param");
 
+    /*
+     * We'll use self.mme_ue_s1ap_id for generating SCTP stream id
+     *
+     * Default number of output stream : 30
+     *  0 : Non UE assocation
+     *  1 ~ 29 : UE specific association
+     */
+    
+    enb_ue->ostream_id = self.mme_ue_s1ap_id %
+        (context_self()->parameter.sctp_streams - 1) + 1;
+
     enb_ue->enb_ue_s1ap_id = INVALID_UE_S1AP_ID;
     enb_ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
     enb_ue->enb = enb;
