@@ -113,6 +113,7 @@ typedef struct _mme_context_t {
 
     /* Generator for unique identification */
     c_uint32_t      mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
+    c_uint16_t      ostream_id;             /* ostream_id generator */
 
     /* M-TMSI Pool */
     struct {
@@ -243,6 +244,8 @@ struct _mme_ue_t {
 
     c_uint32_t      mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
     c_uint32_t      sgw_s11_teid;   /* SGW-S11-TEID is received from SGW */
+
+    c_uint16_t      ostream_id;     /* SCTP output stream identification */
 
     /* UE Info */
     tai_t           tai;
