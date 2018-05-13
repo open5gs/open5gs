@@ -180,10 +180,23 @@ status_t emm_handle_attach_complete(
     nas_daylight_saving_time_t *network_daylight_saving_time = 
         &emm_information->network_daylight_saving_time;
 
-    time_exp_t time_exp;
-    time_exp_lt(&time_exp, time_now());
+    time_exp_t xt_gmt, xt_local;
+
+    rv = time_exp_gmt(&xt_gmt, time_now());
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = time_exp_lt(&xt_local, time_now());
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
+
+    d_trace(5, "    GMT Time[Y:M:D H:M:S GMT] - %d:%d:%d, %d:%d:%d, %d\n",
+        xt_gmt.tm_year, xt_gmt.tm_mon, xt_gmt.tm_mday,
+        xt_gmt.tm_hour, xt_gmt.tm_min, xt_gmt.tm_sec,
+        xt_gmt.tm_gmtoff);
+    d_trace(5, "    LOCAL Time[Y:M:D H:M:S GMT] - %d:%d:%d, %d:%d:%d, %d\n",
+        xt_local.tm_year, xt_local.tm_mon, xt_local.tm_mday,
+        xt_local.tm_hour, xt_local.tm_min, xt_local.tm_sec,
+        xt_local.tm_gmtoff);
 
     rv = nas_send_emm_to_esm(mme_ue, &attach_complete->esm_message_container);
     d_assert(rv == CORE_OK, return CORE_ERROR, "nas_send_emm_to_esm failed");
@@ -199,22 +212,22 @@ status_t emm_handle_attach_complete(
     emm_information->presencemask |=
         NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
     universal_time_and_local_time_zone->year = 
-                NAS_TIME_TO_BCD(time_exp.tm_year % 100);
+                NAS_TIME_TO_BCD(xt_gmt.tm_year % 100);
     universal_time_and_local_time_zone->mon =
-                NAS_TIME_TO_BCD(time_exp.tm_mon+1);
+                NAS_TIME_TO_BCD(xt_gmt.tm_mon+1);
     universal_time_and_local_time_zone->mday = 
-                NAS_TIME_TO_BCD(time_exp.tm_mday);
+                NAS_TIME_TO_BCD(xt_gmt.tm_mday);
     universal_time_and_local_time_zone->hour = 
-                NAS_TIME_TO_BCD(time_exp.tm_hour);
-    universal_time_and_local_time_zone->min = NAS_TIME_TO_BCD(time_exp.tm_min);
-    universal_time_and_local_time_zone->sec = NAS_TIME_TO_BCD(time_exp.tm_sec);
-    if (time_exp.tm_gmtoff > 0)
+                NAS_TIME_TO_BCD(xt_gmt.tm_hour);
+    universal_time_and_local_time_zone->min = NAS_TIME_TO_BCD(xt_gmt.tm_min);
+    universal_time_and_local_time_zone->sec = NAS_TIME_TO_BCD(xt_gmt.tm_sec);
+    if (xt_local.tm_gmtoff >= 0)
         universal_time_and_local_time_zone->sign = 0;
     else
         universal_time_and_local_time_zone->sign = 1;
     /* quarters of an hour */
     universal_time_and_local_time_zone->gmtoff = 
-                NAS_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
+                NAS_TIME_TO_BCD(xt_local.tm_gmtoff / 900);
 
     emm_information->presencemask |=
         NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
