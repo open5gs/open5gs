@@ -54,7 +54,7 @@ status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf,
     d_assert(pkbuf, return CORE_ERROR,);
 
     sent = core_sctp_sendmsg(sock, pkbuf->payload, pkbuf->len,
-            addr, SCTP_S1AP_PPID, 0);
+            addr, SCTP_S1AP_PPID, stream_no);
     d_trace(50, "[S1AP] SEND[%d] : ", sent);
     d_trace_hex(50, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
