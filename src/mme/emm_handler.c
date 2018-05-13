@@ -181,7 +181,7 @@ status_t emm_handle_attach_complete(
         &emm_information->network_daylight_saving_time;
 
     time_exp_t time_exp;
-    time_exp_lt(&time_exp, time_now());
+    time_exp_gmt(&time_exp, time_now());
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
 
