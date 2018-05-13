@@ -161,7 +161,8 @@ status_t sctp_client(sock_id *new, int type, c_sockaddr_t *sa_list)
     return CORE_OK;
 }
 
-status_t s1ap_send(sock_id id, pkbuf_t *pkbuf, c_sockaddr_t *addr)
+status_t s1ap_send(sock_id id, pkbuf_t *pkbuf,
+        c_sockaddr_t *addr, c_uint16_t stream_no)
 {
     ssize_t sent;
     struct socket *sock = (struct socket *)id;
@@ -172,6 +173,7 @@ status_t s1ap_send(sock_id id, pkbuf_t *pkbuf, c_sockaddr_t *addr)
 
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
     sndinfo.snd_ppid = htonl(SCTP_S1AP_PPID);
+    sndinfo.snd_sid = stream_no;
     sent = usrsctp_sendv(sock, pkbuf->payload, pkbuf->len, 
             addr ? &addr->sa : NULL, addr ? 1 : 0,
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),

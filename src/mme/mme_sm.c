@@ -196,12 +196,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
         }
         case MME_EVT_S1AP_DELAYED_SEND:
         {
-            mme_enb_t *enb = NULL;
+            enb_ue_t *enb_ue = NULL;
             pkbuf_t *pkbuf = NULL;
             tm_block_id timer = 0;
 
-            enb = mme_enb_find(event_get_param1(e));
-            d_assert(enb, break,);
+            enb_ue = enb_ue_find(event_get_param1(e));
+            d_assert(enb_ue, break,);
 
             pkbuf = (pkbuf_t *)event_get_param2(e);
             d_assert(pkbuf, break,);
@@ -209,7 +209,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             timer = event_get_param3(e);
             d_assert(timer, pkbuf_free(pkbuf); break,);
 
-            rv = s1ap_send_to_enb(enb, pkbuf);
+            rv = s1ap_send_to_enb_ue(enb_ue, pkbuf);
             d_assert(rv == CORE_OK, pkbuf_free(pkbuf),);
 
             tm_delete(timer);

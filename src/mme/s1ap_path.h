@@ -10,6 +10,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define S1AP_NON_UE_SIGNALLING   0
+
 CORE_DECLARE(status_t) s1ap_init(int sctp_streams, c_uint16_t port);
 CORE_DECLARE(status_t) s1ap_final();
 
@@ -22,14 +24,15 @@ CORE_DECLARE(status_t) s1ap_delete(sock_id sock);
 CORE_DECLARE(int) s1ap_recv_handler(sock_id sock, void *data);
 
 CORE_DECLARE(status_t) s1ap_send(sock_id sock,
-        pkbuf_t *pkbuf, c_sockaddr_t *addr);
+        pkbuf_t *pkbuf, c_sockaddr_t *addr, c_uint16_t stream_no);
 CORE_DECLARE(status_t) s1ap_recv(sock_id id, pkbuf_t *pkbuf);
 
-CORE_DECLARE(status_t) s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkb);
-CORE_DECLARE(status_t) s1ap_delayed_send_to_enb(mme_enb_t *enb,
+CORE_DECLARE(status_t) s1ap_send_to_enb(
+        mme_enb_t *enb, pkbuf_t *pkb, c_uint16_t stream_no);
+CORE_DECLARE(status_t) s1ap_send_to_enb_ue(enb_ue_t *enb_ue, pkbuf_t *pkbuf);
+CORE_DECLARE(status_t) s1ap_delayed_send_to_enb_ue(enb_ue_t *enb_ue,
         pkbuf_t *pkbuf, c_uint32_t duration);
-CORE_DECLARE(status_t) s1ap_send_to_nas(
-        enb_ue_t *enb_ue,
+CORE_DECLARE(status_t) s1ap_send_to_nas(enb_ue_t *enb_ue,
         S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu);
 CORE_DECLARE(status_t) s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf);
 
@@ -44,9 +47,6 @@ CORE_DECLARE(status_t) s1ap_send_mme_configuration_transfer(
         S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer);
 
 CORE_DECLARE(status_t) s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
-CORE_DECLARE(status_t) s1ap_send_path_switch_failure(mme_enb_t *enb,
-    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
-    S1AP_Cause_PR group, long cause);
 
 CORE_DECLARE(status_t) s1ap_send_handover_command(enb_ue_t *source_ue);
 CORE_DECLARE(status_t) s1ap_send_handover_preparation_failure(

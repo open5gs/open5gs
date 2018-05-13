@@ -160,8 +160,6 @@ struct _enb_ue_t {
     lnode_t         node;   /* A node of list_t */
     index_t         index;  /* An index of this node */
 
-    c_uint16_t      ostream_id; /* SCTP Output Stream Identifier */
-
     /* UE identity */
 #define INVALID_UE_S1AP_ID      0xffffffff /* Initial value of enb_ue_s1ap_id */
     c_uint32_t      enb_ue_s1ap_id; /* eNB-UE-S1AP-ID received from eNB */

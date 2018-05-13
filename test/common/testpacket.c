@@ -114,7 +114,7 @@ status_t tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf)
 
 status_t tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf)
 {
-    return s1ap_send(id, sendbuf, NULL);
+    return s1ap_send(id, sendbuf, NULL, 0);
 }
 
 status_t tests1ap_build_setup_req(

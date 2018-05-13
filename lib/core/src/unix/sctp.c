@@ -189,7 +189,7 @@ int core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
             to ? &to->sa : NULL, addrlen,
             htonl(ppid),
             0,  /* flags */
-            stream_no,
+            htons(stream_no),
             0,  /* timetolive */
             0); /* context */
     if (size < 0)

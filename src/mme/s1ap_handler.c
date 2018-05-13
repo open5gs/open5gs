@@ -159,7 +159,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
                 return, "s1ap_build_setup_failure() failed");
     }
 
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,,
+    d_assert(s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == CORE_OK,,
             "s1ap_send_to_enb() failed");
 }
 
@@ -1083,8 +1083,9 @@ void s1ap_handle_paging(mme_ue_t *mme_ue)
                 }
 
                 /* Send to enb */
-                d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK, return,
-                        "s1ap send error");
+                d_assert(s1ap_send_to_enb(
+                        enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == CORE_OK,
+                        return, "s1ap send error");
             }
         }
     }
@@ -1117,6 +1118,7 @@ void s1ap_handle_path_switch_request(
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
+    pkbuf_t *s1apbuf = NULL;
 
     d_assert(enb, return,);
     d_assert(enb->sock, return,);
@@ -1187,10 +1189,14 @@ void s1ap_handle_path_switch_request(
         d_error("Cannot find UE from sourceMME-UE-S1AP-ID[%d] and eNB[%s:%d]",
                 *MME_UE_S1AP_ID, CORE_ADDR(enb->addr, buf), enb->enb_id);
 
-        s1ap_send_path_switch_failure(enb,
+        rv = s1ap_build_path_switch_failure(&s1apbuf,
                 *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+
+        rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
+        d_assert(rv == CORE_OK,, "s1ap send error");
         return;
     }
 
@@ -1207,9 +1213,13 @@ void s1ap_handle_path_switch_request(
     }
     else
     {
-        s1ap_send_path_switch_failure(enb,
+        rv = s1ap_build_path_switch_failure(&s1apbuf,
                 *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
+        d_assert(rv == CORE_OK && s1apbuf, return, "s1ap build error");
+
+        rv = s1ap_send_to_enb_ue(enb_ue, s1apbuf);
+        d_assert(rv == CORE_OK,, "s1ap send error");
         return;
     }
 

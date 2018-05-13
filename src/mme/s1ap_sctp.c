@@ -45,7 +45,8 @@ status_t s1ap_delete(sock_id sock)
     return sock_delete(sock);
 }
 
-status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf, c_sockaddr_t *addr)
+status_t s1ap_send(sock_id sock, pkbuf_t *pkbuf,
+        c_sockaddr_t *addr, c_uint16_t stream_no)
 {
     int sent;
 

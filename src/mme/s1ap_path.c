@@ -68,7 +68,7 @@ static status_t s1ap_delete_list(list_t *list)
     return CORE_OK;
 }
 
-status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
+status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf, c_uint16_t stream_no)
 {
     char buf[CORE_ADDRSTRLEN];
     status_t rv;
@@ -81,7 +81,8 @@ status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
             CORE_ADDR(enb->addr, buf), enb->enb_id);
 
     rv = s1ap_send(enb->sock, pkbuf,
-            enb->sock_type == SOCK_STREAM ? NULL : enb->addr);
+            enb->sock_type == SOCK_STREAM ? NULL : enb->addr,
+            stream_no);
     if (rv != CORE_OK)
     {
         d_error("s1_send error");
@@ -91,12 +92,26 @@ status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
     return CORE_OK;;
 }
 
-status_t s1ap_delayed_send_to_enb(
-        mme_enb_t *enb, pkbuf_t *pkbuf, c_uint32_t duration)
+status_t s1ap_send_to_enb_ue(enb_ue_t *enb_ue, pkbuf_t *pkbuf)
+{
+    mme_enb_t *enb = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    d_assert(enb_ue, return CORE_ERROR,);
+    enb = enb_ue->enb;
+    d_assert(enb, return CORE_ERROR,);
+    mme_ue = enb_ue->mme_ue;
+    d_assert(mme_ue, return CORE_ERROR,);
+
+    return s1ap_send_to_enb(enb, pkbuf, mme_ue->ostream_id);
+}
+
+status_t s1ap_delayed_send_to_enb_ue(
+        enb_ue_t *enb_ue, pkbuf_t *pkbuf, c_uint32_t duration)
 {
     tm_block_id timer = 0;
 
-    d_assert(enb, return CORE_ERROR,);
+    d_assert(enb_ue, return CORE_ERROR,);
     d_assert(pkbuf, return CORE_ERROR,);
         
     if (duration)
@@ -105,7 +120,7 @@ status_t s1ap_delayed_send_to_enb(
                 &mme_self()->tm_service, MME_EVT_S1AP_DELAYED_SEND, duration);
         d_assert(timer, return CORE_ERROR,);
 
-        timer_set_param1(timer, (c_uintptr_t)enb->index);
+        timer_set_param1(timer, (c_uintptr_t)enb_ue->index);
         timer_set_param2(timer, (c_uintptr_t)pkbuf);
         timer_set_param3(timer, timer);
 
@@ -115,7 +130,10 @@ status_t s1ap_delayed_send_to_enb(
     }
     else
     {
-        return s1ap_send_to_enb(enb, pkbuf);
+        mme_enb_t *enb = NULL;
+        enb = enb_ue->enb;
+        d_assert(enb, return CORE_ERROR,);
+        return s1ap_send_to_enb_ue(enb_ue, pkbuf);
     }
 }
 
@@ -133,7 +151,7 @@ status_t s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf)
 
     return CORE_OK;
 }
-
+ 
 status_t s1ap_send_to_nas(enb_ue_t *enb_ue,
         S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu)
 {
@@ -246,7 +264,6 @@ status_t s1ap_send_ue_context_release_command(
     c_uint8_t action, c_uint32_t delay)
 {
     status_t rv;
-    mme_enb_t *enb = NULL;
     pkbuf_t *s1apbuf = NULL;
 
     d_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION, return CORE_ERROR,
@@ -254,8 +271,6 @@ status_t s1ap_send_ue_context_release_command(
 
     d_assert(enb_ue, return CORE_ERROR, "Null param");
     enb_ue->ue_ctx_rel_action = action;
-    enb = enb_ue->enb;
-    d_assert(enb, return CORE_ERROR, "Null param");
 
     d_trace(3, "[MME] UE Context release command\n");
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
@@ -266,7 +281,7 @@ status_t s1ap_send_ue_context_release_command(
     rv = s1ap_build_ue_context_release_command(&s1apbuf, enb_ue, group, cause);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_delayed_send_to_enb(enb, s1apbuf, delay);
+    rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, delay);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return CORE_OK;
@@ -286,7 +301,7 @@ status_t s1ap_send_mme_configuration_transfer(
             &s1apbuf, SONConfigurationTransfer);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_send_to_enb(target_enb, s1apbuf);
+    rv = s1ap_send_to_enb(target_enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
@@ -308,40 +323,17 @@ status_t s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
     return CORE_OK;
 }
 
-status_t s1ap_send_path_switch_failure(mme_enb_t *enb,
-    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
-    S1AP_Cause_PR group, long cause)
-{
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
-
-    d_assert(enb, return CORE_ERROR, "Null param");
-
-    rv = s1ap_build_path_switch_failure(&s1apbuf,
-            enb_ue_s1ap_id, mme_ue_s1ap_id, group, cause);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
-
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
-    
-    return rv;
-}
-
 status_t s1ap_send_handover_command(enb_ue_t *source_ue)
 {
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
 
-    mme_enb_t *enb = NULL;
-
     d_assert(source_ue, return CORE_ERROR,);
-    enb = source_ue->enb;
-    d_assert(enb, return CORE_ERROR,);
 
     rv = s1ap_build_handover_command(&s1apbuf, source_ue);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
+    rv = s1ap_send_to_enb_ue(source_ue, s1apbuf);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
@@ -353,17 +345,13 @@ status_t s1ap_send_handover_preparation_failure(
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
 
-    mme_enb_t *enb = NULL;
-
     d_assert(source_ue, return CORE_ERROR,);
     d_assert(cause, return CORE_ERROR,);
-    enb = source_ue->enb;
-    d_assert(enb, return CORE_ERROR,);
 
     rv = s1ap_build_handover_preparation_failure(&s1apbuf, source_ue, cause);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
+    rv = s1ap_send_to_enb_ue(source_ue, s1apbuf);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
@@ -374,16 +362,12 @@ status_t s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
 
-    mme_enb_t *enb = NULL;
-
     d_assert(source_ue, return CORE_ERROR,);
-    enb = source_ue->enb;
-    d_assert(enb, return CORE_ERROR,);
 
     rv = s1ap_build_handover_cancel_ack(&s1apbuf, source_ue);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
+    rv = s1ap_send_to_enb_ue(source_ue, s1apbuf);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
@@ -432,7 +416,7 @@ status_t s1ap_send_handover_request(
             source_totarget_transparentContainer);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_send_to_enb(target_enb, s1apbuf);
+    rv = s1ap_send_to_enb_ue(target_ue, s1apbuf);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
@@ -446,17 +430,13 @@ status_t s1ap_send_mme_status_transfer(
     status_t rv;
     pkbuf_t *s1apbuf = NULL;
 
-    mme_enb_t *enb = NULL;
-
     d_assert(target_ue, return CORE_ERROR,);
-    enb = target_ue->enb;
-    d_assert(enb, return CORE_ERROR,);
 
     rv = s1ap_build_mme_status_transfer(&s1apbuf, target_ue,
             enb_statustransfer_transparentContainer);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
+    rv = s1ap_send_to_enb_ue(target_ue, s1apbuf);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
@@ -477,7 +457,7 @@ status_t s1ap_send_error_indication(
             mme_ue_s1ap_id, enb_ue_s1ap_id, group, cause);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
+    rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;
@@ -495,7 +475,7 @@ status_t s1ap_send_s1_reset_ack(
     rv = s1ap_build_s1_reset_ack(&s1apbuf, partOfS1_Interface);
     d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
+    rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
     d_assert(rv == CORE_OK,, "s1ap send error");
 
     return rv;

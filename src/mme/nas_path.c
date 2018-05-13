@@ -11,16 +11,13 @@
 
 status_t nas_send_to_enb(mme_ue_t *mme_ue, pkbuf_t *pkbuf)
 {
-    mme_enb_t *enb = NULL;
     enb_ue_t *enb_ue = NULL;
 
     d_assert(mme_ue, return CORE_ERROR, "Null param");
     enb_ue = mme_ue->enb_ue;
     d_assert(enb_ue, return CORE_ERROR, "Null param");
-    enb = enb_ue->enb;
-    d_assert(enb, return CORE_ERROR, "Null param");
 
-    return s1ap_send_to_enb(enb, pkbuf);
+    return s1ap_send_to_enb_ue(enb_ue, pkbuf);
 }
 
 status_t nas_send_emm_to_esm(
