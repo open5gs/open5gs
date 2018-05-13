@@ -281,8 +281,8 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 {
 #if 1 /* IMPLICIT_S1_RELEASE */
                    /* Implcit S1 release */
-                    d_warn("Implicit S1 release");
-                    d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                    d_trace(5, "Implicit S1 release\n");
+                    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
                           mme_ue->enb_ue->enb_ue_s1ap_id,
                           mme_ue->enb_ue->mme_ue_s1ap_id);
                     rv = enb_ue_remove(mme_ue->enb_ue);
