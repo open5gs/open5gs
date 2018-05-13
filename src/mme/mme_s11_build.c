@@ -205,7 +205,7 @@ status_t mme_s11_build_create_session_request(
     /* UE Time Zone */
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     time_exp_lt(&time_exp, time_now());
-    if (time_exp.tm_gmtoff > 0)
+    if (time_exp.tm_gmtoff >= 0)
         ue_timezone.sign = 0;
     else
         ue_timezone.sign = 1;
@@ -426,7 +426,7 @@ status_t mme_s11_build_create_bearer_response(
     /* UE Time Zone */
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     time_exp_lt(&time_exp, time_now());
-    if (time_exp.tm_gmtoff > 0)
+    if (time_exp.tm_gmtoff >= 0)
         ue_timezone.sign = 0;
     else
         ue_timezone.sign = 1;
@@ -503,7 +503,7 @@ status_t mme_s11_build_update_bearer_response(
     /* UE Time Zone */
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     time_exp_lt(&time_exp, time_now());
-    if (time_exp.tm_gmtoff > 0)
+    if (time_exp.tm_gmtoff >= 0)
         ue_timezone.sign = 0;
     else
         ue_timezone.sign = 1;
@@ -580,7 +580,7 @@ status_t mme_s11_build_delete_bearer_response(
     /* UE Time Zone */
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     time_exp_lt(&time_exp, time_now());
-    if (time_exp.tm_gmtoff > 0)
+    if (time_exp.tm_gmtoff >= 0)
         ue_timezone.sign = 0;
     else
         ue_timezone.sign = 1;

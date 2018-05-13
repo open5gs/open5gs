@@ -123,8 +123,7 @@ status_t time_exp_get(c_time_t *t, time_exp_t *xt)
     return CORE_OK;
 }
 
-status_t time_exp_gmt_get(c_time_t *t,
-                                               time_exp_t *xt)
+status_t time_exp_gmt_get(c_time_t *t, time_exp_t *xt)
 {
     status_t status = time_exp_get(t, xt);
     if (status == CORE_OK)
