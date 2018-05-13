@@ -1949,6 +1949,15 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 
     mme_ue->mme_s11_teid = mme_ue->index;
 
+    /*
+     * SCTP output stream identification
+     * Default context_self()->parameter.sctp_streams : 30
+     *   0 : Non UE signalling
+     *   1-29 : UE specific association 
+     */
+    mme_ue->ostream_id = NEXT_ID(self.ostream_id,
+            1, context_self()->parameter.sctp_streams-1);
+
     /* Create New GUTI */
     mme_ue_new_guti(mme_ue);
 
