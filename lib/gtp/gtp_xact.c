@@ -632,8 +632,11 @@ status_t gtp_xact_timeout(index_t index, c_uintptr_t event)
             pkbuf = xact->seq[xact->step-1].pkbuf;
             d_assert(pkbuf, return CORE_ERROR, "Null param");
 
-            d_assert(gtp_send(xact->gnode, pkbuf) == CORE_OK,
-                    goto out, "gtp_send error");
+            if (gtp_send(xact->gnode, pkbuf) != CORE_OK)
+            {
+                d_error("gtp_send() failed");
+                goto out;
+            }
         }
         else
         {

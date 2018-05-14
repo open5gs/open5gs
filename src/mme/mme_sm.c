@@ -588,6 +588,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
         case MME_EVT_S11_T3_HOLDING:
         {
             gtp_xact_timeout(event_get_param1(e), event_get(e));
+            d_error("MME cannot send GTPv2-C message to SGW");
             break;
         }
         default:
