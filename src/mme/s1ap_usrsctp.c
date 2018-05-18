@@ -405,11 +405,13 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                 switch(not->sn_header.sn_type) 
                 {
                     case SCTP_ASSOC_CHANGE :
-                        d_trace(9, "SCTP_ASSOC_CHANGE"
-                                "(type:0x%x, flags:0x%x, state:0x%x)\n", 
+                        d_trace(9, "SCTP_ASSOC_CHANGE:"
+                                "[T:0x%x, F:0x%x, S:0x%x, I/O:%d/%d]\n", 
                                 not->sn_assoc_change.sac_type,
                                 not->sn_assoc_change.sac_flags,
-                                not->sn_assoc_change.sac_state);
+                                not->sn_assoc_change.sac_state,
+                                not->sn_assoc_change.sac_inbound_streams,
+                                not->sn_assoc_change.sac_outbound_streams);
 
                         if (not->sn_assoc_change.sac_state == 
                                 SCTP_SHUTDOWN_COMP ||
@@ -437,6 +439,8 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                             event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
                             event_set_param1(&e, (c_uintptr_t)sock);
                             event_set_param2(&e, (c_uintptr_t)addr);
+                            event_set_param3(&e, (c_uintptr_t)
+                                not->sn_assoc_change.sac_inbound_streams);
                             if (mme_event_send(&e) != CORE_OK)
                             {
                                 CORE_FREE(addr);

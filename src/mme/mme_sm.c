@@ -96,12 +96,26 @@ void mme_state_operational(fsm_t *s, event_t *e)
             if (!enb)
             {
 #if USE_USRSCTP != 1
-                status_t rv = sock_register(sock, s1ap_recv_handler, NULL);
-                d_assert(rv == CORE_OK, break, "register s1ap_recv_cb failed");
-#endif
+                status_t rv;
+                mme_enb_t *enb = NULL;
 
-                mme_enb_t *enb = mme_enb_add(sock, addr);
+                rv = sock_register(sock, s1ap_recv_handler, NULL);
+                d_assert(rv == CORE_OK, break, "register s1ap_recv_cb failed");
+
+                enb = mme_enb_add(sock, addr);
                 d_assert(enb, break, "Null param");
+#else
+                c_uint16_t inbound_streams = 0;
+                mme_enb_t *enb = NULL;
+
+                enb = mme_enb_add(sock, addr);
+                d_assert(enb, break, "Null param");
+
+                inbound_streams = (c_uint16_t)event_get_param3(e);
+                if (inbound_streams)
+                    enb->inbound_streams =
+                        c_min(inbound_streams, enb->inbound_streams);
+#endif
             }
             else
             {
@@ -167,14 +181,14 @@ void mme_state_operational(fsm_t *s, event_t *e)
                     "No S1AP State Machine");
 
             if (inbound_streams)
-                inbound_streams = c_min(inbound_streams, enb->inbound_streams);
+                enb->inbound_streams =
+                    c_min(inbound_streams, enb->inbound_streams);
 
             rv = s1ap_decode_pdu(&message, pkbuf);
             if (rv != CORE_OK)
             {
                 d_print_hex(pkbuf->payload, pkbuf->len);
-                d_assert(0, 
-                        s1ap_free_pdu(&message); pkbuf_free(pkbuf); break,
+                d_assert(0, s1ap_free_pdu(&message); pkbuf_free(pkbuf); break,
                         "Can't decode S1AP_PDU");
             }
 
