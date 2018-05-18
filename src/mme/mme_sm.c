@@ -124,21 +124,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             addr = (c_sockaddr_t *)event_get_param2(e);
             d_assert(addr, break, "Null param");
 
-#ifdef NO_FD_LOCK
             enb = mme_enb_find_by_addr(addr);
-#else
-#error do not use lock in socket fd
-            /* 
-             * <Connection Refused>
-             * if socket type is SOCK_STREAM,
-             * I'm not sure whether address is available or not.
-             * So, I'll use 'sock_id' at this point.
-             */
-            if (mme_enb_sock_type(sock) == SOCK_STREAM)
-                enb = mme_enb_find_by_sock(sock);
-            else
-                enb = mme_enb_find_by_addr(addr);
-#endif
             CORE_FREE(addr);
 
             if (enb)

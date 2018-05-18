@@ -5,8 +5,6 @@
 #include "core_time.h"
 #include "core_list.h"
 
-#define NO_FD_LOCK              1  /* New experimental method */
-
 #if HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif

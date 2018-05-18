@@ -163,11 +163,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
             event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
             event_set_param1(&e, (c_uintptr_t)sock);
             event_set_param2(&e, (c_uintptr_t)addr);
-#ifdef NO_FD_LOCK
             sock_delete(sock);
-#else
-#error do not use lock in socket fd
-#endif
             if (mme_event_send(&e) != CORE_OK)
             {
                 d_error("Event MME_EVT_S1AP_LO_CONNREFUSED failed");

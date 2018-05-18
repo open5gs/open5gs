@@ -1642,12 +1642,6 @@ status_t mme_enb_remove(mme_enb_t *enb)
 
     enb_ue_remove_in_enb(enb);
 
-#ifdef NO_FD_LOCK
-#else
-#error do not use lock in socket fd
-    if (enb->sock_type == SOCK_STREAM)
-        s1ap_delete(enb->sock);
-#endif
     CORE_FREE(enb->addr);
 
     index_free(&mme_enb_pool, enb);
@@ -1663,12 +1657,10 @@ status_t mme_enb_remove_all()
     for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi))
     {
         enb = mme_enb_this(hi);
-#ifdef NO_FD_LOCK
+
         if (enb->sock_type == SOCK_STREAM)
             s1ap_delete(enb->sock);
-#else
-#error do not use lock in socket fd
-#endif
+
         mme_enb_remove(enb);
     }
 
