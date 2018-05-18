@@ -1,5 +1,6 @@
 #define TRACE_MODULE _mme_sm
 #include "core_debug.h"
+#include "core_lib.h"
 
 #include "s1ap/s1ap_message.h"
 #include "nas/nas_message.h"
@@ -160,6 +161,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             sock_id sock = 0;
             c_sockaddr_t *addr = NULL;
             pkbuf_t *pkbuf = NULL;
+            c_uint16_t inbound_streams = 0;
 
             sock = (sock_id)event_get_param1(e);
             d_assert(sock, break, "Null param");
@@ -170,12 +172,16 @@ void mme_state_operational(fsm_t *s, event_t *e)
             pkbuf = (pkbuf_t *)event_get_param3(e);
             d_assert(pkbuf, break, "Null param");
 
+            inbound_streams = (c_uint16_t)event_get_param4(e);
             enb = mme_enb_find_by_addr(addr);
             CORE_FREE(addr);
 
             d_assert(enb, pkbuf_free(pkbuf); break, "No eNB context");
             d_assert(FSM_STATE(&enb->sm), pkbuf_free(pkbuf); break,
                     "No S1AP State Machine");
+
+            if (inbound_streams)
+                inbound_streams = c_min(inbound_streams, enb->inbound_streams);
 
             rv = s1ap_decode_pdu(&message, pkbuf);
             if (rv != CORE_OK)

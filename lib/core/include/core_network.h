@@ -106,6 +106,13 @@ typedef struct ipsubnet_t {
     c_uint32_t mask[4];
 } ipsubnet_t;
 
+typedef struct _sctp_info_t {
+    c_uint32_t ppid;
+    c_uint16_t stream_no;
+    c_uint16_t inbound_streams;
+    c_uint16_t outbound_streams;
+} sctp_info_t;
+
 /*
  * Init/Final
  */
@@ -207,7 +214,7 @@ CORE_DECLARE(int) core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
 #define CORE_SCTP_EAGAIN            -2
 #define CORE_SCTP_REMOTE_CLOSED     -3
 CORE_DECLARE(int) core_sctp_recvmsg(sock_id id, void *msg, size_t len,
-        c_sockaddr_t *from, c_uint32_t *ppid, c_uint16_t *stream_no);
+        c_sockaddr_t *from, sctp_info_t *sinfo);
 /*
  * TUN Driver
  */

@@ -71,7 +71,7 @@ status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
 {
     int size;
 
-    size = core_sctp_recvmsg(id, pkbuf->payload, MAX_SDU_LEN, NULL, NULL, NULL);
+    size = core_sctp_recvmsg(id, pkbuf->payload, MAX_SDU_LEN, NULL, NULL);
     if (size <= 0)
     {
         d_error("s1ap_recv() failed");
@@ -128,6 +128,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
     int size;
     event_t e;
     c_sockaddr_t *addr = NULL;
+    sctp_info_t sinfo;
 
     d_assert(sock, return -1, "Null param");
 
@@ -144,8 +145,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
         return -1;
     }
 
-    size = core_sctp_recvmsg(sock, pkbuf->payload, pkbuf->len,
-            NULL, NULL, NULL);
+    size = core_sctp_recvmsg(sock, pkbuf->payload, pkbuf->len, NULL, &sinfo);
     if (size <= 0)
     {
         pkbuf_free(pkbuf);
@@ -199,6 +199,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
     event_set_param1(&e, (c_uintptr_t)sock);
     event_set_param2(&e, (c_uintptr_t)addr);
     event_set_param3(&e, (c_uintptr_t)pkbuf);
+    event_set_param4(&e, (c_uintptr_t)sinfo.inbound_streams);
     rv = mme_event_send(&e);
     if (rv != CORE_OK)
     {

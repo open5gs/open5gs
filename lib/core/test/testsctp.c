@@ -56,6 +56,7 @@ static void *THREAD_FUNC test2_main(thread_id id, void *data)
     char str[STRLEN];
     ssize_t size;
     c_uint32_t ppid;
+    sctp_info_t sinfo;
     c_sockaddr_t *addr;
     c_sockaddr_t from;
 
@@ -66,9 +67,9 @@ static void *THREAD_FUNC test2_main(thread_id id, void *data)
     rv = core_freeaddrinfo(addr);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    size = core_sctp_recvmsg(sctp, str, STRLEN, &from, &ppid, NULL);
+    size = core_sctp_recvmsg(sctp, str, STRLEN, &from, &sinfo);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, PPID, ppid);
+    ABTS_INT_EQUAL(tc, PPID, sinfo.ppid);
 
     rv = sock_delete(sctp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -149,7 +150,7 @@ static void sctp_test3(abts_case *tc, void *data)
     c_sockaddr_t from, *addr;
     char str[STRLEN];
     char buf[CORE_ADDRSTRLEN];
-    c_uint32_t ppid;
+    sctp_info_t sinfo;
 
     rv = core_getaddrinfo(&addr, AF_INET, NULL, PORT, AI_PASSIVE);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -161,9 +162,9 @@ static void sctp_test3(abts_case *tc, void *data)
     rv = thread_create(&test3_thread, NULL, test3_main, tc);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    size = core_sctp_recvmsg(sctp, str, STRLEN, &from, &ppid, NULL);
+    size = core_sctp_recvmsg(sctp, str, STRLEN, &from, &sinfo);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, PPID, ppid);
+    ABTS_INT_EQUAL(tc, PPID, sinfo.ppid);
     
     thread_join(&rv, test3_thread);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), rv);
@@ -181,7 +182,7 @@ static void *THREAD_FUNC test4_main(thread_id id, void *data)
     c_sockaddr_t *addr;
     char str[STRLEN];
     ssize_t size;
-    c_uint32_t ppid;
+    sctp_info_t sinfo;
 
     rv = core_getaddrinfo(&addr, AF_UNSPEC, NULL, PORT, 0);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -193,9 +194,9 @@ static void *THREAD_FUNC test4_main(thread_id id, void *data)
     size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), NULL, PPID, 0);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
-    size = core_sctp_recvmsg(sctp, str, STRLEN, NULL, &ppid, NULL);
+    size = core_sctp_recvmsg(sctp, str, STRLEN, NULL, &sinfo);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
-    ABTS_INT_EQUAL(tc, PPID, ppid);
+    ABTS_INT_EQUAL(tc, PPID, sinfo.ppid);
 
     rv = sock_delete(sctp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -211,7 +212,7 @@ static void sctp_test4(abts_case *tc, void *data)
     ssize_t size;
     c_sockaddr_t from, *addr;
     char str[STRLEN];
-    c_uint32_t ppid;
+    sctp_info_t sinfo;
     char buf[CORE_ADDRSTRLEN];
 
     rv = core_getaddrinfo(&addr, AF_INET6, NULL, PORT, AI_PASSIVE);
@@ -224,10 +225,10 @@ static void sctp_test4(abts_case *tc, void *data)
     rv = thread_create(&test4_thread, NULL, test4_main, tc);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    size = core_sctp_recvmsg(sctp, str, STRLEN, &from, &ppid, NULL);
+    size = core_sctp_recvmsg(sctp, str, STRLEN, &from, &sinfo);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
     ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(&from, buf));
-    ABTS_INT_EQUAL(tc, PPID, ppid);
+    ABTS_INT_EQUAL(tc, PPID, sinfo.ppid);
 
     size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), &from, PPID, 0);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
@@ -247,7 +248,7 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
     sock_id sctp;
     char str[STRLEN];
     c_sockaddr_t from, *remote_addr, *addr;
-    c_uint32_t ppid;
+    sctp_info_t sinfo;
     ssize_t size;
     char buf[CORE_ADDRSTRLEN];
 
@@ -271,10 +272,10 @@ static void *THREAD_FUNC test5_main(thread_id id, void *data)
             remote_addr, PPID, 0);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
-    size = core_sctp_recvmsg(sctp, str, STRLEN, &from, &ppid, NULL);
+    size = core_sctp_recvmsg(sctp, str, STRLEN, &from, &sinfo);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
     ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(&from, buf));
-    ABTS_INT_EQUAL(tc, PPID, ppid);
+    ABTS_INT_EQUAL(tc, PPID, sinfo.ppid);
 
     rv = sock_delete(sctp);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
@@ -291,7 +292,7 @@ static void sctp_test5(abts_case *tc, void *data)
     c_sockaddr_t from, *addr;
     socklen_t addrlen;
     char str[STRLEN];
-    c_uint32_t ppid;
+    sctp_info_t sinfo;
     char buf[CORE_ADDRSTRLEN];
 
     rv = core_getaddrinfo(&addr, AF_INET6, NULL, PORT, AI_PASSIVE);
@@ -304,12 +305,13 @@ static void sctp_test5(abts_case *tc, void *data)
     rv = thread_create(&test5_thread, NULL, test5_main, tc);
     ABTS_INT_EQUAL(tc, CORE_OK, rv);
 
-    size = core_sctp_recvmsg(sctp, str, STRLEN, &from, &ppid, NULL);
+    size = core_sctp_recvmsg(sctp, str, STRLEN, &from, &sinfo);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
     ABTS_STR_EQUAL(tc, "::1", CORE_ADDR(&from, buf));
-    ABTS_INT_EQUAL(tc, PPID, ppid);
+    ABTS_INT_EQUAL(tc, PPID, sinfo.ppid);
 
-    size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), &from, ppid, 0);
+    size = core_sctp_sendmsg(sctp, DATASTR, strlen(DATASTR), &from,
+            sinfo.ppid, 0);
     ABTS_INT_EQUAL(tc, strlen(DATASTR), size);
 
     thread_join(&rv, test5_thread);

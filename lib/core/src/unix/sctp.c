@@ -202,14 +202,14 @@ int core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
 }
 
 int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
-        c_sockaddr_t *from, c_uint32_t *ppid, c_uint16_t *stream_no)
+        c_sockaddr_t *from, sctp_info_t *sinfo)
 {
     sock_t *sock = (sock_t *)id;
     int size;
     socklen_t addrlen = sizeof(struct sockaddr_storage);
 
     int flags = 0;
-    struct sctp_sndrcvinfo sinfo;
+    struct sctp_sndrcvinfo sndrcvinfo;
 
     d_assert(id, return -1,);
 
@@ -217,7 +217,7 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
     {
         size = sctp_recvmsg(sock->fd, msg, len,
                     from ? &from->sa : NULL,  from ? &addrlen : NULL,
-                    &sinfo, &flags);
+                    &sndrcvinfo, &flags);
         if (size < 0)
         {
             if (errno != EAGAIN)
@@ -251,7 +251,18 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
                     }
 
                     if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
-                        d_trace(3, "SCTP_COMM_UP\n");
+                    {
+                        d_trace(3, "SCTP_COMM_UP : inboud:%d, outbound = %d\n",
+                                not->sn_assoc_change.sac_inbound_streams,
+                                not->sn_assoc_change.sac_outbound_streams);
+                    }
+                    if (sinfo)
+                    {
+                        sinfo->inbound_streams = 
+                            not->sn_assoc_change.sac_inbound_streams;
+                        sinfo->outbound_streams = 
+                            not->sn_assoc_change.sac_outbound_streams;
+                    }
                     break;
                 case SCTP_SEND_FAILED :
                     d_error("SCTP_SEND_FAILED"
@@ -281,14 +292,10 @@ int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
         
     } while(1);
 
-    if (ppid)
+    if (sinfo)
     {
-        *ppid = ntohl(sinfo.sinfo_ppid);
-    }
-    
-    if (stream_no)
-    {
-        *stream_no = sinfo.sinfo_stream;
+        sinfo->ppid = ntohl(sndrcvinfo.sinfo_ppid);
+        sinfo->stream_no = sndrcvinfo.sinfo_stream;
     }
 
     return size;
