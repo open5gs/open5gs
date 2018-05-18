@@ -106,6 +106,7 @@ static int s1ap_accept_handler(sock_id id, void *data)
         event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)new);
         event_set_param2(&e, (c_uintptr_t)addr);
+        event_set_param3(&e, (c_uintptr_t)0);
         if (mme_event_send(&e) != CORE_OK)
         {
             CORE_FREE(addr);

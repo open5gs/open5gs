@@ -95,18 +95,15 @@ void mme_state_operational(fsm_t *s, event_t *e)
             enb = mme_enb_find_by_addr(addr);
             if (!enb)
             {
+                mme_enb_t *enb = NULL;
+                c_uint16_t outbound_streams = 0;
+
 #if USE_USRSCTP != 1
                 status_t rv;
-                mme_enb_t *enb = NULL;
 
                 rv = sock_register(sock, s1ap_recv_handler, NULL);
                 d_assert(rv == CORE_OK, break, "register s1ap_recv_cb failed");
-
-                enb = mme_enb_add(sock, addr);
-                d_assert(enb, break, "Null param");
-#else
-                c_uint16_t outbound_streams = 0;
-                mme_enb_t *enb = NULL;
+#endif
 
                 enb = mme_enb_add(sock, addr);
                 d_assert(enb, break, "Null param");
@@ -115,7 +112,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 if (outbound_streams)
                     enb->outbound_streams =
                         c_min(outbound_streams, enb->outbound_streams);
-#endif
             }
             else
             {
