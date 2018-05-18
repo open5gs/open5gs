@@ -149,7 +149,7 @@ typedef struct _mme_enb_t {
     sock_id         sock;       /* eNB S1AP Socket */
     c_sockaddr_t    *addr;      /* eNB S1AP Address */
 
-    c_uint16_t      inbound_streams; /* SCTP Max number of inbound streams */
+    c_uint16_t      outbound_streams; /* SCTP Max number of outbound streams */
 
     c_uint8_t       num_of_supported_ta_list;
     tai_t           supported_ta_list[MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];

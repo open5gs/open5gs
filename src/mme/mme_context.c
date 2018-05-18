@@ -1610,7 +1610,7 @@ mme_enb_t* mme_enb_add(sock_id sock, c_sockaddr_t *addr)
     enb->addr = addr;
     enb->sock_type = mme_enb_sock_type(enb->sock);
 
-    enb->inbound_streams = context_self()->parameter.sctp_streams;
+    enb->outbound_streams = context_self()->parameter.sctp_streams;
 
     list_init(&enb->enb_ue_list);
 
@@ -1941,7 +1941,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
      *   0 : Non UE signalling
      *   1-29 : UE specific association 
      */
-    mme_ue->ostream_id = NEXT_ID(self.ostream_id, 1, enb->inbound_streams-1);
+    mme_ue->ostream_id = NEXT_ID(self.ostream_id, 1, enb->outbound_streams-1);
 
     /* Create New GUTI */
     mme_ue_new_guti(mme_ue);

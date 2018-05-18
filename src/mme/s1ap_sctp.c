@@ -195,7 +195,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
     event_set_param1(&e, (c_uintptr_t)sock);
     event_set_param2(&e, (c_uintptr_t)addr);
     event_set_param3(&e, (c_uintptr_t)pkbuf);
-    event_set_param4(&e, (c_uintptr_t)sinfo.inbound_streams);
+    event_set_param4(&e, (c_uintptr_t)sinfo.outbound_streams);
     rv = mme_event_send(&e);
     if (rv != CORE_OK)
     {

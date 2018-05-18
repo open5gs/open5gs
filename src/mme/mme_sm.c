@@ -105,16 +105,16 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 enb = mme_enb_add(sock, addr);
                 d_assert(enb, break, "Null param");
 #else
-                c_uint16_t inbound_streams = 0;
+                c_uint16_t outbound_streams = 0;
                 mme_enb_t *enb = NULL;
 
                 enb = mme_enb_add(sock, addr);
                 d_assert(enb, break, "Null param");
 
-                inbound_streams = (c_uint16_t)event_get_param3(e);
-                if (inbound_streams)
-                    enb->inbound_streams =
-                        c_min(inbound_streams, enb->inbound_streams);
+                outbound_streams = (c_uint16_t)event_get_param3(e);
+                if (outbound_streams)
+                    enb->outbound_streams =
+                        c_min(outbound_streams, enb->outbound_streams);
 #endif
             }
             else
@@ -161,7 +161,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             sock_id sock = 0;
             c_sockaddr_t *addr = NULL;
             pkbuf_t *pkbuf = NULL;
-            c_uint16_t inbound_streams = 0;
+            c_uint16_t outbound_streams = 0;
 
             sock = (sock_id)event_get_param1(e);
             d_assert(sock, break, "Null param");
@@ -172,7 +172,7 @@ void mme_state_operational(fsm_t *s, event_t *e)
             pkbuf = (pkbuf_t *)event_get_param3(e);
             d_assert(pkbuf, break, "Null param");
 
-            inbound_streams = (c_uint16_t)event_get_param4(e);
+            outbound_streams = (c_uint16_t)event_get_param4(e);
             enb = mme_enb_find_by_addr(addr);
             CORE_FREE(addr);
 
@@ -180,9 +180,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
             d_assert(FSM_STATE(&enb->sm), pkbuf_free(pkbuf); break,
                     "No S1AP State Machine");
 
-            if (inbound_streams)
-                enb->inbound_streams =
-                    c_min(inbound_streams, enb->inbound_streams);
+            if (outbound_streams)
+                enb->outbound_streams =
+                    c_min(outbound_streams, enb->outbound_streams);
 
             rv = s1ap_decode_pdu(&message, pkbuf);
             if (rv != CORE_OK)
