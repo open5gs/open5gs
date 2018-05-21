@@ -391,7 +391,7 @@ status_t nas_send_tau_accept(
     status_t rv;
     pkbuf_t *emmbuf = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    d_assert(mme_ue, return CORE_ERROR,);
 
     d_trace(3, "[EMM] Tracking area update accept\n");
     d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);

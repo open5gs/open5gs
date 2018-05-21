@@ -333,6 +333,10 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     d_assert(mme_ue, return CORE_ERROR,);
 
     memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+        NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_TRACKING_AREA_UPDATE_ACCEPT;
 
