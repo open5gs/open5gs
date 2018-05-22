@@ -114,9 +114,11 @@ status_t nas_security_decode(mme_ue_t *mme_ue,
 
     if (security_header_type.service_request)
     {
+#define SHORT_MAC_SIZE 2
         nas_ksi_and_sequence_number_t *ksi_and_sequence_number =
             pkbuf->payload + 1;
         c_uint16_t original_pkbuf_len = pkbuf->len;
+        c_uint8_t original_mac[SHORT_MAC_SIZE];
         c_uint8_t estimated_sequence_number;
         c_uint8_t sequence_number_high_3bit;
         c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
@@ -143,10 +145,14 @@ status_t nas_security_decode(mme_ue_t *mme_ue,
         mme_ue->ul_count.sqn = estimated_sequence_number;
 
         pkbuf->len = 2;
+        memcpy(original_mac, pkbuf->payload + 2, SHORT_MAC_SIZE);
+
         nas_mac_calculate(mme_ue->selected_int_algorithm,
             mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
             NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
+
         pkbuf->len = original_pkbuf_len;
+        memcpy(pkbuf->payload + 2, original_mac, SHORT_MAC_SIZE);
 
         if (memcmp(mac + 2, pkbuf->payload + 2, 2) != 0)
         {
@@ -204,11 +210,13 @@ status_t nas_security_decode(mme_ue_t *mme_ue,
         {
             c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
             c_uint32_t mac32;
+            c_uint32_t original_mac = h->message_authentication_code;
 
             /* calculate NAS MAC(message authentication code) */
             nas_mac_calculate(mme_ue->selected_int_algorithm,
                 mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER, 
                 NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
+            h->message_authentication_code = original_mac;
 
             memcpy(&mac32, mac, NAS_SECURITY_MAC_SIZE);
             if (h->message_authentication_code != mac32)
