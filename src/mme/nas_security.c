@@ -65,11 +65,6 @@ status_t nas_security_encode(
         d_assert(nas_plain_encode(&new, message) == CORE_OK, 
                 return CORE_ERROR, "NAS encoding error");
 
-        /* encode sequence number */
-        d_assert(CORE_OK == pkbuf_header(new, 1),
-            pkbuf_free(new);return CORE_ERROR, "pkbuf_header error");
-        *(c_uint8_t *)(new->payload) = h.sequence_number;
-
         if (ciphered)
         {
             /* encrypt NAS message */
@@ -77,6 +72,11 @@ status_t nas_security_encode(
                 mme_ue->knas_enc, mme_ue->dl_count, NAS_SECURITY_BEARER,
                 NAS_SECURITY_DOWNLINK_DIRECTION, new);
         }
+
+        /* encode sequence number */
+        d_assert(CORE_OK == pkbuf_header(new, 1),
+            pkbuf_free(new);return CORE_ERROR, "pkbuf_header error");
+        *(c_uint8_t *)(new->payload) = h.sequence_number;
 
         if (integrity_protected)
         {
@@ -199,13 +199,6 @@ status_t nas_security_decode(mme_ue_t *mme_ue,
             mme_ue->ul_count.overflow++;
         mme_ue->ul_count.sqn = h->sequence_number;
 
-        if (security_header_type.ciphered)
-        {
-            /* decrypt NAS message */
-            nas_encrypt(mme_ue->selected_enc_algorithm,
-                mme_ue->knas_enc, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
-                NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
-        }
         if (security_header_type.integrity_protected)
         {
             c_uint8_t mac[NAS_SECURITY_MAC_SIZE];
@@ -230,6 +223,14 @@ status_t nas_security_decode(mme_ue_t *mme_ue,
         /* NAS EMM Header or ESM Header */
         d_assert(CORE_OK == pkbuf_header(pkbuf, -1),
             return CORE_ERROR, "pkbuf_header error");
+
+        if (security_header_type.ciphered)
+        {
+            /* decrypt NAS message */
+            nas_encrypt(mme_ue->selected_enc_algorithm,
+                mme_ue->knas_enc, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
+                NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
+        }
     }
 
     return CORE_OK;
