@@ -340,7 +340,7 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_TRACKING_AREA_UPDATE_ACCEPT;
 
-    tau_accept->eps_update_result.result = NAS_EPS_UPDATE_RESULT_TA_UPDATED;
+    tau_accept->eps_update_result.result = mme_ue->nas_eps.update.update_type;
 
     /* Set T3412 */
     tau_accept->presencemask |= 
