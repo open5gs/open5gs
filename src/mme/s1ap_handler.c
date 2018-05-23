@@ -974,7 +974,16 @@ void s1ap_handle_ue_context_release_complete(
 
     d_assert(MME_UE_S1AP_ID, return,);
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
-    d_assert(enb_ue, return, "No UE Context[%d]", *MME_UE_S1AP_ID);
+    if (!enb_ue)
+    {
+        d_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]", *MME_UE_S1AP_ID);
+        rv = s1ap_send_error_indication(enb, 
+                MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        d_assert(rv == CORE_OK, return, "s1ap send error");
+        return;
+    }
     mme_ue = enb_ue->mme_ue;
 
     d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
