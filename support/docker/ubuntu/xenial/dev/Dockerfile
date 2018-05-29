@@ -22,6 +22,8 @@ RUN apt-get update && \
         net-tools && \
     apt-get clean
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wireshark
+
 COPY setup.sh /root
 
 ARG username=acetcom
