@@ -2,7 +2,7 @@ version: '3'
 
 services:
   test:
-    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-build
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-build
     depends_on:
       - mongodb
       - build

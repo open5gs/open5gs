@@ -3,7 +3,7 @@ version: '3'
 services:
   run:
     network_mode: "host"
-    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-build
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-build
     depends_on:
       - mongodb
       - build

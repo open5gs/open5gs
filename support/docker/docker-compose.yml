@@ -28,7 +28,7 @@ services:
       args:
         dist: ${DIST-ubuntu}
         tag: ${TAG-latest}
-    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-base
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-base
     command: /bin/bash -c "echo 'base' services"
 
   build:
@@ -38,7 +38,7 @@ services:
         dist: ${DIST-ubuntu}
         tag: ${TAG-latest}
         username: ${USER}
-    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-build
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-build
     depends_on:
       - base
     command: /bin/bash -c "echo 'build' services"
@@ -50,7 +50,7 @@ services:
         dist: ${DIST-ubuntu}
         tag: ${TAG-latest}
         username: ${USER}
-    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-dev
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-dev
     depends_on:
       - mongodb
       - base
