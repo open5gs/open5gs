@@ -213,10 +213,6 @@ CORE_DECLARE(int) core_sctp_recvmsg(sock_id id, void *msg, size_t len,
         c_sockaddr_t *from, sctp_info_t *sinfo, int *msg_flags);
 CORE_DECLARE(int) core_sctp_recvdata(sock_id id, void *msg, size_t len,
         c_sockaddr_t *from, sctp_info_t *sinfo);
-#define CORE_SCTP_EAGAIN            -2
-#define CORE_SCTP_REMOTE_CLOSED     -3
-CORE_DECLARE(int) core_sctp_recvmsg2(sock_id id, void *msg, size_t len,
-        c_sockaddr_t *from, sctp_info_t *sinfo);
 /*
  * TUN Driver
  */

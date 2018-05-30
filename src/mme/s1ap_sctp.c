@@ -3,6 +3,10 @@
 #include "core_debug.h"
 #include "core_thread.h"
 
+#if HAVE_NETINET_SCTP_H
+#include <netinet/sctp.h>
+#endif
+
 #include "mme_event.h"
 
 #include "s1ap_path.h"
@@ -124,12 +128,12 @@ static int s1ap_accept_handler(sock_id id, void *data)
 
 int s1ap_recv_handler(sock_id sock, void *data)
 {
-    status_t rv;
     pkbuf_t *pkbuf;
     int size;
     event_t e;
     c_sockaddr_t *addr = NULL;
     sctp_info_t sinfo;
+    int flags = 0;
 
     d_assert(sock, return -1, "Null param");
 
@@ -146,63 +150,141 @@ int s1ap_recv_handler(sock_id sock, void *data)
         return -1;
     }
 
-    size = core_sctp_recvmsg2(sock, pkbuf->payload, pkbuf->len, NULL, &sinfo);
-    if (size <= 0)
+    size = core_sctp_recvmsg(
+            sock, pkbuf->payload, pkbuf->len, NULL, &sinfo, &flags);
+    if (size < 0)
     {
-        pkbuf_free(pkbuf);
+        d_error("core_sctp_recvmsg(%d) failed(%d:%s)",
+                size, errno, strerror(errno));
+        return size;
+    }
 
-        if (size == CORE_SCTP_EAGAIN)
+    if (flags & MSG_NOTIFICATION)
+    {
+        union sctp_notification *not =
+            (union sctp_notification *)pkbuf->payload;
+
+        switch(not->sn_header.sn_type) 
         {
-            return 0;
+            case SCTP_ASSOC_CHANGE :
+                d_trace(3, "SCTP_ASSOC_CHANGE"
+                        "(type:0x%x, flags:0x%x, state:0x%x)\n", 
+                        not->sn_assoc_change.sac_type,
+                        not->sn_assoc_change.sac_flags,
+                        not->sn_assoc_change.sac_state);
+
+                if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
+                {
+                    d_trace(3, "SCTP_COMM_UP : inbound:%d, outbound = %d\n",
+                            not->sn_assoc_change.sac_inbound_streams,
+                            not->sn_assoc_change.sac_outbound_streams);
+
+                    addr = core_calloc(1, sizeof(c_sockaddr_t));
+                    d_assert(addr, pkbuf_free(pkbuf); return 0,);
+                    memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
+
+                    event_set(&e, MME_EVT_S1AP_LO_SCTP_COMM_UP);
+                    event_set_param1(&e, (c_uintptr_t)sock);
+                    event_set_param2(&e, (c_uintptr_t)addr);
+                    event_set_param3(&e, 
+                        (c_uintptr_t)not->sn_assoc_change.sac_inbound_streams);
+                    event_set_param4(&e, 
+                        (c_uintptr_t)not->sn_assoc_change.sac_outbound_streams);
+
+                    if (mme_event_send(&e) != CORE_OK)
+                    {
+                        d_error("Event MME_EVT_S1AP_LO_CONNREFUSED failed");
+                        CORE_FREE(addr);
+                    }
+
+                    pkbuf_free(pkbuf);
+                    return 0;
+                }
+
+                if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP)
+                    d_trace(3, "SCTP_SHUTDOWN_COMP\n");
+                if (not->sn_assoc_change.sac_state == SCTP_COMM_LOST)
+                    d_trace(3, "SCTP_COMM_LOST\n");
+
+                if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP ||
+                    not->sn_assoc_change.sac_state == SCTP_COMM_LOST)
+                {
+                    addr = core_calloc(1, sizeof(c_sockaddr_t));
+                    d_assert(addr, pkbuf_free(pkbuf); return 0,);
+                    memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
+
+                    event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
+                    event_set_param1(&e, (c_uintptr_t)sock);
+                    event_set_param2(&e, (c_uintptr_t)addr);
+
+                    if (mme_event_send(&e) != CORE_OK)
+                    {
+                        d_error("Event MME_EVT_S1AP_LO_CONNREFUSED failed");
+                        CORE_FREE(addr);
+                    }
+
+                    sock_delete(sock);
+                    pkbuf_free(pkbuf);
+                    return 0;
+                }
+
+                break;
+            case SCTP_SEND_FAILED :
+                d_error("SCTP_SEND_FAILED"
+                        "(type:0x%x, flags:0x%x, error:0x%x)\n", 
+                        not->sn_send_failed.ssf_type,
+                        not->sn_send_failed.ssf_flags,
+                        not->sn_send_failed.ssf_error);
+                break;
+            case SCTP_SHUTDOWN_EVENT :
+                d_trace(3, "SCTP_SHUTDOWN_EVENT\n");
+
+                addr = core_calloc(1, sizeof(c_sockaddr_t));
+                d_assert(addr, pkbuf_free(pkbuf); return 0,);
+                memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
+
+                event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
+                event_set_param1(&e, (c_uintptr_t)sock);
+                event_set_param2(&e, (c_uintptr_t)addr);
+
+                if (mme_event_send(&e) != CORE_OK)
+                {
+                    d_error("Event MME_EVT_S1AP_LO_CONNREFUSED failed");
+                    CORE_FREE(addr);
+                }
+
+                sock_delete(sock);
+                pkbuf_free(pkbuf);
+                return 0;
+            default :
+                d_error("Discarding event with unknown flags:0x%x type:0x%x",
+                        flags, not->sn_header.sn_type);
+                break;
         }
-        if (size == CORE_SCTP_REMOTE_CLOSED)
+    }
+    else if (flags & MSG_EOR)
+    {
+        addr = core_calloc(1, sizeof(c_sockaddr_t));
+        d_assert(addr, pkbuf_free(pkbuf); return 0,);
+        memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
+
+        event_set(&e, MME_EVT_S1AP_MESSAGE);
+        event_set_param1(&e, (c_uintptr_t)sock);
+        event_set_param2(&e, (c_uintptr_t)addr);
+        event_set_param3(&e, (c_uintptr_t)pkbuf);
+        if (mme_event_send(&e) != CORE_OK)
         {
-            addr = core_calloc(1, sizeof(c_sockaddr_t));
-            d_assert(addr, return -1,);
-            memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
-
-            event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
-            event_set_param1(&e, (c_uintptr_t)sock);
-            event_set_param2(&e, (c_uintptr_t)addr);
-            sock_delete(sock);
-            if (mme_event_send(&e) != CORE_OK)
-            {
-                d_error("Event MME_EVT_S1AP_LO_CONNREFUSED failed");
-                CORE_FREE(addr);
-            }
-
-            return 0;
-        }
-
-        if (errno != EAGAIN)
-        {
-            d_error("core_sctp_recvmsg(%d) failed(%d:%s)",
-                    size, errno, strerror(errno));
+            pkbuf_free(pkbuf);
+            CORE_FREE(addr);
         }
 
         return 0;
     }
-
-    pkbuf->len = size;
-
-    d_trace(50, "[S1AP] RECV : ");
-    d_trace_hex(50, pkbuf->payload, pkbuf->len);
-
-    addr = core_calloc(1, sizeof(c_sockaddr_t));
-    d_assert(addr, return -1,);
-    memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
-
-    event_set(&e, MME_EVT_S1AP_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)sock);
-    event_set_param2(&e, (c_uintptr_t)addr);
-    event_set_param3(&e, (c_uintptr_t)pkbuf);
-    event_set_param4(&e, (c_uintptr_t)sinfo.outbound_streams);
-    rv = mme_event_send(&e);
-    if (rv != CORE_OK)
+    else
     {
-        pkbuf_free(pkbuf);
-        CORE_FREE(addr);
+        d_assert(0, pkbuf_free(pkbuf); return 0, "Unknown flags : 0x%x", flags);
     }
-    
+
+    pkbuf_free(pkbuf);
     return 0;
 }

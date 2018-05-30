@@ -440,6 +440,8 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                             event_set_param1(&e, (c_uintptr_t)sock);
                             event_set_param2(&e, (c_uintptr_t)addr);
                             event_set_param3(&e, (c_uintptr_t)
+                                not->sn_assoc_change.sac_inbound_streams);
+                            event_set_param4(&e, (c_uintptr_t)
                                 not->sn_assoc_change.sac_outbound_streams);
                             if (mme_event_send(&e) != CORE_OK)
                             {
@@ -510,7 +512,6 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
             event_set_param1(&e, (c_uintptr_t)sock);
             event_set_param2(&e, (c_uintptr_t)addr);
             event_set_param3(&e, (c_uintptr_t)pkbuf);
-            event_set_param4(&e, (c_uintptr_t)0);
             if (mme_event_send(&e) != CORE_OK)
             {
                 pkbuf_free(pkbuf);
