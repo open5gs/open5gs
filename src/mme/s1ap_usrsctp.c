@@ -436,7 +436,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                                 usrsctp_remote_addr(&store);
                             d_assert(addr, return 1,);
 
-                            event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
+                            event_set(&e, MME_EVT_S1AP_LO_SCTP_COMM_UP);
                             event_set_param1(&e, (c_uintptr_t)sock);
                             event_set_param2(&e, (c_uintptr_t)addr);
                             event_set_param3(&e, (c_uintptr_t)
