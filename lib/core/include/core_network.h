@@ -209,9 +209,13 @@ CORE_DECLARE(status_t) sctp_client(sock_id *new,
 CORE_DECLARE(status_t) sctp_connect(sock_id id, c_sockaddr_t *sa_list);
 CORE_DECLARE(int) core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
         c_sockaddr_t *to, c_uint32_t ppid, c_uint16_t stream_no);
+CORE_DECLARE(int) core_sctp_recvmsg(sock_id id, void *msg, size_t len,
+        c_sockaddr_t *from, sctp_info_t *sinfo, int *msg_flags);
+CORE_DECLARE(int) core_sctp_recvdata(sock_id id, void *msg, size_t len,
+        c_sockaddr_t *from, sctp_info_t *sinfo);
 #define CORE_SCTP_EAGAIN            -2
 #define CORE_SCTP_REMOTE_CLOSED     -3
-CORE_DECLARE(int) core_sctp_recvmsg(sock_id id, void *msg, size_t len,
+CORE_DECLARE(int) core_sctp_recvmsg2(sock_id id, void *msg, size_t len,
         c_sockaddr_t *from, sctp_info_t *sinfo);
 /*
  * TUN Driver

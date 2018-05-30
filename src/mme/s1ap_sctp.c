@@ -71,7 +71,7 @@ status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
 {
     int size;
 
-    size = core_sctp_recvmsg(id, pkbuf->payload, MAX_SDU_LEN, NULL, NULL);
+    size = core_sctp_recvdata(id, pkbuf->payload, MAX_SDU_LEN, NULL, NULL);
     if (size <= 0)
     {
         d_error("s1ap_recv() failed");
@@ -146,7 +146,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
         return -1;
     }
 
-    size = core_sctp_recvmsg(sock, pkbuf->payload, pkbuf->len, NULL, &sinfo);
+    size = core_sctp_recvmsg2(sock, pkbuf->payload, pkbuf->len, NULL, &sinfo);
     if (size <= 0)
     {
         pkbuf_free(pkbuf);

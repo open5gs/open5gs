@@ -22,6 +22,8 @@ char* mme_event_get_name(event_t *e)
             return "MME_EVT_S1AP_DELAYED_SEND";
         case MME_EVT_S1AP_LO_ACCEPT:
             return "MME_EVT_S1AP_LO_ACCEPT";
+        case MME_EVT_S1AP_LO_SCTP_COMM_UP:
+            return "MME_EVT_S1AP_LO_SCTP_COMM_UP";
         case MME_EVT_S1AP_LO_CONNREFUSED:
             return "MME_EVT_S1AP_LO_CONNREFUSED";
         case MME_EVT_S1AP_S1_HOLDING_TIMER:

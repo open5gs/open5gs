@@ -202,6 +202,76 @@ int core_sctp_sendmsg(sock_id id, const void *msg, size_t len,
 }
 
 int core_sctp_recvmsg(sock_id id, void *msg, size_t len,
+        c_sockaddr_t *from, sctp_info_t *sinfo, int *msg_flags)
+{
+    sock_t *sock = (sock_t *)id;
+    int size;
+    socklen_t addrlen = sizeof(struct sockaddr_storage);
+
+    int flags = 0;
+    struct sctp_sndrcvinfo sndrcvinfo;
+
+    d_assert(id, return -1,);
+
+    size = sctp_recvmsg(sock->fd, msg, len,
+                from ? &from->sa : NULL,  from ? &addrlen : NULL,
+                &sndrcvinfo, &flags);
+    if (size < 0)
+    {
+        d_error("sctp_recvmsg(%d) failed(%d:%s)",
+                size, errno, strerror(errno));
+        return size;
+    }
+
+    if (msg_flags)
+    {
+        *msg_flags = flags;
+    }
+
+    if (sinfo)
+    {
+        sinfo->ppid = ntohl(sndrcvinfo.sinfo_ppid);
+        sinfo->stream_no = sndrcvinfo.sinfo_stream;
+    }
+
+    return size;
+}
+
+int core_sctp_recvdata(sock_id id, void *msg, size_t len,
+        c_sockaddr_t *from, sctp_info_t *sinfo)
+{
+    int size;
+    int flags = 0;
+
+    do
+    {
+        size = core_sctp_recvmsg(id, msg, len, from, sinfo, &flags);
+        if (size < 0)
+        {
+            d_error("core_sctp_recvdata(%d) failed(%d:%s)",
+                    size, errno, strerror(errno));
+            return size;
+        }
+
+        if (flags & MSG_NOTIFICATION)
+        {
+            /* Nothing */
+        }
+        else if (flags & MSG_EOR)
+        {
+            break;
+        }
+        else
+        {
+            d_assert(0, return -1,);
+        }
+
+    } while(1);
+
+    return size;
+}
+
+int core_sctp_recvmsg2(sock_id id, void *msg, size_t len,
         c_sockaddr_t *from, sctp_info_t *sinfo)
 {
     sock_t *sock = (sock_t *)id;
