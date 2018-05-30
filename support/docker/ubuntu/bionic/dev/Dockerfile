@@ -7,6 +7,7 @@ MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
 RUN apt-get update && \
     apt-get upgrade -y && \
+    DEBIAN_FRONTEND=noninteractive \
     apt-get install -y --no-install-recommends \
         debhelper \
         devscripts \
@@ -19,10 +20,9 @@ RUN apt-get update && \
         vim \
         sudo \
         iputils-ping \
+        wireshark
         net-tools && \
     apt-get clean
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y wireshark
 
 COPY setup.sh /root
 
