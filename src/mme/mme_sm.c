@@ -129,9 +129,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             outbound_streams = (c_uint16_t)event_get_param4(e);
 
-            d_trace(3, "eNB-S1 SCTP_COMM_UP[%s] Outbound Streams[%d]\n", 
-                CORE_ADDR(addr, buf), outbound_streams);
-
             enb = mme_enb_find_by_addr(addr);
             if (!enb)
             {
@@ -145,6 +142,9 @@ void mme_state_operational(fsm_t *s, event_t *e)
 
             enb->outbound_streams =
                     c_min(outbound_streams, enb->outbound_streams);
+
+            d_trace(3, "eNB-S1 SCTP_COMM_UP[%s] Outbound Streams[%d]\n", 
+                CORE_ADDR(addr, buf), enb->outbound_streams);
 
             break;
         }

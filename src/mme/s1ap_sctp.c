@@ -175,7 +175,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
 
                 if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
                 {
-                    d_trace(3, "SCTP_COMM_UP : inbound:%d, outbound = %d\n",
+                    d_trace(3, "SCTP_COMM_UP : inbound[%d] outbound[%d]\n",
                             not->sn_assoc_change.sac_inbound_streams,
                             not->sn_assoc_change.sac_outbound_streams);
 
