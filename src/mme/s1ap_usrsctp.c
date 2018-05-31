@@ -405,8 +405,9 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                 switch(not->sn_header.sn_type) 
                 {
                     case SCTP_ASSOC_CHANGE :
-                        d_trace(9, "SCTP_ASSOC_CHANGE:"
-                                "[T:0x%x, F:0x%x, S:0x%x, I/O:%d/%d]\n", 
+                    {
+                        d_trace(5, "SCTP_ASSOC_CHANGE:"
+                                "[T:%d, F:0x%x, S:%d, I/O:%d/%d]\n", 
                                 not->sn_assoc_change.sac_type,
                                 not->sn_assoc_change.sac_flags,
                                 not->sn_assoc_change.sac_state,
@@ -422,6 +423,13 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                                 usrsctp_remote_addr(&store);
                             d_assert(addr, return 1,);
 
+                            if (not->sn_assoc_change.sac_state == 
+                                SCTP_SHUTDOWN_COMP)
+                                d_trace(5, "SCTP_SHUTDOWN_COMP\n");
+                            if (not->sn_assoc_change.sac_state == 
+                                SCTP_COMM_LOST)
+                                d_trace(5, "SCTP_COMM_LOST\n");
+
                             event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
                             event_set_param1(&e, (c_uintptr_t)sock);
                             event_set_param2(&e, (c_uintptr_t)addr);
@@ -436,6 +444,8 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                                 usrsctp_remote_addr(&store);
                             d_assert(addr, return 1,);
 
+                            d_trace(5, "SCTP_COMM_UP\n");
+
                             event_set(&e, MME_EVT_S1AP_LO_SCTP_COMM_UP);
                             event_set_param1(&e, (c_uintptr_t)sock);
                             event_set_param2(&e, (c_uintptr_t)addr);
@@ -448,22 +458,18 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                                 CORE_FREE(addr);
                             }
                         }
-
                         break;
-                    case SCTP_PEER_ADDR_CHANGE:
-                        break;
-                    case SCTP_SEND_FAILED :
-                        d_error("flags:0x%x - SCTP_SEND_FAILED"
-                                "(type:0x%x, flags:0x%x, error:0x%x)\n", 
-                                flags,
-                                not->sn_send_failed_event.ssfe_type,
-                                not->sn_send_failed_event.ssfe_flags,
-                                not->sn_send_failed_event.ssfe_error);
-                        break;
+                    }
                     case SCTP_SHUTDOWN_EVENT :
                     {
                         c_sockaddr_t *addr = usrsctp_remote_addr(&store);
                         d_assert(addr, return 1,);
+
+                        d_trace(5, "SCTP_SHUTDOWN_EVENT:"
+                                "[T:0x%x, F:0x%x, L:0x%x]\n", 
+                                not->sn_shutdown_event.sse_type,
+                                not->sn_shutdown_event.sse_flags,
+                                not->sn_shutdown_event.sse_length);
 
                         event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
                         event_set_param1(&e, (c_uintptr_t)sock);
@@ -474,19 +480,34 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                         }
                         break;
                     }
+                    case SCTP_PEER_ADDR_CHANGE:
+                    {
+                        d_warn("SCTP_PEER_ADDR_CHANGE:"
+                                "[T:%d, F:0x%x, S:%d]\n", 
+                                not->sn_paddr_change.spc_type,
+                                not->sn_paddr_change.spc_flags,
+                                not->sn_paddr_change.spc_error);
+                        break;
+                    }
                     case SCTP_REMOTE_ERROR:
                     {
-                        d_warn("flags:0x%x - SCTP_REMOTE_ERROR"
-                                "(type:0x%x, flags:0x%x, error:0x%x)\n",
-                                flags,
+                        d_warn("SCTP_REMOTE_ERROR:[T:%d, F:0x%x, S:%d]\n", 
                                 not->sn_remote_error.sre_type,
                                 not->sn_remote_error.sre_flags,
                                 not->sn_remote_error.sre_error);
                         break;
                     }
+                    case SCTP_SEND_FAILED :
+                    {
+                        d_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]\n", 
+                                not->sn_send_failed.ssf_type,
+                                not->sn_send_failed.ssf_flags,
+                                not->sn_send_failed.ssf_error);
+                        break;
+                    }
                     default :
-                        d_error("Discarding event with unknown "
-                                "flags = 0x%x, type 0x%x", 
+                        d_error("Discarding event with "
+                                "unknown flags:0x%x type:0x%x",
                                 flags, not->sn_header.sn_type);
                         break;
                 }

@@ -110,7 +110,6 @@ static int s1ap_accept_handler(sock_id id, void *data)
         event_set(&e, MME_EVT_S1AP_LO_ACCEPT);
         event_set_param1(&e, (c_uintptr_t)new);
         event_set_param2(&e, (c_uintptr_t)addr);
-        event_set_param3(&e, (c_uintptr_t)0);
         if (mme_event_send(&e) != CORE_OK)
         {
             CORE_FREE(addr);
@@ -167,20 +166,21 @@ int s1ap_recv_handler(sock_id sock, void *data)
         switch(not->sn_header.sn_type) 
         {
             case SCTP_ASSOC_CHANGE :
-                d_trace(3, "SCTP_ASSOC_CHANGE"
-                        "(type:0x%x, flags:0x%x, state:0x%x)\n", 
+            {
+                d_trace(5, "SCTP_ASSOC_CHANGE:"
+                        "[T:%d, F:0x%x, S:%d, I/O:%d/%d]\n", 
                         not->sn_assoc_change.sac_type,
                         not->sn_assoc_change.sac_flags,
-                        not->sn_assoc_change.sac_state);
+                        not->sn_assoc_change.sac_state,
+                        not->sn_assoc_change.sac_inbound_streams,
+                        not->sn_assoc_change.sac_outbound_streams);
 
                 if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
                 {
-                    d_trace(3, "SCTP_COMM_UP : inbound[%d] outbound[%d]\n",
-                            not->sn_assoc_change.sac_inbound_streams,
-                            not->sn_assoc_change.sac_outbound_streams);
+                    d_trace(5, "SCTP_COMM_UP\n");
 
                     addr = core_calloc(1, sizeof(c_sockaddr_t));
-                    d_assert(addr, pkbuf_free(pkbuf); return 0,);
+                    d_assert(addr, pkbuf_free(pkbuf); return -1,);
                     memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
 
                     event_set(&e, MME_EVT_S1AP_LO_SCTP_COMM_UP);
@@ -193,24 +193,21 @@ int s1ap_recv_handler(sock_id sock, void *data)
 
                     if (mme_event_send(&e) != CORE_OK)
                     {
-                        d_error("Event MME_EVT_S1AP_LO_CONNREFUSED failed");
+                        d_error("Event MME_EVT_S1AP_LO_SCTP_COMM_UP failed");
                         CORE_FREE(addr);
                     }
-
-                    pkbuf_free(pkbuf);
-                    return 0;
                 }
-
-                if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP)
-                    d_trace(3, "SCTP_SHUTDOWN_COMP\n");
-                if (not->sn_assoc_change.sac_state == SCTP_COMM_LOST)
-                    d_trace(3, "SCTP_COMM_LOST\n");
-
-                if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP ||
-                    not->sn_assoc_change.sac_state == SCTP_COMM_LOST)
+                else if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP ||
+                        not->sn_assoc_change.sac_state == SCTP_COMM_LOST)
                 {
+
+                    if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP)
+                        d_trace(5, "SCTP_SHUTDOWN_COMP\n");
+                    if (not->sn_assoc_change.sac_state == SCTP_COMM_LOST)
+                        d_trace(5, "SCTP_COMM_LOST\n");
+
                     addr = core_calloc(1, sizeof(c_sockaddr_t));
-                    d_assert(addr, pkbuf_free(pkbuf); return 0,);
+                    d_assert(addr, pkbuf_free(pkbuf); return -1,);
                     memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
 
                     event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
@@ -224,23 +221,18 @@ int s1ap_recv_handler(sock_id sock, void *data)
                     }
 
                     sock_delete(sock);
-                    pkbuf_free(pkbuf);
-                    return 0;
                 }
-
                 break;
-            case SCTP_SEND_FAILED :
-                d_error("SCTP_SEND_FAILED"
-                        "(type:0x%x, flags:0x%x, error:0x%x)\n", 
-                        not->sn_send_failed.ssf_type,
-                        not->sn_send_failed.ssf_flags,
-                        not->sn_send_failed.ssf_error);
-                break;
+            }
             case SCTP_SHUTDOWN_EVENT :
-                d_trace(3, "SCTP_SHUTDOWN_EVENT\n");
+            {
+                d_trace(5, "SCTP_SHUTDOWN_EVENT:[T:%d, F:0x%x, L:%d]\n", 
+                        not->sn_shutdown_event.sse_type,
+                        not->sn_shutdown_event.sse_flags,
+                        not->sn_shutdown_event.sse_length);
 
                 addr = core_calloc(1, sizeof(c_sockaddr_t));
-                d_assert(addr, pkbuf_free(pkbuf); return 0,);
+                d_assert(addr, pkbuf_free(pkbuf); return -1,);
                 memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
 
                 event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
@@ -254,18 +246,44 @@ int s1ap_recv_handler(sock_id sock, void *data)
                 }
 
                 sock_delete(sock);
-                pkbuf_free(pkbuf);
-                return 0;
+                break;
+            }
+            case SCTP_PEER_ADDR_CHANGE:
+            {
+                d_warn("SCTP_PEER_ADDR_CHANGE:[T:%d, F:0x%x, S:%d]\n", 
+                        not->sn_paddr_change.spc_type,
+                        not->sn_paddr_change.spc_flags,
+                        not->sn_paddr_change.spc_error);
+                break;
+            }
+            case SCTP_REMOTE_ERROR:
+            {
+                d_warn("SCTP_REMOTE_ERROR:[T:%d, F:0x%x, S:%d]\n", 
+                        not->sn_remote_error.sre_type,
+                        not->sn_remote_error.sre_flags,
+                        not->sn_remote_error.sre_error);
+                break;
+            }
+            case SCTP_SEND_FAILED :
+            {
+                d_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]\n", 
+                        not->sn_send_failed.ssf_type,
+                        not->sn_send_failed.ssf_flags,
+                        not->sn_send_failed.ssf_error);
+                break;
+            }
             default :
+            {
                 d_error("Discarding event with unknown flags:0x%x type:0x%x",
                         flags, not->sn_header.sn_type);
                 break;
+            }
         }
     }
     else if (flags & MSG_EOR)
     {
         addr = core_calloc(1, sizeof(c_sockaddr_t));
-        d_assert(addr, pkbuf_free(pkbuf); return 0,);
+        d_assert(addr, pkbuf_free(pkbuf); return -1,);
         memcpy(addr, sock_remote_addr(sock), sizeof(c_sockaddr_t));
 
         event_set(&e, MME_EVT_S1AP_MESSAGE);
@@ -274,6 +292,7 @@ int s1ap_recv_handler(sock_id sock, void *data)
         event_set_param3(&e, (c_uintptr_t)pkbuf);
         if (mme_event_send(&e) != CORE_OK)
         {
+            d_error("Event MME_EVT_S1AP_MESSAGE failed");
             pkbuf_free(pkbuf);
             CORE_FREE(addr);
         }
@@ -282,7 +301,8 @@ int s1ap_recv_handler(sock_id sock, void *data)
     }
     else
     {
-        d_assert(0, pkbuf_free(pkbuf); return 0, "Unknown flags : 0x%x", flags);
+        d_assert(0, pkbuf_free(pkbuf); return -1,
+                "Unknown flags : 0x%x", flags);
     }
 
     pkbuf_free(pkbuf);

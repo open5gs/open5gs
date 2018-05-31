@@ -101,7 +101,6 @@ void mme_state_operational(fsm_t *s, event_t *e)
                 rv = sock_register(sock, s1ap_recv_handler, NULL);
                 d_assert(rv == CORE_OK, break, "register s1ap_recv_cb failed");
 #endif
-
                 enb = mme_enb_add(sock, addr);
                 d_assert(enb, break, "Null param");
             }
@@ -132,6 +131,12 @@ void mme_state_operational(fsm_t *s, event_t *e)
             enb = mme_enb_find_by_addr(addr);
             if (!enb)
             {
+#if USE_USRSCTP != 1
+                status_t rv;
+
+                rv = sock_register(sock, s1ap_recv_handler, NULL);
+                d_assert(rv == CORE_OK, break, "register s1ap_recv_cb failed");
+#endif
                 enb = mme_enb_add(sock, addr);
                 d_assert(enb, break, "Null param");
             }
