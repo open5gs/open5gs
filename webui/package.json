@@ -1,6 +1,6 @@
 {
   "name": "nextepc",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "NextEPC",
   "main": "index.js",
   "repository": "https://github.com/acetcom/nextepc",
