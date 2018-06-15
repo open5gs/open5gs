@@ -79,10 +79,11 @@ static tlv_t* _tlv_add_leaf(
             v->u32 = htonl(v->u32);
 
             if (parent_tlv)
-                tlv = tlv_embed(parent_tlv, desc->type, 4, 0, 
-                        (c_uint8_t*)&v->u32);
+                tlv = tlv_embed(parent_tlv,
+                                desc->type, 4, desc->instance, (c_uint8_t*)&v->u32);
             else
-                tlv = tlv_add(tlv, desc->type, 4, 0, (c_uint8_t*)&v->u32);
+                tlv = tlv_add(tlv,
+                              desc->type, 4, desc->instance, (c_uint8_t*)&v->u32);
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
@@ -590,3 +591,4 @@ status_t tlv_parse_msg(void *msg, tlv_desc_t *desc, pkbuf_t *pkbuf, int mode)
 
     return rv;
 }
+
