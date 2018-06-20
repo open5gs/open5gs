@@ -447,34 +447,8 @@ void s1ap_handle_ue_capability_info_indication(
 
     if (enb_ue->mme_ue)
     {
-#if 0
-        S1AP_UERadioCapability_t *radio_capa = NULL;
-        mme_ue_t *mme_ue = enb_ue->mme_ue;
-
-        /* Release the previous one */
-        if (mme_ue->radio_capa)
-        {
-            radio_capa = (S1AP_UERadioCapability_t *)mme_ue->radio_capa;
-
-            if (radio_capa->buf)
-                CORE_FREE(radio_capa->buf);
-            CORE_FREE(mme_ue->radio_capa);
-        }
-        /* Save UE radio capability */ 
-        mme_ue->radio_capa = core_calloc(1, sizeof(S1AP_UERadioCapability_t));
-        radio_capa = (S1AP_UERadioCapability_t *)mme_ue->radio_capa;
-        d_assert(radio_capa, return,);
-
-        d_assert(UERadioCapability, return,);
-        radio_capa->size = UERadioCapability->size;
-        radio_capa->buf = core_calloc(radio_capa->size, sizeof(c_uint8_t)); 
-        d_assert(radio_capa->buf, return, "core_calloc error(size=%d)",
-                radio_capa->size);
-        memcpy(radio_capa->buf, UERadioCapability->buf, radio_capa->size);
-#else
         d_assert(UERadioCapability, return,);
         S1AP_STORE_DATA(&enb_ue->mme_ue->ueRadioCapability, UERadioCapability);
-#endif
     }
 }
 
@@ -661,41 +635,6 @@ void s1ap_handle_initial_context_setup_failure(
          * may in principle be adopted. The eNB should ensure
          * that no hanging resources remain at the eNB.
          */
-
-#if 0 /* NOTHING TO DO */
-
-#if 0 /* FIXME : Does it needed? */
-        rv = nas_send_service_reject(mme_ue,
-            EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-        d_assert(rv == CORE_OK,,
-                "nas_send_service_reject() failed");
-#endif
-
-#if 1 /* Explicit Release */
-
-        d_trace(5, "    Explicit Release\n");
-        rv = s1ap_send_ue_context_release_command(enb_ue,
-                S1AP_Cause_PR_nas,
-#if 1 /* NAS Cause: Normal Relase */
-                S1AP_CauseNas_normal_release,
-#else /* NAS Cause : Detach */
-                S1AP_CauseNas_detach,
-#endif
-                S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);
-        d_assert(rv == CORE_OK,, "s1ap send error");
-
-#else  /* Implicit Release */
-
-        d_trace(5, "    Implicit Release\n");
-        rv = enb_ue_remove(enb_ue);
-        d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
-
-        rv = mme_ue_deassociate(mme_ue);
-        d_assert(rv == CORE_OK,, "mme_ue_deassociate() failed");
-
-#endif
-
-#endif
     }
     else
     {
