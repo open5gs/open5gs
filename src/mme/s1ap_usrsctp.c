@@ -500,9 +500,9 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                     case SCTP_SEND_FAILED :
                     {
                         d_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]\n", 
-                                not->sn_send_failed.ssf_type,
-                                not->sn_send_failed.ssf_flags,
-                                not->sn_send_failed.ssf_error);
+                                not->sn_send_failed_event.ssfe_type,
+                                not->sn_send_failed_event.ssfe_flags,
+                                not->sn_send_failed_event.ssfe_error);
                         break;
                     }
                     default :

@@ -183,7 +183,8 @@ static void common_register_state(fsm_t *s, event_t *e)
                     if (!MME_UE_HAVE_IMSI(mme_ue))
                     {
                         d_warn("[EMM] TAU request : Unknown UE");
-                        rv = nas_send_tau_reject(mme_ue, EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                        rv = nas_send_tau_reject(mme_ue,
+                        EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                         d_assert(rv == CORE_OK,,
                                 "nas_send_tau_reject() failed");
                         FSM_TRAN(s, &emm_state_exception);

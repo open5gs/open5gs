@@ -301,6 +301,29 @@ status_t context_parse_config()
     return CORE_OK;
 }
 
+/*
+ * We've added it 
+ * Because the following function is deprecated in the mongo-c-driver
+ */
+static bool
+context_mongoc_client_get_server_status (mongoc_client_t *client, /* IN */
+                                 mongoc_read_prefs_t *read_prefs, /* IN */
+                                 bson_t *reply,                   /* OUT */
+                                 bson_error_t *error)             /* OUT */
+{
+   bson_t cmd = BSON_INITIALIZER;
+   bool ret = false;
+
+   BSON_ASSERT (client);
+
+   BSON_APPEND_INT32 (&cmd, "serverStatus", 1);
+   ret = mongoc_client_command_simple (
+      client, "admin", &cmd, read_prefs, reply, error);
+   bson_destroy (&cmd);
+
+   return ret;
+}
+
 status_t context_db_init(const char *db_uri)
 {
     bson_t reply;
@@ -334,7 +357,8 @@ status_t context_db_init(const char *db_uri)
     d_assert(self.database, context_db_final(); return CORE_ERROR,
             "Database is not defined in DB_URI [%s]", db_uri);
 
-    if (!mongoc_client_get_server_status(self.db_client, NULL, &reply, &error)) 
+    if (!context_mongoc_client_get_server_status(
+                self.db_client, NULL, &reply, &error)) 
     {
         d_error("Failed to conect to server [%s]", db_uri);
         return CORE_EAGAIN;
