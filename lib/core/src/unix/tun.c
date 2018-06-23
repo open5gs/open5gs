@@ -57,13 +57,13 @@ status_t tun_open(sock_id *new, char *ifname, int is_tap)
     /* Save socket descriptor */
     sock->fd = fd;
     /* Save the interface name */
-    strncpy(sock->ifname, ifname, IFNAMSIZ);
+    strncpy(sock->ifname, ifname, IFNAMSIZ-1);
 
 #if LINUX == 1
     memset(&ifr, 0, sizeof(ifr));
 
     ifr.ifr_flags = (is_tap ? (flags | IFF_TAP) : (flags | IFF_TUN));
-    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
 
     rc = ioctl(sock->fd, TUNSETIFF, (void *)&ifr);
     if (rc < 0)

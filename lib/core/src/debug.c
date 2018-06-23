@@ -472,7 +472,7 @@ void d_trace_off(int *mod_name)
 
 int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
 {
-    char str[HUGE_STRING_LEN] = {0}, fstr[HUGE_STRING_LEN] = {0}, *ac_str;
+    char str[HUGE_STRING_LEN+1] = {0}, fstr[HUGE_STRING_LEN+1] = {0}, *ac_str;
     time_exp_t te;
     size_t n;
     char *lv_str[5] = {"NONE", "FATL", "ERRR", "WARN", "INFO"};
@@ -525,7 +525,7 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
         {
             vsprintf(str, fmt, args);
 
-            n = sprintf(fstr, "["TIME_FMT_STR"] %s",
+            n = snprintf(fstr, HUGE_STRING_LEN, "["TIME_FMT_STR"] %s",
                     te.tm_mon + 1, te.tm_mday, te.tm_hour,
                     te.tm_min, te.tm_sec, te.tm_usec/1000, str);
 
@@ -570,7 +570,8 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
 
             vsprintf(str, fmt, args);
 
-            n = sprintf(fstr, "["TIME_FMT_STR"] %s: %s (%s:%d)",
+            n = snprintf(fstr, HUGE_STRING_LEN,
+                    "["TIME_FMT_STR"] %s: %s (%s:%d)",
                     te.tm_mon + 1, te.tm_mday, te.tm_hour,
                     te.tm_min, te.tm_sec, te.tm_usec/1000,
                     lv_str[lv], str, fn, ln);
@@ -612,7 +613,8 @@ int d_msg(int tp, int lv, c_time_t t, char *fn, int ln, char *fmt, ...)
         {
             vsprintf(str, fmt, args);
 
-            n = sprintf(fstr, "[" TIME_FMT_STR "] ASSERT: %s (%s:%d)",
+            n = snprintf(fstr, HUGE_STRING_LEN,
+                    "[" TIME_FMT_STR "] ASSERT: %s (%s:%d)",
                     te.tm_mon + 1, te.tm_mday, te.tm_hour,
                     te.tm_min, te.tm_sec, te.tm_usec/1000, str, fn, ln);
 
