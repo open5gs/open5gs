@@ -80,10 +80,10 @@ static tlv_t* _tlv_add_leaf(
 
             if (parent_tlv)
                 tlv = tlv_embed(parent_tlv,
-                                desc->type, 4, desc->instance, (c_uint8_t*)&v->u32);
+                        desc->type, 4, desc->instance, (c_uint8_t*)&v->u32);
             else
                 tlv = tlv_add(tlv,
-                              desc->type, 4, desc->instance, (c_uint8_t*)&v->u32);
+                        desc->type, 4, desc->instance, (c_uint8_t*)&v->u32);
             d_assert(tlv, return NULL, "Can't add TLV");
             break;
         }
