@@ -70,7 +70,54 @@ status_t context_read_file()
     if (!yaml_parser_load(&parser, document))
     {
         d_fatal("Failed to parse configuration file '%s'", config->path);
+        switch (parser.error)
+        {
+            case YAML_MEMORY_ERROR:
+                d_error("Memory error: Not enough memory for parsing");
+                break;
+            case YAML_READER_ERROR:
+                if (parser.problem_value != -1)
+                    d_error("Reader error - %s: #%X at %zd", parser.problem,
+                        parser.problem_value, parser.problem_offset);
+                else
+                    d_error("Reader error - %s at %zd", parser.problem,
+                        parser.problem_offset);
+                break;
+            case YAML_SCANNER_ERROR:
+                if (parser.context)
+                    d_error("Scanner error - %s at line %lu, column %lu\n"
+                            "%s at line %lu, column %lu", parser.context,
+                            parser.context_mark.line+1,
+                            parser.context_mark.column+1,
+                            parser.problem, parser.problem_mark.line+1,
+                            parser.problem_mark.column+1);
+                else
+                    d_error("Scanner error - %s at line %lu, column %lu",
+                            parser.problem, parser.problem_mark.line+1,
+                            parser.problem_mark.column+1);
+                break;
+            case YAML_PARSER_ERROR:
+                if (parser.context)
+                    d_error("Parser error - %s at line %lu, column %lu\n"
+                            "%s at line %lu, column %lu", parser.context,
+                            parser.context_mark.line+1,
+                            parser.context_mark.column+1,
+                            parser.problem, parser.problem_mark.line+1,
+                            parser.problem_mark.column+1);
+                else
+                    d_error("Parser error - %s at line %lu, column %lu",
+                            parser.problem, parser.problem_mark.line+1,
+                            parser.problem_mark.column+1);
+                break;
+            default:
+                /* Couldn't happen. */
+                d_assert(0,, "Internal error");
+                break;
+        }
+
         CORE_FREE(document);
+        yaml_parser_delete(&parser);
+        d_assert(!fclose(file),,);
         return CORE_ERROR;
     }
 
