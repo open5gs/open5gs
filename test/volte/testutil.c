@@ -60,7 +60,7 @@ void test_terminate(void)
 status_t test_initialize(int argc, const char *const argv[], char *config_path)
 {
     status_t rv;
-    char dir[C_PATH_MAX];
+    char dir[C_PATH_MAX/2];
     char conf[C_PATH_MAX];
 
     if (config_path)

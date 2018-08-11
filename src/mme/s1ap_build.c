@@ -489,29 +489,6 @@ status_t s1ap_build_initial_context_setup_request(
     memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
 
     /* Set UeRadioCapability if exists */
-#if 0
-    if (mme_ue->radio_capa)
-    {
-        S1AP_UERadioCapability_t *UERadioCapability = NULL;
-        S1AP_UERadioCapability_t *radio_capa = 
-            (S1AP_UERadioCapability_t *)mme_ue->radio_capa;
-
-        ie = core_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
-
-        ie->id = S1AP_ProtocolIE_ID_id_UERadioCapability;
-        ie->criticality = S1AP_Criticality_ignore;
-        ie->value.present =
-            S1AP_InitialContextSetupRequestIEs__value_PR_UERadioCapability;
-
-        UERadioCapability = &ie->value.choice.UERadioCapability;
-
-        UERadioCapability->size = radio_capa->size;
-        UERadioCapability->buf = 
-            core_calloc(UERadioCapability->size, sizeof(c_uint8_t));
-        memcpy(UERadioCapability->buf, radio_capa->buf, radio_capa->size);
-    }
-#else
     if (mme_ue->ueRadioCapability.buf && mme_ue->ueRadioCapability.size)
     {
         S1AP_UERadioCapability_t *UERadioCapability = NULL;
@@ -531,7 +508,6 @@ status_t s1ap_build_initial_context_setup_request(
                 mme_ue->ueRadioCapability.buf, mme_ue->ueRadioCapability.size,
                 UERadioCapability);
     }
-#endif
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);

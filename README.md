@@ -83,7 +83,7 @@ If you don't understand something about NextEPC, the [http://nextepc.org](http:/
 
 ## Support
 
-Problem with NextEPC can be filed as [issues](https://github.com/acetcom/nextepc/issues) in this repository. And also, we've created slack workspace named _nextepc.slack.com_. Use [this link](https://join.slack.com/t/nextepc/shared_invite/enQtMzMyMTIwMzY2MTAyLTJjYzQyYWFhYWZmNTBmNmFmY2EzMzJlY2VhYWMzYzY1NTE1YWYzZjFiMDM4ZDIxNDRhZTRmY2M2YmI4NzdmZjI) to get started.
+Problem with NextEPC can be filed as [issues](https://github.com/acetcom/nextepc/issues) in this repository. And also, we've created *Discord* workspace for _nextepc_. Use [this link](https://discord.gg/GreNkuc) to get started.
 
 
 ## License

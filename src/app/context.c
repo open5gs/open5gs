@@ -70,7 +70,54 @@ status_t context_read_file()
     if (!yaml_parser_load(&parser, document))
     {
         d_fatal("Failed to parse configuration file '%s'", config->path);
+        switch (parser.error)
+        {
+            case YAML_MEMORY_ERROR:
+                d_error("Memory error: Not enough memory for parsing");
+                break;
+            case YAML_READER_ERROR:
+                if (parser.problem_value != -1)
+                    d_error("Reader error - %s: #%X at %zd", parser.problem,
+                        parser.problem_value, parser.problem_offset);
+                else
+                    d_error("Reader error - %s at %zd", parser.problem,
+                        parser.problem_offset);
+                break;
+            case YAML_SCANNER_ERROR:
+                if (parser.context)
+                    d_error("Scanner error - %s at line %lu, column %lu\n"
+                            "%s at line %lu, column %lu", parser.context,
+                            parser.context_mark.line+1,
+                            parser.context_mark.column+1,
+                            parser.problem, parser.problem_mark.line+1,
+                            parser.problem_mark.column+1);
+                else
+                    d_error("Scanner error - %s at line %lu, column %lu",
+                            parser.problem, parser.problem_mark.line+1,
+                            parser.problem_mark.column+1);
+                break;
+            case YAML_PARSER_ERROR:
+                if (parser.context)
+                    d_error("Parser error - %s at line %lu, column %lu\n"
+                            "%s at line %lu, column %lu", parser.context,
+                            parser.context_mark.line+1,
+                            parser.context_mark.column+1,
+                            parser.problem, parser.problem_mark.line+1,
+                            parser.problem_mark.column+1);
+                else
+                    d_error("Parser error - %s at line %lu, column %lu",
+                            parser.problem, parser.problem_mark.line+1,
+                            parser.problem_mark.column+1);
+                break;
+            default:
+                /* Couldn't happen. */
+                d_assert(0,, "Internal error");
+                break;
+        }
+
         CORE_FREE(document);
+        yaml_parser_delete(&parser);
+        d_assert(!fclose(file),,);
         return CORE_ERROR;
     }
 
@@ -301,6 +348,29 @@ status_t context_parse_config()
     return CORE_OK;
 }
 
+/*
+ * We've added it 
+ * Because the following function is deprecated in the mongo-c-driver
+ */
+static bool
+context_mongoc_client_get_server_status (mongoc_client_t *client, /* IN */
+                                 mongoc_read_prefs_t *read_prefs, /* IN */
+                                 bson_t *reply,                   /* OUT */
+                                 bson_error_t *error)             /* OUT */
+{
+   bson_t cmd = BSON_INITIALIZER;
+   bool ret = false;
+
+   BSON_ASSERT (client);
+
+   BSON_APPEND_INT32 (&cmd, "serverStatus", 1);
+   ret = mongoc_client_command_simple (
+      client, "admin", &cmd, read_prefs, reply, error);
+   bson_destroy (&cmd);
+
+   return ret;
+}
+
 status_t context_db_init(const char *db_uri)
 {
     bson_t reply;
@@ -334,7 +404,8 @@ status_t context_db_init(const char *db_uri)
     d_assert(self.database, context_db_final(); return CORE_ERROR,
             "Database is not defined in DB_URI [%s]", db_uri);
 
-    if (!mongoc_client_get_server_status(self.db_client, NULL, &reply, &error)) 
+    if (!context_mongoc_client_get_server_status(
+                self.db_client, NULL, &reply, &error)) 
     {
         d_error("Failed to conect to server [%s]", db_uri);
         return CORE_EAGAIN;

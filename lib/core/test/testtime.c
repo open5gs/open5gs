@@ -1,7 +1,7 @@
 #include "core_time.h"
 #include "testutil.h"
 
-#define STR_SIZE 45
+#define STR_SIZE 100
 
 /* The time value is used throughout the tests, so just make this a global.
  * Also, we need a single value that we can test for the positive tests, so

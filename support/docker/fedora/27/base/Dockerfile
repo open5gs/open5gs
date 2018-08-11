@@ -8,6 +8,7 @@ RUN dnf -y install \
         autoconf \
         libtool \
         gcc \
+        make \
         flex \
         bison \
         git \

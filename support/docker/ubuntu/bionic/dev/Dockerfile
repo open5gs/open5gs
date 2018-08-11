@@ -20,7 +20,7 @@ RUN apt-get update && \
         vim \
         sudo \
         iputils-ping \
-        wireshark
+        wireshark \
         net-tools && \
     apt-get clean
 

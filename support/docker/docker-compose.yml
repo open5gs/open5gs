@@ -56,7 +56,7 @@ services:
       - base
     environment:
       - DB_URI=mongodb://mongodb/nextepc
-      - DISPLAY
+      - DISPLAY=docker.for.mac.localhost:0
     cap_add:
       - NET_ADMIN
     devices:
