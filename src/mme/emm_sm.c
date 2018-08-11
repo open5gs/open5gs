@@ -457,6 +457,23 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                     FSM_TRAN(&mme_ue->sm, &emm_state_exception);
                     break;
                 }
+                case NAS_ATTACH_REQUEST:
+                {
+                    d_warn("[EMM] Attach request", mme_ue->imsi_bcd);
+                    d_trace(3, "[EMM] Attach request\n", mme_ue->imsi_bcd);
+                    rv = emm_handle_attach_request(
+                            mme_ue, &message->emm.attach_request);
+                    if (rv != CORE_OK)
+                    {
+                        d_error("emm_handle_attach_request() failed");
+                        FSM_TRAN(s, emm_state_exception);
+                        return;
+                    }
+
+                    mme_s6a_send_air(mme_ue, NULL);
+                    FSM_TRAN(s, &emm_state_authentication);
+                    break;
+                }
                 case NAS_EMM_STATUS:
                 {
                     d_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
@@ -577,6 +594,23 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                     FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
+                case NAS_ATTACH_REQUEST:
+                {
+                    d_warn("[EMM] Attach request", mme_ue->imsi_bcd);
+                    d_trace(3, "[EMM] Attach request\n", mme_ue->imsi_bcd);
+                    rv = emm_handle_attach_request(
+                            mme_ue, &message->emm.attach_request);
+                    if (rv != CORE_OK)
+                    {
+                        d_error("emm_handle_attach_request() failed");
+                        FSM_TRAN(s, emm_state_exception);
+                        return;
+                    }
+
+                    mme_s6a_send_air(mme_ue, NULL);
+                    FSM_TRAN(s, &emm_state_authentication);
+                    break;
+                }
                 case NAS_EMM_STATUS:
                 {
                     d_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
@@ -665,6 +699,25 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
                         break;
                     }
                     FSM_TRAN(s, &emm_state_registered);
+                    break;
+                }
+                case NAS_ATTACH_REQUEST:
+                {
+                    d_warn("[EMM] Attach request", mme_ue->imsi_bcd);
+                    d_trace(3, "[EMM] Attach request\n", mme_ue->imsi_bcd);
+                    rv = emm_handle_attach_request(
+                            mme_ue, &message->emm.attach_request);
+                    if (rv != CORE_OK)
+                    {
+                        d_error("emm_handle_attach_request() failed");
+                        FSM_TRAN(s, emm_state_exception);
+                        return;
+                    }
+
+                    rv = mme_gtp_send_delete_all_sessions(mme_ue);
+                    d_assert(rv == CORE_OK,,
+                        "mme_gtp_send_delete_all_sessions() failed");
+                    FSM_TRAN(s, &emm_state_authentication);
                     break;
                 }
                 case NAS_EMM_STATUS:
