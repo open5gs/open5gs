@@ -31,6 +31,8 @@
 
 #include "pcscf_fd_path.h"
 
+abts_suite *test_volte(abts_suite *suite);
+
 const struct testlist alltests[] = {
     {test_volte},
     {NULL},
