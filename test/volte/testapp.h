@@ -9,7 +9,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 CORE_DECLARE(status_t) test_app_initialize(
-        const char *config_path, const char *log_path);
+        const char *config_path, const char *log_path, const char *pid_path);
 CORE_DECLARE(void) test_app_terminate(void);
 
 #ifdef __cplusplus

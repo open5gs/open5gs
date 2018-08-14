@@ -22,7 +22,8 @@ static semaphore_id hss_sem2 = 0;
 static semaphore_id mme_sem1 = 0;
 static semaphore_id mme_sem2 = 0;
 
-status_t test_app_initialize(const char *config_path, const char *log_path)
+status_t test_app_initialize(
+        const char *config_path, const char *log_path, const char *pid_path)
 {
     pid_t pid;
     status_t rv;

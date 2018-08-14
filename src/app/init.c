@@ -89,7 +89,7 @@ void app_did_terminate(void)
     context_final();
 }
 
-status_t app_log_pid(const char *pid_path)
+status_t app_log_pid(const char *pid_path, const char *app_name)
 {
     file_t *pid_file = NULL;
     file_info_t finfo;

@@ -75,7 +75,7 @@ status_t test_initialize(int argc, const char *const argv[], char *config_path)
     atexit(test_terminate);
 
     core_initialize();
-    rv = app_initialize(config_path, NULL);
+    rv = app_initialize(config_path, NULL, NULL);
     if (rv != CORE_OK)
     {
         d_error("app_initialize() failed");

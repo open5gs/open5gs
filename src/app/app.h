@@ -8,10 +8,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-extern const char *app_name;
-
 CORE_DECLARE(status_t) app_initialize(
-        const char *config_path, const char *log_path);
+        const char *config_path, const char *log_path, const char *pid_path);
 CORE_DECLARE(void) app_terminate(void);
 
 CORE_DECLARE(status_t) app_will_initialize(
@@ -24,7 +22,7 @@ CORE_DECLARE(status_t) config_initialize(const char *config_path);
 CORE_DECLARE(void) config_terminate(void);
 
 CORE_DECLARE(status_t) app_logger_restart(void);
-CORE_DECLARE(status_t) app_log_pid(const char *pid_path);
+CORE_DECLARE(status_t) app_log_pid(const char *pid_path, const char *app_name);
 
 CORE_DECLARE(status_t) mme_initialize();
 CORE_DECLARE(void) mme_terminate(void);

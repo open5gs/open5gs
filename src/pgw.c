@@ -7,12 +7,14 @@
 #include "app/context.h"
 #include "app/app.h"
 
-const char *app_name = "pgw";
-
-status_t app_initialize(const char *config_path, const char *log_path)
+status_t app_initialize(
+        const char *config_path, const char *log_path, const char *pid_path)
 {
     status_t rv;
     int app = 0;
+
+    rv = app_log_pid(pid_path, "pgw");
+    if (rv != CORE_OK) return rv;
 
     rv = app_will_initialize(config_path, log_path);
     if (rv != CORE_OK) return rv;
