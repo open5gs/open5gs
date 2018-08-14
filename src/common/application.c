@@ -6,8 +6,7 @@
 #include "core_lib.h"
 
 #include "context.h"
-
-#include "app.h"
+#include "application.h"
 
 #define DEFAULT_CONFIG_FILE_PATH SYSCONF_DIR PACKAGE "/nextepc.conf"
 #define DEFAULT_RUNTIME_DIR_PATH LOCALSTATE_DIR "run/"

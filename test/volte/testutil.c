@@ -20,8 +20,8 @@
 #include "core_file.h"
 #include "fd/fd_lib.h"
 
-#include "app/app.h"
-#include "app/context.h"
+#include "common/application.h"
+#include "common/context.h"
 
 #include "testpacket.h"
 #include "testapp.h"

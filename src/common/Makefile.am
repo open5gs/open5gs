@@ -1,17 +1,17 @@
 ## Process this file with automake to produce Makefile.in.
 
-noinst_LTLIBRARIES = libapp.la
+noinst_LTLIBRARIES = libcommon.la
 
-libapp_la_SOURCES = \
-	context.h app.h yaml_helper.h \
-	context.c init.c yaml_helper.c \
+libcommon_la_SOURCES = \
+	context.h application.h yaml_helper.h \
+	context.c application.c yaml_helper.c \
 	$(NULL)
 
-libapp_la_DEPENDENCIES = \
+libcommon_la_DEPENDENCIES = \
     $(top_srcdir)/lib/core/src/libcore.la \
 	$(NULL)
 
-libapp_la_LIBADD = \
+libcommon_la_LIBADD = \
     $(top_srcdir)/lib/core/src/libcore.la \
 	@YAML_LIBS@ \
 	@MONGOC_LIBS@ \

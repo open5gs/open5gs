@@ -9,7 +9,7 @@
 
 #include <mongoc.h>
 #include <yaml.h>
-#include "app/yaml_helper.h"
+#include "common/yaml_helper.h"
 
 #include "s1ap/s1ap_message.h"
 #include "gtp/gtp_xact.h"
@@ -17,7 +17,7 @@
 #include "gtp/gtp_path.h"
 #include "fd/fd_lib.h"
 
-#include "app/context.h"
+#include "common/context.h"
 #include "nas_conv.h"
 #include "mme_context.h"
 #include "mme_event.h"

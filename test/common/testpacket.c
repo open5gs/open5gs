@@ -13,7 +13,7 @@
 #include "gtp/gtp_node.h"
 #include "gtp/gtp_path.h"
 
-#include "app/context.h"
+#include "common/context.h"
 
 extern int test_only_control_plane;
 

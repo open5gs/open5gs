@@ -9,7 +9,8 @@
 #include "core_signal.h"
 
 /* Server */
-#include "app.h"
+#include "common/application.h"
+#include "app_init.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdate-time"

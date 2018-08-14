@@ -8,7 +8,7 @@
 #include "gtp/gtp_node.h"
 #include "gtp/gtp_path.h"
 
-#include "app/context.h"
+#include "common/context.h"
 #include "sgw_event.h"
 #include "sgw_context.h"
 #include "sgw_gtp_path.h"

@@ -11,12 +11,12 @@ libsgw_la_SOURCES = \
 
 libsgw_la_DEPENDENCIES = \
     $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/src/app/libapp.la \
+    $(top_srcdir)/src/common/libcommon.la \
 	$(NULL)
 
 libsgw_la_LIBADD = \
     $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/src/app/libapp.la \
+    $(top_srcdir)/src/common/libcommon.la \
 	$(NULL)
 
 AM_CPPFLAGS = \

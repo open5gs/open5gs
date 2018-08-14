@@ -1,5 +1,5 @@
-#ifndef __APP_H__
-#define __APP_H__
+#ifndef __APP_INIT_H__
+#define __APP_INIT_H__
 
 #include "core.h"
 #include "core_errno.h"
@@ -11,18 +11,6 @@ extern "C" {
 CORE_DECLARE(status_t) app_initialize(
         const char *config_path, const char *log_path, const char *pid_path);
 CORE_DECLARE(void) app_terminate(void);
-
-CORE_DECLARE(status_t) app_will_initialize(
-        const char *config_path, const char *log_path);
-CORE_DECLARE(status_t) app_did_initialize(void);
-CORE_DECLARE(void) app_will_terminate(void);
-CORE_DECLARE(void) app_did_terminate(void);
-
-CORE_DECLARE(status_t) config_initialize(const char *config_path);
-CORE_DECLARE(void) config_terminate(void);
-
-CORE_DECLARE(status_t) app_logger_restart(void);
-CORE_DECLARE(status_t) app_log_pid(const char *pid_path, const char *app_name);
 
 CORE_DECLARE(status_t) mme_initialize();
 CORE_DECLARE(void) mme_terminate(void);
@@ -43,4 +31,4 @@ CORE_DECLARE(void) pcrf_terminate(void);
 }
 #endif /* __cplusplus */
 
-#endif /* __APP_H__ */
+#endif /* __APP_INIT_H__ */

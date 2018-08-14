@@ -6,7 +6,7 @@
 #include "gtp/gtp_node.h"
 #include "gtp/gtp_path.h"
 
-#include "app/context.h"
+#include "common/context.h"
 #include "pgw_context.h"
 #include "pgw_event.h"
 #include "pgw_gtp_path.h"

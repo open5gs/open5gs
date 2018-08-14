@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 
-SUBDIRS = app mme hss sgw pgw pcrf
+SUBDIRS = common mme hss sgw pgw pcrf
 
 noinst_LTLIBRARIES = libmme.la libhss.la libsgw.la libpgw.la libpcrf.la libepc.la
 

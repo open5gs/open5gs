@@ -17,14 +17,14 @@ libpgw_la_DEPENDENCIES = \
     $(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
     $(top_srcdir)/lib/ipfw/libipfw.la \
-    $(top_srcdir)/src/app/libapp.la \
+    $(top_srcdir)/src/common/libcommon.la \
 	$(NULL)
 
 libpgw_la_LIBADD = \
     $(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
     $(top_srcdir)/lib/ipfw/libipfw.la \
-    $(top_srcdir)/src/app/libapp.la \
+    $(top_srcdir)/src/common/libcommon.la \
 	$(NULL)
 
 AM_CPPFLAGS = \

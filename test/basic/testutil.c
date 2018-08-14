@@ -19,8 +19,11 @@
 #include "core_semaphore.h"
 #include "fd/fd_lib.h"
 
-#include "app/app.h"
-#include "app/context.h"
+#include "common/application.h"
+#include "common/context.h"
+
+#include "app_init.h"
+
 #include "testpacket.h"
 #include "abts.h"
 #include "testutil.h"

@@ -34,7 +34,7 @@ libmme_la_DEPENDENCIES = \
     $(top_srcdir)/lib/nas/libnas.la \
 	$(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/src/app/libapp.la \
+    $(top_srcdir)/src/common/libcommon.la \
 	$(NULL)
 
 libmme_la_LIBADD = \
@@ -42,7 +42,7 @@ libmme_la_LIBADD = \
     $(top_srcdir)/lib/nas/libnas.la \
     $(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/src/app/libapp.la \
+    $(top_srcdir)/src/common/libcommon.la \
 	$(NULL)
 
 AM_CPPFLAGS = \

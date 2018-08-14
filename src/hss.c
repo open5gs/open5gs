@@ -4,8 +4,10 @@
 #include "core_signal.h"
 #include "core_semaphore.h"
 
-#include "app/context.h"
-#include "app/app.h"
+#include "common/context.h"
+#include "common/application.h"
+
+#include "app_init.h"
 
 status_t app_initialize(
         const char *config_path, const char *log_path, const char *pid_path)

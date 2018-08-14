@@ -4,7 +4,7 @@
 #include "core_lib.h"
 #include <mongoc.h>
 
-#include "app/context.h"
+#include "common/context.h"
 #include "mme/mme_context.h"
 #include "mme/s1ap_build.h"
 #include "s1ap/s1ap_message.h"

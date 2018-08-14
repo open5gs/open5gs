@@ -7,7 +7,7 @@
 
 #include <mongoc.h>
 #include <yaml.h>
-#include "app/yaml_helper.h"
+#include "common/yaml_helper.h"
 
 #include "gtp/gtp_types.h"
 #include "gtp/gtp_conv.h"
@@ -17,7 +17,7 @@
 
 #include "fd/fd_lib.h"
 
-#include "app/context.h"
+#include "common/context.h"
 #include "pgw_context.h"
 
 static pgw_context_t self;

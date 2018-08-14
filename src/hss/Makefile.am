@@ -9,12 +9,12 @@ libhss_la_SOURCES = \
 
 libhss_la_DEPENDENCIES = \
     $(top_srcdir)/lib/fd/libfd.la \
-    $(top_srcdir)/src/app/libapp.la \
+    $(top_srcdir)/src/common/libcommon.la \
 	$(NULL)
 
 libhss_la_LIBADD = \
     $(top_srcdir)/lib/fd/libfd.la \
-    $(top_srcdir)/src/app/libapp.la \
+    $(top_srcdir)/src/common/libcommon.la \
 	$(NULL)
 
 AM_CPPFLAGS = \

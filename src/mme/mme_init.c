@@ -7,7 +7,7 @@
 
 #include "gtp/gtp_xact.h"
 
-#include "app/context.h"
+#include "common/context.h"
 #include "mme_event.h"
 
 #include "mme_fd_path.h"
