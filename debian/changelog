@@ -1,14 +1,8 @@
-nextepc (0.3.10~zenial) zenial; urgency=medium
+nextepc (0.3.10~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Fri, 17 Aug 2018 04:28:38 +0000
-
-nextepc (0.3.10~artful) artful; urgency=medium
-
-  * Bug Fixed
-
- -- Sukchan Lee <acetcom@gmail.com>  Fri, 17 Aug 2018 04:28:24 +0000
 
 nextepc (0.3.10~bionic) bionic; urgency=medium
 
