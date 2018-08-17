@@ -114,6 +114,12 @@ static void fd_log_func(int printlevel, const char *format, va_list ap)
             break;
 	    case FD_LOG_ERROR:
             d_error("%s", buffer);
+            if (!strcmp(buffer, " - The certificate is expired."))
+            {
+                d_error("You can renew CERT as follows:");
+                d_error("./support/freeDiameter/make_certs.sh "
+                        "./install/etc/nextepc/freeDiameter");
+            }
             break;
 	    case FD_LOG_FATAL:
             {
