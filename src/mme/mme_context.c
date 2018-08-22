@@ -1262,6 +1262,11 @@ status_t mme_context_parse_config()
                         }
                     }
                 }
+                else if (!strcmp(mme_key, "tac_selection"))
+                {
+                    self.tac_selection =
+                        yaml_iter_bool(&mme_iter);
+                }
                 else
                     d_warn("unknown key `%s`", mme_key);
             }
@@ -1285,6 +1290,8 @@ status_t mme_context_parse_config()
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
+                        c_uint16_t tac[MAX_NUM_OF_TAC] = {0};
+                        c_uint8_t num_of_tac = 0;
                         c_uint16_t port = self.gtpc_port;
 
                         if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
@@ -1356,6 +1363,37 @@ status_t mme_context_parse_config()
                                 const char *v = yaml_iter_value(&gtpc_iter);
                                 if (v) port = atoi(v);
                             }
+                            else if (!strcmp(gtpc_key, "tac"))
+                            {
+                                yaml_iter_t tac_iter;
+                                yaml_iter_recurse(&gtpc_iter, &tac_iter);
+                                d_assert(yaml_iter_type(&tac_iter) !=
+                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+
+                                do
+                                {
+                                    const char *v = NULL;
+
+                                    d_assert(num_of_tac <=
+                                            MAX_NUM_OF_TAC, return CORE_ERROR,);
+                                    if (yaml_iter_type(&tac_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!yaml_iter_next(&tac_iter))
+                                            break;
+                                    }
+
+                                    v = yaml_iter_value(&tac_iter);
+                                    if (v) 
+                                    {
+                                        d_trace(9, "SGW_TAC: %d\n", atoi(v));
+                                        tac[num_of_tac] = atoi(v);
+                                        num_of_tac++;
+                                    }
+                                } while(
+                                    yaml_iter_type(&tac_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
                             else
                                 d_warn("unknown key `%s`", gtpc_key);
                         }
@@ -1373,6 +1411,15 @@ status_t mme_context_parse_config()
                                 context_self()->parameter.no_ipv6,
                                 context_self()->parameter.prefer_ipv4);
                         d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+                        sgw->num_of_tac = num_of_tac;
+                        if (num_of_tac != 0)
+                            memcpy(sgw->tac, tac, sizeof(sgw->tac));
+                        else
+                        {
+                            char buf[CORE_ADDRSTRLEN];
+                            d_warn("SGW %s without TAC setting!", CORE_ADDR(sgw->sa_list, buf));
+                        }
 
                         core_freeaddrinfo(list);
 
@@ -1946,13 +1993,40 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     /* Create New GUTI */
     mme_ue_new_guti(mme_ue);
 
-    /* Setup SGW with round-robin manner */
-    if (mme_self()->sgw == NULL)
+    if (!mme_self()->tac_selection)
+    {
+        /* Setup SGW with round-robin manner */
+        if (mme_self()->sgw == NULL)
+            mme_self()->sgw = list_first(&mme_self()->sgw_list);
+
+        SETUP_GTP_NODE(mme_ue, mme_self()->sgw);
+
+        mme_self()->sgw = list_next(mme_self()->sgw);
+    }
+    else
+    {
+        /* Select SGW by eNB TAC */
         mme_self()->sgw = list_first(&mme_self()->sgw_list);
 
-    SETUP_GTP_NODE(mme_ue, mme_self()->sgw);
+        int i, found=0;
+        while(mme_self()->sgw && !found)
+        {
+            for (i=0; i<mme_self()->sgw->num_of_tac && !found; i++)
+                found = mme_self()->sgw->tac[i] == enb_ue->nas.tai.tac? 1: 0;
+            if (!found)
+                mme_self()->sgw = list_next(mme_self()->sgw);
+        }
 
-    mme_self()->sgw = list_next(mme_self()->sgw);
+        if (mme_self()->sgw)
+        {
+            char buf[CORE_ADDRSTRLEN];
+            d_trace(9, "Selected SGW[%s] by TAC[%d]\n", CORE_ADDR(mme_self()->sgw->sa_list, buf), enb_ue->nas.tai.tac);
+        }
+        else
+            d_trace(9, "No available SGW with TAC[%d]\n", enb_ue->nas.tai.tac);
+
+        SETUP_GTP_NODE(mme_ue, mme_self()->sgw);
+    }
 
     /* Create paging retry timer */
     mme_ue->t3413 = timer_create(&self.tm_service, MME_EVT_EMM_T3413,

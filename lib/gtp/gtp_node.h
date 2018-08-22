@@ -20,6 +20,7 @@ extern "C" {
 /**
  * This structure represents the commonalities of GTP node such as MME, SGW,
  * PGW gateway. Some of members may not be used by the specific type of node */
+#define MAX_NUM_OF_TAC    16
 typedef struct _gtp_node_t {
     lnode_t         node;           /* A node of list_t */
 
@@ -27,6 +28,9 @@ typedef struct _gtp_node_t {
 
     sock_id         sock;           /* Socket instance */
     ip_t            ip;             /* Socket Address */
+
+	c_uint16_t      tac[MAX_NUM_OF_TAC];
+	c_uint8_t       num_of_tac;
 
     list_t          local_list;    
     list_t          remote_list;   

@@ -137,6 +137,9 @@ typedef struct _mme_context_t {
     /* Network Name */    
     nas_network_name_t short_name; /* Network short name */
     nas_network_name_t full_name; /* Network Full Name */
+
+	/* TAC Selection */
+	int             tac_selection;
                         
 } mme_context_t;
 
