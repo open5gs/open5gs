@@ -54,6 +54,12 @@ typedef struct _served_gummei {
     c_uint8_t       mme_code[CODE_PER_MME];
 } served_gummei_t;
 
+typedef enum {
+    /* Round-Robin */
+    SGW_SELECT_RR,
+    SGW_SELECT_TAC,
+} sgw_select_e;
+
 typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
     fd_config_t     *fd_config;     /* MME freeDiameter config */
@@ -138,8 +144,8 @@ typedef struct _mme_context_t {
     nas_network_name_t short_name; /* Network short name */
     nas_network_name_t full_name; /* Network Full Name */
 
-	/* TAC Selection */
-	int             tac_selection;
+    /* SGW Selection */
+    sgw_select_e    sgw_selection;
                         
 } mme_context_t;
 

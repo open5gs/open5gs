@@ -29,8 +29,8 @@ typedef struct _gtp_node_t {
     sock_id         sock;           /* Socket instance */
     ip_t            ip;             /* Socket Address */
 
-	c_uint16_t      tac[MAX_NUM_OF_TAC];
-	c_uint8_t       num_of_tac;
+    c_uint16_t      tac[MAX_NUM_OF_TAC];
+    c_uint8_t       num_of_tac;
 
     list_t          local_list;    
     list_t          remote_list;   

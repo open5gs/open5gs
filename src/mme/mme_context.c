@@ -1262,10 +1262,17 @@ status_t mme_context_parse_config()
                         }
                     }
                 }
-                else if (!strcmp(mme_key, "tac_selection"))
+                else if (!strcmp(mme_key, "sgw_selection"))
                 {
-                    self.tac_selection =
-                        yaml_iter_bool(&mme_iter);
+                    const char *sgw_selection_mode =
+                        yaml_iter_value(&mme_iter);
+
+                    if (!strcmp(sgw_selection_mode, "rr"))
+                        self.sgw_selection = SGW_SELECT_RR;
+                    else if (!strcmp(sgw_selection_mode, "tac"))
+                        self.sgw_selection = SGW_SELECT_TAC;
+                    else
+                        d_warn("unknown sgw_selection mode `%s`", sgw_selection_mode);
                 }
                 else
                     d_warn("unknown key `%s`", mme_key);
@@ -1993,7 +2000,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     /* Create New GUTI */
     mme_ue_new_guti(mme_ue);
 
-    if (!mme_self()->tac_selection)
+    if (mme_self()->sgw_selection == SGW_SELECT_RR)
     {
         /* Setup SGW with round-robin manner */
         if (mme_self()->sgw == NULL)
@@ -2003,7 +2010,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 
         mme_self()->sgw = list_next(mme_self()->sgw);
     }
-    else
+    else if (mme_self()->sgw_selection == SGW_SELECT_TAC)
     {
         /* Select SGW by eNB TAC */
         mme_self()->sgw = list_first(&mme_self()->sgw_list);
