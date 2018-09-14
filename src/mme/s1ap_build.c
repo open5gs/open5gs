@@ -1709,6 +1709,8 @@ status_t s1ap_build_handover_request(
     subscription_data = &mme_ue->subscription_data;
     d_assert(subscription_data, return CORE_ERROR, "Null param");
 
+    d_trace(3, "[MME] Handover request\n");
+
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
     pdu.choice.initiatingMessage = 
@@ -2287,7 +2289,7 @@ status_t s1ap_build_s1_reset_ack(
 
     S1AP_ResetAcknowledgeIEs_t *ie = NULL;
 
-    d_trace(3, "[MME] ResetAcknowledge\n");
+    d_trace(3, "[MME] Reset acknowledge\n");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
@@ -2372,6 +2374,229 @@ status_t s1ap_build_s1_reset_ack(
                     item2->eNB_UE_S1AP_ID ? *item2->eNB_UE_S1AP_ID : -1);
         }
     }
+
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
+
+status_t s1ap_build_write_replace_warning_request(
+        pkbuf_t **s1apbuf, sbc_pws_data_t *sbc_pws)
+{
+    status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_WriteReplaceWarningRequest_t *WriteReplaceWarningRequest = NULL;
+
+    S1AP_WriteReplaceWarningRequestIEs_t *ie = NULL;
+    S1AP_MessageIdentifier_t *MessageIdentifier = NULL;
+    S1AP_SerialNumber_t *SerialNumber = NULL;
+    S1AP_RepetitionPeriod_t *RepetitionPeriod = NULL;
+    S1AP_NumberofBroadcastRequest_t *NumberofBroadcastRequest = NULL;
+    S1AP_DataCodingScheme_t *DataCodingScheme = NULL;
+    S1AP_WarningMessageContents_t *WarningMessageContents = NULL;
+
+    d_trace(3, "[MME] Write-replace warning request\n");
+
+    d_assert(sbc_pws, return CORE_ERROR,);
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_WriteReplaceWarning;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_WriteReplaceWarningRequest;
+
+    WriteReplaceWarningRequest = &initiatingMessage->value.choice.WriteReplaceWarningRequest;
+
+    ie = core_calloc(1, sizeof(S1AP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MessageIdentifier;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_MessageIdentifier;
+
+    MessageIdentifier = &ie->value.choice.MessageIdentifier;
+
+    MessageIdentifier->size = (16 / 8);
+    MessageIdentifier->buf = 
+        core_calloc(MessageIdentifier->size, sizeof(c_uint8_t));
+    MessageIdentifier->bits_unused = 0;
+    MessageIdentifier->buf[0] = (sbc_pws->message_id >> 8) & 0xFF;
+    MessageIdentifier->buf[1] = sbc_pws->message_id & 0xFF;
+
+    ie = core_calloc(1, sizeof(S1AP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_SerialNumber;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_SerialNumber;
+
+    SerialNumber = &ie->value.choice.SerialNumber;
+
+    SerialNumber->size = (16 / 8);
+    SerialNumber->buf = 
+        core_calloc(SerialNumber->size, sizeof(c_uint8_t));
+    SerialNumber->bits_unused = 0;
+    SerialNumber->buf[0] = (sbc_pws->serial_number >> 8) & 0xFF;
+    SerialNumber->buf[1] = sbc_pws->serial_number & 0xFF;
+
+    /* TODO: optional Warning Area List */
+
+    ie = core_calloc(1, sizeof(S1AP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_RepetitionPeriod;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_RepetitionPeriod;
+
+    RepetitionPeriod = &ie->value.choice.RepetitionPeriod;
+
+    *RepetitionPeriod = sbc_pws->repetition_period;
+
+    /* TODO: optional Extended Repetition Period */
+
+    ie = core_calloc(1, sizeof(S1AP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_NumberofBroadcastRequest;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_NumberofBroadcastRequest;
+
+    NumberofBroadcastRequest = &ie->value.choice.NumberofBroadcastRequest;
+
+    *NumberofBroadcastRequest = sbc_pws->number_of_broadcast;
+
+    /* TODO: optional Warnging Type */
+
+    /* TODO: optional Warning Security Information */
+
+    ie = core_calloc(1, sizeof(S1AP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_DataCodingScheme;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_DataCodingScheme;
+
+    DataCodingScheme = &ie->value.choice.DataCodingScheme;
+
+    DataCodingScheme->size = (8 / 8);
+    DataCodingScheme->buf = 
+        core_calloc(DataCodingScheme->size, sizeof(c_uint8_t));
+    DataCodingScheme->bits_unused = 0;
+    DataCodingScheme->buf[0] = sbc_pws->data_coding_scheme & 0xFF;
+
+    ie = core_calloc(1, sizeof(S1AP_WriteReplaceWarningRequestIEs_t));
+    ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_WarningMessageContents;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_WarningMessageContents;
+
+    WarningMessageContents = &ie->value.choice.WarningMessageContents;
+
+    WarningMessageContents->size = sbc_pws->message_length;;
+    WarningMessageContents->buf = 
+        core_calloc(WarningMessageContents->size, sizeof(c_uint8_t));
+    memcpy(WarningMessageContents->buf, sbc_pws->message_contents, WarningMessageContents->size);
+
+    /* TODO: optional Concurrent Warning Message Indicator */
+
+    d_trace(5, "    Message[%02x,%02x] Serial[%02x,%02x] Repetition[%d] NumBroadcast[%d]\n",
+            MessageIdentifier->buf[0], MessageIdentifier->buf[1], SerialNumber->buf[0],
+            SerialNumber->buf[1], *RepetitionPeriod, *NumberofBroadcastRequest);
+
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    if (rv != CORE_OK)
+    {
+        d_error("s1ap_encode_pdu() failed");
+        return CORE_ERROR;
+    }
+
+    return CORE_OK;
+}
+
+status_t s1ap_build_kill_request(
+        pkbuf_t **s1apbuf, sbc_pws_data_t *sbc_pws)
+{
+    status_t rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_KillRequest_t *KillRequest = NULL;
+
+    S1AP_KillRequestIEs_t *ie = NULL;
+    S1AP_MessageIdentifier_t *MessageIdentifier = NULL;
+    S1AP_SerialNumber_t *SerialNumber = NULL;
+
+    d_trace(3, "[MME] Kill request\n");
+
+    d_assert(sbc_pws, return CORE_ERROR,);
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        core_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_Kill;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_KillRequest;
+
+    KillRequest = &initiatingMessage->value.choice.KillRequest;
+
+    ie = core_calloc(1, sizeof(S1AP_KillRequestIEs_t));
+    ASN_SEQUENCE_ADD(&KillRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MessageIdentifier;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_KillRequestIEs__value_PR_MessageIdentifier;
+
+    MessageIdentifier = &ie->value.choice.MessageIdentifier;
+
+    MessageIdentifier->size = (16 / 8);
+    MessageIdentifier->buf = 
+        core_calloc(MessageIdentifier->size, sizeof(c_uint8_t));
+    MessageIdentifier->bits_unused = 0;
+    MessageIdentifier->buf[0] = (sbc_pws->message_id >> 8) & 0xFF;
+    MessageIdentifier->buf[1] = sbc_pws->message_id & 0xFF;
+
+    ie = core_calloc(1, sizeof(S1AP_KillRequestIEs_t));
+    ASN_SEQUENCE_ADD(&KillRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_SerialNumber;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_KillRequestIEs__value_PR_SerialNumber;
+
+    SerialNumber = &ie->value.choice.SerialNumber;
+
+    SerialNumber->size = (16 / 8);
+    SerialNumber->buf = 
+        core_calloc(SerialNumber->size, sizeof(c_uint8_t));
+    SerialNumber->bits_unused = 0;
+    SerialNumber->buf[0] = (sbc_pws->serial_number >> 8) & 0xFF;
+    SerialNumber->buf[1] = sbc_pws->serial_number & 0xFF;
+
+    /* TODO: optional Warning Area List */
+
+    d_trace(5, "    Message[%02x,%02x] Serial[%02x,%02x]\n",
+            MessageIdentifier->buf[0], MessageIdentifier->buf[1], 
+            SerialNumber->buf[0], SerialNumber->buf[1]);
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);

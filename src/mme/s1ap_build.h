@@ -4,6 +4,8 @@
 #include "s1ap/s1ap_message.h"
 #include "mme_context.h"
 
+#include "sbc_message.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -77,6 +79,12 @@ CORE_DECLARE(status_t) s1ap_build_s1_reset_partial(
 CORE_DECLARE(status_t) s1ap_build_s1_reset_ack(
         pkbuf_t **s1apbuf,
         S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface);
+
+CORE_DECLARE(status_t) s1ap_build_write_replace_warning_request(
+        pkbuf_t **s1apbuf, sbc_pws_data_t *sbc_pws);
+
+CORE_DECLARE(status_t) s1ap_build_kill_request(
+        pkbuf_t **s1apbuf, sbc_pws_data_t *sbc_pws);
 
 #ifdef __cplusplus
 }

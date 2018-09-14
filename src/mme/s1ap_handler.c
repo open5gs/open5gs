@@ -2106,3 +2106,52 @@ void s1ap_handle_s1_reset(
     d_assert(rv == CORE_OK,,);
 }
 
+void s1ap_handle_write_replace_warning_response(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[CORE_ADDRSTRLEN];
+
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_WriteReplaceWarningResponse_t *WriteReplaceWarningResponse = NULL;
+
+    d_assert(enb, return,);
+    d_assert(enb->sock, return,);
+
+    d_assert(message, return,);
+    successfulOutcome = message->choice.successfulOutcome;
+    d_assert(successfulOutcome, return,);
+    WriteReplaceWarningResponse =
+        &successfulOutcome->value.choice.WriteReplaceWarningResponse;
+    d_assert(WriteReplaceWarningResponse, return,);
+
+    d_trace(3, "[MME] Write replace warning response\n");
+
+    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
+}
+
+void s1ap_handle_kill_response(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[CORE_ADDRSTRLEN];
+
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_KillResponse_t *KillResponse = NULL;
+
+    d_assert(enb, return,);
+    d_assert(enb->sock, return,);
+
+    d_assert(message, return,);
+    successfulOutcome = message->choice.successfulOutcome;
+    d_assert(successfulOutcome, return,);
+    KillResponse =
+        &successfulOutcome->value.choice.KillResponse;
+    d_assert(KillResponse, return,);
+
+    d_trace(3, "[MME] Kill response\n");
+
+    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
+            CORE_ADDR(enb->addr, buf), enb->enb_id);
+
+}

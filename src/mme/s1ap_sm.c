@@ -179,6 +179,16 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                             s1ap_handle_handover_request_ack(enb, pdu);
                             break;
                         }
+                        case S1AP_ProcedureCode_id_WriteReplaceWarning:
+                        {
+                            s1ap_handle_write_replace_warning_response(enb, pdu);
+                            break;
+                        }
+                        case S1AP_ProcedureCode_id_Kill:
+                        {
+                            s1ap_handle_kill_response(enb, pdu);
+                            break;
+                        }
                         default:
                         {
                             d_warn("Not implemented(choice:%d, proc:%d)",
