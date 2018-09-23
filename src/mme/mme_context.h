@@ -34,6 +34,9 @@ extern "C" {
 
 #define MAX_NUM_OF_BPLMN            6
 
+typedef struct _mme_sgw_t mme_sgw_t;
+typedef struct _mme_pgw_t mme_pgw_t;
+
 typedef struct _enb_ue_t enb_ue_t;
 typedef struct _mme_ue_t mme_ue_t;
 
@@ -72,7 +75,7 @@ typedef struct _mme_context_t {
     c_sockaddr_t    *gtpc_addr6;    /* MME GTPC IPv6 Address */
 
     list_t          sgw_list;       /* SGW GTPC Client List */
-    gtp_node_t      *sgw;           /* Iterator for SGW round-robin */
+    mme_sgw_t       *sgw;           /* Iterator for SGW round-robin */
 
     list_t          pgw_list;       /* PGW GTPC Client List */
     c_sockaddr_t    *pgw_addr;      /* First IPv4 Address Selected */
@@ -139,6 +142,18 @@ typedef struct _mme_context_t {
     nas_network_name_t full_name; /* Network Full Name */
                         
 } mme_context_t;
+
+typedef struct _mme_sgw_t {
+    lnode_t         node;
+
+    gtp_node_t      *gnode;
+} mme_sgw_t;
+
+typedef struct _mme_pgw_t {
+    lnode_t         node;
+
+    gtp_node_t      *gnode;
+} mme_pgw_t;
 
 typedef struct _mme_enb_t {
     index_t         index;  /* An index of this node */
@@ -508,6 +523,16 @@ CORE_DECLARE(mme_context_t*) mme_self(void);
 
 CORE_DECLARE(status_t)      mme_context_parse_config(void);
 CORE_DECLARE(status_t)      mme_context_setup_trace_module(void);
+
+CORE_DECLARE(mme_sgw_t*)    mme_sgw_add(
+        c_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
+CORE_DECLARE(status_t )     mme_sgw_remove(mme_sgw_t *sgw);
+CORE_DECLARE(status_t )     mme_sgw_remove_all();
+
+CORE_DECLARE(mme_pgw_t*)    mme_pgw_add(
+        c_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
+CORE_DECLARE(status_t )     mme_pgw_remove(mme_pgw_t *pgw);
+CORE_DECLARE(status_t )     mme_pgw_remove_all();
 
 CORE_DECLARE(mme_enb_t*)    mme_enb_add(sock_id sock, c_sockaddr_t *addr);
 CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);

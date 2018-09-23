@@ -514,7 +514,7 @@ gtp_node_t *sgw_mme_add_by_message(gtp_message_t *message)
     mme = gtp_find_node(&sgw_self()->mme_s11_list, mme_s11_teid);
     if (!mme)
     {
-        mme = gtp_add_node_with_teid(&sgw_self()->mme_s11_list, mme_s11_teid,
+        mme = gtp_add_node(&sgw_self()->mme_s11_list, mme_s11_teid,
             sgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,

@@ -120,7 +120,7 @@ void sgw_s11_handle_create_session_request(
     pgw = gtp_find_node(&sgw_self()->pgw_s5c_list, pgw_s5c_teid);
     if (!pgw)
     {
-        pgw = gtp_add_node_with_teid(&sgw_self()->pgw_s5c_list, pgw_s5c_teid,
+        pgw = gtp_add_node(&sgw_self()->pgw_s5c_list, pgw_s5c_teid,
             sgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
@@ -227,7 +227,7 @@ CORE_DECLARE(void) sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     enb = gtp_find_node(&sgw_self()->enb_s1u_list, enb_s1u_teid);
     if (!enb)
     {
-        enb = gtp_add_node_with_teid(&sgw_self()->enb_s1u_list, enb_s1u_teid,
+        enb = gtp_add_node(&sgw_self()->enb_s1u_list, enb_s1u_teid,
             sgw_self()->gtpu_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
@@ -460,7 +460,7 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     enb = gtp_find_node(&sgw_self()->enb_s1u_list, enb_s1u_teid);
     if (!enb)
     {
-        enb = gtp_add_node_with_teid(&sgw_self()->enb_s1u_list, enb_s1u_teid,
+        enb = gtp_add_node(&sgw_self()->enb_s1u_list, enb_s1u_teid,
             sgw_self()->gtpu_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
@@ -830,8 +830,7 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             enb = gtp_find_node(&sgw_self()->enb_s1u_list, req_teid);
             if (!enb)
             {
-                enb = gtp_add_node_with_teid(
-                    &sgw_self()->enb_s1u_list, req_teid,
+                enb = gtp_add_node(&sgw_self()->enb_s1u_list, req_teid,
                     sgw_self()->gtpu_port,
                     context_self()->parameter.no_ipv4,
                     context_self()->parameter.no_ipv6,
@@ -871,8 +870,7 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             enb = gtp_find_node(&sgw_self()->enb_s1u_list, req_teid);
             if (!enb)
             {
-                enb = gtp_add_node_with_teid(
-                    &sgw_self()->enb_s1u_list, req_teid,
+                enb = gtp_add_node(&sgw_self()->enb_s1u_list, req_teid,
                     sgw_self()->gtpu_port,
                     context_self()->parameter.no_ipv4,
                     context_self()->parameter.no_ipv6,

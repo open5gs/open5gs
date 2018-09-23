@@ -14,6 +14,9 @@ extern "C" {
 #define SCTP_S1AP_PPID              18
 #define SCTP_X2AP_PPID              27
 
+#define MAX_NUM_OF_SGW              32
+#define MAX_NUM_OF_PGW              32
+
 #define MAX_NUM_OF_ENB              128
 #define MAX_NUM_OF_UE               128
 #define MAX_NUM_OF_SESS             4

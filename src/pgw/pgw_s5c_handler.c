@@ -86,7 +86,7 @@ void pgw_s5c_handle_create_session_request(
     sgw = gtp_find_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
     if (!sgw)
     {
-        sgw = gtp_add_node_with_teid(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
+        sgw = gtp_add_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
             pgw_self()->gtpu_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
@@ -190,7 +190,7 @@ void pgw_s5c_handle_create_bearer_response(
     sgw = gtp_find_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
     if (!sgw)
     {
-        sgw = gtp_add_node_with_teid(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
+        sgw = gtp_add_node(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
             pgw_self()->gtpu_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,

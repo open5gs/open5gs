@@ -28,14 +28,13 @@ status_t gtp_node_final(void)
     return CORE_OK;
 }
 
-status_t gtp_add_node(list_t *list, gtp_node_t **node,
+status_t gtp_create_node(gtp_node_t **node,
         c_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
     status_t rv;
     gtp_node_t *new_node = NULL;
     c_sockaddr_t *preferred_list = NULL;
 
-    d_assert(list, return CORE_ERROR,);
     d_assert(all_list, return CORE_ERROR,);
 
     rv = core_copyaddrinfo(&preferred_list, all_list);
@@ -71,8 +70,6 @@ status_t gtp_add_node(list_t *list, gtp_node_t **node,
 
         list_init(&new_node->local_list);
         list_init(&new_node->remote_list);
-
-        list_append(list, new_node);
     }
 
     *node = new_node;
@@ -80,7 +77,22 @@ status_t gtp_add_node(list_t *list, gtp_node_t **node,
     return CORE_OK;
 }
 
-gtp_node_t *gtp_add_node_with_teid(list_t *list, gtp_f_teid_t *f_teid,
+status_t gtp_delete_node(gtp_node_t *node)
+{
+    d_assert(node, return CORE_ERROR,);
+
+    if (node->sock)
+        sock_delete(node->sock);
+
+    gtp_xact_delete_all(node);
+
+    core_freeaddrinfo(node->sa_list);
+    pool_free_node(&gtp_node_pool, node);
+
+    return CORE_OK;
+}
+
+gtp_node_t *gtp_add_node(list_t *list, gtp_f_teid_t *f_teid,
         c_uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
     status_t rv;
@@ -94,9 +106,16 @@ gtp_node_t *gtp_add_node_with_teid(list_t *list, gtp_f_teid_t *f_teid,
     rv = gtp_f_teid_to_sockaddr(f_teid, port, &sa_list);
     d_assert(rv == CORE_OK, return NULL,);
 
-    rv = gtp_add_node(list, &node, sa_list, no_ipv4, no_ipv6, prefer_ipv4);
+    rv = gtp_create_node(&node, sa_list, no_ipv4, no_ipv6, prefer_ipv4);
     d_assert(rv == CORE_OK, return NULL,);
-    d_assert(node, return NULL,);
+    if (node == NULL)
+    {
+        d_error("Invalid Parameter : "
+                "port[%d], no_ipv4[%d], no_ipv6[%d], prefer_ipv4[%d]",
+                port, no_ipv4, no_ipv6, prefer_ipv4);
+        return NULL;
+    }
+    list_append(list, node);
 
     rv = gtp_f_teid_to_ip(f_teid, &node->ip);
     d_assert(rv == CORE_OK, return NULL,);
@@ -111,19 +130,15 @@ gtp_node_t *gtp_add_node_with_teid(list_t *list, gtp_f_teid_t *f_teid,
 
 status_t gtp_remove_node(list_t *list, gtp_node_t *node)
 {
+    status_t rv;
     d_assert(node, return CORE_ERROR,);
 
     list_remove(list, node);
 
-    if (node->sock)
-        sock_delete(node->sock);
+    rv = gtp_delete_node(node);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
 
-    gtp_xact_delete_all(node);
-
-    core_freeaddrinfo(node->sa_list);
-    pool_free_node(&gtp_node_pool, node);
-
-    return CORE_OK;
+    return rv;
 }
 
 status_t gtp_remove_all_nodes(list_t *list)

@@ -43,14 +43,15 @@ static int _gtpv2_c_recv_cb(sock_id sock, void *data)
     return 0;
 }
 
-static c_sockaddr_t *gtp_addr_find_by_family(list_t *list, int family)
+static c_sockaddr_t *pgw_addr_find_by_family(list_t *list, int family)
 {
-    gtp_node_t *gnode = NULL;
+    mme_pgw_t *pgw = NULL;
     d_assert(list, return NULL,);
 
-    for (gnode = list_first(list); gnode; gnode = list_next(gnode))
+    for (pgw = list_first(list); pgw; pgw = list_next(pgw))
     {
-        c_sockaddr_t *addr = gnode->sa_list;
+        d_assert(pgw->gnode, return NULL,);
+        c_sockaddr_t *addr = pgw->gnode->sa_list;
         while(addr)
         {
             if (addr->c_sa_family == family)
@@ -67,7 +68,7 @@ static c_sockaddr_t *gtp_addr_find_by_family(list_t *list, int family)
 status_t mme_gtp_open()
 {
     status_t rv;
-    gtp_node_t *gnode = NULL;
+    mme_sgw_t *sgw = NULL;
 
     rv = gtp_server_list(&mme_self()->gtpc_list, _gtpv2_c_recv_cb);
     d_assert(rv == CORE_OK, return CORE_ERROR,);
@@ -82,17 +83,16 @@ status_t mme_gtp_open()
     d_assert(mme_self()->gtpc_addr || mme_self()->gtpc_addr6,
             return CORE_ERROR, "No GTP Server");
 
-    mme_self()->pgw_addr = gtp_addr_find_by_family(
+    mme_self()->pgw_addr = pgw_addr_find_by_family(
             &mme_self()->pgw_list, AF_INET);
-    mme_self()->pgw_addr6 = gtp_addr_find_by_family(
+    mme_self()->pgw_addr6 = pgw_addr_find_by_family(
             &mme_self()->pgw_list, AF_INET6);
     d_assert(mme_self()->pgw_addr || mme_self()->pgw_addr6,
             return CORE_ERROR,);
 
-    for (gnode = list_first(&mme_self()->sgw_list);
-            gnode; gnode = list_next(gnode))
+    for (sgw = list_first(&mme_self()->sgw_list); sgw; sgw = list_next(sgw))
     {
-        rv = gtp_client(gnode);
+        rv = gtp_client(sgw->gnode);
         d_assert(rv == CORE_OK, return CORE_ERROR,);
     }
 

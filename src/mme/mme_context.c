@@ -29,6 +29,9 @@
 static mme_context_t self;
 static fd_config_t g_fd_conf;
 
+pool_declare(mme_sgw_pool, mme_sgw_t, MAX_NUM_OF_SGW);
+pool_declare(mme_pgw_pool, mme_pgw_t, MAX_NUM_OF_PGW);
+
 index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
 index_declare(mme_ue_pool, mme_ue_t, MAX_POOL_OF_UE);
 index_declare(enb_ue_pool, enb_ue_t, MAX_POOL_OF_UE);
@@ -58,6 +61,9 @@ status_t mme_context_init()
     gtp_node_init();
     list_init(&self.sgw_list);
     list_init(&self.pgw_list);
+
+    pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
+    pool_init(&mme_pgw_pool, MAX_NUM_OF_PGW);
 
     index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
 
@@ -121,8 +127,12 @@ status_t mme_context_final()
 
     index_final(&mme_enb_pool);
 
-    gtp_remove_all_nodes(&self.sgw_list);
-    gtp_remove_all_nodes(&self.pgw_list);
+    mme_sgw_remove_all();
+    mme_pgw_remove_all();
+
+    pool_final(&mme_sgw_pool);
+    pool_final(&mme_pgw_pool);
+
     gtp_node_final();
 
     sock_remove_all_nodes(&self.s1ap_list);
@@ -1280,7 +1290,7 @@ status_t mme_context_parse_config()
                     yaml_iter_recurse(&mme_iter, &gtpc_array);
                     do
                     {
-                        gtp_node_t *sgw = NULL;
+                        mme_sgw_t *sgw = NULL;
                         c_sockaddr_t *list = NULL;
                         int family = AF_UNSPEC;
                         int i, num = 0;
@@ -1368,11 +1378,11 @@ status_t mme_context_parse_config()
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
-                        rv = gtp_add_node(&self.sgw_list, &sgw, list,
+                        sgw = mme_sgw_add(list,
                                 context_self()->parameter.no_ipv4,
                                 context_self()->parameter.no_ipv6,
                                 context_self()->parameter.prefer_ipv4);
-                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        d_assert(sgw, return CORE_ERROR,);
 
                         core_freeaddrinfo(list);
 
@@ -1394,7 +1404,7 @@ status_t mme_context_parse_config()
                     yaml_iter_recurse(&mme_iter, &gtpc_array);
                     do
                     {
-                        gtp_node_t *pgw = NULL;
+                        mme_pgw_t *pgw = NULL;
                         c_sockaddr_t *list = NULL;
                         int family = AF_UNSPEC;
                         int i, num = 0;
@@ -1482,11 +1492,11 @@ status_t mme_context_parse_config()
                             d_assert(rv == CORE_OK, return CORE_ERROR,);
                         }
 
-                        rv = gtp_add_node(&self.pgw_list, &pgw, list,
+                        pgw = mme_pgw_add(list,
                                 context_self()->parameter.no_ipv4,
                                 context_self()->parameter.no_ipv6,
                                 context_self()->parameter.prefer_ipv4);
-                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        d_assert(pgw, return CORE_ERROR,);
 
                         core_freeaddrinfo(list);
 
@@ -1590,6 +1600,122 @@ status_t mme_context_setup_trace_module()
 
         extern int _tlv_msg;
         d_trace_level(&_tlv_msg, gtpv2);
+    }
+
+    return CORE_OK;
+}
+
+mme_sgw_t *mme_sgw_add(
+        c_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
+{
+    status_t rv;
+    mme_sgw_t *sgw = NULL;
+
+    d_assert(all_list, return NULL, "Null param");
+
+    pool_alloc_node(&mme_sgw_pool, &sgw);
+    d_assert(sgw, return NULL, "Null param");
+
+    rv = gtp_create_node(&sgw->gnode, all_list, no_ipv4, no_ipv6, prefer_ipv4);
+    d_assert(rv == CORE_OK, return NULL,);
+    if (sgw->gnode == NULL)
+    {
+        d_error("Invalid Parameter : "
+                "no_ipv4[%d], no_ipv6[%d], prefer_ipv4[%d]",
+                no_ipv4, no_ipv6, prefer_ipv4);
+        return NULL;
+    }
+
+    list_append(&self.sgw_list, sgw);
+
+    return sgw;
+}
+
+status_t mme_sgw_remove(mme_sgw_t *sgw)
+{
+    status_t rv;
+    d_assert(sgw, return CORE_ERROR, "Null param");
+
+    list_remove(&self.sgw_list, sgw);
+
+    rv = gtp_delete_node(sgw->gnode);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    pool_free_node(&mme_sgw_pool, sgw);
+
+    return CORE_OK;
+}
+
+status_t mme_sgw_remove_all()
+{
+    mme_sgw_t *sgw = NULL, *next_sgw = NULL;
+
+    sgw = list_first(&self.sgw_list);
+    while (sgw)
+    {
+        next_sgw = list_next(sgw);
+
+        mme_sgw_remove(sgw);
+
+        sgw = next_sgw;
+    }
+
+    return CORE_OK;
+}
+
+mme_pgw_t *mme_pgw_add(
+        c_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
+{
+    status_t rv;
+    mme_pgw_t *pgw = NULL;
+
+    d_assert(all_list, return NULL, "Null param");
+
+    pool_alloc_node(&mme_pgw_pool, &pgw);
+    d_assert(pgw, return NULL, "Null param");
+
+    rv = gtp_create_node(&pgw->gnode, all_list, no_ipv4, no_ipv6, prefer_ipv4);
+    d_assert(rv == CORE_OK, return NULL,);
+    if (pgw->gnode == NULL)
+    {
+        d_error("Invalid Parameter : "
+                "no_ipv4[%d], no_ipv6[%d], prefer_ipv4[%d]",
+                no_ipv4, no_ipv6, prefer_ipv4);
+        return NULL;
+    }
+
+    list_append(&self.pgw_list, pgw);
+
+    return pgw;
+}
+
+status_t mme_pgw_remove(mme_pgw_t *pgw)
+{
+    status_t rv;
+    d_assert(pgw, return CORE_ERROR, "Null param");
+
+    list_remove(&self.pgw_list, pgw);
+
+    rv = gtp_delete_node(pgw->gnode);
+    d_assert(rv == CORE_OK, return CORE_ERROR,);
+
+    pool_free_node(&mme_pgw_pool, pgw);
+
+    return CORE_OK;
+}
+
+status_t mme_pgw_remove_all()
+{
+    mme_pgw_t *pgw = NULL, *next_pgw = NULL;
+
+    pgw = list_first(&self.pgw_list);
+    while (pgw)
+    {
+        next_pgw = list_next(pgw);
+
+        mme_pgw_remove(pgw);
+
+        pgw = next_pgw;
     }
 
     return CORE_OK;
@@ -1950,7 +2076,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     if (mme_self()->sgw == NULL)
         mme_self()->sgw = list_first(&mme_self()->sgw_list);
 
-    SETUP_GTP_NODE(mme_ue, mme_self()->sgw);
+    SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
 
     mme_self()->sgw = list_next(mme_self()->sgw);
 

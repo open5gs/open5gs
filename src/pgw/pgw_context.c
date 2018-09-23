@@ -1082,7 +1082,7 @@ gtp_node_t *pgw_sgw_add_by_message(gtp_message_t *message)
     sgw = gtp_find_node(&pgw_self()->sgw_s5c_list, sgw_s5c_teid);
     if (!sgw)
     {
-        sgw = gtp_add_node_with_teid(&pgw_self()->sgw_s5c_list, sgw_s5c_teid,
+        sgw = gtp_add_node(&pgw_self()->sgw_s5c_list, sgw_s5c_teid,
             pgw_self()->gtpc_port,
             context_self()->parameter.no_ipv4,
             context_self()->parameter.no_ipv6,
