@@ -206,7 +206,7 @@ sgw:
 # <SGW Selection Mode>
 # 
 # o Round-Robin
-#   (If you does not set the `selection_mode`, default mode is Round-Robin)
+#   (If `selection_mode` is omitted, the default mode is Round-Robin)
 #
 #   selection_mode: rr
 #   gtpc:
