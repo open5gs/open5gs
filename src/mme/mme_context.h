@@ -47,6 +47,11 @@ typedef struct _fd_config_t fd_config_t;
 
 typedef c_uint32_t mme_m_tmsi_t;
 
+typedef enum {
+    SGW_SELECT_RR = 0,  /* Default SGW Selection Method */
+    SGW_SELECT_TAC,
+} sgw_select_e;
+
 typedef struct _served_gummei {
     c_uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
@@ -140,11 +145,17 @@ typedef struct _mme_context_t {
     /* Network Name */    
     nas_network_name_t short_name; /* Network short name */
     nas_network_name_t full_name; /* Network Full Name */
+
+    /* SGW Selection */
+    sgw_select_e    sgw_selection;
                         
 } mme_context_t;
 
 typedef struct _mme_sgw_t {
     lnode_t         node;
+
+    c_uint16_t      tac[MAX_NUM_OF_TAI];
+    c_uint8_t       num_of_tac;
 
     gtp_node_t      *gnode;
 } mme_sgw_t;

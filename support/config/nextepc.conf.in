@@ -203,7 +203,29 @@ sgw:
       addr: 127.0.0.2
 
 #
-#  <GTP-U Server>>
+# <SGW Selection Mode>
+# 
+# o Round-Robin
+#   (If you does not set the `selection_mode`, default mode is Round-Robin)
+#
+#   selection_mode: rr
+#   gtpc:
+#     addr: 127.0.0.2
+#     addr: 127.0.2.2
+#     addr: 127.0.4.2
+#
+# o SGW selection by eNodeB TAC
+#
+#   selection_mode: tac
+#   gtpc:
+#     - addr: 127.0.0.2
+#       tac: 26000
+#     - addr: 127.0.2.2
+#       tac: [25000, 27000, 28000]
+#
+
+#
+#  <GTP-U Server>
 #
 #  o GTP-U Server(all address avaiable)
 #    gtpu:
