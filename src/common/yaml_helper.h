@@ -5,6 +5,10 @@
 
 #include <yaml.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     yaml_document_t *document;
     yaml_node_t *node;
