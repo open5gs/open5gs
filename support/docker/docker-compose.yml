@@ -67,6 +67,7 @@ services:
       - home:/home/${USER}
       - ${HOME}:/mnt
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - /etc/localtime:/etc/localtime:ro
     hostname: nextepc-dev
     user: ${USER}
     entrypoint: /bin/bash -c "/bin/bash -c \"$${@}\""
