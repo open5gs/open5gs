@@ -833,6 +833,7 @@ void s1ap_handle_ue_context_release_request(
             break;
         case S1AP_Cause_PR_nas:
             d_warn("NAS-Cause[%d]", Cause->choice.nas);
+            break;
         default:
             d_warn("Invalid cause group[%d]", Cause->present);
             break;
