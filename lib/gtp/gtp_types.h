@@ -379,14 +379,18 @@ ED3(c_uint8_t       ipv4:1;,
 #define GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME 0
 #define GTP_UE_TIME_ZONE_1_HOUR_FOR_DAYLIGHT_SAVING_TIME        1
 #define GTP_UE_TIME_ZONE_2_HOUR_FOR_DAYLIGHT_SAVING_TIME        2
+/* Time Zone" IE in 3GPP TS 24.008 [5].
+ * This field uses the same format as the Timezone field used in the 
+ * TP-Service-Centre-Time-Stamp, which is defined in 3GPP TS 23.040 [90], 
+ * and its value shall be set as defined in 3GPP TS 22.042 */
 typedef struct _gtp_ue_timezone_t {
-    /* Time Zone" IE in 3GPP TS 24.008 [5].
-     * This field uses the same format as the Timezone field used in the 
-     * TP-Service-Centre-Time-Stamp, which is defined in 3GPP TS 23.040 [90], 
-     * and its value shall be set as defined in 3GPP TS 22.042 */
 #define GTP_TIME_TO_BCD(x) TIME_TO_BCD(x)
-ED2(c_uint8_t sign:1;,
-    c_uint8_t gmtoff:7;) /* quarters of an hour */
+    /* The Time Zone indicates the difference, expressed in quarters of an hour,
+     * between the local time and GMT. In the first of the two semi-octets, 
+     * the first bit (bit 3 of the seventh octet of 
+     * the TP-Service-Centre-Time-Stamp field) represents 
+     * the algebraic sign of this difference (0: positive, 1: negative). */
+    c_uint8_t timezone;
 ED2(c_uint8_t spare:6;,
     c_uint8_t daylight_saving_time:2;)
 } __attribute__ ((packed)) gtp_ue_timezone_t;

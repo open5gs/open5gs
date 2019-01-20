@@ -155,7 +155,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
             &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);
 
     memset(&ue_timezone, 0, sizeof(ue_timezone));
-    ue_timezone.gmtoff = 0x40;
+    ue_timezone.timezone = 0x40;
     ue_timezone.daylight_saving_time = 
         GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     req.ue_time_zone.presence = 1;

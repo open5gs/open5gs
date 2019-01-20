@@ -222,12 +222,16 @@ status_t emm_handle_attach_complete(
     universal_time_and_local_time_zone->min = NAS_TIME_TO_BCD(xt_gmt.tm_min);
     universal_time_and_local_time_zone->sec = NAS_TIME_TO_BCD(xt_gmt.tm_sec);
     if (xt_local.tm_gmtoff >= 0)
-        universal_time_and_local_time_zone->sign = 0;
+    {
+        universal_time_and_local_time_zone->timezone = 
+                    NAS_TIME_TO_BCD(xt_local.tm_gmtoff / 900);
+    }
     else
-        universal_time_and_local_time_zone->sign = 1;
-    /* quarters of an hour */
-    universal_time_and_local_time_zone->gmtoff = 
-                NAS_TIME_TO_BCD(xt_local.tm_gmtoff / 900);
+    {
+        universal_time_and_local_time_zone->timezone = 
+                    NAS_TIME_TO_BCD((-xt_local.tm_gmtoff) / 900);
+        universal_time_and_local_time_zone->timezone |= 0x08;
+    }
 
     emm_information->presencemask |=
         NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;

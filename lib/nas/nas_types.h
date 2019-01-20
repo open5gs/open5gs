@@ -715,8 +715,12 @@ typedef struct _nas_time_zone_and_time_t {
     c_uint8_t hour;
     c_uint8_t min;
     c_uint8_t sec;
-ED2(c_uint8_t sign:1;,
-    c_uint8_t gmtoff:7;) /* quarters of an hour */
+    /* The Time Zone indicates the difference, expressed in quarters of an hour,
+     * between the local time and GMT. In the first of the two semi-octets, 
+     * the first bit (bit 3 of the seventh octet of 
+     * the TP-Service-Centre-Time-Stamp field) represents 
+     * the algebraic sign of this difference (0: positive, 1: negative). */
+    c_uint8_t timezone;  
 } nas_time_zone_and_time_t;
 
 /* 9.9.3.31 TMSI status

@@ -56,7 +56,8 @@ services:
       - base
     environment:
       - DB_URI=mongodb://mongodb/nextepc
-      - DISPLAY=docker.for.mac.localhost:0
+      - DISPLAY=$DISPLAY
+    # - DISPLAY=docker.for.mac.localhost:0
     cap_add:
       - NET_ADMIN
     devices:
@@ -67,7 +68,8 @@ services:
       - home:/home/${USER}
       - ${HOME}:/mnt
       - /tmp/.X11-unix:/tmp/.X11-unix
-      - /etc/localtime:/etc/localtime:ro
+    # - /etc/localtime:/etc/localtime:ro
+    # - /usr/share/zoneinfo/Europe/Helsinki:/etc/localtime:ro
     hostname: nextepc-dev
     user: ${USER}
     entrypoint: /bin/bash -c "/bin/bash -c \"$${@}\""

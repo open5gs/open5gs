@@ -206,11 +206,15 @@ status_t mme_s11_build_create_session_request(
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     time_exp_lt(&time_exp, time_now());
     if (time_exp.tm_gmtoff >= 0)
-        ue_timezone.sign = 0;
+    {
+        ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
+    }
     else
-        ue_timezone.sign = 1;
+    {
+        ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
+        ue_timezone.timezone |= 0x08;
+    }
     /* quarters of an hour */
-    ue_timezone.gmtoff = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
     ue_timezone.daylight_saving_time = 
         GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     req->ue_time_zone.presence = 1;
@@ -427,11 +431,14 @@ status_t mme_s11_build_create_bearer_response(
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     time_exp_lt(&time_exp, time_now());
     if (time_exp.tm_gmtoff >= 0)
-        ue_timezone.sign = 0;
+    {
+        ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
+    }
     else
-        ue_timezone.sign = 1;
-    /* quarters of an hour */
-    ue_timezone.gmtoff = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
+    {
+        ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
+        ue_timezone.timezone |= 0x08;
+    }
     ue_timezone.daylight_saving_time = 
         GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     rsp->ue_time_zone.presence = 1;
@@ -504,11 +511,14 @@ status_t mme_s11_build_update_bearer_response(
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     time_exp_lt(&time_exp, time_now());
     if (time_exp.tm_gmtoff >= 0)
-        ue_timezone.sign = 0;
+    {
+        ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
+    }
     else
-        ue_timezone.sign = 1;
-    /* quarters of an hour */
-    ue_timezone.gmtoff = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
+    {
+        ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
+        ue_timezone.timezone |= 0x08;
+    }
     ue_timezone.daylight_saving_time = 
         GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     rsp->ue_time_zone.presence = 1;
@@ -581,11 +591,14 @@ status_t mme_s11_build_delete_bearer_response(
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     time_exp_lt(&time_exp, time_now());
     if (time_exp.tm_gmtoff >= 0)
-        ue_timezone.sign = 0;
+    {
+        ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
+    }
     else
-        ue_timezone.sign = 1;
-    /* quarters of an hour */
-    ue_timezone.gmtoff = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
+    {
+        ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
+        ue_timezone.timezone |= 0x08;
+    }
     ue_timezone.daylight_saving_time = 
         GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     rsp->ue_time_zone.presence = 1;
