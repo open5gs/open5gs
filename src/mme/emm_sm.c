@@ -403,10 +403,9 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                     d_trace(3, "[EMM] Authentication response\n");
                     d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
 
-                    if (authentication_response_parameter->length != 
-                            mme_ue->xres_len ||
-                        memcmp(authentication_response_parameter->res,
-                            mme_ue->xres, mme_ue->xres_len) != 0)
+                    if (memcmp(authentication_response_parameter->res,
+                        mme_ue->xres,
+                        authentication_response_parameter->length) != 0)
                     {
                         rv = nas_send_authentication_reject(mme_ue);
                         d_assert(rv == CORE_OK,, "nas send error");
