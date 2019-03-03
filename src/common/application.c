@@ -72,17 +72,17 @@ status_t app_did_initialize(void)
 void app_will_terminate(void)
 {
     app_logger_stop();
-}
 
-void app_did_terminate(void)
-{
     if (context_self()->db_uri)
     {
         d_trace(1, "DB-Client try to terminate\n");
         context_db_final();
         d_trace(1, "DB-Client terminate...done\n");
     }
+}
 
+void app_did_terminate(void)
+{
     app_logger_final();
 
     context_final();
