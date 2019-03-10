@@ -1813,8 +1813,7 @@ status_t mme_enb_remove(mme_enb_t *enb)
 
     hash_set(self.enb_sock_hash, &enb->sock, sizeof(enb->sock), NULL);
     hash_set(self.enb_addr_hash, enb->addr, sizeof(c_sockaddr_t), NULL);
-    if (enb->enb_id)
-        hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
+    hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     enb_ue_remove_in_enb(enb);
 
@@ -1868,14 +1867,12 @@ mme_enb_t* mme_enb_find_by_addr(c_sockaddr_t *addr)
 
 mme_enb_t* mme_enb_find_by_enb_id(c_uint32_t enb_id)
 {
-    d_assert(enb_id, return NULL,"Invalid param");
     return (mme_enb_t *)hash_get(self.enb_id_hash, &enb_id, sizeof(enb_id));
 }
 
 status_t mme_enb_set_enb_id(mme_enb_t *enb, c_uint32_t enb_id)
 {
     d_assert(enb, return CORE_ERROR, "Invalid param");
-    d_assert(enb_id, return CORE_ERROR, "Invalid param");
 
     enb->enb_id = enb_id;
     hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);
