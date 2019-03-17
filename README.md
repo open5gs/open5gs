@@ -86,6 +86,11 @@ If you don't understand something about NextEPC, the [http://nextepc.org](http:/
 Problem with NextEPC can be filed as [issues](https://github.com/acetcom/nextepc/issues) in this repository. And also, we've created *Discord* workspace for _nextepc_. Use [this link](https://discord.gg/GreNkuc) to get started.
 
 
+## Mailing List
+
+Discussions related to this project are happening on the nextepc@lists.osmocom.org mailing list, please see <https://lists.osmocom.org/mailman/listinfo/nextepc> for subscription options and the list archive.
+
+
 ## License
 
 NextEPC source files are made available under the terms of the GNU Affero General Public License (GNU AGPLv3). See [this link](http://nextepc.org/docs/nextepc/4-license/) for details.
