@@ -87,7 +87,7 @@ def output_header_to_file(f):
 
 """)
     f.write("/*******************************************************************************\n")
-    f.write(" * This file had been created by gtpv2c_tlv.py script v%s\n" % (version))
+    f.write(" * This file had been created by nas_message.py script v%s\n" % (version))
     f.write(" * Please do not modify this file but regenerate it via script.\n")
     f.write(" * Created on: %s by %s\n * from %s\n" % (str(now), getpass.getuser(), filename))
     f.write(" ******************************************************************************/\n\n")
