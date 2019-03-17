@@ -24,9 +24,9 @@
  */
 
 /*******************************************************************************
- * This file had been created by gtpv2c_tlv.py script v0.1.0
+ * This file had been created by nas_message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2018-01-23 15:58:42.829935 by acetcom
+ * Created on: 2019-03-17 01:58:02.731397 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
