@@ -165,6 +165,33 @@ static void s1ap_message_test6(abts_case *tc, void *data)
     pkbuf_free(s1apbuf);
 }
 
+static void s1ap_message_test7(abts_case *tc, void *data)
+{
+    /* InitialUE(Service Request) */
+    char *payload = 
+        "000c402d000005000800020071001a00 0504c706b410004300060013f1890001"
+        "006440080013f189400bb75000864001 40006440080013f189400bb750004340"
+        "060013f18900014300060013f1890001 006440080013f189400db09000864001"
+        "30000000000000000000000000000000 00000000000000000000000000000000";
+
+    s1ap_message_t message;
+    pkbuf_t *pkbuf;
+    int result;
+    char hexbuf[MAX_SDU_LEN];
+
+    pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
+    pkbuf->len = 8192;
+    memcpy(pkbuf->payload, 
+            CORE_HEX(payload, strlen(payload), hexbuf), 128);
+
+    result = s1ap_decode_pdu(&message, pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+    s1ap_free_pdu(&message);
+
+    pkbuf_free(pkbuf);
+}
+
 abts_suite *test_s1ap_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -175,6 +202,7 @@ abts_suite *test_s1ap_message(abts_suite *suite)
     abts_run_test(suite, s1ap_message_test4, NULL);
     abts_run_test(suite, s1ap_message_test5, NULL);
     abts_run_test(suite, s1ap_message_test6, NULL);
+    abts_run_test(suite, s1ap_message_test7, NULL);
 
     return suite;
 }
