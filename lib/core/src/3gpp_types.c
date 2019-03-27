@@ -16,12 +16,12 @@ c_uint16_t plmn_id_mcc(plmn_id_t *plmn_id)
 }
 c_uint16_t plmn_id_mnc(plmn_id_t *plmn_id)
 {
-    return plmn_id->mnc1 == 0xf ? plmn_id->mnc2 * 10 + plmn_id->mnc3 :
+    return plmn_id->mnc3 == 0xf ? plmn_id->mnc1 * 10 + plmn_id->mnc2 :
         plmn_id->mnc1 * 100 + plmn_id->mnc2 * 10 + plmn_id->mnc3;
 }
 c_uint16_t plmn_id_mnc_len(plmn_id_t *plmn_id)
 {
-    return plmn_id->mnc1 == 0xf ? 2 : 3;
+    return plmn_id->mnc3 == 0xf ? 2 : 3;
 }
 
 void *plmn_id_build(plmn_id_t *plmn_id, 
@@ -31,13 +31,14 @@ void *plmn_id_build(plmn_id_t *plmn_id,
     plmn_id->mcc2 = PLMN_ID_DIGIT2(mcc);
     plmn_id->mcc3 = PLMN_ID_DIGIT3(mcc);
 
-    if (mnc_len == 2)
-        plmn_id->mnc1 = 0xf;
-    else
-        plmn_id->mnc1 = PLMN_ID_DIGIT1(mnc);
+    if (mnc_len == 2) {
+        plmn_id->mnc3 = 0xf;
+        mnc *= 10;
+    } else
+        plmn_id->mnc3 = PLMN_ID_DIGIT3(mnc);
 
     plmn_id->mnc2 = PLMN_ID_DIGIT2(mnc);
-    plmn_id->mnc3 = PLMN_ID_DIGIT3(mnc);
+    plmn_id->mnc1 = PLMN_ID_DIGIT1(mnc);
 
     return plmn_id;
 }

@@ -65,10 +65,10 @@ extern "C" {
 typedef struct _plmn_id_t {
 ED2(c_uint8_t mcc2:4;,
     c_uint8_t mcc1:4;)
-ED2(c_uint8_t mnc1:4;,
-    c_uint8_t mcc3:4;)
 ED2(c_uint8_t mnc3:4;,
-    c_uint8_t mnc2:4;)
+    c_uint8_t mcc3:4;)
+ED2(c_uint8_t mnc2:4;,
+    c_uint8_t mnc1:4;)
 } __attribute__ ((packed)) plmn_id_t;
 
 CORE_DECLARE(c_uint16_t) plmn_id_mcc(plmn_id_t *plmn_id);
