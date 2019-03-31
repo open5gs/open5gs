@@ -5,6 +5,29 @@
 
 #include "nas_types.h"
 
+void *nas_from_plmn_id(nas_plmn_id_t *nas_plmn_id, plmn_id_t *plmn_id)
+{
+    memcpy(nas_plmn_id, plmn_id, PLMN_ID_LEN);
+    if (plmn_id->mnc1 != 0xf)
+    {
+        nas_plmn_id->mnc1 = plmn_id->mnc1;
+        nas_plmn_id->mnc2 = plmn_id->mnc2;
+        nas_plmn_id->mnc3 = plmn_id->mnc3;
+    }
+    return nas_plmn_id;
+}
+void *nas_to_plmn_id(plmn_id_t *plmn_id, nas_plmn_id_t *nas_plmn_id)
+{
+    memcpy(plmn_id, nas_plmn_id, PLMN_ID_LEN);
+    if (plmn_id->mnc1 != 0xf)
+    {
+        plmn_id->mnc1 = nas_plmn_id->mnc1;
+        plmn_id->mnc2 = nas_plmn_id->mnc2;
+        plmn_id->mnc3 = nas_plmn_id->mnc3;
+    }
+    return plmn_id;
+}
+
 static c_uint8_t br_calculate(
     c_uint8_t *br, c_uint8_t *extended, c_uint8_t *extended2,
     c_uint64_t input)
@@ -229,6 +252,7 @@ void nas_tai_list_build(
 
     tai0_list_t target0;
     tai2_list_t target2;
+    nas_plmn_id_t nas_plmn_id;
 
     d_assert(target, return,);
     d_assert(source0, return,);
@@ -249,7 +273,8 @@ void nas_tai_list_build(
                 return, "num = %d", source0->tai[i].num);
         target0.tai[i].num = source0->tai[i].num - 1;
         memcpy(&target0.tai[i].plmn_id,
-               &source0->tai[i].plmn_id, PLMN_ID_LEN);
+                nas_from_plmn_id(&nas_plmn_id, &source0->tai[i].plmn_id),
+                PLMN_ID_LEN);
 
         for (j = 0; j < source0->tai[i].num; j++) 
         {
@@ -290,7 +315,8 @@ void nas_tai_list_build(
         for (i = 0; i < source2->num; i++) 
         {
             memcpy(&target2.tai[i].plmn_id,
-                   &source2->tai[i].plmn_id, PLMN_ID_LEN);
+                    nas_from_plmn_id(&nas_plmn_id, &source2->tai[i].plmn_id),
+                    PLMN_ID_LEN);
             target2.tai[i].tac = htons(source2->tai[i].tac);
         }
         memcpy(target->buffer + target->length, &target2, size);

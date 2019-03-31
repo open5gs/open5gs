@@ -30,6 +30,27 @@ extern "C" {
 
 #define NAS_KSI_NO_KEY_IS_AVAILABLE             0x7
 
+/**********************************
+ * NAS PLMN_ID Structure             */
+typedef struct _nas_plmn_id_t {
+ED2(uint8_t mcc2:4;,
+    uint8_t mcc1:4;)
+ED2(uint8_t mnc3:4;,
+    uint8_t mcc3:4;)
+ED2(uint8_t mnc2:4;,
+    uint8_t mnc1:4;)
+} __attribute__ ((packed)) nas_plmn_id_t;
+
+void *nas_from_plmn_id(nas_plmn_id_t *nas_plmn_id, plmn_id_t *plmn_id);
+void *nas_to_plmn_id(plmn_id_t *plmn_id, nas_plmn_id_t *nas_plmn_id);
+
+typedef struct _guti_t {
+    nas_plmn_id_t plmn_id;
+    uint16_t mme_gid;
+    uint8_t mme_code;
+    uint32_t m_tmsi;
+} __attribute__ ((packed)) guti_t;
+
 /* 9.9.2.0 Additional information
  * O TLV 3-n */
 #define NAX_MAX_ADDITIONAL_INFORMATION_LEN 255
@@ -73,7 +94,7 @@ ED8(c_uint8_t ebi15:1;,
  * See subclause 10.5.1.3 in 3GPP TS 24.008 [13]
  * O TV 6 */
 typedef struct _nas_location_area_identification_t {
-    plmn_id_t plmn_id;
+    nas_plmn_id_t plmn_id;
     c_uint16_t lac;
 } __attribute__ ((packed)) nas_location_area_identification_t;
 
@@ -121,7 +142,7 @@ ED5(c_uint8_t spare:2;,
     c_uint8_t odd_even:1;,
     c_uint8_t type:3;)
     c_uint8_t mbms_servicec_id[3];
-    plmn_id_t plmn_id;
+    nas_plmn_id_t plmn_id;
     c_uint8_t mbms_session_identity;
 } __attribute__ ((packed)) nas_mobile_identity_tmgi_t;
 
@@ -187,7 +208,7 @@ typedef struct _nas_mobile_station_classmark_3_t {
 #define NAS_MAX_PLMN 15
 typedef struct _nas_plmn_list_t {
     c_uint8_t length;
-    plmn_id_t plmn_id[NAS_MAX_PLMN];
+    nas_plmn_id_t plmn_id[NAS_MAX_PLMN];
 } __attribute__ ((packed)) nas_plmn_list_t;
 
 /* 9.9.2.10 Supported codec list
@@ -415,7 +436,7 @@ typedef struct _nas_eps_mobile_identity_guti_t {
 ED3(c_uint8_t spare:4;,
     c_uint8_t odd_even:1;,
     c_uint8_t type:3;)
-    plmn_id_t plmn_id;
+    nas_plmn_id_t plmn_id;
     c_uint16_t mme_gid;
     c_uint8_t mme_code;
     c_uint32_t m_tmsi;
@@ -734,7 +755,10 @@ ED3(c_uint8_t type:4;,
 
 /* 9.9.3.32 Tracking area identity
  * O TV 6 */
-typedef tai_t nas_tracking_area_identity_t;
+typedef struct _nas_tracking_area_identity_t {
+    nas_plmn_id_t plmn_id;
+    uint16_t tac;
+} __attribute__ ((packed)) nas_tracking_area_identity_t;
 
 /* 9.9.3.33 Tracking area identity list
  * M LV 7-97 */
@@ -747,6 +771,12 @@ typedef struct _tai0_list_t {
     ED3(c_uint8_t spare:1;,
         c_uint8_t type:2;,
         c_uint8_t num:5;)
+        /*
+         * Do not change 'plmn_id_t' to 'nas_plmn_id_t'.
+         * Use 'plmn_id_t' for easy implementation.
+         * nas_tai_list_build() changes to NAS format(nas_plmn_id_t)
+         * and is sent to the UE.
+         */
         plmn_id_t plmn_id;
         c_uint16_t tac[MAX_NUM_OF_TAI];
     } __attribute__ ((packed)) tai[MAX_NUM_OF_TAI];
@@ -756,6 +786,12 @@ typedef struct _tai2_list_t {
 ED3(c_uint8_t spare:1;,
     c_uint8_t type:2;,
     c_uint8_t num:5;)
+    /*
+     * Do not change 'tai_t' to 'nas_tracking_area_identity_t'.
+     * Use 'tai_t' for easy implementation.
+     * nas_tai_list_build() changes to NAS format(nas_tracking_area_identity_t)
+     * and is sent to the UE.
+     */
     tai_t tai[MAX_NUM_OF_TAI];
 } __attribute__ ((packed)) tai2_list_t;
 

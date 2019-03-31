@@ -100,9 +100,8 @@ status_t emm_handle_attach_request(
     {
         nas_tracking_area_identity_t *last_visited_registered_tai = 
             &attach_request->last_visited_registered_tai;
-
-        memcpy(&mme_ue->visited_plmn_id, 
-                &last_visited_registered_tai->plmn_id, PLMN_ID_LEN);
+        nas_to_plmn_id(
+            &mme_ue->visited_plmn_id, &last_visited_registered_tai->plmn_id);
     }
     else
     {
@@ -464,9 +463,8 @@ status_t emm_handle_tau_request(
     {
         nas_tracking_area_identity_t *last_visited_registered_tai = 
             &tau_request->last_visited_registered_tai;
-
-        memcpy(&mme_ue->visited_plmn_id, 
-                &last_visited_registered_tai->plmn_id, PLMN_ID_LEN);
+        nas_to_plmn_id(
+            &mme_ue->visited_plmn_id, &last_visited_registered_tai->plmn_id);
     }
     else
     {

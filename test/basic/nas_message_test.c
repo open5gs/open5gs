@@ -57,6 +57,7 @@ static void nas_message_test2(abts_case *tc, void *data)
     nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
     tai0_list_t tai0_list;
     tai2_list_t tai2_list;
+    plmn_id_t plmn_id;
 
     pkbuf_t *pkbuf = NULL;
     status_t rv;
@@ -85,15 +86,16 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     attach_accept->guti.length = 11;
     attach_accept->guti.guti.type = NAS_EPS_MOBILE_IDENTITY_GUTI;
-    plmn_id_build(&attach_accept->guti.guti.plmn_id, 417, 99, 2);
+    nas_from_plmn_id(&attach_accept->guti.guti.plmn_id,
+        plmn_id_build(&plmn_id, 417, 99, 2));
     attach_accept->guti.guti.mme_gid = 9029;
     attach_accept->guti.guti.mme_code = 225;
     attach_accept->guti.guti.m_tmsi = 0x00000456;
 
     attach_accept->presencemask |= 
         NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
-    plmn_id_build(
-        &attach_accept->location_area_identification.plmn_id, 1, 2, 2);
+    nas_from_plmn_id(&attach_accept->location_area_identification.plmn_id,
+        plmn_id_build(&plmn_id, 1, 2, 2));
     attach_accept->location_area_identification.lac = 0xfffd;
 
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
