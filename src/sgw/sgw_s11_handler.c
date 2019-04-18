@@ -38,7 +38,7 @@ void sgw_s11_handle_create_session_request(
 
     req = &gtp_message->create_session_request;
 
-    d_trace(3, "[SGW] Create Session Reqeust\n");
+    d_trace(3, "[SGW] Create Session Request\n");
     if (req->bearer_contexts_to_be_created.presence == 0)
     {
         d_error("No Bearer");
