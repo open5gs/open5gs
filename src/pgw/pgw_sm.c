@@ -1,8 +1,3 @@
-#define TRACE_MODULE _pgw_sm
-
-#include "core_debug.h"
-#include "core_lib.h"
-
 #include "gtp/gtp_node.h"
 #include "fd/fd_lib.h"
 #include "fd/gx/gx_message.h"
@@ -15,79 +10,79 @@
 #include "pgw_gx_handler.h"
 #include "pgw_fd_path.h"
 
-void pgw_state_initial(fsm_t *s, event_t *e)
+void pgw_state_initial(ogs_fsm_t *s, pgw_event_t *e)
 {
-    pgw_sm_trace(3, e);
+    pgw_sm_debug(e);
 
-    d_assert(s, return, "Null param");
+    ogs_assert(s);
 
-    FSM_TRAN(s, &pgw_state_operational);
+    OGS_FSM_TRAN(s, &pgw_state_operational);
 }
 
-void pgw_state_final(fsm_t *s, event_t *e)
+void pgw_state_final(ogs_fsm_t *s, pgw_event_t *e)
 {
-    pgw_sm_trace(3, e);
+    pgw_sm_debug(e);
 
-    d_assert(s, return, "Null param");
+    ogs_assert(s);
 }
 
-void pgw_state_operational(fsm_t *s, event_t *e)
+void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
 {
-    status_t rv;
+    int rv;
 
-    pgw_sm_trace(3, e);
+    pgw_sm_debug(e);
 
-    d_assert(s, return, "Null param");
+    ogs_assert(s);
 
-    switch (event_get(e))
+    switch (e->id)
     {
-        case FSM_ENTRY_SIG:
+        case OGS_FSM_ENTRY_SIG:
         {
             rv = pgw_gtp_open();
-            if (rv != CORE_OK)
+            if (rv != OGS_OK)
             {
-                d_error("Can't establish PGW path");
+                ogs_error("Can't establish PGW path");
                 break;
             }
             break;
         }
-        case FSM_EXIT_SIG:
+        case OGS_FSM_EXIT_SIG:
         {
             rv = pgw_gtp_close();
-            if (rv != CORE_OK)
+            if (rv != OGS_OK)
             {
-                d_error("Can't close PGW path");
+                ogs_error("Can't close PGW path");
                 break;
             }
             break;
         }
         case PGW_EVT_S5C_MESSAGE:
         {
-            status_t rv;
-            pkbuf_t *recvbuf = (pkbuf_t *)event_get_param1(e);
-            pkbuf_t *copybuf = NULL;
-            c_uint16_t copybuf_len = 0;
+            int rv;
+            ogs_pkbuf_t *recvbuf = NULL;
+            ogs_pkbuf_t *copybuf = NULL;
+            uint16_t copybuf_len = 0;
             gtp_xact_t *xact = NULL;
             gtp_message_t *message = NULL;
             pgw_sess_t *sess = NULL;
 
-            d_assert(recvbuf, break, "Null param");
+            ogs_assert(e);
+            recvbuf = e->gtpbuf;
+            ogs_assert(recvbuf);
 
             copybuf_len = sizeof(gtp_message_t);
-            copybuf = pkbuf_alloc(0, copybuf_len);
-            d_assert(copybuf, break, "Null param");
-            message = copybuf->payload;
-            d_assert(message, break, "Null param");
+            copybuf = ogs_pkbuf_alloc(NULL, copybuf_len);
+            ogs_pkbuf_put(copybuf, copybuf_len);
+            message = copybuf->data;
+            ogs_assert(message);
 
             rv = gtp_parse_msg(message, recvbuf);
-            d_assert(rv == CORE_OK,
-                    pkbuf_free(recvbuf); pkbuf_free(copybuf); break,
-                    "parse error");
+            ogs_assert(rv == OGS_OK);
 
             if (message->h.teid == 0)
             {
                 gtp_node_t *sgw = pgw_sgw_add_by_message(message);
-                d_assert(sgw, pkbuf_free(recvbuf);pkbuf_free(copybuf); break,);
+                ogs_assert(sgw);
                 sess = pgw_sess_add_by_message(message);
                 SETUP_GTP_NODE(sess, sgw);
             }
@@ -95,14 +90,13 @@ void pgw_state_operational(fsm_t *s, event_t *e)
             {
                 sess = pgw_sess_find_by_teid(message->h.teid);
             }
-            d_assert(sess, pkbuf_free(recvbuf); pkbuf_free(copybuf); break,
-                    "No Session Context");
+            ogs_assert(sess);
 
             rv = gtp_xact_receive(sess->gnode, &message->h, &xact);
-            if (rv != CORE_OK)
+            if (rv != OGS_OK)
             {
-                pkbuf_free(recvbuf);
-                pkbuf_free(copybuf);
+                ogs_pkbuf_free(recvbuf);
+                ogs_pkbuf_free(copybuf);
                 break;
             }
 
@@ -123,67 +117,66 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                 case GTP_CREATE_BEARER_RESPONSE_TYPE:
                     pgw_s5c_handle_create_bearer_response(
                         sess, xact, &message->create_bearer_response);
-                    pkbuf_free(copybuf);
+                    ogs_pkbuf_free(copybuf);
                     break;
                 case GTP_UPDATE_BEARER_RESPONSE_TYPE:
                     pgw_s5c_handle_update_bearer_response(
                         sess, xact, &message->update_bearer_response);
-                    pkbuf_free(copybuf);
+                    ogs_pkbuf_free(copybuf);
                     break;
                 case GTP_DELETE_BEARER_RESPONSE_TYPE:
                     pgw_s5c_handle_delete_bearer_response(
                         sess, xact, &message->delete_bearer_response);
-                    pkbuf_free(copybuf);
+                    ogs_pkbuf_free(copybuf);
                     break;
                 default:
-                    d_warn("Not implmeneted(type:%d)", message->h.type);
-                    pkbuf_free(copybuf);
+                    ogs_warn("Not implmeneted(type:%d)", message->h.type);
+                    ogs_pkbuf_free(copybuf);
                     break;
             }
-            pkbuf_free(recvbuf);
-            break;
-        }
-        case PGW_EVT_S5C_T3_RESPONSE:
-        case PGW_EVT_S5C_T3_HOLDING:
-        {
-            gtp_xact_timeout(event_get_param1(e), event_get(e));
+            ogs_pkbuf_free(recvbuf);
             break;
         }
         case PGW_EVT_GX_MESSAGE:
         {
-            index_t sess_index = event_get_param1(e);
+            ogs_index_t sess_index;
             pgw_sess_t *sess = NULL;
-            pkbuf_t *gxbuf = (pkbuf_t *)event_get_param2(e);
+            ogs_pkbuf_t *gxbuf = NULL;
             gx_message_t *gx_message = NULL;
 
-            d_assert(sess_index, return, "Null param");
+            ogs_assert(e);
+            sess_index = e->sess_index;
+            ogs_assert(sess_index);
             sess = pgw_sess_find(sess_index);
-            d_assert(sess, return, "Null param");
+            ogs_assert(sess);
 
-            d_assert(gxbuf, return, "Null param");
-            gx_message = gxbuf->payload;
-            d_assert(gx_message, return, "Null param");
+            gxbuf = e->gxbuf;
+            ogs_assert(gxbuf);
+            gx_message = gxbuf->data;
+            ogs_assert(gx_message);
 
             switch(gx_message->cmd_code)
             {
                 case GX_CMD_CODE_CREDIT_CONTROL:
                 {
-                    index_t xact_index = event_get_param3(e);
+                    uint32_t xact_index;
                     gtp_xact_t *xact = NULL;
 
-                    pkbuf_t *gtpbuf = (pkbuf_t *)event_get_param4(e);
+                    ogs_pkbuf_t *gtpbuf = NULL;
                     gtp_message_t *message = NULL;
 
-                    d_assert(xact_index, return, "Null param");
+                    xact_index = e->xact_index;
+                    ogs_assert(xact_index);
                     xact = gtp_xact_find(xact_index);
-                    d_assert(xact, return, "Null param");
+                    ogs_assert(xact);
 
-                    d_assert(gtpbuf, return, "Null param");
-                    message = gtpbuf->payload;
+                    gtpbuf = e->gtpbuf;
+                    ogs_assert(gtpbuf);
+                    message = gtpbuf->data;
 
                     if (gx_message->result_code != ER_DIAMETER_SUCCESS)
                     {
-                        d_error("Diameter Error(%d)", gx_message->result_code);
+                        ogs_error("Diameter Error(%d)", gx_message->result_code);
                         break;
                     }
                     switch(gx_message->cc_request_type)
@@ -204,12 +197,13 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                         }
                         default:
                         {
-                            d_error("Not implemented(%d)", event_get_param4(e));
+                            ogs_error("Not implemented(%d)",
+                                    gx_message->cc_request_type);
                             break;
                         }
                     }
 
-                    pkbuf_free(gtpbuf);
+                    ogs_pkbuf_free(gtpbuf);
                     break;
                 }
                 case GX_CMD_RE_AUTH:
@@ -219,18 +213,18 @@ void pgw_state_operational(fsm_t *s, event_t *e)
                 }
                 default:
                 {
-                    d_error("Invalid type(%d)", event_get_param3(e));
+                    ogs_error("Invalid type(%d)", gx_message->cmd_code);
                     break;
                 }
             }
 
             gx_message_free(gx_message);
-            pkbuf_free(gxbuf);
+            ogs_pkbuf_free(gxbuf);
             break;
         }
         default:
         {
-            d_error("No handler for event %s", pgw_event_get_name(e));
+            ogs_error("No handler for event %s", pgw_event_get_name(e));
             break;
         }
     }

@@ -9,8 +9,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(void) sbc_handle_write_replace_warning_request(sbc_pws_data_t *sbc_pws);
-CORE_DECLARE(void) sbc_handle_stop_warning_request(sbc_pws_data_t *sbc_pws);
+void sbc_handle_write_replace_warning_request(sbc_pws_data_t *sbc_pws);
+void sbc_handle_stop_warning_request(sbc_pws_data_t *sbc_pws);
 
 #ifdef __cplusplus
 }

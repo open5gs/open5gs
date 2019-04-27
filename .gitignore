@@ -9,30 +9,40 @@
 .libs
 
 # generated files
+lib/freeDiameter-*/build-aux/*
+lib/freeDiameter-*/config.status
+lib/freeDiameter-*/m4/*.m4
+lib/freeDiameter-*/!m4/ax_*.m4
 lib/freeDiameter-*/libfdcore/fdd.tab.[chy]
 lib/freeDiameter-*/libfdcore/lex.fdd.[cl]
 lib/freeDiameter-*/include/freeDiameter/version.h
-lib/freeDiameter-*/include/freeDiameter/config.h.in
+lib/freeDiameter-*/include/freeDiameter/config.h.in*
+lib/freeDiameter-*/include/freeDiameter/config.h
 lib/freeDiameter-*/include/freeDiameter/freeDiameter-host.h
-lib/core/include/core.h
 support/systemd/nextepc-*.service
 support/logrotate/nextepc
 
 # autotools
 stamp-h1
 config.h
-config.in
-config.nice
+lib/base/nextepc-config.h
+lib/base/nextepc-config.h.in*
 config.log
+config.status
 configure
 aclocal.m4
-config.status
 libtool
 autom4te.cache
-build-aux
+build/*
+!build/git-version-gen
+!build/osc-upload.sh
 Makefile
 Makefile.in
-m4
+m4/*.m4
+!m4/ax_*.m4
+
+.tarball-version
+.version
 
 # autotest
 test/package.m4
@@ -42,30 +52,16 @@ test/testsuite.dir/
 test/testsuite.log
 
 # executables
-lib/core/test/testcore
-test/testvolte
+test/testunit
 test/testepc
+test/testvolte
+test/testadvanced
 nextepc-mmed
 nextepc-pcrfd
 nextepc-pgwd
 nextepc-sgwd
 nextepc-epcd
 nextepc-hssd
-
-# debian
-debian/*.debhelper.log
-debian/*.debhelper
-debian/*.substvars
-debian/tmp
-debian/files
-debian/autoreconf.before
-debian/autoreconf.after
-debian/nextepc-core
-debian/nextepc-mme
-debian/nextepc-sgw
-debian/nextepc-pgw
-debian/nextepc-pcrf
-debian/nextepc-hss
 
 # webui
 webui/.next/

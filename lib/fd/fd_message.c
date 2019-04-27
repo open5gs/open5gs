@@ -1,4 +1,21 @@
-#define TRACE_MODULE _fd_message
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "fd_message.h"
 
@@ -55,7 +72,7 @@ int fd_message_init()
 }
 
 int fd_message_session_id_set(
-        struct msg *msg, c_uint8_t *sid, size_t sidlen)
+        struct msg *msg, uint8_t *sid, size_t sidlen)
 {
     struct avp *avp;
     union avp_value val;
@@ -76,7 +93,7 @@ int fd_message_session_id_set(
 }
 
 int fd_message_experimental_rescode_set(
-        struct msg *msg, c_uint32_t result_code)
+        struct msg *msg, uint32_t result_code)
 {
     struct avp *avp;
     struct avp *avp_vendor;
@@ -104,7 +121,7 @@ int fd_message_experimental_rescode_set(
     return 0;
 }
 
-int fd_message_vendor_specific_appid_set(struct msg *msg, c_uint32_t app_id)
+int fd_message_vendor_specific_appid_set(struct msg *msg, uint32_t app_id)
 {
     struct avp *avp;
     struct avp *avp_vendor;

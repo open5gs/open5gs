@@ -1,3 +1,15 @@
+EXTRA_DIST = \
+	cacert.pem \
+	hss.key.pem \
+	mme.key.pem \
+	pcrf.key.pem \
+	pgw.key.pem \
+	hss.cert.pem \
+	mme.cert.pem \
+	pcrf.cert.pem \
+	pgw.cert.pem \
+	$(NULL)
+
 configfiles = \
 	mme.conf \
 	hss.conf \
@@ -20,6 +32,3 @@ pemfiles = \
 freeDiameterdir = ${sysconfdir}/nextepc/freeDiameter
 
 freeDiameter_DATA = ${configfiles} ${pemfiles}
-
-MAINTAINERCLEANFILES = Makefile.in 
-MOSTLYCLEANFILES = *.stackdump

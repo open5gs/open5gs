@@ -1,6 +1,22 @@
-## Process this file with automake to produce Makefile.in
+# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+
+# This file is part of Open5GS.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ACLOCAL_AMFLAGS = -I m4
+EXTRA_DIST = build/git-version-gen .version README.md LICENSE
 
 SUBDIRS = lib src support test
 
@@ -25,7 +41,8 @@ dist_nextepc_epcd_SOURCES = main.c
 nextepc_epcd_LDADD = $(top_srcdir)/src/libepc.la
 
 AM_CPPFLAGS = \
-    -I$(top_srcdir)/lib/core/include \
+	@OGSCORE_CFLAGS@ \
+    -I$(top_srcdir)/lib \
     -I$(top_srcdir)/src \
 	$(NULL)
 
@@ -38,14 +55,8 @@ install-data-hook:
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-hssd
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-epcd
 
-CLEANFILES = -R data debian/test
-DISTCLEANFILES = $(DIST_ARCHIVES)
-MAINTAINERCLEANFILES = \
-    configure config.in \
-    aclocal.m4 m4/ltsugar.m4 m4/libtool.m4 m4/ltversion.m4 \
-    m4/lt~obsolete.m4 m4/ltoptions.m4 \
-    build-aux/ar-lib build-aux/config.guess build-aux/depcomp \
-	build-aux/ltmain.sh build-aux/test-driver build-aux/compile \
-	build-aux/config.sub build-aux/missing build-aux/install-sh \
-    Makefile.in
-MOSTLYCLEANFILES = core *.stackdump
+BUILT_SOURCES = $(top_srcdir)/.version
+$(top_srcdir)/.version:
+	echo $(VERSION) > $@-t && mv $@-t $@
+dist-hook:
+	echo $(VERSION) > $(distdir)/.tarball-version

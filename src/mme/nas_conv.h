@@ -7,12 +7,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(void) nas_imsi_to_buffer(
-    nas_mobile_identity_imsi_t *imsi, c_uint8_t imsi_len, 
-    c_uint8_t *buf, c_uint8_t *buf_len);
+void nas_imsi_to_buffer(
+    nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len, 
+    uint8_t *buf, uint8_t *buf_len);
 
-CORE_DECLARE(void) nas_imsi_to_bcd(
-    nas_mobile_identity_imsi_t *imsi, c_uint8_t imsi_len, c_int8_t *bcd);
+void nas_imsi_to_bcd(
+    nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len, char *bcd);
 
 #ifdef __cplusplus
 }

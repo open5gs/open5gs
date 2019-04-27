@@ -1,7 +1,4 @@
-#define TRACE_MODULE _s1ap_sctp
-
-#include "core_debug.h"
-#include "core_thread.h"
+#include "ogs-sctp.h"
 
 #include "mme_event.h"
 
@@ -11,7 +8,7 @@
 #include <netdb.h>
 #endif
 
-#if HAVE_USRSCTP_H
+#if HAVE_USRSCTP
 #ifndef INET
 #define INET            1
 #endif
@@ -21,25 +18,24 @@
 #include <usrsctp.h>
 #endif
 
-static status_t s1ap_usrsctp_socket(sock_id *new,
-    int family, int type,
+static ogs_sock_t *s1ap_usrsctp_socket(int family, int type,
     int (*receive_cb)(struct socket *sock, union sctp_sockstore addr,
         void *data, size_t datalen, struct sctp_rcvinfo, int flags,
         void *ulp_info));
-static status_t s1ap_usrsctp_bind(sock_id id, c_sockaddr_t *sa);
-static status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa);
-static status_t s1ap_usrsctp_listen(sock_id id);
+static int s1ap_usrsctp_bind(ogs_sock_t *sock, ogs_sockaddr_t *sa);
+static int s1ap_usrsctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa);
+static int s1ap_usrsctp_listen(ogs_sock_t *sock);
 
 static int s1ap_usrsctp_recv_handler(struct socket *sock,
         union sctp_sockstore addr, void *data, size_t datalen,
         struct sctp_rcvinfo rcv, int flags, void *ulp_info);
 
-static c_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store);
+static ogs_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store);
 static void debug_printf(const char *format, ...);
 
 static int sctp_num_ostreams = -1;
 
-status_t s1ap_init(int sctp_streams, c_uint16_t port)
+int s1ap_init(int sctp_streams, uint16_t port)
 {
     usrsctp_init(port, NULL, debug_printf);
 #ifdef SCTP_DEBUG
@@ -49,64 +45,66 @@ status_t s1ap_init(int sctp_streams, c_uint16_t port)
     usrsctp_sysctl_set_sctp_enable_sack_immediately(1);
     sctp_num_ostreams = sctp_streams;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t s1ap_final()
+int s1ap_final()
 {
     while(usrsctp_finish() != 0)
     {
-        d_error("try to finsih SCTP\n");
-        core_sleep(time_from_msec(1000));
+        ogs_error("try to finsih SCTP");
+        ogs_msleep(1000);
     }
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t s1ap_delete(sock_id sock)
+void s1ap_server(ogs_socknode_t *snode, int type)
 {
-    d_assert(sock, return CORE_ERROR,);
+    char buf[OGS_ADDRSTRLEN];
+
+    ogs_assert(snode);
+
+    snode->sock = ogs_sctp_server(type, snode->list);
+    ogs_assert(snode->sock);
+
+    ogs_info("s1ap_server() [%s]:%d",
+            OGS_ADDR(snode->list, buf), OGS_PORT(snode->list));
+}
+
+void s1ap_closesocket(ogs_sock_t *sock)
+{
+    ogs_assert(sock);
     usrsctp_close((struct socket *)sock);
-    return CORE_OK;
 }
 
-status_t s1ap_server(sock_node_t *snode, int type)
+void s1ap_delete(ogs_socknode_t *snode)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
-
-    d_assert(snode, return CORE_ERROR,);
-
-    rv = sctp_server(&snode->sock, type, snode->list);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    d_trace(1, "s1ap_server() [%s]:%d\n",
-            CORE_ADDR(snode->list, buf), CORE_PORT(snode->list));
-
-    return CORE_OK;
+    ogs_assert(snode);
+    s1ap_closesocket(snode->sock);
 }
 
-status_t sctp_server(sock_id *new, int type, c_sockaddr_t *sa_list)
+ogs_sock_t *ogs_sctp_server(int type, ogs_sockaddr_t *sa_list)
 {
-    status_t rv;
-    c_sockaddr_t *addr;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
+    ogs_sock_t *sock = NULL;
+    ogs_sockaddr_t *addr = NULL;
 
     addr = sa_list;
     while(addr)
     {
-        rv = s1ap_usrsctp_socket(new,
+        sock = s1ap_usrsctp_socket(
                 addr->c_sa_family, type, s1ap_usrsctp_recv_handler);
-        if (rv == CORE_OK)
+        if (sock)
         {
-            if (s1ap_usrsctp_bind(*new, addr) == CORE_OK)
+            if (s1ap_usrsctp_bind(sock, addr) == OGS_OK)
             {
-                d_trace(9, "sctp_server [%s]:%d\n",
-                        CORE_ADDR(addr, buf), CORE_PORT(addr));
+                ogs_trace("sctp_server [%s]:%d",
+                        OGS_ADDR(addr, buf), OGS_PORT(addr));
                 break;
             }
 
-            rv = s1ap_delete(*new);
-            d_assert(rv == CORE_OK, return CORE_ERROR,);
+            s1ap_closesocket(sock);
         }
 
         addr = addr->next;
@@ -114,38 +112,37 @@ status_t sctp_server(sock_id *new, int type, c_sockaddr_t *sa_list)
 
     if (addr == NULL)
     {
-        d_error("sctp_server [%s]:%d failed",
-                    CORE_ADDR(addr, buf), CORE_PORT(addr));
-        return CORE_ERROR;
+        ogs_error("sctp_server [%s]:%d failed",
+                    OGS_ADDR(addr, buf), OGS_PORT(addr));
+        return NULL;
     }
 
-    rv = s1ap_usrsctp_listen(*new);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    rv = s1ap_usrsctp_listen(sock);
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return sock;
 }
 
-status_t sctp_client(sock_id *new, int type, c_sockaddr_t *sa_list)
+ogs_sock_t *ogs_sctp_client(int type, ogs_sockaddr_t *sa_list)
 {
-    status_t rv;
-    c_sockaddr_t *addr;
-    char buf[CORE_ADDRSTRLEN];
+    ogs_sock_t *sock = NULL;
+    ogs_sockaddr_t *addr = NULL;
+    char buf[OGS_ADDRSTRLEN];
 
     addr = sa_list;
     while(addr)
     {
-        rv = s1ap_usrsctp_socket(new, addr->c_sa_family, type, NULL);
-        if (rv == CORE_OK)
+        sock = s1ap_usrsctp_socket(addr->c_sa_family, type, NULL);
+        if (sock)
         {
-            if (s1ap_usrsctp_connect(*new, addr) == CORE_OK)
+            if (s1ap_usrsctp_connect(sock, addr) == OGS_OK)
             {
-                d_trace(9, "sctp_client [%s]:%d\n",
-                        CORE_ADDR(addr, buf), CORE_PORT(addr));
+                ogs_trace("sctp_client [%s]:%d",
+                        OGS_ADDR(addr, buf), OGS_PORT(addr));
                 break;
             }
 
-            rv = s1ap_delete(*new);
-            d_assert(rv == CORE_OK, return CORE_ERROR,);
+            s1ap_closesocket(sock);
         }
 
         addr = addr->next;
@@ -153,48 +150,46 @@ status_t sctp_client(sock_id *new, int type, c_sockaddr_t *sa_list)
 
     if (addr == NULL)
     {
-        d_error("sctp_client [%s]:%d failed", 
-                    CORE_ADDR(addr, buf), CORE_PORT(addr));
-        return CORE_ERROR;
+        ogs_error("sctp_client [%s]:%d failed", 
+                    OGS_ADDR(addr, buf), OGS_PORT(addr));
+        return NULL;
     }
 
-    return CORE_OK;
+    return sock;
 }
 
-status_t s1ap_send(sock_id id, pkbuf_t *pkbuf,
-        c_sockaddr_t *addr, c_uint16_t stream_no)
+int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
+        ogs_sockaddr_t *addr, uint16_t stream_no)
 {
     ssize_t sent;
-    struct socket *sock = (struct socket *)id;
+    struct socket *socket = (struct socket *)sock;
     struct sctp_sndinfo sndinfo;
 
-    d_assert(id, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    ogs_assert(socket);
+    ogs_assert(pkbuf);
 
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
     sndinfo.snd_ppid = htonl(SCTP_S1AP_PPID);
     sndinfo.snd_sid = stream_no;
-    sent = usrsctp_sendv(sock, pkbuf->payload, pkbuf->len, 
+    sent = usrsctp_sendv(socket, pkbuf->data, pkbuf->len, 
             addr ? &addr->sa : NULL, addr ? 1 : 0,
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
             SCTP_SENDV_SNDINFO, 0);
 
-    d_trace(50, "[S1AP] SEND[%d] : ", sent);
-    d_trace_hex(50, pkbuf->payload, pkbuf->len);
     if (sent < 0 || sent != pkbuf->len)
     {
-        d_error("sent : %d, pkbuf->len : %d\n", sent, pkbuf->len);
-        return CORE_ERROR;
+        ogs_error("sent : %d, pkbuf->len : %d", (int)sent, pkbuf->len);
+        return OGS_ERROR;
     }
-    pkbuf_free(pkbuf);
+    ogs_pkbuf_free(pkbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
+int s1ap_recv(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf)
 {
-	struct socket *sock = (struct socket *)id;
-    c_sockaddr_t addr;
+	struct socket *socket = (struct socket *)sock;
+    ogs_sockaddr_t addr;
 	ssize_t n = 0;
 	int flags = 0;
 	socklen_t from_len;
@@ -204,7 +199,7 @@ status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
 
     while(1)
     {
-        n = usrsctp_recvv(sock, pkbuf->payload, MAX_SDU_LEN,
+        n = usrsctp_recvv(socket, pkbuf->data, MAX_SDU_LEN,
                 &addr.sa, &from_len, (void *)&rcv_info,
                 &infolen, &infotype, &flags);
         if (n > 0)
@@ -222,20 +217,19 @@ status_t s1ap_recv(sock_id id, pkbuf_t *pkbuf)
         }
     }
 
-    pkbuf->len = n;
-    return CORE_OK;
+    ogs_pkbuf_trim(pkbuf, n);
+    return OGS_OK;
 }
 
-static status_t s1ap_usrsctp_socket(sock_id *new,
-    int family, int type,
+static ogs_sock_t *s1ap_usrsctp_socket(int family, int type,
     int (*receive_cb)(struct socket *sock, union sctp_sockstore store,
         void *data, size_t datalen, struct sctp_rcvinfo, int flags,
         void *ulp_info))
 {
-    struct socket *sock = NULL;
+    struct socket *socket = NULL;
     const int on = 1;
     struct sctp_event event;
-    c_uint16_t event_types[] = {
+    uint16_t event_types[] = {
         SCTP_ASSOC_CHANGE,
         SCTP_PEER_ADDR_CHANGE,
         SCTP_REMOTE_ERROR,
@@ -247,44 +241,44 @@ static status_t s1ap_usrsctp_socket(sock_id *new,
     socklen_t socklen;
     int i;
 
-    if (!(sock = usrsctp_socket(family, type, IPPROTO_SCTP,
+    if (!(socket = usrsctp_socket(family, type, IPPROTO_SCTP,
             receive_cb, NULL, 0, NULL)))
     {
-        d_error("usrsctp_socket failed");
-        return CORE_ERROR;
+        ogs_error("usrsctp_socket failed");
+        return NULL;
     }
 
-    if (usrsctp_setsockopt(sock, IPPROTO_SCTP, SCTP_RECVRCVINFO,
+    if (usrsctp_setsockopt(socket, IPPROTO_SCTP, SCTP_RECVRCVINFO,
                 &on, sizeof(int)) < 0)
     {
-        d_error("usrsctp_setsockopt SCTP_RECVRCVINFO failed");
-        return CORE_ERROR;
+        ogs_error("usrsctp_setsockopt SCTP_RECVRCVINFO failed");
+        return NULL;
     }
 
     memset(&event, 0, sizeof(event));
     event.se_assoc_id = SCTP_FUTURE_ASSOC;
     event.se_on = 1;
-    for (i = 0; i < (int)(sizeof(event_types)/sizeof(c_uint16_t)); i++)
+    for (i = 0; i < (int)(sizeof(event_types)/sizeof(uint16_t)); i++)
     {
         event.se_type = event_types[i];
-        if (usrsctp_setsockopt(sock, IPPROTO_SCTP, SCTP_EVENT,
+        if (usrsctp_setsockopt(socket, IPPROTO_SCTP, SCTP_EVENT,
                     &event, sizeof(struct sctp_event)) < 0)
         {
-            d_error("usrsctp_setsockopt SCTP_EVENT failed");
-            return CORE_ERROR;
+            ogs_error("usrsctp_setsockopt SCTP_EVENT failed");
+            return NULL;
         }
     }
 
     memset(&initmsg, 0, sizeof(struct sctp_initmsg));
     socklen = sizeof(struct sctp_initmsg);
-    if (usrsctp_getsockopt(sock, IPPROTO_SCTP, SCTP_INITMSG, &initmsg, &socklen) != 0) 
+    if (usrsctp_getsockopt(socket, IPPROTO_SCTP, SCTP_INITMSG, &initmsg, &socklen) != 0) 
     {
-        d_error("getsockopt for SCTP_INITMSG failed(%d:%s)",
+        ogs_error("getsockopt for SCTP_INITMSG failed(%d:%s)",
                 errno, strerror( errno ));
-        return CORE_ERROR;
+        return NULL;
     }
 
-    d_trace(3, "Old INITMSG (numout:%d maxin:%d maxattempt:%d maxinit_to:%d)\n",
+    ogs_debug("Old INITMSG (numout:%d maxin:%d maxattempt:%d maxinit_to:%d)",
                 initmsg.sinit_num_ostreams,
                 initmsg.sinit_max_instreams,
                 initmsg.sinit_max_attempts,
@@ -297,94 +291,91 @@ static status_t s1ap_usrsctp_socket(sock_id *new,
      * max attemtps : 4
      * max initial timeout : 8 secs
      */
-    d_assert(sctp_num_ostreams > 1, return CORE_ERROR,
-            "Invalid SCTP number of output streams = %d\n", sctp_num_ostreams);
+    ogs_assert(sctp_num_ostreams > 1);
 
     initmsg.sinit_num_ostreams = sctp_num_ostreams;
     initmsg.sinit_max_instreams = 65535;
     initmsg.sinit_max_attempts = 4;
     initmsg.sinit_max_init_timeo = 8000;
 
-    if (usrsctp_setsockopt(sock, IPPROTO_SCTP, SCTP_INITMSG,
+    if (usrsctp_setsockopt(socket, IPPROTO_SCTP, SCTP_INITMSG,
                             &initmsg, sizeof(initmsg)) != 0) 
     {
-        d_error("setsockopt for SCTP_INITMSG failed(%d:%s)",
+        ogs_error("setsockopt for SCTP_INITMSG failed(%d:%s)",
                 errno, strerror( errno ));
-        return CORE_ERROR;
+        return NULL;
     }
 
-    d_trace(3,"New INITMSG (numout:%d maxin:%d maxattempt:%d maxinit_to:%d)\n",
+    ogs_debug("New INITMSG (numout:%d maxin:%d maxattempt:%d maxinit_to:%d)",
                 initmsg.sinit_num_ostreams,
                 initmsg.sinit_max_instreams,
                 initmsg.sinit_max_attempts,
                 initmsg.sinit_max_init_timeo);
 
-    *new = (sock_id)sock;
-
-    return CORE_OK;
+    return (ogs_sock_t *)socket;;
 }
 
-static status_t s1ap_usrsctp_bind(sock_id id, c_sockaddr_t *sa)
+static int s1ap_usrsctp_bind(ogs_sock_t *sock, ogs_sockaddr_t *sa)
 {
-    struct socket *sock = (struct socket *)id;
-    char buf[CORE_ADDRSTRLEN];
+    struct socket *socket = (struct socket *)sock;
+    char buf[OGS_ADDRSTRLEN];
     socklen_t addrlen;
 
-    d_assert(sock, return CORE_ERROR,);
-    d_assert(sa, return CORE_ERROR,);
+    ogs_assert(socket);
+    ogs_assert(sa);
 
-    addrlen = sockaddr_len(sa);
-    d_assert(addrlen, return CORE_ERROR,);
+    addrlen = ogs_sockaddr_len(sa);
+    ogs_assert(addrlen);
 
-    if (usrsctp_bind(sock, &sa->sa, addrlen) != 0)
+    if (usrsctp_bind(socket, &sa->sa, addrlen) != 0)
     {
-        d_error("usrsctp_bind [%s]:%d failed",
-                CORE_ADDR(sa, buf), CORE_PORT(sa));
-        return CORE_ERROR;
+        ogs_error("usrsctp_bind [%s]:%d failed",
+                OGS_ADDR(sa, buf), OGS_PORT(sa));
+        return OGS_ERROR;
     }
 
-    d_trace(9, "usrsctp_bind [%s]:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
+    ogs_trace("usrsctp_bind [%s]:%d", OGS_ADDR(sa, buf), OGS_PORT(sa));
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-static status_t s1ap_usrsctp_connect(sock_id id, c_sockaddr_t *sa)
+static int s1ap_usrsctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa)
 {
-    struct socket *sock = (struct socket *)id;
-    char buf[CORE_ADDRSTRLEN];
+    struct socket *socket = (struct socket *)sock;
+    char buf[OGS_ADDRSTRLEN];
     socklen_t addrlen;
 
-    d_assert(sock, return CORE_ERROR,);
-    d_assert(sa, return CORE_ERROR,);
+    ogs_assert(socket);
+    ogs_assert(sa);
 
-    addrlen = sockaddr_len(sa);
-    d_assert(addrlen, return CORE_ERROR,);
+    addrlen = ogs_sockaddr_len(sa);
+    ogs_assert(addrlen);
 
-    if (usrsctp_connect(sock, &sa->sa, addrlen) != 0)
+    if (usrsctp_connect(socket, &sa->sa, addrlen) != 0)
     {
-        d_error("usrsctp_connect [%s]:%d", CORE_ADDR(sa, buf), CORE_PORT(sa));
-        return CORE_ERROR;
+        ogs_error("usrsctp_connect [%s]:%d", OGS_ADDR(sa, buf), OGS_PORT(sa));
+        return OGS_ERROR;
     }
 
-    d_trace(9, "usrsctp_connect [%s]:%d\n", CORE_ADDR(sa, buf), CORE_PORT(sa));
+    ogs_trace("usrsctp_connect [%s]:%d", OGS_ADDR(sa, buf), OGS_PORT(sa));
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-static status_t s1ap_usrsctp_listen(sock_id id)
+static int s1ap_usrsctp_listen(ogs_sock_t *sock)
 {
     int rc;
-    struct socket *sock = (struct socket *)id;
-    d_assert(sock, return CORE_ERROR,);
+    struct socket *socket = (struct socket *)sock;
+    ogs_assert(socket);
 
-    rc = usrsctp_listen(sock, 5);
+    rc = usrsctp_listen(socket, 5);
     if (rc < 0)
     {
-        d_error("usrsctp_listen failed");
-        return CORE_ERROR;
+        ogs_error("usrsctp_listen() failed");
+        return OGS_ERROR;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 static int s1ap_usrsctp_recv_handler(struct socket *sock,
@@ -393,21 +384,21 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
 {
     if (data)
     {
-        event_t e;
+        mme_event_t *e = NULL;
 
 #undef MSG_NOTIFICATION
 #define MSG_NOTIFICATION 0x2000
         if (flags & MSG_NOTIFICATION)
         {
             union sctp_notification *not = (union sctp_notification *)data;
-            if (not->sn_header.sn_length == (c_uint32_t)datalen)
+            if (not->sn_header.sn_length == (uint32_t)datalen)
             {
                 switch(not->sn_header.sn_type) 
                 {
                     case SCTP_ASSOC_CHANGE :
                     {
-                        d_trace(5, "SCTP_ASSOC_CHANGE:"
-                                "[T:%d, F:0x%x, S:%d, I/O:%d/%d]\n", 
+                        ogs_debug("SCTP_ASSOC_CHANGE:"
+                                "[T:%d, F:0x%x, S:%d, I/O:%d/%d]", 
                                 not->sn_assoc_change.sac_type,
                                 not->sn_assoc_change.sac_flags,
                                 not->sn_assoc_change.sac_state,
@@ -419,71 +410,68 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                             not->sn_assoc_change.sac_state == 
                                 SCTP_COMM_LOST)
                         {
-                            c_sockaddr_t *addr =
+                            ogs_sockaddr_t *addr =
                                 usrsctp_remote_addr(&store);
-                            d_assert(addr, return 1,);
+                            ogs_assert(addr);
 
                             if (not->sn_assoc_change.sac_state == 
                                 SCTP_SHUTDOWN_COMP)
-                                d_trace(5, "SCTP_SHUTDOWN_COMP\n");
+                                ogs_debug("SCTP_SHUTDOWN_COMP");
                             if (not->sn_assoc_change.sac_state == 
                                 SCTP_COMM_LOST)
-                                d_trace(5, "SCTP_COMM_LOST\n");
+                                ogs_debug("SCTP_COMM_LOST");
 
-                            event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
-                            event_set_param1(&e, (c_uintptr_t)sock);
-                            event_set_param2(&e, (c_uintptr_t)addr);
-                            if (mme_event_send(&e) != CORE_OK)
-                            {
-                                CORE_FREE(addr);
-                            }
+                            e = mme_event_new(MME_EVT_S1AP_LO_CONNREFUSED);
+                            ogs_assert(e);
+                            e->enb_sock = (ogs_sock_t *)sock;
+                            e->enb_addr = addr;
+                            mme_event_send(e);
+                            ogs_pollset_notify(mme_self()->pollset);
                         }
                         else if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
                         {
-                            c_sockaddr_t *addr =
+                            ogs_sockaddr_t *addr =
                                 usrsctp_remote_addr(&store);
-                            d_assert(addr, return 1,);
+                            ogs_assert(addr);
 
-                            d_trace(5, "SCTP_COMM_UP\n");
+                            ogs_debug("SCTP_COMM_UP");
 
-                            event_set(&e, MME_EVT_S1AP_LO_SCTP_COMM_UP);
-                            event_set_param1(&e, (c_uintptr_t)sock);
-                            event_set_param2(&e, (c_uintptr_t)addr);
-                            event_set_param3(&e, (c_uintptr_t)
-                                not->sn_assoc_change.sac_inbound_streams);
-                            event_set_param4(&e, (c_uintptr_t)
-                                not->sn_assoc_change.sac_outbound_streams);
-                            if (mme_event_send(&e) != CORE_OK)
-                            {
-                                CORE_FREE(addr);
-                            }
+                            e = mme_event_new(MME_EVT_S1AP_LO_SCTP_COMM_UP);
+                            ogs_assert(e);
+                            e->enb_sock = (ogs_sock_t *)sock;
+                            e->enb_addr = addr;
+                            e->inbound_streams = 
+                                not->sn_assoc_change.sac_inbound_streams;
+                            e->outbound_streams = 
+                                not->sn_assoc_change.sac_outbound_streams;
+                            mme_event_send(e);
+                            ogs_pollset_notify(mme_self()->pollset);
                         }
                         break;
                     }
                     case SCTP_SHUTDOWN_EVENT :
                     {
-                        c_sockaddr_t *addr = usrsctp_remote_addr(&store);
-                        d_assert(addr, return 1,);
+                        ogs_sockaddr_t *addr = usrsctp_remote_addr(&store);
+                        ogs_assert(addr);
 
-                        d_trace(5, "SCTP_SHUTDOWN_EVENT:"
-                                "[T:0x%x, F:0x%x, L:0x%x]\n", 
+                        ogs_debug("SCTP_SHUTDOWN_EVENT:"
+                                "[T:0x%x, F:0x%x, L:0x%x]", 
                                 not->sn_shutdown_event.sse_type,
                                 not->sn_shutdown_event.sse_flags,
                                 not->sn_shutdown_event.sse_length);
 
-                        event_set(&e, MME_EVT_S1AP_LO_CONNREFUSED);
-                        event_set_param1(&e, (c_uintptr_t)sock);
-                        event_set_param2(&e, (c_uintptr_t)addr);
-                        if (mme_event_send(&e) != CORE_OK)
-                        {
-                            CORE_FREE(addr);
-                        }
+                        e = mme_event_new(MME_EVT_S1AP_LO_CONNREFUSED);
+                        ogs_assert(e);
+                        e->enb_sock = (ogs_sock_t *)sock;
+                        e->enb_addr = addr;
+                        mme_event_send(e);
+                        ogs_pollset_notify(mme_self()->pollset);
                         break;
                     }
                     case SCTP_PEER_ADDR_CHANGE:
                     {
-                        d_warn("SCTP_PEER_ADDR_CHANGE:"
-                                "[T:%d, F:0x%x, S:%d]\n", 
+                        ogs_warn("SCTP_PEER_ADDR_CHANGE:"
+                                "[T:%d, F:0x%x, S:%d]", 
                                 not->sn_paddr_change.spc_type,
                                 not->sn_paddr_change.spc_flags,
                                 not->sn_paddr_change.spc_error);
@@ -491,7 +479,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                     }
                     case SCTP_REMOTE_ERROR:
                     {
-                        d_warn("SCTP_REMOTE_ERROR:[T:%d, F:0x%x, S:%d]\n", 
+                        ogs_warn("SCTP_REMOTE_ERROR:[T:%d, F:0x%x, S:%d]", 
                                 not->sn_remote_error.sre_type,
                                 not->sn_remote_error.sre_flags,
                                 not->sn_remote_error.sre_error);
@@ -499,14 +487,14 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                     }
                     case SCTP_SEND_FAILED :
                     {
-                        d_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]\n", 
+                        ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]", 
                                 not->sn_send_failed_event.ssfe_type,
                                 not->sn_send_failed_event.ssfe_flags,
                                 not->sn_send_failed_event.ssfe_error);
                         break;
                     }
                     default :
-                        d_error("Discarding event with "
+                        ogs_error("Discarding event with "
                                 "unknown flags:0x%x type:0x%x",
                                 flags, not->sn_header.sn_type);
                         break;
@@ -515,47 +503,40 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
         }
         else if (flags & MSG_EOR)
         {
-            pkbuf_t *pkbuf;
-            c_sockaddr_t *addr = NULL;
+            ogs_pkbuf_t *pkbuf;
+            ogs_sockaddr_t *addr = NULL;
 
-            pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
-            d_assert(pkbuf, return 1, );
+            pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+            ogs_pkbuf_put_data(pkbuf, data, datalen);
+
             addr = usrsctp_remote_addr(&store);
-            d_assert(addr, return 1,);
+            ogs_assert(addr);
 
-            pkbuf->len = datalen;
-            memcpy(pkbuf->payload, data, pkbuf->len);
-
-            d_trace(50, "[S1AP] RECV : ");
-            d_trace_hex(50, pkbuf->payload, pkbuf->len);
-
-            event_set(&e, MME_EVT_S1AP_MESSAGE);
-            event_set_param1(&e, (c_uintptr_t)sock);
-            event_set_param2(&e, (c_uintptr_t)addr);
-            event_set_param3(&e, (c_uintptr_t)pkbuf);
-            if (mme_event_send(&e) != CORE_OK)
-            {
-                pkbuf_free(pkbuf);
-                CORE_FREE(addr);
-            }
+            e = mme_event_new(MME_EVT_S1AP_MESSAGE);
+            ogs_assert(e);
+            e->enb_sock = (ogs_sock_t *)sock;
+            e->enb_addr = addr;
+            e->pkbuf = pkbuf;
+            mme_event_send(e);
+            ogs_pollset_notify(mme_self()->pollset);
         }
         else
         {
-            d_error("Not engough buffer. Need more recv : 0x%x", flags);
+            ogs_error("Not engough buffer. Need more recv : 0x%x", flags);
         }
         free(data);
     }
     return (1);
 }
 
-static c_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store)
+static ogs_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store)
 {
-    c_sockaddr_t *addr = NULL;
+    ogs_sockaddr_t *addr = NULL;
 
-    d_assert(store, return NULL,);
+    ogs_assert(store);
 
-    addr = core_calloc(1, sizeof(c_sockaddr_t));
-    d_assert(addr, return NULL,);
+    addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
+    ogs_assert(addr);
 
     addr->c_sa_family = store->sin.sin_family;
     switch(addr->c_sa_family)
@@ -567,7 +548,7 @@ static c_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store)
             memcpy(&addr->sin6, &store->sin6, sizeof(struct sockaddr_in6));
             break;
         default:
-            d_assert(0, return NULL,);
+            ogs_assert_if_reached();
     }
 
     return addr;

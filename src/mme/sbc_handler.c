@@ -1,7 +1,3 @@
-#define TRACE_MODULE _sbc_handler
-
-#include "core_debug.h"
-
 #include "mme_context.h"
 #include "s1ap_path.h"
 #include "s1ap_build.h"
@@ -9,11 +5,11 @@
 
 void sbc_handle_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
 {
-    pkbuf_t *s1apbuf = NULL;
-    hash_index_t *hi = NULL;
+    ogs_pkbuf_t *s1apbuf = NULL;
+    ogs_hash_index_t *hi = NULL;
     mme_enb_t *enb = NULL;
     int i, j, flag;
-    status_t rv;
+    int rv;
 
     /* Find enB with matched TAI */
     for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi))
@@ -44,24 +40,22 @@ void sbc_handle_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
 
             /* Buidl S1AP Write Replace Warning Request message */
             rv = s1ap_build_write_replace_warning_request(&s1apbuf, sbc_pws);
-            d_assert(rv == CORE_OK && s1apbuf, return, 
-                    "s1ap build error");
+            ogs_assert(rv == OGS_OK);
 
             /* Send to enb */
-            d_assert(s1ap_send_to_enb(
-                    enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == CORE_OK,
-                    return, "s1ap send error");
+            ogs_assert(s1ap_send_to_enb(
+                    enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == OGS_OK);
         }
     }
 }
 
 void sbc_handle_stop_warning_request(sbc_pws_data_t *sbc_pws)
 {
-    pkbuf_t *s1apbuf = NULL;
-    hash_index_t *hi = NULL;
+    ogs_pkbuf_t *s1apbuf = NULL;
+    ogs_hash_index_t *hi = NULL;
     mme_enb_t *enb = NULL;
     int i, j, flag;
-    status_t rv;
+    int rv;
 
     /* Find enB with matched TAI */
     for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi))
@@ -92,13 +86,11 @@ void sbc_handle_stop_warning_request(sbc_pws_data_t *sbc_pws)
 
             /* Buidl S1AP Kill request message */
             rv = s1ap_build_kill_request(&s1apbuf, sbc_pws);
-            d_assert(rv == CORE_OK && s1apbuf, return, 
-                    "s1ap build error");
+            ogs_assert(rv == OGS_OK && s1apbuf);
 
             /* Send to enb */
-            d_assert(s1ap_send_to_enb(
-                    enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == CORE_OK,
-                    return, "s1ap send error");
+            ogs_assert(s1ap_send_to_enb(
+                    enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == OGS_OK);
         }
     }
 }

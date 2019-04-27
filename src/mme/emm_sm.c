@@ -1,7 +1,3 @@
-#define TRACE_MODULE _emm_sm
-
-#include "core_debug.h"
-
 #include "nas/nas_message.h"
 #include "fd/fd_lib.h"
 #include "fd/s6a/s6a_message.h"
@@ -19,115 +15,116 @@
 #include "mme_path.h"
 #include "mme_sm.h"
 
-void emm_state_initial(fsm_t *s, event_t *e)
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __emm_log_domain
+
+void emm_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
-    d_assert(s, return, "Null param");
+    ogs_assert(s);
 
-    mme_sm_trace(3, e);
+    mme_sm_debug(e);
 
-    FSM_TRAN(s, &emm_state_de_registered);
+    OGS_FSM_TRAN(s, &emm_state_de_registered);
 }
 
-void emm_state_final(fsm_t *s, event_t *e)
+void emm_state_final(ogs_fsm_t *s, mme_event_t *e)
 {
-    d_assert(s, return, "Null param");
+    ogs_assert(s);
 
-    mme_sm_trace(3, e);
+    mme_sm_debug(e);
 }
 
-static void common_register_state(fsm_t *s, event_t *e);
+static void common_register_state(ogs_fsm_t *s, mme_event_t *e);
 
-void emm_state_de_registered(fsm_t *s, event_t *e)
+void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
 {
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
+    ogs_assert(s);
+    ogs_assert(e);
 
-    mme_sm_trace(3, e);
+    mme_sm_debug(e);
 
     common_register_state(s, e);
 }
 
-void emm_state_registered(fsm_t *s, event_t *e)
+void emm_state_registered(ogs_fsm_t *s, mme_event_t *e)
 {
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
+    ogs_assert(s);
+    ogs_assert(e);
 
-    mme_sm_trace(3, e);
+    mme_sm_debug(e);
 
     common_register_state(s, e);
 }
 
-static void common_register_state(fsm_t *s, event_t *e)
+static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 {
-    status_t rv;
+    int rv;
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
+    
+    ogs_assert(e);
         
-    mme_ue = mme_ue_find(event_get_param1(e));
-    d_assert(mme_ue, return, "Null param");
+    mme_ue = e->mme_ue;
+    ogs_assert(mme_ue);
 
-    switch (event_get(e))
+    switch (e->id)
     {
-        case FSM_ENTRY_SIG:
+        case OGS_FSM_ENTRY_SIG:
         {
             return;
         }
-        case FSM_EXIT_SIG:
+        case OGS_FSM_EXIT_SIG:
         {
             return;
         }
         case MME_EVT_EMM_MESSAGE:
         {
-            nas_message_t *message = (nas_message_t *)event_get_param5(e);
-            d_assert(message, return, "Null param");
+            nas_message_t *message = e->nas_message;
+            ogs_assert(message);
 
             enb_ue = mme_ue->enb_ue;
-            d_assert(enb_ue, return, "Null param");
+            ogs_assert(enb_ue);
 
             if (message->emm.h.security_header_type
                     == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
             {
-                d_trace(3, "[EMM] Service request\n");
+                ogs_debug("[EMM] Service request");
                 rv = emm_handle_service_request(
                         mme_ue, &message->emm.service_request);
-                if (rv != CORE_OK)
+                if (rv != OGS_OK)
                 {
-                    d_error("emm_handle_service_request() failed");
-                    FSM_TRAN(s, emm_state_exception);
+                    ogs_error("emm_handle_service_request() failed");
+                    OGS_FSM_TRAN(s, emm_state_exception);
                     return;
                 }
 
                 if (!MME_UE_HAVE_IMSI(mme_ue))
                 {
-                    d_warn("[EMM] Service request : Unknown UE");
+                    ogs_warn("[EMM] Service request : Unknown UE");
                     rv = nas_send_service_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                    d_assert(rv == CORE_OK,,
-                            "nas_send_service_reject() failed");
-                    FSM_TRAN(s, &emm_state_exception);
+                    ogs_assert(rv == OGS_OK);
+                    OGS_FSM_TRAN(s, &emm_state_exception);
                     return;
                 }
 
                 if (!SECURITY_CONTEXT_IS_VALID(mme_ue))
                 {
-                    d_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                    ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
                     rv = nas_send_service_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                    d_assert(rv == CORE_OK,,
-                        "nas_send_service_reject() failed");
+                    ogs_assert(rv == OGS_OK);
 
                     rv = s1ap_send_ue_context_release_command(enb_ue, 
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_S1_NORMAL_RELEASE, 0);
-                    d_assert(rv == CORE_OK,,
-                        "s1ap_send_ue_context_release_command() failed");
+                    ogs_assert(rv == OGS_OK);
                     return;
                 }
 
                 rv = s1ap_send_initial_context_setup_request(mme_ue);
-                d_assert(rv == CORE_OK, return,
-                    "s1ap_send_initial_context_setup_request() failed");
+                ogs_assert(rv == OGS_OK);
                 return;
             }
 
@@ -135,59 +132,58 @@ static void common_register_state(fsm_t *s, event_t *e)
             {
                 case NAS_IDENTITY_RESPONSE:
                 {
-                    d_trace(3, "[EMM] Identity response\n");
+                    ogs_debug("[EMM] Identity response");
                     rv = emm_handle_identity_response(mme_ue,
                             &message->emm.identity_response);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_identity_response() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("emm_handle_identity_response() failed");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
                     if (!MME_UE_HAVE_IMSI(mme_ue))
                     {
-                        d_error("No IMSI");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("No IMSI");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
-                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
                     break;
                 }
                 case NAS_ATTACH_REQUEST:
                 {
-                    d_trace(3, "[EMM] Attach request\n", mme_ue->imsi_bcd);
+                    ogs_debug("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
                     rv = emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_attach_request() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("emm_handle_attach_request() failed");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
                     break;
                 }
                 case NAS_TRACKING_AREA_UPDATE_REQUEST:
                 {
-                    d_trace(3, "[EMM] Tracking area update request\n");
+                    ogs_debug("[EMM] Tracking area update request");
                     rv = emm_handle_tau_request(
                             mme_ue, &message->emm.tracking_area_update_request);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_tau_request() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("emm_handle_tau_request() failed");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
                     if (!MME_UE_HAVE_IMSI(mme_ue))
                     {
-                        d_warn("[EMM] TAU request : Unknown UE");
+                        ogs_warn("[EMM] TAU request : Unknown UE");
                         rv = nas_send_tau_reject(mme_ue,
                         EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                        d_assert(rv == CORE_OK,,
-                                "nas_send_tau_reject() failed");
-                        FSM_TRAN(s, &emm_state_exception);
+                        ogs_assert(rv == OGS_OK);
+                        OGS_FSM_TRAN(s, &emm_state_exception);
                         return;
                     }
 
@@ -195,71 +191,48 @@ static void common_register_state(fsm_t *s, event_t *e)
                 }
                 case NAS_TRACKING_AREA_UPDATE_COMPLETE:
                 {
-                    d_trace(3, "[EMM] Tracking area update complete\n");
-                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    ogs_debug("[EMM] Tracking area update complete");
+                    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
                     return;
                 }
                 case NAS_EMM_STATUS:
                 {
-                    d_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
+                    ogs_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
-                    FSM_TRAN(s, &emm_state_exception);
+                    OGS_FSM_TRAN(s, &emm_state_exception);
                     return;
                 }
                 case NAS_DETACH_REQUEST:
                 {
-                    d_trace(3, "[EMM] Detach request\n");
-                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    ogs_debug("[EMM] Detach request");
+                    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
                     rv = emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_attach_request() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("emm_handle_attach_request() failed");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
                     rv = mme_send_delete_session_or_detach(mme_ue);
-                    d_assert(rv == CORE_OK,,
-                            "mme_send_delete_session_or_detach() failed");
+                    ogs_assert(rv == OGS_OK);
 
-                    FSM_TRAN(s, &emm_state_de_registered);
+                    OGS_FSM_TRAN(s, &emm_state_de_registered);
                     return;
                 }
                 default:
                 {
-                    d_warn("Unknown message[%d]", message->emm.h.message_type);
+                    ogs_warn("Unknown message[%d]", message->emm.h.message_type);
                     return;
                 }
             }
             break;
         }
-        case MME_EVT_EMM_T3413:
-        {
-            if (mme_ue->max_paging_retry >= MAX_NUM_OF_PAGING)
-            {
-                /* Paging failed */
-                d_warn("[EMM] Paging to IMSI[%s] failed. Stop paging",
-                        mme_ue->imsi_bcd);
-                if (mme_ue->last_paging_msg)
-                {
-                    pkbuf_free(mme_ue->last_paging_msg);
-                    mme_ue->last_paging_msg = NULL;
-                }
-            }
-            else
-            {
-                mme_ue->max_paging_retry++;
-                s1ap_handle_paging(mme_ue);
-                /* Start T3413 */
-                tm_start(mme_ue->t3413);
-            }
-            return;
-        }
         default:
         {
-            d_error("Unknown event[%s]", mme_event_get_name(e));
+            ogs_error("Unknown event[%s]", mme_event_get_name(e));
             return;
         }
     }
@@ -267,12 +240,12 @@ static void common_register_state(fsm_t *s, event_t *e)
     if (!MME_UE_HAVE_IMSI(mme_ue))
     {
         rv = nas_send_identity_request(mme_ue);
-        d_assert(rv == CORE_OK, return, "nas_send_identity_request() failed");
+        ogs_assert(rv == OGS_OK);
         return;
     }
 
     enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
+    ogs_assert(enb_ue);
 
     switch(mme_ue->nas_eps.type)
     {
@@ -282,112 +255,113 @@ static void common_register_state(fsm_t *s, event_t *e)
             {
                 rv = nas_send_emm_to_esm(mme_ue,
                         &mme_ue->pdn_connectivity_request);
-                d_assert(rv == CORE_OK,, "nas_send_emm_to_esm() failed");
-                FSM_TRAN(s, &emm_state_initial_context_setup);
+                ogs_assert(rv == OGS_OK);
+                OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
             }
             else
             {
                 if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
                 {
                     rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                    d_assert(rv == CORE_OK,,
-                        "mme_gtp_send_delete_all_sessions() failed");
+                    ogs_assert(rv == OGS_OK);
                 }
                 else
                 {
                     mme_s6a_send_air(mme_ue, NULL);
                 }
-                FSM_TRAN(s, &emm_state_authentication);
+                OGS_FSM_TRAN(s, &emm_state_authentication);
             }
             break;
         }
         case MME_EPS_TYPE_TAU_REQUEST:
         {
-            S1AP_ProcedureCode_t procedureCode =
-                (S1AP_ProcedureCode_t)event_get_param2(e);
+            S1AP_ProcedureCode_t procedureCode = e->s1ap_code;
 
             if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
             {
-                d_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
+                ogs_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
                 rv = nas_send_tau_reject(mme_ue,
                     EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                d_assert(rv == CORE_OK,, "nas_send_tau_reject() failed");
-                FSM_TRAN(s, emm_state_exception);
+                ogs_assert(rv == OGS_OK);
+                OGS_FSM_TRAN(s, emm_state_exception);
                 break;
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue))
             {
                 mme_s6a_send_air(mme_ue, NULL);
-                FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_authentication);
                 break;
             }
 
             if (procedureCode == S1AP_ProcedureCode_id_initialUEMessage)
             {
-                d_trace(5, "    Iniital UE Message\n");
+                ogs_debug("    Iniital UE Message");
                 if (mme_ue->nas_eps.update.active_flag)
                 {
                     rv = nas_send_tau_accept(mme_ue,
                             S1AP_ProcedureCode_id_InitialContextSetup);
-                    d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
+                    ogs_assert(rv == OGS_OK);
                 }
                 else
                 {
                     rv = nas_send_tau_accept(mme_ue,
                             S1AP_ProcedureCode_id_downlinkNASTransport);
-                    d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
+                    ogs_assert(rv == OGS_OK);
 
                     rv = mme_send_release_access_bearer_or_ue_context_release(
                             mme_ue, enb_ue);
-                    d_assert(rv == CORE_OK,, "mme_send_release_access_bearer"
-                            "_or_ue_context_release() failed");
+                    ogs_assert(rv == OGS_OK);
                 }
             }
             else if (procedureCode == S1AP_ProcedureCode_id_uplinkNASTransport)
             {
-                d_trace(5, "    Uplink NAS Transport\n");
+                ogs_debug("    Uplink NAS Transport");
                 rv = nas_send_tau_accept(mme_ue,
                         S1AP_ProcedureCode_id_downlinkNASTransport);
-                d_assert(rv == CORE_OK,, "nas_send_tau_accept() failed");
+                ogs_assert(rv == OGS_OK);
             }
             else
-                d_assert(0,, "Invalid Procedure Code[%d]", procedureCode);
+            {
+                ogs_fatal("Invalid Procedure Code[%d]", (int)procedureCode);
+                ogs_assert_if_reached();
+            }
             break;
         }
         default:
-            d_assert(0,, "Invalid NAS-EPS[%d]", mme_ue->nas_eps.type);
+            ogs_fatal("Invalid NAS-EPS[%d]", mme_ue->nas_eps.type);
+            ogs_assert_if_reached();
             break;
     }
 }
 
-void emm_state_authentication(fsm_t *s, event_t *e)
+void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 {
-    status_t rv;
+    int rv;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
+    ogs_assert(s);
+    ogs_assert(e);
+    
+    mme_sm_debug(e);
 
-    mme_sm_trace(3, e);
+    mme_ue = e->mme_ue;
+    ogs_assert(mme_ue);
 
-    mme_ue = mme_ue_find(event_get_param1(e));
-    d_assert(mme_ue, return, "Null param");
-
-    switch (event_get(e))
+    switch (e->id)
     {
-        case FSM_ENTRY_SIG:
+        case OGS_FSM_ENTRY_SIG:
         {
             break;
         }
-        case FSM_EXIT_SIG:
+        case OGS_FSM_EXIT_SIG:
         {
             break;
         }
         case MME_EVT_EMM_MESSAGE:
         {
-            nas_message_t *message = (nas_message_t *)event_get_param5(e);
-            d_assert(message, break, "Null param");
+            nas_message_t *message = e->nas_message;
+            ogs_assert(message);
 
             switch(message->emm.h.message_type)
             {
@@ -400,20 +374,25 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                             &authentication_response->
                                 authentication_response_parameter;
 
-                    d_trace(3, "[EMM] Authentication response\n");
-                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    ogs_debug("[EMM] Authentication response");
+                    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
                     if (memcmp(authentication_response_parameter->res,
                         mme_ue->xres,
                         authentication_response_parameter->length) != 0)
                     {
+                        ogs_log_hexdump(OGS_LOG_WARN,
+                                authentication_response_parameter->res,
+                                authentication_response_parameter->length);
+                        ogs_log_hexdump(OGS_LOG_WARN,
+                                mme_ue->xres, MAX_RES_LEN);
                         rv = nas_send_authentication_reject(mme_ue);
-                        d_assert(rv == CORE_OK,, "nas send error");
-                        FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                        ogs_assert(rv == OGS_OK);
+                        OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
                     }
                     else
                     {
-                        FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
+                        OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
                     }
                     break;
                 }
@@ -426,84 +405,82 @@ void emm_state_authentication(fsm_t *s, event_t *e)
                             &authentication_failure->
                                 authentication_failure_parameter;
 
-                    d_trace(3, "[EMM] Authentication failure\n");
-                    d_trace(5, "    IMSI[%s] EMM_CAUSE[%d]\n", mme_ue->imsi_bcd,
+                    ogs_debug("[EMM] Authentication failure");
+                    ogs_debug("    IMSI[%s] EMM_CAUSE[%d]", mme_ue->imsi_bcd,
                             authentication_failure->emm_cause);
 
                     switch(authentication_failure->emm_cause)
                     {
                         case EMM_CAUSE_MAC_FAILURE:
-                            d_warn("Authentication failure(MAC failure)");
+                            ogs_warn("Authentication failure(MAC failure)");
                             break;
                         case EMM_CAUSE_NON_EPS_AUTHENTICATION_UNACCEPTABLE:
-                            d_error("Authentication failure"
+                            ogs_error("Authentication failure"
                                     "(Non-EPS authentication unacceptable)");
                             break;
                         case EMM_CAUSE_SYNCH_FAILURE:
-                            d_warn("Authentication failure(Synch failure)");
+                            ogs_warn("Authentication failure(Synch failure)");
                             mme_s6a_send_air(mme_ue,
                                     authentication_failure_parameter);
                             return;
                         default:
-                            d_error("Unknown EMM_CAUSE{%d] in Authentication"
+                            ogs_error("Unknown EMM_CAUSE{%d] in Authentication"
                                     " failure",
                                     authentication_failure->emm_cause);
                             break;
                     }
 
                     rv = nas_send_authentication_reject(mme_ue);
-                    d_assert(rv == CORE_OK,, "nas send error");
-                    FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+                    ogs_assert(rv == OGS_OK);
+                    OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
                     break;
                 }
                 case NAS_ATTACH_REQUEST:
                 {
-                    d_warn("[EMM] Attach request", mme_ue->imsi_bcd);
-                    d_trace(3, "[EMM] Attach request\n", mme_ue->imsi_bcd);
+                    ogs_warn("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
                     rv = emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_attach_request() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("emm_handle_attach_request() failed");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
                     mme_s6a_send_air(mme_ue, NULL);
-                    FSM_TRAN(s, &emm_state_authentication);
+                    OGS_FSM_TRAN(s, &emm_state_authentication);
                     break;
                 }
                 case NAS_EMM_STATUS:
                 {
-                    d_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
+                    ogs_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
-                    FSM_TRAN(s, &emm_state_exception);
+                    OGS_FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
                 case NAS_DETACH_REQUEST:
                 {
-                    d_trace(3, "[EMM] Detach request\n");
-                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    ogs_debug("[EMM] Detach request");
+                    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
                     rv = emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_attach_request() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("emm_handle_attach_request() failed");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
                     rv = mme_send_delete_session_or_detach(mme_ue);
-                    d_assert(rv == CORE_OK,,
-                            "mme_send_delete_session_or_detach() failed");
+                    ogs_assert(rv == OGS_OK);
 
-                    FSM_TRAN(s, &emm_state_de_registered);
+                    OGS_FSM_TRAN(s, &emm_state_de_registered);
                     break;
                 }
                 default:
                 {
-                    d_warn("Unknown message[%d]", message->emm.h.message_type);
+                    ogs_warn("Unknown message[%d]", message->emm.h.message_type);
                     break;
                 }
             }
@@ -511,54 +488,54 @@ void emm_state_authentication(fsm_t *s, event_t *e)
         }
         default:
         {
-            d_error("Unknown event[%s]", mme_event_get_name(e));
+            ogs_error("Unknown event[%s]", mme_event_get_name(e));
             break;
         }
     }
 }
 
-void emm_state_security_mode(fsm_t *s, event_t *e)
+void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 {
-    status_t rv;
+    int rv;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
+    ogs_assert(s);
+    ogs_assert(e);
 
-    mme_sm_trace(3, e);
+    mme_sm_debug(e);
 
-    mme_ue = mme_ue_find(event_get_param1(e));
-    d_assert(mme_ue, return, "Null param");
+    mme_ue = e->mme_ue;
+    ogs_assert(mme_ue);
 
-    switch (event_get(e))
+    switch (e->id)
     {
-        case FSM_ENTRY_SIG:
+        case OGS_FSM_ENTRY_SIG:
         {
-            pkbuf_t *emmbuf = NULL;
+            ogs_pkbuf_t *emmbuf = NULL;
 
             rv = emm_build_security_mode_command(&emmbuf, mme_ue);
-            d_assert(rv == CORE_OK && emmbuf, break, "emm build error");
+            ogs_assert(rv == OGS_OK && emmbuf);
 
             rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
-            d_assert(rv == CORE_OK && emmbuf, break, "emm send error");
+            ogs_assert(rv == OGS_OK && emmbuf);
 
             break;
         }
-        case FSM_EXIT_SIG:
+        case OGS_FSM_EXIT_SIG:
         {
             break;
         }
         case MME_EVT_EMM_MESSAGE:
         {
-            nas_message_t *message = (nas_message_t *)event_get_param5(e);
-            d_assert(message, break, "Null param");
+            nas_message_t *message = e->nas_message;
+            ogs_assert(message);
 
             switch(message->emm.h.message_type)
             {
                 case NAS_SECURITY_MODE_COMPLETE:
                 {
-                    d_trace(3, "[EMM] Security mode complete\n");
-                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    ogs_debug("[EMM] Security mode complete");
+                    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
                     /* Update Kenb */
                     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
@@ -572,75 +549,75 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
                     mme_s6a_send_ulr(mme_ue);
                     if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST)
                     {
-                        FSM_TRAN(s, &emm_state_initial_context_setup);
+                        OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
                     }
                     else if (mme_ue->nas_eps.type ==
                             MME_EPS_TYPE_SERVICE_REQUEST ||
                             mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST)
                     {
-                        FSM_TRAN(s, &emm_state_registered);
+                        OGS_FSM_TRAN(s, &emm_state_registered);
                     }
                     else
-                        d_assert(0,, "Invalid NAS_EPS[%d]",
-                                mme_ue->nas_eps.type);
+                    {
+                        ogs_fatal("Invalid NAS_EPS[%d]", mme_ue->nas_eps.type);
+                        ogs_assert_if_reached();
+                    }
                     break;
                 }
                 case NAS_SECURITY_MODE_REJECT:
                 {
-                    d_warn("[EMM] Security mode reject : IMSI[%s] Cause[%d]",
+                    ogs_warn("[EMM] Security mode reject : IMSI[%s] Cause[%d]",
                             mme_ue->imsi_bcd,
                             message->emm.security_mode_reject.emm_cause);
-                    FSM_TRAN(s, &emm_state_exception);
+                    OGS_FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
                 case NAS_ATTACH_REQUEST:
                 {
-                    d_warn("[EMM] Attach request", mme_ue->imsi_bcd);
-                    d_trace(3, "[EMM] Attach request\n", mme_ue->imsi_bcd);
+                    ogs_warn("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
                     rv = emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_attach_request() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("emm_handle_attach_request() failed");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
                     mme_s6a_send_air(mme_ue, NULL);
-                    FSM_TRAN(s, &emm_state_authentication);
+                    OGS_FSM_TRAN(s, &emm_state_authentication);
                     break;
                 }
                 case NAS_EMM_STATUS:
                 {
-                    d_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
+                    ogs_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
-                    FSM_TRAN(s, &emm_state_exception);
+                    OGS_FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
                 case NAS_DETACH_REQUEST:
                 {
-                    d_trace(3, "[EMM] Detach request\n");
-                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    ogs_debug("[EMM] Detach request");
+                    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
                     rv = emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_attach_request() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("emm_handle_attach_request() failed");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
                     rv = mme_send_delete_session_or_detach(mme_ue);
-                    d_assert(rv == CORE_OK,,
-                            "mme_send_delete_session_or_detach() failed");
+                    ogs_assert(rv == OGS_OK);
 
-                    FSM_TRAN(s, &emm_state_de_registered);
+                    OGS_FSM_TRAN(s, &emm_state_de_registered);
                     break;
                 }
                 default:
                 {
-                    d_warn("Unknown message[%d]", message->emm.h.message_type);
+                    ogs_warn("Unknown message[%d]", message->emm.h.message_type);
                     break;
                 }
             }
@@ -648,108 +625,105 @@ void emm_state_security_mode(fsm_t *s, event_t *e)
         }
         default:
         {
-            d_error("Unknown event[%s]", mme_event_get_name(e));
+            ogs_error("Unknown event[%s]", mme_event_get_name(e));
             break;
         }
     }
 }
 
-void emm_state_initial_context_setup(fsm_t *s, event_t *e)
+void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 {
-    status_t rv;
+    int rv;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
+    ogs_assert(s);
+    ogs_assert(e);
 
-    mme_sm_trace(3, e);
+    mme_sm_debug(e);
 
-    mme_ue = mme_ue_find(event_get_param1(e));
-    d_assert(mme_ue, return, "Null param");
+    mme_ue = e->mme_ue;
+    ogs_assert(mme_ue);
 
-    switch (event_get(e))
+    switch (e->id)
     {
-        case FSM_ENTRY_SIG:
+        case OGS_FSM_ENTRY_SIG:
         {
             break;
         }
-        case FSM_EXIT_SIG:
+        case OGS_FSM_EXIT_SIG:
         {
             break;
         }
         case MME_EVT_EMM_MESSAGE:
         {
-            nas_message_t *message = (nas_message_t *)event_get_param5(e);
-            d_assert(message, break, "Null param");
+            nas_message_t *message = e->nas_message;
+            ogs_assert(message);
 
             switch(message->emm.h.message_type)
             {
                 case NAS_ATTACH_COMPLETE:
                 {
-                    d_trace(3, "[EMM] Attach complete\n");
-                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    ogs_debug("[EMM] Attach complete");
+                    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
                     rv = emm_handle_attach_complete(
                             mme_ue, &message->emm.attach_complete);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_attach_complete() failed "
+                        ogs_error("emm_handle_attach_complete() failed "
                                 "in emm_state_initial_context_setup");
-                        FSM_TRAN(s, emm_state_exception);
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         break;
                     }
-                    FSM_TRAN(s, &emm_state_registered);
+                    OGS_FSM_TRAN(s, &emm_state_registered);
                     break;
                 }
                 case NAS_ATTACH_REQUEST:
                 {
-                    d_warn("[EMM] Attach request", mme_ue->imsi_bcd);
-                    d_trace(3, "[EMM] Attach request\n", mme_ue->imsi_bcd);
+                    ogs_warn("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
                     rv = emm_handle_attach_request(
                             mme_ue, &message->emm.attach_request);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_attach_request() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("emm_handle_attach_request() failed");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
                     rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                    d_assert(rv == CORE_OK,,
-                        "mme_gtp_send_delete_all_sessions() failed");
-                    FSM_TRAN(s, &emm_state_authentication);
+                    ogs_assert(rv == OGS_OK);
+                    OGS_FSM_TRAN(s, &emm_state_authentication);
                     break;
                 }
                 case NAS_EMM_STATUS:
                 {
-                    d_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
+                    ogs_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                             mme_ue->imsi_bcd,
                             message->emm.emm_status.emm_cause);
-                    FSM_TRAN(s, &emm_state_exception);
+                    OGS_FSM_TRAN(s, &emm_state_exception);
                     break;
                 }
                 case NAS_DETACH_REQUEST:
                 {
-                    d_trace(3, "[EMM] Detach request\n");
-                    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+                    ogs_debug("[EMM] Detach request");
+                    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
                     rv = emm_handle_detach_request(
                             mme_ue, &message->emm.detach_request_from_ue);
-                    if (rv != CORE_OK)
+                    if (rv != OGS_OK)
                     {
-                        d_error("emm_handle_attach_request() failed");
-                        FSM_TRAN(s, emm_state_exception);
+                        ogs_error("emm_handle_attach_request() failed");
+                        OGS_FSM_TRAN(s, emm_state_exception);
                         return;
                     }
 
                     rv = mme_send_delete_session_or_detach(mme_ue);
-                    d_assert(rv == CORE_OK,,
-                            "mme_send_delete_session_or_detach() failed");
+                    ogs_assert(rv == OGS_OK);
 
-                    FSM_TRAN(s, &emm_state_de_registered);
+                    OGS_FSM_TRAN(s, &emm_state_de_registered);
                     break;
                 }
                 default:
                 {
-                    d_warn("Unknown message[%d]", 
+                    ogs_warn("Unknown message[%d]", 
                             message->emm.h.message_type);
                     break;
                 }
@@ -758,29 +732,30 @@ void emm_state_initial_context_setup(fsm_t *s, event_t *e)
         }
         default:
         {
-            d_error("Unknown event[%s]", mme_event_get_name(e));
+            ogs_error("Unknown event[%s]", mme_event_get_name(e));
             break;
         }
     }
 }
 
-void emm_state_exception(fsm_t *s, event_t *e)
+void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 {
-    mme_sm_trace(3, e);
+    ogs_assert(e);
+    mme_sm_debug(e);
 
-    switch (event_get(e))
+    switch (e->id)
     {
-        case FSM_ENTRY_SIG:
+        case OGS_FSM_ENTRY_SIG:
         {
             break;
         }
-        case FSM_EXIT_SIG:
+        case OGS_FSM_EXIT_SIG:
         {
             break;
         }
         default:
         {
-            d_error("Unknown event[%s]", mme_event_get_name(e));
+            ogs_error("Unknown event[%s]", mme_event_get_name(e));
             break;
         }
     }

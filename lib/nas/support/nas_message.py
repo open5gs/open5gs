@@ -1,27 +1,20 @@
+# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+
+# This file is part of Open5GS.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Copyright (c) 2017, NextEPC Group
-# All rights reserved.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from docx import Document
 import re, os, sys, string
 import datetime
@@ -61,28 +54,22 @@ def write_file(f, string):
 def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
- * Copyright (c) 2017, NextEPC Group
- * All rights reserved.
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
-
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 """)
@@ -346,23 +333,22 @@ output_header_to_file(f)
 f.write("""#ifndef __NAS_IES_H__
 #define __NAS_IES_H__
 
-#include "core_pkbuf.h"
 #include "nas_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(c_int16_t) nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type);
+int nas_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type);
 
 """)
 
 for (k, v) in sorted_type_list:
-    f.write("CORE_DECLARE(c_int16_t) nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf);\n" % (v_lower(k), v_lower(k), v_lower(k)))
+    f.write("int nas_decode_%s(nas_%s_t *%s, ogs_pkbuf_t *pkbuf);\n" % (v_lower(k), v_lower(k), v_lower(k)))
 f.write("\n")
 
 for (k, v) in sorted_type_list:
-    f.write("CORE_DECLARE(c_int16_t) nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s);\n" % (v_lower(k), v_lower(k), v_lower(k)))
+    f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_%s_t *%s);\n" % (v_lower(k), v_lower(k), v_lower(k)))
 f.write("\n")
 
 
@@ -377,18 +363,17 @@ f.close()
 
 f = open(outdir + 'nas_ies.c', 'w')
 output_header_to_file(f)
-f.write("""#define TRACE_MODULE _nas_ies
+f.write("""#include "nas_ies.h"
 
-#include "core_debug.h"
-#include "core_lib.h"
-#include "nas_ies.h"
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __base_nas_domain
 
-c_int16_t nas_encode_optional_type(pkbuf_t *pkbuf, c_uint8_t type)
+int nas_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type)
 {
-    c_uint16_t size = sizeof(c_uint8_t);
+    uint16_t size = sizeof(uint8_t);
 
-    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, "pkbuf_header error");
-    memcpy(pkbuf->payload - size, &type, size);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &type, size);
 
     return size;
 }
@@ -399,109 +384,109 @@ for (k, v) in sorted_type_list:
     f.write("/* %s %s\n" % (type_list[k]["reference"], k))
     f.write(" * %s %s %s */\n" % (type_list[k]["presence"], type_list[k]["format"], type_list[k]["length"]))
     if type_list[k]["format"] == "TV" and type_list[k]["length"] == "1":
-        f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int nas_decode_%s(nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
-        f.write("    memcpy(%s, pkbuf->payload - 1, 1);\n\n" % v_lower(k))
-        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(25, pkbuf->payload - 1, 1);\n\n");
+        f.write("    memcpy(%s, pkbuf->data - 1, 1);\n\n" % v_lower(k))
+        f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
+        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);\n\n");
         f.write("    return 0;\n")
         f.write("}\n\n")
-        f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
-        f.write("    c_uint16_t size = sizeof(nas_%s_t);\n\n" % v_lower(k))
-        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
-        f.write("    memcpy(pkbuf->payload - size, %s, size);\n\n" % v_lower(k))
-        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
+        f.write("    uint16_t size = sizeof(nas_%s_t);\n\n" % v_lower(k))
+        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    memcpy(pkbuf->data - size, %s, size);\n\n" % v_lower(k))
+        f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
+        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
     elif type_list[k]["format"] == "TV" or type_list[k]["format"] == "V":
-        f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int nas_decode_%s(nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         if type_list[k]["length"] == "4":
-            f.write("    c_uint16_t size = 3;\n\n")
+            f.write("    uint16_t size = 3;\n\n")
         else:
-            f.write("    c_uint16_t size = sizeof(nas_%s_t);\n\n" % v_lower(k))
-        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
-        f.write("    memcpy(%s, pkbuf->payload - size, size);\n\n" % v_lower(k))
+            f.write("    uint16_t size = sizeof(nas_%s_t);\n\n" % v_lower(k))
+        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    memcpy(%s, pkbuf->data - size, size);\n\n" % v_lower(k))
         if "decode" in type_list[k]:
             f.write("%s" % type_list[k]["decode"])
-        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
+        f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
+        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
-        f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         if type_list[k]["length"] == "4":
-            f.write("    c_uint16_t size = 3;\n")
+            f.write("    uint16_t size = 3;\n")
         else:
-            f.write("    c_uint16_t size = sizeof(nas_%s_t);\n" % v_lower(k))
+            f.write("    uint16_t size = sizeof(nas_%s_t);\n" % v_lower(k))
         f.write("    nas_%s_t target;\n\n" % v_lower(k))
         f.write("    memcpy(&target, %s, size);\n" % v_lower(k))
         if "encode" in type_list[k]:
             f.write("%s" % type_list[k]["encode"])
-        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
-        f.write("    memcpy(pkbuf->payload - size, &target, size);\n\n")
-        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
+        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    memcpy(pkbuf->data - size, &target, size);\n\n")
+        f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
+        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
     elif type_list[k]["format"] == "LV-E" or type_list[k]["format"] == "TLV-E":
-        f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int nas_decode_%s(nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
-        f.write("    c_uint16_t size = 0;\n")
-        f.write("    nas_%s_t *source = pkbuf->payload;\n\n" % v_lower(k))
+        f.write("    uint16_t size = 0;\n")
+        f.write("    nas_%s_t *source = pkbuf->data;\n\n" % v_lower(k))
         f.write("    %s->length = ntohs(source->length);\n" % v_lower(k))
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
-        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
-        f.write("    %s->buffer = pkbuf->payload - size + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
-        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(25, %s->buffer, %s->length);\n\n" % (v_lower(k), v_lower(k)));
+        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    %s->buffer = pkbuf->data - size + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
+        f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
+        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, (void*)%s->buffer, %s->length);\n\n" % (v_lower(k), v_lower(k)));
         f.write("    return size;\n")
         f.write("}\n\n")
-        f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
-        f.write("    c_uint16_t size = 0;\n")
-        f.write("    c_uint16_t target;\n\n")
-        f.write("    d_assert(%s, return -1, \"Null param\");\n" % v_lower(k))
-        f.write("    d_assert(%s->buffer, return -1, \"Null param\");\n\n" % v_lower(k))
+        f.write("    uint16_t size = 0;\n")
+        f.write("    uint16_t target;\n\n")
+        f.write("    ogs_assert(%s);\n" % v_lower(k))
+        f.write("    ogs_assert(%s->buffer);\n\n" % v_lower(k))
         f.write("    size = sizeof(%s->length);\n" % v_lower(k))
-        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
+        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
         f.write("    target = htons(%s->length);\n" % v_lower(k))
-        f.write("    memcpy(pkbuf->payload - size, &target, size);\n\n")
+        f.write("    memcpy(pkbuf->data - size, &target, size);\n\n")
         f.write("    size = %s->length;\n" % v_lower(k))
-        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
-        f.write("    memcpy(pkbuf->payload - size, %s->buffer, size);\n\n" % v_lower(k))
-        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
+        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    memcpy(pkbuf->data - size, %s->buffer, size);\n\n" % v_lower(k))
+        f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
+        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
         f.write("    return %s->length + sizeof(%s->length);\n" % (v_lower(k), v_lower(k)))
         f.write("}\n\n");
     else:
-        f.write("c_int16_t nas_decode_%s(nas_%s_t *%s, pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int nas_decode_%s(nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
-        f.write("    c_uint16_t size = 0;\n")
-        f.write("    nas_%s_t *source = pkbuf->payload;\n\n" % v_lower(k))
+        f.write("    uint16_t size = 0;\n")
+        f.write("    nas_%s_t *source = pkbuf->data;\n\n" % v_lower(k))
         f.write("    %s->length = source->length;\n" % v_lower(k))
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
-        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
-        f.write("    memcpy(%s, pkbuf->payload - size, size);\n\n" % v_lower(k))
+        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    memcpy(%s, pkbuf->data - size, size);\n\n" % v_lower(k))
         if "decode" in type_list[k]:
             f.write("%s" % type_list[k]["decode"])
-        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
+        f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
+        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
-        f.write("c_int16_t nas_encode_%s(pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
-        f.write("    c_uint16_t size = %s->length + sizeof(%s->length);\n" % (v_lower(k), v_lower(k)))
+        f.write("    uint16_t size = %s->length + sizeof(%s->length);\n" % (v_lower(k), v_lower(k)))
         f.write("    nas_%s_t target;\n\n" % v_lower(k))
         f.write("    memcpy(&target, %s, sizeof(nas_%s_t));\n" % (v_lower(k), v_lower(k)))
         if "encode" in type_list[k]:
             f.write("%s" % type_list[k]["encode"])
-        f.write("    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, \"pkbuf_header error\");\n")
-        f.write("    memcpy(pkbuf->payload - size, &target, size);\n\n")
-        f.write("    d_trace(25, \"  %s - \");\n" % v_upper(k))
-        f.write("    d_trace_hex(25, pkbuf->payload - size, size);\n\n");
+        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    memcpy(pkbuf->data - size, &target, size);\n\n")
+        f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
+        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n");
 f.close()
@@ -517,7 +502,7 @@ f.write("""#ifndef __NAS_MESSAGE_H__
 extern "C" {
 #endif /* __cplusplus */
 
-/* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+/* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
  * When calculating AES_CMAC, we need to use the headroom of the packet. */
 #define NAS_HEADROOM 16
 
@@ -536,23 +521,23 @@ extern "C" {
 #define NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 
 typedef struct _nas_emm_header_t {
-ED2(c_uint8_t security_header_type:4;,
-    c_uint8_t protocol_discriminator:4;)
-    c_uint8_t message_type;
+ED2(uint8_t security_header_type:4;,
+    uint8_t protocol_discriminator:4;)
+    uint8_t message_type;
 } __attribute__ ((packed)) nas_emm_header_t;
 
 typedef struct _nas_esm_header_t {
-ED2(c_uint8_t eps_bearer_identity:4;,
-    c_uint8_t protocol_discriminator:4;)
-    c_uint8_t procedure_transaction_identity;
-    c_uint8_t message_type;
+ED2(uint8_t eps_bearer_identity:4;,
+    uint8_t protocol_discriminator:4;)
+    uint8_t procedure_transaction_identity;
+    uint8_t message_type;
 } __attribute__ ((packed)) nas_esm_header_t;
 
 typedef struct _nas_security_header_t {
-ED2(c_uint8_t security_header_type:4;,
-    c_uint8_t protocol_discriminator:4;)
-    c_uint32_t message_authentication_code;
-    c_uint8_t sequence_number;
+ED2(uint8_t security_header_type:4;,
+    uint8_t protocol_discriminator:4;)
+    uint32_t message_authentication_code;
+    uint8_t sequence_number;
 } __attribute__ ((packed)) nas_security_header_t;
 
 """)
@@ -589,7 +574,7 @@ for (k, v) in sorted_msg_list:
 
         if ie["presence"] == "O" and optional_fields is False:
             f.write("\n    /* Optional fields */\n")
-            f.write("    c_uint32_t presencemask;\n");
+            f.write("    uint32_t presencemask;\n");
             optional_fields = True;
 
         f.write("    nas_" + v_lower(ie["type"]) + "_t " + \
@@ -636,10 +621,10 @@ typedef struct _nas_message_t {
     };
 } nas_message_t;
 
-CORE_DECLARE(status_t) nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) nas_plain_encode(
-        pkbuf_t **pkbuf, nas_message_t *message);
+int nas_emm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf);
+int nas_esm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf);
+int nas_plain_encode(
+        ogs_pkbuf_t **pkbuf, nas_message_t *message);
 
 #ifdef __cplusplus
 }
@@ -654,10 +639,10 @@ f.close()
 
 f = open(outdir + 'nas_decoder.c', 'w')
 output_header_to_file(f)
-f.write("""#define TRACE_MODULE _nas_decoder
+f.write("""#include "nas_message.h"
 
-#include "core_debug.h"
-#include "nas_message.h"
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __base_nas_domain
 
 """)
 
@@ -667,18 +652,18 @@ for (k, v) in sorted_msg_list:
     if len(msg_list[k]["ies"]) == 0:
         continue
 
-    f.write("c_int32_t nas_decode_%s(nas_message_t *message, pkbuf_t *pkbuf)\n{\n" % v_lower(k))
+    f.write("int nas_decode_%s(nas_message_t *message, ogs_pkbuf_t *pkbuf)\n{\n" % v_lower(k))
     if float(msg_list[k]["type"]) < 192:
         f.write("    nas_%s_t *%s = &message->emm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     else:
         f.write("    nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
-    f.write("    c_int32_t decoded = 0;\n")
-    f.write("    c_int32_t size = 0;\n\n")
-    f.write("    d_trace(25, \"[NAS] Decode %s\\n\");\n\n" % v_upper(k))
+    f.write("    int decoded = 0;\n")
+    f.write("    int size = 0;\n\n")
+    f.write("    ogs_trace(\"[NAS] Decode %s\\n\");\n\n" % v_upper(k))
 
     for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "M"]:
         f.write("    size = nas_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
-        f.write("    d_assert(size >= 0, return -1, \"decode failed\");\n")
+        f.write("    ogs_assert(size >= 0);\n")
         f.write("    decoded += size;\n\n")
 
     optional_fields = False;
@@ -686,12 +671,11 @@ for (k, v) in sorted_msg_list:
         if optional_fields is False:
             f.write("""    while(pkbuf->len > 0) 
     {
-        c_uint8_t *buffer = pkbuf->payload;
-        c_uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
+        uint8_t *buffer = pkbuf->data;
+        uint8_t type = (*buffer) >= 0x80 ? ((*buffer) & 0xf0) : (*buffer);
 
-        size = sizeof(c_uint8_t);
-        d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, return -1, 
-                "pkbuf_header error");
+        size = sizeof(uint8_t);
+        ogs_assert(ogs_pkbuf_pull(pkbuf, size));
         decoded += size;
 
         switch(type)
@@ -701,14 +685,14 @@ for (k, v) in sorted_msg_list:
 
         f.write("             case NAS_%s_%s_TYPE:\n" % (v_upper(k), v_upper(ie["value"])))
         f.write("                 size = nas_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
-        f.write("                 d_assert(size >= 0, return -1, \"decode failed\");\n")
+        f.write("                 ogs_assert(size >= 0);\n")
         f.write("                 %s->presencemask |= NAS_%s_%s_PRESENT;\n" % (v_lower(k), v_upper(k), v_upper(ie["value"])))
         f.write("                 decoded += size;\n")
         f.write("                 break;\n")
 
     if [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
         f.write("""             default:
-                d_warn("Unknown type(0x%x) or not implemented\\n", type);
+                ogs_warn("Unknown type(0x%x) or not implemented\\n", type);
                 break;
         }
     }
@@ -719,31 +703,29 @@ for (k, v) in sorted_msg_list:
 
 """)
 
-f.write("""status_t nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf)
+f.write("""int nas_emm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf)
 {
-    status_t rv = CORE_ERROR;
-    c_uint16_t size = 0;
-    c_uint16_t decoded = 0;
+    uint16_t size = 0;
+    uint16_t decoded = 0;
 
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
+    ogs_assert(pkbuf);
+    ogs_assert(pkbuf->data);
+    ogs_assert(pkbuf->len);
 
     memset(message, 0, sizeof(nas_message_t));
 
     size = sizeof(nas_emm_header_t);
-    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
-            return CORE_ERROR, "pkbuf_header error");
-    memcpy(&message->emm.h, pkbuf->payload - size, size);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(&message->emm.h, pkbuf->data - size, size);
     decoded += size;
 
     if (message->emm.h.security_header_type >=
             NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
-        d_assert(pkbuf_header(pkbuf, 1) == CORE_OK, 
-                return CORE_ERROR, "pkbuf_header error");
+        ogs_assert(ogs_pkbuf_push(pkbuf, 1));
         decoded -= 1;
         size = nas_decode_service_request(message, pkbuf);
-        d_assert(size >= CORE_OK, return CORE_ERROR, "decode error");
+        ogs_assert(size >= OGS_OK);
         decoded += size;
 
         goto out;
@@ -759,39 +741,37 @@ for (k, v) in sorted_msg_list:
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
-            f.write("            d_assert(size >= CORE_OK, return CORE_ERROR, \"decode error\");\n")
+            f.write("            ogs_assert(size >= OGS_OK);\n")
             f.write("            decoded += size;\n")
         f.write("            break;\n")
 
 f.write("""        default:
-            d_error("Unknown message type (0x%x) or not implemented", 
+            ogs_error("Unknown message type (0x%x) or not implemented", 
                     message->emm.h.message_type);
             break;
     }
 
 out:
-    rv = pkbuf_header(pkbuf, decoded);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+    ogs_assert(ogs_pkbuf_push(pkbuf, decoded));
 
-    return CORE_OK;
+    return OGS_OK;
 }
 """)
 
-f.write("""status_t nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf)
+f.write("""int nas_esm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf)
 {
-    status_t rv = CORE_ERROR;
-    c_uint16_t size = 0;
-    c_uint16_t decoded = 0;
+    uint16_t size = 0;
+    uint16_t decoded = 0;
 
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
+    ogs_assert(pkbuf);
+    ogs_assert(pkbuf->data);
+    ogs_assert(pkbuf->len);
 
     memset(message, 0, sizeof(nas_message_t));
 
     size = sizeof(nas_esm_header_t);
-    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK, 
-            return CORE_ERROR, "pkbuf_header error");
-    memcpy(&message->esm.h, pkbuf->payload - size, size);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(&message->esm.h, pkbuf->data - size, size);
     decoded += size;
 
     switch(message->esm.h.message_type)
@@ -804,37 +784,36 @@ for (k, v) in sorted_msg_list:
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
-            f.write("            d_assert(size >= CORE_OK, return CORE_ERROR, \"decode error\");\n")
+            f.write("            ogs_assert(size >= OGS_OK);\n")
             f.write("            decoded += size;\n")
         f.write("            break;\n")
 
 f.write("""        default:
-            d_error("Unknown message type (0x%x) or not implemented", 
+            ogs_error("Unknown message type (0x%x) or not implemented", 
                     message->esm.h.message_type);
             break;
     }
 
-    rv = pkbuf_header(pkbuf, decoded);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+    ogs_assert(ogs_pkbuf_push(pkbuf, decoded));
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 #if 0 /* deprecated */
-status_t nas_plain_decode(nas_message_t *message, pkbuf_t *pkbuf)
+int nas_plain_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf)
 {
     nas_security_header_t *h = NULL;
 
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    h = pkbuf->payload;
-    d_assert(h, return CORE_ERROR, "Null param");
+    ogs_assert(pkbuf);
+    h = pkbuf->data;
+    ogs_assert(h);
 
     if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
         return nas_emm_decode(message, pkbuf);
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
         return nas_esm_decode(message, pkbuf);
 
-    d_assert(0, return CORE_ERROR, 
+    ogs_assert_if_reached();
             "Invalid Protocol : %d", h->protocol_discriminator);
 }
 #endif
@@ -844,11 +823,11 @@ f.close()
 
 f = open(outdir + 'nas_encoder.c', 'w')
 output_header_to_file(f)
-f.write("""#define TRACE_MODULE _nas_encoder
+f.write("""#include "nas_message.h"
 
-#include "core_debug.h"
-#include "nas_message.h"
-
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __base_nas_domain
+ 
 """)
 
 for (k, v) in sorted_msg_list:
@@ -857,18 +836,18 @@ for (k, v) in sorted_msg_list:
     if len(msg_list[k]["ies"]) == 0:
         continue
 
-    f.write("c_int32_t nas_encode_%s(pkbuf_t *pkbuf, nas_message_t *message)\n{\n" % v_lower(k))
+    f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_message_t *message)\n{\n" % v_lower(k))
     if float(msg_list[k]["type"]) < 192:
         f.write("    nas_%s_t *%s = &message->emm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     else:
         f.write("    nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
-    f.write("    c_int32_t encoded = 0;\n")
-    f.write("    c_int32_t size = 0;\n\n")
-    f.write("    d_trace(25, \"[NAS] Encode %s\\n\");\n\n" % v_upper(k))
+    f.write("    int encoded = 0;\n")
+    f.write("    int size = 0;\n\n")
+    f.write("    ogs_trace(\"[NAS] Encode %s\");\n\n" % v_upper(k))
 
     for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "M"]:
         f.write("    size = nas_encode_%s(pkbuf, &%s->%s);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
-        f.write("    d_assert(size >= 0, return -1, \"encode failed\");\n")
+        f.write("    ogs_assert(size >= 0);\n")
         f.write("    encoded += size;\n\n")
 
     for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
@@ -878,10 +857,10 @@ for (k, v) in sorted_msg_list:
             f.write("        %s->%s.type = (NAS_%s_%s_TYPE >> 4);\n\n" % (v_lower(k), v_lower(ie["value"]), v_upper(k), v_upper(ie["value"])))
         else:
             f.write("        size = nas_encode_optional_type(pkbuf, NAS_%s_%s_TYPE);\n" % (v_upper(k), v_upper(ie["value"])))
-            f.write("        d_assert(size >= 0, return encoded, \"decode failed\");\n")
+            f.write("        ogs_assert(size >= 0);\n")
             f.write("        encoded += size;\n\n")
         f.write("        size = nas_encode_%s(pkbuf, &%s->%s);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
-        f.write("        d_assert(size >= 0, return encoded, \"decode failed\");\n")
+        f.write("        ogs_assert(size >= 0);\n")
         f.write("        encoded += size;\n")
         f.write("    }\n\n")
 
@@ -891,34 +870,33 @@ for (k, v) in sorted_msg_list:
 """)
 
 
-f.write("""status_t nas_emm_encode(pkbuf_t **pkbuf, nas_message_t *message)
+f.write("""int nas_emm_encode(ogs_pkbuf_t **pkbuf, nas_message_t *message)
 {
-    status_t rv = CORE_ERROR;
-    c_int32_t size = 0;
-    c_int32_t encoded = 0;
+    int size = 0;
+    int encoded = 0;
 
-    d_assert(message, return CORE_ERROR, "Null param");
+    ogs_assert(message);
 
-    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+    /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    *pkbuf = pkbuf_alloc(NAS_HEADROOM, MAX_SDU_LEN);
-    d_assert(*pkbuf, return -1, "Null Param");
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_assert(*pkbuf);
+    ogs_pkbuf_reserve(*pkbuf, NAS_HEADROOM);
+    ogs_pkbuf_put(*pkbuf, MAX_SDU_LEN-NAS_HEADROOM);
 
     size = sizeof(nas_emm_header_t);
-    rv = pkbuf_header(*pkbuf, -size);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+    ogs_assert(ogs_pkbuf_pull(*pkbuf, size));
 
-    memcpy((*pkbuf)->payload - size, &message->emm.h, size);
+    memcpy((*pkbuf)->data - size, &message->emm.h, size);
     encoded += size;
 
     if (message->emm.h.security_header_type >=
             NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
-        d_assert(pkbuf_header(*pkbuf, 1) == CORE_OK, 
-                return CORE_ERROR, "pkbuf_header error");
+        ogs_assert(ogs_pkbuf_push(*pkbuf, 1));
         encoded -= 1;
         size = nas_encode_service_request(*pkbuf, message);
-        d_assert(size >= 0, return CORE_ERROR, "decode error");
+        ogs_assert(size >= 0);
         encoded += size;
 
         goto out;
@@ -935,46 +913,44 @@ for (k, v) in sorted_msg_list:
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
-            f.write("            d_assert(size >= 0, return CORE_ERROR, \"decode error\");\n")
+            f.write("            ogs_assert(size >= 0);\n")
             f.write("            encoded += size;\n")
         f.write("            break;\n")
 
 f.write("""        default:
-            d_error("Unknown message type (0x%x) or not implemented", 
+            ogs_error("Unknown message type (0x%x) or not implemented", 
                     message->emm.h.message_type);
-            pkbuf_free((*pkbuf));
-            return CORE_ERROR;
+            ogs_pkbuf_free((*pkbuf));
+            return OGS_ERROR;
     }
 
 out:
-    rv = pkbuf_header(*pkbuf, encoded);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
+    ogs_assert(ogs_pkbuf_push(*pkbuf, encoded));
 
     (*pkbuf)->len = encoded;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 """)
 
-f.write("""status_t nas_esm_encode(pkbuf_t **pkbuf, nas_message_t *message)
+f.write("""int nas_esm_encode(ogs_pkbuf_t **pkbuf, nas_message_t *message)
 {
-    status_t rv = CORE_ERROR;
-    c_int32_t size = 0;
-    c_int32_t encoded = 0;
+    int size = 0;
+    int encoded = 0;
 
-    d_assert(message, return CORE_ERROR, "Null param");
+    ogs_assert(message);
 
-    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+    /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    *pkbuf = pkbuf_alloc(NAS_HEADROOM, MAX_SDU_LEN);
-    d_assert(*pkbuf, return -1, "Null Param");
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_assert(*pkbuf);
+    ogs_pkbuf_reserve(*pkbuf, NAS_HEADROOM);
+    ogs_pkbuf_put(*pkbuf, MAX_SDU_LEN-NAS_HEADROOM);
 
     size = sizeof(nas_esm_header_t);
-    rv = pkbuf_header(*pkbuf, -size);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
-
-    memcpy((*pkbuf)->payload - size, &message->esm.h, size);
+    ogs_assert(ogs_pkbuf_pull(*pkbuf, size));
+    memcpy((*pkbuf)->data - size, &message->esm.h, size);
     encoded += size;
 
     switch(message->esm.h.message_type)
@@ -988,32 +964,29 @@ for (k, v) in sorted_msg_list:
         f.write("        case NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
-            f.write("            d_assert(size >= 0, return CORE_ERROR, \"decode error\");\n")
+            f.write("            ogs_assert(size >= 0);\n")
             f.write("            encoded += size;\n")
         f.write("            break;\n")
 
 f.write("""        default:
-            d_error("Unknown message type (0x%x) or not implemented", 
+            ogs_error("Unknown message type (0x%x) or not implemented", 
                     message->esm.h.message_type);
-            pkbuf_free((*pkbuf));
-            return CORE_ERROR;
+            ogs_pkbuf_free((*pkbuf));
+            return OGS_ERROR;
     }
 
-    rv = pkbuf_header(*pkbuf, encoded);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "pkbuf_header error");
-
+    ogs_assert(ogs_pkbuf_push(*pkbuf, encoded));
     (*pkbuf)->len = encoded;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
+int nas_plain_encode(ogs_pkbuf_t **pkbuf, nas_message_t *message)
 {
-    d_assert(message, return CORE_ERROR, "Null param");
+    ogs_assert(message);
 
-    d_assert(message->emm.h.protocol_discriminator ==
-            message->esm.h.protocol_discriminator, 
-            return CORE_ERROR, "check UNION for protocol");
+    ogs_assert(message->emm.h.protocol_discriminator ==
+            message->esm.h.protocol_discriminator);
 
     if (message->emm.h.protocol_discriminator == 
             NAS_PROTOCOL_DISCRIMINATOR_EMM)
@@ -1022,8 +995,9 @@ status_t nas_plain_encode(pkbuf_t **pkbuf, nas_message_t *message)
             NAS_PROTOCOL_DISCRIMINATOR_ESM)
         return nas_esm_encode(pkbuf, message);
 
-    d_assert(0, return CORE_ERROR, 
-            "Invalid Protocol : %d", message->emm.h.protocol_discriminator);
+    ogs_assert_if_reached();
+
+    return OGS_OK;
 }
 """)
 

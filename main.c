@@ -2,30 +2,27 @@
  * @file main.c
  */
 
-/* Core library */
-#define TRACE_MODULE _main_
-#include "core_general.h"
-#include "core_debug.h"
-#include "core_signal.h"
+#include "ogs-core.h"
+#include "base/context.h"
 
 /* Server */
-#include "common/application.h"
+#include "app/application.h"
 #include "app_init.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdate-time"
-static char *compile_time = __DATE__ " " __TIME__;
+static char *version = "NextEPC daemon v" \
+                PACKAGE_VERSION " - "__DATE__ " " __TIME__;
 #pragma GCC diagnostic pop
 
 static void show_version()
 {
-    printf("NextEPC daemon v%s - %s\n",
-            PACKAGE_VERSION, compile_time);
+    printf("%s", version);
 }
 
 static void show_help(const char *name)
 {
-    show_version();
+    printf("%s", version);
 
     printf("\n"
            "Usage: %s [arguments]\n"
@@ -33,10 +30,12 @@ static void show_help(const char *name)
            "Arguments:\n"
            "   -v                   Show version\n"
            "   -h                   Show help\n"
-           "   -d                   Start as daemon\n"
+           "   -D                   Start as daemon\n"
            "   -f                   Set configuration file name\n"
            "   -l log_file          Log file path to be logged to\n"
            "   -p pid_file          PID file path\n"
+           "   -d core:gtp:event    Enable debugging\n"
+           "   -t sock:mem:         Enable trace\n"
            "\n", name);
 }
 
@@ -47,24 +46,21 @@ static int check_signal(int signum)
         case SIGTERM:
         case SIGINT:
         {
-            d_info("%s received", 
+            ogs_info("%s received", 
                     signum == SIGTERM ? "SIGTERM" : "SIGINT");
 
             return 1;
         }
         case SIGHUP:
         {
-            d_info("SIGHUP received");
+            ogs_info("SIGHUP received");
             app_logger_restart();
-            break;
-        }
-        case SIGUSR1:
-        {
             break;
         }
         default:
         {
-            d_error("Unknown signal number = %d\n", signum);
+            ogs_error("Signal-%d received (%s)",
+                    signum, ogs_signal_description_get(signum));
             break;
         }
             
@@ -75,7 +71,8 @@ static int check_signal(int signum)
 void terminate()
 {
     app_terminate();
-    core_terminate();
+    base_finalize();
+    ogs_core_finalize();
 }
 
 int main(int argc, char *argv[])
@@ -85,79 +82,98 @@ int main(int argc, char *argv[])
      *
      * Keep the order of starting-up
      */
-    status_t rv;
-    char *config_path = NULL;
-    char *log_path = NULL;
-    char *pid_path = NULL;
+    int rv;
+    int i;
+    app_param_t param;
+    const char *debug_mask = NULL;
+    const char *trace_mask = NULL;
 
-    while (1)
+    memset(&param, 0, sizeof(param));
+    for (i = 1; i < argc; i++)
     {
-        int opt = getopt (argc, argv, "vhdf:l:p:");
-        if (opt == -1)
-            break;
-
-        switch (opt)
+        if (!strcmp(argv[i], "-v"))
         {
-            case 'v':
-                show_version();
-                return EXIT_SUCCESS;
-            case 'h':
-                show_help(argv[0]);
-                return EXIT_SUCCESS;
-            case 'd':
+            show_version();
+            return EXIT_SUCCESS;
+        }
+        if (!strcmp(argv[i], "-h"))
+        {
+            show_help(argv[0]);
+            return EXIT_SUCCESS;
+        }
+        if (!strcmp(argv[i], "-D"))
+        {
+            pid_t pid;
+            pid = fork();
+
+            ogs_assert(pid >= 0);
+
+            if (pid != 0)
             {
-                pid_t pid;
-                pid = fork();
-
-                d_assert(pid >= 0, return EXIT_FAILURE, "fork() failed");
-
-                if (pid != 0)
-                {
-                    /* Parent */
-                    return EXIT_SUCCESS;
-                }
-                /* Child */
-
-                setsid();
-                umask(027);
-                break;
+                /* Parent */
+                return EXIT_SUCCESS;
             }
-            case 'f':
-                config_path = optarg;
-                break;
-            case 'l':
-                log_path = optarg;
-                break;
-            case 'p':
-                pid_path = optarg;
-                break;
-            default:
-                show_help(argv[0]);
-                return EXIT_FAILURE;
+            /* Child */
+
+            setsid();
+            umask(027);
+            continue;
+        }
+        if (!strcmp(argv[i], "-f"))
+        {
+            param.config_path = argv[++i];
+            continue;
+        }
+        if (!strcmp(argv[i], "-l"))
+        {
+            param.log_path = argv[++i];
+            continue;
+        }
+        if (!strcmp(argv[i], "-p"))
+        {
+            param.pid_path = argv[++i];
+            continue;
+        }
+        if (!strcmp(argv[i], "-d"))
+        {
+            param.log_level = OGS_LOG_DEBUG;
+            param.log_domain = argv[++i];
+            continue;
+        }
+        if (!strcmp(argv[i], "-t"))
+        {
+            param.log_level = OGS_LOG_TRACE;
+            param.log_domain = argv[++i];
+            continue;
+        }
+        if (argv[i][0] == '-') {
+            show_help(argv[0]);
+            return EXIT_FAILURE;
         }
     }
 
-    show_version();
-    d_print("\n");
-
     atexit(terminate);
+    ogs_core_initialize();
+    ogs_setup_signal_thread();
+    base_initialize();
 
-    core_initialize();
-    rv = app_initialize(config_path, log_path, pid_path);
-    if (rv != CORE_OK)
+    ogs_info("NextEPC daemon start");
+    ogs_log_print(OGS_LOG_INFO, "\n");
+
+    rv = app_initialize(&param);
+    if (rv != OGS_OK)
     {
-        if (rv == CORE_EAGAIN)
+        if (rv == OGS_RETRY)
             return EXIT_SUCCESS;
 
-        d_fatal("NextEPC initialization failed. Aborted");
+        ogs_fatal("NextEPC initialization failed. Aborted");
         return EXIT_FAILURE;
     }
 
-    d_print("\n\n");
-    d_info("NextEPC daemon start");
-    signal_thread(check_signal);
+    ogs_log_print(OGS_LOG_INFO, "\n\n%s\n\n", version);
+    ogs_signal_thread(check_signal);
 
-    d_info("NextEPC daemon terminating...");
+    ogs_info("NextEPC daemon terminating...");
 
     return EXIT_SUCCESS;
 }

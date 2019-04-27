@@ -1,12 +1,10 @@
-#define TRACE_MODULE _mme_kdf
+#include "ogs-crypt.h"
 
-#include "core_sha2_hmac.h"
-
-void mme_kdf_nas(c_uint8_t algorithm_type_distinguishers,
-    c_uint8_t algorithm_identity, c_uint8_t *kasme, c_uint8_t *knas)
+void mme_kdf_nas(uint8_t algorithm_type_distinguishers,
+    uint8_t algorithm_identity, uint8_t *kasme, uint8_t *knas)
 {
-    c_uint8_t s[7];
-    c_uint8_t out[32];
+    uint8_t s[7];
+    uint8_t out[32];
 
     s[0] = 0x15; /* FC Value */
 
@@ -18,13 +16,13 @@ void mme_kdf_nas(c_uint8_t algorithm_type_distinguishers,
     s[5] = 0x00;
     s[6] = 0x01;
 
-    hmac_sha256(kasme, 32, s, 7, out, 32);
+    ogs_hmac_sha256(kasme, 32, s, 7, out, 32);
     memcpy(knas, out+16, 16);
 }
 
-void mme_kdf_enb(c_uint8_t *kasme, c_uint32_t ul_count, c_uint8_t *kenb)
+void mme_kdf_enb(uint8_t *kasme, uint32_t ul_count, uint8_t *kenb)
 {
-    c_uint8_t s[7];
+    uint8_t s[7];
 
     s[0] = 0x11; /* FC Value */
 
@@ -34,12 +32,12 @@ void mme_kdf_enb(c_uint8_t *kasme, c_uint32_t ul_count, c_uint8_t *kenb)
     s[5] = 0x00;
     s[6] = 0x04;
 
-    hmac_sha256(kasme, 32, s, 7, kenb, 32);
+    ogs_hmac_sha256(kasme, 32, s, 7, kenb, 32);
 }
 
-void mme_kdf_nh(c_uint8_t *kasme, c_uint8_t *sync_input, c_uint8_t *kenb)
+void mme_kdf_nh(uint8_t *kasme, uint8_t *sync_input, uint8_t *kenb)
 {
-    c_uint8_t s[35];
+    uint8_t s[35];
 
     s[0] = 0x12; /* FC Value */
 
@@ -48,5 +46,5 @@ void mme_kdf_nh(c_uint8_t *kasme, c_uint8_t *sync_input, c_uint8_t *kenb)
     s[33] = 0x00;
     s[34] = 0x20;
 
-    hmac_sha256(kasme, 32, s, 35, kenb, 32);
+    ogs_hmac_sha256(kasme, 32, s, 35, kenb, 32);
 }

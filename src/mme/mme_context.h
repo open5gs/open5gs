@@ -1,21 +1,13 @@
 #ifndef __MME_CONTEXT__
 #define __MME_CONTEXT__
 
-#include "core_list.h"
-#include "core_index.h"
-#include "core_errno.h"
-#include "core_sha2.h"
-#include "core_hash.h"
-#include "core_network.h"
-#include "core_tlv_msg.h"
-#include "core_fsm.h"
-#include "core_msgq.h"
-#include "core_timer.h"
+#include "ogs-crypt.h"
+#include "base/types.h"
 
-#include "3gpp_types.h"
-#include "s1ap/s1ap_message.h"
+#include "asn1c/s1ap_message.h"
 #include "nas/nas_message.h"
 #include "fd/s6a/s6a_message.h"
+#include "gtp/gtp_tlv.h"
 
 /* S1AP */
 #include "S1AP_Cause.h"
@@ -34,6 +26,13 @@ extern "C" {
 
 #define MAX_NUM_OF_BPLMN            6
 
+extern int __mme_log_domain;
+extern int __emm_log_domain;
+extern int __esm_log_domain;
+
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __mme_log_domain
+
 typedef struct _mme_sgw_t mme_sgw_t;
 typedef struct _mme_pgw_t mme_pgw_t;
 
@@ -45,7 +44,7 @@ typedef struct _gtp_xact_t gtp_xact_t;
 
 typedef struct _fd_config_t fd_config_t;
 
-typedef c_uint32_t mme_m_tmsi_t;
+typedef uint32_t mme_m_tmsi_t;
 
 typedef enum {
     SGW_SELECT_RR = 0,  /* Default SGW Selection Method */
@@ -53,45 +52,45 @@ typedef enum {
 } sgw_select_e;
 
 typedef struct _served_gummei {
-    c_uint32_t      num_of_plmn_id;
+    uint32_t      num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
 
-    c_uint32_t      num_of_mme_gid;
-    c_uint16_t      mme_gid[GRP_PER_MME];
-    c_uint32_t      num_of_mme_code;
-    c_uint8_t       mme_code[CODE_PER_MME];
+    uint32_t      num_of_mme_gid;
+    uint16_t      mme_gid[GRP_PER_MME];
+    uint32_t      num_of_mme_code;
+    uint8_t       mme_code[CODE_PER_MME];
 } served_gummei_t;
 
 typedef struct _mme_context_t {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
     fd_config_t     *fd_config;     /* MME freeDiameter config */
 
-    c_uint16_t      s1ap_port;      /* Default S1AP Port */
-    c_uint16_t      gtpc_port;      /* Default GTPC Port */
+    uint16_t      s1ap_port;      /* Default S1AP Port */
+    uint16_t      gtpc_port;      /* Default GTPC Port */
 
-    list_t          s1ap_list;      /* MME S1AP IPv4 Server List */
-    list_t          s1ap_list6;     /* MME S1AP IPv6 Server List */
+    ogs_list_t      s1ap_list;      /* MME S1AP IPv4 Server List */
+    ogs_list_t      s1ap_list6;     /* MME S1AP IPv6 Server List */
 
-    list_t          gtpc_list;      /* MME GTPC IPv4 Server List */
-    list_t          gtpc_list6;     /* MME GTPC IPv6 Server List */
-    sock_id         gtpc_sock;      /* MME GTPC IPv4 Socket */
-    sock_id         gtpc_sock6;     /* MME GTPC IPv6 Socket */
-    c_sockaddr_t    *gtpc_addr;     /* MME GTPC IPv4 Address */
-    c_sockaddr_t    *gtpc_addr6;    /* MME GTPC IPv6 Address */
+    ogs_list_t      gtpc_list;      /* MME GTPC IPv4 Server List */
+    ogs_list_t      gtpc_list6;     /* MME GTPC IPv6 Server List */
+    ogs_sock_t      *gtpc_sock;      /* MME GTPC IPv4 Socket */
+    ogs_sock_t      *gtpc_sock6;     /* MME GTPC IPv6 Socket */
+    ogs_sockaddr_t  *gtpc_addr;     /* MME GTPC IPv4 Address */
+    ogs_sockaddr_t  *gtpc_addr6;    /* MME GTPC IPv6 Address */
 
-    list_t          sgw_list;       /* SGW GTPC Client List */
+    ogs_list_t      sgw_list;       /* SGW GTPC Client List */
     mme_sgw_t       *sgw;           /* Iterator for SGW round-robin */
 
-    list_t          pgw_list;       /* PGW GTPC Client List */
-    c_sockaddr_t    *pgw_addr;      /* First IPv4 Address Selected */
-    c_sockaddr_t    *pgw_addr6;     /* First IPv6 Address Selected */
+    ogs_list_t      pgw_list;       /* PGW GTPC Client List */
+    ogs_sockaddr_t  *pgw_addr;      /* First IPv4 Address Selected */
+    ogs_sockaddr_t  *pgw_addr6;     /* First IPv6 Address Selected */
 
     /* Served GUMME */
-    c_uint8_t       max_num_of_served_gummei;
+    uint8_t         max_num_of_served_gummei;
     served_gummei_t served_gummei[MAX_NUM_OF_SERVED_GUMMEI];
 
     /* Served TAI */
-    c_uint8_t       num_of_served_tai;
+    uint8_t         num_of_served_tai;
     struct {
         tai0_list_t list0;
         tai2_list_t list2;
@@ -102,45 +101,40 @@ typedef struct _mme_context_t {
      * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
      * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
-    c_uint8_t       num_of_ciphering_order;
-    c_uint8_t       ciphering_order[MAX_NUM_OF_ALGORITHM];
+    uint8_t       num_of_ciphering_order;
+    uint8_t       ciphering_order[MAX_NUM_OF_ALGORITHM];
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
      * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
-    c_uint8_t       num_of_integrity_order;
-    c_uint8_t       integrity_order[MAX_NUM_OF_ALGORITHM];
+    uint8_t         num_of_integrity_order;
+    uint8_t         integrity_order[MAX_NUM_OF_ALGORITHM];
 
     /* S1SetupResponse */
-    c_uint8_t       relative_capacity;
+    uint8_t         relative_capacity;
 
     /* Timer value */
-    c_uint32_t      t3413_value;            /* Paging retry timer value */
-    c_uint32_t      s1_holding_timer_value; /* S1 holding timer value */
+    ogs_time_t      t3413_value;            /* Paging retry timer value */
 
     /* Generator for unique identification */
-    c_uint32_t      mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
-    c_uint16_t      ostream_id;             /* ostream_id generator */
+    uint32_t        mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
+    uint16_t        ostream_id;             /* ostream_id generator */
 
     /* M-TMSI Pool */
-    struct {
-        int head, tail;
-        int size, avail;
-        mutex_id mut;
-        mme_m_tmsi_t *free[MAX_POOL_OF_SESS], pool[MAX_POOL_OF_SESS];
-    } m_tmsi;
+    OGS_POOL(m_tmsi, mme_m_tmsi_t);
 
-    hash_t          *enb_sock_hash;         /* hash table for ENB Socket */
-    hash_t          *enb_addr_hash;         /* hash table for ENB Address */
-    hash_t          *enb_id_hash;           /* hash table for ENB-ID */
-    hash_t          *mme_ue_s1ap_id_hash;   /* hash table for MME-UE-S1AP-ID */
-    hash_t          *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
-    hash_t          *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
+    ogs_hash_t      *enb_sock_hash;         /* hash table for ENB Socket */
+    ogs_hash_t      *enb_addr_hash;         /* hash table for ENB Address */
+    ogs_hash_t      *enb_id_hash;           /* hash table for ENB-ID */
+    ogs_hash_t      *mme_ue_s1ap_id_hash;   /* hash table for MME-UE-S1AP-ID */
+    ogs_hash_t      *imsi_ue_hash;          /* hash table (IMSI : MME_UE) */
+    ogs_hash_t      *guti_ue_hash;          /* hash table (GUTI : MME_UE) */
 
     /* System */
-    msgq_id         queue_id;       /* Queue for processing MME control plane */
-    tm_service_t    tm_service;     /* Timer Service */
+    ogs_queue_t     *queue;         /* Queue for processing MME control */
+    ogs_timer_mgr_t *timer_mgr;     /* Timer Manager */
+    ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
     
     /* Network Name */    
     nas_network_name_t short_name; /* Network short name */
@@ -152,46 +146,45 @@ typedef struct _mme_context_t {
 } mme_context_t;
 
 typedef struct _mme_sgw_t {
-    lnode_t         node;
+    ogs_lnode_t     node;
 
-    c_uint16_t      tac[MAX_NUM_OF_TAI];
-    c_uint8_t       num_of_tac;
+    uint16_t        tac[MAX_NUM_OF_TAI];
+    uint8_t         num_of_tac;
 
     gtp_node_t      *gnode;
 } mme_sgw_t;
 
 typedef struct _mme_pgw_t {
-    lnode_t         node;
+    ogs_lnode_t     node;
 
     gtp_node_t      *gnode;
 } mme_pgw_t;
 
 typedef struct _mme_enb_t {
-    index_t         index;  /* An index of this node */
-    fsm_t           sm;     /* A state machine */
+    ogs_fsm_t       sm;     /* A state machine */
 
-    c_uint32_t      enb_id;     /* eNB_ID received from eNB */
+    uint32_t        enb_id;     /* eNB_ID received from eNB */
     int             sock_type;  /* SOCK_STREAM or SOCK_SEQPACKET */
-    sock_id         sock;       /* eNB S1AP Socket */
-    c_sockaddr_t    *addr;      /* eNB S1AP Address */
+    ogs_sock_t      *sock;      /* eNB S1AP Socket */
+    ogs_sockaddr_t  *addr;      /* eNB S1AP Address */
+    ogs_poll_t      *poll;      /* eNB S1AP Poll */
 
-    c_uint16_t      outbound_streams; /* SCTP Max number of outbound streams */
+    uint16_t        outbound_streams; /* SCTP Max number of outbound streams */
 
-    c_uint8_t       num_of_supported_ta_list;
+    uint8_t         num_of_supported_ta_list;
     tai_t           supported_ta_list[MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
 
-    list_t          enb_ue_list;
+    ogs_list_t      enb_ue_list;
 
 } mme_enb_t;
 
 struct _enb_ue_t {
-    lnode_t         node;   /* A node of list_t */
-    index_t         index;  /* An index of this node */
+    ogs_lnode_t     node;   /* A node of list_t */
 
     /* UE identity */
 #define INVALID_UE_S1AP_ID      0xffffffff /* Initial value of enb_ue_s1ap_id */
-    c_uint32_t      enb_ue_s1ap_id; /* eNB-UE-S1AP-ID received from eNB */
-    c_uint32_t      mme_ue_s1ap_id; /* MME-UE-S1AP-ID received from MME */
+    uint32_t        enb_ue_s1ap_id; /* eNB-UE-S1AP-ID received from eNB */
+    uint32_t        mme_ue_s1ap_id; /* MME-UE-S1AP-ID received from MME */
 
     /* Handover Info */
     S1AP_HandoverType_t handover_type;
@@ -214,25 +207,7 @@ struct _enb_ue_t {
 #define S1AP_UE_CTX_REL_S1_NORMAL_RELEASE                   2
 #define S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE                   3
 #define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              4
-    c_uint8_t      ue_ctx_rel_action;
-
-    /* 
-     * S1 holding timer
-     *
-     * When eNodeB sends Attach Request, TAU Request, Service Request repeatly,
-     * S1(enb_ue_t) context is repeatly created. 
-     *
-     * NAS(mme_ue_t) context is associated with last created S1(enb_ue_t)
-     * context, and older S1(enb_ue_t) context might not be freed.
-     *
-     * If NAS(mme_ue_t) has already been associated with
-     * older S1(enb_ue_t) context, the holding timer(30secs) is started.
-     * Newly associated S1(enb_ue_t) context holding timer is stopped.
-     *
-     * If the holding timer expires,
-     * S1(enb_ue_t) context will be implicitly deleted.
-     */
-    tm_block_id     holding_timer;
+    uint8_t         ue_ctx_rel_action;
 
     /* Related Context */
     mme_enb_t       *enb;
@@ -240,8 +215,7 @@ struct _enb_ue_t {
 }; 
 
 struct _mme_ue_t {
-    index_t         index;  /* An index of this node */
-    fsm_t           sm;     /* A state machine */
+    ogs_fsm_t       sm;     /* A state machine */
 
     struct {
 #define MME_EPS_TYPE_ATTACH_REQUEST                 1
@@ -249,31 +223,31 @@ struct _mme_ue_t {
 #define MME_EPS_TYPE_SERVICE_REQUEST                3
 #define MME_EPS_TYPE_DETACH_REQUEST_FROM_UE         4 
 #define MME_EPS_TYPE_DETACH_REQUEST_TO_UE           5 
-        c_uint8_t   type;
-        c_uint8_t   ksi;
+        uint8_t     type;
+        uint8_t     ksi;
         union {
             nas_eps_attach_type_t attach;
             nas_eps_update_type_t update;
             nas_detach_type_t detach;
-            c_uint8_t data;
+            uint8_t data;
         };
     } nas_eps;
 
     /* UE identity */
 #define MME_UE_HAVE_IMSI(__mME) \
     ((__mME) && ((__mME)->imsi_len))
-    c_uint8_t       imsi[MAX_IMSI_LEN];
+    uint8_t         imsi[MAX_IMSI_LEN];
     int             imsi_len;
-    c_int8_t        imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    char            imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
     mme_m_tmsi_t    *m_tmsi;
     guti_t          guti;
     int             guti_present;
 
-    c_uint32_t      mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
-    c_uint32_t      sgw_s11_teid;   /* SGW-S11-TEID is received from SGW */
+    uint32_t        mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
+    uint32_t        sgw_s11_teid;   /* SGW-S11-TEID is received from SGW */
 
-    c_uint16_t      ostream_id;     /* SCTP output stream identification */
+    uint16_t        ostream_id;     /* SCTP output stream identification */
 
     /* UE Info */
     tai_t           tai;
@@ -287,7 +261,7 @@ struct _mme_ue_t {
      ((__mME)->nas_eps.ksi != NAS_KSI_NO_KEY_IS_AVAILABLE))
 #define CLEAR_SECURITY_CONTEXT(__mME) \
     do { \
-        d_assert((__mME), break, "Null param"); \
+        ogs_assert((__mME)); \
         (__mME)->security_context_available = 0; \
         (__mME)->mac_failed = 0; \
         (__mME)->nas_eps.ksi = 0; \
@@ -298,41 +272,41 @@ struct _mme_ue_t {
     /* Security Context */
     nas_ue_network_capability_t ue_network_capability;
     nas_ms_network_capability_t ms_network_capability;
-    c_uint8_t       xres[MAX_RES_LEN];
-    c_uint8_t       xres_len;
-    c_uint8_t       kasme[SHA256_DIGEST_SIZE];
-    c_uint8_t       rand[RAND_LEN];
-    c_uint8_t       knas_int[SHA256_DIGEST_SIZE/2]; 
-    c_uint8_t       knas_enc[SHA256_DIGEST_SIZE/2];
-    c_uint32_t      dl_count;
+    uint8_t         xres[MAX_RES_LEN];
+    uint8_t         xres_len;
+    uint8_t         kasme[OGS_SHA256_DIGEST_SIZE];
+    uint8_t         rand[RAND_LEN];
+    uint8_t         knas_int[OGS_SHA256_DIGEST_SIZE/2]; 
+    uint8_t         knas_enc[OGS_SHA256_DIGEST_SIZE/2];
+    uint32_t        dl_count;
     union {
         struct {
-        ED3(c_uint8_t spare;,
-            c_uint16_t overflow;,
-            c_uint8_t sqn;)
+        ED3(uint8_t spare;,
+            uint16_t overflow;,
+            uint8_t sqn;)
         } __attribute__ ((packed));
-        c_uint32_t i32;
+        uint32_t i32;
     } ul_count;
-    c_uint8_t       kenb[SHA256_DIGEST_SIZE];
+    uint8_t         kenb[OGS_SHA256_DIGEST_SIZE];
 
     struct {
-    ED2(c_uint8_t nhcc_spare:5;,
-        c_uint8_t nhcc:3;) /* Next Hop Channing Counter */
+    ED2(uint8_t nhcc_spare:5;,
+        uint8_t nhcc:3;) /* Next Hop Channing Counter */
     };
-    c_uint8_t       nh[SHA256_DIGEST_SIZE]; /* NH Security Key */
+    uint8_t         nh[OGS_SHA256_DIGEST_SIZE]; /* NH Security Key */
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
      * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
-    c_uint8_t       selected_enc_algorithm;
+    uint8_t         selected_enc_algorithm;
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
      * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
-    c_uint8_t       selected_int_algorithm;
+    uint8_t         selected_int_algorithm;
 
     /* HSS Info */
     s6a_subscription_data_t subscription_data;
@@ -343,15 +317,14 @@ struct _mme_ue_t {
 
 #define CLEAR_EPS_BEARER_ID(__mME) \
     do { \
-        d_assert((__mME), break, "Null param"); \
+        ogs_assert((__mME)); \
         (__mME)->ebi = MIN_EPS_BEARER_ID - 1; \
     } while(0)
-    c_uint8_t       ebi; /* EPS Bearer ID generator */
-    list_t          sess_list;
+    uint8_t         ebi; /* EPS Bearer ID generator */
+    ogs_list_t      sess_list;
 
 #define ECM_CONNECTED(__mME) \
-    ((__mME) && ((__mME)->enb_ue != NULL) && \
-     enb_ue_find((__mME)->enb_ue->index))
+    ((__mME) && ((__mME)->enb_ue != NULL))
 #define ECM_IDLE(__mME) (!ECM_CONNECTED(__mME))
     /* S1 UE context */
     enb_ue_t        *enb_ue;
@@ -362,37 +335,37 @@ struct _mme_ue_t {
     /* Paging */
 #define CLEAR_PAGING_INFO(__mME) \
     do { \
-        d_assert((__mME), break, "Null param"); \
+        ogs_assert((__mME)); \
         \
-        tm_stop((__mME)->t3413); \
+        ogs_timer_stop((__mME)->t3413); \
         if ((__mME)->last_paging_msg) \
         { \
-            pkbuf_free((__mME)->last_paging_msg); \
+            ogs_pkbuf_free((__mME)->last_paging_msg); \
             (__mME)->last_paging_msg = NULL; \
         } \
         (__mME)->max_paging_retry = 0; \
     } while(0);
-    pkbuf_t         *last_paging_msg;
-    tm_block_id     t3413;
+    ogs_pkbuf_t     *last_paging_msg;
+    ogs_timer_t     *t3413;
 #define MAX_NUM_OF_PAGING           2
-    c_uint32_t      max_paging_retry;
+    uint32_t        max_paging_retry;
 
     /* UE Radio Capability */
     OCTET_STRING_t  ueRadioCapability;
 
     /* S1AP Transparent Container */
-    OCTET_STRING_t container;
+    OCTET_STRING_t  container;
 
     /* GTP Request/Response Counter */
 #define GTP_COUNTER_INCREMENT(__mME, __tYPE) \
         do { \
-            d_assert((__mME), break,); \
+            ogs_assert((__mME)); \
             ((__mME)->gtp_counter[__tYPE].request)++; \
         } while(0);
 
 #define GTP_COUNTER_CHECK(__mME, __tYPE, __eXPR) \
         do { \
-            d_assert((__mME), break,); \
+            ogs_assert((__mME)); \
             if ((__mME)->gtp_counter[__tYPE].request == 0) break; \
             ((__mME)->gtp_counter[__tYPE].response)++; \
             if (((__mME)->gtp_counter[__tYPE].request) == \
@@ -409,8 +382,8 @@ struct _mme_ue_t {
 #define GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH                1
 #define GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY            2
     struct {
-        c_uint8_t request;
-        c_uint8_t response;
+        uint8_t request;
+        uint8_t response;
     } gtp_counter[MAX_NUM_OF_GTP_COUNTER];
 
     gtp_node_t      *gnode;
@@ -422,7 +395,7 @@ struct _mme_ue_t {
 #define CLEAR_SGW_S1U_PATH(__sESS) \
     do { \
         mme_bearer_t *__bEARER = NULL; \
-        d_assert((__sESS), break, "Null param"); \
+        ogs_assert((__sESS)); \
         __bEARER = mme_default_bearer_in_sess(__sESS); \
         __bEARER->sgw_s1u_teid = 0; \
     } while(0)
@@ -432,20 +405,19 @@ struct _mme_ue_t {
 
 #define CLEAR_SESSION_CONTEXT(__mME) \
     do { \
-        d_assert((__mME), break, "Null param"); \
+        ogs_assert((__mME)); \
         (__mME)->sgw_s11_teid = 0; \
     } while(0)
 typedef struct _mme_sess_t {
-    lnode_t         node;       /* A node of list_t */
-    index_t         index;      /* An index of this node */
+    ogs_lnode_t     node;       /* A node of list_t */
 
-    c_uint8_t       pti;        /* Procedure Trasaction Identity */
+    uint8_t         pti;        /* Procedure Trasaction Identity */
 
     /* PDN Connectivity Request */
     nas_request_type_t request_type; 
 
     /* mme_bearer_first(sess) : Default Bearer Context */
-    list_t          bearer_list;
+    ogs_list_t      bearer_list;
 
     /* Related Context */
     mme_ue_t        *mme_ue;
@@ -457,8 +429,8 @@ typedef struct _mme_sess_t {
 
     /* Save Protocol Configuration Options from UE */
     struct {
-        c_uint8_t length;
-        c_uint8_t *buffer;
+        uint8_t length;
+        uint8_t *buffer;
     } ue_pco; 
 
     /* Save Protocol Configuration Options from PGW */
@@ -474,7 +446,7 @@ typedef struct _mme_sess_t {
     ((__bEARER) && ((__bEARER)->enb_s1u_teid))
 #define CLEAR_ENB_S1U_PATH(__bEARER) \
     do { \
-        d_assert((__bEARER), break, "Null param"); \
+        ogs_assert((__bEARER)); \
         (__bEARER)->enb_s1u_teid = 0; \
     } while(0)
 
@@ -488,35 +460,34 @@ typedef struct _mme_sess_t {
     ((__bEARER) && ((__bEARER)->sgw_ul_teid))
 #define CLEAR_INDIRECT_TUNNEL(__bEARER) \
     do { \
-        d_assert((__bEARER), break, "Null param"); \
+        ogs_assert((__bEARER)); \
         (__bEARER)->enb_dl_teid = 0; \
         (__bEARER)->enb_ul_teid = 0; \
         (__bEARER)->sgw_dl_teid = 0; \
         (__bEARER)->sgw_ul_teid = 0; \
     } while(0)
 typedef struct _mme_bearer_t {
-    lnode_t         node;           /* A node of list_t */
-    index_t         index;          /* An index of this node */
-    fsm_t           sm;             /* State Machine */
+    ogs_lnode_t     node;           /* A node of list_t */
+    ogs_fsm_t       sm;             /* State Machine */
 
-    c_uint8_t       ebi;            /* EPS Bearer ID */    
+    uint8_t         ebi;            /* EPS Bearer ID */    
 
-    c_uint32_t      enb_s1u_teid;
+    uint32_t        enb_s1u_teid;
     ip_t            enb_s1u_ip;
-    c_uint32_t      sgw_s1u_teid;
+    uint32_t        sgw_s1u_teid;
     ip_t            sgw_s1u_ip;
 
-    c_uint32_t      target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
+    uint32_t        target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
     ip_t            target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
 
-    c_uint32_t      enb_dl_teid;
+    uint32_t        enb_dl_teid;
     ip_t            enb_dl_ip;
-    c_uint32_t      enb_ul_teid;
+    uint32_t        enb_ul_teid;
     ip_t            enb_ul_ip;
 
-    c_uint32_t      sgw_dl_teid;
+    uint32_t        sgw_dl_teid;
     ip_t            sgw_dl_ip;
-    c_uint32_t      sgw_ul_teid;
+    uint32_t        sgw_ul_teid;
     ip_t            sgw_ul_ip;
 
     qos_t           qos;
@@ -528,67 +499,59 @@ typedef struct _mme_bearer_t {
     gtp_xact_t      *xact;
 } mme_bearer_t;
 
-CORE_DECLARE(status_t)      mme_context_init(void);
-CORE_DECLARE(status_t)      mme_context_final(void);
-CORE_DECLARE(mme_context_t*) mme_self(void);
+int mme_context_init(void);
+int mme_context_final(void);
+mme_context_t *mme_self(void);
 
-CORE_DECLARE(status_t)      mme_context_parse_config(void);
-CORE_DECLARE(status_t)      mme_context_setup_trace_module(void);
+int mme_context_parse_config(void);
 
-CORE_DECLARE(mme_sgw_t*)    mme_sgw_add(
-        c_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
-CORE_DECLARE(status_t )     mme_sgw_remove(mme_sgw_t *sgw);
-CORE_DECLARE(status_t )     mme_sgw_remove_all();
+mme_sgw_t *mme_sgw_add(
+        ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
+int mme_sgw_remove(mme_sgw_t *sgw);
+void mme_sgw_remove_all();
 
-CORE_DECLARE(mme_pgw_t*)    mme_pgw_add(
-        c_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
-CORE_DECLARE(status_t )     mme_pgw_remove(mme_pgw_t *pgw);
-CORE_DECLARE(status_t )     mme_pgw_remove_all();
+mme_pgw_t *mme_pgw_add(
+        ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
+int mme_pgw_remove(mme_pgw_t *pgw);
+void mme_pgw_remove_all();
 
-CORE_DECLARE(mme_enb_t*)    mme_enb_add(sock_id sock, c_sockaddr_t *addr);
-CORE_DECLARE(status_t)      mme_enb_remove(mme_enb_t *enb);
-CORE_DECLARE(status_t)      mme_enb_remove_all(void);
-CORE_DECLARE(mme_enb_t*)    mme_enb_find(index_t index);
-CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_sock(sock_id sock);
-CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_addr(c_sockaddr_t *addr);
-CORE_DECLARE(mme_enb_t*)    mme_enb_find_by_enb_id(c_uint32_t enb_id);
-CORE_DECLARE(status_t)      mme_enb_set_enb_id(
-        mme_enb_t *enb, c_uint32_t enb_id);
-CORE_DECLARE(hash_index_t *) mme_enb_first();
-CORE_DECLARE(hash_index_t *) mme_enb_next(hash_index_t *hi);
-CORE_DECLARE(mme_enb_t *)    mme_enb_this(hash_index_t *hi);
-CORE_DECLARE(int)           mme_enb_sock_type(sock_id sock);
+mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
+int mme_enb_remove(mme_enb_t *enb);
+int mme_enb_remove_all(void);
+mme_enb_t *mme_enb_find_by_sock(ogs_sock_t *sock);
+mme_enb_t *mme_enb_find_by_addr(ogs_sockaddr_t *addr);
+mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id);
+int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
+ogs_hash_index_t *mme_enb_first();
+ogs_hash_index_t *mme_enb_next(ogs_hash_index_t *hi);
+mme_enb_t *mme_enb_this(ogs_hash_index_t *hi);
+int mme_enb_sock_type(ogs_sock_t *sock);
 
-CORE_DECLARE(enb_ue_t*)     enb_ue_add(mme_enb_t *enb);
-CORE_DECLARE(unsigned int)  enb_ue_count();
-CORE_DECLARE(status_t)      enb_ue_remove(enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      enb_ue_remove_in_enb(mme_enb_t *enb);
-CORE_DECLARE(status_t)      enb_ue_switch_to_enb(enb_ue_t *enb_ue, 
-                                mme_enb_t *new_enb);
-CORE_DECLARE(enb_ue_t*)     enb_ue_find(index_t index);
-CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_enb_ue_s1ap_id(mme_enb_t *enb, 
-                                c_uint32_t enb_ue_s1ap_id);
-CORE_DECLARE(enb_ue_t*)     enb_ue_find_by_mme_ue_s1ap_id(
-                                c_uint32_t mme_ue_s1ap_id);
-CORE_DECLARE(enb_ue_t*)     enb_ue_first_in_enb(mme_enb_t *enb);
-CORE_DECLARE(enb_ue_t*)     enb_ue_next_in_enb(enb_ue_t *enb_ue);
+enb_ue_t *enb_ue_add(mme_enb_t *enb);
+unsigned int enb_ue_count();
+int enb_ue_remove(enb_ue_t *enb_ue);
+int enb_ue_remove_in_enb(mme_enb_t *enb);
+int enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb);
+enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
+        mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
+enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id);
+enb_ue_t *enb_ue_first_in_enb(mme_enb_t *enb);
+enb_ue_t *enb_ue_next_in_enb(enb_ue_t *enb_ue);
 
-CORE_DECLARE(mme_ue_t*)     mme_ue_add(enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      mme_ue_remove(mme_ue_t *mme_ue);
-CORE_DECLARE(status_t)      mme_ue_remove_all();
+mme_ue_t *mme_ue_add(enb_ue_t *enb_ue);
+int mme_ue_remove(mme_ue_t *mme_ue);
+int mme_ue_remove_all();
 
-CORE_DECLARE(mme_ue_t*)     mme_ue_find(index_t index);
-CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len);
-CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd);
-CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_guti(guti_t *guti);
-CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_teid(c_uint32_t teid);
+mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
+mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd);
+mme_ue_t *mme_ue_find_by_guti(guti_t *guti);
+mme_ue_t *mme_ue_find_by_teid(uint32_t teid);
 
-CORE_DECLARE(mme_ue_t*)     mme_ue_find_by_message(nas_message_t *message);
-CORE_DECLARE(status_t)      mme_ue_set_imsi(
-                                mme_ue_t *mme_ue, c_int8_t *imsi_bcd);
+mme_ue_t *mme_ue_find_by_message(nas_message_t *message);
+int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd);
 
-CORE_DECLARE(int)           mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue);
-CORE_DECLARE(status_t)      mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue);
+int mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue);
+int mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue);
 
 /* 
  * o RECV Initial UE-Message : S-TMSI
@@ -638,61 +601,53 @@ CORE_DECLARE(status_t)      mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue);
  * ### ENB_UE_REMOVE() ####
  *   - Delete Indirect Data Forwarding Tunnel Request/Response
  */
-CORE_DECLARE(status_t)      mme_ue_associate_enb_ue(
-                                mme_ue_t *mme_ue, enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      enb_ue_deassociate(enb_ue_t *enb_ue);
-CORE_DECLARE(status_t)      mme_ue_deassociate(mme_ue_t *mme_ue);
-CORE_DECLARE(status_t)      source_ue_associate_target_ue(
-                                enb_ue_t *source_ue, enb_ue_t *target_ue);
-CORE_DECLARE(status_t)      source_ue_deassociate_target_ue(enb_ue_t *enb_ue);
+int mme_ue_associate_enb_ue(
+                           mme_ue_t *mme_ue, enb_ue_t *enb_ue);
+int enb_ue_deassociate(enb_ue_t *enb_ue);
+int mme_ue_deassociate(mme_ue_t *mme_ue);
+int source_ue_associate_target_ue(
+                           enb_ue_t *source_ue, enb_ue_t *target_ue);
+int source_ue_deassociate_target_ue(enb_ue_t *enb_ue);
 
-CORE_DECLARE(hash_index_t *) mme_ue_first();
-CORE_DECLARE(hash_index_t *) mme_ue_next(hash_index_t *hi);
-CORE_DECLARE(mme_ue_t *)    mme_ue_this(hash_index_t *hi);
+ogs_hash_index_t *mme_ue_first();
+ogs_hash_index_t *mme_ue_next(ogs_hash_index_t *hi);
+mme_ue_t *mme_ue_this(ogs_hash_index_t *hi);
 
-CORE_DECLARE(mme_sess_t*)   mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti);
-CORE_DECLARE(status_t )     mme_sess_remove(mme_sess_t *sess);
-CORE_DECLARE(status_t )     mme_sess_remove_all(mme_ue_t *mme_ue);
-CORE_DECLARE(mme_sess_t*)   mme_sess_find(index_t index);
-CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_pti(
-                                mme_ue_t *mme_ue, c_uint8_t pti);
-CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_ebi(
-                                mme_ue_t *mme_ue, c_uint8_t ebi);
-CORE_DECLARE(mme_sess_t*)   mme_sess_find_by_apn(
-                                mme_ue_t *mme_ue, c_int8_t *apn);
-CORE_DECLARE(mme_sess_t*)   mme_sess_first(mme_ue_t *mme_ue);
-CORE_DECLARE(mme_sess_t*)   mme_sess_next(mme_sess_t *sess);
-CORE_DECLARE(unsigned int)  mme_sess_count(mme_ue_t *mme_ue);
+mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti);
+int mme_sess_remove(mme_sess_t *sess);
+int mme_sess_remove_all(mme_ue_t *mme_ue);
+mme_sess_t *mme_sess_find_by_pti(mme_ue_t *mme_ue, uint8_t pti);
+mme_sess_t *mme_sess_find_by_ebi(mme_ue_t *mme_ue, uint8_t ebi);
+mme_sess_t *mme_sess_find_by_apn(mme_ue_t *mme_ue, char *apn);
+mme_sess_t *mme_sess_first(mme_ue_t *mme_ue);
+mme_sess_t *mme_sess_next(mme_sess_t *sess);
+unsigned int mme_sess_count(mme_ue_t *mme_ue);
 
-CORE_DECLARE(mme_bearer_t*) mme_bearer_add(mme_sess_t *sess);
-CORE_DECLARE(status_t)      mme_bearer_remove(mme_bearer_t *bearer);
-CORE_DECLARE(status_t)      mme_bearer_remove_all(mme_sess_t *sess);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_find(index_t index);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_sess_ebi(
-                                mme_sess_t *sess, c_uint8_t ebi);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_find_by_ue_ebi(
-                                mme_ue_t *mme_ue, c_uint8_t ebi);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_find_or_add_by_message(
+mme_bearer_t *mme_bearer_add(mme_sess_t *sess);
+int mme_bearer_remove(mme_bearer_t *bearer);
+int mme_bearer_remove_all(mme_sess_t *sess);
+mme_bearer_t *mme_bearer_find_by_sess_ebi(mme_sess_t *sess, uint8_t ebi);
+mme_bearer_t *mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, uint8_t ebi);
+mme_bearer_t *mme_bearer_find_or_add_by_message(
                                 mme_ue_t *mme_ue, nas_message_t *message);
-CORE_DECLARE(mme_bearer_t*) mme_default_bearer_in_sess(mme_sess_t *sess);
-CORE_DECLARE(mme_bearer_t*) mme_linked_bearer(mme_bearer_t *bearer);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_first(mme_sess_t *sess);
-CORE_DECLARE(mme_bearer_t*) mme_bearer_next(mme_bearer_t *bearer);
+mme_bearer_t *mme_default_bearer_in_sess(mme_sess_t *sess);
+mme_bearer_t *mme_linked_bearer(mme_bearer_t *bearer);
+mme_bearer_t *mme_bearer_first(mme_sess_t *sess);
+mme_bearer_t *mme_bearer_next(mme_bearer_t *bearer);
 
-CORE_DECLARE(int)           mme_bearer_is_inactive(mme_ue_t *mme_ue);
-CORE_DECLARE(status_t)      mme_bearer_set_inactive(mme_ue_t *mme_ue);
+int mme_bearer_is_inactive(mme_ue_t *mme_ue);
+int mme_bearer_set_inactive(mme_ue_t *mme_ue);
 
-CORE_DECLARE(pdn_t*)        mme_pdn_add(mme_ue_t *mme_ue, c_int8_t *apn);
-CORE_DECLARE(status_t)      mme_pdn_remove_all(mme_ue_t *mme_ue);
-CORE_DECLARE(pdn_t*)        mme_pdn_find_by_apn(
-                                mme_ue_t *mme_ue, c_int8_t *apn);
-CORE_DECLARE(pdn_t*)        mme_default_pdn(mme_ue_t *mme_ue);
+pdn_t *mme_pdn_add(mme_ue_t *mme_ue, char *apn);
+int mme_pdn_remove_all(mme_ue_t *mme_ue);
+pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn);
+pdn_t *mme_default_pdn(mme_ue_t *mme_ue);
 
-CORE_DECLARE(int)           mme_find_served_tai(tai_t *tai);
+int mme_find_served_tai(tai_t *tai);
 
-CORE_DECLARE(status_t)     mme_m_tmsi_pool_generate();
-CORE_DECLARE(mme_m_tmsi_t *) mme_m_tmsi_alloc();
-CORE_DECLARE(status_t)      mme_m_tmsi_free(mme_m_tmsi_t *tmsi);
+int mme_m_tmsi_pool_generate();
+mme_m_tmsi_t *mme_m_tmsi_alloc();
+int mme_m_tmsi_free(mme_m_tmsi_t *tmsi);
 
 #ifdef __cplusplus
 }

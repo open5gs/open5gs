@@ -7,10 +7,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) sgw_gtp_open();
-CORE_DECLARE(status_t) sgw_gtp_close();
+int sgw_gtp_open();
+int sgw_gtp_close();
 
-CORE_DECLARE(status_t) sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel);
+int sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel);
 
 #ifdef __cplusplus
 }

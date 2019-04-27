@@ -1,39 +1,33 @@
 /*
- * Copyright (c) 2017, NextEPC Group
- * All rights reserved.
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
-
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2018-01-23 16:32:53.055846 by acetcom
+ * Created on: 2019-03-06 12:20:52.420255 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
-#ifndef __GTP_TLV_H__
-#define __GTP_TLV_H__
+#ifndef __GTP_MESSAGE_H__
+#define __GTP_MESSAGE_H__
 
-#include "core_tlv_msg.h"
+#include "gtp_tlv.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,28 +40,28 @@ extern "C" {
 typedef struct _gtp_header_t {
     union {
         struct {
-        ED4(c_uint8_t version:3;,
-            c_uint8_t piggybacked:1;,
-            c_uint8_t teid_presence:1;,
-            c_uint8_t spare1:3;)
+        ED4(uint8_t version:3;,
+            uint8_t piggybacked:1;,
+            uint8_t teid_presence:1;,
+            uint8_t spare1:3;)
         };
 /* GTU-U flags */
 #define GTPU_FLAGS_PN                       0x1
 #define GTPU_FLAGS_S                        0x2
-        c_uint8_t flags;
+        uint8_t flags;
     };
-    c_uint8_t type;
-    c_uint16_t length;
+    uint8_t type;
+    uint16_t length;
     union {
         struct {
-            c_uint32_t teid;
+            uint32_t teid;
             /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
 #define GTP_XID_TO_SQN(__xid) htonl(((__xid) << 8))
 #define GTP_SQN_TO_XID(__sqn) (ntohl(__sqn) >> 8)
-            c_uint32_t sqn;
+            uint32_t sqn;
         };
         /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
-        c_uint32_t sqn_only;
+        uint32_t sqn_only;
     };
 } __attribute__ ((packed)) gtp_header_t;
 
@@ -1170,13 +1164,11 @@ typedef struct _gtp_message_t {
    };
 } gtp_message_t;
 
-CORE_DECLARE(status_t) gtp_parse_msg(
-        gtp_message_t *gtp_message, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) gtp_build_msg(
-        pkbuf_t **pkbuf, gtp_message_t *gtp_message);
+int gtp_parse_msg(gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf);
+int gtp_build_msg(ogs_pkbuf_t **pkbuf, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __GTP_TLV_H__ */
+#endif /* __GTP_MESSAGE_H__ */

@@ -1,8 +1,3 @@
-#define TRACE_MODULE _mme_s11_build
-
-#include "core_debug.h"
-#include "3gpp_types.h"
-
 #include "gtp/gtp_types.h"
 #include "gtp/gtp_conv.h"
 #include "gtp/gtp_message.h"
@@ -12,10 +7,10 @@
 
 #include "mme_s11_build.h"
 
-status_t mme_s11_build_create_session_request(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess)
+int mme_s11_build_create_session_request(
+        ogs_pkbuf_t **pkbuf, uint8_t type, mme_sess_t *sess)
 {
-    status_t rv;
+    int rv;
     pdn_t *pdn = NULL;
     mme_ue_t *mme_ue = NULL;
     mme_bearer_t *bearer = NULL;
@@ -30,23 +25,24 @@ status_t mme_s11_build_create_session_request(
     gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     gtp_ue_timezone_t ue_timezone;
-    time_exp_t time_exp;
-    c_int8_t apn[MAX_APN_LEN];
+    struct timeval now;
+    struct tm time_exp;
+    char apn[MAX_APN_LEN];
 
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     pdn = sess->pdn;
-    d_assert(pdn, return CORE_ERROR, "Null param");
+    ogs_assert(pdn);
     bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[MME] Create Session Request\n");
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("[MME] Create Session Request");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
-    d_assert(mme_ue->imsi_len, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue->imsi_len);
     req->imsi.presence = 1;
     req->imsi.data = mme_ue->imsi;
     req->imsi.len = mme_ue->imsi_len;
@@ -75,7 +71,7 @@ status_t mme_s11_build_create_session_request(
     mme_s11_teid.teid = htonl(mme_ue->mme_s11_teid);
     rv = gtp_sockaddr_to_f_teid(
             mme_self()->gtpc_addr, mme_self()->gtpc_addr6, &mme_s11_teid, &len);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
     req->sender_f_teid_for_control_plane.presence = 1;
     req->sender_f_teid_for_control_plane.data = &mme_s11_teid;
     req->sender_f_teid_for_control_plane.len = len;
@@ -117,7 +113,7 @@ status_t mme_s11_build_create_session_request(
     {
         rv = gtp_sockaddr_to_f_teid(
             mme_self()->pgw_addr, mme_self()->pgw_addr6, &pgw_s5c_teid, &len);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        ogs_assert(rv == OGS_OK);
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.len = len;
@@ -131,29 +127,25 @@ status_t mme_s11_build_create_session_request(
     req->selection_mode.u8 = 
         GTP_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN | 0xfc;
 
-    d_assert(sess->request_type.pdn_type ==
+    ogs_assert(sess->request_type.pdn_type ==
             NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4 ||
             sess->request_type.pdn_type ==
             NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV6 ||
             sess->request_type.pdn_type ==
-            NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6, return CORE_ERROR,
-            "UE PDN Configuration Error(%d)", sess->request_type.pdn_type);
+            NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6);
     if (pdn->pdn_type == HSS_PDN_TYPE_IPV4 ||
         pdn->pdn_type == HSS_PDN_TYPE_IPV6 ||
         pdn->pdn_type == HSS_PDN_TYPE_IPV4V6)
     {
         req->pdn_type.u8 = ((pdn->pdn_type + 1) & sess->request_type.pdn_type);
-        d_assert(req->pdn_type.u8 != 0, return CORE_ERROR,
-                "PDN Configuration Error:(%d, %d)",
-                pdn->pdn_type, sess->request_type.pdn_type);
+        ogs_assert(req->pdn_type.u8 != 0);
     }
     else if (pdn->pdn_type == HSS_PDN_TYPE_IPV4_OR_IPV6)
     {
         req->pdn_type.u8 = sess->request_type.pdn_type;
     }
     else
-        d_assert(0, return CORE_ERROR,
-                "HSS PDN Confiugration Error(%d)", pdn->pdn_type);
+        ogs_assert_if_reached();
     req->pdn_type.presence = 1;
 
     pdn->paa.pdn_type = req->pdn_type.u8;
@@ -165,7 +157,7 @@ status_t mme_s11_build_create_session_request(
     else if (req->pdn_type.u8 == GTP_PDN_TYPE_IPV4V6)
         req->pdn_address_allocation.len = PAA_IPV4V6_LEN;
     else
-        d_assert(0, return CORE_ERROR, "Not supported(%d)", req->pdn_type.u8);
+        ogs_assert_if_reached();
     req->pdn_address_allocation.presence = 1;
 
     req->maximum_apn_restriction.presence = 1;
@@ -204,7 +196,8 @@ status_t mme_s11_build_create_session_request(
 
     /* UE Time Zone */
     memset(&ue_timezone, 0, sizeof(ue_timezone));
-    time_exp_lt(&time_exp, time_now());
+    ogs_gettimeofday(&now);
+    ogs_localtime(now.tv_sec, &time_exp);
     if (time_exp.tm_gmtoff >= 0)
     {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
@@ -222,20 +215,20 @@ status_t mme_s11_build_create_session_request(
     req->ue_time_zone.len = sizeof(ue_timezone);
 
     req->charging_characteristics.presence = 1;
-    req->charging_characteristics.data = (c_uint8_t *)"\x54\x00";
+    req->charging_characteristics.data = (uint8_t *)"\x54\x00";
     req->charging_characteristics.len = 2;
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
-        c_uint8_t type, mme_bearer_t *bearer, int uli_presence)
+int mme_s11_build_modify_bearer_request(ogs_pkbuf_t **pkbuf,
+        uint8_t type, mme_bearer_t *bearer, int uli_presence)
 {
-    status_t rv;
+    int rv;
     gtp_message_t gtp_message;
     gtp_modify_bearer_request_t *req = &gtp_message.modify_bearer_request;
 
@@ -246,14 +239,14 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
 
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[MME] Modifty Bearer Request\n");
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("[MME] Modifty Bearer Request");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
-    d_trace(5, "    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]\n",
+    ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
         bearer->enb_s1u_teid, bearer->sgw_s1u_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -268,7 +261,7 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
     enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
     enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
     rv = gtp_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid, &len);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.presence = 1;
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = len;
@@ -291,15 +284,15 @@ status_t mme_s11_build_modify_bearer_request(pkbuf_t **pkbuf,
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_s11_build_delete_session_request(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_sess_t *sess)
+int mme_s11_build_delete_session_request(
+        ogs_pkbuf_t **pkbuf, uint8_t type, mme_sess_t *sess)
 {
-    status_t rv;
+    int rv;
     gtp_message_t gtp_message;
     gtp_delete_session_request_t *req = &gtp_message.delete_session_request;
 
@@ -310,14 +303,14 @@ status_t mme_s11_build_delete_session_request(
     mme_bearer_t *bearer = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
     bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
 
-    d_trace(3, "[MME] Delete Session Request\n");
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("[MME] Delete Session Request");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -345,15 +338,15 @@ status_t mme_s11_build_delete_session_request(
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_s11_build_create_bearer_response(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
+int mme_s11_build_create_bearer_response(
+        ogs_pkbuf_t **pkbuf, uint8_t type, mme_bearer_t *bearer)
 {
-    status_t rv;
+    int rv;
     gtp_message_t gtp_message;
     gtp_create_bearer_response_t *rsp = &gtp_message.create_bearer_response;
 
@@ -363,16 +356,17 @@ status_t mme_s11_build_create_bearer_response(
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
     gtp_ue_timezone_t ue_timezone;
-    time_exp_t time_exp;
+    struct timeval now;
+    struct tm time_exp;
 
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
     
-    d_trace(3, "[MME] Create Bearer Response\n");
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("[MME] Create Bearer Response");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -394,7 +388,7 @@ status_t mme_s11_build_create_bearer_response(
     enb_s1u_teid.interface_type = GTP_F_TEID_S1_U_ENODEB_GTP_U;
     enb_s1u_teid.teid = htonl(bearer->enb_s1u_teid);
     rv = gtp_ip_to_f_teid(&bearer->enb_s1u_ip, &enb_s1u_teid, &len);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
     rsp->bearer_contexts.s1_u_enodeb_f_teid.presence = 1;
     rsp->bearer_contexts.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
     rsp->bearer_contexts.s1_u_enodeb_f_teid.len = len;
@@ -404,7 +398,7 @@ status_t mme_s11_build_create_bearer_response(
     sgw_s1u_teid.interface_type = GTP_F_TEID_S1_U_SGW_GTP_U;
     sgw_s1u_teid.teid = htonl(bearer->sgw_s1u_teid);
     rv = gtp_ip_to_f_teid(&bearer->sgw_s1u_ip, &sgw_s1u_teid, &len);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
     rsp->bearer_contexts.s4_u_sgsn_f_teid.presence = 1;
     rsp->bearer_contexts.s4_u_sgsn_f_teid.data = &sgw_s1u_teid;
     rsp->bearer_contexts.s4_u_sgsn_f_teid.len = GTP_F_TEID_IPV4_LEN;
@@ -429,7 +423,8 @@ status_t mme_s11_build_create_bearer_response(
 
     /* UE Time Zone */
     memset(&ue_timezone, 0, sizeof(ue_timezone));
-    time_exp_lt(&time_exp, time_now());
+    ogs_gettimeofday(&now);
+    ogs_localtime(now.tv_sec, &time_exp);
     if (time_exp.tm_gmtoff >= 0)
     {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
@@ -447,15 +442,15 @@ status_t mme_s11_build_create_bearer_response(
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_s11_build_update_bearer_response(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
+int mme_s11_build_update_bearer_response(
+        ogs_pkbuf_t **pkbuf, uint8_t type, mme_bearer_t *bearer)
 {
-    status_t rv;
+    int rv;
     gtp_message_t gtp_message;
     gtp_update_bearer_response_t *rsp = &gtp_message.update_bearer_response;
 
@@ -463,16 +458,17 @@ status_t mme_s11_build_update_bearer_response(
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
     gtp_ue_timezone_t ue_timezone;
-    time_exp_t time_exp;
+    struct timeval now;
+    struct tm time_exp;
 
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[MME] Update Bearer Response\n");
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("[MME] Update Bearer Response");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -509,7 +505,8 @@ status_t mme_s11_build_update_bearer_response(
 
     /* UE Time Zone */
     memset(&ue_timezone, 0, sizeof(ue_timezone));
-    time_exp_lt(&time_exp, time_now());
+    ogs_gettimeofday(&now);
+    ogs_localtime(now.tv_sec, &time_exp);
     if (time_exp.tm_gmtoff >= 0)
     {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
@@ -527,15 +524,15 @@ status_t mme_s11_build_update_bearer_response(
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_s11_build_delete_bearer_response(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_bearer_t *bearer)
+int mme_s11_build_delete_bearer_response(
+        ogs_pkbuf_t **pkbuf, uint8_t type, mme_bearer_t *bearer)
 {
-    status_t rv;
+    int rv;
     gtp_message_t gtp_message;
     gtp_delete_bearer_response_t *rsp = &gtp_message.delete_bearer_response;
 
@@ -543,16 +540,17 @@ status_t mme_s11_build_delete_bearer_response(
     gtp_uli_t uli;
     char uli_buf[GTP_MAX_ULI_LEN];
     gtp_ue_timezone_t ue_timezone;
-    time_exp_t time_exp;
+    struct timeval now;
+    struct tm time_exp;
 
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[MME] Delete Bearer Response\n");
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("[MME] Delete Bearer Response");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -589,7 +587,8 @@ status_t mme_s11_build_delete_bearer_response(
 
     /* UE Time Zone */
     memset(&ue_timezone, 0, sizeof(ue_timezone));
-    time_exp_lt(&time_exp, time_now());
+    ogs_gettimeofday(&now);
+    ogs_localtime(now.tv_sec, &time_exp);
     if (time_exp.tm_gmtoff >= 0)
     {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
@@ -607,20 +606,20 @@ status_t mme_s11_build_delete_bearer_response(
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_s11_build_release_access_bearers_request(
-        pkbuf_t **pkbuf, c_uint8_t type)
+int mme_s11_build_release_access_bearers_request(
+        ogs_pkbuf_t **pkbuf, uint8_t type)
 {
-    status_t rv;
+    int rv;
     gtp_message_t gtp_message;
     gtp_release_access_bearers_request_t *req = 
         &gtp_message.release_access_bearers_request;
 
-    d_trace(3, "[MME] Release Access Bearers Request\n");
+    ogs_debug("[MME] Release Access Bearers Request");
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
     req->originating_node.presence = 1;
@@ -628,22 +627,22 @@ status_t mme_s11_build_release_access_bearers_request(
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_s11_build_downlink_data_notification_ack(
-        pkbuf_t **pkbuf, c_uint8_t type)
+int mme_s11_build_downlink_data_notification_ack(
+        ogs_pkbuf_t **pkbuf, uint8_t type)
 {
-    status_t rv;
+    int rv;
     gtp_message_t gtp_message;
     gtp_downlink_data_notification_acknowledge_t *ack = 
         &gtp_message.downlink_data_notification_acknowledge;
 
     gtp_cause_t cause;
 
-    d_trace(3, "[MME] Downlink Data Notification Ackknowledge\n");
+    ogs_debug("[MME] Downlink Data Notification Ackknowledge");
 
     memset(&gtp_message, 0, sizeof(gtp_message_t));
 
@@ -656,15 +655,15 @@ status_t mme_s11_build_downlink_data_notification_ack(
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
-        pkbuf_t **pkbuf, c_uint8_t type, mme_ue_t *mme_ue)
+int mme_s11_build_create_indirect_data_forwarding_tunnel_request(
+        ogs_pkbuf_t **pkbuf, uint8_t type, mme_ue_t *mme_ue)
 {
-    status_t rv;
+    int rv;
     int i;
     
     mme_sess_t *sess = NULL;
@@ -679,10 +678,10 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     gtp_f_teid_t ul_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
     int len;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[MME] Create Indirect Data Forwarding Tunnel Request\n");
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("[MME] Create Indirect Data Forwarding Tunnel Request");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     gtp_bearers_in_create_indirect_tunnel_request(&bearers, req);
@@ -702,8 +701,8 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                     GTP_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING;
                 dl_teid[i].teid = htonl(bearer->enb_dl_teid);
                 rv = gtp_ip_to_f_teid(&bearer->enb_dl_ip, &dl_teid[i], &len);
-                d_assert(rv == CORE_OK, return CORE_ERROR,);
-                d_assert(bearers[i], return CORE_ERROR,);
+                ogs_assert(rv == OGS_OK);
+                ogs_assert(bearers[i]);
                 bearers[i]->s1_u_enodeb_f_teid.presence = 1;
                 bearers[i]->s1_u_enodeb_f_teid.data = &dl_teid[i];
                 bearers[i]->s1_u_enodeb_f_teid.len = len;
@@ -716,8 +715,8 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                     GTP_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING;
                 ul_teid[i].teid = htonl(bearer->enb_ul_teid);
                 rv = gtp_ip_to_f_teid(&bearer->enb_ul_ip, &ul_teid[i], &len);
-                d_assert(rv == CORE_OK, return CORE_ERROR,);
-                d_assert(bearers[i], return CORE_ERROR,);
+                ogs_assert(rv == OGS_OK);
+                ogs_assert(bearers[i]);
                 bearers[i]->s12_rnc_f_teid.presence = 1;
                 bearers[i]->s12_rnc_f_teid.data = &ul_teid[i];
                 bearers[i]->s12_rnc_f_teid.len = len;
@@ -739,7 +738,7 @@ status_t mme_s11_build_create_indirect_data_forwarding_tunnel_request(
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }

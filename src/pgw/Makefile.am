@@ -3,6 +3,7 @@
 noinst_LTLIBRARIES = libpgw.la
 
 libpgw_la_SOURCES = \
+	ogs-tun.h ogs-tun.c \
 	pgw_ipfw.h \
     pgw_event.h pgw_context.h pgw_sm.h \
 	pgw_gtp_path.h pgw_s5c_build.h pgw_s5c_handler.h \
@@ -17,18 +18,18 @@ libpgw_la_DEPENDENCIES = \
     $(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
     $(top_srcdir)/lib/ipfw/libipfw.la \
-    $(top_srcdir)/src/common/libcommon.la \
+	$(top_srcdir)/src/app/libapp.la \
 	$(NULL)
 
 libpgw_la_LIBADD = \
     $(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
     $(top_srcdir)/lib/ipfw/libipfw.la \
-    $(top_srcdir)/src/common/libcommon.la \
+	$(top_srcdir)/src/app/libapp.la \
 	$(NULL)
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/lib/core/include \
+	@OGSCORE_CFLAGS@ \
     -I$(top_srcdir)/lib \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
@@ -38,6 +39,3 @@ AM_CPPFLAGS = \
 AM_CFLAGS = \
 	-Wall -Werror \
 	$(NULL)
-
-MAINTAINERCLEANFILES = Makefile.in
-MOSTLYCLEANFILES = core *.stackdump

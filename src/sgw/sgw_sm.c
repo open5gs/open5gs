@@ -1,6 +1,3 @@
-#define TRACE_MODULE _sgw_sm
-#include "core_debug.h"
-
 #include "gtp/gtp_node.h"
 
 #include "sgw_context.h"
@@ -10,68 +7,70 @@
 #include "sgw_s11_handler.h"
 #include "sgw_s5c_handler.h"
 
-void sgw_state_initial(fsm_t *s, event_t *e)
+void sgw_state_initial(ogs_fsm_t *s, sgw_event_t *e)
 {
-    sgw_sm_trace(3, e);
+    sgw_sm_debug(e);
 
-    d_assert(s, return, "Null param");
+    ogs_assert(s);
 
-    FSM_TRAN(s, &sgw_state_operational);
+    OGS_FSM_TRAN(s, &sgw_state_operational);
 }
 
-void sgw_state_final(fsm_t *s, event_t *e)
+void sgw_state_final(ogs_fsm_t *s, sgw_event_t *e)
 {
-    sgw_sm_trace(3, e);
+    sgw_sm_debug(e);
 
-    d_assert(s, return, "Null param");
+    ogs_assert(s);
 }
 
-void sgw_state_operational(fsm_t *s, event_t *e)
+void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
 {
-    status_t rv;
+    int rv;
 
-    sgw_sm_trace(3, e);
+    sgw_sm_debug(e);
 
-    d_assert(s, return, "Null param");
+    ogs_assert(s);
 
-    switch (event_get(e))
+    switch (e->id)
     {
-        case FSM_ENTRY_SIG:
+        case OGS_FSM_ENTRY_SIG:
         {
             rv = sgw_gtp_open();
-            if (rv != CORE_OK)
+            if (rv != OGS_OK)
             {
-                d_error("Can't establish SGW path");
+                ogs_error("Can't establish SGW path");
                 break;
             }
             break;
         }
-        case FSM_EXIT_SIG:
+        case OGS_FSM_EXIT_SIG:
         {
             rv = sgw_gtp_close();
-            if (rv != CORE_OK)
+            if (rv != OGS_OK)
             {
-                d_error("Can't close SGW path");
+                ogs_error("Can't close SGW path");
                 break;
             }
             break;
         }
         case SGW_EVT_S11_MESSAGE:
         {
-            status_t rv;
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param1(e);
+            int rv;
+            ogs_pkbuf_t *pkbuf = NULL;
             gtp_xact_t *xact = NULL;
             gtp_message_t message;
             sgw_ue_t *sgw_ue = NULL;
 
-            d_assert(pkbuf, break,);
+            ogs_assert(e);
+            pkbuf = e->pkbuf;
+            ogs_assert(pkbuf);
             rv = gtp_parse_msg(&message, pkbuf);
-            d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break,);
+            ogs_assert(rv == OGS_OK);
 
             if (message.h.teid == 0)
             {
                 gtp_node_t *mme = sgw_mme_add_by_message(&message);
-                d_assert(mme, pkbuf_free(pkbuf); break,);
+                ogs_assert(mme);
                 sgw_ue = sgw_ue_add_by_message(&message);
                 SETUP_GTP_NODE(sgw_ue, mme);
             }
@@ -79,12 +78,12 @@ void sgw_state_operational(fsm_t *s, event_t *e)
             {
                 sgw_ue = sgw_ue_find_by_teid(message.h.teid);
             }
-            d_assert(sgw_ue, pkbuf_free(pkbuf); break,);
+            ogs_assert(sgw_ue);
 
             rv = gtp_xact_receive(sgw_ue->gnode, &message.h, &xact);
-            if (rv != CORE_OK)
+            if (rv != OGS_OK)
             {
-                pkbuf_free(pkbuf);
+                ogs_pkbuf_free(pkbuf);
                 break;
             }
 
@@ -133,31 +132,34 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                         xact, sgw_ue);
                     break;
                 default:
-                    d_warn("Not implmeneted(type:%d)", message.h.type);
+                    ogs_warn("Not implmeneted(type:%d)", message.h.type);
                     break;
             }
-            pkbuf_free(pkbuf);
+            ogs_pkbuf_free(pkbuf);
             break;
         }
         case SGW_EVT_S5C_MESSAGE:
         {
-            status_t rv;
-            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param1(e);
+            int rv;
+            ogs_pkbuf_t *pkbuf = NULL;
             gtp_xact_t *xact = NULL;
             gtp_message_t message;
             sgw_sess_t *sess = NULL;
 
-            d_assert(pkbuf, break, "Null param");
+            ogs_assert(e);
+            pkbuf = e->pkbuf;
+
+            ogs_assert(pkbuf);
             rv = gtp_parse_msg(&message, pkbuf);
-            d_assert(rv == CORE_OK, pkbuf_free(pkbuf); break,);
+            ogs_assert(rv == OGS_OK);
 
             sess = sgw_sess_find_by_teid(message.h.teid);
-            d_assert(sess, pkbuf_free(pkbuf); break,);
+            ogs_assert(sess);
 
             rv = gtp_xact_receive(sess->gnode, &message.h, &xact);
-            if (rv != CORE_OK)
+            if (rv != OGS_OK)
             {
-                pkbuf_free(pkbuf);
+                ogs_pkbuf_free(pkbuf);
                 break;
             }
 
@@ -184,28 +186,19 @@ void sgw_state_operational(fsm_t *s, event_t *e)
                             &message);
                     break;
                 default:
-                    d_warn("Not implmeneted(type:%d)", message.h.type);
+                    ogs_warn("Not implmeneted(type:%d)", message.h.type);
                     break;
             }
-            pkbuf_free(pkbuf);
-            break;
-        }
-        case SGW_EVT_T3_RESPONSE:
-        case SGW_EVT_T3_HOLDING:
-        {
-            gtp_xact_timeout(event_get_param1(e), event_get(e));
+            ogs_pkbuf_free(pkbuf);
             break;
         }
         case SGW_EVT_LO_DLDATA_NOTI:
         {
-            index_t index = (index_t)event_get_param1(e);
-            sgw_bearer_t* bearer = sgw_bearer_find(index);
+            sgw_bearer_t* bearer = NULL;
+            ogs_assert(e);
 
-            if (!bearer)
-            {
-                d_error("Can not find bearer with index(%d)",index);
-                break;
-            }
+            bearer = e->bearer;
+            ogs_assert(bearer);
 
             sgw_s11_handle_lo_dldata_notification(bearer);
 
@@ -213,7 +206,7 @@ void sgw_state_operational(fsm_t *s, event_t *e)
         }
         default:
         {
-            d_error("No handler for event %s", sgw_event_get_name(e));
+            ogs_error("No handler for event %s", sgw_event_get_name(e));
             break;
         }
     }

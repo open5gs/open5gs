@@ -1,11 +1,7 @@
-#define TRACE_MODULE _nas_conv
-
-#include "core_debug.h"
-
 #include "nas_conv.h"
 
 void nas_imsi_to_bcd(
-    nas_mobile_identity_imsi_t *imsi, c_uint8_t imsi_len, c_int8_t *bcd)
+    nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len, char *bcd)
 {
     int bcd_len;
 
@@ -29,7 +25,7 @@ void nas_imsi_to_bcd(
     if (!imsi->odd_even) /* if bcd length is even */
     {
         if (bcd[bcd_len] != 0xf)
-            d_warn("Spec warning : bcd[%d] = 0x%x", bcd_len, bcd[bcd_len]);
+            ogs_warn("Spec warning : bcd[%d] = 0x%x", bcd_len, bcd[bcd_len]);
         (bcd_len)--; 
     }
 
@@ -37,8 +33,8 @@ void nas_imsi_to_bcd(
 }
 
 void nas_imsi_to_buffer(
-    nas_mobile_identity_imsi_t *imsi, c_uint8_t imsi_len, 
-    c_uint8_t *buf, c_uint8_t *buf_len)
+    nas_mobile_identity_imsi_t *imsi, uint8_t imsi_len, 
+    uint8_t *buf, uint8_t *buf_len)
 {
     buf[0] = ((('0' + imsi->digit2) << 4) & 0xf0) | 
                 (('0' + imsi->digit1) & 0x0f);
@@ -61,6 +57,6 @@ void nas_imsi_to_buffer(
     {
         (*buf_len)--; 
         if ((buf[*buf_len] & 0xf) != 0xf)
-            d_warn("Spec warning : buf[%d] = 0x%x", *buf_len, buf[*buf_len]);
+            ogs_warn("Spec warning : buf[%d] = 0x%x", *buf_len, buf[*buf_len]);
     }
 }

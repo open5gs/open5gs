@@ -1,7 +1,3 @@
-#define TRACE_MODULE _esm_handler
-
-#include "core_debug.h"
-
 #include "nas/nas_message.h"
 
 #include "mme_context.h"
@@ -10,26 +6,27 @@
 
 #include "esm_build.h"
 
-status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer, 
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __esm_log_domain
+
+int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer, 
         nas_pdn_connectivity_request_t *pdn_connectivity_request)
 {
-    status_t rv;
+    int rv;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
-    c_uint8_t security_protected_required = 0;
+    uint8_t security_protected_required = 0;
 
-    d_assert(bearer, return CORE_ERROR,);
+    ogs_assert(bearer);
     sess = bearer->sess;
-    d_assert(sess, return CORE_ERROR,);
+    ogs_assert(sess);
     mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR,);
+    ogs_assert(mme_ue);
 
-    d_assert(pdn_connectivity_request, return CORE_ERROR,);
+    ogs_assert(pdn_connectivity_request);
 
-    d_assert(MME_UE_HAVE_IMSI(mme_ue), return CORE_ERROR,
-        "No IMSI in PDN_CPNNECTIVITY_REQUEST");
-    d_assert(SECURITY_CONTEXT_IS_VALID(mme_ue), return CORE_ERROR,
-        "No Security Context in PDN_CPNNECTIVITY_REQUEST");
+    ogs_assert(MME_UE_HAVE_IMSI(mme_ue));
+    ogs_assert(SECURITY_CONTEXT_IS_VALID(mme_ue));
 
     memcpy(&sess->request_type, &pdn_connectivity_request->request_type,
             sizeof(sess->request_type));
@@ -42,7 +39,7 @@ status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             &pdn_connectivity_request->esm_information_transfer_flag;
         security_protected_required = 
                 esm_information_transfer_flag->security_protected_required;
-        d_trace(5, "    EIT(ESM information transfer)[%d]\n",
+        ogs_debug("    EIT(ESM information transfer)[%d]",
                 security_protected_required);
     }
 
@@ -56,9 +53,9 @@ status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             /* Invalid APN */
             rv = nas_send_pdn_connectivity_reject(
                     sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
-            d_assert(rv == CORE_OK,, "nas send failed");
+            ogs_assert(rv == OGS_OK);
 
-            return CORE_ERROR;
+            return OGS_ERROR;
         }
     }
 
@@ -74,9 +71,9 @@ status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     if (security_protected_required)
     {
         rv = nas_send_esm_information_request(bearer);
-        d_assert(rv == CORE_OK, return CORE_ERROR, "nas send failed");
+        ogs_assert(rv == OGS_OK);
 
-        return CORE_OK;
+        return OGS_OK;
     }
 
     if (!sess->pdn)
@@ -87,31 +84,31 @@ status_t esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 
     if (sess->pdn)
     {
-        d_trace(5, "    APN[%s]\n", sess->pdn->apn);
+        ogs_debug("    APN[%s]", sess->pdn->apn);
         rv = mme_gtp_send_create_session_request(sess);
-        d_assert(rv == CORE_OK, return CORE_ERROR, "gtp send failed");
+        ogs_assert(rv == OGS_OK);
     }
     else
     {
         rv = nas_send_pdn_connectivity_reject(
                 sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
-        d_assert(rv == CORE_OK,, "nas send failed");
+        ogs_assert(rv == OGS_OK);
 
-        return CORE_ERROR;
+        return OGS_ERROR;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t esm_handle_information_response(mme_sess_t *sess, 
+int esm_handle_information_response(mme_sess_t *sess, 
         nas_esm_information_response_t *esm_information_response)
 {
-    status_t rv;
+    int rv;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     if (esm_information_response->presencemask &
             NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT)
@@ -130,26 +127,26 @@ status_t esm_handle_information_response(mme_sess_t *sess,
 
     if (sess->pdn)
     {
-        d_trace(5, "    APN[%s]\n", sess->pdn->apn);
+        ogs_debug("    APN[%s]", sess->pdn->apn);
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
         {
             rv = nas_send_attach_accept(mme_ue);
-            d_assert(rv == CORE_OK, return CORE_ERROR, "nas send failed");
+            ogs_assert(rv == OGS_OK);
         }
         else
         {
             rv = mme_gtp_send_create_session_request(sess);
-            d_assert(rv == CORE_OK, return CORE_ERROR, "gtp send failed");
+            ogs_assert(rv == OGS_OK);
         }
     }
     else
     {
         rv = nas_send_pdn_connectivity_reject(
                 sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
-        d_assert(rv == CORE_OK,, "nas send failed");
+        ogs_assert(rv == OGS_OK);
 
-        return CORE_ERROR;
+        return OGS_ERROR;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }

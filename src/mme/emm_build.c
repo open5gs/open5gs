@@ -1,17 +1,16 @@
-#define TRACE_MODULE _emm_build
-
-#include "core_debug.h"
-
 #include "nas/nas_message.h"
 
 #include "nas_security.h"
 #include "mme_kdf.h"
 #include "emm_build.h"
 
-status_t emm_build_attach_accept(
-        pkbuf_t **emmbuf, mme_ue_t *mme_ue, pkbuf_t *esmbuf)
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __emm_log_domain
+
+int emm_build_attach_accept(
+        ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
 {
-    status_t rv;
+    int rv;
     nas_message_t message;
     nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
     nas_eps_attach_result_t *eps_attach_result = 
@@ -22,10 +21,10 @@ status_t emm_build_attach_accept(
     nas_eps_network_feature_support_t *eps_network_feature_support =
         &attach_accept->eps_network_feature_support;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
-    d_assert(esmbuf, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
+    ogs_assert(esmbuf);
 
-    d_trace(3, "[EMM] Attach accept\n");
+    ogs_debug("[EMM] Attach accept");
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -40,23 +39,24 @@ status_t emm_build_attach_accept(
     t3412_value->unit = NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     t3412_value->value = 9;
 
-    d_trace(5, "    TAI[PLMN_ID:0x%x,TAC:%d]\n",
-            mme_ue->tai.plmn_id, mme_ue->tai.tac);
-    d_trace(5, "    E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
-            mme_ue->e_cgi.plmn_id, mme_ue->e_cgi.cell_id);
+    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+            plmn_id_hexdump(&mme_ue->tai.plmn_id),
+            mme_ue->tai.tac);
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+            plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
+            mme_ue->e_cgi.cell_id);
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
-    d_trace(5, "    SERVED_TAI_INDEX[%d]\n", served_tai_index);
-    d_assert(served_tai_index >= 0 &&
-            served_tai_index < MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,
-            "Cannot find Served TAI. Check 'mme.tai' configuration");
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
+    ogs_assert(served_tai_index >= 0 &&
+            served_tai_index < MAX_NUM_OF_SERVED_TAI);
     nas_tai_list_build(&attach_accept->tai_list,
             &mme_self()->served_tai[served_tai_index].list0,
             &mme_self()->served_tai[served_tai_index].list2);
 
-    attach_accept->esm_message_container.buffer = esmbuf->payload;
+    attach_accept->esm_message_container.buffer = esmbuf->data;
     attach_accept->esm_message_container.length = esmbuf->len;
 
-    d_trace(5, "    %s GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]\n",
+    ogs_debug("    %s GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
             mme_ue->guti_present ? "[V]" : "[N]",
             mme_ue->guti.mme_gid, mme_ue->guti.mme_code,
             mme_ue->guti.m_tmsi, mme_ue->imsi_bcd);
@@ -66,7 +66,8 @@ status_t emm_build_attach_accept(
         guti->length = sizeof(nas_eps_mobile_identity_guti_t);
         guti->guti.odd_even = NAS_EPS_MOBILE_IDENTITY_EVEN;
         guti->guti.type = NAS_EPS_MOBILE_IDENTITY_GUTI;
-        memcpy(&guti->guti.plmn_id, &mme_ue->guti.plmn_id, PLMN_ID_LEN);
+        nas_from_plmn_id(&guti->guti.plmn_id,
+                            (plmn_id_t*)&mme_ue->guti.plmn_id);
         guti->guti.mme_gid = mme_ue->guti.mme_gid;
         guti->guti.mme_code = mme_ue->guti.mme_code;
         guti->guti.m_tmsi = mme_ue->guti.m_tmsi;
@@ -90,16 +91,16 @@ status_t emm_build_attach_accept(
     eps_network_feature_support->ims_vops = 1;
 
     rv = nas_security_encode(emmbuf, mme_ue, &message);
-    d_assert(rv == CORE_OK && *emmbuf,, "nas_security_encode error");
-    pkbuf_free(esmbuf);
+    ogs_assert(rv == OGS_OK && *emmbuf);
+    ogs_pkbuf_free(esmbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t emm_build_attach_reject(
-        pkbuf_t **emmbuf, nas_emm_cause_t emm_cause, pkbuf_t *esmbuf)
+int emm_build_attach_reject(
+        ogs_pkbuf_t **emmbuf, nas_emm_cause_t emm_cause, ogs_pkbuf_t *esmbuf)
 {
-    status_t rv;
+    int rv;
     nas_message_t message;
     nas_attach_reject_t *attach_reject = &message.emm.attach_reject;
 
@@ -113,55 +114,55 @@ status_t emm_build_attach_reject(
     {
         attach_reject->presencemask |= 
             NAS_ATTACH_REJECT_ESM_MESSAGE_CONTAINER_PRESENT;
-        attach_reject->esm_message_container.buffer = esmbuf->payload;
+        attach_reject->esm_message_container.buffer = esmbuf->data;
         attach_reject->esm_message_container.length = esmbuf->len;
     }
 
     rv = nas_plain_encode(emmbuf, &message);
-    d_assert(rv == CORE_OK && *emmbuf,, "nas_plain_encode error");
+    ogs_assert(rv == OGS_OK && *emmbuf);
 
     if (esmbuf)
     {
-        pkbuf_free(esmbuf);
+        ogs_pkbuf_free(esmbuf);
     }
 
     return rv;
 }
 
-status_t emm_build_identity_request(
-        pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+int emm_build_identity_request(
+        ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 {
-    status_t rv;
+    int rv;
     nas_message_t message;
     nas_identity_request_t *identity_request = 
         &message.emm.identity_request;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_IDENTITY_REQUEST;
 
     /* Request IMSI */
-    d_trace(3, "[EMM] Identity request\n");
-    d_trace(5, "    Identity Type 2 : IMSI\n");
+    ogs_debug("[EMM] Identity request");
+    ogs_debug("    Identity Type 2 : IMSI");
     identity_request->identity_type.type = NAS_IDENTITY_TYPE_2_IMSI;
 
     rv = nas_plain_encode(emmbuf, &message);
-    d_assert(rv == CORE_OK && *emmbuf,, "nas_plain_encode error");
+    ogs_assert(rv == OGS_OK && *emmbuf);
 
     return rv;
 }
 
-status_t emm_build_authentication_request(
-        pkbuf_t **emmbuf, e_utran_vector_t *e_utran_vector)
+int emm_build_authentication_request(
+        ogs_pkbuf_t **emmbuf, e_utran_vector_t *e_utran_vector)
 {
-    status_t rv;
+    int rv;
     nas_message_t message;
     nas_authentication_request_t *authentication_request = 
         &message.emm.authentication_request;
 
-    d_assert(e_utran_vector, return CORE_ERROR, "Null param");
+    ogs_assert(e_utran_vector);
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -175,14 +176,14 @@ status_t emm_build_authentication_request(
             AUTN_LEN;
 
     rv = nas_plain_encode(emmbuf, &message);
-    d_assert(rv == CORE_OK && *emmbuf, , "nas encode error");
+    ogs_assert(rv == OGS_OK && *emmbuf);
 
     return rv;
 }
 
-status_t emm_build_authentication_reject(pkbuf_t **emmbuf)
+int emm_build_authentication_reject(ogs_pkbuf_t **emmbuf)
 {
-    status_t rv;
+    int rv;
     nas_message_t message;
 
     memset(&message, 0, sizeof(message));
@@ -191,15 +192,15 @@ status_t emm_build_authentication_reject(pkbuf_t **emmbuf)
     message.emm.h.message_type = NAS_AUTHENTICATION_REJECT;
 
     rv = nas_plain_encode(emmbuf, &message);
-    d_assert(rv == CORE_OK && *emmbuf,, "nas_plain_encode error");
+    ogs_assert(rv == OGS_OK && *emmbuf);
 
     return rv;
 }
 
-status_t emm_build_security_mode_command(
-        pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+int emm_build_security_mode_command(
+        ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 {
-    status_t rv;
+    int rv;
     int i;
 
     nas_message_t message;
@@ -212,10 +213,10 @@ status_t emm_build_security_mode_command(
     nas_ue_security_capability_t *replayed_ue_security_capabilities = 
         &security_mode_command->replayed_ue_security_capabilities;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[EMM] Security mode command\n");
-    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+    ogs_debug("[EMM] Security mode command");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -278,22 +279,24 @@ status_t emm_build_security_mode_command(
             sizeof(replayed_ue_security_capabilities->uea) +
             sizeof(replayed_ue_security_capabilities->uia) +
             sizeof(replayed_ue_security_capabilities->gea);
-    d_trace(5, "    UE[LEN:%d EEA:0x%x EIA:0x%x UEA:0x%x UIA:0x%x GEA:0x%x]\n",
+    ogs_debug("    Replayed UE SEC[LEN:%d EEA:0x%x EIA:0x%x UEA:0x%x UIA:0x%x GEA:0x%x]",
             replayed_ue_security_capabilities->length,
             replayed_ue_security_capabilities->eea,
             replayed_ue_security_capabilities->eia,
             replayed_ue_security_capabilities->uea,
             replayed_ue_security_capabilities->uia,
             replayed_ue_security_capabilities->gea);
-    d_trace(5, "    Selected[Integrity:0x%x Encrypt:0x%x]\n",
+    ogs_debug("    Selected[Integrity:0x%x Encrypt:0x%x]",
             mme_ue->selected_int_algorithm, mme_ue->selected_enc_algorithm);
     if (mme_ue->selected_int_algorithm == NAS_SECURITY_ALGORITHMS_EIA0)
     {
-        d_fatal("Encrypt[0x%x] CAN BE skipped, "
-            "but Integrity[0x%x] CANNOT BE skipped",
+        ogs_fatal("Encrypt[0x%x] can be skipped with EEA0, "
+            "but Integrity[0x%x] cannot be bypassed with EIA0",
             mme_ue->selected_enc_algorithm, mme_ue->selected_int_algorithm);
-        return CORE_ERROR;
+        ogs_assert_if_reached();
+        return OGS_ERROR;
     }
+
 
     mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_ue->selected_int_algorithm,
             mme_ue->kasme, mme_ue->knas_int);
@@ -301,36 +304,36 @@ status_t emm_build_security_mode_command(
             mme_ue->kasme, mme_ue->knas_enc);
 
     rv = nas_security_encode(emmbuf, mme_ue, &message);
-    d_assert(rv == CORE_OK && *emmbuf, return CORE_ERROR, "emm build error");
+    ogs_assert(rv == OGS_OK && *emmbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t emm_build_detach_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+int emm_build_detach_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 {
-    status_t rv;
+    int rv;
     nas_message_t message;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
         NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
 
-    d_trace(3, "[EMM] Detach accept\n");
-    d_trace(5, "    IMSI[%s]\n", mme_ue->imsi_bcd);
+    ogs_debug("[EMM] Detach accept");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_DETACH_ACCEPT;
 
     rv = nas_security_encode(emmbuf, mme_ue, &message);
-    d_assert(rv == CORE_OK && emmbuf, return CORE_ERROR, "emm build error");
+    ogs_assert(rv == OGS_OK && emmbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+int emm_build_tau_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 {
     nas_message_t message;
     nas_tracking_area_update_accept_t *tau_accept = 
@@ -339,7 +342,7 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 
     mme_sess_t *sess = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR,);
+    ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -361,15 +364,16 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     tau_accept->presencemask |= 
         NAS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_PRESENT;
 
-    d_trace(5, "    TAI[PLMN_ID:0x%x,TAC:%d]\n",
-            mme_ue->tai.plmn_id, mme_ue->tai.tac);
-    d_trace(5, "    E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
-            mme_ue->e_cgi.plmn_id, mme_ue->e_cgi.cell_id);
+    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+            plmn_id_hexdump(&mme_ue->tai.plmn_id),
+            mme_ue->tai.tac);
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+            plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
+            mme_ue->e_cgi.cell_id);
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
-    d_trace(5, "    SERVED_TAI_INDEX[%d]\n", served_tai_index);
-    d_assert(served_tai_index >= 0 &&
-            served_tai_index < MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,
-            "Cannot find Served TAI. Check 'mme.tai' configuration");
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
+    ogs_assert(served_tai_index >= 0 &&
+            served_tai_index < MAX_NUM_OF_SERVED_TAI);
     nas_tai_list_build(&tau_accept->tai_list,
             &mme_self()->served_tai[served_tai_index].list0,
             &mme_self()->served_tai[served_tai_index].list2);
@@ -425,23 +429,23 @@ status_t emm_build_tau_accept(pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     tau_accept->eps_network_feature_support.length = 1;
     tau_accept->eps_network_feature_support.ims_vops = 1;
 
-    d_assert(nas_security_encode(emmbuf, mme_ue, &message) == CORE_OK && 
-            *emmbuf,,);
+    ogs_assert(nas_security_encode(emmbuf, mme_ue, &message) == OGS_OK && 
+            *emmbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t emm_build_tau_reject(pkbuf_t **emmbuf, nas_emm_cause_t emm_cause,
+int emm_build_tau_reject(ogs_pkbuf_t **emmbuf, nas_emm_cause_t emm_cause,
         mme_ue_t *mme_ue)
 {
     nas_message_t message;
     nas_tracking_area_update_reject_t *tau_reject = 
         &message.emm.tracking_area_update_reject;
 
-    d_assert(mme_ue, return CORE_ERROR,);
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[EMM] Tracking area update reject\n");
-    d_trace(5, "    IMSI[%s] Cause[%d]\n",
+    ogs_debug("[EMM] Tracking area update reject");
+    ogs_debug("    IMSI[%s] Cause[%d]",
             MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown", emm_cause);
 
     memset(&message, 0, sizeof(message));
@@ -450,21 +454,21 @@ status_t emm_build_tau_reject(pkbuf_t **emmbuf, nas_emm_cause_t emm_cause,
 
     tau_reject->emm_cause = emm_cause;
 
-    d_assert(nas_plain_encode(emmbuf, &message) == CORE_OK && *emmbuf,,);
+    ogs_assert(nas_plain_encode(emmbuf, &message) == OGS_OK && *emmbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t emm_build_service_reject(pkbuf_t **emmbuf, nas_emm_cause_t emm_cause, 
+int emm_build_service_reject(ogs_pkbuf_t **emmbuf, nas_emm_cause_t emm_cause, 
         mme_ue_t *mme_ue)
 {
     nas_message_t message;
     nas_service_reject_t *service_reject = &message.emm.service_reject;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[EMM] Service reject\n");
-    d_trace(5, "    Cause[%d]\n", emm_cause);
+    ogs_debug("[EMM] Service reject");
+    ogs_debug("    Cause[%d]", emm_cause);
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -472,7 +476,7 @@ status_t emm_build_service_reject(pkbuf_t **emmbuf, nas_emm_cause_t emm_cause,
 
     service_reject->emm_cause = emm_cause;
 
-    d_assert(nas_plain_encode(emmbuf, &message) == CORE_OK && *emmbuf,,);
+    ogs_assert(nas_plain_encode(emmbuf, &message) == OGS_OK && *emmbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }

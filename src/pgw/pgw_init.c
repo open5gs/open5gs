@@ -1,117 +1,99 @@
-#define TRACE_MODULE _pgw_init
-
-#include "core_debug.h"
-#include "core_thread.h"
-
 #include "gtp/gtp_xact.h"
 
+#include "app/context.h"
 #include "pgw_context.h"
 #include "pgw_event.h"
 #include "pgw_sm.h"
 
 #include "pgw_fd_path.h"
 
-static thread_id pgw_thread;
-static void *THREAD_FUNC pgw_main(thread_id id, void *data);
+static ogs_thread_t *thread;
+static void pgw_main(void *data);
 
 static int initialized = 0;
 
-status_t pgw_initialize()
+int pgw_initialize()
 {
-    status_t rv;
+    int rv;
 
     rv = pgw_context_init();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
     rv = pgw_context_parse_config();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
-    rv = pgw_context_setup_trace_module();
-    if (rv != CORE_OK) return rv;
+    rv = context_setup_log_module();
+    if (rv != OGS_OK) return rv;
 
     rv = pgw_ue_pool_generate();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
     rv = pgw_fd_init();
-    if (rv != 0) return CORE_ERROR;
+    if (rv != 0) return OGS_ERROR;
 
-    rv = thread_create(&pgw_thread, NULL, pgw_main, NULL);
-    if (rv != CORE_OK) return rv;
+    thread = ogs_thread_create(pgw_main, NULL);
+    if (!thread) return OGS_ERROR;
 
     initialized = 1;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 void pgw_terminate(void)
 {
     if (!initialized) return;
 
-    thread_delete(pgw_thread);
+    pgw_event_term();
+
+    ogs_thread_destroy(thread);
 
     pgw_fd_final();
 
     pgw_context_final();
 
     gtp_xact_final();
+
+    pgw_event_final();
 }
 
-static void *THREAD_FUNC pgw_main(thread_id id, void *data)
+static void pgw_main(void *data)
 {
-    event_t event;
-    fsm_t pgw_sm;
-    c_time_t prev_tm, now_tm;
-    status_t rv;
+    ogs_fsm_t pgw_sm;
+    int rv;
 
-    memset(&event, 0, sizeof(event_t));
+    pgw_event_init();
+    gtp_xact_init(pgw_self()->timer_mgr);
 
-    pgw_self()->queue_id = event_create(MSGQ_O_NONBLOCK);
-    d_assert(pgw_self()->queue_id, return NULL, 
-            "PGW event queue creation failed");
-    tm_service_init(&pgw_self()->tm_service);
-    gtp_xact_init(&pgw_self()->tm_service,
-            PGW_EVT_S5C_T3_RESPONSE, PGW_EVT_S5C_T3_HOLDING);
+    ogs_fsm_create(&pgw_sm, pgw_state_initial, pgw_state_final);
+    ogs_fsm_init(&pgw_sm, 0);
 
-    fsm_create(&pgw_sm, pgw_state_initial, pgw_state_final);
-    fsm_init(&pgw_sm, 0);
-
-    prev_tm = time_now();
-
-#define EVENT_LOOP_TIMEOUT 10   /* 10ms */
-    while ((!thread_should_stop()))
+    for ( ;; )
     {
-        sock_select_loop(EVENT_LOOP_TIMEOUT); 
-        do
+        ogs_pollset_poll(pgw_self()->pollset,
+                ogs_timer_mgr_next(pgw_self()->timer_mgr));
+
+        ogs_timer_mgr_expire(pgw_self()->timer_mgr);
+
+        for ( ;; )
         {
-            rv = event_recv(pgw_self()->queue_id, &event);
+            pgw_event_t *e = NULL;
 
-            d_assert(rv != CORE_ERROR, continue,
-                    "While receiving a event message, error occurs");
+            rv = ogs_queue_trypop(pgw_self()->queue, (void**)&e);
+            ogs_assert(rv != OGS_ERROR);
 
-            now_tm = time_now();
+            if (rv == OGS_DONE)
+                goto done;
 
-            /* if the gap is over event_loop timeout, execute preriodic jobs */
-            if (now_tm - prev_tm > (EVENT_LOOP_TIMEOUT * 1000))
-            {
-                tm_execute_tm_service(
-                        &pgw_self()->tm_service, pgw_self()->queue_id);
+            if (rv == OGS_RETRY)
+                break;
 
-                prev_tm = now_tm;
-            }
-
-            if (rv == CORE_EAGAIN)
-            {
-                continue;
-            }
-
-            fsm_dispatch(&pgw_sm, (fsm_event_t*)&event);
-        } while(rv == CORE_OK);
+            ogs_assert(e);
+            ogs_fsm_dispatch(&pgw_sm, e);
+            pgw_event_free(e);
+        }
     }
+done:
 
-    fsm_final(&pgw_sm, 0);
-    fsm_clear(&pgw_sm);
-
-    event_delete(pgw_self()->queue_id);
-
-    return NULL;
+    ogs_fsm_fini(&pgw_sm, 0);
+    ogs_fsm_delete(&pgw_sm);
 }

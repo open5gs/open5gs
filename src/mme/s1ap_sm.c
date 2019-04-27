@@ -1,7 +1,3 @@
-#define TRACE_MODULE _s1ap_sm
-
-#include "core_debug.h"
-
 #include "nas/nas_message.h"
 #include "gtp/gtp_message.h"
 
@@ -11,48 +7,49 @@
 #include "mme_event.h"
 #include "mme_sm.h"
 
-void s1ap_state_initial(fsm_t *s, event_t *e)
+void s1ap_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
-    d_assert(s, return, "Null param");
+    ogs_assert(s);
 
-    mme_sm_trace(3, e);
+    mme_sm_debug(e);
 
-    FSM_TRAN(s, &s1ap_state_operational);
+    OGS_FSM_TRAN(s, &s1ap_state_operational);
 }
 
-void s1ap_state_final(fsm_t *s, event_t *e)
+void s1ap_state_final(ogs_fsm_t *s, mme_event_t *e)
 {
-    d_assert(s, return, "Null param");
+    ogs_assert(s);
 
-    mme_sm_trace(3, e);
+    mme_sm_debug(e);
 }
 
-void s1ap_state_operational(fsm_t *s, event_t *e)
+void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
 {
     mme_enb_t *enb = NULL;
 
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
+    ogs_assert(s);
+    ogs_assert(e);
 
-    mme_sm_trace(3, e);
+    ogs_assert(e);
+    mme_sm_debug(e);
 
-    enb = mme_enb_find(event_get_param1(e));
-    d_assert(enb, return,);
+    enb = e->enb;
+    ogs_assert(enb);
 
-    switch (event_get(e))
+    switch (e->id)
     {
-        case FSM_ENTRY_SIG:
+        case OGS_FSM_ENTRY_SIG:
         {
             break;
         }
-        case FSM_EXIT_SIG:
+        case OGS_FSM_EXIT_SIG:
         {
             break;
         }
         case MME_EVT_S1AP_MESSAGE:
         {
-            S1AP_S1AP_PDU_t *pdu = (S1AP_S1AP_PDU_t *)event_get_param4(e);
-            d_assert(pdu, break, "Null param");
+            S1AP_S1AP_PDU_t *pdu = e->s1ap_message;
+            ogs_assert(pdu);
 
             switch(pdu->present)
             {
@@ -60,7 +57,7 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                 {
                     S1AP_InitiatingMessage_t *initiatingMessage =
                         pdu->choice.initiatingMessage;
-                    d_assert(initiatingMessage, break, "Null param");
+                    ogs_assert(initiatingMessage);
 
                     switch(initiatingMessage->procedureCode)
                     {
@@ -98,8 +95,8 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                         }
                         case S1AP_ProcedureCode_id_eNBConfigurationTransfer:
                         {
-                            pkbuf_t *pkbuf = (pkbuf_t *)event_get_param3(e);
-                            d_assert(pkbuf, break, "Null param");
+                            ogs_pkbuf_t *pkbuf = e->pkbuf;
+                            ogs_assert(pkbuf);
 
                             s1ap_handle_enb_configuration_transfer(
                                     enb, pdu, pkbuf);
@@ -132,9 +129,9 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                         }
                         default:
                         {
-                            d_warn("Not implemented(choice:%d, proc:%d)",
+                            ogs_warn("Not implemented(choice:%d, proc:%d)",
                                     pdu->present,
-                                    initiatingMessage->procedureCode);
+                                    (int)initiatingMessage->procedureCode);
                             break;
                         }
                     }
@@ -145,7 +142,7 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                 {
                     S1AP_SuccessfulOutcome_t *successfulOutcome =
                         pdu->choice.successfulOutcome;
-                    d_assert(successfulOutcome, break, "Null param");
+                    ogs_assert(successfulOutcome);
 
                     switch(successfulOutcome->procedureCode)
                     {
@@ -191,9 +188,9 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                         }
                         default:
                         {
-                            d_warn("Not implemented(choice:%d, proc:%d)",
+                            ogs_warn("Not implemented(choice:%d, proc:%d)",
                                     pdu->present,
-                                    successfulOutcome->procedureCode);
+                                    (int)successfulOutcome->procedureCode);
                             break;
                         }
                     }
@@ -203,7 +200,7 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                 {
                     S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = 
                         pdu->choice.unsuccessfulOutcome;
-                    d_assert(unsuccessfulOutcome, break, "Null param");
+                    ogs_assert(unsuccessfulOutcome);
 
                     switch(unsuccessfulOutcome->procedureCode)
                     {
@@ -220,9 +217,9 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                         }
                         default:
                         {
-                            d_warn("Not implemented(choice:%d, proc:%d)",
+                            ogs_warn("Not implemented(choice:%d, proc:%d)",
                                     pdu->present,
-                                    unsuccessfulOutcome->procedureCode);
+                                    (int)unsuccessfulOutcome->procedureCode);
                             break;
                         }
                     }
@@ -230,7 +227,7 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
                 }
                 default:
                 {
-                    d_warn("Not implemented(choice:%d)", pdu->present);
+                    ogs_warn("Not implemented(choice:%d)", pdu->present);
                     break;
                 }
             }
@@ -239,32 +236,32 @@ void s1ap_state_operational(fsm_t *s, event_t *e)
         }
         default:
         {
-            d_error("Unknown event %s", mme_event_get_name(e));
+            ogs_error("Unknown event %s", mme_event_get_name(e));
             break;
         }
     }
 }
 
-void s1ap_state_exception(fsm_t *s, event_t *e)
+void s1ap_state_exception(ogs_fsm_t *s, mme_event_t *e)
 {
-    d_assert(s, return, "Null param");
-    d_assert(e, return, "Null param");
+    ogs_assert(s);
+    ogs_assert(e);
 
-    mme_sm_trace(3, e);
+    mme_sm_debug(e);
 
-    switch (event_get(e))
+    switch (e->id)
     {
-        case FSM_ENTRY_SIG:
+        case OGS_FSM_ENTRY_SIG:
         {
             break;
         }
-        case FSM_EXIT_SIG:
+        case OGS_FSM_EXIT_SIG:
         {
             break;
         }
         default:
         {
-            d_error("Unknown event %s", mme_event_get_name(e));
+            ogs_error("Unknown event %s", mme_event_get_name(e));
             break;
         }
     }
