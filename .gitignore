@@ -53,9 +53,9 @@ test/testsuite.log
 
 # executables
 test/testunit
-test/testepc
+test/testsimple
+test/testcomplex
 test/testvolte
-test/testadvanced
 nextepc-mmed
 nextepc-pcrfd
 nextepc-pgwd
