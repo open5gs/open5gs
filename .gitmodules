@@ -1,3 +1,0 @@
-[submodule "lib/ogslib"]
-	path = lib/ogslib
-	url = https://github.com/open5gs/ogslib
