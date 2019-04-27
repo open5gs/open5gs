@@ -9,7 +9,7 @@ permalink: /faq/
 If you do not start MongoDB, you will get the following error:
 
 ```bash
-➜  nextepc git:(master) ✗ ./test/testepc  
+➜  nextepc git:(master) ✗ ./test/testsimple  
 04/09 15:42:34.817: [core] ERROR: Failed to conect to server [mongodb://localhost/nextepc] (context.c:326)  
 04/09 15:42:34.817: [core] ERROR: app_initialize() failed (basic/abts-main.c:91)  
 s1ap_message_test   : -04/09 15:42:34.830: [s1ap] ERROR: Failed to decode S1AP-PDU[-1] (s1ap_encoder.c:41)  
@@ -43,21 +43,17 @@ You should perform **the installation process**.
 $ make install
 ```
 
-#### I have some error when running `./test/testepc`
+#### I have some error when running `./test/testcomplex`
 
-Did you see the following error after executing `testepc`?
+Did you see the following error after executing `testcomplex`?
 ```bash
-➜  nextepc git:(master) ✗ ./test/testepc  
-s1ap_message_test   : SUCCESS  
-nas_message_test    : SUCCESS  
-gtp_message_test    : SUCCESS  
-security_test       : SUCCESS  
+➜  nextepc git:(master) ✗ ./test/testcomplex  
 s1setup_test        : SUCCESS  
 attach_test         : -Line 134: Condition is false, but expected true  
 \04/09 15:49:09.285: [esm] FATAL: esm_handle_pdn_connectivity_request: Assertion `SECURITY_CONTEXT_IS_VALID(mme_ue)' failed. (esm_handler.c:29)  
 /home/acetcom/Documents/git/open5gs/nextepc/lib/ogslib/src/core/.libs/libogscore-1.0.so.0(ogs_abort+0x2b)[0x7f608518271b]  
-/home/acetcom/Documents/git/open5gs/nextepc/test/.libs/testepc(+0x92121)[0x55dc9e274121]  
-/home/acetcom/Documents/git/open5gs/nextepc/test/.libs/testepc(+0x4f5b9)[0x55dc9e2315b9]  
+/home/acetcom/Documents/git/open5gs/nextepc/test/.libs/testcomplex(+0x92121)[0x55dc9e274121]  
+/home/acetcom/Documents/git/open5gs/nextepc/test/.libs/testcomplex(+0x4f5b9)[0x55dc9e2315b9]  
 ```
 
 
@@ -71,15 +67,15 @@ $ mongo
 
 Kill all processes.
 ```bash
-$ ps -ef | grep testepc
+$ ps -ef | grep testcomplex
 $ ps -ef | grep nextepc
-$ sudo pkill -9 testepc
+$ sudo pkill -9 testcomplex
 $ sudo pkill -9 nextepc-epcd ...
 ```
 
-Execute `testepc`
+Execute `testcomplex`
 ```bash
-$ ./test/testepc
+$ ./test/testcomplex
 ```
 
 #### My eNB does not support IPv6.
