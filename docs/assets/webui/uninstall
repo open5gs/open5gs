@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Refer to Node.js install script
+#
+# Run as root or insert `sudo -E` before `bash`:
+#
+# curl -sL http://nextepc.org/static/uninstall_webui.sh | bash -
+#   or
+# wget -qO- http://nextepc.org/static/uninstall_webui.shx | bash -
+#
+
+exec_cmd_nobail() {
+    echo "+ $1"
+    bash -c "$1"
+}
+
+uninstall() {
+exec_cmd_nobail "deb-systemd-invoke stop nextepc-webui"
+exec_cmd_nobail "systemctl disable nextepc-webui"
+exec_cmd_nobail "rm -f /lib/systemd/system/nextepc-webui.service"
+exec_cmd_nobail "rm -rf /usr/lib/node_modules/nextepc"
+
+exec_cmd_nobail "systemctl daemon-reload"
+}
+
+## Defer setup until we have the complete script
+uninstall

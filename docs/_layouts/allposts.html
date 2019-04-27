@@ -1,0 +1,39 @@
+---
+layout: page
+---
+
+{{ content }}
+
+{% for post in site.posts %}
+
+  {% capture year %}{{ post.date | date: '%Y' }}{% endcapture %}
+
+  {% if forloop.first %}
+    <h2 class="mt-0 h4">{{ year }}</h2>
+    <table class="ml-4">
+  {% elsif year != prev_year %}
+    </table>
+    <h2 class="h4">{{ year }}</h2>
+    <table class="ml-4">
+  {% endif %}
+
+  {% assign date_format = site.minima_reboot.date_format_short | default: "%b %-d" %}
+  <tr>
+    <td class="text-right align-top text-truncate"><time class="text-secondary" datetime="{{ post.date | date:"%Y-%m-%d" }}">{{ post.date | date: date_format }}</time></td>
+    <td class="text-center align-top px-1">|</td>
+    <td class="text-left align-top"><a href="{{ post.url | prepend: site.baseurl }}">{{ post.title | escape }}</a></td>
+  </tr>
+
+  {% if forloop.last %}
+    </table>
+  {% endif %}
+
+  {% capture prev_year %}{{ year }}{% endcapture %}
+
+{% endfor %}
+
+<div class="pt-3"></div>
+
+{% if site.plugins contains "jekyll-feed" %}
+  <a href="{{ "/feed.xml" | relative_url }}"><div id="rss-icon" class="mb-2"></div></a>
+{% endif %}

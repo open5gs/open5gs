@@ -1,0 +1,42 @@
+<footer id="site-footer">
+  <div class="container">
+    <div class="h5 pt-4">{{ site.title | escape }}</div>
+
+    <div class="row">
+      <div class="col col-lg-3">
+        <ul class="list-unstyled">
+          <li class="text-secondary">
+            {% if site.author %}
+              {{ site.author | escape }}
+            {% else %}
+              {{ site.title | escape }}
+            {% endif %}
+            </li>
+            {% if site.email %}
+              <li><a href="mailto:{{ site.email }}">{{ site.email }}</a></li>
+              <li><i><font size="2">(Please do not mail me directly for technical support. Instead, use <a href="https://github.com/{{ site.github_username }}/nextepc/issues">GitHub Issues</a>.)</font></i></li>
+            {% endif %}
+        </ul>
+      </div>
+      {% if site.footer_icons %}
+      <div class="col-6 col-lg-3">
+        <ul class="list-unstyled">
+          {% for footer_icon in site.footer_icons %}
+            <li>
+              <a href="{{ footer_icon.url }}">
+                {% if footer_icon.icon %}
+                {% capture icon %}{% include {{footer_icon.icon}} %}{% endcapture %}
+                <span class="align-middle text-secondary pr-2">{{ icon | strip }}</span>{% endif %}<span>{{ footer_icon.username }}</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <div class="col-12 col-lg">
+        <p class="text-secondary text-justify">{{ site.description | escape }}</p>
+      </div>
+    </div>
+
+  </div>
+</footer>
