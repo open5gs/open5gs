@@ -20,14 +20,14 @@ $ sudo apt install nextepc
 
 >The NextEPC package is also available on [OBS](https://build.opensuse.org/package/show/home:acetcom:open5gs:snapshot/nextepc). First, install the authentication key as shown below.
 ```bash
-$ sudo apt install wget
-$ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.10/Release.key
-$ sudo apt install gnupg
+$ sudo apt update
+$ sudo apt install wget gnupg
+$ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/Release.key
 $ sudo apt-key add Release.key
 ```
-In Debian 9.0, you can install it as follows:
+In Ubuntu 18.04(Bionic), you can install it as follows:
 ```bash
-$ sudo sh -c "echo 'deb https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_9.0/ ./' > /etc/apt/sources.list.d/open5gs.list"
+$ sudo sh -c "echo 'deb https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
 $ sudo apt update
 $ sudo apt install nextepc
 ```
