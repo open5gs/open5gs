@@ -198,10 +198,6 @@ YAML FAQ: Why does YAML forbid tabs?
 Tabs have been outlawed since they are treated differently by different editors and tools. And since indentation is so critical to proper interpretation of YAML, this issue is just too tricky to even attempt. Indeed Guido van Rossum of Python has acknowledged that allowing TABs in Python source is a headache for many people and that were he to design Python again, he would forbid them.
 ```
 
-#### High CPU usage on idle
-
-This issue will not occur after v0.4.x version.
-
 #### Cross compilation setup
 
 By default, NextEPC is designed to support the Embedding System. To do so, we introduced pool-based memory management. Unfortunately, we have not tested NextEPC in an embedded environment. I tried to compile on the ARM architecture using Docker and run it with QEMU for your reference.
