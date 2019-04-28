@@ -5,7 +5,7 @@ permalink: /docs/
 head_inline: "<style> ul { padding-bottom: 1em; } </style>"
 ---
 
-- User's Guide 2
+- User's Guide
   - [Quickstart](guide/01-quickstart)
   - [Building nextepc from Sources](guide/02-building-nextepc-from-sources)
 

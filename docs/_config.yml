@@ -51,8 +51,8 @@ minima_reboot:
   date_format: "%Y-%m-%d %H:%M"
 
 footer_icons:
-  - username: open5gs/nextepc
-    url: https://github.com/open5gs/nextepc
+  - username: open5gs
+    url: https://open5gs.org
     icon: icon-github.svg
 
 header_pages:
