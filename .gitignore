@@ -36,6 +36,7 @@ autom4te.cache
 build/*
 !build/git-version-gen
 !build/osc-upload.sh
+!build/dput-upload.sh
 Makefile
 Makefile.in
 m4/*.m4
