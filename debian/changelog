@@ -1,3 +1,9 @@
+nextepc (0.4.0-5~ubuntu) bionic; urgency=medium
+
+  * Integration with OGSLIB
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 29 Apr 2019 14:30:15 +0000
+
 nextepc (0.4.0) unstable; urgency=medium
 
   * Integration with OGSLIB
