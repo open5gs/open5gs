@@ -8,7 +8,7 @@ extern "C" {
 int app_initialize(app_param_t *param);
 #define app_terminate epc_terminate
 
-int epc_initialize();
+int epc_initialize(app_param_t *param);
 void epc_terminate(void);
 
 int mme_initialize();
