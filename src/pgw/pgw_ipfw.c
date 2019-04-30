@@ -1,3 +1,6 @@
+#define _DEFAULT_SOURCE 1
+#define _BSD_SOURCE     1
+
 #include "base/base.h"
 
 #if HAVE_NETINET_IP_H
