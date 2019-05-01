@@ -31,7 +31,7 @@ $ sudo apt-key add Release.key
 In Debian 9.0(stretch), you can install it as follows:
 
 ```bash
-$ sudo sh -c "echo 'deb https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_9.0/ ./' > /etc/apt/sources.list.d/open5gs.list"
+$ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_9.0/ ./' > /etc/apt/sources.list.d/open5gs.list"
 $ sudo apt update
 $ sudo apt install nextepc
 ```
@@ -39,12 +39,12 @@ $ sudo apt install nextepc
 Other Linux distributions can be installed by changing the path.
 
 ```
-https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_9.0/
-https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_9.0/
-https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_16.04/
-https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_17.10/
-https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/
-https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.10/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_9.0/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_9.0/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_16.04/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_17.10/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.10/
 ```
 
 [Martin Hauke](https://build.opensuse.org/user/show/mnhauke) packaged NextEPC for *openSUSE* on [OBS](https://build.opensuse.org/package/show/home:mnhauke:nextepc/nextepc).
