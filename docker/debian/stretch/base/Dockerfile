@@ -5,14 +5,14 @@ FROM ${dist}:${tag}
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
 ARG tag=stable
-RUN apt-get update && \
-    apt-get install -y netselect-apt && \
-    apt-get clean && \
-    if [ "x$tag" = "xlatest" ]; then \
-        netselect-apt -o /etc/apt/sources.list; \
-    else \
-        netselect-apt ${tag} -o /etc/apt/sources.list; \
-    fi
+#RUN apt-get update && \
+#    apt-get install -y netselect-apt && \
+#    apt-get clean && \
+#    if [ "x$tag" = "xlatest" ]; then \
+#        netselect-apt -o /etc/apt/sources.list; \
+#    else \
+#        netselect-apt ${tag} -o /etc/apt/sources.list; \
+#    fi
 
 RUN apt-get update && \
     apt-get upgrade -y && \
