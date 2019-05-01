@@ -9,11 +9,7 @@
 #include "app/application.h"
 #include "app_init.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdate-time"
-static char *version = "NextEPC daemon v" \
-                PACKAGE_VERSION " - "__DATE__ " " __TIME__;
-#pragma GCC diagnostic pop
+static char *version = "NextEPC daemon v" PACKAGE_VERSION;
 
 static void show_version()
 {
