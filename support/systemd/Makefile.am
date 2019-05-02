@@ -5,6 +5,3 @@ EXTRA_DIST = \
 	nextepc-pcrfd.service.in \
 	nextepc-sgwd.service.in \
 	$(NULL)
-
-MAINTAINERCLEANFILES = Makefile.in 
-MOSTLYCLEANFILES = *.stackdump

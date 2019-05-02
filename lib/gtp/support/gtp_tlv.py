@@ -1,27 +1,20 @@
+# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+
+# This file is part of Open5GS.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Copyright (c) 2017, NextEPC Group
-# All rights reserved.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# 1. Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from docx import Document
 import re, os, sys, string
 import datetime
@@ -61,28 +54,22 @@ def write_file(f, string):
 def output_header_to_file(f):
     now = datetime.datetime.now()
     f.write("""/*
- * Copyright (c) 2017, NextEPC Group
- * All rights reserved.
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
-
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 """)
@@ -385,10 +372,10 @@ type_list["Node Type"]["size"] = 1                 # Type : 128
 
 f = open(outdir + 'gtp_message.h', 'w')
 output_header_to_file(f)
-f.write("""#ifndef __GTP_TLV_H__
-#define __GTP_TLV_H__
+f.write("""#ifndef __GTP_MESSAGE_H__
+#define __GTP_MESSAGE_H__
 
-#include "core_tlv_msg.h"
+#include "gtp_tlv.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -401,28 +388,28 @@ extern "C" {
 typedef struct _gtp_header_t {
     union {
         struct {
-        ED4(c_uint8_t version:3;,
-            c_uint8_t piggybacked:1;,
-            c_uint8_t teid_presence:1;,
-            c_uint8_t spare1:3;)
+        ED4(uint8_t version:3;,
+            uint8_t piggybacked:1;,
+            uint8_t teid_presence:1;,
+            uint8_t spare1:3;)
         };
 /* GTU-U flags */
 #define GTPU_FLAGS_PN                       0x1
 #define GTPU_FLAGS_S                        0x2
-        c_uint8_t flags;
+        uint8_t flags;
     };
-    c_uint8_t type;
-    c_uint16_t length;
+    uint8_t type;
+    uint16_t length;
     union {
         struct {
-            c_uint32_t teid;
+            uint32_t teid;
             /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
 #define GTP_XID_TO_SQN(__xid) htonl(((__xid) << 8))
 #define GTP_SQN_TO_XID(__sqn) (ntohl(__sqn) >> 8)
-            c_uint32_t sqn;
+            uint32_t sqn;
         };
         /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
-        c_uint32_t sqn_only;
+        uint32_t sqn_only;
     };
 } __attribute__ ((packed)) gtp_header_t;
 
@@ -531,24 +518,20 @@ for (k, v) in sorted_msg_list:
 f.write("   };\n");
 f.write("} gtp_message_t;\n\n")
 
-f.write("""CORE_DECLARE(status_t) gtp_parse_msg(
-        gtp_message_t *gtp_message, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) gtp_build_msg(
-        pkbuf_t **pkbuf, gtp_message_t *gtp_message);
+f.write("""int gtp_parse_msg(gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf);
+int gtp_build_msg(ogs_pkbuf_t **pkbuf, gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* __GTP_TLV_H__ */
+#endif /* __GTP_MESSAGE_H__ */
 """)
 f.close()
 
 f = open(outdir + 'gtp_message.c', 'w')
 output_header_to_file(f)
-f.write("""#define TRACE_MODULE _gtp_message
-#include "core_debug.h"
-#include "gtp_message.h"
+f.write("""#include "gtp_message.h"
 
 """)
 
@@ -612,21 +595,18 @@ for (k, v) in sorted_msg_list:
         f.write("}};\n\n")
 f.write("\n")
 
-f.write("""status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
+f.write("""int gtp_parse_msg(gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
 {
-    status_t rv = CORE_ERROR;
+    int rv = OGS_ERROR;
     gtp_header_t *h = NULL;
-    c_uint16_t size = 0;
+    uint16_t size = 0;
 
-    d_assert(gtp_message, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
-    d_assert(pkbuf->payload, return CORE_ERROR, "Null param");
+    ogs_assert(gtp_message);
+    ogs_assert(pkbuf);
+    ogs_assert(pkbuf->len);
 
-    d_trace(50, "[GTPv2] RECV : ");
-    d_trace_hex(50, pkbuf->payload, pkbuf->len);
-
-    h = pkbuf->payload;
-    d_assert(h, return CORE_ERROR, "Null param");
+    h = pkbuf->data;
+    ogs_assert(h);
     
     memset(gtp_message, 0, sizeof(gtp_message_t));
 
@@ -635,15 +615,14 @@ f.write("""status_t gtp_parse_msg(gtp_message_t *gtp_message, pkbuf_t *pkbuf)
     else
         size = GTPV2C_HEADER_LEN-GTP_TEID_LEN;
 
-    d_assert(pkbuf_header(pkbuf, -size) == CORE_OK,
-            return CORE_ERROR, "pkbuf_header error");
-    memcpy(&gtp_message->h, pkbuf->payload - size, size);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(&gtp_message->h, pkbuf->data - size, size);
 
     if (h->teid_presence)
         gtp_message->h.teid = ntohl(gtp_message->h.teid);
 
     if (pkbuf->len == 0)
-        return CORE_OK;
+        return OGS_OK;
 
     switch(gtp_message->h.type)
     {
@@ -652,10 +631,10 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("        case GTP_%s_TYPE:\n" % v_upper(k))
         f.write("            rv = tlv_parse_msg(&gtp_message->%s,\n" % v_lower(k))
-        f.write("                    &tlv_desc_%s, pkbuf, TLV_MODE_T1_L2_I1);\n" % v_lower(k))
+        f.write("                    &tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:
-            d_warn("Not implmeneted(type:%d)", gtp_message->h.type);
+            ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
             break;
     }
 
@@ -664,11 +643,11 @@ f.write("""        default:
 
 """)
 
-f.write("""status_t gtp_build_msg(pkbuf_t **pkbuf, gtp_message_t *gtp_message)
+f.write("""int gtp_build_msg(ogs_pkbuf_t **pkbuf, gtp_message_t *gtp_message)
 {
-    status_t rv = CORE_ERROR;
+    int rv = OGS_ERROR;
 
-    d_assert(gtp_message, return rv, "Null param");
+    ogs_assert(gtp_message);
     switch(gtp_message->h.type)
     {
 """)
@@ -676,17 +655,11 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("        case GTP_%s_TYPE:\n" % v_upper(k))
         f.write("            rv = tlv_build_msg(pkbuf, &tlv_desc_%s,\n" % v_lower(k))
-        f.write("                    &gtp_message->%s, TLV_MODE_T1_L2_I1);\n" % v_lower(k))
+        f.write("                    &gtp_message->%s, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:
-            d_warn("Not implmeneted(type:%d)", gtp_message->h.type);
+            ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
             break;
-    }
-
-    if ((*pkbuf) && (*pkbuf)->payload)
-    {
-        d_trace(50, "[GTPv2] SEND : ");
-        d_trace_hex(50, (*pkbuf)->payload, (*pkbuf)->len);
     }
 
     return rv;

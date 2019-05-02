@@ -1,8 +1,3 @@
-#define TRACE_MODULE _s1ap_path
-
-#include "core_debug.h"
-#include "core_thread.h"
-
 #include "mme_event.h"
 
 #include "nas_security.h"
@@ -12,149 +7,161 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 
-static status_t s1ap_server_list(list_t *list, int type);
-static status_t s1ap_delete_list(list_t *list);
+static int s1ap_server_list(ogs_list_t *list, int type);
+static int s1ap_delete_list(ogs_list_t *list);
 
-status_t s1ap_open(void)
+int s1ap_open(void)
 {
-    status_t rv;
-#if USE_USRSCTP != 1
+    int rv;
+#if HAVE_USRSCTP != 1
     int type = SOCK_STREAM;
 #else
     int type = SOCK_SEQPACKET;
 #endif
 
     rv = s1ap_server_list(&mme_self()->s1ap_list, type);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
     rv = s1ap_server_list(&mme_self()->s1ap_list6, type);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t s1ap_close()
+int s1ap_close()
 {
     s1ap_delete_list(&mme_self()->s1ap_list);
     s1ap_delete_list(&mme_self()->s1ap_list6);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-static status_t s1ap_server_list(list_t *list, int type)
+static int s1ap_server_list(ogs_list_t *list, int type)
 {
-    status_t rv;
-    sock_node_t *snode = NULL;
+    ogs_socknode_t *snode = NULL;
 
-    d_assert(list, return CORE_ERROR,);
+    ogs_assert(list);
 
-    for (snode = list_first(list); snode; snode = list_next(snode))
-    {
-        rv = s1ap_server(snode, type);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
+    ogs_list_for_each(list, snode)
+        s1ap_server(snode, type);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-static status_t s1ap_delete_list(list_t *list)
+static int s1ap_delete_list(ogs_list_t *list)
 {
-    sock_node_t *snode = NULL;
+    ogs_socknode_t *snode = NULL;
 
-    for (snode = list_first(list); snode; snode = list_next(snode))
-    {
-        s1ap_delete(snode->sock);
-    }
+    ogs_list_for_each(list, snode)
+        s1ap_delete(snode);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t s1ap_send_to_enb(mme_enb_t *enb, pkbuf_t *pkbuf)
+int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
-    char buf[CORE_ADDRSTRLEN];
-    status_t rv;
+    char buf[OGS_ADDRSTRLEN];
+    int rv;
 
-    d_assert(enb, return CORE_ERROR,);
-    d_assert(pkbuf, return CORE_ERROR,);
-    d_assert(enb->sock, return CORE_ERROR,);
+    ogs_assert(enb);
+    ogs_assert(pkbuf);
+    ogs_assert(enb->sock);
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     rv = s1ap_send(enb->sock, pkbuf,
-            enb->sock_type == SOCK_STREAM ? NULL : enb->addr);
-    if (rv != CORE_OK)
+            enb->sock_type == SOCK_STREAM ? NULL : enb->addr,
+            stream_no);
+    if (rv != OGS_OK)
     {
-        d_error("s1_send error");
-        pkbuf_free(pkbuf);
+        ogs_error("s1_send error");
+        ogs_pkbuf_free(pkbuf);
     }
 
-    return CORE_OK;;
+    return OGS_OK;;
 }
 
-status_t s1ap_delayed_send_to_enb(
-        mme_enb_t *enb, pkbuf_t *pkbuf, c_uint32_t duration)
+int s1ap_send_to_enb_ue(enb_ue_t *enb_ue, ogs_pkbuf_t *pkbuf)
 {
-    tm_block_id timer = 0;
+    mme_enb_t *enb = NULL;
+    mme_ue_t *mme_ue = NULL;
 
-    d_assert(enb, return CORE_ERROR,);
-    d_assert(pkbuf, return CORE_ERROR,);
+    ogs_assert(enb_ue);
+    enb = enb_ue->enb;
+    ogs_assert(enb);
+    mme_ue = enb_ue->mme_ue;
+    ogs_assert(mme_ue);
+
+    return s1ap_send_to_enb(enb, pkbuf, mme_ue->ostream_id);
+}
+
+int s1ap_delayed_send_to_enb_ue(
+        enb_ue_t *enb_ue, ogs_pkbuf_t *pkbuf, ogs_time_t duration)
+{
+    ogs_assert(enb_ue);
+    ogs_assert(pkbuf);
         
     if (duration)
     {
-        timer = timer_create(
-                &mme_self()->tm_service, MME_EVT_S1AP_DELAYED_SEND, duration);
-        d_assert(timer, return CORE_ERROR,);
+        mme_event_t *e = NULL;
 
-        timer_set_param1(timer, (c_uintptr_t)enb->index);
-        timer_set_param2(timer, (c_uintptr_t)pkbuf);
-        timer_set_param3(timer, timer);
+        e = mme_event_new(MME_EVT_S1AP_DELAYED_SEND);
+        ogs_assert(e);
+        e->timer = ogs_timer_add(mme_self()->timer_mgr, mme_event_timeout, e);
+        ogs_assert(e->timer);
+        e->pkbuf = pkbuf;
+        e->enb_ue = enb_ue;
 
-        tm_start(timer);
+        ogs_timer_start(e->timer, duration);
 
-        return CORE_OK;
+        return OGS_OK;
     }
     else
     {
-        return s1ap_send_to_enb(enb, pkbuf);
+        mme_enb_t *enb = NULL;
+        enb = enb_ue->enb;
+        ogs_assert(enb);
+        return s1ap_send_to_enb_ue(enb_ue, pkbuf);
     }
 }
 
-status_t s1ap_send_to_esm(mme_ue_t *mme_ue, pkbuf_t *esmbuf)
+int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
 {
-    event_t e;
+    mme_event_t *e = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
-    d_assert(esmbuf, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
+    ogs_assert(esmbuf);
 
-    event_set(&e, MME_EVT_ESM_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)mme_ue->index);
-    event_set_param2(&e, (c_uintptr_t)esmbuf);
-    mme_event_send(&e);
+    e = mme_event_new(MME_EVT_ESM_MESSAGE);
+    ogs_assert(e);
+    e->mme_ue = mme_ue;
+    e->pkbuf = esmbuf;
+    mme_event_send(e);
 
-    return CORE_OK;
+    return OGS_OK;
 }
-
-status_t s1ap_send_to_nas(enb_ue_t *enb_ue,
+ 
+int s1ap_send_to_nas(enb_ue_t *enb_ue,
         S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu)
 {
     nas_security_header_t *sh = NULL;
     nas_security_header_type_t security_header_type;
 
     nas_emm_header_t *h = NULL;
-    pkbuf_t *nasbuf = NULL;
-    event_t e;
+    ogs_pkbuf_t *nasbuf = NULL;
+    mme_event_t *e = NULL;
 
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
-    d_assert(nasPdu, return CORE_ERROR, "Null param");
+    ogs_assert(enb_ue);
+    ogs_assert(nasPdu);
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    nasbuf = pkbuf_alloc(NAS_HEADROOM, nasPdu->size);
-    d_assert(nasbuf, return CORE_ERROR, "Null param");
-    memcpy(nasbuf->payload, nasPdu->buf, nasPdu->size);
+    nasbuf = ogs_pkbuf_alloc(NULL, NAS_HEADROOM+nasPdu->size);
+    ogs_pkbuf_reserve(nasbuf, NAS_HEADROOM);
+    ogs_pkbuf_put_data(nasbuf, nasPdu->buf, nasPdu->size);
 
-    sh = nasbuf->payload;
-    d_assert(sh, return CORE_ERROR, "Null param");
+    sh = nasbuf->data;
+    ogs_assert(sh);
 
     memset(&security_header_type, 0, sizeof(nas_security_header_type_t));
     switch(sh->security_header_type)
@@ -166,231 +173,191 @@ status_t s1ap_send_to_nas(enb_ue_t *enb_ue,
             break;
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
             security_header_type.integrity_protected = 1;
-            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
-                    return CORE_ERROR, "pkbuf_header error");
+            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
             break;
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
             security_header_type.integrity_protected = 1;
             security_header_type.ciphered = 1;
-            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
-                    return CORE_ERROR, "pkbuf_header error");
+            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
             break;
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
             security_header_type.integrity_protected = 1;
             security_header_type.new_security_context = 1;
-            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
-                    return CORE_ERROR, "pkbuf_header error");
+            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
             break;
         case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
             security_header_type.integrity_protected = 1;
             security_header_type.ciphered = 1;
             security_header_type.new_security_context = 1;
-            d_assert(pkbuf_header(nasbuf, -6) == CORE_OK,
-                    return CORE_ERROR, "pkbuf_header error");
+            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
             break;
         default:
-            d_error("Not implemented(securiry header type:0x%x)", 
+            ogs_error("Not implemented(securiry header type:0x%x)", 
                     sh->security_header_type);
-            return CORE_ERROR;
+            return OGS_ERROR;
     }
 
     if (enb_ue->mme_ue)
     {
-        d_assert(nas_security_decode(
-            enb_ue->mme_ue, security_header_type, nasbuf) == CORE_OK,
-            pkbuf_free(nasbuf);return CORE_ERROR, "nas_security_decode failed");
+        ogs_assert(nas_security_decode(
+            enb_ue->mme_ue, security_header_type, nasbuf) == OGS_OK);
     }
 
-    h = nasbuf->payload;
-    d_assert(h, pkbuf_free(nasbuf); return CORE_ERROR, "Null param");
+    h = nasbuf->data;
+    ogs_assert(h);
     if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
     {
-        event_set(&e, MME_EVT_EMM_MESSAGE);
-        event_set_param1(&e, (c_uintptr_t)enb_ue->index);
-        event_set_param2(&e, (c_uintptr_t)procedureCode);
-        event_set_param3(&e, (c_uintptr_t)security_header_type.type);
-        event_set_param4(&e, (c_uintptr_t)nasbuf);
-        mme_event_send(&e);
+        e = mme_event_new(MME_EVT_EMM_MESSAGE);
+        ogs_assert(e);
+        e->enb_ue = enb_ue;
+        e->s1ap_code = procedureCode;
+        e->nas_type = security_header_type.type;
+        e->pkbuf = nasbuf;
+        mme_event_send(e);
     }
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
     {
         mme_ue_t *mme_ue = enb_ue->mme_ue;
-        d_assert(mme_ue, return CORE_ERROR, "Null param");
+        ogs_assert(mme_ue);
         s1ap_send_to_esm(mme_ue, nasbuf);
     }
     else
-        d_assert(0, pkbuf_free(nasbuf); return CORE_ERROR,
-                "Unknown protocol:%d", h->protocol_discriminator);
+        ogs_assert_if_reached();
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
+int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 {
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, NULL);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
     rv = nas_send_to_enb(mme_ue, s1apbuf);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t s1ap_send_ue_context_release_command(
+int s1ap_send_ue_context_release_command(
     enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
-    c_uint8_t action, c_uint32_t delay)
+    uint8_t action, uint32_t delay)
 {
-    status_t rv;
-    mme_enb_t *enb = NULL;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    d_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION, return CORE_ERROR,
-            "Should give valid action for UE Context Release Command");
+    ogs_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION);
 
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    ogs_assert(enb_ue);
     enb_ue->ue_ctx_rel_action = action;
-    enb = enb_ue->enb;
-    d_assert(enb, return CORE_ERROR, "Null param");
 
-    d_trace(3, "[MME] UE Context release command\n");
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("[MME] UE Context release command");
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
-    d_trace(5, "    Group[%d] Cause[%d] Action[%d] Delay[%d]\n",
-            group, cause, action, delay);
+    ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
+            group, (int)cause, action, delay);
 
     rv = s1ap_build_ue_context_release_command(&s1apbuf, enb_ue, group, cause);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
-    rv = s1ap_delayed_send_to_enb(enb, s1apbuf, delay);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, delay);
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t s1ap_send_mme_configuration_transfer(
+int s1ap_send_mme_configuration_transfer(
         mme_enb_t *target_enb,
         S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer)
 {
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    d_assert(target_enb, return CORE_ERROR,);
-    d_assert(SONConfigurationTransfer, return CORE_ERROR,);
+    ogs_assert(target_enb);
+    ogs_assert(SONConfigurationTransfer);
 
     rv = s1ap_build_mme_configuration_transfer(
             &s1apbuf, SONConfigurationTransfer);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
-    rv = s1ap_send_to_enb(target_enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    rv = s1ap_send_to_enb(target_enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
+    ogs_assert(rv == OGS_OK);
 
     return rv;
 }
 
-status_t s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
+int s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
 {
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     rv = s1ap_build_path_switch_ack(&s1apbuf, mme_ue);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
     rv = nas_send_to_enb(mme_ue, s1apbuf);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "s1ap send error");
+    ogs_assert(rv == OGS_OK);
     
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t s1ap_send_path_switch_failure(mme_enb_t *enb,
-    c_uint32_t enb_ue_s1ap_id, c_uint32_t mme_ue_s1ap_id,
-    S1AP_Cause_PR group, long cause)
+int s1ap_send_handover_command(enb_ue_t *source_ue)
 {
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    d_assert(enb, return CORE_ERROR, "Null param");
-
-    rv = s1ap_build_path_switch_failure(&s1apbuf,
-            enb_ue_s1ap_id, mme_ue_s1ap_id, group, cause);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
-
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
-    
-    return rv;
-}
-
-status_t s1ap_send_handover_command(enb_ue_t *source_ue)
-{
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
-
-    mme_enb_t *enb = NULL;
-
-    d_assert(source_ue, return CORE_ERROR,);
-    enb = source_ue->enb;
-    d_assert(enb, return CORE_ERROR,);
+    ogs_assert(source_ue);
 
     rv = s1ap_build_handover_command(&s1apbuf, source_ue);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    rv = s1ap_send_to_enb_ue(source_ue, s1apbuf);
+    ogs_assert(rv == OGS_OK);
 
     return rv;
 }
 
-status_t s1ap_send_handover_preparation_failure(
+int s1ap_send_handover_preparation_failure(
         enb_ue_t *source_ue, S1AP_Cause_t *cause)
 {
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    mme_enb_t *enb = NULL;
-
-    d_assert(source_ue, return CORE_ERROR,);
-    d_assert(cause, return CORE_ERROR,);
-    enb = source_ue->enb;
-    d_assert(enb, return CORE_ERROR,);
+    ogs_assert(source_ue);
+    ogs_assert(cause);
 
     rv = s1ap_build_handover_preparation_failure(&s1apbuf, source_ue, cause);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    rv = s1ap_send_to_enb_ue(source_ue, s1apbuf);
+    ogs_assert(rv == OGS_OK);
 
     return rv;
 }
 
-status_t s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
+int s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
 {
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    mme_enb_t *enb = NULL;
-
-    d_assert(source_ue, return CORE_ERROR,);
-    enb = source_ue->enb;
-    d_assert(enb, return CORE_ERROR,);
+    ogs_assert(source_ue);
 
     rv = s1ap_build_handover_cancel_ack(&s1apbuf, source_ue);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    rv = s1ap_send_to_enb_ue(source_ue, s1apbuf);
+    ogs_assert(rv == OGS_OK);
 
     return rv;
 }
 
 
-status_t s1ap_send_handover_request(
+int s1ap_send_handover_request(
         mme_ue_t *mme_ue,
         mme_enb_t *target_enb,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
@@ -400,103 +367,98 @@ status_t s1ap_send_handover_request(
         S1AP_Source_ToTarget_TransparentContainer_t
             *source_totarget_transparentContainer)
 {
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
     enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
-    d_trace(3, "[MME] Handover request\n");
+    ogs_debug("[MME] Handover request");
     
-    d_assert(target_enb, return CORE_ERROR, "Cannot find target eNB");
+    ogs_assert(target_enb);
 
-    d_assert(mme_ue, return CORE_ERROR,);
+    ogs_assert(mme_ue);
     source_ue = mme_ue->enb_ue;
-    d_assert(source_ue, return CORE_ERROR,);
-    d_assert(source_ue->target_ue == NULL, return CORE_ERROR,
-            "Handover Required Duplicated");
+    ogs_assert(source_ue);
+    ogs_assert(source_ue->target_ue == NULL);
 
     target_ue = enb_ue_add(target_enb);
-    d_assert(target_ue, return CORE_ERROR,);
+    ogs_assert(target_ue);
 
-    d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    d_trace(5, "    Target : ENB_UE_S1AP_ID[Unknown] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Target : ENB_UE_S1AP_ID[Unknown] MME_UE_S1AP_ID[%d]",
             target_ue->mme_ue_s1ap_id);
 
     rv = source_ue_associate_target_ue(source_ue, target_ue);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
 
     rv = s1ap_build_handover_request(&s1apbuf, mme_ue, target_ue,
             enb_ue_s1ap_id, mme_ue_s1ap_id,
             handovertype, cause,
             source_totarget_transparentContainer);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
-    rv = s1ap_send_to_enb(target_enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    rv = s1ap_send_to_enb_ue(target_ue, s1apbuf);
+    ogs_assert(rv == OGS_OK);
 
     return rv;
 }
 
-status_t s1ap_send_mme_status_transfer(
+int s1ap_send_mme_status_transfer(
         enb_ue_t *target_ue,
         S1AP_ENB_StatusTransfer_TransparentContainer_t
             *enb_statustransfer_transparentContainer)
 {
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    mme_enb_t *enb = NULL;
-
-    d_assert(target_ue, return CORE_ERROR,);
-    enb = target_ue->enb;
-    d_assert(enb, return CORE_ERROR,);
+    ogs_assert(target_ue);
 
     rv = s1ap_build_mme_status_transfer(&s1apbuf, target_ue,
             enb_statustransfer_transparentContainer);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    rv = s1ap_send_to_enb_ue(target_ue, s1apbuf);
+    ogs_assert(rv == OGS_OK);
 
     return rv;
 }
 
-status_t s1ap_send_error_indication(
+int s1ap_send_error_indication(
         mme_enb_t *enb,
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
         S1AP_Cause_PR group, long cause)
 {
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    d_assert(enb, return CORE_ERROR,);
+    ogs_assert(enb);
 
     rv = s1ap_build_error_indication(&s1apbuf,
             mme_ue_s1ap_id, enb_ue_s1ap_id, group, cause);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
+    ogs_assert(rv == OGS_OK);
 
     return rv;
 }
 
-status_t s1ap_send_s1_reset_ack(
+int s1ap_send_s1_reset_ack(
         mme_enb_t *enb,
         S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface)
 {
-    status_t rv;
-    pkbuf_t *s1apbuf = NULL;
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    d_assert(enb, return CORE_ERROR,);
+    ogs_assert(enb);
 
     rv = s1ap_build_s1_reset_ack(&s1apbuf, partOfS1_Interface);
-    d_assert(rv == CORE_OK && s1apbuf, return CORE_ERROR, "s1ap build error");
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
-    rv = s1ap_send_to_enb(enb, s1apbuf);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
+    ogs_assert(rv == OGS_OK);
 
     return rv;
 }

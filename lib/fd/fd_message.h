@@ -1,7 +1,24 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef __FD_MESSAGE_H__
 #define __FD_MESSAGE_H__
-
-#include "core_errno.h"
 
 #include "freeDiameter/freeDiameter-host.h"
 #include "freeDiameter/libfdcore.h"
@@ -48,13 +65,11 @@ extern struct dict_object *fd_mip_home_agent_address;
 extern struct dict_object *fd_vendor;
 extern struct dict_object *fd_vendor_id;
 
-CORE_DECLARE(int) fd_message_init(void);
-CORE_DECLARE(int) fd_message_session_id_set(
-        struct msg *msg, c_uint8_t *sid, size_t sidlen);
-CORE_DECLARE(int) fd_message_experimental_rescode_set(
-        struct msg *msg, c_uint32_t result_code);
-CORE_DECLARE(int) fd_message_vendor_specific_appid_set(
-        struct msg *msg, c_uint32_t app_id);
+int fd_message_init(void);
+int fd_message_session_id_set(struct msg *msg, uint8_t *sid, size_t sidlen);
+int fd_message_experimental_rescode_set(
+        struct msg *msg, uint32_t result_code);
+int fd_message_vendor_specific_appid_set(struct msg *msg, uint32_t app_id);
 
 #ifdef __cplusplus
 }

@@ -1,15 +1,15 @@
 #ifndef __SNOW_3G__
 #define __SNOW_3G__
 
-#include "core.h"
+#include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-typedef c_uint8_t u8;
-typedef c_uint32_t u32;
-typedef c_uint64_t u64;
+typedef uint8_t u8;
+typedef uint32_t u32;
+typedef uint64_t u64;
 
 /* Initialization.
 * Input k[4]: Four 32-bit words making up 128-bit key.
@@ -18,7 +18,7 @@ typedef c_uint64_t u64;
 * See Section 4.1.
 */
 
-CORE_DECLARE(void) snow_3g_initialize(u32 k[4], u32 IV[4]);
+void snow_3g_initialize(u32 k[4], u32 IV[4]);
 
 /* Generation of Keystream.
 * input n: number of 32-bit words of keystream.
@@ -28,7 +28,7 @@ CORE_DECLARE(void) snow_3g_initialize(u32 k[4], u32 IV[4]);
 * See section 4.2.
 */
 
-CORE_DECLARE(void) snow_3g_generate_key_stream(u32 n, u32 *z);
+void snow_3g_generate_key_stream(u32 n, u32 *z);
 
 /* f8.
 * Input key: 128 bit Confidentiality Key.
@@ -44,7 +44,7 @@ CORE_DECLARE(void) snow_3g_generate_key_stream(u32 n, u32 *z);
 * defined in Section 3.
 */
 
-CORE_DECLARE(void) snow_3g_f8( u8 *key, u32 count, u32 bearer, u32 dir,
+void snow_3g_f8( u8 *key, u32 count, u32 bearer, u32 dir,
                   u8 *data, u32 length );
 
 /* f9.
@@ -58,7 +58,7 @@ CORE_DECLARE(void) snow_3g_f8( u8 *key, u32 count, u32 bearer, u32 dir,
 * Generates 32-bit MAC using UIA2 algorithm as defined in Section 4.
 */
 
-CORE_DECLARE(void) snow_3g_f9( u8* key, u32 count, u32 fresh, u32 dir,
+void snow_3g_f9( u8* key, u32 count, u32 fresh, u32 dir,
                  u8 *data, u64 length, u8 *out);
 
 #ifdef __cplusplus

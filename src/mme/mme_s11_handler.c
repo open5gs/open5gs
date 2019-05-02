@@ -1,7 +1,3 @@
-#define TRACE_MODULE _mme_s11_handler
-
-#include "core_debug.h"
-
 #include "gtp/gtp_types.h"
 #include "gtp/gtp_conv.h"
 #include "gtp/gtp_xact.h"
@@ -21,7 +17,7 @@
 void mme_s11_handle_create_session_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_session_response_t *rsp)
 {
-    status_t rv;
+    int rv;
     gtp_f_teid_t *sgw_s11_teid = NULL;
     gtp_f_teid_t *sgw_s1u_teid = NULL;
 
@@ -29,47 +25,47 @@ void mme_s11_handle_create_session_response(
     mme_sess_t *sess = NULL;
     pdn_t *pdn = NULL;
     
-    d_assert(xact, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(rsp, return, "Null param");
+    ogs_assert(xact);
+    ogs_assert(mme_ue);
+    ogs_assert(rsp);
 
-    d_trace(3, "[MME] Create Session Response\n");
+    ogs_debug("[MME] Create Session Response");
 
     if (rsp->sender_f_teid_for_control_plane.presence == 0)
     {
-        d_error("No S11 TEID");
+        ogs_error("No S11 TEID");
         return;
     }
     if (rsp->pdn_address_allocation.presence == 0)
     {
-        d_error("No PDN Address Allocation");
+        ogs_error("No PDN Address Allocation");
         return;
     }
     if (rsp->bearer_contexts_created.s1_u_enodeb_f_teid.presence == 0)
     {
-        d_error("No S1U TEID");
+        ogs_error("No S1U TEID");
         return;
     }
     if (rsp->bearer_contexts_created.presence == 0)
     {
-        d_error("No Bearer");
+        ogs_error("No Bearer");
         return;
     }
     if (rsp->bearer_contexts_created.  eps_bearer_id.presence == 0)
     {
-        d_error("No EPS Bearer ID");
+        ogs_error("No EPS Bearer ID");
         return;
     }
 
-    d_assert(mme_ue, return, "Null param");
+    ogs_assert(mme_ue);
 
     bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
             rsp->bearer_contexts_created.eps_bearer_id.u8);
-    d_assert(bearer, return, "Null param");
+    ogs_assert(bearer);
     sess = bearer->sess;
-    d_assert(sess, return, "Null param");
+    ogs_assert(sess);
     pdn = sess->pdn;
-    d_assert(pdn, return, "Null param");
+    ogs_assert(pdn);
 
     /* Control Plane(UL) : SGW-S11 */
     sgw_s11_teid = rsp->sender_f_teid_for_control_plane.data;
@@ -88,122 +84,116 @@ void mme_s11_handle_create_session_response(
     sgw_s1u_teid = rsp->bearer_contexts_created.s1_u_enodeb_f_teid.data;
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
 
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
-    d_trace(5, "    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]\n",
+    ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
         bearer->enb_s1u_teid, bearer->sgw_s1u_teid);
 
     rv = gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
-    d_assert(rv == CORE_OK, return,);
+    ogs_assert(rv == OGS_OK);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup))
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup))
     {
         rv = nas_send_attach_accept(mme_ue);
-        d_assert(rv == CORE_OK, return, "nas_send_attach_accept failed");
+        ogs_assert(rv == OGS_OK);
     }
-    else if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
+    else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         rv = nas_send_activate_default_bearer_context_request(bearer);
-        d_assert(rv == CORE_OK, return, "nas send failed");
+        ogs_assert(rv == OGS_OK);
     }
     else
-        d_assert(0,, "Invalid EMM state");
+        ogs_assert_if_reached();
 }
 
 void mme_s11_handle_modify_bearer_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_modify_bearer_response_t *rsp)
 {
-    status_t rv;
+    int rv;
     enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
-    d_assert(mme_ue, return, "Null param");
-    d_assert(xact, goto cleanup, "Null param");
-    d_assert(rsp, goto cleanup, "Null param");
+    ogs_assert(mme_ue);
+    ogs_assert(xact);
+    ogs_assert(rsp);
 
-    d_trace(3, "[MME] Modify Bearer Response\n");
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("[MME] Modify Bearer Response");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, goto cleanup, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,
         rv = s1ap_send_path_switch_ack(mme_ue);
-        d_assert(rv == CORE_OK,, "s1ap send error");
+        ogs_assert(rv == OGS_OK);
     );
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY,
         target_ue = mme_ue->enb_ue;
-        d_assert(target_ue, return, "Null param");
+        ogs_assert(target_ue);
         source_ue = target_ue->source_ue;
-        d_assert(source_ue, return, "Null param");
+        ogs_assert(source_ue);
 
         rv = s1ap_send_ue_context_release_command(source_ue,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_successful_handover,
-                S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
-        d_assert(rv == CORE_OK,, "s1ap send error");
+                S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL,
+                ogs_time_from_msec(300));
+        ogs_assert(rv == OGS_OK);
     );
-
-    return;
-
-cleanup:
-    GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,);
-    GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY,);
 }
 
 void mme_s11_handle_delete_session_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_session_response_t *rsp)
 {
-    status_t rv;
+    int rv;
     mme_sess_t *sess = NULL;
 
-    d_assert(mme_ue, return, "Null param");
-    d_assert(xact, return, "Null param");
+    ogs_assert(mme_ue);
+    ogs_assert(xact);
     sess = GTP_XACT_RETRIEVE_SESSION(xact);
-    d_assert(sess, return, "Null param");
-    d_assert(rsp, goto cleanup, "Null param");
+    ogs_assert(sess);
+    ogs_assert(rsp);
 
-    d_trace(3, "[MME] Delete Session Response\n");
+    ogs_debug("[MME] Delete Session Response");
     if (rsp->cause.presence == 0)
     {
-        d_error("No Cause");
+        ogs_error("No Cause");
         goto cleanup;
     }
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, goto cleanup, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_authentication))
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication))
     {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */
         {
             mme_s6a_send_air(mme_ue, NULL);
         }
     }
-    else if (FSM_CHECK(&mme_ue->sm, emm_state_de_registered))
+    else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered))
     {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */
         {
             rv = nas_send_detach_accept(mme_ue);
-            d_assert(rv == CORE_OK,, "nas_send_detach_accept failed");
+            ogs_assert(rv == OGS_OK);
         }
     }
-    else if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
+    else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-        d_assert(bearer, goto cleanup, "Null param");
+        ogs_assert(bearer);
 
-        if (FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
+        if (OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
         {
             rv = nas_send_deactivate_bearer_context_request(bearer);
-            d_assert(rv == CORE_OK,,
-                "nas_send_deactivate_bearer_context_request failed");
+            ogs_assert(rv == OGS_OK);
             
             /*
              * mme_sess_remove() should not be called here.
@@ -214,26 +204,26 @@ void mme_s11_handle_delete_session_response(
             return;
         }
         else
-            d_assert(0,, "Invalid ESM state");
+            ogs_assert_if_reached();
     }
-    else if (FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup) ||
-             FSM_CHECK(&mme_ue->sm, emm_state_exception))
+    else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup) ||
+             OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception))
     {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */
         {
             enb_ue_t *enb_ue = NULL;
 
             enb_ue = mme_ue->enb_ue;
-            d_assert(enb_ue, goto cleanup, );
+            ogs_assert(enb_ue);
 
             rv = s1ap_send_ue_context_release_command(enb_ue,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                 S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-            d_assert(rv == CORE_OK,, "s1ap send error");
+            ogs_assert(rv == OGS_OK);
         }
     }
     else
-        d_assert(0,, "Invalid EMM state");
+        ogs_assert_if_reached();
 
 cleanup:
     if (mme_sess_count(mme_ue) == 1) /* Last Session */
@@ -245,70 +235,69 @@ cleanup:
 void mme_s11_handle_create_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
 {
-    status_t rv;
+    int rv;
     mme_bearer_t *bearer = NULL, *default_bearer = NULL;
     mme_sess_t *sess = NULL;
 
     gtp_f_teid_t *sgw_s1u_teid = NULL;
     gtp_bearer_qos_t bearer_qos;
 
-    d_assert(xact, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(req, return, "Null param");
+    ogs_assert(xact);
+    ogs_assert(mme_ue);
+    ogs_assert(req);
 
-    d_trace(3, "[MME] Create Bearer Response\n");
+    ogs_debug("[MME] Create Bearer Response");
 
     if (req->linked_eps_bearer_id.presence == 0)
     {
-        d_error("No Linked EBI");
+        ogs_error("No Linked EBI");
         return;
     }
     if (req->bearer_contexts.presence == 0)
     {
-        d_error("No Bearer");
+        ogs_error("No Bearer");
         return;
     }
     if (req->bearer_contexts.eps_bearer_id.presence == 0)
     {
-        d_error("No EPS Bearer ID");
+        ogs_error("No EPS Bearer ID");
         return;
     }
     if (req->bearer_contexts.s1_u_enodeb_f_teid.presence == 0)
     {
-        d_error("No GTP TEID");
+        ogs_error("No GTP TEID");
         return;
     }
     if (req->bearer_contexts.bearer_level_qos.presence == 0)
     {
-        d_error("No QoS");
+        ogs_error("No QoS");
         return;
     }
     if (req->bearer_contexts.tft.presence == 0)
     {
-        d_error("No TFT");
+        ogs_error("No TFT");
         return;
     }
 
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     sess = mme_sess_find_by_ebi(mme_ue, req->linked_eps_bearer_id.u8);
-    d_assert(sess, return, 
-            "No Session Context(EBI:%d)", req->linked_eps_bearer_id);
+    ogs_assert(sess);
 
     bearer = mme_bearer_add(sess);
-    d_assert(bearer, return, "No Bearer Context");
+    ogs_assert(bearer);
 
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
     rv = gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
-    d_assert(rv == CORE_OK, return,);
+    ogs_assert(rv == OGS_OK);
 
     /* Bearer QoS */
-    d_assert(gtp_parse_bearer_qos(&bearer_qos,
+    ogs_assert(gtp_parse_bearer_qos(&bearer_qos,
         &req->bearer_contexts.bearer_level_qos) ==
-        req->bearer_contexts.bearer_level_qos.len, return,);
+        req->bearer_contexts.bearer_level_qos.len);
     bearer->qos.qci = bearer_qos.qci;
     bearer->qos.arp.priority_level = bearer_qos.priority_level;
     bearer->qos.arp.pre_emption_capability =
@@ -328,55 +317,53 @@ void mme_s11_handle_create_bearer_request(
 
     /* Before Activate DEDICATED bearer, we'll check DEFAULT bearer status */
     default_bearer = mme_default_bearer_in_sess(sess);
-    d_assert(default_bearer, return,);
+    ogs_assert(default_bearer);
 
     if (/* Check if Activate Default Bearer Accept is received */
-        FSM_CHECK(&default_bearer->sm, esm_state_active) &&
+        OGS_FSM_CHECK(&default_bearer->sm, esm_state_active) &&
         /* Check if Initial Context Setup Response or 
          *          E-RAB Setup Response is received */
         MME_HAVE_ENB_S1U_PATH(default_bearer))
     {
         rv = nas_send_activate_dedicated_bearer_context_request(bearer);
-        d_assert(rv == CORE_OK, return,
-            "nas_send_activate_dedicated_bearer_context failed");
+        ogs_assert(rv == OGS_OK);
     }
 }
 
 void mme_s11_handle_update_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_update_bearer_request_t *req)
 {
-    status_t rv;
+    int rv;
     mme_bearer_t *bearer = NULL;
     gtp_bearer_qos_t bearer_qos;
 
-    d_assert(xact, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(req, return, "Null param");
+    ogs_assert(xact);
+    ogs_assert(mme_ue);
+    ogs_assert(req);
 
-    d_trace(3, "[MME] Update Bearer Request\n");
+    ogs_debug("[MME] Update Bearer Request");
     if (req->bearer_contexts.presence == 0)
     {
-        d_error("No Bearer");
+        ogs_error("No Bearer");
         return;
     }
     if (req->bearer_contexts.eps_bearer_id.presence == 0)
     {
-        d_error("No EPS Bearer ID");
+        ogs_error("No EPS Bearer ID");
         return;
     }
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     bearer = mme_bearer_find_by_ue_ebi(mme_ue,
             req->bearer_contexts.eps_bearer_id.u8);
-    d_assert(bearer, return, 
-            "No Bearer Context(EBI:%d)", req->bearer_contexts.eps_bearer_id.u8);
+    ogs_assert(bearer);
 
     /* Save Transaction. will be handled after EMM-attached */
     bearer->xact = xact;
 
     if (/* Check if Activate Default/Dedicated Bearer Accept is received */
-        FSM_CHECK(&bearer->sm, esm_state_active) &&
+        OGS_FSM_CHECK(&bearer->sm, esm_state_active) &&
         /* Check if Initial Context Setup Response or 
          *          E-RAB Setup Response is received */
         MME_HAVE_ENB_S1U_PATH(bearer))
@@ -384,9 +371,9 @@ void mme_s11_handle_update_bearer_request(
         if (req->bearer_contexts.bearer_level_qos.presence == 1)
         {
             /* Bearer QoS */
-            d_assert(gtp_parse_bearer_qos(&bearer_qos,
+            ogs_assert(gtp_parse_bearer_qos(&bearer_qos,
                 &req->bearer_contexts.bearer_level_qos) ==
-                req->bearer_contexts.bearer_level_qos.len, return,);
+                req->bearer_contexts.bearer_level_qos.len);
             bearer->qos.qci = bearer_qos.qci;
             bearer->qos.arp.priority_level = bearer_qos.priority_level;
             bearer->qos.arp.pre_emption_capability =
@@ -412,30 +399,28 @@ void mme_s11_handle_update_bearer_request(
                     bearer, 
                     req->bearer_contexts.bearer_level_qos.presence,
                     req->bearer_contexts.tft.presence);
-            d_assert(rv == CORE_OK, return,
-                "nas_send_deactivate_bearer_context_request failed");
+            ogs_assert(rv == OGS_OK);
         }
         else
         {
-            d_warn("[IGNORE] Update Bearer Request : "
+            ogs_warn("[IGNORE] Update Bearer Request : "
                     "Both QoS and TFT is NULL");
             rv = mme_gtp_send_update_bearer_response(bearer);
-            d_assert(rv == CORE_OK, return,
-                    "mme_gtp_send_delete_session_request error");
+            ogs_assert(rv == OGS_OK);
         }
     }
     else
     {
-        if (!FSM_CHECK(&bearer->sm, esm_state_active))
+        if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active))
         {
-            d_assert(0,, "Invalid Bearer State");
+            ogs_assert_if_reached();
         }
         else if (!MME_HAVE_ENB_S1U_PATH(bearer))
         {
-            d_assert(0,, "No ENB S1U PATH");
+            ogs_assert_if_reached();
         }
         else
-            d_assert(0,,);
+            ogs_assert_if_reached();
     }
 
 }
@@ -443,60 +428,57 @@ void mme_s11_handle_update_bearer_request(
 void mme_s11_handle_delete_bearer_request(
         gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_bearer_request_t *req)
 {
-    status_t rv;
+    int rv;
     mme_bearer_t *bearer = NULL;
 
-    d_assert(xact, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(req, return, "Null param");
+    ogs_assert(xact);
+    ogs_assert(mme_ue);
+    ogs_assert(req);
 
-    d_trace(3, "[MME] Delete Bearer Request\n");
+    ogs_debug("[MME] Delete Bearer Request");
     if (req->linked_eps_bearer_id.presence == 1)
     {
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, req->linked_eps_bearer_id.u8);
-        d_assert(bearer, return, 
-                "No Bearer Context(EBI:%d)", req->linked_eps_bearer_id.u8);
+        ogs_assert(bearer);
     }
     else if (req->eps_bearer_ids.presence == 1)
     {
         bearer = mme_bearer_find_by_ue_ebi(
                 mme_ue, req->eps_bearer_ids.u8);
-        d_assert(bearer, return, 
-                "No Bearer Context(EBI:%d)", req->eps_bearer_ids.u8);
+        ogs_assert(bearer);
     }
     else
     {
-        d_error("No Linked EBI or EPS Bearer ID");
+        ogs_error("No Linked EBI or EPS Bearer ID");
         return;
     }
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     /* Save Transaction. will be handled after EMM-attached */
     bearer->xact = xact;
 
     if (/* Check if Activate Default/Dedicated Bearer Accept is received */
-        FSM_CHECK(&bearer->sm, esm_state_active) &&
+        OGS_FSM_CHECK(&bearer->sm, esm_state_active) &&
         /* Check if Initial Context Setup Response or 
          *          E-RAB Setup Response is received */
         MME_HAVE_ENB_S1U_PATH(bearer))
     {
         rv = nas_send_deactivate_bearer_context_request(bearer);
-        d_assert(rv == CORE_OK, return,
-            "nas_send_deactivate_bearer_context_request failed");
+        ogs_assert(rv == OGS_OK);
     }
     else
     {
-        if (!FSM_CHECK(&bearer->sm, esm_state_active))
+        if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active))
         {
-            d_assert(0,, "Invalid Bearer State");
+            ogs_assert_if_reached();
         }
         else if (!MME_HAVE_ENB_S1U_PATH(bearer))
         {
-            d_assert(0,, "No ENB S1U PATH");
+            ogs_assert_if_reached();
         }
         else
-            d_assert(0,,);
+            ogs_assert_if_reached();
     }
 
 }
@@ -505,52 +487,52 @@ void mme_s11_handle_release_access_bearers_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue,
         gtp_release_access_bearers_response_t *rsp)
 {
-    status_t rv;
+    int rv;
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(xact, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(rsp, return, "Null param");
+    ogs_assert(xact);
+    ogs_assert(mme_ue);
+    ogs_assert(rsp);
 
-    d_trace(3, "[MME] Release Access Bearers Response\n");
+    ogs_debug("[MME] Release Access Bearers Response");
     enb_ue = mme_ue->enb_ue;
-    d_assert(enb_ue, return, "Null param");
+    ogs_assert(enb_ue);
 
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK,, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
     if (rsp->cause.presence == 0)
     {
-        d_error("No Cause");
+        ogs_error("No Cause");
         return;
     }
 
     rv = CLEAR_BEARER_CONTEXT(mme_ue);
-    d_assert(rv == CORE_OK,, "MME_BEARER_SET_INACTIVE failed");
+    ogs_assert(rv == OGS_OK);
 
     rv = s1ap_send_ue_context_release_command(enb_ue,
             S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
             S1AP_UE_CTX_REL_S1_NORMAL_RELEASE, 0);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    ogs_assert(rv == OGS_OK);
 }
 
 void mme_s11_handle_downlink_data_notification(
         gtp_xact_t *xact, mme_ue_t *mme_ue,
         gtp_downlink_data_notification_t *noti)
 {
-    status_t rv;
+    int rv;
     gtp_header_t h;
-    pkbuf_t *s11buf = NULL;
+    ogs_pkbuf_t *s11buf = NULL;
 
-    d_assert(xact, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(noti, return, "Null param");
+    ogs_assert(xact);
+    ogs_assert(mme_ue);
+    ogs_assert(noti);
 
-    d_trace(3, "[MME] Downlink Data Notification\n");
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("[MME] Downlink Data Notification");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     /* Build Downlink data notification ack */
@@ -559,20 +541,20 @@ void mme_s11_handle_downlink_data_notification(
     h.teid = mme_ue->sgw_s11_teid;
 
     rv = mme_s11_build_downlink_data_notification_ack(&s11buf, h.type);
-    d_assert(rv == CORE_OK, return, "S11 build error");
+    ogs_assert(rv == OGS_OK);
 
     rv = gtp_xact_update_tx(xact, &h, s11buf);
-    d_assert(rv == CORE_OK, return, "xact_update_tx error");
+    ogs_assert(rv == OGS_OK);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 }
 
 void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue,
         gtp_create_indirect_data_forwarding_tunnel_response_t *rsp)
 {
-    status_t rv;
+    int rv;
     mme_bearer_t *bearer = NULL;
     enb_ue_t *source_ue = NULL;
     int i;
@@ -580,24 +562,24 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
     gtp_f_teid_t *teid = NULL;
 
-    d_assert(xact, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(rsp, return, "Null param");
+    ogs_assert(xact);
+    ogs_assert(mme_ue);
+    ogs_assert(rsp);
 
     source_ue = mme_ue->enb_ue;
-    d_assert(source_ue, return, "Null param");
+    ogs_assert(source_ue);
 
-    d_trace(3, "[MME] Create Indirect Data Forwarding Tunnel Response\n");
+    ogs_debug("[MME] Create Indirect Data Forwarding Tunnel Response");
     if (rsp->cause.presence == 0)
     {
-        d_error("No Cause");
+        ogs_error("No Cause");
         return;
     }
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
     gtp_bearers_in_create_indirect_tunnel_response(&bearers, rsp);
 
@@ -605,60 +587,60 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     {
         if (bearers[i]->eps_bearer_id.presence == 0)
         {
-            d_error("No EBI");
+            ogs_error("No EBI");
             return;
         }
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
                     bearers[i]->eps_bearer_id.u8);
-        d_assert(bearer, return, "No Bearer Context");
+        ogs_assert(bearer);
 
         if (bearers[i]->s4_u_sgsn_f_teid.presence)
         {
             teid = bearers[i]->s4_u_sgsn_f_teid.data;
-            d_assert(teid, return,);
+            ogs_assert(teid);
 
             bearer->sgw_dl_teid = ntohl(teid->teid);
             rv = gtp_f_teid_to_ip(teid, &bearer->sgw_dl_ip);
-            d_assert(rv == CORE_OK, return,);
+            ogs_assert(rv == OGS_OK);
         }
         if (bearers[i]->s2b_u_epdg_f_teid_5.presence)
         {
             teid = bearers[i]->s2b_u_epdg_f_teid_5.data;
-            d_assert(teid, return,);
+            ogs_assert(teid);
 
             bearer->sgw_ul_teid = ntohl(teid->teid);
             rv = gtp_f_teid_to_ip(teid, &bearer->sgw_ul_ip);
-            d_assert(rv == CORE_OK, return,);
+            ogs_assert(rv == OGS_OK);
         }
     }
 
     rv = s1ap_send_handover_command(source_ue);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    ogs_assert(rv == OGS_OK);
 }
 
 void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
         gtp_xact_t *xact, mme_ue_t *mme_ue,
         gtp_delete_indirect_data_forwarding_tunnel_response_t *rsp)
 {
-    status_t rv;
+    int rv;
 
-    d_assert(xact, return, "Null param");
-    d_assert(mme_ue, return, "Null param");
-    d_assert(rsp, return, "Null param");
+    ogs_assert(xact);
+    ogs_assert(mme_ue);
+    ogs_assert(rsp);
 
-    d_trace(3, "[MME] Delete Indirect Data Forwarding Tunnel Response\n");
+    ogs_debug("[MME] Delete Indirect Data Forwarding Tunnel Response");
     if (rsp->cause.presence == 0)
     {
-        d_error("No Cause");
+        ogs_error("No Cause");
         return;
     }
-    d_trace(5, "    MME_S11_TEID[%d] SGW_S11_TEID[%d]\n",
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK,, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
     rv = mme_ue_clear_indirect_tunnel(mme_ue);
-    d_assert(rv == CORE_OK,, "mme_ue_clear_indirect_tunnel() failed");
+    ogs_assert(rv == OGS_OK);
 }

@@ -9,16 +9,16 @@ libhss_la_SOURCES = \
 
 libhss_la_DEPENDENCIES = \
     $(top_srcdir)/lib/fd/libfd.la \
-    $(top_srcdir)/src/app/libapp.la \
+	$(top_srcdir)/src/app/libapp.la \
 	$(NULL)
 
 libhss_la_LIBADD = \
     $(top_srcdir)/lib/fd/libfd.la \
-    $(top_srcdir)/src/app/libapp.la \
+	$(top_srcdir)/src/app/libapp.la \
 	$(NULL)
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/lib/core/include \
+	@OGSCORE_CFLAGS@ \
     -I$(top_srcdir)/lib \
 	-I$(top_srcdir)/src \
 	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
@@ -28,6 +28,3 @@ AM_CPPFLAGS = \
 AM_CFLAGS = \
 	-Wall -Werror \
 	$(NULL)
-
-MAINTAINERCLEANFILES = Makefile.in
-MOSTLYCLEANFILES = core *.stackdump

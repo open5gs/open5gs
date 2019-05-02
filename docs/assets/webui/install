@@ -1,0 +1,151 @@
+#!/bin/bash
+
+# Refer to Node.js install script
+#
+# Run as root or insert `sudo -E` before `bash`:
+#
+# curl -sL http://nextepc.org/static/setup_3.x | bash -
+#   or
+# wget -qO- http://nextepc.org/static/setup_3.x | bash -
+#
+
+PACKAGE="nextepc"
+VERSION="0.3.9"
+
+print_status() {
+    echo
+    echo "## $1"
+    echo
+}
+
+if test -t 1; then # if terminal
+    ncolors=$(which tput > /dev/null && tput colors) # supports color
+    if test -n "$ncolors" && test $ncolors -ge 8; then
+        termcols=$(tput cols)
+        bold="$(tput bold)"
+        underline="$(tput smul)"
+        standout="$(tput smso)"
+        normal="$(tput sgr0)"
+        black="$(tput setaf 0)"
+        red="$(tput setaf 1)"
+        green="$(tput setaf 2)"
+        yellow="$(tput setaf 3)"
+        blue="$(tput setaf 4)"
+        magenta="$(tput setaf 5)"
+        cyan="$(tput setaf 6)"
+        white="$(tput setaf 7)"
+    fi
+fi
+
+print_bold() {
+    title="$1"
+    text="$2"
+
+    echo
+    echo "${red}================================================================================${normal}"
+    echo "${red}================================================================================${normal}"
+    echo
+    echo -e "  ${bold}${yellow}${title}${normal}"
+    echo
+    echo -en "  ${text}"
+    echo
+    echo "${red}================================================================================${normal}"
+    echo "${red}================================================================================${normal}"
+}
+
+bail() {
+    echo 'Error executing command, exiting'
+    exit 1
+}
+
+exec_cmd_nobail() {
+    echo "+ $1"
+    bash -c "$1"
+}
+
+exec_cmd() {
+    exec_cmd_nobail "$1" || bail
+}
+
+uninstall() {
+exec_cmd_nobail "deb-systemd-invoke stop nextepc-webui"
+exec_cmd_nobail "systemctl disable nextepc-webui"
+exec_cmd_nobail "rm -f /lib/systemd/system/${PACKAGE}-webui.service"
+exec_cmd_nobail "systemctl daemon-reload"
+
+exec_cmd "rm -rf ./${PACKAGE}-${VERSION}"
+exec_cmd "rm -rf /usr/lib/node_modules/${PACKAGE}"
+}
+
+install() {
+
+PRE_INSTALL_PKGS=""
+
+if [ ! -x /usr/bin/mongod ]; then
+    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} mongodb"
+fi
+
+if [ ! -x /usr/bin/node ] && [ ! -x /usr/bin/wget ]; then
+    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} nodejs"
+fi
+
+if [ ! -x /usr/bin/curl ] && [ ! -x /usr/bin/wget ]; then
+    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} curl"
+fi
+
+print_status "Populating apt-get cache..."
+exec_cmd 'apt-get update'
+
+if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
+    print_status "Installing packages required for setup:${PRE_INSTALL_PKGS}..."
+    # This next command needs to be redirected to /dev/null or the script will bork
+    # in some environments
+    exec_cmd "apt-get install -y${PRE_INSTALL_PKGS} > /dev/null 2>&1"
+fi
+
+uninstall
+
+print_status "Download the NextEPC Source Code (v${VERSION})..."
+if [ -x /usr/bin/curl ]; then
+    exec_cmd "curl -sLf 'https://github.com/acetcom/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
+    RC=$?
+else
+    exec_cmd "wget -qO- /dev/null 'https://github.com/acetcom/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
+    RC=$?
+fi
+
+print_status "Build the NextEPC WebUI..."
+exec_cmd "cd ./${PACKAGE}-${VERSION}/webui && npm install && npm run build"
+
+print_status "Install the NextEPC WebUI..."
+exec_cmd "mv ./${PACKAGE}-${VERSION}/webui /usr/lib/node_modules/${PACKAGE}"
+exec_cmd_nobail "chown -R nextepc:nextepc /usr/lib/node_modules/${PACKAGE}"
+
+exec_cmd "cat << EOF > /lib/systemd/system/nextepc-webui.service
+[Unit]
+Description=NextEPC WebUI
+BindTo=mongodb.service
+After=networking.service mongodb.service
+
+[Service]
+Type=simple
+
+WorkingDirectory=/usr/lib/node_modules/nextepc
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node server/index.js
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+EOF"
+
+exec_cmd_nobail "systemctl daemon-reload"
+exec_cmd "systemctl enable nextepc-webui"
+exec_cmd "deb-systemd-invoke start nextepc-webui"
+
+exec_cmd "rm -rf ./${PACKAGE}-${VERSION}"
+}
+
+## Defer setup until we have the complete script
+install

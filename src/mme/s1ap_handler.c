@@ -1,7 +1,3 @@
-#define TRACE_MODULE _s1ap_handler
-
-#include "core_debug.h"
-
 #include "mme_event.h"
 
 #include "mme_kdf.h"
@@ -19,7 +15,7 @@
 
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 {
-    char buf[CORE_ADDRSTRLEN];
+    char buf[OGS_ADDRSTRLEN];
     int i, j;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -30,21 +26,21 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
     S1AP_SupportedTAs_t *SupportedTAs = NULL;
     S1AP_PagingDRX_t *PagingDRX = NULL;
 
-    pkbuf_t *s1apbuf = NULL;
-    c_uint32_t enb_id;
+    ogs_pkbuf_t *s1apbuf = NULL;
+    uint32_t enb_id;
     S1AP_Cause_PR group = S1AP_Cause_PR_NOTHING;
     long cause = 0;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     S1SetupRequest = &initiatingMessage->value.choice.S1SetupRequest;
-    d_assert(S1SetupRequest, return,);
+    ogs_assert(S1SetupRequest);
 
-    d_trace(3, "[MME] S1-Setup request\n");
+    ogs_debug("[MME] S1-Setup request");
 
     for (i = 0; i < S1SetupRequest->protocolIEs.list.count; i++)
     {
@@ -65,17 +61,17 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
         }
     }
 
-    d_assert(Global_ENB_ID, return,);
+    ogs_assert(Global_ENB_ID);
 
     s1ap_ENB_ID_to_uint32(&Global_ENB_ID->eNB_ID, &enb_id);
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n", CORE_ADDR(enb->addr, buf), enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb_id);
 
     if (PagingDRX)
-        d_trace(5, "    PagingDRX[%ld]\n", *PagingDRX);
+        ogs_debug("    PagingDRX[%ld]", *PagingDRX);
 
     mme_enb_set_enb_id(enb, enb_id);
 
-    d_assert(SupportedTAs, return,);
+    ogs_assert(SupportedTAs);
     /* Parse Supported TA */
     enb->num_of_supported_ta_list = 0;
     for (i = 0; i < SupportedTAs->list.count; i++)
@@ -85,26 +81,26 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 
         SupportedTAs_Item = 
             (S1AP_SupportedTAs_Item_t *)SupportedTAs->list.array[i];
-        d_assert(SupportedTAs_Item, return,);
+        ogs_assert(SupportedTAs_Item);
         tAC = &SupportedTAs_Item->tAC;
-        d_assert(tAC, return,);
+        ogs_assert(tAC);
 
         for (j = 0; j < SupportedTAs_Item->broadcastPLMNs.list.count; j++)
         {
             S1AP_PLMNidentity_t *pLMNidentity = NULL;
             pLMNidentity = (S1AP_PLMNidentity_t *)
                 SupportedTAs_Item->broadcastPLMNs.list.array[j];
-            d_assert(pLMNidentity, return,);
+            ogs_assert(pLMNidentity);
 
             memcpy(&enb->supported_ta_list[enb->num_of_supported_ta_list].tac,
-                    tAC->buf, sizeof(c_uint16_t));
+                    tAC->buf, sizeof(uint16_t));
             enb->supported_ta_list[enb->num_of_supported_ta_list].tac = 
                 ntohs(enb->supported_ta_list
                         [enb->num_of_supported_ta_list].tac);
             memcpy(&enb->supported_ta_list
                         [enb->num_of_supported_ta_list].plmn_id,
                     pLMNidentity->buf, sizeof(plmn_id_t));
-            d_trace(5, "    PLMN_ID[MCC:%d MNC:%d] TAC[%d]\n",
+            ogs_debug("    PLMN_ID[MCC:%d MNC:%d] TAC[%d]",
                 plmn_id_mcc(&enb->supported_ta_list
                     [enb->num_of_supported_ta_list].plmn_id),
                 plmn_id_mnc(&enb->supported_ta_list
@@ -116,8 +112,8 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 
     if (enb->num_of_supported_ta_list == 0)
     {
-        d_warn("S1-Setup failure:");
-        d_warn("    No supported TA exist in S1-Setup request");
+        ogs_warn("S1-Setup failure:");
+        ogs_warn("    No supported TA exist in S1-Setup request");
         group = S1AP_Cause_PR_misc;
         cause = S1AP_CauseMisc_unspecified;
     }
@@ -131,15 +127,15 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
             if (served_tai_index >= 0 &&
                 served_tai_index < MAX_NUM_OF_SERVED_TAI)
             {
-                d_trace(5, "    SERVED_TAI_INDEX[%d]\n", served_tai_index);
+                ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
                 break;
             }
         }
 
         if (served_tai_index < 0)
         {
-            d_warn("S1-Setup failure:");
-            d_warn("    Cannot find Served TAI. Check 'mme.tai' configuration");
+            ogs_warn("S1-Setup failure:");
+            ogs_warn("    Cannot find Served TAI. Check 'mme.tai' configuration");
             group = S1AP_Cause_PR_misc;
             cause = S1AP_CauseMisc_unknown_PLMN;
         }
@@ -147,27 +143,25 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 
     if (group == S1AP_Cause_PR_NOTHING)
     {
-        d_trace(3, "[MME] S1-Setup response\n");
-        d_assert(s1ap_build_setup_rsp(&s1apbuf) == CORE_OK, 
-                return, "s1ap_build_setup_rsp() failed");
+        ogs_debug("[MME] S1-Setup response");
+        ogs_assert(s1ap_build_setup_rsp(&s1apbuf) == OGS_OK);
     }
     else
     {
-        d_trace(3, "[MME] S1-Setup failure\n");
-        d_assert(s1ap_build_setup_failure(
-                &s1apbuf, group, cause, S1AP_TimeToWait_v10s) == CORE_OK, 
-                return, "s1ap_build_setup_failure() failed");
+        ogs_debug("[MME] S1-Setup failure");
+        ogs_assert(s1ap_build_setup_failure(
+                &s1apbuf, group, cause, S1AP_TimeToWait_v10s) == OGS_OK);
     }
 
-    d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK,,
-            "s1ap_send_to_enb() failed");
+    ogs_assert(
+            s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == OGS_OK);
 }
 
 void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
+    int rv;
     int i;
-    char buf[CORE_ADDRSTRLEN];
+    char buf[OGS_ADDRSTRLEN];
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_InitialUEMessage_t *InitialUEMessage = NULL;
@@ -185,16 +179,16 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     InitialUEMessage = &initiatingMessage->value.choice.InitialUEMessage;
-    d_assert(InitialUEMessage, return,);
+    ogs_assert(InitialUEMessage);
 
-    d_trace(3, "[MME] Initial UE Message\n");
+    ogs_debug("[MME] Initial UE Message");
 
     for (i = 0; i < InitialUEMessage->protocolIEs.list.count; i++)
     {
@@ -221,15 +215,15 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(ENB_UE_S1AP_ID, return,);
+    ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
     if (!enb_ue)
     {
         enb_ue = enb_ue_add(enb);
-        d_assert(enb_ue, return, "Null param");
+        ogs_assert(enb_ue);
 
         enb_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
 
@@ -255,12 +249,12 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
             mme_ue = mme_ue_find_by_guti(&guti);
             if (!mme_ue)
             {
-                d_warn("Unknown UE by S_TMSI[G:%d,C:%d,M_TMSI:0x%x]",
+                ogs_warn("Unknown UE by S_TMSI[G:%d,C:%d,M_TMSI:0x%x]",
                         guti.mme_gid, guti.mme_code, guti.m_tmsi);
             }
             else
             {
-                d_trace(5, "    S_TMSI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]\n",
+                ogs_debug("    S_TMSI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
                         mme_ue->guti.mme_gid,
                         mme_ue->guti.mme_code,
                         mme_ue->guti.m_tmsi,
@@ -271,73 +265,52 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                  * older S1(enb_ue_t) context */
                 if (ECM_CONNECTED(mme_ue))
                 {
-#if 1  /* IMPLICIT_S1_RELEASE */
                    /* Implcit S1 release */
-                    d_warn("Implicit S1 release");
-                    d_warn("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+                    ogs_debug("Implicit S1 release");
+                    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                           mme_ue->enb_ue->enb_ue_s1ap_id,
                           mme_ue->enb_ue->mme_ue_s1ap_id);
                     rv = enb_ue_remove(mme_ue->enb_ue);
-                    d_assert(rv == CORE_OK,,);
-
-#else /* S1_HOLDING_TIMER */
-
-                    /* Previous S1(enb_ue_t) context the holding timer(30secs)
-                     * is started.
-                     * Newly associated S1(enb_ue_t) context holding timer
-                     * is stopped. */
-                    d_trace(5, "Start S1 Holding Timer\n");
-                    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
-                            mme_ue->enb_ue->enb_ue_s1ap_id, 
-                            mme_ue->enb_ue->mme_ue_s1ap_id);
-
-                    /* De-associate S1 with NAS/EMM */
-                    rv = enb_ue_deassociate(mme_ue->enb_ue);
-                    d_assert(rv == CORE_OK,,);
-
-                    tm_start(mme_ue->enb_ue->holding_timer);
-#endif
+                    ogs_assert(rv == OGS_OK);
                 }
-                tm_stop(enb_ue->holding_timer);
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
         }
     }
 
-    d_assert(TAI, return,);
+    ogs_assert(TAI);
     pLMNidentity = &TAI->pLMNidentity;
-    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
     tAC = &TAI->tAC;
-    d_assert(tAC && tAC->size == sizeof(c_uint16_t), return,);
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
     memcpy(&enb_ue->nas.tai.plmn_id, pLMNidentity->buf, 
             sizeof(enb_ue->nas.tai.plmn_id));
     memcpy(&enb_ue->nas.tai.tac, tAC->buf, sizeof(enb_ue->nas.tai.tac));
     enb_ue->nas.tai.tac = ntohs(enb_ue->nas.tai.tac);
     
-    d_assert(EUTRAN_CGI, return,);
+    ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
-    d_assert(cell_ID, return,);
+    ogs_assert(cell_ID);
     memcpy(&enb_ue->nas.e_cgi.plmn_id, pLMNidentity->buf, 
             sizeof(enb_ue->nas.e_cgi.plmn_id));
     memcpy(&enb_ue->nas.e_cgi.cell_id, cell_ID->buf,
             sizeof(enb_ue->nas.e_cgi.cell_id));
     enb_ue->nas.e_cgi.cell_id = (ntohl(enb_ue->nas.e_cgi.cell_id) >> 4);
 
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d]\n",
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d]",
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, enb_ue->nas.tai.tac);
 
-    d_assert(s1ap_send_to_nas(enb_ue,
-        S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU) == CORE_OK,,
-        "s1ap_send_to_nas failed");
+    ogs_assert(s1ap_send_to_nas(enb_ue,
+        S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU) == OGS_OK);
 }
 
 void s1ap_handle_uplink_nas_transport(
         mme_enb_t *enb, s1ap_message_t *message)
 {
-    char buf[CORE_ADDRSTRLEN];
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -349,16 +322,16 @@ void s1ap_handle_uplink_nas_transport(
 
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     UplinkNASTransport = &initiatingMessage->value.choice.UplinkNASTransport;
-    d_assert(UplinkNASTransport, return,);
+    ogs_assert(UplinkNASTransport);
 
-    d_trace(3, "[MME] Uplink NAS transport\n");
+    ogs_debug("[MME] Uplink NAS transport");
 
     for (i = 0; i < UplinkNASTransport->protocolIEs.list.count; i++)
     {
@@ -376,26 +349,24 @@ void s1ap_handle_uplink_nas_transport(
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(ENB_UE_S1AP_ID, return,);
+    ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    d_assert(enb_ue, return, "No UE Context[ENB_UE_S1AP_ID:%d]",
-            *ENB_UE_S1AP_ID);
+    ogs_assert(enb_ue);
 
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    d_assert(s1ap_send_to_nas(enb_ue,
-        S1AP_ProcedureCode_id_uplinkNASTransport, NAS_PDU) == CORE_OK,,
-        "s1ap_send_to_nas failed");
+    ogs_assert(s1ap_send_to_nas(enb_ue,
+        S1AP_ProcedureCode_id_uplinkNASTransport, NAS_PDU) == OGS_OK);
 }
 
 void s1ap_handle_ue_capability_info_indication(
         mme_enb_t *enb, s1ap_message_t *message)
 {
-    char buf[CORE_ADDRSTRLEN];
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -407,17 +378,17 @@ void s1ap_handle_ue_capability_info_indication(
 
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     UECapabilityInfoIndication =
         &initiatingMessage->value.choice.UECapabilityInfoIndication;
-    d_assert(UECapabilityInfoIndication, return,);
+    ogs_assert(UECapabilityInfoIndication);
 
-    d_trace(3, "[MME] UE capability info indication\n");
+    ogs_debug("[MME] UE capability info indication");
 
     for (i = 0; i < UECapabilityInfoIndication->protocolIEs.list.count; i++)
     {
@@ -435,54 +406,28 @@ void s1ap_handle_ue_capability_info_indication(
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(ENB_UE_S1AP_ID, return,);
+    ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    d_assert(enb_ue, return, "No UE Context[%d]", *ENB_UE_S1AP_ID);
+    ogs_assert(enb_ue);
 
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     if (enb_ue->mme_ue)
     {
-#if 0
-        S1AP_UERadioCapability_t *radio_capa = NULL;
-        mme_ue_t *mme_ue = enb_ue->mme_ue;
-
-        /* Release the previous one */
-        if (mme_ue->radio_capa)
-        {
-            radio_capa = (S1AP_UERadioCapability_t *)mme_ue->radio_capa;
-
-            if (radio_capa->buf)
-                CORE_FREE(radio_capa->buf);
-            CORE_FREE(mme_ue->radio_capa);
-        }
-        /* Save UE radio capability */ 
-        mme_ue->radio_capa = core_calloc(1, sizeof(S1AP_UERadioCapability_t));
-        radio_capa = (S1AP_UERadioCapability_t *)mme_ue->radio_capa;
-        d_assert(radio_capa, return,);
-
-        d_assert(UERadioCapability, return,);
-        radio_capa->size = UERadioCapability->size;
-        radio_capa->buf = core_calloc(radio_capa->size, sizeof(c_uint8_t)); 
-        d_assert(radio_capa->buf, return, "core_calloc error(size=%d)",
-                radio_capa->size);
-        memcpy(radio_capa->buf, UERadioCapability->buf, radio_capa->size);
-#else
-        d_assert(UERadioCapability, return,);
+        ogs_assert(UERadioCapability);
         S1AP_STORE_DATA(&enb_ue->mme_ue->ueRadioCapability, UERadioCapability);
-#endif
     }
 }
 
 void s1ap_handle_initial_context_setup_response(
         mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
@@ -495,17 +440,17 @@ void s1ap_handle_initial_context_setup_response(
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
-    d_assert(successfulOutcome, return,);
+    ogs_assert(successfulOutcome);
     InitialContextSetupResponse =
         &successfulOutcome->value.choice.InitialContextSetupResponse;
-    d_assert(InitialContextSetupResponse, return,);
+    ogs_assert(InitialContextSetupResponse);
 
-    d_trace(3, "[MME] Initial context setup response\n");
+    ogs_debug("[MME] Initial context setup response");
 
     for (i = 0; i < InitialContextSetupResponse->protocolIEs.list.count; i++)
     {
@@ -524,19 +469,19 @@ void s1ap_handle_initial_context_setup_response(
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(ENB_UE_S1AP_ID, return,);
+    ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    d_assert(enb_ue, return, "No UE Context[%d]", *ENB_UE_S1AP_ID);
+    ogs_assert(enb_ue);
     mme_ue = enb_ue->mme_ue;
-    d_assert(mme_ue, return,);
+    ogs_assert(mme_ue);
 
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    d_assert(E_RABSetupListCtxtSURes, return,);
+    ogs_assert(E_RABSetupListCtxtSURes);
     for (i = 0; i < E_RABSetupListCtxtSURes->list.count; i++)
     {
         S1AP_E_RABSetupItemCtxtSUResIEs_t *ie2 = NULL;
@@ -547,36 +492,36 @@ void s1ap_handle_initial_context_setup_response(
 
         ie2 = (S1AP_E_RABSetupItemCtxtSUResIEs_t *)
             E_RABSetupListCtxtSURes->list.array[i];
-        d_assert(ie2, return,);
+        ogs_assert(ie2);
 
         e_rab = &ie2->value.choice.E_RABSetupItemCtxtSURes;
-        d_assert(e_rab, return, "Null param");
+        ogs_assert(e_rab);
 
         sess = mme_sess_find_by_ebi(mme_ue, e_rab->e_RAB_ID);
-        d_assert(sess, return, "Null param");
+        ogs_assert(sess);
         bearer = mme_default_bearer_in_sess(sess);
-        d_assert(bearer, return, "Null param");
+        ogs_assert(bearer);
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
         rv = s1ap_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-        d_assert(rv == CORE_OK, return,);
+        ogs_assert(rv == OGS_OK);
 
-        d_trace(5, "    EBI[%d] ENB-S1U-TEID[%d]\n",
+        ogs_debug("    EBI[%d] ENB-S1U-TEID[%d]",
                 bearer->ebi, bearer->enb_s1u_teid);
 
-        if (FSM_CHECK(&bearer->sm, esm_state_active))
+        if (OGS_FSM_CHECK(&bearer->sm, esm_state_active))
         {
-            d_trace(5, "    NAS_EPS Type[%d]\n", mme_ue->nas_eps.type);
+            ogs_debug("    NAS_EPS Type[%d]", mme_ue->nas_eps.type);
             int uli_presence = 0;
             if (mme_ue->nas_eps.type != MME_EPS_TYPE_ATTACH_REQUEST)
             {
-                d_trace(5, "    ### ULI PRESENT ###\n");
+                ogs_debug("    ### ULI PRESENT ###");
                 uli_presence = 1;
             }
             rv = mme_gtp_send_modify_bearer_request(bearer, uli_presence);
-            d_assert(rv == CORE_OK, return, "gtp send failed");
+            ogs_assert(rv == OGS_OK);
         }
     }
 }
@@ -584,8 +529,8 @@ void s1ap_handle_initial_context_setup_response(
 void s1ap_handle_initial_context_setup_failure(
         mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
@@ -598,17 +543,17 @@ void s1ap_handle_initial_context_setup_failure(
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     unsuccessfulOutcome = message->choice.unsuccessfulOutcome;
-    d_assert(unsuccessfulOutcome, return,);
+    ogs_assert(unsuccessfulOutcome);
     InitialContextSetupFailure =
         &unsuccessfulOutcome->value.choice.InitialContextSetupFailure;
-    d_assert(InitialContextSetupFailure, return,);
+    ogs_assert(InitialContextSetupFailure);
 
-    d_trace(3, "[MME] Initial context setup failure\n");
+    ogs_debug("[MME] Initial context setup failure");
 
     for (i = 0; i < InitialContextSetupFailure->protocolIEs.list.count; i++)
     {
@@ -626,30 +571,30 @@ void s1ap_handle_initial_context_setup_failure(
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(ENB_UE_S1AP_ID, return,);
-    d_assert(Cause, return,);
+    ogs_assert(ENB_UE_S1AP_ID);
+    ogs_assert(Cause);
 
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
     if (enb_ue == NULL)
     {
-        d_warn("Initial context setup failure : cannot find eNB-UE-S1AP-ID[%d]",
-                *ENB_UE_S1AP_ID);
+        ogs_warn("Initial context setup failure : cannot find eNB-UE-S1AP-ID[%d]",
+                (int)*ENB_UE_S1AP_ID);
         return;
     }
     mme_ue = enb_ue->mme_ue;
 
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
-    d_trace(5, "    Cause[Group:%d Cause:%d]\n",
-            Cause->present, Cause->choice.radioNetwork);
+    ogs_debug("    Cause[Group:%d Cause:%d]",
+            Cause->present, (int)Cause->choice.radioNetwork);
 
-    d_assert(mme_ue,,);
-    if (mme_ue && FSM_CHECK(&mme_ue->sm, emm_state_registered))
+    ogs_assert(mme_ue);
+    if (mme_ue && OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
-        d_trace(5, "    EMM-Registered\n");
+        ogs_debug("    EMM-Registered");
 
         /*
          * 19.2.2.3 in Spec 36.300
@@ -661,57 +606,21 @@ void s1ap_handle_initial_context_setup_failure(
          * may in principle be adopted. The eNB should ensure
          * that no hanging resources remain at the eNB.
          */
-
-#if 0 /* NOTHING TO DO */
-
-#if 0 /* FIXME : Does it needed? */
-        rv = nas_send_service_reject(mme_ue,
-            EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-        d_assert(rv == CORE_OK,,
-                "nas_send_service_reject() failed");
-#endif
-
-#if 1 /* Explicit Release */
-
-        d_trace(5, "    Explicit Release\n");
-        rv = s1ap_send_ue_context_release_command(enb_ue,
-                S1AP_Cause_PR_nas,
-#if 1 /* NAS Cause: Normal Relase */
-                S1AP_CauseNas_normal_release,
-#else /* NAS Cause : Detach */
-                S1AP_CauseNas_detach,
-#endif
-                S1AP_UE_CTX_REL_UNLINK_MME_UE_CONTEXT, 0);
-        d_assert(rv == CORE_OK,, "s1ap send error");
-
-#else  /* Implicit Release */
-
-        d_trace(5, "    Implicit Release\n");
-        rv = enb_ue_remove(enb_ue);
-        d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
-
-        rv = mme_ue_deassociate(mme_ue);
-        d_assert(rv == CORE_OK,, "mme_ue_deassociate() failed");
-
-#endif
-
-#endif
     }
     else
     {
-        d_trace(5, "    NOT EMM-Registered\n");
-        d_assert(mme_ue,,);
+        ogs_debug("    NOT EMM-Registered");
+        ogs_assert(mme_ue);
         rv = mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
-        d_assert(rv == CORE_OK,,
-                "mme_send_delete_session_or_ue_context_release() failed");
+        ogs_assert(rv == OGS_OK);
     }
 }
 
 void s1ap_handle_e_rab_setup_response(
         mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
@@ -724,16 +633,16 @@ void s1ap_handle_e_rab_setup_response(
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
-    d_assert(successfulOutcome, return,);
+    ogs_assert(successfulOutcome);
     E_RABSetupResponse = &successfulOutcome->value.choice.E_RABSetupResponse;
-    d_assert(E_RABSetupResponse, return,);
+    ogs_assert(E_RABSetupResponse);
 
-    d_trace(3, "[MME] E-RAB setup response\n");
+    ogs_debug("[MME] E-RAB setup response");
 
     for (i = 0; i < E_RABSetupResponse->protocolIEs.list.count; i++)
     {
@@ -752,19 +661,19 @@ void s1ap_handle_e_rab_setup_response(
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(ENB_UE_S1AP_ID, return,);
+    ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    d_assert(enb_ue, return, "No UE Context[%d]", *ENB_UE_S1AP_ID);
+    ogs_assert(enb_ue);
     mme_ue = enb_ue->mme_ue;
-    d_assert(mme_ue, return,);
+    ogs_assert(mme_ue);
 
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    d_assert(E_RABSetupListBearerSURes, return,);
+    ogs_assert(E_RABSetupListBearerSURes);
     for (i = 0; i < E_RABSetupListBearerSURes->list.count; i++)
     {
         S1AP_E_RABSetupItemBearerSUResIEs_t *ie2 = NULL;
@@ -774,40 +683,40 @@ void s1ap_handle_e_rab_setup_response(
 
         ie2 = (S1AP_E_RABSetupItemBearerSUResIEs_t *)
             E_RABSetupListBearerSURes->list.array[i];
-        d_assert(ie2, return,);
+        ogs_assert(ie2);
 
         e_rab = &ie2->value.choice.E_RABSetupItemBearerSURes;
-        d_assert(e_rab, return, "Null param");
+        ogs_assert(e_rab);
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
-        d_assert(bearer, return, "Null param");
+        ogs_assert(bearer);
 
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
         rv = s1ap_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-        d_assert(rv == CORE_OK, return,);
+        ogs_assert(rv == OGS_OK);
 
-        d_trace(5, "    EBI[%d]\n", bearer->ebi);
+        ogs_debug("    EBI[%d]", bearer->ebi);
 
-        if (FSM_CHECK(&bearer->sm, esm_state_active))
+        if (OGS_FSM_CHECK(&bearer->sm, esm_state_active))
         {
-            status_t rv;
+            int rv;
 
             mme_bearer_t *linked_bearer = mme_linked_bearer(bearer);
-            d_assert(linked_bearer, return, "Null param");
-            d_trace(5, "    Linked-EBI[%d]\n", linked_bearer->ebi);
+            ogs_assert(linked_bearer);
+            ogs_debug("    Linked-EBI[%d]", linked_bearer->ebi);
 
             if (bearer->ebi == linked_bearer->ebi)
             {
                 rv = mme_gtp_send_modify_bearer_request(bearer, 0);
-                d_assert(rv == CORE_OK, return, "gtp send failed");
+                ogs_assert(rv == OGS_OK);
             }
             else
             {
                 rv = mme_gtp_send_create_bearer_response(bearer);
-                d_assert(rv == CORE_OK, return, "gtp send failed");
+                ogs_assert(rv == OGS_OK);
             }
         }
     }
@@ -816,8 +725,8 @@ void s1ap_handle_e_rab_setup_response(
 void s1ap_handle_ue_context_release_request(
         mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -831,17 +740,17 @@ void s1ap_handle_ue_context_release_request(
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     UEContextReleaseRequest =
         &initiatingMessage->value.choice.UEContextReleaseRequest;
-    d_assert(UEContextReleaseRequest, return,);
+    ogs_assert(UEContextReleaseRequest);
 
-    d_trace(3, "[MME] UE Context release request\n");
+    ogs_debug("[MME] UE Context release request");
 
     for (i = 0; i < UEContextReleaseRequest->protocolIEs.list.count; i++)
     {
@@ -862,28 +771,29 @@ void s1ap_handle_ue_context_release_request(
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(MME_UE_S1AP_ID, return,);
+    ogs_assert(MME_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
     if (!enb_ue)
     {
-        d_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]", *MME_UE_S1AP_ID);
+        ogs_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]",
+                (int)*MME_UE_S1AP_ID);
         rv = s1ap_send_error_indication(enb, 
                 MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
-        d_assert(rv == CORE_OK, return, "s1ap send error");
+        ogs_assert(rv == OGS_OK);
         return;
     }
 
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    d_assert(Cause, return,);
-    d_trace(5, "    Cause[Group:%d Cause:%d]\n",
-            Cause->present, Cause->choice.radioNetwork);
+    ogs_assert(Cause);
+    ogs_debug("    Cause[Group:%d Cause:%d]",
+            Cause->present, (int)Cause->choice.radioNetwork);
 
     switch(Cause->present)
     {
@@ -893,46 +803,45 @@ void s1ap_handle_ue_context_release_request(
         case S1AP_Cause_PR_misc:
             break;
         case S1AP_Cause_PR_nas:
-            d_warn("NAS-Cause[%d]", Cause->choice.nas);
+            ogs_warn("NAS-Cause[%d]", (int)Cause->choice.nas);
+            break;
         default:
-            d_warn("Invalid cause group[%d]", Cause->present);
+            ogs_warn("Invalid cause group[%d]", Cause->present);
             break;
     }
 
     mme_ue = enb_ue->mme_ue;
     if (mme_ue)
     {
-        if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
+        if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
         {
-            d_trace(5, "    EMM-Registered\n");
+            ogs_debug("    EMM-Registered");
             rv = mme_send_release_access_bearer_or_ue_context_release(
                     mme_ue, enb_ue);
-            d_assert(rv == CORE_OK,, "mme_send_release_access_bearer_or_"
-                    "ue_context_release() failed");
+            ogs_assert(rv == OGS_OK);
         }
         else
         {
-            d_trace(5, "    NOT EMM-Registered\n");
+            ogs_debug("    NOT EMM-Registered");
             rv = mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
-            d_assert(rv == CORE_OK,,
-                    "mme_send_delete_session_or_ue_context_release() failed");
+            ogs_assert(rv == OGS_OK);
         }
     }
     else
     {
-        d_trace(5, "    S1 Context Not Associated\n");
+        ogs_debug("    S1 Context Not Associated");
         rv = s1ap_send_ue_context_release_command(enb_ue, 
                 S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                 S1AP_UE_CTX_REL_NO_ACTION, 0);
-        d_assert(rv == CORE_OK,, "s1ap send error");
+        ogs_assert(rv == OGS_OK);
     }
 }
 
 void s1ap_handle_ue_context_release_complete(
         mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
@@ -944,17 +853,17 @@ void s1ap_handle_ue_context_release_complete(
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
-    d_assert(successfulOutcome, return,);
+    ogs_assert(successfulOutcome);
     UEContextReleaseComplete =
         &successfulOutcome->value.choice.UEContextReleaseComplete;
-    d_assert(UEContextReleaseComplete, return,);
+    ogs_assert(UEContextReleaseComplete);
 
-    d_trace(3, "[MME] UE Context release complete\n");
+    ogs_debug("[MME] UE Context release complete");
 
     for (i = 0; i < UEContextReleaseComplete->protocolIEs.list.count; i++)
     {
@@ -969,80 +878,88 @@ void s1ap_handle_ue_context_release_complete(
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(MME_UE_S1AP_ID, return,);
+    ogs_assert(MME_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
-    d_assert(enb_ue, return, "No UE Context[%d]", *MME_UE_S1AP_ID);
+    if (!enb_ue)
+    {
+        ogs_warn("No ENB UE Context : MME_UE_S1AP_ID[%d]",
+                (int)*MME_UE_S1AP_ID);
+        rv = s1ap_send_error_indication(enb, 
+                MME_UE_S1AP_ID, NULL,
+                S1AP_Cause_PR_radioNetwork,
+                S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_assert(rv == OGS_OK);
+        return;
+    }
     mme_ue = enb_ue->mme_ue;
 
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     switch (enb_ue->ue_ctx_rel_action)
     {
         case S1AP_UE_CTX_REL_NO_ACTION:
         {
-            d_trace(5, "    No Action\n");
+            ogs_debug("    No Action");
             rv = enb_ue_remove(enb_ue);
-            d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
+            ogs_assert(rv == OGS_OK);
             break;
         }
         case S1AP_UE_CTX_REL_S1_NORMAL_RELEASE:
         {
-            d_trace(5, "    Action: S1 normal release\n");
+            ogs_debug("    Action: S1 normal release");
             rv = enb_ue_remove(enb_ue);
-            d_assert(rv == CORE_OK,, "enb_ue_remove() failed");
+            ogs_assert(rv == OGS_OK);
 
-            d_assert(mme_ue,,);
+            ogs_assert(mme_ue);
             rv = mme_ue_deassociate(mme_ue);
-            d_assert(rv == CORE_OK,, "mme_ue_deassociate() failed");
+            ogs_assert(rv == OGS_OK);
             break;
         }
         case S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE:
         {
-            d_trace(5, "    Action: UE context remove()\n");
+            ogs_debug("    Action: UE context remove()");
             rv = enb_ue_remove(enb_ue);
-            d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
+            ogs_assert(rv == OGS_OK);
 
-            d_assert(mme_ue,,);
+            ogs_assert(mme_ue);
             rv = mme_ue_remove(mme_ue);
-            d_assert(rv == CORE_OK,, "mme_ue_remove() failed");
+            ogs_assert(rv == OGS_OK);
             break;
         }
         case S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL:
         {
-            d_trace(5, "    Action: Delete indirect tunnel\n");
+            ogs_debug("    Action: Delete indirect tunnel");
 
             rv = source_ue_deassociate_target_ue(enb_ue);
-            d_assert(rv == CORE_OK,,
-                    "source_ue_deassociate_target_ue() failed");
+            ogs_assert(rv == OGS_OK);
 
             rv = enb_ue_remove(enb_ue);
-            d_assert(rv == CORE_OK,, "enb_ue_removeI() failed");
+            ogs_assert(rv == OGS_OK);
 
-            d_assert(mme_ue,,);
+            ogs_assert(mme_ue);
             if (mme_ue_have_indirect_tunnel(mme_ue))
             {
                 rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(mme_ue);
-                d_assert(rv == CORE_OK,, "mme_gtp_send_delete_indirect_data_"
-                    "forwarding_tunnel_request() failed");
+                ogs_assert(rv == OGS_OK);
             }
             else
             {
-                d_warn("Check your eNodeB");
-                d_warn("  There is no INDIRECT TUNNEL");
-                d_warn("  Packet could be dropped during S1-Handover");
+                ogs_warn("Check your eNodeB");
+                ogs_warn("  There is no INDIRECT TUNNEL");
+                ogs_warn("  Packet could be dropped during S1-Handover");
                 rv = mme_ue_clear_indirect_tunnel(mme_ue);
-                d_assert(rv == CORE_OK,,
-                        "mme_ue_clear_indirect_tunnel() failed");
+                ogs_assert(rv == OGS_OK);
             }
             break;
         }
         default:
         {
-            d_assert(0,, "Invalid Action[%d]", enb_ue->ue_ctx_rel_action);
+            ogs_fatal("Invalid Action[%d]", enb_ue->ue_ctx_rel_action);
+            ogs_assert_if_reached();
             break;
         }
     }
@@ -1050,11 +967,11 @@ void s1ap_handle_ue_context_release_complete(
 
 void s1ap_handle_paging(mme_ue_t *mme_ue)
 {
-    pkbuf_t *s1apbuf = NULL;
-    hash_index_t *hi = NULL;
+    ogs_pkbuf_t *s1apbuf = NULL;
+    ogs_hash_index_t *hi = NULL;
     mme_enb_t *enb = NULL;
     int i;
-    status_t rv;
+    int rv;
 
     /* Find enB with matched TAI */
     for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi))
@@ -1069,32 +986,56 @@ void s1ap_handle_paging(mme_ue_t *mme_ue)
                 {
                     s1apbuf = mme_ue->last_paging_msg;
                     /* Save it for later use */
-                    mme_ue->last_paging_msg = pkbuf_copy(s1apbuf);
+                    mme_ue->last_paging_msg = ogs_pkbuf_copy(s1apbuf);
                 }
                 else
                 {
                     /* Buidl S1Ap Paging message */
                     rv = s1ap_build_paging(&s1apbuf, mme_ue);
-                    d_assert(rv == CORE_OK && s1apbuf, return, 
-                            "s1ap build error");
+                    ogs_assert(rv == OGS_OK && s1apbuf);
 
                     /* Save it for later use */
-                    mme_ue->last_paging_msg = pkbuf_copy(s1apbuf);
+                    mme_ue->last_paging_msg = ogs_pkbuf_copy(s1apbuf);
                 }
 
                 /* Send to enb */
-                d_assert(s1ap_send_to_enb(enb, s1apbuf) == CORE_OK, return,
-                        "s1ap send error");
+                ogs_assert(s1ap_send_to_enb(
+                        enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == OGS_OK);
             }
         }
+    }
+}
+
+void s1ap_t3413_timeout(void *data)
+{
+    mme_ue_t *mme_ue = data;
+    ogs_assert(mme_ue);
+
+    if (mme_ue->max_paging_retry >= MAX_NUM_OF_PAGING)
+    {
+        /* Paging failed */
+        ogs_warn("[EMM] Paging to IMSI[%s] failed. Stop paging",
+                mme_ue->imsi_bcd);
+        if (mme_ue->last_paging_msg)
+        {
+            ogs_pkbuf_free(mme_ue->last_paging_msg);
+            mme_ue->last_paging_msg = NULL;
+        }
+    }
+    else
+    {
+        mme_ue->max_paging_retry++;
+        s1ap_handle_paging(mme_ue);
+        /* Start T3413 */
+        ogs_timer_start(mme_ue->t3413, mme_self()->t3413_value);
     }
 }
 
 void s1ap_handle_path_switch_request(
         mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -1113,21 +1054,22 @@ void s1ap_handle_path_switch_request(
 	S1AP_TAC_t *tAC = NULL;
 	S1AP_EncryptionAlgorithms_t	*encryptionAlgorithms = NULL;
 	S1AP_IntegrityProtectionAlgorithms_t *integrityProtectionAlgorithms = NULL;
-    c_uint16_t eea = 0, eia = 0;
+    uint16_t eea = 0, eia = 0;
 
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
+    ogs_pkbuf_t *s1apbuf = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     PathSwitchRequest = &initiatingMessage->value.choice.PathSwitchRequest;
-    d_assert(PathSwitchRequest, return,);
+    ogs_assert(PathSwitchRequest);
 
-    d_trace(3, "[MME] Path switch request\n");
+    ogs_debug("[MME] Path switch request");
 
     for (i = 0; i < PathSwitchRequest->protocolIEs.list.count; i++)
     {
@@ -1158,47 +1100,51 @@ void s1ap_handle_path_switch_request(
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(EUTRAN_CGI, return,);
+    ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
-    d_assert(cell_ID, return,);
+    ogs_assert(cell_ID);
 
-    d_assert(TAI, return,);
+    ogs_assert(TAI);
     pLMNidentity = &TAI->pLMNidentity;
-    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
     tAC = &TAI->tAC;
-    d_assert(tAC && tAC->size == sizeof(c_uint16_t), return,);
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
-    d_assert(UESecurityCapabilities, return,);
+    ogs_assert(UESecurityCapabilities);
     encryptionAlgorithms =
         &UESecurityCapabilities->encryptionAlgorithms;
     integrityProtectionAlgorithms =
         &UESecurityCapabilities->integrityProtectionAlgorithms;
 
-    d_assert(MME_UE_S1AP_ID, return,);
-    d_assert(ENB_UE_S1AP_ID, return,);
+    ogs_assert(MME_UE_S1AP_ID);
+    ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
     if (!enb_ue)
     {
-        d_error("Cannot find UE from sourceMME-UE-S1AP-ID[%d] and eNB[%s:%d]",
-                *MME_UE_S1AP_ID, CORE_ADDR(enb->addr, buf), enb->enb_id);
+        ogs_error("Cannot find UE from sourceMME-UE-S1AP-ID[%d] and eNB[%s:%d]",
+                (int)*MME_UE_S1AP_ID, OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-        s1ap_send_path_switch_failure(enb,
+        rv = s1ap_build_path_switch_failure(&s1apbuf,
                 *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
+        ogs_assert(rv == OGS_OK && s1apbuf);
+
+        rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
+        ogs_assert(rv == OGS_OK);
         return;
     }
 
-    d_trace(5, "    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     mme_ue = enb_ue->mme_ue;
-    d_assert(mme_ue, return, "Null param");
+    ogs_assert(mme_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
     {
@@ -1207,9 +1153,13 @@ void s1ap_handle_path_switch_request(
     }
     else
     {
-        s1ap_send_path_switch_failure(enb,
+        rv = s1ap_build_path_switch_failure(&s1apbuf,
                 *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
+        ogs_assert(rv == OGS_OK && s1apbuf);
+
+        rv = s1ap_send_to_enb_ue(enb_ue, s1apbuf);
+        ogs_assert(rv == OGS_OK);
         return;
     }
 
@@ -1226,14 +1176,18 @@ void s1ap_handle_path_switch_request(
             sizeof(enb_ue->nas.e_cgi.cell_id));
     enb_ue->nas.e_cgi.cell_id = (ntohl(enb_ue->nas.e_cgi.cell_id) >> 4);
 
-    d_trace(5, "    OLD TAI[PLMN_ID:0x%x,TAC:%d]\n",
-            mme_ue->tai.plmn_id, mme_ue->tai.tac);
-    d_trace(5, "    OLD E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
-            mme_ue->e_cgi.plmn_id, mme_ue->e_cgi.cell_id);
-    d_trace(5, "    TAI[PLMN_ID:0x%x,TAC:%d]\n",
-            enb_ue->nas.tai.plmn_id, enb_ue->nas.tai.tac);
-    d_trace(5, "    E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
-            enb_ue->nas.e_cgi.plmn_id, enb_ue->nas.e_cgi.cell_id);
+    ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
+            plmn_id_hexdump(&mme_ue->tai.plmn_id),
+            mme_ue->tai.tac);
+    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+            plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
+            mme_ue->e_cgi.cell_id);
+    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+            plmn_id_hexdump(&enb_ue->nas.tai.plmn_id),
+            enb_ue->nas.tai.tac);
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+            plmn_id_hexdump(&enb_ue->nas.e_cgi.plmn_id),
+            enb_ue->nas.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
     memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
@@ -1249,7 +1203,7 @@ void s1ap_handle_path_switch_request(
     mme_ue->ue_network_capability.eia = eia >> 9;
     mme_ue->ue_network_capability.eia0 = 0;
 
-    d_assert(E_RABToBeSwitchedDLList, return,);
+    ogs_assert(E_RABToBeSwitchedDLList);
     for (i = 0; i < E_RABToBeSwitchedDLList->list.count; i++)
     {
         S1AP_E_RABToBeSwitchedDLItemIEs_t *ie2 = NULL;
@@ -1259,26 +1213,26 @@ void s1ap_handle_path_switch_request(
 
         ie2 = (S1AP_E_RABToBeSwitchedDLItemIEs_t *)
             E_RABToBeSwitchedDLList->list.array[i];
-        d_assert(ie2, return,);
+        ogs_assert(ie2);
 
         e_rab = &ie2->value.choice.E_RABToBeSwitchedDLItem;
-        d_assert(e_rab, return, "Null param");
+        ogs_assert(e_rab);
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
-        d_assert(bearer, return, "Cannot find e_RAB_ID[%d]", e_rab->e_RAB_ID);
+        ogs_assert(bearer);
 
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
         rv = s1ap_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-        d_assert(rv == CORE_OK, return,);
+        ogs_assert(rv == OGS_OK);
 
         GTP_COUNTER_INCREMENT(
                 mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH);
 
         rv = mme_gtp_send_modify_bearer_request(bearer, 1);
-        d_assert(rv == CORE_OK, return, "gtp send failed");
+        ogs_assert(rv == OGS_OK);
     }
 
     /* Switch to enb */
@@ -1286,10 +1240,10 @@ void s1ap_handle_path_switch_request(
 }
 
 void s1ap_handle_enb_configuration_transfer(
-        mme_enb_t *enb, s1ap_message_t *message, pkbuf_t *pkbuf)
+        mme_enb_t *enb, s1ap_message_t *message, ogs_pkbuf_t *pkbuf)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -1298,17 +1252,17 @@ void s1ap_handle_enb_configuration_transfer(
     S1AP_ENBConfigurationTransferIEs_t *ie = NULL;
     S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     ENBConfigurationTransfer =
         &initiatingMessage->value.choice.ENBConfigurationTransfer;
-    d_assert(ENBConfigurationTransfer, return,);
+    ogs_assert(ENBConfigurationTransfer);
 
-    d_trace(3, "[MME] ENB configuration transfer\n");
+    ogs_debug("[MME] ENB configuration transfer");
     for (i = 0; i < ENBConfigurationTransfer->protocolIEs.list.count; i++)
     {
         ie = ENBConfigurationTransfer->protocolIEs.list.array[i];
@@ -1323,8 +1277,8 @@ void s1ap_handle_enb_configuration_transfer(
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
     if (SONConfigurationTransfer)
     {
@@ -1334,8 +1288,8 @@ void s1ap_handle_enb_configuration_transfer(
             &SONConfigurationTransfer->sourceeNB_ID;
 
         mme_enb_t *target_enb = NULL;
-        c_uint32_t source_enb_id, target_enb_id;
-        c_uint16_t source_tac, target_tac;
+        uint32_t source_enb_id, target_enb_id;
+        uint16_t source_tac, target_tac;
 
         s1ap_ENB_ID_to_uint32(
                 &sourceeNB_ID->global_ENB_ID.eNB_ID, &source_enb_id);
@@ -1349,13 +1303,13 @@ void s1ap_handle_enb_configuration_transfer(
                 sizeof(target_tac));
         target_tac = ntohs(target_tac);
 
-        d_trace(5, "    Source : ENB_ID[%s:%d], TAC[%d]\n",
+        ogs_debug("    Source : ENB_ID[%s:%d], TAC[%d]",
                 sourceeNB_ID->global_ENB_ID.eNB_ID.present == 
                     S1AP_ENB_ID_PR_homeENB_ID ? "Home" : 
                 sourceeNB_ID->global_ENB_ID.eNB_ID.present == 
                     S1AP_ENB_ID_PR_macroENB_ID ? "Macro" : "Others",
                 source_enb_id, source_tac);
-        d_trace(5, "    Target : ENB_ID[%s:%d], TAC[%d]\n",
+        ogs_debug("    Target : ENB_ID[%s:%d], TAC[%d]",
                 targeteNB_ID->global_ENB_ID.eNB_ID.present == 
                     S1AP_ENB_ID_PR_homeENB_ID ? "Home" : 
                 targeteNB_ID->global_ENB_ID.eNB_ID.present == 
@@ -1365,21 +1319,21 @@ void s1ap_handle_enb_configuration_transfer(
         target_enb = mme_enb_find_by_enb_id(target_enb_id);
         if (target_enb == NULL)
         {
-            d_warn("eNB configuration transfer : cannot find target eNB-id[%d]",
+            ogs_warn("eNB configuration transfer : cannot find target eNB-id[%d]",
                     target_enb_id);
             return;
         }
 
         rv = s1ap_send_mme_configuration_transfer(
                 target_enb, SONConfigurationTransfer);
-        d_assert(rv == CORE_OK,,);
+        ogs_assert(rv == OGS_OK);
     }
 }
 
 void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -1394,21 +1348,21 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     S1AP_Source_ToTarget_TransparentContainer_t
         *Source_ToTarget_TransparentContainer = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     HandoverRequired = &initiatingMessage->value.choice.HandoverRequired;
-    d_assert(HandoverRequired, return,);
+    ogs_assert(HandoverRequired);
 
     enb_ue_t *source_ue = NULL;
     mme_ue_t *mme_ue = NULL;
     mme_enb_t *target_enb = NULL;
-    c_uint32_t target_enb_id = 0;
+    uint32_t target_enb_id = 0;
 
-    d_trace(3, "[MME] Handover required\n");
+    ogs_debug("[MME] Handover required");
     for (i = 0; i < HandoverRequired->protocolIEs.list.count; i++)
     {
         ie = HandoverRequired->protocolIEs.list.array[i];
@@ -1438,10 +1392,10 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(TargetID, return,);
+    ogs_assert(TargetID);
     switch(TargetID->present)
     {
         case S1AP_TargetID_PR_targeteNB_ID:
@@ -1453,7 +1407,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
         }
         default:
         {
-            d_error("Not implemented(%d)", TargetID->present);
+            ogs_error("Not implemented(%d)", TargetID->present);
             return;
         }
     }
@@ -1461,27 +1415,22 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     target_enb = mme_enb_find_by_enb_id(target_enb_id);
     if (target_enb == NULL)
     {
-        d_warn("Handover required : cannot find target eNB-id[%d]",
+        ogs_warn("Handover required : cannot find target eNB-id[%d]",
                 target_enb_id);
         return;
     }
 
-    d_assert(ENB_UE_S1AP_ID, return,);
-    d_assert(MME_UE_S1AP_ID, return,);
+    ogs_assert(ENB_UE_S1AP_ID);
+    ogs_assert(MME_UE_S1AP_ID);
     source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    d_assert(source_ue, return,
-            "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
-            *ENB_UE_S1AP_ID,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
-    d_assert(source_ue->mme_ue_s1ap_id == *MME_UE_S1AP_ID, return,
-            "Conflict MME-UE-S1AP-ID : %d != %d\n",
-            source_ue->mme_ue_s1ap_id, *MME_UE_S1AP_ID);
+    ogs_assert(source_ue);
+    ogs_assert(source_ue->mme_ue_s1ap_id == *MME_UE_S1AP_ID);
 
-    d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
 
     mme_ue = source_ue->mme_ue;
-    d_assert(mme_ue, return,);
+    ogs_assert(mme_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(mme_ue))
     {
@@ -1490,28 +1439,28 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     }
     else
     {
-        d_assert(Cause, return,);
+        ogs_assert(Cause);
 
         rv = s1ap_send_handover_preparation_failure(source_ue, Cause);
-        d_assert(rv == CORE_OK, return, "s1ap send error");
+        ogs_assert(rv == OGS_OK);
 
         return;
     }
 
-    d_assert(HandoverType, return,);
+    ogs_assert(HandoverType);
     source_ue->handover_type = *HandoverType;
 
     rv = s1ap_send_handover_request(mme_ue, target_enb,
             ENB_UE_S1AP_ID, MME_UE_S1AP_ID,
             HandoverType, Cause,
             Source_ToTarget_TransparentContainer);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    ogs_assert(rv == OGS_OK);
 }
 
 void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
@@ -1528,17 +1477,17 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     enb_ue_t *target_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     successfulOutcome = message->choice.successfulOutcome;
-    d_assert(successfulOutcome, return,);
+    ogs_assert(successfulOutcome);
     HandoverRequestAcknowledge =
         &successfulOutcome->value.choice.HandoverRequestAcknowledge;
-    d_assert(HandoverRequestAcknowledge, return,);
+    ogs_assert(HandoverRequestAcknowledge);
 
-    d_trace(3, "[MME] Handover request acknowledge\n");
+    ogs_debug("[MME] Handover request acknowledge");
     for (i = 0; i < HandoverRequestAcknowledge->protocolIEs.list.count; i++)
     {
         ie = HandoverRequestAcknowledge->protocolIEs.list.array[i];
@@ -1561,30 +1510,27 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
                 break;
         }
     }
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(MME_UE_S1AP_ID, return,);
-    d_assert(ENB_UE_S1AP_ID, return,);
-    d_assert(E_RABAdmittedList, return,);
-    d_assert(Target_ToSource_TransparentContainer, return,);
+    ogs_assert(MME_UE_S1AP_ID);
+    ogs_assert(ENB_UE_S1AP_ID);
+    ogs_assert(E_RABAdmittedList);
+    ogs_assert(Target_ToSource_TransparentContainer);
 
     target_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
-    d_assert(target_ue, return,
-            "Cannot find UE for MME-UE-S1AP-ID[%d] and eNB[%s:%d]",
-            *MME_UE_S1AP_ID,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_assert(target_ue);
 
     target_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
 
     source_ue = target_ue->source_ue;
-    d_assert(source_ue, return,);
+    ogs_assert(source_ue);
     mme_ue = source_ue->mme_ue;
-    d_assert(mme_ue, return,);
+    ogs_assert(mme_ue);
 
-    d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     for (i = 0; i < E_RABAdmittedList->list.count; i++)
@@ -1595,43 +1541,43 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
         mme_bearer_t *bearer = NULL;
 
         ie2 = (S1AP_E_RABAdmittedItemIEs_t *)E_RABAdmittedList->list.array[i];
-        d_assert(ie2, return,);
+        ogs_assert(ie2);
 
         e_rab = &ie2->value.choice.E_RABAdmittedItem;
-        d_assert(e_rab, return,);
+        ogs_assert(e_rab);
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
-        d_assert(bearer, return,);
+        ogs_assert(bearer);
 
         memcpy(&bearer->target_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->target_s1u_teid));
         bearer->target_s1u_teid = ntohl(bearer->target_s1u_teid);
         rv = s1ap_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->target_s1u_ip);
-        d_assert(rv == CORE_OK, return,);
+        ogs_assert(rv == OGS_OK);
 
         if (e_rab->dL_transportLayerAddress && e_rab->dL_gTP_TEID)
         {
-            d_assert(e_rab->dL_gTP_TEID->buf, return,);
-            d_assert(e_rab->dL_transportLayerAddress->buf, return,);
+            ogs_assert(e_rab->dL_gTP_TEID->buf);
+            ogs_assert(e_rab->dL_transportLayerAddress->buf);
             memcpy(&bearer->enb_dl_teid, e_rab->dL_gTP_TEID->buf, 
                     sizeof(bearer->enb_dl_teid));
             bearer->enb_dl_teid = ntohl(bearer->enb_dl_teid);
             rv = s1ap_BIT_STRING_to_ip(
                     e_rab->dL_transportLayerAddress, &bearer->enb_dl_ip);
-            d_assert(rv == CORE_OK, return,);
+            ogs_assert(rv == OGS_OK);
         }
 
         if (e_rab->uL_TransportLayerAddress && e_rab->uL_GTP_TEID)
         {
-            d_assert(e_rab->uL_GTP_TEID->buf, return,);
-            d_assert(e_rab->uL_TransportLayerAddress->buf, return,);
+            ogs_assert(e_rab->uL_GTP_TEID->buf);
+            ogs_assert(e_rab->uL_TransportLayerAddress->buf);
             memcpy(&bearer->enb_ul_teid, e_rab->uL_GTP_TEID->buf, 
                     sizeof(bearer->enb_ul_teid));
             bearer->enb_ul_teid = ntohl(bearer->enb_ul_teid);
             rv = s1ap_BIT_STRING_to_ip(
                     e_rab->uL_TransportLayerAddress, &bearer->enb_ul_ip);
-            d_assert(rv == CORE_OK, return,);
+            ogs_assert(rv == OGS_OK);
         }
     }
 
@@ -1641,19 +1587,19 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     {
         rv = mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
                 mme_ue);
-        d_assert(rv == CORE_OK, return, "gtp send failed");
+        ogs_assert(rv == OGS_OK);
     }
     else
     {
         rv = s1ap_send_handover_command(source_ue);
-        d_assert(rv == CORE_OK, return, "gtp send failed");
+        ogs_assert(rv == OGS_OK);
     }
 }
 
 void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
@@ -1666,16 +1612,16 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     enb_ue_t *target_ue = NULL;
     enb_ue_t *source_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     unsuccessfulOutcome = message->choice.unsuccessfulOutcome;
-    d_assert(unsuccessfulOutcome, return,);
+    ogs_assert(unsuccessfulOutcome);
     HandoverFailure = &unsuccessfulOutcome->value.choice.HandoverFailure;
-    d_assert(HandoverFailure, return,);
+    ogs_assert(HandoverFailure);
 
-    d_trace(3, "[MME] Handover failure\n");
+    ogs_debug("[MME] Handover failure");
     for (i = 0; i < HandoverFailure->protocolIEs.list.count; i++)
     {
         ie = HandoverFailure->protocolIEs.list.array[i];
@@ -1692,40 +1638,37 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(MME_UE_S1AP_ID, return,);
-    d_assert(Cause, return,);
+    ogs_assert(MME_UE_S1AP_ID);
+    ogs_assert(Cause);
 
     target_ue = enb_ue_find_by_mme_ue_s1ap_id(*MME_UE_S1AP_ID);
-    d_assert(target_ue, return,
-            "Cannot find UE for MME-UE-S1AP-ID[%d] and eNB[%s:%d]",
-            *MME_UE_S1AP_ID,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_assert(target_ue);
 
     source_ue = target_ue->source_ue;
-    d_assert(source_ue, return,);
+    ogs_assert(source_ue);
 
-    d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     rv = s1ap_send_handover_preparation_failure(source_ue, Cause);
-    d_assert(rv == CORE_OK, return, "s1ap send error");
+    ogs_assert(rv == OGS_OK);
 
     rv = s1ap_send_ue_context_release_command(
         target_ue, S1AP_Cause_PR_radioNetwork,
         S1AP_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system,
         S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 0);
-    d_assert(rv == CORE_OK, return, "s1ap send error");
+    ogs_assert(rv == OGS_OK);
 }
 
 void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -1739,16 +1682,16 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     enb_ue_t *source_ue = NULL;
     enb_ue_t *target_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     HandoverCancel = &initiatingMessage->value.choice.HandoverCancel;
-    d_assert(HandoverCancel, return,);
+    ogs_assert(HandoverCancel);
 
-    d_trace(3, "[MME] Handover cancel\n");
+    ogs_debug("[MME] Handover cancel");
     for (i = 0; i < HandoverCancel->protocolIEs.list.count; i++)
     {
         ie = HandoverCancel->protocolIEs.list.array[i];
@@ -1767,49 +1710,45 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
                 break;
         }
     }
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(MME_UE_S1AP_ID, return,);
-    d_assert(ENB_UE_S1AP_ID, return,);
-    d_assert(Cause, return,);
+    ogs_assert(MME_UE_S1AP_ID);
+    ogs_assert(ENB_UE_S1AP_ID);
+    ogs_assert(Cause);
 
     source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    d_assert(source_ue, return,
-            "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
-            *ENB_UE_S1AP_ID,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
-    d_assert(source_ue->mme_ue_s1ap_id == *MME_UE_S1AP_ID, return,
-            "Conflict MME-UE-S1AP-ID : %d != %d\n",
-            source_ue->mme_ue_s1ap_id, *MME_UE_S1AP_ID);
+    ogs_assert(source_ue);
+    ogs_assert(source_ue->mme_ue_s1ap_id == *MME_UE_S1AP_ID);
 
     target_ue = source_ue->target_ue;
-    d_assert(target_ue, return,);
+    ogs_assert(target_ue);
 
-    d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     rv = s1ap_send_handover_cancel_ack(source_ue);
-    d_assert(rv == CORE_OK,, "s1ap send error");
+    ogs_assert(rv == OGS_OK);
 
     rv = s1ap_send_ue_context_release_command(
             target_ue, S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_handover_cancelled,
-            S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 300);
-    d_assert(rv == CORE_OK, return, "s1ap send error");
+            S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL,
+            ogs_time_from_msec(300));
+    ogs_assert(rv == OGS_OK);
 
-    d_trace(3, "[MME] Handover Cancel : "
-            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]\n",
+    ogs_debug("[MME] Handover Cancel : "
+            "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",
             source_ue->enb_ue_s1ap_id,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 }
 
 void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -1823,16 +1762,16 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
 
     enb_ue_t *source_ue = NULL, *target_ue = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     ENBStatusTransfer = &initiatingMessage->value.choice.ENBStatusTransfer;
-    d_assert(ENBStatusTransfer, return,);
+    ogs_assert(ENBStatusTransfer);
 
-    d_trace(3, "[MME] ENB status transfer\n");
+    ogs_debug("[MME] ENB status transfer");
     for (i = 0; i < ENBStatusTransfer->protocolIEs.list.count; i++)
     {
         ie = ENBStatusTransfer->protocolIEs.list.array[i];
@@ -1852,39 +1791,34 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
                 break;
         }
     }
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(MME_UE_S1AP_ID, return,);
-    d_assert(ENB_UE_S1AP_ID, return,);
-    d_assert(ENB_StatusTransfer_TransparentContainer, return,);
+    ogs_assert(MME_UE_S1AP_ID);
+    ogs_assert(ENB_UE_S1AP_ID);
+    ogs_assert(ENB_StatusTransfer_TransparentContainer);
 
     source_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    d_assert(source_ue, return,
-            "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
-            *ENB_UE_S1AP_ID,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
-    d_assert(source_ue->mme_ue_s1ap_id == *MME_UE_S1AP_ID, return,
-            "Conflict MME-UE-S1AP-ID : %d != %d\n",
-            source_ue->mme_ue_s1ap_id, *MME_UE_S1AP_ID);
+    ogs_assert(source_ue);
+    ogs_assert(source_ue->mme_ue_s1ap_id == *MME_UE_S1AP_ID);
 
     target_ue = source_ue->target_ue;
-    d_assert(target_ue, return,);
+    ogs_assert(target_ue);
 
-    d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     rv = s1ap_send_mme_status_transfer(target_ue,
             ENB_StatusTransfer_TransparentContainer);
-    d_assert(rv == CORE_OK,,);
+    ogs_assert(rv == OGS_OK);
 }
 
 void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -1906,16 +1840,16 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     HandoverNotify = &initiatingMessage->value.choice.HandoverNotify;
-    d_assert(HandoverNotify, return,);
+    ogs_assert(HandoverNotify);
 
-    d_trace(3, "[MME] Handover notification\n");
+    ogs_debug("[MME] Handover notification");
     for (i = 0; i < HandoverNotify->protocolIEs.list.count; i++)
     {
         ie = HandoverNotify->protocolIEs.list.array[i];
@@ -1937,40 +1871,35 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
                 break;
         }
     }
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(EUTRAN_CGI, return,);
+    ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
-    d_assert(cell_ID, return,);
+    ogs_assert(cell_ID);
 
-    d_assert(TAI, return,);
+    ogs_assert(TAI);
     pLMNidentity = &TAI->pLMNidentity;
-    d_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t), return,);
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
     tAC = &TAI->tAC;
-    d_assert(tAC && tAC->size == sizeof(c_uint16_t), return,);
+    ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
-    d_assert(ENB_UE_S1AP_ID, return,);
-    d_assert(MME_UE_S1AP_ID, return,);
+    ogs_assert(ENB_UE_S1AP_ID);
+    ogs_assert(MME_UE_S1AP_ID);
     target_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    d_assert(target_ue, return,
-            "Cannot find UE for eNB-UE-S1AP-ID[%d] and eNB[%s:%d]",
-            *ENB_UE_S1AP_ID,
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
-    d_assert(target_ue->mme_ue_s1ap_id == *MME_UE_S1AP_ID, return,
-            "Conflict MME-UE-S1AP-ID : %d != %d\n",
-            target_ue->mme_ue_s1ap_id, *MME_UE_S1AP_ID);
+    ogs_assert(target_ue);
+    ogs_assert(target_ue->mme_ue_s1ap_id == *MME_UE_S1AP_ID);
 
     source_ue = target_ue->source_ue;
-    d_assert(source_ue, return,);
+    ogs_assert(source_ue);
     mme_ue = source_ue->mme_ue;
-    d_assert(mme_ue, return,);
+    ogs_assert(mme_ue);
 
-    d_trace(5, "    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
-    d_trace(5, "    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]\n",
+    ogs_debug("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     mme_ue_associate_enb_ue(mme_ue, target_ue);
@@ -1986,14 +1915,18 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
             sizeof(target_ue->nas.e_cgi.cell_id));
     target_ue->nas.e_cgi.cell_id = (ntohl(target_ue->nas.e_cgi.cell_id) >> 4);
 
-    d_trace(5, "    OLD TAI[PLMN_ID:0x%x,TAC:%d]\n",
-            mme_ue->tai.plmn_id, mme_ue->tai.tac);
-    d_trace(5, "    OLD E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
-            mme_ue->e_cgi.plmn_id, mme_ue->e_cgi.cell_id);
-    d_trace(5, "    TAI[PLMN_ID:0x%x,TAC:%d]\n",
-            target_ue->nas.tai.plmn_id, target_ue->nas.tai.tac);
-    d_trace(5, "    E_CGI[PLMN_ID:0x%x,CELL_ID:%d]\n",
-            target_ue->nas.e_cgi.plmn_id, target_ue->nas.e_cgi.cell_id);
+    ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
+            plmn_id_hexdump(&mme_ue->tai.plmn_id),
+            mme_ue->tai.tac);
+    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+            plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
+            mme_ue->e_cgi.cell_id);
+    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+            plmn_id_hexdump(&target_ue->nas.tai.plmn_id),
+            target_ue->nas.tai.tac);
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+            plmn_id_hexdump(&target_ue->nas.e_cgi.plmn_id),
+            target_ue->nas.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
     memcpy(&mme_ue->tai, &target_ue->nas.tai, sizeof(tai_t));
@@ -2012,7 +1945,7 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
                     mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY);
 
             rv = mme_gtp_send_modify_bearer_request(bearer, 1);
-            d_assert(rv == CORE_OK, return, "gtp send failed");
+            ogs_assert(rv == OGS_OK);
 
             bearer = mme_bearer_next(bearer);
         }
@@ -2023,8 +1956,8 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
 void s1ap_handle_s1_reset(
         mme_enb_t *enb, s1ap_message_t *message)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
     int i;
 
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -2035,16 +1968,16 @@ void s1ap_handle_s1_reset(
     S1AP_ResetType_t *ResetType = NULL;
     S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface = NULL;
 
-    d_assert(enb, return,);
-    d_assert(enb->sock, return,);
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    d_assert(message, return,);
+    ogs_assert(message);
     initiatingMessage = message->choice.initiatingMessage;
-    d_assert(initiatingMessage, return,);
+    ogs_assert(initiatingMessage);
     Reset = &initiatingMessage->value.choice.Reset;
-    d_assert(Reset, return,);
+    ogs_assert(Reset);
 
-    d_trace(3, "[MME] Reset\n");
+    ogs_debug("[MME] Reset");
 
     for (i = 0; i < Reset->protocolIEs.list.count; i++)
     {
@@ -2062,12 +1995,12 @@ void s1ap_handle_s1_reset(
         }
     }
 
-    d_trace(5, "    IP[%s] ENB_ID[%d]\n",
-            CORE_ADDR(enb->addr, buf), enb->enb_id);
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
 
-    d_assert(Cause, return,);
-    d_trace(5, "    Cause[Group:%d Cause:%d]\n",
-            Cause->present, Cause->choice.radioNetwork);
+    ogs_assert(Cause);
+    ogs_debug("    Cause[Group:%d Cause:%d]",
+            Cause->present, (int)Cause->choice.radioNetwork);
 
     switch(Cause->present)
     {
@@ -2077,29 +2010,29 @@ void s1ap_handle_s1_reset(
         case S1AP_Cause_PR_misc:
             break;
         case S1AP_Cause_PR_nas:
-            d_warn("NAS-Cause[%d]", Cause->choice.nas);
+            ogs_warn("NAS-Cause[%d]", (int)Cause->choice.nas);
         default:
-            d_warn("Invalid cause group[%d]", Cause->present);
+            ogs_warn("Invalid cause group[%d]", Cause->present);
             break;
     }
 
-    d_assert(ResetType, return,);
+    ogs_assert(ResetType);
     switch(ResetType->present)
     {
         case S1AP_ResetType_PR_s1_Interface:
         {
-            d_trace(5, "    S1AP_ResetType_PR_s1_Interface\n");
+            ogs_debug("    S1AP_ResetType_PR_s1_Interface");
 
             rv = enb_ue_remove_in_enb(enb);
-            d_assert(rv == CORE_OK,,);
+            ogs_assert(rv == OGS_OK);
             break;
         }
         case S1AP_ResetType_PR_partOfS1_Interface:
         {
-            d_trace(5, "    S1AP_ResetType_PR_partOfS1_Interface\n");
+            ogs_debug("    S1AP_ResetType_PR_partOfS1_Interface");
 
             partOfS1_Interface = ResetType->choice.partOfS1_Interface;
-            d_assert(partOfS1_Interface, return,);
+            ogs_assert(partOfS1_Interface);
             for (i = 0; i < partOfS1_Interface->list.count; i++)
             {
                 S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *ie2 = NULL;
@@ -2109,14 +2042,14 @@ void s1ap_handle_s1_reset(
 
                 ie2 = (S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *)
                     partOfS1_Interface->list.array[i];
-                d_assert(ie2, return,);
+                ogs_assert(ie2);
 
                 item = &ie2->value.choice.UE_associatedLogicalS1_ConnectionItem;
-                d_assert(item, return,);
+                ogs_assert(item);
                 
-                d_trace(5, "    MME_UE_S1AP_ID[%d] ENB_UE_S1AP_ID[%d]\n",
-                        item->mME_UE_S1AP_ID ? *item->mME_UE_S1AP_ID : -1,
-                        item->eNB_UE_S1AP_ID ? *item->eNB_UE_S1AP_ID : -1);
+                ogs_debug("    MME_UE_S1AP_ID[%d] ENB_UE_S1AP_ID[%d]",
+                        item->mME_UE_S1AP_ID ? (int)*item->mME_UE_S1AP_ID : -1,
+                        item->eNB_UE_S1AP_ID ? (int)*item->eNB_UE_S1AP_ID : -1);
 
                 if (item->mME_UE_S1AP_ID)
                     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(
@@ -2127,24 +2060,73 @@ void s1ap_handle_s1_reset(
 
                 if (enb_ue == NULL)
                 {
-                    d_warn("Cannot find S1 Context "
-                            "(MME_UE_S1AP_ID[%d] ENB_UE_S1AP_ID[%d])\n",
-                            item->mME_UE_S1AP_ID ? *item->mME_UE_S1AP_ID : -1,
-                            item->eNB_UE_S1AP_ID ? *item->eNB_UE_S1AP_ID : -1);
+                    ogs_warn("Cannot find S1 Context "
+                        "(MME_UE_S1AP_ID[%d] ENB_UE_S1AP_ID[%d])",
+                        item->mME_UE_S1AP_ID ? (int)*item->mME_UE_S1AP_ID : -1,
+                        item->eNB_UE_S1AP_ID ? (int)*item->eNB_UE_S1AP_ID : -1);
                     continue;
                 }
 
                 rv = enb_ue_remove(enb_ue);
-                d_assert(rv == CORE_OK,,);
+                ogs_assert(rv == OGS_OK);
             }
             break;
         }
         default:
-            d_warn("Invalid ResetType[%d]", ResetType->present);
+            ogs_warn("Invalid ResetType[%d]", ResetType->present);
             break;
     }
 
     rv = s1ap_send_s1_reset_ack(enb, partOfS1_Interface);
-    d_assert(rv == CORE_OK,,);
+    ogs_assert(rv == OGS_OK);
 }
 
+void s1ap_handle_write_replace_warning_response(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[OGS_ADDRSTRLEN];
+
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_WriteReplaceWarningResponse_t *WriteReplaceWarningResponse = NULL;
+
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
+
+    ogs_assert(message);
+    successfulOutcome = message->choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
+    WriteReplaceWarningResponse =
+        &successfulOutcome->value.choice.WriteReplaceWarningResponse;
+    ogs_assert(WriteReplaceWarningResponse);
+
+    ogs_debug("[MME] Write replace warning response");
+
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
+
+}
+
+void s1ap_handle_kill_response(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[OGS_ADDRSTRLEN];
+
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_KillResponse_t *KillResponse = NULL;
+
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
+
+    ogs_assert(message);
+    successfulOutcome = message->choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
+    KillResponse =
+        &successfulOutcome->value.choice.KillResponse;
+    ogs_assert(KillResponse);
+
+    ogs_debug("[MME] Kill response");
+
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
+
+}

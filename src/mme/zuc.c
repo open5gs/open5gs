@@ -1,7 +1,6 @@
 /*---------------------------------------------
  * ZUC / EEA3 / EIA3 : LTE security algorithm
  *--------------------------------------------*/
-#include "core_pkbuf.h"
 #include "zuc.h"
 
 /*--------------------------------------------
@@ -286,7 +285,7 @@ void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	u32 lastbits = (8-(LENGTH%8))%8;
     
 	L 	= (LENGTH+31)/32;
-	z 	= (u32 *) core_malloc(L*sizeof(u32));
+	z 	= (u32 *) ogs_malloc(L*sizeof(u32));
     
 	L8 	= (LENGTH+7)/8;
 	
@@ -323,7 +322,7 @@ void zuc_eea3(u8* CK, u32 COUNT, u32 BEARER, u32 DIRECTION,
         i--;
 		C[i] &= 0x100 - (1<<lastbits);
 	
-	CORE_FREE(z);
+	ogs_free(z);
 }
 /* end of EEA3.c */
 
@@ -377,7 +376,7 @@ void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	
 	N	= LENGTH + 64;
 	L	= (N + 31) / 32;
-	z	= (u32 *) core_malloc(L*sizeof(u32));
+	z	= (u32 *) ogs_malloc(L*sizeof(u32));
 	ZUC(IK, IV, z, L);
 	
 	T = 0;
@@ -389,6 +388,6 @@ void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 	T ^= GET_WORD(z,LENGTH);
 	
 	*MAC = T ^ z[L-1];
-	CORE_FREE(z);
+	ogs_free(z);
 }
 /* end of EIA3.c */

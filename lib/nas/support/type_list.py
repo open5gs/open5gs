@@ -1,3 +1,21 @@
+
+# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+
+# This file is part of Open5GS.
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 type_list["P-TMSI signature"]["decode"] = \
 "    *p_tmsi_signature = htonl(*p_tmsi_signature);\n\n"
 type_list["P-TMSI signature"]["encode"] = \
@@ -17,7 +35,7 @@ type_list["Mobile identity"]["decode"] = \
 "    if (mobile_identity->tmsi.type == NAS_MOBILE_IDENTITY_TMSI)\n" \
 "    {\n" \
 "        if (mobile_identity->tmsi.spare != 0xf)\n" \
-"            d_warn(\"Spec warning : mobile_identity->tmsi.spare = 0x%x\", mobile_identity->tmsi.spare);\n" \
+"            ogs_warn(\"Spec warning : mobile_identity->tmsi.spare = 0x%x\", mobile_identity->tmsi.spare);\n" \
 "        mobile_identity->tmsi.tmsi = ntohl(mobile_identity->tmsi.tmsi);\n" \
 "    }\n\n"
 type_list["Mobile identity"]["encode"] = \
@@ -31,7 +49,7 @@ type_list["EPS mobile identity"]["decode"] = \
 "    if (eps_mobile_identity->guti.type == NAS_EPS_MOBILE_IDENTITY_GUTI)\n" \
 "    {\n" \
 "        if (eps_mobile_identity->guti.spare != 0xf)\n" \
-"            d_warn(\"Spec warning : eps_mobile_identy->spare = 0x%x\", eps_mobile_identity->guti.spare);\n" \
+"            ogs_warn(\"Spec warning : eps_mobile_identy->spare = 0x%x\", eps_mobile_identity->guti.spare);\n" \
 "        eps_mobile_identity->guti.mme_gid = ntohs(eps_mobile_identity->guti.mme_gid);\n" \
 "        eps_mobile_identity->guti.m_tmsi = ntohl(eps_mobile_identity->guti.m_tmsi);\n" \
 "    }\n\n"
@@ -60,9 +78,9 @@ type_list["Short MAC"]["encode"] = \
 
 type_list["Access point name"]["decode"] = \
 "    {\n" \
-"        c_int8_t apn[MAX_APN_LEN];\n" \
+"        char apn[MAX_APN_LEN];\n" \
 "        access_point_name->length  = apn_parse(apn, access_point_name->apn, access_point_name->length);\n" \
-"        core_cpystrn(access_point_name->apn, apn, c_min(access_point_name->length, MAX_APN_LEN) + 1);\n" \
+"        ogs_cpystrn(access_point_name->apn, apn, ogs_min(access_point_name->length, MAX_APN_LEN) + 1);\n" \
 "    }\n\n"
 
 type_list["Access point name"]["encode"] = \

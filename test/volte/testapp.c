@@ -1,335 +1,310 @@
-#define TRACE_MODULE _testapp
-
-#include "core_general.h"
-#include "core_debug.h"
-#include "core_semaphore.h"
-
 #include "app/context.h"
-#include "app/app.h"
+#include "app/application.h"
 
-static semaphore_id pcrf_sem1 = 0;
-static semaphore_id pcrf_sem2 = 0;
+#include "app_init.h"
 
-static semaphore_id pgw_sem1 = 0;
-static semaphore_id pgw_sem2 = 0;
+static ogs_proc_mutex_t *pcrf_sem1 = NULL;
+static ogs_proc_mutex_t *pcrf_sem2 = NULL;
 
-static semaphore_id sgw_sem1 = 0;
-static semaphore_id sgw_sem2 = 0;
+static ogs_proc_mutex_t *pgw_sem1 = NULL;
+static ogs_proc_mutex_t *pgw_sem2 = NULL;
 
-static semaphore_id hss_sem1 = 0;
-static semaphore_id hss_sem2 = 0;
+static ogs_proc_mutex_t *sgw_sem1 = NULL;
+static ogs_proc_mutex_t *sgw_sem2 = NULL;
 
-static semaphore_id mme_sem1 = 0;
-static semaphore_id mme_sem2 = 0;
+static ogs_proc_mutex_t *hss_sem1 = NULL;
+static ogs_proc_mutex_t *hss_sem2 = NULL;
 
-status_t test_app_initialize(const char *config_path, const char *log_path)
+static ogs_proc_mutex_t *mme_sem1 = NULL;
+static ogs_proc_mutex_t *mme_sem2 = NULL;
+
+int test_app_initialize(app_param_t *param)
 {
     pid_t pid;
-    status_t rv;
+    int rv;
     int app = 0;
 
-    rv = app_will_initialize(config_path, log_path);
-    if (rv != CORE_OK) return rv;
-
-    app = context_self()->logger.trace.app;
-    if (app)
-    {
-        d_trace_level(&_testapp, app);
-    }
-
+    rv = app_will_initialize(param);
+    if (rv != OGS_OK) return rv;
 
     /************************* PCRF Process **********************/
-    semaphore_create(&pcrf_sem1, 0); /* copied to PCRF/PGW/SGW/HSS process */
-    semaphore_create(&pcrf_sem2, 0); /* copied to PCRF/PGW/SGW/HSS process */
+    pcrf_sem1 = ogs_proc_mutex_create(0); /* copied to PCRF/PGW/SGW/HSS/MME */
+    pcrf_sem2 = ogs_proc_mutex_create(0); /* copied to PCRF/PGW/SGW/HSS/MME */
 
-    if (context_self()->parameter.no_pcrf == 0)
+    if (context_self()->config.parameter.no_pcrf == 0)
     {
         pid = fork();
-        d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+        ogs_assert(pid >= 0);
 
         if (pid == 0)
         {
-            d_trace(1, "PCRF try to initialize\n");
+            ogs_info("PCRF try to initialize");
             rv = pcrf_initialize();
-            d_assert(rv == CORE_OK,, "Failed to intialize PCRF");
-            d_trace(1, "PCRF initialize...done\n");
+            ogs_assert(rv == OGS_OK);
+            ogs_info("PCRF initialize...done");
 
-            if (pcrf_sem1) semaphore_post(pcrf_sem1);
-            if (pcrf_sem2) semaphore_wait(pcrf_sem2);
+            if (pcrf_sem1) ogs_proc_mutex_post(pcrf_sem1);
+            if (pcrf_sem2) ogs_proc_mutex_wait(pcrf_sem2);
 
-            if (rv == CORE_OK)
+            if (rv == OGS_OK)
             {
-                d_trace(1, "PCRF try to terminate\n");
+                ogs_info("PCRF try to terminate");
                 pcrf_terminate();
-                d_trace(1, "PCRF terminate...done\n");
+                ogs_info("PCRF terminate...done");
             }
 
-            if (pcrf_sem1) semaphore_post(pcrf_sem1);
+            if (pcrf_sem1) ogs_proc_mutex_post(pcrf_sem1);
 
             /* allocated from parent process */
-            if (pcrf_sem1) semaphore_delete(pcrf_sem1);
-            if (pcrf_sem2) semaphore_delete(pcrf_sem2);
+            if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
+            if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
 
             app_did_terminate();
-
-            core_terminate();
 
             _exit(EXIT_SUCCESS);
         }
 
-        if (pcrf_sem1) semaphore_wait(pcrf_sem1);
+        if (pcrf_sem1) ogs_proc_mutex_wait(pcrf_sem1);
     }
 
 
     /************************* PGW Process **********************/
+    pgw_sem1 = ogs_proc_mutex_create(0); /* copied to PGW/SGW/HSS/MME */
+    pgw_sem2 = ogs_proc_mutex_create(0); /* copied to PGW/SGW/HSS/MME */
 
-    semaphore_create(&pgw_sem1, 0); /* copied to PGW/SGW/HSS process */
-    semaphore_create(&pgw_sem2, 0); /* copied to PGW/SGW/HSS process */
-
-    if (context_self()->parameter.no_pgw == 0)
+    if (context_self()->config.parameter.no_pgw == 0)
     {
         pid = fork();
-        d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+        ogs_assert(pid >= 0);
 
         if (pid == 0)
         {
             /* allocated from parent process */
-            if (pcrf_sem1) semaphore_delete(pcrf_sem1);
-            if (pcrf_sem2) semaphore_delete(pcrf_sem2);
+            if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
+            if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
 
-            d_trace(1, "PGW try to initialize\n");
+            ogs_info("PGW try to initialize");
             rv = pgw_initialize();
-            d_assert(rv == CORE_OK,, "Failed to intialize PGW");
-            d_trace(1, "PGW initialize...done\n");
+            ogs_assert(rv == OGS_OK);
+            ogs_info("PGW initialize...done");
 
-            if (pgw_sem1) semaphore_post(pgw_sem1);
-            if (pgw_sem2) semaphore_wait(pgw_sem2);
+            if (pgw_sem1) ogs_proc_mutex_post(pgw_sem1);
+            if (pgw_sem2) ogs_proc_mutex_wait(pgw_sem2);
 
-            if (rv == CORE_OK)
+            if (rv == OGS_OK)
             {
-                d_trace(1, "PGW try to terminate\n");
+                ogs_info("PGW try to terminate");
                 pgw_terminate();
-                d_trace(1, "PGW terminate...done\n");
+                ogs_info("PGW terminate...done");
             }
 
-            if (pgw_sem1) semaphore_post(pgw_sem1);
+            if (pgw_sem1) ogs_proc_mutex_post(pgw_sem1);
 
             /* allocated from parent process */
-            if (pgw_sem1) semaphore_delete(pgw_sem1);
-            if (pgw_sem2) semaphore_delete(pgw_sem2);
+            if (pgw_sem1) ogs_proc_mutex_delete(pgw_sem1);
+            if (pgw_sem2) ogs_proc_mutex_delete(pgw_sem2);
 
             app_did_terminate();
-
-            core_terminate();
 
             _exit(EXIT_SUCCESS);
         }
 
-        if (pgw_sem1) semaphore_wait(pgw_sem1);
+        if (pgw_sem1) ogs_proc_mutex_wait(pgw_sem1);
     }
 
 
     /************************* SGW Process **********************/
+    sgw_sem1 = ogs_proc_mutex_create(0); /* copied to SGW/HSS/MME */
+    sgw_sem2 = ogs_proc_mutex_create(0); /* copied to SGW/HSS/MME */
 
-    semaphore_create(&sgw_sem1, 0); /* copied to SGW/HSS process */
-    semaphore_create(&sgw_sem2, 0); /* copied to SGW/HSS process */
-
-    if (context_self()->parameter.no_sgw == 0)
+    if (context_self()->config.parameter.no_sgw == 0)
     {
         pid = fork();
-        d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+        ogs_assert(pid >= 0);
 
         if (pid == 0)
         {
             /* allocated from parent process */
-            if (pcrf_sem1) semaphore_delete(pcrf_sem1);
-            if (pcrf_sem2) semaphore_delete(pcrf_sem2);
-            if (pgw_sem1) semaphore_delete(pgw_sem1);
-            if (pgw_sem2) semaphore_delete(pgw_sem2);
+            if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
+            if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
+            if (pgw_sem1) ogs_proc_mutex_delete(pgw_sem1);
+            if (pgw_sem2) ogs_proc_mutex_delete(pgw_sem2);
 
-            d_trace(1, "SGW try to initialize\n");
+            ogs_info("SGW try to initialize");
             rv = sgw_initialize();
-            d_assert(rv == CORE_OK,, "Failed to intialize SGW");
-            d_trace(1, "SGW initialize...done\n");
+            ogs_assert(rv == OGS_OK);
+            ogs_info("SGW initialize...done");
 
-            if (sgw_sem1) semaphore_post(sgw_sem1);
-            if (sgw_sem2) semaphore_wait(sgw_sem2);
+            if (sgw_sem1) ogs_proc_mutex_post(sgw_sem1);
+            if (sgw_sem2) ogs_proc_mutex_wait(sgw_sem2);
 
-            if (rv == CORE_OK)
+            if (rv == OGS_OK)
             {
-                d_trace(1, "SGW try to terminate\n");
+                ogs_info("SGW try to terminate");
                 sgw_terminate();
-                d_trace(1, "SGW terminate...done\n");
+                ogs_info("SGW terminate...done");
             }
 
-            if (sgw_sem1) semaphore_post(sgw_sem1);
+            if (sgw_sem1) ogs_proc_mutex_post(sgw_sem1);
 
             /* allocated from parent process */
-            if (sgw_sem1) semaphore_delete(sgw_sem1);
-            if (sgw_sem2) semaphore_delete(sgw_sem2);
+            if (sgw_sem1) ogs_proc_mutex_delete(sgw_sem1);
+            if (sgw_sem2) ogs_proc_mutex_delete(sgw_sem2);
 
             app_did_terminate();
-
-            core_terminate();
 
             _exit(EXIT_SUCCESS);
         }
 
-        if (sgw_sem1) semaphore_wait(sgw_sem1);
+        if (sgw_sem1) ogs_proc_mutex_wait(sgw_sem1);
     }
 
 
     /************************* HSS Process **********************/
+    hss_sem1 = ogs_proc_mutex_create(0); /* copied to HSS/MME */
+    hss_sem2 = ogs_proc_mutex_create(0); /* copied to HSS/MME */
 
-    semaphore_create(&hss_sem1, 0); /* copied to HSS process */
-    semaphore_create(&hss_sem2, 0); /* copied to HSS process */
-
-    if (context_self()->parameter.no_hss == 0)
+    if (context_self()->config.parameter.no_hss == 0)
     {
         pid = fork();
-        d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+        ogs_assert(pid >= 0);
 
         if (pid == 0)
         {
             /* allocated from parent process */
-            if (pcrf_sem1) semaphore_delete(pcrf_sem1);
-            if (pcrf_sem2) semaphore_delete(pcrf_sem2);
-            if (pgw_sem1) semaphore_delete(pgw_sem1);
-            if (pgw_sem2) semaphore_delete(pgw_sem2);
-            if (sgw_sem1) semaphore_delete(sgw_sem1);
-            if (sgw_sem2) semaphore_delete(sgw_sem2);
+            if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
+            if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
+            if (pgw_sem1) ogs_proc_mutex_delete(pgw_sem1);
+            if (pgw_sem2) ogs_proc_mutex_delete(pgw_sem2);
+            if (sgw_sem1) ogs_proc_mutex_delete(sgw_sem1);
+            if (sgw_sem2) ogs_proc_mutex_delete(sgw_sem2);
 
-            d_trace(1, "HSS try to initialize\n");
+            ogs_info("HSS try to initialize");
             rv = hss_initialize();
-            d_assert(rv == CORE_OK,, "Failed to intialize HSS");
-            d_trace(1, "HSS initialize...done\n");
+            ogs_assert(rv == OGS_OK);
+            ogs_info("HSS initialize...done");
 
-            if (hss_sem1) semaphore_post(hss_sem1);
-            if (hss_sem2) semaphore_wait(hss_sem2);
+            if (hss_sem1) ogs_proc_mutex_post(hss_sem1);
+            if (hss_sem2) ogs_proc_mutex_wait(hss_sem2);
 
-            if (rv == CORE_OK)
+            if (rv == OGS_OK)
             {
-                d_trace(1, "HSS try to terminate\n");
+                ogs_info("HSS try to terminate");
                 hss_terminate();
-                d_trace(1, "HSS terminate...done\n");
+                ogs_info("HSS terminate...done");
             }
 
-            if (hss_sem1) semaphore_post(hss_sem1);
+            if (hss_sem1) ogs_proc_mutex_post(hss_sem1);
 
-            if (hss_sem1) semaphore_delete(hss_sem1);
-            if (hss_sem2) semaphore_delete(hss_sem2);
+            if (hss_sem1) ogs_proc_mutex_delete(hss_sem1);
+            if (hss_sem2) ogs_proc_mutex_delete(hss_sem2);
 
             app_did_terminate();
-
-            core_terminate();
 
             _exit(EXIT_SUCCESS);
         }
 
-        if (hss_sem1) semaphore_wait(hss_sem1);
+        if (hss_sem1) ogs_proc_mutex_wait(hss_sem1);
     }
 
     /************************* MME Process **********************/
+    mme_sem1 = ogs_proc_mutex_create(0); /* copied to MME */
+    mme_sem2 = ogs_proc_mutex_create(0); /* copied to MME */
 
-    semaphore_create(&mme_sem1, 0); /* copied to MME process */
-    semaphore_create(&mme_sem2, 0); /* copied to MME process */
-
-/*    if (context_self()->parameter.no_mme == 0) */
+/*    if (context_self()->config.parameter.no_mme == 0) */
     {
         pid = fork();
-        d_assert(pid >= 0, _exit(EXIT_FAILURE), "fork() failed");
+        ogs_assert(pid >= 0);
 
         if (pid == 0)
         {
             /* allocated from parent process */
-            if (pcrf_sem1) semaphore_delete(pcrf_sem1);
-            if (pcrf_sem2) semaphore_delete(pcrf_sem2);
-            if (pgw_sem1) semaphore_delete(pgw_sem1);
-            if (pgw_sem2) semaphore_delete(pgw_sem2);
-            if (sgw_sem1) semaphore_delete(sgw_sem1);
-            if (sgw_sem2) semaphore_delete(sgw_sem2);
-            if (hss_sem1) semaphore_delete(hss_sem1);
-            if (hss_sem2) semaphore_delete(hss_sem2);
+            if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
+            if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
+            if (pgw_sem1) ogs_proc_mutex_delete(pgw_sem1);
+            if (pgw_sem2) ogs_proc_mutex_delete(pgw_sem2);
+            if (sgw_sem1) ogs_proc_mutex_delete(sgw_sem1);
+            if (sgw_sem2) ogs_proc_mutex_delete(sgw_sem2);
+            if (hss_sem1) ogs_proc_mutex_delete(hss_sem1);
+            if (hss_sem2) ogs_proc_mutex_delete(hss_sem2);
 
-            d_trace(1, "MME try to initialize\n");
+            ogs_info("MME try to initialize");
             rv = mme_initialize();
-            d_assert(rv == CORE_OK,, "Failed to intialize MME");
-            d_trace(1, "MME initialize...done\n");
+            ogs_assert(rv == OGS_OK);
+            ogs_info("MME initialize...done");
 
-            if (mme_sem1) semaphore_post(mme_sem1);
-            if (mme_sem2) semaphore_wait(mme_sem2);
+            if (mme_sem1) ogs_proc_mutex_post(mme_sem1);
+            if (mme_sem2) ogs_proc_mutex_wait(mme_sem2);
 
-            if (rv == CORE_OK)
+            if (rv == OGS_OK)
             {
-                d_trace(1, "MME try to terminate\n");
+                ogs_info("MME try to terminate");
                 mme_terminate();
-                d_trace(1, "MME terminate...done\n");
+                ogs_info("MME terminate...done");
             }
 
-            if (mme_sem1) semaphore_post(mme_sem1);
+            if (mme_sem1) ogs_proc_mutex_post(mme_sem1);
 
-            if (mme_sem1) semaphore_delete(mme_sem1);
-            if (mme_sem2) semaphore_delete(mme_sem2);
+            if (mme_sem1) ogs_proc_mutex_delete(mme_sem1);
+            if (mme_sem2) ogs_proc_mutex_delete(mme_sem2);
 
             app_did_terminate();
-
-            core_terminate();
 
             _exit(EXIT_SUCCESS);
         }
 
-        if (mme_sem1) semaphore_wait(mme_sem1);
+        if (mme_sem1) ogs_proc_mutex_wait(mme_sem1);
     }
 
     rv = app_did_initialize();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
-    return CORE_OK;;
+    return OGS_OK;;
 }
 
 void test_app_terminate(void)
 {
     app_will_terminate();
 
-    /* if (context_self()->parameter.no_mme == 0) */
+    /* if (context_self()->config.parameter.no_mme == 0) */
     {
-        if (mme_sem2) semaphore_post(mme_sem2);
-        if (mme_sem1) semaphore_wait(mme_sem1);
+        if (mme_sem2) ogs_proc_mutex_post(mme_sem2);
+        if (mme_sem1) ogs_proc_mutex_wait(mme_sem1);
     }
-    if (mme_sem1) semaphore_delete(mme_sem1);
-    if (mme_sem2) semaphore_delete(mme_sem2);
+    if (mme_sem1) ogs_proc_mutex_delete(mme_sem1);
+    if (mme_sem2) ogs_proc_mutex_delete(mme_sem2);
 
-    if (context_self()->parameter.no_hss == 0)
+    if (context_self()->config.parameter.no_hss == 0)
     {
-        if (hss_sem2) semaphore_post(hss_sem2);
-        if (hss_sem1) semaphore_wait(hss_sem1);
+        if (hss_sem2) ogs_proc_mutex_post(hss_sem2);
+        if (hss_sem1) ogs_proc_mutex_wait(hss_sem1);
     }
-    if (hss_sem1) semaphore_delete(hss_sem1);
-    if (hss_sem2) semaphore_delete(hss_sem2);
+    if (hss_sem1) ogs_proc_mutex_delete(hss_sem1);
+    if (hss_sem2) ogs_proc_mutex_delete(hss_sem2);
 
-    if (context_self()->parameter.no_sgw == 0)
+    if (context_self()->config.parameter.no_sgw == 0)
     {
-        if (sgw_sem2) semaphore_post(sgw_sem2);
-        if (sgw_sem1) semaphore_wait(sgw_sem1);
+        if (sgw_sem2) ogs_proc_mutex_post(sgw_sem2);
+        if (sgw_sem1) ogs_proc_mutex_wait(sgw_sem1);
     }
-    if (sgw_sem1) semaphore_delete(sgw_sem1);
-    if (sgw_sem2) semaphore_delete(sgw_sem2);
+    if (sgw_sem1) ogs_proc_mutex_delete(sgw_sem1);
+    if (sgw_sem2) ogs_proc_mutex_delete(sgw_sem2);
 
-    if (context_self()->parameter.no_pgw == 0)
+    if (context_self()->config.parameter.no_pgw == 0)
     {
-        if (pgw_sem2) semaphore_post(pgw_sem2);
-        if (pgw_sem1) semaphore_wait(pgw_sem1);
+        if (pgw_sem2) ogs_proc_mutex_post(pgw_sem2);
+        if (pgw_sem1) ogs_proc_mutex_wait(pgw_sem1);
     }
-    if (pgw_sem1) semaphore_delete(pgw_sem1);
-    if (pgw_sem2) semaphore_delete(pgw_sem2);
+    if (pgw_sem1) ogs_proc_mutex_delete(pgw_sem1);
+    if (pgw_sem2) ogs_proc_mutex_delete(pgw_sem2);
 
-    if (context_self()->parameter.no_pcrf == 0)
+    if (context_self()->config.parameter.no_pcrf == 0)
     {
-        if (pcrf_sem2) semaphore_post(pcrf_sem2);
-        if (pcrf_sem1) semaphore_wait(pcrf_sem1);
+        if (pcrf_sem2) ogs_proc_mutex_post(pcrf_sem2);
+        if (pcrf_sem1) ogs_proc_mutex_wait(pcrf_sem1);
     }
-    if (pcrf_sem1) semaphore_delete(pcrf_sem1);
-    if (pcrf_sem2) semaphore_delete(pcrf_sem2);
+    if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
+    if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
 
     app_did_terminate();
 }

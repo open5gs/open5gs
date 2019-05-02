@@ -1,8 +1,8 @@
 #ifndef __CONTEXT_H__
 #define __CONTEXT_H__
 
-#include "core_debug.h"
-#include "core_param.h"
+#include "ogs-core.h"
+#include "ogs-yaml.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,36 +14,12 @@ extern "C" {
 typedef struct _config_t {
     const char *path;
     void *document;
-} config_t;
-
-#define MAX_DB_URI_LEN          256
-
-typedef struct _context_t {
-    config_t config;
 
     const char *db_uri;
-    void *db_client;
-    char *db_name;
-    void *database;
-
     struct {
-        const char *path;
-        int console;
-        const char *syslog;
-        struct {
-            const char *unix_domain;
-            const char *file;
-        } network;
         const char *file;
-
-        struct {
-            int app;
-            int s1ap;
-            int nas;
-            int gtpv2;
-            int gtp;
-            int diameter;
-        } trace;
+        const char *level;
+        const char *domain;
     } logger;
 
     struct {
@@ -54,6 +30,7 @@ typedef struct _context_t {
         int no_pcrf;
 
         /* Network */
+        int sctp_streams;
         int no_ipv4;
         int no_ipv6;
         int prefer_ipv4;
@@ -61,18 +38,38 @@ typedef struct _context_t {
         int no_slaac;
     } parameter;
 
+} config_t;
+
+#define MAX_DB_URI_LEN          256
+
+typedef struct _context_t {
+    config_t config;
+
+    struct {
+        const char *name;
+        void *uri;
+        void *client;
+        void *database;
+    } db;
+
+    struct {
+        const char *path;
+        ogs_log_level_e level;
+        const char *domain;
+    } log;
+
 } context_t;
 
-CORE_DECLARE(status_t)      context_init(void);
-CORE_DECLARE(status_t)      context_final(void);
-CORE_DECLARE(context_t*)    context_self(void);
+int context_init(void);
+int context_final(void);
+context_t *context_self(void);
 
-CORE_DECLARE(status_t)      context_read_file(void);
-CORE_DECLARE(status_t)      context_parse_config(void);
-CORE_DECLARE(status_t)      context_setup_trace_module(void);
+int context_read_file(void);
+int context_parse_config(void);
+int context_setup_log_module(void);
 
-CORE_DECLARE(status_t)      context_db_init(const char *db_uri);
-CORE_DECLARE(status_t)      context_db_final(void);
+int context_db_init(const char *db_uri);
+int context_db_final(void);
 
 #ifdef __cplusplus
 }

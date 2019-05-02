@@ -1,0 +1,84 @@
+version: '3'
+
+services:
+  mongodb:
+    image: mongo
+    container_name: nextepc-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/data/db
+
+  webui:
+    build: webui
+    image: ${USER}/nextepc-webui
+    container_name: nextepc-webui
+    depends_on:
+      - mongodb
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+    environment:
+      DB_URI: mongodb://mongodb/nextepc
+
+  base:
+    build:
+      context: ./${DIST-ubuntu}/${TAG-latest}/base
+      args:
+        dist: ${DIST-ubuntu}
+        tag: ${TAG-latest}
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-base
+    command: /bin/bash -c "echo 'base' services"
+
+  build:
+    build:
+      context: ./build
+      args:
+        dist: ${DIST-ubuntu}
+        tag: ${TAG-latest}
+        username: ${USER}
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-build
+    depends_on:
+      - base
+    command: /bin/bash -c "echo 'build' services"
+
+  dev:
+    build:
+      context: ./${DIST-ubuntu}/${TAG-latest}/dev
+      args:
+        dist: ${DIST-ubuntu}
+        tag: ${TAG-latest}
+        username: ${USER}
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-dev
+    depends_on:
+      - mongodb
+      - base
+    environment:
+      - DB_URI=mongodb://mongodb/nextepc
+      - DISPLAY=$DISPLAY
+    # - DISPLAY=docker.for.mac.localhost:0
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    volumes:
+      - home:/home/${USER}
+      - ${HOME}:/mnt
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    # - /etc/localtime:/etc/localtime:ro
+    # - /usr/share/zoneinfo/Europe/Helsinki:/etc/localtime:ro
+    hostname: nextepc-dev
+    user: ${USER}
+    entrypoint: /bin/bash -c "/bin/bash -c \"$${@}\""
+    command: |
+        /bin/bash -c "
+            sudo chmod 666 /dev/net/tun
+            sudo /root/setup.sh
+            /bin/bash || exit 0
+        "
+volumes:
+  mongodb: {}
+  home: {}

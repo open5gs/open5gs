@@ -1,7 +1,26 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef __FD_LOGGER_H__
 #define __FD_LOGGER_H__
 
-#include "core_errno.h"
+#include "ogs-core.h"
 
 #include "freeDiameter/freeDiameter-host.h"
 #include "freeDiameter/libfdcore.h"
@@ -30,19 +49,19 @@ struct fd_logger_t {
     pthread_mutex_t stats_lock;
 };
 
-CORE_DECLARE(int) fd_logger_init(int mode);
-CORE_DECLARE(void) fd_logger_final();
+int fd_logger_init(int mode);
+void fd_logger_final();
 
-CORE_DECLARE(struct fd_logger_t*) fd_logger_self();
+struct fd_logger_t* fd_logger_self();
 
-CORE_DECLARE(int) fd_logger_stats_start();
+int fd_logger_stats_start();
 
 typedef void (*fd_logger_user_handler)(
     enum fd_hook_type type, struct msg *msg, struct peer_hdr *peer, 
     void *other, struct fd_hook_permsgdata *pmd, void *regdata);
 
-CORE_DECLARE(void) fd_logger_register(fd_logger_user_handler instance);
-CORE_DECLARE(void) fd_logger_unregister();
+void fd_logger_register(fd_logger_user_handler instance);
+void fd_logger_unregister();
 
 #ifdef __cplusplus
 }

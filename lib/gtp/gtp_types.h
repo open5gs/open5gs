@@ -1,8 +1,31 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef __GTP_TYPES_H__
 #define __GTP_TYPES_H__
 
-#include "core_tlv_msg.h"
-#include "3gpp_types.h"
+#include "base/types.h"
+#include "base/context.h"
+#include "gtp_tlv.h"
+
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __base_gtp_domain
 
 typedef struct c_sockaddr_t c_sockaddr_t;
 
@@ -90,56 +113,56 @@ extern "C" {
 #define GTP_CAUSE_REQUEST_REJECTED_DUE_TO_UE_CAPABILITY 127
 
 typedef struct _gtp_cause_t {
-    c_uint8_t value;
-ED4(c_uint8_t spare:5;,
-    c_uint8_t pce:1;,
-    c_uint8_t bce:1;,
-    c_uint8_t cs:1;)
+    uint8_t value;
+ED4(uint8_t spare:5;,
+    uint8_t pce:1;,
+    uint8_t bce:1;,
+    uint8_t cs:1;)
 } __attribute__ ((packed)) gtp_cause_t;
 
 /* 8.7 Aggregate Maximum Bit Rate (AMBR) */
 typedef struct _gtp_ambr_t {
-    c_uint32_t uplink;
-    c_uint32_t downlink;
+    uint32_t uplink;
+    uint32_t downlink;
 } __attribute__ ((packed)) gtp_ambr_t;
 
 /* 8.12 Indication */
 typedef struct _gtp_indication_t {
-ED8(c_uint8_t daf:1;,
-    c_uint8_t dtf:1;,
-    c_uint8_t hi:1;,
-    c_uint8_t dfi:1;,
-    c_uint8_t oi:1;,
-    c_uint8_t isrsi:1;,
-    c_uint8_t israi:1;,
-    c_uint8_t sgwci:1;)
+ED8(uint8_t daf:1;,
+    uint8_t dtf:1;,
+    uint8_t hi:1;,
+    uint8_t dfi:1;,
+    uint8_t oi:1;,
+    uint8_t isrsi:1;,
+    uint8_t israi:1;,
+    uint8_t sgwci:1;)
 
-ED8(c_uint8_t sqci:1;,
-    c_uint8_t uimsi:1;,
-    c_uint8_t cfsi:1;,
-    c_uint8_t crsi:1;,
-    c_uint8_t p:1;,
-    c_uint8_t pt:1;,
-    c_uint8_t si:1;,
-    c_uint8_t msv:1;)
+ED8(uint8_t sqci:1;,
+    uint8_t uimsi:1;,
+    uint8_t cfsi:1;,
+    uint8_t crsi:1;,
+    uint8_t p:1;,
+    uint8_t pt:1;,
+    uint8_t si:1;,
+    uint8_t msv:1;)
 
-ED8(c_uint8_t retloc:1;,
-    c_uint8_t pbic:1;,
-    c_uint8_t srni:1;,
-    c_uint8_t s6af:1;,
-    c_uint8_t s4af:1;,
-    c_uint8_t mbmdt:1;,
-    c_uint8_t israu:1;,
-    c_uint8_t ccrsi:1;)
+ED8(uint8_t retloc:1;,
+    uint8_t pbic:1;,
+    uint8_t srni:1;,
+    uint8_t s6af:1;,
+    uint8_t s4af:1;,
+    uint8_t mbmdt:1;,
+    uint8_t israu:1;,
+    uint8_t ccrsi:1;)
 
-ED8(c_uint8_t spare1:1;,
-    c_uint8_t spare2:1;,
-    c_uint8_t spare3:1;,
-    c_uint8_t spare4:1;,
-    c_uint8_t spare5:1;,
-    c_uint8_t csfbi:1;,
-    c_uint8_t clii:1;,
-    c_uint8_t cpsr:1;)
+ED8(uint8_t spare1:1;,
+    uint8_t spare2:1;,
+    uint8_t spare3:1;,
+    uint8_t spare4:1;,
+    uint8_t spare5:1;,
+    uint8_t csfbi:1;,
+    uint8_t clii:1;,
+    uint8_t cpsr:1;)
 } __attribute__ ((packed)) gtp_indication_t;
 
 /* 8.13 Protocol Configuration Options (PCO) 
@@ -150,31 +173,31 @@ ED8(c_uint8_t spare1:1;,
 /* 8.15 Bearer Quality of Service (Bearer QoS) */
 #define GTP_BEARER_QOS_LEN 22
 typedef struct _gtp_bearer_qos_t {
-ED5(c_uint8_t spare1:1;,
+ED5(uint8_t spare1:1;,
     /* See 3GPP TS 29.212[29], clause 5.3.46 Pre-emption-Capability AVP. */
-    c_uint8_t pre_emption_capability:1;, 
+    uint8_t pre_emption_capability:1;, 
     /* See 3GPP TS 29.212[29], clause 5.3.45 Priority-Level AVP. 
      * PL encodes each priority level defined for the Priority-Level AVP 
      * as the binary value of the priority level.  */
-    c_uint8_t priority_level:4;,
-    c_uint8_t spare2:1;,
+    uint8_t priority_level:4;,
+    uint8_t spare2:1;,
     /* See 3GPP TS 29.212[29], clause 5.3.47 Pre-emption-Vulnerability AVP. */
-    c_uint8_t pre_emption_vulnerability:1;)
-    c_uint8_t qci; /* specified in 3GPP TS 23.203 [48]. */
+    uint8_t pre_emption_vulnerability:1;)
+    uint8_t qci; /* specified in 3GPP TS 23.203 [48]. */
 
     /* specified in 3GPP TS 36.413 [10]. */
-    c_uint64_t ul_mbr;
-    c_uint64_t dl_mbr;
-    c_uint64_t ul_gbr;
-    c_uint64_t dl_gbr;
+    uint64_t ul_mbr;
+    uint64_t dl_mbr;
+    uint64_t ul_gbr;
+    uint64_t dl_gbr;
 
     /* NOTE : The encoding in 3GPP TS 24.301 [23] and 3GPP TS 36.413 [10] 
      * is different from the encoding within this specification.  */
 } __attribute__ ((packed)) gtp_bearer_qos_t;
 
-CORE_DECLARE(c_int16_t) gtp_parse_bearer_qos(
+int16_t gtp_parse_bearer_qos(
     gtp_bearer_qos_t *bearer_qos, tlv_octet_t *octet);
-CORE_DECLARE(c_int16_t) gtp_build_bearer_qos(
+int16_t gtp_build_bearer_qos(
     tlv_octet_t *octet, gtp_bearer_qos_t *bearer_qos, void *data, int data_len);
 
 /* 8.17 RAT Type */
@@ -202,23 +225,23 @@ typedef struct _gtp_tft_t {
 #define GTP_TFT_CODE_REPLACE_PACKET_FILTERS_IN_EXISTING     4
 #define GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING    5
 #define GTP_TFT_CODE_NO_TFT_OPERATION                       6
-ED3(c_uint8_t code:3;,
-    c_uint8_t e_bit:1;,
-    c_uint8_t num_of_packet_filter:4;)
+ED3(uint8_t code:3;,
+    uint8_t e_bit:1;,
+    uint8_t num_of_packet_filter:4;)
         };
-        c_uint8_t flags;
+        uint8_t flags;
     };
     struct {
         union {
             struct {
-            ED3(c_uint8_t spare:2;,
-                c_uint8_t direction:2;,
-                c_uint8_t identifier:4;)
+            ED3(uint8_t spare:2;,
+                uint8_t direction:2;,
+                uint8_t identifier:4;)
             };
-            c_uint8_t flags;
+            uint8_t flags;
         };
-        c_uint8_t precedence;
-        c_uint8_t length;
+        uint8_t precedence;
+        uint8_t length;
 #define GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE 48
 #define GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE 16
 #define GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE 17
@@ -234,68 +257,68 @@ ED3(c_uint8_t code:3;,
 #define GTP_PACKET_FILTER_TOS_TRAFFIC_CLASS_TYPE 112
 #define GTP_PACKET_FILTER_FLOW_LABEL_TYPE 128
         struct {
-            c_uint8_t type;
+            uint8_t type;
             union {
-                c_uint8_t proto;
+                uint8_t proto;
                 struct {
-                    c_uint32_t addr;
-                    c_uint32_t mask;
+                    uint32_t addr;
+                    uint32_t mask;
                 } ipv4;
                 struct {
-                    c_uint32_t addr[4];
-                    c_uint8_t prefixlen;
+                    uint32_t addr[4];
+                    uint8_t prefixlen;
                 } ipv6;
                 struct {
-                    c_uint32_t addr[4];
-                    c_uint32_t mask[4];
+                    uint32_t addr[4];
+                    uint32_t mask[4];
                 } ipv6_mask;
                 struct {
-                    c_uint16_t low;
-                    c_uint16_t high;
+                    uint16_t low;
+                    uint16_t high;
                 } port;
             };
         } component[GTP_MAX_NUM_OF_PACKET_FILTER_COMPONENT];
-        c_uint8_t num_of_component;
+        uint8_t num_of_component;
     } pf[MAX_NUM_OF_PACKET_FILTER];
 } gtp_tft_t;
 
-CORE_DECLARE(c_int16_t) gtp_build_tft(
+int16_t gtp_build_tft(
     tlv_octet_t *octet, gtp_tft_t *tft, void *data, int data_len);
 
 /* 8.21 User Location Information (ULI) */
 #define GTP_MAX_ULI_LEN sizeof(gtp_uli_t)
 typedef struct _gtp_uli_cgi_t {
     plmn_id_t plmn_id;
-    c_uint16_t lac;
-    c_uint16_t ci;
+    uint16_t lac;
+    uint16_t ci;
 } __attribute__ ((packed)) gtp_uli_cgi_t;
 
 typedef struct _gtp_uli_sai_t {
     plmn_id_t plmn_id;
-    c_uint16_t lac;
-    c_uint16_t sac;
+    uint16_t lac;
+    uint16_t sac;
 } __attribute__ ((packed)) gtp_uli_sai_t;
 
 typedef struct _gtp_uli_rai_t {
     plmn_id_t plmn_id;
-    c_uint16_t lac;
-    c_uint16_t rac;
+    uint16_t lac;
+    uint16_t rac;
 } __attribute__ ((packed)) gtp_uli_rai_t;
 
 typedef struct _gtp_uli_lai_t {
     plmn_id_t plmn_id;
-    c_uint16_t lac;
+    uint16_t lac;
 } __attribute__ ((packed)) gtp_uli_lai_t;
 
 typedef struct _gtp_uli_t {
     struct {
-    ED7(c_uint8_t spare:2;,
-        c_uint8_t lai:1;,
-        c_uint8_t e_cgi:1;,
-        c_uint8_t tai:1;,
-        c_uint8_t rai:1;,
-        c_uint8_t sai:1;,
-        c_uint8_t cgi:1;)
+    ED7(uint8_t spare:2;,
+        uint8_t lai:1;,
+        uint8_t e_cgi:1;,
+        uint8_t tai:1;,
+        uint8_t rai:1;,
+        uint8_t sai:1;,
+        uint8_t cgi:1;)
     } flags;
     gtp_uli_cgi_t cgi;
     gtp_uli_sai_t sai;
@@ -305,8 +328,8 @@ typedef struct _gtp_uli_t {
     gtp_uli_lai_t lai;
 } gtp_uli_t;
 
-CORE_DECLARE(c_int16_t) gtp_parse_uli(gtp_uli_t *uli, tlv_octet_t *octet);
-CORE_DECLARE(c_int16_t) gtp_build_uli(
+int16_t gtp_parse_uli(gtp_uli_t *uli, tlv_octet_t *octet);
+int16_t gtp_build_uli(
         tlv_octet_t *octet, gtp_uli_t *uli, void *data, int data_len);
 
 /* 8.22 Fully Qualified TEID (F-TEID) */
@@ -356,21 +379,21 @@ CORE_DECLARE(c_int16_t) gtp_build_uli(
 #define GTP_F_TEID_IPV6_LEN                     IPV6_LEN+GTP_F_TEID_HDR_LEN
 #define GTP_F_TEID_IPV4V6_LEN                   IPV4V6_LEN+GTP_F_TEID_HDR_LEN
 typedef struct _gtp_f_teid_t {
-ED3(c_uint8_t       ipv4:1;,
-    c_uint8_t       ipv6:1;,
-    c_uint8_t       interface_type:6;)
-    c_uint32_t      teid;
+ED3(uint8_t       ipv4:1;,
+    uint8_t       ipv6:1;,
+    uint8_t       interface_type:6;)
+    uint32_t      teid;
     union {
         /* GTP_F_TEID_IPV4 */
-        c_uint32_t addr;
+        uint32_t addr;
 
         /* GTP_F_TEID_IPV6 */
-        c_uint8_t addr6[IPV6_LEN];
+        uint8_t addr6[IPV6_LEN];
 
         /* GTP_F_TEID_BOTH */
         struct {
-            c_uint32_t addr;
-            c_uint8_t addr6[IPV6_LEN];
+            uint32_t addr;
+            uint8_t addr6[IPV6_LEN];
         } both;
     };
 } __attribute__ ((packed)) gtp_f_teid_t;
@@ -379,16 +402,20 @@ ED3(c_uint8_t       ipv4:1;,
 #define GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME 0
 #define GTP_UE_TIME_ZONE_1_HOUR_FOR_DAYLIGHT_SAVING_TIME        1
 #define GTP_UE_TIME_ZONE_2_HOUR_FOR_DAYLIGHT_SAVING_TIME        2
+/* Time Zone" IE in 3GPP TS 24.008 [5].
+ * This field uses the same format as the Timezone field used in the 
+ * TP-Service-Centre-Time-Stamp, which is defined in 3GPP TS 23.040 [90], 
+ * and its value shall be set as defined in 3GPP TS 22.042 */
 typedef struct _gtp_ue_timezone_t {
-    /* Time Zone" IE in 3GPP TS 24.008 [5].
-     * This field uses the same format as the Timezone field used in the 
-     * TP-Service-Centre-Time-Stamp, which is defined in 3GPP TS 23.040 [90], 
-     * and its value shall be set as defined in 3GPP TS 22.042 */
 #define GTP_TIME_TO_BCD(x) TIME_TO_BCD(x)
-ED2(c_uint8_t sign:1;,
-    c_uint8_t gmtoff:7;) /* quarters of an hour */
-ED2(c_uint8_t spare:6;,
-    c_uint8_t daylight_saving_time:2;)
+    /* The Time Zone indicates the difference, expressed in quarters of an hour,
+     * between the local time and GMT. In the first of the two semi-octets, 
+     * the first bit (bit 3 of the seventh octet of 
+     * the TP-Service-Centre-Time-Stamp field) represents 
+     * the algebraic sign of this difference (0: positive, 1: negative). */
+    uint8_t timezone;
+ED2(uint8_t spare:6;,
+    uint8_t daylight_saving_time:2;)
 } __attribute__ ((packed)) gtp_ue_timezone_t;
 
 /* 8.57 APN Restriction */

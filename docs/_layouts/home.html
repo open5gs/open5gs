@@ -1,0 +1,52 @@
+---
+layout: default
+---
+
+<header class="pt-3 mb-3">
+  {{ content }}
+</header>
+
+<div id="content">
+
+  {% if site.paginate %}
+    {% assign posts = paginator.posts %}
+  {% else %}
+    {% assign posts = site.posts %}
+  {% endif %}
+
+  <ul class="list-unstyled m-0">
+    {% assign date_format = site.minima_reboot.date_format | default: "%b %-d, %Y" %}
+    {% for post in posts %}
+      <li class="py-2">
+        <span class="text-secondary">{{ post.date | date: date_format }}</span>
+
+        <h1 class="mt-1 mb-3 h3">
+          <a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+        </h1>
+
+        <div class="text-justify">
+          {{ post.excerpt }}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+
+  {% if site.paginate %}
+  <nav class="py-1" aria-label="Blog page navigation">
+    {% if paginator.previous_page %}
+      <a href="{{ paginator.previous_page_path | relative_url }}">&laquo; Previous</a>
+    {% endif %}
+
+    Page: {{ paginator.page }} of {{ paginator.total_pages }}
+
+    {% if paginator.next_page %}
+      <a href="{{ paginator.next_page_path | relative_url }}">Next &raquo;</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+
+  {% if site.plugins contains "jekyll-feed" %}
+    <a href="{{ "/feed.xml" | relative_url }}"><div id="rss-icon" class="mb-2"></div></a>
+  {% endif %}
+
+</div>

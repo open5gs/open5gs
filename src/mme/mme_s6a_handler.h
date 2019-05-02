@@ -8,10 +8,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(void) mme_s6a_handle_aia(
-        mme_ue_t *mme_ue, s6a_aia_message_t *aia_message);
-CORE_DECLARE(void) mme_s6a_handle_ula(
-        mme_ue_t *mme_ue, s6a_ula_message_t *ula_message);
+void mme_s6a_handle_aia(mme_ue_t *mme_ue, s6a_aia_message_t *aia_message);
+void mme_s6a_handle_ula(mme_ue_t *mme_ue, s6a_ula_message_t *ula_message);
 
 #ifdef __cplusplus
 }

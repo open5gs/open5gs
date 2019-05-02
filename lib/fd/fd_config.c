@@ -1,20 +1,36 @@
-#define TRACE_MODULE _fd_config
-
-#include "core_debug.h"
-#include "core_lib.h"
-#include "core_file.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "fd_lib.h"
 
-static status_t fd_config_apply(fd_config_t *fd_config)
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __base_fd_domain
+
+static int fd_config_apply(fd_config_t *fd_config)
 {
     struct addrinfo hints, *ai;
     int ret;
     int i;
 
-    d_assert(fd_config->cnf_diamid, return CORE_ERROR,);
-    d_assert(fd_config->cnf_diamrlm, return CORE_ERROR,);
-    d_assert(fd_config->cnf_addr, return CORE_ERROR,);
+    ogs_assert(fd_config->cnf_diamid);
+    ogs_assert(fd_config->cnf_diamrlm);
+    ogs_assert(fd_config->cnf_addr);
 
     /********************************************************************
      * Diameter Server
@@ -31,13 +47,13 @@ static status_t fd_config_apply(fd_config_t *fd_config)
     ret = getaddrinfo(fd_config->cnf_addr, NULL, &hints, &ai);
     if (ret)
     {
-        d_error("getaddrinfo() [%s] failed(%d:%s)",
+        ogs_error("getaddrinfo() [%s] failed(%d:%s)",
                 fd_config->cnf_addr, errno, strerror(errno));
-        return CORE_ERROR;
+        return OGS_ERROR;
     }
 
     CHECK_FCT_DO( fd_ep_add_merge( &fd_g_config->cnf_endpoints,
-            ai->ai_addr, ai->ai_addrlen, EP_FL_CONF), return CORE_ERROR );
+            ai->ai_addr, ai->ai_addrlen, EP_FL_CONF), return OGS_ERROR );
     freeaddrinfo(ai);
 
     if (fd_config->cnf_port)
@@ -56,7 +72,7 @@ static status_t fd_config_apply(fd_config_t *fd_config)
         int disc = 0;
         struct peer_info fddpi;
 
-        d_assert(fd_config->conn[i].addr, return CORE_ERROR,);
+        ogs_assert(fd_config->conn[i].addr);
 
         memset(&fddpi, 0, sizeof(fddpi));
         fddpi.config.pic_flags.persist = PI_PRST_ALWAYS;
@@ -75,16 +91,16 @@ static status_t fd_config_apply(fd_config_t *fd_config)
         ret = getaddrinfo(fd_config->conn[i].addr, NULL, &hints, &ai);
         if (ret)
         {
-            d_error("getaddrinfo() [%s] failed(%d:%s)",
+            ogs_error("getaddrinfo() [%s] failed(%d:%s)",
                     fd_config->conn[i].addr, errno, strerror(errno));
-            return CORE_ERROR;
+            return OGS_ERROR;
         }
         
         CHECK_FCT_DO( fd_ep_add_merge(
                 &fddpi.pi_endpoints, ai->ai_addr, ai->ai_addrlen,
-                EP_FL_CONF | (disc ?: EP_ACCEPTALL) ), return CORE_ERROR);
+                EP_FL_CONF | (disc ?: EP_ACCEPTALL) ), return OGS_ERROR);
         CHECK_FCT_DO( fd_peer_add ( &fddpi, NULL, NULL, NULL ),
-                return CORE_ERROR);
+                return OGS_ERROR);
 
         freeaddrinfo(ai);
     }
@@ -99,13 +115,13 @@ static status_t fd_config_apply(fd_config_t *fd_config)
         FILE *fd;
 
         fname = strdup(fd_config->ext[i].module);
-        d_assert(fname, return CORE_ERROR,);
+        ogs_assert(fname);
         fd = fopen(fname, "r");
         if ((fd == NULL) && (*fname != '/'))
         {
             char *bkp = fname;
             fname = malloc(strlen(bkp) + strlen(DEFAULT_EXTENSIONS_PATH) + 2);
-            d_assert(fname, return CORE_ERROR,);
+            ogs_assert(fname);
             sprintf(fname, DEFAULT_EXTENSIONS_PATH "/%s", bkp);
             fd = fopen(fname, "r");
             if (fd == NULL)
@@ -126,13 +142,13 @@ static status_t fd_config_apply(fd_config_t *fd_config)
         if (cfname)
         {
             cfname = strdup(fd_config->ext[i].conf);
-            d_assert(cfname, return CORE_ERROR,);
+            ogs_assert(cfname);
             fd = fopen(cfname, "r");
             if ((fd == NULL) && (*cfname != '/'))
             {
                 char *test = NULL;
                 test = malloc( strlen(cfname) + strlen(DEFAULT_CONF_PATH) + 2);
-                d_assert(test, return CORE_ERROR,);
+                ogs_assert(test);
                 sprintf(test, DEFAULT_CONF_PATH "/%s", cfname);
                 fd = fopen(test, "r");
                 if (fd)
@@ -151,13 +167,13 @@ static status_t fd_config_apply(fd_config_t *fd_config)
         }
 
         extern int fd_ext_add( char * filename, char * conffile );
-        CHECK_FCT_DO( fd_ext_add( fname, cfname ), return CORE_ERROR );
+        CHECK_FCT_DO( fd_ext_add( fname, cfname ), return OGS_ERROR );
     }
 
-	return CORE_OK;
+	return OGS_OK;
 }
 
-status_t fd_config_init(fd_config_t *fd_config)
+int fd_config_init(fd_config_t *fd_config)
 {
 	char * buf = NULL, *b;
 	size_t len = 0;
@@ -182,6 +198,6 @@ status_t fd_config_init(fd_config_t *fd_config)
     int fd_msg_init(void);
 	CHECK_FCT( fd_msg_init()    );
 	
-    return CORE_OK;
+    return OGS_OK;
 }
 

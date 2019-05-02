@@ -3,23 +3,25 @@
 noinst_LTLIBRARIES = libapp.la
 
 libapp_la_SOURCES = \
-	context.h app.h yaml_helper.h \
-	context.c init.c yaml_helper.c \
-	$(NULL)
-
-libapp_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/core/src/libcore.la \
+	ogs-yaml.h ogs-yaml.c \
+	context.h application.h context.c application.c \
 	$(NULL)
 
 libapp_la_LIBADD = \
-    $(top_srcdir)/lib/core/src/libcore.la \
+	@OGSCORE_LIBS@ \
 	@YAML_LIBS@ \
 	@MONGOC_LIBS@ \
 	$(NULL)
+ 
+libapp_la_DEPENDENCIES = \
+	@OGSCORE_LIBS@ \
+	$(NULL)
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/lib/core/include \
+	@OGSCORE_CFLAGS@ \
+	@YAML_CFLAGS@ \
 	@MONGOC_CFLAGS@ \
+	-I$(top_srcdir)/lib \
 	$(NULL)
 
 AM_CFLAGS = \

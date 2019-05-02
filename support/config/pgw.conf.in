@@ -2,11 +2,6 @@
 
 logger:
     file: @LOCALSTATE_DIR@/log/nextepc/pgw.log
-    trace: 
-        app: 1
-        diameter: 1
-        gtpv2: 1
-        gtp: 1
 
 parameter:
 

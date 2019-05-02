@@ -2,6 +2,8 @@
 
 noinst_LTLIBRARIES = libsgw.la
 
+SUBDIR = gtp
+
 libsgw_la_SOURCES = \
     sgw_event.h sgw_context.h \
 	sgw_gtp_path.h sgw_sm.h sgw_s11_handler.h sgw_s5c_handler.h \
@@ -11,16 +13,16 @@ libsgw_la_SOURCES = \
 
 libsgw_la_DEPENDENCIES = \
     $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/src/app/libapp.la \
+	$(top_srcdir)/src/app/libapp.la \
 	$(NULL)
 
 libsgw_la_LIBADD = \
     $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/src/app/libapp.la \
+	$(top_srcdir)/src/app/libapp.la \
 	$(NULL)
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/lib/core/include \
+	@OGSCORE_CFLAGS@ \
     -I$(top_srcdir)/lib \
 	-I$(top_srcdir)/src \
 	@MONGOC_CFLAGS@ \
@@ -28,6 +30,3 @@ AM_CPPFLAGS = \
 
 AM_CFLAGS = \
 	-Wall -Werror
-
-MAINTAINERCLEANFILES = Makefile.in
-MOSTLYCLEANFILES = core *.stackdump

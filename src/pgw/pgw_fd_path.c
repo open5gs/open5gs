@@ -1,9 +1,3 @@
-#define TRACE_MODULE _pgw_fd_path
-
-#include "core_debug.h"
-#include "core_pool.h"
-#include "core_lib.h"
-
 #include "gtp/gtp_xact.h"
 
 #include "fd/fd_lib.h"
@@ -22,17 +16,15 @@ struct sess_state {
 
     pgw_sess_t *sess;
     gtp_xact_t *xact;
-    pkbuf_t *gtpbuf;
+    ogs_pkbuf_t *gtpbuf;
 
-    c_uint32_t cc_request_type;
-    c_uint32_t cc_request_number;
+    uint32_t cc_request_type;
+    uint32_t cc_request_number;
 
     struct timespec ts; /* Time of sending the message */
 };
 
-pool_declare(pgw_gx_sess_pool, struct sess_state, MAX_POOL_OF_DIAMETER_SESS);
-
-static status_t decode_pcc_rule_definition(
+static int decode_pcc_rule_definition(
         pcc_rule_t *pcc_rule, struct avp *avpch1, int *perror);
 static void pgw_gx_cca_cb(void *data, struct msg **msg);
 
@@ -40,12 +32,9 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 {
     struct sess_state *new = NULL;
 
-    pool_alloc_node(&pgw_gx_sess_pool, &new);
-    d_assert(new, return NULL,);
-    memset(new, 0, sizeof *new);
-
-    new->gx_sid = (os0_t)core_strdup((char *)sid);
-    d_assert(new->gx_sid, return NULL,);
+    new = ogs_calloc(1, sizeof(*new));
+    new->gx_sid = (os0_t)ogs_strdup((char *)sid);
+    ogs_assert(new->gx_sid);
 
     return new;
 }
@@ -53,13 +42,13 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 {
     if (sess_data->gx_sid)
-        CORE_FREE(sess_data->gx_sid);
+        ogs_free(sess_data->gx_sid);
 
-    pool_free_node(&pgw_gx_sess_pool, sess_data);
+    ogs_free(sess_data);
 }
 
 void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
-        pkbuf_t *gtpbuf, c_uint32_t cc_request_type)
+        ogs_pkbuf_t *gtpbuf, uint32_t cc_request_type)
 {
     int ret;
 
@@ -73,17 +62,17 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
     gtp_message_t *message = NULL;
     paa_t paa; /* For changing Framed-IPv6-Prefix Length to 128 */
 
-    d_assert(sess, return,);
-    d_assert(sess->ipv4 || sess->ipv6, return,);
-    d_assert(gtpbuf, return, );
-    message = gtpbuf->payload;
-    d_assert(message, return, );
+    ogs_assert(sess);
+    ogs_assert(sess->ipv4 || sess->ipv6);
+    ogs_assert(gtpbuf);
+    message = gtpbuf->data;
+    ogs_assert(message);
 
-    d_trace(3, "[PGW] Credit-Control-Request\n");
+    ogs_debug("[PGW2] Credit-Control-Request");
 
     /* Create the request */
     ret = fd_msg_new(gx_cmd_ccr, MSGFL_ALLOC_ETEID, &req);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
 
     /* Find Diameter Gx Session */
     if (sess->gx_sid)
@@ -91,12 +80,12 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
         /* Retrieve session by Session-Id */
         size_t sidlen = strlen(sess->gx_sid);
 		ret = fd_sess_fromsid_msg((os0_t)sess->gx_sid, sidlen, &session, &new);
-        d_assert(ret == 0, return,);
-        d_assert(new == 0, return,);
+        ogs_assert(ret == 0);
+        ogs_assert(new == 0);
 
         /* Add Session-Id to the message */
         ret = fd_message_session_id_set(req, (os0_t)sess->gx_sid, sidlen);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         /* Save the session associated with the message */
         ret = fd_msg_sess_set(req, session);
     }
@@ -106,9 +95,9 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
         #define GX_APP_SID_OPT  "app_gx"
         ret = fd_msg_new_session(req, (os0_t)GX_APP_SID_OPT, 
                 CONSTSTRLEN(GX_APP_SID_OPT));
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
     }
 
     /* Retrieve session state in this session */
@@ -119,14 +108,14 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
         size_t sidlen;
 
         ret = fd_sess_getsid(session, &sid, &sidlen);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         /* Allocate new session state memory */
         sess_data = new_state(sid);
-        d_assert(sess_data, return,);
+        ogs_assert(sess_data);
 
         /* Save Session-Id to PGW Session Context */
-        sess->gx_sid = (c_int8_t *)sess_data->gx_sid;
+        sess->gx_sid = (char*)sess_data->gx_sid;
     }
 
     /* Update session state */
@@ -143,232 +132,232 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     
     /* Set the Destination-Realm AVP */
     ret = fd_msg_avp_new(fd_destination_realm, 0, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
     val.os.len  = strlen(fd_g_config->cnf_diamrlm);
     ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
 
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     val.i32 = GX_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
 
     /* Set CC-Request-Type, CC-Request-Number */
     ret = fd_msg_avp_new(gx_cc_request_type, 0, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     val.i32 = sess_data->cc_request_type;
     ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
 
     ret = fd_msg_avp_new(gx_cc_request_number, 0, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     val.i32 = sess_data->cc_request_number;
     ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
 
     /* Set Subscription-Id */
     ret = fd_msg_avp_new(gx_subscription_id, 0, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
 
     ret = fd_msg_avp_new(gx_subscription_id_type, 0, &avpch1);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     val.i32 = GX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI;
     ret = fd_msg_avp_setvalue (avpch1, &val);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
 
     ret = fd_msg_avp_new(gx_subscription_id_data, 0, &avpch1);
-    d_assert(ret == 0, return,);
-    val.os.data = (c_uint8_t *)sess->imsi_bcd;
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t *)sess->imsi_bcd;
     val.os.len  = strlen(sess->imsi_bcd);
     ret = fd_msg_avp_setvalue (avpch1, &val);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
 
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
 
     if (cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
         /* Set Supported-Features */
         ret = fd_msg_avp_new(gx_supported_features, 0, &avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_new(gx_feature_list_id, 0, &avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         val.i32 = 1;
         ret = fd_msg_avp_setvalue (avpch1, &val);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_new(gx_feature_list, 0, &avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         val.u32 = 0x0000000b;
         ret = fd_msg_avp_setvalue (avpch1, &val);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         /* Set Network-Request-Support */
         ret = fd_msg_avp_new(gx_network_request_support, 0, &avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         val.i32 = 1;
         ret = fd_msg_avp_setvalue(avp, &val);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         /* Set Framed-IP-Address */
         if (sess->ipv4)
         {
             ret = fd_msg_avp_new(gx_framed_ip_address, 0, &avp);
-            d_assert(ret == 0, return,);
-            val.os.data = (c_uint8_t*)&sess->ipv4->addr;
+            ogs_assert(ret == 0);
+            val.os.data = (uint8_t*)&sess->ipv4->addr;
             val.os.len = IPV4_LEN;
             ret = fd_msg_avp_setvalue(avp, &val);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
         }
 
         /* Set Framed-IPv6-Prefix */
         if (sess->ipv6)
         {
             ret = fd_msg_avp_new(gx_framed_ipv6_prefix, 0, &avp);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             memcpy(&paa, &sess->pdn.paa, PAA_IPV6_LEN);
 #define FRAMED_IPV6_PREFIX_LENGTH 128  /* from spec document */
             paa.len = FRAMED_IPV6_PREFIX_LENGTH; 
-            val.os.data = (c_uint8_t*)&paa;
+            val.os.data = (uint8_t*)&paa;
             val.os.len = PAA_IPV6_LEN;
             ret = fd_msg_avp_setvalue(avp, &val);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
         }
 
         /* Set IP-Can-Type */
         ret = fd_msg_avp_new(gx_ip_can_type, 0, &avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         val.i32 = GX_IP_CAN_TYPE_3GPP_EPS;
         ret = fd_msg_avp_setvalue(avp, &val);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         /* Set RAT-Type */
         ret = fd_msg_avp_new(gx_rat_type, 0, &avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         val.i32 = GX_RAT_TYPE_EUTRAN;
         ret = fd_msg_avp_setvalue(avp, &val);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         /* Set QoS-Information */
         if (sess->pdn.ambr.downlink || sess->pdn.ambr.uplink)
         {
             ret = fd_msg_avp_new(gx_qos_information, 0, &avp);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
 
             if (sess->pdn.ambr.uplink)
             {
                 ret = fd_msg_avp_new(gx_apn_aggregate_max_bitrate_ul,
                         0, &avpch1);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
                 val.u32 = sess->pdn.ambr.uplink;
                 ret = fd_msg_avp_setvalue (avpch1, &val);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
             }
             
             if (sess->pdn.ambr.downlink)
             {
                 ret = fd_msg_avp_new(gx_apn_aggregate_max_bitrate_dl, 0,
                         &avpch1);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
                 val.u32 = sess->pdn.ambr.downlink;
                 ret = fd_msg_avp_setvalue (avpch1, &val);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
                 ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
             }
 
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
         }
 
         /* Set Default-EPS-Bearer-QoS */
         ret = fd_msg_avp_new(gx_default_eps_bearer_qos, 0, &avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_new(gx_qos_class_identifier, 0, &avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         val.u32 = sess->pdn.qos.qci;
         ret = fd_msg_avp_setvalue (avpch1, &val);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_new(gx_allocation_retention_priority, 0, &avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_new(gx_priority_level, 0, &avpch2);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         val.u32 = sess->pdn.qos.arp.priority_level;
         ret = fd_msg_avp_setvalue (avpch2, &val);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_new(gx_pre_emption_capability, 0, &avpch2);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         val.u32 = sess->pdn.qos.arp.pre_emption_capability;
         ret = fd_msg_avp_setvalue (avpch2, &val);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_new(gx_pre_emption_vulnerability, 0, &avpch2);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         val.u32 = sess->pdn.qos.arp.pre_emption_vulnerability;
         ret = fd_msg_avp_setvalue (avpch2, &val);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avpch1, MSG_BRW_LAST_CHILD, avpch2);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
 
         /* Set 3GPP-User-Location-Info */
         {
             struct gx_uli_t {
-                c_uint8_t type;
+                uint8_t type;
                 tai_t tai;
                 e_cgi_t e_cgi;
             } gx_uli;
@@ -383,38 +372,38 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
             gx_uli.e_cgi.cell_id = htonl(sess->e_cgi.cell_id);
 
             ret = fd_msg_avp_new(gx_3gpp_user_location_info, 0, &avp);
-            d_assert(ret == 0, return,);
-            val.os.data = (c_uint8_t*)&gx_uli;
+            ogs_assert(ret == 0);
+            val.os.data = (uint8_t*)&gx_uli;
             val.os.len = sizeof(gx_uli);
             ret = fd_msg_avp_setvalue(avp, &val);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
         }
 
         /* Set 3GPP-MS-Timezone */
         if (message->create_session_request.ue_time_zone.presence)
         {
             ret = fd_msg_avp_new(gx_3gpp_ms_timezone, 0, &avp);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             val.os.data = message->create_session_request.ue_time_zone.data;
             val.os.len = message->create_session_request.ue_time_zone.len;
             ret = fd_msg_avp_setvalue(avp, &val);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
         }
     }
 
     /* Set Called-Station-Id */
     ret = fd_msg_avp_new(gx_called_station_id, 0, &avp);
-    d_assert(ret == 0, return,);
-    val.os.data = (c_uint8_t*)sess->pdn.apn;
+    ogs_assert(ret == 0);
+    val.os.data = (uint8_t*)sess->pdn.apn;
     val.os.len = strlen(sess->pdn.apn);
     ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
     
@@ -424,22 +413,22 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
     
     /* Store this value in the session */
     ret = fd_sess_state_store(pgw_gx_reg, session, &sess_data);
-    d_assert(ret == 0, return,);
-    d_assert(sess_data == NULL,,);
+    ogs_assert(ret == 0);
+    ogs_assert(sess_data == NULL);
     
     /* Send the request */
     ret = fd_msg_send(&req, pgw_gx_cca_cb, svg);
-    d_assert(ret == 0,,);
+    ogs_assert(ret == 0);
 
     /* Increment the counter */
-    d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
+    ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
     fd_logger_self()->stats.nb_sent++;
-    d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
+    ogs_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0);
 }
 
 static void pgw_gx_cca_cb(void *data, struct msg **msg)
 {
-    status_t rv;
+    int rv;
     int ret;
 
     struct sess_state *sess_data = NULL;
@@ -451,40 +440,40 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     int error = 0;
     int new;
 
-    event_t e;
+    pgw_event_t *e = NULL;
     gtp_xact_t *xact = NULL;
     pgw_sess_t *sess = NULL;
-    pkbuf_t *gxbuf = NULL, *gtpbuf = NULL;
+    ogs_pkbuf_t *gxbuf = NULL, *gtpbuf = NULL;
     gx_message_t *gx_message = NULL;
-    c_uint16_t gxbuf_len = 0;
+    uint16_t gxbuf_len = 0;
 
-    d_trace(3, "[PGW] Credit-Control-Answer\n");
+    ogs_debug("[PGW] Credit-Control-Answer");
     
     ret = clock_gettime(CLOCK_REALTIME, &ts);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
 
     /* Search the session, retrieve its data */
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
-    d_assert(ret == 0, return,);
-    d_assert(new == 0, return, );
+    ogs_assert(ret == 0);
+    ogs_assert(new == 0);
     
     ret = fd_sess_state_retrieve(pgw_gx_reg, session, &sess_data);
-    d_assert(ret == 0, return,);
-    d_assert(sess_data && (void *)sess_data == data, return, );
+    ogs_assert(ret == 0);
+    ogs_assert(sess_data && (void *)sess_data == data);
 
     xact = sess_data->xact;
-    d_assert(xact, return, "Null param");
+    ogs_assert(xact);
     sess = sess_data->sess;
-    d_assert(sess, return, "Null param");
+    ogs_assert(sess);
     gtpbuf = sess_data->gtpbuf;
-    d_assert(gtpbuf, return, "Null param");
+    ogs_assert(gtpbuf);
 
     gxbuf_len = sizeof(gx_message_t);
-    d_assert(gxbuf_len < 8192, return, "Not supported size:%d", gxbuf_len);
-    gxbuf = pkbuf_alloc(0, gxbuf_len);
-    d_assert(gxbuf, return, "Null param");
-    gx_message = gxbuf->payload;
-    d_assert(gx_message, return, "Null param");
+    ogs_assert(gxbuf_len < 8192);
+    gxbuf = ogs_pkbuf_alloc(NULL, gxbuf_len);
+    ogs_pkbuf_put(gxbuf, gxbuf_len);
+    gx_message = gxbuf->data;
+    ogs_assert(gx_message);
 
     /* Set Credit Control Command */
     memset(gx_message, 0, gxbuf_len);
@@ -492,155 +481,155 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     if (avp)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         gx_message->result_code = hdr->avp_value->i32;
-        d_trace(5, "    Result Code: %d\n", hdr->avp_value->i32);
+        ogs_debug("    Result Code: %d", hdr->avp_value->i32);
     }
     else
     {
         ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         if (avp)
         {
             ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch1);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             if (avpch1)
             {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
                 gx_message->result_code = hdr->avp_value->i32;
-                d_trace(5, "    Experimental Result Code: %d\n",
+                ogs_debug("    Experimental Result Code: %d",
                         gx_message->result_code);
             }
         }
         else
         {
-            d_error("no Result-Code");
+            ogs_error("no Result-Code");
             error++;
         }
     }
 
     /* Value of Origin-Host */
     ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     if (avp)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        d_assert(ret == 0, return,);
-        d_trace(5, "    From '%.*s'\n",
+        ogs_assert(ret == 0);
+        ogs_debug("    From '%.*s'",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else
     {
-        d_error("no_Origin-Host");
+        ogs_error("no_Origin-Host");
         error++;
     }
 
     /* Value of Origin-Realm */
     ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     if (avp)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        d_assert(ret == 0, return,);
-        d_trace(5, "         ('%.*s')\n",
+        ogs_assert(ret == 0);
+        ogs_debug("         ('%.*s')",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
     }
     else
     {
-        d_error("no_Origin-Realm");
+        ogs_error("no_Origin-Realm");
         error++;
     }
 
     if (gx_message->result_code != ER_DIAMETER_SUCCESS)
     {
-        d_warn("ERROR DIAMETER Result Code(%d)", gx_message->result_code);
+        ogs_warn("ERROR DIAMETER Result Code(%d)", gx_message->result_code);
         goto out;
     }
 
     ret = fd_msg_search_avp(*msg, gx_cc_request_type, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     if (avp)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         gx_message->cc_request_type = hdr->avp_value->i32;
     }
     else
     {
-        d_error("no_CC-Request-Type");
+        ogs_error("no_CC-Request-Type");
         error++;
     }
 
     ret = fd_msg_search_avp(*msg, gx_qos_information, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     if (avp)
     {
         ret = fd_avp_search_avp(avp, gx_apn_aggregate_max_bitrate_ul, &avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         if (avpch1)
         {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             gx_message->pdn.ambr.uplink = hdr->avp_value->u32;
         }
         ret = fd_avp_search_avp(avp, gx_apn_aggregate_max_bitrate_dl, &avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         if (avpch1)
         {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             gx_message->pdn.ambr.downlink = hdr->avp_value->u32;
         }
     }
 
     ret = fd_msg_search_avp(*msg, gx_default_eps_bearer_qos, &avp);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     if (avp)
     {
         ret = fd_avp_search_avp(avp, gx_qos_class_identifier, &avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         if (avpch1)
         {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             gx_message->pdn.qos.qci = hdr->avp_value->u32;
         }
 
         ret = fd_avp_search_avp(avp, gx_allocation_retention_priority, &avpch1);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         if (avpch1)
         {
             ret = fd_avp_search_avp(avpch1, gx_priority_level, &avpch2);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             if (avpch2)
             {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
                 gx_message->pdn.qos.arp.priority_level = hdr->avp_value->u32;
             }
 
             ret = fd_avp_search_avp(avpch1, gx_pre_emption_capability, &avpch2);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             if (avpch2)
             {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
                 gx_message->pdn.qos.arp.pre_emption_capability =
                     hdr->avp_value->u32;
             }
 
             ret = fd_avp_search_avp(avpch1,
                         gx_pre_emption_vulnerability, &avpch2);
-            d_assert(ret == 0, return,);
+            ogs_assert(ret == 0);
             if (avpch2)
             {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
                 gx_message->pdn.qos.arp.pre_emption_vulnerability =
                     hdr->avp_value->u32;
             }
@@ -648,11 +637,11 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     }
 
     ret = fd_msg_browse(*msg, MSG_BRW_FIRST_CHILD, &avp, NULL);
-    d_assert(ret == 0, return,);
+    ogs_assert(ret == 0);
     while(avp)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        d_assert(ret == 0, return,);
+        ogs_assert(ret == 0);
         switch(hdr->avp_code)
         {
             case AC_SESSION_ID:
@@ -674,11 +663,11 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
             case GX_AVP_CODE_CHARGING_RULE_INSTALL:
             {
                 ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
-                d_assert(ret == 0, return,);
+                ogs_assert(ret == 0);
                 while(avpch1)
                 {
                     ret = fd_msg_avp_hdr(avpch1, &hdr);
-                    d_assert(ret == 0, return,);
+                    ogs_assert(ret == 0);
                     switch(hdr->avp_code)
                     {
                         case GX_AVP_CODE_CHARGING_RULE_DEFINITION:
@@ -688,7 +677,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
 
                             rv = decode_pcc_rule_definition(
                                     pcc_rule, avpch1, &error);
-                            d_assert(rv == CORE_OK, return,);
+                            ogs_assert(rv == OGS_OK);
 
                             pcc_rule->type = PCC_RULE_TYPE_INSTALL;
                             gx_message->num_of_pcc_rule++;
@@ -696,7 +685,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                         }
                         default:
                         {
-                            d_error("Not supported(%d)", hdr->avp_code);
+                            ogs_error("Not supported(%d)", hdr->avp_code);
                             break;
                         }
                     }
@@ -706,7 +695,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
             }
             default:
             {
-                d_warn("Not supported(%d)", hdr->avp_code);
+                ogs_warn("Not supported(%d)", hdr->avp_code);
                 break;
             }
         }
@@ -716,23 +705,26 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
 out:
     if (!error)
     {
-        event_set(&e, PGW_EVT_GX_MESSAGE);
-        event_set_param1(&e, (c_uintptr_t)sess->index);
-        event_set_param2(&e, (c_uintptr_t)gxbuf);
-        event_set_param3(&e, (c_uintptr_t)xact->index);
-        event_set_param4(&e, (c_uintptr_t)gtpbuf);
-        pgw_event_send(&e);
+        e = pgw_event_new(PGW_EVT_GX_MESSAGE);
+        ogs_assert(e);
+
+        e->sess_index = sess->index;
+        e->gxbuf = gxbuf;
+        e->xact_index = xact->index;
+        e->gtpbuf = gtpbuf;
+        pgw_event_send(e);
+        ogs_pollset_notify(pgw_self()->pollset);
     }
     else
     {
         gx_message_free(gx_message);
-        pkbuf_free(gxbuf);
+        ogs_pkbuf_free(gxbuf);
 
-        pkbuf_free(gtpbuf);
+        ogs_pkbuf_free(gtpbuf);
     }
 
     /* Free the message */
-    d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
+    ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
     if (fd_logger_self()->stats.nb_recv)
@@ -758,23 +750,23 @@ out:
     else 
         fd_logger_self()->stats.nb_recv++;
 
-    d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
+    ogs_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0);
     
     /* Display how long it took */
     if (ts.tv_nsec > sess_data->ts.tv_nsec)
-        d_trace(15, "in %d.%06ld sec\n", 
+        ogs_trace("in %d.%06ld sec", 
                 (int)(ts.tv_sec - sess_data->ts.tv_sec),
                 (long)(ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
     else
-        d_trace(15, "in %d.%06ld sec\n", 
+        ogs_trace("in %d.%06ld sec", 
                 (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
 
     if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
     {
         ret = fd_sess_state_store(pgw_gx_reg, session, &sess_data);
-        d_assert(ret == 0, return,);
-        d_assert(sess_data == NULL, return,);
+        ogs_assert(ret == 0);
+        ogs_assert(sess_data == NULL);
     }
     else
     {
@@ -782,7 +774,7 @@ out:
     }
 
     ret = fd_msg_free(*msg);
-    d_assert(ret == 0,,);
+    ogs_assert(ret == 0);
     *msg = NULL;
     
     return;
@@ -792,7 +784,7 @@ static int pgw_gx_fb_cb(struct msg **msg, struct avp *avp,
         struct session *sess, void *opaque, enum disp_action *act)
 {
 	/* This CB should never be called */
-	d_warn("Unexpected message received!");
+	ogs_warn("Unexpected message received!");
 	
 	return ENOTSUP;
 }
@@ -800,7 +792,7 @@ static int pgw_gx_fb_cb(struct msg **msg, struct avp *avp,
 static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp, 
         struct session *session, void *opaque, enum disp_action *act)
 {
-    status_t rv;
+    int rv;
     int ret;
 
 	struct msg *ans, *qry;
@@ -809,25 +801,24 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
     struct sess_state *sess_data = NULL;
 
-    event_t e;
-    c_uint16_t gxbuf_len = 0;
-    pkbuf_t *gxbuf = NULL;
+    pgw_event_t *e = NULL;
+    uint16_t gxbuf_len = 0;
+    ogs_pkbuf_t *gxbuf = NULL;
     pgw_sess_t *sess = NULL;
     gx_message_t *gx_message = NULL;
 
-    c_uint32_t result_code = FD_DIAMETER_UNKNOWN_SESSION_ID;
+    uint32_t result_code = FD_DIAMETER_UNKNOWN_SESSION_ID;
 	
-    d_assert(msg, return EINVAL,);
+    ogs_assert(msg);
 
-    d_trace(3, "[PGW] Re-Auth-Request\n");
+    ogs_debug("[PGW] Re-Auth-Request");
 
     gxbuf_len = sizeof(gx_message_t);
-    d_assert(gxbuf_len < 8192, return EINVAL,
-            "Not supported size:%d", gxbuf_len);
-    gxbuf = pkbuf_alloc(0, gxbuf_len);
-    d_assert(gxbuf, return EINVAL, "Null param");
-    gx_message = gxbuf->payload;
-    d_assert(gx_message, return EINVAL, "Null param");
+    ogs_assert(gxbuf_len < 8192);
+    gxbuf = ogs_pkbuf_alloc(NULL, gxbuf_len);
+    ogs_pkbuf_put(gxbuf, gxbuf_len);
+    gx_message = gxbuf->data;
+    ogs_assert(gx_message);
 
     /* Set Credit Control Command */
     memset(gx_message, 0, gxbuf_len);
@@ -836,27 +827,27 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
 	/* Create answer header */
 	qry = *msg;
 	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    d_assert(ret == 0, return EINVAL,);
+    ogs_assert(ret == 0);
     ans = *msg;
 
     ret = fd_sess_state_retrieve(pgw_gx_reg, session, &sess_data);
-    d_assert(ret == 0, return EINVAL,);
+    ogs_assert(ret == 0);
     if (!sess_data)
     {
-        d_error("No Session Data");
+        ogs_error("No Session Data");
         goto out;
     }
 
     /* Get Session Information */
     sess = sess_data->sess;
-    d_assert(sess, return EINVAL,);
+    ogs_assert(sess);
 
     ret = fd_msg_browse(qry, MSG_BRW_FIRST_CHILD, &avp, NULL);
-    d_assert(ret == 0, return EINVAL,);
+    ogs_assert(ret == 0);
     while(avp)
     {
         ret = fd_msg_avp_hdr(avp, &hdr);
-        d_assert(ret == 0, return EINVAL,);
+        ogs_assert(ret == 0);
         switch(hdr->avp_code)
         {
             case AC_SESSION_ID:
@@ -873,11 +864,11 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
             case GX_AVP_CODE_CHARGING_RULE_INSTALL:
             {
                 ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
-                d_assert(ret == 0, return EINVAL,);
+                ogs_assert(ret == 0);
                 while(avpch1)
                 {
                     ret = fd_msg_avp_hdr(avpch1, &hdr);
-                    d_assert(ret == 0, return EINVAL,);
+                    ogs_assert(ret == 0);
                     switch(hdr->avp_code)
                     {
                         case GX_AVP_CODE_CHARGING_RULE_DEFINITION:
@@ -887,7 +878,7 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
 
                             rv = decode_pcc_rule_definition(
                                     pcc_rule, avpch1, NULL);
-                            d_assert(rv == CORE_OK, return EINVAL,);
+                            ogs_assert(rv == OGS_OK);
 
                             pcc_rule->type = PCC_RULE_TYPE_INSTALL;
                             gx_message->num_of_pcc_rule++;
@@ -895,7 +886,7 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
                         }
                         default:
                         {
-                            d_error("Not supported(%d)", hdr->avp_code);
+                            ogs_error("Not supported(%d)", hdr->avp_code);
                             break;
                         }
                     }
@@ -906,11 +897,11 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
             case GX_AVP_CODE_CHARGING_RULE_REMOVE:
             {
                 ret = fd_msg_browse(avp, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
-                d_assert(ret == 0, return EINVAL,);
+                ogs_assert(ret == 0);
                 while(avpch1)
                 {
                     ret = fd_msg_avp_hdr(avpch1, &hdr);
-                    d_assert(ret == 0, return EINVAL,);
+                    ogs_assert(ret == 0);
                     switch(hdr->avp_code)
                     {
                         case GX_AVP_CODE_CHARGING_RULE_NAME:
@@ -919,8 +910,8 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
                                 [gx_message->num_of_pcc_rule];
 
                             pcc_rule->name = 
-                                core_strdup((char*)hdr->avp_value->os.data);
-                            d_assert(pcc_rule->name, return CORE_ERROR,);
+                                ogs_strdup((char*)hdr->avp_value->os.data);
+                            ogs_assert(pcc_rule->name);
 
                             pcc_rule->type = PCC_RULE_TYPE_REMOVE;
                             gx_message->num_of_pcc_rule++;
@@ -928,7 +919,7 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
                         }
                         default:
                         {
-                            d_error("Not supported(%d)", hdr->avp_code);
+                            ogs_error("Not supported(%d)", hdr->avp_code);
                             break;
                         }
                     }
@@ -938,7 +929,7 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
             }
             default:
             {
-                d_warn("Not supported(%d)", hdr->avp_code);
+                ogs_warn("Not supported(%d)", hdr->avp_code);
                 break;
             }
         }
@@ -946,39 +937,42 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Send Gx Event to PGW State Machine */
-    event_set(&e, PGW_EVT_GX_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)sess->index);
-    event_set_param2(&e, (c_uintptr_t)gxbuf);
-    pgw_event_send(&e);
+    e = pgw_event_new(PGW_EVT_GX_MESSAGE);
+    ogs_assert(e);
+
+    e->sess_index = sess->index;
+    e->gxbuf = gxbuf;
+    pgw_event_send(e);
+    ogs_pollset_notify(pgw_self()->pollset);
 
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
-    d_assert(ret == 0, return EINVAL,);
+    ogs_assert(ret == 0);
     val.i32 = GX_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
-    d_assert(ret == 0, return EINVAL,);
+    ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    d_assert(ret == 0, return EINVAL,);
+    ogs_assert(ret == 0);
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
 	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
-    d_assert(ret == 0, return EINVAL,);
+    ogs_assert(ret == 0);
 
     /* Store this value in the session */
     ret = fd_sess_state_store(pgw_gx_reg, session, &sess_data);
-    d_assert(ret == 0, return EINVAL,);
-    d_assert(sess_data == NULL,,);
+    ogs_assert(ret == 0);
+    ogs_assert(sess_data == NULL);
 
 	/* Send the answer */
 	ret = fd_msg_send(msg, NULL, NULL);
-    d_assert(ret == 0,,);
+    ogs_assert(ret == 0);
 
-    d_trace(3, "[PGW] Re-Auth-Answer\n");
+    ogs_debug("[PGW] Re-Auth-Answer");
 
 	/* Add this value to the stats */
-	d_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0,,);
+	ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
 	fd_logger_self()->stats.nb_echoed++;
-	d_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0,,);
+	ogs_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0);
 
     return 0;
 
@@ -987,63 +981,61 @@ out:
     {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
-        d_assert(ret == 0, return EINVAL,);
+        ogs_assert(ret == 0);
     }
     else
     {
         ret = fd_message_experimental_rescode_set(ans, result_code);
-        d_assert(ret == 0, return EINVAL,);
+        ogs_assert(ret == 0);
     }
 
     /* Store this value in the session */
     ret = fd_sess_state_store(pgw_gx_reg, session, &sess_data);
-    d_assert(ret == 0, return EINVAL,);
-    d_assert(sess_data == NULL,,);
+    ogs_assert(ret == 0);
+    ogs_assert(sess_data == NULL);
 
 	ret = fd_msg_send(msg, NULL, NULL);
-    d_assert(ret == 0,,);
+    ogs_assert(ret == 0);
 
     gx_message_free(gx_message);
-    pkbuf_free(gxbuf);
+    ogs_pkbuf_free(gxbuf);
 
     return 0;
 }
 
-status_t pgw_fd_init(void)
+int pgw_fd_init(void)
 {
     int ret;
 	struct disp_when data;
 
-    pool_init(&pgw_gx_sess_pool, MAX_POOL_OF_DIAMETER_SESS);
-
     ret = fd_init(FD_MODE_CLIENT|FD_MODE_SERVER,
                 pgw_self()->fd_conf_path, pgw_self()->fd_config);
-    d_assert(ret == 0, return CORE_ERROR,);
+    ogs_assert(ret == 0);
 
 	/* Install objects definitions for this application */
 	ret = gx_dict_init();
-    d_assert(ret == 0, return CORE_ERROR,);
+    ogs_assert(ret == 0);
 
     /* Create handler for sessions */
 	ret = fd_sess_handler_create(&pgw_gx_reg, state_cleanup, NULL, NULL);
-    d_assert(ret == 0, return CORE_ERROR,);
+    ogs_assert(ret == 0);
 
 	memset(&data, 0, sizeof(data));
 	data.app = gx_application;
 
 	ret = fd_disp_register(pgw_gx_fb_cb, DISP_HOW_APPID, &data, NULL,
                 &hdl_gx_fb);
-    d_assert(ret == 0, return CORE_ERROR,);
+    ogs_assert(ret == 0);
 
 	data.command = gx_cmd_rar;
 	ret = fd_disp_register(pgw_gx_rar_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_gx_rar);
-    d_assert(ret == 0, return CORE_ERROR,);
+    ogs_assert(ret == 0);
 
 	/* Advertise the support for the application in the peer */
 	ret = fd_disp_app_support(gx_application, fd_vendor, 1, 0);
 
-	return CORE_OK;
+	return OGS_OK;
 }
 
 void pgw_fd_final(void)
@@ -1051,7 +1043,7 @@ void pgw_fd_final(void)
     int ret;
 
 	ret = fd_sess_handler_destroy(&pgw_gx_reg, NULL);
-    d_assert(ret == 0,,);
+    ogs_assert(ret == 0);
 
 	if (hdl_gx_fb)
 		(void) fd_disp_unregister(&hdl_gx_fb, NULL);
@@ -1059,43 +1051,35 @@ void pgw_fd_final(void)
 		(void) fd_disp_unregister(&hdl_gx_rar, NULL);
 
     fd_final();
-
-    if (pool_used(&pgw_gx_sess_pool))
-        d_error("%d not freed in pgw_gx_sess_pool[%d] of GX-SM",
-                pool_used(&pgw_gx_sess_pool), pool_size(&pgw_gx_sess_pool));
-    d_trace(9, "%d not freed in pgw_gx_sess_pool[%d] of GX-SM\n",
-            pool_used(&pgw_gx_sess_pool), pool_size(&pgw_gx_sess_pool));
-
-    pool_final(&pgw_gx_sess_pool);
 }
 
-static status_t decode_pcc_rule_definition(
+static int decode_pcc_rule_definition(
         pcc_rule_t *pcc_rule, struct avp *avpch1, int *perror)
 {
     int ret = 0, error = 0;
     struct avp *avpch2, *avpch3, *avpch4;
     struct avp_hdr *hdr;
 
-    d_assert(pcc_rule, return CORE_ERROR,);
-    d_assert(avpch1, return CORE_ERROR,);
+    ogs_assert(pcc_rule);
+    ogs_assert(avpch1);
 
     ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
-    d_assert(ret == 0, return CORE_ERROR,);
+    ogs_assert(ret == 0);
     while(avpch2)
     {
         ret = fd_msg_avp_hdr(avpch2, &hdr);
-        d_assert(ret == 0, return CORE_ERROR,);
+        ogs_assert(ret == 0);
         switch(hdr->avp_code)
         {
             case GX_AVP_CODE_CHARGING_RULE_NAME:
             {
                 if (pcc_rule->name)
                 {
-                    d_error("PCC Rule Name has already been defined");
-                    CORE_FREE(pcc_rule->name);
+                    ogs_error("PCC Rule Name has already been defined");
+                    ogs_free(pcc_rule->name);
                 }
-                pcc_rule->name = core_strdup((char*)hdr->avp_value->os.data);
-                d_assert(pcc_rule->name, return CORE_ERROR,);
+                pcc_rule->name = ogs_strdup((char*)hdr->avp_value->os.data);
+                ogs_assert(pcc_rule->name);
                 break;
             }
             case GX_AVP_CODE_FLOW_INFORMATION:
@@ -1104,22 +1088,22 @@ static status_t decode_pcc_rule_definition(
                     &pcc_rule->flow[pcc_rule->num_of_flow];
 
                 ret = fd_avp_search_avp(avpch2, gx_flow_direction, &avpch3);
-                d_assert(ret == 0, return CORE_ERROR,);
+                ogs_assert(ret == 0);
                 if (avpch3)
                 {
                     ret = fd_msg_avp_hdr( avpch3, &hdr);
-                    d_assert(ret == 0, return CORE_ERROR,);
+                    ogs_assert(ret == 0);
                     flow->direction = hdr->avp_value->i32;
                 }
 
                 ret = fd_avp_search_avp(avpch2, gx_flow_description, &avpch3);
-                d_assert(ret == 0, return CORE_ERROR,);
+                ogs_assert(ret == 0);
                 if (avpch3)
                 {
                     ret = fd_msg_avp_hdr(avpch3, &hdr);
-                    d_assert(ret == 0, return CORE_ERROR,);
-                    flow->description = core_malloc(hdr->avp_value->os.len+1);
-                    core_cpystrn(flow->description,
+                    ogs_assert(ret == 0);
+                    flow->description = ogs_malloc(hdr->avp_value->os.len+1);
+                    ogs_cpystrn(flow->description,
                         (char*)hdr->avp_value->os.data,
                         hdr->avp_value->os.len+1);
                 }
@@ -1136,110 +1120,110 @@ static status_t decode_pcc_rule_definition(
             {
                 ret = fd_avp_search_avp(avpch2,
                     gx_qos_class_identifier, &avpch3);
-                d_assert(ret == 0, return CORE_ERROR,);
+                ogs_assert(ret == 0);
                 if (avpch3)
                 {
                     ret = fd_msg_avp_hdr(avpch3, &hdr);
-                    d_assert(ret == 0, return CORE_ERROR,);
+                    ogs_assert(ret == 0);
                     pcc_rule->qos.qci = hdr->avp_value->u32;
                 }
                 else
                 {
-                    d_error("no_QCI");
+                    ogs_error("no_QCI");
                     error++;
                 }
 
                 ret = fd_avp_search_avp(avpch2,
                     gx_allocation_retention_priority, &avpch3);
-                d_assert(ret == 0, return CORE_ERROR,);
+                ogs_assert(ret == 0);
                 if (avpch3)
                 {
                     ret = fd_avp_search_avp(avpch3, gx_priority_level, &avpch4);
-                    d_assert(ret == 0, return CORE_ERROR,);
+                    ogs_assert(ret == 0);
                     if (avpch4)
                     {
                         ret = fd_msg_avp_hdr(avpch4, &hdr);
-                        d_assert(ret == 0, return CORE_ERROR,);
+                        ogs_assert(ret == 0);
                         pcc_rule->qos.arp.priority_level = hdr->avp_value->u32;
                     }
                     else
                     {
-                        d_error("no_Priority-Level");
+                        ogs_error("no_Priority-Level");
                         error++;
                     }
 
                     ret = fd_avp_search_avp(avpch3,
                         gx_pre_emption_capability, &avpch4);
-                    d_assert(ret == 0, return CORE_ERROR,);
+                    ogs_assert(ret == 0);
                     if (avpch4)
                     {
                         ret = fd_msg_avp_hdr(avpch4, &hdr);
-                        d_assert(ret == 0, return CORE_ERROR,);
+                        ogs_assert(ret == 0);
                         pcc_rule->qos.arp.pre_emption_capability =
                                 hdr->avp_value->u32;
                     }
                     else
                     {
-                        d_error("no_Preemption-Capability");
+                        ogs_error("no_Preemption-Capability");
                         error++;
                     }
 
                     ret = fd_avp_search_avp(avpch3,
                             gx_pre_emption_vulnerability, &avpch4);
-                    d_assert(ret == 0, return CORE_ERROR,);
+                    ogs_assert(ret == 0);
                     if (avpch4)
                     {
                         ret = fd_msg_avp_hdr(avpch4, &hdr);
-                        d_assert(ret == 0, return CORE_ERROR,);
+                        ogs_assert(ret == 0);
                         pcc_rule->qos.arp.pre_emption_vulnerability =
                                 hdr->avp_value->u32;
                     }
                     else
                     {
-                        d_error("no_Preemption-Vulnerability");
+                        ogs_error("no_Preemption-Vulnerability");
                         error++;
                     }
                 }
                 else
                 {
-                    d_error("no_ARP");
+                    ogs_error("no_ARP");
                     error++;
                 }
 
                 ret = fd_avp_search_avp(avpch2,
                         gx_max_requested_bandwidth_ul, &avpch3);
-                d_assert(ret == 0, return CORE_ERROR,);
+                ogs_assert(ret == 0);
                 if (avpch3)
                 {
                     ret = fd_msg_avp_hdr(avpch3, &hdr);
-                    d_assert(ret == 0, return CORE_ERROR,);
+                    ogs_assert(ret == 0);
                     pcc_rule->qos.mbr.uplink = hdr->avp_value->u32;
                 }
                 ret = fd_avp_search_avp(avpch2,
                     gx_max_requested_bandwidth_dl, &avpch3);
-                d_assert(ret == 0, return CORE_ERROR,);
+                ogs_assert(ret == 0);
                 if (avpch3)
                 {
                     ret = fd_msg_avp_hdr(avpch3, &hdr);
-                    d_assert(ret == 0, return CORE_ERROR,);
+                    ogs_assert(ret == 0);
                     pcc_rule->qos.mbr.downlink = hdr->avp_value->u32;
                 }
                 ret = fd_avp_search_avp(avpch2,
                         gx_guaranteed_bitrate_ul, &avpch3);
-                d_assert(ret == 0, return CORE_ERROR,);
+                ogs_assert(ret == 0);
                 if (avpch3)
                 {
                     ret = fd_msg_avp_hdr(avpch3, &hdr);
-                    d_assert(ret == 0, return CORE_ERROR,);
+                    ogs_assert(ret == 0);
                     pcc_rule->qos.gbr.uplink = hdr->avp_value->u32;
                 }
                 ret = fd_avp_search_avp(avpch2,
                     gx_guaranteed_bitrate_dl, &avpch3);
-                d_assert(ret == 0, return CORE_ERROR,);
+                ogs_assert(ret == 0);
                 if (avpch3)
                 {
                     ret = fd_msg_avp_hdr(avpch3, &hdr);
-                    d_assert(ret == 0, return CORE_ERROR,);
+                    ogs_assert(ret == 0);
                     pcc_rule->qos.gbr.downlink = hdr->avp_value->u32;
                 }
                 break;
@@ -1251,7 +1235,7 @@ static status_t decode_pcc_rule_definition(
             }
             default:
             {
-                d_error("Not implemented(%d)", hdr->avp_code);
+                ogs_error("Not implemented(%d)", hdr->avp_code);
                 break;
             }
         }
@@ -1261,5 +1245,5 @@ static status_t decode_pcc_rule_definition(
     if (perror)
         *perror = error;
 
-    return CORE_OK;
+    return OGS_OK;
 }

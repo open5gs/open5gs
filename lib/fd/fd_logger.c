@@ -1,8 +1,28 @@
-#define TRACE_MODULE _fd_logger
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "core_debug.h"
-
+#include "ogs-core.h"
+#include "base/context.h"
 #include "fd_logger.h"
+
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __base_fd_domain
 
 static struct fd_logger_t self;
 
@@ -90,11 +110,11 @@ static void fd_logger_cb(enum fd_hook_type type, struct msg * msg,
 				protobuf[0] = '-';
 				protobuf[1] = '\0';
 			}
-			d_info("CONNECTED TO '%s' (%s):", peer_name, protobuf);
+			ogs_info("CONNECTED TO '%s' (%s):", peer_name, protobuf);
 		}
 		break;
     default:
-        d_warn("Unknown type(%d)", type);
+        ogs_warn("Unknown type(%d)", type);
 		break;
 	}
 	
@@ -124,37 +144,37 @@ static void * fd_stats_worker(void * arg)
 		CHECK_SYS_DO( clock_gettime(CLOCK_REALTIME, &now), );
 		
 		/* Now, display everything */
-		d_trace(15, "------- fd statistics ---------\n");
+		ogs_trace("------- fd statistics ---------");
 		if (now.tv_nsec >= start.tv_nsec) 
         {
-			d_trace(15, " Executing for: %d.%06ld sec\n",
+			ogs_trace(" Executing for: %d.%06ld sec",
 					(int)(now.tv_sec - start.tv_sec),
 					(long)(now.tv_nsec - start.tv_nsec) / 1000);
 		} 
         else 
         {
-			d_trace(15, " Executing for: %d.%06ld sec\n",
+			ogs_trace(" Executing for: %d.%06ld sec",
 					(int)(now.tv_sec - 1 - start.tv_sec),
 					(long)(now.tv_nsec + 1000000000 - start.tv_nsec) / 1000);
 		}
 		
         if (self.mode & FD_MODE_SERVER) {
-            d_trace(15, " Server: %llu message(s) echoed\n", 
+            ogs_trace(" Server: %llu message(s) echoed", 
                     copy.nb_echoed);
         }
         if (self.mode & FD_MODE_CLIENT) {
-            d_trace(15, " Client:\n");
-            d_trace(15, "   %llu message(s) sent\n", copy.nb_sent);
-            d_trace(15, "   %llu error(s) received\n", copy.nb_errs);
-            d_trace(15, "   %llu answer(s) received\n", copy.nb_recv);
-            d_trace(15, "     fastest: %ld.%06ld sec.\n", 
+            ogs_trace(" Client:");
+            ogs_trace("   %llu message(s) sent", copy.nb_sent);
+            ogs_trace("   %llu error(s) received", copy.nb_errs);
+            ogs_trace("   %llu answer(s) received", copy.nb_recv);
+            ogs_trace("     fastest: %ld.%06ld sec.", 
                     copy.shortest / 1000000, copy.shortest % 1000000);
-            d_trace(15, "     slowest: %ld.%06ld sec.\n", 
+            ogs_trace("     slowest: %ld.%06ld sec.", 
                     copy.longest / 1000000, copy.longest % 1000000);
-            d_trace(15, "     Average: %ld.%06ld sec.\n", 
+            ogs_trace("     Average: %ld.%06ld sec.", 
                     copy.avg / 1000000, copy.avg % 1000000);
         }
-		d_trace(15, "-------------------------------------\n");
+		ogs_trace("-------------------------------------");
 	}
 	
 	return NULL; /* never called */

@@ -1,10 +1,24 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef __GTP_XACT_H__
 #define __GTP_XACT_H__
-
-#include "core_pkbuf.h"
-#include "core_list.h"
-#include "core_index.h"
-#include "core_timer.h"
 
 #include "gtp_message.h"
 
@@ -18,15 +32,15 @@ typedef struct _gtp_node_t gtp_node_t;
  * Transaction context
  */
 typedef struct _gtp_xact_t {
-    lnode_t         node;           /**< A node of list */
-    index_t         index;
+    ogs_lnode_t     node;           /**< A node of list */
+    ogs_index_t     index;
     
 #define GTP_LOCAL_ORIGINATOR  0
 #define GTP_REMOTE_ORIGINATOR 1
-    c_uint8_t       org;            /**< Transaction' originator. 
+    uint8_t         org;            /**< Transaction' originator. 
                                          local or remote */
 
-    c_uint32_t      xid;            /**< Transaction ID */
+    uint32_t        xid;            /**< Transaction ID */
     gtp_node_t      *gnode;         /**< Relevant GTP node context */
 
     int             step;           /**< Current step in the sequence.
@@ -34,21 +48,21 @@ typedef struct _gtp_xact_t {
                                          2 : Triggered 
                                          3 : Triggered-Reply */
     struct {
-        c_uint8_t   type;           /**< Message type history */
-        pkbuf_t     *pkbuf;         /**< Packet history */
+        uint8_t     type;           /**< Message type history */
+        ogs_pkbuf_t *pkbuf;         /**< Packet history */
     } seq[3];                       /**< history for the each step */
 
-    tm_block_id     tm_response;    /**< Timer waiting for next message */
-    c_uint8_t       response_rcount;
-    tm_block_id     tm_holding;  /**< Timer waiting for holding message */
-    c_uint8_t       holding_rcount;
+    ogs_timer_t     *tm_response;   /**< Timer waiting for next message */
+    uint8_t         response_rcount;
+    ogs_timer_t     *tm_holding;    /**< Timer waiting for holding message */
+    uint8_t         holding_rcount;
 
     struct _gtp_xact_t *assoc_xact; /**< Associated transaction */
 
 #define GTP_XACT_STORE_SESSION(xact, session) \
     do { \
-        d_assert((xact), break, "Null param"); \
-        d_assert((session), break, "Null param"); \
+        ogs_assert((xact)); \
+        ogs_assert((session)); \
         ((xact)->sess) = (session); \
     } while(0)
 
@@ -56,31 +70,28 @@ typedef struct _gtp_xact_t {
     void            *sess;          /**< Session Store */
 } gtp_xact_t;
 
-CORE_DECLARE(status_t) gtp_xact_init(tm_service_t *tm_service,
-        c_uintptr_t response_event, c_uintptr_t holding_event);
-CORE_DECLARE(status_t) gtp_xact_final(void);
+int gtp_xact_init(ogs_timer_mgr_t *timer_mgr);
+int gtp_xact_final(void);
 
-CORE_DECLARE(gtp_xact_t *) gtp_xact_local_create(
-        gtp_node_t *gnode, gtp_header_t *hdesc, pkbuf_t *pkbuf);
-CORE_DECLARE(gtp_xact_t *) gtp_xact_remote_create(
-        gtp_node_t *gnode, c_uint32_t sqn);
-CORE_DECLARE(void) gtp_xact_delete_all(gtp_node_t *gnode);
+gtp_xact_t *gtp_xact_local_create(
+        gtp_node_t *gnode, gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf);
+gtp_xact_t *gtp_xact_remote_create(
+        gtp_node_t *gnode, uint32_t sqn);
+void gtp_xact_delete_all(gtp_node_t *gnode);
 
-CORE_DECLARE(status_t) gtp_xact_update_tx(gtp_xact_t *xact,
-        gtp_header_t *hdesc, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) gtp_xact_update_rx(gtp_xact_t *xact, c_uint8_t type);
+int gtp_xact_update_tx(gtp_xact_t *xact,
+        gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf);
+int gtp_xact_update_rx(gtp_xact_t *xact, uint8_t type);
 
-CORE_DECLARE(status_t) gtp_xact_commit(gtp_xact_t *xact);
-CORE_DECLARE(status_t) gtp_xact_timeout(index_t index, c_uintptr_t event);
+int gtp_xact_commit(gtp_xact_t *xact);
 
-CORE_DECLARE(status_t) gtp_xact_receive(
-        gtp_node_t *gnode, gtp_header_t *h, gtp_xact_t **xact);
+int gtp_xact_receive(gtp_node_t *gnode, gtp_header_t *h, gtp_xact_t **xact);
 
-CORE_DECLARE(gtp_xact_t *) gtp_xact_find(index_t index);
-CORE_DECLARE(gtp_xact_t *)gtp_xact_find_by_xid(
-        gtp_node_t *gnode, c_uint8_t type, c_uint32_t xid);
-CORE_DECLARE(void) gtp_xact_associate(gtp_xact_t *xact1, gtp_xact_t *xact2);
-CORE_DECLARE(void) gtp_xact_deassociate(gtp_xact_t *xact1, gtp_xact_t *xact2);
+gtp_xact_t *gtp_xact_find(ogs_index_t index);
+gtp_xact_t *gtp_xact_find_by_xid(
+        gtp_node_t *gnode, uint8_t type, uint32_t xid);
+void gtp_xact_associate(gtp_xact_t *xact1, gtp_xact_t *xact2);
+void gtp_xact_deassociate(gtp_xact_t *xact1, gtp_xact_t *xact2);
 
 #ifdef __cplusplus
 }

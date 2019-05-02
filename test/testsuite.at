@@ -1,18 +1,35 @@
 AT_INIT
 AT_BANNER([NextEPC Amazing Tests.])
 
-
-AT_SETUP([basic])
-AT_KEYWORDS([basic])
+AT_SETUP([unit])
+AT_KEYWORDS([unit])
 AT_CHECK_UNQUOTED(
-    [$abs_top_builddir/test/testepc -f $abs_top_builddir/test/sample.conf],
+    [$abs_top_builddir/test/testunit -f $abs_top_builddir/test/sample.conf],
     [0], [dnl
-  MongoDB URI : 'mongodb://localhost/nextepc'
-  Configuration : '$abs_top_builddir/test/sample.conf'
 s1ap_message_test   :  SUCCESS
 nas_message_test    :  SUCCESS
 gtp_message_test    :  SUCCESS
 security_test       :  SUCCESS
+sctp-test           :  SUCCESS
+All tests passed.
+])
+AT_CLEANUP
+
+AT_SETUP([simplex])
+AT_KEYWORDS([simplex])
+AT_CHECK_UNQUOTED(
+    [$abs_top_builddir/test/testsimple -f $abs_top_builddir/test/sample-simple.conf],
+    [0], [dnl
+mnc3-test           :  SUCCESS
+All tests passed.
+])
+AT_CLEANUP
+
+AT_SETUP([complex])
+AT_KEYWORDS([complex])
+AT_CHECK_UNQUOTED(
+    [$abs_top_builddir/test/testcomplex -f $abs_top_builddir/test/sample.conf],
+    [0], [dnl
 s1setup_test        :  SUCCESS
 attach_test         :  SUCCESS
 volte_test          :  SUCCESS
@@ -26,8 +43,6 @@ AT_KEYWORDS([volte])
 AT_CHECK_UNQUOTED(
     [$abs_top_builddir/test/testvolte -f $abs_top_builddir/test/sample-volte.conf],
     [0], [dnl
-  MongoDB URI : 'mongodb://localhost/nextepc'
-  Configuration : '$abs_top_builddir/test/sample-volte.conf'
 volte_test          :  SUCCESS
 All tests passed.
 ])

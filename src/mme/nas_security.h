@@ -1,9 +1,7 @@
 #ifndef __NAS_SECURITY_H__
 #define __NAS_SECURITY_H__
 
-#include "core_pkbuf.h"
-#include "core_aes.h"
-#include "core_aes_cmac.h"
+#include "ogs-crypt.h"
 
 #include "mme_context.h"
 #include "snow_3g.h"
@@ -22,28 +20,28 @@ extern "C" {
 typedef struct _nas_security_header_type_t {
     union {
         struct {
-        ED5(c_uint8_t integrity_protected:1;,
-            c_uint8_t ciphered:1;,
-            c_uint8_t new_security_context:1;,
-            c_uint8_t service_request:1;,
-            c_uint8_t reserved:4;)
+        ED5(uint8_t integrity_protected:1;,
+            uint8_t ciphered:1;,
+            uint8_t new_security_context:1;,
+            uint8_t service_request:1;,
+            uint8_t reserved:4;)
         };
-        c_uint8_t type;
+        uint8_t type;
     };
 } __attribute__ ((packed)) nas_security_header_type_t;
 
-CORE_DECLARE(status_t) nas_security_encode(
-        pkbuf_t **pkbuf, mme_ue_t *mme_ue, nas_message_t *message);
-CORE_DECLARE(status_t) nas_security_decode(mme_ue_t *mme_ue, 
-        nas_security_header_type_t security_header_type, pkbuf_t *pkbuf);
+int nas_security_encode(
+        ogs_pkbuf_t **pkbuf, mme_ue_t *mme_ue, nas_message_t *message);
+int nas_security_decode(mme_ue_t *mme_ue, 
+        nas_security_header_type_t security_header_type, ogs_pkbuf_t *pkbuf);
 
-CORE_DECLARE(void) nas_mac_calculate(c_uint8_t algorithm_identity,
-        c_uint8_t *knas_int, c_uint32_t count, c_uint8_t bearer, 
-        c_uint8_t direction, pkbuf_t *pkbuf, c_uint8_t *mac);
+void nas_mac_calculate(uint8_t algorithm_identity,
+        uint8_t *knas_int, uint32_t count, uint8_t bearer, 
+        uint8_t direction, ogs_pkbuf_t *pkbuf, uint8_t *mac);
 
-CORE_DECLARE(void) nas_encrypt(c_uint8_t algorithm_identity,
-        c_uint8_t *knas_enc, c_uint32_t count, c_uint8_t bearer, 
-        c_uint8_t direction, pkbuf_t *pkbuf);
+void nas_encrypt(uint8_t algorithm_identity,
+        uint8_t *knas_enc, uint32_t count, uint8_t bearer, 
+        uint8_t direction, ogs_pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

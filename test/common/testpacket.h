@@ -1,106 +1,105 @@
 #ifndef __TESTS1AP_H__
 #define __TESTS1AP_H__
 
-#include "core_network.h"
-#include "core_pkbuf.h"
-
-#include "s1ap/s1ap_message.h"
+#include "asn1c/s1ap_message.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-CORE_DECLARE(status_t) testpacket_init();
-CORE_DECLARE(status_t) testpacket_final();
+int testpacket_init();
+int testpacket_final();
 
-CORE_DECLARE(status_t) tests1ap_enb_connect(sock_id *new);
-CORE_DECLARE(status_t) tests1ap_enb_close(sock_id id);
-CORE_DECLARE(status_t) tests1ap_enb_send(sock_id id, pkbuf_t *sendbuf);
-CORE_DECLARE(status_t) tests1ap_enb_read(sock_id id, pkbuf_t *recvbuf);
+ogs_sock_t *testenb_s1ap_client(const char *ipstr);
+ogs_pkbuf_t *testenb_s1ap_read(ogs_sock_t *sock);
+int testenb_s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf);
+int testenb_s1ap_close(ogs_sock_t *sock);
 
-CORE_DECLARE(status_t) tests1ap_build_setup_req(
-        pkbuf_t **pkbuf, S1AP_ENB_ID_PR present, c_uint32_t enb_id);
-CORE_DECLARE(status_t) tests1ap_build_initial_ue_msg(pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_identity_response(pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_authentication_response(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_authentication_failure(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_security_mode_complete(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_esm_information_response(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_ue_capability_info_indication(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_response(
-        pkbuf_t **pkbuf, 
-        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
-        c_uint8_t ebi, c_uint32_t teid);
-CORE_DECLARE(status_t) tests1ap_build_initial_context_setup_failure(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_attach_complete(pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_emm_status(pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_detach_request(pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_ue_context_release_request(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_ue_context_release_complete(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_service_request(pkbuf_t **pkbuf,
-        c_uint32_t enb_ue_s1ap_id, c_uint8_t seq,
-        c_uint16_t mac, c_uint32_t m_tmsi);
-CORE_DECLARE(status_t) tests1ap_build_tau_request(pkbuf_t **pkbuf, int i,
-    c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id, c_uint8_t active_flag,
-    c_uint32_t m_tmsi, c_uint8_t seq, c_uint32_t mac, c_uint8_t *knas_int);
-CORE_DECLARE(status_t) tests1ap_build_pdn_connectivity_request(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_pdn_disconnectivity_request(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_e_rab_setup_response(
-        pkbuf_t **pkbuf, 
-        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
-        c_uint8_t ebi, c_uint32_t teid);
-CORE_DECLARE(status_t) tests1ap_build_e_rab_modify_response(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_e_rab_release_response(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_activate_default_bearer_accept(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_activate_dedicated_bearer_accept(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_modify_bearer_accept(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_deactivate_bearer_accept(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_path_switch_request(
-        pkbuf_t **pkbuf, int target, 
-        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
-        int num_of_bearer, c_uint8_t ebi, c_uint32_t teid);
-CORE_DECLARE(status_t) tests1ap_build_handover_required(pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_handover_failure(pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_handover_request_ack(
-        pkbuf_t **pkbuf, int target,
-        c_uint32_t mme_ue_s1ap_id, c_uint32_t enb_ue_s1ap_id,
-        int num_of_bearer, c_uint8_t ebi, c_uint32_t teid);
-CORE_DECLARE(status_t) tests1ap_build_handover_request_ack_static(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_enb_status_transfer(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_enb_configuration_transfer(
-        pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_handover_notify(pkbuf_t **pkbuf, int i);
-CORE_DECLARE(status_t) tests1ap_build_handover_cancel(pkbuf_t **pkbuf, int i);
+ogs_sock_t *testenb_gtpu_server(const char *ipstr);
+ogs_pkbuf_t *testenb_gtpu_read(ogs_sock_t *sock);
+int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf);
+int testenb_gtpu_close(ogs_sock_t *sock);
 
-CORE_DECLARE(status_t) tests1ap_build_s1_reset(pkbuf_t **pkbuf, int i);
+int tests1ap_build_setup_req(
+        ogs_pkbuf_t **pkbuf, S1AP_ENB_ID_PR present, uint32_t enb_id,
+        int tac, uint16_t mcc, uint16_t mnc, uint16_t mnc_len);
+int tests1ap_build_initial_ue_msg(ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_identity_response(ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_authentication_response(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_authentication_failure(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_security_mode_complete(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_esm_information_response(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_ue_capability_info_indication(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_initial_context_setup_response(
+        ogs_pkbuf_t **pkbuf, 
+        uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id,
+        uint8_t ebi, uint32_t teid, const char *ipstr);
+int tests1ap_build_initial_context_setup_failure(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_attach_complete(ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_emm_status(ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_detach_request(ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_ue_context_release_request(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_ue_context_release_complete(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_service_request(ogs_pkbuf_t **pkbuf,
+        uint32_t enb_ue_s1ap_id, uint8_t seq,
+        uint16_t mac, uint32_t m_tmsi);
+int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
+    uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id, uint8_t active_flag,
+    uint32_t m_tmsi, uint8_t seq, uint32_t mac, uint8_t *knas_int);
+int tests1ap_build_pdn_connectivity_request(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_pdn_disconnectivity_request(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_e_rab_setup_response(
+        ogs_pkbuf_t **pkbuf, 
+        uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id,
+        uint8_t ebi, uint32_t teid, const char *ipstr);
+int tests1ap_build_e_rab_modify_response(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_e_rab_release_response(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_activate_default_bearer_accept(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_activate_dedicated_bearer_accept(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_modify_bearer_accept(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_deactivate_bearer_accept(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_path_switch_request(
+        ogs_pkbuf_t **pkbuf, int target, 
+        uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id,
+        int num_of_bearer, uint8_t ebi, uint32_t teid,
+        const char *ipstr1, const char *ipstr2);
+int tests1ap_build_handover_required(ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_handover_failure(ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_handover_request_ack(
+        ogs_pkbuf_t **pkbuf, int target,
+        uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id,
+        int num_of_bearer, uint8_t ebi, uint32_t teid,
+        const char *ipstr1, const char *ipstr2);
+int tests1ap_build_handover_request_ack_static(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_enb_status_transfer(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_enb_configuration_transfer(
+        ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_handover_notify(ogs_pkbuf_t **pkbuf, int i);
+int tests1ap_build_handover_cancel(ogs_pkbuf_t **pkbuf, int i);
 
-CORE_DECLARE(status_t) testgtpu_enb_connect(sock_id *new);
-CORE_DECLARE(status_t) testgtpu_enb2_connect(sock_id *new);
-CORE_DECLARE(status_t) testgtpu_enb_close(sock_id sock);
-CORE_DECLARE(status_t) testgtpu_enb_read(sock_id sock, pkbuf_t *recvbuf);
-CORE_DECLARE(status_t) testgtpu_enb_send(pkbuf_t *sendbuf);
+int tests1ap_build_s1_reset(ogs_pkbuf_t **pkbuf, int i);
 
-CORE_DECLARE(status_t) testgtpu_build_ping(pkbuf_t **sendbuf,
+int testgtpu_build_ping(ogs_pkbuf_t **sendbuf,
         const char *src_ip, const char *dst_ip);
-CORE_DECLARE(status_t) testgtpu_build_slacc_rs(pkbuf_t **sendbuf, int i);
+int testgtpu_build_slacc_rs(ogs_pkbuf_t **sendbuf, int i);
 
 #ifdef __cplusplus
 }
