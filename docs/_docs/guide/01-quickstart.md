@@ -119,6 +119,7 @@ $ sudo systemctl restart nextepc-sgwd
 1. *Debian and Ubuntu* based Linux distributions can install [Node.js](https://nodejs.org/) as follows:
 
     ```bash
+    $ sudo apt update
     $ sudo apt install curl
     $ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
     $ sudo apt install nodejs
@@ -133,7 +134,7 @@ $ sudo systemctl restart nextepc-sgwd
 You can now install WebUI of NextEPC.
 
 ```bash
-$ curl -sL {{ site.url }}/static/webui/install | sudo -E bash -
+$ curl -sL {{ site.url }}{{ site.baseurl }}/assets/webui/install | sudo -E bash -
 ```
 
 ### Register Subscriber Information
