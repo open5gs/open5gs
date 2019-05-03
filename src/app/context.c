@@ -298,7 +298,10 @@ int context_db_init(const char *db_uri)
 
     const mongoc_uri_t *uri;
 
+    memset(&self.db, 0, sizeof self.db);
+
     mongoc_init();
+    self.db.initialized = true;
 
     self.db.client = mongoc_client_new(db_uri);
     if (!self.db.client)
@@ -335,18 +338,19 @@ int context_db_init(const char *db_uri)
 
 int context_db_final()
 {
-    if (self.db.database)
-    {
+    if (self.db.database) {
         mongoc_database_destroy(self.db.database);
         self.db.database = NULL;
     }
-    if (self.db.client)
-    {
+    if (self.db.client) {
         mongoc_client_destroy(self.db.client);
         self.db.client = NULL;
     }
 
-    mongoc_cleanup();
+    if (self.db.initialized) {
+        mongoc_cleanup();
+        self.db.initialized = false;
+    }
 
     return OGS_OK;
 }

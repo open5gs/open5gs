@@ -46,6 +46,7 @@ typedef struct _context_t {
     config_t config;
 
     struct {
+        bool initialized;
         const char *name;
         void *uri;
         void *client;

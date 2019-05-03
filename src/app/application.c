@@ -114,16 +114,11 @@ int app_did_initialize(void)
 
 void app_will_terminate(void)
 {
-    if (context_self()->config.db_uri)
-    {
-        ogs_info("DB-Client try to terminate");
-        context_db_final();
-        ogs_info("DB-Client terminate...done");
-    }
 }
 
 void app_did_terminate(void)
 {
+    context_db_final();
     context_final();
 }
 

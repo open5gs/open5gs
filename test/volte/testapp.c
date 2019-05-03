@@ -59,7 +59,8 @@ int test_app_initialize(app_param_t *param)
             if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
             if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
 
-            app_did_terminate();
+            context_final();
+            ogs_core_finalize();
 
             _exit(EXIT_SUCCESS);
         }
@@ -104,7 +105,8 @@ int test_app_initialize(app_param_t *param)
             if (pgw_sem1) ogs_proc_mutex_delete(pgw_sem1);
             if (pgw_sem2) ogs_proc_mutex_delete(pgw_sem2);
 
-            app_did_terminate();
+            context_final();
+            ogs_core_finalize();
 
             _exit(EXIT_SUCCESS);
         }
@@ -151,7 +153,8 @@ int test_app_initialize(app_param_t *param)
             if (sgw_sem1) ogs_proc_mutex_delete(sgw_sem1);
             if (sgw_sem2) ogs_proc_mutex_delete(sgw_sem2);
 
-            app_did_terminate();
+            context_final();
+            ogs_core_finalize();
 
             _exit(EXIT_SUCCESS);
         }
@@ -199,7 +202,8 @@ int test_app_initialize(app_param_t *param)
             if (hss_sem1) ogs_proc_mutex_delete(hss_sem1);
             if (hss_sem2) ogs_proc_mutex_delete(hss_sem2);
 
-            app_did_terminate();
+            context_final();
+            ogs_core_finalize();
 
             _exit(EXIT_SUCCESS);
         }
@@ -248,7 +252,8 @@ int test_app_initialize(app_param_t *param)
             if (mme_sem1) ogs_proc_mutex_delete(mme_sem1);
             if (mme_sem2) ogs_proc_mutex_delete(mme_sem2);
 
-            app_did_terminate();
+            context_final();
+            ogs_core_finalize();
 
             _exit(EXIT_SUCCESS);
         }

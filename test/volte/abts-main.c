@@ -111,6 +111,7 @@ int main(int argc, const char **argv)
 
     abts_init(argc, argv);
 
+    memset(&param, 0, sizeof(param));
     for (i = 1; i < argc; i++) {
         /* abts_init(argc, argv) handles the following options */
         if (!strcmp(argv[i], "-v")) continue;
@@ -153,7 +154,6 @@ int main(int argc, const char **argv)
     else
         ogs_core()->log.level = OGS_LOG_ERROR;
     test_initialize(&param, argc, argv);
-
 
     for (i = 0; alltests[i].func; i++)
     {
