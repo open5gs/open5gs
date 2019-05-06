@@ -193,8 +193,8 @@ ED3(uint8_t spare:2;,
     pgw_bearer_t    *bearer;
 } pgw_pf_t;
 
-int pgw_context_init(void);
-int pgw_context_final(void);
+void pgw_context_init(void);
+void pgw_context_final(void);
 pgw_context_t *pgw_self(void);
 
 int pgw_context_parse_config(void);

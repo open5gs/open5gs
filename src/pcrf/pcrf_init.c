@@ -8,8 +8,7 @@ int pcrf_initialize(void)
 {
     int rv;
 
-    rv = pcrf_context_init();
-    if (rv != OGS_OK) return rv;
+    pcrf_context_init();
 
     rv = pcrf_context_parse_config();
     if (rv != OGS_OK) return rv;

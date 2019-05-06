@@ -21,7 +21,7 @@ static OGS_POOL(sgw_tunnel_pool, sgw_tunnel_t);
 
 static int context_initialized = 0;
 
-int sgw_context_init()
+void sgw_context_init()
 {
     ogs_assert(context_initialized == 0);
 
@@ -48,11 +48,9 @@ int sgw_context_init()
     self.imsi_ue_hash = ogs_hash_make();
 
     context_initialized = 1;
-
-    return OGS_OK;
 }
 
-int sgw_context_final()
+void sgw_context_final()
 {
     ogs_assert(context_initialized == 1);
 
@@ -78,8 +76,6 @@ int sgw_context_final()
     ogs_sock_remove_all_nodes(&self.gtpu_list6);
 
     context_initialized = 0;
-    
-    return OGS_OK;
 }
 
 sgw_context_t* sgw_self()

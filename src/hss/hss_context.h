@@ -36,8 +36,8 @@ typedef struct _hss_context_t {
     ogs_thread_mutex_t db_lock;
 } hss_context_t;
 
-int hss_context_init(void);
-int hss_context_final(void);
+void hss_context_init(void);
+void hss_context_final(void);
 hss_context_t* hss_self(void);
 
 int hss_context_parse_config(void);

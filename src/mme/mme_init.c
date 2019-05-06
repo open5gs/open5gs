@@ -18,7 +18,10 @@ int mme_initialize()
 {
     int rv;
 
-    rv = mme_context_init();
+    mme_context_init();
+    mme_event_init();
+
+    rv = gtp_xact_init(mme_self()->timer_mgr);
     if (rv != OGS_OK) return rv;
 
     rv = mme_context_parse_config();
@@ -70,9 +73,6 @@ static void mme_main(void *data)
 {
     ogs_fsm_t mme_sm;
     int rv;
-
-    mme_event_init();
-    gtp_xact_init(mme_self()->timer_mgr);
 
     ogs_fsm_create(&mme_sm, mme_state_initial, mme_state_final);
     ogs_fsm_init(&mme_sm, 0);

@@ -499,8 +499,8 @@ typedef struct _mme_bearer_t {
     gtp_xact_t      *xact;
 } mme_bearer_t;
 
-int mme_context_init(void);
-int mme_context_final(void);
+void mme_context_init(void);
+void mme_context_final(void);
 mme_context_t *mme_self(void);
 
 int mme_context_parse_config(void);

@@ -16,7 +16,10 @@ int pgw_initialize()
 {
     int rv;
 
-    rv = pgw_context_init();
+    pgw_context_init();
+    pgw_event_init();
+
+    rv = gtp_xact_init(pgw_self()->timer_mgr);
     if (rv != OGS_OK) return rv;
 
     rv = pgw_context_parse_config();
@@ -60,9 +63,6 @@ static void pgw_main(void *data)
 {
     ogs_fsm_t pgw_sm;
     int rv;
-
-    pgw_event_init();
-    gtp_xact_init(pgw_self()->timer_mgr);
 
     ogs_fsm_create(&pgw_sm, pgw_state_initial, pgw_state_final);
     ogs_fsm_init(&pgw_sm, 0);

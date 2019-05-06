@@ -35,7 +35,7 @@ static OGS_POOL(mme_bearer_pool, mme_bearer_t);
 
 static int context_initialized = 0;
 
-int mme_context_init()
+void mme_context_init()
 {
     ogs_assert(context_initialized == 0);
 
@@ -82,11 +82,9 @@ int mme_context_init()
     self.t3413_value = ogs_time_from_sec(2); /* Paging retry timer: 2 secs */
 
     context_initialized = 1;
-
-    return OGS_OK;
 }
 
-int mme_context_final()
+void mme_context_final()
 {
     ogs_assert(context_initialized == 1);
 
@@ -129,8 +127,6 @@ int mme_context_final()
     ogs_sock_remove_all_nodes(&self.gtpc_list6);
 
     context_initialized = 0;
-
-    return OGS_OK;
 }
 
 mme_context_t* mme_self()

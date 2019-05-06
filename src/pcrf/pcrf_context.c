@@ -18,7 +18,7 @@ pcrf_context_t* pcrf_self()
     return &self;
 }
 
-int pcrf_context_init(void)
+void pcrf_context_init(void)
 {
     ogs_assert(context_initialized == 0);
 
@@ -37,11 +37,9 @@ int pcrf_context_init(void)
     self.ip_hash = ogs_hash_make();
 
     context_initialized = 1;
-
-	return OGS_OK;
 }
 
-int pcrf_context_final(void)
+void pcrf_context_final(void)
 {
     ogs_assert(context_initialized == 1);
     ogs_assert(self.ip_hash);
@@ -51,8 +49,6 @@ int pcrf_context_final(void)
     ogs_thread_mutex_destroy(&self.db_lock);
 
     context_initialized = 0;
-
-	return OGS_OK;
 }
 
 static int pcrf_context_prepare()

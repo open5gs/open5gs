@@ -74,12 +74,8 @@ int test_initialize(app_param_t *param, int argc, const char *const argv[])
         ogs_error("app_will_initialize() failed");
         return OGS_ERROR;
     }
-    rv = mme_context_init();
-    if (rv != OGS_OK)
-    {
-        ogs_error("mme_context_init() failed");
-        return OGS_ERROR;
-    }
+
+    mme_context_init();
     app_did_initialize();
 
     return rv;

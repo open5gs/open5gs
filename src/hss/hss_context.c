@@ -18,7 +18,7 @@ hss_context_t* hss_self()
     return &self;
 }
 
-int hss_context_init(void)
+void hss_context_init(void)
 {
     ogs_assert(context_initialized == 0);
 
@@ -34,19 +34,15 @@ int hss_context_init(void)
     ogs_thread_mutex_init(&self.db_lock);
 
     context_initialized = 1;
-
-	return OGS_OK;
 }
 
-int hss_context_final(void)
+void hss_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
     ogs_thread_mutex_destroy(&self.db_lock);
 
     context_initialized = 0;
-
-	return OGS_OK;
 }
 
 static int hss_context_prepare()

@@ -14,7 +14,10 @@ int sgw_initialize()
 {
     int rv;
 
-    rv = sgw_context_init();
+    sgw_context_init();
+    sgw_event_init();
+
+    rv = gtp_xact_init(sgw_self()->timer_mgr);
     if (rv != OGS_OK) return rv;
 
     rv = sgw_context_parse_config();
@@ -50,9 +53,6 @@ static void sgw_main(void *data)
 {
     ogs_fsm_t sgw_sm;
     int rv;
-
-    sgw_event_init();
-    gtp_xact_init(sgw_self()->timer_mgr);
 
     ogs_fsm_create(&sgw_sm, sgw_state_initial, sgw_state_final);
     ogs_fsm_init(&sgw_sm, 0);

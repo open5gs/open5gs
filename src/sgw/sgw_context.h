@@ -129,8 +129,8 @@ typedef struct _sgw_tunnel_t {
     gtp_node_t      *gnode;
 } sgw_tunnel_t;
 
-int sgw_context_init(void);
-int sgw_context_final(void);
+void sgw_context_init(void);
+void sgw_context_final(void);
 sgw_context_t* sgw_self(void);
 
 int sgw_context_parse_config(void);

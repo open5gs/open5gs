@@ -26,8 +26,8 @@ typedef struct _pcrf_context_t {
     ogs_thread_mutex_t hash_lock;
 } pcrf_context_t;
 
-int pcrf_context_init(void);
-int pcrf_context_final(void);
+void pcrf_context_init(void);
+void pcrf_context_final(void);
 pcrf_context_t *pcrf_self(void);
 
 int pcrf_context_parse_config(void);

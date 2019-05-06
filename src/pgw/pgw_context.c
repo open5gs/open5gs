@@ -27,7 +27,7 @@ static OGS_POOL(pgw_pf_pool, pgw_pf_t);
 
 static int context_initiaized = 0;
 
-int pgw_context_init()
+void pgw_context_init()
 {
     ogs_assert(context_initiaized == 0);
 
@@ -62,11 +62,9 @@ int pgw_context_init()
     self.sess_hash = ogs_hash_make();
 
     context_initiaized = 1;
-
-    return OGS_OK;
 }
 
-int pgw_context_final()
+void pgw_context_final()
 {
     ogs_assert(context_initiaized == 1);
 
@@ -95,8 +93,6 @@ int pgw_context_final()
     ogs_sock_remove_all_nodes(&self.gtpu_list6);
 
     context_initiaized = 0;
-    
-    return OGS_OK;
 }
 
 pgw_context_t* pgw_self()
