@@ -32,9 +32,6 @@ void pgw_event_final(void);
 pgw_event_t *pgw_event_new(pgw_event_e id);
 void pgw_event_free(pgw_event_t *e);
 
-#define pgw_event_send(__ptr_e) \
-    ogs_assert(ogs_queue_push(pgw_self()->queue, ((__ptr_e))) == OGS_OK)
-
 const char *pgw_event_get_name(pgw_event_t *e);
 
 #ifdef __cplusplus

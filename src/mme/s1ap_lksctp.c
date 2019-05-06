@@ -98,6 +98,7 @@ static void accept_handler(short when, ogs_socket_t fd, void *data)
     new = ogs_sock_accept(sock);
     if (new)
     {
+        int rv;
         ogs_sockaddr_t *addr = NULL;
         mme_event_t *e = NULL;
 
@@ -112,7 +113,12 @@ static void accept_handler(short when, ogs_socket_t fd, void *data)
         ogs_assert(e);
         e->enb_sock = new;
         e->enb_addr = addr;
-        mme_event_send(e);
+        rv = ogs_queue_push(mme_self()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+            ogs_free(e->enb_addr);
+            mme_event_free(e);
+        }
     }
     else
     {
@@ -122,6 +128,7 @@ static void accept_handler(short when, ogs_socket_t fd, void *data)
 
 void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
 {
+    int rv;
     ogs_pkbuf_t *pkbuf;
     int size;
     mme_event_t *e = NULL;
@@ -190,7 +197,12 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
                         not->sn_assoc_change.sac_inbound_streams;
                     e->outbound_streams = 
                         not->sn_assoc_change.sac_outbound_streams;
-                    mme_event_send(e);
+                    rv = ogs_queue_push(mme_self()->queue, e);
+                    if (rv != OGS_OK) {
+                        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+                        ogs_free(e->enb_addr);
+                        mme_event_free(e);
+                    }
                 }
                 else if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP ||
                         not->sn_assoc_change.sac_state == SCTP_COMM_LOST)
@@ -209,7 +221,12 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
                     ogs_assert(e);
                     e->enb_sock = sock;
                     e->enb_addr = addr;
-                    mme_event_send(e);
+                    rv = ogs_queue_push(mme_self()->queue, e);
+                    if (rv != OGS_OK) {
+                        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+                        ogs_free(e->enb_addr);
+                        mme_event_free(e);
+                    }
                 }
                 break;
             }
@@ -228,7 +245,12 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
                 ogs_assert(e);
                 e->enb_sock = sock;
                 e->enb_addr = addr;
-                mme_event_send(e);
+                rv = ogs_queue_push(mme_self()->queue, e);
+                if (rv != OGS_OK) {
+                    ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+                    ogs_free(e->enb_addr);
+                    mme_event_free(e);
+                }
                 break;
             }
             case SCTP_PEER_ADDR_CHANGE:
@@ -276,7 +298,13 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
         e->enb_sock = sock;
         e->enb_addr = addr;
         e->pkbuf = pkbuf;
-        mme_event_send(e);
+        rv = ogs_queue_push(mme_self()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+            ogs_free(e->enb_addr);
+            ogs_pkbuf_free(e->pkbuf);
+            mme_event_free(e);
+        }
 
         return;
     }

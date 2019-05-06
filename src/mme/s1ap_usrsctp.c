@@ -429,7 +429,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                             rv = ogs_queue_push(mme_self()->queue, e);
                             if (rv != OGS_OK) {
                                 ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                                ogs_free(addr);
+                                ogs_free(e->enb_addr);
                                 mme_event_free(e);
                             } else {
                                 ogs_pollset_notify(mme_self()->pollset);
@@ -454,7 +454,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                             rv = ogs_queue_push(mme_self()->queue, e);
                             if (rv != OGS_OK) {
                                 ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                                ogs_free(addr);
+                                ogs_free(e->enb_addr);
                                 mme_event_free(e);
                             } else {
                                 ogs_pollset_notify(mme_self()->pollset);
@@ -480,7 +480,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                         rv = ogs_queue_push(mme_self()->queue, e);
                         if (rv != OGS_OK) {
                             ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                            ogs_free(addr);
+                            ogs_free(e->enb_addr);
                             mme_event_free(e);
                         } else {
                             ogs_pollset_notify(mme_self()->pollset);
@@ -539,8 +539,8 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
             rv = ogs_queue_push(mme_self()->queue, e);
             if (rv != OGS_OK) {
                 ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                ogs_free(addr);
-                ogs_pkbuf_free(pkbuf);
+                ogs_free(e->enb_addr);
+                ogs_pkbuf_free(e->pkbuf);
                 mme_event_free(e);
             } else {
                 ogs_pollset_notify(mme_self()->pollset);

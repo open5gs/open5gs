@@ -712,14 +712,21 @@ out:
         e->gxbuf = gxbuf;
         e->xact_index = xact->index;
         e->gtpbuf = gtpbuf;
-        pgw_event_send(e);
-        ogs_pollset_notify(pgw_self()->pollset);
+        rv = ogs_queue_push(pgw_self()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+            gx_message_free(gx_message);
+            ogs_pkbuf_free(e->gxbuf);
+            ogs_pkbuf_free(e->gtpbuf);
+            pgw_event_free(e);
+        } else {
+            ogs_pollset_notify(pgw_self()->pollset);
+        }
     }
     else
     {
         gx_message_free(gx_message);
         ogs_pkbuf_free(gxbuf);
-
         ogs_pkbuf_free(gtpbuf);
     }
 
@@ -942,8 +949,15 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
 
     e->sess_index = sess->index;
     e->gxbuf = gxbuf;
-    pgw_event_send(e);
-    ogs_pollset_notify(pgw_self()->pollset);
+    rv = ogs_queue_push(pgw_self()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        gx_message_free(gx_message);
+        ogs_pkbuf_free(e->gxbuf);
+        pgw_event_free(e);
+    } else {
+        ogs_pollset_notify(pgw_self()->pollset);
+    }
 
     /* Set the Auth-Application-Id AVP */
     ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);

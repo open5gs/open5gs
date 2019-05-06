@@ -127,6 +127,7 @@ int s1ap_delayed_send_to_enb_ue(
 
 int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
 {
+    int rv;
     mme_event_t *e = NULL;
 
     ogs_assert(mme_ue);
@@ -136,7 +137,12 @@ int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
     ogs_assert(e);
     e->mme_ue = mme_ue;
     e->pkbuf = esmbuf;
-    mme_event_send(e);
+    rv = ogs_queue_push(mme_self()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_pkbuf_free(e->pkbuf);
+        mme_event_free(e);
+    }
 
     return OGS_OK;
 }
@@ -207,13 +213,19 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_assert(h);
     if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
     {
+        int rv;
         e = mme_event_new(MME_EVT_EMM_MESSAGE);
         ogs_assert(e);
         e->enb_ue = enb_ue;
         e->s1ap_code = procedureCode;
         e->nas_type = security_header_type.type;
         e->pkbuf = nasbuf;
-        mme_event_send(e);
+        rv = ogs_queue_push(mme_self()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+            ogs_pkbuf_free(e->pkbuf);
+            mme_event_free(e);
+        }
     }
     else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
     {

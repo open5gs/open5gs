@@ -32,9 +32,6 @@ void sgw_event_final(void);
 sgw_event_t *sgw_event_new(sgw_event_e id);
 void sgw_event_free(sgw_event_t *e);
 
-#define sgw_event_send(__ptr_e) \
-    ogs_assert(ogs_queue_push(sgw_self()->queue, ((__ptr_e))) == OGS_OK)
-
 const char *sgw_event_get_name(sgw_event_t *e);
 
 #ifdef __cplusplus

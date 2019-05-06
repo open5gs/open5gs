@@ -29,17 +29,18 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     teid = ntohl(gtp_h->teid);
 
     if (SGW_S5C_TEID(teid))
-    {
         e = sgw_event_new(SGW_EVT_S5C_MESSAGE);
-    }
     else
-    {
         e = sgw_event_new(SGW_EVT_S11_MESSAGE);
-    }
     ogs_assert(e);
     e->pkbuf = pkbuf;
 
-    sgw_event_send(e);
+    rv = ogs_queue_push(sgw_self()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_pkbuf_free(e->pkbuf);
+        sgw_event_free(e);
+    }
 }
 
 static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
@@ -206,7 +207,11 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                         e = sgw_event_new(SGW_EVT_LO_DLDATA_NOTI);
                         ogs_assert(e);
                         e->bearer = bearer;
-                        sgw_event_send(e);
+                        rv = ogs_queue_push(sgw_self()->queue, e);
+                        if (rv != OGS_OK) {
+                            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+                            sgw_event_free(e);
+                        }
 
                         SGW_SET_UE_STATE(sgw_ue, SGW_DL_NOTI_SENT);
                     }

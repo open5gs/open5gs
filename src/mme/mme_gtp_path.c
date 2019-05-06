@@ -25,7 +25,12 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     e = mme_event_new(MME_EVT_S11_MESSAGE);
     ogs_assert(e);
     e->pkbuf = pkbuf;
-    mme_event_send(e);
+    rv = ogs_queue_push(mme_self()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_pkbuf_free(e->pkbuf);
+        mme_event_free(e);
+    }
 }
 
 static ogs_sockaddr_t *pgw_addr_find_by_family(ogs_list_t *list, int family)

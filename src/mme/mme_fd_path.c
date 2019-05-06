@@ -383,12 +383,19 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
 out:
     if (!error)
     {
+        int rv;
         e = mme_event_new(MME_EVT_S6A_MESSAGE);
         ogs_assert(e);
         e->mme_ue = mme_ue;
         e->pkbuf = s6abuf;
-        mme_event_send(e);
-        ogs_pollset_notify(mme_self()->pollset);
+        rv = ogs_queue_push(mme_self()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+            ogs_pkbuf_free(e->pkbuf);
+            mme_event_free(e);
+        } else {
+            ogs_pollset_notify(mme_self()->pollset);
+        }
     }
 
     /* Free the message */
@@ -1029,12 +1036,19 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     
     if (!error)
     {
+        int rv;
         e = mme_event_new(MME_EVT_S6A_MESSAGE);
         ogs_assert(e);
         e->mme_ue = mme_ue;
         e->pkbuf = s6abuf;
-        mme_event_send(e);
-        ogs_pollset_notify(mme_self()->pollset);
+        rv = ogs_queue_push(mme_self()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_error("ogs_queue_push() failed:%d", (int)rv);
+            ogs_pkbuf_free(e->pkbuf);
+            mme_event_free(e);
+        } else {
+            ogs_pollset_notify(mme_self()->pollset);
+        }
     }
 
     /* Free the message */

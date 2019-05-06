@@ -68,9 +68,6 @@ void mme_event_free(mme_event_t *e);
 
 void mme_event_timeout(void *data);
 
-#define mme_event_send(__ptr_e) \
-    ogs_assert(ogs_queue_push(mme_self()->queue, ((__ptr_e))) == OGS_OK)
-
 const char *mme_event_get_name(mme_event_t *e);
 
 #ifdef __cplusplus
