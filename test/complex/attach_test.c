@@ -369,8 +369,6 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(300);
-
     /* Send Detach Request */
     rv = tests1ap_build_detach_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -444,6 +442,7 @@ static void attach_test1(abts_case *tc, void *data)
     rv = testenb_gtpu_close(gtpu);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    ogs_msleep(300);
     return;
 
 #if IT_WILL_BE_REMOVED
@@ -706,8 +705,6 @@ static void attach_test2(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(300);
-
     /*****************************************************************
      * Attach Request : IMSI, Integrity Protected, MAC Matched
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
@@ -751,8 +748,6 @@ static void attach_test2(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : Unknown IMSI, Integrity Protected
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
-    ogs_msleep(300);
-
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(sock, sendbuf);
@@ -815,6 +810,8 @@ static void attach_test2(abts_case *tc, void *data)
     /* eNB disonncect from MME */
     rv = testenb_s1ap_close(sock);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
 }
 
 /**************************************************************
@@ -1350,6 +1347,8 @@ static void attach_test4(abts_case *tc, void *data)
     /* eNB disonncect from SGW */
     rv = testenb_gtpu_close(gtpu);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
 }
 
 static void attach_test5(abts_case *tc, void *data)
@@ -1687,6 +1686,8 @@ static void attach_test5(abts_case *tc, void *data)
     /* eNB disonncect from MME */
     rv = testenb_s1ap_close(sock);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
 }
 
 abts_suite *test_attach(abts_suite *suite)

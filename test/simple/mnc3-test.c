@@ -229,8 +229,6 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->data+32, tmp+32, 20) == 0);
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(300);
-
     /* Send GTP-U ICMP Packet */
     rv = testgtpu_build_ping(&sendbuf, "45.45.0.2", "45.45.0.1");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -242,16 +240,6 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(300);
-
-    /* eNB disonncect from MME */
-    rv = testenb_s1ap_close(sock);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* eNB disonncect from SGW */
-    rv = testenb_gtpu_close(gtpu);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("310014987654004"));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -261,8 +249,6 @@ static void test1_func(abts_case *tc, void *data)
 
     mongoc_collection_destroy(collection);
 
-    ogs_msleep(300);
-
     /* eNB disonncect from MME */
     rv = testenb_s1ap_close(sock);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -271,7 +257,7 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_gtpu_close(gtpu);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    return;
+    ogs_msleep(300);
 }
 
 abts_suite *test_mnc3(abts_suite *suite)
