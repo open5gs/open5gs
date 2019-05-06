@@ -313,18 +313,18 @@ static void handover_test1(abts_case *tc, void *data)
 
     mongoc_collection_destroy(collection);
 
-    /* Two eNB disonncect from MME */
-    rv = testenb_s1ap_close(sock1);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    rv = testenb_s1ap_close(sock2);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
     /* eNB disonncect from SGW */
+    rv = testenb_gtpu_close(gtpu2);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     rv = testenb_gtpu_close(gtpu1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    rv = testenb_gtpu_close(gtpu2);
+    /* Two eNB disonncect from MME */
+    rv = testenb_s1ap_close(sock2);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    rv = testenb_s1ap_close(sock1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);

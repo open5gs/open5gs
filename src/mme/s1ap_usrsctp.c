@@ -384,6 +384,7 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
 {
     if (data)
     {
+        int rv;
         mme_event_t *e = NULL;
 
 #undef MSG_NOTIFICATION
@@ -425,8 +426,14 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                             ogs_assert(e);
                             e->enb_sock = (ogs_sock_t *)sock;
                             e->enb_addr = addr;
-                            mme_event_send(e);
-                            ogs_pollset_notify(mme_self()->pollset);
+                            rv = ogs_queue_push(mme_self()->queue, e);
+                            if (rv != OGS_OK) {
+                                ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+                                ogs_free(addr);
+                                mme_event_free(e);
+                            } else {
+                                ogs_pollset_notify(mme_self()->pollset);
+                            }
                         }
                         else if (not->sn_assoc_change.sac_state == SCTP_COMM_UP)
                         {
@@ -444,8 +451,14 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                                 not->sn_assoc_change.sac_inbound_streams;
                             e->outbound_streams = 
                                 not->sn_assoc_change.sac_outbound_streams;
-                            mme_event_send(e);
-                            ogs_pollset_notify(mme_self()->pollset);
+                            rv = ogs_queue_push(mme_self()->queue, e);
+                            if (rv != OGS_OK) {
+                                ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+                                ogs_free(addr);
+                                mme_event_free(e);
+                            } else {
+                                ogs_pollset_notify(mme_self()->pollset);
+                            }
                         }
                         break;
                     }
@@ -464,8 +477,14 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
                         ogs_assert(e);
                         e->enb_sock = (ogs_sock_t *)sock;
                         e->enb_addr = addr;
-                        mme_event_send(e);
-                        ogs_pollset_notify(mme_self()->pollset);
+                        rv = ogs_queue_push(mme_self()->queue, e);
+                        if (rv != OGS_OK) {
+                            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+                            ogs_free(addr);
+                            mme_event_free(e);
+                        } else {
+                            ogs_pollset_notify(mme_self()->pollset);
+                        }
                         break;
                     }
                     case SCTP_PEER_ADDR_CHANGE:
@@ -517,8 +536,15 @@ static int s1ap_usrsctp_recv_handler(struct socket *sock,
             e->enb_sock = (ogs_sock_t *)sock;
             e->enb_addr = addr;
             e->pkbuf = pkbuf;
-            mme_event_send(e);
-            ogs_pollset_notify(mme_self()->pollset);
+            rv = ogs_queue_push(mme_self()->queue, e);
+            if (rv != OGS_OK) {
+                ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+                ogs_free(addr);
+                ogs_pkbuf_free(pkbuf);
+                mme_event_free(e);
+            } else {
+                ogs_pollset_notify(mme_self()->pollset);
+            }
         }
         else
         {

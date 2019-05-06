@@ -1653,7 +1653,8 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_list_init(&enb->enb_ue_list);
 
-    ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), enb);
+    if (enb->sock_type == SOCK_STREAM)
+        ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), enb);
     ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), enb);
 
 #if HAVE_USRSCTP != 1
@@ -1680,7 +1681,8 @@ int mme_enb_remove(mme_enb_t *enb)
     ogs_fsm_fini(&enb->sm, &e);
     ogs_fsm_delete(&enb->sm);
 
-    ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), NULL);
+    if (enb->sock_type == SOCK_STREAM)
+        ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), NULL);
     ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), NULL);
     ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
