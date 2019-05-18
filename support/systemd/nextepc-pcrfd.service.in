@@ -10,7 +10,7 @@ User=nextepc
 Group=nextepc
 
 RuntimeDirectory=nextepc-pcrfd
-PIDFile=@LIB_DIR@/run/nextepc-pcrfd/pid
+PIDFile=@LOCALSTATE_DIR@/run/nextepc-pcrfd/pid
 
 Restart=always
 ExecStart=@BIN_DIR@/nextepc-pcrfd -f @SYSCONF_DIR@/nextepc/pcrf.conf

@@ -10,7 +10,7 @@ User=nextepc
 Group=nextepc
 
 RuntimeDirectory=nextepc-hssd
-PIDFile=@LIB_DIR@/run/nextepc-hssd/pid
+PIDFile=@LOCALSTATE_DIR@/run/nextepc-hssd/pid
 
 Restart=always
 ExecStart=@BIN_DIR@/nextepc-hssd -f @SYSCONF_DIR@/nextepc/hss.conf
