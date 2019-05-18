@@ -217,7 +217,8 @@ How to remove NextEPC package:
 1. On *Ubuntu*:
 
     ```bash
-    $ sudo apt purge nextepc*
+    $ sudo apt purge nextepc
+    $ sudo apt autoremove
     ```
 
 2. On *openSUSE*:
