@@ -446,6 +446,10 @@ int pgw_context_parse_config()
                             {
                                 dev = ogs_yaml_iter_value(&gtpc_iter);
                             }
+                            else if (!strcmp(gtpc_key, "apn"))
+                            {
+                                /* Skip */
+                            }
                             else
                                 ogs_warn("unknown key `%s`", gtpc_key);
                         }

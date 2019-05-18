@@ -249,20 +249,38 @@ pgw:
 #
 #  ------------------------ MME --------------------------
 #
-#  o Only first node is attempted. Others are ignored.
-#  o if HSS provide PGW addresss(per-UE), DB overwrites YAML-configuration.
+#  o By default, the PGW uses the first PGW node.
+#    - To use a different APN for each PGW, specify gtpc.apn as the APN name.
+#    - If the HSS uses WebUI to set the PGW IP for eacho UE,
+#      you can use a specific PGW node for each UE.
 #
-#  o Two PGW are defined. 127.0.0.3:2123 is attempted. [fe80::3%@LO_DEV@]:2123 is ignored.
+#  o Two PGW are defined. 127.0.0.3:2123 is used.
+#    [fe80::3%@LO_DEV@]:2123 is ignored.
 #    gtpc:
 #      - addr: 127.0.0.3
 #      - addr: fe80::3%@LO_DEV@
 #
-#  o One PGW is defined. if prefer_ipv4 is not true, [fe80::3%@LO_DEV@] is selected.
+#  o One PGW is defined. if prefer_ipv4 is not true,
+#    [fe80::3%@LO_DEV@] is selected.
 #    gtpc:
 #      - addr: 
 #        - 127.0.0.3
 #        - fe80::3%@LO_DEV@
 #
+#  o Two PGW are defined with a different APN.
+#    - Note that if PGW IP for UE is configured in HSS,
+#      the following configurion for this UE is ignored.
+#    gtpc:
+#      - addr: 127.0.0.3
+#        apn: internet
+#      - addr: 127.0.0.5
+#        apn: volte
+#
+#  o If APN is omitted, the default APN uses the first PGW node.
+#    gtpc:
+#      - addr: 127.0.0.3
+#      - addr: 127.0.0.5
+#        apn: volte
 #  ------------------------ PGW --------------------------
 #
 #  o GTP-C Server(127.0.0.3:2123, [fe80::3%@LO_DEV@]:2123)
@@ -271,7 +289,7 @@ pgw:
 #        - 127.0.0.3
 #        - fe80::3%@LO_DEV@
 #
-#  o On PGW, Same configuration(127.0.0.3:2123, [fe80::3%@LO_DEV@]:2123) as below.
+#  o On PGW, Same configuration(127.0.0.3:2123, [fe80::3%@LO_DEV@]:2123).
 #    gtpc:
 #      - addr: 127.0.0.3
 #      - addr: fe80::3%@LO_DEV@

@@ -195,21 +195,21 @@ typedef struct _qos_t {
 #define PDN_QCI_66                                      66
 #define PDN_QCI_69                                      69
 #define PDN_QCI_70                                      70
-    uint8_t       qci;
+    uint8_t         qci;
 
     struct {
     /* Values 1 to 8 should only be assigned for services that are
      * authorized to receive prioritized treatment within an operator domain. 
      * Values 9 to 15 may be assigned to resources that are authorized 
      * by the home network and thus applicable when a UE is roaming. */
-        uint8_t       priority_level;
+        uint8_t     priority_level;
 
 #define PDN_PRE_EMPTION_CAPABILITY_ENABLED              0
 #define PDN_PRE_EMPTION_CAPABILITY_DISABLED             1
-        uint8_t       pre_emption_capability;
+        uint8_t     pre_emption_capability;
 #define PDN_PRE_EMPTION_VULNERABILITY_ENABLED           0
 #define PDN_PRE_EMPTION_VULNERABILITY_DISABLED          1
-        uint8_t       pre_emption_vulnerability;
+        uint8_t     pre_emption_vulnerability;
     } arp;
 
     bitrate_t       mbr;  /* Maxmimum Bit Rate (MBR) */
@@ -280,13 +280,13 @@ typedef struct _pcc_rule_t {
 /**********************************
  * PDN Structure                 */
 typedef struct _pdn_t {
-    uint32_t    context_identifier;
-    char        apn[MAX_APN_LEN+1];
+    uint32_t        context_identifier;
+    char            apn[MAX_APN_LEN+1];
 #define HSS_PDN_TYPE_IPV4                       0
 #define HSS_PDN_TYPE_IPV6                       1
 #define HSS_PDN_TYPE_IPV4V6                     2
 #define HSS_PDN_TYPE_IPV4_OR_IPV6               3
-    int         pdn_type;
+    int             pdn_type;
 
     qos_t           qos;
     bitrate_t       ambr; /* APN-AMBR */

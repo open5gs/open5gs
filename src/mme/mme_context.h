@@ -33,11 +33,11 @@ extern int __esm_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __mme_log_domain
 
-typedef struct _mme_sgw_t mme_sgw_t;
-typedef struct _mme_pgw_t mme_pgw_t;
+typedef struct mme_sgw_s mme_sgw_t;
+typedef struct mme_pgw_s mme_pgw_t;
 
-typedef struct _enb_ue_t enb_ue_t;
-typedef struct _mme_ue_t mme_ue_t;
+typedef struct enb_ue_s enb_ue_t;
+typedef struct mme_ue_s mme_ue_t;
 
 typedef struct _gtp_node_t gtp_node_t;
 typedef struct _gtp_xact_t gtp_xact_t;
@@ -51,22 +51,22 @@ typedef enum {
     SGW_SELECT_TAC,
 } sgw_select_e;
 
-typedef struct _served_gummei {
-    uint32_t      num_of_plmn_id;
+typedef struct served_gummei_s {
+    uint32_t        num_of_plmn_id;
     plmn_id_t       plmn_id[MAX_PLMN_ID];
 
-    uint32_t      num_of_mme_gid;
-    uint16_t      mme_gid[GRP_PER_MME];
-    uint32_t      num_of_mme_code;
-    uint8_t       mme_code[CODE_PER_MME];
+    uint32_t        num_of_mme_gid;
+    uint16_t        mme_gid[GRP_PER_MME];
+    uint32_t        num_of_mme_code;
+    uint8_t         mme_code[CODE_PER_MME];
 } served_gummei_t;
 
-typedef struct _mme_context_t {
+typedef struct mme_context_s {
     const char      *fd_conf_path;  /* MME freeDiameter conf path */
     fd_config_t     *fd_config;     /* MME freeDiameter config */
 
-    uint16_t      s1ap_port;      /* Default S1AP Port */
-    uint16_t      gtpc_port;      /* Default GTPC Port */
+    uint16_t        s1ap_port;      /* Default S1AP Port */
+    uint16_t        gtpc_port;      /* Default GTPC Port */
 
     ogs_list_t      s1ap_list;      /* MME S1AP IPv4 Server List */
     ogs_list_t      s1ap_list6;     /* MME S1AP IPv6 Server List */
@@ -101,8 +101,8 @@ typedef struct _mme_context_t {
      * #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
      * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
-    uint8_t       num_of_ciphering_order;
-    uint8_t       ciphering_order[MAX_NUM_OF_ALGORITHM];
+    uint8_t         num_of_ciphering_order;
+    uint8_t         ciphering_order[MAX_NUM_OF_ALGORITHM];
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
@@ -145,7 +145,7 @@ typedef struct _mme_context_t {
                         
 } mme_context_t;
 
-typedef struct _mme_sgw_t {
+typedef struct mme_sgw_s {
     ogs_lnode_t     node;
 
     uint16_t        tac[MAX_NUM_OF_TAI];
@@ -154,13 +154,14 @@ typedef struct _mme_sgw_t {
     gtp_node_t      *gnode;
 } mme_sgw_t;
 
-typedef struct _mme_pgw_t {
+typedef struct mme_pgw_s {
     ogs_lnode_t     node;
 
     gtp_node_t      *gnode;
+    const char      *apn;
 } mme_pgw_t;
 
-typedef struct _mme_enb_t {
+typedef struct mme_enb_s {
     ogs_fsm_t       sm;     /* A state machine */
 
     uint32_t        enb_id;     /* eNB_ID received from eNB */
@@ -178,7 +179,7 @@ typedef struct _mme_enb_t {
 
 } mme_enb_t;
 
-struct _enb_ue_t {
+struct enb_ue_s {
     ogs_lnode_t     node;   /* A node of list_t */
 
     /* UE identity */
@@ -214,7 +215,7 @@ struct _enb_ue_t {
     mme_ue_t        *mme_ue;
 }; 
 
-struct _mme_ue_t {
+struct mme_ue_s {
     ogs_fsm_t       sm;     /* A state machine */
 
     struct {
@@ -408,7 +409,7 @@ struct _mme_ue_t {
         ogs_assert((__mME)); \
         (__mME)->sgw_s11_teid = 0; \
     } while(0)
-typedef struct _mme_sess_t {
+typedef struct mme_sess_s {
     ogs_lnode_t     node;       /* A node of list_t */
 
     uint8_t         pti;        /* Procedure Trasaction Identity */
@@ -466,7 +467,7 @@ typedef struct _mme_sess_t {
         (__bEARER)->sgw_dl_teid = 0; \
         (__bEARER)->sgw_ul_teid = 0; \
     } while(0)
-typedef struct _mme_bearer_t {
+typedef struct mme_bearer_s {
     ogs_lnode_t     node;           /* A node of list_t */
     ogs_fsm_t       sm;             /* State Machine */
 
@@ -514,6 +515,8 @@ mme_pgw_t *mme_pgw_add(
         ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
 int mme_pgw_remove(mme_pgw_t *pgw);
 void mme_pgw_remove_all();
+ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
+        ogs_list_t *list, int family, char *apn);
 
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
 int mme_enb_remove(mme_enb_t *enb);
@@ -638,7 +641,6 @@ mme_bearer_t *mme_bearer_next(mme_bearer_t *bearer);
 int mme_bearer_is_inactive(mme_ue_t *mme_ue);
 int mme_bearer_set_inactive(mme_ue_t *mme_ue);
 
-pdn_t *mme_pdn_add(mme_ue_t *mme_ue, char *apn);
 int mme_pdn_remove_all(mme_ue_t *mme_ue);
 pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn);
 pdn_t *mme_default_pdn(mme_ue_t *mme_ue);

@@ -78,27 +78,23 @@ int mme_s11_build_create_session_request(
 
     memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
     pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
-    if (pdn->pgw_ip.ipv4 || pdn->pgw_ip.ipv6)
-    {
+    if (pdn->pgw_ip.ipv4 || pdn->pgw_ip.ipv6) {
         pgw_s5c_teid.ipv4 = pdn->pgw_ip.ipv4;
         pgw_s5c_teid.ipv6 = pdn->pgw_ip.ipv6;
-        if (pgw_s5c_teid.ipv4 && pgw_s5c_teid.ipv6)
-        {
+        if (pgw_s5c_teid.ipv4 && pgw_s5c_teid.ipv6) {
             pgw_s5c_teid.both.addr = pdn->pgw_ip.both.addr;
             memcpy(pgw_s5c_teid.both.addr6, pdn->pgw_ip.both.addr6,
                     sizeof pdn->pgw_ip.both.addr6);
             req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
                 GTP_F_TEID_IPV4V6_LEN;
         }
-        else if (pgw_s5c_teid.ipv4)
-        {
+        else if (pgw_s5c_teid.ipv4) {
             /* pdn->pgw_ip always uses both ip address memory */
             pgw_s5c_teid.addr = pdn->pgw_ip.both.addr;
             req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
                 GTP_F_TEID_IPV4_LEN;
         }
-        else if (pgw_s5c_teid.ipv6)
-        {
+        else if (pgw_s5c_teid.ipv6) {
             /* pdn->pgw_ip always uses both ip address memory */
             memcpy(pgw_s5c_teid.addr6, pdn->pgw_ip.both.addr6,
                     sizeof pdn->pgw_ip.both.addr6);
@@ -109,10 +105,20 @@ int mme_s11_build_create_session_request(
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data =
             &pgw_s5c_teid;
     }
-    else
-    {
-        rv = gtp_sockaddr_to_f_teid(
-            mme_self()->pgw_addr, mme_self()->pgw_addr6, &pgw_s5c_teid, &len);
+    else {
+        ogs_sockaddr_t *pgw_addr = NULL;
+        ogs_sockaddr_t *pgw_addr6 = NULL;
+
+        pgw_addr = mme_pgw_addr_find_by_apn(
+                &mme_self()->pgw_list, AF_INET, pdn->apn);
+        pgw_addr6 = mme_pgw_addr_find_by_apn(
+                &mme_self()->pgw_list, AF_INET6, pdn->apn);
+        if (!pgw_addr && !pgw_addr6) {
+            pgw_addr = mme_self()->pgw_addr;
+            pgw_addr6 = mme_self()->pgw_addr6;
+        }
+
+        rv = gtp_sockaddr_to_f_teid(pgw_addr, pgw_addr6, &pgw_s5c_teid, &len);
         ogs_assert(rv == OGS_OK);
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
@@ -135,13 +141,11 @@ int mme_s11_build_create_session_request(
             NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6);
     if (pdn->pdn_type == HSS_PDN_TYPE_IPV4 ||
         pdn->pdn_type == HSS_PDN_TYPE_IPV6 ||
-        pdn->pdn_type == HSS_PDN_TYPE_IPV4V6)
-    {
+        pdn->pdn_type == HSS_PDN_TYPE_IPV4V6) {
         req->pdn_type.u8 = ((pdn->pdn_type + 1) & sess->request_type.pdn_type);
         ogs_assert(req->pdn_type.u8 != 0);
     }
-    else if (pdn->pdn_type == HSS_PDN_TYPE_IPV4_OR_IPV6)
-    {
+    else if (pdn->pdn_type == HSS_PDN_TYPE_IPV4_OR_IPV6) {
         req->pdn_type.u8 = sess->request_type.pdn_type;
     }
     else
@@ -163,8 +167,7 @@ int mme_s11_build_create_session_request(
     req->maximum_apn_restriction.presence = 1;
     req->maximum_apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
 
-    if (pdn->ambr.uplink || pdn->ambr.downlink)
-    {
+    if (pdn->ambr.uplink || pdn->ambr.downlink) {
         memset(&ambr, 0, sizeof(gtp_ambr_t));
         ambr.uplink = htonl(pdn->ambr.uplink);
         ambr.downlink = htonl(pdn->ambr.downlink);
@@ -173,8 +176,7 @@ int mme_s11_build_create_session_request(
         req->aggregate_maximum_bit_rate.len = sizeof(ambr);
     }
 
-    if (sess->ue_pco.length && sess->ue_pco.buffer)
-    {
+    if (sess->ue_pco.length && sess->ue_pco.buffer) {
         req->protocol_configuration_options.presence = 1;
         req->protocol_configuration_options.data = sess->ue_pco.buffer;
         req->protocol_configuration_options.len = sess->ue_pco.length;
@@ -198,8 +200,7 @@ int mme_s11_build_create_session_request(
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     ogs_gettimeofday(&now);
     ogs_localtime(now.tv_sec, &time_exp);
-    if (time_exp.tm_gmtoff >= 0)
-    {
+    if (time_exp.tm_gmtoff >= 0) {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
     }
     else
@@ -266,8 +267,7 @@ int mme_s11_build_modify_bearer_request(ogs_pkbuf_t **pkbuf,
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data = &enb_s1u_teid;
     req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len = len;
 
-    if (uli_presence)
-    {
+    if (uli_presence) {
         /* User Location Information(ULI) */
         memset(&uli, 0, sizeof(gtp_uli_t));
         uli.flags.e_cgi = 1;
@@ -425,12 +425,10 @@ int mme_s11_build_create_bearer_response(
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     ogs_gettimeofday(&now);
     ogs_localtime(now.tv_sec, &time_exp);
-    if (time_exp.tm_gmtoff >= 0)
-    {
+    if (time_exp.tm_gmtoff >= 0) {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
     }
-    else
-    {
+    else {
         ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
@@ -507,12 +505,10 @@ int mme_s11_build_update_bearer_response(
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     ogs_gettimeofday(&now);
     ogs_localtime(now.tv_sec, &time_exp);
-    if (time_exp.tm_gmtoff >= 0)
-    {
+    if (time_exp.tm_gmtoff >= 0) {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
     }
-    else
-    {
+    else {
         ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
@@ -589,12 +585,10 @@ int mme_s11_build_delete_bearer_response(
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     ogs_gettimeofday(&now);
     ogs_localtime(now.tv_sec, &time_exp);
-    if (time_exp.tm_gmtoff >= 0)
-    {
+    if (time_exp.tm_gmtoff >= 0) {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
     }
-    else
-    {
+    else {
         ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
@@ -689,13 +683,10 @@ int mme_s11_build_create_indirect_data_forwarding_tunnel_request(
 
     i = 0;
     sess = mme_sess_first(mme_ue);
-    while (sess != NULL)
-    {
+    while (sess != NULL) {
         bearer = mme_bearer_first(sess);
-        while(bearer != NULL)
-        {
-            if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer))
-            {
+        while(bearer != NULL) {
+            if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer)) {
                 memset(&dl_teid[i], 0, sizeof(gtp_f_teid_t));
                 dl_teid[i].interface_type =
                     GTP_F_TEID_ENODEB_GTP_U_FOR_DL_DATA_FORWARDING;
@@ -708,8 +699,7 @@ int mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 bearers[i]->s1_u_enodeb_f_teid.len = len;
             }
 
-            if (MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer))
-            {
+            if (MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer)) {
                 memset(&ul_teid[i], 0, sizeof(gtp_f_teid_t));
                 ul_teid[i].interface_type =
                     GTP_F_TEID_ENODEB_GTP_U_FOR_UL_DATA_FORWARDING;
@@ -723,8 +713,7 @@ int mme_s11_build_create_indirect_data_forwarding_tunnel_request(
             }
 
             if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer) ||
-                MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer))
-            {
+                MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer)) {
                 bearers[i]->presence = 1;
                 bearers[i]->eps_bearer_id.presence = 1;
                 bearers[i]->eps_bearer_id.u8 = bearer->ebi;

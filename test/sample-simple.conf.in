@@ -93,9 +93,12 @@ pgw:
           addr: 127.0.0.5
 
     gtpc:
-      addr:
+      - addr:
         - 127.0.0.3
         - ::1
+      - addr:
+        - 127.0.0.4
+        apn: starent.com
     gtpu:
       - addr: 127.0.0.3
       - addr: ::1

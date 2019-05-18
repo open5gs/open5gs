@@ -33,28 +33,6 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     }
 }
 
-static ogs_sockaddr_t *pgw_addr_find_by_family(ogs_list_t *list, int family)
-{
-    mme_pgw_t *pgw = NULL;
-    ogs_assert(list);
-
-    ogs_list_for_each(list, pgw)
-    {
-        ogs_assert(pgw->gnode);
-        ogs_sockaddr_t *addr = pgw->gnode->sa_list;
-        while(addr)
-        {
-            if (addr->c_sa_family == family)
-            {
-                return addr;
-            }
-            addr = addr->next;
-        }
-    }
-
-    return NULL;
-}
-
 int mme_gtp_open()
 {
     int rv;
@@ -94,10 +72,10 @@ int mme_gtp_open()
 
     ogs_assert(mme_self()->gtpc_addr || mme_self()->gtpc_addr6);
 
-    mme_self()->pgw_addr = pgw_addr_find_by_family(
-            &mme_self()->pgw_list, AF_INET);
-    mme_self()->pgw_addr6 = pgw_addr_find_by_family(
-            &mme_self()->pgw_list, AF_INET6);
+    mme_self()->pgw_addr = mme_pgw_addr_find_by_apn(
+            &mme_self()->pgw_list, AF_INET, NULL);
+    mme_self()->pgw_addr6 = mme_pgw_addr_find_by_apn(
+            &mme_self()->pgw_list, AF_INET6, NULL);
     ogs_assert(mme_self()->pgw_addr || mme_self()->pgw_addr6);
 
     ogs_list_for_each(&mme_self()->sgw_list, sgw)

@@ -29,11 +29,11 @@ typedef enum {
 typedef long S1AP_ProcedureCode_t;
 typedef struct S1AP_S1AP_PDU s1ap_message_t;
 typedef struct _nas_message_t nas_message_t;
-typedef struct _mme_enb_t mme_enb_t;
-typedef struct _enb_ue_t enb_ue_t;
-typedef struct _mme_ue_t mme_ue_t;
-typedef struct _mme_sess_t mme_sess_t;
-typedef struct _mme_bearer_t mme_bearer_t;
+typedef struct mme_enb_s mme_enb_t;
+typedef struct enb_ue_s enb_ue_t;
+typedef struct mme_ue_s mme_ue_t;
+typedef struct mme_sess_s mme_sess_t;
+typedef struct mme_bearer_s mme_bearer_t;
 
 typedef struct mme_event_s {
     int id;
