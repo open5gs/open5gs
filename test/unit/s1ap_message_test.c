@@ -93,6 +93,11 @@ static void s1ap_message_test4(abts_case *tc, void *data)
     ogs_pkbuf_t *pkbuf;
     int result;
 
+    mme_self()->max_num_of_served_gummei = 1;
+    mme_self()->served_gummei[0].num_of_plmn_id = 1;
+    mme_self()->served_gummei[0].num_of_mme_gid = 1;
+    mme_self()->served_gummei[0].num_of_mme_code = 1;
+
     rv = s1ap_build_setup_rsp(&pkbuf);
 
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -194,9 +199,7 @@ abts_suite *test_s1ap_message(abts_suite *suite)
     abts_run_test(suite, s1ap_message_test1, NULL);
     abts_run_test(suite, s1ap_message_test2, NULL);
     abts_run_test(suite, s1ap_message_test3, NULL);
-#if 0
     abts_run_test(suite, s1ap_message_test4, NULL);
-#endif
     abts_run_test(suite, s1ap_message_test5, NULL);
     abts_run_test(suite, s1ap_message_test6, NULL);
     abts_run_test(suite, s1ap_message_test7, NULL);
