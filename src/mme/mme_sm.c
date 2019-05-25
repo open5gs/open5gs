@@ -307,26 +307,32 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             e->nas_message = &message;
 
             ogs_fsm_dispatch(&bearer->sm, e);
-            if (OGS_FSM_CHECK(&bearer->sm, esm_state_bearer_deactivated) ||
-                OGS_FSM_CHECK(&bearer->sm, esm_state_exception))
-            {
-                if (default_bearer->ebi == bearer->ebi)
-                {
+            if (OGS_FSM_CHECK(&bearer->sm,
+                        esm_state_bearer_deactivated)) {
+
+                if (default_bearer->ebi == bearer->ebi) {
                     /* if the bearer is a default bearer,
                      * remove all session context linked the default bearer */
                     mme_sess_remove(sess);
-                }
-                else
-                {
+                } else {
                     /* if the bearer is not a default bearer,
                      * just remove the bearer context */
                     mme_bearer_remove(bearer);
                 }
-            }
-            else if (OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_did_disconnect))
-            {
+
+            } else if (OGS_FSM_CHECK(&bearer->sm,
+                        esm_state_pdn_did_disconnect)) {
+
                 ogs_assert(default_bearer->ebi == bearer->ebi);
                 mme_sess_remove(sess);
+
+            } else if (OGS_FSM_CHECK(&bearer->sm,
+                        esm_state_exception)) {
+
+                /* Probably Invalid APN */
+                rv = mme_send_delete_session_or_ue_context_release(
+                        mme_ue, mme_ue->enb_ue);
+                ogs_assert(rv == OGS_OK);
             }
 
             ogs_pkbuf_free(pkbuf);
