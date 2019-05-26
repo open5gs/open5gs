@@ -170,7 +170,7 @@ $ sudo apt install nextepc
 The following shows how to install the Web UI of NextEPC.
 
 ```bash
-$ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+$ curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 $ sudo apt install nodejs
 $ curl -sL http://nextepc.org/static/webui/install | sudo -E bash -
 ```
