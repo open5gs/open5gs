@@ -141,7 +141,7 @@ int emm_handle_attach_request(
         {
             nas_eps_mobile_identity_guti_t *nas_guti = NULL;
             nas_guti = &eps_mobile_identity->guti;
-            guti_t guti;
+            nas_guti_t guti;
 
             guti.plmn_id = nas_guti->plmn_id;
             guti.mme_gid = nas_guti->mme_gid;
@@ -504,7 +504,7 @@ int emm_handle_tau_request(
         {
             nas_eps_mobile_identity_guti_t *nas_guti = NULL;
             nas_guti = &eps_mobile_identity->guti;
-            guti_t guti;
+            nas_guti_t guti;
 
             guti.plmn_id = nas_guti->plmn_id;
             guti.mme_gid = nas_guti->mme_gid;

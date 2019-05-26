@@ -231,26 +231,26 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         if (S_TMSI)
         {
             served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
-            guti_t guti;
+            nas_guti_t nas_guti;
             mme_ue_t *mme_ue = NULL;
 
-            memset(&guti, 0, sizeof(guti_t));
+            memset(&nas_guti, 0, sizeof(nas_guti_t));
 
             /* Use the first configured plmn_id and mme group id */
-            memcpy(&guti.plmn_id, &served_gummei->plmn_id[0], PLMN_ID_LEN);
-            guti.mme_gid = served_gummei->mme_gid[0];
+            nas_from_plmn_id(&nas_guti.plmn_id, &served_gummei->plmn_id[0]);
+            nas_guti.mme_gid = served_gummei->mme_gid[0];
 
             /* size must be 1 */
-            memcpy(&guti.mme_code, S_TMSI->mMEC.buf, S_TMSI->mMEC.size);
+            memcpy(&nas_guti.mme_code, S_TMSI->mMEC.buf, S_TMSI->mMEC.size);
             /* size must be 4 */
-            memcpy(&guti.m_tmsi, S_TMSI->m_TMSI.buf, S_TMSI->m_TMSI.size);
-            guti.m_tmsi = ntohl(guti.m_tmsi);
+            memcpy(&nas_guti.m_tmsi, S_TMSI->m_TMSI.buf, S_TMSI->m_TMSI.size);
+            nas_guti.m_tmsi = ntohl(nas_guti.m_tmsi);
 
-            mme_ue = mme_ue_find_by_guti(&guti);
+            mme_ue = mme_ue_find_by_guti(&nas_guti);
             if (!mme_ue)
             {
                 ogs_warn("Unknown UE by S_TMSI[G:%d,C:%d,M_TMSI:0x%x]",
-                        guti.mme_gid, guti.mme_code, guti.m_tmsi);
+                        nas_guti.mme_gid, nas_guti.mme_code, nas_guti.m_tmsi);
             }
             else
             {

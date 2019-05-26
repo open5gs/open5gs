@@ -17,7 +17,7 @@ int emm_build_attach_accept(
         &attach_accept->eps_attach_result;
     nas_gprs_timer_t *t3412_value = &attach_accept->t3412_value;
     int served_tai_index = 0;
-    nas_eps_mobile_identity_t *guti = &attach_accept->guti;
+    nas_eps_mobile_identity_t *nas_guti = &attach_accept->guti;
     nas_eps_network_feature_support_t *eps_network_feature_support =
         &attach_accept->eps_network_feature_support;
 
@@ -63,14 +63,13 @@ int emm_build_attach_accept(
     if (mme_ue->guti_present)
     {
         attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
-        guti->length = sizeof(nas_eps_mobile_identity_guti_t);
-        guti->guti.odd_even = NAS_EPS_MOBILE_IDENTITY_EVEN;
-        guti->guti.type = NAS_EPS_MOBILE_IDENTITY_GUTI;
-        nas_from_plmn_id(&guti->guti.plmn_id,
-                            (plmn_id_t*)&mme_ue->guti.plmn_id);
-        guti->guti.mme_gid = mme_ue->guti.mme_gid;
-        guti->guti.mme_code = mme_ue->guti.mme_code;
-        guti->guti.m_tmsi = mme_ue->guti.m_tmsi;
+        nas_guti->length = sizeof(nas_eps_mobile_identity_guti_t);
+        nas_guti->guti.odd_even = NAS_EPS_MOBILE_IDENTITY_EVEN;
+        nas_guti->guti.type = NAS_EPS_MOBILE_IDENTITY_GUTI;
+        nas_guti->guti.plmn_id = mme_ue->guti.plmn_id;
+        nas_guti->guti.mme_gid = mme_ue->guti.mme_gid;
+        nas_guti->guti.mme_code = mme_ue->guti.mme_code;
+        nas_guti->guti.m_tmsi = mme_ue->guti.m_tmsi;
     }
     mme_ue->guti_present = 0;
 

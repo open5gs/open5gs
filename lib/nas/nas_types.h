@@ -64,12 +64,12 @@ ED2(uint8_t mnc2:4;,
 void *nas_from_plmn_id(nas_plmn_id_t *nas_plmn_id, plmn_id_t *plmn_id);
 void *nas_to_plmn_id(plmn_id_t *plmn_id, nas_plmn_id_t *nas_plmn_id);
 
-typedef struct _guti_t {
+typedef struct nas_guti_s {
     nas_plmn_id_t plmn_id;
     uint16_t mme_gid;
     uint8_t mme_code;
     uint32_t m_tmsi;
-} __attribute__ ((packed)) guti_t;
+} __attribute__ ((packed)) nas_guti_t;
 
 /* 9.9.2.0 Additional information
  * O TLV 3-n */

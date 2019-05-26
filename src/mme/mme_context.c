@@ -1771,21 +1771,22 @@ static int mme_ue_new_guti(mme_ue_t *mme_ue)
     {
         /* MME has a VALID GUIT
          * As such, we need to remove previous GUTI in hash table */
-        ogs_hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
+        ogs_hash_set(self.guti_ue_hash,
+                &mme_ue->guti, sizeof(nas_guti_t), NULL);
         ogs_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == OGS_OK);
     }
 
-    memset(&mme_ue->guti, 0, sizeof(guti_t));
+    memset(&mme_ue->guti, 0, sizeof(nas_guti_t));
 
     /* Use the first configured plmn_id and mme group id */
-    memcpy(&mme_ue->guti.plmn_id, &served_gummei->plmn_id[0], PLMN_ID_LEN);
+    nas_from_plmn_id(&mme_ue->guti.plmn_id, &served_gummei->plmn_id[0]);
     mme_ue->guti.mme_gid = served_gummei->mme_gid[0];
     mme_ue->guti.mme_code = served_gummei->mme_code[0];
 
     mme_ue->m_tmsi = mme_m_tmsi_alloc();
     ogs_assert(mme_ue->m_tmsi);
     mme_ue->guti.m_tmsi = *(mme_ue->m_tmsi);
-    ogs_hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), mme_ue);
+    ogs_hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(nas_guti_t), mme_ue);
 
     return OGS_OK;
 }
@@ -1878,7 +1879,8 @@ int mme_ue_remove(mme_ue_t *mme_ue)
     /* Clear hash table */
     if (mme_ue->m_tmsi)
     {
-        ogs_hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
+        ogs_hash_set(self.guti_ue_hash,
+                &mme_ue->guti, sizeof(nas_guti_t), NULL);
         ogs_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == OGS_OK);
     }
     if (mme_ue->imsi_len != 0)
@@ -1943,11 +1945,12 @@ mme_ue_t* mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
     return (mme_ue_t *)ogs_hash_get(self.imsi_ue_hash, imsi, imsi_len);
 }
 
-mme_ue_t* mme_ue_find_by_guti(guti_t *guti)
+mme_ue_t* mme_ue_find_by_guti(nas_guti_t *guti)
 {
     ogs_assert(guti);
 
-    return (mme_ue_t *)ogs_hash_get(self.guti_ue_hash, guti, sizeof(guti_t));
+    return (mme_ue_t *)ogs_hash_get(
+            self.guti_ue_hash, guti, sizeof(nas_guti_t));
 }
 
 mme_ue_t* mme_ue_find_by_teid(uint32_t teid)
@@ -2012,7 +2015,7 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                 {
                     nas_eps_mobile_identity_guti_t *nas_guti = NULL;
                     nas_guti = &eps_mobile_identity->guti;
-                    guti_t guti;
+                    nas_guti_t guti;
 
                     guti.plmn_id = nas_guti->plmn_id;
                     guti.mme_gid = nas_guti->mme_gid;
@@ -2064,7 +2067,7 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                 {
                     nas_eps_mobile_identity_guti_t *nas_guti = NULL;
                     nas_guti = &eps_mobile_identity->guti;
-                    guti_t guti;
+                    nas_guti_t guti;
 
                     guti.plmn_id = nas_guti->plmn_id;
                     guti.mme_gid = nas_guti->mme_gid;

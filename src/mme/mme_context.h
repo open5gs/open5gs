@@ -242,7 +242,7 @@ struct mme_ue_s {
     char            imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
     mme_m_tmsi_t    *m_tmsi;
-    guti_t          guti;
+    nas_guti_t      guti;
     int             guti_present;
 
     uint32_t        mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
@@ -547,7 +547,7 @@ int mme_ue_remove_all();
 
 mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd);
-mme_ue_t *mme_ue_find_by_guti(guti_t *guti);
+mme_ue_t *mme_ue_find_by_guti(nas_guti_t *nas_guti);
 mme_ue_t *mme_ue_find_by_teid(uint32_t teid);
 
 mme_ue_t *mme_ue_find_by_message(nas_message_t *message);
