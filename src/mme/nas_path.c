@@ -211,11 +211,19 @@ int nas_send_pdn_connectivity_reject(
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    rv = esm_build_pdn_connectivity_reject(&esmbuf, sess, esm_cause);
-    ogs_assert(rv == OGS_OK && esmbuf);
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
+        rv = esm_build_pdn_connectivity_reject(&esmbuf, sess, esm_cause);
+        ogs_assert(rv == OGS_OK && esmbuf);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
-    ogs_assert(rv == OGS_OK);
+        rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
+        ogs_assert(rv == OGS_OK);
+    } else {
+        /* During the UE-attach process, we'll send Attach-Reject 
+         * with pyggybacking PDN-connectivity-Reject */
+        rv = nas_send_attach_reject(mme_ue,
+            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esm_cause);
+        ogs_assert(rv == OGS_OK);
+    }
 
     return OGS_OK;
 }
