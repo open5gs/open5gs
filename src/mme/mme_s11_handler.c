@@ -203,6 +203,21 @@ void mme_s11_handle_delete_session_response(
             CLEAR_SGW_S1U_PATH(sess);
             return;
         }
+        else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active))
+        {
+            if (mme_sess_count(mme_ue) == 1) /* Last Session */
+            {
+                enb_ue_t *enb_ue = NULL;
+
+                enb_ue = mme_ue->enb_ue;
+                ogs_assert(enb_ue);
+
+                rv = s1ap_send_ue_context_release_command(enb_ue,
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                ogs_assert(rv == OGS_OK);
+            }
+        }
         else
             ogs_assert_if_reached();
     }

@@ -329,7 +329,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             } else if (OGS_FSM_CHECK(&bearer->sm,
                         esm_state_exception)) {
 
-                /* Probably Invalid APN */
+                /* 
+                 * [Enhancement] - Probably Invalid APN 
+                 * At this point, we'll forcely release UE context
+                 */
                 rv = mme_send_delete_session_or_ue_context_release(
                         mme_ue, mme_ue->enb_ue);
                 ogs_assert(rv == OGS_OK);

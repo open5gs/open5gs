@@ -296,6 +296,19 @@ static void volte_test1(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    /* Receive UE Context Release Command */
+    recvbuf = testenb_s1ap_read(sock);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send UE Context Release Complete */
+    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(sock, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
+
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
     ABTS_PTR_NOTNULL(tc, doc);
