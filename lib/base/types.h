@@ -82,7 +82,7 @@ extern "C" {
 
 /**********************************
  * PLMN_ID Structure             */
-typedef struct _plmn_id_t {
+typedef struct plmn_id_s {
 ED2(uint8_t mcc2:4;,
     uint8_t mcc1:4;)
 ED2(uint8_t mnc1:4;,
@@ -102,12 +102,12 @@ void *plmn_id_build(plmn_id_t *plmn_id,
 
 #define MAX_NUM_OF_TAI              16
 
-typedef struct _tai_t {
+typedef struct tai_s {
     plmn_id_t plmn_id;
     uint16_t tac;
 } __attribute__ ((packed)) tai_t;
 
-typedef struct _e_cgi_t {
+typedef struct e_cgi_s {
     plmn_id_t plmn_id;
     uint32_t cell_id; /* 28 bit */
 } __attribute__ ((packed)) e_cgi_t;
@@ -119,7 +119,7 @@ typedef struct _e_cgi_t {
 #define IPV4_LEN                4
 #define IPV6_LEN                16
 #define IPV4V6_LEN              20
-typedef struct _ip_t {
+typedef struct ip_s {
     union {
         uint32_t addr;
         uint8_t addr6[IPV6_LEN];
@@ -139,7 +139,7 @@ ED3(uint8_t       ipv4:1;,
 #define PAA_IPV4_LEN                                    5
 #define PAA_IPV6_LEN                                    18
 #define PAA_IPV4V6_LEN                                  22
-typedef struct _paa_t {
+typedef struct paa_s {
 /* 8.34 PDN Type  */
 #define GTP_PDN_TYPE_IPV4                               1
 #define GTP_PDN_TYPE_IPV6                               2
@@ -174,14 +174,14 @@ ED2(uint8_t spare:5;,
 
 #define MAX_BIT_RATE 10000000000UL
 
-typedef struct _bitrate_t {
+typedef struct bitrate_s {
     uint64_t downlink;        /* bits per seconds */
     uint64_t uplink;          /* bits per seconds */
 } bitrate_t;
 
 /**********************************
  * QoS Structure                 */
-typedef struct _qos_t {
+typedef struct qos_s {
 #define PDN_QCI_1                                       1
 #define PDN_QCI_2                                       2
 #define PDN_QCI_3                                       3
@@ -220,7 +220,7 @@ typedef struct _qos_t {
  * Flow  Structure               */
 #define FLOW_DOWNLINK_ONLY    1
 #define FLOW_UPLINK_ONLY      2
-typedef struct _flow_t {
+typedef struct flow_s {
     uint8_t direction;
     char *description;
 } flow_t;
@@ -237,7 +237,7 @@ typedef struct _flow_t {
 
 /**********************************
  * PCC Rule Structure            */
-typedef struct _pcc_rule_t {
+typedef struct pcc_rule_s {
 #define PCC_RULE_TYPE_INSTALL               1
 #define PCC_RULE_TYPE_REMOVE                2
     uint8_t type;
@@ -279,7 +279,7 @@ typedef struct _pcc_rule_t {
 
 /**********************************
  * PDN Structure                 */
-typedef struct _pdn_t {
+typedef struct pdn_s {
     uint32_t        context_identifier;
     char            apn[MAX_APN_LEN+1];
 #define HSS_PDN_TYPE_IPV4                       0
@@ -314,28 +314,28 @@ int apn_parse(char *dst, char *src, int len);
 #define PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST                  0x000c
 #define PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST              0x000d
 #define PCO_ID_IPV4_LINK_MTU_REQUEST                        0x0010
-typedef struct _pco_ipcp_options_t {
+typedef struct pco_ipcp_options_s {
     uint8_t type;
     uint8_t len;
     uint32_t addr;
 } __attribute__ ((packed)) pco_ipcp_options_t;
 
 #define PCO_MAX_NUM_OF_IPCO_OPTIONS 4
-typedef struct _pco_ipcp_t {
+typedef struct pco_ipcp_s {
     uint8_t code;
     uint8_t identifier;
     uint16_t len;
     pco_ipcp_options_t options[PCO_MAX_NUM_OF_IPCO_OPTIONS];
 } __attribute__ ((packed)) pco_ipcp_t;
 
-typedef struct _pco_id_t {
+typedef struct pco_id_s {
     uint16_t id;
     uint8_t len;
     void *data;
 } pco_id_t;
 
 #define MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID    8
-typedef struct _pco_t {
+typedef struct pco_s {
 ED3(uint8_t ext:1;,
     uint8_t spare:4;,
     uint8_t configuration_protocol:3;)

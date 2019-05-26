@@ -52,7 +52,7 @@ extern "C" {
 
 /**********************************
  * NAS PLMN_ID Structure             */
-typedef struct _nas_plmn_id_t {
+typedef struct nas_plmn_id_s {
 ED2(uint8_t mcc2:4;,
     uint8_t mcc1:4;)
 ED2(uint8_t mnc3:4;,

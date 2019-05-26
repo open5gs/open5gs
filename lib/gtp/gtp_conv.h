@@ -27,7 +27,7 @@ typedef struct _tlv_bearer_context_t tlv_bearer_context_t;
 typedef struct _gtp_create_indirect_data_forwarding_tunnel_request_t gtp_create_indirect_data_forwarding_tunnel_request_t;
 typedef struct _gtp_create_indirect_data_forwarding_tunnel_response_t gtp_create_indirect_data_forwarding_tunnel_response_t;
 typedef struct _gtp_f_teid_t gtp_f_teid_t;
-typedef struct _ip_t ip_t;
+typedef struct ip_s ip_t;
 
 #ifdef __cplusplus
 extern "C" {
