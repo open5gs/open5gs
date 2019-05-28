@@ -36,7 +36,7 @@ extern "C" {
 
 /* This is default diameter configuration if there is no config file 
  * The Configuration : No TLS, Only TCP */
-typedef struct _fd_config_t {
+typedef struct fd_config_s {
     /* Diameter Identity of the local peer (FQDN -- ASCII) */
     const char *cnf_diamid; 
     /* Diameter realm of the local peer, default to realm part of cnf_diamid */

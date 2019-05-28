@@ -17,7 +17,7 @@ extern int __sgw_log_domain;
 #define OGS_LOG_DOMAIN __sgw_log_domain
 
 typedef struct _sgw_tunnel_t sgw_tunnel_t;
-typedef struct _gtp_node_t gtp_node_t;
+typedef struct gtp_node_s gtp_node_t;
 
 typedef struct _sgw_context_t {
     uint32_t        gtpc_port;      /* Default GTPC port */

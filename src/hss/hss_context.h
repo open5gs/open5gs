@@ -27,7 +27,7 @@ typedef struct _hss_db_auth_info_t {
     uint64_t      sqn;
 } hss_db_auth_info_t;
 
-typedef struct _fd_config_t fd_config_t;
+typedef struct fd_config_s fd_config_t;
 typedef struct _hss_context_t {
     const char      *fd_conf_path;      /* HSS freeDiameter conf path */
     fd_config_t     *fd_config;         /* HSS freeDiameter config */

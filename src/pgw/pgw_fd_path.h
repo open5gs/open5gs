@@ -7,7 +7,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct _gtp_xact_t gtp_xact_t;
+typedef struct gtp_xact_s gtp_xact_t;
 
 int pgw_fd_init(void);
 void pgw_fd_final(void);

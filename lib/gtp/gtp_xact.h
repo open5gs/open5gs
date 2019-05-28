@@ -26,12 +26,12 @@
 extern "C" {
 #endif /* __cplusplus */
 
-typedef struct _gtp_node_t gtp_node_t;
+typedef struct gtp_node_s gtp_node_t;
 
 /**
  * Transaction context
  */
-typedef struct _gtp_xact_t {
+typedef struct gtp_xact_s {
     ogs_lnode_t     node;           /**< A node of list */
     ogs_index_t     index;
     
@@ -57,7 +57,7 @@ typedef struct _gtp_xact_t {
     ogs_timer_t     *tm_holding;    /**< Timer waiting for holding message */
     uint8_t         holding_rcount;
 
-    struct _gtp_xact_t *assoc_xact; /**< Associated transaction */
+    struct gtp_xact_s *assoc_xact; /**< Associated transaction */
 
 #define GTP_XACT_STORE_SESSION(xact, session) \
     do { \

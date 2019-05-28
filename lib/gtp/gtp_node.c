@@ -36,11 +36,11 @@ int gtp_node_final(void)
     return OGS_OK;
 }
 
-int gtp_create_node(gtp_node_t **node,
+gtp_node_t *gtp_create_node(
         ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
     int rv;
-    gtp_node_t *new_node = NULL;
+    gtp_node_t *node = NULL;
     ogs_sockaddr_t *preferred_list = NULL;
 
     ogs_assert(all_list);
@@ -68,21 +68,18 @@ int gtp_create_node(gtp_node_t **node,
         ogs_assert(rv == OGS_OK);
     }
 
-    if (preferred_list)
-    {
-        ogs_pool_alloc(&pool, &new_node);
-        ogs_assert(new_node);
-        memset(new_node, 0, sizeof(gtp_node_t));
+    ogs_assert(preferred_list);
 
-        new_node->sa_list = preferred_list;
+    ogs_pool_alloc(&pool, &node);
+    ogs_assert(node);
+    memset(node, 0, sizeof(gtp_node_t));
 
-        ogs_list_init(&new_node->local_list);
-        ogs_list_init(&new_node->remote_list);
-    }
+    node->sa_list = preferred_list;
 
-    *node = new_node;
+    ogs_list_init(&node->local_list);
+    ogs_list_init(&node->remote_list);
 
-    return OGS_OK;
+    return node;
 }
 
 int gtp_delete_node(gtp_node_t *node)
@@ -114,15 +111,7 @@ gtp_node_t *gtp_add_node(ogs_list_t *list, gtp_f_teid_t *f_teid,
     rv = gtp_f_teid_to_sockaddr(f_teid, port, &sa_list);
     ogs_assert(rv == OGS_OK);
 
-    rv = gtp_create_node(&node, sa_list, no_ipv4, no_ipv6, prefer_ipv4);
-    ogs_assert(rv == OGS_OK);
-    if (node == NULL)
-    {
-        ogs_error("Invalid Parameter : "
-                "port[%d], no_ipv4[%d], no_ipv6[%d], prefer_ipv4[%d]",
-                port, no_ipv4, no_ipv6, prefer_ipv4);
-        return NULL;
-    }
+    node = gtp_create_node(sa_list, no_ipv4, no_ipv6, prefer_ipv4);
     ogs_list_add(list, node);
 
     rv = gtp_f_teid_to_ip(f_teid, &node->ip);

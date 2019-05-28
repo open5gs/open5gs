@@ -36,7 +36,7 @@ extern "C" {
 /**
  * This structure represents the commonalities of GTP node such as MME, SGW,
  * PGW gateway. Some of members may not be used by the specific type of node */
-typedef struct _gtp_node_t {
+typedef struct gtp_node_s {
     ogs_lnode_t     node;           /* A node of list_t */
 
     ogs_sockaddr_t  *sa_list;       /* Socket Address List */
@@ -52,7 +52,7 @@ typedef struct _gtp_node_t {
 int gtp_node_init(void);
 int gtp_node_final(void);
 
-int gtp_create_node(gtp_node_t **node,
+gtp_node_t *gtp_create_node(
         ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
 int gtp_delete_node(gtp_node_t *node);
 

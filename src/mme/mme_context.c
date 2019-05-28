@@ -1234,8 +1234,6 @@ int mme_context_parse_config()
                                 context_self()->config.parameter.no_ipv4,
                                 context_self()->config.parameter.no_ipv6,
                                 context_self()->config.parameter.prefer_ipv4);
-                        ogs_assert(sgw);
-
                         sgw->num_of_tac = num_of_tac;
                         if (num_of_tac != 0)
                             memcpy(sgw->tac, tac, sizeof(sgw->tac));
@@ -1352,7 +1350,6 @@ int mme_context_parse_config()
                                 context_self()->config.parameter.no_ipv4,
                                 context_self()->config.parameter.no_ipv6,
                                 context_self()->config.parameter.prefer_ipv4);
-                        ogs_assert(pgw);
                         pgw->apn = apn;
 
                         ogs_freeaddrinfo(list);
@@ -1372,7 +1369,6 @@ int mme_context_parse_config()
 mme_sgw_t *mme_sgw_add(
         ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
-    int rv;
     mme_sgw_t *sgw = NULL;
 
     ogs_assert(all_list);
@@ -1381,16 +1377,7 @@ mme_sgw_t *mme_sgw_add(
     ogs_assert(sgw);
     memset(sgw, 0, sizeof *sgw);
 
-    rv = gtp_create_node(&sgw->gnode, all_list, no_ipv4, no_ipv6, prefer_ipv4);
-    ogs_assert(rv == OGS_OK);
-    if (sgw->gnode == NULL)
-    {
-        ogs_error("Invalid Parameter : "
-                "no_ipv4[%d], no_ipv6[%d], prefer_ipv4[%d]",
-                no_ipv4, no_ipv6, prefer_ipv4);
-        return NULL;
-    }
-
+    sgw->gnode = gtp_create_node(all_list, no_ipv4, no_ipv6, prefer_ipv4);
     ogs_list_add(&self.sgw_list, sgw);
 
     return sgw;
@@ -1422,7 +1409,6 @@ void mme_sgw_remove_all()
 mme_pgw_t *mme_pgw_add(
         ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
-    int rv;
     mme_pgw_t *pgw = NULL;
 
     ogs_assert(all_list);
@@ -1430,15 +1416,7 @@ mme_pgw_t *mme_pgw_add(
     ogs_pool_alloc(&mme_pgw_pool, &pgw);
     ogs_assert(pgw);
 
-    rv = gtp_create_node(&pgw->gnode, all_list, no_ipv4, no_ipv6, prefer_ipv4);
-    ogs_assert(rv == OGS_OK);
-    if (pgw->gnode == NULL) {
-        ogs_error("Invalid Parameter : "
-                "no_ipv4[%d], no_ipv6[%d], prefer_ipv4[%d]",
-                no_ipv4, no_ipv6, prefer_ipv4);
-        return NULL;
-    }
-
+    pgw->gnode = gtp_create_node(all_list, no_ipv4, no_ipv6, prefer_ipv4);
     ogs_list_add(&self.pgw_list, pgw);
 
     return pgw;

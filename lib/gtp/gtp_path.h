@@ -20,7 +20,7 @@
 #ifndef __GTP_PATH_H__
 #define __GTP_PATH_H__
 
-typedef struct _gtp_node_t gtp_node_t;
+typedef struct gtp_node_s gtp_node_t;
 
 #ifdef __cplusplus
 extern "C" {

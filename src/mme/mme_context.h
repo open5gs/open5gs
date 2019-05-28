@@ -39,10 +39,10 @@ typedef struct mme_pgw_s mme_pgw_t;
 typedef struct enb_ue_s enb_ue_t;
 typedef struct mme_ue_s mme_ue_t;
 
-typedef struct _gtp_node_t gtp_node_t;
-typedef struct _gtp_xact_t gtp_xact_t;
+typedef struct gtp_node_s gtp_node_t;
+typedef struct gtp_xact_s gtp_xact_t;
 
-typedef struct _fd_config_t fd_config_t;
+typedef struct fd_config_s fd_config_t;
 
 typedef uint32_t mme_m_tmsi_t;
 

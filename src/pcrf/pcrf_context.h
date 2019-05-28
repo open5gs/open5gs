@@ -12,10 +12,10 @@ extern int __pcrf_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __pcrf_log_domain
 
-typedef struct _fd_config_t fd_config_t;
+typedef struct fd_config_s fd_config_t;
 struct session;
 
-typedef struct _pcrf_context_t {
+typedef struct pcrf_context_s {
     const char      *fd_conf_path;  /* PCRF freeDiameter conf path */
     fd_config_t     *fd_config;     /* PCRF freeDiameter config */
 

@@ -16,8 +16,8 @@ extern int __pgw_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __pgw_log_domain
 
-typedef struct _gtp_node_t gtp_node_t;
-typedef struct _fd_config_t fd_config_t;
+typedef struct gtp_node_s gtp_node_t;
+typedef struct fd_config_s fd_config_t;
 
 typedef struct _pgw_context_t {
     const char*     fd_conf_path;   /* PGW freeDiameter conf path */

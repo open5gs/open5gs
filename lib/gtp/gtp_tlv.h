@@ -50,7 +50,7 @@ typedef enum {
     TLV_MESSAGE,
 } tlv_type_e;
 
-typedef struct _tlv_desc_t {
+typedef struct tlv_desc_s {
     tlv_type_e ctype;
     char *name;
     uint16_t type;
@@ -72,49 +72,49 @@ extern tlv_desc_t tlv_desc_more8;
 typedef uint64_t tlv_presence_t;
 
 /* 8-bit Unsigned integer */
-typedef struct _tlv_uint8_t {
+typedef struct tlv_uint8_s {
     tlv_presence_t presence;
     uint8_t u8;
 } tlv_uint8_t;
 
 /* 16-bit Unsigned integer */
-typedef struct _tlv_uint16_t {
+typedef struct tlv_uint16_s {
     tlv_presence_t presence;
     uint16_t u16;
 } tlv_uint16_t;
 
 /* 24-bit Unsigned integer */
-typedef struct _tlv_uint24_t {
+typedef struct tlv_uint24_s {
     tlv_presence_t presence;
     uint32_t u24; /* Only 3 bytes valid */
 } tlv_uint24_t;
 
 /* 32-bit Unsigned integer */
-typedef struct _tlv_uint32_t {
+typedef struct tlv_uint32_s {
     tlv_presence_t presence;
     uint32_t u32;
 } tlv_uint32_t;
 
 /* 8-bit Signed integer */
-typedef struct _tlv_int8_t {
+typedef struct tlv_int8_s {
     tlv_presence_t presence;
     int8_t i8;
 } tlv_int8_t;
 
 /* 16-bit Signed integer */
-typedef struct _tlv_int16t {
+typedef struct tlv_int16_s {
     tlv_presence_t presence;
     int16_t i16;
 } tlv_int16_t;
 
 /* 24-bit Signed integer */
-typedef struct _tlv_int24_t {
+typedef struct tlv_int24_s {
     tlv_presence_t presence;
     int32_t i24; /* Only 3 bytes valid */
 } tlv_int24_t;
 
 /* 32-bit Signed integer */
-typedef struct _tlv_int32_t {
+typedef struct tlv_int32_s {
     tlv_presence_t presence;
     int32_t i32;
 } tlv_int32_t;
@@ -142,14 +142,14 @@ typedef struct _tlv_int32_t {
         (__dST)->data = ogs_calloc((__dST)->len, sizeof(uint8_t)); \
         memcpy((__dST)->data, (__sRC)->data, (__dST)->len); \
     } while(0)
-typedef struct _tlv_octet_t {
+typedef struct tlv_octet_s {
     tlv_presence_t presence;
     void *data;
     uint32_t len;
 } tlv_octet_t;
 
 /* No value */
-typedef struct _tlv_null {
+typedef struct tlv_null_s {
     tlv_presence_t presence;
 } tlv_null_t;
 
