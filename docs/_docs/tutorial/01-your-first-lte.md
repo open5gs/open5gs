@@ -65,7 +65,7 @@ Sun May 26 14:26:12 2019
   ATR: 3B 9F 96 80 1F C7 80 31 A0 73 BE 21 13 67 43 20 07 18 00 00 01 A5
 ...
 ```
- - If SIM card reader is recognised then we can expect to print "Card inserted".
+ - If SIM card reader is recognized then we can expect to print "Card inserted".
 
 ###### Get the code of PySIM with installing dependency:
 
@@ -86,7 +86,7 @@ SMSP: ffffffffffffffffffffffffffffffffffffffffffffffffe1ffffffffffffffffffffffff
 ...
 ```
 
-###### Program your SIM card¶ like the followings:
+###### Program your SIM card like the followings:
 ```
 ./pySim-prog.py -p 0 -n NextEPC -a 62416296 -s 8988211000000213010 -i 310789012345301 -x 310 -y 789 -k 82E9053A1882085FF2C020359938DAE9 -o BFD5771AAF4F6728E9BC6EF2C2533BDB
 Using PC/SC reader (dev=0) interface
@@ -199,7 +199,7 @@ K : B1233463AB9BC2AD2DB1830EB6417E7B
 OPc : 625150E2A943E3353DD23554101CAFD4  
 ```
 
-If you programmed USIM using a card reader like me, you should use the following information.
+If you programmed USIM using a card reader like me, you should use your SIM information.
 ```
 MCC/MNC : 310/789
 IMSI : 310789012345301
@@ -283,7 +283,7 @@ $ sudo systemctl restart nextepc-mmed
 $ sudo systemctl restart nextepc-sgwd
 ```
 
-If your phone can connect to internet, you must run the following commands in NextEPC-PGW installed host. 
+If your phone can connect to internet, you must run the following command in NextEPC-PGW installed host. 
 
 ###### Enable IPv4 Forward:
 ```
@@ -316,7 +316,7 @@ Chain POSTROUTING (policy ACCEPT)
 target     prot opt source               destination
 ```
 
- - There is nothing on the table. It is in very good condition. If there is somthing in the table, you will need to take some special action. (For example, disable docker service and reboot the machine)
+ - There is nothing on the table. It is very good condition. If there is somthing in the table, you will need to take some special action. (For example, disable docker service and reboot your machine)
 
 ###### If your IP tables is clean, Add IP/NAT Table like the followings:
 ```
@@ -416,7 +416,7 @@ Setting Sampling frequency 11.52 MHz
 Type <t> to view trace
 ```
 If you see the `No GPSDO found`, please exit the program with Ctrl-C.
-And also, if you see the 'USB 2', it will not be working properly.
+And also, if you see the `USB 2`, it will not be working properly.
 
 The following console output is the correct result of srsENB.
 ```bash
