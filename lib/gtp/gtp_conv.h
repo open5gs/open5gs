@@ -23,10 +23,10 @@
 #include "ogs-core.h"
 
 typedef struct ogs_sockaddr_s ogs_sockaddr_t;
-typedef struct _tlv_bearer_context_t tlv_bearer_context_t;
-typedef struct _gtp_create_indirect_data_forwarding_tunnel_request_t gtp_create_indirect_data_forwarding_tunnel_request_t;
-typedef struct _gtp_create_indirect_data_forwarding_tunnel_response_t gtp_create_indirect_data_forwarding_tunnel_response_t;
-typedef struct _gtp_f_teid_t gtp_f_teid_t;
+typedef struct tlv_bearer_context_s tlv_bearer_context_t;
+typedef struct gtp_create_indirect_data_forwarding_tunnel_request_s gtp_create_indirect_data_forwarding_tunnel_request_t;
+typedef struct gtp_create_indirect_data_forwarding_tunnel_response_s gtp_create_indirect_data_forwarding_tunnel_response_t;
+typedef struct gtp_f_teid_s gtp_f_teid_t;
 typedef struct ip_s ip_t;
 
 #ifdef __cplusplus

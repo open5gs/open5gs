@@ -74,7 +74,7 @@ typedef struct nas_guti_s {
 /* 9.9.2.0 Additional information
  * O TLV 3-n */
 #define NAX_MAX_ADDITIONAL_INFORMATION_LEN 255
-typedef struct _nas_additional_information_t {
+typedef struct nas_additional_information_s {
     uint8_t length;
     uint8_t buffer[NAX_MAX_ADDITIONAL_INFORMATION_LEN];
 } __attribute__ ((packed)) nas_additional_information_t;
@@ -82,7 +82,7 @@ typedef struct _nas_additional_information_t {
 /* 9.9.2.0A Device properties
  * See subclause 10.5.7.8 in 3GPP TS 24.008 [13].
  * O TV 1 */
-typedef struct _nas_device_properties_t {
+typedef struct nas_device_properties_s {
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t low_priority:1;)
@@ -90,7 +90,7 @@ ED3(uint8_t type:4;,
 
 /* 9.9.2.1 EPS bearer context status
  * O TLV 4 */
-typedef struct _nas_eps_bearer_context_status_t {
+typedef struct nas_eps_bearer_context_status_s {
     uint8_t length;
 ED8(uint8_t ebi7:1;,
     uint8_t ebi6:1;,
@@ -113,7 +113,7 @@ ED8(uint8_t ebi15:1;,
 /* 9.9.2.2 Location area identification
  * See subclause 10.5.1.3 in 3GPP TS 24.008 [13]
  * O TV 6 */
-typedef struct _nas_location_area_identification_t {
+typedef struct nas_location_area_identification_s {
     nas_plmn_id_t plmn_id;
     uint16_t lac;
 } __attribute__ ((packed)) nas_location_area_identification_t;
@@ -128,7 +128,7 @@ typedef struct _nas_location_area_identification_t {
 #define NAS_MOBILE_IDENTITY_TMSI 4
 #define NAS_MOBILE_IDENTITY_TMGI 5
 #define NAS_MOBILE_IDENTITY_GUTI 6
-typedef struct _nas_mobile_identity_imsi {
+typedef struct nas_mobile_identity_imsi_s {
 ED3(uint8_t digit1:4;,
     uint8_t odd_even:1;,
     uint8_t type:3;)
@@ -148,14 +148,14 @@ ED2(uint8_t digit15:4;,
     uint8_t digit14:4;)
 } __attribute__ ((packed)) nas_mobile_identity_imsi_t;
 
-typedef struct _nas_mobile_identity_tmsi {
+typedef struct nas_mobile_identity_tmsi_s {
 ED3(uint8_t spare:4;,
     uint8_t odd_even:1;,
     uint8_t type:3;)
     uint32_t tmsi;
 } __attribute__ ((packed)) nas_mobile_identity_tmsi_t;
 
-typedef struct _nas_mobile_identity_tmgi {
+typedef struct nas_mobile_identity_tmgi_s {
 ED5(uint8_t spare:2;,
     uint8_t mbms_session_id:1;,
     uint8_t mcc_mnc:1;,
@@ -166,7 +166,7 @@ ED5(uint8_t spare:2;,
     uint8_t mbms_session_identity;
 } __attribute__ ((packed)) nas_mobile_identity_tmgi_t;
 
-typedef struct _nas_mobile_identity_t {
+typedef struct nas_mobile_identity_s {
     uint8_t length;
     union {
         nas_mobile_identity_imsi_t imsi;
@@ -217,7 +217,7 @@ ED8(uint8_t cm3:1;,
  * See subclause 10.5.1.7 in 3GPP TS 24.008 [13].
  * O TLV 2-34 */
 #define NAS_MAX_MOBILE_STATION_CLASSMARK_3_LEN 32
-typedef struct _nas_mobile_station_classmark_3_t {
+typedef struct nas_mobile_station_classmark_3_s {
     uint8_t length;
     uint8_t buffer[NAS_MAX_MOBILE_STATION_CLASSMARK_3_LEN];
 } __attribute__ ((packed)) nas_mobile_station_classmark_3_t;
@@ -226,7 +226,7 @@ typedef struct _nas_mobile_station_classmark_3_t {
  * See subclause 10.5.1.13 in 3GPP TS 24.008 [13].
  * O TLV 5-47 */
 #define NAS_MAX_PLMN 15
-typedef struct _nas_plmn_list_t {
+typedef struct nas_plmn_list_s {
     uint8_t length;
     nas_plmn_id_t plmn_id[NAS_MAX_PLMN];
 } __attribute__ ((packed)) nas_plmn_list_t;
@@ -234,21 +234,21 @@ typedef struct _nas_plmn_list_t {
 /* 9.9.2.10 Supported codec list
  * See subclause 10.5.4.32 in 3GPP TS 24.008 [13].
  * O TLV 5-n */
-typedef struct _nas_supported_codec_item_t {
+typedef struct nas_supported_codec_item_s {
     uint8_t system_identification;
     uint8_t length_of_bitmap;
     uint16_t codec_bitmap;
 } __attribute__ ((packed)) nas_supported_codec_item_t;
 
 #define NAS_MAX_SUPPORTED_CODECS 8
-typedef struct _nas_supported_codec_list_t {
+typedef struct nas_supported_codec_list_s {
     uint8_t length;
     nas_supported_codec_item_t item[NAS_MAX_SUPPORTED_CODECS];
 } __attribute__ ((packed)) nas_supported_codec_list_t;
 
 /* 9.9.3.0A Additional update result
  * O TV 1  */
-typedef struct _nas_additional_update_result_t {
+typedef struct nas_additional_update_result_s {
 ED3(uint8_t type:4;,
     uint8_t spare:2;,
     uint8_t additional_update_result_value:2;)
@@ -260,7 +260,7 @@ ED3(uint8_t type:4;,
 #define NAS_ADDITIONAL_UPDATE_TYPE_CIOT_CONTROL_PLANE 1
 #define NAS_ADDITIONAL_UPDATE_TYPE_CIOT_DATA_PLANE 2
 #define NAS_ADDITIONAL_UPDATE_TYPE_CIOT_RESERVED 3
-typedef struct _nas_additional_update_type_t {
+typedef struct nas_additional_update_type_s {
 ED4(uint8_t type:4;,
     uint8_t pnb_ciot:2;,
     uint8_t saf:1;,
@@ -270,7 +270,7 @@ ED4(uint8_t type:4;,
 /* 9.9.3.1 Authentication failure parameter
  * See subclause 10.5.3.2.2 in 3GPP TS 24.008 [13].
  * O TLV 16 */
-typedef struct _nas_authentication_failure_parameter_t {
+typedef struct nas_authentication_failure_parameter_s {
     uint8_t length;
     uint8_t auts[AUTS_LEN];
 } __attribute__ ((packed)) nas_authentication_failure_parameter_t;
@@ -278,7 +278,7 @@ typedef struct _nas_authentication_failure_parameter_t {
 /* 9.9.3.2 Authentication parameter AUTN
  * See subclause 10.5.3.1.1 in 3GPP TS 24.008 [13].
  * M LV 17 */
-typedef struct _nas_authentication_parameter_autn_t {
+typedef struct nas_authentication_parameter_autn_s {
     uint8_t length;
     uint8_t autn[AUTN_LEN];
 } nas_authentication_parameter_autn_t;
@@ -286,13 +286,13 @@ typedef struct _nas_authentication_parameter_autn_t {
 /* 9.9.3.3 Authentication parameter RAND
  * See subclause 10.5.3.1 in 3GPP TS 24.008 [13].
  * M V 16 */
-typedef struct _nas_authentication_parameter_rand_t {
+typedef struct nas_authentication_parameter_rand_s {
     uint8_t rand[RAND_LEN];
 } nas_authentication_parameter_rand_t;
 
 /* 9.9.3.4 Authentication response parameter
  * M LV 5-17 */
-typedef struct _nas_authentication_response_parameter_t {
+typedef struct nas_authentication_response_parameter_s {
     uint8_t length;
     uint8_t res[MAX_RES_LEN];
 } nas_authentication_response_parameter_t;
@@ -301,7 +301,7 @@ typedef struct _nas_authentication_response_parameter_t {
  * See subclause 10.5.1.2 in 3GPP TS 24.008 [13].
  * O TV 1 */
 #define NAS_CIPHERING_KEY_SEQUENCE_NUMBER_NO_KEY_FROM_MS 7
-typedef struct _nas_ciphering_key_sequence_number_t {
+typedef struct nas_ciphering_key_sequence_number_s {
 ED3(uint8_t type:4;,
     uint8_t spare:1;,
     uint8_t key_sequence:3;)
@@ -311,7 +311,7 @@ ED3(uint8_t type:4;,
  * O TV 1 */
 #define NAS_CS_FALLBACK_RESPONSE_REJECTED_BY_THE_UE     0
 #define NAS_CS_FALLBACK_RESPONSE_ACCEPTED_BY_THE_UE     1
-typedef struct _nas_csfb_response_t {
+typedef struct nas_csfb_response_s {
 ED3(uint8_t type:4;,
     uint8_t spare:1;,
     uint8_t response:3;)
@@ -323,7 +323,7 @@ ED3(uint8_t type:4;,
 #define NAS_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME              0
 #define NAS_PLUS_1_HOUR_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME     1
 #define NAS_PLUS_2_HOURS_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME    2
-typedef struct _nas_daylight_saving_time_t {
+typedef struct nas_daylight_saving_time_s {
     uint8_t length;
 ED2(uint8_t spare:6;,
     uint8_t value:2;)
@@ -339,7 +339,7 @@ ED2(uint8_t spare:6;,
 #define NAS_DETACH_TYPE_TO_UE_RE_ATTACH_REQUIRED            1
 #define NAS_DETACH_TYPE_TO_UE_RE_ATTACH_NOT_REQUIRED        2
 #define NAS_DETACH_TYPE_TO_UE_IMSI_DETACH                   3
-typedef struct _nas_detach_type_t {
+typedef struct nas_detach_type_s {
 ED4(uint8_t tsc:1;,
     uint8_t nas_key_set_identifier:3;,
     uint8_t switch_off:1;,
@@ -362,7 +362,7 @@ ED4(uint8_t tsc:1;,
 #define NAS_DRX_PARAMETER_COEFFICIENT_7_T_64 7
 #define NAS_DRX_PARAMETER_COEFFICIENT_8_T_128 8
 #define NAS_DRX_PARAMETER_COEFFICIENT_9_T_256 9
-typedef struct _nas_drx_parameter_t {
+typedef struct nas_drx_parameter_s {
     uint8_t split_pg_cycle_code;
 ED3(uint8_t cn_specific_drx_cycle_length_coefficient_and_drx_value_for_s1_mode:4;,
     uint8_t split_on_ccch:1;,
@@ -420,7 +420,7 @@ typedef uint8_t nas_emm_cause_t;
  * M V 1/2 */
 #define NAS_ATTACH_RESULT_EPS_ONLY 1
 #define NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH 2
-typedef struct _nas_eps_attach_result_t {
+typedef struct nas_eps_attach_result_s {
 ED2(uint8_t spare:5;,
     uint8_t result:3;)
 } __attribute__ ((packed)) nas_eps_attach_result_t;
@@ -437,7 +437,7 @@ ED2(uint8_t spare:5;,
 #define NAS_ATTACH_TYPE_COMBINED_EPS_IMSI_ATTAACH 2
 #define NAS_ATTACH_TYPE_EPS_ERMERGENCY_ATTCH 3
 #define NAS_ATTACH_TYPE_RESERVED 4
-typedef struct _nas_eps_attach_type_t {
+typedef struct nas_eps_attach_type_s {
 ED4(uint8_t tsc:1;,
     uint8_t nas_key_set_identifier:3;,
     uint8_t spare:1;,
@@ -452,7 +452,7 @@ ED4(uint8_t tsc:1;,
 
 #define NAS_EPS_MOBILE_IDENTITY_EVEN 0
 #define NAS_EPS_MOBILE_IDENTITY_ODD 1
-typedef struct _nas_eps_mobile_identity_guti_t {
+typedef struct nas_eps_mobile_identity_guti_s {
 ED3(uint8_t spare:4;,
     uint8_t odd_even:1;,
     uint8_t type:3;)
@@ -465,7 +465,7 @@ ED3(uint8_t spare:4;,
 typedef nas_mobile_identity_imsi_t nas_eps_mobile_identity_imsi_t;
 typedef nas_eps_mobile_identity_imsi_t nas_eps_mobile_identity_imei_t;
 
-typedef struct _nas_eps_mobile_identity_t {
+typedef struct nas_eps_mobile_identity_s {
     uint8_t length;
     union {
         nas_eps_mobile_identity_imsi_t imsi;
@@ -476,7 +476,7 @@ typedef struct _nas_eps_mobile_identity_t {
 
 /* 9.9.3.12A EPS network feature support 
  * O TLV 3 */
-typedef struct _nas_eps_network_feature_support_t {
+typedef struct nas_eps_network_feature_support_s {
     uint8_t length;
 ED7(uint8_t cp_ciot:1;,
     uint8_t erw_opdn:1;,
@@ -498,7 +498,7 @@ ED5(uint8_t spare:4;,
 #define NAS_EPS_UPDATE_RESULT_COMBINED_TA_LA_UPDATED                    1
 #define NAS_EPS_UPDATE_RESULT_TA_UPDATED_AND_ISR_ACTIVATED              4
 #define NAS_EPS_UPDATE_RESULT_COMBINED_TA_LA_UPDATED_AND_ISR_ACTIVATED  5
-typedef struct _nas_eps_update_result_t {
+typedef struct nas_eps_update_result_s {
 ED2(uint8_t spare:5;,
     uint8_t result:3;)
 } __attribute__ ((packed)) nas_eps_update_result_t;
@@ -511,7 +511,7 @@ ED2(uint8_t spare:5;,
 #define NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING                     1
 #define NAS_EPS_UPDATE_TYPE_COMBINED_TA_LA_UPDATING_WITH_IMSI_ATTACH    2
 #define NAS_EPS_UPDATE_TYPE_PERIODIC_UPDATING                           3
-typedef struct _nas_eps_update_type_t {
+typedef struct nas_eps_update_type_s {
 ED4(uint8_t tsc:1;,
     uint8_t nas_key_set_identifier:3;,
     uint8_t active_flag:1;,
@@ -520,7 +520,7 @@ ED4(uint8_t tsc:1;,
 
 /* 9.9.3.15 ESM message container
  * M LV-E 5-n */
-typedef struct _nas_esm_message_container_t {
+typedef struct nas_esm_message_container_s {
     uint16_t length;
     uint8_t *buffer;
 } nas_esm_message_container_t;
@@ -532,7 +532,7 @@ typedef struct _nas_esm_message_container_t {
 #define NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM       1
 #define NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH    2
 #define NAS_GRPS_TIMER_UNIT_DEACTIVATED             7
-typedef struct _nas_gprs_timer_t {
+typedef struct nas_gprs_timer_s {
 ED2(uint8_t unit:3;,
     uint8_t value:5;)
 } __attribute__ ((packed)) nas_gprs_timer_t;
@@ -540,7 +540,7 @@ ED2(uint8_t unit:3;,
 /* 9.9.3.16A GPRS timer 2
  * See subclause 10.5.7.4 in 3GPP TS 24.008 [13].
  * O TLV 3 */
-typedef struct _nas_gprs_timer_2_t {
+typedef struct nas_gprs_timer_2_s {
     uint8_t length;
     uint8_t gprs_timer_2_value;
 } __attribute__ ((packed)) nas_gprs_timer_2_t;
@@ -557,7 +557,7 @@ typedef struct _nas_gprs_timer_2_t {
 #define NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_320_HH   6
 #define NAS_GRPS_TIMER_3_UNIT_DEACTIVATED           7
 
-typedef struct _nas_gprs_timer_3_t {
+typedef struct nas_gprs_timer_3_s {
     uint8_t length;
 ED2(uint8_t unit:3;,
     uint8_t timer_value:5;)
@@ -570,7 +570,7 @@ ED2(uint8_t unit:3;,
 #define NAS_IDENTITY_TYPE_2_IMEI            2
 #define NAS_IDENTITY_TYPE_2_IMEISV          3
 #define NAS_IDENTITY_TYPE_2_TMSI            4
-typedef struct _nas_identity_type_2_t {
+typedef struct nas_identity_type_2_s {
 ED2(uint8_t spare:5;,
     uint8_t type:3;)
 } __attribute__ ((packed)) nas_identity_type_2_t;
@@ -578,7 +578,7 @@ ED2(uint8_t spare:5;,
 /* 9.9.3.18 IMEISV request
  * See subclause 10.5.5.10 in 3GPP TS 24.008 [13].
  * O TV 1 */
-typedef struct _nas_imeisv_request_t {
+typedef struct nas_imeisv_request_s {
 ED3(uint8_t type:4;,
     uint8_t spare:1;,
     uint8_t imeisv_request_value:3;)
@@ -586,7 +586,7 @@ ED3(uint8_t type:4;,
 
 /* 9.9.3.19 KSI and sequence number
  * M V 1 */
-typedef struct _nas_ksi_and_sequence_number_t {
+typedef struct nas_ksi_and_sequence_number_s {
 ED2(uint8_t ksi:3;,
     uint8_t sequence_number:5;)
 } __attribute__ ((packed)) nas_ksi_and_sequence_number_t;
@@ -600,7 +600,7 @@ ED2(uint8_t ksi:3;,
 #define NAS_MS_NETWORK_CAPABILITY_GEA5 0b00001000
 #define NAS_MS_NETWORK_CAPABILITY_GEA6 0b00000100
 #define NAS_MS_NETWORK_CAPABILITY_GEA7 0b00000010
-typedef struct _nas_ms_network_capability_t {
+typedef struct nas_ms_network_capability_s {
     uint8_t length;
 ED7(uint8_t gea1:1;,
     uint8_t sm_capabilities_via_dedicated_channels:1;,
@@ -631,7 +631,7 @@ ED6(uint8_t user_plane_integrity_protection_support:1;,
 /* 9.9.3.20A MS network feature support 
  * See subclause 10.5.1.15 in 3GPP TS 24.008 [13].
  * O TV 1 */
-typedef struct _nas_ms_network_feature_support_t {
+typedef struct nas_ms_network_feature_support_s {
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t extended_periodic_timers:1;)
@@ -641,7 +641,7 @@ ED3(uint8_t type:4;,
  * M V 1/2
  * 9.9.2.9 Spare half octet
  * M V 1/2 */
-typedef struct _nas_key_set_identifier_t {
+typedef struct nas_key_set_identifier_s {
 ED3(uint8_t type:4;,
     uint8_t tsc:1;,
     uint8_t nas_key_set_identifier:3;)
@@ -650,7 +650,7 @@ ED3(uint8_t type:4;,
 /* 9.9.3.22 message container
  * M LV 3-252 */
 #define NAS_MAX_MESSAGE_CONTAINER_LEN 250
-typedef struct _nas_message_container_t {
+typedef struct nas_message_container_s {
     uint8_t length;
     uint8_t buffer[NAS_MAX_MESSAGE_CONTAINER_LEN];
 } __attribute__ ((packed)) nas_message_container_t;
@@ -665,7 +665,7 @@ typedef struct _nas_message_container_t {
 #define NAS_SECURITY_ALGORITHMS_128_EEA1    1
 #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
 #define NAS_SECURITY_ALGORITHMS_128_EEA3    3
-typedef struct _nas_security_algorithms_t {
+typedef struct nas_security_algorithms_s {
 ED4(uint8_t spare1:1;,
     uint8_t type_of_ciphering_algorithm:3;,
     uint8_t spare2:1;,
@@ -676,7 +676,7 @@ ED4(uint8_t spare1:1;,
  * See subclause 10.5.3.5a in 3GPP TS 24.008 [13].
  * O TLV 3-n */
 #define NAS_MAX_NETWORK_NAME_LEN 255
-typedef struct _nas_network_name_t {
+typedef struct nas_network_name_s {
     uint8_t length;
 ED4(uint8_t ext:1;,
     uint8_t coding_scheme:3;,
@@ -688,7 +688,7 @@ ED4(uint8_t ext:1;,
 /* 9.9.3.24A Network resource identifier container
  * See subclause 10.5.5.31 in 3GPP TS 24.008 [13].
  * O TLV 4 */
-typedef struct _nas_network_resource_identifier_container_t {
+typedef struct nas_network_resource_identifier_container_s {
     uint8_t length;
     uint8_t nri_container_value1;
 ED2(uint8_t nri_container_value2:2;,
@@ -703,7 +703,7 @@ typedef uint32_t nas_nonce_t;
  * M V 1 */
 #define NAS_PAGING_IDENTITY_IMSI        0
 #define NAS_PAGING_IDENTITY_TMSI        1
-typedef struct _nas_paging_identity_t {
+typedef struct nas_paging_identity_s {
 ED2(uint8_t spare:7;,
     uint8_t identity:1;)
 } nas_paging_identity_t;
@@ -715,7 +715,7 @@ typedef uint32_t nas_p_tmsi_signature_t; /* TV : 4bytes */
 
 /* 9.9.3.26A Extended EMM cause 
  * O TV 1 */
-typedef struct _nas_extended_emm_cause_t {
+typedef struct nas_extended_emm_cause_s {
 ED4(uint8_t type:4;,
     uint8_t spare:2;,
     uint8_t eps_optimization_info:1;,
@@ -729,7 +729,7 @@ ED4(uint8_t type:4;,
 #define NAS_SERVICE_TYPE_CS_FALLBACK_OR_1XCS_FALLBACK_FROM_UE 0
 #define NAS_SERVICE_TYPE_CS_FALLBACK_OR_1XCS_FALLBACK_TO_UE 1
 #define NAS_SERVICE_TYPE_CS_FALLBACK_EMERGENCY_CALL_OR_1XCS_FALLBACK_EMERGENCY_CALL_FROM_UE 2
-typedef struct _nas_service_type_t {
+typedef struct nas_service_type_s {
 ED3(uint8_t tsc:1;,
     uint8_t nas_key_set_identifier:3;,
     uint8_t service_type:4;)
@@ -749,7 +749,7 @@ typedef uint8_t nas_time_zone_t;
  * 9.2.3.11 TPServiceCentreTimeStamp (TPSCTS) in 3GPP TS 23.040 [90]
  * O TV 8 */
 #define NAS_TIME_TO_BCD(x) TIME_TO_BCD(x)
-typedef struct _nas_time_zone_and_time_t {
+typedef struct nas_time_zone_and_time_s {
     uint8_t year;
     uint8_t mon;
     uint8_t mday;
@@ -767,7 +767,7 @@ typedef struct _nas_time_zone_and_time_t {
 /* 9.9.3.31 TMSI status
  * See subclause 10.5.5.4 in 3GPP TS 24.008 [13]
  * O TV 1 */
-typedef struct _nas_tmsi_status_t {
+typedef struct nas_tmsi_status_s {
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t tmsi_flag:1;)
@@ -775,7 +775,7 @@ ED3(uint8_t type:4;,
 
 /* 9.9.3.32 Tracking area identity
  * O TV 6 */
-typedef struct _nas_tracking_area_identity_t {
+typedef struct nas_tracking_area_identity_s {
     nas_plmn_id_t plmn_id;
     uint16_t tac;
 } __attribute__ ((packed)) nas_tracking_area_identity_t;
@@ -786,7 +786,7 @@ typedef struct _nas_tracking_area_identity_t {
 #define TAI0_TYPE                   0
 #define TAI1_TYPE                   1
 #define TAI2_TYPE                   2
-typedef struct _tai0_list_t {
+typedef struct tai0_list_s {
     struct {
     ED3(uint8_t spare:1;,
         uint8_t type:2;,
@@ -802,7 +802,7 @@ typedef struct _tai0_list_t {
     } __attribute__ ((packed)) tai[MAX_NUM_OF_TAI];
 } __attribute__ ((packed)) tai0_list_t;
 
-typedef struct _tai2_list_t {
+typedef struct tai2_list_s {
 ED3(uint8_t spare:1;,
     uint8_t type:2;,
     uint8_t num:5;)
@@ -815,7 +815,7 @@ ED3(uint8_t spare:1;,
     tai_t tai[MAX_NUM_OF_TAI];
 } __attribute__ ((packed)) tai2_list_t;
 
-typedef struct _nas_tracking_area_identity_list_t {
+typedef struct nas_tracking_area_identity_list_s {
     uint8_t length;
     uint8_t buffer[NAS_MAX_TAI_LIST_LEN];
 } __attribute__ ((packed)) nas_tracking_area_identity_list_t;
@@ -826,7 +826,7 @@ void nas_tai_list_build(
 
 /* 9.9.3.34 UE network capability
  * M LV  3-14 */
-typedef struct _nas_ue_network_capability_t {
+typedef struct nas_ue_network_capability_s {
     uint8_t length;
     union { 
         struct {
@@ -902,7 +902,7 @@ ED2(uint8_t spare:7;,
 
 /* 9.9.3.35 UE radio capability information update needed
  * O TV 1 */
-typedef struct _nas_ue_radio_capability_information_update_needed_t {
+typedef struct nas_ue_radio_capability_information_update_needed_s {
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t update_needed:1;)
@@ -910,7 +910,7 @@ ED3(uint8_t type:4;,
 
 /* 9.9.3.36 UE security capability
  * M LV 3-6 */
-typedef struct _nas_ue_security_capability_t {
+typedef struct nas_ue_security_capability_s {
     uint8_t length;
     union { 
         struct {
@@ -983,7 +983,7 @@ typedef struct _nas_ue_security_capability_t {
  * See subclause 10.5.3.13 in 3GPP TS 24.008 [13].
  * O TLV 5-50 */
 #define NAS_MAX_EMERGENCY_NUMBER_LIST_LEN 48
-typedef struct _nas_emergency_number_list_t {
+typedef struct nas_emergency_number_list_s {
     uint16_t length;
     uint8_t buffer[NAS_MAX_EMERGENCY_NUMBER_LIST_LEN];
 } __attribute__ ((packed)) nas_emergency_number_list_t;
@@ -994,7 +994,7 @@ typedef struct _nas_emergency_number_list_t {
  * octets 3 to 14 of the Calling party BCD number information element 
  * defined in subclause 10.5.4.9 of 3GPP TS 24.008 [13]. */
 #define NAX_MAX_CLI_LEN 12
-typedef struct _nas_cli_t {
+typedef struct nas_cli_s {
     uint8_t length;
     uint8_t buffer[NAX_MAX_CLI_LEN];
 } __attribute__ ((packed)) nas_cli_t;
@@ -1013,7 +1013,7 @@ typedef uint8_t nas_lcs_indicator_t;
 /* 9.9.3.41 LCS client identity
  * O TLV 3-257 */
 #define NAS_MAX_LCS_CLIENT_IDENTITY_LEN 255
-typedef struct _nas_lcs_client_identity_t {
+typedef struct nas_lcs_client_identity_s {
     uint8_t length;
     uint8_t buffer[NAS_MAX_LCS_CLIENT_IDENTITY_LEN];
 } __attribute__ ((packed)) nas_lcs_client_identity_t;
@@ -1026,7 +1026,7 @@ typedef uint8_t nas_generic_message_container_type_t;
 
 /* 9.9.3.43 Generic message container
  * M LV-E 3-n */
-typedef struct _nas_generic_message_container_t {
+typedef struct nas_generic_message_container_s {
     uint16_t length;
     uint8_t *buffer;
 } nas_generic_message_container_t;
@@ -1034,7 +1034,7 @@ typedef struct _nas_generic_message_container_t {
 /* 9.9.3.44 Voice domain preference and UE's usage setting
  * See subclause 10.5.5.28 in 3GPP TS 24.008 [13].
  * O TLV 3 */
-typedef struct _nas_voice_domain_preference_and_ue_usage_setting_t {
+typedef struct nas_voice_domain_preference_and_ue_usage_setting_s {
     uint8_t length;
 ED3(uint8_t spare:5;,
     uint8_t ue_usage_setting:1;, 
@@ -1043,7 +1043,7 @@ ED3(uint8_t spare:5;,
 
 /* 9.9.3.45 GUTI type 
  * O TV 1 */
-typedef struct _nas_guti_type_t {
+typedef struct nas_guti_type_s {
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t guti_type:1;)
@@ -1052,7 +1052,7 @@ ED3(uint8_t type:4;,
 /* 9.9.3.46 Extended DRX parameters
  * See subclause 10.5.5.32 in 3GPP TS 24.008 [13].
  * O TLV 3 */
-typedef struct _nas_extended_drx_parameters_t {
+typedef struct nas_extended_drx_parameters_s {
     uint8_t length;
 ED2(uint8_t paging_time_window:4;,
     uint8_t e_drx_value:4;)
@@ -1061,14 +1061,14 @@ ED2(uint8_t paging_time_window:4;,
 /* 9.9.4.1 Access point name
  * See subclause 10.5.6.1 in 3GPP TS 24.008 [13].
  * O TLV 3-102 */
-typedef struct _nas_access_point_name_t {
+typedef struct nas_access_point_name_s {
     uint8_t length;
     char apn[MAX_APN_LEN];
 } __attribute__ ((packed)) nas_access_point_name_t;
 
 /* 9.9.4.2 APN aggregate maximum bit rate
  * O TLV 4-8  */
-typedef struct _nas_apn_aggregate_maximum_bit_rate_t {
+typedef struct nas_apn_aggregate_maximum_bit_rate_s {
     uint8_t length;
     uint8_t dl_apn_ambr;
     uint8_t ul_apn_ambr;
@@ -1085,7 +1085,7 @@ void apn_ambr_build(
 /* 9.9.4.2A Connectivity type
  * See subclause 10.5.6.19 in 3GPP TS 24.008 [13].
  * O TV 1 */
-typedef struct _nas_connectivity_type_t {
+typedef struct nas_connectivity_type_s {
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t considered_lipa_pdn_connection:1;)
@@ -1093,7 +1093,7 @@ ED3(uint8_t type:4;,
 
 /* 9.9.4.3 EPS quality of service
  * M LV 2-14 */
-typedef struct _nas_eps_quality_of_service_t {
+typedef struct nas_eps_quality_of_service_s {
     uint8_t length;
     uint8_t qci;
     uint8_t ul_mbr;
@@ -1169,7 +1169,7 @@ typedef uint8_t nas_esm_cause_t;
 
 /* 9.9.4.5 ESM information transfer flag
  * O TV 1 */
-typedef struct _nas_esm_information_transfer_flag_t {
+typedef struct nas_esm_information_transfer_flag_s {
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t security_protected_required:1;)
@@ -1177,7 +1177,7 @@ ED3(uint8_t type:4;,
 
 /* 9.9.4.6 Linked EPS bearer identity
  * M V 1/2 */
-typedef struct _nas_linked_eps_bearer_identity_t {
+typedef struct nas_linked_eps_bearer_identity_s {
 ED2(uint8_t spare:4;,
     uint8_t eps_bearer_identity:4;)
 } __attribute__ ((packed)) nas_linked_eps_bearer_identity_t;
@@ -1196,7 +1196,7 @@ typedef uint8_t nas_llc_service_access_point_identifier_t;
 #define NAS_PACKET_FLOW_IDENTIFIER_TOM8                 3
 #define NAS_PACKET_FLOW_IDENTIFIER_DYNAMIC_ASSIGN_MIN   8
 #define NAS_PACKET_FLOW_IDENTIFIER_DYNAMIC_ASSIGN_MAX   0xef
-typedef struct _nas_packet_flow_identifier_t {
+typedef struct nas_packet_flow_identifier_s {
     uint8_t length;
 ED2(uint8_t spare:1;,
     uint8_t value:7;)
@@ -1205,7 +1205,7 @@ ED2(uint8_t spare:1;,
 /* 9.9.4.13 Radio priority
  * See subclause 10.5.7.2 in 3GPP TS 24.008 [13].
  * O TV 1 */
-typedef struct _nas_radio_priority_t {
+typedef struct nas_radio_priority_s {
 ED3(uint8_t type:4;,
     uint8_t spare:1;,
     uint8_t value:3;)
@@ -1216,7 +1216,7 @@ ED3(uint8_t type:4;,
 #define NAS_PDN_ADDRESS_IPV4_LEN 5
 #define NAS_PDN_ADDRESS_IPV6_LEN 9
 #define NAS_PDN_ADDRESS_IPV4V6_LEN 13
-typedef struct _nas_pdn_address_t {
+typedef struct nas_pdn_address_s {
     uint8_t length;
 ED2(uint8_t reserved:5;,
     uint8_t pdn_type:3;)
@@ -1235,7 +1235,7 @@ ED2(uint8_t reserved:5;,
 /* 9.9.4.11 Protocol configuration options
  * See subclause 10.5.6.3 in 3GPP TS 24.008 [13].
  * O TLV 3-253 */ 
-typedef struct _nas_protocol_configuration_options_t {
+typedef struct nas_protocol_configuration_options_s {
     uint8_t length;
     uint8_t buffer[MAX_PCO_LEN];
 } __attribute__ ((packed)) nas_protocol_configuration_options_t;
@@ -1244,14 +1244,14 @@ typedef struct _nas_protocol_configuration_options_t {
  * See subclause 10.5.6.5 in 3GPP TS 24.008 [13].
  * O TLV 14-22 */
 #define NAS_QOS_LEN 20
-typedef struct _nas_quality_of_service_t {
+typedef struct nas_quality_of_service_s {
     uint8_t length;
     uint8_t buffer[NAS_QOS_LEN];
 } __attribute__ ((packed)) nas_quality_of_service_t;
 
 /* 9.9.4.13A Re-attempt indicator
  * O TLV 3 */
-typedef struct _nas_re_attempt_indicator_t {
+typedef struct nas_re_attempt_indicator_s {
     uint8_t length;
 ED3(uint8_t spare:3;,  /* allowed in A/Gb mode or Iu mode */
     uint8_t eplmnc:1;, /* allowed in an equivalent PLMN */
@@ -1270,7 +1270,7 @@ ED3(uint8_t spare:3;,  /* allowed in A/Gb mode or Iu mode */
 #define NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV6          2
 #define NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6        3
 #define NAS_PDN_CONNECTIVITY_PDN_TYPE_NON_IP        5
-typedef struct _nas_request_type_t {
+typedef struct nas_request_type_s {
 ED4(uint8_t spare1:1;,
     uint8_t pdn_type:3;,
     uint8_t spare2:1;,
@@ -1281,7 +1281,7 @@ ED4(uint8_t spare1:1;,
  * see subclause 10.5.6.12 in 3GPP TS 24.008 [13]
  * M LV 2-256 */
 #define NAS_MAX_TRAFFIC_FLOW_AGGREGATE_DESCRIPTION 255
-typedef struct _nas_traffic_flow_aggregate_description_t {
+typedef struct nas_traffic_flow_aggregate_description_s {
     uint8_t length;
     uint8_t buffer[NAS_MAX_TRAFFIC_FLOW_AGGREGATE_DESCRIPTION];
 } __attribute__ ((packed)) nas_traffic_flow_aggregate_description_t;
@@ -1290,7 +1290,7 @@ typedef struct _nas_traffic_flow_aggregate_description_t {
  * See subclause 10.5.6.12 in 3GPP TS 24.008 [13].
  * M LV 2-256 */
 #define NAS_MAX_TRAFFIC_FLOW_TEMPLATE 255
-typedef struct _nas_traffic_flow_template_t {
+typedef struct nas_traffic_flow_template_s {
     uint8_t length;
     uint8_t buffer[NAS_MAX_TRAFFIC_FLOW_TEMPLATE];
 } __attribute__ ((packed)) nas_traffic_flow_template_t;
@@ -1298,7 +1298,7 @@ typedef struct _nas_traffic_flow_template_t {
 /* 9.9.4.17 Transaction identifier
  * 3GPP TS 24.008 [13], subclause 10.5.6.7.
  * O TLV 3-4 */
-typedef struct _nas_transaction_identifier_t {
+typedef struct nas_transaction_identifier_s {
     uint8_t length;
     uint16_t linked_ti;
 } __attribute__ ((packed)) nas_transaction_identifier_t;
@@ -1306,7 +1306,7 @@ typedef struct _nas_transaction_identifier_t {
 /* 9.9.4.18 WLAN offload acceptability
  * 3GPP TS 24.008 [13], subclause 10.5.6.20
  * O TV 1 */
-typedef struct _nas_wlan_offload_acceptability_t {
+typedef struct nas_wlan_offload_acceptability_s {
 ED4(uint8_t type:4;,
     uint8_t spare:2;,
     uint8_t utran_via_wlan_acceptable:1;,
@@ -1317,7 +1317,7 @@ ED4(uint8_t type:4;,
  * See subclause 10.5.6.21 in 3GPP TS 24.008 [4].
  * O TLV 3-257 */
 #define MAX_NAS_NBIFOM_CONTAINER_LEN 255
-typedef struct _nas_nbifom_container_t {
+typedef struct nas_nbifom_container_s {
     uint8_t length;
     uint8_t buffer[MAX_NAS_NBIFOM_CONTAINER_LEN];
 } __attribute__ ((packed)) nas_nbifom_container_t;
@@ -1325,7 +1325,7 @@ typedef struct _nas_nbifom_container_t {
 /* 9.9.4.22 Header compression configuration
  * O TLV 5-257 */
 #define MAX_NAS_HEADER_COMPRESSION_CONTAINER_LEN 251
-typedef struct _nas_header_compression_configuration_t {
+typedef struct nas_header_compression_configuration_s {
     uint8_t length;
 ED8(uint8_t spare:1;,
     uint8_t profile0x0104:1;,
@@ -1350,7 +1350,7 @@ ED8(uint8_t spare:1;,
 
 /* 9.9.4.23 Control plane only indication
  * O TV 1 */
-typedef struct _nas_control_plane_only_indication_t {
+typedef struct nas_control_plane_only_indication_s {
 ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t ciot_eps_optimization:1;)
@@ -1358,21 +1358,21 @@ ED3(uint8_t type:4;,
 
 /* 9.9.4.26 Extended protocol configuration options
  * O TLV-E 4-65538 */
-typedef struct _nas_extended_protocol_configuration_options_t {
+typedef struct nas_extended_protocol_configuration_options_s {
     uint16_t length;
     uint8_t *buffer;
 } __attribute__ ((packed)) nas_extended_protocol_configuration_options_t;
 
 /* 9.9.4.27 Header compression configuration status
  * O TLV 4 */
-typedef struct _nas_header_compression_configuration_status_t {
+typedef struct nas_header_compression_configuration_status_s {
     uint8_t length;
     uint16_t value;
 } __attribute__ ((packed)) nas_header_compression_configuration_status_t;
 
 /* 9.9.4.28 Serving PLMN rate control
  * O TLV 4 */
-typedef struct _nas_serving_plmn_rate_control_t {
+typedef struct nas_serving_plmn_rate_control_s {
     uint8_t length;
 ED8(uint8_t ebi7:1;,
     uint8_t ebi6:1;,

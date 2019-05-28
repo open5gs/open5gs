@@ -520,20 +520,20 @@ extern "C" {
 #define NAS_EPS_BEARER_IDENTITY_UNASSIGNED 0
 #define NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 
-typedef struct _nas_emm_header_t {
+typedef struct nas_emm_header_s {
 ED2(uint8_t security_header_type:4;,
     uint8_t protocol_discriminator:4;)
     uint8_t message_type;
 } __attribute__ ((packed)) nas_emm_header_t;
 
-typedef struct _nas_esm_header_t {
+typedef struct nas_esm_header_s {
 ED2(uint8_t eps_bearer_identity:4;,
     uint8_t protocol_discriminator:4;)
     uint8_t procedure_transaction_identity;
     uint8_t message_type;
 } __attribute__ ((packed)) nas_esm_header_t;
 
-typedef struct _nas_security_header_t {
+typedef struct nas_security_header_s {
 ED2(uint8_t security_header_type:4;,
     uint8_t protocol_discriminator:4;)
     uint32_t message_authentication_code;
@@ -563,7 +563,7 @@ for (k, v) in sorted_msg_list:
     for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]):
         f.write("\n#define NAS_%s_%s_TYPE 0x%s" % (v_upper(k), v_upper(ie["value"]), re.sub('-', '0', ie["iei"])))
 
-    f.write("\n\ntypedef struct _nas_%s_t {\n" % v_lower(k))
+    f.write("\n\ntypedef struct nas_%s_s {\n" % v_lower(k))
 
     mandatory_fields = False;
     optional_fields = False;
@@ -584,7 +584,7 @@ for (k, v) in sorted_msg_list:
 
 f.write("\n")
 
-f.write("""typedef struct _nas_emm_message_t {
+f.write("""typedef struct nas_emm_message_s {
     nas_emm_header_t h;
     union {
 """)
@@ -598,7 +598,7 @@ for (k, v) in sorted_msg_list:
 f.write("""    };
 } nas_emm_message_t;
 
-typedef struct _nas_esm_message_t {
+typedef struct nas_esm_message_s {
     nas_esm_header_t h;
     union {
 """)
@@ -613,7 +613,7 @@ for (k, v) in sorted_msg_list:
 f.write("""    };
 } nas_esm_message_t;
 
-typedef struct _nas_message_t {
+typedef struct nas_message_s {
     nas_security_header_t h;
     union {
         nas_emm_message_t emm;

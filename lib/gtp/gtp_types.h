@@ -27,8 +27,6 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __base_gtp_domain
 
-typedef struct c_sockaddr_t c_sockaddr_t;
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -112,7 +110,7 @@ extern "C" {
 #define GTP_CAUSE_MULTIPLE_ACCESSES_TO_A_PDN_CONNECTION_NOT_ALLOWED 126
 #define GTP_CAUSE_REQUEST_REJECTED_DUE_TO_UE_CAPABILITY 127
 
-typedef struct _gtp_cause_t {
+typedef struct gtp_cause_s {
     uint8_t value;
 ED4(uint8_t spare:5;,
     uint8_t pce:1;,
@@ -121,13 +119,13 @@ ED4(uint8_t spare:5;,
 } __attribute__ ((packed)) gtp_cause_t;
 
 /* 8.7 Aggregate Maximum Bit Rate (AMBR) */
-typedef struct _gtp_ambr_t {
+typedef struct gtp_ambr_s {
     uint32_t uplink;
     uint32_t downlink;
 } __attribute__ ((packed)) gtp_ambr_t;
 
 /* 8.12 Indication */
-typedef struct _gtp_indication_t {
+typedef struct gtp_indication_s {
 ED8(uint8_t daf:1;,
     uint8_t dtf:1;,
     uint8_t hi:1;,
@@ -172,7 +170,7 @@ ED8(uint8_t spare1:1;,
 
 /* 8.15 Bearer Quality of Service (Bearer QoS) */
 #define GTP_BEARER_QOS_LEN 22
-typedef struct _gtp_bearer_qos_t {
+typedef struct gtp_bearer_qos_s {
 ED5(uint8_t spare1:1;,
     /* See 3GPP TS 29.212[29], clause 5.3.46 Pre-emption-Capability AVP. */
     uint8_t pre_emption_capability:1;, 
@@ -215,7 +213,7 @@ int16_t gtp_build_bearer_qos(
 #define GTP_MAX_TRAFFIC_FLOW_TEMPLATE 255
 
 #define GTP_MAX_NUM_OF_PACKET_FILTER_COMPONENT 16
-typedef struct _gtp_tft_t {
+typedef struct gtp_tft_s {
     union {
         struct {
 #define GTP_TFT_CODE_IGNORE_THIS_IE                         0
@@ -287,30 +285,30 @@ int16_t gtp_build_tft(
 
 /* 8.21 User Location Information (ULI) */
 #define GTP_MAX_ULI_LEN sizeof(gtp_uli_t)
-typedef struct _gtp_uli_cgi_t {
+typedef struct gtp_uli_cgi_s {
     plmn_id_t plmn_id;
     uint16_t lac;
     uint16_t ci;
 } __attribute__ ((packed)) gtp_uli_cgi_t;
 
-typedef struct _gtp_uli_sai_t {
+typedef struct gtp_uli_sai_s {
     plmn_id_t plmn_id;
     uint16_t lac;
     uint16_t sac;
 } __attribute__ ((packed)) gtp_uli_sai_t;
 
-typedef struct _gtp_uli_rai_t {
+typedef struct gtp_uli_rai_s {
     plmn_id_t plmn_id;
     uint16_t lac;
     uint16_t rac;
 } __attribute__ ((packed)) gtp_uli_rai_t;
 
-typedef struct _gtp_uli_lai_t {
+typedef struct gtp_uli_lai_s {
     plmn_id_t plmn_id;
     uint16_t lac;
 } __attribute__ ((packed)) gtp_uli_lai_t;
 
-typedef struct _gtp_uli_t {
+typedef struct gtp_uli_s {
     struct {
     ED7(uint8_t spare:2;,
         uint8_t lai:1;,
@@ -378,7 +376,7 @@ int16_t gtp_build_uli(
 #define GTP_F_TEID_IPV4_LEN                     IPV4_LEN+GTP_F_TEID_HDR_LEN
 #define GTP_F_TEID_IPV6_LEN                     IPV6_LEN+GTP_F_TEID_HDR_LEN
 #define GTP_F_TEID_IPV4V6_LEN                   IPV4V6_LEN+GTP_F_TEID_HDR_LEN
-typedef struct _gtp_f_teid_t {
+typedef struct gtp_f_teid_s {
 ED3(uint8_t       ipv4:1;,
     uint8_t       ipv6:1;,
     uint8_t       interface_type:6;)
@@ -406,7 +404,7 @@ ED3(uint8_t       ipv4:1;,
  * This field uses the same format as the Timezone field used in the 
  * TP-Service-Centre-Time-Stamp, which is defined in 3GPP TS 23.040 [90], 
  * and its value shall be set as defined in 3GPP TS 22.042 */
-typedef struct _gtp_ue_timezone_t {
+typedef struct gtp_ue_timezone_s {
 #define GTP_TIME_TO_BCD(x) TIME_TO_BCD(x)
     /* The Time Zone indicates the difference, expressed in quarters of an hour,
      * between the local time and GMT. In the first of the two semi-octets, 

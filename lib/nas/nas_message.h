@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by nas_message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-03-17 02:01:09.555771 by acetcom
+ * Created on: 2019-05-28 16:35:26.445690 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -51,20 +51,20 @@ extern "C" {
 #define NAS_EPS_BEARER_IDENTITY_UNASSIGNED 0
 #define NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 
-typedef struct _nas_emm_header_t {
+typedef struct nas_emm_header_s {
 ED2(uint8_t security_header_type:4;,
     uint8_t protocol_discriminator:4;)
     uint8_t message_type;
 } __attribute__ ((packed)) nas_emm_header_t;
 
-typedef struct _nas_esm_header_t {
+typedef struct nas_esm_header_s {
 ED2(uint8_t eps_bearer_identity:4;,
     uint8_t protocol_discriminator:4;)
     uint8_t procedure_transaction_identity;
     uint8_t message_type;
 } __attribute__ ((packed)) nas_esm_header_t;
 
-typedef struct _nas_security_header_t {
+typedef struct nas_security_header_s {
 ED2(uint8_t security_header_type:4;,
     uint8_t protocol_discriminator:4;)
     uint32_t message_authentication_code;
@@ -167,7 +167,7 @@ ED2(uint8_t security_header_type:4;,
 #define NAS_ATTACH_REQUEST_T3412_EXTENDED_VALUE_TYPE 0x5E
 #define NAS_ATTACH_REQUEST_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
 
-typedef struct _nas_attach_request_t {
+typedef struct nas_attach_request_s {
     /* Mandatory fields */
     nas_eps_attach_type_t eps_attach_type;
     nas_eps_mobile_identity_t eps_mobile_identity;
@@ -228,7 +228,7 @@ typedef struct _nas_attach_request_t {
 #define NAS_ATTACH_ACCEPT_T3324_VALUE_TYPE 0x6A
 #define NAS_ATTACH_ACCEPT_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
 
-typedef struct _nas_attach_accept_t {
+typedef struct nas_attach_accept_s {
     /* Mandatory fields */
     nas_eps_attach_result_t eps_attach_result;
     nas_gprs_timer_t t3412_value;
@@ -257,7 +257,7 @@ typedef struct _nas_attach_accept_t {
  * ATTACH COMPLETE
  ******************************************************/
 
-typedef struct _nas_attach_complete_t {
+typedef struct nas_attach_complete_s {
     /* Mandatory fields */
     nas_esm_message_container_t esm_message_container;
 } nas_attach_complete_t;
@@ -275,7 +275,7 @@ typedef struct _nas_attach_complete_t {
 #define NAS_ATTACH_REJECT_T3402_VALUE_TYPE 0x16
 #define NAS_ATTACH_REJECT_EXTENDED_EMM_CAUSE_TYPE 0xA0
 
-typedef struct _nas_attach_reject_t {
+typedef struct nas_attach_reject_s {
     /* Mandatory fields */
     nas_emm_cause_t emm_cause;
 
@@ -292,7 +292,7 @@ typedef struct _nas_attach_reject_t {
  * DETACH REQUEST FROM UE
  ******************************************************/
 
-typedef struct _nas_detach_request_from_ue_t {
+typedef struct nas_detach_request_from_ue_s {
     /* Mandatory fields */
     nas_detach_type_t detach_type;
     nas_eps_mobile_identity_t eps_mobile_identity;
@@ -305,7 +305,7 @@ typedef struct _nas_detach_request_from_ue_t {
 #define NAS_DETACH_REQUEST_EMM_CAUSE_PRESENT (1<<0)
 #define NAS_DETACH_REQUEST_EMM_CAUSE_TYPE 0x53
 
-typedef struct _nas_detach_request_to_ue_t {
+typedef struct nas_detach_request_to_ue_s {
     /* Mandatory fields */
     nas_detach_type_t detach_type;
 
@@ -369,7 +369,7 @@ typedef struct _nas_detach_request_to_ue_t {
 #define NAS_TRACKING_AREA_UPDATE_REQUEST_T3412_EXTENDED_VALUE_TYPE 0x5E
 #define NAS_TRACKING_AREA_UPDATE_REQUEST_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
 
-typedef struct _nas_tracking_area_update_request_t {
+typedef struct nas_tracking_area_update_request_s {
     /* Mandatory fields */
     nas_eps_update_type_t eps_update_type;
     nas_eps_mobile_identity_t old_guti;
@@ -442,7 +442,7 @@ typedef struct _nas_tracking_area_update_request_t {
 #define NAS_TRACKING_AREA_UPDATE_ACCEPT_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
 #define NAS_TRACKING_AREA_UPDATE_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_STATUS_TYPE 0x68
 
-typedef struct _nas_tracking_area_update_accept_t {
+typedef struct nas_tracking_area_update_accept_s {
     /* Mandatory fields */
     nas_eps_update_result_t eps_update_result;
 
@@ -476,7 +476,7 @@ typedef struct _nas_tracking_area_update_accept_t {
 #define NAS_TRACKING_AREA_UPDATE_REJECT_T3346_VALUE_TYPE 0x5F
 #define NAS_TRACKING_AREA_UPDATE_REJECT_EXTENDED_EMM_CAUSE_TYPE 0xA0
 
-typedef struct _nas_tracking_area_update_reject_t {
+typedef struct nas_tracking_area_update_reject_s {
     /* Mandatory fields */
     nas_emm_cause_t emm_cause;
 
@@ -497,7 +497,7 @@ typedef struct _nas_tracking_area_update_reject_t {
 #define NAS_EXTENDED_SERVICE_REQUEST_EPS_BEARER_CONTEXT_STATUS_TYPE 0x57
 #define NAS_EXTENDED_SERVICE_REQUEST_DEVICE_PROPERTIES_TYPE 0xD0
 
-typedef struct _nas_extended_service_request_t {
+typedef struct nas_extended_service_request_s {
     /* Mandatory fields */
     nas_service_type_t service_type;
     nas_mobile_identity_t m_tmsi;
@@ -514,7 +514,7 @@ typedef struct _nas_extended_service_request_t {
  * SERVICE REQUEST
  ******************************************************/
 
-typedef struct _nas_service_request_t {
+typedef struct nas_service_request_s {
     /* Mandatory fields */
     nas_ksi_and_sequence_number_t ksi_and_sequence_number;
     nas_short_mac_t message_authentication_code;
@@ -527,7 +527,7 @@ typedef struct _nas_service_request_t {
 #define NAS_SERVICE_REJECT_T3346_VALUE_PRESENT (1<<0)
 #define NAS_SERVICE_REJECT_T3346_VALUE_TYPE 0x5F
 
-typedef struct _nas_service_reject_t {
+typedef struct nas_service_reject_s {
     /* Mandatory fields */
     nas_emm_cause_t emm_cause;
     nas_gprs_timer_t t3442_value;
@@ -544,7 +544,7 @@ typedef struct _nas_service_reject_t {
 #define NAS_GUTI_REALLOCATION_COMMAND_TAI_LIST_PRESENT (1<<0)
 #define NAS_GUTI_REALLOCATION_COMMAND_TAI_LIST_TYPE 0x54
 
-typedef struct _nas_guti_reallocation_command_t {
+typedef struct nas_guti_reallocation_command_s {
     /* Mandatory fields */
     nas_eps_mobile_identity_t guti;
 
@@ -558,7 +558,7 @@ typedef struct _nas_guti_reallocation_command_t {
  * AUTHENTICATION REQUEST
  ******************************************************/
 
-typedef struct _nas_authentication_request_t {
+typedef struct nas_authentication_request_s {
     /* Mandatory fields */
     nas_key_set_identifier_t nas_key_set_identifierasme;
     nas_authentication_parameter_rand_t authentication_parameter_rand;
@@ -570,7 +570,7 @@ typedef struct _nas_authentication_request_t {
  * AUTHENTICATION RESPONSE
  ******************************************************/
 
-typedef struct _nas_authentication_response_t {
+typedef struct nas_authentication_response_s {
     /* Mandatory fields */
     nas_authentication_response_parameter_t authentication_response_parameter;
 } nas_authentication_response_t;
@@ -580,7 +580,7 @@ typedef struct _nas_authentication_response_t {
  * IDENTITY REQUEST
  ******************************************************/
 
-typedef struct _nas_identity_request_t {
+typedef struct nas_identity_request_s {
     /* Mandatory fields */
     nas_identity_type_2_t identity_type;
 } nas_identity_request_t;
@@ -590,7 +590,7 @@ typedef struct _nas_identity_request_t {
  * IDENTITY RESPONSE
  ******************************************************/
 
-typedef struct _nas_identity_response_t {
+typedef struct nas_identity_response_s {
     /* Mandatory fields */
     nas_mobile_identity_t mobile_identity;
 } nas_identity_response_t;
@@ -602,7 +602,7 @@ typedef struct _nas_identity_response_t {
 #define NAS_AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_PRESENT (1<<0)
 #define NAS_AUTHENTICATION_FAILURE_AUTHENTICATION_FAILURE_PARAMETER_TYPE 0x30
 
-typedef struct _nas_authentication_failure_t {
+typedef struct nas_authentication_failure_s {
     /* Mandatory fields */
     nas_emm_cause_t emm_cause;
 
@@ -622,7 +622,7 @@ typedef struct _nas_authentication_failure_t {
 #define NAS_SECURITY_MODE_COMMAND_REPLAYED_NONCEUE_TYPE 0x55
 #define NAS_SECURITY_MODE_COMMAND_NONCEMME_TYPE 0x56
 
-typedef struct _nas_security_mode_command_t {
+typedef struct nas_security_mode_command_s {
     /* Mandatory fields */
     nas_security_algorithms_t selected_nas_security_algorithms;
     nas_key_set_identifier_t nas_key_set_identifier;
@@ -642,7 +642,7 @@ typedef struct _nas_security_mode_command_t {
 #define NAS_SECURITY_MODE_COMPLETE_IMEISV_PRESENT (1<<0)
 #define NAS_SECURITY_MODE_COMPLETE_IMEISV_TYPE 0x23
 
-typedef struct _nas_security_mode_complete_t {
+typedef struct nas_security_mode_complete_s {
 
     /* Optional fields */
     uint32_t presencemask;
@@ -654,7 +654,7 @@ typedef struct _nas_security_mode_complete_t {
  * SECURITY MODE REJECT
  ******************************************************/
 
-typedef struct _nas_security_mode_reject_t {
+typedef struct nas_security_mode_reject_s {
     /* Mandatory fields */
     nas_emm_cause_t emm_cause;
 } nas_security_mode_reject_t;
@@ -664,7 +664,7 @@ typedef struct _nas_security_mode_reject_t {
  * EMM STATUS
  ******************************************************/
 
-typedef struct _nas_emm_status_t {
+typedef struct nas_emm_status_s {
     /* Mandatory fields */
     nas_emm_cause_t emm_cause;
 } nas_emm_status_t;
@@ -684,7 +684,7 @@ typedef struct _nas_emm_status_t {
 #define NAS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_TYPE 0x47
 #define NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_TYPE 0x49
 
-typedef struct _nas_emm_information_t {
+typedef struct nas_emm_information_s {
 
     /* Optional fields */
     uint32_t presencemask;
@@ -700,7 +700,7 @@ typedef struct _nas_emm_information_t {
  * DOWNLINK NAS TRANSPORT
  ******************************************************/
 
-typedef struct _nas_downlink_nas_transport_t {
+typedef struct nas_downlink_nas_transport_s {
     /* Mandatory fields */
     nas_message_container_t nas_message_container;
 } nas_downlink_nas_transport_t;
@@ -710,7 +710,7 @@ typedef struct _nas_downlink_nas_transport_t {
  * UPLINK NAS TRANSPORT
  ******************************************************/
 
-typedef struct _nas_uplink_nas_transport_t {
+typedef struct nas_uplink_nas_transport_s {
     /* Mandatory fields */
     nas_message_container_t nas_message_container;
 } nas_uplink_nas_transport_t;
@@ -728,7 +728,7 @@ typedef struct _nas_uplink_nas_transport_t {
 #define NAS_CS_SERVICE_NOTIFICATION_LCS_INDICATOR_TYPE 0x62
 #define NAS_CS_SERVICE_NOTIFICATION_LCS_CLIENT_IDENTITY_TYPE 0x63
 
-typedef struct _nas_cs_service_notification_t {
+typedef struct nas_cs_service_notification_s {
     /* Mandatory fields */
     nas_paging_identity_t paging_identity;
 
@@ -747,7 +747,7 @@ typedef struct _nas_cs_service_notification_t {
 #define NAS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT (1<<0)
 #define NAS_UPLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE 0x65
 
-typedef struct _nas_uplink_generic_nas_transport_t {
+typedef struct nas_uplink_generic_nas_transport_s {
     /* Mandatory fields */
     nas_generic_message_container_type_t generic_message_container_type;
     nas_generic_message_container_t generic_message_container;
@@ -764,7 +764,7 @@ typedef struct _nas_uplink_generic_nas_transport_t {
 #define NAS_DOWNLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_PRESENT (1<<0)
 #define NAS_DOWNLINK_GENERIC_NAS_TRANSPORT_ADDITIONAL_INFORMATION_TYPE 0x65
 
-typedef struct _nas_downlink_generic_nas_transport_t {
+typedef struct nas_downlink_generic_nas_transport_s {
     /* Mandatory fields */
     nas_generic_message_container_type_t generic_message_container_type;
     nas_generic_message_container_t generic_message_container;
@@ -809,7 +809,7 @@ typedef struct _nas_downlink_generic_nas_transport_t {
 #define NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 #define NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_SERVING_PLMN_RATE_CONTROL_TYPE 0x6E
 
-typedef struct _nas_activate_default_eps_bearer_context_request_t {
+typedef struct nas_activate_default_eps_bearer_context_request_s {
     /* Mandatory fields */
     nas_eps_quality_of_service_t eps_qos;
     nas_access_point_name_t access_point_name;
@@ -843,7 +843,7 @@ typedef struct _nas_activate_default_eps_bearer_context_request_t {
 #define NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
 #define NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_activate_default_eps_bearer_context_accept_t {
+typedef struct nas_activate_default_eps_bearer_context_accept_s {
 
     /* Optional fields */
     uint32_t presencemask;
@@ -860,7 +860,7 @@ typedef struct _nas_activate_default_eps_bearer_context_accept_t {
 #define NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
 #define NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_activate_default_eps_bearer_context_reject_t {
+typedef struct nas_activate_default_eps_bearer_context_reject_s {
     /* Mandatory fields */
     nas_esm_cause_t esm_cause;
 
@@ -893,7 +893,7 @@ typedef struct _nas_activate_default_eps_bearer_context_reject_t {
 #define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
 #define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_activate_dedicated_eps_bearer_context_request_t {
+typedef struct nas_activate_dedicated_eps_bearer_context_request_s {
     /* Mandatory fields */
     nas_linked_eps_bearer_identity_t linked_eps_bearer_identity;
     nas_eps_quality_of_service_t eps_qos;
@@ -923,7 +923,7 @@ typedef struct _nas_activate_dedicated_eps_bearer_context_request_t {
 #define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_NBIFOM_CONTAINER_TYPE 0x33
 #define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_activate_dedicated_eps_bearer_context_accept_t {
+typedef struct nas_activate_dedicated_eps_bearer_context_accept_s {
 
     /* Optional fields */
     uint32_t presencemask;
@@ -943,7 +943,7 @@ typedef struct _nas_activate_dedicated_eps_bearer_context_accept_t {
 #define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_NBIFOM_CONTAINER_TYPE 0x33
 #define NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_activate_dedicated_eps_bearer_context_reject_t {
+typedef struct nas_activate_dedicated_eps_bearer_context_reject_s {
     /* Mandatory fields */
     nas_esm_cause_t esm_cause;
 
@@ -983,7 +983,7 @@ typedef struct _nas_activate_dedicated_eps_bearer_context_reject_t {
 #define NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
 #define NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_modify_eps_bearer_context_request_t {
+typedef struct nas_modify_eps_bearer_context_request_s {
 
     /* Optional fields */
     uint32_t presencemask;
@@ -1012,7 +1012,7 @@ typedef struct _nas_modify_eps_bearer_context_request_t {
 #define NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT_NBIFOM_CONTAINER_TYPE 0x33
 #define NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_modify_eps_bearer_context_accept_t {
+typedef struct nas_modify_eps_bearer_context_accept_s {
 
     /* Optional fields */
     uint32_t presencemask;
@@ -1032,7 +1032,7 @@ typedef struct _nas_modify_eps_bearer_context_accept_t {
 #define NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT_NBIFOM_CONTAINER_TYPE 0x33
 #define NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_modify_eps_bearer_context_reject_t {
+typedef struct nas_modify_eps_bearer_context_reject_s {
     /* Mandatory fields */
     nas_esm_cause_t esm_cause;
 
@@ -1058,7 +1058,7 @@ typedef struct _nas_modify_eps_bearer_context_reject_t {
 #define NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
 #define NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_deactivate_eps_bearer_context_request_t {
+typedef struct nas_deactivate_eps_bearer_context_request_s {
     /* Mandatory fields */
     nas_esm_cause_t esm_cause;
 
@@ -1080,7 +1080,7 @@ typedef struct _nas_deactivate_eps_bearer_context_request_t {
 #define NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
 #define NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_deactivate_eps_bearer_context_accept_t {
+typedef struct nas_deactivate_eps_bearer_context_accept_s {
 
     /* Optional fields */
     uint32_t presencemask;
@@ -1107,7 +1107,7 @@ typedef struct _nas_deactivate_eps_bearer_context_accept_t {
 #define NAS_PDN_CONNECTIVITY_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
 #define NAS_PDN_CONNECTIVITY_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_pdn_connectivity_request_t {
+typedef struct nas_pdn_connectivity_request_s {
     /* Mandatory fields */
     nas_request_type_t request_type;
 
@@ -1137,7 +1137,7 @@ typedef struct _nas_pdn_connectivity_request_t {
 #define NAS_PDN_CONNECTIVITY_REJECT_NBIFOM_CONTAINER_TYPE 0x33
 #define NAS_PDN_CONNECTIVITY_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_pdn_connectivity_reject_t {
+typedef struct nas_pdn_connectivity_reject_s {
     /* Mandatory fields */
     nas_esm_cause_t esm_cause;
 
@@ -1159,7 +1159,7 @@ typedef struct _nas_pdn_connectivity_reject_t {
 #define NAS_PDN_DISCONNECT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
 #define NAS_PDN_DISCONNECT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_pdn_disconnect_request_t {
+typedef struct nas_pdn_disconnect_request_s {
     /* Mandatory fields */
     nas_linked_eps_bearer_identity_t linked_eps_bearer_identity;
 
@@ -1178,7 +1178,7 @@ typedef struct _nas_pdn_disconnect_request_t {
 #define NAS_PDN_DISCONNECT_REJECT_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
 #define NAS_PDN_DISCONNECT_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_pdn_disconnect_reject_t {
+typedef struct nas_pdn_disconnect_reject_s {
     /* Mandatory fields */
     nas_esm_cause_t esm_cause;
 
@@ -1201,7 +1201,7 @@ typedef struct _nas_pdn_disconnect_reject_t {
 #define NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
 #define NAS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_bearer_resource_allocation_request_t {
+typedef struct nas_bearer_resource_allocation_request_s {
     /* Mandatory fields */
     nas_linked_eps_bearer_identity_t linked_eps_bearer_identity;
     nas_traffic_flow_aggregate_description_t traffic_flow_aggregate;
@@ -1230,7 +1230,7 @@ typedef struct _nas_bearer_resource_allocation_request_t {
 #define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_NBIFOM_CONTAINER_TYPE 0x33
 #define NAS_BEARER_RESOURCE_ALLOCATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_bearer_resource_allocation_reject_t {
+typedef struct nas_bearer_resource_allocation_reject_s {
     /* Mandatory fields */
     nas_esm_cause_t esm_cause;
 
@@ -1262,7 +1262,7 @@ typedef struct _nas_bearer_resource_allocation_reject_t {
 #define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
 #define NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_bearer_resource_modification_request_t {
+typedef struct nas_bearer_resource_modification_request_s {
     /* Mandatory fields */
     nas_linked_eps_bearer_identity_t eps_bearer_identity_for_packet_filter;
     nas_traffic_flow_aggregate_description_t traffic_flow_aggregate;
@@ -1293,7 +1293,7 @@ typedef struct _nas_bearer_resource_modification_request_t {
 #define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_NBIFOM_CONTAINER_TYPE 0x33
 #define NAS_BEARER_RESOURCE_MODIFICATION_REJECT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_bearer_resource_modification_reject_t {
+typedef struct nas_bearer_resource_modification_reject_s {
     /* Mandatory fields */
     nas_esm_cause_t esm_cause;
 
@@ -1317,7 +1317,7 @@ typedef struct _nas_bearer_resource_modification_reject_t {
 #define NAS_ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
 #define NAS_ESM_INFORMATION_RESPONSE_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 
-typedef struct _nas_esm_information_response_t {
+typedef struct nas_esm_information_response_s {
 
     /* Optional fields */
     uint32_t presencemask;
@@ -1331,13 +1331,13 @@ typedef struct _nas_esm_information_response_t {
  * ESM STATUS
  ******************************************************/
 
-typedef struct _nas_esm_status_t {
+typedef struct nas_esm_status_s {
     /* Mandatory fields */
     nas_esm_cause_t esm_cause;
 } nas_esm_status_t;
 
 
-typedef struct _nas_emm_message_t {
+typedef struct nas_emm_message_s {
     nas_emm_header_t h;
     union {
         nas_attach_request_t attach_request;
@@ -1371,7 +1371,7 @@ typedef struct _nas_emm_message_t {
     };
 } nas_emm_message_t;
 
-typedef struct _nas_esm_message_t {
+typedef struct nas_esm_message_s {
     nas_esm_header_t h;
     union {
         nas_activate_default_eps_bearer_context_request_t activate_default_eps_bearer_context_request;
@@ -1398,7 +1398,7 @@ typedef struct _nas_esm_message_t {
     };
 } nas_esm_message_t;
 
-typedef struct _nas_message_t {
+typedef struct nas_message_s {
     nas_security_header_t h;
     union {
         nas_emm_message_t emm;

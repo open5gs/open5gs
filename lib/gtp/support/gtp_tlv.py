@@ -385,7 +385,7 @@ extern "C" {
 #define GTPV1U_HEADER_LEN   8
 #define GTPV2C_HEADER_LEN   12
 #define GTP_TEID_LEN        4
-typedef struct _gtp_header_t {
+typedef struct gtp_header_s {
     union {
         struct {
         ED4(uint8_t version:3;,
@@ -481,7 +481,7 @@ f.write("\n")
 
 f.write("/* Structure for Group Infomration Element */\n")
 for (k, v) in sorted_group_list:
-    f.write("typedef struct _tlv_" + v_lower(k) + "_t {\n")
+    f.write("typedef struct tlv_" + v_lower(k) + "_s {\n")
     f.write("    tlv_presence_t presence;\n")
     for ies in group_list[k]["ies"]:
         f.write("    tlv_" + v_lower(ies["ie_type"]) + "_t " + \
@@ -502,14 +502,14 @@ for (k, v) in sorted_group_list:
 f.write("/* Structure for Message */\n")
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
-        f.write("typedef struct _gtp_" + v_lower(k) + "_t {\n")
+        f.write("typedef struct gtp_" + v_lower(k) + "_s {\n")
         for ies in msg_list[k]["ies"]:
             f.write("    tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                     v_lower(ies["ie_value"]) + ";\n")
         f.write("} gtp_" + v_lower(k) + "_t;\n")
         f.write("\n")
 
-f.write("typedef struct _gtp_message_t {\n")
+f.write("typedef struct gtp_message_s {\n")
 f.write("   gtp_header_t h;\n")
 f.write("   union {\n")
 for (k, v) in sorted_msg_list:
