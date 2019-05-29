@@ -290,7 +290,7 @@ If your phone can connect to internet, you must run the following command in Nex
 $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 ```
 
-###### Check IP Tables:
+###### Check IP/NAT Tables:
 ```
 $ sudo iptables -L
 Chain INPUT (policy ACCEPT)
@@ -316,9 +316,9 @@ Chain POSTROUTING (policy ACCEPT)
 target     prot opt source               destination
 ```
 
- - There is nothing on the table. It is very good condition. If there is something in the table, you will need to take some special action. (For example, disable docker service and reboot your machine)
+ - There is nothing on the table. It is very good condition. If there is something in the table, you will need to take some special action. (For example, disable docker service, reboot your machine, and check your IP/NAT table.)
 
-###### If your IP tables is clean, Add IP/NAT Table like the followings:
+###### If your IP/NAT tables is clean, Add IP/NAT entry like the followings:
 ```
 $ sudo iptables -t nat -A POSTROUTING -o 'interface-name' -j MASQUERADE
 $ sudo iptables -I INPUT -i pgwtun -j ACCEPT
