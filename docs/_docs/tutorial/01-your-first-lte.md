@@ -316,7 +316,7 @@ Chain POSTROUTING (policy ACCEPT)
 target     prot opt source               destination
 ```
 
- - There is nothing on the table. It is very good condition. If there is somthing in the table, you will need to take some special action. (For example, disable docker service and reboot your machine)
+ - There is nothing on the table. It is very good condition. If there is something in the table, you will need to take some special action. (For example, disable docker service and reboot your machine)
 
 ###### If your IP tables is clean, Add IP/NAT Table like the followings:
 ```
