@@ -368,8 +368,7 @@ int pgw_context_parse_config()
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.gtpc_port;
                         const char *dev = NULL;
-                        ogs_sockaddr_t *list = NULL;
-                        ogs_socknode_t *node = NULL;
+                        ogs_sockaddr_t *addr = NULL;
 
                         if (ogs_yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
                         {
@@ -454,31 +453,29 @@ int pgw_context_parse_config()
                                 ogs_warn("unknown key `%s`", gtpc_key);
                         }
 
-                        list = NULL;
+                        addr = NULL;
                         for (i = 0; i < num; i++)
                         {
-                            rv = ogs_addaddrinfo(&list,
+                            rv = ogs_addaddrinfo(&addr,
                                     family, hostname[i], port, 0);
                             ogs_assert(rv == OGS_OK);
                         }
 
-                        if (list)
+                        if (addr)
                         {
                             if (context_self()->config.parameter.no_ipv4 == 0)
                             {
-                                rv = ogs_sock_add_node(&self.gtpc_list,
-                                        &node, list, AF_INET);
-                                ogs_assert(rv == OGS_OK);
+                                ogs_sock_add_node(
+                                        &self.gtpc_list, AF_INET, addr);
                             }
 
                             if (context_self()->config.parameter.no_ipv6 == 0)
                             {
-                                rv = ogs_sock_add_node(&self.gtpc_list6,
-                                        &node, list, AF_INET6);
-                                ogs_assert(rv == OGS_OK);
+                                ogs_sock_add_node(
+                                        &self.gtpc_list6, AF_INET6, addr);
                             }
 
-                            ogs_freeaddrinfo(list);
+                            ogs_freeaddrinfo(addr);
                         }
 
                         if (dev)
@@ -517,8 +514,7 @@ int pgw_context_parse_config()
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.gtpu_port;
                         const char *dev = NULL;
-                        ogs_sockaddr_t *list = NULL;
-                        ogs_socknode_t *node = NULL;
+                        ogs_sockaddr_t *addr = NULL;
 
                         if (ogs_yaml_iter_type(&gtpu_array) == YAML_MAPPING_NODE)
                         {
@@ -599,31 +595,29 @@ int pgw_context_parse_config()
                                 ogs_warn("unknown key `%s`", gtpu_key);
                         }
 
-                        list = NULL;
+                        addr = NULL;
                         for (i = 0; i < num; i++)
                         {
-                            rv = ogs_addaddrinfo(&list,
+                            rv = ogs_addaddrinfo(&addr,
                                     family, hostname[i], port, 0);
                             ogs_assert(rv == OGS_OK);
                         }
 
-                        if (list)
+                        if (addr)
                         {
                             if (context_self()->config.parameter.no_ipv4 == 0)
                             {
-                                rv = ogs_sock_add_node(&self.gtpu_list,
-                                        &node, list, AF_INET);
-                                ogs_assert(rv == OGS_OK);
+                                ogs_sock_add_node(
+                                        &self.gtpu_list, AF_INET, addr);
                             }
 
                             if (context_self()->config.parameter.no_ipv6 == 0)
                             {
-                                rv = ogs_sock_add_node(&self.gtpu_list6,
-                                        &node, list, AF_INET6);
-                                ogs_assert(rv == OGS_OK);
+                                ogs_sock_add_node(
+                                        &self.gtpu_list6, AF_INET6, addr);
                             }
 
-                            ogs_freeaddrinfo(list);
+                            ogs_freeaddrinfo(addr);
                         }
 
                         if (dev)

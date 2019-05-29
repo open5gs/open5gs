@@ -39,7 +39,7 @@ extern "C" {
 typedef struct gtp_node_s {
     ogs_lnode_t     node;           /* A node of list_t */
 
-    ogs_sockaddr_t  *sa_list;       /* Socket Address List */
+    ogs_sockaddr_t  *sa_list;          /* Socket Address List */
 
     ogs_sock_t      *sock;          /* Socket instance */
     ip_t            ip;             /* Socket Address */
