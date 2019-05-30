@@ -64,16 +64,16 @@ void sgw_context_final()
     ogs_pool_final(&sgw_sess_pool);
     ogs_pool_final(&sgw_ue_pool);
 
-    gtp_remove_all_nodes(&self.mme_s11_list);
-    gtp_remove_all_nodes(&self.pgw_s5c_list);
-    gtp_remove_all_nodes(&self.enb_s1u_list);
-    gtp_remove_all_nodes(&self.pgw_s5u_list);
+    gtp_node_remove_all(&self.mme_s11_list);
+    gtp_node_remove_all(&self.pgw_s5c_list);
+    gtp_node_remove_all(&self.enb_s1u_list);
+    gtp_node_remove_all(&self.pgw_s5u_list);
     gtp_node_final();
 
-    ogs_sock_remove_all_nodes(&self.gtpc_list);
-    ogs_sock_remove_all_nodes(&self.gtpc_list6);
-    ogs_sock_remove_all_nodes(&self.gtpu_list);
-    ogs_sock_remove_all_nodes(&self.gtpu_list6);
+    ogs_socknode_remove_all(&self.gtpc_list);
+    ogs_socknode_remove_all(&self.gtpc_list6);
+    ogs_socknode_remove_all(&self.gtpu_list);
+    ogs_socknode_remove_all(&self.gtpu_list6);
 
     context_initialized = 0;
 }
@@ -217,18 +217,18 @@ int sgw_context_parse_config()
 
                         if (addr) {
                             if (context_self()->config.parameter.no_ipv4 == 0)
-                                ogs_sock_add_node(
+                                ogs_socknode_add(
                                         &self.gtpc_list, AF_INET, addr);
 
                             if (context_self()->config.parameter.no_ipv6 == 0)
-                                ogs_sock_add_node(
+                                ogs_socknode_add(
                                         &self.gtpc_list6, AF_INET6, addr);
 
                             ogs_freeaddrinfo(addr);
                         }
 
                         if (dev) {
-                            rv = ogs_sock_probe_node(
+                            rv = ogs_socknode_probe(
                                     context_self()->config.parameter.no_ipv4 ?
                                         NULL : &self.gtpc_list,
                                     context_self()->config.parameter.no_ipv6 ?
@@ -242,7 +242,7 @@ int sgw_context_parse_config()
 
                     if (ogs_list_empty(&self.gtpc_list) &&
                         ogs_list_empty(&self.gtpc_list6)) {
-                        rv = ogs_sock_probe_node(
+                        rv = ogs_socknode_probe(
                                 context_self()->config.parameter.no_ipv4 ?
                                     NULL : &self.gtpc_list,
                                 context_self()->config.parameter.no_ipv6 ?
@@ -331,18 +331,18 @@ int sgw_context_parse_config()
 
                         if (addr) {
                             if (context_self()->config.parameter.no_ipv4 == 0)
-                                ogs_sock_add_node(
+                                ogs_socknode_add(
                                         &self.gtpu_list, AF_INET, addr);
 
                             if (context_self()->config.parameter.no_ipv6 == 0)
-                                ogs_sock_add_node(
+                                ogs_socknode_add(
                                         &self.gtpu_list6, AF_INET6, addr);
 
                             ogs_freeaddrinfo(addr);
                         }
 
                         if (dev) {
-                            rv = ogs_sock_probe_node(
+                            rv = ogs_socknode_probe(
                                     context_self()->config.parameter.no_ipv4 ?
                                         NULL : &self.gtpu_list,
                                     context_self()->config.parameter.no_ipv6 ?
@@ -356,7 +356,7 @@ int sgw_context_parse_config()
 
                     if (ogs_list_empty(&self.gtpu_list) &&
                         ogs_list_empty(&self.gtpu_list6)) {
-                        rv = ogs_sock_probe_node(
+                        rv = ogs_socknode_probe(
                                 context_self()->config.parameter.no_ipv4 ?
                                     NULL : &self.gtpu_list,
                                 context_self()->config.parameter.no_ipv6 ?
@@ -391,9 +391,9 @@ gtp_node_t *sgw_mme_add_by_message(gtp_message_t *message)
 
     mme_s11_teid = req->sender_f_teid_for_control_plane.data;
     ogs_assert(mme_s11_teid);
-    mme = gtp_find_node(&sgw_self()->mme_s11_list, mme_s11_teid);
+    mme = gtp_node_find(&sgw_self()->mme_s11_list, mme_s11_teid);
     if (!mme) {
-        mme = gtp_add_node(&sgw_self()->mme_s11_list, mme_s11_teid,
+        mme = gtp_node_add(&sgw_self()->mme_s11_list, mme_s11_teid,
             sgw_self()->gtpc_port,
             context_self()->config.parameter.no_ipv4,
             context_self()->config.parameter.no_ipv6,

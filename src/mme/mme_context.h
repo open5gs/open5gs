@@ -508,12 +508,12 @@ int mme_context_parse_config(void);
 
 mme_sgw_t *mme_sgw_add(
         ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
-int mme_sgw_remove(mme_sgw_t *sgw);
+void mme_sgw_remove(mme_sgw_t *sgw);
 void mme_sgw_remove_all();
 
 mme_pgw_t *mme_pgw_add(
         ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
-int mme_pgw_remove(mme_pgw_t *pgw);
+void mme_pgw_remove(mme_pgw_t *pgw);
 void mme_pgw_remove_all();
 ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
         ogs_list_t *list, int family, char *apn);

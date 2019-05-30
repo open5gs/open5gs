@@ -121,10 +121,10 @@ void mme_context_final()
 
     gtp_node_final();
 
-    ogs_sock_remove_all_nodes(&self.s1ap_list);
-    ogs_sock_remove_all_nodes(&self.s1ap_list6);
-    ogs_sock_remove_all_nodes(&self.gtpc_list);
-    ogs_sock_remove_all_nodes(&self.gtpc_list6);
+    ogs_socknode_remove_all(&self.s1ap_list);
+    ogs_socknode_remove_all(&self.s1ap_list6);
+    ogs_socknode_remove_all(&self.gtpc_list);
+    ogs_socknode_remove_all(&self.gtpc_list6);
 
     context_initialized = 0;
 }
@@ -483,11 +483,11 @@ int mme_context_parse_config()
 
                         if (addr) {
                             if (context_self()->config.parameter.no_ipv4 == 0)
-                                ogs_sock_add_node(
+                                ogs_socknode_add(
                                         &self.s1ap_list, AF_INET, addr);
 
                             if (context_self()->config.parameter.no_ipv6 == 0)
-                                ogs_sock_add_node(
+                                ogs_socknode_add(
                                         &self.s1ap_list6, AF_INET6, addr);
                                 ogs_assert(rv == OGS_OK);
 
@@ -495,7 +495,7 @@ int mme_context_parse_config()
                         }
 
                         if (dev) {
-                            rv = ogs_sock_probe_node(
+                            rv = ogs_socknode_probe(
                                     context_self()->config.parameter.no_ipv4 ?
                                         NULL : &self.s1ap_list,
                                     context_self()->config.parameter.no_ipv6 ?
@@ -509,7 +509,7 @@ int mme_context_parse_config()
 
                     if (ogs_list_first(&self.s1ap_list) == NULL &&
                         ogs_list_first(&self.s1ap_list6) == NULL) {
-                        rv = ogs_sock_probe_node(
+                        rv = ogs_socknode_probe(
                                 context_self()->config.parameter.no_ipv4 ?
                                     NULL : &self.s1ap_list,
                                 context_self()->config.parameter.no_ipv6 ?
@@ -598,18 +598,18 @@ int mme_context_parse_config()
 
                         if (addr) {
                             if (context_self()->config.parameter.no_ipv4 == 0)
-                                ogs_sock_add_node(
+                                ogs_socknode_add(
                                         &self.gtpc_list, AF_INET, addr);
 
                             if (context_self()->config.parameter.no_ipv6 == 0)
-                                ogs_sock_add_node(
+                                ogs_socknode_add(
                                         &self.gtpc_list6, AF_INET6, addr);
 
                             ogs_freeaddrinfo(addr);
                         }
 
                         if (dev) {
-                            rv = ogs_sock_probe_node(
+                            rv = ogs_socknode_probe(
                                     context_self()->config.parameter.no_ipv4 ?
                                         NULL : &self.gtpc_list,
                                     context_self()->config.parameter.no_ipv6 ?
@@ -622,7 +622,7 @@ int mme_context_parse_config()
 
                     if (ogs_list_first(&self.gtpc_list) == NULL &&
                         ogs_list_first(&self.gtpc_list6) == NULL) {
-                        rv = ogs_sock_probe_node(
+                        rv = ogs_socknode_probe(
                                 context_self()->config.parameter.no_ipv4 ?
                                     NULL : &self.gtpc_list,
                                 context_self()->config.parameter.no_ipv6 ?
@@ -1300,25 +1300,20 @@ mme_sgw_t *mme_sgw_add(
     ogs_assert(sgw);
     memset(sgw, 0, sizeof *sgw);
 
-    sgw->gnode = gtp_create_node(all_list, no_ipv4, no_ipv6, prefer_ipv4);
+    sgw->gnode = gtp_node_new(all_list, no_ipv4, no_ipv6, prefer_ipv4);
     ogs_list_add(&self.sgw_list, sgw);
 
     return sgw;
 }
 
-int mme_sgw_remove(mme_sgw_t *sgw)
+void mme_sgw_remove(mme_sgw_t *sgw)
 {
-    int rv;
     ogs_assert(sgw);
 
     ogs_list_remove(&self.sgw_list, sgw);
 
-    rv = gtp_delete_node(sgw->gnode);
-    ogs_assert(rv == OGS_OK);
-
+    gtp_node_free(sgw->gnode);
     ogs_pool_free(&mme_sgw_pool, sgw);
-
-    return OGS_OK;
 }
 
 void mme_sgw_remove_all()
@@ -1339,25 +1334,20 @@ mme_pgw_t *mme_pgw_add(
     ogs_pool_alloc(&mme_pgw_pool, &pgw);
     ogs_assert(pgw);
 
-    pgw->gnode = gtp_create_node(all_list, no_ipv4, no_ipv6, prefer_ipv4);
+    pgw->gnode = gtp_node_new(all_list, no_ipv4, no_ipv6, prefer_ipv4);
     ogs_list_add(&self.pgw_list, pgw);
 
     return pgw;
 }
 
-int mme_pgw_remove(mme_pgw_t *pgw)
+void mme_pgw_remove(mme_pgw_t *pgw)
 {
-    int rv;
     ogs_assert(pgw);
 
     ogs_list_remove(&self.pgw_list, pgw);
 
-    rv = gtp_delete_node(pgw->gnode);
-    ogs_assert(rv == OGS_OK);
-
+    gtp_node_free(pgw->gnode);
     ogs_pool_free(&mme_pgw_pool, pgw);
-
-    return OGS_OK;
 }
 
 void mme_pgw_remove_all()

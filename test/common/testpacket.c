@@ -158,7 +158,7 @@ int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
         else
             memcpy(sgw.sin6.sin6_addr.s6_addr,
                     bearer->sgw_s1u_ip.addr6, IPV6_LEN);
-        rv = ogs_sock_fill_scope_id_in_local(&sgw);
+        rv = ogs_socknode_fill_scope_id_in_local(&sgw);
         ogs_assert(rv == OGS_OK);
     }
     else
