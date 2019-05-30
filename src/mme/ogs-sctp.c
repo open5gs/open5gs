@@ -84,7 +84,7 @@ ogs_sock_t *ogs_sctp_server(int type, ogs_sockaddr_t *sa_list)
 
     addr = sa_list;
     while (addr) {
-        new = ogs_sctp_socket(addr->c_sa_family, type);
+        new = ogs_sctp_socket(addr->ogs_sa_family, type);
         if (new) {
             rv = ogs_listen_reusable(new->fd);
             ogs_assert(rv == OGS_OK);
@@ -122,7 +122,7 @@ ogs_sock_t *ogs_sctp_client(int type, ogs_sockaddr_t *sa_list)
 
     addr = sa_list;
     while (addr) {
-        new = ogs_sctp_socket(addr->c_sa_family, type);
+        new = ogs_sctp_socket(addr->ogs_sa_family, type);
         if (new) {
             if (ogs_sock_connect(new, addr) == OGS_OK) {
                 ogs_debug("sctp_client() [%s]:%d",
