@@ -1379,7 +1379,7 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
         ogs_sockaddr_t *addr = pgw->gnode->sa_list;
 
         while (addr) {
-            if (addr->c_sa_family == family &&
+            if (addr->ogs_sa_family == family &&
                 (!apn || (pgw->apn && !strcmp(apn, pgw->apn)))) {
                 return addr;
             }

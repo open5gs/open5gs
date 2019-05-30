@@ -148,10 +148,10 @@ int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
     ogs_assert(bearer);
 
     memset(&sgw, 0, sizeof(ogs_sockaddr_t));
-    sgw.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    sgw.ogs_sin_port = htons(GTPV1_U_UDP_PORT);
     if (bearer->sgw_s1u_ip.ipv6)
     {
-        sgw.c_sa_family = AF_INET6;
+        sgw.ogs_sa_family = AF_INET6;
         if (bearer->sgw_s1u_ip.ipv4)
             memcpy(sgw.sin6.sin6_addr.s6_addr,
                     bearer->sgw_s1u_ip.both.addr6, IPV6_LEN);
@@ -163,7 +163,7 @@ int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
     }
     else
     {
-        sgw.c_sa_family = AF_INET;
+        sgw.ogs_sa_family = AF_INET;
         sgw.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
     }
 

@@ -94,7 +94,7 @@ ogs_sock_t *ogs_sctp_server(int type, ogs_sockaddr_t *sa_list)
     while(addr)
     {
         sock = s1ap_usrsctp_socket(
-                addr->c_sa_family, type, s1ap_usrsctp_recv_handler);
+                addr->ogs_sa_family, type, s1ap_usrsctp_recv_handler);
         if (sock)
         {
             if (s1ap_usrsctp_bind(sock, addr) == OGS_OK)
@@ -132,7 +132,7 @@ ogs_sock_t *ogs_sctp_client(int type, ogs_sockaddr_t *sa_list)
     addr = sa_list;
     while(addr)
     {
-        sock = s1ap_usrsctp_socket(addr->c_sa_family, type, NULL);
+        sock = s1ap_usrsctp_socket(addr->ogs_sa_family, type, NULL);
         if (sock)
         {
             if (s1ap_usrsctp_connect(sock, addr) == OGS_OK)
@@ -564,8 +564,8 @@ static ogs_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store)
     addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
     ogs_assert(addr);
 
-    addr->c_sa_family = store->sin.sin_family;
-    switch(addr->c_sa_family)
+    addr->ogs_sa_family = store->sin.sin_family;
+    switch(addr->ogs_sa_family)
     {
         case AF_INET:
             memcpy(&addr->sin, &store->sin, sizeof(struct sockaddr_in));

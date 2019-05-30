@@ -66,8 +66,8 @@ int gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, gtp_node_t *gnode)
     {
         ogs_sock_t *sock = NULL;
 
-        if (addr->c_sa_family == AF_INET) sock = ipv4;
-        else if (addr->c_sa_family == AF_INET6) sock = ipv6;
+        if (addr->ogs_sa_family == AF_INET) sock = ipv4;
+        else if (addr->ogs_sa_family == AF_INET6) sock = ipv6;
         else
             ogs_assert_if_reached();
 
