@@ -95,12 +95,16 @@ int mme_gtp_close()
     ogs_list_for_each(&mme_self()->gtpc_list, snode)
     {
         ogs_pollset_remove(snode->poll);
+#if 0
         ogs_sock_destroy(snode->sock);
+#endif
     }
     ogs_list_for_each(&mme_self()->gtpc_list6, snode)
     {
         ogs_pollset_remove(snode->poll);
+#if 0
         ogs_sock_destroy(snode->sock);
+#endif
     }
 
     return OGS_OK;

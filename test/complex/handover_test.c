@@ -13,7 +13,7 @@ static void handover_test1(abts_case *tc, void *data)
 {
     int rv;
     ogs_sock_t *sock1, *sock2;
-    ogs_sock_t *gtpu1, *gtpu2;
+    ogs_socknode_t *gtpu1, *gtpu2;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -314,11 +314,8 @@ static void handover_test1(abts_case *tc, void *data)
     mongoc_collection_destroy(collection);
 
     /* eNB disonncect from SGW */
-    rv = testenb_gtpu_close(gtpu2);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    rv = testenb_gtpu_close(gtpu1);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_gtpu_close(gtpu2);
+    testenb_gtpu_close(gtpu1);
 
     /* Two eNB disonncect from MME */
     rv = testenb_s1ap_close(sock2);
@@ -334,7 +331,7 @@ static void handover_test2(abts_case *tc, void *data)
 {
     int rv;
     ogs_sock_t *sock1, *sock2;
-    ogs_sock_t *gtpu1, *gtpu2;
+    ogs_socknode_t *gtpu1, *gtpu2;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -824,11 +821,8 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* eNB disonncect from SGW */
-    rv = testenb_gtpu_close(gtpu1);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    rv = testenb_gtpu_close(gtpu2);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_gtpu_close(gtpu1);
+    testenb_gtpu_close(gtpu2);
 
     ogs_msleep(300);
 }

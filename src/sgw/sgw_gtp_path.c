@@ -320,23 +320,31 @@ int sgw_gtp_close()
     ogs_list_for_each(&sgw_self()->gtpc_list, snode)
     {
         ogs_pollset_remove(snode->poll);
+#if 0
         ogs_sock_destroy(snode->sock);
+#endif
     }
     ogs_list_for_each(&sgw_self()->gtpc_list6, snode)
     {
         ogs_pollset_remove(snode->poll);
+#if 0
         ogs_sock_destroy(snode->sock);
+#endif
     }
 
     ogs_list_for_each(&sgw_self()->gtpu_list, snode)
     {
         ogs_pollset_remove(snode->poll);
+#if 0
         ogs_sock_destroy(snode->sock);
+#endif
     }
     ogs_list_for_each(&sgw_self()->gtpu_list6, snode)
     {
         ogs_pollset_remove(snode->poll);
+#if 0
         ogs_sock_destroy(snode->sock);
+#endif
     }
 
     return OGS_OK;

@@ -315,23 +315,31 @@ int pgw_gtp_close()
     ogs_list_for_each(&pgw_self()->gtpc_list, snode)
     {
         ogs_pollset_remove(snode->poll);
+#if 0
         ogs_sock_destroy(snode->sock);
+#endif
     }
     ogs_list_for_each(&pgw_self()->gtpc_list6, snode)
     {
         ogs_pollset_remove(snode->poll);
+#if 0
         ogs_sock_destroy(snode->sock);
+#endif
     }
 
     ogs_list_for_each(&pgw_self()->gtpu_list, snode)
     {
         ogs_pollset_remove(snode->poll);
+#if 0
         ogs_sock_destroy(snode->sock);
+#endif
     }
     ogs_list_for_each(&pgw_self()->gtpu_list6, snode)
     {
         ogs_pollset_remove(snode->poll);
+#if 0
         ogs_sock_destroy(snode->sock);
+#endif
     }
 
     for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev))

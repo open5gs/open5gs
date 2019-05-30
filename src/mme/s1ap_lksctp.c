@@ -45,7 +45,9 @@ void s1ap_delete(ogs_socknode_t *snode)
     ogs_assert(snode);
 
     ogs_pollset_remove(snode->poll);
+#if 0 /* FIXME */
     s1ap_closesocket(snode->sock);
+#endif
 }
 
 int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,

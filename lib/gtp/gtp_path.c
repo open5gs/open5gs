@@ -28,26 +28,11 @@ int gtp_server(ogs_socknode_t *snode)
     char buf[OGS_ADDRSTRLEN];
     ogs_assert(snode);
 
-    snode->sock = ogs_udp_server(snode->addr);
+    ogs_udp_server(snode);
     ogs_assert(snode->sock);
 
     ogs_info("gtp_server() [%s]:%d",
             OGS_ADDR(snode->addr, buf), OGS_PORT(snode->addr));
-
-    return OGS_OK;
-}
-
-int gtp_client(gtp_node_t *gnode)
-{
-    char buf[OGS_ADDRSTRLEN];
-    ogs_assert(gnode);
-
-    gnode->sock = ogs_udp_client(gnode->sa_list);
-    ogs_assert(gnode->sock);
-    memcpy(&gnode->conn, &gnode->sock->remote_addr, sizeof gnode->conn);
-
-    ogs_info("gtp_client() [%s]:%d",
-            OGS_ADDR(gnode->sa_list, buf), OGS_PORT(gnode->sa_list));
 
     return OGS_OK;
 }

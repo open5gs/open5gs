@@ -15,10 +15,10 @@ ogs_pkbuf_t *testenb_s1ap_read(ogs_sock_t *sock);
 int testenb_s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf);
 int testenb_s1ap_close(ogs_sock_t *sock);
 
-ogs_sock_t *testenb_gtpu_server(const char *ipstr);
-ogs_pkbuf_t *testenb_gtpu_read(ogs_sock_t *sock);
-int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf);
-int testenb_gtpu_close(ogs_sock_t *sock);
+ogs_socknode_t *testenb_gtpu_server(const char *ipstr);
+ogs_pkbuf_t *testenb_gtpu_read(ogs_socknode_t *node);
+int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
+void testenb_gtpu_close(ogs_socknode_t *node);
 
 int tests1ap_build_setup_req(
         ogs_pkbuf_t **pkbuf, S1AP_ENB_ID_PR present, uint32_t enb_id,

@@ -18,7 +18,7 @@ static void attach_test1(abts_case *tc, void *data)
 {
     int rv;
     ogs_sock_t *sock;
-    ogs_sock_t *gtpu;
+    ogs_socknode_t *gtpu;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -439,8 +439,7 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* eNB disonncect from SGW */
-    rv = testenb_gtpu_close(gtpu);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_gtpu_close(gtpu);
 
     ogs_msleep(300);
     return;
@@ -463,8 +462,7 @@ out:
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* eNB disonncect from SGW */
-    rv = testenb_gtpu_close(gtpu);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_gtpu_close(gtpu);
 #endif
 }
 
@@ -1164,7 +1162,7 @@ static void attach_test4(abts_case *tc, void *data)
 {
     int rv;
     ogs_sock_t *sock;
-    ogs_sock_t *gtpu;
+    ogs_socknode_t *gtpu;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -1345,8 +1343,7 @@ static void attach_test4(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* eNB disonncect from SGW */
-    rv = testenb_gtpu_close(gtpu);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_gtpu_close(gtpu);
 
     ogs_msleep(300);
 }
@@ -1355,7 +1352,6 @@ static void attach_test5(abts_case *tc, void *data)
 {
     int rv;
     ogs_sock_t *sock;
-    ogs_sock_t *gtpu;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     s1ap_message_t message;

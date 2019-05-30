@@ -77,32 +77,33 @@ int testenb_s1ap_close(ogs_sock_t *sock)
     return OGS_OK;
 }
 
-ogs_sock_t *testenb_gtpu_server(const char *ipstr)
+ogs_socknode_t *testenb_gtpu_server(const char *ipstr)
 {
     int rv;
-    ogs_sockaddr_t *addr = NULL;
+    ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, ipstr, GTPV1_U_UDP_PORT, 0);
-    ogs_assert(rv == OGS_OK);
+    node = ogs_socknode_new(AF_UNSPEC, ipstr, GTPV1_U_UDP_PORT, 0);
+    ogs_assert(node);
 
-    sock = ogs_udp_server(addr);
+    sock = ogs_udp_server(node);
     ogs_assert(sock);
 
-    ogs_freeaddrinfo(addr);
-
-    return sock;
+    return node;
 }
 
-ogs_pkbuf_t *testenb_gtpu_read(ogs_sock_t *sock)
+ogs_pkbuf_t *testenb_gtpu_read(ogs_socknode_t *node)
 {
     int rc = 0;
     ogs_pkbuf_t *recvbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put(recvbuf, MAX_SDU_LEN);
 
+    ogs_assert(node);
+    ogs_assert(node->sock);
+
     while(1)
     {
-        rc = ogs_recv(sock->fd, recvbuf->data, recvbuf->len, 0);
+        rc = ogs_recv(node->sock->fd, recvbuf->data, recvbuf->len, 0);
         if (rc == -2) 
         {
             continue;
@@ -125,7 +126,7 @@ ogs_pkbuf_t *testenb_gtpu_read(ogs_sock_t *sock)
     return recvbuf;
 }
 
-int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
+int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
 {
     int rv;
     ogs_hash_index_t *hi = NULL;
@@ -136,7 +137,8 @@ int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
     ogs_sockaddr_t sgw;
     ssize_t sent;
 
-    ogs_assert(sock);
+    ogs_assert(node);
+    ogs_assert(node->sock);
 
     hi = mme_ue_first();
     ogs_assert(hi);
@@ -167,7 +169,7 @@ int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
         sgw.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
     }
 
-    sent = ogs_sendto(sock->fd, sendbuf->data, sendbuf->len, 0, &sgw);
+    sent = ogs_sendto(node->sock->fd, sendbuf->data, sendbuf->len, 0, &sgw);
     ogs_pkbuf_free(sendbuf);
     if (sent < 0 || sent != sendbuf->len)
         return OGS_ERROR;
@@ -175,10 +177,9 @@ int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
     return OGS_OK;
 }
 
-int testenb_gtpu_close(ogs_sock_t *sock)
+void testenb_gtpu_close(ogs_socknode_t *node)
 {
-    ogs_sock_destroy(sock);
-    return OGS_OK;
+    ogs_socknode_free(node);
 }
 
 

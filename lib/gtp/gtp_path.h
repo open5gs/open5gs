@@ -27,7 +27,6 @@ extern "C" {
 #endif /* __cplusplus */
 
 int gtp_server(ogs_socknode_t *snode);
-int gtp_client(gtp_node_t *gnode);
 int gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, gtp_node_t *gnode);
 
 ogs_sock_t *gtp_local_sock_first(ogs_list_t *list);
