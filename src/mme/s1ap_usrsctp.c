@@ -81,6 +81,7 @@ void s1ap_delete(ogs_socknode_t *snode)
 {
     ogs_assert(snode);
     s1ap_closesocket(snode->sock);
+    snode->sock = NULL;
 }
 
 ogs_sock_t *ogs_sctp_server(int type, ogs_sockaddr_t *sa_list)
