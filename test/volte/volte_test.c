@@ -10,7 +10,7 @@
 static void volte_test1(abts_case *tc, void *data)
 {
     int rv;
-    ogs_sock_t *sock;
+    ogs_socknode_t *s1ap;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -81,18 +81,18 @@ static void volte_test1(abts_case *tc, void *data)
     "}";
 
     /* eNB connects to MME */
-    sock = testenb_s1ap_client("127.0.0.1");
-    ABTS_PTR_NOTNULL(tc, sock);
+    s1ap = testenb_s1ap_client("127.0.0.1");
+    ABTS_PTR_NOTNULL(tc, s1ap);
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
             &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64, 12345, 1, 1, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive S1-Setup Response */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     rv = s1ap_decode_pdu(&message, recvbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -124,53 +124,53 @@ static void volte_test1(abts_case *tc, void *data)
      * Send Initial-UE Message + Attach Request + PDN Connectivity        */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Authentication Request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
     rv = tests1ap_build_authentication_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Security mode Command */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
     rv = tests1ap_build_security_mode_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive ESM Information Request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
     rv = tests1ap_build_esm_information_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Initial Context Setup Request + 
      * Attach Accept + 
      * Activate Default Bearer Context Request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
     rv = tests1ap_build_ue_capability_info_indication(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -179,38 +179,38 @@ static void volte_test1(abts_case *tc, void *data)
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
             1, 1, 5, 1, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Attach Complete + Activate default EPS bearer cotext accept */
     rv = tests1ap_build_attach_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive EMM information */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send PDN Connectivity Request */
     rv = tests1ap_build_pdn_connectivity_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
 
     /* Receive E-RAB Setup Request +
      * Activate default EPS bearer context request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
     rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 6, 2, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -218,7 +218,7 @@ static void volte_test1(abts_case *tc, void *data)
     /* Send Activate default EPS bearer context accept */
     rv = tests1ap_build_activate_default_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -228,14 +228,14 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive E-RAB Setup Request +
      * Activate dedicated EPS bearer context request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
     rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 7, 3, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -243,7 +243,7 @@ static void volte_test1(abts_case *tc, void *data)
     /* Send Activate dedicated EPS bearer context accept */
     rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -253,14 +253,14 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive E-RAB Modify Request +
      * Modify EPS bearer context request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send E-RAB Modify Response */
     rv = tests1ap_build_e_rab_modify_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -268,7 +268,7 @@ static void volte_test1(abts_case *tc, void *data)
     /* Send Modify EPS bearer context accept */
     rv = tests1ap_build_modify_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -278,14 +278,14 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Receive E-RAB Release Command +
      * Dectivate EPS bearer context request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send E-RAB Release Response */
     rv = tests1ap_build_e_rab_release_response(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -293,7 +293,7 @@ static void volte_test1(abts_case *tc, void *data)
     /* Send Deactivate EPS bearer context accept */
     rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -301,18 +301,18 @@ static void volte_test1(abts_case *tc, void *data)
     /* Send Detach Request */
     rv = tests1ap_build_detach_request(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive UE Context Release Command */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Context Release Complete */
     rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -327,8 +327,7 @@ static void volte_test1(abts_case *tc, void *data)
     mongoc_collection_destroy(collection);
 
     /* eNB disonncect from MME */
-    rv = testenb_s1ap_close(sock);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_s1ap_close(s1ap);
 
     ogs_msleep(300);
 }
@@ -336,7 +335,7 @@ static void volte_test1(abts_case *tc, void *data)
 static void volte_test2(abts_case *tc, void *data)
 {
     int rv;
-    ogs_sock_t *sock;
+    ogs_socknode_t *s1ap;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -420,18 +419,18 @@ static void volte_test2(abts_case *tc, void *data)
     "}";
 
     /* eNB connects to MME */
-    sock = testenb_s1ap_client("127.0.0.1");
-    ABTS_PTR_NOTNULL(tc, sock);
+    s1ap = testenb_s1ap_client("127.0.0.1");
+    ABTS_PTR_NOTNULL(tc, s1ap);
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
             &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64, 12345, 1, 1, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive S1-Setup Response */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     rv = s1ap_decode_pdu(&message, recvbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -463,53 +462,53 @@ static void volte_test2(abts_case *tc, void *data)
      * Send Initial-UE Message + Attach Request + PDN Connectivity        */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Authentication Request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
     rv = tests1ap_build_authentication_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Security mode Command */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
     rv = tests1ap_build_security_mode_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive ESM Information Request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
     rv = tests1ap_build_esm_information_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Initial Context Setup Request + 
      * Attach Accept + 
      * Activate Default Bearer Context Request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
     rv = tests1ap_build_ue_capability_info_indication(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -518,38 +517,38 @@ static void volte_test2(abts_case *tc, void *data)
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
             1, 1, 5, 1, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Attach Complete + Activate default EPS bearer cotext accept */
     rv = tests1ap_build_attach_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive EMM information */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send PDN Connectivity Request */
     rv = tests1ap_build_pdn_connectivity_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
 
     /* Receive E-RAB Setup Request +
      * Activate default EPS bearer context request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
     rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 6, 2, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -557,19 +556,19 @@ static void volte_test2(abts_case *tc, void *data)
     /* Send Activate default EPS bearer context accept */
     rv = tests1ap_build_activate_default_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive E-RAB Setup Request +
      * Activate dedicated EPS bearer context request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Activate dedicated EPS bearer context accept */
     rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -577,7 +576,7 @@ static void volte_test2(abts_case *tc, void *data)
     /* Send E-RAB Setup Response */
     rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 7, 3, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -587,14 +586,14 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Receive downlink NAS transport +
      * Modify EPS bearer context request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Modify EPS bearer context accept */
     rv = tests1ap_build_modify_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -602,19 +601,19 @@ static void volte_test2(abts_case *tc, void *data)
     /* Send PDN disconnectivity request */
     rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive E-RAB Release Command +
      * Deactivate EPS bearer context request */
-    recvbuf = testenb_s1ap_read(sock);
+    recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send E-RAB Release Response */
     rv = tests1ap_build_e_rab_release_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -622,7 +621,7 @@ static void volte_test2(abts_case *tc, void *data)
     /* Send Deactivate EPS bearer context accept */
     rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex+2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock, sendbuf);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -637,8 +636,7 @@ static void volte_test2(abts_case *tc, void *data)
     mongoc_collection_destroy(collection);
 
     /* eNB disonncect from MME */
-    rv = testenb_s1ap_close(sock);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_s1ap_close(s1ap);
 
     ogs_msleep(300);
 }

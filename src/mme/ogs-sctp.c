@@ -37,7 +37,7 @@ void ogs_sctp_set_num_ostreams(int sctp_streams)
     sctp_num_ostreams = sctp_streams;
 }
 
-ogs_sock_t *ogs_sctp_socket(int family, int type)
+ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
 {
     ogs_sock_t *new = NULL;
     int rv;
@@ -75,16 +75,19 @@ ogs_sock_t *ogs_sctp_socket(int family, int type)
     return new;
 }
 
-ogs_sock_t *ogs_sctp_server(int type, ogs_sockaddr_t *sa_list)
+ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node)
 {
     int rv;
     ogs_sock_t *new;
     ogs_sockaddr_t *addr;
     char buf[OGS_ADDRSTRLEN];
 
-    addr = sa_list;
+    ogs_assert(node);
+    ogs_assert(node->addr);
+
+    addr = node->addr;
     while (addr) {
-        new = ogs_sctp_socket(addr->ogs_sa_family, type);
+        new = ogs_sctp_socket(addr->ogs_sa_family, type, node);
         if (new) {
             rv = ogs_listen_reusable(new->fd);
             ogs_assert(rv == OGS_OK);
@@ -104,25 +107,30 @@ ogs_sock_t *ogs_sctp_server(int type, ogs_sockaddr_t *sa_list)
     if (addr == NULL) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "sctp_server() [%s]:%d failed",
-                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+                OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
         return NULL;
     }
 
     rv = ogs_sock_listen(new);
     ogs_assert(rv == OGS_OK);
 
+    node->sock = new;
+
     return new;
 }
 
-ogs_sock_t *ogs_sctp_client(int type, ogs_sockaddr_t *sa_list)
+ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node)
 {
     ogs_sock_t *new = NULL;
     ogs_sockaddr_t *addr;
     char buf[OGS_ADDRSTRLEN];
 
-    addr = sa_list;
+    ogs_assert(node);
+    ogs_assert(node->addr);
+
+    addr = node->addr;
     while (addr) {
-        new = ogs_sctp_socket(addr->ogs_sa_family, type);
+        new = ogs_sctp_socket(addr->ogs_sa_family, type, node);
         if (new) {
             if (ogs_sock_connect(new, addr) == OGS_OK) {
                 ogs_debug("sctp_client() [%s]:%d",
@@ -139,9 +147,11 @@ ogs_sock_t *ogs_sctp_client(int type, ogs_sockaddr_t *sa_list)
     if (addr == NULL) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "sctp_client() [%s]:%d failed",
-                OGS_ADDR(sa_list, buf), OGS_PORT(sa_list));
+                OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
         return NULL;
     }
+
+    node->sock = new;
 
     return new;
 }

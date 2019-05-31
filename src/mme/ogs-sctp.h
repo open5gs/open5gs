@@ -39,9 +39,9 @@ typedef struct ogs_sctp_info_s {
 
 void ogs_sctp_set_num_ostreams(int sctp_streams);
 
-ogs_sock_t *ogs_sctp_socket(int family, int type);
-ogs_sock_t *ogs_sctp_server(int type, ogs_sockaddr_t *sa_list);
-ogs_sock_t *ogs_sctp_client(int type, ogs_sockaddr_t *sa_list);
+ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node);
+ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node);
+ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node);
 int ogs_sctp_connect(ogs_sock_t *sock, ogs_sockaddr_t *sa_list);
 int ogs_sctp_sendmsg(ogs_sock_t *sock, const void *msg, size_t len,
         ogs_sockaddr_t *to, uint32_t ppid, uint16_t stream_no);

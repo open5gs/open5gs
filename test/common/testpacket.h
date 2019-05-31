@@ -10,10 +10,10 @@ extern "C" {
 int testpacket_init();
 int testpacket_final();
 
-ogs_sock_t *testenb_s1ap_client(const char *ipstr);
-ogs_pkbuf_t *testenb_s1ap_read(ogs_sock_t *sock);
-int testenb_s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf);
-int testenb_s1ap_close(ogs_sock_t *sock);
+ogs_socknode_t *testenb_s1ap_client(const char *ipstr);
+ogs_pkbuf_t *testenb_s1ap_read(ogs_socknode_t *node);
+int testenb_s1ap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
+void testenb_s1ap_close(ogs_socknode_t *node);
 
 ogs_socknode_t *testenb_gtpu_server(const char *ipstr);
 ogs_pkbuf_t *testenb_gtpu_read(ogs_socknode_t *node);
