@@ -48,9 +48,9 @@ int mme_gtp_open()
         sock = snode->sock;
         ogs_assert(sock);
 
-        snode->poll = ogs_pollset_add(mme_self()->pollset,
+        snode->pollin.poll = ogs_pollset_add(mme_self()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
-        ogs_assert(snode->poll);
+        ogs_assert(snode->pollin.poll);
     }
     ogs_list_for_each(&mme_self()->gtpc_list6, snode)
     {
@@ -60,9 +60,9 @@ int mme_gtp_open()
         sock = snode->sock;
         ogs_assert(sock);
 
-        snode->poll = ogs_pollset_add(mme_self()->pollset,
+        snode->pollin.poll = ogs_pollset_add(mme_self()->pollset,
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
-        ogs_assert(snode->poll);
+        ogs_assert(snode->pollin.poll);
     }
 
     mme_self()->gtpc_sock = gtp_local_sock_first(&mme_self()->gtpc_list);

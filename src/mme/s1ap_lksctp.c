@@ -18,9 +18,9 @@ void s1ap_server(ogs_socknode_t *snode, int type)
     ogs_sctp_server(type, snode);
     ogs_assert(snode->sock);
 
-    snode->poll = ogs_pollset_add(mme_self()->pollset,
+    snode->pollin.poll = ogs_pollset_add(mme_self()->pollset,
             OGS_POLLIN, snode->sock->fd, accept_handler, snode->sock);
-    ogs_assert(snode->poll);
+    ogs_assert(snode->pollin.poll);
 
     ogs_info("s1ap_server() [%s]:%d",
             OGS_ADDR(snode->addr, buf), OGS_PORT(snode->addr));
@@ -30,11 +30,6 @@ void s1ap_closesocket(ogs_sock_t *sock)
 {
     ogs_assert(sock);
     ogs_sock_destroy(sock);
-}
-
-void s1ap_delete(ogs_socknode_t *snode)
-{
-    ogs_assert(snode);
 }
 
 int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
