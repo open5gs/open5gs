@@ -181,36 +181,27 @@ cleanup:
 
 int pgw_gtp_open()
 {
-    int rv;
     pgw_dev_t *dev = NULL;
     pgw_subnet_t *subnet = NULL;
-    ogs_socknode_t *snode = NULL;
+    ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
     int rc;
 
-    ogs_list_for_each(&pgw_self()->gtpc_list, snode)
+    ogs_list_for_each(&pgw_self()->gtpc_list, node)
     {
-        rv = gtp_server(snode);
-        ogs_assert(rv == OGS_OK);
+        ogs_socknode_set_poll(node, pgw_self()->pollset,
+                OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
 
-        sock = snode->sock;
+        sock = gtp_server(node);
         ogs_assert(sock);
-
-        snode->pollin.poll = ogs_pollset_add(pgw_self()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
-        ogs_assert(snode->pollin.poll);
     }
-    ogs_list_for_each(&pgw_self()->gtpc_list6, snode)
+    ogs_list_for_each(&pgw_self()->gtpc_list6, node)
     {
-        rv = gtp_server(snode);
-        ogs_assert(rv == OGS_OK);
+        ogs_socknode_set_poll(node, pgw_self()->pollset,
+                OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
 
-        sock = snode->sock;
+        sock = gtp_server(node);
         ogs_assert(sock);
-
-        snode->pollin.poll = ogs_pollset_add(pgw_self()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
-        ogs_assert(snode->pollin.poll);
     }
 
     pgw_self()->gtpc_sock = gtp_local_sock_first(&pgw_self()->gtpc_list);
@@ -220,29 +211,21 @@ int pgw_gtp_open()
 
     ogs_assert(pgw_self()->gtpc_addr || pgw_self()->gtpc_addr6);
 
-    ogs_list_for_each(&pgw_self()->gtpu_list, snode)
+    ogs_list_for_each(&pgw_self()->gtpu_list, node)
     {
-        rv = gtp_server(snode);
-        ogs_assert(rv == OGS_OK);
+        ogs_socknode_set_poll(node, pgw_self()->pollset,
+                OGS_POLLIN, _gtpv1_u_recv_cb, NULL);
 
-        sock = snode->sock;
+        sock = gtp_server(node);
         ogs_assert(sock);
-
-        snode->pollin.poll = ogs_pollset_add(pgw_self()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, NULL);
-        ogs_assert(snode->pollin.poll);
     }
-    ogs_list_for_each(&pgw_self()->gtpu_list6, snode)
+    ogs_list_for_each(&pgw_self()->gtpu_list6, node)
     {
-        rv = gtp_server(snode);
-        ogs_assert(rv == OGS_OK);
+        ogs_socknode_set_poll(node, pgw_self()->pollset,
+                OGS_POLLIN, _gtpv1_u_recv_cb, NULL);
 
-        sock = snode->sock;
+        sock = gtp_server(node);
         ogs_assert(sock);
-
-        snode->pollin.poll = ogs_pollset_add(pgw_self()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, NULL);
-        ogs_assert(snode->pollin.poll);
     }
 
     pgw_self()->gtpu_sock = gtp_local_sock_first(&pgw_self()->gtpu_list);

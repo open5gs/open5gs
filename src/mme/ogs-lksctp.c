@@ -156,6 +156,8 @@ ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node)
 
     node->sock = new;
 
+    ogs_socknode_install_poll(node);
+
     return new;
 }
 
@@ -192,6 +194,8 @@ ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node)
     }
 
     node->sock = new;
+
+    ogs_socknode_install_poll(node);
 
     return new;
 }

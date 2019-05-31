@@ -23,18 +23,19 @@
 
 #include "gtp_path.h"
 
-int gtp_server(ogs_socknode_t *snode)
+ogs_sock_t *gtp_server(ogs_socknode_t *node)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_assert(snode);
+    ogs_sock_t *gtp;
+    ogs_assert(node);
 
-    ogs_udp_server(snode);
-    ogs_assert(snode->sock);
+    gtp = ogs_udp_server(node);
+    ogs_assert(gtp);
 
     ogs_info("gtp_server() [%s]:%d",
-            OGS_ADDR(snode->addr, buf), OGS_PORT(snode->addr));
+            OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
 
-    return OGS_OK;
+    return gtp;
 }
 
 int gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, gtp_node_t *gnode)

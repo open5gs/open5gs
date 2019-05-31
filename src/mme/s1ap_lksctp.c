@@ -7,23 +7,22 @@
 
 static void accept_handler(short when, ogs_socket_t fd, void *data);
 
-void s1ap_server(ogs_socknode_t *snode, int type)
+void s1ap_server(ogs_socknode_t *node, int type)
 {
     char buf[OGS_ADDRSTRLEN];
+    ogs_sock_t *sock = NULL;
 
-    ogs_assert(snode);
+    ogs_assert(node);
 
-    memcpy(&snode->option,
-            &context_self()->config.sockopt, sizeof(snode->option));
-    ogs_sctp_server(type, snode);
-    ogs_assert(snode->sock);
+    ogs_socknode_set_option(node, &context_self()->config.sockopt);
+    ogs_socknode_set_poll(node, mme_self()->pollset,
+            OGS_POLLIN, accept_handler, node);
 
-    snode->pollin.poll = ogs_pollset_add(mme_self()->pollset,
-            OGS_POLLIN, snode->sock->fd, accept_handler, snode->sock);
-    ogs_assert(snode->pollin.poll);
+    sock = ogs_sctp_server(type, node);
+    ogs_assert(sock);
 
     ogs_info("s1ap_server() [%s]:%d",
-            OGS_ADDR(snode->addr, buf), OGS_PORT(snode->addr));
+            OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
 }
 
 void s1ap_closesocket(ogs_sock_t *sock)
@@ -73,9 +72,12 @@ int s1ap_recv(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf)
 static void accept_handler(short when, ogs_socket_t fd, void *data)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_sock_t *sock = data;
+    ogs_socknode_t *node = data;
+    ogs_sock_t *sock = NULL;
     ogs_sock_t *new = NULL;
 
+    ogs_assert(node);
+    sock = node->sock;
     ogs_assert(sock);
     ogs_assert(fd != INVALID_SOCKET);
 
