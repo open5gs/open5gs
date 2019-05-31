@@ -10,11 +10,8 @@ extern "C" {
 
 #define S1AP_NON_UE_SIGNALLING   0
 
-int s1ap_init(uint16_t port);
-int s1ap_final();
-
 int s1ap_open();
-int s1ap_close();
+void s1ap_close();
 
 void s1ap_server(ogs_socknode_t *snode, int type);
 void s1ap_closesocket(ogs_sock_t *sock);

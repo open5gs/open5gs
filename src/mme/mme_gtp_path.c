@@ -88,26 +88,10 @@ int mme_gtp_open()
     return OGS_OK;
 }
 
-int mme_gtp_close()
+void mme_gtp_close()
 {
-    ogs_socknode_t *snode = NULL;
-
-    ogs_list_for_each(&mme_self()->gtpc_list, snode)
-    {
-        ogs_pollset_remove(snode->poll);
-#if 0
-        ogs_sock_destroy(snode->sock);
-#endif
-    }
-    ogs_list_for_each(&mme_self()->gtpc_list6, snode)
-    {
-        ogs_pollset_remove(snode->poll);
-#if 0
-        ogs_sock_destroy(snode->sock);
-#endif
-    }
-
-    return OGS_OK;
+    ogs_socknode_remove_all(&mme_self()->gtpc_list);
+    ogs_socknode_remove_all(&mme_self()->gtpc_list6);
 }
 
 int mme_gtp_send_create_session_request(mme_sess_t *sess)

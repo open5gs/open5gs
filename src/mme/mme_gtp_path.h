@@ -8,7 +8,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 int mme_gtp_open();
-int mme_gtp_close();
+void mme_gtp_close();
 
 int mme_gtp_send_create_session_request(mme_sess_t *sess);
 int mme_gtp_send_modify_bearer_request(

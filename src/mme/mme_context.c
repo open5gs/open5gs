@@ -93,6 +93,9 @@ void mme_context_final()
     mme_enb_remove_all();
     mme_ue_remove_all();
 
+    mme_sgw_remove_all();
+    mme_pgw_remove_all();
+
     ogs_assert(self.enb_sock_hash);
     ogs_hash_destroy(self.enb_sock_hash);
     ogs_assert(self.enb_addr_hash);
@@ -115,18 +118,10 @@ void mme_context_final()
 
     ogs_pool_final(&mme_enb_pool);
 
-    mme_sgw_remove_all();
-    mme_pgw_remove_all();
-
     ogs_pool_final(&mme_sgw_pool);
     ogs_pool_final(&mme_pgw_pool);
 
     gtp_node_final();
-
-    ogs_socknode_remove_all(&self.s1ap_list);
-    ogs_socknode_remove_all(&self.s1ap_list6);
-    ogs_socknode_remove_all(&self.gtpc_list);
-    ogs_socknode_remove_all(&self.gtpc_list6);
 
     context_initialized = 0;
 }

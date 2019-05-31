@@ -70,11 +70,6 @@ void sgw_context_final()
     gtp_node_remove_all(&self.pgw_s5u_list);
     gtp_node_final();
 
-    ogs_socknode_remove_all(&self.gtpc_list);
-    ogs_socknode_remove_all(&self.gtpc_list6);
-    ogs_socknode_remove_all(&self.gtpu_list);
-    ogs_socknode_remove_all(&self.gtpu_list6);
-
     context_initialized = 0;
 }
 

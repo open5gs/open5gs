@@ -9,7 +9,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 int pgw_gtp_open();
-int pgw_gtp_close();
+void pgw_gtp_close();
 
 #ifdef __cplusplus
 }

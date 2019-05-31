@@ -307,48 +307,20 @@ int pgw_gtp_open()
     return OGS_OK;
 }
 
-int pgw_gtp_close()
+void pgw_gtp_close()
 {
     pgw_dev_t *dev = NULL;
-    ogs_socknode_t *snode = NULL;
 
-    ogs_list_for_each(&pgw_self()->gtpc_list, snode)
-    {
-        ogs_pollset_remove(snode->poll);
-#if 0
-        ogs_sock_destroy(snode->sock);
-#endif
-    }
-    ogs_list_for_each(&pgw_self()->gtpc_list6, snode)
-    {
-        ogs_pollset_remove(snode->poll);
-#if 0
-        ogs_sock_destroy(snode->sock);
-#endif
-    }
-
-    ogs_list_for_each(&pgw_self()->gtpu_list, snode)
-    {
-        ogs_pollset_remove(snode->poll);
-#if 0
-        ogs_sock_destroy(snode->sock);
-#endif
-    }
-    ogs_list_for_each(&pgw_self()->gtpu_list6, snode)
-    {
-        ogs_pollset_remove(snode->poll);
-#if 0
-        ogs_sock_destroy(snode->sock);
-#endif
-    }
+    ogs_socknode_remove_all(&pgw_self()->gtpc_list);
+    ogs_socknode_remove_all(&pgw_self()->gtpc_list6);
+    ogs_socknode_remove_all(&pgw_self()->gtpu_list);
+    ogs_socknode_remove_all(&pgw_self()->gtpu_list6);
 
     for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev))
     {
         ogs_pollset_remove(dev->poll);
         ogs_closesocket(dev->fd);
     }
-
-    return OGS_OK;
 }
 
 static int pgw_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)

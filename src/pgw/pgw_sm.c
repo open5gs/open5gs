@@ -48,12 +48,7 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         }
         case OGS_FSM_EXIT_SIG:
         {
-            rv = pgw_gtp_close();
-            if (rv != OGS_OK)
-            {
-                ogs_error("Can't close PGW path");
-                break;
-            }
+            pgw_gtp_close();
             break;
         }
         case PGW_EVT_S5C_MESSAGE:

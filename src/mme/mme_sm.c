@@ -65,16 +65,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
         case OGS_FSM_EXIT_SIG:
         {
-            rv = mme_gtp_close();
-            if (rv != OGS_OK)
-            {
-                ogs_error("Can't close S11-GTP path");
-            }
-            rv = s1ap_close();
-            if (rv != OGS_OK)
-            {
-                ogs_error("Can't close S1AP path");
-            }
+            mme_gtp_close();
+            s1ap_close();
 
             break;
         }

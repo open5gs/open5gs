@@ -313,41 +313,12 @@ int sgw_gtp_open()
     return OGS_OK;
 }
 
-int sgw_gtp_close()
+void sgw_gtp_close()
 {
-    ogs_socknode_t *snode = NULL;
-
-    ogs_list_for_each(&sgw_self()->gtpc_list, snode)
-    {
-        ogs_pollset_remove(snode->poll);
-#if 0
-        ogs_sock_destroy(snode->sock);
-#endif
-    }
-    ogs_list_for_each(&sgw_self()->gtpc_list6, snode)
-    {
-        ogs_pollset_remove(snode->poll);
-#if 0
-        ogs_sock_destroy(snode->sock);
-#endif
-    }
-
-    ogs_list_for_each(&sgw_self()->gtpu_list, snode)
-    {
-        ogs_pollset_remove(snode->poll);
-#if 0
-        ogs_sock_destroy(snode->sock);
-#endif
-    }
-    ogs_list_for_each(&sgw_self()->gtpu_list6, snode)
-    {
-        ogs_pollset_remove(snode->poll);
-#if 0
-        ogs_sock_destroy(snode->sock);
-#endif
-    }
-
-    return OGS_OK;
+    ogs_socknode_remove_all(&sgw_self()->gtpc_list);
+    ogs_socknode_remove_all(&sgw_self()->gtpc_list6);
+    ogs_socknode_remove_all(&sgw_self()->gtpu_list);
+    ogs_socknode_remove_all(&sgw_self()->gtpu_list6);
 }
 
 int sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel)

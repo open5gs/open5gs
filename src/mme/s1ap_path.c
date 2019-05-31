@@ -8,7 +8,6 @@
 #include "s1ap_path.h"
 
 static int s1ap_server_list(ogs_list_t *list, int type);
-static int s1ap_delete_list(ogs_list_t *list);
 
 int s1ap_open(void)
 {
@@ -27,12 +26,10 @@ int s1ap_open(void)
     return OGS_OK;
 }
 
-int s1ap_close()
+void s1ap_close()
 {
-    s1ap_delete_list(&mme_self()->s1ap_list);
-    s1ap_delete_list(&mme_self()->s1ap_list6);
-
-    return OGS_OK;
+    ogs_socknode_remove_all(&mme_self()->s1ap_list);
+    ogs_socknode_remove_all(&mme_self()->s1ap_list6);
 }
 
 static int s1ap_server_list(ogs_list_t *list, int type)
@@ -43,16 +40,6 @@ static int s1ap_server_list(ogs_list_t *list, int type)
 
     ogs_list_for_each(list, snode)
         s1ap_server(snode, type);
-
-    return OGS_OK;
-}
-
-static int s1ap_delete_list(ogs_list_t *list)
-{
-    ogs_socknode_t *snode = NULL;
-
-    ogs_list_for_each(list, snode)
-        s1ap_delete(snode);
 
     return OGS_OK;
 }
