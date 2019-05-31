@@ -30,17 +30,20 @@ static int set_initmsg(ogs_sock_t *sock,
         uint32_t sinit_num_ostreams, uint32_t sinit_max_instreams,
         uint32_t sinit_max_attempts, uint32_t sinit_max_init_timeo);
 
-static int sctp_num_ostreams = -1;
-
-void ogs_sctp_set_num_ostreams(int sctp_streams)
-{
-    sctp_num_ostreams = sctp_streams;
-}
-
 ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
 {
     ogs_sock_t *new = NULL;
     int rv;
+#define DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30
+    uint16_t max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+
+    if (node) {
+        if (node->sctp.max_num_of_ostreams) {
+            max_num_of_ostreams = node->sctp.max_num_of_ostreams;
+            ogs_info("SCTP: Maximum number of output streams[%d]",
+                    max_num_of_ostreams);
+        }
+    }
 
     new = ogs_sock_socket(family, type, IPPROTO_SCTP);
     ogs_assert(new);
@@ -69,7 +72,7 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
      * max attemtps : 4
      * max initial timeout : 8 secs
      */
-    rv = set_initmsg(new, sctp_num_ostreams, 65535, 4, 8000);
+    rv = set_initmsg(new, max_num_of_ostreams, 65535, 4, 8000);
     ogs_assert(rv == OGS_OK);
 
     return new;

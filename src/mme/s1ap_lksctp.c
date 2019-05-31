@@ -1,14 +1,14 @@
 #include "ogs-sctp.h"
 
+#include "app/context.h"
 #include "mme_event.h"
 
 #include "s1ap_path.h"
 
 static void accept_handler(short when, ogs_socket_t fd, void *data);
 
-int s1ap_init(int sctp_streams, uint16_t port)
+int s1ap_init(uint16_t port)
 {
-    ogs_sctp_set_num_ostreams(sctp_streams);
     return OGS_OK;
 }
 
@@ -22,6 +22,10 @@ void s1ap_server(ogs_socknode_t *snode, int type)
     char buf[OGS_ADDRSTRLEN];
 
     ogs_assert(snode);
+
+    if (context_self()->config.parameter.sctp_streams)
+        ogs_socknode_set_sctp_max_num_of_ostreams(snode,
+                context_self()->config.parameter.sctp_streams);
 
     ogs_sctp_server(type, snode);
     ogs_assert(snode->sock);

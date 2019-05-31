@@ -37,9 +37,7 @@ int mme_initialize()
     if (rv != OGS_OK) return OGS_ERROR;
 
 #define USRSCTP_LOCAL_UDP_PORT 9899
-    rv = s1ap_init(
-            context_self()->config.parameter.sctp_streams,
-            USRSCTP_LOCAL_UDP_PORT);
+    rv = s1ap_init(USRSCTP_LOCAL_UDP_PORT);
     if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(mme_main, NULL);

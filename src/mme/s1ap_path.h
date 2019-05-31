@@ -10,7 +10,7 @@ extern "C" {
 
 #define S1AP_NON_UE_SIGNALLING   0
 
-int s1ap_init(int sctp_streams, uint16_t port);
+int s1ap_init(uint16_t port);
 int s1ap_final();
 
 int s1ap_open();

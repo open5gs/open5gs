@@ -130,8 +130,6 @@ int context_setup_log_module()
 
 static int context_prepare()
 {
-    self.config.parameter.sctp_streams = DEFAULT_SCTP_STREAMS;
-
     return OGS_OK;
 }
 
