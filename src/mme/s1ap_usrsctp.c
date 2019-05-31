@@ -35,7 +35,7 @@ static void debug_printf(const char *format, ...);
 
 static int sctp_num_ostreams = -1;
 
-int s1ap_init(int sctp_streams, uint16_t port)
+int ogs_sctp_init(uint16_t port)
 {
     usrsctp_init(port, NULL, debug_printf);
 #ifdef SCTP_DEBUG
@@ -43,32 +43,31 @@ int s1ap_init(int sctp_streams, uint16_t port)
 #endif
     usrsctp_sysctl_set_sctp_blackhole(2);
     usrsctp_sysctl_set_sctp_enable_sack_immediately(1);
-    sctp_num_ostreams = sctp_streams;
+    sctp_num_ostreams = 30;;
 
     return OGS_OK;
 }
 
-int s1ap_final()
+void ogs_sctp_final()
 {
     while(usrsctp_finish() != 0)
     {
         ogs_error("try to finsih SCTP");
         ogs_msleep(1000);
     }
-    return OGS_OK;
 }
 
-void s1ap_server(ogs_socknode_t *snode, int type)
+void s1ap_server(ogs_socknode_t *node, int type)
 {
     char buf[OGS_ADDRSTRLEN];
 
-    ogs_assert(snode);
+    ogs_assert(node);
 
-    snode->sock = ogs_sctp_server(type, snode->addr);
-    ogs_assert(snode->sock);
+    node->sock = ogs_sctp_server(type, node);
+    ogs_assert(node->sock);
 
     ogs_info("s1ap_server() [%s]:%d",
-            OGS_ADDR(snode->addr, buf), OGS_PORT(snode->addr));
+            OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
 }
 
 void s1ap_closesocket(ogs_sock_t *sock)
@@ -84,14 +83,17 @@ void s1ap_delete(ogs_socknode_t *snode)
     snode->sock = NULL;
 }
 
-ogs_sock_t *ogs_sctp_server(int type, ogs_sockaddr_t *sa_list)
+ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
     ogs_sock_t *sock = NULL;
     ogs_sockaddr_t *addr = NULL;
 
-    addr = sa_list;
+    ogs_assert(node);
+    ogs_assert(node->addr);
+
+    addr = node->addr;
     while(addr)
     {
         sock = s1ap_usrsctp_socket(
@@ -121,16 +123,23 @@ ogs_sock_t *ogs_sctp_server(int type, ogs_sockaddr_t *sa_list)
     rv = s1ap_usrsctp_listen(sock);
     ogs_assert(rv == OGS_OK);
 
+    node->sock = sock;
+
+    ogs_socknode_install_poll(node);
+
     return sock;
 }
 
-ogs_sock_t *ogs_sctp_client(int type, ogs_sockaddr_t *sa_list)
+ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node)
 {
     ogs_sock_t *sock = NULL;
     ogs_sockaddr_t *addr = NULL;
     char buf[OGS_ADDRSTRLEN];
 
-    addr = sa_list;
+    ogs_assert(node);
+    ogs_assert(node->addr);
+
+    addr = node->addr;
     while(addr)
     {
         sock = s1ap_usrsctp_socket(addr->ogs_sa_family, type, NULL);
@@ -155,6 +164,10 @@ ogs_sock_t *ogs_sctp_client(int type, ogs_sockaddr_t *sa_list)
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
         return NULL;
     }
+
+    node->sock = sock;
+
+    ogs_socknode_install_poll(node);
 
     return sock;
 }
