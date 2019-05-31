@@ -7,16 +7,6 @@
 
 static void accept_handler(short when, ogs_socket_t fd, void *data);
 
-int s1ap_init(uint16_t port)
-{
-    return OGS_OK;
-}
-
-int s1ap_final()
-{
-    return OGS_OK;
-}
-
 void s1ap_server(ogs_socknode_t *snode, int type)
 {
     char buf[OGS_ADDRSTRLEN];

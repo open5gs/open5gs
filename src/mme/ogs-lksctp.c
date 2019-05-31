@@ -30,6 +30,15 @@ static int set_initmsg(ogs_sock_t *sock,
         uint32_t sinit_num_ostreams, uint32_t sinit_max_instreams,
         uint32_t sinit_max_attempts, uint32_t sinit_max_init_timeo);
 
+int ogs_sctp_init(uint16_t port)
+{
+    return OGS_OK;
+}
+
+void ogs_sctp_final(void)
+{
+}
+
 ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
 {
     ogs_sock_t *new = NULL;
