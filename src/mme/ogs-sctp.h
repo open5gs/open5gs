@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#define DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30
+
 typedef struct ogs_sctp_info_s {
     uint32_t ppid;
     uint16_t stream_no;

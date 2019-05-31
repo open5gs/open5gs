@@ -1,6 +1,8 @@
 #include <mongoc.h>
 #include <yaml.h>
 
+#include "ogs-sctp.h"
+
 #include "asn1c/s1ap_message.h"
 #include "gtp/gtp_xact.h"
 #include "gtp/gtp_node.h"
@@ -1396,7 +1398,12 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     enb->addr = addr;
     enb->sock_type = mme_enb_sock_type(enb->sock);
 
-    enb->outbound_streams = context_self()->config.parameter.sctp_streams;
+    enb->outbound_streams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+    if (context_self()->config.sockopt.sctp.max_num_of_ostreams) {
+        enb->outbound_streams =
+            context_self()->config.sockopt.sctp.max_num_of_ostreams;
+        ogs_info("[ENB] max_num_of_ostreams : %d", enb->outbound_streams);
+    }
 
     ogs_list_init(&enb->enb_ue_list);
 

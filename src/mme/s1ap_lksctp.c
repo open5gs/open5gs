@@ -13,10 +13,8 @@ void s1ap_server(ogs_socknode_t *snode, int type)
 
     ogs_assert(snode);
 
-    if (context_self()->config.parameter.sctp_streams)
-        ogs_socknode_set_sctp_max_num_of_ostreams(snode,
-                context_self()->config.parameter.sctp_streams);
-
+    memcpy(&snode->option,
+            &context_self()->config.sockopt, sizeof(snode->option));
     ogs_sctp_server(type, snode);
     ogs_assert(snode->sock);
 

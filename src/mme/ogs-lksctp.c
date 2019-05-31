@@ -23,12 +23,9 @@
 #define OGS_LOG_DOMAIN __ogs_sock_domain
 
 static int subscribe_to_events(ogs_sock_t *sock);
-static int set_paddrparams(ogs_sock_t *sock, uint32_t spp_hbinterval);
-static int set_rtoinfo(ogs_sock_t *sock,
-        uint32_t srto_initial, uint32_t srto_min, uint32_t srto_max);
-static int set_initmsg(ogs_sock_t *sock,
-        uint32_t sinit_num_ostreams, uint32_t sinit_max_instreams,
-        uint32_t sinit_max_attempts, uint32_t sinit_max_init_timeo);
+static int set_paddrparams(ogs_sock_t *sock, ogs_sockopt_t *option);
+static int set_rtoinfo(ogs_sock_t *sock, ogs_sockopt_t *option);
+static int set_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option);
 
 int ogs_sctp_init(uint16_t port)
 {
@@ -43,14 +40,60 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
 {
     ogs_sock_t *new = NULL;
     int rv;
-#define DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30
-    uint16_t max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+    ogs_sockopt_t option = {
+        .sctp.heartbit_interval = 5000,     /* 5 seconds */
+        .sctp.rto_initial = 3000,           /* 3 seconds */
+        .sctp.rto_min = 1000,               /* 1 seconds */
+        .sctp.rto_max = 5000,               /* 5 seconds */
+        .sctp.max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS,
+        .sctp.max_num_of_istreams = 65535,
+        .sctp.max_attempts = 4,
+        .sctp.max_initial_timeout = 8000    /* 8 seconds */
+    };
 
     if (node) {
-        if (node->sctp.max_num_of_ostreams) {
-            max_num_of_ostreams = node->sctp.max_num_of_ostreams;
-            ogs_info("SCTP: Maximum number of output streams[%d]",
-                    max_num_of_ostreams);
+        if (node->option.sctp.heartbit_interval) {
+            option.sctp.heartbit_interval = node->option.sctp.heartbit_interval;
+            ogs_debug("[SCTP] heartbit_interval - [%d]",
+                    option.sctp.heartbit_interval);
+        }
+        if (node->option.sctp.rto_initial) {
+            option.sctp.rto_initial = node->option.sctp.rto_initial;
+            ogs_debug("[SCTP] rto_initial - [%d]",
+                    option.sctp.rto_initial);
+        }
+        if (node->option.sctp.rto_min) {
+            option.sctp.rto_min = node->option.sctp.rto_min;
+            ogs_debug("[SCTP] rto_min - [%d]",
+                    option.sctp.rto_min);
+        }
+        if (node->option.sctp.rto_max) {
+            option.sctp.rto_max = node->option.sctp.rto_max;
+            ogs_debug("[SCTP] rto_max - [%d]",
+                    option.sctp.rto_max);
+        }
+        if (node->option.sctp.max_num_of_ostreams) {
+            option.sctp.max_num_of_ostreams =
+                node->option.sctp.max_num_of_ostreams;
+            ogs_debug("[SCTP] max_num_of_ostreams - [%d]",
+                    option.sctp.max_num_of_ostreams);
+        }
+        if (node->option.sctp.max_num_of_istreams) {
+            option.sctp.max_num_of_istreams =
+                node->option.sctp.max_num_of_istreams;
+            ogs_debug("[SCTP] max_num_of_istreams - [%d]",
+                    option.sctp.max_num_of_istreams);
+        }
+        if (node->option.sctp.max_attempts) {
+            option.sctp.max_attempts = node->option.sctp.max_attempts;
+            ogs_debug("[SCTP] max_attempts - [%d]",
+                    option.sctp.max_attempts);
+        }
+        if (node->option.sctp.max_initial_timeout) {
+            option.sctp.max_initial_timeout =
+                node->option.sctp.max_initial_timeout;
+            ogs_debug("[SCTP] max_initial_timeout - [%d]",
+                    option.sctp.max_initial_timeout);
         }
     }
 
@@ -60,28 +103,13 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
     rv = subscribe_to_events(new);
     ogs_assert(rv == OGS_OK);
 
-    /* heartbit interval : 5 secs */
-    rv = set_paddrparams(new, 5000);
+    rv = set_paddrparams(new, &option);
     ogs_assert(rv == OGS_OK);
 
-    /*
-     * RTO info
-     * 
-     * initial : 3 secs
-     * min : 1 sec
-     * max : 5 secs
-     */
-    rv = set_rtoinfo(new, 3000, 1000, 5000);
+    rv = set_rtoinfo(new, &option);
     ogs_assert(rv == OGS_OK);
 
-    /*
-     * INITMSG
-     * 
-     * max number of input streams : 65535
-     * max attemtps : 4
-     * max initial timeout : 8 secs
-     */
-    rv = set_initmsg(new, max_num_of_ostreams, 65535, 4, 8000);
+    rv = set_initmsg(new, &option);
     ogs_assert(rv == OGS_OK);
 
     return new;
@@ -304,12 +332,13 @@ static int subscribe_to_events(ogs_sock_t *sock)
     return OGS_OK;
 }
 
-static int set_paddrparams(ogs_sock_t *sock, uint32_t spp_hbinterval)
+static int set_paddrparams(ogs_sock_t *sock, ogs_sockopt_t *option)
 {
     struct sctp_paddrparams heartbeat;
     socklen_t socklen;
 
     ogs_assert(sock);
+    ogs_assert(option);
 
     memset(&heartbeat, 0, sizeof(heartbeat));
     socklen = sizeof(heartbeat);
@@ -320,12 +349,12 @@ static int set_paddrparams(ogs_sock_t *sock, uint32_t spp_hbinterval)
         return OGS_ERROR;
     }
 
-    ogs_trace("Old spp _flags = 0x%x hbinter = %d pathmax = %d",
+    ogs_trace("OLD spp_flags = 0x%x hbinter = %d pathmax = %d",
             heartbeat.spp_flags,
             heartbeat.spp_hbinterval,
             heartbeat.spp_pathmaxrxt);
 
-    heartbeat.spp_hbinterval = spp_hbinterval;
+    heartbeat.spp_hbinterval = option->sctp.heartbit_interval;
 
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_PEER_ADDR_PARAMS,
                             &heartbeat, sizeof( heartbeat)) != 0) {
@@ -334,7 +363,7 @@ static int set_paddrparams(ogs_sock_t *sock, uint32_t spp_hbinterval)
         return OGS_ERROR;
     }
 
-    ogs_trace("New spp _flags = 0x%x hbinter = %d pathmax = %d",
+    ogs_trace("NEW spp_flags = 0x%x hbinter = %d pathmax = %d",
             heartbeat.spp_flags,
             heartbeat.spp_hbinterval,
             heartbeat.spp_pathmaxrxt);
@@ -342,13 +371,13 @@ static int set_paddrparams(ogs_sock_t *sock, uint32_t spp_hbinterval)
     return OGS_OK;
 }
 
-static int set_rtoinfo(ogs_sock_t *sock,
-        uint32_t srto_initial, uint32_t srto_min, uint32_t srto_max)
+static int set_rtoinfo(ogs_sock_t *sock, ogs_sockopt_t *option)
 {
     struct sctp_rtoinfo rtoinfo;
     socklen_t socklen;
 
     ogs_assert(sock);
+    ogs_assert(option);
 
     memset(&rtoinfo, 0, sizeof(rtoinfo));
     socklen = sizeof(rtoinfo);
@@ -359,14 +388,14 @@ static int set_rtoinfo(ogs_sock_t *sock,
         return OGS_ERROR;
     }
 
-    ogs_trace("Old RTO (initial:%d max:%d min:%d)",
+    ogs_trace("OLD RTO (initial:%d max:%d min:%d)",
             rtoinfo.srto_initial,
             rtoinfo.srto_max,
             rtoinfo.srto_min);
 
-    rtoinfo.srto_initial = srto_initial;
-    rtoinfo.srto_min = srto_min;
-    rtoinfo.srto_max = srto_max;
+    rtoinfo.srto_initial = option->sctp.rto_initial;
+    rtoinfo.srto_min = option->sctp.rto_min;
+    rtoinfo.srto_max = option->sctp.rto_max;
 
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_RTOINFO,
                             &rtoinfo, sizeof(rtoinfo)) != 0) {
@@ -382,15 +411,14 @@ static int set_rtoinfo(ogs_sock_t *sock,
     return OGS_OK;
 }
 
-static int set_initmsg(ogs_sock_t *sock,
-        uint32_t sinit_num_ostreams, uint32_t sinit_max_instreams,
-        uint32_t sinit_max_attempts, uint32_t sinit_max_init_timeo)
+static int set_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option)
 {
     struct sctp_initmsg initmsg;
     socklen_t socklen;
 
     ogs_assert(sock);
-    ogs_assert(sinit_num_ostreams > 1);
+    ogs_assert(option);
+    ogs_assert(option->sctp.max_num_of_ostreams > 1);
 
     memset(&initmsg, 0, sizeof(initmsg));
     socklen = sizeof(initmsg);
@@ -407,10 +435,10 @@ static int set_initmsg(ogs_sock_t *sock,
                 initmsg.sinit_max_attempts,
                 initmsg.sinit_max_init_timeo);
 
-    initmsg.sinit_num_ostreams = sinit_num_ostreams;
-    initmsg.sinit_max_instreams = sinit_max_instreams;
-    initmsg.sinit_max_attempts = sinit_max_attempts;
-    initmsg.sinit_max_init_timeo = sinit_max_init_timeo;
+    initmsg.sinit_num_ostreams = option->sctp.max_num_of_ostreams;
+    initmsg.sinit_max_instreams = option->sctp.max_num_of_istreams;
+    initmsg.sinit_max_attempts = option->sctp.max_attempts;
+    initmsg.sinit_max_init_timeo = option->sctp.max_initial_timeout;
 
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_INITMSG,
                             &initmsg, sizeof(initmsg)) != 0) {
