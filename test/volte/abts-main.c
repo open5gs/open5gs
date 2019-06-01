@@ -20,6 +20,8 @@
 #include "ogs-core.h"
 #include "core/abts.h"
 
+#include "mme/ogs-sctp.h"
+
 #include "fd/fd_lib.h"
 
 #include "app/application.h"
@@ -56,6 +58,7 @@ void test_terminate(void)
 {
     pcscf_fd_final();
     testpacket_final();
+    ogs_sctp_final();
     test_app_terminate();
 
     base_finalize();
@@ -81,6 +84,12 @@ int test_initialize(app_param_t *param, int argc, const char *const argv[])
     if (rv != OGS_OK)
     {
         ogs_error("pcscf_fd_init() failed");
+        return OGS_ERROR;
+    }
+#define USRSCTP_LOCAL_UDP_PORT 9899
+    rv = ogs_sctp_init(USRSCTP_LOCAL_UDP_PORT);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_sctp_init() failed");
         return OGS_ERROR;
     }
     rv = testpacket_init();
