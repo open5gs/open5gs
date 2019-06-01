@@ -1402,16 +1402,17 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_list_init(&enb->enb_ue_list);
 
-    if (enb->sock_type == SOCK_STREAM)
+    if (enb->sock_type == SOCK_STREAM) {
+        /* FIXME  : The sock hash is needed? */
         ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), enb);
+
+        enb->poll = ogs_pollset_add(mme_self()->pollset,
+            OGS_POLLIN, sock->fd, s1ap_recv_handler, sock);
+        ogs_assert(enb->poll);
+    }
+
     ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), enb);
 
-#if HAVE_USRSCTP != 1
-    enb->poll = ogs_pollset_add(mme_self()->pollset,
-        OGS_POLLIN, sock->fd, s1ap_recv_handler, sock);
-    ogs_assert(enb->poll);
-#endif
-    
     e.enb = enb;
     ogs_fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
     ogs_fsm_init(&enb->sm, &e);
@@ -1430,19 +1431,18 @@ int mme_enb_remove(mme_enb_t *enb)
     ogs_fsm_fini(&enb->sm, &e);
     ogs_fsm_delete(&enb->sm);
 
-    if (enb->sock_type == SOCK_STREAM)
-        ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), NULL);
     ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), NULL);
     ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     enb_ue_remove_in_enb(enb);
 
-#if HAVE_USRSCTP != 1
-    ogs_pollset_remove(enb->poll);
-#endif
+    if (enb->sock_type == SOCK_STREAM) {
+        /* FIXME  : The sock hash is needed? */
+        ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), NULL);
 
-    if (enb->sock_type == SOCK_STREAM)
+        ogs_pollset_remove(enb->poll);
         ogs_sctp_destroy(enb->sock);
+    }
 
     ogs_free(enb->addr);
 
