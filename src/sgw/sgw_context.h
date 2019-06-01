@@ -16,10 +16,10 @@ extern int __sgw_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __sgw_log_domain
 
-typedef struct _sgw_tunnel_t sgw_tunnel_t;
+typedef struct sgw_tunnel_s sgw_tunnel_t;
 typedef struct gtp_node_s gtp_node_t;
 
-typedef struct _sgw_context_t {
+typedef struct sgw_context_s {
     uint32_t        gtpc_port;      /* Default GTPC port */
     uint32_t        gtpu_port;      /* Default GTPU port */
 
@@ -49,7 +49,7 @@ typedef struct _sgw_context_t {
     ogs_hash_t      *imsi_ue_hash;  /* hash table (IMSI : SGW_UE) */
 } sgw_context_t;
 
-typedef struct _sgw_ue_t {
+typedef struct sgw_ue_s {
     uint32_t        sgw_s11_teid;   /* SGW-S11-TEID is derived from INDEX */
     uint32_t        mme_s11_teid;   /* MME-S11-TEID is received from MME */
 
@@ -72,7 +72,7 @@ typedef struct _sgw_ue_t {
     gtp_node_t      *gnode;
 } sgw_ue_t;
 
-typedef struct _sgw_sess_t {
+typedef struct sgw_sess_s {
     ogs_lnode_t     node;       /* A node of list_t */
 
     /* 
@@ -95,7 +95,7 @@ typedef struct _sgw_sess_t {
     sgw_ue_t        *sgw_ue;
 } sgw_sess_t;
 
-typedef struct _sgw_bearer_t {
+typedef struct sgw_bearer_s {
     ogs_lnode_t     node; /**< A node of list_t */
 
     uint8_t         ebi;
@@ -116,7 +116,7 @@ typedef struct _sgw_bearer_t {
     sgw_ue_t        *sgw_ue;
 } sgw_bearer_t;
 
-typedef struct _sgw_tunnel_t {
+typedef struct sgw_tunnel_s {
     ogs_lnode_t     node; /**< A node of list_t */
 
     uint8_t         interface_type;

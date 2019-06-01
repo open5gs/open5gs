@@ -1,3 +1,25 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include "ogs-sctp.h"
+
+#include "app/context.h"
 #include "mme_event.h"
 
 #include "nas_security.h"
@@ -5,56 +27,65 @@
 
 #include "s1ap_conv.h"
 #include "s1ap_build.h"
-#include "s1ap_path.h"
-
-static int s1ap_server_list(ogs_list_t *list, int type);
-static int s1ap_delete_list(ogs_list_t *list);
+#include "s1ap-path.h"
 
 int s1ap_open(void)
 {
-    int rv;
-#if HAVE_USRSCTP != 1
-    int type = SOCK_STREAM;
-#else
-    int type = SOCK_SEQPACKET;
-#endif
+    ogs_socknode_t *node = NULL;
 
-    rv = s1ap_server_list(&mme_self()->s1ap_list, type);
-    ogs_assert(rv == OGS_OK);
-    rv = s1ap_server_list(&mme_self()->s1ap_list6, type);
-    ogs_assert(rv == OGS_OK);
+    ogs_list_for_each(&mme_self()->s1ap_list, node) {
+        ogs_socknode_set_option(node, &context_self()->config.sockopt);
+        s1ap_server(node);
+    }
 
-    return OGS_OK;
-}
-
-int s1ap_close()
-{
-    s1ap_delete_list(&mme_self()->s1ap_list);
-    s1ap_delete_list(&mme_self()->s1ap_list6);
+    ogs_list_for_each(&mme_self()->s1ap_list6, node) {
+        ogs_socknode_set_option(node, &context_self()->config.sockopt);
+        s1ap_server(node);
+    }
 
     return OGS_OK;
 }
 
-static int s1ap_server_list(ogs_list_t *list, int type)
+void s1ap_close()
 {
-    ogs_socknode_t *snode = NULL;
+    ogs_socknode_remove_all(&mme_self()->s1ap_list);
+    ogs_socknode_remove_all(&mme_self()->s1ap_list6);
+}
 
-    ogs_assert(list);
+int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
+        ogs_sockaddr_t *addr, uint16_t stream_no)
+{
+    int sent;
 
-    ogs_list_for_each(list, snode)
-        s1ap_server(snode, type);
+    ogs_assert(sock);
+    ogs_assert(pkbuf);
+
+    sent = ogs_sctp_sendmsg(sock, pkbuf->data, pkbuf->len,
+            addr, SCTP_S1AP_PPID, stream_no);
+    if (sent < 0 || sent != pkbuf->len) {
+        ogs_error("ogs_sctp_sendmsg error (%d:%s)", errno, strerror(errno));
+        return OGS_ERROR;
+    }
+    ogs_pkbuf_free(pkbuf);
 
     return OGS_OK;
 }
 
-static int s1ap_delete_list(ogs_list_t *list)
+int s1ap_recv(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf)
 {
-    ogs_socknode_t *snode = NULL;
+    int size;
 
-    ogs_list_for_each(list, snode)
-        s1ap_delete(snode);
+    ogs_assert(sock);
+    ogs_assert(pkbuf);
 
-    return OGS_OK;
+    size = ogs_sctp_recvdata(sock, pkbuf->data, MAX_SDU_LEN, NULL, NULL);
+    if (size <= 0) {
+        ogs_error("s1ap_recv() failed");
+        return OGS_ERROR;
+    }
+
+    ogs_pkbuf_trim(pkbuf, size);
+    return OGS_OK;;
 }
 
 int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
@@ -72,8 +103,7 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     rv = s1ap_send(enb->sock, pkbuf,
             enb->sock_type == SOCK_STREAM ? NULL : enb->addr,
             stream_no);
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("s1_send error");
         ogs_pkbuf_free(pkbuf);
     }
@@ -101,8 +131,7 @@ int s1ap_delayed_send_to_enb_ue(
     ogs_assert(enb_ue);
     ogs_assert(pkbuf);
         
-    if (duration)
-    {
+    if (duration) {
         mme_event_t *e = NULL;
 
         e = mme_event_new(MME_EVT_S1AP_DELAYED_SEND);
@@ -115,9 +144,7 @@ int s1ap_delayed_send_to_enb_ue(
         ogs_timer_start(e->timer, duration);
 
         return OGS_OK;
-    }
-    else
-    {
+    } else {
         mme_enb_t *enb = NULL;
         enb = enb_ue->enb;
         ogs_assert(enb);
@@ -170,49 +197,46 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_assert(sh);
 
     memset(&security_header_type, 0, sizeof(nas_security_header_type_t));
-    switch(sh->security_header_type)
-    {
-        case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-            break;
-        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
-            security_header_type.service_request = 1;
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
-            security_header_type.integrity_protected = 1;
-            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
-            security_header_type.integrity_protected = 1;
-            security_header_type.ciphered = 1;
-            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
-            security_header_type.integrity_protected = 1;
-            security_header_type.new_security_context = 1;
-            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
-            security_header_type.integrity_protected = 1;
-            security_header_type.ciphered = 1;
-            security_header_type.new_security_context = 1;
-            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
-            break;
-        default:
-            ogs_error("Not implemented(securiry header type:0x%x)", 
-                    sh->security_header_type);
-            return OGS_ERROR;
+    switch(sh->security_header_type) {
+    case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
+        break;
+    case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
+        security_header_type.service_request = 1;
+        break;
+    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
+        security_header_type.integrity_protected = 1;
+        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        break;
+    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
+        security_header_type.integrity_protected = 1;
+        security_header_type.ciphered = 1;
+        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        break;
+    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
+        security_header_type.integrity_protected = 1;
+        security_header_type.new_security_context = 1;
+        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        break;
+    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
+        security_header_type.integrity_protected = 1;
+        security_header_type.ciphered = 1;
+        security_header_type.new_security_context = 1;
+        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        break;
+    default:
+        ogs_error("Not implemented(securiry header type:0x%x)", 
+                sh->security_header_type);
+        return OGS_ERROR;
     }
 
-    if (enb_ue->mme_ue)
-    {
+    if (enb_ue->mme_ue) {
         ogs_assert(nas_security_decode(
             enb_ue->mme_ue, security_header_type, nasbuf) == OGS_OK);
     }
 
     h = nasbuf->data;
     ogs_assert(h);
-    if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
-    {
+    if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM) {
         int rv;
         e = mme_event_new(MME_EVT_EMM_MESSAGE);
         ogs_assert(e);
@@ -226,14 +250,11 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_pkbuf_free(e->pkbuf);
             mme_event_free(e);
         }
-    }
-    else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
-    {
+    } else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM) {
         mme_ue_t *mme_ue = enb_ue->mme_ue;
         ogs_assert(mme_ue);
         s1ap_send_to_esm(mme_ue, nasbuf);
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
     return OGS_OK;

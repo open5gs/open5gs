@@ -46,6 +46,19 @@ logger:
 parameter:
     no_ipv6: true
 
+# 
+# sctp:
+#
+#  o heartbit_interval : 5000 (5secs)
+#  o rto_initial : 3000 (3secs)
+#  o rto_min : 1000 (1sec)
+#  o rto_max : 5000 (5secs)
+#  o max_num_of_ostreams : 30
+#  o max_num_of_istreams : 65535
+#  o max_attempts : 4
+#  o max_initial_timeout : 8000(8secs)
+sctp:
+
 mme:
     freeDiameter: mme.conf
 

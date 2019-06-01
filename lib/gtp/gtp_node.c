@@ -36,7 +36,7 @@ int gtp_node_final(void)
     return OGS_OK;
 }
 
-gtp_node_t *gtp_create_node(
+gtp_node_t *gtp_node_new(
         ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
     int rv;
@@ -82,7 +82,7 @@ gtp_node_t *gtp_create_node(
     return node;
 }
 
-int gtp_delete_node(gtp_node_t *node)
+void gtp_node_free(gtp_node_t *node)
 {
     ogs_assert(node);
 
@@ -93,11 +93,9 @@ int gtp_delete_node(gtp_node_t *node)
 
     ogs_freeaddrinfo(node->sa_list);
     ogs_pool_free(&pool, node);
-
-    return OGS_OK;
 }
 
-gtp_node_t *gtp_add_node(ogs_list_t *list, gtp_f_teid_t *f_teid,
+gtp_node_t *gtp_node_add(ogs_list_t *list, gtp_f_teid_t *f_teid,
         uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
     int rv;
@@ -111,13 +109,13 @@ gtp_node_t *gtp_add_node(ogs_list_t *list, gtp_f_teid_t *f_teid,
     rv = gtp_f_teid_to_sockaddr(f_teid, port, &sa_list);
     ogs_assert(rv == OGS_OK);
 
-    node = gtp_create_node(sa_list, no_ipv4, no_ipv6, prefer_ipv4);
+    node = gtp_node_new(sa_list, no_ipv4, no_ipv6, prefer_ipv4);
     ogs_list_add(list, node);
 
     rv = gtp_f_teid_to_ip(f_teid, &node->ip);
     ogs_assert(rv == OGS_OK);
 
-    rv = ogs_sock_fill_scope_id_in_local(node->sa_list);
+    rv = ogs_socknode_fill_scope_id_in_local(node->sa_list);
     ogs_assert(rv == OGS_OK);
 
     ogs_freeaddrinfo(sa_list);
@@ -125,30 +123,24 @@ gtp_node_t *gtp_add_node(ogs_list_t *list, gtp_f_teid_t *f_teid,
     return node;
 }
 
-int gtp_remove_node(ogs_list_t *list, gtp_node_t *node)
+void gtp_node_remove(ogs_list_t *list, gtp_node_t *node)
 {
-    int rv;
     ogs_assert(node);
 
     ogs_list_remove(list, node);
 
-    rv = gtp_delete_node(node);
-    ogs_assert(rv == OGS_OK);
-
-    return rv;
+    gtp_node_free(node);
 }
 
-int gtp_remove_all_nodes(ogs_list_t *list)
+void gtp_node_remove_all(ogs_list_t *list)
 {
     gtp_node_t *node = NULL, *next_node = NULL;
     
     ogs_list_for_each_safe(list, next_node, node)
-        gtp_remove_node(list, node);
-
-    return OGS_OK;
+        gtp_node_remove(list, node);
 }
 
-gtp_node_t *gtp_find_node(ogs_list_t *list, gtp_f_teid_t *f_teid)
+gtp_node_t *gtp_node_find(ogs_list_t *list, gtp_f_teid_t *f_teid)
 {
     int rv;
     gtp_node_t *node = NULL;

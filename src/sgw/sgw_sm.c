@@ -45,12 +45,7 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
         }
         case OGS_FSM_EXIT_SIG:
         {
-            rv = sgw_gtp_close();
-            if (rv != OGS_OK)
-            {
-                ogs_error("Can't close SGW path");
-                break;
-            }
+            sgw_gtp_close();
             break;
         }
         case SGW_EVT_S11_MESSAGE:

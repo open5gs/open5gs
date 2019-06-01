@@ -30,13 +30,14 @@ typedef struct _config_t {
         int no_pcrf;
 
         /* Network */
-        int sctp_streams;
         int no_ipv4;
         int no_ipv6;
         int prefer_ipv4;
         int multicast;
         int no_slaac;
     } parameter;
+
+    ogs_sockopt_t sockopt;
 
 } config_t;
 

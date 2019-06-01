@@ -10,7 +10,7 @@
 static void s1setup_test1(abts_case *tc, void *data)
 {
     int rv;
-    ogs_sock_t *sock[NUM_OF_TEST_DUPLICATED_ENB];
+    ogs_socknode_t *node[NUM_OF_TEST_DUPLICATED_ENB];
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf = NULL;
     s1ap_message_t message;
@@ -18,8 +18,8 @@ static void s1setup_test1(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
-        sock[i] = testenb_s1ap_client("127.0.0.1");
-        ABTS_PTR_NOTNULL(tc, sock[i]);
+        node[i] = testenb_s1ap_client("127.0.0.1");
+        ABTS_PTR_NOTNULL(tc, node[i]);
     }
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
@@ -28,10 +28,10 @@ static void s1setup_test1(abts_case *tc, void *data)
                 &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64, 12345, 1, 1, 2);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-        rv = testenb_s1ap_send(sock[i], sendbuf);
+        rv = testenb_s1ap_send(node[i], sendbuf);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-        recvbuf = testenb_s1ap_read(sock[i]);
+        recvbuf = testenb_s1ap_read(node[i]);
         ABTS_PTR_NOTNULL(tc, recvbuf);
 
         rv = s1ap_decode_pdu(&message, recvbuf);
@@ -43,8 +43,7 @@ static void s1setup_test1(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
     {
-        rv = testenb_s1ap_close(sock[i]);
-        ABTS_INT_EQUAL(tc, OGS_OK, rv);
+        testenb_s1ap_close(node[i]);
     }
 
     ogs_pkbuf_free(recvbuf);
@@ -57,7 +56,7 @@ static void s1setup_test1(abts_case *tc, void *data)
 static void s1setup_test2(abts_case *tc, void *data)
 {
     int rv;
-    ogs_sock_t *sock[NUM_OF_TEST_ENB];
+    ogs_socknode_t *node[NUM_OF_TEST_ENB];
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -65,8 +64,8 @@ static void s1setup_test2(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
     {
-        sock[i] = testenb_s1ap_client("127.0.0.1");
-        ABTS_PTR_NOTNULL(tc, sock[i]);
+        node[i] = testenb_s1ap_client("127.0.0.1");
+        ABTS_PTR_NOTNULL(tc, node[i]);
     }
 
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
@@ -75,10 +74,10 @@ static void s1setup_test2(abts_case *tc, void *data)
             &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64+i, 12345, 1, 1, 2);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-        rv = testenb_s1ap_send(sock[i], sendbuf);
+        rv = testenb_s1ap_send(node[i], sendbuf);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-        recvbuf = testenb_s1ap_read(sock[i]);
+        recvbuf = testenb_s1ap_read(node[i]);
         ABTS_PTR_NOTNULL(tc, recvbuf);
 
         rv = s1ap_decode_pdu(&message, recvbuf);
@@ -90,8 +89,7 @@ static void s1setup_test2(abts_case *tc, void *data)
 
     for (i = 0; i < NUM_OF_TEST_ENB; i++)
     {
-        rv = testenb_s1ap_close(sock[i]);
-        ABTS_INT_EQUAL(tc, OGS_OK, rv);
+        testenb_s1ap_close(node[i]);
     }
 
     ogs_pkbuf_free(recvbuf);

@@ -10,12 +10,9 @@ testunit_SOURCES = \
 	unit/abts-main.c \
 	unit/s1ap_message_test.c unit/nas_message_test.c \
 	unit/gtp_message_test.c unit/security_test.c \
+	unit/sctp-test.c \
 	$(NULL)
 testunit_LDADD = $(top_srcdir)/src/libepc.la
-
-if !WITH_USRSCTP
-testunit_SOURCES += unit/sctp-test.c
-endif
 
 testsimple_SOURCES = \
 	common/testpacket.h common/testpacket.c \

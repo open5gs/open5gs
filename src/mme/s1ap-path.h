@@ -1,5 +1,24 @@
-#ifndef __S1AP_PATH_H__
-#define __S1AP_PATH_H__
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef S1AP_PATH_H
+#define S1AP_PATH_H
 
 #include "mme_context.h"
 #include "asn1c/s1ap_message.h"
@@ -10,15 +29,10 @@ extern "C" {
 
 #define S1AP_NON_UE_SIGNALLING   0
 
-int s1ap_init(int sctp_streams, uint16_t port);
-int s1ap_final();
-
 int s1ap_open();
-int s1ap_close();
+void s1ap_close();
 
-void s1ap_server(ogs_socknode_t *snode, int type);
-void s1ap_closesocket(ogs_sock_t *sock);
-void s1ap_delete(ogs_socknode_t *snode);
+ogs_sock_t *s1ap_server(ogs_socknode_t *node);
 void s1ap_recv_handler(short when, ogs_socket_t fd, void *data);
 
 int s1ap_send(ogs_sock_t *sock,
@@ -77,6 +91,6 @@ int s1ap_send_s1_reset_ack(
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* !__S1_PATH_H__ */
+#endif /* S1AP_PATH_H */

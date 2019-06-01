@@ -1,5 +1,6 @@
-#include "gtp/gtp_xact.h"
+#include "ogs-sctp.h"
 
+#include "gtp/gtp_xact.h"
 #include "app/context.h"
 
 #include "mme_context.h"
@@ -7,7 +8,7 @@
 #include "mme_event.h"
 
 #include "mme_fd_path.h"
-#include "s1ap_path.h"
+#include "s1ap-path.h"
 
 static ogs_thread_t *thread;
 static void mme_main(void *data);
@@ -37,9 +38,7 @@ int mme_initialize()
     if (rv != OGS_OK) return OGS_ERROR;
 
 #define USRSCTP_LOCAL_UDP_PORT 9899
-    rv = s1ap_init(
-            context_self()->config.parameter.sctp_streams,
-            USRSCTP_LOCAL_UDP_PORT);
+    rv = ogs_sctp_init(USRSCTP_LOCAL_UDP_PORT);
     if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(mme_main, NULL);
@@ -62,7 +61,7 @@ void mme_terminate(void)
 
     mme_context_final();
 
-    s1ap_final();
+    ogs_sctp_final();
 
     gtp_xact_final();
 

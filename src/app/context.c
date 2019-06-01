@@ -24,8 +24,7 @@ int context_final()
 {
     ogs_assert(context_initialized == 1);
 
-    if (self.config.document)
-    {
+    if (self.config.document) {
         yaml_document_delete(self.config.document);
         ogs_free(self.config.document);
     }
@@ -50,8 +49,7 @@ int context_read_file()
     ogs_assert(config->path);
 
     file = fopen(config->path, "rb");
-    if (!file)
-    {
+    if (!file) {
         ogs_fatal("cannot open file `%s`", config->path);
         ogs_assert_if_reached();
     }
@@ -60,52 +58,50 @@ int context_read_file()
     yaml_parser_set_input_file(&parser, file);
 
     document = ogs_calloc(1, sizeof(yaml_document_t));
-    if (!yaml_parser_load(&parser, document))
-    {
+    if (!yaml_parser_load(&parser, document)) {
         ogs_fatal("Failed to parse configuration file '%s'", config->path);
-        switch (parser.error)
-        {
-            case YAML_MEMORY_ERROR:
-                ogs_error("Memory error: Not enough memory for parsing");
-                break;
-            case YAML_READER_ERROR:
-                if (parser.problem_value != -1)
-                    ogs_error("Reader error - %s: #%X at %zd", parser.problem,
-                        parser.problem_value, parser.problem_offset);
-                else
-                    ogs_error("Reader error - %s at %zd", parser.problem,
-                        parser.problem_offset);
-                break;
-            case YAML_SCANNER_ERROR:
-                if (parser.context)
-                    ogs_error("Scanner error - %s at line %zu, column %zu"
-                            "%s at line %zu, column %zu", parser.context,
-                            parser.context_mark.line+1,
-                            parser.context_mark.column+1,
-                            parser.problem, parser.problem_mark.line+1,
-                            parser.problem_mark.column+1);
-                else
-                    ogs_error("Scanner error - %s at line %zu, column %zu",
-                            parser.problem, parser.problem_mark.line+1,
-                            parser.problem_mark.column+1);
-                break;
-            case YAML_PARSER_ERROR:
-                if (parser.context)
-                    ogs_error("Parser error - %s at line %zu, column %zu"
-                            "%s at line %zu, column %zu", parser.context,
-                            parser.context_mark.line+1,
-                            parser.context_mark.column+1,
-                            parser.problem, parser.problem_mark.line+1,
-                            parser.problem_mark.column+1);
-                else
-                    ogs_error("Parser error - %s at line %zu, column %zu",
-                            parser.problem, parser.problem_mark.line+1,
-                            parser.problem_mark.column+1);
-                break;
-            default:
-                /* Couldn't happen. */
-                ogs_assert_if_reached();
-                break;
+        switch (parser.error) {
+        case YAML_MEMORY_ERROR:
+            ogs_error("Memory error: Not enough memory for parsing");
+            break;
+        case YAML_READER_ERROR:
+            if (parser.problem_value != -1)
+                ogs_error("Reader error - %s: #%X at %zd", parser.problem,
+                    parser.problem_value, parser.problem_offset);
+            else
+                ogs_error("Reader error - %s at %zd", parser.problem,
+                    parser.problem_offset);
+            break;
+        case YAML_SCANNER_ERROR:
+            if (parser.context)
+                ogs_error("Scanner error - %s at line %zu, column %zu"
+                        "%s at line %zu, column %zu", parser.context,
+                        parser.context_mark.line+1,
+                        parser.context_mark.column+1,
+                        parser.problem, parser.problem_mark.line+1,
+                        parser.problem_mark.column+1);
+            else
+                ogs_error("Scanner error - %s at line %zu, column %zu",
+                        parser.problem, parser.problem_mark.line+1,
+                        parser.problem_mark.column+1);
+            break;
+        case YAML_PARSER_ERROR:
+            if (parser.context)
+                ogs_error("Parser error - %s at line %zu, column %zu"
+                        "%s at line %zu, column %zu", parser.context,
+                        parser.context_mark.line+1,
+                        parser.context_mark.column+1,
+                        parser.problem, parser.problem_mark.line+1,
+                        parser.problem_mark.column+1);
+            else
+                ogs_error("Parser error - %s at line %zu, column %zu",
+                        parser.problem, parser.problem_mark.line+1,
+                        parser.problem_mark.column+1);
+            break;
+        default:
+            /* Couldn't happen. */
+            ogs_assert_if_reached();
+            break;
         }
 
         ogs_free(document);
@@ -133,16 +129,13 @@ int context_setup_log_module()
 
 static int context_prepare()
 {
-    self.config.parameter.sctp_streams = DEFAULT_SCTP_STREAMS;
-
     return OGS_OK;
 }
 
 static int context_validation()
 {
     if (self.config.parameter.no_ipv4 == 1 &&
-        self.config.parameter.no_ipv6 == 1)
-    {
+        self.config.parameter.no_ipv6 == 1) {
         ogs_error("Both `no_ipv4` and `no_ipv6` set to `true` in `%s`",
                 context_self()->config.path);
         return OGS_ERROR;
@@ -165,98 +158,98 @@ int context_parse_config()
     if (rv != OGS_OK) return rv;
 
     ogs_yaml_iter_init(&root_iter, document);
-    while(ogs_yaml_iter_next(&root_iter))
-    {
+    while (ogs_yaml_iter_next(&root_iter)) {
         const char *root_key = ogs_yaml_iter_key(&root_iter);
         ogs_assert(root_key);
-        if (!strcmp(root_key, "db_uri"))
-        {
+        if (!strcmp(root_key, "db_uri")) {
             self.config.db_uri = ogs_yaml_iter_value(&root_iter);
-        }
-        else if (!strcmp(root_key, "logger"))
-        {
+        } else if (!strcmp(root_key, "logger")) {
             ogs_yaml_iter_t logger_iter;
             ogs_yaml_iter_recurse(&root_iter, &logger_iter);
-            while(ogs_yaml_iter_next(&logger_iter))
-            {
+            while (ogs_yaml_iter_next(&logger_iter)) {
                 const char *logger_key = ogs_yaml_iter_key(&logger_iter);
                 ogs_assert(logger_key);
-                if (!strcmp(logger_key, "file"))
-                {
+                if (!strcmp(logger_key, "file")) {
                     self.config.logger.file = ogs_yaml_iter_value(&logger_iter);
-                }
-                else if (!strcmp(logger_key, "level"))
-                {
+                } else if (!strcmp(logger_key, "level")) {
                     self.config.logger.level =
                         ogs_yaml_iter_value(&logger_iter);
-                }
-                else if (!strcmp(logger_key, "domain"))
-                {
+                } else if (!strcmp(logger_key, "domain")) {
                     self.config.logger.domain =
                         ogs_yaml_iter_value(&logger_iter);
                 }
             }
-        }
-        else if (!strcmp(root_key, "parameter"))
-        {
+        } else if (!strcmp(root_key, "parameter")) {
             ogs_yaml_iter_t parameter_iter;
             ogs_yaml_iter_recurse(&root_iter, &parameter_iter);
-            while(ogs_yaml_iter_next(&parameter_iter))
-            {
+            while (ogs_yaml_iter_next(&parameter_iter)) {
                 const char *parameter_key = ogs_yaml_iter_key(&parameter_iter);
                 ogs_assert(parameter_key);
-                if (!strcmp(parameter_key, "no_hss"))
-                {
+                if (!strcmp(parameter_key, "no_hss")) {
                     self.config.parameter.no_hss =
                         ogs_yaml_iter_bool(&parameter_iter);
-                }
-                else if (!strcmp(parameter_key, "no_sgw"))
-                {
+                } else if (!strcmp(parameter_key, "no_sgw")) {
                     self.config.parameter.no_sgw =
                         ogs_yaml_iter_bool(&parameter_iter);
-                }
-                else if (!strcmp(parameter_key, "no_pgw"))
-                {
+                } else if (!strcmp(parameter_key, "no_pgw")) {
                     self.config.parameter.no_pgw =
                         ogs_yaml_iter_bool(&parameter_iter);
-                }
-                else if (!strcmp(parameter_key, "no_pcrf"))
-                {
+                } else if (!strcmp(parameter_key, "no_pcrf")) {
                     self.config.parameter.no_pcrf =
                         ogs_yaml_iter_bool(&parameter_iter);
-                }
-                else if (!strcmp(parameter_key, "sctp_streams"))
-                {
-                    const char *v = ogs_yaml_iter_value(&parameter_iter);
-                    if (v) self.config.parameter.sctp_streams = atoi(v);
-                }
-                else if (!strcmp(parameter_key, "no_ipv4"))
-                {
+                } else if (!strcmp(parameter_key, "no_ipv4")) {
                     self.config.parameter.no_ipv4 =
                         ogs_yaml_iter_bool(&parameter_iter);
-                }
-                else if (!strcmp(parameter_key, "no_ipv6"))
-                {
+                } else if (!strcmp(parameter_key, "no_ipv6")) {
                     self.config.parameter.no_ipv6 =
                         ogs_yaml_iter_bool(&parameter_iter);
-                }
-                else if (!strcmp(parameter_key, "prefer_ipv4"))
-                {
+                } else if (!strcmp(parameter_key, "prefer_ipv4")) {
                     self.config.parameter.prefer_ipv4 =
                         ogs_yaml_iter_bool(&parameter_iter);
-                }
-                else if (!strcmp(parameter_key, "multicast"))
-                {
+                } else if (!strcmp(parameter_key, "multicast")) {
                     self.config.parameter.multicast =
                         ogs_yaml_iter_bool(&parameter_iter);
-                }
-                else if (!strcmp(parameter_key, "no_slaac"))
-                {
+                } else if (!strcmp(parameter_key, "no_slaac")) {
                     self.config.parameter.no_slaac =
                         ogs_yaml_iter_bool(&parameter_iter);
-                }
-                else
+                } else
                     ogs_warn("unknown key `%s`", parameter_key);
+            }
+        } else if (!strcmp(root_key, "sctp")) {
+            ogs_yaml_iter_t sctp_iter;
+            ogs_yaml_iter_recurse(&root_iter, &sctp_iter);
+            while (ogs_yaml_iter_next(&sctp_iter)) {
+                const char *sctp_key = ogs_yaml_iter_key(&sctp_iter);
+                ogs_assert(sctp_key);
+                if (!strcmp(sctp_key, "heartbit_interval")) {
+                    const char *v = ogs_yaml_iter_value(&sctp_iter);
+                    if (v) self.config.sockopt.sctp.heartbit_interval = atoi(v);
+                } else if (!strcmp(sctp_key, "rto_initial")) {
+                    const char *v = ogs_yaml_iter_value(&sctp_iter);
+                    if (v) self.config.sockopt.sctp.rto_initial = atoi(v);
+                } else if (!strcmp(sctp_key, "rto_min")) {
+                    const char *v = ogs_yaml_iter_value(&sctp_iter);
+                    if (v) self.config.sockopt.sctp.rto_min = atoi(v);
+                } else if (!strcmp(sctp_key, "rto_max")) {
+                    const char *v = ogs_yaml_iter_value(&sctp_iter);
+                    if (v) self.config.sockopt.sctp.rto_max = atoi(v);
+                } else if (!strcmp(sctp_key, "max_num_of_ostreams")) {
+                    const char *v = ogs_yaml_iter_value(&sctp_iter);
+                    if (v)
+                        self.config.sockopt.sctp.max_num_of_ostreams = atoi(v);
+                } else if (!strcmp(sctp_key, "max_num_of_istreams")) {
+                    const char *v = ogs_yaml_iter_value(&sctp_iter);
+                    if (v)
+                        self.config.sockopt.sctp.max_num_of_istreams = atoi(v);
+                } else if (!strcmp(sctp_key, "max_attempts")) {
+                    const char *v = ogs_yaml_iter_value(&sctp_iter);
+                    if (v) self.config.sockopt.sctp.max_attempts = atoi(v);
+                } else if (!strcmp(sctp_key, "max_initial_timeout")) {
+                    const char *v = ogs_yaml_iter_value(&sctp_iter);
+                    if (v)
+                        self.config.sockopt.sctp.max_initial_timeout = atoi(v);
+                } else
+                    ogs_warn("unknown key `%s`", sctp_key);
             }
         }
     }
@@ -304,8 +297,7 @@ int context_db_init(const char *db_uri)
     self.db.initialized = true;
 
     self.db.client = mongoc_client_new(db_uri);
-    if (!self.db.client)
-    {
+    if (!self.db.client) {
         ogs_error("Failed to parse DB URI [%s]", db_uri);
         return OGS_ERROR;
     }
@@ -324,8 +316,7 @@ int context_db_init(const char *db_uri)
     ogs_assert(self.db.database);
 
     if (!context_mongoc_client_get_server_status(
-                self.db.client, NULL, &reply, &error)) 
-    {
+                self.db.client, NULL, &reply, &error)) {
         ogs_error("Failed to connect to server [%s]", db_uri);
         return OGS_RETRY;
     }

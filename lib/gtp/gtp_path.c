@@ -23,33 +23,19 @@
 
 #include "gtp_path.h"
 
-int gtp_server(ogs_socknode_t *snode)
+ogs_sock_t *gtp_server(ogs_socknode_t *node)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_assert(snode);
+    ogs_sock_t *gtp;
+    ogs_assert(node);
 
-    snode->sock = ogs_udp_server(snode->list);
-    ogs_assert(snode->sock);
+    gtp = ogs_udp_server(node);
+    ogs_assert(gtp);
 
     ogs_info("gtp_server() [%s]:%d",
-            OGS_ADDR(snode->list, buf), OGS_PORT(snode->list));
+            OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
 
-    return OGS_OK;
-}
-
-int gtp_client(gtp_node_t *gnode)
-{
-    char buf[OGS_ADDRSTRLEN];
-    ogs_assert(gnode);
-
-    gnode->sock = ogs_udp_client(gnode->sa_list);
-    ogs_assert(gnode->sock);
-    memcpy(&gnode->conn, &gnode->sock->remote_addr, sizeof gnode->conn);
-
-    ogs_info("gtp_client() [%s]:%d",
-            OGS_ADDR(gnode->sa_list, buf), OGS_PORT(gnode->sa_list));
-
-    return OGS_OK;
+    return gtp;
 }
 
 int gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, gtp_node_t *gnode)
@@ -66,8 +52,8 @@ int gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, gtp_node_t *gnode)
     {
         ogs_sock_t *sock = NULL;
 
-        if (addr->c_sa_family == AF_INET) sock = ipv4;
-        else if (addr->c_sa_family == AF_INET6) sock = ipv6;
+        if (addr->ogs_sa_family == AF_INET) sock = ipv4;
+        else if (addr->ogs_sa_family == AF_INET6) sock = ipv6;
         else
             ogs_assert_if_reached();
 

@@ -12,8 +12,8 @@
 static void handover_test1(abts_case *tc, void *data)
 {
     int rv;
-    ogs_sock_t *sock1, *sock2;
-    ogs_sock_t *gtpu1, *gtpu2;
+    ogs_socknode_t *s1ap1, *s1ap2;
+    ogs_socknode_t *gtpu1, *gtpu2;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -104,11 +104,11 @@ static void handover_test1(abts_case *tc, void *data)
     mme_self()->mme_ue_s1ap_id = 16777689;
 
     /* Two eNB connects to MME */
-    sock1 = testenb_s1ap_client("127.0.0.1");
-    ABTS_PTR_NOTNULL(tc, sock1);
+    s1ap1 = testenb_s1ap_client("127.0.0.1");
+    ABTS_PTR_NOTNULL(tc, s1ap1);
 
-    sock2 = testenb_s1ap_client("127.0.0.1");
-    ABTS_PTR_NOTNULL(tc, sock2);
+    s1ap2 = testenb_s1ap_client("127.0.0.1");
+    ABTS_PTR_NOTNULL(tc, s1ap2);
 
     /* eNB connects to SGW */
     gtpu1 = testenb_gtpu_server("127.0.0.5");
@@ -121,10 +121,10 @@ static void handover_test1(abts_case *tc, void *data)
     rv = tests1ap_build_setup_req(
             &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64, 12345, 1, 1, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -132,10 +132,10 @@ static void handover_test1(abts_case *tc, void *data)
     rv = tests1ap_build_setup_req(
             &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f65, 12345, 1, 1, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -164,53 +164,53 @@ static void handover_test1(abts_case *tc, void *data)
      * Send Initial-UE Message + Attach Request + PDN Connectivity        */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Authentication Request */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
     rv = tests1ap_build_authentication_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Security mode Command */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
     rv = tests1ap_build_security_mode_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive ESM Information Request */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
     rv = tests1ap_build_esm_information_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Initial Context Setup Request + 
      * Attach Accept + 
      * Activate Default Bearer Context Request */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
     rv = tests1ap_build_ue_capability_info_indication(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -219,23 +219,23 @@ static void handover_test1(abts_case *tc, void *data)
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
             16777690, 1, 5, 1, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Attach Complete + Activate default EPS bearer cotext accept */
     rv = tests1ap_build_attach_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive EMM information */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Receive E-RAB Setup Request + 
      * Activate dedicated EPS bearer context request */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -243,7 +243,7 @@ static void handover_test1(abts_case *tc, void *data)
     rv = tests1ap_build_e_rab_setup_response(&sendbuf,
             33554492, 1, 6, 2, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -251,7 +251,7 @@ static void handover_test1(abts_case *tc, void *data)
     /* Send Activate dedicated EPS bearer context accept */
     rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -260,11 +260,11 @@ static void handover_test1(abts_case *tc, void *data)
     rv = tests1ap_build_path_switch_request(&sendbuf,
             1, 16777690, 1, 2, 5, 1, "127.0.0.5", "127.0.0.4");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Path Switch Ack */
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ABTS_TRUE(tc, memcmp(recvbuf->data + 26,
                 OGS_HEX(_nh1, strlen(_nh1), tmp), 33) == 0);
@@ -284,7 +284,7 @@ static void handover_test1(abts_case *tc, void *data)
     rv = tests1ap_build_path_switch_request(&sendbuf, 0, 16777690, 2, 2, 5, 1,
             "127.0.0.5", "127.0.0.4");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive End Mark */
@@ -298,7 +298,7 @@ static void handover_test1(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Receive Path Switch Ack */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ABTS_TRUE(tc, memcmp(recvbuf->data + 26,
                 OGS_HEX(_nh2, strlen(_nh2), tmp), 33) == 0);
@@ -314,18 +314,12 @@ static void handover_test1(abts_case *tc, void *data)
     mongoc_collection_destroy(collection);
 
     /* eNB disonncect from SGW */
-    rv = testenb_gtpu_close(gtpu2);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    rv = testenb_gtpu_close(gtpu1);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_gtpu_close(gtpu2);
+    testenb_gtpu_close(gtpu1);
 
     /* Two eNB disonncect from MME */
-    rv = testenb_s1ap_close(sock2);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    rv = testenb_s1ap_close(sock1);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_s1ap_close(s1ap1);
+    testenb_s1ap_close(s1ap2);
 
     ogs_msleep(300);
 }
@@ -333,8 +327,8 @@ static void handover_test1(abts_case *tc, void *data)
 static void handover_test2(abts_case *tc, void *data)
 {
     int rv;
-    ogs_sock_t *sock1, *sock2;
-    ogs_sock_t *gtpu1, *gtpu2;
+    ogs_socknode_t *s1ap1, *s1ap2;
+    ogs_socknode_t *gtpu1, *gtpu2;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     s1ap_message_t message;
@@ -422,11 +416,11 @@ static void handover_test2(abts_case *tc, void *data)
     mme_self()->mme_ue_s1ap_id = 33554627;
 
     /* Two eNB connects to MME */
-    sock1 = testenb_s1ap_client("127.0.0.1");
-    ABTS_PTR_NOTNULL(tc, sock1);
+    s1ap1 = testenb_s1ap_client("127.0.0.1");
+    ABTS_PTR_NOTNULL(tc, s1ap1);
 
-    sock2 = testenb_s1ap_client("127.0.0.1");
-    ABTS_PTR_NOTNULL(tc, sock2);
+    s1ap2 = testenb_s1ap_client("127.0.0.1");
+    ABTS_PTR_NOTNULL(tc, s1ap2);
 
     /* eNB connects to SGW */
     gtpu1 = testenb_gtpu_server("127.0.0.5");
@@ -439,10 +433,10 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_build_setup_req(
             &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x001f2, 12345, 1, 1, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -450,10 +444,10 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_build_setup_req(
             &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x00043, 12345, 1, 1, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -482,64 +476,64 @@ static void handover_test2(abts_case *tc, void *data)
      * Send Initial-UE Message + Attach Request + PDN Connectivity        */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Identity Request */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Identity Response */
     rv = tests1ap_build_identity_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Authentication Request */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Authentication Response */
     rv = tests1ap_build_authentication_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Security mode Command */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Security mode Complete */
     rv = tests1ap_build_security_mode_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive ESM Information Request */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send ESM Information Response */
     rv = tests1ap_build_esm_information_response(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Initial Context Setup Request + 
      * Attach Accept + 
      * Activate Default Bearer Context Request */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
     rv = tests1ap_build_ue_capability_info_indication(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -548,17 +542,17 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
             33554628, 12, 5, 1, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Attach Complete + Activate default EPS bearer cotext accept */
     rv = tests1ap_build_attach_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive EMM information */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -571,7 +565,7 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Receive E-RAB Setup Request + 
      * Activate dedicated EPS bearer context request */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -579,7 +573,7 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_build_e_rab_setup_response(&sendbuf,
             33554628, 12, 6, 2, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -587,7 +581,7 @@ static void handover_test2(abts_case *tc, void *data)
     /* Send Activate dedicated EPS bearer context accept */
     rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -595,33 +589,33 @@ static void handover_test2(abts_case *tc, void *data)
     /* Send ENB configuration transfer */
     rv = tests1ap_build_enb_configuration_transfer(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive MME configuration transfer */
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send ENB configuration transfer */
     rv = tests1ap_build_enb_configuration_transfer(&sendbuf, 1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive MME configuration transfer */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Handover Required */
     rv = tests1ap_build_handover_required(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Handover Request */
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -629,7 +623,7 @@ static void handover_test2(abts_case *tc, void *data)
     /* Send Handover Failure */
     rv = tests1ap_build_handover_failure(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 #endif
 
@@ -637,29 +631,29 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_build_handover_request_ack(&sendbuf,
             1, 33554629, 8, 2, 5, 1, "127.0.0.5", "127.0.0.4");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Handover Command */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send eNB Status Transfer */
     rv = tests1ap_build_enb_status_transfer(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive MME Status Transfer */
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Handover Notify */
     rv = tests1ap_build_handover_notify(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive End Mark */
@@ -676,23 +670,23 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_build_tau_request(&sendbuf, 1,
             0x000300, 0x000800, 0, m_tmsi, 4, 0, mme_ue->knas_int);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Tracking Area Update Accept */
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Receive UE Context Release Command */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Context Release Complete */
     rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex-1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -700,11 +694,11 @@ static void handover_test2(abts_case *tc, void *data)
     /* Send Handover Required */
     rv = tests1ap_build_handover_required(&sendbuf, 1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Handover Request */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -712,29 +706,29 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_build_handover_request_ack(&sendbuf,
             0, 33554630, 13, 2, 5, 1, "127.0.0.5", "127.0.0.4");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Handover Command */
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send eNB Status Transfer */
     rv = tests1ap_build_enb_status_transfer(&sendbuf, 1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive MME Status Transfer */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Handover Notify */
     rv = tests1ap_build_handover_notify(&sendbuf, 1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive End Mark */
@@ -748,14 +742,14 @@ static void handover_test2(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Receive UE Context Release Command */
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Context Release Complete */
     rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -763,11 +757,11 @@ static void handover_test2(abts_case *tc, void *data)
     /* Send Handover Required */
     rv = tests1ap_build_handover_required(&sendbuf, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Handover Request */
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
@@ -775,34 +769,34 @@ static void handover_test2(abts_case *tc, void *data)
     rv = tests1ap_build_handover_request_ack(&sendbuf,
             0, 33554631, 9, 2, 5, 1, "127.0.0.5", "127.0.0.4");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Handover Command */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Handover Cancel */
     rv = tests1ap_build_handover_cancel(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock1, sendbuf);
+    rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Recv Handover Cancel Ack */
-    recvbuf = testenb_s1ap_read(sock1);
+    recvbuf = testenb_s1ap_read(s1ap1);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Recv UE Context Relase Command */
-    recvbuf = testenb_s1ap_read(sock2);
+    recvbuf = testenb_s1ap_read(s1ap2);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Context Release Complete */
     rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(sock2, sendbuf);
+    rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_msleep(300);
@@ -817,18 +811,12 @@ static void handover_test2(abts_case *tc, void *data)
     mongoc_collection_destroy(collection);
 
     /* Two eNB disonncect from MME */
-    rv = testenb_s1ap_close(sock1);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    rv = testenb_s1ap_close(sock2);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_s1ap_close(s1ap1);
+    testenb_s1ap_close(s1ap2);
 
     /* eNB disonncect from SGW */
-    rv = testenb_gtpu_close(gtpu1);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    rv = testenb_gtpu_close(gtpu2);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    testenb_gtpu_close(gtpu1);
+    testenb_gtpu_close(gtpu2);
 
     ogs_msleep(300);
 }

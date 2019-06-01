@@ -6,7 +6,7 @@
 #include "mme_sm.h"
 #include "mme_context.h"
 
-#include "s1ap_path.h"
+#include "s1ap-path.h"
 #include "mme_gtp_path.h"
 #include "nas_path.h"
 #include "mme_fd_path.h"

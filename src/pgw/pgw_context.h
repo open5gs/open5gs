@@ -19,7 +19,7 @@ extern int __pgw_log_domain;
 typedef struct gtp_node_s gtp_node_t;
 typedef struct fd_config_s fd_config_t;
 
-typedef struct _pgw_context_t {
+typedef struct pgw_context_s {
     const char*     fd_conf_path;   /* PGW freeDiameter conf path */
     fd_config_t     *fd_config;     /* PGW freeDiameter config */
 
@@ -67,15 +67,15 @@ typedef struct _pgw_context_t {
     ogs_hash_t      *sess_hash; /* hash table (IMSI+APN) */
 } pgw_context_t;
 
-typedef struct _pgw_subnet_t pgw_subnet_t;
-typedef struct _pgw_ue_ip_t {
+typedef struct pgw_subnet_s pgw_subnet_t;
+typedef struct pgw_ue_ip_s {
     uint32_t        addr[4];
 
     /* Related Context */
     pgw_subnet_t    *subnet;
 } pgw_ue_ip_t;
 
-typedef struct _pgw_dev_t {
+typedef struct pgw_dev_s {
     ogs_lnode_t     node;
 
     char            ifname[IFNAMSIZ];
@@ -85,7 +85,7 @@ typedef struct _pgw_dev_t {
     ogs_poll_t      *poll;
 } pgw_dev_t;
 
-typedef struct _pgw_subnet_t {
+typedef struct pgw_subnet_s {
     ogs_lnode_t     node;
 
     ogs_ipsubnet_t  sub;                 /* Subnet : cafe::0/64 */
@@ -100,7 +100,7 @@ typedef struct _pgw_subnet_t {
     pgw_dev_t   *dev;
 } pgw_subnet_t;
 
-typedef struct _pgw_sess_t {
+typedef struct pgw_sess_s {
     uint32_t        index;          /**< An index of this node */
 
     uint32_t        pgw_s5c_teid;   /* PGW-S5C-TEID is derived from INDEX */
@@ -132,7 +132,7 @@ typedef struct _pgw_sess_t {
     gtp_node_t      *gnode;
 } pgw_sess_t;
 
-typedef struct _pgw_bearer_t {
+typedef struct pgw_bearer_s {
     ogs_lnode_t     node; /**< A node of list_t */
     uint32_t        index;
 
@@ -153,7 +153,7 @@ typedef struct _pgw_bearer_t {
     gtp_node_t      *gnode;
 } pgw_bearer_t;
 
-typedef struct _pgw_rule_t {
+typedef struct pgw_rule_s {
     uint8_t proto;
 ED5(uint8_t ipv4_local:1;,
     uint8_t ipv4_remote:1;,
@@ -182,7 +182,7 @@ ED5(uint8_t ipv4_local:1;,
     } port;
 } pgw_rule_t;
 
-typedef struct _pgw_pf_t {
+typedef struct pgw_pf_s {
     ogs_lnode_t     node;
 
 ED3(uint8_t spare:2;,

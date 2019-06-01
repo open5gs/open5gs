@@ -10,7 +10,7 @@
 #include "emm_build.h"
 #include "esm_handler.h"
 #include "nas_path.h"
-#include "s1ap_path.h"
+#include "s1ap-path.h"
 #include "mme_gtp_path.h"
 #include "mme_path.h"
 #include "mme_sm.h"

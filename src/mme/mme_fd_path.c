@@ -926,13 +926,13 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                                         ret = fd_msg_avp_value_interpret(avpch4,
                                                 &addr.sa);
                                         ogs_assert(ret == 0);
-                                        if (addr.c_sa_family == AF_INET)
+                                        if (addr.ogs_sa_family == AF_INET)
                                         {
                                             pdn->pgw_ip.ipv4 = 1;
                                             pdn->pgw_ip.both.addr = 
                                                 addr.sin.sin_addr.s_addr;
                                         }
-                                        else if (addr.c_sa_family == AF_INET6)
+                                        else if (addr.ogs_sa_family == AF_INET6)
                                         {
                                             pdn->pgw_ip.ipv6 = 1;
                                             memcpy(pdn->pgw_ip.both.addr6,
@@ -942,7 +942,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                                         else
                                         {
                                             ogs_error("Invald family:%d",
-                                                    addr.c_sa_family);
+                                                    addr.ogs_sa_family);
                                             error++;
                                         }
                                         break;

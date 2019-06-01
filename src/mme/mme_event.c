@@ -1,7 +1,7 @@
 #include "mme_event.h"
 #include "mme_context.h"
 
-#include "s1ap_path.h"
+#include "s1ap-path.h"
 
 #define EVENT_POOL 32 /* FIXME : 32 */
 void mme_event_init(void)

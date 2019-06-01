@@ -18,7 +18,7 @@
 #endif
 #include "mme/s1ap_build.h"
 #include "mme/s1ap_conv.h"
-#include "mme/s1ap_path.h"
+#include "mme/s1ap-path.h"
 #include "mme/snow_3g.h"
 
 #include "gtp/gtp_message.h"
@@ -39,70 +39,67 @@ int testpacket_final()
     return OGS_OK;
 }
 
-ogs_sock_t *testenb_s1ap_client(const char *ipstr)
+ogs_socknode_t *testenb_s1ap_client(const char *ipstr)
 {
     int rv;
-    ogs_sockaddr_t *addr = NULL;
-    ogs_sock_t *sock = NULL;
+    ogs_socknode_t *node = NULL;
 
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, ipstr, S1AP_SCTP_PORT, 0);
-    ogs_assert(rv == OGS_OK);
+    node = ogs_socknode_new(AF_UNSPEC, ipstr, S1AP_SCTP_PORT, 0);
+    ogs_assert(node);
 
-    sock = ogs_sctp_client(SOCK_STREAM, addr);
-    ogs_assert(sock);
+    ogs_sctp_client(SOCK_STREAM, node);
+    ogs_assert(node->sock);
 
-    ogs_freeaddrinfo(addr);
-
-    return sock;
+    return node;
 }
 
-ogs_pkbuf_t *testenb_s1ap_read(ogs_sock_t *sock)
+ogs_pkbuf_t *testenb_s1ap_read(ogs_socknode_t *node)
 {
     ogs_pkbuf_t *recvbuf = NULL;
     recvbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put(recvbuf, MAX_SDU_LEN);
-    ogs_assert(OGS_OK == s1ap_recv(sock, recvbuf));
+    ogs_assert(OGS_OK == s1ap_recv(node->sock, recvbuf));
 
     return recvbuf;
 }
 
-int testenb_s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
+int testenb_s1ap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
 {
-    return s1ap_send(sock, sendbuf, NULL, 0);
+    return s1ap_send(node->sock, sendbuf, NULL, 0);
 }
 
-int testenb_s1ap_close(ogs_sock_t *sock)
+void testenb_s1ap_close(ogs_socknode_t *node)
 {
-    s1ap_closesocket(sock);
-    return OGS_OK;
+    ogs_socknode_free(node);
 }
 
-ogs_sock_t *testenb_gtpu_server(const char *ipstr)
+ogs_socknode_t *testenb_gtpu_server(const char *ipstr)
 {
     int rv;
-    ogs_sockaddr_t *addr = NULL;
+    ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, ipstr, GTPV1_U_UDP_PORT, 0);
-    ogs_assert(rv == OGS_OK);
+    node = ogs_socknode_new(AF_UNSPEC, ipstr, GTPV1_U_UDP_PORT, 0);
+    ogs_assert(node);
 
-    sock = ogs_udp_server(addr);
+    sock = ogs_udp_server(node);
     ogs_assert(sock);
 
-    ogs_freeaddrinfo(addr);
-
-    return sock;
+    return node;
 }
 
-ogs_pkbuf_t *testenb_gtpu_read(ogs_sock_t *sock)
+ogs_pkbuf_t *testenb_gtpu_read(ogs_socknode_t *node)
 {
     int rc = 0;
     ogs_pkbuf_t *recvbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put(recvbuf, MAX_SDU_LEN);
 
+    ogs_assert(node);
+    ogs_assert(node->sock);
+
     while(1)
     {
-        rc = ogs_recv(sock->fd, recvbuf->data, recvbuf->len, 0);
+        rc = ogs_recv(node->sock->fd, recvbuf->data, recvbuf->len, 0);
         if (rc == -2) 
         {
             continue;
@@ -125,7 +122,7 @@ ogs_pkbuf_t *testenb_gtpu_read(ogs_sock_t *sock)
     return recvbuf;
 }
 
-int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
+int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
 {
     int rv;
     ogs_hash_index_t *hi = NULL;
@@ -136,7 +133,8 @@ int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
     ogs_sockaddr_t sgw;
     ssize_t sent;
 
-    ogs_assert(sock);
+    ogs_assert(node);
+    ogs_assert(node->sock);
 
     hi = mme_ue_first();
     ogs_assert(hi);
@@ -148,26 +146,26 @@ int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
     ogs_assert(bearer);
 
     memset(&sgw, 0, sizeof(ogs_sockaddr_t));
-    sgw.c_sa_port = htons(GTPV1_U_UDP_PORT);
+    sgw.ogs_sin_port = htons(GTPV1_U_UDP_PORT);
     if (bearer->sgw_s1u_ip.ipv6)
     {
-        sgw.c_sa_family = AF_INET6;
+        sgw.ogs_sa_family = AF_INET6;
         if (bearer->sgw_s1u_ip.ipv4)
             memcpy(sgw.sin6.sin6_addr.s6_addr,
                     bearer->sgw_s1u_ip.both.addr6, IPV6_LEN);
         else
             memcpy(sgw.sin6.sin6_addr.s6_addr,
                     bearer->sgw_s1u_ip.addr6, IPV6_LEN);
-        rv = ogs_sock_fill_scope_id_in_local(&sgw);
+        rv = ogs_socknode_fill_scope_id_in_local(&sgw);
         ogs_assert(rv == OGS_OK);
     }
     else
     {
-        sgw.c_sa_family = AF_INET;
+        sgw.ogs_sa_family = AF_INET;
         sgw.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
     }
 
-    sent = ogs_sendto(sock->fd, sendbuf->data, sendbuf->len, 0, &sgw);
+    sent = ogs_sendto(node->sock->fd, sendbuf->data, sendbuf->len, 0, &sgw);
     ogs_pkbuf_free(sendbuf);
     if (sent < 0 || sent != sendbuf->len)
         return OGS_ERROR;
@@ -175,10 +173,9 @@ int testenb_gtpu_send(ogs_sock_t *sock, ogs_pkbuf_t *sendbuf)
     return OGS_OK;
 }
 
-int testenb_gtpu_close(ogs_sock_t *sock)
+void testenb_gtpu_close(ogs_socknode_t *node)
 {
-    ogs_sock_destroy(sock);
-    return OGS_OK;
+    ogs_socknode_free(node);
 }
 
 

@@ -66,13 +66,13 @@ int gtp_f_teid_to_sockaddr(
 
     addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
     ogs_assert(addr);
-    addr->c_sa_family = AF_INET;
-    addr->c_sa_port = htons(port);
+    addr->ogs_sa_family = AF_INET;
+    addr->ogs_sin_port = htons(port);
 
     addr6 = ogs_calloc(1, sizeof(ogs_sockaddr_t));
     ogs_assert(addr6);
-    addr6->c_sa_family = AF_INET6;
-    addr6->c_sa_port = htons(port);
+    addr6->ogs_sa_family = AF_INET6;
+    addr6->ogs_sin_port = htons(port);
 
     if (f_teid->ipv4 && f_teid->ipv6)
     {

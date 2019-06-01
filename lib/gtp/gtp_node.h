@@ -39,7 +39,7 @@ extern "C" {
 typedef struct gtp_node_s {
     ogs_lnode_t     node;           /* A node of list_t */
 
-    ogs_sockaddr_t  *sa_list;       /* Socket Address List */
+    ogs_sockaddr_t  *sa_list;          /* Socket Address List */
 
     ogs_sock_t      *sock;          /* Socket instance */
     ip_t            ip;             /* Socket Address */
@@ -52,17 +52,17 @@ typedef struct gtp_node_s {
 int gtp_node_init(void);
 int gtp_node_final(void);
 
-gtp_node_t *gtp_create_node(
+gtp_node_t *gtp_node_new(
         ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
-int gtp_delete_node(gtp_node_t *node);
+void gtp_node_free(gtp_node_t *node);
 
-gtp_node_t *gtp_add_node(
+gtp_node_t *gtp_node_add(
         ogs_list_t *list, gtp_f_teid_t *f_teid,
         uint16_t port, int no_ipv4, int no_ipv6, int prefer_ipv4);
-int gtp_remove_node(ogs_list_t *list, gtp_node_t *node);
-int gtp_remove_all_nodes(ogs_list_t *list);
+void gtp_node_remove(ogs_list_t *list, gtp_node_t *node);
+void gtp_node_remove_all(ogs_list_t *list);
 
-gtp_node_t *gtp_find_node(ogs_list_t *list, gtp_f_teid_t *f_teid);
+gtp_node_t *gtp_node_find(ogs_list_t *list, gtp_f_teid_t *f_teid);
 
 #ifdef __cplusplus
 }
