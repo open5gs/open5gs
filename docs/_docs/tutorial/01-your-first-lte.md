@@ -285,13 +285,8 @@ $ sudo systemctl restart nextepc-sgwd
 
 If your phone can connect to internet, you must run the following command in NextEPC-PGW installed host. 
 
-###### Enable IPv4 Forward:
-```
-$ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
-```
-
-###### Check IP/NAT Tables:
-```
+```bash
+### Check IP Tables
 $ sudo iptables -L
 Chain INPUT (policy ACCEPT)
 target     prot opt source               destination
@@ -302,6 +297,7 @@ target     prot opt source               destination
 Chain OUTPUT (policy ACCEPT)
 target     prot opt source               destination
 
+### Check NAT Tables
 $ sudo iptables -L -t nat
 Chain PREROUTING (policy ACCEPT)
 target     prot opt source               destination
@@ -314,17 +310,15 @@ target     prot opt source               destination
 
 Chain POSTROUTING (policy ACCEPT)
 target     prot opt source               destination
+
+### Enable IPv4 Forwarding
+$ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+
+### Add NAT Rule
+$ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o pgwtun -j MASQUERADE
 ```
 
- - There is nothing on the table. It is very good condition. If there is something in the table, you will need to take some special action. (For example, disable docker service, reboot your machine, and check your IP/NAT table.)
-
-###### If your IP/NAT tables is clean, Add IP/NAT entry like the followings:
-```
-$ sudo iptables -t nat -A POSTROUTING -o 'interface-name' -j MASQUERADE
-$ sudo iptables -I INPUT -i pgwtun -j ACCEPT
-```
-
-**Note:** In the above command, you should replace `'interface-name'` with your interface name that can connect to the internet. (For example, `enp0s25`, `wls3`, and so on).
+**Note:** For the first time, it is a good condition if you do not have any rules in the IP/NAT tables. If a program such as docker has already set up a rule, you will need to add a rule differently.
 {: .notice--danger}
 
 #### 2. srsENB

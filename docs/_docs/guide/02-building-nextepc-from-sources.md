@@ -231,13 +231,39 @@ To add subscriber information, you can do WebUI operations in the following orde
 If your phone can connect to internet, you must run the following command in NextEPC-PGW installed host. 
 
 ```bash
+### Check IP Tables
+$ sudo iptables -L
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+
+### Check NAT Tables
+$ sudo iptables -L -t nat
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination
+
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination
+
+### Enable IPv4 Forwarding
 $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
-$ sudo iptables -t nat -A POSTROUTING -o 'interface-name' -j MASQUERADE
-$ sudo iptables -I INPUT -i pgwtun -j ACCEPT
+
+### Add NAT Rule
+$ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o pgwtun -j MASQUERADE
 ```
 
-**Note:** In the above command, you should replace `'interface-name'` with your interface name that can connect to the internet. (For example, `enp0s25`, `wls3`, and so on).
-{: .notice--danger}
+**Note:** It is a good condition if you do not have any rules in the IP/NAT tables. If a program such as docker has already set up a rule, you will need to add a rule differently.
 
 ### Turn on your eNodeB and Phone
 ---
