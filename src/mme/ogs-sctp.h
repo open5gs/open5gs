@@ -41,6 +41,9 @@ extern "C" {
 #define INET6           1
 #endif
 #include <usrsctp.h>
+#else
+#define ogs_sctp_destroy ogs_sock_destroy
+#define ogs_sctp_accept ogs_sock_accept
 #endif
 
 #define DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30

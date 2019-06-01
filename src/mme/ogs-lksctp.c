@@ -242,34 +242,6 @@ int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
     return size;
 }
 
-int ogs_sctp_recvdata(ogs_sock_t *sock, void *msg, size_t len,
-        ogs_sockaddr_t *from, ogs_sctp_info_t *sinfo)
-{
-    int size;
-    int flags = 0;
-
-    do {
-        size = ogs_sctp_recvmsg(sock, msg, len, from, sinfo, &flags);
-        if (size < 0) {
-            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                    "ogs_sctp_recvdata(%d)", size);
-            return size;
-        }
-
-        if (flags & MSG_NOTIFICATION) {
-            /* Nothing */
-        }
-        else if (flags & MSG_EOR) {
-            break;
-        }
-        else {
-            ogs_assert_if_reached();
-        }
-    } while(1);
-
-    return size;
-}
-
 static int subscribe_to_events(ogs_sock_t *sock)
 {
     struct sctp_event_subscribe event;
