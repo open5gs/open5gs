@@ -13,7 +13,7 @@
 #include "nas_conv.h"
 #include "mme_context.h"
 #include "mme_event.h"
-#include "s1ap_path.h"
+#include "s1ap-path.h"
 #include "s1ap_handler.h"
 #include "mme_sm.h"
 

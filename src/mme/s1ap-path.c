@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "ogs-sctp.h"
 
 #include "app/context.h"
@@ -8,7 +27,7 @@
 
 #include "s1ap_conv.h"
 #include "s1ap_build.h"
-#include "s1ap_path.h"
+#include "s1ap-path.h"
 
 int s1ap_open(void)
 {
@@ -84,8 +103,7 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     rv = s1ap_send(enb->sock, pkbuf,
             enb->sock_type == SOCK_STREAM ? NULL : enb->addr,
             stream_no);
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("s1_send error");
         ogs_pkbuf_free(pkbuf);
     }
@@ -113,8 +131,7 @@ int s1ap_delayed_send_to_enb_ue(
     ogs_assert(enb_ue);
     ogs_assert(pkbuf);
         
-    if (duration)
-    {
+    if (duration) {
         mme_event_t *e = NULL;
 
         e = mme_event_new(MME_EVT_S1AP_DELAYED_SEND);
@@ -127,9 +144,7 @@ int s1ap_delayed_send_to_enb_ue(
         ogs_timer_start(e->timer, duration);
 
         return OGS_OK;
-    }
-    else
-    {
+    } else {
         mme_enb_t *enb = NULL;
         enb = enb_ue->enb;
         ogs_assert(enb);
@@ -182,49 +197,46 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_assert(sh);
 
     memset(&security_header_type, 0, sizeof(nas_security_header_type_t));
-    switch(sh->security_header_type)
-    {
-        case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-            break;
-        case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
-            security_header_type.service_request = 1;
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
-            security_header_type.integrity_protected = 1;
-            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
-            security_header_type.integrity_protected = 1;
-            security_header_type.ciphered = 1;
-            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
-            security_header_type.integrity_protected = 1;
-            security_header_type.new_security_context = 1;
-            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
-            break;
-        case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
-            security_header_type.integrity_protected = 1;
-            security_header_type.ciphered = 1;
-            security_header_type.new_security_context = 1;
-            ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
-            break;
-        default:
-            ogs_error("Not implemented(securiry header type:0x%x)", 
-                    sh->security_header_type);
-            return OGS_ERROR;
+    switch(sh->security_header_type) {
+    case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
+        break;
+    case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
+        security_header_type.service_request = 1;
+        break;
+    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
+        security_header_type.integrity_protected = 1;
+        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        break;
+    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
+        security_header_type.integrity_protected = 1;
+        security_header_type.ciphered = 1;
+        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        break;
+    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
+        security_header_type.integrity_protected = 1;
+        security_header_type.new_security_context = 1;
+        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        break;
+    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
+        security_header_type.integrity_protected = 1;
+        security_header_type.ciphered = 1;
+        security_header_type.new_security_context = 1;
+        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        break;
+    default:
+        ogs_error("Not implemented(securiry header type:0x%x)", 
+                sh->security_header_type);
+        return OGS_ERROR;
     }
 
-    if (enb_ue->mme_ue)
-    {
+    if (enb_ue->mme_ue) {
         ogs_assert(nas_security_decode(
             enb_ue->mme_ue, security_header_type, nasbuf) == OGS_OK);
     }
 
     h = nasbuf->data;
     ogs_assert(h);
-    if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM)
-    {
+    if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM) {
         int rv;
         e = mme_event_new(MME_EVT_EMM_MESSAGE);
         ogs_assert(e);
@@ -238,14 +250,11 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_pkbuf_free(e->pkbuf);
             mme_event_free(e);
         }
-    }
-    else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM)
-    {
+    } else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM) {
         mme_ue_t *mme_ue = enb_ue->mme_ue;
         ogs_assert(mme_ue);
         s1ap_send_to_esm(mme_ue, nasbuf);
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
     return OGS_OK;

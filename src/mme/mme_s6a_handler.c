@@ -1,6 +1,6 @@
 #include "fd/s6a/s6a_message.h"
 #include "nas_path.h"
-#include "s1ap_path.h"
+#include "s1ap-path.h"
 
 #include "mme_sm.h"
 #include "mme_s6a_handler.h"

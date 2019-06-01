@@ -8,7 +8,7 @@
 #include "mme_event.h"
 
 #include "mme_fd_path.h"
-#include "s1ap_path.h"
+#include "s1ap-path.h"
 
 static ogs_thread_t *thread;
 static void mme_main(void *data);

@@ -1,5 +1,5 @@
 #include "mme_context.h"
-#include "s1ap_path.h"
+#include "s1ap-path.h"
 #include "s1ap_build.h"
 #include "sbc_handler.h"
 

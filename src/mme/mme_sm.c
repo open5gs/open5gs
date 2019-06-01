@@ -7,7 +7,7 @@
 #include "mme_sm.h"
 
 #include "s1ap_handler.h"
-#include "s1ap_path.h"
+#include "s1ap-path.h"
 #include "nas_security.h"
 #include "nas_path.h"
 #include "emm_handler.h"

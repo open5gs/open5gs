@@ -18,7 +18,7 @@
 #endif
 #include "mme/s1ap_build.h"
 #include "mme/s1ap_conv.h"
-#include "mme/s1ap_path.h"
+#include "mme/s1ap-path.h"
 #include "mme/snow_3g.h"
 
 #include "gtp/gtp_message.h"
