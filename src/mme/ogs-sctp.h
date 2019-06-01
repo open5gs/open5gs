@@ -33,6 +33,14 @@ extern "C" {
 #if HAVE_USRSCTP
 #undef MSG_NOTIFICATION
 #define MSG_NOTIFICATION 0x2000
+
+#ifndef INET
+#define INET            1
+#endif
+#ifndef INET6
+#define INET6           1
+#endif
+#include <usrsctp.h>
 #endif
 
 #define DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30

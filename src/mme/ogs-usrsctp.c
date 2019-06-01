@@ -1,19 +1,5 @@
 #include "ogs-sctp.h"
 
-#if HAVE_NETDB_H
-#include <netdb.h>
-#endif
-
-#if HAVE_USRSCTP
-#ifndef INET
-#define INET            1
-#endif
-#ifndef INET6
-#define INET6           1
-#endif
-#include <usrsctp.h>
-#endif
-
 static void ogs_debug_printf(const char *format, ...);
 
 int ogs_sctp_init(uint16_t port)
@@ -30,8 +16,7 @@ int ogs_sctp_init(uint16_t port)
 
 void ogs_sctp_final()
 {
-    while(usrsctp_finish() != 0)
-    {
+    while (usrsctp_finish() != 0) {
         ogs_warn("try to finsih SCTP");
         ogs_msleep(1000);
     }
@@ -146,7 +131,7 @@ ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node)
     ogs_assert(node->addr);
 
     addr = node->addr;
-    while(addr) {
+    while (addr) {
         sock = ogs_sctp_socket(addr->ogs_sa_family, type, node);
         if (sock) {
             if (ogs_sctp_bind(sock, addr) == OGS_OK) {
@@ -186,7 +171,7 @@ ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node)
     ogs_assert(node->addr);
 
     addr = node->addr;
-    while(addr) {
+    while (addr) {
         sock = ogs_sctp_socket(addr->ogs_sa_family, type, node);
         if (sock) {
             if (ogs_sctp_connect(sock, addr) == OGS_OK) {

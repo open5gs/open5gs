@@ -25,44 +25,6 @@ void s1ap_server(ogs_socknode_t *node, int type)
             OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
 }
 
-int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
-        ogs_sockaddr_t *addr, uint16_t stream_no)
-{
-    int sent;
-
-    ogs_assert(sock);
-    ogs_assert(pkbuf);
-
-    sent = ogs_sctp_sendmsg(sock, pkbuf->data, pkbuf->len,
-            addr, SCTP_S1AP_PPID, stream_no);
-    if (sent < 0 || sent != pkbuf->len)
-    {
-        ogs_error("ogs_sctp_sendmsg error (%d:%s)", errno, strerror(errno));
-        return OGS_ERROR;
-    }
-    ogs_pkbuf_free(pkbuf);
-
-    return OGS_OK;
-}
-
-int s1ap_recv(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf)
-{
-    int size;
-
-    ogs_assert(sock);
-    ogs_assert(pkbuf);
-
-    size = ogs_sctp_recvdata(sock, pkbuf->data, MAX_SDU_LEN, NULL, NULL);
-    if (size <= 0)
-    {
-        ogs_error("s1ap_recv() failed");
-        return OGS_ERROR;
-    }
-
-    ogs_pkbuf_trim(pkbuf, size);
-    return OGS_OK;;
-}
-
 static void accept_handler(short when, ogs_socket_t fd, void *data)
 {
     char buf[OGS_ADDRSTRLEN];
