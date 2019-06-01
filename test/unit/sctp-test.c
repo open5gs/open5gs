@@ -196,6 +196,10 @@ static void test4_func(abts_case *tc, void *data)
     ogs_sctp_info_t sinfo;
     char buf[OGS_ADDRSTRLEN];
 
+#if HAVE_USRSCTP /* FIXME : USRSCTP work-around */
+    ogs_msleep(10);
+#endif
+
     node = ogs_socknode_new(AF_INET6, NULL, PORT, AI_PASSIVE);
     ABTS_PTR_NOTNULL(tc, node);
     sctp = ogs_sctp_server(SOCK_SEQPACKET, node);
@@ -300,9 +304,7 @@ abts_suite *test_sctp(abts_suite *suite)
 
     abts_run_test(suite, test1_func, NULL);
     abts_run_test(suite, test2_func, NULL);
-#if !HAVE_USRSCTP /* FIXME */
     abts_run_test(suite, test3_func, NULL);
-#endif
     abts_run_test(suite, test4_func, NULL);
     abts_run_test(suite, test5_func, NULL);
 
