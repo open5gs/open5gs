@@ -38,6 +38,9 @@ typedef struct _config_t {
     } parameter;
 
     ogs_sockopt_t sockopt;
+    struct {
+        int udp_port;
+    } usrsctp;
 
 } config_t;
 

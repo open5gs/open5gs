@@ -129,6 +129,8 @@ int context_setup_log_module()
 
 static int context_prepare()
 {
+#define USRSCTP_LOCAL_UDP_PORT 9899
+    self.config.usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
     return OGS_OK;
 }
 
@@ -248,6 +250,9 @@ int context_parse_config()
                     const char *v = ogs_yaml_iter_value(&sctp_iter);
                     if (v)
                         self.config.sockopt.sctp.max_initial_timeout = atoi(v);
+                } else if (!strcmp(sctp_key, "usrsctp_udp_port")) {
+                    const char *v = ogs_yaml_iter_value(&sctp_iter);
+                    if (v) self.config.usrsctp.udp_port = atoi(v);
                 } else
                     ogs_warn("unknown key `%s`", sctp_key);
             }

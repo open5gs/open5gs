@@ -57,6 +57,7 @@ parameter:
 #  o max_num_of_istreams : 65535
 #  o max_attempts : 4
 #  o max_initial_timeout : 8000(8secs)
+#  o usrsctp_udp_port : 9899
 sctp:
 
 mme:

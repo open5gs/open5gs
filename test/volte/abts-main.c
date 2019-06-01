@@ -86,8 +86,7 @@ int test_initialize(app_param_t *param, int argc, const char *const argv[])
         ogs_error("pcscf_fd_init() failed");
         return OGS_ERROR;
     }
-#define USRSCTP_LOCAL_UDP_PORT 9899
-    rv = ogs_sctp_init(USRSCTP_LOCAL_UDP_PORT);
+    rv = ogs_sctp_init(context_self()->config.usrsctp.udp_port);
     if (rv != OGS_OK) {
         ogs_error("ogs_sctp_init() failed");
         return OGS_ERROR;
