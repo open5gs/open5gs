@@ -27,9 +27,9 @@ libmme_la_SOURCES = \
 	$(NULL)
 
 if WITH_USRSCTP
-libmme_la_SOURCES += ogs-usrsctp.c s1ap_usrsctp.c
+libmme_la_SOURCES += ogs-usrsctp.c s1ap-usrsctp.c
 else
-libmme_la_SOURCES += ogs-lksctp.c s1ap_lksctp.c
+libmme_la_SOURCES += ogs-lksctp.c s1ap-lksctp.c
 endif
 
 libmme_la_DEPENDENCIES = \
