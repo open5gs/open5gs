@@ -47,6 +47,12 @@ ogs_sock_t *s1ap_server(ogs_socknode_t *node)
     return sock;
 }
 
+void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
+{
+    /* At this point, nextepc does not use SOCK_STREAM in libusrsctp */
+    ogs_assert_if_reached();
+}
+
 int s1ap_usrsctp_recv_handler(struct socket *sock,
     union sctp_sockstore store, void *data, size_t datalen,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
