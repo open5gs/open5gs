@@ -1,8 +1,5 @@
 #include "ogs-sctp.h"
-
-#include "app/context.h"
 #include "mme_event.h"
-
 #include "s1ap_path.h"
 
 int s1ap_usrsctp_recv_handler(struct socket *sock,
@@ -11,22 +8,24 @@ int s1ap_usrsctp_recv_handler(struct socket *sock,
 
 static ogs_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store);
 
-void s1ap_server(ogs_socknode_t *node, int type)
+ogs_sock_t *s1ap_server(ogs_socknode_t *node)
 {
     char buf[OGS_ADDRSTRLEN];
     ogs_sock_t *sock = NULL;
 
     ogs_assert(node);
 
-    ogs_socknode_set_option(node, &context_self()->config.sockopt);
     ogs_socknode_set_poll(node, mme_self()->pollset,
             OGS_POLLIN, s1ap_usrsctp_recv_handler, node);
 
-    sock = ogs_sctp_server(type, node);
+    /* FIXME : libsctp 0.9.3.0 is not properly working in SOCK_STREAM */
+    sock = ogs_sctp_server(SOCK_SEQPACKET, node);
     ogs_assert(sock);
 
     ogs_info("s1ap_server() [%s]:%d",
             OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+
+    return sock;
 }
 
 int s1ap_usrsctp_recv_handler(struct socket *sock,

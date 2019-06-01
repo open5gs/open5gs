@@ -1,5 +1,6 @@
 #include "ogs-sctp.h"
 
+#include "app/context.h"
 #include "mme_event.h"
 
 #include "nas_security.h"
@@ -9,21 +10,19 @@
 #include "s1ap_build.h"
 #include "s1ap_path.h"
 
-static int s1ap_server_list(ogs_list_t *list, int type);
-
 int s1ap_open(void)
 {
-    int rv;
-#if HAVE_USRSCTP != 1
-    int type = SOCK_STREAM;
-#else
-    int type = SOCK_SEQPACKET;
-#endif
+    ogs_socknode_t *node = NULL;
 
-    rv = s1ap_server_list(&mme_self()->s1ap_list, type);
-    ogs_assert(rv == OGS_OK);
-    rv = s1ap_server_list(&mme_self()->s1ap_list6, type);
-    ogs_assert(rv == OGS_OK);
+    ogs_list_for_each(&mme_self()->s1ap_list, node) {
+        ogs_socknode_set_option(node, &context_self()->config.sockopt);
+        s1ap_server(node);
+    }
+
+    ogs_list_for_each(&mme_self()->s1ap_list6, node) {
+        ogs_socknode_set_option(node, &context_self()->config.sockopt);
+        s1ap_server(node);
+    }
 
     return OGS_OK;
 }
@@ -32,18 +31,6 @@ void s1ap_close()
 {
     ogs_socknode_remove_all(&mme_self()->s1ap_list);
     ogs_socknode_remove_all(&mme_self()->s1ap_list6);
-}
-
-static int s1ap_server_list(ogs_list_t *list, int type)
-{
-    ogs_socknode_t *snode = NULL;
-
-    ogs_assert(list);
-
-    ogs_list_for_each(list, snode)
-        s1ap_server(snode, type);
-
-    return OGS_OK;
 }
 
 int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,

@@ -13,9 +13,7 @@ extern "C" {
 int s1ap_open();
 void s1ap_close();
 
-void s1ap_server(ogs_socknode_t *node, int type);
-void s1ap_closesocket(ogs_sock_t *sock);
-void s1ap_delete(ogs_socknode_t *node);
+ogs_sock_t *s1ap_server(ogs_socknode_t *node);
 void s1ap_recv_handler(short when, ogs_socket_t fd, void *data);
 
 int s1ap_send(ogs_sock_t *sock,
