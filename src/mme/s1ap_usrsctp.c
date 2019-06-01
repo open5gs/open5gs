@@ -1,5 +1,6 @@
 #include "ogs-sctp.h"
 
+#include "app/context.h"
 #include "mme_event.h"
 
 #include "s1ap_path.h"
@@ -27,27 +28,19 @@ static ogs_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store);
 void s1ap_server(ogs_socknode_t *node, int type)
 {
     char buf[OGS_ADDRSTRLEN];
+    ogs_sock_t *sock = NULL;
 
     ogs_assert(node);
 
-    node->sock = ogs_sctp_server(type, node);
-    ogs_assert(node->sock);
+    ogs_socknode_set_option(node, &context_self()->config.sockopt);
+    ogs_socknode_set_poll(node, mme_self()->pollset,
+            OGS_POLLIN, s1ap_usrsctp_recv_handler, node);
+
+    sock = ogs_sctp_server(type, node);
+    ogs_assert(sock);
 
     ogs_info("s1ap_server() [%s]:%d",
             OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
-}
-
-void s1ap_closesocket(ogs_sock_t *sock)
-{
-    ogs_assert(sock);
-    usrsctp_close((struct socket *)sock);
-}
-
-void s1ap_delete(ogs_socknode_t *snode)
-{
-    ogs_assert(snode);
-    s1ap_closesocket(snode->sock);
-    snode->sock = NULL;
 }
 
 int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,

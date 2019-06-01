@@ -32,7 +32,7 @@ void ogs_sctp_final()
 {
     while(usrsctp_finish() != 0)
     {
-        ogs_error("try to finsih SCTP");
+        ogs_warn("try to finsih SCTP");
         ogs_msleep(1000);
     }
 }

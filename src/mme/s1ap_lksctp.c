@@ -25,12 +25,6 @@ void s1ap_server(ogs_socknode_t *node, int type)
             OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
 }
 
-void s1ap_closesocket(ogs_sock_t *sock)
-{
-    ogs_assert(sock);
-    ogs_sock_destroy(sock);
-}
-
 int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
         ogs_sockaddr_t *addr, uint16_t stream_no)
 {

@@ -1442,7 +1442,7 @@ int mme_enb_remove(mme_enb_t *enb)
 #endif
 
     if (enb->sock_type == SOCK_STREAM)
-        s1ap_closesocket(enb->sock);
+        ogs_sctp_destroy(enb->sock);
 
     ogs_free(enb->addr);
 
