@@ -20,6 +20,8 @@
 #include "ogs-core.h"
 #include "core/abts.h"
 
+#include "mme/ogs-sctp.h"
+
 #include "fd/fd_lib.h"
 
 #include "app/application.h"
@@ -41,9 +43,7 @@ const struct testlist {
     {test_nas_message},
     {test_gtp_message},
     {test_security},
-#if !defined(HAVE_USRSCTP)
     {test_sctp},
-#endif
     {NULL},
 };
 
@@ -51,6 +51,7 @@ void test_terminate(void)
 {
     app_will_terminate();
     mme_context_final();
+    ogs_sctp_final();
     app_did_terminate();
 
     base_finalize();
@@ -69,13 +70,20 @@ int test_initialize(app_param_t *param, int argc, const char *const argv[])
     param->logfile_disabled = true;
     param->db_disabled = true;
     rv = app_will_initialize(param);
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("app_will_initialize() failed");
         return OGS_ERROR;
     }
 
     mme_context_init();
+
+#define USRSCTP_LOCAL_UDP_PORT 9899
+    rv = ogs_sctp_init(USRSCTP_LOCAL_UDP_PORT);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_sctp_init() failed");
+        return OGS_ERROR;
+    }
+
     app_did_initialize();
 
     return rv;
