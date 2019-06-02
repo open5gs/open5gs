@@ -35,6 +35,7 @@ extern int __esm_log_domain;
 
 typedef struct mme_sgw_s mme_sgw_t;
 typedef struct mme_pgw_s mme_pgw_t;
+typedef struct mme_vlr_s mme_vlr_t;
 
 typedef struct enb_ue_s enb_ue_t;
 typedef struct mme_ue_s mme_ue_t;
@@ -67,14 +68,15 @@ typedef struct mme_context_s {
 
     uint16_t        s1ap_port;      /* Default S1AP Port */
     uint16_t        gtpc_port;      /* Default GTPC Port */
+    uint16_t        sgsap_port;     /* Default SGsAP Port */
 
     ogs_list_t      s1ap_list;      /* MME S1AP IPv4 Server List */
     ogs_list_t      s1ap_list6;     /* MME S1AP IPv6 Server List */
 
     ogs_list_t      gtpc_list;      /* MME GTPC IPv4 Server List */
     ogs_list_t      gtpc_list6;     /* MME GTPC IPv6 Server List */
-    ogs_sock_t      *gtpc_sock;      /* MME GTPC IPv4 Socket */
-    ogs_sock_t      *gtpc_sock6;     /* MME GTPC IPv6 Socket */
+    ogs_sock_t      *gtpc_sock;     /* MME GTPC IPv4 Socket */
+    ogs_sock_t      *gtpc_sock6;    /* MME GTPC IPv6 Socket */
     ogs_sockaddr_t  *gtpc_addr;     /* MME GTPC IPv4 Address */
     ogs_sockaddr_t  *gtpc_addr6;    /* MME GTPC IPv6 Address */
 
@@ -84,6 +86,9 @@ typedef struct mme_context_s {
     ogs_list_t      pgw_list;       /* PGW GTPC Client List */
     ogs_sockaddr_t  *pgw_addr;      /* First IPv4 Address Selected */
     ogs_sockaddr_t  *pgw_addr6;     /* First IPv6 Address Selected */
+
+    ogs_list_t      vlr_list;       /* VLR SGsAP Client List */
+    mme_vlr_t       *vlr;           /* Iterator for VLR */
 
     /* Served GUMME */
     uint8_t         max_num_of_served_gummei;
@@ -161,8 +166,17 @@ typedef struct mme_pgw_s {
     const char      *apn;
 } mme_pgw_t;
 
+typedef struct mme_vlr_s {
+    ogs_lnode_t     lnode;
+
+    nas_tai_t       tai;
+    nas_lai_t       lai;
+
+    ogs_socknode_t  *node;
+} mme_vlr_t;
+
 typedef struct mme_enb_s {
-    ogs_fsm_t       sm;     /* A state machine */
+    ogs_fsm_t       sm;         /* A state machine */
 
     uint32_t        enb_id;     /* eNB_ID received from eNB */
     int             sock_type;  /* SOCK_STREAM or SOCK_SEQPACKET */
@@ -193,13 +207,13 @@ struct enb_ue_s {
     enb_ue_t        *target_ue;
 
     /* Use mme_ue->tai, mme_ue->e_cgi.
-     * Do not access enb_ue->nas.tai enb_ue->nas.e_cgi.
+     * Do not access enb_ue->saved.tai enb_ue->saved.e_cgi.
      * 
      * Save TAI and ECGI. And then, this will copy 'mme_ue_t' context later */
     struct {
         tai_t       tai;
         e_cgi_t     e_cgi;
-    } nas;
+    } saved;
 
     /* Store by UE Context Release Command
      * Retrieve by UE Context Release Complete */
@@ -517,6 +531,11 @@ void mme_pgw_remove(mme_pgw_t *pgw);
 void mme_pgw_remove_all();
 ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
         ogs_list_t *list, int family, char *apn);
+
+mme_vlr_t *mme_vlr_add(
+        ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4);
+void mme_vlr_remove(mme_vlr_t *vlr);
+void mme_vlr_remove_all();
 
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
 int mme_enb_remove(mme_enb_t *enb);
