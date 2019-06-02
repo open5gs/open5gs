@@ -103,6 +103,43 @@ mme:
     gtpc:
 
 #
+#  <sgsap>
+#
+#  o Single MSC/VLR(127.0.0.2:29119)
+#    sgsap:
+#      addr: 127.0.0.2
+#      port: 29119
+#      plmn_id:
+#        mcc: 001
+#        mnc: 01
+#      tac: 4130
+#      lac: 43690
+#
+#  o Multiple MSC/VLR
+#    sgsap:
+#      - addr: 127.0.0.2
+#        plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        tac: 4131
+#        lac: 43692
+#      - addr
+#         - 127.0.0.3
+#         - fe80::2%lo0
+#        plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        tac: 4132
+#        lac: 43692
+#      - plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        tac: 4133
+#        lac: 43693
+#        name: msc.open5gs.org
+#
+
+#
 #  <GUMMEI>
 #
 #  o Multiple GUMMEI

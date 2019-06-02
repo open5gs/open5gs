@@ -250,8 +250,7 @@ int mme_context_parse_config()
                     ogs_assert(node);
                     if (node->type == YAML_SCALAR_NODE) {
                         self.fd_conf_path = ogs_yaml_iter_value(&mme_iter);
-                    }
-                    else if (node->type == YAML_MAPPING_NODE) {
+                    } else if (node->type == YAML_MAPPING_NODE) {
                         ogs_yaml_iter_t fd_iter;
                         ogs_yaml_iter_recurse(&mme_iter, &fd_iter);
 
@@ -261,24 +260,19 @@ int mme_context_parse_config()
                             if (!strcmp(fd_key, "identity")) {
                                 self.fd_config->cnf_diamid = 
                                     ogs_yaml_iter_value(&fd_iter);
-                            }
-                            else if (!strcmp(fd_key, "realm")) {
+                            } else if (!strcmp(fd_key, "realm")) {
                                 self.fd_config->cnf_diamrlm = 
                                     ogs_yaml_iter_value(&fd_iter);
-                            }
-                            else if (!strcmp(fd_key, "port")) {
+                            } else if (!strcmp(fd_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
                                 if (v) self.fd_config->cnf_port = atoi(v);
-                            }
-                            else if (!strcmp(fd_key, "sec_port")) {
+                            } else if (!strcmp(fd_key, "sec_port")) {
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
                                 if (v) self.fd_config->cnf_port_tls = atoi(v);
-                            }
-                            else if (!strcmp(fd_key, "no_sctp")) {
+                            } else if (!strcmp(fd_key, "no_sctp")) {
                                 self.fd_config->cnf_flags.no_sctp =
                                     ogs_yaml_iter_bool(&fd_iter);
-                            }
-                            else if (!strcmp(fd_key, "listen_on")) {
+                            } else if (!strcmp(fd_key, "listen_on")) {
                                 self.fd_config->cnf_addr = 
                                     ogs_yaml_iter_value(&fd_iter);
                             }
@@ -302,8 +296,7 @@ int mme_context_parse_config()
                                     } else if (ogs_yaml_iter_type(&ext_array) ==
                                         YAML_SCALAR_NODE) {
                                         break;
-                                    }
-                                    else
+                                    } else
                                         ogs_assert_if_reached();
 
                                     while (ogs_yaml_iter_next(&ext_iter)) {
@@ -332,8 +325,7 @@ int mme_context_parse_config()
                                     }
                                 } while (ogs_yaml_iter_type(&ext_array) ==
                                         YAML_SEQUENCE_NODE);
-                            }
-                            else if (!strcmp(fd_key, "connect")) {
+                            } else if (!strcmp(fd_key, "connect")) {
                                 ogs_yaml_iter_t conn_array, conn_iter;
                                 ogs_yaml_iter_recurse(&fd_iter, &conn_array);
                                 do {
@@ -389,17 +381,14 @@ int mme_context_parse_config()
                                     }
                                 } while (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_SEQUENCE_NODE);
-                            }
-                            else
+                            } else
                                 ogs_warn("unknown key `%s`", fd_key);
                         }
                     }
-                }
-                else if (!strcmp(mme_key, "relative_capacity")) {
+                } else if (!strcmp(mme_key, "relative_capacity")) {
                     const char *v = ogs_yaml_iter_value(&mme_iter);
                     if (v) self.relative_capacity = atoi(v);
-                }
-                else if (!strcmp(mme_key, "s1ap")) {
+                } else if (!strcmp(mme_key, "s1ap")) {
                     ogs_yaml_iter_t s1ap_array, s1ap_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &s1ap_array);
                     do {
@@ -627,8 +616,7 @@ int mme_context_parse_config()
                                 NULL, self.gtpc_port);
                         ogs_assert(rv == OGS_OK);
                     }
-                }
-                else if (!strcmp(mme_key, "gummei")) {
+                } else if (!strcmp(mme_key, "gummei")) {
                     ogs_yaml_iter_t gummei_array, gummei_iter;
                     ogs_yaml_iter_recurse(&mme_iter, &gummei_array);
                     do {
@@ -742,8 +730,7 @@ int mme_context_parse_config()
                                 } while (
                                     ogs_yaml_iter_type(&mme_gid_iter) ==
                                         YAML_SEQUENCE_NODE);
-                            }
-                            else if (!strcmp(gummei_key, "mme_code")) {
+                            } else if (!strcmp(gummei_key, "mme_code")) {
                                 ogs_yaml_iter_t mme_code_iter;
                                 ogs_yaml_iter_recurse(&gummei_iter,
                                         &mme_code_iter);
@@ -841,8 +828,7 @@ int mme_context_parse_config()
                                     if (!strcmp(plmn_id_key, "mcc")) {
                                         mcc = ogs_yaml_iter_value(
                                                 &plmn_id_iter);
-                                    }
-                                    else if (!strcmp(plmn_id_key, "mnc")) {
+                                    } else if (!strcmp(plmn_id_key, "mnc")) {
                                         mnc = ogs_yaml_iter_value(
                                                 &plmn_id_iter);
                                     }
