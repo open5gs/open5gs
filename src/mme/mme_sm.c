@@ -149,12 +149,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
             if (enb)
             {
-                ogs_info("eNB-S1[%x] connection refused!!!", enb->enb_id);
+                ogs_info("eNB-S1[%s] connection refused!!!", 
+                        OGS_ADDR(addr, buf));
                 mme_enb_remove(enb);
             }
             else
             {
-                ogs_warn("Socket connection refused, Already Removed!");
+                ogs_warn("Socket[%s] connection refused, Already Removed!",
+                        OGS_ADDR(addr, buf));
             }
 
             break;
