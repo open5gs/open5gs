@@ -118,6 +118,8 @@ typedef struct nas_location_area_identification_s {
     uint16_t lac;
 } __attribute__ ((packed)) nas_location_area_identification_t;
 
+typedef nas_location_area_identification_t nas_lai_t;
+
 /* 9.9.2.3 Mobile identity
  * See subclause 10.5.1.4 in 3GPP TS 24.008 [13].
  * O TLV 7-10 */
@@ -779,6 +781,8 @@ typedef struct nas_tracking_area_identity_s {
     nas_plmn_id_t plmn_id;
     uint16_t tac;
 } __attribute__ ((packed)) nas_tracking_area_identity_t;
+
+typedef nas_tracking_area_identity_t nas_tai_t;
 
 /* 9.9.3.33 Tracking area identity list
  * M LV 7-97 */

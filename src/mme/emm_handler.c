@@ -70,14 +70,14 @@ int emm_handle_attach_request(
     ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
             plmn_id_hexdump(&mme_ue->e_cgi.plmn_id), mme_ue->e_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            plmn_id_hexdump(&enb_ue->nas.tai.plmn_id), enb_ue->nas.tai.tac);
+            plmn_id_hexdump(&enb_ue->saved.tai.plmn_id), enb_ue->saved.tai.tac);
     ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            plmn_id_hexdump(&enb_ue->nas.e_cgi.plmn_id),
-            enb_ue->nas.e_cgi.cell_id);
+            plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
+            enb_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
-    memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
+    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(e_cgi_t));
 
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
@@ -440,14 +440,14 @@ int emm_handle_tau_request(
     ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
             plmn_id_hexdump(&mme_ue->e_cgi.plmn_id), mme_ue->e_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            plmn_id_hexdump(&enb_ue->nas.tai.plmn_id), enb_ue->nas.tai.tac);
+            plmn_id_hexdump(&enb_ue->saved.tai.plmn_id), enb_ue->saved.tai.tac);
     ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            plmn_id_hexdump(&enb_ue->nas.e_cgi.plmn_id),
-            enb_ue->nas.e_cgi.cell_id);
+            plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
+            enb_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
-    memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
+    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(e_cgi_t));
 
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);

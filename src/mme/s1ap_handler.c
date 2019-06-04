@@ -284,24 +284,24 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     tAC = &TAI->tAC;
     ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
-    memcpy(&enb_ue->nas.tai.plmn_id, pLMNidentity->buf, 
-            sizeof(enb_ue->nas.tai.plmn_id));
-    memcpy(&enb_ue->nas.tai.tac, tAC->buf, sizeof(enb_ue->nas.tai.tac));
-    enb_ue->nas.tai.tac = ntohs(enb_ue->nas.tai.tac);
+    memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf, 
+            sizeof(enb_ue->saved.tai.plmn_id));
+    memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
+    enb_ue->saved.tai.tac = ntohs(enb_ue->saved.tai.tac);
     
     ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
     ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
     ogs_assert(cell_ID);
-    memcpy(&enb_ue->nas.e_cgi.plmn_id, pLMNidentity->buf, 
-            sizeof(enb_ue->nas.e_cgi.plmn_id));
-    memcpy(&enb_ue->nas.e_cgi.cell_id, cell_ID->buf,
-            sizeof(enb_ue->nas.e_cgi.cell_id));
-    enb_ue->nas.e_cgi.cell_id = (ntohl(enb_ue->nas.e_cgi.cell_id) >> 4);
+    memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf, 
+            sizeof(enb_ue->saved.e_cgi.plmn_id));
+    memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
+            sizeof(enb_ue->saved.e_cgi.cell_id));
+    enb_ue->saved.e_cgi.cell_id = (ntohl(enb_ue->saved.e_cgi.cell_id) >> 4);
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d]",
-        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, enb_ue->nas.tai.tac);
+        enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, enb_ue->saved.tai.tac);
 
     ogs_assert(s1ap_send_to_nas(enb_ue,
         S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU) == OGS_OK);
@@ -1165,16 +1165,16 @@ void s1ap_handle_path_switch_request(
 
     enb_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
 
-    memcpy(&enb_ue->nas.tai.plmn_id, pLMNidentity->buf, 
-            sizeof(enb_ue->nas.tai.plmn_id));
-    memcpy(&enb_ue->nas.tai.tac, tAC->buf, sizeof(enb_ue->nas.tai.tac));
-    enb_ue->nas.tai.tac = ntohs(enb_ue->nas.tai.tac);
+    memcpy(&enb_ue->saved.tai.plmn_id, pLMNidentity->buf, 
+            sizeof(enb_ue->saved.tai.plmn_id));
+    memcpy(&enb_ue->saved.tai.tac, tAC->buf, sizeof(enb_ue->saved.tai.tac));
+    enb_ue->saved.tai.tac = ntohs(enb_ue->saved.tai.tac);
 
-    memcpy(&enb_ue->nas.e_cgi.plmn_id, pLMNidentity->buf, 
-            sizeof(enb_ue->nas.e_cgi.plmn_id));
-    memcpy(&enb_ue->nas.e_cgi.cell_id, cell_ID->buf,
-            sizeof(enb_ue->nas.e_cgi.cell_id));
-    enb_ue->nas.e_cgi.cell_id = (ntohl(enb_ue->nas.e_cgi.cell_id) >> 4);
+    memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf, 
+            sizeof(enb_ue->saved.e_cgi.plmn_id));
+    memcpy(&enb_ue->saved.e_cgi.cell_id, cell_ID->buf,
+            sizeof(enb_ue->saved.e_cgi.cell_id));
+    enb_ue->saved.e_cgi.cell_id = (ntohl(enb_ue->saved.e_cgi.cell_id) >> 4);
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             plmn_id_hexdump(&mme_ue->tai.plmn_id),
@@ -1183,15 +1183,15 @@ void s1ap_handle_path_switch_request(
             plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
             mme_ue->e_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            plmn_id_hexdump(&enb_ue->nas.tai.plmn_id),
-            enb_ue->nas.tai.tac);
+            plmn_id_hexdump(&enb_ue->saved.tai.plmn_id),
+            enb_ue->saved.tai.tac);
     ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            plmn_id_hexdump(&enb_ue->nas.e_cgi.plmn_id),
-            enb_ue->nas.e_cgi.cell_id);
+            plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
+            enb_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->nas.tai, sizeof(tai_t));
-    memcpy(&mme_ue->e_cgi, &enb_ue->nas.e_cgi, sizeof(e_cgi_t));
+    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(e_cgi_t));
 
     memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
     eea = ntohs(eea);
@@ -1904,16 +1904,18 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
 
     mme_ue_associate_enb_ue(mme_ue, target_ue);
 
-    memcpy(&target_ue->nas.tai.plmn_id, pLMNidentity->buf, 
-            sizeof(target_ue->nas.tai.plmn_id));
-    memcpy(&target_ue->nas.tai.tac, tAC->buf, sizeof(target_ue->nas.tai.tac));
-    target_ue->nas.tai.tac = ntohs(target_ue->nas.tai.tac);
+    memcpy(&target_ue->saved.tai.plmn_id, pLMNidentity->buf, 
+            sizeof(target_ue->saved.tai.plmn_id));
+    memcpy(&target_ue->saved.tai.tac,
+            tAC->buf, sizeof(target_ue->saved.tai.tac));
+    target_ue->saved.tai.tac = ntohs(target_ue->saved.tai.tac);
 
-    memcpy(&target_ue->nas.e_cgi.plmn_id, pLMNidentity->buf, 
-            sizeof(target_ue->nas.e_cgi.plmn_id));
-    memcpy(&target_ue->nas.e_cgi.cell_id, cell_ID->buf,
-            sizeof(target_ue->nas.e_cgi.cell_id));
-    target_ue->nas.e_cgi.cell_id = (ntohl(target_ue->nas.e_cgi.cell_id) >> 4);
+    memcpy(&target_ue->saved.e_cgi.plmn_id, pLMNidentity->buf, 
+            sizeof(target_ue->saved.e_cgi.plmn_id));
+    memcpy(&target_ue->saved.e_cgi.cell_id, cell_ID->buf,
+            sizeof(target_ue->saved.e_cgi.cell_id));
+    target_ue->saved.e_cgi.cell_id =
+        (ntohl(target_ue->saved.e_cgi.cell_id) >> 4);
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             plmn_id_hexdump(&mme_ue->tai.plmn_id),
@@ -1922,15 +1924,15 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
             plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
             mme_ue->e_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            plmn_id_hexdump(&target_ue->nas.tai.plmn_id),
-            target_ue->nas.tai.tac);
+            plmn_id_hexdump(&target_ue->saved.tai.plmn_id),
+            target_ue->saved.tai.tac);
     ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            plmn_id_hexdump(&target_ue->nas.e_cgi.plmn_id),
-            target_ue->nas.e_cgi.cell_id);
+            plmn_id_hexdump(&target_ue->saved.e_cgi.plmn_id),
+            target_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &target_ue->nas.tai, sizeof(tai_t));
-    memcpy(&mme_ue->e_cgi, &target_ue->nas.e_cgi, sizeof(e_cgi_t));
+    memcpy(&mme_ue->tai, &target_ue->saved.tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &target_ue->saved.e_cgi, sizeof(e_cgi_t));
 
     sess = mme_sess_first(mme_ue);
     while(sess)

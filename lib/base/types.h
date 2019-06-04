@@ -29,12 +29,15 @@ extern "C" {
 #define S1AP_SCTP_PORT              36412
 #define GTPV2_C_UDP_PORT            2123
 #define GTPV1_U_UDP_PORT            2152
+#define SGSAP_SCTP_PORT             29118
 
 #define SCTP_S1AP_PPID              18
 #define SCTP_X2AP_PPID              27
+#define SCTP_SGSAP_PPID             0
 
 #define MAX_NUM_OF_SGW              32
 #define MAX_NUM_OF_PGW              32
+#define MAX_NUM_OF_VLR              32
 
 #define MAX_NUM_OF_ENB              128
 #define MAX_NUM_OF_UE               128
