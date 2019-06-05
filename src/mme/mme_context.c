@@ -473,14 +473,21 @@ int mme_context_parse_config()
                         }
 
                         if (addr) {
-                            if (context_self()->config.parameter.no_ipv4 == 0)
-                                ogs_socknode_add(
-                                        &self.s1ap_list, AF_INET, addr);
-
-                            if (context_self()->config.parameter.no_ipv6 == 0)
-                                ogs_socknode_add(
-                                        &self.s1ap_list6, AF_INET6, addr);
+                            if (context_self()->config.parameter.no_ipv4 == 0) {
+                                ogs_sockaddr_t *dup = NULL;
+                                rv = ogs_copyaddrinfo(&dup, addr);
                                 ogs_assert(rv == OGS_OK);
+                                ogs_socknode_add(
+                                        &self.s1ap_list, AF_INET, dup);
+                            }
+
+                            if (context_self()->config.parameter.no_ipv6 == 0) {
+                                ogs_sockaddr_t *dup = NULL;
+                                rv = ogs_copyaddrinfo(&dup, addr);
+                                ogs_assert(rv == OGS_OK);
+                                ogs_socknode_add(
+                                        &self.s1ap_list6, AF_INET6, dup);
+                            }
 
                             ogs_freeaddrinfo(addr);
                         }
@@ -589,13 +596,21 @@ int mme_context_parse_config()
                         }
 
                         if (addr) {
-                            if (context_self()->config.parameter.no_ipv4 == 0)
+                            if (context_self()->config.parameter.no_ipv4 == 0) {
+                                ogs_sockaddr_t *dup = NULL;
+                                rv = ogs_copyaddrinfo(&dup, addr);
+                                ogs_assert(rv == OGS_OK);
                                 ogs_socknode_add(
-                                        &self.gtpc_list, AF_INET, addr);
+                                        &self.gtpc_list, AF_INET, dup);
+                            }
 
-                            if (context_self()->config.parameter.no_ipv6 == 0)
+                            if (context_self()->config.parameter.no_ipv6 == 0) {
+                                ogs_sockaddr_t *dup = NULL;
+                                rv = ogs_copyaddrinfo(&dup, addr);
+                                ogs_assert(rv == OGS_OK);
                                 ogs_socknode_add(
-                                        &self.gtpc_list6, AF_INET6, addr);
+                                        &self.gtpc_list6, AF_INET6, dup);
+                            }
 
                             ogs_freeaddrinfo(addr);
                         }
@@ -1335,15 +1350,18 @@ int mme_context_parse_config()
                             ogs_assert(rv == OGS_OK);
                         }
 
-                        sgw = mme_sgw_add(addr,
+                        sgw = mme_sgw_add(addr);
+                        ogs_assert(sgw);
+
+                        rv = ogs_filter_ip_version(&sgw->node->addr,
                                 context_self()->config.parameter.no_ipv4,
                                 context_self()->config.parameter.no_ipv6,
                                 context_self()->config.parameter.prefer_ipv4);
+                        ogs_assert(sgw->node->addr);
+
                         sgw->num_of_tac = num_of_tac;
                         if (num_of_tac != 0)
                             memcpy(sgw->tac, tac, sizeof(sgw->tac));
-
-                        ogs_freeaddrinfo(addr);
 
                     } while (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SEQUENCE_NODE);
@@ -1443,13 +1461,16 @@ int mme_context_parse_config()
                             ogs_assert(rv == OGS_OK);
                         }
 
-                        pgw = mme_pgw_add(addr,
+                        pgw = mme_pgw_add(addr);
+                        ogs_assert(pgw);
+
+                        rv = ogs_filter_ip_version(&pgw->node->addr,
                                 context_self()->config.parameter.no_ipv4,
                                 context_self()->config.parameter.no_ipv6,
                                 context_self()->config.parameter.prefer_ipv4);
-                        pgw->apn = apn;
+                        ogs_assert(pgw->node->addr);
 
-                        ogs_freeaddrinfo(addr);
+                        pgw->apn = apn;
 
                     } while (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SEQUENCE_NODE);
@@ -1464,18 +1485,19 @@ int mme_context_parse_config()
     return OGS_OK;
 }
 
-mme_sgw_t *mme_sgw_add(
-        ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
+mme_sgw_t *mme_sgw_add(ogs_sockaddr_t *addr)
 {
     mme_sgw_t *sgw = NULL;
 
-    ogs_assert(all_list);
+    ogs_assert(addr);
 
     ogs_pool_alloc(&mme_sgw_pool, &sgw);
     ogs_assert(sgw);
     memset(sgw, 0, sizeof *sgw);
 
-    sgw->gnode = gtp_node_new(all_list, no_ipv4, no_ipv6, prefer_ipv4);
+    sgw->node = gtp_node_new(addr);
+    ogs_assert(sgw->node);
+
     ogs_list_add(&self.sgw_list, sgw);
 
     return sgw;
@@ -1487,7 +1509,7 @@ void mme_sgw_remove(mme_sgw_t *sgw)
 
     ogs_list_remove(&self.sgw_list, sgw);
 
-    gtp_node_free(sgw->gnode);
+    gtp_node_free(sgw->node);
     ogs_pool_free(&mme_sgw_pool, sgw);
 }
 
@@ -1499,17 +1521,18 @@ void mme_sgw_remove_all()
         mme_sgw_remove(sgw);
 }
 
-mme_pgw_t *mme_pgw_add(
-        ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
+mme_pgw_t *mme_pgw_add(ogs_sockaddr_t *addr)
 {
     mme_pgw_t *pgw = NULL;
 
-    ogs_assert(all_list);
+    ogs_assert(addr);
 
     ogs_pool_alloc(&mme_pgw_pool, &pgw);
     ogs_assert(pgw);
 
-    pgw->gnode = gtp_node_new(all_list, no_ipv4, no_ipv6, prefer_ipv4);
+    pgw->node = gtp_node_new(addr);
+    ogs_assert(pgw->node);
+
     ogs_list_add(&self.pgw_list, pgw);
 
     return pgw;
@@ -1521,7 +1544,7 @@ void mme_pgw_remove(mme_pgw_t *pgw)
 
     ogs_list_remove(&self.pgw_list, pgw);
 
-    gtp_node_free(pgw->gnode);
+    gtp_node_free(pgw->node);
     ogs_pool_free(&mme_pgw_pool, pgw);
 }
 
@@ -1540,8 +1563,8 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
     ogs_assert(list);
 
     ogs_list_for_each(list, pgw) {
-        ogs_assert(pgw->gnode);
-        ogs_sockaddr_t *addr = pgw->gnode->sa_list;
+        ogs_assert(pgw->node);
+        ogs_sockaddr_t *addr = pgw->node->addr;
 
         while (addr) {
             if (addr->ogs_sa_family == family &&
@@ -1556,18 +1579,18 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
 }
 
 mme_vlr_t *mme_vlr_add(
-        ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
+        ogs_sockaddr_t *addr, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
     mme_vlr_t *vlr = NULL;
 
-    ogs_assert(all_list);
+    ogs_assert(addr);
 
     ogs_pool_alloc(&mme_vlr_pool, &vlr);
     ogs_assert(vlr);
     memset(vlr, 0, sizeof *vlr);
 
 #if 0
-    vlr->gnode = gtp_node_new(all_list, no_ipv4, no_ipv6, prefer_ipv4);
+    vlr->gnode = gtp_node_new(addr, no_ipv4, no_ipv6, prefer_ipv4);
 #endif
     ogs_list_add(&self.vlr_list, vlr);
 
@@ -1932,7 +1955,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
             mme_self()->sgw = ogs_list_first(&mme_self()->sgw_list);
 
         ogs_assert(mme_self()->sgw);
-        SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
+        SETUP_GTP_NODE(mme_ue, mme_self()->sgw->node);
 
         mme_self()->sgw = ogs_list_next(mme_self()->sgw);
     } else if (mme_self()->sgw_selection == SGW_SELECT_TAC) {
@@ -1949,7 +1972,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
         }
 
         ogs_assert(mme_self()->sgw);
-        SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
+        SETUP_GTP_NODE(mme_ue, mme_self()->sgw->node);
     } else
         ogs_assert_if_reached();
         

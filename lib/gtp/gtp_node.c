@@ -36,45 +36,17 @@ int gtp_node_final(void)
     return OGS_OK;
 }
 
-gtp_node_t *gtp_node_new(
-        ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
+gtp_node_t *gtp_node_new(ogs_sockaddr_t *addr)
 {
-    int rv;
     gtp_node_t *node = NULL;
-    ogs_sockaddr_t *preferred_list = NULL;
 
-    ogs_assert(all_list);
-
-    rv = ogs_copyaddrinfo(&preferred_list, all_list);
-    ogs_assert(rv == OGS_OK);
-    if (no_ipv4 == 1)
-    {
-        rv = ogs_filteraddrinfo(&preferred_list, AF_INET6);
-        ogs_assert(rv == OGS_OK);
-    }
-    if (no_ipv6 == 1)
-    {
-        rv = ogs_filteraddrinfo(&preferred_list, AF_INET);
-        ogs_assert(rv == OGS_OK);
-    }
-    if (prefer_ipv4 == 1)
-    {
-        rv = ogs_sortaddrinfo(&preferred_list, AF_INET);
-        ogs_assert(rv == OGS_OK);
-    }
-    else
-    {
-        rv = ogs_sortaddrinfo(&preferred_list, AF_INET6);
-        ogs_assert(rv == OGS_OK);
-    }
-
-    ogs_assert(preferred_list);
+    ogs_assert(addr);
 
     ogs_pool_alloc(&pool, &node);
     ogs_assert(node);
     memset(node, 0, sizeof(gtp_node_t));
 
-    node->sa_list = preferred_list;
+    node->addr = addr;
 
     ogs_list_init(&node->local_list);
     ogs_list_init(&node->remote_list);
@@ -91,7 +63,7 @@ void gtp_node_free(gtp_node_t *node)
 
     gtp_xact_delete_all(node);
 
-    ogs_freeaddrinfo(node->sa_list);
+    ogs_freeaddrinfo(node->addr);
     ogs_pool_free(&pool, node);
 }
 
@@ -100,25 +72,31 @@ gtp_node_t *gtp_node_add(ogs_list_t *list, gtp_f_teid_t *f_teid,
 {
     int rv;
     gtp_node_t *node = NULL;
-    ogs_sockaddr_t *sa_list = NULL;
+    ogs_sockaddr_t *addr = NULL;
 
     ogs_assert(list);
     ogs_assert(f_teid);
     ogs_assert(port);
 
-    rv = gtp_f_teid_to_sockaddr(f_teid, port, &sa_list);
+    rv = gtp_f_teid_to_sockaddr(f_teid, port, &addr);
     ogs_assert(rv == OGS_OK);
 
-    node = gtp_node_new(sa_list, no_ipv4, no_ipv6, prefer_ipv4);
+    node = gtp_node_new(addr);
+    ogs_assert(node);
+
+    rv = ogs_filter_ip_version(&node->addr, no_ipv4, no_ipv6, prefer_ipv4);
+    ogs_assert(rv == OGS_OK);
+    ogs_assert(node->addr);
+
+    ogs_assert(addr);
+
     ogs_list_add(list, node);
 
     rv = gtp_f_teid_to_ip(f_teid, &node->ip);
     ogs_assert(rv == OGS_OK);
 
-    rv = ogs_socknode_fill_scope_id_in_local(node->sa_list);
+    rv = ogs_socknode_fill_scope_id_in_local(node->addr);
     ogs_assert(rv == OGS_OK);
-
-    ogs_freeaddrinfo(sa_list);
 
     return node;
 }

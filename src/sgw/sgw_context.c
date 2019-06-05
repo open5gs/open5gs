@@ -211,13 +211,21 @@ int sgw_context_parse_config()
                         }
 
                         if (addr) {
-                            if (context_self()->config.parameter.no_ipv4 == 0)
+                            if (context_self()->config.parameter.no_ipv4 == 0) {
+                                ogs_sockaddr_t *dup = NULL;
+                                rv = ogs_copyaddrinfo(&dup, addr);
+                                ogs_assert(rv == OGS_OK);
                                 ogs_socknode_add(
-                                        &self.gtpc_list, AF_INET, addr);
+                                        &self.gtpc_list, AF_INET, dup);
+                            }
 
-                            if (context_self()->config.parameter.no_ipv6 == 0)
+                            if (context_self()->config.parameter.no_ipv6 == 0) {
+                                ogs_sockaddr_t *dup = NULL;
+                                rv = ogs_copyaddrinfo(&dup, addr);
+                                ogs_assert(rv == OGS_OK);
                                 ogs_socknode_add(
-                                        &self.gtpc_list6, AF_INET6, addr);
+                                        &self.gtpc_list6, AF_INET6, dup);
+                            }
 
                             ogs_freeaddrinfo(addr);
                         }
@@ -325,13 +333,21 @@ int sgw_context_parse_config()
                         }
 
                         if (addr) {
-                            if (context_self()->config.parameter.no_ipv4 == 0)
+                            if (context_self()->config.parameter.no_ipv4 == 0) {
+                                ogs_sockaddr_t *dup = NULL;
+                                rv = ogs_copyaddrinfo(&dup, addr);
+                                ogs_assert(rv == OGS_OK);
                                 ogs_socknode_add(
-                                        &self.gtpu_list, AF_INET, addr);
+                                        &self.gtpu_list, AF_INET, dup);
+                            }
 
-                            if (context_self()->config.parameter.no_ipv6 == 0)
+                            if (context_self()->config.parameter.no_ipv6 == 0) {
+                                ogs_sockaddr_t *dup = NULL;
+                                rv = ogs_copyaddrinfo(&dup, addr);
+                                ogs_assert(rv == OGS_OK);
                                 ogs_socknode_add(
-                                        &self.gtpu_list6, AF_INET6, addr);
+                                        &self.gtpu_list6, AF_INET6, dup);
+                            }
 
                             ogs_freeaddrinfo(addr);
                         }

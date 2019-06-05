@@ -73,7 +73,7 @@ int mme_gtp_open()
     ogs_list_for_each(&mme_self()->sgw_list, sgw)
     {
         rv = gtp_connect(
-                mme_self()->gtpc_sock, mme_self()->gtpc_sock6, sgw->gnode);
+                mme_self()->gtpc_sock, mme_self()->gtpc_sock6, sgw->node);
         ogs_assert(rv == OGS_OK);
     }
 

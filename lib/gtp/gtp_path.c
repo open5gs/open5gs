@@ -45,9 +45,9 @@ int gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, gtp_node_t *gnode)
 
     ogs_assert(ipv4 || ipv6);
     ogs_assert(gnode);
-    ogs_assert(gnode->sa_list);
+    ogs_assert(gnode->addr);
 
-    addr = gnode->sa_list;
+    addr = gnode->addr;
     while(addr)
     {
         ogs_sock_t *sock = NULL;
@@ -74,7 +74,7 @@ int gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, gtp_node_t *gnode)
     {
         ogs_log_message(OGS_LOG_WARN, ogs_socket_errno,
                 "gtp_connect() [%s]:%d failed",
-                OGS_ADDR(gnode->sa_list, buf), OGS_PORT(gnode->sa_list));
+                OGS_ADDR(gnode->addr, buf), OGS_PORT(gnode->addr));
         return OGS_ERROR;
     }
 
