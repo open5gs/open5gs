@@ -81,14 +81,11 @@ gtp_node_t *gtp_node_add(ogs_list_t *list, gtp_f_teid_t *f_teid,
     rv = gtp_f_teid_to_sockaddr(f_teid, port, &addr);
     ogs_assert(rv == OGS_OK);
 
+    rv = ogs_filter_ip_version(&addr, no_ipv4, no_ipv6, prefer_ipv4);
+    ogs_assert(addr);
+
     node = gtp_node_new(addr);
     ogs_assert(node);
-
-    rv = ogs_filter_ip_version(&node->addr, no_ipv4, no_ipv6, prefer_ipv4);
-    ogs_assert(rv == OGS_OK);
-    ogs_assert(node->addr);
-
-    ogs_assert(addr);
 
     ogs_list_add(list, node);
 

@@ -1350,14 +1350,13 @@ int mme_context_parse_config()
                             ogs_assert(rv == OGS_OK);
                         }
 
-                        sgw = mme_sgw_add(addr);
-                        ogs_assert(sgw);
-
-                        rv = ogs_filter_ip_version(&sgw->node->addr,
+                        ogs_filter_ip_version(&addr,
                                 context_self()->config.parameter.no_ipv4,
                                 context_self()->config.parameter.no_ipv6,
                                 context_self()->config.parameter.prefer_ipv4);
-                        ogs_assert(sgw->node->addr);
+
+                        sgw = mme_sgw_add(addr);
+                        ogs_assert(sgw);
 
                         sgw->num_of_tac = num_of_tac;
                         if (num_of_tac != 0)
@@ -1461,14 +1460,13 @@ int mme_context_parse_config()
                             ogs_assert(rv == OGS_OK);
                         }
 
-                        pgw = mme_pgw_add(addr);
-                        ogs_assert(pgw);
-
-                        rv = ogs_filter_ip_version(&pgw->node->addr,
+                        ogs_filter_ip_version(&addr,
                                 context_self()->config.parameter.no_ipv4,
                                 context_self()->config.parameter.no_ipv6,
                                 context_self()->config.parameter.prefer_ipv4);
-                        ogs_assert(pgw->node->addr);
+
+                        pgw = mme_pgw_add(addr);
+                        ogs_assert(pgw);
 
                         pgw->apn = apn;
 
