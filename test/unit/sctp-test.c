@@ -33,6 +33,7 @@
 static void test1_func(abts_case *tc, void *data)
 {
     ogs_sock_t *sctp;
+    ogs_sockaddr_t *addr;
     ogs_socknode_t *node;
     int rv;
 
@@ -40,13 +41,17 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sctp);
     ogs_sctp_destroy(sctp);
 
-    node = ogs_socknode_new(AF_INET, NULL, PORT, AI_PASSIVE);
+    rv = ogs_getaddrinfo(&addr, AF_INET, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
     sctp = ogs_sctp_server(SOCK_STREAM, node);
     ABTS_PTR_NOTNULL(tc, sctp);
     ogs_socknode_free(node);
 
-    node = ogs_socknode_new(AF_UNSPEC, NULL, PORT, AI_PASSIVE);
+    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
     sctp = ogs_sctp_server(SOCK_SEQPACKET, node);
     ABTS_PTR_NOTNULL(tc, sctp);
@@ -63,10 +68,13 @@ static void test2_main(void *data)
     ssize_t size;
     uint32_t ppid;
     ogs_sctp_info_t sinfo;
+    ogs_sockaddr_t *addr;
     ogs_socknode_t *node;
     ogs_sockaddr_t from;
 
-    node = ogs_socknode_new(AF_UNSPEC, NULL, PORT, 0);
+    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, NULL, PORT, 0);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
     sctp = ogs_sctp_client(SOCK_SEQPACKET, node);
     ABTS_PTR_NOTNULL(tc, sctp);
@@ -82,11 +90,15 @@ static void test2_main(void *data)
 
 static void test2_func(abts_case *tc, void *data)
 {
+    int rv;
     ogs_sock_t *sctp, *sctp2;
     ssize_t size;
+    ogs_sockaddr_t *addr;
     ogs_socknode_t *node;
 
-    node = ogs_socknode_new(AF_INET6, NULL, PORT, AI_PASSIVE);
+    rv = ogs_getaddrinfo(&addr, AF_INET6, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
     sctp = ogs_sctp_server(SOCK_STREAM, node);
     ABTS_PTR_NOTNULL(tc, sctp);
@@ -144,7 +156,9 @@ static void test3_func(abts_case *tc, void *data)
     char buf[OGS_ADDRSTRLEN];
     ogs_sctp_info_t sinfo;
 
-    node = ogs_socknode_new(AF_INET, NULL, PORT, AI_PASSIVE);
+    rv = ogs_getaddrinfo(&addr, AF_INET, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
     sctp = ogs_sctp_server(SOCK_SEQPACKET, node);
     ABTS_PTR_NOTNULL(tc, sctp);
@@ -164,14 +178,18 @@ static void test3_func(abts_case *tc, void *data)
 static ogs_thread_t *test4_thread;
 static void test4_main(void *data)
 {
+    int rv;
     abts_case *tc = data;
     ogs_sock_t *sctp;
+    ogs_sockaddr_t *addr;
     ogs_socknode_t *node;
     char str[STRLEN];
     ssize_t size;
     ogs_sctp_info_t sinfo;
 
-    node = ogs_socknode_new(AF_UNSPEC, NULL, PORT, 0);
+    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, NULL, PORT, 0);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
     sctp = ogs_sctp_client(SOCK_STREAM, node);
     ABTS_PTR_NOTNULL(tc, sctp);
@@ -190,6 +208,7 @@ static void test4_main(void *data)
 
 static void test4_func(abts_case *tc, void *data)
 {
+    int rv;
     ogs_sock_t *sctp;
     ssize_t size;
     ogs_sockaddr_t from, *addr;
@@ -202,7 +221,9 @@ static void test4_func(abts_case *tc, void *data)
     ogs_msleep(10);
 #endif
 
-    node = ogs_socknode_new(AF_INET6, NULL, PORT, AI_PASSIVE);
+    rv = ogs_getaddrinfo(&addr, AF_INET6, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
     sctp = ogs_sctp_server(SOCK_SEQPACKET, node);
     ABTS_PTR_NOTNULL(tc, sctp);
@@ -235,7 +256,9 @@ static void test5_main(void *data)
     ssize_t size;
     char buf[OGS_ADDRSTRLEN];
 
-    node = ogs_socknode_new(AF_INET6, NULL, PORT2, AI_PASSIVE);
+    rv = ogs_getaddrinfo(&addr, AF_INET6, NULL, PORT2, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
     sctp = ogs_sctp_server(SOCK_SEQPACKET, node);
     ABTS_PTR_NOTNULL(tc, sctp);
@@ -270,16 +293,20 @@ static void test5_main(void *data)
 
 static void test5_func(abts_case *tc, void *data)
 {
+    int rv;
     ogs_sock_t *sctp;
     ssize_t size;
     ogs_sockaddr_t from;
+    ogs_sockaddr_t *addr;
     ogs_socknode_t *node;
     socklen_t addrlen;
     char str[STRLEN];
     ogs_sctp_info_t sinfo;
     char buf[OGS_ADDRSTRLEN];
 
-    node = ogs_socknode_new(AF_INET6, NULL, PORT, AI_PASSIVE);
+    rv = ogs_getaddrinfo(&addr, AF_INET6, NULL, PORT, AI_PASSIVE);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    node = ogs_socknode_new(addr);
     ABTS_PTR_NOTNULL(tc, node);
     sctp = ogs_sctp_server(SOCK_SEQPACKET, node);
     ABTS_PTR_NOTNULL(tc, sctp);

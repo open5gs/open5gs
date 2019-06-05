@@ -1226,10 +1226,7 @@ int mme_context_parse_config()
                                     family, hostname[i], port, 0);
                             ogs_assert(rv == OGS_OK);
                         }
-                        vlr = mme_vlr_add(addr,
-                                context_self()->config.parameter.no_ipv4,
-                                context_self()->config.parameter.no_ipv6,
-                                context_self()->config.parameter.prefer_ipv4);
+                        vlr = mme_vlr_add(addr);
                         ogs_assert(vlr);
 
                         memcpy(&vlr->tai, &tai, sizeof tai);
@@ -1576,8 +1573,7 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
     return NULL;
 }
 
-mme_vlr_t *mme_vlr_add(
-        ogs_sockaddr_t *addr, int no_ipv4, int no_ipv6, int prefer_ipv4)
+mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr)
 {
     mme_vlr_t *vlr = NULL;
 

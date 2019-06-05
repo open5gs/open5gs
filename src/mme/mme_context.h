@@ -530,8 +530,7 @@ void mme_pgw_remove_all();
 ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
         ogs_list_t *list, int family, char *apn);
 
-mme_vlr_t *mme_vlr_add(
-        ogs_sockaddr_t *addr, int no_ipv4, int no_ipv6, int prefer_ipv4);
+mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr);
 void mme_vlr_remove(mme_vlr_t *vlr);
 void mme_vlr_remove_all();
 

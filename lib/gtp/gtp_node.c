@@ -84,16 +84,16 @@ gtp_node_t *gtp_node_add(ogs_list_t *list, gtp_f_teid_t *f_teid,
     rv = ogs_filter_ip_version(&addr, no_ipv4, no_ipv6, prefer_ipv4);
     ogs_assert(addr);
 
+    rv = ogs_socknode_fill_scope_id_in_local(addr);
+    ogs_assert(rv == OGS_OK);
+
     node = gtp_node_new(addr);
     ogs_assert(node);
-
-    ogs_list_add(list, node);
 
     rv = gtp_f_teid_to_ip(f_teid, &node->ip);
     ogs_assert(rv == OGS_OK);
 
-    rv = ogs_socknode_fill_scope_id_in_local(node->addr);
-    ogs_assert(rv == OGS_OK);
+    ogs_list_add(list, node);
 
     return node;
 }
