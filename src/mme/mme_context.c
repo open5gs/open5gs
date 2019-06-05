@@ -1056,12 +1056,9 @@ int mme_context_parse_config()
                     ogs_yaml_iter_recurse(&mme_iter, &sgsap_array);
                     do {
                         mme_vlr_t *vlr = NULL;
-                        nas_tai_t tai;
-                        const char *tai_mcc = NULL, *tai_mnc = NULL;
-                        const char *tai_tac = NULL;
-                        nas_lai_t lai;
-                        const char *lai_mcc = NULL, *lai_mnc = NULL;
-                        const char *lai_lac = NULL;
+                        plmn_id_t plmn_id;
+                        const char *mcc = NULL, *mnc = NULL;
+                        const char *tac = NULL, *lac = NULL;
                         ogs_sockaddr_t *addr = NULL;
                         int family = AF_UNSPEC;
                         int i, num = 0;
@@ -1120,120 +1117,66 @@ int mme_context_parse_config()
                                     ogs_yaml_iter_type(&hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
                             } else if (!strcmp(sgsap_key, "port")) {
-                                const char *v = ogs_yaml_iter_value(&sgsap_iter);
+                                const char *v =
+                                    ogs_yaml_iter_value(&sgsap_iter);
                                 if (v) {
                                     port = atoi(v);
                                     self.sgsap_port = port;
                                 }
-                            } else if (!strcmp(sgsap_key, "tai")) {
-                                ogs_yaml_iter_t tai_iter;
-                                ogs_yaml_iter_recurse(&sgsap_iter, &tai_iter);
+                            } else if (!strcmp(sgsap_key, "plmn_id")) {
+                                ogs_yaml_iter_t plmn_id_iter;
+                                ogs_yaml_iter_recurse(&sgsap_iter,
+                                        &plmn_id_iter);
 
-                                while (ogs_yaml_iter_next(&tai_iter)) {
-                                    const char *tai_key =
-                                        ogs_yaml_iter_key(&tai_iter);
-                                    ogs_assert(tai_key);
-                                    if (!strcmp(tai_key, "plmn_id")) {
-                                        ogs_yaml_iter_t plmn_id_iter;
-                                        ogs_yaml_iter_recurse(&tai_iter,
-                                                &plmn_id_iter);
-                                        while (ogs_yaml_iter_next(
-                                                    &plmn_id_iter)) {
-                                            const char *plmn_id_key =
-                                                ogs_yaml_iter_key(
-                                                        &plmn_id_iter);
-                                            ogs_assert(plmn_id_key);
-                                            if (!strcmp(plmn_id_key, "mcc")) {
-                                                tai_mcc = ogs_yaml_iter_value(
-                                                        &plmn_id_iter);
-                                            } else if (!strcmp(plmn_id_key,
-                                                        "mnc")) {
-                                                tai_mnc = ogs_yaml_iter_value(
-                                                        &plmn_id_iter);
-                                            }
-                                        }
-                                    } else if (!strcmp(tai_key, "tac")) {
-                                        tai_tac = 
-                                            ogs_yaml_iter_value(&tai_iter);
+                                while (ogs_yaml_iter_next(&plmn_id_iter)) {
+                                    const char *plmn_id_key =
+                                        ogs_yaml_iter_key(&plmn_id_iter);
+                                    ogs_assert(plmn_id_key);
+                                    if (!strcmp(plmn_id_key, "mcc")) {
+                                        mcc =
+                                            ogs_yaml_iter_value(&plmn_id_iter);
+                                    } else if (!strcmp(plmn_id_key, "mnc")) {
+                                        mnc =
+                                            ogs_yaml_iter_value(&plmn_id_iter);
                                     } else
-                                        ogs_warn("unknown key `%s`", tai_key);
+                                        ogs_warn("unknown key `%s`",
+                                                plmn_id_key);
                                 }
-                            } else if (!strcmp(sgsap_key, "lai")) {
-                                ogs_yaml_iter_t tai_iter;
-                                ogs_yaml_iter_recurse(&sgsap_iter, &tai_iter);
-
-                                while (ogs_yaml_iter_next(&tai_iter)) {
-                                    const char *tai_key =
-                                        ogs_yaml_iter_key(&tai_iter);
-                                    ogs_assert(tai_key);
-                                    if (!strcmp(tai_key, "plmn_id")) {
-                                        ogs_yaml_iter_t plmn_id_iter;
-                                        ogs_yaml_iter_recurse(&tai_iter,
-                                                &plmn_id_iter);
-                                        while (ogs_yaml_iter_next(
-                                                    &plmn_id_iter)) {
-                                            const char *plmn_id_key =
-                                                ogs_yaml_iter_key(
-                                                        &plmn_id_iter);
-                                            ogs_assert(plmn_id_key);
-                                            if (!strcmp(plmn_id_key, "mcc")) {
-                                                lai_mcc = ogs_yaml_iter_value(
-                                                        &plmn_id_iter);
-                                            } else if (!strcmp(plmn_id_key,
-                                                        "mnc")) {
-                                                lai_mnc = ogs_yaml_iter_value(
-                                                        &plmn_id_iter);
-                                            }
-                                        }
-                                    } else if (!strcmp(tai_key, "lac")) {
-                                        lai_lac = 
-                                            ogs_yaml_iter_value(&tai_iter);
-                                    } else
-                                        ogs_warn("unknown key `%s`", tai_key);
-                                }
+                            } else if (!strcmp(sgsap_key, "tac")) {
+                                tac = ogs_yaml_iter_value(&sgsap_iter);
+                            } else if (!strcmp(sgsap_key, "lac")) {
+                                lac = ogs_yaml_iter_value(&sgsap_iter);
                             } else
                                 ogs_warn("unknown key `%s`", sgsap_key);
                         }
 
-                        if (tai_mcc && tai_mnc && tai_tac) {
-                            plmn_id_t plmn_id;
-                            plmn_id_build(&plmn_id,
-                                atoi(tai_mcc), atoi(tai_mnc), strlen(tai_mnc));
-                            nas_from_plmn_id(&tai.plmn_id, &plmn_id);
-                            tai.tac = atoi(tai_tac);
-                        } else {
+                        if (!mcc || !mnc || !tac || !lac) {
                             ogs_error("sgsap.tai configuration failed"
-                                    " - (mcc:%p, mnc:%p, tac:%p)",
-                                    tai_mcc, tai_mnc, tai_tac);
+                                    " - (mcc:%p, mnc:%p, tac:%p, lac:%p)",
+                                    mcc, mnc, tac, lac);
                             return OGS_ERROR;
                         }
 
-                        if (lai_mcc && lai_mnc && lai_lac) {
-                            plmn_id_t plmn_id;
-                            plmn_id_build(&plmn_id,
-                                atoi(lai_mcc), atoi(lai_mnc), strlen(lai_mnc));
-                            nas_from_plmn_id(&tai.plmn_id, &plmn_id);
-                            lai.lac = atoi(lai_lac);
-                        } else {
-                            ogs_error("sgsap.lai configuration failed"
-                                    " - (mcc:%p, mnc:%p, lac:%p)",
-                                    lai_mcc, lai_mnc, lai_lac);
-                            return OGS_ERROR;
-                        }
                         addr = NULL;
                         for (i = 0; i < num; i++) {
                             rv = ogs_addaddrinfo(&addr,
                                     family, hostname[i], port, 0);
                             ogs_assert(rv == OGS_OK);
                         }
+
+                        ogs_filter_ip_version(&addr,
+                                context_self()->config.parameter.no_ipv4,
+                                context_self()->config.parameter.no_ipv6,
+                                context_self()->config.parameter.prefer_ipv4);
+
                         vlr = mme_vlr_add(addr);
                         ogs_assert(vlr);
 
-                        memcpy(&vlr->tai, &tai, sizeof tai);
-                        memcpy(&vlr->lai, &lai, sizeof lai);
-
-                        ogs_freeaddrinfo(addr);
-
+                        plmn_id_build(&plmn_id,
+                            atoi(mcc), atoi(mnc), strlen(mnc));
+                        nas_from_plmn_id(&vlr->nas_plmn_id, &plmn_id);
+                        vlr->tac = atoi(tac);
+                        vlr->lac = atoi(lac);
                     } while (ogs_yaml_iter_type(&sgsap_array) ==
                             YAML_SEQUENCE_NODE);
                 } else
@@ -1583,9 +1526,9 @@ mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr)
     ogs_assert(vlr);
     memset(vlr, 0, sizeof *vlr);
 
-#if 0
-    vlr->gnode = gtp_node_new(addr, no_ipv4, no_ipv6, prefer_ipv4);
-#endif
+    vlr->node = ogs_socknode_new(addr);
+    ogs_assert(vlr->node);
+
     ogs_list_add(&self.vlr_list, vlr);
 
     return vlr;
@@ -1597,9 +1540,7 @@ void mme_vlr_remove(mme_vlr_t *vlr)
 
     ogs_list_remove(&self.vlr_list, vlr);
 
-#if 0
-    gtp_node_free(vlr->gnode);
-#endif
+    ogs_socknode_free(vlr->node);
     ogs_pool_free(&mme_vlr_pool, vlr);
 }
 

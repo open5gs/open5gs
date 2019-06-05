@@ -169,8 +169,9 @@ typedef struct mme_pgw_s {
 typedef struct mme_vlr_s {
     ogs_lnode_t     lnode;
 
-    nas_tai_t       tai;
-    nas_lai_t       lai;
+    nas_plmn_id_t   nas_plmn_id;
+    uint16_t        tac;
+    uint16_t        lac;
 
     ogs_socknode_t  *node;
 } mme_vlr_t;
