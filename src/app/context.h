@@ -1,5 +1,24 @@
-#ifndef __CONTEXT_H__
-#define __CONTEXT_H__
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef APP_CONTEXT_H
+#define APP_CONTEXT_H
 
 #include "ogs-core.h"
 #include "ogs-yaml.h"
@@ -7,9 +26,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#define MAX_CONFIG_FILE_SIZE    2048
-#define MAX_NUM_OF_CONFIG_TOKEN 256
 
 typedef struct _config_t {
     const char *path;
@@ -42,9 +58,20 @@ typedef struct _config_t {
         int udp_port;
     } usrsctp;
 
-} config_t;
+    struct {
+        int enb;
+        int ue;
+        int sess;
+        int bearer;
+        int tunnel;
+        int pf;
+        struct {
+            int buffer;
+            int pool;
+        } packet;
+    } max;
 
-#define MAX_DB_URI_LEN          256
+} config_t;
 
 typedef struct _context_t {
     config_t config;
@@ -63,6 +90,15 @@ typedef struct _context_t {
         const char *domain;
     } log;
 
+    struct {
+        int ue;
+        int sess;
+        int bearer;
+        int tunnel;
+        int pf;
+        int diameter_sess;
+    } pool;
+
 } context_t;
 
 int context_init(void);
@@ -80,4 +116,4 @@ int context_db_final(void);
 }
 #endif /* __cplusplus */
 
-#endif /* __CONTEXT_H__ */
+#endif /* APP_CONTEXT_H */

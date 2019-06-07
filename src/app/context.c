@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <mongoc.h>
 #include <yaml.h>
 
@@ -129,8 +148,26 @@ int context_setup_log_module()
 
 static int context_prepare()
 {
-#define USRSCTP_LOCAL_UDP_PORT 9899
+#define USRSCTP_LOCAL_UDP_PORT      9899
     self.config.usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
+
+#define MAX_NUM_OF_ENB              32  /* Num of eNodeB per MME */
+#define MAX_NUM_OF_UE               128 /* Num of UE per eNodeB */
+#define MAX_NUM_OF_SESS             4   /* Num of APN(Session) per UE */
+#define MAX_NUM_OF_BEARER           4   /* Num of Bearer per APN(Session) */
+#define MAX_NUM_OF_TUNNEL           3   /* Num of Tunnel per Bearer */
+#define MAX_NUM_OF_PF               16  /* Num of Packet Filter per Bearer */
+#define MAX_NUM_OF_PACKET_BUFFER    512 /* Num of Buffer when S1-U Deactivated */
+#define MAX_NUM_OF_PACKET_POOL      131072 /* Num of 8192-packet pool in SGW */
+    self.config.max.enb = MAX_NUM_OF_ENB;
+    self.config.max.ue = MAX_NUM_OF_UE;
+    self.config.max.sess = MAX_NUM_OF_SESS;
+    self.config.max.bearer = MAX_NUM_OF_BEARER;
+    self.config.max.tunnel = MAX_NUM_OF_TUNNEL;
+    self.config.max.pf = MAX_NUM_OF_PF;
+    self.config.max.packet.buffer = MAX_NUM_OF_PACKET_BUFFER;
+    self.config.max.packet.pool = MAX_NUM_OF_PACKET_POOL;
+
     return OGS_OK;
 }
 
@@ -142,6 +179,13 @@ static int context_validation()
                 context_self()->config.path);
         return OGS_ERROR;
     }
+
+    self.pool.ue = self.config.max.ue * self.config.max.enb;
+    self.pool.sess = self.pool.ue *  self.config.max.sess;
+    self.pool.bearer = self.pool.sess * self.config.max.bearer;
+    self.pool.tunnel = self.pool.bearer * self.config.max.tunnel;
+    self.pool.pf = self.pool.bearer * self.config.max.pf;
+    self.pool.diameter_sess = self.pool.ue * self.config.max.sess;
 
     return OGS_OK;
 }
@@ -256,7 +300,50 @@ int context_parse_config()
                 } else
                     ogs_warn("unknown key `%s`", sctp_key);
             }
+        } else if (!strcmp(root_key, "max")) {
+            ogs_yaml_iter_t max_iter;
+            ogs_yaml_iter_recurse(&root_iter, &max_iter);
+            while (ogs_yaml_iter_next(&max_iter)) {
+                const char *max_key = ogs_yaml_iter_key(&max_iter);
+                ogs_assert(max_key);
+                if (!strcmp(max_key, "ue")) {
+                    const char *v = ogs_yaml_iter_value(&max_iter);
+                    if (v) self.config.max.ue = atoi(v);
+                } else if (!strcmp(max_key, "enb")) {
+                    const char *v = ogs_yaml_iter_value(&max_iter);
+                    if (v) self.config.max.enb = atoi(v);
+                } else if (!strcmp(max_key, "sess")) {
+                    const char *v = ogs_yaml_iter_value(&max_iter);
+                    if (v) self.config.max.sess = atoi(v);
+                } else if (!strcmp(max_key, "bearer")) {
+                    const char *v = ogs_yaml_iter_value(&max_iter);
+                    if (v) self.config.max.bearer = atoi(v);
+                } else if (!strcmp(max_key, "tunnel")) {
+                    const char *v = ogs_yaml_iter_value(&max_iter);
+                    if (v) self.config.max.tunnel = atoi(v);
+                } else if (!strcmp(max_key, "pf")) {
+                    const char *v = ogs_yaml_iter_value(&max_iter);
+                    if (v) self.config.max.pf = atoi(v);
+                } else if (!strcmp(max_key, "packet")) {
+                    ogs_yaml_iter_t packet_iter;
+                    ogs_yaml_iter_recurse(&max_iter, &packet_iter);
+                    while (ogs_yaml_iter_next(&packet_iter)) {
+                        const char *packet_key = ogs_yaml_iter_key(&packet_iter);
+                        ogs_assert(packet_key);
+                        if (!strcmp(packet_key, "buffer")) {
+                            const char *v = ogs_yaml_iter_value(&packet_iter);
+                            if (v) self.config.max.packet.buffer = atoi(v);
+                        } else if (!strcmp(packet_key, "pool")) {
+                            const char *v = ogs_yaml_iter_value(&packet_iter);
+                            if (v) self.config.max.packet.pool = atoi(v);
+                        } else
+                            ogs_warn("unknown key `%s`", packet_key);
+                    }
+                } else
+                    ogs_warn("unknown key `%s`", max_key);
+            }
         }
+            
     }
 
     rv = context_validation();

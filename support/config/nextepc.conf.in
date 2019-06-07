@@ -60,6 +60,30 @@ parameter:
 #  o usrsctp_udp_port : 9899
 sctp:
 
+# 
+# max:
+#
+# o Maximum Number of eNodeB per MME 
+#    enb: 128
+# o Maximum Number of UE per eNodeB 
+#    ue: 32
+# o Maximum Number of APN(Session) per UE 
+#    sess: 4
+# o Maximum Number of Bearer per APN(Session) 
+#    bearer: 4
+# o Maximum Number of Tunnel per Bearer 
+#    tunnel: 3
+# o Maximum Number of Packet Filter per Bearer 
+#    pf: 16
+#
+# o Memory of Packet Buffering 
+#    packet:
+#        -  Maximum Number of Buffer when S1-U Deactivated 
+#        buffer: 512
+#        -  Maximum Number of packet(SDU size = 8Kbytes) pool in SGW 
+#        pool: 131092
+max:
+
 mme:
     freeDiameter: mme.conf
 
