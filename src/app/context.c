@@ -20,6 +20,8 @@
 #include <mongoc.h>
 #include <yaml.h>
 
+#include "base/types.h"
+
 #include "context.h"
 
 #define DEFAULT_SCTP_STREAMS        30
@@ -146,6 +148,15 @@ int context_setup_log_module()
     return OGS_OK;
 }
 
+static void context_setup_pool()
+{
+    self.pool.ue = self.config.max.ue * self.config.max.enb;
+    self.pool.sess = self.pool.ue * MAX_NUM_OF_SESS;
+    self.pool.bearer = self.pool.sess * MAX_NUM_OF_BEARER;
+    self.pool.tunnel = self.pool.bearer * MAX_NUM_OF_TUNNEL;
+    self.pool.pf = self.pool.bearer * MAX_NUM_OF_PF;
+}
+
 static int context_prepare()
 {
 #define USRSCTP_LOCAL_UDP_PORT      9899
@@ -154,27 +165,18 @@ static int context_prepare()
 #define MAX_NUM_OF_SGW              32  /* Num of SGW per MME */
 #define MAX_NUM_OF_PGW              32  /* Num of PGW per MME */
 #define MAX_NUM_OF_VLR              32  /* Num of VLR per MME */
-#define MAX_NUM_OF_ENB              16  /* Num of eNodeB per MME */
+#define MAX_NUM_OF_ENB              32  /* Num of eNodeB per MME */
 #define MAX_NUM_OF_UE               128 /* Num of UE per eNodeB */
-#define MAX_NUM_OF_SESS             4   /* Num of APN(Session) per UE */
-#define MAX_NUM_OF_BEARER           4   /* Num of Bearer per APN(Session) */
-#define MAX_NUM_OF_TUNNEL           3   /* Num of Tunnel per Bearer */
-#define MAX_NUM_OF_PF               16  /* Num of Packet Filter per Bearer */
-#define MAX_NUM_OF_PACKET_BUFFER    64 /* Num of Buffer when S1-U Deactivated */
     self.config.max.sgw = MAX_NUM_OF_SGW;
     self.config.max.pgw = MAX_NUM_OF_PGW;
     self.config.max.vlr = MAX_NUM_OF_VLR;
     self.config.max.enb = MAX_NUM_OF_ENB;
     self.config.max.ue = MAX_NUM_OF_UE;
-    self.config.max.sess = MAX_NUM_OF_SESS;
-    self.config.max.bearer = MAX_NUM_OF_BEARER;
-    self.config.max.tunnel = MAX_NUM_OF_TUNNEL;
-    self.config.max.pf = MAX_NUM_OF_PF;
 
-    self.config.max.packet.buffer = MAX_NUM_OF_PACKET_BUFFER;
-    self.config.max.packet.pool = 
-        self.config.max.enb * self.config.max.ue * 
-        self.config.max.packet.buffer;
+#define MAX_NUM_OF_PACKET_POOL      65536
+    self.config.max.packet.pool = MAX_NUM_OF_PACKET_POOL;
+
+    context_setup_pool();
 
     return OGS_OK;
 }
@@ -187,12 +189,6 @@ static int context_validation()
                 context_self()->config.path);
         return OGS_ERROR;
     }
-
-    self.pool.ue = self.config.max.ue * self.config.max.enb;
-    self.pool.sess = self.pool.ue *  self.config.max.sess;
-    self.pool.bearer = self.pool.sess * self.config.max.bearer;
-    self.pool.tunnel = self.pool.bearer * self.config.max.tunnel;
-    self.pool.pf = self.pool.bearer * self.config.max.pf;
 
     return OGS_OK;
 }
@@ -319,46 +315,27 @@ int context_parse_config()
                 } else if (!strcmp(max_key, "enb")) {
                     const char *v = ogs_yaml_iter_value(&max_iter);
                     if (v) self.config.max.enb = atoi(v);
-                } else if (!strcmp(max_key, "sess")) {
-                    const char *v = ogs_yaml_iter_value(&max_iter);
-                    if (v) self.config.max.sess = atoi(v);
-                } else if (!strcmp(max_key, "bearer")) {
-                    const char *v = ogs_yaml_iter_value(&max_iter);
-                    if (v) self.config.max.bearer = atoi(v);
-                } else if (!strcmp(max_key, "tunnel")) {
-                    const char *v = ogs_yaml_iter_value(&max_iter);
-                    if (v) self.config.max.tunnel = atoi(v);
-                } else if (!strcmp(max_key, "pf")) {
-                    const char *v = ogs_yaml_iter_value(&max_iter);
-                    if (v) self.config.max.pf = atoi(v);
                 } else if (!strcmp(max_key, "packet")) {
-                    const char *buffer = NULL;
                     const char *pool = NULL;
                     ogs_yaml_iter_t packet_iter;
                     ogs_yaml_iter_recurse(&max_iter, &packet_iter);
                     while (ogs_yaml_iter_next(&packet_iter)) {
                         const char *packet_key = ogs_yaml_iter_key(&packet_iter);
                         ogs_assert(packet_key);
-                        if (!strcmp(packet_key, "buffer")) {
-                            buffer = ogs_yaml_iter_value(&packet_iter);
-                        } else if (!strcmp(packet_key, "pool")) {
+                        if (!strcmp(packet_key, "pool")) {
                             pool = ogs_yaml_iter_value(&packet_iter);
                         } else
                             ogs_warn("unknown key `%s`", packet_key);
                     }
 
-                    if (buffer) {
-                        self.config.max.packet.buffer = atoi(buffer);
-                        self.config.max.packet.pool = 
-                            self.config.max.enb * self.config.max.ue * 
-                            self.config.max.packet.buffer;
-                    }
                     if (pool) {
                         self.config.max.packet.pool =  atoi(pool);
                     }
                 } else
                     ogs_warn("unknown key `%s`", max_key);
             }
+
+            context_setup_pool();
         }
             
     }

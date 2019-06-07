@@ -35,7 +35,10 @@ extern "C" {
 #define SCTP_X2AP_PPID              27
 #define SCTP_SGSAP_PPID             0
 
-#define MAX_NUM_OF_PDN              4
+#define MAX_NUM_OF_SESS             4   /* Num of APN(Session) per UE */
+#define MAX_NUM_OF_BEARER           4   /* Num of Bearer per APN(Session) */
+#define MAX_NUM_OF_TUNNEL           3   /* Num of Tunnel per Bearer */
+#define MAX_NUM_OF_PF               16  /* Num of Packet Filter per Bearer */
 
 #define MAX_NUM_OF_HOSTNAME         16
 #define MAX_NUM_OF_PCC_RULE         8 

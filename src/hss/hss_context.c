@@ -610,7 +610,7 @@ int hss_db_subscription_data(
 
                 ogs_assert(child1_key);
                 pdn_index = atoi(child1_key);
-                ogs_assert(pdn_index < MAX_NUM_OF_PDN);
+                ogs_assert(pdn_index < MAX_NUM_OF_SESS);
 
                 pdn = &subscription_data->pdn[pdn_index];
 

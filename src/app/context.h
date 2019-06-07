@@ -64,12 +64,7 @@ typedef struct _config_t {
         int vlr;
         int enb;
         int ue;
-        int sess;
-        int bearer;
-        int tunnel;
-        int pf;
         struct {
-            int buffer;
             int pool;
         } packet;
     } max;
