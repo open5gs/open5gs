@@ -63,10 +63,16 @@ sctp:
 # 
 # max:
 #
+# o Maximum Number of SGW per MME 
+#    sgw: 32
+# o Maximum Number of PGW per MME 
+#    pgw: 32
+# o Maximum Number of VLR per MME 
+#    vlr: 32
 # o Maximum Number of eNodeB per MME 
-#    enb: 128
+#    enb: 16
 # o Maximum Number of UE per eNodeB 
-#    ue: 32
+#    ue: 128
 # o Maximum Number of APN(Session) per UE 
 #    sess: 4
 # o Maximum Number of Bearer per APN(Session) 
@@ -79,9 +85,11 @@ sctp:
 # o Memory of Packet Buffering 
 #    packet:
 #        -  Maximum Number of Buffer when S1-U Deactivated 
-#        buffer: 512
+#        buffer: 64
 #        -  Maximum Number of packet(SDU size = 8Kbytes) pool in SGW 
-#        pool: 131092
+#           Default(131072) : ue(16) x enb(128) x buffer(64)
+#           Memory Usage : 131072 * 8Kbytes = 1Gbytes
+#        pool: 131072    
 max:
 
 mme:

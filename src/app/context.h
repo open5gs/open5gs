@@ -59,6 +59,9 @@ typedef struct _config_t {
     } usrsctp;
 
     struct {
+        int sgw;
+        int pgw;
+        int vlr;
         int enb;
         int ue;
         int sess;
@@ -96,7 +99,6 @@ typedef struct _context_t {
         int bearer;
         int tunnel;
         int pf;
-        int diameter_sess;
     } pool;
 
 } context_t;

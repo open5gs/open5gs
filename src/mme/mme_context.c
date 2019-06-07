@@ -64,17 +64,17 @@ void mme_context_init()
     ogs_list_init(&self.pgw_list);
     ogs_list_init(&self.vlr_list);
 
-    ogs_pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
-    ogs_pool_init(&mme_pgw_pool, MAX_NUM_OF_PGW);
-    ogs_pool_init(&mme_vlr_pool, MAX_NUM_OF_VLR);
+    ogs_pool_init(&mme_sgw_pool, context_self()->config.max.sgw);
+    ogs_pool_init(&mme_pgw_pool, context_self()->config.max.pgw);
+    ogs_pool_init(&mme_vlr_pool, context_self()->config.max.vlr);
 
-    ogs_pool_init(&mme_enb_pool, MAX_NUM_OF_ENB);
+    ogs_pool_init(&mme_enb_pool, context_self()->config.max.enb);
 
-    ogs_pool_init(&mme_ue_pool, MAX_POOL_OF_UE);
-    ogs_pool_init(&enb_ue_pool, MAX_POOL_OF_UE);
-    ogs_pool_init(&mme_sess_pool, MAX_POOL_OF_SESS);
-    ogs_pool_init(&mme_bearer_pool, MAX_POOL_OF_BEARER);
-    ogs_pool_init(&self.m_tmsi, MAX_POOL_OF_UE);
+    ogs_pool_init(&mme_ue_pool, context_self()->pool.ue);
+    ogs_pool_init(&enb_ue_pool, context_self()->pool.ue);
+    ogs_pool_init(&mme_sess_pool, context_self()->pool.sess);
+    ogs_pool_init(&mme_bearer_pool, context_self()->pool.bearer);
+    ogs_pool_init(&self.m_tmsi, context_self()->pool.ue);
 
     self.enb_sock_hash = ogs_hash_make();
     self.enb_addr_hash = ogs_hash_make();
@@ -1871,7 +1871,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 
     mme_ue->mme_s11_teid = ogs_pool_index(&mme_ue_pool, mme_ue);
     ogs_assert(mme_ue->mme_s11_teid > 0 &&
-            mme_ue->mme_s11_teid <= MAX_POOL_OF_UE);
+            mme_ue->mme_s11_teid <= context_self()->pool.ue);
 
     /*
      * SCTP output stream identification
@@ -2730,7 +2730,7 @@ int mme_m_tmsi_pool_generate()
     int index = 0;
 
     ogs_trace("M-TMSI Pool try to generate...");
-    for (i = 0; index < MAX_POOL_OF_UE; i++) {
+    for (i = 0; index < context_self()->pool.ue; i++) {
         mme_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 

@@ -54,10 +54,10 @@ void pgw_context_init()
     ogs_list_init(&self.subnet_list);
     ogs_pool_init(&pgw_subnet_pool, MAX_NUM_OF_SUBNET);
 
-    ogs_pool_init(&pgw_sess_pool, MAX_POOL_OF_SESS);
-    ogs_pool_init(&pgw_bearer_pool, MAX_POOL_OF_BEARER);
+    ogs_pool_init(&pgw_sess_pool, context_self()->pool.sess);
+    ogs_pool_init(&pgw_bearer_pool, context_self()->pool.bearer);
 
-    ogs_pool_init(&pgw_pf_pool, MAX_POOL_OF_PF);
+    ogs_pool_init(&pgw_pf_pool, context_self()->pool.pf);
 
     self.sess_hash = ogs_hash_make();
 
@@ -718,7 +718,7 @@ pgw_sess_t *pgw_sess_add(
     ogs_pool_alloc(&pgw_sess_pool, &sess);
     ogs_assert(sess);
     sess->index = ogs_pool_index(&pgw_sess_pool, sess);
-    ogs_assert(sess->index > 0 && sess->index <= MAX_POOL_OF_SESS);
+    ogs_assert(sess->index > 0 && sess->index <= context_self()->pool.sess);
 
     sess->gnode = NULL;
 
@@ -937,7 +937,8 @@ pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess)
     ogs_pool_alloc(&pgw_bearer_pool, &bearer);
     ogs_assert(bearer);
     bearer->index = ogs_pool_index(&pgw_bearer_pool, bearer);
-    ogs_assert(bearer->index > 0 && bearer->index <= MAX_POOL_OF_BEARER);
+    ogs_assert(bearer->index > 0 && bearer->index <=
+            context_self()->pool.bearer);
 
     bearer->name = NULL;
 
@@ -1182,7 +1183,7 @@ int pgw_ue_pool_generate()
             broadcast[j] = subnet->sub.sub[j] + ~subnet->sub.mask[j];
         }
 
-        for (j = 0; j < mask_count && index < MAX_POOL_OF_SESS; j++) {
+        for (j = 0; j < mask_count && index < context_self()->pool.sess; j++) {
             pgw_ue_ip_t *ue_ip = NULL;
             int maxbytes = 0;
             int lastindex = 0;
@@ -1384,7 +1385,7 @@ pgw_subnet_t *pgw_subnet_add(
     subnet->family = subnet->gw.family;
     subnet->prefixlen = atoi(mask_or_numbits);
 
-    ogs_pool_init(&subnet->pool, MAX_POOL_OF_SESS);
+    ogs_pool_init(&subnet->pool, context_self()->pool.sess);
 
     ogs_list_add(&self.subnet_list, subnet);
 

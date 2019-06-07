@@ -40,10 +40,10 @@ void sgw_context_init()
     ogs_list_init(&self.enb_s1u_list);
     ogs_list_init(&self.pgw_s5u_list);
 
-    ogs_pool_init(&sgw_ue_pool, MAX_POOL_OF_UE);
-    ogs_pool_init(&sgw_sess_pool, MAX_POOL_OF_SESS);
-    ogs_pool_init(&sgw_bearer_pool, MAX_POOL_OF_BEARER);
-    ogs_pool_init(&sgw_tunnel_pool, MAX_POOL_OF_TUNNEL);
+    ogs_pool_init(&sgw_ue_pool, context_self()->pool.ue);
+    ogs_pool_init(&sgw_sess_pool, context_self()->pool.sess);
+    ogs_pool_init(&sgw_bearer_pool, context_self()->pool.bearer);
+    ogs_pool_init(&sgw_tunnel_pool, context_self()->pool.tunnel);
 
     self.imsi_ue_hash = ogs_hash_make();
 
@@ -453,7 +453,7 @@ sgw_ue_t *sgw_ue_add(uint8_t *imsi, int imsi_len)
 
     sgw_ue->sgw_s11_teid = ogs_pool_index(&sgw_ue_pool, sgw_ue);
     ogs_assert(sgw_ue->sgw_s11_teid > 0 &&
-                sgw_ue->sgw_s11_teid <= MAX_POOL_OF_UE);
+                sgw_ue->sgw_s11_teid <= context_self()->pool.ue);
 
     /* Set IMSI */
     sgw_ue->imsi_len = imsi_len;
@@ -752,7 +752,7 @@ sgw_tunnel_t* sgw_tunnel_add(sgw_bearer_t *bearer, uint8_t interface_type)
     tunnel->interface_type = interface_type;
     tunnel->local_teid = ogs_pool_index(&sgw_tunnel_pool, tunnel);
     ogs_assert(tunnel->local_teid > 0 &&
-            tunnel->local_teid <= MAX_POOL_OF_TUNNEL);
+            tunnel->local_teid <= context_self()->pool.tunnel);
 
     tunnel->bearer = bearer;
     tunnel->gnode = NULL;

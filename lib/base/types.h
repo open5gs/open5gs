@@ -35,44 +35,28 @@ extern "C" {
 #define SCTP_X2AP_PPID              27
 #define SCTP_SGSAP_PPID             0
 
-#define MAX_NUM_OF_SGW              32
-#define MAX_NUM_OF_PGW              32
-#define MAX_NUM_OF_VLR              32
-
-#define MAX_NUM_OF_ENB              128
-#define MAX_NUM_OF_UE               128
-#define MAX_NUM_OF_SESS             4
-#define MAX_NUM_OF_BEARER           4
-#define MAX_NUM_OF_TUNNEL           3   /* Num of Tunnel per Bearer */
-#define MAX_NUM_OF_PF               16  /* Num of Packet Filter per Bearer */
-
-#define MAX_POOL_OF_UE              (MAX_NUM_OF_ENB * MAX_NUM_OF_UE)
-#define MAX_POOL_OF_SESS            (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)
-#define MAX_POOL_OF_BEARER          (MAX_POOL_OF_SESS * MAX_NUM_OF_BEARER)
-#define MAX_POOL_OF_TUNNEL          (MAX_POOL_OF_BEARER * MAX_NUM_OF_TUNNEL)
-#define MAX_POOL_OF_PF              (MAX_POOL_OF_BEARER * MAX_NUM_OF_PF)
-#define MAX_POOL_OF_DIAMETER_SESS   (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)
+#define MAX_NUM_OF_PDN              4
 
 #define MAX_NUM_OF_HOSTNAME         16
 #define MAX_NUM_OF_PCC_RULE         8 
 #define MAX_NUM_OF_FLOW             8   /* Num of Flow per PCC Rule */
 #define MAX_NUM_OF_PACKET_FILTER    16  /* Num of Packet Filter per Bearer */
 
-#define MAX_SDU_LEN             8192
-#define PLMN_ID_LEN             3
+#define MAX_SDU_LEN                 8192
+#define PLMN_ID_LEN                 3
 
-#define BCD_TO_BUFFER_LEN(x)    (((x)+1)/2)
-#define MAX_IMSI_BCD_LEN        15
-#define MAX_IMSI_LEN            BCD_TO_BUFFER_LEN(MAX_IMSI_BCD_LEN)
+#define BCD_TO_BUFFER_LEN(x)        (((x)+1)/2)
+#define MAX_IMSI_BCD_LEN            15
+#define MAX_IMSI_LEN                BCD_TO_BUFFER_LEN(MAX_IMSI_BCD_LEN)
 
-#define RAND_LEN                16
-#define AUTN_LEN                16
-#define AUTS_LEN                14
-#define MAX_RES_LEN             16
+#define RAND_LEN                    16
+#define AUTN_LEN                    16
+#define AUTS_LEN                    14
+#define MAX_RES_LEN                 16
 
-#define MAX_APN_LEN             100
-#define MAX_PCO_LEN             251
-#define MAX_FILEPATH_LEN        256
+#define MAX_APN_LEN                 100
+#define MAX_PCO_LEN                 251
+#define MAX_FILEPATH_LEN            256
 
 #define NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
