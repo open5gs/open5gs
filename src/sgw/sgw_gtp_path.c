@@ -16,10 +16,13 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_assert(fd != INVALID_SOCKET);
 
-    rv = gtp_recv(fd, &pkbuf);
-    if (rv != OGS_OK)
-    {
-        ogs_log_message(OGS_LOG_WARN, ogs_socket_errno, "gtp_recv() failed");
+    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+
+    rv = gtp_recv(fd, pkbuf);
+    if (rv != OGS_OK) {
+        ogs_error("gtp_recv() failed");
+        ogs_pkbuf_free(pkbuf);
         return;
     }
 
@@ -57,10 +60,13 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_assert(fd != INVALID_SOCKET);
 
-    rv = gtp_recvfrom(fd, &pkbuf, &from);
-    if (rv != OGS_OK)
-    {
-        ogs_log_message(OGS_LOG_WARN, ogs_socket_errno, "gtp_recv() failed");
+    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+
+    rv = gtp_recvfrom(fd, pkbuf, &from);
+    if (rv != OGS_OK) {
+        ogs_error("gtp_recvfrom() failed");
+        ogs_pkbuf_free(pkbuf);
         return;
     }
 
