@@ -79,6 +79,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     pgw_event_t *e = NULL;
     int rv;
+    ssize_t size;
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(fd != INVALID_SOCKET);
@@ -86,12 +87,15 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
 
-    rv = gtp_recv(fd, pkbuf);
-    if (rv != OGS_OK) {
-        ogs_error("gtp_recv() failed");
+    size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
+    if (size <= 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_recv() failed");
         ogs_pkbuf_free(pkbuf);
         return;
     }
+
+    ogs_pkbuf_trim(pkbuf, size);
 
     e = pgw_event_new(PGW_EVT_S5C_MESSAGE);
     ogs_assert(e);
@@ -108,8 +112,9 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     int rv;
+    ssize_t size;
     ogs_pkbuf_t *pkbuf = NULL;
-    uint32_t size = GTPV1U_HEADER_LEN;
+    uint32_t len = GTPV1U_HEADER_LEN;
     gtp_header_t *gtp_h = NULL;
     struct ip *ip_h = NULL;
 
@@ -124,24 +129,27 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
 
-    rv = gtp_recv(fd, pkbuf);
-    if (rv != OGS_OK) {
-        ogs_error("gtp_recv() failed");
+    size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
+    if (size <= 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_recv() failed");
         ogs_pkbuf_free(pkbuf);
         return;
     }
+
+    ogs_pkbuf_trim(pkbuf, size);
 
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
     gtp_h = pkbuf->data;
-    if (gtp_h->flags & GTPU_FLAGS_S) size += 4;
+    if (gtp_h->flags & GTPU_FLAGS_S) len += 4;
     teid = ntohl(gtp_h->teid);
 
     ogs_debug("[PGW] RECV GPU-U from SGW : TEID[0x%x]", teid);
 
     /* Remove GTP header and send packets to TUN interface */
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, len));
 
     ip_h = pkbuf->data;
     ogs_assert(ip_h);

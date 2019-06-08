@@ -13,6 +13,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     sgw_event_t *e = NULL;
     int rv;
+    ssize_t size;
     gtp_header_t *gtp_h = NULL;
     uint32_t teid = 0;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -22,12 +23,15 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
 
-    rv = gtp_recv(fd, pkbuf);
-    if (rv != OGS_OK) {
-        ogs_error("gtp_recv() failed");
+    size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
+    if (size <= 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_recv() failed");
         ogs_pkbuf_free(pkbuf);
         return;
     }
+
+    ogs_pkbuf_trim(pkbuf, size);
 
     gtp_h = (gtp_header_t *)pkbuf->data;
     ogs_assert(gtp_h);
@@ -53,6 +57,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     char buf[OGS_ADDRSTRLEN];
     int rv;
+    ssize_t size;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
     gtp_header_t *gtp_h = NULL;
@@ -67,12 +72,15 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     pkbuf = ogs_pkbuf_alloc(packet_pool, MAX_SDU_LEN);
     ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
 
-    rv = gtp_recvfrom(fd, pkbuf, &from);
-    if (rv != OGS_OK) {
-        ogs_error("gtp_recvfrom() failed");
+    size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
+    if (size <= 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_recvfrom() failed");
         ogs_pkbuf_free(pkbuf);
         return;
     }
+
+    ogs_pkbuf_trim(pkbuf, size);
 
     gtp_h = (gtp_header_t *)pkbuf->data;
     if (gtp_h->type == GTPU_MSGTYPE_ECHO_REQ) {

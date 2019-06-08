@@ -10,6 +10,7 @@
 static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 {
     int rv;
+    ssize_t size;
     mme_event_t *e = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -18,12 +19,15 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
 
-    rv = gtp_recv(fd, pkbuf);
-    if (rv != OGS_OK) {
-        ogs_error("gtp_recv() failed");
+    size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
+    if (size <= 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_recv() failed");
         ogs_pkbuf_free(pkbuf);
         return;
     }
+
+    ogs_pkbuf_trim(pkbuf, size);
 
     e = mme_event_new(MME_EVT_S11_MESSAGE);
     ogs_assert(e);

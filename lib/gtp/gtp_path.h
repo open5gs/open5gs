@@ -32,8 +32,6 @@ int gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, gtp_node_t *gnode);
 ogs_sock_t *gtp_local_sock_first(ogs_list_t *list);
 ogs_sockaddr_t *gtp_local_addr_first(ogs_list_t *list);
 
-int gtp_recv(ogs_socket_t fd, ogs_pkbuf_t *pkbuf);
-int gtp_recvfrom(ogs_socket_t fd, ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *from);
 int gtp_send(gtp_node_t *gnode, ogs_pkbuf_t *pkbuf);
 int gtp_sendto(gtp_node_t *gnode, ogs_pkbuf_t *pkbuf);
 

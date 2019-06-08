@@ -106,41 +106,6 @@ ogs_sockaddr_t *gtp_local_addr_first(ogs_list_t *list)
     return NULL;
 }
 
-int gtp_recv(ogs_socket_t fd, ogs_pkbuf_t *pkbuf)
-{
-    ssize_t size;
-
-    ogs_assert(fd != INVALID_SOCKET);
-
-    size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
-    if (size <= 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_recv() failed");
-        return OGS_ERROR;
-    } else {
-        ogs_pkbuf_trim(pkbuf, size);
-        return OGS_OK;;
-    }
-}
-
-int gtp_recvfrom(ogs_socket_t fd, ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *from)
-{
-    ssize_t size;
-
-    ogs_assert(fd != INVALID_SOCKET);
-    ogs_assert(from);
-
-    size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, from);
-    if (size <= 0) {
-        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_recvfrom() failed");
-        return OGS_ERROR;
-    } else {
-        ogs_pkbuf_trim(pkbuf, size);
-        return OGS_OK;;
-    }
-}
-
 int gtp_send(gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
 {
     ssize_t sent;
