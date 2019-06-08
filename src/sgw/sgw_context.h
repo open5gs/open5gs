@@ -107,9 +107,8 @@ typedef struct sgw_bearer_s {
     /* Pkts which will be buffered in case of UE-IDLE */
     uint32_t        num_buffered_pkt;
 
-    /* FIXME: The value should be depdendant on the clbuf number. */
-#define MAX_NUM_BUFFER_PKT      512 
-    ogs_pkbuf_t*    buffered_pkts[MAX_NUM_BUFFER_PKT];
+#define MAX_NUM_OF_PACKET_BUFFER      512 
+    ogs_pkbuf_t*    buffered_pkts[MAX_NUM_OF_PACKET_BUFFER];
 
     ogs_list_t      tunnel_list;
     sgw_sess_t      *sess;
