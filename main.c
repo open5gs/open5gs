@@ -7,7 +7,7 @@
 
 /* Server */
 #include "app/application.h"
-#include "app_init.h"
+#include "app-init.h"
 
 static char *version = "NextEPC daemon v" PACKAGE_VERSION;
 

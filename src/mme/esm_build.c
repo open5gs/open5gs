@@ -1,4 +1,4 @@
-#include "nas/nas_message.h"
+#include "nas/nas-message.h"
 
 #include "nas_security.h"
 #include "esm_build.h"

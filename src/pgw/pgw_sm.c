@@ -1,6 +1,6 @@
-#include "gtp/gtp_node.h"
-#include "fd/fd_lib.h"
-#include "fd/gx/gx_message.h"
+#include "gtp/gtp-node.h"
+#include "fd/fd-lib.h"
+#include "fd/gx/gx-message.h"
 
 #include "pgw_sm.h"
 #include "pgw_context.h"

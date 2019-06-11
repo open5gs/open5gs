@@ -1,7 +1,7 @@
-#include "asn1c/s1ap_message.h"
-#include "nas/nas_message.h"
-#include "gtp/gtp_xact.h"
-#include "fd/fd_lib.h"
+#include "asn1c/s1ap-message.h"
+#include "nas/nas-message.h"
+#include "gtp/gtp-xact.h"
+#include "fd/fd-lib.h"
 
 #include "mme_event.h"
 #include "mme_sm.h"

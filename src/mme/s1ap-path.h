@@ -21,7 +21,7 @@
 #define S1AP_PATH_H
 
 #include "mme_context.h"
-#include "asn1c/s1ap_message.h"
+#include "asn1c/s1ap-message.h"
 
 #ifdef __cplusplus
 extern "C" {

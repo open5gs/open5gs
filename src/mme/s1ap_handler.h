@@ -1,7 +1,7 @@
 #ifndef __S1AP_HANDLER_H__
 #define __S1AP_HANDLER_H__
 
-#include "asn1c/s1ap_message.h"
+#include "asn1c/s1ap-message.h"
 
 #include "mme_context.h"
 

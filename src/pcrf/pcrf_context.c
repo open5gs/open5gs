@@ -1,7 +1,7 @@
 #include <mongoc.h>
 #include <yaml.h>
 
-#include "fd/fd_lib.h"
+#include "fd/fd-lib.h"
 
 #include "app/context.h"
 #include "pcrf_context.h"

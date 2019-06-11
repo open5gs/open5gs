@@ -1,6 +1,6 @@
-#include "gtp/gtp_types.h"
-#include "gtp/gtp_conv.h"
-#include "gtp/gtp_xact.h"
+#include "gtp/gtp-types.h"
+#include "gtp/gtp-conv.h"
+#include "gtp/gtp-xact.h"
 
 #include "mme_event.h"
 #include "mme_sm.h"

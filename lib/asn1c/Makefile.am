@@ -1127,8 +1127,8 @@ ASN_MODULE_CFLAGS=
 pkglib_LTLIBRARIES=libasn1c.la
 libasn1c_la_SOURCES= \
     $(ASN_MODULE_SRCS) $(ASN_MODULE_HDRS) \
-    s1ap_asn1c.h s1ap_message.h \
-    s1ap_decoder.c s1ap_encoder.c s1ap_free.c \
+    s1ap-asn1c.h s1ap-message.h \
+    s1ap-decoder.c s1ap-encoder.c s1ap-free.c \
     $(NULL)
 
 libasn1c_la_DEPENDENCIES = \

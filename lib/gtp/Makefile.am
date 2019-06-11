@@ -18,10 +18,10 @@
 pkglib_LTLIBRARIES = libgtp.la
 
 libgtp_la_SOURCES = \
-	gtp_tlv.h gtp_message.h gtp_types.h gtp_conv.h \
-	gtp_node.h gtp_path.h gtp_xact.h \
-	gtp_tlv.c gtp_message.c gtp_types.c gtp_conv.c \
-	gtp_node.c gtp_path.c gtp_xact.c \
+	gtp-tlv.h gtp-message.h gtp-types.h gtp-conv.h \
+	gtp-node.h gtp-path.h gtp-xact.h \
+	gtp-tlv.c gtp-message.c gtp-types.c gtp-conv.c \
+	gtp-node.c gtp-path.c gtp-xact.c \
 	$(NULL)
 
 libgtp_la_DEPENDENCIES = \

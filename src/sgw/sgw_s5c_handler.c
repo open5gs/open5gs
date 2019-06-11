@@ -1,7 +1,7 @@
-#include "gtp/gtp_conv.h"
-#include "gtp/gtp_types.h"
-#include "gtp/gtp_node.h"
-#include "gtp/gtp_path.h"
+#include "gtp/gtp-conv.h"
+#include "gtp/gtp-types.h"
+#include "gtp/gtp-node.h"
+#include "gtp/gtp-path.h"
 
 #include "app/context.h"
 #include "sgw_event.h"

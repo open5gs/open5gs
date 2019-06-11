@@ -5,7 +5,7 @@
 
 #include "app/context.h"
 #include "mme/mme_context.h"
-#include "asn1c/s1ap_message.h"
+#include "asn1c/s1ap-message.h"
 
 #include "test-packet.h"
 

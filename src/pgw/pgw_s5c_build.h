@@ -1,7 +1,7 @@
 #ifndef __PGW_S5C_BUILD_H__
 #define __PGW_S5C_BUILD_H__
 
-#include "gtp/gtp_message.h"
+#include "gtp/gtp-message.h"
 
 #ifdef __cplusplus
 extern "C" {

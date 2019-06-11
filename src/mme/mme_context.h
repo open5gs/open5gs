@@ -4,10 +4,10 @@
 #include "ogs-crypt.h"
 #include "base/types.h"
 
-#include "asn1c/s1ap_message.h"
-#include "nas/nas_message.h"
-#include "fd/s6a/s6a_message.h"
-#include "gtp/gtp_tlv.h"
+#include "asn1c/s1ap-message.h"
+#include "nas/nas-message.h"
+#include "fd/s6a/s6a-message.h"
+#include "gtp/gtp-tlv.h"
 
 /* S1AP */
 #include "S1AP_Cause.h"

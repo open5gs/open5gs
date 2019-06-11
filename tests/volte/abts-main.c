@@ -22,12 +22,12 @@
 
 #include "mme/ogs-sctp.h"
 
-#include "fd/fd_lib.h"
+#include "fd/fd-lib.h"
 
 #include "app/application.h"
 #include "app/context.h"
 
-#include "app_init.h"
+#include "app-init.h"
 
 #include "test-packet.h"
 #include "test-app.h"

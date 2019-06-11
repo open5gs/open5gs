@@ -1,7 +1,7 @@
 #ifndef __NAS_CONV_H__
 #define __NAS_CONV_H__
 
-#include "nas/nas_message.h"
+#include "nas/nas-message.h"
 
 #ifdef __cplusplus
 extern "C" {

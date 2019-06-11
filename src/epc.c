@@ -1,7 +1,7 @@
 #include "app/context.h"
 #include "app/application.h"
 
-#include "app_init.h"
+#include "app-init.h"
 
 static ogs_proc_mutex_t *pcrf_sem1 = NULL;
 static ogs_proc_mutex_t *pcrf_sem2 = NULL;

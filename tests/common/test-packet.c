@@ -21,10 +21,10 @@
 #include "mme/s1ap-path.h"
 #include "mme/snow_3g.h"
 
-#include "gtp/gtp_message.h"
-#include "gtp/gtp_conv.h"
-#include "gtp/gtp_node.h"
-#include "gtp/gtp_path.h"
+#include "gtp/gtp-message.h"
+#include "gtp/gtp-conv.h"
+#include "gtp/gtp-node.h"
+#include "gtp/gtp-path.h"
 
 #include "mme/ogs-sctp.h"
 #include "app/context.h"

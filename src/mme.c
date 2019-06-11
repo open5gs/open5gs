@@ -1,7 +1,7 @@
 #include "app/context.h"
 #include "app/application.h"
 
-#include "app_init.h"
+#include "app-init.h"
 
 extern int __mme_log_domain;
 

@@ -1,6 +1,6 @@
-#include "fd/fd_lib.h"
-#include "fd/s6a/s6a_dict.h"
-#include "fd/s6a/s6a_message.h"
+#include "fd/fd-lib.h"
+#include "fd/s6a/s6a-dict.h"
+#include "fd/s6a/s6a-message.h"
 
 #include "mme_event.h"
 #include "mme_fd_path.h"

@@ -1,8 +1,8 @@
 #include "ogs-crypt.h"
 
-#include "fd/fd_lib.h"
-#include "fd/s6a/s6a_dict.h"
-#include "fd/s6a/s6a_message.h"
+#include "fd/fd-lib.h"
+#include "fd/s6a/s6a-dict.h"
+#include "fd/s6a/s6a-message.h"
 
 #include "hss_context.h"
 #include "hss_auc.h"

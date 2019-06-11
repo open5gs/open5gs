@@ -16,8 +16,8 @@
 #include <netinet/icmp6.h>
 #endif
 
-#include "gtp/gtp_node.h"
-#include "gtp/gtp_path.h"
+#include "gtp/gtp-node.h"
+#include "gtp/gtp-path.h"
 
 #include "app/context.h"
 #include "pgw_context.h"

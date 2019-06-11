@@ -1,6 +1,6 @@
-#include "gtp/gtp_node.h"
-#include "gtp/gtp_path.h"
-#include "gtp/gtp_xact.h"
+#include "gtp/gtp-node.h"
+#include "gtp/gtp-path.h"
+#include "gtp/gtp-xact.h"
 
 #include "mme_event.h"
 #include "mme_gtp_path.h"

@@ -1,7 +1,7 @@
 #ifndef __PGW_GX_HANDLER_H__
 #define __PGW_GX_HANDLER_H__
 
-#include "gtp/gtp_message.h"
+#include "gtp/gtp-message.h"
 
 #include "pgw_context.h"
 

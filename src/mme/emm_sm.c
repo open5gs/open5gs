@@ -1,6 +1,6 @@
-#include "nas/nas_message.h"
-#include "fd/fd_lib.h"
-#include "fd/s6a/s6a_message.h"
+#include "nas/nas-message.h"
+#include "fd/fd-lib.h"
+#include "fd/s6a/s6a-message.h"
 
 #include "mme_event.h"
 #include "mme_kdf.h"

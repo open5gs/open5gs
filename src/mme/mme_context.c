@@ -3,11 +3,11 @@
 
 #include "ogs-sctp.h"
 
-#include "asn1c/s1ap_message.h"
-#include "gtp/gtp_xact.h"
-#include "gtp/gtp_node.h"
-#include "gtp/gtp_path.h"
-#include "fd/fd_lib.h"
+#include "asn1c/s1ap-message.h"
+#include "gtp/gtp-xact.h"
+#include "gtp/gtp-node.h"
+#include "gtp/gtp-path.h"
+#include "fd/fd-lib.h"
 
 #include "app/context.h"
 #include "nas_conv.h"

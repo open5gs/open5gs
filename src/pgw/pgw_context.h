@@ -1,8 +1,8 @@
 #ifndef __PGW_CONTEXT_H__
 #define __PGW_CONTEXT_H__
 
-#include "gtp/gtp_types.h"
-#include "gtp/gtp_message.h"
+#include "gtp/gtp-types.h"
+#include "gtp/gtp-message.h"
 
 #ifdef __cplusplus
 extern "C" {

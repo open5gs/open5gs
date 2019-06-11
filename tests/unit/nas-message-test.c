@@ -1,6 +1,6 @@
 #include "core/abts.h"
 
-#include "nas/nas_message.h"
+#include "nas/nas-message.h"
 #include "mme/nas_security.h"
 
 static void nas_message_test1(abts_case *tc, void *data)

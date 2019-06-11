@@ -1,6 +1,6 @@
-#include "fd/fd_lib.h"
-#include "fd/rx/rx_dict.h"
-#include "fd/rx/rx_message.h"
+#include "fd/fd-lib.h"
+#include "fd/rx/rx-dict.h"
+#include "fd/rx/rx-message.h"
 
 #include "pcrf_context.h"
 #include "pcrf_fd_path.h"

@@ -1,7 +1,7 @@
 #ifndef __HSS_CONTEXT_H__
 #define __HSS_CONTEXT_H__
 
-#include "fd/s6a/s6a_message.h"
+#include "fd/s6a/s6a-message.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -1,7 +1,7 @@
 #ifndef __MME_S11_BUILD_H__
 #define __MME_S11_BUILD_H__
 
-#include "gtp/gtp_message.h"
+#include "gtp/gtp-message.h"
 
 #ifdef __cplusplus
 extern "C" {

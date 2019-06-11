@@ -1,7 +1,7 @@
 #ifndef __SGW_S11_HANDLER_H__
 #define __SGW_S11_HANDLER_H__
 
-#include "gtp/gtp_message.h"
+#include "gtp/gtp-message.h"
 
 #include "sgw_context.h"
 

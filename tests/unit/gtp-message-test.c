@@ -1,7 +1,7 @@
 #include "core/abts.h"
 
-#include "gtp/gtp_types.h"
-#include "gtp/gtp_message.h"
+#include "gtp/gtp-types.h"
+#include "gtp/gtp-message.h"
 
 static void gtp_message_test1(abts_case *tc, void *data)
 {

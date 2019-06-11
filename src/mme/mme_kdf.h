@@ -1,7 +1,7 @@
 #ifndef __MME_KDF_H__
 #define __MME_KDF_H__
 
-#include "nas/nas_ies.h"
+#include "nas/nas-ies.h"
 
 /* Algorithm Type Distinguishers */
 #define MME_KDF_NAS_ENC_ALG 0x01

@@ -1,5 +1,5 @@
 #include "ogs-crypt.h"
-#include "nas/nas_message.h"
+#include "nas/nas-message.h"
 
 #include "hss/milenage.h"
 #include "hss/hss_auc.h"

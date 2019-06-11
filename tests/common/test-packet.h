@@ -1,11 +1,11 @@
-#ifndef __TESTS1AP_H__
-#define __TESTS1AP_H__
+#ifndef TEST_PACKET_H
+#define TEST_PACKET_H
 
-#include "asn1c/s1ap_message.h"
+#include "asn1c/s1ap-message.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 int testpacket_init();
 int testpacket_final();
@@ -103,6 +103,6 @@ int testgtpu_build_slacc_rs(ogs_pkbuf_t **sendbuf, int i);
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __TESTS1AP_H__ */
+#endif /* TEST_PACKET_H */

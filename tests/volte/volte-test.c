@@ -2,7 +2,7 @@
 #include <mongoc.h>
 #include "core/abts.h"
 #include "base/types.h"
-#include "asn1c/s1ap_message.h"
+#include "asn1c/s1ap-message.h"
 #include "app/context.h"
 #include "test-packet.h"
 #include "pcscf-fd-path.h"

@@ -1,7 +1,7 @@
 #ifndef __PCRF_CONTEXT_H__
 #define __PCRF_CONTEXT_H__
 
-#include "fd/gx/gx_message.h"
+#include "fd/gx/gx-message.h"
 
 #ifdef __cplusplus
 extern "C" {

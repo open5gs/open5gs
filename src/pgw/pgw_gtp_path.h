@@ -2,7 +2,7 @@
 #define __PGW_PATH_H__
 
 #include "ogs-tun.h"
-#include "gtp/gtp_xact.h"
+#include "gtp/gtp-xact.h"
 
 #ifdef __cplusplus
 extern "C" {

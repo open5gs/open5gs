@@ -1,7 +1,7 @@
 #ifndef __SGW_PATH_H__
 #define __SGW_PATH_H__
 
-#include "gtp/gtp_xact.h"
+#include "gtp/gtp-xact.h"
 
 #ifdef __cplusplus
 extern "C" {

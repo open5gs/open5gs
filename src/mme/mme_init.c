@@ -1,6 +1,6 @@
 #include "ogs-sctp.h"
 
-#include "gtp/gtp_xact.h"
+#include "gtp/gtp-xact.h"
 #include "app/context.h"
 
 #include "mme_context.h"

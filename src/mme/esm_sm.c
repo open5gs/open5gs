@@ -1,4 +1,4 @@
-#include "nas/nas_message.h"
+#include "nas/nas-message.h"
 
 #include "mme_event.h"
 #include "mme_sm.h"

@@ -1,5 +1,5 @@
-#include "nas/nas_message.h"
-#include "gtp/gtp_message.h"
+#include "nas/nas-message.h"
+#include "gtp/gtp-message.h"
 
 #include "s1ap_build.h"
 #include "s1ap_handler.h"

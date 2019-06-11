@@ -1,8 +1,8 @@
 #include "base/types.h"
-#include "gtp/gtp_types.h"
-#include "gtp/gtp_conv.h"
-#include "gtp/gtp_message.h"
-#include "fd/gx/gx_message.h"
+#include "gtp/gtp-types.h"
+#include "gtp/gtp-conv.h"
+#include "gtp/gtp-message.h"
+#include "fd/gx/gx-message.h"
 
 #include "ipfw/ipfw2.h"
 

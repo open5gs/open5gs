@@ -1,8 +1,8 @@
-#include "gtp/gtp_xact.h"
+#include "gtp/gtp-xact.h"
 
-#include "fd/fd_lib.h"
-#include "fd/gx/gx_dict.h"
-#include "fd/gx/gx_message.h"
+#include "fd/fd-lib.h"
+#include "fd/gx/gx-dict.h"
+#include "fd/gx/gx-message.h"
 
 #include "pgw_event.h"
 #include "pgw_fd_path.h"

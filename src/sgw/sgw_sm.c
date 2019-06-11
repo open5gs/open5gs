@@ -1,4 +1,4 @@
-#include "gtp/gtp_node.h"
+#include "gtp/gtp-node.h"
 
 #include "sgw_context.h"
 #include "sgw_event.h"
