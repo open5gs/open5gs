@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "fd/fd-lib.h"
 #include "fd/rx/rx-dict.h"
 #include "fd/rx/rx-message.h"
@@ -86,8 +105,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
     ret = fd_sess_state_retrieve(pcrf_rx_reg, sess, &sess_data);
     ogs_assert(ret == 0);
-    if (!sess_data)
-    {
+    if (!sess_data) {
         os0_t sid = NULL;
         ret = fd_sess_getsid(sess, &sid, &sidlen);
         ogs_assert(ret == 0);
@@ -127,25 +145,21 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     /* Get Framed-IP-Address */
     ret = fd_msg_search_avp(qry, rx_framed_ip_address, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         gx_sid = (os0_t)pcrf_sess_find_by_ipv4(hdr->avp_value->os.data);
-        if (!gx_sid)
-        {
+        if (!gx_sid) {
             ogs_warn("Cannot find Gx Sesson for IPv4:%s",
                     INET_NTOP(hdr->avp_value->os.data, buf));
         }
     }
 
-    if (!gx_sid)
-    {
+    if (!gx_sid) {
         /* Get Framed-IPv6-Prefix */
         ret = fd_msg_search_avp(qry, rx_framed_ipv6_prefix, &avp);
         ogs_assert(ret == 0);
-        if (avp)
-        {
+        if (avp) {
             paa_t *paa = NULL;
 
             ret = fd_msg_avp_hdr(avp, &hdr);
@@ -154,190 +168,154 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
             ogs_assert(paa);
             ogs_assert(paa->len == IPV6_LEN * 8 /* 128bit */);
             gx_sid = (os0_t)pcrf_sess_find_by_ipv6(paa->addr6);
-            if (!gx_sid)
-            {
+            if (!gx_sid) {
                 ogs_warn("Cannot find Gx Sesson for IPv6:%s",
                         INET6_NTOP(hdr->avp_value->os.data, buf));
             }
         }
     }
 
-    if (!gx_sid)
-    {
+    if (!gx_sid) {
         ogs_error("No Gx Session");
         goto out;
     }
 
     ret = fd_msg_browse(qry, MSG_BRW_FIRST_CHILD, &avpch1, NULL);
     ogs_assert(ret == 0);
-    while(avpch1)
-    {
+    while (avpch1) {
         ret = fd_msg_avp_hdr(avpch1, &hdr);
         ogs_assert(ret == 0);
-        switch(hdr->avp_code)
+        switch(hdr->avp_code) {
+        case AC_SESSION_ID:
+        case AC_ORIGIN_HOST:
+            if (sess_data->peer_host)
+                ogs_free(sess_data->peer_host);
+            sess_data->peer_host =
+                (os0_t)ogs_strdup((char *)hdr->avp_value->os.data);
+            ogs_assert(sess_data->peer_host);
+            break;
+        case AC_ORIGIN_REALM:
+        case AC_DESTINATION_REALM:
+        case AC_ROUTE_RECORD:
+        case AC_PROXY_INFO:
+        case AC_AUTH_APPLICATION_ID:
+        case FD_AVP_CODE_FRAME_IP_ADDRESS:
+        case FD_AVP_CODE_FRAME_IPV6_PREFIX:
+        case RX_AVP_CODE_SUBSCRIPTION_ID:
+            break;
+        /* Gwt Specific-Action */
+        case RX_AVP_CODE_SPECIFIC_ACTION:
+            break;
+        /* Gwt Media-Component-Description */
+        case RX_AVP_CODE_MEDIA_COMPONENT_DESCRIPTION:
         {
-            case AC_SESSION_ID:
-            case AC_ORIGIN_HOST:
-            {
-                if (sess_data->peer_host)
-                    ogs_free(sess_data->peer_host);
-                sess_data->peer_host =
-                    (os0_t)ogs_strdup((char *)hdr->avp_value->os.data);
-                ogs_assert(sess_data->peer_host);
-                break;
-            }
-            case AC_ORIGIN_REALM:
-            case AC_DESTINATION_REALM:
-            case AC_ROUTE_RECORD:
-            case AC_PROXY_INFO:
-            case AC_AUTH_APPLICATION_ID:
-            case FD_AVP_CODE_FRAME_IP_ADDRESS:
-            case FD_AVP_CODE_FRAME_IPV6_PREFIX:
-            case RX_AVP_CODE_SUBSCRIPTION_ID:
-                break;
-            /* Gwt Specific-Action */
-            case RX_AVP_CODE_SPECIFIC_ACTION:
-                break;
-            /* Gwt Media-Component-Description */
-            case RX_AVP_CODE_MEDIA_COMPONENT_DESCRIPTION:
-            {
-                rx_media_component_t *media_component = &rx_message.
-                        media_component[rx_message.num_of_media_component];
+            rx_media_component_t *media_component = &rx_message.
+                    media_component[rx_message.num_of_media_component];
 
-                ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
+            ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
+            ogs_assert(ret == 0);
+            while (avpch2) {
+                ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
-                while(avpch2)
+                switch (hdr->avp_code) {
+                case RX_AVP_CODE_MEDIA_COMPONENT_NUMBER:
+                    media_component->media_component_number =
+                        hdr->avp_value->i32;
+                    break;
+                case RX_AVP_CODE_MEDIA_TYPE:
+                    media_component->media_type = hdr->avp_value->i32;
+                    break;
+                case RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_DL:
+                    media_component->max_requested_bandwidth_dl =
+                        hdr->avp_value->i32;
+                    break;
+                case RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_UL:
+                    media_component->max_requested_bandwidth_ul =
+                        hdr->avp_value->i32;
+                    break;
+                case RX_AVP_CODE_RR_BANDWIDTH:
+                    media_component->rr_bandwidth = hdr->avp_value->i32;
+                    break;
+                case RX_AVP_CODE_RS_BANDWIDTH:
+                    media_component->rs_bandwidth = hdr->avp_value->i32;
+                    break;
+                case RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_DL:
+                    media_component->min_requested_bandwidth_dl =
+                        hdr->avp_value->i32;
+                    break;
+                case RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_UL:
+                    media_component->min_requested_bandwidth_ul =
+                        hdr->avp_value->i32;
+                    break;
+                case RX_AVP_CODE_MEDIA_SUB_COMPONENT:
                 {
-                    ret = fd_msg_avp_hdr(avpch2, &hdr);
+                    rx_media_sub_component_t *sub = &media_component->
+                        sub[media_component->num_of_sub];
+
+                    ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD,
+                            &avpch3, NULL);
                     ogs_assert(ret == 0);
-                    switch(hdr->avp_code)
-                    {
-                        case RX_AVP_CODE_MEDIA_COMPONENT_NUMBER:
-                        {
-                            media_component->media_component_number =
+                    while (avpch3) {
+                        ret = fd_msg_avp_hdr(avpch3, &hdr);
+                        ogs_assert(ret == 0);
+                        switch (hdr->avp_code) {
+                        case RX_AVP_CODE_FLOW_NUMBER:
+                            sub->flow_number =
                                 hdr->avp_value->i32;
                             break;
-                        }
-                        case RX_AVP_CODE_MEDIA_TYPE:
-                        {
-                            media_component->media_type = hdr->avp_value->i32;
-                            break;
-                        }
-                        case RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_DL:
-                        {
-                            media_component->max_requested_bandwidth_dl =
+                        case RX_AVP_CODE_FLOW_USAGE:
+                            sub->flow_usage =
                                 hdr->avp_value->i32;
                             break;
-                        }
-                        case RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_UL:
+                        case RX_AVP_CODE_FLOW_DESCRIPTION:
                         {
-                            media_component->max_requested_bandwidth_ul =
-                                hdr->avp_value->i32;
-                            break;
-                        }
-                        case RX_AVP_CODE_RR_BANDWIDTH:
-                        {
-                            media_component->rr_bandwidth = hdr->avp_value->i32;
-                            break;
-                        }
-                        case RX_AVP_CODE_RS_BANDWIDTH:
-                        {
-                            media_component->rs_bandwidth = hdr->avp_value->i32;
-                            break;
-                        }
-                        case RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_DL:
-                        {
-                            media_component->min_requested_bandwidth_dl =
-                                hdr->avp_value->i32;
-                            break;
-                        }
-                        case RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_UL:
-                        {
-                            media_component->min_requested_bandwidth_ul =
-                                hdr->avp_value->i32;
-                            break;
-                        }
-                        case RX_AVP_CODE_MEDIA_SUB_COMPONENT:
-                        {
-                            rx_media_sub_component_t *sub = &media_component->
-                                sub[media_component->num_of_sub];
+                            flow_t *flow = &sub->flow
+                                [sub->num_of_flow];
 
-                            ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD,
-                                    &avpch3, NULL);
-                            ogs_assert(ret == 0);
-                            while(avpch3)
-                            {
-                                ret = fd_msg_avp_hdr(avpch3, &hdr);
-                                ogs_assert(ret == 0);
-                                switch(hdr->avp_code)
-                                {
-                                    case RX_AVP_CODE_FLOW_NUMBER:
-                                        sub->flow_number =
-                                            hdr->avp_value->i32;
-                                        break;
-                                    case RX_AVP_CODE_FLOW_USAGE:
-                                    {
-                                        sub->flow_usage =
-                                            hdr->avp_value->i32;
-                                        break;
-                                    }
-                                    case RX_AVP_CODE_FLOW_DESCRIPTION:
-                                    {
-                                        flow_t *flow = &sub->flow
-                                            [sub->num_of_flow];
+                            flow->description = ogs_malloc(
+                                    hdr->avp_value->os.len+1);
+                            ogs_cpystrn(
+                                flow->description,
+                                (char*)hdr->avp_value->os.data,
+                                hdr->avp_value->os.len+1);
 
-                                        flow->description = ogs_malloc(
-                                                hdr->avp_value->os.len+1);
-                                        ogs_cpystrn(
-                                            flow->description,
-                                            (char*)hdr->avp_value->os.data,
-                                            hdr->avp_value->os.len+1);
-
-                                        sub->num_of_flow++;
-                                        break;
-                                    }
-                                    default:
-                                    {
-                                        ogs_error("Not supported(%d)",
-                                                hdr->avp_code);
-                                        break;
-                                    }
-                                }
-                                fd_msg_browse(avpch3, MSG_BRW_NEXT, &avpch3, NULL);
-                            }
-
-                            media_component->num_of_sub++;
+                            sub->num_of_flow++;
                             break;
                         }
                         default:
-                        {
-                            ogs_warn("Not supported(%d)", hdr->avp_code);
+                            ogs_error("Not supported(%d)",
+                                    hdr->avp_code);
                             break;
                         }
+                        fd_msg_browse(avpch3, MSG_BRW_NEXT, &avpch3, NULL);
                     }
 
-                    fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
+                    media_component->num_of_sub++;
+                    break;
+                }
+                default:
+                    ogs_warn("Not supported(%d)", hdr->avp_code);
+                    break;
                 }
 
-                rx_message.num_of_media_component++;
-                break;
+                fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
             }
-            default:
-            {
-                ogs_warn("Not supported(%d)", hdr->avp_code);
-                break;
-            }
+
+            rx_message.num_of_media_component++;
+            break;
+        }
+        default:
+            ogs_warn("Not supported(%d)", hdr->avp_code);
+            break;
         }
         fd_msg_browse(avpch1, MSG_BRW_NEXT, &avpch1, NULL);
     }
 
     /* Send Re-Auth Request */
     rv = pcrf_gx_send_rar(gx_sid, sess_data->rx_sid, &rx_message);
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         result_code = rx_message.result_code;
-        if (result_code != ER_DIAMETER_SUCCESS)
-        {
+        if (result_code != ER_DIAMETER_SUCCESS) {
             ogs_error("pcrf_gx_send_rar() failed");
             goto out;
         }
@@ -391,26 +369,19 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     return 0;
 
 out:
-    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED)
-    {
+    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    }
-    else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID)
-    {
+    } else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    }
-    else if (result_code == FD_DIAMETER_MISSING_AVP)
-    {
+    } else if (result_code == FD_DIAMETER_MISSING_AVP) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    }
-    else
-    {
+    } else {
         ret = fd_message_experimental_rescode_set(ans, result_code);
         ogs_assert(ret == 0);
     }
@@ -554,32 +525,25 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         result_code = hdr->avp_value->i32;
         ogs_debug("    Result Code: %d", hdr->avp_value->i32);
-    }
-    else
-    {
+    } else {
         ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
         ogs_assert(ret == 0);
-        if (avp)
-        {
+        if (avp) {
             ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch1);
             ogs_assert(ret == 0);
-            if (avpch1)
-            {
+            if (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
                 result_code = hdr->avp_value->i32;
                 ogs_debug("    Experimental Result Code: %d",
                         result_code);
             }
-        }
-        else
-        {
+        } else {
             ogs_error("no Result-Code");
         }
     }
@@ -587,35 +551,28 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     /* Value of Origin-Host */
     ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("    From '%.*s'",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Host ");
     }
 
     /* Value of Origin-Realm */
     ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("         ('%.*s')",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Realm ");
     }
 
-    if (result_code != ER_DIAMETER_SUCCESS)
-    {
+    if (result_code != ER_DIAMETER_SUCCESS) {
         ogs_error("ERROR DIAMETER Result Code(%d)", result_code);
     }
 
@@ -683,32 +640,26 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     /* Get Termination-Cause */
     ret = fd_msg_search_avp(qry, rx_termination_cause, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         sess_data->termination_cause = hdr->avp_value->i32;
-        switch(sess_data->termination_cause)
-        {
-            case RX_TERMINATION_CAUSE_DIAMETER_LOGOUT:
-                break;
-            default:
-                ogs_error("Termination-Cause Error : [%d]",
-                        sess_data->termination_cause);
-                break;
+        switch (sess_data->termination_cause) {
+        case RX_TERMINATION_CAUSE_DIAMETER_LOGOUT:
+            break;
+        default:
+            ogs_error("Termination-Cause Error : [%d]",
+                    sess_data->termination_cause);
+            break;
         }
-    }
-    else
-    {
+    } else {
         ogs_error("no_Termination-Cause");
     }
 
-    if (sess_data->state != SESSION_ABORTED)
-    {
+    if (sess_data->state != SESSION_ABORTED) {
         /* Send Re-Auth Request if Abort-Session-Request is not initaited */
         rv = pcrf_gx_send_rar(sess_data->gx_sid, sess_data->rx_sid, &rx_message);
-        if (rv != OGS_OK)
-        {
+        if (rv != OGS_OK) {
             result_code = rx_message.result_code;
             ogs_error("pcrf_gx_send_rar() failed");
             goto out;
@@ -736,26 +687,19 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     return 0;
 
 out:
-    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED)
-    {
+    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    }
-    else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID)
-    {
+    } else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    }
-    else if (result_code == FD_DIAMETER_MISSING_AVP)
-    {
+    } else if (result_code == FD_DIAMETER_MISSING_AVP) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    }
-    else
-    {
+    } else {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);

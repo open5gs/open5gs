@@ -1,5 +1,23 @@
-#include "ogs-crypt.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
+#include "ogs-crypt.h"
 #include "fd/fd-lib.h"
 #include "fd/s6a/s6a-dict.h"
 #include "fd/s6a/s6a-message.h"
@@ -74,15 +92,13 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
         ogs_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
 
     rv = hss_db_auth_info(imsi_bcd, &auth_info);
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         result_code = S6A_DIAMETER_ERROR_USER_UNKNOWN;
         goto out;
     }
 
     memset(zero, 0, sizeof(zero));
-    if (memcmp(auth_info.rand, zero, RAND_LEN) == 0)
-    {
+    if (memcmp(auth_info.rand, zero, RAND_LEN) == 0) {
         ogs_random(auth_info.rand, RAND_LEN);
     }
 
@@ -93,25 +109,20 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
 
     ret = fd_msg_search_avp(qry, s6a_req_eutran_auth_info, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_avp_search_avp(avp, s6a_re_synchronization_info, &avpch);
         ogs_assert(ret == 0);
-        if (avpch)
-        {
+        if (avpch) {
             ret = fd_msg_avp_hdr(avpch, &hdr);
             ogs_assert(ret == 0);
             hss_auc_sqn(opc, auth_info.k, hdr->avp_value->os.data, sqn, mac_s);
             if (memcmp(mac_s, hdr->avp_value->os.data +
-                        RAND_LEN + HSS_SQN_LEN, MAC_S_LEN) == 0)
-            {
+                        RAND_LEN + HSS_SQN_LEN, MAC_S_LEN) == 0) {
                 ogs_random(auth_info.rand, RAND_LEN);
                 auth_info.sqn = ogs_buffer_to_uint64(sqn, HSS_SQN_LEN);
                 /* 33.102 C.3.4 Guide : IND + 1 */
                 auth_info.sqn = (auth_info.sqn + 32 + 1) & HSS_MAX_SQN;
-            }
-            else
-            {
+            } else {
                 ogs_error("Re-synch MAC failed for IMSI:`%s`", imsi_bcd);
                 ogs_log_print(OGS_LOG_ERROR, "MAC_S: ");
                 ogs_log_hexdump(OGS_LOG_ERROR, mac_s, MAC_S_LEN);
@@ -127,16 +138,14 @@ static int hss_s6a_air_cb( struct msg **msg, struct avp *avp,
     }
 
     rv = hss_db_update_rand_and_sqn(imsi_bcd, auth_info.rand, auth_info.sqn);
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("Cannot update rand and sqn for IMSI:'%s'", imsi_bcd);
         result_code = S6A_DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE;
         goto out;
     }
 
     rv = hss_db_increment_sqn(imsi_bcd);
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("Cannot increment sqn for IMSI:'%s'", imsi_bcd);
         result_code = S6A_DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE;
         goto out;
@@ -291,8 +300,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ogs_min(hdr->avp_value->os.len, MAX_IMSI_BCD_LEN)+1);
 
     rv = hss_db_subscription_data(imsi_bcd, &subscription_data);
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("Cannot get Subscription-Data for IMSI:'%s'", imsi_bcd);
         result_code = S6A_DIAMETER_ERROR_USER_UNKNOWN;
         goto out;
@@ -332,8 +340,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
-    if (!(hdr->avp_value->u32 & S6A_ULR_SKIP_SUBSCRIBER_DATA))
-    {
+    if (!(hdr->avp_value->u32 & S6A_ULR_SKIP_SUBSCRIBER_DATA)) {
         struct avp *avp_access_restriction_data;
         struct avp *avp_subscriber_status, *avp_network_access_mode;
         struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
@@ -343,8 +350,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_new(s6a_subscription_data, 0, &avp);
         ogs_assert(ret == 0);
 
-        if (subscription_data.access_restriction_data)
-        {
+        if (subscription_data.access_restriction_data) {
             ret = fd_msg_avp_new(s6a_access_restriction_data, 0,
                     &avp_access_restriction_data);
             ogs_assert(ret == 0);
@@ -393,8 +399,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_ambr);
         ogs_assert(ret == 0);
 
-        if (subscription_data.num_of_pdn)
-        {
+        if (subscription_data.num_of_pdn) {
             /* Set the APN Configuration Profile */
             struct avp *apn_configuration_profile;
             struct avp *context_identifier;
@@ -427,8 +432,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                     all_apn_configuration_included_indicator);
             ogs_assert(ret == 0);
 
-            for (i = 0; i < subscription_data.num_of_pdn; i++)
-            {
+            for (i = 0; i < subscription_data.num_of_pdn; i++) {
                 /* Set the APN Configuration */
                 struct avp *apn_configuration, *context_identifier;
                 struct avp *pdn_type, *service_selection;
@@ -536,14 +540,12 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 ogs_assert(ret == 0);
 
                 /* Set MIP6-Agent-Info */
-                if (pdn->pgw_ip.ipv4 || pdn->pgw_ip.ipv6)
-                {
+                if (pdn->pgw_ip.ipv4 || pdn->pgw_ip.ipv6) {
                     ret = fd_msg_avp_new(fd_mip6_agent_info, 0,
                                 &mip6_agent_info);
                     ogs_assert(ret == 0);
 
-                    if (pdn->pgw_ip.ipv4)
-                    {
+                    if (pdn->pgw_ip.ipv4) {
                         ret = fd_msg_avp_new(fd_mip_home_agent_address, 0,
                                     &mip_home_agent_address);
                         ogs_assert(ret == 0);
@@ -557,8 +559,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                         ogs_assert(ret == 0);
                     }
 
-                    if (pdn->pgw_ip.ipv6)
-                    {
+                    if (pdn->pgw_ip.ipv6) {
                         ret = fd_msg_avp_new(fd_mip_home_agent_address, 0,
                                     &mip_home_agent_address);
                         ogs_assert(ret == 0);
@@ -579,8 +580,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 }
 
                 /* Set AMBR */
-                if (pdn->ambr.downlink || pdn->ambr.uplink)
-                {
+                if (pdn->ambr.downlink || pdn->ambr.uplink) {
                     ret = fd_msg_avp_new(s6a_ambr, 0, &avp_ambr);
                     ogs_assert(ret == 0);
                     ret = fd_msg_avp_new(s6a_max_bandwidth_ul, 0, 

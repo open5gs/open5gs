@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "fd/fd-lib.h"
 #include "fd/gx/gx-dict.h"
 #include "fd/rx/rx-dict.h"
@@ -94,8 +113,7 @@ static int remove_rx_state(struct rx_sess_state *rx_sess_data)
     ogs_assert(rx_sess_data);
     gx = rx_sess_data->gx;
 
-    for (i = 0; i < rx_sess_data->num_of_pcc_rule; i++)
-    {
+    for (i = 0; i < rx_sess_data->num_of_pcc_rule; i++) {
         PCC_RULE_FREE(&rx_sess_data->pcc_rule[i]);
     }
 
@@ -127,8 +145,7 @@ static struct rx_sess_state *find_rx_state(struct sess_state *gx, os0_t sid)
     ogs_assert(gx);
     ogs_assert(sid);
     
-    ogs_list_for_each(&gx->rx_list, rx_sess_data)
-    {
+    ogs_list_for_each(&gx->rx_list, rx_sess_data) {
         if (!strcmp((char *)rx_sess_data->sid, (char *)sid))
             return rx_sess_data;
     }
@@ -194,8 +211,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     ret = fd_sess_state_retrieve(pcrf_gx_reg, sess, &sess_data);
     ogs_assert(ret == 0);
 
-    if (!sess_data)
-    {
+    if (!sess_data) {
         os0_t sid;
         size_t sidlen;
 
@@ -218,8 +234,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Get Origin-Host */
     ret = fd_msg_search_avp(qry, fd_origin_host, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
 
@@ -228,9 +243,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         sess_data->peer_host =
             (os0_t)ogs_strdup((char *)hdr->avp_value->os.data);
         ogs_assert(sess_data->peer_host);
-    }
-    else
-    {
+    } else {
         ogs_error("no_CC-Request-Type ");
         result_code = FD_DIAMETER_MISSING_AVP;
         goto out;
@@ -239,14 +252,11 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Get CC-Request-Type */
     ret = fd_msg_search_avp(qry, gx_cc_request_type, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         sess_data->cc_request_type = hdr->avp_value->i32;
-    }
-    else
-    {
+    } else {
         ogs_error("no_CC-Request-Type ");
         result_code = FD_DIAMETER_MISSING_AVP;
         goto out;
@@ -255,8 +265,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Get CC-Request-Number */
     ret = fd_msg_search_avp(qry, gx_cc_request_number, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         cc_request_number = hdr->avp_value->i32;
@@ -265,8 +274,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Get Framed-IP-Address */
     ret = fd_msg_search_avp(qry, gx_framed_ip_address, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
 
@@ -279,8 +287,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Get Framed-IPv6-Prefix */
     ret = fd_msg_search_avp(qry, gx_framed_ipv6_prefix, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         paa_t *paa = NULL;
 
         ret = fd_msg_avp_hdr(avp, &hdr);
@@ -324,51 +331,42 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     /* Get IMSI + APN */
     ret = fd_msg_search_avp(qry, gx_subscription_id, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ret = fd_avp_search_avp(avp, gx_subscription_id_type, &avpch1);
         ogs_assert(ret == 0);
-        if (avpch1)
-        {
+        if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
-            if (hdr->avp_value->i32 != GX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI)
-            {
+            if (hdr->avp_value->i32 != GX_SUBSCRIPTION_ID_TYPE_END_USER_IMSI) {
                 ogs_error("Not implemented Subscription-Id-Type(%d)",
                         hdr->avp_value->i32);
                 result_code = FD_DIAMETER_AVP_UNSUPPORTED;
                 goto out;
             }
-        }
-        else
-        {
+        } else {
             ogs_error("no_Subscription-Id-Type");
             result_code = FD_DIAMETER_MISSING_AVP;
             goto out;
         }
         ret = fd_avp_search_avp(avp, gx_subscription_id_data, &avpch1);
         ogs_assert(ret == 0);
-        if (avpch1)
-        {
+        if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
             if (sess_data->imsi_bcd)
                 ogs_free(sess_data->imsi_bcd);
             sess_data->imsi_bcd = ogs_strdup((char *)hdr->avp_value->os.data);
             ogs_assert(sess_data->imsi_bcd);
-        }
-        else
-        {
+        } else {
             ogs_error("no_Subscription-Id-Data");
             result_code = FD_DIAMETER_MISSING_AVP;
             goto out;
         }
     }
 
-    if (sess_data->imsi_bcd == NULL)
-    {
+    if (sess_data->imsi_bcd == NULL) {
         ogs_error("no_Subscription-Id");
         result_code = FD_DIAMETER_MISSING_AVP;
         goto out;
@@ -376,8 +374,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
     ret = fd_msg_search_avp(qry, gx_called_station_id, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         if (sess_data->apn)
@@ -386,8 +383,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         ogs_assert(sess_data->apn);
     }
 
-    if (sess_data->apn == NULL)
-    {
+    if (sess_data->apn == NULL) {
         ogs_error("no_Called-Station-Id");
         result_code = FD_DIAMETER_MISSING_AVP;
         goto out;
@@ -395,8 +391,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
     /* Retrieve QoS Data from Database */
     rv = pcrf_db_qos_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("Cannot get data for IMSI(%s)+APN(%s)'",
                 sess_data->imsi_bcd, sess_data->apn);
         result_code = FD_DIAMETER_UNKNOWN_SESSION_ID;
@@ -404,17 +399,13 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
     }
 
     if (sess_data->cc_request_type == GX_CC_REQUEST_TYPE_INITIAL_REQUEST ||
-        sess_data->cc_request_type == GX_CC_REQUEST_TYPE_UPDATE_REQUEST)
-    {
+        sess_data->cc_request_type == GX_CC_REQUEST_TYPE_UPDATE_REQUEST) {
         int charging_rule = 0;
 
-        for (i = 0; i < gx_message.num_of_pcc_rule; i++)
-        {
+        for (i = 0; i < gx_message.num_of_pcc_rule; i++) {
             pcc_rule_t *pcc_rule = &gx_message.pcc_rule[i];
-            if (pcc_rule->num_of_flow)
-            {
-                if (charging_rule == 0)
-                {
+            if (pcc_rule->num_of_flow) {
+                if (charging_rule == 0) {
                     ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
                     ogs_assert(ret == 0);
 
@@ -426,20 +417,17 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
             }
         }
 
-        if (charging_rule)
-        {
+        if (charging_rule) {
             ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
             ogs_assert(ret == 0);
         }
 
         /* Set QoS-Information */
-        if (gx_message.pdn.ambr.downlink || gx_message.pdn.ambr.uplink)
-        {
+        if (gx_message.pdn.ambr.downlink || gx_message.pdn.ambr.uplink) {
             ret = fd_msg_avp_new(gx_qos_information, 0, &avp);
             ogs_assert(ret == 0);
 
-            if (gx_message.pdn.ambr.uplink)
-            {
+            if (gx_message.pdn.ambr.uplink) {
                 ret = fd_msg_avp_new(gx_apn_aggregate_max_bitrate_ul, 0,
                         &avpch1);
                 ogs_assert(ret == 0);
@@ -450,8 +438,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
                 ogs_assert(ret == 0);
             }
             
-            if (gx_message.pdn.ambr.downlink)
-            {
+            if (gx_message.pdn.ambr.downlink) {
                 ret = fd_msg_avp_new(gx_apn_aggregate_max_bitrate_dl, 0,
                         &avpch1);
                 ogs_assert(ret == 0);
@@ -533,14 +520,11 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
-    }
-    else if (sess_data->cc_request_type ==
-            GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
-    {
+    } else if (sess_data->cc_request_type ==
+            GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
         struct rx_sess_state *rx_sess_data = NULL, *next_rx_sess_data = NULL;
         ogs_list_for_each_safe(&sess_data->rx_list,
-                next_rx_sess_data, rx_sess_data)
-        {
+                next_rx_sess_data, rx_sess_data) {
             rv = pcrf_rx_send_asr(
                     rx_sess_data->sid, RX_ABORT_CAUSE_BEARER_RELEASED);
             ogs_assert(rv == OGS_OK);
@@ -553,15 +537,12 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
-    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
-    {
+    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
         /* Store this value in the session */
         ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
         ogs_assert(ret == 0);
         ogs_assert(sess_data == NULL);
-    }
-    else
-    {
+    } else {
         state_cleanup(sess_data, NULL, NULL);
     }
 
@@ -582,38 +563,28 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
 out:
 	/* Set the Result-Code */
-    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED)
-    {
+    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    }
-    else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID)
-    {
+    } else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    }
-    else if (result_code == FD_DIAMETER_MISSING_AVP)
-    {
+    } else if (result_code == FD_DIAMETER_MISSING_AVP) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    }
-    else
-    {
+    } else {
         ret = fd_message_experimental_rescode_set(ans, result_code);
         ogs_assert(ret == 0);
     }
 
-    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST)
-    {
+    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
         /* Store this value in the session */
         ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
         ogs_assert(sess_data == NULL);
-    }
-    else
-    {
+    } else {
         state_cleanup(sess_data, NULL, NULL);
     }
 
@@ -670,8 +641,7 @@ int pcrf_gx_send_rar(
     sidlen = strlen((char *)gx_sid);
     ret = fd_sess_fromsid_msg((os0_t)gx_sid, sidlen, &session, &new);
     ogs_assert(ret == 0);
-    if (new)
-    {
+    if (new) {
         ogs_error("No session data");
         ret = fd_msg_free(req);
         ogs_assert(ret == 0);
@@ -690,8 +660,7 @@ int pcrf_gx_send_rar(
     /* Retrieve session state in this session */
     ret = fd_sess_state_retrieve(pcrf_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    if (sess_data == NULL)
-    {
+    if (sess_data == NULL) {
         ogs_error("No session data");
         ret = fd_msg_free(req);
         ogs_assert(ret == 0);
@@ -701,18 +670,15 @@ int pcrf_gx_send_rar(
 
     /* Find RX session state */
     rx_sess_data = find_rx_state(sess_data, rx_sid);
-    if (rx_message->cmd_code == RX_CMD_CODE_AA)
-    {
-        if (!rx_sess_data)
-        {
+    if (rx_message->cmd_code == RX_CMD_CODE_AA) {
+        if (!rx_sess_data) {
             rx_sess_data = add_rx_state(sess_data, rx_sid);
             ogs_assert(rx_sess_data);
         }
 
         /* Retrieve QoS Data from Database */
         rv = pcrf_db_qos_data(sess_data->imsi_bcd, sess_data->apn, &gx_message);
-        if (rv != OGS_OK)
-        {
+        if (rv != OGS_OK) {
             ogs_error("Cannot get data for IMSI(%s)+APN(%s)'",
                     sess_data->imsi_bcd, sess_data->apn);
             rx_message->result_code =
@@ -721,8 +687,7 @@ int pcrf_gx_send_rar(
         }
 
         /* Match Media-Component with PCC Rule */
-        for (i = 0; i < rx_message->num_of_media_component; i++)
-        {
+        for (i = 0; i < rx_message->num_of_media_component; i++) {
             int flow_presence = 0;
             pcc_rule_t *pcc_rule = NULL;
             pcc_rule_t *db_pcc_rule = NULL;
@@ -730,38 +695,29 @@ int pcrf_gx_send_rar(
             rx_media_component_t *media_component =
                 &rx_message->media_component[i];
 
-            if (media_component->media_component_number == 0)
-            {
+            if (media_component->media_component_number == 0) {
                 continue;
             }
 
-            switch(media_component->media_type)
-            {
-                case RX_MEDIA_TYPE_AUDIO:
-                {
-                    qci = PDN_QCI_1;
-                    break;
-                }
-                default:
-                {
-                    ogs_error("Not implemented : [Media-Type:%d]",
-                            media_component->media_type);
-                    rx_message->result_code = FD_DIAMETER_INVALID_AVP_VALUE;
-                    goto out;
-                }
+            switch(media_component->media_type) {
+            case RX_MEDIA_TYPE_AUDIO:
+                qci = PDN_QCI_1;
+                break;
+            default:
+                ogs_error("Not implemented : [Media-Type:%d]",
+                        media_component->media_type);
+                rx_message->result_code = FD_DIAMETER_INVALID_AVP_VALUE;
+                goto out;
             }
             
-            for (j = 0; j < gx_message.num_of_pcc_rule; j++)
-            {
-                if (gx_message.pcc_rule[j].qos.qci == qci)
-                {
+            for (j = 0; j < gx_message.num_of_pcc_rule; j++) {
+                if (gx_message.pcc_rule[j].qos.qci == qci) {
                     db_pcc_rule = &gx_message.pcc_rule[j];
                     break;
                 }
             }
 
-            if (!db_pcc_rule)
-            {
+            if (!db_pcc_rule) {
                 ogs_error("CHECK WEBUI : No PCC Rule in DB [QCI:%d]", qci);
                 ogs_error("Please add PCC Rule using WEBUI");
                 rx_message->result_code = 
@@ -769,17 +725,14 @@ int pcrf_gx_send_rar(
                 goto out;
             }
 
-            for (j = 0; j < rx_sess_data->num_of_pcc_rule; j++)
-            {
-                if (rx_sess_data->pcc_rule[j].qos.qci == qci)
-                {
+            for (j = 0; j < rx_sess_data->num_of_pcc_rule; j++) {
+                if (rx_sess_data->pcc_rule[j].qos.qci == qci) {
                     pcc_rule = &rx_sess_data->pcc_rule[j];
                     break;
                 }
             }
 
-            if (!pcc_rule)
-            {
+            if (!pcc_rule) {
                 pcc_rule = 
                     &rx_sess_data->pcc_rule[rx_sess_data->num_of_pcc_rule];
 
@@ -795,35 +748,29 @@ int pcrf_gx_send_rar(
                 /* Install Flow */
                 flow_presence = 1;
                 rv = install_flow(pcc_rule, media_component);
-                if (rv != OGS_OK)
-                {
+                if (rv != OGS_OK) {
                     rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
                     ogs_error("install_flow() failed");
                     goto out;
                 }
 
                 rx_sess_data->num_of_pcc_rule++;
-            }
-            else
-            {
+            } else {
                 ogs_assert(strcmp(pcc_rule->name, db_pcc_rule->name) == 0);
 
                 /* Check Flow */
                 count = matched_flow(pcc_rule, media_component);
-                if (count == -1)
-                {
+                if (count == -1) {
                     rx_message->result_code = RX_DIAMETER_FILTER_RESTRICTIONS;
                     ogs_error("matched_flow() failed");
                     goto out;
                 }
 
-                if (pcc_rule->num_of_flow != count)
-                {
+                if (pcc_rule->num_of_flow != count) {
                     /* Re-install Flow */
                     flow_presence = 1;
                     rv = install_flow(pcc_rule, media_component);
-                    if (rv != OGS_OK)
-                    {
+                    if (rv != OGS_OK) {
                         rx_message->result_code = 
                             RX_DIAMETER_FILTER_RESTRICTIONS;
                         ogs_error("install_flow() failed");
@@ -836,8 +783,7 @@ int pcrf_gx_send_rar(
 
             /* Update QoS */
             rv = update_qos(pcc_rule, media_component);
-            if (rv != OGS_OK)
-            {
+            if (rv != OGS_OK) {
                 rx_message->result_code =
                     RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
                 ogs_error("update_qos() failed");
@@ -854,8 +800,7 @@ int pcrf_gx_send_rar(
             if (pcc_rule->qos.gbr.uplink == 0)
                 pcc_rule->qos.gbr.uplink = db_pcc_rule->qos.gbr.uplink;
 
-            if (charging_rule == 0)
-            {
+            if (charging_rule == 0) {
                 ret = fd_msg_avp_new(gx_charging_rule_install, 0, &avp);
                 ogs_assert(ret == 0);
                 charging_rule = 1;
@@ -865,23 +810,18 @@ int pcrf_gx_send_rar(
             ogs_assert(rv == OGS_OK);
         }
 
-        if (charging_rule == 1)
-        {
+        if (charging_rule == 1) {
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
             ogs_assert(ret == 0);
         }
 
-    }
-    else if (rx_message->cmd_code == RX_CMD_CODE_SESSION_TERMINATION)
-    {
+    } else if (rx_message->cmd_code == RX_CMD_CODE_SESSION_TERMINATION) {
         ogs_assert(rx_sess_data);
 
-        for (i = 0; i < rx_sess_data->num_of_pcc_rule; i++)
-        {
+        for (i = 0; i < rx_sess_data->num_of_pcc_rule; i++) {
             ogs_assert(rx_sess_data->pcc_rule[i].name);
 
-            if (charging_rule == 0)
-            {
+            if (charging_rule == 0) {
                 ret = fd_msg_avp_new(gx_charging_rule_remove, 0, &avp);
                 ogs_assert(ret == 0);
                 charging_rule = 1;
@@ -897,19 +837,16 @@ int pcrf_gx_send_rar(
             ogs_assert(ret == 0);
         }
 
-        if (charging_rule == 1)
-        {
+        if (charging_rule == 1) {
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
             ogs_assert(ret == 0);
         }
 
         remove_rx_state(rx_sess_data);
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
-    if (charging_rule == 0)
-    {
+    if (charging_rule == 0) {
         rx_message->result_code = ER_DIAMETER_SUCCESS;
         goto out;
     }
@@ -1026,31 +963,24 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         result_code = hdr->avp_value->i32;
         ogs_debug("    Result Code: %d", hdr->avp_value->i32);
-    }
-    else
-    {
+    } else {
         ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
         ogs_assert(ret == 0);
-        if (avp)
-        {
+        if (avp) {
             ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch1);
             ogs_assert(ret == 0);
-            if (avpch1)
-            {
+            if (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
                 result_code = hdr->avp_value->i32;
                 ogs_debug("    Experimental Result Code: %d", result_code);
             }
-        }
-        else
-        {
+        } else {
             ogs_error("no Result-Code");
             error++;
         }
@@ -1059,15 +989,12 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     /* Value of Origin-Host */
     ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("    From '%.*s'",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Host");
         error++;
     }
@@ -1075,15 +1002,12 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     /* Value of Origin-Realm */
     ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("         ('%.*s')",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Realm");
         error++;
     }
@@ -1092,8 +1016,7 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
     ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (fd_logger_self()->stats.nb_recv)
-    {
+    if (fd_logger_self()->stats.nb_recv) {
         /* Ponderate in the avg */
         fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
             fd_logger_self()->stats.nb_recv + dur) /
@@ -1103,9 +1026,7 @@ static void pcrf_gx_raa_cb(void *data, struct msg **msg)
             fd_logger_self()->stats.shortest = dur;
         if (dur > fd_logger_self()->stats.longest)
             fd_logger_self()->stats.longest = dur;
-    }
-    else
-    {
+    } else {
         fd_logger_self()->stats.shortest = dur;
         fd_logger_self()->stats.longest = dur;
         fd_logger_self()->stats.avg = dur;
@@ -1204,10 +1125,8 @@ static int encode_pcc_rule_definition(
     ret = fd_msg_avp_add(avpch1, MSG_BRW_LAST_CHILD, avpch2);
     ogs_assert(ret == 0);
 
-    if (flow_presence == 1)
-    {
-        for (i = 0; i < pcc_rule->num_of_flow; i++)
-        {
+    if (flow_presence == 1) {
+        for (i = 0; i < pcc_rule->num_of_flow; i++) {
             flow_t *flow = &pcc_rule->flow[i];
 
             ret = fd_msg_avp_new(gx_flow_information, 0, &avpch2);
@@ -1284,8 +1203,7 @@ static int encode_pcc_rule_definition(
     ret = fd_msg_avp_add (avpch2, MSG_BRW_LAST_CHILD, avpch3);
     ogs_assert(ret == 0);
 
-    if (pcc_rule->qos.mbr.uplink)
-    {
+    if (pcc_rule->qos.mbr.uplink) {
         ret = fd_msg_avp_new(gx_max_requested_bandwidth_ul, 0, &avpch3);
         ogs_assert(ret == 0);
         val.u32 = pcc_rule->qos.mbr.uplink;
@@ -1295,8 +1213,7 @@ static int encode_pcc_rule_definition(
         ogs_assert(ret == 0);
     }
 
-    if (pcc_rule->qos.mbr.downlink)
-    {
+    if (pcc_rule->qos.mbr.downlink) {
         ret = fd_msg_avp_new(gx_max_requested_bandwidth_dl, 0, &avpch3);
         ogs_assert(ret == 0);
         val.u32 = pcc_rule->qos.mbr.downlink;
@@ -1306,8 +1223,7 @@ static int encode_pcc_rule_definition(
         ogs_assert(ret == 0);
     }
 
-    if (pcc_rule->qos.gbr.uplink)
-    {
+    if (pcc_rule->qos.gbr.uplink) {
         ret = fd_msg_avp_new(gx_guaranteed_bitrate_ul, 0, &avpch3);
         ogs_assert(ret == 0);
         val.u32 = pcc_rule->qos.gbr.uplink;
@@ -1317,8 +1233,7 @@ static int encode_pcc_rule_definition(
         ogs_assert(ret == 0);
     }
 
-    if (pcc_rule->qos.gbr.downlink)
-    {
+    if (pcc_rule->qos.gbr.downlink) {
         ret = fd_msg_avp_new(gx_guaranteed_bitrate_dl, 0, &avpch3);
         ogs_assert(ret == 0);
         val.u32 = pcc_rule->qos.gbr.downlink;
@@ -1353,17 +1268,14 @@ static int flow_rx_to_gx(flow_t *rx_flow, flow_t *gx_flow)
     ogs_assert(gx_flow);
 
     if (!strncmp(rx_flow->description,
-                "permit out", strlen("permit out")))
-    {
+                "permit out", strlen("permit out"))) {
         gx_flow->direction = FLOW_DOWNLINK_ONLY;
 
         len = strlen(rx_flow->description)+1;
         gx_flow->description = ogs_malloc(len);
         ogs_cpystrn(gx_flow->description, rx_flow->description, len);
-    }
-    else if (!strncmp(rx_flow->description,
-                "permit in", strlen("permit in")))
-    {
+    } else if (!strncmp(rx_flow->description,
+                "permit in", strlen("permit in"))) {
         gx_flow->direction = FLOW_UPLINK_ONLY;
 
         /* 'permit in' should be changed
@@ -1374,9 +1286,7 @@ static int flow_rx_to_gx(flow_t *rx_flow, flow_t *gx_flow)
         strcat(gx_flow->description,
                 &rx_flow->description[strlen("permit in")]);
         ogs_assert(len == strlen(gx_flow->description)+1);
-    }
-    else
-    {
+    } else {
         ogs_error("Invalid Flow Descripton : [%s]", rx_flow->description);
         return OGS_ERROR;
     }
@@ -1395,53 +1305,44 @@ static int matched_flow(
     ogs_assert(pcc_rule);
     ogs_assert(media_component);
 
-    for (i = 0; i < media_component->num_of_sub; i++)
-    {
+    for (i = 0; i < media_component->num_of_sub; i++) {
         rx_media_sub_component_t *sub = &media_component->sub[i];
 
-        if (sub->flow_number == 0)
-        {
+        if (sub->flow_number == 0) {
             continue;
         }
 
-        for (j = 0; j < sub->num_of_flow; j++)
-        {
+        for (j = 0; j < sub->num_of_flow; j++) {
             new++;
         }
     }
 
-    if (new == 0)
-    {
+    if (new == 0) {
         /* No new flow in Media-Component */
         return pcc_rule->num_of_flow;
     }
 
-    for (i = 0; i < media_component->num_of_sub; i++)
-    {
+    for (i = 0; i < media_component->num_of_sub; i++) {
         rx_media_sub_component_t *sub = &media_component->sub[i];
 
-        if (sub->flow_number == 0)
-        {
+        if (sub->flow_number == 0) {
             continue;
         }
 
-        for (j = 0; j < sub->num_of_flow; j++)
-        {
+        for (j = 0; j < sub->num_of_flow; j++) {
             flow_t gx_flow;
             flow_t *rx_flow = &sub->flow[j];
 
             rv = flow_rx_to_gx(rx_flow, &gx_flow);
-            if (rv != OGS_OK)
-            {
+            if (rv != OGS_OK) {
                 ogs_error("flow reformatting error");
                 return OGS_ERROR;
             }
 
-            for (k = 0; k < pcc_rule->num_of_flow; k++)
-            {
+            for (k = 0; k < pcc_rule->num_of_flow; k++) {
                 if (gx_flow.direction == pcc_rule->flow[k].direction &&
-                    !strcmp(gx_flow.description, pcc_rule->flow[k].description))
-                {
+                    !strcmp(gx_flow.description,
+                        pcc_rule->flow[k].description)) {
                     matched++;
                     break;
                 }
@@ -1464,30 +1365,25 @@ static int install_flow(
     ogs_assert(media_component);
 
     /* Remove Flow from PCC Rule */
-    for (i = 0; i < pcc_rule->num_of_flow; i++)
-    {
+    for (i = 0; i < pcc_rule->num_of_flow; i++) {
         FLOW_FREE(&pcc_rule->flow[i]);
     }
     pcc_rule->num_of_flow = 0;
 
-    for (i = 0; i < media_component->num_of_sub; i++)
-    {
+    for (i = 0; i < media_component->num_of_sub; i++) {
         rx_media_sub_component_t *sub = &media_component->sub[i];
 
-        if (sub->flow_number == 0)
-        {
+        if (sub->flow_number == 0) {
             continue;
         }
 
         /* Copy Flow to PCC Rule */
-        for (j = 0; j < sub->num_of_flow; j++)
-        {
+        for (j = 0; j < sub->num_of_flow; j++) {
             flow_t *rx_flow = &sub->flow[j];
             flow_t *gx_flow = &pcc_rule->flow[pcc_rule->num_of_flow];
 
             rv = flow_rx_to_gx(rx_flow, gx_flow);
-            if (rv != OGS_OK)
-            {
+            if (rv != OGS_OK) {
                 ogs_error("flow reformatting error");
                 return OGS_ERROR;
             }
@@ -1513,142 +1409,112 @@ static int update_qos(
     pcc_rule->qos.gbr.downlink = 0;
     pcc_rule->qos.gbr.uplink = 0;
 
-    for (i = 0; i < media_component->num_of_sub; i++)
-    {
+    for (i = 0; i < media_component->num_of_sub; i++) {
         rx_media_sub_component_t *sub = &media_component->sub[i];
 
-        if (sub->flow_number == 0)
-        {
+        if (sub->flow_number == 0) {
             continue;
         }
 
-        for (j = 0; j < sub->num_of_flow; j++)
-        {
+        for (j = 0; j < sub->num_of_flow; j++) {
             flow_t gx_flow;
             flow_t *rx_flow = &sub->flow[j];
 
             rv = flow_rx_to_gx(rx_flow, &gx_flow);
-            if (rv != OGS_OK)
-            {
+            if (rv != OGS_OK) {
                 ogs_error("flow reformatting error");
                 return OGS_ERROR;
             }
 
-            if (gx_flow.direction == FLOW_DOWNLINK_ONLY)
-            {
-                if (sub->flow_usage == RX_FLOW_USAGE_RTCP)
-                {
+            if (gx_flow.direction == FLOW_DOWNLINK_ONLY) {
+                if (sub->flow_usage == RX_FLOW_USAGE_RTCP) {
                     if (media_component->rr_bandwidth && 
-                        media_component->rs_bandwidth)
-                    {
+                        media_component->rs_bandwidth) {
                         pcc_rule->qos.mbr.downlink +=
                             (media_component->rr_bandwidth +
                             media_component->rs_bandwidth);
-                    }
-                    else if (media_component->max_requested_bandwidth_dl)
-                    {
+                    } else if (media_component->max_requested_bandwidth_dl) {
                         if (media_component->rr_bandwidth && 
-                            !media_component->rs_bandwidth)
-                        {
+                            !media_component->rs_bandwidth) {
                             pcc_rule->qos.mbr.downlink +=
                                 ogs_max(0.05 *
                                     media_component->max_requested_bandwidth_dl,
                                     media_component->rr_bandwidth);
                         }
                         if (!media_component->rr_bandwidth && 
-                            media_component->rs_bandwidth)
-                        {
+                            media_component->rs_bandwidth) {
                             pcc_rule->qos.mbr.downlink +=
                                 ogs_max(0.05 *
                                     media_component->max_requested_bandwidth_dl,
                                     media_component->rs_bandwidth);
                         }
                         if (!media_component->rr_bandwidth && 
-                            !media_component->rs_bandwidth)
-                        {
+                            !media_component->rs_bandwidth) {
                             pcc_rule->qos.mbr.downlink +=
                                 0.05 *
                                     media_component->max_requested_bandwidth_dl;
                         }
                     }
-                }
-                else
-                {
-                    if (gx_flow.description)
-                    {
+                } else {
+                    if (gx_flow.description) {
                         pcc_rule->qos.mbr.downlink +=
                             media_component->max_requested_bandwidth_dl;
                         pcc_rule->qos.gbr.downlink +=
                             media_component->min_requested_bandwidth_dl;
                     }
                 }
-            }
-            else if (gx_flow.direction == FLOW_UPLINK_ONLY)
-            {
-                if (sub->flow_usage == RX_FLOW_USAGE_RTCP)
-                {
+            } else if (gx_flow.direction == FLOW_UPLINK_ONLY) {
+                if (sub->flow_usage == RX_FLOW_USAGE_RTCP) {
                     if (media_component->rr_bandwidth && 
-                        media_component->rs_bandwidth)
-                    {
+                        media_component->rs_bandwidth) {
                         pcc_rule->qos.mbr.uplink +=
                             (media_component->rr_bandwidth +
                             media_component->rs_bandwidth);
-                    }
-                    else if (media_component->max_requested_bandwidth_ul)
-                    {
+                    } else if (media_component->max_requested_bandwidth_ul) {
                         if (media_component->rr_bandwidth && 
-                            !media_component->rs_bandwidth)
-                        {
+                            !media_component->rs_bandwidth) {
                             pcc_rule->qos.mbr.uplink +=
                                 ogs_max(0.05 *
                                     media_component->max_requested_bandwidth_ul,
                                     media_component->rr_bandwidth);
                         }
                         if (!media_component->rr_bandwidth && 
-                            media_component->rs_bandwidth)
-                        {
+                            media_component->rs_bandwidth) {
                             pcc_rule->qos.mbr.uplink +=
                                 ogs_max(0.05 *
                                     media_component->max_requested_bandwidth_ul,
                                     media_component->rs_bandwidth);
                         }
                         if (!media_component->rr_bandwidth && 
-                            !media_component->rs_bandwidth)
-                        {
+                            !media_component->rs_bandwidth) {
                             pcc_rule->qos.mbr.uplink +=
                                 0.05 *
                                     media_component->max_requested_bandwidth_ul;
                         }
                     }
-                }
-                else
-                {
-                    if (gx_flow.description)
-                    {
+                } else {
+                    if (gx_flow.description) {
                         pcc_rule->qos.mbr.uplink +=
                             media_component->max_requested_bandwidth_ul;
                         pcc_rule->qos.gbr.uplink +=
                             media_component->min_requested_bandwidth_ul;
                     }
                 }
-            }
-            else
+            } else
                 ogs_assert_if_reached();
 
             FLOW_FREE(&gx_flow);
         }
     }
 
-    if (pcc_rule->qos.mbr.downlink == 0)
-    {
+    if (pcc_rule->qos.mbr.downlink == 0) {
         pcc_rule->qos.mbr.downlink +=
             media_component->max_requested_bandwidth_dl;
         pcc_rule->qos.mbr.downlink +=
             (media_component->rr_bandwidth + media_component->rs_bandwidth);
     }
 
-    if (pcc_rule->qos.mbr.uplink == 0)
-    {
+    if (pcc_rule->qos.mbr.uplink == 0) {
         pcc_rule->qos.mbr.uplink +=
             media_component->max_requested_bandwidth_ul;
         pcc_rule->qos.mbr.uplink +=

@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "fd/fd-lib.h"
 #include "fd/s6a/s6a-dict.h"
 #include "fd/s6a/s6a-message.h"
@@ -113,8 +132,7 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
     ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch);
     ogs_assert(ret == 0);
 
-    if (authentication_failure_parameter)
-    {
+    if (authentication_failure_parameter) {
         ret = fd_msg_avp_new(s6a_re_synchronization_info, 0, &avpch);
         ogs_assert(ret == 0);
         memcpy(resync, mme_ue->rand, RAND_LEN);
@@ -225,32 +243,25 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         s6a_message->result_code = hdr->avp_value->i32;
         ogs_debug("    Result Code: %d", hdr->avp_value->i32);
-    }
-    else
-    {
+    } else {
         ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
         ogs_assert(ret == 0);
-        if (avp)
-        {
+        if (avp) {
             ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch);
             ogs_assert(ret == 0);
-            if (avpch)
-            {
+            if (avpch) {
                 ret = fd_msg_avp_hdr(avpch, &hdr);
                 ogs_assert(ret == 0);
                 s6a_message->result_code = hdr->avp_value->i32;
                 ogs_debug("    Experimental Result Code: %d",
                         s6a_message->result_code);
             }
-        }
-        else
-        {
+        } else {
             ogs_error("no Result-Code");
             error++;
         }
@@ -259,15 +270,12 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     /* Value of Origin-Host */
     ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("    From '%.*s'",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Host ");
         error++;
     }
@@ -275,114 +283,91 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
     /* Value of Origin-Realm */
     ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("         ('%.*s')",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Realm ");
         error++;
     }
 
-    if (s6a_message->result_code != ER_DIAMETER_SUCCESS)
-    {
+    if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
         ogs_warn("ERROR DIAMETER Result Code(%d)", s6a_message->result_code);
         goto out;
     }
 
     ret = fd_msg_search_avp(*msg, s6a_authentication_info, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Authentication-Info ");
         error++;
     }
 
     ret = fd_avp_search_avp(avp, s6a_e_utran_vector, &avp_e_utran_vector); 
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp_e_utran_vector, &hdr);
         ogs_assert(ret == 0);
-    }
-    else
-    {
+    } else {
         ogs_error("no_E-UTRAN-Vector-Info ");
         error++;
     }
 
     ret = fd_avp_search_avp(avp_e_utran_vector, s6a_xres, &avp_xres);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp_xres, &hdr);
         ogs_assert(ret == 0);
         memcpy(e_utran_vector->xres,
                 hdr->avp_value->os.data, hdr->avp_value->os.len);
         e_utran_vector->xres_len = hdr->avp_value->os.len;
-    }
-    else
-    {
+    } else {
         ogs_error("no_XRES");
         error++;
     }
 
     ret = fd_avp_search_avp(avp_e_utran_vector, s6a_kasme, &avp_kasme);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp_kasme, &hdr);
         ogs_assert(ret == 0);
         memcpy(e_utran_vector->kasme,
                 hdr->avp_value->os.data, hdr->avp_value->os.len);
-    }
-    else
-    {
+    } else {
         ogs_error("no_KASME");
         error++;
     }
 
 
     ret = fd_avp_search_avp(avp_e_utran_vector, s6a_rand, &avp_rand);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp_rand, &hdr);
         memcpy(e_utran_vector->rand,
                 hdr->avp_value->os.data, hdr->avp_value->os.len);
-    }
-    else
-    {
+    } else {
         ogs_error("no_RAND");
         error++;
     }
 
     ret = fd_avp_search_avp(avp_e_utran_vector, s6a_autn, &avp_autn);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp_autn, &hdr);
         ogs_assert(ret == 0);
         memcpy(e_utran_vector->autn,
                 hdr->avp_value->os.data, hdr->avp_value->os.len);
-    }
-    else
-    {
+    } else {
         ogs_error("no_AUTN");
         error++;
     }
 
 out:
-    if (!error)
-    {
+    if (!error) {
         int rv;
         e = mme_event_new(MME_EVT_S6A_MESSAGE);
         ogs_assert(e);
@@ -402,8 +387,7 @@ out:
     ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (fd_logger_self()->stats.nb_recv)
-    {
+    if (fd_logger_self()->stats.nb_recv) {
         /* Ponderate in the avg */
         fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
             fd_logger_self()->stats.nb_recv + dur) /
@@ -413,9 +397,7 @@ out:
             fd_logger_self()->stats.shortest = dur;
         if (dur > fd_logger_self()->stats.longest)
             fd_logger_self()->stats.longest = dur;
-    }
-    else
-    {
+    } else {
         fd_logger_self()->stats.shortest = dur;
         fd_logger_self()->stats.longest = dur;
         fd_logger_self()->stats.avg = dur;
@@ -631,32 +613,25 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         s6a_message->result_code = hdr->avp_value->i32;
         ogs_debug("    Result Code: %d", hdr->avp_value->i32);
-    }
-    else
-    {
+    } else {
         ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
         ogs_assert(ret == 0);
-        if (avp)
-        {
+        if (avp) {
             ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch);
             ogs_assert(ret == 0);
-            if (avpch)
-            {
+            if (avpch) {
                 ret = fd_msg_avp_hdr(avpch, &hdr);
                 ogs_assert(ret == 0);
                 s6a_message->result_code = hdr->avp_value->i32;
                 ogs_debug("    Experimental Result Code: %d",
                         s6a_message->result_code);
             }
-        }
-        else
-        {
+        } else {
             ogs_error("no Result-Code");
             error++;
         }
@@ -665,15 +640,12 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     /* Value of Origin-Host */
     ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("    From '%.*s'",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Host");
         error++;
     }
@@ -681,29 +653,23 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     /* Value of Origin-Realm */
     ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("         ('%.*s')",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Realm");
         error++;
     }
 
     ret = fd_msg_search_avp(*msg, s6a_ula_flags, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ula_message->ula_flags = hdr->avp_value->i32;
-    }
-    else
-    {
+    } else {
         ogs_error("no_ULA-Flags");
         error++;
     }
@@ -711,331 +677,267 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 
     ret = fd_msg_search_avp(*msg, s6a_subscription_data, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_avp_search_avp(avp, s6a_ambr, &avpch1);
         ogs_assert(ret == 0);
-        if (avpch1)
-        {
+        if (avpch1) {
             ret = fd_avp_search_avp( avpch1, s6a_max_bandwidth_ul, &avpch2);
             ogs_assert(ret == 0);
-            if (avpch2)
-            {
+            if (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
                 subscription_data->ambr.uplink = hdr->avp_value->u32;
-            }
-            else
-            {
+            } else {
                 ogs_error("no_Max-Bandwidth-UL");
                 error++;
             }
 
             ret = fd_avp_search_avp(avpch1, s6a_max_bandwidth_dl, &avpch2);
             ogs_assert(ret == 0);
-            if (avpch2)
-            {
+            if (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
                 subscription_data->ambr.downlink = hdr->avp_value->u32;
-            }
-            else
-            {
+            } else {
                 ogs_error("no_Max-Bandwidth-DL");
                 error++;
             }
-        }
-        else
-        {
+        } else {
             ogs_error("no_AMBR");
             error++;
         }
 
         ret = fd_avp_search_avp(avp, s6a_apn_configuration_profile, &avpch1);
         ogs_assert(ret == 0);
-        if (avpch1)
-        {
+        if (avpch1) {
             ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
             ogs_assert(ret == 0);
-            while(avpch2) 
-            {
+            while (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
-                switch(hdr->avp_code)
+                switch(hdr->avp_code) {
+                case S6A_AVP_CODE_CONTEXT_IDENTIFIER:
+                    subscription_data->context_identifier = 
+                            hdr->avp_value->i32;
+                    break;
+                case S6A_AVP_CODE_ALL_APN_CONFIG_INC_IND:
+                    break;
+                case S6A_AVP_CODE_APN_CONFIGURATION:
                 {
-                    case S6A_AVP_CODE_CONTEXT_IDENTIFIER:
-                    {
-                        subscription_data->context_identifier = 
-                                hdr->avp_value->i32;
-                        break;
+                    pdn_t *pdn = &subscription_data->pdn[
+                                    subscription_data->num_of_pdn];
+                    ogs_assert(pdn);
+                    ret = fd_avp_search_avp(
+                        avpch2, s6a_service_selection, &avpch3);
+                    ogs_assert(ret == 0);
+                    if (avpch3) {
+                        ret = fd_msg_avp_hdr(avpch3, &hdr);
+                        ogs_cpystrn(pdn->apn,
+                            (char*)hdr->avp_value->os.data,
+                            ogs_min(hdr->avp_value->os.len, MAX_APN_LEN)+1);
+                    } else {
+                        ogs_error("no_Service-Selection");
+                        error++;
                     }
-                    case S6A_AVP_CODE_ALL_APN_CONFIG_INC_IND:
-                        break;
-                    case S6A_AVP_CODE_APN_CONFIGURATION:
-                    {
-                        pdn_t *pdn = &subscription_data->pdn[
-                                        subscription_data->num_of_pdn];
-                        ogs_assert(pdn);
-                        ret = fd_avp_search_avp(
-                            avpch2, s6a_service_selection, &avpch3);
-                        ogs_assert(ret == 0);
-                        if (avpch3)
-                        {
-                            ret = fd_msg_avp_hdr(avpch3, &hdr);
-                            ogs_cpystrn(pdn->apn,
-                                (char*)hdr->avp_value->os.data,
-                                ogs_min(hdr->avp_value->os.len, MAX_APN_LEN)+1);
-                        }
-                        else
-                        {
-                            ogs_error("no_Service-Selection");
-                            error++;
-                        }
 
-                        ret = fd_avp_search_avp(avpch2,
-                            s6a_context_identifier, &avpch3);
-                        ogs_assert(ret == 0);
-                        if (avpch3)
-                        {
-                            ret = fd_msg_avp_hdr(avpch3, &hdr);
-                            pdn->context_identifier = hdr->avp_value->i32;
-                        }
-                        else
-                        {
-                            ogs_error("no_Context-Identifier");
-                            error++;
-                        }
+                    ret = fd_avp_search_avp(avpch2,
+                        s6a_context_identifier, &avpch3);
+                    ogs_assert(ret == 0);
+                    if (avpch3) {
+                        ret = fd_msg_avp_hdr(avpch3, &hdr);
+                        pdn->context_identifier = hdr->avp_value->i32;
+                    } else {
+                        ogs_error("no_Context-Identifier");
+                        error++;
+                    }
 
-                        ret = fd_avp_search_avp(avpch2, s6a_pdn_type, &avpch3);
-                        ogs_assert(ret == 0);
-                        if (avpch3)
-                        {
-                            ret = fd_msg_avp_hdr(avpch3, &hdr);
-                            pdn->pdn_type = hdr->avp_value->i32;
-                        }
-                        else
-                        {
-                            ogs_error("no_PDN-Type");
-                            error++;
-                        }
+                    ret = fd_avp_search_avp(avpch2, s6a_pdn_type, &avpch3);
+                    ogs_assert(ret == 0);
+                    if (avpch3) {
+                        ret = fd_msg_avp_hdr(avpch3, &hdr);
+                        pdn->pdn_type = hdr->avp_value->i32;
+                    } else {
+                        ogs_error("no_PDN-Type");
+                        error++;
+                    }
 
-                        ret = fd_avp_search_avp(avpch2,
-                            s6a_eps_subscribed_qos_profile, &avpch3);
+                    ret = fd_avp_search_avp(avpch2,
+                        s6a_eps_subscribed_qos_profile, &avpch3);
+                    ogs_assert(ret == 0);
+                    if (avpch3) {
+                        ret = fd_avp_search_avp(avpch3,
+                            s6a_qos_class_identifier, &avpch4);
                         ogs_assert(ret == 0);
-                        if (avpch3)
-                        {
-                            ret = fd_avp_search_avp(avpch3,
-                                s6a_qos_class_identifier, &avpch4);
+                        if (avpch4) {
+                            ret = fd_msg_avp_hdr(avpch4, &hdr);
                             ogs_assert(ret == 0);
-                            if (avpch4)
-                            {
-                                ret = fd_msg_avp_hdr(avpch4, &hdr);
+                            pdn->qos.qci = hdr->avp_value->i32;
+                        } else {
+                            ogs_error("no_QoS-Class-Identifier");
+                            error++;
+                        }
+
+                        ret = fd_avp_search_avp(avpch3,
+                            s6a_allocation_retention_priority, &avpch4);
+                        ogs_assert(ret == 0);
+                        if (avpch4) {
+                            ret = fd_avp_search_avp(avpch4,
+                                s6a_priority_level, &avpch5);
+                            ogs_assert(ret == 0);
+                            if (avpch5) {
+                                ret = fd_msg_avp_hdr(avpch5, &hdr);
                                 ogs_assert(ret == 0);
-                                pdn->qos.qci = hdr->avp_value->i32;
-                            }
-                            else
-                            {
-                                ogs_error("no_QoS-Class-Identifier");
+                                pdn->qos.arp.priority_level = 
+                                    hdr->avp_value->i32;
+
+                            } else {
+                                ogs_error("no_ARP");
                                 error++;
                             }
 
-                            ret = fd_avp_search_avp(avpch3,
-                                s6a_allocation_retention_priority, &avpch4);
+                            ret = fd_avp_search_avp(avpch4,
+                                s6a_pre_emption_capability, &avpch5);
                             ogs_assert(ret == 0);
-                            if (avpch4)
-                            {
-                                ret = fd_avp_search_avp(avpch4,
-                                    s6a_priority_level, &avpch5);
+                            if (avpch5) {
+                                ret = fd_msg_avp_hdr(avpch5, &hdr);
                                 ogs_assert(ret == 0);
-                                if (avpch5)
-                                {
-                                    ret = fd_msg_avp_hdr(avpch5, &hdr);
-                                    ogs_assert(ret == 0);
-                                    pdn->qos.arp.priority_level = 
-                                        hdr->avp_value->i32;
+                                pdn->qos.arp.pre_emption_capability =
+                                    hdr->avp_value->i32;
+                            } else {
+                                ogs_error("no_Preemption-Capability");
+                                error++;
+                            }
 
+                            ret = fd_avp_search_avp(avpch4,
+                                s6a_pre_emption_vulnerability, &avpch5);
+                            ogs_assert(ret == 0);
+                            if (avpch5) {
+                                ret = fd_msg_avp_hdr(avpch5, &hdr);
+                                ogs_assert(ret == 0);
+                                pdn->qos.arp.pre_emption_vulnerability =
+                                    hdr->avp_value->i32;
+                            } else {
+                                ogs_error("no_Preemption-Vulnerability");
+                                error++;
+                            }
+
+                        } else {
+                            ogs_error("no_QCI");
+                            error++;
+                        }
+                    } else {
+                        ogs_error("no_EPS-Subscribed-QoS-Profile");
+                        error++;
+                    }
+
+                    ret = fd_avp_search_avp(avpch2,
+                            fd_mip6_agent_info, &avpch3);
+                    ogs_assert(ret == 0);
+                    if (avpch3) {
+                        ret = fd_msg_browse(avpch3,
+                            MSG_BRW_FIRST_CHILD, &avpch4, NULL);
+                        ogs_assert(ret == 0);
+                        while (avpch4) {
+                            ret = fd_msg_avp_hdr(avpch4, &hdr);
+                            switch(hdr->avp_code) {
+                            case S6A_AVP_CODE_MIP_HOME_AGENT_ADDRESS:
+                            {
+                                ogs_sockaddr_t addr;
+
+                                ret = fd_msg_avp_value_interpret(avpch4,
+                                        &addr.sa);
+                                ogs_assert(ret == 0);
+                                if (addr.ogs_sa_family == AF_INET)
+                                {
+                                    pdn->pgw_ip.ipv4 = 1;
+                                    pdn->pgw_ip.both.addr = 
+                                        addr.sin.sin_addr.s_addr;
+                                }
+                                else if (addr.ogs_sa_family == AF_INET6)
+                                {
+                                    pdn->pgw_ip.ipv6 = 1;
+                                    memcpy(pdn->pgw_ip.both.addr6,
+                                        addr.sin6.sin6_addr.s6_addr,
+                                        IPV6_LEN);
                                 }
                                 else
                                 {
-                                    ogs_error("no_ARP");
+                                    ogs_error("Invald family:%d",
+                                            addr.ogs_sa_family);
                                     error++;
                                 }
-
-                                ret = fd_avp_search_avp(avpch4,
-                                    s6a_pre_emption_capability, &avpch5);
-                                ogs_assert(ret == 0);
-                                if (avpch5)
-                                {
-                                    ret = fd_msg_avp_hdr(avpch5, &hdr);
-                                    ogs_assert(ret == 0);
-                                    pdn->qos.arp.pre_emption_capability =
-                                        hdr->avp_value->i32;
-                                }
-                                else
-                                {
-                                    ogs_error("no_Preemption-Capability");
-                                    error++;
-                                }
-
-                                ret = fd_avp_search_avp(avpch4,
-                                    s6a_pre_emption_vulnerability, &avpch5);
-                                ogs_assert(ret == 0);
-                                if (avpch5)
-                                {
-                                    ret = fd_msg_avp_hdr(avpch5, &hdr);
-                                    ogs_assert(ret == 0);
-                                    pdn->qos.arp.pre_emption_vulnerability =
-                                        hdr->avp_value->i32;
-                                }
-                                else
-                                {
-                                    ogs_error("no_Preemption-Vulnerability");
-                                    error++;
-                                }
-
+                                break;
                             }
-                            else
-                            {
-                                ogs_error("no_QCI");
+                            default:
+                                ogs_error("Unknown AVP-Code:%d",
+                                        hdr->avp_code);
                                 error++;
+                                break; 
                             }
+                            fd_msg_browse(avpch4, MSG_BRW_NEXT,
+                                    &avpch4, NULL);
                         }
-                        else
-                        {
-                            ogs_error("no_EPS-Subscribed-QoS-Profile");
+                    }
+
+                    ret = fd_avp_search_avp(avpch2, s6a_ambr, &avpch3);
+                    ogs_assert(ret == 0);
+                    if (avpch3) {
+                        ret = fd_avp_search_avp(avpch3,
+                            s6a_max_bandwidth_ul, &avpch4);
+                        ogs_assert(ret == 0);
+                        if (avpch4) {
+                            ret = fd_msg_avp_hdr(avpch4, &hdr);
+                            ogs_assert(ret == 0);
+                            pdn->ambr.uplink = hdr->avp_value->u32;
+                        } else {
+                            ogs_error("no_Max-Bandwidth-UL");
                             error++;
                         }
 
-                        ret = fd_avp_search_avp(avpch2,
-                                fd_mip6_agent_info, &avpch3);
+                        ret = fd_avp_search_avp(avpch3,
+                            s6a_max_bandwidth_dl, &avpch4);
                         ogs_assert(ret == 0);
-                        if (avpch3)
-                        {
-                            ret = fd_msg_browse(avpch3,
-                                MSG_BRW_FIRST_CHILD, &avpch4, NULL);
+                        if (avpch4) {
+                            ret = fd_msg_avp_hdr(avpch4, &hdr);
                             ogs_assert(ret == 0);
-                            while(avpch4) 
-                            {
-                                ret = fd_msg_avp_hdr(avpch4, &hdr);
-                                switch(hdr->avp_code)
-                                {
-                                    case S6A_AVP_CODE_MIP_HOME_AGENT_ADDRESS:
-                                    {
-                                        ogs_sockaddr_t addr;
-
-                                        ret = fd_msg_avp_value_interpret(avpch4,
-                                                &addr.sa);
-                                        ogs_assert(ret == 0);
-                                        if (addr.ogs_sa_family == AF_INET)
-                                        {
-                                            pdn->pgw_ip.ipv4 = 1;
-                                            pdn->pgw_ip.both.addr = 
-                                                addr.sin.sin_addr.s_addr;
-                                        }
-                                        else if (addr.ogs_sa_family == AF_INET6)
-                                        {
-                                            pdn->pgw_ip.ipv6 = 1;
-                                            memcpy(pdn->pgw_ip.both.addr6,
-                                                addr.sin6.sin6_addr.s6_addr,
-                                                IPV6_LEN);
-                                        }
-                                        else
-                                        {
-                                            ogs_error("Invald family:%d",
-                                                    addr.ogs_sa_family);
-                                            error++;
-                                        }
-                                        break;
-                                    }
-                                    default:
-                                    {
-                                        ogs_error("Unknown AVP-Code:%d",
-                                                hdr->avp_code);
-                                        error++;
-                                        break; 
-                                    }
-                                }
-                                fd_msg_browse(avpch4, MSG_BRW_NEXT,
-                                        &avpch4, NULL);
-                            }
+                            pdn->ambr.downlink = hdr->avp_value->u32;
+                        } else {
+                            ogs_error("no_Max-Bandwidth-DL");
+                            error++;
                         }
-
-                        ret = fd_avp_search_avp(avpch2, s6a_ambr, &avpch3);
-                        ogs_assert(ret == 0);
-                        if (avpch3)
-                        {
-                            ret = fd_avp_search_avp(avpch3,
-                                s6a_max_bandwidth_ul, &avpch4);
-                            ogs_assert(ret == 0);
-                            if (avpch4)
-                            {
-                                ret = fd_msg_avp_hdr(avpch4, &hdr);
-                                ogs_assert(ret == 0);
-                                pdn->ambr.uplink = hdr->avp_value->u32;
-                            }
-                            else
-                            {
-                                ogs_error("no_Max-Bandwidth-UL");
-                                error++;
-                            }
-
-                            ret = fd_avp_search_avp(avpch3,
-                                s6a_max_bandwidth_dl, &avpch4);
-                            ogs_assert(ret == 0);
-                            if (avpch4)
-                            {
-                                ret = fd_msg_avp_hdr(avpch4, &hdr);
-                                ogs_assert(ret == 0);
-                                pdn->ambr.downlink = hdr->avp_value->u32;
-                            }
-                            else
-                            {
-                                ogs_error("no_Max-Bandwidth-DL");
-                                error++;
-                            }
-                        }
-
-                        subscription_data->num_of_pdn++;
-                        break;
                     }
-                    default:
-                    {
-                        ogs_warn("Unknown AVP-code:%d", hdr->avp_code);
-                        break;
-                    }
+
+                    subscription_data->num_of_pdn++;
+                    break;
+                }
+                default:
+                    ogs_warn("Unknown AVP-code:%d", hdr->avp_code);
+                    break;
                 }
 
                 fd_msg_browse(avpch2, MSG_BRW_NEXT, &avpch2, NULL);
             }
-        }
-        else
-        {
+        } else {
             ogs_error("no_APN-Configuration-Profile");
             error++;
         }
-    }
-    else
-    {
+    } else {
         ogs_error("no_Subscription-Data");
         error++;
     }
 
     ret = fd_msg_search_avp(*msg, s6a_subscribed_rau_tau_timer, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         subscription_data->subscribed_rau_tau_timer = hdr->avp_value->i32;
-    }
-    else
-    {
+    } else {
         ogs_error("no_Subscribed_RAU-TAU-Timer");
         error++;
     }
     
-    if (!error)
-    {
+    if (!error) {
         int rv;
         e = mme_event_new(MME_EVT_S6A_MESSAGE);
         ogs_assert(e);
@@ -1055,8 +957,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (fd_logger_self()->stats.nb_recv)
-    {
+    if (fd_logger_self()->stats.nb_recv) {
         /* Ponderate in the avg */
         fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
             fd_logger_self()->stats.nb_recv + dur) / 
@@ -1066,9 +967,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             fd_logger_self()->stats.shortest = dur;
         if (dur > fd_logger_self()->stats.longest)
             fd_logger_self()->stats.longest = dur;
-    }
-    else
-    {
+    } else {
         fd_logger_self()->stats.shortest = dur;
         fd_logger_self()->stats.longest = dur;
         fd_logger_self()->stats.avg = dur;
