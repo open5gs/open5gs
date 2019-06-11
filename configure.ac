@@ -24,7 +24,7 @@ AC_INIT([NextEPC],
 
 AC_CONFIG_AUX_DIR([build])
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_TESTDIR(test)
+AC_CONFIG_TESTDIR(tests)
 AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([1.10 -Wall -Werror foreign subdir-objects])
@@ -211,10 +211,10 @@ AC_CONFIG_FILES([support/logrotate/Makefile])
 AC_CONFIG_FILES([support/newsyslog/nextepc.conf])
 AC_CONFIG_FILES([support/newsyslog/Makefile])
 AC_CONFIG_FILES([support/Makefile])
-AC_CONFIG_FILES([test/sample.conf])
-AC_CONFIG_FILES([test/sample-simple.conf])
-AC_CONFIG_FILES([test/sample-volte.conf])
-AC_CONFIG_FILES([test/Makefile])
+AC_CONFIG_FILES([tests/sample.conf])
+AC_CONFIG_FILES([tests/sample-simple.conf])
+AC_CONFIG_FILES([tests/sample-volte.conf])
+AC_CONFIG_FILES([tests/Makefile])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 

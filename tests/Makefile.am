@@ -2,7 +2,7 @@
 
 bin_PROGRAMS = testunit testsimple testcomplex testvolte
 
-configdir = ${sysconfdir}/nextepc/test
+configdir = ${sysconfdir}/nextepc/tests
 config_DATA = sample.conf sample-simple.conf sample-volte.conf
 
 testunit_SOURCES = \
@@ -46,7 +46,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/lib/asn1c/common \
     -I$(top_srcdir)/lib/asn1c/s1ap \
 	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
-	-I$(top_srcdir)/test/common \
+	-I$(top_srcdir)/tests/common \
 	$(NULL)
 
 AM_CFLAGS = \
