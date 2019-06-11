@@ -2,8 +2,8 @@
 #include "nas/nas-message.h"
 
 #include "hss/milenage.h"
-#include "hss/hss_auc.h"
-#include "mme/nas_security.h"
+#include "hss/hss-auc.h"
+#include "mme/nas-security.h"
 
 #include "core/abts.h"
 

@@ -18,7 +18,7 @@
  */
 
 #include "ogs-sctp.h"
-#include "mme_event.h"
+#include "mme-event.h"
 #include "s1ap-path.h"
 
 static void accept_handler(short when, ogs_socket_t fd, void *data);

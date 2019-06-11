@@ -3,8 +3,8 @@
 noinst_LTLIBRARIES = libhss.la
 
 libhss_la_SOURCES = \
-	milenage.h hss_auc.h hss_context.h hss_fd_path.h \
-	milenage.c hss_auc.c hss_init.c hss_context.c hss_fd_path.c \
+	milenage.h hss-auc.h hss-context.h hss-fd-path.h \
+	milenage.c hss-auc.c hss-init.c hss-context.c hss-fd-path.c \
 	$(NULL)
 
 libhss_la_DEPENDENCIES = \

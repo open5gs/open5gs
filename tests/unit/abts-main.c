@@ -28,7 +28,7 @@
 #include "app/context.h"
 
 #include "app-init.h"
-#include "mme/mme_context.h"
+#include "mme/mme-context.h"
 
 abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);

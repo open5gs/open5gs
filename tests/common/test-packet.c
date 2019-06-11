@@ -16,10 +16,10 @@
 #if HAVE_NETINET_ICMP6_H
 #include <netinet/icmp6.h>
 #endif
-#include "mme/s1ap_build.h"
-#include "mme/s1ap_conv.h"
+#include "mme/s1ap-build.h"
+#include "mme/s1ap-conv.h"
 #include "mme/s1ap-path.h"
-#include "mme/snow_3g.h"
+#include "mme/snow-3g.h"
 
 #include "gtp/gtp-message.h"
 #include "gtp/gtp-conv.h"

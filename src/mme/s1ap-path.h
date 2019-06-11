@@ -20,7 +20,7 @@
 #ifndef S1AP_PATH_H
 #define S1AP_PATH_H
 
-#include "mme_context.h"
+#include "mme-context.h"
 #include "asn1c/s1ap-message.h"
 
 #ifdef __cplusplus

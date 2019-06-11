@@ -18,7 +18,7 @@
  */
 
 #include "ogs-sctp.h"
-#include "mme_event.h"
+#include "mme-event.h"
 #include "s1ap-path.h"
 
 int s1ap_usrsctp_recv_handler(struct socket *sock,

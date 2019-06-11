@@ -1,7 +1,7 @@
 #include "core/abts.h"
 
-#include "mme/s1ap_build.h"
-#include "mme/s1ap_conv.h"
+#include "mme/s1ap-build.h"
+#include "mme/s1ap-conv.h"
 
 #include "test-packet.h"
 

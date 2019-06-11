@@ -4,8 +4,8 @@
 #include "core/abts.h"
 
 #include "app/context.h"
-#include "mme/mme_context.h"
-#include "mme/s1ap_build.h"
+#include "mme/mme-context.h"
+#include "mme/s1ap-build.h"
 #include "asn1c/s1ap-message.h"
 
 #include "test-packet.h"

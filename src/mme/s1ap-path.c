@@ -20,13 +20,13 @@
 #include "ogs-sctp.h"
 
 #include "app/context.h"
-#include "mme_event.h"
+#include "mme-event.h"
 
-#include "nas_security.h"
-#include "nas_path.h"
+#include "nas-security.h"
+#include "nas-path.h"
 
-#include "s1ap_conv.h"
-#include "s1ap_build.h"
+#include "s1ap-conv.h"
+#include "s1ap-build.h"
 #include "s1ap-path.h"
 
 int s1ap_open(void)

@@ -5,10 +5,10 @@ noinst_LTLIBRARIES = libsgw.la
 SUBDIR = gtp
 
 libsgw_la_SOURCES = \
-    sgw_event.h sgw_context.h \
-	sgw_gtp_path.h sgw_sm.h sgw_s11_handler.h sgw_s5c_handler.h \
-    sgw_init.c sgw_event.c sgw_context.c \
-	sgw_gtp_path.c sgw_sm.c sgw_s11_handler.c sgw_s5c_handler.c \
+    sgw-event.h sgw-context.h \
+	sgw-gtp-path.h sgw-sm.h sgw-s11-handler.h sgw-s5c-handler.h \
+    sgw-init.c sgw-event.c sgw-context.c \
+	sgw-gtp-path.c sgw-sm.c sgw-s11-handler.c sgw-s5c-handler.c \
 	$(NULL)
 
 libsgw_la_DEPENDENCIES = \
