@@ -427,7 +427,8 @@ static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
     
     ret = fd_sess_state_retrieve(pcscf_rx_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data && (void *)sess_data == data);
+    ogs_assert(sess_data);
+    ogs_assert((void *)sess_data == data);
 
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, fd_result_code, &avp);

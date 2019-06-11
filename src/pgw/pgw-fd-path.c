@@ -466,7 +466,8 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     
     ret = fd_sess_state_retrieve(pgw_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
-    ogs_assert(sess_data && (void *)sess_data == data);
+    ogs_assert(sess_data);
+    ogs_assert((void *)sess_data == data);
 
     xact = sess_data->xact;
     ogs_assert(xact);
