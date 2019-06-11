@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "base/base.h"
 
 #if HAVE_NETINET_IP_H
@@ -46,8 +65,7 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pkbuf_put(recvbuf, MAX_SDU_LEN-GTPV1U_HEADER_LEN);
 
     n = ogs_read(fd, recvbuf->data, recvbuf->len);
-    if (n <= 0)
-    {
+    if (n <= 0) {
         ogs_log_message(OGS_LOG_WARN, ogs_socket_errno, "ogs_read() failed");
         ogs_pkbuf_free(recvbuf);
         return;
@@ -57,16 +75,12 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
 
     /* Find the bearer by packet filter */
     bearer = pgw_bearer_find_by_packet(recvbuf);
-    if (bearer)
-    {
+    if (bearer) {
         /* Unicast */
         rv = pgw_gtp_send_to_bearer(bearer, recvbuf);
         ogs_assert(rv == OGS_OK);
-    }
-    else
-    {
-        if (context_self()->config.parameter.multicast)
-        {
+    } else {
+        if (context_self()->config.parameter.multicast) {
             rv = pgw_gtp_handle_multicast(recvbuf);
             ogs_assert(rv != OGS_ERROR);
         }
@@ -133,8 +147,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     if (size <= 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "ogs_recv() failed");
-        ogs_pkbuf_free(pkbuf);
-        return;
+        goto cleanup;
     }
 
     ogs_pkbuf_trim(pkbuf, size);
@@ -155,7 +168,10 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(ip_h);
 
     bearer = pgw_bearer_find_by_pgw_s5u_teid(teid);
-    ogs_assert(bearer);
+    if (!bearer) {
+        ogs_warn("[DROP] Cannot find PGW S5U bearer : TEID[0x%x]", teid);
+        goto cleanup;
+    }
     sess = bearer->sess;
     ogs_assert(sess);
 
@@ -164,8 +180,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     else if (ip_h->ip_v == 6 && sess->ipv6)
         subnet = sess->ipv6->subnet;
 
-    if (!subnet)
-    {
+    if (!subnet) {
         ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data, pkbuf->len);
         ogs_trace("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
                 ip_h->ip_v, sess->ipv4, sess->ipv6);
@@ -173,13 +188,10 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     }
 
     /* Check IPv6 */
-    if (context_self()->config.parameter.no_slaac == 0 && ip_h->ip_v == 6)
-    {
+    if (context_self()->config.parameter.no_slaac == 0 && ip_h->ip_v == 6) {
         rv = pgw_gtp_handle_slaac(sess, pkbuf);
-        if (rv == PGW_GTP_HANDLED)
-        {
-            ogs_pkbuf_free(pkbuf);
-            return;
+        if (rv == PGW_GTP_HANDLED) {
+            goto cleanup;
         }
         ogs_assert(rv == OGS_OK);
     }
@@ -201,16 +213,14 @@ int pgw_gtp_open()
     ogs_sock_t *sock = NULL;
     int rc;
 
-    ogs_list_for_each(&pgw_self()->gtpc_list, node)
-    {
+    ogs_list_for_each(&pgw_self()->gtpc_list, node) {
         ogs_socknode_set_poll(node, pgw_self()->pollset,
                 OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
 
         sock = gtp_server(node);
         ogs_assert(sock);
     }
-    ogs_list_for_each(&pgw_self()->gtpc_list6, node)
-    {
+    ogs_list_for_each(&pgw_self()->gtpc_list6, node) {
         ogs_socknode_set_poll(node, pgw_self()->pollset,
                 OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
 
@@ -225,16 +235,14 @@ int pgw_gtp_open()
 
     ogs_assert(pgw_self()->gtpc_addr || pgw_self()->gtpc_addr6);
 
-    ogs_list_for_each(&pgw_self()->gtpu_list, node)
-    {
+    ogs_list_for_each(&pgw_self()->gtpu_list, node) {
         ogs_socknode_set_poll(node, pgw_self()->pollset,
                 OGS_POLLIN, _gtpv1_u_recv_cb, NULL);
 
         sock = gtp_server(node);
         ogs_assert(sock);
     }
-    ogs_list_for_each(&pgw_self()->gtpu_list6, node)
-    {
+    ogs_list_for_each(&pgw_self()->gtpu_list6, node) {
         ogs_socknode_set_poll(node, pgw_self()->pollset,
                 OGS_POLLIN, _gtpv1_u_recv_cb, NULL);
 
@@ -261,11 +269,9 @@ int pgw_gtp_open()
      */
 
     /* Open Tun interface */
-    for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev))
-    {
+    for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev)) {
         dev->fd = ogs_tun_open(dev->ifname, IFNAMSIZ, 0);
-        if (dev->fd == INVALID_SOCKET)
-        {
+        if (dev->fd == INVALID_SOCKET) {
             ogs_error("tun_open(dev:%s) failed", dev->ifname);
             return OGS_ERROR;
         }
@@ -286,12 +292,11 @@ int pgw_gtp_open()
 
     /* Set P-to-P IP address with Netmask
      * Note that Linux will skip this configuration */
-    for (subnet = pgw_subnet_first(); subnet; subnet = pgw_subnet_next(subnet))
-    {
+    for (subnet = pgw_subnet_first(); 
+            subnet; subnet = pgw_subnet_next(subnet)) {
         ogs_assert(subnet->dev);
         rc = ogs_tun_set_ip(subnet->dev->ifname, &subnet->gw, &subnet->sub);
-        if (rc != OGS_OK)
-        {
+        if (rc != OGS_OK) {
             ogs_error("ogs_tun_set_ip(dev:%s) failed", subnet->dev->ifname);
             return OGS_ERROR;
         }
@@ -313,8 +318,7 @@ void pgw_gtp_close()
     ogs_socknode_remove_all(&pgw_self()->gtpu_list);
     ogs_socknode_remove_all(&pgw_self()->gtpu_list6);
 
-    for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev))
-    {
+    for (dev = pgw_dev_first(); dev; dev = pgw_dev_next(dev)) {
         ogs_pollset_remove(dev->poll);
         ogs_closesocket(dev->fd);
     }
@@ -327,8 +331,7 @@ static int pgw_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
     struct ip6_hdr *ip6_h =  NULL;
 
     ip_h = (struct ip *)recvbuf->data;
-    if (ip_h->ip_v == 6)
-    {
+    if (ip_h->ip_v == 6) {
 #if COMPILE_ERROR_IN_MAC_OS_X  /* Compiler error in Mac OS X platform */
         ip6_h = (struct ip6_hdr *)recvbuf->data;
         if (IN6_IS_ADDR_MULTICAST(&ip6_h->ip6_dst))
@@ -342,12 +345,10 @@ static int pgw_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
             ogs_hash_index_t *hi = NULL;
 
             /* IPv6 Multicast */
-            for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
-            {
+            for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi)) {
                 pgw_sess_t *sess = pgw_sess_this(hi);
                 ogs_assert(sess);
-                if (sess->ipv6)
-                {
+                if (sess->ipv6) {
                     /* PDN IPv6 is avaiable */
                     pgw_bearer_t *bearer = pgw_default_bearer_in_sess(sess);
                     ogs_assert(bearer);
@@ -373,18 +374,14 @@ static int pgw_gtp_handle_slaac(pgw_sess_t *sess, ogs_pkbuf_t *recvbuf)
     ogs_assert(recvbuf);
     ogs_assert(recvbuf->len);
     ip_h = (struct ip *)recvbuf->data;
-    if (ip_h->ip_v == 6)
-    {
+    if (ip_h->ip_v == 6) {
         struct ip6_hdr *ip6_h = (struct ip6_hdr *)recvbuf->data;
-        if (ip6_h->ip6_nxt == IPPROTO_ICMPV6)
-        {
+        if (ip6_h->ip6_nxt == IPPROTO_ICMPV6) {
             struct icmp6_hdr *icmp_h =
                 (struct icmp6_hdr *)(recvbuf->data + sizeof(struct ip6_hdr));
-            if (icmp_h->icmp6_type == ND_ROUTER_SOLICIT)
-            {
+            if (icmp_h->icmp6_type == ND_ROUTER_SOLICIT) {
                 ogs_debug("[PGW]      Router Solict");
-                if (sess->ipv6)
-                {
+                if (sess->ipv6) {
                     rv = pgw_gtp_send_router_advertisement(
                             sess, ip6_h->ip6_src.s6_addr);
                     ogs_assert(rv == OGS_OK);
@@ -531,16 +528,14 @@ uint16_t in_cksum(uint16_t *addr, int len)
     uint16_t answer = 0;
 
     // Adding 16 bits sequentially in sum
-    while (nleft > 1)
-    {
+    while (nleft > 1) {
         sum += *w;
         nleft -= 2;
         w++;
     }
 
     // If an odd byte is left
-    if (nleft == 1)
-    {
+    if (nleft == 1) {
         *(uint8_t *) (&answer) = *(uint8_t *) w;
         sum += answer;
     }
