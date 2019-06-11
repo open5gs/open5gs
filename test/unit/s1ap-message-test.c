@@ -3,7 +3,7 @@
 #include "mme/s1ap_build.h"
 #include "mme/s1ap_conv.h"
 
-#include "testpacket.h"
+#include "test-packet.h"
 
 static void s1ap_message_test1(abts_case *tc, void *data)
 {

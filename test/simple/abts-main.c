@@ -26,7 +26,7 @@
 #include "app/context.h"
 
 #include "app_init.h"
-#include "testpacket.h"
+#include "test-packet.h"
 
 abts_suite *test_mnc3(abts_suite *suite);
 

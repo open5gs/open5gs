@@ -7,7 +7,7 @@
 #include "mme/mme_context.h"
 #include "asn1c/s1ap_message.h"
 
-#include "testpacket.h"
+#include "test-packet.h"
 
 static void handover_test1(abts_case *tc, void *data)
 {

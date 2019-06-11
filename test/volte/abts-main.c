@@ -29,10 +29,10 @@
 
 #include "app_init.h"
 
-#include "testpacket.h"
-#include "testapp.h"
+#include "test-packet.h"
+#include "test-app.h"
 
-#include "pcscf_fd_path.h"
+#include "pcscf-fd-path.h"
 
 abts_suite *test_volte(abts_suite *suite);
 

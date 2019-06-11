@@ -4,7 +4,7 @@
 #include "fd/rx/rx_dict.h"
 #include "fd/rx/rx_message.h"
 
-#include "pcscf_fd_path.h"
+#include "pcscf-fd-path.h"
 
 #define MAX_NUM_SESSION_STATE 32
 

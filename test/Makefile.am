@@ -6,35 +6,35 @@ configdir = ${sysconfdir}/nextepc/test
 config_DATA = sample.conf sample-simple.conf sample-volte.conf
 
 testunit_SOURCES = \
-	common/testpacket.h common/testpacket.c \
+	common/test-packet.h common/test-packet.c \
 	unit/abts-main.c \
-	unit/s1ap_message_test.c unit/nas_message_test.c \
-	unit/gtp_message_test.c unit/security_test.c \
+	unit/s1ap-message-test.c unit/nas-message-test.c \
+	unit/gtp-message-test.c unit/security-test.c \
 	unit/sctp-test.c \
 	$(NULL)
 testunit_LDADD = $(top_srcdir)/src/libepc.la
 
 testsimple_SOURCES = \
-	common/testpacket.h common/testpacket.c \
+	common/test-packet.h common/test-packet.c \
 	simple/abts-main.c \
 	simple/mnc3-test.c \
 	$(NULL)
 testsimple_LDADD = $(top_srcdir)/src/libepc.la
 
 testcomplex_SOURCES = \
-	common/testpacket.h common/testpacket.c \
+	common/test-packet.h common/test-packet.c \
 	complex/abts-main.c \
-	complex/s1setup_test.c \
-	complex/attach_test.c complex/volte_test.c complex/handover_test.c \
+	complex/s1setup-test.c \
+	complex/attach-test.c complex/volte-test.c complex/handover-test.c \
 	$(NULL)
 testcomplex_LDADD = $(top_srcdir)/src/libepc.la
 
 testvolte_SOURCES = \
-	common/testpacket.h common/testpacket.c \
+	common/test-packet.h common/test-packet.c \
 	volte/abts-main.c \
 	volte/testapp.h volte/testapp.c \
-	volte/pcscf_fd_path.h volte/pcscf_fd_path.c \
-	volte/volte_test.c \
+	volte/pcscf-fd-path.h volte/pcscf-fd-path.c \
+	volte/volte-test.c \
 	$(NULL)
 testvolte_LDADD = $(top_srcdir)/src/libepc.la
 

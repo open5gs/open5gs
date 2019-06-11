@@ -8,7 +8,7 @@
 #include "mme/s1ap_build.h"
 #include "asn1c/s1ap_message.h"
 
-#include "testpacket.h"
+#include "test-packet.h"
 
 static void test1_func(abts_case *tc, void *data)
 {

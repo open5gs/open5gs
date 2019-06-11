@@ -3,7 +3,7 @@
 #include "mme/s1ap_build.h"
 #include "mme/s1ap_conv.h"
 
-#include "testpacket.h"
+#include "test-packet.h"
 
 #define NUM_OF_TEST_DUPLICATED_ENB 4
 
