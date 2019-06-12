@@ -1,5 +1,5 @@
 ---
-title: Qucikstart
+title: Quickstart
 ---
 
 **Note:** NextEPC supports installation of packages in *Debian/Ubuntu and openSUSE* environments. *CentOS, Fedora, FreeBSD, and Mac OSX* require you to [build with source code]({{ site.url }}{{ site.baseurl }}/docs/guide/02-building-nextepc-from-sources)
@@ -202,7 +202,7 @@ $ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o pgwtun -j MASQUERADE
 
 ### Turn on your eNodeB and Phone
 ---
-
+- Connect your eNodeB to the IP of your server via the standard S1AP port of SCTP 36412 (for MME)
 - You can see actual traffic through wireshark -- [[srsenb.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/srsenb.pcapng).
 - You can view the log at `/var/log/nextepc/*.log`.
 
