@@ -86,7 +86,7 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
     message = gtpbuf->data;
     ogs_assert(message);
 
-    ogs_debug("[PGW2] Credit-Control-Request");
+    ogs_debug("[Credit-Control-Request]");
 
     /* Create the request */
     ret = fd_msg_new(gx_cmd_ccr, MSGFL_ALLOC_ETEID, &req);
@@ -99,6 +99,8 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
 		ret = fd_sess_fromsid_msg((os0_t)sess->gx_sid, sidlen, &session, &new);
         ogs_assert(ret == 0);
         ogs_assert(new == 0);
+
+        ogs_debug("    Found GX Session-Id: [%s]", sess->gx_sid);
 
         /* Add Session-Id to the message */
         ret = fd_message_session_id_set(req, (os0_t)sess->gx_sid, sidlen);
@@ -113,6 +115,7 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
         ogs_assert(ret == 0);
         ret = fd_msg_sess_get(fd_g_config->cnf_dict, req, &session, NULL);
         ogs_assert(ret == 0);
+        ogs_debug("    Create a New Session");
     }
 
     /* Retrieve session state in this session */
@@ -128,9 +131,12 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
         sess_data = new_state(sid);
         ogs_assert(sess_data);
 
+        ogs_debug("    Allocate new session: [%s]", sess_data->gx_sid);
+
         /* Save Session-Id to PGW Session Context */
         sess->gx_sid = (char*)sess_data->gx_sid;
-    }
+    } else
+        ogs_debug("    Retrieve session: [%s]", sess_data->gx_sid);
 
     /* Update session state */
     sess_data->sess = sess;
@@ -143,6 +149,9 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
         sess_data->cc_request_number = 0;
     else
         sess_data->cc_request_number++;
+
+    ogs_debug("    CC Request Type[%d] Number[%d]", 
+        sess_data->cc_request_type, sess_data->cc_request_number);
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
@@ -454,7 +463,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     gx_message_t *gx_message = NULL;
     uint16_t gxbuf_len = 0;
 
-    ogs_debug("[PGW] Credit-Control-Answer");
+    ogs_debug("[Credit-Control-Answer]");
     
     ret = clock_gettime(CLOCK_REALTIME, &ts);
     ogs_assert(ret == 0);
@@ -463,11 +472,15 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     ret = fd_msg_sess_get(fd_g_config->cnf_dict, *msg, &session, &new);
     ogs_assert(ret == 0);
     ogs_assert(new == 0);
+
+    ogs_debug("    Search the session");
     
     ret = fd_sess_state_retrieve(pgw_gx_reg, session, &sess_data);
     ogs_assert(ret == 0);
     ogs_assert(sess_data);
     ogs_assert((void *)sess_data == data);
+
+    ogs_debug("    Retrieve its data: [%s]", sess_data->gx_sid);
 
     xact = sess_data->xact;
     ogs_assert(xact);
@@ -736,10 +749,12 @@ out:
                 (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
 
     if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
+        ogs_debug("    fd_sess_state_store(): [%s]", sess_data->gx_sid);
         ret = fd_sess_state_store(pgw_gx_reg, session, &sess_data);
         ogs_assert(ret == 0);
         ogs_assert(sess_data == NULL);
     } else {
+        ogs_debug("    state_cleanup(): [%s]", sess_data->gx_sid);
         state_cleanup(sess_data, NULL, NULL);
     }
 
@@ -781,7 +796,7 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
 	
     ogs_assert(msg);
 
-    ogs_debug("[PGW] Re-Auth-Request");
+    ogs_debug("Re-Auth-Request");
 
     gxbuf_len = sizeof(gx_message_t);
     ogs_assert(gxbuf_len < 8192);
@@ -935,7 +950,7 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
 	ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("[PGW] Re-Auth-Answer");
+    ogs_debug("Re-Auth-Answer");
 
 	/* Add this value to the stats */
 	ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);

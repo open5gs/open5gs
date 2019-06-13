@@ -944,11 +944,27 @@ int tests1ap_build_initial_context_setup_failure(ogs_pkbuf_t **pkbuf, int i)
 
         "",
         "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "4009001500000300 0040020001000840 0200010002400202 a0",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         25,
         0,
         0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        25,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -1134,9 +1150,8 @@ int tests1ap_build_ue_context_release_request(ogs_pkbuf_t **pkbuf, int i)
 
         "0012"
         "4018000003000000 05c0020000c80008 0002000200024002 0280",
-
         "",
-        "",
+        "0012401500000300 0000020001000800 0200010002400202 a0",
 
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -1150,7 +1165,7 @@ int tests1ap_build_ue_context_release_request(ogs_pkbuf_t **pkbuf, int i)
 
         28,
         0,
-        0,
+        25,
     };
     char hexbuf[MAX_SDU_LEN];
     

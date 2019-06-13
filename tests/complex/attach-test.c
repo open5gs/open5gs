@@ -1680,15 +1680,206 @@ static void attach_test5(abts_case *tc, void *data)
     ogs_msleep(300);
 }
 
+/**************************************************************
+ * eNB : MACRO
+ * UE : IMSI 
+ * Protocol Configuration Options without default APN */
+static void attach_test6(abts_case *tc, void *data)
+{
+    int rv;
+    ogs_socknode_t *s1ap;
+    ogs_socknode_t *gtpu;
+    ogs_pkbuf_t *sendbuf;
+    ogs_pkbuf_t *recvbuf;
+    s1ap_message_t message;
+    int i;
+    int msgindex = 8;
+
+    uint8_t tmp[MAX_SDU_LEN];
+
+    mongoc_collection_t *collection = NULL;
+    bson_t *doc = NULL;
+    int64_t count = 0;
+    bson_error_t error;
+    const char *json =
+      "{"
+        "\"_id\" : { \"$oid\" : \"597223258b8861d7605378c7\" }, "
+        "\"imsi\" : \"001010000000002\", "
+        "\"pdn\" : ["
+          "{"
+            "\"apn\" : \"internet\", "
+            "\"_id\" : { \"$oid\" : \"598223158b8861d7605378c8\" }, "
+            "\"ambr\" : {"
+              "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+              "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+            "},"
+            "\"qos\" : { "
+              "\"qci\" : 9, "
+              "\"arp\" : { "
+                "\"priority_level\" : 8,"
+                "\"pre_emption_vulnerability\" : 1, "
+                "\"pre_emption_capability\" : 1"
+              "} "
+            "}, "
+            "\"type\" : 2"
+          "}"
+        "],"
+        "\"ambr\" : { "
+          "\"uplink\" : { \"$numberLong\" : \"1024000\" }, "
+          "\"downlink\" : { \"$numberLong\" : \"1024000\" } "
+        "},"
+        "\"subscribed_rau_tau_timer\" : 12,"
+        "\"network_access_mode\" : 2, "
+        "\"subscriber_status\" : 0, "
+        "\"access_restriction_data\" : 32, "
+        "\"security\" : { "
+          "\"k\" : \"00112233 44556677 8899AABB CCDDEEFF\", "
+          "\"opc\" : \"00010203 04050607 08090A0B 0C0D0E0F\", "
+          "\"amf\" : \"9001\", "
+          "\"sqn\" : { \"$numberLong\" : \"96\" }, "
+          "\"rand\" : \"9bdbfb93 16be4d52 80153094 38326671\" "
+        "}, "
+        "\"__v\" : 0 "
+      "}";
+
+    ogs_msleep(300);
+
+    /* eNB connects to MME */
+    s1ap = testenb_s1ap_client("127.0.0.1");
+    ABTS_PTR_NOTNULL(tc, s1ap);
+
+    /* eNB connects to SGW */
+    gtpu = testenb_gtpu_server("127.0.0.5");
+    ABTS_PTR_NOTNULL(tc, gtpu);
+
+    /* Send S1-Setup Reqeust */
+    rv = tests1ap_build_setup_req(
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64, 12345, 1, 1, 2);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive S1-Setup Response */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    rv = s1ap_decode_pdu(&message, recvbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    s1ap_free_pdu(&message);
+    ogs_pkbuf_free(recvbuf);
+
+    collection = mongoc_client_get_collection(
+        context_self()->db.client,
+        context_self()->db.name, "subscribers");
+    ABTS_PTR_NOTNULL(tc, collection);
+
+    /********** Insert Subscriber in Database */
+    doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_insert(collection, 
+                MONGOC_INSERT_NONE, doc, NULL, &error));
+    bson_destroy(doc);
+
+    doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    do
+    {
+        count = mongoc_collection_count (
+            collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    } while (count == 0);
+    bson_destroy(doc);
+
+    /***********************************************************************
+     * Attach Request : Known IMSI, Integrity Protected, No Security Context
+     * Send Initial-UE Message + Attach Request + PDN Connectivity        */
+    ogs_msleep(300);
+
+    mme_self()->mme_ue_s1ap_id = 0;
+    rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Authentication Request */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send Authentication Response */
+    rv = tests1ap_build_authentication_response(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Security mode Command */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send Security mode Complete */
+    rv = tests1ap_build_security_mode_complete(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Initial Context Setup Request */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send Initial Context Setup Failure */
+    rv = tests1ap_build_initial_context_setup_failure(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send UE Context Release Request */
+    rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE Context Release Command */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send UE Context Release Complete */
+    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
+
+    doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
+    ABTS_PTR_NOTNULL(tc, doc);
+    ABTS_TRUE(tc, mongoc_collection_remove(collection,
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    bson_destroy(doc);
+
+    mongoc_collection_destroy(collection);
+
+    /* eNB disonncect from MME */
+    testenb_s1ap_close(s1ap);
+
+    /* eNB disonncect from SGW */
+    testenb_gtpu_close(gtpu);
+
+    ogs_msleep(300);
+}
+
 abts_suite *test_attach(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
+#if 0
     abts_run_test(suite, attach_test1, NULL);
     abts_run_test(suite, attach_test2, NULL);
     abts_run_test(suite, attach_test3, NULL);
     abts_run_test(suite, attach_test4, NULL);
     abts_run_test(suite, attach_test5, NULL);
+#endif
+    abts_run_test(suite, attach_test6, NULL);
 
     return suite;
 }
