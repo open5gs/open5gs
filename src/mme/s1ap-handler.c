@@ -611,7 +611,9 @@ void s1ap_handle_initial_context_setup_failure(
     {
         ogs_debug("    NOT EMM-Registered");
         ogs_assert(mme_ue);
+#if 0 /* FIXME */
         ogs_msleep(300);
+#endif
         rv = mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
         ogs_assert(rv == OGS_OK);
     }

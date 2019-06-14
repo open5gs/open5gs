@@ -29,7 +29,7 @@ extern "C" {
 typedef struct _gx_message_t {
 #define GX_CMD_CODE_CREDIT_CONTROL                      272
 #define GX_CMD_RE_AUTH                                  258
-    uint16_t          cmd_code;
+    uint16_t            cmd_code;
 
 /* Experimental-Result-Codes */
 #define GX_DIAMETER_ERROR_LATE_OVERLAPPING_REQUEST      5453
@@ -42,13 +42,13 @@ typedef struct _gx_message_t {
 #define GX_DIAMETER_ERROR_CONFLICTING_REQUEST           5147
 #define GX_DIAMETER_ADC_RULE_EVENT                      5148
 #define GX_DIAMETER_ERROR_NBIFOM_NOT_AUTHORIZED         5149
-    uint32_t          result_code;
+    uint32_t            result_code;
 
 #define GX_CC_REQUEST_TYPE_INITIAL_REQUEST              1
 #define GX_CC_REQUEST_TYPE_UPDATE_REQUEST               2
 #define GX_CC_REQUEST_TYPE_TERMINATION_REQUEST          3
 #define GX_CC_REQUEST_TYPE_EVENT_REQUEST                4
-    uint32_t          cc_request_type;
+    uint32_t            cc_request_type;
 
     pdn_t               pdn;
     pcc_rule_t          pcc_rule[MAX_NUM_OF_PCC_RULE];

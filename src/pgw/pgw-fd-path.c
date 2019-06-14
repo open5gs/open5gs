@@ -32,9 +32,10 @@ static struct disp_hdl *hdl_gx_rar = NULL;
 struct sess_state {
     os0_t       gx_sid;             /* Gx Session-Id */
 
+#define MAX_CC_REQUEST_NUMBER 32
     pgw_sess_t *sess;
-    gtp_xact_t *xact;
-    ogs_pkbuf_t *gtpbuf;
+    gtp_xact_t *xact[MAX_CC_REQUEST_NUMBER];
+    ogs_pkbuf_t *gtpbuf[MAX_CC_REQUEST_NUMBER];
 
     uint32_t cc_request_type;
     uint32_t cc_request_number;
@@ -138,10 +139,19 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
     } else
         ogs_debug("    Retrieve session: [%s]", sess_data->gx_sid);
 
-    /* Update session state */
-    sess_data->sess = sess;
-    sess_data->xact = xact;
-    sess_data->gtpbuf = gtpbuf;
+    /* 
+     * 8.2.  CC-Request-Number AVP
+     *
+     *  The CC-Request-Number AVP (AVP Code 415) is of type Unsigned32 and
+     *  identifies this request within one session.  As Session-Id AVPs are
+     * globally unique, the combination of Session-Id and CC-Request-Number
+     * AVPs is also globally unique and can be used in matching credit-
+     * control messages with confirmations.  An easy way to produce unique
+     * numbers is to set the value to 0 for a credit-control request of type
+     * INITIAL_REQUEST and EVENT_REQUEST and to set the value to 1 for the
+     * first UPDATE_REQUEST, to 2 for the second, and so on until the value
+     * for TERMINATION_REQUEST is one more than for the last UPDATE_REQUEST.
+     */
 
     sess_data->cc_request_type = cc_request_type;
     if (cc_request_type == GX_CC_REQUEST_TYPE_INITIAL_REQUEST ||
@@ -152,6 +162,12 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
 
     ogs_debug("    CC Request Type[%d] Number[%d]", 
         sess_data->cc_request_type, sess_data->cc_request_number);
+    ogs_assert(sess_data->cc_request_number <= MAX_CC_REQUEST_NUMBER);
+
+    /* Update session state */
+    sess_data->sess = sess;
+    sess_data->xact[sess_data->cc_request_number] = xact;
+    sess_data->gtpbuf[sess_data->cc_request_number] = gtpbuf;
 
     /* Set Origin-Host & Origin-Realm */
     ret = fd_msg_add_origin(req, 0);
@@ -462,6 +478,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     ogs_pkbuf_t *gxbuf = NULL, *gtpbuf = NULL;
     gx_message_t *gx_message = NULL;
     uint16_t gxbuf_len = 0;
+    uint32_t cc_request_number = 0;
 
     ogs_debug("[Credit-Control-Answer]");
     
@@ -482,11 +499,25 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
 
     ogs_debug("    Retrieve its data: [%s]", sess_data->gx_sid);
 
-    xact = sess_data->xact;
+    /* Value of CC-Request-Number */
+    ret = fd_msg_search_avp(*msg, gx_cc_request_number, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        cc_request_number = hdr->avp_value->i32;
+    } else {
+        ogs_error("no_CC-Request-Number");
+        ogs_assert_if_reached();
+    }
+
+    ogs_debug("    CC-Request-Number[%d]", cc_request_number);
+
+    xact = sess_data->xact[cc_request_number];
     ogs_assert(xact);
     sess = sess_data->sess;
     ogs_assert(sess);
-    gtpbuf = sess_data->gtpbuf;
+    gtpbuf = sess_data->gtpbuf[cc_request_number];
     ogs_assert(gtpbuf);
 
     gxbuf_len = sizeof(gx_message_t);
@@ -558,6 +589,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         goto out;
     }
 
+    /* Value of CC-Request-Type */
     ret = fd_msg_search_avp(*msg, gx_cc_request_type, &avp);
     ogs_assert(ret == 0);
     if (avp) {
@@ -748,14 +780,18 @@ out:
                 (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
 
-    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
+    ogs_debug("    [LAST] CC-Request-Type[%d] Number[%d] in Session Data", 
+        sess_data->cc_request_type, sess_data->cc_request_number);
+    ogs_debug("           Current CC-Request-Number[%d]", cc_request_number);
+    if (sess_data->cc_request_type == GX_CC_REQUEST_TYPE_TERMINATION_REQUEST &&
+        sess_data->cc_request_number <= cc_request_number) {
+        ogs_debug("    state_cleanup(): [%s]", sess_data->gx_sid);
+        state_cleanup(sess_data, NULL, NULL);
+    } else {
         ogs_debug("    fd_sess_state_store(): [%s]", sess_data->gx_sid);
         ret = fd_sess_state_store(pgw_gx_reg, session, &sess_data);
         ogs_assert(ret == 0);
         ogs_assert(sess_data == NULL);
-    } else {
-        ogs_debug("    state_cleanup(): [%s]", sess_data->gx_sid);
-        state_cleanup(sess_data, NULL, NULL);
     }
 
     ret = fd_msg_free(*msg);
