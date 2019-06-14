@@ -280,15 +280,9 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         (cc_request_type == GX_CC_REQUEST_TYPE_UPDATE_REQUEST ||
         cc_request_type == GX_CC_REQUEST_TYPE_TERMINATION_REQUEST))
     {
-        ogs_warn("No Session for CC-Request-Type: [%d]", cc_request_type);
-        result_code = FD_DIAMETER_MISSING_AVP;
-        ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
-        ogs_assert(ret == 0);
-
-        ret = fd_msg_send(msg, NULL, NULL);
-        ogs_assert(ret == 0);
-        return 0;
+        ogs_error("No Session for CC-Request-Type: [%d]", cc_request_type);
+        result_code = FD_DIAMETER_UNKNOWN_SESSION_ID;
+        goto out;
     }
 
     if (!sess_data) {
@@ -601,12 +595,14 @@ out:
         ogs_assert(ret == 0);
     }
 
-    if (cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
-        /* Store this value in the session */
-        ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
-        ogs_assert(sess_data == NULL);
-    } else {
-        state_cleanup(sess_data, NULL, NULL);
+    if (sess_data) {
+        if (cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
+            /* Store this value in the session */
+            ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
+            ogs_assert(sess_data == NULL);
+        } else {
+            state_cleanup(sess_data, NULL, NULL);
+        }
     }
 
 	ret = fd_msg_send(msg, NULL, NULL);
