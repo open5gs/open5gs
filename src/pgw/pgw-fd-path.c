@@ -780,12 +780,12 @@ out:
                 (int)(ts.tv_sec + 1 - sess_data->ts.tv_sec),
                 (long)(1000000000 + ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
 
-    ogs_debug("    [LAST] CC-Request-Type[%d] Number[%d] in Session Data", 
+    ogs_debug("    CC-Request-Type[%d] Number[%d] in Session Data", 
         sess_data->cc_request_type, sess_data->cc_request_number);
-    ogs_debug("           Current CC-Request-Number[%d]", cc_request_number);
+    ogs_debug("    Current CC-Request-Number[%d]", cc_request_number);
     if (sess_data->cc_request_type == GX_CC_REQUEST_TYPE_TERMINATION_REQUEST &&
         sess_data->cc_request_number <= cc_request_number) {
-        ogs_debug("    state_cleanup(): [%s]", sess_data->gx_sid);
+        ogs_debug("    [LAST] state_cleanup(): [%s]", sess_data->gx_sid);
         state_cleanup(sess_data, NULL, NULL);
     } else {
         ogs_debug("    fd_sess_state_store(): [%s]", sess_data->gx_sid);

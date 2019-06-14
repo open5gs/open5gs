@@ -40,7 +40,6 @@ struct rx_sess_state {
 struct sess_state {
     os0_t       sid;                /* Gx Session-Id */
 
-    uint32_t    cc_request_type;    /* CC-Request-Type */
     os0_t       peer_host;          /* Peer Host */
 
     char        *imsi_bcd;
@@ -201,15 +200,96 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
     gx_message_t gx_message;
 
+    uint32_t cc_request_type = GX_CC_REQUEST_TYPE_INITIAL_REQUEST;
     uint32_t cc_request_number = 0;
     uint32_t result_code = FD_DIAMETER_MISSING_AVP;
 	
-    ogs_debug("[PCRF] Credit-Control-Request");
+    ogs_debug("[Credit-Control-Request]");
 
     ogs_assert(msg);
 
+    /* Initialize Message */
+    memset(&gx_message, 0, sizeof(gx_message_t));
+
+	/* Create answer header */
+	qry = *msg;
+	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
+    ogs_assert(ret == 0);
+    ans = *msg;
+
+    /* Set the Auth-Application-Id AVP */
+    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = GX_APPLICATION_ID;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Get CC-Request-Type */
+    ret = fd_msg_search_avp(qry, gx_cc_request_type, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        cc_request_type = hdr->avp_value->i32;
+    } else {
+        ogs_error("no_CC-Request-Type ");
+        ogs_assert_if_reached();
+    }
+
+    /* Get CC-Request-Number */
+    ret = fd_msg_search_avp(qry, gx_cc_request_number, &avp);
+    ogs_assert(ret == 0);
+    if (avp) {
+        ret = fd_msg_avp_hdr(avp, &hdr);
+        ogs_assert(ret == 0);
+        cc_request_number = hdr->avp_value->i32;
+    } else {
+        ogs_error("no_CC-Request-Number");
+        ogs_assert_if_reached();
+    }
+
+    ogs_debug("    CC-Request-Type[%d] Number[%d]",
+        cc_request_type, cc_request_number);
+
+    /* Set CC-Request-Type */
+    ret = fd_msg_avp_new(gx_cc_request_type, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = cc_request_type;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Set CC-Request-Number */
+    ret = fd_msg_avp_new(gx_cc_request_number, 0, &avp);
+    ogs_assert(ret == 0);
+    val.i32 = cc_request_number;
+    ret = fd_msg_avp_setvalue(avp, &val);
+    ogs_assert(ret == 0);
+    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
+    ogs_assert(ret == 0);
+
+    /* Find Session */
     ret = fd_sess_state_retrieve(pcrf_gx_reg, sess, &sess_data);
     ogs_assert(ret == 0);
+
+    /* Check Session */
+    if (!sess_data &&
+        (cc_request_type == GX_CC_REQUEST_TYPE_UPDATE_REQUEST ||
+        cc_request_type == GX_CC_REQUEST_TYPE_TERMINATION_REQUEST))
+    {
+        ogs_warn("No Session for CC-Request-Type: [%d]", cc_request_type);
+        result_code = FD_DIAMETER_MISSING_AVP;
+        ret = fd_msg_rescode_set(ans,
+                    "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_send(msg, NULL, NULL);
+        ogs_assert(ret == 0);
+        return 0;
+    }
 
     if (!sess_data) {
         os0_t sid;
@@ -221,15 +301,6 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         sess_data = new_state(sid);
         ogs_assert(sess_data);
     }
-
-    /* Initialize Message */
-    memset(&gx_message, 0, sizeof(gx_message_t));
-
-	/* Create answer header */
-	qry = *msg;
-	ret = fd_msg_new_answer_from_req(fd_g_config->cnf_dict, msg, 0);
-    ogs_assert(ret == 0);
-    ans = *msg;
 
     /* Get Origin-Host */
     ret = fd_msg_search_avp(qry, fd_origin_host, &avp);
@@ -247,28 +318,6 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         ogs_error("no_CC-Request-Type ");
         result_code = FD_DIAMETER_MISSING_AVP;
         goto out;
-    }
-
-    /* Get CC-Request-Type */
-    ret = fd_msg_search_avp(qry, gx_cc_request_type, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
-        ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-        sess_data->cc_request_type = hdr->avp_value->i32;
-    } else {
-        ogs_error("no_CC-Request-Type ");
-        result_code = FD_DIAMETER_MISSING_AVP;
-        goto out;
-    }
-
-    /* Get CC-Request-Number */
-    ret = fd_msg_search_avp(qry, gx_cc_request_number, &avp);
-    ogs_assert(ret == 0);
-    if (avp) {
-        ret = fd_msg_avp_hdr(avp, &hdr);
-        ogs_assert(ret == 0);
-        cc_request_number = hdr->avp_value->i32;
     }
 
     /* Get Framed-IP-Address */
@@ -300,33 +349,6 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         pcrf_sess_set_ipv6(sess_data->addr6, sess_data->sid);
         sess_data->ipv6 = 1;
     }
-
-    /* Set the Auth-Application-Id AVP */
-    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
-    ogs_assert(ret == 0);
-    val.i32 = GX_APPLICATION_ID;
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-    /* Set CC-Request-Type */
-    ret = fd_msg_avp_new(gx_cc_request_type, 0, &avp);
-    ogs_assert(ret == 0);
-    val.i32 = sess_data->cc_request_type;
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
-
-    /* Set CC-Request-Number */
-    ret = fd_msg_avp_new(gx_cc_request_number, 0, &avp);
-    ogs_assert(ret == 0);
-    val.i32 = cc_request_number;
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
 
     /* Get IMSI + APN */
     ret = fd_msg_search_avp(qry, gx_subscription_id, &avp);
@@ -398,8 +420,8 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
         goto out;
     }
 
-    if (sess_data->cc_request_type == GX_CC_REQUEST_TYPE_INITIAL_REQUEST ||
-        sess_data->cc_request_type == GX_CC_REQUEST_TYPE_UPDATE_REQUEST) {
+    if (cc_request_type == GX_CC_REQUEST_TYPE_INITIAL_REQUEST ||
+        cc_request_type == GX_CC_REQUEST_TYPE_UPDATE_REQUEST) {
         int charging_rule = 0;
 
         for (i = 0; i < gx_message.num_of_pcc_rule; i++) {
@@ -520,8 +542,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
-    } else if (sess_data->cc_request_type ==
-            GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
+    } else if (cc_request_type == GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
         struct rx_sess_state *rx_sess_data = NULL, *next_rx_sess_data = NULL;
         ogs_list_for_each_safe(&sess_data->rx_list,
                 next_rx_sess_data, rx_sess_data) {
@@ -537,7 +558,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
-    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
+    if (cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
         /* Store this value in the session */
         ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
         ogs_assert(ret == 0);
@@ -550,7 +571,7 @@ static int pcrf_gx_ccr_cb( struct msg **msg, struct avp *avp,
 	ret = fd_msg_send(msg, NULL, NULL);
     ogs_assert(ret == 0);
 
-    ogs_debug("[PCRF] Credit-Control-Answer");
+    ogs_debug("[Credit-Control-Answer]");
 
 	/* Add this value to the stats */
 	ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
@@ -580,7 +601,7 @@ out:
         ogs_assert(ret == 0);
     }
 
-    if (sess_data->cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
+    if (cc_request_type != GX_CC_REQUEST_TYPE_TERMINATION_REQUEST) {
         /* Store this value in the session */
         ret = fd_sess_state_store(pcrf_gx_reg, sess, &sess_data);
         ogs_assert(sess_data == NULL);
