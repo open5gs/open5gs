@@ -210,12 +210,13 @@ void mme_s11_handle_delete_session_response(
                 enb_ue_t *enb_ue = NULL;
 
                 enb_ue = mme_ue->enb_ue;
-                ogs_assert(enb_ue);
-
-                rv = s1ap_send_ue_context_release_command(enb_ue,
-                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-                ogs_assert(rv == OGS_OK);
+                if (enb_ue) {
+                    rv = s1ap_send_ue_context_release_command(enb_ue,
+                        S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                        S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                    ogs_assert(rv == OGS_OK);
+                } else
+                    ogs_warn("ENB-S1 Context has already been removed");
             }
         }
         else
@@ -229,12 +230,13 @@ void mme_s11_handle_delete_session_response(
             enb_ue_t *enb_ue = NULL;
 
             enb_ue = mme_ue->enb_ue;
-            ogs_assert(enb_ue);
-
-            rv = s1ap_send_ue_context_release_command(enb_ue,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-            ogs_assert(rv == OGS_OK);
+            if (enb_ue) {
+                rv = s1ap_send_ue_context_release_command(enb_ue,
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+                ogs_assert(rv == OGS_OK);
+            } else
+                ogs_warn("ENB-S1 Context has already been removed");
         }
     }
     else
@@ -511,7 +513,6 @@ void mme_s11_handle_release_access_bearers_response(
 
     ogs_debug("[MME] Release Access Bearers Response");
     enb_ue = mme_ue->enb_ue;
-    ogs_assert(enb_ue);
 
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
@@ -528,10 +529,13 @@ void mme_s11_handle_release_access_bearers_response(
     rv = CLEAR_BEARER_CONTEXT(mme_ue);
     ogs_assert(rv == OGS_OK);
 
-    rv = s1ap_send_ue_context_release_command(enb_ue,
-            S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-            S1AP_UE_CTX_REL_S1_NORMAL_RELEASE, 0);
-    ogs_assert(rv == OGS_OK);
+    if (enb_ue) {
+        rv = s1ap_send_ue_context_release_command(enb_ue,
+                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_S1_NORMAL_RELEASE, 0);
+        ogs_assert(rv == OGS_OK);
+    } else
+        ogs_warn("ENB-S1 Context has already been removed");
 }
 
 void mme_s11_handle_downlink_data_notification(
