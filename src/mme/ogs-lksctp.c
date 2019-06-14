@@ -26,6 +26,7 @@ static int subscribe_to_events(ogs_sock_t *sock);
 static int set_paddrparams(ogs_sock_t *sock, ogs_sockopt_t *option);
 static int set_rtoinfo(ogs_sock_t *sock, ogs_sockopt_t *option);
 static int set_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option);
+static int set_nodelay(ogs_sock_t *sock, int on);
 
 int ogs_sctp_init(uint16_t port)
 {
@@ -57,6 +58,9 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
     ogs_assert(new);
 
     rv = subscribe_to_events(new);
+    ogs_assert(rv == OGS_OK);
+
+    rv = set_nodelay(new, true);
     ogs_assert(rv == OGS_OK);
 
     rv = set_paddrparams(new, &option);
@@ -384,6 +388,20 @@ static int set_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option)
                 initmsg.sinit_max_instreams,
                 initmsg.sinit_max_attempts,
                 initmsg.sinit_max_init_timeo);
+
+    return OGS_OK;
+}
+
+static int set_nodelay(ogs_sock_t *sock, int on)
+{
+    ogs_assert(sock);
+
+    if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_NODELAY,
+                &on, sizeof(on)) != 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "setsockopt for SCTP_NO_DELAY failed");
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
