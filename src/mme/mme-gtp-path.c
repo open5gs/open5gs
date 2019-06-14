@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "gtp/gtp-node.h"
 #include "gtp/gtp-path.h"
 #include "gtp/gtp-xact.h"
@@ -47,16 +66,14 @@ int mme_gtp_open()
     ogs_sock_t *sock = NULL;
     mme_sgw_t *sgw = NULL;
 
-    ogs_list_for_each(&mme_self()->gtpc_list, node)
-    {
+    ogs_list_for_each(&mme_self()->gtpc_list, node) {
         ogs_socknode_set_poll(node, mme_self()->pollset,
                 OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
 
         sock = gtp_server(node);
         ogs_assert(sock);
     }
-    ogs_list_for_each(&mme_self()->gtpc_list6, node)
-    {
+    ogs_list_for_each(&mme_self()->gtpc_list6, node) {
         ogs_socknode_set_poll(node, mme_self()->pollset,
                 OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
 
@@ -77,8 +94,7 @@ int mme_gtp_open()
             &mme_self()->pgw_list, AF_INET6, NULL);
     ogs_assert(mme_self()->pgw_addr || mme_self()->pgw_addr6);
 
-    ogs_list_for_each(&mme_self()->sgw_list, sgw)
-    {
+    ogs_list_for_each(&mme_self()->sgw_list, sgw) {
         rv = gtp_connect(
                 mme_self()->gtpc_sock, mme_self()->gtpc_sock6, sgw->node);
         ogs_assert(rv == OGS_OK);
@@ -189,29 +205,31 @@ int mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
     mme_sess_t *sess = NULL, *next_sess = NULL;
 
     ogs_assert(mme_ue);
+
+    if (SESSION_CONTEXT_WILL_DELETED(mme_ue)) {
+        ogs_warn("The MME has already sent a Delete-Session-Request to the SGW"
+                " for all sessions.");
+        return OGS_OK;
+    }
+
+    mme_ue->session_context_will_deleted = 1;
+
     sess = mme_sess_first(mme_ue);
-    while (sess != NULL)
-    {
+    while (sess != NULL) {
         next_sess = mme_sess_next(sess);
 
-        if (MME_HAVE_SGW_S1U_PATH(sess))
-        {
+        if (MME_HAVE_SGW_S1U_PATH(sess)) {
             mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
             ogs_assert(bearer);
 
             if (bearer &&
-                OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
-            {
+                OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect)) {
                 ogs_warn("PDN will disconnect[EBI:%d]", bearer->ebi);
-            }
-            else
-            {
+            } else {
                 rv = mme_gtp_send_delete_session_request(sess);
                 ogs_assert(rv == OGS_OK);
             }
-        }
-        else
-        {
+        } else {
             mme_sess_remove(sess);
         }
 

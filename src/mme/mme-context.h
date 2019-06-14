@@ -402,6 +402,14 @@ struct mme_ue_s {
         uint8_t response;
     } gtp_counter[MAX_NUM_OF_GTP_COUNTER];
 
+    /*
+     * If the MME sends Delete-Session-Request to the SGW for all sessions,
+     *    session_context_will_deleted = 1
+     * When the MME receives a Delete-Session-Response for the last session,
+     *    session_context_will_deleted = 0
+     */
+    int             session_context_will_deleted;
+
     gtp_node_t      *gnode;
 };
 
@@ -419,10 +427,14 @@ struct mme_ue_s {
 #define SESSION_CONTEXT_IS_AVAILABLE(__mME) \
      ((__mME) && ((__mME)->sgw_s11_teid))
 
+#define SESSION_CONTEXT_WILL_DELETED(__mME) \
+     ((__mME) && ((__mME)->session_context_will_deleted))
+
 #define CLEAR_SESSION_CONTEXT(__mME) \
     do { \
         ogs_assert((__mME)); \
         (__mME)->sgw_s11_teid = 0; \
+        (__mME)->session_context_will_deleted = 0; \
     } while(0)
 typedef struct mme_sess_s {
     ogs_lnode_t     node;       /* A node of list_t */
