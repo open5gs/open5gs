@@ -250,7 +250,7 @@ static void handover_test1(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
+    ogs_msleep(50);
 
     /* Send Path Switch Request */
     rv = tests1ap_build_path_switch_request(&sendbuf,
@@ -316,8 +316,6 @@ static void handover_test1(abts_case *tc, void *data)
     /* Two eNB disonncect from MME */
     testenb_s1ap_close(s1ap1);
     testenb_s1ap_close(s1ap2);
-
-    ogs_msleep(300);
 }
 
 static void handover_test2(abts_case *tc, void *data)
@@ -801,8 +799,6 @@ static void handover_test2(abts_case *tc, void *data)
     /* eNB disonncect from SGW */
     testenb_gtpu_close(gtpu1);
     testenb_gtpu_close(gtpu2);
-
-    ogs_msleep(300);
 }
 
 abts_suite *test_handover(abts_suite *suite)

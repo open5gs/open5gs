@@ -416,8 +416,6 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* eNB disonncect from SGW */
     testenb_gtpu_close(gtpu);
-
-    ogs_msleep(300);
     return;
 
 #if IT_WILL_BE_REMOVED
@@ -436,8 +434,6 @@ out:
 
     /* eNB disonncect from SGW */
     testenb_gtpu_close(gtpu);
-
-    ogs_msleep(300);
 #endif
 }
 
@@ -772,8 +768,6 @@ static void attach_test2(abts_case *tc, void *data)
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
-
-    ogs_msleep(300);
 }
 
 /**************************************************************
@@ -1097,8 +1091,6 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
-
-    ogs_msleep(300);
 }
 
 /**************************************************************
@@ -1284,8 +1276,6 @@ static void attach_test4(abts_case *tc, void *data)
 
     /* eNB disonncect from SGW */
     testenb_gtpu_close(gtpu);
-
-    ogs_msleep(300);
 }
 
 static void attach_test5(abts_case *tc, void *data)
@@ -1613,8 +1603,6 @@ static void attach_test5(abts_case *tc, void *data)
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
-
-    ogs_msleep(300);
 }
 
 /**************************************************************
@@ -1795,8 +1783,6 @@ static void attach_test6(abts_case *tc, void *data)
 
     /* eNB disonncect from SGW */
     testenb_gtpu_close(gtpu);
-
-    ogs_msleep(300);
 }
 
 abts_suite *test_attach(abts_suite *suite)

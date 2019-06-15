@@ -306,8 +306,6 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
-
-    ogs_msleep(300);
 }
 
 static void volte_test2(abts_case *tc, void *data)
@@ -599,8 +597,6 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
-
-    ogs_msleep(300);
 }
 
 abts_suite *test_volte(abts_suite *suite)

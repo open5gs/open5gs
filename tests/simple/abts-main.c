@@ -50,6 +50,8 @@ static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg,
 
 void test_terminate(void)
 {
+    ogs_msleep(50);
+
     testpacket_final();
     epc_terminate();
 

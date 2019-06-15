@@ -248,8 +248,6 @@ static void test1_func(abts_case *tc, void *data)
 
     /* eNB disonncect from SGW */
     testenb_gtpu_close(gtpu);
-
-    ogs_msleep(300);
 }
 
 abts_suite *test_mnc3(abts_suite *suite)

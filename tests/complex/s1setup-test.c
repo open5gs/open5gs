@@ -47,8 +47,6 @@ static void s1setup_test1(abts_case *tc, void *data)
     }
 
     ogs_pkbuf_free(recvbuf);
-
-    ogs_msleep(300);
 }
 
 #define NUM_OF_TEST_ENB 4
@@ -93,8 +91,6 @@ static void s1setup_test2(abts_case *tc, void *data)
     }
 
     ogs_pkbuf_free(recvbuf);
-
-    ogs_msleep(300);
 }
 
 abts_suite *test_s1setup(abts_suite *suite)
