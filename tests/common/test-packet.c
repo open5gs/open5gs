@@ -1207,9 +1207,9 @@ int tests1ap_build_detach_request(ogs_pkbuf_t **pkbuf, int i)
         "",
 
         /* 3 */
-        ""
-        ""
-        ""
+        "",
+        "",
+        "",
 
         /* 6 */
         "",

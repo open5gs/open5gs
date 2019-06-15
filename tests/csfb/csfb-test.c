@@ -204,13 +204,11 @@ static void test1_func(abts_case *tc, void *data)
      * Activate Default Bearer Context Request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-#if 0
     OGS_HEX(_initial_context_setup_request,
             strlen(_initial_context_setup_request), tmp);
-    ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 62) == 0);
-    ABTS_TRUE(tc, memcmp(recvbuf->data+66, tmp+66, 78) == 0);
-    ABTS_TRUE(tc, memcmp(recvbuf->data+148, tmp+148, 50) == 0);
-#endif
+    ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 59) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data+63, tmp+63, 88) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data+155, tmp+155, 50) == 0);
     ogs_pkbuf_free(recvbuf);
 
     /* Send Initial Context Setup Response */
@@ -229,14 +227,12 @@ static void test1_func(abts_case *tc, void *data)
     /* Receive EMM information */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-#if 0
     OGS_HEX(_emm_information, strlen(_emm_information), tmp);
-    ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 28) == 0);
-    ABTS_TRUE(tc, memcmp(recvbuf->data+32, tmp+32, 20) == 0);
-#endif
+    ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 25) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data+29, tmp+29, 24) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data+56, tmp+56, 4) == 0);
     ogs_pkbuf_free(recvbuf);
 
-#if 0
     /* Send GTP-U ICMP Packet */
     rv = testgtpu_build_ping(&sendbuf, "45.45.0.2", "45.45.0.1");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -247,7 +243,65 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
-#endif
+
+    /* Send UE Context Release Request */
+    rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE Context Release Command */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send UE Context Release Complete */
+    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Retreive M-TMSI */
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(1);
+    ogs_assert(enb_ue);
+    mme_ue = enb_ue->mme_ue;
+    ogs_assert(mme_ue);
+    m_tmsi = mme_ue->guti.m_tmsi;
+
+    /* Send Service Request */
+    rv = tests1ap_build_service_request(&sendbuf, 0x000200, 3, 0xc340, m_tmsi);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Initial Context Setup Request */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send Initial Context Setup Response */
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
+            2, 2, 5, 0x00470003, "127.0.0.5");
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Detach Request */
+    rv = tests1ap_build_detach_request(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive UE Context Release Command */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send UE Context Release Complete */
+    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("901700000021777"));
