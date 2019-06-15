@@ -46,17 +46,18 @@ m4/*.m4
 .version
 
 # autotest
-test/package.m4
-test/atconfig
-test/testsuite
-test/testsuite.dir/
-test/testsuite.log
+tests/package.m4
+tests/atconfig
+tests/testsuite
+tests/testsuite.dir/
+tests/testsuite.log
 
 # executables
-test/testunit
-test/testsimple
-test/testcomplex
-test/testvolte
+tests/testunit
+tests/testsimple
+tests/testcomplex
+tests/testvolte
+tests/testcsfb
 nextepc-mmed
 nextepc-pcrfd
 nextepc-pgwd
