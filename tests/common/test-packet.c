@@ -50,6 +50,7 @@ ogs_socknode_t *testenb_s1ap_client(const char *ipstr)
 
     node = ogs_socknode_new(addr);
     ogs_assert(node);
+    ogs_socknode_nodelay(node, true);
 
     ogs_sctp_client(SOCK_STREAM, node);
     ogs_assert(node->sock);

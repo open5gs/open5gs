@@ -61,8 +61,8 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
     rv = subscribe_to_events(new);
     ogs_assert(rv == OGS_OK);
 
-    if (option.nodelay) {
-        rv = set_nodelay(new, option.nodelay);
+    if (node->option.nodelay) {
+        rv = set_nodelay(new, node->option.nodelay);
         ogs_assert(rv == OGS_OK);
     }
 
@@ -399,10 +399,11 @@ static int set_nodelay(ogs_sock_t *sock, int on)
 {
     ogs_assert(sock);
 
+    ogs_trace("Turn on SCTP_NODELAY");
     if (setsockopt(sock->fd, IPPROTO_SCTP, SCTP_NODELAY,
                 &on, sizeof(on)) != 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "setsockopt for SCTP_NO_DELAY failed");
+                "setsockopt for SCTP_NODELAY failed");
         return OGS_ERROR;
     }
 

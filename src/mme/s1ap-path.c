@@ -19,7 +19,6 @@
 
 #include "ogs-sctp.h"
 
-#include "app/context.h"
 #include "mme-event.h"
 
 #include "nas-security.h"
@@ -33,15 +32,11 @@ int s1ap_open(void)
 {
     ogs_socknode_t *node = NULL;
 
-    ogs_list_for_each(&mme_self()->s1ap_list, node) {
-        ogs_socknode_set_option(node, &context_self()->config.sockopt);
+    ogs_list_for_each(&mme_self()->s1ap_list, node)
         s1ap_server(node);
-    }
 
-    ogs_list_for_each(&mme_self()->s1ap_list6, node) {
-        ogs_socknode_set_option(node, &context_self()->config.sockopt);
+    ogs_list_for_each(&mme_self()->s1ap_list6, node)
         s1ap_server(node);
-    }
 
     return OGS_OK;
 }

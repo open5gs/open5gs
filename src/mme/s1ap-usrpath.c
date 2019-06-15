@@ -18,6 +18,8 @@
  */
 
 #include "ogs-sctp.h"
+
+#include "app/context.h"
 #include "mme-event.h"
 #include "s1ap-path.h"
 
@@ -34,6 +36,7 @@ ogs_sock_t *s1ap_server(ogs_socknode_t *node)
 
     ogs_assert(node);
 
+    ogs_socknode_sctp_option(node, &context_self()->config.sockopt);
     ogs_socknode_set_poll(node, mme_self()->pollset,
             OGS_POLLIN, s1ap_usrsctp_recv_handler, node);
 
