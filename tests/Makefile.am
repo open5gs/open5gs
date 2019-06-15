@@ -1,9 +1,9 @@
 ## Process this file with automake to produce Makefile.in.
 
-bin_PROGRAMS = testunit testsimple testcomplex testvolte
+bin_PROGRAMS = testunit testsimple testcomplex testvolte testcsfb
 
 configdir = ${sysconfdir}/nextepc/tests
-config_DATA = sample.conf sample-simple.conf sample-volte.conf
+config_DATA = sample.conf sample-simple.conf sample-volte.conf sample-csfb.conf
 
 testunit_SOURCES = \
 	common/test-packet.h common/test-packet.c \
@@ -37,6 +37,13 @@ testvolte_SOURCES = \
 	volte/volte-test.c \
 	$(NULL)
 testvolte_LDADD = $(top_srcdir)/src/libepc.la
+
+testcsfb_SOURCES = \
+	common/test-packet.h common/test-packet.c \
+	csfb/abts-main.c \
+	csfb/csfb-test.c \
+	$(NULL)
+testcsfb_LDADD = $(top_srcdir)/src/libepc.la
 
 AM_CPPFLAGS = \
 	@OGSCORE_CFLAGS@ \

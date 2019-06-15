@@ -214,6 +214,7 @@ AC_CONFIG_FILES([support/Makefile])
 AC_CONFIG_FILES([tests/sample.conf])
 AC_CONFIG_FILES([tests/sample-simple.conf])
 AC_CONFIG_FILES([tests/sample-volte.conf])
+AC_CONFIG_FILES([tests/sample-csfb.conf])
 AC_CONFIG_FILES([tests/Makefile])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
