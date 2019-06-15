@@ -92,8 +92,6 @@ static void test1_func(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
-    ogs_msleep(300);
-
     /* eNB connects to MME */
     s1ap = testenb_s1ap_client("127.0.0.1");
     ABTS_PTR_NOTNULL(tc, s1ap);
@@ -137,8 +135,6 @@ static void test1_func(abts_case *tc, void *data)
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);
     bson_destroy(doc);
-
-    ogs_msleep(300);
 
     mme_self()->mme_ue_s1ap_id = 27263233;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
@@ -205,8 +201,6 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,

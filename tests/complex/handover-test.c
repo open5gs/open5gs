@@ -213,8 +213,6 @@ static void handover_test1(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
             16777690, 1, 5, 1, "127.0.0.5");
@@ -245,8 +243,6 @@ static void handover_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     /* Send Activate dedicated EPS bearer context accept */
     rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
@@ -536,8 +532,6 @@ static void handover_test2(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
             33554628, 12, 5, 1, "127.0.0.5");
@@ -576,15 +570,11 @@ static void handover_test2(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /* Send Activate dedicated EPS bearer context accept */
     rv = tests1ap_build_activate_dedicated_bearer_accept(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     /* Send ENB configuration transfer */
     rv = tests1ap_build_enb_configuration_transfer(&sendbuf, 0);
@@ -689,8 +679,6 @@ static void handover_test2(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /* Send Handover Required */
     rv = tests1ap_build_handover_required(&sendbuf, 1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -752,8 +740,6 @@ static void handover_test2(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /* Send Handover Required */
     rv = tests1ap_build_handover_required(&sendbuf, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -798,8 +784,6 @@ static void handover_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));

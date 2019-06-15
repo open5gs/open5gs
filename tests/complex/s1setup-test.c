@@ -94,7 +94,7 @@ static void s1setup_test2(abts_case *tc, void *data)
 
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(1000);
+    ogs_msleep(300);
 }
 
 abts_suite *test_s1setup(abts_suite *suite)

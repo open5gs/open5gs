@@ -95,8 +95,6 @@ static void attach_test1(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
-    ogs_msleep(300);
-
     /* eNB connects to MME */
     s1ap = testenb_s1ap_client("127.0.0.1");
     ABTS_PTR_NOTNULL(tc, s1ap);
@@ -144,8 +142,6 @@ static void attach_test1(abts_case *tc, void *data)
     /***********************************************************************
      * Attach Request : Known IMSI, Integrity Protected, No Security Context
      * Send Initial-UE Message + Attach Request + PDN Connectivity        */
-    ogs_msleep(300);
-
     mme_self()->mme_ue_s1ap_id = 16777372;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -217,8 +213,6 @@ static void attach_test1(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
             16777373, 1, 5, 1, "127.0.0.5");
@@ -239,15 +233,6 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 28) == 0);
     ABTS_TRUE(tc, memcmp(recvbuf->data+32, tmp+32, 20) == 0);
     ogs_pkbuf_free(recvbuf);
-
-#if TEST_INITIAL_CONTEXT_SETUP_FAILURE
-    /* Send Initial Context Setup Failure */
-    rv = tests1ap_build_initial_context_setup_failure(&sendbuf, msgindex);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-#endif
-    ogs_msleep(300);
 
     rv = testgtpu_build_slacc_rs(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -291,8 +276,6 @@ static void attach_test1(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : Known GUTI, Integrity Protected, MAC Matched
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
-    ogs_msleep(300);
-
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
     /* Update M-TMSI */
     m_tmsi = htonl(m_tmsi);
@@ -340,8 +323,6 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 #endif
 
     /* Send ESM Information Response */
@@ -389,8 +370,6 @@ static void attach_test1(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : Unknown GUTI, Integrity Protected
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
-    ogs_msleep(300);
-
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
@@ -432,8 +411,6 @@ static void attach_test1(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
 
@@ -454,13 +431,13 @@ out:
 
     mongoc_collection_destroy(collection);
 
-    ogs_msleep(300);
-
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
 
     /* eNB disonncect from SGW */
     testenb_gtpu_close(gtpu);
+
+    ogs_msleep(300);
 #endif
 }
 
@@ -565,8 +542,6 @@ static void attach_test2(abts_case *tc, void *data)
 
     uint8_t tmp[MAX_SDU_LEN];
 
-    ogs_msleep(300);
-
     /* eNB connects to MME */
     s1ap = testenb_s1ap_client("127.0.0.1");
     ABTS_PTR_NOTNULL(tc, s1ap);
@@ -627,8 +602,6 @@ static void attach_test2(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : Known IMSI, Plain NAS message
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
-    ogs_msleep(300);
-
     mme_self()->mme_ue_s1ap_id = 0;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -681,8 +654,6 @@ static void attach_test2(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
             1, 31, 5, 1, "127.0.0.5");
@@ -704,8 +675,6 @@ static void attach_test2(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : IMSI, Integrity Protected, MAC Matched
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
-    ogs_msleep(300);
-
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
@@ -786,8 +755,6 @@ static void attach_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -900,8 +867,6 @@ static void attach_test3(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
-    ogs_msleep(300);
-
     /* eNB connects to MME */
     s1ap = testenb_s1ap_client("127.0.0.1");
     ABTS_PTR_NOTNULL(tc, s1ap);
@@ -946,8 +911,6 @@ static void attach_test3(abts_case *tc, void *data)
     /*****************************************************************
      * Attach Request : Known IMSI, Plain NAS message
      * Send Initial-UE Message + Attach Request + PDN Connectivity  */
-    ogs_msleep(300);
-
     mme_self()->mme_ue_s1ap_id = 33554631;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1009,8 +972,6 @@ static void attach_test3(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
             33554632, 2, 5, 1, "127.0.0.5");
@@ -1061,8 +1022,6 @@ static void attach_test3(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Service Request */
-    ogs_msleep(300);
-
     rv = tests1ap_build_service_request(&sendbuf, 0x000400, 4, 0xd4b8, m_tmsi);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
@@ -1079,16 +1038,12 @@ static void attach_test3(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
             33554633, 4, 5, 1, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     /* Send TAU Request */
     rv = tests1ap_build_tau_request(&sendbuf, 0,
@@ -1108,8 +1063,6 @@ static void attach_test3(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     /* Send TAU Request */
     rv = tests1ap_build_tau_request(&sendbuf, 0,
@@ -1133,8 +1086,6 @@ static void attach_test3(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456797"));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -1212,8 +1163,6 @@ static void attach_test4(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
-    ogs_msleep(300);
-
     /* eNB connects to MME */
     s1ap = testenb_s1ap_client("127.0.0.1");
     ABTS_PTR_NOTNULL(tc, s1ap);
@@ -1261,8 +1210,6 @@ static void attach_test4(abts_case *tc, void *data)
     /***********************************************************************
      * Attach Request : Known IMSI, Integrity Protected, No Security Context
      * Send Initial-UE Message + Attach Request + PDN Connectivity        */
-    ogs_msleep(300);
-
     mme_self()->mme_ue_s1ap_id = 0;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1323,8 +1270,6 @@ static void attach_test4(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -1401,8 +1346,6 @@ static void attach_test5(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
-    ogs_msleep(300);
-
     /* eNB connects to MME */
     s1ap = testenb_s1ap_client("127.0.0.1");
     ABTS_PTR_NOTNULL(tc, s1ap);
@@ -1439,8 +1382,6 @@ static void attach_test5(abts_case *tc, void *data)
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);
     bson_destroy(doc);
-
-    ogs_msleep(300);
 
     /* Send Service request */
     mme_self()->mme_ue_s1ap_id = 0;
@@ -1519,8 +1460,6 @@ static void attach_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
@@ -1663,8 +1602,6 @@ static void attach_test5(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(300);
-
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456937"));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -1742,8 +1679,6 @@ static void attach_test6(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
-    ogs_msleep(300);
-
     /* eNB connects to MME */
     s1ap = testenb_s1ap_client("127.0.0.1");
     ABTS_PTR_NOTNULL(tc, s1ap);
@@ -1791,8 +1726,6 @@ static void attach_test6(abts_case *tc, void *data)
     /***********************************************************************
      * Attach Request : Known IMSI, Integrity Protected, No Security Context
      * Send Initial-UE Message + Attach Request + PDN Connectivity        */
-    ogs_msleep(300);
-
     mme_self()->mme_ue_s1ap_id = 0;
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1848,8 +1781,6 @@ static void attach_test6(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(300);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
     ABTS_PTR_NOTNULL(tc, doc);
