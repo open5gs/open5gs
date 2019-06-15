@@ -31,15 +31,15 @@ mme:
       addr: 127.0.0.1
     gummei: 
       plmn_id:
-        mcc: 310
-        mnc: 014
-      mme_gid: 32798
-      mme_code: 100
+        mcc: 901
+        mnc: 70
+      mme_gid: 2
+      mme_code: 1
     tai:
       plmn_id:
-        mcc: 310
-        mnc: 014
-      tac: [50, 51, 52, 53]
+        mcc: 901
+        mnc: 70
+      tac: 7
     security:
         integrity_order : [ EIA1, EIA2, EIA0 ]
         ciphering_order : [ EEA0, EEA1, EEA2 ]
@@ -96,9 +96,6 @@ pgw:
       - addr:
         - 127.0.0.3
         - ::1
-      - addr:
-        - 127.0.0.4
-        apn: starent.com
     gtpu:
       - addr: 127.0.0.3
       - addr: ::1
