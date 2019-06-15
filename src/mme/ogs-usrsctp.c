@@ -67,7 +67,6 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
         .sctp.max_num_of_istreams = 65535,
         .sctp.max_attempts = 4,
         .sctp.max_initial_timeout = 8000,   /* 8 seconds */
-        .nodelay = true                     /* Turn-on NODELAY */
     };
 
     ogs_sctp_set_option(&option, node);
@@ -78,11 +77,13 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
         return NULL;
     }
 
-    if (option.nodelay) {
-        if (usrsctp_setsockopt(socket, IPPROTO_SCTP, SCTP_NODELAY,
-                    &on, sizeof(int)) < 0) {
-            ogs_error("usrsctp_setsockopt SCTP_NODELAY failed");
-            return NULL;
+    if (node) {
+        if (node->option.nodelay) {
+            if (usrsctp_setsockopt(socket, IPPROTO_SCTP, SCTP_NODELAY,
+                        &on, sizeof(int)) < 0) {
+                ogs_error("usrsctp_setsockopt SCTP_NODELAY failed");
+                return NULL;
+            }
         }
     }
 
