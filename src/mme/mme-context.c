@@ -15,7 +15,6 @@
 #include "mme-event.h"
 #include "s1ap-path.h"
 #include "s1ap-handler.h"
-#include "sgsap-path.h"
 #include "mme-sm.h"
 
 #define MAX_CELL_PER_ENB            8
@@ -87,7 +86,7 @@ void mme_context_init()
     /* Paging retry timer: 2 secs */
     self.t3413_value = ogs_time_from_sec(2); 
     /* Client timer to connect to server: 3 secs */
-    self.connect_timer_value = ogs_time_from_sec(3);
+    self.t_conn_value = ogs_time_from_sec(3);
 
     context_initialized = 1;
 }
@@ -1522,7 +1521,6 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
 
 mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr)
 {
-    mme_event_t e;
     mme_vlr_t *vlr = NULL;
 
     ogs_assert(addr);
@@ -1534,14 +1532,6 @@ mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr)
     vlr->node = ogs_socknode_new(addr);
     ogs_assert(vlr->node);
 
-    vlr->connect_timer =
-        ogs_timer_add(self.timer_mgr, sgsap_connect_timeout, vlr);
-    ogs_assert(vlr->connect_timer);
-
-    e.vlr = vlr;
-    ogs_fsm_create(&vlr->sm, sgsap_state_initial, sgsap_state_final);
-    ogs_fsm_init(&vlr->sm, &e);
-
     ogs_list_add(&self.vlr_list, vlr);
 
     return vlr;
@@ -1549,17 +1539,9 @@ mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr)
 
 void mme_vlr_remove(mme_vlr_t *vlr)
 {
-    mme_event_t e;
-
     ogs_assert(vlr);
 
     ogs_list_remove(&self.vlr_list, vlr);
-
-    ogs_timer_delete(vlr->connect_timer);
-
-    e.vlr = vlr;
-    ogs_fsm_fini(&vlr->sm, &e);
-    ogs_fsm_delete(&vlr->sm);
 
     ogs_socknode_free(vlr->node);
 

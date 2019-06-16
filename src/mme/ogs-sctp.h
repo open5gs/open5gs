@@ -55,7 +55,7 @@ typedef struct ogs_sctp_info_s {
     uint16_t outbound_streams;
 } ogs_sctp_info_t;
 
-int ogs_sctp_init(uint16_t port);
+void ogs_sctp_init(uint16_t port);
 void ogs_sctp_final(void);
 
 ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node);

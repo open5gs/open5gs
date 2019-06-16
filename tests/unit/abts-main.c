@@ -76,12 +76,7 @@ int test_initialize(app_param_t *param, int argc, const char *const argv[])
     }
 
     mme_context_init();
-
-    rv = ogs_sctp_init(context_self()->config.usrsctp.udp_port);
-    if (rv != OGS_OK) {
-        ogs_error("ogs_sctp_init() failed");
-        return OGS_ERROR;
-    }
+    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
 
     app_did_initialize();
 

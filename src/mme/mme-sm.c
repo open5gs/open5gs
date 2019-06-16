@@ -8,6 +8,7 @@
 
 #include "s1ap-handler.h"
 #include "s1ap-path.h"
+#include "sgsap-path.h"
 #include "nas-security.h"
 #include "nas-path.h"
 #include "emm-handler.h"
@@ -54,6 +55,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 ogs_error("Can't establish S11-GTP path");
                 break;
             }
+            rv = sgsap_open();
+            if (rv != OGS_OK)
+            {
+                ogs_error("Can't establish SGsAP path");
+                break;
+            }
             rv = s1ap_open();
             if (rv != OGS_OK)
             {
@@ -66,6 +73,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         case OGS_FSM_EXIT_SIG:
         {
             mme_gtp_close();
+            sgsap_close();
             s1ap_close();
 
             break;

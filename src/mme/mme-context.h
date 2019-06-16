@@ -122,7 +122,7 @@ typedef struct mme_context_s {
     /* Paging retry timer value */
     ogs_time_t      t3413_value;
     /* Client timer value to connect to server */
-    ogs_time_t      connect_timer_value;    
+    ogs_time_t      t_conn_value;    
 
     /* Generator for unique identification */
     uint32_t        mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
@@ -172,10 +172,9 @@ typedef struct mme_pgw_s {
 typedef struct mme_vlr_s {
     ogs_lnode_t     lnode;
 
-    ogs_fsm_t       sm;                 /* A state machine */
+    ogs_fsm_t       sm;          /* A state machine */
 
-    /* client timer to connect to server */
-    ogs_timer_t     *connect_timer;     
+    ogs_timer_t     *t_conn;     /* client timer to connect to server */
 
     nas_tai_t       tai;
     nas_lai_t       lai;

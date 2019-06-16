@@ -21,7 +21,7 @@
 
 static void ogs_debug_printf(const char *format, ...);
 
-int ogs_sctp_init(uint16_t port)
+void ogs_sctp_init(uint16_t port)
 {
     usrsctp_init(port, NULL, ogs_debug_printf);
 #ifdef SCTP_DEBUG
@@ -29,8 +29,6 @@ int ogs_sctp_init(uint16_t port)
 #endif
     usrsctp_sysctl_set_sctp_blackhole(2);
     usrsctp_sysctl_set_sctp_enable_sack_immediately(1);
-
-    return OGS_OK;
 }
 
 void ogs_sctp_final()

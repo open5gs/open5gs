@@ -41,7 +41,7 @@ ogs_sock_t *sgsap_client(ogs_socknode_t *node)
     ogs_socknode_set_poll(node, mme_self()->pollset,
             OGS_POLLIN, sgsap_usrsctp_recv_handler, node);
 
-    sock = ogs_sctp_client(SOCK_STREAM, node);
+    sock = ogs_sctp_client(SOCK_SEQPACKET, node);
     ogs_assert(sock);
 
     ogs_info("sgsap_client() [%s]:%d",

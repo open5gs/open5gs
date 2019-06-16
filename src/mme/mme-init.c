@@ -22,6 +22,8 @@ int mme_initialize()
     mme_context_init();
     mme_event_init();
 
+    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
+
     rv = gtp_xact_init(mme_self()->timer_mgr);
     if (rv != OGS_OK) return rv;
 
@@ -36,9 +38,6 @@ int mme_initialize()
 
     rv = mme_fd_init();
     if (rv != OGS_OK) return OGS_ERROR;
-
-    rv = ogs_sctp_init(context_self()->config.usrsctp.udp_port);
-    if (rv != OGS_OK) return rv;
 
     thread = ogs_thread_create(mme_main, NULL);
     if (!thread) return OGS_ERROR;

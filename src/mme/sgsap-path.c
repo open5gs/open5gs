@@ -19,15 +19,36 @@
 
 #include "ogs-sctp.h"
 
+#include "mme-event.h"
+#include "mme-sm.h"
 #include "sgsap-path.h"
 
 int sgsap_open()
 {
+    mme_vlr_t *vlr = NULL;
+
+    ogs_list_for_each(&mme_self()->vlr_list, vlr) {
+        mme_event_t e;
+        e.vlr = vlr;
+
+        ogs_fsm_create(&vlr->sm, sgsap_state_initial, sgsap_state_final);
+        ogs_fsm_init(&vlr->sm, &e);
+    }
+
     return OGS_OK;
 }
 
 void sgsap_close()
 {
+    mme_vlr_t *vlr = NULL;
+
+    ogs_list_for_each(&mme_self()->vlr_list, vlr) {
+        mme_event_t e;
+        e.vlr = vlr;
+
+        ogs_fsm_fini(&vlr->sm, &e);
+        ogs_fsm_delete(&vlr->sm);
+    }
 }
 
 void sgsap_connect_timeout(void *data)

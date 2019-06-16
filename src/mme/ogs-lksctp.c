@@ -28,9 +28,8 @@ static int set_rtoinfo(ogs_sock_t *sock, ogs_sockopt_t *option);
 static int set_initmsg(ogs_sock_t *sock, ogs_sockopt_t *option);
 static int set_nodelay(ogs_sock_t *sock, int on);
 
-int ogs_sctp_init(uint16_t port)
+void ogs_sctp_init(uint16_t port)
 {
-    return OGS_OK;
 }
 
 void ogs_sctp_final(void)
