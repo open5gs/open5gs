@@ -1174,9 +1174,10 @@ int mme_context_parse_config()
 
                         plmn_id_build(&plmn_id,
                             atoi(mcc), atoi(mnc), strlen(mnc));
-                        nas_from_plmn_id(&vlr->nas_plmn_id, &plmn_id);
-                        vlr->tac = atoi(tac);
-                        vlr->lac = atoi(lac);
+                        nas_from_plmn_id(&vlr->tai.plmn_id, &plmn_id);
+                        vlr->tai.tac = atoi(tac);
+                        nas_from_plmn_id(&vlr->lai.plmn_id, &plmn_id);
+                        vlr->lai.lac = atoi(lac);
                     } while (ogs_yaml_iter_type(&sgsap_array) ==
                             YAML_SEQUENCE_NODE);
                 } else
@@ -1550,6 +1551,32 @@ void mme_vlr_remove_all()
 
     ogs_list_for_each_safe(&self.vlr_list, next_vlr, vlr)
         mme_vlr_remove(vlr);
+}
+
+mme_vlr_t *mme_vlr_find_by_tai(nas_tai_t *tai)
+{
+    mme_vlr_t *vlr = NULL;
+    ogs_assert(tai);
+
+    ogs_list_for_each(&self.vlr_list, vlr) {
+        if (memcmp(&vlr->tai, tai, sizeof *tai) == 0)
+            return vlr;
+    }
+
+    return NULL;
+}
+
+mme_vlr_t *mme_vlr_find_by_lai(nas_lai_t *lai)
+{
+    mme_vlr_t *vlr = NULL;
+    ogs_assert(lai);
+
+    ogs_list_for_each(&self.vlr_list, vlr) {
+        if (memcmp(&vlr->lai, lai, sizeof *lai) == 0)
+            return vlr;
+    }
+
+    return NULL;
 }
 
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)

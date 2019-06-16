@@ -5,8 +5,9 @@ noinst_LTLIBRARIES = libmme.la
 libmme_la_SOURCES = \
 	mme-kdf.h kasumi.h snow-3g.h zuc.h \
     mme-event.h mme-context.h \
-	s1ap-build.h s1ap-handler.h s1ap-conv.h s1ap-path.h \
 	ogs-sctp.h \
+	s1ap-build.h s1ap-handler.h s1ap-conv.h s1ap-path.h \
+	sgsap-path.h \
 	mme-fd-path.h mme-s6a-handler.h \
 	nas-conv.h nas-security.h nas-path.h \
 	emm-handler.h emm-build.h \
@@ -15,8 +16,9 @@ libmme_la_SOURCES = \
 	mme-sm.h mme-path.h \
 	mme-kdf.c kasumi.c snow-3g.c zuc.c \
     mme-init.c mme-event.c mme-context.c \
-	s1ap-sm.c s1ap-build.c s1ap-handler.c s1ap-conv.c s1ap-path.c \
 	ogs-sctp.c \
+	s1ap-sm.c s1ap-build.c s1ap-handler.c s1ap-conv.c s1ap-path.c \
+	sgsap-sm.c sgsap-path.c \
 	mme-fd-path.c mme-s6a-handler.c \
 	nas-conv.c nas-security.c nas-path.c \
 	emm-sm.c emm-handler.c emm-build.c \
@@ -27,7 +29,7 @@ libmme_la_SOURCES = \
 	$(NULL)
 
 if WITH_USRSCTP
-libmme_la_SOURCES += ogs-usrsctp.c s1ap-usrpath.c
+libmme_la_SOURCES += ogs-usrsctp.c s1ap-usrpath.c sgsap-usrpath.c
 else
 libmme_la_SOURCES += ogs-lksctp.c s1ap-lkpath.c
 endif

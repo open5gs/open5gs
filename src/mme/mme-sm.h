@@ -54,6 +54,12 @@ void esm_state_pdn_did_disconnect(ogs_fsm_t *s, mme_event_t *e);
 void esm_state_bearer_deactivated(ogs_fsm_t *s, mme_event_t *e);
 void esm_state_exception(ogs_fsm_t *s, mme_event_t *e);
 
+void sgsap_state_initial(ogs_fsm_t *s, mme_event_t *e);
+void sgsap_state_final(ogs_fsm_t *s, mme_event_t *e);
+void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e);
+void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e);
+void sgsap_state_exception(ogs_fsm_t *s, mme_event_t *e);
+
 #define mme_sm_debug(__pe) \
     ogs_debug("%s(): %s\n", __func__, mme_event_get_name(__pe))
 

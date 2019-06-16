@@ -1,11 +1,30 @@
-#ifndef __MME_EVENT_H__
-#define __MME_EVENT_H__
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef MME_EVENT_H
+#define MME_EVENT_H
 
 #include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 /* forward declaration */
 typedef enum {
@@ -21,6 +40,10 @@ typedef enum {
     MME_EVT_ESM_MESSAGE,
     MME_EVT_S11_MESSAGE,
     MME_EVT_S6A_MESSAGE,
+
+    MME_EVT_SGSAP_MESSAGE,
+    MME_EVT_SGSAP_LO_WILL_CONNECT,
+    MME_EVT_SGSAP_LO_CONNECTED,
 
     MME_EVT_TOP,
 
@@ -72,6 +95,6 @@ const char *mme_event_get_name(mme_event_t *e);
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __MME_EVENT_H__ */
+#endif /* MME_EVENT_H */
