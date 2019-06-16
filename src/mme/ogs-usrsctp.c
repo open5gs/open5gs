@@ -175,7 +175,7 @@ ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node)
 
     if (addr == NULL) {
         ogs_error("sctp_server [%s]:%d failed",
-                    OGS_ADDR(addr, buf), OGS_PORT(addr));
+                    OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
         return NULL;
     }
 
@@ -215,7 +215,7 @@ ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node)
 
     if (addr == NULL) {
         ogs_error("sctp_client [%s]:%d failed", 
-                    OGS_ADDR(addr, buf), OGS_PORT(addr));
+                    OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
         return NULL;
     }
 

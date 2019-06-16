@@ -31,7 +31,7 @@ libmme_la_SOURCES = \
 if WITH_USRSCTP
 libmme_la_SOURCES += ogs-usrsctp.c s1ap-usrpath.c sgsap-usrpath.c
 else
-libmme_la_SOURCES += ogs-lksctp.c s1ap-lkpath.c
+libmme_la_SOURCES += ogs-lksctp.c s1ap-lkpath.c sgsap-lkpath.c
 endif
 
 libmme_la_DEPENDENCIES = \
