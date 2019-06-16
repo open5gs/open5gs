@@ -66,7 +66,8 @@ int sgsap_recv(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf)
     return OGS_OK;;
 }
 
-int sgsap_send_to_vlr(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
+int sgsap_send_to_vlr_with_sid(
+        mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
     char buf[OGS_ADDRSTRLEN];
     ogs_socknode_t *node = NULL;;
@@ -99,3 +100,13 @@ int sgsap_send_to_vlr(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
     return OGS_OK;;
 }
 
+int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
+{
+    mme_vlr_t *vlr = NULL;
+    ogs_assert(mme_ue);
+    ogs_assert(pkbuf);
+    vlr = mme_ue->vlr;
+    ogs_assert(vlr);
+
+    return sgsap_send_to_vlr_with_sid(vlr, pkbuf, mme_ue->vlr_ostream_id);
+}

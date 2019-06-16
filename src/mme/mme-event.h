@@ -64,8 +64,8 @@ typedef struct mme_event_s {
 
     ogs_sock_t *enb_sock;
     ogs_sockaddr_t *enb_addr;
-    uint16_t inbound_streams;
-    uint16_t outbound_streams;
+    uint16_t max_num_of_istreams;
+    uint16_t max_num_of_ostreams;
 
     S1AP_ProcedureCode_t s1ap_code;
     s1ap_message_t *s1ap_message;

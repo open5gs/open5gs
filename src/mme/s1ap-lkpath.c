@@ -148,9 +148,9 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
                 ogs_assert(e);
                 e->enb_sock = sock;
                 e->enb_addr = addr;
-                e->inbound_streams = 
+                e->max_num_of_istreams = 
                     not->sn_assoc_change.sac_inbound_streams;
-                e->outbound_streams = 
+                e->max_num_of_ostreams = 
                     not->sn_assoc_change.sac_outbound_streams;
                 rv = ogs_queue_push(mme_self()->queue, e);
                 if (rv != OGS_OK) {

@@ -105,14 +105,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_sock_t *sock = NULL;
             ogs_sockaddr_t *addr = NULL;
             mme_enb_t *enb = NULL;
-            uint16_t outbound_streams = 0;
+            uint16_t max_num_of_ostreams = 0;
 
             sock = e->enb_sock;
             ogs_assert(sock);
             addr = e->enb_addr;
             ogs_assert(addr);
 
-            outbound_streams = e->outbound_streams;
+            max_num_of_ostreams = e->max_num_of_ostreams;
 
             enb = mme_enb_find_by_addr(addr);
             if (!enb)
@@ -125,11 +125,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 ogs_free(addr);
             }
 
-            enb->outbound_streams =
-                    ogs_min(outbound_streams, enb->outbound_streams);
+            enb->max_num_of_ostreams =
+                    ogs_min(max_num_of_ostreams, enb->max_num_of_ostreams);
 
-            ogs_debug("eNB-S1 SCTP_COMM_UP[%s] Outbound Streams[%d]", 
-                OGS_ADDR(addr, buf), enb->outbound_streams);
+            ogs_debug("eNB-S1 SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
+                OGS_ADDR(addr, buf), enb->max_num_of_ostreams);
 
             break;
         }

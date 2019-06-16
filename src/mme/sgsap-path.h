@@ -36,7 +36,9 @@ int sgsap_send(ogs_sock_t *sock,
         ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *addr, uint16_t stream_no);
 int sgsap_recv(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf);
 
-int sgsap_send_to_vlr(mme_vlr_t *vlr, ogs_pkbuf_t *pkb, uint16_t stream_no);
+int sgsap_send_to_vlr_with_sid(
+        mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no);
+int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

@@ -124,7 +124,8 @@ typedef struct mme_context_s {
 
     /* Generator for unique identification */
     uint32_t        mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
-    uint16_t        ostream_id;             /* ostream_id generator */
+    uint16_t        enb_ostream_id;         /* enb_ostream_id generator */
+    uint16_t        vlr_ostream_id;         /* vlr_ostream_id generator */
 
     /* M-TMSI Pool */
     OGS_POOL(m_tmsi, mme_m_tmsi_t);
@@ -169,8 +170,12 @@ typedef struct mme_pgw_s {
 typedef struct mme_vlr_s {
     ogs_lnode_t     lnode;
 
+    ogs_fsm_t       sm;         /* A state machine */
+
     nas_tai_t       tai;
     nas_lai_t       lai;
+
+    uint16_t        max_num_of_ostreams; /* SCTP Max num of outbound streams */
 
     ogs_socknode_t  *node;
 } mme_vlr_t;
@@ -184,7 +189,7 @@ typedef struct mme_enb_s {
     ogs_sockaddr_t  *addr;      /* eNB S1AP Address */
     ogs_poll_t      *poll;      /* eNB S1AP Poll */
 
-    uint16_t        outbound_streams; /* SCTP Max number of outbound streams */
+    uint16_t        max_num_of_ostreams; /* SCTP Max num of outbound streams */
 
     uint8_t         num_of_supported_ta_list;
     tai_t           supported_ta_list[MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
@@ -262,7 +267,8 @@ struct mme_ue_s {
     uint32_t        mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
     uint32_t        sgw_s11_teid;   /* SGW-S11-TEID is received from SGW */
 
-    uint16_t        ostream_id;     /* SCTP output stream identification */
+    uint16_t        enb_ostream_id; /* SCTP output stream id for eNB */
+    uint16_t        vlr_ostream_id; /* SCTP output stream id for VLR */
 
     /* UE Info */
     tai_t           tai;
@@ -410,6 +416,7 @@ struct mme_ue_s {
     int             session_context_will_deleted;
 
     gtp_node_t      *gnode;
+    mme_vlr_t       *vlr;
 };
 
 #define MME_HAVE_SGW_S1U_PATH(__sESS) \

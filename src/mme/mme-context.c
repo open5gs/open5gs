@@ -1594,11 +1594,11 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     enb->addr = addr;
     enb->sock_type = mme_enb_sock_type(enb->sock);
 
-    enb->outbound_streams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+    enb->max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
     if (context_self()->config.sockopt.sctp.max_num_of_ostreams) {
-        enb->outbound_streams =
+        enb->max_num_of_ostreams =
             context_self()->config.sockopt.sctp.max_num_of_ostreams;
-        ogs_info("[ENB] max_num_of_ostreams : %d", enb->outbound_streams);
+        ogs_info("[ENB] max_num_of_ostreams : %d", enb->max_num_of_ostreams);
     }
 
     ogs_list_init(&enb->enb_ue_list);
@@ -1906,7 +1906,8 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
      *   0 : Non UE signalling
      *   1-29 : UE specific association 
      */
-    mme_ue->ostream_id = NEXT_ID(self.ostream_id, 1, enb->outbound_streams-1);
+    mme_ue->enb_ostream_id = 
+        NEXT_ID(self.enb_ostream_id, 1, enb->max_num_of_ostreams-1);
 
     /* Create New GUTI */
     mme_ue_new_guti(mme_ue);
@@ -1938,6 +1939,18 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     } else
         ogs_assert_if_reached();
         
+    /* Clear VLR */
+    mme_ue->vlr = NULL;
+    mme_ue->vlr_ostream_id = 0;
+
+#if 0 /* FIXME */
+    if (mme_ue->vlr) {
+        mme_ue->vlr_ostream_id = 
+            NEXT_ID(self.vlr_ostream_id, 1, mme_ue->vlr->max_num_of_ostreams-1);
+    } else {
+        mme_ue->vlr_ostream_id = 0;
+    }
+#endif
 
     /* Create paging retry timer */
     mme_ue->t3413 = ogs_timer_add(self.timer_mgr, s1ap_t3413_timeout, mme_ue);
