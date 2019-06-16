@@ -1,11 +1,30 @@
-#ifndef __S1AP_CONV_H__
-#define __S1AP_CONV_H__
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef S1AP_CONV_H
+#define S1AP_CONV_H
 
 #include "asn1c/s1ap-message.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 void s1ap_uint8_to_OCTET_STRING(
         uint8_t uint8, OCTET_STRING_t *octet_string);
@@ -32,7 +51,7 @@ int s1ap_copy_ie(
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __S1AP_CONV_H__ */
+#endif /* S1AP_CONV_H */
 

@@ -25,7 +25,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #define S1AP_NON_UE_SIGNALLING   0
 
