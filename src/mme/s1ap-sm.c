@@ -55,7 +55,6 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
     ogs_assert(s);
     ogs_assert(e);
 
-    ogs_assert(e);
     mme_sm_debug(e);
 
     enb = e->enb;

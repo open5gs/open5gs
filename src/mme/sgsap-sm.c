@@ -38,10 +38,14 @@ void sgsap_state_final(ogs_fsm_t *s, mme_event_t *e)
 
 void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
 {
+    mme_vlr_t *vlr = NULL;
     ogs_assert(s);
     ogs_assert(e);
 
     mme_sm_debug(e);
+
+    vlr = e->vlr;
+    ogs_assert(vlr);
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:

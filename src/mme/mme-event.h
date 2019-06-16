@@ -52,6 +52,7 @@ typedef enum {
 typedef long S1AP_ProcedureCode_t;
 typedef struct S1AP_S1AP_PDU s1ap_message_t;
 typedef struct nas_message_s nas_message_t;
+typedef struct mme_vlr_s mme_vlr_t;
 typedef struct mme_enb_s mme_enb_t;
 typedef struct enb_ue_s enb_ue_t;
 typedef struct mme_ue_s mme_ue_t;
@@ -73,6 +74,7 @@ typedef struct mme_event_s {
     uint8_t nas_type;
     nas_message_t *nas_message;
 
+    mme_vlr_t *vlr;
     mme_enb_t *enb;
     enb_ue_t *enb_ue;
     mme_ue_t *mme_ue;
