@@ -29,7 +29,7 @@ extern "C" {
 int sgsap_open(void);
 void sgsap_close(void);
 
-ogs_sock_t *sgsap_client(ogs_socknode_t *node);
+ogs_sock_t *sgsap_client(mme_vlr_t *vlr);
 void sgsap_recv_handler(short when, ogs_socket_t fd, void *data);
 
 int sgsap_send(ogs_sock_t *sock,

@@ -1562,7 +1562,7 @@ mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr)
     ogs_assert(addr);
 
     ogs_list_for_each(&self.vlr_list, vlr) {
-        if (ogs_sockaddr_is_equal(vlr->node->addr, addr) == true)
+        if (ogs_sockaddr_is_equal(vlr->addr, addr) == true)
             return vlr;
     }
 

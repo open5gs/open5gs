@@ -20,41 +20,39 @@
 #include "ogs-sctp.h"
 
 #include "app/context.h"
+#include "mme-context.h"
 #include "mme-event.h"
 #include "sgsap-path.h"
 
-static int sgsap_usrsctp_recv_handler(struct socket *sock,
+static int usrsctp_recv_handler(struct socket *sock,
         union sctp_sockstore addr, void *data, size_t datalen,
         struct sctp_rcvinfo rcv, int flags, void *ulp_info);
 
-static ogs_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store);
-
-ogs_sock_t *sgsap_client(ogs_socknode_t *node)
+ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
 {
     char buf[OGS_ADDRSTRLEN];
+    ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
+    ogs_assert(vlr);
+    node = vlr->node;
     ogs_assert(node);
 
     ogs_socknode_sctp_option(node, &context_self()->config.sockopt);
     ogs_socknode_set_poll(node, mme_self()->pollset,
-            OGS_POLLIN, sgsap_usrsctp_recv_handler, node);
+            OGS_POLLIN, usrsctp_recv_handler, node);
 
     sock = ogs_sctp_client(SOCK_SEQPACKET, node);
-    if (sock)
+    if (sock) {
         ogs_info("sgsap_client() [%s]:%d",
                 OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+        vlr->addr = node->addr;
+    }
 
     return sock;
 }
 
-void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
-{
-    /* At this point, nextepc does not use SOCK_STREAM in libusrsctp */
-    ogs_assert_if_reached();
-}
-
-static int sgsap_usrsctp_recv_handler(struct socket *sock,
+static int usrsctp_recv_handler(struct socket *sock,
     union sctp_sockstore store, void *data, size_t datalen,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
 {
@@ -80,7 +78,7 @@ static int sgsap_usrsctp_recv_handler(struct socket *sock,
                         not->sn_assoc_change.sac_state == 
                             SCTP_COMM_LOST) {
                         ogs_sockaddr_t *addr =
-                            usrsctp_remote_addr(&store);
+                            ogs_usrsctp_remote_addr(&store);
                         ogs_assert(addr);
 
                         if (not->sn_assoc_change.sac_state == 
@@ -104,7 +102,7 @@ static int sgsap_usrsctp_recv_handler(struct socket *sock,
                         }
                     } else if (not->sn_assoc_change.sac_state == SCTP_COMM_UP) {
                         ogs_sockaddr_t *addr =
-                            usrsctp_remote_addr(&store);
+                            ogs_usrsctp_remote_addr(&store);
                         ogs_assert(addr);
 
                         ogs_debug("SCTP_COMM_UP");
@@ -129,7 +127,7 @@ static int sgsap_usrsctp_recv_handler(struct socket *sock,
                     break;
                 case SCTP_SHUTDOWN_EVENT :
                 {
-                    ogs_sockaddr_t *addr = usrsctp_remote_addr(&store);
+                    ogs_sockaddr_t *addr = ogs_usrsctp_remote_addr(&store);
                     ogs_assert(addr);
 
                     ogs_debug("SCTP_SHUTDOWN_EVENT:"
@@ -159,6 +157,14 @@ static int sgsap_usrsctp_recv_handler(struct socket *sock,
                             not->sn_paddr_change.spc_flags,
                             not->sn_paddr_change.spc_error);
                     break;
+                case SCTP_ADAPTATION_INDICATION :
+                    ogs_info("SCTP_ADAPTATION_INDICATION:"
+                            "[T:%d, F:0x%x, S:%d, I:%d]", 
+                            not->sn_adaptation_event.sai_type,
+                            not->sn_adaptation_event.sai_flags,
+                            not->sn_adaptation_event.sai_length,
+                            not->sn_adaptation_event.sai_adaptation_ind);
+                    break;
                 case SCTP_REMOTE_ERROR:
                     ogs_warn("SCTP_REMOTE_ERROR:[T:%d, F:0x%x, S:%d]", 
                             not->sn_remote_error.sre_type,
@@ -170,14 +176,6 @@ static int sgsap_usrsctp_recv_handler(struct socket *sock,
                             not->sn_send_failed_event.ssfe_type,
                             not->sn_send_failed_event.ssfe_flags,
                             not->sn_send_failed_event.ssfe_error);
-                    break;
-                case SCTP_ADAPTATION_INDICATION :
-                    ogs_error("SCTP_ADAPTATION_INDICATION:"
-                            "[T:%d, F:0x%x, S:%d, I:%d]", 
-                            not->sn_adaptation_event.sai_type,
-                            not->sn_adaptation_event.sai_flags,
-                            not->sn_adaptation_event.sai_length,
-                            not->sn_adaptation_event.sai_adaptation_ind);
                     break;
                 default :
                     ogs_error("Discarding event with "
@@ -193,7 +191,7 @@ static int sgsap_usrsctp_recv_handler(struct socket *sock,
             pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
             ogs_pkbuf_put_data(pkbuf, data, datalen);
 
-            addr = usrsctp_remote_addr(&store);
+            addr = ogs_usrsctp_remote_addr(&store);
             ogs_assert(addr);
 
             e = mme_event_new(MME_EVT_SGSAP_MESSAGE);
@@ -216,28 +214,4 @@ static int sgsap_usrsctp_recv_handler(struct socket *sock,
         free(data);
     }
     return (1);
-}
-
-static ogs_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store)
-{
-    ogs_sockaddr_t *addr = NULL;
-
-    ogs_assert(store);
-
-    addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_assert(addr);
-
-    addr->ogs_sa_family = store->sin.sin_family;
-    switch(addr->ogs_sa_family) {
-    case AF_INET:
-        memcpy(&addr->sin, &store->sin, sizeof(struct sockaddr_in));
-        break;
-    case AF_INET6:
-        memcpy(&addr->sin6, &store->sin6, sizeof(struct sockaddr_in6));
-        break;
-    default:
-        ogs_assert_if_reached();
-    }
-
-    return addr;
 }

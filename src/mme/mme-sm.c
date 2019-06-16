@@ -480,14 +480,19 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         max_num_of_ostreams = e->max_num_of_ostreams;
 
         vlr = mme_vlr_find_by_addr(addr);
-        ogs_assert(vlr);
         ogs_free(addr);
+
+        ogs_assert(vlr);
+        ogs_assert(OGS_FSM_STATE(&vlr->sm));
 
         vlr->max_num_of_ostreams =
                 ogs_min(max_num_of_ostreams, vlr->max_num_of_ostreams);
 
-        ogs_warn("VLR-SGs SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
+        ogs_debug("VLR-SGs SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
             OGS_ADDR(addr, buf), vlr->max_num_of_ostreams);
+
+        e->vlr = vlr;
+        ogs_fsm_dispatch(&vlr->sm, e);
         break;
 
     case MME_EVT_SGSAP_LO_CONNREFUSED:

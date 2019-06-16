@@ -378,6 +378,30 @@ int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
     return n;
 }
 
+ogs_sockaddr_t *ogs_usrsctp_remote_addr(union sctp_sockstore *store)
+{
+    ogs_sockaddr_t *addr = NULL;
+
+    ogs_assert(store);
+
+    addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
+    ogs_assert(addr);
+
+    addr->ogs_sa_family = store->sin.sin_family;
+    switch(addr->ogs_sa_family) {
+    case AF_INET:
+        memcpy(&addr->sin, &store->sin, sizeof(struct sockaddr_in));
+        break;
+    case AF_INET6:
+        memcpy(&addr->sin6, &store->sin6, sizeof(struct sockaddr_in6));
+        break;
+    default:
+        ogs_assert_if_reached();
+    }
+
+    return addr;
+}
+
 static void ogs_debug_printf(const char *format, ...)
 {
     va_list ap;
@@ -386,3 +410,4 @@ static void ogs_debug_printf(const char *format, ...)
     vprintf(format, ap);
     va_end(ap);
 }
+

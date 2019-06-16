@@ -41,6 +41,7 @@ extern "C" {
 #define INET6           1
 #endif
 #include <usrsctp.h>
+ogs_sockaddr_t *ogs_usrsctp_remote_addr(union sctp_sockstore *store);
 #else
 #define ogs_sctp_destroy ogs_sock_destroy
 #define ogs_sctp_accept ogs_sock_accept

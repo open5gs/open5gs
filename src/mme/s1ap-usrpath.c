@@ -23,11 +23,9 @@
 #include "mme-event.h"
 #include "s1ap-path.h"
 
-int s1ap_usrsctp_recv_handler(struct socket *sock,
+static int usrsctp_recv_handler(struct socket *sock,
         union sctp_sockstore addr, void *data, size_t datalen,
         struct sctp_rcvinfo rcv, int flags, void *ulp_info);
-
-static ogs_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store);
 
 ogs_sock_t *s1ap_server(ogs_socknode_t *node)
 {
@@ -38,7 +36,7 @@ ogs_sock_t *s1ap_server(ogs_socknode_t *node)
 
     ogs_socknode_sctp_option(node, &context_self()->config.sockopt);
     ogs_socknode_set_poll(node, mme_self()->pollset,
-            OGS_POLLIN, s1ap_usrsctp_recv_handler, node);
+            OGS_POLLIN, usrsctp_recv_handler, node);
 
     /* FIXME : libsctp 0.9.3.0 is not properly working in SOCK_STREAM */
     sock = ogs_sctp_server(SOCK_SEQPACKET, node);
@@ -56,7 +54,7 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
     ogs_assert_if_reached();
 }
 
-int s1ap_usrsctp_recv_handler(struct socket *sock,
+static int usrsctp_recv_handler(struct socket *sock,
     union sctp_sockstore store, void *data, size_t datalen,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
 {
@@ -82,7 +80,7 @@ int s1ap_usrsctp_recv_handler(struct socket *sock,
                         not->sn_assoc_change.sac_state == 
                             SCTP_COMM_LOST) {
                         ogs_sockaddr_t *addr =
-                            usrsctp_remote_addr(&store);
+                            ogs_usrsctp_remote_addr(&store);
                         ogs_assert(addr);
 
                         if (not->sn_assoc_change.sac_state == 
@@ -106,7 +104,7 @@ int s1ap_usrsctp_recv_handler(struct socket *sock,
                         }
                     } else if (not->sn_assoc_change.sac_state == SCTP_COMM_UP) {
                         ogs_sockaddr_t *addr =
-                            usrsctp_remote_addr(&store);
+                            ogs_usrsctp_remote_addr(&store);
                         ogs_assert(addr);
 
                         ogs_debug("SCTP_COMM_UP");
@@ -131,7 +129,7 @@ int s1ap_usrsctp_recv_handler(struct socket *sock,
                     break;
                 case SCTP_SHUTDOWN_EVENT :
                 {
-                    ogs_sockaddr_t *addr = usrsctp_remote_addr(&store);
+                    ogs_sockaddr_t *addr = ogs_usrsctp_remote_addr(&store);
                     ogs_assert(addr);
 
                     ogs_debug("SCTP_SHUTDOWN_EVENT:"
@@ -187,7 +185,7 @@ int s1ap_usrsctp_recv_handler(struct socket *sock,
             pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
             ogs_pkbuf_put_data(pkbuf, data, datalen);
 
-            addr = usrsctp_remote_addr(&store);
+            addr = ogs_usrsctp_remote_addr(&store);
             ogs_assert(addr);
 
             e = mme_event_new(MME_EVT_S1AP_MESSAGE);
@@ -210,28 +208,4 @@ int s1ap_usrsctp_recv_handler(struct socket *sock,
         free(data);
     }
     return (1);
-}
-
-static ogs_sockaddr_t *usrsctp_remote_addr(union sctp_sockstore *store)
-{
-    ogs_sockaddr_t *addr = NULL;
-
-    ogs_assert(store);
-
-    addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_assert(addr);
-
-    addr->ogs_sa_family = store->sin.sin_family;
-    switch(addr->ogs_sa_family) {
-    case AF_INET:
-        memcpy(&addr->sin, &store->sin, sizeof(struct sockaddr_in));
-        break;
-    case AF_INET6:
-        memcpy(&addr->sin6, &store->sin6, sizeof(struct sockaddr_in6));
-        break;
-    default:
-        ogs_assert_if_reached();
-    }
-
-    return addr;
 }
