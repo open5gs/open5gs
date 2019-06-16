@@ -128,7 +128,6 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
 
         switch(not->sn_header.sn_type) {
         case SCTP_ASSOC_CHANGE :
-        {
             ogs_debug("SCTP_ASSOC_CHANGE:"
                     "[T:%d, F:0x%x, S:%d, I/O:%d/%d]", 
                     not->sn_assoc_change.sac_type,
@@ -182,9 +181,7 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
                 }
             }
             break;
-        }
         case SCTP_SHUTDOWN_EVENT :
-        {
             ogs_debug("SCTP_SHUTDOWN_EVENT:[T:%d, F:0x%x, L:%d]", 
                     not->sn_shutdown_event.sse_type,
                     not->sn_shutdown_event.sse_flags,
@@ -205,7 +202,6 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
                 mme_event_free(e);
             }
             break;
-        }
         case SCTP_PEER_ADDR_CHANGE:
             ogs_warn("SCTP_PEER_ADDR_CHANGE:[T:%d, F:0x%x, S:%d]", 
                     not->sn_paddr_change.spc_type,

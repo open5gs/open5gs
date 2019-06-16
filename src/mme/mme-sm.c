@@ -502,13 +502,18 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(addr);
 
         vlr = mme_vlr_find_by_addr(addr);
-        ogs_assert(vlr);
         ogs_free(addr);
 
-        if (vlr) {
+        ogs_assert(vlr);
+        ogs_assert(OGS_FSM_STATE(&vlr->sm));
+
+        if (OGS_FSM_CHECK(&vlr->sm, sgsap_state_connected)) {
+            e->vlr = vlr;
+            ogs_fsm_dispatch(&vlr->sm, e);
+
             ogs_info("VLR-SGs[%s] connection refused!!!", 
                     OGS_ADDR(addr, buf));
-            mme_vlr_remove(vlr);
+
         } else {
             ogs_warn("VLR-SGs[%s] connection refused, Already Removed!",
                     OGS_ADDR(addr, buf));

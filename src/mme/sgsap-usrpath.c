@@ -42,7 +42,7 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
     ogs_socknode_set_poll(node, mme_self()->pollset,
             OGS_POLLIN, usrsctp_recv_handler, node);
 
-    sock = ogs_sctp_client(SOCK_SEQPACKET, node);
+    sock = ogs_sctp_client(SOCK_STREAM, node);
     if (sock) {
         ogs_info("sgsap_client() [%s]:%d",
                 OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));

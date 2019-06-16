@@ -102,6 +102,9 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         break;
+    case MME_EVT_SGSAP_LO_CONNREFUSED:
+        OGS_FSM_TRAN(s, sgsap_state_will_connect);
+        break;
     case MME_EVT_SGSAP_MESSAGE:
         break;
     default:
@@ -148,8 +151,8 @@ static void sgsap_connect_timeout(void *data)
     ogs_assert(vlr->t_conn);
     ogs_timer_start(vlr->t_conn, mme_self()->t_conn_value);
 
-    ogs_assert(vlr->node->sock);
-    ogs_sctp_destroy(vlr->node->sock);
+    if (vlr->node->sock)
+        ogs_sctp_destroy(vlr->node->sock);
 
     ogs_assert(vlr->node);
     sgsap_client(vlr);

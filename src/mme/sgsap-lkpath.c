@@ -20,59 +20,54 @@
 #include "ogs-sctp.h"
 
 #include "app/context.h"
+#include "mme-context.h"
 #include "mme-event.h"
 #include "s1ap-path.h"
 
-static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data);
+static void recv_handler(short when, ogs_socket_t fd, void *data);
 
-ogs_sock_t *sgsap_client(ogs_socknode_t *node)
+ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
 {
     char buf[OGS_ADDRSTRLEN];
+    ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
+    node = vlr->node;
     ogs_assert(node);
 
     ogs_socknode_sctp_option(node, &context_self()->config.sockopt);
     ogs_socknode_nodelay(node, true);
     ogs_socknode_set_poll(node, mme_self()->pollset,
-            OGS_POLLIN, sgsap_recv_handler, node);
+            OGS_POLLIN, recv_handler, node);
 
-    sock = ogs_sctp_client(SOCK_STREAM, node);
-    if (sock)
+    sock = ogs_sctp_client(SOCK_SEQPACKET, node);
+    if (sock) {
         ogs_info("sgsap client() [%s]:%d",
                 OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+        vlr->addr = &sock->remote_addr;
+    }
 
     return sock;
 }
 
-static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
+static void recv_handler(short when, ogs_socket_t fd, void *data)
 {
-#if 0
     int rv;
     ogs_pkbuf_t *pkbuf;
     int size;
     mme_event_t *e = NULL;
-    ogs_sock_t *sock = data;
+    ogs_socknode_t *node = data;
+    ogs_sock_t *sock = NULL;
     ogs_sockaddr_t *addr = NULL;
     ogs_sctp_info_t sinfo;
     int flags = 0;
 
+    ogs_assert(node);
+    sock = node->sock;
     ogs_assert(sock);
     ogs_assert(fd != INVALID_SOCKET);
 
     pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-#if DEPRECATED
-    if (pkbuf == NULL) {
-        char tmp_buf[MAX_SDU_LEN];
-
-        d_fatal("Can't allocate pkbuf");
-
-        /* Read data from socket to exit from select */
-        ogs_recv(fd, tmp_buf, MAX_SDU_LEN, 0);
-
-        return;
-    }
-#endif
     ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
     size = ogs_sctp_recvmsg(
             sock, pkbuf->data, pkbuf->len, NULL, &sinfo, &flags);
@@ -88,7 +83,6 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
 
         switch(not->sn_header.sn_type) {
         case SCTP_ASSOC_CHANGE :
-        {
             ogs_debug("SCTP_ASSOC_CHANGE:"
                     "[T:%d, F:0x%x, S:%d, I/O:%d/%d]", 
                     not->sn_assoc_change.sac_type,
@@ -104,7 +98,7 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
                 ogs_assert(addr);
                 memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
-                e = mme_event_new(MME_EVT_S1AP_LO_SCTP_COMM_UP);
+                e = mme_event_new(MME_EVT_SGSAP_LO_SCTP_COMM_UP);
                 ogs_assert(e);
                 e->vlr_sock = sock;
                 e->vlr_addr = addr;
@@ -130,7 +124,7 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
                 ogs_assert(addr);
                 memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
-                e = mme_event_new(MME_EVT_S1AP_LO_CONNREFUSED);
+                e = mme_event_new(MME_EVT_SGSAP_LO_CONNREFUSED);
                 ogs_assert(e);
                 e->vlr_sock = sock;
                 e->vlr_addr = addr;
@@ -142,9 +136,7 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
                 }
             }
             break;
-        }
         case SCTP_SHUTDOWN_EVENT :
-        {
             ogs_debug("SCTP_SHUTDOWN_EVENT:[T:%d, F:0x%x, L:%d]", 
                     not->sn_shutdown_event.sse_type,
                     not->sn_shutdown_event.sse_flags,
@@ -154,7 +146,7 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
             ogs_assert(addr);
             memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
-            e = mme_event_new(MME_EVT_S1AP_LO_CONNREFUSED);
+            e = mme_event_new(MME_EVT_SGSAP_LO_CONNREFUSED);
             ogs_assert(e);
             e->vlr_sock = sock;
             e->vlr_addr = addr;
@@ -165,7 +157,6 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
                 mme_event_free(e);
             }
             break;
-        }
         case SCTP_PEER_ADDR_CHANGE:
             ogs_warn("SCTP_PEER_ADDR_CHANGE:[T:%d, F:0x%x, S:%d]", 
                     not->sn_paddr_change.spc_type,
@@ -196,7 +187,7 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
         ogs_assert(addr);
         memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
-        e = mme_event_new(MME_EVT_S1AP_MESSAGE);
+        e = mme_event_new(MME_EVT_SGSAP_MESSAGE);
         ogs_assert(e);
         e->vlr_sock = sock;
         e->vlr_addr = addr;
@@ -214,5 +205,4 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
         ogs_assert_if_reached();
     }
     ogs_pkbuf_free(pkbuf);
-#endif
 }
