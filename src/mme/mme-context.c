@@ -1556,6 +1556,19 @@ void mme_vlr_remove_all()
         mme_vlr_remove(vlr);
 }
 
+mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr)
+{
+    mme_vlr_t *vlr = NULL;
+    ogs_assert(addr);
+
+    ogs_list_for_each(&self.vlr_list, vlr) {
+        if (ogs_sockaddr_is_equal(vlr->node->addr, addr) == true)
+            return vlr;
+    }
+
+    return NULL;
+}
+
 mme_vlr_t *mme_vlr_find_by_tai(nas_tai_t *tai)
 {
     mme_vlr_t *vlr = NULL;

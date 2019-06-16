@@ -82,6 +82,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     gtp_xact_t *xact = NULL;
     gtp_message_t gtp_message;
 
+    mme_vlr_t *vlr = NULL;
+
     ogs_assert(e);
     mme_sm_debug(e);
 
@@ -106,12 +108,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         break;
+
     case OGS_FSM_EXIT_SIG:
         mme_gtp_close();
         sgsap_close();
         s1ap_close();
 
         break;
+
     case MME_EVT_S1AP_LO_ACCEPT:
         sock = e->enb_sock;
         ogs_assert(sock);
@@ -133,6 +137,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         break;
+
     case MME_EVT_S1AP_LO_SCTP_COMM_UP:
         sock = e->enb_sock;
         ogs_assert(sock);
@@ -156,6 +161,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             OGS_ADDR(addr, buf), enb->max_num_of_ostreams);
 
         break;
+
     case MME_EVT_S1AP_LO_CONNREFUSED:
         sock = e->enb_sock;
         ogs_assert(sock);
@@ -170,7 +176,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                     OGS_ADDR(addr, buf));
             mme_enb_remove(enb);
         } else {
-            ogs_warn("Socket[%s] connection refused, Already Removed!",
+            ogs_warn("eNB-S1[%s] connection refused, Already Removed!",
                     OGS_ADDR(addr, buf));
         }
 
@@ -201,6 +207,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         s1ap_free_pdu(&s1ap_message);
         ogs_pkbuf_free(pkbuf);
         break;
+
     case MME_EVT_EMM_MESSAGE:
         enb_ue = e->enb_ue;
         ogs_assert(enb_ue);
@@ -261,6 +268,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         ogs_pkbuf_free(pkbuf);
         break;
+
     case MME_EVT_ESM_MESSAGE:
         mme_ue = e->mme_ue;
         ogs_assert(mme_ue);
@@ -307,6 +315,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         ogs_pkbuf_free(pkbuf);
         break;
+
     case MME_EVT_S6A_MESSAGE:
         mme_ue = e->mme_ue;
         ogs_assert(mme_ue);
@@ -376,6 +385,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
         ogs_pkbuf_free(s6abuf);
         break;
+
     case MME_EVT_S11_MESSAGE:
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
@@ -460,6 +470,76 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
         ogs_pkbuf_free(pkbuf);
         break;
+
+    case MME_EVT_SGSAP_LO_SCTP_COMM_UP:
+        sock = e->vlr_sock;
+        ogs_assert(sock);
+        addr = e->vlr_addr;
+        ogs_assert(addr);
+
+        max_num_of_ostreams = e->max_num_of_ostreams;
+
+        vlr = mme_vlr_find_by_addr(addr);
+        ogs_assert(vlr);
+        ogs_free(addr);
+
+        vlr->max_num_of_ostreams =
+                ogs_min(max_num_of_ostreams, vlr->max_num_of_ostreams);
+
+        ogs_warn("VLR-SGs SCTP_COMM_UP[%s] Max Num of Outbound Streams[%d]", 
+            OGS_ADDR(addr, buf), vlr->max_num_of_ostreams);
+        break;
+
+    case MME_EVT_SGSAP_LO_CONNREFUSED:
+        sock = e->vlr_sock;
+        ogs_assert(sock);
+        addr = e->vlr_addr;
+        ogs_assert(addr);
+
+        vlr = mme_vlr_find_by_addr(addr);
+        ogs_assert(vlr);
+        ogs_free(addr);
+
+        if (vlr) {
+            ogs_info("VLR-SGs[%s] connection refused!!!", 
+                    OGS_ADDR(addr, buf));
+            mme_vlr_remove(vlr);
+        } else {
+            ogs_warn("VLR-SGs[%s] connection refused, Already Removed!",
+                    OGS_ADDR(addr, buf));
+        }
+
+        break;
+    case MME_EVT_SGSAP_MESSAGE:
+        sock = e->vlr_sock;
+        ogs_assert(sock);
+        addr = e->vlr_addr;
+        ogs_assert(addr);
+        pkbuf = e->pkbuf;
+        ogs_assert(pkbuf);
+
+        vlr = mme_vlr_find_by_addr(addr);
+        ogs_assert(vlr);
+        ogs_free(addr);
+
+#if 0
+        ogs_assert(vlr);
+        ogs_assert(OGS_FSM_STATE(&vlr->sm));
+
+        rc = s1ap_decode_pdu(&s1ap_message, pkbuf);
+        if (rc == OGS_OK) {
+            e->vlr = vlr;
+            e->s1ap_message = &s1ap_message;
+            ogs_fsm_dispatch(&vlr->sm, e);
+        } else {
+            ogs_error("Cannot process SGSAP message");
+        }
+
+        s1ap_free_pdu(&s1ap_message);
+        ogs_pkbuf_free(pkbuf);
+#endif
+        break;
+
     default:
         ogs_error("No handler for event %s", mme_event_get_name(e));
         break;

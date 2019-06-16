@@ -139,7 +139,7 @@ static void sgsap_connect_timeout(void *data)
     addr = node->addr;
     ogs_assert(addr);
 
-    ogs_warn("[SGsAP] Connect to VLR[%s]:%d failed",
+    ogs_warn("[SGsAP] Connect to VLR [%s]:%d failed",
                 OGS_ADDR(addr, buf), OGS_PORT(addr));
 
     ogs_assert(vlr->t_conn);

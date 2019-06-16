@@ -181,7 +181,8 @@ typedef struct mme_vlr_s {
 
     uint16_t        max_num_of_ostreams; /* SCTP Max num of outbound streams */
 
-    ogs_socknode_t  *node;
+    ogs_socknode_t  *node;      /* VLR SGsAP Node */
+    ogs_sockaddr_t  *addr;      /* VLR SGsAP Address */
 } mme_vlr_t;
 
 typedef struct mme_enb_s {
@@ -556,6 +557,7 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
 mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr);
 void mme_vlr_remove(mme_vlr_t *vlr);
 void mme_vlr_remove_all();
+mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr);
 mme_vlr_t *mme_vlr_find_by_tai(nas_tai_t *tai);
 mme_vlr_t *mme_vlr_find_by_lai(nas_lai_t *lai);
 

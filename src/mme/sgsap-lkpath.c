@@ -106,8 +106,8 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
 
                 e = mme_event_new(MME_EVT_S1AP_LO_SCTP_COMM_UP);
                 ogs_assert(e);
-                e->enb_sock = sock;
-                e->enb_addr = addr;
+                e->vlr_sock = sock;
+                e->vlr_addr = addr;
                 e->max_num_of_istreams = 
                     not->sn_assoc_change.sac_inbound_streams;
                 e->max_num_of_ostreams = 
@@ -115,7 +115,7 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
                 rv = ogs_queue_push(mme_self()->queue, e);
                 if (rv != OGS_OK) {
                     ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                    ogs_free(e->enb_addr);
+                    ogs_free(e->vlr_addr);
                     mme_event_free(e);
                 }
             } else if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP ||
@@ -132,12 +132,12 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
 
                 e = mme_event_new(MME_EVT_S1AP_LO_CONNREFUSED);
                 ogs_assert(e);
-                e->enb_sock = sock;
-                e->enb_addr = addr;
+                e->vlr_sock = sock;
+                e->vlr_addr = addr;
                 rv = ogs_queue_push(mme_self()->queue, e);
                 if (rv != OGS_OK) {
                     ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                    ogs_free(e->enb_addr);
+                    ogs_free(e->vlr_addr);
                     mme_event_free(e);
                 }
             }
@@ -156,12 +156,12 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
 
             e = mme_event_new(MME_EVT_S1AP_LO_CONNREFUSED);
             ogs_assert(e);
-            e->enb_sock = sock;
-            e->enb_addr = addr;
+            e->vlr_sock = sock;
+            e->vlr_addr = addr;
             rv = ogs_queue_push(mme_self()->queue, e);
             if (rv != OGS_OK) {
                 ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                ogs_free(e->enb_addr);
+                ogs_free(e->vlr_addr);
                 mme_event_free(e);
             }
             break;
@@ -198,13 +198,13 @@ static void sgsap_recv_handler(short when, ogs_socket_t fd, void *data)
 
         e = mme_event_new(MME_EVT_S1AP_MESSAGE);
         ogs_assert(e);
-        e->enb_sock = sock;
-        e->enb_addr = addr;
+        e->vlr_sock = sock;
+        e->vlr_addr = addr;
         e->pkbuf = pkbuf;
         rv = ogs_queue_push(mme_self()->queue, e);
         if (rv != OGS_OK) {
             ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-            ogs_free(e->enb_addr);
+            ogs_free(e->vlr_addr);
             ogs_pkbuf_free(e->pkbuf);
             mme_event_free(e);
         }

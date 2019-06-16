@@ -69,7 +69,6 @@ int s1ap_usrsctp_recv_handler(struct socket *sock,
             if (not->sn_header.sn_length == (uint32_t)datalen) {
                 switch(not->sn_header.sn_type) {
                 case SCTP_ASSOC_CHANGE :
-                {
                     ogs_debug("SCTP_ASSOC_CHANGE:"
                             "[T:%d, F:0x%x, S:%d, I/O:%d/%d]", 
                             not->sn_assoc_change.sac_type,
@@ -130,7 +129,6 @@ int s1ap_usrsctp_recv_handler(struct socket *sock,
                         }
                     }
                     break;
-                }
                 case SCTP_SHUTDOWN_EVENT :
                 {
                     ogs_sockaddr_t *addr = usrsctp_remote_addr(&store);

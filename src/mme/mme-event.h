@@ -42,8 +42,8 @@ typedef enum {
     MME_EVT_S6A_MESSAGE,
 
     MME_EVT_SGSAP_MESSAGE,
-    MME_EVT_SGSAP_LO_WILL_CONNECT,
-    MME_EVT_SGSAP_LO_CONNECTED,
+    MME_EVT_SGSAP_LO_SCTP_COMM_UP,
+    MME_EVT_SGSAP_LO_CONNREFUSED,
 
     MME_EVT_TOP,
 
@@ -65,6 +65,8 @@ typedef struct mme_event_s {
 
     ogs_sock_t *enb_sock;
     ogs_sockaddr_t *enb_addr;
+    ogs_sock_t *vlr_sock;
+    ogs_sockaddr_t *vlr_addr;
     uint16_t max_num_of_istreams;
     uint16_t max_num_of_ostreams;
 

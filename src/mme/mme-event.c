@@ -119,10 +119,10 @@ const char *mme_event_get_name(mme_event_t *e)
 
     case MME_EVT_SGSAP_MESSAGE:
         return "MME_EVT_SGSAP_MESSAGE";
-    case MME_EVT_SGSAP_LO_WILL_CONNECT:
-        return "MME_EVT_SGSAP_LO_WILL_CONNECT";
-    case MME_EVT_SGSAP_LO_CONNECTED:
-        return "MME_EVT_SGSAP_LO_CONNECTED";
+    case MME_EVT_SGSAP_LO_SCTP_COMM_UP:
+        return "MME_EVT_SGSAP_LO_SCTP_COMM_UP";
+    case MME_EVT_SGSAP_LO_CONNREFUSED:
+        return "MME_EVT_SGSAP_LO_CONNREFUSED";
 
     default: 
        break;
