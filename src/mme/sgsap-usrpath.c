@@ -42,10 +42,9 @@ ogs_sock_t *sgsap_client(ogs_socknode_t *node)
             OGS_POLLIN, sgsap_usrsctp_recv_handler, node);
 
     sock = ogs_sctp_client(SOCK_SEQPACKET, node);
-    ogs_assert(sock);
-
-    ogs_info("sgsap_client() [%s]:%d",
-            OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+    if (sock)
+        ogs_info("sgsap_client() [%s]:%d",
+                OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
 
     return sock;
 }

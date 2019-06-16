@@ -37,10 +37,10 @@ ogs_sock_t *sgsap_client(ogs_socknode_t *node)
     ogs_socknode_set_poll(node, mme_self()->pollset,
             OGS_POLLIN, sgsap_recv_handler, node);
 
-    ogs_sctp_client(SOCK_STREAM, node);
-
-    ogs_info("sgsap client() [%s]:%d",
-            OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
+    sock = ogs_sctp_client(SOCK_STREAM, node);
+    if (sock)
+        ogs_info("sgsap client() [%s]:%d",
+                OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
 
     return sock;
 }

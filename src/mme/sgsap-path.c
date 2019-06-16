@@ -51,29 +51,6 @@ void sgsap_close()
     }
 }
 
-void sgsap_connect_timeout(void *data)
-{
-#if 0
-    mme_vlr_t *vlr = data;
-    ogs_assert(vlr);
-
-    if (mme_ue->max_paging_retry >= MAX_NUM_OF_PAGING) {
-        /* Paging failed */
-        ogs_warn("[EMM] Paging to IMSI[%s] failed. Stop paging",
-                mme_ue->imsi_bcd);
-        if (mme_ue->last_paging_msg) {
-            ogs_pkbuf_free(mme_ue->last_paging_msg);
-            mme_ue->last_paging_msg = NULL;
-        }
-    } else {
-        mme_ue->max_paging_retry++;
-        s1ap_handle_paging(mme_ue);
-        /* Start T3413 */
-        ogs_timer_start(mme_ue->t3413, mme_self()->t3413_value);
-    }
-#endif
-}
-
 int sgsap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
         ogs_sockaddr_t *addr, uint16_t stream_no)
 {

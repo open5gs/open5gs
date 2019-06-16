@@ -17,11 +17,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "ogs-sctp.h"
+
 #include "mme-context.h"
 #include "mme-event.h"
 #include "mme-sm.h"
 
 #include "sgsap-path.h"
+
+static void sgsap_connect_timeout(void *data);
 
 void sgsap_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
@@ -66,14 +70,16 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
     vlr = e->vlr;
     ogs_assert(vlr);
 
+    ogs_assert(vlr->t_conn);
+    ogs_assert(vlr->node);
+
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_assert(vlr->node);
+        ogs_timer_start(vlr->t_conn, mme_self()->t_conn_value);
         sgsap_client(vlr->node);
         break;
     case OGS_FSM_EXIT_SIG:
-        break;
-    case MME_EVT_SGSAP_MESSAGE:
+        ogs_timer_stop(vlr->t_conn);
         break;
     default:
         ogs_error("Unknown event %s", mme_event_get_name(e));
@@ -117,5 +123,32 @@ void sgsap_state_exception(ogs_fsm_t *s, mme_event_t *e)
         ogs_error("Unknown event %s", mme_event_get_name(e));
         break;
     }
+}
+
+static void sgsap_connect_timeout(void *data)
+{
+    char buf[OGS_ADDRSTRLEN];
+
+    mme_vlr_t *vlr = data;
+    ogs_socknode_t *node = NULL;
+    ogs_sockaddr_t *addr = NULL;
+
+    ogs_assert(vlr);
+    node = vlr->node;
+    ogs_assert(node);
+    addr = node->addr;
+    ogs_assert(addr);
+
+    ogs_warn("[SGsAP] Connect to VLR[%s]:%d failed",
+                OGS_ADDR(addr, buf), OGS_PORT(addr));
+
+    ogs_assert(vlr->t_conn);
+    ogs_timer_start(vlr->t_conn, mme_self()->t_conn_value);
+
+    ogs_assert(vlr->node->sock);
+    ogs_sctp_destroy(vlr->node->sock);
+
+    ogs_assert(vlr->node);
+    sgsap_client(vlr->node);
 }
 
