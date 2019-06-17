@@ -71,7 +71,6 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
     ogs_assert(vlr);
 
     ogs_assert(vlr->t_conn);
-    ogs_assert(vlr->node);
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
@@ -92,10 +91,14 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
 
 void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
 {
+    mme_vlr_t *vlr = NULL;
     ogs_assert(s);
     ogs_assert(e);
 
     mme_sm_debug(e);
+
+    vlr = e->vlr;
+    ogs_assert(vlr);
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
@@ -103,6 +106,7 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
     case OGS_FSM_EXIT_SIG:
         break;
     case MME_EVT_SGSAP_LO_CONNREFUSED:
+        mme_vlr_free_node(vlr);
         OGS_FSM_TRAN(s, sgsap_state_will_connect);
         break;
     case MME_EVT_SGSAP_MESSAGE:
@@ -151,10 +155,7 @@ static void sgsap_connect_timeout(void *data)
     ogs_assert(vlr->t_conn);
     ogs_timer_start(vlr->t_conn, mme_self()->t_conn_value);
 
-    if (vlr->node->sock)
-        ogs_sctp_destroy(vlr->node->sock);
-
-    ogs_assert(vlr->node);
+    mme_vlr_free_node(vlr);
     sgsap_client(vlr);
 }
 

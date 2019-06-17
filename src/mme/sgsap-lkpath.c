@@ -32,7 +32,7 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
     ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
-    node = vlr->node;
+    node = mme_vlr_new_node(vlr);
     ogs_assert(node);
 
     ogs_socknode_sctp_option(node, &context_self()->config.sockopt);

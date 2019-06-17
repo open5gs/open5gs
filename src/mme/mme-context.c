@@ -1519,18 +1519,17 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
     return NULL;
 }
 
-mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr)
+mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list)
 {
     mme_vlr_t *vlr = NULL;
 
-    ogs_assert(addr);
+    ogs_assert(sa_list);
 
     ogs_pool_alloc(&mme_vlr_pool, &vlr);
     ogs_assert(vlr);
     memset(vlr, 0, sizeof *vlr);
 
-    vlr->node = ogs_socknode_new(addr);
-    ogs_assert(vlr->node);
+    vlr->sa_list = sa_list;
 
     ogs_list_add(&self.vlr_list, vlr);
 
@@ -1543,7 +1542,10 @@ void mme_vlr_remove(mme_vlr_t *vlr)
 
     ogs_list_remove(&self.vlr_list, vlr);
 
-    ogs_socknode_free(vlr->node);
+    if (vlr->node)
+        mme_vlr_free_node(vlr);
+
+    ogs_freeaddrinfo(vlr->sa_list);
 
     ogs_pool_free(&mme_vlr_pool, vlr);
 }
@@ -1554,6 +1556,29 @@ void mme_vlr_remove_all()
 
     ogs_list_for_each_safe(&self.vlr_list, next_vlr, vlr)
         mme_vlr_remove(vlr);
+}
+
+ogs_socknode_t *mme_vlr_new_node(mme_vlr_t *vlr)
+{
+    ogs_sockaddr_t *addr = NULL;
+    ogs_assert(vlr);
+
+    ogs_copyaddrinfo(&addr, vlr->sa_list);
+
+    ogs_assert(vlr->node == NULL);
+    vlr->node = ogs_socknode_new(addr);
+    ogs_assert(vlr->node);
+
+    return vlr->node;
+}
+
+void mme_vlr_free_node(mme_vlr_t *vlr)
+{
+    ogs_assert(vlr);
+    ogs_assert(vlr->node);
+
+    ogs_socknode_free(vlr->node);
+    vlr->node = NULL;
 }
 
 mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr)
