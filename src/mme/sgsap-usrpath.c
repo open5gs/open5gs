@@ -39,6 +39,7 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
 
     ogs_socknode_sctp_option(node, &context_self()->config.sockopt);
     ogs_socknode_nodelay(node, true);
+    ogs_socknode_linger(node, true, 0);
     ogs_socknode_set_poll(node, mme_self()->pollset,
             OGS_POLLIN, usrsctp_recv_handler, node);
 

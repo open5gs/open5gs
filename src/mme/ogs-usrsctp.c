@@ -42,6 +42,7 @@ void ogs_sctp_final()
 ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
 {
     struct socket *socket = NULL;
+    struct linger l;
     const int on = 1;
     struct sctp_event event;
     uint16_t event_types[] = {
@@ -80,6 +81,16 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
             if (usrsctp_setsockopt(socket, IPPROTO_SCTP, SCTP_NODELAY,
                         &on, sizeof(int)) < 0) {
                 ogs_error("usrsctp_setsockopt SCTP_NODELAY failed");
+                return NULL;
+            }
+        }
+        if (node->option.l_onoff) {
+            memset(&l, 0, sizeof(l));
+            l.l_onoff = node->option.l_onoff;
+            l.l_linger = node->option.l_linger;
+            if (usrsctp_setsockopt(socket, SOL_SOCKET, SO_LINGER,
+                    (const void *)&l, (socklen_t) sizeof(struct linger)) < 0) {
+                ogs_error("Could not set SO_LINGER on SCTP socket");
                 return NULL;
             }
         }
