@@ -35,6 +35,7 @@ ogs_sock_t *s1ap_server(ogs_socknode_t *node)
     ogs_assert(node);
 
     ogs_socknode_sctp_option(node, &context_self()->config.sockopt);
+    ogs_socknode_nodelay(node, true);
     ogs_socknode_set_poll(node, mme_self()->pollset,
             OGS_POLLIN, usrsctp_recv_handler, node);
 

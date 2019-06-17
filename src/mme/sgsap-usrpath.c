@@ -34,15 +34,15 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
     ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
 
-    ogs_assert(vlr);
-    node = vlr->node;
+    node = mme_vlr_new_node(vlr);
     ogs_assert(node);
 
     ogs_socknode_sctp_option(node, &context_self()->config.sockopt);
+    ogs_socknode_nodelay(node, true);
     ogs_socknode_set_poll(node, mme_self()->pollset,
             OGS_POLLIN, usrsctp_recv_handler, node);
 
-    sock = ogs_sctp_client(SOCK_STREAM, node);
+    sock = ogs_sctp_client(SOCK_SEQPACKET, node);
     if (sock) {
         ogs_info("sgsap_client() [%s]:%d",
                 OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
