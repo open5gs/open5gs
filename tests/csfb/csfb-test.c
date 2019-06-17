@@ -230,7 +230,7 @@ static void test1_func(abts_case *tc, void *data)
     OGS_HEX(_emm_information, strlen(_emm_information), tmp);
     ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 25) == 0);
     ABTS_TRUE(tc, memcmp(recvbuf->data+29, tmp+29, 23) == 0);
-    ABTS_TRUE(tc, memcmp(recvbuf->data+56, tmp+56, 4) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data+57, tmp+57, 3) == 0);
     ogs_pkbuf_free(recvbuf);
 
 #if 0 /* Sometimes, it's not working. */
