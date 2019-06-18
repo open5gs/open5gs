@@ -66,23 +66,6 @@ int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
     return OGS_OK;
 }
 
-int s1ap_recv(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf)
-{
-    int size;
-
-    ogs_assert(sock);
-    ogs_assert(pkbuf);
-
-    size = ogs_sctp_recvdata(sock, pkbuf->data, MAX_SDU_LEN, NULL, NULL);
-    if (size <= 0) {
-        ogs_error("s1ap_recv() failed");
-        return OGS_ERROR;
-    }
-
-    ogs_pkbuf_trim(pkbuf, size);
-    return OGS_OK;;
-}
-
 int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
     char buf[OGS_ADDRSTRLEN];

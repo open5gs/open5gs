@@ -37,7 +37,6 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data);
 
 int s1ap_send(ogs_sock_t *sock,
         ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *addr, uint16_t stream_no);
-int s1ap_recv(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf);
 
 int s1ap_send_to_enb(
         mme_enb_t *enb, ogs_pkbuf_t *pkb, uint16_t stream_no);

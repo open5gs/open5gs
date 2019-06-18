@@ -60,12 +60,24 @@ ogs_socknode_t *testenb_s1ap_client(const char *ipstr)
 
 ogs_pkbuf_t *testenb_s1ap_read(ogs_socknode_t *node)
 {
+    int size;
     ogs_pkbuf_t *recvbuf = NULL;
+
+    ogs_assert(node);
+    ogs_assert(node->sock);
+
     recvbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put(recvbuf, MAX_SDU_LEN);
-    ogs_assert(OGS_OK == s1ap_recv(node->sock, recvbuf));
 
-    return recvbuf;
+    size = ogs_sctp_recvdata(node->sock, 
+            recvbuf->data, MAX_SDU_LEN, NULL, NULL);
+    if (size <= 0) {
+        ogs_error("s1ap_recv() failed");
+        return NULL;
+    }
+
+    ogs_pkbuf_trim(recvbuf, size);
+    return recvbuf;;
 }
 
 int testenb_s1ap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
