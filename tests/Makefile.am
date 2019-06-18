@@ -31,8 +31,8 @@ testcomplex_LDADD = $(top_srcdir)/src/libepc.la
 
 testvolte_SOURCES = \
 	common/test-packet.h common/test-packet.c \
-	volte/abts-main.c \
-	volte/testapp.h volte/testapp.c \
+	common/test-app.h \
+	volte/abts-main.c volte/test-app.c \
 	volte/pcscf-fd-path.h volte/pcscf-fd-path.c \
 	volte/volte-test.c \
 	$(NULL)
@@ -40,7 +40,8 @@ testvolte_LDADD = $(top_srcdir)/src/libepc.la
 
 testcsfb_SOURCES = \
 	common/test-packet.h common/test-packet.c \
-	csfb/abts-main.c \
+	common/test-app.h \
+	csfb/abts-main.c csfb/test-app.c \
 	csfb/csfb-test.c \
 	$(NULL)
 testcsfb_LDADD = $(top_srcdir)/src/libepc.la

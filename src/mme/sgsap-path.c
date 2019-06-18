@@ -70,23 +70,6 @@ int sgsap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
     return OGS_OK;
 }
 
-int sgsap_recv(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf)
-{
-    int size;
-
-    ogs_assert(sock);
-    ogs_assert(pkbuf);
-
-    size = ogs_sctp_recvdata(sock, pkbuf->data, MAX_SDU_LEN, NULL, NULL);
-    if (size <= 0) {
-        ogs_error("sgsap_recv() failed");
-        return OGS_ERROR;
-    }
-
-    ogs_pkbuf_trim(pkbuf, size);
-    return OGS_OK;;
-}
-
 int sgsap_send_to_vlr_with_sid(
         mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 {
@@ -112,7 +95,7 @@ int sgsap_send_to_vlr_with_sid(
         vlr->lai.plmn_id.mnc1, vlr->lai.plmn_id.mnc2, vlr->lai.plmn_id.mnc3,
         vlr->lai.lac);
 
-    rv = sgsap_send(sock, pkbuf, NULL, stream_no);
+    rv = sgsap_send(sock, pkbuf, node->addr, stream_no);
     if (rv != OGS_OK) {
         ogs_error("sgsap_send() failed");
         ogs_pkbuf_free(pkbuf);

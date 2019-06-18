@@ -27,6 +27,7 @@
 
 #include "app-init.h"
 #include "test-packet.h"
+#include "test-app.h"
 
 abts_suite *test_csfb(abts_suite *suite);
 
@@ -47,12 +48,16 @@ static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg,
     }
 }
 
+static ogs_socknode_t *sgsap = NULL;
+
 void test_terminate(void)
 {
     ogs_msleep(300);
 
+    testvlr_sgsap_close(sgsap);
+
     testpacket_final();
-    epc_terminate();
+    test_app_terminate();
 
     base_finalize();
     ogs_core_finalize();
@@ -68,16 +73,20 @@ int test_initialize(app_param_t *param, int argc, const char *const argv[])
     ogs_core_initialize();
     base_initialize();
 
-    rv = epc_initialize(param);
+    rv = test_app_initialize(param);
     if (rv != OGS_OK) {
         ogs_error("app_initialize() failed");
         return OGS_ERROR;
     }
+
     rv = testpacket_init();
     if (rv != OGS_OK) {
         ogs_error("testpacket() failed");
         return OGS_ERROR;
     }
+
+    sgsap = testvlr_sgsap_server("127.0.0.2");
+    ogs_assert(sgsap);
 
     while(1) {
         if (connected_count == 1) break;

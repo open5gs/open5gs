@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef TEST_PACKET_H
 #define TEST_PACKET_H
 
@@ -10,10 +29,19 @@ extern "C" {
 int testpacket_init();
 int testpacket_final();
 
-ogs_socknode_t *testenb_s1ap_client(const char *ipstr);
-ogs_pkbuf_t *testenb_s1ap_read(ogs_socknode_t *node);
+ogs_socknode_t *testsctp_server(const char *ipstr);
+ogs_socknode_t *testsctp_client(const char *ipstr);
+ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node);
+
+#define testenb_s1ap_client testsctp_client
+#define testenb_s1ap_read testsctp_read
 int testenb_s1ap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
-void testenb_s1ap_close(ogs_socknode_t *node);
+#define testenb_s1ap_close ogs_socknode_free
+
+#define testvlr_sgsap_server testsctp_server
+#define testvlr_sgsap_read testsctp_read
+int testvlr_sgsap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
+#define testvlr_sgsap_close ogs_socknode_free
 
 ogs_socknode_t *testenb_gtpu_server(const char *ipstr);
 ogs_pkbuf_t *testenb_gtpu_read(ogs_socknode_t *node);

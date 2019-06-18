@@ -15,13 +15,15 @@ static ogs_proc_mutex_t *sgw_sem2 = NULL;
 static ogs_proc_mutex_t *hss_sem1 = NULL;
 static ogs_proc_mutex_t *hss_sem2 = NULL;
 
-int app_initialize(app_param_t *param)
+int test_epc_initialize(app_param_t *param);
+
+int test_app_initialize(app_param_t *param)
 {
     param->name = "epc";
-    return epc_initialize(param);
+    return test_epc_initialize(param);
 }
 
-int epc_initialize(app_param_t *param)
+int test_epc_initialize(app_param_t *param)
 {
     pid_t pid;
     int rv;
@@ -224,7 +226,7 @@ int epc_initialize(app_param_t *param)
     return OGS_OK;;
 }
 
-void epc_terminate(void)
+void test_app_terminate(void)
 {
     app_will_terminate();
 

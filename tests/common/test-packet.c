@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "base/base.h"
 
@@ -16,9 +34,6 @@
 #if HAVE_NETINET_ICMP6_H
 #include <netinet/icmp6.h>
 #endif
-#include "mme/s1ap-build.h"
-#include "mme/s1ap-conv.h"
-#include "mme/s1ap-path.h"
 #include "mme/snow-3g.h"
 
 #include "gtp/gtp-message.h"
@@ -28,6 +43,12 @@
 
 #include "mme/ogs-sctp.h"
 #include "app/context.h"
+
+#include "mme/s1ap-build.h"
+#include "mme/s1ap-conv.h"
+#include "mme/s1ap-path.h"
+
+#include "mme/sgsap-path.h"
 
 int testpacket_init()
 {
@@ -39,7 +60,26 @@ int testpacket_final()
     return OGS_OK;
 }
 
-ogs_socknode_t *testenb_s1ap_client(const char *ipstr)
+ogs_socknode_t *testsctp_server(const char *ipstr)
+{
+    int rv;
+    ogs_sockaddr_t *addr = NULL;
+    ogs_socknode_t *node = NULL;
+
+    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, ipstr, SGSAP_SCTP_PORT, 0);
+    ogs_assert(rv == OGS_OK);
+
+    node = ogs_socknode_new(addr);
+    ogs_assert(node);
+    ogs_socknode_nodelay(node, true);
+
+    ogs_sctp_server(SOCK_SEQPACKET, node);
+    ogs_assert(node->sock);
+
+    return node;
+}
+
+ogs_socknode_t *testsctp_client(const char *ipstr)
 {
     int rv;
     ogs_sockaddr_t *addr = NULL;
@@ -58,7 +98,7 @@ ogs_socknode_t *testenb_s1ap_client(const char *ipstr)
     return node;
 }
 
-ogs_pkbuf_t *testenb_s1ap_read(ogs_socknode_t *node)
+ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node)
 {
     int size;
     ogs_pkbuf_t *recvbuf = NULL;
@@ -72,7 +112,7 @@ ogs_pkbuf_t *testenb_s1ap_read(ogs_socknode_t *node)
     size = ogs_sctp_recvdata(node->sock, 
             recvbuf->data, MAX_SDU_LEN, NULL, NULL);
     if (size <= 0) {
-        ogs_error("s1ap_recv() failed");
+        ogs_error("sgsap_recv() failed");
         return NULL;
     }
 
@@ -85,9 +125,9 @@ int testenb_s1ap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
     return s1ap_send(node->sock, sendbuf, NULL, 0);
 }
 
-void testenb_s1ap_close(ogs_socknode_t *node)
+int testvlr_sgsap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
 {
-    ogs_socknode_free(node);
+    return sgsap_send(node->sock, sendbuf, NULL, 0);
 }
 
 ogs_socknode_t *testenb_gtpu_server(const char *ipstr)
@@ -118,23 +158,14 @@ ogs_pkbuf_t *testenb_gtpu_read(ogs_socknode_t *node)
     ogs_assert(node);
     ogs_assert(node->sock);
 
-    while(1)
-    {
+    while (1) {
         rc = ogs_recv(node->sock->fd, recvbuf->data, recvbuf->len, 0);
-        if (rc == -2) 
-        {
-            continue;
-        }
-        else if (rc <= 0)
-        {
-            if (errno == EAGAIN)
-            {
+        if (rc <= 0) {
+            if (errno == EAGAIN) {
                 continue;
             }
             break;
-        }
-        else
-        {
+        } else {
             break;
         }
     }
@@ -168,8 +199,7 @@ int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
 
     memset(&sgw, 0, sizeof(ogs_sockaddr_t));
     sgw.ogs_sin_port = htons(GTPV1_U_UDP_PORT);
-    if (bearer->sgw_s1u_ip.ipv6)
-    {
+    if (bearer->sgw_s1u_ip.ipv6) {
         sgw.ogs_sa_family = AF_INET6;
         if (bearer->sgw_s1u_ip.ipv4)
             memcpy(sgw.sin6.sin6_addr.s6_addr,
@@ -179,9 +209,7 @@ int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
                     bearer->sgw_s1u_ip.addr6, IPV6_LEN);
         rv = ogs_socknode_fill_scope_id_in_local(&sgw);
         ogs_assert(rv == OGS_OK);
-    }
-    else
-    {
+    } else {
         sgw.ogs_sa_family = AF_INET;
         sgw.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
     }
@@ -198,7 +226,6 @@ void testenb_gtpu_close(ogs_socknode_t *node)
 {
     ogs_socknode_free(node);
 }
-
 
 int tests1ap_build_setup_req(
         ogs_pkbuf_t **pkbuf, S1AP_ENB_ID_PR present, uint32_t enb_id,
@@ -281,8 +308,7 @@ int tests1ap_build_setup_req(
     rv = s1ap_encode_pdu(pkbuf, &pdu);
     s1ap_free_pdu(&pdu);
 
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("s1ap_encode_pdu() failed");
         return OGS_ERROR;
     }
@@ -1027,8 +1053,7 @@ int tests1ap_build_initial_context_setup_response(
     rv = s1ap_encode_pdu(pkbuf, &pdu);
     s1ap_free_pdu(&pdu);
 
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("s1ap_encode_pdu() failed");
         return OGS_ERROR;
     }
@@ -1517,12 +1542,10 @@ int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
     ogs_pkbuf_put_data(*pkbuf, 
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
-    if (i == 0)
-    {
+    if (i == 0) {
         enb_ue_s1ap_id = htonl(enb_ue_s1ap_id << 8);
         memcpy((*pkbuf)->data + 11, &enb_ue_s1ap_id, 3);
-        if (active_flag)
-        {
+        if (active_flag) {
             char *active_buf = (*pkbuf)->data + 26;
             *active_buf |= 0x08;
         }
@@ -1531,9 +1554,7 @@ int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
         memcpy((*pkbuf)->data + 23, &seq, 1);
         m_tmsi = htonl(m_tmsi);
         memcpy((*pkbuf)->data + 109, &m_tmsi, 4);
-    }
-    else if (i == 1)
-    {
+    } else if (i == 1) {
         ogs_assert(knas_int);
 
         mme_ue_s1ap_id = htonl(mme_ue_s1ap_id << 8);
@@ -1549,8 +1570,7 @@ int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
         snow_3g_f9(knas_int, seq, (0 << 27), 0,
                 (*pkbuf)->data + 29, (52 << 3),
                 (*pkbuf)->data + 25);
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
     return OGS_OK;
@@ -1740,8 +1760,7 @@ int tests1ap_build_e_rab_setup_response(
     rv = s1ap_encode_pdu(pkbuf, &pdu);
     s1ap_free_pdu(&pdu);
 
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("s1ap_encode_pdu() failed");
         return OGS_ERROR;
     }
@@ -2116,8 +2135,7 @@ int tests1ap_build_path_switch_request(
     mme_ue = enb_ue->mme_ue;
     ogs_assert(mme_ue);
 
-    for (i = 0; i < num_of_bearer; i++)
-    {
+    for (i = 0; i < num_of_bearer; i++) {
         S1AP_E_RABToBeSwitchedDLItemIEs_t *item = NULL;
         S1AP_E_RABToBeSwitchedDLItem_t *e_rab = NULL;
 
@@ -2138,15 +2156,12 @@ int tests1ap_build_path_switch_request(
 
         e_rab->e_RAB_ID = ebi+i;
 
-        if (target == 0)
-        {
+        if (target == 0) {
             rv = ogs_getaddrinfo(&addr, AF_INET, ipstr1, GTPV1_U_UDP_PORT, 0);
             rv = gtp_sockaddr_to_f_teid(
                     addr, NULL, &f_teid, &len);
             ogs_freeaddrinfo(addr);
-        }
-        else
-        {
+        } else {
             rv = ogs_getaddrinfo(&addr, AF_INET, ipstr2, GTPV1_U_UDP_PORT, 0);
             rv = gtp_sockaddr_to_f_teid(
                     addr, NULL, &f_teid, &len);
@@ -2197,8 +2212,7 @@ int tests1ap_build_path_switch_request(
     rv = s1ap_encode_pdu(pkbuf, &pdu);
     s1ap_free_pdu(&pdu);
 
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("s1ap_encode_pdu() failed");
         return OGS_ERROR;
     }
@@ -2383,8 +2397,7 @@ int tests1ap_build_handover_request_ack(
     *MME_UE_S1AP_ID = mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
 
-    for (i = 0; i < num_of_bearer; i++)
-    {
+    for (i = 0; i < num_of_bearer; i++) {
         S1AP_E_RABAdmittedItemIEs_t *item = NULL;
         S1AP_E_RABAdmittedItem_t *e_rab = NULL;
 
@@ -2405,15 +2418,12 @@ int tests1ap_build_handover_request_ack(
 
         e_rab->e_RAB_ID = ebi+i;
 
-        if (target == 0)
-        {
+        if (target == 0) {
             rv = ogs_getaddrinfo(&addr, AF_INET, ipstr1, GTPV1_U_UDP_PORT, 0);
             rv = gtp_sockaddr_to_f_teid(
                     addr, NULL, &f_teid, &len);
             ogs_freeaddrinfo(addr);
-        }
-        else
-        {
+        } else {
             rv = ogs_getaddrinfo(&addr, AF_INET, ipstr2, GTPV1_U_UDP_PORT, 0);
             rv = gtp_sockaddr_to_f_teid(
                     addr, NULL, &f_teid, &len);
@@ -2453,8 +2463,7 @@ int tests1ap_build_handover_request_ack(
     rv = s1ap_encode_pdu(pkbuf, &pdu);
     s1ap_free_pdu(&pdu);
 
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         ogs_error("s1ap_encode_pdu() failed");
         return OGS_ERROR;
     }
@@ -2758,8 +2767,7 @@ int testgtpu_build_ping(
     gtp_h->type = GTPU_MSGTYPE_GPDU;
     gtp_h->teid = htonl(1);
 
-    if (dst_ipsub.family == AF_INET)
-    {
+    if (dst_ipsub.family == AF_INET) {
         struct ip *ip_h = NULL;
         struct icmp *icmp_h = NULL;
 
@@ -2784,9 +2792,7 @@ int testgtpu_build_ping(
         icmp_h->icmp_seq = rand();
         icmp_h->icmp_id = rand();
         icmp_h->icmp_cksum = in_cksum((uint16_t *)icmp_h, ICMP_MINLEN);
-    }
-    else if (dst_ipsub.family == AF_INET6)
-    {
+    } else if (dst_ipsub.family == AF_INET6) {
         struct ip6_hdr *ip6_h = NULL;
         struct icmp6_hdr *icmp6_h = NULL;
         uint16_t plen = 0;
@@ -2821,8 +2827,7 @@ int testgtpu_build_ping(
         ip6_h->ip6_hlim = 0xff;
         memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
         memcpy(ip6_h->ip6_dst.s6_addr, dst_ipsub.sub, sizeof dst_ipsub.sub);
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
     *sendbuf = pkbuf;
