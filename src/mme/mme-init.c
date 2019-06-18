@@ -8,7 +8,6 @@
 #include "mme-event.h"
 
 #include "mme-fd-path.h"
-#include "s1ap-path.h"
 
 static ogs_thread_t *thread;
 static void mme_main(void *data);
@@ -21,8 +20,6 @@ int mme_initialize()
 
     mme_context_init();
     mme_event_init();
-
-    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
 
     rv = gtp_xact_init(mme_self()->timer_mgr);
     if (rv != OGS_OK) return rv;
@@ -58,8 +55,6 @@ void mme_terminate(void)
     mme_fd_final();
 
     mme_context_final();
-
-    ogs_sctp_final();
 
     gtp_xact_final();
 

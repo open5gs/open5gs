@@ -1,3 +1,5 @@
+#include "mme/ogs-sctp.h"
+
 #include "app/context.h"
 #include "app/application.h"
 
@@ -214,6 +216,7 @@ int epc_initialize(app_param_t *param)
     }
 
     ogs_info("MME try to initialize");
+    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
     rv = mme_initialize();
     ogs_assert(rv == OGS_OK);
     ogs_info("MME initialize...done");
@@ -230,6 +233,7 @@ void epc_terminate(void)
 
     ogs_info("MME try to terminate");
     mme_terminate();
+    ogs_sctp_final();
     ogs_info("MME terminate...done");
 
     if (context_self()->config.parameter.no_hss == 0)

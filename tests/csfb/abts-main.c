@@ -48,13 +48,9 @@ static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg,
     }
 }
 
-static ogs_socknode_t *sgsap = NULL;
-
 void test_terminate(void)
 {
     ogs_msleep(300);
-
-    testvlr_sgsap_close(sgsap);
 
     testpacket_final();
     test_app_terminate();
@@ -84,9 +80,6 @@ int test_initialize(app_param_t *param, int argc, const char *const argv[])
         ogs_error("testpacket() failed");
         return OGS_ERROR;
     }
-
-    sgsap = testvlr_sgsap_server("127.0.0.2");
-    ogs_assert(sgsap);
 
     while(1) {
         if (connected_count == 1) break;

@@ -69,6 +69,7 @@ libepc_la_LIBADD = \
 AM_CPPFLAGS = \
 	@OGSCORE_CFLAGS@ \
 	-I$(top_srcdir)/src \
+	-I$(top_srcdir)/lib \
 	$(NULL)
 
 AM_CFLAGS = \

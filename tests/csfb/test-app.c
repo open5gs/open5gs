@@ -1,7 +1,10 @@
+#include "mme/ogs-sctp.h"
+
 #include "app/context.h"
 #include "app/application.h"
 
 #include "app-init.h"
+#include "test-packet.h"
 
 static ogs_proc_mutex_t *pcrf_sem1 = NULL;
 static ogs_proc_mutex_t *pcrf_sem2 = NULL;
@@ -14,6 +17,8 @@ static ogs_proc_mutex_t *sgw_sem2 = NULL;
 
 static ogs_proc_mutex_t *hss_sem1 = NULL;
 static ogs_proc_mutex_t *hss_sem2 = NULL;
+
+static ogs_socknode_t *sgsap = NULL;
 
 int test_epc_initialize(app_param_t *param);
 
@@ -216,6 +221,11 @@ int test_epc_initialize(app_param_t *param)
     }
 
     ogs_info("MME try to initialize");
+    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
+
+    sgsap = testvlr_sgsap_server("127.0.0.2");
+    ogs_assert(sgsap);
+
     rv = mme_initialize();
     ogs_assert(rv == OGS_OK);
     ogs_info("MME initialize...done");
@@ -232,6 +242,10 @@ void test_app_terminate(void)
 
     ogs_info("MME try to terminate");
     mme_terminate();
+
+    testvlr_sgsap_close(sgsap);
+
+    ogs_sctp_final();
     ogs_info("MME terminate...done");
 
     if (context_self()->config.parameter.no_hss == 0)

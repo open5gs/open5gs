@@ -1,3 +1,5 @@
+#include "mme/ogs-sctp.h"
+
 #include "app/context.h"
 #include "app/application.h"
 
@@ -16,6 +18,7 @@ int app_initialize(app_param_t *param)
     rv = app_will_initialize(param);
     if (rv != OGS_OK) return rv;
 
+    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
     rv = mme_initialize();
     if (rv != OGS_OK)
     {
@@ -36,6 +39,7 @@ void app_terminate(void)
 
     ogs_info("MME try to terminate");
     mme_terminate();
+    ogs_sctp_final();
     ogs_info("MME terminate...done");
 
     app_did_terminate();
