@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "gtp/gtp-types.h"
 #include "gtp/gtp-conv.h"
 #include "gtp/gtp-xact.h"
@@ -31,28 +50,23 @@ void mme_s11_handle_create_session_response(
 
     ogs_debug("[MME] Create Session Response");
 
-    if (rsp->sender_f_teid_for_control_plane.presence == 0)
-    {
+    if (rsp->sender_f_teid_for_control_plane.presence == 0) {
         ogs_error("No S11 TEID");
         return;
     }
-    if (rsp->pdn_address_allocation.presence == 0)
-    {
+    if (rsp->pdn_address_allocation.presence == 0) {
         ogs_error("No PDN Address Allocation");
         return;
     }
-    if (rsp->bearer_contexts_created.s1_u_enodeb_f_teid.presence == 0)
-    {
+    if (rsp->bearer_contexts_created.s1_u_enodeb_f_teid.presence == 0) {
         ogs_error("No S1U TEID");
         return;
     }
-    if (rsp->bearer_contexts_created.presence == 0)
-    {
+    if (rsp->bearer_contexts_created.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (rsp->bearer_contexts_created.  eps_bearer_id.presence == 0)
-    {
+    if (rsp->bearer_contexts_created.  eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
@@ -75,8 +89,7 @@ void mme_s11_handle_create_session_response(
             rsp->pdn_address_allocation.len);
 
     /* PCO */
-    if (rsp->protocol_configuration_options.presence)
-    {
+    if (rsp->protocol_configuration_options.presence) {
         TLV_STORE_DATA(&sess->pgw_pco, &rsp->protocol_configuration_options);
     }
 
@@ -95,17 +108,22 @@ void mme_s11_handle_create_session_response(
     rv = gtp_xact_commit(xact);
     ogs_assert(rv == OGS_OK);
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup))
-    {
-        rv = nas_send_attach_accept(mme_ue);
-        ogs_assert(rv == OGS_OK);
-    }
-    else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
-    {
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
+        mme_vlr_t *vlr = mme_vlr_find_by_tai(&mme_ue->tai);
+        mme_ue->vlr = vlr;
+#if 0
+        if (mme_ue->vlr) {
+        } else {
+#endif
+            rv = nas_send_attach_accept(mme_ue);
+            ogs_assert(rv == OGS_OK);
+#if 0
+        }
+#endif
+    } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
         rv = nas_send_activate_default_bearer_context_request(bearer);
         ogs_assert(rv == OGS_OK);
-    }
-    else
+    } else
         ogs_assert_if_reached();
 }
 
@@ -159,8 +177,7 @@ void mme_s11_handle_delete_session_response(
     ogs_assert(rsp);
 
     ogs_debug("[MME] Delete Session Response");
-    if (rsp->cause.presence == 0)
-    {
+    if (rsp->cause.presence == 0) {
         ogs_error("No Cause");
         goto cleanup;
     }
@@ -170,28 +187,20 @@ void mme_s11_handle_delete_session_response(
     rv = gtp_xact_commit(xact);
     ogs_assert(rv == OGS_OK);
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication))
-    {
-        if (mme_sess_count(mme_ue) == 1) /* Last Session */
-        {
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
+        if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             mme_s6a_send_air(mme_ue, NULL);
         }
-    }
-    else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered))
-    {
-        if (mme_sess_count(mme_ue) == 1) /* Last Session */
-        {
+    } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_de_registered)) {
+        if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             rv = nas_send_detach_accept(mme_ue);
             ogs_assert(rv == OGS_OK);
         }
-    }
-    else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
-    {
+    } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
         ogs_assert(bearer);
 
-        if (OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
-        {
+        if (OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect)) {
             rv = nas_send_deactivate_bearer_context_request(bearer);
             ogs_assert(rv == OGS_OK);
             
@@ -202,11 +211,8 @@ void mme_s11_handle_delete_session_response(
              * accept is received */
             CLEAR_SGW_S1U_PATH(sess);
             return;
-        }
-        else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active))
-        {
-            if (mme_sess_count(mme_ue) == 1) /* Last Session */
-            {
+        } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
+            if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
                 enb_ue_t *enb_ue = NULL;
 
                 enb_ue = mme_ue->enb_ue;
@@ -218,15 +224,11 @@ void mme_s11_handle_delete_session_response(
                 } else
                     ogs_warn("ENB-S1 Context has already been removed");
             }
-        }
-        else
+        } else
             ogs_assert_if_reached();
-    }
-    else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup) ||
-             OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception))
-    {
-        if (mme_sess_count(mme_ue) == 1) /* Last Session */
-        {
+    } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup) ||
+             OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {
+        if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
             enb_ue_t *enb_ue = NULL;
 
             enb_ue = mme_ue->enb_ue;
@@ -238,8 +240,7 @@ void mme_s11_handle_delete_session_response(
             } else
                 ogs_warn("ENB-S1 Context has already been removed");
         }
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
 cleanup:
@@ -265,33 +266,27 @@ void mme_s11_handle_create_bearer_request(
 
     ogs_debug("[MME] Create Bearer Response");
 
-    if (req->linked_eps_bearer_id.presence == 0)
-    {
+    if (req->linked_eps_bearer_id.presence == 0) {
         ogs_error("No Linked EBI");
         return;
     }
-    if (req->bearer_contexts.presence == 0)
-    {
+    if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
-    if (req->bearer_contexts.s1_u_enodeb_f_teid.presence == 0)
-    {
+    if (req->bearer_contexts.s1_u_enodeb_f_teid.presence == 0) {
         ogs_error("No GTP TEID");
         return;
     }
-    if (req->bearer_contexts.bearer_level_qos.presence == 0)
-    {
+    if (req->bearer_contexts.bearer_level_qos.presence == 0) {
         ogs_error("No QoS");
         return;
     }
-    if (req->bearer_contexts.tft.presence == 0)
-    {
+    if (req->bearer_contexts.tft.presence == 0) {
         ogs_error("No TFT");
         return;
     }
@@ -340,8 +335,7 @@ void mme_s11_handle_create_bearer_request(
         OGS_FSM_CHECK(&default_bearer->sm, esm_state_active) &&
         /* Check if Initial Context Setup Response or 
          *          E-RAB Setup Response is received */
-        MME_HAVE_ENB_S1U_PATH(default_bearer))
-    {
+        MME_HAVE_ENB_S1U_PATH(default_bearer)) {
         rv = nas_send_activate_dedicated_bearer_context_request(bearer);
         ogs_assert(rv == OGS_OK);
     }
@@ -359,13 +353,11 @@ void mme_s11_handle_update_bearer_request(
     ogs_assert(req);
 
     ogs_debug("[MME] Update Bearer Request");
-    if (req->bearer_contexts.presence == 0)
-    {
+    if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
@@ -383,10 +375,8 @@ void mme_s11_handle_update_bearer_request(
         OGS_FSM_CHECK(&bearer->sm, esm_state_active) &&
         /* Check if Initial Context Setup Response or 
          *          E-RAB Setup Response is received */
-        MME_HAVE_ENB_S1U_PATH(bearer))
-    {
-        if (req->bearer_contexts.bearer_level_qos.presence == 1)
-        {
+        MME_HAVE_ENB_S1U_PATH(bearer)) {
+        if (req->bearer_contexts.bearer_level_qos.presence == 1) {
             /* Bearer QoS */
             ogs_assert(gtp_parse_bearer_qos(&bearer_qos,
                 &req->bearer_contexts.bearer_level_qos) ==
@@ -403,40 +393,30 @@ void mme_s11_handle_update_bearer_request(
             bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
         }
 
-        if (req->bearer_contexts.tft.presence == 1)
-        {
+        if (req->bearer_contexts.tft.presence == 1) {
             /* Save Bearer TFT */
             TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
         }
 
         if (req->bearer_contexts.bearer_level_qos.presence == 1 ||
-            req->bearer_contexts.tft.presence == 1)
-        {
+            req->bearer_contexts.tft.presence == 1) {
             rv = nas_send_modify_bearer_context_request(
                     bearer, 
                     req->bearer_contexts.bearer_level_qos.presence,
                     req->bearer_contexts.tft.presence);
             ogs_assert(rv == OGS_OK);
-        }
-        else
-        {
+        } else {
             ogs_warn("[IGNORE] Update Bearer Request : "
                     "Both QoS and TFT is NULL");
             rv = mme_gtp_send_update_bearer_response(bearer);
             ogs_assert(rv == OGS_OK);
         }
-    }
-    else
-    {
-        if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active))
-        {
+    } else {
+        if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
             ogs_assert_if_reached();
-        }
-        else if (!MME_HAVE_ENB_S1U_PATH(bearer))
-        {
+        } else if (!MME_HAVE_ENB_S1U_PATH(bearer)) {
             ogs_assert_if_reached();
-        }
-        else
+        } else
             ogs_assert_if_reached();
     }
 
@@ -453,19 +433,15 @@ void mme_s11_handle_delete_bearer_request(
     ogs_assert(req);
 
     ogs_debug("[MME] Delete Bearer Request");
-    if (req->linked_eps_bearer_id.presence == 1)
-    {
-        bearer = mme_bearer_find_by_ue_ebi(mme_ue, req->linked_eps_bearer_id.u8);
+    if (req->linked_eps_bearer_id.presence == 1) {
+        bearer = mme_bearer_find_by_ue_ebi(
+                mme_ue, req->linked_eps_bearer_id.u8);
         ogs_assert(bearer);
-    }
-    else if (req->eps_bearer_ids.presence == 1)
-    {
+    } else if (req->eps_bearer_ids.presence == 1) {
         bearer = mme_bearer_find_by_ue_ebi(
                 mme_ue, req->eps_bearer_ids.u8);
         ogs_assert(bearer);
-    }
-    else
-    {
+    } else {
         ogs_error("No Linked EBI or EPS Bearer ID");
         return;
     }
@@ -479,22 +455,15 @@ void mme_s11_handle_delete_bearer_request(
         OGS_FSM_CHECK(&bearer->sm, esm_state_active) &&
         /* Check if Initial Context Setup Response or 
          *          E-RAB Setup Response is received */
-        MME_HAVE_ENB_S1U_PATH(bearer))
-    {
+        MME_HAVE_ENB_S1U_PATH(bearer)) {
         rv = nas_send_deactivate_bearer_context_request(bearer);
         ogs_assert(rv == OGS_OK);
-    }
-    else
-    {
-        if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active))
-        {
+    } else {
+        if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
             ogs_assert_if_reached();
-        }
-        else if (!MME_HAVE_ENB_S1U_PATH(bearer))
-        {
+        } else if (!MME_HAVE_ENB_S1U_PATH(bearer)) {
             ogs_assert_if_reached();
-        }
-        else
+        } else
             ogs_assert_if_reached();
     }
 
@@ -520,8 +489,7 @@ void mme_s11_handle_release_access_bearers_response(
     rv = gtp_xact_commit(xact);
     ogs_assert(rv == OGS_OK);
 
-    if (rsp->cause.presence == 0)
-    {
+    if (rsp->cause.presence == 0) {
         ogs_error("No Cause");
         return;
     }
@@ -589,8 +557,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     ogs_assert(source_ue);
 
     ogs_debug("[MME] Create Indirect Data Forwarding Tunnel Response");
-    if (rsp->cause.presence == 0)
-    {
+    if (rsp->cause.presence == 0) {
         ogs_error("No Cause");
         return;
     }
@@ -602,10 +569,8 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 
     gtp_bearers_in_create_indirect_tunnel_response(&bearers, rsp);
 
-    for (i = 0; bearers[i]->presence; i++)
-    {
-        if (bearers[i]->eps_bearer_id.presence == 0)
-        {
+    for (i = 0; bearers[i]->presence; i++) {
+        if (bearers[i]->eps_bearer_id.presence == 0) {
             ogs_error("No EBI");
             return;
         }
@@ -614,8 +579,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
                     bearers[i]->eps_bearer_id.u8);
         ogs_assert(bearer);
 
-        if (bearers[i]->s4_u_sgsn_f_teid.presence)
-        {
+        if (bearers[i]->s4_u_sgsn_f_teid.presence) {
             teid = bearers[i]->s4_u_sgsn_f_teid.data;
             ogs_assert(teid);
 
@@ -623,8 +587,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             rv = gtp_f_teid_to_ip(teid, &bearer->sgw_dl_ip);
             ogs_assert(rv == OGS_OK);
         }
-        if (bearers[i]->s2b_u_epdg_f_teid_5.presence)
-        {
+        if (bearers[i]->s2b_u_epdg_f_teid_5.presence) {
             teid = bearers[i]->s2b_u_epdg_f_teid_5.data;
             ogs_assert(teid);
 
@@ -649,8 +612,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     ogs_assert(rsp);
 
     ogs_debug("[MME] Delete Indirect Data Forwarding Tunnel Response");
-    if (rsp->cause.presence == 0)
-    {
+    if (rsp->cause.presence == 0) {
         ogs_error("No Cause");
         return;
     }

@@ -1594,20 +1594,23 @@ mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr)
     return NULL;
 }
 
-mme_vlr_t *mme_vlr_find_by_tai(nas_tai_t *tai)
+mme_vlr_t *mme_vlr_find_by_tai(tai_t *tai)
 {
     mme_vlr_t *vlr = NULL;
     ogs_assert(tai);
 
     ogs_list_for_each(&self.vlr_list, vlr) {
-        if (memcmp(&vlr->tai, tai, sizeof *tai) == 0)
+        nas_tai_t nas_tai;
+        nas_from_plmn_id(&nas_tai.plmn_id, &tai->plmn_id);
+        nas_tai.tac = tai->tac;
+        if (memcmp(&vlr->tai, &nas_tai, sizeof(nas_tai_t)) == 0)
             return vlr;
     }
 
     return NULL;
 }
 
-mme_vlr_t *mme_vlr_find_by_lai(nas_lai_t *lai)
+mme_vlr_t *mme_vlr_find_by_nas_lai(nas_lai_t *lai)
 {
     mme_vlr_t *vlr = NULL;
     ogs_assert(lai);

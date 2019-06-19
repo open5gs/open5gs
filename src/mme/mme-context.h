@@ -564,8 +564,8 @@ ogs_socknode_t *mme_vlr_new_node(mme_vlr_t *vlr);
 void mme_vlr_free_node(mme_vlr_t *vlr);
 
 mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr);
-mme_vlr_t *mme_vlr_find_by_tai(nas_tai_t *tai);
-mme_vlr_t *mme_vlr_find_by_lai(nas_lai_t *lai);
+mme_vlr_t *mme_vlr_find_by_tai(tai_t *tai);
+mme_vlr_t *mme_vlr_find_by_nas_lai(nas_lai_t *lai);
 
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
 int mme_enb_remove(mme_enb_t *enb);
