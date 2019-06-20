@@ -17,32 +17,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SGSAP_PATH_H
-#define SGSAP_PATH_H
+#ifndef SGSAP_CONV_H
+#define SGSAP_CONV_H
 
-#include "mme-context.h"
+#include "base/types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int sgsap_open(void);
-void sgsap_close(void);
-
-ogs_sock_t *sgsap_client(mme_vlr_t *vlr);
-void sgsap_recv_handler(short when, ogs_socket_t fd, void *data);
-
-int sgsap_send(ogs_sock_t *sock,
-        ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *addr, uint16_t stream_no);
-
-int sgsap_send_to_vlr_with_sid(
-        mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no);
-int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf);
-
-int sgsap_send_location_update_request(mme_ue_t *mme_ue);
+char *sgsap_to_mme_name(char *buf, size_t size,
+        uint32_t mme_code, uint16_t mme_gid, plmn_id_t *plmn_id);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SGSAP_PATH_H */
+#endif /* SGSAP_CONV_H */

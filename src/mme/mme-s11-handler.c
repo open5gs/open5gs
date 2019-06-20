@@ -29,6 +29,7 @@
 #include "mme-gtp-path.h"
 #include "nas-path.h"
 #include "mme-fd-path.h"
+#include "sgsap-path.h"
 
 #include "mme-s11-build.h"
 #include "mme-s11-handler.h"
@@ -111,18 +112,13 @@ void mme_s11_handle_create_session_response(
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
         mme_vlr_t *vlr = mme_vlr_find_by_tai(&mme_ue->tai);
         mme_ue->vlr = vlr;
-#if 0
         if (mme_ue->vlr) {
+            sgsap_send_location_update_request(mme_ue);
         } else {
-#endif
-            rv = nas_send_attach_accept(mme_ue);
-            ogs_assert(rv == OGS_OK);
-#if 0
+            nas_send_attach_accept(mme_ue);
         }
-#endif
     } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-        rv = nas_send_activate_default_bearer_context_request(bearer);
-        ogs_assert(rv == OGS_OK);
+        nas_send_activate_default_bearer_context_request(bearer);
     } else
         ogs_assert_if_reached();
 }

@@ -17,32 +17,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef SGSAP_PATH_H
-#define SGSAP_PATH_H
+#ifndef SGSAP_BUILD_H
+#define SGSAP_BUILD_H
 
+#include "asn1c/s1ap-message.h"
 #include "mme-context.h"
+
+#include "sbc-message.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int sgsap_open(void);
-void sgsap_close(void);
+#define SGSAP_PAGING_REQUEST                1
+#define SGSAP_SERVICE_REQUEST               6
+#define SGSAP_LOCATION_UPDATE_REQUEST       9
+#define SGSAP_LOCATION_UPDATE_ACCEPT        10
+#define SGSAP_TMSI_REALLOCATION_COMPLETE    12
+#define SGSAP_MO_CSFB_INDICIATION           24
 
-ogs_sock_t *sgsap_client(mme_vlr_t *vlr);
-void sgsap_recv_handler(short when, ogs_socket_t fd, void *data);
-
-int sgsap_send(ogs_sock_t *sock,
-        ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *addr, uint16_t stream_no);
-
-int sgsap_send_to_vlr_with_sid(
-        mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no);
-int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf);
-
-int sgsap_send_location_update_request(mme_ue_t *mme_ue);
+ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue);
+ogs_pkbuf_t *sgsap_build_tmsi_reallocation_complete(mme_ue_t *mme_ue);
+ogs_pkbuf_t *sgsap_build_service_request(mme_ue_t *mme_ue);
+ogs_pkbuf_t *sgsap_build_mo_csfb_indication(mme_ue_t *mme_ue);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SGSAP_PATH_H */
+#endif /* SGSAP_BUILD_H */

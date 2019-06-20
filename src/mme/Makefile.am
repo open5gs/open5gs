@@ -7,7 +7,7 @@ libmme_la_SOURCES = \
     mme-event.h mme-context.h \
 	ogs-sctp.h \
 	s1ap-build.h s1ap-handler.h s1ap-conv.h s1ap-path.h \
-	sgsap-path.h \
+	sgsap-build.h sgsap-conv.h sgsap-path.h \
 	mme-fd-path.h mme-s6a-handler.h \
 	nas-conv.h nas-security.h nas-path.h \
 	emm-handler.h emm-build.h \
@@ -18,7 +18,7 @@ libmme_la_SOURCES = \
     mme-init.c mme-event.c mme-context.c \
 	ogs-sctp.c \
 	s1ap-sm.c s1ap-build.c s1ap-handler.c s1ap-conv.c s1ap-path.c \
-	sgsap-sm.c sgsap-path.c \
+	sgsap-sm.c sgsap-build.c sgsap-conv.c sgsap-path.c \
 	mme-fd-path.c mme-s6a-handler.c \
 	nas-conv.c nas-security.c nas-path.c \
 	emm-sm.c emm-handler.c emm-build.c \

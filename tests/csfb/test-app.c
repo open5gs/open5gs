@@ -18,7 +18,7 @@ static ogs_proc_mutex_t *sgw_sem2 = NULL;
 static ogs_proc_mutex_t *hss_sem1 = NULL;
 static ogs_proc_mutex_t *hss_sem2 = NULL;
 
-static ogs_socknode_t *sgsap = NULL;
+ogs_socknode_t *sgsap = NULL;
 
 int test_epc_initialize(app_param_t *param);
 

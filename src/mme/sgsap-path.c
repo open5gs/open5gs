@@ -21,6 +21,8 @@
 
 #include "mme-event.h"
 #include "mme-sm.h"
+
+#include "sgsap-build.h"
 #include "sgsap-path.h"
 
 int sgsap_open()
@@ -113,4 +115,18 @@ int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
     ogs_assert(vlr);
 
     return sgsap_send_to_vlr_with_sid(vlr, pkbuf, mme_ue->vlr_ostream_id);
+}
+
+int sgsap_send_location_update_request(mme_ue_t *mme_ue)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_assert(mme_ue);
+
+    pkbuf = sgsap_build_location_update_request(mme_ue);
+
+    rv = sgsap_send_to_vlr(mme_ue, pkbuf);
+    ogs_assert(rv == OGS_OK);
+
+    return OGS_OK;
 }
