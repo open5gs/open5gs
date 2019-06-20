@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-char *sgsap_to_mme_name(char *buf, size_t size,
+char *mme_name_build(char *buf, size_t size,
         uint32_t mme_code, uint16_t mme_gid, plmn_id_t *plmn_id);
 
 #ifdef __cplusplus

@@ -20,21 +20,11 @@
 #ifndef SGSAP_BUILD_H
 #define SGSAP_BUILD_H
 
-#include "asn1c/s1ap-message.h"
 #include "mme-context.h"
-
-#include "sbc-message.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define SGSAP_PAGING_REQUEST                1
-#define SGSAP_SERVICE_REQUEST               6
-#define SGSAP_LOCATION_UPDATE_REQUEST       9
-#define SGSAP_LOCATION_UPDATE_ACCEPT        10
-#define SGSAP_TMSI_REALLOCATION_COMPLETE    12
-#define SGSAP_MO_CSFB_INDICIATION           24
 
 ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_tmsi_reallocation_complete(mme_ue_t *mme_ue);

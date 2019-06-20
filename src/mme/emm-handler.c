@@ -128,6 +128,8 @@ int emm_handle_attach_request(
         {
             char imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
+            memcpy(&mme_ue->nas_mobile_identity_imsi, 
+                &eps_mobile_identity->imsi, sizeof(nas_mobile_identity_imsi_t));
             nas_imsi_to_bcd(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length,
                 imsi_bcd);
@@ -284,6 +286,8 @@ int emm_handle_identity_response(
     {
         char imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
+        memcpy(&mme_ue->nas_mobile_identity_imsi, 
+            &mobile_identity->imsi, sizeof(nas_mobile_identity_imsi_t));
         nas_imsi_to_bcd(
             &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
         mme_ue_set_imsi(mme_ue, imsi_bcd);

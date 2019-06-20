@@ -19,28 +19,9 @@
 
 #include "mme-context.h"
 
+#include "sgsap-types.h"
 #include "sgsap-build.h"
 #include "sgsap-conv.h"
-
-#define SGSAP_IE_IMSI_TYPE                  1
-#define SGSAP_IE_IMSI_LEN                   MAX_IMSI_LEN
-#define SGSAP_IE_VLR_NAME_TYPE              2
-#define SGSAP_IE_VLR_NAME_LEN               256
-#define SGSAP_IE_LAI_TYPE                   4
-#define SGSAP_IE_LAI_LEN                    5
-#define SGSAP_IE_MME_NAME_TYPE              9
-#define SGSAP_IE_MME_NAME_LEN               55
-#define SGSAP_IE_EPS_UPDATE_TYPE            10
-#define SGSAP_IE_EPS_UPDATE_LEN             1
-#define SGSAP_IE_MOBILE_IDENTITY_TYPE       14
-#define SGSAP_IE_MOBILE_IDENTITY_LEN        5
-#define SGSAP_IE_SERVICE_INDICATOR_TYPE     32
-#define SGSAP_IE_SERVICE_INDICATOR_LEN      1
-#define SGSAP_IE_UE_EMM_MODE_TYPE           37
-#define SGSAP_IE_UE_EMM_MODE_LEN            1
-
-#define SGSAP_EPS_UPDATE_IMSI_ATTACH        1
-#define SGSAP_EPS_UPDATE_NORMAL             2
 
 ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue)
 {
@@ -52,16 +33,16 @@ ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue)
     served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
     char eps_update_type;
     uint32_t len;
-    const char *p;
+    nas_lai_t lai;
 
     ogs_assert(mme_ue);
     vlr = mme_ue->vlr;
     ogs_assert(vlr);
 
     root = ogs_tlv_add(NULL, SGSAP_IE_IMSI_TYPE, SGSAP_IE_IMSI_LEN, 0,
-            mme_ue->imsi);
+            (uint8_t *)&mme_ue->nas_mobile_identity_imsi);
 
-    sgsap_to_mme_name(mme_name, SGSAP_IE_MME_NAME_LEN+1,
+    mme_name_build(mme_name, SGSAP_IE_MME_NAME_LEN+1,
             served_gummei->mme_code[0],
             served_gummei->mme_gid[0],
             &served_gummei->plmn_id[0]);;
@@ -70,23 +51,19 @@ ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue)
     eps_update_type = SGSAP_EPS_UPDATE_IMSI_ATTACH;
     ogs_tlv_add(root, SGSAP_IE_EPS_UPDATE_TYPE, SGSAP_IE_EPS_UPDATE_LEN, 0,
             (uint8_t *)&eps_update_type);
+    memcpy(&lai, &vlr->lai, sizeof(nas_lai_t));
+    lai.lac = htons(lai.lac);
     ogs_tlv_add(root, SGSAP_IE_LAI_TYPE, SGSAP_IE_LAI_LEN, 0,
-            (uint8_t *)&vlr->lai);
+            (uint8_t *)&lai);
 
     pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+    ogs_pkbuf_put_u8(pkbuf, SGSAP_LOCATION_UPDATE_REQUEST);
+    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
     len = ogs_tlv_render(root,
             pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1);
-    p = pkbuf->data;
+
+    ogs_tlv_free_all(root);
     ogs_pkbuf_trim(pkbuf, len+1);
-    printf("len = %d\n", len);
-    {
-        int i;
-        for (i = 0; i < len; i++) {
-            const char *p = pkbuf->data;
-            printf("%x\n", p[i]);
-        }
-    }
 
     return pkbuf;
 }

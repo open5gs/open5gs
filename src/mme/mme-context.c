@@ -2137,7 +2137,6 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                 &eps_mobile_identity->imsi, eps_mobile_identity->length,
                 imsi_bcd);
 
-
             mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
             if (mme_ue) {
                 ogs_trace("known UE by IMSI[%s]", imsi_bcd);

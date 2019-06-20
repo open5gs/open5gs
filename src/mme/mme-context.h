@@ -266,6 +266,7 @@ struct mme_ue_s {
     uint8_t         imsi[MAX_IMSI_LEN];
     int             imsi_len;
     char            imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    nas_mobile_identity_imsi_t nas_mobile_identity_imsi;
 
     mme_m_tmsi_t    *m_tmsi;
     nas_guti_t      guti;
