@@ -17,19 +17,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "sgsap-types.h"
 #include "sgsap-conv.h"
 
-char *mme_name_build(char *buf, size_t size,
+int mme_name_build(char *buf, 
         uint32_t mme_code, uint16_t mme_gid, plmn_id_t *plmn_id)
 {
+    int len;
+    char temp[SGSAP_IE_MME_NAME_LEN];
     ogs_assert(buf);
     ogs_assert(plmn_id);
-    if (ogs_snprintf(buf, size,
+
+    len = ogs_snprintf(temp, SGSAP_IE_MME_NAME_LEN,
         "mmec%02d.mmegi%04d.mme.epc.mnc%03d.mcc%03d.3gppnetwork.org",
-        mme_code, mme_gid, plmn_id_mnc(plmn_id), plmn_id_mcc(plmn_id)) < 0) {
-        ogs_error("Cannot make MME name");
-        return NULL;
+        mme_code, mme_gid, plmn_id_mnc(plmn_id), plmn_id_mcc(plmn_id));
+    if (len < 0) {
+        ogs_assert_if_reached();
     }
 
-    return buf;
+    return fqdn_build(buf, temp, len);
 }

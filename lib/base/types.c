@@ -64,19 +64,15 @@ void *plmn_id_build(plmn_id_t *plmn_id,
     return plmn_id;
 }
 
-int apn_build(char *dst, char *src, int length)
+int fqdn_build(char *dst, char *src, int length)
 {
     int i = 0, j = 0;
 
-    for (i = 0, j = 0; i < length; i++, j++)
-    {
-        if (src[i] == '.')
-        {
+    for (i = 0, j = 0; i < length; i++, j++) {
+        if (src[i] == '.') {
             dst[i-j] = j;
             j = -1;
-        }
-        else
-        {
+        } else {
             dst[i+1] = src[i];
         }
     }
@@ -85,13 +81,12 @@ int apn_build(char *dst, char *src, int length)
     return length+1;
 }
 
-int apn_parse(char *dst, char *src, int length)
+int fqdn_parse(char *dst, char *src, int length)
 {
     int i = 0, j = 0;
     uint8_t len = 0;
 
-    do
-    {
+    do {
         len = src[i++];
         memcpy(&dst[j], &src[i], len);
 
@@ -125,8 +120,7 @@ int pco_parse(pco_t *pco, void *data, int data_len)
     pco->configuration_protocol = source->configuration_protocol;
     size++;
 
-    while(size < data_len && i < MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID)
-    {
+    while(size < data_len && i < MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID) {
         pco_id_t *id = &pco->ids[i];
         ogs_assert(size + sizeof(id->id) <= data_len);
         memcpy(&id->id, data + size, sizeof(id->id));
@@ -164,8 +158,7 @@ int pco_build(void *data, int data_len, pco_t *pco)
     size += 1;
 
     ogs_assert(target.num_of_id <= MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID);
-    for (i = 0; i < target.num_of_id; i++)
-    {
+    for (i = 0; i < target.num_of_id; i++) {
         pco_id_t *id = &target.ids[i];
 
         ogs_assert(size + sizeof(id->id) <= data_len);
@@ -184,4 +177,3 @@ int pco_build(void *data, int data_len, pco_t *pco)
 
     return size;
 }
-

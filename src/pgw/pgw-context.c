@@ -894,7 +894,7 @@ pgw_sess_t *pgw_sess_add_by_message(gtp_message_t *message)
         return NULL;
     }
 
-    apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
+    fqdn_parse(apn, req->access_point_name.data, req->access_point_name.len);
 
     ogs_trace("pgw_sess_add_by_message() [APN:%s, PDN:%d, EDI:%d]",
             apn, req->pdn_type.u8,

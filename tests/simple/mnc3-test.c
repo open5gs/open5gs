@@ -129,8 +129,7 @@ static void test1_func(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("310014987654004"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);

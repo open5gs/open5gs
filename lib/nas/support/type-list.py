@@ -79,10 +79,10 @@ type_list["Short MAC"]["encode"] = \
 type_list["Access point name"]["decode"] = \
 "    {\n" \
 "        char apn[MAX_APN_LEN];\n" \
-"        access_point_name->length  = apn_parse(apn, access_point_name->apn, access_point_name->length);\n" \
+"        access_point_name->length  = fqdn_parse(apn, access_point_name->apn, access_point_name->length);\n" \
 "        ogs_cpystrn(access_point_name->apn, apn, ogs_min(access_point_name->length, MAX_APN_LEN) + 1);\n" \
 "    }\n\n"
 
 type_list["Access point name"]["encode"] = \
-"    target.length = apn_build(target.apn, access_point_name->apn, access_point_name->length);\n" \
+"    target.length = fqdn_build(target.apn, access_point_name->apn, access_point_name->length);\n" \
 "    size = target.length + sizeof(target.length);\n\n"

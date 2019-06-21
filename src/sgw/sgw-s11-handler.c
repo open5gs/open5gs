@@ -58,7 +58,8 @@ void sgw_s11_handle_create_session_request(
             return;
         }
 
-        apn_parse(apn, req->access_point_name.data, req->access_point_name.len);
+        fqdn_parse(apn,
+                req->access_point_name.data, req->access_point_name.len);
         sess = sgw_sess_add(sgw_ue, apn,
                 req->bearer_contexts_to_be_created.eps_bearer_id.u8);
         ogs_assert(sess);

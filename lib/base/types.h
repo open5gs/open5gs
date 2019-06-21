@@ -285,8 +285,8 @@ typedef struct pdn_s {
     ip_t            pgw_ip;
 } pdn_t;
 
-int apn_build(char *dst, char *src, int len);
-int apn_parse(char *dst, char *src, int len);
+int fqdn_build(char *dst, char *src, int len);
+int fqdn_parse(char *dst, char *src, int len);
 
 /**************************************************
  * Protocol Configuration Options Structure

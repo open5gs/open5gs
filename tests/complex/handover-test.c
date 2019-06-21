@@ -152,8 +152,7 @@ static void handover_test1(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456801"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);
@@ -458,8 +457,7 @@ static void handover_test2(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);

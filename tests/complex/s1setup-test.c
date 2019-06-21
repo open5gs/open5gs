@@ -16,14 +16,12 @@ static void s1setup_test1(abts_case *tc, void *data)
     s1ap_message_t message;
     int i;
 
-    for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
-    {
+    for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++) {
         node[i] = testenb_s1ap_client("127.0.0.1");
         ABTS_PTR_NOTNULL(tc, node[i]);
     }
 
-    for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
-    {
+    for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++) {
         rv = tests1ap_build_setup_req(
                 &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64, 12345, 1, 1, 2);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -41,8 +39,7 @@ static void s1setup_test1(abts_case *tc, void *data)
         ogs_pkbuf_free(recvbuf);
     }
 
-    for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++)
-    {
+    for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++) {
         testenb_s1ap_close(node[i]);
     }
 
@@ -60,14 +57,12 @@ static void s1setup_test2(abts_case *tc, void *data)
     s1ap_message_t message;
     int i;
 
-    for (i = 0; i < NUM_OF_TEST_ENB; i++)
-    {
+    for (i = 0; i < NUM_OF_TEST_ENB; i++) {
         node[i] = testenb_s1ap_client("127.0.0.1");
         ABTS_PTR_NOTNULL(tc, node[i]);
     }
 
-    for (i = 0; i < NUM_OF_TEST_ENB; i++)
-    {
+    for (i = 0; i < NUM_OF_TEST_ENB; i++) {
         rv = tests1ap_build_setup_req(
             &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x54f64+i, 12345, 1, 1, 2);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -85,8 +80,7 @@ static void s1setup_test2(abts_case *tc, void *data)
         ogs_pkbuf_free(recvbuf);
     }
 
-    for (i = 0; i < NUM_OF_TEST_ENB; i++)
-    {
+    for (i = 0; i < NUM_OF_TEST_ENB; i++) {
         testenb_s1ap_close(node[i]);
     }
 

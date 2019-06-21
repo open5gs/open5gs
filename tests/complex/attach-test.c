@@ -132,8 +132,7 @@ static void attach_test1(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);
@@ -574,8 +573,7 @@ static void attach_test2(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);
@@ -590,8 +588,7 @@ static void attach_test2(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010000000003"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);
@@ -897,8 +894,7 @@ static void attach_test3(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456797"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);
@@ -1194,8 +1190,7 @@ static void attach_test4(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);
@@ -1368,8 +1363,7 @@ static void attach_test5(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456937"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);
@@ -1706,8 +1700,7 @@ static void attach_test6(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);

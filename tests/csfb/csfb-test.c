@@ -38,6 +38,10 @@ static void test1_func(abts_case *tc, void *data)
     char *_esm_information_request =
         "000b401d00000300 0000020001000800 020001001a000a09 27d1237969010234"
         "d9";
+    char *_sgsap_location_update_request =
+        "0901082926240000 1118930937066d6d 65633031096d6d65 676930303032036d"
+        "6d6503657063066d 6e63303730066d63 633930310b336770 706e6574776f726b"
+        "036f72670a010104 0509f1070926";
     char *_initial_context_setup_request = 
         "00090080c8000006 0000000200010008 000200010042000a 183d090000603d09"
         "00000018007a0000 340075450009230f 807f000002000000 01662775a81d1902"
@@ -132,8 +136,7 @@ static void test1_func(abts_case *tc, void *data)
 
     doc = BCON_NEW("imsi", BCON_UTF8("262420000118139"));
     ABTS_PTR_NOTNULL(tc, doc);
-    do
-    {
+    do {
         count = mongoc_collection_count (
             collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
     } while (count == 0);
@@ -204,7 +207,13 @@ static void test1_func(abts_case *tc, void *data)
     /* Receive SGsAP-Location-Update-Request */
     recvbuf = testvlr_sgsap_read(sgsap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
+    ABTS_TRUE(tc, memcmp(recvbuf->data, 
+        OGS_HEX(_sgsap_location_update_request,
+                strlen(_sgsap_location_update_request), tmp),
+        recvbuf->len) == 0);
     ogs_pkbuf_free(recvbuf);
+
+    /* Send SGsAP-Location-Update-Accept */
 
 #if 0
     /* Receive Initial Context Setup Request + 

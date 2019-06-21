@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-06-11 17:27:29.648106 by acetcom
+ * Created on: 2019-06-21 14:10:51.889878 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -2123,7 +2123,7 @@ int nas_decode_access_point_name(nas_access_point_name_t *access_point_name, ogs
 
     {
         char apn[MAX_APN_LEN];
-        access_point_name->length  = apn_parse(apn, access_point_name->apn, access_point_name->length);
+        access_point_name->length  = fqdn_parse(apn, access_point_name->apn, access_point_name->length);
         ogs_cpystrn(access_point_name->apn, apn, ogs_min(access_point_name->length, MAX_APN_LEN) + 1);
     }
 
@@ -2139,7 +2139,7 @@ int nas_encode_access_point_name(ogs_pkbuf_t *pkbuf, nas_access_point_name_t *ac
     nas_access_point_name_t target;
 
     memcpy(&target, access_point_name, sizeof(nas_access_point_name_t));
-    target.length = apn_build(target.apn, access_point_name->apn, access_point_name->length);
+    target.length = fqdn_build(target.apn, access_point_name->apn, access_point_name->length);
     size = target.length + sizeof(target.length);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));

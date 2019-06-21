@@ -126,7 +126,7 @@ int mme_s11_build_create_session_request(
     }
 
     req->access_point_name.presence = 1;
-    req->access_point_name.len = apn_build(apn, pdn->apn, strlen(pdn->apn));
+    req->access_point_name.len = fqdn_build(apn, pdn->apn, strlen(pdn->apn));
     req->access_point_name.data = apn;
 
     req->selection_mode.presence = 1;
