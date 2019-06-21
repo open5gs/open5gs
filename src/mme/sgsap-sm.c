@@ -24,6 +24,7 @@
 #include "mme-sm.h"
 
 #include "sgsap-path.h"
+#include "sgsap-handler.h"
 
 static void sgsap_connect_timeout(void *data);
 
@@ -92,6 +93,8 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
 void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
 {
     mme_vlr_t *vlr = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+    uint8_t type;
     ogs_assert(s);
     ogs_assert(e);
 
@@ -110,6 +113,17 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
         OGS_FSM_TRAN(s, sgsap_state_will_connect);
         break;
     case MME_EVT_SGSAP_MESSAGE:
+        pkbuf = e->pkbuf;
+        ogs_assert(pkbuf);
+        type = *(unsigned char *)(pkbuf->data);
+        switch (type) {
+        case SGSAP_LOCATION_UPDATE_ACCEPT:
+            sgsap_handler_location_update_accept(vlr, pkbuf);
+            break;
+        default:
+            ogs_warn("Not implemented(type:%d)", type);
+            break;
+        }
         break;
     default:
         ogs_error("Unknown event %s", mme_event_get_name(e));

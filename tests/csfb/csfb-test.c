@@ -214,8 +214,11 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send SGsAP-Location-Update-Accept */
+    rv = testsgsap_location_update_accept(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testvlr_sgsap_send(sgsap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-#if 0
     /* Receive Initial Context Setup Request + 
      * Attach Accept + 
      * Activate Default Bearer Context Request */
@@ -321,7 +324,6 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-#endif
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("262420000118139"));

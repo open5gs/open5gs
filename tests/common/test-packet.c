@@ -98,6 +98,8 @@ ogs_socknode_t *testsctp_client(const char *ipstr)
     return node;
 }
 
+static ogs_sockaddr_t sctp_last_addr;
+
 ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node)
 {
     int size;
@@ -110,7 +112,7 @@ ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node)
     ogs_pkbuf_put(recvbuf, MAX_SDU_LEN);
 
     size = ogs_sctp_recvdata(node->sock, 
-            recvbuf->data, MAX_SDU_LEN, NULL, NULL);
+            recvbuf->data, MAX_SDU_LEN, &sctp_last_addr, NULL);
     if (size <= 0) {
         ogs_error("sgsap_recv() failed");
         return NULL;
@@ -127,7 +129,7 @@ int testenb_s1ap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
 
 int testvlr_sgsap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
 {
-    return sgsap_send(node->sock, sendbuf, NULL, 0);
+    return sgsap_send(node->sock, sendbuf, &sctp_last_addr, 0);
 }
 
 ogs_socknode_t *testenb_gtpu_server(const char *ipstr)
@@ -2854,3 +2856,24 @@ int testgtpu_build_slacc_rs(ogs_pkbuf_t **pkbuf, int i)
     return OGS_OK;
 }
 
+int testsgsap_location_update_accept(ogs_pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "0a01082926240000 111893040509f107 09260e05f49ee88e 64",
+        "",
+        "",
+
+    };
+    uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        25,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_data(*pkbuf, 
+        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+
+    return OGS_OK;
+}

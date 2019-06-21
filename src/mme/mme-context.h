@@ -46,6 +46,7 @@ typedef struct gtp_xact_s gtp_xact_t;
 typedef struct fd_config_s fd_config_t;
 
 typedef uint32_t mme_m_tmsi_t;
+typedef uint32_t mme_p_tmsi_t;
 
 typedef enum {
     SGW_SELECT_RR = 0,  /* Default SGW Selection Method */
@@ -269,6 +270,7 @@ struct mme_ue_s {
     nas_mobile_identity_imsi_t nas_mobile_identity_imsi;
 
     mme_m_tmsi_t    *m_tmsi;
+    mme_p_tmsi_t    p_tmsi;
     nas_guti_t      guti;
     int             guti_present;
 

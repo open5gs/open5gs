@@ -535,22 +535,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(vlr);
         ogs_assert(OGS_FSM_STATE(&vlr->sm));
 
-#if 0
-        rc = s1ap_decode_pdu(&s1ap_message, pkbuf);
-        if (rc == OGS_OK) {
-#endif
-            e->vlr = vlr;
-#if 0
-            e->s1ap_message = &s1ap_message;
-#endif
-            ogs_fsm_dispatch(&vlr->sm, e);
-#if 0
-        } else {
-            ogs_error("Cannot process SGSAP message");
-        }
+        e->vlr = vlr;
+        ogs_fsm_dispatch(&vlr->sm, e);
 
-        s1ap_free_pdu(&s1ap_message);
-#endif
         ogs_pkbuf_free(pkbuf);
         break;
 
