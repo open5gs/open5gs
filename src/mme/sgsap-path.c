@@ -87,23 +87,11 @@ int sgsap_send_to_vlr_with_sid(
     sock = node->sock;
     ogs_assert(sock);
 
-    ogs_debug("    IP[%s] TAI[MCC:%d%d%d,MNC:%d%d%d,TAC:%d]",
-                OGS_ADDR(node->addr, buf),
-                vlr->tai.nas_plmn_id.mcc1,
-                vlr->tai.nas_plmn_id.mcc2,
-                vlr->tai.nas_plmn_id.mcc3,
-                vlr->tai.nas_plmn_id.mnc1,
-                vlr->tai.nas_plmn_id.mnc2,
-                vlr->tai.nas_plmn_id.mnc3,
-                vlr->tai.tac);
-    ogs_debug("           LAI[MCC:%d%d%d,MNC:%d%d%d,TAC:%d]",
-                vlr->lai.nas_plmn_id.mcc1,
-                vlr->lai.nas_plmn_id.mcc2,
-                vlr->lai.nas_plmn_id.mcc3,
-                vlr->lai.nas_plmn_id.mnc1,
-                vlr->lai.nas_plmn_id.mnc2,
-                vlr->lai.nas_plmn_id.mnc3,
-                vlr->lai.lac);
+    ogs_debug("    VLR-IP[%s]", OGS_ADDR(node->addr, buf));
+    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+                plmn_id_hexdump(&vlr->tai.nas_plmn_id), vlr->tai.tac);
+    ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
+                plmn_id_hexdump(&vlr->lai.nas_plmn_id), vlr->lai.lac);
 
     rv = sgsap_send(sock, pkbuf, node->addr, stream_no);
     if (rv != OGS_OK) {
@@ -131,7 +119,25 @@ int sgsap_send_location_update_request(mme_ue_t *mme_ue)
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_assert(mme_ue);
 
+    ogs_debug("[SGSAP] LOCATION-UPDATE-REQUEST");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     pkbuf = sgsap_build_location_update_request(mme_ue);
+
+    rv = sgsap_send_to_vlr(mme_ue, pkbuf);
+    ogs_assert(rv == OGS_OK);
+
+    return OGS_OK;
+}
+
+int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_assert(mme_ue);
+
+    ogs_debug("[SGSAP] TMSI-REALLOCATION-COMPLETE");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    pkbuf = sgsap_build_tmsi_reallocation_complete(mme_ue);
 
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
     ogs_assert(rv == OGS_OK);

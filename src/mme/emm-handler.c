@@ -1,5 +1,23 @@
-#include "nas/nas-message.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
+#include "nas/nas-message.h"
 #include "mme-event.h"
 
 #include "mme-kdf.h"
@@ -10,6 +28,7 @@
 #include "nas-path.h"
 #include "mme-fd-path.h"
 #include "mme-gtp-path.h"
+#include "sgsap-path.h"
 
 #include "emm-handler.h"
 
@@ -58,8 +77,7 @@ int emm_handle_attach_request(
      */
     CLEAR_EPS_BEARER_ID(mme_ue);
     CLEAR_PAGING_INFO(mme_ue);
-    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-    {
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
         mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
         mme_ue->nhcc = 1;
@@ -81,8 +99,7 @@ int emm_handle_attach_request(
 
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
-    if (served_tai_index < 0)
-    {
+    if (served_tai_index < 0) {
         /* Send Attach Reject */
         ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
             plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
@@ -95,8 +112,7 @@ int emm_handle_attach_request(
 
     /* Store UE specific information */
     if (attach_request->presencemask &
-        NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
-    {
+        NAS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
         nas_tracking_area_identity_t *last_visited_registered_tai = 
             &attach_request->last_visited_registered_tai;
 
@@ -104,9 +120,7 @@ int emm_handle_attach_request(
             &last_visited_registered_tai->nas_plmn_id);
         ogs_debug("    Visited_PLMN_ID:%06x",
                 plmn_id_hexdump(&mme_ue->visited_plmn_id));
-    }
-    else
-    {
+    } else {
         memcpy(&mme_ue->visited_plmn_id, &mme_ue->tai.plmn_id, PLMN_ID_LEN);
     }
 
@@ -115,54 +129,50 @@ int emm_handle_attach_request(
             sizeof(attach_request->ue_network_capability));
 
     if (attach_request->presencemask &
-            NAS_ATTACH_REQUEST_MS_NETWORK_CAPABILITY_PRESENT)
-    {
+            NAS_ATTACH_REQUEST_MS_NETWORK_CAPABILITY_PRESENT) {
         memcpy(&mme_ue->ms_network_capability, 
                 &attach_request->ms_network_capability,
                 sizeof(attach_request->ms_network_capability));
     }
 
-    switch(eps_mobile_identity->imsi.type)
+    switch (eps_mobile_identity->imsi.type) {
+    case NAS_EPS_MOBILE_IDENTITY_IMSI:
     {
-        case NAS_EPS_MOBILE_IDENTITY_IMSI:
-        {
-            char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+        char imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
-            memcpy(&mme_ue->nas_mobile_identity_imsi, 
-                &eps_mobile_identity->imsi, sizeof(nas_mobile_identity_imsi_t));
-            nas_imsi_to_bcd(
-                &eps_mobile_identity->imsi, eps_mobile_identity->length,
-                imsi_bcd);
-            mme_ue_set_imsi(mme_ue, imsi_bcd);
+        memcpy(&mme_ue->nas_mobile_identity_imsi, 
+            &eps_mobile_identity->imsi, sizeof(nas_mobile_identity_imsi_t));
+        nas_imsi_to_bcd(
+            &eps_mobile_identity->imsi, eps_mobile_identity->length,
+            imsi_bcd);
+        mme_ue_set_imsi(mme_ue, imsi_bcd);
 
-            ogs_debug("    IMSI[%s]", imsi_bcd);
+        ogs_debug("    IMSI[%s]", imsi_bcd);
 
-            break;
-        }
-        case NAS_EPS_MOBILE_IDENTITY_GUTI:
-        {
-            nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti =
-                                &eps_mobile_identity->guti;
-            nas_guti_t nas_guti;
+        break;
+    }
+    case NAS_EPS_MOBILE_IDENTITY_GUTI:
+    {
+        nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti =
+                            &eps_mobile_identity->guti;
+        nas_guti_t nas_guti;
 
-            nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
-            nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
-            nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
-            nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
+        nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
+        nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
+        nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
+        nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
 
-            ogs_debug("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]",
-                    nas_guti.mme_gid,
-                    nas_guti.mme_code,
-                    nas_guti.m_tmsi,
-                    MME_UE_HAVE_IMSI(mme_ue) 
-                        ? mme_ue->imsi_bcd : "Unknown");
-            break;
-        }
-        default:
-        {
-            ogs_warn("Not implemented[%d]", eps_mobile_identity->imsi.type);
-            break;
-        }
+        ogs_debug("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]",
+                nas_guti.mme_gid,
+                nas_guti.mme_code,
+                nas_guti.m_tmsi,
+                MME_UE_HAVE_IMSI(mme_ue) 
+                    ? mme_ue->imsi_bcd : "Unknown");
+        break;
+    }
+    default:
+        ogs_warn("Not implemented[%d]", eps_mobile_identity->imsi.type);
+        break;
     }
 
     NAS_STORE_DATA(&mme_ue->pdn_connectivity_request, esm_message_container);
@@ -224,13 +234,10 @@ int emm_handle_attach_complete(
                 NAS_TIME_TO_BCD(gmt.tm_hour);
     universal_time_and_local_time_zone->min = NAS_TIME_TO_BCD(gmt.tm_min);
     universal_time_and_local_time_zone->sec = NAS_TIME_TO_BCD(gmt.tm_sec);
-    if (local.tm_gmtoff >= 0)
-    {
+    if (local.tm_gmtoff >= 0) {
         universal_time_and_local_time_zone->timezone = 
                     NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
-    }
-    else
-    {
+    } else {
         universal_time_and_local_time_zone->timezone = 
                     NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
         universal_time_and_local_time_zone->timezone |= 0x08;
@@ -242,16 +249,14 @@ int emm_handle_attach_complete(
         NAS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
     network_daylight_saving_time->length = 1;
 
-    if(mme_self()->full_name.length) 
-    {
+    if (mme_self()->full_name.length) {
         emm_information->presencemask |=
             NAS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT;
         memcpy(&emm_information->full_name_for_network,
             &mme_self()->full_name, sizeof(nas_network_name_t));
     }
     
-    if(mme_self()->short_name.length)
-    {
+    if (mme_self()->short_name.length) {
         emm_information->presencemask |=
             NAS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_PRESENT;
         memcpy(&emm_information->short_name_for_network,
@@ -264,6 +269,9 @@ int emm_handle_attach_complete(
 
     ogs_debug("[EMM] EMM information");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    if (mme_ue->vlr)
+        sgsap_send_tmsi_reallocation_complete(mme_ue);
 
     return OGS_OK;
 }
@@ -282,8 +290,7 @@ int emm_handle_identity_response(
 
     mobile_identity = &identity_response->mobile_identity;
 
-    if (mobile_identity->imsi.type == NAS_IDENTITY_TYPE_2_IMSI)
-    {
+    if (mobile_identity->imsi.type == NAS_IDENTITY_TYPE_2_IMSI) {
         char imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
         memcpy(&mme_ue->nas_mobile_identity_imsi, 
@@ -293,9 +300,7 @@ int emm_handle_identity_response(
         mme_ue_set_imsi(mme_ue, imsi_bcd);
 
         ogs_assert(mme_ue->imsi_len);
-    }
-    else
-    {
+    } else {
         ogs_warn("Not supported Identity type[%d]", mobile_identity->imsi.type);
     }
 
@@ -319,26 +324,25 @@ int emm_handle_detach_request(
     ogs_debug("    NAS_EPS TYPE[%d] KSI[%d] DETACH[0x%x]",
             mme_ue->nas_eps.type, mme_ue->nas_eps.ksi, mme_ue->nas_eps.data);
 
-    switch (detach_request->detach_type.detach_type)
-    {
-        /* 0 0 1 : EPS detach */
-        case NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
-            ogs_debug("    EPS Detach");
-            break;
-        /* 0 1 0 : IMSI detach */
-        case NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
-            ogs_debug("    IMSI Detach");
-            break;
-        case 6: /* 1 1 0 : reserved */
-        case 7: /* 1 1 1 : reserved */
-            ogs_warn("Unknown Detach type[%d]",
-                detach_request->detach_type.detach_type);
-            break;
-        /* 0 1 1 : combined EPS/IMSI detach */
-        case NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
-            ogs_debug("    Combined EPS/IMSI Detach");
-        default: /* all other values */
-            break;
+    switch (detach_request->detach_type.detach_type) {
+    /* 0 0 1 : EPS detach */
+    case NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
+        ogs_debug("    EPS Detach");
+        break;
+    /* 0 1 0 : IMSI detach */
+    case NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
+        ogs_debug("    IMSI Detach");
+        break;
+    case 6: /* 1 1 0 : reserved */
+    case 7: /* 1 1 1 : reserved */
+        ogs_warn("Unknown Detach type[%d]",
+            detach_request->detach_type.detach_type);
+        break;
+    /* 0 1 1 : combined EPS/IMSI detach */
+    case NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
+        ogs_debug("    Combined EPS/IMSI Detach");
+    default: /* all other values */
+        break;
     }
     if (detach_request->detach_type.switch_off)
         ogs_debug("    Switch-Off");
@@ -374,8 +378,7 @@ int emm_handle_service_request(
      *   Update KeNB
      */
     CLEAR_PAGING_INFO(mme_ue);
-    if (SECURITY_CONTEXT_IS_VALID(mme_ue))
-    {
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
         mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
         mme_ue->nhcc = 1;
@@ -455,8 +458,7 @@ int emm_handle_tau_request(
 
     /* Check TAI */
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
-    if (served_tai_index < 0)
-    {
+    if (served_tai_index < 0) {
         /* Send TAU reject */
         ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
             plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
@@ -467,8 +469,7 @@ int emm_handle_tau_request(
 
     /* Store UE specific information */
     if (tau_request->presencemask &
-        NAS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT)
-    {
+        NAS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
         nas_tracking_area_identity_t *last_visited_registered_tai = 
             &tau_request->last_visited_registered_tai;
 
@@ -476,23 +477,19 @@ int emm_handle_tau_request(
                 &last_visited_registered_tai->nas_plmn_id);
         ogs_debug("    Visited_PLMN_ID:%06x",
                 plmn_id_hexdump(&mme_ue->visited_plmn_id));
-    }
-    else
-    {
+    } else {
         memcpy(&mme_ue->visited_plmn_id, &mme_ue->tai.plmn_id, PLMN_ID_LEN);
     }
 
     if (tau_request->presencemask &
-            NAS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_PRESENT)
-    {
+            NAS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_PRESENT) {
         memcpy(&mme_ue->ue_network_capability, 
                 &tau_request->ue_network_capability,
                 sizeof(tau_request->ue_network_capability));
     }
 
     if (tau_request->presencemask &
-            NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_CAPABILITY_PRESENT)
-    {
+            NAS_TRACKING_AREA_UPDATE_REQUEST_MS_NETWORK_CAPABILITY_PRESENT) {
         memcpy(&mme_ue->ms_network_capability, 
                 &tau_request->ms_network_capability,
                 sizeof(tau_request->ms_network_capability));
@@ -502,34 +499,31 @@ int emm_handle_tau_request(
      *   1) Consider if MME is changed or not.
      *   2) Consider if SGW is changed or not.
      */
-    switch(eps_mobile_identity->imsi.type)
+    switch (eps_mobile_identity->imsi.type) {
+    case NAS_EPS_MOBILE_IDENTITY_GUTI:
     {
-        case NAS_EPS_MOBILE_IDENTITY_GUTI:
-        {
-            nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti = 
-                        &eps_mobile_identity->guti;
-            nas_guti_t nas_guti;
+        nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti = 
+                    &eps_mobile_identity->guti;
+        nas_guti_t nas_guti;
 
-            nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
-            nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
-            nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
-            nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
+        nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
+        nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
+        nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
+        nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
 
-            ogs_debug("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
-                    nas_guti.mme_gid,
-                    nas_guti.mme_code,
-                    nas_guti.m_tmsi,
-                    MME_UE_HAVE_IMSI(mme_ue) 
-                        ? mme_ue->imsi_bcd : "Unknown");
-            break;
-        }
-        default:
-        {
-            ogs_warn("Not implemented[%d]", 
-                    eps_mobile_identity->imsi.type);
-            
-            return OGS_OK;
-        }
+        ogs_debug("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
+                nas_guti.mme_gid,
+                nas_guti.mme_code,
+                nas_guti.m_tmsi,
+                MME_UE_HAVE_IMSI(mme_ue) 
+                    ? mme_ue->imsi_bcd : "Unknown");
+        break;
+    }
+    default:
+        ogs_warn("Not implemented[%d]", 
+                eps_mobile_identity->imsi.type);
+        
+        return OGS_OK;
     }
 
     return OGS_OK;

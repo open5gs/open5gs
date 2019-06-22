@@ -53,6 +53,8 @@ static void test1_func(abts_case *tc, void *data)
     char *_emm_information = 
         "000b403800000300 0000020001000800 020001001a002524 2751034124030761"
         "430f10004e006500 7800740045005000 4347916051216124 63490100";
+    char *_sgsap_tmsi_reallocation_complete = 
+        "0c01082926240000 111893";
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -251,6 +253,15 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 25) == 0);
     ABTS_TRUE(tc, memcmp(recvbuf->data+29, tmp+29, 23) == 0);
     ABTS_TRUE(tc, memcmp(recvbuf->data+57, tmp+57, 3) == 0);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Receive SGsAP TMSI-REALLOCATION-COMPLETE */
+    recvbuf = testvlr_sgsap_read(sgsap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ABTS_TRUE(tc, memcmp(recvbuf->data, 
+        OGS_HEX(_sgsap_tmsi_reallocation_complete,
+                strlen(_sgsap_tmsi_reallocation_complete), tmp),
+        recvbuf->len) == 0);
     ogs_pkbuf_free(recvbuf);
 
 #if 0 /* Sometimes, it's not working. */

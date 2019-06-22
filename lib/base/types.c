@@ -23,11 +23,11 @@
 #define PLMN_ID_DIGIT2(x) (((x) / 10) % 10)
 #define PLMN_ID_DIGIT3(x) ((x) % 10)
 
-uint32_t plmn_id_hexdump(plmn_id_t *plmn_id)
+uint32_t plmn_id_hexdump(void *plmn_id)
 {
     uint32_t hex;
     ogs_assert(plmn_id);
-    memcpy(&hex, plmn_id, sizeof *plmn_id);
+    memcpy(&hex, plmn_id, sizeof(plmn_id_t));
     hex = ntohl(hex) >> 8;
     return hex;
 }

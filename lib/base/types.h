@@ -81,7 +81,7 @@ ED2(uint8_t mnc3:4;,
     uint8_t mnc2:4;)
 } __attribute__ ((packed)) plmn_id_t;
 
-uint32_t plmn_id_hexdump(plmn_id_t *plmn_id);
+uint32_t plmn_id_hexdump(void *plmn_id);
 
 uint16_t plmn_id_mcc(plmn_id_t *plmn_id);
 uint16_t plmn_id_mnc(plmn_id_t *plmn_id);

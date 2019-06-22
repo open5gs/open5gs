@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "nas/nas-message.h"
 
 #include "nas-security.h"
@@ -64,8 +83,7 @@ int emm_build_attach_accept(
             mme_ue->guti_present ? "[V]" : "[N]",
             mme_ue->guti.mme_gid, mme_ue->guti.mme_code,
             mme_ue->guti.m_tmsi, mme_ue->imsi_bcd);
-    if (mme_ue->guti_present)
-    {
+    if (mme_ue->guti_present) {
         attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
         nas_guti->length = sizeof(nas_eps_mobile_identity_guti_t);
         nas_guti->guti.odd_even = NAS_EPS_MOBILE_IDENTITY_EVEN;
@@ -98,23 +116,8 @@ int emm_build_attach_accept(
             NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
         lai->nas_plmn_id = mme_ue->vlr->lai.nas_plmn_id;
         lai->lac = mme_ue->vlr->lai.lac;
-        if (lai->nas_plmn_id.mnc3 == 0xf)
-            ogs_debug("    LAI[MCC:%d%d%d,MNC:%d%d,LAC:%d]",
-                lai->nas_plmn_id.mcc1,
-                lai->nas_plmn_id.mcc2,
-                lai->nas_plmn_id.mcc3,
-                lai->nas_plmn_id.mnc1,
-                lai->nas_plmn_id.mnc2,
-                lai->lac);
-        else
-            ogs_debug("    LAI[MCC:%d%d%d,MNC:%d%d%d,LAC:%d]",
-                lai->nas_plmn_id.mcc1,
-                lai->nas_plmn_id.mcc2,
-                lai->nas_plmn_id.mcc3,
-                lai->nas_plmn_id.mnc1,
-                lai->nas_plmn_id.mnc2,
-                lai->nas_plmn_id.mnc3,
-                lai->lac);
+        ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
+                plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
     }
 
     if (mme_ue->p_tmsi) {
@@ -147,8 +150,7 @@ int emm_build_attach_reject(
 
     attach_reject->emm_cause = emm_cause;
 
-    if (esmbuf)
-    {
+    if (esmbuf) {
         attach_reject->presencemask |= 
             NAS_ATTACH_REJECT_ESM_MESSAGE_CONTAINER_PRESENT;
         attach_reject->esm_message_container.buffer = esmbuf->data;
@@ -158,8 +160,7 @@ int emm_build_attach_reject(
     rv = nas_plain_encode(emmbuf, &message);
     ogs_assert(rv == OGS_OK && *emmbuf);
 
-    if (esmbuf)
-    {
+    if (esmbuf) {
         ogs_pkbuf_free(esmbuf);
     }
 
@@ -263,20 +264,16 @@ int emm_build_security_mode_command(
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_SECURITY_MODE_COMMAND;
 
-    for (i = 0; i < mme_self()->num_of_integrity_order; i++)
-    {
+    for (i = 0; i < mme_self()->num_of_integrity_order; i++) {
         if (mme_ue->ue_network_capability.eia & 
-                (0x80 >> mme_self()->integrity_order[i]))
-        {
+                (0x80 >> mme_self()->integrity_order[i])) {
             mme_ue->selected_int_algorithm = mme_self()->integrity_order[i];
             break;
         }
     }
-    for (i = 0; i < mme_self()->num_of_ciphering_order; i++)
-    {
+    for (i = 0; i < mme_self()->num_of_ciphering_order; i++) {
         if (mme_ue->ue_network_capability.eea & 
-                (0x80 >> mme_self()->ciphering_order[i]))
-        {
+                (0x80 >> mme_self()->ciphering_order[i])) {
             mme_ue->selected_enc_algorithm = mme_self()->ciphering_order[i];
             break;
         }
@@ -325,8 +322,7 @@ int emm_build_security_mode_command(
             replayed_ue_security_capabilities->gea);
     ogs_debug("    Selected[Integrity:0x%x Encrypt:0x%x]",
             mme_ue->selected_int_algorithm, mme_ue->selected_enc_algorithm);
-    if (mme_ue->selected_int_algorithm == NAS_SECURITY_ALGORITHMS_EIA0)
-    {
+    if (mme_ue->selected_int_algorithm == NAS_SECURITY_ALGORITHMS_EIA0) {
         ogs_fatal("Encrypt[0x%x] can be skipped with EEA0, "
             "but Integrity[0x%x] cannot be bypassed with EIA0",
             mme_ue->selected_enc_algorithm, mme_ue->selected_int_algorithm);
@@ -420,25 +416,22 @@ int emm_build_tau_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
         NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_BEARER_CONTEXT_STATUS_PRESENT;
     tau_accept->eps_bearer_context_status.length = 2;
     sess = mme_sess_first(mme_ue);
-    while(sess)
-    {
+    while (sess) {
         mme_bearer_t *bearer = mme_bearer_first(sess);
-        while(bearer)
-        {
-            switch(bearer->ebi)
-            {
-                case 5: tau_accept->eps_bearer_context_status.ebi5 = 1; break;
-                case 6: tau_accept->eps_bearer_context_status.ebi6 = 1; break;
-                case 7: tau_accept->eps_bearer_context_status.ebi7 = 1; break;
-                case 8: tau_accept->eps_bearer_context_status.ebi8 = 1; break;
-                case 9: tau_accept->eps_bearer_context_status.ebi9 = 1; break;
-                case 10: tau_accept->eps_bearer_context_status.ebi10 = 1; break;
-                case 11: tau_accept->eps_bearer_context_status.ebi11 = 1; break;
-                case 12: tau_accept->eps_bearer_context_status.ebi12 = 1; break;
-                case 13: tau_accept->eps_bearer_context_status.ebi13 = 1; break;
-                case 14: tau_accept->eps_bearer_context_status.ebi14 = 1; break;
-                case 15: tau_accept->eps_bearer_context_status.ebi15 = 1; break;
-                default: break;
+        while (bearer) {
+            switch (bearer->ebi) {
+            case 5: tau_accept->eps_bearer_context_status.ebi5 = 1; break;
+            case 6: tau_accept->eps_bearer_context_status.ebi6 = 1; break;
+            case 7: tau_accept->eps_bearer_context_status.ebi7 = 1; break;
+            case 8: tau_accept->eps_bearer_context_status.ebi8 = 1; break;
+            case 9: tau_accept->eps_bearer_context_status.ebi9 = 1; break;
+            case 10: tau_accept->eps_bearer_context_status.ebi10 = 1; break;
+            case 11: tau_accept->eps_bearer_context_status.ebi11 = 1; break;
+            case 12: tau_accept->eps_bearer_context_status.ebi12 = 1; break;
+            case 13: tau_accept->eps_bearer_context_status.ebi13 = 1; break;
+            case 14: tau_accept->eps_bearer_context_status.ebi14 = 1; break;
+            case 15: tau_accept->eps_bearer_context_status.ebi15 = 1; break;
+            default: break;
             }
 
             bearer = mme_bearer_next(bearer);

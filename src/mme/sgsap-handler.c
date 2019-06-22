@@ -38,6 +38,8 @@ void sgsap_handler_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_assert(vlr);
     ogs_assert(pkbuf);
 
+    ogs_debug("[SGSAP] LOCATION-UPDATE-ACCEPT");
+
     ogs_pkbuf_pull(pkbuf, 1);
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
@@ -86,6 +88,9 @@ void sgsap_handler_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 nas_mobile_identity_tmsi->type);
         goto error;
     }
+
+    ogs_debug("    IMSI[%s] P-TMSI[0x%08x]",
+            mme_ue->imsi_bcd, mme_ue->p_tmsi);
 
     nas_send_attach_accept(mme_ue);
 
