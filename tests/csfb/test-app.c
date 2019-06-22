@@ -24,7 +24,6 @@ int test_epc_initialize(app_param_t *param);
 
 int test_app_initialize(app_param_t *param)
 {
-    param->name = "epc";
     return test_epc_initialize(param);
 }
 
