@@ -20,6 +20,10 @@ int emm_build_attach_accept(
     nas_eps_mobile_identity_t *nas_guti = &attach_accept->guti;
     nas_eps_network_feature_support_t *eps_network_feature_support =
         &attach_accept->eps_network_feature_support;
+    nas_location_area_identification_t *lai =
+        &attach_accept->location_area_identification;
+    nas_mobile_identity_t *ms_identity = &attach_accept->ms_identity;
+    nas_mobile_identity_tmsi_t *tmsi = &ms_identity->tmsi;;
 
     ogs_assert(mme_ue);
     ogs_assert(esmbuf);
@@ -66,7 +70,7 @@ int emm_build_attach_accept(
         nas_guti->length = sizeof(nas_eps_mobile_identity_guti_t);
         nas_guti->guti.odd_even = NAS_EPS_MOBILE_IDENTITY_EVEN;
         nas_guti->guti.type = NAS_EPS_MOBILE_IDENTITY_GUTI;
-        nas_guti->guti.plmn_id = mme_ue->guti.plmn_id;
+        nas_guti->guti.nas_plmn_id = mme_ue->guti.nas_plmn_id;
         nas_guti->guti.mme_gid = mme_ue->guti.mme_gid;
         nas_guti->guti.mme_code = mme_ue->guti.mme_code;
         nas_guti->guti.m_tmsi = mme_ue->guti.m_tmsi;
@@ -88,6 +92,40 @@ int emm_build_attach_accept(
         NAS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     eps_network_feature_support->length = 1;
     eps_network_feature_support->ims_vops = 1;
+
+    if (mme_ue->vlr) {
+        attach_accept->presencemask |=
+            NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
+        lai->nas_plmn_id = mme_ue->vlr->lai.nas_plmn_id;
+        lai->lac = mme_ue->vlr->lai.lac;
+        if (lai->nas_plmn_id.mnc3 == 0xf)
+            ogs_debug("    LAI[MCC:%d%d%d,MNC:%d%d,LAC:%d]",
+                lai->nas_plmn_id.mcc1,
+                lai->nas_plmn_id.mcc2,
+                lai->nas_plmn_id.mcc3,
+                lai->nas_plmn_id.mnc1,
+                lai->nas_plmn_id.mnc2,
+                lai->lac);
+        else
+            ogs_debug("    LAI[MCC:%d%d%d,MNC:%d%d%d,LAC:%d]",
+                lai->nas_plmn_id.mcc1,
+                lai->nas_plmn_id.mcc2,
+                lai->nas_plmn_id.mcc3,
+                lai->nas_plmn_id.mnc1,
+                lai->nas_plmn_id.mnc2,
+                lai->nas_plmn_id.mnc3,
+                lai->lac);
+    }
+
+    if (mme_ue->p_tmsi) {
+        attach_accept->presencemask |= NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
+        ms_identity->length = 5;
+        tmsi->spare = 0xf;
+        tmsi->odd_even = 0;
+        tmsi->type = NAS_MOBILE_IDENTITY_TMSI;
+        tmsi->tmsi = mme_ue->p_tmsi;
+        ogs_debug("    P-TMSI: 0x%08x", tmsi->tmsi);
+    }
 
     rv = nas_security_encode(emmbuf, mme_ue, &message);
     ogs_assert(rv == OGS_OK && *emmbuf);

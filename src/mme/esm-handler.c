@@ -2,6 +2,7 @@
 
 #include "mme-context.h"
 #include "nas-path.h"
+#include "sgsap-path.h"
 #include "mme-gtp-path.h"
 
 #include "esm-build.h"
@@ -130,8 +131,13 @@ int esm_handle_information_response(mme_sess_t *sess,
         ogs_debug("    APN[%s]", sess->pdn->apn);
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue))
         {
-            rv = nas_send_attach_accept(mme_ue);
-            ogs_assert(rv == OGS_OK);
+            mme_vlr_t *vlr = mme_vlr_find_by_tai(&mme_ue->tai);
+            mme_ue->vlr = vlr;
+
+            if (vlr)
+                sgsap_send_location_update_request(mme_ue);
+            else
+                nas_send_attach_accept(mme_ue);
         }
         else
         {

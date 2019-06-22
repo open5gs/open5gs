@@ -1176,9 +1176,9 @@ int mme_context_parse_config()
 
                         plmn_id_build(&plmn_id,
                             atoi(mcc), atoi(mnc), strlen(mnc));
-                        nas_from_plmn_id(&vlr->tai.plmn_id, &plmn_id);
+                        nas_from_plmn_id(&vlr->tai.nas_plmn_id, &plmn_id);
                         vlr->tai.tac = atoi(tac);
-                        nas_from_plmn_id(&vlr->lai.plmn_id, &plmn_id);
+                        nas_from_plmn_id(&vlr->lai.nas_plmn_id, &plmn_id);
                         vlr->lai.lac = atoi(lac);
                     } while (ogs_yaml_iter_type(&sgsap_array) ==
                             YAML_SEQUENCE_NODE);
@@ -1601,7 +1601,7 @@ mme_vlr_t *mme_vlr_find_by_tai(tai_t *tai)
 
     ogs_list_for_each(&self.vlr_list, vlr) {
         nas_tai_t nas_tai;
-        nas_from_plmn_id(&nas_tai.plmn_id, &tai->plmn_id);
+        nas_from_plmn_id(&nas_tai.nas_plmn_id, &tai->plmn_id);
         nas_tai.tac = tai->tac;
         if (memcmp(&vlr->tai, &nas_tai, sizeof(nas_tai_t)) == 0)
             return vlr;
@@ -1913,7 +1913,7 @@ static int mme_ue_new_guti(mme_ue_t *mme_ue)
     memset(&mme_ue->guti, 0, sizeof(nas_guti_t));
 
     /* Use the first configured plmn_id and mme group id */
-    nas_from_plmn_id(&mme_ue->guti.plmn_id, &served_gummei->plmn_id[0]);
+    nas_from_plmn_id(&mme_ue->guti.nas_plmn_id, &served_gummei->plmn_id[0]);
     mme_ue->guti.mme_gid = served_gummei->mme_gid[0];
     mme_ue->guti.mme_code = served_gummei->mme_code[0];
 
@@ -2147,26 +2147,26 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
         }
         case NAS_EPS_MOBILE_IDENTITY_GUTI:
         {
-            nas_eps_mobile_identity_guti_t *nas_guti = NULL;
-            nas_guti = &eps_mobile_identity->guti;
-            nas_guti_t guti;
+            nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti =
+                &eps_mobile_identity->guti;
+            nas_guti_t nas_guti;
 
-            guti.plmn_id = nas_guti->plmn_id;
-            guti.mme_gid = nas_guti->mme_gid;
-            guti.mme_code = nas_guti->mme_code;
-            guti.m_tmsi = nas_guti->m_tmsi;
+            nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
+            nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
+            nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
+            nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
 
-            mme_ue = mme_ue_find_by_guti(&guti);
+            mme_ue = mme_ue_find_by_guti(&nas_guti);
             if (mme_ue) {
                 ogs_trace("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
-                        guti.mme_gid,
-                        guti.mme_code,
-                        guti.m_tmsi);
+                        nas_guti.mme_gid,
+                        nas_guti.mme_code,
+                        nas_guti.m_tmsi);
             } else {
                 ogs_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
-                        guti.mme_gid,
-                        guti.mme_code,
-                        guti.m_tmsi);
+                        nas_guti.mme_gid,
+                        nas_guti.mme_code,
+                        nas_guti.m_tmsi);
             }
             break;
         }
@@ -2193,26 +2193,26 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
         switch(eps_mobile_identity->imsi.type) {
         case NAS_EPS_MOBILE_IDENTITY_GUTI:
         {
-            nas_eps_mobile_identity_guti_t *nas_guti = NULL;
-            nas_guti = &eps_mobile_identity->guti;
-            nas_guti_t guti;
+            nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti =
+                &eps_mobile_identity->guti;
+            nas_guti_t nas_guti;
 
-            guti.plmn_id = nas_guti->plmn_id;
-            guti.mme_gid = nas_guti->mme_gid;
-            guti.mme_code = nas_guti->mme_code;
-            guti.m_tmsi = nas_guti->m_tmsi;
+            nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
+            nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
+            nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
+            nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
 
-            mme_ue = mme_ue_find_by_guti(&guti);
+            mme_ue = mme_ue_find_by_guti(&nas_guti);
             if (mme_ue) {
                 ogs_trace("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
-                        guti.mme_gid,
-                        guti.mme_code,
-                        guti.m_tmsi);
+                        nas_guti.mme_gid,
+                        nas_guti.mme_code,
+                        nas_guti.m_tmsi);
             } else {
                 ogs_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
-                        guti.mme_gid,
-                        guti.mme_code,
-                        guti.m_tmsi);
+                        nas_guti.mme_gid,
+                        nas_guti.mme_code,
+                        nas_guti.m_tmsi);
             }
             break;
         }

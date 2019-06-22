@@ -88,14 +88,22 @@ int sgsap_send_to_vlr_with_sid(
     ogs_assert(sock);
 
     ogs_debug("    IP[%s] TAI[MCC:%d%d%d,MNC:%d%d%d,TAC:%d]",
-        OGS_ADDR(node->addr, buf),
-        vlr->tai.plmn_id.mcc1, vlr->tai.plmn_id.mcc2, vlr->tai.plmn_id.mcc3,
-        vlr->tai.plmn_id.mnc1, vlr->tai.plmn_id.mnc2, vlr->tai.plmn_id.mnc3,
-        vlr->tai.tac);
+                OGS_ADDR(node->addr, buf),
+                vlr->tai.nas_plmn_id.mcc1,
+                vlr->tai.nas_plmn_id.mcc2,
+                vlr->tai.nas_plmn_id.mcc3,
+                vlr->tai.nas_plmn_id.mnc1,
+                vlr->tai.nas_plmn_id.mnc2,
+                vlr->tai.nas_plmn_id.mnc3,
+                vlr->tai.tac);
     ogs_debug("           LAI[MCC:%d%d%d,MNC:%d%d%d,TAC:%d]",
-        vlr->lai.plmn_id.mcc1, vlr->lai.plmn_id.mcc2, vlr->lai.plmn_id.mcc3,
-        vlr->lai.plmn_id.mnc1, vlr->lai.plmn_id.mnc2, vlr->lai.plmn_id.mnc3,
-        vlr->lai.lac);
+                vlr->lai.nas_plmn_id.mcc1,
+                vlr->lai.nas_plmn_id.mcc2,
+                vlr->lai.nas_plmn_id.mcc3,
+                vlr->lai.nas_plmn_id.mnc1,
+                vlr->lai.nas_plmn_id.mnc2,
+                vlr->lai.nas_plmn_id.mnc3,
+                vlr->lai.lac);
 
     rv = sgsap_send(sock, pkbuf, node->addr, stream_no);
     if (rv != OGS_OK) {

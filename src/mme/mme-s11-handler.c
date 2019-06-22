@@ -112,11 +112,12 @@ void mme_s11_handle_create_session_response(
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
         mme_vlr_t *vlr = mme_vlr_find_by_tai(&mme_ue->tai);
         mme_ue->vlr = vlr;
-        if (mme_ue->vlr) {
+
+        if (vlr)
             sgsap_send_location_update_request(mme_ue);
-        } else {
+        else
             nas_send_attach_accept(mme_ue);
-        }
+
     } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
         nas_send_activate_default_bearer_context_request(bearer);
     } else

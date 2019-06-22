@@ -100,8 +100,8 @@ int emm_handle_attach_request(
         nas_tracking_area_identity_t *last_visited_registered_tai = 
             &attach_request->last_visited_registered_tai;
 
-        nas_to_plmn_id(
-            &mme_ue->visited_plmn_id, &last_visited_registered_tai->plmn_id);
+        nas_to_plmn_id(&mme_ue->visited_plmn_id,
+            &last_visited_registered_tai->nas_plmn_id);
         ogs_debug("    Visited_PLMN_ID:%06x",
                 plmn_id_hexdump(&mme_ue->visited_plmn_id));
     }
@@ -141,19 +141,19 @@ int emm_handle_attach_request(
         }
         case NAS_EPS_MOBILE_IDENTITY_GUTI:
         {
-            nas_eps_mobile_identity_guti_t *nas_guti = NULL;
-            nas_guti = &eps_mobile_identity->guti;
-            nas_guti_t guti;
+            nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti =
+                                &eps_mobile_identity->guti;
+            nas_guti_t nas_guti;
 
-            guti.plmn_id = nas_guti->plmn_id;
-            guti.mme_gid = nas_guti->mme_gid;
-            guti.mme_code = nas_guti->mme_code;
-            guti.m_tmsi = nas_guti->m_tmsi;
+            nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
+            nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
+            nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
+            nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
 
             ogs_debug("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]",
-                    guti.mme_gid,
-                    guti.mme_code,
-                    guti.m_tmsi,
+                    nas_guti.mme_gid,
+                    nas_guti.mme_code,
+                    nas_guti.m_tmsi,
                     MME_UE_HAVE_IMSI(mme_ue) 
                         ? mme_ue->imsi_bcd : "Unknown");
             break;
@@ -472,8 +472,8 @@ int emm_handle_tau_request(
         nas_tracking_area_identity_t *last_visited_registered_tai = 
             &tau_request->last_visited_registered_tai;
 
-        nas_to_plmn_id(
-            &mme_ue->visited_plmn_id, &last_visited_registered_tai->plmn_id);
+        nas_to_plmn_id(&mme_ue->visited_plmn_id,
+                &last_visited_registered_tai->nas_plmn_id);
         ogs_debug("    Visited_PLMN_ID:%06x",
                 plmn_id_hexdump(&mme_ue->visited_plmn_id));
     }
@@ -506,19 +506,19 @@ int emm_handle_tau_request(
     {
         case NAS_EPS_MOBILE_IDENTITY_GUTI:
         {
-            nas_eps_mobile_identity_guti_t *nas_guti = NULL;
-            nas_guti = &eps_mobile_identity->guti;
-            nas_guti_t guti;
+            nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti = 
+                        &eps_mobile_identity->guti;
+            nas_guti_t nas_guti;
 
-            guti.plmn_id = nas_guti->plmn_id;
-            guti.mme_gid = nas_guti->mme_gid;
-            guti.mme_code = nas_guti->mme_code;
-            guti.m_tmsi = nas_guti->m_tmsi;
+            nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
+            nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
+            nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
+            nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
 
             ogs_debug("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
-                    guti.mme_gid,
-                    guti.mme_code,
-                    guti.m_tmsi,
+                    nas_guti.mme_gid,
+                    nas_guti.mme_code,
+                    nas_guti.m_tmsi,
                     MME_UE_HAVE_IMSI(mme_ue) 
                         ? mme_ue->imsi_bcd : "Unknown");
             break;

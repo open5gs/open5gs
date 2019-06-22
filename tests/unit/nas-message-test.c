@@ -81,7 +81,7 @@ static void nas_message_test2(abts_case *tc, void *data)
     attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     attach_accept->guti.length = 11;
     attach_accept->guti.guti.type = NAS_EPS_MOBILE_IDENTITY_GUTI;
-    nas_from_plmn_id(&attach_accept->guti.guti.plmn_id,
+    nas_from_plmn_id(&attach_accept->guti.guti.nas_plmn_id,
         plmn_id_build(&plmn_id, 417, 99, 2));
     attach_accept->guti.guti.mme_gid = 9029;
     attach_accept->guti.guti.mme_code = 225;
@@ -89,7 +89,7 @@ static void nas_message_test2(abts_case *tc, void *data)
 
     attach_accept->presencemask |= 
         NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
-    nas_from_plmn_id(&attach_accept->location_area_identification.plmn_id,
+    nas_from_plmn_id(&attach_accept->location_area_identification.nas_plmn_id,
         plmn_id_build(&plmn_id, 1, 2, 2));
     attach_accept->location_area_identification.lac = 0xfffd;
 

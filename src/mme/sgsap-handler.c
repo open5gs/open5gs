@@ -95,5 +95,8 @@ error:
     enb_ue = mme_ue->enb_ue;
     ogs_assert(enb_ue);
 
+    nas_send_attach_reject(mme_ue,
+            EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
+            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
     mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
 }
