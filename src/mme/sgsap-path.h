@@ -21,6 +21,7 @@
 #define SGSAP_PATH_H
 
 #include "mme-context.h"
+#include "mme-event.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,6 +42,10 @@ int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf);
 
 int sgsap_send_location_update_request(mme_ue_t *mme_ue);
 int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue);
+
+void sgsap_event_push(mme_event_e id,
+        void *sock, ogs_sockaddr_t *addr, ogs_pkbuf_t *pkbuf,
+        uint16_t max_num_of_istreams, uint16_t max_num_of_ostreams);
 
 #ifdef __cplusplus
 }

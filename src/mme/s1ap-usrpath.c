@@ -60,9 +60,6 @@ static int usrsctp_recv_handler(struct socket *sock,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
 {
     if (data) {
-        int rv;
-        mme_event_t *e = NULL;
-
         if (flags & MSG_NOTIFICATION) {
             union sctp_notification *not = (union sctp_notification *)data;
             if (not->sn_header.sn_length == (uint32_t)datalen) {
@@ -91,18 +88,9 @@ static int usrsctp_recv_handler(struct socket *sock,
                             SCTP_COMM_LOST)
                             ogs_debug("SCTP_COMM_LOST");
 
-                        e = mme_event_new(MME_EVT_S1AP_LO_CONNREFUSED);
-                        ogs_assert(e);
-                        e->enb_sock = (ogs_sock_t *)sock;
-                        e->enb_addr = addr;
-                        rv = ogs_queue_push(mme_self()->queue, e);
-                        if (rv != OGS_OK) {
-                            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                            ogs_free(e->enb_addr);
-                            mme_event_free(e);
-                        } else {
-                            ogs_pollset_notify(mme_self()->pollset);
-                        }
+                        s1ap_event_push(MME_EVT_S1AP_LO_CONNREFUSED,
+                                sock, addr, NULL, 0, 0);
+
                     } else if (not->sn_assoc_change.sac_state == SCTP_COMM_UP) {
                         ogs_sockaddr_t *addr =
                             ogs_usrsctp_remote_addr(&store);
@@ -110,22 +98,10 @@ static int usrsctp_recv_handler(struct socket *sock,
 
                         ogs_debug("SCTP_COMM_UP");
 
-                        e = mme_event_new(MME_EVT_S1AP_LO_SCTP_COMM_UP);
-                        ogs_assert(e);
-                        e->enb_sock = (ogs_sock_t *)sock;
-                        e->enb_addr = addr;
-                        e->max_num_of_istreams = 
-                            not->sn_assoc_change.sac_inbound_streams;
-                        e->max_num_of_ostreams = 
-                            not->sn_assoc_change.sac_outbound_streams;
-                        rv = ogs_queue_push(mme_self()->queue, e);
-                        if (rv != OGS_OK) {
-                            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                            ogs_free(e->enb_addr);
-                            mme_event_free(e);
-                        } else {
-                            ogs_pollset_notify(mme_self()->pollset);
-                        }
+                        s1ap_event_push(MME_EVT_S1AP_LO_SCTP_COMM_UP,
+                                sock, addr, NULL,
+                                not->sn_assoc_change.sac_inbound_streams,
+                                not->sn_assoc_change.sac_outbound_streams);
                     }
                     break;
                 case SCTP_SHUTDOWN_EVENT :
@@ -133,24 +109,8 @@ static int usrsctp_recv_handler(struct socket *sock,
                     ogs_sockaddr_t *addr = ogs_usrsctp_remote_addr(&store);
                     ogs_assert(addr);
 
-                    ogs_debug("SCTP_SHUTDOWN_EVENT:"
-                            "[T:0x%x, F:0x%x, L:0x%x]", 
-                            not->sn_shutdown_event.sse_type,
-                            not->sn_shutdown_event.sse_flags,
-                            not->sn_shutdown_event.sse_length);
-
-                    e = mme_event_new(MME_EVT_S1AP_LO_CONNREFUSED);
-                    ogs_assert(e);
-                    e->enb_sock = (ogs_sock_t *)sock;
-                    e->enb_addr = addr;
-                    rv = ogs_queue_push(mme_self()->queue, e);
-                    if (rv != OGS_OK) {
-                        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                        ogs_free(e->enb_addr);
-                        mme_event_free(e);
-                    } else {
-                        ogs_pollset_notify(mme_self()->pollset);
-                    }
+                    s1ap_event_push(MME_EVT_S1AP_LO_CONNREFUSED,
+                            sock, addr, NULL, 0, 0);
                     break;
                 }
                 case SCTP_PEER_ADDR_CHANGE:
@@ -189,24 +149,42 @@ static int usrsctp_recv_handler(struct socket *sock,
             addr = ogs_usrsctp_remote_addr(&store);
             ogs_assert(addr);
 
-            e = mme_event_new(MME_EVT_S1AP_MESSAGE);
-            ogs_assert(e);
-            e->enb_sock = (ogs_sock_t *)sock;
-            e->enb_addr = addr;
-            e->pkbuf = pkbuf;
-            rv = ogs_queue_push(mme_self()->queue, e);
-            if (rv != OGS_OK) {
-                ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                ogs_free(e->enb_addr);
-                ogs_pkbuf_free(e->pkbuf);
-                mme_event_free(e);
-            } else {
-                ogs_pollset_notify(mme_self()->pollset);
-            }
+            s1ap_event_push(MME_EVT_S1AP_MESSAGE, sock, addr, pkbuf, 0, 0);
         } else {
             ogs_error("Not engough buffer. Need more recv : 0x%x", flags);
         }
         free(data);
     }
     return (1);
+}
+
+void s1ap_event_push(mme_event_e id,
+        void *sock, ogs_sockaddr_t *addr, ogs_pkbuf_t *pkbuf,
+        uint16_t max_num_of_istreams, uint16_t max_num_of_ostreams)
+{
+    mme_event_t *e = NULL;
+    int rv;
+
+    ogs_assert(id);
+    ogs_assert(sock);
+    ogs_assert(addr);
+
+    e = mme_event_new(id);
+    ogs_assert(e);
+    e->enb_sock = sock;
+    e->enb_addr = addr;
+    e->pkbuf = pkbuf;
+    e->max_num_of_istreams = max_num_of_istreams;
+    e->max_num_of_ostreams = max_num_of_ostreams;
+
+    rv = ogs_queue_push(mme_self()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_free(e->enb_addr);
+        if (e->pkbuf)
+            ogs_pkbuf_free(e->pkbuf);
+        mme_event_free(e);
+    } else {
+        ogs_pollset_notify(mme_self()->pollset);
+    }
 }
