@@ -118,10 +118,17 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
             }
             break;
         case SCTP_SHUTDOWN_EVENT :
-            ogs_debug("SCTP_SHUTDOWN_EVENT:[T:%d, F:0x%x, L:%d]", 
-                    not->sn_shutdown_event.sse_type,
-                    not->sn_shutdown_event.sse_flags,
-                    not->sn_shutdown_event.sse_length);
+        case SCTP_SEND_FAILED :
+            if (not->sn_header.sn_type == SCTP_SHUTDOWN_EVENT)
+                ogs_debug("SCTP_SHUTDOWN_EVENT:[T:%d, F:0x%x, L:%d]", 
+                        not->sn_shutdown_event.sse_type,
+                        not->sn_shutdown_event.sse_flags,
+                        not->sn_shutdown_event.sse_length);
+            if (not->sn_header.sn_type == SCTP_SEND_FAILED)
+                ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]", 
+                        not->sn_send_failed.ssf_type,
+                        not->sn_send_failed.ssf_flags,
+                        not->sn_send_failed.ssf_error);
 
             addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
             ogs_assert(addr);
@@ -141,12 +148,6 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
                     not->sn_remote_error.sre_type,
                     not->sn_remote_error.sre_flags,
                     not->sn_remote_error.sre_error);
-            break;
-        case SCTP_SEND_FAILED :
-            ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]", 
-                    not->sn_send_failed.ssf_type,
-                    not->sn_send_failed.ssf_flags,
-                    not->sn_send_failed.ssf_error);
             break;
         default :
             ogs_error("Discarding event with unknown flags:0x%x type:0x%x",

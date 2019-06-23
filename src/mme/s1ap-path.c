@@ -82,8 +82,11 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
             enb->sock_type == SOCK_STREAM ? NULL : enb->addr,
             stream_no);
     if (rv != OGS_OK) {
-        ogs_error("s1_send error");
+        ogs_error("s1ap_send() failed");
+
         ogs_pkbuf_free(pkbuf);
+        s1ap_event_push(MME_EVT_S1AP_LO_CONNREFUSED,
+                enb->sock, enb->addr, NULL, 0, 0);
     }
 
     return OGS_OK;;

@@ -61,6 +61,7 @@ static int usrsctp_recv_handler(struct socket *sock,
 {
     if (data) {
         if (flags & MSG_NOTIFICATION) {
+            ogs_sockaddr_t *addr = NULL;
             union sctp_notification *not = (union sctp_notification *)data;
             if (not->sn_header.sn_length == (uint32_t)datalen) {
                 switch(not->sn_header.sn_type) {
@@ -92,8 +93,7 @@ static int usrsctp_recv_handler(struct socket *sock,
                                 sock, addr, NULL, 0, 0);
 
                     } else if (not->sn_assoc_change.sac_state == SCTP_COMM_UP) {
-                        ogs_sockaddr_t *addr =
-                            ogs_usrsctp_remote_addr(&store);
+                        addr = ogs_usrsctp_remote_addr(&store);
                         ogs_assert(addr);
 
                         ogs_debug("SCTP_COMM_UP");
@@ -105,14 +105,25 @@ static int usrsctp_recv_handler(struct socket *sock,
                     }
                     break;
                 case SCTP_SHUTDOWN_EVENT :
-                {
-                    ogs_sockaddr_t *addr = ogs_usrsctp_remote_addr(&store);
+                case SCTP_SEND_FAILED :
+                    addr = ogs_usrsctp_remote_addr(&store);
                     ogs_assert(addr);
+
+                    if (not->sn_header.sn_type == SCTP_SHUTDOWN_EVENT)
+                        ogs_debug("SCTP_SHUTDOWN_EVENT:"
+                                "[T:0x%x, F:0x%x, L:0x%x]", 
+                                not->sn_shutdown_event.sse_type,
+                                not->sn_shutdown_event.sse_flags,
+                                not->sn_shutdown_event.sse_length);
+                    if (not->sn_header.sn_type == SCTP_SEND_FAILED)
+                        ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]", 
+                                not->sn_send_failed_event.ssfe_type,
+                                not->sn_send_failed_event.ssfe_flags,
+                                not->sn_send_failed_event.ssfe_error);
 
                     s1ap_event_push(MME_EVT_S1AP_LO_CONNREFUSED,
                             sock, addr, NULL, 0, 0);
                     break;
-                }
                 case SCTP_PEER_ADDR_CHANGE:
                     ogs_warn("SCTP_PEER_ADDR_CHANGE:"
                             "[T:%d, F:0x%x, S:%d]", 
@@ -126,11 +137,6 @@ static int usrsctp_recv_handler(struct socket *sock,
                             not->sn_remote_error.sre_flags,
                             not->sn_remote_error.sre_error);
                     break;
-                case SCTP_SEND_FAILED :
-                    ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]", 
-                            not->sn_send_failed_event.ssfe_type,
-                            not->sn_send_failed_event.ssfe_flags,
-                            not->sn_send_failed_event.ssfe_error);
                     break;
                 default :
                     ogs_error("Discarding event with "

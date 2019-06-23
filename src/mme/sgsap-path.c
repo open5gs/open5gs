@@ -96,7 +96,10 @@ int sgsap_send_to_vlr_with_sid(
     rv = sgsap_send(sock, pkbuf, node->addr, stream_no);
     if (rv != OGS_OK) {
         ogs_error("sgsap_send() failed");
+
         ogs_pkbuf_free(pkbuf);
+        sgsap_event_push(MME_EVT_SGSAP_LO_CONNREFUSED,
+                node->sock, node->addr, NULL, 0, 0);
     }
 
     return OGS_OK;;
