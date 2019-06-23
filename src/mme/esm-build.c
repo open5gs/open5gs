@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "nas/nas-message.h"
 
 #include "nas-security.h"
@@ -24,8 +43,7 @@ int esm_build_pdn_connectivity_reject(
             mme_ue->imsi_bcd, sess->pti, esm_cause);
 
     memset(&message, 0, sizeof(message));
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
-    {
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
         message.h.security_header_type = 
            NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -37,13 +55,10 @@ int esm_build_pdn_connectivity_reject(
 
     pdn_connectivity_reject->esm_cause = esm_cause;
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
-    {
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
         ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
                 *pkbuf);
-    }
-    else
-    {
+    } else {
         ogs_assert(nas_plain_encode(pkbuf, &message) == OGS_OK && *pkbuf);
     }
 
@@ -118,8 +133,7 @@ int esm_build_activate_default_bearer_context_request(
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
-    {
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
         message.h.security_header_type = 
            NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
@@ -142,38 +156,30 @@ int esm_build_activate_default_bearer_context_request(
     ogs_debug("    APN[%s]", pdn->apn);
 
     pdn_address->pdn_type = pdn->paa.pdn_type;
-    if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4)
-    {
+    if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4) {
         pdn_address->addr = pdn->paa.addr;
         pdn_address->length = NAS_PDN_ADDRESS_IPV4_LEN;
         ogs_debug("    IPv4");
-    }
-    else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV6)
-    {
+    } else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV6) {
         memcpy(pdn_address->addr6, pdn->paa.addr6+(IPV6_LEN>>1), IPV6_LEN>>1);
         pdn_address->length = NAS_PDN_ADDRESS_IPV6_LEN;
         ogs_debug("    IPv6");
-    }
-    else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4V6)
-    {
+    } else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4V6) {
         pdn_address->both.addr = pdn->paa.both.addr;
         memcpy(pdn_address->both.addr6,
                 pdn->paa.both.addr6+(IPV6_LEN>>1), IPV6_LEN>>1);
         pdn_address->length = NAS_PDN_ADDRESS_IPV4V6_LEN;
         ogs_debug("    IPv4v6");
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
-    if (pdn->ambr.downlink || pdn->ambr.uplink)
-    {
+    if (pdn->ambr.downlink || pdn->ambr.uplink) {
         activate_default_eps_bearer_context_request->presencemask |=
             NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_APN_AMBR_PRESENT;
         apn_ambr_build(apn_ambr, pdn->ambr.downlink, pdn->ambr.uplink);
     }
 
-    if (sess->pgw_pco.presence && sess->pgw_pco.len && sess->pgw_pco.data)
-    {
+    if (sess->pgw_pco.presence && sess->pgw_pco.len && sess->pgw_pco.data) {
         activate_default_eps_bearer_context_request->presencemask |=
             NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
         protocol_configuration_options->length = sess->pgw_pco.len;
@@ -181,13 +187,10 @@ int esm_build_activate_default_bearer_context_request(
                 sess->pgw_pco.data, protocol_configuration_options->length);
     }
 
-    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
-    {
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
         ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
                 *pkbuf);
-    }
-    else
-    {
+    } else {
         ogs_assert(nas_plain_encode(pkbuf, &message) == OGS_OK && *pkbuf);
     }
 
@@ -282,8 +285,7 @@ int esm_build_modify_bearer_context_request(
     message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type = NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST;
 
-    if (qos_presence == 1)
-    {
+    if (qos_presence == 1) {
         modify_eps_bearer_context_request->presencemask |=
             NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NEW_EPS_QOS_PRESENT;
         eps_qos_build(new_eps_qos, bearer->qos.qci,
@@ -291,8 +293,7 @@ int esm_build_modify_bearer_context_request(
                 bearer->qos.gbr.downlink, bearer->qos.gbr.uplink);
     }
 
-    if (tft_presence == 1)
-    {
+    if (tft_presence == 1) {
         modify_eps_bearer_context_request->presencemask |=
             NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_TFT_PRESENT;
         tft->length = bearer->tft.len;
