@@ -44,15 +44,20 @@ int nas_send_to_downlink_nas_transport(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
     ogs_pkbuf_t *s1apbuf = NULL;
     enb_ue_t *enb_ue = NULL;
 
+    ogs_assert(pkbuf);
     ogs_assert(mme_ue);
     enb_ue = mme_ue->enb_ue;
-    ogs_assert(enb_ue);
+    if (!enb_ue) {
+        ogs_warn("S1 context has already been removed");
+        ogs_pkbuf_free(pkbuf);
 
-    rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, pkbuf);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    } else {
+        rv = s1ap_build_downlink_nas_transport(&s1apbuf, enb_ue, pkbuf);
+        ogs_assert(rv == OGS_OK && s1apbuf);
 
-    rv = nas_send_to_enb(mme_ue, s1apbuf);
-    ogs_assert(rv == OGS_OK);
+        rv = nas_send_to_enb(mme_ue, s1apbuf);
+        ogs_assert(rv == OGS_OK);
+    }
 
     return OGS_OK;
 }
