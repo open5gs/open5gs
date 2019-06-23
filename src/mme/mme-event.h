@@ -63,10 +63,8 @@ typedef struct mme_event_s {
     int id;
     void *pkbuf;
 
-    ogs_sock_t *enb_sock;
-    ogs_sockaddr_t *enb_addr;
-    ogs_sock_t *vlr_sock;
-    ogs_sockaddr_t *vlr_addr;
+    ogs_sock_t *sctp_sock;
+    ogs_sockaddr_t *sctp_addr;
     uint16_t max_num_of_istreams;
     uint16_t max_num_of_ostreams;
 
@@ -96,6 +94,10 @@ void mme_event_free(mme_event_t *e);
 void mme_event_timeout(void *data);
 
 const char *mme_event_get_name(mme_event_t *e);
+
+void mme_sctp_event_push(mme_event_e id,
+        void *sock, ogs_sockaddr_t *addr, ogs_pkbuf_t *pkbuf,
+        uint16_t max_num_of_istreams, uint16_t max_num_of_ostreams);
 
 #ifdef __cplusplus
 }

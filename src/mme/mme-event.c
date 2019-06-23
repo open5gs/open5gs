@@ -130,3 +130,37 @@ const char *mme_event_get_name(mme_event_t *e)
 
     return "UNKNOWN_EVENT";
 }
+
+void mme_sctp_event_push(mme_event_e id,
+        void *sock, ogs_sockaddr_t *addr, ogs_pkbuf_t *pkbuf,
+        uint16_t max_num_of_istreams, uint16_t max_num_of_ostreams)
+{
+    mme_event_t *e = NULL;
+    int rv;
+
+    ogs_assert(id);
+    ogs_assert(sock);
+    ogs_assert(addr);
+
+    e = mme_event_new(id);
+    ogs_assert(e);
+    e->sctp_sock = sock;
+    e->sctp_addr = addr;
+    e->pkbuf = pkbuf;
+    e->max_num_of_istreams = max_num_of_istreams;
+    e->max_num_of_ostreams = max_num_of_ostreams;
+
+    rv = ogs_queue_push(mme_self()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        ogs_free(e->sctp_addr);
+        if (e->pkbuf)
+            ogs_pkbuf_free(e->pkbuf);
+        mme_event_free(e);
+    }
+#if HAVE_USRSCTP
+    else {
+        ogs_pollset_notify(mme_self()->pollset);
+    }
+#endif
+}

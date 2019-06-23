@@ -30,6 +30,8 @@ extern "C" {
 
 #define S1AP_NON_UE_SIGNALLING   0
 
+#define s1ap_event_push  mme_sctp_event_push
+
 int s1ap_open();
 void s1ap_close();
 
@@ -88,10 +90,6 @@ int s1ap_send_error_indication(
 int s1ap_send_s1_reset_ack(
         mme_enb_t *enb,
         S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface);
-
-void s1ap_event_push(mme_event_e id,
-        void *sock, ogs_sockaddr_t *addr, ogs_pkbuf_t *pkbuf,
-        uint16_t max_num_of_istreams, uint16_t max_num_of_ostreams);
 
 #ifdef __cplusplus
 }

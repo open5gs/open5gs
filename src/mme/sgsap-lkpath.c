@@ -18,6 +18,7 @@
  */
 
 #include "ogs-sctp.h"
+#include "sgsap-path.h"
 
 #include "app/context.h"
 #include "mme-context.h"
@@ -52,10 +53,8 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
 
 static void recv_handler(short when, ogs_socket_t fd, void *data)
 {
-    int rv;
     ogs_pkbuf_t *pkbuf;
     int size;
-    mme_event_t *e = NULL;
     ogs_socknode_t *node = data;
     ogs_sock_t *sock = NULL;
     ogs_sockaddr_t *addr = NULL;
@@ -98,20 +97,10 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
                 ogs_assert(addr);
                 memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
-                e = mme_event_new(MME_EVT_SGSAP_LO_SCTP_COMM_UP);
-                ogs_assert(e);
-                e->vlr_sock = sock;
-                e->vlr_addr = addr;
-                e->max_num_of_istreams = 
-                    not->sn_assoc_change.sac_inbound_streams;
-                e->max_num_of_ostreams = 
-                    not->sn_assoc_change.sac_outbound_streams;
-                rv = ogs_queue_push(mme_self()->queue, e);
-                if (rv != OGS_OK) {
-                    ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                    ogs_free(e->vlr_addr);
-                    mme_event_free(e);
-                }
+                sgsap_event_push(MME_EVT_SGSAP_LO_SCTP_COMM_UP,
+                        sock, addr, NULL,
+                        not->sn_assoc_change.sac_inbound_streams,
+                        not->sn_assoc_change.sac_outbound_streams);
             } else if (not->sn_assoc_change.sac_state == SCTP_SHUTDOWN_COMP ||
                     not->sn_assoc_change.sac_state == SCTP_COMM_LOST) {
 
@@ -124,16 +113,8 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
                 ogs_assert(addr);
                 memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
-                e = mme_event_new(MME_EVT_SGSAP_LO_CONNREFUSED);
-                ogs_assert(e);
-                e->vlr_sock = sock;
-                e->vlr_addr = addr;
-                rv = ogs_queue_push(mme_self()->queue, e);
-                if (rv != OGS_OK) {
-                    ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                    ogs_free(e->vlr_addr);
-                    mme_event_free(e);
-                }
+                sgsap_event_push(MME_EVT_SGSAP_LO_CONNREFUSED,
+                        sock, addr, NULL, 0, 0);
             }
             break;
         case SCTP_SHUTDOWN_EVENT :
@@ -146,16 +127,8 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
             ogs_assert(addr);
             memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
-            e = mme_event_new(MME_EVT_SGSAP_LO_CONNREFUSED);
-            ogs_assert(e);
-            e->vlr_sock = sock;
-            e->vlr_addr = addr;
-            rv = ogs_queue_push(mme_self()->queue, e);
-            if (rv != OGS_OK) {
-                ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-                ogs_free(e->vlr_addr);
-                mme_event_free(e);
-            }
+            sgsap_event_push(MME_EVT_SGSAP_LO_CONNREFUSED,
+                    sock, addr, NULL, 0, 0);
             break;
         case SCTP_PEER_ADDR_CHANGE:
             ogs_warn("SCTP_PEER_ADDR_CHANGE:[T:%d, F:0x%x, S:%d]", 
@@ -187,19 +160,7 @@ static void recv_handler(short when, ogs_socket_t fd, void *data)
         ogs_assert(addr);
         memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
 
-        e = mme_event_new(MME_EVT_SGSAP_MESSAGE);
-        ogs_assert(e);
-        e->vlr_sock = sock;
-        e->vlr_addr = addr;
-        e->pkbuf = pkbuf;
-        rv = ogs_queue_push(mme_self()->queue, e);
-        if (rv != OGS_OK) {
-            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-            ogs_free(e->vlr_addr);
-            ogs_pkbuf_free(e->pkbuf);
-            mme_event_free(e);
-        }
-
+        sgsap_event_push(MME_EVT_SGSAP_MESSAGE, sock, addr, pkbuf, 0, 0);
         return;
     } else {
         ogs_assert_if_reached();
