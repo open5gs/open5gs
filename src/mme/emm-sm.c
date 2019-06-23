@@ -467,6 +467,16 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         message = e->nas_message;
         ogs_assert(message);
 
+        if (message->emm.h.security_header_type
+                == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
+            ogs_debug("[EMM] Service request");
+            rv = nas_send_service_reject(mme_ue,
+                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
+            ogs_assert(rv == OGS_OK);
+            OGS_FSM_TRAN(s, &emm_state_exception);
+            return;
+        }
+
         switch (message->emm.h.message_type) {
         case NAS_SECURITY_MODE_COMPLETE:
             ogs_debug("[EMM] Security mode complete");
@@ -510,6 +520,13 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 
             mme_s6a_send_air(mme_ue, NULL);
             OGS_FSM_TRAN(s, &emm_state_authentication);
+            break;
+        case NAS_TRACKING_AREA_UPDATE_REQUEST:
+            ogs_debug("[EMM] Tracking area update request");
+            rv = nas_send_tau_reject(mme_ue,
+                EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
+            ogs_assert(rv == OGS_OK);
+            OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case NAS_EMM_STATUS:
             ogs_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
