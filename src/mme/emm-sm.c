@@ -126,11 +126,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 rv = nas_send_service_reject(mme_ue,
                     EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
                 ogs_assert(rv == OGS_OK);
-
-                rv = s1ap_send_ue_context_release_command(enb_ue, 
-                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                    S1AP_UE_CTX_REL_S1_NORMAL_RELEASE, 0);
-                ogs_assert(rv == OGS_OK);
+                OGS_FSM_TRAN(s, &emm_state_exception);
                 return;
             }
 
