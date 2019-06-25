@@ -208,7 +208,18 @@ void mme_s11_handle_delete_session_response(
              * accept is received */
             CLEAR_SGW_S1U_PATH(sess);
             return;
-        } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
+        } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active) ||
+            /*
+             * MME sends InitialContextSetupRequest to eNB.
+             * eNB sends InitialContextSetupFailure to MME.
+             *
+             * In this case, ESM state is INACTIVE.
+             *
+             * So, if Delete-Session-Response is received,
+             * MME needs to send UEContextReleaseCommand to eNB. 
+             */
+                OGS_FSM_CHECK(&bearer->sm, esm_state_inactive)) {
+
             if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
                 enb_ue_t *enb_ue = NULL;
 
@@ -223,6 +234,7 @@ void mme_s11_handle_delete_session_response(
             }
         } else
             ogs_assert_if_reached();
+
     } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup) ||
              OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {
