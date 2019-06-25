@@ -205,111 +205,116 @@ void sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
         return;
     }
 
+    rsp = &gtp_message.modify_bearer_response;
+
+    memset(&gtp_message, 0, sizeof(gtp_message_t));
+    gtp_message.h.type = GTP_MODIFY_BEARER_RESPONSE_TYPE;
+    gtp_message.h.teid = sgw_ue->mme_s11_teid;
+
+    memset(&cause, 0, sizeof(cause));
+    rsp->cause.presence = 1;
+    rsp->cause.data = &cause;
+    rsp->cause.len = sizeof(cause);
+
     bearer = sgw_bearer_find_by_ue_ebi(sgw_ue, 
                 req->bearer_contexts_to_be_modified.eps_bearer_id.u8);
-    ogs_assert(bearer);
-    s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
-    ogs_assert(s1u_tunnel);
 
-    /* Data Plane(DL) : eNB-S1U */
-    enb_s1u_teid = req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data;
-    s1u_tunnel->remote_teid = ntohl(enb_s1u_teid->teid);
+    if (!bearer) {
+        cause.value = GTP_CAUSE_CONTEXT_NOT_FOUND;
 
-    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
-    ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
-        s1u_tunnel->remote_teid, s1u_tunnel->local_teid);
+    } else {
+        s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
+        ogs_assert(s1u_tunnel);
 
-    enb = gtp_node_find(&sgw_self()->enb_s1u_list, enb_s1u_teid);
-    if (!enb)
-    {
-        enb = gtp_node_add(&sgw_self()->enb_s1u_list, enb_s1u_teid,
-            sgw_self()->gtpu_port,
-            context_self()->config.parameter.no_ipv4,
-            context_self()->config.parameter.no_ipv6,
-            context_self()->config.parameter.prefer_ipv4);
-        ogs_assert(enb);
+        /* Data Plane(DL) : eNB-S1U */
+        enb_s1u_teid = req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data;
+        s1u_tunnel->remote_teid = ntohl(enb_s1u_teid->teid);
 
-        rv = gtp_connect(sgw_self()->gtpu_sock, sgw_self()->gtpu_sock6, enb);
-        ogs_assert(rv == OGS_OK);
-    }
+        ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+            sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+        ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
+            s1u_tunnel->remote_teid, s1u_tunnel->local_teid);
+
+        enb = gtp_node_find(&sgw_self()->enb_s1u_list, enb_s1u_teid);
+        if (!enb)
+        {
+            enb = gtp_node_add(&sgw_self()->enb_s1u_list, enb_s1u_teid,
+                sgw_self()->gtpu_port,
+                context_self()->config.parameter.no_ipv4,
+                context_self()->config.parameter.no_ipv6,
+                context_self()->config.parameter.prefer_ipv4);
+            ogs_assert(enb);
+
+            rv = gtp_connect(sgw_self()->gtpu_sock, sgw_self()->gtpu_sock6, enb);
+            ogs_assert(rv == OGS_OK);
+        }
 
 #if ULI_END_MARKER
-    /* if ULI's Cell ID changes, End Marker is sent out or not */
-    if (req->user_location_information.presence == 1)
-    {
-        /* Set User Location Information */
-        decoded = gtp_parse_uli(&uli, &req->user_location_information);
-        ogs_assert(req->user_location_information.len == decoded);
-        memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
-        bearer->tai.tac = uli.tai.tac;
-        memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
-                sizeof(uli.e_cgi.plmn_id));
-        ogs_debug("    ULI Presence: CellID[OLD:0x%x, NEW:0x%x]",
-            bearer->e_cgi.cell_id, uli.e_cgi.cell_id);
-        if (bearer->e_cgi.cell_id != uli.e_cgi.cell_id)
+        /* if ULI's Cell ID changes, End Marker is sent out or not */
+        if (req->user_location_information.presence == 1)
         {
+            /* Set User Location Information */
+            decoded = gtp_parse_uli(&uli, &req->user_location_information);
+            ogs_assert(req->user_location_information.len == decoded);
+            memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+            bearer->tai.tac = uli.tai.tac;
+            memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
+                    sizeof(uli.e_cgi.plmn_id));
+            ogs_debug("    ULI Presence: CellID[OLD:0x%x, NEW:0x%x]",
+                bearer->e_cgi.cell_id, uli.e_cgi.cell_id);
+            if (bearer->e_cgi.cell_id != uli.e_cgi.cell_id)
+            {
+                ogs_debug("[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]",
+                    OGS_ADDR(&s1u_tunnel->gnode->conn, buf),
+                    s1u_tunnel->remote_teid);
+                rv = sgw_gtp_send_end_marker(s1u_tunnel);
+                if (rv != OGS_OK)
+                    ogs_error("gtp send end marker failed");
+
+                bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
+            }
+        }
+#else /* GNODE_END_MARKER */
+        /* if GTP Node changes, End Marker is sent out or not */
+        if (req->user_location_information.presence == 1)
+        {
+            /* Set User Location Information */
+            decoded = gtp_parse_uli(&uli, &req->user_location_information);
+            ogs_assert(req->user_location_information.len == decoded);
+            memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+            bearer->tai.tac = uli.tai.tac;
+            memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
+                    sizeof(uli.e_cgi.plmn_id));
+            bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
+            ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+                    plmn_id_hexdump(&bearer->tai.plmn_id),
+                    bearer->tai.tac);
+            ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+                    plmn_id_hexdump(&bearer->e_cgi.plmn_id),
+                    bearer->e_cgi.cell_id);
+        }
+
+        if (s1u_tunnel->gnode && s1u_tunnel->gnode != enb)
+        {
+            ogs_assert(s1u_tunnel->gnode->sock);
+
             ogs_debug("[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]",
                 OGS_ADDR(&s1u_tunnel->gnode->conn, buf),
                 s1u_tunnel->remote_teid);
             rv = sgw_gtp_send_end_marker(s1u_tunnel);
             if (rv != OGS_OK)
                 ogs_error("gtp send end marker failed");
-
-            bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
         }
-    }
-#else /* GNODE_END_MARKER */
-    /* if GTP Node changes, End Marker is sent out or not */
-    if (req->user_location_information.presence == 1)
-    {
-        /* Set User Location Information */
-        decoded = gtp_parse_uli(&uli, &req->user_location_information);
-        ogs_assert(req->user_location_information.len == decoded);
-        memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
-        bearer->tai.tac = uli.tai.tac;
-        memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
-                sizeof(uli.e_cgi.plmn_id));
-        bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
-        ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-                plmn_id_hexdump(&bearer->tai.plmn_id),
-                bearer->tai.tac);
-        ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-                plmn_id_hexdump(&bearer->e_cgi.plmn_id),
-                bearer->e_cgi.cell_id);
-    }
-
-    if (s1u_tunnel->gnode && s1u_tunnel->gnode != enb)
-    {
-        ogs_assert(s1u_tunnel->gnode->sock);
-
-        ogs_debug("[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]",
-            OGS_ADDR(&s1u_tunnel->gnode->conn, buf),
-            s1u_tunnel->remote_teid);
-        rv = sgw_gtp_send_end_marker(s1u_tunnel);
-        if (rv != OGS_OK)
-            ogs_error("gtp send end marker failed");
-    }
 #endif
 
-    /* Setup GTP Node */
-    SETUP_GTP_NODE(s1u_tunnel, enb);
+        /* Setup GTP Node */
+        SETUP_GTP_NODE(s1u_tunnel, enb);
 
-    /* Reset UE state */
-    SGW_RESET_UE_STATE(sgw_ue, SGW_S1U_INACTIVE);
+        /* Reset UE state */
+        SGW_RESET_UE_STATE(sgw_ue, SGW_S1U_INACTIVE);
 
-    rsp = &gtp_message.modify_bearer_response;
-    memset(&gtp_message, 0, sizeof(gtp_message_t));
-
-    memset(&cause, 0, sizeof(cause));
-    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
-
-    rsp->cause.presence = 1;
-    rsp->cause.data = &cause;
-    rsp->cause.len = sizeof(cause);
-
-    gtp_message.h.type = GTP_MODIFY_BEARER_RESPONSE_TYPE;
-    gtp_message.h.teid = sgw_ue->mme_s11_teid;
+        cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
+    }
 
     rv = gtp_build_msg(&pkbuf, &gtp_message);
     ogs_assert(rv == OGS_OK);
