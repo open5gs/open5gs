@@ -1529,6 +1529,9 @@ mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *sa_list)
     ogs_assert(vlr);
     memset(vlr, 0, sizeof *vlr);
 
+    vlr->max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+    vlr->ostream_id = 0;
+
     vlr->sa_list = sa_list;
 
     ogs_list_add(&self.vlr_list, vlr);
@@ -1639,6 +1642,7 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     enb->sock_type = mme_enb_sock_type(enb->sock);
 
     enb->max_num_of_ostreams = DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS;
+    enb->ostream_id = 0;
     if (context_self()->config.sockopt.sctp.max_num_of_ostreams) {
         enb->max_num_of_ostreams =
             context_self()->config.sockopt.sctp.max_num_of_ostreams;
@@ -1951,7 +1955,7 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
      *   1-29 : UE specific association 
      */
     mme_ue->enb_ostream_id = 
-        NEXT_ID(self.enb_ostream_id, 1, enb->max_num_of_ostreams-1);
+        NEXT_ID(enb->ostream_id, 1, enb->max_num_of_ostreams-1);
 
     /* Create New GUTI */
     mme_ue_new_guti(mme_ue);
@@ -1986,15 +1990,6 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     /* Clear VLR */
     mme_ue->vlr = NULL;
     mme_ue->vlr_ostream_id = 0;
-
-#if 0 /* FIXME */
-    if (mme_ue->vlr) {
-        mme_ue->vlr_ostream_id = 
-            NEXT_ID(self.vlr_ostream_id, 1, mme_ue->vlr->max_num_of_ostreams-1);
-    } else {
-        mme_ue->vlr_ostream_id = 0;
-    }
-#endif
 
     /* Create paging retry timer */
     mme_ue->t3413 = ogs_timer_add(self.timer_mgr, s1ap_t3413_timeout, mme_ue);

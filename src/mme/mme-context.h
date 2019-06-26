@@ -127,8 +127,6 @@ typedef struct mme_context_s {
 
     /* Generator for unique identification */
     uint32_t        mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
-    uint16_t        enb_ostream_id;         /* enb_ostream_id generator */
-    uint16_t        vlr_ostream_id;         /* vlr_ostream_id generator */
 
     /* M-TMSI Pool */
     OGS_POOL(m_tmsi, mme_m_tmsi_t);
@@ -180,7 +178,8 @@ typedef struct mme_vlr_s {
     nas_tai_t       tai;
     nas_lai_t       lai;
 
-    uint16_t        max_num_of_ostreams; /* SCTP Max num of outbound streams */
+    uint16_t        max_num_of_ostreams;/* SCTP Max num of outbound streams */
+    uint16_t        ostream_id;     /* vlr_ostream_id generator */
 
     ogs_sockaddr_t  *sa_list;   /* VLR SGsAP Socket Address List */
 
@@ -197,7 +196,9 @@ typedef struct mme_enb_s {
     ogs_sockaddr_t  *addr;      /* eNB S1AP Address */
     ogs_poll_t      *poll;      /* eNB S1AP Poll */
 
-    uint16_t        max_num_of_ostreams; /* SCTP Max num of outbound streams */
+    uint16_t        max_num_of_ostreams;/* SCTP Max num of outbound streams */
+    uint16_t        ostream_id;         /* enb_ostream_id generator */
+
 
     uint8_t         num_of_supported_ta_list;
     tai_t           supported_ta_list[MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
