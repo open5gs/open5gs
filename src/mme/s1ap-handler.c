@@ -488,7 +488,11 @@ void s1ap_handle_initial_context_setup_response(
         ogs_assert(e_rab);
 
         sess = mme_sess_find_by_ebi(mme_ue, e_rab->e_RAB_ID);
-        ogs_assert(sess);
+        if (!sess) {
+            ogs_warn("Session context has already been removed");
+            continue;
+        }
+
         bearer = mme_default_bearer_in_sess(sess);
         ogs_assert(bearer);
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
