@@ -1790,6 +1790,16 @@ enb_ue_t* enb_ue_add(mme_enb_t *enb)
 
     enb_ue->enb_ue_s1ap_id = INVALID_UE_S1AP_ID;
     enb_ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
+
+    /*
+     * SCTP output stream identification
+     * Default context_self()->config.parameter.sctp_streams : 30
+     *   0 : Non UE signalling
+     *   1-29 : UE specific association 
+     */
+    enb_ue->enb_ostream_id = 
+        NEXT_ID(enb->ostream_id, 1, enb->max_num_of_ostreams-1);
+
     enb_ue->enb = enb;
 
     ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
@@ -1947,15 +1957,6 @@ mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->mme_s11_teid = ogs_pool_index(&mme_ue_pool, mme_ue);
     ogs_assert(mme_ue->mme_s11_teid > 0 &&
             mme_ue->mme_s11_teid <= context_self()->pool.ue);
-
-    /*
-     * SCTP output stream identification
-     * Default context_self()->config.parameter.sctp_streams : 30
-     *   0 : Non UE signalling
-     *   1-29 : UE specific association 
-     */
-    mme_ue->enb_ostream_id = 
-        NEXT_ID(enb->ostream_id, 1, enb->max_num_of_ostreams-1);
 
     /* Create New GUTI */
     mme_ue_new_guti(mme_ue);

@@ -215,6 +215,8 @@ struct enb_ue_s {
     uint32_t        enb_ue_s1ap_id; /* eNB-UE-S1AP-ID received from eNB */
     uint32_t        mme_ue_s1ap_id; /* MME-UE-S1AP-ID received from MME */
 
+    uint16_t        enb_ostream_id; /* SCTP output stream id for eNB */
+
     /* Handover Info */
     S1AP_HandoverType_t handover_type;
     enb_ue_t        *source_ue;
@@ -278,7 +280,6 @@ struct mme_ue_s {
     uint32_t        mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
     uint32_t        sgw_s11_teid;   /* SGW-S11-TEID is received from SGW */
 
-    uint16_t        enb_ostream_id; /* SCTP output stream id for eNB */
     uint16_t        vlr_ostream_id; /* SCTP output stream id for VLR */
 
     /* UE Info */

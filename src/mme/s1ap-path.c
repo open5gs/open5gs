@@ -103,7 +103,7 @@ int s1ap_send_to_enb_ue(enb_ue_t *enb_ue, ogs_pkbuf_t *pkbuf)
     mme_ue = enb_ue->mme_ue;
     ogs_assert(mme_ue);
 
-    return s1ap_send_to_enb(enb, pkbuf, mme_ue->enb_ostream_id);
+    return s1ap_send_to_enb(enb, pkbuf, enb_ue->enb_ostream_id);
 }
 
 int s1ap_delayed_send_to_enb_ue(
