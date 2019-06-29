@@ -318,7 +318,7 @@ int tests1ap_build_setup_req(
     return OGS_OK;
 }
 
-#define TESTS1AP_MAX_MESSAGE 32
+#define TESTS1AP_MAX_MESSAGE 64
 
 int tests1ap_build_initial_ue_msg(ogs_pkbuf_t **pkbuf, int i)
 {
@@ -411,6 +411,16 @@ int tests1ap_build_initial_ue_msg(ogs_pkbuf_t **pkbuf, int i)
         "",
         "",
 
+        /* 21 */
+        "000c407400000700 08000200d0001a00 3c3b17c000c55201 0741010bf600f110"
+        "000201c5001d9005 f0f0000000001702 01d011d027108000 0a00000d00001000"
+        "ff00031301845264 f0130002e0004300 060000f110303900 6440080000f11000"
+        "0640100086400130 004b00070000f110 02000100aa400100",
+        "000c407400000700 08000200d1001a00 3c3b17f1f96e4a02 0741010bf600f110"
+        "000201c5001d9005 f0f0000000001702 01d011d027108000 0a00000d00001000"
+        "ff00031301845264 f0130002e0004300 060000f110303900 6440080000f11000"
+        "0640100086400130 004b00070000f110 02000100aa400100",
+        "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         92,
@@ -439,6 +449,11 @@ int tests1ap_build_initial_ue_msg(ogs_pkbuf_t **pkbuf, int i)
 
         155,
         0,
+        0,
+
+        /* 21 */
+        120,
+        120,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -489,6 +504,13 @@ int tests1ap_build_identity_response(ogs_pkbuf_t **pkbuf, int i)
         "0829262400001118 93006440080009f1 070019b010004340 060009f1070007",
         "",
         "",
+
+        /* 21 */
+        "000d403b00000500 00000200d0000800 0200d0001a001211 17d2074692020756"
+        "0839118900000070 52006440080064f0 1300064010004340 060064f0130002",
+        "000d403b00000500 00000200d1000800 0200d1001a001211 170baa6c40030756"
+        "0839118900000070 52006440080064f0 1300064010004340 060064f0130002",
+        "",
     };
 
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -518,6 +540,11 @@ int tests1ap_build_identity_response(ogs_pkbuf_t **pkbuf, int i)
 
         63,
         0,
+        0,
+
+        /* 21 */
+        63,
+        63,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -582,6 +609,13 @@ int tests1ap_build_authentication_response(ogs_pkbuf_t **pkbuf, int i)
         "086f7ff4fc4be85f d1006440080009f1 070019b010004340 060009f1070007",
         "",
         "",
+
+        /* 21 */
+        "000d403b00000500 00000200d0000800 0200d0001a001211 17c3cf6653030753"
+        "0831c964f0761378 76006440080064f0 1300064010004340 060064f0130002",
+        "000d403b00000500 00000200d1000800 0200d1001a001211 17e41759f6040753"
+        "0831c964f0761378 76006440080064f0 1300064010004340 060064f0130002",
+        "",
     };
 
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -611,6 +645,11 @@ int tests1ap_build_authentication_response(ogs_pkbuf_t **pkbuf, int i)
 
         63,
         0,
+        0,
+
+        /* 21 */
+        63,
+        63,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -727,6 +766,13 @@ int tests1ap_build_security_mode_complete(ogs_pkbuf_t **pkbuf, int i)
         "006440080009f107 0019b01000434006 0009f1070007",
         "",
         "",
+
+        /* 21 */
+        "000d403200000500 00000200d0000800 0200d0001a000908 475089bacd00075e"
+        "006440080064f013 0006401000434006 0064f0130002",
+        "000d403200000500 00000200d1000800 0200d1001a000908 4753a25a8000075e"
+        "006440080064f013 0006401000434006 0064f0130002",
+        "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         57,
@@ -755,6 +801,11 @@ int tests1ap_build_security_mode_complete(ogs_pkbuf_t **pkbuf, int i)
 
         54,
         0,
+        0,
+
+        /* 21 */
+        54,
+        54,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -882,11 +933,13 @@ int tests1ap_build_ue_capability_info_indication(ogs_pkbuf_t **pkbuf, int i)
         "",
         "",
 
+        /* 3 */
         "0016402d00000300 0000020001000800 02001f004a401a19 00b801014c598080"
         "9c000bf06ec4d001 40302c0000000000 000000",
         "",
         "",
 
+        /* 6 */
         "0016"
         "403f000003000000 05c0020000c80008 00020002004a4029 28013001023cd980"
         "00bc000ff06ec4d0 0141b82c00000000 07d404000ef08020 00012a0300008800"
@@ -897,6 +950,7 @@ int tests1ap_build_ue_capability_info_indication(ogs_pkbuf_t **pkbuf, int i)
         "00",
         "",
 
+        /* 9 */
         "0016"
         "4030000003000000 05c0010001da0008 00020001004a401a 1900b801014c5980"
         "809c000bf06ec4d0 0140302c00000000 0000",
@@ -905,6 +959,7 @@ int tests1ap_build_ue_capability_info_indication(ogs_pkbuf_t **pkbuf, int i)
         "0018000bf06ec4d0 0100302c00000000 0000",
         "",
 
+        /* 12 */
         "0016"
         "4080800000030000 0002000200080003 40072d004a406c6b 034803042c998001"
         "08201838bfc1c5fd bd3ffa8a20400902 3a54930382c60000 00001c4083840008"
@@ -914,11 +969,31 @@ int tests1ap_build_ue_capability_info_indication(ogs_pkbuf_t **pkbuf, int i)
         "",
         "",
 
+        /* 15 */
         "0016"
         "403f000003000000 05c001a001020008 00020018004a4029 28013001023cd980"
         "00bc000ff06ec4d0 0141b82c00000000 07d404000ef08020 00016a0300008800"
         "00",
         "",
+        "",
+
+        "",
+        "",
+        "",
+
+        /* 21 */
+        "00164080b6000003 0000000200d00008 000200d0004a4080 a280a00404e80108"
+        "099cd98002a552f0 40b82e0bff06ec4d 00141b8748000000 02a5647400c00c00"
+        "80007d404380e900 04103a8001040ef0 004107a400101a82 003d200080de1001"
+        "ea00040690800f50 00203784007bc001 01a42003de00080d 41000e90004807a4"
+        "00101a42001d4000 900f500020350400 3bc001201ef00040 6f080381705c1705"
+        "c1705c1705c1705c 1705c1705c172a32 0000887003fc0000 000000",
+        "00164080b6000003 0000000200d10008 000200d1004a4080 a280a00404e80108"
+        "099cd98002a552f0 40b82e0bff06ec4d 00141b8748000000 02a5647400c00c00"
+        "80007d404380e900 04103a8001040ef0 004107a400101a82 003d200080de1001"
+        "ea00040690800f50 00203784007bc001 01a42003de00080d 41000e90004807a4"
+        "00101a42001d4000 900f500020350400 3bc001201ef00040 6f080381705c1705"
+        "c1705c1705c1705c 1705c1705c172a32 0000887003fc0000 000000",
         "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -944,6 +1019,15 @@ int tests1ap_build_ue_capability_info_indication(ogs_pkbuf_t **pkbuf, int i)
 
         67,
         0,
+        0,
+
+        0,
+        0,
+        0,
+
+        /* 21 */
+        187,
+        187,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -1067,17 +1151,41 @@ int tests1ap_build_initial_context_setup_failure(ogs_pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {
         "4009 0015000003000040 0200020008400200 01000240020000",
-
         "",
         "",
 
+        /* 3 */
         "",
         "",
         "",
 
+        /* 6 */
         "",
         "",
         "4009001500000300 0040020001000840 0200010002400202 a0",
+
+        /* 9 */
+        "",
+        "",
+        "",
+
+        /* 12 */
+        "",
+        "",
+        "",
+
+        /* 15 */
+        "",
+        "",
+        "",
+
+        /* 18 */
+        "",
+        "",
+        "",
+
+        /* 21 */
+        "4009001500000300 00400200d0000840 0200d00002400203 40",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         25,
@@ -1091,6 +1199,27 @@ int tests1ap_build_initial_context_setup_failure(ogs_pkbuf_t **pkbuf, int i)
         0,
         0,
         25,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        /* 21 */
+        25,
+        0,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -1157,6 +1286,11 @@ int tests1ap_build_attach_complete(ogs_pkbuf_t **pkbuf, int i)
         "",
         "",
 
+        /* 21 */
+        "",
+        "000d403700000500 00000200d1000800 0200d1001a000e0d 277c78c659010743"
+        "00035200c2006440 080064f013000640 10004340060064f0 130002",
+        "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         62,
@@ -1185,6 +1319,11 @@ int tests1ap_build_attach_complete(ogs_pkbuf_t **pkbuf, int i)
 
         59,
         0,
+        0,
+
+        /* 21 */
+        0,
+        59,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -1436,6 +1575,10 @@ int tests1ap_build_ue_context_release_complete(ogs_pkbuf_t **pkbuf, int i)
         "2017000f00000200 0040020001000840 020001",
         "2017000f00000200 0040020002000840 020002",
         "",
+
+        /* 21 */
+        "2017000f00000200 00400200d0000840 0200d0",
+        "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         23,
@@ -1462,6 +1605,11 @@ int tests1ap_build_ue_context_release_complete(ogs_pkbuf_t **pkbuf, int i)
         0,
         0,
 
+        19,
+        19,
+        0,
+        
+        /* 21 */
         19,
         19,
         0,

@@ -26,6 +26,7 @@ testcomplex_SOURCES = \
 	complex/abts-main.c \
 	complex/s1setup-test.c \
 	complex/attach-test.c complex/volte-test.c complex/handover-test.c \
+	complex/crash-test.c \
 	$(NULL)
 testcomplex_LDADD = $(top_srcdir)/src/libepc.la
 
