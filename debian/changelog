@@ -1,3 +1,9 @@
+nextepc (0.4.4~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 30 Jun 2019 13:23:15 +0000
+
 nextepc (0.4.4~xenial) xenial; urgency=medium
 
   * Bug Fixed
