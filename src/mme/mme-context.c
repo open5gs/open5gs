@@ -1,6 +1,25 @@
-#include <mongoc.h>
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <yaml.h>
 
+#include <mongoc.h>
 #include "ogs-sctp.h"
 
 #include "asn1c/s1ap-message.h"
@@ -2174,10 +2193,8 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
         break;
     }
     case NAS_DETACH_REQUEST:
-    {
         /* TODO */
         break;
-    }
     case NAS_TRACKING_AREA_UPDATE_REQUEST:
     {
         nas_tracking_area_update_request_t *tau_request =

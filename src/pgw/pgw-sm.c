@@ -48,6 +48,17 @@ void pgw_state_final(ogs_fsm_t *s, pgw_event_t *e)
 void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
 {
     int rv;
+    ogs_pkbuf_t *recvbuf = NULL;
+    ogs_pkbuf_t *copybuf = NULL;
+    uint16_t copybuf_len = 0;
+    gtp_xact_t *xact = NULL;
+    gtp_message_t *message = NULL;
+    pgw_sess_t *sess = NULL;
+    ogs_index_t sess_index;
+    ogs_pkbuf_t *gxbuf = NULL;
+    gx_message_t *gx_message = NULL;
+    uint32_t xact_index;
+    ogs_pkbuf_t *gtpbuf = NULL;
 
     pgw_sm_debug(e);
 
@@ -63,15 +74,6 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         pgw_gtp_close();
         break;
     case PGW_EVT_S5C_MESSAGE:
-    {
-        int rv;
-        ogs_pkbuf_t *recvbuf = NULL;
-        ogs_pkbuf_t *copybuf = NULL;
-        uint16_t copybuf_len = 0;
-        gtp_xact_t *xact = NULL;
-        gtp_message_t *message = NULL;
-        pgw_sess_t *sess = NULL;
-
         ogs_assert(e);
         recvbuf = e->gtpbuf;
         ogs_assert(recvbuf);
@@ -137,14 +139,8 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         }
         ogs_pkbuf_free(recvbuf);
         break;
-    }
-    case PGW_EVT_GX_MESSAGE:
-    {
-        ogs_index_t sess_index;
-        pgw_sess_t *sess = NULL;
-        ogs_pkbuf_t *gxbuf = NULL;
-        gx_message_t *gx_message = NULL;
 
+    case PGW_EVT_GX_MESSAGE:
         ogs_assert(e);
 
         gxbuf = e->gxbuf;
@@ -158,13 +154,6 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
 
         switch(gx_message->cmd_code) {
         case GX_CMD_CODE_CREDIT_CONTROL:
-        {
-            uint32_t xact_index;
-            gtp_xact_t *xact = NULL;
-
-            ogs_pkbuf_t *gtpbuf = NULL;
-            gtp_message_t *message = NULL;
-
             xact_index = e->xact_index;
             ogs_assert(xact_index);
             xact = gtp_xact_find(xact_index);
@@ -196,7 +185,6 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
 
             ogs_pkbuf_free(gtpbuf);
             break;
-        }
         case GX_CMD_RE_AUTH:
             pgw_gx_handle_re_auth_request(sess, gx_message);
             break;
@@ -208,7 +196,6 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         gx_message_free(gx_message);
         ogs_pkbuf_free(gxbuf);
         break;
-    }
     default:
         ogs_error("No handler for event %s", pgw_event_get_name(e));
         break;

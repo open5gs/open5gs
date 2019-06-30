@@ -1,12 +1,31 @@
-#ifndef __PGW_CONTEXT_H__
-#define __PGW_CONTEXT_H__
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef PGW_CONTEXT_H
+#define PGW_CONTEXT_H
 
 #include "gtp/gtp-types.h"
 #include "gtp/gtp-message.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #define MAX_NUM_OF_DEV          16
 #define MAX_NUM_OF_SUBNET       16
@@ -29,15 +48,15 @@ typedef struct pgw_context_s {
 
     ogs_list_t      gtpc_list;      /* PGW GTPC IPv4 Server List */
     ogs_list_t      gtpc_list6;     /* PGW GTPC IPv6 Server List */
-    ogs_sock_t      *gtpc_sock;      /* PGW GTPC IPv4 Socket */
-    ogs_sock_t      *gtpc_sock6;     /* PGW GTPC IPv6 Socket */
+    ogs_sock_t      *gtpc_sock;     /* PGW GTPC IPv4 Socket */
+    ogs_sock_t      *gtpc_sock6;    /* PGW GTPC IPv6 Socket */
     ogs_sockaddr_t  *gtpc_addr;     /* PGW GTPC IPv4 Address */
     ogs_sockaddr_t  *gtpc_addr6;    /* PGW GTPC IPv6 Address */
 
     ogs_list_t      gtpu_list;      /* PGW GTPU IPv4 Server List */
     ogs_list_t      gtpu_list6;     /* PGW GTPU IPv6 Server List */
-    ogs_sock_t      *gtpu_sock;      /* PGW GTPU IPv4 Socket */
-    ogs_sock_t      *gtpu_sock6;     /* PGW GTPU IPv6 Socket */
+    ogs_sock_t      *gtpu_sock;     /* PGW GTPU IPv4 Socket */
+    ogs_sock_t      *gtpu_sock6;    /* PGW GTPU IPv6 Socket */
     ogs_sockaddr_t  *gtpu_addr;     /* PGW GTPU IPv4 Address */
     ogs_sockaddr_t  *gtpu_addr6;    /* PGW GTPU IPv6 Address */
 
@@ -60,11 +79,11 @@ typedef struct pgw_context_s {
     int             num_of_p_cscf6;
     int             p_cscf6_index;
 
-    ogs_list_t      sgw_s5c_list;  /* SGW GTPC Node List */
-    ogs_list_t      sgw_s5u_list;  /* SGW GTPU Node List */
+    ogs_list_t      sgw_s5c_list;   /* SGW GTPC Node List */
+    ogs_list_t      sgw_s5u_list;   /* SGW GTPU Node List */
     ogs_list_t      ip_pool_list;
 
-    ogs_hash_t      *sess_hash; /* hash table (IMSI+APN) */
+    ogs_hash_t      *sess_hash;     /* hash table (IMSI+APN) */
 } pgw_context_t;
 
 typedef struct pgw_subnet_s pgw_subnet_t;
@@ -88,12 +107,12 @@ typedef struct pgw_dev_s {
 typedef struct pgw_subnet_s {
     ogs_lnode_t     node;
 
-    ogs_ipsubnet_t  sub;                 /* Subnet : cafe::0/64 */
-    ogs_ipsubnet_t  gw;                  /* Gateway : cafe::1 */
-    char            apn[MAX_APN_LEN];       /* APN : "internet", "volte", .. */
+    ogs_ipsubnet_t  sub;                /* Subnet : cafe::0/64 */
+    ogs_ipsubnet_t  gw;                 /* Gateway : cafe::1 */
+    char            apn[MAX_APN_LEN];   /* APN : "internet", "volte", .. */
 
-    int             family;                 /* AF_INET or AF_INET6 */
-    uint8_t         prefixlen;              /* prefixlen */
+    int             family;             /* AF_INET or AF_INET6 */
+    uint8_t         prefixlen;          /* prefixlen */
     OGS_POOL(pool, pgw_ue_ip_t);
 
     /* Related Context */
@@ -259,6 +278,6 @@ pgw_subnet_t *gw_subnet_next(pgw_subnet_t *subnet);
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __PGW_CONTEXT_H__ */
+#endif /* PGW_CONTEXT_H */

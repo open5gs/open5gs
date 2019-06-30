@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <mongoc.h>
 #include <yaml.h>
 
@@ -90,7 +109,7 @@ void pgw_context_final()
     context_initiaized = 0;
 }
 
-pgw_context_t* pgw_self()
+pgw_context_t *pgw_self()
 {
     return &self;
 }
@@ -813,18 +832,18 @@ void pgw_sess_remove_all()
     }
 }
 
-pgw_sess_t* pgw_sess_find(uint32_t index)
+pgw_sess_t *pgw_sess_find(uint32_t index)
 {
     ogs_assert(index);
     return ogs_pool_find(&pgw_sess_pool, index);
 }
 
-pgw_sess_t* pgw_sess_find_by_teid(uint32_t teid)
+pgw_sess_t *pgw_sess_find_by_teid(uint32_t teid)
 {
     return pgw_sess_find(teid);
 }
 
-pgw_sess_t* pgw_sess_find_by_imsi_apn(
+pgw_sess_t *pgw_sess_find_by_imsi_apn(
     uint8_t *imsi, int imsi_len, char *apn)
 {
     uint8_t keybuf[MAX_IMSI_LEN+MAX_APN_LEN+1];
@@ -911,13 +930,13 @@ pgw_sess_t *pgw_sess_add_by_message(gtp_message_t *message)
     return sess;
 }
 
-ogs_hash_index_t* pgw_sess_first()
+ogs_hash_index_t *pgw_sess_first()
 {
     ogs_assert(self.sess_hash);
     return ogs_hash_first(self.sess_hash);
 }
 
-ogs_hash_index_t* pgw_sess_next(ogs_hash_index_t *hi)
+ogs_hash_index_t *pgw_sess_next(ogs_hash_index_t *hi)
 {
     return ogs_hash_next(hi);
 }
@@ -928,7 +947,7 @@ pgw_sess_t *pgw_sess_this(ogs_hash_index_t *hi)
     return ogs_hash_this_val(hi);
 }
 
-pgw_bearer_t* pgw_bearer_add(pgw_sess_t *sess)
+pgw_bearer_t *pgw_bearer_add(pgw_sess_t *sess)
 {
     pgw_bearer_t *bearer = NULL;
 
@@ -980,18 +999,18 @@ void pgw_bearer_remove_all(pgw_sess_t *sess)
         pgw_bearer_remove(bearer);
 }
 
-pgw_bearer_t* pgw_bearer_find(uint32_t index)
+pgw_bearer_t *pgw_bearer_find(uint32_t index)
 {
     ogs_assert(index);
     return ogs_pool_find(&pgw_bearer_pool, index);
 }
 
-pgw_bearer_t* pgw_bearer_find_by_pgw_s5u_teid(uint32_t pgw_s5u_teid)
+pgw_bearer_t *pgw_bearer_find_by_pgw_s5u_teid(uint32_t pgw_s5u_teid)
 {
     return pgw_bearer_find(pgw_s5u_teid);
 }
 
-pgw_bearer_t* pgw_bearer_find_by_ebi(pgw_sess_t *sess, uint8_t ebi)
+pgw_bearer_t *pgw_bearer_find_by_ebi(pgw_sess_t *sess, uint8_t ebi)
 {
     pgw_bearer_t *bearer = NULL;
     
@@ -1008,7 +1027,7 @@ pgw_bearer_t* pgw_bearer_find_by_ebi(pgw_sess_t *sess, uint8_t ebi)
     return bearer;
 }
 
-pgw_bearer_t* pgw_bearer_find_by_name(pgw_sess_t *sess, char *name)
+pgw_bearer_t *pgw_bearer_find_by_name(pgw_sess_t *sess, char *name)
 {
     pgw_bearer_t *bearer = NULL;
     
@@ -1026,7 +1045,7 @@ pgw_bearer_t* pgw_bearer_find_by_name(pgw_sess_t *sess, char *name)
     return NULL;
 }
 
-pgw_bearer_t* pgw_bearer_find_by_qci_arp(pgw_sess_t *sess, 
+pgw_bearer_t *pgw_bearer_find_by_qci_arp(pgw_sess_t *sess, 
                                 uint8_t qci,
                                 uint8_t priority_level,
                                 uint8_t pre_emption_capability,
@@ -1064,18 +1083,18 @@ pgw_bearer_t* pgw_bearer_find_by_qci_arp(pgw_sess_t *sess,
     return NULL;
 }
 
-pgw_bearer_t* pgw_default_bearer_in_sess(pgw_sess_t *sess)
+pgw_bearer_t *pgw_default_bearer_in_sess(pgw_sess_t *sess)
 {
     return pgw_bearer_first(sess);
 }
 
-pgw_bearer_t* pgw_bearer_first(pgw_sess_t *sess)
+pgw_bearer_t *pgw_bearer_first(pgw_sess_t *sess)
 {
     ogs_assert(sess);
     return ogs_list_first(&sess->bearer_list);
 }
 
-pgw_bearer_t* pgw_bearer_next(pgw_bearer_t *bearer)
+pgw_bearer_t *pgw_bearer_next(pgw_bearer_t *bearer)
 {
     return ogs_list_next(bearer);
 }
@@ -1117,7 +1136,7 @@ void pgw_pf_remove_all(pgw_bearer_t *bearer)
         pgw_pf_remove(pf);
 }
 
-pgw_pf_t* pgw_pf_find_by_id(pgw_bearer_t *bearer, uint8_t id)
+pgw_pf_t *pgw_pf_find_by_id(pgw_bearer_t *bearer, uint8_t id)
 {
     pgw_pf_t *pf = NULL;
     
@@ -1132,12 +1151,12 @@ pgw_pf_t* pgw_pf_find_by_id(pgw_bearer_t *bearer, uint8_t id)
     return OGS_OK;
 }
 
-pgw_pf_t* pgw_pf_first(pgw_bearer_t *bearer)
+pgw_pf_t *pgw_pf_first(pgw_bearer_t *bearer)
 {
     return ogs_list_first(&bearer->pf_list);
 }
 
-pgw_pf_t* pgw_pf_next(pgw_pf_t *pf)
+pgw_pf_t *pgw_pf_next(pgw_pf_t *pf)
 {
     return ogs_list_next(pf);
 }
@@ -1323,7 +1342,7 @@ void pgw_dev_remove_all()
         pgw_dev_remove(dev);
 }
 
-pgw_dev_t* pgw_dev_find_by_ifname(const char *ifname)
+pgw_dev_t *pgw_dev_find_by_ifname(const char *ifname)
 {
     pgw_dev_t *dev = NULL;
 
@@ -1340,12 +1359,12 @@ pgw_dev_t* pgw_dev_find_by_ifname(const char *ifname)
     return OGS_OK;
 }
 
-pgw_dev_t* pgw_dev_first()
+pgw_dev_t *pgw_dev_first()
 {
     return ogs_list_first(&self.dev_list);
 }
 
-pgw_dev_t* pgw_dev_next(pgw_dev_t *dev)
+pgw_dev_t *pgw_dev_next(pgw_dev_t *dev)
 {
     return ogs_list_next(dev);
 }
@@ -1413,12 +1432,12 @@ void pgw_subnet_remove_all()
         pgw_subnet_remove(subnet);
 }
 
-pgw_subnet_t* pgw_subnet_first()
+pgw_subnet_t *pgw_subnet_first()
 {
     return ogs_list_first(&self.subnet_list);
 }
 
-pgw_subnet_t* pgw_subnet_next(pgw_subnet_t *subnet)
+pgw_subnet_t *pgw_subnet_next(pgw_subnet_t *subnet)
 {
     return ogs_list_next(subnet);
 }

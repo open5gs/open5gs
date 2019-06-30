@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <mongoc.h>
 #include <yaml.h>
 
@@ -73,7 +92,7 @@ void sgw_context_final()
     context_initialized = 0;
 }
 
-sgw_context_t* sgw_self()
+sgw_context_t *sgw_self()
 {
     return &self;
 }
@@ -89,15 +108,13 @@ static int sgw_context_prepare()
 static int sgw_context_validation()
 {
     if (ogs_list_empty(&self.gtpc_list) &&
-        ogs_list_empty(&self.gtpc_list6))
-    {
+        ogs_list_empty(&self.gtpc_list6)) {
         ogs_error("No sgw.gtpc in '%s'",
                 context_self()->config.path);
         return OGS_ERROR;
     }
     if (ogs_list_empty(&self.gtpu_list) &&
-        ogs_list_empty(&self.gtpu_list6))
-    {
+        ogs_list_empty(&self.gtpu_list6)) {
         ogs_error("No sgw.gtpu in '%s'",
                 context_self()->config.path);
         return OGS_RETRY;
@@ -159,8 +176,7 @@ int sgw_context_parse_config()
                             const char *gtpc_key =
                                 ogs_yaml_iter_key(&gtpc_iter);
                             ogs_assert(gtpc_key);
-                            if (!strcmp(gtpc_key, "family"))
-                            {
+                            if (!strcmp(gtpc_key, "family")) {
                                 const char *v = ogs_yaml_iter_value(&gtpc_iter);
                                 if (v) family = atoi(v);
                                 if (family != AF_UNSPEC &&
@@ -198,8 +214,7 @@ int sgw_context_parse_config()
                                 }
                             } else if (!strcmp(gtpc_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&gtpc_iter);
-                            }
-                            else
+                            } else
                                 ogs_warn("unknown key `%s`", gtpc_key);
                         }
 
@@ -493,7 +508,7 @@ void sgw_ue_remove_all()
     }
 }
 
-sgw_ue_t* sgw_ue_find_by_imsi_bcd(char *imsi_bcd)
+sgw_ue_t *sgw_ue_find_by_imsi_bcd(char *imsi_bcd)
 {
     uint8_t imsi[MAX_IMSI_LEN];
     int imsi_len = 0;
@@ -505,14 +520,14 @@ sgw_ue_t* sgw_ue_find_by_imsi_bcd(char *imsi_bcd)
     return sgw_ue_find_by_imsi(imsi, imsi_len);
 }
 
-sgw_ue_t* sgw_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
+sgw_ue_t *sgw_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
 {
     ogs_assert(imsi && imsi_len);
 
     return (sgw_ue_t *)ogs_hash_get(self.imsi_ue_hash, imsi, imsi_len);
 }
 
-sgw_ue_t* sgw_ue_find_by_teid(uint32_t teid)
+sgw_ue_t *sgw_ue_find_by_teid(uint32_t teid)
 {
     return ogs_pool_find(&sgw_ue_pool, teid);
 }
@@ -686,12 +701,12 @@ void sgw_bearer_remove_all(sgw_sess_t *sess)
         sgw_bearer_remove(bearer);
 }
 
-sgw_bearer_t* sgw_bearer_find_by_sgw_s5u_teid(uint32_t sgw_s5u_teid)
+sgw_bearer_t *sgw_bearer_find_by_sgw_s5u_teid(uint32_t sgw_s5u_teid)
 {
     return ogs_pool_find(&sgw_bearer_pool, sgw_s5u_teid);
 }
 
-sgw_bearer_t* sgw_bearer_find_by_sess_ebi(sgw_sess_t *sess, uint8_t ebi)
+sgw_bearer_t *sgw_bearer_find_by_sess_ebi(sgw_sess_t *sess, uint8_t ebi)
 {
     sgw_bearer_t *bearer = NULL;
 
@@ -706,7 +721,7 @@ sgw_bearer_t* sgw_bearer_find_by_sess_ebi(sgw_sess_t *sess, uint8_t ebi)
     return NULL;
 }
 
-sgw_bearer_t* sgw_bearer_find_by_ue_ebi(sgw_ue_t *sgw_ue, uint8_t ebi)
+sgw_bearer_t *sgw_bearer_find_by_ue_ebi(sgw_ue_t *sgw_ue, uint8_t ebi)
 {
     sgw_sess_t *sess = NULL;
     sgw_bearer_t *bearer = NULL;
@@ -724,23 +739,23 @@ sgw_bearer_t* sgw_bearer_find_by_ue_ebi(sgw_ue_t *sgw_ue, uint8_t ebi)
     return NULL;
 }
 
-sgw_bearer_t* sgw_default_bearer_in_sess(sgw_sess_t *sess)
+sgw_bearer_t *sgw_default_bearer_in_sess(sgw_sess_t *sess)
 {
     return sgw_bearer_first(sess);
 }
 
-sgw_bearer_t* sgw_bearer_first(sgw_sess_t *sess)
+sgw_bearer_t *sgw_bearer_first(sgw_sess_t *sess)
 {
     ogs_assert(sess);
     return ogs_list_first(&sess->bearer_list);
 }
 
-sgw_bearer_t* sgw_bearer_next(sgw_bearer_t *bearer)
+sgw_bearer_t *sgw_bearer_next(sgw_bearer_t *bearer)
 {
     return ogs_list_next(bearer);
 }
 
-sgw_tunnel_t* sgw_tunnel_add(sgw_bearer_t *bearer, uint8_t interface_type)
+sgw_tunnel_t *sgw_tunnel_add(sgw_bearer_t *bearer, uint8_t interface_type)
 {
     sgw_tunnel_t *tunnel = NULL;
 
@@ -782,12 +797,12 @@ void sgw_tunnel_remove_all(sgw_bearer_t *bearer)
         sgw_tunnel_remove(tunnel);
 }
 
-sgw_tunnel_t* sgw_tunnel_find_by_teid(uint32_t teid)
+sgw_tunnel_t *sgw_tunnel_find_by_teid(uint32_t teid)
 {
     return ogs_pool_find(&sgw_tunnel_pool, teid);
 }
 
-sgw_tunnel_t* sgw_tunnel_find_by_interface_type(
+sgw_tunnel_t *sgw_tunnel_find_by_interface_type(
         sgw_bearer_t *bearer, uint8_t interface_type)
 {
     sgw_tunnel_t *tunnel = NULL;
@@ -806,24 +821,24 @@ sgw_tunnel_t* sgw_tunnel_find_by_interface_type(
     return NULL;
 }
 
-sgw_tunnel_t* sgw_s1u_tunnel_in_bearer(sgw_bearer_t *bearer)
+sgw_tunnel_t *sgw_s1u_tunnel_in_bearer(sgw_bearer_t *bearer)
 {
     return sgw_tunnel_find_by_interface_type(
             bearer, GTP_F_TEID_S1_U_SGW_GTP_U);
 }
-sgw_tunnel_t* sgw_s5u_tunnel_in_bearer(sgw_bearer_t *bearer)
+sgw_tunnel_t *sgw_s5u_tunnel_in_bearer(sgw_bearer_t *bearer)
 {
     return sgw_tunnel_find_by_interface_type(
             bearer, GTP_F_TEID_S5_S8_SGW_GTP_U);
 }
 
-sgw_tunnel_t* sgw_tunnel_first(sgw_bearer_t *bearer)
+sgw_tunnel_t *sgw_tunnel_first(sgw_bearer_t *bearer)
 {
     ogs_assert(bearer);
     return ogs_list_first(&bearer->tunnel_list);
 }
 
-sgw_tunnel_t* sgw_tunnel_next(sgw_tunnel_t *tunnel)
+sgw_tunnel_t *sgw_tunnel_next(sgw_tunnel_t *tunnel)
 {
     return ogs_list_next(tunnel);
 }

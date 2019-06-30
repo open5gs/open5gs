@@ -1,5 +1,24 @@
-#ifndef __SGW_CONTEXT_H__
-#define __SGW_CONTEXT_H__
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef SGW_CONTEXT_H
+#define SGW_CONTEXT_H
 
 #include "ogs-core.h"
 
@@ -9,7 +28,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 extern int __sgw_log_domain;
 
@@ -25,15 +44,15 @@ typedef struct sgw_context_s {
 
     ogs_list_t      gtpc_list;      /* SGW GTPC IPv4 Server List */
     ogs_list_t      gtpc_list6;     /* SGW GTPC IPv6 Server List */
-    ogs_sock_t      *gtpc_sock;      /* SGW GTPC IPv4 Socket */
-    ogs_sock_t      *gtpc_sock6;     /* SGW GTPC IPv6 Socket */
+    ogs_sock_t      *gtpc_sock;     /* SGW GTPC IPv4 Socket */
+    ogs_sock_t      *gtpc_sock6;    /* SGW GTPC IPv6 Socket */
     ogs_sockaddr_t  *gtpc_addr;     /* SGW GTPC IPv4 Address */
     ogs_sockaddr_t  *gtpc_addr6;    /* SGW GTPC IPv6 Address */
 
     ogs_list_t      gtpu_list;      /* SGW GTPU IPv4 Server List */
     ogs_list_t      gtpu_list6;     /* SGW GTPU IPv6 Server List */
-    ogs_sock_t      *gtpu_sock;      /* SGW GTPU IPv4 Socket */
-    ogs_sock_t      *gtpu_sock6;     /* SGW GTPU IPv6 Socket */
+    ogs_sock_t      *gtpu_sock;     /* SGW GTPU IPv4 Socket */
+    ogs_sock_t      *gtpu_sock6;    /* SGW GTPU IPv6 Socket */
     ogs_sockaddr_t  *gtpu_addr;     /* SGW GTPU IPv4 Address */
     ogs_sockaddr_t  *gtpu_addr6;    /* SGW GTPU IPv6 Address */
 
@@ -137,13 +156,13 @@ int sgw_context_parse_config(void);
 gtp_node_t *sgw_mme_add_by_message(gtp_message_t *message);
 sgw_ue_t *sgw_ue_add_by_message(gtp_message_t *message);
 
-sgw_ue_t* sgw_ue_add(uint8_t *imsi, int imsi_len);
+sgw_ue_t *sgw_ue_add(uint8_t *imsi, int imsi_len);
 int sgw_ue_remove(sgw_ue_t *sgw_ue);
 void sgw_ue_remove_all();
 
-sgw_ue_t* sgw_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
-sgw_ue_t* sgw_ue_find_by_imsi_bcd(char *imsi_bcd);
-sgw_ue_t* sgw_ue_find_by_teid(uint32_t teid);
+sgw_ue_t *sgw_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
+sgw_ue_t *sgw_ue_find_by_imsi_bcd(char *imsi_bcd);
+sgw_ue_t *sgw_ue_find_by_teid(uint32_t teid);
 
 ogs_hash_index_t *sgw_ue_first();
 ogs_hash_index_t *sgw_ue_next(ogs_hash_index_t *hi);
@@ -187,6 +206,6 @@ sgw_tunnel_t *sgw_tunnel_next(sgw_tunnel_t *tunnel);
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __SGW_CONTEXT_H__ */
+#endif /* SGW_CONTEXT_H */
