@@ -41,9 +41,7 @@ const struct testlist {
     {test_attach},
     {test_volte},
     {test_handover},
-#if 0
     {test_crash},
-#endif
     {NULL},
 };
 

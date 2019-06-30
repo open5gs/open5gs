@@ -34,6 +34,7 @@ s1setup-test        :  SUCCESS
 attach-test         :  SUCCESS
 volte-test          :  SUCCESS
 handover-test       :  SUCCESS
+crash-test          :  SUCCESS
 All tests passed.
 ])
 AT_CLEANUP
