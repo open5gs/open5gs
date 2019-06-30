@@ -1577,7 +1577,7 @@ int tests1ap_build_ue_context_release_complete(ogs_pkbuf_t **pkbuf, int i)
         "",
 
         /* 21 */
-        "2017000f00000200 00400200d1000840 0200d1",
+        "2017000f00000200 00400200d0000840 0200d0",
         "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {

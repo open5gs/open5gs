@@ -83,7 +83,7 @@ typedef struct pgw_context_s {
     ogs_list_t      sgw_s5u_list;   /* SGW GTPU Node List */
     ogs_list_t      ip_pool_list;
 
-    ogs_hash_t      *sess_hash;     /* hash table (IMSI+APN) */
+    ogs_list_t      sess_list;
 } pgw_context_t;
 
 typedef struct pgw_subnet_s pgw_subnet_t;
@@ -95,7 +95,7 @@ typedef struct pgw_ue_ip_s {
 } pgw_ue_ip_t;
 
 typedef struct pgw_dev_s {
-    ogs_lnode_t     node;
+    ogs_lnode_t     lnode;
 
     char            ifname[IFNAMSIZ];
     ogs_socket_t    fd;
@@ -120,6 +120,7 @@ typedef struct pgw_subnet_s {
 } pgw_subnet_t;
 
 typedef struct pgw_sess_s {
+    ogs_lnode_t     lnode;
     uint32_t        index;          /**< An index of this node */
 
     uint32_t        pgw_s5c_teid;   /* PGW-S5C-TEID is derived from INDEX */
@@ -141,10 +142,6 @@ typedef struct pgw_sess_s {
     tai_t           tai;
     e_cgi_t         e_cgi;
 
-    /* Hash Key : IMSI+APN */
-    uint8_t         hash_keybuf[MAX_IMSI_LEN+MAX_APN_LEN+1];
-    int             hash_keylen;
-
     ogs_list_t      bearer_list;
 
     /* Related Context */
@@ -152,7 +149,7 @@ typedef struct pgw_sess_s {
 } pgw_sess_t;
 
 typedef struct pgw_bearer_s {
-    ogs_lnode_t     node; /**< A node of list_t */
+    ogs_lnode_t     lnode; /**< A node of list_t */
     uint32_t        index;
 
     uint8_t         ebi;
@@ -202,7 +199,7 @@ ED5(uint8_t ipv4_local:1;,
 } pgw_rule_t;
 
 typedef struct pgw_pf_s {
-    ogs_lnode_t     node;
+    ogs_lnode_t     lnode;
 
 ED3(uint8_t spare:2;,
     uint8_t direction:2;,
@@ -228,10 +225,6 @@ int pgw_sess_remove(pgw_sess_t *sess);
 void pgw_sess_remove_all();
 pgw_sess_t *pgw_sess_find(uint32_t index);
 pgw_sess_t *pgw_sess_find_by_teid(uint32_t teid);
-pgw_sess_t *pgw_sess_find_by_imsi_apn(uint8_t *imsi, int imsi_len, char *apn);
-ogs_hash_index_t *pgw_sess_first();
-ogs_hash_index_t *pgw_sess_next(ogs_hash_index_t *hi);
-pgw_sess_t *pgw_sess_this(ogs_hash_index_t *hi);
 
 pgw_bearer_t *pgw_bearer_add(pgw_sess_t *sess);
 int pgw_bearer_remove(pgw_bearer_t *bearer);

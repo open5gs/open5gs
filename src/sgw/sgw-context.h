@@ -65,10 +65,12 @@ typedef struct sgw_context_s {
     ogs_list_t      enb_s1u_list;   /* eNB GTPU Node List */
     ogs_list_t      pgw_s5u_list;   /* PGW GTPU Node List */
 
-    ogs_hash_t      *imsi_ue_hash;  /* hash table (IMSI : SGW_UE) */
+    ogs_list_t      sgw_ue_list;    /* SGW_UE List */
 } sgw_context_t;
 
 typedef struct sgw_ue_s {
+    ogs_lnode_t     lnode;
+
     uint32_t        sgw_s11_teid;   /* SGW-S11-TEID is derived from INDEX */
     uint32_t        mme_s11_teid;   /* MME-S11-TEID is received from MME */
 
@@ -92,7 +94,7 @@ typedef struct sgw_ue_s {
 } sgw_ue_t;
 
 typedef struct sgw_sess_s {
-    ogs_lnode_t     node;       /* A node of list_t */
+    ogs_lnode_t     lnode;      /* A node of list_t */
 
     /* 
      * SGW-S5C-TEID     = INDEX         | 0x80000000 
@@ -115,7 +117,7 @@ typedef struct sgw_sess_s {
 } sgw_sess_t;
 
 typedef struct sgw_bearer_s {
-    ogs_lnode_t     node; /**< A node of list_t */
+    ogs_lnode_t     lnode;
 
     uint8_t         ebi;
 
@@ -135,7 +137,7 @@ typedef struct sgw_bearer_s {
 } sgw_bearer_t;
 
 typedef struct sgw_tunnel_s {
-    ogs_lnode_t     node; /**< A node of list_t */
+    ogs_lnode_t     lnode;
 
     uint8_t         interface_type;
 
@@ -149,32 +151,23 @@ typedef struct sgw_tunnel_s {
 
 void sgw_context_init(void);
 void sgw_context_final(void);
-sgw_context_t* sgw_self(void);
+sgw_context_t *sgw_self(void);
 
 int sgw_context_parse_config(void);
 
 gtp_node_t *sgw_mme_add_by_message(gtp_message_t *message);
 sgw_ue_t *sgw_ue_add_by_message(gtp_message_t *message);
+sgw_ue_t *sgw_ue_find_by_teid(uint32_t teid);
 
 sgw_ue_t *sgw_ue_add(uint8_t *imsi, int imsi_len);
 int sgw_ue_remove(sgw_ue_t *sgw_ue);
 void sgw_ue_remove_all();
 
-sgw_ue_t *sgw_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
-sgw_ue_t *sgw_ue_find_by_imsi_bcd(char *imsi_bcd);
-sgw_ue_t *sgw_ue_find_by_teid(uint32_t teid);
-
-ogs_hash_index_t *sgw_ue_first();
-ogs_hash_index_t *sgw_ue_next(ogs_hash_index_t *hi);
-sgw_ue_t *sgw_ue_this(ogs_hash_index_t *hi);
-
 sgw_sess_t *sgw_sess_add(sgw_ue_t *sgw_ue, char *apn, uint8_t ebi);
 int sgw_sess_remove(sgw_sess_t *sess);
 void sgw_sess_remove_all(sgw_ue_t *sgw_ue);
-sgw_sess_t *sgw_sess_find_by_apn(
-                                sgw_ue_t *sgw_ue, char *apn);
-sgw_sess_t *sgw_sess_find_by_ebi(
-                                sgw_ue_t *sgw_ue, uint8_t ebi);
+sgw_sess_t *sgw_sess_find_by_apn(sgw_ue_t *sgw_ue, char *apn);
+sgw_sess_t *sgw_sess_find_by_ebi(sgw_ue_t *sgw_ue, uint8_t ebi);
 sgw_sess_t *sgw_sess_find_by_teid(uint32_t teid);
 sgw_sess_t *sgw_sess_first(sgw_ue_t *sgw_ue);
 sgw_sess_t *sgw_sess_next(sgw_sess_t *sess);

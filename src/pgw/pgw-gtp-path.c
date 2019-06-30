@@ -342,12 +342,10 @@ static int pgw_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
         if (IN6_IS_ADDR_MULTICAST(&ip6_dst))
 #endif
         {
-            ogs_hash_index_t *hi = NULL;
+            pgw_sess_t *sess = NULL;
 
             /* IPv6 Multicast */
-            for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi)) {
-                pgw_sess_t *sess = pgw_sess_this(hi);
-                ogs_assert(sess);
+            ogs_list_for_each(&pgw_self()->sess_list, sess) {
                 if (sess->ipv6) {
                     /* PDN IPv6 is avaiable */
                     pgw_bearer_t *bearer = pgw_default_bearer_in_sess(sess);

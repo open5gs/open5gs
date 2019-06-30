@@ -244,7 +244,6 @@ static int decode_ipv6_header(
 
 pgw_bearer_t *pgw_bearer_find_by_packet(ogs_pkbuf_t *pkt)
 {
-    ogs_hash_index_t *hi = NULL;
     struct ip *ip_h =  NULL;
     struct ip6_hdr *ip6_h =  NULL;
     uint32_t *src_addr = NULL;
@@ -253,6 +252,7 @@ pgw_bearer_t *pgw_bearer_find_by_packet(ogs_pkbuf_t *pkt)
     uint8_t proto = 0;
     uint16_t ip_hlen = 0;
     char buf[OGS_ADDRSTRLEN];
+    pgw_sess_t *sess = NULL;
 
     ogs_assert(pkt);
     ogs_assert(pkt->len);
@@ -298,11 +298,7 @@ pgw_bearer_t *pgw_bearer_find_by_packet(ogs_pkbuf_t *pkt)
      *       Until be ready, linear searching will be use to find the bearer.
      */
 
-    for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
-    {
-        pgw_sess_t *sess = pgw_sess_this(hi);
-        ogs_assert(sess);
-
+    ogs_list_for_each(&pgw_self()->sess_list, sess) {
         if (sess->ipv4)
             ogs_debug("[PGW] PAA IPv4:%s",
                     INET_NTOP(&sess->ipv4->addr, buf));

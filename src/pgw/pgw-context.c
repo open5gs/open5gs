@@ -78,7 +78,7 @@ void pgw_context_init()
 
     ogs_pool_init(&pgw_pf_pool, context_self()->pool.pf);
 
-    self.sess_hash = ogs_hash_make();
+    ogs_list_init(&self.sess_list);
 
     context_initiaized = 1;
 }
@@ -88,9 +88,6 @@ void pgw_context_final()
     ogs_assert(context_initiaized == 1);
 
     pgw_sess_remove_all();
-
-    ogs_assert(self.sess_hash);
-    ogs_hash_destroy(self.sess_hash);
 
     pgw_dev_remove_all();
     pgw_subnet_remove_all();
@@ -714,16 +711,6 @@ int pgw_context_parse_config()
     return OGS_OK;
 }
 
-static void *sess_hash_keygen(uint8_t *out, int *out_len,
-        uint8_t *imsi, int imsi_len, char *apn)
-{
-    memcpy(out, imsi, imsi_len);
-    ogs_cpystrn((char*)(out+imsi_len), apn, MAX_APN_LEN+1);
-    *out_len = imsi_len+strlen((char*)(out+imsi_len));
-
-    return out;
-}
-
 pgw_sess_t *pgw_sess_add(
         uint8_t *imsi, int imsi_len, char *apn, 
         uint8_t pdn_type, uint8_t ebi)
@@ -794,20 +781,16 @@ pgw_sess_t *pgw_sess_add(
             sess->ipv4 ?  INET_NTOP(&sess->ipv4->addr, buf1) : "",
             sess->ipv6 ?  INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
-    /* Generate Hash Key : IMSI + APN */
-    sess_hash_keygen(sess->hash_keybuf, &sess->hash_keylen,
-            imsi, imsi_len, apn);
-    ogs_hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, sess);
+    ogs_list_add(&self.sess_list, sess);
 
     return sess;
 }
 
 int pgw_sess_remove(pgw_sess_t *sess)
 {
-    ogs_assert(self.sess_hash);
     ogs_assert(sess);
 
-    ogs_hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, NULL);
+    ogs_list_remove(&self.sess_list, sess);
 
     if (sess->ipv4)
         pgw_ue_ip_free(sess->ipv4);
@@ -823,13 +806,10 @@ int pgw_sess_remove(pgw_sess_t *sess)
 
 void pgw_sess_remove_all()
 {
-    ogs_hash_index_t *hi = NULL;
-    pgw_sess_t *sess = NULL;
+    pgw_sess_t *sess = NULL, *next = NULL;;
 
-    for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi)) {
-        sess = pgw_sess_this(hi);
+    ogs_list_for_each_safe(&self.sess_list, next, sess)
         pgw_sess_remove(sess);
-    }
 }
 
 pgw_sess_t *pgw_sess_find(uint32_t index)
@@ -841,18 +821,6 @@ pgw_sess_t *pgw_sess_find(uint32_t index)
 pgw_sess_t *pgw_sess_find_by_teid(uint32_t teid)
 {
     return pgw_sess_find(teid);
-}
-
-pgw_sess_t *pgw_sess_find_by_imsi_apn(
-    uint8_t *imsi, int imsi_len, char *apn)
-{
-    uint8_t keybuf[MAX_IMSI_LEN+MAX_APN_LEN+1];
-    int keylen = 0;
-
-    ogs_assert(self.sess_hash);
-
-    sess_hash_keygen(keybuf, &keylen, imsi, imsi_len, apn);
-    return (pgw_sess_t *)ogs_hash_get(self.sess_hash, keybuf, keylen);
 }
 
 gtp_node_t *pgw_sgw_add_by_message(gtp_message_t *message)
@@ -919,32 +887,12 @@ pgw_sess_t *pgw_sess_add_by_message(gtp_message_t *message)
             apn, req->pdn_type.u8,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
 
-    sess = pgw_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
-    if (!sess) {
-        sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
-            req->pdn_type.u8,
-            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-        ogs_assert(sess);
-    }
+    sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
+        req->pdn_type.u8,
+        req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+    ogs_assert(sess);
 
     return sess;
-}
-
-ogs_hash_index_t *pgw_sess_first()
-{
-    ogs_assert(self.sess_hash);
-    return ogs_hash_first(self.sess_hash);
-}
-
-ogs_hash_index_t *pgw_sess_next(ogs_hash_index_t *hi)
-{
-    return ogs_hash_next(hi);
-}
-
-pgw_sess_t *pgw_sess_this(ogs_hash_index_t *hi)
-{
-    ogs_assert(hi);
-    return ogs_hash_this_val(hi);
 }
 
 pgw_bearer_t *pgw_bearer_add(pgw_sess_t *sess)

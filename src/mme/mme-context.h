@@ -227,7 +227,7 @@ typedef struct mme_enb_s {
 } mme_enb_t;
 
 struct enb_ue_s {
-    ogs_lnode_t     node;   /* A node of list_t */
+    ogs_lnode_t     lnode;
 
     /* UE identity */
 #define INVALID_UE_S1AP_ID      0xffffffff /* Initial value of enb_ue_s1ap_id */
@@ -474,7 +474,7 @@ struct mme_ue_s {
         (__mME)->session_context_will_deleted = 0; \
     } while(0)
 typedef struct mme_sess_s {
-    ogs_lnode_t     node;       /* A node of list_t */
+    ogs_lnode_t     lnode;
 
     uint8_t         pti;        /* Procedure Trasaction Identity */
 
@@ -532,7 +532,7 @@ typedef struct mme_sess_s {
         (__bEARER)->sgw_ul_teid = 0; \
     } while(0)
 typedef struct mme_bearer_s {
-    ogs_lnode_t     node;           /* A node of list_t */
+    ogs_lnode_t     lnode;
     ogs_fsm_t       sm;             /* State Machine */
 
     uint8_t         ebi;            /* EPS Bearer ID */    
