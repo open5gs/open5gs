@@ -150,6 +150,8 @@ typedef struct mme_context_s {
     /* M-TMSI Pool */
     OGS_POOL(m_tmsi, mme_m_tmsi_t);
 
+    ogs_list_t      mme_ue_list;
+
     ogs_hash_t      *enb_sock_hash;         /* hash table for ENB Socket */
     ogs_hash_t      *enb_addr_hash;         /* hash table for ENB Address */
     ogs_hash_t      *enb_id_hash;           /* hash table for ENB-ID */
@@ -265,6 +267,7 @@ struct enb_ue_s {
 }; 
 
 struct mme_ue_s {
+    ogs_lnode_t     lnode;
     ogs_fsm_t       sm;     /* A state machine */
 
     struct {
@@ -605,9 +608,9 @@ int mme_enb_sock_type(ogs_sock_t *sock);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb);
 unsigned int enb_ue_count();
-int enb_ue_remove(enb_ue_t *enb_ue);
-int enb_ue_remove_in_enb(mme_enb_t *enb);
-int enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb);
+void enb_ue_remove(enb_ue_t *enb_ue);
+void enb_ue_remove_in_enb(mme_enb_t *enb);
+void enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb);
 enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
         mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
 enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id);
@@ -615,8 +618,8 @@ enb_ue_t *enb_ue_first_in_enb(mme_enb_t *enb);
 enb_ue_t *enb_ue_next_in_enb(enb_ue_t *enb_ue);
 
 mme_ue_t *mme_ue_add(enb_ue_t *enb_ue);
-int mme_ue_remove(mme_ue_t *mme_ue);
-int mme_ue_remove_all();
+void mme_ue_remove(mme_ue_t *mme_ue);
+void mme_ue_remove_all();
 
 mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd);
@@ -677,21 +680,15 @@ int mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue);
  * ### ENB_UE_REMOVE() ####
  *   - Delete Indirect Data Forwarding Tunnel Request/Response
  */
-int mme_ue_associate_enb_ue(
-                           mme_ue_t *mme_ue, enb_ue_t *enb_ue);
-int enb_ue_deassociate(enb_ue_t *enb_ue);
-int mme_ue_deassociate(mme_ue_t *mme_ue);
-int source_ue_associate_target_ue(
-                           enb_ue_t *source_ue, enb_ue_t *target_ue);
-int source_ue_deassociate_target_ue(enb_ue_t *enb_ue);
-
-ogs_hash_index_t *mme_ue_first();
-ogs_hash_index_t *mme_ue_next(ogs_hash_index_t *hi);
-mme_ue_t *mme_ue_this(ogs_hash_index_t *hi);
+void mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue);
+void enb_ue_deassociate(enb_ue_t *enb_ue);
+void mme_ue_deassociate(mme_ue_t *mme_ue);
+void source_ue_associate_target_ue(enb_ue_t *source_ue, enb_ue_t *target_ue);
+void source_ue_deassociate_target_ue(enb_ue_t *enb_ue);
 
 mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti);
-int mme_sess_remove(mme_sess_t *sess);
-int mme_sess_remove_all(mme_ue_t *mme_ue);
+void mme_sess_remove(mme_sess_t *sess);
+void mme_sess_remove_all(mme_ue_t *mme_ue);
 mme_sess_t *mme_sess_find_by_pti(mme_ue_t *mme_ue, uint8_t pti);
 mme_sess_t *mme_sess_find_by_ebi(mme_ue_t *mme_ue, uint8_t ebi);
 mme_sess_t *mme_sess_find_by_apn(mme_ue_t *mme_ue, char *apn);
@@ -700,8 +697,8 @@ mme_sess_t *mme_sess_next(mme_sess_t *sess);
 unsigned int mme_sess_count(mme_ue_t *mme_ue);
 
 mme_bearer_t *mme_bearer_add(mme_sess_t *sess);
-int mme_bearer_remove(mme_bearer_t *bearer);
-int mme_bearer_remove_all(mme_sess_t *sess);
+void mme_bearer_remove(mme_bearer_t *bearer);
+void mme_bearer_remove_all(mme_sess_t *sess);
 mme_bearer_t *mme_bearer_find_by_sess_ebi(mme_sess_t *sess, uint8_t ebi);
 mme_bearer_t *mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, uint8_t ebi);
 mme_bearer_t *mme_bearer_find_or_add_by_message(
@@ -714,7 +711,7 @@ mme_bearer_t *mme_bearer_next(mme_bearer_t *bearer);
 int mme_bearer_is_inactive(mme_ue_t *mme_ue);
 int mme_bearer_set_inactive(mme_ue_t *mme_ue);
 
-int mme_pdn_remove_all(mme_ue_t *mme_ue);
+void mme_pdn_remove_all(mme_ue_t *mme_ue);
 pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn);
 pdn_t *mme_default_pdn(mme_ue_t *mme_ue);
 

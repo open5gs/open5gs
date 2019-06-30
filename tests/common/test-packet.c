@@ -190,9 +190,7 @@ int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
     ogs_assert(node);
     ogs_assert(node->sock);
 
-    hi = mme_ue_first();
-    ogs_assert(hi);
-    mme_ue = mme_ue_this(hi);
+    mme_ue = ogs_list_first(&mme_self()->mme_ue_list);
     ogs_assert(mme_ue);
     sess = mme_sess_first(mme_ue);
     ogs_assert(sess);

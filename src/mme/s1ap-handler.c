@@ -165,7 +165,6 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 
 void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 {
-    int rv;
     int i;
     char buf[OGS_ADDRSTRLEN];
 
@@ -268,8 +267,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
                     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                           mme_ue->enb_ue->enb_ue_s1ap_id,
                           mme_ue->enb_ue->mme_ue_s1ap_id);
-                    rv = enb_ue_remove(mme_ue->enb_ue);
-                    ogs_assert(rv == OGS_OK);
+                    enb_ue_remove(mme_ue->enb_ue);
                 }
                 mme_ue_associate_enb_ue(mme_ue, enb_ue);
             }
@@ -868,35 +866,23 @@ void s1ap_handle_ue_context_release_complete(
     switch (enb_ue->ue_ctx_rel_action) {
     case S1AP_UE_CTX_REL_NO_ACTION:
         ogs_debug("    No Action");
-        rv = enb_ue_remove(enb_ue);
-        ogs_assert(rv == OGS_OK);
+        enb_ue_remove(enb_ue);
         break;
     case S1AP_UE_CTX_REL_S1_NORMAL_RELEASE:
         ogs_debug("    Action: S1 normal release");
-        rv = enb_ue_remove(enb_ue);
-        ogs_assert(rv == OGS_OK);
-
-        ogs_assert(mme_ue);
-        rv = mme_ue_deassociate(mme_ue);
-        ogs_assert(rv == OGS_OK);
+        enb_ue_remove(enb_ue);
+        mme_ue_deassociate(mme_ue);
         break;
     case S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE:
         ogs_debug("    Action: UE context remove()");
-        rv = enb_ue_remove(enb_ue);
-        ogs_assert(rv == OGS_OK);
-
-        ogs_assert(mme_ue);
-        rv = mme_ue_remove(mme_ue);
-        ogs_assert(rv == OGS_OK);
+        enb_ue_remove(enb_ue);
+        mme_ue_remove(mme_ue);
         break;
     case S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL:
         ogs_debug("    Action: Delete indirect tunnel");
 
-        rv = source_ue_deassociate_target_ue(enb_ue);
-        ogs_assert(rv == OGS_OK);
-
-        rv = enb_ue_remove(enb_ue);
-        ogs_assert(rv == OGS_OK);
+        source_ue_deassociate_target_ue(enb_ue);
+        enb_ue_remove(enb_ue);
 
         ogs_assert(mme_ue);
         if (mme_ue_have_indirect_tunnel(mme_ue)) {
@@ -1923,8 +1909,7 @@ void s1ap_handle_s1_reset(
     case S1AP_ResetType_PR_s1_Interface:
         ogs_debug("    S1AP_ResetType_PR_s1_Interface");
 
-        rv = enb_ue_remove_in_enb(enb);
-        ogs_assert(rv == OGS_OK);
+        enb_ue_remove_in_enb(enb);
         break;
     case S1AP_ResetType_PR_partOfS1_Interface:
         ogs_debug("    S1AP_ResetType_PR_partOfS1_Interface");
@@ -1963,10 +1948,9 @@ void s1ap_handle_s1_reset(
                 continue;
             }
 
-            rv = enb_ue_remove(enb_ue);
-            ogs_assert(rv == OGS_OK);
+            enb_ue_remove(enb_ue);
+        }
         break;
-    }
     default:
         ogs_warn("Invalid ResetType[%d]", ResetType->present);
         break;

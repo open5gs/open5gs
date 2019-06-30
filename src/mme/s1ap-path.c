@@ -403,8 +403,7 @@ int s1ap_send_handover_request(
     ogs_debug("    Target : ENB_UE_S1AP_ID[Unknown] MME_UE_S1AP_ID[%d]",
             target_ue->mme_ue_s1ap_id);
 
-    rv = source_ue_associate_target_ue(source_ue, target_ue);
-    ogs_assert(rv == OGS_OK);
+    source_ue_associate_target_ue(source_ue, target_ue);
 
     rv = s1ap_build_handover_request(&s1apbuf, mme_ue, target_ue,
             enb_ue_s1ap_id, mme_ue_s1ap_id,

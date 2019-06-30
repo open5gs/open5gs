@@ -247,8 +247,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
                       mme_ue->enb_ue->enb_ue_s1ap_id,
                       mme_ue->enb_ue->mme_ue_s1ap_id);
-                rv = enb_ue_remove(mme_ue->enb_ue);
-                ogs_assert(rv == OGS_OK);
+                enb_ue_remove(mme_ue->enb_ue);
             }
             mme_ue_associate_enb_ue(mme_ue, enb_ue);
         }
