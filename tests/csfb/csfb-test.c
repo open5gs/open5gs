@@ -251,8 +251,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     OGS_HEX(_emm_information, strlen(_emm_information), tmp);
     ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 25) == 0);
-    ABTS_TRUE(tc, memcmp(recvbuf->data+29, tmp+29, 23) == 0);
-    ABTS_TRUE(tc, memcmp(recvbuf->data+57, tmp+57, 3) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data+29, tmp+29, 21) == 0);
     ogs_pkbuf_free(recvbuf);
 
     /* Receive SGsAP TMSI-REALLOCATION-COMPLETE */
@@ -264,7 +263,6 @@ static void test1_func(abts_case *tc, void *data)
         recvbuf->len) == 0);
     ogs_pkbuf_free(recvbuf);
 
-#if 0 /* Sometimes, it's not working. */
     /* Send GTP-U ICMP Packet */
     rv = testgtpu_build_ping(&sendbuf, "45.45.0.2", "45.45.0.1");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -275,7 +273,6 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
-#endif
 
     /* Retreive M-TMSI */
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(1);
