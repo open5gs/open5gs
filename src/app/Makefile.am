@@ -14,7 +14,6 @@ libapp_la_LIBADD = \
 	$(NULL)
  
 libapp_la_DEPENDENCIES = \
-	@OGSCORE_LIBS@ \
 	$(NULL)
 
 AM_CPPFLAGS = \

@@ -1132,7 +1132,6 @@ libasn1c_la_SOURCES= \
     $(NULL)
 
 libasn1c_la_DEPENDENCIES = \
-	@OGSCORE_LIBS@ \
     $(top_srcdir)/lib/base/libbase.la \
 	$(NULL)
 

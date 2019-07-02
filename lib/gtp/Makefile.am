@@ -25,7 +25,6 @@ libgtp_la_SOURCES = \
 	$(NULL)
 
 libgtp_la_DEPENDENCIES = \
-	@OGSCORE_LIBS@ \
     $(top_srcdir)/lib/base/libbase.la \
 	$(NULL)
 
