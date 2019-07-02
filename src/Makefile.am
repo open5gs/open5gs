@@ -7,7 +7,6 @@ noinst_LTLIBRARIES = libmme.la libhss.la libsgw.la libpgw.la libpcrf.la libepc.l
 libmme_la_SOURCES = mme.c
 libmme_la_DEPENDENCIES = \
 	$(top_srcdir)/src/mme/libmme.la \
-	@OGSCRYPT_LIBS@ \
 	$(NULL)
 libmme_la_LIBADD = \
 	$(top_srcdir)/src/mme/libmme.la \
@@ -17,7 +16,6 @@ libmme_la_LIBADD = \
 libhss_la_SOURCES = hss.c
 libhss_la_DEPENDENCIES = \
 	$(top_srcdir)/src/hss/libhss.la \
-	@OGSCRYPT_LIBS@ \
 	$(NULL)
 libhss_la_LIBADD = \
 	$(top_srcdir)/src/hss/libhss.la \
@@ -55,7 +53,6 @@ libepc_la_DEPENDENCIES = \
     $(top_srcdir)/src/sgw/libsgw.la \
     $(top_srcdir)/src/pgw/libpgw.la \
     $(top_srcdir)/src/pcrf/libpcrf.la \
-	@OGSCRYPT_LIBS@ \
 	$(NULL)
 libepc_la_LIBADD = \
     $(top_srcdir)/src/mme/libmme.la \

@@ -23,7 +23,6 @@ libnas_la_SOURCES = \
 	$(NULL)
 
 libnas_la_DEPENDENCIES = \
-	@OGSCORE_LIBS@ \
     $(top_srcdir)/lib/base/libbase.la \
 	$(NULL)
 

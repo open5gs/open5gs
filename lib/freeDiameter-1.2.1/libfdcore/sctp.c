@@ -48,7 +48,8 @@
 /* #define OLD_SCTP_SOCKET_API */
 
 /* Automatically fallback to old API if some of the new symbols are not defined */
-#if (!defined(SCTP_CONNECTX_4_ARGS) || (!defined(SCTP_RECVRCVINFO)) || (!defined(SCTP_SNDINFO))) 
+#if (!defined(SCTP_CONNECTX_4_ARGS) || (!defined(SCTP_RECVRCVINFO)) || (!defined(SCTP_SNDINFO)) || \
+    (!defined(SCTP_SEND_FAILED_EVENT)) || (!defined(SCTP_NOTIFICATIONS_STOPPED_EVENT)) )
 # define OLD_SCTP_SOCKET_API
 #endif
 

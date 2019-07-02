@@ -32,7 +32,6 @@ libfd_la_SOURCES = \
 	$(NULL)
 
 libfd_la_DEPENDENCIES = \
-	@OGSCORE_LIBS@ \
     $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
     $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la \
     $(top_srcdir)/lib/base/libbase.la \

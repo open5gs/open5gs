@@ -9,7 +9,6 @@ libbase_la_SOURCES = \
 	$(NULL)
 
 libbase_la_DEPENDENCIES = \
-	@OGSCORE_LIBS@ \
 	$(NULL)
 
 libbase_la_LIBADD = \
