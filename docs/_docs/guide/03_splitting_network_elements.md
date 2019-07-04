@@ -15,13 +15,6 @@ In these examples we'll be connecting NextEPC elements together, but it could ju
 | MME | 10.0.1.124 | mme.localdomain |
 | HSS | 10.0.1.118 | hss.localdomain |
 
-# External MME
-In it's simplest form the MME has 3 interfaces:
- * S1AP - Connections from eNodeBs
- * S6a - Connection to HSS (Diameter)
- * S11 - Connection to S-GW (GTP-C)
-
-
 
 # External P-GW
 In it's simplest from the P-GW has 3 interfaces:
@@ -148,8 +141,12 @@ Restart MongoDB for changes to take effect.
 
 ``` $ /etc/init.d/mongodb restart ```
 
-
 # External MME
+In it's simplest form the MME has 3 interfaces:
+ * S1AP - Connections from eNodeBs
+ * S6a - Connection to HSS (Diameter)
+ * S11 - Connection to S-GW (GTP-C)
+ 
 ### S11 Interface Configuration
 Edit ```/etc/nextepc/mme.conf```, filling the IP address of the S-GW and P-GW servers.
 ```
