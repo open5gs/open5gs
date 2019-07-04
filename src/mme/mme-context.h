@@ -307,7 +307,7 @@ struct mme_ue_s {
     /* UE Info */
     tai_t           tai;
     e_cgi_t         e_cgi;
-    plmn_id_t       visited_plmn_id;
+    plmn_id_t       last_visited_plmn_id;
 
 #define SECURITY_CONTEXT_IS_VALID(__mME) \
     ((__mME) && \

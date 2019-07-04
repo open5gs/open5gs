@@ -116,12 +116,10 @@ int emm_handle_attach_request(
         nas_tracking_area_identity_t *last_visited_registered_tai = 
             &attach_request->last_visited_registered_tai;
 
-        nas_to_plmn_id(&mme_ue->visited_plmn_id,
+        nas_to_plmn_id(&mme_ue->last_visited_plmn_id,
             &last_visited_registered_tai->nas_plmn_id);
         ogs_debug("    Visited_PLMN_ID:%06x",
-                plmn_id_hexdump(&mme_ue->visited_plmn_id));
-    } else {
-        memcpy(&mme_ue->visited_plmn_id, &mme_ue->tai.plmn_id, PLMN_ID_LEN);
+                plmn_id_hexdump(&mme_ue->last_visited_plmn_id));
     }
 
     memcpy(&mme_ue->ue_network_capability, 
@@ -473,13 +471,11 @@ int emm_handle_tau_request(
         nas_tracking_area_identity_t *last_visited_registered_tai = 
             &tau_request->last_visited_registered_tai;
 
-        nas_to_plmn_id(&mme_ue->visited_plmn_id,
+        nas_to_plmn_id(&mme_ue->last_visited_plmn_id,
                 &last_visited_registered_tai->nas_plmn_id);
         ogs_debug("    Visited_PLMN_ID:%06x",
-                plmn_id_hexdump(&mme_ue->visited_plmn_id));
-    } else {
-        memcpy(&mme_ue->visited_plmn_id, &mme_ue->tai.plmn_id, PLMN_ID_LEN);
-    }
+                plmn_id_hexdump(&mme_ue->last_visited_plmn_id));
+    } 
 
     if (tau_request->presencemask &
             NAS_TRACKING_AREA_UPDATE_REQUEST_UE_NETWORK_CAPABILITY_PRESENT) {

@@ -60,8 +60,8 @@ int mme_s11_build_create_session_request(
             uli_buf, GTP_MAX_ULI_LEN);
 
     req->serving_network.presence = 1;
-    req->serving_network.data = &mme_ue->visited_plmn_id;
-    req->serving_network.len = sizeof(mme_ue->visited_plmn_id);
+    req->serving_network.data = &mme_ue->tai.plmn_id;
+    req->serving_network.len = sizeof(mme_ue->tai.plmn_id);
 
     req->rat_type.presence = 1;
     req->rat_type.u8 = GTP_RAT_TYPE_EUTRAN;

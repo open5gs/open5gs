@@ -152,7 +152,7 @@ void mme_s6a_send_air(mme_ue_t *mme_ue,
     /* Set the Visited-PLMN-Id AVP */
     ret = fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = nas_from_plmn_id(&nas_plmn_id, &mme_ue->visited_plmn_id);
+    val.os.data = nas_from_plmn_id(&nas_plmn_id, &mme_ue->tai.plmn_id);
     val.os.len  = PLMN_ID_LEN;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
@@ -514,7 +514,7 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     /* Set the Visited-PLMN-Id */
     ret = fd_msg_avp_new(s6a_visited_plmn_id, 0, &avp);
     ogs_assert(ret == 0);
-    val.os.data = nas_from_plmn_id(&nas_plmn_id, &mme_ue->visited_plmn_id);
+    val.os.data = nas_from_plmn_id(&nas_plmn_id, &mme_ue->tai.plmn_id);
     val.os.len  = PLMN_ID_LEN;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
