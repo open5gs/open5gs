@@ -1,4 +1,8 @@
-# NextEPC Splitting Network Elements
+---
+title: NextEPC Splitting Network Elements
+head_inline: "<style> .blue { color: blue; } </style>"
+---
+
 In a production network network elements would typically not all be on the same machine, as is the default example that ships with NextEPC.
 
 NextEPC is designed to be standards compliant, so in theory you can connect any core network element (MME, PGW, SGW, PCRF, HSS) from NextEPC or any other vendor to form a functioning network, so long as they are 3GPP compliant. 
