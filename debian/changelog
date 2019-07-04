@@ -1,3 +1,9 @@
+nextepc (0.5.0) unstable; urgency=medium
+
+  * OGSLib package name changed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Thu, 04 Jul 2019 12:58:43 +0000
+
 nextepc (0.4.4~bionic) bionic; urgency=medium
 
   * Bug Fixed
