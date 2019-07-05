@@ -28,7 +28,6 @@
 #include "nas-path.h"
 #include "mme-fd-path.h"
 #include "mme-gtp-path.h"
-#include "sgsap-path.h"
 
 #include "emm-handler.h"
 
@@ -267,9 +266,6 @@ int emm_handle_attach_complete(
 
     ogs_debug("[EMM] EMM information");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-
-    if (mme_ue->vlr)
-        sgsap_send_tmsi_reallocation_complete(mme_ue);
 
     return OGS_OK;
 }

@@ -24,7 +24,7 @@
 #include "nas-conv.h"
 #include "nas-path.h"
 
-void sgsap_handler_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
+void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 {
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -108,7 +108,7 @@ error:
     mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
 }
 
-void sgsap_handler_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
+void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 {
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -171,4 +171,63 @@ void sgsap_handler_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     nas_send_attach_reject(mme_ue,
             emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
     mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
+}
+
+void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
+{
+    ogs_tlv_t *root = NULL, *iter = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    uint8_t type = 0;
+    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
+    int nas_mobile_identity_imsi_len = 0;
+
+    ogs_assert(vlr);
+    ogs_assert(pkbuf);
+
+    type = *(unsigned char *)(pkbuf->data);
+    if (type == SGSAP_EPS_DETACH_ACK)
+        ogs_debug("[SGSAP] EPS-DETACH-ACK");
+    else if (type == SGSAP_IMSI_DETACH_ACK)
+        ogs_debug("[SGSAP] IMSI-DETACH-ACK");
+    else
+        ogs_assert_if_reached();
+
+    ogs_pkbuf_pull(pkbuf, 1);
+
+    root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
+    ogs_assert(root);
+
+    iter = root;
+    while (iter) {
+        switch (iter->type) {
+        case SGSAP_IE_IMSI_TYPE:
+            nas_mobile_identity_imsi = iter->value;
+            nas_mobile_identity_imsi_len = iter->length;
+            break;
+        default:
+            ogs_warn("Invalid Type [%d]", iter->type);
+            break;
+        }
+        iter = iter->next;
+    }
+
+    ogs_tlv_free_all(root);
+
+    ogs_assert(nas_mobile_identity_imsi);
+    ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
+
+    if (nas_mobile_identity_imsi->type == NAS_MOBILE_IDENTITY_IMSI) {
+        char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+
+        nas_imsi_to_bcd(nas_mobile_identity_imsi,
+                nas_mobile_identity_imsi_len, imsi_bcd);
+        mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
+    } else 
+        ogs_assert_if_reached();
+
+    ogs_assert(mme_ue);
+
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    mme_send_delete_session_or_detach(mme_ue);
 }

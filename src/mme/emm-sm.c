@@ -30,6 +30,7 @@
 #include "esm-handler.h"
 #include "nas-path.h"
 #include "s1ap-path.h"
+#include "sgsap-path.h"
 #include "mme-gtp-path.h"
 #include "mme-path.h"
 #include "mme-sm.h"
@@ -206,8 +207,12 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 return;
             }
 
-            rv = mme_send_delete_session_or_detach(mme_ue);
-            ogs_assert(rv == OGS_OK);
+            if (mme_ue->p_tmsi) {
+                rv = sgsap_send_detach_indication(mme_ue);
+            } else {
+                rv = mme_send_delete_session_or_detach(mme_ue);
+                ogs_assert(rv == OGS_OK);
+            }
 
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             return;
@@ -592,6 +597,9 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 OGS_FSM_TRAN(s, emm_state_exception);
                 break;
             }
+            if (mme_ue->p_tmsi)
+                sgsap_send_tmsi_reallocation_complete(mme_ue);
+
             OGS_FSM_TRAN(s, &emm_state_registered);
             break;
         case NAS_ATTACH_REQUEST:

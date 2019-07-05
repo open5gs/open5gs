@@ -90,8 +90,7 @@ ogs_pkbuf_t *sgsap_build_tmsi_reallocation_complete(mme_ue_t *mme_ue)
     return pkbuf;
 }
 
-ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue,
-        uint8_t msg_type, uint8_t detach_type)
+ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue)
 {
     mme_vlr_t *vlr = NULL;
     ogs_tlv_t *root = NULL;
@@ -100,33 +99,35 @@ ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue,
     char mme_name[SGSAP_IE_MME_NAME_LEN+1];
     int mme_name_len = 0;
     served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
-    nas_lai_t lai;
+    uint8_t type = SGSAP_EPS_DETACH_INDICATION;
     uint8_t indication = SGSAP_EPS_DETACH_UE_INITIATED;
 
     ogs_assert(mme_ue);
     vlr = mme_ue->vlr;
     ogs_assert(vlr);
 
-    switch (detach_type) {
+    switch (mme_ue->nas_eps.detach.detach_type) {
     /* 0 0 1 : EPS detach */
     case NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
+        type = SGSAP_EPS_DETACH_INDICATION;
         indication = SGSAP_EPS_DETACH_UE_INITIATED;
         break;
     /* 0 1 0 : IMSI detach */
     case NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
+        type = SGSAP_IMSI_DETACH_INDICATION;
         indication = SGSAP_IMSI_DETACH_EXPLICIT_UE_INITIATED;
         break;
     case 6: /* 1 1 0 : reserved */
     case 7: /* 1 1 1 : reserved */
-        ogs_warn("Unknown Detach type[%d]", detach_type);
+        ogs_warn("Unknown Detach type[%d]", mme_ue->nas_eps.detach.detach_type);
         break;
     /* 0 1 1 : combined EPS/IMSI detach */
     case NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
+        type = SGSAP_IMSI_DETACH_INDICATION;
         indication = SGSAP_IMSI_DETACH_COMBINED_UE_INITIATED;
     default: /* all other values */
         break;
     }
-    ogs_debug("    INDICATION[%d]", indication);
 
     root = ogs_tlv_add(NULL, SGSAP_IE_IMSI_TYPE, SGSAP_IE_IMSI_LEN, 0,
             &mme_ue->nas_mobile_identity_imsi);
@@ -136,21 +137,22 @@ ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue,
             served_gummei->mme_gid[0],
             &served_gummei->plmn_id[0]);
     ogs_tlv_add(root, SGSAP_IE_MME_NAME_TYPE, mme_name_len, 0, mme_name);
-    if (msg_type == SGSAP_EPS_DETACH_INDICATION)
+    if (type == SGSAP_EPS_DETACH_INDICATION) {
+        ogs_debug("[SGSAP] EPS-DETACH-INDICATION");
         ogs_tlv_add(root, SGSAP_IE_EPS_DETACH_INDICATION_TYPE,
                 SGSAP_IE_EPS_DETACH_INDICATION_LEN, 0, &indication);
-    else if (msg_type == SGSAP_IMSI_DETACH_INDICATION)
+    } else if (type == SGSAP_IMSI_DETACH_INDICATION) {
+        ogs_debug("[SGSAP] IMSI-DETACH-INDICATION");
         ogs_tlv_add(root, SGSAP_IE_IMSI_DETACH_INDICATION_TYPE,
                 SGSAP_IE_IMSI_DETACH_INDICATION_LEN, 0, &indication);
-    else
+    } else
         ogs_assert_if_reached();
 
-    memcpy(&lai, &vlr->lai, sizeof(nas_lai_t));
-    lai.lac = htons(lai.lac);
-    ogs_tlv_add(root, SGSAP_IE_LAI_TYPE, SGSAP_IE_LAI_LEN, 0, &lai);
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    ogs_debug("    INDICATION[%d]", indication);
 
     pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_put_u8(pkbuf, msg_type);
+    ogs_pkbuf_put_u8(pkbuf, type);
     ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,

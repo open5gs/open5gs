@@ -301,10 +301,25 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+#if 0
+    ogs_msleep(50);
+#endif
+
     /* Send Detach Request */
     rv = tests1ap_build_detach_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive SGsAP IMSI-DETACH-INDICATION */
+    recvbuf = testvlr_sgsap_read(sgsap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send SGsAP IMSI-DETACH-ACK */
+    rv = testsgsap_imsi_detach_ack(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testvlr_sgsap_send(sgsap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive UE Context Release Command */

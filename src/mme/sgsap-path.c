@@ -149,22 +149,13 @@ int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue)
     return OGS_OK;
 }
 
-int sgsap_send_detach_indication(mme_ue_t *mme_ue,
-        uint8_t msg_type, uint8_t detach_type)
+int sgsap_send_detach_indication(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_assert(mme_ue);
 
-    if (msg_type == SGSAP_EPS_DETACH_INDICATION)
-        ogs_debug("[SGSAP] EPS-DETACH-INDICATION");
-    else if (msg_type == SGSAP_IMSI_DETACH_INDICATION)
-        ogs_debug("[SGSAP] IMSI-DETACH-INDICATION");
-    else
-        ogs_assert_if_reached();
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-
-    pkbuf = sgsap_build_detach_indication(mme_ue, msg_type, detach_type);
+    pkbuf = sgsap_build_detach_indication(mme_ue);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
     ogs_assert(rv == OGS_OK);
 

@@ -118,10 +118,14 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
         type = *(unsigned char *)(pkbuf->data);
         switch (type) {
         case SGSAP_LOCATION_UPDATE_ACCEPT:
-            sgsap_handler_location_update_accept(vlr, pkbuf);
+            sgsap_handle_location_update_accept(vlr, pkbuf);
             break;
         case SGSAP_LOCATION_UPDATE_REJECT:
-            sgsap_handler_location_update_reject(vlr, pkbuf);
+            sgsap_handle_location_update_reject(vlr, pkbuf);
+            break;
+        case SGSAP_EPS_DETACH_ACK:
+        case SGSAP_IMSI_DETACH_ACK:
+            sgsap_handle_detach_ack(vlr, pkbuf);
             break;
         default:
             ogs_warn("Not implemented(type:%d)", type);

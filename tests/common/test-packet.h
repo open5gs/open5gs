@@ -131,6 +131,7 @@ int testgtpu_build_slacc_rs(ogs_pkbuf_t **sendbuf, int i);
 
 int testsgsap_location_update_accept(ogs_pkbuf_t **pkbuf, int i);
 int testsgsap_location_update_reject(ogs_pkbuf_t **pkbuf, int i);
+int testsgsap_imsi_detach_ack(ogs_pkbuf_t **pkbuf, int i);
 
 #ifdef __cplusplus
 }

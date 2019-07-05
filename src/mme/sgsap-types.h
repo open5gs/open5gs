@@ -31,7 +31,9 @@ extern "C" {
 #define SGSAP_LOCATION_UPDATE_REJECT                    11
 #define SGSAP_TMSI_REALLOCATION_COMPLETE                12
 #define SGSAP_EPS_DETACH_INDICATION                     17
+#define SGSAP_EPS_DETACH_ACK                            18
 #define SGSAP_IMSI_DETACH_INDICATION                    19
+#define SGSAP_IMSI_DETACH_ACK                           20
 #define SGSAP_MO_CSFB_INDICIATION                       24
 
 #define SGSAP_IE_IMSI_TYPE                              1
