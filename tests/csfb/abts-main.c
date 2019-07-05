@@ -86,6 +86,8 @@ int test_initialize(app_param_t *param, int argc, const char *const argv[])
         ogs_msleep(50);
     }
 
+    ogs_msleep(100); /* waiting for running SCTP server */
+
     return rv;
 }
 
