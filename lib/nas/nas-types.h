@@ -377,6 +377,7 @@ ED3(uint8_t cn_specific_drx_cycle_length_coefficient_and_drx_value_for_s1_mode:4
  * A.1 Causes related to UE identification */
 #define EMM_CAUSE_IMSI_UNKNOWN_IN_HSS 2
 #define EMM_CAUSE_ILLEGAL_UE 3
+#define EMM_CAUSE_IMSI_UNKNOWN_IN_VLR 4
 #define EMM_CAUSE_ILLEGAL_ME 6
 #define EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK 9
 #define EMM_CAUSE_IMPLICITLY_DETACHED 10

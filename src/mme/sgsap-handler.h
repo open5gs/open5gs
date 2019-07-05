@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 void sgsap_handler_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf);
+void sgsap_handler_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

@@ -130,6 +130,7 @@ int testgtpu_build_ping(ogs_pkbuf_t **sendbuf,
 int testgtpu_build_slacc_rs(ogs_pkbuf_t **sendbuf, int i);
 
 int testsgsap_location_update_accept(ogs_pkbuf_t **pkbuf, int i);
+int testsgsap_location_update_reject(ogs_pkbuf_t **pkbuf, int i);
 
 #ifdef __cplusplus
 }

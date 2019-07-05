@@ -120,6 +120,9 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
         case SGSAP_LOCATION_UPDATE_ACCEPT:
             sgsap_handler_location_update_accept(vlr, pkbuf);
             break;
+        case SGSAP_LOCATION_UPDATE_REJECT:
+            sgsap_handler_location_update_reject(vlr, pkbuf);
+            break;
         default:
             ogs_warn("Not implemented(type:%d)", type);
             break;
