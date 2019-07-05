@@ -22,6 +22,7 @@
 #include "mme-event.h"
 #include "mme-sm.h"
 
+#include "sgsap-types.h"
 #include "sgsap-build.h"
 #include "sgsap-path.h"
 
@@ -102,7 +103,7 @@ int sgsap_send_to_vlr_with_sid(
                 node->sock, node->addr, NULL, 0, 0);
     }
 
-    return OGS_OK;;
+    return OGS_OK;
 }
 
 int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
@@ -124,8 +125,8 @@ int sgsap_send_location_update_request(mme_ue_t *mme_ue)
 
     ogs_debug("[SGSAP] LOCATION-UPDATE-REQUEST");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-    pkbuf = sgsap_build_location_update_request(mme_ue);
 
+    pkbuf = sgsap_build_location_update_request(mme_ue);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
     ogs_assert(rv == OGS_OK);
 
@@ -140,8 +141,30 @@ int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue)
 
     ogs_debug("[SGSAP] TMSI-REALLOCATION-COMPLETE");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-    pkbuf = sgsap_build_tmsi_reallocation_complete(mme_ue);
 
+    pkbuf = sgsap_build_tmsi_reallocation_complete(mme_ue);
+    rv = sgsap_send_to_vlr(mme_ue, pkbuf);
+    ogs_assert(rv == OGS_OK);
+
+    return OGS_OK;
+}
+
+int sgsap_send_detach_indication(mme_ue_t *mme_ue,
+        uint8_t msg_type, uint8_t detach_type)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_assert(mme_ue);
+
+    if (msg_type == SGSAP_EPS_DETACH_INDICATION)
+        ogs_debug("[SGSAP] EPS-DETACH-INDICATION");
+    else if (msg_type == SGSAP_IMSI_DETACH_INDICATION)
+        ogs_debug("[SGSAP] IMSI-DETACH-INDICATION");
+    else
+        ogs_assert_if_reached();
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    pkbuf = sgsap_build_detach_indication(mme_ue, msg_type, detach_type);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
     ogs_assert(rv == OGS_OK);
 
