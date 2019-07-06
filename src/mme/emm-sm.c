@@ -189,6 +189,26 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("[EMM] Tracking area update complete");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
             return;
+        case NAS_EXTENDED_SERVICE_REQUEST:
+            ogs_debug("[EMM] Extended service request");
+            rv = emm_handle_extended_service_request(
+                    mme_ue, &message->emm.extended_service_request);
+            if (rv != OGS_OK) {
+                ogs_error("emm_handle_extended_service_request() failed");
+                OGS_FSM_TRAN(s, emm_state_exception);
+                return;
+            }
+
+            if (!MME_UE_HAVE_IMSI(mme_ue)) {
+                ogs_warn("[EMM] Extended Service request : Unknown UE");
+                rv = nas_send_service_reject(mme_ue,
+                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                ogs_assert(rv == OGS_OK);
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                return;
+            }
+
+            break;
         case NAS_EMM_STATUS:
             ogs_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                     mme_ue->imsi_bcd,
@@ -290,6 +310,39 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             rv = nas_send_tau_accept(mme_ue,
                     S1AP_ProcedureCode_id_downlinkNASTransport);
             ogs_assert(rv == OGS_OK);
+        } else {
+            ogs_fatal("Invalid Procedure Code[%d]", (int)procedureCode);
+            ogs_assert_if_reached();
+        }
+        break;
+    case MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST:
+        procedureCode = e->s1ap_code;
+
+        if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+            ogs_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
+            rv = nas_send_service_reject(mme_ue,
+                EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+            ogs_assert(rv == OGS_OK);
+            OGS_FSM_TRAN(s, emm_state_exception);
+            break;
+        }
+
+        if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+            ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+            rv = nas_send_service_reject(mme_ue,
+                EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+            ogs_assert(rv == OGS_OK);
+            OGS_FSM_TRAN(s, &emm_state_exception);
+            return;
+        }
+
+        if (procedureCode == S1AP_ProcedureCode_id_initialUEMessage) {
+            ogs_debug("    Iniital UE Message");
+            rv = s1ap_send_initial_context_setup_request(mme_ue);
+            ogs_assert(rv == OGS_OK);
+        } else if (procedureCode == S1AP_ProcedureCode_id_uplinkNASTransport) {
+            ogs_error("    Uplink NAS Transport : Not Implemented");
+            ogs_assert_if_reached();
         } else {
             ogs_fatal("Invalid Procedure Code[%d]", (int)procedureCode);
             ogs_assert_if_reached();

@@ -2104,21 +2104,25 @@ mme_ue_t *mme_ue_find_by_teid(uint32_t teid)
 mme_ue_t *mme_ue_find_by_message(nas_message_t *message)
 {
     mme_ue_t *mme_ue = NULL;
+    nas_attach_request_t *attach_request = NULL;
+    nas_tracking_area_update_request_t *tau_request = NULL;
+    nas_extended_service_request_t *extended_service_request = NULL;
+    nas_eps_mobile_identity_t *eps_mobile_identity = NULL;
+    nas_mobile_identity_t *mobile_identity = NULL;
+
+    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
+    nas_mobile_identity_tmsi_t *mobile_identity_tmsi = NULL;
+    served_gummei_t *served_gummei = NULL;
+    nas_guti_t nas_guti;
 
     switch (message->emm.h.message_type) {
     case NAS_ATTACH_REQUEST:
-    {
-        nas_attach_request_t *attach_request =
-            &message->emm.attach_request;
-
-        nas_eps_mobile_identity_t *eps_mobile_identity =
-                        &attach_request->eps_mobile_identity;
+        attach_request = &message->emm.attach_request;
+        eps_mobile_identity = &attach_request->eps_mobile_identity;
 
         switch(eps_mobile_identity->imsi.type) {
         case NAS_EPS_MOBILE_IDENTITY_IMSI:
-        {
-            char imsi_bcd[MAX_IMSI_BCD_LEN+1];
-
             nas_imsi_to_bcd(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length,
                 imsi_bcd);
@@ -2130,17 +2134,13 @@ mme_ue_t *mme_ue_find_by_message(nas_message_t *message)
                 ogs_trace("Unknown UE by IMSI[%s]", imsi_bcd);
             }
             break;
-        }
         case NAS_EPS_MOBILE_IDENTITY_GUTI:
-        {
-            nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti =
-                &eps_mobile_identity->guti;
-            nas_guti_t nas_guti;
+            eps_mobile_identity_guti = &eps_mobile_identity->guti;
 
-            nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
-            nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
-            nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
-            nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
+            nas_guti.nas_plmn_id = eps_mobile_identity_guti->nas_plmn_id;
+            nas_guti.mme_gid = eps_mobile_identity_guti->mme_gid;
+            nas_guti.mme_code = eps_mobile_identity_guti->mme_code;
+            nas_guti.m_tmsi = eps_mobile_identity_guti->m_tmsi;
 
             mme_ue = mme_ue_find_by_guti(&nas_guti);
             if (mme_ue) {
@@ -2155,36 +2155,26 @@ mme_ue_t *mme_ue_find_by_message(nas_message_t *message)
                         nas_guti.m_tmsi);
             }
             break;
-        }
         default:
-            ogs_error("Uknown message imsi type =%d",
-                    eps_mobile_identity->imsi.type);
+            ogs_error("Unknown IMSI type [%d]", eps_mobile_identity->imsi.type);
             break;
         }
         break;
-    }
     case NAS_DETACH_REQUEST:
         /* TODO */
         break;
     case NAS_TRACKING_AREA_UPDATE_REQUEST:
-    {
-        nas_tracking_area_update_request_t *tau_request =
-            &message->emm.tracking_area_update_request;
-
-        nas_eps_mobile_identity_t *eps_mobile_identity =
-                        &tau_request->old_guti;
+        tau_request = &message->emm.tracking_area_update_request;
+        eps_mobile_identity = &tau_request->old_guti;
 
         switch(eps_mobile_identity->imsi.type) {
         case NAS_EPS_MOBILE_IDENTITY_GUTI:
-        {
-            nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti =
-                &eps_mobile_identity->guti;
-            nas_guti_t nas_guti;
+            eps_mobile_identity_guti = &eps_mobile_identity->guti;
 
-            nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
-            nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
-            nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
-            nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
+            nas_guti.nas_plmn_id = eps_mobile_identity_guti->nas_plmn_id;
+            nas_guti.mme_gid = eps_mobile_identity_guti->mme_gid;
+            nas_guti.mme_code = eps_mobile_identity_guti->mme_code;
+            nas_guti.m_tmsi = eps_mobile_identity_guti->m_tmsi;
 
             mme_ue = mme_ue_find_by_guti(&nas_guti);
             if (mme_ue) {
@@ -2199,14 +2189,44 @@ mme_ue_t *mme_ue_find_by_message(nas_message_t *message)
                         nas_guti.m_tmsi);
             }
             break;
-        }
         default:
-            ogs_error("Uknown message imsi type =%d",
-                    eps_mobile_identity->imsi.type);
+            ogs_error("Unknown IMSI type [%d]", eps_mobile_identity->imsi.type);
             break;
         }
         break;
-    }
+    case NAS_EXTENDED_SERVICE_REQUEST:
+        extended_service_request = &message->emm.extended_service_request;
+        mobile_identity = &extended_service_request->m_tmsi;
+
+        switch(mobile_identity->tmsi.type) {
+        case NAS_MOBILE_IDENTITY_TMSI:
+            mobile_identity_tmsi = &mobile_identity->tmsi;
+            served_gummei = &mme_self()->served_gummei[0];
+
+            /* Use the first configured plmn_id and mme group id */
+            nas_from_plmn_id(&nas_guti.nas_plmn_id, &served_gummei->plmn_id[0]);
+            nas_guti.mme_gid = served_gummei->mme_gid[0];
+            nas_guti.mme_code = served_gummei->mme_code[0];
+            nas_guti.m_tmsi = mobile_identity_tmsi->tmsi;
+
+            mme_ue = mme_ue_find_by_guti(&nas_guti);
+            if (mme_ue) {
+                ogs_trace("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                        nas_guti.mme_gid,
+                        nas_guti.mme_code,
+                        nas_guti.m_tmsi);
+            } else {
+                ogs_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                        nas_guti.mme_gid,
+                        nas_guti.mme_code,
+                        nas_guti.m_tmsi);
+            }
+            break;
+        default:
+            ogs_error("Unknown TMSI type [%d]", mobile_identity->tmsi.type);
+            break;
+        }
+        break;
     default:
         break;
     }

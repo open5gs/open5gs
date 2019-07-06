@@ -283,6 +283,26 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Send Extended Service Request */
+    rv = tests1ap_build_extended_service_request(&sendbuf,
+            msgindex, m_tmsi, 4, mme_ue->knas_int);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Initial Context Setup Request */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send Initial Context Setup Response */
+    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
+            2, 2, 5, 0x00470003, "127.0.0.5");
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+#if 0
     /* Send Service Request */
     rv = tests1ap_build_service_request(&sendbuf, 0x000200, 3, 0xc340, m_tmsi);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -300,10 +320,6 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-#if 0
-    ogs_msleep(50);
-#endif
 
     /* Send Detach Request */
     rv = tests1ap_build_detach_request(&sendbuf, msgindex);
@@ -332,6 +348,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+#endif
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("262420000118139"));
@@ -539,7 +556,9 @@ abts_suite *test_csfb(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test1_func, NULL);
+#if 0
     abts_run_test(suite, test2_func, NULL);
+#endif
 
     return suite;
 }

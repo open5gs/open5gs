@@ -1724,6 +1724,99 @@ int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
     return OGS_OK;
 }
 
+int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf,
+        int i, uint32_t m_tmsi, uint8_t seq, uint8_t *knas_int)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "",
+        "",
+        "",
+
+        /* 3 */
+        "",
+        "",
+        "",
+
+        /* 6 */
+        "",
+        "",
+        "",
+
+        /* 9 */
+        "",
+        "",
+        "",
+
+        /* 12 */
+        "",
+        "",
+        "",
+
+        /* 15 */
+        "",
+        "",
+        "",
+
+        /* 18 */
+        "000c"
+        "4038000005000800 020002001a00100f 17b51a57a504074c 000504e900a25200"
+        "4300060009f10700 07006440080009f1 0707080140008640 0130",
+        "",
+        "",
+
+        /* 21 */
+        "",
+        "",
+    };
+    uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        60,
+        0,
+        0,
+        
+        /* 21 */
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_data(*pkbuf, 
+        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+    m_tmsi = htonl(m_tmsi);
+    memcpy((*pkbuf)->data + 29, &m_tmsi, sizeof m_tmsi);
+
+    snow_3g_f9(knas_int, seq, (0 << 27), 0,
+            (*pkbuf)->data + 23, (10 << 3),
+            (*pkbuf)->data + 19);
+
+    return OGS_OK;
+}
+
 int tests1ap_build_pdn_connectivity_request(
         ogs_pkbuf_t **pkbuf, int i)
 {

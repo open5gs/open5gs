@@ -45,6 +45,9 @@ int emm_handle_service_request(
 int emm_handle_tau_request(
     mme_ue_t *mme_ue, nas_tracking_area_update_request_t *tau_request);
 
+int emm_handle_extended_service_request(
+    mme_ue_t *mme_ue, nas_extended_service_request_t *extended_service_request);
+
 #ifdef __cplusplus
 }
 #endif

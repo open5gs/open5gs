@@ -39,6 +39,9 @@ int emm_handle_attach_request(
 {
     int served_tai_index = 0;
 
+    nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
+    nas_guti_t nas_guti;
+
     enb_ue_t *enb_ue = NULL;
     nas_eps_attach_type_t *eps_attach_type =
                     &attach_request->eps_attach_type;
@@ -46,6 +49,8 @@ int emm_handle_attach_request(
                     &attach_request->eps_mobile_identity;
     nas_esm_message_container_t *esm_message_container =
                     &attach_request->esm_message_container;
+
+    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
     ogs_assert(mme_ue);
     enb_ue = mme_ue->enb_ue;
@@ -71,6 +76,10 @@ int emm_handle_attach_request(
      *   Clear Paging Timer and Message
      *
      * SERVICE_REQUEST
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     *
+     * EXTENDED_SERVICE_REQUEST
      *   Clear Paging Timer and Message
      *   Update KeNB
      */
@@ -134,9 +143,6 @@ int emm_handle_attach_request(
 
     switch (eps_mobile_identity->imsi.type) {
     case NAS_EPS_MOBILE_IDENTITY_IMSI:
-    {
-        char imsi_bcd[MAX_IMSI_BCD_LEN+1];
-
         memcpy(&mme_ue->nas_mobile_identity_imsi, 
             &eps_mobile_identity->imsi, sizeof(nas_mobile_identity_imsi_t));
         nas_imsi_to_bcd(
@@ -147,17 +153,13 @@ int emm_handle_attach_request(
         ogs_debug("    IMSI[%s]", imsi_bcd);
 
         break;
-    }
     case NAS_EPS_MOBILE_IDENTITY_GUTI:
-    {
-        nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti =
-                            &eps_mobile_identity->guti;
-        nas_guti_t nas_guti;
+        eps_mobile_identity_guti = &eps_mobile_identity->guti;
 
-        nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
-        nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
-        nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
-        nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
+        nas_guti.nas_plmn_id = eps_mobile_identity_guti->nas_plmn_id;
+        nas_guti.mme_gid = eps_mobile_identity_guti->mme_gid;
+        nas_guti.mme_code = eps_mobile_identity_guti->mme_code;
+        nas_guti.m_tmsi = eps_mobile_identity_guti->m_tmsi;
 
         ogs_debug("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]",
                 nas_guti.mme_gid,
@@ -166,7 +168,6 @@ int emm_handle_attach_request(
                 MME_UE_HAVE_IMSI(mme_ue) 
                     ? mme_ue->imsi_bcd : "Unknown");
         break;
-    }
     default:
         ogs_warn("Not implemented[%d]", eps_mobile_identity->imsi.type);
         break;
@@ -370,6 +371,10 @@ int emm_handle_service_request(
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
      *   Update KeNB
+     *
+     * EXTENDED_SERVICE_REQUEST
+     *   Clear Paging Timer and Message
+     *   Update KeNB
      */
     CLEAR_PAGING_INFO(mme_ue);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
@@ -391,6 +396,9 @@ int emm_handle_tau_request(
         mme_ue_t *mme_ue, nas_tracking_area_update_request_t *tau_request)
 {
     int served_tai_index = 0;
+
+    nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
+    nas_guti_t nas_guti;
 
     nas_eps_update_type_t *eps_update_type =
                     &tau_request->eps_update_type;
@@ -421,6 +429,10 @@ int emm_handle_tau_request(
      *   Clear Paging Timer and Message
      *
      * SERVICE_REQUEST
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     *
+     * EXTENDED_SERVICE_REQUEST
      *   Clear Paging Timer and Message
      *   Update KeNB
      */
@@ -493,15 +505,12 @@ int emm_handle_tau_request(
      */
     switch (eps_mobile_identity->imsi.type) {
     case NAS_EPS_MOBILE_IDENTITY_GUTI:
-    {
-        nas_eps_mobile_identity_guti_t *nas_eps_mobile_identity_guti = 
-                    &eps_mobile_identity->guti;
-        nas_guti_t nas_guti;
+        eps_mobile_identity_guti = &eps_mobile_identity->guti;
 
-        nas_guti.nas_plmn_id = nas_eps_mobile_identity_guti->nas_plmn_id;
-        nas_guti.mme_gid = nas_eps_mobile_identity_guti->mme_gid;
-        nas_guti.mme_code = nas_eps_mobile_identity_guti->mme_code;
-        nas_guti.m_tmsi = nas_eps_mobile_identity_guti->m_tmsi;
+        nas_guti.nas_plmn_id = eps_mobile_identity_guti->nas_plmn_id;
+        nas_guti.mme_gid = eps_mobile_identity_guti->mme_gid;
+        nas_guti.mme_code = eps_mobile_identity_guti->mme_code;
+        nas_guti.m_tmsi = eps_mobile_identity_guti->m_tmsi;
 
         ogs_debug("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
                 nas_guti.mme_gid,
@@ -510,12 +519,99 @@ int emm_handle_tau_request(
                 MME_UE_HAVE_IMSI(mme_ue) 
                     ? mme_ue->imsi_bcd : "Unknown");
         break;
-    }
     default:
         ogs_warn("Not implemented[%d]", 
                 eps_mobile_identity->imsi.type);
         
         return OGS_OK;
+    }
+
+    return OGS_OK;
+}
+
+int emm_handle_extended_service_request(
+    mme_ue_t *mme_ue, nas_extended_service_request_t *extended_service_request)
+{
+    int served_tai_index = 0;
+
+    nas_service_type_t *service_type = &extended_service_request->service_type;
+    nas_mobile_identity_t *mobile_identity = &extended_service_request->m_tmsi;
+    nas_mobile_identity_tmsi_t *mobile_identity_tmsi = NULL;
+    enb_ue_t *enb_ue = NULL;
+
+    ogs_assert(mme_ue);
+    enb_ue = mme_ue->enb_ue;
+    ogs_assert(enb_ue);
+
+    /* Set Service Type */
+    memcpy(&mme_ue->nas_eps.service, service_type,
+            sizeof(nas_service_type_t));
+    mme_ue->nas_eps.type = MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST;
+    mme_ue->nas_eps.ksi = service_type->nas_key_set_identifier;
+    ogs_debug("    NAS_EPS TYPE[%d] KSI[%d] SERVICE[0x%x]",
+            mme_ue->nas_eps.type, mme_ue->nas_eps.ksi,
+            mme_ue->nas_eps.data);
+    
+    /*
+     * ATTACH_REQUEST
+     *   Clear EBI generator
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     *
+     * TAU_REQUEST
+     *   Clear Paging Timer and Message
+     *
+     * SERVICE_REQUEST
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     *
+     * EXTENDED_SERVICE_REQUEST
+     *   Clear Paging Timer and Message
+     *   Update KeNB
+     */
+    CLEAR_PAGING_INFO(mme_ue);
+    if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+        mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+        mme_ue->nhcc = 1;
+    }
+
+    ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
+            plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
+    ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+            plmn_id_hexdump(&mme_ue->e_cgi.plmn_id), mme_ue->e_cgi.cell_id);
+    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+            plmn_id_hexdump(&enb_ue->saved.tai.plmn_id), enb_ue->saved.tai.tac);
+    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
+            plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
+            enb_ue->saved.e_cgi.cell_id);
+
+    /* Copy TAI and ECGI from enb_ue */
+    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(e_cgi_t));
+
+    /* Check TAI */
+    served_tai_index = mme_find_served_tai(&mme_ue->tai);
+    if (served_tai_index < 0) {
+        /* Send TAU reject */
+        ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
+            plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);
+        nas_send_tau_reject(mme_ue, EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
+        return OGS_ERROR;
+    }
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
+
+    switch(mobile_identity->tmsi.type) {
+    case NAS_MOBILE_IDENTITY_TMSI:
+        mobile_identity_tmsi = &mobile_identity->tmsi;
+
+        ogs_debug("    M-TMSI:[0x%x] IMSI:[%s]",
+                mobile_identity_tmsi->tmsi,
+                MME_UE_HAVE_IMSI(mme_ue) ? mme_ue->imsi_bcd : "Unknown");
+        break;
+    default:
+        ogs_error("Unknown TMSI type [%d]", mobile_identity->tmsi.type);
+        break;
     }
 
     return OGS_OK;

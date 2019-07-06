@@ -274,13 +274,15 @@ struct mme_ue_s {
 #define MME_EPS_TYPE_ATTACH_REQUEST                 1
 #define MME_EPS_TYPE_TAU_REQUEST                    2
 #define MME_EPS_TYPE_SERVICE_REQUEST                3
-#define MME_EPS_TYPE_DETACH_REQUEST_FROM_UE         4 
-#define MME_EPS_TYPE_DETACH_REQUEST_TO_UE           5 
+#define MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST       4
+#define MME_EPS_TYPE_DETACH_REQUEST_FROM_UE         5 
+#define MME_EPS_TYPE_DETACH_REQUEST_TO_UE           6 
         uint8_t     type;
         uint8_t     ksi;
         union {
             nas_eps_attach_type_t attach;
             nas_eps_update_type_t update;
+            nas_service_type_t service;
             nas_detach_type_t detach;
             uint8_t data;
         };

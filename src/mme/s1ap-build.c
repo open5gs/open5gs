@@ -490,6 +490,42 @@ int s1ap_build_initial_context_setup_request(
     SecurityKey->bits_unused = 0;
     memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
 
+    /* Set CS-Fallback */
+    if (mme_ue->nas_eps.type == MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST) {
+        S1AP_CSFallbackIndicator_t *CSFallbackIndicator = NULL;
+        S1AP_LAI_t *LAI = NULL;
+
+        ie = ogs_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_CSFallbackIndicator;
+        ie->criticality = S1AP_Criticality_reject;
+        ie->value.present =
+            S1AP_InitialContextSetupRequestIEs__value_PR_CSFallbackIndicator;
+
+        CSFallbackIndicator = &ie->value.choice.CSFallbackIndicator;
+        ogs_assert(CSFallbackIndicator);
+
+        *CSFallbackIndicator = S1AP_CSFallbackIndicator_cs_fallback_required;
+
+        ie = ogs_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_RegisteredLAI;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present =
+            S1AP_InitialContextSetupRequestIEs__value_PR_LAI;
+
+        LAI = &ie->value.choice.LAI;
+        ogs_assert(LAI);
+
+        s1ap_buffer_to_OCTET_STRING(&mme_ue->tai.plmn_id, sizeof(plmn_id_t),
+                &LAI->pLMNidentity);
+        ogs_assert(mme_ue->vlr);
+        ogs_assert(mme_ue->p_tmsi);
+        s1ap_uint16_to_OCTET_STRING(mme_ue->vlr->lai.lac, &LAI->lAC);
+    }
+
     /* Set UeRadioCapability if exists */
     if (mme_ue->ueRadioCapability.buf && mme_ue->ueRadioCapability.size) {
         S1AP_UERadioCapability_t *UERadioCapability = NULL;

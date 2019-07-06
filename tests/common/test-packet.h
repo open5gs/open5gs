@@ -82,6 +82,8 @@ int tests1ap_build_service_request(ogs_pkbuf_t **pkbuf,
 int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
     uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id, uint8_t active_flag,
     uint32_t m_tmsi, uint8_t seq, uint32_t mac, uint8_t *knas_int);
+int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf,
+        int i, uint32_t m_tmsi, uint8_t seq, uint8_t *knas_int);
 int tests1ap_build_pdn_connectivity_request(
         ogs_pkbuf_t **pkbuf, int i);
 int tests1ap_build_pdn_disconnectivity_request(
