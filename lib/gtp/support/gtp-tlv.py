@@ -161,7 +161,7 @@ else:
     d_error("Cannot find file : " + filename)
 
 d_info("[Message List]")
-cachefile = cachedir + 'tlv_msg_list.py'
+cachefile = cachedir + 'tlv-msg-list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
     print "Read from " + cachefile
@@ -238,7 +238,7 @@ else:
 type_list['MM Context'] = { "type": "107", "max_instance" : "0" }
 
 d_info("[Group IE List]")
-cachefile = cachedir + 'tlv_group_list.py'
+cachefile = cachedir + 'tlv-group-list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
     print "Read from " + cachefile
@@ -334,7 +334,7 @@ msg_list["Modify Access Bearers Response"]["table"] = 87
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
         d_info("[" + key + "]")
-        cachefile = cachedir + "tlv_msg_" + msg_list[key]["type"] + ".py"
+        cachefile = cachedir + "tlv-msg-" + msg_list[key]["type"] + ".py"
         if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
             execfile(cachefile)
             print "Read from " + cachefile

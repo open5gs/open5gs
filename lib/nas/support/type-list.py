@@ -34,8 +34,6 @@ type_list["Tracking area identity"]["encode"] = \
 type_list["Mobile identity"]["decode"] = \
 "    if (mobile_identity->tmsi.type == NAS_MOBILE_IDENTITY_TMSI)\n" \
 "    {\n" \
-"        if (mobile_identity->tmsi.spare != 0xf)\n" \
-"            ogs_warn(\"Spec warning : mobile_identity->tmsi.spare = 0x%x\", mobile_identity->tmsi.spare);\n" \
 "        mobile_identity->tmsi.tmsi = ntohl(mobile_identity->tmsi.tmsi);\n" \
 "    }\n\n"
 type_list["Mobile identity"]["encode"] = \
@@ -48,8 +46,6 @@ type_list["Mobile identity"]["encode"] = \
 type_list["EPS mobile identity"]["decode"] = \
 "    if (eps_mobile_identity->guti.type == NAS_EPS_MOBILE_IDENTITY_GUTI)\n" \
 "    {\n" \
-"        if (eps_mobile_identity->guti.spare != 0xf)\n" \
-"            ogs_warn(\"Spec warning : eps_mobile_identy->spare = 0x%x\", eps_mobile_identity->guti.spare);\n" \
 "        eps_mobile_identity->guti.mme_gid = ntohs(eps_mobile_identity->guti.mme_gid);\n" \
 "        eps_mobile_identity->guti.m_tmsi = ntohl(eps_mobile_identity->guti.m_tmsi);\n" \
 "    }\n\n"

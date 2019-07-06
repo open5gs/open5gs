@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-06-21 14:10:51.889878 by acetcom
+ * Created on: 2019-07-06 22:48:01.547045 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -214,8 +214,6 @@ int nas_decode_mobile_identity(nas_mobile_identity_t *mobile_identity, ogs_pkbuf
 
     if (mobile_identity->tmsi.type == NAS_MOBILE_IDENTITY_TMSI)
     {
-        if (mobile_identity->tmsi.spare != 0xf)
-            ogs_warn("Spec warning : mobile_identity->tmsi.spare = 0x%x", mobile_identity->tmsi.spare);
         mobile_identity->tmsi.tmsi = ntohl(mobile_identity->tmsi.tmsi);
     }
 
@@ -507,8 +505,6 @@ int nas_decode_eps_mobile_identity(nas_eps_mobile_identity_t *eps_mobile_identit
 
     if (eps_mobile_identity->guti.type == NAS_EPS_MOBILE_IDENTITY_GUTI)
     {
-        if (eps_mobile_identity->guti.spare != 0xf)
-            ogs_warn("Spec warning : eps_mobile_identy->spare = 0x%x", eps_mobile_identity->guti.spare);
         eps_mobile_identity->guti.mme_gid = ntohs(eps_mobile_identity->guti.mme_gid);
         eps_mobile_identity->guti.m_tmsi = ntohl(eps_mobile_identity->guti.m_tmsi);
     }

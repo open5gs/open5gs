@@ -258,7 +258,7 @@ for key in msg_list.keys():
         continue;
 
     d_info("[" + key + "]")
-    cachefile = cachedir + "nas_msg_" + msg_list[key]["type"] + ".py"
+    cachefile = cachedir + "nas-msg-" + msg_list[key]["type"] + ".py"
     if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
         execfile(cachefile)
         print "Read from " + cachefile
