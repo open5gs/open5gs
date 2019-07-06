@@ -21,6 +21,7 @@
 #include "mme-context.h"
 
 #include "mme-kdf.h"
+#include "mme-sm.h"
 #include "s1ap-build.h"
 #include "s1ap-conv.h"
 
@@ -491,7 +492,8 @@ int s1ap_build_initial_context_setup_request(
     memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
 
     /* Set CS-Fallback */
-    if (mme_ue->nas_eps.type == MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST) {
+    if (mme_ue->nas_eps.type == MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST &&
+        MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
         S1AP_CSFallbackIndicator_t *CSFallbackIndicator = NULL;
         S1AP_LAI_t *LAI = NULL;
 

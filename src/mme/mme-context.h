@@ -189,6 +189,12 @@ typedef struct mme_pgw_s {
     const char      *apn;
 } mme_pgw_t;
 
+#define MME_SGSAP_IS_CONNECTED(__mME) \
+    ((__mME) && ((__mME)->vlr) && \
+     (OGS_FSM_CHECK(&(__mME)->vlr->sm, sgsap_state_connected)))
+#define MME_P_TMSI_IS_AVAILABLE(__mME) \
+    (MME_SGSAP_IS_CONNECTED(__mME) && (__mME)->p_tmsi)
+
 typedef struct mme_vlr_s {
     ogs_lnode_t     lnode;
 

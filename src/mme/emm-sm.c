@@ -227,7 +227,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 return;
             }
 
-            if (mme_ue->p_tmsi) {
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
                 rv = sgsap_send_detach_indication(mme_ue);
             } else {
                 rv = mme_send_delete_session_or_detach(mme_ue);
@@ -650,7 +650,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 OGS_FSM_TRAN(s, emm_state_exception);
                 break;
             }
-            if (mme_ue->p_tmsi)
+            if (MME_P_TMSI_IS_AVAILABLE(mme_ue))
                 sgsap_send_tmsi_reallocation_complete(mme_ue);
 
             OGS_FSM_TRAN(s, &emm_state_registered);

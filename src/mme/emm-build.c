@@ -22,6 +22,7 @@
 #include "nas-security.h"
 #include "mme-kdf.h"
 #include "emm-build.h"
+#include "mme-sm.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __emm_log_domain
@@ -111,16 +112,17 @@ int emm_build_attach_accept(
     eps_network_feature_support->length = 1;
     eps_network_feature_support->ims_vops = 1;
 
-    if (mme_ue->vlr) {
+    if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+        ogs_assert(mme_ue->vlr);
+        ogs_assert(mme_ue->p_tmsi);
+
         attach_accept->presencemask |=
             NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
         lai->nas_plmn_id = mme_ue->vlr->lai.nas_plmn_id;
         lai->lac = mme_ue->vlr->lai.lac;
         ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
                 plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
-    }
 
-    if (mme_ue->p_tmsi) {
         attach_accept->presencemask |= NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
         ms_identity->length = 5;
         tmsi->spare = 0xf;
