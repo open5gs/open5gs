@@ -1489,7 +1489,7 @@ int tests1ap_build_ue_context_release_request(ogs_pkbuf_t **pkbuf, int i)
 
         /* 18 */
         "0012401500000300 0000020001000800 0200010002400202 80",
-        "",
+        "0012401500000300 0000020002000800 0200020002400202 e0",
         "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -1518,7 +1518,7 @@ int tests1ap_build_ue_context_release_request(ogs_pkbuf_t **pkbuf, int i)
         0,
 
         25,
-        0,
+        25,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
