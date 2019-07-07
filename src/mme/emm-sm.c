@@ -318,6 +318,15 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
     case MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST:
         procedureCode = e->s1ap_code;
 
+        if (!MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+            ogs_warn("No P-TMSI : UE[%s]", mme_ue->imsi_bcd);
+            rv = nas_send_service_reject(mme_ue,
+                EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+            ogs_assert(rv == OGS_OK);
+            OGS_FSM_TRAN(s, emm_state_exception);
+            break;
+        }
+
         if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
             ogs_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
             rv = nas_send_service_reject(mme_ue,
@@ -337,6 +346,14 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         }
 
         if (procedureCode == S1AP_ProcedureCode_id_initialUEMessage) {
+            if (mme_ue->nas_eps.service.service_type ==
+                    NAS_SERVICE_TYPE_CS_FALLBACK_FROM_UE ||
+                mme_ue->nas_eps.service.service_type ==
+                    NAS_SERVICE_TYPE_CS_FALLBACK_EMERGENCY_CALL_FROM_UE) {
+                ogs_debug("    MO-CSFB-INDICATION[%d]",
+                        mme_ue->nas_eps.service.service_type);
+                sgsap_send_mo_csfb_indication(mme_ue);
+            }
             ogs_debug("    Iniital UE Message");
             rv = s1ap_send_initial_context_setup_request(mme_ue);
             ogs_assert(rv == OGS_OK);

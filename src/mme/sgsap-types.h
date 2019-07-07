@@ -34,6 +34,8 @@ extern "C" {
 #define SGSAP_EPS_DETACH_ACK                            18
 #define SGSAP_IMSI_DETACH_INDICATION                    19
 #define SGSAP_IMSI_DETACH_ACK                           20
+#define SGSAP_RESET_INDICATION                          21
+#define SGSAP_RESET_ACK                                 22
 #define SGSAP_MO_CSFB_INDICIATION                       24
 
 #define SGSAP_IE_IMSI_TYPE                              1
@@ -56,6 +58,10 @@ extern "C" {
 #define SGSAP_IE_IMSI_DETACH_INDICATION_LEN             1
 #define SGSAP_IE_SERVICE_INDICATOR_TYPE                 32
 #define SGSAP_IE_SERVICE_INDICATOR_LEN                  1
+#define SGSAP_IE_TAI_TYPE                               35
+#define SGSAP_IE_TAI_LEN                                7
+#define SGSAP_IE_E_CGI_TYPE                             36
+#define SGSAP_IE_E_CGI_LEN                              9
 #define SGSAP_IE_UE_EMM_MODE_TYPE                       37
 #define SGSAP_IE_UE_EMM_MODE_LEN                        1
 

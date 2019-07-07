@@ -161,3 +161,19 @@ int sgsap_send_detach_indication(mme_ue_t *mme_ue)
 
     return OGS_OK;
 }
+
+int sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_assert(mme_ue);
+
+    ogs_debug("[SGSAP] MO-CSFB-INDICATION");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    pkbuf = sgsap_build_mo_csfb_indication(mme_ue);
+    rv = sgsap_send_to_vlr(mme_ue, pkbuf);
+    ogs_assert(rv == OGS_OK);
+
+    return OGS_OK;
+}
