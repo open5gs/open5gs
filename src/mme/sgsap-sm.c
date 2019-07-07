@@ -127,8 +127,14 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
         case SGSAP_IMSI_DETACH_ACK:
             sgsap_handle_detach_ack(vlr, pkbuf);
             break;
+        case SGSAP_RESET_INDICATION:
+            sgsap_handle_reset_indication(vlr, pkbuf);
+
+            mme_vlr_free_node(vlr);
+            OGS_FSM_TRAN(s, sgsap_state_will_connect);
+            break;
         default:
-            ogs_warn("Not implemented(type:%d)", type);
+            ogs_warn("Unknown Message Type: [%d]", type);
             break;
         }
         break;

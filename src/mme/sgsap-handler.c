@@ -18,6 +18,7 @@
  */
 
 #include "sgsap-types.h"
+#include "sgsap-path.h"
 
 #include "mme-context.h"
 #include "mme-path.h"
@@ -230,4 +231,14 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     mme_send_delete_session_or_detach(mme_ue);
+}
+
+void sgsap_handle_reset_indication(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
+{
+    ogs_debug("[SGSAP] RESET-INDICATION");
+
+    ogs_assert(vlr);
+    ogs_assert(pkbuf);
+
+    sgsap_send_reset_ack(vlr);
 }

@@ -177,3 +177,18 @@ int sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue)
 
     return OGS_OK;
 }
+
+int sgsap_send_reset_ack(mme_vlr_t *vlr)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_assert(vlr);
+
+    ogs_debug("[SGSAP] RESET-ACK");
+
+    pkbuf = sgsap_build_reset_ack(vlr);
+    rv =  sgsap_send_to_vlr_with_sid(vlr, pkbuf, 0);
+    ogs_assert(rv == OGS_OK);
+
+    return OGS_OK;
+}

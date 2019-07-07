@@ -3160,3 +3160,25 @@ int testsgsap_imsi_detach_ack(ogs_pkbuf_t **pkbuf, int i)
 
     return OGS_OK;
 }
+
+int testsgsap_reset_indication(ogs_pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "15021003766c7207 6578616d706c6503 6e6574",
+        "",
+        "",
+
+    };
+    uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        19,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_data(*pkbuf, 
+        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+
+    return OGS_OK;
+}
