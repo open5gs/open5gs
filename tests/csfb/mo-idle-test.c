@@ -975,7 +975,7 @@ static void test4_func(abts_case *tc, void *data)
 }
 
 
-abts_suite *test_csfb(abts_suite *suite)
+abts_suite *test_mo_idle(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 

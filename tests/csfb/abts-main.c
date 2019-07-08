@@ -29,12 +29,14 @@
 #include "test-packet.h"
 #include "test-app.h"
 
-abts_suite *test_csfb(abts_suite *suite);
+abts_suite *test_mo_idle(abts_suite *suite);
+abts_suite *test_mt_idle(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
-    {test_csfb},
+    {test_mo_idle},
+    {test_mt_idle},
     {NULL},
 };
 
