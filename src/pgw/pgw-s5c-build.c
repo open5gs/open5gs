@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "base/types.h"
 #include "gtp/gtp-types.h"
 #include "gtp/gtp-conv.h"
@@ -82,8 +101,7 @@ int pgw_s5c_build_create_session_response(
      * if PCRF changes APN-AMBR, this should be included. */
 
     /* PCO */
-    if (req->protocol_configuration_options.presence == 1)
-    {
+    if (req->protocol_configuration_options.presence == 1) {
         pco_len = pgw_pco_build(pco_buf, &req->protocol_configuration_options);
         ogs_assert(pco_len > 0);
         rsp->protocol_configuration_options.presence = 1;
@@ -148,8 +166,7 @@ int pgw_s5c_build_delete_session_response(
     /* Recovery */
 
     /* PCO */
-    if (req->protocol_configuration_options.presence == 1)
-    {
+    if (req->protocol_configuration_options.presence == 1) {
         pco_len = pgw_pco_build(pco_buf, &req->protocol_configuration_options);
         ogs_assert(pco_len > 0);
         rsp->protocol_configuration_options.presence = 1;
@@ -180,23 +197,20 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
 
     i = 0;
     pf = pgw_pf_first(bearer);
-    while(pf)
-    {
+    while (pf) {
         tft->pf[i].direction = pf->direction;
         tft->pf[i].identifier = pf->identifier - 1;
         tft->pf[i].precedence = i+1;
 
         j = 0, len = 0;
-        if (pf->rule.proto)
-        {
+        if (pf->rule.proto) {
             tft->pf[i].component[j].type = 
                 GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
             tft->pf[i].component[j].proto = pf->rule.proto;
             j++; len += 2;
         }
 
-        if (pf->rule.ipv4_local)
-        {
+        if (pf->rule.ipv4_local) {
             tft->pf[i].component[j].type = 
                 GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
             tft->pf[i].component[j].ipv4.addr = pf->rule.ip.local.addr[0];
@@ -204,8 +218,7 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
             j++; len += 9;
         }
 
-        if (pf->rule.ipv4_remote)
-        {
+        if (pf->rule.ipv4_remote) {
             tft->pf[i].component[j].type = 
                 GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
             tft->pf[i].component[j].ipv4.addr = pf->rule.ip.remote.addr[0];
@@ -213,8 +226,7 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
             j++; len += 9;
         }
 
-        if (pf->rule.ipv6_local)
-        {
+        if (pf->rule.ipv6_local) {
             tft->pf[i].component[j].type = 
                 GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE;
             memcpy(tft->pf[i].component[j].ipv6.addr, pf->rule.ip.local.addr,
@@ -224,8 +236,7 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
             j++; len += 18;
         }
 
-        if (pf->rule.ipv6_remote)
-        {
+        if (pf->rule.ipv6_remote) {
             tft->pf[i].component[j].type = 
                 GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
             memcpy(tft->pf[i].component[j].ipv6.addr, pf->rule.ip.remote.addr,
@@ -235,17 +246,14 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
             j++; len += 18;
         }
 
-        if (pf->rule.port.local.low)
-        {
+        if (pf->rule.port.local.low) {
             if (pf->rule.port.local.low == pf->rule.port.local.high)
             {
                 tft->pf[i].component[j].type = 
                     GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
                 tft->pf[i].component[j].port.low = pf->rule.port.local.low;
                 j++; len += 3;
-            }
-            else
-            {
+            } else {
                 tft->pf[i].component[j].type = 
                     GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE;
                 tft->pf[i].component[j].port.low = pf->rule.port.local.low;
@@ -254,17 +262,13 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
             }
         }
 
-        if (pf->rule.port.remote.low)
-        {
-            if (pf->rule.port.remote.low == pf->rule.port.remote.high)
-            {
+        if (pf->rule.port.remote.low) {
+            if (pf->rule.port.remote.low == pf->rule.port.remote.high) {
                 tft->pf[i].component[j].type = 
                     GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
                 tft->pf[i].component[j].port.low = pf->rule.port.remote.low;
                 j++; len += 3;
-            }
-            else
-            {
+            } else {
                 tft->pf[i].component[j].type = 
                     GTP_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE;
                 tft->pf[i].component[j].port.low = pf->rule.port.remote.low;
@@ -396,8 +400,7 @@ int pgw_s5c_build_update_bearer_request(
     req->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
 
     /* Bearer QoS */
-    if (qos_presence == 1)
-    {
+    if (qos_presence == 1) {
         memset(&bearer_qos, 0, sizeof(bearer_qos));
         bearer_qos.qci = bearer->qos.qci;
         bearer_qos.priority_level = bearer->qos.arp.priority_level;
@@ -416,8 +419,7 @@ int pgw_s5c_build_update_bearer_request(
     }
 
     /* Bearer TFT */
-    if (tft_presence == 1)
-    {
+    if (tft_presence == 1) {
         encode_traffic_flow_template(&tft, bearer);
         req->bearer_contexts.tft.presence = 1;
         gtp_build_tft(&req->bearer_contexts.tft,
@@ -453,14 +455,11 @@ int pgw_s5c_build_delete_bearer_request(
     req = &gtp_message.delete_bearer_request;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
  
-    if (bearer->ebi == linked_bearer->ebi)
-    {
+    if (bearer->ebi == linked_bearer->ebi) {
         /* Linked EBI */
         req->linked_eps_bearer_id.presence = 1;
         req->linked_eps_bearer_id.u8 = bearer->ebi;
-    }
-    else
-    {
+    } else {
         /* Bearer EBI */
         req->eps_bearer_ids.presence = 1;
         req->eps_bearer_ids.u8 = bearer->ebi;
@@ -493,155 +492,131 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
     pgw.ext = ue.ext;
     pgw.configuration_protocol = ue.configuration_protocol;
 
-    for(i = 0; i < ue.num_of_id; i++)
-    {
+    for (i = 0; i < ue.num_of_id; i++) {
         uint8_t *data = ue.ids[i].data;
-        switch(ue.ids[i].id)
-        {
-            case PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL:
-            {
-                if (data[0] == 2) /* Code : Response */
-                {
-                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                    pgw.ids[pgw.num_of_id].len = 4;
-                    pgw.ids[pgw.num_of_id].data =
-                        (uint8_t *)"\x03\x00\x00\x04"; /* Code : Success */
-                    pgw.num_of_id++;
-                }
-                break;
+        switch(ue.ids[i].id) {
+        case PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL:
+            if (data[0] == 2) { /* Code : Response */
+                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                pgw.ids[pgw.num_of_id].len = 4;
+                pgw.ids[pgw.num_of_id].data =
+                    (uint8_t *)"\x03\x00\x00\x04"; /* Code : Success */
+                pgw.num_of_id++;
             }
-            case PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL:
-            {
-                if (data[0] == 1) /* Code : Configuration Request */
-                {
-                    uint16_t len = 16;
+            break;
+        case PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL:
+            if (data[0] == 1) { /* Code : Configuration Request */
+                uint16_t len = 16;
 
-                    memset(&pco_ipcp, 0, sizeof(pco_ipcp_t));
-                    pco_ipcp.code = 2; /* Code : Configuration Ack */
-                    pco_ipcp.len = htons(len);
+                memset(&pco_ipcp, 0, sizeof(pco_ipcp_t));
+                pco_ipcp.code = 2; /* Code : Configuration Ack */
+                pco_ipcp.len = htons(len);
 
-                    /* Primary DNS Server IP Address */
-                    if (pgw_self()->dns[0])
-                    {
-                        rv = ogs_ipsubnet(
-                                &dns_primary, pgw_self()->dns[0], NULL);
-                        ogs_assert(rv == OGS_OK);
-                        pco_ipcp.options[0].type = 129; 
-                        pco_ipcp.options[0].len = 6; 
-                        pco_ipcp.options[0].addr = dns_primary.sub[0];
-                    }
-
-                    /* Secondary DNS Server IP Address */
-                    if (pgw_self()->dns[1])
-                    {
-                        rv = ogs_ipsubnet(
-                                &dns_secondary, pgw_self()->dns[1], NULL);
-                        ogs_assert(rv == OGS_OK);
-                        pco_ipcp.options[1].type = 131; 
-                        pco_ipcp.options[1].len = 6; 
-                        pco_ipcp.options[1].addr = dns_secondary.sub[0];
-                    }
-
-                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                    pgw.ids[pgw.num_of_id].len = len;
-                    pgw.ids[pgw.num_of_id].data = (uint8_t *)&pco_ipcp;
-
-                    pgw.num_of_id++;
-                }
-                break;
-            }
-            case PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST:
-            {
-                if (pgw_self()->dns[0])
-                {
+                /* Primary DNS Server IP Address */
+                if (pgw_self()->dns[0]) {
                     rv = ogs_ipsubnet(
                             &dns_primary, pgw_self()->dns[0], NULL);
                     ogs_assert(rv == OGS_OK);
-                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                    pgw.ids[pgw.num_of_id].len = IPV4_LEN;
-                    pgw.ids[pgw.num_of_id].data = dns_primary.sub;
-                    pgw.num_of_id++;
+                    pco_ipcp.options[0].type = 129; 
+                    pco_ipcp.options[0].len = 6; 
+                    pco_ipcp.options[0].addr = dns_primary.sub[0];
                 }
 
-                if (pgw_self()->dns[1])
-                {
+                /* Secondary DNS Server IP Address */
+                if (pgw_self()->dns[1]) {
                     rv = ogs_ipsubnet(
                             &dns_secondary, pgw_self()->dns[1], NULL);
                     ogs_assert(rv == OGS_OK);
-                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                    pgw.ids[pgw.num_of_id].len = IPV4_LEN;
-                    pgw.ids[pgw.num_of_id].data = dns_secondary.sub;
-                    pgw.num_of_id++;
-                }
-                break;
-            }
-            case PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST:
-            {
-                if (pgw_self()->dns6[0])
-                {
-                    rv = ogs_ipsubnet(
-                            &dns6_primary, pgw_self()->dns6[0], NULL);
-                    ogs_assert(rv == OGS_OK);
-                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                    pgw.ids[pgw.num_of_id].len = IPV6_LEN;
-                    pgw.ids[pgw.num_of_id].data = dns6_primary.sub;
-                    pgw.num_of_id++;
+                    pco_ipcp.options[1].type = 131; 
+                    pco_ipcp.options[1].len = 6; 
+                    pco_ipcp.options[1].addr = dns_secondary.sub[0];
                 }
 
-                if (pgw_self()->dns6[1])
-                {
-                    rv = ogs_ipsubnet(
-                            &dns6_secondary, pgw_self()->dns6[1], NULL);
-                    ogs_assert(rv == OGS_OK);
-                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                    pgw.ids[pgw.num_of_id].len = IPV6_LEN;
-                    pgw.ids[pgw.num_of_id].data = dns6_secondary.sub;
-                    pgw.num_of_id++;
-                }
-                break;
-            }
-            case PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST:
-            {
-                if (pgw_self()->num_of_p_cscf)
-                {
-                    rv = ogs_ipsubnet(&p_cscf,
-                        pgw_self()->p_cscf[pgw_self()->p_cscf_index], NULL);
-                    ogs_assert(rv == OGS_OK);
-                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                    pgw.ids[pgw.num_of_id].len = IPV4_LEN;
-                    pgw.ids[pgw.num_of_id].data = p_cscf.sub;
-                    pgw.num_of_id++;
+                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                pgw.ids[pgw.num_of_id].len = len;
+                pgw.ids[pgw.num_of_id].data = (uint8_t *)&pco_ipcp;
 
-                    pgw_self()->p_cscf_index++;
-                    pgw_self()->p_cscf_index %= pgw_self()->num_of_p_cscf;
-                }
-                break;
+                pgw.num_of_id++;
             }
-            case PCO_ID_P_CSCF_IPV6_ADDRESS_REQUEST:
-            {
-                if (pgw_self()->num_of_p_cscf6)
-                {
-                    rv = ogs_ipsubnet(&p_cscf6,
-                        pgw_self()->p_cscf6[pgw_self()->p_cscf6_index], NULL);
-                    ogs_assert(rv == OGS_OK);
-                    pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                    pgw.ids[pgw.num_of_id].len = IPV6_LEN;
-                    pgw.ids[pgw.num_of_id].data = p_cscf6.sub;
-                    pgw.num_of_id++;
+            break;
+        case PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST:
+            if (pgw_self()->dns[0]) {
+                rv = ogs_ipsubnet(
+                        &dns_primary, pgw_self()->dns[0], NULL);
+                ogs_assert(rv == OGS_OK);
+                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                pgw.ids[pgw.num_of_id].data = dns_primary.sub;
+                pgw.num_of_id++;
+            }
 
-                    pgw_self()->p_cscf6_index++;
-                    pgw_self()->p_cscf6_index %= pgw_self()->num_of_p_cscf6;
-                }
-                break;
+            if (pgw_self()->dns[1]) {
+                rv = ogs_ipsubnet(
+                        &dns_secondary, pgw_self()->dns[1], NULL);
+                ogs_assert(rv == OGS_OK);
+                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                pgw.ids[pgw.num_of_id].data = dns_secondary.sub;
+                pgw.num_of_id++;
             }
-            case PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING:
-                /* TODO */
-                break;
-            case PCO_ID_IPV4_LINK_MTU_REQUEST:
-                /* TODO */
-                break;
-            default:
-                ogs_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);
+            break;
+        case PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST:
+            if (pgw_self()->dns6[0]) {
+                rv = ogs_ipsubnet(
+                        &dns6_primary, pgw_self()->dns6[0], NULL);
+                ogs_assert(rv == OGS_OK);
+                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                pgw.ids[pgw.num_of_id].data = dns6_primary.sub;
+                pgw.num_of_id++;
+            }
+
+            if (pgw_self()->dns6[1]) {
+                rv = ogs_ipsubnet(
+                        &dns6_secondary, pgw_self()->dns6[1], NULL);
+                ogs_assert(rv == OGS_OK);
+                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                pgw.ids[pgw.num_of_id].data = dns6_secondary.sub;
+                pgw.num_of_id++;
+            }
+            break;
+        case PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST:
+            if (pgw_self()->num_of_p_cscf) {
+                rv = ogs_ipsubnet(&p_cscf,
+                    pgw_self()->p_cscf[pgw_self()->p_cscf_index], NULL);
+                ogs_assert(rv == OGS_OK);
+                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                pgw.ids[pgw.num_of_id].data = p_cscf.sub;
+                pgw.num_of_id++;
+
+                pgw_self()->p_cscf_index++;
+                pgw_self()->p_cscf_index %= pgw_self()->num_of_p_cscf;
+            }
+            break;
+        case PCO_ID_P_CSCF_IPV6_ADDRESS_REQUEST:
+            if (pgw_self()->num_of_p_cscf6) {
+                rv = ogs_ipsubnet(&p_cscf6,
+                    pgw_self()->p_cscf6[pgw_self()->p_cscf6_index], NULL);
+                ogs_assert(rv == OGS_OK);
+                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                pgw.ids[pgw.num_of_id].data = p_cscf6.sub;
+                pgw.num_of_id++;
+
+                pgw_self()->p_cscf6_index++;
+                pgw_self()->p_cscf6_index %= pgw_self()->num_of_p_cscf6;
+            }
+            break;
+        case PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING:
+            /* TODO */
+            break;
+        case PCO_ID_IPV4_LINK_MTU_REQUEST:
+            /* TODO */
+            break;
+        default:
+            ogs_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);
         }
     }
 

@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "gtp/gtp-conv.h"
 #include "gtp/gtp-types.h"
 #include "gtp/gtp-node.h"
@@ -39,23 +58,19 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
     rsp = &gtp_message->create_session_response;
 
     if (rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
-            presence == 0)
-    {
+            presence == 0) {
         ogs_error("No GTP TEID");
         return;
     }
-    if (rsp->bearer_contexts_created.presence == 0)
-    {
+    if (rsp->bearer_contexts_created.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (rsp->bearer_contexts_created.eps_bearer_id.presence == 0)
-    {
+    if (rsp->bearer_contexts_created.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
-    if (rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence == 0)
-    {
+    if (rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence == 0) {
         ogs_error("No GTP TEID");
         return;
     }
@@ -91,8 +106,7 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
         s5u_tunnel->local_teid, s5u_tunnel->remote_teid);
 
     pgw = gtp_node_find(&sgw_self()->pgw_s5u_list, pgw_s5u_teid);
-    if (!pgw)
-    {
+    if (!pgw) {
         pgw = gtp_node_add(&sgw_self()->pgw_s5u_list, pgw_s5u_teid,
             sgw_self()->gtpu_port,
             context_self()->config.parameter.no_ipv4,
@@ -168,8 +182,7 @@ void sgw_s5c_handle_delete_session_response(gtp_xact_t *s5c_xact,
 
     rsp = &gtp_message->delete_session_response;
 
-    if (rsp->cause.presence == 0)
-    {
+    if (rsp->cause.presence == 0) {
         ogs_error("No Cause");
         return;
     }
@@ -178,8 +191,7 @@ void sgw_s5c_handle_delete_session_response(gtp_xact_t *s5c_xact,
     ogs_assert(cause);
 
     /* Remove a pgw session */
-    if (sess)
-    {
+    if (sess) {
         ogs_debug("[SGW] Delete Session Response");
         ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
@@ -194,9 +206,7 @@ void sgw_s5c_handle_delete_session_response(gtp_xact_t *s5c_xact,
             ogs_error("Error on PGW session removal");
             cause->value = GTP_CAUSE_CONTEXT_NOT_FOUND;
         }
-    }
-    else
-    {
+    } else {
         cause->value = GTP_CAUSE_INVALID_PEER;
         ogs_error("Cannot find session");
         return;
@@ -247,23 +257,19 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    if (req->linked_eps_bearer_id.presence == 0)
-    {
+    if (req->linked_eps_bearer_id.presence == 0) {
         ogs_error("No Linked EBI");
         return;
     }
-    if (req->bearer_contexts.presence == 0)
-    {
+    if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
-    if (req->bearer_contexts.s5_s8_u_sgw_f_teid.presence == 0)
-    {
+    if (req->bearer_contexts.s5_s8_u_sgw_f_teid.presence == 0) {
         ogs_error("No GTP TEID");
         return;
     }
@@ -280,8 +286,7 @@ void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
     ogs_assert(pgw_s5u_teid);
     s5u_tunnel->remote_teid = ntohl(pgw_s5u_teid->teid);
     pgw = gtp_node_find(&sgw_self()->pgw_s5u_list, pgw_s5u_teid);
-    if (!pgw)
-    {
+    if (!pgw) {
         pgw = gtp_node_add(&sgw_self()->pgw_s5u_list, pgw_s5u_teid,
             sgw_self()->gtpu_port,
             context_self()->config.parameter.no_ipv4,
@@ -348,13 +353,11 @@ void sgw_s5c_handle_update_bearer_request(gtp_xact_t *s5c_xact,
 
     req = &gtp_message->update_bearer_request;
 
-    if (req->bearer_contexts.presence == 0)
-    {
+    if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
@@ -399,8 +402,7 @@ void sgw_s5c_handle_delete_bearer_request(gtp_xact_t *s5c_xact,
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
         sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     if (req->linked_eps_bearer_id.presence == 0 &&
-        req->eps_bearer_ids.presence == 0)
-    {
+        req->eps_bearer_ids.presence == 0) {
         ogs_error("No Linked EBI or EPS Bearer ID");
         return;
     }

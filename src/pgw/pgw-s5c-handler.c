@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "gtp/gtp-types.h"
 #include "gtp/gtp-node.h"
 #include "gtp/gtp-path.h"
@@ -27,33 +46,27 @@ void pgw_s5c_handle_create_session_request(
     ogs_assert(bearer);
 
     ogs_debug("[PGW] Create Session Reqeust");
-    if (req->imsi.presence == 0)
-    {
+    if (req->imsi.presence == 0) {
         ogs_error("No IMSI");
         return;
     }
-    if (req->sender_f_teid_for_control_plane.presence == 0)
-    {
+    if (req->sender_f_teid_for_control_plane.presence == 0) {
         ogs_error("No TEID");
         return;
     }
-    if (req->bearer_contexts_to_be_created.presence == 0)
-    {
+    if (req->bearer_contexts_to_be_created.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts_to_be_created.bearer_level_qos.presence == 0)
-    {
+    if (req->bearer_contexts_to_be_created.bearer_level_qos.presence == 0) {
         ogs_error("No EPS Bearer QoS");
         return;
     }
-    if (req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.presence == 0)
-    {
+    if (req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.presence == 0) {
         ogs_error("No TEID");
         return;
     }
-    if (req->user_location_information.presence == 0)
-    {
+    if (req->user_location_information.presence == 0) {
         ogs_error("No User Location Inforamtion");
         return;
     }
@@ -79,8 +92,7 @@ void pgw_s5c_handle_create_session_request(
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
     sgw = gtp_node_find(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
-    if (!sgw)
-    {
+    if (!sgw) {
         sgw = gtp_node_add(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
             pgw_self()->gtpu_port,
             context_self()->config.parameter.no_ipv4,
@@ -107,8 +119,7 @@ void pgw_s5c_handle_create_session_request(
                     bearer_qos.pre_emption_vulnerability;
 
     /* Set AMBR if available */
-    if (req->aggregate_maximum_bit_rate.presence)
-    {
+    if (req->aggregate_maximum_bit_rate.presence) {
         ambr = req->aggregate_maximum_bit_rate.data;
         sess->pdn.ambr.downlink = ntohl(ambr->downlink);
         sess->pdn.ambr.uplink = ntohl(ambr->uplink);
@@ -148,23 +159,19 @@ void pgw_s5c_handle_create_bearer_response(
     ogs_debug("[PGW] Create Bearer Response");
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    if (req->bearer_contexts.presence == 0)
-    {
+    if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
-    if (req->bearer_contexts.s5_s8_u_pgw_f_teid.presence == 0)
-    {
+    if (req->bearer_contexts.s5_s8_u_pgw_f_teid.presence == 0) {
         ogs_error("No PGW TEID");
         return;
     }
-    if (req->bearer_contexts.s5_s8_u_sgw_f_teid.presence == 0)
-    {
+    if (req->bearer_contexts.s5_s8_u_sgw_f_teid.presence == 0) {
         ogs_error("No SGW TEID");
         return;
     }
@@ -184,8 +191,7 @@ void pgw_s5c_handle_create_bearer_response(
     sgw_s5u_teid = req->bearer_contexts.s5_s8_u_sgw_f_teid.data;
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
     sgw = gtp_node_find(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
-    if (!sgw)
-    {
+    if (!sgw) {
         sgw = gtp_node_add(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
             pgw_self()->gtpu_port,
             context_self()->config.parameter.no_ipv4,
@@ -218,13 +224,11 @@ void pgw_s5c_handle_update_bearer_response(
     ogs_debug("[PGW] Update Bearer Request");
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    if (req->bearer_contexts.presence == 0)
-    {
+    if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
@@ -249,13 +253,11 @@ void pgw_s5c_handle_delete_bearer_response(
     ogs_debug("[PGW] Delete Bearer Request");
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    if (req->bearer_contexts.presence == 0)
-    {
+    if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
