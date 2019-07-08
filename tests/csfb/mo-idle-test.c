@@ -744,8 +744,8 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Extended Service Request */
-    rv = tests1ap_build_extended_service_request(&sendbuf,
-            msgindex, m_tmsi, 4, mme_ue->knas_int);
+    rv = tests1ap_build_extended_service_request(&sendbuf, msgindex,
+            0, m_tmsi, 4, mme_ue->knas_int);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -755,7 +755,7 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    /* Initial Context Setup Request */
+    /* Receive Initial Context Setup Request */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);

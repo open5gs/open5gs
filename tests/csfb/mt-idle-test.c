@@ -225,11 +225,28 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Service Request */
-    rv = tests1ap_build_service_request(&sendbuf, 0x000200, 3, 0xc340, m_tmsi);
+    /* Send SGsAP-Paging-Request */
+    rv = testsgsap_paging_request(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testvlr_sgsap_send(sgsap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive S1AP Paging */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send Extended Service Request */
+    rv = tests1ap_build_extended_service_request(&sendbuf, msgindex, 
+            1, m_tmsi, 4, mme_ue->knas_int);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Service Request */
+    recvbuf = testvlr_sgsap_read(sgsap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
 
     /* Receive Initial Context Setup Request */
     recvbuf = testenb_s1ap_read(s1ap);
@@ -243,21 +260,10 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Send Detach Request */
-    rv = tests1ap_build_detach_request(&sendbuf, msgindex);
+    /* Send UE Context Release Request */
+    rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive SGsAP IMSI-DETACH-INDICATION */
-    recvbuf = testvlr_sgsap_read(sgsap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
-
-    /* Send SGsAP IMSI-DETACH-ACK */
-    rv = testsgsap_imsi_detach_ack(&sendbuf, 0);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testvlr_sgsap_send(sgsap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive UE Context Release Command */

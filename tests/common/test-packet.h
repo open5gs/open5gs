@@ -31,15 +31,15 @@ int testpacket_final();
 
 ogs_socknode_t *testsctp_server(const char *ipstr);
 ogs_socknode_t *testsctp_client(const char *ipstr);
-ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node);
+ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type);
 
 #define testenb_s1ap_client testsctp_client
-#define testenb_s1ap_read testsctp_read
+#define testenb_s1ap_read(x) testsctp_read(x, 0);
 int testenb_s1ap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
 #define testenb_s1ap_close ogs_socknode_free
 
 #define testvlr_sgsap_server testsctp_server
-#define testvlr_sgsap_read testsctp_read
+#define testvlr_sgsap_read(x) testsctp_read(x, 1);
 int testvlr_sgsap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
 #define testvlr_sgsap_close ogs_socknode_free
 
@@ -82,8 +82,8 @@ int tests1ap_build_service_request(ogs_pkbuf_t **pkbuf,
 int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
     uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id, uint8_t active_flag,
     uint32_t m_tmsi, uint8_t seq, uint32_t mac, uint8_t *knas_int);
-int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf,
-        int i, uint32_t m_tmsi, uint8_t seq, uint8_t *knas_int);
+int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf, int i,
+        uint8_t service_type, uint32_t m_tmsi, uint8_t seq, uint8_t *knas_int);
 int tests1ap_build_pdn_connectivity_request(
         ogs_pkbuf_t **pkbuf, int i);
 int tests1ap_build_pdn_disconnectivity_request(
@@ -134,6 +134,7 @@ int testgtpu_build_slacc_rs(ogs_pkbuf_t **sendbuf, int i);
 int testsgsap_location_update_accept(ogs_pkbuf_t **pkbuf, int i);
 int testsgsap_location_update_reject(ogs_pkbuf_t **pkbuf, int i);
 int testsgsap_imsi_detach_ack(ogs_pkbuf_t **pkbuf, int i);
+int testsgsap_paging_request(ogs_pkbuf_t **pkbuf, int i);
 int testsgsap_reset_indication(ogs_pkbuf_t **pkbuf, int i);
 
 #ifdef __cplusplus

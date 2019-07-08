@@ -353,6 +353,19 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_debug("    MO-CSFB-INDICATION[%d]",
                         mme_ue->nas_eps.service.service_type);
                 sgsap_send_mo_csfb_indication(mme_ue);
+            } else if (mme_ue->nas_eps.service.service_type ==
+                    NAS_SERVICE_TYPE_CS_FALLBACK_TO_UE) {
+                ogs_debug("    SERVICE_REQUEST[%d]",
+                        mme_ue->nas_eps.service.service_type);
+                sgsap_send_service_request(mme_ue);
+            } else {
+                ogs_warn(" Unknown CSFB Service Type[%d]",
+                        mme_ue->nas_eps.service.service_type);
+                rv = nas_send_service_reject(mme_ue,
+                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                ogs_assert(rv == OGS_OK);
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                return;
             }
             ogs_debug("    Iniital UE Message");
             rv = s1ap_send_initial_context_setup_request(mme_ue);

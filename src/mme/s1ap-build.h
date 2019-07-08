@@ -44,7 +44,8 @@ int s1ap_build_e_rab_release_command(ogs_pkbuf_t **s1apbuf,
     mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf, S1AP_Cause_PR group, long cause);
 int s1ap_build_ue_context_release_command(
     ogs_pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause);
-int s1ap_build_paging(ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue);
+int s1ap_build_paging(ogs_pkbuf_t **s1apbuf,
+        mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain);
 
 int s1ap_build_mme_configuration_transfer(
     ogs_pkbuf_t **s1apbuf, 

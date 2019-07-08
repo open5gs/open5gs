@@ -413,6 +413,10 @@ struct mme_ue_s {
 #define MAX_NUM_OF_PAGING           2
     uint32_t        max_paging_retry;
 
+#define SGSAP_CS_CALL_SERVICE_INDICATOR     1
+#define SGSAP_SMS_SERVICE_INDICATOR         2
+    uint8_t          service_indicator;
+
     /* UE Radio Capability */
     OCTET_STRING_t  ueRadioCapability;
 

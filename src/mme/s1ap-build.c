@@ -1065,7 +1065,8 @@ int s1ap_build_ue_context_release_command(
     return OGS_OK;
 }
 
-int s1ap_build_paging(ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
+int s1ap_build_paging(ogs_pkbuf_t **s1apbuf,
+        mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
 {
     int rv;
 
@@ -1168,7 +1169,7 @@ int s1ap_build_paging(ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
     ogs_debug("    MME_CODE[%d] M_TMSI[0x%x]",
             mme_ue->guti.mme_code, mme_ue->guti.m_tmsi);
 
-    *CNDomain = S1AP_CNDomain_ps;
+    *CNDomain = cn_domain;
 
     item = ogs_calloc(1, sizeof(S1AP_TAIItemIEs_t));
     ASN_SEQUENCE_ADD(&TAIList->list, item);

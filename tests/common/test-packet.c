@@ -100,7 +100,7 @@ ogs_socknode_t *testsctp_client(const char *ipstr)
 
 static ogs_sockaddr_t sctp_last_addr;
 
-ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node)
+ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type)
 {
     int size;
     ogs_pkbuf_t *recvbuf = NULL;
@@ -111,8 +111,8 @@ ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node)
     recvbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put(recvbuf, MAX_SDU_LEN);
 
-    size = ogs_sctp_recvdata(node->sock, 
-            recvbuf->data, MAX_SDU_LEN, &sctp_last_addr, NULL);
+    size = ogs_sctp_recvdata(node->sock, recvbuf->data, MAX_SDU_LEN,
+            type == 1 ? &sctp_last_addr : NULL, NULL);
     if (size <= 0) {
         ogs_error("sgsap_recv() failed");
         return NULL;
@@ -1724,8 +1724,8 @@ int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
     return OGS_OK;
 }
 
-int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf,
-        int i, uint32_t m_tmsi, uint8_t seq, uint8_t *knas_int)
+int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf, int i,
+        uint8_t service_type, uint32_t m_tmsi, uint8_t seq, uint8_t *knas_int)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {
         "",
@@ -1807,6 +1807,7 @@ int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf,
     *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put_data(*pkbuf, 
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+    memcpy((*pkbuf)->data + 26, &service_type, sizeof service_type);
     m_tmsi = htonl(m_tmsi);
     memcpy((*pkbuf)->data + 29, &m_tmsi, sizeof m_tmsi);
 
@@ -3149,6 +3150,29 @@ int testsgsap_imsi_detach_ack(ogs_pkbuf_t **pkbuf, int i)
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         11,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_data(*pkbuf, 
+        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+
+    return OGS_OK;
+}
+
+int testsgsap_paging_request(ogs_pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "0101082926240000 111893021003766c 72076578616d706c 65036e6574200101"
+        "040509f1070926",
+        "",
+        "",
+
+    };
+    uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        39,
         0,
         0,
     };

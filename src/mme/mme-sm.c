@@ -447,11 +447,8 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 * If the MME receives a Downlink Data Notification after step 2 and 
 * before step 9, the MME shall not send S1 interface paging messages
 */
-            if (ECM_IDLE(mme_ue)) {
-                s1ap_handle_paging(mme_ue);
-                /* Start T3413 */
-                ogs_timer_start(mme_ue->t3413, mme_self()->t3413_value);
-            }
+            if (ECM_IDLE(mme_ue))
+                s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
             break;
         case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             mme_s11_handle_create_indirect_data_forwarding_tunnel_response(

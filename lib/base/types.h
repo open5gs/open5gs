@@ -60,6 +60,7 @@ extern "C" {
 #define MAX_APN_LEN                 100
 #define MAX_PCO_LEN                 251
 #define MAX_FILEPATH_LEN            256
+#define MAX_FQDN_LEN                256
 
 #define NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))

@@ -127,6 +127,9 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
         case SGSAP_IMSI_DETACH_ACK:
             sgsap_handle_detach_ack(vlr, pkbuf);
             break;
+        case SGSAP_PAGING_REQUEST:
+            sgsap_handle_paging_request(vlr, pkbuf);
+            break;
         case SGSAP_RESET_INDICATION:
             sgsap_handle_reset_indication(vlr, pkbuf);
 

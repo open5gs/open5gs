@@ -97,7 +97,7 @@ int fqdn_parse(char *dst, char *src, int length)
             dst[j++] = '.';
         else
             dst[j] = 0;
-    } while(i < length);
+    } while (i < length);
 
     return j;
 }

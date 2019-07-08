@@ -41,7 +41,7 @@ extern "C" {
 #define SGSAP_IE_IMSI_TYPE                              1
 #define SGSAP_IE_IMSI_LEN                               MAX_IMSI_LEN
 #define SGSAP_IE_VLR_NAME_TYPE                          2
-#define SGSAP_IE_VLR_NAME_LEN                           256
+#define SGSAP_IE_VLR_NAME_LEN                           MAX_FQDN_LEN
 #define SGSAP_IE_LAI_TYPE                               4
 #define SGSAP_IE_LAI_LEN                                5
 #define SGSAP_IE_MME_NAME_TYPE                          9

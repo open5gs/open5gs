@@ -284,6 +284,87 @@ int s1ap_send_ue_context_release_command(
     return OGS_OK;
 }
 
+void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
+{
+    ogs_pkbuf_t *s1apbuf = NULL;
+    ogs_hash_index_t *hi = NULL;
+    mme_enb_t *enb = NULL;
+    int i;
+    int rv;
+
+    /* Find enB with matched TAI */
+    for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi)) {
+
+        enb = mme_enb_this(hi);
+        for (i = 0; i < enb->num_of_supported_ta_list; i++) {
+
+            if (memcmp(&enb->supported_ta_list[i], &mme_ue->tai,
+                        sizeof(tai_t)) == 0) {
+
+                /* Build S1AP Paging message */
+                rv = s1ap_build_paging(&s1apbuf, mme_ue, cn_domain);
+                ogs_assert(rv == OGS_OK && s1apbuf);
+
+                /* Save it for later use */
+                ogs_assert(mme_ue->last_paging_msg == NULL);
+                mme_ue->last_paging_msg = ogs_pkbuf_copy(s1apbuf);
+
+                /* Send to enb */
+                rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
+                ogs_assert(rv == OGS_OK);
+            }
+        }
+    }
+
+    /* Start T3413 */
+    ogs_timer_start(mme_ue->t3413, mme_self()->t3413_value);
+}
+
+void s1ap_t3413_timeout(void *data)
+{
+    mme_ue_t *mme_ue = data;
+    ogs_assert(mme_ue);
+
+    if (mme_ue->max_paging_retry < MAX_NUM_OF_PAGING) {
+        ogs_pkbuf_t *s1apbuf = NULL;
+        ogs_hash_index_t *hi = NULL;
+        mme_enb_t *enb = NULL;
+        int i;
+        int rv;
+
+        /* Find enB with matched TAI */
+        for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi)) {
+
+            enb = mme_enb_this(hi);
+            for (i = 0; i < enb->num_of_supported_ta_list; i++) {
+
+                if (memcmp(&enb->supported_ta_list[i], &mme_ue->tai,
+                            sizeof(tai_t)) == 0) {
+
+                    /* Save it for later use */
+                    ogs_assert(mme_ue->last_paging_msg);
+                    s1apbuf = mme_ue->last_paging_msg;
+                    mme_ue->last_paging_msg = ogs_pkbuf_copy(s1apbuf);
+
+                    /* Send to enb */
+                    rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
+                    ogs_assert(rv == OGS_OK);
+                }
+            }
+        }
+
+        /* Start T3413 */
+        ogs_timer_start(mme_ue->t3413, mme_self()->t3413_value);
+
+        mme_ue->max_paging_retry++;
+    } else {
+        /* Paging failed */
+        ogs_warn("[EMM] Paging to IMSI[%s] failed. Stop paging",
+                mme_ue->imsi_bcd);
+        CLEAR_PAGING_INFO(mme_ue);
+    }
+}
+
 int s1ap_send_mme_configuration_transfer(
         mme_enb_t *target_enb,
         S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer)

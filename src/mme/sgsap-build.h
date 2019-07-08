@@ -31,6 +31,7 @@ ogs_pkbuf_t *sgsap_build_tmsi_reallocation_complete(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_service_request(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_mo_csfb_indication(mme_ue_t *mme_ue);
+ogs_pkbuf_t *sgsap_build_service_request(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_reset_ack(mme_vlr_t *vlr);
 
 #ifdef __cplusplus

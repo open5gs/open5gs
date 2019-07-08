@@ -437,7 +437,6 @@ int emm_handle_tau_request(
      *   Update KeNB
      */
     CLEAR_PAGING_INFO(mme_ue);
-
     if (BEARER_CONTEXT_IS_ACTIVE(mme_ue))
         ogs_debug("    Bearer-Active");
     else

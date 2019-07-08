@@ -48,9 +48,6 @@ void s1ap_handle_ue_context_release_request(
 void s1ap_handle_ue_context_release_complete(
         mme_enb_t *enb, s1ap_message_t *message);
 
-void s1ap_handle_paging(mme_ue_t *mme_ue);
-void s1ap_t3413_timeout(void *data);
-
 void s1ap_handle_path_switch_request(
         mme_enb_t *enb, s1ap_message_t *message);
 
