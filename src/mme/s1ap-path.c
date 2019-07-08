@@ -287,15 +287,12 @@ int s1ap_send_ue_context_release_command(
 void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
 {
     ogs_pkbuf_t *s1apbuf = NULL;
-    ogs_hash_index_t *hi = NULL;
     mme_enb_t *enb = NULL;
     int i;
     int rv;
 
     /* Find enB with matched TAI */
-    for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi)) {
-
-        enb = mme_enb_this(hi);
+    ogs_list_for_each(&mme_self()->enb_list, enb) {
         for (i = 0; i < enb->num_of_supported_ta_list; i++) {
 
             if (memcmp(&enb->supported_ta_list[i], &mme_ue->tai,
@@ -327,15 +324,12 @@ void s1ap_t3413_timeout(void *data)
 
     if (mme_ue->max_paging_retry < MAX_NUM_OF_PAGING) {
         ogs_pkbuf_t *s1apbuf = NULL;
-        ogs_hash_index_t *hi = NULL;
         mme_enb_t *enb = NULL;
         int i;
         int rv;
 
         /* Find enB with matched TAI */
-        for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi)) {
-
-            enb = mme_enb_this(hi);
+        ogs_list_for_each(&mme_self()->enb_list, enb) {
             for (i = 0; i < enb->num_of_supported_ta_list; i++) {
 
                 if (memcmp(&enb->supported_ta_list[i], &mme_ue->tai,

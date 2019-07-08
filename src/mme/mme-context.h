@@ -107,6 +107,8 @@ typedef struct mme_context_s {
     ogs_sockaddr_t  *pgw_addr;      /* First IPv4 Address Selected */
     ogs_sockaddr_t  *pgw_addr6;     /* First IPv6 Address Selected */
 
+    ogs_list_t      enb_list;       /* ENB S1AP Client List */
+
     ogs_list_t      vlr_list;       /* VLR SGsAP Client List */
     mme_vlr_t       *vlr;           /* Iterator for VLR */
 
@@ -152,7 +154,6 @@ typedef struct mme_context_s {
 
     ogs_list_t      mme_ue_list;
 
-    ogs_hash_t      *enb_sock_hash;         /* hash table for ENB Socket */
     ogs_hash_t      *enb_addr_hash;         /* hash table for ENB Address */
     ogs_hash_t      *enb_id_hash;           /* hash table for ENB-ID */
     ogs_hash_t      *mme_ue_s1ap_id_hash;   /* hash table for MME-UE-S1AP-ID */
@@ -215,6 +216,8 @@ typedef struct mme_vlr_s {
 } mme_vlr_t;
 
 typedef struct mme_enb_s {
+    ogs_lnode_t     lnode;
+
     ogs_fsm_t       sm;         /* A state machine */
 
     uint32_t        enb_id;     /* eNB_ID received from eNB */
@@ -609,13 +612,9 @@ mme_vlr_t *mme_vlr_find_by_nas_lai(nas_lai_t *lai);
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
 int mme_enb_remove(mme_enb_t *enb);
 int mme_enb_remove_all(void);
-mme_enb_t *mme_enb_find_by_sock(ogs_sock_t *sock);
 mme_enb_t *mme_enb_find_by_addr(ogs_sockaddr_t *addr);
 mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id);
 int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
-ogs_hash_index_t *mme_enb_first();
-ogs_hash_index_t *mme_enb_next(ogs_hash_index_t *hi);
-mme_enb_t *mme_enb_this(ogs_hash_index_t *hi);
 int mme_enb_sock_type(ogs_sock_t *sock);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb);

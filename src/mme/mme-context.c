@@ -81,6 +81,7 @@ void mme_context_init()
     gtp_node_init();
     ogs_list_init(&self.sgw_list);
     ogs_list_init(&self.pgw_list);
+    ogs_list_init(&self.enb_list);
     ogs_list_init(&self.vlr_list);
 
     ogs_pool_init(&mme_sgw_pool, context_self()->config.max.sgw);
@@ -95,7 +96,6 @@ void mme_context_init()
     ogs_pool_init(&mme_bearer_pool, context_self()->pool.bearer);
     ogs_pool_init(&self.m_tmsi, context_self()->pool.ue);
 
-    self.enb_sock_hash = ogs_hash_make();
     self.enb_addr_hash = ogs_hash_make();
     self.enb_id_hash = ogs_hash_make();
     self.mme_ue_s1ap_id_hash = ogs_hash_make();
@@ -123,8 +123,6 @@ void mme_context_final()
     mme_pgw_remove_all();
     mme_vlr_remove_all();
 
-    ogs_assert(self.enb_sock_hash);
-    ogs_hash_destroy(self.enb_sock_hash);
     ogs_assert(self.enb_addr_hash);
     ogs_hash_destroy(self.enb_addr_hash);
     ogs_assert(self.enb_id_hash);
@@ -1673,9 +1671,6 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_list_init(&enb->enb_ue_list);
 
     if (enb->sock_type == SOCK_STREAM) {
-        /* FIXME  : The sock hash is needed? */
-        ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), enb);
-
         enb->poll = ogs_pollset_add(mme_self()->pollset,
             OGS_POLLIN, sock->fd, s1ap_recv_handler, sock);
         ogs_assert(enb->poll);
@@ -1687,6 +1682,8 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
     ogs_fsm_init(&enb->sm, &e);
 
+    ogs_list_add(&self.enb_list, enb);
+
     return enb;
 }
 
@@ -1696,6 +1693,8 @@ int mme_enb_remove(mme_enb_t *enb)
 
     ogs_assert(enb);
     ogs_assert(enb->sock);
+
+    ogs_list_remove(&self.enb_list, enb);
 
     e.enb = enb;
     ogs_fsm_fini(&enb->sm, &e);
@@ -1707,9 +1706,6 @@ int mme_enb_remove(mme_enb_t *enb)
     enb_ue_remove_in_enb(enb);
 
     if (enb->sock_type == SOCK_STREAM) {
-        /* FIXME  : The sock hash is needed? */
-        ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), NULL);
-
         ogs_pollset_remove(enb->poll);
         ogs_sctp_destroy(enb->sock);
     }
@@ -1723,23 +1719,12 @@ int mme_enb_remove(mme_enb_t *enb)
 
 int mme_enb_remove_all()
 {
-    ogs_hash_index_t *hi = NULL;
-    mme_enb_t *enb = NULL;
+    mme_enb_t *enb = NULL, *next_enb = NULL;
 
-    for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi)) {
-        enb = mme_enb_this(hi);
+    ogs_list_for_each_safe(&self.enb_list, next_enb, enb)
         mme_enb_remove(enb);
-    }
 
     return OGS_OK;
-}
-
-mme_enb_t *mme_enb_find_by_sock(ogs_sock_t *sock)
-{
-    ogs_assert(sock);
-    return (mme_enb_t *)ogs_hash_get(self.enb_sock_hash, sock, sizeof(ogs_sock_t));
-
-    return NULL;
 }
 
 mme_enb_t *mme_enb_find_by_addr(ogs_sockaddr_t *addr)
@@ -1764,23 +1749,6 @@ int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id)
     ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);
 
     return OGS_OK;
-}
-
-ogs_hash_index_t *mme_enb_first()
-{
-    ogs_assert(self.enb_sock_hash);
-    return ogs_hash_first(self.enb_sock_hash);
-}
-
-ogs_hash_index_t *mme_enb_next(ogs_hash_index_t *hi)
-{
-    return ogs_hash_next(hi);
-}
-
-mme_enb_t *mme_enb_this(ogs_hash_index_t *hi)
-{
-    ogs_assert(hi);
-    return ogs_hash_this_val(hi);
 }
 
 int mme_enb_sock_type(ogs_sock_t *sock)

@@ -184,7 +184,7 @@ int sgsap_send_service_request(mme_ue_t *mme_ue)
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_assert(mme_ue);
 
-    ogs_debug("[SGSAP] MO-CSFB-INDICATION");
+    ogs_debug("[SGSAP] SERVICE-REQUEST");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     ogs_debug("    SERVICE_INDICATOR[%d]", mme_ue->service_indicator);
 
