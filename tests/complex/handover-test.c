@@ -781,6 +781,8 @@ static void handover_test2(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    ogs_msleep(200);
+
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456815"));
     ABTS_PTR_NOTNULL(tc, doc);
