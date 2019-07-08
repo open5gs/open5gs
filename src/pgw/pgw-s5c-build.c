@@ -114,6 +114,11 @@ int pgw_s5c_build_create_session_response(
     rsp->bearer_contexts_created.eps_bearer_id.presence = 1;
     rsp->bearer_contexts_created.eps_bearer_id.u8 = bearer->ebi;
 
+    /* Bearer Cause */
+    rsp->bearer_contexts_created.cause.presence = 1;
+    rsp->bearer_contexts_created.cause.len = sizeof(cause);
+    rsp->bearer_contexts_created.cause.data = &cause;
+
     /* TODO : Bearer QoS 
      * if PCRF changes Bearer QoS, this should be included. */
 

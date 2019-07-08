@@ -70,6 +70,10 @@ void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
         ogs_error("No EPS Bearer ID");
         return;
     }
+    if (rsp->bearer_contexts_created.cause.presence == 0) {
+        ogs_error("No EPS Bearer Cause");
+        return;
+    }
     if (rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence == 0) {
         ogs_error("No GTP TEID");
         return;
