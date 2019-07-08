@@ -412,7 +412,7 @@ static void attach_test1(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(200);
+    ogs_msleep(300);
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
@@ -753,7 +753,7 @@ static void attach_test2(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(200);
+    ogs_msleep(300);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456826"));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -1083,7 +1083,7 @@ static void attach_test3(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(200);
+    ogs_msleep(300);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456797"));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -1266,7 +1266,7 @@ static void attach_test4(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(200);
+    ogs_msleep(300);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
     ABTS_PTR_NOTNULL(tc, doc);
@@ -1596,7 +1596,7 @@ static void attach_test5(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(200);
+    ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8("001010123456937"));
@@ -1775,7 +1775,7 @@ static void attach_test6(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(200);
+    ogs_msleep(300);
 
     doc = BCON_NEW("imsi", BCON_UTF8("001010000000002"));
     ABTS_PTR_NOTNULL(tc, doc);
