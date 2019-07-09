@@ -75,6 +75,9 @@ extern "C" {
 #define SGSAP_IMSI_DETACH_COMBINED_UE_INITIATED         2
 #define SGSAP_IMSI_DETACH_IMPLICIT_NETWORK_INITIATED    3
 
+#define SGSAP_EMM_IDLE_MODE                             0
+#define SGSAP_EMM_CONNECTED_MODE                        1
+
 #ifdef __cplusplus
 }
 #endif

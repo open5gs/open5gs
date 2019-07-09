@@ -178,7 +178,7 @@ int sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue)
     return OGS_OK;
 }
 
-int sgsap_send_service_request(mme_ue_t *mme_ue)
+int sgsap_send_service_request(mme_ue_t *mme_ue, uint8_t emm_mode)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -187,8 +187,9 @@ int sgsap_send_service_request(mme_ue_t *mme_ue)
     ogs_debug("[SGSAP] SERVICE-REQUEST");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     ogs_debug("    SERVICE_INDICATOR[%d]", mme_ue->service_indicator);
+    ogs_debug("    EMM_MODE[%d]", emm_mode);
 
-    pkbuf = sgsap_build_service_request(mme_ue);
+    pkbuf = sgsap_build_service_request(mme_ue, emm_mode);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
     ogs_assert(rv == OGS_OK);
 

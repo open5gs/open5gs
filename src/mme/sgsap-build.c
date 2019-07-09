@@ -188,7 +188,7 @@ ogs_pkbuf_t *sgsap_build_mo_csfb_indication(mme_ue_t *mme_ue)
     return pkbuf;
 }
 
-ogs_pkbuf_t *sgsap_build_service_request(mme_ue_t *mme_ue)
+ogs_pkbuf_t *sgsap_build_service_request(mme_ue_t *mme_ue, uint8_t emm_mode)
 {
     mme_vlr_t *vlr = NULL;
     ogs_tlv_t *root = NULL;
@@ -203,6 +203,9 @@ ogs_pkbuf_t *sgsap_build_service_request(mme_ue_t *mme_ue)
 
     ogs_tlv_add(root, SGSAP_IE_SERVICE_INDICATOR_TYPE,
             SGSAP_IE_SERVICE_INDICATOR_LEN, 0, &mme_ue->service_indicator);
+
+    ogs_tlv_add(root, SGSAP_IE_UE_EMM_MODE_TYPE,
+            SGSAP_IE_UE_EMM_MODE_LEN, 0, &emm_mode);
 
     pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put_u8(pkbuf, SGSAP_SERVICE_REQUEST);

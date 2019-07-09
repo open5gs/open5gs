@@ -30,6 +30,7 @@
 #include "esm-handler.h"
 #include "nas-path.h"
 #include "s1ap-path.h"
+#include "sgsap-types.h"
 #include "sgsap-path.h"
 #include "mme-gtp-path.h"
 #include "mme-path.h"
@@ -357,7 +358,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                     NAS_SERVICE_TYPE_CS_FALLBACK_TO_UE) {
                 ogs_debug("    SERVICE_REQUEST[%d]",
                         mme_ue->nas_eps.service.service_type);
-                sgsap_send_service_request(mme_ue);
+                sgsap_send_service_request(mme_ue, SGSAP_EMM_IDLE_MODE);
             } else {
                 ogs_warn(" Unknown CSFB Service Type[%d]",
                         mme_ue->nas_eps.service.service_type);
