@@ -125,19 +125,22 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert(successfulOutcome);
 
             switch (successfulOutcome->procedureCode) {
-            case S1AP_ProcedureCode_id_InitialContextSetup :
+            case S1AP_ProcedureCode_id_InitialContextSetup:
                 s1ap_handle_initial_context_setup_response(enb, pdu);
                 break;
-            case S1AP_ProcedureCode_id_E_RABSetup :
-                s1ap_handle_e_rab_setup_response(enb, pdu);
+            case S1AP_ProcedureCode_id_UEContextModification:
+                s1ap_handle_ue_context_modification_response(enb, pdu);
                 break;
-            case S1AP_ProcedureCode_id_E_RABModify :
-                break;
-            case S1AP_ProcedureCode_id_E_RABRelease :
-                break;
-            case S1AP_ProcedureCode_id_UEContextRelease :
+            case S1AP_ProcedureCode_id_UEContextRelease:
                 s1ap_handle_ue_context_release_complete(
                         enb, pdu);
+                break;
+            case S1AP_ProcedureCode_id_E_RABSetup:
+                s1ap_handle_e_rab_setup_response(enb, pdu);
+                break;
+            case S1AP_ProcedureCode_id_E_RABModify:
+                break;
+            case S1AP_ProcedureCode_id_E_RABRelease:
                 break;
             case S1AP_ProcedureCode_id_HandoverResourceAllocation:
                 s1ap_handle_handover_request_ack(enb, pdu);
@@ -161,6 +164,9 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
             switch (unsuccessfulOutcome->procedureCode) {
             case S1AP_ProcedureCode_id_InitialContextSetup :
                 s1ap_handle_initial_context_setup_failure(enb, pdu);
+                break;
+            case S1AP_ProcedureCode_id_UEContextModification:
+                s1ap_handle_ue_context_modification_failure(enb, pdu);
                 break;
             case S1AP_ProcedureCode_id_HandoverResourceAllocation :
                 s1ap_handle_handover_failure(enb, pdu);

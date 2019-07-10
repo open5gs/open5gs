@@ -257,6 +257,22 @@ int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
     return OGS_OK;
 }
 
+int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue)
+{
+    int rv;
+    ogs_pkbuf_t *s1apbuf = NULL;
+
+    ogs_assert(mme_ue);
+
+    rv = s1ap_build_ue_context_modification_request(&s1apbuf, mme_ue);
+    ogs_assert(rv == OGS_OK && s1apbuf);
+
+    rv = nas_send_to_enb(mme_ue, s1apbuf);
+    ogs_assert(rv == OGS_OK);
+
+    return OGS_OK;
+}
+
 int s1ap_send_ue_context_release_command(
     enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
     uint8_t action, uint32_t delay)

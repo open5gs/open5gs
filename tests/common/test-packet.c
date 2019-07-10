@@ -1145,6 +1145,70 @@ int tests1ap_build_initial_context_setup_response(
     return OGS_OK;
 }
 
+int tests1ap_build_ue_context_modification_response(
+        ogs_pkbuf_t **pkbuf, 
+        uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id)
+{
+    int rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_UEContextModificationResponse_t *UEContextModificationResponse = NULL;
+    ogs_sockaddr_t *addr = NULL;
+
+    S1AP_UEContextModificationResponseIEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = 
+        ogs_calloc(1, sizeof(S1AP_SuccessfulOutcome_t));
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode =
+        S1AP_ProcedureCode_id_UEContextModification;
+    successfulOutcome->criticality = S1AP_Criticality_reject;
+    successfulOutcome->value.present =
+        S1AP_SuccessfulOutcome__value_PR_UEContextModificationResponse;
+
+    UEContextModificationResponse = 
+        &successfulOutcome->value.choice.UEContextModificationResponse;
+
+    ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationResponseIEs_t));
+    ASN_SEQUENCE_ADD(&UEContextModificationResponse->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_UEContextModificationResponseIEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationResponseIEs_t));
+    ASN_SEQUENCE_ADD(&UEContextModificationResponse->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_UEContextModificationResponseIEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    *MME_UE_S1AP_ID = mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
+
+    rv = s1ap_encode_pdu(pkbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    if (rv != OGS_OK) {
+        ogs_error("s1ap_encode_pdu() failed");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
 int tests1ap_build_initial_context_setup_failure(ogs_pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {
@@ -1761,7 +1825,9 @@ int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf, int i,
         "000c"
         "4038000005000800 020002001a00100f 17b51a57a504074c 000504e900a25200"
         "4300060009f10700 07006440080009f1 0707080140008640 0130",
-        "",
+
+        "000d403900000500 0000020001000800 020001001a00100f 17b51a57a504074c"
+        "000504e900a25200 6440080009f10700 19b0100043400600 09f1070007",
         "",
 
         /* 21 */
@@ -1794,7 +1860,7 @@ int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf, int i,
         0,
 
         60,
-        0,
+        61,
         0,
         
         /* 21 */
@@ -1807,13 +1873,22 @@ int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf, int i,
     *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
     ogs_pkbuf_put_data(*pkbuf, 
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
-    memcpy((*pkbuf)->data + 26, &service_type, sizeof service_type);
-    m_tmsi = htonl(m_tmsi);
-    memcpy((*pkbuf)->data + 29, &m_tmsi, sizeof m_tmsi);
+    if (i == 18) {
+        memcpy((*pkbuf)->data + 26, &service_type, sizeof service_type);
+        m_tmsi = htonl(m_tmsi);
+        memcpy((*pkbuf)->data + 29, &m_tmsi, sizeof m_tmsi);
 
-    snow_3g_f9(knas_int, seq, (0 << 27), 0,
-            (*pkbuf)->data + 23, (10 << 3),
-            (*pkbuf)->data + 19);
+        snow_3g_f9(knas_int, seq, (0 << 27), 0,
+                (*pkbuf)->data + 23, (10 << 3),
+                (*pkbuf)->data + 19);
+    } else if (i == 19) {
+        memcpy((*pkbuf)->data + 32, &service_type, sizeof service_type);
+        m_tmsi = htonl(m_tmsi);
+        memcpy((*pkbuf)->data + 35, &m_tmsi, sizeof m_tmsi);
+        snow_3g_f9(knas_int, seq, (0 << 27), 0,
+                (*pkbuf)->data + 29, (10 << 3),
+                (*pkbuf)->data + 25);
+    }
 
     return OGS_OK;
 }

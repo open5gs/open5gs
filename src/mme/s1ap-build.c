@@ -559,6 +559,236 @@ int s1ap_build_initial_context_setup_request(
     return OGS_OK;
 }
 
+int s1ap_build_ue_context_modification_request(
+            ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
+{
+    int rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_UEContextModificationRequest_t *UEContextModificationRequest = NULL;
+
+    S1AP_UEContextModificationRequestIEs_t *ie = NULL;
+
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
+    S1AP_SecurityKey_t *SecurityKey = NULL;
+    S1AP_CSFallbackIndicator_t *CSFallbackIndicator = NULL;
+    S1AP_LAI_t *LAI = NULL;
+
+    enb_ue_t *enb_ue = NULL;
+
+    ogs_assert(mme_ue);
+    enb_ue = mme_ue->enb_ue;
+    ogs_assert(enb_ue);
+
+    ogs_debug("[MME] UE context modification request");
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        ogs_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_UEContextModification;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_UEContextModificationRequest;
+
+    UEContextModificationRequest =
+        &initiatingMessage->value.choice.UEContextModificationRequest;
+
+    ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
+    ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UEContextModificationRequestIEs__value_PR_MME_UE_S1AP_ID,
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
+    ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UEContextModificationRequestIEs__value_PR_ENB_UE_S1AP_ID,
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
+    ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UEContextModificationRequestIEs__value_PR_UESecurityCapabilities,
+
+    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+
+    ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
+    ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_SecurityKey;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UEContextModificationRequestIEs__value_PR_SecurityKey,
+
+    SecurityKey = &ie->value.choice.SecurityKey;
+
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+    *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+
+    UESecurityCapabilities->encryptionAlgorithms.size = 2;
+    UESecurityCapabilities->encryptionAlgorithms.buf = 
+        ogs_calloc(UESecurityCapabilities->encryptionAlgorithms.size, 
+                    sizeof(uint8_t));
+    UESecurityCapabilities->encryptionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->encryptionAlgorithms.buf[0] = 
+        (mme_ue->ue_network_capability.eea << 1);
+
+    UESecurityCapabilities->integrityProtectionAlgorithms.size = 2;
+    UESecurityCapabilities->integrityProtectionAlgorithms.buf =
+        ogs_calloc(UESecurityCapabilities->
+                        integrityProtectionAlgorithms.size, sizeof(uint8_t));
+    UESecurityCapabilities->integrityProtectionAlgorithms.bits_unused = 0;
+    UESecurityCapabilities->integrityProtectionAlgorithms.buf[0] =
+        (mme_ue->ue_network_capability.eia << 1);
+
+    SecurityKey->size = OGS_SHA256_DIGEST_SIZE;
+    SecurityKey->buf = 
+        ogs_calloc(SecurityKey->size, sizeof(uint8_t));
+    SecurityKey->bits_unused = 0;
+    memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
+
+    ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
+    ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_CSFallbackIndicator;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UEContextModificationRequestIEs__value_PR_CSFallbackIndicator;
+
+    CSFallbackIndicator = &ie->value.choice.CSFallbackIndicator;
+    ogs_assert(CSFallbackIndicator);
+
+    *CSFallbackIndicator = S1AP_CSFallbackIndicator_cs_fallback_required;
+
+    ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
+    ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_RegisteredLAI;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_UEContextModificationRequestIEs__value_PR_LAI;
+
+    LAI = &ie->value.choice.LAI;
+    ogs_assert(LAI);
+
+    s1ap_buffer_to_OCTET_STRING(&mme_ue->tai.plmn_id, sizeof(plmn_id_t),
+            &LAI->pLMNidentity);
+    ogs_assert(mme_ue->vlr);
+    ogs_assert(mme_ue->p_tmsi);
+    s1ap_uint16_to_OCTET_STRING(mme_ue->vlr->lai.lac, &LAI->lAC);
+
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    if (rv != OGS_OK) {
+        ogs_error("s1ap_encode_pdu() failed");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+int s1ap_build_ue_context_release_command(
+    ogs_pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause)
+{
+    int rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_UEContextReleaseCommand_t *UEContextReleaseCommand = NULL;
+
+    S1AP_UEContextReleaseCommand_IEs_t *ie = NULL;
+    S1AP_UE_S1AP_IDs_t *UE_S1AP_IDs = NULL;
+    S1AP_Cause_t *Cause = NULL;
+
+    ogs_assert(enb_ue);
+
+    if (enb_ue->mme_ue_s1ap_id == 0) {
+        ogs_error("invalid mme ue s1ap id");
+        return OGS_ERROR;
+    }
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        ogs_calloc(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_UEContextRelease;
+    initiatingMessage->criticality = S1AP_Criticality_reject;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_UEContextReleaseCommand;
+
+    UEContextReleaseCommand =
+        &initiatingMessage->value.choice.UEContextReleaseCommand;
+
+    ie = ogs_calloc(1, sizeof(S1AP_UEContextReleaseCommand_IEs_t));
+    ASN_SEQUENCE_ADD(&UEContextReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UE_S1AP_IDs;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_UEContextReleaseCommand_IEs__value_PR_UE_S1AP_IDs;
+
+    UE_S1AP_IDs = &ie->value.choice.UE_S1AP_IDs;
+
+    ie = ogs_calloc(1, sizeof(S1AP_UEContextReleaseCommand_IEs_t));
+    ASN_SEQUENCE_ADD(&UEContextReleaseCommand->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_Cause;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_UEContextReleaseCommand_IEs__value_PR_Cause;
+
+    Cause = &ie->value.choice.Cause;
+
+    if (enb_ue->enb_ue_s1ap_id == INVALID_UE_S1AP_ID) {
+        UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
+        UE_S1AP_IDs->choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+    } else {
+        UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair = 
+            ogs_calloc(1, sizeof(S1AP_UE_S1AP_ID_pair_t));
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->mME_UE_S1AP_ID = 
+            enb_ue->mme_ue_s1ap_id;
+        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->eNB_UE_S1AP_ID = 
+            enb_ue->enb_ue_s1ap_id;
+    }
+
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
+
+    rv = s1ap_encode_pdu(s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    if (rv != OGS_OK) {
+        ogs_error("s1ap_encode_pdu() failed");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+
 int s1ap_build_e_rab_setup_request(
             ogs_pkbuf_t **s1apbuf, mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf)
 {
@@ -974,85 +1204,6 @@ int s1ap_build_e_rab_release_command(ogs_pkbuf_t **s1apbuf,
     nasPdu->buf = ogs_calloc(nasPdu->size, sizeof(uint8_t));
     memcpy(nasPdu->buf, esmbuf->data, nasPdu->size);
     ogs_pkbuf_free(esmbuf);
-
-    rv = s1ap_encode_pdu(s1apbuf, &pdu);
-    s1ap_free_pdu(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("s1ap_encode_pdu() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
-}
-
-int s1ap_build_ue_context_release_command(
-    ogs_pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause)
-{
-    int rv;
-
-    S1AP_S1AP_PDU_t pdu;
-    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
-    S1AP_UEContextReleaseCommand_t *UEContextReleaseCommand = NULL;
-
-    S1AP_UEContextReleaseCommand_IEs_t *ie = NULL;
-    S1AP_UE_S1AP_IDs_t *UE_S1AP_IDs = NULL;
-    S1AP_Cause_t *Cause = NULL;
-
-    ogs_assert(enb_ue);
-
-    if (enb_ue->mme_ue_s1ap_id == 0) {
-        ogs_error("invalid mme ue s1ap id");
-        return OGS_ERROR;
-    }
-
-    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
-    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
-    pdu.choice.initiatingMessage = 
-        ogs_calloc(1, sizeof(S1AP_InitiatingMessage_t));
-
-    initiatingMessage = pdu.choice.initiatingMessage;
-    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_UEContextRelease;
-    initiatingMessage->criticality = S1AP_Criticality_reject;
-    initiatingMessage->value.present =
-        S1AP_InitiatingMessage__value_PR_UEContextReleaseCommand;
-
-    UEContextReleaseCommand =
-        &initiatingMessage->value.choice.UEContextReleaseCommand;
-
-    ie = ogs_calloc(1, sizeof(S1AP_UEContextReleaseCommand_IEs_t));
-    ASN_SEQUENCE_ADD(&UEContextReleaseCommand->protocolIEs, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_UE_S1AP_IDs;
-    ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_UEContextReleaseCommand_IEs__value_PR_UE_S1AP_IDs;
-
-    UE_S1AP_IDs = &ie->value.choice.UE_S1AP_IDs;
-
-    ie = ogs_calloc(1, sizeof(S1AP_UEContextReleaseCommand_IEs_t));
-    ASN_SEQUENCE_ADD(&UEContextReleaseCommand->protocolIEs, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_Cause;
-    ie->criticality = S1AP_Criticality_ignore;
-    ie->value.present = S1AP_UEContextReleaseCommand_IEs__value_PR_Cause;
-
-    Cause = &ie->value.choice.Cause;
-
-    if (enb_ue->enb_ue_s1ap_id == INVALID_UE_S1AP_ID) {
-        UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_mME_UE_S1AP_ID;
-        UE_S1AP_IDs->choice.mME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
-    } else {
-        UE_S1AP_IDs->present = S1AP_UE_S1AP_IDs_PR_uE_S1AP_ID_pair;
-        UE_S1AP_IDs->choice.uE_S1AP_ID_pair = 
-            ogs_calloc(1, sizeof(S1AP_UE_S1AP_ID_pair_t));
-        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->mME_UE_S1AP_ID = 
-            enb_ue->mme_ue_s1ap_id;
-        UE_S1AP_IDs->choice.uE_S1AP_ID_pair->eNB_UE_S1AP_ID = 
-            enb_ue->enb_ue_s1ap_id;
-    }
-
-    Cause->present = group;
-    Cause->choice.radioNetwork = cause;
 
     rv = s1ap_encode_pdu(s1apbuf, &pdu);
     s1ap_free_pdu(&pdu);

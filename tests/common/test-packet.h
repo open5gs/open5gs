@@ -67,6 +67,9 @@ int tests1ap_build_initial_context_setup_response(
         ogs_pkbuf_t **pkbuf, 
         uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id,
         uint8_t ebi, uint32_t teid, const char *ipstr);
+int tests1ap_build_ue_context_modification_response(
+        ogs_pkbuf_t **pkbuf, 
+        uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id);
 int tests1ap_build_initial_context_setup_failure(
         ogs_pkbuf_t **pkbuf, int i);
 int tests1ap_build_attach_complete(ogs_pkbuf_t **pkbuf, int i);

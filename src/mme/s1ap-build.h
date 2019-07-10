@@ -32,18 +32,24 @@ extern "C" {
 int s1ap_build_setup_rsp(ogs_pkbuf_t **pkbuf);
 int s1ap_build_setup_failure(
     ogs_pkbuf_t **pkbuf, S1AP_Cause_PR group, long cause, long time_to_wait);
+
 int s1ap_build_downlink_nas_transport(
     ogs_pkbuf_t **s1apbuf, enb_ue_t *enb_ue, ogs_pkbuf_t *emmbuf);
+
 int s1ap_build_initial_context_setup_request(
     ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue, ogs_pkbuf_t *emmbuf);
+int s1ap_build_ue_context_modification_request(
+    ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue);
+int s1ap_build_ue_context_release_command(
+    ogs_pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause);
+
 int s1ap_build_e_rab_setup_request(
     ogs_pkbuf_t **s1apbuf, mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf);
 int s1ap_build_e_rab_modify_request(
             ogs_pkbuf_t **s1apbuf, mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf);
 int s1ap_build_e_rab_release_command(ogs_pkbuf_t **s1apbuf,
     mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf, S1AP_Cause_PR group, long cause);
-int s1ap_build_ue_context_release_command(
-    ogs_pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause);
+
 int s1ap_build_paging(ogs_pkbuf_t **s1apbuf,
         mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain);
 

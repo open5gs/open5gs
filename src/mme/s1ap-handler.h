@@ -40,12 +40,18 @@ void s1ap_handle_initial_context_setup_response(
         mme_enb_t *enb, s1ap_message_t *message);
 void s1ap_handle_initial_context_setup_failure(
         mme_enb_t *enb, s1ap_message_t *message);
-void s1ap_handle_e_rab_setup_response(
+
+void s1ap_handle_ue_context_modification_response(
+        mme_enb_t *enb, s1ap_message_t *message);
+void s1ap_handle_ue_context_modification_failure(
         mme_enb_t *enb, s1ap_message_t *message);
 
 void s1ap_handle_ue_context_release_request(
         mme_enb_t *enb, s1ap_message_t *message);
 void s1ap_handle_ue_context_release_complete(
+        mme_enb_t *enb, s1ap_message_t *message);
+
+void s1ap_handle_e_rab_setup_response(
         mme_enb_t *enb, s1ap_message_t *message);
 
 void s1ap_handle_path_switch_request(

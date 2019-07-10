@@ -567,8 +567,8 @@ void s1ap_handle_initial_context_setup_failure(
 
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
     if (enb_ue == NULL) {
-        ogs_warn("Initial context setup failure : cannot find eNB-UE-S1AP-ID[%d]",
-                (int)*ENB_UE_S1AP_ID);
+        ogs_warn("Initial context setup failure : "
+                "cannot find eNB-UE-S1AP-ID[%d]", (int)*ENB_UE_S1AP_ID);
         return;
     }
     mme_ue = enb_ue->mme_ue;
@@ -599,6 +599,119 @@ void s1ap_handle_initial_context_setup_failure(
         ogs_assert(rv == OGS_OK);
     }
 }
+
+void s1ap_handle_ue_context_modification_response(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[OGS_ADDRSTRLEN];
+    int i;
+
+    S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    S1AP_UEContextModificationResponse_t *UEContextModificationResponse = NULL;
+
+    S1AP_UEContextModificationResponseIEs_t *ie = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+
+    mme_ue_t *mme_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
+
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
+
+    ogs_assert(message);
+    successfulOutcome = message->choice.successfulOutcome;
+    ogs_assert(successfulOutcome);
+    UEContextModificationResponse =
+        &successfulOutcome->value.choice.UEContextModificationResponse;
+    ogs_assert(UEContextModificationResponse);
+
+    ogs_debug("[MME] UE context modification response");
+
+    for (i = 0; i < UEContextModificationResponse->protocolIEs.list.count; i++) {
+        ie = UEContextModificationResponse->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+            ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+            break;
+        default:
+            break;
+        }
+    }
+
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
+
+    ogs_assert(ENB_UE_S1AP_ID);
+    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
+    ogs_assert(enb_ue);
+    mme_ue = enb_ue->mme_ue;
+    ogs_assert(mme_ue);
+
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+
+}
+
+void s1ap_handle_ue_context_modification_failure(
+        mme_enb_t *enb, s1ap_message_t *message)
+{
+    char buf[OGS_ADDRSTRLEN];
+    int i;
+
+    S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
+    S1AP_UEContextModificationFailure_t *UEContextModificationFailure = NULL;
+
+    S1AP_UEContextModificationFailureIEs_t *ie = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_Cause_t *Cause = NULL;
+
+    enb_ue_t *enb_ue = NULL;
+
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
+
+    ogs_assert(message);
+    unsuccessfulOutcome = message->choice.unsuccessfulOutcome;
+    ogs_assert(unsuccessfulOutcome);
+    UEContextModificationFailure =
+        &unsuccessfulOutcome->value.choice.UEContextModificationFailure;
+    ogs_assert(UEContextModificationFailure);
+
+    ogs_warn("[MME] UE context modification failure");
+
+    for (i = 0; i < UEContextModificationFailure->protocolIEs.list.count; i++) {
+        ie = UEContextModificationFailure->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID:
+            ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+            break;
+        case S1AP_ProtocolIE_ID_id_Cause:
+            Cause = &ie->value.choice.Cause;
+            break;
+        default:
+            break;
+        }
+    }
+
+    ogs_debug("    IP[%s] ENB_ID[%d]",
+            OGS_ADDR(enb->addr, buf), enb->enb_id);
+
+    ogs_assert(ENB_UE_S1AP_ID);
+    ogs_assert(Cause);
+
+    enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
+    if (enb_ue == NULL) {
+        ogs_warn("Initial context setup failure : "
+                "cannot find eNB-UE-S1AP-ID[%d]", (int)*ENB_UE_S1AP_ID);
+        return;
+    }
+
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
+    ogs_debug("    Cause[Group:%d Cause:%d]",
+            Cause->present, (int)Cause->choice.radioNetwork);
+}
+
 
 void s1ap_handle_e_rab_setup_response(
         mme_enb_t *enb, s1ap_message_t *message)
