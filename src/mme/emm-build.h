@@ -50,6 +50,8 @@ int emm_build_tau_reject(ogs_pkbuf_t **emmbuf,
 int emm_build_service_reject(ogs_pkbuf_t **emmbuf, 
         nas_emm_cause_t emm_cause, mme_ue_t *mme_ue);
 
+int emm_build_cs_service_notification(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue);
+
 #ifdef __cplusplus
 }
 #endif

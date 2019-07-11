@@ -446,3 +446,22 @@ int nas_send_service_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause)
 
     return OGS_OK;
 }
+
+int nas_send_cs_service_notification(mme_ue_t *mme_ue)
+{
+    int rv;
+    ogs_pkbuf_t *emmbuf = NULL;
+
+    ogs_assert(mme_ue);
+
+    ogs_debug("[EMM] CS Service Notification");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    rv = emm_build_cs_service_notification(&emmbuf, mme_ue);
+    ogs_assert(rv == OGS_OK && emmbuf);
+
+    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    ogs_assert(rv == OGS_OK);
+
+    return OGS_OK;
+}

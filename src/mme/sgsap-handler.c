@@ -317,7 +317,10 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                     plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
     }
 
-    s1ap_send_paging(mme_ue, S1AP_CNDomain_cs);
+    if (ECM_IDLE(mme_ue))
+        s1ap_send_paging(mme_ue, S1AP_CNDomain_cs);
+    else
+        nas_send_cs_service_notification(mme_ue);
 }
 
 void sgsap_handle_reset_indication(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)

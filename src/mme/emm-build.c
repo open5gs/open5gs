@@ -512,3 +512,34 @@ int emm_build_service_reject(ogs_pkbuf_t **emmbuf, nas_emm_cause_t emm_cause,
 
     return OGS_OK;
 }
+
+int emm_build_cs_service_notification(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+{
+    nas_message_t message;
+    nas_cs_service_notification_t *cs_service_notification = 
+        &message.emm.cs_service_notification;
+    nas_paging_identity_t *paging_identity =
+        &cs_service_notification->paging_identity;
+
+    ogs_assert(mme_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+        NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_CS_SERVICE_NOTIFICATION;
+
+    /* FIXME : Does it right to use TMSI */
+    paging_identity->identity = NAS_PAGING_IDENTITY_TMSI;
+    ogs_debug("    Paging Identity[%d]", paging_identity->identity);
+
+    /* FIXME : What optional filed should be included in this message? */  
+
+    ogs_assert(nas_security_encode(emmbuf, mme_ue, &message) == OGS_OK && 
+            *emmbuf);
+
+    return OGS_OK;
+}
+

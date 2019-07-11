@@ -44,7 +44,7 @@ testcsfb_SOURCES = \
 	common/test-app.h \
 	csfb/abts-main.c csfb/test-app.c \
 	csfb/mo-idle-test.c csfb/mt-idle-test.c \
-	csfb/mo-active-test.c \
+	csfb/mo-active-test.c csfb/mt-active-test.c \
 	$(NULL)
 testcsfb_LDADD = $(top_srcdir)/src/libepc.la
 
