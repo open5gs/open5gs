@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "gtp/gtp-types.h"
 #include "gtp/gtp-conv.h"
 #include "gtp/gtp-message.h"
@@ -87,14 +106,12 @@ int mme_s11_build_create_session_request(
                     sizeof pdn->pgw_ip.both.addr6);
             req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
                 GTP_F_TEID_IPV4V6_LEN;
-        }
-        else if (pgw_s5c_teid.ipv4) {
+        } else if (pgw_s5c_teid.ipv4) {
             /* pdn->pgw_ip always uses both ip address memory */
             pgw_s5c_teid.addr = pdn->pgw_ip.both.addr;
             req->pgw_s5_s8_address_for_control_plane_or_pmip.len =
                 GTP_F_TEID_IPV4_LEN;
-        }
-        else if (pgw_s5c_teid.ipv6) {
+        } else if (pgw_s5c_teid.ipv6) {
             /* pdn->pgw_ip always uses both ip address memory */
             memcpy(pgw_s5c_teid.addr6, pdn->pgw_ip.both.addr6,
                     sizeof pdn->pgw_ip.both.addr6);
@@ -104,8 +121,7 @@ int mme_s11_build_create_session_request(
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data =
             &pgw_s5c_teid;
-    }
-    else {
+    } else {
         ogs_sockaddr_t *pgw_addr = NULL;
         ogs_sockaddr_t *pgw_addr6 = NULL;
 
@@ -144,11 +160,9 @@ int mme_s11_build_create_session_request(
         pdn->pdn_type == HSS_PDN_TYPE_IPV4V6) {
         req->pdn_type.u8 = ((pdn->pdn_type + 1) & sess->request_type.pdn_type);
         ogs_assert(req->pdn_type.u8 != 0);
-    }
-    else if (pdn->pdn_type == HSS_PDN_TYPE_IPV4_OR_IPV6) {
+    } else if (pdn->pdn_type == HSS_PDN_TYPE_IPV4_OR_IPV6) {
         req->pdn_type.u8 = sess->request_type.pdn_type;
-    }
-    else
+    } else
         ogs_assert_if_reached();
     req->pdn_type.presence = 1;
 
@@ -202,9 +216,7 @@ int mme_s11_build_create_session_request(
     ogs_localtime(now.tv_sec, &time_exp);
     if (time_exp.tm_gmtoff >= 0) {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
-    }
-    else
-    {
+    } else {
         ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
@@ -427,8 +439,7 @@ int mme_s11_build_create_bearer_response(
     ogs_localtime(now.tv_sec, &time_exp);
     if (time_exp.tm_gmtoff >= 0) {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
-    }
-    else {
+    } else {
         ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
@@ -507,8 +518,7 @@ int mme_s11_build_update_bearer_response(
     ogs_localtime(now.tv_sec, &time_exp);
     if (time_exp.tm_gmtoff >= 0) {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
-    }
-    else {
+    } else {
         ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
@@ -587,8 +597,7 @@ int mme_s11_build_delete_bearer_response(
     ogs_localtime(now.tv_sec, &time_exp);
     if (time_exp.tm_gmtoff >= 0) {
         ue_timezone.timezone = GTP_TIME_TO_BCD(time_exp.tm_gmtoff / 900);
-    }
-    else {
+    } else {
         ue_timezone.timezone = GTP_TIME_TO_BCD((-time_exp.tm_gmtoff) / 900);
         ue_timezone.timezone |= 0x08;
     }
@@ -685,7 +694,7 @@ int mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     sess = mme_sess_first(mme_ue);
     while (sess != NULL) {
         bearer = mme_bearer_first(sess);
-        while(bearer != NULL) {
+        while (bearer != NULL) {
             if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer)) {
                 memset(&dl_teid[i], 0, sizeof(gtp_f_teid_t));
                 dl_teid[i].interface_type =

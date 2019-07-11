@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "s1ap-path.h"
 #include "s1ap-build.h"
 #include "esm-build.h"
@@ -106,8 +125,7 @@ int nas_send_attach_reject(mme_ue_t *mme_ue,
     ogs_debug("    IMSI[%s] Cause[%d]", mme_ue->imsi_bcd, emm_cause);
 
     sess = mme_sess_first(mme_ue);
-    if (sess)
-    {
+    if (sess) {
         rv = esm_build_pdn_connectivity_reject(&esmbuf, sess, esm_cause);
         ogs_assert(rv == OGS_OK && esmbuf);
     }
@@ -187,8 +205,7 @@ int nas_send_detach_accept(mme_ue_t *mme_ue)
     ogs_assert(enb_ue);
 
     /* reply with detach accept */
-    if (mme_ue->nas_eps.detach.switch_off == 0)
-    {
+    if (mme_ue->nas_eps.detach.switch_off == 0) {
         rv = emm_build_detach_accept(&emmbuf, mme_ue);
         ogs_assert(rv == OGS_OK && emmbuf);
 
@@ -309,8 +326,7 @@ int nas_send_activate_all_dedicated_bearers(mme_bearer_t *default_bearer)
     ogs_assert(default_bearer);
 
     mme_bearer_t *dedicated_bearer = mme_bearer_next(default_bearer);
-    while(dedicated_bearer)
-    {
+    while (dedicated_bearer) {
         rv = nas_send_activate_dedicated_bearer_context_request(
                 dedicated_bearer);
         ogs_assert(rv == OGS_OK);
@@ -337,16 +353,13 @@ int nas_send_modify_bearer_context_request(
             &esmbuf, bearer, qos_presence, tft_presence);
     ogs_assert(rv == OGS_OK && esmbuf);
 
-    if (qos_presence == 1)
-    {
+    if (qos_presence == 1) {
         rv = s1ap_build_e_rab_modify_request(&s1apbuf, bearer, esmbuf);
         ogs_assert(rv == OGS_OK && s1apbuf);
 
         rv = nas_send_to_enb(mme_ue, s1apbuf);
         ogs_assert(rv == OGS_OK);
-    }
-    else
-    {
+    } else {
         rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
         ogs_assert(rv == OGS_OK);
     }
@@ -393,21 +406,17 @@ int nas_send_tau_accept(
     rv = emm_build_tau_accept(&emmbuf, mme_ue);
     ogs_assert(rv == OGS_OK);
 
-    if (procedureCode == S1AP_ProcedureCode_id_InitialContextSetup)
-    {
+    if (procedureCode == S1AP_ProcedureCode_id_InitialContextSetup) {
         ogs_pkbuf_t *s1apbuf = NULL;
         rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, emmbuf);
         ogs_assert(rv == OGS_OK && s1apbuf);
 
         rv = nas_send_to_enb(mme_ue, s1apbuf);
         ogs_assert(rv == OGS_OK);
-    }
-    else if (procedureCode == S1AP_ProcedureCode_id_downlinkNASTransport)
-    {
+    } else if (procedureCode == S1AP_ProcedureCode_id_downlinkNASTransport) {
         rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
         ogs_assert(rv == OGS_OK);
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
     return rv;

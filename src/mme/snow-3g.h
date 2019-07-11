@@ -1,11 +1,11 @@
-#ifndef __SNOW_3G__
-#define __SNOW_3G__
+#ifndef SNOW_3G_H
+#define SNOW_3G_H
 
 #include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 typedef uint8_t u8;
 typedef uint32_t u32;
@@ -63,6 +63,6 @@ void snow_3g_f9( u8* key, u32 count, u32 fresh, u32 dir,
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __SNOW_3G__ */
+#endif /* SNOW_3G_H */

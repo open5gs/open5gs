@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "nas-conv.h"
 
 void nas_imsi_to_bcd(
@@ -22,8 +41,7 @@ void nas_imsi_to_bcd(
     bcd[14] = '0' + imsi->digit15;
 
     bcd_len = imsi_len * 2 - 1;
-    if (!imsi->odd_even) /* if bcd length is even */
-    {
+    if (!imsi->odd_even) { /* if bcd length is even */
         if (bcd[bcd_len] != 0xf)
             ogs_warn("Spec warning : bcd[%d] = 0x%x", bcd_len, bcd[bcd_len]);
         (bcd_len)--; 
@@ -53,8 +71,7 @@ void nas_imsi_to_buffer(
     buf[7] = ((('0' + imsi->digit15)) & 0x0f);
 
     *buf_len = imsi_len;
-    if (!imsi->odd_even) /* if imsi length is even */
-    {
+    if (!imsi->odd_even) { /* if imsi length is even */
         (*buf_len)--; 
         if ((buf[*buf_len] & 0xf) != 0xf)
             ogs_warn("Spec warning : buf[%d] = 0x%x", *buf_len, buf[*buf_len]);

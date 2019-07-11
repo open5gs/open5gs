@@ -1,11 +1,30 @@
-#ifndef __MME_S11_BUILD_H__
-#define __MME_S11_BUILD_H__
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef MME_S11_BUILD_H
+#define MME_S11_BUILD_H
 
 #include "gtp/gtp-message.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 int mme_s11_build_create_session_request(
         ogs_pkbuf_t **pkbuf, uint8_t type, mme_sess_t *sess);
@@ -28,6 +47,6 @@ int mme_s11_build_create_indirect_data_forwarding_tunnel_request(
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __MME_S11_BUILD_H__ */
+#endif /* MME_S11_BUILD_H */
