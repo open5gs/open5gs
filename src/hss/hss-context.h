@@ -1,11 +1,30 @@
-#ifndef __HSS_CONTEXT_H__
-#define __HSS_CONTEXT_H__
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#ifndef HSS_CONTEXT_H
+#define HSS_CONTEXT_H
 
 #include "fd/s6a/s6a-message.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #define HSS_KEY_LEN                 16
 #define HSS_AMF_LEN                 2
@@ -38,7 +57,7 @@ typedef struct _hss_context_t {
 
 void hss_context_init(void);
 void hss_context_final(void);
-hss_context_t* hss_self(void);
+hss_context_t *hss_self(void);
 
 int hss_context_parse_config(void);
 
@@ -54,6 +73,6 @@ int hss_db_subscription_data(
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __HSS_CONTEXT_H__ */
+#endif /* HSS_CONTEXT_H */

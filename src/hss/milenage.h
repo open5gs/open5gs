@@ -6,8 +6,12 @@
  * See README for more details.
  */
 
-#ifndef __MILENAGE_H__
-#define __MILENAGE_H__
+#ifndef MILENAGE_H
+#define MILENAGE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void milenage_generate(const uint8_t *opc, const uint8_t *amf, 
     const uint8_t *k, const uint8_t *sqn, const uint8_t *_rand, 
@@ -30,4 +34,8 @@ int milenage_f2345(const uint8_t *opc, const uint8_t *k,
 
 void milenage_opc(const uint8_t *k, const uint8_t *op,  uint8_t *opc);
 
-#endif /* __MILENAGE_H__ */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* MILENAGE_H */
