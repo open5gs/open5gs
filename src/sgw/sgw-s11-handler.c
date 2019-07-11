@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "gtp/gtp-types.h"
 #include "gtp/gtp-conv.h"
 #include "gtp/gtp-node.h"
@@ -34,13 +53,11 @@ void sgw_s11_handle_create_session_request(
     req = &gtp_message->create_session_request;
 
     ogs_debug("[SGW] Create Session Request");
-    if (req->bearer_contexts_to_be_created.presence == 0)
-    {
+    if (req->bearer_contexts_to_be_created.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
@@ -48,8 +65,7 @@ void sgw_s11_handle_create_session_request(
     ogs_assert(sgw_ue);
     sess = sgw_sess_find_by_ebi(sgw_ue,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    if (!sess)
-    {
+    if (!sess) {
         char apn[MAX_APN_LEN];
 
         if (req->access_point_name.presence == 0)
@@ -65,18 +81,15 @@ void sgw_s11_handle_create_session_request(
         ogs_assert(sess);
     }
 
-    if (req->sender_f_teid_for_control_plane.presence == 0)
-    {
+    if (req->sender_f_teid_for_control_plane.presence == 0) {
         ogs_error("No Sender F-TEID");
         return;
     }
-    if (req->pgw_s5_s8_address_for_control_plane_or_pmip.presence == 0)
-    {
+    if (req->pgw_s5_s8_address_for_control_plane_or_pmip.presence == 0) {
         ogs_error("No PGW IP");
         return;
     }
-    if (req->user_location_information.presence == 0)
-    {
+    if (req->user_location_information.presence == 0) {
         ogs_error("No User Location Inforamtion");
         return;
     }
@@ -114,8 +127,7 @@ void sgw_s11_handle_create_session_request(
     ogs_assert(pgw_s5c_teid);
 
     pgw = gtp_node_find(&sgw_self()->pgw_s5c_list, pgw_s5c_teid);
-    if (!pgw)
-    {
+    if (!pgw) {
         pgw = gtp_node_add(&sgw_self()->pgw_s5c_list, pgw_s5c_teid,
             sgw_self()->gtpc_port,
             context_self()->config.parameter.no_ipv4,
@@ -189,18 +201,15 @@ void sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
     ogs_assert(req);
 
     ogs_debug("[SGW] Modify Bearer Reqeust");
-    if (req->bearer_contexts_to_be_modified.presence == 0)
-    {
+    if (req->bearer_contexts_to_be_modified.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts_to_be_modified.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts_to_be_modified.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
-    if (req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.presence == 0)
-    {
+    if (req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.presence == 0) {
         ogs_error("No eNB TEID");
         return;
     }
@@ -236,8 +245,7 @@ void sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
             s1u_tunnel->remote_teid, s1u_tunnel->local_teid);
 
         enb = gtp_node_find(&sgw_self()->enb_s1u_list, enb_s1u_teid);
-        if (!enb)
-        {
+        if (!enb) {
             enb = gtp_node_add(&sgw_self()->enb_s1u_list, enb_s1u_teid,
                 sgw_self()->gtpu_port,
                 context_self()->config.parameter.no_ipv4,
@@ -251,8 +259,7 @@ void sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
 
 #if ULI_END_MARKER
         /* if ULI's Cell ID changes, End Marker is sent out or not */
-        if (req->user_location_information.presence == 1)
-        {
+        if (req->user_location_information.presence == 1) {
             /* Set User Location Information */
             decoded = gtp_parse_uli(&uli, &req->user_location_information);
             ogs_assert(req->user_location_information.len == decoded);
@@ -262,8 +269,7 @@ void sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
                     sizeof(uli.e_cgi.plmn_id));
             ogs_debug("    ULI Presence: CellID[OLD:0x%x, NEW:0x%x]",
                 bearer->e_cgi.cell_id, uli.e_cgi.cell_id);
-            if (bearer->e_cgi.cell_id != uli.e_cgi.cell_id)
-            {
+            if (bearer->e_cgi.cell_id != uli.e_cgi.cell_id) {
                 ogs_debug("[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]",
                     OGS_ADDR(&s1u_tunnel->gnode->conn, buf),
                     s1u_tunnel->remote_teid);
@@ -276,8 +282,7 @@ void sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
         }
 #else /* GNODE_END_MARKER */
         /* if GTP Node changes, End Marker is sent out or not */
-        if (req->user_location_information.presence == 1)
-        {
+        if (req->user_location_information.presence == 1) {
             /* Set User Location Information */
             decoded = gtp_parse_uli(&uli, &req->user_location_information);
             ogs_assert(req->user_location_information.len == decoded);
@@ -294,8 +299,7 @@ void sgw_s11_handle_modify_bearer_request(gtp_xact_t *s11_xact,
                     bearer->e_cgi.cell_id);
         }
 
-        if (s1u_tunnel->gnode && s1u_tunnel->gnode != enb)
-        {
+        if (s1u_tunnel->gnode && s1u_tunnel->gnode != enb) {
             ogs_assert(s1u_tunnel->gnode->sock);
 
             ogs_debug("[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]",
@@ -343,8 +347,7 @@ void sgw_s11_handle_delete_session_request(gtp_xact_t *s11_xact,
     ogs_assert(req);
 
     ogs_debug("[SGW] Delete Session Reqeust");
-    if (req->linked_eps_bearer_id.presence == 0)
-    {
+    if (req->linked_eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
@@ -399,28 +402,23 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
     req = &gtp_message->create_bearer_response;
     ogs_assert(req);
 
-    if (req->bearer_contexts.presence == 0)
-    {
+    if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
-    if (req->bearer_contexts.s1_u_enodeb_f_teid.presence == 0)
-    {
+    if (req->bearer_contexts.s1_u_enodeb_f_teid.presence == 0) {
         ogs_error("No eNB TEID");
         return;
     }
-    if (req->bearer_contexts.s4_u_sgsn_f_teid.presence == 0)
-    {
+    if (req->bearer_contexts.s4_u_sgsn_f_teid.presence == 0) {
         ogs_error("No SGW TEID");
         return;
     }
-    if (req->user_location_information.presence == 0)
-    {
+    if (req->user_location_information.presence == 0) {
         ogs_error("No User Location Inforamtion");
         return;
     }
@@ -457,8 +455,7 @@ void sgw_s11_handle_create_bearer_response(gtp_xact_t *s11_xact,
         s5u_tunnel->local_teid, s5u_tunnel->remote_teid);
 
     enb = gtp_node_find(&sgw_self()->enb_s1u_list, enb_s1u_teid);
-    if (!enb)
-    {
+    if (!enb) {
         enb = gtp_node_add(&sgw_self()->enb_s1u_list, enb_s1u_teid,
             sgw_self()->gtpu_port,
             context_self()->config.parameter.no_ipv4,
@@ -538,13 +535,11 @@ void sgw_s11_handle_update_bearer_response(gtp_xact_t *s11_xact,
     ogs_assert(req);
 
     ogs_debug("[SGW] Update Bearer Reqeust");
-    if (req->bearer_contexts.presence == 0)
-    {
+    if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
@@ -593,13 +588,11 @@ void sgw_s11_handle_delete_bearer_response(gtp_xact_t *s11_xact,
     ogs_assert(req);
 
     ogs_debug("[SGW] Delete Bearer Response");
-    if (req->bearer_contexts.presence == 0)
-    {
+    if (req->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0)
-    {
+    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
@@ -657,11 +650,9 @@ void sgw_s11_handle_release_access_bearers_request(gtp_xact_t *s11_xact,
 
     /* Release S1U(DL) path */
     sess = sgw_sess_first(sgw_ue);
-    while (sess)
-    {
+    while (sess) {
         bearer = ogs_list_first(&sess->bearer_list);
-        while (bearer)
-        {
+        while (bearer) {
             next_bearer = ogs_list_next(bearer);
 
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
@@ -802,10 +793,8 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
     rsp->cause.data = &cause;
     rsp->cause.len = sizeof(cause);
 
-    for (i = 0; req_bearers[i]->presence; i++)
-    {
-        if (req_bearers[i]->eps_bearer_id.presence == 0)
-        {
+    for (i = 0; req_bearers[i]->presence; i++) {
+        if (req_bearers[i]->eps_bearer_id.presence == 0) {
             ogs_error("No EBI");
             return;
         }
@@ -814,8 +803,7 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
                     req_bearers[i]->eps_bearer_id.u8);
         ogs_assert(bearer);
 
-        if (req_bearers[i]->s1_u_enodeb_f_teid.presence)
-        {
+        if (req_bearers[i]->s1_u_enodeb_f_teid.presence) {
             req_teid = req_bearers[i]->s1_u_enodeb_f_teid.data;
             ogs_assert(req_teid);
 
@@ -825,8 +813,7 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
             tunnel->remote_teid = ntohl(req_teid->teid);
             enb = gtp_node_find(&sgw_self()->enb_s1u_list, req_teid);
-            if (!enb)
-            {
+            if (!enb) {
                 enb = gtp_node_add(&sgw_self()->enb_s1u_list, req_teid,
                     sgw_self()->gtpu_port,
                     context_self()->config.parameter.no_ipv4,
@@ -855,8 +842,7 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
                     tunnel->local_teid, tunnel->remote_teid);
         }
 
-        if (req_bearers[i]->s12_rnc_f_teid.presence)
-        {
+        if (req_bearers[i]->s12_rnc_f_teid.presence) {
             req_teid = req_bearers[i]->s12_rnc_f_teid.data;
             ogs_assert(req_teid);
 
@@ -866,8 +852,7 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
 
             tunnel->remote_teid = ntohl(req_teid->teid);
             enb = gtp_node_find(&sgw_self()->enb_s1u_list, req_teid);
-            if (!enb)
-            {
+            if (!enb) {
                 enb = gtp_node_add(&sgw_self()->enb_s1u_list, req_teid,
                     sgw_self()->gtpu_port,
                     context_self()->config.parameter.no_ipv4,
@@ -896,8 +881,7 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
         }
 
         if (req_bearers[i]->s1_u_enodeb_f_teid.presence ||
-            req_bearers[i]->s12_rnc_f_teid.presence)
-        {
+            req_bearers[i]->s12_rnc_f_teid.presence) {
             rsp_bearers[i]->presence = 1;
             rsp_bearers[i]->eps_bearer_id.presence = 1;
             rsp_bearers[i]->eps_bearer_id.u8 = bearer->ebi;
@@ -941,14 +925,11 @@ void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
 
     /* Delete Indirect Tunnel */
     sess = sgw_sess_first(sgw_ue);
-    while (sess)
-    {
+    while (sess) {
         bearer = sgw_bearer_first(sess);
-        while (bearer)
-        {
+        while (bearer) {
             tunnel = sgw_tunnel_first(bearer);
-            while(tunnel)
-            {
+            while(tunnel) {
                 next_tunnel = sgw_tunnel_next(tunnel);
 
                 if (tunnel->interface_type ==
