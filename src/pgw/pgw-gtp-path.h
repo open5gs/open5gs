@@ -25,7 +25,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 int pgw_gtp_open();
 void pgw_gtp_close();

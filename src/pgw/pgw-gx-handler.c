@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "pgw-context.h"
 #include "fd/gx/gx-message.h"
 #include "pgw-gtp-path.h"
@@ -94,8 +113,7 @@ static int bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
     ogs_assert(sess);
     ogs_assert(gx_message);
 
-    for (i = 0; i < gx_message->num_of_pcc_rule; i++)
-    {
+    for (i = 0; i < gx_message->num_of_pcc_rule; i++) {
         gtp_xact_t *xact = NULL;
         gtp_header_t h;
         ogs_pkbuf_t *pkbuf = NULL;
@@ -107,21 +125,18 @@ static int bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
         int tft_presence = 0;
 
         ogs_assert(pcc_rule);
-        if (pcc_rule->name == NULL)
-        {
+        if (pcc_rule->name == NULL) {
             ogs_error("No PCC Rule Name");
             continue;
         }
 
-        if (pcc_rule->type == PCC_RULE_TYPE_INSTALL)
-        {
+        if (pcc_rule->type == PCC_RULE_TYPE_INSTALL) {
             bearer = pgw_bearer_find_by_qci_arp(sess, 
                         pcc_rule->qos.qci,
                         pcc_rule->qos.arp.priority_level,
                         pcc_rule->qos.arp.pre_emption_capability,
                         pcc_rule->qos.arp.pre_emption_vulnerability);
-            if (!bearer)
-            {
+            if (!bearer) {
                 bearer = pgw_bearer_add(sess);
                 ogs_assert(bearer);
 
@@ -132,13 +147,10 @@ static int bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
                 ogs_assert(pcc_rule->num_of_flow);
 
                 bearer_created = 1;
-            }
-            else
-            {
+            } else {
                 ogs_assert(strcmp(bearer->name, pcc_rule->name) == 0);
 
-                if (pcc_rule->num_of_flow)
-                {
+                if (pcc_rule->num_of_flow) {
                     /* Remove all previous flow */
                     pgw_pf_remove_all(bearer);
 
@@ -153,8 +165,7 @@ static int bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
                     (pcc_rule->qos.gbr.downlink &&
                     bearer->qos.gbr.downlink != pcc_rule->qos.gbr.downlink) ||
                     (pcc_rule->qos.gbr.uplink &&
-                    bearer->qos.gbr.uplink != pcc_rule->qos.gbr.uplink))
-                {
+                    bearer->qos.gbr.uplink != pcc_rule->qos.gbr.uplink)) {
                     /* Update QoS parameter */
                     memcpy(&bearer->qos, &pcc_rule->qos, sizeof(qos_t));
 
@@ -162,16 +173,14 @@ static int bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
                     qos_presence = 1;
                 }
 
-                if (tft_presence == 0 && qos_presence == 0)
-                {
+                if (tft_presence == 0 && qos_presence == 0) {
                     ogs_warn("[IGNORE] Update Bearer Request : "
                             "Both QoS and TFT is NULL");
                     continue;
                 }
             }
 
-            for (j = 0; j < pcc_rule->num_of_flow; j++)
-            {
+            for (j = 0; j < pcc_rule->num_of_flow; j++) {
                 flow_t *flow = &pcc_rule->flow[j];
                 pgw_rule_t rule;
                 pgw_pf_t *pf = NULL;
@@ -191,16 +200,13 @@ static int bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
 
             memset(&h, 0, sizeof(gtp_header_t));
 
-            if (bearer_created == 1)
-            {
+            if (bearer_created == 1) {
                 h.type = GTP_CREATE_BEARER_REQUEST_TYPE;
                 h.teid = sess->sgw_s5c_teid;
 
                 rv = pgw_s5c_build_create_bearer_request(&pkbuf, h.type, bearer);
                 ogs_assert(rv == OGS_OK);
-            }
-            else
-            {
+            } else {
                 h.type = GTP_UPDATE_BEARER_REQUEST_TYPE;
                 h.teid = sess->sgw_s5c_teid;
 
@@ -214,9 +220,7 @@ static int bearer_binding(pgw_sess_t *sess, gx_message_t *gx_message)
 
             rv = gtp_xact_commit(xact);
             ogs_assert(rv == OGS_OK);
-        }
-        else if (pcc_rule->type == PCC_RULE_TYPE_REMOVE)
-        {
+        } else if (pcc_rule->type == PCC_RULE_TYPE_REMOVE) {
             bearer = pgw_bearer_find_by_name(sess, pcc_rule->name);
             ogs_assert(bearer);
 
