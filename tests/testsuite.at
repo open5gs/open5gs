@@ -48,3 +48,16 @@ volte-test          :  SUCCESS
 All tests passed.
 ])
 AT_CLEANUP
+
+AT_SETUP([csfb])
+AT_KEYWORDS([csfb])
+AT_CHECK_UNQUOTED(
+    [$abs_top_builddir/tests/testcsfb -f $abs_top_builddir/tests/sample-csfb.conf],
+    [0], [dnl
+mo-idle-test        :  SUCCESS
+mt-idle-test        :  SUCCESS
+mo-active-test      :  SUCCESS
+mt-active-test      :  SUCCESS
+All tests passed.
+])
+AT_CLEANUP
