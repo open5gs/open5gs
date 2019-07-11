@@ -119,8 +119,8 @@ if test x$have_srclib == xyes; then
   AC_SUBST(OGSCRYPT_CFLAGS, '-I$(top_srcdir)/lib/ogslib/src')
   AC_SUBST(OGSCRYPT_LIBS, '$(top_srcdir)/lib/ogslib/src/crypt/libogscrypt-1.0.la')
 else
-  PKG_CHECK_MODULES(OGSCORE, ogscore-1.0 >= 1.0.2)
-  PKG_CHECK_MODULES(OGSCRYPT, ogscrypt-1.0 >= 1.0.2)
+  PKG_CHECK_MODULES(OGSCORE, ogscore-1.0 >= 1.1.0)
+  PKG_CHECK_MODULES(OGSCRYPT, ogscrypt-1.0 >= 1.1.0)
 fi
 AM_CONDITIONAL([WITH_SRCLIB], [test x$have_srclib = xyes])
 
