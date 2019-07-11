@@ -1,11 +1,4 @@
-nextepc (0.5.0~bionic) bionic; urgency=medium
-
-  * CSFB Supported
-  * OGSLib package name changed
-
- -- Sukchan Lee <acetcom@gmail.com>  Thu, 11 Jul 2019 15:10:41 +0000
-
-nextepc (0.5.0~xenial) xenial; urgency=medium
+nextepc (0.5.0-1~xenial) xenial; urgency=medium
 
   * CSFB Supported
   * OGSLib package name changed
