@@ -25,6 +25,7 @@ extern "C" {
 #endif
 
 #define SGSAP_PAGING_REQUEST                            1
+#define SGSAP_PAGING_REJECT                             2
 #define SGSAP_SERVICE_REQUEST                           6
 #define SGSAP_LOCATION_UPDATE_REQUEST                   9
 #define SGSAP_LOCATION_UPDATE_ACCEPT                    10

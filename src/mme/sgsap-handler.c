@@ -303,24 +303,26 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     } else 
         ogs_assert_if_reached();
 
-    ogs_assert(mme_ue);
+    if (mme_ue) {
+        ogs_assert(service_indicator);
+        mme_ue->service_indicator = service_indicator;
 
-    ogs_assert(service_indicator);
-    mme_ue->service_indicator = service_indicator;
+        ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+        ogs_debug("    VLR_NAME[%s]", vlr_name);
+        ogs_debug("    SERVICE_INDICATOR[%d]", mme_ue->service_indicator);
 
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-    ogs_debug("    VLR_NAME[%s]", vlr_name);
-    ogs_debug("    SERVICE_INDICATOR[%d]", mme_ue->service_indicator);
+        if (lai) {
+            ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
+                        plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
+        }
 
-    if (lai) {
-        ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
-                    plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
+        if (ECM_IDLE(mme_ue))
+            s1ap_send_paging(mme_ue, S1AP_CNDomain_cs);
+        else
+            nas_send_cs_service_notification(mme_ue);
+    } else {
+        sgsap_send_paging_reject(mme_ue);
     }
-
-    if (ECM_IDLE(mme_ue))
-        s1ap_send_paging(mme_ue, S1AP_CNDomain_cs);
-    else
-        nas_send_cs_service_notification(mme_ue);
 }
 
 void sgsap_handle_reset_indication(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)

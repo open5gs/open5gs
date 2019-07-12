@@ -188,6 +188,36 @@ ogs_pkbuf_t *sgsap_build_mo_csfb_indication(mme_ue_t *mme_ue)
     return pkbuf;
 }
 
+ogs_pkbuf_t *sgsap_build_paging_reject(mme_ue_t *mme_ue)
+{
+    mme_vlr_t *vlr = NULL;
+    ogs_tlv_t *root = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    nas_emm_cause_t emm_cause = 0;
+
+    ogs_assert(mme_ue);
+    vlr = mme_ue->vlr;
+    ogs_assert(vlr);
+
+    root = ogs_tlv_add(NULL, SGSAP_IE_IMSI_TYPE, SGSAP_IE_IMSI_LEN, 0,
+            &mme_ue->nas_mobile_identity_imsi);
+    emm_cause = EMM_CAUSE_ILLEGAL_UE;
+    ogs_tlv_add(root, SGSAP_IE_REJECT_CAUSE_TYPE, SGSAP_IE_REJECT_CAUSE_LEN, 0,
+            &emm_cause);
+
+    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_u8(pkbuf, SGSAP_PAGING_REJECT);
+    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+
+    ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
+            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+
+    ogs_tlv_free_all(root);
+
+    return pkbuf;
+}
+
 ogs_pkbuf_t *sgsap_build_service_request(mme_ue_t *mme_ue, uint8_t emm_mode)
 {
     mme_vlr_t *vlr = NULL;
