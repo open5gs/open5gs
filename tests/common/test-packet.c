@@ -3264,13 +3264,14 @@ int testsgsap_paging_request(ogs_pkbuf_t **pkbuf, int i)
     char *payload[TESTS1AP_MAX_MESSAGE] = {
         "0101082926240000 111893021003766c 72076578616d706c 65036e6574200101"
         "040509f1070926",
-        "",
+        "0101082926240000 111892021003766c 72076578616d706c 65036e6574200101"
+        "040509f1070926",
         "",
 
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         39,
-        0,
+        39,
         0,
     };
     char hexbuf[MAX_SDU_LEN];

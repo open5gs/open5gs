@@ -18,6 +18,7 @@
  */
 
 #include "sgsap-types.h"
+#include "sgsap-build.h"
 #include "sgsap-path.h"
 
 #include "mme-context.h"
@@ -255,6 +256,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     nas_lai_t *lai = NULL;
     char vlr_name[SGSAP_IE_VLR_NAME_LEN] = { 0, };
     uint8_t service_indicator = 0;
+    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
     ogs_assert(vlr);
     ogs_assert(pkbuf);
@@ -295,7 +297,6 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
     if (nas_mobile_identity_imsi->type == NAS_MOBILE_IDENTITY_IMSI) {
-        char imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
         nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
@@ -321,7 +322,15 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         else
             nas_send_cs_service_notification(mme_ue);
     } else {
-        sgsap_send_paging_reject(mme_ue);
+        ogs_debug("[SGSAP] PAGING-REJECT");
+        ogs_debug("    IMSI[%s]", imsi_bcd);
+
+        sgsap_send_to_vlr_with_sid(
+            vlr, 
+            sgsap_build_paging_reject(
+                nas_mobile_identity_imsi, nas_mobile_identity_imsi_len,
+                SGSAP_SGS_CAUSE_IMSI_UNKNOWN),
+            0);
     }
 }
 

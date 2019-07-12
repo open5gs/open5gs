@@ -226,6 +226,17 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send SGsAP-Paging-Request */
+    rv = testsgsap_paging_request(&sendbuf, 1);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testvlr_sgsap_send(sgsap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive SGsAP-Paging-Reject */
+    recvbuf = testvlr_sgsap_read(sgsap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send SGsAP-Paging-Request */
     rv = testsgsap_paging_request(&sendbuf, 0);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testvlr_sgsap_send(sgsap, sendbuf);
