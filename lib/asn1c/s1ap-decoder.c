@@ -35,9 +35,9 @@ int s1ap_decode_pdu(s1ap_message_t *message, ogs_pkbuf_t *pkbuf)
     dec_ret = aper_decode(NULL, &asn_DEF_S1AP_S1AP_PDU, (void **)&message, 
             pkbuf->data, pkbuf->len, 0, 0);
 
-    if (dec_ret.code != RC_OK) 
-    {
-        ogs_error("Failed to decode S1AP-PDU[%d]", dec_ret.code);
+    if (dec_ret.code != RC_OK) {
+        ogs_warn("Failed to decode S1AP-PDU[code:%d,consumed:%d]",
+                dec_ret.code, dec_ret.consumed);
         return OGS_ERROR;
     }
 

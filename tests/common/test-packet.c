@@ -318,6 +318,28 @@ int tests1ap_build_setup_req(
 
 #define TESTS1AP_MAX_MESSAGE 64
 
+int tests1ap_build_invalid_packet(ogs_pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "0011002100000300 3b40080062f22400 0001700040000700 00004062f224002c"
+        "00030a0100",
+        "",
+    };
+
+    uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        37,
+        0,
+    };
+
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_data(*pkbuf, 
+        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+
+    return OGS_OK;
+}
+
 int tests1ap_build_initial_ue_msg(ogs_pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {

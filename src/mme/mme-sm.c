@@ -201,7 +201,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             e->s1ap_message = &s1ap_message;
             ogs_fsm_dispatch(&enb->sm, e);
         } else {
-            ogs_error("Cannot process S1AP message");
+            ogs_warn("Cannot process S1AP message");
+            rv = s1ap_send_error_indication(
+                    enb, NULL, NULL, S1AP_Cause_PR_protocol, 
+                    S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message);
+            ogs_assert(rv == OGS_OK);
         }
 
         s1ap_free_pdu(&s1ap_message);

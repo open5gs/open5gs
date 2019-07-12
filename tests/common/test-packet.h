@@ -48,6 +48,8 @@ ogs_pkbuf_t *testenb_gtpu_read(ogs_socknode_t *node);
 int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
 void testenb_gtpu_close(ogs_socknode_t *node);
 
+int tests1ap_build_invalid_packet(ogs_pkbuf_t **pkbuf, int i);
+
 int tests1ap_build_setup_req(
         ogs_pkbuf_t **pkbuf, S1AP_ENB_ID_PR present, uint32_t enb_id,
         int tac, uint16_t mcc, uint16_t mnc, uint16_t mnc_len);
