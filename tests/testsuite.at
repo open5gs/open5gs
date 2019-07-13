@@ -58,6 +58,7 @@ mo-idle-test        :  SUCCESS
 mt-idle-test        :  SUCCESS
 mo-active-test      :  SUCCESS
 mt-active-test      :  SUCCESS
+mo-sms-test         :  SUCCESS
 All tests passed.
 ])
 AT_CLEANUP

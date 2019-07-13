@@ -143,6 +143,7 @@ int testsgsap_location_update_reject(ogs_pkbuf_t **pkbuf, int i);
 int testsgsap_imsi_detach_ack(ogs_pkbuf_t **pkbuf, int i);
 int testsgsap_paging_request(ogs_pkbuf_t **pkbuf, int i);
 int testsgsap_reset_indication(ogs_pkbuf_t **pkbuf, int i);
+int testsgsap_release_request(ogs_pkbuf_t **pkbuf, int i);
 
 #ifdef __cplusplus
 }

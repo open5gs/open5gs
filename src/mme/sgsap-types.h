@@ -40,7 +40,7 @@ extern "C" {
 #define SGSAP_RESET_INDICATION                                      21
 #define SGSAP_RESET_ACK                                             22
 #define SGSAP_MO_CSFB_INDICIATION                                   24
-#define SGSAP_REELASE_REQUEST                                       27
+#define SGSAP_RELEASE_REQUEST                                       27
 
 #define SGSAP_IE_IMSI_TYPE                                          1
 #define SGSAP_IE_IMSI_LEN                                           MAX_IMSI_LEN

@@ -244,7 +244,18 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 sgsap_send_uplink_unitdata(mme_ue,
                     &message->emm.uplink_nas_transport.nas_message_container);
             } else {
+                S1AP_MME_UE_S1AP_ID_t MME_UE_S1AP_ID;
+                S1AP_ENB_UE_S1AP_ID_t ENB_UE_S1AP_ID;
+
                 ogs_warn("No connection of MSC/VLR");
+                MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
+                ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
+
+                rv = s1ap_send_error_indication(enb_ue->enb, 
+                        &MME_UE_S1AP_ID, &ENB_UE_S1AP_ID,
+                        S1AP_Cause_PR_transport,
+                        S1AP_CauseTransport_transport_resource_unavailable);
+                ogs_assert(rv == OGS_OK);
             }
 
             return;
