@@ -572,8 +572,6 @@ int s1ap_build_ue_context_modification_request(
 
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
-    S1AP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
-    S1AP_SecurityKey_t *SecurityKey = NULL;
     S1AP_CSFallbackIndicator_t *CSFallbackIndicator = NULL;
     S1AP_LAI_t *LAI = NULL;
 
@@ -620,53 +618,11 @@ int s1ap_build_ue_context_modification_request(
 
     ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
 
-    ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
-    ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
-    ie->criticality = S1AP_Criticality_reject;
-    ie->value.present =
-        S1AP_UEContextModificationRequestIEs__value_PR_UESecurityCapabilities,
-
-    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
-
-    ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
-    ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_SecurityKey;
-    ie->criticality = S1AP_Criticality_reject;
-    ie->value.present =
-        S1AP_UEContextModificationRequestIEs__value_PR_SecurityKey,
-
-    SecurityKey = &ie->value.choice.SecurityKey;
-
-    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
-            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
-
     *MME_UE_S1AP_ID = enb_ue->mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = enb_ue->enb_ue_s1ap_id;
 
-    UESecurityCapabilities->encryptionAlgorithms.size = 2;
-    UESecurityCapabilities->encryptionAlgorithms.buf = 
-        ogs_calloc(UESecurityCapabilities->encryptionAlgorithms.size, 
-                    sizeof(uint8_t));
-    UESecurityCapabilities->encryptionAlgorithms.bits_unused = 0;
-    UESecurityCapabilities->encryptionAlgorithms.buf[0] = 
-        (mme_ue->ue_network_capability.eea << 1);
-
-    UESecurityCapabilities->integrityProtectionAlgorithms.size = 2;
-    UESecurityCapabilities->integrityProtectionAlgorithms.buf =
-        ogs_calloc(UESecurityCapabilities->
-                        integrityProtectionAlgorithms.size, sizeof(uint8_t));
-    UESecurityCapabilities->integrityProtectionAlgorithms.bits_unused = 0;
-    UESecurityCapabilities->integrityProtectionAlgorithms.buf[0] =
-        (mme_ue->ue_network_capability.eia << 1);
-
-    SecurityKey->size = OGS_SHA256_DIGEST_SIZE;
-    SecurityKey->buf = 
-        ogs_calloc(SecurityKey->size, sizeof(uint8_t));
-    SecurityKey->bits_unused = 0;
-    memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
+    ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
+            enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
     ASN_SEQUENCE_ADD(&UEContextModificationRequest->protocolIEs, ie);
