@@ -1,32 +1,30 @@
-#define TRACE_MODULE _esm_build
-
-#include "core_debug.h"
-#include "core_lib.h"
-
 #include "nas/nas_message.h"
 
 #include "nas_security.h"
 #include "esm_build.h"
 #include "mme_sm.h"
 
-status_t esm_build_pdn_connectivity_reject(
-        pkbuf_t **pkbuf, mme_sess_t *sess, nas_esm_cause_t esm_cause)
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __esm_log_domain
+
+int esm_build_pdn_connectivity_reject(
+        ogs_pkbuf_t **pkbuf, mme_sess_t *sess, nas_esm_cause_t esm_cause)
 {
     mme_ue_t *mme_ue = NULL;
     nas_message_t message;
     nas_pdn_connectivity_reject_t *pdn_connectivity_reject = 
             &message.esm.pdn_connectivity_reject;
 
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[ESM] PDN connectivity reject\n");
-    d_trace(5, "    IMSI[%s] PTI[%d] Cause[%d]\n",
+    ogs_debug("[ESM] PDN connectivity reject");
+    ogs_debug("    IMSI[%s] PTI[%d] Cause[%d]",
             mme_ue->imsi_bcd, sess->pti, esm_cause);
 
     memset(&message, 0, sizeof(message));
-    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         message.h.security_header_type = 
            NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
@@ -39,34 +37,33 @@ status_t esm_build_pdn_connectivity_reject(
 
     pdn_connectivity_reject->esm_cause = esm_cause;
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
-        d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
-                *pkbuf, return CORE_ERROR,);
+        ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+                *pkbuf);
     }
     else
     {
-        d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,
-                return CORE_ERROR,);
+        ogs_assert(nas_plain_encode(pkbuf, &message) == OGS_OK && *pkbuf);
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
+int esm_build_information_request(ogs_pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     nas_message_t message;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     sess = bearer->sess;
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[ESM] ESM information request\n");
-    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+    ogs_debug("[ESM] ESM information request");
+    ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
@@ -78,14 +75,14 @@ status_t esm_build_information_request(pkbuf_t **pkbuf, mme_bearer_t *bearer)
     message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type = NAS_ESM_INFORMATION_REQUEST;
 
-    d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
-            *pkbuf, return CORE_ERROR,);
+    ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+            *pkbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t esm_build_activate_default_bearer_context_request(
-        pkbuf_t **pkbuf, mme_sess_t *sess)
+int esm_build_activate_default_bearer_context_request(
+        ogs_pkbuf_t **pkbuf, mme_sess_t *sess)
 {
     nas_message_t message;
     nas_activate_default_eps_bearer_context_request_t 
@@ -107,22 +104,21 @@ status_t esm_build_activate_default_bearer_context_request(
     mme_bearer_t *bearer = NULL;
     pdn_t *pdn = NULL;
 
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
     pdn = sess->pdn;
-    d_assert(pdn, return CORE_ERROR, "Null param");
+    ogs_assert(pdn);
     bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return CORE_ERROR, "Null param");
-    d_assert(mme_bearer_next(bearer) == NULL,
-            return CORE_ERROR, "there is dedicated bearer");
+    ogs_assert(bearer);
+    ogs_assert(mme_bearer_next(bearer) == NULL);
 
-    d_trace(3, "[ESM] Activate default bearer context request\n");
-    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+    ogs_debug("[ESM] Activate default bearer context request");
+    ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
-    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
         message.h.security_header_type = 
            NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
@@ -141,22 +137,22 @@ status_t esm_build_activate_default_bearer_context_request(
             bearer->qos.gbr.downlink, bearer->qos.gbr.uplink);
 
     access_point_name->length = strlen(pdn->apn);
-    core_cpystrn(access_point_name->apn, pdn->apn,
-            c_min(access_point_name->length, MAX_APN_LEN) + 1);
-    d_trace(5, "    APN[%s]\n", pdn->apn);
+    ogs_cpystrn(access_point_name->apn, pdn->apn,
+            ogs_min(access_point_name->length, MAX_APN_LEN) + 1);
+    ogs_debug("    APN[%s]", pdn->apn);
 
     pdn_address->pdn_type = pdn->paa.pdn_type;
     if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4)
     {
         pdn_address->addr = pdn->paa.addr;
         pdn_address->length = NAS_PDN_ADDRESS_IPV4_LEN;
-        d_trace(5, "    IPv4\n");
+        ogs_debug("    IPv4");
     }
     else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV6)
     {
         memcpy(pdn_address->addr6, pdn->paa.addr6+(IPV6_LEN>>1), IPV6_LEN>>1);
         pdn_address->length = NAS_PDN_ADDRESS_IPV6_LEN;
-        d_trace(5, "    IPv6\n");
+        ogs_debug("    IPv6");
     }
     else if (pdn_address->pdn_type == GTP_PDN_TYPE_IPV4V6)
     {
@@ -164,11 +160,10 @@ status_t esm_build_activate_default_bearer_context_request(
         memcpy(pdn_address->both.addr6,
                 pdn->paa.both.addr6+(IPV6_LEN>>1), IPV6_LEN>>1);
         pdn_address->length = NAS_PDN_ADDRESS_IPV4V6_LEN;
-        d_trace(5, "    IPv4v6\n");
+        ogs_debug("    IPv4v6");
     }
     else
-        d_assert(0, return CORE_ERROR,
-                "Invalid PDN_TYPE(%d)", pdn->paa.pdn_type);
+        ogs_assert_if_reached();
 
     if (pdn->ambr.downlink || pdn->ambr.uplink)
     {
@@ -186,22 +181,21 @@ status_t esm_build_activate_default_bearer_context_request(
                 sess->pgw_pco.data, protocol_configuration_options->length);
     }
 
-    if (FSM_CHECK(&mme_ue->sm, emm_state_registered))
+    if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered))
     {
-        d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
-                *pkbuf, return CORE_ERROR,);
+        ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+                *pkbuf);
     }
     else
     {
-        d_assert(nas_plain_encode(pkbuf, &message) == CORE_OK && *pkbuf,
-                return CORE_ERROR,);
+        ogs_assert(nas_plain_encode(pkbuf, &message) == OGS_OK && *pkbuf);
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t esm_build_activate_dedicated_bearer_context_request(
-        pkbuf_t **pkbuf, mme_bearer_t *bearer)
+int esm_build_activate_dedicated_bearer_context_request(
+        ogs_pkbuf_t **pkbuf, mme_bearer_t *bearer)
 {
     mme_ue_t *mme_ue = NULL;
     mme_bearer_t *linked_bearer = NULL;
@@ -218,14 +212,14 @@ status_t esm_build_activate_dedicated_bearer_context_request(
     nas_traffic_flow_template_t *tft = 
         &activate_dedicated_eps_bearer_context_request->tft;
     
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
     linked_bearer = mme_linked_bearer(bearer); 
-    d_assert(linked_bearer, return CORE_ERROR, "Null param");
+    ogs_assert(linked_bearer);
 
-    d_trace(3, "[ESM] Activate dedicated bearer context request\n");
-    d_trace(5, "    IMSI[%s] EBI[%d] Linked-EBI[%d]\n",
+    ogs_debug("[ESM] Activate dedicated bearer context request");
+    ogs_debug("    IMSI[%s] EBI[%d] Linked-EBI[%d]",
             mme_ue->imsi_bcd, bearer->ebi, linked_bearer->ebi);
 
     memset(&message, 0, sizeof(message));
@@ -244,18 +238,18 @@ status_t esm_build_activate_dedicated_bearer_context_request(
             bearer->qos.gbr.downlink, bearer->qos.gbr.uplink);
 
     tft->length = bearer->tft.len;
-    d_assert(tft->length, return CORE_ERROR, "No TFT Len");
-    d_assert(bearer->tft.data, return CORE_ERROR, "Null param");
+    ogs_assert(tft->length);
+    ogs_assert(bearer->tft.data);
     memcpy(tft->buffer, bearer->tft.data, tft->length);
 
-    d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
-            *pkbuf, return CORE_ERROR,);
+    ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+            *pkbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t esm_build_modify_bearer_context_request(
-        pkbuf_t **pkbuf, mme_bearer_t *bearer, int qos_presence, int tft_presence)
+int esm_build_modify_bearer_context_request(
+        ogs_pkbuf_t **pkbuf, mme_bearer_t *bearer, int qos_presence, int tft_presence)
 {
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -269,14 +263,14 @@ status_t esm_build_modify_bearer_context_request(
     nas_traffic_flow_template_t *tft = 
         &modify_eps_bearer_context_request->tft;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     sess = bearer->sess;
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[ESM] Modify bearer context request\n");
-    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+    ogs_debug("[ESM] Modify bearer context request");
+    ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
     memset(&message, 0, sizeof(message));
@@ -302,19 +296,19 @@ status_t esm_build_modify_bearer_context_request(
         modify_eps_bearer_context_request->presencemask |=
             NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_TFT_PRESENT;
         tft->length = bearer->tft.len;
-        d_assert(tft->length, return CORE_ERROR, "No TFT Len");
-        d_assert(bearer->tft.data, return CORE_ERROR, "Null param");
+        ogs_assert(tft->length);
+        ogs_assert(bearer->tft.data);
         memcpy(tft->buffer, bearer->tft.data, tft->length);
     }
 
-    d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
-            *pkbuf, return CORE_ERROR,);
+    ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+            *pkbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t esm_build_deactivate_bearer_context_request(
-        pkbuf_t **pkbuf, mme_bearer_t *bearer, nas_esm_cause_t esm_cause)
+int esm_build_deactivate_bearer_context_request(
+        ogs_pkbuf_t **pkbuf, mme_bearer_t *bearer, nas_esm_cause_t esm_cause)
 {
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -324,16 +318,16 @@ status_t esm_build_deactivate_bearer_context_request(
         *deactivate_eps_bearer_context_request = 
             &message.esm.deactivate_eps_bearer_context_request;
     
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     sess = bearer->sess;
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    d_trace(3, "[ESM] Deactivate bearer context request\n");
-    d_trace(5, "    IMSI[%s] PTI[%d] EBI[%d]\n",
+    ogs_debug("[ESM] Deactivate bearer context request");
+    ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
             mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-    d_trace(5, "    Cause[%d]\n", esm_cause);
+    ogs_debug("    Cause[%d]", esm_cause);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -346,8 +340,8 @@ status_t esm_build_deactivate_bearer_context_request(
 
     deactivate_eps_bearer_context_request->esm_cause = esm_cause;
 
-    d_assert(nas_security_encode(pkbuf, mme_ue, &message) == CORE_OK && 
-            *pkbuf, return CORE_ERROR,);
+    ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+            *pkbuf);
 
-    return CORE_OK;
+    return OGS_OK;
 }

@@ -1,7 +1,17 @@
-#define TRACE_MODULE _pgw_ipfw
+#define _DEFAULT_SOURCE 1
+#define _BSD_SOURCE     1
 
-#include "core_network.h"
-#include "pgw_ipfw.h"
+#include "base/base.h"
+
+#if HAVE_NETINET_IP_H
+#include <netinet/ip.h>
+#endif
+
+#if HAVE_NETINET_IP6_H
+#include <netinet/ip6.h>
+#endif
+
+#include "pgw_context.h"
 
 #include "ipfw/ipfw2.h"
 #include "ipfw/objs/include_e/netinet/ip_fw.h"
@@ -11,7 +21,7 @@
 
 void compile_rule(char *av[], uint32_t *rbuf, int *rbufsize, void *tstate);
 
-status_t pgw_compile_packet_filter(pgw_rule_t *pgw_rule, c_int8_t *description)
+int pgw_compile_packet_filter(pgw_rule_t *pgw_rule, char *description)
 {
     pgw_rule_t zero_rule;
     char *token, *dir;
@@ -26,8 +36,7 @@ status_t pgw_compile_packet_filter(pgw_rule_t *pgw_rule, c_int8_t *description)
 	int l;
 	ipfw_insn *cmd;
 
-    d_assert(pgw_rule, return CORE_ERROR, "Null param");
-    d_assert(description, return CORE_ERROR, "Null param");
+    ogs_assert(pgw_rule);
 
 	rbufsize = sizeof(rulebuf);
 	memset(rulebuf, 0, rbufsize);
@@ -35,11 +44,16 @@ status_t pgw_compile_packet_filter(pgw_rule_t *pgw_rule, c_int8_t *description)
     av[0] = NULL;
 
     /* ACTION */
+    if (!description) {
+        /* FIXME : OLD gcc generates uninitialized warning */
+        ogs_assert_if_reached();
+        return OGS_ERROR;
+    }
     token = strtok_r(description, " ", &saveptr);
     if (strcmp(token, "permit") != 0)
     {
-        d_error("Not begins with reserved keyword : 'permit'");
-        return CORE_ERROR;
+        ogs_error("Not begins with reserved keyword : 'permit'");
+        return OGS_ERROR;
     }
     av[1] = token;
 
@@ -47,8 +61,8 @@ status_t pgw_compile_packet_filter(pgw_rule_t *pgw_rule, c_int8_t *description)
     dir = token = strtok_r(NULL, " ", &saveptr);
     if (strcmp(token, "out") != 0)
     {
-        d_error("Not begins with reserved keyword : 'permit out'");
-        return CORE_ERROR;
+        ogs_error("Not begins with reserved keyword : 'permit out'");
+        return OGS_ERROR;
     }
 
     /* ADDR */
@@ -143,35 +157,35 @@ status_t pgw_compile_packet_filter(pgw_rule_t *pgw_rule, c_int8_t *description)
     memset(&zero_rule, 0, sizeof(pgw_rule_t));
     if (memcmp(pgw_rule, &zero_rule, sizeof(pgw_rule_t)) == 0)
     {
-        d_error("Cannot find Flow-Description");
-        return CORE_ERROR;
+        ogs_error("Cannot find Flow-Description");
+        return OGS_ERROR;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-static status_t decode_ipv6_header(
-        struct ip6_hdr *ip6_h, c_uint8_t *proto, c_uint16_t *hlen)
+static int decode_ipv6_header(
+        struct ip6_hdr *ip6_h, uint8_t *proto, uint16_t *hlen)
 {
     int done = 0;
-    c_uint8_t *p, *jp, *endp;
-    c_uint8_t nxt;          /* Next Header */
+    uint8_t *p, *jp, *endp;
+    uint8_t nxt;          /* Next Header */
 
-    d_assert(ip6_h, return CORE_ERROR,);
-    d_assert(proto, return CORE_ERROR,);
-    d_assert(hlen, return CORE_ERROR,);
+    ogs_assert(ip6_h);
+    ogs_assert(proto);
+    ogs_assert(hlen);
 
     nxt = ip6_h->ip6_nxt;
-    p = (c_uint8_t *)ip6_h + sizeof(*ip6_h);
+    p = (uint8_t *)ip6_h + sizeof(*ip6_h);
     endp = p + ntohs(ip6_h->ip6_plen);
 
     jp = p + sizeof(struct ip6_hbh);
     while(p == endp) /* Jumbo Frame */
     {
-        c_uint32_t jp_len = 0;
+        uint32_t jp_len = 0;
         struct ip6_opt_jumbo *jumbo = NULL;
 
-        d_assert(nxt == 0, return CORE_ERROR,);
+        ogs_assert(nxt == 0);
 
         jumbo = (struct ip6_opt_jumbo *)jp;
         memcpy(&jp_len, jumbo->ip6oj_jumbo_len, sizeof(jp_len));
@@ -223,30 +237,30 @@ static status_t decode_ipv6_header(
     }
 
     *proto = nxt;
-    *hlen = p - (c_uint8_t *)ip6_h;
+    *hlen = p - (uint8_t *)ip6_h;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-pgw_bearer_t *pgw_bearer_find_by_packet(pkbuf_t *pkt)
+pgw_bearer_t *pgw_bearer_find_by_packet(ogs_pkbuf_t *pkt)
 {
-    hash_index_t *hi = NULL;
+    ogs_hash_index_t *hi = NULL;
     struct ip *ip_h =  NULL;
     struct ip6_hdr *ip6_h =  NULL;
-    c_uint32_t *src_addr = NULL;
-    c_uint32_t *dst_addr = NULL;
+    uint32_t *src_addr = NULL;
+    uint32_t *dst_addr = NULL;
     int addr_len = 0;
-    c_uint8_t proto = 0;
-    c_uint16_t ip_hlen = 0;
-    char buf[CORE_ADDRSTRLEN];
+    uint8_t proto = 0;
+    uint16_t ip_hlen = 0;
+    char buf[OGS_ADDRSTRLEN];
 
-    d_assert(pkt, return NULL, "pkt is NULL");
-    d_assert(pkt->payload, return NULL, "pkt is NULL");
+    ogs_assert(pkt);
+    ogs_assert(pkt->len);
 
-    ip_h = (struct ip *)pkt->payload;
+    ip_h = (struct ip *)pkt->data;
     if (ip_h->ip_v == 4)
     {
-        ip_h = (struct ip *)pkt->payload;
+        ip_h = (struct ip *)pkt->data;
         ip6_h = NULL;
 
         proto = ip_h->ip_p;
@@ -259,22 +273,22 @@ pgw_bearer_t *pgw_bearer_find_by_packet(pkbuf_t *pkt)
     else if (ip_h->ip_v == 6)
     {
         ip_h = NULL;
-        ip6_h = (struct ip6_hdr *)pkt->payload;
+        ip6_h = (struct ip6_hdr *)pkt->data;
 
         decode_ipv6_header(ip6_h, &proto, &ip_hlen);
 
-        src_addr = (c_uint32_t *)ip6_h->ip6_src.s6_addr;
-        dst_addr = (c_uint32_t *)ip6_h->ip6_dst.s6_addr;
+        src_addr = (uint32_t *)ip6_h->ip6_src.s6_addr;
+        dst_addr = (uint32_t *)ip6_h->ip6_dst.s6_addr;
         addr_len = 16;
 
     }
     else
-        d_error("Invalid IP version = %d\n", ip_h->ip_v);
+        ogs_error("Invalid IP version = %d", ip_h->ip_v);
 
-    d_trace(5, "[PGW] PROTO:%d SRC:%08x %08x %08x %08x\n",
+    ogs_debug("[PGW] PROTO:%d SRC:%08x %08x %08x %08x",
             proto, ntohl(src_addr[0]), ntohl(src_addr[1]),
             ntohl(src_addr[2]), ntohl(src_addr[3]));
-    d_trace(5, "[PGW] HLEN:%d  DST:%08x %08x %08x %08x\n",
+    ogs_debug("[PGW] HLEN:%d  DST:%08x %08x %08x %08x",
             ip_hlen, ntohl(dst_addr[0]), ntohl(dst_addr[1]),
             ntohl(dst_addr[2]), ntohl(dst_addr[3]));
 
@@ -287,13 +301,13 @@ pgw_bearer_t *pgw_bearer_find_by_packet(pkbuf_t *pkt)
     for (hi = pgw_sess_first(); hi; hi = pgw_sess_next(hi))
     {
         pgw_sess_t *sess = pgw_sess_this(hi);
-        d_assert(sess, return NULL,);
+        ogs_assert(sess);
 
         if (sess->ipv4)
-            d_trace(5, "[PGW] PAA IPv4:%s\n",
+            ogs_debug("[PGW] PAA IPv4:%s",
                     INET_NTOP(&sess->ipv4->addr, buf));
         if (sess->ipv6)
-            d_trace(5, "[PGW] PAA IPv6:%s\n",
+            ogs_debug("[PGW] PAA IPv6:%s",
                     INET6_NTOP(&sess->ipv6->addr, buf));
 
         if ((sess->ipv4 && memcmp(dst_addr, sess->ipv4->addr, addr_len) == 0) ||
@@ -304,10 +318,10 @@ pgw_bearer_t *pgw_bearer_find_by_packet(pkbuf_t *pkt)
 
             /* Save the default bearer */
             default_bearer = pgw_default_bearer_in_sess(sess);
-            d_assert(default_bearer, return NULL, "No default Bearer");
+            ogs_assert(default_bearer);
 
             /* Found */
-            d_trace(5, "[PGW] Found Session : EBI[%d]\n", default_bearer->ebi);
+            ogs_debug("[PGW] Found Session : EBI[%d]", default_bearer->ebi);
 
             bearer = pgw_bearer_next(default_bearer);
             /* Find the bearer with matched */
@@ -324,16 +338,16 @@ pgw_bearer_t *pgw_bearer_find_by_packet(pkbuf_t *pkt)
                 for (pf = pgw_pf_first(bearer); pf; pf = pgw_pf_next(pf))
                 {
                     int k;
-                    c_uint32_t src_mask[4];
-                    c_uint32_t dst_mask[4];
+                    uint32_t src_mask[4];
+                    uint32_t dst_mask[4];
 
-                    d_trace(5, "DIR:%d PROTO:%d SRC:%d-%d DST:%d-%d\n",
+                    ogs_debug("DIR:%d PROTO:%d SRC:%d-%d DST:%d-%d",
                             pf->direction, pf->rule.proto,
                             pf->rule.port.local.low,
                             pf->rule.port.local.high,
                             pf->rule.port.remote.low,
                             pf->rule.port.remote.high);
-                    d_trace(5, "SRC:%08x %08x %08x %08x/%08x %08x %08x %08x\n",
+                    ogs_debug("SRC:%08x %08x %08x %08x/%08x %08x %08x %08x",
                             ntohl(pf->rule.ip.local.addr[0]),
                             ntohl(pf->rule.ip.local.addr[1]),
                             ntohl(pf->rule.ip.local.addr[2]),
@@ -342,7 +356,7 @@ pgw_bearer_t *pgw_bearer_find_by_packet(pkbuf_t *pkt)
                             ntohl(pf->rule.ip.local.mask[1]),
                             ntohl(pf->rule.ip.local.mask[2]),
                             ntohl(pf->rule.ip.local.mask[3]));
-                    d_trace(5, "DST:%08x %08x %08x %08x/%08x %08x %08x %08x\n",
+                    ogs_debug("DST:%08x %08x %08x %08x/%08x %08x %08x %08x",
                             ntohl(pf->rule.ip.remote.addr[0]),
                             ntohl(pf->rule.ip.remote.addr[1]),
                             ntohl(pf->rule.ip.remote.addr[2]),
@@ -381,7 +395,7 @@ pgw_bearer_t *pgw_bearer_find_by_packet(pkbuf_t *pkt)
                             {
                                 struct tcphdr *tcph = 
                                     (struct tcphdr *)
-                                    ((char *)pkt->payload + ip_hlen);
+                                    ((char *)pkt->data + ip_hlen);
 
                                 /* Source port */
                                 if (pf->rule.port.local.low && 
@@ -420,7 +434,7 @@ pgw_bearer_t *pgw_bearer_find_by_packet(pkbuf_t *pkt)
                             {
                                 struct udphdr *udph = 
                                     (struct udphdr *)
-                                    ((char *)pkt->payload + ip_hlen);
+                                    ((char *)pkt->data + ip_hlen);
 
                                 /* Source port */
                                 if (pf->rule.port.local.low && 
@@ -469,7 +483,7 @@ pgw_bearer_t *pgw_bearer_find_by_packet(pkbuf_t *pkt)
                 if (pf)
                 {
                     bearer = pf->bearer;
-                    d_trace(5, "Found Dedicated Bearer : EBI[%d]\n", bearer->ebi);
+                    ogs_debug("Found Dedicated Bearer : EBI[%d]", bearer->ebi);
                     break;
                 }
 

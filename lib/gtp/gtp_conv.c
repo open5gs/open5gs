@@ -1,7 +1,21 @@
-#define TRACE_MODULE _gtp_conv
-
-#include "core_debug.h"
-#include "core_network.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "gtp_message.h"
 #include "gtp_types.h"
@@ -42,21 +56,21 @@ void gtp_bearers_in_create_indirect_tunnel_response(
     (*bearers)[10] = &rsp->bearer_context_10;
 }
 
-status_t gtp_f_teid_to_sockaddr(
-    gtp_f_teid_t *f_teid, c_uint16_t port, c_sockaddr_t **list)
+int gtp_f_teid_to_sockaddr(
+    gtp_f_teid_t *f_teid, uint16_t port, ogs_sockaddr_t **list)
 {
-    c_sockaddr_t *addr = NULL, *addr6 = NULL;
+    ogs_sockaddr_t *addr = NULL, *addr6 = NULL;
 
-    d_assert(f_teid, return CORE_ERROR,);
-    d_assert(list, return CORE_ERROR,);
+    ogs_assert(f_teid);
+    ogs_assert(list);
 
-    addr = core_calloc(1, sizeof(c_sockaddr_t));
-    d_assert(addr, return CORE_ERROR,);
+    addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
+    ogs_assert(addr);
     addr->c_sa_family = AF_INET;
     addr->c_sa_port = htons(port);
 
-    addr6 = core_calloc(1, sizeof(c_sockaddr_t));
-    d_assert(addr6, return CORE_ERROR,);
+    addr6 = ogs_calloc(1, sizeof(ogs_sockaddr_t));
+    ogs_assert(addr6);
     addr6->c_sa_family = AF_INET6;
     addr6->c_sa_port = htons(port);
 
@@ -72,31 +86,31 @@ status_t gtp_f_teid_to_sockaddr(
     else if (f_teid->ipv4)
     {
         addr->sin.sin_addr.s_addr = f_teid->addr;
-        CORE_FREE(addr6);
+        ogs_free(addr6);
 
         *list = addr;
     }
     else if (f_teid->ipv6)
     {
         memcpy(addr6->sin6.sin6_addr.s6_addr, f_teid->addr6, IPV6_LEN);
-        CORE_FREE(addr);
+        ogs_free(addr);
 
         *list = addr6;
     }
     else
     {
-        CORE_FREE(addr);
-        CORE_FREE(addr6);
-        d_assert(0, return CORE_ERROR,);
+        ogs_free(addr);
+        ogs_free(addr6);
+        ogs_assert_if_reached();
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t gtp_sockaddr_to_f_teid(
-    c_sockaddr_t *addr, c_sockaddr_t *addr6, gtp_f_teid_t *f_teid, int *len)
+int gtp_sockaddr_to_f_teid(
+    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, gtp_f_teid_t *f_teid, int *len)
 {
-    d_assert(f_teid, return CORE_ERROR,);
+    ogs_assert(f_teid);
 
     if (addr && addr6)
     {
@@ -121,15 +135,15 @@ status_t gtp_sockaddr_to_f_teid(
         *len = GTP_F_TEID_IPV6_LEN;
     }
     else
-        d_assert(0, return CORE_ERROR,);
+        ogs_assert_if_reached();
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t gtp_f_teid_to_ip(gtp_f_teid_t *f_teid, ip_t *ip)
+int gtp_f_teid_to_ip(gtp_f_teid_t *f_teid, ip_t *ip)
 {
-    d_assert(ip, return CORE_ERROR,);
-    d_assert(f_teid, return CORE_ERROR,);
+    ogs_assert(ip);
+    ogs_assert(f_teid);
 
     memset(ip, 0, sizeof(ip_t));
 
@@ -153,15 +167,15 @@ status_t gtp_f_teid_to_ip(gtp_f_teid_t *f_teid, ip_t *ip)
         ip->len = IPV6_LEN;
     }
     else
-        d_assert(0, return CORE_ERROR,);
+        ogs_assert_if_reached();
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t gtp_ip_to_f_teid(ip_t *ip, gtp_f_teid_t *f_teid, int *len)
+int gtp_ip_to_f_teid(ip_t *ip, gtp_f_teid_t *f_teid, int *len)
 {
-    d_assert(ip, return CORE_ERROR,);
-    d_assert(f_teid, return CORE_ERROR,);
+    ogs_assert(ip);
+    ogs_assert(f_teid);
 
     f_teid->ipv4 = ip->ipv4;
     f_teid->ipv6 = ip->ipv6;
@@ -183,7 +197,7 @@ status_t gtp_ip_to_f_teid(ip_t *ip, gtp_f_teid_t *f_teid, int *len)
         *len = GTP_F_TEID_IPV6_LEN;
     }
     else
-        d_assert(0, return CORE_ERROR,);
+        ogs_assert_if_reached();
 
-    return CORE_OK;
+    return OGS_OK;
 }

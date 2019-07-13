@@ -21,35 +21,37 @@ libmme_la_SOURCES = \
 	esm_sm.c esm_handler.c esm_build.c \
 	mme_gtp_path.c mme_s11_build.c mme_s11_handler.c \
 	mme_sm.c mme_path.c \
+	sbc_message.h sbc_handler.h sbc_handler.c \
 	$(NULL)
 
-if USRSCTP
+if WITH_USRSCTP
 libmme_la_SOURCES += s1ap_usrsctp.c
 else
-libmme_la_SOURCES += s1ap_sctp.c
+libmme_la_SOURCES += ogs-sctp.h ogs-sctp.c s1ap_lksctp.c
 endif
 
 libmme_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/s1ap/libs1ap.la \
+    $(top_srcdir)/lib/asn1c/libasn1c.la \
     $(top_srcdir)/lib/nas/libnas.la \
 	$(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/src/app/libapp.la \
+	$(top_srcdir)/src/app/libapp.la \
 	$(NULL)
 
 libmme_la_LIBADD = \
-    $(top_srcdir)/lib/s1ap/libs1ap.la \
+    $(top_srcdir)/lib/asn1c/libasn1c.la \
     $(top_srcdir)/lib/nas/libnas.la \
     $(top_srcdir)/lib/fd/libfd.la \
     $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/src/app/libapp.la \
+	$(top_srcdir)/src/app/libapp.la \
 	$(NULL)
 
 AM_CPPFLAGS = \
-	-I$(top_srcdir)/lib/core/include \
+	@OGSCORE_CFLAGS@ \
     -I$(top_srcdir)/lib \
 	-I$(top_srcdir)/src \
-    -I$(top_srcdir)/lib/s1ap/asn1c \
+    -I$(top_srcdir)/lib/asn1c/common \
+    -I$(top_srcdir)/lib/asn1c/s1ap \
 	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
 	@MONGOC_CFLAGS@ \
 	$(NULL)
@@ -57,6 +59,3 @@ AM_CPPFLAGS = \
 AM_CFLAGS = \
 	-Wall -Werror \
 	$(NULL)
-
-MAINTAINERCLEANFILES = Makefile.in
-MOSTLYCLEANFILES = core *.stackdump

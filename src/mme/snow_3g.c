@@ -2,7 +2,6 @@
 * SNOW_3G.c
 *------------------------------------------------------------------------*/
 
-#include "core_pkbuf.h"
 #include "snow_3g.h"
 
 /* LFSR */
@@ -400,7 +399,7 @@ void snow_3g_f8(u8 *key, u32 count, u32 bearer, u32 dir, u8 *data, u32 length)
 	
 	/* Run SNOW 3G algorithm to generate sequence of key stream bits KS*/
 	snow_3g_initialize(K,IV);
-	KS = (u32 *)core_malloc(4*n);
+	KS = (u32 *)ogs_malloc(4*n);
 	snow_3g_generate_key_stream(n,(u32*)KS);
 	
 	/* Exclusive-OR the input data with keystream to generate the output bit
@@ -413,7 +412,7 @@ void snow_3g_f8(u8 *key, u32 count, u32 bearer, u32 dir, u8 *data, u32 length)
 		data[4*i+3] ^= (u8) (KS[i] ) & 0xff;
 	}
 	
-	CORE_FREE(KS);
+	ogs_free(KS);
 	
 	/* zero last bits of data in case its length is not byte-aligned 
 	   this is an addition to the C reference code, which did not handle it */

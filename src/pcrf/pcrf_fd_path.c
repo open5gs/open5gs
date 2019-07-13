@@ -1,25 +1,21 @@
-#define TRACE_MODULE _pcrf_fd_path
-
-#include "core_debug.h"
-
 #include "fd/fd_lib.h"
 
 #include "pcrf_context.h"
 #include "pcrf_fd_path.h"
 
-status_t pcrf_fd_init(void)
+int pcrf_fd_init(void)
 {
-    status_t rv;
+    int rv;
     int ret = fd_init(FD_MODE_CLIENT|FD_MODE_SERVER,
                 pcrf_self()->fd_conf_path, pcrf_self()->fd_config);
-    d_assert(ret == 0, return CORE_ERROR,);
+    ogs_assert(ret == 0);
 
     rv = pcrf_gx_init();
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
     rv = pcrf_rx_init();
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
 
-	return CORE_OK;
+	return OGS_OK;
 }
 
 void pcrf_fd_final(void)

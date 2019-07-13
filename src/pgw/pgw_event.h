@@ -1,29 +1,41 @@
 #ifndef __PGW_EVENT_H__
 #define __PGW_EVENT_H__
 
-#include "core_event.h"
-#include "core_fsm.h"
+#include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 typedef enum {
-    PGW_EVT_BASE = FSM_USER_SIG,
+    PGW_EVT_BASE = OGS_FSM_USER_SIG,
 
     PGW_EVT_S5C_MESSAGE,
-    PGW_EVT_S5C_T3_RESPONSE,
-    PGW_EVT_S5C_T3_HOLDING,
-
     PGW_EVT_GX_MESSAGE,
 
     PGW_EVT_TOP,
 
-} event_e;
+} pgw_event_e;
 
-#define pgw_event_send(__ptr_e) event_send(pgw_self()->queue_id, (__ptr_e))
+typedef struct pgw_event_s {
+    int id;
+    void *gtpbuf;
+    void *gxbuf;
+    ogs_index_t sess_index;
+    ogs_index_t xact_index;
+} pgw_event_t;
 
-CORE_DECLARE(char*) pgw_event_get_name(event_t *e);
+void pgw_event_init(void);
+void pgw_event_term(void);
+void pgw_event_final(void);
+
+pgw_event_t *pgw_event_new(pgw_event_e id);
+void pgw_event_free(pgw_event_t *e);
+
+#define pgw_event_send(__ptr_e) \
+    ogs_assert(ogs_queue_push(pgw_self()->queue, ((__ptr_e))) == OGS_OK)
+
+const char *pgw_event_get_name(pgw_event_t *e);
 
 #ifdef __cplusplus
 }

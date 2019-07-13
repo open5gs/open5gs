@@ -1,7 +1,21 @@
-#define TRACE_MODULE _rx_message
-
-#include "core_debug.h"
-#include "core_pkbuf.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "rx_message.h"
 
@@ -9,7 +23,7 @@ void rx_message_free(rx_message_t *rx_message)
 {
     int i, j, k;
 
-    d_assert(rx_message, return, "Null param");
+    ogs_assert(rx_message);
 
     for (i = 0; i < rx_message->num_of_media_component; i++)
     {
@@ -26,10 +40,10 @@ void rx_message_free(rx_message_t *rx_message)
 
                 if (flow->description)
                 {
-                    CORE_FREE(flow->description);
+                    ogs_free(flow->description);
                 }
                 else
-                    d_assert(0,, "Null param");
+                    ogs_assert_if_reached();
             }
         }
     }

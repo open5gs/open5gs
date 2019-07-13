@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  run:
+    network_mode: "host"
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-build
+    depends_on:
+      - mongodb
+      - build
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    volumes:
+      - config:/etc/nextepc
+    hostname: nextepc-run
+    command: /bin/bash -c "/root/setup.sh; /usr/bin/nextepc-epcd"
+
+volumes:
+  config: {}

@@ -1,17 +1,7 @@
-#define TRACE_MODULE _mme_context
-
-#include "core_debug.h"
-#include "core_pool.h"
-#include "core_lib.h"
-#include "core_msgq.h"
-#include "core_fsm.h"
-#include "core_network.h"
-
 #include <mongoc.h>
 #include <yaml.h>
-#include "app/yaml_helper.h"
 
-#include "s1ap/s1ap_message.h"
+#include "asn1c/s1ap_message.h"
 #include "gtp/gtp_xact.h"
 #include "gtp/gtp_node.h"
 #include "gtp/gtp_path.h"
@@ -22,6 +12,7 @@
 #include "mme_context.h"
 #include "mme_event.h"
 #include "s1ap_path.h"
+#include "s1ap_handler.h"
 #include "mme_sm.h"
 
 #define MAX_CELL_PER_ENB            8
@@ -29,18 +20,24 @@
 static mme_context_t self;
 static fd_config_t g_fd_conf;
 
-index_declare(mme_enb_pool, mme_enb_t, MAX_NUM_OF_ENB);
-index_declare(mme_ue_pool, mme_ue_t, MAX_POOL_OF_UE);
-index_declare(enb_ue_pool, enb_ue_t, MAX_POOL_OF_UE);
-index_declare(mme_sess_pool, mme_sess_t, MAX_POOL_OF_SESS);
-index_declare(mme_bearer_pool, mme_bearer_t, MAX_POOL_OF_BEARER);
+int __mme_log_domain;
+int __emm_log_domain;
+int __esm_log_domain;
+
+static OGS_POOL(mme_sgw_pool, mme_sgw_t);
+static OGS_POOL(mme_pgw_pool, mme_pgw_t);
+
+static OGS_POOL(mme_enb_pool, mme_enb_t);
+static OGS_POOL(mme_ue_pool, mme_ue_t);
+static OGS_POOL(enb_ue_pool, enb_ue_t);
+static OGS_POOL(mme_sess_pool, mme_sess_t);
+static OGS_POOL(mme_bearer_pool, mme_bearer_t);
 
 static int context_initialized = 0;
 
-status_t mme_context_init()
+int mme_context_init()
 {
-    d_assert(context_initialized == 0, return CORE_ERROR,
-            "MME context already has been context_initialized");
+    ogs_assert(context_initialized == 0);
 
     /* Initial FreeDiameter Config */
     memset(&g_fd_conf, 0, sizeof(fd_config_t));
@@ -49,90 +46,91 @@ status_t mme_context_init()
     memset(&self, 0, sizeof(mme_context_t));
     self.fd_config = &g_fd_conf;
 
-    list_init(&self.s1ap_list);
-    list_init(&self.s1ap_list6);
+    ogs_log_install_domain(&__mme_log_domain, "mme", ogs_core()->log.level);
+    ogs_log_install_domain(&__emm_log_domain, "emm", ogs_core()->log.level);
+    ogs_log_install_domain(&__esm_log_domain, "esm", ogs_core()->log.level);
 
-    list_init(&self.gtpc_list);
-    list_init(&self.gtpc_list6);
+    ogs_list_init(&self.s1ap_list);
+    ogs_list_init(&self.s1ap_list6);
+
+    ogs_list_init(&self.gtpc_list);
+    ogs_list_init(&self.gtpc_list6);
 
     gtp_node_init();
-    list_init(&self.sgw_list);
-    list_init(&self.pgw_list);
+    ogs_list_init(&self.sgw_list);
+    ogs_list_init(&self.pgw_list);
 
-    index_init(&mme_enb_pool, MAX_NUM_OF_ENB);
+    ogs_pool_init(&mme_sgw_pool, MAX_NUM_OF_SGW);
+    ogs_pool_init(&mme_pgw_pool, MAX_NUM_OF_PGW);
 
-    index_init(&mme_ue_pool, MAX_POOL_OF_UE);
-    index_init(&enb_ue_pool, MAX_POOL_OF_UE);
-    index_init(&mme_sess_pool, MAX_POOL_OF_SESS);
-    index_init(&mme_bearer_pool, MAX_POOL_OF_BEARER);
-    pool_init(&self.m_tmsi, MAX_POOL_OF_UE);
+    ogs_pool_init(&mme_enb_pool, MAX_NUM_OF_ENB);
 
-    self.enb_sock_hash = hash_make();
-    self.enb_addr_hash = hash_make();
-    self.enb_id_hash = hash_make();
-    self.mme_ue_s1ap_id_hash = hash_make();
-    self.imsi_ue_hash = hash_make();
-    self.guti_ue_hash = hash_make();
+    ogs_pool_init(&mme_ue_pool, MAX_POOL_OF_UE);
+    ogs_pool_init(&enb_ue_pool, MAX_POOL_OF_UE);
+    ogs_pool_init(&mme_sess_pool, MAX_POOL_OF_SESS);
+    ogs_pool_init(&mme_bearer_pool, MAX_POOL_OF_BEARER);
+    ogs_pool_init(&self.m_tmsi, MAX_POOL_OF_UE);
+
+    self.enb_sock_hash = ogs_hash_make();
+    self.enb_addr_hash = ogs_hash_make();
+    self.enb_id_hash = ogs_hash_make();
+    self.mme_ue_s1ap_id_hash = ogs_hash_make();
+    self.imsi_ue_hash = ogs_hash_make();
+    self.guti_ue_hash = ogs_hash_make();
 
     /* Timer value */
-    self.t3413_value = 2;               /* Paging retry timer: 2 secs */
-    self.s1_holding_timer_value = 30;   /* S1 holding timer: 30 secs */
+    self.t3413_value = ogs_time_from_sec(2); /* Paging retry timer: 2 secs */
 
     context_initialized = 1;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_context_final()
+int mme_context_final()
 {
-    d_assert(context_initialized == 1, return CORE_ERROR,
-            "MME context already has been finalized");
+    ogs_assert(context_initialized == 1);
 
     mme_enb_remove_all();
     mme_ue_remove_all();
 
-    if (pool_used(&self.m_tmsi))
-    {
-        d_error("%d not freed in M-TMSI pool[%d] in MME-Context",
-                pool_used(&self.m_tmsi), pool_size(&self.m_tmsi));
-    }
-    d_trace(9, "%d not freed in M-TMSI pool[%d] in MME-Context\n",
-            pool_used(&self.m_tmsi), pool_size(&self.m_tmsi));
+    ogs_assert(self.enb_sock_hash);
+    ogs_hash_destroy(self.enb_sock_hash);
+    ogs_assert(self.enb_addr_hash);
+    ogs_hash_destroy(self.enb_addr_hash);
+    ogs_assert(self.enb_id_hash);
+    ogs_hash_destroy(self.enb_id_hash);
 
-    d_assert(self.enb_sock_hash, , "Null param");
-    hash_destroy(self.enb_sock_hash);
-    d_assert(self.enb_addr_hash, , "Null param");
-    hash_destroy(self.enb_addr_hash);
-    d_assert(self.enb_id_hash, , "Null param");
-    hash_destroy(self.enb_id_hash);
+    ogs_assert(self.mme_ue_s1ap_id_hash);
+    ogs_hash_destroy(self.mme_ue_s1ap_id_hash);
+    ogs_assert(self.imsi_ue_hash);
+    ogs_hash_destroy(self.imsi_ue_hash);
+    ogs_assert(self.guti_ue_hash);
+    ogs_hash_destroy(self.guti_ue_hash);
 
-    d_assert(self.mme_ue_s1ap_id_hash, , "Null param");
-    hash_destroy(self.mme_ue_s1ap_id_hash);
-    d_assert(self.imsi_ue_hash, , "Null param");
-    hash_destroy(self.imsi_ue_hash);
-    d_assert(self.guti_ue_hash, , "Null param");
-    hash_destroy(self.guti_ue_hash);
+    ogs_pool_final(&self.m_tmsi);
+    ogs_pool_final(&mme_bearer_pool);
+    ogs_pool_final(&mme_sess_pool);
+    ogs_pool_final(&mme_ue_pool);
+    ogs_pool_final(&enb_ue_pool);
 
-    pool_final(&self.m_tmsi);
-    index_final(&mme_bearer_pool);
-    index_final(&mme_sess_pool);
-    index_final(&mme_ue_pool);
-    index_final(&enb_ue_pool);
+    ogs_pool_final(&mme_enb_pool);
 
-    index_final(&mme_enb_pool);
+    mme_sgw_remove_all();
+    mme_pgw_remove_all();
 
-    gtp_remove_all_nodes(&self.sgw_list);
-    gtp_remove_all_nodes(&self.pgw_list);
+    ogs_pool_final(&mme_sgw_pool);
+    ogs_pool_final(&mme_pgw_pool);
+
     gtp_node_final();
 
-    sock_remove_all_nodes(&self.s1ap_list);
-    sock_remove_all_nodes(&self.s1ap_list6);
-    sock_remove_all_nodes(&self.gtpc_list);
-    sock_remove_all_nodes(&self.gtpc_list6);
+    ogs_sock_remove_all_nodes(&self.s1ap_list);
+    ogs_sock_remove_all_nodes(&self.s1ap_list6);
+    ogs_sock_remove_all_nodes(&self.gtpc_list);
+    ogs_sock_remove_all_nodes(&self.gtpc_list6);
 
     context_initialized = 0;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 mme_context_t* mme_self()
@@ -140,7 +138,7 @@ mme_context_t* mme_self()
     return &self;
 }
 
-static status_t mme_context_prepare()
+static int mme_context_prepare()
 {
     self.relative_capacity = 0xff;
 
@@ -149,221 +147,220 @@ static status_t mme_context_prepare()
     self.fd_config->cnf_port = DIAMETER_PORT;
     self.fd_config->cnf_port_tls = DIAMETER_SECURE_PORT;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-static status_t mme_context_validation()
+static int mme_context_validation()
 {
     if (self.fd_conf_path == NULL &&
         (self.fd_config->cnf_diamid == NULL ||
         self.fd_config->cnf_diamrlm == NULL ||
         self.fd_config->cnf_addr == NULL))
     {
-        d_error("No mme.freeDiameter in '%s'", context_self()->config.path);
-        return CORE_ERROR;
+        ogs_error("No mme.freeDiameter in '%s'", context_self()->config.path);
+        return OGS_ERROR;
     }
 
-    if (list_first(&self.s1ap_list) == NULL &&
-        list_first(&self.s1ap_list6) == NULL)
+    if (ogs_list_first(&self.s1ap_list) == NULL &&
+        ogs_list_first(&self.s1ap_list6) == NULL)
     {
-        d_error("No mme.s1ap in '%s'", context_self()->config.path);
-        return CORE_EAGAIN;
+        ogs_error("No mme.s1ap in '%s'", context_self()->config.path);
+        return OGS_RETRY;
     }
 
-    if (list_first(&self.gtpc_list) == NULL &&
-        list_first(&self.gtpc_list6) == NULL)
+    if (ogs_list_first(&self.gtpc_list) == NULL &&
+        ogs_list_first(&self.gtpc_list6) == NULL)
     {
-        d_error("No mme.gtpc in '%s'", context_self()->config.path);
-        return CORE_EAGAIN;
+        ogs_error("No mme.gtpc in '%s'", context_self()->config.path);
+        return OGS_RETRY;
     }
 
-    if (list_first(&self.sgw_list) == NULL)
+    if (ogs_list_first(&self.sgw_list) == NULL)
     {
-        d_error("No sgw.gtpc in '%s'", context_self()->config.path);
-        return CORE_ERROR;
+        ogs_error("No sgw.gtpc in '%s'", context_self()->config.path);
+        return OGS_ERROR;
     }
 
-    if (list_first(&self.pgw_list) == NULL)
+    if (ogs_list_first(&self.pgw_list) == NULL)
     {
-        d_error("No pgw.gtpc in '%s'", context_self()->config.path);
-        return CORE_ERROR;
+        ogs_error("No pgw.gtpc in '%s'", context_self()->config.path);
+        return OGS_ERROR;
     }
 
     if (self.max_num_of_served_gummei == 0)
     {
-        d_error("No mme.gummei in '%s'", context_self()->config.path);
-        return CORE_ERROR;
+        ogs_error("No mme.gummei in '%s'", context_self()->config.path);
+        return OGS_ERROR;
     }
 
     if (self.served_gummei[0].num_of_plmn_id == 0)
     {
-        d_error("No mme.gummei.plmn_id in '%s'", context_self()->config.path);
-        return CORE_ERROR;
+        ogs_error("No mme.gummei.plmn_id in '%s'", context_self()->config.path);
+        return OGS_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_gid == 0)
     {
-        d_error("No mme.gummei.mme_gid in '%s'", context_self()->config.path);
-        return CORE_ERROR;
+        ogs_error("No mme.gummei.mme_gid in '%s'", context_self()->config.path);
+        return OGS_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_code == 0)
     {
-        d_error("No mme.gummei.mme_code in '%s'", context_self()->config.path);
-        return CORE_ERROR;
+        ogs_error("No mme.gummei.mme_code in '%s'", context_self()->config.path);
+        return OGS_ERROR;
     }
 
     if (self.num_of_served_tai == 0)
     {
-        d_error("No mme.tai in '%s'", context_self()->config.path);
-        return CORE_ERROR;
+        ogs_error("No mme.tai in '%s'", context_self()->config.path);
+        return OGS_ERROR;
     }
 
     if (self.served_tai[0].list0.tai[0].num == 0 &&
         self.served_tai[0].list2.num == 0)
     {
-        d_error("No mme.tai.plmn_id|tac in '%s'", context_self()->config.path);
-        return CORE_ERROR;
+        ogs_error("No mme.tai.plmn_id|tac in '%s'", context_self()->config.path);
+        return OGS_ERROR;
     }
 
     if (self.num_of_integrity_order == 0)
     {
-        d_error("No mme.security.integrity_order in '%s'",
+        ogs_error("No mme.security.integrity_order in '%s'",
                 context_self()->config.path);
-        return CORE_ERROR;
+        return OGS_ERROR;
     }
     if (self.num_of_ciphering_order == 0)
     {
-        d_error("no mme.security.ciphering_order in '%s'",
+        ogs_error("no mme.security.ciphering_order in '%s'",
                 context_self()->config.path);
-        return CORE_ERROR;
+        return OGS_ERROR;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_context_parse_config()
+int mme_context_parse_config()
 {
-    status_t rv;
+    int rv;
     config_t *config = &context_self()->config;
     yaml_document_t *document = NULL;
-    yaml_iter_t root_iter;
+    ogs_yaml_iter_t root_iter;
 
-    d_assert(config, return CORE_ERROR,);
+    ogs_assert(config);
     document = config->document;
-    d_assert(document, return CORE_ERROR,);
+    ogs_assert(document);
 
     rv = mme_context_prepare();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
-    yaml_iter_init(&root_iter, document);
-    while(yaml_iter_next(&root_iter))
+    ogs_yaml_iter_init(&root_iter, document);
+    while(ogs_yaml_iter_next(&root_iter))
     {
-        const char *root_key = yaml_iter_key(&root_iter);
-        d_assert(root_key, return CORE_ERROR,);
+        const char *root_key = ogs_yaml_iter_key(&root_iter);
+        ogs_assert(root_key);
         if (!strcmp(root_key, "mme"))
         {
-            yaml_iter_t mme_iter;
-            yaml_iter_recurse(&root_iter, &mme_iter);
-            while(yaml_iter_next(&mme_iter))
+            ogs_yaml_iter_t mme_iter;
+            ogs_yaml_iter_recurse(&root_iter, &mme_iter);
+            while(ogs_yaml_iter_next(&mme_iter))
             {
-                const char *mme_key = yaml_iter_key(&mme_iter);
-                d_assert(mme_key, return CORE_ERROR,);
+                const char *mme_key = ogs_yaml_iter_key(&mme_iter);
+                ogs_assert(mme_key);
                 if (!strcmp(mme_key, "freeDiameter"))
                 {
                     yaml_node_t *node = 
                         yaml_document_get_node(document, mme_iter.pair->value);
-                    d_assert(node, return CORE_ERROR,);
+                    ogs_assert(node);
                     if (node->type == YAML_SCALAR_NODE)
                     {
-                        self.fd_conf_path = yaml_iter_value(&mme_iter);
+                        self.fd_conf_path = ogs_yaml_iter_value(&mme_iter);
                     }
                     else if (node->type == YAML_MAPPING_NODE)
                     {
-                        yaml_iter_t fd_iter;
-                        yaml_iter_recurse(&mme_iter, &fd_iter);
+                        ogs_yaml_iter_t fd_iter;
+                        ogs_yaml_iter_recurse(&mme_iter, &fd_iter);
 
-                        while(yaml_iter_next(&fd_iter))
+                        while(ogs_yaml_iter_next(&fd_iter))
                         {
-                            const char *fd_key = yaml_iter_key(&fd_iter);
-                            d_assert(fd_key, return CORE_ERROR,);
+                            const char *fd_key = ogs_yaml_iter_key(&fd_iter);
+                            ogs_assert(fd_key);
                             if (!strcmp(fd_key, "identity"))
                             {
                                 self.fd_config->cnf_diamid = 
-                                    yaml_iter_value(&fd_iter);
+                                    ogs_yaml_iter_value(&fd_iter);
                             }
                             else if (!strcmp(fd_key, "realm"))
                             {
                                 self.fd_config->cnf_diamrlm = 
-                                    yaml_iter_value(&fd_iter);
+                                    ogs_yaml_iter_value(&fd_iter);
                             }
                             else if (!strcmp(fd_key, "port"))
                             {
-                                const char *v = yaml_iter_value(&fd_iter);
+                                const char *v = ogs_yaml_iter_value(&fd_iter);
                                 if (v) self.fd_config->cnf_port = atoi(v);
                             }
                             else if (!strcmp(fd_key, "sec_port"))
                             {
-                                const char *v = yaml_iter_value(&fd_iter);
+                                const char *v = ogs_yaml_iter_value(&fd_iter);
                                 if (v) self.fd_config->cnf_port_tls = atoi(v);
                             }
                             else if (!strcmp(fd_key, "no_sctp"))
                             {
                                 self.fd_config->cnf_flags.no_sctp =
-                                    yaml_iter_bool(&fd_iter);
+                                    ogs_yaml_iter_bool(&fd_iter);
                             }
                             else if (!strcmp(fd_key, "listen_on"))
                             {
                                 self.fd_config->cnf_addr = 
-                                    yaml_iter_value(&fd_iter);
+                                    ogs_yaml_iter_value(&fd_iter);
                             }
                             else if (!strcmp(fd_key, "load_extension"))
                             {
-                                yaml_iter_t ext_array, ext_iter;
-                                yaml_iter_recurse(&fd_iter, &ext_array);
+                                ogs_yaml_iter_t ext_array, ext_iter;
+                                ogs_yaml_iter_recurse(&fd_iter, &ext_array);
                                 do
                                 {
                                     const char *module = NULL;
                                     const char *conf = NULL;
 
-                                    if (yaml_iter_type(&ext_array) ==
+                                    if (ogs_yaml_iter_type(&ext_array) ==
                                         YAML_MAPPING_NODE)
                                     {
                                         memcpy(&ext_iter, &ext_array,
-                                                sizeof(yaml_iter_t));
+                                                sizeof(ogs_yaml_iter_t));
                                     }
-                                    else if (yaml_iter_type(&ext_array) ==
+                                    else if (ogs_yaml_iter_type(&ext_array) ==
                                         YAML_SEQUENCE_NODE)
                                     {
-                                        if (!yaml_iter_next(&ext_array))
+                                        if (!ogs_yaml_iter_next(&ext_array))
                                             break;
-                                        yaml_iter_recurse(
+                                        ogs_yaml_iter_recurse(
                                                 &ext_array, &ext_iter);
                                     }
-                                    else if (yaml_iter_type(&ext_array) ==
+                                    else if (ogs_yaml_iter_type(&ext_array) ==
                                         YAML_SCALAR_NODE)
                                     {
                                         break;
                                     }
                                     else
-                                        d_assert(0, return CORE_ERROR,);
+                                        ogs_assert_if_reached();
 
-                                    while(yaml_iter_next(&ext_iter))
+                                    while(ogs_yaml_iter_next(&ext_iter))
                                     {
                                         const char *ext_key =
-                                            yaml_iter_key(&ext_iter);
-                                        d_assert(ext_key,
-                                                return CORE_ERROR,);
+                                            ogs_yaml_iter_key(&ext_iter);
+                                        ogs_assert(ext_key);
                                         if (!strcmp(ext_key, "module"))
                                         {
-                                            module = yaml_iter_value(&ext_iter);
+                                            module = ogs_yaml_iter_value(&ext_iter);
                                         }
                                         else if (!strcmp(ext_key, "conf"))
                                         {
-                                            conf = yaml_iter_value(&ext_iter);
+                                            conf = ogs_yaml_iter_value(&ext_iter);
                                         }
                                         else
-                                            d_warn("unknown key `%s`", ext_key);
+                                            ogs_warn("unknown key `%s`", ext_key);
                                     }
 
                                     if (module)
@@ -376,62 +373,61 @@ status_t mme_context_parse_config()
                                                 conf = conf;
                                         self.fd_config->num_of_ext++;
                                     }
-                                } while(yaml_iter_type(&ext_array) ==
+                                } while(ogs_yaml_iter_type(&ext_array) ==
                                         YAML_SEQUENCE_NODE);
                             }
                             else if (!strcmp(fd_key, "connect"))
                             {
-                                yaml_iter_t conn_array, conn_iter;
-                                yaml_iter_recurse(&fd_iter, &conn_array);
+                                ogs_yaml_iter_t conn_array, conn_iter;
+                                ogs_yaml_iter_recurse(&fd_iter, &conn_array);
                                 do
                                 {
                                     const char *identity = NULL;
                                     const char *addr = NULL;
-                                    c_uint16_t port = 0;
+                                    uint16_t port = 0;
 
-                                    if (yaml_iter_type(&conn_array) ==
+                                    if (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_MAPPING_NODE)
                                     {
                                         memcpy(&conn_iter, &conn_array,
-                                                sizeof(yaml_iter_t));
+                                                sizeof(ogs_yaml_iter_t));
                                     }
-                                    else if (yaml_iter_type(&conn_array) ==
+                                    else if (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_SEQUENCE_NODE)
                                     {
-                                        if (!yaml_iter_next(&conn_array))
+                                        if (!ogs_yaml_iter_next(&conn_array))
                                             break;
-                                        yaml_iter_recurse(&conn_array, &conn_iter);
+                                        ogs_yaml_iter_recurse(&conn_array, &conn_iter);
                                     }
-                                    else if (yaml_iter_type(&conn_array) ==
+                                    else if (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_SCALAR_NODE)
                                     {
                                         break;
                                     }
                                     else
-                                        d_assert(0, return CORE_ERROR,);
+                                        ogs_assert_if_reached();
 
-                                    while(yaml_iter_next(&conn_iter))
+                                    while(ogs_yaml_iter_next(&conn_iter))
                                     {
                                         const char *conn_key =
-                                            yaml_iter_key(&conn_iter);
-                                        d_assert(conn_key,
-                                                return CORE_ERROR,);
+                                            ogs_yaml_iter_key(&conn_iter);
+                                        ogs_assert(conn_key);
                                         if (!strcmp(conn_key, "identity"))
                                         {
-                                            identity = yaml_iter_value(&conn_iter);
+                                            identity = ogs_yaml_iter_value(&conn_iter);
                                         }
                                         else if (!strcmp(conn_key, "addr"))
                                         {
-                                            addr = yaml_iter_value(&conn_iter);
+                                            addr = ogs_yaml_iter_value(&conn_iter);
                                         }
                                         else if (!strcmp(conn_key, "port"))
                                         {
                                             const char *v =
-                                                yaml_iter_value(&conn_iter);
+                                                ogs_yaml_iter_value(&conn_iter);
                                             if (v) port = atoi(v);
                                         }
                                         else
-                                            d_warn("unknown key `%s`", conn_key);
+                                            ogs_warn("unknown key `%s`", conn_key);
                                     }
 
                                     if (identity && addr)
@@ -447,67 +443,66 @@ status_t mme_context_parse_config()
                                                 port = port;
                                         self.fd_config->num_of_conn++;
                                     }
-                                } while(yaml_iter_type(&conn_array) ==
+                                } while(ogs_yaml_iter_type(&conn_array) ==
                                         YAML_SEQUENCE_NODE);
                             }
                             else
-                                d_warn("unknown key `%s`", fd_key);
+                                ogs_warn("unknown key `%s`", fd_key);
                         }
                     }
                 }
                 else if (!strcmp(mme_key, "relative_capacity"))
                 {
-                    const char *v = yaml_iter_value(&mme_iter);
+                    const char *v = ogs_yaml_iter_value(&mme_iter);
                     if (v) self.relative_capacity = atoi(v);
                 }
                 else if (!strcmp(mme_key, "s1ap"))
                 {
-                    yaml_iter_t s1ap_array, s1ap_iter;
-                    yaml_iter_recurse(&mme_iter, &s1ap_array);
+                    ogs_yaml_iter_t s1ap_array, s1ap_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &s1ap_array);
                     do
                     {
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
-                        c_uint16_t port = self.s1ap_port;
+                        uint16_t port = self.s1ap_port;
                         const char *dev = NULL;
-                        c_sockaddr_t *list = NULL;
-                        sock_node_t *node = NULL;
+                        ogs_sockaddr_t *list = NULL;
+                        ogs_socknode_t *node = NULL;
 
-                        if (yaml_iter_type(&s1ap_array) == YAML_MAPPING_NODE)
+                        if (ogs_yaml_iter_type(&s1ap_array) == YAML_MAPPING_NODE)
                         {
                             memcpy(&s1ap_iter, &s1ap_array,
-                                    sizeof(yaml_iter_t));
+                                    sizeof(ogs_yaml_iter_t));
                         }
-                        else if (yaml_iter_type(&s1ap_array) ==
+                        else if (ogs_yaml_iter_type(&s1ap_array) ==
                             YAML_SEQUENCE_NODE)
                         {
-                            if (!yaml_iter_next(&s1ap_array))
+                            if (!ogs_yaml_iter_next(&s1ap_array))
                                 break;
-                            yaml_iter_recurse(&s1ap_array, &s1ap_iter);
+                            ogs_yaml_iter_recurse(&s1ap_array, &s1ap_iter);
                         }
-                        else if (yaml_iter_type(&s1ap_array) ==
+                        else if (ogs_yaml_iter_type(&s1ap_array) ==
                             YAML_SCALAR_NODE)
                         {
                             break;
                         }
                         else
-                            d_assert(0, return CORE_ERROR,);
+                            ogs_assert_if_reached();
 
-                        while(yaml_iter_next(&s1ap_iter))
+                        while(ogs_yaml_iter_next(&s1ap_iter))
                         {
                             const char *s1ap_key =
-                                yaml_iter_key(&s1ap_iter);
-                            d_assert(s1ap_key,
-                                    return CORE_ERROR,);
+                                ogs_yaml_iter_key(&s1ap_iter);
+                            ogs_assert(s1ap_key);
                             if (!strcmp(s1ap_key, "family"))
                             {
-                                const char *v = yaml_iter_value(&s1ap_iter);
+                                const char *v = ogs_yaml_iter_value(&s1ap_iter);
                                 if (v) family = atoi(v);
                                 if (family != AF_UNSPEC &&
                                     family != AF_INET && family != AF_INET6)
                                 {
-                                    d_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                    ogs_warn("Ignore family(%d) : AF_UNSPEC(%d), "
                                         "AF_INET(%d), AF_INET6(%d) ", 
                                         family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;
@@ -516,31 +511,30 @@ status_t mme_context_parse_config()
                             else if (!strcmp(s1ap_key, "addr") ||
                                     !strcmp(s1ap_key, "name"))
                             {
-                                yaml_iter_t hostname_iter;
-                                yaml_iter_recurse(&s1ap_iter, &hostname_iter);
-                                d_assert(yaml_iter_type(&hostname_iter) !=
-                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+                                ogs_yaml_iter_t hostname_iter;
+                                ogs_yaml_iter_recurse(&s1ap_iter, &hostname_iter);
+                                ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE);
 
                                 do
                                 {
-                                    if (yaml_iter_type(&hostname_iter) ==
+                                    if (ogs_yaml_iter_type(&hostname_iter) ==
                                             YAML_SEQUENCE_NODE)
                                     {
-                                        if (!yaml_iter_next(&hostname_iter))
+                                        if (!ogs_yaml_iter_next(&hostname_iter))
                                             break;
                                     }
 
-                                    d_assert(num <= MAX_NUM_OF_HOSTNAME,
-                                            return CORE_ERROR,);
+                                    ogs_assert(num <= MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] = 
-                                        yaml_iter_value(&hostname_iter);
+                                        ogs_yaml_iter_value(&hostname_iter);
                                 } while(
-                                    yaml_iter_type(&hostname_iter) ==
+                                    ogs_yaml_iter_type(&hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
                             }
                             else if (!strcmp(s1ap_key, "port"))
                             {
-                                const char *v = yaml_iter_value(&s1ap_iter);
+                                const char *v = ogs_yaml_iter_value(&s1ap_iter);
                                 if (v)
                                 {
                                     port = atoi(v);
@@ -549,112 +543,111 @@ status_t mme_context_parse_config()
                             }
                             else if (!strcmp(s1ap_key, "dev"))
                             {
-                                dev = yaml_iter_value(&s1ap_iter);
+                                dev = ogs_yaml_iter_value(&s1ap_iter);
                             }
                             else
-                                d_warn("unknown key `%s`", s1ap_key);
+                                ogs_warn("unknown key `%s`", s1ap_key);
                         }
 
                         list = NULL;
                         for (i = 0; i < num; i++)
                         {
-                            rv = core_addaddrinfo(&list,
+                            rv = ogs_addaddrinfo(&list,
                                     family, hostname[i], port, 0);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            ogs_assert(rv == OGS_OK);
                         }
 
                         if (list)
                         {
-                            if (context_self()->parameter.no_ipv4 == 0)
+                            if (context_self()->config.parameter.no_ipv4 == 0)
                             {
-                                rv = sock_add_node(&self.s1ap_list,
+                                rv = ogs_sock_add_node(&self.s1ap_list,
                                         &node, list, AF_INET);
-                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                                ogs_assert(rv == OGS_OK);
                             }
 
-                            if (context_self()->parameter.no_ipv6 == 0)
+                            if (context_self()->config.parameter.no_ipv6 == 0)
                             {
-                                rv = sock_add_node(&self.s1ap_list6,
+                                rv = ogs_sock_add_node(&self.s1ap_list6,
                                         &node, list, AF_INET6);
-                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                                ogs_assert(rv == OGS_OK);
                             }
 
-                            core_freeaddrinfo(list);
+                            ogs_freeaddrinfo(list);
                         }
 
                         if (dev)
                         {
-                            rv = sock_probe_node(
-                                    context_self()->parameter.no_ipv4 ?
+                            rv = ogs_sock_probe_node(
+                                    context_self()->config.parameter.no_ipv4 ?
                                         NULL : &self.s1ap_list,
-                                    context_self()->parameter.no_ipv6 ?
+                                    context_self()->config.parameter.no_ipv6 ?
                                         NULL : &self.s1ap_list6,
                                     dev, self.s1ap_port);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            ogs_assert(rv == OGS_OK);
                         }
 
-                    } while(yaml_iter_type(&s1ap_array) == YAML_SEQUENCE_NODE);
+                    } while(ogs_yaml_iter_type(&s1ap_array) == YAML_SEQUENCE_NODE);
 
-                    if (list_first(&self.s1ap_list) == NULL &&
-                        list_first(&self.s1ap_list6) == NULL)
+                    if (ogs_list_first(&self.s1ap_list) == NULL &&
+                        ogs_list_first(&self.s1ap_list6) == NULL)
                     {
-                        rv = sock_probe_node(
-                                context_self()->parameter.no_ipv4 ?
+                        rv = ogs_sock_probe_node(
+                                context_self()->config.parameter.no_ipv4 ?
                                     NULL : &self.s1ap_list,
-                                context_self()->parameter.no_ipv6 ?
+                                context_self()->config.parameter.no_ipv6 ?
                                     NULL : &self.s1ap_list6,
                                 NULL, self.s1ap_port);
-                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        ogs_assert(rv == OGS_OK);
                     }
                 }
                 else if (!strcmp(mme_key, "gtpc"))
                 {
-                    yaml_iter_t gtpc_array, gtpc_iter;
-                    yaml_iter_recurse(&mme_iter, &gtpc_array);
+                    ogs_yaml_iter_t gtpc_array, gtpc_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &gtpc_array);
                     do
                     {
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
-                        c_uint16_t port = self.gtpc_port;
+                        uint16_t port = self.gtpc_port;
                         const char *dev = NULL;
-                        c_sockaddr_t *list = NULL;
-                        sock_node_t *node = NULL;
+                        ogs_sockaddr_t *list = NULL;
+                        ogs_socknode_t *node = NULL;
 
-                        if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
+                        if (ogs_yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
                         {
                             memcpy(&gtpc_iter, &gtpc_array,
-                                    sizeof(yaml_iter_t));
+                                    sizeof(ogs_yaml_iter_t));
                         }
-                        else if (yaml_iter_type(&gtpc_array) ==
+                        else if (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SEQUENCE_NODE)
                         {
-                            if (!yaml_iter_next(&gtpc_array))
+                            if (!ogs_yaml_iter_next(&gtpc_array))
                                 break;
-                            yaml_iter_recurse(&gtpc_array, &gtpc_iter);
+                            ogs_yaml_iter_recurse(&gtpc_array, &gtpc_iter);
                         }
-                        else if (yaml_iter_type(&gtpc_array) ==
+                        else if (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SCALAR_NODE)
                         {
                             break;
                         }
                         else
-                            d_assert(0, return CORE_ERROR,);
+                            ogs_assert_if_reached();
 
-                        while(yaml_iter_next(&gtpc_iter))
+                        while(ogs_yaml_iter_next(&gtpc_iter))
                         {
                             const char *gtpc_key =
-                                yaml_iter_key(&gtpc_iter);
-                            d_assert(gtpc_key,
-                                    return CORE_ERROR,);
+                                ogs_yaml_iter_key(&gtpc_iter);
+                            ogs_assert(gtpc_key);
                             if (!strcmp(gtpc_key, "family"))
                             {
-                                const char *v = yaml_iter_value(&gtpc_iter);
+                                const char *v = ogs_yaml_iter_value(&gtpc_iter);
                                 if (v) family = atoi(v);
                                 if (family != AF_UNSPEC &&
                                     family != AF_INET && family != AF_INET6)
                                 {
-                                    d_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                    ogs_warn("Ignore family(%d) : AF_UNSPEC(%d), "
                                         "AF_INET(%d), AF_INET6(%d) ", 
                                         family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;
@@ -663,31 +656,30 @@ status_t mme_context_parse_config()
                             else if (!strcmp(gtpc_key, "addr") ||
                                     !strcmp(gtpc_key, "name"))
                             {
-                                yaml_iter_t hostname_iter;
-                                yaml_iter_recurse(&gtpc_iter, &hostname_iter);
-                                d_assert(yaml_iter_type(&hostname_iter) !=
-                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+                                ogs_yaml_iter_t hostname_iter;
+                                ogs_yaml_iter_recurse(&gtpc_iter, &hostname_iter);
+                                ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE);
 
                                 do
                                 {
-                                    if (yaml_iter_type(&hostname_iter) ==
+                                    if (ogs_yaml_iter_type(&hostname_iter) ==
                                             YAML_SEQUENCE_NODE)
                                     {
-                                        if (!yaml_iter_next(&hostname_iter))
+                                        if (!ogs_yaml_iter_next(&hostname_iter))
                                             break;
                                     }
 
-                                    d_assert(num <= MAX_NUM_OF_HOSTNAME,
-                                            return CORE_ERROR,);
+                                    ogs_assert(num <= MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] = 
-                                        yaml_iter_value(&hostname_iter);
+                                        ogs_yaml_iter_value(&hostname_iter);
                                 } while(
-                                    yaml_iter_type(&hostname_iter) ==
+                                    ogs_yaml_iter_type(&hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
                             }
                             else if (!strcmp(gtpc_key, "port"))
                             {
-                                const char *v = yaml_iter_value(&gtpc_iter);
+                                const char *v = ogs_yaml_iter_value(&gtpc_iter);
                                 if (v)
                                 {
                                     port = atoi(v);
@@ -696,155 +688,153 @@ status_t mme_context_parse_config()
                             }
                             else if (!strcmp(gtpc_key, "dev"))
                             {
-                                dev = yaml_iter_value(&gtpc_iter);
+                                dev = ogs_yaml_iter_value(&gtpc_iter);
                             }
                             else
-                                d_warn("unknown key `%s`", gtpc_key);
+                                ogs_warn("unknown key `%s`", gtpc_key);
                         }
 
                         list = NULL;
                         for (i = 0; i < num; i++)
                         {
-                            rv = core_addaddrinfo(&list,
+                            rv = ogs_addaddrinfo(&list,
                                     family, hostname[i], port, 0);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            ogs_assert(rv == OGS_OK);
                         }
 
                         if (list)
                         {
-                            if (context_self()->parameter.no_ipv4 == 0)
+                            if (context_self()->config.parameter.no_ipv4 == 0)
                             {
-                                rv = sock_add_node(&self.gtpc_list,
+                                rv = ogs_sock_add_node(&self.gtpc_list,
                                         &node, list, AF_INET);
-                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                                ogs_assert(rv == OGS_OK);
                             }
 
-                            if (context_self()->parameter.no_ipv6 == 0)
+                            if (context_self()->config.parameter.no_ipv6 == 0)
                             {
-                                rv = sock_add_node(&self.gtpc_list6,
+                                rv = ogs_sock_add_node(&self.gtpc_list6,
                                         &node, list, AF_INET6);
-                                d_assert(rv == CORE_OK, return CORE_ERROR,);
+                                ogs_assert(rv == OGS_OK);
                             }
 
-                            core_freeaddrinfo(list);
+                            ogs_freeaddrinfo(list);
                         }
 
                         if (dev)
                         {
-                            rv = sock_probe_node(
-                                    context_self()->parameter.no_ipv4 ?
+                            rv = ogs_sock_probe_node(
+                                    context_self()->config.parameter.no_ipv4 ?
                                         NULL : &self.gtpc_list,
-                                    context_self()->parameter.no_ipv6 ?
+                                    context_self()->config.parameter.no_ipv6 ?
                                         NULL : &self.gtpc_list6,
                                     dev, self.gtpc_port);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            ogs_assert(rv == OGS_OK);
                         }
-                    } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
+                    } while(ogs_yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
 
-                    if (list_first(&self.gtpc_list) == NULL &&
-                        list_first(&self.gtpc_list6) == NULL)
+                    if (ogs_list_first(&self.gtpc_list) == NULL &&
+                        ogs_list_first(&self.gtpc_list6) == NULL)
                     {
-                        rv = sock_probe_node(
-                                context_self()->parameter.no_ipv4 ?
+                        rv = ogs_sock_probe_node(
+                                context_self()->config.parameter.no_ipv4 ?
                                     NULL : &self.gtpc_list,
-                                context_self()->parameter.no_ipv6 ?
+                                context_self()->config.parameter.no_ipv6 ?
                                     NULL : &self.gtpc_list6,
                                 NULL, self.gtpc_port);
-                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        ogs_assert(rv == OGS_OK);
                     }
                 }
                 else if (!strcmp(mme_key, "gummei"))
                 {
-                    yaml_iter_t gummei_array, gummei_iter;
-                    yaml_iter_recurse(&mme_iter, &gummei_array);
+                    ogs_yaml_iter_t gummei_array, gummei_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &gummei_array);
                     do
                     {
                         served_gummei_t *gummei = NULL;
-                        d_assert(self.max_num_of_served_gummei <=
-                                MAX_NUM_OF_SERVED_GUMMEI, return CORE_ERROR,);
+                        ogs_assert(self.max_num_of_served_gummei <=
+                                MAX_NUM_OF_SERVED_GUMMEI);
                         gummei = &self.served_gummei[
                             self.max_num_of_served_gummei];
-                        d_assert(gummei, return CORE_ERROR,);
+                        ogs_assert(gummei);
 
-                        if (yaml_iter_type(&gummei_array) ==
+                        if (ogs_yaml_iter_type(&gummei_array) ==
                                 YAML_MAPPING_NODE)
                         {
                             memcpy(&gummei_iter, &gummei_array,
-                                    sizeof(yaml_iter_t));
+                                    sizeof(ogs_yaml_iter_t));
                         }
-                        else if (yaml_iter_type(&gummei_array) ==
+                        else if (ogs_yaml_iter_type(&gummei_array) ==
                             YAML_SEQUENCE_NODE)
                         {
-                            if (!yaml_iter_next(&gummei_array))
+                            if (!ogs_yaml_iter_next(&gummei_array))
                                 break;
-                            yaml_iter_recurse(&gummei_array,
+                            ogs_yaml_iter_recurse(&gummei_array,
                                     &gummei_iter);
                         }
-                        else if (yaml_iter_type(&gummei_array) ==
+                        else if (ogs_yaml_iter_type(&gummei_array) ==
                             YAML_SCALAR_NODE)
                         {
                             break;
                         }
                         else
-                            d_assert(0, return CORE_ERROR,);
+                            ogs_assert_if_reached();
 
-                        while(yaml_iter_next(&gummei_iter))
+                        while(ogs_yaml_iter_next(&gummei_iter))
                         {
                             const char *gummei_key =
-                                yaml_iter_key(&gummei_iter);
-                            d_assert(gummei_key,
-                                    return CORE_ERROR,);
+                                ogs_yaml_iter_key(&gummei_iter);
+                            ogs_assert(gummei_key);
                             if (!strcmp(gummei_key, "plmn_id"))
                             {
-                                yaml_iter_t plmn_id_array, plmn_id_iter;
-                                yaml_iter_recurse(&gummei_iter, &plmn_id_array);
+                                ogs_yaml_iter_t plmn_id_array, plmn_id_iter;
+                                ogs_yaml_iter_recurse(&gummei_iter, &plmn_id_array);
                                 do
                                 {
                                     plmn_id_t *plmn_id = NULL;
                                     const char *mcc = NULL, *mnc = NULL;
-                                    d_assert(gummei->num_of_plmn_id <=
-                                            MAX_PLMN_ID, return CORE_ERROR,);
+                                    ogs_assert(gummei->num_of_plmn_id <=
+                                            MAX_PLMN_ID);
                                     plmn_id = &gummei->plmn_id[
                                         gummei->num_of_plmn_id];
-                                    d_assert(plmn_id, return CORE_ERROR,);
+                                    ogs_assert(plmn_id);
 
-                                    if (yaml_iter_type(&plmn_id_array) ==
+                                    if (ogs_yaml_iter_type(&plmn_id_array) ==
                                             YAML_MAPPING_NODE)
                                     {
                                         memcpy(&plmn_id_iter, &plmn_id_array,
-                                                sizeof(yaml_iter_t));
+                                                sizeof(ogs_yaml_iter_t));
                                     }
-                                    else if (yaml_iter_type(&plmn_id_array) ==
+                                    else if (ogs_yaml_iter_type(&plmn_id_array) ==
                                         YAML_SEQUENCE_NODE)
                                     {
-                                        if (!yaml_iter_next(&plmn_id_array))
+                                        if (!ogs_yaml_iter_next(&plmn_id_array))
                                             break;
-                                        yaml_iter_recurse(&plmn_id_array,
+                                        ogs_yaml_iter_recurse(&plmn_id_array,
                                                 &plmn_id_iter);
                                     }
-                                    else if (yaml_iter_type(&plmn_id_array) ==
+                                    else if (ogs_yaml_iter_type(&plmn_id_array) ==
                                         YAML_SCALAR_NODE)
                                     {
                                         break;
                                     }
                                     else
-                                        d_assert(0, return CORE_ERROR,);
+                                        ogs_assert_if_reached();
 
-                                    while(yaml_iter_next(&plmn_id_iter))
+                                    while(ogs_yaml_iter_next(&plmn_id_iter))
                                     {
                                         const char *plmn_id_key =
-                                            yaml_iter_key(&plmn_id_iter);
-                                        d_assert(plmn_id_key,
-                                                return CORE_ERROR,);
+                                            ogs_yaml_iter_key(&plmn_id_iter);
+                                        ogs_assert(plmn_id_key);
                                         if (!strcmp(plmn_id_key, "mcc"))
                                         {
                                             mcc =
-                                                yaml_iter_value(&plmn_id_iter);
+                                                ogs_yaml_iter_value(&plmn_id_iter);
                                         }
                                         else if (!strcmp(plmn_id_key, "mnc"))
                                         {
                                             mnc =
-                                                yaml_iter_value(&plmn_id_iter);
+                                                ogs_yaml_iter_value(&plmn_id_iter);
                                         }
                                     }
 
@@ -855,81 +845,81 @@ status_t mme_context_parse_config()
                                         gummei->num_of_plmn_id++;
                                     }
 
-                                } while(yaml_iter_type(&plmn_id_array) ==
+                                } while(ogs_yaml_iter_type(&plmn_id_array) ==
                                         YAML_SEQUENCE_NODE);
                             }
                             else if (!strcmp(gummei_key, "mme_gid"))
                             {
-                                yaml_iter_t mme_gid_iter;
-                                yaml_iter_recurse(&gummei_iter, &mme_gid_iter);
-                                d_assert(yaml_iter_type(&mme_gid_iter) !=
-                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+                                ogs_yaml_iter_t mme_gid_iter;
+                                ogs_yaml_iter_recurse(&gummei_iter, &mme_gid_iter);
+                                ogs_assert(ogs_yaml_iter_type(&mme_gid_iter) !=
+                                    YAML_MAPPING_NODE);
 
                                 do
                                 {
-                                    c_uint16_t *mme_gid = NULL;
+                                    uint16_t *mme_gid = NULL;
                                     const char *v = NULL;
 
-                                    d_assert(gummei->num_of_mme_gid <=
-                                            GRP_PER_MME, return CORE_ERROR,);
+                                    ogs_assert(gummei->num_of_mme_gid <=
+                                            GRP_PER_MME);
                                     mme_gid = &gummei->mme_gid[
                                         gummei->num_of_mme_gid];
-                                    d_assert(mme_gid, return CORE_ERROR,);
+                                    ogs_assert(mme_gid);
 
-                                    if (yaml_iter_type(&mme_gid_iter) ==
+                                    if (ogs_yaml_iter_type(&mme_gid_iter) ==
                                             YAML_SEQUENCE_NODE)
                                     {
-                                        if (!yaml_iter_next(&mme_gid_iter))
+                                        if (!ogs_yaml_iter_next(&mme_gid_iter))
                                             break;
                                     }
 
-                                    v = yaml_iter_value(&mme_gid_iter);
+                                    v = ogs_yaml_iter_value(&mme_gid_iter);
                                     if (v) 
                                     {
                                         *mme_gid = atoi(v);
                                         gummei->num_of_mme_gid++;
                                     }
                                 } while(
-                                    yaml_iter_type(&mme_gid_iter) ==
+                                    ogs_yaml_iter_type(&mme_gid_iter) ==
                                         YAML_SEQUENCE_NODE);
                             }
                             else if (!strcmp(gummei_key, "mme_code"))
                             {
-                                yaml_iter_t mme_code_iter;
-                                yaml_iter_recurse(&gummei_iter, &mme_code_iter);
-                                d_assert(yaml_iter_type(&mme_code_iter) !=
-                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+                                ogs_yaml_iter_t mme_code_iter;
+                                ogs_yaml_iter_recurse(&gummei_iter, &mme_code_iter);
+                                ogs_assert(ogs_yaml_iter_type(&mme_code_iter) !=
+                                    YAML_MAPPING_NODE);
 
                                 do
                                 {
-                                    c_uint8_t *mme_code = NULL;
+                                    uint8_t *mme_code = NULL;
                                     const char *v = NULL;
 
-                                    d_assert(gummei->num_of_mme_code <=
-                                            CODE_PER_MME, return CORE_ERROR,);
+                                    ogs_assert(gummei->num_of_mme_code <=
+                                            CODE_PER_MME);
                                     mme_code = &gummei->mme_code[
                                         gummei->num_of_mme_code];
-                                    d_assert(mme_code, return CORE_ERROR,);
+                                    ogs_assert(mme_code);
 
-                                    if (yaml_iter_type(&mme_code_iter) ==
+                                    if (ogs_yaml_iter_type(&mme_code_iter) ==
                                             YAML_SEQUENCE_NODE)
                                     {
-                                        if (!yaml_iter_next(&mme_code_iter))
+                                        if (!ogs_yaml_iter_next(&mme_code_iter))
                                             break;
                                     }
 
-                                    v = yaml_iter_value(&mme_code_iter);
+                                    v = ogs_yaml_iter_value(&mme_code_iter);
                                     if (v) 
                                     {
                                         *mme_code = atoi(v);
                                         gummei->num_of_mme_code++;
                                     }
                                 } while(
-                                    yaml_iter_type(&mme_code_iter) ==
+                                    ogs_yaml_iter_type(&mme_code_iter) ==
                                         YAML_SEQUENCE_NODE);
                             }
                             else
-                                d_warn("unknown key `%s`", gummei_key);
+                                ogs_warn("unknown key `%s`", gummei_key);
                         }
 
                         if (gummei->num_of_plmn_id &&
@@ -939,7 +929,7 @@ status_t mme_context_parse_config()
                         }
                         else
                         {
-                            d_warn("Ignore gummei : "
+                            ogs_warn("Ignore gummei : "
                                     "plmn_id(%d), mme_gid(%d), mme_code(%d)",
                                 gummei->num_of_plmn_id,
                                 gummei->num_of_mme_gid, gummei->num_of_mme_code);
@@ -947,7 +937,7 @@ status_t mme_context_parse_config()
                             gummei->num_of_mme_gid = 0;
                             gummei->num_of_mme_code = 0;
                         }
-                    } while(yaml_iter_type(&gummei_array) ==
+                    } while(ogs_yaml_iter_type(&gummei_array) ==
                             YAML_SEQUENCE_NODE);
                 }
                 else if (!strcmp(mme_key, "tai"))
@@ -956,97 +946,96 @@ status_t mme_context_parse_config()
                     tai0_list_t *list0 = NULL;
                     tai2_list_t *list2 = NULL;
 
-                    d_assert(self.num_of_served_tai <=
-                            MAX_NUM_OF_SERVED_TAI, return CORE_ERROR,);
+                    ogs_assert(self.num_of_served_tai <=
+                            MAX_NUM_OF_SERVED_TAI);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
-                    d_assert(list0, return CORE_ERROR,);
+                    ogs_assert(list0);
                     list2 = &self.served_tai[self.num_of_served_tai].list2;
-                    d_assert(list2, return CORE_ERROR,);
+                    ogs_assert(list2);
 
-                    yaml_iter_t tai_array, tai_iter;
-                    yaml_iter_recurse(&mme_iter, &tai_array);
+                    ogs_yaml_iter_t tai_array, tai_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &tai_array);
                     do
                     {
                         const char *mcc = NULL, *mnc = NULL;
-                        c_uint16_t tac[MAX_NUM_OF_TAI];
+                        uint16_t tac[MAX_NUM_OF_TAI];
                         int num_of_tac = 0;
 
-                        if (yaml_iter_type(&tai_array) == YAML_MAPPING_NODE)
+                        if (ogs_yaml_iter_type(&tai_array) == YAML_MAPPING_NODE)
                         {
-                            memcpy(&tai_iter, &tai_array, sizeof(yaml_iter_t));
+                            memcpy(&tai_iter, &tai_array, sizeof(ogs_yaml_iter_t));
                         }
-                        else if (yaml_iter_type(&tai_array) ==
+                        else if (ogs_yaml_iter_type(&tai_array) ==
                             YAML_SEQUENCE_NODE)
                         {
-                            if (!yaml_iter_next(&tai_array))
+                            if (!ogs_yaml_iter_next(&tai_array))
                                 break;
-                            yaml_iter_recurse(&tai_array,
+                            ogs_yaml_iter_recurse(&tai_array,
                                     &tai_iter);
                         }
-                        else if (yaml_iter_type(&tai_array) == YAML_SCALAR_NODE)
+                        else if (ogs_yaml_iter_type(&tai_array) == YAML_SCALAR_NODE)
                         {
                             break;
                         }
                         else
-                            d_assert(0, return CORE_ERROR,);
+                            ogs_assert_if_reached();
 
-                        while(yaml_iter_next(&tai_iter))
+                        while(ogs_yaml_iter_next(&tai_iter))
                         {
-                            const char *tai_key = yaml_iter_key(&tai_iter);
-                            d_assert(tai_key, return CORE_ERROR,);
+                            const char *tai_key = ogs_yaml_iter_key(&tai_iter);
+                            ogs_assert(tai_key);
                             if (!strcmp(tai_key, "plmn_id"))
                             {
-                                yaml_iter_t plmn_id_iter;
+                                ogs_yaml_iter_t plmn_id_iter;
 
-                                yaml_iter_recurse(&tai_iter, &plmn_id_iter);
-                                while(yaml_iter_next(&plmn_id_iter))
+                                ogs_yaml_iter_recurse(&tai_iter, &plmn_id_iter);
+                                while(ogs_yaml_iter_next(&plmn_id_iter))
                                 {
                                     const char *plmn_id_key =
-                                        yaml_iter_key(&plmn_id_iter);
-                                    d_assert(plmn_id_key,
-                                            return CORE_ERROR,);
+                                        ogs_yaml_iter_key(&plmn_id_iter);
+                                    ogs_assert(plmn_id_key);
                                     if (!strcmp(plmn_id_key, "mcc"))
                                     {
-                                        mcc = yaml_iter_value(&plmn_id_iter);
+                                        mcc = ogs_yaml_iter_value(&plmn_id_iter);
                                     }
                                     else if (!strcmp(plmn_id_key, "mnc"))
                                     {
-                                        mnc = yaml_iter_value(&plmn_id_iter);
+                                        mnc = ogs_yaml_iter_value(&plmn_id_iter);
                                     }
                                 }
                             }
                             else if (!strcmp(tai_key, "tac"))
                             {
-                                yaml_iter_t tac_iter;
-                                yaml_iter_recurse(&tai_iter, &tac_iter);
-                                d_assert(yaml_iter_type(&tac_iter) !=
-                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+                                ogs_yaml_iter_t tac_iter;
+                                ogs_yaml_iter_recurse(&tai_iter, &tac_iter);
+                                ogs_assert(ogs_yaml_iter_type(&tac_iter) !=
+                                    YAML_MAPPING_NODE);
 
                                 do
                                 {
                                     const char *v = NULL;
 
-                                    d_assert(num_of_tac <=
-                                            MAX_NUM_OF_TAI, return CORE_ERROR,);
-                                    if (yaml_iter_type(&tac_iter) ==
+                                    ogs_assert(num_of_tac <=
+                                            MAX_NUM_OF_TAI);
+                                    if (ogs_yaml_iter_type(&tac_iter) ==
                                             YAML_SEQUENCE_NODE)
                                     {
-                                        if (!yaml_iter_next(&tac_iter))
+                                        if (!ogs_yaml_iter_next(&tac_iter))
                                             break;
                                     }
 
-                                    v = yaml_iter_value(&tac_iter);
+                                    v = ogs_yaml_iter_value(&tac_iter);
                                     if (v) 
                                     {
                                         tac[num_of_tac] = atoi(v);
                                         num_of_tac++;
                                     }
                                 } while(
-                                    yaml_iter_type(&tac_iter) ==
+                                    ogs_yaml_iter_type(&tac_iter) ==
                                         YAML_SEQUENCE_NODE);
                             }
                             else
-                                d_warn("unknown key `%s`", tai_key);
+                                ogs_warn("unknown key `%s`", tai_key);
                         }
 
                         if (mcc && mnc && num_of_tac)
@@ -1083,10 +1072,10 @@ status_t mme_context_parse_config()
                         }
                         else
                         {
-                            d_warn("Ignore tai : mcc(%p), mnc(%p), "
+                            ogs_warn("Ignore tai : mcc(%p), mnc(%p), "
                                     "num_of_tac(%d)", mcc, mnc, num_of_tac);
                         }
-                    } while(yaml_iter_type(&tai_array) ==
+                    } while(ogs_yaml_iter_type(&tai_array) ==
                             YAML_SEQUENCE_NODE);
 
                     if (list2->num || num_of_list0)
@@ -1096,33 +1085,33 @@ status_t mme_context_parse_config()
                 }
                 else if (!strcmp(mme_key, "security"))
                 {
-                    yaml_iter_t security_iter;
-                    yaml_iter_recurse(&mme_iter, &security_iter);
-                    while(yaml_iter_next(&security_iter))
+                    ogs_yaml_iter_t security_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &security_iter);
+                    while(ogs_yaml_iter_next(&security_iter))
                     {
                         const char *security_key =
-                            yaml_iter_key(&security_iter);
-                        d_assert(security_key, return CORE_ERROR,);
+                            ogs_yaml_iter_key(&security_iter);
+                        ogs_assert(security_key);
                         if (!strcmp(security_key, "integrity_order"))
                         {
-                            yaml_iter_t integrity_order_iter;
-                            yaml_iter_recurse(&security_iter,
+                            ogs_yaml_iter_t integrity_order_iter;
+                            ogs_yaml_iter_recurse(&security_iter,
                                     &integrity_order_iter);
-                            d_assert(yaml_iter_type(&integrity_order_iter) !=
-                                YAML_MAPPING_NODE, return CORE_ERROR,);
+                            ogs_assert(ogs_yaml_iter_type(&integrity_order_iter) !=
+                                YAML_MAPPING_NODE);
 
                             do
                             {
                                 const char *v = NULL;
 
-                                if (yaml_iter_type(&integrity_order_iter) ==
+                                if (ogs_yaml_iter_type(&integrity_order_iter) ==
                                         YAML_SEQUENCE_NODE)
                                 {
-                                    if (!yaml_iter_next(&integrity_order_iter))
+                                    if (!ogs_yaml_iter_next(&integrity_order_iter))
                                         break;
                                 }
 
-                                v = yaml_iter_value(&integrity_order_iter);
+                                v = ogs_yaml_iter_value(&integrity_order_iter);
                                 if (v) 
                                 {
                                     int integrity_index = 
@@ -1153,29 +1142,29 @@ status_t mme_context_parse_config()
                                     }
                                 }
                             } while(
-                                yaml_iter_type(&integrity_order_iter) ==
+                                ogs_yaml_iter_type(&integrity_order_iter) ==
                                     YAML_SEQUENCE_NODE);
                         }
                         else if (!strcmp(security_key, "ciphering_order"))
                         {
-                            yaml_iter_t ciphering_order_iter;
-                            yaml_iter_recurse(&security_iter,
+                            ogs_yaml_iter_t ciphering_order_iter;
+                            ogs_yaml_iter_recurse(&security_iter,
                                     &ciphering_order_iter);
-                            d_assert(yaml_iter_type(&ciphering_order_iter) !=
-                                YAML_MAPPING_NODE, return CORE_ERROR,);
+                            ogs_assert(ogs_yaml_iter_type(&ciphering_order_iter) !=
+                                YAML_MAPPING_NODE);
 
                             do
                             {
                                 const char *v = NULL;
 
-                                if (yaml_iter_type(&ciphering_order_iter) ==
+                                if (ogs_yaml_iter_type(&ciphering_order_iter) ==
                                         YAML_SEQUENCE_NODE)
                                 {
-                                    if (!yaml_iter_next(&ciphering_order_iter))
+                                    if (!ogs_yaml_iter_next(&ciphering_order_iter))
                                         break;
                                 }
 
-                                v = yaml_iter_value(&ciphering_order_iter);
+                                v = ogs_yaml_iter_value(&ciphering_order_iter);
                                 if (v) 
                                 {
                                     int ciphering_index = 
@@ -1206,30 +1195,29 @@ status_t mme_context_parse_config()
                                     }
                                 }
                             } while(
-                                yaml_iter_type(&ciphering_order_iter) ==
+                                ogs_yaml_iter_type(&ciphering_order_iter) ==
                                     YAML_SEQUENCE_NODE);
                         }
                     }
                 }
                 else if(!strcmp(mme_key, "network_name"))
                 {
-                    yaml_iter_t network_name_iter;
-                    yaml_iter_recurse(&mme_iter, &network_name_iter);
+                    ogs_yaml_iter_t network_name_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &network_name_iter);
 
-                    while(yaml_iter_next(&network_name_iter))
+                    while(ogs_yaml_iter_next(&network_name_iter))
                     {
                         const char *network_name_key =
-                        yaml_iter_key(&network_name_iter);
-                        d_assert(network_name_key,
-                                    return CORE_ERROR,);
+                        ogs_yaml_iter_key(&network_name_iter);
+                        ogs_assert(network_name_key);
                         if (!strcmp(network_name_key, "full"))
                         {  
                             nas_network_name_t *network_full_name =
                                 &self.full_name;
                             const char *c_network_name =
-                                yaml_iter_value(&network_name_iter);
-                            c_uint8_t size = strlen(c_network_name);
-                            c_uint8_t i;
+                                ogs_yaml_iter_value(&network_name_iter);
+                            uint8_t size = strlen(c_network_name);
+                            uint8_t i;
                             for(i = 0;i<size;i++)
                             {
                                 /* Workaround to convert the ASCII to USC-2 */
@@ -1246,9 +1234,9 @@ status_t mme_context_parse_config()
                             nas_network_name_t *network_short_name =
                                 &self.short_name;
                             const char *c_network_name =
-                                yaml_iter_value(&network_name_iter);
-                            c_uint8_t size = strlen(c_network_name);
-                            c_uint8_t i;
+                                ogs_yaml_iter_value(&network_name_iter);
+                            uint8_t size = strlen(c_network_name);
+                            uint8_t i;
                             for(i = 0;i<size;i++)
                             {
                                 /* Workaround to convert the ASCII to USC-2 */
@@ -1263,64 +1251,65 @@ status_t mme_context_parse_config()
                     }
                 }
                 else
-                    d_warn("unknown key `%s`", mme_key);
+                    ogs_warn("unknown key `%s`", mme_key);
             }
         }
         else if (!strcmp(root_key, "sgw"))
         {
-            yaml_iter_t mme_iter;
-            yaml_iter_recurse(&root_iter, &mme_iter);
-            while(yaml_iter_next(&mme_iter))
+            ogs_yaml_iter_t mme_iter;
+            ogs_yaml_iter_recurse(&root_iter, &mme_iter);
+            while(ogs_yaml_iter_next(&mme_iter))
             {
-                const char *mme_key = yaml_iter_key(&mme_iter);
-                d_assert(mme_key, return CORE_ERROR,);
+                const char *mme_key = ogs_yaml_iter_key(&mme_iter);
+                ogs_assert(mme_key);
                 if (!strcmp(mme_key, "gtpc"))
                 {
-                    yaml_iter_t gtpc_array, gtpc_iter;
-                    yaml_iter_recurse(&mme_iter, &gtpc_array);
+                    ogs_yaml_iter_t gtpc_array, gtpc_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &gtpc_array);
                     do
                     {
-                        gtp_node_t *sgw = NULL;
-                        c_sockaddr_t *list = NULL;
+                        mme_sgw_t *sgw = NULL;
+                        ogs_sockaddr_t *list = NULL;
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
-                        c_uint16_t port = self.gtpc_port;
+                        uint16_t port = self.gtpc_port;
+                        uint16_t tac[MAX_NUM_OF_TAI] = {0,};
+                        uint8_t num_of_tac = 0;
 
-                        if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
+                        if (ogs_yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
                         {
                             memcpy(&gtpc_iter, &gtpc_array,
-                                    sizeof(yaml_iter_t));
+                                    sizeof(ogs_yaml_iter_t));
                         }
-                        else if (yaml_iter_type(&gtpc_array) ==
+                        else if (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SEQUENCE_NODE)
                         {
-                            if (!yaml_iter_next(&gtpc_array))
+                            if (!ogs_yaml_iter_next(&gtpc_array))
                                 break;
-                            yaml_iter_recurse(&gtpc_array, &gtpc_iter);
+                            ogs_yaml_iter_recurse(&gtpc_array, &gtpc_iter);
                         }
-                        else if (yaml_iter_type(&gtpc_array) ==
+                        else if (ogs_yaml_iter_type(&gtpc_array) ==
                                 YAML_SCALAR_NODE)
                         {
                             break;
                         }
                         else
-                            d_assert(0, return CORE_ERROR,);
+                            ogs_assert_if_reached();
 
-                        while(yaml_iter_next(&gtpc_iter))
+                        while(ogs_yaml_iter_next(&gtpc_iter))
                         {
                             const char *gtpc_key =
-                                yaml_iter_key(&gtpc_iter);
-                            d_assert(gtpc_key,
-                                    return CORE_ERROR,);
+                                ogs_yaml_iter_key(&gtpc_iter);
+                            ogs_assert(gtpc_key);
                             if (!strcmp(gtpc_key, "family"))
                             {
-                                const char *v = yaml_iter_value(&gtpc_iter);
+                                const char *v = ogs_yaml_iter_value(&gtpc_iter);
                                 if (v) family = atoi(v);
                                 if (family != AF_UNSPEC &&
                                     family != AF_INET && family != AF_INET6)
                                 {
-                                    d_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                    ogs_warn("Ignore family(%d) : AF_UNSPEC(%d), "
                                         "AF_INET(%d), AF_INET6(%d) ", 
                                         family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;
@@ -1329,112 +1318,157 @@ status_t mme_context_parse_config()
                             else if (!strcmp(gtpc_key, "addr") ||
                                     !strcmp(gtpc_key, "name"))
                             {
-                                yaml_iter_t hostname_iter;
-                                yaml_iter_recurse(&gtpc_iter, &hostname_iter);
-                                d_assert(yaml_iter_type(&hostname_iter) !=
-                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+                                ogs_yaml_iter_t hostname_iter;
+                                ogs_yaml_iter_recurse(&gtpc_iter, &hostname_iter);
+                                ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE);
 
                                 do
                                 {
-                                    if (yaml_iter_type(&hostname_iter) ==
+                                    if (ogs_yaml_iter_type(&hostname_iter) ==
                                             YAML_SEQUENCE_NODE)
                                     {
-                                        if (!yaml_iter_next(&hostname_iter))
+                                        if (!ogs_yaml_iter_next(&hostname_iter))
                                             break;
                                     }
 
-                                    d_assert(num <= MAX_NUM_OF_HOSTNAME,
-                                            return CORE_ERROR,);
+                                    ogs_assert(num <= MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] = 
-                                        yaml_iter_value(&hostname_iter);
+                                        ogs_yaml_iter_value(&hostname_iter);
                                 } while(
-                                    yaml_iter_type(&hostname_iter) ==
+                                    ogs_yaml_iter_type(&hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
                             }
                             else if (!strcmp(gtpc_key, "port"))
                             {
-                                const char *v = yaml_iter_value(&gtpc_iter);
+                                const char *v = ogs_yaml_iter_value(&gtpc_iter);
                                 if (v) port = atoi(v);
                             }
+                            else if (!strcmp(gtpc_key, "tac"))
+                            {
+                                ogs_yaml_iter_t tac_iter;
+                                ogs_yaml_iter_recurse(&gtpc_iter, &tac_iter);
+                                ogs_assert(ogs_yaml_iter_type(&tac_iter) !=
+                                    YAML_MAPPING_NODE);
+
+                                do
+                                {
+                                    const char *v = NULL;
+
+                                    ogs_assert(num_of_tac <=
+                                            MAX_NUM_OF_TAI);
+                                    if (ogs_yaml_iter_type(&tac_iter) ==
+                                            YAML_SEQUENCE_NODE)
+                                    {
+                                        if (!ogs_yaml_iter_next(&tac_iter))
+                                            break;
+                                    }
+
+                                    v = ogs_yaml_iter_value(&tac_iter);
+                                    if (v) 
+                                    {
+                                        tac[num_of_tac] = atoi(v);
+                                        num_of_tac++;
+                                    }
+                                } while(
+                                    ogs_yaml_iter_type(&tac_iter) ==
+                                        YAML_SEQUENCE_NODE);
+                            }
                             else
-                                d_warn("unknown key `%s`", gtpc_key);
+                                ogs_warn("unknown key `%s`", gtpc_key);
                         }
 
                         list = NULL;
                         for (i = 0; i < num; i++)
                         {
-                            rv = core_addaddrinfo(&list,
+                            rv = ogs_addaddrinfo(&list,
                                     family, hostname[i], port, 0);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            ogs_assert(rv == OGS_OK);
                         }
 
-                        rv = gtp_add_node(&self.sgw_list, &sgw, list,
-                                context_self()->parameter.no_ipv4,
-                                context_self()->parameter.no_ipv6,
-                                context_self()->parameter.prefer_ipv4);
-                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        sgw = mme_sgw_add(list,
+                                context_self()->config.parameter.no_ipv4,
+                                context_self()->config.parameter.no_ipv6,
+                                context_self()->config.parameter.prefer_ipv4);
+                        ogs_assert(sgw);
 
-                        core_freeaddrinfo(list);
+                        sgw->num_of_tac = num_of_tac;
+                        if (num_of_tac != 0)
+                            memcpy(sgw->tac, tac, sizeof(sgw->tac));
 
-                    } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
+                        ogs_freeaddrinfo(list);
+
+                    } while(ogs_yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
+                }
+                else if(!strcmp(mme_key, "selection_mode"))
+                {
+                    const char *selection_mode =
+                    ogs_yaml_iter_value(&mme_iter);
+
+                    if (!strcmp(selection_mode, "rr"))
+                        self.sgw_selection = SGW_SELECT_RR;
+                    else if (!strcmp(selection_mode, "tac"))
+                        self.sgw_selection = SGW_SELECT_TAC;
+                    else
+                        ogs_warn("unknown sgw_selection mode `%s`",
+                                selection_mode);
                 }
             }
         }
         else if (!strcmp(root_key, "pgw"))
         {
-            yaml_iter_t mme_iter;
-            yaml_iter_recurse(&root_iter, &mme_iter);
-            while(yaml_iter_next(&mme_iter))
+            ogs_yaml_iter_t mme_iter;
+            ogs_yaml_iter_recurse(&root_iter, &mme_iter);
+            while(ogs_yaml_iter_next(&mme_iter))
             {
-                const char *mme_key = yaml_iter_key(&mme_iter);
-                d_assert(mme_key, return CORE_ERROR,);
+                const char *mme_key = ogs_yaml_iter_key(&mme_iter);
+                ogs_assert(mme_key);
                 if (!strcmp(mme_key, "gtpc"))
                 {
-                    yaml_iter_t gtpc_array, gtpc_iter;
-                    yaml_iter_recurse(&mme_iter, &gtpc_array);
+                    ogs_yaml_iter_t gtpc_array, gtpc_iter;
+                    ogs_yaml_iter_recurse(&mme_iter, &gtpc_array);
                     do
                     {
-                        gtp_node_t *pgw = NULL;
-                        c_sockaddr_t *list = NULL;
+                        mme_pgw_t *pgw = NULL;
+                        ogs_sockaddr_t *list = NULL;
                         int family = AF_UNSPEC;
                         int i, num = 0;
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
-                        c_uint16_t port = self.gtpc_port;
+                        uint16_t port = self.gtpc_port;
 
-                        if (yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
+                        if (ogs_yaml_iter_type(&gtpc_array) == YAML_MAPPING_NODE)
                         {
                             memcpy(&gtpc_iter, &gtpc_array,
-                                    sizeof(yaml_iter_t));
+                                    sizeof(ogs_yaml_iter_t));
                         }
-                        else if (yaml_iter_type(&gtpc_array) ==
+                        else if (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SEQUENCE_NODE)
                         {
-                            if (!yaml_iter_next(&gtpc_array))
+                            if (!ogs_yaml_iter_next(&gtpc_array))
                                 break;
-                            yaml_iter_recurse(&gtpc_array, &gtpc_iter);
+                            ogs_yaml_iter_recurse(&gtpc_array, &gtpc_iter);
                         }
-                        else if (yaml_iter_type(&gtpc_array) ==
+                        else if (ogs_yaml_iter_type(&gtpc_array) ==
                                 YAML_SCALAR_NODE)
                         {
                             break;
                         }
                         else
-                            d_assert(0, return CORE_ERROR,);
+                            ogs_assert_if_reached();
 
-                        while(yaml_iter_next(&gtpc_iter))
+                        while(ogs_yaml_iter_next(&gtpc_iter))
                         {
                             const char *gtpc_key =
-                                yaml_iter_key(&gtpc_iter);
-                            d_assert(gtpc_key,
-                                    return CORE_ERROR,);
+                                ogs_yaml_iter_key(&gtpc_iter);
+                            ogs_assert(gtpc_key);
                             if (!strcmp(gtpc_key, "family"))
                             {
-                                const char *v = yaml_iter_value(&gtpc_iter);
+                                const char *v = ogs_yaml_iter_value(&gtpc_iter);
                                 if (v) family = atoi(v);
                                 if (family != AF_UNSPEC &&
                                     family != AF_INET && family != AF_INET6)
                                 {
-                                    d_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                    ogs_warn("Ignore family(%d) : AF_UNSPEC(%d), "
                                         "AF_INET(%d), AF_INET6(%d) ", 
                                         family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;
@@ -1443,309 +1477,303 @@ status_t mme_context_parse_config()
                             else if (!strcmp(gtpc_key, "addr") ||
                                     !strcmp(gtpc_key, "name"))
                             {
-                                yaml_iter_t hostname_iter;
-                                yaml_iter_recurse(&gtpc_iter, &hostname_iter);
-                                d_assert(yaml_iter_type(&hostname_iter) !=
-                                    YAML_MAPPING_NODE, return CORE_ERROR,);
+                                ogs_yaml_iter_t hostname_iter;
+                                ogs_yaml_iter_recurse(&gtpc_iter, &hostname_iter);
+                                ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
+                                    YAML_MAPPING_NODE);
 
                                 do
                                 {
-                                    if (yaml_iter_type(&hostname_iter) ==
+                                    if (ogs_yaml_iter_type(&hostname_iter) ==
                                             YAML_SEQUENCE_NODE)
                                     {
-                                        if (!yaml_iter_next(&hostname_iter))
+                                        if (!ogs_yaml_iter_next(&hostname_iter))
                                             break;
                                     }
 
-                                    d_assert(num <= MAX_NUM_OF_HOSTNAME,
-                                            return CORE_ERROR,);
+                                    ogs_assert(num <= MAX_NUM_OF_HOSTNAME);
                                     hostname[num++] = 
-                                        yaml_iter_value(&hostname_iter);
+                                        ogs_yaml_iter_value(&hostname_iter);
                                 } while(
-                                    yaml_iter_type(&hostname_iter) ==
+                                    ogs_yaml_iter_type(&hostname_iter) ==
                                         YAML_SEQUENCE_NODE);
                             }
                             else if (!strcmp(gtpc_key, "port"))
                             {
-                                const char *v = yaml_iter_value(&gtpc_iter);
+                                const char *v = ogs_yaml_iter_value(&gtpc_iter);
                                 if (v) port = atoi(v);
                             }
                             else
-                                d_warn("unknown key `%s`", gtpc_key);
+                                ogs_warn("unknown key `%s`", gtpc_key);
                         }
 
                         list = NULL;
                         for (i = 0; i < num; i++)
                         {
-                            rv = core_addaddrinfo(&list,
+                            rv = ogs_addaddrinfo(&list,
                                     family, hostname[i], port, 0);
-                            d_assert(rv == CORE_OK, return CORE_ERROR,);
+                            ogs_assert(rv == OGS_OK);
                         }
 
-                        rv = gtp_add_node(&self.pgw_list, &pgw, list,
-                                context_self()->parameter.no_ipv4,
-                                context_self()->parameter.no_ipv6,
-                                context_self()->parameter.prefer_ipv4);
-                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        pgw = mme_pgw_add(list,
+                                context_self()->config.parameter.no_ipv4,
+                                context_self()->config.parameter.no_ipv6,
+                                context_self()->config.parameter.prefer_ipv4);
+                        ogs_assert(pgw);
 
-                        core_freeaddrinfo(list);
+                        ogs_freeaddrinfo(list);
 
-                    } while(yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
+                    } while(ogs_yaml_iter_type(&gtpc_array) == YAML_SEQUENCE_NODE);
                 }
             }
         }
     }
 
     rv = mme_context_validation();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_context_setup_trace_module()
+mme_sgw_t *mme_sgw_add(
+        ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
 {
-    int app = context_self()->logger.trace.app;
-    int s1ap = context_self()->logger.trace.s1ap;
-    int nas = context_self()->logger.trace.nas;
-    int diameter = context_self()->logger.trace.diameter;
-    int gtpv2 = context_self()->logger.trace.gtpv2;
+    int rv;
+    mme_sgw_t *sgw = NULL;
 
-    if (app)
+    ogs_assert(all_list);
+
+    ogs_pool_alloc(&mme_sgw_pool, &sgw);
+    ogs_assert(sgw);
+    memset(sgw, 0, sizeof *sgw);
+
+    rv = gtp_create_node(&sgw->gnode, all_list, no_ipv4, no_ipv6, prefer_ipv4);
+    ogs_assert(rv == OGS_OK);
+    if (sgw->gnode == NULL)
     {
-        extern int _mme_context;
-        d_trace_level(&_mme_context, app);
-        extern int _mme_sm;
-        d_trace_level(&_mme_sm, app);
+        ogs_error("Invalid Parameter : "
+                "no_ipv4[%d], no_ipv6[%d], prefer_ipv4[%d]",
+                no_ipv4, no_ipv6, prefer_ipv4);
+        return NULL;
     }
 
-    if (s1ap)
-    {
-        extern int _s1ap_sm;
-        d_trace_level(&_s1ap_sm, s1ap);
-        extern int _s1ap_build;
-        d_trace_level(&_s1ap_build, s1ap);
-        extern int _s1ap_conv;
-        d_trace_level(&_s1ap_conv, s1ap);
-        extern int _s1ap_handler;
-        d_trace_level(&_s1ap_handler, s1ap);
-        extern int _s1ap_sctp;
-        d_trace_level(&_s1ap_sctp, s1ap);
-        extern int _s1ap_path;
-        d_trace_level(&_s1ap_path, s1ap);
-        extern int _s1ap_decoder;
-        d_trace_level(&_s1ap_decoder, s1ap);
-        extern int _s1ap_encoder;
-        d_trace_level(&_s1ap_encoder, s1ap);
-    }
+    ogs_list_add(&self.sgw_list, sgw);
 
-    if (nas)
-    {
-        extern int _emm_sm;
-        d_trace_level(&_emm_sm, nas);
-        extern int _esm_sm;
-        d_trace_level(&_esm_sm, nas);
-        extern int _emm_build;
-        d_trace_level(&_emm_build, nas);
-        extern int _esm_build;
-        d_trace_level(&_esm_build, nas);
-        extern int _emm_handler;
-        d_trace_level(&_emm_handler, nas);
-        extern int _esm_handler;
-        d_trace_level(&_esm_handler, nas);
-        extern int _nas_path;
-        d_trace_level(&_nas_path, nas);
-        extern int _nas_decoder;
-        d_trace_level(&_nas_decoder, nas);
-        extern int _nas_encoder;
-        d_trace_level(&_nas_encoder, nas);
-        extern int _nas_ies;
-        d_trace_level(&_nas_ies, nas);
-    }
-
-    if (diameter)
-    {
-        extern int _mme_fd_path;
-        d_trace_level(&_mme_fd_path, diameter);
-        extern int _fd_init;
-        d_trace_level(&_fd_init, diameter);
-        extern int _fd_logger;
-        d_trace_level(&_fd_logger, diameter);
-    }
-
-    if (gtpv2)
-    {
-        extern int _mme_s11_handler;
-        d_trace_level(&_mme_s11_handler, gtpv2);
-        extern int _mme_gtp_path;
-        d_trace_level(&_mme_gtp_path, gtpv2);
-
-        extern int _gtp_node;
-        d_trace_level(&_gtp_node, gtpv2);
-        extern int _gtp_message;
-        d_trace_level(&_gtp_message, gtpv2);
-        extern int _gtp_path;
-        d_trace_level(&_gtp_path, gtpv2);
-        extern int _gtp_xact;
-        d_trace_level(&_gtp_xact, gtpv2);
-
-        extern int _tlv_msg;
-        d_trace_level(&_tlv_msg, gtpv2);
-    }
-
-    return CORE_OK;
+    return sgw;
 }
 
-mme_enb_t* mme_enb_add(sock_id sock, c_sockaddr_t *addr)
+int mme_sgw_remove(mme_sgw_t *sgw)
+{
+    int rv;
+    ogs_assert(sgw);
+
+    ogs_list_remove(&self.sgw_list, sgw);
+
+    rv = gtp_delete_node(sgw->gnode);
+    ogs_assert(rv == OGS_OK);
+
+    ogs_pool_free(&mme_sgw_pool, sgw);
+
+    return OGS_OK;
+}
+
+void mme_sgw_remove_all()
+{
+    mme_sgw_t *sgw = NULL, *next_sgw = NULL;
+
+    ogs_list_for_each_safe(&self.sgw_list, next_sgw, sgw)
+        mme_sgw_remove(sgw);
+}
+
+mme_pgw_t *mme_pgw_add(
+        ogs_sockaddr_t *all_list, int no_ipv4, int no_ipv6, int prefer_ipv4)
+{
+    int rv;
+    mme_pgw_t *pgw = NULL;
+
+    ogs_assert(all_list);
+
+    ogs_pool_alloc(&mme_pgw_pool, &pgw);
+    ogs_assert(pgw);
+
+    rv = gtp_create_node(&pgw->gnode, all_list, no_ipv4, no_ipv6, prefer_ipv4);
+    ogs_assert(rv == OGS_OK);
+    if (pgw->gnode == NULL)
+    {
+        ogs_error("Invalid Parameter : "
+                "no_ipv4[%d], no_ipv6[%d], prefer_ipv4[%d]",
+                no_ipv4, no_ipv6, prefer_ipv4);
+        return NULL;
+    }
+
+    ogs_list_add(&self.pgw_list, pgw);
+
+    return pgw;
+}
+
+int mme_pgw_remove(mme_pgw_t *pgw)
+{
+    int rv;
+    ogs_assert(pgw);
+
+    ogs_list_remove(&self.pgw_list, pgw);
+
+    rv = gtp_delete_node(pgw->gnode);
+    ogs_assert(rv == OGS_OK);
+
+    ogs_pool_free(&mme_pgw_pool, pgw);
+
+    return OGS_OK;
+}
+
+void mme_pgw_remove_all()
+{
+    mme_pgw_t *pgw = NULL, *next_pgw = NULL;
+
+    ogs_list_for_each_safe(&self.pgw_list, next_pgw, pgw)
+        mme_pgw_remove(pgw);
+}
+
+mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 {
     mme_enb_t *enb = NULL;
-    event_t e;
+    mme_event_t e;
 
-    d_assert(sock, return NULL,);
-    d_assert(addr, return NULL,);
+    ogs_assert(sock);
+    ogs_assert(addr);
 
-    index_alloc(&mme_enb_pool, &enb);
-    d_assert(enb, return NULL, "Null param");
+    ogs_pool_alloc(&mme_enb_pool, &enb);
+    ogs_assert(enb);
 
     enb->sock = sock;
     enb->addr = addr;
     enb->sock_type = mme_enb_sock_type(enb->sock);
 
-    list_init(&enb->enb_ue_list);
+    enb->outbound_streams = context_self()->config.parameter.sctp_streams;
 
-    hash_set(self.enb_sock_hash, &enb->sock, sizeof(enb->sock), enb);
-    hash_set(self.enb_addr_hash, enb->addr, sizeof(c_sockaddr_t), enb);
+    ogs_list_init(&enb->enb_ue_list);
+
+    ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), enb);
+    ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), enb);
+
+#if HAVE_USRSCTP != 1
+    enb->poll = ogs_pollset_add(mme_self()->pollset,
+        OGS_POLLIN, sock->fd, s1ap_recv_handler, sock);
+    ogs_assert(enb->poll);
+#endif
     
-    event_set_param1(&e, (c_uintptr_t)enb->index);
-    fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
-    fsm_init(&enb->sm, &e);
+    e.enb = enb;
+    ogs_fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
+    ogs_fsm_init(&enb->sm, &e);
 
     return enb;
 }
 
-status_t mme_enb_remove(mme_enb_t *enb)
+int mme_enb_remove(mme_enb_t *enb)
 {
-    event_t e;
+    mme_event_t e;
 
-    d_assert(enb, return CORE_ERROR, "Null param");
-    d_assert(enb->sock, return CORE_ERROR, "Null param");
+    ogs_assert(enb);
+    ogs_assert(enb->sock);
 
-    event_set_param1(&e, (c_uintptr_t)enb->index);
-    fsm_final(&enb->sm, &e);
-    fsm_clear(&enb->sm);
+    e.enb = enb;
+    ogs_fsm_fini(&enb->sm, &e);
+    ogs_fsm_delete(&enb->sm);
 
-    hash_set(self.enb_sock_hash, &enb->sock, sizeof(enb->sock), NULL);
-    hash_set(self.enb_addr_hash, enb->addr, sizeof(c_sockaddr_t), NULL);
-    if (enb->enb_id)
-        hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
+    ogs_hash_set(self.enb_sock_hash, enb->sock, sizeof(ogs_sock_t), NULL);
+    ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), NULL);
+    ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), NULL);
 
     enb_ue_remove_in_enb(enb);
 
-#ifdef NO_FD_LOCK
-#else
-#error do not use lock in socket fd
-    if (enb->sock_type == SOCK_STREAM)
-        s1ap_delete(enb->sock);
+#if HAVE_USRSCTP != 1
+    ogs_pollset_remove(enb->poll);
 #endif
-    CORE_FREE(enb->addr);
 
-    index_free(&mme_enb_pool, enb);
+    if (enb->sock_type == SOCK_STREAM)
+        s1ap_closesocket(enb->sock);
 
-    return CORE_OK;
+    ogs_free(enb->addr);
+
+    ogs_pool_free(&mme_enb_pool, enb);
+
+    return OGS_OK;
 }
 
-status_t mme_enb_remove_all()
+int mme_enb_remove_all()
 {
-    hash_index_t *hi = NULL;
+    ogs_hash_index_t *hi = NULL;
     mme_enb_t *enb = NULL;
 
     for (hi = mme_enb_first(); hi; hi = mme_enb_next(hi))
     {
         enb = mme_enb_this(hi);
-#ifdef NO_FD_LOCK
-        if (enb->sock_type == SOCK_STREAM)
-            s1ap_delete(enb->sock);
-#else
-#error do not use lock in socket fd
-#endif
         mme_enb_remove(enb);
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-mme_enb_t* mme_enb_find(index_t index)
+mme_enb_t* mme_enb_find_by_sock(ogs_sock_t *sock)
 {
-    d_assert(index, return NULL, "Invalid Index");
-    return index_find(&mme_enb_pool, index);
-}
-
-mme_enb_t* mme_enb_find_by_sock(sock_id sock)
-{
-    d_assert(sock, return NULL,"Invalid param");
-    return (mme_enb_t *)hash_get(self.enb_sock_hash, &sock, sizeof(sock));
+    ogs_assert(sock);
+    return (mme_enb_t *)ogs_hash_get(self.enb_sock_hash, sock, sizeof(ogs_sock_t));
 
     return NULL;
 }
 
-mme_enb_t* mme_enb_find_by_addr(c_sockaddr_t *addr)
+mme_enb_t* mme_enb_find_by_addr(ogs_sockaddr_t *addr)
 {
-    d_assert(addr, return NULL,"Invalid param");
-    return (mme_enb_t *)hash_get(self.enb_addr_hash,
-            addr, sizeof(c_sockaddr_t));
+    ogs_assert(addr);
+    return (mme_enb_t *)ogs_hash_get(self.enb_addr_hash,
+            addr, sizeof(ogs_sockaddr_t));
 
     return NULL;
 }
 
-mme_enb_t* mme_enb_find_by_enb_id(c_uint32_t enb_id)
+mme_enb_t* mme_enb_find_by_enb_id(uint32_t enb_id)
 {
-    d_assert(enb_id, return NULL,"Invalid param");
-    return (mme_enb_t *)hash_get(self.enb_id_hash, &enb_id, sizeof(enb_id));
+    return (mme_enb_t *)ogs_hash_get(self.enb_id_hash, &enb_id, sizeof(enb_id));
 }
 
-status_t mme_enb_set_enb_id(mme_enb_t *enb, c_uint32_t enb_id)
+int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id)
 {
-    d_assert(enb, return CORE_ERROR, "Invalid param");
-    d_assert(enb_id, return CORE_ERROR, "Invalid param");
+    ogs_assert(enb);
 
     enb->enb_id = enb_id;
-    hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);
+    ogs_hash_set(self.enb_id_hash, &enb->enb_id, sizeof(enb->enb_id), enb);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-hash_index_t* mme_enb_first()
+ogs_hash_index_t* mme_enb_first()
 {
-    d_assert(self.enb_sock_hash, return NULL, "Null param");
-    return hash_first(self.enb_sock_hash);
+    ogs_assert(self.enb_sock_hash);
+    return ogs_hash_first(self.enb_sock_hash);
 }
 
-hash_index_t* mme_enb_next(hash_index_t *hi)
+ogs_hash_index_t* mme_enb_next(ogs_hash_index_t *hi)
 {
-    return hash_next(hi);
+    return ogs_hash_next(hi);
 }
 
-mme_enb_t *mme_enb_this(hash_index_t *hi)
+mme_enb_t *mme_enb_this(ogs_hash_index_t *hi)
 {
-    d_assert(hi, return NULL, "Null param");
-    return hash_this_val(hi);
+    ogs_assert(hi);
+    return ogs_hash_this_val(hi);
 }
 
-int mme_enb_sock_type(sock_id sock)
+int mme_enb_sock_type(ogs_sock_t *sock)
 {
-    sock_node_t *snode = NULL;
+    ogs_socknode_t *snode = NULL;
 
-    d_assert(sock, return SOCK_STREAM,);
+    ogs_assert(sock);
 
-    for (snode = list_first(&mme_self()->s1ap_list);
-            snode; snode = list_next(snode))
-    {
+    ogs_list_for_each(&mme_self()->s1ap_list, snode)
         if (snode->sock == sock) return SOCK_SEQPACKET;
-    }
-    for (snode = list_first(&mme_self()->s1ap_list6);
-            snode; snode = list_next(snode))
-    {
+
+    ogs_list_for_each(&mme_self()->s1ap_list6, snode)
         if (snode->sock == sock) return SOCK_SEQPACKET;
-    }
 
     return SOCK_STREAM;
 }
@@ -1755,61 +1783,51 @@ enb_ue_t* enb_ue_add(mme_enb_t *enb)
 {
     enb_ue_t *enb_ue = NULL;
 
-    d_assert(self.mme_ue_s1ap_id_hash, return NULL, "Null param");
-    d_assert(enb, return NULL, "Null param");
+    ogs_assert(self.mme_ue_s1ap_id_hash);
+    ogs_assert(enb);
 
-    index_alloc(&enb_ue_pool, &enb_ue);
-    d_assert(enb_ue, return NULL, "Null param");
+    ogs_pool_alloc(&enb_ue_pool, &enb_ue);
+    ogs_assert(enb_ue);
 
     enb_ue->enb_ue_s1ap_id = INVALID_UE_S1AP_ID;
     enb_ue->mme_ue_s1ap_id = NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
     enb_ue->enb = enb;
 
-    hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
+    ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
-    list_append(&enb->enb_ue_list, enb_ue);
-
-    /* Create S1 holding timer */
-    enb_ue->holding_timer = timer_create(&self.tm_service,
-            MME_EVT_S1AP_S1_HOLDING_TIMER, self.s1_holding_timer_value * 1000);
-    d_assert(enb_ue->holding_timer, return NULL, "Null param");
-    timer_set_param1(enb_ue->holding_timer, enb_ue->index);
+    ogs_list_add(&enb->enb_ue_list, enb_ue);
 
     return enb_ue;
-
 }
 
 unsigned int enb_ue_count()
 {
-    d_assert(self.mme_ue_s1ap_id_hash, return 0, "Null param");
-    return hash_count(self.mme_ue_s1ap_id_hash);
+    ogs_assert(self.mme_ue_s1ap_id_hash);
+    return ogs_hash_count(self.mme_ue_s1ap_id_hash);
 }
 
-status_t enb_ue_remove(enb_ue_t *enb_ue)
+int enb_ue_remove(enb_ue_t *enb_ue)
 {
-    status_t rv;
+    int rv;
 
-    d_assert(self.mme_ue_s1ap_id_hash, return CORE_ERROR, "Null param");
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
-    d_assert(enb_ue->enb, return CORE_ERROR, "Null param");
+    ogs_assert(self.mme_ue_s1ap_id_hash);
+    ogs_assert(enb_ue);
+    ogs_assert(enb_ue->enb);
 
     /* De-associate S1 with NAS/EMM */
     rv = enb_ue_deassociate(enb_ue);
-    d_assert(rv == CORE_OK,,);
+    ogs_assert(rv == OGS_OK);
 
-   /* Delete All Timers */
-    tm_delete(enb_ue->holding_timer);
-
-    list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
-    hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
+    ogs_list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
+    ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), NULL);
 
-    index_free(&enb_ue_pool, enb_ue);
+    ogs_pool_free(&enb_ue_pool, enb_ue);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t enb_ue_remove_in_enb(mme_enb_t *enb)
+int enb_ue_remove_in_enb(mme_enb_t *enb)
 {
     enb_ue_t *enb_ue = NULL, *next_enb_ue = NULL;
     
@@ -1823,35 +1841,29 @@ status_t enb_ue_remove_in_enb(mme_enb_t *enb)
         enb_ue = next_enb_ue;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb)
+int enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb)
 {
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
-    d_assert(enb_ue->enb, return CORE_ERROR, "Null param");
-    d_assert(new_enb, return CORE_ERROR, "Null param");
+    ogs_assert(enb_ue);
+    ogs_assert(enb_ue->enb);
+    ogs_assert(new_enb);
 
     /* Remove from the old enb */
-    list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
+    ogs_list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
 
     /* Add to the new enb */
-    list_append(&new_enb->enb_ue_list, enb_ue);
+    ogs_list_add(&new_enb->enb_ue_list, enb_ue);
 
     /* Switch to enb */
     enb_ue->enb = new_enb;
 
-    return CORE_OK;
-}
-
-enb_ue_t* enb_ue_find(index_t index)
-{
-    d_assert(index, return NULL, "Invalid Index");
-    return index_find(&enb_ue_pool, index);
+    return OGS_OK;
 }
 
 enb_ue_t* enb_ue_find_by_enb_ue_s1ap_id(
-        mme_enb_t *enb, c_uint32_t enb_ue_s1ap_id)
+        mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 {
     enb_ue_t *enb_ue = NULL;
     
@@ -1867,46 +1879,42 @@ enb_ue_t* enb_ue_find_by_enb_ue_s1ap_id(
     return enb_ue;
 }
 
-enb_ue_t* enb_ue_find_by_mme_ue_s1ap_id(c_uint32_t mme_ue_s1ap_id)
+enb_ue_t* enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id)
 {
-    d_assert(self.mme_ue_s1ap_id_hash, return NULL, "Null param");
-    return hash_get(self.mme_ue_s1ap_id_hash, 
+    ogs_assert(self.mme_ue_s1ap_id_hash);
+    return ogs_hash_get(self.mme_ue_s1ap_id_hash, 
             &mme_ue_s1ap_id, sizeof(mme_ue_s1ap_id));
 }
 
 enb_ue_t* enb_ue_first_in_enb(mme_enb_t *enb)
 {
-    return list_first(&enb->enb_ue_list);
+    return ogs_list_first(&enb->enb_ue_list);
 }
 
 enb_ue_t* enb_ue_next_in_enb(enb_ue_t *enb_ue)
 {
-    return list_next(enb_ue);
+    return ogs_list_next(enb_ue);
 }
 
-static status_t mme_ue_new_guti(mme_ue_t *mme_ue)
+static int mme_ue_new_guti(mme_ue_t *mme_ue)
 {
     served_gummei_t *served_gummei = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR, "Invalid param");
-    d_assert(mme_self()->max_num_of_served_gummei > 0,
-            return CORE_ERROR, "Invalid param");
+    ogs_assert(mme_ue);
+    ogs_assert(mme_self()->max_num_of_served_gummei > 0);
 
     served_gummei = &mme_self()->served_gummei[0];
 
-    d_assert(served_gummei->num_of_plmn_id > 0,
-            return CORE_ERROR, "Invalid param");
-    d_assert(served_gummei->num_of_mme_gid > 0,
-            return CORE_ERROR, "Invalid param");
-    d_assert(served_gummei->num_of_mme_code > 0,
-            return CORE_ERROR, "Invalid param");
+    ogs_assert(served_gummei->num_of_plmn_id > 0);
+    ogs_assert(served_gummei->num_of_mme_gid > 0);
+    ogs_assert(served_gummei->num_of_mme_code > 0);
 
     if (mme_ue->m_tmsi)
     {
         /* MME has a VALID GUIT
          * As such, we need to remove previous GUTI in hash table */
-        hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
-        d_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == CORE_OK,,);
+        ogs_hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
+        ogs_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == OGS_OK);
     }
 
     memset(&mme_ue->guti, 0, sizeof(guti_t));
@@ -1917,70 +1925,106 @@ static status_t mme_ue_new_guti(mme_ue_t *mme_ue)
     mme_ue->guti.mme_code = served_gummei->mme_code[0];
 
     mme_ue->m_tmsi = mme_m_tmsi_alloc();
-    d_assert(mme_ue->m_tmsi, return CORE_ERROR,);
+    ogs_assert(mme_ue->m_tmsi);
     mme_ue->guti.m_tmsi = *(mme_ue->m_tmsi);
-    hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), mme_ue);
+    ogs_hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), mme_ue);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 mme_ue_t* mme_ue_add(enb_ue_t *enb_ue)
 {
+    mme_enb_t *enb = NULL;
     mme_ue_t *mme_ue = NULL;
-    event_t e;
+    mme_event_t e;
 
-    d_assert(enb_ue, return NULL, "Null param");
+    ogs_assert(enb_ue);
+    enb = enb_ue->enb;
+    ogs_assert(enb);
 
-    index_alloc(&mme_ue_pool, &mme_ue);
-    d_assert(mme_ue, return NULL, "Null param");
+    ogs_pool_alloc(&mme_ue_pool, &mme_ue);
+    ogs_assert(mme_ue);
 
-    list_init(&mme_ue->sess_list);
+    ogs_list_init(&mme_ue->sess_list);
 
-    mme_ue->mme_s11_teid = mme_ue->index;
+    mme_ue->mme_s11_teid = ogs_pool_index(&mme_ue_pool, mme_ue);
+    ogs_assert(mme_ue->mme_s11_teid > 0 &&
+            mme_ue->mme_s11_teid <= MAX_POOL_OF_UE);
+
+    /*
+     * SCTP output stream identification
+     * Default context_self()->config.parameter.sctp_streams : 30
+     *   0 : Non UE signalling
+     *   1-29 : UE specific association 
+     */
+    mme_ue->ostream_id = NEXT_ID(self.ostream_id, 1, enb->outbound_streams-1);
 
     /* Create New GUTI */
     mme_ue_new_guti(mme_ue);
 
-    /* Setup SGW with round-robin manner */
-    if (mme_self()->sgw == NULL)
-        mme_self()->sgw = list_first(&mme_self()->sgw_list);
+    if (mme_self()->sgw_selection == SGW_SELECT_RR)
+    {
+        /* Setup SGW with round-robin manner */
+        if (mme_self()->sgw == NULL)
+            mme_self()->sgw = ogs_list_first(&mme_self()->sgw_list);
 
-    SETUP_GTP_NODE(mme_ue, mme_self()->sgw);
+        ogs_assert(mme_self()->sgw);
+        SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
 
-    mme_self()->sgw = list_next(mme_self()->sgw);
+        mme_self()->sgw = ogs_list_next(mme_self()->sgw);
+    }
+    else if (mme_self()->sgw_selection == SGW_SELECT_TAC)
+    {
+        /* Select SGW by eNB TAC */
+        int i, found = 0;
+
+        mme_self()->sgw = ogs_list_first(&mme_self()->sgw_list);
+        while(mme_self()->sgw && !found)
+        {
+            for (i = 0; i < mme_self()->sgw->num_of_tac && !found; i++)
+                found = mme_self()->sgw->tac[i] == enb_ue->nas.tai.tac ? 1: 0;
+
+            if (!found)
+                mme_self()->sgw = ogs_list_next(mme_self()->sgw);
+        }
+
+        ogs_assert(mme_self()->sgw);
+        SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
+    }
+    else
+        ogs_assert_if_reached();
+        
 
     /* Create paging retry timer */
-    mme_ue->t3413 = timer_create(&self.tm_service, MME_EVT_EMM_T3413,
-            self.t3413_value * 1000);
-    d_assert(mme_ue->t3413, return NULL, "Null param");
-    timer_set_param1(mme_ue->t3413, mme_ue->index);
+    mme_ue->t3413 = ogs_timer_add(self.timer_mgr, s1ap_t3413_timeout, mme_ue);
+    ogs_assert(mme_ue->t3413);
 
-    event_set_param1(&e, (c_uintptr_t)mme_ue->index);
-    fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
-    fsm_init(&mme_ue->sm, &e);
+    e.mme_ue = mme_ue;
+    ogs_fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
+    ogs_fsm_init(&mme_ue->sm, &e);
 
     return mme_ue;
 }
 
-status_t mme_ue_remove(mme_ue_t *mme_ue)
+int mme_ue_remove(mme_ue_t *mme_ue)
 {
-    status_t rv;
-    event_t e;
+    int rv;
+    mme_event_t e;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
-    event_set_param1(&e, (c_uintptr_t)mme_ue->index);
-    fsm_final(&mme_ue->sm, &e);
-    fsm_clear(&mme_ue->sm);
+    e.mme_ue = mme_ue;
+    ogs_fsm_fini(&mme_ue->sm, &e);
+    ogs_fsm_delete(&mme_ue->sm);
 
     /* Clear hash table */
     if (mme_ue->m_tmsi)
     {
-        hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
-        d_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == CORE_OK,,);
+        ogs_hash_set(self.guti_ue_hash, &mme_ue->guti, sizeof(guti_t), NULL);
+        ogs_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == OGS_OK);
     }
     if (mme_ue->imsi_len != 0)
-        hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, NULL);
+        ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, NULL);
     
     /* Clear the saved PDN Connectivity Request */
     NAS_CLEAR_DATA(&mme_ue->pdn_connectivity_request);
@@ -1989,40 +2033,28 @@ status_t mme_ue_remove(mme_ue_t *mme_ue)
     CLEAR_PAGING_INFO(mme_ue);
 
     /* Free UeRadioCapability */
-#if 0
-    if (mme_ue->radio_capa)
-    {
-        S1AP_UERadioCapability_t *radio_capa = 
-            (S1AP_UERadioCapability_t *)mme_ue->radio_capa;
-
-        if (radio_capa->buf)
-            CORE_FREE(radio_capa->buf);
-        CORE_FREE(mme_ue->radio_capa);
-    }
-#else
     S1AP_CLEAR_DATA(&mme_ue->ueRadioCapability);
-#endif
 
     /* Clear Transparent Container */
     S1AP_CLEAR_DATA(&mme_ue->container);
 
     /* Delete All Timers */
-    tm_delete(mme_ue->t3413);
+    ogs_timer_delete(mme_ue->t3413);
 
     rv = mme_ue_deassociate(mme_ue);
-    d_assert(rv == CORE_OK,,);
+    ogs_assert(rv == OGS_OK);
 
     mme_sess_remove_all(mme_ue);
     mme_pdn_remove_all(mme_ue);
 
-    index_free(&mme_ue_pool, mme_ue);
+    ogs_pool_free(&mme_ue_pool, mme_ue);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_ue_remove_all()
+int mme_ue_remove_all()
 {
-    hash_index_t *hi = NULL;
+    ogs_hash_index_t *hi = NULL;
     mme_ue_t *mme_ue = NULL;
 
     for (hi = mme_ue_first(); hi; hi = mme_ue_next(hi))
@@ -2031,61 +2063,55 @@ status_t mme_ue_remove_all()
         mme_ue_remove(mme_ue);
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-mme_ue_t* mme_ue_find(index_t index)
+mme_ue_t* mme_ue_find_by_imsi_bcd(char *imsi_bcd)
 {
-    d_assert(index, return NULL, "Invalid Index");
-    return index_find(&mme_ue_pool, index);
-}
-
-mme_ue_t* mme_ue_find_by_imsi_bcd(c_int8_t *imsi_bcd)
-{
-    c_uint8_t imsi[MAX_IMSI_LEN];
+    uint8_t imsi[MAX_IMSI_LEN];
     int imsi_len = 0;
 
-    d_assert(imsi_bcd, return NULL,"Invalid param");
+    ogs_assert(imsi_bcd);
 
-    core_bcd_to_buffer(imsi_bcd, imsi, &imsi_len);
+    ogs_bcd_to_buffer(imsi_bcd, imsi, &imsi_len);
 
     return mme_ue_find_by_imsi(imsi, imsi_len);
 }
 
-mme_ue_t* mme_ue_find_by_imsi(c_uint8_t *imsi, int imsi_len)
+mme_ue_t* mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
 {
-    d_assert(imsi && imsi_len, return NULL,"Invalid param");
+    ogs_assert(imsi && imsi_len);
 
-    return (mme_ue_t *)hash_get(self.imsi_ue_hash, imsi, imsi_len);
+    return (mme_ue_t *)ogs_hash_get(self.imsi_ue_hash, imsi, imsi_len);
 }
 
 mme_ue_t* mme_ue_find_by_guti(guti_t *guti)
 {
-    d_assert(guti, return NULL,"Invalid param");
+    ogs_assert(guti);
 
-    return (mme_ue_t *)hash_get(self.guti_ue_hash, guti, sizeof(guti_t));
+    return (mme_ue_t *)ogs_hash_get(self.guti_ue_hash, guti, sizeof(guti_t));
 }
 
-mme_ue_t* mme_ue_find_by_teid(c_uint32_t teid)
+mme_ue_t* mme_ue_find_by_teid(uint32_t teid)
 {
-    return mme_ue_find(teid);
+    return ogs_pool_find(&mme_ue_pool, teid);
 }
 
-hash_index_t *mme_ue_first()
+ogs_hash_index_t *mme_ue_first()
 {
-    d_assert(self.imsi_ue_hash, return NULL, "Null param");
-    return hash_first(self.imsi_ue_hash);
+    ogs_assert(self.imsi_ue_hash);
+    return ogs_hash_first(self.imsi_ue_hash);
 }
 
-hash_index_t *mme_ue_next(hash_index_t *hi)
+ogs_hash_index_t *mme_ue_next(ogs_hash_index_t *hi)
 {
-    return hash_next(hi);
+    return ogs_hash_next(hi);
 }
 
-mme_ue_t *mme_ue_this(hash_index_t *hi)
+mme_ue_t *mme_ue_this(ogs_hash_index_t *hi)
 {
-    d_assert(hi, return NULL, "Null param");
-    return hash_this_val(hi);
+    ogs_assert(hi);
+    return ogs_hash_this_val(hi);
 }
 
 mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
@@ -2106,7 +2132,7 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
             {
                 case NAS_EPS_MOBILE_IDENTITY_IMSI:
                 {
-                    c_int8_t imsi_bcd[MAX_IMSI_BCD_LEN+1];
+                    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
 
                     nas_imsi_to_bcd(
                         &eps_mobile_identity->imsi, eps_mobile_identity->length,
@@ -2116,11 +2142,11 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                     mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
                     if (mme_ue)
                     {
-                        d_trace(9, "known UE by IMSI[%s]\n", imsi_bcd);
+                        ogs_trace("known UE by IMSI[%s]", imsi_bcd);
                     }
                     else
                     {
-                        d_trace(9, "Unknown UE by IMSI[%s]\n", imsi_bcd);
+                        ogs_trace("Unknown UE by IMSI[%s]", imsi_bcd);
                     }
                     break;
                 }
@@ -2138,14 +2164,14 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                     mme_ue = mme_ue_find_by_guti(&guti);
                     if (mme_ue)
                     {
-                        d_trace(9, "Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
+                        ogs_trace("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                                 guti.mme_gid,
                                 guti.mme_code,
                                 guti.m_tmsi);
                     }
                     else
                     {
-                        d_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                        ogs_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                                 guti.mme_gid,
                                 guti.mme_code,
                                 guti.m_tmsi);
@@ -2154,7 +2180,7 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                 }
                 default:
                 {
-                    d_error("Uknown message imsi type =%d\n",
+                    ogs_error("Uknown message imsi type =%d",
                             eps_mobile_identity->imsi.type);
                     break;
                 }
@@ -2190,14 +2216,14 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                     mme_ue = mme_ue_find_by_guti(&guti);
                     if (mme_ue)
                     {
-                        d_trace(9, "Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]\n",
+                        ogs_trace("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                                 guti.mme_gid,
                                 guti.mme_code,
                                 guti.m_tmsi);
                     }
                     else
                     {
-                        d_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
+                        ogs_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
                                 guti.mme_gid,
                                 guti.mme_code,
                                 guti.m_tmsi);
@@ -2206,7 +2232,7 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
                 }
                 default:
                 {
-                    d_error("Uknown message imsi type =%d\n",
+                    ogs_error("Uknown message imsi type =%d",
                             eps_mobile_identity->imsi.type);
                     break;
                 }
@@ -2222,18 +2248,18 @@ mme_ue_t* mme_ue_find_by_message(nas_message_t *message)
     return mme_ue;
 }
 
-status_t mme_ue_set_imsi(mme_ue_t *mme_ue, c_int8_t *imsi_bcd)
+int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
 {
-    d_assert(mme_ue && imsi_bcd, return CORE_ERROR, "Invalid param");
+    ogs_assert(mme_ue && imsi_bcd);
 
-    core_cpystrn(mme_ue->imsi_bcd, imsi_bcd, MAX_IMSI_BCD_LEN+1);
-    core_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, &mme_ue->imsi_len);
+    ogs_cpystrn(mme_ue->imsi_bcd, imsi_bcd, MAX_IMSI_BCD_LEN+1);
+    ogs_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, &mme_ue->imsi_len);
 
-    hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
+    ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
     mme_ue->guti_present = 1;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 int mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue)
@@ -2262,11 +2288,11 @@ int mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue)
     return 0;
 }
 
-status_t mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue)
+int mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue)
 {
     mme_sess_t *sess = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR,);
+    ogs_assert(mme_ue);
 
     sess = mme_sess_first(mme_ue);
     while(sess)
@@ -2281,66 +2307,66 @@ status_t mme_ue_clear_indirect_tunnel(mme_ue_t *mme_ue)
         sess = mme_sess_next(sess);
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
+int mme_ue_associate_enb_ue(mme_ue_t *mme_ue, enb_ue_t *enb_ue)
 {
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
+    ogs_assert(enb_ue);
 
     mme_ue->enb_ue = enb_ue;
     enb_ue->mme_ue = mme_ue;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t enb_ue_deassociate(enb_ue_t *enb_ue)
+int enb_ue_deassociate(enb_ue_t *enb_ue)
 {
-    d_assert(enb_ue, return CORE_ERROR, "Null param");
+    ogs_assert(enb_ue);
     enb_ue->mme_ue = NULL;
     
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_ue_deassociate(mme_ue_t *mme_ue)
+int mme_ue_deassociate(mme_ue_t *mme_ue)
 {
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
     mme_ue->enb_ue = NULL;
     
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t source_ue_associate_target_ue(
+int source_ue_associate_target_ue(
         enb_ue_t *source_ue, enb_ue_t *target_ue)
 {
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(source_ue, return CORE_ERROR, "Null param");
-    d_assert(target_ue, return CORE_ERROR, "Null param");
+    ogs_assert(source_ue);
+    ogs_assert(target_ue);
     mme_ue = source_ue->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     target_ue->mme_ue = mme_ue;
     target_ue->source_ue = source_ue;
     source_ue->target_ue = target_ue;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t source_ue_deassociate_target_ue(enb_ue_t *enb_ue)
+int source_ue_deassociate_target_ue(enb_ue_t *enb_ue)
 {
     enb_ue_t *source_ue = NULL;
     enb_ue_t *target_ue = NULL;
-    d_assert(enb_ue, return CORE_ERROR,);
+    ogs_assert(enb_ue);
 
     if (enb_ue->target_ue)
     {
         source_ue = enb_ue;
         target_ue = enb_ue->target_ue;
 
-        d_assert(source_ue->target_ue, return CORE_ERROR,);
-        d_assert(target_ue->source_ue, return CORE_ERROR,);
+        ogs_assert(source_ue->target_ue);
+        ogs_assert(target_ue->source_ue);
         source_ue->target_ue = NULL;
         target_ue->source_ue = NULL;
     }
@@ -2349,59 +2375,57 @@ status_t source_ue_deassociate_target_ue(enb_ue_t *enb_ue)
         target_ue = enb_ue;
         source_ue = enb_ue->source_ue;
 
-        d_assert(source_ue->target_ue, return CORE_ERROR,);
-        d_assert(target_ue->source_ue, return CORE_ERROR,);
+        ogs_assert(source_ue->target_ue);
+        ogs_assert(target_ue->source_ue);
         source_ue->target_ue = NULL;
         target_ue->source_ue = NULL;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, c_uint8_t pti)
+mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti)
 {
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
 
-    d_assert(mme_ue, return NULL, "Null param");
-    d_assert(pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-            return NULL, "Invalid PTI(%d)", pti);
+    ogs_assert(mme_ue);
+    ogs_assert(pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
-    index_alloc(&mme_sess_pool, &sess);
-    d_assert(sess, return NULL, "Null param");
+    ogs_pool_alloc(&mme_sess_pool, &sess);
+    ogs_assert(sess);
 
-    list_init(&sess->bearer_list);
+    ogs_list_init(&sess->bearer_list);
 
     sess->mme_ue = mme_ue;
     sess->pti = pti;
 
     bearer = mme_bearer_add(sess);
-    d_assert(bearer, mme_sess_remove(sess); return NULL, 
-            "Can't add default bearer context");
+    ogs_assert(bearer);
 
-    list_append(&mme_ue->sess_list, sess);
+    ogs_list_add(&mme_ue->sess_list, sess);
 
     return sess;
 }
 
-status_t mme_sess_remove(mme_sess_t *sess)
+int mme_sess_remove(mme_sess_t *sess)
 {
-    d_assert(sess, return CORE_ERROR, "Null param");
-    d_assert(sess->mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
+    ogs_assert(sess->mme_ue);
     
-    list_remove(&sess->mme_ue->sess_list, sess);
+    ogs_list_remove(&sess->mme_ue->sess_list, sess);
 
     mme_bearer_remove_all(sess);
 
     NAS_CLEAR_DATA(&sess->ue_pco);
     TLV_CLEAR_DATA(&sess->pgw_pco);
 
-    index_free(&mme_sess_pool, sess);
+    ogs_pool_free(&mme_sess_pool, sess);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_sess_remove_all(mme_ue_t *mme_ue)
+int mme_sess_remove_all(mme_ue_t *mme_ue)
 {
     mme_sess_t *sess = NULL, *next_sess = NULL;
     
@@ -2415,16 +2439,10 @@ status_t mme_sess_remove_all(mme_ue_t *mme_ue)
         sess = next_sess;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-mme_sess_t* mme_sess_find(index_t index)
-{
-    d_assert(index, return NULL, "Invalid Index");
-    return index_find(&mme_sess_pool, index);
-}
-
-mme_sess_t* mme_sess_find_by_pti(mme_ue_t *mme_ue, c_uint8_t pti)
+mme_sess_t* mme_sess_find_by_pti(mme_ue_t *mme_ue, uint8_t pti)
 {
     mme_sess_t *sess = NULL;
 
@@ -2440,7 +2458,7 @@ mme_sess_t* mme_sess_find_by_pti(mme_ue_t *mme_ue, c_uint8_t pti)
     return NULL;
 }
 
-mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
+mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, uint8_t ebi)
 {
     mme_bearer_t *bearer = NULL;
 
@@ -2451,7 +2469,7 @@ mme_sess_t* mme_sess_find_by_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
     return NULL;
 }
 
-mme_sess_t* mme_sess_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
+mme_sess_t* mme_sess_find_by_apn(mme_ue_t *mme_ue, char *apn)
 {
     mme_sess_t *sess = NULL;
 
@@ -2469,12 +2487,12 @@ mme_sess_t* mme_sess_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
 
 mme_sess_t* mme_sess_first(mme_ue_t *mme_ue)
 {
-    return list_first(&mme_ue->sess_list);
+    return ogs_list_first(&mme_ue->sess_list);
 }
 
 mme_sess_t* mme_sess_next(mme_sess_t *sess)
 {
-    return list_next(sess);
+    return ogs_list_next(sess);
 }
 
 unsigned int  mme_sess_count(mme_ue_t *mme_ue)
@@ -2494,57 +2512,57 @@ unsigned int  mme_sess_count(mme_ue_t *mme_ue)
 
 mme_bearer_t* mme_bearer_add(mme_sess_t *sess)
 {
-    event_t e;
+    mme_event_t e;
 
     mme_bearer_t *bearer = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(sess, return NULL, "Null param");
+    ogs_assert(sess);
     mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return NULL, "Null param");
+    ogs_assert(mme_ue);
 
-    index_alloc(&mme_bearer_pool, &bearer);
-    d_assert(bearer, return NULL, "Null param");
+    ogs_pool_alloc(&mme_bearer_pool, &bearer);
+    ogs_assert(bearer);
 
     bearer->ebi = NEXT_ID(mme_ue->ebi, MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
 
     bearer->mme_ue = mme_ue;
     bearer->sess = sess;
 
-    list_append(&sess->bearer_list, bearer);
+    ogs_list_add(&sess->bearer_list, bearer);
     
-    event_set_param1(&e, (c_uintptr_t)bearer->index);
-    fsm_create(&bearer->sm, esm_state_initial, esm_state_final);
-    fsm_init(&bearer->sm, &e);
+    e.bearer = bearer;
+    ogs_fsm_create(&bearer->sm, esm_state_initial, esm_state_final);
+    ogs_fsm_init(&bearer->sm, &e);
 
     return bearer;
 }
 
-status_t mme_bearer_remove(mme_bearer_t *bearer)
+int mme_bearer_remove(mme_bearer_t *bearer)
 {
-    event_t e;
+    mme_event_t e;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
-    d_assert(bearer->sess, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
+    ogs_assert(bearer->sess);
 
-    event_set_param1(&e, (c_uintptr_t)bearer->index);
-    fsm_final(&bearer->sm, &e);
-    fsm_clear(&bearer->sm);
+    e.bearer = bearer;
+    ogs_fsm_fini(&bearer->sm, &e);
+    ogs_fsm_delete(&bearer->sm);
 
-    list_remove(&bearer->sess->bearer_list, bearer);
+    ogs_list_remove(&bearer->sess->bearer_list, bearer);
 
     TLV_CLEAR_DATA(&bearer->tft);
     
-    index_free(&mme_bearer_pool, bearer);
+    ogs_pool_free(&mme_bearer_pool, bearer);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_bearer_remove_all(mme_sess_t *sess)
+int mme_bearer_remove_all(mme_sess_t *sess)
 {
     mme_bearer_t *bearer = NULL, *next_bearer = NULL;
 
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     
     bearer = mme_bearer_first(sess);
     while (bearer)
@@ -2556,16 +2574,10 @@ status_t mme_bearer_remove_all(mme_sess_t *sess)
         bearer = next_bearer;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-mme_bearer_t* mme_bearer_find(index_t index)
-{
-    d_assert(index, return NULL, "Invalid Index");
-    return index_find(&mme_bearer_pool, index);
-}
-
-mme_bearer_t* mme_bearer_find_by_sess_ebi(mme_sess_t *sess, c_uint8_t ebi)
+mme_bearer_t* mme_bearer_find_by_sess_ebi(mme_sess_t *sess, uint8_t ebi)
 {
     mme_bearer_t *bearer = NULL;
 
@@ -2581,7 +2593,7 @@ mme_bearer_t* mme_bearer_find_by_sess_ebi(mme_sess_t *sess, c_uint8_t ebi)
     return NULL;
 }
 
-mme_bearer_t* mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
+mme_bearer_t* mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, uint8_t ebi)
 {
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -2604,30 +2616,29 @@ mme_bearer_t* mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, c_uint8_t ebi)
 mme_bearer_t* mme_bearer_find_or_add_by_message(
         mme_ue_t *mme_ue, nas_message_t *message)
 {
-    c_uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-    c_uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
+    uint8_t pti = NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+    uint8_t ebi = NAS_EPS_BEARER_IDENTITY_UNASSIGNED;
 
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
 
-    d_assert(mme_ue, return NULL,);
-    d_assert(message, return NULL,);
+    ogs_assert(mme_ue);
+    ogs_assert(message);
 
     pti = message->esm.h.procedure_transaction_identity;
     ebi = message->esm.h.eps_bearer_identity;
 
-    d_trace(9, "mme_bearer_find_or_add_by_message() [PTI:%d, EBI:%d]\n",
+    ogs_trace("mme_bearer_find_or_add_by_message() [PTI:%d, EBI:%d]",
             pti, ebi);
 
     if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED)
     {
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, ebi);
-        d_assert(bearer, return NULL, "No Bearer : [EBI:%d]", ebi);
+        ogs_assert(bearer);
         return bearer;
     }
         
-    d_assert(pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
-            return NULL, "Invalid param : [PTI:%d, EBI:%d]", pti, ebi);
+    ogs_assert(pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
     if (message->esm.h.message_type == NAS_PDN_CONNECTIVITY_REQUEST)
     {
@@ -2645,7 +2656,7 @@ mme_bearer_t* mme_bearer_find_or_add_by_message(
         else
             sess->pti = pti;
 
-        d_assert(sess, return NULL, "No Session : [PTI:%d]", pti);
+        ogs_assert(sess);
     }
     else if (message->esm.h.message_type == NAS_PDN_DISCONNECT_REQUEST)
     {
@@ -2656,12 +2667,9 @@ mme_bearer_t* mme_bearer_find_or_add_by_message(
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue,
                 linked_eps_bearer_identity->eps_bearer_identity);
-        d_assert(bearer, return NULL,
-                "No Bearer : [Linked-EBI:%d, PTI:%d, EBI:%d]",
-                linked_eps_bearer_identity->eps_bearer_identity,
-                pti, ebi);
+        ogs_assert(bearer);
         sess = bearer->sess;
-        d_assert(sess, return NULL, "No Session : [PTI:%d]", pti);
+        ogs_assert(sess);
         sess->pti = pti;
 
         return bearer;
@@ -2669,11 +2677,11 @@ mme_bearer_t* mme_bearer_find_or_add_by_message(
     else
     {
         sess = mme_sess_find_by_pti(mme_ue, pti);
-        d_assert(sess, return NULL, "No Session : [PTI:%d]", pti);
+        ogs_assert(sess);
     }
 
     bearer = mme_default_bearer_in_sess(sess);
-    d_assert(bearer, return NULL, "No Bearer : [EBI:%d]", ebi);
+    ogs_assert(bearer);
     return bearer;
 }
 
@@ -2686,29 +2694,29 @@ mme_bearer_t* mme_linked_bearer(mme_bearer_t *bearer)
 {
     mme_sess_t *sess = NULL;
 
-    d_assert(bearer, return NULL, "Null param");
+    ogs_assert(bearer);
     sess = bearer->sess;
-    d_assert(sess, return NULL, "Null param");
+    ogs_assert(sess);
 
     return mme_default_bearer_in_sess(sess);
 }
 
 mme_bearer_t* mme_bearer_first(mme_sess_t *sess)
 {
-    d_assert(sess, return NULL, "Null param");
+    ogs_assert(sess);
 
-    return list_first(&sess->bearer_list);
+    return ogs_list_first(&sess->bearer_list);
 }
 
 mme_bearer_t* mme_bearer_next(mme_bearer_t *bearer)
 {
-    return list_next(bearer);
+    return ogs_list_next(bearer);
 }
 
 int mme_bearer_is_inactive(mme_ue_t *mme_ue)
 {
     mme_sess_t *sess = NULL;
-    d_assert(mme_ue, return 1,);
+    ogs_assert(mme_ue);
 
     sess = mme_sess_first(mme_ue);
     while(sess)
@@ -2729,10 +2737,10 @@ int mme_bearer_is_inactive(mme_ue_t *mme_ue)
     return 1;
 }
 
-status_t mme_bearer_set_inactive(mme_ue_t *mme_ue)
+int mme_bearer_set_inactive(mme_ue_t *mme_ue)
 {
     mme_sess_t *sess = NULL;
-    d_assert(mme_ue, return CORE_ERROR,);
+    ogs_assert(mme_ue);
 
     sess = mme_sess_first(mme_ue);
     while(sess)
@@ -2747,31 +2755,31 @@ status_t mme_bearer_set_inactive(mme_ue_t *mme_ue)
         sess = mme_sess_next(sess);
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_pdn_remove_all(mme_ue_t *mme_ue)
+int mme_pdn_remove_all(mme_ue_t *mme_ue)
 {
     s6a_subscription_data_t *subscription_data = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
     subscription_data = &mme_ue->subscription_data;
-    d_assert(subscription_data, return CORE_ERROR, "Null param");
+    ogs_assert(subscription_data);
 
     subscription_data->num_of_pdn = 0;
     
-    return CORE_OK;
+    return OGS_OK;
 }
 
-pdn_t* mme_pdn_find_by_apn(mme_ue_t *mme_ue, c_int8_t *apn)
+pdn_t* mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn)
 {
     s6a_subscription_data_t *subscription_data = NULL;
     pdn_t *pdn = NULL;
     int i = 0;
     
-    d_assert(mme_ue, return NULL, "Null param");
+    ogs_assert(mme_ue);
     subscription_data = &mme_ue->subscription_data;
-    d_assert(subscription_data, return NULL, "Null param");
+    ogs_assert(subscription_data);
 
     for (i = 0; i < subscription_data->num_of_pdn; i++)
     {
@@ -2789,9 +2797,9 @@ pdn_t* mme_default_pdn(mme_ue_t *mme_ue)
     pdn_t *pdn = NULL;
     int i = 0;
     
-    d_assert(mme_ue, return NULL, "Null param");
+    ogs_assert(mme_ue);
     subscription_data = &mme_ue->subscription_data;
-    d_assert(subscription_data, return NULL, "Null param");
+    ogs_assert(subscription_data);
 
     for (i = 0; i < subscription_data->num_of_pdn; i++)
     {
@@ -2807,21 +2815,19 @@ int mme_find_served_tai(tai_t *tai)
 {
     int i = 0, j = 0, k = 0;
 
-    d_assert(tai, return -1,);
+    ogs_assert(tai);
 
     for (i = 0; i < self.num_of_served_tai; i++)
     {
         tai0_list_t *list0 = &self.served_tai[i].list0;
-        d_assert(list0, return -1,);
+        ogs_assert(list0);
         tai2_list_t *list2 = &self.served_tai[i].list2;
-        d_assert(list2, return -1,);
+        ogs_assert(list2);
 
         for (j = 0; list0->tai[j].num; j++)
         {
-            d_assert(list0->tai[j].type == TAI0_TYPE,
-                return -1, "type = %d", list0->tai[j].type);
-            d_assert(list0->tai[j].num < MAX_NUM_OF_TAI,
-                    return -1, "num = %d", list0->tai[j].num);
+            ogs_assert(list0->tai[j].type == TAI0_TYPE);
+            ogs_assert(list0->tai[j].num < MAX_NUM_OF_TAI);
 
             for (k = 0; k < list0->tai[j].num; k++) 
             {
@@ -2836,10 +2842,8 @@ int mme_find_served_tai(tai_t *tai)
 
         if (list2->num)
         {
-            d_assert(list2->type == TAI1_TYPE || list2->type == TAI2_TYPE,
-                return -1, "type = %d", list2->type);
-            d_assert(list2->num < MAX_NUM_OF_TAI,
-                    return -1, "num = %d", list2->num);
+            ogs_assert(list2->type == TAI1_TYPE || list2->type == TAI2_TYPE);
+            ogs_assert(list2->num < MAX_NUM_OF_TAI);
 
             for (j = 0; j < list2->num; j++) 
             {
@@ -2856,21 +2860,20 @@ int mme_find_served_tai(tai_t *tai)
     return -1;
 }
 
-status_t mme_m_tmsi_pool_generate()
+int mme_m_tmsi_pool_generate()
 {
-    status_t rv;
     int i, j;
     int index = 0;
 
-    d_trace(9, "M-TMSI Pool try to generate...\n");
+    ogs_trace("M-TMSI Pool try to generate...");
     for (i = 0; index < MAX_POOL_OF_UE; i++)
     {
         mme_m_tmsi_t *m_tmsi = NULL;
         int conflict = 0;
 
-        m_tmsi = &self.m_tmsi.pool[index];
-        rv = core_generate_random_bytes((c_uint8_t *)m_tmsi, sizeof(*m_tmsi));
-        d_assert(rv == CORE_OK, return CORE_ERROR, "Cannot generate random");
+        m_tmsi = &self.m_tmsi.array[index];
+        ogs_assert(m_tmsi);
+        *m_tmsi = ogs_random32();
 
         /* for mapped-GUTI */
         *m_tmsi |= 0xc0000000;
@@ -2878,39 +2881,42 @@ status_t mme_m_tmsi_pool_generate()
 
         for (j = 0; j < index; j++)
         {
-            if (*m_tmsi == self.m_tmsi.pool[j])
+            if (*m_tmsi == self.m_tmsi.array[j])
             {
                 conflict = 1;
-                d_trace(11, "[M-TMSI CONFLICT]  %d:0x%x == %d:0x%x\n",
-                        index, *m_tmsi, j, self.m_tmsi.pool[j]);
+                ogs_trace("[M-TMSI CONFLICT]  %d:0x%x == %d:0x%x",
+                        index, *m_tmsi, j, self.m_tmsi.array[j]);
                 break;
             }
         }
-        if (conflict == 1) continue;
+        if (conflict == 1)
+        {
+            continue;
+        }
 
         index++;
     }
     self.m_tmsi.size = index;
-    d_trace(9, "M-TMSI Pool generate...done\n");
+    ogs_trace("M-TMSI Pool generate...done");
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 mme_m_tmsi_t *mme_m_tmsi_alloc()
 {
     mme_m_tmsi_t *m_tmsi = NULL;
 
-    pool_alloc_node(&self.m_tmsi, &m_tmsi);
-    d_assert(m_tmsi, return NULL,);
+    ogs_pool_alloc(&self.m_tmsi, &m_tmsi);
+    ogs_assert(m_tmsi);
 
     return m_tmsi;
 }
 
-status_t mme_m_tmsi_free(mme_m_tmsi_t *m_tmsi)
+int mme_m_tmsi_free(mme_m_tmsi_t *m_tmsi)
 {
-    d_assert(m_tmsi, return CORE_ERROR,);
-    pool_free_node(&self.m_tmsi, m_tmsi);
+    ogs_assert(m_tmsi);
+    ogs_pool_free(&self.m_tmsi, m_tmsi);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 

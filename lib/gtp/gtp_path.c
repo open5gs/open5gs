@@ -1,79 +1,84 @@
-#define TRACE_MODULE _gtp_path
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "core_debug.h"
-#include "core_pkbuf.h"
-
-#include "3gpp_types.h"
 #include "gtp_message.h"
 #include "gtp_conv.h"
 #include "gtp_node.h"
 
 #include "gtp_path.h"
 
-status_t gtp_server(sock_node_t *snode, sock_handler handler)
+int gtp_server(ogs_socknode_t *snode)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    char buf[OGS_ADDRSTRLEN];
+    ogs_assert(snode);
 
-    d_assert(snode, return CORE_ERROR,);
+    snode->sock = ogs_udp_server(snode->list);
+    ogs_assert(snode->sock);
 
-    rv = udp_server(&snode->sock, snode->list);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_info("gtp_server() [%s]:%d",
+            OGS_ADDR(snode->list, buf), OGS_PORT(snode->list));
 
-    rv = sock_register(snode->sock, handler, NULL);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-
-    d_trace(1, "gtp_server() [%s]:%d\n",
-            CORE_ADDR(snode->list, buf), CORE_PORT(snode->list));
-
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t gtp_client(gtp_node_t *gnode)
+int gtp_client(gtp_node_t *gnode)
 {
-    status_t rv;
-    char buf[CORE_ADDRSTRLEN];
+    char buf[OGS_ADDRSTRLEN];
+    ogs_assert(gnode);
 
-    d_assert(gnode, return CORE_ERROR,);
+    gnode->sock = ogs_udp_client(gnode->sa_list);
+    ogs_assert(gnode->sock);
+    memcpy(&gnode->conn, &gnode->sock->remote_addr, sizeof gnode->conn);
 
-    rv = udp_client(&gnode->sock, gnode->sa_list);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_info("gtp_client() [%s]:%d",
+            OGS_ADDR(gnode->sa_list, buf), OGS_PORT(gnode->sa_list));
 
-    d_trace(1, "gtp_client() [%s]:%d\n",
-            CORE_ADDR(gnode->sa_list, buf), CORE_PORT(gnode->sa_list));
-
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t gtp_connect(sock_id ipv4, sock_id ipv6, gtp_node_t *gnode)
+int gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, gtp_node_t *gnode)
 {
-    c_sockaddr_t *addr;
-    char buf[CORE_ADDRSTRLEN];
+    ogs_sockaddr_t *addr;
+    char buf[OGS_ADDRSTRLEN];
 
-    d_assert(ipv4 || ipv6, return CORE_ERROR,);
-    d_assert(gnode, return CORE_ERROR,);
-    d_assert(gnode->sa_list, return CORE_ERROR,);
+    ogs_assert(ipv4 || ipv6);
+    ogs_assert(gnode);
+    ogs_assert(gnode->sa_list);
 
     addr = gnode->sa_list;
     while(addr)
     {
-        sock_id id;
+        ogs_sock_t *sock = NULL;
 
-        if (addr->c_sa_family == AF_INET) id = ipv4;
-        else if (addr->c_sa_family == AF_INET6) id = ipv6;
+        if (addr->c_sa_family == AF_INET) sock = ipv4;
+        else if (addr->c_sa_family == AF_INET6) sock = ipv6;
         else
-            d_assert(0, return CORE_ERROR,);
+            ogs_assert_if_reached();
 
-        if (id)
+        if (sock)
         {
-            if (sock_connect(id, addr) == CORE_OK)
-            {
-                d_trace(1, "gtp_connect() [%s]:%d\n",
-                        CORE_ADDR(addr, buf), CORE_PORT(addr));
+            ogs_info("gtp_connect() [%s]:%d",
+                    OGS_ADDR(addr, buf), OGS_PORT(addr));
 
-                gnode->sock = id;
-                break;
-            }
+            gnode->sock = sock;
+            memcpy(&gnode->conn, addr, sizeof gnode->conn);
+            break;
         }
 
         addr = addr->next;
@@ -81,183 +86,176 @@ status_t gtp_connect(sock_id ipv4, sock_id ipv6, gtp_node_t *gnode)
 
     if (addr == NULL)
     {
-        d_warn("gtp_connect() [%s]:%d failed(%d:%s)",
-                CORE_ADDR(gnode->sa_list, buf), CORE_PORT(gnode->sa_list),
-                errno, strerror(errno));
-        return CORE_ERROR;
+        ogs_log_message(OGS_LOG_WARN, ogs_socket_errno,
+                "gtp_connect() [%s]:%d failed",
+                OGS_ADDR(gnode->sa_list, buf), OGS_PORT(gnode->sa_list));
+        return OGS_ERROR;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t gtp_server_list(list_t *list, sock_handler handler)
+ogs_sock_t *gtp_local_sock_first(ogs_list_t *list)
 {
-    status_t rv;
-    sock_node_t *snode = NULL;
+    ogs_socknode_t *snode = NULL;
 
-    d_assert(list, return CORE_ERROR,);
-    d_assert(handler, return CORE_ERROR,);
-
-    for (snode = list_first(list); snode; snode = list_next(snode))
+    ogs_assert(list);
+    ogs_list_for_each(list, snode)
     {
-        rv = gtp_server(snode, handler);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
-    }
-
-    return CORE_OK;
-}
-
-sock_id gtp_local_sock_first(list_t *list)
-{
-    sock_node_t *snode = NULL;
-    sock_id sock = 0;
-
-    d_assert(list, return 0,);
-
-    for (snode = list_first(list); snode; snode = list_next(snode))
-    {
-        sock = snode->sock;
-        if (sock) return sock;
-    }
-
-    return 0;
-}
-
-c_sockaddr_t *gtp_local_addr_first(list_t *list)
-{
-    sock_node_t *snode = NULL;
-    c_sockaddr_t *addr = NULL;
-
-    d_assert(list, return NULL,);
-
-    for (snode = list_first(list); snode; snode = list_next(snode))
-    {
-        addr = sock_local_addr(snode->sock);
-        if (addr) return addr;
+        if (snode->sock)
+            return snode->sock;
     }
 
     return NULL;
 }
 
-status_t gtp_recv(sock_id sock, pkbuf_t **pkbuf)
+ogs_sockaddr_t *gtp_local_addr_first(ogs_list_t *list)
+{
+    ogs_socknode_t *snode = NULL;
+
+    ogs_assert(list);
+    ogs_list_for_each(list, snode)
+    {
+        ogs_sock_t *sock = snode->sock;
+        ogs_assert(snode->sock);
+
+        return &sock->local_addr;
+    }
+
+    return NULL;
+}
+
+int gtp_recv(ogs_socket_t fd, ogs_pkbuf_t **pkbuf)
 {
     ssize_t size;
 
-    d_assert(sock, return CORE_ERROR,);
+    ogs_assert(fd != INVALID_SOCKET);
 
-    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+#if DEPRECATED
     if ((*pkbuf) == NULL)
     {
         char tmp_buf[MAX_SDU_LEN];
 
-        d_fatal("Can't allocate pkbuf");
+        ogs_error("Can't allocate pkbuf");
 
         /* Read data from socket to exit from select */
-        core_recv(sock, tmp_buf, MAX_SDU_LEN, 0);
+        ogs_recv(fd, tmp_buf, MAX_SDU_LEN, 0);
 
-        return CORE_ERROR;
+        return OGS_ERROR;
     }
+#endif
+    ogs_pkbuf_put(*pkbuf, MAX_SDU_LEN);
 
-    size = core_recv(sock, (*pkbuf)->payload, (*pkbuf)->len, 0);
+    size = ogs_recv(fd, (*pkbuf)->data, (*pkbuf)->len, 0);
     if (size <= 0)
     {
-        pkbuf_free((*pkbuf));
+        ogs_pkbuf_free((*pkbuf));
+        ogs_error("ogs_recv failed");
 
-        if (errno != EAGAIN)
-        {
-            d_warn("net_read failed(%d:%s)", errno, strerror(errno));
-        }
-
-        return CORE_ERROR;
+        return OGS_ERROR;
     }
     else
     {
-        (*pkbuf)->len = size;
+        ogs_pkbuf_trim(*pkbuf, size);
 
-        return CORE_OK;;
+        return OGS_OK;;
     }
 }
 
-status_t gtp_recvfrom(sock_id sock, pkbuf_t **pkbuf, c_sockaddr_t *from)
+int gtp_recvfrom(ogs_socket_t fd, ogs_pkbuf_t **pkbuf, ogs_sockaddr_t *from)
 {
     ssize_t size;
 
-    d_assert(sock, return CORE_ERROR,);
-    d_assert(from, return CORE_ERROR,);
+    ogs_assert(fd != INVALID_SOCKET);
+    ogs_assert(from);
 
-    *pkbuf = pkbuf_alloc(0, MAX_SDU_LEN);
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+#if DEPRECATED
     if ((*pkbuf) == NULL)
     {
         char tmp_buf[MAX_SDU_LEN];
 
-        d_fatal("Can't allocate pkbuf");
+        ogs_error("Can't allocate pkbuf");
 
         /* Read data from socket to exit from select */
-        core_recv(sock, tmp_buf, MAX_SDU_LEN, 0);
+        ogs_recv(fd, tmp_buf, MAX_SDU_LEN, 0);
 
-        return CORE_ERROR;
+        return OGS_ERROR;
     }
+#endif
+    ogs_pkbuf_put(*pkbuf, MAX_SDU_LEN);
 
-    size = core_recvfrom(sock, (*pkbuf)->payload, (*pkbuf)->len, 0, from);
+    size = ogs_recvfrom(fd, (*pkbuf)->data, (*pkbuf)->len, 0, from);
     if (size <= 0)
     {
-        pkbuf_free((*pkbuf));
+        ogs_pkbuf_free((*pkbuf));
+        ogs_error("ogs_recvfrom() failed");
 
-        if (errno != EAGAIN)
-        {
-            d_warn("core_recv failed(%d:%s)", errno, strerror(errno));
-        }
-
-        return CORE_ERROR;
+        return OGS_ERROR;
     }
     else
     {
-        (*pkbuf)->len = size;
+        ogs_pkbuf_trim(*pkbuf, size);
 
-        return CORE_OK;;
+        return OGS_OK;;
     }
 }
 
-status_t gtp_send(gtp_node_t *gnode, pkbuf_t *pkbuf)
+int gtp_send(gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
 {
-    char buf[CORE_ADDRSTRLEN];
     ssize_t sent;
-    sock_id sock = 0;
-    c_sockaddr_t *addr = NULL;
+    ogs_sock_t *sock = NULL;
 
-    d_assert(gnode, return CORE_ERROR, "Null param");
-    d_assert(pkbuf, return CORE_ERROR, "Null param");
+    ogs_assert(gnode);
+    ogs_assert(pkbuf);
     sock = gnode->sock;
-    d_assert(sock, return CORE_ERROR, "Null param");
+    ogs_assert(sock);
 
-    /* New interface */
-    sock = gnode->sock;
-    d_assert(sock, return CORE_ERROR,);
-    addr = sock_remote_addr(sock);
-    d_assert(addr, return CORE_ERROR,);
-
-    sent = core_send(sock, pkbuf->payload, pkbuf->len, 0);
+    sent = ogs_send(sock->fd, pkbuf->data, pkbuf->len, 0);
     if (sent < 0 || sent != pkbuf->len)
     {
-        d_error("core_send [%s]:%d failed(%d:%s)",
-            CORE_ADDR(addr, buf), CORE_PORT(addr), errno, strerror(errno));
-        return CORE_ERROR;
+        ogs_error("ogs_send() failed");
+        return OGS_ERROR;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-pkbuf_t *gtp_handle_echo_req(pkbuf_t *pkb)
+int gtp_sendto(gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
+{
+    ssize_t sent;
+    ogs_sock_t *sock = NULL;
+    ogs_sockaddr_t *conn = NULL;
+
+    ogs_assert(gnode);
+    ogs_assert(pkbuf);
+    sock = gnode->sock;
+    ogs_assert(sock);
+    conn = &gnode->conn;
+    ogs_assert(conn);
+
+    sent = ogs_sendto(sock->fd, pkbuf->data, pkbuf->len, 0, conn);
+    if (sent < 0 || sent != pkbuf->len)
+    {
+        ogs_error("ogs_send() failed");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+ogs_pkbuf_t *gtp_handle_echo_req(ogs_pkbuf_t *pkb)
 {
     gtp_header_t *gtph = NULL;
-    pkbuf_t *pkb_resp;NULL;
-    gtp_header_t *gtph_resp;NULL;
-    c_uint16_t length;
+    ogs_pkbuf_t *pkb_resp = NULL;
+    gtp_header_t *gtph_resp = NULL;
+    uint16_t length;
     int idx;
 
-    d_assert(pkb, return NULL, "pkt is NULL");
+    ogs_assert(pkb);
 
-    gtph = (gtp_header_t *)pkb->payload;
+    gtph = (gtp_header_t *)pkb->data;
     /* Check GTP version. Now only support GTPv1(version = 1) */
     if ((gtph->flags >> 5) != 1)
     {
@@ -270,9 +268,10 @@ pkbuf_t *gtp_handle_echo_req(pkbuf_t *pkb)
     }
 
 
-    pkb_resp = pkbuf_alloc(0, 100 /* enough for ECHO_RSP; use smaller buffer */);
-    d_assert(pkb_resp, return NULL, "Can't allocate pkbuf");
-    gtph_resp = (gtp_header_t *)pkb_resp->payload;
+    pkb_resp = ogs_pkbuf_alloc(NULL,
+            100 /* enough for ECHO_RSP; use smaller buffer */);
+    ogs_pkbuf_put(pkb_resp, 100);
+    gtph_resp = (gtp_header_t *)pkb_resp->data;
 
     /* reply back immediately */
     gtph_resp->flags = (1 << 5); /* set version */
@@ -290,37 +289,38 @@ pkbuf_t *gtp_handle_echo_req(pkbuf_t *pkb)
         {
             /* sequence exists */
             gtph_resp->flags |= GTPU_FLAGS_S;
-            *((c_uint8_t *)pkb_resp->payload + idx) = *((c_uint8_t *)pkb->payload + idx);
-            *((c_uint8_t *)pkb_resp->payload + idx + 1) = *((c_uint8_t *)pkb->payload + idx + 1);
+            *((uint8_t *)pkb_resp->data + idx) = *((uint8_t *)pkb->data + idx);
+            *((uint8_t *)pkb_resp->data + idx + 1) =
+                *((uint8_t *)pkb->data + idx + 1);
         }
         else
         {
-            *((c_uint8_t *)pkb_resp->payload + idx) = 0;
-            *((c_uint8_t *)pkb_resp->payload + idx + 1) = 0;
+            *((uint8_t *)pkb_resp->data + idx) = 0;
+            *((uint8_t *)pkb_resp->data + idx + 1) = 0;
         }
         idx += 2;
         if (gtph->flags & GTPU_FLAGS_PN)
         {
             /* sequence exists */
             gtph_resp->flags |= GTPU_FLAGS_PN;
-            *((c_uint8_t *)pkb_resp->payload + idx) = *((c_uint8_t *)pkb->payload + idx);
+            *((uint8_t *)pkb_resp->data + idx) = *((uint8_t *)pkb->data + idx);
         }
         else
         {
-            *((c_uint8_t *)pkb_resp->payload + idx) = 0;
+            *((uint8_t *)pkb_resp->data + idx) = 0;
         }
         idx++;
-        *((c_uint8_t *)pkb_resp->payload + idx) = 0; /* next-extension header */
+        *((uint8_t *)pkb_resp->data + idx) = 0; /* next-extension header */
         idx++;
     }
     
     /* fill Recovery IE */
     length += 2;
-    *((c_uint8_t *)pkb_resp->payload + idx) = 14; idx++; /* type */
-    *((c_uint8_t *)pkb_resp->payload + idx) = 0; idx++; /* restart counter */
+    *((uint8_t *)pkb_resp->data + idx) = 14; idx++; /* type */
+    *((uint8_t *)pkb_resp->data + idx) = 0; idx++; /* restart counter */
 
     gtph_resp->length = htons(length);
-    pkb_resp->len = idx;                /* buffer length */
+    ogs_pkbuf_trim(pkb_resp, idx); /* buffer length */
 
     return pkb_resp;
 }

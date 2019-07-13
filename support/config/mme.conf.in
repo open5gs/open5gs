@@ -2,12 +2,6 @@
 
 logger:
     file: @LOCALSTATE_DIR@/log/nextepc/mme.log
-    trace: 
-        app: 1
-        s1ap: 1
-        nas: 1
-        diameter: 1
-        gtpv2: 1
 
 parameter:
 

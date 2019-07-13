@@ -1,7 +1,3 @@
-#define TRACE_MODULE _mme_gtp_path
-#include "core_debug.h"
-#include "core_pkbuf.h"
-
 #include "gtp/gtp_node.h"
 #include "gtp/gtp_path.h"
 #include "gtp/gtp_xact.h"
@@ -11,46 +7,36 @@
 #include "mme_s11_build.h"
 #include "mme_sm.h"
 
-static int _gtpv2_c_recv_cb(sock_id sock, void *data)
+static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 {
-    status_t rv;
-    event_t e;
-    pkbuf_t *pkbuf = NULL;
+    int rv;
+    mme_event_t *e = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
-    d_assert(sock, return -1, "Null param");
+    ogs_assert(fd != INVALID_SOCKET);
 
-    rv = gtp_recv(sock, &pkbuf);
-    if (rv != CORE_OK)
+    rv = gtp_recv(fd, &pkbuf);
+    if (rv != OGS_OK)
     {
-        if (errno == EAGAIN)
-            return 0;
-
-        return -1;
+        ogs_log_message(OGS_LOG_WARN, ogs_socket_errno, "gtp_recv() failed");
+        return;
     }
 
-    d_trace(50, "[GTPv2] RECV : ");
-    d_trace_hex(50, pkbuf->payload, pkbuf->len);
-
-    event_set(&e, MME_EVT_S11_MESSAGE);
-    event_set_param1(&e, (c_uintptr_t)pkbuf);
-    rv = mme_event_send(&e);
-    if (rv != CORE_OK)
-    {
-        d_error("mme_event_send error");
-        pkbuf_free(pkbuf);
-        return -1;
-    }
-    return 0;
+    e = mme_event_new(MME_EVT_S11_MESSAGE);
+    ogs_assert(e);
+    e->pkbuf = pkbuf;
+    mme_event_send(e);
 }
 
-static c_sockaddr_t *gtp_addr_find_by_family(list_t *list, int family)
+static ogs_sockaddr_t *pgw_addr_find_by_family(ogs_list_t *list, int family)
 {
-    gtp_node_t *gnode = NULL;
-    d_assert(list, return NULL,);
+    mme_pgw_t *pgw = NULL;
+    ogs_assert(list);
 
-    for (gnode = list_first(list); gnode; gnode = list_next(gnode))
+    ogs_list_for_each(list, pgw)
     {
-        c_sockaddr_t *addr = gnode->sa_list;
+        ogs_assert(pgw->gnode);
+        ogs_sockaddr_t *addr = pgw->gnode->sa_list;
         while(addr)
         {
             if (addr->c_sa_family == family)
@@ -64,92 +50,121 @@ static c_sockaddr_t *gtp_addr_find_by_family(list_t *list, int family)
     return NULL;
 }
 
-status_t mme_gtp_open()
+int mme_gtp_open()
 {
-    status_t rv;
-    gtp_node_t *gnode = NULL;
+    int rv;
+    ogs_socknode_t *snode = NULL;
+    ogs_sock_t *sock = NULL;
+    mme_sgw_t *sgw = NULL;
 
-    rv = gtp_server_list(&mme_self()->gtpc_list, _gtpv2_c_recv_cb);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
-    rv = gtp_server_list(&mme_self()->gtpc_list6, _gtpv2_c_recv_cb);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_list_for_each(&mme_self()->gtpc_list, snode)
+    {
+        rv = gtp_server(snode);
+        ogs_assert(rv == OGS_OK);
+
+        sock = snode->sock;
+        ogs_assert(sock);
+
+        snode->poll = ogs_pollset_add(mme_self()->pollset,
+                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
+        ogs_assert(snode->poll);
+    }
+    ogs_list_for_each(&mme_self()->gtpc_list6, snode)
+    {
+        rv = gtp_server(snode);
+        ogs_assert(rv == OGS_OK);
+
+        sock = snode->sock;
+        ogs_assert(sock);
+
+        snode->poll = ogs_pollset_add(mme_self()->pollset,
+                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
+        ogs_assert(snode->poll);
+    }
 
     mme_self()->gtpc_sock = gtp_local_sock_first(&mme_self()->gtpc_list);
     mme_self()->gtpc_sock6 = gtp_local_sock_first(&mme_self()->gtpc_list6);
     mme_self()->gtpc_addr = gtp_local_addr_first(&mme_self()->gtpc_list);
     mme_self()->gtpc_addr6 = gtp_local_addr_first(&mme_self()->gtpc_list6);
 
-    d_assert(mme_self()->gtpc_addr || mme_self()->gtpc_addr6,
-            return CORE_ERROR, "No GTP Server");
+    ogs_assert(mme_self()->gtpc_addr || mme_self()->gtpc_addr6);
 
-    mme_self()->pgw_addr = gtp_addr_find_by_family(
+    mme_self()->pgw_addr = pgw_addr_find_by_family(
             &mme_self()->pgw_list, AF_INET);
-    mme_self()->pgw_addr6 = gtp_addr_find_by_family(
+    mme_self()->pgw_addr6 = pgw_addr_find_by_family(
             &mme_self()->pgw_list, AF_INET6);
-    d_assert(mme_self()->pgw_addr || mme_self()->pgw_addr6,
-            return CORE_ERROR,);
+    ogs_assert(mme_self()->pgw_addr || mme_self()->pgw_addr6);
 
-    for (gnode = list_first(&mme_self()->sgw_list);
-            gnode; gnode = list_next(gnode))
+    ogs_list_for_each(&mme_self()->sgw_list, sgw)
     {
-        rv = gtp_client(gnode);
-        d_assert(rv == CORE_OK, return CORE_ERROR,);
+        rv = gtp_connect(
+                mme_self()->gtpc_sock, mme_self()->gtpc_sock6, sgw->gnode);
+        ogs_assert(rv == OGS_OK);
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_gtp_close()
+int mme_gtp_close()
 {
-    sock_delete_list(&mme_self()->gtpc_list);
-    sock_delete_list(&mme_self()->gtpc_list6);
+    ogs_socknode_t *snode = NULL;
 
-    return CORE_OK;
+    ogs_list_for_each(&mme_self()->gtpc_list, snode)
+    {
+        ogs_pollset_remove(snode->poll);
+        ogs_sock_destroy(snode->sock);
+    }
+    ogs_list_for_each(&mme_self()->gtpc_list6, snode)
+    {
+        ogs_pollset_remove(snode->poll);
+        ogs_sock_destroy(snode->sock);
+    }
+
+    return OGS_OK;
 }
 
-status_t mme_gtp_send_create_session_request(mme_sess_t *sess)
+int mme_gtp_send_create_session_request(mme_sess_t *sess)
 {
-    status_t rv;
+    int rv;
     gtp_header_t h;
-    pkbuf_t *pkbuf = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
     gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
 
     mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_CREATE_SESSION_REQUEST_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
     rv = mme_s11_build_create_session_request(&pkbuf, h.type, sess);
-    d_assert(rv == CORE_OK, return CORE_ERROR,
-            "S11 build error");
+    ogs_assert(rv == OGS_OK);
 
     xact = gtp_xact_local_create(mme_ue->gnode, &h, pkbuf);
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 
-status_t mme_gtp_send_modify_bearer_request(
+int mme_gtp_send_modify_bearer_request(
         mme_bearer_t *bearer, int uli_presence)
 {
-    status_t rv;
+    int rv;
 
     gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
 
     gtp_header_t h;
-    pkbuf_t *pkbuf = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_MODIFY_BEARER_REQUEST_TYPE;
@@ -157,53 +172,53 @@ status_t mme_gtp_send_modify_bearer_request(
 
     rv = mme_s11_build_modify_bearer_request(
             &pkbuf, h.type, bearer, uli_presence);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+    ogs_assert(rv == OGS_OK);
 
     xact = gtp_xact_local_create(mme_ue->gnode, &h, pkbuf);
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_gtp_send_delete_session_request(mme_sess_t *sess)
+int mme_gtp_send_delete_session_request(mme_sess_t *sess)
 {
-    status_t rv;
-    pkbuf_t *s11buf = NULL;
+    int rv;
+    ogs_pkbuf_t *s11buf = NULL;
     gtp_header_t h;
     gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     mme_ue = sess->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_DELETE_SESSION_REQUEST_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
     rv = mme_s11_build_delete_session_request(&s11buf, h.type, sess);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+    ogs_assert(rv == OGS_OK);
 
     xact = gtp_xact_local_create(mme_ue->gnode, &h, s11buf);
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     GTP_XACT_STORE_SESSION(xact, sess);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
+int mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
 {
-    status_t rv;
+    int rv;
     mme_sess_t *sess = NULL, *next_sess = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
     sess = mme_sess_first(mme_ue);
     while (sess != NULL)
     {
@@ -212,17 +227,17 @@ status_t mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
         if (MME_HAVE_SGW_S1U_PATH(sess))
         {
             mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-            d_assert(bearer,, "Null param");
+            ogs_assert(bearer);
 
-            if (bearer && FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
+            if (bearer &&
+                OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect))
             {
-                d_warn("PDN will disconnect[EBI:%d]", bearer->ebi);
+                ogs_warn("PDN will disconnect[EBI:%d]", bearer->ebi);
             }
             else
             {
                 rv = mme_gtp_send_delete_session_request(sess);
-                d_assert(rv == CORE_OK, return CORE_ERROR,
-                        "mme_gtp_send_delete_session_request error");
+                ogs_assert(rv == OGS_OK);
             }
         }
         else
@@ -233,139 +248,139 @@ status_t mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue)
         sess = next_sess;
     }
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
+int mme_gtp_send_create_bearer_response(mme_bearer_t *bearer)
 {
-    status_t rv;
+    int rv;
 
     gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
 
     gtp_header_t h;
-    pkbuf_t *pkbuf = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
     xact = bearer->xact;
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_CREATE_BEARER_RESPONSE_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
     rv = mme_s11_build_create_bearer_response(&pkbuf, h.type, bearer);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+    ogs_assert(rv == OGS_OK);
 
     rv = gtp_xact_update_tx(xact, &h, pkbuf);
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_gtp_send_update_bearer_response(mme_bearer_t *bearer)
+int mme_gtp_send_update_bearer_response(mme_bearer_t *bearer)
 {
-    status_t rv;
+    int rv;
 
     gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
 
     gtp_header_t h;
-    pkbuf_t *pkbuf = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
     xact = bearer->xact;
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_UPDATE_BEARER_RESPONSE_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
     rv = mme_s11_build_update_bearer_response(&pkbuf, h.type, bearer);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+    ogs_assert(rv == OGS_OK);
 
     rv = gtp_xact_update_tx(xact, &h, pkbuf);
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_gtp_send_delete_bearer_response(mme_bearer_t *bearer)
+int mme_gtp_send_delete_bearer_response(mme_bearer_t *bearer)
 {
-    status_t rv;
+    int rv;
 
     gtp_xact_t *xact = NULL;
     mme_ue_t *mme_ue = NULL;
 
     gtp_header_t h;
-    pkbuf_t *pkbuf = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
     xact = bearer->xact;
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_DELETE_BEARER_RESPONSE_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
     rv = mme_s11_build_delete_bearer_response(&pkbuf, h.type, bearer);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+    ogs_assert(rv == OGS_OK);
 
     rv = gtp_xact_update_tx(xact, &h, pkbuf);
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue)
+int mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue)
 {
-    status_t rv;
+    int rv;
     gtp_header_t h;
-    pkbuf_t *pkbuf = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
     gtp_xact_t *xact = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
     rv = mme_s11_build_release_access_bearers_request(&pkbuf, h.type);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+    ogs_assert(rv == OGS_OK);
 
     xact = gtp_xact_local_create(mme_ue->gnode, &h, pkbuf);
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
+int mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
         mme_ue_t *mme_ue)
 {
-    status_t rv;
+    int rv;
     gtp_header_t h;
-    pkbuf_t *pkbuf = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
     gtp_xact_t *xact = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE;
@@ -373,39 +388,39 @@ status_t mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
 
     rv = mme_s11_build_create_indirect_data_forwarding_tunnel_request(
             &pkbuf, h.type, mme_ue);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "S11 build error");
+    ogs_assert(rv == OGS_OK);
 
     xact = gtp_xact_local_create(mme_ue->gnode, &h, pkbuf);
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
+int mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
         mme_ue_t *mme_ue)
 {
-    status_t rv;
+    int rv;
     gtp_header_t h;
-    pkbuf_t *pkbuf = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
     gtp_xact_t *xact = NULL;
 
-    d_assert(mme_ue, return CORE_ERROR, "Null param");
+    ogs_assert(mme_ue);
 
     memset(&h, 0, sizeof(gtp_header_t));
     h.type = GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
-    pkbuf = pkbuf_alloc(TLV_MAX_HEADROOM, 0);
-    d_assert(pkbuf, return CORE_ERROR, "S11 build error");
+    pkbuf = ogs_pkbuf_alloc(NULL, TLV_MAX_HEADROOM);
+    ogs_pkbuf_reserve(pkbuf, TLV_MAX_HEADROOM);
 
     xact = gtp_xact_local_create(mme_ue->gnode, &h, pkbuf);
-    d_assert(xact, return CORE_ERROR, "Null param");
+    ogs_assert(xact);
 
     rv = gtp_xact_commit(xact);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "xact_commit error");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }

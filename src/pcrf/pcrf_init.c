@@ -1,32 +1,31 @@
-#define TRACE_MODULE _pcrf_init
-
+#include "app/context.h"
 #include "pcrf_context.h"
 #include "pcrf_fd_path.h"
 
 static int initialized = 0;
 
-status_t pcrf_initialize(void)
+int pcrf_initialize(void)
 {
-    status_t rv;
+    int rv;
 
     rv = pcrf_context_init();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
     rv = pcrf_context_parse_config();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
-    rv = pcrf_context_setup_trace_module();
-    if (rv != CORE_OK) return rv;
+    rv = context_setup_log_module();
+    if (rv != OGS_OK) return rv;
 
     rv = pcrf_db_init();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
     rv = pcrf_fd_init();
-    if (rv != CORE_OK) return CORE_ERROR;
+    if (rv != OGS_OK) return OGS_ERROR;
 
     initialized = 1;
 
-	return CORE_OK;
+	return OGS_OK;
 }
 
 void pcrf_terminate(void)

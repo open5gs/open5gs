@@ -1,46 +1,60 @@
 ## Process this file with automake to produce Makefile.in.
 
-bin_PROGRAMS = testepc testvolte
+bin_PROGRAMS = testunit testsimple testcomplex testvolte
 
 configdir = ${sysconfdir}/nextepc/test
-config_DATA = sample.conf sample-volte.conf
+config_DATA = sample.conf sample-simple.conf sample-volte.conf
 
-testepc_SOURCES = \
-	common/abts.h common/abts.c \
-	common/testpacket.h common/testpacket.c common/testutil.h \
-	basic/testutil.c basic/s1ap_message_test.c basic/nas_message_test.c \
-	basic/gtp_message_test.c basic/security_test.c basic/s1setup_test.c \
-	basic/attach_test.c basic/volte_test.c basic/handover_test.c \
+testunit_SOURCES = \
+	common/testpacket.h common/testpacket.c \
+	unit/abts-main.c \
+	unit/s1ap_message_test.c unit/nas_message_test.c \
+	unit/gtp_message_test.c unit/security_test.c \
 	$(NULL)
+testunit_LDADD = $(top_srcdir)/src/libepc.la
+
+if !WITH_USRSCTP
+testunit_SOURCES += unit/sctp-test.c
+endif
+
+testsimple_SOURCES = \
+	common/testpacket.h common/testpacket.c \
+	simple/abts-main.c \
+	simple/mnc3-test.c \
+	$(NULL)
+testsimple_LDADD = $(top_srcdir)/src/libepc.la
+
+testcomplex_SOURCES = \
+	common/testpacket.h common/testpacket.c \
+	complex/abts-main.c \
+	complex/s1setup_test.c \
+	complex/attach_test.c complex/volte_test.c complex/handover_test.c \
+	$(NULL)
+testcomplex_LDADD = $(top_srcdir)/src/libepc.la
 
 testvolte_SOURCES = \
-	common/abts.h common/abts.c \
-	common/testpacket.h common/testpacket.c common/testutil.h \
-	volte/testutil.c volte/testapp.h volte/testapp.c volte/pcscf_fd_path.c \
+	common/testpacket.h common/testpacket.c \
+	volte/abts-main.c \
+	volte/testapp.h volte/testapp.c \
+	volte/pcscf_fd_path.h volte/pcscf_fd_path.c \
 	volte/volte_test.c \
 	$(NULL)
-
-LDADD = \
-    $(top_srcdir)/src/libepc.la \
-	$(NULL)
-
-DEPENDENCIES = \
-    $(top_srcdir)/src/libepc.la \
-	$(NULL)
+testvolte_LDADD = $(top_srcdir)/src/libepc.la
 
 AM_CPPFLAGS = \
-    -I$(top_srcdir)/lib/core/include \
+	@OGSCORE_CFLAGS@ \
+	@MONGOC_CFLAGS@ \
     -I$(top_srcdir)/lib \
     -I$(top_srcdir)/src \
-    -I$(top_srcdir)/lib/s1ap/asn1c \
+    -I$(top_srcdir)/lib/asn1c/common \
+    -I$(top_srcdir)/lib/asn1c/s1ap \
 	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
 	-I$(top_srcdir)/test/common \
-	@MONGOC_CFLAGS@ \
 	$(NULL)
 
 AM_CFLAGS = \
 	-Wall -Werror \
-	-Wno-unused-function -Wno-unused-variable \
+	-Wno-unused-function -Wno-unused-variable -Wno-deprecated-declarations \
 	@OSCPPFLAGS@ \
 	$(NULL)
 
@@ -62,7 +76,7 @@ clean-local:
 	test ! -f '$(TESTSUITE)' || \
 		$(SHELL) '$(TESTSUITE)' --clean
 
-AUTOM4TE = $(SHELL) $(top_srcdir)/build-aux/missing --run autom4te
+AUTOM4TE = $(SHELL) $(top_srcdir)/build/missing --run autom4te
 AUTOTEST = $(AUTOM4TE) --language=autotest
 $(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at

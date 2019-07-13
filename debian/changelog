@@ -1,3 +1,63 @@
+nextepc (0.4.0-5~ubuntu1) xenial; urgency=medium
+
+  * Integration with OGSLIB
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 30 Apr 2019 15:18:39 +0000
+
+nextepc (0.4.0-5~ubuntu) bionic; urgency=medium
+
+  * Integration with OGSLIB
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 29 Apr 2019 14:30:15 +0000
+
+nextepc (0.4.0) unstable; urgency=medium
+
+  * Integration with OGSLIB
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 29 Apr 2019 14:09:03 +0000
+
+nextepc (0.3.11~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 27 Apr 2019 13:59:08 +0000
+
+nextepc (0.3.11~xenial) xenial; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 27 Apr 2019 13:57:42 +0000
+
+nextepc (0.3.10~xenial) xenial; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 17 Aug 2018 04:28:38 +0000
+
+nextepc (0.3.10~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 17 Aug 2018 04:21:39 +0000
+
+nextepc (0.3.9~artful) artful; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 03 Jun 2018 01:40:44 +0000
+
+nextepc (0.3.9~xenial) xenial; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 03 Jun 2018 01:39:33 +0000
+
+nextepc (0.3.9~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 03 Jun 2018 01:38:15 +0000
+
 nextepc (0.3.8-1~bionic) bionic; urgency=medium
 
   * Bug Fixed 

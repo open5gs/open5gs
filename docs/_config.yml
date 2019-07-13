@@ -1,0 +1,108 @@
+# Welcome to Jekyll!
+#
+# This config file is meant for settings that affect your whole blog, values
+# which you are expected to set up once and rarely edit after that. If you find
+# yourself editing this file very often, consider using Jekyll's data files
+# feature for the data you need to update frequently.
+#
+# For technical reasons, this file is *NOT* reloaded automatically when you use
+# 'bundle exec jekyll serve'. If you change this file, please restart the server process.
+
+# Site settings
+# These are used to personalize your new site. If you look in the HTML files,
+# you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
+# You can create any custom variable you would like, and they will be accessible
+# in the templates via {{ site.myvariable }}.
+title: NextEPC
+email: acetcom@gmail.com
+description: >- # this means to ignore newlines until "baseurl:"
+  An open source implementation of the Evolved Packet Core of LTE networks 
+  supporting 3GPP Release 13.
+baseurl: "/nextepc" # the subpath of your site, e.g. /blog
+url: "https://open5gs.org" # the base hostname & protocol for your site, e.g. http://example.com
+author: "Sukchan Lee"
+github_username: acetcom
+google_analytics: UA-139225646-2
+
+# Build settings
+markdown: kramdown
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-redirect-from
+
+include:
+  - _pages
+
+# Exclude from processing.
+# The following items will not be processed, by default. Create a custom list
+# to override the default setting.
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+
+# Minima date format
+# refer to http://shopify.github.io/liquid/filters/date/ if you want to customize this
+minima_reboot:
+  date_format: "%Y-%m-%d %H:%M"
+
+footer_icons:
+  - username: open5gs
+    url: https://open5gs.org
+    icon: icon-github.svg
+
+header_pages:
+  - _pages/docs.md
+  - _pages/faq.md
+  - _pages/about.md
+  - _pages/github.md
+
+show_excerpts: true
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:path/
+
+defaults:
+  # _pages
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: page
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+  # _docs
+  - scope:
+      path: ""
+      type: docs
+    values:
+      layout: post
+
+# Archives
+#  Type
+#  - GitHub Pages compatible archive pages built with Liquid ~> type: liquid (default)
+#  - Jekyll Archives plugin archive pages ~> type: jekyll-archives
+#  Path (examples)
+#  - Archive page should exist at path when using Liquid method or you can
+#    expect broken links (especially with breadcrumbs enabled)
+#  - <base_path>/tags/my-awesome-tag/index.html ~> path: /tags/
+#  - <base_path/categories/my-awesome-category/index.html ~> path: /categories/
+#  - <base_path/my-awesome-category/index.html ~> path: /
+category_archive:
+  type: liquid
+  path: /categories/
+tag_archive:
+  type: liquid
+  path: /tags/

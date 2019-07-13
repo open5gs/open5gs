@@ -1,66 +1,59 @@
-#define TRACE_MODULE _mme_init
-
-#include "core_debug.h"
-#include "core_thread.h"
-#include "core_msgq.h"
-#include "core_fsm.h"
-
 #include "gtp/gtp_xact.h"
 
+#include "app/context.h"
+
+#include "mme_context.h"
+#include "mme_sm.h"
 #include "mme_event.h"
 
 #include "mme_fd_path.h"
 #include "s1ap_path.h"
 
-#include "mme_sm.h"
-
-static thread_id sm_thread;
-static void *THREAD_FUNC sm_main(thread_id id, void *data);
-
-static thread_id net_thread;
-static void *THREAD_FUNC net_main(thread_id id, void *data);
+static ogs_thread_t *thread;
+static void mme_main(void *data);
 
 static int initialized = 0;
 
-status_t mme_initialize()
+int mme_initialize()
 {
-    status_t rv;
+    int rv;
 
     rv = mme_context_init();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
     rv = mme_context_parse_config();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
-    rv = mme_context_setup_trace_module();
-    if (rv != CORE_OK) return rv;
+    rv = context_setup_log_module();
+    if (rv != OGS_OK) return rv;
 
     rv = mme_m_tmsi_pool_generate();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
     rv = mme_fd_init();
-    if (rv != CORE_OK) return CORE_ERROR;
+    if (rv != OGS_OK) return OGS_ERROR;
 
 #define USRSCTP_LOCAL_UDP_PORT 9899
-    rv = s1ap_init(USRSCTP_LOCAL_UDP_PORT);
-    if (rv != CORE_OK) return rv;
+    rv = s1ap_init(
+            context_self()->config.parameter.sctp_streams,
+            USRSCTP_LOCAL_UDP_PORT);
+    if (rv != OGS_OK) return rv;
 
-    rv = thread_create(&sm_thread, NULL, sm_main, NULL);
-    if (rv != CORE_OK) return rv;
-    rv = thread_create(&net_thread, NULL, net_main, NULL);
-    if (rv != CORE_OK) return rv;
+    thread = ogs_thread_create(mme_main, NULL);
+    if (!thread) return OGS_ERROR;
 
     initialized = 1;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 void mme_terminate(void)
 {
     if (!initialized) return;
 
-    thread_delete(net_thread);
-    thread_delete(sm_thread);
+    mme_event_term();
+
+    ogs_thread_destroy(thread);
 
     mme_fd_final();
 
@@ -69,70 +62,48 @@ void mme_terminate(void)
     s1ap_final();
 
     gtp_xact_final();
+
+    mme_event_final();
 }
 
-static void *THREAD_FUNC sm_main(thread_id id, void *data)
+static void mme_main(void *data)
 {
-    event_t event;
-    fsm_t mme_sm;
-    c_time_t prev_tm, now_tm;
-    status_t rv;
+    ogs_fsm_t mme_sm;
+    int rv;
 
-    memset(&event, 0, sizeof(event_t));
+    mme_event_init();
+    gtp_xact_init(mme_self()->timer_mgr);
 
-    mme_self()->queue_id = event_create(MSGQ_O_BLOCK);
-    d_assert(mme_self()->queue_id, return NULL, 
-            "MME event queue creation failed");
-    tm_service_init(&mme_self()->tm_service);
-    gtp_xact_init(&mme_self()->tm_service,
-            MME_EVT_S11_T3_RESPONSE, MME_EVT_S11_T3_HOLDING);
+    ogs_fsm_create(&mme_sm, mme_state_initial, mme_state_final);
+    ogs_fsm_init(&mme_sm, 0);
 
-    fsm_create(&mme_sm, mme_state_initial, mme_state_final);
-    fsm_init(&mme_sm, 0);
-
-    prev_tm = time_now();
-
-#define EVENT_LOOP_TIMEOUT 50   /* 50ms */
-    while ((!thread_should_stop()))
+    for ( ;; )
     {
-        rv = event_timedrecv(mme_self()->queue_id, &event, EVENT_LOOP_TIMEOUT);
+        ogs_pollset_poll(mme_self()->pollset,
+                ogs_timer_mgr_next(mme_self()->timer_mgr));
 
-        d_assert(rv != CORE_ERROR, continue,
-                "While receiving a event message, error occurs");
+        ogs_timer_mgr_expire(mme_self()->timer_mgr);
 
-        now_tm = time_now();
-
-        /* if the gap is over 10 ms, execute preriodic jobs */
-        if (now_tm - prev_tm > EVENT_LOOP_TIMEOUT * 1000)
+        for ( ;; )
         {
-            tm_execute_tm_service(
-                    &mme_self()->tm_service, mme_self()->queue_id);
+            mme_event_t *e = NULL;
 
-            prev_tm = now_tm;
+            rv = ogs_queue_trypop(mme_self()->queue, (void**)&e);
+            ogs_assert(rv != OGS_ERROR);
+
+            if (rv == OGS_DONE)
+                goto done;
+
+            if (rv == OGS_RETRY)
+                break;
+
+            ogs_assert(e);
+            ogs_fsm_dispatch(&mme_sm, e);
+            mme_event_free(e);
         }
-
-        if (rv == CORE_TIMEUP)
-        {
-            continue;
-        }
-
-        fsm_dispatch(&mme_sm, (fsm_event_t*)&event);
     }
+done:
 
-    fsm_final(&mme_sm, 0);
-    fsm_clear(&mme_sm);
-
-    event_delete(mme_self()->queue_id);
-
-    return NULL;
-}
-
-static void *THREAD_FUNC net_main(thread_id id, void *data)
-{
-    while (!thread_should_stop())
-    {
-        sock_select_loop(EVENT_LOOP_TIMEOUT); 
-    }
-
-    return NULL;
+    ogs_fsm_fini(&mme_sm, 0);
+    ogs_fsm_delete(&mme_sm);
 }

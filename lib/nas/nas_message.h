@@ -1,32 +1,26 @@
 /*
- * Copyright (c) 2017, NextEPC Group
- * All rights reserved.
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
-
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /*******************************************************************************
- * This file had been created by gtpv2c_tlv.py script v0.1.0
+ * This file had been created by nas_message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2018-01-23 15:58:42.847411 by acetcom
+ * Created on: 2019-03-17 02:01:09.555771 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -39,7 +33,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-/* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
+/* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
  * When calculating AES_CMAC, we need to use the headroom of the packet. */
 #define NAS_HEADROOM 16
 
@@ -58,23 +52,23 @@ extern "C" {
 #define NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 
 typedef struct _nas_emm_header_t {
-ED2(c_uint8_t security_header_type:4;,
-    c_uint8_t protocol_discriminator:4;)
-    c_uint8_t message_type;
+ED2(uint8_t security_header_type:4;,
+    uint8_t protocol_discriminator:4;)
+    uint8_t message_type;
 } __attribute__ ((packed)) nas_emm_header_t;
 
 typedef struct _nas_esm_header_t {
-ED2(c_uint8_t eps_bearer_identity:4;,
-    c_uint8_t protocol_discriminator:4;)
-    c_uint8_t procedure_transaction_identity;
-    c_uint8_t message_type;
+ED2(uint8_t eps_bearer_identity:4;,
+    uint8_t protocol_discriminator:4;)
+    uint8_t procedure_transaction_identity;
+    uint8_t message_type;
 } __attribute__ ((packed)) nas_esm_header_t;
 
 typedef struct _nas_security_header_t {
-ED2(c_uint8_t security_header_type:4;,
-    c_uint8_t protocol_discriminator:4;)
-    c_uint32_t message_authentication_code;
-    c_uint8_t sequence_number;
+ED2(uint8_t security_header_type:4;,
+    uint8_t protocol_discriminator:4;)
+    uint32_t message_authentication_code;
+    uint8_t sequence_number;
 } __attribute__ ((packed)) nas_security_header_t;
 
 #define NAS_ATTACH_REQUEST 65
@@ -181,7 +175,7 @@ typedef struct _nas_attach_request_t {
     nas_esm_message_container_t esm_message_container;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_p_tmsi_signature_t old_p_tmsi_signature;
     nas_eps_mobile_identity_t additional_guti;
     nas_tracking_area_identity_t last_visited_registered_tai;
@@ -242,7 +236,7 @@ typedef struct _nas_attach_accept_t {
     nas_esm_message_container_t esm_message_container;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_eps_mobile_identity_t guti;
     nas_location_area_identification_t location_area_identification;
     nas_mobile_identity_t ms_identity;
@@ -286,7 +280,7 @@ typedef struct _nas_attach_reject_t {
     nas_emm_cause_t emm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_esm_message_container_t esm_message_container;
     nas_gprs_timer_2_t t3346_value;
     nas_gprs_timer_2_t t3402_value;
@@ -316,7 +310,7 @@ typedef struct _nas_detach_request_to_ue_t {
     nas_detach_type_t detach_type;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_emm_cause_t emm_cause;
 } nas_detach_request_to_ue_t;
 
@@ -381,7 +375,7 @@ typedef struct _nas_tracking_area_update_request_t {
     nas_eps_mobile_identity_t old_guti;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_key_set_identifier_t non_current_native_nas_key_set_identifier;
     nas_ciphering_key_sequence_number_t gprs_ciphering_key_sequence_number;
     nas_p_tmsi_signature_t old_p_tmsi_signature;
@@ -453,7 +447,7 @@ typedef struct _nas_tracking_area_update_accept_t {
     nas_eps_update_result_t eps_update_result;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_gprs_timer_t t3412_value;
     nas_eps_mobile_identity_t guti;
     nas_tracking_area_identity_list_t tai_list;
@@ -487,7 +481,7 @@ typedef struct _nas_tracking_area_update_reject_t {
     nas_emm_cause_t emm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_gprs_timer_2_t t3346_value;
     nas_extended_emm_cause_t extended_emm_cause;
 } nas_tracking_area_update_reject_t;
@@ -509,7 +503,7 @@ typedef struct _nas_extended_service_request_t {
     nas_mobile_identity_t m_tmsi;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_csfb_response_t csfb_response;
     nas_eps_bearer_context_status_t eps_bearer_context_status;
     nas_device_properties_t device_properties;
@@ -539,7 +533,7 @@ typedef struct _nas_service_reject_t {
     nas_gprs_timer_t t3442_value;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_gprs_timer_2_t t3346_value;
 } nas_service_reject_t;
 
@@ -555,7 +549,7 @@ typedef struct _nas_guti_reallocation_command_t {
     nas_eps_mobile_identity_t guti;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_tracking_area_identity_list_t tai_list;
 } nas_guti_reallocation_command_t;
 
@@ -613,7 +607,7 @@ typedef struct _nas_authentication_failure_t {
     nas_emm_cause_t emm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_authentication_failure_parameter_t authentication_failure_parameter;
 } nas_authentication_failure_t;
 
@@ -635,7 +629,7 @@ typedef struct _nas_security_mode_command_t {
     nas_ue_security_capability_t replayed_ue_security_capabilities;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_imeisv_request_t imeisv_request;
     nas_nonce_t replayed_nonceue;
     nas_nonce_t noncemme;
@@ -651,7 +645,7 @@ typedef struct _nas_security_mode_command_t {
 typedef struct _nas_security_mode_complete_t {
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_mobile_identity_t imeisv;
 } nas_security_mode_complete_t;
 
@@ -693,7 +687,7 @@ typedef struct _nas_emm_status_t {
 typedef struct _nas_emm_information_t {
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_network_name_t full_name_for_network;
     nas_network_name_t short_name_for_network;
     nas_time_zone_t local_time_zone;
@@ -739,7 +733,7 @@ typedef struct _nas_cs_service_notification_t {
     nas_paging_identity_t paging_identity;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_cli_t cli;
     nas_ss_code_t ss_code;
     nas_lcs_indicator_t lcs_indicator;
@@ -759,7 +753,7 @@ typedef struct _nas_uplink_generic_nas_transport_t {
     nas_generic_message_container_t generic_message_container;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_additional_information_t additional_information;
 } nas_uplink_generic_nas_transport_t;
 
@@ -776,7 +770,7 @@ typedef struct _nas_downlink_generic_nas_transport_t {
     nas_generic_message_container_t generic_message_container;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_additional_information_t additional_information;
 } nas_downlink_generic_nas_transport_t;
 
@@ -822,7 +816,7 @@ typedef struct _nas_activate_default_eps_bearer_context_request_t {
     nas_pdn_address_t pdn_address;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_transaction_identifier_t transaction_identifier;
     nas_quality_of_service_t negotiated_qos;
     nas_llc_service_access_point_identifier_t negotiated_llc_sapi;
@@ -852,7 +846,7 @@ typedef struct _nas_activate_default_eps_bearer_context_request_t {
 typedef struct _nas_activate_default_eps_bearer_context_accept_t {
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
 } nas_activate_default_eps_bearer_context_accept_t;
@@ -871,7 +865,7 @@ typedef struct _nas_activate_default_eps_bearer_context_reject_t {
     nas_esm_cause_t esm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
 } nas_activate_default_eps_bearer_context_reject_t;
@@ -906,7 +900,7 @@ typedef struct _nas_activate_dedicated_eps_bearer_context_request_t {
     nas_traffic_flow_template_t tft;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_transaction_identifier_t transaction_identifier;
     nas_quality_of_service_t negotiated_qos;
     nas_llc_service_access_point_identifier_t negotiated_llc_sapi;
@@ -932,7 +926,7 @@ typedef struct _nas_activate_dedicated_eps_bearer_context_request_t {
 typedef struct _nas_activate_dedicated_eps_bearer_context_accept_t {
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_nbifom_container_t nbifom_container;
     nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
@@ -954,7 +948,7 @@ typedef struct _nas_activate_dedicated_eps_bearer_context_reject_t {
     nas_esm_cause_t esm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_nbifom_container_t nbifom_container;
     nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
@@ -992,7 +986,7 @@ typedef struct _nas_activate_dedicated_eps_bearer_context_reject_t {
 typedef struct _nas_modify_eps_bearer_context_request_t {
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_eps_quality_of_service_t new_eps_qos;
     nas_traffic_flow_template_t tft;
     nas_quality_of_service_t new_qos;
@@ -1021,7 +1015,7 @@ typedef struct _nas_modify_eps_bearer_context_request_t {
 typedef struct _nas_modify_eps_bearer_context_accept_t {
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_nbifom_container_t nbifom_container;
     nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
@@ -1043,7 +1037,7 @@ typedef struct _nas_modify_eps_bearer_context_reject_t {
     nas_esm_cause_t esm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_nbifom_container_t nbifom_container;
     nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
@@ -1069,7 +1063,7 @@ typedef struct _nas_deactivate_eps_bearer_context_request_t {
     nas_esm_cause_t esm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_gprs_timer_3_t t3396_value;
     nas_wlan_offload_acceptability_t wlan_offload_indication;
@@ -1089,7 +1083,7 @@ typedef struct _nas_deactivate_eps_bearer_context_request_t {
 typedef struct _nas_deactivate_eps_bearer_context_accept_t {
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
 } nas_deactivate_eps_bearer_context_accept_t;
@@ -1118,7 +1112,7 @@ typedef struct _nas_pdn_connectivity_request_t {
     nas_request_type_t request_type;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_esm_information_transfer_flag_t esm_information_transfer_flag;
     nas_access_point_name_t access_point_name;
     nas_protocol_configuration_options_t protocol_configuration_options;
@@ -1148,7 +1142,7 @@ typedef struct _nas_pdn_connectivity_reject_t {
     nas_esm_cause_t esm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_gprs_timer_3_t back_off_timer_value;
     nas_re_attempt_indicator_t re_attempt_indicator;
@@ -1170,7 +1164,7 @@ typedef struct _nas_pdn_disconnect_request_t {
     nas_linked_eps_bearer_identity_t linked_eps_bearer_identity;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
 } nas_pdn_disconnect_request_t;
@@ -1189,7 +1183,7 @@ typedef struct _nas_pdn_disconnect_reject_t {
     nas_esm_cause_t esm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
 } nas_pdn_disconnect_reject_t;
@@ -1214,7 +1208,7 @@ typedef struct _nas_bearer_resource_allocation_request_t {
     nas_eps_quality_of_service_t required_traffic_flow_qos;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_device_properties_t device_properties;
     nas_nbifom_container_t nbifom_container;
@@ -1241,7 +1235,7 @@ typedef struct _nas_bearer_resource_allocation_reject_t {
     nas_esm_cause_t esm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_gprs_timer_3_t back_off_timer_value;
     nas_re_attempt_indicator_t re_attempt_indicator;
@@ -1274,7 +1268,7 @@ typedef struct _nas_bearer_resource_modification_request_t {
     nas_traffic_flow_aggregate_description_t traffic_flow_aggregate;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_eps_quality_of_service_t required_traffic_flow_qos;
     nas_esm_cause_t esm_cause;
     nas_protocol_configuration_options_t protocol_configuration_options;
@@ -1304,7 +1298,7 @@ typedef struct _nas_bearer_resource_modification_reject_t {
     nas_esm_cause_t esm_cause;
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_gprs_timer_3_t back_off_timer_value;
     nas_re_attempt_indicator_t re_attempt_indicator;
@@ -1326,7 +1320,7 @@ typedef struct _nas_bearer_resource_modification_reject_t {
 typedef struct _nas_esm_information_response_t {
 
     /* Optional fields */
-    c_uint32_t presencemask;
+    uint32_t presencemask;
     nas_access_point_name_t access_point_name;
     nas_protocol_configuration_options_t protocol_configuration_options;
     nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
@@ -1412,10 +1406,10 @@ typedef struct _nas_message_t {
     };
 } nas_message_t;
 
-CORE_DECLARE(status_t) nas_emm_decode(nas_message_t *message, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) nas_esm_decode(nas_message_t *message, pkbuf_t *pkbuf);
-CORE_DECLARE(status_t) nas_plain_encode(
-        pkbuf_t **pkbuf, nas_message_t *message);
+int nas_emm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf);
+int nas_esm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf);
+int nas_plain_encode(
+        ogs_pkbuf_t **pkbuf, nas_message_t *message);
 
 #ifdef __cplusplus
 }

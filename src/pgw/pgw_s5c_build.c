@@ -1,8 +1,4 @@
-#define TRACE_MODULE _pgw_s5c_build
-
-#include "core_debug.h"
-
-#include "3gpp_types.h"
+#include "base/types.h"
 #include "gtp/gtp_types.h"
 #include "gtp/gtp_conv.h"
 #include "gtp/gtp_message.h"
@@ -12,13 +8,13 @@
 
 #include "pgw_context.h"
 
-static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco);
+static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco);
 
-status_t pgw_s5c_build_create_session_response(
-        pkbuf_t **pkbuf, c_uint8_t type, pgw_sess_t *sess,
+int pgw_s5c_build_create_session_response(
+        ogs_pkbuf_t **pkbuf, uint8_t type, pgw_sess_t *sess,
         gx_message_t *gx_message, gtp_create_session_request_t *req)
 {
-    status_t rv;
+    int rv;
     pgw_bearer_t *bearer = NULL;
 
     gtp_message_t gtp_message;
@@ -27,19 +23,19 @@ status_t pgw_s5c_build_create_session_response(
     gtp_cause_t cause;
     gtp_f_teid_t pgw_s5c_teid, pgw_s5u_teid;
     int len;
-    c_uint8_t pco_buf[MAX_PCO_LEN];
-    c_int16_t pco_len;
+    uint8_t pco_buf[MAX_PCO_LEN];
+    int16_t pco_len;
 
-    d_trace(3, "[PGW] Create Session Response\n");
+    ogs_debug("[PGW] Create Session Response");
 
-    d_assert(sess, return CORE_ERROR, "Null param");
-    d_assert(req, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
+    ogs_assert(req);
     bearer = pgw_default_bearer_in_sess(sess);
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
 
-    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    d_trace(5, "    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]\n",
+    ogs_debug("    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]",
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
     rsp = &gtp_message.create_session_response;
@@ -58,7 +54,7 @@ status_t pgw_s5c_build_create_session_response(
     pgw_s5c_teid.teid = htonl(sess->pgw_s5c_teid);
     rv = gtp_sockaddr_to_f_teid(
         pgw_self()->gtpc_addr, pgw_self()->gtpc_addr6, &pgw_s5c_teid, &len);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
         presence = 1;
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
@@ -75,7 +71,7 @@ status_t pgw_s5c_build_create_session_response(
     else if (sess->ipv6)
         rsp->pdn_address_allocation.len = PAA_IPV6_LEN;
     else
-        d_assert(0, return CORE_ERROR, "No IP Pool");
+        ogs_assert_if_reached();
     rsp->pdn_address_allocation.presence = 1;
 
     /* APN Restriction */
@@ -89,7 +85,7 @@ status_t pgw_s5c_build_create_session_response(
     if (req->protocol_configuration_options.presence == 1)
     {
         pco_len = pgw_pco_build(pco_buf, &req->protocol_configuration_options);
-        d_assert(pco_len > 0, return CORE_ERROR, "pco build failed");
+        ogs_assert(pco_len > 0);
         rsp->protocol_configuration_options.presence = 1;
         rsp->protocol_configuration_options.data = pco_buf;
         rsp->protocol_configuration_options.len = pco_len;
@@ -109,33 +105,33 @@ status_t pgw_s5c_build_create_session_response(
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
     rv = gtp_sockaddr_to_f_teid(
         pgw_self()->gtpu_addr, pgw_self()->gtpu_addr6, &pgw_s5u_teid, &len);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 1;
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = len;
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t pgw_s5c_build_delete_session_response(
-        pkbuf_t **pkbuf, c_uint8_t type,
+int pgw_s5c_build_delete_session_response(
+        ogs_pkbuf_t **pkbuf, uint8_t type,
         gx_message_t *gx_message, gtp_delete_session_request_t *req)
 {
-    status_t rv;
+    int rv;
 
     gtp_message_t gtp_message;
     gtp_delete_session_response_t *rsp = NULL;
 
     gtp_cause_t cause;
-    c_uint8_t pco_buf[MAX_PCO_LEN];
-    c_int16_t pco_len;
+    uint8_t pco_buf[MAX_PCO_LEN];
+    int16_t pco_len;
     
-    d_assert(gx_message, return CORE_ERROR, "Null param");
-    d_assert(req, return CORE_ERROR, "Null param");
+    ogs_assert(gx_message);
+    ogs_assert(req);
 
     /* prepare cause */
     memset(&cause, 0, sizeof(cause));
@@ -155,7 +151,7 @@ status_t pgw_s5c_build_delete_session_response(
     if (req->protocol_configuration_options.presence == 1)
     {
         pco_len = pgw_pco_build(pco_buf, &req->protocol_configuration_options);
-        d_assert(pco_len > 0, return CORE_ERROR, "pco build failed");
+        ogs_assert(pco_len > 0);
         rsp->protocol_configuration_options.presence = 1;
         rsp->protocol_configuration_options.data = pco_buf;
         rsp->protocol_configuration_options.len = pco_len;
@@ -166,9 +162,9 @@ status_t pgw_s5c_build_delete_session_response(
     /* build */
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
@@ -176,8 +172,8 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
     int i, j, len;
     pgw_pf_t *pf = NULL;
 
-    d_assert(tft, return,);
-    d_assert(bearer, return,);
+    ogs_assert(tft);
+    ogs_assert(bearer);
 
     memset(tft, 0, sizeof(*tft));
     tft->code = GTP_TFT_CODE_CREATE_NEW_TFT;
@@ -224,7 +220,7 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
             memcpy(tft->pf[i].component[j].ipv6.addr, pf->rule.ip.local.addr,
                     sizeof pf->rule.ip.local.addr);
             tft->pf[i].component[j].ipv6.prefixlen =
-                contigmask((c_uint8_t *)pf->rule.ip.local.mask, 128);
+                contigmask((uint8_t *)pf->rule.ip.local.mask, 128);
             j++; len += 18;
         }
 
@@ -235,7 +231,7 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
             memcpy(tft->pf[i].component[j].ipv6.addr, pf->rule.ip.remote.addr,
                     sizeof pf->rule.ip.remote.addr);
             tft->pf[i].component[j].ipv6.prefixlen =
-                contigmask((c_uint8_t *)pf->rule.ip.remote.mask, 128);
+                contigmask((uint8_t *)pf->rule.ip.remote.mask, 128);
             j++; len += 18;
         }
 
@@ -286,10 +282,10 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
     tft->num_of_packet_filter = i;
 }
 
-status_t pgw_s5c_build_create_bearer_request(
-        pkbuf_t **pkbuf, c_uint8_t type, pgw_bearer_t *bearer)
+int pgw_s5c_build_create_bearer_request(
+        ogs_pkbuf_t **pkbuf, uint8_t type, pgw_bearer_t *bearer)
 {
-    status_t rv;
+    int rv;
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *linked_bearer = NULL;
 
@@ -303,14 +299,14 @@ status_t pgw_s5c_build_create_bearer_request(
     int len;
     char tft_buf[GTP_MAX_TRAFFIC_FLOW_TEMPLATE];
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     sess = bearer->sess;
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     linked_bearer = pgw_default_bearer_in_sess(sess);
-    d_assert(linked_bearer, return CORE_ERROR, "Null param");
+    ogs_assert(linked_bearer);
 
-    d_trace(3, "[PGW] Create Bearer Request\n");
-    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    ogs_debug("[PGW] Create Bearer Request");
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     req = &gtp_message.create_bearer_request;
@@ -331,7 +327,7 @@ status_t pgw_s5c_build_create_bearer_request(
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
     rv = gtp_sockaddr_to_f_teid(
         pgw_self()->gtpu_addr, pgw_self()->gtpu_addr6, &pgw_s5u_teid, &len);
-    d_assert(rv == CORE_OK, return CORE_ERROR,);
+    ogs_assert(rv == OGS_OK);
     req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.data = &pgw_s5u_teid;
     req->bearer_contexts.s5_s8_u_sgw_f_teid.len = len;
@@ -361,16 +357,16 @@ status_t pgw_s5c_build_create_bearer_request(
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t pgw_s5c_build_update_bearer_request(
-        pkbuf_t **pkbuf, c_uint8_t type, pgw_bearer_t *bearer,
+int pgw_s5c_build_update_bearer_request(
+        ogs_pkbuf_t **pkbuf, uint8_t type, pgw_bearer_t *bearer,
         int qos_presence, int tft_presence)
 {
-    status_t rv;
+    int rv;
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *linked_bearer = NULL;
 
@@ -382,14 +378,14 @@ status_t pgw_s5c_build_update_bearer_request(
     gtp_tft_t tft;
     char tft_buf[GTP_MAX_TRAFFIC_FLOW_TEMPLATE];
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     sess = bearer->sess;
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     linked_bearer = pgw_default_bearer_in_sess(sess);
-    d_assert(linked_bearer, return CORE_ERROR, "Null param");
+    ogs_assert(linked_bearer);
 
-    d_trace(3, "[PGW] Update Bearer Request\n");
-    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    ogs_debug("[PGW] Update Bearer Request");
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     req = &gtp_message.update_bearer_request;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -430,29 +426,29 @@ status_t pgw_s5c_build_update_bearer_request(
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-status_t pgw_s5c_build_delete_bearer_request(
-        pkbuf_t **pkbuf, c_uint8_t type, pgw_bearer_t *bearer)
+int pgw_s5c_build_delete_bearer_request(
+        ogs_pkbuf_t **pkbuf, uint8_t type, pgw_bearer_t *bearer)
 {
-    status_t rv;
+    int rv;
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *linked_bearer = NULL;
 
     gtp_message_t gtp_message;
     gtp_delete_bearer_request_t *req = NULL;
 
-    d_assert(bearer, return CORE_ERROR, "Null param");
+    ogs_assert(bearer);
     sess = bearer->sess;
-    d_assert(sess, return CORE_ERROR, "Null param");
+    ogs_assert(sess);
     linked_bearer = pgw_default_bearer_in_sess(sess);
-    d_assert(linked_bearer, return CORE_ERROR, "Null param");
+    ogs_assert(linked_bearer);
 
-    d_trace(3, "[PGW] Delete Bearer Request\n");
-    d_trace(5, "    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]\n",
+    ogs_debug("[PGW] Delete Bearer Request");
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     req = &gtp_message.delete_bearer_request;
     memset(&gtp_message, 0, sizeof(gtp_message_t));
@@ -472,26 +468,26 @@ status_t pgw_s5c_build_delete_bearer_request(
 
     gtp_message.h.type = type;
     rv = gtp_build_msg(pkbuf, &gtp_message);
-    d_assert(rv == CORE_OK, return CORE_ERROR, "gtp build failed");
+    ogs_assert(rv == OGS_OK);
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
-static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
+static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
 {
-    status_t rv;
+    int rv;
     pco_t ue, pgw;
     pco_ipcp_t pco_ipcp;
-    ipsubnet_t dns_primary, dns_secondary, dns6_primary, dns6_secondary;
-    ipsubnet_t p_cscf, p_cscf6;
-    c_int8_t size = 0;
+    ogs_ipsubnet_t dns_primary, dns_secondary, dns6_primary, dns6_secondary;
+    ogs_ipsubnet_t p_cscf, p_cscf6;
+    int size = 0;
     int i = 0;
 
-    d_assert(pco_buf, return -1, "Null param");
-    d_assert(tlv_pco, return -1, "Null param");
+    ogs_assert(pco_buf);
+    ogs_assert(tlv_pco);
 
     size = pco_parse(&ue, tlv_pco->data, tlv_pco->len);
-    d_assert(size, return -1, "pco parse failed");
+    ogs_assert(size);
 
     memset(&pgw, 0, sizeof(pco_t));
     pgw.ext = ue.ext;
@@ -499,7 +495,7 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
 
     for(i = 0; i < ue.num_of_id; i++)
     {
-        c_uint8_t *data = ue.ids[i].data;
+        uint8_t *data = ue.ids[i].data;
         switch(ue.ids[i].id)
         {
             case PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL:
@@ -509,7 +505,7 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = 4;
                     pgw.ids[pgw.num_of_id].data =
-                        (c_uint8_t *)"\x03\x00\x00\x04"; /* Code : Success */
+                        (uint8_t *)"\x03\x00\x00\x04"; /* Code : Success */
                     pgw.num_of_id++;
                 }
                 break;
@@ -518,7 +514,7 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
             {
                 if (data[0] == 1) /* Code : Configuration Request */
                 {
-                    c_uint16_t len = 16;
+                    uint16_t len = 16;
 
                     memset(&pco_ipcp, 0, sizeof(pco_ipcp_t));
                     pco_ipcp.code = 2; /* Code : Configuration Ack */
@@ -527,9 +523,9 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                     /* Primary DNS Server IP Address */
                     if (pgw_self()->dns[0])
                     {
-                        rv = core_ipsubnet(
+                        rv = ogs_ipsubnet(
                                 &dns_primary, pgw_self()->dns[0], NULL);
-                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        ogs_assert(rv == OGS_OK);
                         pco_ipcp.options[0].type = 129; 
                         pco_ipcp.options[0].len = 6; 
                         pco_ipcp.options[0].addr = dns_primary.sub[0];
@@ -538,9 +534,9 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                     /* Secondary DNS Server IP Address */
                     if (pgw_self()->dns[1])
                     {
-                        rv = core_ipsubnet(
+                        rv = ogs_ipsubnet(
                                 &dns_secondary, pgw_self()->dns[1], NULL);
-                        d_assert(rv == CORE_OK, return CORE_ERROR,);
+                        ogs_assert(rv == OGS_OK);
                         pco_ipcp.options[1].type = 131; 
                         pco_ipcp.options[1].len = 6; 
                         pco_ipcp.options[1].addr = dns_secondary.sub[0];
@@ -548,7 +544,7 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
 
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = len;
-                    pgw.ids[pgw.num_of_id].data = (c_uint8_t *)&pco_ipcp;
+                    pgw.ids[pgw.num_of_id].data = (uint8_t *)&pco_ipcp;
 
                     pgw.num_of_id++;
                 }
@@ -558,9 +554,9 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
             {
                 if (pgw_self()->dns[0])
                 {
-                    rv = core_ipsubnet(
+                    rv = ogs_ipsubnet(
                             &dns_primary, pgw_self()->dns[0], NULL);
-                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    ogs_assert(rv == OGS_OK);
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = IPV4_LEN;
                     pgw.ids[pgw.num_of_id].data = dns_primary.sub;
@@ -569,9 +565,9 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
 
                 if (pgw_self()->dns[1])
                 {
-                    rv = core_ipsubnet(
+                    rv = ogs_ipsubnet(
                             &dns_secondary, pgw_self()->dns[1], NULL);
-                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    ogs_assert(rv == OGS_OK);
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = IPV4_LEN;
                     pgw.ids[pgw.num_of_id].data = dns_secondary.sub;
@@ -583,9 +579,9 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
             {
                 if (pgw_self()->dns6[0])
                 {
-                    rv = core_ipsubnet(
+                    rv = ogs_ipsubnet(
                             &dns6_primary, pgw_self()->dns6[0], NULL);
-                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    ogs_assert(rv == OGS_OK);
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = IPV6_LEN;
                     pgw.ids[pgw.num_of_id].data = dns6_primary.sub;
@@ -594,9 +590,9 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
 
                 if (pgw_self()->dns6[1])
                 {
-                    rv = core_ipsubnet(
+                    rv = ogs_ipsubnet(
                             &dns6_secondary, pgw_self()->dns6[1], NULL);
-                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    ogs_assert(rv == OGS_OK);
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = IPV6_LEN;
                     pgw.ids[pgw.num_of_id].data = dns6_secondary.sub;
@@ -608,9 +604,9 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
             {
                 if (pgw_self()->num_of_p_cscf)
                 {
-                    rv = core_ipsubnet(&p_cscf,
+                    rv = ogs_ipsubnet(&p_cscf,
                         pgw_self()->p_cscf[pgw_self()->p_cscf_index], NULL);
-                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    ogs_assert(rv == OGS_OK);
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = IPV4_LEN;
                     pgw.ids[pgw.num_of_id].data = p_cscf.sub;
@@ -625,9 +621,9 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
             {
                 if (pgw_self()->num_of_p_cscf6)
                 {
-                    rv = core_ipsubnet(&p_cscf6,
+                    rv = ogs_ipsubnet(&p_cscf6,
                         pgw_self()->p_cscf6[pgw_self()->p_cscf6_index], NULL);
-                    d_assert(rv == CORE_OK, return CORE_ERROR,);
+                    ogs_assert(rv == OGS_OK);
                     pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                     pgw.ids[pgw.num_of_id].len = IPV6_LEN;
                     pgw.ids[pgw.num_of_id].data = p_cscf6.sub;
@@ -645,7 +641,7 @@ static c_int16_t pgw_pco_build(c_uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                 /* TODO */
                 break;
             default:
-                d_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);
+                ogs_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);
         }
     }
 

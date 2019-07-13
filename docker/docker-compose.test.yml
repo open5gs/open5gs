@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  test:
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-build
+    depends_on:
+      - mongodb
+      - build
+    environment:
+      DB_URI: mongodb://mongodb/nextepc
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - "/dev/net/tun:/dev/net/tun"
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+    hostname: nextepc-test
+    command: /bin/bash -c "/root/setup.sh; /usr/bin/testepc"

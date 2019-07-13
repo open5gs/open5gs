@@ -4,24 +4,27 @@ Section: net
 Priority: optional
 Build-Depends: debhelper (>= 9),
                autotools-dev,
-               pkg-config,
-               git,
                dh-autoreconf,
                dh-systemd,
+               pkg-config,
+               autoconf,
+               automake,
+               libtool,
                flex,
                bison,
-               libsctp-dev,
+               ogslib-dev (>= 1.0.0),
                libgnutls28-dev,
                libgcrypt-dev,
                libssl-dev,
                libidn11-dev,
                libmongoc-dev,
                libbson-dev,
-               libyaml-dev
-Standards-Version: 3.9.6
-Vcs-Browser: https://github.com/acetcom/nextepc
-Vcs-Git: git://github.com/acetcom/nextepc
-Homepage: http://nextepc.org/
+               libsctp-dev,
+               libyaml-dev,
+Standards-Version: 3.9.8
+Vcs-Browser: https://github.com/open5gs/nextepc
+Vcs-Git: git://github.com/open5gs/nextepc
+Homepage: https://open5gs.org/nextepc
 
 Package: nextepc-core
 Architecture: any
@@ -117,8 +120,7 @@ Description: Open Source based 3GPP EPC HSS (Home Subscriber Server)
 Package: nextepc
 Architecture: any
 Multi-Arch: same
-Depends: ${shlibs:Depends},
-         ${misc:Depends},
+Depends: ${misc:Depends},
          mongodb,
          nextepc-core (= ${binary:Version}),
          nextepc-mme (= ${binary:Version}),
@@ -132,3 +134,14 @@ Description: Open Source based 3GPP EPC (metapackage)
  .
  This is a metapackage that depends on all the nextepc parts.
  (MME, SGW, PGW, HSS, PCRF)
+
+Package: nextepc-dbg
+Architecture: any
+Multi-Arch: same
+Depends: ${misc:Depends},
+         nextepc (= ${binary:Version})
+Description: Debug symbols for NextEPC
+ NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Packet Core, i.e. the core network of an LTE network.
+ .
+ This package contains debug symbols for NextEPC.

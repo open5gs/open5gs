@@ -14,11 +14,7 @@
  * c2=00..01, c3=00..02, c4=00..04, c5=00..08. The block cipher is assumed to
  * be AES (Rijndael).
  */
-#define TRACE_MODULE _milenage
-
-#include "core_debug.h"
-#include "core_aes.h"
-#include "core_sha2.h"
+#include "ogs-crypt.h"
 
 #include "milenage.h"
 
@@ -26,15 +22,15 @@
 #define os_memcmp memcmp
 #define os_memcmp_const memcmp
 
-int aes_128_encrypt_block(const c_uint8_t *key, 
-    const c_uint8_t *in, c_uint8_t *out)
+int aes_128_encrypt_block(const uint8_t *key, 
+    const uint8_t *in, uint8_t *out)
 {
     const int key_bits = 128;
-    unsigned int rk[RKLENGTH(128)];
+    unsigned int rk[OGS_AES_RKLENGTH(128)];
     int nrounds;
 
-    nrounds = aes_setup_enc(rk, key, key_bits);
-    aes_encrypt(rk, nrounds, in, out);
+    nrounds = ogs_aes_setup_enc(rk, key, key_bits);
+    ogs_aes_encrypt(rk, nrounds, in, out);
 
     return 0;
 }
@@ -50,11 +46,11 @@ int aes_128_encrypt_block(const c_uint8_t *key,
  * @mac_s: Buffer for MAC-S = 64-bit resync authentication code, or %NULL
  * Returns: 0 on success, -1 on failure
  */
-int milenage_f1(const c_uint8_t *opc, const c_uint8_t *k, 
-    const c_uint8_t *_rand, const c_uint8_t *sqn, 
-    const c_uint8_t *amf, c_uint8_t *mac_a, c_uint8_t *mac_s)
+int milenage_f1(const uint8_t *opc, const uint8_t *k, 
+    const uint8_t *_rand, const uint8_t *sqn, 
+    const uint8_t *amf, uint8_t *mac_a, uint8_t *mac_s)
 {
-	c_uint8_t tmp1[16], tmp2[16], tmp3[16];
+	uint8_t tmp1[16], tmp2[16], tmp3[16];
 	int i;
 
 	/* tmp1 = TEMP = E_K(RAND XOR OP_C) */
@@ -103,11 +99,11 @@ int milenage_f1(const c_uint8_t *opc, const c_uint8_t *k,
  * @akstar: Buffer for AK = 48-bit anonymity key (f5*), or %NULL
  * Returns: 0 on success, -1 on failure
  */
-int milenage_f2345(const c_uint8_t *opc, const c_uint8_t *k, 
-    const c_uint8_t *_rand, c_uint8_t *res, c_uint8_t *ck, 
-    c_uint8_t *ik, c_uint8_t *ak, c_uint8_t *akstar)
+int milenage_f2345(const uint8_t *opc, const uint8_t *k, 
+    const uint8_t *_rand, uint8_t *res, uint8_t *ck, 
+    uint8_t *ik, uint8_t *ak, uint8_t *akstar)
 {
-	c_uint8_t tmp1[16], tmp2[16], tmp3[16];
+	uint8_t tmp1[16], tmp2[16], tmp3[16];
 	int i;
 
 	/* tmp2 = TEMP = E_K(RAND XOR OP_C) */
@@ -189,13 +185,13 @@ int milenage_f2345(const c_uint8_t *opc, const c_uint8_t *k,
  * @res: Buffer for RES = 64-bit signed response (f2), or %NULL
  * @res_len: Max length for res; set to used length or 0 on failure
  */
-void milenage_generate(const c_uint8_t *opc, const c_uint8_t *amf, 
-    const c_uint8_t *k, const c_uint8_t *sqn, const c_uint8_t *_rand, 
-    c_uint8_t *autn, c_uint8_t *ik, c_uint8_t *ck, c_uint8_t *ak, 
-    c_uint8_t *res, size_t *res_len)
+void milenage_generate(const uint8_t *opc, const uint8_t *amf, 
+    const uint8_t *k, const uint8_t *sqn, const uint8_t *_rand, 
+    uint8_t *autn, uint8_t *ik, uint8_t *ck, uint8_t *ak, 
+    uint8_t *res, size_t *res_len)
 {
 	int i;
-	c_uint8_t mac_a[8];
+	uint8_t mac_a[8];
 
 	if (*res_len < 8) {
 		*res_len = 0;
@@ -224,11 +220,11 @@ void milenage_generate(const c_uint8_t *opc, const c_uint8_t *amf,
  * @sqn: Buffer for SQN = 48-bit sequence number
  * Returns: 0 = success (sqn filled), -1 on failure
  */
-int milenage_auts(const c_uint8_t *opc, const c_uint8_t *k, 
-    const c_uint8_t *_rand, const c_uint8_t *auts, c_uint8_t *sqn)
+int milenage_auts(const uint8_t *opc, const uint8_t *k, 
+    const uint8_t *_rand, const uint8_t *auts, uint8_t *sqn)
 {
-	c_uint8_t amf[2] = { 0x00, 0x00 }; /* TS 33.102 v7.0.0, 6.3.3 */
-	c_uint8_t ak[6], mac_s[8];
+	uint8_t amf[2] = { 0x00, 0x00 }; /* TS 33.102 v7.0.0, 6.3.3 */
+	uint8_t ak[6], mac_s[8];
 	int i;
 
 	if (milenage_f2345(opc, k, _rand, NULL, NULL, NULL, NULL, ak))
@@ -251,10 +247,10 @@ int milenage_auts(const c_uint8_t *opc, const c_uint8_t *k,
  * @kc: Buffer for Kc = 64-bit Kc
  * Returns: 0 on success, -1 on failure
  */
-int gsm_milenage(const c_uint8_t *opc, const c_uint8_t *k, 
-    const c_uint8_t *_rand, c_uint8_t *sres, c_uint8_t *kc)
+int gsm_milenage(const uint8_t *opc, const uint8_t *k, 
+    const uint8_t *_rand, uint8_t *sres, uint8_t *kc)
 {
-	c_uint8_t res[8], ck[16], ik[16];
+	uint8_t res[8], ck[16], ik[16];
 	int i;
 
 	if (milenage_f2345(opc, k, _rand, res, ck, ik, NULL, NULL))
@@ -287,62 +283,74 @@ int gsm_milenage(const c_uint8_t *opc, const c_uint8_t *k,
  * @auts: 112-bit buffer for AUTS
  * Returns: 0 on success, -1 on failure, or -2 on synchronization failure
  */
-int milenage_check(const c_uint8_t *opc, const c_uint8_t *k, 
-    const c_uint8_t *sqn, const c_uint8_t *_rand, const c_uint8_t *autn, 
-    c_uint8_t *ik, c_uint8_t *ck, c_uint8_t *res, size_t *res_len,
-    c_uint8_t *auts)
+int milenage_check(const uint8_t *opc, const uint8_t *k, 
+    const uint8_t *sqn, const uint8_t *_rand, const uint8_t *autn, 
+    uint8_t *ik, uint8_t *ck, uint8_t *res, size_t *res_len,
+    uint8_t *auts)
 {
 	int i;
-	c_uint8_t mac_a[8], ak[6], rx_sqn[6];
-	const c_uint8_t *amf;
+	uint8_t mac_a[8], ak[6], rx_sqn[6];
+	const uint8_t *amf;
 
-    d_trace(1, "Milenage: AUTN\n"); d_trace_hex(1, autn, 16);
-    d_trace(1, "Milenage: RAND\n"); d_trace_hex(1, _rand, 16);
+    ogs_log_print(OGS_LOG_INFO, "Milenage: AUTN\n");
+    ogs_log_hexdump(OGS_LOG_INFO, autn, 16);
+    ogs_log_print(OGS_LOG_INFO, "Milenage: RAND\n");
+    ogs_log_hexdump(OGS_LOG_INFO, _rand, 16);
 
 	if (milenage_f2345(opc, k, _rand, res, ck, ik, ak, NULL))
 		return -1;
 
 	*res_len = 8;
-    d_trace(1, "Milenage: RES\n"); d_trace_hex(1, res, *res_len);
-    d_trace(1, "Milenage: CK\n"); d_trace_hex(1, ck, 16);
-    d_trace(1, "Milenage: IK\n"); d_trace_hex(1, ik, 16);
-    d_trace(1, "Milenage: AK\n"); d_trace_hex(1, ak, 6);
+    ogs_log_print(OGS_LOG_INFO, "Milenage: RES\n");
+    ogs_log_hexdump(OGS_LOG_INFO, res, *res_len);
+    ogs_log_print(OGS_LOG_INFO, "Milenage: CK\n");
+    ogs_log_hexdump(OGS_LOG_INFO, ck, 16);
+    ogs_log_print(OGS_LOG_INFO, "Milenage: IK\n");
+    ogs_log_hexdump(OGS_LOG_INFO, ik, 16);
+    ogs_log_print(OGS_LOG_INFO, "Milenage: AK\n");
+    ogs_log_hexdump(OGS_LOG_INFO, ak, 6);
 
 	/* AUTN = (SQN ^ AK) || AMF || MAC */
 	for (i = 0; i < 6; i++)
 		rx_sqn[i] = autn[i] ^ ak[i];
-    d_trace(1, "Milenage: SQN\n"); d_trace_hex(1, rx_sqn, 6);
+    ogs_log_print(OGS_LOG_INFO, "Milenage: SQN\n");
+    ogs_log_hexdump(OGS_LOG_INFO, rx_sqn, 6);
 
 	if (os_memcmp(rx_sqn, sqn, 6) <= 0) {
-		c_uint8_t auts_amf[2] = { 0x00, 0x00 }; /* TS 33.102 v7.0.0, 6.3.3 */
+		uint8_t auts_amf[2] = { 0x00, 0x00 }; /* TS 33.102 v7.0.0, 6.3.3 */
 		if (milenage_f2345(opc, k, _rand, NULL, NULL, NULL, NULL, ak))
 			return -1;
-        d_trace(1, "Milenage: AK*\n"); d_trace_hex(1, ak, 6);
+        ogs_log_print(OGS_LOG_INFO, "Milenage: AK*\n");
+        ogs_log_hexdump(OGS_LOG_INFO, ak, 6);
 		for (i = 0; i < 6; i++)
 			auts[i] = sqn[i] ^ ak[i];
 		if (milenage_f1(opc, k, _rand, sqn, auts_amf, NULL, auts + 6))
 			return -1;
-        d_trace(1, "Milenage: AUTS*\n"); d_trace_hex(1, auts, 14);
+        ogs_log_print(OGS_LOG_INFO, "Milenage: AUTS*\n");
+        ogs_log_hexdump(OGS_LOG_INFO, auts, 14);
 		return -2;
 	}
 
 	amf = autn + 6;
-    d_trace(1, "Milenage: AMF\n"); d_trace_hex(1, amf, 2);
+    ogs_log_print(OGS_LOG_INFO, "Milenage: AMF\n");
+    ogs_log_hexdump(OGS_LOG_INFO, amf, 2);
 	if (milenage_f1(opc, k, _rand, rx_sqn, amf, mac_a, NULL))
 		return -1;
 
-    d_trace(1, "Milenage: MAC_A\n"); d_trace_hex(1, mac_a, 8);
+    ogs_log_print(OGS_LOG_INFO, "Milenage: MAC_A\n");
+    ogs_log_hexdump(OGS_LOG_INFO, mac_a, 8);
 
 	if (os_memcmp_const(mac_a, autn + 8, 8) != 0) {
-        d_trace(1, "Milenage: MAC mismatch\n");
-        d_trace(1, "Milenage: Received MAC_A\n"); d_trace_hex(1, autn + 8, 8);
+        ogs_log_print(OGS_LOG_INFO, "Milenage: MAC mismatch\n");
+        ogs_log_print(OGS_LOG_INFO, "Milenage: Received MAC_A\n");
+        ogs_log_hexdump(OGS_LOG_INFO, autn + 8, 8);
 		return -1;
 	}
 
 	return 0;
 }
 
-void milenage_opc(const c_uint8_t *k, const c_uint8_t *op,  c_uint8_t *opc)
+void milenage_opc(const uint8_t *k, const uint8_t *op,  uint8_t *opc)
 {
     int i;
 

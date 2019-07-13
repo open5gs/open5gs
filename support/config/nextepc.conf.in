@@ -2,16 +2,30 @@ db_uri: mongodb://localhost/nextepc
 
 logger:
     file: @LOCALSTATE_DIR@/log/nextepc/nextepc.log
-    trace: 
-        app: 1
-        s1ap: 1
-        nas: 1
-        diameter: 1
-        gtpv2: 1
-        gtp: 1
+# 
+#  o Set OGS_LOG_INFO to all domain level
+#   - If `level` is omitted, the default level is OGS_LOG_INFO)
+#   - If `domain` is omitted, the all domain level is set from 'level'
+#    (Nothing is needed)
+#
+#  o Set OGS_LOG_ERROR to all domain level
+#   - `level` can be set with none, fatal, error, warn, info, debug, trace
+#    level: error
+#
+#  o Set OGS_LOG_DEBUG to mme/emm domain level
+#    level: debug
+#    domain: mme,emm
+#
+#  o Set OGS_LOG_TRACE to all domain level
+#    level: trace
+#    domain: core,s1ap,nas,fd,gtp,mme,emm,esm,sgw,pgw,hss,pcrf,event,tlv,mem,sock
+#
 
 # 
 # parameter:
+#
+#  o Number of output streams per SCTP associations.
+#      sctp_streams: 30
 #
 #  o Disable use of IPv4 addresses (only IPv6)
 #      no_ipv4: true
@@ -200,7 +214,29 @@ sgw:
       addr: 127.0.0.2
 
 #
-#  <GTP-U Server>>
+# <SGW Selection Mode>
+# 
+# o Round-Robin
+#   (If `selection_mode` is omitted, the default mode is Round-Robin)
+#
+#   selection_mode: rr
+#   gtpc:
+#     addr: 127.0.0.2
+#     addr: 127.0.2.2
+#     addr: 127.0.4.2
+#
+# o SGW selection by eNodeB TAC
+#
+#   selection_mode: tac
+#   gtpc:
+#     - addr: 127.0.0.2
+#       tac: 26000
+#     - addr: 127.0.2.2
+#       tac: [25000, 27000, 28000]
+#
+
+#
+#  <GTP-U Server>
 #
 #  o GTP-U Server(all address avaiable)
 #    gtpu:

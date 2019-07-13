@@ -1,50 +1,42 @@
-#define TRACE_MODULE _mme_main
-
-#include "core_debug.h"
-#include "core_signal.h"
-#include "core_semaphore.h"
-
 #include "app/context.h"
-#include "app/app.h"
+#include "app/application.h"
 
-const char *app_name = "mme";
+#include "app_init.h"
 
-status_t app_initialize(const char *config_path, const char *log_path)
+extern int __mme_log_domain;
+
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __mme_log_domain
+
+int app_initialize(app_param_t *param)
 {
-    status_t rv;
-    int app = 0;
+    int rv;
 
-    rv = app_will_initialize(config_path, log_path);
-    if (rv != CORE_OK) return rv;
+    param->name = "mme";
+    rv = app_will_initialize(param);
+    if (rv != OGS_OK) return rv;
 
-    app = context_self()->logger.trace.app;
-    if (app)
-    {
-        d_trace_level(&_mme_main, app);
-    }
-
-    d_trace(1, "MME try to initialize\n");
     rv = mme_initialize();
-    if (rv != CORE_OK)
+    if (rv != OGS_OK)
     {
-        d_error("Failed to intialize MME");
+        ogs_error("Failed to intialize MME");
         return rv;
     }
-    d_trace(1, "MME initialize...done\n");
+    ogs_info("MME initialize...done");
 
     rv = app_did_initialize();
-    if (rv != CORE_OK) return rv;
+    if (rv != OGS_OK) return rv;
 
-    return CORE_OK;
+    return OGS_OK;
 }
 
 void app_terminate(void)
 {
     app_will_terminate();
 
-    d_trace(1, "MME try to terminate\n");
+    ogs_info("MME try to terminate");
     mme_terminate();
-    d_trace(1, "MME terminate...done\n");
+    ogs_info("MME terminate...done");
 
     app_did_terminate();
 }
