@@ -2815,3 +2815,34 @@ int mme_m_tmsi_free(mme_m_tmsi_t *m_tmsi)
     return OGS_OK;
 }
 
+uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue)
+{
+    int i;
+
+    ogs_assert(mme_ue);
+
+    for (i = 0; i < mme_self()->num_of_integrity_order; i++) {
+        if (mme_ue->ue_network_capability.eia & 
+                (0x80 >> mme_self()->integrity_order[i])) {
+            return mme_self()->integrity_order[i];
+        }
+    }
+
+    return 0;
+}
+
+uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
+{
+    int i;
+
+    ogs_assert(mme_ue);
+
+    for (i = 0; i < mme_self()->num_of_ciphering_order; i++) {
+        if (mme_ue->ue_network_capability.eea & 
+                (0x80 >> mme_self()->ciphering_order[i])) {
+            return mme_self()->ciphering_order[i];
+        }
+    }
+
+    return 0;
+}

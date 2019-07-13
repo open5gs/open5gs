@@ -143,6 +143,17 @@ int emm_handle_attach_request(
                 sizeof(attach_request->ms_network_capability));
     }
 
+    if (mme_selected_int_algorithm(mme_ue) == NAS_SECURITY_ALGORITHMS_EIA0) {
+        ogs_warn("Encrypt[0x%x] can be skipped with EEA0, "
+            "but Integrity[0x%x] cannot be bypassed with EIA0",
+            mme_selected_enc_algorithm(mme_ue), 
+            mme_selected_int_algorithm(mme_ue));
+        nas_send_attach_reject(mme_ue,
+            EMM_CAUSE_UE_SECURITY_CAPABILITIES_MISMATCH,
+            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        return OGS_ERROR;
+    }
+
     switch (eps_mobile_identity->imsi.type) {
     case NAS_EPS_MOBILE_IDENTITY_IMSI:
         memcpy(&mme_ue->nas_mobile_identity_imsi, 

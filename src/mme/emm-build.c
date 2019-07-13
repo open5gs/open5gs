@@ -241,7 +241,6 @@ int emm_build_security_mode_command(
         ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 {
     int rv;
-    int i;
 
     nas_message_t message;
     nas_security_mode_command_t *security_mode_command = 
@@ -266,20 +265,8 @@ int emm_build_security_mode_command(
     message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = NAS_SECURITY_MODE_COMMAND;
 
-    for (i = 0; i < mme_self()->num_of_integrity_order; i++) {
-        if (mme_ue->ue_network_capability.eia & 
-                (0x80 >> mme_self()->integrity_order[i])) {
-            mme_ue->selected_int_algorithm = mme_self()->integrity_order[i];
-            break;
-        }
-    }
-    for (i = 0; i < mme_self()->num_of_ciphering_order; i++) {
-        if (mme_ue->ue_network_capability.eea & 
-                (0x80 >> mme_self()->ciphering_order[i])) {
-            mme_ue->selected_enc_algorithm = mme_self()->ciphering_order[i];
-            break;
-        }
-    }
+    mme_ue->selected_int_algorithm = mme_selected_int_algorithm(mme_ue);
+    mme_ue->selected_enc_algorithm = mme_selected_enc_algorithm(mme_ue);
 
     selected_nas_security_algorithms->type_of_integrity_protection_algorithm =
         mme_ue->selected_int_algorithm;

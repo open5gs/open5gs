@@ -737,6 +737,9 @@ int mme_m_tmsi_pool_generate();
 mme_m_tmsi_t *mme_m_tmsi_alloc();
 int mme_m_tmsi_free(mme_m_tmsi_t *tmsi);
 
+uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue);
+uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);
+
 #ifdef __cplusplus
 }
 #endif
