@@ -277,3 +277,33 @@ ogs_pkbuf_t *sgsap_build_reset_ack(mme_vlr_t *vlr)
 
     return pkbuf;
 }
+
+ogs_pkbuf_t *sgsap_build_uplink_unidata(
+        mme_ue_t *mme_ue, nas_message_container_t *nas_message_container)
+{
+    mme_vlr_t *vlr = NULL;
+    ogs_tlv_t *root = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(mme_ue);
+    vlr = mme_ue->vlr;
+    ogs_assert(vlr);
+    ogs_assert(nas_message_container);
+
+    root = ogs_tlv_add(NULL, SGSAP_IE_IMSI_TYPE, SGSAP_IE_IMSI_LEN, 0,
+            &mme_ue->nas_mobile_identity_imsi);
+
+    ogs_tlv_add(root, SGSAP_IE_NAS_MESSAGE_CONTAINER_TYPE,
+            nas_message_container->length, 0, nas_message_container->buffer);
+
+    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_u8(pkbuf, SGSAP_UPLINK_UNITDATA);
+    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+
+    ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
+            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+
+    ogs_tlv_free_all(root);
+
+    return pkbuf;
+}

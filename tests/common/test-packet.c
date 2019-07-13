@@ -3080,6 +3080,49 @@ int tests1ap_build_s1_reset(ogs_pkbuf_t **pkbuf, int i)
     return OGS_OK;
 }
 
+int tests1ap_build_uplink_nas_transport(ogs_pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "000d40809d000005 0000000200010008 00020001001a0074 7327f908d4bd0307"
+        "636a390167000300 0581005155f55d11 030c914477680205 490000055ad2e2b1"
+        "252d467ff6de6c47 efd568375b303613 166fb51c6d160cc2 8ab462b006a3d98a"
+        "31da90060b0673c5 9c512684158bb119 2c88b3058b37e1ad 081bca84c1582d07"
+        "93ede4bddc6d2693 e566371b00644008 0009f1070019b010 004340060009f107"
+        "0007",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        162,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_data(*pkbuf, 
+        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+
+    return OGS_OK;
+}
+
 uint16_t in_cksum(uint16_t *addr, int len); /* from pgw_gtp_path.c */
 
 int testgtpu_build_ping(

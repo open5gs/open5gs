@@ -210,3 +210,23 @@ int sgsap_send_reset_ack(mme_vlr_t *vlr)
 
     return OGS_OK;
 }
+
+int sgsap_send_uplink_unitdata(
+        mme_ue_t *mme_ue, nas_message_container_t *nas_message_container)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_assert(mme_ue);
+    ogs_assert(nas_message_container);
+
+    ogs_debug("[SGSAP] UPLINK-UNITDATA");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    ogs_log_hexdump(OGS_LOG_DEBUG,
+            nas_message_container->buffer, nas_message_container->length);
+
+    pkbuf = sgsap_build_uplink_unidata(mme_ue, nas_message_container);
+    rv = sgsap_send_to_vlr(mme_ue, pkbuf);
+    ogs_assert(rv == OGS_OK);
+
+    return OGS_OK;
+}

@@ -27,6 +27,8 @@ extern "C" {
 #define SGSAP_PAGING_REQUEST                                        1
 #define SGSAP_PAGING_REJECT                                         2
 #define SGSAP_SERVICE_REQUEST                                       6
+#define SGSAP_DOWNLINK_UNITDATA                                     7
+#define SGSAP_UPLINK_UNITDATA                                       8
 #define SGSAP_LOCATION_UPDATE_REQUEST                               9
 #define SGSAP_LOCATION_UPDATE_ACCEPT                                10
 #define SGSAP_LOCATION_UPDATE_REJECT                                11
@@ -38,6 +40,7 @@ extern "C" {
 #define SGSAP_RESET_INDICATION                                      21
 #define SGSAP_RESET_ACK                                             22
 #define SGSAP_MO_CSFB_INDICIATION                                   24
+#define SGSAP_REELASE_REQUEST                                       27
 
 #define SGSAP_IE_IMSI_TYPE                                          1
 #define SGSAP_IE_IMSI_LEN                                           MAX_IMSI_LEN
@@ -59,6 +62,7 @@ extern "C" {
 #define SGSAP_IE_EPS_DETACH_INDICATION_LEN                          1
 #define SGSAP_IE_IMSI_DETACH_INDICATION_TYPE                        17
 #define SGSAP_IE_IMSI_DETACH_INDICATION_LEN                         1
+#define SGSAP_IE_NAS_MESSAGE_CONTAINER_TYPE                         22
 #define SGSAP_IE_SERVICE_INDICATOR_TYPE                             32
 #define SGSAP_IE_SERVICE_INDICATOR_LEN                              1
 #define SGSAP_IE_TAI_TYPE                                           35

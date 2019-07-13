@@ -19,6 +19,7 @@
 
 #include "nas/nas-message.h"
 #include "mme-event.h"
+#include "mme-sm.h"
 
 #include "mme-kdf.h"
 #include "nas-security.h"

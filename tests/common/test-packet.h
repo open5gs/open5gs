@@ -132,6 +132,8 @@ int tests1ap_build_handover_cancel(ogs_pkbuf_t **pkbuf, int i);
 
 int tests1ap_build_s1_reset(ogs_pkbuf_t **pkbuf, int i);
 
+int tests1ap_build_uplink_nas_transport(ogs_pkbuf_t **pkbuf, int i);
+
 int testgtpu_build_ping(ogs_pkbuf_t **sendbuf,
         const char *src_ip, const char *dst_ip);
 int testgtpu_build_slacc_rs(ogs_pkbuf_t **sendbuf, int i);

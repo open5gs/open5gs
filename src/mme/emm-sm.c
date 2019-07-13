@@ -237,6 +237,17 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             return;
+        case NAS_UPLINK_NAS_TRANSPORT:
+            ogs_debug("[EMM] Uplink NAS Transport");
+            ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+            if (MME_SGSAP_IS_CONNECTED(mme_ue)) {
+                sgsap_send_uplink_unitdata(mme_ue,
+                    &message->emm.uplink_nas_transport.nas_message_container);
+            } else {
+                ogs_warn("No connection of MSC/VLR");
+            }
+
+            return;
         default:
             ogs_warn("Unknown message[%d]", message->emm.h.message_type);
             return;
