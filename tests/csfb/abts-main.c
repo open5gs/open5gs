@@ -34,6 +34,7 @@ abts_suite *test_mt_idle(abts_suite *suite);
 abts_suite *test_mo_active(abts_suite *suite);
 abts_suite *test_mt_active(abts_suite *suite);
 abts_suite *test_mo_sms(abts_suite *suite);
+abts_suite *test_mt_sms(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -43,6 +44,7 @@ const struct testlist {
     {test_mo_active},
     {test_mt_active},
     {test_mo_sms},
+    {test_mt_sms},
     {NULL},
 };
 

@@ -24,6 +24,8 @@
 #include "s1ap-path.h"
 #include "nas-path.h"
 #include "mme-gtp-path.h"
+#include "sgsap-types.h"
+#include "sgsap-path.h"
 
 #include "mme-s11-build.h"
 #include "s1ap-build.h"
@@ -514,6 +516,12 @@ void s1ap_handle_initial_context_setup_response(
             ogs_assert(rv == OGS_OK);
         }
     }
+
+    if (mme_ue->service_indicator == SGSAP_SMS_SERVICE_INDICATOR) {
+        sgsap_send_service_request(mme_ue, SGSAP_EMM_CONNECTED_MODE);
+    }
+
+    CLEAR_SERVICE_INDICATOR(mme_ue);
 }
 
 void s1ap_handle_initial_context_setup_failure(

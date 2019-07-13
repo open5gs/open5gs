@@ -130,6 +130,9 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
         case SGSAP_PAGING_REQUEST:
             sgsap_handle_paging_request(vlr, pkbuf);
             break;
+        case SGSAP_DOWNLINK_UNITDATA:
+            sgsap_handle_downlink_unitdata(vlr, pkbuf);
+            break;
         case SGSAP_RESET_INDICATION:
             sgsap_handle_reset_indication(vlr, pkbuf);
 

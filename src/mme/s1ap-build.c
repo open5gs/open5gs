@@ -206,7 +206,7 @@ int s1ap_build_downlink_nas_transport(
     ogs_assert(emmbuf);
     ogs_assert(enb_ue);
 
-    ogs_debug("[MME] Downlink NAS transport");
+    ogs_debug("[MME] DownlinkNASTransport");
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -1319,6 +1319,9 @@ int s1ap_build_paging(ogs_pkbuf_t **s1apbuf,
 
     ogs_debug("    MME_CODE[%d] M_TMSI[0x%x]",
             mme_ue->guti.mme_code, mme_ue->guti.m_tmsi);
+    ogs_debug("    CN_DOMAIN[%s]",
+            cn_domain == S1AP_CNDomain_cs ? "CS" :
+                cn_domain == S1AP_CNDomain_ps ? "PS" : "Unknown");
 
     *CNDomain = cn_domain;
 

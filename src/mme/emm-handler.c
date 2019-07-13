@@ -86,6 +86,7 @@ int emm_handle_attach_request(
      */
     CLEAR_EPS_BEARER_ID(mme_ue);
     CLEAR_PAGING_INFO(mme_ue);
+    CLEAR_SERVICE_INDICATOR(mme_ue);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
         mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
@@ -438,6 +439,7 @@ int emm_handle_tau_request(
      *   Update KeNB
      */
     CLEAR_PAGING_INFO(mme_ue);
+    CLEAR_SERVICE_INDICATOR(mme_ue);
     if (BEARER_CONTEXT_IS_ACTIVE(mme_ue))
         ogs_debug("    Bearer-Active");
     else

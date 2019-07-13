@@ -474,3 +474,25 @@ int nas_send_cs_service_notification(mme_ue_t *mme_ue)
 
     return OGS_OK;
 }
+
+int nas_send_downlink_nas_transport(
+        mme_ue_t *mme_ue, uint8_t *buffer, uint8_t length)
+{
+    int rv;
+    ogs_pkbuf_t *emmbuf = NULL;
+
+    ogs_assert(mme_ue);
+    ogs_assert(buffer);
+    ogs_assert(length);
+
+    ogs_debug("[EMM] Downlink NAS transport");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    rv = emm_build_downlink_nas_transport(&emmbuf, mme_ue, buffer, length);
+    ogs_assert(rv == OGS_OK && emmbuf);
+
+    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    ogs_assert(rv == OGS_OK);
+
+    return OGS_OK;
+}

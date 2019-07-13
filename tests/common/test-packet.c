@@ -3308,14 +3308,15 @@ int testsgsap_paging_request(ogs_pkbuf_t **pkbuf, int i)
         "0101082926240000 111893021003766c 72076578616d706c 65036e6574200101"
         "040509f1070926",
         "0101082926240000 111892021003766c 72076578616d706c 65036e6574200101"
-        "040509f1070926",
-        "",
+        "040509f1070926",  /* Paging-Reject */
+        "0101082926240000 111893021003766c 72076578616d706c 65036e6574200102"
+        "040509f1070926",  /* Paging-Request with SMS */
 
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         39,
         39,
-        0,
+        39,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -3358,6 +3359,29 @@ int testsgsap_release_request(ogs_pkbuf_t **pkbuf, int i)
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         11,
+        0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_data(*pkbuf, 
+        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+
+    return OGS_OK;
+}
+
+int testsgsap_downlink_unitdata(ogs_pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "0701082926240000 1118931626090123 0100079144775810 0650001700048032"
+        "2400009160404044 150009c8329bfd06 4d9b53",
+        "",
+        "",
+
+    };
+    uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        51,
         0,
         0,
     };

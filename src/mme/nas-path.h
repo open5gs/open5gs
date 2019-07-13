@@ -59,6 +59,8 @@ int nas_send_tau_reject(mme_ue_t *mme_ue, nas_esm_cause_t emm_cause);
 int nas_send_service_reject(mme_ue_t *mme_ue, nas_emm_cause_t emm_cause);
 
 int nas_send_cs_service_notification(mme_ue_t *mme_ue);
+int nas_send_downlink_nas_transport(
+        mme_ue_t *mme_ue, uint8_t *buffer, uint8_t length);
 
 #ifdef __cplusplus
 }

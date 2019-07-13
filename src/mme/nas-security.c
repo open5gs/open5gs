@@ -156,7 +156,11 @@ int nas_security_decode(mme_ue_t *mme_ue,
 
         ogs_pkbuf_put_data(pkbuf, original_mac, SHORT_MAC_SIZE);
         if (memcmp(mac + 2, pkbuf->data + 2, 2) != 0) {
-            ogs_warn("NAS MAC verification failed");
+            ogs_warn("NAS MAC verification failed(%x%x != %x%x)",
+                    mac[2], mac[3],
+                    ((unsigned char *)pkbuf->data)[2],
+                    ((unsigned char *)pkbuf->data)[3]);
+
             mme_ue->mac_failed = 1;
         }
 

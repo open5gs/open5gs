@@ -391,8 +391,10 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 return;
             }
+
             rv = s1ap_send_initial_context_setup_request(mme_ue);
             ogs_assert(rv == OGS_OK);
+
         } else if (procedureCode == S1AP_ProcedureCode_id_uplinkNASTransport) {
             ogs_debug("    Uplink NAS Transport");
             if (mme_ue->nas_eps.service.service_type ==
@@ -423,6 +425,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             ogs_fatal("Invalid Procedure Code[%d]", (int)procedureCode);
             ogs_assert_if_reached();
         }
+
+        CLEAR_SERVICE_INDICATOR(mme_ue);
         break;
     default:
         ogs_fatal("Invalid NAS-EPS[%d]", mme_ue->nas_eps.type);

@@ -51,6 +51,8 @@ int emm_build_service_reject(ogs_pkbuf_t **emmbuf,
         nas_emm_cause_t emm_cause, mme_ue_t *mme_ue);
 
 int emm_build_cs_service_notification(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue);
+int emm_build_downlink_nas_transport(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue,
+        uint8_t *buffer, uint8_t length);
 
 #ifdef __cplusplus
 }

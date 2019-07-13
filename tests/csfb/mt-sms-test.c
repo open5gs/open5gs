@@ -226,18 +226,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send SGsAP-Paging-Request */
-    rv = testsgsap_paging_request(&sendbuf, 1);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testvlr_sgsap_send(sgsap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive SGsAP-Paging-Reject */
-    recvbuf = testvlr_sgsap_read(sgsap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
-
-    /* Send SGsAP-Paging-Request */
-    rv = testsgsap_paging_request(&sendbuf, 0);
+    rv = testsgsap_paging_request(&sendbuf, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testvlr_sgsap_send(sgsap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -247,17 +236,11 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    /* Send Extended Service Request */
-    rv = tests1ap_build_extended_service_request(&sendbuf, msgindex, 
-            1, m_tmsi, 4, mme_ue->knas_int);
+    /* Send Service Request */
+    rv = tests1ap_build_service_request(&sendbuf, 0x000200, 4, 0x6033, m_tmsi);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive SGsAP-Service-Request */
-    recvbuf = testvlr_sgsap_read(sgsap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
 
     /* Receive Initial Context Setup Request */
     recvbuf = testenb_s1ap_read(s1ap);
@@ -269,6 +252,28 @@ static void test1_func(abts_case *tc, void *data)
             2, 2, 5, 0x00470003, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive SGsAP-Service-Request */
+    recvbuf = testvlr_sgsap_read(sgsap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send SGsAP-Downlink-Unitdata */
+    rv = testsgsap_downlink_unitdata(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testvlr_sgsap_send(sgsap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Downlink NAS Transport */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send SGsAP-RELEASE-REQUEST */
+    rv = testsgsap_release_request(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testvlr_sgsap_send(sgsap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send UE Context Release Request */
@@ -303,7 +308,7 @@ static void test1_func(abts_case *tc, void *data)
     testenb_s1ap_close(s1ap);
 }
 
-abts_suite *test_mt_idle(abts_suite *suite)
+abts_suite *test_mt_sms(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 

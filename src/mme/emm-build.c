@@ -543,3 +543,30 @@ int emm_build_cs_service_notification(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     return OGS_OK;
 }
 
+int emm_build_downlink_nas_transport(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue,
+        uint8_t *buffer, uint8_t length)
+{
+    nas_message_t message;
+    nas_downlink_nas_transport_t *downlink_nas_transport = 
+        &message.emm.downlink_nas_transport;
+    nas_message_container_t *nas_message_container =
+        &downlink_nas_transport->nas_message_container;
+
+    ogs_assert(mme_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type = 
+        NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+
+    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = NAS_DOWNLINK_NAS_TRANSPORT;
+
+    nas_message_container->length = length;
+    memcpy(nas_message_container->buffer, buffer, length);
+
+    ogs_assert(nas_security_encode(emmbuf, mme_ue, &message) == OGS_OK && 
+            *emmbuf);
+
+    return OGS_OK;
+}
