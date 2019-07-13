@@ -46,6 +46,41 @@ logger:
 parameter:
     no_ipv6: true
 
+# 
+# sctp:
+#
+#  o heartbit_interval : 5000 (5secs)
+#  o rto_initial : 3000 (3secs)
+#  o rto_min : 1000 (1sec)
+#  o rto_max : 5000 (5secs)
+#  o max_num_of_ostreams : 30
+#  o max_num_of_istreams : 65535
+#  o max_attempts : 4
+#  o max_initial_timeout : 8000(8secs)
+#  o usrsctp_udp_port : 9899
+sctp:
+
+# 
+# max:
+#
+# o Maximum Number of SGW per MME 
+#    sgw: 32
+# o Maximum Number of PGW per MME 
+#    pgw: 32
+# o Maximum Number of VLR per MME 
+#    vlr: 32
+# o Maximum Number of eNodeB per MME 
+#    enb: 32
+# o Maximum Number of UE per eNodeB 
+#    ue: 128
+#
+# o Memory of Packet Buffering in SGW
+#   - Maximum Number of packet(SDU size = 8Kbytes) pool in SGW 
+#   - SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
+#    packet:
+#        pool: 65536
+max:
+
 mme:
     freeDiameter: mme.conf
 
@@ -87,6 +122,45 @@ mme:
 #      - addr: ::1
 #
     gtpc:
+
+#
+#  <sgsap>
+#
+#  o Single MSC/VLR(127.0.0.2:29119)
+#    sgsap:
+#      addr: 127.0.0.2
+#      port: 29119
+#      plmn_id:
+#        mcc: 001
+#        mnc: 01
+#      tac: 4130
+#      lac: 43690
+#
+#  o Multiple MSC/VLR
+#    sgsap:
+#      - addr: 127.0.0.2
+#        plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        tac: 4131
+#        lac: 43692
+#      - addr
+#         - 127.0.0.3
+#         - fe80::2%lo0
+#        plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        tac: 4132
+#        lac: 43692
+#      - name: msc.open5gs.org
+#        plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        tac: 4133
+#        lac: 43693
+#
+    sgsap:
+
 
 #
 #  <GUMMEI>
@@ -249,20 +323,38 @@ pgw:
 #
 #  ------------------------ MME --------------------------
 #
-#  o Only first node is attempted. Others are ignored.
-#  o if HSS provide PGW addresss(per-UE), DB overwrites YAML-configuration.
+#  o By default, the PGW uses the first PGW node.
+#    - To use a different APN for each PGW, specify gtpc.apn as the APN name.
+#    - If the HSS uses WebUI to set the PGW IP for eacho UE,
+#      you can use a specific PGW node for each UE.
 #
-#  o Two PGW are defined. 127.0.0.3:2123 is attempted. [fe80::3%@LO_DEV@]:2123 is ignored.
+#  o Two PGW are defined. 127.0.0.3:2123 is used.
+#    [fe80::3%@LO_DEV@]:2123 is ignored.
 #    gtpc:
 #      - addr: 127.0.0.3
 #      - addr: fe80::3%@LO_DEV@
 #
-#  o One PGW is defined. if prefer_ipv4 is not true, [fe80::3%@LO_DEV@] is selected.
+#  o One PGW is defined. if prefer_ipv4 is not true,
+#    [fe80::3%@LO_DEV@] is selected.
 #    gtpc:
 #      - addr: 
 #        - 127.0.0.3
 #        - fe80::3%@LO_DEV@
 #
+#  o Two PGW are defined with a different APN.
+#    - Note that if PGW IP for UE is configured in HSS,
+#      the following configurion for this UE is ignored.
+#    gtpc:
+#      - addr: 127.0.0.3
+#        apn: internet
+#      - addr: 127.0.0.5
+#        apn: volte
+#
+#  o If APN is omitted, the default APN uses the first PGW node.
+#    gtpc:
+#      - addr: 127.0.0.3
+#      - addr: 127.0.0.5
+#        apn: volte
 #  ------------------------ PGW --------------------------
 #
 #  o GTP-C Server(127.0.0.3:2123, [fe80::3%@LO_DEV@]:2123)
@@ -271,7 +363,7 @@ pgw:
 #        - 127.0.0.3
 #        - fe80::3%@LO_DEV@
 #
-#  o On PGW, Same configuration(127.0.0.3:2123, [fe80::3%@LO_DEV@]:2123) as below.
+#  o On PGW, Same configuration(127.0.0.3:2123, [fe80::3%@LO_DEV@]:2123).
 #    gtpc:
 #      - addr: 127.0.0.3
 #      - addr: fe80::3%@LO_DEV@

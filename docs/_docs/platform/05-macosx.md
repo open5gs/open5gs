@@ -75,8 +75,13 @@ To compile with autotools:
 ➜  nextepc git:(master) ✗ make -j `nproc`
 ```
 
-**Note:** On MAC OS X, the compilation check is not supported at this point.
+Check whether the compilation is correct.
+
+**Note:** This should require *sudo* due to access `/dev/tun0`.
 {: .notice--danger}
+```bash
+➜  nextepc git:(master) ✗ sudo make check
+```
 
 You need to perform **the installation process**.
 ```bash

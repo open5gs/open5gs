@@ -3,8 +3,8 @@
 noinst_LTLIBRARIES = libpcrf.la
 
 libpcrf_la_SOURCES = \
-	pcrf_context.h pcrf_fd_path.h \
-	pcrf_init.c pcrf_context.c pcrf_fd_path.c pcrf_gx_path.c pcrf_rx_path.c \
+	pcrf-context.h pcrf-fd-path.h \
+	pcrf-init.c pcrf-context.c pcrf-fd-path.c pcrf-gx-path.c pcrf-rx-path.c \
 	$(NULL)
 
 libpcrf_la_DEPENDENCIES = \

@@ -29,47 +29,38 @@ extern "C" {
 #define S1AP_SCTP_PORT              36412
 #define GTPV2_C_UDP_PORT            2123
 #define GTPV1_U_UDP_PORT            2152
+#define SGSAP_SCTP_PORT             29118
 
 #define SCTP_S1AP_PPID              18
 #define SCTP_X2AP_PPID              27
+#define SCTP_SGSAP_PPID             0
 
-#define MAX_NUM_OF_SGW              32
-#define MAX_NUM_OF_PGW              32
-
-#define MAX_NUM_OF_ENB              128
-#define MAX_NUM_OF_UE               128
-#define MAX_NUM_OF_SESS             4
-#define MAX_NUM_OF_BEARER           4
+#define MAX_NUM_OF_SESS             4   /* Num of APN(Session) per UE */
+#define MAX_NUM_OF_BEARER           4   /* Num of Bearer per APN(Session) */
 #define MAX_NUM_OF_TUNNEL           3   /* Num of Tunnel per Bearer */
 #define MAX_NUM_OF_PF               16  /* Num of Packet Filter per Bearer */
-
-#define MAX_POOL_OF_UE              (MAX_NUM_OF_ENB * MAX_NUM_OF_UE)
-#define MAX_POOL_OF_SESS            (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)
-#define MAX_POOL_OF_BEARER          (MAX_POOL_OF_SESS * MAX_NUM_OF_BEARER)
-#define MAX_POOL_OF_TUNNEL          (MAX_POOL_OF_BEARER * MAX_NUM_OF_TUNNEL)
-#define MAX_POOL_OF_PF              (MAX_POOL_OF_BEARER * MAX_NUM_OF_PF)
-#define MAX_POOL_OF_DIAMETER_SESS   (MAX_POOL_OF_UE * MAX_NUM_OF_SESS)
 
 #define MAX_NUM_OF_HOSTNAME         16
 #define MAX_NUM_OF_PCC_RULE         8 
 #define MAX_NUM_OF_FLOW             8   /* Num of Flow per PCC Rule */
 #define MAX_NUM_OF_PACKET_FILTER    16  /* Num of Packet Filter per Bearer */
 
-#define MAX_SDU_LEN             8192
-#define PLMN_ID_LEN             3
+#define MAX_SDU_LEN                 8192
+#define PLMN_ID_LEN                 3
 
-#define BCD_TO_BUFFER_LEN(x)    (((x)+1)/2)
-#define MAX_IMSI_BCD_LEN        15
-#define MAX_IMSI_LEN            BCD_TO_BUFFER_LEN(MAX_IMSI_BCD_LEN)
+#define BCD_TO_BUFFER_LEN(x)        (((x)+1)/2)
+#define MAX_IMSI_BCD_LEN            15
+#define MAX_IMSI_LEN                BCD_TO_BUFFER_LEN(MAX_IMSI_BCD_LEN)
 
-#define RAND_LEN                16
-#define AUTN_LEN                16
-#define AUTS_LEN                14
-#define MAX_RES_LEN             16
+#define RAND_LEN                    16
+#define AUTN_LEN                    16
+#define AUTS_LEN                    14
+#define MAX_RES_LEN                 16
 
-#define MAX_APN_LEN             100
-#define MAX_PCO_LEN             251
-#define MAX_FILEPATH_LEN        256
+#define MAX_APN_LEN                 100
+#define MAX_PCO_LEN                 251
+#define MAX_FILEPATH_LEN            256
+#define MAX_FQDN_LEN                256
 
 #define NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
@@ -82,7 +73,7 @@ extern "C" {
 
 /**********************************
  * PLMN_ID Structure             */
-typedef struct _plmn_id_t {
+typedef struct plmn_id_s {
 ED2(uint8_t mcc2:4;,
     uint8_t mcc1:4;)
 ED2(uint8_t mnc1:4;,
@@ -91,7 +82,7 @@ ED2(uint8_t mnc3:4;,
     uint8_t mnc2:4;)
 } __attribute__ ((packed)) plmn_id_t;
 
-uint32_t plmn_id_hexdump(plmn_id_t *plmn_id);
+uint32_t plmn_id_hexdump(void *plmn_id);
 
 uint16_t plmn_id_mcc(plmn_id_t *plmn_id);
 uint16_t plmn_id_mnc(plmn_id_t *plmn_id);
@@ -102,12 +93,12 @@ void *plmn_id_build(plmn_id_t *plmn_id,
 
 #define MAX_NUM_OF_TAI              16
 
-typedef struct _tai_t {
+typedef struct tai_s {
     plmn_id_t plmn_id;
     uint16_t tac;
 } __attribute__ ((packed)) tai_t;
 
-typedef struct _e_cgi_t {
+typedef struct e_cgi_s {
     plmn_id_t plmn_id;
     uint32_t cell_id; /* 28 bit */
 } __attribute__ ((packed)) e_cgi_t;
@@ -119,7 +110,7 @@ typedef struct _e_cgi_t {
 #define IPV4_LEN                4
 #define IPV6_LEN                16
 #define IPV4V6_LEN              20
-typedef struct _ip_t {
+typedef struct ip_s {
     union {
         uint32_t addr;
         uint8_t addr6[IPV6_LEN];
@@ -139,7 +130,7 @@ ED3(uint8_t       ipv4:1;,
 #define PAA_IPV4_LEN                                    5
 #define PAA_IPV6_LEN                                    18
 #define PAA_IPV4V6_LEN                                  22
-typedef struct _paa_t {
+typedef struct paa_s {
 /* 8.34 PDN Type  */
 #define GTP_PDN_TYPE_IPV4                               1
 #define GTP_PDN_TYPE_IPV6                               2
@@ -174,14 +165,14 @@ ED2(uint8_t spare:5;,
 
 #define MAX_BIT_RATE 10000000000UL
 
-typedef struct _bitrate_t {
+typedef struct bitrate_s {
     uint64_t downlink;        /* bits per seconds */
     uint64_t uplink;          /* bits per seconds */
 } bitrate_t;
 
 /**********************************
  * QoS Structure                 */
-typedef struct _qos_t {
+typedef struct qos_s {
 #define PDN_QCI_1                                       1
 #define PDN_QCI_2                                       2
 #define PDN_QCI_3                                       3
@@ -195,21 +186,21 @@ typedef struct _qos_t {
 #define PDN_QCI_66                                      66
 #define PDN_QCI_69                                      69
 #define PDN_QCI_70                                      70
-    uint8_t       qci;
+    uint8_t         qci;
 
     struct {
     /* Values 1 to 8 should only be assigned for services that are
      * authorized to receive prioritized treatment within an operator domain. 
      * Values 9 to 15 may be assigned to resources that are authorized 
      * by the home network and thus applicable when a UE is roaming. */
-        uint8_t       priority_level;
+        uint8_t     priority_level;
 
 #define PDN_PRE_EMPTION_CAPABILITY_ENABLED              0
 #define PDN_PRE_EMPTION_CAPABILITY_DISABLED             1
-        uint8_t       pre_emption_capability;
+        uint8_t     pre_emption_capability;
 #define PDN_PRE_EMPTION_VULNERABILITY_ENABLED           0
 #define PDN_PRE_EMPTION_VULNERABILITY_DISABLED          1
-        uint8_t       pre_emption_vulnerability;
+        uint8_t     pre_emption_vulnerability;
     } arp;
 
     bitrate_t       mbr;  /* Maxmimum Bit Rate (MBR) */
@@ -220,7 +211,7 @@ typedef struct _qos_t {
  * Flow  Structure               */
 #define FLOW_DOWNLINK_ONLY    1
 #define FLOW_UPLINK_ONLY      2
-typedef struct _flow_t {
+typedef struct flow_s {
     uint8_t direction;
     char *description;
 } flow_t;
@@ -237,7 +228,7 @@ typedef struct _flow_t {
 
 /**********************************
  * PCC Rule Structure            */
-typedef struct _pcc_rule_t {
+typedef struct pcc_rule_s {
 #define PCC_RULE_TYPE_INSTALL               1
 #define PCC_RULE_TYPE_REMOVE                2
     uint8_t type;
@@ -279,14 +270,14 @@ typedef struct _pcc_rule_t {
 
 /**********************************
  * PDN Structure                 */
-typedef struct _pdn_t {
-    uint32_t    context_identifier;
-    char        apn[MAX_APN_LEN+1];
+typedef struct pdn_s {
+    uint32_t        context_identifier;
+    char            apn[MAX_APN_LEN+1];
 #define HSS_PDN_TYPE_IPV4                       0
 #define HSS_PDN_TYPE_IPV6                       1
 #define HSS_PDN_TYPE_IPV4V6                     2
 #define HSS_PDN_TYPE_IPV4_OR_IPV6               3
-    int         pdn_type;
+    int             pdn_type;
 
     qos_t           qos;
     bitrate_t       ambr; /* APN-AMBR */
@@ -295,8 +286,8 @@ typedef struct _pdn_t {
     ip_t            pgw_ip;
 } pdn_t;
 
-int apn_build(char *dst, char *src, int len);
-int apn_parse(char *dst, char *src, int len);
+int fqdn_build(char *dst, char *src, int len);
+int fqdn_parse(char *dst, char *src, int len);
 
 /**************************************************
  * Protocol Configuration Options Structure
@@ -314,28 +305,28 @@ int apn_parse(char *dst, char *src, int len);
 #define PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST                  0x000c
 #define PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST              0x000d
 #define PCO_ID_IPV4_LINK_MTU_REQUEST                        0x0010
-typedef struct _pco_ipcp_options_t {
+typedef struct pco_ipcp_options_s {
     uint8_t type;
     uint8_t len;
     uint32_t addr;
 } __attribute__ ((packed)) pco_ipcp_options_t;
 
 #define PCO_MAX_NUM_OF_IPCO_OPTIONS 4
-typedef struct _pco_ipcp_t {
+typedef struct pco_ipcp_s {
     uint8_t code;
     uint8_t identifier;
     uint16_t len;
     pco_ipcp_options_t options[PCO_MAX_NUM_OF_IPCO_OPTIONS];
 } __attribute__ ((packed)) pco_ipcp_t;
 
-typedef struct _pco_id_t {
+typedef struct pco_id_s {
     uint16_t id;
     uint8_t len;
     void *data;
 } pco_id_t;
 
 #define MAX_NUM_OF_PROTOCOL_OR_CONTAINER_ID    8
-typedef struct _pco_t {
+typedef struct pco_s {
 ED3(uint8_t ext:1;,
     uint8_t spare:4;,
     uint8_t configuration_protocol:3;)

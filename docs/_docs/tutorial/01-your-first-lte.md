@@ -10,26 +10,103 @@ This post is the perfect starting point for learning to build your own LTE netwo
 
 First, you have to prepare USRP B200/B210 to run srsENB. However, please keep in mind that you would still need a fairly high-end PC (at least dual-core i5, better quad-core i7) with USB 3.0 to attach the USRP B200/B210. 
 
-Also, for USRP B200/B210 you will need a GPS antenna for clock synchronization. It is good to have a window near your desk where you can put the small GPS patch antenna. In my case, a 1 to 2 meters antenna cable is used between desk/computer and the window.
+For USRP B200/B210, you can use a GPS antenna for clock synchronization. Of course, it can work without a GPS antenna, but if you have that antenna, it's a good to have a window near your desk where you can put the small GPS patch antenna. In my case, a 1 to 2 meters antenna cable is used between desk/computer and the window.
 
-For stable operation of USRP B200/B210, I used 10Mhz GPS-DO(GPS disciplined oscillator). Of course, a USIM card(sysmoUSIM-SJS1) was also inserted into the phone.
+This document will be described with the following equipment.
+ - i5-8500 PC with Ubuntu 18.04(bionic)
+ - USRP B200/B210 with USB 3.0
+ - iPhone XS
+ - sysmoUSIM-SJS1
+ - 10Mhz GPS-DO(Optional)
 
 ### Overall Physical Setup
 ---
 
-Setup your devices in the following order:
+If you want to use GPS antenna, setup your devices in the following order:
 
   1. GPS antenna near window
   2. GPS antenna connected to "GPS ANT" connector of GPS-DO (SMA)
   3. 10MHz output (BNC) of GPS-DO connected to 10MHz input of USRP (SMA)
   4. GPS input of USRP open/unused!
   5. 1PPS input of USRP open/unused!
-  6. 4x Small Antennas connected to USRP Rx/Tx ports (RF-A/RF-B)
-  7. USRP powered via power supply or over USB
-  8. USRP USB port connected to your PC 
-  9. GPS-DO powered via power supply
+  6. GPS-DO powered via power supply
 
 **Note:** When the GPS-DO acquires a lock on the GPS signal, a **GREEN** LED is displayed. GPS takes time to function normally. You also need to wait for the **RED** LED(ALARM) to turn off.
+{: .notice--warning}
+
+Then, setup the USRP B200/B210 as below:
+  1. **4x Small Antennas** should be connected to USRP Rx/Tx ports (RF-A/RF-B)
+  2. USRP powered via power supply or over **USB 3.0**
+  3. USRP **USB 3.0** port connected to your PC 
+
+### USIM Setup
+---
+
+Bascially, you can learn how to use it in the [sysmoUSIM manual](https://www.sysmocom.de/manuals/sysmousim-manual.pdf) or on the [official homepage of pysim project](http://osmocom.org/projects/pysim/wiki). Let's take a quickstart guide for this experiment.
+
+###### Install dependencies:
+```
+$ sudo apt-get install pcscd pcsc-tools libccid libpcsclite-dev python-pyscard
+```
+ - Connect SIM card reader to your computer and insert programmable SIM card to the reader. 
+
+###### Check the status of connection by entering the following command:
+```
+$ pcsc_scan
+PC/SC device scanner
+V 1.5.2 (c) 2001-2017, Ludovic Rousseau <ludovic.rousseau@free.fr>
+Using reader plug'n play mechanism
+Scanning present readers...
+0: HID Global OMNIKEY 3x21 Smart Card Reader [OMNIKEY 3x21 Smart Card Reader] 00
+
+Sun May 26 14:26:12 2019
+ Reader 0: HID Global OMNIKEY 3x21 Smart Card Reader [OMNIKEY 3x21 Smart Card Re
+  Card state: Card inserted,
+  ATR: 3B 9F 96 80 1F C7 80 31 A0 73 BE 21 13 67 43 20 07 18 00 00 01 A5
+...
+```
+ - If SIM card reader is recognized then we can expect to print "Card inserted".
+
+###### Get the code of PySIM with installing dependency:
+
+```
+$ sudo apt-get install python-pyscard python-serial python-pip
+$ pip install pytlv
+$ git clone git://git.osmocom.org/pysim
+```
+
+###### Read your SIM card:
+```
+$ ./pySim-read.py -p0 or ./pySim-read.py -p1
+Using PC/SC reader (dev=0) interface
+Reading ...
+ICCID: 8988211000000213010
+IMSI: 310789012345301
+SMSP: ffffffffffffffffffffffffffffffffffffffffffffffffe1ffffffffffffffffffffffff
+...
+```
+
+###### Program your SIM card like the followings:
+```
+./pySim-prog.py -p 0 -n NextEPC -a 62416296 -s 8988211000000213010 -i 310789012345301 -x 310 -y 789 -k 82E9053A1882085FF2C020359938DAE9 -o BFD5771AAF4F6728E9BC6EF2C2533BDB
+Using PC/SC reader (dev=0) interface
+Insert card now (or CTRL-C to cancel)
+Autodetected card type: sysmoUSIM-SJS1
+Generated card parameters :
+ > Name    : NextEPC
+ > SMSP    : e1ffffffffffffffffffffffff0581005155f5ffffffffffff000000
+ > ICCID   : 8988211000000213010
+ > MCC/MNC : 310/789
+ > IMSI    : 310789012345301
+ > Ki      : 82E9053A1882085FF2C020359938DAE9
+ > OPC     : BFD5771AAF4F6728E9BC6EF2C2533BDB
+ > ACC     : None
+
+Programming ...
+Done !
+```
+
+**Note:** You should use your ADM value to program USIM card, not my ADM(-a 62416296).
 {: .notice--warning}
 
 ### Installation
@@ -93,7 +170,7 @@ $ sudo apt install nextepc
 The following shows how to install the Web UI of NextEPC.
 
 ```bash
-$ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+$ curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 $ sudo apt install nodejs
 $ curl -sL http://nextepc.org/static/webui/install | sudo -E bash -
 ```
@@ -116,9 +193,18 @@ IMSI    ICCID   ACC PIN1    PUK1    PIN2    PUK2    Ki  OPC ADM1    KIC1    KID1
 Here's my subscriber information from above.
 
 ```
+MCC/MNC : 901/70
 IMSI : 901700000017408
 K : B1233463AB9BC2AD2DB1830EB6417E7B
 OPc : 625150E2A943E3353DD23554101CAFD4  
+```
+
+If you programmed USIM using a card reader like me, you should use your SIM information.
+```
+MCC/MNC : 310/789
+IMSI : 310789012345301
+K : 82E9053A1882085FF2C020359938DAE9
+OPc : BFD5771AAF4F6728E9BC6EF2C2533BDB  
 ```
 
 Connect to `http://localhost:3000` and login with **admin** account.
@@ -150,8 +236,8 @@ diff -u mme.conf.old mme.conf
        plmn_id:
 -        mcc: 001
 -        mnc: 01
-+        mcc: 901
-+        mnc: 70
++        mcc: 310
++        mnc: 789
        mme_gid: 2
        mme_code: 1
      tai:
@@ -159,8 +245,8 @@ diff -u mme.conf.old mme.conf
 -        mcc: 001
 -        mnc: 01
 -      tac: 12345
-+        mcc: 901
-+        mnc: 70
++        mcc: 310
++        mnc: 789
 +      tac: 7
      security:
          integrity_order : [ EIA1, EIA2, EIA0 ]
@@ -172,7 +258,7 @@ S1AP/GTP-C IP address, PLMN ID, TAC are changed as follows.
 ```
 S1AP address : 127.0.1.100 - srsENB default value
 GTP-C address : 127.0.1.100 - Use loopback interface
-PLMN ID : MNC(901), MCC(70) - sysmoUSIM default value
+PLMN ID : MNC(310), MCC(789) - Programmed USIM with a card reader
 TAC : 7 - srsENB default value
 ```
 
@@ -200,12 +286,39 @@ $ sudo systemctl restart nextepc-sgwd
 If your phone can connect to internet, you must run the following command in NextEPC-PGW installed host. 
 
 ```bash
+### Check IP Tables
+$ sudo iptables -L
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+
+Chain FORWARD (policy ACCEPT)
+target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+
+### Check NAT Tables
+$ sudo iptables -L -t nat
+Chain PREROUTING (policy ACCEPT)
+target     prot opt source               destination
+
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination
+
+### Enable IPv4 Forwarding
 $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
-$ sudo iptables -t nat -A POSTROUTING -o 'interface-name' -j MASQUERADE
-$ sudo iptables -I INPUT -i pgwtun -j ACCEPT
+
+### Add NAT Rule
+$ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o pgwtun -j MASQUERADE
 ```
 
-**Note:** In the above command, you should replace `'interface-name'` with your interface name that can connect to the internet. (For example, `enp0s25`, `wls3`, and so on).
+**Note:** For the first time, it is a good condition if you do not have any rules in the IP/NAT tables. If a program such as docker has already set up a rule, you will need to add a rule differently.
 {: .notice--danger}
 
 #### 2. srsENB
@@ -229,8 +342,8 @@ You should check your phone frequency. If your phone does not support Band-3, yo
  tac = 0x0007
 -mcc = 001
 -mnc = 01
-+mcc = 901
-+mnc = 70
++mcc = 310
++mnc = 789
  mme_addr = 127.0.1.100
  gtp_bind_addr = 127.0.1.1
  s1c_bind_addr = 127.0.1.1
@@ -253,9 +366,18 @@ You should check your phone frequency. If your phone does not support Band-3, yo
 PLMN ID, DL EARFCN, and Device Argument are updated as belows.
 
 ```
-PLMN ID : MNC(901), MCC(70) sysmoUSIM default value
+PLMN ID : MNC(310), MCC(789) programmed USIM with a card reader
 DL EARFCN : Band-3 - from your Phone
 Device Argument : Clock source from external GPS-DO
+```
+
+If you do not use the GPS-DO, you should use:
+```diff
+ #device_name = auto
+-#device_args = auto
++device_args = auto
+ #time_adv_nsamples = auto
+ #burst_preamble_us = auto
 ```
 
 Now, run the srsENB as follows:
@@ -272,7 +394,7 @@ Reading configuration file ./enb.conf...
 Opening USRP with args: "",master_clock_rate=30.72e6
 -- Detected Device: B200
 -- Loading FPGA image: /usr/share/uhd/images/usrp_b200_fpga.bin... done
--- Operating over USB 3.
+-- Operating over 'USB 2'.
 -- Detecting internal GPSDO.... 'No GPSDO found'
 -- Initialize CODEC control...
 -- Initialize Radio control...
@@ -287,8 +409,9 @@ Setting Sampling frequency 11.52 MHz
 ==== eNodeB started ===
 Type <t> to view trace
 ```
-
 If you see the `No GPSDO found`, please exit the program with Ctrl-C.
+And also, if you see the `USB 2`, it will not be working properly.
+
 The following console output is the correct result of srsENB.
 ```bash
 linux; GNU C++ version 6.2.0 20161027; Boost_106200; UHD_003.009.005-0-unknow

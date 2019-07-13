@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "base/types.h"
 
 #include "context.h"
@@ -15,8 +34,7 @@ int app_will_initialize(app_param_t *param)
 
     context_init();
 
-    if (param->name)
-    {
+    if (param->name) {
         rv = log_pid(param->name, param->pid_path);
         if (rv != OGS_OK) return rv;
     }
@@ -34,13 +52,11 @@ int app_will_initialize(app_param_t *param)
     context_self()->log.path = param->log_path;
 
     if (param->logfile_disabled == false &&
-        context_self()->config.logger.file)
-    {
+        context_self()->config.logger.file) {
         if (context_self()->log.path)
             context_self()->config.logger.file = context_self()->log.path;
 
-        if (ogs_log_add_file(context_self()->config.logger.file) == NULL)
-        {
+        if (ogs_log_add_file(context_self()->config.logger.file) == NULL) {
             ogs_fatal("cannot open log file : %s",
                     context_self()->config.logger.file);
             ogs_assert_if_reached();
@@ -49,8 +65,8 @@ int app_will_initialize(app_param_t *param)
         ogs_log_print(OGS_LOG_INFO, 
                 "File Logging: '%s'\n", context_self()->config.logger.file);
     }
-    if (context_self()->config.logger.level)
-    {
+
+    if (context_self()->config.logger.level) {
         if (!strcasecmp(context_self()->config.logger.level, "none"))
             context_self()->log.level = OGS_LOG_NONE;
         else if (!strcasecmp(context_self()->config.logger.level, "fatal"))
@@ -73,15 +89,14 @@ int app_will_initialize(app_param_t *param)
         ogs_log_print(OGS_LOG_INFO, 
                 "LOG-LEVEL: '%s'\n", context_self()->config.logger.level);
     }
-    if (context_self()->config.logger.domain)
-    {
+
+    if (context_self()->config.logger.domain) {
         context_self()->log.domain = context_self()->config.logger.domain;
         ogs_log_print(OGS_LOG_INFO, 
                 "LOG-DOMAIN: '%s'\n", context_self()->config.logger.domain);
     }
 
-    if (param->log_level)
-    {
+    if (param->log_level) {
         context_self()->log.level = param->log_level;
         context_self()->log.domain = param->log_domain;
     }
@@ -90,8 +105,7 @@ int app_will_initialize(app_param_t *param)
     if (rv != OGS_OK) return rv;
 
     if (param->db_disabled == false &&
-        context_self()->config.db_uri)
-    {
+        context_self()->config.db_uri) {
         /* Override configuration if DB_URI environment variable is existed */
         if (ogs_env_get("DB_URI"))
             context_self()->config.db_uri = ogs_env_get("DB_URI");
@@ -114,16 +128,11 @@ int app_did_initialize(void)
 
 void app_will_terminate(void)
 {
-    if (context_self()->config.db_uri)
-    {
-        ogs_info("DB-Client try to terminate");
-        context_db_final();
-        ogs_info("DB-Client terminate...done");
-    }
 }
 
 void app_did_terminate(void)
 {
+    context_db_final();
     context_final();
 }
 
@@ -133,8 +142,7 @@ static int log_pid(const char *app_name, const char *pid_path)
     pid_t mypid;
     char default_pid_path[MAX_FILEPATH_LEN];
 
-    if (pid_path == NULL)
-    {
+    if (pid_path == NULL) {
         ogs_snprintf(default_pid_path, sizeof(default_pid_path),
                 "%snextepc-%sd/pid", DEFAULT_RUNTIME_DIR_PATH, app_name);
         pid_path = default_pid_path;
@@ -142,8 +150,7 @@ static int log_pid(const char *app_name, const char *pid_path)
 
     mypid = getpid();
     pid_file = fopen(pid_path, "w");
-    if (!pid_file)
-    {
+    if (!pid_file) {
         ogs_error("CHECK PERMISSION of Installation Directory...");
         ogs_error("Cannot create PID file:`%s`", pid_path);
         ogs_assert_if_reached();

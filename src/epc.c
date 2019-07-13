@@ -1,7 +1,9 @@
+#include "mme/ogs-sctp.h"
+
 #include "app/context.h"
 #include "app/application.h"
 
-#include "app_init.h"
+#include "app-init.h"
 
 static ogs_proc_mutex_t *pcrf_sem1 = NULL;
 static ogs_proc_mutex_t *pcrf_sem2 = NULL;
@@ -61,8 +63,7 @@ int epc_initialize(app_param_t *param)
             if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
             if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
 
-            app_did_terminate();
-
+            context_final();
             ogs_core_finalize();
 
             _exit(EXIT_SUCCESS);
@@ -108,8 +109,7 @@ int epc_initialize(app_param_t *param)
             if (pgw_sem1) ogs_proc_mutex_delete(pgw_sem1);
             if (pgw_sem2) ogs_proc_mutex_delete(pgw_sem2);
 
-            app_did_terminate();
-
+            context_final();
             ogs_core_finalize();
 
             _exit(EXIT_SUCCESS);
@@ -157,8 +157,7 @@ int epc_initialize(app_param_t *param)
             if (sgw_sem1) ogs_proc_mutex_delete(sgw_sem1);
             if (sgw_sem2) ogs_proc_mutex_delete(sgw_sem2);
 
-            app_did_terminate();
-
+            context_final();
             ogs_core_finalize();
 
             _exit(EXIT_SUCCESS);
@@ -207,8 +206,7 @@ int epc_initialize(app_param_t *param)
             if (hss_sem1) ogs_proc_mutex_delete(hss_sem1);
             if (hss_sem2) ogs_proc_mutex_delete(hss_sem2);
 
-            app_did_terminate();
-
+            context_final();
             ogs_core_finalize();
 
             _exit(EXIT_SUCCESS);
@@ -217,13 +215,14 @@ int epc_initialize(app_param_t *param)
         if (hss_sem1) ogs_proc_mutex_wait(hss_sem1);
     }
 
-    rv = app_did_initialize();
-    if (rv != OGS_OK) return rv;
-
     ogs_info("MME try to initialize");
+    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
     rv = mme_initialize();
     ogs_assert(rv == OGS_OK);
     ogs_info("MME initialize...done");
+
+    rv = app_did_initialize();
+    if (rv != OGS_OK) return rv;
 
     return OGS_OK;;
 }
@@ -234,6 +233,7 @@ void epc_terminate(void)
 
     ogs_info("MME try to terminate");
     mme_terminate();
+    ogs_sctp_final();
     ogs_info("MME terminate...done");
 
     if (context_self()->config.parameter.no_hss == 0)

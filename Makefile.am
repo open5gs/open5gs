@@ -18,7 +18,7 @@
 ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = build/git-version-gen .version README.md LICENSE
 
-SUBDIRS = lib src support test
+SUBDIRS = lib src support tests
 
 bin_PROGRAMS = nextepc-mmed nextepc-hssd nextepc-sgwd nextepc-pgwd nextepc-pcrfd nextepc-epcd
 

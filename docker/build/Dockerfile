@@ -8,10 +8,10 @@ MAINTAINER Sukchan Lee <acetcom@gmail.com>
 WORKDIR /root
 COPY setup.sh /root
 
-ARG USER=acetcom
+ARG USER=open5gs
 ARG REPO=nextepc
 ARG BRANCH=master
-RUN	git clone https://github.com/$USER/$REPO
+RUN	git clone --recursive https://github.com/$USER/$REPO
 ADD https://api.github.com/repos/$USER/$REPO/git/refs/heads/$BRANCH /root/nextepc-ver.json
 
 RUN	cd nextepc && \

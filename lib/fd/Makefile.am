@@ -18,21 +18,20 @@
 pkglib_LTLIBRARIES = libfd.la
 
 libfd_la_SOURCES = \
-	fd_message.h fd_logger.h fd_lib.h \
-	libapp_sip.c fd_message.c fd_logger.c fd_config.c fd_init.c \
+	fd-message.h fd-logger.h fd-lib.h \
+	libapp_sip.c fd-message.c fd-logger.c fd-config.c fd-init.c \
 	\
-	s6a/s6a_dict.h s6a/s6a_message.h \
-	s6a/dict_init.c \
+	s6a/s6a-dict.h s6a/s6a-message.h \
+	s6a/dict-init.c \
 	\
-	gx/gx_dict.h gx/gx_message.h \
-	gx/dict_init.c gx/gx_message.c \
+	gx/gx-dict.h gx/gx-message.h \
+	gx/dict-init.c gx/gx-message.c \
 	\
-	rx/rx_dict.h rx/rx_message.h \
-	rx/dict_init.c rx/rx_message.c \
+	rx/rx-dict.h rx/rx-message.h \
+	rx/dict-init.c rx/rx-message.c \
 	$(NULL)
 
 libfd_la_DEPENDENCIES = \
-	@OGSCORE_LIBS@ \
     $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdcore/libfdcore.la \
     $(top_srcdir)/lib/@FREEDIAMETER_DIR@/libfdproto/libfdproto.la \
     $(top_srcdir)/lib/base/libbase.la \

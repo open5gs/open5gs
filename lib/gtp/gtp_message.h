@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp_tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-03-06 12:20:52.420255 by acetcom
+ * Created on: 2019-05-28 16:37:12.761642 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -37,7 +37,7 @@ extern "C" {
 #define GTPV1U_HEADER_LEN   8
 #define GTPV2C_HEADER_LEN   12
 #define GTP_TEID_LEN        4
-typedef struct _gtp_header_t {
+typedef struct gtp_header_s {
     union {
         struct {
         ED4(uint8_t version:3;,
@@ -590,7 +590,7 @@ typedef tlv_octet_t tlv_serving_plmn_rate_control_t;
 typedef tlv_octet_t tlv_counter_t;
 
 /* Structure for Group Infomration Element */
-typedef struct _tlv_bearer_context_t {
+typedef struct tlv_bearer_context_s {
     tlv_presence_t presence;
     tlv_ebi_t eps_bearer_id;
     tlv_bearer_tft_t tft;
@@ -619,11 +619,11 @@ typedef struct _tlv_bearer_context_t {
     tlv_packet_flow_id_t packet_flow_id;
 } tlv_bearer_context_t;
 
-typedef struct _tlv_pdn_connection_t {
+typedef struct tlv_pdn_connection_s {
     tlv_presence_t presence;
 } tlv_pdn_connection_t;
 
-typedef struct _tlv_overload_control_information_t {
+typedef struct tlv_overload_control_information_s {
     tlv_presence_t presence;
     tlv_sequence_number_t overload_control_sequence_number;
     tlv_metric_t overload_reduction_metric;
@@ -631,20 +631,20 @@ typedef struct _tlv_overload_control_information_t {
     tlv_apn_t list_of_access_point_name;
 } tlv_overload_control_information_t;
 
-typedef struct _tlv_load_control_information_t {
+typedef struct tlv_load_control_information_s {
     tlv_presence_t presence;
     tlv_sequence_number_t load_control_sequence_number;
     tlv_metric_t load_metric;
     tlv_apn_and_relative_capacity_t list_of_apn_and_relative_capacity;
 } tlv_load_control_information_t;
 
-typedef struct _tlv_remote_ue_context_t {
+typedef struct tlv_remote_ue_context_s {
     tlv_presence_t presence;
     tlv_remote_user_id_t remote_user_id;
     tlv_remote_ue_ip_information_t remote_ue_ip_information;
 } tlv_remote_ue_context_t;
 
-typedef struct _tlv_scef_pdn_connection_t {
+typedef struct tlv_scef_pdn_connection_s {
     tlv_presence_t presence;
     tlv_apn_t apn;
     tlv_ebi_t default_eps_bearer_id;
@@ -652,17 +652,17 @@ typedef struct _tlv_scef_pdn_connection_t {
 } tlv_scef_pdn_connection_t;
 
 /* Structure for Message */
-typedef struct _gtp_echo_request_t {
+typedef struct gtp_echo_request_s {
     tlv_recovery_t recovery;
     tlv_node_features_t sending_node_features;
 } gtp_echo_request_t;
 
-typedef struct _gtp_echo_response_t {
+typedef struct gtp_echo_response_s {
     tlv_recovery_t recovery;
     tlv_node_features_t sending_node_features;
 } gtp_echo_response_t;
 
-typedef struct _gtp_create_session_request_t {
+typedef struct gtp_create_session_request_s {
     tlv_imsi_t imsi;
     tlv_msisdn_t msisdn;
     tlv_mei_t me_identity;
@@ -723,7 +723,7 @@ typedef struct _gtp_create_session_request_t {
     tlv_port_number_t ue_tcp_port;
 } gtp_create_session_request_t;
 
-typedef struct _gtp_create_session_response_t {
+typedef struct gtp_create_session_response_s {
     tlv_cause_t cause;
     tlv_change_reporting_action_t change_reporting_action_;
     tlv_csg_information_reporting_action_t csg_information_reporting_action;
@@ -759,7 +759,7 @@ typedef struct _gtp_create_session_response_t {
     tlv_epco_t extended_protocol_configuration_options;
 } gtp_create_session_response_t;
 
-typedef struct _gtp_modify_bearer_request_t {
+typedef struct gtp_modify_bearer_request_s {
     tlv_mei_t me_identity;
     tlv_uli_t user_location_information;
     tlv_serving_network_t serving_network;
@@ -790,7 +790,7 @@ typedef struct _gtp_modify_bearer_request_t {
     tlv_counter_t mo_exception_data_counter;
 } gtp_modify_bearer_request_t;
 
-typedef struct _gtp_modify_bearer_response_t {
+typedef struct gtp_modify_bearer_response_s {
     tlv_cause_t cause;
     tlv_msisdn_t msisdn;
     tlv_ebi_t linked_eps_bearer_id;
@@ -818,7 +818,7 @@ typedef struct _gtp_modify_bearer_response_t {
     tlv_charging_id_t pdn_connection_charging_id;
 } gtp_modify_bearer_response_t;
 
-typedef struct _gtp_delete_session_request_t {
+typedef struct gtp_delete_session_request_s {
     tlv_cause_t cause;
     tlv_ebi_t linked_eps_bearer_id;
     tlv_uli_t user_location_information;
@@ -842,7 +842,7 @@ typedef struct _gtp_delete_session_request_t {
     tlv_port_number_t ue_tcp_port;
 } gtp_delete_session_request_t;
 
-typedef struct _gtp_delete_session_response_t {
+typedef struct gtp_delete_session_response_s {
     tlv_cause_t cause;
     tlv_recovery_t recovery;
     tlv_pco_t protocol_configuration_options;
@@ -855,7 +855,7 @@ typedef struct _gtp_delete_session_response_t {
     tlv_epco_t extended_protocol_configuration_options;
 } gtp_delete_session_response_t;
 
-typedef struct _gtp_modify_bearer_command_t {
+typedef struct gtp_modify_bearer_command_s {
     tlv_ambr_t apn_aggregate_maximum_bit_rate;
     tlv_bearer_context_t bearer_context;
     tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
@@ -864,7 +864,7 @@ typedef struct _gtp_modify_bearer_command_t {
     tlv_f_teid_t sender_f_teid_for_control_plane;
 } gtp_modify_bearer_command_t;
 
-typedef struct _gtp_modify_bearer_failure_indication_t {
+typedef struct gtp_modify_bearer_failure_indication_s {
     tlv_cause_t cause;
     tlv_recovery_t recovery;
     tlv_indication_t indication_flags;
@@ -872,7 +872,7 @@ typedef struct _gtp_modify_bearer_failure_indication_t {
     tlv_overload_control_information_t sgw_s_overload_control_information;
 } gtp_modify_bearer_failure_indication_t;
 
-typedef struct _gtp_delete_bearer_command_t {
+typedef struct gtp_delete_bearer_command_s {
     tlv_bearer_context_t bearer_contexts;
     tlv_uli_t user_location_information;
     tlv_uli_timestamp_t uli_timestamp;
@@ -882,7 +882,7 @@ typedef struct _gtp_delete_bearer_command_t {
     tlv_f_teid_t sender_f_teid_for_control_plane;
 } gtp_delete_bearer_command_t;
 
-typedef struct _gtp_delete_bearer_failure_indication_t {
+typedef struct gtp_delete_bearer_failure_indication_s {
     tlv_cause_t cause;
     tlv_bearer_context_t bearer_context;
     tlv_recovery_t recovery;
@@ -891,13 +891,13 @@ typedef struct _gtp_delete_bearer_failure_indication_t {
     tlv_overload_control_information_t sgw_s_overload_control_information;
 } gtp_delete_bearer_failure_indication_t;
 
-typedef struct _gtp_downlink_data_notification_failure_indication_t {
+typedef struct gtp_downlink_data_notification_failure_indication_s {
     tlv_cause_t cause;
     tlv_node_type_t originating_node;
     tlv_imsi_t imsi;
 } gtp_downlink_data_notification_failure_indication_t;
 
-typedef struct _gtp_create_bearer_request_t {
+typedef struct gtp_create_bearer_request_s {
     tlv_pti_t procedure_transaction_id;
     tlv_ebi_t linked_eps_bearer_id;
     tlv_pco_t protocol_configuration_options;
@@ -917,7 +917,7 @@ typedef struct _gtp_create_bearer_request_t {
     tlv_f_container_t nbifom_container;
 } gtp_create_bearer_request_t;
 
-typedef struct _gtp_create_bearer_response_t {
+typedef struct gtp_create_bearer_response_s {
     tlv_cause_t cause;
     tlv_bearer_context_t bearer_contexts;
     tlv_recovery_t recovery;
@@ -940,7 +940,7 @@ typedef struct _gtp_create_bearer_response_t {
     tlv_port_number_t ue_tcp_port;
 } gtp_create_bearer_response_t;
 
-typedef struct _gtp_update_bearer_request_t {
+typedef struct gtp_update_bearer_request_s {
     tlv_bearer_context_t bearer_contexts;
     tlv_pti_t procedure_transaction_id;
     tlv_pco_t protocol_configuration_options;
@@ -960,7 +960,7 @@ typedef struct _gtp_update_bearer_request_t {
     tlv_f_container_t nbifom_container;
 } gtp_update_bearer_request_t;
 
-typedef struct _gtp_update_bearer_response_t {
+typedef struct gtp_update_bearer_response_s {
     tlv_cause_t cause;
     tlv_bearer_context_t bearer_contexts;
     tlv_pco_t protocol_configuration_options;
@@ -985,7 +985,7 @@ typedef struct _gtp_update_bearer_response_t {
     tlv_port_number_t ue_tcp_port;
 } gtp_update_bearer_response_t;
 
-typedef struct _gtp_delete_bearer_request_t {
+typedef struct gtp_delete_bearer_request_s {
     tlv_ebi_t linked_eps_bearer_id;
     tlv_ebi_t eps_bearer_ids;
     tlv_bearer_context_t failed_bearer_contexts;
@@ -1004,7 +1004,7 @@ typedef struct _gtp_delete_bearer_request_t {
     tlv_epco_t extended_protocol_configuration_options;
 } gtp_delete_bearer_request_t;
 
-typedef struct _gtp_delete_bearer_response_t {
+typedef struct gtp_delete_bearer_response_s {
     tlv_cause_t cause;
     tlv_ebi_t linked_eps_bearer_id;
     tlv_bearer_context_t bearer_contexts;
@@ -1030,7 +1030,7 @@ typedef struct _gtp_delete_bearer_response_t {
     tlv_port_number_t ue_tcp_port	;
 } gtp_delete_bearer_response_t;
 
-typedef struct _gtp_create_indirect_data_forwarding_tunnel_request_t {
+typedef struct gtp_create_indirect_data_forwarding_tunnel_request_s {
     tlv_imsi_t imsi;
     tlv_mei_t me_identity;
     tlv_indication_t indication_flags;
@@ -1049,7 +1049,7 @@ typedef struct _gtp_create_indirect_data_forwarding_tunnel_request_t {
     tlv_recovery_t recovery;
 } gtp_create_indirect_data_forwarding_tunnel_request_t;
 
-typedef struct _gtp_create_indirect_data_forwarding_tunnel_response_t {
+typedef struct gtp_create_indirect_data_forwarding_tunnel_response_s {
     tlv_cause_t cause;
     tlv_f_teid_t sender_f_teid_for_control_plane;
     tlv_bearer_context_t bearer_context_0;
@@ -1066,21 +1066,21 @@ typedef struct _gtp_create_indirect_data_forwarding_tunnel_response_t {
     tlv_recovery_t recovery;
 } gtp_create_indirect_data_forwarding_tunnel_response_t;
 
-typedef struct _gtp_delete_indirect_data_forwarding_tunnel_request_t {
+typedef struct gtp_delete_indirect_data_forwarding_tunnel_request_s {
 } gtp_delete_indirect_data_forwarding_tunnel_request_t;
 
-typedef struct _gtp_delete_indirect_data_forwarding_tunnel_response_t {
+typedef struct gtp_delete_indirect_data_forwarding_tunnel_response_s {
     tlv_cause_t cause;
     tlv_recovery_t recovery;
 } gtp_delete_indirect_data_forwarding_tunnel_response_t;
 
-typedef struct _gtp_release_access_bearers_request_t {
+typedef struct gtp_release_access_bearers_request_s {
     tlv_ebi_t list_of_rabs;
     tlv_node_type_t originating_node;
     tlv_indication_t indication_flags;
 } gtp_release_access_bearers_request_t;
 
-typedef struct _gtp_release_access_bearers_response_t {
+typedef struct gtp_release_access_bearers_response_s {
     tlv_cause_t cause;
     tlv_recovery_t recovery;
     tlv_indication_t indication_flags;
@@ -1088,7 +1088,7 @@ typedef struct _gtp_release_access_bearers_response_t {
     tlv_overload_control_information_t sgw_s_overload_control_information;
 } gtp_release_access_bearers_response_t;
 
-typedef struct _gtp_downlink_data_notification_t {
+typedef struct gtp_downlink_data_notification_s {
     tlv_cause_t cause;
     tlv_ebi_t eps_bearer_id;
     tlv_arp_t allocation_retention_priority;
@@ -1100,7 +1100,7 @@ typedef struct _gtp_downlink_data_notification_t {
     tlv_paging_and_service_information_t paging_and_service_information;
 } gtp_downlink_data_notification_t;
 
-typedef struct _gtp_downlink_data_notification_acknowledge_t {
+typedef struct gtp_downlink_data_notification_acknowledge_s {
     tlv_cause_t cause;
     tlv_delay_value_t data_notification_delay;
     tlv_recovery_t recovery;
@@ -1110,7 +1110,7 @@ typedef struct _gtp_downlink_data_notification_acknowledge_t {
     tlv_integer_number_t dl_buffering_suggested_packet_count;
 } gtp_downlink_data_notification_acknowledge_t;
 
-typedef struct _gtp_modify_access_bearers_request_t {
+typedef struct gtp_modify_access_bearers_request_s {
     tlv_indication_t indication_flags;
     tlv_f_teid_t sender_f_teid_for_control_plane;
     tlv_delay_value_t delay_downlink_packet_notification_request;
@@ -1119,7 +1119,7 @@ typedef struct _gtp_modify_access_bearers_request_t {
     tlv_recovery_t recovery;
 } gtp_modify_access_bearers_request_t;
 
-typedef struct _gtp_modify_access_bearers_response_t {
+typedef struct gtp_modify_access_bearers_response_s {
     tlv_cause_t cause;
     tlv_bearer_context_t bearer_contexts_modified;
     tlv_bearer_context_t bearer_contexts_marked_for_removal;
@@ -1129,7 +1129,7 @@ typedef struct _gtp_modify_access_bearers_response_t {
     tlv_overload_control_information_t sgw_s_overload_control_information;
 } gtp_modify_access_bearers_response_t;
 
-typedef struct _gtp_message_t {
+typedef struct gtp_message_s {
    gtp_header_t h;
    union {
         gtp_echo_request_t echo_request;

@@ -18,12 +18,11 @@
 pkglib_LTLIBRARIES = libnas.la
 
 libnas_la_SOURCES = \
-	nas_message.h nas_ies.h nas_types.h \
-	nas_decoder.c nas_encoder.c nas_ies.c nas_types.c \
+	nas-message.h nas-ies.h nas-types.h \
+	nas-decoder.c nas-encoder.c nas-ies.c nas-types.c \
 	$(NULL)
 
 libnas_la_DEPENDENCIES = \
-	@OGSCORE_LIBS@ \
     $(top_srcdir)/lib/base/libbase.la \
 	$(NULL)
 

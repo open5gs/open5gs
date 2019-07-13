@@ -3,31 +3,35 @@
 noinst_LTLIBRARIES = libmme.la
 
 libmme_la_SOURCES = \
-	mme_kdf.h kasumi.h snow_3g.h zuc.h \
-    mme_event.h mme_context.h \
-	s1ap_build.h s1ap_handler.h s1ap_conv.h s1ap_path.h \
-	mme_fd_path.h mme_s6a_handler.h \
-	nas_conv.h nas_security.h nas_path.h \
-	emm_handler.h emm_build.h \
-	esm_handler.h esm_build.h \
-	mme_gtp_path.h mme_s11_build.h mme_s11_handler.h \
-	mme_sm.h mme_path.h \
-	mme_kdf.c kasumi.c snow_3g.c zuc.c \
-    mme_init.c mme_event.c mme_context.c \
-	s1ap_sm.c s1ap_build.c s1ap_handler.c s1ap_conv.c s1ap_path.c \
-	mme_fd_path.c mme_s6a_handler.c \
-	nas_conv.c nas_security.c nas_path.c \
-	emm_sm.c emm_handler.c emm_build.c \
-	esm_sm.c esm_handler.c esm_build.c \
-	mme_gtp_path.c mme_s11_build.c mme_s11_handler.c \
-	mme_sm.c mme_path.c \
-	sbc_message.h sbc_handler.h sbc_handler.c \
+	mme-kdf.h kasumi.h snow-3g.h zuc.h \
+    mme-event.h mme-context.h \
+	ogs-sctp.h \
+	s1ap-build.h s1ap-handler.h s1ap-conv.h s1ap-path.h \
+	sgsap-build.h sgsap-handler.h sgsap-conv.h sgsap-path.h \
+	mme-fd-path.h mme-s6a-handler.h \
+	nas-conv.h nas-security.h nas-path.h \
+	emm-handler.h emm-build.h \
+	esm-handler.h esm-build.h \
+	mme-gtp-path.h mme-s11-build.h mme-s11-handler.h \
+	mme-sm.h mme-path.h \
+	mme-kdf.c kasumi.c snow-3g.c zuc.c \
+    mme-init.c mme-event.c mme-context.c \
+	ogs-sctp.c \
+	s1ap-sm.c s1ap-build.c s1ap-handler.c s1ap-conv.c s1ap-path.c \
+	sgsap-sm.c sgsap-build.c sgsap-handler.c sgsap-conv.c sgsap-path.c \
+	mme-fd-path.c mme-s6a-handler.c \
+	nas-conv.c nas-security.c nas-path.c \
+	emm-sm.c emm-handler.c emm-build.c \
+	esm-sm.c esm-handler.c esm-build.c \
+	mme-gtp-path.c mme-s11-build.c mme-s11-handler.c \
+	mme-sm.c mme-path.c \
+	sbc-message.h sbc-handler.h sbc-handler.c \
 	$(NULL)
 
 if WITH_USRSCTP
-libmme_la_SOURCES += s1ap_usrsctp.c
+libmme_la_SOURCES += ogs-usrsctp.c s1ap-usrpath.c sgsap-usrpath.c
 else
-libmme_la_SOURCES += ogs-sctp.h ogs-sctp.c s1ap_lksctp.c
+libmme_la_SOURCES += ogs-lksctp.c s1ap-lkpath.c sgsap-lkpath.c
 endif
 
 libmme_la_DEPENDENCIES = \

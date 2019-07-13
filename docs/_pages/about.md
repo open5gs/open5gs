@@ -15,7 +15,8 @@ NextEPC is a C-language Open Source implementation of the 3GPP Evolved Packet Co
 - Multiple PDN support
 - S1/X2 Handover
 - IPv6 support
-- Supports several IMS servers with Rx interface.
+- CSFB(Circuit Switched Fall Back) and SMSoS(SMS Over SGs)
+- VoLTE(Voice over LTE)
 
 #### Known Limitations
 ---
@@ -23,7 +24,7 @@ NextEPC is a C-language Open Source implementation of the 3GPP Evolved Packet Co
 - No OCS/OFCS
 - No NB-IoT
 - No eMBMS
-- No CS Fallback and SRVCC
+- No SRVCC
 - No Roaming
 - No Emergency Call
 - No ePDG Gateway

@@ -4,14 +4,14 @@
  * available on the GSMA website
  *------------------------------------------------------------------------*/
 
-#ifndef __ZUC_H__
-#define __ZUC_H__
+#ifndef ZUC_H
+#define ZUC_H
 
 #include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 /* type definition from */
 typedef uint8_t u8;
@@ -53,6 +53,6 @@ void zuc_eia3(u8* IK, u32 COUNT, u32 BEARER, u32 DIRECTION,
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __ZUC_H__ */
+#endif /* ZUC_H */

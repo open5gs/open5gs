@@ -2,14 +2,14 @@
  *					Kasumi.h
  *---------------------------------------------------------*/
 
-#ifndef __KASUMI__
-#define __KASUMI__
+#ifndef KASUMI_H
+#define KASUMI_H
 
 #include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 typedef uint8_t u8;
 typedef uint16_t  u16;
@@ -59,6 +59,6 @@ u8* kasumi_f9( u8 *key, u32 count, u32 fresh, u32 dir, u8 *data, int length );
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __KASUMI__ */
+#endif /* KASUMI_H */
