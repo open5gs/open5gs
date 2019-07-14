@@ -71,18 +71,15 @@ int emm_handle_attach_request(
      * ATTACH_REQUEST
      *   Clear EBI generator
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * TAU_REQUEST
      *   Clear Paging Timer and Message
      *
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * EXTENDED_SERVICE_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      */
     CLEAR_EPS_BEARER_ID(mme_ue);
     CLEAR_PAGING_INFO(mme_ue);
@@ -376,18 +373,15 @@ int emm_handle_service_request(
      * ATTACH_REQUEST
      *   Clear EBI generator
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * TAU_REQUEST
      *   Clear Paging Timer and Message
      *
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * EXTENDED_SERVICE_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      */
     CLEAR_PAGING_INFO(mme_ue);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
@@ -436,18 +430,15 @@ int emm_handle_tau_request(
      * ATTACH_REQUEST
      *   Clear EBI generator
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * TAU_REQUEST
      *   Clear Paging Timer and Message
      *
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * EXTENDED_SERVICE_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      */
     CLEAR_PAGING_INFO(mme_ue);
     CLEAR_SERVICE_INDICATOR(mme_ue);
@@ -569,25 +560,24 @@ int emm_handle_extended_service_request(
      * ATTACH_REQUEST
      *   Clear EBI generator
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * TAU_REQUEST
      *   Clear Paging Timer and Message
      *
      * SERVICE_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      *
      * EXTENDED_SERVICE_REQUEST
      *   Clear Paging Timer and Message
-     *   Update KeNB
      */
     CLEAR_PAGING_INFO(mme_ue);
+#if KeNB_Should_Not_Refreshed
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
         mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
         mme_ue->nhcc = 1;
     }
+#endif
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);

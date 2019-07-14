@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef MME_CONTEXT
-#define MME_CONTEXT
+#ifndef MME_CONTEXT_H
+#define MME_CONTEXT_H
 
 #include "ogs-crypt.h"
 #include "base/types.h"
@@ -423,6 +423,13 @@ struct mme_ue_s {
     } while(0);
 #define SGSAP_CS_CALL_SERVICE_INDICATOR     1
 #define SGSAP_SMS_SERVICE_INDICATOR         2
+
+#define CS_CALL_SERVICE_INDICATOR(__mME) \
+    (MME_P_TMSI_IS_AVAILABLE(__mME) && \
+     ((__mME)->service_indicator) == SGSAP_CS_CALL_SERVICE_INDICATOR)
+#define SMS_SERVICE_INDICATOR(__mME) \
+    (MME_P_TMSI_IS_AVAILABLE(__mME) && \
+     ((__mME)->service_indicator) == SGSAP_SMS_SERVICE_INDICATOR)
     uint8_t         service_indicator;
 
     /* UE Radio Capability */
@@ -744,4 +751,4 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);
 }
 #endif
 
-#endif /* MME_CONTEXT */
+#endif /* MME_CONTEXT_H */

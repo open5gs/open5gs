@@ -2011,6 +2011,9 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     /* Clear Paging info : stop t3413, last_paing_msg */
     CLEAR_PAGING_INFO(mme_ue);
+    
+    /* Clear Service Indicator */
+    CLEAR_SERVICE_INDICATOR(mme_ue);
 
     /* Free UeRadioCapability */
     S1AP_CLEAR_DATA(&mme_ue->ueRadioCapability);

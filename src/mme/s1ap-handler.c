@@ -517,7 +517,7 @@ void s1ap_handle_initial_context_setup_response(
         }
     }
 
-    if (mme_ue->service_indicator == SGSAP_SMS_SERVICE_INDICATOR) {
+    if (SMS_SERVICE_INDICATOR(mme_ue)) {
         sgsap_send_service_request(mme_ue, SGSAP_EMM_CONNECTED_MODE);
     }
 
@@ -577,7 +577,7 @@ void s1ap_handle_initial_context_setup_failure(
     if (enb_ue == NULL) {
         ogs_warn("Initial context setup failure : "
                 "cannot find eNB-UE-S1AP-ID[%d]", (int)*ENB_UE_S1AP_ID);
-        return;
+        goto cleanup;
     }
     mme_ue = enb_ue->mme_ue;
 
@@ -606,6 +606,9 @@ void s1ap_handle_initial_context_setup_failure(
         rv = mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
         ogs_assert(rv == OGS_OK);
     }
+
+cleanup:
+    CLEAR_SERVICE_INDICATOR(mme_ue);
 }
 
 void s1ap_handle_ue_context_modification_response(
@@ -658,6 +661,7 @@ void s1ap_handle_ue_context_modification_response(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
+    CLEAR_SERVICE_INDICATOR(mme_ue);
 }
 
 void s1ap_handle_ue_context_modification_failure(
@@ -674,6 +678,7 @@ void s1ap_handle_ue_context_modification_failure(
     S1AP_Cause_t *Cause = NULL;
 
     enb_ue_t *enb_ue = NULL;
+    mme_ue_t *mme_ue = NULL;
 
     ogs_assert(enb);
     ogs_assert(enb->sock);
@@ -711,13 +716,18 @@ void s1ap_handle_ue_context_modification_failure(
     if (enb_ue == NULL) {
         ogs_warn("Initial context setup failure : "
                 "cannot find eNB-UE-S1AP-ID[%d]", (int)*ENB_UE_S1AP_ID);
-        return;
+        goto cleanup;
     }
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
     ogs_debug("    Cause[Group:%d Cause:%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
+
+cleanup:
+    mme_ue = enb_ue->mme_ue;
+    ogs_assert(mme_ue);
+    CLEAR_SERVICE_INDICATOR(mme_ue);
 }
 
 

@@ -426,7 +426,6 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert_if_reached();
         }
 
-        CLEAR_SERVICE_INDICATOR(mme_ue);
         break;
     default:
         ogs_fatal("Invalid NAS-EPS[%d]", mme_ue->nas_eps.type);
