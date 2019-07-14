@@ -1253,7 +1253,7 @@ int mme_context_parse_config()
                         vlr->tai.tac = atoi(tac);
             
                         plmn_id_build(&plmn_id,
-                            atoi(tai_mcc), atoi(tai_mnc), strlen(tai_mnc));
+                            atoi(lai_mcc), atoi(lai_mnc), strlen(lai_mnc));
                         nas_from_plmn_id(&vlr->lai.nas_plmn_id, &plmn_id);
                         vlr->lai.lac = atoi(lac);
                     } while (ogs_yaml_iter_type(&sgsap_array) ==
