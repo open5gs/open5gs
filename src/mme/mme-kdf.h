@@ -34,10 +34,10 @@
 */
 
 void mme_kdf_nas(uint8_t algorithm_type_distinguishers,
-    uint8_t algorithm_identity, uint8_t *kasme, uint8_t *knas);
+    uint8_t algorithm_identity, const uint8_t *kasme, uint8_t *knas);
 
-void mme_kdf_enb(uint8_t *kasme, uint32_t ul_count, uint8_t *kenb);
+void mme_kdf_enb(const uint8_t *kasme, uint32_t ul_count, uint8_t *kenb);
 
-void mme_kdf_nh(uint8_t *kasme, uint8_t *sync_input, uint8_t *kenb);
+void mme_kdf_nh(const uint8_t *kasme, const uint8_t *sync_input, uint8_t *kenb);
 
 #endif /* MME_KDF_H */
