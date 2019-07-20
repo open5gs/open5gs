@@ -93,3 +93,19 @@ static void mme_ue_timer_event(
     }
 }
 
+void mme_timer_sgs_cli_conn_to_srv(void *data)
+{
+    int rv;
+    mme_event_t *e = NULL;
+    ogs_assert(data);
+
+    e = mme_event_new(MME_EVT_SGSAP_TIMER);
+    e->timer_id = MME_TIMER_SGS_CLI_CONN_TO_SRV;
+    e->vlr = data;
+
+    rv = ogs_queue_push(mme_self()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        mme_event_free(e);
+    }
+}

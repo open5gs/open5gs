@@ -50,6 +50,7 @@ const char *mme_timer_get_name(mme_timer_e id);
 
 void mme_timer_s1_delayed_send(void *data);
 void mme_timer_t3413_expire(void *data);
+void mme_timer_sgs_cli_conn_to_srv(void *data);
 
 #ifdef __cplusplus
 }

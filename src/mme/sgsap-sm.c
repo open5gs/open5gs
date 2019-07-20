@@ -21,12 +21,11 @@
 
 #include "mme-context.h"
 #include "mme-event.h"
+#include "mme-timer.h"
 #include "mme-sm.h"
 
 #include "sgsap-path.h"
 #include "sgsap-handler.h"
-
-static void sgsap_connect_timeout(void *data);
 
 void sgsap_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
@@ -40,7 +39,7 @@ void sgsap_state_initial(ogs_fsm_t *s, mme_event_t *e)
     ogs_assert(vlr);
 
     vlr->t_conn = ogs_timer_add(mme_self()->timer_mgr,
-            sgsap_connect_timeout, vlr);
+            mme_timer_sgs_cli_conn_to_srv, vlr);
     ogs_assert(vlr->t_conn);
 
     OGS_FSM_TRAN(s, &sgsap_state_will_connect);
@@ -62,7 +61,11 @@ void sgsap_state_final(ogs_fsm_t *s, mme_event_t *e)
 
 void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
 {
+    char buf[OGS_ADDRSTRLEN];
+
     mme_vlr_t *vlr = NULL;
+    ogs_socknode_t *node = NULL;
+    ogs_sockaddr_t *addr = NULL;
     ogs_assert(s);
     ogs_assert(e);
 
@@ -80,6 +83,31 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
         break;
     case OGS_FSM_EXIT_SIG:
         ogs_timer_stop(vlr->t_conn);
+        break;
+    case MME_EVT_SGSAP_TIMER:
+        switch(e->timer_id) {
+        case MME_TIMER_SGS_CLI_CONN_TO_SRV:
+            vlr = e->vlr;
+            ogs_assert(vlr);
+            node = vlr->node;
+            ogs_assert(node);
+            addr = node->addr;
+            ogs_assert(addr);
+
+            ogs_warn("[SGsAP] Connect to VLR [%s]:%d failed",
+                        OGS_ADDR(addr, buf), OGS_PORT(addr));
+
+            ogs_assert(vlr->t_conn);
+            ogs_timer_start(vlr->t_conn, mme_self()->t_conn_value);
+
+            mme_vlr_free_node(vlr);
+            sgsap_client(vlr);
+            break;
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
+            break;
+        }
         break;
     case MME_EVT_SGSAP_LO_SCTP_COMM_UP:
         OGS_FSM_TRAN(s, sgsap_state_connected);
@@ -170,28 +198,3 @@ void sgsap_state_exception(ogs_fsm_t *s, mme_event_t *e)
         break;
     }
 }
-
-static void sgsap_connect_timeout(void *data)
-{
-    char buf[OGS_ADDRSTRLEN];
-
-    mme_vlr_t *vlr = data;
-    ogs_socknode_t *node = NULL;
-    ogs_sockaddr_t *addr = NULL;
-
-    ogs_assert(vlr);
-    node = vlr->node;
-    ogs_assert(node);
-    addr = node->addr;
-    ogs_assert(addr);
-
-    ogs_warn("[SGsAP] Connect to VLR [%s]:%d failed",
-                OGS_ADDR(addr, buf), OGS_PORT(addr));
-
-    ogs_assert(vlr->t_conn);
-    ogs_timer_start(vlr->t_conn, mme_self()->t_conn_value);
-
-    mme_vlr_free_node(vlr);
-    sgsap_client(vlr);
-}
-

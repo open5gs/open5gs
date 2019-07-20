@@ -562,6 +562,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_pkbuf_free(pkbuf);
         break;
 
+    case MME_EVT_SGSAP_TIMER:
+        vlr = e->vlr;
+        ogs_assert(vlr);
+        ogs_assert(OGS_FSM_STATE(&vlr->sm));
+
+        ogs_fsm_dispatch(&vlr->sm, e);
+        break;
+
     default:
         ogs_error("No handler for event %s", mme_event_get_name(e));
         break;
