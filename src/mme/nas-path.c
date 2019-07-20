@@ -146,8 +146,19 @@ int nas_send_identity_request(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
-    rv = emm_build_identity_request(&emmbuf, mme_ue);
-    ogs_assert(rv == OGS_OK && emmbuf);
+    ogs_debug("[EMM] Identity request");
+
+    if (mme_ue->t3470.pkbuf) {
+        emmbuf = mme_ue->t3470.pkbuf;
+
+    } else {
+        rv = emm_build_identity_request(&emmbuf, mme_ue);
+        ogs_assert(rv == OGS_OK && emmbuf);
+    }
+
+    mme_ue->t3470.pkbuf = ogs_pkbuf_copy(emmbuf);
+    ogs_timer_start(mme_ue->t3470.timer, 
+            mme_timer_cfg(MME_TIMER_T3470)->duration);
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_assert(rv == OGS_OK);

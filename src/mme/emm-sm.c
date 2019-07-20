@@ -141,6 +141,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         switch (message->emm.h.message_type) {
         case NAS_IDENTITY_RESPONSE:
             ogs_debug("[EMM] Identity response");
+            CLEAR_MME_UE_TIMER(mme_ue->t3470);
+
             rv = emm_handle_identity_response(mme_ue,
                     &message->emm.identity_response);
             if (rv != OGS_OK) {
@@ -285,6 +287,18 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 s1ap_send_paging(mme_ue, 0);
             }
             break;
+        case MME_TIMER_T3470:
+            if (mme_ue->t3470.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3470)->max_count) {
+                ogs_warn("[EMM] Retransmission of Identity-Request failed. "
+                        "Stop retransmission");
+                CLEAR_MME_UE_TIMER(mme_ue->t3470);
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+            } else {
+                mme_ue->t3470.retry_count++;
+                nas_send_identity_request(mme_ue);
+            }
+            break;
         default:
             ogs_error("Unknown timer[%s:%d]",
                     mme_timer_get_name(e->timer_id), e->timer_id);
@@ -297,8 +311,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
     }
 
     if (!MME_UE_HAVE_IMSI(mme_ue)) {
-        rv = nas_send_identity_request(mme_ue);
-        ogs_assert(rv == OGS_OK);
+        CLEAR_MME_UE_TIMER(mme_ue->t3470);
+        nas_send_identity_request(mme_ue);
         return;
     }
 
@@ -606,9 +620,9 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                         "Stop retransmission",
                         mme_ue->imsi_bcd);
                 CLEAR_MME_UE_TIMER(mme_ue->t3460);
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
 
                 nas_send_authentication_reject(mme_ue);
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
             } else {
                 mme_ue->t3460.retry_count++;
                 nas_send_authentication_request(mme_ue, NULL);
@@ -751,9 +765,6 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                         "Stop retransmission",
                         mme_ue->imsi_bcd);
                 CLEAR_MME_UE_TIMER(mme_ue->t3460);
-
-                /* No response message for security-mode */
-
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
             } else {
                 mme_ue->t3460.retry_count++;

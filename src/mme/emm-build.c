@@ -184,7 +184,6 @@ int emm_build_identity_request(
     message.emm.h.message_type = NAS_IDENTITY_REQUEST;
 
     /* Request IMSI */
-    ogs_debug("[EMM] Identity request");
     ogs_debug("    Identity Type 2 : IMSI");
     identity_request->identity_type.type = NAS_IDENTITY_TYPE_2_IMSI;
 
