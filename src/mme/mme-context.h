@@ -394,21 +394,21 @@ struct mme_ue_s {
     nas_esm_message_container_t pdn_connectivity_request;
 
     /* Paging */
-#define CLEAR_PAGING_INFO(__mME) \
+#define CLEAR_MME_UE_TIMER(__mME_UE_TIMER) \
     do { \
-        ogs_assert((__mME)); \
-        \
-        ogs_timer_stop((__mME)->t3413); \
-        if ((__mME)->last_paging_msg) \
+        ogs_timer_stop((__mME_UE_TIMER).timer); \
+        if ((__mME_UE_TIMER).pkbuf) \
         { \
-            ogs_pkbuf_free((__mME)->last_paging_msg); \
-            (__mME)->last_paging_msg = NULL; \
+            ogs_pkbuf_free((__mME_UE_TIMER).pkbuf); \
+            (__mME_UE_TIMER).pkbuf = NULL; \
         } \
-        (__mME)->max_paging_retry = 0; \
+        (__mME_UE_TIMER).retry_count = 0; \
     } while(0);
-    ogs_pkbuf_t     *last_paging_msg;
-    ogs_timer_t     *t3413;
-    uint32_t        max_paging_retry;
+    struct {
+        ogs_pkbuf_t     *pkbuf;
+        ogs_timer_t     *timer;
+        uint32_t        retry_count;;
+    } t3413, t3422, t3450, t3460, t3470;
 
 #define CLEAR_SERVICE_INDICATOR(__mME) \
     do { \

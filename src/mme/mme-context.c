@@ -2025,11 +2025,19 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->vlr = NULL;
     mme_ue->vlr_ostream_id = 0;
 
-    /* Create paging retry timer */
-    mme_ue->t3413 = ogs_timer_add(
+    /* Add All Timers */
+    mme_ue->t3413.timer = ogs_timer_add(
             self.timer_mgr, mme_timer_t3413_expire, mme_ue);
-    ogs_assert(mme_ue->t3413);
+    mme_ue->t3422.timer = ogs_timer_add(
+            self.timer_mgr, mme_timer_t3422_expire, mme_ue);
+    mme_ue->t3450.timer = ogs_timer_add(
+            self.timer_mgr, mme_timer_t3450_expire, mme_ue);
+    mme_ue->t3460.timer = ogs_timer_add(
+            self.timer_mgr, mme_timer_t3460_expire, mme_ue);
+    mme_ue->t3470.timer = ogs_timer_add(
+            self.timer_mgr, mme_timer_t3470_expire, mme_ue);
 
+    /* Create FSM */
     e.mme_ue = mme_ue;
     ogs_fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
     ogs_fsm_init(&mme_ue->sm, &e);
@@ -2063,9 +2071,6 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     /* Clear the saved PDN Connectivity Request */
     NAS_CLEAR_DATA(&mme_ue->pdn_connectivity_request);
 
-    /* Clear Paging info : stop t3413, last_paing_msg */
-    CLEAR_PAGING_INFO(mme_ue);
-    
     /* Clear Service Indicator */
     CLEAR_SERVICE_INDICATOR(mme_ue);
 
@@ -2076,7 +2081,16 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     S1AP_CLEAR_DATA(&mme_ue->container);
 
     /* Delete All Timers */
-    ogs_timer_delete(mme_ue->t3413);
+    CLEAR_MME_UE_TIMER(mme_ue->t3413);
+    CLEAR_MME_UE_TIMER(mme_ue->t3422);
+    CLEAR_MME_UE_TIMER(mme_ue->t3450);
+    CLEAR_MME_UE_TIMER(mme_ue->t3460);
+    CLEAR_MME_UE_TIMER(mme_ue->t3470);
+    ogs_timer_delete(mme_ue->t3413.timer);
+    ogs_timer_delete(mme_ue->t3422.timer);
+    ogs_timer_delete(mme_ue->t3450.timer);
+    ogs_timer_delete(mme_ue->t3460.timer);
+    ogs_timer_delete(mme_ue->t3470.timer);
 
     mme_ue_deassociate(mme_ue);
 

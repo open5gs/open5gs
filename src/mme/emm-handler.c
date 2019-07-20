@@ -81,8 +81,9 @@ int emm_handle_attach_request(
      * EXTENDED_SERVICE_REQUEST
      *   Clear Paging Timer and Message
      */
+    CLEAR_MME_UE_TIMER(mme_ue->t3413);
+
     CLEAR_EPS_BEARER_ID(mme_ue);
-    CLEAR_PAGING_INFO(mme_ue);
     CLEAR_SERVICE_INDICATOR(mme_ue);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
@@ -383,7 +384,7 @@ int emm_handle_service_request(
      * EXTENDED_SERVICE_REQUEST
      *   Clear Paging Timer and Message
      */
-    CLEAR_PAGING_INFO(mme_ue);
+    CLEAR_MME_UE_TIMER(mme_ue->t3413);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
         mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
@@ -440,7 +441,8 @@ int emm_handle_tau_request(
      * EXTENDED_SERVICE_REQUEST
      *   Clear Paging Timer and Message
      */
-    CLEAR_PAGING_INFO(mme_ue);
+    CLEAR_MME_UE_TIMER(mme_ue->t3413);
+
     CLEAR_SERVICE_INDICATOR(mme_ue);
     if (BEARER_CONTEXT_IS_ACTIVE(mme_ue))
         ogs_debug("    Bearer-Active");
@@ -570,14 +572,7 @@ int emm_handle_extended_service_request(
      * EXTENDED_SERVICE_REQUEST
      *   Clear Paging Timer and Message
      */
-    CLEAR_PAGING_INFO(mme_ue);
-#if KeNB_Should_Not_Refreshed
-    if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
-        mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
-        mme_ue->nhcc = 1;
-    }
-#endif
+    CLEAR_MME_UE_TIMER(mme_ue->t3413);
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             plmn_id_hexdump(&mme_ue->tai.plmn_id), mme_ue->tai.tac);

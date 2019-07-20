@@ -268,17 +268,17 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
     case MME_EVT_EMM_TIMER:
         switch (e->timer_id) {
         case MME_TIMER_T3413:
-            if (mme_ue->max_paging_retry >=
+            if (mme_ue->t3413.retry_count >=
                     mme_timer_cfg(MME_TIMER_T3413)->max_count) {
                 /* Paging failed */
                 ogs_warn("[EMM] Paging to IMSI[%s] failed. Stop paging",
                         mme_ue->imsi_bcd);
-                if (mme_ue->last_paging_msg) {
-                    ogs_pkbuf_free(mme_ue->last_paging_msg);
-                    mme_ue->last_paging_msg = NULL;
+                if (mme_ue->t3413.pkbuf) {
+                    ogs_pkbuf_free(mme_ue->t3413.pkbuf);
+                    mme_ue->t3413.pkbuf = NULL;
                 }
             } else {
-                mme_ue->max_paging_retry++;
+                mme_ue->t3413.retry_count++;
                 /* If t3413 is timeout, last_paging_msg is used.
                  * We don't have to set CNDomain. So, we just set CNDomain to 0 */
                 s1ap_send_paging(mme_ue, 0);

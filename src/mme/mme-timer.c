@@ -23,7 +23,15 @@
 
 static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
     [MME_TIMER_T3413] = 
-        { .max_count = 2, .duration = ogs_time_from_sec(2) },
+        { .max_count = 4, .duration = ogs_time_from_sec(2) },
+    [MME_TIMER_T3422] = 
+        { .max_count = 2, .duration = ogs_time_from_sec(6) },
+    [MME_TIMER_T3450] = 
+        { .max_count = 2, .duration = ogs_time_from_sec(6) },
+    [MME_TIMER_T3460] = 
+        { .max_count = 2, .duration = ogs_time_from_sec(6) },
+    [MME_TIMER_T3470] = 
+        { .max_count = 2, .duration = ogs_time_from_sec(6) },
     [MME_TIMER_SGS_CLI_CONN_TO_SRV] = 
         { .duration = ogs_time_from_sec(3) },
 };
@@ -44,6 +52,14 @@ const char *mme_timer_get_name(mme_timer_e id)
         return "MME_TIMER_S1_DELAYED_SEND";
     case MME_TIMER_T3413:
         return "MME_TIMER_T3413";
+    case MME_TIMER_T3422:
+        return "MME_TIMER_T3422";
+    case MME_TIMER_T3450:
+        return "MME_TIMER_T3450";
+    case MME_TIMER_T3460:
+        return "MME_TIMER_T3460";
+    case MME_TIMER_T3470:
+        return "MME_TIMER_T3470";
     case MME_TIMER_SGS_CLI_CONN_TO_SRV:
         return "MME_TIMER_SGS_CLI_CONN_TO_SRV";
     default: 
@@ -70,6 +86,22 @@ void mme_timer_s1_delayed_send(void *data)
 }
 
 void mme_timer_t3413_expire(void *data)
+{
+    mme_ue_timer_event(MME_TIMER_T3413, data);
+}
+void mme_timer_t3422_expire(void *data)
+{
+    mme_ue_timer_event(MME_TIMER_T3422, data);
+}
+void mme_timer_t3450_expire(void *data)
+{
+    mme_ue_timer_event(MME_TIMER_T3413, data);
+}
+void mme_timer_t3460_expire(void *data)
+{
+    mme_ue_timer_event(MME_TIMER_T3413, data);
+}
+void mme_timer_t3470_expire(void *data)
 {
     mme_ue_timer_event(MME_TIMER_T3413, data);
 }

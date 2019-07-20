@@ -30,13 +30,26 @@ extern "C" {
 typedef enum {
     MME_TIMER_BASE = 0,
 
-    /* S1AP */
     MME_TIMER_S1_DELAYED_SEND,
 
-    /* EMM */
-    MME_TIMER_T3413,
+    MME_TIMER_T3413, /* Paging procedure for EPS services initiated */
+    MME_TIMER_T3422, /* DETACH REQUEST sent */
 
-    /* SGSAP */
+    /*
+     * ATTACH ACCEPT sent
+     * TRACKING AREA UPDATE ACCEPT sent with GUTI
+     * TRACKING AREA UPDATE ACCEPT sent with TMSI
+     * GUTI REALLOCATION COMMAND sent
+     */
+    MME_TIMER_T3450,
+    /*
+     * AUTHENTICATION REQUEST sent
+     * SECURITY MODE COMMAND sent
+     */
+    MME_TIMER_T3460,
+
+    MME_TIMER_T3470, /* IDENTITY REQUEST sent */
+
     MME_TIMER_SGS_CLI_CONN_TO_SRV,
 
     MAX_NUM_OF_MME_TIMER,
@@ -53,7 +66,13 @@ mme_timer_cfg_t *mme_timer_cfg(mme_timer_e id);
 const char *mme_timer_get_name(mme_timer_e id);
 
 void mme_timer_s1_delayed_send(void *data);
+
 void mme_timer_t3413_expire(void *data);
+void mme_timer_t3422_expire(void *data);
+void mme_timer_t3450_expire(void *data);
+void mme_timer_t3460_expire(void *data);
+void mme_timer_t3470_expire(void *data);
+
 void mme_timer_sgs_cli_conn_to_srv(void *data);
 
 #ifdef __cplusplus

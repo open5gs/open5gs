@@ -317,14 +317,14 @@ void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
             if (memcmp(&enb->supported_ta_list[i], &mme_ue->tai,
                         sizeof(tai_t)) == 0) {
 
-                if (mme_ue->last_paging_msg) {
-                    s1apbuf = mme_ue->last_paging_msg;
+                if (mme_ue->t3413.pkbuf) {
+                    s1apbuf = mme_ue->t3413.pkbuf;
                 } else {
                     rv = s1ap_build_paging(&s1apbuf, mme_ue, cn_domain);
                     ogs_assert(rv == OGS_OK && s1apbuf);
                 }
 
-                mme_ue->last_paging_msg = ogs_pkbuf_copy(s1apbuf);
+                mme_ue->t3413.pkbuf = ogs_pkbuf_copy(s1apbuf);
 
                 rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
                 ogs_assert(rv == OGS_OK);
@@ -333,7 +333,7 @@ void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
     }
 
     /* Start T3413 */
-    ogs_timer_start(mme_ue->t3413, 
+    ogs_timer_start(mme_ue->t3413.timer, 
             mme_timer_cfg(MME_TIMER_T3413)->duration);
 }
 
