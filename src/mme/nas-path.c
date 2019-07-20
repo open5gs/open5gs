@@ -23,6 +23,7 @@
 #include "emm-build.h"
 #include "nas-path.h"
 #include "mme-event.h"
+#include "mme-timer.h"
 #include "mme-sm.h"
 
 int nas_send_to_enb(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
@@ -161,13 +162,50 @@ int nas_send_authentication_request(
     ogs_pkbuf_t *emmbuf = NULL;
 
     ogs_assert(mme_ue);
-    ogs_assert(e_utran_vector);
 
     ogs_debug("[EMM] Authentication request");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
-    rv = emm_build_authentication_request(&emmbuf, e_utran_vector);
-    ogs_assert(rv == OGS_OK && emmbuf);
+    if (mme_ue->t3460.pkbuf) {
+        emmbuf = mme_ue->t3460.pkbuf;
+
+    } else {
+        ogs_assert(e_utran_vector);
+        rv = emm_build_authentication_request(&emmbuf, e_utran_vector);
+        ogs_assert(rv == OGS_OK && emmbuf);
+    }
+
+    mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
+    ogs_timer_start(mme_ue->t3460.timer, 
+            mme_timer_cfg(MME_TIMER_T3460)->duration);
+
+    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    ogs_assert(rv == OGS_OK);
+
+    return rv;
+}
+
+int nas_send_security_mode_command(mme_ue_t *mme_ue)
+{
+    int rv;
+    ogs_pkbuf_t *emmbuf = NULL;
+
+    ogs_assert(mme_ue);
+
+    ogs_debug("[EMM] Security mode command");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+    if (mme_ue->t3460.pkbuf) {
+        emmbuf = mme_ue->t3460.pkbuf;
+
+    } else {
+        rv = emm_build_security_mode_command(&emmbuf, mme_ue);
+        ogs_assert(rv == OGS_OK && emmbuf);
+    }
+
+    mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
+    ogs_timer_start(mme_ue->t3460.timer, 
+            mme_timer_cfg(MME_TIMER_T3460)->duration);
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_assert(rv == OGS_OK);

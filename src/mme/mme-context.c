@@ -2081,11 +2081,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     S1AP_CLEAR_DATA(&mme_ue->container);
 
     /* Delete All Timers */
-    CLEAR_MME_UE_TIMER(mme_ue->t3413);
-    CLEAR_MME_UE_TIMER(mme_ue->t3422);
-    CLEAR_MME_UE_TIMER(mme_ue->t3450);
-    CLEAR_MME_UE_TIMER(mme_ue->t3460);
-    CLEAR_MME_UE_TIMER(mme_ue->t3470);
+    CLEAR_MME_UE_ALL_TIMERS(mme_ue);
     ogs_timer_delete(mme_ue->t3413.timer);
     ogs_timer_delete(mme_ue->t3422.timer);
     ogs_timer_delete(mme_ue->t3450.timer);

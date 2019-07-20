@@ -39,6 +39,8 @@ void mme_s6a_handle_aia(mme_ue_t *mme_ue, s6a_aia_message_t *aia_message)
     memcpy(mme_ue->kasme, e_utran_vector->kasme, OGS_SHA256_DIGEST_SIZE);
     memcpy(mme_ue->rand, e_utran_vector->rand, RAND_LEN);
 
+    CLEAR_MME_UE_TIMER(mme_ue->t3460);
+
     rv = nas_send_authentication_request(mme_ue, e_utran_vector);
     ogs_assert(rv == OGS_OK);
 }

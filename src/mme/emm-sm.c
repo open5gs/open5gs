@@ -273,14 +273,15 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 /* Paging failed */
                 ogs_warn("[EMM] Paging to IMSI[%s] failed. Stop paging",
                         mme_ue->imsi_bcd);
-                if (mme_ue->t3413.pkbuf) {
-                    ogs_pkbuf_free(mme_ue->t3413.pkbuf);
-                    mme_ue->t3413.pkbuf = NULL;
-                }
+                CLEAR_MME_UE_TIMER(mme_ue->t3413);
+
             } else {
                 mme_ue->t3413.retry_count++;
-                /* If t3413 is timeout, last_paging_msg is used.
-                 * We don't have to set CNDomain. So, we just set CNDomain to 0 */
+                /*
+                 * If t3413 is timeout, the saved pkbuf is used.
+                 * We don't have to set CNDomain.
+                 * So, we just set CNDomain to 0
+                 */
                 s1ap_send_paging(mme_ue, 0);
             }
             break;
@@ -496,6 +497,8 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("[EMM] Authentication response");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
+            CLEAR_MME_UE_TIMER(mme_ue->t3460);
+
             if (memcmp(authentication_response_parameter->res,
                 mme_ue->xres,
                 authentication_response_parameter->length) != 0) {
@@ -510,6 +513,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             } else {
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
             }
+
             break;
         }
         case NAS_AUTHENTICATION_FAILURE:
@@ -524,6 +528,8 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("[EMM] Authentication failure");
             ogs_debug("    IMSI[%s] EMM_CAUSE[%d]", mme_ue->imsi_bcd,
                     authentication_failure->emm_cause);
+
+            CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
             switch (authentication_failure->emm_cause) {
             case EMM_CAUSE_MAC_FAILURE:
@@ -548,6 +554,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             rv = nas_send_authentication_reject(mme_ue);
             ogs_assert(rv == OGS_OK);
             OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+
             break;
         }
         case NAS_ATTACH_REQUEST:
@@ -590,6 +597,29 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
         break;
+    case MME_EVT_EMM_TIMER:
+        switch (e->timer_id) {
+        case MME_TIMER_T3460:
+            if (mme_ue->t3460.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3460)->max_count) {
+                ogs_warn("[EMM] Retransmission of IMSI[%s] failed. "
+                        "Stop retransmission",
+                        mme_ue->imsi_bcd);
+                CLEAR_MME_UE_TIMER(mme_ue->t3460);
+
+                nas_send_authentication_reject(mme_ue);
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+            } else {
+                mme_ue->t3460.retry_count++;
+                nas_send_authentication_request(mme_ue, NULL);
+            }
+            break;
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
+            break;
+        }
+        return;
     default:
         ogs_error("Unknown event[%s]", mme_event_get_name(e));
         break;
@@ -600,7 +630,6 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 {
     int rv;
     mme_ue_t *mme_ue = NULL;
-    ogs_pkbuf_t *emmbuf = NULL;
     nas_message_t *message = NULL;
 
     ogs_assert(s);
@@ -613,12 +642,8 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        rv = emm_build_security_mode_command(&emmbuf, mme_ue);
-        ogs_assert(rv == OGS_OK && emmbuf);
-
-        rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
-        ogs_assert(rv == OGS_OK && emmbuf);
-
+        CLEAR_MME_UE_TIMER(mme_ue->t3460);
+        nas_send_security_mode_command(mme_ue);
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -640,6 +665,8 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         case NAS_SECURITY_MODE_COMPLETE:
             ogs_debug("[EMM] Security mode complete");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+            CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
             /* Update Kenb */
             if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
@@ -665,6 +692,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             ogs_warn("[EMM] Security mode reject : IMSI[%s] Cause[%d]",
                     mme_ue->imsi_bcd,
                     message->emm.security_mode_reject.emm_cause);
+            CLEAR_MME_UE_TIMER(mme_ue->t3460);
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case NAS_ATTACH_REQUEST:
@@ -714,6 +742,30 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
         break;
+    case MME_EVT_EMM_TIMER:
+        switch (e->timer_id) {
+        case MME_TIMER_T3460:
+            if (mme_ue->t3460.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3460)->max_count) {
+                ogs_warn("[EMM] Retransmission of IMSI[%s] failed. "
+                        "Stop retransmission",
+                        mme_ue->imsi_bcd);
+                CLEAR_MME_UE_TIMER(mme_ue->t3460);
+
+                /* No response message for security-mode */
+
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+            } else {
+                mme_ue->t3460.retry_count++;
+                nas_send_security_mode_command(mme_ue);
+            }
+            break;
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
+            break;
+        }
+        return;
     default:
         ogs_error("Unknown event[%s]", mme_event_get_name(e));
         break;
@@ -810,11 +862,17 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
 void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 {
+    mme_ue_t *mme_ue = NULL;
+
     ogs_assert(e);
     mme_sm_debug(e);
 
+    mme_ue = e->mme_ue;
+    ogs_assert(mme_ue);
+
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        CLEAR_MME_UE_ALL_TIMERS(mme_ue);
         break;
     case OGS_FSM_EXIT_SIG:
         break;

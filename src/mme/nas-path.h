@@ -41,6 +41,8 @@ int nas_send_authentication_request(
         mme_ue_t *mme_ue, e_utran_vector_t *e_utran_vector);
 int nas_send_authentication_reject(mme_ue_t *mme_ue);
 
+int nas_send_security_mode_command(mme_ue_t *mme_ue);
+
 int nas_send_detach_accept(mme_ue_t *mme_ue);
 
 int nas_send_pdn_connectivity_reject(

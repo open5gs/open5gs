@@ -393,7 +393,14 @@ struct mme_ue_s {
     /* Save PDN Connectivity Request */
     nas_esm_message_container_t pdn_connectivity_request;
 
-    /* Paging */
+#define CLEAR_MME_UE_ALL_TIMERS(__mME) \
+    do { \
+        CLEAR_MME_UE_TIMER((__mME)->t3413); \
+        CLEAR_MME_UE_TIMER((__mME)->t3422); \
+        CLEAR_MME_UE_TIMER((__mME)->t3450); \
+        CLEAR_MME_UE_TIMER((__mME)->t3460); \
+        CLEAR_MME_UE_TIMER((__mME)->t3470); \
+    } while(0);
 #define CLEAR_MME_UE_TIMER(__mME_UE_TIMER) \
     do { \
         ogs_timer_stop((__mME_UE_TIMER).timer); \

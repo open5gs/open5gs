@@ -23,15 +23,15 @@
 
 static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
     [MME_TIMER_T3413] = 
-        { .max_count = 4, .duration = ogs_time_from_sec(2) },
+        { .max_count = 2, .duration = ogs_time_from_sec(2) },
     [MME_TIMER_T3422] = 
-        { .max_count = 2, .duration = ogs_time_from_sec(6) },
+        { .max_count = 4, .duration = ogs_time_from_sec(3) },
     [MME_TIMER_T3450] = 
-        { .max_count = 2, .duration = ogs_time_from_sec(6) },
+        { .max_count = 4, .duration = ogs_time_from_sec(3) },
     [MME_TIMER_T3460] = 
-        { .max_count = 2, .duration = ogs_time_from_sec(6) },
+        { .max_count = 4, .duration = ogs_time_from_sec(3) },
     [MME_TIMER_T3470] = 
-        { .max_count = 2, .duration = ogs_time_from_sec(6) },
+        { .max_count = 4, .duration = ogs_time_from_sec(3) },
     [MME_TIMER_SGS_CLI_CONN_TO_SRV] = 
         { .duration = ogs_time_from_sec(3) },
 };
@@ -95,15 +95,15 @@ void mme_timer_t3422_expire(void *data)
 }
 void mme_timer_t3450_expire(void *data)
 {
-    mme_ue_timer_event(MME_TIMER_T3413, data);
+    mme_ue_timer_event(MME_TIMER_T3450, data);
 }
 void mme_timer_t3460_expire(void *data)
 {
-    mme_ue_timer_event(MME_TIMER_T3413, data);
+    mme_ue_timer_event(MME_TIMER_T3460, data);
 }
 void mme_timer_t3470_expire(void *data)
 {
-    mme_ue_timer_event(MME_TIMER_T3413, data);
+    mme_ue_timer_event(MME_TIMER_T3470, data);
 }
 
 static void mme_ue_timer_event(

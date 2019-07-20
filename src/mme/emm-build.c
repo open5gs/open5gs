@@ -254,9 +254,6 @@ int emm_build_security_mode_command(
 
     ogs_assert(mme_ue);
 
-    ogs_debug("[EMM] Security mode command");
-    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
-
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
        NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
