@@ -183,42 +183,36 @@ int gtp_xact_update_tx(gtp_xact_t *xact,
             OGS_PORT(&xact->gnode->conn));
 
     stage = gtp_xact_get_stage(hdesc->type, xact->xid);
-    if (xact->org == GTP_LOCAL_ORIGINATOR)
-    {
-        switch(stage)
-        {
-            case GTP_XACT_INITIAL_STAGE:
-                ogs_assert(xact->step == 0);
-                break;
+    if (xact->org == GTP_LOCAL_ORIGINATOR) {
+        switch (stage) {
+        case GTP_XACT_INITIAL_STAGE:
+            ogs_assert(xact->step == 0);
+            break;
 
-            case GTP_XACT_INTERMEDIATE_STAGE:
-                ogs_assert_if_reached();
+        case GTP_XACT_INTERMEDIATE_STAGE:
+            ogs_assert_if_reached();
 
-            case GTP_XACT_FINAL_STAGE:
-                ogs_assert(xact->step == 2);
-                break;
+        case GTP_XACT_FINAL_STAGE:
+            ogs_assert(xact->step == 2);
+            break;
 
-            default:
-                ogs_assert_if_reached();
+        default:
+            ogs_assert_if_reached();
         }
-    }
-    else if (xact->org == GTP_REMOTE_ORIGINATOR)
-    {
-        switch(stage)
-        {
-            case GTP_XACT_INITIAL_STAGE:
-                ogs_assert_if_reached();
+    } else if (xact->org == GTP_REMOTE_ORIGINATOR) {
+        switch (stage) {
+        case GTP_XACT_INITIAL_STAGE:
+            ogs_assert_if_reached();
 
-            case GTP_XACT_INTERMEDIATE_STAGE:
-            case GTP_XACT_FINAL_STAGE:
-                ogs_assert(xact->step == 1);
-                break;
+        case GTP_XACT_INTERMEDIATE_STAGE:
+        case GTP_XACT_FINAL_STAGE:
+            ogs_assert(xact->step == 1);
+            break;
 
-            default:
-                ogs_assert_if_reached();
+        default:
+            ogs_assert_if_reached();
         }
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
 
@@ -258,138 +252,124 @@ int gtp_xact_update_rx(gtp_xact_t *xact, uint8_t type)
             OGS_PORT(&xact->gnode->conn));
 
     stage = gtp_xact_get_stage(type, xact->xid);
-    if (xact->org == GTP_LOCAL_ORIGINATOR)
-    {
-        switch(stage)
-        {
-            case GTP_XACT_INITIAL_STAGE:
-                ogs_assert_if_reached();
+    if (xact->org == GTP_LOCAL_ORIGINATOR) {
+        switch (stage) {
+        case GTP_XACT_INITIAL_STAGE:
+            ogs_assert_if_reached();
 
-            case GTP_XACT_INTERMEDIATE_STAGE:
-                if (xact->seq[1].type == type)
-                {
-                    ogs_pkbuf_t *pkbuf = NULL;
+        case GTP_XACT_INTERMEDIATE_STAGE:
+            if (xact->seq[1].type == type) {
+                ogs_pkbuf_t *pkbuf = NULL;
 
-                    ogs_assert(xact->step == 2 || xact->step == 3);
+                ogs_assert(xact->step == 2 || xact->step == 3);
 
-                    pkbuf = xact->seq[2].pkbuf;
-                    if (pkbuf)
-                    {
-                        if (xact->tm_holding)
-                            ogs_timer_start(
-                                    xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
+                pkbuf = xact->seq[2].pkbuf;
+                if (pkbuf) {
+                    if (xact->tm_holding)
+                        ogs_timer_start(
+                                xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
 
-                        ogs_warn("[%d] %s Request Duplicated. Retransmit!"
-                                " for step %d type %d peer [%s]:%d",
-                                xact->xid,
-                                xact->org == GTP_LOCAL_ORIGINATOR ?
-                                    "LOCAL " : "REMOTE",
-                                xact->step, type,
-                                OGS_ADDR(&xact->gnode->conn,
-                                    buf),
-                                OGS_PORT(&xact->gnode->conn));
-                        rv = gtp_sendto(xact->gnode, pkbuf);
-                        ogs_assert(rv == OGS_OK);
-                    }
-                    else
-                    {
-                        ogs_warn("[%d] %s Request Duplicated. Discard!"
-                                " for step %d type %d peer [%s]:%d",
-                                xact->xid,
-                                xact->org == GTP_LOCAL_ORIGINATOR ?
-                                    "LOCAL " : "REMOTE",
-                                xact->step, type,
-                                OGS_ADDR(&xact->gnode->conn,
-                                    buf),
-                                OGS_PORT(&xact->gnode->conn));
-                    }
-
-                    return OGS_RETRY;
+                    ogs_warn("[%d] %s Request Duplicated. Retransmit!"
+                            " for step %d type %d peer [%s]:%d",
+                            xact->xid,
+                            xact->org == GTP_LOCAL_ORIGINATOR ?
+                                "LOCAL " : "REMOTE",
+                            xact->step, type,
+                            OGS_ADDR(&xact->gnode->conn,
+                                buf),
+                            OGS_PORT(&xact->gnode->conn));
+                    rv = gtp_sendto(xact->gnode, pkbuf);
+                    ogs_assert(rv == OGS_OK);
+                } else {
+                    ogs_warn("[%d] %s Request Duplicated. Discard!"
+                            " for step %d type %d peer [%s]:%d",
+                            xact->xid,
+                            xact->org == GTP_LOCAL_ORIGINATOR ?
+                                "LOCAL " : "REMOTE",
+                            xact->step, type,
+                            OGS_ADDR(&xact->gnode->conn,
+                                buf),
+                            OGS_PORT(&xact->gnode->conn));
                 }
 
-                ogs_assert(xact->step == 1);
+                return OGS_RETRY;
+            }
 
-                if (xact->tm_holding)
-                    ogs_timer_start(
-                            xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
+            ogs_assert(xact->step == 1);
 
-                break;
+            if (xact->tm_holding)
+                ogs_timer_start(
+                        xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
 
-            case GTP_XACT_FINAL_STAGE:
-                ogs_assert(xact->step == 1);
-                break;
+            break;
 
-            default:
-                ogs_assert_if_reached();
+        case GTP_XACT_FINAL_STAGE:
+            ogs_assert(xact->step == 1);
+            break;
+
+        default:
+            ogs_assert_if_reached();
         }
-    }
-    else if (xact->org == GTP_REMOTE_ORIGINATOR)
-    {
-        switch(stage)
-        {
-            case GTP_XACT_INITIAL_STAGE:
-                if (xact->seq[0].type == type)
-                {
-                    ogs_pkbuf_t *pkbuf = NULL;
+    } else if (xact->org == GTP_REMOTE_ORIGINATOR) {
+        switch (stage) {
+        case GTP_XACT_INITIAL_STAGE:
+            if (xact->seq[0].type == type) {
+                ogs_pkbuf_t *pkbuf = NULL;
 
-                    ogs_assert(xact->step == 1 || xact->step == 2);
+                ogs_assert(xact->step == 1 || xact->step == 2);
 
-                    pkbuf = xact->seq[1].pkbuf;
-                    if (pkbuf)
-                    {
-                        if (xact->tm_holding)
-                            ogs_timer_start(
-                                    xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
+                pkbuf = xact->seq[1].pkbuf;
+                if (pkbuf) {
+                    if (xact->tm_holding)
+                        ogs_timer_start(
+                                xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
 
-                        ogs_warn("[%d] %s Request Duplicated. Retransmit!"
-                                " for step %d type %d peer [%s]:%d",
-                                xact->xid,
-                                xact->org == GTP_LOCAL_ORIGINATOR ?
-                                    "LOCAL " : "REMOTE",
-                                xact->step, type,
-                                OGS_ADDR(&xact->gnode->conn,
-                                    buf),
-                                OGS_PORT(&xact->gnode->conn));
-                        rv = gtp_sendto(xact->gnode, pkbuf);
-                        ogs_assert(rv == OGS_OK);
-                    }
-                    else
-                    {
-                        ogs_warn("[%d] %s Request Duplicated. Discard!"
-                                " for step %d type %d peer [%s]:%d",
-                                xact->xid,
-                                xact->org == GTP_LOCAL_ORIGINATOR ?
-                                    "LOCAL " : "REMOTE",
-                                xact->step, type,
-                                OGS_ADDR(&xact->gnode->conn,
-                                    buf),
-                                OGS_PORT(&xact->gnode->conn));
-                    }
-
-                    return OGS_RETRY;
+                    ogs_warn("[%d] %s Request Duplicated. Retransmit!"
+                            " for step %d type %d peer [%s]:%d",
+                            xact->xid,
+                            xact->org == GTP_LOCAL_ORIGINATOR ?
+                                "LOCAL " : "REMOTE",
+                            xact->step, type,
+                            OGS_ADDR(&xact->gnode->conn,
+                                buf),
+                            OGS_PORT(&xact->gnode->conn));
+                    rv = gtp_sendto(xact->gnode, pkbuf);
+                    ogs_assert(rv == OGS_OK);
+                } else {
+                    ogs_warn("[%d] %s Request Duplicated. Discard!"
+                            " for step %d type %d peer [%s]:%d",
+                            xact->xid,
+                            xact->org == GTP_LOCAL_ORIGINATOR ?
+                                "LOCAL " : "REMOTE",
+                            xact->step, type,
+                            OGS_ADDR(&xact->gnode->conn,
+                                buf),
+                            OGS_PORT(&xact->gnode->conn));
                 }
 
-                ogs_assert(xact->step == 0);
-                if (xact->tm_holding)
-                    ogs_timer_start(
-                            xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
+                return OGS_RETRY;
+            }
 
-                break;
+            ogs_assert(xact->step == 0);
+            if (xact->tm_holding)
+                ogs_timer_start(
+                        xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
 
-            case GTP_XACT_INTERMEDIATE_STAGE:
-                ogs_assert_if_reached();
+            break;
 
-            case GTP_XACT_FINAL_STAGE:
-                ogs_assert(xact->step == 2);
+        case GTP_XACT_INTERMEDIATE_STAGE:
+            ogs_assert_if_reached();
 
-                /* continue */
-                break;
+        case GTP_XACT_FINAL_STAGE:
+            ogs_assert(xact->step == 2);
 
-            default:
-                ogs_assert_if_reached();
+            /* continue */
+            break;
+
+        default:
+            ogs_assert_if_reached();
         }
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
     if (xact->tm_response)
@@ -426,68 +406,58 @@ int gtp_xact_commit(gtp_xact_t *xact)
     type = xact->seq[xact->step-1].type;
     stage = gtp_xact_get_stage(type, xact->xid);
 
-    if (xact->org == GTP_LOCAL_ORIGINATOR)
-    {
-        switch(stage)
-        {
-            case GTP_XACT_INITIAL_STAGE:
-            {
-                ogs_assert(xact->step == 1);
+    if (xact->org == GTP_LOCAL_ORIGINATOR) {
+        switch (stage) {
+        case GTP_XACT_INITIAL_STAGE:
+            ogs_assert(xact->step == 1);
 
-                if (xact->tm_response)
-                    ogs_timer_start(
-                            xact->tm_response, GTP_T3_RESPONSE_DURATION);
+            if (xact->tm_response)
+                ogs_timer_start(
+                        xact->tm_response, GTP_T3_RESPONSE_DURATION);
 
-                break;
+            break;
+
+        case GTP_XACT_INTERMEDIATE_STAGE:
+            ogs_assert_if_reached();
+
+        case GTP_XACT_FINAL_STAGE:
+            ogs_assert(xact->step == 2 || xact->step == 3);
+            if (xact->step == 2) {
+                gtp_xact_delete(xact);
+                return OGS_OK;
             }
 
-            case GTP_XACT_INTERMEDIATE_STAGE:
-                ogs_assert_if_reached();
+            break;
 
-            case GTP_XACT_FINAL_STAGE:
-                ogs_assert(xact->step == 2 || xact->step == 3);
-                if (xact->step == 2)
-                {
-                    gtp_xact_delete(xact);
-                    return OGS_OK;
-                }
-
-                break;
-
-            default:
-                ogs_assert_if_reached();
+        default:
+            ogs_assert_if_reached();
         }
-    }
-    else if (xact->org == GTP_REMOTE_ORIGINATOR)
-    {
-        switch(stage)
-        {
-            case GTP_XACT_INITIAL_STAGE:
-                ogs_assert_if_reached();
+    } else if (xact->org == GTP_REMOTE_ORIGINATOR) {
+        switch (stage) {
+        case GTP_XACT_INITIAL_STAGE:
+            ogs_assert_if_reached();
 
-            case GTP_XACT_INTERMEDIATE_STAGE:
-                ogs_assert(xact->step == 2);
-                if (xact->tm_response)
-                    ogs_timer_start(
-                            xact->tm_response, GTP_T3_RESPONSE_DURATION);
+        case GTP_XACT_INTERMEDIATE_STAGE:
+            ogs_assert(xact->step == 2);
+            if (xact->tm_response)
+                ogs_timer_start(
+                        xact->tm_response, GTP_T3_RESPONSE_DURATION);
 
-                break;
+            break;
 
-            case GTP_XACT_FINAL_STAGE:
-                ogs_assert(xact->step == 2 || xact->step == 3);
-                if (xact->step == 3)
-                {
-                    gtp_xact_delete(xact);
-                    return OGS_OK;
-                }
+        case GTP_XACT_FINAL_STAGE:
+            ogs_assert(xact->step == 2 || xact->step == 3);
+            if (xact->step == 3) {
+                gtp_xact_delete(xact);
+                return OGS_OK;
+            }
 
-                break;
+            break;
 
-            default:
-                ogs_assert_if_reached();
+        default:
+            ogs_assert_if_reached();
         }
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
     pkbuf = xact->seq[xact->step-1].pkbuf;
@@ -515,8 +485,7 @@ static void response_timeout(void *data)
             OGS_ADDR(&xact->gnode->conn, buf),
             OGS_PORT(&xact->gnode->conn));
 
-    if (--xact->response_rcount > 0)
-    {
+    if (--xact->response_rcount > 0) {
         ogs_pkbuf_t *pkbuf = NULL;
 
         if (xact->tm_response)
@@ -525,14 +494,11 @@ static void response_timeout(void *data)
         pkbuf = xact->seq[xact->step-1].pkbuf;
         ogs_assert(pkbuf);
 
-        if (gtp_sendto(xact->gnode, pkbuf) != OGS_OK)
-        {
+        if (gtp_sendto(xact->gnode, pkbuf) != OGS_OK) {
             ogs_error("gtp_sendto() failed");
             goto out;
         }
-    }
-    else
-    {
+    } else {
         ogs_warn("[%d] %s No Reponse. Give up! "
                 "for step %d type %d peer [%s]:%d",
                 xact->xid,
@@ -565,13 +531,10 @@ static void holding_timeout(void *data)
             OGS_ADDR(&xact->gnode->conn, buf),
             OGS_PORT(&xact->gnode->conn));
 
-    if (--xact->holding_rcount > 0)
-    {
+    if (--xact->holding_rcount > 0) {
         if (xact->tm_holding)
             ogs_timer_start(xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
-    }
-    else
-    {
+    } else {
         ogs_debug("[%d] %s Delete Transaction "
                 "for step %d type %d peer [%s]:%d",
                 xact->xid,
@@ -606,8 +569,7 @@ int gtp_xact_receive(
             OGS_PORT(&gnode->conn));
 
     rv = gtp_xact_update_rx(new, h->type);
-    if (rv != OGS_OK)
-    {
+    if (rv != OGS_OK) {
         return rv;
     }
 
@@ -625,47 +587,46 @@ static gtp_xact_stage_t gtp_xact_get_stage(uint8_t type, uint32_t xid)
 {
     gtp_xact_stage_t stage = GTP_XACT_UNKNOWN_STAGE;
 
-    switch(type)
-    {
-        case GTP_CREATE_SESSION_REQUEST_TYPE:
-        case GTP_MODIFY_BEARER_REQUEST_TYPE:
-        case GTP_DELETE_SESSION_REQUEST_TYPE:
-        case GTP_MODIFY_BEARER_COMMAND_TYPE:
-        case GTP_DELETE_BEARER_COMMAND_TYPE:
-        case GTP_BEARER_RESOURCE_COMMAND_TYPE:
-        case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
-        case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-        case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
-        case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+    switch (type) {
+    case GTP_CREATE_SESSION_REQUEST_TYPE:
+    case GTP_MODIFY_BEARER_REQUEST_TYPE:
+    case GTP_DELETE_SESSION_REQUEST_TYPE:
+    case GTP_MODIFY_BEARER_COMMAND_TYPE:
+    case GTP_DELETE_BEARER_COMMAND_TYPE:
+    case GTP_BEARER_RESOURCE_COMMAND_TYPE:
+    case GTP_RELEASE_ACCESS_BEARERS_REQUEST_TYPE:
+    case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+    case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
+    case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+        stage = GTP_XACT_INITIAL_STAGE;
+        break;
+    case GTP_CREATE_BEARER_REQUEST_TYPE:
+    case GTP_UPDATE_BEARER_REQUEST_TYPE:
+    case GTP_DELETE_BEARER_REQUEST_TYPE:
+        if (xid & GTP_MAX_XACT_ID)
+            stage = GTP_XACT_INTERMEDIATE_STAGE;
+        else
             stage = GTP_XACT_INITIAL_STAGE;
-            break;
-        case GTP_CREATE_BEARER_REQUEST_TYPE:
-        case GTP_UPDATE_BEARER_REQUEST_TYPE:
-        case GTP_DELETE_BEARER_REQUEST_TYPE:
-            if (xid & GTP_MAX_XACT_ID)
-                stage = GTP_XACT_INTERMEDIATE_STAGE;
-            else
-                stage = GTP_XACT_INITIAL_STAGE;
-            break;
-        case GTP_CREATE_SESSION_RESPONSE_TYPE:
-        case GTP_MODIFY_BEARER_RESPONSE_TYPE:
-        case GTP_DELETE_SESSION_RESPONSE_TYPE:
-        case GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
-        case GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE:
-        case GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
-        case GTP_CREATE_BEARER_RESPONSE_TYPE:
-        case GTP_UPDATE_BEARER_RESPONSE_TYPE:
-        case GTP_DELETE_BEARER_RESPONSE_TYPE:
-        case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
-        case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-        case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
-        case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
-            stage = GTP_XACT_FINAL_STAGE;
-            break;
+        break;
+    case GTP_CREATE_SESSION_RESPONSE_TYPE:
+    case GTP_MODIFY_BEARER_RESPONSE_TYPE:
+    case GTP_DELETE_SESSION_RESPONSE_TYPE:
+    case GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
+    case GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+    case GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+    case GTP_CREATE_BEARER_RESPONSE_TYPE:
+    case GTP_UPDATE_BEARER_RESPONSE_TYPE:
+    case GTP_DELETE_BEARER_RESPONSE_TYPE:
+    case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+    case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+    case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+    case GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+        stage = GTP_XACT_FINAL_STAGE;
+        break;
 
-        default:
-            ogs_error("Not implemented GTPv2 Message Type(%d)", type);
-            break;
+    default:
+        ogs_error("Not implemented GTPv2 Message Type(%d)", type);
+        break;
     }
 
     return stage;
@@ -681,35 +642,26 @@ gtp_xact_t *gtp_xact_find_by_xid(
 
     ogs_assert(gnode);
 
-    switch(gtp_xact_get_stage(type, xid))
-    {
-        case GTP_XACT_INITIAL_STAGE:
-        {
+    switch (gtp_xact_get_stage(type, xid)) {
+    case GTP_XACT_INITIAL_STAGE:
+        list = &gnode->remote_list;
+        break;
+    case GTP_XACT_INTERMEDIATE_STAGE:
+        list = &gnode->local_list;
+        break;
+    case GTP_XACT_FINAL_STAGE:
+        if (xid & GTP_MAX_XACT_ID)
             list = &gnode->remote_list;
-            break;
-        }
-        case GTP_XACT_INTERMEDIATE_STAGE:
-        {
+        else
             list = &gnode->local_list;
-            break;
-        }
-        case GTP_XACT_FINAL_STAGE:
-        {
-            if (xid & GTP_MAX_XACT_ID)
-                list = &gnode->remote_list;
-            else
-                list = &gnode->local_list;
-            break;
-        }
-        default:
-            ogs_assert_if_reached();
+        break;
+    default:
+        ogs_assert_if_reached();
     }
 
     ogs_assert(list);
-    ogs_list_for_each(list, xact)
-    {
-        if (xact->xid == xid)
-        {
+    ogs_list_for_each(list, xact) {
+        if (xact->xid == xid) {
             ogs_debug("[%d] %s Find    peer [%s]:%d",
                     xact->xid,
                     xact->org == GTP_LOCAL_ORIGINATOR ? "LOCAL " : "REMOTE",
