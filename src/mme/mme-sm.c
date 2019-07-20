@@ -219,6 +219,21 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(enb);
         ogs_assert(OGS_FSM_STATE(&enb->sm));
 
+        /*
+         * MME main loop is as below,
+         *  1. Wait Poll. If S1AP message is received, Awake Poll
+         *  2. Check Timer Expiration. If Timer is expired, push Queue
+         *  3. In this situation,
+         *     3-1. S1AP message is processed
+         *     3-1. And then, Timer handler is processed.
+         *
+         * If UE Context Release Complete is received,
+         *   1. enb_ue context is removed.
+         *   2. And then, timer handler retransmits UE context release command.
+         *
+         * The race-condition is raised,
+         * So, we should check whether the enb_ue context is removed or not.
+         */
         if (enb_ue_find_by_mme_ue_s1ap_id(enb_ue->mme_ue_s1ap_id)) {
             ogs_fsm_dispatch(&enb->sm, e);
         }
