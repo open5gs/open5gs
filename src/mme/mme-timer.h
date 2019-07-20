@@ -30,8 +30,14 @@ extern "C" {
 typedef enum {
     MME_TIMER_BASE = 0,
 
-    MME_TIMER_CLI_CONN_TO_SRV,
+    /* S1AP */
+    MME_TIMER_S1_DELAYED_SEND,
+
+    /* EMM */
     MME_TIMER_T3413,
+
+    /* SGSAP */
+    MME_TIMER_SGS_CLI_CONN_TO_SRV,
 
     MME_TIMER_TOP,
 
@@ -42,6 +48,7 @@ void mme_timer_final(void);
 
 const char *mme_timer_get_name(mme_timer_e id);
 
+void mme_timer_s1_delayed_send(void *data);
 void mme_timer_t3413_expire(void *data);
 
 #ifdef __cplusplus

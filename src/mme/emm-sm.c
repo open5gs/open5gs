@@ -284,7 +284,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
             break;
         default:
-            ogs_warn("Unknown timer[%s:%d]",
+            ogs_error("Unknown timer[%s:%d]",
                     mme_timer_get_name(e->timer_id), e->timer_id);
             break;
         }

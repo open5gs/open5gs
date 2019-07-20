@@ -212,6 +212,18 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_pkbuf_free(pkbuf);
         break;
 
+    case MME_EVT_S1AP_TIMER:
+        enb_ue = e->enb_ue;
+        ogs_assert(enb_ue);
+        enb = e->enb;
+        ogs_assert(enb);
+        ogs_assert(OGS_FSM_STATE(&enb->sm));
+
+        ogs_fsm_dispatch(&enb->sm, e);
+
+        ogs_timer_delete(e->timer);
+        break;
+
     case MME_EVT_EMM_MESSAGE:
         enb_ue = e->enb_ue;
         ogs_assert(enb_ue);

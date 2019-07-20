@@ -20,6 +20,7 @@
 #include "ogs-sctp.h"
 
 #include "mme-event.h"
+#include "mme-timer.h"
 
 #include "nas-security.h"
 #include "nas-path.h"
@@ -115,12 +116,14 @@ int s1ap_delayed_send_to_enb_ue(
     if (duration) {
         mme_event_t *e = NULL;
 
-        e = mme_event_new(MME_EVT_S1AP_DELAYED_SEND);
+        e = mme_event_new(MME_EVT_S1AP_TIMER);
         ogs_assert(e);
-        e->timer = ogs_timer_add(mme_self()->timer_mgr, mme_event_timeout, e);
+        e->timer = ogs_timer_add(
+                mme_self()->timer_mgr, mme_timer_s1_delayed_send, e);
         ogs_assert(e->timer);
         e->pkbuf = pkbuf;
         e->enb_ue = enb_ue;
+        e->enb = enb_ue->enb;
 
         ogs_timer_start(e->timer, duration);
 

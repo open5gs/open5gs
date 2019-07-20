@@ -22,8 +22,10 @@
 
 #include "s1ap-build.h"
 #include "s1ap-handler.h"
+#include "s1ap-path.h"
 
 #include "mme-event.h"
+#include "mme-timer.h"
 #include "mme-sm.h"
 
 void s1ap_state_initial(ogs_fsm_t *s, mme_event_t *e)
@@ -182,6 +184,20 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
             break;
         }
 
+        break;
+    case MME_EVT_S1AP_TIMER:
+        switch (e->timer_id) {
+        case MME_TIMER_S1_DELAYED_SEND:
+            ogs_assert(e->enb_ue);
+            ogs_assert(e->pkbuf);
+
+            ogs_assert(OGS_OK == s1ap_send_to_enb_ue(e->enb_ue, e->pkbuf));
+            break;
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
+            break;
+        }
         break;
     default:
         ogs_error("Unknown event %s", mme_event_get_name(e));

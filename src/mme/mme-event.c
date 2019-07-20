@@ -66,26 +66,6 @@ void mme_event_free(mme_event_t *e)
     ogs_free(e);
 }
 
-void mme_event_timeout(void *data)
-{
-    int rc;
-    mme_event_t *e = data;
-    enb_ue_t *enb_ue = NULL;
-    ogs_pkbuf_t *pkbuf = NULL;
-    ogs_assert(e);
-
-    enb_ue = e->enb_ue;
-    ogs_assert(enb_ue);
-    pkbuf = e->pkbuf;
-    ogs_assert(pkbuf);
-
-    rc = s1ap_send_to_enb_ue(enb_ue, pkbuf);
-    ogs_assert(rc == OGS_OK);
-
-    ogs_timer_delete(e->timer);
-    mme_event_free(e);
-}
-
 const char *mme_event_get_name(mme_event_t *e)
 {
     if (e == NULL)
@@ -101,8 +81,6 @@ const char *mme_event_get_name(mme_event_t *e)
         return "MME_EVT_S1AP_MESSAGE";
     case MME_EVT_S1AP_TIMER:
         return "MME_EVT_S1AP_TIMER";
-    case MME_EVT_S1AP_DELAYED_SEND:
-        return "MME_EVT_S1AP_DELAYED_SEND";
     case MME_EVT_S1AP_LO_ACCEPT:
         return "MME_EVT_S1AP_LO_ACCEPT";
     case MME_EVT_S1AP_LO_SCTP_COMM_UP:
