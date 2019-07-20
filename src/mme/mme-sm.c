@@ -219,9 +219,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(enb);
         ogs_assert(OGS_FSM_STATE(&enb->sm));
 
-        ogs_fsm_dispatch(&enb->sm, e);
-
-        ogs_timer_delete(e->timer);
+        if (enb_ue_find_by_mme_ue_s1ap_id(enb_ue->mme_ue_s1ap_id)) {
+            ogs_fsm_dispatch(&enb->sm, e);
+        }
         break;
 
     case MME_EVT_EMM_MESSAGE:
@@ -363,6 +363,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             enb_ue = mme_ue->enb_ue;
             ogs_assert(enb_ue);
 
+            CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
             rv = s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);

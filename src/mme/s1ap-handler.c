@@ -928,6 +928,7 @@ void s1ap_handle_ue_context_release_request(
         }
     } else {
         ogs_debug("    S1 Context Not Associated");
+        CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
         rv = s1ap_send_ue_context_release_command(enb_ue, 
                 S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                 S1AP_UE_CTX_REL_NO_ACTION, 0);
@@ -989,6 +990,7 @@ void s1ap_handle_ue_context_release_complete(
         ogs_assert(rv == OGS_OK);
         return;
     }
+
     mme_ue = enb_ue->mme_ue;
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
@@ -1630,6 +1632,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     rv = s1ap_send_handover_preparation_failure(source_ue, Cause);
     ogs_assert(rv == OGS_OK);
 
+    CLEAR_ENB_UE_TIMER(target_ue->t_ue_context_release);
     rv = s1ap_send_ue_context_release_command(
         target_ue, S1AP_Cause_PR_radioNetwork,
         S1AP_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system,
@@ -1702,6 +1705,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
     rv = s1ap_send_handover_cancel_ack(source_ue);
     ogs_assert(rv == OGS_OK);
 
+    CLEAR_ENB_UE_TIMER(target_ue->t_ue_context_release);
     rv = s1ap_send_ue_context_release_command(
             target_ue, S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_handover_cancelled,

@@ -265,6 +265,26 @@ struct enb_ue_s {
 #define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              4
     uint8_t         ue_ctx_rel_action;
 
+#define CLEAR_ENB_UE_ALL_TIMERS(__eNB) \
+    do { \
+        CLEAR_ENB_UE_TIMER((__eNB)->t_ue_context_release); \
+    } while(0);
+#define CLEAR_ENB_UE_TIMER(__eNB_UE_TIMER) \
+    do { \
+        ogs_timer_stop((__eNB_UE_TIMER).timer); \
+        if ((__eNB_UE_TIMER).pkbuf) \
+        { \
+            ogs_pkbuf_free((__eNB_UE_TIMER).pkbuf); \
+            (__eNB_UE_TIMER).pkbuf = NULL; \
+        } \
+        (__eNB_UE_TIMER).retry_count = 0; \
+    } while(0);
+    struct {
+        ogs_pkbuf_t     *pkbuf;
+        ogs_timer_t     *timer;
+        uint32_t        retry_count;;
+    } t_ue_context_release;
+
     /* Related Context */
     mme_enb_t       *enb;
     mme_ue_t        *mme_ue;

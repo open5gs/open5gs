@@ -283,22 +283,47 @@ int s1ap_send_ue_context_release_command(
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
 
-    ogs_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION);
-
     ogs_assert(enb_ue);
-    enb_ue->ue_ctx_rel_action = action;
 
     ogs_debug("[MME] UE Context release command");
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
-    ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
-            group, (int)cause, action, delay);
 
-    rv = s1ap_build_ue_context_release_command(&s1apbuf, enb_ue, group, cause);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    if (delay) {
+        ogs_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION);
+        enb_ue->ue_ctx_rel_action = action;
 
-    rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, delay);
-    ogs_assert(rv == OGS_OK);
+        ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
+                group, (int)cause, action, delay);
+
+        rv = s1ap_build_ue_context_release_command(
+                &s1apbuf, enb_ue, group, cause);
+        ogs_assert(rv == OGS_OK && s1apbuf);
+
+        rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, delay);
+        ogs_assert(rv == OGS_OK);
+    } else {
+        if (enb_ue->t_ue_context_release.pkbuf) {
+            s1apbuf = enb_ue->t_ue_context_release.pkbuf;
+        } else {
+            ogs_assert(action != S1AP_UE_CTX_REL_INVALID_ACTION);
+            enb_ue->ue_ctx_rel_action = action;
+
+            ogs_debug("    Group[%d] Cause[%d] Action[%d] Delay[%d]",
+                    group, (int)cause, action, delay);
+
+            rv = s1ap_build_ue_context_release_command(
+                    &s1apbuf, enb_ue, group, cause);
+            ogs_assert(rv == OGS_OK && s1apbuf);
+        }
+
+        enb_ue->t_ue_context_release.pkbuf = ogs_pkbuf_copy(s1apbuf);
+        ogs_timer_start(enb_ue->t_ue_context_release.timer, 
+                mme_timer_cfg(MME_TIMER_UE_CONTEXT_RELEASE)->duration);
+
+        rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, 0);
+        ogs_assert(rv == OGS_OK);
+    }
 
     return OGS_OK;
 }
