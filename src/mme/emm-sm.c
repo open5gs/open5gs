@@ -60,10 +60,24 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e);
 
 void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
 {
+    mme_ue_t *mme_ue = NULL;
     ogs_assert(s);
     ogs_assert(e);
 
     mme_sm_debug(e);
+
+    mme_ue = e->mme_ue;
+    ogs_assert(mme_ue);
+
+    switch (e->id) {
+    case OGS_FSM_ENTRY_SIG:
+        CLEAR_MME_UE_ALL_TIMERS(mme_ue);
+        break;
+    case OGS_FSM_EXIT_SIG:
+        break;
+    default:
+        break;
+    }
 
     common_register_state(s, e);
 }
@@ -633,7 +647,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                     mme_timer_get_name(e->timer_id), e->timer_id);
             break;
         }
-        return;
+        break;
     default:
         ogs_error("Unknown event[%s]", mme_event_get_name(e));
         break;
@@ -776,7 +790,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                     mme_timer_get_name(e->timer_id), e->timer_id);
             break;
         }
-        return;
+        break;
     default:
         ogs_error("Unknown event[%s]", mme_event_get_name(e));
         break;
@@ -810,6 +824,9 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         case NAS_ATTACH_COMPLETE:
             ogs_debug("[EMM] Attach complete");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+
+            CLEAR_MME_UE_TIMER(mme_ue->t3450);
+
             rv = emm_handle_attach_complete(
                     mme_ue, &message->emm.attach_complete);
             if (rv != OGS_OK) {
@@ -862,6 +879,27 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         default:
             ogs_warn("Unknown message[%d]", 
                     message->emm.h.message_type);
+            break;
+        }
+        break;
+    case MME_EVT_EMM_TIMER:
+        switch (e->timer_id) {
+        case MME_TIMER_T3450:
+            if (mme_ue->t3450.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3450)->max_count) {
+                ogs_warn("[EMM] Retransmission of IMSI[%s] failed. "
+                        "Stop retransmission",
+                        mme_ue->imsi_bcd);
+                CLEAR_MME_UE_TIMER(mme_ue->t3450);
+                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+            } else {
+                mme_ue->t3450.retry_count++;
+                nas_send_attach_accept(mme_ue);
+            }
+            break;
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
             break;
         }
         break;

@@ -140,10 +140,12 @@ int esm_handle_information_response(mme_sess_t *sess,
             mme_vlr_t *vlr = mme_vlr_find_by_tai(&mme_ue->tai);
             mme_ue->vlr = vlr;
 
-            if (vlr)
+            if (vlr) {
                 sgsap_send_location_update_request(mme_ue);
-            else
+            } else {
+                CLEAR_MME_UE_TIMER(mme_ue->t3450);
                 nas_send_attach_accept(mme_ue);
+            }
         } else {
             rv = mme_gtp_send_create_session_request(sess);
             ogs_assert(rv == OGS_OK);
