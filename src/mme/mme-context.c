@@ -32,6 +32,7 @@
 #include "nas-conv.h"
 #include "mme-context.h"
 #include "mme-event.h"
+#include "mme-timer.h"
 #include "s1ap-path.h"
 #include "s1ap-handler.h"
 #include "mme-sm.h"
@@ -103,11 +104,6 @@ void mme_context_init()
     self.guti_ue_hash = ogs_hash_make();
 
     ogs_list_init(&self.mme_ue_list);
-
-    /* Paging retry timer: 2 secs */
-    self.t3413_value = ogs_time_from_sec(2); 
-    /* Client timer to connect to server: 3 secs */
-    self.t_conn_value = ogs_time_from_sec(3);
 
     context_initialized = 1;
 }

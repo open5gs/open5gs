@@ -4,7 +4,7 @@ noinst_LTLIBRARIES = libmme.la
 
 libmme_la_SOURCES = \
 	mme-kdf.h kasumi.h snow-3g.h zuc.h \
-    mme-event.h mme-context.h \
+    mme-event.h mme-timer.h mme-context.h \
 	ogs-sctp.h \
 	s1ap-build.h s1ap-handler.h s1ap-conv.h s1ap-path.h \
 	sgsap-build.h sgsap-handler.h sgsap-conv.h sgsap-path.h \
@@ -15,7 +15,7 @@ libmme_la_SOURCES = \
 	mme-gtp-path.h mme-s11-build.h mme-s11-handler.h \
 	mme-sm.h mme-path.h \
 	mme-kdf.c kasumi.c snow-3g.c zuc.c \
-    mme-init.c mme-event.c mme-context.c \
+    mme-init.c mme-event.c mme-timer.c mme-context.c \
 	ogs-sctp.c \
 	s1ap-sm.c s1ap-build.c s1ap-handler.c s1ap-conv.c s1ap-path.c \
 	sgsap-sm.c sgsap-build.c sgsap-handler.c sgsap-conv.c sgsap-path.c \

@@ -25,6 +25,7 @@
 #include "mme-context.h"
 #include "mme-sm.h"
 #include "mme-event.h"
+#include "mme-timer.h"
 
 #include "mme-fd-path.h"
 
@@ -39,6 +40,7 @@ int mme_initialize()
 
     mme_context_init();
     mme_event_init();
+    mme_timer_init();
 
     rv = gtp_xact_init(mme_self()->timer_mgr);
     if (rv != OGS_OK) return rv;
@@ -77,6 +79,7 @@ void mme_terminate(void)
 
     gtp_xact_final();
 
+    mme_timer_final();
     mme_event_final();
 }
 
