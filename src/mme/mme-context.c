@@ -2026,7 +2026,8 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->vlr_ostream_id = 0;
 
     /* Create paging retry timer */
-    mme_ue->t3413 = ogs_timer_add(self.timer_mgr, s1ap_t3413_timeout, mme_ue);
+    mme_ue->t3413 = ogs_timer_add(
+            self.timer_mgr, mme_timer_t3413_expire, mme_ue);
     ogs_assert(mme_ue->t3413);
 
     e.mme_ue = mme_ue;

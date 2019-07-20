@@ -26,6 +26,7 @@
 extern "C" {
 #endif
 
+/* forward declaration */
 typedef enum {
     MME_TIMER_BASE = 0,
 
@@ -38,6 +39,10 @@ typedef enum {
 
 void mme_timer_init(void);
 void mme_timer_final(void);
+
+const char *mme_timer_get_name(mme_timer_e id);
+
+void mme_timer_t3413_expire(void *data);
 
 #ifdef __cplusplus
 }

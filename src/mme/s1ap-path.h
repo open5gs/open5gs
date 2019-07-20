@@ -57,7 +57,6 @@ int s1ap_send_ue_context_release_command(
     uint8_t action, uint32_t delay);
 
 void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain);
-void s1ap_t3413_timeout(void *data);
 
 int s1ap_send_mme_configuration_transfer(
         mme_enb_t *target_enb,

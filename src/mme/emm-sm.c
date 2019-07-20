@@ -22,6 +22,7 @@
 #include "fd/s6a/s6a-message.h"
 
 #include "mme-event.h"
+#include "mme-timer.h"
 #include "mme-kdf.h"
 #include "s1ap-handler.h"
 #include "mme-fd-path.h"
@@ -264,6 +265,30 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             return;
         }
         break;
+    case MME_EVT_EMM_TIMER:
+        switch (e->timer_id) {
+        case MME_TIMER_T3413:
+            if (mme_ue->max_paging_retry >= MAX_NUM_OF_PAGING) {
+                /* Paging failed */
+                ogs_warn("[EMM] Paging to IMSI[%s] failed. Stop paging",
+                        mme_ue->imsi_bcd);
+                if (mme_ue->last_paging_msg) {
+                    ogs_pkbuf_free(mme_ue->last_paging_msg);
+                    mme_ue->last_paging_msg = NULL;
+                }
+            } else {
+                mme_ue->max_paging_retry++;
+                /* If t3413 is timeout, last_paging_msg is used.
+                 * We don't have to set CNDomain. So, we just set CNDomain to 0 */
+                s1ap_send_paging(mme_ue, 0);
+            }
+            break;
+        default:
+            ogs_warn("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
+            break;
+        }
+        return;
     default:
         ogs_error("Unknown event[%s]", mme_event_get_name(e));
         return;

@@ -99,6 +99,8 @@ const char *mme_event_get_name(mme_event_t *e)
 
     case MME_EVT_S1AP_MESSAGE:
         return "MME_EVT_S1AP_MESSAGE";
+    case MME_EVT_S1AP_TIMER:
+        return "MME_EVT_S1AP_TIMER";
     case MME_EVT_S1AP_DELAYED_SEND:
         return "MME_EVT_S1AP_DELAYED_SEND";
     case MME_EVT_S1AP_LO_ACCEPT:
@@ -110,15 +112,25 @@ const char *mme_event_get_name(mme_event_t *e)
 
     case MME_EVT_EMM_MESSAGE:
         return "MME_EVT_EMM_MESSAGE";
+    case MME_EVT_EMM_TIMER:
+        return "MME_EVT_EMM_TIMER";
     case MME_EVT_ESM_MESSAGE:
         return "MME_EVT_ESM_MESSAGE";
+    case MME_EVT_ESM_TIMER:
+        return "MME_EVT_ESM_TIMER";
     case MME_EVT_S11_MESSAGE:
         return "MME_EVT_S11_MESSAGE";
+    case MME_EVT_S11_TIMER:
+        return "MME_EVT_S11_TIMER";
     case MME_EVT_S6A_MESSAGE:
         return "MME_EVT_S6A_MESSAGE";
+    case MME_EVT_S6A_TIMER:
+        return "MME_EVT_S6A_TIMER";
 
     case MME_EVT_SGSAP_MESSAGE:
         return "MME_EVT_SGSAP_MESSAGE";
+    case MME_EVT_SGSAP_TIMER:
+        return "MME_EVT_SGSAP_TIMER";
     case MME_EVT_SGSAP_LO_SCTP_COMM_UP:
         return "MME_EVT_SGSAP_LO_SCTP_COMM_UP";
     case MME_EVT_SGSAP_LO_CONNREFUSED:

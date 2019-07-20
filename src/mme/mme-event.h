@@ -31,17 +31,23 @@ typedef enum {
     MME_EVT_BASE = OGS_FSM_USER_SIG,
 
     MME_EVT_S1AP_MESSAGE,
+    MME_EVT_S1AP_TIMER,
     MME_EVT_S1AP_DELAYED_SEND,
     MME_EVT_S1AP_LO_ACCEPT,
     MME_EVT_S1AP_LO_SCTP_COMM_UP,
     MME_EVT_S1AP_LO_CONNREFUSED,
 
     MME_EVT_EMM_MESSAGE,
+    MME_EVT_EMM_TIMER,
     MME_EVT_ESM_MESSAGE,
+    MME_EVT_ESM_TIMER,
     MME_EVT_S11_MESSAGE,
+    MME_EVT_S11_TIMER,
     MME_EVT_S6A_MESSAGE,
+    MME_EVT_S6A_TIMER,
 
     MME_EVT_SGSAP_MESSAGE,
+    MME_EVT_SGSAP_TIMER,
     MME_EVT_SGSAP_LO_SCTP_COMM_UP,
     MME_EVT_SGSAP_LO_CONNREFUSED,
 
@@ -62,6 +68,7 @@ typedef struct mme_bearer_s mme_bearer_t;
 typedef struct mme_event_s {
     int id;
     void *pkbuf;
+    int timer_id;
 
     ogs_sock_t *sctp_sock;
     ogs_sockaddr_t *sctp_addr;

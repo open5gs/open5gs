@@ -18,6 +18,7 @@
  */
 
 #include "mme-timer.h"
+#include "mme-event.h"
 #include "mme-context.h"
 
 void mme_timer_init(void)
@@ -44,4 +45,27 @@ const char *mme_timer_get_name(mme_timer_e id)
     }
 
     return "UNKNOWN_TIMER";
+}
+
+static void mme_ue_timer_event(
+        mme_timer_e timer_id, mme_ue_t *mme_ue)
+{
+    int rv;
+    mme_event_t *e = NULL;
+    ogs_assert(mme_ue);
+
+    e = mme_event_new(MME_EVT_EMM_TIMER);
+    e->timer_id = timer_id;
+    e->mme_ue = mme_ue;
+
+    rv = ogs_queue_push(mme_self()->queue, e);
+    if (rv != OGS_OK) {
+        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+        mme_event_free(e);
+    }
+}
+
+void mme_timer_t3413_expire(void *data)
+{
+    mme_ue_timer_event(MME_TIMER_T3413, data);
 }

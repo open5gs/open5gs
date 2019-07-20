@@ -333,27 +333,6 @@ void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
     ogs_timer_start(mme_ue->t3413, mme_self()->t3413_value);
 }
 
-void s1ap_t3413_timeout(void *data)
-{
-    mme_ue_t *mme_ue = data;
-    ogs_assert(mme_ue);
-
-    if (mme_ue->max_paging_retry >= MAX_NUM_OF_PAGING) {
-        /* Paging failed */
-        ogs_warn("[EMM] Paging to IMSI[%s] failed. Stop paging",
-                mme_ue->imsi_bcd);
-        if (mme_ue->last_paging_msg) {
-            ogs_pkbuf_free(mme_ue->last_paging_msg);
-            mme_ue->last_paging_msg = NULL;
-        }
-    } else {
-        mme_ue->max_paging_retry++;
-        /* If t3413 is timeout, last_paging_msg is used.
-         * We don't have to set CNDomain. So, we just set CNDomain to 0 */
-        s1ap_send_paging(mme_ue, 0);
-    }
-}
-
 int s1ap_send_mme_configuration_transfer(
         mme_enb_t *target_enb,
         S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer)
