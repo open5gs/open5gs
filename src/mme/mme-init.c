@@ -93,8 +93,30 @@ static void mme_main(void *data)
         ogs_pollset_poll(mme_self()->pollset,
                 ogs_timer_mgr_next(mme_self()->timer_mgr));
 
+        /* Process the MESSAGE FIRST.
+         *
+         * For example, if UE Context Release Complete is received,
+         * the MME_TIMER_UE_CONTEXT_RELEASE is first stopped */
+        for ( ;; ) {
+            mme_event_t *e = NULL;
+
+            rv = ogs_queue_trypop(mme_self()->queue, (void**)&e);
+            ogs_assert(rv != OGS_ERROR);
+
+            if (rv == OGS_DONE)
+                goto done;
+
+            if (rv == OGS_RETRY)
+                break;
+
+            ogs_assert(e);
+            ogs_fsm_dispatch(&mme_sm, e);
+            mme_event_free(e);
+        }
+
         ogs_timer_mgr_expire(mme_self()->timer_mgr);
 
+        /* AND THEN, process the TIMER. */
         for ( ;; ) {
             mme_event_t *e = NULL;
 

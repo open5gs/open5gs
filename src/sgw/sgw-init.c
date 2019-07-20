@@ -80,8 +80,30 @@ static void sgw_main(void *data)
         ogs_pollset_poll(sgw_self()->pollset,
                 ogs_timer_mgr_next(sgw_self()->timer_mgr));
 
+        /* Process the MESSAGE FIRST.
+         *
+         * For example, if UE Context Release Complete is received,
+         * the MME_TIMER_UE_CONTEXT_RELEASE is first stopped */
+        for ( ;; ) {
+            sgw_event_t *e = NULL;
+
+            rv = ogs_queue_trypop(sgw_self()->queue, (void**)&e);
+            ogs_assert(rv != OGS_ERROR);
+
+            if (rv == OGS_DONE)
+                goto done;
+
+            if (rv == OGS_RETRY)
+                break;
+
+            ogs_assert(e);
+            ogs_fsm_dispatch(&sgw_sm, e);
+            sgw_event_free(e);
+        }
+
         ogs_timer_mgr_expire(sgw_self()->timer_mgr);
 
+        /* AND THEN, process the TIMER. */
         for ( ;; ) {
             sgw_event_t *e = NULL;
 

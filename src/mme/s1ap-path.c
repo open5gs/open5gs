@@ -96,13 +96,10 @@ int s1ap_send_to_enb(mme_enb_t *enb, ogs_pkbuf_t *pkbuf, uint16_t stream_no)
 int s1ap_send_to_enb_ue(enb_ue_t *enb_ue, ogs_pkbuf_t *pkbuf)
 {
     mme_enb_t *enb = NULL;
-    mme_ue_t *mme_ue = NULL;
 
     ogs_assert(enb_ue);
     enb = enb_ue->enb;
     ogs_assert(enb);
-    mme_ue = enb_ue->mme_ue;
-    ogs_assert(mme_ue);
 
     return s1ap_send_to_enb(enb, pkbuf, enb_ue->enb_ostream_id);
 }

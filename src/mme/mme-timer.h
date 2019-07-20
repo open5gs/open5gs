@@ -34,26 +34,11 @@ typedef enum {
 
     MME_TIMER_UE_CONTEXT_RELEASE,
 
-    /* Paging procedure for EPS services initiated */
     MME_TIMER_T3413,
-
-    /* DETACH REQUEST sent */
     MME_TIMER_T3422,
-
-    /* ATTACH ACCEPT sent
-     * TRACKING AREA UPDATE ACCEPT sent with GUTI
-     * TRACKING AREA UPDATE ACCEPT sent with TMSI
-     * GUTI REALLOCATION COMMAND sent */
     MME_TIMER_T3450,
-
-    /* AUTHENTICATION REQUEST sent
-     * SECURITY MODE COMMAND sent */
     MME_TIMER_T3460,
-
-    /* IDENTITY REQUEST sent */
     MME_TIMER_T3470,
-
-    /* ESM INFORMATION REQUEST sent */
     MME_TIMER_T3489,
 
     MME_TIMER_SGS_CLI_CONN_TO_SRV,

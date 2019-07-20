@@ -24,18 +24,35 @@
 static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
     [MME_TIMER_UE_CONTEXT_RELEASE] = 
         { .max_count = 2, .duration = ogs_time_from_sec(1) },
+
+    /* Paging procedure for EPS services initiated */
     [MME_TIMER_T3413] = 
         { .max_count = 2, .duration = ogs_time_from_sec(2) },
+
+    /* DETACH REQUEST sent */
     [MME_TIMER_T3422] = 
         { .max_count = 4, .duration = ogs_time_from_sec(3) },
+
+    /* ATTACH ACCEPT sent
+     * TRACKING AREA UPDATE ACCEPT sent with GUTI
+     * TRACKING AREA UPDATE ACCEPT sent with TMSI
+     * GUTI REALLOCATION COMMAND sent */
     [MME_TIMER_T3450] = 
         { .max_count = 4, .duration = ogs_time_from_sec(3) },
+
+    /* AUTHENTICATION REQUEST sent
+     * SECURITY MODE COMMAND sent */
     [MME_TIMER_T3460] = 
         { .max_count = 4, .duration = ogs_time_from_sec(3) },
+
+    /* IDENTITY REQUEST sent */
     [MME_TIMER_T3470] = 
         { .max_count = 4, .duration = ogs_time_from_sec(3) },
+
+    /* ESM INFORMATION REQUEST sent */
     [MME_TIMER_T3489] = 
         { .max_count = 2, .duration = ogs_time_from_sec(4) },
+
     [MME_TIMER_SGS_CLI_CONN_TO_SRV] = 
         { .duration = ogs_time_from_sec(3) },
 };
