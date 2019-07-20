@@ -39,12 +39,18 @@ typedef enum {
     /* SGSAP */
     MME_TIMER_SGS_CLI_CONN_TO_SRV,
 
-    MME_TIMER_TOP,
+    MAX_NUM_OF_MME_TIMER,
 
 } mme_timer_e;
 
+typedef struct mme_timer_cfg_s {
+    int max_count;
+    ogs_time_t duration;
+} mme_timer_cfg_t;
+
 void mme_timer_init(void);
 void mme_timer_final(void);
+mme_timer_cfg_t *mme_timer_cfg(mme_timer_e id);
 
 const char *mme_timer_get_name(mme_timer_e id);
 

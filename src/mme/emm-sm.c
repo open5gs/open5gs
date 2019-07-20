@@ -268,7 +268,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
     case MME_EVT_EMM_TIMER:
         switch (e->timer_id) {
         case MME_TIMER_T3413:
-            if (mme_ue->max_paging_retry >= MAX_NUM_OF_PAGING) {
+            if (mme_ue->max_paging_retry >=
+                    mme_timer_cfg(MME_TIMER_T3413)->max_count) {
                 /* Paging failed */
                 ogs_warn("[EMM] Paging to IMSI[%s] failed. Stop paging",
                         mme_ue->imsi_bcd);

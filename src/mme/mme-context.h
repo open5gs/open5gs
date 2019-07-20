@@ -141,11 +141,6 @@ typedef struct mme_context_s {
     /* S1SetupResponse */
     uint8_t         relative_capacity;
 
-    /* Paging retry timer value */
-    ogs_time_t      t3413_value;
-    /* Client timer value to connect to server */
-    ogs_time_t      t_conn_value;    
-
     /* Generator for unique identification */
     uint32_t        mme_ue_s1ap_id;         /* mme_ue_s1ap_id generator */
 
@@ -413,7 +408,6 @@ struct mme_ue_s {
     } while(0);
     ogs_pkbuf_t     *last_paging_msg;
     ogs_timer_t     *t3413;
-#define MAX_NUM_OF_PAGING           2
     uint32_t        max_paging_retry;
 
 #define CLEAR_SERVICE_INDICATOR(__mME) \

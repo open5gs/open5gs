@@ -333,7 +333,8 @@ void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
     }
 
     /* Start T3413 */
-    ogs_timer_start(mme_ue->t3413, mme_self()->t3413_value);
+    ogs_timer_start(mme_ue->t3413, 
+            mme_timer_cfg(MME_TIMER_T3413)->duration);
 }
 
 int s1ap_send_mme_configuration_transfer(

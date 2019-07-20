@@ -21,19 +21,28 @@
 #include "mme-event.h"
 #include "mme-context.h"
 
+mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
+    [MME_TIMER_T3413] = 
+        { .max_count = 2, .duration = ogs_time_from_sec(2) },
+    [MME_TIMER_SGS_CLI_CONN_TO_SRV] = 
+        { .duration = ogs_time_from_sec(3) },
+};
+
 static void mme_ue_timer_event(
         mme_timer_e timer_id, mme_ue_t *mme_ue);
 
 void mme_timer_init(void)
 {
-    /* Paging retry timer: 2 secs */
-    mme_self()->t3413_value = ogs_time_from_sec(2); 
-    /* Client timer to connect to server: 3 secs */
-    mme_self()->t_conn_value = ogs_time_from_sec(3);
 }
 
 void mme_timer_final(void)
 {
+}
+
+mme_timer_cfg_t *mme_timer_cfg(mme_timer_e id)
+{
+    ogs_assert(id < MAX_NUM_OF_MME_TIMER);
+    return &g_mme_timer_cfg[id];
 }
 
 const char *mme_timer_get_name(mme_timer_e id)
@@ -51,8 +60,6 @@ const char *mme_timer_get_name(mme_timer_e id)
 
     return "UNKNOWN_TIMER";
 }
-
-#include "s1ap-path.h"
 
 void mme_timer_s1_delayed_send(void *data)
 {

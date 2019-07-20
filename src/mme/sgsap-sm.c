@@ -78,7 +78,8 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_timer_start(vlr->t_conn, mme_self()->t_conn_value);
+        ogs_timer_start(vlr->t_conn,
+                mme_timer_cfg(MME_TIMER_SGS_CLI_CONN_TO_SRV)->duration);
         sgsap_client(vlr);
         break;
     case OGS_FSM_EXIT_SIG:
@@ -98,7 +99,8 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
                         OGS_ADDR(addr, buf), OGS_PORT(addr));
 
             ogs_assert(vlr->t_conn);
-            ogs_timer_start(vlr->t_conn, mme_self()->t_conn_value);
+            ogs_timer_start(vlr->t_conn,
+                mme_timer_cfg(MME_TIMER_SGS_CLI_CONN_TO_SRV)->duration);
 
             mme_vlr_free_node(vlr);
             sgsap_client(vlr);
