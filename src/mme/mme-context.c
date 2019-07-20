@@ -2525,6 +2525,9 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
     bearer->sess = sess;
 
     ogs_list_add(&sess->bearer_list, bearer);
+
+    bearer->t3489.timer = ogs_timer_add(
+            self.timer_mgr, mme_timer_t3489_expire, bearer);
     
     e.bearer = bearer;
     ogs_fsm_create(&bearer->sm, esm_state_initial, esm_state_final);
@@ -2543,6 +2546,8 @@ void mme_bearer_remove(mme_bearer_t *bearer)
     e.bearer = bearer;
     ogs_fsm_fini(&bearer->sm, &e);
     ogs_fsm_delete(&bearer->sm);
+
+    ogs_timer_delete(bearer->t3489.timer);
 
     ogs_list_remove(&bearer->sess->bearer_list, bearer);
 

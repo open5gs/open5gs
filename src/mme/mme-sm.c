@@ -276,11 +276,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         ogs_fsm_dispatch(&mme_ue->sm, e);
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {
-            CLEAR_SERVICE_INDICATOR(mme_ue);
-
-            rv = mme_send_delete_session_or_ue_context_release(
-                    mme_ue, enb_ue);
-            ogs_assert(rv == OGS_OK);
+            mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
         }
 
         ogs_pkbuf_free(pkbuf);
@@ -332,12 +328,19 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
              * [Enhancement] - Probably Invalid APN 
              * At this point, we'll forcely release UE context
              */
-            rv = mme_send_delete_session_or_ue_context_release(
+            mme_send_delete_session_or_ue_context_release(
                     mme_ue, mme_ue->enb_ue);
-            ogs_assert(rv == OGS_OK);
         }
 
         ogs_pkbuf_free(pkbuf);
+        break;
+
+    case MME_EVT_ESM_TIMER:
+        bearer = e->bearer;
+        ogs_assert(bearer);
+        ogs_assert(OGS_FSM_STATE(&bearer->sm));
+
+        ogs_fsm_dispatch(&bearer->sm, e);
         break;
 
     case MME_EVT_S6A_MESSAGE:

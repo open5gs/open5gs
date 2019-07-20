@@ -318,8 +318,16 @@ int nas_send_esm_information_request(mme_bearer_t *bearer)
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
 
-    rv = esm_build_information_request(&esmbuf, bearer);
-    ogs_assert(rv == OGS_OK && esmbuf);
+    if (bearer->t3489.pkbuf) {
+        esmbuf = bearer->t3489.pkbuf;
+    } else {
+        rv = esm_build_information_request(&esmbuf, bearer);
+        ogs_assert(rv == OGS_OK && esmbuf);
+    }
+
+    bearer->t3489.pkbuf = ogs_pkbuf_copy(esmbuf);
+    ogs_timer_start(bearer->t3489.timer, 
+            mme_timer_cfg(MME_TIMER_T3489)->duration);
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
     ogs_assert(rv == OGS_OK);

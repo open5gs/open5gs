@@ -32,23 +32,27 @@ typedef enum {
 
     MME_TIMER_S1_DELAYED_SEND,
 
-    MME_TIMER_T3413, /* Paging procedure for EPS services initiated */
-    MME_TIMER_T3422, /* DETACH REQUEST sent */
+    /* Paging procedure for EPS services initiated */
+    MME_TIMER_T3413,
 
-    /*
-     * ATTACH ACCEPT sent
+    /* DETACH REQUEST sent */
+    MME_TIMER_T3422,
+
+    /* ATTACH ACCEPT sent
      * TRACKING AREA UPDATE ACCEPT sent with GUTI
      * TRACKING AREA UPDATE ACCEPT sent with TMSI
-     * GUTI REALLOCATION COMMAND sent
-     */
+     * GUTI REALLOCATION COMMAND sent */
     MME_TIMER_T3450,
-    /*
-     * AUTHENTICATION REQUEST sent
-     * SECURITY MODE COMMAND sent
-     */
+
+    /* AUTHENTICATION REQUEST sent
+     * SECURITY MODE COMMAND sent */
     MME_TIMER_T3460,
 
-    MME_TIMER_T3470, /* IDENTITY REQUEST sent */
+    /* IDENTITY REQUEST sent */
+    MME_TIMER_T3470,
+
+    /* ESM INFORMATION REQUEST sent */
+    MME_TIMER_T3489,
 
     MME_TIMER_SGS_CLI_CONN_TO_SRV,
 
@@ -72,6 +76,7 @@ void mme_timer_t3422_expire(void *data);
 void mme_timer_t3450_expire(void *data);
 void mme_timer_t3460_expire(void *data);
 void mme_timer_t3470_expire(void *data);
+void mme_timer_t3489_expire(void *data);
 
 void mme_timer_sgs_cli_conn_to_srv(void *data);
 

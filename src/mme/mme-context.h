@@ -589,6 +589,26 @@ typedef struct mme_bearer_s {
     qos_t           qos;
     tlv_octet_t     tft;   /* Saved TFT */
 
+#define CLEAR_BEARER_ALL_TIMERS(__bEARER) \
+    do { \
+        CLEAR_BEARER_TIMER((__bEARER)->t3489); \
+    } while(0);
+#define CLEAR_BEARER_TIMER(__bEARER_TIMER) \
+    do { \
+        ogs_timer_stop((__bEARER_TIMER).timer); \
+        if ((__bEARER_TIMER).pkbuf) \
+        { \
+            ogs_pkbuf_free((__bEARER_TIMER).pkbuf); \
+            (__bEARER_TIMER).pkbuf = NULL; \
+        } \
+        (__bEARER_TIMER).retry_count = 0; \
+    } while(0);
+    struct {
+        ogs_pkbuf_t     *pkbuf;
+        ogs_timer_t     *timer;
+        uint32_t        retry_count;;
+    } t3489;
+
     /* Related Context */
     mme_ue_t        *mme_ue;
     mme_sess_t      *sess;

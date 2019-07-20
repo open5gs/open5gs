@@ -71,6 +71,7 @@ void emm_state_de_registered(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        CLEAR_SERVICE_INDICATOR(mme_ue);
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
         break;
     case OGS_FSM_EXIT_SIG:
@@ -921,6 +922,7 @@ void emm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        CLEAR_SERVICE_INDICATOR(mme_ue);
         CLEAR_MME_UE_ALL_TIMERS(mme_ue);
         break;
     case OGS_FSM_EXIT_SIG:

@@ -19,6 +19,7 @@
 
 #include "nas/nas-message.h"
 #include "mme-event.h"
+#include "mme-timer.h"
 #include "mme-sm.h"
 #include "mme-fd-path.h"
 #include "emm-handler.h"
@@ -69,6 +70,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        CLEAR_BEARER_ALL_TIMERS(bearer);
         break;
     case OGS_FSM_EXIT_SIG:
         break;
@@ -92,6 +94,8 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("[ESM] ESM information response");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
+
+            CLEAR_BEARER_TIMER(bearer->t3489);
             rv = esm_handle_information_response(
                     sess, &message->esm.esm_information_response);
             if (rv != OGS_OK) {
@@ -133,6 +137,30 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
         default:
             ogs_error("Unknown message(type:%d)", 
                     message->esm.h.message_type);
+            break;
+        }
+        break;
+    case MME_EVT_ESM_TIMER:
+        switch (e->timer_id) {
+        case MME_TIMER_T3489:
+            if (bearer->t3489.retry_count >=
+                    mme_timer_cfg(MME_TIMER_T3489)->max_count) {
+                ogs_warn("[EMM] Retransmission of IMSI[%s] failed. "
+                        "Stop retransmission",
+                        mme_ue->imsi_bcd);
+                CLEAR_BEARER_TIMER(bearer->t3489);
+                OGS_FSM_TRAN(&bearer->sm, &esm_state_exception);
+
+                nas_send_pdn_connectivity_reject(sess,
+                    ESM_CAUSE_ESM_INFORMATION_NOT_RECEIVED);
+            } else {
+                bearer->t3489.retry_count++;
+                nas_send_esm_information_request(bearer);
+            }
+            break;
+        default:
+            ogs_error("Unknown timer[%s:%d]",
+                    mme_timer_get_name(e->timer_id), e->timer_id);
             break;
         }
         break;
@@ -310,11 +338,15 @@ void esm_state_bearer_deactivated(ogs_fsm_t *s, mme_event_t *e)
 
 void esm_state_exception(ogs_fsm_t *s, mme_event_t *e)
 {
+    mme_bearer_t *bearer = NULL;
     ogs_assert(e);
     mme_sm_debug(e);
 
+    bearer = e->bearer;
+
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
+        CLEAR_BEARER_ALL_TIMERS(bearer);
         break;
     case OGS_FSM_EXIT_SIG:
         break;
