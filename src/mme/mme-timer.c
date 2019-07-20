@@ -21,7 +21,7 @@
 #include "mme-event.h"
 #include "mme-context.h"
 
-mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
+static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
     [MME_TIMER_T3413] = 
         { .max_count = 2, .duration = ogs_time_from_sec(2) },
     [MME_TIMER_SGS_CLI_CONN_TO_SRV] = 
@@ -30,14 +30,6 @@ mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
 
 static void mme_ue_timer_event(
         mme_timer_e timer_id, mme_ue_t *mme_ue);
-
-void mme_timer_init(void)
-{
-}
-
-void mme_timer_final(void)
-{
-}
 
 mme_timer_cfg_t *mme_timer_cfg(mme_timer_e id)
 {
