@@ -523,9 +523,9 @@ int s1ap_build_initial_context_setup_request(
 
         s1ap_buffer_to_OCTET_STRING(&mme_ue->tai.plmn_id, sizeof(plmn_id_t),
                 &LAI->pLMNidentity);
-        ogs_assert(mme_ue->vlr);
+        ogs_assert(mme_ue->csmap);
         ogs_assert(mme_ue->p_tmsi);
-        s1ap_uint16_to_OCTET_STRING(mme_ue->vlr->lai.lac, &LAI->lAC);
+        s1ap_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
     }
 
     /* Set UeRadioCapability if exists */
@@ -654,9 +654,9 @@ int s1ap_build_ue_context_modification_request(
 
         s1ap_buffer_to_OCTET_STRING(&mme_ue->tai.plmn_id, sizeof(plmn_id_t),
                 &LAI->pLMNidentity);
-        ogs_assert(mme_ue->vlr);
+        ogs_assert(mme_ue->csmap);
         ogs_assert(mme_ue->p_tmsi);
-        s1ap_uint16_to_OCTET_STRING(mme_ue->vlr->lai.lac, &LAI->lAC);
+        s1ap_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
 
     } else {
         ie = ogs_calloc(1, sizeof(S1AP_UEContextModificationRequestIEs_t));

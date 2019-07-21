@@ -52,7 +52,7 @@ mme:
             plmn_id:
               mcc: 724
               mnc: 21
-            lac: 2342
+            lac: 51544
     gummei: 
       plmn_id:
         mcc: 901

@@ -1783,35 +1783,6 @@ mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr)
     return NULL;
 }
 
-mme_vlr_t *mme_vlr_find_by_tai(tai_t *tai)
-{
-    mme_vlr_t *vlr = NULL;
-    ogs_assert(tai);
-
-    ogs_list_for_each(&self.vlr_list, vlr) {
-        nas_tai_t nas_tai;
-        nas_from_plmn_id(&nas_tai.nas_plmn_id, &tai->plmn_id);
-        nas_tai.tac = tai->tac;
-        if (memcmp(&vlr->tai, &nas_tai, sizeof(nas_tai_t)) == 0)
-            return vlr;
-    }
-
-    return NULL;
-}
-
-mme_vlr_t *mme_vlr_find_by_nas_lai(nas_lai_t *lai)
-{
-    mme_vlr_t *vlr = NULL;
-    ogs_assert(lai);
-
-    ogs_list_for_each(&self.vlr_list, vlr) {
-        if (memcmp(&vlr->lai, lai, sizeof *lai) == 0)
-            return vlr;
-    }
-
-    return NULL;
-}
-
 mme_csmap_t *mme_csmap_add(mme_vlr_t *vlr)
 {
     mme_csmap_t *csmap = NULL;
@@ -2205,7 +2176,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
         ogs_assert_if_reached();
         
     /* Clear VLR */
-    mme_ue->vlr = NULL;
+    mme_ue->csmap = NULL;
     mme_ue->vlr_ostream_id = 0;
 
     /* Add All Timers */

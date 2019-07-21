@@ -160,18 +160,16 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-#if 0
     /* Receive SGsAP-Location-Update-Request */
     recvbuf = testvlr_sgsap_read(sgsap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
     /* Send SGsAP-Location-Update-Accept */
-    rv = testsgsap_location_update_accept(&sendbuf, 0);
+    rv = testsgsap_location_update_accept(&sendbuf, 1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testvlr_sgsap_send(sgsap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-#endif
 
     /* Receive Initial Context Setup Request + 
      * Attach Accept + 

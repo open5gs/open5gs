@@ -110,10 +110,10 @@ void mme_s11_handle_create_session_response(
     ogs_assert(rv == OGS_OK);
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
-        mme_vlr_t *vlr = mme_vlr_find_by_tai(&mme_ue->tai);
-        mme_ue->vlr = vlr;
+        mme_csmap_t *csmap = mme_csmap_find_by_tai(&mme_ue->tai);
+        mme_ue->csmap = csmap;
 
-        if (vlr) {
+        if (csmap) {
             sgsap_send_location_update_request(mme_ue);
         } else {
             CLEAR_MME_UE_TIMER(mme_ue->t3450);

@@ -187,8 +187,8 @@ typedef struct mme_pgw_s {
 } mme_pgw_t;
 
 #define MME_SGSAP_IS_CONNECTED(__mME) \
-    ((__mME) && ((__mME)->vlr) && \
-     (OGS_FSM_CHECK(&(__mME)->vlr->sm, sgsap_state_connected)))
+    ((__mME) && ((__mME)->csmap) && ((__mME)->csmap->vlr) && \
+     (OGS_FSM_CHECK(&(__mME)->csmap->vlr->sm, sgsap_state_connected)))
 #define MME_P_TMSI_IS_AVAILABLE(__mME) \
     (MME_SGSAP_IS_CONNECTED(__mME) && (__mME)->p_tmsi)
 
@@ -198,9 +198,6 @@ typedef struct mme_vlr_s {
     ogs_fsm_t       sm;          /* A state machine */
 
     ogs_timer_t     *t_conn;     /* client timer to connect to server */
-
-    nas_tai_t       tai;
-    nas_lai_t       lai;
 
     uint16_t        max_num_of_ostreams;/* SCTP Max num of outbound streams */
     uint16_t        ostream_id;     /* vlr_ostream_id generator */
@@ -506,7 +503,7 @@ struct mme_ue_s {
     int             session_context_will_deleted;
 
     gtp_node_t      *gnode;
-    mme_vlr_t       *vlr;
+    mme_csmap_t     *csmap;
 };
 
 #define MME_HAVE_SGW_S1U_PATH(__sESS) \
@@ -665,10 +662,7 @@ void mme_vlr_remove_all();
 
 ogs_socknode_t *mme_vlr_new_node(mme_vlr_t *vlr);
 void mme_vlr_free_node(mme_vlr_t *vlr);
-
 mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr);
-mme_vlr_t *mme_vlr_find_by_tai(tai_t *tai);
-mme_vlr_t *mme_vlr_find_by_nas_lai(nas_lai_t *lai);
 
 mme_csmap_t *mme_csmap_add(mme_vlr_t *vlr);
 void mme_csmap_remove(mme_csmap_t *csmap);

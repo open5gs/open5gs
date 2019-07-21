@@ -89,11 +89,6 @@ int sgsap_send_to_vlr_with_sid(
     ogs_assert(sock);
 
     ogs_debug("    VLR-IP[%s]", OGS_ADDR(node->addr, buf));
-    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-                plmn_id_hexdump(&vlr->tai.nas_plmn_id), vlr->tai.tac);
-    ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
-                plmn_id_hexdump(&vlr->lai.nas_plmn_id), vlr->lai.lac);
-
     rv = sgsap_send(sock, pkbuf, node->addr, stream_no);
     if (rv != OGS_OK) {
         ogs_error("sgsap_send() failed");
@@ -108,11 +103,21 @@ int sgsap_send_to_vlr_with_sid(
 
 int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
 {
+    mme_csmap_t *csmap = NULL;
     mme_vlr_t *vlr = NULL;
-    ogs_assert(mme_ue);
+
     ogs_assert(pkbuf);
-    vlr = mme_ue->vlr;
+
+    ogs_assert(mme_ue);
+    csmap = mme_ue->csmap;
+    ogs_assert(csmap);
+    vlr = csmap->vlr;
     ogs_assert(vlr);
+
+    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+                plmn_id_hexdump(&csmap->tai.nas_plmn_id), csmap->tai.tac);
+    ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
+                plmn_id_hexdump(&csmap->lai.nas_plmn_id), csmap->lai.lac);
 
     return sgsap_send_to_vlr_with_sid(vlr, pkbuf, mme_ue->vlr_ostream_id);
 }

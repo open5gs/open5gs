@@ -137,10 +137,10 @@ int esm_handle_information_response(mme_sess_t *sess,
     if (sess->pdn) {
         ogs_debug("    APN[%s]", sess->pdn->apn);
         if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-            mme_vlr_t *vlr = mme_vlr_find_by_tai(&mme_ue->tai);
-            mme_ue->vlr = vlr;
+            mme_csmap_t *csmap = mme_csmap_find_by_tai(&mme_ue->tai);
+            mme_ue->csmap = csmap;
 
-            if (vlr) {
+            if (csmap) {
                 sgsap_send_location_update_request(mme_ue);
             } else {
                 CLEAR_MME_UE_TIMER(mme_ue->t3450);

@@ -3254,13 +3254,13 @@ int testsgsap_location_update_accept(ogs_pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {
         "0a01082926240000 111893040509f107 09260e05f49ee88e 64",
-        "",
+        "0a01087942120000 000030040527f412 c9580e05f437ab9c c5",
         "",
 
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         25,
-        0,
+        25,
         0,
     };
     char hexbuf[MAX_SDU_LEN];

@@ -113,13 +113,13 @@ int emm_build_attach_accept(
     eps_network_feature_support->ims_vops = 1;
 
     if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
-        ogs_assert(mme_ue->vlr);
+        ogs_assert(mme_ue->csmap);
         ogs_assert(mme_ue->p_tmsi);
 
         attach_accept->presencemask |=
             NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
-        lai->nas_plmn_id = mme_ue->vlr->lai.nas_plmn_id;
-        lai->lac = mme_ue->vlr->lai.lac;
+        lai->nas_plmn_id = mme_ue->csmap->lai.nas_plmn_id;
+        lai->lac = mme_ue->csmap->lai.lac;
         ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
                 plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
 
