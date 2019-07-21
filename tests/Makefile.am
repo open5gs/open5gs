@@ -46,6 +46,7 @@ testcsfb_SOURCES = \
 	csfb/mo-idle-test.c csfb/mt-idle-test.c \
 	csfb/mo-active-test.c csfb/mt-active-test.c \
 	csfb/mo-sms-test.c csfb/mt-sms-test.c \
+	csfb/crash-test.c \
 	$(NULL)
 testcsfb_LDADD = $(top_srcdir)/src/libepc.la
 

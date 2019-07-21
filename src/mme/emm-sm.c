@@ -718,13 +718,19 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            /* Update Kenb */
-            if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-                mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
-                        mme_ue->kenb);
-                mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
-                mme_ue->nhcc = 1;
+            if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
+                ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
+                nas_send_attach_reject(mme_ue,
+                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
             }
+
+            mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
+                    mme_ue->kenb);
+            mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+            mme_ue->nhcc = 1;
 
             mme_s6a_send_ulr(mme_ue);
             if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
@@ -752,7 +758,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
-                return;
+                break;
             }
 
             mme_s6a_send_air(mme_ue, NULL);
@@ -779,7 +785,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
-                return;
+                break;
             }
 
             rv = mme_send_delete_session_or_detach(mme_ue);
