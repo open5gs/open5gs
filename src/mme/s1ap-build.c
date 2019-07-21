@@ -357,26 +357,6 @@ int s1ap_build_initial_context_setup_request(
 
     E_RABToBeSetupListCtxtSUReq = &ie->value.choice.E_RABToBeSetupListCtxtSUReq;
 
-    ie = ogs_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
-    ie->criticality = S1AP_Criticality_reject;
-    ie->value.present =
-        S1AP_InitialContextSetupRequestIEs__value_PR_UESecurityCapabilities;
-
-    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
-
-    ie = ogs_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
-    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
-
-    ie->id = S1AP_ProtocolIE_ID_id_SecurityKey;
-    ie->criticality = S1AP_Criticality_reject;
-    ie->value.present =
-        S1AP_InitialContextSetupRequestIEs__value_PR_SecurityKey;
-
-    SecurityKey = &ie->value.choice.SecurityKey;
-
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
@@ -469,6 +449,16 @@ int s1ap_build_initial_context_setup_request(
         sess = mme_sess_next(sess);
     }
 
+    ie = ogs_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_InitialContextSetupRequestIEs__value_PR_UESecurityCapabilities;
+
+    UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
+
     UESecurityCapabilities->encryptionAlgorithms.size = 2;
     UESecurityCapabilities->encryptionAlgorithms.buf = 
         ogs_calloc(UESecurityCapabilities->encryptionAlgorithms.size, 
@@ -485,15 +475,29 @@ int s1ap_build_initial_context_setup_request(
     UESecurityCapabilities->integrityProtectionAlgorithms.buf[0] =
         (mme_ue->ue_network_capability.eia << 1);
 
+    ie = ogs_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_SecurityKey;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_InitialContextSetupRequestIEs__value_PR_SecurityKey;
+
+    SecurityKey = &ie->value.choice.SecurityKey;
+
     SecurityKey->size = OGS_SHA256_DIGEST_SIZE;
     SecurityKey->buf = 
         ogs_calloc(SecurityKey->size, sizeof(uint8_t));
     SecurityKey->bits_unused = 0;
     memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
 
-    /* Set CS-Fallback */
+    /* Workaround for asn1c library
+     * - More than 9 ProtocolIE cannot be built 
+     *   from InitialContextSetupRequest */
     if (mme_ue->nas_eps.type == MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST &&
         MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
+
+        /* Set CS-Fallback */
         S1AP_CSFallbackIndicator_t *CSFallbackIndicator = NULL;
         S1AP_LAI_t *LAI = NULL;
 
@@ -526,10 +530,10 @@ int s1ap_build_initial_context_setup_request(
         ogs_assert(mme_ue->csmap);
         ogs_assert(mme_ue->p_tmsi);
         s1ap_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
-    }
 
-    /* Set UeRadioCapability if exists */
-    if (mme_ue->ueRadioCapability.buf && mme_ue->ueRadioCapability.size) {
+    } else if (mme_ue->ueRadioCapability.buf &&
+            mme_ue->ueRadioCapability.size) {
+        /* Set UeRadioCapability if exists */
         S1AP_UERadioCapability_t *UERadioCapability = NULL;
 
         ie = ogs_calloc(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
