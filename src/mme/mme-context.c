@@ -50,6 +50,7 @@ int __esm_log_domain;
 static OGS_POOL(mme_sgw_pool, mme_sgw_t);
 static OGS_POOL(mme_pgw_pool, mme_pgw_t);
 static OGS_POOL(mme_vlr_pool, mme_vlr_t);
+static OGS_POOL(mme_csmap_pool, mme_csmap_t);
 
 static OGS_POOL(mme_enb_pool, mme_enb_t);
 static OGS_POOL(mme_ue_pool, mme_ue_t);
@@ -85,10 +86,12 @@ void mme_context_init()
     ogs_list_init(&self.pgw_list);
     ogs_list_init(&self.enb_list);
     ogs_list_init(&self.vlr_list);
+    ogs_list_init(&self.csmap_list);
 
     ogs_pool_init(&mme_sgw_pool, context_self()->config.max.sgw);
     ogs_pool_init(&mme_pgw_pool, context_self()->config.max.pgw);
     ogs_pool_init(&mme_vlr_pool, context_self()->config.max.vlr);
+    ogs_pool_init(&mme_csmap_pool, context_self()->config.max.csmap);
 
     ogs_pool_init(&mme_enb_pool, context_self()->config.max.enb);
 
@@ -118,6 +121,7 @@ void mme_context_final()
 
     mme_sgw_remove_all();
     mme_pgw_remove_all();
+    mme_csmap_remove_all();
     mme_vlr_remove_all();
 
     ogs_assert(self.enb_addr_hash);
@@ -142,6 +146,7 @@ void mme_context_final()
 
     ogs_pool_final(&mme_sgw_pool);
     ogs_pool_final(&mme_pgw_pool);
+    ogs_pool_final(&mme_csmap_pool);
     ogs_pool_final(&mme_vlr_pool);
 
     gtp_node_final();
@@ -1075,12 +1080,16 @@ int mme_context_parse_config()
                     do {
                         mme_vlr_t *vlr = NULL;
                         plmn_id_t plmn_id;
-                        const char *tai_mcc = NULL, *tai_mnc = NULL;
-                        const char *lai_mcc = NULL, *lai_mnc = NULL;
-                        const char *tac = NULL, *lac = NULL;
+#define MAX_NUM_OF_CSMAP            128 /* Num of TAI-LAI MAP per MME */
+                        struct {
+                            const char *tai_mcc, *tai_mnc;
+                            const char *lai_mcc, *lai_mnc;
+                            const char *tac, *lac;
+                        } map[MAX_NUM_OF_CSMAP];
+                        int map_num = 0;
                         ogs_sockaddr_t *addr = NULL;
                         int family = AF_UNSPEC;
-                        int i, num = 0;
+                        int i, hostname_num = 0;
                         const char *hostname[MAX_NUM_OF_HOSTNAME];
                         uint16_t port = self.sgsap_port;
 
@@ -1129,8 +1138,9 @@ int mme_context_parse_config()
                                             break;
                                     }
 
-                                    ogs_assert(num <= MAX_NUM_OF_HOSTNAME);
-                                    hostname[num++] = 
+                                    ogs_assert(hostname_num <=
+                                            MAX_NUM_OF_HOSTNAME);
+                                    hostname[hostname_num++] = 
                                         ogs_yaml_iter_value(&hostname_iter);
                                 } while (
                                     ogs_yaml_iter_type(&hostname_iter) ==
@@ -1142,95 +1152,194 @@ int mme_context_parse_config()
                                     port = atoi(v);
                                     self.sgsap_port = port;
                                 }
+                            } else if (!strcmp(sgsap_key, "map")) {
+                                ogs_yaml_iter_t map_iter;
+                                ogs_yaml_iter_recurse(&sgsap_iter, &map_iter);
+
+                                map[map_num].tai_mcc = NULL;
+                                map[map_num].tai_mnc = NULL;
+                                map[map_num].tac = NULL;
+                                map[map_num].lai_mcc = NULL;
+                                map[map_num].lai_mnc = NULL;
+                                map[map_num].lac = NULL;
+
+                                while (ogs_yaml_iter_next(&map_iter)) {
+                                    const char *map_key =
+                                        ogs_yaml_iter_key(&map_iter);
+                                    ogs_assert(map_key);
+                                    if (!strcmp(map_key, "tai")) {
+                                        ogs_yaml_iter_t tai_iter;
+                                        ogs_yaml_iter_recurse(&map_iter,
+                                                &tai_iter);
+                                        
+                                        while (ogs_yaml_iter_next(&tai_iter)) {
+                                            const char *tai_key =
+                                                ogs_yaml_iter_key(&tai_iter);
+                                            ogs_assert(tai_key);
+
+                                            if (!strcmp(tai_key, "plmn_id")) {
+                                                ogs_yaml_iter_t plmn_id_iter;
+                                                ogs_yaml_iter_recurse(&tai_iter,
+                                                        &plmn_id_iter);
+
+                                                while (ogs_yaml_iter_next(
+                                                            &plmn_id_iter)) {
+                                                    const char *plmn_id_key =
+                                                    ogs_yaml_iter_key(
+                                                            &plmn_id_iter);
+                                                    ogs_assert(plmn_id_key);
+
+                                                    if (!strcmp(plmn_id_key,
+                                                                "mcc")) {
+                                                        map[map_num].tai_mcc = 
+                                                            ogs_yaml_iter_value(
+                                                                &plmn_id_iter);
+                                                    } else if (!strcmp(
+                                                        plmn_id_key, "mnc")) {
+                                                        map[map_num].tai_mnc =
+                                                            ogs_yaml_iter_value(
+                                                                &plmn_id_iter);
+                                                    } else
+                                                        ogs_warn(
+                                                            "unknown key `%s`",
+                                                                plmn_id_key);
+                                                }
+                                            } else if (!strcmp(tai_key, "tac")) {
+                                                map[map_num].tac =
+                                                    ogs_yaml_iter_value(
+                                                        &tai_iter);
+                                            } else
+                                                ogs_warn("unknown key `%s`",
+                                                        tai_key);
+                                        }
+                                    } else if (!strcmp(map_key, "lai")) {
+                                        ogs_yaml_iter_t lai_iter;
+                                        ogs_yaml_iter_recurse(&map_iter,
+                                                &lai_iter);
+
+                                        while (ogs_yaml_iter_next(&lai_iter)) {
+                                            const char *lai_key =
+                                                ogs_yaml_iter_key(&lai_iter);
+                                            ogs_assert(lai_key);
+
+                                            if (!strcmp(lai_key, "plmn_id")) {
+                                                ogs_yaml_iter_t plmn_id_iter;
+                                                ogs_yaml_iter_recurse(&lai_iter,
+                                                        &plmn_id_iter);
+
+                                                while (ogs_yaml_iter_next(
+                                                            &plmn_id_iter)) {
+                                                    const char *plmn_id_key =
+                                                    ogs_yaml_iter_key(
+                                                            &plmn_id_iter);
+                                                    ogs_assert(plmn_id_key);
+
+                                                    if (!strcmp(plmn_id_key,
+                                                                "mcc")) {
+                                                        map[map_num].lai_mcc =
+                                                            ogs_yaml_iter_value(
+                                                                &plmn_id_iter);
+                                                    } else if (!strcmp(
+                                                        plmn_id_key, "mnc")) {
+                                                        map[map_num].lai_mnc =
+                                                            ogs_yaml_iter_value(
+                                                                &plmn_id_iter);
+                                                    } else
+                                                        ogs_warn(
+                                                            "unknown key `%s`",
+                                                                plmn_id_key);
+                                                }
+                                            } else if (!strcmp(lai_key, "lac")) {
+                                                map[map_num].lac =
+                                                    ogs_yaml_iter_value(
+                                                        &lai_iter);
+                                            } else
+                                                ogs_warn("unknown key `%s`",
+                                                        lai_key);
+                                        }
+                                    } else
+                                        ogs_warn("unknown key `%s`", map_key);
+                                }
+
+                                if (!map[map_num].tai_mcc) {
+                                    ogs_error("No map.tai.plmn_id.mcc "
+                                            "in configuration file");
+                                    return OGS_ERROR;
+                                }
+                                if (!map[map_num].tai_mnc) {
+                                    ogs_error("No map.tai.plmn_id.mnc "
+                                            "in configuration file");
+                                    return OGS_ERROR;
+                                }
+                                if (!map[map_num].tac) {
+                                    ogs_error("No map.tai.tac "
+                                            "in configuration file");
+                                    return OGS_ERROR;
+                                }
+                                if (!map[map_num].lai_mcc) {
+                                    ogs_error("No map.lai.plmn_id.mcc "
+                                            "in configuration file");
+                                    return OGS_ERROR;
+                                }
+                                if (!map[map_num].lai_mnc) {
+                                    ogs_error("No map.lai.plmn_id.mnc "
+                                            "in configuration file");
+                                    return OGS_ERROR;
+                                }
+                                if (!map[map_num].lac) {
+                                    ogs_error("No map.lai.lac "
+                                            "in configuration file");
+                                    return OGS_ERROR;
+                                }
+
+                                map_num++;
+
                             } else if (!strcmp(sgsap_key, "tai")) {
-                                ogs_yaml_iter_t tai_iter;
-                                ogs_yaml_iter_recurse(&sgsap_iter, &tai_iter);
-                                
-                                while (ogs_yaml_iter_next(&tai_iter)) {
-                                    const char *tai_id_key =
-                                        ogs_yaml_iter_key(&tai_iter);
-                                    ogs_assert(tai_id_key);
-
-                                    if (!strcmp(tai_id_key, "plmn_id")) {
-                                        ogs_yaml_iter_t plmn_id_iter;
-                                        ogs_yaml_iter_recurse(&tai_iter,
-                                                &plmn_id_iter);
-
-                                        while (ogs_yaml_iter_next(
-                                                    &plmn_id_iter)) {
-                                            const char *plmn_id_key =
-                                            ogs_yaml_iter_key(&plmn_id_iter);
-                                            ogs_assert(plmn_id_key);
-
-                                            if (!strcmp(plmn_id_key, "mcc")) {
-                                                tai_mcc = ogs_yaml_iter_value(
-                                                        &plmn_id_iter);
-                                            } else if (!strcmp(plmn_id_key,
-                                                        "mnc")) {
-                                                tai_mnc = ogs_yaml_iter_value(
-                                                        &plmn_id_iter);
-                                            } else
-                                                ogs_warn("unknown key `%s`",
-                                                        plmn_id_key);
-                                        }
-                                    } else if (!strcmp(tai_id_key, "tac")) {
-                                        tac = ogs_yaml_iter_value(&tai_iter);
-                                    } else
-                                        ogs_warn("unknown key `%s`",
-                                                tai_id_key);
-                                }
+                                ogs_error("tai/lai configuraton changed to "
+                                        "map.tai/map.lai");
+                                printf("sgsap:\n"
+                                    "  addr: 127.0.0.2\n"
+                                    "  map:\n"
+                                    "    tai:\n"
+                                    "      plmn_id:\n"
+                                    "        mcc: 001\n"
+                                    "        mnc: 01\n"
+                                    "      tac: 4131\n"
+                                    "    lai:\n"
+                                    "      plmn_id:\n"
+                                    "        mcc: 001\n"
+                                    "        mnc: 01\n"
+                                    "      lac: 43691\n");
+                                return OGS_ERROR;
                             } else if (!strcmp(sgsap_key, "lai")) {
-                                ogs_yaml_iter_t lai_iter;
-                                ogs_yaml_iter_recurse(&sgsap_iter, &lai_iter);
-
-                                while (ogs_yaml_iter_next(&lai_iter)) {
-                                    const char *lai_id_key =
-                                            ogs_yaml_iter_key(&lai_iter);
-                                    ogs_assert(lai_id_key);
-
-                                    if (!strcmp(lai_id_key, "plmn_id")) {
-                                        ogs_yaml_iter_t plmn_id_iter;
-                                        ogs_yaml_iter_recurse(&lai_iter,
-                                                &plmn_id_iter);
-
-                                        while (ogs_yaml_iter_next(
-                                                    &plmn_id_iter)) {
-                                            const char *plmn_id_key =
-                                            ogs_yaml_iter_key(&plmn_id_iter);
-                                            ogs_assert(plmn_id_key);
-
-                                            if (!strcmp(plmn_id_key, "mcc")) {
-                                                lai_mcc = ogs_yaml_iter_value(
-                                                        &plmn_id_iter);
-                                            } else if (!strcmp(plmn_id_key,
-                                                        "mnc")) {
-                                                lai_mnc = ogs_yaml_iter_value(
-                                                        &plmn_id_iter);
-                                            } else
-                                                ogs_warn("unknown key `%s`",
-                                                        plmn_id_key);
-                                        }
-                                    } else if (!strcmp(lai_id_key, "lac")) {
-                                        lac = ogs_yaml_iter_value(&lai_iter);
-                                    } else
-                                        ogs_warn("unknown key `%s`",
-                                                lai_id_key);
-                                }
+                                ogs_error("tai/lai configuraton changed to "
+                                        "map.tai/map.lai");
+                                printf("sgsap:\n"
+                                    "  addr: 127.0.0.2\n"
+                                    "  map:\n"
+                                    "    tai:\n"
+                                    "      plmn_id:\n"
+                                    "        mcc: 001\n"
+                                    "        mnc: 01\n"
+                                    "      tac: 4131\n"
+                                    "    lai:\n"
+                                    "      plmn_id:\n"
+                                    "        mcc: 001\n"
+                                    "        mnc: 01\n"
+                                    "      lac: 43691\n");
+                                return OGS_ERROR;
                             } else
                                 ogs_warn("unknown key `%s`", sgsap_key);
+
                         }
 
-                        if (!tai_mcc || !tai_mnc || !tac ||
-                            !lai_mcc || !lai_mnc || !lac) {
-                            ogs_error("sgsap.tai configuration failed"
-                                " - (tai_mcc:%p, tai_mnc:%p, tac:%p)"
-                                " - (lai_mcc:%p, lai_mnc:%p, lac:%p)",
-                                tai_mcc, tai_mnc, tac, lai_mcc, lai_mnc, lac);
+                        if (map_num == 0) {
+                            ogs_error("No TAI-LAI Map");
                             return OGS_ERROR;
                         }
 
                         addr = NULL;
-                        for (i = 0; i < num; i++) {
+                        for (i = 0; i < hostname_num; i++) {
                             rv = ogs_addaddrinfo(&addr,
                                     family, hostname[i], port, 0);
                             ogs_assert(rv == OGS_OK);
@@ -1244,15 +1353,19 @@ int mme_context_parse_config()
                         vlr = mme_vlr_add(addr);
                         ogs_assert(vlr);
 
-                        plmn_id_build(&plmn_id,
-                            atoi(tai_mcc), atoi(tai_mnc), strlen(tai_mnc));
-                        nas_from_plmn_id(&vlr->tai.nas_plmn_id, &plmn_id);
-                        vlr->tai.tac = atoi(tac);
-            
-                        plmn_id_build(&plmn_id,
-                            atoi(lai_mcc), atoi(lai_mnc), strlen(lai_mnc));
-                        nas_from_plmn_id(&vlr->lai.nas_plmn_id, &plmn_id);
-                        vlr->lai.lac = atoi(lac);
+                        for (i = 0; i < map_num; i++) {
+                            mme_csmap_t *csmap = mme_csmap_add(vlr);
+                            ogs_assert(csmap);
+
+                            plmn_id_build(&plmn_id, atoi(map[i].tai_mcc),
+                                atoi(map[i].tai_mnc), strlen(map[i].tai_mnc));
+                            nas_from_plmn_id(&csmap->tai.nas_plmn_id, &plmn_id);
+                            csmap->tai.tac = atoi(map[i].tac);
+                            plmn_id_build(&plmn_id, atoi(map[i].lai_mcc),
+                                atoi(map[i].lai_mnc), strlen(map[i].lai_mnc));
+                            nas_from_plmn_id(&csmap->lai.nas_plmn_id, &plmn_id);
+                            csmap->lai.lac = atoi(map[i].lac);
+                        }
                     } while (ogs_yaml_iter_type(&sgsap_array) ==
                             YAML_SEQUENCE_NODE);
                 } else
@@ -1694,6 +1807,69 @@ mme_vlr_t *mme_vlr_find_by_nas_lai(nas_lai_t *lai)
     ogs_list_for_each(&self.vlr_list, vlr) {
         if (memcmp(&vlr->lai, lai, sizeof *lai) == 0)
             return vlr;
+    }
+
+    return NULL;
+}
+
+mme_csmap_t *mme_csmap_add(mme_vlr_t *vlr)
+{
+    mme_csmap_t *csmap = NULL;
+
+    ogs_assert(vlr);
+
+    ogs_pool_alloc(&mme_csmap_pool, &csmap);
+    ogs_assert(csmap);
+    memset(csmap, 0, sizeof *csmap);
+
+    csmap->vlr = vlr;
+
+    ogs_list_add(&self.csmap_list, csmap);
+
+    return csmap;
+}
+
+void mme_csmap_remove(mme_csmap_t *csmap)
+{
+    ogs_assert(csmap);
+
+    ogs_list_remove(&self.csmap_list, csmap);
+
+    ogs_pool_free(&mme_csmap_pool, csmap);
+}
+
+void mme_csmap_remove_all(void)
+{
+    mme_csmap_t *csmap = NULL, *next_csmap = NULL;
+
+    ogs_list_for_each_safe(&self.csmap_list, next_csmap, csmap)
+        mme_csmap_remove(csmap);
+}
+
+mme_csmap_t *mme_csmap_find_by_tai(tai_t *tai)
+{
+    mme_csmap_t *csmap = NULL;
+    ogs_assert(tai);
+
+    ogs_list_for_each(&self.csmap_list, csmap) {
+        nas_tai_t nas_tai;
+        nas_from_plmn_id(&nas_tai.nas_plmn_id, &tai->plmn_id);
+        nas_tai.tac = tai->tac;
+        if (memcmp(&csmap->tai, &nas_tai, sizeof(nas_tai_t)) == 0)
+            return csmap;
+    }
+
+    return NULL;
+}
+
+mme_csmap_t *mme_csmap_find_by_nas_lai(nas_lai_t *lai)
+{
+    mme_csmap_t *csmap = NULL;
+    ogs_assert(lai);
+
+    ogs_list_for_each(&self.csmap_list, csmap) {
+        if (memcmp(&csmap->lai, lai, sizeof *lai) == 0)
+            return csmap;
     }
 
     return NULL;

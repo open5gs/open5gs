@@ -62,6 +62,7 @@ typedef struct _config_t {
         int sgw;
         int pgw;
         int vlr;
+        int csmap;
         int enb;
         int ue;
         struct {

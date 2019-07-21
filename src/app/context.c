@@ -165,11 +165,13 @@ static int context_prepare()
 #define MAX_NUM_OF_SGW              32  /* Num of SGW per MME */
 #define MAX_NUM_OF_PGW              32  /* Num of PGW per MME */
 #define MAX_NUM_OF_VLR              32  /* Num of VLR per MME */
+#define MAX_NUM_OF_CSMAP            128 /* Num of TAI-LAI MAP per MME */
 #define MAX_NUM_OF_ENB              32  /* Num of eNodeB per MME */
 #define MAX_NUM_OF_UE               128 /* Num of UE per eNodeB */
     self.config.max.sgw = MAX_NUM_OF_SGW;
     self.config.max.pgw = MAX_NUM_OF_PGW;
     self.config.max.vlr = MAX_NUM_OF_VLR;
+    self.config.max.csmap = MAX_NUM_OF_CSMAP;
     self.config.max.enb = MAX_NUM_OF_ENB;
     self.config.max.ue = MAX_NUM_OF_UE;
 

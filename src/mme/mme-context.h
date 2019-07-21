@@ -55,6 +55,7 @@ extern int __esm_log_domain;
 typedef struct mme_sgw_s mme_sgw_t;
 typedef struct mme_pgw_s mme_pgw_t;
 typedef struct mme_vlr_s mme_vlr_t;
+typedef struct mme_csmap_s mme_csmap_t;
 
 typedef struct enb_ue_s enb_ue_t;
 typedef struct mme_ue_s mme_ue_t;
@@ -110,7 +111,7 @@ typedef struct mme_context_s {
     ogs_list_t      enb_list;       /* ENB S1AP Client List */
 
     ogs_list_t      vlr_list;       /* VLR SGsAP Client List */
-    mme_vlr_t       *vlr;           /* Iterator for VLR */
+    ogs_list_t      csmap_list;     /* TAI-LAI Map List */
 
     /* Served GUMME */
     uint8_t         max_num_of_served_gummei;
@@ -209,6 +210,15 @@ typedef struct mme_vlr_s {
     ogs_socknode_t  *node;      /* VLR SGsAP Node */
     ogs_sockaddr_t  *addr;      /* VLR SGsAP Connected Socket Address */
 } mme_vlr_t;
+
+typedef struct mme_csmap_s {
+    ogs_lnode_t     lnode;
+
+    nas_tai_t       tai;
+    nas_lai_t       lai;
+
+    mme_vlr_t       *vlr;
+} mme_csmap_t;
 
 typedef struct mme_enb_s {
     ogs_lnode_t     lnode;
@@ -659,6 +669,13 @@ void mme_vlr_free_node(mme_vlr_t *vlr);
 mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr);
 mme_vlr_t *mme_vlr_find_by_tai(tai_t *tai);
 mme_vlr_t *mme_vlr_find_by_nas_lai(nas_lai_t *lai);
+
+mme_csmap_t *mme_csmap_add(mme_vlr_t *vlr);
+void mme_csmap_remove(mme_csmap_t *csmap);
+void mme_csmap_remove_all(void);
+
+mme_csmap_t *mme_csmap_find_by_tai(tai_t *tai);
+mme_csmap_t *mme_csmap_find_by_nas_lai(nas_lai_t *lai);
 
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
 int mme_enb_remove(mme_enb_t *enb);

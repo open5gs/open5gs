@@ -126,58 +126,84 @@ mme:
 #
 #  <sgsap>
 #
-#  o Single MSC/VLR(127.0.0.2:29119)
+#  o Single MSC/VLR(127.0.0.2)
 #    sgsap:
 #      addr: 127.0.0.2
-#      port: 29119
-#      tai:
-#        plmn_id:
-#          mcc: 001
-#          mnc: 01
-#        tac: 4130
-#      lai:
-#        plmn_id:
-#          mcc: 001
-#          mnc: 01
-#        lac: 43690
-#
-#  o Multiple MSC/VLR
-#    sgsap:
-#      - addr: 127.0.0.2
+#      map:
 #        tai:
 #          plmn_id:
 #            mcc: 001
 #            mnc: 01
-#          tac: 4131
+#          tac: 4130
 #        lai:
 #          plmn_id:
 #            mcc: 001
 #            mnc: 01
-#          lac: 43691
-#      - addr
-#         - 127.0.0.3
-#         - fe80::2%lo0
+#          lac: 43690
+#      map:
 #        tai:
 #          plmn_id:
-#            mcc: 001
-#            mnc: 01
+#            mcc: 002
+#            mnc: 02
 #          tac: 4132
 #        lai:
 #          plmn_id:
 #            mcc: 002
 #            mnc: 02
 #          lac: 43692
+#
+#  o Multiple MSC/VLR
+#    sgsap:
+#      - addr: 127.0.0.2
+#        port: 29119
+#        map:
+#          tai:
+#            plmn_id:
+#              mcc: 001
+#              mnc: 01
+#            tac: 4131
+#          lai:
+#            plmn_id:
+#              mcc: 001
+#              mnc: 01
+#            lac: 43691
+#        map:
+#          tai:
+#            plmn_id:
+#              mcc: 002
+#              mnc: 02
+#            tac: 4132
+#          lai:
+#            plmn_id:
+#              mcc: 002
+#              mnc: 02
+#            lac: 43692
+#      - addr
+#         - 127.0.0.3
+#         - fe80::2%lo0
+#        map:
+#          tai:
+#            plmn_id:
+#              mcc: 001
+#              mnc: 01
+#            tac: 4132
+#          lai:
+#            plmn_id:
+#              mcc: 002
+#              mnc: 02
+#            lac: 43692
 #      - name: msc.open5gs.org
-#        tai:
-#          plmn_id:
-#            mcc: 001
-#            mnc: 01
-#          tac: 4133
-#        lai:
-#          plmn_id:
-#            mcc: 002
-#            mnc: 02
-#          lac: 43693
+#        map:
+#          tai:
+#            plmn_id:
+#              mcc: 001
+#              mnc: 01
+#            tac: 4133
+#          lai:
+#            plmn_id:
+#              mcc: 002
+#              mnc: 02
+#            lac: 43693
 #
     sgsap:
 

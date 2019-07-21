@@ -31,16 +31,28 @@ mme:
       addr: 127.0.0.1
     sgsap:
       - addr: 127.0.0.2
-        tai:
-          plmn_id:
-            mcc: 901
-            mnc: 70
-          tac: 7
-        lai:
-          plmn_id:
-            mcc: 901
-            mnc: 70
-          lac: 2342
+        map:
+          tai:
+            plmn_id:
+              mcc: 901
+              mnc: 70
+            tac: 7
+          lai:
+            plmn_id:
+              mcc: 901
+              mnc: 70
+            lac: 2342
+        map:
+          tai:
+            plmn_id:
+              mcc: 724
+              mnc: 21
+            tac: 12345
+          lai:
+            plmn_id:
+              mcc: 724
+              mnc: 21
+            lac: 2342
     gummei: 
       plmn_id:
         mcc: 901
