@@ -230,3 +230,20 @@ int sgsap_send_uplink_unitdata(
 
     return OGS_OK;
 }
+
+int sgsap_send_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_assert(mme_ue);
+
+    ogs_debug("[SGSAP] UE-UNREACHABLE");
+    ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    ogs_debug("    CAUSE[%d]", sgs_cause);
+
+    pkbuf = sgsap_build_ue_unreachable(mme_ue, sgs_cause);
+    rv = sgsap_send_to_vlr(mme_ue, pkbuf);
+    ogs_assert(rv == OGS_OK);
+
+    return OGS_OK;
+}

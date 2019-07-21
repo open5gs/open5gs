@@ -37,6 +37,7 @@ ogs_pkbuf_t *sgsap_build_service_request(mme_ue_t *mme_ue, uint8_t emm_mode);
 ogs_pkbuf_t *sgsap_build_reset_ack(mme_vlr_t *vlr);
 ogs_pkbuf_t *sgsap_build_uplink_unidata(
         mme_ue_t *mme_ue, nas_message_container_t *nas_message_container);
+ogs_pkbuf_t *sgsap_build_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause);
 
 #ifdef __cplusplus
 }

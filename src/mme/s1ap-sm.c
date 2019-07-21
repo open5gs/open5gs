@@ -198,7 +198,6 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert(e->enb_ue);
             if (e->enb_ue->t_ue_context_release.retry_count >=
                     mme_timer_cfg(MME_TIMER_UE_CONTEXT_RELEASE)->max_count) {
-                /* Paging failed */
                 ogs_warn("[S1AP] UE Context Release failed. Stop Releasing");
                 CLEAR_ENB_UE_TIMER(e->enb_ue->t_ue_context_release);
 

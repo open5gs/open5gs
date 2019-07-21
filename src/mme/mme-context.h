@@ -442,8 +442,6 @@ struct mme_ue_s {
         ogs_assert((__mME)); \
         (__mME)->service_indicator = 0; \
     } while(0);
-#define SGSAP_CS_CALL_SERVICE_INDICATOR     1
-#define SGSAP_SMS_SERVICE_INDICATOR         2
 
 #define CS_CALL_SERVICE_INDICATOR(__mME) \
     (MME_P_TMSI_IS_AVAILABLE(__mME) && \

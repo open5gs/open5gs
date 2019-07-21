@@ -293,6 +293,13 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         mme_ue->imsi_bcd);
                 CLEAR_MME_UE_TIMER(mme_ue->t3413);
 
+                if (CS_CALL_SERVICE_INDICATOR(mme_ue) ||
+                    SMS_SERVICE_INDICATOR(mme_ue)) {
+                    sgsap_send_ue_unreachable(mme_ue,
+                            SGSAP_SGS_CAUSE_UE_UNREACHABLE);
+                }
+    
+                CLEAR_SERVICE_INDICATOR(mme_ue);
             } else {
                 mme_ue->t3413.retry_count++;
                 /*

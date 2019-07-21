@@ -307,3 +307,31 @@ ogs_pkbuf_t *sgsap_build_uplink_unidata(
 
     return pkbuf;
 }
+
+ogs_pkbuf_t *sgsap_build_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause)
+{
+    mme_vlr_t *vlr = NULL;
+    ogs_tlv_t *root = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(mme_ue);
+    vlr = mme_ue->vlr;
+    ogs_assert(vlr);
+
+    root = ogs_tlv_add(NULL, SGSAP_IE_IMSI_TYPE, SGSAP_IE_IMSI_LEN, 0,
+            &mme_ue->nas_mobile_identity_imsi);
+
+    ogs_tlv_add(root, SGSAP_IE_SGS_CAUSE_TYPE,
+            SGSAP_IE_SGS_CAUSE_LEN, 0, &sgs_cause);
+
+    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_u8(pkbuf, SGSAP_UE_UNREACHABLE);
+    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+
+    ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
+            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+
+    ogs_tlv_free_all(root);
+
+    return pkbuf;
+}
