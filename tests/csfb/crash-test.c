@@ -178,21 +178,27 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-#if 0
+    /* Send UE Capability Info Indication */
+    rv = tests1ap_build_ue_capability_info_indication(&sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
-            1, 1, 5, 0x00460003, "127.0.0.5");
+            248, 256403, 5, 0x00000615, "127.0.0.5");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Attach Complete + Activate default EPS bearer cotext accept */
+    /* Receive EMM information */
     rv = tests1ap_build_attach_complete(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive EMM information */
+    /* Receive EMM Information */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
@@ -202,6 +208,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+#if 0
     /* Retreive M-TMSI */
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(1);
     ogs_assert(enb_ue);
