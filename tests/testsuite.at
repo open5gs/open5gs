@@ -60,6 +60,7 @@ mo-active-test      :  SUCCESS
 mt-active-test      :  SUCCESS
 mo-sms-test         :  SUCCESS
 mt-sms-test         :  SUCCESS
+crash-test          :  SUCCESS
 All tests passed.
 ])
 AT_CLEANUP
