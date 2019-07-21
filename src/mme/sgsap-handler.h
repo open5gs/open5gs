@@ -33,6 +33,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf);
 void sgsap_handle_downlink_unitdata(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf);
 void sgsap_handle_reset_indication(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf);
 void sgsap_handle_release_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf);
+void sgsap_handle_mm_information_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

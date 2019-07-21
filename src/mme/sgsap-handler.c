@@ -479,3 +479,59 @@ void sgsap_handle_release_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         ogs_warn("Unknown IMSI[%s]", imsi_bcd);
 
 }
+
+void sgsap_handle_mm_information_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
+{
+    ogs_tlv_t *root = NULL, *iter = NULL;
+    mme_ue_t *mme_ue = NULL;
+
+    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+
+    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
+    int nas_mobile_identity_imsi_len = 0;
+
+    ogs_assert(vlr);
+    ogs_assert(pkbuf);
+
+    ogs_debug("[SGSAP] MM-INFORMATION-REQUEST(DISCARD by OPTION2)");
+
+    ogs_pkbuf_pull(pkbuf, 1);
+
+    root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
+    ogs_assert(root);
+
+    iter = root;
+    while (iter) {
+        switch (iter->type) {
+        case SGSAP_IE_IMSI_TYPE:
+            nas_mobile_identity_imsi = iter->value;
+            nas_mobile_identity_imsi_len = iter->length;
+            break;
+        case SGSAP_IE_MM_INFORMATION_TYPE:
+            /* TODO */
+            break;
+        default:
+            ogs_warn("Invalid Type [%d]", iter->type);
+            break;
+        }
+        iter = iter->next;
+    }
+
+    ogs_tlv_free_all(root);
+
+    ogs_assert(nas_mobile_identity_imsi);
+    ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
+
+    if (nas_mobile_identity_imsi->type == NAS_MOBILE_IDENTITY_IMSI) {
+
+        nas_imsi_to_bcd(nas_mobile_identity_imsi,
+                nas_mobile_identity_imsi_len, imsi_bcd);
+        mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
+    } else 
+        ogs_assert_if_reached();
+
+    if (mme_ue)
+        ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
+    else
+        ogs_warn("Unknown IMSI[%s]", imsi_bcd);
+}

@@ -208,6 +208,12 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
+    /* Send SGsAP-MM-INFORMATION-REQUEST */
+    rv = testsgsap_mm_information_request(&sendbuf, 0);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testvlr_sgsap_send(sgsap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Retreive M-TMSI */
     enb_ue = enb_ue_find_by_mme_ue_s1ap_id(248);
     ogs_assert(enb_ue);

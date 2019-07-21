@@ -172,6 +172,9 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
         case SGSAP_RELEASE_REQUEST:
             sgsap_handle_release_request(vlr, pkbuf);
             break;
+        case SGSAP_MM_INFORMATION_REQUEST:
+            sgsap_handle_mm_information_request(vlr, pkbuf);
+            break;
         default:
             ogs_warn("Unknown Message Type: [%d]", type);
             break;

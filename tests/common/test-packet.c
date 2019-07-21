@@ -3464,15 +3464,15 @@ int testsgsap_downlink_unitdata(ogs_pkbuf_t **pkbuf, int i)
 int testsgsap_mm_information_request(ogs_pkbuf_t **pkbuf, int i)
 {
     char *payload[TESTS1AP_MAX_MESSAGE] = {
-        "",
         "1a01087942120000 0000301714430483 d46413450483d464 1347917071028401"
         "29",
+        "",
         "",
 
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
-        0,
         33,
+        0,
         0,
     };
     char hexbuf[MAX_SDU_LEN];

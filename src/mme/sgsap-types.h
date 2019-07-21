@@ -40,6 +40,7 @@ extern "C" {
 #define SGSAP_RESET_INDICATION                                      21
 #define SGSAP_RESET_ACK                                             22
 #define SGSAP_MO_CSFB_INDICIATION                                   24
+#define SGSAP_MM_INFORMATION_REQUEST                                26
 #define SGSAP_RELEASE_REQUEST                                       27
 #define SGSAP_UE_UNREACHABLE                                        31
 
@@ -64,6 +65,7 @@ extern "C" {
 #define SGSAP_IE_IMSI_DETACH_INDICATION_TYPE                        17
 #define SGSAP_IE_IMSI_DETACH_INDICATION_LEN                         1
 #define SGSAP_IE_NAS_MESSAGE_CONTAINER_TYPE                         22
+#define SGSAP_IE_MM_INFORMATION_TYPE                                23
 #define SGSAP_IE_SERVICE_INDICATOR_TYPE                             32
 #define SGSAP_IE_SERVICE_INDICATOR_LEN                              1
 #define SGSAP_IE_TAI_TYPE                                           35
