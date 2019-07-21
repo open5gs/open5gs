@@ -30,6 +30,7 @@
 
 #include "app/context.h"
 #include "nas-conv.h"
+#include "nas-path.h"
 #include "mme-context.h"
 #include "mme-event.h"
 #include "mme-timer.h"
@@ -2627,7 +2628,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
     pti = message->esm.h.procedure_transaction_identity;
     ebi = message->esm.h.eps_bearer_identity;
 
-    ogs_trace("mme_bearer_find_or_add_by_message() [PTI:%d, EBI:%d]",
+    ogs_debug("mme_bearer_find_or_add_by_message() [PTI:%d, EBI:%d]",
             pti, ebi);
 
     if (ebi != NAS_EPS_BEARER_IDENTITY_UNASSIGNED) {
@@ -2635,11 +2636,16 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         ogs_assert(bearer);
         return bearer;
     }
-        
-    ogs_assert(pti != NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
 
-    if (message->esm.h.message_type == NAS_PDN_CONNECTIVITY_REQUEST)
-    {
+    if (pti == NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED) {
+        ogs_error("Both PTI[%d] and EBI[%d] are 0", pti, ebi);
+        nas_send_attach_reject(mme_ue,
+            EMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE,
+            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        return NULL;
+    }
+
+    if (message->esm.h.message_type == NAS_PDN_CONNECTIVITY_REQUEST) {
         nas_pdn_connectivity_request_t *pdn_connectivity_request =
             &message->esm.pdn_connectivity_request;
         if (pdn_connectivity_request->presencemask &

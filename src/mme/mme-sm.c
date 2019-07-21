@@ -296,7 +296,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(nas_esm_decode(&nas_message, pkbuf) == OGS_OK);
 
         bearer = mme_bearer_find_or_add_by_message(mme_ue, &nas_message);
-        ogs_assert(bearer);
+        if (!bearer) {
+            ogs_error("mme_bearer_find_or_add_by_message() failed");
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
+
         sess = bearer->sess;
         ogs_assert(sess);
         default_bearer = mme_default_bearer_in_sess(sess);
