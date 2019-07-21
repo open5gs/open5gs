@@ -148,7 +148,6 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("[EMM] Retransmission of IMSI[%s] failed. "
                         "Stop retransmission",
                         mme_ue->imsi_bcd);
-                CLEAR_BEARER_TIMER(bearer->t3489);
                 OGS_FSM_TRAN(&bearer->sm, &esm_state_exception);
 
                 nas_send_pdn_connectivity_reject(sess,

@@ -30,6 +30,7 @@
 #include "emm-build.h"
 #include "esm-handler.h"
 #include "nas-path.h"
+#include "nas-security.h"
 #include "s1ap-path.h"
 #include "sgsap-types.h"
 #include "sgsap-path.h"
@@ -634,7 +635,6 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("[EMM] Retransmission of IMSI[%s] failed. "
                         "Stop retransmission",
                         mme_ue->imsi_bcd);
-                CLEAR_MME_UE_TIMER(mme_ue->t3460);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
 
                 nas_send_authentication_reject(mme_ue);
@@ -660,6 +660,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
     int rv;
     mme_ue_t *mme_ue = NULL;
     nas_message_t *message = NULL;
+    nas_security_header_type_t h;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -696,6 +697,19 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
             CLEAR_MME_UE_TIMER(mme_ue->t3460);
+
+            /* Now, We will check the MAC in the NAS message*/
+            h.type = e->nas_type;
+            if (h.integrity_protected == 0) {
+                ogs_error("Security-mode : No Integrity Protected in IMSI[%s]",
+                        mme_ue->imsi_bcd);
+
+                nas_send_attach_reject(mme_ue,
+                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                break;
+            }
 
             /* Update Kenb */
             if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
@@ -779,8 +793,11 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("[EMM] Retransmission of IMSI[%s] failed. "
                         "Stop retransmission",
                         mme_ue->imsi_bcd);
-                CLEAR_MME_UE_TIMER(mme_ue->t3460);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+
+                nas_send_attach_reject(mme_ue,
+                    EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED,
+                    ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             } else {
                 mme_ue->t3460.retry_count++;
                 nas_send_security_mode_command(mme_ue);
@@ -891,8 +908,9 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("[EMM] Retransmission of IMSI[%s] failed. "
                         "Stop retransmission",
                         mme_ue->imsi_bcd);
-                CLEAR_MME_UE_TIMER(mme_ue->t3450);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
+
+                /* NOTE: Do I need to send Attach-Reject */
             } else {
                 mme_ue->t3450.retry_count++;
                 nas_send_attach_accept(mme_ue);
