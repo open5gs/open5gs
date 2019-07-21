@@ -76,7 +76,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
-            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x0019b0, 7, 901, 70, 2);
+            &sendbuf, S1AP_ENB_ID_PR_macroENB_ID, 0x0019b0, 12345, 724, 21, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -208,16 +208,15 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-#if 0
     /* Retreive M-TMSI */
-    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(1);
+    enb_ue = enb_ue_find_by_mme_ue_s1ap_id(248);
     ogs_assert(enb_ue);
     mme_ue = enb_ue->mme_ue;
     ogs_assert(mme_ue);
     m_tmsi = mme_ue->guti.m_tmsi;
 
     /* Send SGsAP-Paging-Request */
-    rv = testsgsap_paging_request(&sendbuf, 0);
+    rv = testsgsap_paging_request(&sendbuf, 3);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testvlr_sgsap_send(sgsap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -228,8 +227,8 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send Extended Service Request */
-    rv = tests1ap_build_extended_service_request(&sendbuf, msgindex+1, 
-            1, m_tmsi, 4, mme_ue->knas_int);
+    rv = tests1ap_build_extended_service_request(&sendbuf, 22, 
+            1, m_tmsi, 3, mme_ue->knas_int);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -245,13 +244,13 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Context Modification Response */
-    rv = tests1ap_build_ue_context_modification_response(&sendbuf, 1, 1);
+    rv = tests1ap_build_ue_context_modification_response(&sendbuf, 248, 256403);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send UE Context Release Request */
-    rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
+    rv = tests1ap_build_ue_context_release_request(&sendbuf, 20);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -262,7 +261,26 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Context Release Complete */
-    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex);
+    rv = tests1ap_build_ue_context_release_complete(&sendbuf, 20);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send SGsAP-Paging-Request */
+    rv = testsgsap_paging_request(&sendbuf, 3);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testvlr_sgsap_send(sgsap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive S1AP Paging */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+#if 0
+    /* Send Extended Service Request */
+    rv = tests1ap_build_extended_service_request(&sendbuf, 21, 
+            1, m_tmsi, 4, mme_ue->knas_int);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

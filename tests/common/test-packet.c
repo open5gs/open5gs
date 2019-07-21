@@ -1606,7 +1606,7 @@ int tests1ap_build_ue_context_release_request(ogs_pkbuf_t **pkbuf, int i)
         /* 18 */
         "0012401500000300 0000020001000800 0200010002400202 80",
         "0012401500000300 0000020002000800 0200020002400202 e0",
-        "",
+        "0012401700000300 00000200f8000800 048003e993000240 0202e0",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         28,
@@ -1635,7 +1635,7 @@ int tests1ap_build_ue_context_release_request(ogs_pkbuf_t **pkbuf, int i)
 
         25,
         25,
-        0,
+        27,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -1688,7 +1688,7 @@ int tests1ap_build_ue_context_release_complete(ogs_pkbuf_t **pkbuf, int i)
         /* 18 */
         "2017000f00000200 0040020001000840 020001",
         "2017000f00000200 0040020002000840 020002",
-        "",
+        "2017001100000200 00400200f8000840 048003e993",
 
         /* 21 */
         "2017000f00000200 00400200d0000840 0200d0",
@@ -1721,7 +1721,7 @@ int tests1ap_build_ue_context_release_complete(ogs_pkbuf_t **pkbuf, int i)
 
         19,
         19,
-        0,
+        21,
         
         /* 21 */
         19,
@@ -1794,10 +1794,18 @@ int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
         "00f1103039",
         "",
 
+        /* Crash : 3 */
+
+        "",
+
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         113,
         103,
+        0,
+
+        77,
+        68,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -1880,10 +1888,16 @@ int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf, int i,
 
         "000d403900000500 0000020001000800 020001001a00100f 17b51a57a504074c"
         "000504e900a25200 6440080009f10700 19b0100043400600 09f1070007",
+
         "",
 
         /* 21 */
-        "",
+        "000c404900000600 0800048004141300 1a001514172cf294 2e04074c0105f4e6"
+        "004551b157022000 004300060027f412 3039006440080027 f412000640300086"
+        "4001200060000600 40e6004551",
+        "000d404000000500 00000200f8000800 048003e993001a00 151427b426655c03"
+        "074c0105f4e60045 51b1570220000064 40080027f4120006 4020004340060027"
+        "f4123039",
         "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -1916,8 +1930,8 @@ int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf, int i,
         0,
         
         /* 21 */
-        0,
-        0,
+        77,
+        68,
         0,
     };
     char hexbuf[MAX_SDU_LEN];
@@ -1940,6 +1954,20 @@ int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf, int i,
         snow_3g_f9(knas_int, seq, (0 << 27), 0,
                 (*pkbuf)->data + 29, (10 << 3),
                 (*pkbuf)->data + 25);
+    } else if (i == 21) {
+        memcpy((*pkbuf)->data + 28, &service_type, sizeof service_type);
+        m_tmsi = htonl(m_tmsi);
+        memcpy((*pkbuf)->data + 31, &m_tmsi, sizeof m_tmsi);
+        snow_3g_f9(knas_int, seq, (0 << 27), 0,
+                (*pkbuf)->data + 25, (15 << 3),
+                (*pkbuf)->data + 21);
+    } else if (i == 22) {
+        memcpy((*pkbuf)->data + 34, &service_type, sizeof service_type);
+        m_tmsi = htonl(m_tmsi);
+        memcpy((*pkbuf)->data + 37, &m_tmsi, sizeof m_tmsi);
+        snow_3g_f9(knas_int, seq, (0 << 27), 0,
+                (*pkbuf)->data + 31, (15 << 3),
+                (*pkbuf)->data + 27);
     }
 
     return OGS_OK;
@@ -3342,11 +3370,20 @@ int testsgsap_paging_request(ogs_pkbuf_t **pkbuf, int i)
         "0101082926240000 111893021003766c 72076578616d706c 65036e6574200102"
         "040509f1070926",  /* Paging-Request with SMS */
 
+        /* Paging-Request for crash-test */
+        "0101087942120000 000030021003766c 72076578616d706c 65036e6574200101"
+        "040527f412c958",
+        "",
+        "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         39,
         39,
         39,
+
+        39,
+        0,
+        0,
     };
     char hexbuf[MAX_SDU_LEN];
     
@@ -3413,6 +3450,29 @@ int testsgsap_downlink_unitdata(ogs_pkbuf_t **pkbuf, int i)
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         51,
         0,
+        0,
+    };
+    char hexbuf[MAX_SDU_LEN];
+    
+    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_data(*pkbuf, 
+        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+
+    return OGS_OK;
+}
+
+int testsgsap_mm_information_request(ogs_pkbuf_t **pkbuf, int i)
+{
+    char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "",
+        "1a01087942120000 0000301714430483 d46413450483d464 1347917071028401"
+        "29",
+        "",
+
+    };
+    uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        0,
+        33,
         0,
     };
     char hexbuf[MAX_SDU_LEN];

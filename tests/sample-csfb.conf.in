@@ -54,11 +54,16 @@ mme:
               mnc: 21
             lac: 51544
     gummei: 
-      plmn_id:
-        mcc: 901
-        mnc: 70
-      mme_gid: 2
-      mme_code: 1
+      - plmn_id:
+          mcc: 901
+          mnc: 70
+        mme_gid: 2
+        mme_code: 1
+      - plmn_id:
+          mcc: 724
+          mnc: 21
+        mme_gid: 2
+        mme_code: 1
     tai:
       plmn_id:
         mcc: 901
