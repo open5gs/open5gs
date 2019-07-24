@@ -35,7 +35,7 @@ extern "C" {
         ogs_assert((__dATA)); \
         if ((__dATA)->buf) \
         { \
-            ogs_free((__dATA)->buf); \
+            FREEMEM((__dATA)->buf); \
             (__dATA)->buf = NULL; \
             (__dATA)->size = 0; \
         } \
@@ -47,7 +47,7 @@ extern "C" {
         ogs_assert((__dST)); \
         S1AP_CLEAR_DATA(__dST); \
         (__dST)->size = (__sRC)->size; \
-        (__dST)->buf = ogs_calloc((__dST)->size, sizeof(uint8_t)); \
+        (__dST)->buf = CALLOC((__dST)->size, sizeof(uint8_t)); \
         memcpy((__dST)->buf, (__sRC)->buf, (__dST)->size); \
     } while(0)
 

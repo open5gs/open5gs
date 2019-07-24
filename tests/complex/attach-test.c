@@ -1494,11 +1494,11 @@ static void attach_test5(abts_case *tc, void *data)
         S1AP_UE_associatedLogicalS1_ConnectionItemRes_t *ie = NULL;
         S1AP_UE_associatedLogicalS1_ConnectionItem_t *item = NULL;
 
-        partOfS1_Interface = ogs_calloc(1,
+        partOfS1_Interface = CALLOC(1,
                 sizeof(S1AP_UE_associatedLogicalS1_ConnectionListRes_t));
         ogs_assert(partOfS1_Interface);
 
-        ie = ogs_calloc(1,
+        ie = CALLOC(1,
                 sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
         ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
 
@@ -1508,14 +1508,14 @@ static void attach_test5(abts_case *tc, void *data)
 
         item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
 
-        item->mME_UE_S1AP_ID = ogs_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        item->mME_UE_S1AP_ID = CALLOC(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
         ogs_assert(item->mME_UE_S1AP_ID);
         *item->mME_UE_S1AP_ID = 100;
-        item->eNB_UE_S1AP_ID = ogs_calloc(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
+        item->eNB_UE_S1AP_ID = CALLOC(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
         ogs_assert(item->eNB_UE_S1AP_ID);
         *item->eNB_UE_S1AP_ID = 4;
 
-        ie = ogs_calloc(1,
+        ie = CALLOC(1,
                 sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
         ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
 
@@ -1525,14 +1525,14 @@ static void attach_test5(abts_case *tc, void *data)
 
         item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
 
-        item->mME_UE_S1AP_ID = ogs_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        item->mME_UE_S1AP_ID = CALLOC(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
         ogs_assert(item->mME_UE_S1AP_ID);
         *item->mME_UE_S1AP_ID = 2;
-        item->eNB_UE_S1AP_ID = ogs_calloc(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
+        item->eNB_UE_S1AP_ID = CALLOC(1, sizeof(S1AP_ENB_UE_S1AP_ID_t));
         ogs_assert(item->eNB_UE_S1AP_ID);
         *item->eNB_UE_S1AP_ID = 3;
 
-        ie = ogs_calloc(1,
+        ie = CALLOC(1,
                 sizeof(S1AP_UE_associatedLogicalS1_ConnectionItemRes_t));
         ASN_SEQUENCE_ADD(&partOfS1_Interface->list, ie);
 
@@ -1542,7 +1542,7 @@ static void attach_test5(abts_case *tc, void *data)
 
         item = &ie->value.choice.UE_associatedLogicalS1_ConnectionItem;
 
-        item->mME_UE_S1AP_ID = ogs_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        item->mME_UE_S1AP_ID = CALLOC(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
         ogs_assert(item->mME_UE_S1AP_ID);
         *item->mME_UE_S1AP_ID = 44;
 
@@ -1555,7 +1555,7 @@ static void attach_test5(abts_case *tc, void *data)
     {
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id = NULL;
 
-        mme_ue_s1ap_id = ogs_calloc(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
+        mme_ue_s1ap_id = CALLOC(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
         ogs_assert(mme_ue_s1ap_id);
         *mme_ue_s1ap_id = 2;
         rv = s1ap_build_s1_reset_partial(&sendbuf,

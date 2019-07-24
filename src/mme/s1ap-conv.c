@@ -23,7 +23,7 @@
 void s1ap_uint8_to_OCTET_STRING(uint8_t uint8, OCTET_STRING_t *octet_string)
 {
     octet_string->size = 1;
-    octet_string->buf = ogs_calloc(octet_string->size, sizeof(uint8_t));
+    octet_string->buf = CALLOC(octet_string->size, sizeof(uint8_t));
 
     octet_string->buf[0] = uint8;
 }
@@ -31,7 +31,7 @@ void s1ap_uint8_to_OCTET_STRING(uint8_t uint8, OCTET_STRING_t *octet_string)
 void s1ap_uint16_to_OCTET_STRING(uint16_t uint16, OCTET_STRING_t *octet_string)
 {
     octet_string->size = 2;
-    octet_string->buf = ogs_calloc(octet_string->size, sizeof(uint8_t));
+    octet_string->buf = CALLOC(octet_string->size, sizeof(uint8_t));
 
     octet_string->buf[0] = uint16 >> 8;
     octet_string->buf[1] = uint16;
@@ -40,7 +40,7 @@ void s1ap_uint16_to_OCTET_STRING(uint16_t uint16, OCTET_STRING_t *octet_string)
 void s1ap_uint32_to_OCTET_STRING(uint32_t uint32, OCTET_STRING_t *octet_string)
 {
     octet_string->size = 4;
-    octet_string->buf = ogs_calloc(octet_string->size, sizeof(uint8_t));
+    octet_string->buf = CALLOC(octet_string->size, sizeof(uint8_t));
 
     octet_string->buf[0] = uint32 >> 24;
     octet_string->buf[1] = uint32 >> 16;
@@ -52,7 +52,7 @@ void s1ap_buffer_to_OCTET_STRING(
         void *buf, int size, S1AP_TBCD_STRING_t *tbcd_string)
 {
     tbcd_string->size = size;
-    tbcd_string->buf = ogs_calloc(tbcd_string->size, sizeof(uint8_t));
+    tbcd_string->buf = CALLOC(tbcd_string->size, sizeof(uint8_t));
 
     memcpy(tbcd_string->buf, buf, size);
 }
@@ -68,7 +68,7 @@ void s1ap_uint32_to_ENB_ID(
         ogs_assert(bit_string);
 
         bit_string->size = 3;
-        bit_string->buf = ogs_calloc(bit_string->size, sizeof(uint8_t));
+        bit_string->buf = CALLOC(bit_string->size, sizeof(uint8_t));
 
         bit_string->buf[0] = enb_id >> 12;
         bit_string->buf[1] = enb_id >> 4;
@@ -80,7 +80,7 @@ void s1ap_uint32_to_ENB_ID(
         ogs_assert(bit_string);
 
         bit_string->size = 4;
-        bit_string->buf = ogs_calloc(bit_string->size, sizeof(uint8_t));
+        bit_string->buf = CALLOC(bit_string->size, sizeof(uint8_t));
 
         bit_string->buf[0] = enb_id >> 20;
         bit_string->buf[1] = enb_id >> 12;
@@ -152,19 +152,19 @@ int s1ap_ip_to_BIT_STRING(ip_t *ip, BIT_STRING_t *bit_string)
 
     if (ip->ipv4 && ip->ipv6) {
         bit_string->size = IPV4V6_LEN;
-        bit_string->buf = ogs_calloc(bit_string->size, sizeof(uint8_t));
+        bit_string->buf = CALLOC(bit_string->size, sizeof(uint8_t));
         memcpy(bit_string->buf, &ip->both.addr, IPV4_LEN);
         memcpy(bit_string->buf+IPV4_LEN, &ip->both.addr6, IPV6_LEN);
         ogs_debug("    IPv4[%s] IPv6[%s]",
             INET_NTOP(&ip->both.addr, buf), INET6_NTOP(&ip->both.addr6, buf2));
     } else if (ip->ipv4) {
         bit_string->size = IPV4_LEN;
-        bit_string->buf = ogs_calloc(bit_string->size, sizeof(uint8_t));
+        bit_string->buf = CALLOC(bit_string->size, sizeof(uint8_t));
         memcpy(bit_string->buf, &ip->addr, IPV4_LEN);
         ogs_debug("    IPv4[%s]", INET_NTOP(&ip->addr, buf));
     } else if (ip->ipv6) {
         bit_string->size = IPV6_LEN;
-        bit_string->buf = ogs_calloc(bit_string->size, sizeof(uint8_t));
+        bit_string->buf = CALLOC(bit_string->size, sizeof(uint8_t));
         memcpy(bit_string->buf, &ip->addr6, IPV6_LEN);
         ogs_debug("    IPv6[%s]", INET_NTOP(&ip->addr6, buf));
     } else
