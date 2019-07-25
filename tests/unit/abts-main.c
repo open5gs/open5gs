@@ -35,6 +35,7 @@ abts_suite *test_nas_message(abts_suite *suite);
 abts_suite *test_gtp_message(abts_suite *suite);
 abts_suite *test_security(abts_suite *suite);
 abts_suite *test_sctp(abts_suite *suite);
+abts_suite *test_crash(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
@@ -44,6 +45,9 @@ const struct testlist {
     {test_gtp_message},
     {test_security},
     {test_sctp},
+#if 0
+    {test_crash},
+#endif
     {NULL},
 };
 

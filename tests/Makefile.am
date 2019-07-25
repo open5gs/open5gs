@@ -10,7 +10,7 @@ testunit_SOURCES = \
 	unit/abts-main.c \
 	unit/s1ap-message-test.c unit/nas-message-test.c \
 	unit/gtp-message-test.c unit/security-test.c \
-	unit/sctp-test.c \
+	unit/sctp-test.c unit/crash-test.c \
 	$(NULL)
 testunit_LDADD = $(top_srcdir)/src/libepc.la
 
