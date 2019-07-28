@@ -11,6 +11,7 @@ nas-message-test    :  SUCCESS
 gtp-message-test    :  SUCCESS
 security-test       :  SUCCESS
 sctp-test           :  SUCCESS
+crash-test          :  SUCCESS
 All tests passed.
 ])
 AT_CLEANUP

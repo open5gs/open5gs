@@ -491,9 +491,6 @@ int s1ap_build_initial_context_setup_request(
     SecurityKey->bits_unused = 0;
     memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
 
-    /* Workaround for asn1c library
-     * - More than 9 ProtocolIE cannot be built 
-     *   from InitialContextSetupRequest */
     if (mme_ue->nas_eps.type == MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST &&
         MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
 
@@ -531,8 +528,9 @@ int s1ap_build_initial_context_setup_request(
         ogs_assert(mme_ue->p_tmsi);
         s1ap_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
 
-    } else if (mme_ue->ueRadioCapability.buf &&
-            mme_ue->ueRadioCapability.size) {
+    }
+
+    if (mme_ue->ueRadioCapability.buf && mme_ue->ueRadioCapability.size) {
         /* Set UeRadioCapability if exists */
         S1AP_UERadioCapability_t *UERadioCapability = NULL;
 

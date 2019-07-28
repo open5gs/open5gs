@@ -45,9 +45,7 @@ const struct testlist {
     {test_gtp_message},
     {test_security},
     {test_sctp},
-#if 0
     {test_crash},
-#endif
     {NULL},
 };
 
