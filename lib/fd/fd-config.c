@@ -77,8 +77,8 @@ static int fd_config_apply(fd_config_t *fd_config)
         memset(&fddpi, 0, sizeof(fddpi));
         fddpi.config.pic_flags.persist = PI_PRST_ALWAYS;
         fddpi.config.pic_flags.pro3 = PI_P3_IP;
-        fddpi.config.pic_flags.pro4 = PI_P4_TCP;
-        fddpi.config.pic_flags.alg = PI_ALGPREF_TCP;
+        fddpi.config.pic_flags.pro4 = PI_P4_DEFAULT;
+        fddpi.config.pic_flags.alg = PI_ALGPREF_SCTP;
         fddpi.config.pic_flags.sec |= PI_SEC_NONE;
 
         fddpi.config.pic_port = fd_config->conn[i].port;
