@@ -477,7 +477,6 @@ void s1ap_handle_initial_context_setup_response(
         S1AP_E_RABSetupItemCtxtSUResIEs_t *ie2 = NULL;
         S1AP_E_RABSetupItemCtxtSURes_t *e_rab = NULL;
 
-        mme_sess_t *sess = NULL;
         mme_bearer_t *bearer = NULL;
 
         ie2 = (S1AP_E_RABSetupItemCtxtSUResIEs_t *)
@@ -487,13 +486,7 @@ void s1ap_handle_initial_context_setup_response(
         e_rab = &ie2->value.choice.E_RABSetupItemCtxtSURes;
         ogs_assert(e_rab);
 
-        sess = mme_sess_find_by_ebi(mme_ue, e_rab->e_RAB_ID);
-        if (!sess) {
-            ogs_warn("Session context has already been removed");
-            continue;
-        }
-
-        bearer = mme_default_bearer_in_sess(sess);
+        bearer = mme_bearer_find_by_ue_ebi(mme_ue, e_rab->e_RAB_ID);
         ogs_assert(bearer);
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
