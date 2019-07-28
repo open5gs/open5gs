@@ -134,9 +134,6 @@ int hss_context_parse_config()
                             } else if (!strcmp(fd_key, "sec_port")) {
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
                                 if (v) self.fd_config->cnf_port_tls = atoi(v);
-                            } else if (!strcmp(fd_key, "no_sctp")) {
-                                self.fd_config->cnf_flags.no_sctp =
-                                    ogs_yaml_iter_bool(&fd_iter);
                             } else if (!strcmp(fd_key, "listen_on")) {
                                 self.fd_config->cnf_addr = 
                                     ogs_yaml_iter_value(&fd_iter);

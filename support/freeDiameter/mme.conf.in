@@ -46,11 +46,10 @@ Realm = "localdomain";
 
 # Disable use of TCP protocol (only listen and connect over SCTP)
 # Default : TCP enabled
-No_TCP;
+#No_TCP;
 
 # Disable use of SCTP protocol (only listen and connect over TCP)
 # Default : SCTP enabled
-#No_SCTP;
 #No_SCTP;
 # This option is ignored if freeDiameter is compiled with DISABLE_SCTP option.
 
