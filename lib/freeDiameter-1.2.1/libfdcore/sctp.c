@@ -1101,10 +1101,12 @@ ssize_t fd_sctp_sendstrv(struct cnxctx * conn, uint16_t strid, const struct iove
 	hdr->cmsg_type  = SCTP_SNDRCV;
 	sndrcv = (struct sctp_sndrcvinfo *)CMSG_DATA(hdr);
 	sndrcv->sinfo_stream = strid;
+	sndrcv->sinfo_ppid = htonl(46);
 #else /* OLD_SCTP_SOCKET_API */
 	hdr->cmsg_type  = SCTP_SNDINFO;
 	sndinf = (struct sctp_sndinfo *)CMSG_DATA(hdr);
 	sndinf->snd_sid = strid;
+	sndinf->snd_ppid = htonl(46);
 #endif /* OLD_SCTP_SOCKET_API */
 	/* note : we could store other data also, for example in .sinfo_ppid for remote peer or in .sinfo_context for errors. */
 	
