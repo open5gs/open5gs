@@ -806,8 +806,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                                 pdn->qos.arp.pre_emption_capability =
                                     hdr->avp_value->i32;
                             } else {
-                                ogs_error("no_Preemption-Capability");
-                                error++;
+                                pdn->qos.arp.pre_emption_capability = 1; /* disabled */
                             }
 
                             ret = fd_avp_search_avp(avpch4,
@@ -819,8 +818,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                                 pdn->qos.arp.pre_emption_vulnerability =
                                     hdr->avp_value->i32;
                             } else {
-                                ogs_error("no_Preemption-Vulnerability");
-                                error++;
+                                pdn->qos.arp.pre_emption_vulnerability = 0; /* enabled */
                             }
 
                         } else {
