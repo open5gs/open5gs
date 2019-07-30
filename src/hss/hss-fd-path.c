@@ -399,6 +399,15 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_ambr);
         ogs_assert(ret == 0);
 
+        /* Set the Subscribed RAU TAU Timer */
+        ret = fd_msg_avp_new(s6a_subscribed_rau_tau_timer, 0, &avp_rau_tau_timer);
+        ogs_assert(ret == 0);
+        val.i32 = subscription_data.subscribed_rau_tau_timer * 60; /* seconds */
+        ret = fd_msg_avp_setvalue(avp_rau_tau_timer, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_rau_tau_timer);
+        ogs_assert(ret == 0);
+
         if (subscription_data.num_of_pdn) {
             /* Set the APN Configuration Profile */
             struct avp *apn_configuration_profile;
@@ -619,14 +628,6 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
     }
-
-    ret = fd_msg_avp_new(s6a_subscribed_rau_tau_timer, 0, &avp);
-    ogs_assert(ret == 0);
-    val.i32 = subscription_data.subscribed_rau_tau_timer * 60; /* seconds */
-    ret = fd_msg_avp_setvalue(avp, &val);
-    ogs_assert(ret == 0);
-    ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
-    ogs_assert(ret == 0);
 
     /* Set Vendor-Specific-Application-Id AVP */
     ret = fd_message_vendor_specific_appid_set(ans, S6A_APPLICATION_ID);
