@@ -1,3 +1,10 @@
+nextepc (0.5.1~xenial) xenial; urgency=medium
+
+  * SMSoSG Supported 
+  * Many BUGS Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 30 Jul 2019 22:42:27 +0900
+
 nextepc (0.5.1~bionic) bionic; urgency=medium
 
   * SMSoSG Supported 
