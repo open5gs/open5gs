@@ -50,7 +50,7 @@ const Subscriber = new Schema({
           $type: Number, default: 1 // Capability Disabled
         },
         pre_emption_vulnerability: {
-          $type : Number, default: 1 // Vulnerability Disabled
+          $type : Number, default: 0 // Vulnerability Disabled
         }
       }
     },
@@ -75,7 +75,7 @@ const Subscriber = new Schema({
             $type: Number, default: 1 // Capability Disabled
           },
           pre_emption_vulnerability: {
-            $type : Number, default: 1 // Vulnerability Disabled
+            $type : Number, default: 0 // Vulnerability Disabled
           }
         },
         mbr: {

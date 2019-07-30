@@ -127,7 +127,7 @@ const schema = {
                     "title": "Vulnerability*",
                     "enum": [1, 0],
                     "enumNames": ["Disabled", "Enabled"],
-                    "default": 1,
+                    "default": 0,
                   },
                 }
               }
@@ -240,7 +240,7 @@ const schema = {
                           "maximum": 1,
                           "enum": [1, 0],
                           "enumNames": ["Disabled", "Enabled"],
-                          "default": 1,
+                          "default": 0,
                         },
                       }
                     },

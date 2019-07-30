@@ -344,6 +344,7 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         struct avp *avp_access_restriction_data;
         struct avp *avp_subscriber_status, *avp_network_access_mode;
         struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
+        struct avp *avp_rau_tau_timer;
         int i;
 
         /* Set the Subscription Data */
@@ -387,20 +388,23 @@ static int hss_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         val.u32 = subscription_data.ambr.uplink;
         ret = fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val);
         ogs_assert(ret == 0);
-        ret = fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, avp_max_bandwidth_ul);
+        ret = fd_msg_avp_add(
+                avp_ambr, MSG_BRW_LAST_CHILD, avp_max_bandwidth_ul);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_new(s6a_max_bandwidth_dl, 0, &avp_max_bandwidth_dl);
         ogs_assert(ret == 0);
         val.u32 = subscription_data.ambr.downlink;
         ret = fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val);
         ogs_assert(ret == 0);
-        ret = fd_msg_avp_add(avp_ambr, MSG_BRW_LAST_CHILD, avp_max_bandwidth_dl);
+        ret = fd_msg_avp_add(
+                avp_ambr, MSG_BRW_LAST_CHILD, avp_max_bandwidth_dl);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_ambr);
         ogs_assert(ret == 0);
 
         /* Set the Subscribed RAU TAU Timer */
-        ret = fd_msg_avp_new(s6a_subscribed_rau_tau_timer, 0, &avp_rau_tau_timer);
+        ret = fd_msg_avp_new(
+                s6a_subscribed_rau_tau_timer, 0, &avp_rau_tau_timer);
         ogs_assert(ret == 0);
         val.i32 = subscription_data.subscribed_rau_tau_timer * 60; /* seconds */
         ret = fd_msg_avp_setvalue(avp_rau_tau_timer, &val);
