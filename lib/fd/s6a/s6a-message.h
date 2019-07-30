@@ -58,7 +58,9 @@ typedef struct _s6a_subscription_data_t {
     uint32_t                network_access_mode;
 
     bitrate_t               ambr;                       /* UE-AMBR */
-    uint32_t                subscribed_rau_tau_timer;   /* unit : minutes */
+
+#define HSS_RAU_TAU_DEFAULT_TIME            (12*60)     /* 12 min */
+    uint32_t                subscribed_rau_tau_timer;   /* unit : seconds */
 
     uint32_t                context_identifier;         /* default APN */
     pdn_t                   pdn[MAX_NUM_OF_SESS];

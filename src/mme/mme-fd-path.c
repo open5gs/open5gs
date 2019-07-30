@@ -717,8 +717,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             ogs_assert(ret == 0);
             subscription_data->subscribed_rau_tau_timer = hdr->avp_value->i32;
         } else {
-            ogs_error("no_Subscribed_RAU-TAU-Timer");
-            error++;
+            subscription_data->subscribed_rau_tau_timer =
+                HSS_RAU_TAU_DEFAULT_TIME;
         }
 
         ret = fd_avp_search_avp(avp, s6a_apn_configuration_profile, &avpch1);
