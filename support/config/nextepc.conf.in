@@ -180,7 +180,7 @@ mme:
 #            lac: 43692
 #      - addr
 #         - 127.0.0.3
-#         - fe80::2%lo0
+#         - fe80::2%@LO_DEV@
 #        map:
 #          tai:
 #            plmn_id:
