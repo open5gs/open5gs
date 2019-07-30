@@ -1,3 +1,10 @@
+nextepc (0.5.1) unstable; urgency=medium
+
+  * SMSoSG Supported 
+  * Many BUGS Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Tue, 30 Jul 2019 21:34:15 +0900
+
 nextepc (0.5.0-1~bionic) bionic; urgency=medium
 
   * CSFB Supported
