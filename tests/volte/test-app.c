@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "mme/ogs-sctp.h"
 
 #include "app/context.h"
@@ -33,13 +52,11 @@ int test_app_initialize(app_param_t *param)
     pcrf_sem1 = ogs_proc_mutex_create(0); /* copied to PCRF/PGW/SGW/HSS/MME */
     pcrf_sem2 = ogs_proc_mutex_create(0); /* copied to PCRF/PGW/SGW/HSS/MME */
 
-    if (context_self()->config.parameter.no_pcrf == 0)
-    {
+    if (context_self()->config.parameter.no_pcrf == 0) {
         pid = fork();
         ogs_assert(pid >= 0);
 
-        if (pid == 0)
-        {
+        if (pid == 0) {
             ogs_info("PCRF try to initialize");
             rv = pcrf_initialize();
             ogs_assert(rv == OGS_OK);
@@ -48,8 +65,7 @@ int test_app_initialize(app_param_t *param)
             if (pcrf_sem1) ogs_proc_mutex_post(pcrf_sem1);
             if (pcrf_sem2) ogs_proc_mutex_wait(pcrf_sem2);
 
-            if (rv == OGS_OK)
-            {
+            if (rv == OGS_OK) {
                 ogs_info("PCRF try to terminate");
                 pcrf_terminate();
                 ogs_info("PCRF terminate...done");
@@ -75,13 +91,11 @@ int test_app_initialize(app_param_t *param)
     pgw_sem1 = ogs_proc_mutex_create(0); /* copied to PGW/SGW/HSS/MME */
     pgw_sem2 = ogs_proc_mutex_create(0); /* copied to PGW/SGW/HSS/MME */
 
-    if (context_self()->config.parameter.no_pgw == 0)
-    {
+    if (context_self()->config.parameter.no_pgw == 0) {
         pid = fork();
         ogs_assert(pid >= 0);
 
-        if (pid == 0)
-        {
+        if (pid == 0) {
             /* allocated from parent process */
             if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
             if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
@@ -94,8 +108,7 @@ int test_app_initialize(app_param_t *param)
             if (pgw_sem1) ogs_proc_mutex_post(pgw_sem1);
             if (pgw_sem2) ogs_proc_mutex_wait(pgw_sem2);
 
-            if (rv == OGS_OK)
-            {
+            if (rv == OGS_OK) {
                 ogs_info("PGW try to terminate");
                 pgw_terminate();
                 ogs_info("PGW terminate...done");
@@ -121,13 +134,11 @@ int test_app_initialize(app_param_t *param)
     sgw_sem1 = ogs_proc_mutex_create(0); /* copied to SGW/HSS/MME */
     sgw_sem2 = ogs_proc_mutex_create(0); /* copied to SGW/HSS/MME */
 
-    if (context_self()->config.parameter.no_sgw == 0)
-    {
+    if (context_self()->config.parameter.no_sgw == 0) {
         pid = fork();
         ogs_assert(pid >= 0);
 
-        if (pid == 0)
-        {
+        if (pid == 0) {
             /* allocated from parent process */
             if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
             if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
@@ -142,8 +153,7 @@ int test_app_initialize(app_param_t *param)
             if (sgw_sem1) ogs_proc_mutex_post(sgw_sem1);
             if (sgw_sem2) ogs_proc_mutex_wait(sgw_sem2);
 
-            if (rv == OGS_OK)
-            {
+            if (rv == OGS_OK) {
                 ogs_info("SGW try to terminate");
                 sgw_terminate();
                 ogs_info("SGW terminate...done");
@@ -169,13 +179,11 @@ int test_app_initialize(app_param_t *param)
     hss_sem1 = ogs_proc_mutex_create(0); /* copied to HSS/MME */
     hss_sem2 = ogs_proc_mutex_create(0); /* copied to HSS/MME */
 
-    if (context_self()->config.parameter.no_hss == 0)
-    {
+    if (context_self()->config.parameter.no_hss == 0) {
         pid = fork();
         ogs_assert(pid >= 0);
 
-        if (pid == 0)
-        {
+        if (pid == 0) {
             /* allocated from parent process */
             if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
             if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
@@ -192,8 +200,7 @@ int test_app_initialize(app_param_t *param)
             if (hss_sem1) ogs_proc_mutex_post(hss_sem1);
             if (hss_sem2) ogs_proc_mutex_wait(hss_sem2);
 
-            if (rv == OGS_OK)
-            {
+            if (rv == OGS_OK) {
                 ogs_info("HSS try to terminate");
                 hss_terminate();
                 ogs_info("HSS terminate...done");
@@ -222,8 +229,7 @@ int test_app_initialize(app_param_t *param)
         pid = fork();
         ogs_assert(pid >= 0);
 
-        if (pid == 0)
-        {
+        if (pid == 0) {
             /* allocated from parent process */
             if (pcrf_sem1) ogs_proc_mutex_delete(pcrf_sem1);
             if (pcrf_sem2) ogs_proc_mutex_delete(pcrf_sem2);
@@ -243,8 +249,7 @@ int test_app_initialize(app_param_t *param)
             if (mme_sem1) ogs_proc_mutex_post(mme_sem1);
             if (mme_sem2) ogs_proc_mutex_wait(mme_sem2);
 
-            if (rv == OGS_OK)
-            {
+            if (rv == OGS_OK) {
                 ogs_info("MME try to terminate");
                 mme_terminate();
                 ogs_sctp_final();
@@ -283,32 +288,28 @@ void test_app_terminate(void)
     if (mme_sem1) ogs_proc_mutex_delete(mme_sem1);
     if (mme_sem2) ogs_proc_mutex_delete(mme_sem2);
 
-    if (context_self()->config.parameter.no_hss == 0)
-    {
+    if (context_self()->config.parameter.no_hss == 0) {
         if (hss_sem2) ogs_proc_mutex_post(hss_sem2);
         if (hss_sem1) ogs_proc_mutex_wait(hss_sem1);
     }
     if (hss_sem1) ogs_proc_mutex_delete(hss_sem1);
     if (hss_sem2) ogs_proc_mutex_delete(hss_sem2);
 
-    if (context_self()->config.parameter.no_sgw == 0)
-    {
+    if (context_self()->config.parameter.no_sgw == 0) {
         if (sgw_sem2) ogs_proc_mutex_post(sgw_sem2);
         if (sgw_sem1) ogs_proc_mutex_wait(sgw_sem1);
     }
     if (sgw_sem1) ogs_proc_mutex_delete(sgw_sem1);
     if (sgw_sem2) ogs_proc_mutex_delete(sgw_sem2);
 
-    if (context_self()->config.parameter.no_pgw == 0)
-    {
+    if (context_self()->config.parameter.no_pgw == 0) {
         if (pgw_sem2) ogs_proc_mutex_post(pgw_sem2);
         if (pgw_sem1) ogs_proc_mutex_wait(pgw_sem1);
     }
     if (pgw_sem1) ogs_proc_mutex_delete(pgw_sem1);
     if (pgw_sem2) ogs_proc_mutex_delete(pgw_sem2);
 
-    if (context_self()->config.parameter.no_pcrf == 0)
-    {
+    if (context_self()->config.parameter.no_pcrf == 0) {
         if (pcrf_sem2) ogs_proc_mutex_post(pcrf_sem2);
         if (pcrf_sem1) ogs_proc_mutex_wait(pcrf_sem1);
     }

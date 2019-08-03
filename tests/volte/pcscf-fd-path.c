@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "gtp/gtp-xact.h"
 
 #include "fd/fd-lib.h"
@@ -84,8 +103,7 @@ void pcscf_rx_send_aar(uint8_t **rx_sid, const char *ip,
     }
 
     /* Find Diameter Rx Session */
-    if (*rx_sid)
-    {
+    if (*rx_sid) {
         /* Retrieve session by Session-Id */
         size_t sidlen = strlen((char *)*rx_sid);
 		ret = fd_sess_fromsid_msg(*rx_sid, sidlen, &session, &new);
@@ -97,9 +115,7 @@ void pcscf_rx_send_aar(uint8_t **rx_sid, const char *ip,
         ogs_assert(ret == 0);
         /* Save the session associated with the message */
         ret = fd_msg_sess_set(req, session);
-    }
-    else
-    {
+    } else {
         /* Create a new session */
         #define RX_APP_SID_OPT  "app_rx"
         ret = fd_msg_new_session(req, (os0_t)RX_APP_SID_OPT, 
@@ -111,8 +127,7 @@ void pcscf_rx_send_aar(uint8_t **rx_sid, const char *ip,
 
     /* Retrieve session state in this session */
     ret = fd_sess_state_retrieve(pcscf_rx_reg, session, &sess_data);
-    if (!sess_data)
-    {
+    if (!sess_data) {
         os0_t sid;
         size_t sidlen;
 
@@ -175,8 +190,7 @@ void pcscf_rx_send_aar(uint8_t **rx_sid, const char *ip,
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
-    if (ipsub.family == AF_INET)
-    {
+    if (ipsub.family == AF_INET) {
         /* Set Framed-IP-Address */
         ret = fd_msg_avp_new(rx_framed_ip_address, 0, &avp);
         ogs_assert(ret == 0);
@@ -186,9 +200,7 @@ void pcscf_rx_send_aar(uint8_t **rx_sid, const char *ip,
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
         ogs_assert(ret == 0);
-    }
-    else if (ipsub.family == AF_INET6)
-    {
+    } else if (ipsub.family == AF_INET6) {
         /* Set Framed-IPv6-Prefix */
         ret = fd_msg_avp_new(rx_framed_ipv6_prefix, 0, &avp);
         ogs_assert(ret == 0);
@@ -226,8 +238,7 @@ void pcscf_rx_send_aar(uint8_t **rx_sid, const char *ip,
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
 
-    if (qos_type == 1)
-    {
+    if (qos_type == 1) {
         ret = fd_msg_avp_new(rx_max_requested_bandwidth_dl, 0, &avpch1);
         ogs_assert(ret == 0);
         val.i32 = 96000;
@@ -259,9 +270,7 @@ void pcscf_rx_send_aar(uint8_t **rx_sid, const char *ip,
         ogs_assert(ret == 0);
         ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
         ogs_assert(ret == 0);
-    }
-    else if (qos_type == 2)
-    {
+    } else if (qos_type == 2) {
         ret = fd_msg_avp_new(rx_max_requested_bandwidth_dl, 0, &avpch1);
         ogs_assert(ret == 0);
         val.i32 = 96000;
@@ -295,8 +304,7 @@ void pcscf_rx_send_aar(uint8_t **rx_sid, const char *ip,
         ogs_assert(ret == 0);
     }
 
-    if (flow_presence)
-    {
+    if (flow_presence) {
         /* Set Media-Sub-Component #1 */
         ret = fd_msg_avp_new(rx_media_sub_component, 0, &avpch1);
 
@@ -433,32 +441,25 @@ static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         result_code = hdr->avp_value->i32;
         ogs_debug("Result Code: %d\n", hdr->avp_value->i32);
-    }
-    else
-    {
+    } else {
         ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
         ogs_assert(ret == 0);
-        if (avp)
-        {
+        if (avp) {
             ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch1);
             ogs_assert(ret == 0);
-            if (avpch1)
-            {
+            if (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
                 result_code = hdr->avp_value->i32;
                 ogs_debug("Experimental Result Code: %d\n",
                         result_code);
             }
-        }
-        else
-        {
+        } else {
             ogs_error("no Result-Code");
             error++;
         }
@@ -467,15 +468,12 @@ static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
     /* Value of Origin-Host */
     ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("From '%.*s' ",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Host ");
         error++;
     }
@@ -483,21 +481,17 @@ static void pcscf_rx_aaa_cb(void *data, struct msg **msg)
     /* Value of Origin-Realm */
     ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("('%.*s') ",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Realm ");
         error++;
     }
 
-    if (result_code != ER_DIAMETER_SUCCESS)
-    {
+    if (result_code != ER_DIAMETER_SUCCESS) {
         ogs_warn("ERROR DIAMETER Result Code(%d)", result_code);
         error++;
         goto out;
@@ -508,8 +502,7 @@ out:
     ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (fd_logger_self()->stats.nb_recv)
-    {
+    if (fd_logger_self()->stats.nb_recv) {
         /* Ponderate in the avg */
         fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
             fd_logger_self()->stats.nb_recv + dur) /
@@ -519,9 +512,7 @@ out:
             fd_logger_self()->stats.shortest = dur;
         if (dur > fd_logger_self()->stats.longest)
             fd_logger_self()->stats.longest = dur;
-    }
-    else
-    {
+    } else {
         fd_logger_self()->stats.shortest = dur;
         fd_logger_self()->stats.longest = dur;
         fd_logger_self()->stats.avg = dur;
@@ -602,13 +593,10 @@ static int pcscf_rx_asr_cb( struct msg **msg, struct avp *avp,
     /* Get Abort-Cause */
     ret = fd_msg_search_avp(qry, rx_abort_cause, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Abort-Cause ");
     }
 
@@ -760,32 +748,25 @@ static void pcscf_rx_sta_cb(void *data, struct msg **msg)
     /* Value of Result Code */
     ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         result_code = hdr->avp_value->i32;
         ogs_debug("Result Code: %d\n", hdr->avp_value->i32);
-    }
-    else
-    {
+    } else {
         ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
         ogs_assert(ret == 0);
-        if (avp)
-        {
+        if (avp) {
             ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch1);
             ogs_assert(ret == 0);
-            if (avpch1)
-            {
+            if (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
                 result_code = hdr->avp_value->i32;
                 ogs_debug("Experimental Result Code: %d\n",
                         result_code);
             }
-        }
-        else
-        {
+        } else {
             ogs_error("no Result-Code");
             error++;
         }
@@ -794,15 +775,12 @@ static void pcscf_rx_sta_cb(void *data, struct msg **msg)
     /* Value of Origin-Host */
     ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("From '%.*s' ",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Host ");
         error++;
     }
@@ -810,21 +788,17 @@ static void pcscf_rx_sta_cb(void *data, struct msg **msg)
     /* Value of Origin-Realm */
     ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
     ogs_assert(ret == 0);
-    if (avp)
-    {
+    if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         ogs_debug("('%.*s') ",
                 (int)hdr->avp_value->os.len, hdr->avp_value->os.data);
-    }
-    else
-    {
+    } else {
         ogs_error("no_Origin-Realm ");
         error++;
     }
 
-    if (result_code != ER_DIAMETER_SUCCESS)
-    {
+    if (result_code != ER_DIAMETER_SUCCESS) {
         ogs_warn("ERROR DIAMETER Result Code(%d)", result_code);
         error++;
         goto out;
@@ -835,8 +809,7 @@ out:
     ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
     dur = ((ts.tv_sec - sess_data->ts.tv_sec) * 1000000) + 
         ((ts.tv_nsec - sess_data->ts.tv_nsec) / 1000);
-    if (fd_logger_self()->stats.nb_recv)
-    {
+    if (fd_logger_self()->stats.nb_recv) {
         /* Ponderate in the avg */
         fd_logger_self()->stats.avg = (fd_logger_self()->stats.avg * 
             fd_logger_self()->stats.nb_recv + dur) /
@@ -846,9 +819,7 @@ out:
             fd_logger_self()->stats.shortest = dur;
         if (dur > fd_logger_self()->stats.longest)
             fd_logger_self()->stats.longest = dur;
-    }
-    else
-    {
+    } else {
         fd_logger_self()->stats.shortest = dur;
         fd_logger_self()->stats.longest = dur;
         fd_logger_self()->stats.avg = dur;
