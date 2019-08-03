@@ -70,6 +70,18 @@ LT_INIT([dlopen pic-only disable-static])
 dnl Checks for compile flag
 dnl AX_CHECK_COMPILE_FLAG([-Wno-format-truncation],[CFLAGS="$CFLAGS -Wno-format-truncation"])
 
+if test "x$LEX" != "xflex"; then
+  AC_MSG_ERROR([flex program is needed to build freeDiameter, please install flex.])
+fi
+
+if test "x$YACC" = "xyacc"; then
+# AC_PROG_YACC only checks for yacc replacements, not for yacc itself
+  AC_CHECK_PROG([YACC_FOUND], [yacc], [yes], [no])
+  if test "x$YACC_FOUND" = "xno"; then
+    AC_MSG_ERROR([A yacc program is needed to build freeDiameter, please install bison.])
+  fi
+fi
+
 dnl Check Endian
 AC_C_BIGENDIAN
 
