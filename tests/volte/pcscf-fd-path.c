@@ -177,7 +177,7 @@ void pcscf_rx_send_aar(uint8_t **rx_sid, const char *ip,
     ret = fd_msg_avp_add (avp, MSG_BRW_LAST_CHILD, avpch1);
     ogs_assert(ret == 0);
 
-    #define RX_APP_IMSI_BCD  "0123456789012345"
+    #define RX_APP_IMSI_BCD  "001010123456789"
     ret = fd_msg_avp_new(rx_subscription_id_data, 0, &avpch1);
     ogs_assert(ret == 0);
     val.os.data = (uint8_t *)RX_APP_IMSI_BCD;
