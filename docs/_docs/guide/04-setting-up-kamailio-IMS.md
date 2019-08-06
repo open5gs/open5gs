@@ -3,11 +3,12 @@ title: Setting up Kamailio IMS
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-Setting up Kamailio IMS in OpenStack VM and connecting P-CSCF of Kamailio IMS with PCRF of NextEPC (Running on another OpenStak VM) - Install from source
+Setting up Kamailio IMS in OpenStack VM and connecting P-CSCF of Kamailio IMS with PCRF of NextEPC (Running on another OpenStak VM) - Install from deb packages
 {: .blue}
 
+
 #### 1. Start from Bionic Ubuntu cloud image
-#### 2. Use the following Cloud init data while spawning an instance
+#### 2. Use the following Cloud init config while spawning an instance
 
 ```
 #cloud-config
@@ -30,374 +31,20 @@ This removes all existing cloud users and allows only root user and sets a passw
 #### 3. Install following packages
 
 ```
-$ apt install -y tcpdump screen ntp ntpdate bind9 mysql-server git-core gcc flex bison libmysqlclient-dev make libssl-dev libcurl4-openssl-dev libxml2-dev libpcre3-dev bash-completion g++ autoconf rtpproxy libmnl-dev libsctp-dev ipsec-tools
+$ apt update && apt upgrade -y && apt install -y mysql-server tcpdump screen ntp ntpdate git-core dkms gcc flex bison libmysqlclient-dev make \
+                                                 libssl-dev libcurl4-openssl-dev libxml2-dev libpcre3-dev bash-completion g++ autoconf rtpproxy libmnl-dev \
+                                                 libsctp-dev ipsec-tools
 ```
 
-#### 4. Execute,
+#### 4. Install all required Kamailio packages (v5.2)
 
 ```
-$ ntpdate pool.ntp.org
+$ wget -O- http://deb.kamailio.org/kamailiodebkey.gpg | sudo apt-key add -
+$ add-apt-repository 'deb http://deb.kamailio.org/kamailio52 bionic main'
+$ apt install -y kamailio kamailio-mysql-modules kamailio-ims-modules kamailio-presence-modules kamailio-tls-modules kamailio-xml-modules kamailio-xmlrpc-modules
 ```
 
-#### 5. Clone Kamailio repository and checkout 5.2 version of repository,
-
-```
-$ mkdir -p /usr/local/src/kamailio-5.2
-$ cd /usr/local/src/kamailio-5.2/
-$ git clone git://git.kamailio.org/kamailio kamailio
-$ cd kamailio
-$ git checkout -b 5.2 origin/5.2
-```
-
-#### 6. Copy the example DNS Zone file from /usr/local/src/kamailio-5.2/kamailio/misc/examples/ims/ims_dnszone into the bind folder and 
-
-Edit /etc/bind/named.conf.local, /etc/bind/named.conf.options accordingly:
-{: .notice--info}
-
-```
-$ cp /usr/local/src/kamailio-5.2/kamailio/misc/examples/ims/ims_dnszone/mnc001.mcc001.3gppnetwork.org /etc/bind/
-$ cd /etc/bind
-```
-
-Rename as per your need
-
-```
-$ mv mnc001.mcc001.3gppnetwork.org mnc096.mcc262.3gppnetwork.org
-```
-
-In this example: PCRF is running in 10.4.128.11/172.24.15.3 (Floating IP) machine and IMS & DNS server running at 10.4.128.3/172.24.15.30 (Floating IP)
-
-Edit /etc/bind/mnc096.mcc262.3gppnetwork.org file as follows:
-
-Notice the change in PCRF address resolution (It should be the machine IP where PCRF is running)
-{: .notice--warning}
-
-```
-$ORIGIN mnc096.mcc262.3gppnetwork.org.
-$TTL 1W
-@                       1D IN SOA       localhost. root.localhost. (
-                                        1               ; serial
-                                        3H              ; refresh
-                                        15M             ; retry
-                                        1W              ; expiry
-                                        1D )            ; minimum
-
-                        1D IN NS        ns
-ns                      1D IN A         127.0.0.1
-
-pcscf                   1D IN A         127.0.0.1
-_sip._udp.pcscf         1D SRV 0 0 5060 pcscf
-_sip._tcp.pcscf         1D SRV 0 0 5060 pcscf
-
-icscf                   1D IN A         127.0.0.1
-_sip._udp               1D SRV 0 0 4060 icscf
-_sip._tcp               1D SRV 0 0 4060 icscf
-_sip._udp.ims           1D SRV 0 0 4060 icscf
-_sip._tcp.ims           1D SRV 0 0 4060 icscf
-
-scscf                   1D IN A         127.0.0.1
-_sip._udp.scscf         1D SRV 0 0 6060 scscf
-_sip._tcp.scscf         1D SRV 0 0 6060 scscf
-
-hss                     1D IN A         127.0.0.1
-pcrf                     1D IN A         10.4.128.11
-```
-
-Edit /etc/bind/named.conf.local file as follows:
-{: .notice--info}
-
-```
-//
-// Do any local configuration here
-//
-
-// Consider adding the 1918 zones here, if they are not used in your
-// organization
-//include "/etc/bind/zones.rfc1918";
-
-zone "mnc096.mcc262.3gppnetwork.org" {
-        type master;
-        file "/etc/bind/mnc096.mcc262.3gppnetwork.org";
-};
-
-Edit /etc/bind/named.conf.options file as follows:
-
-options {
-        directory "/var/cache/bind";
-
-        // If there is a firewall between you and nameservers you want
-        // to talk to, you may need to fix the firewall to allow multiple
-        // ports to talk.  See http://www.kb.cert.org/vuls/id/800113
-
-        // If your ISP provided one or more IP addresses for stable
-        // nameservers, you probably want to use them as forwarders.
-        // Uncomment the following block, and insert the addresses replacing
-        // the all-0's placeholder.
-
-        // forwarders {
-	// Put here the IP address of other DNS server which could be used if name cannot be resolved with DNS server running in this machine
-        //      0.0.0.0; 
-        // };
-
-        //========================================================================
-        // If BIND logs error messages about the root key being expired,
-        // you will need to update your keys.  See https://www.isc.org/bind-keys
-        //========================================================================
-        //dnssec-validation auto;
-        allow-query { any; };
-
-        auth-nxdomain no;    # conform to RFC1035
-        //listen-on-v6 { any; };
-};
-```
-
-```
-$ systemctl restart bind9
-```
-
-Then, test DNS resolution by adding following entries on top of all other entries in /etc/resolv.conf
-
-```
-search mnc096.mcc262.3gppnetwork.org
-nameserver 10.4.128.3
-```
-
-Finally, ping domain names
-
-```
-$ ping pcrf
-PING pcrf.mnc096.mcc262.3gppnetwork.org (10.4.128.11) 56(84) bytes of data.
-64 bytes from 10.4.128.11 (10.4.128.11): icmp_seq=1 ttl=64 time=0.425 ms
-64 bytes from 10.4.128.11 (10.4.128.11): icmp_seq=2 ttl=64 time=0.291 ms
-64 bytes from 10.4.128.11 (10.4.128.11): icmp_seq=3 ttl=64 time=0.260 ms
-
-$ ping pcscf
-PING pcscf.mnc096.mcc262.3gppnetwork.org (127.0.0.1) 56(84) bytes of data.
-64 bytes from localhost (127.0.0.1): icmp_seq=1 ttl=64 time=0.013 ms
-64 bytes from localhost (127.0.0.1): icmp_seq=2 ttl=64 time=0.045 ms
-64 bytes from localhost (127.0.0.1): icmp_seq=3 ttl=64 time=0.030 ms
-```
-
-Notice that domain names are properly resolved to IP address i.e 10.4.128.11 for pcrf and localhost for pcscf
-{: .notice--warning}
-
-To make changes in /etc/resolv.conf be persistent across reboot edit the /etc/netplan/50-cloud-init.yaml file as follows:
-
-```
-# This file is generated from information provided by
-# the datasource.  Changes to it will not persist across an instance.
-# To disable cloud-init's network configuration capabilities, write a file
-# /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg with the following:
-# network: {config: disabled}
-network:
-    version: 2
-    ethernets:
-        ens3:
-            dhcp4: true
-            match:
-                macaddress: fa:16:3e:99:f5:67
-            set-name: ens3
-            nameservers:
-                search: [mnc096.mcc262.3gppnetwork.org]
-                addresses: [10.4.128.3]
-```
-
-#### 7. Next step in installing SIP server is to generate build config files.
-
-```
-$ cd /usr/local/src/kamailio-5.2/kamailio
-$ make cfg
-```
-
-#### 8. Then enable the MySQL module and all required IMS modules. Edit modules.lst file present at /usr/local/src/kamailio-5.2/kamailio/src
-
-The contents of modules.lst should be as follows:
-
-```
-# this file is autogenerated by make modules-cfg
-
-# the list of sub-directories with modules
-modules_dirs:=modules
-
-# the list of module groups to compile
-cfg_group_include=
-
-# the list of extra modules to compile
-include_modules= cdp cdp_avp db_mysql ims_auth ims_charging ims_dialog ims_diameter_server ims_icscf ims_ipsec_pcscf ims_isc ims_ocs ims_qos ims_registrar_pcscf ims_registrar_scscf ims_usrloc_pcscf ims_usrloc_scscf presence presence_conference presence_dialoginfo presence_mwi presence_profile presence_reginfo presence_xml pua pua_bla pua_dialoginfo pua_reginfo pua_rpc pua_usrloc pua_xmpp regex sctp tls xmlops xmlrpc
-
-# the list of static modules
-static_modules=
-
-# the list of modules to skip from compile list
-skip_modules=
-
-# the list of modules to exclude from compile list
-exclude_modules= acc_json acc_radius app_java app_lua app_mono app_perl app_python app_python3 app_ruby auth_ephemeral auth_identity auth_radius cnxcc cplc crypto db2_ldap db_berkeley db_cassandra db_mongodb db_oracle db_perlvdb db_postgres db_redis db_sqlite db_unixodbc dialplan dnssec erlang evapi geoip geoip2 gzcompress h350 http_async_client http_client jansson janssonrpcc json jsonrpcc kazoo lcr ldap log_systemd memcached misc_radius ndb_cassandra ndb_mongodb ndb_redis nsq osp outbound peering phonenum pua_json rabbitmq rls snmpstats topos_redis utils uuid websocket xcap_client xcap_server xhttp_pi xmpp $(skip_modules)
-
-modules_all= $(filter-out modules/CVS,$(wildcard modules/*))
-modules_noinc= $(filter-out $(addprefix modules/, $(exclude_modules) $(static_modules)), $(modules_all)) 
-modules= $(filter-out $(modules_noinc), $(addprefix modules/, $(include_modules) )) $(modules_noinc) 
-modules_configured:=1
-```
-
-#### 9. When the compilation is ready, install Kamailio with the following command:
-
-```
-$ cd /usr/local/src/kamailio-5.2/kamailio
-$ make Q=0 all | tee make_all.txt
-$ make install | tee make_install.txt
-$ ldconfig
-```
-
-The binaries and executable scripts were installed in: /usr/local/sbin
-
-```
-kamailio - Kamailio SIP server
-kamdbctl - script to create and manage the Databases
-kamctl - script to manage and control Kamailio SIP server
-kamcmd - CLI - command line tool to interface with Kamailio SIP server
-```
-
-To be able to use the binaries from command line, make sure that '/usr/local/sbin' is set in PATH environment variable. 
-You can check that with 'echo $PATH'. If not and you are using 'bash', open '/root/.bash_profile' and at the end add:
-
-```
-  PATH=$PATH:/usr/local/sbin
-  export PATH
-```
-
-Kamailio modules are installed in:
-```
-/usr/local/lib64/kamailio/modules
-```
-
-The documentation and readme files are installed in:
-```
-/usr/local/share/doc/kamailio/
-```
-
-The configuration file was installed in:
-```
-/usr/local/etc/kamailio
-```
-
-In case you set the PREFIX variable in 'make cfg' command, then replace /usr/local in all paths above with the value of PREFIX 
-in order to locate the files installed.
-
-#### 10. Populate MySQL database using kamctlrc command
-
-Before executing the command edit kamctlrc file to set the database server and sip domain type at /usr/local/etc/kamailio/
-
-Locate DBENGINE and SIP_DOMAIN variable and set it to MYSQL and IP address of SIP server and uncomment the line:
-
-```
-SIP_DOMAIN=mnc096.mcc262.3gppnetwork.org (Created DNS Domain Name or IP to which IMS components are bound to, visible interface IP address)
-#SIP_DOMAIN=10.4.128.3
-DBENGINE=MYSQL
-```
-
-You can change other values in kamctlrc file. Once you are done updating kamctlrc file, run the script to create the database used by Kamailio:
-
-```
-$ kamdbctl create
-```
-
-(When prompted for mysql root user password, leave it blank i.e. Press Enter)
-
-check database manually;
-```
-$ mysql
-<mysql> show databases;
-<mysql> use kamailio;
-<mysql> show tables;
-<mysql> select * from subscriber;
-```
-
-No Subscribers are added yet
-
-The kamdbctl will add two users in MySQL user tables:
-```
-- kamailio   - (with default password 'kamailiorw') - user which has full access rights to 'kamailio' database
-- kamailioro - (with default password 'kamailioro') - user which has read-only access rights to 'kamailio' database
-```
-
-#### 11. Edit /etc/default/rtpproxy file as follows:
-
-```
-# Defaults for rtpproxy
-
-# The control socket.
-#CONTROL_SOCK="unix:/var/run/rtpproxy/rtpproxy.sock"
-# To listen on an UDP socket, uncomment this line:
-#CONTROL_SOCK=udp:127.0.0.1:22222
-CONTROL_SOCK=udp:127.0.0.1:7722
-
-# Additional options that are passed to the daemon.
-EXTRA_OPTS="-l 172.24.15.30 -d DBUG:LOG_LOCAL0"
-```
-
-here, `-l <PUBLIC_IP>`
-
-Then run,
-
-```
-$ systemctl restart rtpproxy
-```
-
-#### 12. Edit configuration file to fit your requirements for the VoIP platform, you have to edit the /usr/local/etc/kamailio/kamailio.cfg configuration file. 
-
-Follow the instruction in the comments to enable usage of MySQL. Basically you have to add several lines at the top of config file, like:
-
-```
-#!define WITH_MYSQL
-#!define WITH_AUTH
-#!define WITH_USRLOCDB
-#!define WITH_NAT (Include this if client and/or SIP server is behind a NAT)
-
-(uncomment this line and enter the DNS domain created above)
-alias="mnc096.mcc262.3gppnetwork.org"
-
-(uncomment this line, 10.4.128.3 is the internal IP and 172.24.15.30 is the Public/Floating IP)
-listen=udp:10.4.128.3:5060 advertise 172.24.15.30:5060
-```
-
-Further down, we will need to modify the rtpproxy_sock value to match the CONTROL_SOCK option we set for RTPProxy in /etc/default/rtpproxy
-```
-modparam("rtpproxy", "rtpproxy_sock", "udp:127.0.0.1:7722")
-```
-
-If you changed the password for the 'kamailio' user of MySQL, you have to update the value for 'DBURL' parameters.
-
-#### 13. The init.d script
-
-The init.d script can be used to start/stop the Kamailio server in a nicer way. A sample of init.d script for Kamailio is provided at:
-/usr/local/src/kamailio-5.2/kamailio/pkg/kamailio/deb/debian/kamailio.init
-
-Just copy the init file into the /etc/init.d/kamailio. Then change the permissions:
-
-```
-$ cp /usr/local/src/kamailio-5.2/kamailio/pkg/kamailio/deb/bionic/kamailio.init /etc/init.d/kamailio
-$ chmod 755 /etc/init.d/kamailio
-```
-
-then edit the file updating the $DAEMON and $CFGFILE values:
-
-```
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin
-DAEMON=/usr/local/sbin/kamailio
-CFGFILE=/usr/local/etc/kamailio/kamailio.cfg
-```
-
-You need to setup a configuration file in the /etc/default/ directory. This file can be found at:
-```
-/usr/local/src/kamailio-5.2/kamailio/pkg/kamailio/deb/bionic/kamailio.default
-```
-
-You need to rename the file to 'kamailio' after you've copied it. Then edit this file and set RUN_KAMAILIO=yes. Edit the other options at your convenience.
-
-```
-$ cp /usr/local/src/kamailio-5.2/kamailio/pkg/kamailio/deb/bionic/kamailio.default /etc/default/kamailio
-```
+#### 5. Create necessary folders for kamailio pid files and set ownership
 
 Create the directory for pid file:
 
@@ -428,7 +75,7 @@ $ adduser --quiet --system --group --disabled-password \
         --home /var/run/kamailio_scscf kamailio
 ```
 
-Set ownership
+Set ownership:
 
 ```
 $ chown kamailio:kamailio /var/run/kamailio
@@ -437,31 +84,144 @@ $ chown kamailio:kamailio /var/run/kamailio_pcscf
 $ chown kamailio:kamailio /var/run/kamailio_scscf
 ```
 
-Then you can start/stop Kamailio using the following commands:
+#### 6. Clone Kamailio repository and checkout 5.2 version of repository
 
 ```
-$ systemctl start kamailio.service
-$ systemctl stop kamailio.service
+$ mkdir -p /usr/local/src/kamailio-5.2
+$ cd /usr/local/src/kamailio-5.2/
+$ git clone git://git.kamailio.org/kamailio kamailio
+$ cd kamailio
+$ git checkout -b 5.2 origin/5.2
 ```
 
-OR
+#### 7. Edit /etc/hosts file for hostname resolution
+
+Edit the /etc/hosts file as follows:
+
+In the below example ims-deb is the hostname of the machine, PCRF is running in 10.4.128.11/172.24.15.3 (Floating IP) machine and IMS running at 10.4.128.7/172.24.15.21 (Floating IP)
+
+Notice the change in PCRF address resolution (It should be the machine IP where PCRF is running)
+{: .notice--warning}
 
 ```
-$ /etc/init.d/kamailio start
-$ /etc/init.d/kamailio stop
+root@ims-deb:~# cat /etc/hosts
+127.0.0.1   localhost
+127.0.1.1   ims-deb
+10.4.128.7  hss.mnc096.mcc262.3gppnetwork.org     mnc096.mcc262.3gppnetwork.org
+10.4.128.7  icscf.mnc096.mcc262.3gppnetwork.org   mnc096.mcc262.3gppnetwork.org
+10.4.128.7  pcscf.mnc096.mcc262.3gppnetwork.org   mnc096.mcc262.3gppnetwork.org
+10.4.128.7  scscf.mnc096.mcc262.3gppnetwork.org   mnc096.mcc262.3gppnetwork.org
+172.24.15.3 pcrf.mnc096.mcc262.3gppnetwork.org    mnc096.mcc262.3gppnetwork.org
+
+# The following lines are desirable for IPv6 capable hosts
+::1 ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
 ```
 
-check running processes with: ps axw | egrep kamailio
+After editing the file, save it and reboot the machine
+{: .notice--info}
 
-#### 14. A quick check for the basic working of SIP server can be done as follows:
 
-Start the kamailio sip server
+#### 8. Populate MySQL database using kamctlrc command
+
+Edit SIP_DOMAIN and DBENGINE in the /etc/kamailio/kamctlrc configuration file (Used by kamctl and kamdbctl tools).
+
+Set the SIP_DOMAIN to your SIP service domain (or IP address if you don't have a DNS hostname associated with your SIP service).
+Set the DBENGINE to be MYSQL and adjust other setting as you want. Finally, uncomment both SIP_DOMAIN and DBENGINE.
+
+In example above, the following values are set for SIP_DOMAIN and DBENGINE
 
 ```
-$ systemctl start kamailio.service
+SIP_DOMAIN=mnc096.mcc262.3gppnetwork.org
+DBENGINE=MYSQL
 ```
+
+You can change other values in kamctlrc file. Once you are done updating kamctlrc file, run the script to create the database used by Kamailio:
+
+```
+$ kamdbctl create
+```
+
+When prompted for mysql root user password enter the root password if its is set or else leave it blank i.e. Press Enter
+{: .notice--info}
+
+check database manually;
+```
+$ mysql
+<mysql> show databases;
+<mysql> use kamailio;
+<mysql> show tables;
+<mysql> select * from subscriber;
+```
+
+No Subscribers are added yet
+
+The kamdbctl will add two users in MySQL user tables:
+```
+- kamailio   - (with default password 'kamailiorw') - user which has full access rights to 'kamailio' database
+- kamailioro - (with default password 'kamailioro') - user which has read-only access rights to 'kamailio' database
+```
+
+#### 9. Edit /etc/default/rtpproxy file as follows:
+
+```
+# Defaults for rtpproxy
+
+# The control socket.
+#CONTROL_SOCK="unix:/var/run/rtpproxy/rtpproxy.sock"
+# To listen on an UDP socket, uncomment this line:
+CONTROL_SOCK=udp:127.0.0.1:22222
+
+# Additional options that are passed to the daemon.
+EXTRA_OPTS="-l 172.24.15.21 -d DBUG:LOG_LOCAL0"
+```
+
+here, `-l <PUBLIC_IP>`
+
+Then run,
+
+```
+$ systemctl restart rtpproxy
+```
+
+#### 10. Edit configuration file to fit your requirements for the VoIP platform, you have to edit the /etc/kamailio/kamailio.cfg configuration file
+
+Follow the instruction in the comments to enable usage of MySQL. Basically you have to add several lines at the top of config file, like:
+
+```
+#!define WITH_MYSQL
+#!define WITH_AUTH
+#!define WITH_USRLOCDB
+#!define WITH_NAT (Include this if client and/or SIP server is behind a NAT)
+
+(uncomment this line and enter the DNS domain created above)
+alias="mnc096.mcc262.3gppnetwork.org"
+
+(uncomment this line, 10.4.128.7 is the internal IP and 172.24.15.21 is the Public/Floating IP)
+listen=udp:10.4.128.7:5060 advertise 172.24.15.21:5060
+```
+
+Further down, we will need to modify the rtpproxy_sock value to match the CONTROL_SOCK option we set for RTPProxy in /etc/default/rtpproxy
+```
+modparam("rtpproxy", "rtpproxy_sock", "udp:127.0.0.1:22222")
+```
+
+If you changed the password for the 'kamailio' user of MySQL, you have to update the value for 'DBURL' parameters.
+
+#### 11. Run Kamailio SIP server
+
+```
+$ systemctl start kamailio
+```
+
+#### 12. A quick check for the basic working of SIP server can be done as follows:
 
 Create new subscriber accounts. A new account can be added using `kamctl` tool via `kamctl add <username> <password>`
+(When asked for entering MySQL password for user 'kamailio@localhost': type 'kamailiorw', as provided in kamailio.cfg)
 
 ```
 $ kamctl add test testpasswd
@@ -483,7 +243,7 @@ Password: testpasswd
 Server: mnc096.mcc262.3gppnetwork.org (Created DNS Domain Name or IP to which IMS components are bound to, visible interface IP address)
 Optional Settings:
 	Authentication username: test
-	Outbound proxy address: 172.24.15.30 (Floating IP of VM in case of OpenStack or else no need to fill in case of physical machine)
+	Outbound proxy address: 172.24.15.21 (Floating IP of VM in case of OpenStack or else no need to fill in case of physical machine)
 	Transport type: UDP
 ```
 
@@ -495,7 +255,7 @@ Password: testpasswd
 Server: mnc096.mcc262.3gppnetwork.org (Created DNS Domain Name or IP to which IMS components are bound to, visible interface IP address)
 Optional Settings:
 	Authentication username: test2
-	Outbound proxy address: 172.24.15.30 (Floating IP of VM in case of OpenStack or else no need to fill in case of physical machine)
+	Outbound proxy address: 172.24.15.21 (Floating IP of VM in case of OpenStack or else no need to fill in case of physical machine)
 	Transport type: UDP
 ```
 
@@ -527,7 +287,7 @@ Save and exit
 
 - Now try calling from either phone
 
-#### 15. Create new mysql database for pcscf, scscf and icscf, populate databases and grant permissions to respective users identified by a password
+#### 13. Create new mysql database for pcscf, scscf and icscf, populate databases and grant permissions to respective users identified by a password
 
 ```
 $ mysql
@@ -600,14 +360,16 @@ Verify that following tables are present in respective databases by logging into
 | s_cscf              |
 | s_cscf_capabilities |
 +---------------------+
+```
 
+```
 <mysql> grant delete,insert,select,update on pcscf.* to pcscf@localhost identified by 'heslo';
 <mysql> grant delete,insert,select,update on scscf.* to scscf@localhost identified by 'heslo';
 <mysl> grant delete,insert,select,update on icscf.* to icscf@localhost identified by 'heslo';
 <mysl> grant delete,insert,select,update on icscf.* to provisioning@localhost identified by 'provi';
 ```
 
-#### 16. Copy pcscf, icscf and scscf configuration files to /etc/ folder and edit accordingly
+#### 14. Copy pcscf, icscf and scscf configuration files to /etc/ folder and edit accordingly
 
 ```
 $ cd /usr/local/src/kamailio-5.2/kamailio/misc/examples/ims/
@@ -622,121 +384,48 @@ And, rename kamailio.cfg in respective folder as follows: kamailio_pcscf.cfg, ka
 
 Edit the configuration files as per your deployment needs
 
-### I-CSCF  
+### I-CSCF
 
-Edit the DNS domain names, DB URL and IP addresses at all places in the icscf.cfg, icscf.xml files accordingly
+Changes required in icscf.cfg:
 
-Change the DB_URL in icscf.cfg as follows:
 ```
+# SIP / UDP
+listen=udp:10.4.128.7:4060
+
+alias=icscf.mnc096.mcc262.3gppnetwork.org
+
+#!define NETWORKNAME "mnc096.mcc262.3gppnetwork.org" 
+#!define HOSTNAME "icscf.mnc096.mcc262.3gppnetwork.org"
+
 #!define DB_URL "mysql://icscf:heslo@localhost/icscf"
 ```
 
-Edit kamailio_icscf.cfg modules path i.e. mpath variable. Add the following location to mpath: `/usr/local/lib64/kamailio/modules/`
-```
-# ------------------ module loading ----------------------------------
-mpath="/usr/lib64/kamailio/modules_k/:/usr/lib64/kamailio/modules/:/usr/lib/kamailio/modules_k/:/usr/lib/kamailio/modules/:/usr/local/lib64/kamailio/modules/"
-```
-
-Can run I-CSCF as follows: kamailio -f kamailio_icscf.cfg
-
-### P-CSCF 
-
-Edit the DNS domain names, DB URL and IP addresses at all places in the pcscf.cfg, pcscf.xml files accordingly
-
-Change the DB_URL in pcscf.cfg as follows:
+Changes required in icscf.xml:
 
 ```
-#!define DB_URL "mysql://pcscf:heslo@localhost/pcscf"
-Uncomment IPsec flag in pcscf.cfg as follows:
-#!define WITH_IPSEC
-Change the following line as follows
-#!define SQLOPS_DBURL "pcscf=>mysql://pcscf:heslo@localhost/pcscf"
-Uncomment RX interface flag in pcscf.cfg as follows:
-#!define WITH_RX
+FQDN="icscf.mnc096.mcc262.3gppnetwork.org"
+Realm="mnc096.mcc262.3gppnetwork.org"
+
+<Peer FQDN="hss.mnc096.mcc262.3gppnetwork.org" Realm="mnc096.mcc262.3gppnetwork.org" port="3868"/>
+
+<Acceptor port="3869" bind="10.4.128.7"/>
+
+<DefaultRoute FQDN="hss.mnc096.mcc262.3gppnetwork.org" metric="10"/>
 ```
 
-Edit kamailio_pcscf.cfg modules path i.e. mpath variable. Add the following location to mpath: `/usr/local/lib64/kamailio/modules/`
-```
-# ------------------ module loading ----------------------------------
-mpath="/usr/lib64/kamailio/modules_k/:/usr/lib64/kamailio/modules/:/usr/lib/kamailio/modules_k/:/usr/lib/kamailio/modules/:/usr/local/lib64/kamailio/modules/"
-Comment out certain dispatcher modparam parts in kamailio_pcscf.cfg as it does not apply for v5.2 of Kamailio:
-# ----------------- Settings for Dispatcher ---------------
-modparam("dispatcher", "list_file", "/etc/kamailio_pcscf/dispatcher.list")
-
-# Dispatcher: Enable Failover-Support
-modparam("dispatcher", "flags", 2)
-# Dispatcher: Overwrite Destination address, if required.
-modparam("dispatcher", "force_dst", 1)
-# AVP's required for Fail-Over-Support:
-#modparam("dispatcher", "dst_avp", "$avp(DISPATCHER_DST_AVP)")
-#modparam("dispatcher", "grp_avp", "$avp(DISPATCHER_GRP_AVP)")
-#modparam("dispatcher", "cnt_avp", "$avp(DISPATCHER_CNT_AVP)")
-#modparam("dispatcher", "sock_avp", "$avp(DISPATCHER_SOCK_AVP)")
-
-# Try to recover disabled destinations every 15 seconds.
-modparam("dispatcher", "ds_ping_interval", 15)
-# Actively query the gateways:
-modparam("dispatcher", "ds_probing_mode", 1)
-
-Comment out hashing feature for usrloc params in kamailio_pcscf.cfg as it does not apply for v5.2 of Kamailio:
-#modparam("ims_usrloc_pcscf", "hashing_type", 2)
-```
-
-Dispatcher List file - Not sure what to do
-
-Can run P-CSCF as follows: `kamailio -f kamailio_pcscf.cfg`
-
-### S-CSCF
-
-Edit the DNS domain names, DB URL and IP addresses at all places in the scscf.cfg, scscf.xml files accordingly
-
-Change the DB_URL in scscf.cfg as follows:
-
-```
-#!define DB_URL "mysql://scscf:heslo@localhost/scscf"
-```
-
-Edit kamailio_scscf.cfg modules path i.e. mpath variable. Add the following location to mpath: `/usr/local/lib64/kamailio/modules/`
+Changes required in kamailio_icscf.cfg:
 
 ```
 # ------------------ module loading ----------------------------------
-mpath="/usr/lib64/kamailio/modules_k/:/usr/lib64/kamailio/modules/:/usr/lib/kamailio/modules_k/:/usr/lib/kamailio/modules/:/usr/local/lib64/kamailio/modules/"
-Comment out certain dispatcher modparam parts in kamailio_scscf.cfg as it does not apply for v5.2 of Kamailio:
-# ----------------- Settings for Dispatcher ---------------
-modparam("dispatcher", "list_file", "/etc/kamailio_scscf/dispatcher.list")
-# Dispatcher: Enable Failover-Support
-modparam("dispatcher", "flags", 2)
-# Dispatcher: Overwrite Destination address, if required.
-modparam("dispatcher", "force_dst", 1)
-# AVP's required for Fail-Over-Support:
-#modparam("dispatcher", "dst_avp", "$avp(DISPATCHER_DST_AVP)")
-#modparam("dispatcher", "grp_avp", "$avp(DISPATCHER_GRP_AVP)")
-#modparam("dispatcher", "cnt_avp", "$avp(DISPATCHER_CNT_AVP)")
-#modparam("dispatcher", "sock_avp", "$avp(DISPATCHER_SOCK_AVP)")
-
-# Try to recover disabled destinations every 15 seconds.
-modparam("dispatcher", "ds_ping_interval", 15)
-# Actively query the gateways:
-modparam("dispatcher", "ds_probing_mode", 1)
-modparam("dispatcher", "ds_ping_reply_codes", "class=2;code=404;code=480")
+mpath="/usr/lib64/kamailio/modules_k/:/usr/lib64/kamailio/modules/:/usr/lib/kamailio/modules_k/:/usr/lib/kamailio/modules/:/usr/lib/x86_64-linux-gnu/kamailio/modules/"
 ```
 
-Dispatcher List file - Not sure what to do
-
-Can run S-CSCF as follows: `kamailio -f kamailio_scscf.cfg`
-
-OR
-
-edit the /etc/default/kamailio file, by changing the configuration file parameter as follows:
+To perform a quick test edit the /etc/default/kamailio file, by changing the configuration file parameter as follows:
 
 ```
 # Config file
-#CFGFILE=/etc/kamailio_icscf/kamailio_icscf.cfg
-#CFGFILE=/etc/kamailio_scscf/kamailio_scscf.cfg
-CFGFILE=/etc/kamailio_pcscf/kamailio_pcscf.cfg
+CFGFILE=/etc/kamailio_icscf/kamailio_icscf.cfg
 ```
-
-(This example runs PCSCF)
 
 After altering the above file, execute below command
 
@@ -744,7 +433,181 @@ After altering the above file, execute below command
 $ systemctl restart kamailio.service
 ```
 
-#### 17. Install RTPEngine
+And, check that there are no error by viewing logs using the below command
+
+```
+$ journalctl -f --unit kamailio
+```
+
+### P-CSCF 
+
+Edit the DNS domain names, DB URL and IP addresses at all places in the pcscf.cfg, pcscf.xml files accordingly
+
+Changes required in pcscf.cfg:
+
+```
+# SIP / UDP
+listen=udp:10.4.128.7:5060
+
+#!define IPSEC_LISTEN_ADDR "10.4.128.7"
+
+alias=pcscf.mnc096.mcc262.3gppnetwork.org
+
+#!define PCSCF_URL "sip:pcscf.mnc096.mcc262.3gppnetwork.org"
+
+#!subst "/NETWORKNAME/mnc096.mcc262.3gppnetwork.org/"
+#!subst "/HOSTNAME/pcscf.mnc096.mcc262.3gppnetwork.org/"
+
+#!define DB_URL "mysql://pcscf:heslo@localhost/pcscf"
+
+#!define SQLOPS_DBURL "pcscf=>mysql://pcscf:heslo@localhost/pcscf"
+
+##!define TRF_FUNCTION "trf.mnc096.mcc262.3gppnetwork.org"
+
+#!define WITH_RX
+#!define WITH_RX_REG
+#!define WITH_RX_CALL
+
+#!define WITH_IPSEC
+```
+
+Changes required in pcscf.xml:
+
+```
+FQDN="pcscf.mnc096.mcc262.3gppnetwork.org"
+
+Realm="mnc096.mcc262.3gppnetwork.org"
+
+<Peer FQDN="pcrf.mnc096.mcc262.3gppnetwork.org" Realm="mnc096.mcc262.3gppnetwork.org" port="3868"/>
+
+<Acceptor port="3871" bind="10.4.128.7"/>
+
+<DefaultRoute FQDN="pcrf.mnc096.mcc262.3gppnetwork.org" metric="10"/>
+```
+
+Changes required in kamailio_pcscf.cfg:
+
+```
+# ------------------ module loading ----------------------------------
+mpath="/usr/lib64/kamailio/modules_k/:/usr/lib64/kamailio/modules/:/usr/lib/kamailio/modules_k/:/usr/lib/kamailio/modules/:/usr/lib/x86_64-linux-gnu/kamailio/modules/"
+
+# AVP's required for Fail-Over-Support:
+#modparam("dispatcher", "dst_avp", "$avp(DISPATCHER_DST_AVP)")
+#modparam("dispatcher", "grp_avp", "$avp(DISPATCHER_GRP_AVP)")
+#modparam("dispatcher", "cnt_avp", "$avp(DISPATCHER_CNT_AVP)")
+#modparam("dispatcher", "sock_avp", "$avp(DISPATCHER_SOCK_AVP)")
+
+#modparam("ims_usrloc_pcscf", "hashing_type", 2)
+```
+
+Changes required in dispatcher.list:
+
+```
+# SBC's
+2 sip:10.4.128.7:5070
+```
+
+To perform a quick test edit the /etc/default/kamailio file, by changing the configuration file parameter as follows:
+
+```
+# Config file
+CFGFILE=/etc/kamailio_pcscf/kamailio_pcscf.cfg
+```
+
+After altering the above file, execute below command
+
+```
+$ systemctl restart kamailio.service
+```
+
+And, check that there are no error by viewing logs using the below command (Ignore the rtpengine related for now, as we will install in next step)
+
+```
+$ journalctl -f --unit kamailio
+```
+
+### S-CSCF
+
+Edit the DNS domain names, DB URL and IP addresses at all places in the scscf.cfg, scscf.xml files accordingly
+
+Changes required in scscf.cfg:
+
+```
+# SIP / UDP
+listen=udp:10.4.128.7:6060
+
+#!define NETWORKNAME "mnc096.mcc262.3gppnetwork.org"
+#!define HOSTNAME "scscf.mnc096.mcc262.3gppnetwork.org"
+#!define URI "sip:scscf.mnc096.mcc262.3gppnetwork.org:6060"
+
+alias=scscf.mnc096.mcc262.3gppnetwork.org
+
+# ENUM-Server to query:
+#!define ENUM_SUFFIX "mnc096.mcc262.3gppnetwork.org."
+
+#!define DB_URL "mysql://scscf:heslo@localhost/scscf"
+
+#!define RO_MNC "96"
+```
+
+Changes required in scscf.xml:
+
+```
+FQDN="scscf.mnc096.mcc262.3gppnetwork.org"
+
+Realm="mnc096.mcc262.3gppnetwork.org"
+
+<Peer FQDN="hss.mnc096.mcc262.3gppnetwork.org" Realm="mnc096.mcc262.3gppnetwork.org" port="3868"/>
+
+<Acceptor port="3870" bind="10.4.128.7"/>
+
+<DefaultRoute FQDN="hss.mnc096.mcc262.3gppnetwork.org" metric="10"/>
+```
+
+Changes required in kamailio_scscf.cfg:
+
+```
+# ------------------ module loading ----------------------------------
+mpath="/usr/lib64/kamailio/modules_k/:/usr/lib64/kamailio/modules/:/usr/lib/kamailio/modules_k/:/usr/lib/kamailio/modules/:/usr/lib/x86_64-linux-gnu/kamailio/modules/"
+
+# AVP's required for Fail-Over-Support:
+#modparam("dispatcher", "dst_avp", "$avp(DISPATCHER_DST_AVP)")
+#modparam("dispatcher", "grp_avp", "$avp(DISPATCHER_GRP_AVP)")
+#modparam("dispatcher", "cnt_avp", "$avp(DISPATCHER_CNT_AVP)")
+#modparam("dispatcher", "sock_avp", "$avp(DISPATCHER_SOCK_AVP)")
+```
+
+Changes required in dispatcher.list: Not sure what to do hence comment out as follows
+
+```
+# ng-voice Interconnect
+#1 sip:sbc-1.ng-voice.com
+#1 sip:sbc-2.ng-voice.com
+```
+
+To perform a quick test edit the /etc/default/kamailio file, by changing the configuration file parameter as follows:
+
+```
+# Config file
+CFGFILE=/etc/kamailio_scscf/kamailio_scscf.cfg
+```
+
+After altering the above file, execute below command
+
+```
+$ systemctl restart kamailio.service
+```
+
+And, check that there are no error by viewing logs using the below command
+
+```
+$ journalctl -f --unit kamailio
+```
+
+Can run S-CSCF as follows: `kamailio -f kamailio_scscf.cfg`
+
+
+#### 15. Install RTPEngine
 
 Check for dependencies, install dependencies and build .deb packages
 
@@ -779,20 +642,17 @@ $ cp /etc/rtpengine/rtpengine.sample.conf /etc/rtpengine/rtpengine.conf
 Edit this file as follows under "[rtpengine]":
 
 ```
-interface = 10.4.128.3!172.24.15.30
-listen-ng = 127.0.0.1:12222
+interface = 10.4.128.7!172.24.15.21
 ```
 
-Port on which rtpengine binds i.e. listen_ng parameter is udp port 12222. This should be updated in kamailio_pcscf.cfg file at modparam(rtpengine ...
+Port on which rtpengine binds i.e. listen_ng parameter is udp port 2223. This should be updated in kamailio_pcscf.cfg file at modparam(rtpengine ...
 
 ```
 # ----- rtpproxy params -----
-modparam("rtpengine", "rtpengine_sock", "1 == udp:localhost:12222")
-#modparam("rtpengine", "rtpengine_sock", "2 == udp:localhost:9911")
-#modparam("rtpengine", "setid_avp", "$avp(setid)")
-modparam("rtpengine", "setid_default", 1)
-modparam("rtpengine", "extra_id_pv", "$avp(extra_id)")
+modparam("rtpengine", "rtpengine_sock", "1 == udp:localhost:2223")
+```
 
+```
 $ cp /etc/rtpengine/rtpengine-recording.sample.conf /etc/rtpengine/rtpengine-recording.conf
 $ mkdir /var/spool/rtpengine
 $ systemctl restart ngcp-rtpengine-daemon.service ngcp-rtpengine-recording-daemon.service ngcp-rtpengine-recording-nfs-mount.service
@@ -800,19 +660,95 @@ $ systemctl enable ngcp-rtpengine-daemon.service ngcp-rtpengine-recording-daemon
 
 $ systemctl stop rtpproxy
 $ systemctl disable rtpproxy
+$ systemctl mask rtpproxy
 ```
 
-#### 18. Ensure NextEPC HSS and PCRF of the Core Network is configured to use IMS
+#### 16. Running I-CSCF, P-CSCF and S-CSCF as separate systemctl process
+
+First, stop the default kamailio SIP server
+
+```
+$ systemctl stop kamailio
+$ systemctl disable kamailio
+$ systemctl mask kamailio
+```
+
+Copy the init file each of the process you need
+
+```
+$ cp /etc/init.d/kamailio /etc/init.d/kamailio_icscf
+$ cp /etc/init.d/kamailio /etc/init.d/kamailio_pcscf
+$ cp /etc/init.d/kamailio /etc/init.d/kamailio_scscf
+```
+
+Changes required in /etc/init.d/kamailio_icscf
+
+```
+NAME="kamailio_icscf"
+CFGFILE=/etc/$NAME/kamailio_icscf.cfg
+```
+
+Changes required in /etc/init.d/kamailio_pcscf
+
+```
+NAME="kamailio_pcscf"
+CFGFILE=/etc/$NAME/kamailio_pcscf.cfg
+```
+
+Changes required in /etc/init.d/kamailio_scscf
+
+```
+NAME="kamailio_scscf"
+CFGFILE=/etc/$NAME/kamailio_scscf.cfg
+```
+
+```
+$ cd /etc/default/
+$ cp kamailio kamailio_icscf
+$ cp kamailio kamailio_pcscf
+$ cp kamailio kamailio_scscf
+```
+
+Changes required in /etc/default/kamailio_icscf
+
+```
+CFGFILE=/etc/kamailio_icscf/kamailio_icscf.cfg
+
+RUN_KAMAILIO=yes
+```
+
+Changes required in /etc/default/kamailio_pcscf
+
+```
+CFGFILE=/etc/kamailio_pcscf/kamailio_pcscf.cfg
+
+RUN_KAMAILIO=yes
+```
+
+Changes required in /etc/default/kamailio_scscf
+
+```
+CFGFILE=/etc/kamailio_scscf/kamailio_scscf.cfg
+
+RUN_KAMAILIO=yes
+```
+
+Finally,
+
+```
+$ systemctl start kamailio_icscf kamailio_pcscf kamailio_scscf
+```
+
+#### 17. Ensure NextEPC PCRF of the Core Network is configured to use IMS
 
 In nextepc.conf, add the floating IP of the VM running P-CSCF as shown below
 
 ```
 pcscf:
-  - 172.24.15.30
+  - 172.24.15.21
 ```
 
-And, make sure to run NextEPC with Realm as created above "mnc096.mcc262.3gppnetwork.org" so that when a connection request from I-SCSF or S-SCSF
-arrives to HSS with a FQDN hss.mnc096.mcc262.3gppnetwork.org it should be resolved as localhost of the NextEPC machine
+And, make sure to run NextEPC with Realm as created above "mnc096.mcc262.3gppnetwork.org" so that when a connection request from P-SCSF to PCRF with a FQDN pcrf.mnc096.mcc262.3gppnetwork.org it should be resolved as localhost of the NextEPC machine
 {: .notice--warning}
 
 - To change Realm in All-in-One NextEPC configuration
@@ -827,5 +763,5 @@ $ cd ~/nextepc/install/etc/nextepc/freediameter
 - Insert additional "ConnectPeer" entry in ~/nextepc/install/etc/nextepc/freediameter/pcrf.conf to connect to P-CSCF as show below
 
 ```
-ConnectPeer = "pcscf.mnc096.mcc262.3gppnetwork.org" { ConnectTo = "172.24.15.30"; Port=3871; No_TLS; NO_SCTP; };
+ConnectPeer = "pcscf.mnc096.mcc262.3gppnetwork.org" { ConnectTo = "172.24.15.21"; Port=3871; No_TLS; NO_SCTP; };
 ```
