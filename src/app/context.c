@@ -45,9 +45,11 @@ int context_final()
 {
     ogs_assert(context_initialized == 1);
 
+    ogs_pkbuf_default_destroy();
+
     if (self.config.document) {
         yaml_document_delete(self.config.document);
-        ogs_free(self.config.document);
+        free(self.config.document);
     }
 
     context_initialized = 0;
@@ -78,7 +80,7 @@ int context_read_file()
     ogs_assert(yaml_parser_initialize(&parser));
     yaml_parser_set_input_file(&parser, file);
 
-    document = ogs_calloc(1, sizeof(yaml_document_t));
+    document = calloc(1, sizeof(yaml_document_t));
     if (!yaml_parser_load(&parser, document)) {
         ogs_fatal("Failed to parse configuration file '%s'", config->path);
         switch (parser.error) {
@@ -125,7 +127,7 @@ int context_read_file()
             break;
         }
 
-        ogs_free(document);
+        free(document);
         yaml_parser_delete(&parser);
         ogs_assert(!fclose(file));
         return OGS_ERROR;
@@ -148,7 +150,7 @@ int context_setup_log_module()
     return OGS_OK;
 }
 
-static void context_setup_pool()
+static void context_recalculate_pool_size()
 {
     self.pool.ue = self.config.max.ue * self.config.max.enb;
     self.pool.sess = self.pool.ue * MAX_NUM_OF_SESS;
@@ -176,9 +178,11 @@ static int context_prepare()
     self.config.max.ue = MAX_NUM_OF_UE;
 
 #define MAX_NUM_OF_PACKET_POOL      65536
-    self.config.max.packet.pool = MAX_NUM_OF_PACKET_POOL;
+    self.config.pool.packet = MAX_NUM_OF_PACKET_POOL;
 
-    context_setup_pool();
+    ogs_pkbuf_default_init(&self.config.pool.defconfig);
+
+    context_recalculate_pool_size();
 
     return OGS_OK;
 }
@@ -317,27 +321,52 @@ int context_parse_config()
                 } else if (!strcmp(max_key, "enb")) {
                     const char *v = ogs_yaml_iter_value(&max_iter);
                     if (v) self.config.max.enb = atoi(v);
-                } else if (!strcmp(max_key, "packet")) {
-                    const char *pool = NULL;
-                    ogs_yaml_iter_t packet_iter;
-                    ogs_yaml_iter_recurse(&max_iter, &packet_iter);
-                    while (ogs_yaml_iter_next(&packet_iter)) {
-                        const char *packet_key = ogs_yaml_iter_key(&packet_iter);
-                        ogs_assert(packet_key);
-                        if (!strcmp(packet_key, "pool")) {
-                            pool = ogs_yaml_iter_value(&packet_iter);
-                        } else
-                            ogs_warn("unknown key `%s`", packet_key);
-                    }
-
-                    if (pool) {
-                        self.config.max.packet.pool =  atoi(pool);
-                    }
                 } else
                     ogs_warn("unknown key `%s`", max_key);
             }
 
-            context_setup_pool();
+            context_recalculate_pool_size();
+        } else if (!strcmp(root_key, "pool")) {
+            ogs_yaml_iter_t pool_iter;
+            ogs_yaml_iter_recurse(&root_iter, &pool_iter);
+            while (ogs_yaml_iter_next(&pool_iter)) {
+                const char *pool_key = ogs_yaml_iter_key(&pool_iter);
+                ogs_assert(pool_key);
+                if (!strcmp(pool_key, "128")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.config.pool.defconfig.cluster_128_pool = atoi(v);
+                } else if (!strcmp(pool_key, "256")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.config.pool.defconfig.cluster_256_pool = atoi(v);
+                } else if (!strcmp(pool_key, "512")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.config.pool.defconfig.cluster_512_pool = atoi(v);
+                } else if (!strcmp(pool_key, "1024")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.config.pool.defconfig.cluster_1024_pool = atoi(v);
+                } else if (!strcmp(pool_key, "2048")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.config.pool.defconfig.cluster_2048_pool = atoi(v);
+                } else if (!strcmp(pool_key, "8192")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.config.pool.defconfig.cluster_8192_pool = atoi(v);
+                } else if (!strcmp(pool_key, "big")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.config.pool.defconfig.cluster_big_pool = atoi(v);
+                } else if (!strcmp(pool_key, "packet")) {
+                    const char *v = ogs_yaml_iter_value(&pool_iter);
+                    if (v)
+                        self.config.pool.packet = atoi(v);
+                } else
+                    ogs_warn("unknown key `%s`", pool_key);
+            }
         }
             
     }

@@ -265,8 +265,7 @@ int sgw_gtp_open()
     ogs_pkbuf_config_t config;
     memset(&config, 0, sizeof config);
 
-    config.pkbuf_pool = config.cluster_pool = config.cluster_8192_pool = 
-        context_self()->config.max.packet.pool;
+    config.cluster_8192_pool = context_self()->config.pool.packet;
 
     packet_pool = ogs_pkbuf_pool_create(&config);
 

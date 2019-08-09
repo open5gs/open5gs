@@ -49,6 +49,8 @@ int app_will_initialize(app_param_t *param)
     rv = context_parse_config();
     if (rv != OGS_OK) return rv;
 
+    ogs_pkbuf_default_create(&context_self()->config.pool.defconfig);
+
     context_self()->log.path = param->log_path;
 
     if (param->logfile_disabled == false &&
