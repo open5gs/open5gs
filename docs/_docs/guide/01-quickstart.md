@@ -40,11 +40,14 @@ Other Linux distributions can be installed by changing the path.
 
 ```
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_9.0/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10.0/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_9.0/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_10.0/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_16.04/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_17.10/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.10/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.04/
 ```
 
 [Martin Hauke](https://build.opensuse.org/user/show/mnhauke) packaged NextEPC for *openSUSE* on [OBS](https://build.opensuse.org/package/show/home:mnhauke:nextepc/nextepc).
