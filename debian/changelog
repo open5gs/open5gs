@@ -1,3 +1,9 @@
+nextepc (0.5.2~disco) disco; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Aug 2019 13:21:24 +0000
+
 nextepc (0.5.2~xenial) xenial; urgency=medium
 
   * Bug Fixed
