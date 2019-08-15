@@ -24,7 +24,7 @@
 #define OGS_LOG_DOMAIN __base_fd_domain
 
 static void fd_gnutls_log_func(int level, const char *str);
-static void fd_log_func(int printlevel, const char *format, va_list ap);
+static void fd_log_func(int printlevel, const char *fname, int line, const char *format, va_list ap);
 
 int fd_init(int mode, const char *conffile, fd_config_t *fd_config)
 {
@@ -93,7 +93,7 @@ static void fd_gnutls_log_func(int level, const char *str)
     ogs_trace("gnutls[%d]: %s", level, str);
 }
 
-static void fd_log_func(int printlevel, const char *format, va_list ap)
+static void fd_log_func(int printlevel, const char *fname, int line, const char *format, va_list ap)
 {
     char buffer[OGS_HUGE_LEN];
     int  ret = 0;
@@ -108,16 +108,16 @@ static void fd_log_func(int printlevel, const char *format, va_list ap)
     switch(printlevel) 
     {
 	    case FD_LOG_ANNOYING: 
-            ogs_trace("freeDiameter[%d]: %s", printlevel, buffer);
+            ogs_trace("freeDiameter[%d]: %s:%u %s", printlevel, fname, line, buffer);
             break;  
 	    case FD_LOG_DEBUG:
-            ogs_trace("freeDiameter[%d]: %s", printlevel, buffer);
+            ogs_trace("freeDiameter[%d]: %s:%u %s", printlevel, fname, line, buffer);
             break;  
 	    case FD_LOG_NOTICE:
-            ogs_trace("freeDiameter[%d]: %s", printlevel, buffer);
+            ogs_trace("freeDiameter[%d]: %s:%u %s", printlevel, fname, line, buffer);
             break;
 	    case FD_LOG_ERROR:
-            ogs_error("%s", buffer);
+            ogs_error("%s:%d %s", fname, line, buffer);
             if (!strcmp(buffer, " - The certificate is expired."))
             {
                 ogs_error("You can renew CERT as follows:");
@@ -129,13 +129,13 @@ static void fd_log_func(int printlevel, const char *format, va_list ap)
             {
                 char *except = "Initiating freeDiameter shutdown sequence";
                 if (strncmp(buffer, except, strlen(except)) == 0)
-                    ogs_info("freeDiameter[%d]: %s", printlevel, buffer);
+                    ogs_info("freeDiameter[%d]: %s:%u %s", printlevel, fname, line, buffer);
                 else
-                    ogs_fatal("%s", buffer);
+                    ogs_fatal("%s:%d %s", fname, line, buffer);
             }
             break;
 	    default:
-            ogs_warn("%s", buffer);
+            ogs_warn("%s:%d %s", fname, line, buffer);
             break;
     }
 }

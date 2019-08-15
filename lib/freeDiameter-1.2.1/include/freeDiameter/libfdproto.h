@@ -135,6 +135,8 @@ extern const char fd_libproto_version[];
  *
  * PARAMETERS:
  *  loglevel	: Integer, how important the message is. Valid values are macros FD_LOG_*
+ *  filename	: source file name
+ *  line	: source line number
  *  format 	: Same format string as in the printf function
  *  ...		: Same list as printf
  *
@@ -146,9 +148,9 @@ extern const char fd_libproto_version[];
  * RETURN VALUE:
  *  None.
  */
-void fd_log ( int, const char *, ... ) _ATTRIBUTE_PRINTFLIKE_(2,3);
+void fd_log ( int, const char *, int, const char *, ... ) _ATTRIBUTE_PRINTFLIKE_(4,5);
 #ifndef SWIG
-void fd_log_va( int, const char *, va_list);
+void fd_log_va( int, const char *, int, const char *, va_list);
 #endif /* SWIG */
 
 /* these are internal objects of the debug facility, 
@@ -208,7 +210,7 @@ char * fd_log_time ( struct timespec * ts, char * buf, size_t len, int incl_date
  * RETURN VALUE:
  * int          : Success or failure
  */
-int fd_log_handler_register ( void (*logger)(int loglevel, const char * format, va_list args) );
+int fd_log_handler_register ( void (*logger)(int loglevel, const char *fname, int line, const char * format, va_list args) );
 
 /*
  * FUNCTION:    fd_log_handler_unregister
@@ -309,7 +311,7 @@ static char * file_bname_init(char * full) { file_bname = basename(full); return
   The general debug macro
  *************************/
 #define LOG(printlevel,format,args... ) \
-	fd_log((printlevel), STD_TRACE_FMT_STRING format STD_TRACE_FMT_ARGS, ## args)
+	fd_log((printlevel), __FILE__, __LINE__, STD_TRACE_FMT_STRING format STD_TRACE_FMT_ARGS, ## args)
 
 /*
  * Use the following macros in the code to get traces with location & pid in debug mode: 
@@ -355,7 +357,7 @@ static char * file_bname_init(char * full) { file_bname = basename(full); return
 	for (__i = 0; (__i < __sz) && (__i<(sizeof(__strbuf)/2)); __i++) {						\
 		sprintf(__strbuf + (2 * __i), "%02hhx", __buf[__i]);     						\
 	}														\
-        fd_log(printlevel, STD_TRACE_FMT_STRING "%s%s%s" STD_TRACE_FMT_ARGS,  						\
+        fd_log(printlevel, __FILE__, __LINE__, STD_TRACE_FMT_STRING "%s%s%s" STD_TRACE_FMT_ARGS,  						\
                (prefix), __strbuf, (suffix));										\
 }
 
@@ -490,15 +492,15 @@ static __inline__ int old_TRACE_BOOL( enum old_levels level, const char * file, 
 #define TRACE_BOOL(level)  old_TRACE_BOOL((level), __STRIPPED_FILE__, __PRETTY_FUNCTION__)
 
 #ifndef SWIG
-static __inline__ void fd_log_deprecated( int level, const char *format, ... ) MARK_DEPRECATED
+static __inline__ void fd_log_deprecated( int level, const char *fname, int line, const char *format, ... ) MARK_DEPRECATED
 { 
 	va_list ap;
 	va_start(ap, format);
-	fd_log_va(level, format, ap);
+	fd_log_va(level, fname, line, format, ap);
 	va_end(ap);
 }
 #else /* SWIG */
-void fd_log_deprecated( int level, const char *format, ... );
+void fd_log_deprecated( int level, const char *fname, int line, const char *format, ... );
 #endif /* SWIG */
 static __inline__ void replace_me() MARK_DEPRECATED { }
 
@@ -507,9 +509,9 @@ static __inline__ void replace_me() MARK_DEPRECATED { }
 
 
 /* Use the LOG_* instead, or use the new *_dump functions when dumping an object */
-#define fd_log_debug(format,args...)  fd_log_deprecated(FD_LOG_DEBUG, format, ## args)
-#define fd_log_notice(format,args...) fd_log_deprecated(FD_LOG_NOTICE, format, ## args)
-#define fd_log_error(format,args...)  fd_log_deprecated(FD_LOG_ERROR, format, ## args)
+#define fd_log_debug(format,args...)  fd_log_deprecated(FD_LOG_DEBUG, __FILE__, __LINE__, format, ## args)
+#define fd_log_notice(format,args...) fd_log_deprecated(FD_LOG_NOTICE, __FILE__, __LINE__, format, ## args)
+#define fd_log_error(format,args...)  fd_log_deprecated(FD_LOG_ERROR, __FILE__, __LINE__, format, ## args)
 
 /* old macro for traces. To be replaced by appropriate LOG_* macros. */
 # define TRACE_DEBUG(oldlevel, format,args... ) {					\
@@ -601,9 +603,9 @@ static __inline__ void replace_me() MARK_DEPRECATED { }
 #undef LOG_BUFFER
 
 #define LOG_D(format,args... ) /* noop */
-#define LOG_N(format,args...) fd_log(FD_LOG_NOTICE, format, ## args)
-#define LOG_E(format,args...) fd_log(FD_LOG_ERROR, format, ## args)
-#define LOG_F(format,args...) fd_log(FD_LOG_FATAL, format, ## args)
+#define LOG_N(format,args...) fd_log(FD_LOG_NOTICE, __FILE__, __LINE__, format, ## args)
+#define LOG_E(format,args...) fd_log(FD_LOG_ERROR, __FILE__, __LINE__, format, ## args)
+#define LOG_F(format,args...) fd_log(FD_LOG_FATAL, __FILE__, __LINE__, format, ## args)
 #define LOG_BUFFER(printlevel, level, prefix, buf, bufsz, suffix ) {								\
 	if (printlevel > FD_LOG_DEBUG) {											\
 		int __i;													\
@@ -613,7 +615,7 @@ static __inline__ void replace_me() MARK_DEPRECATED { }
 		for (__i = 0; (__i < __sz) && (__i<(sizeof(__strbuf)/2); __i++) {						\
 			sprintf(__strbuf + (2 * __i), "%02.2hhx", __buf[__i]);     						\
 		}														\
-                fd_log(printlevel, prefix"%s"suffix, __strbuf);									\
+                fd_log(printlevel, __FILE__, __LINE__, prefix"%s"suffix, __strbuf);									\
 	}
 #endif /* STRIP_DEBUG_CODE */
 

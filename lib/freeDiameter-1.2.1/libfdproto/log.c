@@ -41,7 +41,7 @@ pthread_mutex_t fd_log_lock = PTHREAD_MUTEX_INITIALIZER;
 pthread_key_t	fd_log_thname;
 int fd_g_debug_lvl = FD_LOG_NOTICE;
 
-static void fd_internal_logger( int, const char *, va_list );
+static void fd_internal_logger( int, const char *, int, const char *, va_list );
 static int use_colors = 0; /* 0: not init, 1: yes, 2: no */
 
 /* These may be used to pass specific debug requests via the command-line parameters */
@@ -53,10 +53,10 @@ int fd_breaks = 0;
 int fd_breakhere(void) { return ++fd_breaks; }
 
 /* Allow passing of the log and debug information from base stack to extensions */
-void (*fd_logger)( int loglevel, const char * format, va_list args ) = fd_internal_logger;
+void (*fd_logger)( int loglevel, const char *fname, int line, const char * format, va_list args ) = fd_internal_logger;
 
 /* Register an external call back for tracing and debug */
-int fd_log_handler_register( void (*logger)(int loglevel, const char * format, va_list args) )
+int fd_log_handler_register( void (*logger)(int loglevel, const char *fname, int line, const char * format, va_list args) )
 {
         CHECK_PARAMS( logger );
 
@@ -85,7 +85,7 @@ static void fd_cleanup_mutex_silent( void * mutex )
 }
 
 
-static void fd_internal_logger( int printlevel, const char *format, va_list ap )
+static void fd_internal_logger( int printlevel, const char *fname, int line, const char *format, va_list ap )
 {
     char buf[25];
 
@@ -94,13 +94,13 @@ static void fd_internal_logger( int printlevel, const char *format, va_list ap )
     	return;
 
     /* add timestamp */
-    printf("%s  ", fd_log_time(NULL, buf, sizeof(buf), 
+    printf("%s %s:%d  ", fd_log_time(NULL, buf, sizeof(buf), 
 #if (defined(DEBUG) && defined(DEBUG_WITH_META))
     	1, 1
 #else /* (defined(DEBUG) && defined(DEBUG_WITH_META)) */
         0, 0
 #endif /* (defined(DEBUG) && defined(DEBUG_WITH_META)) */
-	    ));
+	    ), fname, line);
     /* Use colors on stdout ? */
     if (!use_colors) {
 	if (isatty(STDOUT_FILENO))
@@ -126,7 +126,7 @@ static void fd_internal_logger( int printlevel, const char *format, va_list ap )
 }
 
 /* Log a debug message */
-void fd_log ( int loglevel, const char * format, ... )
+void fd_log ( int loglevel, const char *fname, int line, const char * format, ... )
 {
 	va_list ap;
 	
@@ -135,7 +135,7 @@ void fd_log ( int loglevel, const char * format, ... )
 	pthread_cleanup_push(fd_cleanup_mutex_silent, &fd_log_lock);
 	
 	va_start(ap, format);
-	fd_logger(loglevel, format, ap);
+	fd_logger(loglevel, fname, line, format, ap);
 	va_end(ap);
 
 	pthread_cleanup_pop(0);
@@ -144,12 +144,12 @@ void fd_log ( int loglevel, const char * format, ... )
 }
 
 /* Log a debug message */
-void fd_log_va ( int loglevel, const char * format, va_list args )
+void fd_log_va ( int loglevel, const char *fname, int line, const char * format, va_list args )
 {
 	(void)pthread_mutex_lock(&fd_log_lock);
 	
 	pthread_cleanup_push(fd_cleanup_mutex_silent, &fd_log_lock);
-	fd_logger(loglevel, format, args);
+	fd_logger(loglevel, fname, line, format, args);
 	pthread_cleanup_pop(0);
 	
 	(void)pthread_mutex_unlock(&fd_log_lock);
