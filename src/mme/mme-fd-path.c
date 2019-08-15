@@ -712,7 +712,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
 
         ret = fd_avp_search_avp(avp, s6a_subscribed_rau_tau_timer, &avpch1);
         ogs_assert(ret == 0);
-        if (avp) {
+        if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
             ogs_assert(ret == 0);
             subscription_data->subscribed_rau_tau_timer = hdr->avp_value->i32;
