@@ -38,7 +38,7 @@ static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
      * TRACKING AREA UPDATE ACCEPT sent with TMSI
      * GUTI REALLOCATION COMMAND sent */
     [MME_TIMER_T3450] = 
-        { .max_count = 4, .duration = ogs_time_from_sec(3) },
+        { .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     /* AUTHENTICATION REQUEST sent
      * SECURITY MODE COMMAND sent */
