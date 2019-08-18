@@ -922,7 +922,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 /* NOTE: Do I need to send Attach-Reject */
             } else {
                 mme_ue->t3450.retry_count++;
-                nas_send_attach_accept(mme_ue);
+                //nas_send_attach_accept(mme_ue);
             }
             break;
         default:
