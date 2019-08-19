@@ -355,10 +355,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             enb_ue_t *enb_ue = NULL;
 
             rv = nas_send_attach_reject(mme_ue,
-                EMM_CAUSE_IMSI_UNKNOWN_IN_HSS,
+                EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED,
                 ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             ogs_assert(rv == OGS_OK);
-            ogs_warn("EMM_CAUSE : IMSI Unknown in HSS");
+            ogs_warn("EMM_CAUSE : Roaming not allowed in this TA");
 
             enb_ue = mme_ue->enb_ue;
             ogs_assert(enb_ue);
