@@ -49,6 +49,48 @@ void mme_state_final(ogs_fsm_t *s, mme_event_t *e)
     ogs_assert(s);
 }
 
+/* 3GPP TS 29.272 Annex A; Table !.a: Mapping from S6a error codes to NAS Cause Codes */
+static uint8_t emm_cause_from_diameter(const uint32_t *dia_err, const uint32_t *dia_exp_err)
+{
+    if (dia_exp_err) {
+        switch (*dia_exp_err) {
+        case S6A_DIAMETER_ERROR_USER_UNKNOWN:                   /* 5001 */
+        return EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED;
+        case S6A_DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION:       /* 5420 */
+            /* FIXME: Error diagnostic? */
+            return EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
+        case S6A_DIAMETER_ERROR_RAT_NOT_ALLOWED:                /* 5421 */
+            return EMM_CAUSE_ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA;
+        case S6A_DIAMETER_ERROR_ROAMING_NOT_ALLOWED:            /* 5004 */
+            return EMM_CAUSE_PLMN_NOT_ALLOWED;
+            //return EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN; (ODB_HPLMN_APN)
+            //return EMM_CAUSE_ESM_FAILURE; (ODB_ALL_APN)
+        case S6A_DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE:      /* 4181 */
+            return EMM_CAUSE_NETWORK_FAILURE;
+        }
+    }
+    if (dia_err) {
+        switch (*dia_err) {
+        case ER_DIAMETER_AUTHORIZATION_REJECTED:                /* 5003 */
+        case ER_DIAMETER_UNABLE_TO_DELIVER:                     /* 3002 */
+        case ER_DIAMETER_REALM_NOT_SERVED:                      /* 3003 */
+            return EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
+        case ER_DIAMETER_UNABLE_TO_COMPLY:                      /* 5012 */
+        case ER_DIAMETER_INVALID_AVP_VALUE:                     /* 5004 */
+        case ER_DIAMETER_AVP_UNSUPPORTED:                       /* 5001 */
+        case ER_DIAMETER_MISSING_AVP:                           /* 5005 */
+        case ER_DIAMETER_RESOURCES_EXCEEDED:                    /* 5006 */
+        case ER_DIAMETER_AVP_OCCURS_TOO_MANY_TIMES:             /* 5009 */
+        default: /* FIXME: only permanent */
+            return EMM_CAUSE_NETWORK_FAILURE;
+        }
+    }
+
+    ogs_error("Unexpected Diameter Result Code %d/%d, defaulting to severe "
+              "network failure", dia_err ? *dia_err : -1, dia_exp_err ? *dia_exp_err : -1);
+    return EMM_CAUSE_SEVERE_NETWORK_FAILURE;
+}
+
 void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 {
     int rv;
@@ -353,12 +395,16 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
             enb_ue_t *enb_ue = NULL;
+            /* unfortunately fd doesn't distinguish between result-code and experimental-
+             * result-code.  However, e.g. 5004 has different meaning if used in result-code
+             * than in experimental-result-code */
+            uint8_t emm_cause = emm_cause_from_diameter(&s6a_message->result_code,
+                                                        &s6a_message->result_code);
 
-            rv = nas_send_attach_reject(mme_ue,
-                EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED,
+            rv = nas_send_attach_reject(mme_ue, emm_cause,
                 ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             ogs_assert(rv == OGS_OK);
-            ogs_warn("EMM_CAUSE : Roaming not allowed in this TA");
+            ogs_warn("EMM_CAUSE : %d", emm_cause);
 
             enb_ue = mme_ue->enb_ue;
             ogs_assert(enb_ue);
