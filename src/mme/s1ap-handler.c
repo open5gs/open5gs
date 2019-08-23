@@ -300,8 +300,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d]",
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, enb_ue->saved.tai.tac);
 
-    ogs_assert(s1ap_send_to_nas(enb_ue,
-        S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU) == OGS_OK);
+    s1ap_send_to_nas(enb_ue, S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU);
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -354,8 +353,7 @@ void s1ap_handle_uplink_nas_transport(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    ogs_assert(s1ap_send_to_nas(enb_ue,
-        S1AP_ProcedureCode_id_uplinkNASTransport, NAS_PDU) == OGS_OK);
+    s1ap_send_to_nas(enb_ue, S1AP_ProcedureCode_id_uplinkNASTransport, NAS_PDU);
 }
 
 void s1ap_handle_ue_capability_info_indication(
