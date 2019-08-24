@@ -230,11 +230,155 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 }
 
+static int test_build_mme_configuration_transfer(
+        S1AP_SONConfigurationTransfer_t *son_configuration_transfer)
+{
+    int rv;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_MMEConfigurationTransfer_t *MMEConfigurationTransfer = NULL;
+
+    S1AP_MMEConfigurationTransferIEs_t *ie = NULL;
+    S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer = NULL;
+
+    ogs_assert(son_configuration_transfer);
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = 
+        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_MMEConfigurationTransfer;
+    initiatingMessage->criticality = S1AP_Criticality_ignore;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_MMEConfigurationTransfer;
+
+    MMEConfigurationTransfer =
+        &initiatingMessage->value.choice.MMEConfigurationTransfer;
+
+    ie = CALLOC(1, sizeof(S1AP_MMEConfigurationTransferIEs_t));
+    ASN_SEQUENCE_ADD(&MMEConfigurationTransfer->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_SONConfigurationTransferMCT;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present =
+        S1AP_MMEConfigurationTransferIEs__value_PR_SONConfigurationTransfer;
+
+    SONConfigurationTransfer = &ie->value.choice.SONConfigurationTransfer;
+
+    rv = s1ap_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
+            son_configuration_transfer, SONConfigurationTransfer);
+    ogs_assert(rv == OGS_OK);
+
+    ogs_pkbuf_t *s1apbuf;
+    rv = s1ap_encode_pdu(&s1apbuf, &pdu);
+    s1ap_free_pdu(&pdu);
+
+    ogs_pkbuf_free(s1apbuf);
+
+    return OGS_OK;
+}
+
+static void test_parse_enb_configuration_transfer(
+        s1ap_message_t *message)
+{
+    int rv;
+    char buf[OGS_ADDRSTRLEN];
+    int i;
+
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_ENBConfigurationTransfer_t *ENBConfigurationTransfer = NULL;
+
+    S1AP_ENBConfigurationTransferIEs_t *ie = NULL;
+    S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer = NULL;
+
+    ogs_assert(message);
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    ENBConfigurationTransfer =
+        &initiatingMessage->value.choice.ENBConfigurationTransfer;
+    ogs_assert(ENBConfigurationTransfer);
+
+    for (i = 0; i < ENBConfigurationTransfer->protocolIEs.list.count; i++) {
+        ie = ENBConfigurationTransfer->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case S1AP_ProtocolIE_ID_id_SONConfigurationTransferECT:
+            SONConfigurationTransfer =
+                &ie->value.choice.SONConfigurationTransfer;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (SONConfigurationTransfer) {
+        test_build_mme_configuration_transfer(SONConfigurationTransfer);
+    }
+}
+
+static void test2_func(abts_case *tc, void *data)
+{
+    char *payload = 
+        "0028"
+        "4022000001008140 1b0009f124000000 1009f12458ac0009 f1240000002009f1"
+        "2458ac00";
+
+    s1ap_message_t message;
+    ogs_pkbuf_t *enb_pkbuf;
+    int result;
+    char hexbuf[MAX_SDU_LEN];
+
+    enb_pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_data(enb_pkbuf, 
+            OGS_HEX(payload, strlen(payload), hexbuf), 38);
+
+    result = s1ap_decode_pdu(&message, enb_pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+
+    test_parse_enb_configuration_transfer(&message);
+    s1ap_free_pdu(&message);
+
+    ogs_pkbuf_free(enb_pkbuf);
+}
+
+static void test3_func(abts_case *tc, void *data)
+{
+    char *payload = 
+        "0028"
+        "4028000001008140 210009f124000000 2009f12458ac0009 f1240000001009f1"
+        "2458ac500f80c0a8 683b";
+
+    S1AP_SONConfigurationTransfer_t SONConfigurationTransfer;
+    s1ap_message_t message;
+    ogs_pkbuf_t *enb_pkbuf;
+    int result;
+    char hexbuf[MAX_SDU_LEN];
+
+    enb_pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    ogs_pkbuf_put_data(enb_pkbuf, 
+            OGS_HEX(payload, strlen(payload), hexbuf), 44);
+
+    result = s1ap_decode_pdu(&message, enb_pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+
+    test_parse_enb_configuration_transfer(&message);
+    s1ap_free_pdu(&message);
+
+    ogs_pkbuf_free(enb_pkbuf);
+}
+
 abts_suite *test_crash(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test1_func, NULL);
+#if 0
+    abts_run_test(suite, test2_func, NULL);
+#endif
+    abts_run_test(suite, test3_func, NULL);
 
     return suite;
 }
