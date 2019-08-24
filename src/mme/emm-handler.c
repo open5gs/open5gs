@@ -219,7 +219,7 @@ int emm_handle_attach_complete(
         (int)local.tm_gmtoff);
 
     rv = nas_send_emm_to_esm(mme_ue, &attach_complete->esm_message_container);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -271,8 +271,10 @@ int emm_handle_attach_complete(
     }                
 
     rv = nas_security_encode(&emmbuf, mme_ue, &message);
-    ogs_assert(rv == OGS_OK && emmbuf);
-    ogs_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == OGS_OK);
+    if (rv == OGS_OK) {
+        ogs_assert(emmbuf);
+        ogs_expect(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == OGS_OK);
+    }
 
     ogs_debug("[EMM] EMM information");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
@@ -303,7 +305,7 @@ int emm_handle_identity_response(
             &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
         mme_ue_set_imsi(mme_ue, imsi_bcd);
 
-        ogs_assert(mme_ue->imsi_len);
+        ogs_expect(mme_ue->imsi_len);
     } else {
         ogs_warn("Not supported Identity type[%d]", mobile_identity->imsi.type);
     }

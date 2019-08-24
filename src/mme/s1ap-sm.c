@@ -191,7 +191,7 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert(e->enb_ue);
             ogs_assert(e->pkbuf);
 
-            ogs_assert(OGS_OK == s1ap_send_to_enb_ue(e->enb_ue, e->pkbuf));
+            ogs_expect(OGS_OK == s1ap_send_to_enb_ue(e->enb_ue, e->pkbuf));
             ogs_timer_delete(e->timer);
             break;
         case MME_TIMER_UE_CONTEXT_RELEASE:

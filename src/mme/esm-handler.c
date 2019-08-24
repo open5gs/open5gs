@@ -69,7 +69,7 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             /* Invalid APN */
             rv = nas_send_pdn_connectivity_reject(
                     sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
 
             return OGS_ERROR;
         }
@@ -99,11 +99,11 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     if (sess->pdn) {
         ogs_debug("    APN[%s]", sess->pdn->apn);
         rv = mme_gtp_send_create_session_request(sess);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
     } else {
         rv = nas_send_pdn_connectivity_reject(
                 sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
 
         return OGS_ERROR;
     }
@@ -149,12 +149,12 @@ int esm_handle_information_response(mme_sess_t *sess,
             }
         } else {
             rv = mme_gtp_send_create_session_request(sess);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
         }
     } else {
         rv = nas_send_pdn_connectivity_reject(
                 sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
 
         return OGS_ERROR;
     }

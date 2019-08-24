@@ -51,10 +51,10 @@ void sbc_handle_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
 
             /* Buidl S1AP Write Replace Warning Request message */
             rv = s1ap_build_write_replace_warning_request(&s1apbuf, sbc_pws);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
 
             /* Send to enb */
-            ogs_assert(s1ap_send_to_enb(
+            ogs_expect(s1ap_send_to_enb(
                     enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == OGS_OK);
         }
     }
@@ -89,10 +89,10 @@ void sbc_handle_stop_warning_request(sbc_pws_data_t *sbc_pws)
 
             /* Buidl S1AP Kill request message */
             rv = s1ap_build_kill_request(&s1apbuf, sbc_pws);
-            ogs_assert(rv == OGS_OK && s1apbuf);
+            ogs_expect(rv == OGS_OK && s1apbuf);
 
             /* Send to enb */
-            ogs_assert(s1ap_send_to_enb(
+            ogs_expect(s1ap_send_to_enb(
                     enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == OGS_OK);
         }
     }

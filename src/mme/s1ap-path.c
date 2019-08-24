@@ -185,23 +185,27 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         break;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
         security_header_type.integrity_protected = 1;
-        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        if (!ogs_pkbuf_pull(nasbuf, 6))
+            return OGS_ERROR;
         break;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
         security_header_type.integrity_protected = 1;
         security_header_type.ciphered = 1;
-        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        if (!ogs_pkbuf_pull(nasbuf, 6))
+            return OGS_ERROR;
         break;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
         security_header_type.integrity_protected = 1;
         security_header_type.new_security_context = 1;
-        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        if (!ogs_pkbuf_pull(nasbuf, 6))
+            return OGS_ERROR;
         break;
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
         security_header_type.integrity_protected = 1;
         security_header_type.ciphered = 1;
         security_header_type.new_security_context = 1;
-        ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
+        if (!ogs_pkbuf_pull(nasbuf, 6))
+            return OGS_ERROR;
         break;
     default:
         ogs_error("Not implemented(securiry header type:0x%x)", 
@@ -235,8 +239,11 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         mme_ue_t *mme_ue = enb_ue->mme_ue;
         ogs_assert(mme_ue);
         s1ap_send_to_esm(mme_ue, nasbuf);
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("Unknown/Unimplemented NAS Protocol discriminator 0x%02x",
+                  h->protocol_discriminator);
+        return OGS_ERROR;
+    }
 
     return OGS_OK;
 }
@@ -249,10 +256,10 @@ int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, NULL);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = nas_send_to_enb(mme_ue, s1apbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -265,10 +272,10 @@ int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     rv = s1ap_build_ue_context_modification_request(&s1apbuf, mme_ue);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = nas_send_to_enb(mme_ue, s1apbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -295,10 +302,10 @@ int s1ap_send_ue_context_release_command(
 
         rv = s1ap_build_ue_context_release_command(
                 &s1apbuf, enb_ue, group, cause);
-        ogs_assert(rv == OGS_OK && s1apbuf);
+        ogs_expect(rv == OGS_OK && s1apbuf);
 
         rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, delay);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
     } else {
         if (enb_ue->t_ue_context_release.pkbuf) {
             s1apbuf = enb_ue->t_ue_context_release.pkbuf;
@@ -311,7 +318,7 @@ int s1ap_send_ue_context_release_command(
 
             rv = s1ap_build_ue_context_release_command(
                     &s1apbuf, enb_ue, group, cause);
-            ogs_assert(rv == OGS_OK && s1apbuf);
+            ogs_expect(rv == OGS_OK && s1apbuf);
         }
 
         enb_ue->t_ue_context_release.pkbuf = ogs_pkbuf_copy(s1apbuf);
@@ -319,7 +326,7 @@ int s1ap_send_ue_context_release_command(
                 mme_timer_cfg(MME_TIMER_UE_CONTEXT_RELEASE)->duration);
 
         rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, 0);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
     }
 
     return OGS_OK;
@@ -343,13 +350,13 @@ void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
                     s1apbuf = mme_ue->t3413.pkbuf;
                 } else {
                     rv = s1ap_build_paging(&s1apbuf, mme_ue, cn_domain);
-                    ogs_assert(rv == OGS_OK && s1apbuf);
+                    ogs_expect(rv == OGS_OK && s1apbuf);
                 }
 
                 mme_ue->t3413.pkbuf = ogs_pkbuf_copy(s1apbuf);
 
                 rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
-                ogs_assert(rv == OGS_OK);
+                ogs_expect(rv == OGS_OK);
             }
         }
     }
@@ -371,10 +378,10 @@ int s1ap_send_mme_configuration_transfer(
 
     rv = s1ap_build_mme_configuration_transfer(
             &s1apbuf, SONConfigurationTransfer);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = s1ap_send_to_enb(target_enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return rv;
 }
@@ -387,10 +394,10 @@ int s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
     ogs_assert(mme_ue);
 
     rv = s1ap_build_path_switch_ack(&s1apbuf, mme_ue);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = nas_send_to_enb(mme_ue, s1apbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
     
     return OGS_OK;
 }
@@ -403,10 +410,10 @@ int s1ap_send_handover_command(enb_ue_t *source_ue)
     ogs_assert(source_ue);
 
     rv = s1ap_build_handover_command(&s1apbuf, source_ue);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = s1ap_send_to_enb_ue(source_ue, s1apbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return rv;
 }
@@ -421,10 +428,10 @@ int s1ap_send_handover_preparation_failure(
     ogs_assert(cause);
 
     rv = s1ap_build_handover_preparation_failure(&s1apbuf, source_ue, cause);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = s1ap_send_to_enb_ue(source_ue, s1apbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return rv;
 }
@@ -437,10 +444,10 @@ int s1ap_send_handover_cancel_ack(enb_ue_t *source_ue)
     ogs_assert(source_ue);
 
     rv = s1ap_build_handover_cancel_ack(&s1apbuf, source_ue);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = s1ap_send_to_enb_ue(source_ue, s1apbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return rv;
 }
@@ -484,10 +491,10 @@ int s1ap_send_handover_request(
             enb_ue_s1ap_id, mme_ue_s1ap_id,
             handovertype, cause,
             source_totarget_transparentContainer);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = s1ap_send_to_enb_ue(target_ue, s1apbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return rv;
 }
@@ -504,10 +511,10 @@ int s1ap_send_mme_status_transfer(
 
     rv = s1ap_build_mme_status_transfer(&s1apbuf, target_ue,
             enb_statustransfer_transparentContainer);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = s1ap_send_to_enb_ue(target_ue, s1apbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return rv;
 }
@@ -525,10 +532,10 @@ int s1ap_send_error_indication(
 
     rv = s1ap_build_error_indication(&s1apbuf,
             mme_ue_s1ap_id, enb_ue_s1ap_id, group, cause);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return rv;
 }
@@ -543,10 +550,10 @@ int s1ap_send_s1_reset_ack(
     ogs_assert(enb);
 
     rv = s1ap_build_s1_reset_ack(&s1apbuf, partOfS1_Interface);
-    ogs_assert(rv == OGS_OK && s1apbuf);
+    ogs_expect(rv == OGS_OK && s1apbuf);
 
     rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return rv;
 }

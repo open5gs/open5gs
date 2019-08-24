@@ -232,7 +232,7 @@ int mme_s11_build_create_session_request(
 
     gtp_message.h.type = type;
     rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -295,7 +295,7 @@ int mme_s11_build_modify_bearer_request(ogs_pkbuf_t **pkbuf,
 
     gtp_message.h.type = type;
     rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -349,7 +349,7 @@ int mme_s11_build_delete_session_request(
 
     gtp_message.h.type = type;
     rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -450,7 +450,7 @@ int mme_s11_build_create_bearer_response(
 
     gtp_message.h.type = type;
     rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -608,7 +608,7 @@ int mme_s11_build_delete_bearer_response(
 
     gtp_message.h.type = type;
     rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -629,7 +629,7 @@ int mme_s11_build_release_access_bearers_request(
 
     gtp_message.h.type = type;
     rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -657,7 +657,7 @@ int mme_s11_build_downlink_data_notification_ack(
 
     gtp_message.h.type = type;
     rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -737,7 +737,7 @@ int mme_s11_build_create_indirect_data_forwarding_tunnel_request(
 
     gtp_message.h.type = type;
     rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
