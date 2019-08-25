@@ -88,6 +88,6 @@ void test_main(int argc, char **argv,
         ogs_msleep(50);
     }
 
-    ogs_msleep(300); /* Wait for listening all sockets */
+    ogs_msleep(500); /* Wait for listening all sockets */
 }
 
