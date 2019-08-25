@@ -90,23 +90,13 @@ Check whether the compilation is correct.
 ➜  nextepc git:(master) ✗ make check
 ```
 
+**Tip:** You can also check the result of `make check` with a tool that captures packets. If you are running `wireshark`, select the `loopback` interface and set FILTER to `s1ap || gtpv2 || diameter || gtp`.  You can see the virtually created packets. [[testcomplex.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testcomplex.pcapng)
+{: .notice--info}
+
 You need to perform **the installation process**.
 ```bash
 ➜  nextepc git:(master) ✗ make install
 ```
-
-Check whether the installation is correct.
-```bash
-➜  nextepc git:(master) ✗ ./test/testcomplex
-s1setup_test        : SUCCESS
-attach_test         : SUCCESS
-volte_test          : SUCCESS
-handover_test       : SUCCESS
-All tests passed.
-```
-
-**Tip:** You can also check the result of `./test/testcomplex` with a tool that captures packets. If you are running `wireshark`, select the `loopback` interface and set FILTER to `s1ap || gtpv2 || diameter || gtp`.  You can see the virtually created packets. [[testcomplex.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testcomplex.pcapng)
-{: .notice--info}
 
 ### Building WebUI of NextEPC
 ---
