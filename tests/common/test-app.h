@@ -1,15 +1,15 @@
-#ifndef __TESTAPP_H__
-#define __TESTAPP_H__
+#ifndef TEST_APP_H
+#define TEST_APP_H
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
-int test_app_initialize(app_param_t *param);
-void test_app_terminate(void);
+void test_main(int argc, char **argv,
+        const char *name, void (*init)(char **argv));
 
 #ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#endif
 
-#endif /* __TESTAPP_H__ */
+#endif /* TEST_APP_H */

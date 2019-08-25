@@ -178,71 +178,71 @@ static int mme_context_validation()
         (self.fd_config->cnf_diamid == NULL ||
         self.fd_config->cnf_diamrlm == NULL ||
         self.fd_config->cnf_addr == NULL)) {
-        ogs_error("No mme.freeDiameter in '%s'", context_self()->config.path);
+        ogs_error("No mme.freeDiameter in '%s'", context_self()->config.file);
         return OGS_ERROR;
     }
 
     if (ogs_list_first(&self.s1ap_list) == NULL &&
         ogs_list_first(&self.s1ap_list6) == NULL) {
-        ogs_error("No mme.s1ap in '%s'", context_self()->config.path);
+        ogs_error("No mme.s1ap in '%s'", context_self()->config.file);
         return OGS_RETRY;
     }
 
     if (ogs_list_first(&self.gtpc_list) == NULL &&
         ogs_list_first(&self.gtpc_list6) == NULL) {
-        ogs_error("No mme.gtpc in '%s'", context_self()->config.path);
+        ogs_error("No mme.gtpc in '%s'", context_self()->config.file);
         return OGS_RETRY;
     }
 
     if (ogs_list_first(&self.sgw_list) == NULL) {
-        ogs_error("No sgw.gtpc in '%s'", context_self()->config.path);
+        ogs_error("No sgw.gtpc in '%s'", context_self()->config.file);
         return OGS_ERROR;
     }
 
     if (ogs_list_first(&self.pgw_list) == NULL) {
-        ogs_error("No pgw.gtpc in '%s'", context_self()->config.path);
+        ogs_error("No pgw.gtpc in '%s'", context_self()->config.file);
         return OGS_ERROR;
     }
 
     if (self.max_num_of_served_gummei == 0) {
-        ogs_error("No mme.gummei in '%s'", context_self()->config.path);
+        ogs_error("No mme.gummei in '%s'", context_self()->config.file);
         return OGS_ERROR;
     }
 
     if (self.served_gummei[0].num_of_plmn_id == 0) {
-        ogs_error("No mme.gummei.plmn_id in '%s'", context_self()->config.path);
+        ogs_error("No mme.gummei.plmn_id in '%s'", context_self()->config.file);
         return OGS_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_gid == 0) {
-        ogs_error("No mme.gummei.mme_gid in '%s'", context_self()->config.path);
+        ogs_error("No mme.gummei.mme_gid in '%s'", context_self()->config.file);
         return OGS_ERROR;
     }
 
     if (self.served_gummei[0].num_of_mme_code == 0) {
-        ogs_error("No mme.gummei.mme_code in '%s'", context_self()->config.path);
+        ogs_error("No mme.gummei.mme_code in '%s'", context_self()->config.file);
         return OGS_ERROR;
     }
 
     if (self.num_of_served_tai == 0) {
-        ogs_error("No mme.tai in '%s'", context_self()->config.path);
+        ogs_error("No mme.tai in '%s'", context_self()->config.file);
         return OGS_ERROR;
     }
 
     if (self.served_tai[0].list0.tai[0].num == 0 &&
         self.served_tai[0].list2.num == 0) {
-        ogs_error("No mme.tai.plmn_id|tac in '%s'", context_self()->config.path);
+        ogs_error("No mme.tai.plmn_id|tac in '%s'", context_self()->config.file);
         return OGS_ERROR;
     }
 
     if (self.num_of_integrity_order == 0) {
         ogs_error("No mme.security.integrity_order in '%s'",
-                context_self()->config.path);
+                context_self()->config.file);
         return OGS_ERROR;
     }
     if (self.num_of_ciphering_order == 0) {
         ogs_error("no mme.security.ciphering_order in '%s'",
-                context_self()->config.path);
+                context_self()->config.file);
         return OGS_ERROR;
     }
 

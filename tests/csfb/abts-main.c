@@ -21,6 +21,7 @@
 #include "core/abts.h"
 
 #include "fd/fd-lib.h"
+#include "mme/ogs-sctp.h"
 
 #include "app/application.h"
 #include "app/context.h"
@@ -50,118 +51,75 @@ const struct testlist {
     {NULL},
 };
 
-static int connected_count = 0;
-static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg, 
-    struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
-    void * regdata)
-{
-    if (type == HOOK_PEER_CONNECT_SUCCESS) {
-        connected_count++;
-    }
-}
+static ogs_thread_t *pcrf_thread = NULL;
+static ogs_thread_t *pgw_thread = NULL;
+static ogs_thread_t *sgw_thread = NULL;
+static ogs_thread_t *hss_thread = NULL;
+ogs_socknode_t *sgsap = NULL;
 
-void test_terminate(void)
+static void terminate(void)
 {
-    ogs_msleep(300);
+    ogs_msleep(50);
 
-    testpacket_final();
-    test_app_terminate();
+    epc_child_terminate();
+
+    app_will_terminate();
+
+    ogs_info("MME try to terminate");
+    mme_terminate();
+    testvlr_sgsap_close(sgsap);
+    ogs_sctp_final();
+    ogs_info("MME terminate...done");
+
+    if (hss_thread) ogs_thread_destroy(hss_thread);
+    if (sgw_thread) ogs_thread_destroy(sgw_thread);
+    if (pgw_thread) ogs_thread_destroy(pgw_thread);
+    if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
+
+    app_did_terminate();
 
     base_finalize();
     ogs_core_finalize();
 }
 
-int test_initialize(app_param_t *param, int argc, const char *const argv[])
+static void initialize(char **argv)
 {
     int rv;
-    fd_logger_register(test_fd_logger_handler);
-
-    atexit(test_terminate);
 
     ogs_core_initialize();
     base_initialize();
 
-    rv = test_app_initialize(param);
-    if (rv != OGS_OK) {
-        ogs_error("app_initialize() failed");
-        return OGS_ERROR;
-    }
+    rv = app_will_initialize(argv);
+    ogs_assert(rv == OGS_OK);
 
-    rv = testpacket_init();
-    if (rv != OGS_OK) {
-        ogs_error("testpacket() failed");
-        return OGS_ERROR;
-    }
+    pcrf_thread = epc_child_create("nextepc-pcrfd", argv);
+    pgw_thread = epc_child_create("nextepc-pgwd", argv);
+    sgw_thread = epc_child_create("nextepc-sgwd", argv);
+    hss_thread = epc_child_create("nextepc-hssd", argv);
 
-    while(1) {
-        if (connected_count == 1) break;
-        ogs_msleep(50);
-    }
+    ogs_info("MME try to initialize");
+    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
+    sgsap = testvlr_sgsap_server("127.0.0.2");
+    ogs_assert(sgsap);
 
-    ogs_msleep(100); /* waiting for running SCTP server */
+    rv = mme_initialize();
+    ogs_assert(rv == OGS_OK);
+    ogs_info("MME initialize...done");
 
-    return rv;
+    rv = app_did_initialize();
+    ogs_assert(rv == OGS_OK);
 }
 
-int main(int argc, const char **argv)
+int main(int argc, char **argv)
 {
     int i;
-    app_param_t param;
-    const char *debug_mask = NULL;
-    const char *trace_mask = NULL;
-    char config_dir[MAX_FILEPATH_LEN/2];
-    char config_path[MAX_FILEPATH_LEN];
     abts_suite *suite = NULL;
 
-    abts_init(argc, argv);
-
-    memset(&param, 0, sizeof(param));
-    for (i = 1; i < argc; i++) {
-        /* abts_init(argc, argv) handles the following options */
-        if (!strcmp(argv[i], "-v")) continue;
-        if (!strcmp(argv[i], "-x")) continue;
-        if (!strcmp(argv[i], "-l")) continue;
-        if (!strcmp(argv[i], "-q")) continue;
-
-        if (!strcmp(argv[i], "-d")) {
-            param.log_level = OGS_LOG_DEBUG;
-            param.log_domain = argv[++i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-t")) {
-            param.log_level = OGS_LOG_TRACE;
-            param.log_domain = argv[++i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-f")) {
-            param.config_path = argv[++i];
-            continue;
-        }
-        if (argv[i][0] == '-') {
-            fprintf(stderr, "Invalid option: `%s'\n", argv[i]);
-            exit(1);
-        }
-    }
-
-    if (!param.config_path) {
-        ogs_path_remove_last_component(config_dir, argv[0]);
-        if (strstr(config_dir, ".libs"))
-            ogs_path_remove_last_component(config_dir, config_dir);
-        ogs_snprintf(config_path, sizeof config_path,
-                "%s/sample-csfb.conf", config_dir);
-        param.config_path = config_path;
-    }
-
-    if (param.log_level)
-        ogs_core()->log.level = OGS_LOG_DEFAULT;
-    else
-        ogs_core()->log.level = OGS_LOG_ERROR;
-    test_initialize(&param, argc, argv);
+    atexit(terminate);
+    test_main(argc, argv, "sample-csfb.conf", initialize);
 
     for (i = 0; alltests[i].func; i++)
-    {
         suite = alltests[i].func(suite);
-    }
 
     return abts_report(suite);
 }

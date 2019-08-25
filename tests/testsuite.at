@@ -4,7 +4,7 @@ AT_BANNER([NextEPC Amazing Tests.])
 AT_SETUP([unit])
 AT_KEYWORDS([unit])
 AT_CHECK_UNQUOTED(
-    [$abs_top_builddir/tests/testunit -f $abs_top_builddir/tests/sample.conf],
+    [$abs_top_builddir/tests/testunit -q],
     [0], [dnl
 s1ap-message-test   :  SUCCESS
 nas-message-test    :  SUCCESS
@@ -19,7 +19,7 @@ AT_CLEANUP
 AT_SETUP([simple])
 AT_KEYWORDS([simple])
 AT_CHECK_UNQUOTED(
-    [$abs_top_builddir/tests/testsimple -f $abs_top_builddir/tests/sample-simple.conf],
+    [$abs_top_builddir/tests/testsimple -q -c $abs_top_builddir/tests/sample-simple.conf],
     [0], [dnl
 mnc3-test           :  SUCCESS
 All tests passed.
@@ -29,7 +29,7 @@ AT_CLEANUP
 AT_SETUP([complex])
 AT_KEYWORDS([complex])
 AT_CHECK_UNQUOTED(
-    [$abs_top_builddir/tests/testcomplex -f $abs_top_builddir/tests/sample.conf],
+    [$abs_top_builddir/tests/testcomplex -q -c $abs_top_builddir/tests/sample-complex.conf],
     [0], [dnl
 s1setup-test        :  SUCCESS
 attach-test         :  SUCCESS
@@ -43,7 +43,7 @@ AT_CLEANUP
 AT_SETUP([volte])
 AT_KEYWORDS([volte])
 AT_CHECK_UNQUOTED(
-    [$abs_top_builddir/tests/testvolte -f $abs_top_builddir/tests/sample-volte.conf],
+    [$abs_top_builddir/tests/testvolte -q -c $abs_top_builddir/tests/sample-volte.conf],
     [0], [dnl
 volte-test          :  SUCCESS
 All tests passed.
@@ -53,7 +53,7 @@ AT_CLEANUP
 AT_SETUP([csfb])
 AT_KEYWORDS([csfb])
 AT_CHECK_UNQUOTED(
-    [$abs_top_builddir/tests/testcsfb -f $abs_top_builddir/tests/sample-csfb.conf],
+    [$abs_top_builddir/tests/testcsfb -q -c $abs_top_builddir/tests/sample-csfb.conf],
     [0], [dnl
 mo-idle-test        :  SUCCESS
 mt-idle-test        :  SUCCESS

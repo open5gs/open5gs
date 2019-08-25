@@ -28,7 +28,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 typedef struct _config_t {
-    const char *path;
+    const char *file;
     void *document;
 
     const char *db_uri;
@@ -85,12 +85,6 @@ typedef struct _context_t {
     } db;
 
     struct {
-        const char *path;
-        ogs_log_level_e level;
-        const char *domain;
-    } log;
-
-    struct {
         int ue;
         int sess;
         int bearer;
@@ -106,7 +100,6 @@ context_t *context_self(void);
 
 int context_read_file(void);
 int context_parse_config(void);
-int context_setup_log_module(void);
 
 int context_db_init(const char *db_uri);
 int context_db_final(void);

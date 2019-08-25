@@ -8,12 +8,11 @@ extern int __hss_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __hss_log_domain
 
-int app_initialize(app_param_t *param)
+int app_initialize(char **argv)
 {
     int rv;
 
-    param->name = "hss";
-    rv = app_will_initialize(param);
+    rv = app_will_initialize(argv);
     if (rv != OGS_OK) return rv;
 
     rv = hss_initialize();

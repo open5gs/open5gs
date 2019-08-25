@@ -26,9 +26,6 @@
 extern "C" {
 #endif
 
-int testpacket_init();
-int testpacket_final();
-
 ogs_socknode_t *testsctp_server(const char *ipstr);
 ogs_socknode_t *testsctp_client(const char *ipstr);
 ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type);

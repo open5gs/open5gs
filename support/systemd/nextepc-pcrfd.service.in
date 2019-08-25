@@ -9,9 +9,6 @@ Type=simple
 User=nextepc
 Group=nextepc
 
-RuntimeDirectory=nextepc-pcrfd
-PIDFile=@LOCALSTATE_DIR@/run/nextepc-pcrfd/pid
-
 Restart=always
 ExecStart=@BIN_DIR@/nextepc-pcrfd -f @SYSCONF_DIR@/nextepc/pcrf.conf
 RestartSec=2

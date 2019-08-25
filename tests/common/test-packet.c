@@ -50,16 +50,6 @@
 
 #include "mme/sgsap-path.h"
 
-int testpacket_init()
-{
-    return OGS_OK;
-}
-
-int testpacket_final()
-{
-    return OGS_OK;
-}
-
 ogs_socknode_t *testsctp_server(const char *ipstr)
 {
     int rv;

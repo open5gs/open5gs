@@ -9,56 +9,44 @@
 #include "app/application.h"
 #include "app-init.h"
 
-static char *version = "NextEPC daemon v" PACKAGE_VERSION;
-
-static void show_version()
+void show_version()
 {
-    printf("%s", version);
+    printf("%s\n\n", app_version());
 }
 
-static void show_help(const char *name)
+void show_help(const char *name)
 {
-    printf("%s", version);
-
-    printf("\n"
-           "Usage: %s [arguments]\n"
-           "\n"
-           "Arguments:\n"
-           "   -v                   Show version\n"
-           "   -h                   Show help\n"
-           "   -D                   Start as daemon\n"
-           "   -f                   Set configuration file name\n"
-           "   -l log_file          Log file path to be logged to\n"
-           "   -p pid_file          PID file path\n"
-           "   -d core:gtp:event    Enable debugging\n"
-           "   -t sock:mem:         Enable trace\n"
-           "\n", name);
+    printf("Usage: %s [options]\n"
+        "Options:\n"
+       "   -c filename    : set configuration file\n"
+       "   -l filename    : set logging file\n"
+       "   -e level       : set global log-level (default:info)\n"
+       "   -m domain      : set log-domain (e.g. mme:sgw:gtp)\n"
+       "   -d             : print lots of debugging information\n"
+       "   -t             : print tracing information for developer\n"
+       "   -D             : start as a daemon\n"
+       "   -v             : show version number and exit\n"
+       "   -h             : show this message and exit\n"
+       "\n", name);
 }
 
 static int check_signal(int signum)
 {
-    switch (signum)
-    {
-        case SIGTERM:
-        case SIGINT:
-        {
-            ogs_info("%s received", 
-                    signum == SIGTERM ? "SIGTERM" : "SIGINT");
+    switch (signum) {
+    case SIGTERM:
+    case SIGINT:
+        ogs_info("%s received", 
+                signum == SIGTERM ? "SIGTERM" : "SIGINT");
 
-            return 1;
-        }
-        case SIGHUP:
-        {
-            ogs_info("SIGHUP received");
-            app_logger_restart();
-            break;
-        }
-        default:
-        {
-            ogs_error("Signal-%d received (%s)",
-                    signum, ogs_signal_description_get(signum));
-            break;
-        }
+        return 1;
+    case SIGHUP:
+        ogs_info("SIGHUP received");
+        app_logger_restart();
+        break;
+    default:
+        ogs_error("Signal-NUM[%d] received (%s)",
+                signum, ogs_signal_description_get(signum));
+        break;
             
     }
     return 0;
@@ -78,26 +66,32 @@ int main(int argc, char *argv[])
      *
      * Keep the order of starting-up
      */
-    int rv;
-    int i;
-    app_param_t param;
-    const char *debug_mask = NULL;
-    const char *trace_mask = NULL;
+    int rv, i, opt;
+    ogs_getopt_t options;
+    struct {
+        char *config_file;
+        char *log_file;
+        char *log_level;
+        char *domain_mask;
 
-    memset(&param, 0, sizeof(param));
-    for (i = 1; i < argc; i++)
-    {
-        if (!strcmp(argv[i], "-v"))
-        {
+        bool enable_debug;
+        bool enable_trace;
+    } optarg;
+    char *argv_out[argc];
+
+    memset(&optarg, 0, sizeof(optarg));
+
+    ogs_getopt_init(&options, argv);
+    while ((opt = ogs_getopt(&options, "vhDc:l:e:m:dt")) != -1) {
+        switch (opt) {
+        case 'v':
             show_version();
-            return EXIT_SUCCESS;
-        }
-        if (!strcmp(argv[i], "-h"))
-        {
+            return OGS_OK;
+        case 'h':
             show_help(argv[0]);
-            return EXIT_SUCCESS;
-        }
-        if (!strcmp(argv[i], "-D"))
+            return OGS_OK;
+        case 'D':
+#if !defined(_WIN32)
         {
             pid_t pid;
             pid = fork();
@@ -113,63 +107,81 @@ int main(int argc, char *argv[])
 
             setsid();
             umask(027);
-            continue;
         }
-        if (!strcmp(argv[i], "-f"))
-        {
-            param.config_path = argv[++i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-l"))
-        {
-            param.log_path = argv[++i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-p"))
-        {
-            param.pid_path = argv[++i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-d"))
-        {
-            param.log_level = OGS_LOG_DEBUG;
-            param.log_domain = argv[++i];
-            continue;
-        }
-        if (!strcmp(argv[i], "-t"))
-        {
-            param.log_level = OGS_LOG_TRACE;
-            param.log_domain = argv[++i];
-            continue;
-        }
-        if (argv[i][0] == '-') {
+#else
+            printf("%s: Not Support in WINDOWS", argv[0]);
+#endif
+            break;
+        case 'c':
+            optarg.config_file = options.optarg;
+            break;
+        case 'l':
+            optarg.log_file = options.optarg;
+            break;
+        case 'e':
+            optarg.log_level = options.optarg;
+            break;
+        case 'm':
+            optarg.domain_mask = options.optarg;
+            break;
+        case 'd':
+            optarg.enable_debug = true;
+            break;
+        case 't':
+            optarg.enable_trace = true;
+            break;
+        case '?':
+            fprintf(stderr, "%s: %s\n", argv[0], options.errmsg);
             show_help(argv[0]);
-            return EXIT_FAILURE;
+            return OGS_ERROR;
+        default:
+            fprintf(stderr, "%s: should not be reached\n", OGS_FUNC);
+            return OGS_ERROR;
         }
     }
 
-    atexit(terminate);
+    if (optarg.enable_debug) optarg.log_level = "debug";
+    if (optarg.enable_trace) optarg.log_level = "trace";
+
+    i = 0;
+    argv_out[i++] = argv[0];
+
+    if (optarg.config_file) {
+        argv_out[i++] = "-c";
+        argv_out[i++] = optarg.config_file;
+    }
+    if (optarg.log_file) {
+        argv_out[i++] = "-l";
+        argv_out[i++] = optarg.log_file;
+    }
+    if (optarg.log_level) {
+        argv_out[i++] = "-e";
+        argv_out[i++] = optarg.log_level;
+    }
+    if (optarg.domain_mask) {
+        argv_out[i++] = "-m";
+        argv_out[i++] = optarg.domain_mask;
+    }
+
+    argv_out[i] = NULL;
+
     ogs_core_initialize();
     ogs_setup_signal_thread();
     base_initialize();
 
-    ogs_info("NextEPC daemon start");
-    ogs_log_print(OGS_LOG_INFO, "\n");
-
-    rv = app_initialize(&param);
-    if (rv != OGS_OK)
-    {
+    rv = app_initialize(argv_out);
+    if (rv != OGS_OK) {
         if (rv == OGS_RETRY)
             return EXIT_SUCCESS;
 
         ogs_fatal("NextEPC initialization failed. Aborted");
-        return EXIT_FAILURE;
+        return OGS_ERROR;
     }
-
-    ogs_log_print(OGS_LOG_INFO, "\n\n%s\n\n", version);
+    atexit(terminate);
     ogs_signal_thread(check_signal);
 
     ogs_info("NextEPC daemon terminating...");
 
-    return EXIT_SUCCESS;
+    return OGS_OK;
 }
+

@@ -85,7 +85,7 @@ static int pcrf_context_validation()
         self.fd_config->cnf_diamrlm == NULL ||
         self.fd_config->cnf_addr == NULL)) {
         ogs_error("No pcrf.freeDiameter in '%s'",
-                context_self()->config.path);
+                context_self()->config.file);
         return OGS_ERROR;
     }
 

@@ -47,7 +47,9 @@ int mme_initialize()
     rv = mme_context_parse_config();
     if (rv != OGS_OK) return rv;
 
-    rv = context_setup_log_module();
+    rv = ogs_log_config_domain(
+            context_self()->config.logger.domain,
+            context_self()->config.logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = mme_m_tmsi_pool_generate();

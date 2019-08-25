@@ -107,13 +107,13 @@ static int sgw_context_validation()
     if (ogs_list_empty(&self.gtpc_list) &&
         ogs_list_empty(&self.gtpc_list6)) {
         ogs_error("No sgw.gtpc in '%s'",
-                context_self()->config.path);
+                context_self()->config.file);
         return OGS_ERROR;
     }
     if (ogs_list_empty(&self.gtpu_list) &&
         ogs_list_empty(&self.gtpu_list6)) {
         ogs_error("No sgw.gtpu in '%s'",
-                context_self()->config.path);
+                context_self()->config.file);
         return OGS_RETRY;
     }
     return OGS_OK;

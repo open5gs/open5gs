@@ -8,9 +8,6 @@ Type=simple
 User=nextepc
 Group=nextepc
 
-RuntimeDirectory=nextepc-mmed
-PIDFile=@LOCALSTATE_DIR@/run/nextepc-mmed/pid
-
 Restart=always
 ExecStart=@BIN_DIR@/nextepc-mmed -f @SYSCONF_DIR@/nextepc/mme.conf
 RestartSec=2

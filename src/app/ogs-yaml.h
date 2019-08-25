@@ -22,6 +22,10 @@
 
 #include "ogs-core.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 typedef struct yaml_document_s yaml_document_t;
 typedef struct yaml_node_s yaml_node_t;
 typedef struct yaml_node_pair_s yaml_node_pair_t;

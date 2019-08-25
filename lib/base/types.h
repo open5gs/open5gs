@@ -62,6 +62,8 @@ extern "C" {
 #define MAX_FILEPATH_LEN            256
 #define MAX_FQDN_LEN                256
 
+#define OGS_ARG_MAX                 256
+
 #define NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
 #define COMPARE_ID(__id1, __id2, __max) \

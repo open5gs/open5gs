@@ -8,12 +8,11 @@ extern int __pgw_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __pgw_log_domain
 
-int app_initialize(app_param_t *param)
+int app_initialize(char **argv)
 {
     int rv;
 
-    param->name = "pgw";
-    rv = app_will_initialize(param);
+    rv = app_will_initialize(argv);
     if (rv != OGS_OK) return rv;
 
     rv = pgw_initialize();

@@ -69,11 +69,11 @@ int context_read_file()
     yaml_parser_t parser;
     yaml_document_t *document = NULL;
 
-    ogs_assert(config->path);
+    ogs_assert(config->file);
 
-    file = fopen(config->path, "rb");
+    file = fopen(config->file, "rb");
     if (!file) {
-        ogs_fatal("cannot open file `%s`", config->path);
+        ogs_fatal("cannot open file `%s`", config->file);
         ogs_assert_if_reached();
     }
 
@@ -82,7 +82,7 @@ int context_read_file()
 
     document = calloc(1, sizeof(yaml_document_t));
     if (!yaml_parser_load(&parser, document)) {
-        ogs_fatal("Failed to parse configuration file '%s'", config->path);
+        ogs_fatal("Failed to parse configuration file '%s'", config->file);
         switch (parser.error) {
         case YAML_MEMORY_ERROR:
             ogs_error("Memory error: Not enough memory for parsing");
@@ -141,15 +141,6 @@ int context_read_file()
     return OGS_OK;
 }
 
-int context_setup_log_module()
-{
-    if (context_self()->log.level || context_self()->log.domain)
-        ogs_log_set_mask_level(context_self()->log.domain,
-                context_self()->log.level);
-
-    return OGS_OK;
-}
-
 static void context_recalculate_pool_size()
 {
     self.pool.ue = self.config.max.ue * self.config.max.enb;
@@ -192,7 +183,7 @@ static int context_validation()
     if (self.config.parameter.no_ipv4 == 1 &&
         self.config.parameter.no_ipv6 == 1) {
         ogs_error("Both `no_ipv4` and `no_ipv6` set to `true` in `%s`",
-                context_self()->config.path);
+                context_self()->config.file);
         return OGS_ERROR;
     }
 

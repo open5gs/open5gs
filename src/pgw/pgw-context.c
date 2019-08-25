@@ -130,24 +130,24 @@ static int pgw_context_validation()
         self.fd_config->cnf_diamrlm == NULL ||
         self.fd_config->cnf_addr == NULL)) {
         ogs_error("No pgw.freeDiameter in '%s'",
-                context_self()->config.path);
+                context_self()->config.file);
         return OGS_ERROR;
     }
     if (ogs_list_first(&self.gtpc_list) == NULL &&
         ogs_list_first(&self.gtpc_list6) == NULL) {
         ogs_error("No pgw.gtpc in '%s'",
-                context_self()->config.path);
+                context_self()->config.file);
         return OGS_ERROR;
     }
     if (ogs_list_first(&self.gtpu_list) == NULL &&
         ogs_list_first(&self.gtpu_list6) == NULL) {
         ogs_error("No pgw.gtpu in '%s'",
-                context_self()->config.path);
+                context_self()->config.file);
         return OGS_ERROR;
     }
     if (self.dns[0] == NULL && self.dns6[0] == NULL) {
         ogs_error("No pgw.dns in '%s'",
-                context_self()->config.path);
+                context_self()->config.file);
         return OGS_ERROR;
     }
     return OGS_OK;

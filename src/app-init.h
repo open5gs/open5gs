@@ -5,11 +5,14 @@
 extern "C" {
 #endif /* __cplusplus */
 
-int app_initialize(app_param_t *param);
-#define app_terminate epc_terminate
+/* For testing */
+void epc_child_terminate(void);
+ogs_thread_t *epc_child_create(char *name, char **argv);
 
-int epc_initialize(app_param_t *param);
-void epc_terminate(void);
+char *app_version(void);
+
+int app_initialize(char **argv);
+void app_terminate(void);
 
 int mme_initialize();
 void mme_terminate(void);

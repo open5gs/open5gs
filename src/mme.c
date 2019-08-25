@@ -10,12 +10,11 @@ extern int __mme_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __mme_log_domain
 
-int app_initialize(app_param_t *param)
+int app_initialize(char **argv)
 {
     int rv;
 
-    param->name = "mme";
-    rv = app_will_initialize(param);
+    rv = app_will_initialize(argv);
     if (rv != OGS_OK) return rv;
 
     ogs_sctp_init(context_self()->config.usrsctp.udp_port);

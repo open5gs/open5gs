@@ -3,7 +3,9 @@
 bin_PROGRAMS = testunit testsimple testcomplex testvolte testcsfb
 
 configdir = ${sysconfdir}/nextepc/tests
-config_DATA = sample.conf sample-simple.conf sample-volte.conf sample-csfb.conf
+config_DATA = \
+	sample-simple.conf sample-complex.conf sample-volte.conf sample-csfb.conf \
+	$(NULL)
 
 testunit_SOURCES = \
 	common/test-packet.h common/test-packet.c \
@@ -16,6 +18,7 @@ testunit_LDADD = $(top_srcdir)/src/libepc.la
 
 testsimple_SOURCES = \
 	common/test-packet.h common/test-packet.c \
+	common/test-app.h common/test-app.c \
 	simple/abts-main.c \
 	simple/mnc3-test.c \
 	$(NULL)
@@ -23,6 +26,7 @@ testsimple_LDADD = $(top_srcdir)/src/libepc.la
 
 testcomplex_SOURCES = \
 	common/test-packet.h common/test-packet.c \
+	common/test-app.h common/test-app.c \
 	complex/abts-main.c \
 	complex/s1setup-test.c \
 	complex/attach-test.c complex/volte-test.c complex/handover-test.c \
@@ -32,8 +36,8 @@ testcomplex_LDADD = $(top_srcdir)/src/libepc.la
 
 testvolte_SOURCES = \
 	common/test-packet.h common/test-packet.c \
-	common/test-app.h \
-	volte/abts-main.c volte/test-app.c \
+	common/test-app.h common/test-app.c \
+	volte/abts-main.c \
 	volte/pcscf-fd-path.h volte/pcscf-fd-path.c \
 	volte/volte-test.c \
 	$(NULL)
@@ -41,8 +45,8 @@ testvolte_LDADD = $(top_srcdir)/src/libepc.la
 
 testcsfb_SOURCES = \
 	common/test-packet.h common/test-packet.c \
-	common/test-app.h \
-	csfb/abts-main.c csfb/test-app.c \
+	common/test-app.h common/test-app.c \
+	csfb/abts-main.c \
 	csfb/mo-idle-test.c csfb/mt-idle-test.c \
 	csfb/mo-active-test.c csfb/mt-active-test.c \
 	csfb/mo-sms-test.c csfb/mt-sms-test.c \
