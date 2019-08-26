@@ -190,7 +190,7 @@ int s1ap_copy_ie(const asn_TYPE_descriptor_t *td, void *src, void *dst)
     }
 
     dec_ret = aper_decode(NULL, td, (void **)&dst,
-            buffer, (enc_ret.encoded >> 3), 0, 0);
+            buffer, ((enc_ret.encoded + 7) / 8), 0, 0);
 
     if (dec_ret.code != RC_OK) {
         ogs_error("aper_decode() failed[%d]", dec_ret.code);
