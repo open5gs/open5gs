@@ -375,9 +375,7 @@ abts_suite *test_crash(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test1_func, NULL);
-#if 0
     abts_run_test(suite, test2_func, NULL);
-#endif
     abts_run_test(suite, test3_func, NULL);
 
     return suite;
