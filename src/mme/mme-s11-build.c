@@ -162,8 +162,10 @@ int mme_s11_build_create_session_request(
         ogs_assert(req->pdn_type.u8 != 0);
     } else if (pdn->pdn_type == HSS_PDN_TYPE_IPV4_OR_IPV6) {
         req->pdn_type.u8 = sess->request_type.pdn_type;
-    } else
+    } else {
+        ogs_fatal("Invalid PDN_TYPE[%d]\n", pdn->pdn_type);
         ogs_assert_if_reached();
+    }
     req->pdn_type.presence = 1;
 
     pdn->paa.pdn_type = req->pdn_type.u8;
