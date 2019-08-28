@@ -23,7 +23,7 @@ $ sudo systemctl start mongodb (if '/usr/bin/mongod' is not running)
 Create the TUN device with the interface name `pgwtun`.
 
 ```bash
-$ sudo ip tuntap add name pgwtun mode tun user $USER group $USER
+$ sudo ip tuntap add name pgwtun mode tun
 $ sudo ip addr add 45.45.0.1/16 dev pgwtun
 $ sudo ip addr add cafe::1/64 dev pgwtun
 $ sudo ip link set pgwtun up
