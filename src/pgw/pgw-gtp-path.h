@@ -21,7 +21,7 @@
 #define PGW_PATH_H
 
 #include "ogs-tun.h"
-#include "gtp/gtp-xact.h"
+#include "ogs-gtp.h"
 
 #ifdef __cplusplus
 extern "C" {

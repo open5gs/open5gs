@@ -20,8 +20,6 @@
 #ifndef SGW_GTP_PATH_H
 #define SGW_GTP_PATH_H
 
-#include "gtp/gtp-xact.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

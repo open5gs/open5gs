@@ -17,9 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "gtp/gtp-xact.h"
-
-#include "app/context.h"
 #include "pgw-context.h"
 #include "pgw-event.h"
 #include "pgw-sm.h"
@@ -38,15 +35,14 @@ int pgw_initialize()
     pgw_context_init();
     pgw_event_init();
 
-    rv = gtp_xact_init(pgw_self()->timer_mgr);
+    rv = ogs_gtp_xact_init(pgw_self()->timer_mgr, 512);
     if (rv != OGS_OK) return rv;
 
     rv = pgw_context_parse_config();
     if (rv != OGS_OK) return rv;
 
     rv = ogs_log_config_domain(
-            context_self()->config.logger.domain,
-            context_self()->config.logger.level);
+            ogs_config()->logger.domain, ogs_config()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = pgw_ue_pool_generate();
@@ -75,7 +71,7 @@ void pgw_terminate(void)
 
     pgw_context_final();
 
-    gtp_xact_final();
+    ogs_gtp_xact_final();
 
     pgw_event_final();
 }

@@ -20,8 +20,6 @@
 #ifndef MME_S11_HANDLER_H
 #define MME_S11_HANDLER_H
 
-#include "gtp/gtp-message.h"
-
 #include "mme-context.h"
 
 #ifdef __cplusplus
@@ -29,30 +27,36 @@ extern "C" {
 #endif
 
 void mme_s11_handle_create_session_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_session_response_t *rsp);
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_create_session_response_t *rsp);
 void mme_s11_handle_modify_bearer_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_modify_bearer_response_t *rsp);
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_modify_bearer_response_t *rsp);
 void mme_s11_handle_delete_session_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_session_response_t *rsp);
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_delete_session_response_t *rsp);
 void mme_s11_handle_create_bearer_request(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *rsp);
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_create_bearer_request_t *rsp);
 void mme_s11_handle_update_bearer_request(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_update_bearer_request_t *rsp);
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_update_bearer_request_t *rsp);
 void mme_s11_handle_delete_bearer_request(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_bearer_request_t *rsp);
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_delete_bearer_request_t *rsp);
 
 void mme_s11_handle_release_access_bearers_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue,
-        gtp_release_access_bearers_response_t *rsp);
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_release_access_bearers_response_t *rsp);
 void mme_s11_handle_downlink_data_notification(
-        gtp_xact_t *xact, mme_ue_t *mme_ue,
-        gtp_downlink_data_notification_t *noti);
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_downlink_data_notification_t *noti);
 void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue,
-        gtp_create_indirect_data_forwarding_tunnel_response_t *rsp);
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_create_indirect_data_forwarding_tunnel_response_t *rsp);
 void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue,
-        gtp_delete_indirect_data_forwarding_tunnel_response_t *rsp);
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_delete_indirect_data_forwarding_tunnel_response_t *rsp);
 
 #ifdef __cplusplus
 }

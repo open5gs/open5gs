@@ -1,13 +1,23 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include <mongoc.h>
-
-#include "core/abts.h"
-
-#include "app/context.h"
-#include "mme/mme-context.h"
-#include "asn1c/s1ap-message.h"
-
-#include "test-packet.h"
+#include "test-app.h"
 
 static void handover_test1(abts_case *tc, void *data)
 {
@@ -16,11 +26,11 @@ static void handover_test1(abts_case *tc, void *data)
     ogs_socknode_t *gtpu1, *gtpu2;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
     int msgindex = 9;
 
-    uint8_t tmp[MAX_SDU_LEN];
+    uint8_t tmp[OGS_MAX_SDU_LEN];
     char *_nh1 = "10"
         "3715a966536b75b4 d46e99774dcdb344 5ce5e893fbbf28f4 9f58508c36f827cc";
     char *_nh2 = "18"
@@ -140,8 +150,7 @@ static void handover_test1(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
-        context_self()->db.client,
-        context_self()->db.name, "subscribers");
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
@@ -324,7 +333,7 @@ static void handover_test2(abts_case *tc, void *data)
     ogs_socknode_t *gtpu1, *gtpu2;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
     int msgindex = 10;
     enb_ue_t *enb_ue = NULL;
@@ -445,8 +454,7 @@ static void handover_test2(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
-        context_self()->db.client,
-        context_self()->db.name, "subscribers");
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;

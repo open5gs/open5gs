@@ -20,8 +20,11 @@
 #ifndef PGW_CONTEXT_H
 #define PGW_CONTEXT_H
 
-#include "gtp/gtp-types.h"
-#include "gtp/gtp-message.h"
+#include <net/if.h>
+
+#include "ogs-gtp.h"
+#include "diameter/ogs-gx.h"
+#include "ogs-app.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,12 +38,9 @@ extern int __pgw_log_domain;
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __pgw_log_domain
 
-typedef struct gtp_node_s gtp_node_t;
-typedef struct fd_config_s fd_config_t;
-
 typedef struct pgw_context_s {
-    const char*     fd_conf_path;   /* PGW freeDiameter conf path */
-    fd_config_t     *fd_config;     /* PGW freeDiameter config */
+    const char*         diam_conf_path;   /* PGW Diameter conf path */
+    ogs_diam_config_t   *diam_config;     /* PGW Diameter config */
 
     uint32_t        gtpc_port;      /* Default: PGW GTP-C local port */
     uint32_t        gtpu_port;      /* Default: PGW GTP-U local port */
@@ -109,7 +109,7 @@ typedef struct pgw_subnet_s {
 
     ogs_ipsubnet_t  sub;                /* Subnet : cafe::0/64 */
     ogs_ipsubnet_t  gw;                 /* Gateway : cafe::1 */
-    char            apn[MAX_APN_LEN];   /* APN : "internet", "volte", .. */
+    char            apn[OGS_MAX_APN_LEN];   /* APN : "internet", "volte", .. */
 
     int             family;             /* AF_INET or AF_INET6 */
     uint8_t         prefixlen;          /* prefixlen */
@@ -129,23 +129,23 @@ typedef struct pgw_sess_s {
     char            *gx_sid;        /* Gx Session ID */
 
     /* IMSI */
-    uint8_t         imsi[MAX_IMSI_LEN];
+    uint8_t         imsi[OGS_MAX_IMSI_LEN];
     int             imsi_len;
-    char            imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    char            imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
     /* APN Configuration */
-    pdn_t           pdn;
+    ogs_pdn_t       pdn;
     pgw_ue_ip_t*    ipv4;
     pgw_ue_ip_t*    ipv6;
 
     /* User-Lication-Info */
-    tai_t           tai;
-    e_cgi_t         e_cgi;
+    ogs_tai_t       tai;
+    ogs_e_cgi_t     e_cgi;
 
     ogs_list_t      bearer_list;
 
     /* Related Context */
-    gtp_node_t      *gnode;
+    ogs_gtp_node_t  *gnode;
 } pgw_sess_t;
 
 typedef struct pgw_bearer_s {
@@ -158,7 +158,7 @@ typedef struct pgw_bearer_s {
     uint32_t        sgw_s5u_teid;   /* SGW_S5U is received from SGW */
 
     char            *name;          /* PCC Rule Name */
-    qos_t           qos;            /* QoS Infomration */
+    ogs_qos_t       qos;            /* QoS Infomration */
 
     /* Packet Filter Identifier Generator(1~15) */
     uint8_t         pf_identifier;
@@ -166,7 +166,7 @@ typedef struct pgw_bearer_s {
     ogs_list_t      pf_list;
 
     pgw_sess_t      *sess;
-    gtp_node_t      *gnode;
+    ogs_gtp_node_t  *gnode;
 } pgw_bearer_t;
 
 typedef struct pgw_rule_s {
@@ -215,8 +215,8 @@ pgw_context_t *pgw_self(void);
 
 int pgw_context_parse_config(void);
 
-gtp_node_t *pgw_sgw_add_by_message(gtp_message_t *message);
-pgw_sess_t *pgw_sess_add_by_message(gtp_message_t *message);
+ogs_gtp_node_t *pgw_sgw_add_by_message(ogs_gtp_message_t *message);
+pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message);
 
 pgw_sess_t *pgw_sess_add(
         uint8_t *imsi, int imsi_len, char *apn,

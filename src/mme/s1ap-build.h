@@ -20,7 +20,6 @@
 #ifndef S1AP_BUILD_H
 #define S1AP_BUILD_H
 
-#include "asn1c/s1ap-message.h"
 #include "mme-context.h"
 
 #include "sbc-message.h"

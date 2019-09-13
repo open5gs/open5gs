@@ -46,6 +46,12 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src \
 	$(NULL)
 
+DEFS = \
+   @DEFS@ \
+   -DSYSCONF_DIR=\"$(sysconfdir)/\" \
+   -DLOCALSTATE_DIR=\"$(localstatedir)/\" \
+   $(NULL)
+
 install-data-hook:
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/log/nextepc
 	$(MKDIR_P) $(DESTDIR)/$(localstatedir)/run/nextepc-mmed

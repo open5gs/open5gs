@@ -31,7 +31,7 @@ typedef struct gtp_xact_s gtp_xact_t;
 int pgw_fd_init(void);
 void pgw_fd_final(void);
 
-void pgw_gx_send_ccr(pgw_sess_t *sess, gtp_xact_t *xact,
+void pgw_gx_send_ccr(pgw_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_pkbuf_t *gtpbuf, uint32_t cc_request_type);
 
 #ifdef __cplusplus

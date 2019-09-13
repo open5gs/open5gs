@@ -1,9 +1,26 @@
-#include "core/abts.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "nas/nas-message.h"
+#include "core/abts.h"
 #include "mme/nas-security.h"
 
-static void nas_message_test1(abts_case *tc, void *data)
+static void ogs_nas_message_test1(abts_case *tc, void *data)
 {
     /* Attach Request */
     char *payload = 
@@ -12,24 +29,24 @@ static void nas_message_test1(abts_case *tc, void *data)
         "30395c0a003103e5e0349011035758a6"
         "5d0100e0c1";
 
-    nas_message_t message;
+    ogs_nas_message_t message;
     ogs_pkbuf_t *pkbuf;
     int rv;
-    char hexbuf[MAX_SDU_LEN];
+    char hexbuf[OGS_MAX_SDU_LEN];
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 53);
     memcpy(pkbuf->data, 
             OGS_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
-    rv = nas_emm_decode(&message, pkbuf);
+    rv = ogs_nas_emm_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_pkbuf_free(pkbuf);
 }
 
-static void nas_message_test2(abts_case *tc, void *data)
+static void ogs_nas_message_test2(abts_case *tc, void *data)
 {
     /* Attach Accept */
     char *payload = 
@@ -48,65 +65,65 @@ static void nas_message_test2(abts_case *tc, void *data)
         "a801";
     char esm_buffer[50];
 
-    nas_message_t message;
-    nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
+    ogs_nas_message_t message;
+    ogs_nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
     tai0_list_t tai0_list;
     tai2_list_t tai2_list;
-    plmn_id_t plmn_id;
+    ogs_plmn_id_t plmn_id;
 
     ogs_pkbuf_t *pkbuf = NULL;
     int rv;
 
     memset(&message, 0, sizeof(message));
-    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.emm.h.message_type = NAS_ATTACH_ACCEPT;
+    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = OGS_NAS_ATTACH_ACCEPT;
     attach_accept->eps_attach_result.result = 
-        NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH;
+        OGS_NAS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH;
     attach_accept->t3412_value.unit = 
-        NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
+        OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     attach_accept->t3412_value.value = 3;
 
     memset(&tai0_list, 0, sizeof(tai0_list_t));
     memset(&tai2_list, 0, sizeof(tai2_list_t));
     tai0_list.tai[0].type = TAI0_TYPE;
     tai0_list.tai[0].num = 1;
-    plmn_id_build(&tai0_list.tai[0].plmn_id, 417, 99, 2);
+    ogs_plmn_id_build(&tai0_list.tai[0].plmn_id, 417, 99, 2);
     tai0_list.tai[0].tac[0] = 12345;
-    nas_tai_list_build(&attach_accept->tai_list, &tai0_list, &tai2_list);
+    ogs_nas_tai_list_build(&attach_accept->tai_list, &tai0_list, &tai2_list);
 
     attach_accept->esm_message_container.length = sizeof(esm_buffer);
     attach_accept->esm_message_container.buffer = 
         OGS_HEX(esm_payload, strlen(esm_payload), esm_buffer);
 
-    attach_accept->presencemask |= NAS_ATTACH_ACCEPT_GUTI_PRESENT;
+    attach_accept->presencemask |= OGS_NAS_ATTACH_ACCEPT_GUTI_PRESENT;
     attach_accept->guti.length = 11;
-    attach_accept->guti.guti.type = NAS_EPS_MOBILE_IDENTITY_GUTI;
-    nas_from_plmn_id(&attach_accept->guti.guti.nas_plmn_id,
-        plmn_id_build(&plmn_id, 417, 99, 2));
+    attach_accept->guti.guti.type = OGS_NAS_EPS_MOBILE_IDENTITY_GUTI;
+    ogs_nas_from_plmn_id(&attach_accept->guti.guti.nas_plmn_id,
+        ogs_plmn_id_build(&plmn_id, 417, 99, 2));
     attach_accept->guti.guti.mme_gid = 9029;
     attach_accept->guti.guti.mme_code = 225;
     attach_accept->guti.guti.m_tmsi = 0x00000456;
 
     attach_accept->presencemask |= 
-        NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
-    nas_from_plmn_id(&attach_accept->location_area_identification.nas_plmn_id,
-        plmn_id_build(&plmn_id, 1, 2, 2));
+        OGS_NAS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
+    ogs_nas_from_plmn_id(&attach_accept->location_area_identification.nas_plmn_id,
+        ogs_plmn_id_build(&plmn_id, 1, 2, 2));
     attach_accept->location_area_identification.lac = 0xfffd;
 
-    attach_accept->presencemask |= NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
+    attach_accept->presencemask |= OGS_NAS_ATTACH_ACCEPT_MS_IDENTITY_PRESENT;
     attach_accept->ms_identity.length = 5;
     attach_accept->ms_identity.tmsi.type = 
-        NAS_MOBILE_IDENTITY_TMSI;
+        OGS_NAS_MOBILE_IDENTITY_TMSI;
     attach_accept->ms_identity.tmsi.tmsi = 0x00e102d4;
 
     attach_accept->presencemask |= 
-        NAS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
+        OGS_NAS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     attach_accept->eps_network_feature_support.length = 1;
     attach_accept->eps_network_feature_support.esr_ps = 1;
     attach_accept->eps_network_feature_support.emc_bs = 1;
     attach_accept->eps_network_feature_support.ims_vops = 1;
 
-    rv = nas_plain_encode(&pkbuf, &message);
+    rv = ogs_nas_plain_encode(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ogs_log_hexdump(OGS_LOG_DEBUG, pkbuf->data, pkbuf->len);
@@ -116,45 +133,45 @@ static void nas_message_test2(abts_case *tc, void *data)
     ogs_pkbuf_free(pkbuf);
 }
 
-static void nas_message_test3(abts_case *tc, void *data)
+static void ogs_nas_message_test3(abts_case *tc, void *data)
 {
     char *payload = "074300035200c2";
 
-    nas_message_t message;
+    ogs_nas_message_t message;
     ogs_pkbuf_t *pkbuf;
     int rv;
-    char hexbuf[MAX_SDU_LEN];
+    char hexbuf[OGS_MAX_SDU_LEN];
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 7);
     memcpy(pkbuf->data, 
             OGS_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
-    rv = nas_emm_decode(&message, pkbuf);
+    rv = ogs_nas_emm_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_pkbuf_free(pkbuf);
 }
 
-static void nas_message_test4(abts_case *tc, void *data)
+static void ogs_nas_message_test4(abts_case *tc, void *data)
 {
     /* Attach Reject */
     char *payload = "074411";
     char buffer[3];
 
-    nas_message_t message;
-    nas_attach_reject_t *attach_reject = &message.emm.attach_reject;
+    ogs_nas_message_t message;
+    ogs_nas_attach_reject_t *attach_reject = &message.emm.attach_reject;
 
     ogs_pkbuf_t *pkbuf = NULL;
     int rv;
 
     memset(&message, 0, sizeof(message));
-    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.emm.h.message_type = NAS_ATTACH_REJECT;
+    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = OGS_NAS_ATTACH_REJECT;
     attach_reject->emm_cause = EMM_CAUSE_NETWORK_FAILURE; 
 
-    rv = nas_plain_encode(&pkbuf, &message);
+    rv = ogs_nas_plain_encode(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
@@ -163,7 +180,7 @@ static void nas_message_test4(abts_case *tc, void *data)
     ogs_pkbuf_free(pkbuf);
 }
 
-static void nas_message_test5(abts_case *tc, void *data)
+static void ogs_nas_message_test5(abts_case *tc, void *data)
 {
     mme_ue_t ue;
 
@@ -177,55 +194,55 @@ static void nas_message_test5(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0xabcdef, ue.ul_count.i32);
 }
 
-static void nas_message_test6(abts_case *tc, void *data)
+static void ogs_nas_message_test6(abts_case *tc, void *data)
 {
     /* Identity Request */
     char *payload = "075501";
-    char hexbuf[MAX_SDU_LEN];
+    char hexbuf[OGS_MAX_SDU_LEN];
 
-    nas_message_t message;
-    nas_identity_request_t *identity_request = &message.emm.identity_request;
+    ogs_nas_message_t message;
+    ogs_nas_identity_request_t *identity_request = &message.emm.identity_request;
     ogs_pkbuf_t *pkbuf;
     int rv;
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 3);
     memcpy(pkbuf->data, 
             OGS_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
-    rv = nas_emm_decode(&message, pkbuf);
+    rv = ogs_nas_emm_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ABTS_INT_EQUAL(tc, NAS_PROTOCOL_DISCRIMINATOR_EMM, 
+    ABTS_INT_EQUAL(tc, OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM, 
             message.emm.h.protocol_discriminator);
-    ABTS_INT_EQUAL(tc, NAS_IDENTITY_REQUEST, message.emm.h.message_type);
-    ABTS_INT_EQUAL(tc, NAS_IDENTITY_TYPE_2_IMSI, 
+    ABTS_INT_EQUAL(tc, OGS_NAS_IDENTITY_REQUEST, message.emm.h.message_type);
+    ABTS_INT_EQUAL(tc, OGS_NAS_IDENTITY_TYPE_2_IMSI, 
             identity_request->identity_type.type);
 
     ogs_pkbuf_free(pkbuf);
 }
 
-static void nas_message_test7(abts_case *tc, void *data)
+static void ogs_nas_message_test7(abts_case *tc, void *data)
 {
     /* Identity Response */
     char *payload = "0756080910101032548651";
     char buffer[11];
 
-    nas_message_t message;
-    nas_identity_response_t *identity_response = &message.emm.identity_response;
+    ogs_nas_message_t message;
+    ogs_nas_identity_response_t *identity_response = &message.emm.identity_response;
 
     ogs_pkbuf_t *pkbuf = NULL;
     int rv;
 
     memset(&message, 0, sizeof(message));
-    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.emm.h.message_type = NAS_IDENTITY_RESPONSE;
+    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.message_type = OGS_NAS_IDENTITY_RESPONSE;
 
     identity_response->mobile_identity.length = 8;
     identity_response->mobile_identity.imsi.digit1 = 0;
     identity_response->mobile_identity.imsi.type = 
-        NAS_IDENTITY_TYPE_2_IMSI;
+        OGS_NAS_IDENTITY_TYPE_2_IMSI;
     identity_response->mobile_identity.imsi.odd_even = 1;
     identity_response->mobile_identity.imsi.digit2 = 0;
     identity_response->mobile_identity.imsi.digit3 = 1;
@@ -242,7 +259,7 @@ static void nas_message_test7(abts_case *tc, void *data)
     identity_response->mobile_identity.imsi.digit14 = 1;
     identity_response->mobile_identity.imsi.digit15 = 5;
 
-    rv = nas_plain_encode(&pkbuf, &message);
+    rv = ogs_nas_plain_encode(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
@@ -251,28 +268,28 @@ static void nas_message_test7(abts_case *tc, void *data)
     ogs_pkbuf_free(pkbuf);
 }
 
-static void nas_message_test8(abts_case *tc, void *data)
+static void ogs_nas_message_test8(abts_case *tc, void *data)
 {
     /* Security Request */
     char *payload = "c7a8640c";
     char buffer[4];
 
-    nas_message_t message;
+    ogs_nas_message_t message;
     ogs_pkbuf_t *pkbuf;
     int rv;
-    char hexbuf[MAX_SDU_LEN];
-    nas_service_request_t *service_request = &message.emm.service_request;
-    nas_ksi_and_sequence_number_t *ksi_and_sequence_number = 
+    char hexbuf[OGS_MAX_SDU_LEN];
+    ogs_nas_service_request_t *service_request = &message.emm.service_request;
+    ogs_nas_ksi_and_sequence_number_t *ksi_and_sequence_number = 
         &service_request->ksi_and_sequence_number;
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     ogs_pkbuf_trim(pkbuf, 4);
     memcpy(pkbuf->data, 
             OGS_HEX(payload, strlen(payload), hexbuf), pkbuf->len);
 
     /* Decode service request */
-    rv = nas_emm_decode(&message, pkbuf);
+    rv = ogs_nas_emm_decode(&message, pkbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, 5, ksi_and_sequence_number->ksi);
     ABTS_INT_EQUAL(tc, 8, ksi_and_sequence_number->sequence_number);
@@ -282,15 +299,15 @@ static void nas_message_test8(abts_case *tc, void *data)
 
     /* Encode service request */
     memset(&message, 0, sizeof(message));
-    message.emm.h.protocol_discriminator = NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.security_header_type = 
-        NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE;
+        OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE;
 
     ksi_and_sequence_number->ksi = 5;
     ksi_and_sequence_number->sequence_number = 8;
     service_request->message_authentication_code = 0x640c;
 
-    rv = nas_plain_encode(&pkbuf, &message);
+    rv = ogs_nas_plain_encode(&pkbuf, &message);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
@@ -303,14 +320,14 @@ abts_suite *test_nas_message(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
 
-    abts_run_test(suite, nas_message_test1, NULL);
-    abts_run_test(suite, nas_message_test2, NULL);
-    abts_run_test(suite, nas_message_test3, NULL);
-    abts_run_test(suite, nas_message_test4, NULL);
-    abts_run_test(suite, nas_message_test5, NULL);
-    abts_run_test(suite, nas_message_test6, NULL);
-    abts_run_test(suite, nas_message_test7, NULL);
-    abts_run_test(suite, nas_message_test8, NULL);
+    abts_run_test(suite, ogs_nas_message_test1, NULL);
+    abts_run_test(suite, ogs_nas_message_test2, NULL);
+    abts_run_test(suite, ogs_nas_message_test3, NULL);
+    abts_run_test(suite, ogs_nas_message_test4, NULL);
+    abts_run_test(suite, ogs_nas_message_test5, NULL);
+    abts_run_test(suite, ogs_nas_message_test6, NULL);
+    abts_run_test(suite, ogs_nas_message_test7, NULL);
+    abts_run_test(suite, ogs_nas_message_test8, NULL);
 
     return suite;
 }

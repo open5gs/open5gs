@@ -17,19 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-core.h"
-#include "core/abts.h"
-
-#include "mme/ogs-sctp.h"
-
-#include "fd/fd-lib.h"
-
-#include "app/application.h"
-#include "app/context.h"
-
-#include "app-init.h"
-
-#include "test-packet.h"
 #include "test-app.h"
 
 #include "pcscf-fd-path.h"
@@ -55,31 +42,25 @@ static void terminate(void)
 
     epc_child_terminate();
 
-    app_will_terminate();
-
     if (mme_thread) ogs_thread_destroy(mme_thread);
     if (hss_thread) ogs_thread_destroy(hss_thread);
     if (sgw_thread) ogs_thread_destroy(sgw_thread);
     if (pgw_thread) ogs_thread_destroy(pgw_thread);
     if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
 
-    app_did_terminate();
-
     pcscf_fd_final();
+
     ogs_sctp_final();
 
-    base_finalize();
-    ogs_core_finalize();
+    test_app_final();
+    ogs_app_terminate();
 }
 
 static void initialize(char **argv)
 {
     int rv;
 
-    ogs_core_initialize();
-    base_initialize();
-
-    rv = app_will_initialize(argv);
+    rv = ogs_app_initialize(NULL, argv);
     ogs_assert(rv == OGS_OK);
 
     pcrf_thread = epc_child_create("nextepc-pcrfd", argv);
@@ -88,12 +69,10 @@ static void initialize(char **argv)
     hss_thread = epc_child_create("nextepc-hssd", argv);
     mme_thread = epc_child_create("nextepc-mmed", argv);
 
-    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
+    test_app_init();
+    ogs_sctp_init(ogs_config()->usrsctp.udp_port);
 
     rv = pcscf_fd_init();
-    ogs_assert(rv == OGS_OK);
-
-    rv = app_did_initialize();
     ogs_assert(rv == OGS_OK);
 }
 
@@ -103,7 +82,7 @@ int main(int argc, char **argv)
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_main(argc, argv, "sample-volte.conf", initialize);
+    test_app_run(argc, argv, "sample-volte.conf", initialize);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

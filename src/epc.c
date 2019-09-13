@@ -1,11 +1,5 @@
-#include "mme/ogs-sctp.h"
-
-#include "base/types.h"
-
-#include "app/context.h"
-#include "app/application.h"
-
-#include "app-init.h"
+#include "ogs-sctp.h"
+#include "ogs-app.h"
 
 static ogs_thread_t *pcrf_thread = NULL;
 static ogs_thread_t *pgw_thread = NULL;
@@ -48,10 +42,11 @@ static void child_main(void *data)
 ogs_thread_t *epc_child_create(char *name, char **argv)
 {
     ogs_thread_t *child = NULL;
+#define OGS_ARG_MAX                     256
     char *commandLine[OGS_ARG_MAX];
     int i = 0;
-    char directory[MAX_FILEPATH_LEN];
-    char command[MAX_FILEPATH_LEN];
+    char directory[OGS_MAX_FILEPATH_LEN];
+    char command[OGS_MAX_FILEPATH_LEN];
 
     while(argv[i] && i < 32) {
         commandLine[i] = argv[i];
@@ -85,36 +80,28 @@ int app_initialize(char **argv)
 {
     int rv;
 
-    rv = app_will_initialize(argv);
-    if (rv != OGS_OK) return rv;
-
-    if (context_self()->config.parameter.no_pcrf == 0)
+    if (ogs_config()->parameter.no_pcrf == 0)
         pcrf_thread = epc_child_create("nextepc-pcrfd", argv);
-    if (context_self()->config.parameter.no_pgw == 0)
+    if (ogs_config()->parameter.no_pgw == 0)
         pgw_thread = epc_child_create("nextepc-pgwd", argv);
-    if (context_self()->config.parameter.no_sgw == 0)
+    if (ogs_config()->parameter.no_sgw == 0)
         sgw_thread = epc_child_create("nextepc-sgwd", argv);
-    if (context_self()->config.parameter.no_hss == 0)
+    if (ogs_config()->parameter.no_hss == 0)
         hss_thread = epc_child_create("nextepc-hssd", argv);
 
-    ogs_info("MME try to initialize");
-    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
+    ogs_sctp_init(ogs_config()->usrsctp.udp_port);
+
     rv = mme_initialize();
     ogs_assert(rv == OGS_OK);
     ogs_info("MME initialize...done");
-
-    rv = app_did_initialize();
-    if (rv != OGS_OK) return rv;
 
     return OGS_OK;;
 }
 
 void app_terminate(void)
 {
-    app_will_terminate();
-
-    ogs_info("MME try to terminate");
     mme_terminate();
+
     ogs_sctp_final();
     ogs_info("MME terminate...done");
 
@@ -122,6 +109,4 @@ void app_terminate(void)
     if (sgw_thread) ogs_thread_destroy(sgw_thread);
     if (pgw_thread) ogs_thread_destroy(pgw_thread);
     if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
-
-    app_did_terminate();
 }

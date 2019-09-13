@@ -32,25 +32,25 @@ type_list["Tracking area identity"]["encode"] = \
 "    target.tac = htons(tracking_area_identity->tac);\n\n"
 
 type_list["Mobile identity"]["decode"] = \
-"    if (mobile_identity->tmsi.type == NAS_MOBILE_IDENTITY_TMSI)\n" \
+"    if (mobile_identity->tmsi.type == OGS_NAS_MOBILE_IDENTITY_TMSI)\n" \
 "    {\n" \
 "        mobile_identity->tmsi.tmsi = ntohl(mobile_identity->tmsi.tmsi);\n" \
 "    }\n\n"
 type_list["Mobile identity"]["encode"] = \
-"    if (mobile_identity->tmsi.type == NAS_MOBILE_IDENTITY_TMSI)\n" \
+"    if (mobile_identity->tmsi.type == OGS_NAS_MOBILE_IDENTITY_TMSI)\n" \
 "    {\n" \
 "        target.tmsi.tmsi = htonl(mobile_identity->tmsi.tmsi);\n" \
 "        target.tmsi.spare = 0xf;\n" \
 "    }\n\n" 
 
 type_list["EPS mobile identity"]["decode"] = \
-"    if (eps_mobile_identity->guti.type == NAS_EPS_MOBILE_IDENTITY_GUTI)\n" \
+"    if (eps_mobile_identity->guti.type == OGS_NAS_EPS_MOBILE_IDENTITY_GUTI)\n" \
 "    {\n" \
 "        eps_mobile_identity->guti.mme_gid = ntohs(eps_mobile_identity->guti.mme_gid);\n" \
 "        eps_mobile_identity->guti.m_tmsi = ntohl(eps_mobile_identity->guti.m_tmsi);\n" \
 "    }\n\n"
 type_list["EPS mobile identity"]["encode"] = \
-"    if (target.guti.type == NAS_EPS_MOBILE_IDENTITY_GUTI)\n" \
+"    if (target.guti.type == OGS_NAS_EPS_MOBILE_IDENTITY_GUTI)\n" \
 "    {\n" \
 "        target.guti.spare = 0xf;\n" \
 "        target.guti.mme_gid = htons(eps_mobile_identity->guti.mme_gid);\n" \
@@ -74,11 +74,11 @@ type_list["Short MAC"]["encode"] = \
 
 type_list["Access point name"]["decode"] = \
 "    {\n" \
-"        char apn[MAX_APN_LEN];\n" \
-"        access_point_name->length  = fqdn_parse(apn, access_point_name->apn, access_point_name->length);\n" \
-"        ogs_cpystrn(access_point_name->apn, apn, ogs_min(access_point_name->length, MAX_APN_LEN) + 1);\n" \
+"        char apn[OGS_MAX_APN_LEN];\n" \
+"        access_point_name->length  = ogs_fqdn_parse(apn, access_point_name->apn, access_point_name->length);\n" \
+"        ogs_cpystrn(access_point_name->apn, apn, ogs_min(access_point_name->length, OGS_MAX_APN_LEN) + 1);\n" \
 "    }\n\n"
 
 type_list["Access point name"]["encode"] = \
-"    target.length = fqdn_build(target.apn, access_point_name->apn, access_point_name->length);\n" \
+"    target.length = ogs_fqdn_build(target.apn, access_point_name->apn, access_point_name->length);\n" \
 "    size = target.length + sizeof(target.length);\n\n"

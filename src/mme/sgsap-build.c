@@ -34,7 +34,7 @@ ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue)
     int mme_name_len = 0;
     served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
     char eps_update_type;
-    nas_lai_t lai;
+    ogs_nas_lai_t lai;
 
     ogs_assert(mme_ue);
     csmap = mme_ue->csmap;
@@ -53,16 +53,16 @@ ogs_pkbuf_t *sgsap_build_location_update_request(mme_ue_t *mme_ue)
     eps_update_type = SGSAP_EPS_UPDATE_IMSI_ATTACH;
     ogs_tlv_add(root, SGSAP_IE_EPS_UPDATE_TYPE, SGSAP_IE_EPS_UPDATE_LEN, 0,
             &eps_update_type);
-    memcpy(&lai, &csmap->lai, sizeof(nas_lai_t));
+    memcpy(&lai, &csmap->lai, sizeof(ogs_nas_lai_t));
     lai.lac = htons(lai.lac);
     ogs_tlv_add(root, SGSAP_IE_LAI_TYPE, SGSAP_IE_LAI_LEN, 0, &lai);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_u8(pkbuf, SGSAP_LOCATION_UPDATE_REQUEST);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
-            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
 
     ogs_tlv_free_all(root);
 
@@ -84,12 +84,12 @@ ogs_pkbuf_t *sgsap_build_tmsi_reallocation_complete(mme_ue_t *mme_ue)
     root = ogs_tlv_add(NULL, SGSAP_IE_IMSI_TYPE, SGSAP_IE_IMSI_LEN, 0,
             &mme_ue->nas_mobile_identity_imsi);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_u8(pkbuf, SGSAP_TMSI_REALLOCATION_COMPLETE);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
-            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
 
     ogs_tlv_free_all(root);
 
@@ -117,12 +117,12 @@ ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue)
 
     switch (mme_ue->nas_eps.detach.detach_type) {
     /* 0 0 1 : EPS detach */
-    case NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
         type = SGSAP_EPS_DETACH_INDICATION;
         indication = SGSAP_EPS_DETACH_UE_INITIATED;
         break;
     /* 0 1 0 : IMSI detach */
-    case NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
         type = SGSAP_IMSI_DETACH_INDICATION;
         indication = SGSAP_IMSI_DETACH_EXPLICIT_UE_INITIATED;
         break;
@@ -131,7 +131,7 @@ ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue)
         ogs_warn("Unknown Detach type[%d]", mme_ue->nas_eps.detach.detach_type);
         break;
     /* 0 1 1 : combined EPS/IMSI detach */
-    case NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
+    case OGS_NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
         type = SGSAP_IMSI_DETACH_INDICATION;
         indication = SGSAP_IMSI_DETACH_COMBINED_UE_INITIATED;
     default: /* all other values */
@@ -160,12 +160,12 @@ ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue)
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     ogs_debug("    INDICATION[%d]", indication);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_u8(pkbuf, type);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
-            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
 
     ogs_tlv_free_all(root);
 
@@ -188,12 +188,12 @@ ogs_pkbuf_t *sgsap_build_mo_csfb_indication(mme_ue_t *mme_ue)
     root = ogs_tlv_add(NULL, SGSAP_IE_IMSI_TYPE, SGSAP_IE_IMSI_LEN, 0,
             &mme_ue->nas_mobile_identity_imsi);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_u8(pkbuf, SGSAP_MO_CSFB_INDICIATION);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
-            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
 
     ogs_tlv_free_all(root);
 
@@ -201,7 +201,7 @@ ogs_pkbuf_t *sgsap_build_mo_csfb_indication(mme_ue_t *mme_ue)
 }
 
 ogs_pkbuf_t *sgsap_build_paging_reject(
-    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi,
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi,
     int nas_mobile_identity_imsi_len, uint8_t sgs_cause)
 {
     ogs_tlv_t *root = NULL;
@@ -218,12 +218,12 @@ ogs_pkbuf_t *sgsap_build_paging_reject(
 
     ogs_debug("    CAUSE[%d]", sgs_cause);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_u8(pkbuf, SGSAP_PAGING_REJECT);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
-            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
 
     ogs_tlv_free_all(root);
 
@@ -252,12 +252,12 @@ ogs_pkbuf_t *sgsap_build_service_request(mme_ue_t *mme_ue, uint8_t emm_mode)
     ogs_tlv_add(root, SGSAP_IE_UE_EMM_MODE_TYPE,
             SGSAP_IE_UE_EMM_MODE_LEN, 0, &emm_mode);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_u8(pkbuf, SGSAP_SERVICE_REQUEST);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
-            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
 
     ogs_tlv_free_all(root);
 
@@ -281,12 +281,12 @@ ogs_pkbuf_t *sgsap_build_reset_ack(mme_vlr_t *vlr)
             &served_gummei->plmn_id[0]);
     root = ogs_tlv_add(NULL, SGSAP_IE_MME_NAME_TYPE, mme_name_len, 0, mme_name);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_u8(pkbuf, SGSAP_RESET_ACK);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
-            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
 
     ogs_tlv_free_all(root);
 
@@ -294,7 +294,7 @@ ogs_pkbuf_t *sgsap_build_reset_ack(mme_vlr_t *vlr)
 }
 
 ogs_pkbuf_t *sgsap_build_uplink_unidata(
-        mme_ue_t *mme_ue, nas_message_container_t *nas_message_container)
+        mme_ue_t *mme_ue, ogs_nas_message_container_t *nas_message_container)
 {
     mme_csmap_t *csmap = NULL;
     mme_vlr_t *vlr = NULL;
@@ -315,12 +315,12 @@ ogs_pkbuf_t *sgsap_build_uplink_unidata(
     ogs_tlv_add(root, SGSAP_IE_NAS_MESSAGE_CONTAINER_TYPE,
             nas_message_container->length, 0, nas_message_container->buffer);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_u8(pkbuf, SGSAP_UPLINK_UNITDATA);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
-            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
 
     ogs_tlv_free_all(root);
 
@@ -346,12 +346,12 @@ ogs_pkbuf_t *sgsap_build_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause)
     ogs_tlv_add(root, SGSAP_IE_SGS_CAUSE_TYPE,
             SGSAP_IE_SGS_CAUSE_LEN, 0, &sgs_cause);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_u8(pkbuf, SGSAP_UE_UNREACHABLE);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN-1);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-1);
 
     ogs_pkbuf_trim(pkbuf, 1+ogs_tlv_render(root,
-            pkbuf->data+1, MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
+            pkbuf->data+1, OGS_MAX_SDU_LEN-1, OGS_TLV_MODE_T1_L1));
 
     ogs_tlv_free_all(root);
 

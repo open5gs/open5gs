@@ -17,22 +17,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "base/base.h"
+#include "ogs-common.h"
 #include "ogs-tun.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __ogs_sock_domain
 
-#if defined(_WIN32)
-#elif defined(__linux__)
-#include <linux/if_tun.h>
-#else
-#include <netinet6/in6_var.h>
-#include <netinet6/nd6.h>
+#if !defined(WIN32)
+#include <net/if.h>
+#include <net/route.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 #endif
 
-#if HAVE_NET_ROUTE_H
-#include <net/route.h>
+#if defined(__linux__)
+#include <linux/if_tun.h>
 #endif
 
 #ifndef IFNAMSIZ

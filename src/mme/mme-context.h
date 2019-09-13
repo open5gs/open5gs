@@ -21,12 +21,12 @@
 #define MME_CONTEXT_H
 
 #include "ogs-crypt.h"
-#include "base/types.h"
 
-#include "asn1c/s1ap-message.h"
-#include "nas/nas-message.h"
-#include "fd/s6a/s6a-message.h"
-#include "gtp/gtp-tlv.h"
+#include "ogs-s1ap.h"
+#include "diameter/ogs-s6a.h"
+#include "ogs-gtp.h"
+#include "ogs-nas.h"
+#include "ogs-app.h"
 
 /* S1AP */
 #include "S1AP_Cause.h"
@@ -60,10 +60,7 @@ typedef struct mme_csmap_s mme_csmap_t;
 typedef struct enb_ue_s enb_ue_t;
 typedef struct mme_ue_s mme_ue_t;
 
-typedef struct gtp_node_s gtp_node_t;
-typedef struct gtp_xact_s gtp_xact_t;
-
-typedef struct fd_config_s fd_config_t;
+typedef struct ogs_diam_config_s ogs_diam_config_t;
 
 typedef uint32_t mme_m_tmsi_t;
 typedef uint32_t mme_p_tmsi_t;
@@ -75,7 +72,7 @@ typedef enum {
 
 typedef struct served_gummei_s {
     uint32_t        num_of_plmn_id;
-    plmn_id_t       plmn_id[MAX_PLMN_ID];
+    ogs_plmn_id_t   plmn_id[MAX_PLMN_ID];
 
     uint32_t        num_of_mme_gid;
     uint16_t        mme_gid[GRP_PER_MME];
@@ -84,8 +81,8 @@ typedef struct served_gummei_s {
 } served_gummei_t;
 
 typedef struct mme_context_s {
-    const char      *fd_conf_path;  /* MME freeDiameter conf path */
-    fd_config_t     *fd_config;     /* MME freeDiameter config */
+    const char          *diam_conf_path;  /* MME Diameter conf path */
+    ogs_diam_config_t   *diam_config;     /* MME Diameter config */
 
     uint16_t        s1ap_port;      /* Default S1AP Port */
     uint16_t        gtpc_port;      /* Default GTPC Port */
@@ -162,8 +159,8 @@ typedef struct mme_context_s {
     ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
     
     /* Network Name */    
-    nas_network_name_t short_name; /* Network short name */
-    nas_network_name_t full_name; /* Network Full Name */
+    ogs_nas_network_name_t short_name; /* Network short name */
+    ogs_nas_network_name_t full_name; /* Network Full Name */
 
     /* SGW Selection */
     sgw_select_e    sgw_selection;
@@ -173,16 +170,16 @@ typedef struct mme_context_s {
 typedef struct mme_sgw_s {
     ogs_lnode_t     lnode;
 
-    uint16_t        tac[MAX_NUM_OF_TAI];
+    uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
 
-    gtp_node_t      *node;
+    ogs_gtp_node_t  *node;
 } mme_sgw_t;
 
 typedef struct mme_pgw_s {
     ogs_lnode_t     lnode;
 
-    gtp_node_t      *node;
+    ogs_gtp_node_t  *node;
     const char      *apn;
 } mme_pgw_t;
 
@@ -211,8 +208,8 @@ typedef struct mme_vlr_s {
 typedef struct mme_csmap_s {
     ogs_lnode_t     lnode;
 
-    nas_tai_t       tai;
-    nas_lai_t       lai;
+    ogs_nas_tai_t   tai;
+    ogs_nas_lai_t   lai;
 
     mme_vlr_t       *vlr;
 } mme_csmap_t;
@@ -233,7 +230,7 @@ typedef struct mme_enb_s {
 
 
     uint8_t         num_of_supported_ta_list;
-    tai_t           supported_ta_list[MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
+    ogs_tai_t       supported_ta_list[OGS_MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
 
     ogs_list_t      enb_ue_list;
 
@@ -259,8 +256,8 @@ struct enb_ue_s {
      * 
      * Save TAI and ECGI. And then, this will copy 'mme_ue_t' context later */
     struct {
-        tai_t       tai;
-        e_cgi_t     e_cgi;
+        ogs_tai_t       tai;
+        ogs_e_cgi_t     e_cgi;
     } saved;
 
     /* Store by UE Context Release Command
@@ -311,10 +308,10 @@ struct mme_ue_s {
         uint8_t     type;
         uint8_t     ksi;
         union {
-            nas_eps_attach_type_t attach;
-            nas_eps_update_type_t update;
-            nas_service_type_t service;
-            nas_detach_type_t detach;
+            ogs_nas_eps_attach_type_t attach;
+            ogs_nas_eps_update_type_t update;
+            ogs_nas_service_type_t service;
+            ogs_nas_detach_type_t detach;
             uint8_t data;
         };
     } nas_eps;
@@ -322,14 +319,14 @@ struct mme_ue_s {
     /* UE identity */
 #define MME_UE_HAVE_IMSI(__mME) \
     ((__mME) && ((__mME)->imsi_len))
-    uint8_t         imsi[MAX_IMSI_LEN];
+    uint8_t         imsi[OGS_MAX_IMSI_LEN];
     int             imsi_len;
-    char            imsi_bcd[MAX_IMSI_BCD_LEN+1];
-    nas_mobile_identity_imsi_t nas_mobile_identity_imsi;
+    char            imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    ogs_nas_mobile_identity_imsi_t nas_mobile_identity_imsi;
 
     mme_m_tmsi_t    *m_tmsi;
     mme_p_tmsi_t    p_tmsi;
-    nas_guti_t      guti;
+    ogs_nas_guti_t  guti;
     int             guti_present;
 
     uint32_t        mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
@@ -338,15 +335,15 @@ struct mme_ue_s {
     uint16_t        vlr_ostream_id; /* SCTP output stream id for VLR */
 
     /* UE Info */
-    tai_t           tai;
-    e_cgi_t         e_cgi;
-    plmn_id_t       last_visited_plmn_id;
+    ogs_tai_t       tai;
+    ogs_e_cgi_t     e_cgi;
+    ogs_plmn_id_t   last_visited_plmn_id;
 
 #define SECURITY_CONTEXT_IS_VALID(__mME) \
     ((__mME) && \
     ((__mME)->security_context_available == 1) && \
      ((__mME)->mac_failed == 0) && \
-     ((__mME)->nas_eps.ksi != NAS_KSI_NO_KEY_IS_AVAILABLE))
+     ((__mME)->nas_eps.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
 #define CLEAR_SECURITY_CONTEXT(__mME) \
     do { \
         ogs_assert((__mME)); \
@@ -358,12 +355,12 @@ struct mme_ue_s {
     int             mac_failed;
 
     /* Security Context */
-    nas_ue_network_capability_t ue_network_capability;
-    nas_ms_network_capability_t ms_network_capability;
-    uint8_t         xres[MAX_RES_LEN];
+    ogs_nas_ue_network_capability_t ue_network_capability;
+    ogs_nas_ms_network_capability_t ms_network_capability;
+    uint8_t         xres[OGS_MAX_RES_LEN];
     uint8_t         xres_len;
     uint8_t         kasme[OGS_SHA256_DIGEST_SIZE];
-    uint8_t         rand[RAND_LEN];
+    uint8_t         rand[OGS_RAND_LEN];
     uint8_t         knas_int[OGS_SHA256_DIGEST_SIZE/2]; 
     uint8_t         knas_enc[OGS_SHA256_DIGEST_SIZE/2];
     uint32_t        dl_count;
@@ -397,7 +394,7 @@ struct mme_ue_s {
     uint8_t         selected_int_algorithm;
 
     /* HSS Info */
-    s6a_subscription_data_t subscription_data;
+    ogs_diam_s6a_subscription_data_t subscription_data;
 
     /* ESM Info */
 #define MIN_EPS_BEARER_ID           5
@@ -418,7 +415,7 @@ struct mme_ue_s {
     enb_ue_t        *enb_ue;
 
     /* Save PDN Connectivity Request */
-    nas_esm_message_container_t pdn_connectivity_request;
+    ogs_nas_esm_message_container_t pdn_connectivity_request;
 
 #define CLEAR_MME_UE_ALL_TIMERS(__mME) \
     do { \
@@ -502,7 +499,7 @@ struct mme_ue_s {
      */
     int             session_context_will_deleted;
 
-    gtp_node_t      *gnode;
+    ogs_gtp_node_t  *gnode;
     mme_csmap_t     *csmap;
 };
 
@@ -535,7 +532,7 @@ typedef struct mme_sess_s {
     uint8_t         pti;        /* Procedure Trasaction Identity */
 
     /* PDN Connectivity Request */
-    nas_request_type_t request_type; 
+    ogs_nas_request_type_t request_type; 
 
     /* mme_bearer_first(sess) : Default Bearer Context */
     ogs_list_t      bearer_list;
@@ -546,7 +543,7 @@ typedef struct mme_sess_s {
 #define MME_UE_HAVE_APN(__mME) \
     ((__mME) && (mme_sess_first(__mME)) && \
     ((mme_sess_first(__mME))->pdn))
-    pdn_t           *pdn;
+    ogs_pdn_t       *pdn;
 
     /* Save Protocol Configuration Options from UE */
     struct {
@@ -555,7 +552,7 @@ typedef struct mme_sess_s {
     } ue_pco; 
 
     /* Save Protocol Configuration Options from PGW */
-    tlv_octet_t     pgw_pco;
+    ogs_tlv_octet_t pgw_pco;
 } mme_sess_t;
 
 #define BEARER_CONTEXT_IS_ACTIVE(__mME)  \
@@ -594,25 +591,25 @@ typedef struct mme_bearer_s {
     uint8_t         ebi;            /* EPS Bearer ID */    
 
     uint32_t        enb_s1u_teid;
-    ip_t            enb_s1u_ip;
+    ogs_ip_t        enb_s1u_ip;
     uint32_t        sgw_s1u_teid;
-    ip_t            sgw_s1u_ip;
+    ogs_ip_t        sgw_s1u_ip;
 
     uint32_t        target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
-    ip_t            target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
+    ogs_ip_t        target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
 
     uint32_t        enb_dl_teid;
-    ip_t            enb_dl_ip;
+    ogs_ip_t        enb_dl_ip;
     uint32_t        enb_ul_teid;
-    ip_t            enb_ul_ip;
+    ogs_ip_t        enb_ul_ip;
 
     uint32_t        sgw_dl_teid;
-    ip_t            sgw_dl_ip;
+    ogs_ip_t        sgw_dl_ip;
     uint32_t        sgw_ul_teid;
-    ip_t            sgw_ul_ip;
+    ogs_ip_t        sgw_ul_ip;
 
-    qos_t           qos;
-    tlv_octet_t     tft;   /* Saved TFT */
+    ogs_qos_t       qos;
+    ogs_tlv_octet_t tft;   /* Saved TFT */
 
 #define CLEAR_BEARER_ALL_TIMERS(__bEARER) \
     do { \
@@ -637,7 +634,7 @@ typedef struct mme_bearer_s {
     /* Related Context */
     mme_ue_t        *mme_ue;
     mme_sess_t      *sess;
-    gtp_xact_t      *xact;
+    ogs_gtp_xact_t  *xact;
 } mme_bearer_t;
 
 void mme_context_init(void);
@@ -668,8 +665,8 @@ mme_csmap_t *mme_csmap_add(mme_vlr_t *vlr);
 void mme_csmap_remove(mme_csmap_t *csmap);
 void mme_csmap_remove_all(void);
 
-mme_csmap_t *mme_csmap_find_by_tai(tai_t *tai);
-mme_csmap_t *mme_csmap_find_by_nas_lai(nas_lai_t *lai);
+mme_csmap_t *mme_csmap_find_by_tai(ogs_tai_t *tai);
+mme_csmap_t *mme_csmap_find_by_nas_lai(ogs_nas_lai_t *lai);
 
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
 int mme_enb_remove(mme_enb_t *enb);
@@ -696,10 +693,10 @@ void mme_ue_remove_all();
 
 mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd);
-mme_ue_t *mme_ue_find_by_guti(nas_guti_t *nas_guti);
+mme_ue_t *mme_ue_find_by_guti(ogs_nas_guti_t *nas_guti);
 mme_ue_t *mme_ue_find_by_teid(uint32_t teid);
 
-mme_ue_t *mme_ue_find_by_message(nas_message_t *message);
+mme_ue_t *mme_ue_find_by_message(ogs_nas_message_t *message);
 int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd);
 
 int mme_ue_have_indirect_tunnel(mme_ue_t *mme_ue);
@@ -775,7 +772,7 @@ void mme_bearer_remove_all(mme_sess_t *sess);
 mme_bearer_t *mme_bearer_find_by_sess_ebi(mme_sess_t *sess, uint8_t ebi);
 mme_bearer_t *mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, uint8_t ebi);
 mme_bearer_t *mme_bearer_find_or_add_by_message(
-                                mme_ue_t *mme_ue, nas_message_t *message);
+                                mme_ue_t *mme_ue, ogs_nas_message_t *message);
 mme_bearer_t *mme_default_bearer_in_sess(mme_sess_t *sess);
 mme_bearer_t *mme_linked_bearer(mme_bearer_t *bearer);
 mme_bearer_t *mme_bearer_first(mme_sess_t *sess);
@@ -785,10 +782,10 @@ int mme_bearer_is_inactive(mme_ue_t *mme_ue);
 int mme_bearer_set_inactive(mme_ue_t *mme_ue);
 
 void mme_pdn_remove_all(mme_ue_t *mme_ue);
-pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn);
-pdn_t *mme_default_pdn(mme_ue_t *mme_ue);
+ogs_pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn);
+ogs_pdn_t *mme_default_pdn(mme_ue_t *mme_ue);
 
-int mme_find_served_tai(tai_t *tai);
+int mme_find_served_tai(ogs_tai_t *tai);
 
 int mme_m_tmsi_pool_generate();
 mme_m_tmsi_t *mme_m_tmsi_alloc();

@@ -9,24 +9,24 @@
 .libs
 
 # generated files
-lib/freeDiameter-*/build-aux/*
-lib/freeDiameter-*/config.status
-lib/freeDiameter-*/m4/*.m4
-lib/freeDiameter-*/!m4/ax_*.m4
-lib/freeDiameter-*/libfdcore/fdd.tab.[chy]
-lib/freeDiameter-*/libfdcore/lex.fdd.[cl]
-lib/freeDiameter-*/include/freeDiameter/version.h
-lib/freeDiameter-*/include/freeDiameter/config.h.in*
-lib/freeDiameter-*/include/freeDiameter/config.h
-lib/freeDiameter-*/include/freeDiameter/freeDiameter-host.h
+lib/freeDiameter/build-aux/*
+lib/freeDiameter/config.status
+lib/freeDiameter/m4/*.m4
+lib/freeDiameter/!m4/ax_*.m4
+lib/freeDiameter/libfdcore/fdd.tab.[chy]
+lib/freeDiameter/libfdcore/lex.fdd.[cl]
+lib/freeDiameter/include/freeDiameter/version.h
+lib/freeDiameter/include/freeDiameter/freeDiameter-config.h.in*
+lib/freeDiameter/include/freeDiameter/freeDiameter-config.h
+lib/freeDiameter/include/freeDiameter/freeDiameter-host.h
 support/systemd/nextepc-*.service
 support/logrotate/nextepc
 
 # autotools
 stamp-h1
 config.h
-lib/base/nextepc-config.h
-lib/base/nextepc-config.h.in*
+lib/nextepc-config.h
+lib/nextepc-config.h.in*
 config.log
 config.status
 configure

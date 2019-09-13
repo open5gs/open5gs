@@ -17,16 +17,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-core.h"
-#include "core/abts.h"
-
-#include "base/types.h"
-#include "fd/fd-lib.h"
-
 #include "test-app.h"
 
 static int connected_count = 0;
-static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg, 
+static void test_diam_logger_handler(enum fd_hook_type type, struct msg * msg, 
     struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
     void * regdata)
 {
@@ -35,7 +29,7 @@ static void test_fd_logger_handler(enum fd_hook_type type, struct msg * msg,
     }
 }
 
-void test_main(int argc, char **argv,
+void test_app_run(int argc, char **argv,
         const char *name, void (*init)(char **argv))
 {
     int rv;
@@ -45,9 +39,9 @@ void test_main(int argc, char **argv,
     char *argv_out[argc+4], *new_argv[argc+4];
     int argc_out;
 
-    char directory[MAX_FILEPATH_LEN];
-    char exec_file[MAX_FILEPATH_LEN];
-    char conf_file[MAX_FILEPATH_LEN];
+    char directory[OGS_MAX_FILEPATH_LEN];
+    char exec_file[OGS_MAX_FILEPATH_LEN];
+    char conf_file[OGS_MAX_FILEPATH_LEN];
     
     ogs_path_remove_last_component(directory, argv[0]);
     if (strstr(directory, ".libs")) {
@@ -79,7 +73,7 @@ void test_main(int argc, char **argv,
     rv = abts_main(argc_out, argv_out, new_argv);
     ogs_assert(rv == OGS_OK);
 
-    fd_logger_register(test_fd_logger_handler);
+    ogs_diam_logger_register(test_diam_logger_handler);
 
     (*init)(new_argv);
 
@@ -89,5 +83,15 @@ void test_main(int argc, char **argv,
     }
 
     ogs_msleep(500); /* Wait for listening all sockets */
+}
+
+void test_app_init(void)
+{
+    ogs_log_install_domain(&__ogs_sctp_domain, "sctp", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_s1ap_domain, "s1ap", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_diam_domain, "diam", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_dbi_domain, "dbi", OGS_LOG_ERROR);
+
+    ogs_assert(ogs_mongoc_init(ogs_config()->db_uri) == OGS_OK);
 }
 

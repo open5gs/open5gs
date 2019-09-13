@@ -20,7 +20,9 @@
 #ifndef PCRF_CONTEXT_H
 #define PCRF_CONTEXT_H
 
-#include "fd/gx/gx-message.h"
+#include "diameter/ogs-gx.h"
+#include "diameter/ogs-rx.h"
+#include "ogs-app.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,8 +37,8 @@ typedef struct fd_config_s fd_config_t;
 struct session;
 
 typedef struct pcrf_context_s {
-    const char      *fd_conf_path;  /* PCRF freeDiameter conf path */
-    fd_config_t     *fd_config;     /* PCRF freeDiameter config */
+    const char          *diam_conf_path;  /* PCRF Diameter conf path */
+    ogs_diam_config_t   *diam_config;     /* PCRF Diameter config */
 
     void            *subscriberCollection;
     ogs_thread_mutex_t db_lock;
@@ -54,7 +56,8 @@ int pcrf_context_parse_config(void);
 int pcrf_db_init(void);
 int pcrf_db_final(void);
 
-int pcrf_db_qos_data(char *imsi_bcd, char *apn, gx_message_t *gx_message);
+int pcrf_db_qos_data(char *imsi_bcd, char *apn,
+        ogs_diam_gx_message_t *gx_message);
 
 int pcrf_sess_set_ipv4(const void *key, uint8_t *sid);
 int pcrf_sess_set_ipv6(const void *key, uint8_t *sid);

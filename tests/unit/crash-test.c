@@ -1,7 +1,21 @@
-#include "core/abts.h"
-
-#include "mme/s1ap-build.h"
-#include "mme/s1ap-conv.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "test-packet.h"
 
@@ -91,7 +105,7 @@ static void test1_func(abts_case *tc, void *data)
         S1AP_E_RABToBeSetupItemCtxtSUReq_t *e_rab = NULL;
         S1AP_GBR_QosInformation_t *gbrQosInformation = NULL;
         S1AP_NAS_PDU_t *nasPdu = NULL;
-        ip_t sgw_s1u_ip;
+        ogs_ip_t sgw_s1u_ip;
         uint32_t sgw_s1u_teid = 1;
 
         item = CALLOC(
@@ -125,9 +139,9 @@ static void test1_func(abts_case *tc, void *data)
 
         sgw_s1u_ip.ipv4 = 1;
         sgw_s1u_ip.ipv6 = 0;
-        rv = s1ap_ip_to_BIT_STRING(
+        rv = ogs_s1ap_ip_to_BIT_STRING(
                 &sgw_s1u_ip, &e_rab->transportLayerAddress);
-        s1ap_uint32_to_OCTET_STRING(sgw_s1u_teid, &e_rab->gTP_TEID);
+        ogs_s1ap_uint32_to_OCTET_STRING(sgw_s1u_teid, &e_rab->gTP_TEID);
     }
 
     ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
@@ -171,7 +185,7 @@ static void test1_func(abts_case *tc, void *data)
     {
         S1AP_CSFallbackIndicator_t *CSFallbackIndicator = NULL;
         S1AP_LAI_t *LAI = NULL;
-        plmn_id_t plmn_id;
+        ogs_plmn_id_t plmn_id;
         uint16_t lac = 1;
 
         ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
@@ -198,9 +212,9 @@ static void test1_func(abts_case *tc, void *data)
         LAI = &ie->value.choice.LAI;
         ogs_assert(LAI);
 
-        s1ap_buffer_to_OCTET_STRING(&plmn_id, sizeof(plmn_id_t),
+        ogs_s1ap_buffer_to_OCTET_STRING(&plmn_id, sizeof(ogs_plmn_id_t),
                 &LAI->pLMNidentity);
-        s1ap_uint16_to_OCTET_STRING(lac, &LAI->lAC);
+        ogs_s1ap_uint16_to_OCTET_STRING(lac, &LAI->lAC);
 
     }
     
@@ -220,11 +234,11 @@ static void test1_func(abts_case *tc, void *data)
 
         UERadioCapability = &ie->value.choice.UERadioCapability;
 
-        s1ap_buffer_to_OCTET_STRING(buf, size, UERadioCapability);
+        ogs_s1ap_buffer_to_OCTET_STRING(buf, size, UERadioCapability);
     }
 
-    rv = s1ap_encode_pdu(&s1apbuf, &pdu);
-    s1ap_free_pdu(&pdu);
+    rv = ogs_s1ap_encode(&s1apbuf, &pdu);
+    ogs_s1ap_free(&pdu);
     ogs_pkbuf_free(s1apbuf);
 
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -269,13 +283,13 @@ static int test_build_mme_configuration_transfer(
 
     SONConfigurationTransfer = &ie->value.choice.SONConfigurationTransfer;
 
-    rv = s1ap_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
+    rv = ogs_s1ap_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
             son_configuration_transfer, SONConfigurationTransfer);
     ogs_assert(rv == OGS_OK);
 
     ogs_pkbuf_t *s1apbuf;
-    rv = s1ap_encode_pdu(&s1apbuf, &pdu);
-    s1ap_free_pdu(&pdu);
+    rv = ogs_s1ap_encode(&s1apbuf, &pdu);
+    ogs_s1ap_free(&pdu);
 
     ogs_pkbuf_free(s1apbuf);
 
@@ -283,7 +297,7 @@ static int test_build_mme_configuration_transfer(
 }
 
 static void test_parse_enb_configuration_transfer(
-        s1ap_message_t *message)
+        ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -326,20 +340,20 @@ static void test2_func(abts_case *tc, void *data)
         "4022000001008140 1b0009f124000000 1009f12458ac0009 f1240000002009f1"
         "2458ac00";
 
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     ogs_pkbuf_t *enb_pkbuf;
     int result;
-    char hexbuf[MAX_SDU_LEN];
+    char hexbuf[OGS_MAX_SDU_LEN];
 
-    enb_pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_data(enb_pkbuf, 
             OGS_HEX(payload, strlen(payload), hexbuf), 38);
 
-    result = s1ap_decode_pdu(&message, enb_pkbuf);
+    result = ogs_s1ap_decode(&message, enb_pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
 
     test_parse_enb_configuration_transfer(&message);
-    s1ap_free_pdu(&message);
+    ogs_s1ap_free(&message);
 
     ogs_pkbuf_free(enb_pkbuf);
 }
@@ -352,20 +366,20 @@ static void test3_func(abts_case *tc, void *data)
         "2458ac500f80c0a8 683b";
 
     S1AP_SONConfigurationTransfer_t SONConfigurationTransfer;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     ogs_pkbuf_t *enb_pkbuf;
     int result;
-    char hexbuf[MAX_SDU_LEN];
+    char hexbuf[OGS_MAX_SDU_LEN];
 
-    enb_pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put_data(enb_pkbuf, 
             OGS_HEX(payload, strlen(payload), hexbuf), 44);
 
-    result = s1ap_decode_pdu(&message, enb_pkbuf);
+    result = ogs_s1ap_decode(&message, enb_pkbuf);
     ABTS_INT_EQUAL(tc, 0, result);
 
     test_parse_enb_configuration_transfer(&message);
-    s1ap_free_pdu(&message);
+    ogs_s1ap_free(&message);
 
     ogs_pkbuf_free(enb_pkbuf);
 }

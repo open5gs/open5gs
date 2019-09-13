@@ -12,7 +12,7 @@
 #if 0 /* modified by acetcom */
 #include "config.h"
 #else
-#include "base/base.h"
+#include "ogs-common.h"
 #endif
 #endif
 

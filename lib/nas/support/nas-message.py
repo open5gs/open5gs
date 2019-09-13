@@ -328,27 +328,29 @@ if os.path.isfile(typefile) and os.access(typefile, os.R_OK):
 tmp = [(k, v["reference"]) for k, v in type_list.items()]
 sorted_type_list = sorted(tmp, key=lambda tup: tup[1])
 
-f = open(outdir + 'nas-ies.h', 'w')
+f = open(outdir + 'ies.h', 'w')
 output_header_to_file(f)
-f.write("""#ifndef NAS_IES_H
-#define NAS_IES_H
+f.write("""#if !defined(OGS_NAS_INSIDE) && !defined(OGS_NAS_COMPILATION)
+#error "This header cannot be included directly."
+#endif
 
-#include "nas-types.h"
+#ifndef OGS_NAS_IES_H
+#define OGS_NAS_IES_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int nas_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type);
+int ogs_nas_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type);
 
 """)
 
 for (k, v) in sorted_type_list:
-    f.write("int nas_decode_%s(nas_%s_t *%s, ogs_pkbuf_t *pkbuf);\n" % (v_lower(k), v_lower(k), v_lower(k)))
+    f.write("int ogs_nas_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf);\n" % (v_lower(k), v_lower(k), v_lower(k)))
 f.write("\n")
 
 for (k, v) in sorted_type_list:
-    f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_%s_t *%s);\n" % (v_lower(k), v_lower(k), v_lower(k)))
+    f.write("int ogs_nas_encode_%s(ogs_pkbuf_t *pkbuf, ogs_nas_%s_t *%s);\n" % (v_lower(k), v_lower(k), v_lower(k)))
 f.write("\n")
 
 
@@ -356,19 +358,16 @@ f.write("""#ifdef __cplusplus
 }
 #endif
 
-#endif /* NAS_IES_H */
+#endif /* OGS_NAS_IES_H */
 
 """)
 f.close()
 
-f = open(outdir + 'nas-ies.c', 'w')
+f = open(outdir + 'ies.c', 'w')
 output_header_to_file(f)
-f.write("""#include "nas-ies.h"
+f.write("""#include "ogs-nas.h"
 
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __base_nas_domain
-
-int nas_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type)
+int ogs_nas_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type)
 {
     uint16_t size = sizeof(uint8_t);
 
@@ -384,16 +383,16 @@ for (k, v) in sorted_type_list:
     f.write("/* %s %s\n" % (type_list[k]["reference"], k))
     f.write(" * %s %s %s */\n" % (type_list[k]["presence"], type_list[k]["format"], type_list[k]["length"]))
     if type_list[k]["format"] == "TV" and type_list[k]["length"] == "1":
-        f.write("int nas_decode_%s(nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int ogs_nas_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    memcpy(%s, pkbuf->data - 1, 1);\n\n" % v_lower(k))
         f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
         f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);\n\n");
         f.write("    return 0;\n")
         f.write("}\n\n")
-        f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int ogs_nas_encode_%s(ogs_pkbuf_t *pkbuf, ogs_nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
-        f.write("    uint16_t size = sizeof(nas_%s_t);\n\n" % v_lower(k))
+        f.write("    uint16_t size = sizeof(ogs_nas_%s_t);\n\n" % v_lower(k))
         f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
         f.write("    memcpy(pkbuf->data - size, %s, size);\n\n" % v_lower(k))
         f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
@@ -401,12 +400,12 @@ for (k, v) in sorted_type_list:
         f.write("    return size;\n")
         f.write("}\n\n")
     elif type_list[k]["format"] == "TV" or type_list[k]["format"] == "V":
-        f.write("int nas_decode_%s(nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int ogs_nas_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         if type_list[k]["length"] == "4":
             f.write("    uint16_t size = 3;\n\n")
         else:
-            f.write("    uint16_t size = sizeof(nas_%s_t);\n\n" % v_lower(k))
+            f.write("    uint16_t size = sizeof(ogs_nas_%s_t);\n\n" % v_lower(k))
         f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
         f.write("    memcpy(%s, pkbuf->data - size, size);\n\n" % v_lower(k))
         if "decode" in type_list[k]:
@@ -415,13 +414,13 @@ for (k, v) in sorted_type_list:
         f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
-        f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int ogs_nas_encode_%s(ogs_pkbuf_t *pkbuf, ogs_nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         if type_list[k]["length"] == "4":
             f.write("    uint16_t size = 3;\n")
         else:
-            f.write("    uint16_t size = sizeof(nas_%s_t);\n" % v_lower(k))
-        f.write("    nas_%s_t target;\n\n" % v_lower(k))
+            f.write("    uint16_t size = sizeof(ogs_nas_%s_t);\n" % v_lower(k))
+        f.write("    ogs_nas_%s_t target;\n\n" % v_lower(k))
         f.write("    memcpy(&target, %s, size);\n" % v_lower(k))
         if "encode" in type_list[k]:
             f.write("%s" % type_list[k]["encode"])
@@ -432,10 +431,10 @@ for (k, v) in sorted_type_list:
         f.write("    return size;\n")
         f.write("}\n\n")
     elif type_list[k]["format"] == "LV-E" or type_list[k]["format"] == "TLV-E":
-        f.write("int nas_decode_%s(nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int ogs_nas_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    uint16_t size = 0;\n")
-        f.write("    nas_%s_t *source = pkbuf->data;\n\n" % v_lower(k))
+        f.write("    ogs_nas_%s_t *source = pkbuf->data;\n\n" % v_lower(k))
         f.write("    %s->length = ntohs(source->length);\n" % v_lower(k))
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
         f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
@@ -444,7 +443,7 @@ for (k, v) in sorted_type_list:
         f.write("    ogs_log_hexdump(OGS_LOG_TRACE, (void*)%s->buffer, %s->length);\n\n" % (v_lower(k), v_lower(k)));
         f.write("    return size;\n")
         f.write("}\n\n")
-        f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int ogs_nas_encode_%s(ogs_pkbuf_t *pkbuf, ogs_nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    uint16_t size = 0;\n")
         f.write("    uint16_t target;\n\n")
@@ -462,10 +461,10 @@ for (k, v) in sorted_type_list:
         f.write("    return %s->length + sizeof(%s->length);\n" % (v_lower(k), v_lower(k)))
         f.write("}\n\n");
     else:
-        f.write("int nas_decode_%s(nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int ogs_nas_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    uint16_t size = 0;\n")
-        f.write("    nas_%s_t *source = pkbuf->data;\n\n" % v_lower(k))
+        f.write("    ogs_nas_%s_t *source = pkbuf->data;\n\n" % v_lower(k))
         f.write("    %s->length = source->length;\n" % v_lower(k))
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
         f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
@@ -476,11 +475,11 @@ for (k, v) in sorted_type_list:
         f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
-        f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("int ogs_nas_encode_%s(ogs_pkbuf_t *pkbuf, ogs_nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    uint16_t size = %s->length + sizeof(%s->length);\n" % (v_lower(k), v_lower(k)))
-        f.write("    nas_%s_t target;\n\n" % v_lower(k))
-        f.write("    memcpy(&target, %s, sizeof(nas_%s_t));\n" % (v_lower(k), v_lower(k)))
+        f.write("    ogs_nas_%s_t target;\n\n" % v_lower(k))
+        f.write("    memcpy(&target, %s, sizeof(ogs_nas_%s_t));\n" % (v_lower(k), v_lower(k)))
         if "encode" in type_list[k]:
             f.write("%s" % type_list[k]["encode"])
         f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
@@ -491,12 +490,14 @@ for (k, v) in sorted_type_list:
         f.write("}\n\n");
 f.close()
 
-f = open(outdir + 'nas-message.h', 'w')
+f = open(outdir + 'message.h', 'w')
 output_header_to_file(f)
-f.write("""#ifndef NAS_MESSAGE_H
-#define NAS_MESSAGE_H
+f.write("""#if !defined(OGS_NAS_INSIDE) && !defined(OGS_NAS_COMPILATION)
+#error "This header cannot be included directly."
+#endif
 
-#include "nas-ies.h"
+#ifndef OGS_NAS_MESSAGE_H
+#define OGS_NAS_MESSAGE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -504,47 +505,47 @@ extern "C" {
 
 /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
  * When calculating AES_CMAC, we need to use the headroom of the packet. */
-#define NAS_HEADROOM 16
+#define OGS_NAS_HEADROOM 16
 
-#define NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE 0
-#define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED 1
-#define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED 2
-#define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT 3
-#define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT 4
-#define NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_PARTICALLY_CIPHTERD 5
-#define NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE 12
+#define OGS_NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE 0
+#define OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED 1
+#define OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED 2
+#define OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT 3
+#define OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT 4
+#define OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_PARTICALLY_CIPHTERD 5
+#define OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE 12
 
-#define NAS_PROTOCOL_DISCRIMINATOR_ESM 0x2
-#define NAS_PROTOCOL_DISCRIMINATOR_EMM 0x7
+#define OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM 0x2
+#define OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM 0x7
 
-#define NAS_EPS_BEARER_IDENTITY_UNASSIGNED 0
-#define NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
+#define OGS_NAS_EPS_BEARER_IDENTITY_UNASSIGNED 0
+#define OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 
-typedef struct nas_emm_header_s {
+typedef struct ogs_nas_emm_header_s {
 ED2(uint8_t security_header_type:4;,
     uint8_t protocol_discriminator:4;)
     uint8_t message_type;
-} __attribute__ ((packed)) nas_emm_header_t;
+} __attribute__ ((packed)) ogs_nas_emm_header_t;
 
-typedef struct nas_esm_header_s {
+typedef struct ogs_nas_esm_header_s {
 ED2(uint8_t eps_bearer_identity:4;,
     uint8_t protocol_discriminator:4;)
     uint8_t procedure_transaction_identity;
     uint8_t message_type;
-} __attribute__ ((packed)) nas_esm_header_t;
+} __attribute__ ((packed)) ogs_nas_esm_header_t;
 
-typedef struct nas_security_header_s {
+typedef struct ogs_nas_security_header_s {
 ED2(uint8_t security_header_type:4;,
     uint8_t protocol_discriminator:4;)
     uint32_t message_authentication_code;
     uint8_t sequence_number;
-} __attribute__ ((packed)) nas_security_header_t;
+} __attribute__ ((packed)) ogs_nas_security_header_t;
 
 """)
 
 for (k, v) in sorted_msg_list:
     if k.find("TO UE") == -1 and k != "SERVICE REQUEST":
-        f.write("#define NAS_" + v_upper(k) + " " + v.split('.')[0] + "\n")
+        f.write("#define OGS_NAS_" + v_upper(k) + " " + v.split('.')[0] + "\n")
 f.write("\n")
 
 for (k, v) in sorted_msg_list:
@@ -558,12 +559,12 @@ for (k, v) in sorted_msg_list:
     f.write(" ******************************************************/")
 
     for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]):
-        f.write("\n#define NAS_%s_%s_PRESENT (1<<%d)" % (v_upper(k), v_upper(ie["value"]), i))
+        f.write("\n#define OGS_NAS_%s_%s_PRESENT (1<<%d)" % (v_upper(k), v_upper(ie["value"]), i))
 
     for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]):
-        f.write("\n#define NAS_%s_%s_TYPE 0x%s" % (v_upper(k), v_upper(ie["value"]), re.sub('-', '0', ie["iei"])))
+        f.write("\n#define OGS_NAS_%s_%s_TYPE 0x%s" % (v_upper(k), v_upper(ie["value"]), re.sub('-', '0', ie["iei"])))
 
-    f.write("\n\ntypedef struct nas_%s_s {\n" % v_lower(k))
+    f.write("\n\ntypedef struct ogs_nas_%s_s {\n" % v_lower(k))
 
     mandatory_fields = False;
     optional_fields = False;
@@ -577,15 +578,15 @@ for (k, v) in sorted_msg_list:
             f.write("    uint32_t presencemask;\n");
             optional_fields = True;
 
-        f.write("    nas_" + v_lower(ie["type"]) + "_t " + \
+        f.write("    ogs_nas_" + v_lower(ie["type"]) + "_t " + \
                 v_lower(ie["value"]) + ";\n")
 
-    f.write("} nas_%s_t;\n\n" % v_lower(k))
+    f.write("} ogs_nas_%s_t;\n\n" % v_lower(k))
 
 f.write("\n")
 
-f.write("""typedef struct nas_emm_message_s {
-    nas_emm_header_t h;
+f.write("""typedef struct ogs_nas_emm_message_s {
+    ogs_nas_emm_header_t h;
     union {
 """)
 for (k, v) in sorted_msg_list:
@@ -594,12 +595,12 @@ for (k, v) in sorted_msg_list:
     if len(msg_list[k]["ies"]) == 0:
         continue;
     if float(msg_list[k]["type"]) < 192:
-        f.write("        nas_%s_t %s;\n" % (v_lower(k), v_lower(k)))
+        f.write("        ogs_nas_%s_t %s;\n" % (v_lower(k), v_lower(k)))
 f.write("""    };
-} nas_emm_message_t;
+} ogs_nas_emm_message_t;
 
-typedef struct nas_esm_message_s {
-    nas_esm_header_t h;
+typedef struct ogs_nas_esm_message_s {
+    ogs_nas_esm_header_t h;
     union {
 """)
 for (k, v) in sorted_msg_list:
@@ -608,41 +609,38 @@ for (k, v) in sorted_msg_list:
     if len(msg_list[k]["ies"]) == 0:
         continue;
     if float(msg_list[k]["type"]) >= 192:
-        f.write("        nas_%s_t %s;\n" % (v_lower(k), v_lower(k)))
+        f.write("        ogs_nas_%s_t %s;\n" % (v_lower(k), v_lower(k)))
 
 f.write("""    };
-} nas_esm_message_t;
+} ogs_nas_esm_message_t;
 
-typedef struct nas_message_s {
-    nas_security_header_t h;
+typedef struct ogs_nas_message_s {
+    ogs_nas_security_header_t h;
     union {
-        nas_emm_message_t emm;
-        nas_esm_message_t esm;
+        ogs_nas_emm_message_t emm;
+        ogs_nas_esm_message_t esm;
     };
-} nas_message_t;
+} ogs_nas_message_t;
 
-int nas_emm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf);
-int nas_esm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf);
-int nas_plain_encode(
-        ogs_pkbuf_t **pkbuf, nas_message_t *message);
+int ogs_nas_emm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf);
+int ogs_nas_esm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf);
+int ogs_nas_plain_encode(
+        ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* NAS_MESSAGE_H */
+#endif /* OGS_NAS_MESSAGE_H */
 """)
 
 f.close()
 
 
 
-f = open(outdir + 'nas-decoder.c', 'w')
+f = open(outdir + 'decoder.c', 'w')
 output_header_to_file(f)
-f.write("""#include "nas-message.h"
-
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __base_nas_domain
+f.write("""#include "ogs-nas.h"
 
 """)
 
@@ -652,17 +650,17 @@ for (k, v) in sorted_msg_list:
     if len(msg_list[k]["ies"]) == 0:
         continue
 
-    f.write("int nas_decode_%s(nas_message_t *message, ogs_pkbuf_t *pkbuf)\n{\n" % v_lower(k))
+    f.write("int ogs_nas_decode_%s(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf)\n{\n" % v_lower(k))
     if float(msg_list[k]["type"]) < 192:
-        f.write("    nas_%s_t *%s = &message->emm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("    ogs_nas_%s_t *%s = &message->emm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     else:
-        f.write("    nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("    ogs_nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     f.write("    int decoded = 0;\n")
     f.write("    int size = 0;\n\n")
     f.write("    ogs_trace(\"[NAS] Decode %s\\n\");\n\n" % v_upper(k))
 
     for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "M"]:
-        f.write("    size = nas_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
+        f.write("    size = ogs_nas_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
         f.write("    ogs_assert(size >= 0);\n")
         f.write("    decoded += size;\n\n")
 
@@ -683,10 +681,10 @@ for (k, v) in sorted_msg_list:
 """)
             optional_fields = True;
 
-        f.write("             case NAS_%s_%s_TYPE:\n" % (v_upper(k), v_upper(ie["value"])))
-        f.write("                 size = nas_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
+        f.write("             case OGS_NAS_%s_%s_TYPE:\n" % (v_upper(k), v_upper(ie["value"])))
+        f.write("                 size = ogs_nas_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
         f.write("                 ogs_assert(size >= 0);\n")
-        f.write("                 %s->presencemask |= NAS_%s_%s_PRESENT;\n" % (v_lower(k), v_upper(k), v_upper(ie["value"])))
+        f.write("                 %s->presencemask |= OGS_NAS_%s_%s_PRESENT;\n" % (v_lower(k), v_upper(k), v_upper(ie["value"])))
         f.write("                 decoded += size;\n")
         f.write("                 break;\n")
 
@@ -703,7 +701,7 @@ for (k, v) in sorted_msg_list:
 
 """)
 
-f.write("""int nas_emm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf)
+f.write("""int ogs_nas_emm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     uint16_t decoded = 0;
@@ -712,19 +710,19 @@ f.write("""int nas_emm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf)
     ogs_assert(pkbuf->data);
     ogs_assert(pkbuf->len);
 
-    memset(message, 0, sizeof(nas_message_t));
+    memset(message, 0, sizeof(ogs_nas_message_t));
 
-    size = sizeof(nas_emm_header_t);
+    size = sizeof(ogs_nas_emm_header_t);
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(&message->emm.h, pkbuf->data - size, size);
     decoded += size;
 
     if (message->emm.h.security_header_type >=
-            NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
+            OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
         ogs_assert(ogs_pkbuf_push(pkbuf, 1));
         decoded -= 1;
-        size = nas_decode_service_request(message, pkbuf);
+        size = ogs_nas_decode_service_request(message, pkbuf);
         ogs_assert(size >= OGS_OK);
         decoded += size;
 
@@ -738,9 +736,9 @@ for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
     if float(msg_list[k]["type"]) < 192 and k.find("TO UE") == -1 and k != "SERVICE REQUEST":
-        f.write("        case NAS_%s:\n" % v_upper(k))
+        f.write("        case OGS_NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
-            f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
+            f.write("            size = ogs_nas_decode_%s(message, pkbuf);\n" % v_lower(k))
             f.write("            ogs_assert(size >= OGS_OK);\n")
             f.write("            decoded += size;\n")
         f.write("            break;\n")
@@ -758,7 +756,7 @@ out:
 }
 """)
 
-f.write("""int nas_esm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf)
+f.write("""int ogs_nas_esm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     uint16_t decoded = 0;
@@ -767,9 +765,9 @@ f.write("""int nas_esm_decode(nas_message_t *message, ogs_pkbuf_t *pkbuf)
     ogs_assert(pkbuf->data);
     ogs_assert(pkbuf->len);
 
-    memset(message, 0, sizeof(nas_message_t));
+    memset(message, 0, sizeof(ogs_nas_message_t));
 
-    size = sizeof(nas_esm_header_t);
+    size = sizeof(ogs_nas_esm_header_t);
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(&message->esm.h, pkbuf->data - size, size);
     decoded += size;
@@ -781,9 +779,9 @@ for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
     if float(msg_list[k]["type"]) >= 192:
-        f.write("        case NAS_%s:\n" % v_upper(k))
+        f.write("        case OGS_NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
-            f.write("            size = nas_decode_%s(message, pkbuf);\n" % v_lower(k))
+            f.write("            size = ogs_nas_decode_%s(message, pkbuf);\n" % v_lower(k))
             f.write("            ogs_assert(size >= OGS_OK);\n")
             f.write("            decoded += size;\n")
         f.write("            break;\n")
@@ -803,13 +801,10 @@ f.write("""        default:
 
 f.close()
 
-f = open(outdir + 'nas-encoder.c', 'w')
+f = open(outdir + 'encoder.c', 'w')
 output_header_to_file(f)
-f.write("""#include "nas-message.h"
+f.write("""#include "ogs-nas.h"
 
-#undef OGS_LOG_DOMAIN
-#define OGS_LOG_DOMAIN __base_nas_domain
- 
 """)
 
 for (k, v) in sorted_msg_list:
@@ -818,30 +813,30 @@ for (k, v) in sorted_msg_list:
     if len(msg_list[k]["ies"]) == 0:
         continue
 
-    f.write("int nas_encode_%s(ogs_pkbuf_t *pkbuf, nas_message_t *message)\n{\n" % v_lower(k))
+    f.write("int ogs_nas_encode_%s(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message)\n{\n" % v_lower(k))
     if float(msg_list[k]["type"]) < 192:
-        f.write("    nas_%s_t *%s = &message->emm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("    ogs_nas_%s_t *%s = &message->emm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     else:
-        f.write("    nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
+        f.write("    ogs_nas_%s_t *%s = &message->esm.%s;\n" % (v_lower(k), v_lower(k), v_lower(k)))
     f.write("    int encoded = 0;\n")
     f.write("    int size = 0;\n\n")
     f.write("    ogs_trace(\"[NAS] Encode %s\");\n\n" % v_upper(k))
 
     for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "M"]:
-        f.write("    size = nas_encode_%s(pkbuf, &%s->%s);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
+        f.write("    size = ogs_nas_encode_%s(pkbuf, &%s->%s);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
         f.write("    ogs_assert(size >= 0);\n")
         f.write("    encoded += size;\n\n")
 
     for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
-        f.write("    if (%s->presencemask & NAS_%s_%s_PRESENT)\n" % (v_lower(k), v_upper(k), v_upper(ie["value"])))
+        f.write("    if (%s->presencemask & OGS_NAS_%s_%s_PRESENT)\n" % (v_lower(k), v_upper(k), v_upper(ie["value"])))
         f.write("    {\n")
         if ie["length"] == "1" and ie["format"] == "TV":
-            f.write("        %s->%s.type = (NAS_%s_%s_TYPE >> 4);\n\n" % (v_lower(k), v_lower(ie["value"]), v_upper(k), v_upper(ie["value"])))
+            f.write("        %s->%s.type = (OGS_NAS_%s_%s_TYPE >> 4);\n\n" % (v_lower(k), v_lower(ie["value"]), v_upper(k), v_upper(ie["value"])))
         else:
-            f.write("        size = nas_encode_optional_type(pkbuf, NAS_%s_%s_TYPE);\n" % (v_upper(k), v_upper(ie["value"])))
+            f.write("        size = ogs_nas_encode_optional_type(pkbuf, OGS_NAS_%s_%s_TYPE);\n" % (v_upper(k), v_upper(ie["value"])))
             f.write("        ogs_assert(size >= 0);\n")
             f.write("        encoded += size;\n\n")
-        f.write("        size = nas_encode_%s(pkbuf, &%s->%s);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
+        f.write("        size = ogs_nas_encode_%s(pkbuf, &%s->%s);\n" % (v_lower(ie["type"]), v_lower(k), v_lower(ie["value"])))
         f.write("        ogs_assert(size >= 0);\n")
         f.write("        encoded += size;\n")
         f.write("    }\n\n")
@@ -852,7 +847,7 @@ for (k, v) in sorted_msg_list:
 """)
 
 
-f.write("""int nas_emm_encode(ogs_pkbuf_t **pkbuf, nas_message_t *message)
+f.write("""int ogs_nas_emm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
 {
     int size = 0;
     int encoded = 0;
@@ -861,23 +856,23 @@ f.write("""int nas_emm_encode(ogs_pkbuf_t **pkbuf, nas_message_t *message)
 
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(*pkbuf);
-    ogs_pkbuf_reserve(*pkbuf, NAS_HEADROOM);
-    ogs_pkbuf_put(*pkbuf, MAX_SDU_LEN-NAS_HEADROOM);
+    ogs_pkbuf_reserve(*pkbuf, OGS_NAS_HEADROOM);
+    ogs_pkbuf_put(*pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 
-    size = sizeof(nas_emm_header_t);
+    size = sizeof(ogs_nas_emm_header_t);
     ogs_assert(ogs_pkbuf_pull(*pkbuf, size));
 
     memcpy((*pkbuf)->data - size, &message->emm.h, size);
     encoded += size;
 
     if (message->emm.h.security_header_type >=
-            NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
+            OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
         ogs_assert(ogs_pkbuf_push(*pkbuf, 1));
         encoded -= 1;
-        size = nas_encode_service_request(*pkbuf, message);
+        size = ogs_nas_encode_service_request(*pkbuf, message);
         ogs_assert(size >= 0);
         encoded += size;
 
@@ -892,9 +887,9 @@ for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
     if float(msg_list[k]["type"]) < 192 and k.find("FROM UE") == -1 and k != "SERVICE REQUEST":
-        f.write("        case NAS_%s:\n" % v_upper(k))
+        f.write("        case OGS_NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
-            f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
+            f.write("            size = ogs_nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
             f.write("            ogs_assert(size >= 0);\n")
             f.write("            encoded += size;\n")
         f.write("            break;\n")
@@ -916,7 +911,7 @@ out:
 
 """)
 
-f.write("""int nas_esm_encode(ogs_pkbuf_t **pkbuf, nas_message_t *message)
+f.write("""int ogs_nas_esm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
 {
     int size = 0;
     int encoded = 0;
@@ -925,12 +920,12 @@ f.write("""int nas_esm_encode(ogs_pkbuf_t **pkbuf, nas_message_t *message)
 
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    *pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+    *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_assert(*pkbuf);
-    ogs_pkbuf_reserve(*pkbuf, NAS_HEADROOM);
-    ogs_pkbuf_put(*pkbuf, MAX_SDU_LEN-NAS_HEADROOM);
+    ogs_pkbuf_reserve(*pkbuf, OGS_NAS_HEADROOM);
+    ogs_pkbuf_put(*pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 
-    size = sizeof(nas_esm_header_t);
+    size = sizeof(ogs_nas_esm_header_t);
     ogs_assert(ogs_pkbuf_pull(*pkbuf, size));
     memcpy((*pkbuf)->data - size, &message->esm.h, size);
     encoded += size;
@@ -943,9 +938,9 @@ for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
         continue;
     if float(msg_list[k]["type"]) >= 192:
-        f.write("        case NAS_%s:\n" % v_upper(k))
+        f.write("        case OGS_NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
-            f.write("            size = nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
+            f.write("            size = ogs_nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
             f.write("            ogs_assert(size >= 0);\n")
             f.write("            encoded += size;\n")
         f.write("            break;\n")
@@ -963,7 +958,7 @@ f.write("""        default:
     return OGS_OK;
 }
 
-int nas_plain_encode(ogs_pkbuf_t **pkbuf, nas_message_t *message)
+int ogs_nas_plain_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
 {
     ogs_assert(message);
 
@@ -971,11 +966,11 @@ int nas_plain_encode(ogs_pkbuf_t **pkbuf, nas_message_t *message)
             message->esm.h.protocol_discriminator);
 
     if (message->emm.h.protocol_discriminator == 
-            NAS_PROTOCOL_DISCRIMINATOR_EMM)
-        return nas_emm_encode(pkbuf, message);
+            OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM)
+        return ogs_nas_emm_encode(pkbuf, message);
     else if (message->emm.h.protocol_discriminator == 
-            NAS_PROTOCOL_DISCRIMINATOR_ESM)
-        return nas_esm_encode(pkbuf, message);
+            OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM)
+        return ogs_nas_esm_encode(pkbuf, message);
 
     ogs_assert_if_reached();
 

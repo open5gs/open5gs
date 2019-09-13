@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 
-SUBDIRS = app mme hss sgw pgw pcrf
+SUBDIRS = mme hss sgw pgw pcrf
 
 noinst_LTLIBRARIES = libmme.la libhss.la libsgw.la libpgw.la libpcrf.la libepc.la
 
@@ -46,7 +46,7 @@ libpcrf_la_LIBADD = \
 	$(top_srcdir)/src/pcrf/libpcrf.la \
 	$(NULL)
 
-libepc_la_SOURCES = app_init.h epc.c
+libepc_la_SOURCES = epc.c
 libepc_la_DEPENDENCIES = \
     $(top_srcdir)/src/mme/libmme.la \
     $(top_srcdir)/src/hss/libhss.la \

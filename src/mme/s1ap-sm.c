@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "nas/nas-message.h"
-#include "gtp/gtp-message.h"
+#include "ogs-gtp.h"
+#include "ogs-nas.h"
 
 #include "s1ap-build.h"
 #include "s1ap-handler.h"

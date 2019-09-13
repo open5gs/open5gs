@@ -17,12 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <mongoc.h>
-#include "core/abts.h"
-#include "base/types.h"
-#include "asn1c/s1ap-message.h"
-#include "app/context.h"
-#include "test-packet.h"
+#include "test-app.h"
 #include "pcscf-fd-path.h"
 
 static void volte_test1(abts_case *tc, void *data)
@@ -31,7 +26,7 @@ static void volte_test1(abts_case *tc, void *data)
     ogs_socknode_t *s1ap;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
     int msgindex = 0;
     uint8_t *rx_sid = NULL;
@@ -112,14 +107,13 @@ static void volte_test1(abts_case *tc, void *data)
     /* Receive S1-Setup Response */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    rv = s1ap_decode_pdu(&message, recvbuf);
+    rv = ogs_s1ap_decode(&message, recvbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    s1ap_free_pdu(&message);
+    ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
-        context_self()->db.client,
-        context_self()->db.name, "subscribers");
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
@@ -335,7 +329,7 @@ static void volte_test2(abts_case *tc, void *data)
     ogs_socknode_t *s1ap;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
     int msgindex = 0;
     uint8_t *rx_sid = NULL;
@@ -429,14 +423,13 @@ static void volte_test2(abts_case *tc, void *data)
     /* Receive S1-Setup Response */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    rv = s1ap_decode_pdu(&message, recvbuf);
+    rv = ogs_s1ap_decode(&message, recvbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    s1ap_free_pdu(&message);
+    ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
-        context_self()->db.client,
-        context_self()->db.name, "subscribers");
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;

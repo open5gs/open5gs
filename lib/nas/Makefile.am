@@ -15,20 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pkglib_LTLIBRARIES = libnas.la
+pkglib_LTLIBRARIES = libogsnas.la
 
-libnas_la_SOURCES = \
-	nas-message.h nas-ies.h nas-types.h \
-	nas-decoder.c nas-encoder.c nas-ies.c nas-types.c \
+libogsnas_la_SOURCES = \
+	ies.h ies.c types.h types.c conv.h conv.c \
+	message.h decoder.c encoder.c \
 	$(NULL)
 
-libnas_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/base/libbase.la \
-	$(NULL)
-
-libnas_la_LIBADD = \
+libogsnas_la_LIBADD = \
 	@OGSCORE_LIBS@ \
-    $(top_srcdir)/lib/base/libbase.la \
 	$(NULL)
 
 AM_CPPFLAGS = \
@@ -37,5 +32,6 @@ AM_CPPFLAGS = \
 	$(NULL)
 
 AM_CFLAGS = \
+	-DOGS_NAS_COMPILATION \
 	-Wall -Werror \
 	$(NULL)

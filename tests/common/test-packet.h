@@ -20,7 +20,9 @@
 #ifndef TEST_PACKET_H
 #define TEST_PACKET_H
 
-#include "asn1c/s1ap-message.h"
+#include "ogs-s1ap.h"
+#include "mme/s1ap-build.h"
+#include "core/abts.h"
 
 #ifdef __cplusplus
 extern "C" {

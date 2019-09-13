@@ -1127,24 +1127,16 @@ ASN_MODULE_CFLAGS=
 pkglib_LTLIBRARIES=libasn1c.la
 libasn1c_la_SOURCES= \
     $(ASN_MODULE_SRCS) $(ASN_MODULE_HDRS) \
-    s1ap-asn1c.h s1ap-message.h \
-    s1ap-decoder.c s1ap-encoder.c s1ap-free.c \
     $(NULL)
-
-libasn1c_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/base/libbase.la \
-	$(NULL)
 
 libasn1c_la_LIBADD = \
 	@OGSCORE_LIBS@ \
-    $(top_srcdir)/lib/base/libbase.la \
 	$(NULL)
 
 AM_CPPFLAGS = \
 	@OGSCORE_CFLAGS@ \
     -I$(top_srcdir)/lib/asn1c/common \
     -I$(top_srcdir)/lib/asn1c/s1ap \
-    -I$(top_srcdir)/lib \
 	$(NULL)
 
 AM_CFLAGS = \

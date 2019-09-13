@@ -29,7 +29,7 @@ AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([1.10 -Wall -Werror foreign subdir-objects])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
-AC_CONFIG_HEADERS([lib/base/nextepc-config.h])
+AC_CONFIG_HEADERS([lib/nextepc-config.h])
 AC_CONFIG_SRCDIR([main.c])
 
 LO_DEV="lo0"
@@ -165,26 +165,26 @@ AC_CHECK_HEADERS(netinet/ip_icmp.h netinet/icmp6.h,,,[[
 
 PKG_CHECK_MODULES([YAML], yaml-0.1 >= 0.1.4)
 PKG_CHECK_MODULES([MONGOC], libmongoc-1.0 >= 1.3.1)
-FREEDIAMETER_DIR=freeDiameter-1.2.1
-AC_SUBST(FREEDIAMETER_DIR)
 
 #####################
 #### Conclusion. ####
 #####################
 
-AC_CONFIG_SUBDIRS([lib/freeDiameter-1.2.1])
+AC_CONFIG_SUBDIRS([lib/freeDiameter])
 
-AC_CONFIG_FILES([lib/base/Makefile])
 AC_CONFIG_FILES([lib/asn1c/Makefile])
+AC_CONFIG_FILES([lib/s1ap/Makefile])
 AC_CONFIG_FILES([lib/nas/Makefile])
-AC_CONFIG_FILES([lib/fd/Makefile])
+AC_CONFIG_FILES([lib/diameter/Makefile])
 AC_CONFIG_FILES([lib/gtp/Makefile])
-AC_CONFIG_FILES([lib/ipfw/Makefile])
+AC_CONFIG_FILES([lib/dbi/Makefile])
+AC_CONFIG_FILES([lib/sctp/Makefile])
+AC_CONFIG_FILES([lib/app/Makefile])
 AC_CONFIG_FILES([lib/Makefile])
-AC_CONFIG_FILES([src/app/Makefile])
 AC_CONFIG_FILES([src/mme/Makefile])
 AC_CONFIG_FILES([src/hss/Makefile])
 AC_CONFIG_FILES([src/sgw/Makefile])
+AC_CONFIG_FILES([src/pgw/ipfw/Makefile])
 AC_CONFIG_FILES([src/pgw/Makefile])
 AC_CONFIG_FILES([src/pcrf/Makefile])
 AC_CONFIG_FILES([src/Makefile])
