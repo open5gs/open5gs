@@ -19,7 +19,6 @@
 
 #include "ogs-sctp.h"
 
-#include "app/context.h"
 #include "mme-event.h"
 #include "s1ap-path.h"
 
@@ -32,7 +31,7 @@ ogs_sock_t *s1ap_server(ogs_socknode_t *node)
 
     ogs_assert(node);
 
-    ogs_socknode_sctp_option(node, &context_self()->config.sockopt);
+    ogs_socknode_sctp_option(node, &ogs_config()->sockopt);
     ogs_socknode_nodelay(node, true);
     ogs_socknode_set_poll(node, mme_self()->pollset,
             OGS_POLLIN, accept_handler, node);
@@ -88,8 +87,8 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
     ogs_assert(sock);
     ogs_assert(fd != INVALID_SOCKET);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     size = ogs_sctp_recvmsg(
             sock, pkbuf->data, pkbuf->len, NULL, &sinfo, &flags);
     if (size < 0) {

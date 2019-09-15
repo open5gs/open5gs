@@ -20,6 +20,9 @@ RUN apt-get update && \
         autoconf \
         automake \
         libtool \
+        python3-pip \
+        python3-setuptools \
+        ninja-build \
         gcc \
         flex \
         bison \
@@ -38,3 +41,4 @@ RUN apt-get update && \
         netbase \
         pkg-config && \
     apt-get clean
+RUN python3 -m pip install meson

@@ -20,7 +20,6 @@
 #include "mme-event.h"
 
 #include "mme-kdf.h"
-#include "s1ap-conv.h"
 #include "s1ap-path.h"
 #include "nas-path.h"
 #include "mme-gtp-path.h"
@@ -34,7 +33,7 @@
 #include "mme-path.h"
 #include "mme-sm.h"
 
-void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
+void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
     int i, j;
@@ -82,7 +81,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
 
     ogs_assert(Global_ENB_ID);
 
-    s1ap_ENB_ID_to_uint32(&Global_ENB_ID->eNB_ID, &enb_id);
+    ogs_s1ap_ENB_ID_to_uint32(&Global_ENB_ID->eNB_ID, &enb_id);
     ogs_debug("    IP[%s] ENB_ID[%d]", OGS_ADDR(enb->addr, buf), enb_id);
 
     if (PagingDRX)
@@ -116,11 +115,11 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
                         [enb->num_of_supported_ta_list].tac);
             memcpy(&enb->supported_ta_list
                         [enb->num_of_supported_ta_list].plmn_id,
-                    pLMNidentity->buf, sizeof(plmn_id_t));
+                    pLMNidentity->buf, sizeof(ogs_plmn_id_t));
             ogs_debug("    PLMN_ID[MCC:%d MNC:%d] TAC[%d]",
-                plmn_id_mcc(&enb->supported_ta_list
+                ogs_plmn_id_mcc(&enb->supported_ta_list
                     [enb->num_of_supported_ta_list].plmn_id),
-                plmn_id_mnc(&enb->supported_ta_list
+                ogs_plmn_id_mnc(&enb->supported_ta_list
                     [enb->num_of_supported_ta_list].plmn_id),
                 enb->supported_ta_list[enb->num_of_supported_ta_list].tac);
             enb->num_of_supported_ta_list++;
@@ -165,7 +164,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, s1ap_message_t *message)
             s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == OGS_OK);
 }
 
-void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
+void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int i;
     char buf[OGS_ADDRSTRLEN];
@@ -234,13 +233,13 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
         /* Find MME_UE if S_TMSI included */
         if (S_TMSI) {
             served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
-            nas_guti_t nas_guti;
+            ogs_nas_guti_t nas_guti;
             mme_ue_t *mme_ue = NULL;
 
-            memset(&nas_guti, 0, sizeof(nas_guti_t));
+            memset(&nas_guti, 0, sizeof(ogs_nas_guti_t));
 
             /* Use the first configured plmn_id and mme group id */
-            nas_from_plmn_id(&nas_guti.nas_plmn_id, &served_gummei->plmn_id[0]);
+            ogs_nas_from_plmn_id(&nas_guti.nas_plmn_id, &served_gummei->plmn_id[0]);
             nas_guti.mme_gid = served_gummei->mme_gid[0];
 
             /* size must be 1 */
@@ -278,7 +277,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 
     ogs_assert(TAI);
     pLMNidentity = &TAI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
     ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
@@ -289,7 +288,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
     
     ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
     ogs_assert(cell_ID);
     memcpy(&enb_ue->saved.e_cgi.plmn_id, pLMNidentity->buf, 
@@ -306,7 +305,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, s1ap_message_t *message)
 }
 
 void s1ap_handle_uplink_nas_transport(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
     int i;
@@ -350,7 +349,7 @@ void s1ap_handle_uplink_nas_transport(
 
     ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    ogs_assert(enb_ue);
+    ogs_expect_or_return(enb_ue);
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
@@ -360,7 +359,7 @@ void s1ap_handle_uplink_nas_transport(
 }
 
 void s1ap_handle_ue_capability_info_indication(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
     int i;
@@ -412,12 +411,13 @@ void s1ap_handle_ue_capability_info_indication(
 
     if (enb_ue->mme_ue) {
         ogs_assert(UERadioCapability);
-        S1AP_STORE_DATA(&enb_ue->mme_ue->ueRadioCapability, UERadioCapability);
+        OGS_S1AP_STORE_DATA(&enb_ue->mme_ue->ueRadioCapability,
+                UERadioCapability);
     }
 }
 
 void s1ap_handle_initial_context_setup_response(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -491,7 +491,7 @@ void s1ap_handle_initial_context_setup_response(
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
-        rv = s1ap_BIT_STRING_to_ip(
+        rv = ogs_s1ap_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         ogs_assert(rv == OGS_OK);
 
@@ -518,7 +518,7 @@ void s1ap_handle_initial_context_setup_response(
 }
 
 void s1ap_handle_initial_context_setup_failure(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -605,7 +605,7 @@ cleanup:
 }
 
 void s1ap_handle_ue_context_modification_response(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
     int i;
@@ -658,7 +658,7 @@ void s1ap_handle_ue_context_modification_response(
 }
 
 void s1ap_handle_ue_context_modification_failure(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
     int i;
@@ -725,7 +725,7 @@ cleanup:
 
 
 void s1ap_handle_e_rab_setup_response(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -799,7 +799,7 @@ void s1ap_handle_e_rab_setup_response(
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
-        rv = s1ap_BIT_STRING_to_ip(
+        rv = ogs_s1ap_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         ogs_assert(rv == OGS_OK);
 
@@ -824,7 +824,7 @@ void s1ap_handle_e_rab_setup_response(
 }
 
 void s1ap_handle_ue_context_release_request(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -930,7 +930,7 @@ void s1ap_handle_ue_context_release_request(
 }
 
 void s1ap_handle_ue_context_release_complete(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -1031,7 +1031,7 @@ void s1ap_handle_ue_context_release_complete(
 }
 
 void s1ap_handle_path_switch_request(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -1102,13 +1102,13 @@ void s1ap_handle_path_switch_request(
 
     ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
     ogs_assert(cell_ID);
 
     ogs_assert(TAI);
     pLMNidentity = &TAI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
     ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
@@ -1170,21 +1170,21 @@ void s1ap_handle_path_switch_request(
     enb_ue->saved.e_cgi.cell_id = (ntohl(enb_ue->saved.e_cgi.cell_id) >> 4);
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
-            plmn_id_hexdump(&mme_ue->tai.plmn_id),
+            ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),
             mme_ue->tai.tac);
     ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
+            ogs_plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
             mme_ue->e_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            plmn_id_hexdump(&enb_ue->saved.tai.plmn_id),
+            ogs_plmn_id_hexdump(&enb_ue->saved.tai.plmn_id),
             enb_ue->saved.tai.tac);
     ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
+            ogs_plmn_id_hexdump(&enb_ue->saved.e_cgi.plmn_id),
             enb_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(tai_t));
-    memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(e_cgi_t));
+    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_tai_t));
+    memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
     memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
     eea = ntohs(eea);
@@ -1216,7 +1216,7 @@ void s1ap_handle_path_switch_request(
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
-        rv = s1ap_BIT_STRING_to_ip(
+        rv = ogs_s1ap_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         ogs_assert(rv == OGS_OK);
 
@@ -1232,7 +1232,7 @@ void s1ap_handle_path_switch_request(
 }
 
 void s1ap_handle_enb_configuration_transfer(
-        mme_enb_t *enb, s1ap_message_t *message, ogs_pkbuf_t *pkbuf)
+        mme_enb_t *enb, ogs_s1ap_message_t *message, ogs_pkbuf_t *pkbuf)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -1280,9 +1280,9 @@ void s1ap_handle_enb_configuration_transfer(
         uint32_t source_enb_id, target_enb_id;
         uint16_t source_tac, target_tac;
 
-        s1ap_ENB_ID_to_uint32(
+        ogs_s1ap_ENB_ID_to_uint32(
                 &sourceeNB_ID->global_ENB_ID.eNB_ID, &source_enb_id);
-        s1ap_ENB_ID_to_uint32(
+        ogs_s1ap_ENB_ID_to_uint32(
                 &targeteNB_ID->global_ENB_ID.eNB_ID, &target_enb_id);
 
         memcpy(&source_tac, sourceeNB_ID->selected_TAI.tAC.buf,
@@ -1318,7 +1318,7 @@ void s1ap_handle_enb_configuration_transfer(
     }
 }
 
-void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
+void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -1384,7 +1384,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     ogs_assert(TargetID);
     switch (TargetID->present) {
     case S1AP_TargetID_PR_targeteNB_ID:
-        s1ap_ENB_ID_to_uint32(
+        ogs_s1ap_ENB_ID_to_uint32(
             &TargetID->choice.targeteNB_ID->global_ENB_ID.eNB_ID,
             &target_enb_id);
         break;
@@ -1434,7 +1434,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, s1ap_message_t *message)
     ogs_assert(rv == OGS_OK);
 }
 
-void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
+void s1ap_handle_handover_request_ack(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -1526,7 +1526,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
         memcpy(&bearer->target_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->target_s1u_teid));
         bearer->target_s1u_teid = ntohl(bearer->target_s1u_teid);
-        rv = s1ap_BIT_STRING_to_ip(
+        rv = ogs_s1ap_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->target_s1u_ip);
         ogs_assert(rv == OGS_OK);
 
@@ -1536,7 +1536,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
             memcpy(&bearer->enb_dl_teid, e_rab->dL_gTP_TEID->buf, 
                     sizeof(bearer->enb_dl_teid));
             bearer->enb_dl_teid = ntohl(bearer->enb_dl_teid);
-            rv = s1ap_BIT_STRING_to_ip(
+            rv = ogs_s1ap_BIT_STRING_to_ip(
                     e_rab->dL_transportLayerAddress, &bearer->enb_dl_ip);
             ogs_assert(rv == OGS_OK);
         }
@@ -1547,13 +1547,14 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
             memcpy(&bearer->enb_ul_teid, e_rab->uL_GTP_TEID->buf, 
                     sizeof(bearer->enb_ul_teid));
             bearer->enb_ul_teid = ntohl(bearer->enb_ul_teid);
-            rv = s1ap_BIT_STRING_to_ip(
+            rv = ogs_s1ap_BIT_STRING_to_ip(
                     e_rab->uL_TransportLayerAddress, &bearer->enb_ul_ip);
             ogs_assert(rv == OGS_OK);
         }
     }
 
-    S1AP_STORE_DATA(&mme_ue->container, Target_ToSource_TransparentContainer);
+    OGS_S1AP_STORE_DATA(&mme_ue->container,
+            Target_ToSource_TransparentContainer);
 
     if (mme_ue_have_indirect_tunnel(mme_ue) == 1) {
         rv = mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
@@ -1565,7 +1566,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, s1ap_message_t *message)
     }
 }
 
-void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
+void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -1633,7 +1634,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, s1ap_message_t *message)
     ogs_assert(rv == OGS_OK);
 }
 
-void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
+void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -1712,7 +1713,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, s1ap_message_t *message)
             OGS_ADDR(enb->addr, buf), enb->enb_id);
 }
 
-void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
+void s1ap_handle_enb_status_transfer(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -1780,7 +1781,7 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, s1ap_message_t *message)
     ogs_assert(rv == OGS_OK);
 }
 
-void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
+void s1ap_handle_handover_notification(mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -1839,13 +1840,13 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
 
     ogs_assert(EUTRAN_CGI);
     pLMNidentity = &EUTRAN_CGI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     cell_ID = &EUTRAN_CGI->cell_ID;
     ogs_assert(cell_ID);
 
     ogs_assert(TAI);
     pLMNidentity = &TAI->pLMNidentity;
-    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(plmn_id_t));
+    ogs_assert(pLMNidentity && pLMNidentity->size == sizeof(ogs_plmn_id_t));
     tAC = &TAI->tAC;
     ogs_assert(tAC && tAC->size == sizeof(uint16_t));
 
@@ -1881,28 +1882,29 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
         (ntohl(target_ue->saved.e_cgi.cell_id) >> 4);
 
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
-            plmn_id_hexdump(&mme_ue->tai.plmn_id),
+            ogs_plmn_id_hexdump(&mme_ue->tai.plmn_id),
             mme_ue->tai.tac);
     ogs_debug("    OLD E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
+            ogs_plmn_id_hexdump(&mme_ue->e_cgi.plmn_id),
             mme_ue->e_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            plmn_id_hexdump(&target_ue->saved.tai.plmn_id),
+            ogs_plmn_id_hexdump(&target_ue->saved.tai.plmn_id),
             target_ue->saved.tai.tac);
     ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            plmn_id_hexdump(&target_ue->saved.e_cgi.plmn_id),
+            ogs_plmn_id_hexdump(&target_ue->saved.e_cgi.plmn_id),
             target_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &target_ue->saved.tai, sizeof(tai_t));
-    memcpy(&mme_ue->e_cgi, &target_ue->saved.e_cgi, sizeof(e_cgi_t));
+    memcpy(&mme_ue->tai, &target_ue->saved.tai, sizeof(ogs_tai_t));
+    memcpy(&mme_ue->e_cgi, &target_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
     sess = mme_sess_first(mme_ue);
     while (sess) {
         bearer = mme_bearer_first(sess);
         while (bearer) {
             bearer->enb_s1u_teid = bearer->target_s1u_teid;
-            memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip, sizeof(ip_t));
+            memcpy(&bearer->enb_s1u_ip, &bearer->target_s1u_ip,
+                    sizeof(ogs_ip_t));
 
             GTP_COUNTER_INCREMENT(
                     mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY);
@@ -1917,7 +1919,7 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, s1ap_message_t *message)
 }
 
 void s1ap_handle_s1_reset(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -2033,7 +2035,7 @@ void s1ap_handle_s1_reset(
 }
 
 void s1ap_handle_write_replace_warning_response(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
 
@@ -2058,7 +2060,7 @@ void s1ap_handle_write_replace_warning_response(
 }
 
 void s1ap_handle_kill_response(
-        mme_enb_t *enb, s1ap_message_t *message)
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
 

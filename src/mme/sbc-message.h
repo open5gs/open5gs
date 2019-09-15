@@ -20,7 +20,7 @@
 #ifndef SBC_MESSAGE_H
 #define SBC_MESSAGE_H
 
-#include "base/types.h"
+#include "ogs-common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,7 +38,7 @@ typedef struct _sbc_pws_data_t {
     uint16_t message_id;
     uint16_t serial_number;
     uint32_t no_of_tai;
-    tai_t tai[16];              /* TODO: max 65535 */
+    ogs_tai_t tai[16];              /* TODO: max 65535 */
     uint32_t repetition_period;
     uint32_t number_of_broadcast;
     uint8_t data_coding_scheme;

@@ -1,7 +1,24 @@
-#include "ogs-crypt.h"
-#include "nas/nas-message.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "hss/milenage.h"
+#include "ogs-crypt.h"
+
 #include "hss/hss-auc.h"
 #include "mme/nas-security.h"
 
@@ -129,11 +146,11 @@ static void security_test4(abts_case *tc, void *data)
         SECURITY_TEST4_BIT_LEN, mact);
     ABTS_TRUE(tc, memcmp(mact, OGS_HEX(_mact, strlen(_mact), tmp), 4) == 0);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, NAS_HEADROOM+SECURITY_TEST4_LEN);
-    ogs_pkbuf_reserve(pkbuf, NAS_HEADROOM);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_NAS_HEADROOM+SECURITY_TEST4_LEN);
+    ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put_data(pkbuf, message, SECURITY_TEST4_LEN);
 
-    nas_mac_calculate(NAS_SECURITY_ALGORITHMS_128_EIA1, 
+    nas_mac_calculate(OGS_NAS_SECURITY_ALGORITHMS_128_EIA1, 
             ik, 0x38a6f056, 0x1f, 0, pkbuf, mac);
     ABTS_TRUE(tc, memcmp(mac, tmp, 4) == 0);
     ogs_pkbuf_free(pkbuf);
@@ -174,11 +191,11 @@ static void security_test5(abts_case *tc, void *data)
         OGS_HEX(_cipher, strlen(_cipher), tmp),
         SECURITY_TEST5_LEN) == 0);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, NAS_HEADROOM+SECURITY_TEST5_LEN);
-    ogs_pkbuf_reserve(pkbuf, NAS_HEADROOM);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_NAS_HEADROOM+SECURITY_TEST5_LEN);
+    ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put_data(pkbuf, plain, SECURITY_TEST5_LEN);
 
-    nas_encrypt(NAS_SECURITY_ALGORITHMS_128_EEA1,
+    nas_encrypt(OGS_NAS_SECURITY_ALGORITHMS_128_EEA1,
         ck, 0x72a4f20f, 0x0c, 1, pkbuf);
     ABTS_TRUE(tc, memcmp(pkbuf->data, OGS_HEX(_plain, strlen(_plain), tmp),
         SECURITY_TEST5_LEN) == 0);
@@ -214,11 +231,11 @@ static void security_test6(abts_case *tc, void *data)
 
     ABTS_TRUE(tc, memcmp(mact, OGS_HEX(_mact, strlen(_mact), tmp), 4) == 0);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, NAS_HEADROOM+SECURITY_TEST6_LEN);
-    ogs_pkbuf_reserve(pkbuf, NAS_HEADROOM);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_NAS_HEADROOM+SECURITY_TEST6_LEN);
+    ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put_data(pkbuf, message, SECURITY_TEST6_LEN);
 
-    nas_mac_calculate(NAS_SECURITY_ALGORITHMS_128_EIA2, 
+    nas_mac_calculate(OGS_NAS_SECURITY_ALGORITHMS_128_EIA2, 
             ik, 0x398a59b4, 0x1a, 1, pkbuf, mac);
     ABTS_TRUE(tc, memcmp(mac, tmp, 4) == 0);
     ogs_pkbuf_free(pkbuf);
@@ -268,11 +285,11 @@ static void security_test7(abts_case *tc, void *data)
 
     ABTS_TRUE(tc, memcmp(cipher, plain, SECURITY_TEST7_LEN) == 0);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, NAS_HEADROOM+SECURITY_TEST7_LEN);
-    ogs_pkbuf_reserve(pkbuf, NAS_HEADROOM);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_NAS_HEADROOM+SECURITY_TEST7_LEN);
+    ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put_data(pkbuf, plain, SECURITY_TEST7_LEN);
 
-    nas_encrypt(NAS_SECURITY_ALGORITHMS_128_EEA2,
+    nas_encrypt(OGS_NAS_SECURITY_ALGORITHMS_128_EEA2,
         ck, 0xc675a64b, 0x0c, 1, pkbuf);
     ABTS_TRUE(tc, memcmp(pkbuf->data, 
         OGS_HEX(_cipher, strlen(_cipher), tmp), SECURITY_TEST7_LEN) == 0);
@@ -309,11 +326,11 @@ static void security_test8(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(&mac32, 
         OGS_HEX(_mact, strlen(_mact), mact), 4) == 0);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, NAS_HEADROOM+SECURITY_TEST8_LEN);
-    ogs_pkbuf_reserve(pkbuf, NAS_HEADROOM);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_NAS_HEADROOM+SECURITY_TEST8_LEN);
+    ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put_data(pkbuf, message, SECURITY_TEST8_LEN);
 
-    nas_mac_calculate(NAS_SECURITY_ALGORITHMS_128_EIA3, 
+    nas_mac_calculate(OGS_NAS_SECURITY_ALGORITHMS_128_EIA3, 
             ik, 0xa94059da, 0xa, 1, pkbuf, mac);
     ABTS_TRUE(tc, memcmp(mac, mact, 4) == 0);
     ogs_pkbuf_free(pkbuf);
@@ -353,11 +370,11 @@ static void security_test9(abts_case *tc, void *data)
     ABTS_TRUE(tc, memcmp(cipher, OGS_HEX(_cipher, strlen(_cipher), tmp),
         SECURITY_TEST9_LEN) == 0);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, NAS_HEADROOM+SECURITY_TEST9_LEN);
-    ogs_pkbuf_reserve(pkbuf, NAS_HEADROOM);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_NAS_HEADROOM+SECURITY_TEST9_LEN);
+    ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put_data(pkbuf, plain, SECURITY_TEST9_LEN);
 
-    nas_encrypt(NAS_SECURITY_ALGORITHMS_128_EEA3,
+    nas_encrypt(OGS_NAS_SECURITY_ALGORITHMS_128_EEA3,
         ck, 0x66035492, 0xf, 0, pkbuf);
     ABTS_TRUE(tc, memcmp(pkbuf->data, 
         OGS_HEX(_cipher, strlen(_cipher), tmp), SECURITY_TEST9_LEN) == 0);

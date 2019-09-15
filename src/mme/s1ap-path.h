@@ -22,7 +22,6 @@
 
 #include "mme-context.h"
 #include "mme-event.h"
-#include "asn1c/s1ap-message.h"
 
 #ifdef __cplusplus
 extern "C" {

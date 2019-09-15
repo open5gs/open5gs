@@ -1,3 +1,9 @@
+nextepc (0.6.0) unstable; urgency=medium
+
+  * Re-factorting all the library
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 13 Sep 2019 12:14:08 +0000
+
 nextepc (0.5.2~disco) disco; urgency=medium
 
   * Bug Fixed

@@ -17,10 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "nas/nas-message.h"
-#include "fd/fd-lib.h"
-#include "fd/s6a/s6a-message.h"
-
 #include "mme-event.h"
 #include "mme-timer.h"
 #include "mme-kdf.h"
@@ -100,7 +96,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
-    nas_message_t *message = NULL;
+    ogs_nas_message_t *message = NULL;
     S1AP_ProcedureCode_t procedureCode;
     
     ogs_assert(e);
@@ -121,7 +117,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(enb_ue);
 
         if (message->emm.h.security_header_type
-                == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
+                == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
             ogs_debug("[EMM] Service request");
             rv = emm_handle_service_request(
                     mme_ue, &message->emm.service_request);
@@ -155,7 +151,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         }
 
         switch (message->emm.h.message_type) {
-        case NAS_IDENTITY_RESPONSE:
+        case OGS_NAS_IDENTITY_RESPONSE:
             ogs_debug("[EMM] Identity response");
             CLEAR_MME_UE_TIMER(mme_ue->t3470);
 
@@ -175,7 +171,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
             break;
-        case NAS_ATTACH_REQUEST:
+        case OGS_NAS_ATTACH_REQUEST:
             ogs_debug("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request);
@@ -185,7 +181,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 return;
             }
             break;
-        case NAS_TRACKING_AREA_UPDATE_REQUEST:
+        case OGS_NAS_TRACKING_AREA_UPDATE_REQUEST:
             ogs_debug("[EMM] Tracking area update request");
             rv = emm_handle_tau_request(
                     mme_ue, &message->emm.tracking_area_update_request);
@@ -205,11 +201,11 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             break;
-        case NAS_TRACKING_AREA_UPDATE_COMPLETE:
+        case OGS_NAS_TRACKING_AREA_UPDATE_COMPLETE:
             ogs_debug("[EMM] Tracking area update complete");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
             return;
-        case NAS_EXTENDED_SERVICE_REQUEST:
+        case OGS_NAS_EXTENDED_SERVICE_REQUEST:
             ogs_debug("[EMM] Extended service request");
             rv = emm_handle_extended_service_request(
                     mme_ue, &message->emm.extended_service_request);
@@ -229,13 +225,13 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             break;
-        case NAS_EMM_STATUS:
+        case OGS_NAS_EMM_STATUS:
             ogs_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                     mme_ue->imsi_bcd,
                     message->emm.emm_status.emm_cause);
             OGS_FSM_TRAN(s, &emm_state_exception);
             return;
-        case NAS_DETACH_REQUEST:
+        case OGS_NAS_DETACH_REQUEST:
             ogs_debug("[EMM] Detach request");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(
@@ -256,7 +252,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             return;
-        case NAS_UPLINK_NAS_TRANSPORT:
+        case OGS_NAS_UPLINK_NAS_TRANSPORT:
             ogs_debug("[EMM] Uplink NAS Transport");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
             if (MME_SGSAP_IS_CONNECTED(mme_ue)) {
@@ -435,14 +431,14 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         if (procedureCode == S1AP_ProcedureCode_id_initialUEMessage) {
             ogs_debug("    Initial UE Message");
             if (mme_ue->nas_eps.service.service_type ==
-                    NAS_SERVICE_TYPE_CS_FALLBACK_FROM_UE ||
+                    OGS_NAS_SERVICE_TYPE_CS_FALLBACK_FROM_UE ||
                 mme_ue->nas_eps.service.service_type ==
-                    NAS_SERVICE_TYPE_CS_FALLBACK_EMERGENCY_CALL_FROM_UE) {
+                    OGS_NAS_SERVICE_TYPE_CS_FALLBACK_EMERGENCY_CALL_FROM_UE) {
                 ogs_debug("    MO-CSFB-INDICATION[%d]",
                         mme_ue->nas_eps.service.service_type);
                 sgsap_send_mo_csfb_indication(mme_ue);
             } else if (mme_ue->nas_eps.service.service_type ==
-                    NAS_SERVICE_TYPE_CS_FALLBACK_TO_UE) {
+                    OGS_NAS_SERVICE_TYPE_CS_FALLBACK_TO_UE) {
                 ogs_debug("    SERVICE_REQUEST[%d]",
                         mme_ue->nas_eps.service.service_type);
                 sgsap_send_service_request(mme_ue, SGSAP_EMM_IDLE_MODE);
@@ -462,14 +458,14 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         } else if (procedureCode == S1AP_ProcedureCode_id_uplinkNASTransport) {
             ogs_debug("    Uplink NAS Transport");
             if (mme_ue->nas_eps.service.service_type ==
-                    NAS_SERVICE_TYPE_CS_FALLBACK_FROM_UE ||
+                    OGS_NAS_SERVICE_TYPE_CS_FALLBACK_FROM_UE ||
                 mme_ue->nas_eps.service.service_type ==
-                    NAS_SERVICE_TYPE_CS_FALLBACK_EMERGENCY_CALL_FROM_UE) {
+                    OGS_NAS_SERVICE_TYPE_CS_FALLBACK_EMERGENCY_CALL_FROM_UE) {
                 ogs_debug("    MO-CSFB-INDICATION[%d]",
                         mme_ue->nas_eps.service.service_type);
                 sgsap_send_mo_csfb_indication(mme_ue);
             } else if (mme_ue->nas_eps.service.service_type ==
-                    NAS_SERVICE_TYPE_CS_FALLBACK_TO_UE) {
+                    OGS_NAS_SERVICE_TYPE_CS_FALLBACK_TO_UE) {
                 ogs_debug("    SERVICE_REQUEST[%d]",
                         mme_ue->nas_eps.service.service_type);
                 sgsap_send_service_request(mme_ue, SGSAP_EMM_CONNECTED_MODE);
@@ -502,7 +498,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 {
     int rv;
     mme_ue_t *mme_ue = NULL;
-    nas_message_t *message = NULL;
+    ogs_nas_message_t *message = NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -522,11 +518,11 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         switch (message->emm.h.message_type) {
-        case NAS_AUTHENTICATION_RESPONSE:
+        case OGS_NAS_AUTHENTICATION_RESPONSE:
         {
-            nas_authentication_response_t *authentication_response =
+            ogs_nas_authentication_response_t *authentication_response =
                 &message->emm.authentication_response;
-            nas_authentication_response_parameter_t
+            ogs_nas_authentication_response_parameter_t
                 *authentication_response_parameter =
                     &authentication_response->
                         authentication_response_parameter;
@@ -543,7 +539,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                         authentication_response_parameter->res,
                         authentication_response_parameter->length);
                 ogs_log_hexdump(OGS_LOG_WARN,
-                        mme_ue->xres, MAX_RES_LEN);
+                        mme_ue->xres, OGS_MAX_RES_LEN);
                 rv = nas_send_authentication_reject(mme_ue);
                 ogs_assert(rv == OGS_OK);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
@@ -553,11 +549,11 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
             break;
         }
-        case NAS_AUTHENTICATION_FAILURE:
+        case OGS_NAS_AUTHENTICATION_FAILURE:
         {
-            nas_authentication_failure_t *authentication_failure =
+            ogs_nas_authentication_failure_t *authentication_failure =
                 &message->emm.authentication_failure;
-            nas_authentication_failure_parameter_t
+            ogs_nas_authentication_failure_parameter_t
                 *authentication_failure_parameter = 
                     &authentication_failure->
                         authentication_failure_parameter;
@@ -594,7 +590,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
             break;
         }
-        case NAS_ATTACH_REQUEST:
+        case OGS_NAS_ATTACH_REQUEST:
             ogs_warn("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request);
@@ -607,13 +603,13 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             mme_s6a_send_air(mme_ue, NULL);
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
-        case NAS_EMM_STATUS:
+        case OGS_NAS_EMM_STATUS:
             ogs_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                     mme_ue->imsi_bcd,
                     message->emm.emm_status.emm_cause);
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
-        case NAS_DETACH_REQUEST:
+        case OGS_NAS_DETACH_REQUEST:
             ogs_debug("[EMM] Detach request");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(
@@ -666,7 +662,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
 {
     int rv;
     mme_ue_t *mme_ue = NULL;
-    nas_message_t *message = NULL;
+    ogs_nas_message_t *message = NULL;
     nas_security_header_type_t h;
 
     ogs_assert(s);
@@ -689,7 +685,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         if (message->emm.h.security_header_type
-                == NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
+                == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
             ogs_debug("[EMM] Service request");
             rv = nas_send_service_reject(mme_ue,
                     EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
@@ -699,7 +695,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         }
 
         switch (message->emm.h.message_type) {
-        case NAS_SECURITY_MODE_COMPLETE:
+        case OGS_NAS_SECURITY_MODE_COMPLETE:
             ogs_debug("[EMM] Security mode complete");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
@@ -740,18 +736,18 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                     mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
                 OGS_FSM_TRAN(s, &emm_state_registered);
             } else {
-                ogs_fatal("Invalid NAS_EPS[%d]", mme_ue->nas_eps.type);
+                ogs_fatal("Invalid OGS_NAS_EPS[%d]", mme_ue->nas_eps.type);
                 ogs_assert_if_reached();
             }
             break;
-        case NAS_SECURITY_MODE_REJECT:
+        case OGS_NAS_SECURITY_MODE_REJECT:
             ogs_warn("[EMM] Security mode reject : IMSI[%s] Cause[%d]",
                     mme_ue->imsi_bcd,
                     message->emm.security_mode_reject.emm_cause);
             CLEAR_MME_UE_TIMER(mme_ue->t3460);
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
-        case NAS_ATTACH_REQUEST:
+        case OGS_NAS_ATTACH_REQUEST:
             ogs_warn("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request);
@@ -764,20 +760,20 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             mme_s6a_send_air(mme_ue, NULL);
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
-        case NAS_TRACKING_AREA_UPDATE_REQUEST:
+        case OGS_NAS_TRACKING_AREA_UPDATE_REQUEST:
             ogs_debug("[EMM] Tracking area update request");
             rv = nas_send_tau_reject(mme_ue,
                 EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
             ogs_assert(rv == OGS_OK);
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
-        case NAS_EMM_STATUS:
+        case OGS_NAS_EMM_STATUS:
             ogs_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                     mme_ue->imsi_bcd,
                     message->emm.emm_status.emm_cause);
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
-        case NAS_DETACH_REQUEST:
+        case OGS_NAS_DETACH_REQUEST:
             ogs_debug("[EMM] Detach request");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(
@@ -832,7 +828,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 {
     int rv;
     mme_ue_t *mme_ue = NULL;
-    nas_message_t *message = NULL;
+    ogs_nas_message_t *message = NULL;
 
     ogs_assert(s);
     ogs_assert(e);
@@ -852,7 +848,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(message);
 
         switch (message->emm.h.message_type) {
-        case NAS_ATTACH_COMPLETE:
+        case OGS_NAS_ATTACH_COMPLETE:
             ogs_debug("[EMM] Attach complete");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
@@ -871,7 +867,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
 
             OGS_FSM_TRAN(s, &emm_state_registered);
             break;
-        case NAS_ATTACH_REQUEST:
+        case OGS_NAS_ATTACH_REQUEST:
             ogs_warn("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
                     mme_ue, &message->emm.attach_request);
@@ -885,13 +881,13 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert(rv == OGS_OK);
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
-        case NAS_EMM_STATUS:
+        case OGS_NAS_EMM_STATUS:
             ogs_warn("[EMM] EMM STATUS : IMSI[%s] Cause[%d]",
                     mme_ue->imsi_bcd,
                     message->emm.emm_status.emm_cause);
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
-        case NAS_DETACH_REQUEST:
+        case OGS_NAS_DETACH_REQUEST:
             ogs_debug("[EMM] Detach request");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_detach_request(

@@ -61,7 +61,7 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src \
     -I$(top_srcdir)/lib/asn1c/common \
     -I$(top_srcdir)/lib/asn1c/s1ap \
-	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
+	-I$(top_srcdir)/lib/freeDiameter/include \
 	-I$(top_srcdir)/tests/common \
 	$(NULL)
 
@@ -73,7 +73,7 @@ AM_CFLAGS = \
 
 DEFS = \
    @DEFS@ \
-   -DFD_EXT_DIR=\"$(abs_top_builddir)/lib/@FREEDIAMETER_DIR@/extensions\" \
+   -DFD_EXT_DIR=\"$(abs_top_builddir)/lib/freeDiameter/extensions\" \
    $(NULL)
 
 TESTSUITE = $(srcdir)/testsuite

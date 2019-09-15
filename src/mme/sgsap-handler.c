@@ -24,7 +24,6 @@
 #include "mme-sm.h"
 #include "mme-context.h"
 #include "mme-path.h"
-#include "nas-conv.h"
 #include "nas-path.h"
 #include "s1ap-path.h"
 
@@ -34,12 +33,12 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
 
-    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
     int nas_mobile_identity_imsi_len = 0;
-    nas_lai_t *lai = NULL;
-    nas_mobile_identity_tmsi_t *nas_mobile_identity_tmsi = NULL;
+    ogs_nas_lai_t *lai = NULL;
+    ogs_nas_mobile_identity_tmsi_t *nas_mobile_identity_tmsi = NULL;
 
     ogs_assert(vlr);
     ogs_assert(pkbuf);
@@ -76,8 +75,8 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_assert(nas_mobile_identity_imsi && lai);
     ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
-    if (nas_mobile_identity_imsi->type == NAS_MOBILE_IDENTITY_IMSI) {
-        nas_imsi_to_bcd(nas_mobile_identity_imsi,
+    if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
+        ogs_nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else
@@ -88,11 +87,11 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     if (lai) {
         ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
-                    plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
+                    ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
     }
 
     if (nas_mobile_identity_tmsi) {
-        if (nas_mobile_identity_tmsi->type == NAS_MOBILE_IDENTITY_TMSI) {
+        if (nas_mobile_identity_tmsi->type == OGS_NAS_MOBILE_IDENTITY_TMSI) {
             mme_ue->p_tmsi = ntohl(nas_mobile_identity_tmsi->tmsi);
         } else {
             ogs_error("Not supported Identity type[%d]",
@@ -123,12 +122,12 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
 
-    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
     int nas_mobile_identity_imsi_len = 0;
-    nas_emm_cause_t emm_cause = 0;
-    nas_lai_t *lai = NULL;
+    ogs_nas_emm_cause_t emm_cause = 0;
+    ogs_nas_lai_t *lai = NULL;
 
     ogs_assert(vlr);
     ogs_assert(pkbuf);
@@ -165,8 +164,8 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_assert(nas_mobile_identity_imsi && emm_cause);
     ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
-    if (nas_mobile_identity_imsi->type == NAS_MOBILE_IDENTITY_IMSI) {
-        nas_imsi_to_bcd(nas_mobile_identity_imsi,
+    if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
+        ogs_nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else 
@@ -177,7 +176,7 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_debug("    IMSI[%s] CAUSE[%d]", mme_ue->imsi_bcd, emm_cause);
     if (lai) {
         ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
-                    plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
+                    ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
     }
 
     enb_ue = mme_ue->enb_ue;
@@ -193,10 +192,10 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
     uint8_t type = 0;
-    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
     int nas_mobile_identity_imsi_len = 0;
 
     ogs_assert(vlr);
@@ -234,8 +233,8 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_assert(nas_mobile_identity_imsi);
     ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
-    if (nas_mobile_identity_imsi->type == NAS_MOBILE_IDENTITY_IMSI) {
-        nas_imsi_to_bcd(nas_mobile_identity_imsi,
+    if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
+        ogs_nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else 
@@ -253,11 +252,11 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
     int nas_mobile_identity_imsi_len = 0;
-    nas_lai_t *lai = NULL;
+    ogs_nas_lai_t *lai = NULL;
     char vlr_name[SGSAP_IE_VLR_NAME_LEN] = { 0, };
     uint8_t service_indicator = 0;
 
@@ -279,7 +278,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
             nas_mobile_identity_imsi_len = iter->length;
             break;
         case SGSAP_IE_VLR_NAME_TYPE:
-            fqdn_parse(vlr_name, iter->value, iter->length);
+            ogs_fqdn_parse(vlr_name, iter->value, iter->length);
             break;
         case SGSAP_IE_LAI_TYPE:
             lai = iter->value;
@@ -299,9 +298,9 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_assert(nas_mobile_identity_imsi);
     ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
-    if (nas_mobile_identity_imsi->type == NAS_MOBILE_IDENTITY_IMSI) {
+    if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
 
-        nas_imsi_to_bcd(nas_mobile_identity_imsi,
+        ogs_nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else 
@@ -317,7 +316,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
         if (lai) {
             ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
-                        plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
+                        ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
         }
 
         if (ECM_IDLE(mme_ue)) {
@@ -355,9 +354,9 @@ void sgsap_handle_downlink_unitdata(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
     int nas_mobile_identity_imsi_len = 0;
     uint8_t *nas_message_container_buffer = NULL;
     uint8_t nas_message_container_length = 0;
@@ -397,9 +396,9 @@ void sgsap_handle_downlink_unitdata(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_assert(nas_message_container_buffer);
     ogs_assert(nas_message_container_length);
 
-    if (nas_mobile_identity_imsi->type == NAS_MOBILE_IDENTITY_IMSI) {
+    if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
 
-        nas_imsi_to_bcd(nas_mobile_identity_imsi,
+        ogs_nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else 
@@ -431,9 +430,9 @@ void sgsap_handle_release_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
     int nas_mobile_identity_imsi_len = 0;
 
     ogs_assert(vlr);
@@ -465,9 +464,9 @@ void sgsap_handle_release_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_assert(nas_mobile_identity_imsi);
     ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
-    if (nas_mobile_identity_imsi->type == NAS_MOBILE_IDENTITY_IMSI) {
+    if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
 
-        nas_imsi_to_bcd(nas_mobile_identity_imsi,
+        ogs_nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else 
@@ -485,9 +484,9 @@ void sgsap_handle_mm_information_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
 
-    char imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi = NULL;
     int nas_mobile_identity_imsi_len = 0;
 
     ogs_assert(vlr);
@@ -522,9 +521,9 @@ void sgsap_handle_mm_information_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_assert(nas_mobile_identity_imsi);
     ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
-    if (nas_mobile_identity_imsi->type == NAS_MOBILE_IDENTITY_IMSI) {
+    if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
 
-        nas_imsi_to_bcd(nas_mobile_identity_imsi,
+        ogs_nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else 

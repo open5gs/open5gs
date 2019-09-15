@@ -20,8 +20,6 @@
 #ifndef MME_S11_BUILD_H
 #define MME_S11_BUILD_H
 
-#include "gtp/gtp-message.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

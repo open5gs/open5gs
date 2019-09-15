@@ -22,7 +22,7 @@ override_dh_auto_test:
 	if ! cat /proc/net/protocols | grep SCTP > /dev/null; then \
 		sctp_exclude_list="-x sctp-test"; \
 	fi; \
-	tests/testunit -f ./tests/sample.conf $$sctp_exclude_list || exit; \
+	tests/testunit $$sctp_exclude_list || exit; \
 
 #override_dh_makeshlibs:
 #	dh_makeshlibs -V

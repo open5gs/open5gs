@@ -11,15 +11,15 @@ mme:
       realm: localdomain
       listen_on: 127.0.0.2
       load_extension:
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
           conf: 0x8888
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_rfc5777/.libs/dict_rfc5777.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_mip6i/.libs/dict_mip6i.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nasreq/.libs/dict_nasreq.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca/.libs/dict_dcca.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_s6a/.libs/dict_s6a.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_rfc5777/.libs/dict_rfc5777.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_mip6i/.libs/dict_mip6i.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_nasreq/.libs/dict_nasreq.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_dcca/.libs/dict_dcca.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_s6a/.libs/dict_s6a.so
       connect:
         - identity: hss.localdomain
           addr: 127.0.0.4
@@ -52,15 +52,15 @@ hss:
       realm: localdomain
       listen_on: 127.0.0.4
       load_extension:
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
           conf: 0x8888
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_rfc5777/.libs/dict_rfc5777.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_mip6i/.libs/dict_mip6i.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nasreq/.libs/dict_nasreq.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca/.libs/dict_dcca.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_s6a/.libs/dict_s6a.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_rfc5777/.libs/dict_rfc5777.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_mip6i/.libs/dict_mip6i.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_nasreq/.libs/dict_nasreq.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_dcca/.libs/dict_dcca.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_s6a/.libs/dict_s6a.so
       connect:
         - identity: mme.localdomain
           addr: 127.0.0.2
@@ -77,14 +77,14 @@ pgw:
       realm: localdomain
       listen_on: 127.0.0.3
       load_extension:
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
           conf: 0x8888
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_rfc5777/.libs/dict_rfc5777.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_mip6i/.libs/dict_mip6i.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nasreq/.libs/dict_nasreq.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca/.libs/dict_dcca.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_rfc5777/.libs/dict_rfc5777.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_mip6i/.libs/dict_mip6i.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_nasreq/.libs/dict_nasreq.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_dcca/.libs/dict_dcca.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
       connect:
         - identity: pcrf.localdomain
           addr: 127.0.0.5
@@ -110,14 +110,14 @@ pcrf:
       realm: localdomain
       listen_on: 127.0.0.5
       load_extension:
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dbg_msg_dumps/.libs/dbg_msg_dumps.so
           conf: 0x8888
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_rfc5777/.libs/dict_rfc5777.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_mip6i/.libs/dict_mip6i.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nasreq/.libs/dict_nasreq.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca/.libs/dict_dcca.so
-        - module: @abs_top_builddir@/lib/@FREEDIAMETER_DIR@/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_rfc5777/.libs/dict_rfc5777.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_mip6i/.libs/dict_mip6i.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_nasreq/.libs/dict_nasreq.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_nas_mipv6/.libs/dict_nas_mipv6.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_dcca/.libs/dict_dcca.so
+        - module: @abs_top_builddir@/lib/freeDiameter/extensions/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so
       connect:
         - identity: pgw.localdomain
           addr: 127.0.0.3

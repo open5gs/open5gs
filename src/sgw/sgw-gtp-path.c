@@ -17,11 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "gtp/gtp-types.h"
-#include "gtp/gtp-node.h"
-#include "gtp/gtp-path.h"
-
-#include "app/context.h"
 #include "sgw-context.h"
 #include "sgw-event.h"
 #include "sgw-gtp-path.h"
@@ -33,14 +28,14 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     sgw_event_t *e = NULL;
     int rv;
     ssize_t size;
-    gtp_header_t *gtp_h = NULL;
+    ogs_gtp_header_t *gtp_h = NULL;
     uint32_t teid = 0;
     ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(fd != INVALID_SOCKET);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
 
     size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
     if (size <= 0) {
@@ -52,7 +47,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_pkbuf_trim(pkbuf, size);
 
-    gtp_h = (gtp_header_t *)pkbuf->data;
+    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
     ogs_assert(gtp_h);
     ogs_assert(gtp_h->teid_presence);
     teid = ntohl(gtp_h->teid);
@@ -79,7 +74,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ssize_t size;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
-    gtp_header_t *gtp_h = NULL;
+    ogs_gtp_header_t *gtp_h = NULL;
     sgw_bearer_t *bearer = NULL;
     sgw_tunnel_t *tunnel = NULL;
     uint32_t teid;
@@ -88,8 +83,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(fd != INVALID_SOCKET);
     ogs_assert(packet_pool);
 
-    pkbuf = ogs_pkbuf_alloc(packet_pool, MAX_SDU_LEN);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(packet_pool, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
 
     size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
     if (size <= 0) {
@@ -101,13 +96,13 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_pkbuf_trim(pkbuf, size);
 
-    gtp_h = (gtp_header_t *)pkbuf->data;
-    if (gtp_h->type == GTPU_MSGTYPE_ECHO_REQ) {
+    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
+    if (gtp_h->type == OGS_GTPU_MSGTYPE_ECHO_REQ) {
         ogs_pkbuf_t *echo_rsp;
 
         ogs_debug("[SGW] RECV Echo Request from [%s]",
                 OGS_ADDR(&from, buf));
-        echo_rsp = gtp_handle_echo_req(pkbuf);
+        echo_rsp = ogs_gtp_handle_echo_req(pkbuf);
         if (echo_rsp) {
             ssize_t sent;
 
@@ -122,22 +117,22 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
             }
             ogs_pkbuf_free(echo_rsp);
         }
-    } else if (gtp_h->type == GTPU_MSGTYPE_GPDU || 
-                gtp_h->type == GTPU_MSGTYPE_END_MARKER) {
+    } else if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU || 
+                gtp_h->type == OGS_GTPU_MSGTYPE_END_MARKER) {
         teid = ntohl(gtp_h->teid);
-        if (gtp_h->type == GTPU_MSGTYPE_GPDU)
+        if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU)
             ogs_debug("[SGW] RECV GPU-U from [%s] : TEID[0x%x]",
                     OGS_ADDR(&from, buf), teid);
-        else if (gtp_h->type == GTPU_MSGTYPE_END_MARKER)
+        else if (gtp_h->type == OGS_GTPU_MSGTYPE_END_MARKER)
             ogs_debug("[SGW] RECV End Marker from [%s] : TEID[0x%x]",
                     OGS_ADDR(&from, buf), teid);
 
         tunnel = sgw_tunnel_find_by_teid(teid);
         if (!tunnel) {
-            if (gtp_h->type == GTPU_MSGTYPE_GPDU)
+            if (gtp_h->type == OGS_GTPU_MSGTYPE_GPDU)
                 ogs_warn("[SGW] RECV GPU-U from [%s] : No TEID[0x%x]",
                         OGS_ADDR(&from, buf), teid);
-            else if (gtp_h->type == GTPU_MSGTYPE_END_MARKER)
+            else if (gtp_h->type == OGS_GTPU_MSGTYPE_END_MARKER)
                 ogs_warn("[SGW] RECV End Marker from [%s] : No TEID[0x%x]",
                         OGS_ADDR(&from, buf), teid);
             ogs_pkbuf_free(pkbuf);
@@ -147,7 +142,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         ogs_assert(bearer);
 
         /* Convert TEID */
-        if (tunnel->interface_type == GTP_F_TEID_S1_U_SGW_GTP_U) {
+        if (tunnel->interface_type == OGS_GTP_F_TEID_S1_U_SGW_GTP_U) {
             sgw_tunnel_t *s5u_tunnel = NULL;
 
             s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
@@ -159,11 +154,11 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 s5u_tunnel->remote_teid);
 
             gtp_h->teid = htonl(s5u_tunnel->remote_teid);
-            gtp_sendto(s5u_tunnel->gnode, pkbuf);
+            ogs_gtp_sendto(s5u_tunnel->gnode, pkbuf);
         } else if (tunnel->interface_type ==
-                    GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
+                    OGS_GTP_F_TEID_SGW_GTP_U_FOR_DL_DATA_FORWARDING ||
                 tunnel->interface_type ==
-                    GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING) {
+                    OGS_GTP_F_TEID_SGW_GTP_U_FOR_UL_DATA_FORWARDING) {
             sgw_tunnel_t *indirect_tunnel = NULL;
 
             indirect_tunnel = sgw_tunnel_find_by_interface_type(bearer,
@@ -176,8 +171,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
                 indirect_tunnel->remote_teid);
 
             gtp_h->teid = htonl(indirect_tunnel->remote_teid);
-            gtp_sendto(indirect_tunnel->gnode, pkbuf);
-        } else if (tunnel->interface_type == GTP_F_TEID_S5_S8_SGW_GTP_U) {
+            ogs_gtp_sendto(indirect_tunnel->gnode, pkbuf);
+        } else if (tunnel->interface_type == OGS_GTP_F_TEID_S5_S8_SGW_GTP_U) {
             sgw_tunnel_t *s1u_tunnel = NULL;
 
             s1u_tunnel = sgw_s1u_tunnel_in_bearer(bearer);
@@ -192,18 +187,18 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
                 /* If there is buffered packet, send it first */
                 for (i = 0; i < bearer->num_buffered_pkt; i++) {
-                    gtp_header_t *gtp_h = NULL;
+                    ogs_gtp_header_t *gtp_h = NULL;
 
-                    gtp_h = (gtp_header_t *)bearer->buffered_pkts[i]->data;
+                    gtp_h = (ogs_gtp_header_t *)bearer->buffered_pkts[i]->data;
                     gtp_h->teid = htonl(s1u_tunnel->remote_teid);
 
-                    gtp_sendto(s1u_tunnel->gnode, bearer->buffered_pkts[i]);
+                    ogs_gtp_sendto(s1u_tunnel->gnode, bearer->buffered_pkts[i]);
                     ogs_pkbuf_free(bearer->buffered_pkts[i]);
                 }
                 bearer->num_buffered_pkt = 0;
 
                 gtp_h->teid = htonl(s1u_tunnel->remote_teid);
-                gtp_sendto(s1u_tunnel->gnode, pkbuf);
+                ogs_gtp_sendto(s1u_tunnel->gnode, pkbuf);
             } else {
                 /* S1U path is deactivated.
                  * Send downlink_data_notification to MME.
@@ -265,7 +260,7 @@ int sgw_gtp_open()
     ogs_pkbuf_config_t config;
     memset(&config, 0, sizeof config);
 
-    config.cluster_8192_pool = context_self()->config.pool.packet;
+    config.cluster_8192_pool = ogs_config()->pool.packet;
 
     packet_pool = ogs_pkbuf_pool_create(&config);
 
@@ -273,21 +268,21 @@ int sgw_gtp_open()
         ogs_socknode_set_poll(node, sgw_self()->pollset,
                 OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
 
-        sock = gtp_server(node);
+        sock = ogs_gtp_server(node);
         ogs_assert(sock);
     }
     ogs_list_for_each(&sgw_self()->gtpc_list6, node) {
         ogs_socknode_set_poll(node, sgw_self()->pollset,
                 OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
 
-        sock = gtp_server(node);
+        sock = ogs_gtp_server(node);
         ogs_assert(sock);
     }
 
-    sgw_self()->gtpc_sock = gtp_local_sock_first(&sgw_self()->gtpc_list);
-    sgw_self()->gtpc_sock6 = gtp_local_sock_first(&sgw_self()->gtpc_list6);
-    sgw_self()->gtpc_addr = gtp_local_addr_first(&sgw_self()->gtpc_list);
-    sgw_self()->gtpc_addr6 = gtp_local_addr_first(&sgw_self()->gtpc_list6);
+    sgw_self()->gtpc_sock = ogs_gtp_local_sock_first(&sgw_self()->gtpc_list);
+    sgw_self()->gtpc_sock6 = ogs_gtp_local_sock_first(&sgw_self()->gtpc_list6);
+    sgw_self()->gtpc_addr = ogs_gtp_local_addr_first(&sgw_self()->gtpc_list);
+    sgw_self()->gtpc_addr6 = ogs_gtp_local_addr_first(&sgw_self()->gtpc_list6);
 
     ogs_assert(sgw_self()->gtpc_addr || sgw_self()->gtpc_addr6);
 
@@ -295,21 +290,21 @@ int sgw_gtp_open()
         ogs_socknode_set_poll(node, sgw_self()->pollset,
                 OGS_POLLIN, _gtpv1_u_recv_cb, NULL);
 
-        sock = gtp_server(node);
+        sock = ogs_gtp_server(node);
         ogs_assert(sock);
     }
     ogs_list_for_each(&sgw_self()->gtpu_list6, node) {
         ogs_socknode_set_poll(node, sgw_self()->pollset,
                 OGS_POLLIN, _gtpv1_u_recv_cb, NULL);
 
-        sock = gtp_server(node);
+        sock = ogs_gtp_server(node);
         ogs_assert(sock);
     }
 
-    sgw_self()->gtpu_sock = gtp_local_sock_first(&sgw_self()->gtpu_list);
-    sgw_self()->gtpu_sock6 = gtp_local_sock_first(&sgw_self()->gtpu_list6);
-    sgw_self()->gtpu_addr = gtp_local_addr_first(&sgw_self()->gtpu_list);
-    sgw_self()->gtpu_addr6 = gtp_local_addr_first(&sgw_self()->gtpu_list6);
+    sgw_self()->gtpu_sock = ogs_gtp_local_sock_first(&sgw_self()->gtpu_list);
+    sgw_self()->gtpu_sock6 = ogs_gtp_local_sock_first(&sgw_self()->gtpu_list6);
+    sgw_self()->gtpu_addr = ogs_gtp_local_addr_first(&sgw_self()->gtpu_list);
+    sgw_self()->gtpu_addr6 = ogs_gtp_local_addr_first(&sgw_self()->gtpu_list6);
 
     ogs_assert(sgw_self()->gtpu_addr || sgw_self()->gtpu_addr6);
 
@@ -331,7 +326,7 @@ int sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel)
     char buf[OGS_ADDRSTRLEN];
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
-    gtp_header_t *h = NULL;
+    ogs_gtp_header_t *h = NULL;
 
     ogs_assert(s1u_tunnel);
     ogs_assert(s1u_tunnel->gnode);
@@ -344,9 +339,9 @@ int sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel)
     pkbuf = ogs_pkbuf_alloc(NULL,
             100 /* enough for END_MARKER; use smaller buffer */);
     ogs_pkbuf_put(pkbuf, 100);
-    h = (gtp_header_t *)pkbuf->data;
+    h = (ogs_gtp_header_t *)pkbuf->data;
 
-    memset(h, 0, GTPV1U_HEADER_LEN);
+    memset(h, 0, OGS_GTPV1U_HEADER_LEN);
 
     /*
      * Flags
@@ -354,10 +349,10 @@ int sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel)
      * 0x10 - Protocol Type : GTP (1)
      */
     h->flags = 0x30;
-    h->type = GTPU_MSGTYPE_END_MARKER;
+    h->type = OGS_GTPU_MSGTYPE_END_MARKER;
     h->teid =  htonl(s1u_tunnel->remote_teid);
     
-    rv = gtp_sendto(s1u_tunnel->gnode, pkbuf);
+    rv = ogs_gtp_sendto(s1u_tunnel->gnode, pkbuf);
     ogs_assert(rv == OGS_OK);
     ogs_pkbuf_free(pkbuf);
 

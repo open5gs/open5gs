@@ -25,7 +25,6 @@
 #include "nas-security.h"
 #include "nas-path.h"
 
-#include "s1ap-conv.h"
 #include "s1ap-build.h"
 #include "s1ap-path.h"
 
@@ -57,7 +56,7 @@ int s1ap_send(ogs_sock_t *sock, ogs_pkbuf_t *pkbuf,
     ogs_assert(pkbuf);
 
     sent = ogs_sctp_sendmsg(sock, pkbuf->data, pkbuf->len,
-            addr, SCTP_S1AP_PPID, stream_no);
+            addr, OGS_SCTP_S1AP_PPID, stream_no);
     if (sent < 0 || sent != pkbuf->len) {
         ogs_error("ogs_sctp_sendmsg error (%d:%s)", errno, strerror(errno));
         return OGS_ERROR;
@@ -158,10 +157,10 @@ int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
 int s1ap_send_to_nas(enb_ue_t *enb_ue,
         S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu)
 {
-    nas_security_header_t *sh = NULL;
+    ogs_nas_security_header_t *sh = NULL;
     nas_security_header_type_t security_header_type;
 
-    nas_emm_header_t *h = NULL;
+    ogs_nas_emm_header_t *h = NULL;
     ogs_pkbuf_t *nasbuf = NULL;
     mme_event_t *e = NULL;
 
@@ -170,8 +169,8 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
 
     /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    nasbuf = ogs_pkbuf_alloc(NULL, NAS_HEADROOM+nasPdu->size);
-    ogs_pkbuf_reserve(nasbuf, NAS_HEADROOM);
+    nasbuf = ogs_pkbuf_alloc(NULL, OGS_NAS_HEADROOM+nasPdu->size);
+    ogs_pkbuf_reserve(nasbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put_data(nasbuf, nasPdu->buf, nasPdu->size);
 
     sh = nasbuf->data;
@@ -179,26 +178,26 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
 
     memset(&security_header_type, 0, sizeof(nas_security_header_type_t));
     switch(sh->security_header_type) {
-    case NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
+    case OGS_NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
         break;
-    case NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
+    case OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE:
         security_header_type.service_request = 1;
         break;
-    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
+    case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
         security_header_type.integrity_protected = 1;
         ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
         break;
-    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
+    case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED:
         security_header_type.integrity_protected = 1;
         security_header_type.ciphered = 1;
         ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
         break;
-    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
+    case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT:
         security_header_type.integrity_protected = 1;
         security_header_type.new_security_context = 1;
         ogs_assert(ogs_pkbuf_pull(nasbuf, 6));
         break;
-    case NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
+    case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT:
         security_header_type.integrity_protected = 1;
         security_header_type.ciphered = 1;
         security_header_type.new_security_context = 1;
@@ -217,7 +216,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
 
     h = nasbuf->data;
     ogs_assert(h);
-    if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_EMM) {
+    if (h->protocol_discriminator == OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM) {
         int rv;
         e = mme_event_new(MME_EVT_EMM_MESSAGE);
         ogs_assert(e);
@@ -231,7 +230,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             ogs_pkbuf_free(e->pkbuf);
             mme_event_free(e);
         }
-    } else if (h->protocol_discriminator == NAS_PROTOCOL_DISCRIMINATOR_ESM) {
+    } else if (h->protocol_discriminator == OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM) {
         mme_ue_t *mme_ue = enb_ue->mme_ue;
         ogs_assert(mme_ue);
         s1ap_send_to_esm(mme_ue, nasbuf);
@@ -337,7 +336,7 @@ void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
         for (i = 0; i < enb->num_of_supported_ta_list; i++) {
 
             if (memcmp(&enb->supported_ta_list[i], &mme_ue->tai,
-                        sizeof(tai_t)) == 0) {
+                        sizeof(ogs_tai_t)) == 0) {
 
                 if (mme_ue->t3413.pkbuf) {
                     s1apbuf = mme_ue->t3413.pkbuf;

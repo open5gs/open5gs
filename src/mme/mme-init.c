@@ -18,9 +18,7 @@
  */
 
 #include "ogs-sctp.h"
-
-#include "gtp/gtp-xact.h"
-#include "app/context.h"
+#include "ogs-gtp.h"
 
 #include "mme-context.h"
 #include "mme-sm.h"
@@ -41,15 +39,14 @@ int mme_initialize()
     mme_context_init();
     mme_event_init();
 
-    rv = gtp_xact_init(mme_self()->timer_mgr);
+    rv = ogs_gtp_xact_init(mme_self()->timer_mgr, 512);
     if (rv != OGS_OK) return rv;
 
     rv = mme_context_parse_config();
     if (rv != OGS_OK) return rv;
 
     rv = ogs_log_config_domain(
-            context_self()->config.logger.domain,
-            context_self()->config.logger.level);
+            ogs_config()->logger.domain, ogs_config()->logger.level);
     if (rv != OGS_OK) return rv;
 
     rv = mme_m_tmsi_pool_generate();
@@ -78,7 +75,7 @@ void mme_terminate(void)
 
     mme_context_final();
 
-    gtp_xact_final();
+    ogs_gtp_xact_final();
 
     mme_event_final();
 }

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "base/base.h"
+#include "pgw-context.h"
 
 #if HAVE_NETINET_IP_H
 #include <netinet/ip.h>
@@ -35,11 +35,6 @@
 #include <netinet/icmp6.h>
 #endif
 
-#include "gtp/gtp-node.h"
-#include "gtp/gtp-path.h"
-
-#include "app/context.h"
-#include "pgw-context.h"
 #include "pgw-event.h"
 #include "pgw-gtp-path.h"
 #include "pgw-ipfw.h"
@@ -60,9 +55,9 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
     int rv;
     pgw_bearer_t *bearer = NULL;
 
-    recvbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_reserve(recvbuf, GTPV1U_HEADER_LEN);
-    ogs_pkbuf_put(recvbuf, MAX_SDU_LEN-GTPV1U_HEADER_LEN);
+    recvbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_reserve(recvbuf, OGS_GTPV1U_HEADER_LEN);
+    ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN-OGS_GTPV1U_HEADER_LEN);
 
     n = ogs_read(fd, recvbuf->data, recvbuf->len);
     if (n <= 0) {
@@ -80,7 +75,7 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
         rv = pgw_gtp_send_to_bearer(bearer, recvbuf);
         ogs_assert(rv == OGS_OK);
     } else {
-        if (context_self()->config.parameter.multicast) {
+        if (ogs_config()->parameter.multicast) {
             rv = pgw_gtp_handle_multicast(recvbuf);
             ogs_assert(rv != OGS_ERROR);
         }
@@ -98,8 +93,8 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_assert(fd != INVALID_SOCKET);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
 
     size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
     if (size <= 0) {
@@ -128,8 +123,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     int rv;
     ssize_t size;
     ogs_pkbuf_t *pkbuf = NULL;
-    uint32_t len = GTPV1U_HEADER_LEN;
-    gtp_header_t *gtp_h = NULL;
+    uint32_t len = OGS_GTPV1U_HEADER_LEN;
+    ogs_gtp_header_t *gtp_h = NULL;
     struct ip *ip_h = NULL;
 
     uint32_t teid;
@@ -140,8 +135,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     ogs_assert(fd != INVALID_SOCKET);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
-    ogs_pkbuf_put(pkbuf, MAX_SDU_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
 
     size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
     if (size <= 0) {
@@ -156,7 +151,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(pkbuf->len);
 
     gtp_h = pkbuf->data;
-    if (gtp_h->flags & GTPU_FLAGS_S) len += 4;
+    if (gtp_h->flags & OGS_GTPU_FLAGS_S) len += 4;
     teid = ntohl(gtp_h->teid);
 
     ogs_debug("[PGW] RECV GPU-U from SGW : TEID[0x%x]", teid);
@@ -188,7 +183,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     }
 
     /* Check IPv6 */
-    if (context_self()->config.parameter.no_slaac == 0 && ip_h->ip_v == 6) {
+    if (ogs_config()->parameter.no_slaac == 0 && ip_h->ip_v == 6) {
         rv = pgw_gtp_handle_slaac(sess, pkbuf);
         if (rv == PGW_GTP_HANDLED) {
             goto cleanup;
@@ -217,21 +212,21 @@ int pgw_gtp_open()
         ogs_socknode_set_poll(node, pgw_self()->pollset,
                 OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
 
-        sock = gtp_server(node);
+        sock = ogs_gtp_server(node);
         ogs_assert(sock);
     }
     ogs_list_for_each(&pgw_self()->gtpc_list6, node) {
         ogs_socknode_set_poll(node, pgw_self()->pollset,
                 OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
 
-        sock = gtp_server(node);
+        sock = ogs_gtp_server(node);
         ogs_assert(sock);
     }
 
-    pgw_self()->gtpc_sock = gtp_local_sock_first(&pgw_self()->gtpc_list);
-    pgw_self()->gtpc_sock6 = gtp_local_sock_first(&pgw_self()->gtpc_list6);
-    pgw_self()->gtpc_addr = gtp_local_addr_first(&pgw_self()->gtpc_list);
-    pgw_self()->gtpc_addr6 = gtp_local_addr_first(&pgw_self()->gtpc_list6);
+    pgw_self()->gtpc_sock = ogs_gtp_local_sock_first(&pgw_self()->gtpc_list);
+    pgw_self()->gtpc_sock6 = ogs_gtp_local_sock_first(&pgw_self()->gtpc_list6);
+    pgw_self()->gtpc_addr = ogs_gtp_local_addr_first(&pgw_self()->gtpc_list);
+    pgw_self()->gtpc_addr6 = ogs_gtp_local_addr_first(&pgw_self()->gtpc_list6);
 
     ogs_assert(pgw_self()->gtpc_addr || pgw_self()->gtpc_addr6);
 
@@ -239,21 +234,21 @@ int pgw_gtp_open()
         ogs_socknode_set_poll(node, pgw_self()->pollset,
                 OGS_POLLIN, _gtpv1_u_recv_cb, NULL);
 
-        sock = gtp_server(node);
+        sock = ogs_gtp_server(node);
         ogs_assert(sock);
     }
     ogs_list_for_each(&pgw_self()->gtpu_list6, node) {
         ogs_socknode_set_poll(node, pgw_self()->pollset,
                 OGS_POLLIN, _gtpv1_u_recv_cb, NULL);
 
-        sock = gtp_server(node);
+        sock = ogs_gtp_server(node);
         ogs_assert(sock);
     }
 
-    pgw_self()->gtpu_sock = gtp_local_sock_first(&pgw_self()->gtpu_list);
-    pgw_self()->gtpu_sock6 = gtp_local_sock_first(&pgw_self()->gtpu_list6);
-    pgw_self()->gtpu_addr = gtp_local_addr_first(&pgw_self()->gtpu_list);
-    pgw_self()->gtpu_addr6 = gtp_local_addr_first(&pgw_self()->gtpu_list6);
+    pgw_self()->gtpu_sock = ogs_gtp_local_sock_first(&pgw_self()->gtpu_list);
+    pgw_self()->gtpu_sock6 = ogs_gtp_local_sock_first(&pgw_self()->gtpu_list6);
+    pgw_self()->gtpu_addr = ogs_gtp_local_addr_first(&pgw_self()->gtpu_list);
+    pgw_self()->gtpu_addr6 = ogs_gtp_local_addr_first(&pgw_self()->gtpu_list6);
 
     ogs_assert(pgw_self()->gtpu_addr || pgw_self()->gtpu_addr6);
 
@@ -396,15 +391,15 @@ static int pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, ogs_pkbuf_t *sendbuf)
 {
     char buf[OGS_ADDRSTRLEN];
     int rv;
-    gtp_header_t *gtp_h = NULL;
+    ogs_gtp_header_t *gtp_h = NULL;
 
     ogs_assert(bearer);
     ogs_assert(bearer->gnode);
     ogs_assert(bearer->gnode->sock);
 
     /* Add GTP-U header */
-    ogs_assert(ogs_pkbuf_push(sendbuf, GTPV1U_HEADER_LEN));
-    gtp_h = (gtp_header_t *)sendbuf->data;
+    ogs_assert(ogs_pkbuf_push(sendbuf, OGS_GTPV1U_HEADER_LEN));
+    gtp_h = (ogs_gtp_header_t *)sendbuf->data;
     /* Bits    8  7  6  5  4  3  2  1
      *        +--+--+--+--+--+--+--+--+
      *        |version |PT| 1| E| S|PN|
@@ -412,15 +407,15 @@ static int pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, ogs_pkbuf_t *sendbuf)
      *         0  0  1   1  0  0  0  0
      */
     gtp_h->flags = 0x30;
-    gtp_h->type = GTPU_MSGTYPE_GPDU;
-    gtp_h->length = htons(sendbuf->len - GTPV1U_HEADER_LEN);
+    gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
+    gtp_h->length = htons(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
     gtp_h->teid = htonl(bearer->sgw_s5u_teid);
 
     /* Send to SGW */
     ogs_debug("[PGW] SEND GPU-U to SGW[%s] : TEID[0x%x]",
         OGS_ADDR(&bearer->gnode->conn, buf),
         bearer->sgw_s5u_teid);
-    rv =  gtp_sendto(bearer->gnode, sendbuf);
+    rv =  ogs_gtp_sendto(bearer->gnode, sendbuf);
 
     return rv;
 }
@@ -454,8 +449,8 @@ static int pgw_gtp_send_router_advertisement(
     dev = subnet->dev;
     ogs_assert(dev);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, GTPV1U_HEADER_LEN+200);
-    ogs_pkbuf_reserve(pkbuf, GTPV1U_HEADER_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_HEADER_LEN+200);
+    ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_HEADER_LEN);
     ogs_pkbuf_put(pkbuf, 200);
     pkbuf->len = sizeof *ip6_h + sizeof *advert_h + sizeof *prefix;
     memset(pkbuf->data, 0, pkbuf->len);
@@ -496,8 +491,8 @@ static int pgw_gtp_send_router_advertisement(
 
     memcpy(p, src_ipsub.sub, sizeof src_ipsub.sub);
     p += sizeof src_ipsub.sub;
-    memcpy(p, ip6_dst, IPV6_LEN);
-    p += IPV6_LEN;
+    memcpy(p, ip6_dst, OGS_IPV6_LEN);
+    p += OGS_IPV6_LEN;
     p += 2; memcpy(p, &plen, 2); p += 2;
     p += 3; *p = nxt; p += 1;
     advert_h->nd_ra_cksum = in_cksum((uint16_t *)pkbuf->data, pkbuf->len);
@@ -507,7 +502,7 @@ static int pgw_gtp_send_router_advertisement(
     ip6_h->ip6_nxt = nxt;  /* ICMPv6 */
     ip6_h->ip6_hlim = 0xff;
     memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
-    memcpy(ip6_h->ip6_dst.s6_addr, ip6_dst, IPV6_LEN);
+    memcpy(ip6_h->ip6_dst.s6_addr, ip6_dst, OGS_IPV6_LEN);
     
     rv = pgw_gtp_send_to_bearer(bearer, pkbuf);
     ogs_assert(rv == OGS_OK);

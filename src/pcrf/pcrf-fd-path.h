@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 struct sess_state;
-typedef struct _rx_message_t rx_message_t;
+typedef struct ogs_diam_rx_message_s ogs_diam_rx_message_t;
 
 int pcrf_fd_init(void);
 void pcrf_fd_final(void);
@@ -36,7 +36,7 @@ int pcrf_rx_init(void);
 void pcrf_rx_final(void);
 
 int pcrf_gx_send_rar(
-        uint8_t *gx_sid, uint8_t *rx_sid, rx_message_t *rx_message);
+        uint8_t *gx_sid, uint8_t *rx_sid, ogs_diam_rx_message_t *rx_message);
 int pcrf_rx_send_asr(
         uint8_t *rx_sid, uint32_t abort_cause);
 

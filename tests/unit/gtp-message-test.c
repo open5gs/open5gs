@@ -1,7 +1,23 @@
-#include "core/abts.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include "gtp/gtp-types.h"
-#include "gtp/gtp-message.h"
+#include "test-app.h"
 
 static void gtp_message_test1(abts_case *tc, void *data)
 {
@@ -17,27 +33,27 @@ static void gtp_message_test1(abts_case *tc, void *data)
         "005d001f00490001 0005500016004505 0000000000000000 0000000000000000"
         "0000000072000200 40005f0002005400";
     char *_value = NULL;
-    char hexbuf[MAX_SDU_LEN];
+    char hexbuf[OGS_MAX_SDU_LEN];
 
-    gtp_create_session_request_t req;
-    gtp_uli_t uli;
-    char ulibuf[GTP_MAX_ULI_LEN];
-    plmn_id_t serving_network;
+    ogs_gtp_create_session_request_t req;
+    ogs_gtp_uli_t uli;
+    char ulibuf[OGS_GTP_MAX_ULI_LEN];
+    ogs_plmn_id_t serving_network;
     char apnbuf[34];
-    gtp_f_teid_t s11, s5;
-    paa_t paa;
-    gtp_ambr_t ambr;
-    pco_t pco;
-    char pcobuf[MAX_PCO_LEN];
-    gtp_bearer_qos_t bearer_qos;
+    ogs_gtp_f_teid_t s11, s5;
+    ogs_paa_t paa;
+    ogs_gtp_ambr_t ambr;
+    ogs_pco_t pco;
+    char pcobuf[OGS_MAX_PCO_LEN];
+    ogs_gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
-    gtp_ue_timezone_t ue_timezone;
+    ogs_gtp_ue_timezone_t ue_timezone;
     int size = 0;
 
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t sa;
 
-    memset(&req, 0, sizeof(gtp_create_session_request_t));
+    memset(&req, 0, sizeof(ogs_gtp_create_session_request_t));
 
     req.imsi.presence = 1;
     req.imsi.data = (uint8_t *)"\x55\x15\x30\x11\x34\x00\x10\xf4";
@@ -51,43 +67,44 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.me_identity.data = (uint8_t *)"\x53\x61\x20\x00\x91\x78\x84\x00";
     req.me_identity.len = 8;
 
-    memset(&uli, 0, sizeof(gtp_uli_t));
+    memset(&uli, 0, sizeof(ogs_gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
-    plmn_id_build(&uli.tai.plmn_id, 555, 10, 2);
+    ogs_plmn_id_build(&uli.tai.plmn_id, 555, 10, 2);
     uli.tai.tac = 4130;
-    plmn_id_build(&uli.e_cgi.plmn_id, 555, 10, 2);
+    ogs_plmn_id_build(&uli.e_cgi.plmn_id, 555, 10, 2);
     uli.e_cgi.cell_id = 105729;
     req.user_location_information.presence = 1;
-    size = gtp_build_uli(&req.user_location_information, &uli, 
-            ulibuf, GTP_MAX_ULI_LEN);
+    size = ogs_gtp_build_uli(&req.user_location_information, &uli, 
+            ulibuf, OGS_GTP_MAX_ULI_LEN);
     ABTS_INT_EQUAL(tc, 13, req.user_location_information.len);
 
     req.serving_network.presence = 1;
-    req.serving_network.data = plmn_id_build(&serving_network, 555, 10, 2);
+    req.serving_network.data = ogs_plmn_id_build(&serving_network, 555, 10, 2);
     req.serving_network.len = sizeof(serving_network);
 
     req.rat_type.presence = 1;
-    req.rat_type.u8 = GTP_RAT_TYPE_EUTRAN;
+    req.rat_type.u8 = OGS_GTP_RAT_TYPE_EUTRAN;
 
-    memset(&s11, 0, sizeof(gtp_f_teid_t));
+    memset(&s11, 0, sizeof(ogs_gtp_f_teid_t));
     s11.ipv4 = 1;
-    s11.interface_type = GTP_F_TEID_S11_MME_GTP_C;
+    s11.interface_type = OGS_GTP_F_TEID_S11_MME_GTP_C;
     s11.teid = htonl(0x80000084);
     ogs_inet_pton(AF_INET, "10.50.54.10", &sa);
     s11.addr = sa.sin.sin_addr.s_addr;
     req.sender_f_teid_for_control_plane.presence = 1;
     req.sender_f_teid_for_control_plane.data = &s11;
-    req.sender_f_teid_for_control_plane.len = GTP_F_TEID_IPV4_LEN;
+    req.sender_f_teid_for_control_plane.len = OGS_GTP_F_TEID_IPV4_LEN;
 
-    memset(&s5, 0, sizeof(gtp_f_teid_t));
+    memset(&s5, 0, sizeof(ogs_gtp_f_teid_t));
     s5.ipv4 = 1;
-    s5.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
+    s5.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_C;
     ogs_inet_pton(AF_INET, "10.50.54.37", &sa);
     s5.addr = sa.sin.sin_addr.s_addr;
     req.pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
     req.pgw_s5_s8_address_for_control_plane_or_pmip.data = &s5;
-    req.pgw_s5_s8_address_for_control_plane_or_pmip.len = GTP_F_TEID_IPV4_LEN;
+    req.pgw_s5_s8_address_for_control_plane_or_pmip.len =
+        OGS_GTP_F_TEID_IPV4_LEN;
 
     _value = "05766f6c7465036e 6732046d6e657406 6d6e63303130066d 6363353535046770 7273";
     req.access_point_name.presence = 1;
@@ -95,44 +112,45 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.access_point_name.len = sizeof(apnbuf);
 
     req.selection_mode.presence = 1;
-    req.selection_mode.u8 = GTP_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN | 0xfc;
+    req.selection_mode.u8 = 
+        OGS_GTP_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN | 0xfc;
 
     req.pdn_type.presence = 1;
-    req.pdn_type.u8 = GTP_PDN_TYPE_IPV4;
+    req.pdn_type.u8 = OGS_GTP_PDN_TYPE_IPV4;
 
-    memset(&paa, 0, sizeof(paa_t));
-    paa.pdn_type = GTP_PDN_TYPE_IPV4;
+    memset(&paa, 0, sizeof(ogs_paa_t));
+    paa.pdn_type = OGS_GTP_PDN_TYPE_IPV4;
     req.pdn_address_allocation.presence = 1;
     req.pdn_address_allocation.data = &paa;
-    req.pdn_address_allocation.len = PAA_IPV4_LEN;
+    req.pdn_address_allocation.len = OGS_PAA_IPV4_LEN;
 
     req.maximum_apn_restriction.presence = 1;
-    req.maximum_apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
+    req.maximum_apn_restriction.u8 = OGS_GTP_APN_NO_RESTRICTION;
 
-    memset(&ambr, 0, sizeof(gtp_ambr_t));
+    memset(&ambr, 0, sizeof(ogs_gtp_ambr_t));
     ambr.uplink = htonl(1000);
     ambr.downlink = htonl(2000);
     req.aggregate_maximum_bit_rate.presence = 1;
     req.aggregate_maximum_bit_rate.data = &ambr;
     req.aggregate_maximum_bit_rate.len = sizeof(ambr);
 
-    memset(&pco, 0, sizeof(pco_t));
+    memset(&pco, 0, sizeof(ogs_pco_t));
     pco.ext = 1;
     pco.configuration_protocol = 
-        PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE;
+        OGS_PCO_PPP_FOR_USE_WITH_IP_PDP_TYPE_OR_IP_PDN_TYPE;
     pco.num_of_id = 3;
-    pco.ids[0].id = PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL;
+    pco.ids[0].id = OGS_PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL;
     pco.ids[0].data = (uint8_t *)"\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00\x83\x06\x00\x00\x00\x00";
     pco.ids[0].len = 16;
-    pco.ids[1].id = PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST;
+    pco.ids[1].id = OGS_PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST;
     pco.ids[1].len = 0;
-    pco.ids[2].id = PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING;
+    pco.ids[2].id = OGS_PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING;
     pco.ids[2].len = 0;
 
     req.protocol_configuration_options.presence = 1;
     req.protocol_configuration_options.data = &pcobuf;
     req.protocol_configuration_options.len = 
-        pco_build(pcobuf, MAX_PCO_LEN, &pco);
+        ogs_pco_build(pcobuf, OGS_MAX_PCO_LEN, &pco);
 
     req.bearer_contexts_to_be_created.presence = 1;
     req.bearer_contexts_to_be_created.eps_bearer_id.presence = 1;
@@ -144,14 +162,14 @@ static void gtp_message_test1(abts_case *tc, void *data)
     bearer_qos.pre_emption_capability = 1;
     bearer_qos.qci = 5;
     req.bearer_contexts_to_be_created.bearer_level_qos.presence = 1;
-    size = gtp_build_bearer_qos(
+    size = ogs_gtp_build_bearer_qos(
             &req.bearer_contexts_to_be_created.bearer_level_qos,
             &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);
 
     memset(&ue_timezone, 0, sizeof(ue_timezone));
     ue_timezone.timezone = 0x40;
     ue_timezone.daylight_saving_time = 
-        GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
+        OGS_GTP_UE_TIME_ZONE_NO_ADJUSTMENT_FOR_DAYLIGHT_SAVING_TIME;
     req.ue_time_zone.presence = 1;
     req.ue_time_zone.data = &ue_timezone;
     req.ue_time_zone.len = sizeof(ue_timezone);
@@ -160,7 +178,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.charging_characteristics.data = (uint8_t *)"\x54\x00";
     req.charging_characteristics.len = 2;
 
-    rv = tlv_build_msg(&pkbuf, &tlv_desc_create_session_request, &req,
+    rv = ogs_tlv_build_msg(&pkbuf, &ogs_tlv_desc_create_session_request, &req,
             OGS_TLV_MODE_T1_L2_I1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
@@ -168,7 +186,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
         OGS_HEX(_payload, strlen(_payload), hexbuf), pkbuf->len) == 0);
 
     memset(&req, 0, sizeof(req));
-    rv = tlv_parse_msg(&req, &tlv_desc_create_session_request, pkbuf,
+    rv = ogs_tlv_parse_msg(&req, &ogs_tlv_desc_create_session_request, pkbuf,
             OGS_TLV_MODE_T1_L2_I1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
@@ -193,7 +211,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
         req.me_identity.data, req.me_identity.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.user_location_information.presence);
-    size = gtp_parse_uli(&uli, &req.user_location_information);
+    size = ogs_gtp_parse_uli(&uli, &req.user_location_information);
     ABTS_INT_EQUAL(tc, 13, size);
     ABTS_INT_EQUAL(tc, 0, uli.flags.lai);
     ABTS_INT_EQUAL(tc, 1, uli.flags.e_cgi);
@@ -219,25 +237,25 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, 0, req.linked_eps_bearer_id.presence);
     ABTS_INT_EQUAL(tc, 0, req.trusted_wlan_mode_indication.presence);
     ABTS_INT_EQUAL(tc, 1, req.protocol_configuration_options.presence);
-    size = pco_parse(&pco, req.protocol_configuration_options.data,
+    size = ogs_pco_parse(&pco, req.protocol_configuration_options.data,
                         req.protocol_configuration_options.len);
     ABTS_INT_EQUAL(tc, 26, size);
     ABTS_INT_EQUAL(tc, 1, pco.ext);
     ABTS_INT_EQUAL(tc, 0, pco.configuration_protocol);
     ABTS_INT_EQUAL(tc, 3, pco.num_of_id);
     ABTS_INT_EQUAL(tc, 
-        PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL, 
+        OGS_PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL, 
         pco.ids[0].id);
     ABTS_INT_EQUAL(tc, 16, pco.ids[0].len); 
     ABTS_TRUE(tc, memcmp(
         "\x01\x00\x00\x10\x81\x06\x00\x00\x00\x00\x83\x06\x00\x00\x00\x00",
         pco.ids[0].data, pco.ids[0].len) == 0);
     ABTS_INT_EQUAL(tc, 
-        PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST, 
+        OGS_PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST, 
         pco.ids[1].id);
     ABTS_INT_EQUAL(tc, 0, pco.ids[1].len); 
     ABTS_INT_EQUAL(tc, 
-        PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING, 
+        OGS_PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING, 
         pco.ids[2].id);
     ABTS_INT_EQUAL(tc, 0, pco.ids[2].len); 
     ABTS_INT_EQUAL(tc, 1, req.bearer_contexts_to_be_created.presence);
@@ -257,7 +275,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
                 bearer_contexts_to_be_created.bearer_level_qos.presence);
     ABTS_INT_EQUAL(tc, 22,
             req.bearer_contexts_to_be_created.bearer_level_qos.len);
-    size = gtp_parse_bearer_qos(&bearer_qos, 
+    size = ogs_gtp_parse_bearer_qos(&bearer_qos, 
             &req.bearer_contexts_to_be_created.bearer_level_qos);
     ABTS_INT_EQUAL(tc, 22, size);
     ABTS_INT_EQUAL(tc, 1, bearer_qos.pre_emption_vulnerability);

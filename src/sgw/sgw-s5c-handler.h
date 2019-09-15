@@ -20,24 +20,22 @@
 #ifndef SGW_S5C_HANDLER_H
 #define SGW_S5C_HANDLER_H
 
-#include "gtp/gtp-message.h"
-
 #include "sgw-context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void sgw_s5c_handle_create_session_response(gtp_xact_t *s5c_xact,
-        sgw_sess_t *sess, gtp_message_t *gtp_message);
-void sgw_s5c_handle_delete_session_response(gtp_xact_t *s5c_xact,
-        sgw_sess_t *sess, gtp_message_t *gtp_message);
-void sgw_s5c_handle_create_bearer_request(gtp_xact_t *s5c_xact,
-        sgw_sess_t *sess, gtp_message_t *gtp_message);
-void sgw_s5c_handle_update_bearer_request(gtp_xact_t *s5c_xact, 
-        sgw_sess_t *sess, gtp_message_t *gtp_message);
-void sgw_s5c_handle_delete_bearer_request(gtp_xact_t *s5c_xact, 
-        sgw_sess_t *sess, gtp_message_t *gtp_message);
+void sgw_s5c_handle_create_session_response(ogs_gtp_xact_t *s5c_xact,
+        sgw_sess_t *sess, ogs_gtp_message_t *gtp_message);
+void sgw_s5c_handle_delete_session_response(ogs_gtp_xact_t *s5c_xact,
+        sgw_sess_t *sess, ogs_gtp_message_t *gtp_message);
+void sgw_s5c_handle_create_bearer_request(ogs_gtp_xact_t *s5c_xact,
+        sgw_sess_t *sess, ogs_gtp_message_t *gtp_message);
+void sgw_s5c_handle_update_bearer_request(ogs_gtp_xact_t *s5c_xact, 
+        sgw_sess_t *sess, ogs_gtp_message_t *gtp_message);
+void sgw_s5c_handle_delete_bearer_request(ogs_gtp_xact_t *s5c_xact, 
+        sgw_sess_t *sess, ogs_gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }

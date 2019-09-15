@@ -20,14 +20,14 @@
 #ifndef SGSAP_CONV_H
 #define SGSAP_CONV_H
 
-#include "base/types.h"
+#include "ogs-common.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 int mme_name_build(char *buf, 
-        uint32_t mme_code, uint16_t mme_gid, plmn_id_t *plmn_id);
+        uint32_t mme_code, uint16_t mme_gid, ogs_plmn_id_t *plmn_id);
 
 #ifdef __cplusplus
 }

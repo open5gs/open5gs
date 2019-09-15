@@ -18,10 +18,9 @@
  */
 
 #include "ogs-crypt.h"
-#include "base/types.h"
+#include "ogs-common.h"
 
 #include "hss-auc.h"
-#include "milenage.h"
 
 #define FC_VALUE 0x10
 
@@ -57,7 +56,7 @@ void hss_auc_sqn(
     uint8_t ak[HSS_AK_LEN];
     uint8_t amf[2] = { 0, 0 };
     const uint8_t *rand = auts;
-    const uint8_t *conc_sqn_ms = auts + RAND_LEN;
+    const uint8_t *conc_sqn_ms = auts + OGS_RAND_LEN;
 
     milenage_f2345(opc, k, rand, NULL, NULL, NULL, NULL, ak);
     for (i = 0; i < HSS_SQN_LEN; i++)

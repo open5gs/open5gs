@@ -21,7 +21,7 @@
 #include "sgsap-conv.h"
 
 int mme_name_build(char *buf, 
-        uint32_t mme_code, uint16_t mme_gid, plmn_id_t *plmn_id)
+        uint32_t mme_code, uint16_t mme_gid, ogs_plmn_id_t *plmn_id)
 {
     int len;
     char temp[SGSAP_IE_MME_NAME_LEN];
@@ -30,10 +30,10 @@ int mme_name_build(char *buf,
 
     len = ogs_snprintf(temp, SGSAP_IE_MME_NAME_LEN,
         "mmec%02d.mmegi%04d.mme.epc.mnc%03d.mcc%03d.3gppnetwork.org",
-        mme_code, mme_gid, plmn_id_mnc(plmn_id), plmn_id_mcc(plmn_id));
+        mme_code, mme_gid, ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
     if (len < 0) {
         ogs_assert_if_reached();
     }
 
-    return fqdn_build(buf, temp, len);
+    return ogs_fqdn_build(buf, temp, len);
 }

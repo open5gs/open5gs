@@ -17,18 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-core.h"
-#include "core/abts.h"
-
-#include "mme/ogs-sctp.h"
-
-#include "fd/fd-lib.h"
-
-#include "app/application.h"
-#include "app/context.h"
-
-#include "app-init.h"
-#include "mme/mme-context.h"
+#include "test-app.h"
 
 abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
@@ -56,8 +45,7 @@ static void terminate(void)
 
     ogs_pkbuf_default_destroy();
 
-    base_finalize();
-    ogs_core_finalize();
+    ogs_core_terminate();
 }
 
 int main(int argc, char **argv)
@@ -95,14 +83,14 @@ int main(int argc, char **argv)
     }
 
     ogs_core_initialize();
-    base_initialize();
+    ogs_app_setup_log();
 
     ogs_pkbuf_default_init(&config);
     ogs_pkbuf_default_create(&config);
 
-    context_init();
+    ogs_config_init();
     mme_context_init();
-    ogs_sctp_init(context_self()->config.usrsctp.udp_port);
+    ogs_sctp_init(ogs_config()->usrsctp.udp_port);
 
     atexit(terminate);
 

@@ -17,10 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "gtp/gtp-node.h"
-#include "fd/fd-lib.h"
-#include "fd/gx/gx-message.h"
-
 #include "pgw-sm.h"
 #include "pgw-context.h"
 #include "pgw-event.h"
@@ -51,12 +47,12 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
     ogs_pkbuf_t *recvbuf = NULL;
     ogs_pkbuf_t *copybuf = NULL;
     uint16_t copybuf_len = 0;
-    gtp_xact_t *xact = NULL;
-    gtp_message_t *message = NULL;
+    ogs_gtp_xact_t *xact = NULL;
+    ogs_gtp_message_t *message = NULL;
     pgw_sess_t *sess = NULL;
     ogs_index_t sess_index;
     ogs_pkbuf_t *gxbuf = NULL;
-    gx_message_t *gx_message = NULL;
+    ogs_diam_gx_message_t *gx_message = NULL;
     uint32_t xact_index;
     ogs_pkbuf_t *gtpbuf = NULL;
 
@@ -78,26 +74,26 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         recvbuf = e->gtpbuf;
         ogs_assert(recvbuf);
 
-        copybuf_len = sizeof(gtp_message_t);
+        copybuf_len = sizeof(ogs_gtp_message_t);
         copybuf = ogs_pkbuf_alloc(NULL, copybuf_len);
         ogs_pkbuf_put(copybuf, copybuf_len);
         message = copybuf->data;
         ogs_assert(message);
 
-        rv = gtp_parse_msg(message, recvbuf);
+        rv = ogs_gtp_parse_msg(message, recvbuf);
         ogs_assert(rv == OGS_OK);
 
         if (message->h.teid == 0) {
-            gtp_node_t *sgw = pgw_sgw_add_by_message(message);
+            ogs_gtp_node_t *sgw = pgw_sgw_add_by_message(message);
             ogs_assert(sgw);
             sess = pgw_sess_add_by_message(message);
-            SETUP_GTP_NODE(sess, sgw);
+            OGS_SETUP_GTP_NODE(sess, sgw);
         } else {
             sess = pgw_sess_find_by_teid(message->h.teid);
         }
         ogs_assert(sess);
 
-        rv = gtp_xact_receive(sess->gnode, &message->h, &xact);
+        rv = ogs_gtp_xact_receive(sess->gnode, &message->h, &xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(recvbuf);
             ogs_pkbuf_free(copybuf);
@@ -105,29 +101,29 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         }
 
         switch(message->h.type) {
-        case GTP_CREATE_SESSION_REQUEST_TYPE:
+        case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
             pgw_s5c_handle_create_session_request(
                 sess, xact, &message->create_session_request);
             pgw_gx_send_ccr(sess, xact, copybuf,
-                GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+                OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
             break;
-        case GTP_DELETE_SESSION_REQUEST_TYPE:
+        case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
             pgw_s5c_handle_delete_session_request(
                 sess, xact, &message->delete_session_request);
             pgw_gx_send_ccr(sess, xact, copybuf,
-                GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
+                OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
             break;
-        case GTP_CREATE_BEARER_RESPONSE_TYPE:
+        case OGS_GTP_CREATE_BEARER_RESPONSE_TYPE:
             pgw_s5c_handle_create_bearer_response(
                 sess, xact, &message->create_bearer_response);
             ogs_pkbuf_free(copybuf);
             break;
-        case GTP_UPDATE_BEARER_RESPONSE_TYPE:
+        case OGS_GTP_UPDATE_BEARER_RESPONSE_TYPE:
             pgw_s5c_handle_update_bearer_response(
                 sess, xact, &message->update_bearer_response);
             ogs_pkbuf_free(copybuf);
             break;
-        case GTP_DELETE_BEARER_RESPONSE_TYPE:
+        case OGS_GTP_DELETE_BEARER_RESPONSE_TYPE:
             pgw_s5c_handle_delete_bearer_response(
                 sess, xact, &message->delete_bearer_response);
             ogs_pkbuf_free(copybuf);
@@ -153,10 +149,10 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         sess = pgw_sess_find(sess_index);
 
         switch(gx_message->cmd_code) {
-        case GX_CMD_CODE_CREDIT_CONTROL:
+        case OGS_DIAM_GX_CMD_CODE_CREDIT_CONTROL:
             xact_index = e->xact_index;
             ogs_assert(xact_index);
-            xact = gtp_xact_find(xact_index);
+            xact = ogs_gtp_xact_find(xact_index);
             ogs_assert(xact);
 
             gtpbuf = e->gtpbuf;
@@ -165,12 +161,12 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
 
             if (gx_message->result_code == ER_DIAMETER_SUCCESS) {
                 switch(gx_message->cc_request_type) {
-                case GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
+                case OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
                     pgw_gx_handle_cca_initial_request(
                             sess, gx_message, xact, 
                             &message->create_session_request);
                     break;
-                case GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
+                case OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
                     pgw_gx_handle_cca_termination_request(
                             sess, gx_message, xact,
                             &message->delete_session_request);
@@ -185,7 +181,7 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
 
             ogs_pkbuf_free(gtpbuf);
             break;
-        case GX_CMD_RE_AUTH:
+        case OGS_DIAM_GX_CMD_RE_AUTH:
             pgw_gx_handle_re_auth_request(sess, gx_message);
             break;
         default:
@@ -193,7 +189,7 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
             break;
         }
 
-        gx_message_free(gx_message);
+        ogs_diam_gx_message_free(gx_message);
         ogs_pkbuf_free(gxbuf);
         break;
     default:

@@ -17,10 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "gtp/gtp-types.h"
-#include "gtp/gtp-conv.h"
-#include "gtp/gtp-xact.h"
-
 #include "mme-event.h"
 #include "mme-sm.h"
 #include "mme-context.h"
@@ -35,15 +31,16 @@
 #include "mme-s11-handler.h"
 
 void mme_s11_handle_create_session_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_session_response_t *rsp)
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_create_session_response_t *rsp)
 {
     int rv;
-    gtp_f_teid_t *sgw_s11_teid = NULL;
-    gtp_f_teid_t *sgw_s1u_teid = NULL;
+    ogs_gtp_f_teid_t *sgw_s11_teid = NULL;
+    ogs_gtp_f_teid_t *sgw_s1u_teid = NULL;
 
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
-    pdn_t *pdn = NULL;
+    ogs_pdn_t *pdn = NULL;
     
     ogs_assert(xact);
     ogs_assert(mme_ue);
@@ -91,7 +88,8 @@ void mme_s11_handle_create_session_response(
 
     /* PCO */
     if (rsp->protocol_configuration_options.presence) {
-        TLV_STORE_DATA(&sess->pgw_pco, &rsp->protocol_configuration_options);
+        OGS_TLV_STORE_DATA(&sess->pgw_pco,
+                &rsp->protocol_configuration_options);
     }
 
     /* Data Plane(UL) : SGW-S1U */
@@ -103,10 +101,10 @@ void mme_s11_handle_create_session_response(
     ogs_debug("    ENB_S1U_TEID[%d] SGW_S1U_TEID[%d]",
         bearer->enb_s1u_teid, bearer->sgw_s1u_teid);
 
-    rv = gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
+    rv = ogs_gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
     ogs_assert(rv == OGS_OK);
 
-    rv = gtp_xact_commit(xact);
+    rv = ogs_gtp_xact_commit(xact);
     ogs_assert(rv == OGS_OK);
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
@@ -127,7 +125,8 @@ void mme_s11_handle_create_session_response(
 }
 
 void mme_s11_handle_modify_bearer_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_modify_bearer_response_t *rsp)
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_modify_bearer_response_t *rsp)
 {
     int rv;
     enb_ue_t *source_ue = NULL, *target_ue = NULL;
@@ -140,7 +139,7 @@ void mme_s11_handle_modify_bearer_response(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    rv = gtp_xact_commit(xact);
+    rv = ogs_gtp_xact_commit(xact);
     ogs_assert(rv == OGS_OK);
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,
@@ -165,14 +164,15 @@ void mme_s11_handle_modify_bearer_response(
 }
 
 void mme_s11_handle_delete_session_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_session_response_t *rsp)
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_delete_session_response_t *rsp)
 {
     int rv;
     mme_sess_t *sess = NULL;
 
     ogs_assert(mme_ue);
     ogs_assert(xact);
-    sess = GTP_XACT_RETRIEVE_SESSION(xact);
+    sess = OGS_GTP_XACT_RETRIEVE_SESSION(xact);
     ogs_assert(sess);
     ogs_assert(rsp);
 
@@ -184,7 +184,7 @@ void mme_s11_handle_delete_session_response(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    rv = gtp_xact_commit(xact);
+    rv = ogs_gtp_xact_commit(xact);
     ogs_assert(rv == OGS_OK);
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
@@ -265,14 +265,15 @@ cleanup:
 }
 
 void mme_s11_handle_create_bearer_request(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_create_bearer_request_t *req)
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_create_bearer_request_t *req)
 {
     int rv;
     mme_bearer_t *bearer = NULL, *default_bearer = NULL;
     mme_sess_t *sess = NULL;
 
-    gtp_f_teid_t *sgw_s1u_teid = NULL;
-    gtp_bearer_qos_t bearer_qos;
+    ogs_gtp_f_teid_t *sgw_s1u_teid = NULL;
+    ogs_gtp_bearer_qos_t bearer_qos;
 
     ogs_assert(xact);
     ogs_assert(mme_ue);
@@ -317,11 +318,11 @@ void mme_s11_handle_create_bearer_request(
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
-    rv = gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
+    rv = ogs_gtp_f_teid_to_ip(sgw_s1u_teid, &bearer->sgw_s1u_ip);
     ogs_assert(rv == OGS_OK);
 
     /* Bearer QoS */
-    ogs_assert(gtp_parse_bearer_qos(&bearer_qos,
+    ogs_assert(ogs_gtp_parse_bearer_qos(&bearer_qos,
         &req->bearer_contexts.bearer_level_qos) ==
         req->bearer_contexts.bearer_level_qos.len);
     bearer->qos.qci = bearer_qos.qci;
@@ -336,7 +337,7 @@ void mme_s11_handle_create_bearer_request(
     bearer->qos.gbr.uplink = bearer_qos.ul_gbr;
 
     /* Save Bearer TFT */
-    TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
+    OGS_TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
 
     /* Save Transaction. will be handled after EMM-attached */
     bearer->xact = xact;
@@ -356,11 +357,12 @@ void mme_s11_handle_create_bearer_request(
 }
 
 void mme_s11_handle_update_bearer_request(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_update_bearer_request_t *req)
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_update_bearer_request_t *req)
 {
     int rv;
     mme_bearer_t *bearer = NULL;
-    gtp_bearer_qos_t bearer_qos;
+    ogs_gtp_bearer_qos_t bearer_qos;
 
     ogs_assert(xact);
     ogs_assert(mme_ue);
@@ -392,7 +394,7 @@ void mme_s11_handle_update_bearer_request(
         MME_HAVE_ENB_S1U_PATH(bearer)) {
         if (req->bearer_contexts.bearer_level_qos.presence == 1) {
             /* Bearer QoS */
-            ogs_assert(gtp_parse_bearer_qos(&bearer_qos,
+            ogs_assert(ogs_gtp_parse_bearer_qos(&bearer_qos,
                 &req->bearer_contexts.bearer_level_qos) ==
                 req->bearer_contexts.bearer_level_qos.len);
             bearer->qos.qci = bearer_qos.qci;
@@ -409,7 +411,7 @@ void mme_s11_handle_update_bearer_request(
 
         if (req->bearer_contexts.tft.presence == 1) {
             /* Save Bearer TFT */
-            TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
+            OGS_TLV_STORE_DATA(&bearer->tft, &req->bearer_contexts.tft);
         }
 
         if (req->bearer_contexts.bearer_level_qos.presence == 1 ||
@@ -437,7 +439,8 @@ void mme_s11_handle_update_bearer_request(
 }
 
 void mme_s11_handle_delete_bearer_request(
-        gtp_xact_t *xact, mme_ue_t *mme_ue, gtp_delete_bearer_request_t *req)
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_delete_bearer_request_t *req)
 {
     int rv;
     mme_bearer_t *bearer = NULL;
@@ -484,8 +487,8 @@ void mme_s11_handle_delete_bearer_request(
 }
 
 void mme_s11_handle_release_access_bearers_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue,
-        gtp_release_access_bearers_response_t *rsp)
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_release_access_bearers_response_t *rsp)
 {
     int rv;
     enb_ue_t *enb_ue = NULL;
@@ -500,7 +503,7 @@ void mme_s11_handle_release_access_bearers_response(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    rv = gtp_xact_commit(xact);
+    rv = ogs_gtp_xact_commit(xact);
     ogs_assert(rv == OGS_OK);
 
     if (rsp->cause.presence == 0) {
@@ -522,11 +525,11 @@ void mme_s11_handle_release_access_bearers_response(
 }
 
 void mme_s11_handle_downlink_data_notification(
-        gtp_xact_t *xact, mme_ue_t *mme_ue,
-        gtp_downlink_data_notification_t *noti)
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_downlink_data_notification_t *noti)
 {
     int rv;
-    gtp_header_t h;
+    ogs_gtp_header_t h;
     ogs_pkbuf_t *s11buf = NULL;
 
     ogs_assert(xact);
@@ -538,31 +541,31 @@ void mme_s11_handle_downlink_data_notification(
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
     /* Build Downlink data notification ack */
-    memset(&h, 0, sizeof(gtp_header_t));
-    h.type = GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE;
+    memset(&h, 0, sizeof(ogs_gtp_header_t));
+    h.type = OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
     rv = mme_s11_build_downlink_data_notification_ack(&s11buf, h.type);
     ogs_assert(rv == OGS_OK);
 
-    rv = gtp_xact_update_tx(xact, &h, s11buf);
+    rv = ogs_gtp_xact_update_tx(xact, &h, s11buf);
     ogs_assert(rv == OGS_OK);
 
-    rv = gtp_xact_commit(xact);
+    rv = ogs_gtp_xact_commit(xact);
     ogs_assert(rv == OGS_OK);
 }
 
 void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue,
-        gtp_create_indirect_data_forwarding_tunnel_response_t *rsp)
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_create_indirect_data_forwarding_tunnel_response_t *rsp)
 {
     int rv;
     mme_bearer_t *bearer = NULL;
     enb_ue_t *source_ue = NULL;
     int i;
 
-    tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
-    gtp_f_teid_t *teid = NULL;
+    ogs_tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    ogs_gtp_f_teid_t *teid = NULL;
 
     ogs_assert(xact);
     ogs_assert(mme_ue);
@@ -579,10 +582,10 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    rv = gtp_xact_commit(xact);
+    rv = ogs_gtp_xact_commit(xact);
     ogs_assert(rv == OGS_OK);
 
-    gtp_bearers_in_create_indirect_tunnel_response(&bearers, rsp);
+    ogs_gtp_bearers_in_create_indirect_tunnel_response(&bearers, rsp);
 
     for (i = 0; bearers[i]->presence; i++) {
         if (bearers[i]->eps_bearer_id.presence == 0) {
@@ -599,7 +602,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             ogs_assert(teid);
 
             bearer->sgw_dl_teid = ntohl(teid->teid);
-            rv = gtp_f_teid_to_ip(teid, &bearer->sgw_dl_ip);
+            rv = ogs_gtp_f_teid_to_ip(teid, &bearer->sgw_dl_ip);
             ogs_assert(rv == OGS_OK);
         }
         if (bearers[i]->s2b_u_epdg_f_teid_5.presence) {
@@ -607,7 +610,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
             ogs_assert(teid);
 
             bearer->sgw_ul_teid = ntohl(teid->teid);
-            rv = gtp_f_teid_to_ip(teid, &bearer->sgw_ul_ip);
+            rv = ogs_gtp_f_teid_to_ip(teid, &bearer->sgw_ul_ip);
             ogs_assert(rv == OGS_OK);
         }
     }
@@ -617,8 +620,8 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 }
 
 void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
-        gtp_xact_t *xact, mme_ue_t *mme_ue,
-        gtp_delete_indirect_data_forwarding_tunnel_response_t *rsp)
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_delete_indirect_data_forwarding_tunnel_response_t *rsp)
 {
     int rv;
 
@@ -634,7 +637,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    rv = gtp_xact_commit(xact);
+    rv = ogs_gtp_xact_commit(xact);
     ogs_assert(rv == OGS_OK);
 
     rv = mme_ue_clear_indirect_tunnel(mme_ue);

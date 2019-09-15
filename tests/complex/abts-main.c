@@ -17,15 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-core.h"
-#include "core/abts.h"
-
-#include "fd/fd-lib.h"
-
-#include "app/application.h"
-#include "app/context.h"
-
-#include "app-init.h"
 #include "test-app.h"
 
 abts_suite *test_s1setup(abts_suite *suite);
@@ -52,16 +43,17 @@ static void terminate(void)
     epc_child_terminate();
     app_terminate();
 
-    base_finalize();
-    ogs_core_finalize();
+    test_app_final();
+    ogs_app_terminate();
 }
 
 static void initialize(char **argv)
 {
     int rv;
 
-    ogs_core_initialize();
-    base_initialize();
+    rv = ogs_app_initialize(NULL, argv);
+    ogs_assert(rv == OGS_OK);
+    test_app_init();
 
     rv = app_initialize(argv);
     ogs_assert(rv == OGS_OK);
@@ -73,7 +65,7 @@ int main(int argc, char **argv)
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_main(argc, argv, "sample-complex.conf", initialize);
+    test_app_run(argc, argv, "sample-complex.conf", initialize);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

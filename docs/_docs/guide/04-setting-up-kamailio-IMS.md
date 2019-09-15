@@ -1214,9 +1214,9 @@ $ cd ~/nextepc/install/etc/nextepc/freediameter
 ```
 
 - And, change all the configuration files in freediameter folder (hss.conf, mme.conf, pcrf.conf, pgw.conf) to have desired Domain Name
-- Copy make_certs.sh from ~/nextepc/support/freeDiameter/ to ~/nextepc/install/etc/nextepc/freediameter
+- Copy `make_certs.sh` from `~/nextepc/support/freeDiameter/` to `~/nextepc/install/etc/nextepc/freediameter`.
 - Modify Domain Names in make_certs.sh and Generate the certificates using make_certs.sh
-- Insert additional "ConnectPeer" entry in ./etc/nextepc/freediameter/pcrf.conf to connect to P-CSCF as show below
+- Insert additional "ConnectPeer" entry in `~/nextepc/install/etc/nextepc/freediameter/pcrf.conf` to connect to P-CSCF as show below
 
 ```
 ConnectPeer = "pcscf.mnc096.mcc262.3gppnetwork.org" { ConnectTo = "172.24.15.21"; Port=3871; No_TLS; NO_SCTP; };

@@ -20,7 +20,8 @@
 #ifndef HSS_CONTEXT_H
 #define HSS_CONTEXT_H
 
-#include "fd/s6a/s6a-message.h"
+#include "diameter/ogs-s6a.h"
+#include "ogs-app.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,17 +43,16 @@ typedef struct _hss_db_auth_info_t {
     uint8_t       opc[HSS_KEY_LEN];
     uint8_t       op[HSS_KEY_LEN];
     uint8_t       amf[HSS_AMF_LEN];
-    uint8_t       rand[RAND_LEN];
+    uint8_t       rand[OGS_RAND_LEN];
     uint64_t      sqn;
 } hss_db_auth_info_t;
 
-typedef struct fd_config_s fd_config_t;
 typedef struct _hss_context_t {
-    const char      *fd_conf_path;      /* HSS freeDiameter conf path */
-    fd_config_t     *fd_config;         /* HSS freeDiameter config */
+    const char          *diam_conf_path;      /* HSS Diameter conf path */
+    ogs_diam_config_t   *diam_config;         /* HSS Diameter config */
 
-    void            *subscriberCollection;
-    ogs_thread_mutex_t db_lock;
+    void                *subscriberCollection;
+    ogs_thread_mutex_t  db_lock;
 } hss_context_t;
 
 void hss_context_init(void);
@@ -69,7 +69,7 @@ int hss_db_update_rand_and_sqn(char *imsi_bcd, uint8_t *rand, uint64_t sqn);
 int hss_db_increment_sqn(char *imsi_bcd);
 
 int hss_db_subscription_data(
-    char *imsi_bcd, s6a_subscription_data_t *subscription_data);
+    char *imsi_bcd, ogs_diam_s6a_subscription_data_t *subscription_data);
 
 #ifdef __cplusplus
 }

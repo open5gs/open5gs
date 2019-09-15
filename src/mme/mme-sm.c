@@ -17,12 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "asn1c/s1ap-message.h"
-#include "nas/nas-message.h"
-#include "gtp/gtp-xact.h"
-#include "fd/fd-lib.h"
-
-#include "mme-event.h"
+#include "mme-context.h"
 #include "mme-sm.h"
 
 #include "s1ap-handler.h"
@@ -68,7 +63,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     ogs_pkbuf_t *pkbuf = NULL;
     int rc;
 
-    nas_message_t nas_message;
+    ogs_nas_message_t nas_message;
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
@@ -77,10 +72,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     mme_sess_t *sess = NULL;
 
     ogs_pkbuf_t *s6abuf = NULL;
-    s6a_message_t *s6a_message = NULL;
+    ogs_diam_s6a_message_t *s6a_message = NULL;
 
-    gtp_xact_t *xact = NULL;
-    gtp_message_t gtp_message;
+    ogs_gtp_xact_t *xact = NULL;
+    ogs_gtp_message_t gtp_message;
 
     mme_vlr_t *vlr = NULL;
 
@@ -195,7 +190,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(enb);
         ogs_assert(OGS_FSM_STATE(&enb->sm));
 
-        rc = s1ap_decode_pdu(&s1ap_message, pkbuf);
+        rc = ogs_s1ap_decode(&s1ap_message, pkbuf);
         if (rc == OGS_OK) {
             e->enb = enb;
             e->s1ap_message = &s1ap_message;
@@ -208,7 +203,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert(rv == OGS_OK);
         }
 
-        s1ap_free_pdu(&s1ap_message);
+        ogs_s1ap_free(&s1ap_message);
         ogs_pkbuf_free(pkbuf);
         break;
 
@@ -227,7 +222,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(enb_ue);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
-        ogs_assert(nas_emm_decode(&nas_message, pkbuf) == OGS_OK);
+        ogs_assert(ogs_nas_emm_decode(&nas_message, pkbuf) == OGS_OK);
 
         mme_ue = enb_ue->mme_ue;
         if (!mme_ue) {
@@ -293,7 +288,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
-        ogs_assert(nas_esm_decode(&nas_message, pkbuf) == OGS_OK);
+        ogs_assert(ogs_nas_esm_decode(&nas_message, pkbuf) == OGS_OK);
 
         bearer = mme_bearer_find_or_add_by_message(mme_ue, &nas_message);
         if (!bearer) {
@@ -377,10 +372,10 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         switch (s6a_message->cmd_code) {
-        case S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
+        case OGS_DIAM_S6A_CMD_CODE_AUTHENTICATION_INFORMATION:
             mme_s6a_handle_aia(mme_ue, &s6a_message->aia_message);
             break;
-        case S6A_CMD_CODE_UPDATE_LOCATION:
+        case OGS_DIAM_S6A_CMD_CODE_UPDATE_LOCATION:
             mme_s6a_handle_ula(mme_ue, &s6a_message->ula_message);
 
             if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
@@ -420,48 +415,48 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     case MME_EVT_S11_MESSAGE:
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
-        rv = gtp_parse_msg(&gtp_message, pkbuf);
+        rv = ogs_gtp_parse_msg(&gtp_message, pkbuf);
         ogs_assert(rv == OGS_OK);
 
         mme_ue = mme_ue_find_by_teid(gtp_message.h.teid);
         ogs_assert(mme_ue);
 
-        rv = gtp_xact_receive(mme_ue->gnode, &gtp_message.h, &xact);
+        rv = ogs_gtp_xact_receive(mme_ue->gnode, &gtp_message.h, &xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(pkbuf);
             break;
         }
 
         switch (gtp_message.h.type) {
-        case GTP_CREATE_SESSION_RESPONSE_TYPE:
+        case OGS_GTP_CREATE_SESSION_RESPONSE_TYPE:
             mme_s11_handle_create_session_response(
                 xact, mme_ue, &gtp_message.create_session_response);
             break;
-        case GTP_MODIFY_BEARER_RESPONSE_TYPE:
+        case OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE:
             mme_s11_handle_modify_bearer_response(
                 xact, mme_ue, &gtp_message.modify_bearer_response);
             break;
-        case GTP_DELETE_SESSION_RESPONSE_TYPE:
+        case OGS_GTP_DELETE_SESSION_RESPONSE_TYPE:
             mme_s11_handle_delete_session_response(
                 xact, mme_ue, &gtp_message.delete_session_response);
             break;
-        case GTP_CREATE_BEARER_REQUEST_TYPE:
+        case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
             mme_s11_handle_create_bearer_request(
                 xact, mme_ue, &gtp_message.create_bearer_request);
             break;
-        case GTP_UPDATE_BEARER_REQUEST_TYPE:
+        case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
             mme_s11_handle_update_bearer_request(
                 xact, mme_ue, &gtp_message.update_bearer_request);
             break;
-        case GTP_DELETE_BEARER_REQUEST_TYPE:
+        case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
             mme_s11_handle_delete_bearer_request(
                 xact, mme_ue, &gtp_message.delete_bearer_request);
             break;
-        case GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+        case OGS_GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
             mme_s11_handle_release_access_bearers_response(
                 xact, mme_ue, &gtp_message.release_access_bearers_response);
             break;
-        case GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+        case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
             mme_s11_handle_downlink_data_notification(
                 xact, mme_ue, &gtp_message.downlink_data_notification);
 
@@ -482,12 +477,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             if (ECM_IDLE(mme_ue))
                 s1ap_send_paging(mme_ue, S1AP_CNDomain_ps);
             break;
-        case GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
                 xact, mme_ue,
                 &gtp_message.create_indirect_data_forwarding_tunnel_response);
             break;
-        case GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
             mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
                 xact, mme_ue,
                 &gtp_message.delete_indirect_data_forwarding_tunnel_response);

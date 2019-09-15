@@ -31,12 +31,12 @@ ogs_pkbuf_t *sgsap_build_tmsi_reallocation_complete(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_mo_csfb_indication(mme_ue_t *mme_ue);
 ogs_pkbuf_t *sgsap_build_paging_reject(
-    nas_mobile_identity_imsi_t *nas_mobile_identity_imsi,
+    ogs_nas_mobile_identity_imsi_t *nas_mobile_identity_imsi,
     int nas_mobile_identity_imsi_len, uint8_t sgs_cause);
 ogs_pkbuf_t *sgsap_build_service_request(mme_ue_t *mme_ue, uint8_t emm_mode);
 ogs_pkbuf_t *sgsap_build_reset_ack(mme_vlr_t *vlr);
 ogs_pkbuf_t *sgsap_build_uplink_unidata(
-        mme_ue_t *mme_ue, nas_message_container_t *nas_message_container);
+        mme_ue_t *mme_ue, ogs_nas_message_container_t *nas_message_container);
 ogs_pkbuf_t *sgsap_build_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause);
 
 #ifdef __cplusplus

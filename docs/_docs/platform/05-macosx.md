@@ -83,43 +83,12 @@ Check whether the compilation is correct.
 ➜  nextepc git:(master) ✗ sudo make check
 ```
 
+**Tip:** You can also check the result of `make check` with a tool that captures packets. If you are running `wireshark`, select the `loopback` interface and set FILTER to `s1ap || gtpv2 || diameter || gtp`.  You can see the virtually created packets. [[testcomplex.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testcomplex.pcapng)
+{: .notice--info}
+
 You need to perform **the installation process**.
 ```bash
 ➜  nextepc git:(master) ✗ make install
-```
-
-Check whether the installation is correct.
-
-**Note:** This should require *sudo* due to access `/dev/tun0`.
-{: .notice--danger}
-
-```bash
-acetcom@nextepc:~/nextepc$ sudo ./test/testcomplex
-s1setup_test        : SUCCESS
-attach_test         : SUCCESS
-volte_test          : SUCCESS
-handover_test       : SUCCESS
-All tests passed.
-```
-
-**Tip:** You can also check the result of `./test/testcomplex` with a tool that captures packets. If you are running `wireshark`, select the `loopback` interface and set FILTER to `s1ap || gtpv2 || diameter || gtp`.  You can see the virtually created packets. [[testcomplex.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/testcomplex.pcapng)
-{: .notice--info}
-
-For developers, it provides `nextepc-epcd` daemon that includes both *MME*, *SGW*, *PGW*, *HSS*, and *PCRF*.
-
-**Note:** This should require *sudo* due to access `/dev/tun0`.
-{: .notice--danger}
-
-```bash
-acetcom@nextepc:~/nextepc$ sudo ./nextepc-epcd
-04/06 23:13:03.367: [core] INFO: NextEPC daemon start (main.c:169)
-
-PID[6404]: '/home/acetcom/Documents/git/open5gs/nextepc/install/var/run/nextepc-epcd/pid'
-File Logging: '/home/acetcom/Documents/git/open5gs/nextepc/install/var/log/nextepc/nextepc.log'
-MongoDB URI: 'mongodb://localhost/nextepc'
-Configuration: '/home/acetcom/Documents/git/open5gs/nextepc/install/etc/nextepc/nextepc.conf'
-04/06 23:13:03.369: [core] INFO: PCRF try to initialize (epc.c:37)
-...
 ```
 
 ### Building WebUI of NextEPC

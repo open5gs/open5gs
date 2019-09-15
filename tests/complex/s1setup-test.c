@@ -1,7 +1,21 @@
-#include "core/abts.h"
-
-#include "mme/s1ap-build.h"
-#include "mme/s1ap-conv.h"
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 #include "test-packet.h"
 
@@ -13,7 +27,7 @@ static void s1setup_test1(abts_case *tc, void *data)
     ogs_socknode_t *node[NUM_OF_TEST_DUPLICATED_ENB];
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf = NULL;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
 
     for (i = 0; i < NUM_OF_TEST_DUPLICATED_ENB; i++) {
@@ -32,10 +46,10 @@ static void s1setup_test1(abts_case *tc, void *data)
         recvbuf = testenb_s1ap_read(node[i]);
         ABTS_PTR_NOTNULL(tc, recvbuf);
 
-        rv = s1ap_decode_pdu(&message, recvbuf);
+        rv = ogs_s1ap_decode(&message, recvbuf);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-        s1ap_free_pdu(&message);
+        ogs_s1ap_free(&message);
         ogs_pkbuf_free(recvbuf);
     }
 
@@ -54,7 +68,7 @@ static void s1setup_test2(abts_case *tc, void *data)
     ogs_socknode_t *node[NUM_OF_TEST_ENB];
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
 
     for (i = 0; i < NUM_OF_TEST_ENB; i++) {
@@ -73,10 +87,10 @@ static void s1setup_test2(abts_case *tc, void *data)
         recvbuf = testenb_s1ap_read(node[i]);
         ABTS_PTR_NOTNULL(tc, recvbuf);
 
-        rv = s1ap_decode_pdu(&message, recvbuf);
+        rv = ogs_s1ap_decode(&message, recvbuf);
         ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-        s1ap_free_pdu(&message);
+        ogs_s1ap_free(&message);
         ogs_pkbuf_free(recvbuf);
     }
 

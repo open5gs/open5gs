@@ -17,16 +17,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <mongoc.h>
-#include <yaml.h>
-
-#include "fd/fd-lib.h"
-
-#include "app/context.h"
+#include "ogs-dbi.h"
 #include "pcrf-context.h"
 
 static pcrf_context_t self;
-static fd_config_t g_fd_conf;
+static ogs_diam_config_t g_diam_conf;
 
 int __pcrf_log_domain;
 
@@ -42,12 +37,14 @@ void pcrf_context_init(void)
     ogs_assert(context_initialized == 0);
 
     /* Initial FreeDiameter Config */
-    memset(&g_fd_conf, 0, sizeof(fd_config_t));
+    memset(&g_diam_conf, 0, sizeof(ogs_diam_config_t));
 
     /* Initialize PCRF context */
     memset(&self, 0, sizeof(pcrf_context_t));
-    self.fd_config = &g_fd_conf;
+    self.diam_config = &g_diam_conf;
 
+    ogs_log_install_domain(&__ogs_diam_domain, "diam", ogs_core()->log.level);
+    ogs_log_install_domain(&__ogs_dbi_domain, "dbi", ogs_core()->log.level);
     ogs_log_install_domain(&__pcrf_log_domain, "pcrf", ogs_core()->log.level);
 
     ogs_thread_mutex_init(&self.db_lock);
@@ -72,20 +69,20 @@ void pcrf_context_final(void)
 
 static int pcrf_context_prepare()
 {
-    self.fd_config->cnf_port = DIAMETER_PORT;
-    self.fd_config->cnf_port_tls = DIAMETER_SECURE_PORT;
+    self.diam_config->cnf_port = DIAMETER_PORT;
+    self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
     
     return OGS_OK;
 }
 
 static int pcrf_context_validation()
 {
-    if (self.fd_conf_path == NULL &&
-        (self.fd_config->cnf_diamid == NULL ||
-        self.fd_config->cnf_diamrlm == NULL ||
-        self.fd_config->cnf_addr == NULL)) {
+    if (self.diam_conf_path == NULL &&
+        (self.diam_config->cnf_diamid == NULL ||
+        self.diam_config->cnf_diamrlm == NULL ||
+        self.diam_config->cnf_addr == NULL)) {
         ogs_error("No pcrf.freeDiameter in '%s'",
-                context_self()->config.file);
+                ogs_config()->file);
         return OGS_ERROR;
     }
 
@@ -95,12 +92,10 @@ static int pcrf_context_validation()
 int pcrf_context_parse_config()
 {
     int rv;
-    config_t *config = &context_self()->config;
     yaml_document_t *document = NULL;
     ogs_yaml_iter_t root_iter;
 
-    ogs_assert(config);
-    document = config->document;
+    document = ogs_config()->document;
     ogs_assert(document);
 
     rv = pcrf_context_prepare();
@@ -121,7 +116,7 @@ int pcrf_context_parse_config()
                         yaml_document_get_node(document, pcrf_iter.pair->value);
                     ogs_assert(node);
                     if (node->type == YAML_SCALAR_NODE) {
-                        self.fd_conf_path = ogs_yaml_iter_value(&pcrf_iter);
+                        self.diam_conf_path = ogs_yaml_iter_value(&pcrf_iter);
                     } else if (node->type == YAML_MAPPING_NODE) {
                         ogs_yaml_iter_t fd_iter;
                         ogs_yaml_iter_recurse(&pcrf_iter, &fd_iter);
@@ -130,19 +125,19 @@ int pcrf_context_parse_config()
                             const char *fd_key = ogs_yaml_iter_key(&fd_iter);
                             ogs_assert(fd_key);
                             if (!strcmp(fd_key, "identity")) {
-                                self.fd_config->cnf_diamid = 
+                                self.diam_config->cnf_diamid = 
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "realm")) {
-                                self.fd_config->cnf_diamrlm = 
+                                self.diam_config->cnf_diamrlm = 
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
-                                if (v) self.fd_config->cnf_port = atoi(v);
+                                if (v) self.diam_config->cnf_port = atoi(v);
                             } else if (!strcmp(fd_key, "sec_port")) {
                                 const char *v = ogs_yaml_iter_value(&fd_iter);
-                                if (v) self.fd_config->cnf_port_tls = atoi(v);
+                                if (v) self.diam_config->cnf_port_tls = atoi(v);
                             } else if (!strcmp(fd_key, "listen_on")) {
-                                self.fd_config->cnf_addr = 
+                                self.diam_config->cnf_addr = 
                                     ogs_yaml_iter_value(&fd_iter);
                             } else if (!strcmp(fd_key, "load_extension")) {
                                 ogs_yaml_iter_t ext_array, ext_iter;
@@ -184,13 +179,13 @@ int pcrf_context_parse_config()
                                     }
 
                                     if (module) {
-                                        self.fd_config->
-                                            ext[self.fd_config->num_of_ext].
+                                        self.diam_config->
+                                            ext[self.diam_config->num_of_ext].
                                                 module = module;
-                                        self.fd_config->
-                                            ext[self.fd_config->num_of_ext].
+                                        self.diam_config->
+                                            ext[self.diam_config->num_of_ext].
                                                 conf = conf;
-                                        self.fd_config->num_of_ext++;
+                                        self.diam_config->num_of_ext++;
                                     }
                                 } while(ogs_yaml_iter_type(&ext_array) ==
                                         YAML_SEQUENCE_NODE);
@@ -237,16 +232,16 @@ int pcrf_context_parse_config()
                                     }
 
                                     if (identity && addr) {
-                                        self.fd_config->
-                                            conn[self.fd_config->num_of_conn].
+                                        self.diam_config->
+                                            conn[self.diam_config->num_of_conn].
                                                 identity = identity;
-                                        self.fd_config->
-                                            conn[self.fd_config->num_of_conn].
+                                        self.diam_config->
+                                            conn[self.diam_config->num_of_conn].
                                                 addr = addr;
-                                        self.fd_config->
-                                            conn[self.fd_config->num_of_conn].
+                                        self.diam_config->
+                                            conn[self.diam_config->num_of_conn].
                                                 port = port;
-                                        self.fd_config->num_of_conn++;
+                                        self.diam_config->num_of_conn++;
                                     }
                                 } while (ogs_yaml_iter_type(&conn_array) ==
                                         YAML_SEQUENCE_NODE);
@@ -268,10 +263,14 @@ int pcrf_context_parse_config()
 
 int pcrf_db_init()
 {
-    if (context_self()->db.client && context_self()->db.name) {
+    int rv;
+
+    rv = ogs_mongoc_init(ogs_config()->db_uri);
+    if (rv != OGS_OK) return rv;
+
+    if (ogs_mongoc()->client && ogs_mongoc()->name) {
         self.subscriberCollection = mongoc_client_get_collection(
-            context_self()->db.client, 
-            context_self()->db.name, "subscribers");
+            ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
         ogs_assert(self.subscriberCollection);
     }
 
@@ -284,10 +283,13 @@ int pcrf_db_final()
         mongoc_collection_destroy(self.subscriberCollection);
     }
 
+    ogs_mongoc_final();
+
     return OGS_OK;
 }
 
-int pcrf_db_qos_data(char *imsi_bcd, char *apn, gx_message_t *gx_message)
+int pcrf_db_qos_data(char *imsi_bcd, char *apn,
+        ogs_diam_gx_message_t *gx_message)
 {
     int rv = OGS_OK;
     mongoc_cursor_t *cursor = NULL;
@@ -358,7 +360,7 @@ int pcrf_db_qos_data(char *imsi_bcd, char *apn, gx_message_t *gx_message)
             bson_iter_recurse(&iter, &child1_iter);
             while (bson_iter_next(&child1_iter)) {
                 const char *child1_key = bson_iter_key(&child1_iter);
-                pdn_t *pdn = NULL;
+                ogs_pdn_t *pdn = NULL;
 
                 ogs_assert(child1_key);
                 pdn_index = atoi(child1_key);
@@ -372,7 +374,7 @@ int pcrf_db_qos_data(char *imsi_bcd, char *apn, gx_message_t *gx_message)
                         BSON_ITER_HOLDS_UTF8(&child2_iter)) {
                         utf8 = bson_iter_utf8(&child2_iter, &length);
                         ogs_cpystrn(pdn->apn, utf8,
-                            ogs_min(length, MAX_APN_LEN)+1);
+                            ogs_min(length, OGS_MAX_APN_LEN)+1);
                     } else if (!strcmp(child2_key, "type") &&
                         BSON_ITER_HOLDS_INT32(&child2_iter)) {
                         pdn->pdn_type = bson_iter_int32(&child2_iter);
@@ -433,11 +435,11 @@ int pcrf_db_qos_data(char *imsi_bcd, char *apn, gx_message_t *gx_message)
                         while (bson_iter_next(&child3_iter)) {
                             const char *child3_key =
                                 bson_iter_key(&child3_iter);
-                            pcc_rule_t *pcc_rule = NULL;
+                            ogs_pcc_rule_t *pcc_rule = NULL;
 
                             ogs_assert(child3_key);
                             pcc_rule_index = atoi(child3_key);
-                            ogs_assert(pcc_rule_index < MAX_NUM_OF_PCC_RULE);
+                            ogs_assert(pcc_rule_index < OGS_MAX_NUM_OF_PCC_RULE);
 
                             pcc_rule = &gx_message->pcc_rule[pcc_rule_index];
                             bson_iter_recurse(&child3_iter, &child4_iter);
@@ -553,12 +555,12 @@ int pcrf_db_qos_data(char *imsi_bcd, char *apn, gx_message_t *gx_message)
                                     while (bson_iter_next(&child5_iter)) {
                                         const char *child5_key =
                                             bson_iter_key(&child5_iter);
-                                        flow_t *flow = NULL;
+                                        ogs_flow_t *flow = NULL;
 
                                         ogs_assert(child5_key);
                                         flow_index = atoi(child5_key);
                                         ogs_assert(
-                                            flow_index < MAX_NUM_OF_FLOW);
+                                            flow_index < OGS_MAX_NUM_OF_FLOW);
 
                                         flow = &pcc_rule->flow[flow_index];
                                         bson_iter_recurse(
@@ -597,12 +599,12 @@ int pcrf_db_qos_data(char *imsi_bcd, char *apn, gx_message_t *gx_message)
                                 ogs_free(pcc_rule->name);
                             }
                             pcc_rule->name = ogs_calloc(
-                                    1, MAX_PCC_RULE_NAME_LEN);
+                                    1, OGS_MAX_PCC_RULE_NAME_LEN);
                             ogs_assert(pcc_rule->name);
-                            snprintf(pcc_rule->name, MAX_PCC_RULE_NAME_LEN,
+                            snprintf(pcc_rule->name, OGS_MAX_PCC_RULE_NAME_LEN,
                                     "%s%d", apn, pcc_rule_index+1);
                             pcc_rule->precedence = pcc_rule_index+1;
-                            pcc_rule->flow_status = FLOW_STATUS_ENABLED;
+                            pcc_rule->flow_status = OGS_FLOW_STATUS_ENABLED;
                             pcc_rule_index++;
                         }
                         gx_message->num_of_pcc_rule = pcc_rule_index;
@@ -628,7 +630,7 @@ int pcrf_sess_set_ipv4(const void *key, uint8_t *sid)
 
     ogs_thread_mutex_lock(&self.hash_lock);
 
-    ogs_hash_set(self.ip_hash, key, IPV4_LEN, sid);
+    ogs_hash_set(self.ip_hash, key, OGS_IPV4_LEN, sid);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
 
@@ -640,7 +642,7 @@ int pcrf_sess_set_ipv6(const void *key, uint8_t *sid)
 
     ogs_thread_mutex_lock(&self.hash_lock);
 
-    ogs_hash_set(self.ip_hash, key, IPV6_LEN, sid);
+    ogs_hash_set(self.ip_hash, key, OGS_IPV6_LEN, sid);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
 
@@ -654,7 +656,7 @@ uint8_t *pcrf_sess_find_by_ipv4(const void *key)
 
     ogs_thread_mutex_lock(&self.hash_lock);
 
-    sid = (uint8_t *)ogs_hash_get(self.ip_hash, key, IPV4_LEN);
+    sid = (uint8_t *)ogs_hash_get(self.ip_hash, key, OGS_IPV4_LEN);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
     
@@ -668,7 +670,7 @@ uint8_t *pcrf_sess_find_by_ipv6(const void *key)
 
     ogs_thread_mutex_lock(&self.hash_lock);
 
-    sid = (uint8_t *)ogs_hash_get(self.ip_hash, key, IPV6_LEN);
+    sid = (uint8_t *)ogs_hash_get(self.ip_hash, key, OGS_IPV6_LEN);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
 

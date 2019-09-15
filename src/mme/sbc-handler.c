@@ -36,7 +36,7 @@ void sbc_handle_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
             for (i = 0, flag = 0; i < enb->num_of_supported_ta_list; i++) {
                 for (j = 0; j < sbc_pws->no_of_tai; j++) {
                     if (!memcmp(&enb->supported_ta_list[i],
-                                &sbc_pws->tai[j], sizeof(tai_t)))
+                                &sbc_pws->tai[j], sizeof(ogs_tai_t)))
                         flag = 1;
 
                     if (flag) break;
@@ -74,7 +74,7 @@ void sbc_handle_stop_warning_request(sbc_pws_data_t *sbc_pws)
             for (i = 0, flag = 0; i < enb->num_of_supported_ta_list; i++) {
                 for (j = 0; j < sbc_pws->no_of_tai; j++) {
                     if (!memcmp(&enb->supported_ta_list[i],
-                                &sbc_pws->tai[j], sizeof(tai_t)))
+                                &sbc_pws->tai[j], sizeof(ogs_tai_t)))
                         flag = 1;
 
                     if (flag) break;

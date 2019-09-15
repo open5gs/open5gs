@@ -20,11 +20,8 @@
 #ifndef SGW_CONTEXT_H
 #define SGW_CONTEXT_H
 
-#include "ogs-core.h"
-
-#include "base/types.h"
-#include "gtp/gtp-types.h"
-#include "gtp/gtp-message.h"
+#include "ogs-gtp.h"
+#include "ogs-app.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,7 +33,6 @@ extern int __sgw_log_domain;
 #define OGS_LOG_DOMAIN __sgw_log_domain
 
 typedef struct sgw_tunnel_s sgw_tunnel_t;
-typedef struct gtp_node_s gtp_node_t;
 
 typedef struct sgw_context_s {
     uint32_t        gtpc_port;      /* Default GTPC port */
@@ -75,9 +71,9 @@ typedef struct sgw_ue_s {
     uint32_t        mme_s11_teid;   /* MME-S11-TEID is received from MME */
 
     /* UE identity */
-    uint8_t         imsi[MAX_IMSI_LEN];
+    uint8_t         imsi[OGS_MAX_IMSI_LEN];
     int             imsi_len;
-    char            imsi_bcd[MAX_IMSI_BCD_LEN+1];
+    char            imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
 #define SGW_S1U_INACTIVE  0x0001
 #define SGW_DL_NOTI_SENT  0x0002
@@ -90,7 +86,7 @@ typedef struct sgw_ue_s {
 
     ogs_list_t      sess_list;
 
-    gtp_node_t      *gnode;
+    ogs_gtp_node_t  *gnode;
 } sgw_ue_t;
 
 typedef struct sgw_sess_s {
@@ -107,12 +103,12 @@ typedef struct sgw_sess_s {
     uint32_t        pgw_s5c_teid;   /* PGW-S5C-TEID is received from PGW */
 
     /* APN Configuration */
-    pdn_t           pdn;
+    ogs_pdn_t       pdn;
 
     ogs_list_t      bearer_list;
 
     /* Related Context */
-    gtp_node_t      *gnode;
+    ogs_gtp_node_t  *gnode;
     sgw_ue_t        *sgw_ue;
 } sgw_sess_t;
 
@@ -122,8 +118,8 @@ typedef struct sgw_bearer_s {
     uint8_t         ebi;
 
     /* User-Lication-Info */
-    tai_t           tai;
-    e_cgi_t         e_cgi;
+    ogs_tai_t       tai;
+    ogs_e_cgi_t     e_cgi;
 
     /* Pkts which will be buffered in case of UE-IDLE */
     uint32_t        num_buffered_pkt;
@@ -146,7 +142,7 @@ typedef struct sgw_tunnel_s {
 
     /* Related Context */
     sgw_bearer_t    *bearer;
-    gtp_node_t      *gnode;
+    ogs_gtp_node_t  *gnode;
 } sgw_tunnel_t;
 
 void sgw_context_init(void);
@@ -155,8 +151,8 @@ sgw_context_t *sgw_self(void);
 
 int sgw_context_parse_config(void);
 
-gtp_node_t *sgw_mme_add_by_message(gtp_message_t *message);
-sgw_ue_t *sgw_ue_add_by_message(gtp_message_t *message);
+ogs_gtp_node_t *sgw_mme_add_by_message(ogs_gtp_message_t *message);
+sgw_ue_t *sgw_ue_add_by_message(ogs_gtp_message_t *message);
 sgw_ue_t *sgw_ue_find_by_teid(uint32_t teid);
 
 sgw_ue_t *sgw_ue_add(uint8_t *imsi, int imsi_len);

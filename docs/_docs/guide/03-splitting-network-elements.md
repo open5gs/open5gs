@@ -30,24 +30,15 @@ In it's simplest from the P-GW has 3 interfaces:
 Edit ```/etc/nextepc/pgw.conf```and change the address to IP of the server running the P-GW for the listener on GTP-C and GTP-U interfaces.
 
 ```
-
 pgw:
-
     freeDiameter: pgw.conf
-      
     gtpc: 
-    
       addr:
-      
         - 10.0.1.121
-        
      gtpu: 
-    
       addr:
-      
         - 10.0.1.121
-        
- ```
+```
 
 
 
@@ -80,16 +71,11 @@ Edit ```/etc/nextepc/sgw.conf```and change the address to IP of the server runni
 
 ```
 sgw:
-
     freeDiameter: pgw.conf
-      
     gtpc: 
-    
       addr:
-      
         - 10.0.1.122
-        
- ```
+```
  
  Restart NextEPC SGW Daemon:
 
@@ -155,18 +141,12 @@ In it's simplest form the MME has 3 interfaces:
 Edit ```/etc/nextepc/mme.conf```, filling the IP address of the S-GW and P-GW servers.
 ```
 sgw:
-
     gtpc:
-    
       addr: 10.0.1.122
 
-
 pgw:
-
     gtpc:
-    
       addr:
-      
         - 10.0.1.121
 ```
 

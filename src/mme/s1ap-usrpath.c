@@ -19,7 +19,6 @@
 
 #include "ogs-sctp.h"
 
-#include "app/context.h"
 #include "mme-event.h"
 #include "s1ap-path.h"
 
@@ -34,7 +33,7 @@ ogs_sock_t *s1ap_server(ogs_socknode_t *node)
 
     ogs_assert(node);
 
-    ogs_socknode_sctp_option(node, &context_self()->config.sockopt);
+    ogs_socknode_sctp_option(node, &ogs_config()->sockopt);
     ogs_socknode_nodelay(node, true);
     ogs_socknode_set_poll(node, mme_self()->pollset,
             OGS_POLLIN, usrsctp_recv_handler, node);
@@ -149,7 +148,7 @@ static int usrsctp_recv_handler(struct socket *sock,
             ogs_pkbuf_t *pkbuf;
             ogs_sockaddr_t *addr = NULL;
 
-            pkbuf = ogs_pkbuf_alloc(NULL, MAX_SDU_LEN);
+            pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
             ogs_pkbuf_put_data(pkbuf, data, datalen);
 
             addr = ogs_usrsctp_remote_addr(&store);

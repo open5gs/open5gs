@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in.
 
+SUBDIRS = ipfw
+
 noinst_LTLIBRARIES = libpgw.la
 
 libpgw_la_SOURCES = \
@@ -15,24 +17,24 @@ libpgw_la_SOURCES = \
 	$(NULL)
 
 libpgw_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/fd/libfd.la \
-    $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/lib/ipfw/libipfw.la \
-	$(top_srcdir)/src/app/libapp.la \
+	$(top_srcdir)/lib/diameter/libogsdiameter.la \
+    $(top_srcdir)/lib/gtp/libogsgtp.la \
+	$(top_srcdir)/lib/app/libogsapp.la \
+    $(top_srcdir)/src/pgw/ipfw/libipfw.la \
 	$(NULL)
 
 libpgw_la_LIBADD = \
-    $(top_srcdir)/lib/fd/libfd.la \
-    $(top_srcdir)/lib/gtp/libgtp.la \
-    $(top_srcdir)/lib/ipfw/libipfw.la \
-	$(top_srcdir)/src/app/libapp.la \
+	$(top_srcdir)/lib/diameter/libogsdiameter.la \
+    $(top_srcdir)/lib/gtp/libogsgtp.la \
+	$(top_srcdir)/lib/app/libogsapp.la \
+    $(top_srcdir)/src/pgw/ipfw/libipfw.la \
 	$(NULL)
 
 AM_CPPFLAGS = \
 	@OGSCORE_CFLAGS@ \
     -I$(top_srcdir)/lib \
 	-I$(top_srcdir)/src \
-	-I$(top_srcdir)/lib/@FREEDIAMETER_DIR@/include \
+	-I$(top_srcdir)/lib/freeDiameter/include \
 	@MONGOC_CFLAGS@ \
 	$(NULL)
 

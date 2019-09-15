@@ -20,7 +20,7 @@
 #ifndef PGW_S5C_BUILD_H
 #define PGW_S5C_BUILD_H
 
-#include "gtp/gtp-message.h"
+#include "ogs-gtp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,10 +28,12 @@ extern "C" {
 
 int pgw_s5c_build_create_session_response(
         ogs_pkbuf_t **pkbuf, uint8_t type, pgw_sess_t *sess,
-        gx_message_t *gx_message, gtp_create_session_request_t *req);
+        ogs_diam_gx_message_t *gx_message,
+        ogs_gtp_create_session_request_t *req);
 int pgw_s5c_build_delete_session_response(
         ogs_pkbuf_t **pkbuf, uint8_t type,
-        gx_message_t *gx_message, gtp_delete_session_request_t *req);
+        ogs_diam_gx_message_t *gx_message,
+        ogs_gtp_delete_session_request_t *req);
 
 int pgw_s5c_build_create_bearer_request(
         ogs_pkbuf_t **pkbuf, uint8_t type, pgw_bearer_t *bearer);

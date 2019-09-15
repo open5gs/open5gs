@@ -20,15 +20,11 @@
 #define _DEFAULT_SOURCE 1
 #define _BSD_SOURCE     1
 
-#include "base/base.h"
-
-#if HAVE_NETINET_IP_H
 #include <netinet/ip.h>
-#endif
-
-#if HAVE_NETINET_IP6_H
 #include <netinet/ip6.h>
-#endif
+#include <netinet/tcp.h>
+#include <netinet/udp.h>
+#include <arpa/inet.h>
 
 #include "pgw-context.h"
 
@@ -128,9 +124,9 @@ int pgw_compile_packet_filter(pgw_rule_t *pgw_rule, char *description)
         case O_IP6_SRC_MASK:
             a = ((ipfw_insn_u32 *)cmd)->d;
             pgw_rule->ipv6_local = 1;
-            memcpy(pgw_rule->ip.local.addr, a, IPV6_LEN);
+            memcpy(pgw_rule->ip.local.addr, a, OGS_IPV6_LEN);
             if (cmd->opcode == O_IP6_SRC_MASK)
-                memcpy(pgw_rule->ip.local.mask, a+4, IPV6_LEN);
+                memcpy(pgw_rule->ip.local.mask, a+4, OGS_IPV6_LEN);
             else
                 n2mask((struct in6_addr *)pgw_rule->ip.local.mask, 128);
             break;
@@ -138,9 +134,9 @@ int pgw_compile_packet_filter(pgw_rule_t *pgw_rule, char *description)
         case O_IP6_DST_MASK:
             a = ((ipfw_insn_u32 *)cmd)->d;
             pgw_rule->ipv6_remote = 1;
-            memcpy(pgw_rule->ip.remote.addr, a, IPV6_LEN);
+            memcpy(pgw_rule->ip.remote.addr, a, OGS_IPV6_LEN);
             if (cmd->opcode == O_IP6_DST_MASK)
-                memcpy(pgw_rule->ip.remote.mask, a+4, IPV6_LEN);
+                memcpy(pgw_rule->ip.remote.mask, a+4, OGS_IPV6_LEN);
             else
                 n2mask((struct in6_addr *)pgw_rule->ip.remote.mask, 128);
             break;

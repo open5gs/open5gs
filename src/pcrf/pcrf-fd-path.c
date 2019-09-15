@@ -17,15 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "fd/fd-lib.h"
 #include "pcrf-context.h"
 #include "pcrf-fd-path.h"
 
 int pcrf_fd_init(void)
 {
     int rv;
-    int ret = fd_init(FD_MODE_CLIENT|FD_MODE_SERVER,
-                pcrf_self()->fd_conf_path, pcrf_self()->fd_config);
+    int ret = ogs_diam_init(FD_MODE_CLIENT|FD_MODE_SERVER,
+                pcrf_self()->diam_conf_path, pcrf_self()->diam_config);
     ogs_assert(ret == 0);
 
     rv = pcrf_gx_init();
@@ -41,5 +40,5 @@ void pcrf_fd_final(void)
     pcrf_gx_final();
     pcrf_rx_final();
 
-    fd_final();
+    ogs_diam_final();
 }

@@ -17,10 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "fd/fd-lib.h"
-#include "fd/rx/rx-dict.h"
-#include "fd/rx/rx-message.h"
-
 #include "pcrf-context.h"
 #include "pcrf-fd-path.h"
 
@@ -92,11 +88,11 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     struct sess_state *sess_data = NULL;
     size_t sidlen;
 
-    rx_message_t rx_message;
+    ogs_diam_rx_message_t rx_message;
 
     char buf[OGS_ADDRSTRLEN];
     os0_t gx_sid = NULL;
-    uint32_t result_code = RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
+    uint32_t result_code = OGS_DIAM_RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 
     ogs_debug("[PCRF] AA-Request");
 	
@@ -115,8 +111,8 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Initialize Message */
-    memset(&rx_message, 0, sizeof(rx_message_t));
-    rx_message.cmd_code = RX_CMD_CODE_AA;
+    memset(&rx_message, 0, sizeof(ogs_diam_rx_message_t));
+    rx_message.cmd_code = OGS_DIAM_RX_CMD_CODE_AA;
 
 	/* Create answer header */
 	qry = *msg;
@@ -125,16 +121,16 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ans = *msg;
 
     /* Set the Auth-Application-Id AVP */
-    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_auth_application_id, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = RX_APPLICATION_ID;
+    val.i32 = OGS_DIAM_RX_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
     /* Set the Auth-Request-Type AVP */
-    ret = fd_msg_avp_new(fd_auth_request_type, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_auth_request_type, 0, &avp);
     ogs_assert(ret == 0);
     val.i32 = 1;
     ret = fd_msg_avp_setvalue(avp, &val);
@@ -143,7 +139,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
 
     /* Get Framed-IP-Address */
-    ret = fd_msg_search_avp(qry, rx_framed_ip_address, &avp);
+    ret = fd_msg_search_avp(qry, ogs_diam_rx_framed_ip_address, &avp);
     ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
@@ -157,16 +153,16 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 
     if (!gx_sid) {
         /* Get Framed-IPv6-Prefix */
-        ret = fd_msg_search_avp(qry, rx_framed_ipv6_prefix, &avp);
+        ret = fd_msg_search_avp(qry, ogs_diam_rx_framed_ipv6_prefix, &avp);
         ogs_assert(ret == 0);
         if (avp) {
-            paa_t *paa = NULL;
+            ogs_paa_t *paa = NULL;
 
             ret = fd_msg_avp_hdr(avp, &hdr);
             ogs_assert(ret == 0);
-            paa = (paa_t *)hdr->avp_value->os.data;
+            paa = (ogs_paa_t *)hdr->avp_value->os.data;
             ogs_assert(paa);
-            ogs_assert(paa->len == IPV6_LEN * 8 /* 128bit */);
+            ogs_assert(paa->len == OGS_IPV6_LEN * 8 /* 128bit */);
             gx_sid = (os0_t)pcrf_sess_find_by_ipv6(paa->addr6);
             if (!gx_sid) {
                 ogs_warn("Cannot find Gx Sesson for IPv6:%s",
@@ -199,17 +195,17 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
         case AC_ROUTE_RECORD:
         case AC_PROXY_INFO:
         case AC_AUTH_APPLICATION_ID:
-        case FD_AVP_CODE_FRAME_IP_ADDRESS:
-        case FD_AVP_CODE_FRAME_IPV6_PREFIX:
-        case RX_AVP_CODE_SUBSCRIPTION_ID:
+        case OGS_DIAM_AVP_CODE_FRAME_IP_ADDRESS:
+        case OGS_DIAM_AVP_CODE_FRAME_IPV6_PREFIX:
+        case OGS_DIAM_RX_AVP_CODE_SUBSCRIPTION_ID:
             break;
         /* Gwt Specific-Action */
-        case RX_AVP_CODE_SPECIFIC_ACTION:
+        case OGS_DIAM_RX_AVP_CODE_SPECIFIC_ACTION:
             break;
         /* Gwt Media-Component-Description */
-        case RX_AVP_CODE_MEDIA_COMPONENT_DESCRIPTION:
+        case OGS_DIAM_RX_AVP_CODE_MEDIA_COMPONENT_DESCRIPTION:
         {
-            rx_media_component_t *media_component = &rx_message.
+            ogs_diam_rx_media_component_t *media_component = &rx_message.
                     media_component[rx_message.num_of_media_component];
 
             ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
@@ -218,38 +214,38 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
                 ogs_assert(ret == 0);
                 switch (hdr->avp_code) {
-                case RX_AVP_CODE_MEDIA_COMPONENT_NUMBER:
+                case OGS_DIAM_RX_AVP_CODE_MEDIA_COMPONENT_NUMBER:
                     media_component->media_component_number =
                         hdr->avp_value->i32;
                     break;
-                case RX_AVP_CODE_MEDIA_TYPE:
+                case OGS_DIAM_RX_AVP_CODE_MEDIA_TYPE:
                     media_component->media_type = hdr->avp_value->i32;
                     break;
-                case RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_DL:
+                case OGS_DIAM_RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_DL:
                     media_component->max_requested_bandwidth_dl =
                         hdr->avp_value->i32;
                     break;
-                case RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_UL:
+                case OGS_DIAM_RX_AVP_CODE_MAX_REQUESTED_BANDWIDTH_UL:
                     media_component->max_requested_bandwidth_ul =
                         hdr->avp_value->i32;
                     break;
-                case RX_AVP_CODE_RR_BANDWIDTH:
+                case OGS_DIAM_RX_AVP_CODE_RR_BANDWIDTH:
                     media_component->rr_bandwidth = hdr->avp_value->i32;
                     break;
-                case RX_AVP_CODE_RS_BANDWIDTH:
+                case OGS_DIAM_RX_AVP_CODE_RS_BANDWIDTH:
                     media_component->rs_bandwidth = hdr->avp_value->i32;
                     break;
-                case RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_DL:
+                case OGS_DIAM_RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_DL:
                     media_component->min_requested_bandwidth_dl =
                         hdr->avp_value->i32;
                     break;
-                case RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_UL:
+                case OGS_DIAM_RX_AVP_CODE_MIN_REQUESTED_BANDWIDTH_UL:
                     media_component->min_requested_bandwidth_ul =
                         hdr->avp_value->i32;
                     break;
-                case RX_AVP_CODE_MEDIA_SUB_COMPONENT:
+                case OGS_DIAM_RX_AVP_CODE_MEDIA_SUB_COMPONENT:
                 {
-                    rx_media_sub_component_t *sub = &media_component->
+                    ogs_diam_rx_media_sub_component_t *sub = &media_component->
                         sub[media_component->num_of_sub];
 
                     ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD,
@@ -259,17 +255,17 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
                         ret = fd_msg_avp_hdr(avpch3, &hdr);
                         ogs_assert(ret == 0);
                         switch (hdr->avp_code) {
-                        case RX_AVP_CODE_FLOW_NUMBER:
+                        case OGS_DIAM_RX_AVP_CODE_FLOW_NUMBER:
                             sub->flow_number =
                                 hdr->avp_value->i32;
                             break;
-                        case RX_AVP_CODE_FLOW_USAGE:
+                        case OGS_DIAM_RX_AVP_CODE_FLOW_USAGE:
                             sub->flow_usage =
                                 hdr->avp_value->i32;
                             break;
-                        case RX_AVP_CODE_FLOW_DESCRIPTION:
+                        case OGS_DIAM_RX_AVP_CODE_FLOW_DESCRIPTION:
                         {
-                            flow_t *flow = &sub->flow
+                            ogs_flow_t *flow = &sub->flow
                                 [sub->num_of_flow];
 
                             flow->description = ogs_malloc(
@@ -327,18 +323,18 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(sess_data->gx_sid);
 
     /* Set IP-Can-Type */
-    ret = fd_msg_avp_new(rx_ip_can_type, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_rx_ip_can_type, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = RX_IP_CAN_TYPE_3GPP_EPS;
+    val.i32 = OGS_DIAM_RX_IP_CAN_TYPE_3GPP_EPS;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
     /* Set RAT-Type */
-    ret = fd_msg_avp_new(rx_rat_type, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_rx_rat_type, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = RX_RAT_TYPE_EUTRAN;
+    val.i32 = OGS_DIAM_RX_RAT_TYPE_EUTRAN;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
@@ -360,29 +356,29 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ogs_debug("[PCRF] AA-Answer");
 
 	/* Add this value to the stats */
-	ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
-	fd_logger_self()->stats.nb_echoed++;
-	ogs_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0);
+	ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+	ogs_diam_logger_self()->stats.nb_echoed++;
+	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
-    rx_message_free(&rx_message);
+    ogs_diam_rx_message_free(&rx_message);
     
     return 0;
 
 out:
-    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED) {
+    if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    } else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID) {
+    } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    } else if (result_code == FD_DIAMETER_MISSING_AVP) {
+    } else if (result_code == OGS_DIAM_MISSING_AVP) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);
     } else {
-        ret = fd_message_experimental_rescode_set(ans, result_code);
+        ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
         ogs_assert(ret == 0);
     }
     
@@ -390,7 +386,7 @@ out:
     ogs_assert(ret == 0);
 
     state_cleanup(sess_data, NULL, NULL);
-    rx_message_free(&rx_message);
+    ogs_diam_rx_message_free(&rx_message);
 
     return 0;
 }
@@ -412,13 +408,13 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     ogs_debug("[PCRF] Abort-Session-Request");
 
     /* Create the request */
-    ret = fd_msg_new(rx_cmd_asr, MSGFL_ALLOC_ETEID, &req);
+    ret = fd_msg_new(ogs_diam_rx_cmd_asr, MSGFL_ALLOC_ETEID, &req);
     ogs_assert(ret == 0);
     {
         struct msg_hdr * h;
         ret = fd_msg_hdr( req, &h );
         ogs_assert(ret == 0);
-        h->msg_appl = RX_APPLICATION_ID;
+        h->msg_appl = OGS_DIAM_RX_APPLICATION_ID;
     }
 
     /* Retrieve session by Session-Id */
@@ -428,7 +424,7 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     ogs_assert(new == 0);
 
     /* Add Session-Id to the message */
-    ret = fd_message_session_id_set(req, (os0_t)(rx_sid), sidlen);
+    ret = ogs_diam_message_session_id_set(req, (os0_t)(rx_sid), sidlen);
     ogs_assert(ret == 0);
 
     /* Save the session associated with the message */
@@ -447,7 +443,7 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     ogs_assert(ret == 0);
     
     /* Set the Destination-Realm AVP */
-    ret = fd_msg_avp_new(fd_destination_realm, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_destination_realm, 0, &avp);
     ogs_assert(ret == 0);
     val.os.data = (unsigned char *)(fd_g_config->cnf_diamrlm);
     val.os.len  = strlen(fd_g_config->cnf_diamrlm);
@@ -457,7 +453,7 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     ogs_assert(ret == 0);
 
     /* Set the Destination-Host AVP */
-    ret = fd_msg_avp_new(fd_destination_host, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_destination_host, 0, &avp);
     ogs_assert(ret == 0);
     val.os.data = sess_data->peer_host;
     val.os.len  = strlen((char *)sess_data->peer_host);
@@ -467,16 +463,16 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     ogs_assert(ret == 0);
 
     /* Set the Auth-Application-Id AVP */
-    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_auth_application_id, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = RX_APPLICATION_ID;
+    val.i32 = OGS_DIAM_RX_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
     /* Set the Abort-Cause AVP */
-    ret = fd_msg_avp_new(rx_abort_cause, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_rx_abort_cause, 0, &avp);
     ogs_assert(ret == 0);
     val.i32 = sess_data->abort_cause;
     ret = fd_msg_avp_setvalue(avp, &val);
@@ -498,9 +494,9 @@ int pcrf_rx_send_asr(uint8_t *rx_sid, uint32_t abort_cause)
     ogs_assert(ret == 0);
 
     /* Increment the counter */
-    ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
-    fd_logger_self()->stats.nb_sent++;
-    ogs_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0);
+    ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+    ogs_diam_logger_self()->stats.nb_sent++;
+    ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
     return OGS_OK;
 }
@@ -523,7 +519,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     ogs_assert(new == 0);
     
     /* Value of Result Code */
-    ret = fd_msg_search_avp(*msg, fd_result_code, &avp);
+    ret = fd_msg_search_avp(*msg, ogs_diam_result_code, &avp);
     ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
@@ -531,10 +527,10 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
         result_code = hdr->avp_value->i32;
         ogs_debug("    Result Code: %d", hdr->avp_value->i32);
     } else {
-        ret = fd_msg_search_avp(*msg, fd_experimental_result, &avp);
+        ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
         ogs_assert(ret == 0);
         if (avp) {
-            ret = fd_avp_search_avp(avp, fd_experimental_result_code, &avpch1);
+            ret = fd_avp_search_avp(avp, ogs_diam_experimental_result_code, &avpch1);
             ogs_assert(ret == 0);
             if (avpch1) {
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
@@ -549,7 +545,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     }
 
     /* Value of Origin-Host */
-    ret = fd_msg_search_avp(*msg, fd_origin_host, &avp);
+    ret = fd_msg_search_avp(*msg, ogs_diam_origin_host, &avp);
     ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
@@ -561,7 +557,7 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg)
     }
 
     /* Value of Origin-Realm */
-    ret = fd_msg_search_avp(*msg, fd_origin_realm, &avp);
+    ret = fd_msg_search_avp(*msg, ogs_diam_origin_realm, &avp);
     ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
@@ -594,9 +590,9 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
     struct sess_state *sess_data = NULL;
 
-    rx_message_t rx_message;
+    ogs_diam_rx_message_t rx_message;
 
-    uint32_t result_code = RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
+    uint32_t result_code = OGS_DIAM_RX_DIAMETER_IP_CAN_SESSION_NOT_AVAILABLE;
 
     ogs_debug("[PCRF] Session-Termination-Request");
 	
@@ -610,8 +606,8 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     ogs_assert(sess_data->gx_sid);
 
     /* Initialize Message */
-    memset(&rx_message, 0, sizeof(rx_message_t));
-    rx_message.cmd_code = RX_CMD_CODE_SESSION_TERMINATION;
+    memset(&rx_message, 0, sizeof(ogs_diam_rx_message_t));
+    rx_message.cmd_code = OGS_DIAM_RX_CMD_CODE_SESSION_TERMINATION;
 
 	/* Create answer header */
 	qry = *msg;
@@ -620,16 +616,16 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     ans = *msg;
 
     /* Set the Auth-Application-Id AVP */
-    ret = fd_msg_avp_new(fd_auth_application_id, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_auth_application_id, 0, &avp);
     ogs_assert(ret == 0);
-    val.i32 = RX_APPLICATION_ID;
+    val.i32 = OGS_DIAM_RX_APPLICATION_ID;
     ret = fd_msg_avp_setvalue(avp, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(ans, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
 
     /* Set the Auth-Request-Type AVP */
-    ret = fd_msg_avp_new(fd_auth_request_type, 0, &avp);
+    ret = fd_msg_avp_new(ogs_diam_auth_request_type, 0, &avp);
     ogs_assert(ret == 0);
     val.i32 = 1;
     ret = fd_msg_avp_setvalue(avp, &val);
@@ -638,14 +634,14 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
 
     /* Get Termination-Cause */
-    ret = fd_msg_search_avp(qry, rx_termination_cause, &avp);
+    ret = fd_msg_search_avp(qry, ogs_diam_rx_termination_cause, &avp);
     ogs_assert(ret == 0);
     if (avp) {
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         sess_data->termination_cause = hdr->avp_value->i32;
         switch (sess_data->termination_cause) {
-        case RX_TERMINATION_CAUSE_DIAMETER_LOGOUT:
+        case OGS_DIAM_RX_TERMINATION_CAUSE_DIAMETER_LOGOUT:
             break;
         default:
             ogs_error("Termination-Cause Error : [%d]",
@@ -677,25 +673,25 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     ogs_debug("[PCRF] Session-Termination-Answer");
 
 	/* Add this value to the stats */
-	ogs_assert(pthread_mutex_lock(&fd_logger_self()->stats_lock) == 0);
-	fd_logger_self()->stats.nb_echoed++;
-	ogs_assert(pthread_mutex_unlock(&fd_logger_self()->stats_lock) == 0);
+	ogs_assert(pthread_mutex_lock(&ogs_diam_logger_self()->stats_lock) == 0);
+	ogs_diam_logger_self()->stats.nb_echoed++;
+	ogs_assert(pthread_mutex_unlock(&ogs_diam_logger_self()->stats_lock) == 0);
 
     state_cleanup(sess_data, NULL, NULL);
-    rx_message_free(&rx_message);
+    ogs_diam_rx_message_free(&rx_message);
     
     return 0;
 
 out:
-    if (result_code == FD_DIAMETER_AVP_UNSUPPORTED) {
+    if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    } else if (result_code == FD_DIAMETER_UNKNOWN_SESSION_ID) {
+    } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
         ogs_assert(ret == 0);
-    } else if (result_code == FD_DIAMETER_MISSING_AVP) {
+    } else if (result_code == OGS_DIAM_MISSING_AVP) {
         ret = fd_msg_rescode_set(ans,
                     "DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);
@@ -710,7 +706,7 @@ out:
     ogs_debug("[PCRF] Session-Termination-Answer");
 
     state_cleanup(sess_data, NULL, NULL);
-    rx_message_free(&rx_message);
+    ogs_diam_rx_message_free(&rx_message);
 
     return 0;
 }
@@ -721,7 +717,7 @@ int pcrf_rx_init(void)
 	struct disp_when data;
 
 	/* Install objects definitions for this application */
-	ret = rx_dict_init();
+	ret = ogs_diam_rx_dict_init();
     ogs_assert(ret == 0);
 
     /* Create handler for sessions */
@@ -730,26 +726,26 @@ int pcrf_rx_init(void)
 
 	/* Fallback CB if command != unexpected message received */
 	memset(&data, 0, sizeof(data));
-	data.app = rx_application;
+	data.app = ogs_diam_rx_application;
 	
 	ret = fd_disp_register(pcrf_rx_fb_cb, DISP_HOW_APPID, &data, NULL,
                 &hdl_rx_fb);
     ogs_assert(ret == 0);
 	
 	/* Specific handler for AA-Request */
-	data.command = rx_cmd_aar;
+	data.command = ogs_diam_rx_cmd_aar;
 	ret = fd_disp_register(pcrf_rx_aar_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_rx_aar);
     ogs_assert(ret == 0);
 
 	/* Specific handler for STR-Request */
-	data.command = rx_cmd_str;
+	data.command = ogs_diam_rx_cmd_str;
 	ret = fd_disp_register(pcrf_rx_str_cb, DISP_HOW_CC, &data, NULL,
                 &hdl_rx_str);
     ogs_assert(ret == 0);
 
 	/* Advertise the support for the application in the peer */
-	ret = fd_disp_app_support(rx_application, fd_vendor, 1, 0);
+	ret = fd_disp_app_support(ogs_diam_rx_application, ogs_diam_vendor, 1, 0);
     ogs_assert(ret == 0);
 
 	return OGS_OK;

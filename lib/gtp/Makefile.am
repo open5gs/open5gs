@@ -15,22 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pkglib_LTLIBRARIES = libgtp.la
+pkglib_LTLIBRARIES = libogsgtp.la
 
-libgtp_la_SOURCES = \
-	gtp-tlv.h gtp-message.h gtp-types.h gtp-conv.h \
-	gtp-node.h gtp-path.h gtp-xact.h \
-	gtp-tlv.c gtp-message.c gtp-types.c gtp-conv.c \
-	gtp-node.c gtp-path.c gtp-xact.c \
+libogsgtp_la_SOURCES = \
+	tlv.h message.h types.h conv.h node.h path.h xact.h \
+	tlv.c message.c types.c conv.c node.c path.c xact.c \
 	$(NULL)
 
-libgtp_la_DEPENDENCIES = \
-    $(top_srcdir)/lib/base/libbase.la \
-	$(NULL)
-
-libgtp_la_LIBADD = \
+libogsgtp_la_LIBADD = \
 	@OGSCORE_LIBS@ \
-    $(top_srcdir)/lib/base/libbase.la \
 	$(NULL)
 
 AM_CPPFLAGS = \
@@ -39,5 +32,6 @@ AM_CPPFLAGS = \
 	$(NULL)
 
 AM_CFLAGS = \
+	-DOGS_GTP_COMPILATION \
 	-Wall -Werror \
 	$(NULL)

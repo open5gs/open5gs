@@ -1,14 +1,23 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-#include <mongoc.h>
-
-#include "core/abts.h"
-
-#include "app/context.h"
-#include "mme/mme-context.h"
-#include "mme/s1ap-build.h"
-#include "asn1c/s1ap-message.h"
-
-#include "test-packet.h"
+#include "test-app.h"
 
 /**************************************************************
  * eNB : MACRO
@@ -21,14 +30,14 @@ static void attach_test1(abts_case *tc, void *data)
     ogs_socknode_t *gtpu;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
     int msgindex = 0;
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
     uint32_t m_tmsi = 0;
 
-    uint8_t tmp[MAX_SDU_LEN];
+    uint8_t tmp[OGS_MAX_SDU_LEN];
     char *_authentication_request = 
         "000b403b00000300 000005c00100009d 000800020001001a 0025240752002008"
         "0c3818183b522614 162c07601d0d10f1 1b89a2a8de8000ad 0ccf7f55e8b20d";
@@ -113,14 +122,13 @@ static void attach_test1(abts_case *tc, void *data)
     /* Receive S1-Setup Response */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    rv = s1ap_decode_pdu(&message, recvbuf);
+    rv = ogs_s1ap_decode(&message, recvbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    s1ap_free_pdu(&message);
+    ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
-        context_self()->db.client,
-        context_self()->db.name, "subscribers");
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     /********** Insert Subscriber in Database */
@@ -450,7 +458,7 @@ static void attach_test2(abts_case *tc, void *data)
     ogs_socknode_t *s1ap;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
     int msgindex = 3;
 
@@ -539,7 +547,7 @@ static void attach_test2(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
-    uint8_t tmp[MAX_SDU_LEN];
+    uint8_t tmp[OGS_MAX_SDU_LEN];
 
     /* eNB connects to MME */
     s1ap = testenb_s1ap_client("127.0.0.1");
@@ -555,14 +563,13 @@ static void attach_test2(abts_case *tc, void *data)
     /* Receive S1-Setup Response */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    rv = s1ap_decode_pdu(&message, recvbuf);
+    rv = ogs_s1ap_decode(&message, recvbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    s1ap_free_pdu(&message);
+    ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
-        context_self()->db.client,
-        context_self()->db.name, "subscribers");
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     /********** Insert Subscriber in Database */
@@ -781,14 +788,14 @@ static void attach_test3(abts_case *tc, void *data)
     ogs_socknode_t *s1ap;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
     int msgindex = 6;
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
     uint32_t m_tmsi = 0;
 
-    uint8_t tmp[MAX_SDU_LEN];
+    uint8_t tmp[OGS_MAX_SDU_LEN];
     char *_authentication_request =
         "000b"
         "403b000003000000 05c0020000c80008 00020002001a0025 2407520042200639"
@@ -878,17 +885,16 @@ static void attach_test3(abts_case *tc, void *data)
     /* Receive S1-Setup Response */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    rv = s1ap_decode_pdu(&message, recvbuf);
+    rv = ogs_s1ap_decode(&message, recvbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    s1ap_free_pdu(&message);
+    ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
 
     collection = mongoc_client_get_collection(
-        context_self()->db.client,
-        context_self()->db.name, "subscribers");
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     /********** Insert Subscriber in Database */
@@ -1108,11 +1114,11 @@ static void attach_test4(abts_case *tc, void *data)
     ogs_socknode_t *gtpu;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
     int msgindex = 8;
 
-    uint8_t tmp[MAX_SDU_LEN];
+    uint8_t tmp[OGS_MAX_SDU_LEN];
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -1177,14 +1183,13 @@ static void attach_test4(abts_case *tc, void *data)
     /* Receive S1-Setup Response */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    rv = s1ap_decode_pdu(&message, recvbuf);
+    rv = ogs_s1ap_decode(&message, recvbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    s1ap_free_pdu(&message);
+    ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
-        context_self()->db.client,
-        context_self()->db.name, "subscribers");
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     /********** Insert Subscriber in Database */
@@ -1289,7 +1294,7 @@ static void attach_test5(abts_case *tc, void *data)
     ogs_socknode_t *s1ap;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
     int msgindex = 12;
     enb_ue_t *enb_ue = NULL;
@@ -1358,8 +1363,7 @@ static void attach_test5(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
-        context_self()->db.client,
-        context_self()->db.name, "subscribers");
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     /********** Insert Subscriber in Database */
@@ -1622,11 +1626,11 @@ static void attach_test6(abts_case *tc, void *data)
     ogs_socknode_t *gtpu;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
-    s1ap_message_t message;
+    ogs_s1ap_message_t message;
     int i;
     int msgindex = 8;
 
-    uint8_t tmp[MAX_SDU_LEN];
+    uint8_t tmp[OGS_MAX_SDU_LEN];
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -1691,14 +1695,13 @@ static void attach_test6(abts_case *tc, void *data)
     /* Receive S1-Setup Response */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
-    rv = s1ap_decode_pdu(&message, recvbuf);
+    rv = ogs_s1ap_decode(&message, recvbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    s1ap_free_pdu(&message);
+    ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
     collection = mongoc_client_get_collection(
-        context_self()->db.client,
-        context_self()->db.name, "subscribers");
+        ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
     /********** Insert Subscriber in Database */

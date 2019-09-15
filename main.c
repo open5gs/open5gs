@@ -2,19 +2,22 @@
  * @file main.c
  */
 
-#include "ogs-core.h"
-#include "base/context.h"
+#include <signal.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
-/* Server */
-#include "app/application.h"
-#include "app-init.h"
+#include "ogs-app.h"
 
-void show_version()
+#define DEFAULT_CONFIG_FILENAME SYSCONF_DIR "nextepc/nextepc.conf"
+
+static char *version = "NextEPC daemon v" PACKAGE_VERSION;
+
+static void show_version()
 {
-    printf("%s\n\n", app_version());
+    printf("%s\n\n", version);
 }
 
-void show_help(const char *name)
+static void show_help(const char *name)
 {
     printf("Usage: %s [options]\n"
         "Options:\n"
@@ -30,6 +33,23 @@ void show_help(const char *name)
        "\n", name);
 }
 
+static void show_running_config()
+{
+    ogs_log_print(OGS_LOG_INFO, "%s\n\n", version);
+
+    ogs_info("Configuration: '%s'", ogs_config()->file);
+
+    if (ogs_config()->logger.file) {
+        ogs_info("File Logging: '%s'", ogs_config()->logger.file);
+
+        if (ogs_config()->logger.level)
+            ogs_info("LOG-LEVEL: '%s'", ogs_config()->logger.level);
+
+        if (ogs_config()->logger.domain)
+            ogs_info("LOG-DOMAIN: '%s'", ogs_config()->logger.domain);
+    }
+}
+
 static int check_signal(int signum)
 {
     switch (signum) {
@@ -41,7 +61,8 @@ static int check_signal(int signum)
         return 1;
     case SIGHUP:
         ogs_info("SIGHUP received");
-        app_logger_restart();
+        ogs_log_cycle();
+
         break;
     default:
         ogs_error("Signal-NUM[%d] received (%s)",
@@ -52,11 +73,11 @@ static int check_signal(int signum)
     return 0;
 }
 
-void terminate()
+static void terminate()
 {
     app_terminate();
-    base_finalize();
-    ogs_core_finalize();
+
+    ogs_app_terminate();
 }
 
 int main(int argc, char *argv[])
@@ -165,9 +186,13 @@ int main(int argc, char *argv[])
 
     argv_out[i] = NULL;
 
-    ogs_core_initialize();
+    ogs_signal_init();
     ogs_setup_signal_thread();
-    base_initialize();
+
+    rv = ogs_app_initialize(DEFAULT_CONFIG_FILENAME, argv_out);
+    ogs_assert(rv == OGS_OK);
+
+    show_running_config();
 
     rv = app_initialize(argv_out);
     if (rv != OGS_OK) {
@@ -177,6 +202,7 @@ int main(int argc, char *argv[])
         ogs_fatal("NextEPC initialization failed. Aborted");
         return OGS_ERROR;
     }
+
     atexit(terminate);
     ogs_signal_thread(check_signal);
 

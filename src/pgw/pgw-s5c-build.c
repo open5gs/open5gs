@@ -17,32 +17,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "base/types.h"
-#include "gtp/gtp-types.h"
-#include "gtp/gtp-conv.h"
-#include "gtp/gtp-message.h"
-#include "fd/gx/gx-message.h"
+#include "pgw-context.h"
 
 #include "ipfw/ipfw2.h"
 
-#include "pgw-context.h"
-
-static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco);
+static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_tlv_pco_t *tlv_pco);
 
 int pgw_s5c_build_create_session_response(
         ogs_pkbuf_t **pkbuf, uint8_t type, pgw_sess_t *sess,
-        gx_message_t *gx_message, gtp_create_session_request_t *req)
+        ogs_diam_gx_message_t *gx_message,
+        ogs_gtp_create_session_request_t *req)
 {
     int rv;
     pgw_bearer_t *bearer = NULL;
 
-    gtp_message_t gtp_message;
-    gtp_create_session_response_t *rsp = NULL;
+    ogs_gtp_message_t gtp_message;
+    ogs_gtp_create_session_response_t *rsp = NULL;
 
-    gtp_cause_t cause;
-    gtp_f_teid_t pgw_s5c_teid, pgw_s5u_teid;
+    ogs_gtp_cause_t cause;
+    ogs_gtp_f_teid_t pgw_s5c_teid, pgw_s5u_teid;
     int len;
-    uint8_t pco_buf[MAX_PCO_LEN];
+    uint8_t pco_buf[OGS_MAX_PCO_LEN];
     int16_t pco_len;
 
     ogs_debug("[PGW] Create Session Response");
@@ -58,20 +53,20 @@ int pgw_s5c_build_create_session_response(
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
     rsp = &gtp_message.create_session_response;
-    memset(&gtp_message, 0, sizeof(gtp_message_t));
+    memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
 
     /* Set Cause */
     memset(&cause, 0, sizeof(cause));
-    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
+    cause.value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
     rsp->cause.presence = 1;
     rsp->cause.len = sizeof(cause);
     rsp->cause.data = &cause;
 
     /* Control Plane(UL) : PGW-S5C */
-    memset(&pgw_s5c_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5c_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_C;
+    memset(&pgw_s5c_teid, 0, sizeof(ogs_gtp_f_teid_t));
+    pgw_s5c_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_C;
     pgw_s5c_teid.teid = htonl(sess->pgw_s5c_teid);
-    rv = gtp_sockaddr_to_f_teid(
+    rv = ogs_gtp_sockaddr_to_f_teid(
         pgw_self()->gtpc_addr, pgw_self()->gtpc_addr6, &pgw_s5c_teid, &len);
     ogs_assert(rv == OGS_OK);
     rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
@@ -84,18 +79,18 @@ int pgw_s5c_build_create_session_response(
     /* PDN Address Allocation */
     rsp->pdn_address_allocation.data = &sess->pdn.paa;
     if (sess->ipv4 && sess->ipv6)
-        rsp->pdn_address_allocation.len = PAA_IPV4V6_LEN;
+        rsp->pdn_address_allocation.len = OGS_PAA_IPV4V6_LEN;
     else if (sess->ipv4)
-        rsp->pdn_address_allocation.len = PAA_IPV4_LEN;
+        rsp->pdn_address_allocation.len = OGS_PAA_IPV4_LEN;
     else if (sess->ipv6)
-        rsp->pdn_address_allocation.len = PAA_IPV6_LEN;
+        rsp->pdn_address_allocation.len = OGS_PAA_IPV6_LEN;
     else
         ogs_assert_if_reached();
     rsp->pdn_address_allocation.presence = 1;
 
     /* APN Restriction */
     rsp->apn_restriction.presence = 1;
-    rsp->apn_restriction.u8 = GTP_APN_NO_RESTRICTION;
+    rsp->apn_restriction.u8 = OGS_GTP_APN_NO_RESTRICTION;
     
     /* TODO : APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
@@ -123,10 +118,10 @@ int pgw_s5c_build_create_session_response(
      * if PCRF changes Bearer QoS, this should be included. */
 
     /* Data Plane(UL) : PGW-S5U */
-    memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
+    memset(&pgw_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
+    pgw_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_U;
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
-    rv = gtp_sockaddr_to_f_teid(
+    rv = ogs_gtp_sockaddr_to_f_teid(
         pgw_self()->gtpu_addr, pgw_self()->gtpu_addr6, &pgw_s5u_teid, &len);
     ogs_assert(rv == OGS_OK);
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 1;
@@ -134,7 +129,7 @@ int pgw_s5c_build_create_session_response(
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = len;
 
     gtp_message.h.type = type;
-    rv = gtp_build_msg(pkbuf, &gtp_message);
+    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
     ogs_assert(rv == OGS_OK);
 
     return OGS_OK;
@@ -142,15 +137,16 @@ int pgw_s5c_build_create_session_response(
 
 int pgw_s5c_build_delete_session_response(
         ogs_pkbuf_t **pkbuf, uint8_t type,
-        gx_message_t *gx_message, gtp_delete_session_request_t *req)
+        ogs_diam_gx_message_t *gx_message,
+        ogs_gtp_delete_session_request_t *req)
 {
     int rv;
 
-    gtp_message_t gtp_message;
-    gtp_delete_session_response_t *rsp = NULL;
+    ogs_gtp_message_t gtp_message;
+    ogs_gtp_delete_session_response_t *rsp = NULL;
 
-    gtp_cause_t cause;
-    uint8_t pco_buf[MAX_PCO_LEN];
+    ogs_gtp_cause_t cause;
+    uint8_t pco_buf[OGS_MAX_PCO_LEN];
     int16_t pco_len;
     
     ogs_assert(gx_message);
@@ -158,10 +154,10 @@ int pgw_s5c_build_delete_session_response(
 
     /* prepare cause */
     memset(&cause, 0, sizeof(cause));
-    cause.value = GTP_CAUSE_REQUEST_ACCEPTED;
+    cause.value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
     rsp = &gtp_message.delete_session_response;
-    memset(&gtp_message, 0, sizeof(gtp_message_t));
+    memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
 
     /* Cause */
     rsp->cause.presence = 1;
@@ -183,13 +179,14 @@ int pgw_s5c_build_delete_session_response(
 
     /* build */
     gtp_message.h.type = type;
-    rv = gtp_build_msg(pkbuf, &gtp_message);
+    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
     ogs_assert(rv == OGS_OK);
 
     return OGS_OK;
 }
 
-static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
+static void encode_traffic_flow_template(
+        ogs_gtp_tft_t *tft, pgw_bearer_t *bearer)
 {
     int i, j, len;
     pgw_pf_t *pf = NULL;
@@ -198,7 +195,7 @@ static void encode_traffic_flow_template(gtp_tft_t *tft, pgw_bearer_t *bearer)
     ogs_assert(bearer);
 
     memset(tft, 0, sizeof(*tft));
-    tft->code = GTP_TFT_CODE_CREATE_NEW_TFT;
+    tft->code = OGS_GTP_TFT_CODE_CREATE_NEW_TFT;
 
     i = 0;
     pf = pgw_pf_first(bearer);
@@ -298,15 +295,15 @@ int pgw_s5c_build_create_bearer_request(
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *linked_bearer = NULL;
 
-    gtp_message_t gtp_message;
-    gtp_create_bearer_request_t *req = NULL;
+    ogs_gtp_message_t gtp_message;
+    ogs_gtp_create_bearer_request_t *req = NULL;
 
-    gtp_f_teid_t pgw_s5u_teid;
-    gtp_bearer_qos_t bearer_qos;
+    ogs_gtp_f_teid_t pgw_s5u_teid;
+    ogs_gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
-    gtp_tft_t tft;
+    ogs_gtp_tft_t tft;
     int len;
-    char tft_buf[GTP_MAX_TRAFFIC_FLOW_TEMPLATE];
+    char tft_buf[OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE];
 
     ogs_assert(bearer);
     sess = bearer->sess;
@@ -319,7 +316,7 @@ int pgw_s5c_build_create_bearer_request(
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     req = &gtp_message.create_bearer_request;
-    memset(&gtp_message, 0, sizeof(gtp_message_t));
+    memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
  
     /* Linked EBI */
     req->linked_eps_bearer_id.presence = 1;
@@ -331,10 +328,10 @@ int pgw_s5c_build_create_bearer_request(
     req->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
 
     /* Data Plane(UL) : PGW_S5U */
-    memset(&pgw_s5u_teid, 0, sizeof(gtp_f_teid_t));
-    pgw_s5u_teid.interface_type = GTP_F_TEID_S5_S8_PGW_GTP_U;
+    memset(&pgw_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
+    pgw_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_U;
     pgw_s5u_teid.teid = htonl(bearer->pgw_s5u_teid);
-    rv = gtp_sockaddr_to_f_teid(
+    rv = ogs_gtp_sockaddr_to_f_teid(
         pgw_self()->gtpu_addr, pgw_self()->gtpu_addr6, &pgw_s5u_teid, &len);
     ogs_assert(rv == OGS_OK);
     req->bearer_contexts.s5_s8_u_sgw_f_teid.presence = 1;
@@ -355,17 +352,17 @@ int pgw_s5c_build_create_bearer_request(
     bearer_qos.ul_gbr = bearer->qos.gbr.uplink;
 
     req->bearer_contexts.bearer_level_qos.presence = 1;
-    gtp_build_bearer_qos(&req->bearer_contexts.bearer_level_qos,
+    ogs_gtp_build_bearer_qos(&req->bearer_contexts.bearer_level_qos,
             &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);
 
     /* Bearer TFT */
     encode_traffic_flow_template(&tft, bearer);
     req->bearer_contexts.tft.presence = 1;
-    gtp_build_tft(&req->bearer_contexts.tft,
-            &tft, tft_buf, GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
+    ogs_gtp_build_tft(&req->bearer_contexts.tft,
+            &tft, tft_buf, OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
 
     gtp_message.h.type = type;
-    rv = gtp_build_msg(pkbuf, &gtp_message);
+    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
     ogs_assert(rv == OGS_OK);
 
     return OGS_OK;
@@ -379,13 +376,13 @@ int pgw_s5c_build_update_bearer_request(
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *linked_bearer = NULL;
 
-    gtp_message_t gtp_message;
-    gtp_update_bearer_request_t *req = NULL;
+    ogs_gtp_message_t gtp_message;
+    ogs_gtp_update_bearer_request_t *req = NULL;
 
-    gtp_bearer_qos_t bearer_qos;
+    ogs_gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
-    gtp_tft_t tft;
-    char tft_buf[GTP_MAX_TRAFFIC_FLOW_TEMPLATE];
+    ogs_gtp_tft_t tft;
+    char tft_buf[OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE];
 
     ogs_assert(bearer);
     sess = bearer->sess;
@@ -397,7 +394,7 @@ int pgw_s5c_build_update_bearer_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     req = &gtp_message.update_bearer_request;
-    memset(&gtp_message, 0, sizeof(gtp_message_t));
+    memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
  
     /* Bearer EBI */
     req->bearer_contexts.presence = 1;
@@ -419,7 +416,7 @@ int pgw_s5c_build_update_bearer_request(
         bearer_qos.ul_gbr = bearer->qos.gbr.uplink;
 
         req->bearer_contexts.bearer_level_qos.presence = 1;
-        gtp_build_bearer_qos(&req->bearer_contexts.bearer_level_qos,
+        ogs_gtp_build_bearer_qos(&req->bearer_contexts.bearer_level_qos,
                 &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);
     }
 
@@ -427,12 +424,12 @@ int pgw_s5c_build_update_bearer_request(
     if (tft_presence == 1) {
         encode_traffic_flow_template(&tft, bearer);
         req->bearer_contexts.tft.presence = 1;
-        gtp_build_tft(&req->bearer_contexts.tft,
-                &tft, tft_buf, GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
+        ogs_gtp_build_tft(&req->bearer_contexts.tft,
+                &tft, tft_buf, OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
     }
 
     gtp_message.h.type = type;
-    rv = gtp_build_msg(pkbuf, &gtp_message);
+    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
     ogs_assert(rv == OGS_OK);
 
     return OGS_OK;
@@ -445,8 +442,8 @@ int pgw_s5c_build_delete_bearer_request(
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *linked_bearer = NULL;
 
-    gtp_message_t gtp_message;
-    gtp_delete_bearer_request_t *req = NULL;
+    ogs_gtp_message_t gtp_message;
+    ogs_gtp_delete_bearer_request_t *req = NULL;
 
     ogs_assert(bearer);
     sess = bearer->sess;
@@ -458,7 +455,7 @@ int pgw_s5c_build_delete_bearer_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
     req = &gtp_message.delete_bearer_request;
-    memset(&gtp_message, 0, sizeof(gtp_message_t));
+    memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
  
     if (bearer->ebi == linked_bearer->ebi) {
         /* Linked EBI */
@@ -471,17 +468,17 @@ int pgw_s5c_build_delete_bearer_request(
     }
 
     gtp_message.h.type = type;
-    rv = gtp_build_msg(pkbuf, &gtp_message);
+    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
     ogs_assert(rv == OGS_OK);
 
     return OGS_OK;
 }
 
-static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
+static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_tlv_pco_t *tlv_pco)
 {
     int rv;
-    pco_t ue, pgw;
-    pco_ipcp_t pco_ipcp;
+    ogs_pco_t ue, pgw;
+    ogs_pco_ipcp_t pco_ipcp;
     ogs_ipsubnet_t dns_primary, dns_secondary, dns6_primary, dns6_secondary;
     ogs_ipsubnet_t p_cscf, p_cscf6;
     int size = 0;
@@ -490,17 +487,17 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
     ogs_assert(pco_buf);
     ogs_assert(tlv_pco);
 
-    size = pco_parse(&ue, tlv_pco->data, tlv_pco->len);
+    size = ogs_pco_parse(&ue, tlv_pco->data, tlv_pco->len);
     ogs_assert(size);
 
-    memset(&pgw, 0, sizeof(pco_t));
+    memset(&pgw, 0, sizeof(ogs_pco_t));
     pgw.ext = ue.ext;
     pgw.configuration_protocol = ue.configuration_protocol;
 
     for (i = 0; i < ue.num_of_id; i++) {
         uint8_t *data = ue.ids[i].data;
         switch(ue.ids[i].id) {
-        case PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL:
+        case OGS_PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL:
             if (data[0] == 2) { /* Code : Response */
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                 pgw.ids[pgw.num_of_id].len = 4;
@@ -509,11 +506,11 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                 pgw.num_of_id++;
             }
             break;
-        case PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL:
+        case OGS_PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL:
             if (data[0] == 1) { /* Code : Configuration Request */
                 uint16_t len = 16;
 
-                memset(&pco_ipcp, 0, sizeof(pco_ipcp_t));
+                memset(&pco_ipcp, 0, sizeof(ogs_pco_ipcp_t));
                 pco_ipcp.code = 2; /* Code : Configuration Ack */
                 pco_ipcp.len = htons(len);
 
@@ -544,13 +541,13 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                 pgw.num_of_id++;
             }
             break;
-        case PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST:
+        case OGS_PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST:
             if (pgw_self()->dns[0]) {
                 rv = ogs_ipsubnet(
                         &dns_primary, pgw_self()->dns[0], NULL);
                 ogs_assert(rv == OGS_OK);
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                pgw.ids[pgw.num_of_id].len = OGS_IPV4_LEN;
                 pgw.ids[pgw.num_of_id].data = dns_primary.sub;
                 pgw.num_of_id++;
             }
@@ -560,18 +557,18 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                         &dns_secondary, pgw_self()->dns[1], NULL);
                 ogs_assert(rv == OGS_OK);
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                pgw.ids[pgw.num_of_id].len = OGS_IPV4_LEN;
                 pgw.ids[pgw.num_of_id].data = dns_secondary.sub;
                 pgw.num_of_id++;
             }
             break;
-        case PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST:
+        case OGS_PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST:
             if (pgw_self()->dns6[0]) {
                 rv = ogs_ipsubnet(
                         &dns6_primary, pgw_self()->dns6[0], NULL);
                 ogs_assert(rv == OGS_OK);
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                pgw.ids[pgw.num_of_id].len = OGS_IPV6_LEN;
                 pgw.ids[pgw.num_of_id].data = dns6_primary.sub;
                 pgw.num_of_id++;
             }
@@ -581,18 +578,18 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                         &dns6_secondary, pgw_self()->dns6[1], NULL);
                 ogs_assert(rv == OGS_OK);
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                pgw.ids[pgw.num_of_id].len = OGS_IPV6_LEN;
                 pgw.ids[pgw.num_of_id].data = dns6_secondary.sub;
                 pgw.num_of_id++;
             }
             break;
-        case PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST:
+        case OGS_PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST:
             if (pgw_self()->num_of_p_cscf) {
                 rv = ogs_ipsubnet(&p_cscf,
                     pgw_self()->p_cscf[pgw_self()->p_cscf_index], NULL);
                 ogs_assert(rv == OGS_OK);
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                pgw.ids[pgw.num_of_id].len = IPV4_LEN;
+                pgw.ids[pgw.num_of_id].len = OGS_IPV4_LEN;
                 pgw.ids[pgw.num_of_id].data = p_cscf.sub;
                 pgw.num_of_id++;
 
@@ -600,13 +597,13 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                 pgw_self()->p_cscf_index %= pgw_self()->num_of_p_cscf;
             }
             break;
-        case PCO_ID_P_CSCF_IPV6_ADDRESS_REQUEST:
+        case OGS_PCO_ID_P_CSCF_IPV6_ADDRESS_REQUEST:
             if (pgw_self()->num_of_p_cscf6) {
                 rv = ogs_ipsubnet(&p_cscf6,
                     pgw_self()->p_cscf6[pgw_self()->p_cscf6_index], NULL);
                 ogs_assert(rv == OGS_OK);
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
-                pgw.ids[pgw.num_of_id].len = IPV6_LEN;
+                pgw.ids[pgw.num_of_id].len = OGS_IPV6_LEN;
                 pgw.ids[pgw.num_of_id].data = p_cscf6.sub;
                 pgw.num_of_id++;
 
@@ -614,10 +611,10 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
                 pgw_self()->p_cscf6_index %= pgw_self()->num_of_p_cscf6;
             }
             break;
-        case PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING:
+        case OGS_PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING:
             /* TODO */
             break;
-        case PCO_ID_IPV4_LINK_MTU_REQUEST:
+        case OGS_PCO_ID_IPV4_LINK_MTU_REQUEST:
             /* TODO */
             break;
         default:
@@ -625,6 +622,6 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, tlv_pco_t *tlv_pco)
         }
     }
 
-    size = pco_build(pco_buf, MAX_PCO_LEN, &pgw);
+    size = ogs_pco_build(pco_buf, OGS_MAX_PCO_LEN, &pgw);
     return size;
 }
