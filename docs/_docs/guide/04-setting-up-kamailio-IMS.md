@@ -934,7 +934,9 @@ $ systemctl start kamailio_icscf kamailio_pcscf kamailio_scscf
 Requirements for FoHSS: Install Java JDK and ant
 
 Download Oracle Java 7 JDK from following link using a browser:
+```
 https://www.oracle.com/technetwork/java/javase/downloads/java-archive-downloads-javase7-521261.html
+```
 
 ```
 $ mkdir -p  /usr/lib/jvm/
@@ -1100,9 +1102,11 @@ $ grep -r "open-ims"
 $ vim webapps/hss.web.console/WEB-INF/web.xml
 $ vim hibernate.properties
 ```
-And, change the following line
+And, change the following line:
 
+```
 hibernate.connection.url=jdbc:mysql://127.0.0.1:3306/hss_db
+```
 
 ```
 $ cp configurator.sh ../scripts/
