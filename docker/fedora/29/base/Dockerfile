@@ -9,6 +9,8 @@ RUN dnf -y install \
         libtool \
         gcc \
         make \
+        python3-pip \
+        ninja-build \
         flex \
         bison \
         git \
@@ -22,3 +24,4 @@ RUN dnf -y install \
         snappy-devel \
         libyaml-devel \
         iproute
+RUN python3 -m pip install meson
