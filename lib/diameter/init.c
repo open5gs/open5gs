@@ -22,7 +22,8 @@
 int __ogs_diam_domain;
 
 static void diam_gnutls_log_func(int level, const char *str);
-static void diam_log_func(int printlevel, const char *format, va_list ap);
+static void diam_log_func(int printlevel,
+        const char *fname, int line, const char *format, va_list ap);
 
 int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config)
 {
@@ -33,26 +34,21 @@ int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config)
 
     fd_g_debug_lvl = FD_LOG_ERROR;
     ret = fd_log_handler_register(diam_log_func);
-    if (ret != 0) 
-    {
+    if (ret != 0) {
         ogs_error("fd_log_handler_register() failed");
         return ret;
     } 
 
     ret = fd_core_initialize();
-    if (ret != 0) 
-    {
+    if (ret != 0) {
         ogs_error("fd_core_initialize() failed");
         return ret;
     } 
     
 	/* Parse the configuration file */
-    if (conffile)
-    {
+    if (conffile) {
         CHECK_FCT_DO( fd_core_parseconf(conffile), goto error );
-    }
-    else
-    {
+    } else {
         CHECK_FCT_DO( ogs_diam_config_init(fd_config), goto error );
     }
 
@@ -91,49 +87,47 @@ static void diam_gnutls_log_func(int level, const char *str)
     ogs_trace("gnutls[%d]: %s", level, str);
 }
 
-static void diam_log_func(int printlevel, const char *format, va_list ap)
+static void diam_log_func(int printlevel,
+        const char *fname, int line, const char *format, va_list ap)
 {
     char buffer[OGS_HUGE_LEN];
     int  ret = 0;
 
     ret = vsnprintf(buffer, OGS_HUGE_LEN, format, ap);
-    if (ret < 0 || ret > OGS_HUGE_LEN)
-    {
+    if (ret < 0 || ret > OGS_HUGE_LEN) {
         ogs_error("vsnprintf() failed");
         return;
     }
 
-    switch(printlevel) 
-    {
-	    case FD_LOG_ANNOYING: 
-            ogs_trace("freeDiameter[%d]: %s", printlevel, buffer);
-            break;  
-	    case FD_LOG_DEBUG:
-            ogs_trace("freeDiameter[%d]: %s", printlevel, buffer);
-            break;  
-	    case FD_LOG_NOTICE:
-            ogs_trace("freeDiameter[%d]: %s", printlevel, buffer);
-            break;
-	    case FD_LOG_ERROR:
-            ogs_error("%s", buffer);
-            if (!strcmp(buffer, " - The certificate is expired."))
-            {
-                ogs_error("You can renew CERT as follows:");
-                ogs_error("./support/freeDiameter/make_certs.sh "
-                        "./install/etc/nextepc/freeDiameter");
-            }
-            break;
-	    case FD_LOG_FATAL:
-            {
-                char *except = "Initiating freeDiameter shutdown sequence";
-                if (strncmp(buffer, except, strlen(except)) == 0)
-                    ogs_info("freeDiameter[%d]: %s", printlevel, buffer);
-                else
-                    ogs_fatal("%s", buffer);
-            }
-            break;
-	    default:
-            ogs_warn("%s", buffer);
-            break;
+    switch(printlevel) {
+    case FD_LOG_ANNOYING: 
+        ogs_trace("[%d]: %s:%u %s", printlevel, fname, line, buffer);
+        break;  
+    case FD_LOG_DEBUG:
+        ogs_trace("[%d]: %s:%u %s", printlevel, fname, line, buffer);
+        break;  
+    case FD_LOG_NOTICE:
+        ogs_trace("[%d]: %s:%u %s", printlevel, fname, line, buffer);
+        break;
+    case FD_LOG_ERROR:
+        ogs_error("%s:%d %s", fname, line, buffer);
+        if (!strcmp(buffer, " - The certificate is expired.")) {
+            ogs_error("You can renew CERT as follows:");
+            ogs_error("./support/freeDiameter/make_certs.sh "
+                    "./install/etc/nextepc/freeDiameter");
+        }
+        break;
+    case FD_LOG_FATAL:
+        {
+            char *except = "Initiating freeDiameter shutdown sequence";
+            if (strncmp(buffer, except, strlen(except)) == 0)
+                ogs_info("[%d]: %s:%u %s", printlevel, fname, line, buffer);
+            else
+                ogs_fatal("%s:%d %s", fname, line, buffer);
+        }
+        break;
+    default:
+        ogs_warn("%s:%d %s", fname, line, buffer);
+        break;
     }
 }
