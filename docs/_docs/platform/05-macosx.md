@@ -18,7 +18,8 @@ $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/inst
 
 Install MongoDB with Package Manager.
 ```bash
-$ brew install mongodb
+$ brew tap mongodb/brew
+$ brew install mongodb-community
 ```
 
 Run MongoDB server.
