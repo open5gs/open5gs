@@ -6,7 +6,7 @@ If you don't understand something about Open5GS, the [https://open5gs.org/open5g
 
 Problem with Open5GS can be filed as [issues](https://github.com/open5gs/open5gs/issues) in this repository. 
 
-Discussions related to this project are happening on the [open5gs@lists.osmocom.org](mailto:open5gs@lists.osmocom.org) mailing list, please see <https://lists.osmocom.org/mailman/listinfo/open5gs> for subscription options and the list archive.
+Discussions related to this project are happening on the [nextepc@lists.osmocom.org](mailto:nextepc@lists.osmocom.org) mailing list, please see <https://lists.osmocom.org/mailman/listinfo/nextepc> for subscription options and the list archive.
 
 Voice and text chat available in Open5GS's [Discord](https://discordapp.com/) workspace. Use [this link](https://discord.gg/GreNkuc) to get started.
 
