@@ -29,10 +29,7 @@ int get_asn1c_environment_version(void);	/* Run-time version */
 #define	REALLOC(oldptr, size)	realloc(oldptr, size)
 #define	FREEMEM(ptr)		free(ptr)
 #else
-extern void *ogs_malloc(size_t size);
-extern void ogs_free(void *ptr);
-extern void *ogs_calloc(size_t nmemb, size_t size);
-extern void *ogs_realloc(void *ptr, size_t size);
+#include "ogs-core.h"
 #define	CALLOC(nmemb, size)	ogs_calloc(nmemb, size)
 #define	MALLOC(size)		ogs_malloc(size)
 #define	REALLOC(oldptr, size)	ogs_realloc(oldptr, size)

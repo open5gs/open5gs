@@ -6,6 +6,11 @@ permalink: /faq/
 
 #### Is it possible to setup IP/NAT table along with Docker?
 
+Enable IP Forward.
+```
+$ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
+```
+
 The following is the default docker IP/NAT table.
 
 ```
@@ -57,7 +62,7 @@ $ diff -u oldtables newtables
  -A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
  -A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER
  -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
-+-A POSTROUTING -s 45.45.0.0/16 ! -o pgwtun -j MASQUERADE
++-A POSTROUTING -s 45.45.0.0/16 ! -o ogstun -j MASQUERADE
  -A DOCKER -i docker0 -j RETURN
  COMMIT
  # Completed on Sat Jun  1 23:43:50 2019
@@ -65,10 +70,10 @@ $ diff -u oldtables newtables
  -A FORWARD -o docker0 -j DOCKER
  -A FORWARD -i docker0 ! -o docker0 -j ACCEPT
  -A FORWARD -i docker0 -o docker0 -j ACCEPT
-+-A FORWARD -o pgwtun -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-+-A FORWARD -o pgwtun -j DOCKER
-+-A FORWARD -i pgwtun ! -o pgwtun -j ACCEPT
-+-A FORWARD -i pgwtun -o pgwtun -j ACCEPT
++-A FORWARD -o ogstun -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
++-A FORWARD -o ogstun -j DOCKER
++-A FORWARD -i ogstun ! -o ogstun -j ACCEPT
++-A FORWARD -i ogstun -o ogstun -j ACCEPT
  -A DOCKER-ISOLATION-STAGE-1 -i docker0 ! -o docker0 -j DOCKER-ISOLATION-STAGE-2
  -A DOCKER-ISOLATION-STAGE-1 -j RETURN
  -A DOCKER-ISOLATION-STAGE-2 -o docker0 -j DROP
@@ -110,7 +115,7 @@ target     prot opt source               destination
 $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 
 ### Add NAT Rule
-$ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o pgwtun -j MASQUERADE
+$ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o ogstun -j MASQUERADE
 ```
 
 #### How to use a different APN for each PGW
@@ -120,7 +125,7 @@ By default, MME selects the PGW as the first PGW node. To use a different APN fo
 See the following example.
 
 ```
-### For reference, see `nextepc.conf`
+### For reference, see `pgw.yaml`
 #------------------------ MME --------------------------
 #
 #  o Two PGW are defined. 127.0.0.3:2123 is used.
@@ -156,19 +161,19 @@ See the following example.
 The IP address of the UE can also use a different UE pool depending on the APN.
 
 ```
-### For reference, see `nextepc.conf`
+### For reference, see `pgw.yaml`
 #
 #  <UE Pool>
 #
 #  o IPv4 Pool
-#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
+#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
 #
 #    ue_pool:
 #      addr: 45.45.0.1/16
 #
 #  o IPv4/IPv6 Pool
-#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
-#    $ sudo ip addr add cafe:1::1/64 dev pgwtun
+#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
+#    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #
 #    ue_pool:
 #      - addr: 45.45.0.1/16
@@ -177,10 +182,10 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 #
 #  o Specific APN(e.g 'volte') uses 45.46.0.1/16, cafe:2::1/64
 #    All other APNs use 45.45.0.1/16, cafe:1::1/64
-#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
-#    $ sudo ip addr add 45.46.0.1/16 dev pgwtun
-#    $ sudo ip addr add cafe:1::1/64 dev pgwtun
-#    $ sudo ip addr add cafe:2::1/64 dev pgwtun
+#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
+#    $ sudo ip addr add 45.46.0.1/16 dev ogstun
+#    $ sudo ip addr add cafe:1::1/64 dev ogstun
+#    $ sudo ip addr add cafe:2::1/64 dev ogstun
 #
 #    ue_pool:
 #      - addr: 45.45.0.1/16
@@ -190,22 +195,22 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 #      - addr: cafe:2::1/64
 #        apn: volte
 #
-#  o Multiple Devices (default: pgwtun)
-#    $ sudo ip addr add 45.45.0.1/16 dev pgwtun
-#    $ sudo ip addr add cafe:1::1/64 dev pgwtun2
-#    $ sudo ip addr add 45.46.0.1/16 dev pgwtun3
-#    $ sudo ip addr add cafe:2::1/64 dev pgwtun3
+#  o Multiple Devices (default: ogstun)
+#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
+#    $ sudo ip addr add cafe:1::1/64 dev ogstun2
+#    $ sudo ip addr add 45.46.0.1/16 dev ogstun3
+#    $ sudo ip addr add cafe:2::1/64 dev ogstun3
 #
 #    ue_pool:
 #      - addr: 45.45.0.1/16
 #      - addr: cafe:1::1/64
-#        dev: pgwtun2
+#        dev: ogstun2
 #      - addr: 45.46.0.1/16
 #        apn: volte
-#        dev: pgwtun3
+#        dev: ogstun3
 #      - addr: cafe:2::1/64
 #        apn: volte
-#        dev: pgwtun3
+#        dev: ogstun3
 #
 ```
 
@@ -214,11 +219,13 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 If you do not start MongoDB, you will get the following error:
 
 ```bash
-➜  nextepc git:(master) ✗ ./test/testsimple  
-04/09 15:42:34.817: [core] ERROR: Failed to conect to server [mongodb://localhost/nextepc] (context.c:326)  
-04/09 15:42:34.817: [core] ERROR: app_initialize() failed (basic/abts-main.c:91)  
-s1ap_message_test   : -04/09 15:42:34.830: [s1ap] ERROR: Failed to decode S1AP-PDU[-1] (s1ap_encoder.c:41)  
-04/09 15:42:34.830: [core] FATAL: ogs_log_vprintf: Assertion `domain' failed. (ogs-log.c:347)  
+$ ./install/bin/open5gs-hssd
+Open5GS daemon v1.0.0
+
+10/27 16:45:00.371: [app] INFO: Configuration: '/Users/acetcom/Documents/git/nextepc/install/etc/open5gs/hss.yaml' (../src/main.c:54)
+10/27 16:45:00.372: [app] INFO: File Logging: '/Users/acetcom/Documents/git/nextepc/install/var/log/open5gs/hss.log' (../src/main.c:57)
+10/27 16:45:00.377: [dbi] ERROR: Failed to connect to server [mongodb://localhost/open5gs] (../lib/dbi/ogs-mongoc.c:91)
+10/27 16:45:00.377: [app] ERROR: Failed to intialize HSS (../src/hss/app-init.c:28)
 ```
 
 You can start MongoDB using systemctl.
@@ -226,20 +233,13 @@ You can start MongoDB using systemctl.
 $ sudo systemctl start mongodb
 ```
 
-#### Failing to run `./nextepc-epcd`
+#### Failing to run `./open5gs-mmed`
 
-You might be getting the following error after running `./nextepc-epcd`.
+You might be getting the following error after running `./open5gs-mmed`.
 ```bash
-➜  nextepc git:(master) ./nextepc-epcd  
-04/09 15:41:02.600: [core] INFO: NextEPC daemon start (main.c:169)  
-04/09 15:41:02.601: [core] ERROR: CHECK PERMISSION of Installation Directory... (application.c:144)  
-04/09 15:41:02.601: [core] ERROR: Cannot create PID file:`/home/acetcom/Documents/git/open5gs/nextepc/install/var/run/nextepc-epcd/pid` (application.c:145)  
-04/09 15:41:02.601: [core] WARNING: log_pid: should not be reached. (application.c:146)  
-/home/acetcom/Documents/git/open5gs/nextepc/lib/ogslib/src/core/.libs/libogscore-1.0.so.0(ogs_abort+0x2b)[0x7f9d5d26d71b]  
-/home/acetcom/Documents/git/open5gs/nextepc/.libs/nextepc-epcd(+0x9606)[0x563a4ba23606]  
-/home/acetcom/Documents/git/open5gs/nextepc/.libs/nextepc-epcd(+0x8640)[0x563a4ba22640]  
-/home/acetcom/Documents/git/open5gs/nextepc/.libs/nextepc-epcd(+0x81f3)[0x563a4ba221f3]  
-[1]    9635 abort (core dumped)  ./nextepc-epcd
+$ ./build/src/mme/open5gs-mmed
+10/27 16:45:41.912: [app] FATAL: cannot open file `/Users/acetcom/Documents/git/nextepc/install/etc/open5gs/mme.yaml` (../lib/app/ogs-config.c:67)
+10/27 16:45:41.912: [app] FATAL: Open5GS initialization failed. Aborted (../src/main.c:211)
 ```
 
 You should perform **the installation process**.
@@ -248,17 +248,17 @@ You should perform **the installation process**.
 $ make install
 ```
 
-#### I have some error when running `./test/testcomplex`
+#### I have some error when running `./build/test/simple/simple`
 
-Did you see the following error after executing `testcomplex`?
+Did you see the following error after executing `./build/test/simple/simple`?
 ```bash
-➜  nextepc git:(master) ✗ ./test/testcomplex  
+$ ./build/test/simple/simple
 s1setup_test        : SUCCESS  
 attach_test         : -Line 134: Condition is false, but expected true  
 \04/09 15:49:09.285: [esm] FATAL: esm_handle_pdn_connectivity_request: Assertion `SECURITY_CONTEXT_IS_VALID(mme_ue)' failed. (esm_handler.c:29)  
-/home/acetcom/Documents/git/open5gs/nextepc/lib/ogslib/src/core/.libs/libogscore-1.0.so.0(ogs_abort+0x2b)[0x7f608518271b]  
-/home/acetcom/Documents/git/open5gs/nextepc/test/.libs/testcomplex(+0x92121)[0x55dc9e274121]  
-/home/acetcom/Documents/git/open5gs/nextepc/test/.libs/testcomplex(+0x4f5b9)[0x55dc9e2315b9]  
+/home/acetcom/Documents/git/open5gs/open5gs/lib/ogslib/src/core/.libs/libogscore-1.0.so.0(ogs_abort+0x2b)[0x7f608518271b]  
+/home/acetcom/Documents/git/open5gs/open5gs/test/.libs/testcomplex(+0x92121)[0x55dc9e274121]  
+/home/acetcom/Documents/git/open5gs/open5gs/test/.libs/testcomplex(+0x4f5b9)[0x55dc9e2315b9]  
 ```
 
 
@@ -272,15 +272,15 @@ $ mongo
 
 Kill all processes.
 ```bash
-$ ps -ef | grep testcomplex
-$ ps -ef | grep nextepc
-$ sudo pkill -9 testcomplex
-$ sudo pkill -9 nextepc-epcd ...
+$ ps -ef | grep simple
+$ ps -ef | grep open5gs
+$ sudo pkill -9 simple
+$ sudo pkill -9 open5gs-mmed ...
 ```
 
-Execute `testcomplex`
+Execute `./build/test/simple/simple`
 ```bash
-$ ./test/testcomplex
+$ ./build/test/simple/simple
 ```
 
 #### My eNB does not support IPv6.
@@ -294,7 +294,7 @@ parameter:
     no_ipv6: true
 ```
 
-**Note:** This parameter `no_ipv6` is only applied to EPC Elements such as MME, SGW, and so on. The parameter `no_ipv6` does not affect to UE. So, IPv6-enabled UE can connect to NextEPC LTE network.
+**Note:** This parameter `no_ipv6` is only applied to EPC Elements such as MME, SGW, and so on. The parameter `no_ipv6` does not affect to UE. So, IPv6-enabled UE can connect to Open5GS LTE network.
 {: .notice--warning}
 
 #### Unable to add new user by WebUI 
@@ -306,9 +306,9 @@ Please, delete corresponding cookies, cache, session data etc.
 
 You should configure the domain name on your computer. Otherwise, freeDiameter raise an error.
 
-#### How many of UEs can NextEPC support?
+#### How many of UEs can Open5GS support?
 
-See the [lib/base/types.h](https://github.com/{{ site.github_username }}/nextepc/blob/master/lib/base/types.h).
+See the [lib/core/ogs-3gpp-types.h](https://github.com/{{ site.github_username }}/open5gs/blob/master/lib/core/ogs-3gpp-types.h).
 
 ```
 #define MAX_NUM_OF_ENB              128
@@ -395,7 +395,7 @@ Currently, the number of UE is limited to `128*128`.
 
 #### The parsing errors are caused by tab spaces in the configuration files.
 
-YAML forbids tabs. You should use space instead of tab in NextEPC configuration file.
+YAML forbids tabs. You should use space instead of tab in Open5GS configuration file.
 
 ```markdown
 YAML FAQ: Why does YAML forbid tabs?
@@ -405,85 +405,66 @@ Tabs have been outlawed since they are treated differently by different editors 
 
 #### Cross compilation setup
 
-By default, NextEPC is designed to support the Embedding System. To do so, we introduced pool-based memory management. Unfortunately, we have not tested NextEPC in an embedded environment. I tried to compile on the ARM architecture using Docker and run it with QEMU for your reference.
+By default, Open5GS is designed to support the Embedding System. To do so, we introduced pool-based memory management. Unfortunately, we have not tested Open5GS in an embedded environment. I tried to compile on the ARM architecture using Docker and run it with QEMU for your reference.
 
 - We'll use Debian Docker Environment.
 
 ```bash
-$ git clone -r https://github.com/acetcom/nextepc
-$ cd nextepc/docker
+$ git clone https://github.com/acetcom/open5gs
+$ cd open5gs/docker
 $ DIST=debian docker-compose run dev
 ```
 
 - In Docker Container
 
 ```bash
-acetcom@nextepc-dev:~$ sudo dpkg --add-architecture armel
-acetcom@nextepc-dev:~$ sudo apt-get install libsctp-dev:armel libyaml-dev:armel libgnutls28-dev:armel libgcrypt-dev:armel libssl-dev:armel libmongoc-dev:armel libbson-dev:armel
-acetcom@nextepc-dev:~$ sudo apt-get install crossbuild-essential-armel
-acetcom@nextepc-dev:~$ sudo apt-get install qemu
+$ sudo dpkg --add-architecture armel
+$ sudo apt update
+$ sudo apt install libsctp-dev:armel libyaml-dev:armel libgnutls28-dev:armel libgcrypt-dev:armel libidn11-dev:armel libssl-dev:armel libmongoc-dev:armel libbson-dev:armel
+$ sudo apt install crossbuild-essential-armel
+$ sudo apt install qemu
+$ git clone https://github.com/acetcom/open5gs
+$ cd open5gs/
 
-acetcom@nextepc-dev:~$ mkdir git
-acetcom@nextepc-dev:~$ cd git/
-acetcom@nextepc-dev:~/git$ git clone https://github.com/acetcom/nextepc
-acetcom@nextepc-dev:~/git$ cd nextepc/
-acetcom@nextepc-dev:~/git/nextepc$ autoreconf -if;./configure --prefix=`pwd`/install --host=arm-linux-gnueabi;make -j 2
-acetcom@nextepc-dev:~/git/nextepc$ make install
-acetcom@nextepc-dev:~/git/nextepc$ qemu-arm .libs/nextepc-mmed
-NextEPC daemon v0.3.10 - Oct  4 2018 13:24:24
+$ cat << EOF > cross_file.txt
+[host_machine]
+system = 'linux'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
 
-[10/04 13:38:06.329] WARN: pid file /home/acetcom/git/nextepc/install/var/run/nextepc-mmed/pid overwritten -- Unclean shutdown of previous NextEPC run? (application.c:113)
-  PID[55780] : '/home/acetcom/git/nextepc/install/var/run/nextepc-mmed/pid'
-  File Logging : '/home/acetcom/git/nextepc/install/var/log/nextepc/nextepc.log'
-qemu: Unsupported syscall: 345
-qemu: Unsupported syscall: 345
-qemu: Unsupported syscall: 345
-qemu: Unsupported syscall: 345
-qemu: Unsupported syscall: 345
-qemu: Unsupported syscall: 345
-qemu: Unsupported syscall: 345
-qemu: Unsupported syscall: 345
-  MongoDB URI : 'mongodb://mongodb/nextepc'
-  Configuration : '/home/acetcom/git/nextepc/install/etc/nextepc/nextepc.conf'
-[10/04 13:38:06.400] MME try to initialize
-Unknown host QEMU_IFLA type: 40
-Unknown host QEMU_IFLA type: 41
-Unknown host QEMU_IFLA type: 40
-Unknown host QEMU_IFLA type: 41
+[binaries]
+c = '/usr/bin/arm-linux-gnueabi-gcc'
+ar = '/usr/bin/arm-linux-gnueabi-ar'
+strip = '/usr/bin/arm-linux-gnueabi-strip'
+pkgconfig = '/usr/bin/arm-linux-gnueabi-pkg-config'
+exe_wrapper = 'qemu'
+
+[properties]
+needs_exe_wrapper = true
+EOF
+
+$ meson build --prefix=`pwd`/install --cross-file cross_file.txt
+$ ninja -C build
+$ ./install/bin/open5gs-sgwd
+./install/bin/open5gs-sgwd
+Open5GS daemon v1.0.0
+
+10/27 08:37:33.158: [app] INFO: Configuration: '/home/acetcom/git/nextepc/install/etc/open5gs/sgw.yaml' (../src/main.c:54)
+10/27 08:37:33.166: [app] INFO: File Logging: '/home/acetcom/git/nextepc/install/var/log/open5gs/sgw.log' (../src/main.c:57)
 Unknown QEMU_IFLA_INFO_KIND ipip
-Unknown host QEMU_IFLA type: 40
-Unknown host QEMU_IFLA type: 41
 Unknown QEMU_IFLA_INFO_KIND ip6tnl
-Unknown host QEMU_IFLA type: 40
-Unknown host QEMU_IFLA type: 41
-Unknown host QEMU_IFLA type: 40
-Unknown host QEMU_IFLA type: 41
-Unknown host QEMU_IFLA type: 40
-Unknown host QEMU_IFLA type: 41
-Unknown host QEMU_IFLA type: 40
-Unknown host QEMU_IFLA type: 41
-Unknown QEMU_IFLA_INFO_KIND ipip
-Unknown host QEMU_IFLA type: 40
-Unknown host QEMU_IFLA type: 41
-Unknown QEMU_IFLA_INFO_KIND ip6tnl
-Unknown host QEMU_IFLA type: 40
-Unknown host QEMU_IFLA type: 41
-Unknown host QEMU_IFLA type: 40
-Unknown host QEMU_IFLA type: 41
-[10/04 13:38:08.693] gtp_server() [172.20.0.2]:2123
-[10/04 13:38:08.696] gtp_client() [127.0.0.2]:2123
-Unsupported setsockopt level=132 optname=11
-[10/04 13:38:08.697] ERRR: Unable to subscribe to SCTP events: (92:Protocol not available) (unix/sctp.c:291)
-[10/04 13:38:08.699] ASSERT: !(rv == CORE_OK).  (unix/sctp.c:33)
-[10/04 13:38:08.700] ERRR: sctp_server() [172.20.0.2]:36412 failed(92:Protocol not available) (unix/sctp.c:98)
-[10/04 13:38:08.701] ASSERT: !(rv == CORE_OK).  (s1ap_sctp.c:35)
-[10/04 13:38:08.702] ASSERT: !(rv == CORE_OK).  (s1ap_path.c:53)
-[10/04 13:38:08.703] ASSERT: !(rv == CORE_OK).  (s1ap_path.c:28)
-[10/04 13:38:08.704] ERRR: Can't establish S1AP path (mme_sm.c:63)
-[10/04 13:38:08.708] MME initialize...done
+10/27 08:37:33.225: [app] INFO: SGW initialize...done (../src/sgw/app-init.c:31)
+10/27 08:37:33.263: [gtp] INFO: gtp_server() [127.0.0.2]:2123 (../lib/gtp/path.c:32)
+10/27 08:37:33.265: [gtp] INFO: gtp_server() [172.20.0.4]:2152 (../lib/gtp/path.c:32)
 
+./install/bin/open5gs-hssd
+Open5GS daemon v1.0.0
 
-[10/04 13:38:08.710] INFO: NextEPC daemon start (main.c:157)
+10/27 08:37:45.754: [app] INFO: Configuration: '/home/acetcom/git/nextepc/install/etc/open5gs/hss.yaml' (../src/main.c:54)
+10/27 08:37:45.762: [app] INFO: File Logging: '/home/acetcom/git/nextepc/install/var/log/open5gs/hss.log' (../src/main.c:57)
+10/27 08:37:45.868: [dbi] INFO: MongoDB URI: 'mongodb://mongodb/open5gs' (../lib/dbi/ogs-mongoc.c:99)
+^Cgetsockopt level=132 optname=0 not yet supported
 ```
 
 The SCTP module is not included in the QEMU kernel. I believe that if the Linux kernel installed on your target platform contains an SCTP module, it will work normally.

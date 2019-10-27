@@ -1,15 +1,15 @@
 ---
-title: NextEPC Splitting Network Elements
+title: Open5GS Splitting Network Elements
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-In a production network network elements would typically not all be on the same machine, as is the default example that ships with NextEPC.
+In a production network network elements would typically not all be on the same machine, as is the default example that ships with Open5GS.
 
-NextEPC is designed to be standards compliant, so in theory you can connect any core network element (MME, PGW, SGW, PCRF, HSS) from NextEPC or any other vendor to form a functioning network, so long as they are 3GPP compliant. 
+Open5GS is designed to be standards compliant, so in theory you can connect any core network element (MME, PGW, SGW, PCRF, HSS) from Open5GS or any other vendor to form a functioning network, so long as they are 3GPP compliant. 
 
 To demonstrate this we will cover isolating each network element onto it's on machine and connect each network element to the other. For some interfaces specifying multiple interfaces is supported to allow connection to multiple
 
-In these examples we'll be connecting NextEPC elements together, but it could just as easily be EPC elements from a different vendor in the place of any NextEPC network element.
+In these examples we'll be connecting Open5GS elements together, but it could just as easily be EPC elements from a different vendor in the place of any Open5GS network element.
 
 | Service        | IP           | Identity |
 | ------------- |:-------------:|:-------------:|
@@ -27,11 +27,11 @@ In it's simplest from the P-GW has 3 interfaces:
  * Sgi - Connection to external network (Generally the Internet via standard TCP/IP)
  
 ### S5 Interface Configuration
-Edit ```/etc/nextepc/pgw.conf```and change the address to IP of the server running the P-GW for the listener on GTP-C and GTP-U interfaces.
+Edit ```/etc/open5gs/pgw.yaml``` and change the address to IP of the server running the P-GW for the listener on GTP-C and GTP-U interfaces.
 
 ```
 pgw:
-    freeDiameter: pgw.conf
+    freeDiameter: /etc/freeDiameter/pgw.conf
     gtpc: 
       addr:
         - 10.0.1.121
@@ -44,7 +44,7 @@ pgw:
 
 
 ### Gx Interface Configuration
-Edit ```/etc/nextepc/freeDiameter/pgwd.conf```
+Edit ```/etc/freeDiameter/pgw.conf```
 
 Update ```ListenOn``` address to IP of the server running the P-GW:
 
@@ -56,9 +56,9 @@ Update ConnectPeer to connect to the PCRF on it's IP.
 
 
 ### Restart Services
-Restart NextEPC PGW Daemon:
+Restart Open5GS PGW Daemon:
 
-``` $ sudo systemctl restart nextepc-pgwd ```
+``` $ sudo systemctl restart open5gs-pgwd ```
 
 
 # External S-GW
@@ -67,19 +67,19 @@ In it's simplest form the S-GW has 2 interfaces:
  * S5 - Connection to the home network P-GW (GTP-C)
 
 ### S5 Interface Configuration
-Edit ```/etc/nextepc/sgw.conf```and change the address to IP of the server running the S-GW for the listener on GTP-C interface.
+Edit ```/etc/open5gs/sgw.yaml``` and change the address to IP of the server running the S-GW for the listener on GTP-C interface.
 
 ```
 sgw:
-    freeDiameter: pgw.conf
+    freeDiameter: /etc/freeDiameter/pgw.conf
     gtpc: 
       addr:
         - 10.0.1.122
 ```
  
- Restart NextEPC SGW Daemon:
+ Restart Open5GS SGW Daemon:
 
-``` $ sudo systemctl restart nextepc-sgwd ```
+``` $ sudo systemctl restart open5gs-sgwd ```
 
 
 # External PCRF
@@ -87,7 +87,7 @@ In it's simplest from the PCRF has 1 network interface:
  * Gx - Connection to P-GW (Diameter)
 
 ### Gx Interface Configuration
-Edit ```/etc/nextepc/freeDiameter/hss.conf```
+Edit ```/etc/freeDiameter/hss.conf```
 
 Update ```ListenOn``` address to IP of the server running the HSS on it's IP:
 
@@ -97,19 +97,19 @@ Update ConnectPeer to connect to the MME.
 
 ```ConnectPeer = "pgw.localdomain" { ConnectTo = "10.0.1.121"; No_TLS; };```
 
-### MongoDB Interface Configuration (NextEPC HSS only)
-Edit ```/etc/nextepc/freeDiameter/hss.conf``` and change the ```db_uri:``` to point at the HSS: ```db_uri: mongodb://10.0.1.118/nextepc``` 
+### MongoDB Interface Configuration (Open5GS HSS only)
+Edit ```/etc/freeDiameter/hss.conf``` and change the ```db_uri:``` to point at the HSS: ```db_uri: mongodb://10.0.1.118/open5gs``` 
 
-Restart NextEPC PCRF Daemon:
+Restart Open5GS PCRF Daemon:
 
-``` $ sudo systemctl restart nextepc-pcrfd ```
+``` $ sudo systemctl restart open5gs-pcrfd ```
 
 # External HSS
 In it's simplest form the HSS has 1 network interface:
  * S6a - Connection to MME (Diameter)
 
 ### S6a Interface Configuration
-Edit ```/etc/nextepc/freeDiameter/hss.conf```
+Edit ```/etc/freeDiameter/hss.conf```
 
 Update ```ListenOn``` address to IP of the server running the HSS on it's IP:
 
@@ -119,12 +119,12 @@ Update ConnectPeer to connect to the MME.
 
 ```ConnectPeer = "mme.localdomain" { ConnectTo = "10.0.1.124"; No_TLS; };```
 
-Restart NextEPC HSS Daemon:
+Restart Open5GS HSS Daemon:
 
-``` $ sudo systemctl restart nextepc-hssd ```
+``` $ sudo systemctl restart open5gs-hssd ```
 
-### MongoDB Interface Configuration (NextEPC specific)
-If you are using NextEPC's HSS you may need to enable MongoDB access from the PCRF. This is done by editing ''/etc/mongodb.conf'' and changing the bind IP to:
+### MongoDB Interface Configuration (Open5GS specific)
+If you are using Open5GS's HSS you may need to enable MongoDB access from the PCRF. This is done by editing ''/etc/mongodb.conf'' and changing the bind IP to:
 ``` bind_ip = 0.0.0.0 ```
 
 Restart MongoDB for changes to take effect.
@@ -138,7 +138,7 @@ In it's simplest form the MME has 3 interfaces:
  * S11 - Connection to S-GW (GTP-C)
  
 ### S11 Interface Configuration
-Edit ```/etc/nextepc/mme.conf```, filling the IP address of the S-GW and P-GW servers.
+Edit ```/etc/open5gs/mme.yaml``` and filling the IP address of the S-GW and P-GW servers.
 ```
 sgw:
     gtpc:
@@ -151,7 +151,7 @@ pgw:
 ```
 
 ### S6a Interface Configuration
-Edit ```/etc/nextepc/freeDiameter/mme.conf```
+Edit ```/etc/freeDiameter/mme.conf```
 
 Update ```ListenOn``` address to IP of the server running the MME:
 
@@ -163,7 +163,7 @@ Update ConnectPeer to connect to the PCRF on it's IP.
 
 
 ### Restart Services
-Restart NextEPC MME Daemon:
+Restart Open5GS MME Daemon:
 
-``` $ sudo systemctl restart nextepc-mmed ```
+``` $ sudo systemctl restart open5gs-mmed ```
  

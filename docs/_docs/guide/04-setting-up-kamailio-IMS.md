@@ -3,7 +3,7 @@ title: Setting up Kamailio IMS
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-Setting up Kamailio IMS in OpenStack VM and connecting P-CSCF of Kamailio IMS with PCRF of NextEPC (Running on another OpenStak VM) - Install from deb packages
+Setting up Kamailio IMS in OpenStack VM and connecting P-CSCF of Kamailio IMS with PCRF of Open5GS (Running on another OpenStak VM) - Install from deb packages
 {: .blue}
 
 
@@ -1195,9 +1195,9 @@ password:  hss
 
 The steps are exactly the same as in Step 11, but now the usernames and passwords are alice and bob, which are the default users present in FoHSS.
 
-#### 18. Ensure NextEPC PCRF of the Core Network is configured to use IMS
+#### 18. Ensure Open5GS PCRF of the Core Network is configured to use IMS
 
-In nextepc.conf, add the floating IP of the VM running P-CSCF as shown below
+In open5gs.yaml, add the floating IP of the VM running P-CSCF as shown below
 
 ```
 parameter:
@@ -1208,19 +1208,19 @@ pcscf:
   - 172.24.15.21
 ```
 
-And, make sure to run NextEPC with Realm as created above "mnc096.mcc262.3gppnetwork.org" so that when a connection request from P-SCSF to PCRF with a FQDN pcrf.mnc096.mcc262.3gppnetwork.org it should be resolved as localhost of the NextEPC machine
+And, make sure to run Open5GS with Realm as created above "mnc096.mcc262.3gppnetwork.org" so that when a connection request from P-SCSF to PCRF with a FQDN pcrf.mnc096.mcc262.3gppnetwork.org it should be resolved as localhost of the Open5GS machine
 {: .notice--warning}
 
-- To change Realm in All-in-One NextEPC configuration
+- To change Realm in All-in-One Open5GS configuration
 
 ```
-$ cd ~/nextepc/install/etc/nextepc/freediameter
+$ cd ~/open5gs/install/etc/freediameter
 ```
 
 - And, change all the configuration files in freediameter folder (hss.conf, mme.conf, pcrf.conf, pgw.conf) to have desired Domain Name
-- Copy `make_certs.sh` from `~/nextepc/support/freeDiameter/` to `~/nextepc/install/etc/nextepc/freediameter`.
+- Copy `make_certs.sh` from `~/open5gs/misc` to `~/open5gs/install/etc/freediameter`.
 - Modify Domain Names in make_certs.sh and Generate the certificates using make_certs.sh
-- Insert additional "ConnectPeer" entry in `~/nextepc/install/etc/nextepc/freediameter/pcrf.conf` to connect to P-CSCF as show below
+- Insert additional "ConnectPeer" entry in `~/open5gs/install/etc/freediameter/pcrf.conf` to connect to P-CSCF as show below
 
 ```
 ConnectPeer = "pcscf.mnc096.mcc262.3gppnetwork.org" { ConnectTo = "172.24.15.21"; Port=3871; No_TLS; NO_SCTP; };

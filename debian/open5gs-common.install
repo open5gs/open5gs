@@ -1,0 +1,5 @@
+usr/lib/*/libogs*.so*
+usr/lib/*/libfd*.so*
+usr/lib/*/freeDiameter/*.fdx
+configs/freeDiameter/cacert.pem /etc/freeDiameter
+configs/logrotate/open5gs /etc/logrotate.d

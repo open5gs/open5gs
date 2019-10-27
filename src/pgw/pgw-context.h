@@ -20,10 +20,14 @@
 #ifndef PGW_CONTEXT_H
 #define PGW_CONTEXT_H
 
+#include "pgw-config.h"
+
+#if HAVE_NET_IF_H
 #include <net/if.h>
+#endif
 
 #include "ogs-gtp.h"
-#include "diameter/ogs-gx.h"
+#include "ogs-diameter-gx.h"
 #include "ogs-app.h"
 
 #ifdef __cplusplus
@@ -44,7 +48,7 @@ typedef struct pgw_context_s {
 
     uint32_t        gtpc_port;      /* Default: PGW GTP-C local port */
     uint32_t        gtpu_port;      /* Default: PGW GTP-U local port */
-    const char      *tun_ifname;    /* Default:: pgwtun */
+    const char      *tun_ifname;    /* Default: ogstun */
 
     ogs_list_t      gtpc_list;      /* PGW GTPC IPv4 Server List */
     ogs_list_t      gtpc_list6;     /* PGW GTPC IPv6 Server List */
@@ -222,7 +226,7 @@ pgw_sess_t *pgw_sess_add(
         uint8_t *imsi, int imsi_len, char *apn,
         uint8_t pdn_type, uint8_t ebi);
 int pgw_sess_remove(pgw_sess_t *sess);
-void pgw_sess_remove_all();
+void pgw_sess_remove_all(void);
 pgw_sess_t *pgw_sess_find(uint32_t index);
 pgw_sess_t *pgw_sess_find_by_teid(uint32_t teid);
 
@@ -249,15 +253,15 @@ pgw_pf_t *pgw_pf_find_by_id(pgw_bearer_t *pgw_bearer, uint8_t id);
 pgw_pf_t *pgw_pf_first(pgw_bearer_t *bearer);
 pgw_pf_t *pgw_pf_next(pgw_pf_t *pf);
 
-int pgw_ue_pool_generate();
+int pgw_ue_pool_generate(void);
 pgw_ue_ip_t *pgw_ue_ip_alloc(int family, const char *apn);
 int pgw_ue_ip_free(pgw_ue_ip_t *ip);
 
 pgw_dev_t *pgw_dev_add(const char *ifname);
 int pgw_dev_remove(pgw_dev_t *dev);
-void pgw_dev_remove_all();
+void pgw_dev_remove_all(void);
 pgw_dev_t *pgw_dev_find_by_ifname(const char *ifname);
-pgw_dev_t *pgw_dev_first();
+pgw_dev_t *pgw_dev_first(void);
 pgw_dev_t *pgw_dev_next(pgw_dev_t *dev);
 
 pgw_subnet_t *pgw_subnet_add(
@@ -265,8 +269,8 @@ pgw_subnet_t *pgw_subnet_add(
         const char *apn, const char *ifname);
 pgw_subnet_t *pgw_subnet_next(pgw_subnet_t *subnet);
 int pgw_subnet_remove(pgw_subnet_t *subnet);
-void pgw_subnet_remove_all();
-pgw_subnet_t *pgw_subnet_first();
+void pgw_subnet_remove_all(void);
+pgw_subnet_t *pgw_subnet_first(void);
 pgw_subnet_t *gw_subnet_next(pgw_subnet_t *subnet);
 
 #ifdef __cplusplus

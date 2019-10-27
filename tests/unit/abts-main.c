@@ -23,7 +23,6 @@ abts_suite *test_s1ap_message(abts_suite *suite);
 abts_suite *test_nas_message(abts_suite *suite);
 abts_suite *test_gtp_message(abts_suite *suite);
 abts_suite *test_security(abts_suite *suite);
-abts_suite *test_sctp(abts_suite *suite);
 abts_suite *test_crash(abts_suite *suite);
 
 const struct testlist {
@@ -33,7 +32,6 @@ const struct testlist {
     {test_nas_message},
     {test_gtp_message},
     {test_security},
-    {test_sctp},
     {test_crash},
     {NULL},
 };
@@ -41,14 +39,13 @@ const struct testlist {
 static void terminate(void)
 {
     mme_context_final();
-    ogs_sctp_final();
 
     ogs_pkbuf_default_destroy();
 
     ogs_core_terminate();
 }
 
-int main(int argc, char **argv)
+int main(int argc, const char *const argv[])
 {
     int rv, i, opt;
     ogs_getopt_t options;
@@ -56,7 +53,7 @@ int main(int argc, char **argv)
         char *log_level;
         char *domain_mask;
     } optarg;
-    char *argv_out[argc+2]; /* '-e error' is always added */
+    const char *argv_out[argc+2]; /* '-e error' is always added */
     
     abts_suite *suite = NULL;
     ogs_pkbuf_config_t config;
@@ -65,7 +62,7 @@ int main(int argc, char **argv)
     if (rv != OGS_OK) return rv;
 
     memset(&optarg, 0, sizeof(optarg));
-    ogs_getopt_init(&options, argv_out);
+    ogs_getopt_init(&options, (char**)argv_out);
 
     while ((opt = ogs_getopt(&options, "e:m:")) != -1) {
         switch (opt) {
@@ -90,7 +87,6 @@ int main(int argc, char **argv)
 
     ogs_config_init();
     mme_context_init();
-    ogs_sctp_init(ogs_config()->usrsctp.udp_port);
 
     atexit(terminate);
 

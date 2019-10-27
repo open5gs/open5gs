@@ -23,6 +23,7 @@
 #include "mme-gtp-path.h"
 
 #include "esm-build.h"
+#include "esm-handler.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __esm_log_domain

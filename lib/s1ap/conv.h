@@ -24,8 +24,6 @@
 #ifndef OGS_S1AP_CONV_H
 #define OGS_S1AP_CONV_H
 
-#include "ogs-s1ap.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

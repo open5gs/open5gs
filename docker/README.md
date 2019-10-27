@@ -15,8 +15,8 @@ Docker running example
     -f docker-compose.yml -f docker-compose.test.yml run test
 
 * Test(ubuntu:artful)
-  $ TAG=artful docker-compose build
-  $ TAG=artful docker-compose \
+  $ TAG=eoan docker-compose build
+  $ TAG=eoan docker-compose \
     -f docker-compose.yml -f docker-compose.test.yml run test
 
 * Development(fedora:latest)
@@ -24,8 +24,8 @@ Docker running example
   $ DIST=fedora docker-compose run dev
 
 * Runtime(debian:jessie)
-  $ DIST=debian TAG=jessie docker-compose build
-  $ DIST=debian TAG=jessie docker-compose 
+  $ DIST=debian TAG=stretch docker-compose build
+  $ DIST=debian TAG=stretch docker-compose 
     -f docker-compose.yml -f docker-compose.run.yml run run
 
 * All Test with All Environment
@@ -66,11 +66,19 @@ export DEBEMAIL='acetcom@gmail.com'
   $ gpg --export > public.asc
   $ gpg --import public.asc
 
+* Upload OpenBuildService
+  $ dch -i
+  $ debuild -S -uc -us -d
+  $ osc co home:acetcom:open5gs latest
+  $ cd home\:acetcom\:open5gs/latest/
+  $ cp ~/git/open5gs_1.0.0.* .
+  $ osc ci -m "Update it"
+
 * Upload LaunchPad
   $ dch -i
-  $ debuild -S
-  $ dput ppa:acetcom/nextepc *.source.changes
+  $ debuild -S -d
+  $ dput ppa:open5gs/latest *.source.changes
 
-* Build pckage
-  $ dpkg-buildpackage
+* Build package
+  $ dpkg-buildpackage -d
 

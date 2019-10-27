@@ -1,0 +1,4 @@
+usr/bin/open5gs-hssd
+configs/freeDiameter/hss.* etc/freeDiameter
+configs/open5gs/hss.yaml etc/open5gs
+configs/systemd/open5gs-hssd.service lib/systemd/system

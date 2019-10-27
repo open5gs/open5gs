@@ -346,7 +346,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(mme_ue);
         s6abuf = e->pkbuf;
         ogs_assert(s6abuf);
-        s6a_message = s6abuf->data;
+        s6a_message = (ogs_diam_s6a_message_t *)s6abuf->data;
         ogs_assert(s6a_message);
 
         if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {

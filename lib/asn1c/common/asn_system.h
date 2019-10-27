@@ -9,11 +9,7 @@
 #define	ASN_SYSTEM_H
 
 #ifdef	HAVE_CONFIG_H
-#if 0 /* modified by acetcom */
 #include "config.h"
-#else
-#include "ogs-common.h"
-#endif
 #endif
 
 #ifndef _DEFAULT_SOURCE

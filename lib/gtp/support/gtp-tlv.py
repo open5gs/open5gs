@@ -379,7 +379,7 @@ f.write("""#if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
 #ifndef OGS_GTP_MESSAGE_H
 #define OGS_GTP_MESSAGE_H
 
-#include "ogs-gtp-tlv.h"
+#include "gtp/tlv.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -609,7 +609,7 @@ f.write("""int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pk
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
-    h = pkbuf->data;
+    h = (ogs_gtp_header_t *)pkbuf->data;
     ogs_assert(h);
     
     memset(gtp_message, 0, sizeof(ogs_gtp_message_t));

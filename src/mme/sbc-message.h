@@ -20,7 +20,7 @@
 #ifndef SBC_MESSAGE_H
 #define SBC_MESSAGE_H
 
-#include "ogs-common.h"
+#include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {

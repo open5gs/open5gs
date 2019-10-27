@@ -1,0 +1,35 @@
+logger:
+    file: @localstatedir@/log/open5gs/mme.log
+
+parameter:
+
+mme:
+    freeDiameter: @sysconfdir@/freeDiameter/mme.conf
+    s1ap:
+    gtpc:
+    gummei: 
+      plmn_id:
+        mcc: 001
+        mnc: 01
+      mme_gid: 2
+      mme_code: 1
+    tai:
+      plmn_id:
+        mcc: 001
+        mnc: 01
+      tac: 12345
+    security:
+        integrity_order : [ EIA1, EIA2, EIA0 ]
+        ciphering_order : [ EEA0, EEA1, EEA2 ]
+    network_name:
+        full: Open5GS
+
+sgw:
+    gtpc:
+      addr: 127.0.0.2
+
+pgw:
+    gtpc:
+      addr:
+        - 127.0.0.3
+        - ::1

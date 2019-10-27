@@ -23,7 +23,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
 {
     int rv;
     /* Create Session Request */
-    char *_payload = 
+    const char *_payload = 
         "0100080055153011 340010f44c000600 9471527600414b00 0800536120009178"
         "840056000d001855 f501102255f50100 019d015300030055 f501520001000657"
         "0009008a80000084 0a32360a57000901 87000000000a3236 254700220005766f"
@@ -44,7 +44,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
     ogs_paa_t paa;
     ogs_gtp_ambr_t ambr;
     ogs_pco_t pco;
-    char pcobuf[OGS_MAX_PCO_LEN];
+    unsigned char pcobuf[OGS_MAX_PCO_LEN];
     ogs_gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     ogs_gtp_ue_timezone_t ue_timezone;
@@ -106,7 +106,7 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.pgw_s5_s8_address_for_control_plane_or_pmip.len =
         OGS_GTP_F_TEID_IPV4_LEN;
 
-    _value = "05766f6c7465036e 6732046d6e657406 6d6e63303130066d 6363353535046770 7273";
+    _value = (char*)"05766f6c7465036e 6732046d6e657406 6d6e63303130066d 6363353535046770 7273";
     req.access_point_name.presence = 1;
     req.access_point_name.data = OGS_HEX(_value, strlen(_value), apnbuf);
     req.access_point_name.len = sizeof(apnbuf);
@@ -194,19 +194,19 @@ static void gtp_message_test1(abts_case *tc, void *data)
 
     ABTS_INT_EQUAL(tc, 1, req.imsi.presence);
     ABTS_INT_EQUAL(tc, 8, req.imsi.len);
-    _value = "55153011 340010f4";
+    _value = (char*)"55153011 340010f4";
     ABTS_TRUE(tc, memcmp(OGS_HEX(_value, strlen(_value), hexbuf), 
                 req.imsi.data, req.imsi.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.msisdn.presence);
     ABTS_INT_EQUAL(tc, 6, req.msisdn.len);
-    _value = "94715276 0041";
+    _value = (char*)"94715276 0041";
     ABTS_TRUE(tc, memcmp(OGS_HEX(_value, strlen(_value), hexbuf), 
                 req.msisdn.data, req.msisdn.len) == 0);
 
     ABTS_INT_EQUAL(tc, 1, req.me_identity.presence);
     ABTS_INT_EQUAL(tc, 8, req.me_identity.len);
-    _value = "53612000 91788400";
+    _value = (char*)"53612000 91788400";
     ABTS_TRUE(tc, memcmp(OGS_HEX(_value, strlen(_value), hexbuf),
         req.me_identity.data, req.me_identity.len) == 0);
 

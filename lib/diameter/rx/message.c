@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "diameter/ogs-rx.h"
+#include "ogs-diameter-rx.h"
 
 void ogs_diam_rx_message_free(ogs_diam_rx_message_t *rx_message)
 {

@@ -24,7 +24,7 @@
 #ifndef OGS_NAS_TYPES_H
 #define OGS_NAS_TYPES_H
 
-#include "ogs-common.h"
+#include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,8 +33,7 @@ extern "C" {
 #define OGS_NAS_CLEAR_DATA(__dATA) \
     do { \
         ogs_assert((__dATA)); \
-        if ((__dATA)->buffer) \
-        { \
+        if ((__dATA)->buffer) { \
             ogs_free((__dATA)->buffer); \
             (__dATA)->buffer = NULL; \
             (__dATA)->length = 0; \

@@ -32,7 +32,9 @@ int sgsap_open()
 
     ogs_list_for_each(&mme_self()->vlr_list, vlr) {
         mme_event_t e;
+
         e.vlr = vlr;
+        e.id = 0;
 
         ogs_fsm_create(&vlr->sm, sgsap_state_initial, sgsap_state_final);
         ogs_fsm_init(&vlr->sm, &e);

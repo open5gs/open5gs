@@ -27,7 +27,7 @@ int __pcrf_log_domain;
 
 static int context_initialized = 0;
 
-pcrf_context_t* pcrf_self()
+pcrf_context_t *pcrf_self(void)
 {
     return &self;
 }
@@ -67,7 +67,7 @@ void pcrf_context_final(void)
     context_initialized = 0;
 }
 
-static int pcrf_context_prepare()
+static int pcrf_context_prepare(void)
 {
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
@@ -75,7 +75,7 @@ static int pcrf_context_prepare()
     return OGS_OK;
 }
 
-static int pcrf_context_validation()
+static int pcrf_context_validation(void)
 {
     if (self.diam_conf_path == NULL &&
         (self.diam_config->cnf_diamid == NULL ||
@@ -89,7 +89,7 @@ static int pcrf_context_validation()
     return OGS_OK;
 }
 
-int pcrf_context_parse_config()
+int pcrf_context_parse_config(void)
 {
     int rv;
     yaml_document_t *document = NULL;

@@ -1,0 +1,4 @@
+[wrap-git]
+directory = usrsctp
+url = https://github.com/sctplab/usrsctp.git
+revision = master

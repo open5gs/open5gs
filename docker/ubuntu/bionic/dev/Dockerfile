@@ -1,7 +1,7 @@
 ARG dist=ubuntu
 ARG tag=latest
 ARG username=acetcom
-FROM ${username}/${dist}-${tag}-nextepc-base
+FROM ${username}/${dist}-${tag}-open5gs-base
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
@@ -14,8 +14,6 @@ RUN apt-get update && \
         devscripts \
         osc \
         dput \
-        dh-autoreconf \
-        dh-systemd \
         manpages-dev \
         fakeroot \
         cscope \

@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-09-10 21:31:45.122396 by acetcom
+ * Created on: 2019-09-26 22:10:18.839117 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -2771,7 +2771,7 @@ int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
-    h = pkbuf->data;
+    h = (ogs_gtp_header_t *)pkbuf->data;
     ogs_assert(h);
     
     memset(gtp_message, 0, sizeof(ogs_gtp_message_t));

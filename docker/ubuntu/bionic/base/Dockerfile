@@ -7,13 +7,10 @@ MAINTAINER Sukchan Lee <acetcom@gmail.com>
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
-        autoconf \
-        automake \
-        libtool \
         python3-pip \
         python3-setuptools \
         ninja-build \
-        gcc \
+        build-essential \
         flex \
         bison \
         git \
@@ -25,7 +22,6 @@ RUN apt-get update && \
         libmongoc-dev \
         libbson-dev \
         libyaml-dev \
-        build-essential \
         iproute2 \
         ca-certificates \
         netbase \

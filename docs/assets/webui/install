@@ -4,13 +4,13 @@
 #
 # Run as root or insert `sudo -E` before `bash`:
 #
-# curl -sL http://nextepc.org/static/setup_3.x | bash -
+# curl -sL http://open5gs.org/static/setup_3.x | bash -
 #   or
-# wget -qO- http://nextepc.org/static/setup_3.x | bash -
+# wget -qO- http://open5gs.org/static/setup_3.x | bash -
 #
 
-PACKAGE="nextepc"
-VERSION="0.5.1"
+PACKAGE="open5gs"
+VERSION="1.0.0"
 
 print_status() {
     echo
@@ -68,8 +68,8 @@ exec_cmd() {
 }
 
 uninstall() {
-exec_cmd_nobail "deb-systemd-invoke stop nextepc-webui"
-exec_cmd_nobail "systemctl disable nextepc-webui"
+exec_cmd_nobail "deb-systemd-invoke stop open5gs-webui"
+exec_cmd_nobail "systemctl disable open5gs-webui"
 exec_cmd_nobail "rm -f /lib/systemd/system/${PACKAGE}-webui.service"
 exec_cmd_nobail "systemctl daemon-reload"
 
@@ -105,7 +105,7 @@ fi
 
 uninstall
 
-print_status "Download the NextEPC Source Code (v${VERSION})..."
+print_status "Download the Open5GS Source Code (v${VERSION})..."
 if [ -x /usr/bin/curl ]; then
     exec_cmd "curl -sLf 'https://github.com/acetcom/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
     RC=$?
@@ -114,23 +114,23 @@ else
     RC=$?
 fi
 
-print_status "Build the NextEPC WebUI..."
+print_status "Build the Open5GS WebUI..."
 exec_cmd "cd ./${PACKAGE}-${VERSION}/webui && npm install && npm run build"
 
-print_status "Install the NextEPC WebUI..."
+print_status "Install the Open5GS WebUI..."
 exec_cmd "mv ./${PACKAGE}-${VERSION}/webui /usr/lib/node_modules/${PACKAGE}"
-exec_cmd_nobail "chown -R nextepc:nextepc /usr/lib/node_modules/${PACKAGE}"
+exec_cmd_nobail "chown -R open5gs:open5gs /usr/lib/node_modules/${PACKAGE}"
 
-exec_cmd "cat << EOF > /lib/systemd/system/nextepc-webui.service
+exec_cmd "cat << EOF > /lib/systemd/system/open5gs-webui.service
 [Unit]
-Description=NextEPC WebUI
+Description=Open5GS WebUI
 BindTo=mongodb.service
 After=networking.service mongodb.service
 
 [Service]
 Type=simple
 
-WorkingDirectory=/usr/lib/node_modules/nextepc
+WorkingDirectory=/usr/lib/node_modules/open5gs
 Environment=NODE_ENV=production
 ExecStart=/usr/bin/node server/index.js
 Restart=always
@@ -141,8 +141,8 @@ WantedBy=multi-user.target
 EOF"
 
 exec_cmd_nobail "systemctl daemon-reload"
-exec_cmd "systemctl enable nextepc-webui"
-exec_cmd "deb-systemd-invoke start nextepc-webui"
+exec_cmd "systemctl enable open5gs-webui"
+exec_cmd "deb-systemd-invoke start open5gs-webui"
 
 exec_cmd "rm -rf ./${PACKAGE}-${VERSION}"
 }

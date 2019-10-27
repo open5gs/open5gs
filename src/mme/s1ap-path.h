@@ -31,8 +31,8 @@ extern "C" {
 
 #define s1ap_event_push  mme_sctp_event_push
 
-int s1ap_open();
-void s1ap_close();
+int s1ap_open(void);
+void s1ap_close(void);
 
 ogs_sock_t *s1ap_server(ogs_socknode_t *node);
 void s1ap_recv_handler(short when, ogs_socket_t fd, void *data);

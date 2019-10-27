@@ -88,12 +88,12 @@ SMSP: ffffffffffffffffffffffffffffffffffffffffffffffffe1ffffffffffffffffffffffff
 
 ###### Program your SIM card like the followings:
 ```
-./pySim-prog.py -p 0 -n NextEPC -a 62416296 -s 8988211000000213010 -i 310789012345301 -x 310 -y 789 -k 82E9053A1882085FF2C020359938DAE9 -o BFD5771AAF4F6728E9BC6EF2C2533BDB
+./pySim-prog.py -p 0 -n Open5GS -a 62416296 -s 8988211000000213010 -i 310789012345301 -x 310 -y 789 -k 82E9053A1882085FF2C020359938DAE9 -o BFD5771AAF4F6728E9BC6EF2C2533BDB
 Using PC/SC reader (dev=0) interface
 Insert card now (or CTRL-C to cancel)
 Autodetected card type: sysmoUSIM-SJS1
 Generated card parameters :
- > Name    : NextEPC
+ > Name    : Open5GS
  > SMSP    : e1ffffffffffffffffffffffff0581005155f5ffffffffffff000000
  > ICCID   : 8988211000000213010
  > MCC/MNC : 310/789
@@ -151,9 +151,9 @@ Download and build srsLTE:
 ➜  build git:(master) ✗ make test
 ```
 
-#### 3. NextEPC
+#### 3. Open5GS
 
-The NextEPC package is available on the recent versions of *Ubuntu*.
+The Open5GS package is available on the recent versions of *Ubuntu*.
 
 ```bash
 # Getting the authentication key
@@ -161,24 +161,24 @@ $ sudo apt install wget
 $ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/Release.key
 $ sudo apt-key add Release.key
 
-# Installing NextEPC
+# Installing Open5GS
 $ sudo sh -c "echo 'deb https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/ ./' > /etc/apt/sources.list.d/open5gs.list"
 $ sudo apt update
-$ sudo apt install nextepc
+$ sudo apt install open5gs
 ```
 
-The following shows how to install the Web UI of NextEPC.
+The following shows how to install the Web UI of Open5GS.
 
 ```bash
 $ curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 $ sudo apt install nodejs
-$ curl -sL http://nextepc.org/static/webui/install | sudo -E bash -
+$ curl -sL http://open5gs.org/static/webui/install | sudo -E bash -
 ```
 
 ### Configuration & Running
 ---
 
-#### 1. NextEPC
+#### 1. Open5GS
 
 When you purchase the sysmoUSIM, you will receive the following information via e-mail.
 
@@ -219,12 +219,12 @@ Then proceed as follows:
   3. Fill the IMSI, security context(K, OPc, AMF), and APN of the subscriber.
   4. Click `SAVE` Button
 
-Modify [/etc/nextepc/mme.conf](https://github.com/{{ site.github_username }}/nextepc/blob/master/support/config/mme.conf.in) to set the S1AP/GTP-C IP address, PLMN ID, and TAC
+Modify [/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP/GTP-C IP address, PLMN ID, and TAC
 
 ```diff
-diff -u mme.conf.old mme.conf
---- mme.conf.old	2018-04-15 18:28:31.000000000 +0900
-+++ mme.conf	2018-04-15 19:53:10.000000000 +0900
+diff -u mme.yaml.old mme.yaml
+--- mme.yaml.old	2018-04-15 18:28:31.000000000 +0900
++++ mme.yaml	2018-04-15 19:53:10.000000000 +0900
 @@ -14,18 +14,20 @@
  mme:
      freeDiameter: mme.conf
@@ -263,12 +263,12 @@ TAC : 7 - srsENB default value
 ```
 
 
-The GTP-U IP address will be set to 127.0.0.2. To do this, modify [/etc/nextepc/sgw.conf](https://github.com/{{ site.github_username }}/nextepc/blob/master/support/config/sgw.conf.in) to set the GTP-U IP address.  
+The GTP-U IP address will be set to 127.0.0.2. To do this, modify [/etc/open5gs/sgw.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgw.yaml.in) to set the GTP-U IP address.  
 
 ```diff
-diff -u /etc/nextepc/sgw.conf.old /etc/nextepc/sgw.conf
---- sgw.conf.old	2018-04-15 18:30:25.000000000 +0900
-+++ sgw.conf	2018-04-15 18:30:30.000000000 +0900
+diff -u /etc/open5gs/sgw.yaml.old /etc/open5gs/sgw.yaml
+--- sgw.yaml.old	2018-04-15 18:30:25.000000000 +0900
++++ sgw.yaml	2018-04-15 18:30:30.000000000 +0900
 @@ -14,3 +14,4 @@
      gtpc:
        addr: 127.0.0.2
@@ -276,14 +276,14 @@ diff -u /etc/nextepc/sgw.conf.old /etc/nextepc/sgw.conf
 +      addr: 127.0.0.2
 ```
 
-After changing conf files, please restart NextEPC daemons.
+After changing conf files, please restart Open5GS daemons.
 
 ```bash
-$ sudo systemctl restart nextepc-mmed
-$ sudo systemctl restart nextepc-sgwd
+$ sudo systemctl restart open5gs-mmed
+$ sudo systemctl restart open5gs-sgwd
 ```
 
-If your phone can connect to internet, you must run the following command in NextEPC-PGW installed host. 
+If your phone can connect to internet, you must run the following command in Open5GS-PGW installed host. 
 
 ```bash
 ### Check IP Tables
@@ -315,7 +315,7 @@ target     prot opt source               destination
 $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 
 ### Add NAT Rule
-$ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o pgwtun -j MASQUERADE
+$ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o ogstun -j MASQUERADE
 ```
 
 **Note:** For the first time, it is a good condition if you do not have any rules in the IP/NAT tables. If a program such as docker has already set up a rule, you will need to add a rule differently.
@@ -440,4 +440,4 @@ Type <t> to view trace
 ---
 
 - You can see actual traffic through wireshark -- [[srsenb.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/srsenb.pcapng).
-- You can view the log at `/var/log/nextepc/*.log`.
+- You can view the log at `/var/log/open5gs/*.log`.

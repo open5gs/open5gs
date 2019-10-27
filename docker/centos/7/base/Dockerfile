@@ -4,9 +4,13 @@ FROM ${dist}:${tag}
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
+RUN yum -y install epel-release
+RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+RUN yum -y update
+
 RUN yum -y install \
-        autoconf \
-        libtool \
+        python3 \
+        ninja-build \
         gcc \
         flex \
         bison \
@@ -18,13 +22,7 @@ RUN yum -y install \
         openssl-devel \
         cyrus-sasl-devel \
         libyaml-devel \
-        iproute
+        iproute \
+        mongo-c-driver-devel
 
-RUN yum -y install epel-release && \
-    yum -y install mongo-c-driver-devel
-
-RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm && \
-    yum install -y python36u python36u-libs python36u-devel python36u-pip \
-    yum install -y ninja-build
-
-RUN pip3.6 install meson
+RUN pip3 install --upgrade pip && pip install meson

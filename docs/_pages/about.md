@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-NextEPC is a C-language Open Source implementation of the 3GPP Evolved Packet Core, i.e. the core network of an LTE network.
+Open5GS is a C-language Open Source implementation of the 3GPP Evolved Packet Core, i.e. the core network of an LTE network.
 
 #### Supported Features
 ---

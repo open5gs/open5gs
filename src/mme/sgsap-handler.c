@@ -20,6 +20,7 @@
 #include "sgsap-types.h"
 #include "sgsap-build.h"
 #include "sgsap-path.h"
+#include "sgsap-handler.h"
 
 #include "mme-sm.h"
 #include "mme-context.h"

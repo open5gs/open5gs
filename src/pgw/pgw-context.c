@@ -17,9 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <mongoc.h>
-#include <yaml.h>
-
 #include "pgw-context.h"
 
 static pgw_context_t self;
@@ -37,7 +34,7 @@ static OGS_POOL(pgw_pf_pool, pgw_pf_t);
 
 static int context_initiaized = 0;
 
-void pgw_context_init()
+void pgw_context_init(void)
 {
     ogs_assert(context_initiaized == 0);
 
@@ -76,7 +73,7 @@ void pgw_context_init()
     context_initiaized = 1;
 }
 
-void pgw_context_final()
+void pgw_context_final(void)
 {
     ogs_assert(context_initiaized == 1);
 
@@ -99,24 +96,24 @@ void pgw_context_final()
     context_initiaized = 0;
 }
 
-pgw_context_t *pgw_self()
+pgw_context_t *pgw_self(void)
 {
     return &self;
 }
 
-static int pgw_context_prepare()
+static int pgw_context_prepare(void)
 {
     self.gtpc_port = OGS_GTPV2_C_UDP_PORT;
     self.gtpu_port = OGS_GTPV1_U_UDP_PORT;
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
 
-    self.tun_ifname = "pgwtun";
+    self.tun_ifname = "ogstun";
 
     return OGS_OK;
 }
 
-static int pgw_context_validation()
+static int pgw_context_validation(void)
 {
     if (self.diam_conf_path == NULL &&
         (self.diam_config->cnf_diamid == NULL ||
@@ -146,7 +143,7 @@ static int pgw_context_validation()
     return OGS_OK;
 }
 
-int pgw_context_parse_config()
+int pgw_context_parse_config(void)
 {
     int rv;
     yaml_document_t *document = NULL;
@@ -711,6 +708,8 @@ pgw_sess_t *pgw_sess_add(
 
     ogs_pool_alloc(&pgw_sess_pool, &sess);
     ogs_assert(sess);
+    memset(sess, 0, sizeof *sess);
+
     sess->index = ogs_pool_index(&pgw_sess_pool, sess);
     ogs_assert(sess->index > 0 && sess->index <= ogs_config()->pool.sess);
 
@@ -792,7 +791,7 @@ int pgw_sess_remove(pgw_sess_t *sess)
     return OGS_OK;
 }
 
-void pgw_sess_remove_all()
+void pgw_sess_remove_all(void)
 {
     pgw_sess_t *sess = NULL, *next = NULL;;
 
@@ -892,6 +891,8 @@ pgw_bearer_t *pgw_bearer_add(pgw_sess_t *sess)
 
     ogs_pool_alloc(&pgw_bearer_pool, &bearer);
     ogs_assert(bearer);
+    memset(bearer, 0, sizeof *bearer);
+
     bearer->index = ogs_pool_index(&pgw_bearer_pool, bearer);
     ogs_assert(bearer->index > 0 && bearer->index <=
             ogs_config()->pool.bearer);
@@ -1044,6 +1045,7 @@ pgw_pf_t *pgw_pf_add(pgw_bearer_t *bearer, uint32_t precedence)
 
     ogs_pool_alloc(&pgw_pf_pool, &pf);
     ogs_assert(pf);
+    memset(pf, 0, sizeof *pf);
 
     pf->identifier = OGS_NEXT_ID(bearer->pf_identifier, 1, 15);
     pf->bearer = bearer;
@@ -1098,7 +1100,7 @@ pgw_pf_t *pgw_pf_next(pgw_pf_t *pf)
     return ogs_list_next(pf);
 }
 
-int pgw_ue_pool_generate()
+int pgw_ue_pool_generate(void)
 {
     int j;
     pgw_subnet_t *subnet = NULL;
@@ -1271,7 +1273,7 @@ int pgw_dev_remove(pgw_dev_t *dev)
     return OGS_OK;
 }
 
-void pgw_dev_remove_all()
+void pgw_dev_remove_all(void)
 {
     pgw_dev_t *dev = NULL, *next_dev = NULL;
 
@@ -1296,7 +1298,7 @@ pgw_dev_t *pgw_dev_find_by_ifname(const char *ifname)
     return OGS_OK;
 }
 
-pgw_dev_t *pgw_dev_first()
+pgw_dev_t *pgw_dev_first(void)
 {
     return ogs_list_first(&self.dev_list);
 }
@@ -1361,7 +1363,7 @@ int pgw_subnet_remove(pgw_subnet_t *subnet)
     return OGS_OK;
 }
 
-void pgw_subnet_remove_all()
+void pgw_subnet_remove_all(void)
 {
     pgw_subnet_t *subnet = NULL, *next_subnet = NULL;
 
@@ -1369,7 +1371,7 @@ void pgw_subnet_remove_all()
         pgw_subnet_remove(subnet);
 }
 
-pgw_subnet_t *pgw_subnet_first()
+pgw_subnet_t *pgw_subnet_first(void)
 {
     return ogs_list_first(&self.subnet_list);
 }
