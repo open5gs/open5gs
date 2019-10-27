@@ -9,8 +9,8 @@ WORKDIR /root
 COPY setup.sh /root
 
 ARG USER=open5gs
-ARG REPO=nextepc
-ARG BRANCH=meson
+ARG REPO=open5gs
+ARG BRANCH=master
 RUN	git clone https://github.com/$USER/$REPO
 ADD https://api.github.com/repos/$USER/$REPO/git/refs/heads/$BRANCH /root/open5gs-ver.json
 

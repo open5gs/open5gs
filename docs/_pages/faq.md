@@ -222,8 +222,8 @@ If you do not start MongoDB, you will get the following error:
 $ ./install/bin/open5gs-hssd
 Open5GS daemon v1.0.0
 
-10/27 16:45:00.371: [app] INFO: Configuration: '/Users/acetcom/Documents/git/nextepc/install/etc/open5gs/hss.yaml' (../src/main.c:54)
-10/27 16:45:00.372: [app] INFO: File Logging: '/Users/acetcom/Documents/git/nextepc/install/var/log/open5gs/hss.log' (../src/main.c:57)
+10/27 16:45:00.371: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/hss.yaml' (../src/main.c:54)
+10/27 16:45:00.372: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/hss.log' (../src/main.c:57)
 10/27 16:45:00.377: [dbi] ERROR: Failed to connect to server [mongodb://localhost/open5gs] (../lib/dbi/ogs-mongoc.c:91)
 10/27 16:45:00.377: [app] ERROR: Failed to intialize HSS (../src/hss/app-init.c:28)
 ```
@@ -238,7 +238,7 @@ $ sudo systemctl start mongodb
 You might be getting the following error after running `./open5gs-mmed`.
 ```bash
 $ ./build/src/mme/open5gs-mmed
-10/27 16:45:41.912: [app] FATAL: cannot open file `/Users/acetcom/Documents/git/nextepc/install/etc/open5gs/mme.yaml` (../lib/app/ogs-config.c:67)
+10/27 16:45:41.912: [app] FATAL: cannot open file `/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml` (../lib/app/ogs-config.c:67)
 10/27 16:45:41.912: [app] FATAL: Open5GS initialization failed. Aborted (../src/main.c:211)
 ```
 
@@ -450,8 +450,8 @@ $ ./install/bin/open5gs-sgwd
 ./install/bin/open5gs-sgwd
 Open5GS daemon v1.0.0
 
-10/27 08:37:33.158: [app] INFO: Configuration: '/home/acetcom/git/nextepc/install/etc/open5gs/sgw.yaml' (../src/main.c:54)
-10/27 08:37:33.166: [app] INFO: File Logging: '/home/acetcom/git/nextepc/install/var/log/open5gs/sgw.log' (../src/main.c:57)
+10/27 08:37:33.158: [app] INFO: Configuration: '/home/acetcom/git/open5gs/install/etc/open5gs/sgw.yaml' (../src/main.c:54)
+10/27 08:37:33.166: [app] INFO: File Logging: '/home/acetcom/git/open5gs/install/var/log/open5gs/sgw.log' (../src/main.c:57)
 Unknown QEMU_IFLA_INFO_KIND ipip
 Unknown QEMU_IFLA_INFO_KIND ip6tnl
 10/27 08:37:33.225: [app] INFO: SGW initialize...done (../src/sgw/app-init.c:31)
@@ -461,8 +461,8 @@ Unknown QEMU_IFLA_INFO_KIND ip6tnl
 ./install/bin/open5gs-hssd
 Open5GS daemon v1.0.0
 
-10/27 08:37:45.754: [app] INFO: Configuration: '/home/acetcom/git/nextepc/install/etc/open5gs/hss.yaml' (../src/main.c:54)
-10/27 08:37:45.762: [app] INFO: File Logging: '/home/acetcom/git/nextepc/install/var/log/open5gs/hss.log' (../src/main.c:57)
+10/27 08:37:45.754: [app] INFO: Configuration: '/home/acetcom/git/open5gs/install/etc/open5gs/hss.yaml' (../src/main.c:54)
+10/27 08:37:45.762: [app] INFO: File Logging: '/home/acetcom/git/open5gs/install/var/log/open5gs/hss.log' (../src/main.c:57)
 10/27 08:37:45.868: [dbi] INFO: MongoDB URI: 'mongodb://mongodb/open5gs' (../lib/dbi/ogs-mongoc.c:99)
 ^Cgetsockopt level=132 optname=0 not yet supported
 ```

@@ -136,16 +136,16 @@ $ cd install
 $ ./open5gs-pcrfd
 Open5GS daemon v1.0.0
 
-10/27 15:47:55.821: [app] INFO: Configuration: '/Users/acetcom/Documents/git/nextepc/install/etc/open5gs/pcrf.yaml' (../src/main.c:54)
-10/27 15:47:55.822: [app] INFO: File Logging: '/Users/acetcom/Documents/git/nextepc/install/var/log/open5gs/pcrf.log' (../src/main.c:57)
+10/27 15:47:55.821: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/pcrf.yaml' (../src/main.c:54)
+10/27 15:47:55.822: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/pcrf.log' (../src/main.c:57)
 10/27 15:47:55.868: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:99)
 10/27 15:47:55.965: [app] INFO: PCRF initialize...done (../src/pcrf/app-init.c:31)
 
 $ ./open5gs-pgwd
 Open5GS daemon v1.0.0
 
-10/27 15:48:11.198: [app] INFO: Configuration: '/Users/acetcom/Documents/git/nextepc/install/etc/open5gs/pgw.yaml' (../src/main.c:54)
-10/27 15:48:11.199: [app] INFO: File Logging: '/Users/acetcom/Documents/git/nextepc/install/var/log/open5gs/pgw.log' (../src/main.c:57)
+10/27 15:48:11.198: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/pgw.yaml' (../src/main.c:54)
+10/27 15:48:11.199: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/pgw.log' (../src/main.c:57)
 10/27 15:48:11.292: [app] INFO: PGW initialize...done (../src/pgw/app-init.c:31)
 10/27 15:48:11.293: [gtp] INFO: gtp_server() [127.0.0.3]:2123 (../lib/gtp/path.c:32)
 10/27 15:48:11.293: [gtp] INFO: gtp_server() [::1]:2123 (../lib/gtp/path.c:32)
@@ -155,8 +155,8 @@ Open5GS daemon v1.0.0
 $ ./open5gs-sgwd
 Open5GS daemon v1.0.0
 
-10/27 15:48:21.526: [app] INFO: Configuration: '/Users/acetcom/Documents/git/nextepc/install/etc/open5gs/sgw.yaml' (../src/main.c:54)
-10/27 15:48:21.527: [app] INFO: File Logging: '/Users/acetcom/Documents/git/nextepc/install/var/log/open5gs/sgw.log' (../src/main.c:57)
+10/27 15:48:21.526: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/sgw.yaml' (../src/main.c:54)
+10/27 15:48:21.527: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/sgw.log' (../src/main.c:57)
 10/27 15:48:21.533: [app] INFO: SGW initialize...done (../src/sgw/app-init.c:31)
 10/27 15:48:21.537: [gtp] INFO: gtp_server() [127.0.0.2]:2123 (../lib/gtp/path.c:32)
 10/27 15:48:21.537: [gtp] INFO: gtp_server() [192.168.0.3]:2152 (../lib/gtp/path.c:32)
@@ -164,16 +164,16 @@ Open5GS daemon v1.0.0
 $ ./open5gs-hssd
 Open5GS daemon v1.0.0
 
-10/27 15:48:32.802: [app] INFO: Configuration: '/Users/acetcom/Documents/git/nextepc/install/etc/open5gs/hss.yaml' (../src/main.c:54)
-10/27 15:48:32.803: [app] INFO: File Logging: '/Users/acetcom/Documents/git/nextepc/install/var/log/open5gs/hss.log' (../src/main.c:57)
+10/27 15:48:32.802: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/hss.yaml' (../src/main.c:54)
+10/27 15:48:32.803: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/hss.log' (../src/main.c:57)
 10/27 15:48:32.815: [dbi] INFO: MongoDB URI: 'mongodb://localhost/open5gs' (../lib/dbi/ogs-mongoc.c:99)
 10/27 15:48:32.861: [app] INFO: HSS initialize...done (../src/hss/app-init.c:31)
 
 $ ./open5gs-mmed
 Open5GS daemon v1.0.0
 
-10/27 15:46:23.539: [app] INFO: Configuration: '/Users/acetcom/Documents/git/nextepc/install/etc/open5gs/mme.yaml' (../src/main.c:54)
-10/27 15:46:23.540: [app] INFO: File Logging: '/Users/acetcom/Documents/git/nextepc/install/var/log/open5gs/mme.log' (../src/main.c:57)
+10/27 15:46:23.539: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml' (../src/main.c:54)
+10/27 15:46:23.540: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/mme.log' (../src/main.c:57)
 10/27 15:46:23.682: [app] INFO: MME initialize...done (../src/mme/app-init.c:33)
 10/27 15:46:23.682: [gtp] INFO: gtp_server() [192.168.0.3]:2123 (../lib/gtp/path.c:32)
 10/27 15:46:23.683: [gtp] INFO: gtp_connect() [127.0.0.2]:2123 (../lib/gtp/path.c:57)
@@ -312,8 +312,8 @@ You can use the command line option[`-d`] to record more logs.
 ```bash
 Open5GS daemon v1.0.0
 
-10/27 15:50:45.170: [app] INFO: Configuration: '/Users/acetcom/Documents/git/nextepc/install/etc/open5gs/mme.yaml' (../src/main.c:54)
-10/27 15:50:45.171: [app] INFO: File Logging: '/Users/acetcom/Documents/git/nextepc/install/var/log/open5gs/mme.log' (../src/main.c:57)
+10/27 15:50:45.170: [app] INFO: Configuration: '/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml' (../src/main.c:54)
+10/27 15:50:45.171: [app] INFO: File Logging: '/Users/acetcom/Documents/git/open5gs/install/var/log/open5gs/mme.log' (../src/main.c:57)
 10/27 15:50:45.171: [app] INFO: LOG-LEVEL: 'debug' (../src/main.c:60)
 10/27 15:50:45.267: [thread] DEBUG: [0x10b52ed08] thread started (../lib/core/ogs-thread.c:101)
 10/27 15:50:45.267: [thread] DEBUG: [0x10b52ed08] worker signal (../lib/core/ogs-thread.c:66)
