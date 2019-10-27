@@ -214,6 +214,21 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 #
 ```
 
+#### Failing to run `./open5gs-mmed`
+
+You might be getting the following error after running `./open5gs-mmed`.
+```bash
+$ ./build/src/mme/open5gs-mmed
+10/27 16:45:41.912: [app] FATAL: cannot open file `/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml` (../lib/app/ogs-config.c:67)
+10/27 16:45:41.912: [app] FATAL: Open5GS initialization failed. Aborted (../src/main.c:211)
+```
+
+You should perform **the installation process**.
+
+```bash
+$ ninja -C build install
+```
+
 #### How to connect MongoDB server
 
 If you do not start MongoDB, you will get the following error:
@@ -231,21 +246,6 @@ Open5GS daemon v1.0.0
 You can start MongoDB using systemctl.
 ```bash
 $ sudo systemctl start mongodb
-```
-
-#### Failing to run `./open5gs-mmed`
-
-You might be getting the following error after running `./open5gs-mmed`.
-```bash
-$ ./build/src/mme/open5gs-mmed
-10/27 16:45:41.912: [app] FATAL: cannot open file `/Users/acetcom/Documents/git/open5gs/install/etc/open5gs/mme.yaml` (../lib/app/ogs-config.c:67)
-10/27 16:45:41.912: [app] FATAL: Open5GS initialization failed. Aborted (../src/main.c:211)
-```
-
-You should perform **the installation process**.
-
-```bash
-$ make install
 ```
 
 #### I have some error when running `./build/test/simple/simple`
