@@ -18,7 +18,7 @@ $ sudo apt update
 $ sudo apt install open5gs
 ```
 
-The Open5GS package is also available on [OBS](https://build.opensuse.org/package/show/home:acetcom:open5gs:snapshot/open5gs). First, install the authentication key as shown below.
+The Open5GS package is also available on [OBS](https://build.opensuse.org/project/show/home:acetcom:open5gs). First, install the authentication key as shown below.
 
 ```bash
 $ sudo apt update
@@ -213,7 +213,7 @@ $ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o ogstun -j MASQUERADE
 Problem with Open5GS can be filed as [GitHub Issues](https://github.com/open5gs/open5gs/issues). Please include the following to get help:
 
 - Attach `*.pcapng` file created by wireskark.
-- Attach configuration files at `/etc/open5gs/*.conf`.
+- Attach configuration files at `/etc/open5gs/*.yaml`.
 - Attach log files at `/var/log/open5gs/*.log`.
 
 You can modify the configuration file to record more logs.
