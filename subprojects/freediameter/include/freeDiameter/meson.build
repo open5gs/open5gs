@@ -180,9 +180,7 @@ else
 endif
 
 configure_file(output : 'freeDiameter-host.h',
-               configuration : freeDiameter_host_conf,
-               install : false)
+               configuration : freeDiameter_host_conf)
 
 configure_file(output : 'version.h',
-               configuration : freeDiameter_version_conf,
-               install : false)
+               configuration : freeDiameter_version_conf)

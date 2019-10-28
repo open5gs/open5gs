@@ -412,7 +412,7 @@ By default, Open5GS is designed to support the Embedding System. To do so, we in
 ```bash
 $ git clone https://github.com/acetcom/open5gs
 $ cd open5gs/docker
-$ DIST=debian docker-compose run dev
+$ DIST=debian TAG=stretch docker-compose run dev
 ```
 
 - In Docker Container
@@ -438,7 +438,6 @@ c = '/usr/bin/arm-linux-gnueabi-gcc'
 ar = '/usr/bin/arm-linux-gnueabi-ar'
 strip = '/usr/bin/arm-linux-gnueabi-strip'
 pkgconfig = '/usr/bin/arm-linux-gnueabi-pkg-config'
-exe_wrapper = 'qemu'
 
 [properties]
 needs_exe_wrapper = true
@@ -446,25 +445,65 @@ EOF
 
 $ meson build --prefix=`pwd`/install --cross-file cross_file.txt
 $ ninja -C build
-$ ./install/bin/open5gs-sgwd
-./install/bin/open5gs-sgwd
+$ qemu-arm ./install/bin/open5gs-sgwd
 Open5GS daemon v1.0.0
 
-10/27 08:37:33.158: [app] INFO: Configuration: '/home/acetcom/git/open5gs/install/etc/open5gs/sgw.yaml' (../src/main.c:54)
-10/27 08:37:33.166: [app] INFO: File Logging: '/home/acetcom/git/open5gs/install/var/log/open5gs/sgw.log' (../src/main.c:57)
-Unknown QEMU_IFLA_INFO_KIND ipip
-Unknown QEMU_IFLA_INFO_KIND ip6tnl
-10/27 08:37:33.225: [app] INFO: SGW initialize...done (../src/sgw/app-init.c:31)
-10/27 08:37:33.263: [gtp] INFO: gtp_server() [127.0.0.2]:2123 (../lib/gtp/path.c:32)
-10/27 08:37:33.265: [gtp] INFO: gtp_server() [172.20.0.4]:2152 (../lib/gtp/path.c:32)
+10/28 06:47:36.649: [app] INFO: Configuration: '/home/acetcom/git/open5gs/install/etc/open5gs/sgw.yaml' (../src/main.c:54)
+10/28 06:47:36.652: [app] INFO: File Logging: '/home/acetcom/git/open5gs/install/var/log/open5gs/sgw.log' (../src/main.c:57)
+Unknown host QEMU_IFLA type: 50
+Unknown host QEMU_IFLA type: 51
+Unknown host QEMU_IFLA type: 40
+Unknown host QEMU_IFLA type: 41
+Unknown host QEMU_IFLA type: 47
+Unknown host QEMU_IFLA type: 48
+Unknown host QEMU_IFLA type: 43
+Unknown host QEMU_IFLA type: 50
+Unknown host QEMU_IFLA type: 51
+Unknown host QEMU_IFLA type: 40
+Unknown host QEMU_IFLA type: 41
+Unknown host QEMU_IFLA type: 47
+Unknown host QEMU_IFLA type: 48
+Unknown host QEMU_IFLA type: 43
+Unknown QEMU_IFLA_INFO_KIND tun
+Unknown host QEMU_IFLA type: 50
+Unknown host QEMU_IFLA type: 51
+Unknown host QEMU_IFLA type: 40
+Unknown host QEMU_IFLA type: 41
+Unknown host QEMU_IFLA type: 47
+Unknown host QEMU_IFLA type: 48
+Unknown host QEMU_IFLA type: 43
+10/28 06:47:36.683: [app] INFO: SGW initialize...done (../src/sgw/app-init.c:31)
+10/28 06:47:36.696: [gtp] INFO: gtp_server() [127.0.0.2]:2123 (../lib/gtp/path.c:32)
+10/28 06:47:36.697: [gtp] INFO: gtp_server() [172.18.0.2]:2152 (../lib/gtp/path.c:32)
+^C10/28 06:47:37.324: [app] INFO: SIGINT received (../src/main.c:73)
+10/28 06:47:37.325: [app] INFO: Open5GS daemon terminating... (../src/main.c:229)
+10/28 06:47:37.337: [app] INFO: SGW terminate...done (../src/sgw/app-init.c:39)
 
-./install/bin/open5gs-hssd
+$ qemu-arm ./install/bin/open5gs-hssd
 Open5GS daemon v1.0.0
 
-10/27 08:37:45.754: [app] INFO: Configuration: '/home/acetcom/git/open5gs/install/etc/open5gs/hss.yaml' (../src/main.c:54)
-10/27 08:37:45.762: [app] INFO: File Logging: '/home/acetcom/git/open5gs/install/var/log/open5gs/hss.log' (../src/main.c:57)
-10/27 08:37:45.868: [dbi] INFO: MongoDB URI: 'mongodb://mongodb/open5gs' (../lib/dbi/ogs-mongoc.c:99)
-^Cgetsockopt level=132 optname=0 not yet supported
+10/28 06:47:39.021: [app] INFO: Configuration: '/home/acetcom/git/open5gs/install/etc/open5gs/hss.yaml' (../src/main.c:54)
+10/28 06:47:39.024: [app] INFO: File Logging: '/home/acetcom/git/open5gs/install/var/log/open5gs/hss.log' (../src/main.c:57)
+qemu: Unsupported syscall: 345
+qemu: Unsupported syscall: 345
+qemu: Unsupported syscall: 345
+qemu: Unsupported syscall: 345
+qemu: Unsupported syscall: 345
+qemu: Unsupported syscall: 345
+qemu: Unsupported syscall: 345
+qemu: Unsupported syscall: 345
+10/28 06:47:39.044: [dbi] INFO: MongoDB URI: 'mongodb://mongodb/open5gs' (../lib/dbi/ogs-mongoc.c:99)
+
+
+getsockopt level=132 optname=0 not yet supported
+10/28 06:47:41.917: [diam] ERROR: ../subprojects/freediameter/libfdcore/sctp.c:86 ERROR: in '(getsockopt(sk, IPPROTO_SCTP, 0, &rtoinfo, &sz))' :    Operation not supported (../lib/diameter/common/init.c:116)
+10/28 06:47:41.919: [diam] ERROR: ../subprojects/freediameter/libfdcore/sctp.c:778 ERROR: in '((fd_setsockopt_prebind(*sock)))' :   Operation not supported (../lib/diameter/common/init.c:116)
+10/28 06:47:41.919: [diam] ERROR: ../subprojects/freediameter/libfdcore/cnxctx.c:181 ERROR: in '(fd_sctp_create_bind_server( &cnx->cc_socket, cnx->cc_family, ep_list, port ))' :   Operation not supported (../lib/diameter/common/init.c:116)
+10/28 06:47:41.919: [diam] ERROR: ../subprojects/freediameter/libfdcore/server.c:355 ERROR: in '(s->conn = fd_cnx_serv_sctp(fd_g_config->cnf_port, empty_conf_ep ? ((void *)0) : &fd_g_config->cnf_endpoints))' :   Transport endpoint is not connected (../lib/diameter/common/init.c:116)
+10/28 06:47:41.919: [diam] ERROR: ../subprojects/freediameter/libfdcore/core.c:300 ERROR: in '((fd_servers_start()))' : Transport endpoint is not connected (../lib/diameter/common/init.c:116)
+10/28 06:47:41.920: [diam] ERROR: ../lib/diameter/common/init.c:62 ERROR: in '(fd_core_start())' :  Transport endpoint is not connected (../lib/diameter/common/init.c:116)
+10/28 06:47:41.920: [diam] INFO: [6]: ../subprojects/freediameter/libfdcore/core.c:329 Initiating freeDiameter shutdown sequence (2) (../lib/diameter/common/init.c:127)
+10/28 06:47:42.057: [hss] FATAL: hss_fd_init: Assertion `ret == 0' failed. (../src/hss/hss-fd-path.c:681)
 ```
 
 The SCTP module is not included in the QEMU kernel. I believe that if the Linux kernel installed on your target platform contains an SCTP module, it will work normally.

@@ -20,7 +20,6 @@ project('open5gs', 'c',
     license : 'AGPL-3.0-or-later',
     meson_version : '>= 0.43.0',
     default_options : [
-        'warning_level=1',
         'c_std=gnu89',
         'prefix=/usr',
     ],
