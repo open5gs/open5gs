@@ -1,0 +1,380 @@
+/*
+ * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ *
+ * This file is part of Open5GS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include "core-config-private.h"
+
+#if HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#include "ogs-core.h"
+
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __ogs_sock_domain
+
+void ogs_socket_init(void)
+{
+#if _WIN32
+    WORD wVersionRequested;
+    WSADATA wsaData;
+    int err;
+
+    wVersionRequested = MAKEWORD(2, 2);
+
+    err = WSAStartup(wVersionRequested, &wsaData);
+    ogs_assert(err == 0);
+#endif
+}
+
+void ogs_socket_final(void)
+{
+}
+
+ogs_sock_t *ogs_sock_create(void)
+{
+    ogs_sock_t *sock = NULL;
+    
+    sock = ogs_calloc(1, sizeof(*sock));
+    ogs_assert(sock);
+
+    sock->fd = INVALID_SOCKET;
+    
+    return sock;
+}
+
+void ogs_sock_destroy(ogs_sock_t *sock)
+{
+    ogs_assert(sock);
+
+    if (sock->fd != INVALID_SOCKET) {
+        ogs_closesocket(sock->fd);
+    }
+    sock->fd = INVALID_SOCKET;
+
+    ogs_free(sock);
+}
+
+ogs_sock_t *ogs_sock_socket(int family, int type, int protocol)
+{
+    ogs_sock_t *sock = NULL;
+
+    sock = ogs_sock_create();
+    ogs_assert(sock);
+
+    sock->family = family;
+    sock->fd = socket(sock->family, type, protocol);
+    if (sock->fd < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+            "socket create(%d:%d:%d) failed", sock->family, type, protocol);
+        return NULL;
+    }
+
+    ogs_debug("socket create(%d:%d:%d)", sock->family, type, protocol);
+
+    return sock;
+}
+
+int ogs_sock_bind(ogs_sock_t *sock, ogs_sockaddr_t *addr)
+{
+    char buf[OGS_ADDRSTRLEN];
+    socklen_t addrlen;
+
+    ogs_assert(sock);
+    ogs_assert(addr);
+
+    addrlen = ogs_sockaddr_len(addr);
+    ogs_assert(addrlen);
+
+    if (bind(sock->fd, &addr->sa, addrlen) != 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "socket bind(%d) [%s]:%d failed",
+                addr->ogs_sa_family, OGS_ADDR(addr, buf), OGS_PORT(addr));
+        return OGS_ERROR;
+    }
+
+    memcpy(&sock->local_addr, addr, sizeof(sock->local_addr));
+
+    ogs_debug("socket bind %s:%d", OGS_ADDR(addr, buf), OGS_PORT(addr));
+
+    return OGS_OK;
+}
+
+int ogs_sock_connect(ogs_sock_t *sock, ogs_sockaddr_t *addr)
+{
+    char buf[OGS_ADDRSTRLEN];
+    socklen_t addrlen;
+
+    ogs_assert(sock);
+    ogs_assert(addr);
+
+    addrlen = ogs_sockaddr_len(addr);
+    ogs_assert(addrlen);
+
+    if (connect(sock->fd, &addr->sa, addrlen) != 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, 
+                "socket connect[%s]:%d failed",
+                OGS_ADDR(addr, buf), OGS_PORT(addr));
+        return OGS_ERROR;
+    }
+
+    memcpy(&sock->remote_addr, addr, sizeof(sock->remote_addr));
+
+    ogs_debug("socket connect %s:%d\n", OGS_ADDR(addr, buf), OGS_PORT(addr));
+
+    return OGS_OK;
+}
+
+int ogs_sock_listen(ogs_sock_t *sock)
+{
+    int rc;
+    ogs_assert(sock);
+
+    rc = listen(sock->fd, 5);
+    if (rc < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "listen failed");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+ogs_sock_t *ogs_sock_accept(ogs_sock_t *sock)
+{
+    ogs_sock_t *new_sock = NULL;
+
+    int new_fd = -1;
+    ogs_sockaddr_t addr;
+    socklen_t addrlen;
+
+    ogs_assert(sock);
+
+    memset(&addr, 0, sizeof(addr));
+    addrlen = sizeof(addr.ss);
+
+    new_fd = accept(sock->fd, &addr.sa, &addrlen);
+    if (new_fd < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "accept failed");
+        return NULL;
+    }
+
+    new_sock = ogs_sock_create();
+    ogs_assert(new_sock);
+
+    new_sock->family = sock->family;
+    new_sock->fd = new_fd;
+
+    memcpy(&new_sock->remote_addr, &addr, sizeof(new_sock->remote_addr));
+
+    return new_sock;;
+}
+
+ssize_t ogs_write(ogs_socket_t fd, const void *buf, size_t len)
+{
+    ssize_t size;
+
+    ogs_assert(fd != INVALID_SOCKET);
+
+    size = write(fd, buf, len);
+    if (size < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_write(len:%d) failed", (int)size);
+    }
+
+    return size;
+}
+
+ssize_t ogs_read(ogs_socket_t fd, void *buf, size_t len)
+{
+    ssize_t size;
+
+    ogs_assert(fd != INVALID_SOCKET);
+
+    size = read(fd, buf, len);
+    if (size < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "ogs_read(len:%d) failed", (int)size);
+    }
+
+    return size;
+}
+
+ssize_t ogs_send(ogs_socket_t fd, const void *buf, size_t len, int flags)
+{
+    ssize_t size;
+
+    ogs_assert(fd != INVALID_SOCKET);
+
+    size = send(fd, buf, len, flags);
+    if (size < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "send(len:%d) failed", (int)len);
+    }
+
+    return size;
+}
+
+ssize_t ogs_sendto(ogs_socket_t fd,
+        const void *buf, size_t len, int flags, const ogs_sockaddr_t *to)
+{
+    ssize_t size;
+    socklen_t addrlen;
+
+    ogs_assert(fd != INVALID_SOCKET);
+    ogs_assert(to);
+
+    addrlen = ogs_sockaddr_len(to);
+    ogs_assert(addrlen);
+
+    size = sendto(fd, buf, len, flags, &to->sa, addrlen);
+    if (size < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "sendto(len:%d) failed", (int)len);
+    }
+
+    return size;
+}
+
+ssize_t ogs_recv(ogs_socket_t fd, void *buf, size_t len, int flags)
+{
+    ssize_t size;
+
+    ogs_assert(fd != INVALID_SOCKET);
+
+    size = recv(fd, buf, len, flags);
+    if (size < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "recv(len:%d) failed", (int)len);
+    }
+
+    return size;
+}
+
+ssize_t ogs_recvfrom(ogs_socket_t fd,
+        void *buf, size_t len, int flags, ogs_sockaddr_t *from)
+{
+    ssize_t size;
+    socklen_t addrlen = sizeof(struct sockaddr_storage);
+
+    ogs_assert(fd != INVALID_SOCKET);
+    ogs_assert(from);
+
+    size = recvfrom(fd, buf, len, flags, &from->sa, &addrlen);
+    if (size < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "recvfrom(len:%d) failed", (int)len);
+    }
+
+    return size;
+}
+
+int ogs_closesocket(ogs_socket_t fd)
+{
+    int r;
+#ifdef _WIN32
+    r = closesocket(fd);
+#else
+    r = close(fd);
+#endif
+    if (r != 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "closesocket failed");
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
+int ogs_nonblocking(ogs_socket_t fd)
+{
+#ifdef _WIN32
+    int rc;
+    ogs_assert(fd != INVALID_SOCKET);
+
+    u_long io_mode = 1;
+    rc = ioctlsocket(fd, FIONBIO, &io_mode);
+    if (rc != OGS_OK) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "ioctlsocket failed");
+        return OGS_ERROR;
+    }
+#else
+    int rc;
+    int flags;
+    ogs_assert(fd != INVALID_SOCKET);
+
+    flags = fcntl(fd, F_GETFL, NULL);
+    if (flags < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "F_GETFL failed");
+        return OGS_ERROR;
+    }
+    if (!(flags & O_NONBLOCK)) {
+        rc = fcntl(fd, F_SETFL, (flags | O_NONBLOCK));
+        if (rc != OGS_OK) {
+            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "F_SETFL failed");
+            return OGS_ERROR;
+        }
+    }
+#endif
+
+    return OGS_OK;
+}
+
+int ogs_closeonexec(ogs_socket_t fd)
+{
+#ifndef _WIN32
+    int rc;
+    int flags;
+
+    ogs_assert(fd != INVALID_SOCKET);
+    flags = fcntl(fd, F_GETFL, NULL);
+    if (flags < 0) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "F_GETFL failed");
+        return OGS_ERROR;
+    }
+    if (!(flags & FD_CLOEXEC)) {
+        rc = fcntl(fd, F_SETFL, (flags | FD_CLOEXEC));
+        if (rc != OGS_OK) {
+            ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "F_SETFL failed");
+            return OGS_ERROR;
+        }
+    }
+#endif
+
+    return OGS_OK;
+}
+
+int ogs_listen_reusable(ogs_socket_t fd)
+{
+#if defined(SO_REUSEADDR) && !defined(_WIN32)
+    int rc;
+    int on = 1;
+
+    ogs_assert(fd != INVALID_SOCKET);
+    rc = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&on, sizeof(int));
+    if (rc != OGS_OK) {
+        ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "setsockopt(SOL_SOCKET, SO_REUSEADDR) failed");
+        return OGS_ERROR;
+    }
+#endif
+
+    return OGS_OK;
+}

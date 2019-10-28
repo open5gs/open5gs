@@ -187,6 +187,7 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
 
         case GTP_XACT_INTERMEDIATE_STAGE:
             ogs_assert_if_reached();
+            break;
 
         case GTP_XACT_FINAL_STAGE:
             ogs_assert(xact->step == 2);
@@ -194,11 +195,13 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
 
         default:
             ogs_assert_if_reached();
+            break;
         }
     } else if (xact->org == OGS_GTP_REMOTE_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
             ogs_assert_if_reached();
+            break;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
         case GTP_XACT_FINAL_STAGE:
@@ -207,13 +210,13 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
 
         default:
             ogs_assert_if_reached();
+            break;
         }
     } else
         ogs_assert_if_reached();
 
-
     ogs_pkbuf_push(pkbuf, OGS_GTPV2C_HEADER_LEN);
-    h = pkbuf->data;
+    h = (ogs_gtp_header_t *)pkbuf->data;
     ogs_assert(h);
 
     memset(h, 0, sizeof(ogs_gtp_header_t));
@@ -252,6 +255,7 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
             ogs_assert_if_reached();
+            break;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
             if (xact->seq[1].type == type) {
@@ -305,6 +309,7 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
 
         default:
             ogs_assert_if_reached();
+            break;
         }
     } else if (xact->org == OGS_GTP_REMOTE_ORIGINATOR) {
         switch (stage) {
@@ -355,6 +360,7 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
 
         case GTP_XACT_INTERMEDIATE_STAGE:
             ogs_assert_if_reached();
+            break;
 
         case GTP_XACT_FINAL_STAGE:
             ogs_assert(xact->step == 2);
@@ -364,6 +370,7 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
 
         default:
             ogs_assert_if_reached();
+            break;
         }
     } else
         ogs_assert_if_reached();
@@ -415,6 +422,7 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
 
         case GTP_XACT_INTERMEDIATE_STAGE:
             ogs_assert_if_reached();
+            break;
 
         case GTP_XACT_FINAL_STAGE:
             ogs_assert(xact->step == 2 || xact->step == 3);
@@ -427,11 +435,13 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
 
         default:
             ogs_assert_if_reached();
+            break;
         }
     } else if (xact->org == OGS_GTP_REMOTE_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
             ogs_assert_if_reached();
+            break;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
             ogs_assert(xact->step == 2);
@@ -452,6 +462,7 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
 
         default:
             ogs_assert_if_reached();
+            break;
         }
     } else
         ogs_assert_if_reached();
@@ -653,6 +664,7 @@ ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
         break;
     default:
         ogs_assert_if_reached();
+        break;
     }
 
     ogs_assert(list);

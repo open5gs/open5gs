@@ -77,7 +77,7 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         copybuf_len = sizeof(ogs_gtp_message_t);
         copybuf = ogs_pkbuf_alloc(NULL, copybuf_len);
         ogs_pkbuf_put(copybuf, copybuf_len);
-        message = copybuf->data;
+        message = (ogs_gtp_message_t *)copybuf->data;
         ogs_assert(message);
 
         rv = ogs_gtp_parse_msg(message, recvbuf);
@@ -141,7 +141,7 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
 
         gxbuf = e->gxbuf;
         ogs_assert(gxbuf);
-        gx_message = gxbuf->data;
+        gx_message = (ogs_diam_gx_message_t *)gxbuf->data;
         ogs_assert(gx_message);
 
         sess_index = e->sess_index;
@@ -157,7 +157,7 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
 
             gtpbuf = e->gtpbuf;
             ogs_assert(gtpbuf);
-            message = gtpbuf->data;
+            message = (ogs_gtp_message_t *)gtpbuf->data;
 
             if (gx_message->result_code == ER_DIAMETER_SUCCESS) {
                 switch(gx_message->cc_request_type) {

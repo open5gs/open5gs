@@ -17,9 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <yaml.h>
-
-#include <mongoc.h>
 #include "ogs-sctp.h"
 
 #include "mme-context.h"
@@ -151,12 +148,12 @@ void mme_context_final()
     context_initialized = 0;
 }
 
-mme_context_t *mme_self()
+mme_context_t *mme_self(void)
 {
     return &self;
 }
 
-static int mme_context_prepare()
+static int mme_context_prepare(void)
 {
     self.relative_capacity = 0xff;
 
@@ -169,7 +166,7 @@ static int mme_context_prepare()
     return OGS_OK;
 }
 
-static int mme_context_validation()
+static int mme_context_validation(void)
 {
     if (self.diam_conf_path == NULL &&
         (self.diam_config->cnf_diamid == NULL ||
@@ -1649,6 +1646,7 @@ mme_pgw_t *mme_pgw_add(ogs_sockaddr_t *addr)
 
     ogs_pool_alloc(&mme_pgw_pool, &pgw);
     ogs_assert(pgw);
+    memset(pgw, 0, sizeof *pgw);
 
     pgw->node = ogs_gtp_node_new(addr);
     ogs_assert(pgw->node);
@@ -1826,7 +1824,7 @@ mme_csmap_t *mme_csmap_find_by_tai(ogs_tai_t *tai)
     return NULL;
 }
 
-mme_csmap_t *mme_csmap_find_by_ogs_nas_lai(ogs_nas_lai_t *lai)
+mme_csmap_t *mme_csmap_find_by_nas_lai(ogs_nas_lai_t *lai)
 {
     mme_csmap_t *csmap = NULL;
     ogs_assert(lai);
@@ -1849,6 +1847,7 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_pool_alloc(&mme_enb_pool, &enb);
     ogs_assert(enb);
+    memset(enb, 0, sizeof *enb);
 
     enb->sock = sock;
     enb->addr = addr;
@@ -1873,6 +1872,7 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), enb);
 
     e.enb = enb;
+    e.id = 0;
     ogs_fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
     ogs_fsm_init(&enb->sm, &e);
 
@@ -1970,6 +1970,7 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb)
 
     ogs_pool_alloc(&enb_ue_pool, &enb_ue);
     ogs_assert(enb_ue);
+    memset(enb_ue, 0, sizeof *enb_ue);
 
     enb_ue->enb_ue_s1ap_id = INVALID_UE_S1AP_ID;
     enb_ue->mme_ue_s1ap_id = OGS_NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
@@ -2131,6 +2132,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 
     ogs_pool_alloc(&mme_ue_pool, &mme_ue);
     ogs_assert(mme_ue);
+    memset(mme_ue, 0, sizeof *mme_ue);
 
     ogs_list_init(&mme_ue->sess_list);
 
@@ -2175,17 +2177,23 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     /* Add All Timers */
     mme_ue->t3413.timer = ogs_timer_add(
             self.timer_mgr, mme_timer_t3413_expire, mme_ue);
+    mme_ue->t3413.pkbuf = NULL;
     mme_ue->t3422.timer = ogs_timer_add(
             self.timer_mgr, mme_timer_t3422_expire, mme_ue);
+    mme_ue->t3422.pkbuf = NULL;
     mme_ue->t3450.timer = ogs_timer_add(
             self.timer_mgr, mme_timer_t3450_expire, mme_ue);
+    mme_ue->t3450.pkbuf = NULL;
     mme_ue->t3460.timer = ogs_timer_add(
             self.timer_mgr, mme_timer_t3460_expire, mme_ue);
+    mme_ue->t3460.pkbuf = NULL;
     mme_ue->t3470.timer = ogs_timer_add(
             self.timer_mgr, mme_timer_t3470_expire, mme_ue);
+    mme_ue->t3470.pkbuf = NULL;
 
     /* Create FSM */
     e.mme_ue = mme_ue;
+    e.id = 0;
     ogs_fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
     ogs_fsm_init(&mme_ue->sm, &e);
 
@@ -2544,6 +2552,7 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti)
 
     ogs_pool_alloc(&mme_sess_pool, &sess);
     ogs_assert(sess);
+    memset(sess, 0, sizeof *sess);
 
     ogs_list_init(&sess->bearer_list);
 
@@ -2665,6 +2674,7 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
 
     ogs_pool_alloc(&mme_bearer_pool, &bearer);
     ogs_assert(bearer);
+    memset(bearer, 0, sizeof *bearer);
 
     bearer->ebi = OGS_NEXT_ID(mme_ue->ebi,
             MIN_EPS_BEARER_ID, MAX_EPS_BEARER_ID);
@@ -2676,8 +2686,10 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
 
     bearer->t3489.timer = ogs_timer_add(
             self.timer_mgr, mme_timer_t3489_expire, bearer);
+    bearer->t3489.pkbuf = NULL;
     
     e.bearer = bearer;
+    e.id = 0;
     ogs_fsm_create(&bearer->sm, esm_state_initial, esm_state_final);
     ogs_fsm_init(&bearer->sm, &e);
 

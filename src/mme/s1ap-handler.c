@@ -1973,6 +1973,7 @@ void s1ap_handle_s1_reset(
         break;
     case S1AP_Cause_PR_nas:
         ogs_warn("NAS-Cause[%d]", (int)Cause->choice.nas);
+        break;
     default:
         ogs_warn("Invalid cause group[%d]", Cause->present);
         break;

@@ -23,7 +23,7 @@
 static void ogs_nas_message_test1(abts_case *tc, void *data)
 {
     /* Attach Request */
-    char *payload = 
+    const char *payload = 
         "0741020bf600f110000201030003e605"
         "f07000001000050215d011d15200f110"
         "30395c0a003103e5e0349011035758a6"
@@ -49,7 +49,7 @@ static void ogs_nas_message_test1(abts_case *tc, void *data)
 static void ogs_nas_message_test2(abts_case *tc, void *data)
 {
     /* Attach Accept */
-    char *payload = 
+    const char *payload = 
         "07420223060014f799303900325201c1"
         "01090908696e7465726e657405010ae1"
         "000a271b80802110020200108106c0a8"
@@ -58,7 +58,7 @@ static void ogs_nas_message_test2(abts_case *tc, void *data)
         "fffd2305f400e102d4640123";
     char buffer[92];
 
-    char *esm_payload = 
+    const char *esm_payload = 
         "5201c101090908696e7465726e657405"
         "010ae1000a271b808021100202001081"
         "06c0a8a8018306c0a8a801000d04c0a8"
@@ -135,7 +135,7 @@ static void ogs_nas_message_test2(abts_case *tc, void *data)
 
 static void ogs_nas_message_test3(abts_case *tc, void *data)
 {
-    char *payload = "074300035200c2";
+    const char *payload = "074300035200c2";
 
     ogs_nas_message_t message;
     ogs_pkbuf_t *pkbuf;
@@ -157,7 +157,7 @@ static void ogs_nas_message_test3(abts_case *tc, void *data)
 static void ogs_nas_message_test4(abts_case *tc, void *data)
 {
     /* Attach Reject */
-    char *payload = "074411";
+    const char *payload = "074411";
     char buffer[3];
 
     ogs_nas_message_t message;
@@ -197,7 +197,7 @@ static void ogs_nas_message_test5(abts_case *tc, void *data)
 static void ogs_nas_message_test6(abts_case *tc, void *data)
 {
     /* Identity Request */
-    char *payload = "075501";
+    const char *payload = "075501";
     char hexbuf[OGS_MAX_SDU_LEN];
 
     ogs_nas_message_t message;
@@ -226,7 +226,7 @@ static void ogs_nas_message_test6(abts_case *tc, void *data)
 static void ogs_nas_message_test7(abts_case *tc, void *data)
 {
     /* Identity Response */
-    char *payload = "0756080910101032548651";
+    const char *payload = "0756080910101032548651";
     char buffer[11];
 
     ogs_nas_message_t message;
@@ -271,7 +271,7 @@ static void ogs_nas_message_test7(abts_case *tc, void *data)
 static void ogs_nas_message_test8(abts_case *tc, void *data)
 {
     /* Security Request */
-    char *payload = "c7a8640c";
+    const char *payload = "c7a8640c";
     char buffer[4];
 
     ogs_nas_message_t message;

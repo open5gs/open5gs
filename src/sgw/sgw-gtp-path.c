@@ -252,7 +252,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     return;
 }
 
-int sgw_gtp_open()
+int sgw_gtp_open(void)
 {
     ogs_socknode_t *node = NULL;
     ogs_sock_t *sock = NULL;
@@ -311,7 +311,7 @@ int sgw_gtp_open()
     return OGS_OK;
 }
 
-void sgw_gtp_close()
+void sgw_gtp_close(void)
 {
     ogs_socknode_remove_all(&sgw_self()->gtpc_list);
     ogs_socknode_remove_all(&sgw_self()->gtpc_list6);

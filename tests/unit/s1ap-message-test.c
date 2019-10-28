@@ -7,7 +7,7 @@
 static void s1ap_message_test1(abts_case *tc, void *data)
 {
     /* S1SetupRequest */
-    char *payload = 
+    const char *payload = 
         "0011002d000004003b00090000f11040"
         "54f64010003c400903004a4c542d3632"
         "3100400007000c0e4000f11000894001"
@@ -33,7 +33,7 @@ static void s1ap_message_test1(abts_case *tc, void *data)
 static void s1ap_message_test2(abts_case *tc, void *data)
 {
     /* InitialUE(Attach Request) */
-    char *payload = 
+    const char *payload = 
         "000c406f000006000800020001001a00"
         "3c3b17df675aa8050741020bf600f110"
         "000201030003e605f070000010000502"
@@ -63,7 +63,7 @@ static void s1ap_message_test2(abts_case *tc, void *data)
 static void s1ap_message_test3(abts_case *tc, void *data)
 {
     /* initial context setup response */
-    char *payload = 
+    const char *payload = 
         "2009002500000300004005c0020000bf"
         "0008400200010033400f000032400a0a"
         "1f0a0123c601000908";
@@ -140,9 +140,8 @@ static void s1ap_message_test6(abts_case *tc, void *data)
     ogs_pkbuf_t *emmbuf = NULL;
     enb_ue_t enb_ue;
     int i;
-    ogs_s1ap_message_t message;
     char buffer[1024];
-    char *_result = 
+    const char *_result = 
     "000b4080 8c000003 00000002 00010008 00020001 001a0079 78efefef efefefef"
     "efefefef efefefef efefefef efefefef efefefef efefefef efefefef efefefef"
     "efefefef efefefef efefefef efefefef efefefef efefefef efefefef efefefef"
@@ -168,7 +167,7 @@ static void s1ap_message_test6(abts_case *tc, void *data)
 static void s1ap_message_test7(abts_case *tc, void *data)
 {
     /* InitialUE(Service Request) */
-    char *payload = 
+    const char *payload = 
         "000c402d000005000800020071001a00 0504c706b410004300060013f1890001"
         "006440080013f189400bb75000864001 40006440080013f189400bb750004340"
         "060013f18900014300060013f1890001 006440080013f189400db09000864001"

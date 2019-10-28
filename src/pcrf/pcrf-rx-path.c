@@ -341,7 +341,7 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
+	ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
     /* Store this value in the session */
@@ -367,15 +367,15 @@ static int pcrf_rx_aar_cb( struct msg **msg, struct avp *avp,
 out:
     if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
         ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
+                    (char *)"DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
         ogs_assert(ret == 0);
     } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
         ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+                    (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
         ogs_assert(ret == 0);
     } else if (result_code == OGS_DIAM_MISSING_AVP) {
         ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_MISSING_AVP", NULL, NULL, 1);
+                    (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);
     } else {
         ret = ogs_diam_message_experimental_rescode_set(ans, result_code);
@@ -663,7 +663,7 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
     }
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
+	ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
 	/* Send the answer */
@@ -685,19 +685,19 @@ static int pcrf_rx_str_cb( struct msg **msg, struct avp *avp,
 out:
     if (result_code == OGS_DIAM_AVP_UNSUPPORTED) {
         ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
+                    (char *)"DIAMETER_AVP_UNSUPPORTED", NULL, NULL, 1);
         ogs_assert(ret == 0);
     } else if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
         ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+                    (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
         ogs_assert(ret == 0);
     } else if (result_code == OGS_DIAM_MISSING_AVP) {
         ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_MISSING_AVP", NULL, NULL, 1);
+                    (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);
     } else {
         ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_MISSING_AVP", NULL, NULL, 1);
+                    (char *)"DIAMETER_MISSING_AVP", NULL, NULL, 1);
         ogs_assert(ret == 0);
     }
     

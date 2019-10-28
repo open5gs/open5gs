@@ -168,7 +168,7 @@ const Login = ({
 }) => (
   <div>
     <Head>
-    <title>NextEPC - Login</title>
+    <title>Open5gs - Login</title>
     </Head>
     <Wrapper id='nprogress-base-login' width={width}>
       <ErrorBar 

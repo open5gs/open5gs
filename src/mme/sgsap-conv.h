@@ -20,7 +20,7 @@
 #ifndef SGSAP_CONV_H
 #define SGSAP_CONV_H
 
-#include "ogs-common.h"
+#include "ogs-core.h"
 
 #ifdef __cplusplus
 extern "C" {

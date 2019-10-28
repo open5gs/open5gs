@@ -3,7 +3,7 @@ version: '3'
 services:
   run:
     network_mode: "host"
-    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-build
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-open5gs-build
     depends_on:
       - mongodb
       - build
@@ -14,9 +14,9 @@ services:
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
     volumes:
-      - config:/etc/nextepc
-    hostname: nextepc-run
-    command: /bin/bash -c "/root/setup.sh; /usr/bin/nextepc-epcd"
+      - config:/etc/open5gs
+    hostname: open5gs-run
+    command: /bin/bash -c "/root/setup.sh; /usr/bin/open5gs-pcrfd -D; /usr/bin/open5gs-pgwd -D; /usr/bin/open5gs-sgwd -D; /usr/bin/open5gs-hssd -D; /usr/bin/open5gs-mmed"
 
 volumes:
   config: {}

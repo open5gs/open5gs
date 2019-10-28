@@ -18,7 +18,7 @@
  */
 
 #include "ogs-crypt.h"
-#include "ogs-common.h"
+#include "ogs-core.h"
 
 #include "hss-auc.h"
 

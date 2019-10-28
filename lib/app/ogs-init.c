@@ -21,7 +21,7 @@
 
 int __ogs_app_domain;
 
-int ogs_app_initialize(char *default_config, char **argv)
+int ogs_app_initialize(const char *default_config, const char *const argv[])
 {
     int rv, opt;
     ogs_getopt_t options;
@@ -45,7 +45,7 @@ int ogs_app_initialize(char *default_config, char **argv)
      */
     memset(&optarg, 0, sizeof(optarg));
 
-    ogs_getopt_init(&options, argv);
+    ogs_getopt_init(&options, (char**)argv);
     while ((opt = ogs_getopt(&options, "c:l:e:m:")) != -1) {
         switch (opt) {
         case 'c':

@@ -1,5 +1,0 @@
-usr/lib/*/nextepc/*
-var/log/nextepc
-etc/nextepc/nextepc.conf
-etc/nextepc/freeDiameter/cacert.pem
-support/logrotate/nextepc /etc/logrotate.d

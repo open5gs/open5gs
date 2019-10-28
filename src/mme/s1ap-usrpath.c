@@ -50,7 +50,7 @@ ogs_sock_t *s1ap_server(ogs_socknode_t *node)
 
 void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
 {
-    /* At this point, nextepc does not use SOCK_STREAM in libusrsctp */
+    /* At this point, open5gs does not use SOCK_STREAM in libusrsctp */
     ogs_assert_if_reached();
 }
 

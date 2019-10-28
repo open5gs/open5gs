@@ -18,7 +18,7 @@
  */
 
 #include "ogs-gtp.h"
-#include "diameter/ogs-rx.h"
+#include "ogs-diameter-rx.h"
 
 #include "pcscf-fd-path.h"
 
@@ -598,7 +598,7 @@ static int pcscf_rx_asr_cb( struct msg **msg, struct avp *avp,
     }
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
+	ret = fd_msg_rescode_set(ans, (char*)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
     /* Store this value in the session */
@@ -847,7 +847,7 @@ out:
     return;
 }
 
-void pcscf_diam_config()
+void pcscf_diam_config(void)
 {
     memset(&diam_config, 0, sizeof(ogs_diam_config_t));
 
@@ -859,26 +859,26 @@ void pcscf_diam_config()
     diam_config.cnf_addr = "127.0.0.1";
 
     diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR "/dbg_msg_dumps/.libs/dbg_msg_dumps.so";
+        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dbg_msg_dumps.fdx";
     diam_config.ext[diam_config.num_of_ext].conf = "0x8888";
     diam_config.num_of_ext++;
     diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR "/dict_rfc5777/.libs/dict_rfc5777.so";
+        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_rfc5777.fdx";
     diam_config.num_of_ext++;
     diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR "/dict_mip6i/.libs/dict_mip6i.so";
+        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_mip6i.fdx";
     diam_config.num_of_ext++;
     diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR "/dict_nasreq/.libs/dict_nasreq.so";
+        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_nasreq.fdx";
     diam_config.num_of_ext++;
     diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR "/dict_nas_mipv6/.libs/dict_nas_mipv6.so";
+        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_nas_mipv6.fdx";
     diam_config.num_of_ext++;
     diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR "/dict_dcca/.libs/dict_dcca.so";
+        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_dcca.fdx";
     diam_config.num_of_ext++;
     diam_config.ext[diam_config.num_of_ext].module =
-        FD_EXT_DIR "/dict_dcca_3gpp/.libs/dict_dcca_3gpp.so";
+        FD_EXT_DIR OGS_DIR_SEPARATOR_S "dict_dcca_3gpp.fdx";
     diam_config.num_of_ext++;
 
     diam_config.conn[diam_config.num_of_conn].identity = "pcrf.open-ims.test";

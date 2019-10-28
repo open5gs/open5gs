@@ -1,541 +1,563 @@
-nextepc (0.6.0) unstable; urgency=medium
+open5gs (1.0.0) unstable; urgency=medium
 
-  * Re-factorting all the library
+  * Change build-tool to MESON
+  * Many BUGS Fixed
 
- -- Sukchan Lee <acetcom@gmail.com>  Fri, 13 Sep 2019 12:14:08 +0000
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 27 Oct 2019 06:34:23 +0000
 
-nextepc (0.5.2~disco) disco; urgency=medium
+open5gs (1.0.0~eoan6) eoan; urgency=medium
+
+  * Change build-tool to MESON
+  * Many BUGS Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 27 Oct 2019 06:33:10 +0000
+
+open5gs (1.0.0~disco6) disco; urgency=medium
+
+  * Change build-tool to MESON
+  * Many BUGS Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 27 Oct 2019 06:32:11 +0000
+
+open5gs (1.0.0~bionic6) bionic; urgency=medium
+
+  * Change build-tool to MESON
+  * Many BUGS Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 27 Oct 2019 14:39:52 +0900
+
+open5gs (0.5.2~disco) disco; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Aug 2019 13:21:24 +0000
 
-nextepc (0.5.2~xenial) xenial; urgency=medium
+open5gs (0.5.2~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Aug 2019 12:55:48 +0000
 
-nextepc (0.5.2~bionic) bionic; urgency=medium
+open5gs (0.5.2~bionic) bionic; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Aug 2019 11:51:07 +0000
 
-nextepc (0.5.2) unstable; urgency=medium
+open5gs (0.5.2) unstable; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Aug 2019 11:17:35 +0000
 
-nextepc (0.5.1~xenial) xenial; urgency=medium
+open5gs (0.5.1~xenial) xenial; urgency=medium
 
   * SMSoSG Supported 
   * Many BUGS Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 30 Jul 2019 22:42:27 +0900
 
-nextepc (0.5.1~bionic) bionic; urgency=medium
+open5gs (0.5.1~bionic) bionic; urgency=medium
 
   * SMSoSG Supported 
   * Many BUGS Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 30 Jul 2019 22:41:14 +0900
 
-nextepc (0.5.1) unstable; urgency=medium
+open5gs (0.5.1) unstable; urgency=medium
 
   * SMSoSG Supported 
   * Many BUGS Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 30 Jul 2019 21:34:15 +0900
 
-nextepc (0.5.0-1~bionic) bionic; urgency=medium
+open5gs (0.5.0-1~bionic) bionic; urgency=medium
 
   * CSFB Supported
   * OGSLib package name changed
 
  -- Sukchan Lee <acetcom@gmail.com>  Thu, 11 Jul 2019 15:34:08 +0000
 
-nextepc (0.5.0-1~xenial) xenial; urgency=medium
+open5gs (0.5.0-1~xenial) xenial; urgency=medium
 
   * CSFB Supported
   * OGSLib package name changed
 
  -- Sukchan Lee <acetcom@gmail.com>  Thu, 11 Jul 2019 15:09:05 +0000
 
-nextepc (0.5.0) unstable; urgency=medium
+open5gs (0.5.0) unstable; urgency=medium
 
   * CSFB Supported
   * OGSLib package name changed
 
  -- Sukchan Lee <acetcom@gmail.com>  Thu, 11 Jul 2019 22:26:35 +0900
 
-nextepc (0.4.4~bionic) bionic; urgency=medium
+open5gs (0.4.4~bionic) bionic; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 30 Jun 2019 13:23:15 +0000
 
-nextepc (0.4.4~xenial) xenial; urgency=medium
+open5gs (0.4.4~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 30 Jun 2019 13:21:59 +0000
 
-nextepc (0.4.4) unstable; urgency=medium
+open5gs (0.4.4) unstable; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 30 Jun 2019 12:05:12 +0000
 
-nextepc (0.4.3~xenial) xenial; urgency=medium
+open5gs (0.4.3~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 22 Jun 2019 06:57:10 +0000
 
-nextepc (0.4.3~bionic) bionic; urgency=medium
+open5gs (0.4.3~bionic) bionic; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 22 Jun 2019 06:55:56 +0000
 
-nextepc (0.4.3) unstable; urgency=medium
+open5gs (0.4.3) unstable; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 22 Jun 2019 03:30:10 +0000
 
-nextepc (0.4.2~xenial) xenial; urgency=medium
+open5gs (0.4.2~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 28 May 2019 20:11:51 +0900
 
-nextepc (0.4.2~bionic) bionic; urgency=medium
+open5gs (0.4.2~bionic) bionic; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 28 May 2019 20:09:02 +0900
 
-nextepc (0.4.2) unstable; urgency=medium
+open5gs (0.4.2) unstable; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 28 May 2019 20:04:53 +0900
 
-nextepc (0.4.1~bionic) bionic; urgency=medium
+open5gs (0.4.1~bionic) bionic; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 18 May 2019 09:59:17 +0000
 
-nextepc (0.4.1~xenial) xenial; urgency=medium
+open5gs (0.4.1~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 18 May 2019 09:57:44 +0000
 
-nextepc (0.4.1) unstable; urgency=medium
+open5gs (0.4.1) unstable; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 18 May 2019 08:18:59 +0000
 
-nextepc (0.4.0) unstable; urgency=medium
+open5gs (0.4.0) unstable; urgency=medium
 
   * Integration with OGSLIB
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 29 Apr 2019 14:09:03 +0000
 
-nextepc (0.3.11~bionic) bionic; urgency=medium
+open5gs (0.3.11~bionic) bionic; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 27 Apr 2019 13:59:08 +0000
 
-nextepc (0.3.11~xenial) xenial; urgency=medium
+open5gs (0.3.11~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 27 Apr 2019 13:57:42 +0000
 
-nextepc (0.3.10~xenial) xenial; urgency=medium
+open5gs (0.3.10~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Fri, 17 Aug 2018 04:28:38 +0000
 
-nextepc (0.3.10~bionic) bionic; urgency=medium
+open5gs (0.3.10~bionic) bionic; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Fri, 17 Aug 2018 04:21:39 +0000
 
-nextepc (0.3.9~artful) artful; urgency=medium
+open5gs (0.3.9~artful) artful; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 03 Jun 2018 01:40:44 +0000
 
-nextepc (0.3.9~xenial) xenial; urgency=medium
+open5gs (0.3.9~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 03 Jun 2018 01:39:33 +0000
 
-nextepc (0.3.9~bionic) bionic; urgency=medium
+open5gs (0.3.9~bionic) bionic; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 03 Jun 2018 01:38:15 +0000
 
-nextepc (0.3.8-1~bionic) bionic; urgency=medium
+open5gs (0.3.8-1~bionic) bionic; urgency=medium
 
   * Bug Fixed 
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 05 May 2018 22:37:45 +0900
 
-nextepc (0.3.8~bionic) bionic; urgency=medium
+open5gs (0.3.8~bionic) bionic; urgency=medium
 
   * Bug Fixed 
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 05 May 2018 21:48:55 +0900
 
-nextepc (0.3.8~xenial) xenial; urgency=medium
+open5gs (0.3.8~xenial) xenial; urgency=medium
 
   * Bug Fixed 
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 29 Apr 2018 21:47:25 +0900
 
-nextepc (0.3.8~artful) artful; urgency=medium
+open5gs (0.3.8~artful) artful; urgency=medium
 
   * Bug Fixed 
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 29 Apr 2018 21:45:36 +0900
 
-nextepc (0.3.7~artful) artful; urgency=medium
+open5gs (0.3.7~artful) artful; urgency=medium
 
   * Buf Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 14 Apr 2018 15:02:05 +0900
 
-nextepc (0.3.7~xenial) xenial; urgency=medium
+open5gs (0.3.7~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Sat, 14 Apr 2018 14:59:37 +0900
 
-nextepc (0.3.6~xenial) xenial; urgency=medium
+open5gs (0.3.6~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Wed, 21 Mar 2018 08:02:52 +0000
 
-nextepc (0.3.6~artful) artful; urgency=medium
+open5gs (0.3.6~artful) artful; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Wed, 21 Mar 2018 08:00:12 +0000
 
-nextepc (0.3.5~xenial) xenial; urgency=medium
+open5gs (0.3.5~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 06 Mar 2018 12:41:53 +0000
 
-nextepc (0.3.5~artful) artful; urgency=medium
+open5gs (0.3.5~artful) artful; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 06 Mar 2018 12:40:07 +0000
 
-nextepc (0.3.4-1~xenial) xenial; urgency=medium
+open5gs (0.3.4-1~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Thu, 22 Feb 2018 02:16:08 +0000
 
-nextepc (0.3.4-1~artful) artful; urgency=medium
+open5gs (0.3.4-1~artful) artful; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Thu, 22 Feb 2018 02:14:43 +0000
 
-nextepc (0.3.4~xenial) xenial; urgency=medium
+open5gs (0.3.4~xenial) xenial; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Thu, 22 Feb 2018 02:09:23 +0000
 
-nextepc (0.3.4~artful) artful; urgency=medium
+open5gs (0.3.4~artful) artful; urgency=medium
 
   * Bug Fixed
 
  -- Sukchan Lee <acetcom@gmail.com>  Thu, 22 Feb 2018 01:33:04 +0000
 
-nextepc (0.3.3-3~artful) artful; urgency=medium
+open5gs (0.3.3-3~artful) artful; urgency=medium
 
   * Support Docker
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 13 Feb 2018 04:47:43 +0000
 
-nextepc (0.3.3-3~xenial) xenial; urgency=medium
+open5gs (0.3.3-3~xenial) xenial; urgency=medium
 
   * Support Docker
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 13 Feb 2018 04:44:47 +0000
 
-nextepc (0.3.3-2~xenial) xenial; urgency=medium
+open5gs (0.3.3-2~xenial) xenial; urgency=medium
 
   * Minor bug fixes
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 16:08:14 +0000
 
-nextepc (0.3.3-2~artful) artful; urgency=medium
+open5gs (0.3.3-2~artful) artful; urgency=medium
 
   * Minor bug fixes
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 16:05:44 +0000
 
-nextepc (0.3.3-1~xenial) xenial; urgency=medium
+open5gs (0.3.3-1~xenial) xenial; urgency=medium
 
   * Minor bug fixes
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 15:39:37 +0000
 
-nextepc (0.3.3-1~artful) artful; urgency=medium
+open5gs (0.3.3-1~artful) artful; urgency=medium
 
   * Minor bug fixes
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 15:33:57 +0000
 
-nextepc (0.3.3~artful) artful; urgency=medium
+open5gs (0.3.3~artful) artful; urgency=medium
 
   * Minor bug fixes
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 15:05:08 +0000
 
-nextepc (0.3.3~xenial) xenial; urgency=medium
+open5gs (0.3.3~xenial) xenial; urgency=medium
 
   * Minor bug fixes
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 11 Feb 2018 15:00:24 +0000
 
-nextepc (0.3.2~zesty) zesty; urgency=medium
+open5gs (0.3.2~zesty) zesty; urgency=medium
 
   * VoLTE Support
 
  -- Sukchan Lee <acetcom@gmail.com>  Wed, 24 Jan 2018 08:06:32 +0000
 
-nextepc (0.3.2~xenial) xenial; urgency=medium
+open5gs (0.3.2~xenial) xenial; urgency=medium
 
   * VoLTE Support
 
  -- Sukchan Lee <acetcom@gmail.com>  Wed, 24 Jan 2018 08:03:41 +0000
 
-nextepc (0.3.2~artful) artful; urgency=medium
+open5gs (0.3.2~artful) artful; urgency=medium
 
   * VoLTE Support
 
  -- Sukchan Lee <acetcom@gmail.com>  Wed, 24 Jan 2018 08:00:24 +0000
 
-nextepc (0.3.1-1~zesty) zesty; urgency=medium
+open5gs (0.3.1-1~zesty) zesty; urgency=medium
 
   * IPv6 Support (Linux Only)
   * Change Configuration File (JSON -> YAML)
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 31 Dec 2017 22:10:52 +0000
 
-nextepc (0.3.1-1~xenial) xenial; urgency=medium
+open5gs (0.3.1-1~xenial) xenial; urgency=medium
 
   * IPv6 Support (Linux Only)
   * Change Configuration File (JSON -> YAML)
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 31 Dec 2017 22:09:26 +0000
 
-nextepc (0.3.1-1~artful) artful; urgency=medium
+open5gs (0.3.1-1~artful) artful; urgency=medium
 
   * IPv6 Support (Linux Only)
   * Change Configuration File (JSON -> YAML)
 
  -- Sukchan Lee <acetcom@gmail.com>  Sun, 31 Dec 2017 22:04:50 +0000
 
-nextepc (0.3-3~zesty) zesty; urgency=medium
+open5gs (0.3-3~zesty) zesty; urgency=medium
 
   * IPv6 Support (Linux Only)
   * Change Configuration File (JSON -> YAML)
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 18 Dec 2017 10:18:26 +0000
 
-nextepc (0.3-3~xenial) xenial; urgency=medium
+open5gs (0.3-3~xenial) xenial; urgency=medium
 
   * IPv6 Support (Linux Only)
   * Change Configuration File (JSON -> YAML)
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 18 Dec 2017 10:16:51 +0000
 
-nextepc (0.3-3~artful) artful; urgency=medium
+open5gs (0.3-3~artful) artful; urgency=medium
 
   * IPv6 Support (Linux Only)
   * Change Configuration File (JSON -> YAML)
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 18 Dec 2017 10:15:18 +0000
 
-nextepc (0.3-2~artful) artful; urgency=medium
+open5gs (0.3-2~artful) artful; urgency=medium
 
   * Fix the bug reboot scenario
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 18 Dec 2017 07:06:52 +0000
 
-nextepc (0.3-1~artful) artful; urgency=medium
+open5gs (0.3-1~artful) artful; urgency=medium
 
   * IPv6 Support (Linux Only)
   * Change Configuration File (JSON -> YAML)
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 18 Dec 2017 05:07:31 +0000
 
-nextepc (0.2-6~artful2) artful; urgency=medium
+open5gs (0.2-6~artful2) artful; urgency=medium
 
   * postrm script is improved to purge package completely.
 
  -- Sukchan Lee <acetcom@gmail.com>  Fri, 03 Nov 2017 02:30:53 +0000
 
-nextepc (0.2-6~zesty2) zesty; urgency=medium
+open5gs (0.2-6~zesty2) zesty; urgency=medium
 
   * postrm script is improved to purge package completely.
 
  -- Sukchan Lee <acetcom@gmail.com>  Fri, 03 Nov 2017 02:30:08 +0000
 
-nextepc (0.2-6~xenial2) xenial; urgency=medium
+open5gs (0.2-6~xenial2) xenial; urgency=medium
 
   * postrm script is improved to purge package completely.
 
  -- Sukchan Lee <acetcom@gmail.com>  Fri, 03 Nov 2017 02:28:41 +0000
 
-nextepc (0.2-6~zesty) zesty; urgency=medium
+open5gs (0.2-6~zesty) zesty; urgency=medium
 
   * postrm script is improved to purge package completely.
 
  -- Sukchan Lee <acetcom@gmail.com>  Fri, 03 Nov 2017 02:25:37 +0000
 
-nextepc (0.2-6~xenial) xenial; urgency=medium
+open5gs (0.2-6~xenial) xenial; urgency=medium
 
   * postrm script is improved to purge package completely.
 
  -- Sukchan Lee <acetcom@gmail.com>  Fri, 03 Nov 2017 02:23:54 +0000
 
-nextepc (0.2-6~artful) artful; urgency=medium
+open5gs (0.2-6~artful) artful; urgency=medium
 
   * postrm script is improved to purge package completely.
 
  -- Sukchan Lee <acetcom@gmail.com>  Fri, 03 Nov 2017 02:00:14 +0000
 
-nextepc (0.2-5~artful) artful; urgency=medium
+open5gs (0.2-5~artful) artful; urgency=medium
 
   * Relase 0.2
 
  -- Sukchan Lee <acetcom@gmail.com>  Thu, 02 Nov 2017 07:13:23 +0000
 
-nextepc (0.2-5~zesty) zesty; urgency=medium
+open5gs (0.2-5~zesty) zesty; urgency=medium
 
   * Relase 0.2
 
  -- Sukchan Lee <acetcom@gmail.com>  Thu, 02 Nov 2017 07:12:17 +0000
 
-nextepc (0.2-5~xenial) xenial; urgency=medium
+open5gs (0.2-5~xenial) xenial; urgency=medium
 
   * Release 0.2
 
  -- Sukchan Lee <acetcom@gmail.com>  Thu, 02 Nov 2017 07:11:16 +0000
 
-nextepc (0.2-4~xenial2) xenial; urgency=medium
+open5gs (0.2-4~xenial2) xenial; urgency=medium
 
-  * Fix the bug nextepc-pgwd post install script
+  * Fix the bug open5gs-pgwd post install script
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 14:07:54 +0000
 
-nextepc (0.2-4~artful) artful; urgency=medium
+open5gs (0.2-4~artful) artful; urgency=medium
 
-  * Fix the bug nextepc-pgwd post install script
+  * Fix the bug open5gs-pgwd post install script
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 14:06:31 +0000
 
-nextepc (0.2-4~zesty) zesty; urgency=medium
+open5gs (0.2-4~zesty) zesty; urgency=medium
 
-  * Fix the bug nextepc-pgwd post install script
+  * Fix the bug open5gs-pgwd post install script
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 14:04:23 +0000
 
-nextepc (0.2-4~xenial) xenial; urgency=medium
+open5gs (0.2-4~xenial) xenial; urgency=medium
 
-  * Fix the bug nextepc-pgwd post install script
+  * Fix the bug open5gs-pgwd post install script
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 14:01:58 +0000
 
-nextepc (0.2-3~artful) artful; urgency=medium
+open5gs (0.2-3~artful) artful; urgency=medium
 
   * MongoDB re-connect using systemd
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 12:10:18 +0000
 
-nextepc (0.2-3~zesty) zesty; urgency=medium
+open5gs (0.2-3~zesty) zesty; urgency=medium
 
   * MongoDB re-connect using systemd
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 12:07:36 +0000
 
-nextepc (0.2-3~xenial) xenial; urgency=medium
+open5gs (0.2-3~xenial) xenial; urgency=medium
 
   * MongoDB re-connect using systemd
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 12:00:16 +0000
 
-nextepc (0.2-2~artful) artful; urgency=medium
+open5gs (0.2-2~artful) artful; urgency=medium
 
   * Fix PGW installation
 
  -- Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 05:02:03 +0000
 
-nextepc (0.2-2~xenial) xenial; urgency=medium
+open5gs (0.2-2~xenial) xenial; urgency=medium
 
   * Fix PGW installation
 
  --  Sukchan Lee <acetcom@gmail.com>  Tue, 31 Oct 2017 03:16:02 +0000
 
-nextepc (0.2-1~artful2) artful; urgency=medium
+open5gs (0.2-1~artful2) artful; urgency=medium
 
   * Fix the compile error [-Werror=pointer]
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 13:14:42 +0000
 
-nextepc (0.2-1~artful1) artful; urgency=medium
+open5gs (0.2-1~artful1) artful; urgency=medium
 
   * Remove mongodb build-dependancy for Ubuntu 17.10(i386)
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 12:46:58 +0000
 
-nextepc (0.2-1~artful) artful; urgency=medium
+open5gs (0.2-1~artful) artful; urgency=medium
 
   * Ubuntu 17.10(amd64)
   * Currently, `mongodb` is not available in Ubuntu 17.10(i386)
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 06:50:47 +0000
 
-nextepc (0.2-1~zesty) zesty; urgency=medium
+open5gs (0.2-1~zesty) zesty; urgency=medium
 
   * Ubuntu 17.04
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 06:47:55 +0000
 
-nextepc (0.2-1~xenial) xenial; urgency=medium
+open5gs (0.2-1~xenial) xenial; urgency=medium
 
   * Add matapackage
   * dh_overide_auto_test is re-enabled
 
  -- Sukchan Lee <acetcom@gmail.com>  Mon, 30 Oct 2017 03:48:39 +0000
 
-nextepc (0.1.1) UNRELEASED; urgency=medium
+open5gs (0.1.1) UNRELEASED; urgency=medium
 
   * Initial release.
 

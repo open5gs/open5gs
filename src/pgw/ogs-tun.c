@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-common.h"
 #include "ogs-tun.h"
 
 #undef OGS_LOG_DOMAIN
@@ -43,7 +42,7 @@ ogs_socket_t ogs_tun_open(char *ifname, int len, int is_tap)
 {
     ogs_socket_t fd = INVALID_SOCKET;
 #if defined(__linux__)
-    char *dev = "/dev/net/tun";
+    const char *dev = "/dev/net/tun";
     int rc;
     struct ifreq ifr;
     int flags = IFF_NO_PI;

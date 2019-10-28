@@ -20,6 +20,7 @@
 #include "pgw-context.h"
 #include "pgw-gtp-path.h"
 #include "pgw-s5c-build.h"
+#include "pgw-gx-handler.h"
 #include "pgw-ipfw.h"
 
 static int bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message);

@@ -1,0 +1,10 @@
+logger:
+    file: @localstatedir@/log/open5gs/sgw.log
+
+parameter:
+    no_ipv6: true
+
+sgw:
+    gtpc:
+      addr: 127.0.0.2
+    gtpu:

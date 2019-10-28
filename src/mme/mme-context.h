@@ -23,7 +23,7 @@
 #include "ogs-crypt.h"
 
 #include "ogs-s1ap.h"
-#include "diameter/ogs-s6a.h"
+#include "ogs-diameter-s6a.h"
 #include "ogs-gtp.h"
 #include "ogs-nas.h"
 #include "ogs-app.h"
@@ -276,8 +276,7 @@ struct enb_ue_s {
 #define CLEAR_ENB_UE_TIMER(__eNB_UE_TIMER) \
     do { \
         ogs_timer_stop((__eNB_UE_TIMER).timer); \
-        if ((__eNB_UE_TIMER).pkbuf) \
-        { \
+        if ((__eNB_UE_TIMER).pkbuf) { \
             ogs_pkbuf_free((__eNB_UE_TIMER).pkbuf); \
             (__eNB_UE_TIMER).pkbuf = NULL; \
         } \
@@ -428,8 +427,7 @@ struct mme_ue_s {
 #define CLEAR_MME_UE_TIMER(__mME_UE_TIMER) \
     do { \
         ogs_timer_stop((__mME_UE_TIMER).timer); \
-        if ((__mME_UE_TIMER).pkbuf) \
-        { \
+        if ((__mME_UE_TIMER).pkbuf) { \
             ogs_pkbuf_free((__mME_UE_TIMER).pkbuf); \
             (__mME_UE_TIMER).pkbuf = NULL; \
         } \
@@ -645,17 +643,17 @@ int mme_context_parse_config(void);
 
 mme_sgw_t *mme_sgw_add(ogs_sockaddr_t *addr);
 void mme_sgw_remove(mme_sgw_t *sgw);
-void mme_sgw_remove_all();
+void mme_sgw_remove_all(void);
 
 mme_pgw_t *mme_pgw_add(ogs_sockaddr_t *addr);
 void mme_pgw_remove(mme_pgw_t *pgw);
-void mme_pgw_remove_all();
+void mme_pgw_remove_all(void);
 ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
         ogs_list_t *list, int family, char *apn);
 
 mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr);
 void mme_vlr_remove(mme_vlr_t *vlr);
-void mme_vlr_remove_all();
+void mme_vlr_remove_all(void);
 
 ogs_socknode_t *mme_vlr_new_node(mme_vlr_t *vlr);
 void mme_vlr_free_node(mme_vlr_t *vlr);
@@ -677,7 +675,7 @@ int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
 int mme_enb_sock_type(ogs_sock_t *sock);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb);
-unsigned int enb_ue_count();
+unsigned int enb_ue_count(void);
 void enb_ue_remove(enb_ue_t *enb_ue);
 void enb_ue_remove_in_enb(mme_enb_t *enb);
 void enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb);
@@ -689,7 +687,7 @@ enb_ue_t *enb_ue_next_in_enb(enb_ue_t *enb_ue);
 
 mme_ue_t *mme_ue_add(enb_ue_t *enb_ue);
 void mme_ue_remove(mme_ue_t *mme_ue);
-void mme_ue_remove_all();
+void mme_ue_remove_all(void);
 
 mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd);
@@ -787,8 +785,8 @@ ogs_pdn_t *mme_default_pdn(mme_ue_t *mme_ue);
 
 int mme_find_served_tai(ogs_tai_t *tai);
 
-int mme_m_tmsi_pool_generate();
-mme_m_tmsi_t *mme_m_tmsi_alloc();
+int mme_m_tmsi_pool_generate(void);
+mme_m_tmsi_t *mme_m_tmsi_alloc(void);
 int mme_m_tmsi_free(mme_m_tmsi_t *tmsi);
 
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue);

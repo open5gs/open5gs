@@ -19,6 +19,8 @@
 
 #include "ogs-crypt.h"
 
+#include "mme-kdf.h"
+
 void mme_kdf_nas(uint8_t algorithm_type_distinguishers,
     uint8_t algorithm_identity, const uint8_t *kasme, uint8_t *knas)
 {

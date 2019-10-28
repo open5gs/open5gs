@@ -27,8 +27,8 @@
 extern "C" {
 #endif
 
-int pgw_gtp_open();
-void pgw_gtp_close();
+int pgw_gtp_open(void);
+void pgw_gtp_close(void);
 
 #ifdef __cplusplus
 }

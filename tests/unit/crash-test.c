@@ -137,6 +137,7 @@ static void test1_func(abts_case *tc, void *data)
         e_rab->e_RABlevelQoSParameters.gbrQosInformation =
                 gbrQosInformation;
 
+        memset(&sgw_s1u_ip, 0, sizeof(sgw_s1u_ip));
         sgw_s1u_ip.ipv4 = 1;
         sgw_s1u_ip.ipv6 = 0;
         rv = ogs_s1ap_ip_to_BIT_STRING(
@@ -335,7 +336,7 @@ static void test_parse_enb_configuration_transfer(
 
 static void test2_func(abts_case *tc, void *data)
 {
-    char *payload = 
+    const char *payload = 
         "0028"
         "4022000001008140 1b0009f124000000 1009f12458ac0009 f1240000002009f1"
         "2458ac00";
@@ -360,7 +361,7 @@ static void test2_func(abts_case *tc, void *data)
 
 static void test3_func(abts_case *tc, void *data)
 {
-    char *payload = 
+    const char *payload = 
         "0028"
         "4028000001008140 210009f124000000 2009f12458ac0009 f1240000001009f1"
         "2458ac500f80c0a8 683b";

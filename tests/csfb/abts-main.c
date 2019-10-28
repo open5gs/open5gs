@@ -50,7 +50,7 @@ static void terminate(void)
 {
     ogs_msleep(50);
 
-    epc_child_terminate();
+    test_child_terminate();
 
     ogs_info("MME try to terminate");
     mme_terminate();
@@ -69,17 +69,17 @@ static void terminate(void)
     ogs_app_terminate();
 }
 
-static void initialize(char **argv)
+static void initialize(const char *const argv[])
 {
     int rv;
 
     rv = ogs_app_initialize(NULL, argv);
     ogs_assert(rv == OGS_OK);
 
-    pcrf_thread = epc_child_create("nextepc-pcrfd", argv);
-    pgw_thread = epc_child_create("nextepc-pgwd", argv);
-    sgw_thread = epc_child_create("nextepc-sgwd", argv);
-    hss_thread = epc_child_create("nextepc-hssd", argv);
+    pcrf_thread = test_child_create("pcrf", argv);
+    pgw_thread = test_child_create("pgw", argv);
+    sgw_thread = test_child_create("sgw", argv);
+    hss_thread = test_child_create("hss", argv);
 
     test_app_init();
     ogs_sctp_init(ogs_config()->usrsctp.udp_port);
@@ -92,13 +92,13 @@ static void initialize(char **argv)
     ogs_info("MME initialize...done");
 }
 
-int main(int argc, char **argv)
+int main(int argc, const char *const argv[])
 {
     int i;
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_app_run(argc, argv, "sample-csfb.conf", initialize);
+    test_app_run(argc, argv, "csfb.yaml", initialize);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

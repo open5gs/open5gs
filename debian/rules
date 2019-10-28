@@ -1,28 +1,17 @@
 #!/usr/bin/make -f
 
-# Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
-
-DEBIAN  := $(shell dpkg-parsechangelog | grep ^Version: | cut -d' ' -f2)
-DEBVERS := $(shell echo '$(DEBIAN)' | cut -d- -f1)
-VERSION := $(shell echo '$(DEBVERS)' | sed -e 's/[+-].*//' -e 's/~//g')
-
-# This has to be exported to make some magic below work.
-#export DH_OPTIONS
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-%:
-	dh $@ --with autoreconf --with systemd
+export LC_ALL = C.UTF-8
 
-override_dh_strip:
-	dh_strip --dbg-package=nextepc-dbg
+include /usr/share/dpkg/default.mk
+
+%:
+	dh $@ --buildsystem=meson
+
+override_dh_install:
+	dh_install --sourcedir=obj-$(DEB_HOST_GNU_TYPE)
 
 override_dh_auto_test:
-	sctp_exclude_list=; \
-	if ! cat /proc/net/protocols | grep SCTP > /dev/null; then \
-		sctp_exclude_list="-x sctp-test"; \
-	fi; \
-	tests/testunit $$sctp_exclude_list || exit; \
-
-#override_dh_makeshlibs:
-#	dh_makeshlibs -V
+	cd obj-$(DEB_HOST_GNU_TYPE) && meson test --suite unit

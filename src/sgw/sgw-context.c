@@ -17,7 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <mongoc.h>
 #include <yaml.h>
 
 #include "sgw-context.h"
@@ -33,7 +32,7 @@ static OGS_POOL(sgw_tunnel_pool, sgw_tunnel_t);
 
 static int context_initialized = 0;
 
-void sgw_context_init()
+void sgw_context_init(void)
 {
     ogs_assert(context_initialized == 0);
 
@@ -63,7 +62,7 @@ void sgw_context_init()
     context_initialized = 1;
 }
 
-void sgw_context_final()
+void sgw_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
@@ -83,12 +82,12 @@ void sgw_context_final()
     context_initialized = 0;
 }
 
-sgw_context_t *sgw_self()
+sgw_context_t *sgw_self(void)
 {
     return &self;
 }
 
-static int sgw_context_prepare()
+static int sgw_context_prepare(void)
 {
     self.gtpc_port = OGS_GTPV2_C_UDP_PORT;
     self.gtpu_port = OGS_GTPV1_U_UDP_PORT;
@@ -96,7 +95,7 @@ static int sgw_context_prepare()
     return OGS_OK;
 }
 
-static int sgw_context_validation()
+static int sgw_context_validation(void)
 {
     if (ogs_list_empty(&self.gtpc_list) &&
         ogs_list_empty(&self.gtpc_list6)) {
@@ -113,7 +112,7 @@ static int sgw_context_validation()
     return OGS_OK;
 }
 
-int sgw_context_parse_config()
+int sgw_context_parse_config(void)
 {
     int rv;
     yaml_document_t *document = NULL;
@@ -451,6 +450,7 @@ sgw_ue_t *sgw_ue_add(uint8_t *imsi, int imsi_len)
 
     ogs_pool_alloc(&sgw_ue_pool, &sgw_ue);
     ogs_assert(sgw_ue);
+    memset(sgw_ue, 0, sizeof *sgw_ue);
 
     sgw_ue->sgw_s11_teid = ogs_pool_index(&sgw_ue_pool, sgw_ue);
     ogs_assert(sgw_ue->sgw_s11_teid > 0 &&
@@ -481,7 +481,7 @@ int sgw_ue_remove(sgw_ue_t *sgw_ue)
     return OGS_OK;
 }
 
-void sgw_ue_remove_all()
+void sgw_ue_remove_all(void)
 {
     sgw_ue_t *sgw_ue = NULL, *next = NULL;;
 
@@ -504,6 +504,7 @@ sgw_sess_t *sgw_sess_add(sgw_ue_t *sgw_ue, char *apn, uint8_t ebi)
 
     ogs_pool_alloc(&sgw_sess_pool, &sess);
     ogs_assert(sess);
+    memset(sess, 0, sizeof *sess);
 
     sess->sgw_s5c_teid = 
         SGW_S5C_INDEX_TO_TEID(ogs_pool_index(&sgw_sess_pool, sess));
@@ -600,6 +601,7 @@ sgw_bearer_t* sgw_bearer_add(sgw_sess_t *sess)
 
     ogs_pool_alloc(&sgw_bearer_pool, &bearer);
     ogs_assert(bearer);
+    memset(bearer, 0, sizeof *bearer);
 
     bearer->sgw_ue = sgw_ue;
     bearer->sess = sess;
@@ -708,6 +710,7 @@ sgw_tunnel_t *sgw_tunnel_add(sgw_bearer_t *bearer, uint8_t interface_type)
 
     ogs_pool_alloc(&sgw_tunnel_pool, &tunnel);
     ogs_assert(tunnel);
+    memset(tunnel, 0, sizeof *tunnel);
 
     tunnel->interface_type = interface_type;
     tunnel->local_teid = ogs_pool_index(&sgw_tunnel_pool, tunnel);

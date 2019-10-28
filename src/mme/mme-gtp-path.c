@@ -57,7 +57,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     }
 }
 
-int mme_gtp_open()
+int mme_gtp_open(void)
 {
     int rv;
     ogs_socknode_t *node = NULL;
@@ -101,7 +101,7 @@ int mme_gtp_open()
     return OGS_OK;
 }
 
-void mme_gtp_close()
+void mme_gtp_close(void)
 {
     ogs_socknode_remove_all(&mme_self()->gtpc_list);
     ogs_socknode_remove_all(&mme_self()->gtpc_list6);
