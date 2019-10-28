@@ -54,6 +54,8 @@ fi
 if [ "$1" = "remove" ]; then
 	if [ "$#" -ne 2 ]; then
 		echo "nextepc_conf: incorrect number of args, format is \"nextepc_conf remove imsi\""
+		$IMSI = $2 
+		mongo --eval "db.subscribers.remove({\"imsi\": \"$IMSI\"});" nextepc
 		exit 1
 	fi
 	exit 0
