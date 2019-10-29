@@ -31,7 +31,7 @@ $ sudo apt-key add Release.key
 In Debian 10.0(buster), you can install it as follows:
 
 ```bash
-$ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_9.0/ ./' > /etc/apt/sources.list.d/open5gs.list"
+$ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10.0/ ./' > /etc/apt/sources.list.d/open5gs.list"
 $ sudo apt update
 $ sudo apt install open5gs
 ```
