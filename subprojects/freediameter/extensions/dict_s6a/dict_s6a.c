@@ -116,9 +116,9 @@ int dict_s6a_init(char * conffile)
 			struct dict_object * avp;
 			struct local_rules_definition rules[] =
 			{
-				{ { .avp_vendor = 10415, .avp_name = "IMEI" }, RULE_REQUIRED, -1, 1 },
-				{ { .avp_vendor = 10415, .avp_name = "3GPP2-MEID" }, RULE_REQUIRED, -1, 1 },
-				{ { .avp_vendor = 10415, .avp_name = "Software-Version" }, RULE_REQUIRED, -1, 1 },
+				{ { .avp_vendor = 10415, .avp_name = "IMEI" }, RULE_OPTIONAL, -1, 1 },
+				{ { .avp_vendor = 10415, .avp_name = "3GPP2-MEID" }, RULE_OPTIONAL, -1, 1 },
+				{ { .avp_vendor = 10415, .avp_name = "Software-Version" }, RULE_OPTIONAL, -1, 1 },
 			};
 
             CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Terminal-Information", &avp);
