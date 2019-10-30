@@ -258,12 +258,13 @@ int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
-    stats_add_attached_ue();
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, NULL);
     ogs_assert(rv == OGS_OK && s1apbuf);
 
     rv = nas_send_to_enb(mme_ue, s1apbuf);
     ogs_assert(rv == OGS_OK);
+
+    stats_add_attached_ue();
 
     return OGS_OK;
 }
@@ -293,7 +294,6 @@ int s1ap_send_ue_context_release_command(
 
     ogs_assert(enb_ue);
 
-    stats_remove_attached_ue();
     ogs_debug("[MME] UE Context release command");
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
@@ -333,6 +333,8 @@ int s1ap_send_ue_context_release_command(
         rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, 0);
         ogs_assert(rv == OGS_OK);
     }
+
+    stats_remove_attached_ue();
 
     return OGS_OK;
 }
