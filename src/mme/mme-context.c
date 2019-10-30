@@ -52,12 +52,12 @@ static int context_initialized = 0;
 int attached_ues = 0;
 void stats_add_attached_ue(void) {
     attached_ues = attached_ues + 1;
-    ogs_error("Attached a UE. Number of Attached UEs is now %d", attached_ues);
+    ogs_info("Attached a UE. Number of Attached UEs is now %d", attached_ues);
 }
 
 void stats_remove_attached_ue(void) {
     attached_ues = attached_ues - 1;
-    ogs_error("Removed a UE. Number of Attached UEs is now %d", attached_ues);
+    ogs_info("Removed a UE. Number of Attached UEs is now %d", attached_ues);
 }
 
 void mme_context_init()

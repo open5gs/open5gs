@@ -37,12 +37,12 @@ static int context_initiaized = 0;
 int num_sessions = 0;
 void stats_add_session(void) {
     num_sessions = num_sessions + 1;
-    ogs_error("Added a session. Number of active sessions is now %d", num_sessions);
+    ogs_info("Added a session. Number of active sessions is now %d", num_sessions);
 }
 
 void stats_remove_session(void) {
     num_sessions = num_sessions - 1;
-    ogs_error("Removed a session. Number of active sessions is now %d", num_sessions);
+    ogs_info("Removed a session. Number of active sessions is now %d", num_sessions);
 }
 
 void pgw_context_init(void)
