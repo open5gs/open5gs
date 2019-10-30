@@ -34,9 +34,6 @@ extern "C" {
 int s1ap_open(void);
 void s1ap_close(void);
 
-void stats_add_attached_ue(void);
-void stats_remove_attached_ue(void);
-
 ogs_sock_t *s1ap_server(ogs_socknode_t *node);
 void s1ap_recv_handler(short when, ogs_socket_t fd, void *data);
 

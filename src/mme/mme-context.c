@@ -49,6 +49,17 @@ static OGS_POOL(mme_bearer_pool, mme_bearer_t);
 
 static int context_initialized = 0;
 
+int attached_ues = 0;
+void stats_add_attached_ue(void) {
+    attached_ues = attached_ues + 1;
+    ogs_error("Attached a UE. Number of Attached UEs is now %d", attached_ues);
+}
+
+void stats_remove_attached_ue(void) {
+    attached_ues = attached_ues - 1;
+    ogs_error("Removed a UE. Number of Attached UEs is now %d", attached_ues);
+}
+
 void mme_context_init()
 {
     ogs_assert(context_initialized == 0);
@@ -1993,6 +2004,8 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb)
             sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
     ogs_list_add(&enb->enb_ue_list, enb_ue);
 
+    stats_add_attached_ue();
+
     return enb_ue;
 }
 
@@ -2017,6 +2030,8 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     ogs_list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
     ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), NULL);
+
+    stats_remove_attached_ue();
 
     ogs_pool_free(&enb_ue_pool, enb_ue);
 }
