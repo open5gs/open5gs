@@ -28,6 +28,17 @@
 #include "s1ap-build.h"
 #include "s1ap-path.h"
 
+int attached_ues = 0;
+void stats_add_attached_ue(void) {
+    attached_ues = attached_ues + 1;
+    ogs_error("Attached a UE. Number of Attached UEs is now %d", attached_ues);
+}
+
+void stats_remove_attached_ue(void) {
+    attached_ues = attached_ues - 1;
+    ogs_error("Removed a UE. Number of Attached UEs is now %d", attached_ues);
+}
+
 int s1ap_open(void)
 {
     ogs_socknode_t *node = NULL;
@@ -247,6 +258,7 @@ int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
+    stats_add_attached_ue();
     rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, NULL);
     ogs_assert(rv == OGS_OK && s1apbuf);
 
@@ -281,6 +293,7 @@ int s1ap_send_ue_context_release_command(
 
     ogs_assert(enb_ue);
 
+    stats_remove_attached_ue();
     ogs_debug("[MME] UE Context release command");
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
