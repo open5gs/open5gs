@@ -55,13 +55,7 @@ typedef struct ogs_socknode_s {
 
     ogs_sock_t *sock;
     void (*cleanup)(ogs_sock_t *sock);
-
-    struct {
-        ogs_pollset_t *set;
-        ogs_poll_t *poll;
-        void *handler;
-        void *data;
-    } pollin, pollout;
+    ogs_poll_t *poll;
 
     ogs_sockopt_t option;
 } ogs_socknode_t;
@@ -84,9 +78,6 @@ void ogs_socknode_linger(ogs_socknode_t *node, int onoff, int linger);
 
 void ogs_socknode_set_cleanup(
         ogs_socknode_t *node, void (*cleanup)(ogs_sock_t *));
-void ogs_socknode_set_poll(ogs_socknode_t *node,
-        ogs_pollset_t *set, short when, void *handler, void *data);
-void ogs_socknode_install_poll(ogs_socknode_t *node);
 
 #ifdef __cplusplus
 }

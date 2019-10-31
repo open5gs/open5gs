@@ -278,6 +278,7 @@ ssize_t ogs_recvfrom(ogs_socket_t fd,
     ogs_assert(fd != INVALID_SOCKET);
     ogs_assert(from);
 
+    memset(from, 0, sizeof *from);
     size = recvfrom(fd, buf, len, flags, &from->sa, &addrlen);
     if (size < 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,

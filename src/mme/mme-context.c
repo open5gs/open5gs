@@ -1722,8 +1722,7 @@ void mme_vlr_remove(mme_vlr_t *vlr)
 
     ogs_list_remove(&self.vlr_list, vlr);
 
-    if (vlr->node)
-        mme_vlr_free_node(vlr);
+    mme_vlr_close(vlr);
 
     ogs_freeaddrinfo(vlr->sa_list);
 
@@ -1738,27 +1737,14 @@ void mme_vlr_remove_all()
         mme_vlr_remove(vlr);
 }
 
-ogs_socknode_t *mme_vlr_new_node(mme_vlr_t *vlr)
-{
-    ogs_sockaddr_t *addr = NULL;
-    ogs_assert(vlr);
-
-    ogs_copyaddrinfo(&addr, vlr->sa_list);
-
-    ogs_assert(vlr->node == NULL);
-    vlr->node = ogs_socknode_new(addr);
-    ogs_assert(vlr->node);
-
-    return vlr->node;
-}
-
-void mme_vlr_free_node(mme_vlr_t *vlr)
+void mme_vlr_close(mme_vlr_t *vlr)
 {
     ogs_assert(vlr);
-    ogs_assert(vlr->node);
 
-    ogs_socknode_free(vlr->node);
-    vlr->node = NULL;
+    if (vlr->poll)
+        ogs_pollset_remove(vlr->poll);
+    if (vlr->sock)
+        ogs_sctp_destroy(vlr->sock);
 }
 
 mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr)
@@ -1865,7 +1851,7 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     if (enb->sock_type == SOCK_STREAM) {
         enb->poll = ogs_pollset_add(mme_self()->pollset,
-            OGS_POLLIN, sock->fd, s1ap_recv_handler, sock);
+            OGS_POLLIN, sock->fd, s1ap_recv_upcall, sock);
         ogs_assert(enb->poll);
     }
 

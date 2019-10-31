@@ -224,10 +224,6 @@ static void test4_func(abts_case *tc, void *data)
     ogs_sctp_info_t sinfo;
     char buf[OGS_ADDRSTRLEN];
 
-#if HAVE_USRSCTP /* FIXME : USRSCTP work-around */
-    ogs_msleep(10);
-#endif
-
     rv = ogs_getaddrinfo(&addr, AF_INET6, NULL, TEST4_PORT, AI_PASSIVE);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     node = ogs_socknode_new(addr);

@@ -35,8 +35,7 @@ int s1ap_open(void);
 void s1ap_close(void);
 
 ogs_sock_t *s1ap_server(ogs_socknode_t *node);
-void s1ap_recv_handler(short when, ogs_socket_t fd, void *data);
-
+void s1ap_recv_upcall(short when, ogs_socket_t fd, void *data);
 int s1ap_send(ogs_sock_t *sock,
         ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *addr, uint16_t stream_no);
 

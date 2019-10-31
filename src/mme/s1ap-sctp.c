@@ -22,7 +22,14 @@
 #include "mme-event.h"
 #include "s1ap-path.h"
 
-static void accept_handler(short when, ogs_socket_t fd, void *data);
+#if HAVE_USRSCTP
+static void usrsctp_recv_handler(struct socket *socket, void *data, int flags);
+#else
+static void lksctp_accept_handler(short when, ogs_socket_t fd, void *data);
+#endif
+
+void s1ap_accept_handler(ogs_sock_t *sock);
+void s1ap_recv_handler(ogs_sock_t *sock);
 
 ogs_sock_t *s1ap_server(ogs_socknode_t *node)
 {
@@ -33,11 +40,17 @@ ogs_sock_t *s1ap_server(ogs_socknode_t *node)
 
     ogs_socknode_sctp_option(node, &ogs_config()->sockopt);
     ogs_socknode_nodelay(node, true);
-    ogs_socknode_set_poll(node, mme_self()->pollset,
-            OGS_POLLIN, accept_handler, node);
 
+#if HAVE_USRSCTP
+    sock = ogs_sctp_server(SOCK_SEQPACKET, node);
+    ogs_assert(sock);
+    usrsctp_set_upcall((struct socket *)sock, usrsctp_recv_handler, NULL);
+#else
     sock = ogs_sctp_server(SOCK_STREAM, node);
     ogs_assert(sock);
+    node->poll = ogs_pollset_add(mme_self()->pollset,
+            OGS_POLLIN, sock->fd, lksctp_accept_handler, sock);
+#endif
 
     ogs_info("s1ap_server() [%s]:%d",
             OGS_ADDR(node->addr, buf), OGS_PORT(node->addr));
@@ -45,17 +58,43 @@ ogs_sock_t *s1ap_server(ogs_socknode_t *node)
     return sock;
 }
 
-static void accept_handler(short when, ogs_socket_t fd, void *data)
+void s1ap_recv_upcall(short when, ogs_socket_t fd, void *data)
+{
+    ogs_sock_t *sock = NULL;
+
+    ogs_assert(fd != INVALID_SOCKET);
+    sock = data;
+    ogs_assert(sock);
+
+    s1ap_recv_handler(sock);
+}
+
+#if HAVE_USRSCTP
+static void usrsctp_recv_handler(struct socket *socket, void *data, int flags)
+{
+	int events;
+
+	while ((events = usrsctp_get_events(socket)) &&
+           (events & SCTP_EVENT_READ)) {
+        s1ap_recv_handler((ogs_sock_t *)socket);
+	}
+}
+#else
+static void lksctp_accept_handler(short when, ogs_socket_t fd, void *data)
+{
+    ogs_assert(data);
+    ogs_assert(fd != INVALID_SOCKET);
+
+    s1ap_accept_handler(data);
+}
+#endif
+
+void s1ap_accept_handler(ogs_sock_t *sock)
 {
     char buf[OGS_ADDRSTRLEN];
-    ogs_socknode_t *node = data;
-    ogs_sock_t *sock = NULL;
     ogs_sock_t *new = NULL;
 
-    ogs_assert(node);
-    sock = node->sock;
     ogs_assert(sock);
-    ogs_assert(fd != INVALID_SOCKET);
 
     new = ogs_sock_accept(sock);
     if (new) {
@@ -75,25 +114,25 @@ static void accept_handler(short when, ogs_socket_t fd, void *data)
     }
 }
 
-void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
+void s1ap_recv_handler(ogs_sock_t *sock)
 {
     ogs_pkbuf_t *pkbuf;
     int size;
-    ogs_sock_t *sock = data;
     ogs_sockaddr_t *addr = NULL;
+    ogs_sockaddr_t from;
     ogs_sctp_info_t sinfo;
     int flags = 0;
 
     ogs_assert(sock);
-    ogs_assert(fd != INVALID_SOCKET);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
     size = ogs_sctp_recvmsg(
-            sock, pkbuf->data, pkbuf->len, NULL, &sinfo, &flags);
+            sock, pkbuf->data, pkbuf->len, &from, &sinfo, &flags);
     if (size < 0) {
         ogs_error("ogs_sctp_recvmsg(%d) failed(%d:%s)",
                 size, errno, strerror(errno));
+        ogs_pkbuf_free(pkbuf);
         return;
     }
 
@@ -116,7 +155,7 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
 
                 addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
                 ogs_assert(addr);
-                memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
+                memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
                 s1ap_event_push(MME_EVT_S1AP_LO_SCTP_COMM_UP,
                         sock, addr, NULL,
@@ -132,7 +171,7 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
 
                 addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
                 ogs_assert(addr);
-                memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
+                memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
                 s1ap_event_push(MME_EVT_S1AP_LO_CONNREFUSED,
                         sock, addr, NULL, 0, 0);
@@ -146,14 +185,21 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
                         not->sn_shutdown_event.sse_flags,
                         not->sn_shutdown_event.sse_length);
             if (not->sn_header.sn_type == SCTP_SEND_FAILED)
+#if HAVE_USRSCTP
+                ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]", 
+                        not->sn_send_failed_event.ssfe_type,
+                        not->sn_send_failed_event.ssfe_flags,
+                        not->sn_send_failed_event.ssfe_error);
+#else
                 ogs_error("SCTP_SEND_FAILED:[T:%d, F:0x%x, S:%d]", 
                         not->sn_send_failed.ssf_type,
                         not->sn_send_failed.ssf_flags,
                         not->sn_send_failed.ssf_error);
+#endif
 
             addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
             ogs_assert(addr);
-            memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
+            memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
             s1ap_event_push(MME_EVT_S1AP_LO_CONNREFUSED,
                     sock, addr, NULL, 0, 0);
@@ -180,7 +226,7 @@ void s1ap_recv_handler(short when, ogs_socket_t fd, void *data)
 
         addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
         ogs_assert(addr);
-        memcpy(addr, &sock->remote_addr, sizeof(ogs_sockaddr_t));
+        memcpy(addr, &from, sizeof(ogs_sockaddr_t));
 
         s1ap_event_push(MME_EVT_S1AP_MESSAGE, sock, addr, pkbuf, 0, 0);
         return;

@@ -85,13 +85,11 @@ int sgsap_send_to_vlr_with_sid(
 
     ogs_assert(vlr);
     ogs_assert(pkbuf);
-    node = vlr->node;
-    ogs_assert(node);
-    sock = node->sock;
+    sock = vlr->sock;
     ogs_assert(sock);
 
-    ogs_debug("    VLR-IP[%s]", OGS_ADDR(node->addr, buf));
-    rv = sgsap_send(sock, pkbuf, node->addr, stream_no);
+    ogs_debug("    VLR-IP[%s]", OGS_ADDR(vlr->addr, buf));
+    rv = sgsap_send(sock, pkbuf, vlr->addr, stream_no);
     if (rv != OGS_OK) {
         ogs_error("sgsap_send() failed");
 

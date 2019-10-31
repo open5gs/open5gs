@@ -51,11 +51,13 @@ libmme_sources = files('''
     s1ap-sm.c
     s1ap-build.c
     s1ap-handler.c
+    s1ap-sctp.c
     s1ap-path.c 
     sgsap-sm.c
     sgsap-build.c
     sgsap-handler.c
     sgsap-conv.c
+    sgsap-sctp.c
     sgsap-path.c
     mme-fd-path.c
     mme-s6a-handler.c 
@@ -74,14 +76,6 @@ libmme_sources = files('''
     mme-path.c 
     sbc-handler.c 
 '''.split())
-
-if libsctp_conf.has('HAVE_USRSCTP')
-    libmme_sources += files('s1ap-usrpath.c')
-    libmme_sources += files('sgsap-usrpath.c')
-else
-    libmme_sources += files('s1ap-lkpath.c')
-    libmme_sources += files('sgsap-lkpath.c')
-endif
 
 libmme = static_library('mme',
     sources : libmme_sources,
