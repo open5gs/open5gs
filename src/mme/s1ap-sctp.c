@@ -44,6 +44,7 @@ ogs_sock_t *s1ap_server(ogs_socknode_t *node)
 #if HAVE_USRSCTP
     sock = ogs_sctp_server(SOCK_SEQPACKET, node);
     ogs_assert(sock);
+    usrsctp_set_non_blocking((struct socket *)sock, 1);
     usrsctp_set_upcall((struct socket *)sock, usrsctp_recv_handler, NULL);
 #else
     sock = ogs_sctp_server(SOCK_STREAM, node);

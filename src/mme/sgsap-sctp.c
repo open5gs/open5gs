@@ -45,13 +45,18 @@ ogs_sock_t *sgsap_client(mme_vlr_t *vlr)
 
     ogs_socknode_sctp_option(&node, &ogs_config()->sockopt);
     ogs_socknode_nodelay(&node, true);
+#if 0 /* Try to remove LINGER in usrsctp */
+#if HAVE_USRSCTP
     ogs_socknode_linger(&node, true, 0);
+#endif
+#endif
 
     sock = ogs_sctp_client(SOCK_SEQPACKET, &node);
     if (sock) {
         vlr->sock = sock;
 #if HAVE_USRSCTP
         vlr->addr = node.addr;
+        usrsctp_set_non_blocking((struct socket *)sock, 1);
         usrsctp_set_upcall((struct socket *)sock, usrsctp_recv_handler, NULL);
 #else
         vlr->addr = &sock->remote_addr;
