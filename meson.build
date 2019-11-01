@@ -109,7 +109,8 @@ add_project_arguments(
     cc.get_supported_arguments(possible_cc_flags),
     language : 'c')
 
-freediameter_proj = subproject('freediameter')
+freediameter_subdir = 'freeDiameter-1.2.1'
+freediameter_proj = subproject(freediameter_subdir)
 
 subdir('configs')
 subdir('lib')

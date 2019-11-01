@@ -64,6 +64,9 @@ int fd_ep_add_merge( struct fd_list * list, sSA * sa, socklen_t sl, uint32_t fla
 		case AF_INET:
 			if (! (flags & EP_ACCEPTALL)) {
 				if (IN_IS_ADDR_UNSPECIFIED(&ptr.sin->sin_addr) 
+#if 0 /* modified by laforge */
+				 || IN_IS_ADDR_LOOPBACK(&ptr.sin->sin_addr)
+#endif
 				    /* the next one filters both EXPERIMENTAL, BADCLASS and MULTICAST. */
 				 || ((ntohl(ptr.sin->sin_addr.s_addr) & 0xe0000000) == 0xe0000000)
 				 || (ptr.sin->sin_addr.s_addr == INADDR_BROADCAST)) {
@@ -77,6 +80,11 @@ int fd_ep_add_merge( struct fd_list * list, sSA * sa, socklen_t sl, uint32_t fla
 		case AF_INET6:
 			if (! (flags & EP_ACCEPTALL)) {
 				if (IN6_IS_ADDR_UNSPECIFIED(&ptr.sin6->sin6_addr) 
+#if 0 /* modified by laforge */
+				 || IN6_IS_ADDR_LOOPBACK(&ptr.sin6->sin6_addr)
+				 || IN6_IS_ADDR_LINKLOCAL(&ptr.sin6->sin6_addr)
+				 || IN6_IS_ADDR_SITELOCAL(&ptr.sin6->sin6_addr)
+#endif
 				 || IN6_IS_ADDR_MULTICAST(&ptr.sin6->sin6_addr)) {
 					LOG_A("  DEBUG:fd_ep_add_merge  Address was ignored, not added.");
 					return 0;

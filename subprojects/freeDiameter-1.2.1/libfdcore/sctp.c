@@ -48,9 +48,15 @@
 /* #define OLD_SCTP_SOCKET_API */
 
 /* Automatically fallback to old API if some of the new symbols are not defined */
+#if 0 /* modified by laforge */
+#if (!defined(SCTP_CONNECTX_4_ARGS) || (!defined(SCTP_RECVRCVINFO)) || (!defined(SCTP_SNDINFO))) 
+# define OLD_SCTP_SOCKET_API
+#endif
+#else
 #if (!defined(SCTP_CONNECTX_4_ARGS) || (!defined(SCTP_RECVRCVINFO)) || (!defined(SCTP_SNDINFO)) || \
     (!defined(SCTP_SEND_FAILED_EVENT)) || (!defined(SCTP_NOTIFICATIONS_STOPPED_EVENT)) )
 # define OLD_SCTP_SOCKET_API
+#endif
 #endif
 
 
@@ -1101,12 +1107,16 @@ ssize_t fd_sctp_sendstrv(struct cnxctx * conn, uint16_t strid, const struct iove
 	hdr->cmsg_type  = SCTP_SNDRCV;
 	sndrcv = (struct sctp_sndrcvinfo *)CMSG_DATA(hdr);
 	sndrcv->sinfo_stream = strid;
+#if 1 /* modified by laforge */
 	sndrcv->sinfo_ppid = htonl(46);
+#endif
 #else /* OLD_SCTP_SOCKET_API */
 	hdr->cmsg_type  = SCTP_SNDINFO;
 	sndinf = (struct sctp_sndinfo *)CMSG_DATA(hdr);
 	sndinf->snd_sid = strid;
+#if 1 /* modified by laforge */
 	sndinf->snd_ppid = htonl(46);
+#endif
 #endif /* OLD_SCTP_SOCKET_API */
 	/* note : we could store other data also, for example in .sinfo_ppid for remote peer or in .sinfo_context for errors. */
 	

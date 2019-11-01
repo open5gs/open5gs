@@ -31,7 +31,6 @@ libdiameter_common_sources = files('''
 
 libdiameter_common_inc = include_directories('.')
 
-freediameter_proj = subproject('freediameter')
 libfdcore_dep = freediameter_proj.get_variable('libfdcore_dep')
 
 libdiameter_common = library('ogsdiameter-common',
