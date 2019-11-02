@@ -1077,7 +1077,7 @@ int pcrf_gx_init(void)
 	struct disp_when data;
 
 	/* Install objects definitions for this application */
-	ret = ogs_diam_gx_dict_init();
+	ret = ogs_diam_gx_init();
     ogs_assert(ret == 0);
 
     /* Create handler for sessions */

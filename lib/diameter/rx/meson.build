@@ -18,7 +18,6 @@
 libdiameter_rx_sources = files('''
     ogs-diameter-rx.h
     
-    dict.h
     message.h
 
     dict.c
@@ -30,7 +29,7 @@ libdiameter_rx_inc = include_directories('.')
 libdiameter_rx = library('ogsdiameter-rx',
     sources : libdiameter_rx_sources,
     version : libogslib_version,
-    c_args : '-DOGS_DIAM_COMPILATION',
+    c_args : libdiameter_common_cc_flags,
     include_directories : libdiameter_rx_inc,
     dependencies : libdiameter_common_dep,
     install : true)

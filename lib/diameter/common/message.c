@@ -44,9 +44,13 @@ struct dict_object *ogs_diam_mip_home_agent_address = NULL;
 struct dict_object *ogs_diam_vendor = NULL;
 struct dict_object *ogs_diam_vendor_id = NULL;
 
+extern int ogs_dict_common_entry(char *conffile);
+
 int ogs_diam_message_init()
 {
     vendor_id_t id = OGS_3GPP_VENDOR_ID;
+
+    ogs_assert(ogs_dict_common_entry(NULL) == 0);
 
     CHECK_dict_search( DICT_VENDOR, VENDOR_BY_ID, (void *)&id, &ogs_diam_vendor);
     CHECK_dict_search( DICT_AVP, AVP_BY_NAME, "Vendor-Id", &ogs_diam_vendor_id);

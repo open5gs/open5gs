@@ -229,7 +229,6 @@ LoadExtension = "@libdir@/freeDiameter/dict_nasreq.fdx";
 LoadExtension = "@libdir@/freeDiameter/dict_nas_mipv6.fdx";
 LoadExtension = "@libdir@/freeDiameter/dict_dcca.fdx";
 LoadExtension = "@libdir@/freeDiameter/dict_dcca_3gpp.fdx";
-LoadExtension = "@libdir@/freeDiameter/dict_s6a.fdx";
 
 
 ##############################################################

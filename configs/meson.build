@@ -23,7 +23,7 @@ conf_data.set('libdir', libdir)
 conf_data.set('localstatedir', localstatedir)
 
 freediameter_extensions_builddir = join_paths(
-        meson.build_root(), 'subprojects', freediameter_subdir, 'extensions')
+        meson.build_root(), 'subprojects', 'freeDiameter', 'extensions')
 conf_data.set('freediameter_extensions_builddir',
         freediameter_extensions_builddir)
 

@@ -681,7 +681,7 @@ int hss_fd_init(void)
     ogs_assert(ret == 0);
 
 	/* Install objects definitions for this application */
-	ret = ogs_diam_s6a_dict_init();
+	ret = ogs_diam_s6a_init();
     ogs_assert(ret == 0);
 
 	memset(&data, 0, sizeof(data));
