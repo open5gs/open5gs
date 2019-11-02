@@ -86,8 +86,6 @@ void sgw_s5c_handle_create_session_response(ogs_gtp_xact_t *s5c_xact,
                 data;
     ogs_assert(pgw_s5c_teid);
     sess->pgw_s5c_teid = ntohl(pgw_s5c_teid->teid);
-    rsp->pgw_s5_s8__s2a_s2b_f_teid_for_pmip_based_interface_or_for_gtp_based_control_plane_interface.
-                presence = 0;
 
     /* Receive Data Plane(UL) : PGW-S5U */
     pgw_s5u_teid = rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.data;
@@ -118,9 +116,6 @@ void sgw_s5c_handle_create_session_response(ogs_gtp_xact_t *s5c_xact,
     }
     /* Setup GTP Node */
     OGS_SETUP_GTP_NODE(s5u_tunnel, pgw);
-
-    /* Remove S5C-F-TEID */
-    rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.presence = 0;
 
     /* Send Control Plane(UL) : SGW-S11 */
     memset(&sgw_s11_teid, 0, sizeof(ogs_gtp_f_teid_t));
