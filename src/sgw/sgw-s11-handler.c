@@ -274,6 +274,10 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
         rsp->bearer_contexts_modified.s1_u_enodeb_f_teid.len =
             req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len;
 
+        rsp->bearer_contexts_modified.cause.presence = 1;
+        rsp->bearer_contexts_modified.cause.len = sizeof(cause);
+        rsp->bearer_contexts_modified.cause.data = &cause;
+
         /* if GTP Node changes, End Marker is sent out or not */
         if (req->user_location_information.presence == 1) {
             /* Set User Location Information */
