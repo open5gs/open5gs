@@ -251,36 +251,31 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
             ogs_assert(rv == OGS_OK);
         }
 
-#if ULI_END_MARKER
-        /* if ULI's Cell ID changes, End Marker is sent out or not */
-        if (req->user_location_information.presence == 1) {
-            /* Set User Location Information */
-            decoded = ogs_gtp_parse_uli(&uli, &req->user_location_information);
-            ogs_assert(req->user_location_information.len == decoded);
-            memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
-            bearer->tai.tac = uli.tai.tac;
-            memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
-                    sizeof(uli.e_cgi.plmn_id));
-            ogs_debug("    ULI Presence: CellID[OLD:0x%x, NEW:0x%x]",
-                bearer->e_cgi.cell_id, uli.e_cgi.cell_id);
-            if (bearer->e_cgi.cell_id != uli.e_cgi.cell_id) {
-                ogs_debug("[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]",
-                    OGS_ADDR(&s1u_tunnel->gnode->conn, buf),
-                    s1u_tunnel->remote_teid);
-                rv = sgw_gtp_send_end_marker(s1u_tunnel);
-                if (rv != OGS_OK)
-                    ogs_error("gtp send end marker failed");
+        /* Copy Bearer-Contexts-Modified from Modify-Bearer-Request
+         *
+         * TS 29.274 Table 7.2.7-2
+         * NOTE 1: If only EPS Bearer ID IE is included in the Bearer Context
+         * to be modified IE during the TAU/RAU without SGW change procedure,
+         * the SGW shall remove the stored SGSN/RNC/eNodeB userplane F-TEID
+         * locally.
+         */
+        rsp->bearer_contexts_modified.presence = 1;
+        rsp->bearer_contexts_modified.eps_bearer_id.presence = 1;
+        rsp->bearer_contexts_modified.eps_bearer_id.u8 =
+            req->bearer_contexts_to_be_modified.eps_bearer_id.u8;
+        rsp->bearer_contexts_modified.s1_u_enodeb_f_teid.presence = 1;
+        rsp->bearer_contexts_modified.s1_u_enodeb_f_teid.data =
+            req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data;
+        rsp->bearer_contexts_modified.s1_u_enodeb_f_teid.len =
+            req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len;
 
-                bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
-            }
-        }
-#else /* GNODE_END_MARKER */
         /* if GTP Node changes, End Marker is sent out or not */
         if (req->user_location_information.presence == 1) {
             /* Set User Location Information */
             decoded = ogs_gtp_parse_uli(&uli, &req->user_location_information);
             ogs_assert(req->user_location_information.len == decoded);
-            memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+            memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id,
+                    sizeof(uli.tai.plmn_id));
             bearer->tai.tac = uli.tai.tac;
             memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
                     sizeof(uli.e_cgi.plmn_id));
@@ -303,7 +298,6 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
             if (rv != OGS_OK)
                 ogs_error("gtp send end marker failed");
         }
-#endif
 
         /* Setup GTP Node */
         OGS_SETUP_GTP_NODE(s1u_tunnel, enb);
