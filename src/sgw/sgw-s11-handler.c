@@ -254,10 +254,15 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
         /* Copy Bearer-Contexts-Modified from Modify-Bearer-Request
          *
          * TS 29.274 Table 7.2.7-2
-         * NOTE 1: If only EPS Bearer ID IE is included in the Bearer Context
-         * to be modified IE during the TAU/RAU without SGW change procedure,
-         * the SGW shall remove the stored SGSN/RNC/eNodeB userplane F-TEID
-         * locally.
+         * NOTE 1: The SGW shall not change its F-TEID for a given interface
+         * during the Handover, Service Request, E-UTRAN Initial Attach,
+         * UE Requested PDN connectivity and PDP Context Activation procedures.
+         * The SGW F-TEID shall be same for S1-U, S4-U and S12. During Handover
+         * and Service Request the target eNodeB/RNC/SGSN may use a different
+         * IP type than the one used by the source eNodeB/RNC/SGSN.
+         * In order to support such a scenario, the SGW F-TEID should contain
+         * both an IPv4 address and an IPv6 address
+         * (see also subclause 8.22 "F-TEID").
          */
         rsp->bearer_contexts_modified.presence = 1;
         rsp->bearer_contexts_modified.eps_bearer_id.presence = 1;
