@@ -79,6 +79,8 @@ void pgw_context_init(void)
 
     ogs_pool_init(&pgw_pf_pool, ogs_config()->pool.pf);
 
+    self.sess_hash = ogs_hash_make();
+
     ogs_list_init(&self.sess_list);
 
     context_initiaized = 1;
@@ -92,6 +94,9 @@ void pgw_context_final(void)
 
     pgw_dev_remove_all();
     pgw_subnet_remove_all();
+
+    ogs_assert(self.sess_hash);
+    ogs_hash_destroy(self.sess_hash);
 
     ogs_pool_final(&pgw_bearer_pool);
     ogs_pool_final(&pgw_sess_pool);
@@ -707,6 +712,16 @@ int pgw_context_parse_config(void)
     return OGS_OK;
 }
 
+static void *sess_hash_keygen(uint8_t *out, int *out_len,
+        uint8_t *imsi, int imsi_len, char *apn)
+{
+    memcpy(out, imsi, imsi_len);
+    ogs_cpystrn((char*)(out+imsi_len), apn, OGS_MAX_APN_LEN+1);
+    *out_len = imsi_len+strlen((char*)(out+imsi_len));
+
+    return out;
+}
+
 pgw_sess_t *pgw_sess_add(
         uint8_t *imsi, int imsi_len, char *apn, 
         uint8_t pdn_type, uint8_t ebi)
@@ -779,6 +794,11 @@ pgw_sess_t *pgw_sess_add(
             sess->ipv4 ?  INET_NTOP(&sess->ipv4->addr, buf1) : "",
             sess->ipv6 ?  INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
+     /* Generate Hash Key : IMSI + APN */
+    sess_hash_keygen(sess->hash_keybuf, &sess->hash_keylen,
+            imsi, imsi_len, apn);
+    ogs_hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, sess);
+
     ogs_list_add(&self.sess_list, sess);
     
     stats_add_session();
@@ -791,6 +811,8 @@ int pgw_sess_remove(pgw_sess_t *sess)
     ogs_assert(sess);
 
     ogs_list_remove(&self.sess_list, sess);
+
+    ogs_hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, NULL);
 
     if (sess->ipv4)
         pgw_ue_ip_free(sess->ipv4);
@@ -823,6 +845,18 @@ pgw_sess_t *pgw_sess_find(uint32_t index)
 pgw_sess_t *pgw_sess_find_by_teid(uint32_t teid)
 {
     return pgw_sess_find(teid);
+}
+
+pgw_sess_t *pgw_sess_find_by_imsi_apn(
+    uint8_t *imsi, int imsi_len, char *apn)
+{
+    uint8_t keybuf[OGS_MAX_IMSI_LEN+OGS_MAX_APN_LEN+1];
+    int keylen = 0;
+
+    ogs_assert(self.sess_hash);
+
+    sess_hash_keygen(keybuf, &keylen, imsi, imsi_len, apn);
+    return (pgw_sess_t *)ogs_hash_get(self.sess_hash, keybuf, keylen);
 }
 
 ogs_gtp_node_t *pgw_sgw_add_by_message(ogs_gtp_message_t *message)
@@ -890,10 +924,31 @@ pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message)
             apn, req->pdn_type.u8,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
 
-    sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
-        req->pdn_type.u8,
-        req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    ogs_assert(sess);
+    /* 
+     * 3GPP TS 29.274 Release 15, Page 38
+     *
+     * If the new Create Session Request received by the PGW collides with
+     * an existing PDN connection context (the existing PDN connection context
+     * is identified with the triplet [IMSI, EPS Bearer ID, Interface type],
+     * where applicable Interface type here is S2a TWAN GTP-C interface or
+     * S2b ePDG GTP-C interface or S5/S8 SGW GTP-C interface, and where IMSI
+     * shall be replaced by TAC and SNR part of ME Identity for emergency
+     * attached UE without UICC or authenticated IMSI), this Create Session
+     * Request shall be treated as a request for a new session. Before creating
+     * the new session, the PGW should delete:
+     *
+     * - the existing PDN connection context, if the Create Session Request
+     *   collides with the default bearer of an existing PDN connection context;
+     * - the existing dedicated bearer context, if the Create Session Request
+     *   collides with a dedicated bearer of an existing PDN connection context.
+     */
+    sess = pgw_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
+    if (!sess) {
+        sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
+                        req->pdn_type.u8,
+                        req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+        ogs_assert(sess);
+    }
 
     return sess;
 }
