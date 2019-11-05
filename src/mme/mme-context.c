@@ -2455,10 +2455,18 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_message_t *message)
 
 int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
 {
+    mme_ue_t *old_mme_ue = NULL;
     ogs_assert(mme_ue && imsi_bcd);
 
     ogs_cpystrn(mme_ue->imsi_bcd, imsi_bcd, OGS_MAX_IMSI_BCD_LEN+1);
     ogs_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, &mme_ue->imsi_len);
+
+    old_mme_ue = mme_ue_find_by_imsi(mme_ue->imsi, mme_ue->imsi_len);
+    if (old_mme_ue) {
+        if (old_mme_ue->enb_ue)
+            enb_ue_deassociate(old_mme_ue->enb_ue);
+        mme_ue_remove(old_mme_ue);
+    }
 
     ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
