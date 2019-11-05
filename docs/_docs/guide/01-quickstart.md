@@ -23,15 +23,15 @@ The Open5GS package is also available on [OBS](https://build.opensuse.org/projec
 ```bash
 $ sudo apt update
 $ sudo apt install wget gnupg
-$ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10.0/Release.key
+$ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/Release.key
 $ sudo apt-key add Release.key
 
 ```
 
-In Debian 10.0(buster), you can install it as follows:
+In Debian 10(buster), you can install it as follows:
 
 ```bash
-$ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_9.0/ ./' > /etc/apt/sources.list.d/open5gs.list"
+$ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/ ./' > /etc/apt/sources.list.d/open5gs.list"
 $ sudo apt update
 $ sudo apt install open5gs
 ```
@@ -39,10 +39,10 @@ $ sudo apt install open5gs
 Other Linux distributions can be installed by changing the path.
 
 ```
-http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10.0/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_Testing/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_Unstable/
-http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_10.0/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_10/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.04/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.10/

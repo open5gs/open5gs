@@ -24,10 +24,6 @@
 
 #include "sctp/sctp-config.h"
 
-#if HAVE_NETINET_SCTP_H
-#include <netinet/sctp.h>
-#endif
-
 #define OGS_SCTP_INSIDE
 
 /* Nothing */
@@ -51,6 +47,7 @@ extern int __ogs_sctp_domain;
 #define OGS_SCTP_SGSAP_PPID             0
 
 #if HAVE_USRSCTP
+
 #undef MSG_NOTIFICATION
 #define MSG_NOTIFICATION 0x2000
 
@@ -60,13 +57,22 @@ extern int __ogs_sctp_domain;
 #ifndef INET6
 #define INET6           1
 #endif
+
 #include <usrsctp.h>
+
 ogs_sockaddr_t *ogs_usrsctp_remote_addr(union sctp_sockstore *store);
 void ogs_sctp_destroy(ogs_sock_t *sock);
 ogs_sock_t *ogs_sctp_accept(ogs_sock_t *sock);
+
 #else
+
+#if HAVE_NETINET_SCTP_H
+#include <netinet/sctp.h>
+#endif
+
 #define ogs_sctp_destroy ogs_sock_destroy
 #define ogs_sctp_accept ogs_sock_accept
+
 #endif
 
 #define DEFAULT_SCTP_MAX_NUM_OF_OSTREAMS 30

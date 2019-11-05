@@ -58,9 +58,10 @@ static int usrsctp_recv_handler(struct socket *sock,
     union sctp_sockstore store, void *data, size_t datalen,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
 {
+    ogs_sockaddr_t *addr = NULL;
+
     if (data) {
         if (flags & MSG_NOTIFICATION) {
-            ogs_sockaddr_t *addr = NULL;
             union sctp_notification *not = (union sctp_notification *)data;
             if (not->sn_header.sn_length == (uint32_t)datalen) {
                 switch(not->sn_header.sn_type) {
@@ -77,8 +78,7 @@ static int usrsctp_recv_handler(struct socket *sock,
                             SCTP_SHUTDOWN_COMP ||
                         not->sn_assoc_change.sac_state == 
                             SCTP_COMM_LOST) {
-                        ogs_sockaddr_t *addr =
-                            ogs_usrsctp_remote_addr(&store);
+                        addr = ogs_usrsctp_remote_addr(&store);
                         ogs_assert(addr);
 
                         if (not->sn_assoc_change.sac_state == 
@@ -130,6 +130,14 @@ static int usrsctp_recv_handler(struct socket *sock,
                             not->sn_paddr_change.spc_flags,
                             not->sn_paddr_change.spc_error);
                     break;
+                case SCTP_ADAPTATION_INDICATION :
+                    ogs_info("SCTP_ADAPTATION_INDICATION:"
+                            "[T:%d, F:0x%x, S:%d, I:%d]", 
+                            not->sn_adaptation_event.sai_type,
+                            not->sn_adaptation_event.sai_flags,
+                            not->sn_adaptation_event.sai_length,
+                            not->sn_adaptation_event.sai_adaptation_ind);
+                    break;
                 case SCTP_REMOTE_ERROR:
                     ogs_warn("SCTP_REMOTE_ERROR:[T:%d, F:0x%x, S:%d]", 
                             not->sn_remote_error.sre_type,
@@ -146,7 +154,6 @@ static int usrsctp_recv_handler(struct socket *sock,
             }
         } else if (flags & MSG_EOR) {
             ogs_pkbuf_t *pkbuf;
-            ogs_sockaddr_t *addr = NULL;
 
             pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
             ogs_pkbuf_put_data(pkbuf, data, datalen);

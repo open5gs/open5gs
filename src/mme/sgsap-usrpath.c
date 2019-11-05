@@ -56,10 +56,11 @@ static int usrsctp_recv_handler(struct socket *sock,
     union sctp_sockstore store, void *data, size_t datalen,
     struct sctp_rcvinfo rcv, int flags, void *ulp_info)
 {
+    ogs_sockaddr_t *addr = NULL;
+
     if (data) {
         if (flags & MSG_NOTIFICATION) {
             union sctp_notification *not = (union sctp_notification *)data;
-            ogs_sockaddr_t *addr = NULL;
             if (not->sn_header.sn_length == (uint32_t)datalen) {
                 switch(not->sn_header.sn_type) {
                 case SCTP_ASSOC_CHANGE :
@@ -98,6 +99,7 @@ static int usrsctp_recv_handler(struct socket *sock,
                     }
                     break;
                 case SCTP_SHUTDOWN_EVENT :
+                case SCTP_SEND_FAILED :
                     addr = ogs_usrsctp_remote_addr(&store);
                     ogs_assert(addr);
 
@@ -145,7 +147,6 @@ static int usrsctp_recv_handler(struct socket *sock,
             }
         } else if (flags & MSG_EOR) {
             ogs_pkbuf_t *pkbuf;
-            ogs_sockaddr_t *addr = NULL;
 
             pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
             ogs_pkbuf_put_data(pkbuf, data, datalen);
