@@ -65,12 +65,12 @@ void stats_remove_ue(void) {
 
 void stats_add_enb(void) {
     num_enbs = num_enbs + 1;
-    ogs_info("Added a UE. Number of eNBs is now %d", num_enbs);
+    ogs_info("Added a eNB. Number of eNBs is now %d", num_enbs);
 }
 
 void stats_remove_enb(void) {
     num_enbs = num_enbs - 1;
-    ogs_info("Removed a UE. Number of eNBs is now %d", num_enbs);
+    ogs_info("Removed a eNB. Number of eNBs is now %d", num_enbs);
 }
 
 void stats_add_mme_session(void) {
