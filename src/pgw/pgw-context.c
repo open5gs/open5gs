@@ -34,6 +34,17 @@ static OGS_POOL(pgw_pf_pool, pgw_pf_t);
 
 static int context_initiaized = 0;
 
+int num_sessions = 0;
+void stats_add_session(void) {
+    num_sessions = num_sessions + 1;
+    ogs_info("Added a session. Number of active sessions is now %d", num_sessions);
+}
+
+void stats_remove_session(void) {
+    num_sessions = num_sessions - 1;
+    ogs_info("Removed a session. Number of active sessions is now %d", num_sessions);
+}
+
 void pgw_context_init(void)
 {
     ogs_assert(context_initiaized == 0);
@@ -769,6 +780,8 @@ pgw_sess_t *pgw_sess_add(
             sess->ipv6 ?  INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
     ogs_list_add(&self.sess_list, sess);
+    
+    stats_add_session();
 
     return sess;
 }
@@ -787,6 +800,8 @@ int pgw_sess_remove(pgw_sess_t *sess)
     pgw_bearer_remove_all(sess);
 
     ogs_pool_free(&pgw_sess_pool, sess);
+
+    stats_remove_session();
 
     return OGS_OK;
 }
