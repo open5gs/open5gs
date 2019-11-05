@@ -49,16 +49,40 @@ static OGS_POOL(mme_bearer_pool, mme_bearer_t);
 
 static int context_initialized = 0;
 
-int attached_ues = 0;
-void stats_add_attached_ue(void) {
-    attached_ues = attached_ues + 1;
-    ogs_info("Attached a UE. Number of Attached UEs is now %d", attached_ues);
+int num_ues = 0;
+int num_enbs = 0;
+int num_mme_sessions = 0;
+
+void stats_add_ue(void) {
+    num_ues = num_ues + 1;
+    ogs_info("Added a UE. Number of UEs is now %d", num_ues);
 }
 
-void stats_remove_attached_ue(void) {
-    attached_ues = attached_ues - 1;
-    ogs_info("Removed a UE. Number of Attached UEs is now %d", attached_ues);
+void stats_remove_ue(void) {
+    num_ues = num_ues - 1;
+    ogs_info("Removed a UE. Number of UEs is now %d", num_ues);
 }
+
+void stats_add_enb(void) {
+    num_enbs = num_enbs + 1;
+    ogs_info("Added a UE. Number of eNBs is now %d", num_enbs);
+}
+
+void stats_remove_enb(void) {
+    num_enbs = num_enbs - 1;
+    ogs_info("Removed a UE. Number of eNBs is now %d", num_enbs);
+}
+
+void stats_add_mme_session(void) {
+    num_mme_sessions = num_mme_sessions + 1;
+    ogs_info("Added a session. Number of sessions is now %d", num_mme_sessions);
+}
+
+void stats_remove_mme_session(void) {
+    num_mme_sessions = num_mme_sessions - 1;
+    ogs_info("Removed a session. Number of sessions is now %d", num_mme_sessions);
+}
+
 
 void mme_context_init()
 {
@@ -1889,6 +1913,8 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_list_add(&self.enb_list, enb);
 
+    stats_add_enb();
+
     return enb;
 }
 
@@ -1918,6 +1944,8 @@ int mme_enb_remove(mme_enb_t *enb)
     ogs_free(enb->addr);
 
     ogs_pool_free(&mme_enb_pool, enb);
+
+    stats_remove_enb();
 
     return OGS_OK;
 }
@@ -2004,7 +2032,7 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb)
             sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
     ogs_list_add(&enb->enb_ue_list, enb_ue);
 
-    stats_add_attached_ue();
+    stats_add_ue();
 
     return enb_ue;
 }
@@ -2031,7 +2059,7 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), NULL);
 
-    stats_remove_attached_ue();
+    stats_remove_ue();
 
     ogs_pool_free(&enb_ue_pool, enb_ue);
 }
@@ -2579,6 +2607,8 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti)
 
     ogs_list_add(&mme_ue->sess_list, sess);
 
+    stats_add_mme_session();
+
     return sess;
 }
 
@@ -2595,6 +2625,8 @@ void mme_sess_remove(mme_sess_t *sess)
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
 
     ogs_pool_free(&mme_sess_pool, sess);
+
+    stats_remove_mme_session();
 }
 
 void mme_sess_remove_all(mme_ue_t *mme_ue)
