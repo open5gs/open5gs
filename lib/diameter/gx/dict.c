@@ -1,156 +1,286 @@
+/*********************************************************************************************************
+ * Software License Agreement (BSD License)                                                               *
+ * Author: Thomas Klausner <tk@giga.or.at>                                                                *
+ *                                                                                                        *
+ * Copyright (c) 2013, Thomas Klausner                                                                    *
+ * All rights reserved.                                                                                   *
+ *                                                                                                        *
+ * Written under contract by nfotex IT GmbH, http://nfotex.com/                                           *
+ *                                                                                                        *
+ * Redistribution and use of this software in source and binary forms, with or without modification, are  *
+ * permitted provided that the following conditions are met:                                              *
+ *                                                                                                        *
+ * * Redistributions of source code must retain the above                                                 *
+ *   copyright notice, this list of conditions and the                                                    *
+ *   following disclaimer.                                                                                *
+ *                                                                                                        *
+ * * Redistributions in binary form must reproduce the above                                              *
+ *   copyright notice, this list of conditions and the                                                    *
+ *   following disclaimer in the documentation and/or other                                               *
+ *   materials provided with the distribution.                                                            *
+ *                                                                                                        *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED *
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A *
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR *
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT     *
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS    *
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR *
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF   *
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                                                             *
+ *********************************************************************************************************/
 
-/*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+/* 
+ * Dictionary definitions for objects specified for DCCA by 3GPP.
  *
- * This file is part of Open5GS.
+ * This extensions contains a lot of AVPs from various 3GPP standards
+ * documents, and some rules for the grouped AVPs described therein.
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This extension does not contain ALL AVPs described by 3GPP, but
+ * quite a big number of them.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * When extending the AVPs, please edit dict_rx.org instead and
+ * create pastable code with contrib/tools/org_to_fd.pl.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * Some points of consideration:
+ * 1. This dictionary could be split up per document.
+ *
+ * + pro: you can only load the AVPs/Rules you're interested in ->
+ * smaller memory size
+ *
+ * - con: the documents use AVPs from each other A LOT, so setting the
+ * dependencies correctly will be annoying
+ *
+ * - con: you need to load all of them as extensions
+ *
+ * 2. This dictionary contains ONE AVP in the "3GPP2" vendor space,
+ * since I found it wasteful to write a separate dictionary just for
+ * one AVP. Also, it is defined in a 3GPP document.
+ *
+ * 3. While there are quite a number of rules here already, many more
+ * are missing. I've only added rules for those grouped AVPs or
+ * commands in which I was concretely interested so far; many more
+ * will need to be added to make this complete.
+ *
+ * That being said, I hope this will be useful for you.
+ *
  */
 
-#include "ogs-diameter-gx.h"
 
-#define CHECK_dict_search( _type, _criteria, _what, _result )	\
-	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
+/*
+ * Some comments on the 3GPP Standards documents themselves:
+ *
+ * 1. It would be good if 29.061 was reviewed to check for each AVP if
+ * it is Mandatory or not. The data currently in the document does not
+ * match what was in the previous version of the freeDiameter
+ * extension (the one that existedbefore I rewrote it) or what I saw
+ * so far. IIRC, even the table and the document contradict each
+ * other. The AVP table is also missing an entry for
+ * "External-Identifier", 28.
+ *
+ * 2. 29.140 has conflicting AVP names with other documents:
+ *   - Sequence-Number is also in 32.329
+ *   - Recipient-Address is also in 32.299
+ *   - Status is also in 32.299
+ *
+ * 3. 29.229 has name conflict with 29.329 about User-Data (different
+ * AVP code 702, instead of 606) -- the weird thing is, the latter
+ * uses some AVPs from the former, but not this one.
+*/
+#include <freeDiameter/extension.h>
 
-struct dict_object *ogs_diam_gx_application = NULL;
 
-struct dict_object *ogs_diam_gx_cmd_ccr = NULL;
-struct dict_object *ogs_diam_gx_cmd_cca = NULL;
-struct dict_object *ogs_diam_gx_cmd_rar = NULL;
-struct dict_object *ogs_diam_gx_cmd_raa = NULL;
+/* The content of this file follows the same structure as dict_base_proto.c */
 
-struct dict_object *ogs_diam_gx_cc_request_type = NULL;
-struct dict_object *ogs_diam_gx_cc_request_number = NULL;
-struct dict_object *ogs_diam_gx_network_request_support = NULL;
-struct dict_object *ogs_diam_gx_subscription_id = NULL;
-struct dict_object *ogs_diam_gx_subscription_id_type = NULL;
-struct dict_object *ogs_diam_gx_subscription_id_data = NULL;
-struct dict_object *ogs_diam_gx_supported_features = NULL;
-struct dict_object *ogs_diam_gx_feature_list_id = NULL;
-struct dict_object *ogs_diam_gx_feature_list = NULL;
-struct dict_object *ogs_diam_gx_framed_ip_address = NULL;
-struct dict_object *ogs_diam_gx_framed_ipv6_prefix = NULL;
-struct dict_object *ogs_diam_gx_ip_can_type = NULL;
-struct dict_object *ogs_diam_gx_rat_type = NULL;
-struct dict_object *ogs_diam_gx_qos_information = NULL;
-struct dict_object *ogs_diam_gx_qos_class_identifier = NULL;
-struct dict_object *ogs_diam_gx_max_requested_bandwidth_ul = NULL;
-struct dict_object *ogs_diam_gx_max_requested_bandwidth_dl = NULL;
-struct dict_object *ogs_diam_gx_min_requested_bandwidth_ul = NULL;
-struct dict_object *ogs_diam_gx_min_requested_bandwidth_dl = NULL;
-struct dict_object *ogs_diam_gx_guaranteed_bitrate_ul = NULL;
-struct dict_object *ogs_diam_gx_guaranteed_bitrate_dl = NULL;
-struct dict_object *ogs_diam_gx_allocation_retention_priority = NULL;
-struct dict_object *ogs_diam_gx_priority_level = NULL;
-struct dict_object *ogs_diam_gx_pre_emption_capability = NULL;
-struct dict_object *ogs_diam_gx_pre_emption_vulnerability = NULL;
-struct dict_object *ogs_diam_gx_apn_aggregate_max_bitrate_ul = NULL;
-struct dict_object *ogs_diam_gx_apn_aggregate_max_bitrate_dl = NULL;
-struct dict_object *ogs_diam_gx_3gpp_user_location_info = NULL;
-struct dict_object *ogs_diam_gx_called_station_id = NULL;
-struct dict_object *ogs_diam_gx_default_eps_bearer_qos = NULL;
-struct dict_object *ogs_diam_gx_3gpp_ms_timezone = NULL;
-struct dict_object *ogs_diam_gx_event_trigger = NULL;
-struct dict_object *ogs_diam_gx_bearer_control_mode = NULL;
-struct dict_object *ogs_diam_gx_charging_rule_install = NULL;
-struct dict_object *ogs_diam_gx_charging_rule_remove = NULL;
-struct dict_object *ogs_diam_gx_charging_rule_definition = NULL;
-struct dict_object *ogs_diam_gx_charging_rule_base_name = NULL;
-struct dict_object *ogs_diam_gx_charging_rule_name = NULL;
-struct dict_object *ogs_diam_gx_flow_information = NULL;
-struct dict_object *ogs_diam_gx_flow_direction = NULL;
-struct dict_object *ogs_diam_gx_flow_description = NULL;
-struct dict_object *ogs_diam_gx_flow_status = NULL;
-struct dict_object *ogs_diam_gx_precedence = NULL;
-struct dict_object *ogs_diam_gx_flows = NULL;
-struct dict_object *ogs_diam_gx_media_component_description = NULL;
-struct dict_object *ogs_diam_gx_media_component_number = NULL;
-struct dict_object *ogs_diam_gx_media_type = NULL;
-struct dict_object *ogs_diam_gx_rr_bandwidth = NULL;
-struct dict_object *ogs_diam_gx_rs_bandwidth = NULL;
-struct dict_object *ogs_diam_gx_codec_data = NULL;
-struct dict_object *ogs_diam_gx_media_sub_component = NULL;
-struct dict_object *ogs_diam_gx_flow_number = NULL;
-struct dict_object *ogs_diam_gx_flow_usage = NULL;
+#define CHECK_dict_new( _type, _data, _parent, _ref )  \
+  CHECK_FCT(  fd_dict_new( fd_g_config->cnf_dict, (_type), (_data), (_parent), (_ref))  );
 
-int ogs_diam_gx_dict_init(void)
-{
-    application_id_t id = OGS_DIAM_GX_APPLICATION_ID;
+#define CHECK_dict_search( _type, _criteria, _what, _result )  \
+  CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );
 
-    CHECK_dict_search(DICT_APPLICATION, APPLICATION_BY_ID, (void *)&id, &ogs_diam_gx_application);
+struct local_rules_definition {
+  struct dict_avp_request avp_vendor_plus_name;
+  enum rule_position  position;
+  int       min;
+  int      max;
+};
 
-    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Credit-Control-Request", &ogs_diam_gx_cmd_ccr);
-    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Credit-Control-Answer", &ogs_diam_gx_cmd_cca);
-    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Re-Auth-Request", &ogs_diam_gx_cmd_rar);
-    CHECK_dict_search(DICT_COMMAND, CMD_BY_NAME, "Re-Auth-Answer", &ogs_diam_gx_cmd_raa);
+#define RULE_ORDER( _position ) ((((_position) == RULE_FIXED_HEAD) || ((_position) == RULE_FIXED_TAIL)) ? 1 : 0 )
 
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "CC-Request-Type", &ogs_diam_gx_cc_request_type);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "CC-Request-Number", &ogs_diam_gx_cc_request_number);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Network-Request-Support", &ogs_diam_gx_network_request_support);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Id", &ogs_diam_gx_subscription_id);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Id-Type", &ogs_diam_gx_subscription_id_type);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Id-Data", &ogs_diam_gx_subscription_id_data);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Supported-Features", &ogs_diam_gx_supported_features);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List-ID", &ogs_diam_gx_feature_list_id);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Feature-List", &ogs_diam_gx_feature_list);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IP-Address", &ogs_diam_gx_framed_ip_address);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Framed-IPv6-Prefix", &ogs_diam_gx_framed_ipv6_prefix);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IP-CAN-Type", &ogs_diam_gx_ip_can_type);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RAT-Type", &ogs_diam_gx_rat_type);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "QoS-Information", &ogs_diam_gx_qos_information);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "QoS-Class-Identifier" , &ogs_diam_gx_qos_class_identifier);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-UL" , &ogs_diam_gx_max_requested_bandwidth_ul);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Max-Requested-Bandwidth-DL" , &ogs_diam_gx_max_requested_bandwidth_dl);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-UL" , &ogs_diam_gx_min_requested_bandwidth_ul);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Min-Requested-Bandwidth-DL" , &ogs_diam_gx_min_requested_bandwidth_dl);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Guaranteed-Bitrate-UL" , &ogs_diam_gx_guaranteed_bitrate_ul);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Guaranteed-Bitrate-DL" , &ogs_diam_gx_guaranteed_bitrate_dl);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Allocation-Retention-Priority" , &ogs_diam_gx_allocation_retention_priority);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Priority-Level", &ogs_diam_gx_priority_level);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Pre-emption-Capability", &ogs_diam_gx_pre_emption_capability);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Pre-emption-Vulnerability", &ogs_diam_gx_pre_emption_vulnerability);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Aggregate-Max-Bitrate-UL" , &ogs_diam_gx_apn_aggregate_max_bitrate_ul);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Aggregate-Max-Bitrate-DL" , &ogs_diam_gx_apn_aggregate_max_bitrate_dl);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-User-Location-Info", &ogs_diam_gx_3gpp_user_location_info);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Called-Station-Id", &ogs_diam_gx_called_station_id);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Default-EPS-Bearer-QoS", &ogs_diam_gx_default_eps_bearer_qos);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "3GPP-MS-TimeZone", &ogs_diam_gx_3gpp_ms_timezone);
-
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Event-Trigger", &ogs_diam_gx_event_trigger);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Bearer-Control-Mode", &ogs_diam_gx_bearer_control_mode);
-
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Install", &ogs_diam_gx_charging_rule_install);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Remove", &ogs_diam_gx_charging_rule_remove);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Definition", &ogs_diam_gx_charging_rule_definition);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Base-Name", &ogs_diam_gx_charging_rule_base_name);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Charging-Rule-Name", &ogs_diam_gx_charging_rule_name);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Information", &ogs_diam_gx_flow_information);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Direction", &ogs_diam_gx_flow_direction);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Description", &ogs_diam_gx_flow_description);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Status", &ogs_diam_gx_flow_status);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Precedence", &ogs_diam_gx_precedence);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flows", &ogs_diam_gx_flows);
-
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Description", &ogs_diam_gx_media_component_description);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Component-Number", &ogs_diam_gx_media_component_number);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Type", &ogs_diam_gx_media_type);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RR-Bandwidth" , &ogs_diam_gx_rr_bandwidth);
-	CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "RS-Bandwidth" , &ogs_diam_gx_rs_bandwidth);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Codec-Data", &ogs_diam_gx_codec_data);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Media-Sub-Component", &ogs_diam_gx_media_sub_component);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Number", &ogs_diam_gx_flow_number);
-    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Flow-Usage", &ogs_diam_gx_flow_usage);
-
-    return 0;
+/* Attention! This version of the macro uses AVP_BY_NAME_AND_VENDOR, in contrast to most other copies! */
+#define PARSE_loc_rules( _rulearray, _parent) {                \
+  int __ar;                      \
+  for (__ar=0; __ar < sizeof(_rulearray) / sizeof((_rulearray)[0]); __ar++) {      \
+    struct dict_rule_data __data = { NULL,               \
+      (_rulearray)[__ar].position,              \
+      0,                     \
+      (_rulearray)[__ar].min,                \
+      (_rulearray)[__ar].max};              \
+    __data.rule_order = RULE_ORDER(__data.rule_position);          \
+    CHECK_FCT(  fd_dict_search(                 \
+      fd_g_config->cnf_dict,                \
+      DICT_AVP,                   \
+      AVP_BY_NAME_AND_VENDOR,               \
+      &(_rulearray)[__ar].avp_vendor_plus_name,          \
+      &__data.rule_avp, 0 ) );              \
+    if ( !__data.rule_avp ) {                \
+      TRACE_DEBUG(INFO, "AVP Not found: '%s'", (_rulearray)[__ar].avp_vendor_plus_name.avp_name);    \
+      return ENOENT;                  \
+    }                      \
+    CHECK_FCT_DO( fd_dict_new( fd_g_config->cnf_dict, DICT_RULE, &__data, _parent, NULL),  \
+      {                          \
+        TRACE_DEBUG(INFO, "Error on rule with AVP '%s'",            \
+              (_rulearray)[__ar].avp_vendor_plus_name.avp_name);    \
+        return EINVAL;                      \
+      } );                          \
+  }                              \
 }
+
+#define enumval_def_u32( _val_, _str_ ) \
+    { _str_,     { .u32 = _val_ }}
+
+#define enumval_def_os( _len_, _val_, _str_ ) \
+    { _str_,     { .os = { .data = (unsigned char *)_val_, .len = _len_ }}}
+
+
+int ogs_dict_gx_entry(char *conffile)
+{
+  /* Applications section */
+  {    
+  {
+    struct dict_object * vendor;
+    CHECK_FCT(fd_dict_search(fd_g_config->cnf_dict, DICT_VENDOR, VENDOR_BY_NAME, "3GPP", &vendor, ENOENT));
+    struct dict_application_data app_data = { 16777238, "Gx" };
+    CHECK_FCT(fd_dict_new(fd_g_config->cnf_dict, DICT_APPLICATION, &app_data, vendor, NULL));
+  }
+
+  }
+
+  /* Re-Auth-Request (RAR) Command - Extension for Gx */
+  {
+    struct dict_object * cmd;
+    struct local_rules_definition rules[] =
+    {
+      {  { .avp_vendor = 10415, .avp_name = "Session-Release-Cause" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Event-Trigger" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Event-Report-Indication" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Charging-Rule-Remove" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Charging-Rule-Install" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Default-EPS-Bearer-QoS" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "QoS-Information" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Revalidation-Time" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Usage-Monitoring-Information" }, RULE_OPTIONAL, -1, -1 }
+    };
+
+    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Re-Auth-Request", &cmd);
+    PARSE_loc_rules( rules, cmd );
+  }
+
+  /* Re-Auth-Answer (RAA) Command - Extension for Gx */
+  {
+    struct dict_object * cmd;
+    struct local_rules_definition rules[] =
+    {
+      {  {                      .avp_name = "Experimental-Result" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "IP-CAN-Type" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "RAT-Type" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "AN-GW-Address" }, RULE_OPTIONAL, -1, 2 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-SGSN-MCC-MNC" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-SGSN-Address" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-SGSN-IPv6-Address" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "RAI" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-User-Location-Info" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-MS-TimeZone" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Charging-Rule-Report" }, RULE_OPTIONAL, -1, -1 }
+    };
+
+    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Re-Auth-Answer", &cmd);
+    PARSE_loc_rules( rules, cmd );
+  }
+
+  /* Credit-Control-Request (CCR) Command - Extension for Gx */
+  {
+    struct dict_object * cmd;
+    struct local_rules_definition rules[] =
+    {
+      {  { .avp_vendor = 10415, .avp_name = "Supported-Features" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Network-Request-Support" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Packet-Filter-Information" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Packet-Filter-Operation" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Bearer-Identifier" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Bearer-Operation" }, RULE_OPTIONAL, -1, 1 },
+      {  {                      .avp_name = "Framed-IP-Address" }, RULE_OPTIONAL, -1, 1 },
+      {  {                      .avp_name = "Framed-IPv6-Prefix" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "IP-CAN-Type" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-RAT-Type" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "RAT-Type" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "QoS-Information" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "QoS-Negotiation" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "QoS-Upgrade" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Default-EPS-Bearer-QoS" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "AN-GW-Address" }, RULE_OPTIONAL, -1, 2 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-SGSN-MCC-MNC" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-SGSN-Address" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-SGSN-IPv6-Address" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "RAI" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-User-Location-Info" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "3GPP-MS-TimeZone" }, RULE_OPTIONAL, -1, 1 },
+      {  {                      .avp_name = "Called-Station-Id" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "PDN-Connection-ID" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Bearer-Usage" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Online" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Offline" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "TFT-Packet-Filter-Information" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Charging-Rule-Report" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Event-Trigger" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Event-Report-Indication" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Access-Network-Charging-Address" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Access-Network-Charging-Identifier-Gx" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "CoA-Information" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Usage-Monitoring-Information" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Routing-Rule-Install" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Routing-Rule-Remove" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 13019, .avp_name = "Logical-Access-ID" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 13019, .avp_name = "Physical-Access-ID" }, RULE_OPTIONAL, -1, 1 }
+    };
+
+    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Credit-Control-Request", &cmd);
+    PARSE_loc_rules( rules, cmd );
+  }
+
+  /* Credit-Control-Answer (CCA) Command - Extension for Gx */
+  {
+    struct dict_object * cmd;
+    struct local_rules_definition rules[] =
+    {
+      {  {                      .avp_name = "Experimental-Result" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Supported-Features" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Bearer-Control-Mode" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Event-Trigger" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Event-Report-Indication" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Charging-Rule-Remove" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Charging-Rule-Install" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "Charging-Information" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Online" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Offline" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "QoS-Information" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Revalidation-Time" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Default-EPS-Bearer-QoS" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Bearer-Usage" }, RULE_OPTIONAL, -1, 1 },
+      {  { .avp_vendor = 10415, .avp_name = "Usage-Monitoring-Information" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "CSG-Information-Reporting" }, RULE_OPTIONAL, -1, -1 },
+      {  { .avp_vendor = 10415, .avp_name = "User-CSG-Information" }, RULE_OPTIONAL, -1, 1 },
+      {  {                      .avp_name = "Error-Message" }, RULE_OPTIONAL, -1, 1 },
+      {  {                      .avp_name = "Error-Reporting-Host" }, RULE_OPTIONAL, -1, 1 }
+    };
+
+    CHECK_dict_search( DICT_COMMAND, CMD_BY_NAME, "Credit-Control-Answer", &cmd);
+    PARSE_loc_rules( rules, cmd );
+  }
+  
+  LOG_D( "Extension 'Dictionary definitions for DCCA 3GPP' initialized");
+  return 0;
+}
+
+#if 0 /* modified by acetcom */
+EXTENSION_ENTRY("dict_gx", ogs_dict_gx_entry, "dict_dcca_3gpp");
+#endif

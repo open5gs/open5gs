@@ -33,7 +33,6 @@ int sgsap_open(void);
 void sgsap_close(void);
 
 ogs_sock_t *sgsap_client(mme_vlr_t *vlr);
-void sgsap_recv_handler(short when, ogs_socket_t fd, void *data);
 
 int sgsap_send(ogs_sock_t *sock,
         ogs_pkbuf_t *pkbuf, ogs_sockaddr_t *addr, uint16_t stream_no);

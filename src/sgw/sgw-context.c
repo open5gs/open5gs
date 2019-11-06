@@ -57,6 +57,8 @@ void sgw_context_init(void)
     ogs_pool_init(&sgw_bearer_pool, ogs_config()->pool.bearer);
     ogs_pool_init(&sgw_tunnel_pool, ogs_config()->pool.tunnel);
 
+    self.imsi_ue_hash = ogs_hash_make();
+
     ogs_list_init(&self.sgw_ue_list);
 
     context_initialized = 1;
@@ -67,6 +69,9 @@ void sgw_context_final(void)
     ogs_assert(context_initialized == 1);
 
     sgw_ue_remove_all();
+
+    ogs_assert(self.imsi_ue_hash);
+    ogs_hash_destroy(self.imsi_ue_hash);
 
     ogs_pool_final(&sgw_tunnel_pool);
     ogs_pool_final(&sgw_bearer_pool);
@@ -435,6 +440,31 @@ sgw_ue_t *sgw_ue_add_by_message(ogs_gtp_message_t *message)
     ogs_trace("sgw_ue_add_by_message() - IMSI ");
     ogs_log_hexdump(OGS_LOG_TRACE, req->imsi.data, req->imsi.len);
 
+    /* 
+     * 3GPP TS 29.274 Release 15, Page 38
+     *
+     * If the new Create Session Request received by the SGW collides with
+     * an existing active PDN connection context (the existing PDN connection
+     * context is identified with the tuple [IMSI, EPS Bearer ID], where IMSI
+     * shall be replaced by TAC and SNR part of ME Identity for emergency
+     * attached UE without UICC or authenticated IMSI), this Create Session
+     * Request shall be treated as a request for a new session. Before creating
+     * the new session, the SGW should delete:
+     *
+     * - the existing PDN connection context locally, if the Create Session
+     *   Request is received with the TEID set to zero in the header, or
+     *   if it is received with a TEID not set to zero in the header and
+     *   it collides with the default bearer of an existing PDN connection
+     *   context;
+     * - the existing dedicated bearer context locally, if the Create Session
+     *   Request collides with an existing dedicated bearer context and
+     *   the message is received with a TEID not set to zero in the header.
+     */
+    sgw_ue = sgw_ue_find_by_imsi(req->imsi.data, req->imsi.len);
+    if (sgw_ue) {
+        ogs_warn("OLD UE Context Release [IMSI:%s]", sgw_ue->imsi_bcd);
+        sgw_ue_remove(sgw_ue);
+    }
     sgw_ue = sgw_ue_add(req->imsi.data, req->imsi.len);
     ogs_assert(sgw_ue);
 
@@ -463,6 +493,8 @@ sgw_ue_t *sgw_ue_add(uint8_t *imsi, int imsi_len)
 
     ogs_list_init(&sgw_ue->sess_list);
 
+    ogs_hash_set(self.imsi_ue_hash, sgw_ue->imsi, sgw_ue->imsi_len, sgw_ue);
+
     ogs_list_add(&self.sgw_ue_list, sgw_ue);
 
     return sgw_ue;
@@ -473,6 +505,8 @@ int sgw_ue_remove(sgw_ue_t *sgw_ue)
     ogs_assert(sgw_ue);
 
     ogs_list_remove(&self.sgw_ue_list, sgw_ue);
+
+    ogs_hash_set(self.imsi_ue_hash, sgw_ue->imsi, sgw_ue->imsi_len, NULL);
 
     sgw_sess_remove_all(sgw_ue);
 
@@ -487,6 +521,25 @@ void sgw_ue_remove_all(void)
 
     ogs_list_for_each_safe(&self.sgw_ue_list, next, sgw_ue)
         sgw_ue_remove(sgw_ue);
+}
+
+sgw_ue_t *sgw_ue_find_by_imsi_bcd(char *imsi_bcd)
+{
+    uint8_t imsi[OGS_MAX_IMSI_LEN];
+    int imsi_len = 0;
+
+    ogs_assert(imsi_bcd);
+
+    ogs_bcd_to_buffer(imsi_bcd, imsi, &imsi_len);
+
+    return sgw_ue_find_by_imsi(imsi, imsi_len);
+}
+
+sgw_ue_t *sgw_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
+{
+    ogs_assert(imsi && imsi_len);
+
+    return (sgw_ue_t *)ogs_hash_get(self.imsi_ue_hash, imsi, imsi_len);
 }
 
 sgw_ue_t *sgw_ue_find_by_teid(uint32_t teid)
@@ -513,7 +566,6 @@ sgw_sess_t *sgw_sess_add(sgw_ue_t *sgw_ue, char *apn, uint8_t ebi)
     ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
 
     sess->sgw_ue = sgw_ue;
-    sess->gnode = NULL;
 
     ogs_list_init(&sess->bearer_list);
 
@@ -718,7 +770,6 @@ sgw_tunnel_t *sgw_tunnel_add(sgw_bearer_t *bearer, uint8_t interface_type)
             tunnel->local_teid <= ogs_config()->pool.tunnel);
 
     tunnel->bearer = bearer;
-    tunnel->gnode = NULL;
 
     ogs_list_add(&bearer->tunnel_list, tunnel);
 

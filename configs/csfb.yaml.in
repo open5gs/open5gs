@@ -19,7 +19,6 @@ mme:
         - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
-        - module: @freediameter_extensions_builddir@/dict_s6a.fdx
       connect:
         - identity: hss.localdomain
           addr: 127.0.0.4
@@ -94,7 +93,6 @@ hss:
         - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
-        - module: @freediameter_extensions_builddir@/dict_s6a.fdx
       connect:
         - identity: mme.localdomain
           addr: 127.0.0.2

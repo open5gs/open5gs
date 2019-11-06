@@ -18,10 +18,10 @@
 libdiameter_s6a_sources = files('''
     ogs-diameter-s6a.h
 
-    dict.h
     message.h
 
     dict.c
+    message.c
 '''.split())
 
 libdiameter_s6a_inc = include_directories('.')
@@ -29,7 +29,7 @@ libdiameter_s6a_inc = include_directories('.')
 libdiameter_s6a = library('ogsdiameter-s6a',
     sources : libdiameter_s6a_sources,
     version : libogslib_version,
-    c_args : '-DOGS_DIAM_COMPILATION',
+    c_args : libdiameter_common_cc_flags,
     include_directories : [libdiameter_s6a_inc, libcrypt_inc],
     dependencies : libdiameter_common_dep,
     install : true)

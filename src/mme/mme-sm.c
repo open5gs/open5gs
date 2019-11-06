@@ -552,7 +552,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(pkbuf);
 
         vlr = mme_vlr_find_by_addr(addr);
-        ogs_assert(vlr);
         ogs_free(addr);
 
         ogs_assert(vlr);

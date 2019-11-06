@@ -65,18 +65,18 @@ int mme_gtp_open(void)
     mme_sgw_t *sgw = NULL;
 
     ogs_list_for_each(&mme_self()->gtpc_list, node) {
-        ogs_socknode_set_poll(node, mme_self()->pollset,
-                OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
-
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
+
+        node->poll = ogs_pollset_add(mme_self()->pollset,
+                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
     }
     ogs_list_for_each(&mme_self()->gtpc_list6, node) {
-        ogs_socknode_set_poll(node, mme_self()->pollset,
-                OGS_POLLIN, _gtpv2_c_recv_cb, NULL);
-
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
+
+        node->poll = ogs_pollset_add(mme_self()->pollset,
+                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
     }
 
     mme_self()->gtpc_sock = ogs_gtp_local_sock_first(&mme_self()->gtpc_list);

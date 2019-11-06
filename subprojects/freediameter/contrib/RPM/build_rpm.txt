@@ -1,6 +1,0 @@
-[krum@ThinkPad DelMe]$ cp freeDiameter.spec /home/krum/rpmbuild/SPECS/
-[krum@ThinkPad DelMe]$ cd /home/krum/rpmbuild/SOURCES/
-[krum@ThinkPad ~]$ cd /home/krum/rpmbuild/SOURCES/
-[krum@ThinkPad SOURCES]$ wget http://www.freediameter.net/hg/freeDiameter/archive/1.1.6.tar.gz
-[krum@ThinkPad SOURCES]$ cd ../SPECS/
-[krum@ThinkPad SPECS]$ rpmbuild -ba freeDiameter.spec

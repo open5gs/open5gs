@@ -570,19 +570,25 @@ void s1ap_handle_initial_context_setup_failure(
     if (enb_ue == NULL) {
         ogs_warn("Initial context setup failure : "
                 "cannot find eNB-UE-S1AP-ID[%d]", (int)*ENB_UE_S1AP_ID);
-        goto cleanup;
+        return;
     }
-    mme_ue = enb_ue->mme_ue;
 
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
     ogs_debug("    Cause[Group:%d Cause:%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
-    ogs_assert(mme_ue);
-    if (mme_ue && OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-        ogs_debug("    EMM-Registered");
+    mme_ue = enb_ue->mme_ue;
 
+    if (!mme_ue) {
+        ogs_debug("    S1 Context Release");
+        CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
+        rv = s1ap_send_ue_context_release_command(enb_ue, 
+                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_NO_ACTION, 0);
+        ogs_assert(rv == OGS_OK);
+    } else {
+        ogs_debug("    UE Context Release [IMSI:%s]", mme_ue->imsi_bcd);
         /*
          * 19.2.2.3 in Spec 36.300
          *
@@ -593,15 +599,11 @@ void s1ap_handle_initial_context_setup_failure(
          * may in principle be adopted. The eNB should ensure
          * that no hanging resources remain at the eNB.
          */
-    } else {
-        ogs_debug("    NOT EMM-Registered");
-        ogs_assert(mme_ue);
         rv = mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
         ogs_assert(rv == OGS_OK);
-    }
 
-cleanup:
-    CLEAR_SERVICE_INDICATOR(mme_ue);
+        CLEAR_SERVICE_INDICATOR(mme_ue);
+    }
 }
 
 void s1ap_handle_ue_context_modification_response(

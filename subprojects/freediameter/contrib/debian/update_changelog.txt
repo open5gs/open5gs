@@ -1,3 +1,0 @@
-new release: dch -v 1.0.3 -D UNRELEASED --release-heuristic log
-Simple addition: dch "changelog entry text"
-

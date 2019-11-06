@@ -87,6 +87,8 @@ typedef struct pgw_context_s {
     ogs_list_t      sgw_s5u_list;   /* SGW GTPU Node List */
     ogs_list_t      ip_pool_list;
 
+    ogs_hash_t      *sess_hash;     /* hash table (IMSI+APN) */
+
     ogs_list_t      sess_list;
 } pgw_context_t;
 
@@ -145,6 +147,9 @@ typedef struct pgw_sess_s {
     /* User-Lication-Info */
     ogs_tai_t       tai;
     ogs_e_cgi_t     e_cgi;
+
+    uint8_t         hash_keybuf[OGS_MAX_IMSI_LEN+OGS_MAX_APN_LEN+1];
+    int             hash_keylen;
 
     ogs_list_t      bearer_list;
 
@@ -229,6 +234,7 @@ int pgw_sess_remove(pgw_sess_t *sess);
 void pgw_sess_remove_all(void);
 pgw_sess_t *pgw_sess_find(uint32_t index);
 pgw_sess_t *pgw_sess_find_by_teid(uint32_t teid);
+pgw_sess_t *pgw_sess_find_by_imsi_apn(uint8_t *imsi, int imsi_len, char *apn);
 
 pgw_bearer_t *pgw_bearer_add(pgw_sess_t *sess);
 int pgw_bearer_remove(pgw_bearer_t *bearer);
@@ -272,6 +278,9 @@ int pgw_subnet_remove(pgw_subnet_t *subnet);
 void pgw_subnet_remove_all(void);
 pgw_subnet_t *pgw_subnet_first(void);
 pgw_subnet_t *gw_subnet_next(pgw_subnet_t *subnet);
+
+void stats_add_session(void);
+void stats_remove_session(void);
 
 #ifdef __cplusplus
 }

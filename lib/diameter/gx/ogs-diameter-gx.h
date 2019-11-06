@@ -24,7 +24,6 @@
 
 #define OGS_DIAMETER_INSIDE
 
-#include "diameter/gx/dict.h"
 #include "diameter/gx/message.h"
 
 #undef OGS_DIAMETER_INSIDE

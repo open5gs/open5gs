@@ -1,0 +1,4 @@
+[wrap-git]
+directory = freeDiameter
+url = https://github.com/open5gs/freeDiameter.git
+revision = open5gs

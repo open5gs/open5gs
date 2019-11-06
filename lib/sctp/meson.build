@@ -38,17 +38,13 @@ libsctp_dep = cc.find_library('sctp', required : false)
 if libsctp_dep.found()
     libsctp_sources += files('ogs-lksctp.c')
 else
-    libsctp_dep = cc.find_library('usrsctp', required : false)
-    if not libsctp_dep.found()
-#       sctp_debug = get_option('debug_level') >= 7
-        libsctp_dep = dependency('usrsctp',
-            version: ['>=1.0.0', '<2'],
-            fallback: ['usrsctp', 'usrsctp_dep'],
-            default_options: [
-                'sctp_build_programs=false',
-#                'sctp_debug=@0@'.format(sctp_debug),
-            ])
-    endif
+    libsctp_dep = dependency('usrsctp',
+        version: ['>=1.0.0', '<2'],
+        fallback: ['usrsctp', 'usrsctp_dep'],
+        default_options: [
+            'sctp_build_programs=false',
+#            'sctp_debug=@0@'.format(true),
+        ])
 
     libsctp_sources += files('ogs-usrsctp.c')
     libsctp_conf.set('HAVE_USRSCTP', 1)

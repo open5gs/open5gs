@@ -73,7 +73,7 @@ ogs_sock_t *ogs_sctp_socket(int family, int type, ogs_socknode_t *node)
     ogs_sctp_set_option(&option, node);
 
     if (!(socket = usrsctp_socket(family, type, IPPROTO_SCTP,
-            node ? node->pollin.handler : NULL, NULL, 0, NULL))) {
+                    NULL, NULL, 0, NULL))) {
         ogs_error("ogs_sctp_socket() failed");
         return NULL;
     }
@@ -341,8 +341,7 @@ int ogs_sctp_sendmsg(ogs_sock_t *sock, const void *msg, size_t len,
             (void *)&sndinfo, (socklen_t)sizeof(struct sctp_sndinfo),
             SCTP_SENDV_SNDINFO, 0);
 
-    if (sent < 0 || sent != len)
-    {
+    if (sent < 0 || sent != len) {
         ogs_error("sent : %d, len : %d", (int)sent, (int)len);
         return OGS_ERROR;
     }
@@ -365,6 +364,7 @@ int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
     ogs_assert(socket);
 
     memset(&rcv_info, 0, sizeof rcv_info);
+    memset(&addr, 0, sizeof addr);
     n = usrsctp_recvv(socket, msg, len,
             &addr.sa, &addrlen,
             (void *)&rcv_info,

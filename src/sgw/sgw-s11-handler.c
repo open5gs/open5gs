@@ -41,6 +41,8 @@ void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
     sgw_bearer_t *bearer = NULL;
     sgw_tunnel_t *s5u_tunnel = NULL;
 
+    char apn[OGS_MAX_APN_LEN];
+
     ogs_assert(s11_xact);
     ogs_assert(gtp_message);
 
@@ -59,21 +61,22 @@ void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
     ogs_assert(sgw_ue);
     sess = sgw_sess_find_by_ebi(sgw_ue,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    if (!sess) {
-        char apn[OGS_MAX_APN_LEN];
-
-        if (req->access_point_name.presence == 0)
-        {
-            ogs_error("No APN");
-            return;
-        }
-
-        ogs_fqdn_parse(apn,
-                req->access_point_name.data, req->access_point_name.len);
-        sess = sgw_sess_add(sgw_ue, apn,
-                req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-        ogs_assert(sess);
+    if (sess) {
+        ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
+                sgw_ue->imsi_bcd, sess->pdn.apn);
+        sgw_sess_remove(sess);
     }
+
+    if (req->access_point_name.presence == 0) {
+        ogs_error("No APN");
+        return;
+    }
+
+    ogs_fqdn_parse(apn,
+            req->access_point_name.data, req->access_point_name.len);
+    sess = sgw_sess_add(sgw_ue, apn,
+            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+    ogs_assert(sess);
 
     if (req->sender_f_teid_for_control_plane.presence == 0) {
         ogs_error("No Sender F-TEID");
@@ -88,7 +91,6 @@ void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
         return;
     }
 
-    ogs_assert(sess);
     bearer = sgw_default_bearer_in_sess(sess);
     ogs_assert(bearer);
     s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);
@@ -251,36 +253,40 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
             ogs_assert(rv == OGS_OK);
         }
 
-#if ULI_END_MARKER
-        /* if ULI's Cell ID changes, End Marker is sent out or not */
-        if (req->user_location_information.presence == 1) {
-            /* Set User Location Information */
-            decoded = ogs_gtp_parse_uli(&uli, &req->user_location_information);
-            ogs_assert(req->user_location_information.len == decoded);
-            memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
-            bearer->tai.tac = uli.tai.tac;
-            memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
-                    sizeof(uli.e_cgi.plmn_id));
-            ogs_debug("    ULI Presence: CellID[OLD:0x%x, NEW:0x%x]",
-                bearer->e_cgi.cell_id, uli.e_cgi.cell_id);
-            if (bearer->e_cgi.cell_id != uli.e_cgi.cell_id) {
-                ogs_debug("[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]",
-                    OGS_ADDR(&s1u_tunnel->gnode->conn, buf),
-                    s1u_tunnel->remote_teid);
-                rv = sgw_gtp_send_end_marker(s1u_tunnel);
-                if (rv != OGS_OK)
-                    ogs_error("gtp send end marker failed");
+        /* Copy Bearer-Contexts-Modified from Modify-Bearer-Request
+         *
+         * TS 29.274 Table 7.2.7-2
+         * NOTE 1: The SGW shall not change its F-TEID for a given interface
+         * during the Handover, Service Request, E-UTRAN Initial Attach,
+         * UE Requested PDN connectivity and PDP Context Activation procedures.
+         * The SGW F-TEID shall be same for S1-U, S4-U and S12. During Handover
+         * and Service Request the target eNodeB/RNC/SGSN may use a different
+         * IP type than the one used by the source eNodeB/RNC/SGSN.
+         * In order to support such a scenario, the SGW F-TEID should contain
+         * both an IPv4 address and an IPv6 address
+         * (see also subclause 8.22 "F-TEID").
+         */
+        rsp->bearer_contexts_modified.presence = 1;
+        rsp->bearer_contexts_modified.eps_bearer_id.presence = 1;
+        rsp->bearer_contexts_modified.eps_bearer_id.u8 =
+            req->bearer_contexts_to_be_modified.eps_bearer_id.u8;
+        rsp->bearer_contexts_modified.s1_u_enodeb_f_teid.presence = 1;
+        rsp->bearer_contexts_modified.s1_u_enodeb_f_teid.data =
+            req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.data;
+        rsp->bearer_contexts_modified.s1_u_enodeb_f_teid.len =
+            req->bearer_contexts_to_be_modified.s1_u_enodeb_f_teid.len;
 
-                bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
-            }
-        }
-#else /* GNODE_END_MARKER */
+        rsp->bearer_contexts_modified.cause.presence = 1;
+        rsp->bearer_contexts_modified.cause.len = sizeof(cause);
+        rsp->bearer_contexts_modified.cause.data = &cause;
+
         /* if GTP Node changes, End Marker is sent out or not */
         if (req->user_location_information.presence == 1) {
             /* Set User Location Information */
             decoded = ogs_gtp_parse_uli(&uli, &req->user_location_information);
             ogs_assert(req->user_location_information.len == decoded);
-            memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+            memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id,
+                    sizeof(uli.tai.plmn_id));
             bearer->tai.tac = uli.tai.tac;
             memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
                     sizeof(uli.e_cgi.plmn_id));
@@ -303,7 +309,6 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
             if (rv != OGS_OK)
                 ogs_error("gtp send end marker failed");
         }
-#endif
 
         /* Setup GTP Node */
         OGS_SETUP_GTP_NODE(s1u_tunnel, enb);
