@@ -970,14 +970,11 @@ pgw_bearer_t *pgw_bearer_add(pgw_sess_t *sess)
     ogs_assert(bearer->index > 0 && bearer->index <=
             ogs_config()->pool.bearer);
 
-    bearer->name = NULL;
-
     ogs_list_init(&bearer->pf_list);
 
     bearer->pgw_s5u_teid = bearer->index;
     
     bearer->sess = sess;
-    bearer->gnode = NULL;
 
     ogs_list_add(&sess->bearer_list, bearer);
 

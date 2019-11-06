@@ -566,7 +566,6 @@ sgw_sess_t *sgw_sess_add(sgw_ue_t *sgw_ue, char *apn, uint8_t ebi)
     ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
 
     sess->sgw_ue = sgw_ue;
-    sess->gnode = NULL;
 
     ogs_list_init(&sess->bearer_list);
 
@@ -771,7 +770,6 @@ sgw_tunnel_t *sgw_tunnel_add(sgw_bearer_t *bearer, uint8_t interface_type)
             tunnel->local_teid <= ogs_config()->pool.tunnel);
 
     tunnel->bearer = bearer;
-    tunnel->gnode = NULL;
 
     ogs_list_add(&bearer->tunnel_list, tunnel);
 
