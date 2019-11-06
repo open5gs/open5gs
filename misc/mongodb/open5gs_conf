@@ -5,8 +5,8 @@ version=0.9.0
 display_help() {
     echo "open5gs_conf: Open5Gs Database Configuration Tool ($version)"
     echo "COMMANDS:" >&2
-    echo "   add {imsi key opc}: adds a user to the network with default values"
-    echo "   remove {imsi}: removes a user from the network"
+    echo "   add {imsi key opc}: adds a user to the database with default values"
+    echo "   remove {imsi}: removes a user from the database"
     echo "   reset: WIPES OUT the database and restores it to an empty default"
     echo "   help: displays this message and exits"
     echo "   default values are as follows: APN \"internet\", dl_bw/ul_bw 1 Gbps, PGW address is 127.0.0.3, IPv4 only"
