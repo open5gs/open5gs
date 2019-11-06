@@ -41,6 +41,8 @@ void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
     sgw_bearer_t *bearer = NULL;
     sgw_tunnel_t *s5u_tunnel = NULL;
 
+    char apn[OGS_MAX_APN_LEN];
+
     ogs_assert(s11_xact);
     ogs_assert(gtp_message);
 
@@ -59,21 +61,22 @@ void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
     ogs_assert(sgw_ue);
     sess = sgw_sess_find_by_ebi(sgw_ue,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-    if (!sess) {
-        char apn[OGS_MAX_APN_LEN];
-
-        if (req->access_point_name.presence == 0)
-        {
-            ogs_error("No APN");
-            return;
-        }
-
-        ogs_fqdn_parse(apn,
-                req->access_point_name.data, req->access_point_name.len);
-        sess = sgw_sess_add(sgw_ue, apn,
-                req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-        ogs_assert(sess);
+    if (sess) {
+        ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
+                sgw_ue->imsi_bcd, sess->pdn.apn);
+        sgw_sess_remove(sess);
     }
+
+    if (req->access_point_name.presence == 0) {
+        ogs_error("No APN");
+        return;
+    }
+
+    ogs_fqdn_parse(apn,
+            req->access_point_name.data, req->access_point_name.len);
+    sess = sgw_sess_add(sgw_ue, apn,
+            req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+    ogs_assert(sess);
 
     if (req->sender_f_teid_for_control_plane.presence == 0) {
         ogs_error("No Sender F-TEID");
@@ -88,7 +91,6 @@ void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
         return;
     }
 
-    ogs_assert(sess);
     bearer = sgw_default_bearer_in_sess(sess);
     ogs_assert(bearer);
     s5u_tunnel = sgw_s5u_tunnel_in_bearer(bearer);

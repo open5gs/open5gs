@@ -2467,6 +2467,7 @@ int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
         /* Check if OLD mme_ue_t is different with NEW mme_ue_t */
         if (ogs_pool_index(&mme_ue_pool, mme_ue) !=
             ogs_pool_index(&mme_ue_pool, old_mme_ue)) {
+            ogs_warn("OLD UE Context Release [IMSI:%s]", mme_ue->imsi_bcd);
             if (old_mme_ue->enb_ue)
                 enb_ue_deassociate(old_mme_ue->enb_ue);
             mme_ue_remove(old_mme_ue);

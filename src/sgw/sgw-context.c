@@ -461,10 +461,12 @@ sgw_ue_t *sgw_ue_add_by_message(ogs_gtp_message_t *message)
      *   the message is received with a TEID not set to zero in the header.
      */
     sgw_ue = sgw_ue_find_by_imsi(req->imsi.data, req->imsi.len);
-    if (!sgw_ue) {
-        sgw_ue = sgw_ue_add(req->imsi.data, req->imsi.len);
-        ogs_assert(sgw_ue);
+    if (sgw_ue) {
+        ogs_warn("OLD UE Context Release [IMSI:%s]", sgw_ue->imsi_bcd);
+        sgw_ue_remove(sgw_ue);
     }
+    sgw_ue = sgw_ue_add(req->imsi.data, req->imsi.len);
+    ogs_assert(sgw_ue);
 
     return sgw_ue;
 }

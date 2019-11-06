@@ -943,12 +943,15 @@ pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message)
      *   collides with a dedicated bearer of an existing PDN connection context.
      */
     sess = pgw_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
-    if (!sess) {
-        sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
-                        req->pdn_type.u8,
-                        req->bearer_contexts_to_be_created.eps_bearer_id.u8);
-        ogs_assert(sess);
+    if (sess) {
+        ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
+                sess->imsi_bcd, sess->pdn.apn);
+        pgw_sess_remove(sess);
     }
+    sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
+                    req->pdn_type.u8,
+                    req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+    ogs_assert(sess);
 
     return sess;
 }
