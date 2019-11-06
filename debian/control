@@ -1,18 +1,13 @@
-Source: nextepc
-Maintainer: Harald Welte <laforge@gnumonks.org>
+Source: open5gs
 Section: net
 Priority: optional
-Build-Depends: debhelper (>= 9),
-               autotools-dev,
-               dh-autoreconf,
-               dh-systemd,
+Maintainer: Harald Welte <laforge@gnumonks.org>
+Uploaders: Sukchan Lee <acetcom@gmail.com>
+Build-Depends: debhelper (>= 11),
                pkg-config,
-               autoconf,
-               automake,
-               libtool,
+               meson (>= 0.43.0),
                flex,
                bison,
-               libogslib-dev (>= 1.3.0),
                libgnutls28-dev,
                libgcrypt-dev,
                libssl-dev,
@@ -21,31 +16,32 @@ Build-Depends: debhelper (>= 9),
                libbson-dev,
                libsctp-dev,
                libyaml-dev,
-Standards-Version: 3.9.8
-Vcs-Browser: https://github.com/open5gs/nextepc
-Vcs-Git: git://github.com/open5gs/nextepc
-Homepage: https://open5gs.org/nextepc
+Standards-Version: 4.3.0
+Rules-Requires-Root: no
+Homepage: https://open5gs.org
+Vcs-Browser: https://github.com/open5gs/open5gs
+Vcs-Git: git://github.com/open5gs/open5gs
 
-Package: nextepc-core
+Package: open5gs-common
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends}
 Description: Open Source based 3GPP EPC (Shared Files)
- NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Open5GS is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
  .
  This package contains some core libraries/plugins required by the other
- binary packages such as nextepc-{mme,sgw,pgw,pcrf,hss}.
+ binary packages such as open5gs-{mme,sgw,pgw,pcrf,hss}.
 
-Package: nextepc-mme
+Package: open5gs-mme
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         nextepc-core (= ${binary:Version})
+         open5gs-common (= ${binary:Version})
 Description: Open Source based 3GPP EPC MME (Mobility Management Entity)
- NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Open5GS is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
  .
  This package provides the MME (Mobility Management Engine), which
@@ -53,29 +49,29 @@ Description: Open Source based 3GPP EPC MME (Mobility Management Entity)
  network, and interfaces via S11 to the SGW as well as via S6a to the
  HSS.
 
-Package: nextepc-sgw
+Package: open5gs-sgw
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         nextepc-core (= ${binary:Version})
+         open5gs-common (= ${binary:Version})
 Description: Open Source based 3GPP EPC SGW (Serving Gateway)
- NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Open5GS is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
  .
  This package provides the SGW (Serving Gateway) which is situated
  between the MME and PGW.  It implements the S11 interface to the MME,
  and the S5 interface to the PGW.
 
-Package: nextepc-pgw
+Package: open5gs-pgw
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          udev,
-         nextepc-core (= ${binary:Version})
+         open5gs-common (= ${binary:Version})
 Description: Open Source based 3GPP EPC PGW (Packet Data Network Gateway)
- NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Open5GS is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
  .
  This package provides the PGW or PDN-GW (Packet Data Network Gateway)
@@ -84,15 +80,15 @@ Description: Open Source based 3GPP EPC PGW (Packet Data Network Gateway)
  interface towards the S-GW, the SGi interface towards the Internet,
  and the S7 interface towards the PCRF.
 
-Package: nextepc-pcrf
+Package: open5gs-pcrf
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          mongodb,
-         nextepc-core (= ${binary:Version})
+         open5gs-common (= ${binary:Version})
 Description: Open Source based 3GPP EPC PCRF (Policy and Charging Rules Function)
- NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Open5GS is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
  .
  This package contains the PCRF (Policy and Charging Rules Function),
@@ -100,15 +96,15 @@ Description: Open Source based 3GPP EPC PCRF (Policy and Charging Rules Function
  how to account/charge related traffic.  It implements the Gx interface
  towards the PGW using the DIAMETER protocol.
 
-Package: nextepc-hss
+Package: open5gs-hss
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          mongodb,
-         nextepc-core (= ${binary:Version})
+         open5gs-common (= ${binary:Version})
 Description: Open Source based 3GPP EPC HSS (Home Subscriber Server)
- NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Open5GS is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
  .
  This package provides the HSS (Home Subscriber Server) element of the
@@ -117,31 +113,31 @@ Description: Open Source based 3GPP EPC HSS (Home Subscriber Server)
  information, etc.  It implements the S6a interface towards the MME
  using the DIAMETER protocol.
 
-Package: nextepc
+Package: open5gs
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
          mongodb,
-         nextepc-core (= ${binary:Version}),
-         nextepc-mme (= ${binary:Version}),
-         nextepc-sgw (= ${binary:Version}),
-         nextepc-pgw (= ${binary:Version}),
-         nextepc-hss (= ${binary:Version}),
-         nextepc-pcrf (= ${binary:Version})
+         open5gs-common (= ${binary:Version}),
+         open5gs-mme (= ${binary:Version}),
+         open5gs-sgw (= ${binary:Version}),
+         open5gs-pgw (= ${binary:Version}),
+         open5gs-hss (= ${binary:Version}),
+         open5gs-pcrf (= ${binary:Version})
 Description: Open Source based 3GPP EPC (metapackage)
- NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+ Open5GS is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
  .
- This is a metapackage that depends on all the nextepc parts.
+ This is a metapackage that depends on all the open5gs parts.
  (MME, SGW, PGW, HSS, PCRF)
 
-Package: nextepc-dbg
+Package: open5gs-dbg
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends},
-         nextepc (= ${binary:Version})
-Description: Debug symbols for NextEPC
- NextEPC is a C-language Open Source implementation of the 3GPP Evolved
+         open5gs (= ${binary:Version})
+Description: Debug symbols for Open5GS
+ Open5GS is a C-language Open Source implementation of the 3GPP Evolved
  Packet Core, i.e. the core network of an LTE network.
  .
- This package contains debug symbols for NextEPC.
+ This package contains debug symbols for Open5GS.

@@ -26,7 +26,7 @@
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 
-#include "pgw-context.h"
+#include "pgw-ipfw.h"
 
 #include "ipfw/ipfw2.h"
 #include "ipfw/objs/include_e/netinet/ip_fw.h"

@@ -28,7 +28,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-int ogs_app_initialize(char *default_config, char **argv);
+int ogs_app_initialize(const char *default_config, const char *const argv[]);
 void ogs_app_terminate(void);
 
 void ogs_app_setup_log(void);

@@ -79,7 +79,7 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, ogs_gtp_xact_t *xact,
     ogs_assert(sess);
     ogs_assert(sess->ipv4 || sess->ipv6);
     ogs_assert(gtpbuf);
-    message = gtpbuf->data;
+    message = (ogs_gtp_message_t *)gtpbuf->data;
     ogs_assert(message);
 
     ogs_debug("[Credit-Control-Request]");
@@ -519,7 +519,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     ogs_assert(gxbuf_len < 8192);
     gxbuf = ogs_pkbuf_alloc(NULL, gxbuf_len);
     ogs_pkbuf_put(gxbuf, gxbuf_len);
-    gx_message = gxbuf->data;
+    gx_message = (ogs_diam_gx_message_t *)gxbuf->data;
     ogs_assert(gx_message);
 
     /* Set Credit Control Command */
@@ -833,7 +833,7 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(gxbuf_len < 8192);
     gxbuf = ogs_pkbuf_alloc(NULL, gxbuf_len);
     ogs_pkbuf_put(gxbuf, gxbuf_len);
-    gx_message = gxbuf->data;
+    gx_message = (ogs_diam_gx_message_t *)gxbuf->data;
     ogs_assert(gx_message);
 
     /* Set Credit Control Command */
@@ -969,7 +969,7 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
 
 	/* Set the Origin-Host, Origin-Realm, andResult-Code AVPs */
-	ret = fd_msg_rescode_set(ans, "DIAMETER_SUCCESS", NULL, NULL, 1);
+	ret = fd_msg_rescode_set(ans, (char *)"DIAMETER_SUCCESS", NULL, NULL, 1);
     ogs_assert(ret == 0);
 
     /* Store this value in the session */
@@ -993,7 +993,7 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
 out:
     if (result_code == OGS_DIAM_UNKNOWN_SESSION_ID) {
         ret = fd_msg_rescode_set(ans,
-                    "DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
+                    (char *)"DIAMETER_UNKNOWN_SESSION_ID", NULL, NULL, 1);
         ogs_assert(ret == 0);
     } else {
         ret = ogs_diam_message_experimental_rescode_set(ans, result_code);

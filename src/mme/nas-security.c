@@ -121,7 +121,7 @@ int nas_security_decode(mme_ue_t *mme_ue,
     if (security_header_type.service_request) {
 #define SHORT_MAC_SIZE 2
         ogs_nas_ksi_and_sequence_number_t *ksi_and_sequence_number =
-            pkbuf->data + 1;
+            (ogs_nas_ksi_and_sequence_number_t *)(pkbuf->data + 1);
         uint8_t original_mac[SHORT_MAC_SIZE];
         uint8_t estimated_sequence_number;
         uint8_t sequence_number_high_3bit;
@@ -187,7 +187,7 @@ int nas_security_decode(mme_ue_t *mme_ue,
 
         /* NAS Security Header */
         ogs_assert(ogs_pkbuf_push(pkbuf, 6));
-        h = pkbuf->data;
+        h = (ogs_nas_security_header_t *)pkbuf->data;
 
         /* NAS Security Header.Sequence_Number */
         ogs_assert(ogs_pkbuf_pull(pkbuf, 5));
@@ -239,7 +239,7 @@ void nas_mac_calculate(uint8_t algorithm_identity,
     uint32_t mac32;
 
     ogs_assert(knas_int);
-    ogs_assert(bearer >= 0 && bearer <= 0x1f);
+    ogs_assert(bearer <= 0x1f);
     ogs_assert(direction == 0 || direction == 1);
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);
@@ -289,7 +289,7 @@ void nas_encrypt(uint8_t algorithm_identity,
     uint8_t ivec[16];
 
     ogs_assert(knas_enc);
-    ogs_assert(bearer >= 0 && bearer <= 0x1f);
+    ogs_assert(bearer <= 0x1f);
     ogs_assert(direction == 0 || direction == 1);
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->data);

@@ -18,6 +18,7 @@
  */
 
 #include "pgw-context.h"
+#include "pgw-s5c-build.h"
 
 #include "ipfw/ipfw2.h"
 

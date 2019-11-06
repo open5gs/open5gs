@@ -1,9 +1,9 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: nextepc
-Source: https://github.com/acetcom/nextepc
+Upstream-Name: open5gs
+Source: https://github.com/open5gs/open5gs
 
 Files: *
-Copyright: 2017 NextEPC Group
+Copyright: 2017 Open5GS Group
 License: AGPL-3
 
 Files: lib/freeDiameter-1.2.1/*

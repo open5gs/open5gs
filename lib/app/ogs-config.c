@@ -65,7 +65,7 @@ int ogs_config_read()
     file = fopen(config->file, "rb");
     if (!file) {
         ogs_fatal("cannot open file `%s`", config->file);
-        ogs_assert_if_reached();
+        return OGS_ERROR;
     }
 
     ogs_assert(yaml_parser_initialize(&parser));
@@ -132,7 +132,7 @@ int ogs_config_read()
     return OGS_OK;
 }
 
-static void recalculate_pool_size()
+static void recalculate_pool_size(void)
 {
 #define MAX_NUM_OF_BEARER       4   /* Num of Bearer per APN(Session) */
 #define MAX_NUM_OF_TUNNEL       3   /* Num of Tunnel per Bearer */
@@ -145,7 +145,7 @@ static void recalculate_pool_size()
     self.pool.pf = self.pool.bearer * MAX_NUM_OF_PF;
 }
 
-static int config_prepare()
+static int config_prepare(void)
 {
 #define USRSCTP_LOCAL_UDP_PORT      9899
     self.usrsctp.udp_port = USRSCTP_LOCAL_UDP_PORT;
@@ -173,7 +173,7 @@ static int config_prepare()
     return OGS_OK;
 }
 
-static int ogs_app_ctx_validation()
+static int ogs_app_ctx_validation(void)
 {
     if (self.parameter.no_ipv4 == 1 &&
         self.parameter.no_ipv6 == 1) {

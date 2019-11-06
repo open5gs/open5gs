@@ -173,7 +173,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_pkbuf_reserve(nasbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put_data(nasbuf, nasPdu->buf, nasPdu->size);
 
-    sh = nasbuf->data;
+    sh = (ogs_nas_security_header_t *)nasbuf->data;
     ogs_assert(sh);
 
     memset(&security_header_type, 0, sizeof(nas_security_header_type_t));
@@ -214,7 +214,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
             enb_ue->mme_ue, security_header_type, nasbuf) == OGS_OK);
     }
 
-    h = nasbuf->data;
+    h = (ogs_nas_emm_header_t *)nasbuf->data;
     ogs_assert(h);
     if (h->protocol_discriminator == OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM) {
         int rv;

@@ -20,12 +20,61 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-09-10 21:33:33.950259 by acetcom
+ * Created on: 2019-09-30 22:46:44.517916 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
 #include "ogs-nas.h"
 
+int ogs_nas_encode_attach_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_attach_accept(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_attach_complete(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_attach_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_detach_request_from_ue(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_detach_request_to_ue(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_tracking_area_update_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_tracking_area_update_accept(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_tracking_area_update_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_extended_service_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_service_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_service_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_guti_reallocation_command(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_authentication_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_authentication_response(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_identity_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_identity_response(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_authentication_failure(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_security_mode_command(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_security_mode_complete(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_security_mode_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_emm_status(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_emm_information(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_downlink_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_uplink_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_cs_service_notification(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_uplink_generic_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_downlink_generic_nas_transport(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_activate_default_eps_bearer_context_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_activate_default_eps_bearer_context_accept(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_activate_default_eps_bearer_context_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_activate_dedicated_eps_bearer_context_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_activate_dedicated_eps_bearer_context_accept(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_activate_dedicated_eps_bearer_context_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_modify_eps_bearer_context_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_modify_eps_bearer_context_accept(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_modify_eps_bearer_context_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_deactivate_eps_bearer_context_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_deactivate_eps_bearer_context_accept(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_pdn_connectivity_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_pdn_connectivity_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_pdn_disconnect_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_pdn_disconnect_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_bearer_resource_allocation_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_bearer_resource_allocation_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_bearer_resource_modification_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_bearer_resource_modification_reject(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_esm_information_response(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
+int ogs_nas_encode_esm_status(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);
 int ogs_nas_encode_attach_request(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message)
 {
     ogs_nas_attach_request_t *attach_request = &message->emm.attach_request;

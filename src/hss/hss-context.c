@@ -27,7 +27,7 @@ int __hss_log_domain;
 
 static int context_initialized = 0;
 
-hss_context_t* hss_self()
+hss_context_t* hss_self(void)
 {
     return &self;
 }
@@ -61,7 +61,7 @@ void hss_context_final(void)
     context_initialized = 0;
 }
 
-static int hss_context_prepare()
+static int hss_context_prepare(void)
 {
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
@@ -69,7 +69,7 @@ static int hss_context_prepare()
     return OGS_OK;
 }
 
-static int hss_context_validation()
+static int hss_context_validation(void)
 {
     if (self.diam_conf_path == NULL &&
         (self.diam_config->cnf_diamid == NULL ||
@@ -82,7 +82,7 @@ static int hss_context_validation()
     return OGS_OK;
 }
 
-int hss_context_parse_config()
+int hss_context_parse_config(void)
 {
     int rv;
     yaml_document_t *document = NULL;

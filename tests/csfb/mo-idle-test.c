@@ -35,22 +35,22 @@ static void test1_func(abts_case *tc, void *data)
     uint32_t m_tmsi = 0;
 
     uint8_t tmp[OGS_MAX_SDU_LEN];
-    char *_identity_request = 
+    const char *_identity_request = 
         "000b401700000300 0000020001000800 020001001a000403 075501";
-    char *_authentication_request = 
+    const char *_authentication_request = 
         "000b403800000300 0000020001000800 020001001a002524 075200aa266700bc"
         "2887354e9f87368d 5d0ae710ab857af5 5f1a8000d71e5537 4ee176e9";
-    char *_security_mode_command = 
+    const char *_security_mode_command = 
         "000b402400000300 0000020001000800 020001001a001110 378ccbca6000075d"
         "010005f0f0c04070";
-    char *_esm_information_request =
+    const char *_esm_information_request =
         "000b401d00000300 0000020001000800 020001001a000a09 27d1237969010234"
         "d9";
-    char *_sgsap_location_update_request =
+    const char *_sgsap_location_update_request =
         "0901082926240000 1118930937066d6d 65633031096d6d65 676930303032036d"
         "6d6503657063066d 6e63303730066d63 633930310b336770 706e6574776f726b"
         "036f72670a010104 0509f1070926";
-    char *_initial_context_setup_request = 
+    const char *_initial_context_setup_request = 
         "00090080d7000006 0000000200010008 000200010042000a 183d090000603d09"
         "0000001800808800 0034008082450009 230f807f00000200 0000017327283f4c"
         "6102074202490620 09f1070007004152 34c101090908696e 7465726e65740501"
@@ -58,10 +58,10 @@ static void test1_func(abts_case *tc, void *data)
         "0404000d04080808 08000d0408080404 500bf609f1070002 01d20064c31309f1"
         "0709262305f49ee8 8e64594964010100 6b00051c000e0000 00490020f9f4f80b"
         "206c33ae286c6daf f4c253585174c3a0 a12a661967f5e1ba 0a686c8c";
-    char *_emm_information = 
+    const char *_emm_information = 
         "000b403800000300 0000020001000800 020001001a002524 2751034124030761"
-        "430f10004e006500 7800740045005000 4347916051216124 63490100";
-    char *_sgsap_tmsi_reallocation_complete = 
+        "430f10004f007000 65006e0035004700 5347916051216124 63490100";
+    const char *_sgsap_tmsi_reallocation_complete = 
         "0c01082926240000 111893";
 
     mongoc_collection_t *collection = NULL;

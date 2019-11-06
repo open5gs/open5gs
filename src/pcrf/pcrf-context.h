@@ -20,8 +20,8 @@
 #ifndef PCRF_CONTEXT_H
 #define PCRF_CONTEXT_H
 
-#include "diameter/ogs-gx.h"
-#include "diameter/ogs-rx.h"
+#include "ogs-diameter-gx.h"
+#include "ogs-diameter-rx.h"
 #include "ogs-app.h"
 
 #ifdef __cplusplus

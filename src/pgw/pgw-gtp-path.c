@@ -150,7 +150,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
-    gtp_h = pkbuf->data;
+    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
     if (gtp_h->flags & OGS_GTPU_FLAGS_S) len += 4;
     teid = ntohl(gtp_h->teid);
 
@@ -159,7 +159,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     /* Remove GTP header and send packets to TUN interface */
     ogs_assert(ogs_pkbuf_pull(pkbuf, len));
 
-    ip_h = pkbuf->data;
+    ip_h = (struct ip *)pkbuf->data;
     ogs_assert(ip_h);
 
     bearer = pgw_bearer_find_by_pgw_s5u_teid(teid);
@@ -200,7 +200,7 @@ cleanup:
     ogs_pkbuf_free(pkbuf);
 }
 
-int pgw_gtp_open()
+int pgw_gtp_open(void)
 {
     pgw_dev_t *dev = NULL;
     pgw_subnet_t *subnet = NULL;
@@ -254,12 +254,12 @@ int pgw_gtp_open()
 
     /* NOTE : tun device can be created via following command.
      *
-     * $ sudo ip tuntap add name pgwtun mode tun
+     * $ sudo ip tuntap add name ogstun mode tun
      *
      * Also, before running pgw, assign the one IP from IP pool of UE 
-     * to pgwtun. The IP should not be assigned to UE
+     * to ogstun. The IP should not be assigned to UE
      *
-     * $ sudo ifconfig pgwtun 45.45.0.1/16 up
+     * $ sudo ifconfig ogstun 45.45.0.1/16 up
      *
      */
 
@@ -278,10 +278,10 @@ int pgw_gtp_open()
 
     /* 
      * On Linux, it is possible to create a persistent tun/tap 
-     * interface which will continue to exist even if nextepc quit, 
+     * interface which will continue to exist even if open5gs quit, 
      * although this is normally not required. 
      * It can be useful to set up a tun/tap interface owned 
-     * by a non-root user, so nextepc can be started without 
+     * by a non-root user, so open5gs can be started without 
      * needing any root privileges at all.
      */
 
@@ -304,7 +304,7 @@ int pgw_gtp_open()
     return OGS_OK;
 }
 
-void pgw_gtp_close()
+void pgw_gtp_close(void)
 {
     pgw_dev_t *dev = NULL;
 

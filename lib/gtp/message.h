@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-09-10 21:31:45.116236 by acetcom
+ * Created on: 2019-09-26 22:10:18.823195 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -31,7 +31,7 @@
 #ifndef OGS_GTP_MESSAGE_H
 #define OGS_GTP_MESSAGE_H
 
-#include "tlv.h"
+#include "gtp/tlv.h"
 
 #ifdef __cplusplus
 extern "C" {

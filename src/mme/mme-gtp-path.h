@@ -26,8 +26,8 @@
 extern "C" {
 #endif
 
-int mme_gtp_open();
-void mme_gtp_close();
+int mme_gtp_open(void);
+void mme_gtp_close(void);
 
 int mme_gtp_send_create_session_request(mme_sess_t *sess);
 int mme_gtp_send_modify_bearer_request(

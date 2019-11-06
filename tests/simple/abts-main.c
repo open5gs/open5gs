@@ -19,12 +19,20 @@
 
 #include "test-app.h"
 
-abts_suite *test_mnc3(abts_suite *suite);
+abts_suite *test_s1setup(abts_suite *suite);
+abts_suite *test_attach(abts_suite *suite);
+abts_suite *test_volte(abts_suite *suite);
+abts_suite *test_handover(abts_suite *suite);
+abts_suite *test_crash(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
-    {test_mnc3},
+    {test_s1setup},
+    {test_attach},
+    {test_volte},
+    {test_handover},
+    {test_crash},
     {NULL},
 };
 
@@ -32,14 +40,14 @@ static void terminate(void)
 {
     ogs_msleep(50);
 
-    epc_child_terminate();
+    test_child_terminate();
     app_terminate();
 
     test_app_final();
     ogs_app_terminate();
 }
 
-static void initialize(char **argv)
+static void initialize(const char *const argv[])
 {
     int rv;
 
@@ -51,13 +59,13 @@ static void initialize(char **argv)
     ogs_assert(rv == OGS_OK);
 }
 
-int main(int argc, char **argv)
+int main(int argc, const char *const argv[])
 {
     int i;
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_app_run(argc, argv, "sample-simple.conf", initialize);
+    test_app_run(argc, argv, "simple.yaml", initialize);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

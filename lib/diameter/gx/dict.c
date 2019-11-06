@@ -18,7 +18,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "diameter/ogs-gx.h"
+#include "ogs-diameter-gx.h"
 
 #define CHECK_dict_search( _type, _criteria, _what, _result )	\
 	CHECK_FCT(  fd_dict_search( fd_g_config->cnf_dict, (_type), (_criteria), (_what), (_result), ENOENT) );

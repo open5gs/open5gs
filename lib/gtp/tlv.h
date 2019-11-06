@@ -54,7 +54,7 @@ typedef enum {
 
 typedef struct ogs_tlv_desc_s {
     ogs_tlv_type_e ctype;
-    char *name;
+    const char *name;
     uint16_t type;
     uint16_t length;
     uint8_t  instance;

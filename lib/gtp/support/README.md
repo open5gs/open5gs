@@ -1,10 +1,10 @@
 
 * Install python-pip
-user@host ~/Documents/git/nextepc/lib/gtp/support$ \
+user@host ~/Documents/git/open5gs/lib/gtp/support$ \
     sudo apt-get install python-pip
 
 * Install python-docx
-user@host ~/Documents/git/nextepc/lib/gtp/support$ \
+user@host ~/Documents/git/open5gs/lib/gtp/support$ \
     sudo pip install python-docx
 
 * Change the format of standard specification 
@@ -12,5 +12,5 @@ user@host ~/Documents/git/nextepc/lib/gtp/support$ \
   using Microsoft Office 2007+
 
 * Generate TLV support files
-user@host ~/Documents/git/nextepc/lib/s1ap/support$ \
+user@host ~/Documents/git/open5gs/lib/s1ap/support$ \
     python gtp-tlv.py -f 29274-d80.docx -o ..

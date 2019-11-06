@@ -1,7 +1,7 @@
 ARG dist=ubuntu
 ARG tag=latest
 ARG username=acetcom
-FROM ${username}/${dist}-${tag}-nextepc-base
+FROM ${username}/${dist}-${tag}-open5gs-base
 
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
@@ -9,16 +9,11 @@ WORKDIR /root
 COPY setup.sh /root
 
 ARG USER=open5gs
-ARG REPO=nextepc
+ARG REPO=open5gs
 ARG BRANCH=master
-RUN	git clone --recursive https://github.com/$USER/$REPO
-ADD https://api.github.com/repos/$USER/$REPO/git/refs/heads/$BRANCH /root/nextepc-ver.json
+RUN	git clone https://github.com/$USER/$REPO
+ADD https://api.github.com/repos/$USER/$REPO/git/refs/heads/$BRANCH /root/open5gs-ver.json
 
-RUN	cd nextepc && \
-	git fetch && git checkout -f -B master origin/master && \
-    autoreconf -f -i && \
-    ./configure \
-        --prefix=/usr \
-        --sysconfdir=/etc \
-        --localstatedir=/var && \
-    make -j `nproc` install
+RUN	cd $REPO && \
+	git fetch && git checkout -f -B $BRANCH origin/$BRANCH && \
+    meson build && ninja -C build install

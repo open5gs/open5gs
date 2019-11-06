@@ -1,6 +1,0 @@
-usr/bin/nextepc-pcrfd
-etc/nextepc/freeDiameter/pcrf.conf
-etc/nextepc/freeDiameter/pcrf.cert.pem
-etc/nextepc/freeDiameter/pcrf.key.pem
-etc/nextepc/pcrf.conf
-support/systemd/nextepc-pcrfd.service lib/systemd/system

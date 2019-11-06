@@ -157,7 +157,7 @@ sgw_ue_t *sgw_ue_find_by_teid(uint32_t teid);
 
 sgw_ue_t *sgw_ue_add(uint8_t *imsi, int imsi_len);
 int sgw_ue_remove(sgw_ue_t *sgw_ue);
-void sgw_ue_remove_all();
+void sgw_ue_remove_all(void);
 
 sgw_sess_t *sgw_sess_add(sgw_ue_t *sgw_ue, char *apn, uint8_t ebi);
 int sgw_sess_remove(sgw_sess_t *sess);

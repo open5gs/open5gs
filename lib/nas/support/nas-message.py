@@ -434,7 +434,7 @@ for (k, v) in sorted_type_list:
         f.write("int ogs_nas_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    uint16_t size = 0;\n")
-        f.write("    ogs_nas_%s_t *source = pkbuf->data;\n\n" % v_lower(k))
+        f.write("    ogs_nas_%s_t *source = (ogs_nas_%s_t *)pkbuf->data;\n\n" % (v_lower(k), v_lower(k)))
         f.write("    %s->length = ntohs(source->length);\n" % v_lower(k))
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
         f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
@@ -464,7 +464,7 @@ for (k, v) in sorted_type_list:
         f.write("int ogs_nas_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), v_lower(k)))
         f.write("{\n")
         f.write("    uint16_t size = 0;\n")
-        f.write("    ogs_nas_%s_t *source = pkbuf->data;\n\n" % v_lower(k))
+        f.write("    ogs_nas_%s_t *source = (ogs_nas_%s_t *)pkbuf->data;\n\n" % (v_lower(k), v_lower(k)))
         f.write("    %s->length = source->length;\n" % v_lower(k))
         f.write("    size = %s->length + sizeof(%s->length);\n\n" % (v_lower(k), v_lower(k)))
         f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
@@ -622,6 +622,8 @@ typedef struct ogs_nas_message_s {
     };
 } ogs_nas_message_t;
 
+int ogs_nas_emm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message);
+int ogs_nas_esm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message);
 int ogs_nas_emm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf);
 int ogs_nas_esm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf);
 int ogs_nas_plain_encode(
@@ -643,6 +645,13 @@ output_header_to_file(f)
 f.write("""#include "ogs-nas.h"
 
 """)
+
+for (k, v) in sorted_msg_list:
+    if "ies" not in msg_list[k]:
+        continue
+    if len(msg_list[k]["ies"]) == 0:
+        continue
+    f.write("int ogs_nas_decode_%s(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf);\n" % v_lower(k))
 
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:
@@ -703,7 +712,7 @@ for (k, v) in sorted_msg_list:
 
 f.write("""int ogs_nas_emm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf)
 {
-    uint16_t size = 0;
+    int size = 0;
     uint16_t decoded = 0;
 
     ogs_assert(pkbuf);
@@ -723,7 +732,7 @@ f.write("""int ogs_nas_emm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf
         ogs_assert(ogs_pkbuf_push(pkbuf, 1));
         decoded -= 1;
         size = ogs_nas_decode_service_request(message, pkbuf);
-        ogs_assert(size >= OGS_OK);
+        ogs_assert(size >= 0);
         decoded += size;
 
         goto out;
@@ -739,7 +748,7 @@ for (k, v) in sorted_msg_list:
         f.write("        case OGS_NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = ogs_nas_decode_%s(message, pkbuf);\n" % v_lower(k))
-            f.write("            ogs_assert(size >= OGS_OK);\n")
+            f.write("            ogs_assert(size >= 0);\n")
             f.write("            decoded += size;\n")
         f.write("            break;\n")
 
@@ -758,7 +767,7 @@ out:
 
 f.write("""int ogs_nas_esm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf)
 {
-    uint16_t size = 0;
+    int size = 0;
     uint16_t decoded = 0;
 
     ogs_assert(pkbuf);
@@ -782,7 +791,7 @@ for (k, v) in sorted_msg_list:
         f.write("        case OGS_NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
             f.write("            size = ogs_nas_decode_%s(message, pkbuf);\n" % v_lower(k))
-            f.write("            ogs_assert(size >= OGS_OK);\n")
+            f.write("            ogs_assert(size >= 0);\n")
             f.write("            decoded += size;\n")
         f.write("            break;\n")
 
@@ -806,6 +815,13 @@ output_header_to_file(f)
 f.write("""#include "ogs-nas.h"
 
 """)
+
+for (k, v) in sorted_msg_list:
+    if "ies" not in msg_list[k]:
+        continue;
+    if len(msg_list[k]["ies"]) == 0:
+        continue
+    f.write("int ogs_nas_encode_%s(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message);\n" % v_lower(k))
 
 for (k, v) in sorted_msg_list:
     if "ies" not in msg_list[k]:

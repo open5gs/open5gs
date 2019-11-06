@@ -1,9 +1,0 @@
-# truncate rails logs every day at midnight, keep 14 previous logs, compress previous logs
-#
-# logfilename                         [owner:group] mode count size  when  flags [/pid_file]        [sig_num]
-@LOCALSTATE_DIR@/log/nextepc/pcrf.log              644  14    *     $D0   GZ    @LOCALSTATE_DIR@/run/nextepc-pcrfd/pid`
-@LOCALSTATE_DIR@/log/nextepc/pgw.log               644  14    *     $D0   GZ    @LOCALSTATE_DIR@/run/nextepc-pgwd/pid`
-@LOCALSTATE_DIR@/log/nextepc/sgw.log               644  14    *     $D0   GZ    @LOCALSTATE_DIR@/run/nextepc-sgwd/pid`
-@LOCALSTATE_DIR@/log/nextepc/hss.log               644  14    *     $D0   GZ    @LOCALSTATE_DIR@/run/nextepc-hssd/pid`
-@LOCALSTATE_DIR@/log/nextepc/mme.log               644  14    *     $D0   GZ    @LOCALSTATE_DIR@/run/nextepc-mmed/pid`
-@LOCALSTATE_DIR@/log/nextepc/nextepc.log           644  14    *     $D0   GZ    @LOCALSTATE_DIR@/run/nextepc-epcd/pid`

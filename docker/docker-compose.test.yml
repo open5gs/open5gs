@@ -2,17 +2,17 @@ version: '3'
 
 services:
   test:
-    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-nextepc-build
+    image: ${USER}/${DIST-ubuntu}-${TAG-latest}-open5gs-build
     depends_on:
       - mongodb
       - build
     environment:
-      DB_URI: mongodb://mongodb/nextepc
+      DB_URI: mongodb://mongodb/open5gs
     cap_add:
       - NET_ADMIN
     devices:
       - "/dev/net/tun:/dev/net/tun"
     sysctls:
       - net.ipv6.conf.all.disable_ipv6=0
-    hostname: nextepc-test
-    command: /bin/bash -c "/root/setup.sh; /usr/bin/testepc"
+    hostname: open5gs-test
+    command: /bin/bash -c "/root/setup.sh; cd open5gs && ninja -C build test"
