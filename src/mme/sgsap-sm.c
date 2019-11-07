@@ -64,7 +64,6 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
     char buf[OGS_ADDRSTRLEN];
 
     mme_vlr_t *vlr = NULL;
-    ogs_socknode_t *node = NULL;
     ogs_sockaddr_t *addr = NULL;
     ogs_assert(s);
     ogs_assert(e);
@@ -90,9 +89,7 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
         case MME_TIMER_SGS_CLI_CONN_TO_SRV:
             vlr = e->vlr;
             ogs_assert(vlr);
-            node = vlr->node;
-            ogs_assert(node);
-            addr = node->addr;
+            addr = vlr->addr;
             ogs_assert(addr);
 
             ogs_warn("[SGsAP] Connect to VLR [%s]:%d failed",
@@ -102,7 +99,7 @@ void sgsap_state_will_connect(ogs_fsm_t *s, mme_event_t *e)
             ogs_timer_start(vlr->t_conn,
                 mme_timer_cfg(MME_TIMER_SGS_CLI_CONN_TO_SRV)->duration);
 
-            mme_vlr_free_node(vlr);
+            mme_vlr_close(vlr);
             sgsap_client(vlr);
             break;
         default:
@@ -139,7 +136,7 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
     case OGS_FSM_EXIT_SIG:
         break;
     case MME_EVT_SGSAP_LO_CONNREFUSED:
-        mme_vlr_free_node(vlr);
+        mme_vlr_close(vlr);
         OGS_FSM_TRAN(s, sgsap_state_will_connect);
         break;
     case MME_EVT_SGSAP_MESSAGE:
@@ -166,7 +163,7 @@ void sgsap_state_connected(ogs_fsm_t *s, mme_event_t *e)
         case SGSAP_RESET_INDICATION:
             sgsap_handle_reset_indication(vlr, pkbuf);
 
-            mme_vlr_free_node(vlr);
+            mme_vlr_close(vlr);
             OGS_FSM_TRAN(s, sgsap_state_will_connect);
             break;
         case SGSAP_RELEASE_REQUEST:

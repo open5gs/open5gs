@@ -23,6 +23,7 @@ libdiameter_common_sources = files('''
     base.h
 
     libapp_sip.c
+    dict.c
     message.c
     logger.c
     config.c
@@ -31,13 +32,23 @@ libdiameter_common_sources = files('''
 
 libdiameter_common_inc = include_directories('.')
 
-freediameter_proj = subproject('freediameter')
-libfdcore_dep = freediameter_proj.get_variable('libfdcore_dep')
+# At this point, Open5GS always use the subproject of freeDiameter
+freeDiameter_proj = subproject('freeDiameter')
+libfdcore_dep = freeDiameter_proj.get_variable('libfdcore_dep')
+
+libdiameter_common_cc_flags = ['-DOGS_DIAM_COMPILATION']
+libdiameter_common_cc_flags += cc.get_supported_arguments([
+    '-Wno-missing-prototypes',
+    '-Wno-missing-declarations',
+    '-Wno-discarded-qualifiers',
+    '-Wno-incompatible-pointer-types',
+    '-Wno-strict-prototypes',
+])
 
 libdiameter_common = library('ogsdiameter-common',
     sources : libdiameter_common_sources,
     version : libogslib_version,
-    c_args : '-DOGS_DIAM_COMPILATION',
+    c_args : libdiameter_common_cc_flags,
     include_directories : [libdiameter_common_inc, libinc],
     dependencies : [libcore_dep, libfdcore_dep],
     install : true)

@@ -201,8 +201,9 @@ typedef struct mme_vlr_s {
 
     ogs_sockaddr_t  *sa_list;   /* VLR SGsAP Socket Address List */
 
-    ogs_socknode_t  *node;      /* VLR SGsAP Node */
+    ogs_sock_t      *sock;      /* VLR SGsAP Socket */
     ogs_sockaddr_t  *addr;      /* VLR SGsAP Connected Socket Address */
+    ogs_poll_t      *poll;      /* VLR SGsAP Poll */
 } mme_vlr_t;
 
 typedef struct mme_csmap_s {
@@ -654,9 +655,7 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
 mme_vlr_t *mme_vlr_add(ogs_sockaddr_t *addr);
 void mme_vlr_remove(mme_vlr_t *vlr);
 void mme_vlr_remove_all(void);
-
-ogs_socknode_t *mme_vlr_new_node(mme_vlr_t *vlr);
-void mme_vlr_free_node(mme_vlr_t *vlr);
+void mme_vlr_close(mme_vlr_t *vlr);
 mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr);
 
 mme_csmap_t *mme_csmap_add(mme_vlr_t *vlr);
@@ -791,6 +790,16 @@ int mme_m_tmsi_free(mme_m_tmsi_t *tmsi);
 
 uint8_t mme_selected_int_algorithm(mme_ue_t *mme_ue);
 uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue);
+
+void stats_add_ue(void);
+void stats_remove_ue(void);
+void stats_add_enb(void);
+void stats_remove_enb(void);
+void stats_add_mme_session(void);
+void stats_remove_mme_session(void);
+
+
+
 
 #ifdef __cplusplus
 }

@@ -35,8 +35,7 @@ ogs_pollset_t *ogs_pollset_create(void)
 
     ogs_pool_init(&pollset->pool, ogs_core()->socket.pool);
 
-    if (ogs_pollset_actions_initialized == false)
-    {
+    if (ogs_pollset_actions_initialized == false) {
 #if defined(HAVE_KQUEUE)
         ogs_pollset_actions = ogs_kqueue_actions;;
 #elif defined(HAVE_EPOLL)

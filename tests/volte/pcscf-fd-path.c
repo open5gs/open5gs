@@ -897,7 +897,7 @@ int pcscf_fd_init(void)
     ogs_assert(ret == 0);
 
 	/* Install objects definitions for this application */
-	ret = ogs_diam_rx_dict_init();
+	ret = ogs_diam_rx_init();
     ogs_assert(ret == 0);
 
     /* Create handler for sessions */

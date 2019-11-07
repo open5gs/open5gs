@@ -61,6 +61,8 @@ typedef struct sgw_context_s {
     ogs_list_t      enb_s1u_list;   /* eNB GTPU Node List */
     ogs_list_t      pgw_s5u_list;   /* PGW GTPU Node List */
 
+    ogs_hash_t      *imsi_ue_hash;  /* hash table (IMSI : SGW_UE) */
+
     ogs_list_t      sgw_ue_list;    /* SGW_UE List */
 } sgw_context_t;
 
@@ -153,6 +155,8 @@ int sgw_context_parse_config(void);
 
 ogs_gtp_node_t *sgw_mme_add_by_message(ogs_gtp_message_t *message);
 sgw_ue_t *sgw_ue_add_by_message(ogs_gtp_message_t *message);
+sgw_ue_t *sgw_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
+sgw_ue_t *sgw_ue_find_by_imsi_bcd(char *imsi_bcd);
 sgw_ue_t *sgw_ue_find_by_teid(uint32_t teid);
 
 sgw_ue_t *sgw_ue_add(uint8_t *imsi, int imsi_len);

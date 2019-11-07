@@ -119,8 +119,6 @@ ogs_sock_t *ogs_sctp_server(int type, ogs_socknode_t *node)
 
     node->sock = new;
 
-    ogs_socknode_install_poll(node);
-
     return new;
 }
 
@@ -157,8 +155,6 @@ ogs_sock_t *ogs_sctp_client(int type, ogs_socknode_t *node)
     }
 
     node->sock = new;
-
-    ogs_socknode_install_poll(node);
 
     return new;
 }
@@ -222,19 +218,25 @@ int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
 {
     int size;
     socklen_t addrlen = sizeof(struct sockaddr_storage);
+    ogs_sockaddr_t addr;
 
     int flags = 0;
     struct sctp_sndrcvinfo sndrcvinfo;
 
     ogs_assert(sock);
 
-    size = sctp_recvmsg(sock->fd, msg, len,
-                from ? &from->sa : NULL,  from ? &addrlen : NULL,
+    memset(&sndrcvinfo, 0, sizeof sndrcvinfo);
+    memset(&addr, 0, sizeof addr);
+    size = sctp_recvmsg(sock->fd, msg, len, &addr.sa, &addrlen,
                 &sndrcvinfo, &flags);
     if (size < 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "sctp_recvmsg(%d) failed", size);
         return size;
+    }
+
+    if (from) {
+        memcpy(from, &addr, sizeof(ogs_sockaddr_t));
     }
 
     if (msg_flags) {

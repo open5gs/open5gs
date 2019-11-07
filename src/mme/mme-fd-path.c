@@ -1007,7 +1007,7 @@ int mme_fd_init(void)
     ogs_assert(ret == OGS_OK);
 
 	/* Install objects definitions for this application */
-	ret = ogs_diam_s6a_dict_init();
+	ret = ogs_diam_s6a_init();
     ogs_assert(ret == OGS_OK);
 
     /* Create handler for sessions */

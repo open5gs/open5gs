@@ -49,6 +49,41 @@ static OGS_POOL(mme_bearer_pool, mme_bearer_t);
 
 static int context_initialized = 0;
 
+int num_ues = 0;
+int num_enbs = 0;
+int num_mme_sessions = 0;
+
+void stats_add_ue(void) {
+    num_ues = num_ues + 1;
+    ogs_info("Added a UE. Number of UEs is now %d", num_ues);
+}
+
+void stats_remove_ue(void) {
+    num_ues = num_ues - 1;
+    ogs_info("Removed a UE. Number of UEs is now %d", num_ues);
+}
+
+void stats_add_enb(void) {
+    num_enbs = num_enbs + 1;
+    ogs_info("Added a eNB. Number of eNBs is now %d", num_enbs);
+}
+
+void stats_remove_enb(void) {
+    num_enbs = num_enbs - 1;
+    ogs_info("Removed a eNB. Number of eNBs is now %d", num_enbs);
+}
+
+void stats_add_mme_session(void) {
+    num_mme_sessions = num_mme_sessions + 1;
+    ogs_info("Added a session. Number of sessions is now %d", num_mme_sessions);
+}
+
+void stats_remove_mme_session(void) {
+    num_mme_sessions = num_mme_sessions - 1;
+    ogs_info("Removed a session. Number of sessions is now %d", num_mme_sessions);
+}
+
+
 void mme_context_init()
 {
     ogs_assert(context_initialized == 0);
@@ -1722,8 +1757,7 @@ void mme_vlr_remove(mme_vlr_t *vlr)
 
     ogs_list_remove(&self.vlr_list, vlr);
 
-    if (vlr->node)
-        mme_vlr_free_node(vlr);
+    mme_vlr_close(vlr);
 
     ogs_freeaddrinfo(vlr->sa_list);
 
@@ -1738,27 +1772,14 @@ void mme_vlr_remove_all()
         mme_vlr_remove(vlr);
 }
 
-ogs_socknode_t *mme_vlr_new_node(mme_vlr_t *vlr)
-{
-    ogs_sockaddr_t *addr = NULL;
-    ogs_assert(vlr);
-
-    ogs_copyaddrinfo(&addr, vlr->sa_list);
-
-    ogs_assert(vlr->node == NULL);
-    vlr->node = ogs_socknode_new(addr);
-    ogs_assert(vlr->node);
-
-    return vlr->node;
-}
-
-void mme_vlr_free_node(mme_vlr_t *vlr)
+void mme_vlr_close(mme_vlr_t *vlr)
 {
     ogs_assert(vlr);
-    ogs_assert(vlr->node);
 
-    ogs_socknode_free(vlr->node);
-    vlr->node = NULL;
+    if (vlr->poll)
+        ogs_pollset_remove(vlr->poll);
+    if (vlr->sock)
+        ogs_sctp_destroy(vlr->sock);
 }
 
 mme_vlr_t *mme_vlr_find_by_addr(ogs_sockaddr_t *addr)
@@ -1865,7 +1886,7 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     if (enb->sock_type == SOCK_STREAM) {
         enb->poll = ogs_pollset_add(mme_self()->pollset,
-            OGS_POLLIN, sock->fd, s1ap_recv_handler, sock);
+            OGS_POLLIN, sock->fd, s1ap_recv_upcall, sock);
         ogs_assert(enb->poll);
     }
 
@@ -1877,6 +1898,8 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_fsm_init(&enb->sm, &e);
 
     ogs_list_add(&self.enb_list, enb);
+
+    stats_add_enb();
 
     return enb;
 }
@@ -1907,6 +1930,8 @@ int mme_enb_remove(mme_enb_t *enb)
     ogs_free(enb->addr);
 
     ogs_pool_free(&mme_enb_pool, enb);
+
+    stats_remove_enb();
 
     return OGS_OK;
 }
@@ -1993,6 +2018,8 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb)
             sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
     ogs_list_add(&enb->enb_ue_list, enb_ue);
 
+    stats_add_ue();
+
     return enb_ue;
 }
 
@@ -2017,6 +2044,8 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     ogs_list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
     ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), NULL);
+
+    stats_remove_ue();
 
     ogs_pool_free(&enb_ue_pool, enb_ue);
 }
@@ -2426,10 +2455,24 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_message_t *message)
 
 int mme_ue_set_imsi(mme_ue_t *mme_ue, char *imsi_bcd)
 {
+    mme_ue_t *old_mme_ue = NULL;
     ogs_assert(mme_ue && imsi_bcd);
 
     ogs_cpystrn(mme_ue->imsi_bcd, imsi_bcd, OGS_MAX_IMSI_BCD_LEN+1);
     ogs_bcd_to_buffer(mme_ue->imsi_bcd, mme_ue->imsi, &mme_ue->imsi_len);
+
+    /* Check if OLD mme_ue_t is existed */
+    old_mme_ue = mme_ue_find_by_imsi(mme_ue->imsi, mme_ue->imsi_len);
+    if (old_mme_ue) {
+        /* Check if OLD mme_ue_t is different with NEW mme_ue_t */
+        if (ogs_pool_index(&mme_ue_pool, mme_ue) !=
+            ogs_pool_index(&mme_ue_pool, old_mme_ue)) {
+            ogs_warn("OLD UE Context Release [IMSI:%s]", mme_ue->imsi_bcd);
+            if (old_mme_ue->enb_ue)
+                enb_ue_deassociate(old_mme_ue->enb_ue);
+            mme_ue_remove(old_mme_ue);
+        }
+    }
 
     ogs_hash_set(self.imsi_ue_hash, mme_ue->imsi, mme_ue->imsi_len, mme_ue);
 
@@ -2564,6 +2607,8 @@ mme_sess_t *mme_sess_add(mme_ue_t *mme_ue, uint8_t pti)
 
     ogs_list_add(&mme_ue->sess_list, sess);
 
+    stats_add_mme_session();
+
     return sess;
 }
 
@@ -2580,6 +2625,8 @@ void mme_sess_remove(mme_sess_t *sess)
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
 
     ogs_pool_free(&mme_sess_pool, sess);
+
+    stats_remove_mme_session();
 }
 
 void mme_sess_remove_all(mme_ue_t *mme_ue)
