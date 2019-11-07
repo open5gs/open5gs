@@ -66,11 +66,12 @@ typedef struct mme_bearer_s mme_bearer_t;
 
 typedef struct mme_event_s {
     int id;
-    void *pkbuf;
+    ogs_pkbuf_t *pkbuf;
     int timer_id;
 
-    ogs_sock_t *sctp_sock;
-    ogs_sockaddr_t *sctp_addr;
+    ogs_sock_t *sock;
+    ogs_sockaddr_t *addr;
+
     uint16_t max_num_of_istreams;
     uint16_t max_num_of_ostreams;
 

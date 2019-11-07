@@ -173,13 +173,13 @@ typedef struct mme_sgw_s {
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
 
-    ogs_gtp_node_t  *node;
+    ogs_gtp_node_t  *gnode;
 } mme_sgw_t;
 
 typedef struct mme_pgw_s {
     ogs_lnode_t     lnode;
 
-    ogs_gtp_node_t  *node;
+    ogs_gtp_node_t  *gnode;
     const char      *apn;
 } mme_pgw_t;
 
@@ -645,6 +645,7 @@ int mme_context_parse_config(void);
 mme_sgw_t *mme_sgw_add(ogs_sockaddr_t *addr);
 void mme_sgw_remove(mme_sgw_t *sgw);
 void mme_sgw_remove_all(void);
+mme_sgw_t *mme_sgw_find_by_addr(ogs_sockaddr_t *addr);
 
 mme_pgw_t *mme_pgw_add(ogs_sockaddr_t *addr);
 void mme_pgw_remove(mme_pgw_t *pgw);

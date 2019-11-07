@@ -90,16 +90,17 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     int rv;
     ssize_t size;
     ogs_pkbuf_t *pkbuf = NULL;
+    ogs_sockaddr_t from;
 
     ogs_assert(fd != INVALID_SOCKET);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
 
-    size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
+    size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
     if (size <= 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_recv() failed");
+                "ogs_recvfrom() failed");
         ogs_pkbuf_free(pkbuf);
         return;
     }
@@ -110,10 +111,17 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(e);
     e->gtpbuf = pkbuf;
 
+    e->sock = data;
+    ogs_assert(e->sock);
+    e->addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
+    ogs_assert(e->addr);
+    memcpy(e->addr, &from, sizeof(ogs_sockaddr_t));
+
     rv = ogs_queue_push(pgw_self()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->gtpbuf);
+        ogs_free(e->addr);
         pgw_event_free(e);
     }
 }
@@ -213,14 +221,14 @@ int pgw_gtp_open(void)
         ogs_assert(sock);
         
         node->poll = ogs_pollset_add(pgw_self()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
+                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
     ogs_list_for_each(&pgw_self()->gtpc_list6, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
         node->poll = ogs_pollset_add(pgw_self()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
+                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
 
     pgw_self()->gtpc_sock = ogs_gtp_local_sock_first(&pgw_self()->gtpc_list);
@@ -235,14 +243,14 @@ int pgw_gtp_open(void)
         ogs_assert(sock);
 
         node->poll = ogs_pollset_add(pgw_self()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, NULL);
+                OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, sock);
     }
     ogs_list_for_each(&pgw_self()->gtpu_list6, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
         node->poll = ogs_pollset_add(pgw_self()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, NULL);
+                OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, sock);
     }
 
     pgw_self()->gtpu_sock = ogs_gtp_local_sock_first(&pgw_self()->gtpu_list);
@@ -413,7 +421,7 @@ static int pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, ogs_pkbuf_t *sendbuf)
 
     /* Send to SGW */
     ogs_debug("[PGW] SEND GPU-U to SGW[%s] : TEID[0x%x]",
-        OGS_ADDR(&bearer->gnode->conn, buf),
+        OGS_ADDR(&bearer->gnode->remote_addr, buf),
         bearer->sgw_s5u_teid);
     rv =  ogs_gtp_sendto(bearer->gnode, sendbuf);
 

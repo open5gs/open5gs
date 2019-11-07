@@ -859,36 +859,6 @@ pgw_sess_t *pgw_sess_find_by_imsi_apn(
     return (pgw_sess_t *)ogs_hash_get(self.sess_hash, keybuf, keylen);
 }
 
-ogs_gtp_node_t *pgw_sgw_add_by_message(ogs_gtp_message_t *message)
-{
-    int rv;
-    ogs_gtp_node_t *sgw = NULL;
-    ogs_gtp_f_teid_t *sgw_s5c_teid = NULL;
-
-    ogs_gtp_create_session_request_t *req = &message->create_session_request;
-
-    if (req->sender_f_teid_for_control_plane.presence == 0) {
-        ogs_error("No Sender F-TEID");
-        return NULL;
-    }
-
-    sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
-    ogs_assert(sgw_s5c_teid);
-    sgw = ogs_gtp_node_find(&pgw_self()->sgw_s5c_list, sgw_s5c_teid);
-    if (!sgw) {
-        sgw = ogs_gtp_node_add(&pgw_self()->sgw_s5c_list, sgw_s5c_teid,
-            pgw_self()->gtpc_port,
-            ogs_config()->parameter.no_ipv4,
-            ogs_config()->parameter.no_ipv6,
-            ogs_config()->parameter.prefer_ipv4);
-        ogs_assert(sgw);
-
-        rv = ogs_gtp_connect(pgw_self()->gtpc_sock, pgw_self()->gtpc_sock6, sgw);
-        ogs_assert(rv == OGS_OK);
-    }
-
-    return sgw;
-}
 pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message)
 {
     pgw_sess_t *sess = NULL;
@@ -925,7 +895,7 @@ pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message)
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
 
     /* 
-     * 3GPP TS 29.274 Release 15, Page 38
+     * 7.2.1 in 3GPP TS 29.274 Release 15
      *
      * If the new Create Session Request received by the PGW collides with
      * an existing PDN connection context (the existing PDN connection context

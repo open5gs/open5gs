@@ -41,14 +41,16 @@ int ogs_gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_gtp_node_t *gnode)
 
     ogs_assert(ipv4 || ipv6);
     ogs_assert(gnode);
-    ogs_assert(gnode->addr);
+    ogs_assert(gnode->sa_list);
 
-    addr = gnode->addr;
+    addr = gnode->sa_list;
     while (addr) {
         ogs_sock_t *sock = NULL;
 
-        if (addr->ogs_sa_family == AF_INET) sock = ipv4;
-        else if (addr->ogs_sa_family == AF_INET6) sock = ipv6;
+        if (addr->ogs_sa_family == AF_INET)
+            sock = ipv4;
+        else if (addr->ogs_sa_family == AF_INET6)
+            sock = ipv6;
         else
             ogs_assert_if_reached();
 
@@ -57,7 +59,7 @@ int ogs_gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_gtp_node_t *gnode)
                     OGS_ADDR(addr, buf), OGS_PORT(addr));
 
             gnode->sock = sock;
-            memcpy(&gnode->conn, addr, sizeof gnode->conn);
+            memcpy(&gnode->remote_addr, addr, sizeof gnode->remote_addr);
             break;
         }
 
@@ -67,7 +69,7 @@ int ogs_gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_gtp_node_t *gnode)
     if (addr == NULL) {
         ogs_log_message(OGS_LOG_WARN, ogs_socket_errno,
                 "gtp_connect() [%s]:%d failed",
-                OGS_ADDR(gnode->addr, buf), OGS_PORT(gnode->addr));
+                OGS_ADDR(gnode->sa_list, buf), OGS_PORT(gnode->sa_list));
         return OGS_ERROR;
     }
 
@@ -125,16 +127,16 @@ int ogs_gtp_sendto(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
 {
     ssize_t sent;
     ogs_sock_t *sock = NULL;
-    ogs_sockaddr_t *conn = NULL;
+    ogs_sockaddr_t *addr = NULL;
 
     ogs_assert(gnode);
     ogs_assert(pkbuf);
     sock = gnode->sock;
     ogs_assert(sock);
-    conn = &gnode->conn;
-    ogs_assert(conn);
+    addr = &gnode->remote_addr;
+    ogs_assert(addr);
 
-    sent = ogs_sendto(sock->fd, pkbuf->data, pkbuf->len, 0, conn);
+    sent = ogs_sendto(sock->fd, pkbuf->data, pkbuf->len, 0, addr);
     if (sent < 0 || sent != pkbuf->len) {
         ogs_error("ogs_send() failed");
         return OGS_ERROR;
