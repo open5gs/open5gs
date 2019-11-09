@@ -167,25 +167,36 @@ void mme_s11_handle_delete_session_response(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp_delete_session_response_t *rsp)
 {
+    ogs_gtp_cause_t cause;
+
     int rv;
     mme_sess_t *sess = NULL;
 
-    ogs_assert(mme_ue);
     ogs_assert(xact);
     sess = OGS_GTP_XACT_RETRIEVE_SESSION(xact);
     ogs_assert(sess);
+    mme_ue = sess->mme_ue;
+    ogs_assert(mme_ue);
     ogs_assert(rsp);
 
     ogs_debug("[MME] Delete Session Response");
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_assert(rv == OGS_OK);
+
     if (rsp->cause.presence == 0) {
         ogs_error("No Cause");
         goto cleanup;
     }
+
+    memcpy(&cause, rsp->cause.data, rsp->cause.len);
+    if (cause.value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        ogs_warn("No Accept [%d]", cause.value);
+        goto cleanup;
+    }
+
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
-
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_assert(rv == OGS_OK);
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_authentication)) {
         if (mme_sess_count(mme_ue) == 1) /* Last Session */ {

@@ -26,6 +26,8 @@
 extern "C" {
 #endif
 
+typedef struct sgw_bearer_s sgw_bearer_t;
+
 typedef enum {
     SGW_EVT_BASE = OGS_FSM_USER_SIG,
 
@@ -40,8 +42,12 @@ typedef enum {
 
 typedef struct sgw_event_s {
     int id;
-    void *pkbuf;
-    void *bearer;
+    ogs_pkbuf_t *pkbuf;
+
+    ogs_sock_t *sock;
+    ogs_sockaddr_t *addr;
+
+    sgw_bearer_t *bearer;
 } sgw_event_t;
 
 void sgw_event_init(void);

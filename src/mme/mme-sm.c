@@ -58,6 +58,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     ogs_sockaddr_t *addr = NULL;
     mme_enb_t *enb = NULL;
     uint16_t max_num_of_ostreams = 0;
+    mme_sgw_t *sgw = NULL;
 
     s1ap_message_t s1ap_message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -74,6 +75,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     ogs_pkbuf_t *s6abuf = NULL;
     ogs_diam_s6a_message_t *s6a_message = NULL;
 
+    ogs_gtp_node_t *gnode = NULL;
     ogs_gtp_xact_t *xact = NULL;
     ogs_gtp_message_t gtp_message;
 
@@ -112,9 +114,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         break;
 
     case MME_EVT_S1AP_LO_ACCEPT:
-        sock = e->sctp_sock;
+        sock = e->sock;
         ogs_assert(sock);
-        addr = e->sctp_addr;
+        addr = e->addr;
         ogs_assert(addr);
 
         ogs_info("eNB-S1 accepted[%s] in master_sm module", 
@@ -134,9 +136,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         break;
 
     case MME_EVT_S1AP_LO_SCTP_COMM_UP:
-        sock = e->sctp_sock;
+        sock = e->sock;
         ogs_assert(sock);
-        addr = e->sctp_addr;
+        addr = e->addr;
         ogs_assert(addr);
 
         max_num_of_ostreams = e->max_num_of_ostreams;
@@ -158,9 +160,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         break;
 
     case MME_EVT_S1AP_LO_CONNREFUSED:
-        sock = e->sctp_sock;
+        sock = e->sock;
         ogs_assert(sock);
-        addr = e->sctp_addr;
+        addr = e->addr;
         ogs_assert(addr);
 
         enb = mme_enb_find_by_addr(addr);
@@ -177,9 +179,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         break;
     case MME_EVT_S1AP_MESSAGE:
-        sock = e->sctp_sock;
+        sock = e->sock;
         ogs_assert(sock);
-        addr = e->sctp_addr;
+        addr = e->addr;
         ogs_assert(addr);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
@@ -418,10 +420,56 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         rv = ogs_gtp_parse_msg(&gtp_message, pkbuf);
         ogs_assert(rv == OGS_OK);
 
-        mme_ue = mme_ue_find_by_teid(gtp_message.h.teid);
-        ogs_assert(mme_ue);
+        /*
+         * 5.5.2 in spec 29.274
+         *
+         * If a peer's TEID is not available, the TEID field still shall be
+         * present in the header and its value shall be set to "0" in the
+         * following messages:
+         *
+         * - Create Session Request message on S2a/S2b/S5/S8
+         *
+         * - Create Session Request message on S4/S11, if for a given UE,
+         *   the SGSN/MME has not yet obtained the Control TEID of the SGW.
+         *
+         * - If a node receives a message and the TEID-C in the GTPv2 header of
+         *   the received message is not known, it shall respond with
+         *   "Context not found" Cause in the corresponding response message
+         *   to the sender, the TEID used in the GTPv2-C header in the response
+         *   message shall be then set to zero.
+         *
+         * - If a node receives a request message containing protocol error,
+         *   e.g. Mandatory IE missing, which requires the receiver to reject
+         *   the message as specified in clause 7.7, it shall reject
+         *   the request message. For the response message, the node should
+         *   look up the remote peer's TEID and accordingly set the GTPv2-C
+         *   header TEID and the message cause code. As an implementation
+         *   option, the node may not look up the remote peer's TEID and
+         *   set the GTPv2-C header TEID to zero in the response message.
+         *   However in this case, the cause code shall not be set to
+         *   "Context not found".
+         */
+        if (gtp_message.h.teid != 0) {
+            /* Cause is not "Context not found" */
+            mme_ue = mme_ue_find_by_teid(gtp_message.h.teid);
+        }
 
-        rv = ogs_gtp_xact_receive(mme_ue->gnode, &gtp_message.h, &xact);
+        if (mme_ue) {
+            gnode = mme_ue->gnode;
+            ogs_assert(gnode);
+
+        } else {
+            ogs_assert(e->addr);
+
+            sgw = mme_sgw_find_by_addr(e->addr);
+            ogs_assert(sgw);
+
+            gnode = sgw->gnode;
+            ogs_assert(gnode);
+        }
+        ogs_free(e->addr);
+
+        rv = ogs_gtp_xact_receive(gnode, &gtp_message.h, &xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(pkbuf);
             break;
@@ -495,9 +543,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         break;
 
     case MME_EVT_SGSAP_LO_SCTP_COMM_UP:
-        sock = e->sctp_sock;
+        sock = e->sock;
         ogs_assert(sock);
-        addr = e->sctp_addr;
+        addr = e->addr;
         ogs_assert(addr);
 
         max_num_of_ostreams = e->max_num_of_ostreams;
@@ -519,9 +567,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         break;
 
     case MME_EVT_SGSAP_LO_CONNREFUSED:
-        sock = e->sctp_sock;
+        sock = e->sock;
         ogs_assert(sock);
-        addr = e->sctp_addr;
+        addr = e->addr;
         ogs_assert(addr);
 
         vlr = mme_vlr_find_by_addr(addr);
@@ -544,9 +592,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         break;
     case MME_EVT_SGSAP_MESSAGE:
-        sock = e->sctp_sock;
+        sock = e->sock;
         ogs_assert(sock);
-        addr = e->sctp_addr;
+        addr = e->addr;
         ogs_assert(addr);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);

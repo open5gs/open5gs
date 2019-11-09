@@ -136,8 +136,8 @@ void mme_sctp_event_push(mme_event_e id,
 
     e = mme_event_new(id);
     ogs_assert(e);
-    e->sctp_sock = sock;
-    e->sctp_addr = addr;
+    e->sock = sock;
+    e->addr = addr;
     e->pkbuf = pkbuf;
     e->max_num_of_istreams = max_num_of_istreams;
     e->max_num_of_ostreams = max_num_of_ostreams;
@@ -145,7 +145,7 @@ void mme_sctp_event_push(mme_event_e id,
     rv = ogs_queue_push(mme_self()->queue, e);
     if (rv != OGS_OK) {
         ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-        ogs_free(e->sctp_addr);
+        ogs_free(e->addr);
         if (e->pkbuf)
             ogs_pkbuf_free(e->pkbuf);
         mme_event_free(e);

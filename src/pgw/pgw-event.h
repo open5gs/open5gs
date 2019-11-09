@@ -26,6 +26,9 @@
 extern "C" {
 #endif
 
+typedef struct pgw_sess_s pgw_sess_t;
+typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
+
 typedef enum {
     PGW_EVT_BASE = OGS_FSM_USER_SIG,
 
@@ -38,10 +41,14 @@ typedef enum {
 
 typedef struct pgw_event_s {
     int id;
-    void *gtpbuf;
-    void *gxbuf;
-    ogs_index_t sess_index;
-    ogs_index_t xact_index;
+    ogs_pkbuf_t *gtpbuf;
+    ogs_pkbuf_t *gxbuf;
+
+    ogs_sock_t *sock;
+    ogs_sockaddr_t *addr;
+
+    pgw_sess_t *sess;
+    ogs_gtp_xact_t *xact;
 } pgw_event_t;
 
 void pgw_event_init(void);

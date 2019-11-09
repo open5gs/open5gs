@@ -155,15 +155,11 @@ int ogs_copyaddrinfo(ogs_sockaddr_t **dst, const ogs_sockaddr_t *src)
     ogs_sockaddr_t *d;
     const ogs_sockaddr_t *s;
 
-    for (*dst = d = NULL, s = src; s; s = s->next)
-    {
-        if (!d)
-        {
+    for (*dst = d = NULL, s = src; s; s = s->next) {
+        if (!d) {
             d = ogs_calloc(1, sizeof *s);
             *dst = memcpy(d, s, sizeof *s);
-        }
-        else
-        {
+        } else {
             d->next = ogs_calloc(1, sizeof(ogs_sockaddr_t));
             d = memcpy(d->next, s, sizeof *s);
         }

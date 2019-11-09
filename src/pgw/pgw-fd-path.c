@@ -719,9 +719,9 @@ out:
         e = pgw_event_new(PGW_EVT_GX_MESSAGE);
         ogs_assert(e);
 
-        e->sess_index = sess->index;
+        e->sess = sess;
         e->gxbuf = gxbuf;
-        e->xact_index = xact->index;
+        e->xact = xact;
         e->gtpbuf = gtpbuf;
         rv = ogs_queue_push(pgw_self()->queue, e);
         if (rv != OGS_OK) {
@@ -947,7 +947,7 @@ static int pgw_gx_rar_cb( struct msg **msg, struct avp *avp,
     e = pgw_event_new(PGW_EVT_GX_MESSAGE);
     ogs_assert(e);
 
-    e->sess_index = sess->index;
+    e->sess = sess;
     e->gxbuf = gxbuf;
     rv = ogs_queue_push(pgw_self()->queue, e);
     if (rv != OGS_OK) {

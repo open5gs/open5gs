@@ -30,16 +30,17 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     ssize_t size;
     mme_event_t *e = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
+    ogs_sockaddr_t from;
 
     ogs_assert(fd != INVALID_SOCKET);
 
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
 
-    size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
+    size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
     if (size <= 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "ogs_recv() failed");
+                "ogs_recvfrom() failed");
         ogs_pkbuf_free(pkbuf);
         return;
     }
@@ -49,10 +50,18 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     e = mme_event_new(MME_EVT_S11_MESSAGE);
     ogs_assert(e);
     e->pkbuf = pkbuf;
+
+    e->sock = data;
+    ogs_assert(e->sock);
+    e->addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
+    ogs_assert(e->addr);
+    memcpy(e->addr, &from, sizeof(ogs_sockaddr_t));
+
     rv = ogs_queue_push(mme_self()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
+        ogs_free(e->addr);
         mme_event_free(e);
     }
 }
@@ -69,14 +78,14 @@ int mme_gtp_open(void)
         ogs_assert(sock);
 
         node->poll = ogs_pollset_add(mme_self()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
+                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
     ogs_list_for_each(&mme_self()->gtpc_list6, node) {
         sock = ogs_gtp_server(node);
         ogs_assert(sock);
 
         node->poll = ogs_pollset_add(mme_self()->pollset,
-                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, NULL);
+                OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
 
     mme_self()->gtpc_sock = ogs_gtp_local_sock_first(&mme_self()->gtpc_list);
@@ -94,7 +103,7 @@ int mme_gtp_open(void)
 
     ogs_list_for_each(&mme_self()->sgw_list, sgw) {
         rv = ogs_gtp_connect(
-                mme_self()->gtpc_sock, mme_self()->gtpc_sock6, sgw->node);
+                mme_self()->gtpc_sock, mme_self()->gtpc_sock6, sgw->gnode);
         ogs_assert(rv == OGS_OK);
     }
 

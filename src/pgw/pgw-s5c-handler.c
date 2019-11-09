@@ -87,7 +87,7 @@ void pgw_s5c_handle_create_session_request(
     ogs_debug("    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]",
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
-    sgw = ogs_gtp_node_find(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
+    sgw = ogs_gtp_node_find_by_f_teid(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
     if (!sgw) {
         sgw = ogs_gtp_node_add(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
             pgw_self()->gtpu_port,
@@ -188,7 +188,7 @@ void pgw_s5c_handle_create_bearer_response(
     /* Data Plane(DL) : SGW-S5U */
     sgw_s5u_teid = req->bearer_contexts.s5_s8_u_sgw_f_teid.data;
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
-    sgw = ogs_gtp_node_find(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
+    sgw = ogs_gtp_node_find_by_f_teid(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
     if (!sgw) {
         sgw = ogs_gtp_node_add(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
             pgw_self()->gtpu_port,

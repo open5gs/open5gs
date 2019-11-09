@@ -50,11 +50,10 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
     ogs_gtp_xact_t *xact = NULL;
     ogs_gtp_message_t *message = NULL;
     pgw_sess_t *sess = NULL;
-    ogs_index_t sess_index;
     ogs_pkbuf_t *gxbuf = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
-    uint32_t xact_index;
     ogs_pkbuf_t *gtpbuf = NULL;
+    ogs_gtp_node_t *gnode = NULL;
 
     pgw_sm_debug(e);
 
@@ -83,17 +82,59 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         rv = ogs_gtp_parse_msg(message, recvbuf);
         ogs_assert(rv == OGS_OK);
 
-        if (message->h.teid == 0) {
-            ogs_gtp_node_t *sgw = pgw_sgw_add_by_message(message);
-            ogs_assert(sgw);
-            sess = pgw_sess_add_by_message(message);
-            OGS_SETUP_GTP_NODE(sess, sgw);
-        } else {
+        /*
+         * 5.5.2 in spec 29.274
+         *
+         * If a peer's TEID is not available, the TEID field still shall be
+         * present in the header and its value shall be set to "0" in the
+         * following messages:
+         *
+         * - Create Session Request message on S2a/S2b/S5/S8
+         *
+         * - Create Session Request message on S4/S11, if for a given UE,
+         *   the SGSN/MME has not yet obtained the Control TEID of the SGW.
+         *
+         * - If a node receives a message and the TEID-C in the GTPv2 header of
+         *   the received message is not known, it shall respond with
+         *   "Context not found" Cause in the corresponding response message
+         *   to the sender, the TEID used in the GTPv2-C header in the response
+         *   message shall be then set to zero.
+         *
+         * - If a node receives a request message containing protocol error,
+         *   e.g. Mandatory IE missing, which requires the receiver to reject
+         *   the message as specified in clause 7.7, it shall reject
+         *   the request message. For the response message, the node should
+         *   look up the remote peer's TEID and accordingly set the GTPv2-C
+         *   header TEID and the message cause code. As an implementation
+         *   option, the node may not look up the remote peer's TEID and
+         *   set the GTPv2-C header TEID to zero in the response message.
+         *   However in this case, the cause code shall not be set to
+         *   "Context not found".
+         */
+        if (message->h.teid != 0) {
+            /* Cause is not "Context not found" */
             sess = pgw_sess_find_by_teid(message->h.teid);
         }
-        ogs_assert(sess);
 
-        rv = ogs_gtp_xact_receive(sess->gnode, &message->h, &xact);
+        if (sess) {
+            gnode = sess->gnode;
+            ogs_assert(gnode);
+
+        } else {
+            ogs_assert(e->addr);
+
+            gnode = ogs_gtp_node_find_by_addr(
+                    &pgw_self()->sgw_s5c_list, e->addr);
+            if (!gnode) {
+                gnode = ogs_gtp_node_add_by_addr(
+                        &pgw_self()->sgw_s5c_list, e->addr);
+                ogs_assert(gnode);
+                gnode->sock = e->sock;
+            }
+        }
+        ogs_free(e->addr);
+
+        rv = ogs_gtp_xact_receive(gnode, &message->h, &xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(recvbuf);
             ogs_pkbuf_free(copybuf);
@@ -102,6 +143,12 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
 
         switch(message->h.type) {
         case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
+            if (message->h.teid == 0) {
+                ogs_assert(!sess);
+                sess = pgw_sess_add_by_message(message);
+                ogs_assert(sess);
+                OGS_SETUP_GTP_NODE(sess, gnode);
+            }
             pgw_s5c_handle_create_session_request(
                 sess, xact, &message->create_session_request);
             pgw_gx_send_ccr(sess, xact, copybuf,
@@ -144,15 +191,12 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         gx_message = (ogs_diam_gx_message_t *)gxbuf->data;
         ogs_assert(gx_message);
 
-        sess_index = e->sess_index;
-        ogs_assert(sess_index);
-        sess = pgw_sess_find(sess_index);
+        sess = e->sess;
+        ogs_assert(sess);
 
         switch(gx_message->cmd_code) {
         case OGS_DIAM_GX_CMD_CODE_CREDIT_CONTROL:
-            xact_index = e->xact_index;
-            ogs_assert(xact_index);
-            xact = ogs_gtp_xact_find(xact_index);
+            xact = e->xact;
             ogs_assert(xact);
 
             gtpbuf = e->gtpbuf;

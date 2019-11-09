@@ -153,7 +153,6 @@ sgw_context_t *sgw_self(void);
 
 int sgw_context_parse_config(void);
 
-ogs_gtp_node_t *sgw_mme_add_by_message(ogs_gtp_message_t *message);
 sgw_ue_t *sgw_ue_add_by_message(ogs_gtp_message_t *message);
 sgw_ue_t *sgw_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 sgw_ue_t *sgw_ue_find_by_imsi_bcd(char *imsi_bcd);

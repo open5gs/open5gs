@@ -224,7 +224,6 @@ pgw_context_t *pgw_self(void);
 
 int pgw_context_parse_config(void);
 
-ogs_gtp_node_t *pgw_sgw_add_by_message(ogs_gtp_message_t *message);
 pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message);
 
 pgw_sess_t *pgw_sess_add(
