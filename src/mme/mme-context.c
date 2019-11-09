@@ -75,12 +75,14 @@ void stats_remove_enb(void) {
 
 void stats_add_mme_session(void) {
     num_mme_sessions = num_mme_sessions + 1;
-    ogs_info("Added a session. Number of sessions is now %d", num_mme_sessions);
+    ogs_info("Added a session. Number of sessions is now %d",
+            num_mme_sessions);
 }
 
 void stats_remove_mme_session(void) {
     num_mme_sessions = num_mme_sessions - 1;
-    ogs_info("Removed a session. Number of sessions is now %d", num_mme_sessions);
+    ogs_info("Removed a session. Number of sessions is now %d",
+            num_mme_sessions);
 }
 
 
@@ -1647,8 +1649,8 @@ mme_sgw_t *mme_sgw_add(ogs_sockaddr_t *addr)
     ogs_assert(sgw);
     memset(sgw, 0, sizeof *sgw);
 
-    sgw->node = ogs_gtp_node_new(addr);
-    ogs_assert(sgw->node);
+    sgw->gnode = ogs_gtp_node_new(addr);
+    ogs_assert(sgw->gnode);
 
     ogs_list_add(&self.sgw_list, sgw);
 
@@ -1661,7 +1663,7 @@ void mme_sgw_remove(mme_sgw_t *sgw)
 
     ogs_list_remove(&self.sgw_list, sgw);
 
-    ogs_gtp_node_free(sgw->node);
+    ogs_gtp_node_free(sgw->gnode);
     ogs_pool_free(&mme_sgw_pool, sgw);
 }
 
@@ -1671,6 +1673,21 @@ void mme_sgw_remove_all()
 
     ogs_list_for_each_safe(&self.sgw_list, next_sgw, sgw)
         mme_sgw_remove(sgw);
+}
+
+mme_sgw_t *mme_sgw_find_by_addr(ogs_sockaddr_t *addr)
+{
+    mme_sgw_t *sgw = NULL;
+
+    ogs_assert(addr);
+
+    ogs_list_for_each(&self.sgw_list, sgw) {
+        ogs_assert(sgw->gnode);
+        if (ogs_sockaddr_is_equal(&sgw->gnode->remote_addr, addr) == true)
+            break;
+    }
+
+    return sgw;
 }
 
 mme_pgw_t *mme_pgw_add(ogs_sockaddr_t *addr)
@@ -1683,8 +1700,8 @@ mme_pgw_t *mme_pgw_add(ogs_sockaddr_t *addr)
     ogs_assert(pgw);
     memset(pgw, 0, sizeof *pgw);
 
-    pgw->node = ogs_gtp_node_new(addr);
-    ogs_assert(pgw->node);
+    pgw->gnode = ogs_gtp_node_new(addr);
+    ogs_assert(pgw->gnode);
 
     ogs_list_add(&self.pgw_list, pgw);
 
@@ -1697,7 +1714,7 @@ void mme_pgw_remove(mme_pgw_t *pgw)
 
     ogs_list_remove(&self.pgw_list, pgw);
 
-    ogs_gtp_node_free(pgw->node);
+    ogs_gtp_node_free(pgw->gnode);
     ogs_pool_free(&mme_pgw_pool, pgw);
 }
 
@@ -1716,8 +1733,8 @@ ogs_sockaddr_t *mme_pgw_addr_find_by_apn(
     ogs_assert(list);
 
     ogs_list_for_each(list, pgw) {
-        ogs_assert(pgw->node);
-        ogs_sockaddr_t *addr = pgw->node->addr;
+        ogs_assert(pgw->gnode);
+        ogs_sockaddr_t *addr = pgw->gnode->sa_list;
 
         while (addr) {
             if (addr->ogs_sa_family == family &&
@@ -2178,7 +2195,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
             mme_self()->sgw = ogs_list_first(&mme_self()->sgw_list);
 
         ogs_assert(mme_self()->sgw);
-        OGS_SETUP_GTP_NODE(mme_ue, mme_self()->sgw->node);
+        OGS_SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
 
         mme_self()->sgw = ogs_list_next(mme_self()->sgw);
     } else if (mme_self()->sgw_selection == SGW_SELECT_TAC) {
@@ -2195,7 +2212,7 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
         }
 
         ogs_assert(mme_self()->sgw);
-        OGS_SETUP_GTP_NODE(mme_ue, mme_self()->sgw->node);
+        OGS_SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
     } else
         ogs_assert_if_reached();
         
