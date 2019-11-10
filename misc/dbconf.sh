@@ -3,7 +3,7 @@
 version=0.9.0
 
 display_help() {
-    echo "open5gs_conf: Open5Gs Database Configuration Tool ($version)"
+    echo "dbconf.sh: Open5GS Database Configuration Tool ($version)"
     echo "COMMANDS:" >&2
     echo "   add {imsi key opc}: adds a user to the database with default values"
     echo "   remove {imsi}: removes a user from the database"
@@ -25,7 +25,7 @@ fi
 
 if [ "$1" = "add" ]; then
 	if [ "$#" -ne 4 ]; then
-		echo "open5gs_conf: incorrect number of args, format is \"open5gs_conf add imsi key opc\""
+		echo "dbconf.sh: incorrect number of args, format is \"dbconf.sh add imsi key opc\""
 		exit 1
 	fi
 	IMSI=$2 
@@ -38,7 +38,7 @@ fi
 
 if [ "$1" = "remove" ]; then
 	if [ "$#" -ne 2 ]; then
-		echo "open5gs_conf: incorrect number of args, format is \"open5gs_conf remove imsi\""
+		echo "dbconf.sh: incorrect number of args, format is \"dbconf.sh remove imsi\""
 		exit 1
 	fi
 
@@ -49,7 +49,7 @@ fi
 
 if [ "$1" = "reset" ]; then
 	if [ "$#" -ne 1 ]; then
-		echo "open5gs_conf: incorrect number of args, format is \"open5gs_conf reset\""
+		echo "dbconf.sh: incorrect number of args, format is \"dbconf.sh reset\""
 		exit 1
 	fi
 
