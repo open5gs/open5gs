@@ -150,15 +150,11 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
                 OGS_SETUP_GTP_NODE(sess, gnode);
             }
             pgw_s5c_handle_create_session_request(
-                sess, xact, &message->create_session_request);
-            pgw_gx_send_ccr(sess, xact, copybuf,
-                OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
+                sess, xact, copybuf, &message->create_session_request);
             break;
         case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
             pgw_s5c_handle_delete_session_request(
-                sess, xact, &message->delete_session_request);
-            pgw_gx_send_ccr(sess, xact, copybuf,
-                OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
+                sess, xact, copybuf, &message->delete_session_request);
             break;
         case OGS_GTP_CREATE_BEARER_RESPONSE_TYPE:
             pgw_s5c_handle_create_bearer_response(

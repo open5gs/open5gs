@@ -430,10 +430,8 @@ sgw_ue_t *sgw_ue_add_by_message(ogs_gtp_message_t *message)
      *   the message is received with a TEID not set to zero in the header.
      */
     sgw_ue = sgw_ue_find_by_imsi(req->imsi.data, req->imsi.len);
-    if (sgw_ue) {
-        ogs_warn("OLD UE Context Release [IMSI:%s]", sgw_ue->imsi_bcd);
+    if (sgw_ue)
         sgw_ue_remove(sgw_ue);
-    }
     sgw_ue = sgw_ue_add(req->imsi.data, req->imsi.len);
     ogs_assert(sgw_ue);
 
@@ -795,11 +793,13 @@ sgw_tunnel_t *sgw_tunnel_find_by_interface_type(
 
 sgw_tunnel_t *sgw_s1u_tunnel_in_bearer(sgw_bearer_t *bearer)
 {
+    ogs_assert(bearer);
     return sgw_tunnel_find_by_interface_type(
             bearer, OGS_GTP_F_TEID_S1_U_SGW_GTP_U);
 }
 sgw_tunnel_t *sgw_s5u_tunnel_in_bearer(sgw_bearer_t *bearer)
 {
+    ogs_assert(bearer);
     return sgw_tunnel_find_by_interface_type(
             bearer, OGS_GTP_F_TEID_S5_S8_SGW_GTP_U);
 }

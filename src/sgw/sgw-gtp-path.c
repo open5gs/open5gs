@@ -29,9 +29,12 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     int rv;
     ssize_t size;
     ogs_gtp_header_t *gtp_h = NULL;
+#if 0
     uint32_t teid = 0;
+#endif
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
+    ogs_gtp_node_t *gnode = NULL;
 
     ogs_assert(fd != INVALID_SOCKET);
 
@@ -51,26 +54,62 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     gtp_h = (ogs_gtp_header_t *)pkbuf->data;
     ogs_assert(gtp_h);
     ogs_assert(gtp_h->teid_presence);
+#if 0
     teid = ntohl(gtp_h->teid);
+#endif
 
-    if (SGW_S5C_TEID(teid))
+    /*
+     * 5.5.2 in spec 29.274
+     *
+     * If a peer's TEID is not available, the TEID field still shall be
+     * present in the header and its value shall be set to "0" in the
+     * following messages:
+     *
+     * - Create Session Request message on S2a/S2b/S5/S8
+     *
+     * - Create Session Request message on S4/S11, if for a given UE,
+     *   the SGSN/MME has not yet obtained the Control TEID of the SGW.
+     *
+     * - If a node receives a message and the TEID-C in the GTPv2 header of
+     *   the received message is not known, it shall respond with
+     *   "Context not found" Cause in the corresponding response message
+     *   to the sender, the TEID used in the GTPv2-C header in the response
+     *   message shall be then set to zero.
+     *
+     * - If a node receives a request message containing protocol error,
+     *   e.g. Mandatory IE missing, which requires the receiver to reject
+     *   the message as specified in clause 7.7, it shall reject
+     *   the request message. For the response message, the node should
+     *   look up the remote peer's TEID and accordingly set the GTPv2-C
+     *   header TEID and the message cause code. As an implementation
+     *   option, the node may not look up the remote peer's TEID and
+     *   set the GTPv2-C header TEID to zero in the response message.
+     *   However in this case, the cause code shall not be set to
+     *   "Context not found".
+     */
+    gnode = ogs_gtp_node_find_by_addr(&sgw_self()->pgw_s5c_list, &from);
+    if (gnode) {
         e = sgw_event_new(SGW_EVT_S5C_MESSAGE);
-    else
+        e->gnode = gnode;
+    } else {
         e = sgw_event_new(SGW_EVT_S11_MESSAGE);
+        gnode = ogs_gtp_node_find_by_addr(&sgw_self()->mme_s11_list, &from);
+        if (!gnode) {
+            gnode = ogs_gtp_node_add_by_addr(
+                    &sgw_self()->mme_s11_list, &from);
+            ogs_assert(gnode);
+            gnode->sock = data;
+        }
+        e->gnode = gnode;
+    }
+
     ogs_assert(e);
     e->pkbuf = pkbuf;
-
-    e->sock = data;
-    ogs_assert(e->sock);
-    e->addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_assert(e->addr);
-    memcpy(e->addr, &from, sizeof(ogs_sockaddr_t));
 
     rv = ogs_queue_push(sgw_self()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
-        ogs_free(e->addr);
         sgw_event_free(e);
     }
 }

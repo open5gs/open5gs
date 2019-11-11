@@ -26,6 +26,7 @@
 extern "C" {
 #endif
 
+typedef struct ogs_gtp_node_s ogs_gtp_node_t;
 typedef struct sgw_bearer_s sgw_bearer_t;
 
 typedef enum {
@@ -44,8 +45,7 @@ typedef struct sgw_event_s {
     int id;
     ogs_pkbuf_t *pkbuf;
 
-    ogs_sock_t *sock;
-    ogs_sockaddr_t *addr;
+    ogs_gtp_node_t *gnode;
 
     sgw_bearer_t *bearer;
 } sgw_event_t;
