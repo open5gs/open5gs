@@ -1,6 +1,9 @@
 
 * Network Configuration
-$ sudo ./misc/network/restart.sh
+$ sudo ./misc/netconf.sh
+
+* Add/Update/Remove A User
+$ ./misc/dbconf.sh
 
 * Generate Key & Cert for Diameter
-$ ./misc/ssl/make_certs.sh ./freeDiameter
+$ ./misc/make_certs.sh ./freeDiameter

@@ -351,8 +351,7 @@ bool ogs_sockaddr_is_equal(void *p, void *q)
         &a->sin6.sin6_addr, &b->sin6.sin6_addr, sizeof(struct in6_addr)) == 0)
         return true;
     else {
-        ogs_fatal("Unknown family(%d)", a->ogs_sa_family);
-        ogs_abort();
+        return false;
     }
 
     return false;

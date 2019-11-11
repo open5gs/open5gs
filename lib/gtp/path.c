@@ -215,3 +215,53 @@ ogs_pkbuf_t *ogs_gtp_handle_echo_req(ogs_pkbuf_t *pkb)
 
     return pkb_resp;
 }
+
+void ogs_gtp_send_error_message(
+        ogs_gtp_xact_t *xact, uint32_t teid, uint8_t type, uint8_t cause_value)
+{
+    int rv;
+    ogs_gtp_message_t errmsg;
+    ogs_gtp_cause_t cause;
+    ogs_tlv_cause_t *tlv = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    memset(&errmsg, 0, sizeof(ogs_gtp_message_t));
+    errmsg.h.teid = teid;
+    errmsg.h.type = type;
+
+    switch (type) {
+    case OGS_GTP_CREATE_SESSION_RESPONSE_TYPE:
+        tlv = &errmsg.create_session_response.cause;
+        break;
+    case OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE:
+        tlv = &errmsg.modify_bearer_response.cause;
+        break;
+    case OGS_GTP_DELETE_SESSION_RESPONSE_TYPE:
+        tlv = &errmsg.delete_session_response.cause;
+        break;
+    case OGS_GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
+        tlv = &errmsg.release_access_bearers_response.cause;
+        break;
+    default:
+        ogs_assert_if_reached();
+        return;
+    }
+
+    ogs_assert(tlv);
+
+    memset(&cause, 0, sizeof cause);
+    cause.value = cause_value;
+    tlv->presence = 1;
+    tlv->len = sizeof(cause);
+    tlv->data = &cause;
+
+    rv = ogs_gtp_build_msg(&pkbuf, &errmsg);
+    ogs_assert(rv == OGS_OK);
+
+    rv = ogs_gtp_xact_update_tx(xact, &errmsg.h, pkbuf);
+    ogs_assert(rv == OGS_OK);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_assert(rv == OGS_OK);
+}
+
