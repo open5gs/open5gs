@@ -21,7 +21,6 @@ project('open5gs', 'c',
     meson_version : '>= 0.43.0',
     default_options : [
         'c_std=gnu89',
-        'prefix=/usr',
     ],
 )
 
