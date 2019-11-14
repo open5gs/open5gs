@@ -119,11 +119,11 @@ endif
 
 message('\n'.join([
   '',
-  '        prefix:                       ' + get_option('prefix'),
-  '        libdir:                       ' + get_option('libdir'),
-  '        bindir:                       ' + get_option('bindir'),
-  '        sysconfdir:                   ' + get_option('sysconfdir'),
-  '        localstatedir:                ' + get_option('localstatedir'),
+  '        prefix:                       ' + prefix,
+  '        libdir:                       ' + libdir,
+  '        bindir:                       ' + bindir,
+  '        sysconfdir:                   ' + sysconfdir,
+  '        localstatedir:                ' + localstatedir,
   '        source code location:         ' + meson.source_root(),
   '        compiler:                     ' + cc.get_id(),
   '        debugging support:            ' + get_option('buildtype'),
