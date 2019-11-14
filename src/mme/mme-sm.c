@@ -54,18 +54,18 @@ static uint8_t emm_cause_from_diameter(const uint32_t *dia_err, const uint32_t *
 {
     if (dia_exp_err) {
         switch (*dia_exp_err) {
-        case S6A_DIAMETER_ERROR_USER_UNKNOWN:                   /* 5001 */
+        case OGS_DIAM_S6A_ERROR_USER_UNKNOWN:                   /* 5001 */
         return EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED;
-        case S6A_DIAMETER_ERROR_UNKNOWN_EPS_SUBSCRIPTION:       /* 5420 */
+        case OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION:       /* 5420 */
             /* FIXME: Error diagnostic? */
             return EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
-        case S6A_DIAMETER_ERROR_RAT_NOT_ALLOWED:                /* 5421 */
+        case OGS_DIAM_S6A_ERROR_RAT_NOT_ALLOWED:                /* 5421 */
             return EMM_CAUSE_ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA;
-        case S6A_DIAMETER_ERROR_ROAMING_NOT_ALLOWED:            /* 5004 */
+        case OGS_DIAM_S6A_ERROR_ROAMING_NOT_ALLOWED:            /* 5004 */
             return EMM_CAUSE_PLMN_NOT_ALLOWED;
             //return EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN; (ODB_HPLMN_APN)
             //return EMM_CAUSE_ESM_FAILURE; (ODB_ALL_APN)
-        case S6A_DIAMETER_AUTHENTICATION_DATA_UNAVAILABLE:      /* 4181 */
+        case OGS_DIAM_S6A_AUTHENTICATION_DATA_UNAVAILABLE:      /* 4181 */
             return EMM_CAUSE_NETWORK_FAILURE;
         }
     }
