@@ -36,6 +36,7 @@ extern "C" {
 #define OGS_DIAM_S6A_AVP_CODE_ALL_APN_CONFIG_INC_IND    (1428)
 #define OGS_DIAM_S6A_AVP_CODE_APN_CONFIGURATION         (1430)
 #define OGS_DIAM_S6A_AVP_CODE_MIP_HOME_AGENT_ADDRESS    (334)
+#define OGS_DIAM_S6A_AVP_CODE_SERVED_PARTY_IP_ADDRESS   (848)
 
 #define OGS_DIAM_S6A_RAT_TYPE_WLAN                      0
 #define OGS_DIAM_S6A_RAT_TYPE_VIRTUAL                   1
@@ -99,6 +100,7 @@ extern struct dict_object *ogs_diam_s6a_apn_configuration;
 extern struct dict_object *ogs_diam_s6a_max_bandwidth_ul;
 extern struct dict_object *ogs_diam_s6a_max_bandwidth_dl;
 extern struct dict_object *ogs_diam_s6a_pdn_type;
+extern struct dict_object *ogs_diam_s6a_served_party_ip_address;
 extern struct dict_object *ogs_diam_s6a_eps_subscribed_qos_profile;
 extern struct dict_object *ogs_diam_s6a_qos_class_identifier;
 extern struct dict_object *ogs_diam_s6a_allocation_retention_priority;

@@ -630,6 +630,30 @@ int hss_db_subscription_data(
                                 }
                             }
                         }
+                    } else if (!strcmp(child2_key, "addr") && BSON_ITER_HOLDS_UTF8(&child2_iter)) {
+                        ogs_ipsubnet_t ipsub;
+                        const char *v = bson_iter_utf8(&child2_iter, &length);
+                        rv = ogs_ipsubnet(&ipsub, v, NULL);
+                        if (rv == OGS_OK) {
+                            if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV6) {
+                                pdn->paa.pdn_type = OGS_HSS_PDN_TYPE_IPV4V6;
+                            } else {
+                                pdn->paa.pdn_type = OGS_HSS_PDN_TYPE_IPV4;
+                            }
+                            pdn->paa.both.addr = ipsub.sub[0];
+                        }
+                    } else if (!strcmp(child2_key, "addr6") && BSON_ITER_HOLDS_UTF8(&child2_iter)) {
+                        ogs_ipsubnet_t ipsub;
+                        const char *v = bson_iter_utf8(&child2_iter, &length);
+                        rv = ogs_ipsubnet(&ipsub, v, NULL);
+                        if (rv == OGS_OK) {
+                            if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4) {
+                                pdn->paa.pdn_type = OGS_HSS_PDN_TYPE_IPV4V6;
+                            } else {
+                                pdn->paa.pdn_type = OGS_HSS_PDN_TYPE_IPV6;
+                            }
+                            memcpy(&(pdn->paa.both.addr6), ipsub.sub, OGS_IPV6_LEN);
+                        }
                     }
                 }
                 pdn_index++;

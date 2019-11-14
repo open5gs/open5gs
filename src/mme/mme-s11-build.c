@@ -164,6 +164,21 @@ int mme_s11_build_create_session_request(
     }
     req->pdn_type.presence = 1;
 
+    /* If we started with both addrs (IPV4V6) but the above code 
+     * (pdn_type & sess->request_type) truncates us down to just one,
+     * we need to change position of addresses in struct. */
+    if (req->pdn_type.u8 == OGS_GTP_PDN_TYPE_IPV4 &&
+            pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4V6) {
+	    uint32_t addr = pdn->paa.both.addr;
+	    pdn->paa.addr = addr;
+    }
+    if (req->pdn_type.u8 == OGS_GTP_PDN_TYPE_IPV6 &&
+            pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4V6) {
+	    uint8_t addr[16];
+	    memcpy(&addr, pdn->paa.both.addr6, OGS_IPV6_LEN);
+	    memcpy(pdn->paa.addr6, &addr, OGS_IPV6_LEN);
+    }
+
     pdn->paa.pdn_type = req->pdn_type.u8;
     req->pdn_address_allocation.data = &pdn->paa;
     if (req->pdn_type.u8 == OGS_GTP_PDN_TYPE_IPV4)

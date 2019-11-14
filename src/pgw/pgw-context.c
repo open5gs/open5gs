@@ -573,6 +573,7 @@ int pgw_context_parse_config(void)
                         const char *mask_or_numbits = NULL;
                         const char *apn = NULL;
                         const char *dev = self.tun_ifname;
+                        bool static_pool = false;
 
                         if (ogs_yaml_iter_type(&ue_pool_array) ==
                                 YAML_MAPPING_NODE) {
@@ -607,13 +608,17 @@ int pgw_context_parse_config(void)
                                 apn = ogs_yaml_iter_value(&ue_pool_iter);
                             } else if (!strcmp(ue_pool_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&ue_pool_iter);
+                            } else if (!strcmp(ue_pool_key, "static")) {
+				                char *str = (char *)ogs_yaml_iter_value(&ue_pool_iter);
+				                if (!strcmp(str, "true")) {
+				                    static_pool = true;
+				                }
                             } else
                                 ogs_warn("unknown key `%s`", ue_pool_key);
                         }
 
                         if (ipstr && mask_or_numbits) {
-                            subnet = pgw_subnet_add(
-                                    ipstr, mask_or_numbits, apn, dev);
+                            subnet = pgw_subnet_add(ipstr, mask_or_numbits, apn, dev, static_pool);
                             ogs_assert(subnet);
                         } else {
                             ogs_warn("Ignore : addr(%s/%s), apn(%s)",
@@ -724,7 +729,7 @@ static void *sess_hash_keygen(uint8_t *out, int *out_len,
 
 pgw_sess_t *pgw_sess_add(
         uint8_t *imsi, int imsi_len, char *apn, 
-        uint8_t pdn_type, uint8_t ebi)
+        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *paa)
 {
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
@@ -760,12 +765,14 @@ pgw_sess_t *pgw_sess_add(
     bearer->ebi = ebi;
 
     sess->pdn.paa.pdn_type = pdn_type;
+    ogs_assert(pdn_type == paa->pdn_type);
+
     if (pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
-        sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn);
+        sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn, (uint8_t *)&(paa->addr));
         ogs_assert(sess->ipv4);
         sess->pdn.paa.addr = sess->ipv4->addr[0];
     } else if (pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
-        sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn);
+        sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn, (paa->addr6));
         ogs_assert(sess->ipv6);
 
         subnet6 = sess->ipv6->subnet;
@@ -774,9 +781,9 @@ pgw_sess_t *pgw_sess_add(
         sess->pdn.paa.len = subnet6->prefixlen;
         memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
     } else if (pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
-        sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn);
+        sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn, (uint8_t *)&(paa->both.addr));
         ogs_assert(sess->ipv4);
-        sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn);
+        sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn, (paa->both.addr6));
         ogs_assert(sess->ipv6);
 
         subnet6 = sess->ipv6->subnet;
@@ -887,12 +894,19 @@ pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message)
         return NULL;
     }
 
+    if (req->pdn_address_allocation.presence == 0) {
+        ogs_error("No PAA Type");
+        return NULL;
+    }
+
     ogs_fqdn_parse(apn,
             req->access_point_name.data, req->access_point_name.len);
 
     ogs_trace("pgw_sess_add_by_message() [APN:%s, PDN:%d, EDI:%d]",
             apn, req->pdn_type.u8,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+
+    ogs_paa_t *paa = (ogs_paa_t *)req->pdn_address_allocation.data;
 
     /* 
      * 7.2.1 in 3GPP TS 29.274 Release 15
@@ -920,7 +934,7 @@ pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message)
     }
     sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
                     req->pdn_type.u8,
-                    req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+                    req->bearer_contexts_to_be_created.eps_bearer_id.u8, paa);
     ogs_assert(sess);
 
     return sess;
@@ -1253,19 +1267,57 @@ static pgw_subnet_t *find_subnet(int family, const char *apn)
     return subnet;
 }
 
-pgw_ue_ip_t *pgw_ue_ip_alloc(int family, const char *apn)
+pgw_ue_ip_t *pgw_ue_ip_alloc(int family, const char *apn, uint8_t *addr)
 {
     pgw_subnet_t *subnet = NULL;
     pgw_ue_ip_t *ue_ip = NULL;
 
     ogs_assert(apn);
-
     subnet = find_subnet(family, apn);
     ogs_assert(subnet);
 
-    ogs_pool_alloc(&subnet->pool, &ue_ip);
-    ogs_assert(ue_ip);
+    bool static_ip = 0;
+    int address_size = 0;
 
+    if (family == AF_INET) {
+        address_size = 4;
+    } else if (family == AF_INET6) {
+        address_size = 16;
+    } else {
+        ogs_error("unknown address family!");
+        ogs_assert(0);
+    }
+
+    // if address is all zeros, we are allocating dynamically
+    int i = 0;
+    for(i = 0; i < address_size; i++) {
+        if (addr[i] != 0) {
+            static_ip = 1;
+            break;
+        }
+    }
+
+    // mismatch error cases
+    if (!subnet->static_pool && static_ip) {
+        ogs_warn("HSS assigning static IP but PGW subnet is dynamic (default). Ignoring HSS-assigned IP and proceeding with dynamic allocation...");
+    }
+
+    if (subnet->static_pool && !static_ip) {
+        ogs_error("PGW subnet is static but HSS did not assign the UE an IP. Cannot proceed with assignment.");
+        ogs_assert(ue_ip);
+        return ue_ip;
+    }
+
+    // if assigning a static IP, do so. If not, assign dynamically!
+    if (subnet->static_pool) {
+        ue_ip = calloc(1, sizeof(pgw_ue_ip_t));
+        ue_ip->subnet = subnet;
+        memcpy(ue_ip->addr, addr, address_size);
+    } else {
+        ogs_pool_alloc(&subnet->pool, &ue_ip);
+    }
+
+    ogs_assert(ue_ip);
     return ue_ip;
 }
 
@@ -1277,7 +1329,12 @@ int pgw_ue_ip_free(pgw_ue_ip_t *ue_ip)
     subnet = ue_ip->subnet;
 
     ogs_assert(subnet);
-    ogs_pool_free(&subnet->pool, ue_ip);
+
+    if (subnet->static_pool) {
+        free(ue_ip);
+    } else {
+        ogs_pool_free(&subnet->pool, ue_ip);
+    }
 
     return OGS_OK;
 }
@@ -1350,7 +1407,7 @@ pgw_dev_t *pgw_dev_next(pgw_dev_t *dev)
 
 pgw_subnet_t *pgw_subnet_add(
         const char *ipstr, const char *mask_or_numbits,
-        const char *apn, const char *ifname)
+        const char *apn, const char *ifname, bool static_pool)
 {
     int rv;
     pgw_dev_t *dev = NULL;
@@ -1384,6 +1441,8 @@ pgw_subnet_t *pgw_subnet_add(
     subnet->prefixlen = atoi(mask_or_numbits);
 
     ogs_pool_init(&subnet->pool, ogs_config()->pool.sess);
+
+    subnet->static_pool = static_pool;
 
     ogs_list_add(&self.subnet_list, subnet);
 

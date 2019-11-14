@@ -567,6 +567,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     unsigned long dur;
     int error = 0;
     int new;
+    ogs_sockaddr_t addr;
 
     mme_event_t *e = NULL;
     mme_ue_t *mme_ue = NULL;
@@ -767,9 +768,45 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                     if (avpch3) {
                         ret = fd_msg_avp_hdr(avpch3, &hdr);
                         pdn->pdn_type = hdr->avp_value->i32;
+                        pdn->paa.pdn_type = pdn->pdn_type;
                     } else {
                         ogs_error("no_PDN-Type");
                         error++;
+                    }
+
+                    /* Served-Party-IP-Address parsing for any static IPs */
+                    ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD, &avpch3, NULL);
+                    ogs_assert(ret == 0);
+                    while (avpch3) {
+                        ret = fd_msg_avp_hdr(avpch3, &hdr);
+                        ogs_assert(ret == 0);
+                        switch(hdr->avp_code) {
+                        case OGS_DIAM_S6A_AVP_CODE_SERVED_PARTY_IP_ADDRESS:
+                            ret = fd_msg_avp_value_interpret(avpch3, &addr.sa);
+                            ogs_assert(ret == 0);
+
+                            if (addr.ogs_sa_family == AF_INET) {
+                                if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4) {
+                                    pdn->paa.addr = addr.sin.sin_addr.s_addr;
+                                } else if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4V6) {
+                                    pdn->paa.both.addr = addr.sin.sin_addr.s_addr;
+                                } else {
+                                    ogs_error("Warning: Received a static IPv4 address but PDN-Type does not include IPv4. Ignoring...");
+                                }
+                            } else if (addr.ogs_sa_family == AF_INET6) {
+                                if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV6) {
+                                    memcpy(pdn->paa.addr6, addr.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+                                } else if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4V6) {
+                                    memcpy(pdn->paa.both.addr6, addr.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+                                } else {
+                                    ogs_error("Warning: Received a static IPv6 address but PDN-Type does not include IPv6. Ignoring...");
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                        }
+                        fd_msg_browse(avpch3, MSG_BRW_NEXT, &avpch3, NULL);
                     }
 
                     ret = fd_avp_search_avp(avpch2,
