@@ -63,6 +63,7 @@ typedef struct enb_ue_s enb_ue_t;
 typedef struct mme_ue_s mme_ue_t;
 typedef struct mme_sess_s mme_sess_t;
 typedef struct mme_bearer_s mme_bearer_t;
+typedef struct ogs_gtp_node_s ogs_gtp_node_t;
 
 typedef struct mme_event_s {
     int id;
@@ -77,6 +78,8 @@ typedef struct mme_event_s {
 
     S1AP_ProcedureCode_t s1ap_code;
     s1ap_message_t *s1ap_message;
+
+    ogs_gtp_node_t *gnode;
 
     uint8_t nas_type;
     ogs_nas_message_t *nas_message;

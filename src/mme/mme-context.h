@@ -264,8 +264,8 @@ struct enb_ue_s {
     /* Store by UE Context Release Command
      * Retrieve by UE Context Release Complete */
 #define S1AP_UE_CTX_REL_INVALID_ACTION                      0
-#define S1AP_UE_CTX_REL_NO_ACTION                           1
-#define S1AP_UE_CTX_REL_S1_NORMAL_RELEASE                   2
+#define S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE                   1
+#define S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK                2
 #define S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE                   3
 #define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              4
     uint8_t         ue_ctx_rel_action;
@@ -461,6 +461,12 @@ struct mme_ue_s {
     OCTET_STRING_t  container;
 
     /* GTP Request/Response Counter */
+#define GTP_COUNTER_CLEAR(__mME, __tYPE) \
+        do { \
+            ogs_assert((__mME)); \
+            ((__mME)->gtp_counter[__tYPE].request) = 0; \
+            ((__mME)->gtp_counter[__tYPE].response) = 0; \
+        } while(0);
 #define GTP_COUNTER_INCREMENT(__mME, __tYPE) \
         do { \
             ogs_assert((__mME)); \
@@ -475,8 +481,7 @@ struct mme_ue_s {
             if (((__mME)->gtp_counter[__tYPE].request) == \
                 ((__mME)->gtp_counter[__tYPE].response)) \
             { \
-                ((__mME)->gtp_counter[__tYPE].request) = 0; \
-                ((__mME)->gtp_counter[__tYPE].response) = 0; \
+                GTP_COUNTER_CLEAR(__mME, __tYPE) \
                 __eXPR \
             } \
         } while(0);

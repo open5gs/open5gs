@@ -253,9 +253,8 @@ int nas_send_authentication_reject(mme_ue_t *mme_ue)
     return OGS_OK;
 }
 
-int nas_send_detach_accept(mme_ue_t *mme_ue)
+void nas_send_detach_accept(mme_ue_t *mme_ue)
 {
-    int rv;
     enb_ue_t *enb_ue = NULL;
     ogs_pkbuf_t *emmbuf = NULL;
 
@@ -265,6 +264,7 @@ int nas_send_detach_accept(mme_ue_t *mme_ue)
 
     /* reply with detach accept */
     if (mme_ue->nas_eps.detach.switch_off == 0) {
+        int rv;
         rv = emm_build_detach_accept(&emmbuf, mme_ue);
         ogs_assert(rv == OGS_OK && emmbuf);
 
@@ -273,12 +273,9 @@ int nas_send_detach_accept(mme_ue_t *mme_ue)
     }
 
     CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
-    rv = s1ap_send_ue_context_release_command(enb_ue,
+    s1ap_send_ue_context_release_command(enb_ue,
             S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
-            S1AP_UE_CTX_REL_S1_NORMAL_RELEASE, 0);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+            S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);
 }
 
 

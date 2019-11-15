@@ -2801,6 +2801,8 @@ mme_bearer_t *mme_bearer_find_by_sess_ebi(mme_sess_t *sess, uint8_t ebi)
 {
     mme_bearer_t *bearer = NULL;
 
+    ogs_assert(sess);
+
     bearer = mme_bearer_first(sess);
     while (bearer) {
         if (ebi == bearer->ebi)
@@ -2817,6 +2819,8 @@ mme_bearer_t *mme_bearer_find_by_ue_ebi(mme_ue_t *mme_ue, uint8_t ebi)
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
     
+    ogs_assert(mme_ue);
+
     sess = mme_sess_first(mme_ue);
     while (sess) {
         bearer = mme_bearer_find_by_sess_ebi(sess, ebi);
@@ -2904,6 +2908,7 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
 
 mme_bearer_t *mme_default_bearer_in_sess(mme_sess_t *sess)
 {
+    ogs_assert(sess);
     return mme_bearer_first(sess);
 }
 
@@ -2927,6 +2932,7 @@ mme_bearer_t *mme_bearer_first(mme_sess_t *sess)
 
 mme_bearer_t *mme_bearer_next(mme_bearer_t *bearer)
 {
+    ogs_assert(bearer);
     return ogs_list_next(bearer);
 }
 
@@ -2954,8 +2960,8 @@ int mme_bearer_is_inactive(mme_ue_t *mme_ue)
 int mme_bearer_set_inactive(mme_ue_t *mme_ue)
 {
     mme_sess_t *sess = NULL;
-    ogs_assert(mme_ue);
 
+    ogs_assert(mme_ue);
     sess = mme_sess_first(mme_ue);
     while (sess) {
         mme_bearer_t *bearer = mme_bearer_first(sess);
@@ -2988,6 +2994,8 @@ ogs_pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn)
     int i = 0;
     
     ogs_assert(mme_ue);
+    ogs_assert(apn);
+
     subscription_data = &mme_ue->subscription_data;
     ogs_assert(subscription_data);
 

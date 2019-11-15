@@ -301,7 +301,6 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-#if 1 /* IMPLICIT_S1_RELEASE */
     /* Send UE Context Release Request */
     rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -312,25 +311,6 @@ static void attach_test1(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
-
-#else /* S1_HOLDING_TIMER */
-    /* Send UE Context Release Request */
-    rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive UE Context Release Command */
-    recvbuf = testenb_s1ap_read(s1ap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
-
-    /* Send UE Context Release Complete */
-    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+3);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-#endif
 
     /* Send ESM Information Response */
     rv = tests1ap_build_esm_information_response(&sendbuf, msgindex+1);
@@ -425,25 +405,6 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* eNB disonncect from SGW */
     testenb_gtpu_close(gtpu);
-    return;
-
-#if IT_WILL_BE_REMOVED
-out:
-    /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection, 
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
-    bson_destroy(doc);
-
-    mongoc_collection_destroy(collection);
-
-    /* eNB disonncect from MME */
-    testenb_s1ap_close(s1ap);
-
-    /* eNB disonncect from SGW */
-    testenb_gtpu_close(gtpu);
-#endif
 }
 
 /**************************************************************

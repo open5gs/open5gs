@@ -58,7 +58,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     ogs_sockaddr_t *addr = NULL;
     mme_enb_t *enb = NULL;
     uint16_t max_num_of_ostreams = 0;
-    mme_sgw_t *sgw = NULL;
 
     s1ap_message_t s1ap_message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -271,7 +270,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         ogs_fsm_dispatch(&mme_ue->sm, e);
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {
-            mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
+            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         }
 
         ogs_pkbuf_free(pkbuf);
@@ -328,8 +327,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
              * [Enhancement] - Probably Invalid APN 
              * At this point, we'll forcely release UE context
              */
-            mme_send_delete_session_or_ue_context_release(
-                    mme_ue, mme_ue->enb_ue);
+            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         }
 
         ogs_pkbuf_free(pkbuf);
@@ -364,10 +362,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert(enb_ue);
 
             CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
-            rv = s1ap_send_ue_context_release_command(enb_ue,
+            s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-            ogs_assert(rv == OGS_OK);
 
             ogs_pkbuf_free(s6abuf);
             break;
@@ -459,15 +456,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert(gnode);
 
         } else {
-            ogs_assert(e->addr);
-
-            sgw = mme_sgw_find_by_addr(e->addr);
-            ogs_assert(sgw);
-
-            gnode = sgw->gnode;
+            gnode = e->gnode;
             ogs_assert(gnode);
         }
-        ogs_free(e->addr);
 
         rv = ogs_gtp_xact_receive(gnode, &gtp_message.h, &xact);
         if (rv != OGS_OK) {

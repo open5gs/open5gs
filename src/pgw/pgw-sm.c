@@ -119,20 +119,10 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         if (sess) {
             gnode = sess->gnode;
             ogs_assert(gnode);
-
         } else {
-            ogs_assert(e->addr);
-
-            gnode = ogs_gtp_node_find_by_addr(
-                    &pgw_self()->sgw_s5c_list, e->addr);
-            if (!gnode) {
-                gnode = ogs_gtp_node_add_by_addr(
-                        &pgw_self()->sgw_s5c_list, e->addr);
-                ogs_assert(gnode);
-                gnode->sock = e->sock;
-            }
+            gnode = e->gnode;
+            ogs_assert(gnode);
         }
-        ogs_free(e->addr);
 
         rv = ogs_gtp_xact_receive(gnode, &message->h, &xact);
         if (rv != OGS_OK) {
@@ -146,8 +136,8 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
             if (message->h.teid == 0) {
                 ogs_assert(!sess);
                 sess = pgw_sess_add_by_message(message);
-                ogs_assert(sess);
-                OGS_SETUP_GTP_NODE(sess, gnode);
+                if (sess)
+                    OGS_SETUP_GTP_NODE(sess, gnode);
             }
             pgw_s5c_handle_create_session_request(
                 sess, xact, copybuf, &message->create_session_request);

@@ -272,7 +272,7 @@ int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue)
     return OGS_OK;
 }
 
-int s1ap_send_ue_context_release_command(
+void s1ap_send_ue_context_release_command(
     enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
     uint8_t action, uint32_t delay)
 {
@@ -320,8 +320,6 @@ int s1ap_send_ue_context_release_command(
         rv = s1ap_delayed_send_to_enb_ue(enb_ue, s1apbuf, 0);
         ogs_assert(rv == OGS_OK);
     }
-
-    return OGS_OK;
 }
 
 void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)

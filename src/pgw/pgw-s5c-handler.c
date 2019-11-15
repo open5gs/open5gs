@@ -23,15 +23,12 @@
 #include "pgw-fd-path.h"
 #include "pgw-s5c-handler.h"
 
-#define SEND_ERROR_MESSAGE(XACT, SESS, TYPE, CAUSE) \
-    ogs_gtp_send_error_message( \
-        (XACT), ((SESS) ? ((SESS)->sgw_s5c_teid) : 0), (TYPE), (CAUSE))
-
 void pgw_s5c_handle_create_session_request(
         pgw_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp_create_session_request_t *req)
 {
     int rv;
+    uint8_t cause_value = 0;
     ogs_gtp_f_teid_t *sgw_s5c_teid, *sgw_s5u_teid;
     ogs_gtp_node_t *sgw = NULL;
     pgw_bearer_t *bearer = NULL;
@@ -45,54 +42,7 @@ void pgw_s5c_handle_create_session_request(
 
     ogs_debug("[PGW] Create Session Reqeust");
 
-    if (req->imsi.presence == 0) {
-        ogs_error("No IMSI");
-        SEND_ERROR_MESSAGE(xact, sess,
-                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP_CAUSE_MANDATORY_IE_MISSING);
-        ogs_pkbuf_free(gtpbuf);
-        return;
-    }
-    if (req->sender_f_teid_for_control_plane.presence == 0) {
-        ogs_error("No TEID");
-        SEND_ERROR_MESSAGE(xact, sess,
-                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP_CAUSE_MANDATORY_IE_MISSING);
-        ogs_pkbuf_free(gtpbuf);
-        return;
-    }
-    if (req->bearer_contexts_to_be_created.presence == 0) {
-        ogs_error("No Bearer");
-        SEND_ERROR_MESSAGE(xact, sess,
-                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP_CAUSE_MANDATORY_IE_MISSING);
-        ogs_pkbuf_free(gtpbuf);
-        return;
-    }
-    if (req->bearer_contexts_to_be_created.bearer_level_qos.presence == 0) {
-        ogs_error("No EPS Bearer QoS");
-        SEND_ERROR_MESSAGE(xact, sess,
-                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP_CAUSE_MANDATORY_IE_MISSING);
-        ogs_pkbuf_free(gtpbuf);
-        return;
-    }
-    if (req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.presence == 0) {
-        ogs_error("No TEID");
-        SEND_ERROR_MESSAGE(xact, sess,
-                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP_CAUSE_MANDATORY_IE_MISSING);
-        ogs_pkbuf_free(gtpbuf);
-        return;
-    }
-    if (req->user_location_information.presence == 0) {
-        ogs_error("No User Location Inforamtion");
-        SEND_ERROR_MESSAGE(xact, sess,
-                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP_CAUSE_MANDATORY_IE_MISSING);
-        ogs_pkbuf_free(gtpbuf);
-        return;
-    }
+    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
     if (sess) {
         bearer = pgw_default_bearer_in_sess(sess);
@@ -100,9 +50,39 @@ void pgw_s5c_handle_create_session_request(
     }
     if (!bearer) {
         ogs_warn("No Context");
-        SEND_ERROR_MESSAGE(xact, sess,
-                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
-                OGS_GTP_CAUSE_CONTEXT_NOT_FOUND);
+        cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+    }
+
+    if (req->imsi.presence == 0) {
+        ogs_error("No IMSI");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (req->sender_f_teid_for_control_plane.presence == 0) {
+        ogs_error("No TEID");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (req->bearer_contexts_to_be_created.presence == 0) {
+        ogs_error("No Bearer");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (req->bearer_contexts_to_be_created.bearer_level_qos.presence == 0) {
+        ogs_error("No EPS Bearer QoS");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.presence == 0) {
+        ogs_error("No TEID");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (req->user_location_information.presence == 0) {
+        ogs_error("No User Location Inforamtion");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);
+        ogs_pkbuf_free(gtpbuf);
+        return;
     }
     
     /* Set IMSI */
@@ -182,7 +162,7 @@ void pgw_s5c_handle_delete_session_request(
 
     if (!sess) {
         ogs_warn("No Context");
-        SEND_ERROR_MESSAGE(xact, sess,
+        ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP_DELETE_SESSION_RESPONSE_TYPE,
                 OGS_GTP_CAUSE_CONTEXT_NOT_FOUND);
         ogs_pkbuf_free(gtpbuf);

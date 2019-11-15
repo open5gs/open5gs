@@ -246,8 +246,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
                 rv = sgsap_send_detach_indication(mme_ue);
             } else {
-                rv = mme_send_delete_session_or_detach(mme_ue);
-                ogs_assert(rv == OGS_OK);
+                mme_send_delete_session_or_detach(mme_ue);
             }
 
             OGS_FSM_TRAN(s, &emm_state_de_registered);
@@ -347,8 +346,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
         } else {
             if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-                rv = mme_gtp_send_delete_all_sessions(mme_ue);
-                ogs_assert(rv == OGS_OK);
+                mme_gtp_send_delete_all_sessions(mme_ue);
             } else {
                 mme_s6a_send_air(mme_ue, NULL);
             }
@@ -384,9 +382,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         S1AP_ProcedureCode_id_downlinkNASTransport);
                 ogs_assert(rv == OGS_OK);
 
-                rv = mme_send_release_access_bearer_or_ue_context_release(
-                        mme_ue, enb_ue);
-                ogs_assert(rv == OGS_OK);
+                mme_send_release_access_bearer_or_ue_context_release(enb_ue);
             }
         } else if (procedureCode == S1AP_ProcedureCode_id_uplinkNASTransport) {
             ogs_debug("    Uplink NAS Transport");
@@ -620,9 +616,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 return;
             }
 
-            rv = mme_send_delete_session_or_detach(mme_ue);
-            ogs_assert(rv == OGS_OK);
-
+            mme_send_delete_session_or_detach(mme_ue);
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
         default:
@@ -784,9 +778,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            rv = mme_send_delete_session_or_detach(mme_ue);
-            ogs_assert(rv == OGS_OK);
-
+            mme_send_delete_session_or_detach(mme_ue);
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
         default:
@@ -877,8 +869,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 return;
             }
 
-            rv = mme_gtp_send_delete_all_sessions(mme_ue);
-            ogs_assert(rv == OGS_OK);
+            mme_gtp_send_delete_all_sessions(mme_ue);
             OGS_FSM_TRAN(s, &emm_state_authentication);
             break;
         case OGS_NAS_EMM_STATUS:
@@ -898,9 +889,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
                 return;
             }
 
-            rv = mme_send_delete_session_or_detach(mme_ue);
-            ogs_assert(rv == OGS_OK);
-
+            mme_send_delete_session_or_detach(mme_ue);
             OGS_FSM_TRAN(s, &emm_state_de_registered);
             break;
         default:

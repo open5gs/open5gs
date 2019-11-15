@@ -520,7 +520,6 @@ void s1ap_handle_initial_context_setup_response(
 void s1ap_handle_initial_context_setup_failure(
         mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
-    int rv;
     char buf[OGS_ADDRSTRLEN];
     int i;
 
@@ -578,32 +577,20 @@ void s1ap_handle_initial_context_setup_failure(
     ogs_debug("    Cause[Group:%d Cause:%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
-    mme_ue = enb_ue->mme_ue;
-
-    if (!mme_ue) {
-        ogs_debug("    S1 Context Release");
-        CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
-        rv = s1ap_send_ue_context_release_command(enb_ue, 
-                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_NO_ACTION, 0);
-        ogs_assert(rv == OGS_OK);
-    } else {
-        ogs_debug("    UE Context Release [IMSI:%s]", mme_ue->imsi_bcd);
-        /*
-         * 19.2.2.3 in Spec 36.300
-         *
-         * In case of failure, eNB and MME behaviours are not mandated.
-         *
-         * Both implicit release (local release at each node) and
-         * explicit release (MME-initiated UE Context Release procedure)
-         * may in principle be adopted. The eNB should ensure
-         * that no hanging resources remain at the eNB.
-         */
-        rv = mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
-        ogs_assert(rv == OGS_OK);
-
+    if (mme_ue)
         CLEAR_SERVICE_INDICATOR(mme_ue);
-    }
+
+    /*
+     * 19.2.2.3 in Spec 36.300
+     *
+     * In case of failure, eNB and MME behaviours are not mandated.
+     *
+     * Both implicit release (local release at each node) and
+     * explicit release (MME-initiated UE Context Release procedure)
+     * may in principle be adopted. The eNB should ensure
+     * that no hanging resources remain at the eNB.
+     */
+    mme_send_delete_session_or_enb_ue_context_release(enb_ue);
 }
 
 void s1ap_handle_ue_context_modification_response(
@@ -841,7 +828,6 @@ void s1ap_handle_ue_context_release_request(
     S1AP_Cause_t *Cause = NULL;
 
     enb_ue_t *enb_ue = NULL;
-    mme_ue_t *mme_ue = NULL;
 
     ogs_assert(enb);
     ogs_assert(enb->sock);
@@ -909,26 +895,7 @@ void s1ap_handle_ue_context_release_request(
         break;
     }
 
-    mme_ue = enb_ue->mme_ue;
-    if (mme_ue) {
-        if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-            ogs_debug("    EMM-Registered");
-            rv = mme_send_release_access_bearer_or_ue_context_release(
-                    mme_ue, enb_ue);
-            ogs_assert(rv == OGS_OK);
-        } else {
-            ogs_debug("    NOT EMM-Registered");
-            rv = mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
-            ogs_assert(rv == OGS_OK);
-        }
-    } else {
-        ogs_debug("    S1 Context Not Associated");
-        CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
-        rv = s1ap_send_ue_context_release_command(enb_ue, 
-                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_NO_ACTION, 0);
-        ogs_assert(rv == OGS_OK);
-    }
+    mme_send_release_access_bearer_or_ue_context_release(enb_ue);
 }
 
 void s1ap_handle_ue_context_release_complete(
@@ -992,11 +959,11 @@ void s1ap_handle_ue_context_release_complete(
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
     switch (enb_ue->ue_ctx_rel_action) {
-    case S1AP_UE_CTX_REL_NO_ACTION:
+    case S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE:
         ogs_debug("    No Action");
         enb_ue_remove(enb_ue);
         break;
-    case S1AP_UE_CTX_REL_S1_NORMAL_RELEASE:
+    case S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK:
         ogs_debug("    Action: S1 normal release");
         enb_ue_remove(enb_ue);
         mme_ue_deassociate(mme_ue);
@@ -1629,11 +1596,10 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_assert(rv == OGS_OK);
 
     CLEAR_ENB_UE_TIMER(target_ue->t_ue_context_release);
-    rv = s1ap_send_ue_context_release_command(
+    s1ap_send_ue_context_release_command(
         target_ue, S1AP_Cause_PR_radioNetwork,
         S1AP_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system,
         S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL, 0);
-    ogs_assert(rv == OGS_OK);
 }
 
 void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
@@ -1702,12 +1668,11 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_assert(rv == OGS_OK);
 
     CLEAR_ENB_UE_TIMER(target_ue->t_ue_context_release);
-    rv = s1ap_send_ue_context_release_command(
+    s1ap_send_ue_context_release_command(
             target_ue, S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_handover_cancelled,
             S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL,
             ogs_time_from_msec(300));
-    ogs_assert(rv == OGS_OK);
 
     ogs_debug("[MME] Handover Cancel : "
             "UE[eNB-UE-S1AP-ID(%d)] --> eNB[%s:%d]",

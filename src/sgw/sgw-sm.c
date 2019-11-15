@@ -134,8 +134,7 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
         case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
             sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
                 xact, sgw_ue,
-                &message.
-                    create_indirect_data_forwarding_tunnel_request);
+                &message.create_indirect_data_forwarding_tunnel_request);
             break;
         case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
             sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
