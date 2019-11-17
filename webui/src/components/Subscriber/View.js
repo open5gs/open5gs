@@ -257,7 +257,6 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                 <div className="medium_data">Vulnerablility</div>
                 <div className="large_data">MBR DL/UL(Kbps)</div>
                 <div className="large_data">GBR DL/UL(Kbps)</div>
-                <div className="medium_data">PGW IP</div>
               </div>
               {pdns.map(pdn =>
                 <div key={pdn.apn}>
@@ -278,9 +277,25 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                       </div>
                     }
                     <div className="large_data"></div>
-                    <div className="small_data">{(pdn.pgw || {}).addr}</div>
-                    <div className="small_data">{(pdn.pgw || {}).addr6}</div>
                   </div>
+                  {pdn['ue'] !== undefined &&
+                    <div className="body">
+                      <div className="medium_data"></div>
+                      <div className="medium_data" style={{color:oc.gray[5]}}>{"UE IPv4"} </div>
+                      <div className="large_data">{(pdn.ue || {}).addr}</div>
+                      <div className="medium_data" style={{color:oc.gray[5]}}>{"UE IPv6"} </div>
+                      <div className="large_data">{(pdn.ue || {}).addr6}</div>
+                    </div>
+                  }
+                  {pdn['pgw'] !== undefined &&
+                    <div className="body">
+                      <div className="medium_data"></div>
+                      <div className="medium_data" style={{color:oc.gray[5]}}>{"PGW IPv4"} </div>
+                      <div className="large_data">{(pdn.pgw || {}).addr}</div>
+                      <div className="medium_data" style={{color:oc.gray[5]}}>{"PGW IPv6"} </div>
+                      <div className="large_data">{(pdn.pgw || {}).addr6}</div>
+                    </div>
+                  }
                   {pdn['pcc_rule'] !== undefined &&
                     pdn.pcc_rule.map((pcc_rule, index) =>
                       <div key={index}>

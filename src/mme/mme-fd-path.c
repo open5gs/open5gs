@@ -528,7 +528,8 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     ogs_assert(ret == 0);
 
     /* Set Vendor-Specific-Application-Id AVP */
-    ret = ogs_diam_message_vendor_specific_appid_set( req, OGS_DIAM_S6A_APPLICATION_ID);
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            req, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
 
     ret = clock_gettime(CLOCK_REALTIME, &sess_data->ts);
@@ -622,7 +623,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
         ogs_assert(ret == 0);
         if (avp) {
-            ret = fd_avp_search_avp(avp, ogs_diam_experimental_result_code, &avpch);
+            ret = fd_avp_search_avp(avp,
+                    ogs_diam_experimental_result_code, &avpch);
             ogs_assert(ret == 0);
             if (avpch) {
                 ret = fd_msg_avp_hdr(avpch, &hdr);
@@ -681,7 +683,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         ret = fd_avp_search_avp(avp, ogs_diam_s6a_ambr, &avpch1);
         ogs_assert(ret == 0);
         if (avpch1) {
-            ret = fd_avp_search_avp( avpch1, ogs_diam_s6a_max_bandwidth_ul, &avpch2);
+            ret = fd_avp_search_avp( avpch1,
+                    ogs_diam_s6a_max_bandwidth_ul, &avpch2);
             ogs_assert(ret == 0);
             if (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
@@ -692,7 +695,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                 error++;
             }
 
-            ret = fd_avp_search_avp(avpch1, ogs_diam_s6a_max_bandwidth_dl, &avpch2);
+            ret = fd_avp_search_avp(avpch1,
+                    ogs_diam_s6a_max_bandwidth_dl, &avpch2);
             ogs_assert(ret == 0);
             if (avpch2) {
                 ret = fd_msg_avp_hdr(avpch2, &hdr);
@@ -708,7 +712,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             error++;
         }
 
-        ret = fd_avp_search_avp(avp, ogs_diam_s6a_subscribed_rau_tau_timer, &avpch1);
+        ret = fd_avp_search_avp(avp,
+                ogs_diam_s6a_subscribed_rau_tau_timer, &avpch1);
         ogs_assert(ret == 0);
         if (avpch1) {
             ret = fd_msg_avp_hdr(avpch1, &hdr);
@@ -719,7 +724,8 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                 OGS_DIAM_S6A_RAU_TAU_DEFAULT_TIME;
         }
 
-        ret = fd_avp_search_avp(avp, ogs_diam_s6a_apn_configuration_profile, &avpch1);
+        ret = fd_avp_search_avp(avp,
+                ogs_diam_s6a_apn_configuration_profile, &avpch1);
         ogs_assert(ret == 0);
         if (avpch1) {
             ret = fd_msg_browse(avpch1, MSG_BRW_FIRST_CHILD, &avpch2, NULL);
@@ -763,19 +769,20 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                         error++;
                     }
 
-                    ret = fd_avp_search_avp(avpch2, ogs_diam_s6a_pdn_type, &avpch3);
+                    ret = fd_avp_search_avp(avpch2, ogs_diam_s6a_pdn_type,
+                            &avpch3);
                     ogs_assert(ret == 0);
                     if (avpch3) {
                         ret = fd_msg_avp_hdr(avpch3, &hdr);
                         pdn->pdn_type = hdr->avp_value->i32;
-                        pdn->paa.pdn_type = pdn->pdn_type;
                     } else {
                         ogs_error("no_PDN-Type");
                         error++;
                     }
 
                     /* Served-Party-IP-Address parsing for any static IPs */
-                    ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD, &avpch3, NULL);
+                    ret = fd_msg_browse(avpch2, MSG_BRW_FIRST_CHILD,
+                            &avpch3, NULL);
                     ogs_assert(ret == 0);
                     while (avpch3) {
                         ret = fd_msg_avp_hdr(avpch3, &hdr);
@@ -786,21 +793,35 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                             ogs_assert(ret == 0);
 
                             if (addr.ogs_sa_family == AF_INET) {
-                                if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4) {
+                                if (pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4) {
                                     pdn->paa.addr = addr.sin.sin_addr.s_addr;
-                                } else if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4V6) {
-                                    pdn->paa.both.addr = addr.sin.sin_addr.s_addr;
+                                } else if (pdn->pdn_type ==
+                                        OGS_DIAM_PDN_TYPE_IPV4V6) {
+                                    pdn->paa.both.addr =
+                                        addr.sin.sin_addr.s_addr;
                                 } else {
-                                    ogs_error("Warning: Received a static IPv4 address but PDN-Type does not include IPv4. Ignoring...");
+                                    ogs_error("Warning: Received a static IPv4 "
+                                        "address but PDN-Type does not include "
+                                        "IPv4. Ignoring...");
                                 }
                             } else if (addr.ogs_sa_family == AF_INET6) {
-                                if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV6) {
-                                    memcpy(pdn->paa.addr6, addr.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
-                                } else if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4V6) {
-                                    memcpy(pdn->paa.both.addr6, addr.sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+                                if (pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV6) {
+                                    memcpy(pdn->paa.addr6,
+                                        addr.sin6.sin6_addr.s6_addr,
+                                        OGS_IPV6_LEN);
+                                } else if (pdn->pdn_type ==
+                                        OGS_DIAM_PDN_TYPE_IPV4V6) {
+                                    memcpy(pdn->paa.both.addr6,
+                                        addr.sin6.sin6_addr.s6_addr,
+                                        OGS_IPV6_LEN);
                                 } else {
-                                    ogs_error("Warning: Received a static IPv6 address but PDN-Type does not include IPv6. Ignoring...");
+                                    ogs_error("Warning: Received a static IPv6 "
+                                        "address but PDN-Type does not include "
+                                        "IPv6. Ignoring...");
                                 }
+                            } else {
+                                ogs_error("Invalid family[%d]",
+                                        addr.ogs_sa_family);
                             }
                             break;
                         default:
@@ -889,9 +910,6 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                             ret = fd_msg_avp_hdr(avpch4, &hdr);
                             switch(hdr->avp_code) {
                             case OGS_DIAM_S6A_AVP_CODE_MIP_HOME_AGENT_ADDRESS:
-                            {
-                                ogs_sockaddr_t addr;
-
                                 ret = fd_msg_avp_value_interpret(avpch4,
                                         &addr.sa);
                                 ogs_assert(ret == 0);
@@ -915,7 +933,6 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                                     error++;
                                 }
                                 break;
-                            }
                             default:
                                 ogs_error("Unknown AVP-Code:%d",
                                         hdr->avp_code);

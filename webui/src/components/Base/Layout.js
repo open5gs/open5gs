@@ -19,7 +19,7 @@ const propTypes = {
 }
 
 const defaultProps = {
-  title: `Next.EPC ${Package.version}`
+  title: `Open5GS ${Package.version}`
 }
 
 const Layout = ({ title, children }) => (

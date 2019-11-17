@@ -255,10 +255,10 @@ typedef struct ogs_pcc_rule_s {
 typedef struct ogs_pdn_s {
     uint32_t        context_identifier;
     char            apn[OGS_MAX_APN_LEN+1];
-#define OGS_HSS_PDN_TYPE_IPV4                       0
-#define OGS_HSS_PDN_TYPE_IPV6                       1
-#define OGS_HSS_PDN_TYPE_IPV4V6                     2
-#define OGS_HSS_PDN_TYPE_IPV4_OR_IPV6               3
+#define OGS_DIAM_PDN_TYPE_IPV4                      0
+#define OGS_DIAM_PDN_TYPE_IPV6                      1
+#define OGS_DIAM_PDN_TYPE_IPV4V6                    2
+#define OGS_DIAM_PDN_TYPE_IPV4_OR_IPV6              3
     int             pdn_type;
 
     ogs_qos_t       qos;

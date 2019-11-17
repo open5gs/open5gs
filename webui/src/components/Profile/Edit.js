@@ -141,6 +141,22 @@ const schema = {
               },
             }
           },
+          "ue": {
+            "type": "object",
+            "title": "",
+            "properties": {
+              "addr": {
+                "type": "string",
+                "title": "UE IPv4 Address",
+                "format" : "ipv4"
+              },
+              "addr6": {
+                "type": "string",
+                "title": "UE IPv6 Address",
+                "format" : "ipv6"
+              },
+            }
+          },
           "pgw": {
             "type": "object",
             "title": "",
@@ -329,6 +345,14 @@ const uiSchema = {
           classNames: "col-xs-6"
         },
         "uplink" : {
+          classNames: "col-xs-6"
+        },
+      },
+      "ue" : {
+        "addr" : {
+          classNames: "col-xs-6"
+        },
+        "addr6" : {
           classNames: "col-xs-6"
         },
       },

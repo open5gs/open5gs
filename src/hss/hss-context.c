@@ -630,29 +630,49 @@ int hss_db_subscription_data(
                                 }
                             }
                         }
-                    } else if (!strcmp(child2_key, "addr") && BSON_ITER_HOLDS_UTF8(&child2_iter)) {
-                        ogs_ipsubnet_t ipsub;
-                        const char *v = bson_iter_utf8(&child2_iter, &length);
-                        rv = ogs_ipsubnet(&ipsub, v, NULL);
-                        if (rv == OGS_OK) {
-                            if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV6) {
-                                pdn->paa.pdn_type = OGS_HSS_PDN_TYPE_IPV4V6;
-                            } else {
-                                pdn->paa.pdn_type = OGS_HSS_PDN_TYPE_IPV4;
+                    } else if (!strcmp(child2_key, "ue") &&
+                        BSON_ITER_HOLDS_DOCUMENT(&child2_iter)) {
+                        bson_iter_recurse(&child2_iter, &child3_iter);
+                        while (bson_iter_next(&child3_iter)) {
+                            const char *child3_key =
+                                bson_iter_key(&child3_iter);
+                            if (!strcmp(child3_key, "addr") &&
+                                BSON_ITER_HOLDS_UTF8(&child3_iter)) {
+                                ogs_ipsubnet_t ipsub;
+                                const char *v = 
+                                    bson_iter_utf8(&child3_iter, &length);
+                                rv = ogs_ipsubnet(&ipsub, v, NULL);
+                                if (rv == OGS_OK) {
+                                    if (pdn->paa.pdn_type ==
+                                            OGS_GTP_PDN_TYPE_IPV6) {
+                                        pdn->paa.pdn_type =
+                                            OGS_GTP_PDN_TYPE_IPV4V6;
+                                    } else {
+                                        pdn->paa.pdn_type =
+                                            OGS_GTP_PDN_TYPE_IPV4;
+                                    }
+                                    pdn->paa.both.addr = ipsub.sub[0];
+                                }
+                            } else if (!strcmp(child3_key, "addr6") &&
+                                BSON_ITER_HOLDS_UTF8(&child3_iter)) {
+                                ogs_ipsubnet_t ipsub;
+                                const char *v = 
+                                    bson_iter_utf8(&child3_iter, &length);
+                                rv = ogs_ipsubnet(&ipsub, v, NULL);
+                                if (rv == OGS_OK) {
+                                    if (pdn->paa.pdn_type ==
+                                            OGS_GTP_PDN_TYPE_IPV4) {
+                                        pdn->paa.pdn_type =
+                                            OGS_GTP_PDN_TYPE_IPV4V6;
+                                    } else {
+                                        pdn->paa.pdn_type =
+                                            OGS_GTP_PDN_TYPE_IPV6;
+                                    }
+                                    memcpy(&(pdn->paa.both.addr6),
+                                            ipsub.sub, OGS_IPV6_LEN);
+                                }
+
                             }
-                            pdn->paa.both.addr = ipsub.sub[0];
-                        }
-                    } else if (!strcmp(child2_key, "addr6") && BSON_ITER_HOLDS_UTF8(&child2_iter)) {
-                        ogs_ipsubnet_t ipsub;
-                        const char *v = bson_iter_utf8(&child2_iter, &length);
-                        rv = ogs_ipsubnet(&ipsub, v, NULL);
-                        if (rv == OGS_OK) {
-                            if (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4) {
-                                pdn->paa.pdn_type = OGS_HSS_PDN_TYPE_IPV4V6;
-                            } else {
-                                pdn->paa.pdn_type = OGS_HSS_PDN_TYPE_IPV6;
-                            }
-                            memcpy(&(pdn->paa.both.addr6), ipsub.sub, OGS_IPV6_LEN);
                         }
                     }
                 }

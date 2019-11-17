@@ -95,6 +95,7 @@ typedef struct pgw_context_s {
 typedef struct pgw_subnet_s pgw_subnet_t;
 typedef struct pgw_ue_ip_s {
     uint32_t        addr[4];
+    bool            static_ip;
 
     /* Related Context */
     pgw_subnet_t    *subnet;
@@ -117,13 +118,22 @@ typedef struct pgw_subnet_s {
     ogs_ipsubnet_t  gw;                 /* Gateway : cafe::1 */
     char            apn[OGS_MAX_APN_LEN];   /* APN : "internet", "volte", .. */
 
-    bool            static_pool;        /* Does the pool assign addresses dynamically or statically via HSS */
-    int             family;             /* AF_INET or AF_INET6 */
-    uint8_t         prefixlen;          /* prefixlen */
+#define MAX_NUM_OF_SUBNET_RANGE         16
+    struct {
+#if 0
+        ogs_ipsubnet_t low, high;
+#else
+        const char *low;
+        const char *high;
+#endif
+    } range[MAX_NUM_OF_SUBNET_RANGE];
+    int num_of_range;
+
+    int             family;         /* AF_INET or AF_INET6 */
+    uint8_t         prefixlen;      /* prefixlen */
     OGS_POOL(pool, pgw_ue_ip_t);
 
-    /* Related Context */
-    pgw_dev_t   *dev;
+    pgw_dev_t       *dev;           /* Related Context */
 } pgw_subnet_t;
 
 typedef struct pgw_sess_s {
@@ -273,7 +283,7 @@ pgw_dev_t *pgw_dev_next(pgw_dev_t *dev);
 
 pgw_subnet_t *pgw_subnet_add(
         const char *ipstr, const char *mask_or_numbits,
-        const char *apn, const char *ifname, bool static_pool);
+        const char *apn, const char *ifname);
 pgw_subnet_t *pgw_subnet_next(pgw_subnet_t *subnet);
 int pgw_subnet_remove(pgw_subnet_t *subnet);
 void pgw_subnet_remove_all(void);

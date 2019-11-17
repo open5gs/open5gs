@@ -445,8 +445,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 
             for (i = 0; i < subscription_data.num_of_pdn; i++) {
                 /* Set the APN Configuration */
-                struct avp *apn_configuration, *context_identifier;
-                struct avp *pdn_type, *served_party_ip_address, *service_selection;
+                struct avp *apn_configuration, *context_identifier, *pdn_type;
+                struct avp *served_party_ip_address, *service_selection;
                 struct avp *eps_subscribed_qos_profile, *qos_class_identifier;
                 struct avp *allocation_retention_priority, *priority_level;
                 struct avp *pre_emption_capability, *pre_emption_vulnerability;
@@ -482,27 +482,38 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 ogs_assert(ret == 0);
 
                 /* Set Served-Party-IP-Address */
-                if ((pdn->pdn_type == OGS_HSS_PDN_TYPE_IPV4 || pdn->pdn_type == OGS_HSS_PDN_TYPE_IPV4V6) &&
-                        (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4 || pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4V6)) {
-                    ret = fd_msg_avp_new(ogs_diam_s6a_served_party_ip_address, 0, &served_party_ip_address);
+                if ((pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4 ||
+                     pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4V6) &&
+                    (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4 ||
+                     pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6)) {
+                    ret = fd_msg_avp_new(ogs_diam_s6a_served_party_ip_address,
+                            0, &served_party_ip_address);
                     ogs_assert(ret == 0);
                     sin.sin_family = AF_INET;
                     sin.sin_addr.s_addr = pdn->paa.both.addr;
-                    ret = fd_msg_avp_value_encode (&sin, served_party_ip_address);
+                    ret = fd_msg_avp_value_encode(
+                            &sin, served_party_ip_address);
                     ogs_assert(ret == 0);
-                    ret = fd_msg_avp_add(apn_configuration, MSG_BRW_LAST_CHILD, served_party_ip_address);
+                    ret = fd_msg_avp_add(apn_configuration, MSG_BRW_LAST_CHILD,
+                            served_party_ip_address);
                     ogs_assert(ret == 0);
                 }
 
-                if ((pdn->pdn_type == OGS_HSS_PDN_TYPE_IPV6 || pdn->pdn_type == OGS_HSS_PDN_TYPE_IPV4V6) && 
-                        (pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV6 || pdn->paa.pdn_type == OGS_HSS_PDN_TYPE_IPV4V6)) {
-                    ret = fd_msg_avp_new(ogs_diam_s6a_served_party_ip_address, 0, &served_party_ip_address);
+                if ((pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV6 ||
+                     pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4V6) &&
+                    (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6 ||
+                     pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6)) {
+                    ret = fd_msg_avp_new(ogs_diam_s6a_served_party_ip_address,
+                            0, &served_party_ip_address);
                     ogs_assert(ret == 0);
                     sin6.sin6_family = AF_INET6;
-                    memcpy(sin6.sin6_addr.s6_addr, pdn->paa.both.addr6, OGS_IPV6_LEN);
-                    ret = fd_msg_avp_value_encode (&sin6, served_party_ip_address);
+                    memcpy(sin6.sin6_addr.s6_addr,
+                            pdn->paa.both.addr6, OGS_IPV6_LEN);
+                    ret = fd_msg_avp_value_encode(
+                            &sin6, served_party_ip_address);
                     ogs_assert(ret == 0);
-                    ret = fd_msg_avp_add(apn_configuration, MSG_BRW_LAST_CHILD, served_party_ip_address);
+                    ret = fd_msg_avp_add(apn_configuration, MSG_BRW_LAST_CHILD,
+                            served_party_ip_address);
                     ogs_assert(ret == 0);
                 }
 
