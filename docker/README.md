@@ -68,6 +68,7 @@ export DEBEMAIL='acetcom@gmail.com'
 
 * Upload OpenBuildService
   $ dch -i
+  $ meson subprojects download freeDiameter
   $ debuild -S -uc -us -d
   $ osc co home:acetcom:open5gs latest
   $ cd home\:acetcom\:open5gs/latest/
@@ -76,6 +77,7 @@ export DEBEMAIL='acetcom@gmail.com'
 
 * Upload LaunchPad
   $ dch -i
+  $ meson subprojects download freeDiameter
   $ debuild -S -d
   $ dput ppa:open5gs/latest *.source.changes
 
