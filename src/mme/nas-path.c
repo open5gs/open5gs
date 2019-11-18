@@ -114,7 +114,7 @@ int nas_send_attach_accept(mme_ue_t *mme_ue)
     return OGS_OK;
 }
 
-int nas_send_attach_reject(mme_ue_t *mme_ue,
+void nas_send_attach_reject(mme_ue_t *mme_ue,
     ogs_nas_emm_cause_t emm_cause, ogs_nas_esm_cause_t esm_cause)
 {
     int rv;
@@ -136,8 +136,6 @@ int nas_send_attach_reject(mme_ue_t *mme_ue,
     ogs_assert(rv == OGS_OK && emmbuf);
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_assert(rv == OGS_OK);
-
-    return rv;
 }
 
 int nas_send_identity_request(mme_ue_t *mme_ue)
@@ -289,9 +287,8 @@ int nas_send_pdn_connectivity_reject(
     } else {
         /* During the UE-attach process, we'll send Attach-Reject 
          * with pyggybacking PDN-connectivity-Reject */
-        rv = nas_send_attach_reject(mme_ue,
+        nas_send_attach_reject(mme_ue,
             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esm_cause);
-        ogs_assert(rv == OGS_OK);
     }
 
     return OGS_OK;
@@ -494,7 +491,7 @@ int nas_send_tau_reject(mme_ue_t *mme_ue, ogs_nas_emm_cause_t emm_cause)
     return OGS_OK;
 }
 
-int nas_send_service_reject(mme_ue_t *mme_ue,
+void nas_send_service_reject(mme_ue_t *mme_ue,
         ogs_nas_emm_cause_t emm_cause)
 {
     int rv;
@@ -508,8 +505,6 @@ int nas_send_service_reject(mme_ue_t *mme_ue,
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
 }
 
 int nas_send_cs_service_notification(mme_ue_t *mme_ue)

@@ -245,6 +245,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         s6a_message->result_code = hdr->avp_value->i32;
+        s6a_message->err = &s6a_message->result_code;
         ogs_debug("    Result Code: %d", hdr->avp_value->i32);
     } else {
         ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
@@ -256,6 +257,7 @@ static void mme_s6a_aia_cb(void *data, struct msg **msg)
                 ret = fd_msg_avp_hdr(avpch, &hdr);
                 ogs_assert(ret == 0);
                 s6a_message->result_code = hdr->avp_value->i32;
+                s6a_message->exp_err = &s6a_message->result_code;
                 ogs_debug("    Experimental Result Code: %d",
                         s6a_message->result_code);
             }
@@ -618,6 +620,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         s6a_message->result_code = hdr->avp_value->i32;
+        s6a_message->err = &s6a_message->result_code;
         ogs_debug("    Result Code: %d", hdr->avp_value->i32);
     } else {
         ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
@@ -630,6 +633,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                 ret = fd_msg_avp_hdr(avpch, &hdr);
                 ogs_assert(ret == 0);
                 s6a_message->result_code = hdr->avp_value->i32;
+                s6a_message->exp_err = &s6a_message->result_code;
                 ogs_debug("    Experimental Result Code: %d",
                         s6a_message->result_code);
             }

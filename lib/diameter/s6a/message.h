@@ -168,6 +168,8 @@ typedef struct ogs_diam_s6a_message_s {
 #define OGS_DIAM_S6A_ERROR_EQUIPMENT_UNKNOWN                5422
 #define OGS_DIAM_S6A_ERROR_UNKOWN_SERVING_NODE              5423
     uint32_t                        result_code;
+    uint32_t                        *err;
+    uint32_t                        *exp_err;
 
     ogs_diam_s6a_aia_message_t      aia_message;
     ogs_diam_s6a_ula_message_t      ula_message;

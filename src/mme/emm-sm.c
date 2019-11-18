@@ -129,18 +129,16 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
                 ogs_warn("[EMM] Service request : Unknown UE");
-                rv = nas_send_service_reject(mme_ue,
+                nas_send_service_reject(mme_ue,
                     EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                ogs_assert(rv == OGS_OK);
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 return;
             }
 
             if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
                 ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
-                rv = nas_send_service_reject(mme_ue,
+                nas_send_service_reject(mme_ue,
                     EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                ogs_assert(rv == OGS_OK);
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 return;
             }
@@ -217,9 +215,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
             if (!MME_UE_HAVE_IMSI(mme_ue)) {
                 ogs_warn("[EMM] Extended Service request : Unknown UE");
-                rv = nas_send_service_reject(mme_ue,
+                nas_send_service_reject(mme_ue,
                     EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                ogs_assert(rv == OGS_OK);
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 return;
             }
@@ -399,27 +396,24 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
         if (!MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
             ogs_warn("No P-TMSI : UE[%s]", mme_ue->imsi_bcd);
-            rv = nas_send_service_reject(mme_ue,
+            nas_send_service_reject(mme_ue,
                 EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-            ogs_assert(rv == OGS_OK);
             OGS_FSM_TRAN(s, emm_state_exception);
             break;
         }
 
         if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
             ogs_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
-            rv = nas_send_service_reject(mme_ue,
+            nas_send_service_reject(mme_ue,
                 EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-            ogs_assert(rv == OGS_OK);
             OGS_FSM_TRAN(s, emm_state_exception);
             break;
         }
 
         if (!SECURITY_CONTEXT_IS_VALID(mme_ue)) {
             ogs_warn("No Security Context : IMSI[%s]", mme_ue->imsi_bcd);
-            rv = nas_send_service_reject(mme_ue,
+            nas_send_service_reject(mme_ue,
                 EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-            ogs_assert(rv == OGS_OK);
             OGS_FSM_TRAN(s, &emm_state_exception);
             return;
         }
@@ -441,9 +435,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             } else {
                 ogs_warn(" Unknown CSFB Service Type[%d]",
                         mme_ue->nas_eps.service.service_type);
-                rv = nas_send_service_reject(mme_ue,
+                nas_send_service_reject(mme_ue,
                     EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                ogs_assert(rv == OGS_OK);
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 return;
             }
@@ -468,9 +461,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             } else {
                 ogs_warn(" Unknown CSFB Service Type[%d]",
                         mme_ue->nas_eps.service.service_type);
-                rv = nas_send_service_reject(mme_ue,
+                nas_send_service_reject(mme_ue,
                     EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                ogs_assert(rv == OGS_OK);
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 return;
             }
@@ -681,9 +673,8 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         if (message->emm.h.security_header_type
                 == OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE) {
             ogs_debug("[EMM] Service request");
-            rv = nas_send_service_reject(mme_ue,
+            nas_send_service_reject(mme_ue,
                     EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
-            ogs_assert(rv == OGS_OK);
             OGS_FSM_TRAN(s, &emm_state_exception);
             return;
         }
