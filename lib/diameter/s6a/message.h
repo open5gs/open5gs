@@ -108,6 +108,10 @@ extern struct dict_object *ogs_diam_s6a_priority_level;
 extern struct dict_object *ogs_diam_s6a_pre_emption_capability;
 extern struct dict_object *ogs_diam_s6a_pre_emption_vulnerability;
 
+extern struct dict_object *ogs_diam_s6a_terminal_information;
+extern struct dict_object *ogs_diam_s6a_imei;
+extern struct dict_object *ogs_diam_s6a_software_version;
+
 typedef struct ogs_diam_e_utran_vector_s {
     uint8_t                 xres[OGS_MAX_RES_LEN];
     uint8_t                 xres_len;

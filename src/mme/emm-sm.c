@@ -708,6 +708,14 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
+            rv = emm_handle_security_mode_complete(
+                    mme_ue, &message->emm.security_mode_complete);
+            if (rv != OGS_OK) {
+                ogs_error("emm_handle_security_mode_complete() failed");
+                OGS_FSM_TRAN(s, emm_state_exception);
+                return;
+            }
+
             mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
                     mme_ue->kenb);
             mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);

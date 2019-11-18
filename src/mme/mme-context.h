@@ -305,6 +305,10 @@ struct mme_ue_s {
     char            imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
     ogs_nas_mobile_identity_imsi_t nas_mobile_identity_imsi;
 
+    bool            imeisv_presence;
+    char            imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
+    ogs_nas_mobile_identity_imeisv_t nas_mobile_identity_imeisv;
+
     mme_m_tmsi_t    *m_tmsi;
     mme_p_tmsi_t    p_tmsi;
     ogs_nas_guti_t  guti;

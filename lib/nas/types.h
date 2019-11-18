@@ -172,12 +172,35 @@ ED5(uint8_t spare:2;,
     uint8_t mbms_session_identity;
 } __attribute__ ((packed)) ogs_nas_mobile_identity_tmgi_t;
 
+typedef struct ogs_nas_mobile_identity_imeisv_s {
+ED3(uint8_t digit1:4;,
+    uint8_t odd_even:1;,
+    uint8_t type:3;)
+ED2(uint8_t digit3:4;,
+    uint8_t digit2:4;)
+ED2(uint8_t digit5:4;,
+    uint8_t digit4:4;)
+ED2(uint8_t digit7:4;,
+    uint8_t digit6:4;)
+ED2(uint8_t digit9:4;,
+    uint8_t digit8:4;)
+ED2(uint8_t digit11:4;,
+    uint8_t digit10:4;)
+ED2(uint8_t digit13:4;,
+    uint8_t digit12:4;)
+ED2(uint8_t digit15:4;,
+    uint8_t digit14:4;)
+ED2(uint8_t digit17:4;,
+    uint8_t digit16:4;)
+} __attribute__ ((packed)) ogs_nas_mobile_identity_imeisv_t;
+
 typedef struct ogs_nas_mobile_identity_s {
     uint8_t length;
     union {
         ogs_nas_mobile_identity_imsi_t imsi;
         ogs_nas_mobile_identity_tmsi_t tmsi;
         ogs_nas_mobile_identity_tmgi_t tmgi;
+        ogs_nas_mobile_identity_imeisv_t imeisv;
     };
 } ogs_nas_mobile_identity_t;
 
@@ -586,8 +609,11 @@ ED2(uint8_t spare:5;,
  * See subclause 10.5.5.10 in 3GPP TS 24.008 [13].
  * O TV 1 */
 typedef struct ogs_nas_imeisv_request_s {
+#define OGS_NAS_IMEISV_TYPE                     0xc
 ED3(uint8_t type:4;,
     uint8_t spare:1;,
+#define OGS_NAS_IMEISV_NOT_REQUESTED            0
+#define OGS_NAS_IMEISV_REQUESTED                1
     uint8_t imeisv_request_value:3;)
 } __attribute__ ((packed)) ogs_nas_imeisv_request_t;
 

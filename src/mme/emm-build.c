@@ -151,7 +151,7 @@ int emm_build_attach_reject(
     attach_reject->emm_cause = emm_cause;
 
     if (esmbuf) {
-        attach_reject->presencemask |= 
+        attach_reject->presencemask |=
             OGS_NAS_ATTACH_REJECT_ESM_MESSAGE_CONTAINER_PRESENT;
         attach_reject->esm_message_container.buffer = esmbuf->data;
         attach_reject->esm_message_container.length = esmbuf->len;
@@ -248,6 +248,8 @@ int emm_build_security_mode_command(
         &security_mode_command->nas_key_set_identifier;
     ogs_nas_ue_security_capability_t *replayed_ue_security_capabilities = 
         &security_mode_command->replayed_ue_security_capabilities;
+    ogs_nas_imeisv_request_t *imeisv_request =
+        &security_mode_command->imeisv_request;
 
     ogs_assert(mme_ue);
 
@@ -305,6 +307,12 @@ int emm_build_security_mode_command(
             replayed_ue_security_capabilities->gea);
     ogs_debug("    Selected[Integrity:0x%x Encrypt:0x%x]",
             mme_ue->selected_int_algorithm, mme_ue->selected_enc_algorithm);
+
+    security_mode_command->presencemask |=
+        OGS_NAS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT;
+    imeisv_request->type = OGS_NAS_IMEISV_TYPE;
+    imeisv_request->imeisv_request_value = OGS_NAS_IMEISV_REQUESTED;
+
     if (mme_ue->selected_int_algorithm == OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
         ogs_fatal("Encrypt[0x%x] can be skipped with EEA0, "
             "but Integrity[0x%x] cannot be bypassed with EIA0",
@@ -312,7 +320,6 @@ int emm_build_security_mode_command(
         ogs_assert_if_reached();
         return OGS_ERROR;
     }
-
 
     mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_ue->selected_int_algorithm,
             mme_ue->kasme, mme_ue->knas_int);
@@ -371,13 +378,13 @@ int emm_build_tau_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     tau_accept->eps_update_result.result = mme_ue->nas_eps.update.update_type;
 
     /* Set T3412 */
-    tau_accept->presencemask |= 
+    tau_accept->presencemask |=
         OGS_NAS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_PRESENT ;
     tau_accept->t3412_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     tau_accept->t3412_value.value = 9;
 
     /* Set TAI */
-    tau_accept->presencemask |= 
+    tau_accept->presencemask |=
         OGS_NAS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_PRESENT;
 
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
@@ -395,7 +402,7 @@ int emm_build_tau_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
             &mme_self()->served_tai[served_tai_index].list2);
 
     /* Set EPS bearer context status */
-    tau_accept->presencemask |= 
+    tau_accept->presencemask |=
         OGS_NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_BEARER_CONTEXT_STATUS_PRESENT;
     tau_accept->eps_bearer_context_status.length = 2;
     sess = mme_sess_first(mme_ue);
@@ -424,20 +431,20 @@ int emm_build_tau_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 
 #if 0 /* Need not to include T3402 */
     /* Set T3402 */
-    tau_accept->presencemask |= 
+    tau_accept->presencemask |=
         OGS_NAS_TRACKING_AREA_UPDATE_ACCEPT_T3402_VALUE_PRESENT;
     tau_accept->t3402_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     tau_accept->t3402_value.value = 12;
 #endif
 
     /* Set T3423 */
-    tau_accept->presencemask |= 
+    tau_accept->presencemask |=
         OGS_NAS_TRACKING_AREA_UPDATE_ACCEPT_T3423_VALUE_PRESENT;
     tau_accept->t3423_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     tau_accept->t3423_value.value = 9;
 
     /* Set EPS network feature support */
-    tau_accept->presencemask |= 
+    tau_accept->presencemask |=
         OGS_NAS_TRACKING_AREA_UPDATE_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     tau_accept->eps_network_feature_support.length = 1;
     tau_accept->eps_network_feature_support.ims_vops = 1;

@@ -152,8 +152,10 @@ int emm_handle_attach_request(
 
     switch (eps_mobile_identity->imsi.type) {
     case OGS_NAS_EPS_MOBILE_IDENTITY_IMSI:
+        ogs_assert(sizeof(ogs_nas_mobile_identity_imsi_t) ==
+                eps_mobile_identity->length);
         memcpy(&mme_ue->nas_mobile_identity_imsi, 
-            &eps_mobile_identity->imsi, sizeof(ogs_nas_mobile_identity_imsi_t));
+            &eps_mobile_identity->imsi, eps_mobile_identity->length);
         ogs_nas_imsi_to_bcd(
             &eps_mobile_identity->imsi, eps_mobile_identity->length,
             imsi_bcd);
@@ -297,8 +299,10 @@ int emm_handle_identity_response(
     if (mobile_identity->imsi.type == OGS_NAS_IDENTITY_TYPE_2_IMSI) {
         char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
+        ogs_assert(sizeof(ogs_nas_mobile_identity_imsi_t) ==
+                mobile_identity->length);
         memcpy(&mme_ue->nas_mobile_identity_imsi, 
-            &mobile_identity->imsi, sizeof(ogs_nas_mobile_identity_imsi_t));
+            &mobile_identity->imsi, mobile_identity->length);
         ogs_nas_imsi_to_bcd(
             &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
         mme_ue_set_imsi(mme_ue, imsi_bcd);
@@ -611,6 +615,34 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     default:
         ogs_error("Unknown TMSI type [%d]", mobile_identity->tmsi.type);
         break;
+    }
+
+    return OGS_OK;
+}
+
+int emm_handle_security_mode_complete(mme_ue_t *mme_ue,
+    ogs_nas_security_mode_complete_t *security_mode_complete)
+{
+    ogs_nas_mobile_identity_t *imeisv = &security_mode_complete->imeisv;
+
+    ogs_assert(mme_ue);
+
+    if (security_mode_complete->presencemask &
+        OGS_NAS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT) {
+        switch (imeisv->imeisv.type) {
+        case OGS_NAS_MOBILE_IDENTITY_IMEISV:
+            memcpy(&mme_ue->nas_mobile_identity_imeisv,
+                &imeisv->imeisv, imeisv->length);
+            ogs_nas_imeisv_to_bcd(&imeisv->imeisv, imeisv->length,
+                    mme_ue->imeisv_bcd);
+            mme_ue->imeisv_presence = true;
+            break;
+        default:
+            ogs_warn("Invalid IMEISV Type[%d]", imeisv->imeisv.type);
+            break;
+
+        }
+
     }
 
     return OGS_OK;

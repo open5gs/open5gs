@@ -433,7 +433,7 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     int ret;
 
     struct msg *req = NULL;
-    struct avp *avp;
+    struct avp *avp, *avpch;
     union avp_value val;
     struct sess_state *sess_data = NULL, *svg;
     struct session *session = NULL;
@@ -491,6 +491,33 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
     ogs_assert(ret == 0);
+
+    /* Set the Terminal-Information AVP */
+    if (mme_ue->imeisv_presence) {
+        ret = fd_msg_avp_new(ogs_diam_s6a_terminal_information, 0, &avp);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_s6a_imei, 0, &avpch);
+        ogs_assert(ret == 0);
+        val.os.data = (uint8_t *)mme_ue->imeisv_bcd;
+        val.os.len  = 14;
+        ret = fd_msg_avp_setvalue(avpch, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_new(ogs_diam_s6a_software_version, 0, &avpch);
+        ogs_assert(ret == 0);
+        val.os.data = (uint8_t *)mme_ue->imeisv_bcd+14;
+        val.os.len  = 2;
+        ret = fd_msg_avp_setvalue(avpch, &val);
+        ogs_assert(ret == 0);
+        ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avpch);
+        ogs_assert(ret == 0);
+
+        ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
+        ogs_assert(ret == 0);
+    }
 
     /* Set the RAT-Type */
     ret = fd_msg_avp_new(ogs_diam_s6a_rat_type, 0, &avp);
