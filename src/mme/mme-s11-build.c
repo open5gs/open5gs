@@ -61,6 +61,12 @@ int mme_s11_build_create_session_request(
     req->imsi.data = mme_ue->imsi;
     req->imsi.len = mme_ue->imsi_len;
 
+    if (mme_ue->imeisv_presence) {
+        req->me_identity.presence = 1;
+        req->me_identity.data = mme_ue->imeisv;
+        req->me_identity.len = mme_ue->imeisv_len;
+    }
+
     memset(&uli, 0, sizeof(ogs_gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;

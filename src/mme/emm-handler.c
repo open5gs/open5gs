@@ -635,6 +635,8 @@ int emm_handle_security_mode_complete(mme_ue_t *mme_ue,
                 &imeisv->imeisv, imeisv->length);
             ogs_nas_imeisv_to_bcd(&imeisv->imeisv, imeisv->length,
                     mme_ue->imeisv_bcd);
+            ogs_bcd_to_buffer(mme_ue->imeisv_bcd,
+                    mme_ue->imeisv, &mme_ue->imeisv_len);
             mme_ue->imeisv_presence = true;
             break;
         default:

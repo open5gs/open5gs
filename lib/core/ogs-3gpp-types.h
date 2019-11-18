@@ -41,6 +41,8 @@ extern "C" {
     OGS_BCD_TO_BUFFER_LEN(OGS_MAX_IMSI_BCD_LEN)
 
 #define OGS_MAX_IMEISV_BCD_LEN          16
+#define OGS_MAX_IMEISV_LEN              \
+    OGS_BCD_TO_BUFFER_LEN(OGS_MAX_IMEISV_BCD_LEN)
 
 #define OGS_MAX_NUM_OF_HOSTNAME         16
 #define OGS_MAX_APN_LEN                 100
