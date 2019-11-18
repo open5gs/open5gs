@@ -101,7 +101,6 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         ogs_debug("    P-TMSI[0x%08x]", mme_ue->p_tmsi);
     }
 
-    CLEAR_MME_UE_TIMER(mme_ue->t3450);
     nas_send_attach_accept(mme_ue);
 
     return;

@@ -148,7 +148,6 @@ void mme_s11_handle_create_session_response(
         if (csmap) {
             sgsap_send_location_update_request(mme_ue);
         } else {
-            CLEAR_MME_UE_TIMER(mme_ue->t3450);
             nas_send_attach_accept(mme_ue);
         }
 
@@ -208,7 +207,6 @@ void mme_s11_handle_modify_bearer_response(
         source_ue = target_ue->source_ue;
         ogs_assert(source_ue);
 
-        CLEAR_ENB_UE_TIMER(source_ue->t_ue_context_release);
         s1ap_send_ue_context_release_command(source_ue,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_successful_handover,
@@ -290,7 +288,6 @@ void mme_s11_handle_delete_session_response(
 
                 enb_ue = mme_ue->enb_ue;
                 if (enb_ue) {
-                    CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
                     s1ap_send_ue_context_release_command(enb_ue,
                         S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                         S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
@@ -307,7 +304,6 @@ void mme_s11_handle_delete_session_response(
 
             enb_ue = mme_ue->enb_ue;
             if (enb_ue) {
-                CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
                 s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
@@ -629,7 +625,6 @@ void mme_s11_handle_release_access_bearers_response(
 
     enb_ue = mme_ue->enb_ue;
     if (enb_ue) {
-        CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
         s1ap_send_ue_context_release_command(enb_ue,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                 S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);

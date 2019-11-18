@@ -99,23 +99,14 @@ int nas_send_attach_accept(mme_ue_t *mme_ue)
     ogs_assert(bearer);
     ogs_assert(mme_bearer_next(bearer) == NULL);
 
-    if (mme_ue->t3450.pkbuf) {
-        s1apbuf = mme_ue->t3450.pkbuf;
+    rv = esm_build_activate_default_bearer_context_request(&esmbuf, sess);
+    ogs_assert(rv == OGS_OK && esmbuf);
 
-    } else {
-        rv = esm_build_activate_default_bearer_context_request(&esmbuf, sess);
-        ogs_assert(rv == OGS_OK && esmbuf);
+    rv = emm_build_attach_accept(&emmbuf, mme_ue, esmbuf);
+    ogs_assert(rv == OGS_OK && emmbuf);
 
-        rv = emm_build_attach_accept(&emmbuf, mme_ue, esmbuf);
-        ogs_assert(rv == OGS_OK && emmbuf);
-
-        rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, emmbuf);
-        ogs_assert(rv == OGS_OK && s1apbuf);
-    }
-
-    mme_ue->t3450.pkbuf = ogs_pkbuf_copy(s1apbuf);
-    ogs_timer_start(mme_ue->t3450.timer, 
-            mme_timer_cfg(MME_TIMER_T3450)->duration);
+    rv = s1ap_build_initial_context_setup_request(&s1apbuf, mme_ue, emmbuf);
+    ogs_assert(rv == OGS_OK && s1apbuf);
 
     rv = nas_send_to_enb(mme_ue, s1apbuf);
     ogs_assert(rv == OGS_OK);
@@ -272,7 +263,6 @@ void nas_send_detach_accept(mme_ue_t *mme_ue)
         ogs_assert(rv == OGS_OK);
     }
 
-    CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
     s1ap_send_ue_context_release_command(enb_ue,
             S1AP_Cause_PR_nas, S1AP_CauseNas_detach,
             S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK, 0);

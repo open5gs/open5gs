@@ -844,8 +844,6 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("[EMM] Attach complete");
             ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
-            CLEAR_MME_UE_TIMER(mme_ue->t3450);
-
             rv = emm_handle_attach_complete(
                     mme_ue, &message->emm.attach_complete);
             if (rv != OGS_OK) {
@@ -900,20 +898,6 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         break;
     case MME_EVT_EMM_TIMER:
         switch (e->timer_id) {
-        case MME_TIMER_T3450:
-            if (mme_ue->t3450.retry_count >=
-                    mme_timer_cfg(MME_TIMER_T3450)->max_count) {
-                ogs_warn("[EMM] Retransmission of IMSI[%s] failed. "
-                        "Stop retransmission",
-                        mme_ue->imsi_bcd);
-                OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
-
-                /* NOTE: Do I need to send Attach-Reject */
-            } else {
-                mme_ue->t3450.retry_count++;
-                nas_send_attach_accept(mme_ue);
-            }
-            break;
         default:
             ogs_error("Unknown timer[%s:%d]",
                     mme_timer_get_name(e->timer_id), e->timer_id);

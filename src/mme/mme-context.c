@@ -2028,9 +2028,6 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb)
 
     enb_ue->enb = enb;
 
-    enb_ue->t_ue_context_release.timer = ogs_timer_add(
-            self.timer_mgr, mme_timer_ue_context_release, enb_ue);
-
     ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
     ogs_list_add(&enb->enb_ue_list, enb_ue);
@@ -2051,9 +2048,6 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     ogs_assert(self.mme_ue_s1ap_id_hash);
     ogs_assert(enb_ue);
     ogs_assert(enb_ue->enb);
-
-    CLEAR_ENB_UE_ALL_TIMERS(enb_ue);
-    ogs_timer_delete(enb_ue->t_ue_context_release.timer);
 
     /* De-associate S1 with NAS/EMM */
     enb_ue_deassociate(enb_ue);

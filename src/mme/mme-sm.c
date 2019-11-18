@@ -361,7 +361,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             enb_ue = mme_ue->enb_ue;
             ogs_assert(enb_ue);
 
-            CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
             s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);

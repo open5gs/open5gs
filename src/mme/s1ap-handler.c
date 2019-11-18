@@ -1595,7 +1595,6 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
     rv = s1ap_send_handover_preparation_failure(source_ue, Cause);
     ogs_assert(rv == OGS_OK);
 
-    CLEAR_ENB_UE_TIMER(target_ue->t_ue_context_release);
     s1ap_send_ue_context_release_command(
         target_ue, S1AP_Cause_PR_radioNetwork,
         S1AP_CauseRadioNetwork_ho_failure_in_target_EPC_eNB_or_target_system,
@@ -1667,7 +1666,6 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
     rv = s1ap_send_handover_cancel_ack(source_ue);
     ogs_assert(rv == OGS_OK);
 
-    CLEAR_ENB_UE_TIMER(target_ue->t_ue_context_release);
     s1ap_send_ue_context_release_command(
             target_ue, S1AP_Cause_PR_radioNetwork,
             S1AP_CauseRadioNetwork_handover_cancelled,

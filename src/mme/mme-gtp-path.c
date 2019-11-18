@@ -92,7 +92,6 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
 
         enb_ue = mme_ue->enb_ue;
         if (enb_ue) {
-            CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
             s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
