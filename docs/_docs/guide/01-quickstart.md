@@ -160,7 +160,7 @@ To add subscriber information, you can do WebUI operations in the following orde
 {: .notice--info}
 
 
-### Adding a route for UE to have Internet connectivity
+### Adding a route for UE to have Internet connectivity {#UEInternet}
 ---
 
 If your phone can connect to internet, you must run the following command in Open5GS-PGW installed host. 
@@ -237,6 +237,23 @@ After changing conf files, please restart Open5GS daemons.
 $ sudo systemctl restart open5gs-mmed
 $ sudo systemctl restart open5gs-sgwd
 ```
+
+#### Additional Troubleshooting
+
+After successfully attaching the UE (e.g. `45.45.0.2`) to the EPC if the UE device doesn't have access to internet,
+it is recommended to do the following checks:
+- Check if the interface connected to the internet is correctly `NAT` with the `ogstun` interface. Follow the documentation [Here](#UEInternet)
+   - Ensure that the packets in the `INPUT` chain to the `ogstun` interface are accepted 
+   ```
+   $ sudo iptables -I INPUT -i ogstun -j ACCEPT
+   ```
+- Check if the UE's IP can be pinged successfully by performing `ping <IP of UE>` e.g.`ping 45.45.0.2`
+- Configure the firewall correctly. Some operating systems (Ubuntu) by default enable firewall rules to block traffic
+   - Explicitly disable it to see if it resolves the problem of granting data access to the UE by doing
+   ```
+   $ sudo ufw disable
+   ```
+
 
 ### Uninstall Open5GS and WebUI
 
