@@ -1,0 +1,6 @@
+.idea/*
+build/*
+
+# This directory is fetched during first build and is present in this directory
+subprojects/*
+install/*
