@@ -1,3 +1,10 @@
+open5gs (1.1.0) stable; urgency=medium
+
+  * Static IP addresses
+  * Many BUGS Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 18 Nov 2019 22:27:05 +0900
+
 open5gs (1.0.0) unstable; urgency=medium
 
   * Change build-tool to MESON

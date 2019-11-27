@@ -573,6 +573,9 @@ int pgw_context_parse_config(void)
                         const char *mask_or_numbits = NULL;
                         const char *apn = NULL;
                         const char *dev = self.tun_ifname;
+                        const char *low[MAX_NUM_OF_SUBNET_RANGE];
+                        const char *high[MAX_NUM_OF_SUBNET_RANGE];
+                        int i, num = 0;
 
                         if (ogs_yaml_iter_type(&ue_pool_array) ==
                                 YAML_MAPPING_NODE) {
@@ -607,6 +610,40 @@ int pgw_context_parse_config(void)
                                 apn = ogs_yaml_iter_value(&ue_pool_iter);
                             } else if (!strcmp(ue_pool_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&ue_pool_iter);
+                            } else if (!strcmp(ue_pool_key, "range")) {
+                                ogs_yaml_iter_t range_iter;
+                                ogs_yaml_iter_recurse(
+                                        &ue_pool_iter, &range_iter);
+                                ogs_assert(ogs_yaml_iter_type(&range_iter) !=
+                                    YAML_MAPPING_NODE);
+                                do {
+                                    char *v = NULL;
+
+                                    if (ogs_yaml_iter_type(&range_iter) ==
+                                            YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(&range_iter))
+                                            break;
+                                    }
+
+                                    v = (char *)ogs_yaml_iter_value(
+                                            &range_iter);
+                                    if (v) {
+                                        ogs_assert(num <=
+                                                MAX_NUM_OF_SUBNET_RANGE);
+                                        low[num] =
+                                            (const char *)strsep(&v, "-");
+                                        if (low[num] && strlen(low[num]) == 0)
+                                            low[num] = NULL;
+
+                                        high[num] = (const char *)v;
+                                        if (high[num] && strlen(high[num]) == 0)
+                                            high[num] = NULL;
+                                    }
+
+                                    if (low[num] || high[num]) num++;
+                                } while (
+                                    ogs_yaml_iter_type(&range_iter) ==
+                                        YAML_SEQUENCE_NODE);
                             } else
                                 ogs_warn("unknown key `%s`", ue_pool_key);
                         }
@@ -615,10 +652,17 @@ int pgw_context_parse_config(void)
                             subnet = pgw_subnet_add(
                                     ipstr, mask_or_numbits, apn, dev);
                             ogs_assert(subnet);
+
+                            subnet->num_of_range = num;
+                            for (i = 0; i < subnet->num_of_range; i++) {
+                                subnet->range[i].low = low[i];
+                                subnet->range[i].high = high[i];
+                            }
                         } else {
                             ogs_warn("Ignore : addr(%s/%s), apn(%s)",
                                     ipstr, mask_or_numbits, apn);
                         }
+
                     } while (ogs_yaml_iter_type(&ue_pool_array) ==
                             YAML_SEQUENCE_NODE);
                 } else if (!strcmp(pgw_key, "dns")) {
@@ -724,13 +768,17 @@ static void *sess_hash_keygen(uint8_t *out, int *out_len,
 
 pgw_sess_t *pgw_sess_add(
         uint8_t *imsi, int imsi_len, char *apn, 
-        uint8_t pdn_type, uint8_t ebi)
+        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *paa)
 {
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *bearer = NULL;
     pgw_subnet_t *subnet6 = NULL;
+
+    ogs_assert(imsi);
+    ogs_assert(apn);
+    ogs_assert(paa);
 
     ogs_pool_alloc(&pgw_sess_pool, &sess);
     ogs_assert(sess);
@@ -760,12 +808,14 @@ pgw_sess_t *pgw_sess_add(
     bearer->ebi = ebi;
 
     sess->pdn.paa.pdn_type = pdn_type;
+    ogs_assert(pdn_type == paa->pdn_type);
+
     if (pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
-        sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn);
+        sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn, (uint8_t *)&(paa->addr));
         ogs_assert(sess->ipv4);
         sess->pdn.paa.addr = sess->ipv4->addr[0];
     } else if (pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
-        sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn);
+        sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn, (paa->addr6));
         ogs_assert(sess->ipv6);
 
         subnet6 = sess->ipv6->subnet;
@@ -774,9 +824,9 @@ pgw_sess_t *pgw_sess_add(
         sess->pdn.paa.len = subnet6->prefixlen;
         memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
     } else if (pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
-        sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn);
+        sess->ipv4 = pgw_ue_ip_alloc(AF_INET, apn, (uint8_t *)&(paa->both.addr));
         ogs_assert(sess->ipv4);
-        sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn);
+        sess->ipv6 = pgw_ue_ip_alloc(AF_INET6, apn, (paa->both.addr6));
         ogs_assert(sess->ipv6);
 
         subnet6 = sess->ipv6->subnet;
@@ -862,6 +912,7 @@ pgw_sess_t *pgw_sess_find_by_imsi_apn(
 pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message)
 {
     pgw_sess_t *sess = NULL;
+    ogs_paa_t *paa = NULL;
     char apn[OGS_MAX_APN_LEN];
 
     ogs_gtp_create_session_request_t *req = &message->create_session_request;
@@ -887,12 +938,19 @@ pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message)
         return NULL;
     }
 
+    if (req->pdn_address_allocation.presence == 0) {
+        ogs_error("No PAA Type");
+        return NULL;
+    }
+
     ogs_fqdn_parse(apn,
             req->access_point_name.data, req->access_point_name.len);
 
     ogs_trace("pgw_sess_add_by_message() [APN:%s, PDN:%d, EDI:%d]",
             apn, req->pdn_type.u8,
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+
+    paa = (ogs_paa_t *)req->pdn_address_allocation.data;
 
     /* 
      * 7.2.1 in 3GPP TS 29.274 Release 15
@@ -920,7 +978,7 @@ pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message)
     }
     sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
                     req->pdn_type.u8,
-                    req->bearer_contexts_to_be_created.eps_bearer_id.u8);
+                    req->bearer_contexts_to_be_created.eps_bearer_id.u8, paa);
     ogs_assert(sess);
 
     return sess;
@@ -1142,79 +1200,93 @@ pgw_pf_t *pgw_pf_next(pgw_pf_t *pf)
 
 int pgw_ue_pool_generate(void)
 {
-    int j;
+    int i, rv;
     pgw_subnet_t *subnet = NULL;
 
     for (subnet = pgw_subnet_first(); 
         subnet; subnet = pgw_subnet_next(subnet)) {
-        int index = 0;
-        uint32_t mask_count;
-        uint32_t broadcast[4];
+        int maxbytes = 0;
+        int lastindex = 0;
+        uint32_t start[4], end[4], broadcast[4];
+        int rangeindex, num_of_range;
+        int poolindex;
+        int inc;
 
         if (subnet->family == AF_INET) {
-            if (subnet->prefixlen == 32)
-                mask_count = 1;
-            else if (subnet->prefixlen < 32)
-                mask_count = (0xffffffff >> subnet->prefixlen) + 1;
-            else
-            {
-                ogs_assert_if_reached();
-                return OGS_ERROR;
-            }
-        } else if (subnet->family == AF_INET6) {
-            if (subnet->prefixlen == 128)
-                mask_count = 1;
-            else if (subnet->prefixlen > 96 && subnet->prefixlen < 128)
-                mask_count = (0xffffffff >> (subnet->prefixlen - 96)) + 1;
-            else if (subnet->prefixlen <= 96)
-                mask_count = 0xffffffff;
-            else {
-                ogs_assert_if_reached();
-                return OGS_ERROR;
-            }
-        } else {
-            ogs_assert_if_reached();
-            return OGS_ERROR;
+            maxbytes = 4;
+            lastindex = 0;
         }
-        
-        for (j = 0; j < 4; j++) {
-            broadcast[j] = subnet->sub.sub[j] + ~subnet->sub.mask[j];
+        else if (subnet->family == AF_INET6) {
+            maxbytes = 16;
+            lastindex = 3;
         }
 
-        for (j = 0; j < mask_count && index < ogs_config()->pool.sess; j++) {
-            pgw_ue_ip_t *ue_ip = NULL;
-            int maxbytes = 0;
-            int lastindex = 0;
-
-            ue_ip = &subnet->pool.array[index];
-            ogs_assert(ue_ip);
-            memset(ue_ip, 0, sizeof *ue_ip);
-
-            if (subnet->family == AF_INET) {
-                maxbytes = 4;
-                lastindex = 0;
-            }
-            else if (subnet->family == AF_INET6) {
-                maxbytes = 16;
-                lastindex = 3;
-            }
-
-            memcpy(ue_ip->addr, subnet->sub.sub, maxbytes);
-            ue_ip->addr[lastindex] += htonl(j);
-            ue_ip->subnet = subnet;
-
-            /* Exclude Network Address */
-            if (memcmp(ue_ip->addr, subnet->sub.sub, maxbytes) == 0) continue;
-
-            /* Exclude Broadcast Address */
-            if (memcmp(ue_ip->addr, broadcast, maxbytes) == 0) continue;
-
-            /* Exclude TUN IP Address */
-            if (memcmp(ue_ip->addr, subnet->gw.sub, maxbytes) == 0) continue;
-
-            index++;
+        for (i = 0; i < 4; i++) {
+            broadcast[i] = subnet->sub.sub[i] + ~subnet->sub.mask[i];
         }
-        subnet->pool.size = subnet->pool.avail = index;
+
+        num_of_range = subnet->num_of_range;
+        if (!num_of_range) num_of_range = 1;
+
+        poolindex = 0;
+        for (rangeindex = 0; rangeindex < num_of_range; rangeindex++) {
+
+            if (subnet->num_of_range &&
+                subnet->range[rangeindex].low) {
+                ogs_ipsubnet_t low;
+                rv = ogs_ipsubnet(
+                        &low, subnet->range[rangeindex].low, NULL);
+                ogs_assert(rv == OGS_OK);
+                memcpy(start, low.sub, maxbytes);
+            } else {
+                memcpy(start, subnet->sub.sub, maxbytes);
+            }
+
+            if (subnet->num_of_range &&
+                subnet->range[rangeindex].high) {
+                ogs_ipsubnet_t high;
+                rv = ogs_ipsubnet(
+                        &high, subnet->range[rangeindex].high, NULL);
+                ogs_assert(rv == OGS_OK);
+                high.sub[lastindex] += htonl(1);
+                memcpy(end, high.sub, maxbytes);
+            } else {
+                memcpy(end, broadcast, maxbytes);
+            }
+
+            inc = 0;
+            while(poolindex < ogs_config()->pool.sess) {
+                pgw_ue_ip_t *ue_ip = NULL;
+
+                ue_ip = &subnet->pool.array[poolindex];
+                ogs_assert(ue_ip);
+                memset(ue_ip, 0, sizeof *ue_ip);
+                ue_ip->subnet = subnet;
+
+                memcpy(ue_ip->addr, start, maxbytes);
+                ue_ip->addr[lastindex] += htonl(inc);
+                inc++;
+
+                if (memcmp(ue_ip->addr, end, maxbytes) == 0)
+                    break;
+
+                /* Exclude Network Address */
+                if (memcmp(ue_ip->addr, subnet->sub.sub, maxbytes) == 0)
+                    continue;
+
+                /* Exclude TUN IP Address */
+                if (memcmp(ue_ip->addr, subnet->gw.sub, maxbytes) == 0)
+                    continue;
+
+                ogs_debug("[%d] - %x:%x:%x:%x",
+                        poolindex,
+                        ue_ip->addr[0], ue_ip->addr[1],
+                        ue_ip->addr[2], ue_ip->addr[3]);
+
+                poolindex++;
+            }
+        }
+        subnet->pool.size = subnet->pool.avail = poolindex;
     }
 
     return OGS_OK;
@@ -1253,19 +1325,40 @@ static pgw_subnet_t *find_subnet(int family, const char *apn)
     return subnet;
 }
 
-pgw_ue_ip_t *pgw_ue_ip_alloc(int family, const char *apn)
+pgw_ue_ip_t *pgw_ue_ip_alloc(int family, const char *apn, uint8_t *addr)
 {
     pgw_subnet_t *subnet = NULL;
     pgw_ue_ip_t *ue_ip = NULL;
 
-    ogs_assert(apn);
+    uint8_t zero[16];
+    size_t maxbytes = 0;
 
+    ogs_assert(apn);
     subnet = find_subnet(family, apn);
     ogs_assert(subnet);
 
-    ogs_pool_alloc(&subnet->pool, &ue_ip);
-    ogs_assert(ue_ip);
+    memset(zero, 0, sizeof zero);
+    if (family == AF_INET) {
+        maxbytes = 4;
+    } else if (family == AF_INET6) {
+        maxbytes = 16;
+    } else {
+        ogs_fatal("Invalid family[%d]", family);
+        ogs_assert_if_reached();
+    }
 
+    // if assigning a static IP, do so. If not, assign dynamically!
+    if (memcmp(addr, zero, maxbytes) != 0) {
+        ue_ip = ogs_calloc(1, sizeof(pgw_ue_ip_t));
+
+        ue_ip->subnet = subnet;
+        ue_ip->static_ip = true;
+        memcpy(ue_ip->addr, addr, maxbytes);
+    } else {
+        ogs_pool_alloc(&subnet->pool, &ue_ip);
+    }
+
+    ogs_assert(ue_ip);
     return ue_ip;
 }
 
@@ -1277,7 +1370,12 @@ int pgw_ue_ip_free(pgw_ue_ip_t *ue_ip)
     subnet = ue_ip->subnet;
 
     ogs_assert(subnet);
-    ogs_pool_free(&subnet->pool, ue_ip);
+
+    if (ue_ip->static_ip) {
+        ogs_free(ue_ip);
+    } else {
+        ogs_pool_free(&subnet->pool, ue_ip);
+    }
 
     return OGS_OK;
 }

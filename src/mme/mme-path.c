@@ -22,61 +22,68 @@
 #include "mme-gtp-path.h"
 #include "mme-path.h"
 
-int mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
+void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
 {
-    int rv;
-
     ogs_assert(mme_ue);
 
     if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-        rv = mme_gtp_send_delete_all_sessions(mme_ue);
-        ogs_assert(rv == OGS_OK);
+        mme_gtp_send_delete_all_sessions(mme_ue);
     } else {
-        rv = nas_send_detach_accept(mme_ue);
-        ogs_assert(rv == OGS_OK);
+        nas_send_detach_accept(mme_ue);
     }
-
-    return rv;
 }
 
-int mme_send_delete_session_or_ue_context_release(
-        mme_ue_t *mme_ue, enb_ue_t *enb_ue)
+void mme_send_delete_session_or_mme_ue_context_release(mme_ue_t *mme_ue)
 {
-    int rv;
-
-    ogs_assert(enb_ue);
+    ogs_assert(mme_ue);
 
     if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
-        rv = mme_gtp_send_delete_all_sessions(mme_ue);
-        ogs_assert(rv == OGS_OK);
+        mme_gtp_send_delete_all_sessions(mme_ue);
     } else {
-        CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
-        rv = s1ap_send_ue_context_release_command(enb_ue,
-                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-        ogs_assert(rv == OGS_OK);
+        enb_ue_t *enb_ue = mme_ue->enb_ue;
+        if (enb_ue) {
+            s1ap_send_ue_context_release_command(enb_ue,
+                    S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                    S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+        } else {
+            ogs_warn("No S1 Context");
+        }
     }
-
-    return rv;
 }
 
-int mme_send_release_access_bearer_or_ue_context_release(
-        mme_ue_t *mme_ue, enb_ue_t *enb_ue)
+void mme_send_delete_session_or_enb_ue_context_release(enb_ue_t *enb_ue)
 {
-    int rv;
-
+    mme_ue_t *mme_ue = NULL;
     ogs_assert(enb_ue);
 
-    if (BEARER_CONTEXT_IS_ACTIVE(mme_ue)) {
-        rv = mme_gtp_send_release_access_bearers_request(mme_ue);
-        ogs_assert(rv == OGS_OK);
+    mme_ue = enb_ue->mme_ue;
+    if (mme_ue && SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+        mme_gtp_send_delete_all_sessions(mme_ue);
     } else {
-        CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
-        rv = s1ap_send_ue_context_release_command(enb_ue,
+        s1ap_send_ue_context_release_command(enb_ue,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
-                S1AP_UE_CTX_REL_S1_NORMAL_RELEASE, 0);
-        ogs_assert(rv == OGS_OK);
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
     }
+}
 
-    return rv;
+void mme_send_release_access_bearer_or_ue_context_release(enb_ue_t *enb_ue)
+{
+    mme_ue_t *mme_ue = NULL;
+    ogs_assert(enb_ue);
+
+    mme_ue = enb_ue->mme_ue;
+    if (mme_ue) {
+        if (BEARER_CONTEXT_IS_ACTIVE(mme_ue)) {
+            ogs_debug("    EMM-Registered");
+            mme_gtp_send_release_access_bearers_request(mme_ue);
+        } else {
+            ogs_warn("No EMM-Registered");
+            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+        }
+    } else {
+        ogs_debug("No UE Context");
+        s1ap_send_ue_context_release_command(enb_ue, 
+                S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
+                S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE, 0);
+    }
 }

@@ -61,6 +61,12 @@ int mme_s11_build_create_session_request(
     req->imsi.data = mme_ue->imsi;
     req->imsi.len = mme_ue->imsi_len;
 
+    if (mme_ue->imeisv_presence) {
+        req->me_identity.presence = 1;
+        req->me_identity.data = mme_ue->imeisv;
+        req->me_identity.len = mme_ue->imeisv_len;
+    }
+
     memset(&uli, 0, sizeof(ogs_gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;
@@ -151,18 +157,33 @@ int mme_s11_build_create_session_request(
             OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV6 ||
             sess->request_type.pdn_type ==
             OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6);
-    if (pdn->pdn_type == OGS_HSS_PDN_TYPE_IPV4 ||
-        pdn->pdn_type == OGS_HSS_PDN_TYPE_IPV6 ||
-        pdn->pdn_type == OGS_HSS_PDN_TYPE_IPV4V6) {
+    if (pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4 ||
+        pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV6 ||
+        pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4V6) {
         req->pdn_type.u8 = ((pdn->pdn_type + 1) & sess->request_type.pdn_type);
         ogs_assert(req->pdn_type.u8 != 0);
-    } else if (pdn->pdn_type == OGS_HSS_PDN_TYPE_IPV4_OR_IPV6) {
+    } else if (pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4_OR_IPV6) {
         req->pdn_type.u8 = sess->request_type.pdn_type;
     } else {
         ogs_fatal("Invalid PDN_TYPE[%d]\n", pdn->pdn_type);
         ogs_assert_if_reached();
     }
     req->pdn_type.presence = 1;
+
+    /* If we started with both addrs (IPV4V6) but the above code 
+     * (pdn_type & sess->request_type) truncates us down to just one,
+     * we need to change position of addresses in struct. */
+    if (req->pdn_type.u8 == OGS_GTP_PDN_TYPE_IPV4 &&
+            pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4V6) {
+	    uint32_t addr = pdn->paa.both.addr;
+	    pdn->paa.addr = addr;
+    }
+    if (req->pdn_type.u8 == OGS_GTP_PDN_TYPE_IPV6 &&
+            pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4V6) {
+	    uint8_t addr[16];
+	    memcpy(&addr, pdn->paa.both.addr6, OGS_IPV6_LEN);
+	    memcpy(pdn->paa.addr6, &addr, OGS_IPV6_LEN);
+    }
 
     pdn->paa.pdn_type = req->pdn_type.u8;
     req->pdn_address_allocation.data = &pdn->paa;

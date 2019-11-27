@@ -42,8 +42,9 @@ static void attach_test1(abts_case *tc, void *data)
         "000b403b00000300 000005c00100009d 000800020001001a 0025240752002008"
         "0c3818183b522614 162c07601d0d10f1 1b89a2a8de8000ad 0ccf7f55e8b20d";
     const char *_security_mode_command = 
-        "000b402700000300 000005c00100009d 000800020001001a 00111037f933b5d5"
-        "00075d010005e060 c04070";
+        "000b4028"
+        "00000300000005c0 0100009d00080002 0001001a00121137 f497722900075d01"
+        "0005e060c04070c1";
     const char *_esm_information_request =
         "000b402000000300 000005c00100009d 000800020001001a 000a092779012320"
         "010221d9";
@@ -301,7 +302,6 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-#if 1 /* IMPLICIT_S1_RELEASE */
     /* Send UE Context Release Request */
     rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -312,25 +312,6 @@ static void attach_test1(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
-
-#else /* S1_HOLDING_TIMER */
-    /* Send UE Context Release Request */
-    rv = tests1ap_build_ue_context_release_request(&sendbuf, msgindex);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    /* Receive UE Context Release Command */
-    recvbuf = testenb_s1ap_read(s1ap);
-    ABTS_PTR_NOTNULL(tc, recvbuf);
-    ogs_pkbuf_free(recvbuf);
-
-    /* Send UE Context Release Complete */
-    rv = tests1ap_build_ue_context_release_complete(&sendbuf, msgindex+3);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_s1ap_send(s1ap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-#endif
 
     /* Send ESM Information Response */
     rv = tests1ap_build_esm_information_response(&sendbuf, msgindex+1);
@@ -425,25 +406,6 @@ static void attach_test1(abts_case *tc, void *data)
 
     /* eNB disonncect from SGW */
     testenb_gtpu_close(gtpu);
-    return;
-
-#if IT_WILL_BE_REMOVED
-out:
-    /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
-    ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection, 
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
-    bson_destroy(doc);
-
-    mongoc_collection_destroy(collection);
-
-    /* eNB disonncect from MME */
-    testenb_s1ap_close(s1ap);
-
-    /* eNB disonncect from SGW */
-    testenb_gtpu_close(gtpu);
-#endif
 }
 
 /**************************************************************
@@ -799,8 +761,9 @@ static void attach_test3(abts_case *tc, void *data)
         "403b000003000000 05c0020000c80008 00020002001a0025 2407520042200639"
         "1c0021554d444928 4a1a062e10e543cb 257f1f800021f4f9 2d522a5b87";
     const char *_security_mode_command =
-        "000b402400000300 000005c0020000c8 000800020002001a 000e0d37a3761a13"
-        "00075d010002f0f0";
+        "000b4025"
+        "00000300000005c0 020000c800080002 0002001a000f0e37 c48c93b000075d01"
+        "0002f0f0c1";
 
     const char *_esm_information_request =
         "000b"

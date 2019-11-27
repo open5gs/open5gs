@@ -160,7 +160,7 @@ To add subscriber information, you can do WebUI operations in the following orde
 {: .notice--info}
 
 
-### Adding a route for UE to have Internet connectivity
+### Adding a route for UE to have Internet connectivity {#UEInternet}
 ---
 
 If your phone can connect to internet, you must run the following command in Open5GS-PGW installed host. 
@@ -207,36 +207,6 @@ $ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o ogstun -j MASQUERADE
 - You can see actual traffic through wireshark -- [[srsenb.pcapng]]({{ site.url }}{{ site.baseurl }}/assets/pcapng/srsenb.pcapng).
 - You can view the log at `/var/log/open5gs/*.log`.
 
-### Troubleshooting
----
-
-Problem with Open5GS can be filed as [GitHub Issues](https://github.com/open5gs/open5gs/issues). Please include the following to get help:
-
-- Attach `*.pcapng` file created by wireskark.
-- Attach configuration files at `/etc/open5gs/*.yaml`.
-- Attach log files at `/var/log/open5gs/*.log`.
-
-You can modify the configuration file to record more logs.
-
-```diff
-diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
---- mme.yaml.old	2018-04-15 18:28:31.000000000 +0900
-+++ mme.yaml	2018-04-15 19:53:10.000000000 +0900
-@@ -2,6 +2,7 @@
-
- logger:
-     file: /var/log/open5gs/mme.log
-+    level: debug
-
- parameter:
-```
-
-After changing conf files, please restart Open5GS daemons.
-
-```bash
-$ sudo systemctl restart open5gs-mmed
-$ sudo systemctl restart open5gs-sgwd
-```
 
 ### Uninstall Open5GS and WebUI
 

@@ -22,9 +22,6 @@
 #include "mme-context.h"
 
 static mme_timer_cfg_t g_mme_timer_cfg[MAX_NUM_OF_MME_TIMER] = {
-    [MME_TIMER_UE_CONTEXT_RELEASE] = 
-        { .max_count = 2, .duration = ogs_time_from_sec(1) },
-
     /* Paging procedure for EPS services initiated */
     [MME_TIMER_T3413] = 
         { .max_count = 2, .duration = ogs_time_from_sec(2) },
@@ -73,8 +70,6 @@ const char *mme_timer_get_name(mme_timer_e id)
     switch (id) {
     case MME_TIMER_S1_DELAYED_SEND:
         return "MME_TIMER_S1_DELAYED_SEND";
-    case MME_TIMER_UE_CONTEXT_RELEASE:
-        return "MME_TIMER_UE_CONTEXT_RELEASE";
     case MME_TIMER_T3413:
         return "MME_TIMER_T3413";
     case MME_TIMER_T3422:
@@ -112,30 +107,6 @@ void mme_timer_s1_delayed_send(void *data)
     }
 }
 
-
-static void s1_timer_event_send(
-        mme_timer_e timer_id, enb_ue_t *enb_ue)
-{
-    int rv;
-    mme_event_t *e = NULL;
-    ogs_assert(enb_ue);
-
-    e = mme_event_new(MME_EVT_S1AP_TIMER);
-    e->timer_id = timer_id;
-    e->enb_ue = enb_ue;
-    e->enb = enb_ue->enb;
-
-    rv = ogs_queue_push(mme_self()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-        mme_event_free(e);
-    }
-}
-
-void mme_timer_ue_context_release(void *data)
-{
-    s1_timer_event_send(MME_TIMER_UE_CONTEXT_RELEASE, data);
-}
 
 static void emm_timer_event_send(
         mme_timer_e timer_id, mme_ue_t *mme_ue)

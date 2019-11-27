@@ -43,6 +43,9 @@ typedef struct ogs_gtp_xact_s {
     uint32_t        xid;            /**< Transaction ID */
     ogs_gtp_node_t  *gnode;         /**< Relevant GTP node context */
 
+    void (*cb)(ogs_gtp_xact_t *, void *); /**< Local timer expiration handler */
+    void            *data;          /**< Transaction Data */
+
     int             step;           /**< Current step in the sequence.
                                          1 : Initial 
                                          2 : Triggered 
@@ -58,23 +61,14 @@ typedef struct ogs_gtp_xact_s {
     uint8_t         holding_rcount;
 
     struct ogs_gtp_xact_s *assoc_xact; /**< Associated transaction */
-
-#define OGS_GTP_XACT_STORE_SESSION(xact, session) \
-    do { \
-        ogs_assert((xact)); \
-        ogs_assert((session)); \
-        ((xact)->sess) = (session); \
-    } while(0)
-
-#define OGS_GTP_XACT_RETRIEVE_SESSION(xact) ((xact) ? ((xact)->sess) : NULL)
-    void            *sess;          /**< Session Store */
 } ogs_gtp_xact_t;
 
 int ogs_gtp_xact_init(ogs_timer_mgr_t *timer_mgr, int size);
 int ogs_gtp_xact_final(void);
 
-ogs_gtp_xact_t *ogs_gtp_xact_local_create(
-        ogs_gtp_node_t *gnode, ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf);
+ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
+        ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf,
+        void (*cb)(ogs_gtp_xact_t *xact, void *data), void *data);
 ogs_gtp_xact_t *ogs_gtp_xact_remote_create(
         ogs_gtp_node_t *gnode, uint32_t sqn);
 void ogs_gtp_xact_delete_all(ogs_gtp_node_t *gnode);

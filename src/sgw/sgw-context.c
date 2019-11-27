@@ -401,6 +401,9 @@ sgw_ue_t *sgw_ue_add_by_message(ogs_gtp_message_t *message)
     sgw_ue_t *sgw_ue = NULL;
     ogs_gtp_create_session_request_t *req = &message->create_session_request;
 
+    ogs_assert(message);
+
+    req = &message->create_session_request;
     if (req->imsi.presence == 0) {
         ogs_error("No IMSI");
         return NULL;
@@ -563,6 +566,7 @@ void sgw_sess_remove_all(sgw_ue_t *sgw_ue)
 {
     sgw_sess_t *sess = NULL, *next_sess = NULL;
     
+    ogs_assert(sgw_ue);
     ogs_list_for_each_safe(&sgw_ue->sess_list, next_sess, sess)
         sgw_sess_remove(sess);
 }
@@ -575,8 +579,8 @@ sgw_sess_t* sgw_sess_find_by_teid(uint32_t teid)
 sgw_sess_t* sgw_sess_find_by_apn(sgw_ue_t *sgw_ue, char *apn)
 {
     sgw_sess_t *sess = NULL;
+
     ogs_assert(sgw_ue);
-    
     sess = sgw_sess_first(sgw_ue);
     while (sess) {
         if (strcmp(sess->pdn.apn, apn) == 0)
@@ -680,6 +684,7 @@ sgw_bearer_t *sgw_bearer_find_by_sess_ebi(sgw_sess_t *sess, uint8_t ebi)
 {
     sgw_bearer_t *bearer = NULL;
 
+    ogs_assert(sess);
     bearer = sgw_bearer_first(sess);
     while (bearer) {
         if (ebi == bearer->ebi)
@@ -696,6 +701,7 @@ sgw_bearer_t *sgw_bearer_find_by_ue_ebi(sgw_ue_t *sgw_ue, uint8_t ebi)
     sgw_sess_t *sess = NULL;
     sgw_bearer_t *bearer = NULL;
     
+    ogs_assert(sgw_ue);
     sess = sgw_sess_first(sgw_ue);
     while (sess) {
         bearer = sgw_bearer_find_by_sess_ebi(sess, ebi);
@@ -722,6 +728,7 @@ sgw_bearer_t *sgw_bearer_first(sgw_sess_t *sess)
 
 sgw_bearer_t *sgw_bearer_next(sgw_bearer_t *bearer)
 {
+    ogs_assert(bearer);
     return ogs_list_next(bearer);
 }
 
@@ -812,5 +819,6 @@ sgw_tunnel_t *sgw_tunnel_first(sgw_bearer_t *bearer)
 
 sgw_tunnel_t *sgw_tunnel_next(sgw_tunnel_t *tunnel)
 {
+    ogs_assert(tunnel);
     return ogs_list_next(tunnel);
 }

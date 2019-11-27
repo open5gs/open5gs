@@ -25,6 +25,19 @@
 
 static int bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message);
 
+static void timeout(ogs_gtp_xact_t *xact, void *data)
+{
+    pgw_sess_t *sess = data;
+    uint8_t type = 0;
+
+    ogs_assert(sess);
+
+    type = xact->seq[0].type;
+
+    ogs_debug("GTP Timeout : SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x] "
+            "Message-Type[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid, type);
+}
+
 void pgw_gx_handle_cca_initial_request(
         pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message,
         ogs_gtp_xact_t *xact, ogs_gtp_create_session_request_t *req)
@@ -215,7 +228,8 @@ static int bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
                 ogs_assert(rv == OGS_OK);
             }
 
-            xact = ogs_gtp_xact_local_create(sess->gnode, &h, pkbuf);
+            xact = ogs_gtp_xact_local_create(
+                    sess->gnode, &h, pkbuf, timeout, sess);
             ogs_assert(xact);
 
             rv = ogs_gtp_xact_commit(xact);
@@ -231,7 +245,8 @@ static int bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
             rv = pgw_s5c_build_delete_bearer_request(&pkbuf, h.type, bearer);
             ogs_assert(rv == OGS_OK);
 
-            xact = ogs_gtp_xact_local_create(sess->gnode, &h, pkbuf);
+            xact = ogs_gtp_xact_local_create(
+                    sess->gnode, &h, pkbuf, timeout, sess);
             ogs_assert(xact);
 
             rv = ogs_gtp_xact_commit(xact);

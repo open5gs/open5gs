@@ -33,6 +33,51 @@
 #include "mme-s6a-handler.h"
 #include "mme-path.h"
 
+/* 3GPP TS 29.272 Annex A; Table !.a:
+ * Mapping from S6a error codes to NAS Cause Codes */
+static uint8_t emm_cause_from_diameter(
+        const uint32_t *dia_err, const uint32_t *dia_exp_err)
+{
+    if (dia_exp_err) {
+        switch (*dia_exp_err) {
+        case OGS_DIAM_S6A_ERROR_USER_UNKNOWN:                   /* 5001 */
+            return EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED;
+        case OGS_DIAM_S6A_ERROR_UNKNOWN_EPS_SUBSCRIPTION:       /* 5420 */
+            /* FIXME: Error diagnostic? */
+            return EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
+        case OGS_DIAM_S6A_ERROR_RAT_NOT_ALLOWED:                /* 5421 */
+            return EMM_CAUSE_ROAMING_NOT_ALLOWED_IN_THIS_TRACKING_AREA;
+        case OGS_DIAM_S6A_ERROR_ROAMING_NOT_ALLOWED:            /* 5004 */
+            return EMM_CAUSE_PLMN_NOT_ALLOWED;
+            //return EMM_CAUSE_EPS_SERVICES_NOT_ALLOWED_IN_THIS_PLMN; (ODB_HPLMN_APN)
+            //return EMM_CAUSE_ESM_FAILURE; (ODB_ALL_APN)
+        case OGS_DIAM_S6A_AUTHENTICATION_DATA_UNAVAILABLE:      /* 4181 */
+            return EMM_CAUSE_NETWORK_FAILURE;
+        }
+    }
+    if (dia_err) {
+        switch (*dia_err) {
+        case ER_DIAMETER_AUTHORIZATION_REJECTED:                /* 5003 */
+        case ER_DIAMETER_UNABLE_TO_DELIVER:                     /* 3002 */
+        case ER_DIAMETER_REALM_NOT_SERVED:                      /* 3003 */
+            return EMM_CAUSE_NO_SUITABLE_CELLS_IN_TRACKING_AREA;
+        case ER_DIAMETER_UNABLE_TO_COMPLY:                      /* 5012 */
+        case ER_DIAMETER_INVALID_AVP_VALUE:                     /* 5004 */
+        case ER_DIAMETER_AVP_UNSUPPORTED:                       /* 5001 */
+        case ER_DIAMETER_MISSING_AVP:                           /* 5005 */
+        case ER_DIAMETER_RESOURCES_EXCEEDED:                    /* 5006 */
+        case ER_DIAMETER_AVP_OCCURS_TOO_MANY_TIMES:             /* 5009 */
+        default: /* FIXME: only permanent */
+            return EMM_CAUSE_NETWORK_FAILURE;
+        }
+    }
+
+    ogs_error("Unexpected Diameter Result Code %d/%d, defaulting to severe "
+              "network failure",
+              dia_err ? *dia_err : -1, dia_exp_err ? *dia_exp_err : -1);
+    return EMM_CAUSE_SEVERE_NETWORK_FAILURE;
+}
+
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
     mme_sm_debug(e);
@@ -58,7 +103,6 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     ogs_sockaddr_t *addr = NULL;
     mme_enb_t *enb = NULL;
     uint16_t max_num_of_ostreams = 0;
-    mme_sgw_t *sgw = NULL;
 
     s1ap_message_t s1ap_message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -271,7 +315,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         ogs_fsm_dispatch(&mme_ue->sm, e);
         if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_exception)) {
-            mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
+            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         }
 
         ogs_pkbuf_free(pkbuf);
@@ -328,8 +372,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
              * [Enhancement] - Probably Invalid APN 
              * At this point, we'll forcely release UE context
              */
-            mme_send_delete_session_or_ue_context_release(
-                    mme_ue, mme_ue->enb_ue);
+            mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         }
 
         ogs_pkbuf_free(pkbuf);
@@ -354,20 +397,24 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         if (s6a_message->result_code != ER_DIAMETER_SUCCESS) {
             enb_ue_t *enb_ue = NULL;
 
-            rv = nas_send_attach_reject(mme_ue,
-                EMM_CAUSE_IMSI_UNKNOWN_IN_HSS,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-            ogs_assert(rv == OGS_OK);
-            ogs_warn("EMM_CAUSE : IMSI Unknown in HSS");
+            /* Unfortunately fd doesn't distinguish
+             * between result-code and experimental-result-code.
+             *
+             * However, e.g. 5004 has different meaning
+             * if used in result-code than in experimental-result-code */
+            uint8_t emm_cause = emm_cause_from_diameter(
+                    s6a_message->err, s6a_message->exp_err);
+
+            nas_send_attach_reject(mme_ue,
+                emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            ogs_warn("EMM_CAUSE : %d", emm_cause);
 
             enb_ue = mme_ue->enb_ue;
             ogs_assert(enb_ue);
 
-            CLEAR_ENB_UE_TIMER(enb_ue->t_ue_context_release);
-            rv = s1ap_send_ue_context_release_command(enb_ue,
+            s1ap_send_ue_context_release_command(enb_ue,
                     S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release,
                     S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
-            ogs_assert(rv == OGS_OK);
 
             ogs_pkbuf_free(s6abuf);
             break;
@@ -459,15 +506,9 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             ogs_assert(gnode);
 
         } else {
-            ogs_assert(e->addr);
-
-            sgw = mme_sgw_find_by_addr(e->addr);
-            ogs_assert(sgw);
-
-            gnode = sgw->gnode;
+            gnode = e->gnode;
             ogs_assert(gnode);
         }
-        ogs_free(e->addr);
 
         rv = ogs_gtp_xact_receive(gnode, &gtp_message.h, &xact);
         if (rv != OGS_OK) {

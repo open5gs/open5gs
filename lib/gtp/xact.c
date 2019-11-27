@@ -72,8 +72,9 @@ int ogs_gtp_xact_final(void)
     return OGS_OK;
 }
 
-ogs_gtp_xact_t *ogs_gtp_xact_local_create(
-        ogs_gtp_node_t *gnode, ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf)
+ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
+        ogs_gtp_header_t *hdesc, ogs_pkbuf_t *pkbuf,
+        void (*cb)(ogs_gtp_xact_t *xact, void *data), void *data)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];
@@ -89,6 +90,8 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(
     xact->org = OGS_GTP_LOCAL_ORIGINATOR;
     xact->xid = OGS_NEXT_ID(g_xact_id, GTP_MIN_XACT_ID, GTP_MAX_XACT_ID);
     xact->gnode = gnode;
+    xact->cb = cb;
+    xact->data = data;
 
     xact->tm_response = ogs_timer_add(g_timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
@@ -513,6 +516,10 @@ static void response_timeout(void *data)
                 xact->step, xact->seq[xact->step-1].type,
                 OGS_ADDR(&xact->gnode->remote_addr, buf),
                 OGS_PORT(&xact->gnode->remote_addr));
+
+        if (xact->cb)
+            xact->cb(xact, xact->data);
+
         ogs_gtp_xact_delete(xact);
     }
 

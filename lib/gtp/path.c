@@ -242,6 +242,24 @@ void ogs_gtp_send_error_message(
     case OGS_GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE:
         tlv = &errmsg.release_access_bearers_response.cause;
         break;
+    case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+        tlv = &errmsg.downlink_data_notification_acknowledge.cause;
+        break;
+    case OGS_GTP_CREATE_BEARER_RESPONSE_TYPE:
+        tlv = &errmsg.create_bearer_response.cause;
+        break;
+    case OGS_GTP_UPDATE_BEARER_RESPONSE_TYPE:
+        tlv = &errmsg.update_bearer_response.cause;
+        break;
+    case OGS_GTP_DELETE_BEARER_RESPONSE_TYPE:
+        tlv = &errmsg.delete_bearer_response.cause;
+        break;
+    case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        tlv = &errmsg.create_indirect_data_forwarding_tunnel_response.cause;
+        break;
+    case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
+        tlv = &errmsg.delete_indirect_data_forwarding_tunnel_response.cause;
+        break;
     default:
         ogs_assert_if_reached();
         return;

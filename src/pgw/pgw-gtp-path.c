@@ -91,6 +91,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     ssize_t size;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
+    ogs_gtp_node_t *gnode = NULL;
 
     ogs_assert(fd != INVALID_SOCKET);
 
@@ -108,20 +109,20 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pkbuf_trim(pkbuf, size);
 
     e = pgw_event_new(PGW_EVT_S5C_MESSAGE);
+    gnode = ogs_gtp_node_find_by_addr(&pgw_self()->sgw_s5c_list, &from);
+    if (!gnode) {
+        gnode = ogs_gtp_node_add_by_addr(&pgw_self()->sgw_s5c_list, &from);
+        ogs_assert(gnode);
+        gnode->sock = data;
+    }
     ogs_assert(e);
+    e->gnode = gnode;
     e->gtpbuf = pkbuf;
-
-    e->sock = data;
-    ogs_assert(e->sock);
-    e->addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
-    ogs_assert(e->addr);
-    memcpy(e->addr, &from, sizeof(ogs_sockaddr_t));
 
     rv = ogs_queue_push(pgw_self()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->gtpbuf);
-        ogs_free(e->addr);
         pgw_event_free(e);
     }
 }
@@ -185,7 +186,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     if (!subnet) {
         ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data, pkbuf->len);
-        ogs_trace("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
+        ogs_error("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
                 ip_h->ip_v, sess->ipv4, sess->ipv6);
         goto cleanup;
     }

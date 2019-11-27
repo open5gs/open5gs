@@ -58,6 +58,10 @@ const Subscriber = new Schema({
       downlink: Schema.Types.Long,
       uplink: Schema.Types.Long
     },
+    ue: {
+      addr: String,
+      addr6: String
+    },
     pgw: {
       addr: String,
       addr6: String

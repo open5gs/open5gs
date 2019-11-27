@@ -28,10 +28,6 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     sgw_event_t *e = NULL;
     int rv;
     ssize_t size;
-    ogs_gtp_header_t *gtp_h = NULL;
-#if 0
-    uint32_t teid = 0;
-#endif
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_sockaddr_t from;
     ogs_gtp_node_t *gnode = NULL;
@@ -50,13 +46,6 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     }
 
     ogs_pkbuf_trim(pkbuf, size);
-
-    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
-    ogs_assert(gtp_h);
-    ogs_assert(gtp_h->teid_presence);
-#if 0
-    teid = ntohl(gtp_h->teid);
-#endif
 
     /*
      * 5.5.2 in spec 29.274
@@ -90,6 +79,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     gnode = ogs_gtp_node_find_by_addr(&sgw_self()->pgw_s5c_list, &from);
     if (gnode) {
         e = sgw_event_new(SGW_EVT_S5C_MESSAGE);
+        ogs_assert(e);
         e->gnode = gnode;
     } else {
         e = sgw_event_new(SGW_EVT_S11_MESSAGE);
@@ -100,10 +90,10 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
             ogs_assert(gnode);
             gnode->sock = data;
         }
+        ogs_assert(e);
         e->gnode = gnode;
     }
 
-    ogs_assert(e);
     e->pkbuf = pkbuf;
 
     rv = ogs_queue_push(sgw_self()->queue, e);

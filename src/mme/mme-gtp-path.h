@@ -33,11 +33,11 @@ int mme_gtp_send_create_session_request(mme_sess_t *sess);
 int mme_gtp_send_modify_bearer_request(
         mme_bearer_t *bearer, int uli_presence);
 int mme_gtp_send_delete_session_request(mme_sess_t *sess);
-int mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue);
+void mme_gtp_send_delete_all_sessions(mme_ue_t *mme_ue);
 int mme_gtp_send_create_bearer_response(mme_bearer_t *bearer);
 int mme_gtp_send_update_bearer_response(mme_bearer_t *bearer);
 int mme_gtp_send_delete_bearer_response(mme_bearer_t *bearer);
-int mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue);
+void mme_gtp_send_release_access_bearers_request(mme_ue_t *mme_ue);
 
 int mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
         mme_ue_t *mme_ue);

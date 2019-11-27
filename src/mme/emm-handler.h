@@ -46,6 +46,9 @@ int emm_handle_tau_request(
 int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     ogs_nas_extended_service_request_t *extended_service_request);
 
+int emm_handle_security_mode_complete(mme_ue_t *mme_ue,
+    ogs_nas_security_mode_complete_t *security_mode_complete);
+
 #ifdef __cplusplus
 }
 #endif

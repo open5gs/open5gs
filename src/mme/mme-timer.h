@@ -32,8 +32,6 @@ typedef enum {
 
     MME_TIMER_S1_DELAYED_SEND,
 
-    MME_TIMER_UE_CONTEXT_RELEASE,
-
     MME_TIMER_T3413,
     MME_TIMER_T3422,
     MME_TIMER_T3450,
@@ -57,7 +55,6 @@ mme_timer_cfg_t *mme_timer_cfg(mme_timer_e id);
 const char *mme_timer_get_name(mme_timer_e id);
 
 void mme_timer_s1_delayed_send(void *data);
-void mme_timer_ue_context_release(void *data);
 
 void mme_timer_t3413_expire(void *data);
 void mme_timer_t3422_expire(void *data);

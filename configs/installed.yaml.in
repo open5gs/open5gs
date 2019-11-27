@@ -508,6 +508,34 @@ pgw:
 #        apn: volte
 #        dev: ogstun3
 #
+#  o Pool Range Sample
+#    ue_pool:
+#      - addr: 45.45.0.1/24
+#        range: 45.45.0.100-45.45.0.200
+#
+#    ue_pool:
+#      - addr: 45.45.0.1/24
+#        range:
+#          - 45.45.0.5-45.45.0.50
+#          - 45.45.0.100-
+#
+#    ue_pool:
+#      - addr: 45.45.0.1/24
+#        range:
+#          - -45.45.0.200
+#          - 45.45.0.210-45.45.0.220
+#
+#    ue_pool:
+#      - addr: 45.45.0.1/16
+#        range:
+#          - 45.45.0.100-45.45.0.200
+#          - 45.45.1.100-45.45.1.200
+#      - addr: cafe::1/64
+#        range:
+#          - cafe::a0-cafe:b0
+#          - cafe::c0-cafe:d0
+#
+#
     ue_pool:
       - addr: 45.45.0.1/16
       - addr: cafe::1/64

@@ -261,7 +261,7 @@ int ogs_dict_s6a_entry(char *conffile)
 			struct local_rules_definition rules[] =
 			{
                 { { .avp_vendor = 10415, .avp_name = "Context-Identifier" }, RULE_REQUIRED, -1, 1 },
-                { { .avp_vendor = 10415, .avp_name = "Served-Party-IP-Address" }, RULE_OPTIONAL, -1, 1 },
+                { { .avp_vendor = 10415, .avp_name = "Served-Party-IP-Address" }, RULE_OPTIONAL, -1, 2 },
                 { { .avp_vendor = 10415, .avp_name = "PDN-Type" }, RULE_REQUIRED, -1, 1 },
                 { {                      .avp_name = "Service-Selection" }, RULE_REQUIRED, -1, 1 },
                 { { .avp_vendor = 10415, .avp_name = "EPS-Subscribed-QoS-Profile" }, RULE_OPTIONAL, -1, 1 },

@@ -144,7 +144,6 @@ int esm_handle_information_response(mme_sess_t *sess,
             if (csmap) {
                 sgsap_send_location_update_request(mme_ue);
             } else {
-                CLEAR_MME_UE_TIMER(mme_ue->t3450);
                 nas_send_attach_accept(mme_ue);
             }
         } else {

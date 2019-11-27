@@ -60,12 +60,17 @@ struct dict_object *ogs_diam_s6a_apn_configuration = NULL;
 struct dict_object *ogs_diam_s6a_max_bandwidth_ul = NULL;
 struct dict_object *ogs_diam_s6a_max_bandwidth_dl = NULL;
 struct dict_object *ogs_diam_s6a_pdn_type = NULL;
+struct dict_object *ogs_diam_s6a_served_party_ip_address = NULL;
 struct dict_object *ogs_diam_s6a_eps_subscribed_qos_profile = NULL;
 struct dict_object *ogs_diam_s6a_qos_class_identifier = NULL;
 struct dict_object *ogs_diam_s6a_allocation_retention_priority = NULL;
 struct dict_object *ogs_diam_s6a_priority_level = NULL;
 struct dict_object *ogs_diam_s6a_pre_emption_capability = NULL;
 struct dict_object *ogs_diam_s6a_pre_emption_vulnerability = NULL;
+
+struct dict_object *ogs_diam_s6a_terminal_information = NULL;
+struct dict_object *ogs_diam_s6a_imei = NULL;
+struct dict_object *ogs_diam_s6a_software_version = NULL;
 
 extern int ogs_dict_s6a_entry(char *conffile);
 
@@ -119,11 +124,16 @@ int ogs_diam_s6a_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "APN-Configuration", &ogs_diam_s6a_apn_configuration);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Service-Selection", &ogs_diam_s6a_service_selection);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "PDN-Type", &ogs_diam_s6a_pdn_type);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Served-Party-IP-Address", &ogs_diam_s6a_served_party_ip_address);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscription-Data", &ogs_diam_s6a_subscription_data);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscriber-Status", &ogs_diam_s6a_subscriber_status);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Network-Access-Mode", &ogs_diam_s6a_network_access_mode);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Access-Restriction-Data", &ogs_diam_s6a_access_restriction_data);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Subscribed-Periodic-RAU-TAU-Timer", &ogs_diam_s6a_subscribed_rau_tau_timer);
+
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Terminal-Information", &ogs_diam_s6a_terminal_information);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IMEI", &ogs_diam_s6a_imei);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Software-Version", &ogs_diam_s6a_software_version);
 
 	return 0;
 }

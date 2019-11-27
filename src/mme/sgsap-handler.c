@@ -32,7 +32,6 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 {
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
-    enb_ue_t *enb_ue = NULL;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
@@ -102,26 +101,21 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
         ogs_debug("    P-TMSI[0x%08x]", mme_ue->p_tmsi);
     }
 
-    CLEAR_MME_UE_TIMER(mme_ue->t3450);
     nas_send_attach_accept(mme_ue);
 
     return;
 
 error:
-    enb_ue = mme_ue->enb_ue;
-    ogs_assert(enb_ue);
-
     nas_send_attach_reject(mme_ue,
             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED,
             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-    mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
+    mme_send_delete_session_or_mme_ue_context_release(mme_ue);
 }
 
 void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 {
     ogs_tlv_t *root = NULL, *iter = NULL;
     mme_ue_t *mme_ue = NULL;
-    enb_ue_t *enb_ue = NULL;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
@@ -180,12 +174,9 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                     ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
     }
 
-    enb_ue = mme_ue->enb_ue;
-    ogs_assert(enb_ue);
-
     nas_send_attach_reject(mme_ue,
             emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-    mme_send_delete_session_or_ue_context_release(mme_ue, enb_ue);
+    mme_send_delete_session_or_mme_ue_context_release(mme_ue);
 }
 
 void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)

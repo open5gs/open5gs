@@ -264,30 +264,11 @@ struct enb_ue_s {
     /* Store by UE Context Release Command
      * Retrieve by UE Context Release Complete */
 #define S1AP_UE_CTX_REL_INVALID_ACTION                      0
-#define S1AP_UE_CTX_REL_NO_ACTION                           1
-#define S1AP_UE_CTX_REL_S1_NORMAL_RELEASE                   2
+#define S1AP_UE_CTX_REL_S1_CONTEXT_REMOVE                   1
+#define S1AP_UE_CTX_REL_S1_REMOVE_AND_UNLINK                2
 #define S1AP_UE_CTX_REL_UE_CONTEXT_REMOVE                   3
 #define S1AP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              4
     uint8_t         ue_ctx_rel_action;
-
-#define CLEAR_ENB_UE_ALL_TIMERS(__eNB) \
-    do { \
-        CLEAR_ENB_UE_TIMER((__eNB)->t_ue_context_release); \
-    } while(0);
-#define CLEAR_ENB_UE_TIMER(__eNB_UE_TIMER) \
-    do { \
-        ogs_timer_stop((__eNB_UE_TIMER).timer); \
-        if ((__eNB_UE_TIMER).pkbuf) { \
-            ogs_pkbuf_free((__eNB_UE_TIMER).pkbuf); \
-            (__eNB_UE_TIMER).pkbuf = NULL; \
-        } \
-        (__eNB_UE_TIMER).retry_count = 0; \
-    } while(0);
-    struct {
-        ogs_pkbuf_t     *pkbuf;
-        ogs_timer_t     *timer;
-        uint32_t        retry_count;;
-    } t_ue_context_release;
 
     /* Related Context */
     mme_enb_t       *enb;
@@ -323,6 +304,12 @@ struct mme_ue_s {
     int             imsi_len;
     char            imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
     ogs_nas_mobile_identity_imsi_t nas_mobile_identity_imsi;
+
+    bool            imeisv_presence;
+    uint8_t         imeisv[OGS_MAX_IMEISV_LEN];
+    int             imeisv_len;
+    char            imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
+    ogs_nas_mobile_identity_imeisv_t nas_mobile_identity_imeisv;
 
     mme_m_tmsi_t    *m_tmsi;
     mme_p_tmsi_t    p_tmsi;
@@ -461,6 +448,12 @@ struct mme_ue_s {
     OCTET_STRING_t  container;
 
     /* GTP Request/Response Counter */
+#define GTP_COUNTER_CLEAR(__mME, __tYPE) \
+        do { \
+            ogs_assert((__mME)); \
+            ((__mME)->gtp_counter[__tYPE].request) = 0; \
+            ((__mME)->gtp_counter[__tYPE].response) = 0; \
+        } while(0);
 #define GTP_COUNTER_INCREMENT(__mME, __tYPE) \
         do { \
             ogs_assert((__mME)); \
@@ -475,8 +468,7 @@ struct mme_ue_s {
             if (((__mME)->gtp_counter[__tYPE].request) == \
                 ((__mME)->gtp_counter[__tYPE].response)) \
             { \
-                ((__mME)->gtp_counter[__tYPE].request) = 0; \
-                ((__mME)->gtp_counter[__tYPE].response) = 0; \
+                GTP_COUNTER_CLEAR(__mME, __tYPE) \
                 __eXPR \
             } \
         } while(0);
