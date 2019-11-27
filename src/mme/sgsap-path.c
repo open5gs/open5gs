@@ -133,7 +133,7 @@ int sgsap_send_location_update_request(mme_ue_t *mme_ue)
 
     pkbuf = sgsap_build_location_update_request(mme_ue);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -149,7 +149,7 @@ int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue)
 
     pkbuf = sgsap_build_tmsi_reallocation_complete(mme_ue);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -162,7 +162,7 @@ int sgsap_send_detach_indication(mme_ue_t *mme_ue)
 
     pkbuf = sgsap_build_detach_indication(mme_ue);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -178,7 +178,7 @@ int sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue)
 
     pkbuf = sgsap_build_mo_csfb_indication(mme_ue);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -196,7 +196,7 @@ int sgsap_send_service_request(mme_ue_t *mme_ue, uint8_t emm_mode)
 
     pkbuf = sgsap_build_service_request(mme_ue, emm_mode);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -211,7 +211,7 @@ int sgsap_send_reset_ack(mme_vlr_t *vlr)
 
     pkbuf = sgsap_build_reset_ack(vlr);
     rv =  sgsap_send_to_vlr_with_sid(vlr, pkbuf, 0);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -231,7 +231,7 @@ int sgsap_send_uplink_unitdata(
 
     pkbuf = sgsap_build_uplink_unidata(mme_ue, nas_message_container);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -248,7 +248,7 @@ int sgsap_send_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause)
 
     pkbuf = sgsap_build_ue_unreachable(mme_ue, sgs_cause);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
