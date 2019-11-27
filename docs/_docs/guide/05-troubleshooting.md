@@ -133,6 +133,7 @@ If your device shows as connected (Includes LTE/4G symbol) there are a few simpl
    ```
    $ sudo ufw disable
    ```
+
 ## Further Debugging
 ---
 
