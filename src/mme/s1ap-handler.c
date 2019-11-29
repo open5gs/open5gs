@@ -160,7 +160,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
                 &s1apbuf, group, cause, S1AP_TimeToWait_v10s) == OGS_OK);
     }
 
-    ogs_assert(
+    ogs_expect(
             s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == OGS_OK);
 }
 
@@ -300,8 +300,7 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d] TAC[%d]",
         enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id, enb_ue->saved.tai.tac);
 
-    ogs_assert(s1ap_send_to_nas(enb_ue,
-        S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU) == OGS_OK);
+    s1ap_send_to_nas(enb_ue, S1AP_ProcedureCode_id_initialUEMessage, NAS_PDU);
 }
 
 void s1ap_handle_uplink_nas_transport(
@@ -354,8 +353,7 @@ void s1ap_handle_uplink_nas_transport(
     ogs_debug("    ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             enb_ue->enb_ue_s1ap_id, enb_ue->mme_ue_s1ap_id);
 
-    ogs_assert(s1ap_send_to_nas(enb_ue,
-        S1AP_ProcedureCode_id_uplinkNASTransport, NAS_PDU) == OGS_OK);
+    s1ap_send_to_nas(enb_ue, S1AP_ProcedureCode_id_uplinkNASTransport, NAS_PDU);
 }
 
 void s1ap_handle_ue_capability_info_indication(
@@ -506,7 +504,7 @@ void s1ap_handle_initial_context_setup_response(
                 uli_presence = 1;
             }
             rv = mme_gtp_send_modify_bearer_request(bearer, uli_presence);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
         }
     }
 
@@ -803,10 +801,10 @@ void s1ap_handle_e_rab_setup_response(
 
             if (bearer->ebi == linked_bearer->ebi) {
                 rv = mme_gtp_send_modify_bearer_request(bearer, 0);
-                ogs_assert(rv == OGS_OK);
+                ogs_expect(rv == OGS_OK);
             } else {
                 rv = mme_gtp_send_create_bearer_response(bearer);
-                ogs_assert(rv == OGS_OK);
+                ogs_expect(rv == OGS_OK);
             }
         }
     }
@@ -870,7 +868,7 @@ void s1ap_handle_ue_context_release_request(
                 MME_UE_S1AP_ID, ENB_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
         return;
     }
 
@@ -949,7 +947,7 @@ void s1ap_handle_ue_context_release_complete(
                 MME_UE_S1AP_ID, NULL,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
         return;
     }
 
@@ -983,13 +981,13 @@ void s1ap_handle_ue_context_release_complete(
         if (mme_ue_have_indirect_tunnel(mme_ue)) {
             rv = mme_gtp_send_delete_indirect_data_forwarding_tunnel_request(
                     mme_ue);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
         } else {
             ogs_warn("Check your eNodeB");
             ogs_warn("  There is no INDIRECT TUNNEL");
             ogs_warn("  Packet could be dropped during S1-Handover");
             rv = mme_ue_clear_indirect_tunnel(mme_ue);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
         }
         break;
     default:
@@ -1098,10 +1096,10 @@ void s1ap_handle_path_switch_request(
                 *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_unknown_mme_ue_s1ap_id);
-        ogs_assert(rv == OGS_OK && s1apbuf);
+        ogs_expect(rv == OGS_OK && s1apbuf);
 
         rv = s1ap_send_to_enb(enb, s1apbuf, S1AP_NON_UE_SIGNALLING);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
         return;
     }
 
@@ -1118,10 +1116,10 @@ void s1ap_handle_path_switch_request(
         rv = s1ap_build_path_switch_failure(&s1apbuf,
                 *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
                 S1AP_Cause_PR_nas, S1AP_CauseNas_authentication_failure);
-        ogs_assert(rv == OGS_OK && s1apbuf);
+        ogs_expect(rv == OGS_OK && s1apbuf);
 
         rv = s1ap_send_to_enb_ue(enb_ue, s1apbuf);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
         return;
     }
 
@@ -1187,13 +1185,13 @@ void s1ap_handle_path_switch_request(
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
         rv = ogs_s1ap_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
 
         GTP_COUNTER_INCREMENT(
                 mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH);
 
         rv = mme_gtp_send_modify_bearer_request(bearer, 1);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
     }
 
     /* Switch to enb */
@@ -1283,7 +1281,7 @@ void s1ap_handle_enb_configuration_transfer(
 
         rv = s1ap_send_mme_configuration_transfer(
                 target_enb, SONConfigurationTransfer);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
     }
 }
 
@@ -1388,7 +1386,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
         ogs_assert(Cause);
 
         rv = s1ap_send_handover_preparation_failure(source_ue, Cause);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
 
         return;
     }
@@ -1400,7 +1398,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
             ENB_UE_S1AP_ID, MME_UE_S1AP_ID,
             HandoverType, Cause,
             Source_ToTarget_TransparentContainer);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void s1ap_handle_handover_request_ack(mme_enb_t *enb, ogs_s1ap_message_t *message)
@@ -1528,10 +1526,10 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, ogs_s1ap_message_t *messag
     if (mme_ue_have_indirect_tunnel(mme_ue) == 1) {
         rv = mme_gtp_send_create_indirect_data_forwarding_tunnel_request(
                 mme_ue);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
     } else {
         rv = s1ap_send_handover_command(source_ue);
-        ogs_assert(rv == OGS_OK);
+        ogs_expect(rv == OGS_OK);
     }
 }
 
@@ -1593,7 +1591,7 @@ void s1ap_handle_handover_failure(mme_enb_t *enb, ogs_s1ap_message_t *message)
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     rv = s1ap_send_handover_preparation_failure(source_ue, Cause);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     s1ap_send_ue_context_release_command(
         target_ue, S1AP_Cause_PR_radioNetwork,
@@ -1664,7 +1662,7 @@ void s1ap_handle_handover_cancel(mme_enb_t *enb, ogs_s1ap_message_t *message)
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
     rv = s1ap_send_handover_cancel_ack(source_ue);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     s1ap_send_ue_context_release_command(
             target_ue, S1AP_Cause_PR_radioNetwork,
@@ -1743,7 +1741,7 @@ void s1ap_handle_enb_status_transfer(mme_enb_t *enb, ogs_s1ap_message_t *message
 
     rv = s1ap_send_mme_status_transfer(target_ue,
             ENB_StatusTransfer_TransparentContainer);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void s1ap_handle_handover_notification(mme_enb_t *enb, ogs_s1ap_message_t *message)
@@ -1875,7 +1873,7 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, ogs_s1ap_message_t *messa
                     mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY);
 
             rv = mme_gtp_send_modify_bearer_request(bearer, 1);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
 
             bearer = mme_bearer_next(bearer);
         }
@@ -1997,7 +1995,7 @@ void s1ap_handle_s1_reset(
     }
 
     rv = s1ap_send_s1_reset_ack(enb, partOfS1_Interface);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void s1ap_handle_write_replace_warning_response(

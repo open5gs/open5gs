@@ -246,7 +246,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             rv = s1ap_send_error_indication(
                     enb, NULL, NULL, S1AP_Cause_PR_protocol, 
                     S1AP_CauseProtocol_abstract_syntax_error_falsely_constructed_message);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
         }
 
         ogs_s1ap_free(&s1ap_message);
@@ -268,7 +268,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(enb_ue);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
-        ogs_assert(ogs_nas_emm_decode(&nas_message, pkbuf) == OGS_OK);
+        if (ogs_nas_emm_decode(&nas_message, pkbuf) != OGS_OK) {
+            ogs_expect(0);
+            ogs_pkbuf_free(pkbuf);
+            return;
+        }
 
         mme_ue = enb_ue->mme_ue;
         if (!mme_ue) {
@@ -290,7 +294,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                      * So, we disabled 'ciphered' 
                      * not to decrypt NAS message */
                     h.ciphered = 0;
-                    ogs_assert(nas_security_decode(mme_ue, h, pkbuf) == OGS_OK);
+                    if (nas_security_decode(mme_ue, h, pkbuf) != OGS_OK) {
+                        ogs_expect(0);
+                        ogs_pkbuf_free(pkbuf);
+                        return;
+                    }
                 }
             }
 
@@ -334,7 +342,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
-        ogs_assert(ogs_nas_esm_decode(&nas_message, pkbuf) == OGS_OK);
+        if (ogs_nas_esm_decode(&nas_message, pkbuf) != OGS_OK) {
+            ogs_expect(0);
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
 
         bearer = mme_bearer_find_or_add_by_message(mme_ue, &nas_message);
         if (!bearer) {
@@ -346,7 +358,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         sess = bearer->sess;
         ogs_assert(sess);
         default_bearer = mme_default_bearer_in_sess(sess);
-        ogs_assert(default_bearer);
+        ogs_expect(default_bearer);
+        if (!default_bearer) {
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
 
         e->bearer = bearer;
         e->nas_message = &nas_message;
@@ -431,7 +447,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
                     rv = nas_send_emm_to_esm(mme_ue,
                             &mme_ue->pdn_connectivity_request);
-                    ogs_assert(rv == OGS_OK);
+                    ogs_expect(rv == OGS_OK);
                 } else {
                     ogs_fatal("Invalid Type[%d]", mme_ue->nas_eps.type);
                     ogs_assert_if_reached();
@@ -441,12 +457,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
                     rv = nas_send_tau_accept(mme_ue,
                             S1AP_ProcedureCode_id_InitialContextSetup);
-                    ogs_assert(rv == OGS_OK);
+                    ogs_expect(rv == OGS_OK);
                 } else if (mme_ue->nas_eps.type ==
                     MME_EPS_TYPE_SERVICE_REQUEST) {
                     rv = s1ap_send_initial_context_setup_request(
                             mme_ue);
-                    ogs_assert(rv == OGS_OK);
+                    ogs_expect(rv == OGS_OK);
                 } else {
                     ogs_fatal("Invalid Type[%d]", mme_ue->nas_eps.type);
                     ogs_assert_if_reached();

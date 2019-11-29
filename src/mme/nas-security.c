@@ -73,7 +73,10 @@ int nas_security_encode(
         h.protocol_discriminator = message->h.protocol_discriminator;
         h.sequence_number = (mme_ue->dl_count & 0xff);
 
-        ogs_assert(ogs_nas_plain_encode(&new, message) == OGS_OK);
+        if (ogs_nas_plain_encode(&new, message) != OGS_OK) {
+            ogs_error("Error encoding plaintext NAS");
+            return OGS_ERROR;
+        }
 
         if (ciphered) {
             /* encrypt NAS message */

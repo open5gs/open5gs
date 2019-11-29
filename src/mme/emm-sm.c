@@ -144,7 +144,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             rv = s1ap_send_initial_context_setup_request(mme_ue);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
             return;
         }
 
@@ -193,7 +193,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 ogs_warn("[EMM] TAU request : Unknown UE");
                 rv = nas_send_tau_reject(mme_ue,
                 EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                ogs_assert(rv == OGS_OK);
+                ogs_expect(rv == OGS_OK);
                 OGS_FSM_TRAN(s, &emm_state_exception);
                 return;
             }
@@ -266,7 +266,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                         &MME_UE_S1AP_ID, &ENB_UE_S1AP_ID,
                         S1AP_Cause_PR_transport,
                         S1AP_CauseTransport_transport_resource_unavailable);
-                ogs_assert(rv == OGS_OK);
+                ogs_expect(rv == OGS_OK);
             }
 
             return;
@@ -339,7 +339,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
             rv = nas_send_emm_to_esm(mme_ue,
                     &mme_ue->pdn_connectivity_request);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
             OGS_FSM_TRAN(s, &emm_state_initial_context_setup);
         } else {
             if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
@@ -357,7 +357,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             ogs_warn("No PDN Connection : UE[%s]", mme_ue->imsi_bcd);
             rv = nas_send_tau_reject(mme_ue,
                 EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
             OGS_FSM_TRAN(s, emm_state_exception);
             break;
         }
@@ -373,11 +373,11 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             if (mme_ue->nas_eps.update.active_flag) {
                 rv = nas_send_tau_accept(mme_ue,
                         S1AP_ProcedureCode_id_InitialContextSetup);
-                ogs_assert(rv == OGS_OK);
+                ogs_expect(rv == OGS_OK);
             } else {
                 rv = nas_send_tau_accept(mme_ue,
                         S1AP_ProcedureCode_id_downlinkNASTransport);
-                ogs_assert(rv == OGS_OK);
+                ogs_expect(rv == OGS_OK);
 
                 mme_send_release_access_bearer_or_ue_context_release(enb_ue);
             }
@@ -385,10 +385,9 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    Uplink NAS Transport");
             rv = nas_send_tau_accept(mme_ue,
                     S1AP_ProcedureCode_id_downlinkNASTransport);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
         } else {
             ogs_fatal("Invalid Procedure Code[%d]", (int)procedureCode);
-            ogs_assert_if_reached();
         }
         break;
     case MME_EPS_TYPE_EXTENDED_SERVICE_REQUEST:
@@ -442,7 +441,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             rv = s1ap_send_initial_context_setup_request(mme_ue);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
 
         } else if (procedureCode == S1AP_ProcedureCode_id_uplinkNASTransport) {
             ogs_debug("    Uplink NAS Transport");
@@ -468,16 +467,14 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             }
 
             rv = s1ap_send_ue_context_modification_request(mme_ue);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
         } else {
             ogs_fatal("Invalid Procedure Code[%d]", (int)procedureCode);
-            ogs_assert_if_reached();
         }
 
         break;
     default:
         ogs_fatal("Invalid NAS-EPS[%d]", mme_ue->nas_eps.type);
-        ogs_assert_if_reached();
         break;
     }
 }
@@ -529,7 +526,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
                 ogs_log_hexdump(OGS_LOG_WARN,
                         mme_ue->xres, OGS_MAX_RES_LEN);
                 rv = nas_send_authentication_reject(mme_ue);
-                ogs_assert(rv == OGS_OK);
+                ogs_expect(rv == OGS_OK);
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
             } else {
                 OGS_FSM_TRAN(&mme_ue->sm, &emm_state_security_mode);
@@ -573,7 +570,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             }
 
             rv = nas_send_authentication_reject(mme_ue);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
             OGS_FSM_TRAN(&mme_ue->sm, &emm_state_exception);
 
             break;
@@ -730,7 +727,6 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 OGS_FSM_TRAN(s, &emm_state_registered);
             } else {
                 ogs_fatal("Invalid OGS_NAS_EPS[%d]", mme_ue->nas_eps.type);
-                ogs_assert_if_reached();
             }
             break;
         case OGS_NAS_SECURITY_MODE_REJECT:
@@ -757,7 +753,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("[EMM] Tracking area update request");
             rv = nas_send_tau_reject(mme_ue,
                 EMM_CAUSE_SECURITY_MODE_REJECTED_UNSPECIFIED);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
             OGS_FSM_TRAN(s, &emm_state_exception);
             break;
         case OGS_NAS_EMM_STATUS:

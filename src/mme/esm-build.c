@@ -54,10 +54,10 @@ int esm_build_pdn_connectivity_reject(
     pdn_connectivity_reject->esm_cause = esm_cause;
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-        ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+        ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
                 *pkbuf);
     } else {
-        ogs_assert(ogs_nas_plain_encode(pkbuf, &message) == OGS_OK && *pkbuf);
+        ogs_expect(ogs_nas_plain_encode(pkbuf, &message) == OGS_OK && *pkbuf);
     }
 
     return OGS_OK;
@@ -88,7 +88,7 @@ int esm_build_information_request(ogs_pkbuf_t **pkbuf, mme_bearer_t *bearer)
     message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type = OGS_NAS_ESM_INFORMATION_REQUEST;
 
-    ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+    ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
             *pkbuf);
 
     return OGS_OK;
@@ -169,8 +169,10 @@ int esm_build_activate_default_bearer_context_request(
                 pdn->paa.both.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
         pdn_address->length = OGS_NAS_PDN_ADDRESS_IPV4V6_LEN;
         ogs_debug("    IPv4v6");
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("Unexpected PDN Type %u", pdn_address->pdn_type);
+        return OGS_ERROR;
+    }
 
     if (pdn->ambr.downlink || pdn->ambr.uplink) {
         activate_default_eps_bearer_context_request->presencemask |=
@@ -187,10 +189,10 @@ int esm_build_activate_default_bearer_context_request(
     }
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-        ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+        ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
                 *pkbuf);
     } else {
-        ogs_assert(ogs_nas_plain_encode(pkbuf, &message) == OGS_OK && *pkbuf);
+        ogs_expect(ogs_nas_plain_encode(pkbuf, &message) == OGS_OK && *pkbuf);
     }
 
     return OGS_OK;
@@ -244,7 +246,7 @@ int esm_build_activate_dedicated_bearer_context_request(
     ogs_assert(bearer->tft.data);
     memcpy(tft->buffer, bearer->tft.data, tft->length);
 
-    ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+    ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
             *pkbuf);
 
     return OGS_OK;
@@ -301,7 +303,7 @@ int esm_build_modify_bearer_context_request(
         memcpy(tft->buffer, bearer->tft.data, tft->length);
     }
 
-    ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+    ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
             *pkbuf);
 
     return OGS_OK;
@@ -340,7 +342,7 @@ int esm_build_deactivate_bearer_context_request(
 
     deactivate_eps_bearer_context_request->esm_cause = esm_cause;
 
-    ogs_assert(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
+    ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
             *pkbuf);
 
     return OGS_OK;
