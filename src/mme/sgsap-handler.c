@@ -323,7 +323,12 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 goto paging_reject;
 
         } else {
-            nas_send_cs_service_notification(mme_ue);
+            if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
+                nas_send_cs_service_notification(mme_ue);
+            } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
+                /* Nothing to do */
+            } else
+                goto paging_reject;
         }
 
         return;
