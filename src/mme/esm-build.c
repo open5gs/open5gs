@@ -24,8 +24,8 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __esm_log_domain
 
-int esm_build_pdn_connectivity_reject(
-        ogs_pkbuf_t **pkbuf, mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause)
+ogs_pkbuf_t *esm_build_pdn_connectivity_reject(
+        mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause)
 {
     mme_ue_t *mme_ue = NULL;
     ogs_nas_message_t message;
@@ -54,16 +54,13 @@ int esm_build_pdn_connectivity_reject(
     pdn_connectivity_reject->esm_cause = esm_cause;
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-        ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
-                *pkbuf);
+        return nas_security_encode(mme_ue, &message);
     } else {
-        ogs_expect(ogs_nas_plain_encode(pkbuf, &message) == OGS_OK && *pkbuf);
+        return ogs_nas_plain_encode(&message);
     }
-
-    return OGS_OK;
 }
 
-int esm_build_information_request(ogs_pkbuf_t **pkbuf, mme_bearer_t *bearer)
+ogs_pkbuf_t *esm_build_information_request(mme_bearer_t *bearer)
 {
     ogs_nas_message_t message;
     mme_ue_t *mme_ue = NULL;
@@ -88,14 +85,11 @@ int esm_build_information_request(ogs_pkbuf_t **pkbuf, mme_bearer_t *bearer)
     message.esm.h.procedure_transaction_identity = sess->pti;
     message.esm.h.message_type = OGS_NAS_ESM_INFORMATION_REQUEST;
 
-    ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
-            *pkbuf);
-
-    return OGS_OK;
+    return nas_security_encode(mme_ue, &message);
 }
 
-int esm_build_activate_default_bearer_context_request(
-        ogs_pkbuf_t **pkbuf, mme_sess_t *sess)
+ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
+        mme_sess_t *sess)
 {
     ogs_nas_message_t message;
     ogs_nas_activate_default_eps_bearer_context_request_t 
@@ -171,7 +165,7 @@ int esm_build_activate_default_bearer_context_request(
         ogs_debug("    IPv4v6");
     } else {
         ogs_error("Unexpected PDN Type %u", pdn_address->pdn_type);
-        return OGS_ERROR;
+        return NULL;
     }
 
     if (pdn->ambr.downlink || pdn->ambr.uplink) {
@@ -189,17 +183,14 @@ int esm_build_activate_default_bearer_context_request(
     }
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
-        ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
-                *pkbuf);
+        return nas_security_encode(mme_ue, &message);
     } else {
-        ogs_expect(ogs_nas_plain_encode(pkbuf, &message) == OGS_OK && *pkbuf);
+        return ogs_nas_plain_encode(&message);
     }
-
-    return OGS_OK;
 }
 
-int esm_build_activate_dedicated_bearer_context_request(
-        ogs_pkbuf_t **pkbuf, mme_bearer_t *bearer)
+ogs_pkbuf_t *esm_build_activate_dedicated_bearer_context_request(
+        mme_bearer_t *bearer)
 {
     mme_ue_t *mme_ue = NULL;
     mme_bearer_t *linked_bearer = NULL;
@@ -246,14 +237,11 @@ int esm_build_activate_dedicated_bearer_context_request(
     ogs_assert(bearer->tft.data);
     memcpy(tft->buffer, bearer->tft.data, tft->length);
 
-    ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
-            *pkbuf);
-
-    return OGS_OK;
+    return nas_security_encode(mme_ue, &message);
 }
 
-int esm_build_modify_bearer_context_request(
-        ogs_pkbuf_t **pkbuf, mme_bearer_t *bearer, int qos_presence, int tft_presence)
+ogs_pkbuf_t *esm_build_modify_bearer_context_request(
+        mme_bearer_t *bearer, int qos_presence, int tft_presence)
 {
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -303,14 +291,11 @@ int esm_build_modify_bearer_context_request(
         memcpy(tft->buffer, bearer->tft.data, tft->length);
     }
 
-    ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
-            *pkbuf);
-
-    return OGS_OK;
+    return nas_security_encode(mme_ue, &message);
 }
 
-int esm_build_deactivate_bearer_context_request(
-        ogs_pkbuf_t **pkbuf, mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause)
+ogs_pkbuf_t *esm_build_deactivate_bearer_context_request(
+        mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause)
 {
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -342,8 +327,5 @@ int esm_build_deactivate_bearer_context_request(
 
     deactivate_eps_bearer_context_request->esm_cause = esm_cause;
 
-    ogs_expect(nas_security_encode(pkbuf, mme_ue, &message) == OGS_OK && 
-            *pkbuf);
-
-    return OGS_OK;
+    return nas_security_encode(mme_ue, &message);
 }

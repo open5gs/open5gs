@@ -273,13 +273,13 @@ void ogs_gtp_send_error_message(
     tlv->len = sizeof(cause);
     tlv->data = &cause;
 
-    rv = ogs_gtp_build_msg(&pkbuf, &errmsg);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(&errmsg);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(xact, &errmsg.h, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 

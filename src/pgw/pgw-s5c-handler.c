@@ -239,7 +239,7 @@ void pgw_s5c_handle_create_bearer_response(
     OGS_SETUP_GTP_NODE(bearer, sgw);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
     
     ogs_debug("[PGW] Create Bearer Response : SGW[0x%x] --> PGW[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
@@ -268,7 +268,7 @@ void pgw_s5c_handle_update_bearer_response(
     }
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
     
     ogs_debug("[PGW] Update Bearer Response : SGW[0x%x] --> PGW[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
@@ -302,7 +302,7 @@ void pgw_s5c_handle_delete_bearer_response(
     ogs_assert(bearer);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
     
     ogs_debug("[PGW] Delete Bearer Response : SGW[0x%x] --> PGW[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);

@@ -97,9 +97,8 @@ static void s1ap_message_test4(abts_case *tc, void *data)
     mme_self()->served_gummei[0].num_of_mme_gid = 1;
     mme_self()->served_gummei[0].num_of_mme_code = 1;
 
-    rv = s1ap_build_setup_rsp(&pkbuf);
+    pkbuf = s1ap_build_setup_rsp();
 
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
     ABTS_PTR_NOTNULL(tc, pkbuf);
     ABTS_PTR_NOTNULL(tc, pkbuf->data);
     ABTS_INT_EQUAL(tc, 27, pkbuf->len);
@@ -157,8 +156,7 @@ static void s1ap_message_test6(abts_case *tc, void *data)
     for (i = 0; i < emmbuf->len; i++)
         ((char *)emmbuf->data)[i] = 0xef;
 
-    rv = s1ap_build_downlink_nas_transport(&s1apbuf, &enb_ue, emmbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    s1apbuf = s1ap_build_downlink_nas_transport(&enb_ue, emmbuf);
     ABTS_TRUE(tc, memcmp(OGS_HEX(_result, strlen(_result), buffer),
             s1apbuf->data, s1apbuf->len) == 0);
     ogs_pkbuf_free(s1apbuf);

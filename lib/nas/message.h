@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-09-30 22:46:44.500512 by acetcom
+ * Created on: 2019-11-29 20:48:26.769392 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -1408,12 +1408,11 @@ typedef struct ogs_nas_message_s {
     };
 } ogs_nas_message_t;
 
-int ogs_nas_emm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message);
-int ogs_nas_esm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message);
+ogs_pkbuf_t *ogs_nas_emm_encode(ogs_nas_message_t *message);
+ogs_pkbuf_t *ogs_nas_esm_encode(ogs_nas_message_t *message);
 int ogs_nas_emm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf);
 int ogs_nas_esm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf);
-int ogs_nas_plain_encode(
-        ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message);
+ogs_pkbuf_t *ogs_nas_plain_encode(ogs_nas_message_t *message);
 
 #ifdef __cplusplus
 }

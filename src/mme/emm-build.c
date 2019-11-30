@@ -25,11 +25,11 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __emm_log_domain
 
-int emm_build_attach_accept(
-        ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
+ogs_pkbuf_t *emm_build_attach_accept(
+        mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
 {
-    int rv;
     ogs_nas_message_t message;
+    ogs_pkbuf_t *pkbuf = NULL;
     ogs_nas_attach_accept_t *attach_accept = &message.emm.attach_accept;
     ogs_nas_eps_attach_result_t *eps_attach_result = 
         &attach_accept->eps_attach_result;
@@ -130,18 +130,17 @@ int emm_build_attach_accept(
         ogs_debug("    P-TMSI: 0x%08x", tmsi->tmsi);
     }
 
-    rv = nas_security_encode(emmbuf, mme_ue, &message);
-    ogs_assert(rv == OGS_OK && *emmbuf);
+    pkbuf = nas_security_encode(mme_ue, &message);
     ogs_pkbuf_free(esmbuf);
 
-    return OGS_OK;
+    return pkbuf;
 }
 
-int emm_build_attach_reject(
-        ogs_pkbuf_t **emmbuf, ogs_nas_emm_cause_t emm_cause, ogs_pkbuf_t *esmbuf)
+ogs_pkbuf_t *emm_build_attach_reject(
+        ogs_nas_emm_cause_t emm_cause, ogs_pkbuf_t *esmbuf)
 {
-    int rv;
     ogs_nas_message_t message;
+    ogs_pkbuf_t *pkbuf = NULL;
     ogs_nas_attach_reject_t *attach_reject = &message.emm.attach_reject;
 
     memset(&message, 0, sizeof(message));
@@ -157,20 +156,15 @@ int emm_build_attach_reject(
         attach_reject->esm_message_container.length = esmbuf->len;
     }
 
-    rv = ogs_nas_plain_encode(emmbuf, &message);
-    ogs_assert(rv == OGS_OK && *emmbuf);
-
-    if (esmbuf) {
+    pkbuf = ogs_nas_plain_encode(&message);
+    if (esmbuf)
         ogs_pkbuf_free(esmbuf);
-    }
 
-    return rv;
+    return pkbuf;
 }
 
-int emm_build_identity_request(
-        ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+ogs_pkbuf_t *emm_build_identity_request(mme_ue_t *mme_ue)
 {
-    int rv;
     ogs_nas_message_t message;
     ogs_nas_identity_request_t *identity_request = 
         &message.emm.identity_request;
@@ -185,16 +179,12 @@ int emm_build_identity_request(
     ogs_debug("    Identity Type 2 : IMSI");
     identity_request->identity_type.type = OGS_NAS_IDENTITY_TYPE_2_IMSI;
 
-    rv = ogs_nas_plain_encode(emmbuf, &message);
-    ogs_assert(rv == OGS_OK && *emmbuf);
-
-    return rv;
+    return ogs_nas_plain_encode(&message);
 }
 
-int emm_build_authentication_request(
-        ogs_pkbuf_t **emmbuf, ogs_diam_e_utran_vector_t *e_utran_vector)
+ogs_pkbuf_t *emm_build_authentication_request(
+        ogs_diam_e_utran_vector_t *e_utran_vector)
 {
-    int rv;
     ogs_nas_message_t message;
     ogs_nas_authentication_request_t *authentication_request = 
         &message.emm.authentication_request;
@@ -212,15 +202,11 @@ int emm_build_authentication_request(
     authentication_request->authentication_parameter_autn.length = 
             OGS_AUTN_LEN;
 
-    rv = ogs_nas_plain_encode(emmbuf, &message);
-    ogs_assert(rv == OGS_OK && *emmbuf);
-
-    return rv;
+    return ogs_nas_plain_encode(&message);
 }
 
-int emm_build_authentication_reject(ogs_pkbuf_t **emmbuf)
+ogs_pkbuf_t *emm_build_authentication_reject(void)
 {
-    int rv;
     ogs_nas_message_t message;
 
     memset(&message, 0, sizeof(message));
@@ -228,17 +214,11 @@ int emm_build_authentication_reject(ogs_pkbuf_t **emmbuf)
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_AUTHENTICATION_REJECT;
 
-    rv = ogs_nas_plain_encode(emmbuf, &message);
-    ogs_assert(rv == OGS_OK && *emmbuf);
-
-    return rv;
+    return ogs_nas_plain_encode(&message);
 }
 
-int emm_build_security_mode_command(
-        ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
 {
-    int rv;
-
     ogs_nas_message_t message;
     ogs_nas_security_mode_command_t *security_mode_command = 
         &message.emm.security_mode_command;
@@ -314,11 +294,10 @@ int emm_build_security_mode_command(
     imeisv_request->imeisv_request_value = OGS_NAS_IMEISV_REQUESTED;
 
     if (mme_ue->selected_int_algorithm == OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
-        ogs_fatal("Encrypt[0x%x] can be skipped with EEA0, "
+        ogs_error("Encrypt[0x%x] can be skipped with EEA0, "
             "but Integrity[0x%x] cannot be bypassed with EIA0",
             mme_ue->selected_enc_algorithm, mme_ue->selected_int_algorithm);
-        ogs_assert_if_reached();
-        return OGS_ERROR;
+        return NULL;
     }
 
     mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_ue->selected_int_algorithm,
@@ -326,15 +305,11 @@ int emm_build_security_mode_command(
     mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_ue->selected_enc_algorithm,
             mme_ue->kasme, mme_ue->knas_enc);
 
-    rv = nas_security_encode(emmbuf, mme_ue, &message);
-    ogs_assert(rv == OGS_OK && *emmbuf);
-
-    return OGS_OK;
+    return nas_security_encode(mme_ue, &message);
 }
 
-int emm_build_detach_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+ogs_pkbuf_t *emm_build_detach_accept(mme_ue_t *mme_ue)
 {
-    int rv;
     ogs_nas_message_t message;
 
     ogs_assert(mme_ue);
@@ -350,13 +325,10 @@ int emm_build_detach_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_DETACH_ACCEPT;
 
-    rv = nas_security_encode(emmbuf, mme_ue, &message);
-    ogs_assert(rv == OGS_OK && emmbuf);
-
-    return OGS_OK;
+    return nas_security_encode(mme_ue, &message);
 }
 
-int emm_build_tau_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
 {
     ogs_nas_message_t message;
     ogs_nas_tracking_area_update_accept_t *tau_accept = 
@@ -449,14 +421,11 @@ int emm_build_tau_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
     tau_accept->eps_network_feature_support.length = 1;
     tau_accept->eps_network_feature_support.ims_vops = 1;
 
-    ogs_assert(nas_security_encode(emmbuf, mme_ue, &message) == OGS_OK && 
-            *emmbuf);
-
-    return OGS_OK;
+    return nas_security_encode(mme_ue, &message);
 }
 
-int emm_build_tau_reject(ogs_pkbuf_t **emmbuf, ogs_nas_emm_cause_t emm_cause,
-        mme_ue_t *mme_ue)
+ogs_pkbuf_t *emm_build_tau_reject(
+        ogs_nas_emm_cause_t emm_cause, mme_ue_t *mme_ue)
 {
     ogs_nas_message_t message;
     ogs_nas_tracking_area_update_reject_t *tau_reject = 
@@ -474,13 +443,11 @@ int emm_build_tau_reject(ogs_pkbuf_t **emmbuf, ogs_nas_emm_cause_t emm_cause,
 
     tau_reject->emm_cause = emm_cause;
 
-    ogs_assert(ogs_nas_plain_encode(emmbuf, &message) == OGS_OK && *emmbuf);
-
-    return OGS_OK;
+    return ogs_nas_plain_encode(&message);
 }
 
-int emm_build_service_reject(ogs_pkbuf_t **emmbuf, ogs_nas_emm_cause_t emm_cause, 
-        mme_ue_t *mme_ue)
+ogs_pkbuf_t *emm_build_service_reject(
+        ogs_nas_emm_cause_t emm_cause, mme_ue_t *mme_ue)
 {
     ogs_nas_message_t message;
     ogs_nas_service_reject_t *service_reject = &message.emm.service_reject;
@@ -496,12 +463,10 @@ int emm_build_service_reject(ogs_pkbuf_t **emmbuf, ogs_nas_emm_cause_t emm_cause
 
     service_reject->emm_cause = emm_cause;
 
-    ogs_assert(ogs_nas_plain_encode(emmbuf, &message) == OGS_OK && *emmbuf);
-
-    return OGS_OK;
+    return ogs_nas_plain_encode(&message);
 }
 
-int emm_build_cs_service_notification(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
+ogs_pkbuf_t *emm_build_cs_service_notification(mme_ue_t *mme_ue)
 {
     ogs_nas_message_t message;
     ogs_nas_cs_service_notification_t *cs_service_notification = 
@@ -525,14 +490,11 @@ int emm_build_cs_service_notification(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue)
 
     /* FIXME : What optional filed should be included in this message? */  
 
-    ogs_assert(nas_security_encode(emmbuf, mme_ue, &message) == OGS_OK && 
-            *emmbuf);
-
-    return OGS_OK;
+    return nas_security_encode(mme_ue, &message);
 }
 
-int emm_build_downlink_nas_transport(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue,
-        uint8_t *buffer, uint8_t length)
+ogs_pkbuf_t *emm_build_downlink_nas_transport(
+        mme_ue_t *mme_ue, uint8_t *buffer, uint8_t length)
 {
     ogs_nas_message_t message;
     ogs_nas_downlink_nas_transport_t *downlink_nas_transport = 
@@ -553,8 +515,5 @@ int emm_build_downlink_nas_transport(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue,
     nas_message_container->length = length;
     memcpy(nas_message_container->buffer, buffer, length);
 
-    ogs_assert(nas_security_encode(emmbuf, mme_ue, &message) == OGS_OK && 
-            *emmbuf);
-
-    return OGS_OK;
+    return nas_security_encode(mme_ue, &message);
 }

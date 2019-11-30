@@ -19,8 +19,8 @@
 
 #include "nas-security.h"
 
-int nas_security_encode(
-        ogs_pkbuf_t **pkbuf, mme_ue_t *mme_ue, ogs_nas_message_t *message)
+ogs_pkbuf_t *nas_security_encode(
+        mme_ue_t *mme_ue, ogs_nas_message_t *message)
 {
     int integrity_protected = 0;
     int new_security_context = 0;
@@ -31,7 +31,7 @@ int nas_security_encode(
 
     switch (message->h.security_header_type) {
     case OGS_NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-        return ogs_nas_plain_encode(pkbuf, message);
+        return ogs_nas_plain_encode(message);
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
         integrity_protected = 1;
         break;
@@ -49,9 +49,9 @@ int nas_security_encode(
         ciphered = 1;
         break;
     default:
-        ogs_warn("Not implemented(securiry header type:0x%x)", 
+        ogs_error("Not implemented(securiry header type:0x%x)", 
                 message->h.security_header_type);
-        return OGS_ERROR;
+        return NULL;
     }
 
     if (new_security_context) {
@@ -73,9 +73,10 @@ int nas_security_encode(
         h.protocol_discriminator = message->h.protocol_discriminator;
         h.sequence_number = (mme_ue->dl_count & 0xff);
 
-        if (ogs_nas_plain_encode(&new, message) != OGS_OK) {
-            ogs_error("Error encoding plaintext NAS");
-            return OGS_ERROR;
+        new = ogs_nas_plain_encode(message);
+        if (!new) {
+            ogs_error("ogs_nas_plain_encode() failed");
+            return NULL;
         }
 
         if (ciphered) {
@@ -106,12 +107,14 @@ int nas_security_encode(
         ogs_assert(ogs_pkbuf_push(new, 5));
         memcpy(new->data, &h, sizeof(ogs_nas_security_header_t));
 
-        *pkbuf = new;
-
         mme_ue->security_context_available = 1;
+
+        return new;
     }
 
-    return OGS_OK;
+    ogs_error("Invalid param : type[%d] ciphered[%d] integrity_protected[%d]",
+            message->h.security_header_type, ciphered, integrity_protected);
+    return NULL;
 }
 
 int nas_security_decode(mme_ue_t *mme_ue, 

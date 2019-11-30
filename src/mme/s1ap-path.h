@@ -48,25 +48,25 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu);
 int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf);
 
-int s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue);
-int s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue);
+void s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue);
+void s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue);
 void s1ap_send_ue_context_release_command(
     enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause,
     uint8_t action, uint32_t delay);
 
 void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain);
 
-int s1ap_send_mme_configuration_transfer(
+void s1ap_send_mme_configuration_transfer(
         mme_enb_t *target_enb,
         S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer);
 
-int s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
+void s1ap_send_path_switch_ack(mme_ue_t *mme_ue);
 
-int s1ap_send_handover_command(enb_ue_t *source_ue);
-int s1ap_send_handover_preparation_failure(
+void s1ap_send_handover_command(enb_ue_t *source_ue);
+void s1ap_send_handover_preparation_failure(
         enb_ue_t *source_ue, S1AP_Cause_t *cause);
 
-int s1ap_send_handover_request(
+void s1ap_send_handover_request(
         mme_ue_t *mme_ue,
         mme_enb_t *target_enb,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
@@ -76,18 +76,18 @@ int s1ap_send_handover_request(
         S1AP_Source_ToTarget_TransparentContainer_t
             *source_totarget_transparentContainer);
 
-int s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
+void s1ap_send_handover_cancel_ack(enb_ue_t *source_ue);
 
-int s1ap_send_mme_status_transfer(
+void s1ap_send_mme_status_transfer(
         enb_ue_t *target_ue,
         S1AP_ENB_StatusTransfer_TransparentContainer_t
             *enb_statustransfer_transparentContainer);
-int s1ap_send_error_indication(
+void s1ap_send_error_indication(
         mme_enb_t *enb,
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
         S1AP_Cause_PR group, long cause);
-int s1ap_send_s1_reset_ack(
+void s1ap_send_s1_reset_ack(
         mme_enb_t *enb,
         S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface);
 

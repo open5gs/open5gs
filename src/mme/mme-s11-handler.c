@@ -56,7 +56,7 @@ void mme_s11_handle_create_session_response(
     }
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;
@@ -177,7 +177,7 @@ void mme_s11_handle_modify_bearer_response(
     }
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;
@@ -197,8 +197,7 @@ void mme_s11_handle_modify_bearer_response(
     }
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_PATH_SWITCH,
-        rv = s1ap_send_path_switch_ack(mme_ue);
-        ogs_expect(rv == OGS_OK);
+        s1ap_send_path_switch_ack(mme_ue);
     );
 
     GTP_COUNTER_CHECK(mme_ue, GTP_COUNTER_MODIFY_BEARER_BY_HANDOVER_NOTIFY,
@@ -234,7 +233,7 @@ void mme_s11_handle_delete_session_response(
     ogs_assert(mme_ue);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;
@@ -258,11 +257,10 @@ void mme_s11_handle_delete_session_response(
         }
     } else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
         mme_bearer_t *bearer = mme_default_bearer_in_sess(sess);
-        ogs_expect(bearer);
+        ogs_expect_or_return(bearer);
 
         if (OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect)) {
-            rv = nas_send_deactivate_bearer_context_request(bearer);
-            ogs_expect(rv == OGS_OK);
+            nas_send_deactivate_bearer_context_request(bearer);
             
             /*
              * mme_sess_remove() should not be called here.
@@ -393,7 +391,7 @@ void mme_s11_handle_create_bearer_request(
     ogs_assert(rv == OGS_OK);
 
     /* Bearer QoS */
-    ogs_expect(ogs_gtp_parse_bearer_qos(&bearer_qos,
+    ogs_expect_or_return(ogs_gtp_parse_bearer_qos(&bearer_qos,
         &req->bearer_contexts.bearer_level_qos) ==
         req->bearer_contexts.bearer_level_qos.len);
     bearer->qos.qci = bearer_qos.qci;
@@ -422,8 +420,7 @@ void mme_s11_handle_create_bearer_request(
         /* Check if Initial Context Setup Response or 
          *          E-RAB Setup Response is received */
         MME_HAVE_ENB_S1U_PATH(default_bearer)) {
-        rv = nas_send_activate_dedicated_bearer_context_request(bearer);
-        ogs_expect(rv == OGS_OK);
+        nas_send_activate_dedicated_bearer_context_request(bearer);
     }
 }
 
@@ -431,7 +428,6 @@ void mme_s11_handle_update_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp_update_bearer_request_t *req)
 {
-    int rv;
     uint8_t cause_value = 0;
     mme_bearer_t *bearer = NULL;
     ogs_gtp_bearer_qos_t bearer_qos;
@@ -482,7 +478,7 @@ void mme_s11_handle_update_bearer_request(
         MME_HAVE_ENB_S1U_PATH(bearer)) {
         if (req->bearer_contexts.bearer_level_qos.presence == 1) {
             /* Bearer QoS */
-            ogs_expect(ogs_gtp_parse_bearer_qos(&bearer_qos,
+            ogs_expect_or_return(ogs_gtp_parse_bearer_qos(&bearer_qos,
                 &req->bearer_contexts.bearer_level_qos) ==
                 req->bearer_contexts.bearer_level_qos.len);
             bearer->qos.qci = bearer_qos.qci;
@@ -504,16 +500,13 @@ void mme_s11_handle_update_bearer_request(
 
         if (req->bearer_contexts.bearer_level_qos.presence == 1 ||
             req->bearer_contexts.tft.presence == 1) {
-            rv = nas_send_modify_bearer_context_request(
-                    bearer, 
+            nas_send_modify_bearer_context_request(bearer, 
                     req->bearer_contexts.bearer_level_qos.presence,
                     req->bearer_contexts.tft.presence);
-            ogs_expect(rv == OGS_OK);
         } else {
             ogs_warn("[IGNORE] Update Bearer Request : "
                     "Both QoS and TFT is NULL");
-            rv = mme_gtp_send_update_bearer_response(bearer);
-            ogs_expect(rv == OGS_OK);
+            mme_gtp_send_update_bearer_response(bearer);
         }
     } else {
         if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
@@ -523,14 +516,12 @@ void mme_s11_handle_update_bearer_request(
         } else
             ogs_assert_if_reached();
     }
-
 }
 
 void mme_s11_handle_delete_bearer_request(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp_delete_bearer_request_t *req)
 {
-    int rv;
     mme_bearer_t *bearer = NULL;
 
     ogs_assert(xact);
@@ -541,11 +532,11 @@ void mme_s11_handle_delete_bearer_request(
     if (mme_ue && req->linked_eps_bearer_id.presence == 1) {
         bearer = mme_bearer_find_by_ue_ebi(
                 mme_ue, req->linked_eps_bearer_id.u8);
-        ogs_expect(bearer);
+        ogs_expect_or_return(bearer);
     } else if (mme_ue && req->eps_bearer_ids.presence == 1) {
         bearer = mme_bearer_find_by_ue_ebi(
                 mme_ue, req->eps_bearer_ids.u8);
-        ogs_expect(bearer);
+        ogs_expect_or_return(bearer);
     } else {
         ogs_error("No Linked EBI or EPS Bearer ID");
         ogs_gtp_send_error_message(xact, mme_ue ? mme_ue->sgw_s11_teid : 0,
@@ -555,14 +546,12 @@ void mme_s11_handle_delete_bearer_request(
     }
 
     ogs_assert(mme_ue);
-    ogs_assert(bearer);
 
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    ogs_expect_or_return(bearer);
-
     /* Save Transaction. will be handled after EMM-attached */
+    ogs_assert(bearer);
     bearer->xact = xact;
 
     if (/* Check if Activate Default/Dedicated Bearer Accept is received */
@@ -570,8 +559,7 @@ void mme_s11_handle_delete_bearer_request(
         /* Check if Initial Context Setup Response or 
          *          E-RAB Setup Response is received */
         MME_HAVE_ENB_S1U_PATH(bearer)) {
-        rv = nas_send_deactivate_bearer_context_request(bearer);
-        ogs_expect(rv == OGS_OK);
+        nas_send_deactivate_bearer_context_request(bearer);
     } else {
         if (!OGS_FSM_CHECK(&bearer->sm, esm_state_active)) {
             ogs_assert_if_reached();
@@ -603,7 +591,7 @@ void mme_s11_handle_release_access_bearers_response(
     }
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;
@@ -672,11 +660,11 @@ void mme_s11_handle_downlink_data_notification(
     h.type = OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE;
     h.teid = mme_ue->sgw_s11_teid;
 
-    rv = mme_s11_build_downlink_data_notification_ack(&s11buf, h.type);
-    ogs_expect(rv == OGS_OK);
+    s11buf = mme_s11_build_downlink_data_notification_ack(h.type);
+    ogs_expect_or_return(s11buf);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, s11buf);
-    ogs_expect(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
@@ -707,7 +695,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     }
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;
@@ -736,9 +724,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
                     bearers[i]->eps_bearer_id.u8);
-        ogs_expect(bearer);
-        if (!bearer)
-            continue;
+        ogs_expect_or_return(bearer);
 
         if (bearers[i]->s4_u_sgsn_f_teid.presence) {
             teid = bearers[i]->s4_u_sgsn_f_teid.data;
@@ -746,7 +732,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 
             bearer->sgw_dl_teid = ntohl(teid->teid);
             rv = ogs_gtp_f_teid_to_ip(teid, &bearer->sgw_dl_ip);
-            ogs_expect(rv == OGS_OK);
+            ogs_expect_or_return(rv == OGS_OK);
         }
         if (bearers[i]->s2b_u_epdg_f_teid_5.presence) {
             teid = bearers[i]->s2b_u_epdg_f_teid_5.data;
@@ -754,15 +740,14 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
 
             bearer->sgw_ul_teid = ntohl(teid->teid);
             rv = ogs_gtp_f_teid_to_ip(teid, &bearer->sgw_ul_ip);
-            ogs_expect(rv == OGS_OK);
+            ogs_expect_or_return(rv == OGS_OK);
         }
     }
 
     source_ue = mme_ue->enb_ue;
     ogs_assert(source_ue);
 
-    rv = s1ap_send_handover_command(source_ue);
-    ogs_expect(rv == OGS_OK);
+    s1ap_send_handover_command(source_ue);
 }
 
 void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
@@ -784,7 +769,7 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
     }
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     if (rsp->cause.presence) {
         ogs_gtp_cause_t *cause = rsp->cause.data;

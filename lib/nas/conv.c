@@ -42,8 +42,9 @@ void ogs_nas_imsi_to_bcd(
 
     bcd_len = imsi_len * 2 - 1;
     if (!imsi->odd_even) { /* if bcd length is even */
-        if (bcd[bcd_len] != 0xf)
-            ogs_warn("Spec warning : bcd[%d] = 0x%x", bcd_len, bcd[bcd_len]);
+        if (imsi->digit15 != 0xf)
+            ogs_warn("Spec warning : bcd[%d] = 0x%x, 0x%x",
+                    bcd_len-1, imsi->digit15, bcd[bcd_len-1]);
         (bcd_len)--;
     }
 
@@ -103,8 +104,10 @@ void ogs_nas_imeisv_to_bcd(
 
     bcd_len = imeisv_len * 2 - 1;
     if (!imeisv->odd_even) { /* if bcd length is even */
-        if (bcd[bcd_len] != 0xf)
-            ogs_warn("Spec warning : bcd[%d] = 0x%x", bcd_len, bcd[bcd_len]);
+        if (imeisv->digit17 != 0xf) {
+            ogs_warn("Spec warning : bcd[%d] = 0x%x, 0x%x",
+                    bcd_len-1, imeisv->digit17, bcd[bcd_len-1]);
+        }
         (bcd_len)--;
     }
 

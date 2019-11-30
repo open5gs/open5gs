@@ -523,7 +523,7 @@ f.write("   };\n");
 f.write("} ogs_gtp_message_t;\n\n")
 
 f.write("""int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf);
-int ogs_gtp_build_msg(ogs_pkbuf_t **pkbuf, ogs_gtp_message_t *gtp_message);
+ogs_pkbuf_t *ogs_gtp_build_msg(ogs_gtp_message_t *gtp_message);
 
 #ifdef __cplusplus
 }
@@ -647,26 +647,25 @@ f.write("""        default:
 
 """)
 
-f.write("""int ogs_gtp_build_msg(ogs_pkbuf_t **pkbuf, ogs_gtp_message_t *gtp_message)
+f.write("""ogs_pkbuf_t *ogs_gtp_build_msg(ogs_gtp_message_t *gtp_message)
 {
-    int rv = OGS_ERROR;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     ogs_assert(gtp_message);
-    switch(gtp_message->h.type)
-    {
+    switch(gtp_message->h.type) {
 """)
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
-        f.write("        case OGS_GTP_%s_TYPE:\n" % v_upper(k))
-        f.write("            rv = ogs_tlv_build_msg(pkbuf, &ogs_tlv_desc_%s,\n" % v_lower(k))
-        f.write("                    &gtp_message->%s, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
-        f.write("            break;\n")
-f.write("""        default:
-            ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
-            break;
+        f.write("    case OGS_GTP_%s_TYPE:\n" % v_upper(k))
+        f.write("        pkbuf = ogs_tlv_build_msg(&ogs_tlv_desc_%s,\n" % v_lower(k))
+        f.write("                &gtp_message->%s, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
+        f.write("        break;\n")
+f.write("""    default:
+        ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
+        break;
     }
 
-    return rv;
+    return pkbuf;
 }
 """)
 

@@ -155,11 +155,9 @@ typedef struct ogs_tlv_null_s {
     ogs_tlv_presence_t presence;
 } ogs_tlv_null_t;
 
-int ogs_tlv_build_msg(ogs_pkbuf_t **pkbuf, ogs_tlv_desc_t *desc, void *msg,
-        int mode);
-
-int ogs_tlv_parse_msg(void *msg, ogs_tlv_desc_t *desc, ogs_pkbuf_t *pkbuf,
-        int mode);
+ogs_pkbuf_t *ogs_tlv_build_msg(ogs_tlv_desc_t *desc, void *msg, int mode);
+int ogs_tlv_parse_msg(
+        void *msg, ogs_tlv_desc_t *desc, ogs_pkbuf_t *pkbuf, int mode);
 
 #ifdef __cplusplus
 }

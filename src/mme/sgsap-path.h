@@ -41,15 +41,15 @@ int sgsap_send_to_vlr_with_sid(
         mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf, uint16_t stream_no);
 int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf);
 
-int sgsap_send_location_update_request(mme_ue_t *mme_ue);
-int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue);
-int sgsap_send_detach_indication(mme_ue_t *mme_ue);
-int sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue);
-int sgsap_send_service_request(mme_ue_t *mme_ue, uint8_t emm_mode);
-int sgsap_send_reset_ack(mme_vlr_t *vlr);
-int sgsap_send_uplink_unitdata(
+void sgsap_send_location_update_request(mme_ue_t *mme_ue);
+void sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue);
+void sgsap_send_detach_indication(mme_ue_t *mme_ue);
+void sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue);
+void sgsap_send_service_request(mme_ue_t *mme_ue, uint8_t emm_mode);
+void sgsap_send_reset_ack(mme_vlr_t *vlr);
+void sgsap_send_uplink_unitdata(
         mme_ue_t *mme_ue, ogs_nas_message_container_t *nas_message_container);
-int sgsap_send_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause);
+void sgsap_send_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause);
 
 #ifdef __cplusplus
 }

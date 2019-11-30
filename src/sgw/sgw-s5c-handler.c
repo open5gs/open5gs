@@ -67,7 +67,7 @@ void sgw_s5c_handle_create_session_response(ogs_gtp_xact_t *s5c_xact,
     }
 
     rv = ogs_gtp_xact_commit(s5c_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     rsp = &message->create_session_response;
 
@@ -202,14 +202,14 @@ void sgw_s5c_handle_create_session_response(ogs_gtp_xact_t *s5c_xact,
     message->h.type = OGS_GTP_CREATE_SESSION_RESPONSE_TYPE;
     message->h.teid = sgw_ue->mme_s11_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(s11_xact, &message->h, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s5c_handle_delete_session_response(ogs_gtp_xact_t *s5c_xact,
@@ -236,7 +236,7 @@ void sgw_s5c_handle_delete_session_response(ogs_gtp_xact_t *s5c_xact,
     }
 
     rv = ogs_gtp_xact_commit(s5c_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     rsp = &message->delete_session_response;
 
@@ -270,14 +270,14 @@ void sgw_s5c_handle_delete_session_response(ogs_gtp_xact_t *s5c_xact,
     message->h.type = OGS_GTP_DELETE_SESSION_RESPONSE_TYPE;
     message->h.teid = sgw_ue->mme_s11_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(s11_xact, &message->h, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s5c_handle_create_bearer_request(ogs_gtp_xact_t *s5c_xact, 
@@ -385,17 +385,17 @@ void sgw_s5c_handle_create_bearer_request(ogs_gtp_xact_t *s5c_xact,
     message->h.type = OGS_GTP_CREATE_BEARER_REQUEST_TYPE;
     message->h.teid = sgw_ue->mme_s11_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
 
     s11_xact = ogs_gtp_xact_local_create(
             sgw_ue->gnode, &message->h, pkbuf, timeout, sess);
-    ogs_assert(s11_xact);
+    ogs_expect_or_return(s11_xact);
 
     ogs_gtp_xact_associate(s5c_xact, s11_xact);
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s5c_handle_update_bearer_request(ogs_gtp_xact_t *s5c_xact, 
@@ -447,17 +447,17 @@ void sgw_s5c_handle_update_bearer_request(ogs_gtp_xact_t *s5c_xact,
     message->h.type = OGS_GTP_UPDATE_BEARER_REQUEST_TYPE;
     message->h.teid = sgw_ue->mme_s11_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
 
     s11_xact = ogs_gtp_xact_local_create(
             sgw_ue->gnode, &message->h, pkbuf, timeout, sess);
-    ogs_assert(s11_xact);
+    ogs_expect_or_return(s11_xact);
 
     ogs_gtp_xact_associate(s5c_xact, s11_xact);
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     ogs_debug("[SGW] Update Bearer Request : SGW <-- PGW");
 }
@@ -508,16 +508,16 @@ void sgw_s5c_handle_delete_bearer_request(ogs_gtp_xact_t *s5c_xact,
     message->h.type = OGS_GTP_DELETE_BEARER_REQUEST_TYPE;
     message->h.teid = sgw_ue->mme_s11_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
 
     s11_xact = ogs_gtp_xact_local_create(
             sgw_ue->gnode, &message->h, pkbuf, timeout, sess);
-    ogs_assert(s11_xact);
+    ogs_expect_or_return(s11_xact);
 
     ogs_gtp_xact_associate(s5c_xact, s11_xact);
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 

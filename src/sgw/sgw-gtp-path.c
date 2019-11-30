@@ -358,7 +358,7 @@ void sgw_gtp_close(void)
     ogs_pkbuf_pool_destroy(packet_pool);
 }
 
-int sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel)
+void sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel)
 {
     char buf[OGS_ADDRSTRLEN];
     int rv;
@@ -390,8 +390,5 @@ int sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel)
     h->teid =  htonl(s1u_tunnel->remote_teid);
     
     rv = ogs_gtp_sendto(s1u_tunnel->gnode, pkbuf);
-    ogs_assert(rv == OGS_OK);
-    ogs_pkbuf_free(pkbuf);
-
-    return rv;
+    ogs_expect(rv == OGS_OK);
 }
