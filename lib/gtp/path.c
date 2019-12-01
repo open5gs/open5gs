@@ -76,34 +76,6 @@ int ogs_gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_gtp_node_t *gnode)
     return OGS_OK;
 }
 
-ogs_sock_t *ogs_gtp_local_sock_first(ogs_list_t *list)
-{
-    ogs_socknode_t *snode = NULL;
-
-    ogs_assert(list);
-    ogs_list_for_each(list, snode) {
-        if (snode->sock)
-            return snode->sock;
-    }
-
-    return NULL;
-}
-
-ogs_sockaddr_t *ogs_gtp_local_addr_first(ogs_list_t *list)
-{
-    ogs_socknode_t *snode = NULL;
-
-    ogs_assert(list);
-    ogs_list_for_each(list, snode) {
-        ogs_sock_t *sock = snode->sock;
-        ogs_assert(snode->sock);
-
-        return &sock->local_addr;
-    }
-
-    return NULL;
-}
-
 int ogs_gtp_send(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf)
 {
     ssize_t sent;

@@ -33,9 +33,6 @@ typedef struct ogs_gtp_xact_s ogs_gtp_xact_t;
 ogs_sock_t *ogs_gtp_server(ogs_socknode_t *node);
 int ogs_gtp_connect(ogs_sock_t *ipv4, ogs_sock_t *ipv6, ogs_gtp_node_t *gnode);
 
-ogs_sock_t *ogs_gtp_local_sock_first(ogs_list_t *list);
-ogs_sockaddr_t *ogs_gtp_local_addr_first(ogs_list_t *list);
-
 int ogs_gtp_send(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf);
 int ogs_gtp_sendto(ogs_gtp_node_t *gnode, ogs_pkbuf_t *pkbuf);
 

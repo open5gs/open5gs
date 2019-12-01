@@ -628,18 +628,17 @@ f.write("""int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pk
     if (pkbuf->len == 0)
         return OGS_OK;
 
-    switch(gtp_message->h.type)
-    {
+    switch(gtp_message->h.type) {
 """)
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
-        f.write("        case OGS_GTP_%s_TYPE:\n" % v_upper(k))
-        f.write("            rv = ogs_tlv_parse_msg(&gtp_message->%s,\n" % v_lower(k))
-        f.write("                    &ogs_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
-        f.write("            break;\n")
-f.write("""        default:
-            ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
-            break;
+        f.write("    case OGS_GTP_%s_TYPE:\n" % v_upper(k))
+        f.write("        rv = ogs_tlv_parse_msg(&gtp_message->%s,\n" % v_lower(k))
+        f.write("                &ogs_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
+        f.write("        break;\n")
+f.write("""    default:
+        ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
+        break;
     }
 
     return rv;

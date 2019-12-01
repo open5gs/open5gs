@@ -79,6 +79,8 @@ void ogs_socknode_linger(ogs_socknode_t *node, int onoff, int linger);
 void ogs_socknode_set_cleanup(
         ogs_socknode_t *node, void (*cleanup)(ogs_sock_t *));
 
+ogs_sock_t *ogs_socknode_sock_first(ogs_list_t *list);
+
 #ifdef __cplusplus
 }
 #endif

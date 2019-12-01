@@ -232,10 +232,13 @@ int pgw_gtp_open(void)
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
 
-    pgw_self()->gtpc_sock = ogs_gtp_local_sock_first(&pgw_self()->gtpc_list);
-    pgw_self()->gtpc_sock6 = ogs_gtp_local_sock_first(&pgw_self()->gtpc_list6);
-    pgw_self()->gtpc_addr = ogs_gtp_local_addr_first(&pgw_self()->gtpc_list);
-    pgw_self()->gtpc_addr6 = ogs_gtp_local_addr_first(&pgw_self()->gtpc_list6);
+    pgw_self()->gtpc_sock = ogs_socknode_sock_first(&pgw_self()->gtpc_list);
+    if (pgw_self()->gtpc_sock)
+        pgw_self()->gtpc_addr = &pgw_self()->gtpc_sock->local_addr;
+
+    pgw_self()->gtpc_sock6 = ogs_socknode_sock_first(&pgw_self()->gtpc_list6);
+    if (pgw_self()->gtpc_sock6)
+        pgw_self()->gtpc_addr6 = &pgw_self()->gtpc_sock6->local_addr;
 
     ogs_assert(pgw_self()->gtpc_addr || pgw_self()->gtpc_addr6);
 
@@ -254,10 +257,13 @@ int pgw_gtp_open(void)
                 OGS_POLLIN, sock->fd, _gtpv1_u_recv_cb, sock);
     }
 
-    pgw_self()->gtpu_sock = ogs_gtp_local_sock_first(&pgw_self()->gtpu_list);
-    pgw_self()->gtpu_sock6 = ogs_gtp_local_sock_first(&pgw_self()->gtpu_list6);
-    pgw_self()->gtpu_addr = ogs_gtp_local_addr_first(&pgw_self()->gtpu_list);
-    pgw_self()->gtpu_addr6 = ogs_gtp_local_addr_first(&pgw_self()->gtpu_list6);
+    pgw_self()->gtpu_sock = ogs_socknode_sock_first(&pgw_self()->gtpu_list);
+    if (pgw_self()->gtpu_sock)
+        pgw_self()->gtpu_addr = &pgw_self()->gtpu_sock->local_addr;
+
+    pgw_self()->gtpu_sock6 = ogs_socknode_sock_first(&pgw_self()->gtpu_list6);
+    if (pgw_self()->gtpu_sock6)
+        pgw_self()->gtpu_addr6 = &pgw_self()->gtpu_sock6->local_addr;
 
     ogs_assert(pgw_self()->gtpu_addr || pgw_self()->gtpu_addr6);
 

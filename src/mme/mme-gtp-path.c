@@ -132,10 +132,13 @@ int mme_gtp_open(void)
                 OGS_POLLIN, sock->fd, _gtpv2_c_recv_cb, sock);
     }
 
-    mme_self()->gtpc_sock = ogs_gtp_local_sock_first(&mme_self()->gtpc_list);
-    mme_self()->gtpc_sock6 = ogs_gtp_local_sock_first(&mme_self()->gtpc_list6);
-    mme_self()->gtpc_addr = ogs_gtp_local_addr_first(&mme_self()->gtpc_list);
-    mme_self()->gtpc_addr6 = ogs_gtp_local_addr_first(&mme_self()->gtpc_list6);
+    mme_self()->gtpc_sock = ogs_socknode_sock_first(&mme_self()->gtpc_list);
+    if (mme_self()->gtpc_sock)
+        mme_self()->gtpc_addr = &mme_self()->gtpc_sock->local_addr;
+
+    mme_self()->gtpc_sock6 = ogs_socknode_sock_first(&mme_self()->gtpc_list6);
+    if (mme_self()->gtpc_sock6)
+        mme_self()->gtpc_addr6 = &mme_self()->gtpc_sock6->local_addr;
 
     ogs_assert(mme_self()->gtpc_addr || mme_self()->gtpc_addr6);
 
