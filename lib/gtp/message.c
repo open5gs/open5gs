@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-12-01 20:43:32.882820 by acetcom
+ * Created on: 2019-12-01 21:10:09.850284 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -30,7 +30,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_imsi_0 =
 {
     OGS_TLV_VAR_STR,
     "IMSI",
-    OGS_TLV_IMSI_TYPE,
+    OGS_GTP_IMSI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_imsi_t),
@@ -41,7 +41,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_cause_0 =
 {
     OGS_TLV_VAR_STR,
     "Cause",
-    OGS_TLV_CAUSE_TYPE,
+    OGS_GTP_CAUSE_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_cause_t),
@@ -52,7 +52,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_recovery_0 =
 {
     OGS_TLV_UINT8,
     "Recovery",
-    OGS_TLV_RECOVERY_TYPE,
+    OGS_GTP_RECOVERY_TYPE,
     1,
     0,
     sizeof(ogs_gtp_tlv_recovery_t),
@@ -63,7 +63,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_stn_sr_0 =
 {
     OGS_TLV_VAR_STR,
     "STN-SR",
-    OGS_TLV_STN_SR_TYPE,
+    OGS_GTP_STN_SR_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_stn_sr_t),
@@ -74,7 +74,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_apn_0 =
 {
     OGS_TLV_VAR_STR,
     "APN",
-    OGS_TLV_APN_TYPE,
+    OGS_GTP_APN_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_apn_t),
@@ -85,7 +85,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ambr_0 =
 {
     OGS_TLV_VAR_STR,
     "AMBR",
-    OGS_TLV_AMBR_TYPE,
+    OGS_GTP_AMBR_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_ambr_t),
@@ -96,7 +96,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ebi_0 =
 {
     OGS_TLV_UINT8,
     "EBI",
-    OGS_TLV_EBI_TYPE,
+    OGS_GTP_EBI_TYPE,
     1,
     0,
     sizeof(ogs_gtp_tlv_ebi_t),
@@ -107,7 +107,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ebi_1 =
 {
     OGS_TLV_UINT8,
     "EBI",
-    OGS_TLV_EBI_TYPE,
+    OGS_GTP_EBI_TYPE,
     1,
     1,
     sizeof(ogs_gtp_tlv_ebi_t),
@@ -118,7 +118,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ip_address_0 =
 {
     OGS_TLV_VAR_STR,
     "IP Address",
-    OGS_TLV_IP_ADDRESS_TYPE,
+    OGS_GTP_IP_ADDRESS_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_ip_address_t),
@@ -129,7 +129,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ip_address_1 =
 {
     OGS_TLV_VAR_STR,
     "IP Address",
-    OGS_TLV_IP_ADDRESS_TYPE,
+    OGS_GTP_IP_ADDRESS_TYPE,
     0,
     1,
     sizeof(ogs_gtp_tlv_ip_address_t),
@@ -140,7 +140,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ip_address_2 =
 {
     OGS_TLV_VAR_STR,
     "IP Address",
-    OGS_TLV_IP_ADDRESS_TYPE,
+    OGS_GTP_IP_ADDRESS_TYPE,
     0,
     2,
     sizeof(ogs_gtp_tlv_ip_address_t),
@@ -151,7 +151,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ip_address_3 =
 {
     OGS_TLV_VAR_STR,
     "IP Address",
-    OGS_TLV_IP_ADDRESS_TYPE,
+    OGS_GTP_IP_ADDRESS_TYPE,
     0,
     3,
     sizeof(ogs_gtp_tlv_ip_address_t),
@@ -162,7 +162,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mei_0 =
 {
     OGS_TLV_VAR_STR,
     "MEI",
-    OGS_TLV_MEI_TYPE,
+    OGS_GTP_MEI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mei_t),
@@ -173,7 +173,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_msisdn_0 =
 {
     OGS_TLV_VAR_STR,
     "MSISDN",
-    OGS_TLV_MSISDN_TYPE,
+    OGS_GTP_MSISDN_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_msisdn_t),
@@ -184,7 +184,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_indication_0 =
 {
     OGS_TLV_VAR_STR,
     "Indication",
-    OGS_TLV_INDICATION_TYPE,
+    OGS_GTP_INDICATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_indication_t),
@@ -195,7 +195,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_pco_0 =
 {
     OGS_TLV_VAR_STR,
     "PCO",
-    OGS_TLV_PCO_TYPE,
+    OGS_GTP_PCO_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_pco_t),
@@ -206,7 +206,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_paa_0 =
 {
     OGS_TLV_VAR_STR,
     "PAA",
-    OGS_TLV_PAA_TYPE,
+    OGS_GTP_PAA_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_paa_t),
@@ -217,7 +217,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_qos_0 =
 {
     OGS_TLV_VAR_STR,
     "Bearer QoS",
-    OGS_TLV_BEARER_QOS_TYPE,
+    OGS_GTP_BEARER_QOS_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_bearer_qos_t),
@@ -228,7 +228,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_flow_qos_0 =
 {
     OGS_TLV_VAR_STR,
     "Flow QoS",
-    OGS_TLV_FLOW_QOS_TYPE,
+    OGS_GTP_FLOW_QOS_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_flow_qos_t),
@@ -239,7 +239,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_rat_type_0 =
 {
     OGS_TLV_UINT8,
     "RAT Type",
-    OGS_TLV_RAT_TYPE_TYPE,
+    OGS_GTP_RAT_TYPE_TYPE,
     1,
     0,
     sizeof(ogs_gtp_tlv_rat_type_t),
@@ -250,7 +250,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_serving_network_0 =
 {
     OGS_TLV_VAR_STR,
     "Serving Network",
-    OGS_TLV_SERVING_NETWORK_TYPE,
+    OGS_GTP_SERVING_NETWORK_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_serving_network_t),
@@ -261,7 +261,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_tft_0 =
 {
     OGS_TLV_VAR_STR,
     "Bearer TFT",
-    OGS_TLV_BEARER_TFT_TYPE,
+    OGS_GTP_BEARER_TFT_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_bearer_tft_t),
@@ -272,7 +272,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_tad_0 =
 {
     OGS_TLV_VAR_STR,
     "TAD",
-    OGS_TLV_TAD_TYPE,
+    OGS_GTP_TAD_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_tad_t),
@@ -283,7 +283,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_uli_0 =
 {
     OGS_TLV_VAR_STR,
     "ULI",
-    OGS_TLV_ULI_TYPE,
+    OGS_GTP_ULI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_uli_t),
@@ -294,7 +294,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_0 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -305,7 +305,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_1 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     1,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -316,7 +316,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_2 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     2,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -327,7 +327,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_3 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     3,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -338,7 +338,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_4 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     4,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -349,7 +349,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_5 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     5,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -360,7 +360,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_6 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     6,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -371,7 +371,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_7 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     7,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -382,7 +382,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_8 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     8,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -393,7 +393,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_9 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     9,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -404,7 +404,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_10 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     10,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -415,7 +415,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_11 =
 {
     OGS_TLV_VAR_STR,
     "F-TEID",
-    OGS_TLV_F_TEID_TYPE,
+    OGS_GTP_F_TEID_TYPE,
     0,
     11,
     sizeof(ogs_gtp_tlv_f_teid_t),
@@ -426,7 +426,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_tmsi_0 =
 {
     OGS_TLV_VAR_STR,
     "TMSI",
-    OGS_TLV_TMSI_TYPE,
+    OGS_GTP_TMSI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_tmsi_t),
@@ -437,7 +437,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_global_cn_id_0 =
 {
     OGS_TLV_VAR_STR,
     "Global CN-Id",
-    OGS_TLV_GLOBAL_CN_ID_TYPE,
+    OGS_GTP_GLOBAL_CN_ID_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_global_cn_id_t),
@@ -448,7 +448,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_s103pdf_0 =
 {
     OGS_TLV_VAR_STR,
     "S103PDF",
-    OGS_TLV_S103PDF_TYPE,
+    OGS_GTP_S103PDF_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_s103pdf_t),
@@ -459,7 +459,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_s1udf_0 =
 {
     OGS_TLV_VAR_STR,
     "S1UDF",
-    OGS_TLV_S1UDF_TYPE,
+    OGS_GTP_S1UDF_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_s1udf_t),
@@ -470,7 +470,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_delay_value_0 =
 {
     OGS_TLV_VAR_STR,
     "Delay Value",
-    OGS_TLV_DELAY_VALUE_TYPE,
+    OGS_GTP_DELAY_VALUE_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_delay_value_t),
@@ -481,7 +481,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_charging_id_0 =
 {
     OGS_TLV_VAR_STR,
     "Charging ID",
-    OGS_TLV_CHARGING_ID_TYPE,
+    OGS_GTP_CHARGING_ID_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_charging_id_t),
@@ -492,7 +492,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_charging_characteristics_0 =
 {
     OGS_TLV_VAR_STR,
     "Charging Characteristics",
-    OGS_TLV_CHARGING_CHARACTERISTICS_TYPE,
+    OGS_GTP_CHARGING_CHARACTERISTICS_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_charging_characteristics_t),
@@ -503,7 +503,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_trace_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Trace Information",
-    OGS_TLV_TRACE_INFORMATION_TYPE,
+    OGS_GTP_TRACE_INFORMATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_trace_information_t),
@@ -514,7 +514,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_flags_0 =
 {
     OGS_TLV_VAR_STR,
     "Bearer Flags",
-    OGS_TLV_BEARER_FLAGS_TYPE,
+    OGS_GTP_BEARER_FLAGS_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_bearer_flags_t),
@@ -525,7 +525,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_type_0 =
 {
     OGS_TLV_UINT8,
     "PDN Type",
-    OGS_TLV_PDN_TYPE_TYPE,
+    OGS_GTP_PDN_TYPE_TYPE,
     1,
     0,
     sizeof(ogs_gtp_tlv_pdn_type_t),
@@ -536,7 +536,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_pti_0 =
 {
     OGS_TLV_VAR_STR,
     "PTI",
-    OGS_TLV_PTI_TYPE,
+    OGS_GTP_PTI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_pti_t),
@@ -547,7 +547,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mm_context_0 =
 {
     OGS_TLV_VAR_STR,
     "MM Context",
-    OGS_TLV_MM_CONTEXT_TYPE,
+    OGS_GTP_MM_CONTEXT_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mm_context_t),
@@ -558,7 +558,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_pdu_numbers_0 =
 {
     OGS_TLV_VAR_STR,
     "PDU Numbers",
-    OGS_TLV_PDU_NUMBERS_TYPE,
+    OGS_GTP_PDU_NUMBERS_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_pdu_numbers_t),
@@ -569,7 +569,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_p_tmsi_0 =
 {
     OGS_TLV_VAR_STR,
     "P-TMSI",
-    OGS_TLV_P_TMSI_TYPE,
+    OGS_GTP_P_TMSI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_p_tmsi_t),
@@ -580,7 +580,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_p_tmsi_signature_0 =
 {
     OGS_TLV_VAR_STR,
     "P-TMSI Signature",
-    OGS_TLV_P_TMSI_SIGNATURE_TYPE,
+    OGS_GTP_P_TMSI_SIGNATURE_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_p_tmsi_signature_t),
@@ -591,7 +591,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_hop_counter_0 =
 {
     OGS_TLV_VAR_STR,
     "Hop Counter",
-    OGS_TLV_HOP_COUNTER_TYPE,
+    OGS_GTP_HOP_COUNTER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_hop_counter_t),
@@ -602,7 +602,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ue_time_zone_0 =
 {
     OGS_TLV_VAR_STR,
     "UE Time Zone",
-    OGS_TLV_UE_TIME_ZONE_TYPE,
+    OGS_GTP_UE_TIME_ZONE_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_ue_time_zone_t),
@@ -613,7 +613,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_trace_reference_0 =
 {
     OGS_TLV_VAR_STR,
     "Trace Reference",
-    OGS_TLV_TRACE_REFERENCE_TYPE,
+    OGS_GTP_TRACE_REFERENCE_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_trace_reference_t),
@@ -624,7 +624,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_complete_request_message_0 =
 {
     OGS_TLV_VAR_STR,
     "Complete Request Message",
-    OGS_TLV_COMPLETE_REQUEST_MESSAGE_TYPE,
+    OGS_GTP_COMPLETE_REQUEST_MESSAGE_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_complete_request_message_t),
@@ -635,7 +635,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_guti_0 =
 {
     OGS_TLV_VAR_STR,
     "GUTI",
-    OGS_TLV_GUTI_TYPE,
+    OGS_GTP_GUTI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_guti_t),
@@ -646,7 +646,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_container_0 =
 {
     OGS_TLV_VAR_STR,
     "F-Container",
-    OGS_TLV_F_CONTAINER_TYPE,
+    OGS_GTP_F_CONTAINER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_f_container_t),
@@ -657,7 +657,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_f_cause_0 =
 {
     OGS_TLV_VAR_STR,
     "F-Cause",
-    OGS_TLV_F_CAUSE_TYPE,
+    OGS_GTP_F_CAUSE_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_f_cause_t),
@@ -668,7 +668,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_plmn_id_0 =
 {
     OGS_TLV_VAR_STR,
     "PLMN ID",
-    OGS_TLV_PLMN_ID_TYPE,
+    OGS_GTP_PLMN_ID_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_plmn_id_t),
@@ -679,7 +679,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_target_identification_0 =
 {
     OGS_TLV_VAR_STR,
     "Target Identification",
-    OGS_TLV_TARGET_IDENTIFICATION_TYPE,
+    OGS_GTP_TARGET_IDENTIFICATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_target_identification_t),
@@ -690,7 +690,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_packet_flow_id_0 =
 {
     OGS_TLV_VAR_STR,
     "Packet Flow ID",
-    OGS_TLV_PACKET_FLOW_ID_TYPE,
+    OGS_GTP_PACKET_FLOW_ID_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_packet_flow_id_t),
@@ -701,7 +701,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_rab_context_0 =
 {
     OGS_TLV_VAR_STR,
     "RAB Context",
-    OGS_TLV_RAB_CONTEXT_TYPE,
+    OGS_GTP_RAB_CONTEXT_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_rab_context_t),
@@ -712,7 +712,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_source_rnc_pdcp_context_info_0 =
 {
     OGS_TLV_VAR_STR,
     "Source RNC PDCP Context Info",
-    OGS_TLV_SOURCE_RNC_PDCP_CONTEXT_INFO_TYPE,
+    OGS_GTP_SOURCE_RNC_PDCP_CONTEXT_INFO_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_source_rnc_pdcp_context_info_t),
@@ -723,7 +723,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_port_number_0 =
 {
     OGS_TLV_UINT16,
     "Port Number",
-    OGS_TLV_PORT_NUMBER_TYPE,
+    OGS_GTP_PORT_NUMBER_TYPE,
     2,
     0,
     sizeof(ogs_gtp_tlv_port_number_t),
@@ -734,7 +734,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_port_number_1 =
 {
     OGS_TLV_UINT16,
     "Port Number",
-    OGS_TLV_PORT_NUMBER_TYPE,
+    OGS_GTP_PORT_NUMBER_TYPE,
     2,
     1,
     sizeof(ogs_gtp_tlv_port_number_t),
@@ -745,7 +745,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_port_number_2 =
 {
     OGS_TLV_UINT16,
     "Port Number",
-    OGS_TLV_PORT_NUMBER_TYPE,
+    OGS_GTP_PORT_NUMBER_TYPE,
     2,
     2,
     sizeof(ogs_gtp_tlv_port_number_t),
@@ -756,7 +756,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_apn_restriction_0 =
 {
     OGS_TLV_UINT8,
     "APN Restriction",
-    OGS_TLV_APN_RESTRICTION_TYPE,
+    OGS_GTP_APN_RESTRICTION_TYPE,
     1,
     0,
     sizeof(ogs_gtp_tlv_apn_restriction_t),
@@ -767,7 +767,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_selection_mode_0 =
 {
     OGS_TLV_UINT8,
     "Selection Mode",
-    OGS_TLV_SELECTION_MODE_TYPE,
+    OGS_GTP_SELECTION_MODE_TYPE,
     1,
     0,
     sizeof(ogs_gtp_tlv_selection_mode_t),
@@ -778,7 +778,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_source_identification_0 =
 {
     OGS_TLV_VAR_STR,
     "Source Identification",
-    OGS_TLV_SOURCE_IDENTIFICATION_TYPE,
+    OGS_GTP_SOURCE_IDENTIFICATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_source_identification_t),
@@ -789,7 +789,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_change_reporting_action_0 =
 {
     OGS_TLV_VAR_STR,
     "Change Reporting Action",
-    OGS_TLV_CHANGE_REPORTING_ACTION_TYPE,
+    OGS_GTP_CHANGE_REPORTING_ACTION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_change_reporting_action_t),
@@ -800,7 +800,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_fq_csid_0 =
 {
     OGS_TLV_VAR_STR,
     "FQ-CSID",
-    OGS_TLV_FQ_CSID_TYPE,
+    OGS_GTP_FQ_CSID_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_fq_csid_t),
@@ -811,7 +811,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_fq_csid_1 =
 {
     OGS_TLV_VAR_STR,
     "FQ-CSID",
-    OGS_TLV_FQ_CSID_TYPE,
+    OGS_GTP_FQ_CSID_TYPE,
     0,
     1,
     sizeof(ogs_gtp_tlv_fq_csid_t),
@@ -822,7 +822,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_fq_csid_2 =
 {
     OGS_TLV_VAR_STR,
     "FQ-CSID",
-    OGS_TLV_FQ_CSID_TYPE,
+    OGS_GTP_FQ_CSID_TYPE,
     0,
     2,
     sizeof(ogs_gtp_tlv_fq_csid_t),
@@ -833,7 +833,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_fq_csid_3 =
 {
     OGS_TLV_VAR_STR,
     "FQ-CSID",
-    OGS_TLV_FQ_CSID_TYPE,
+    OGS_GTP_FQ_CSID_TYPE,
     0,
     3,
     sizeof(ogs_gtp_tlv_fq_csid_t),
@@ -844,7 +844,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_channel_needed_0 =
 {
     OGS_TLV_VAR_STR,
     "Channel needed",
-    OGS_TLV_CHANNEL_NEEDED_TYPE,
+    OGS_GTP_CHANNEL_NEEDED_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_channel_needed_t),
@@ -855,7 +855,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_emlpp_priority_0 =
 {
     OGS_TLV_VAR_STR,
     "eMLPP Priority",
-    OGS_TLV_EMLPP_PRIORITY_TYPE,
+    OGS_GTP_EMLPP_PRIORITY_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_emlpp_priority_t),
@@ -866,7 +866,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_node_type_0 =
 {
     OGS_TLV_UINT8,
     "Node Type",
-    OGS_TLV_NODE_TYPE_TYPE,
+    OGS_GTP_NODE_TYPE_TYPE,
     1,
     0,
     sizeof(ogs_gtp_tlv_node_type_t),
@@ -877,7 +877,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_fqdn_0 =
 {
     OGS_TLV_VAR_STR,
     "FQDN",
-    OGS_TLV_FQDN_TYPE,
+    OGS_GTP_FQDN_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_fqdn_t),
@@ -888,7 +888,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ti_0 =
 {
     OGS_TLV_VAR_STR,
     "TI",
-    OGS_TLV_TI_TYPE,
+    OGS_GTP_TI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_ti_t),
@@ -899,7 +899,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_session_duration_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Session Duration",
-    OGS_TLV_MBMS_SESSION_DURATION_TYPE,
+    OGS_GTP_MBMS_SESSION_DURATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mbms_session_duration_t),
@@ -910,7 +910,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_service_area_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Service Area",
-    OGS_TLV_MBMS_SERVICE_AREA_TYPE,
+    OGS_GTP_MBMS_SERVICE_AREA_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mbms_service_area_t),
@@ -921,7 +921,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_session_identifier_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Session Identifier",
-    OGS_TLV_MBMS_SESSION_IDENTIFIER_TYPE,
+    OGS_GTP_MBMS_SESSION_IDENTIFIER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mbms_session_identifier_t),
@@ -932,7 +932,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_flow_identifier_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Flow Identifier",
-    OGS_TLV_MBMS_FLOW_IDENTIFIER_TYPE,
+    OGS_GTP_MBMS_FLOW_IDENTIFIER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mbms_flow_identifier_t),
@@ -943,7 +943,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_ip_multicast_distribution_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS IP Multicast Distribution",
-    OGS_TLV_MBMS_IP_MULTICAST_DISTRIBUTION_TYPE,
+    OGS_GTP_MBMS_IP_MULTICAST_DISTRIBUTION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mbms_ip_multicast_distribution_t),
@@ -954,7 +954,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_distribution_acknowledge_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Distribution Acknowledge",
-    OGS_TLV_MBMS_DISTRIBUTION_ACKNOWLEDGE_TYPE,
+    OGS_GTP_MBMS_DISTRIBUTION_ACKNOWLEDGE_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mbms_distribution_acknowledge_t),
@@ -965,7 +965,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_rfsp_index_0 =
 {
     OGS_TLV_VAR_STR,
     "RFSP Index",
-    OGS_TLV_RFSP_INDEX_TYPE,
+    OGS_GTP_RFSP_INDEX_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_rfsp_index_t),
@@ -976,7 +976,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_uci_0 =
 {
     OGS_TLV_VAR_STR,
     "UCI",
-    OGS_TLV_UCI_TYPE,
+    OGS_GTP_UCI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_uci_t),
@@ -987,7 +987,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_csg_information_reporting_action_0 =
 {
     OGS_TLV_VAR_STR,
     "CSG Information Reporting Action",
-    OGS_TLV_CSG_INFORMATION_REPORTING_ACTION_TYPE,
+    OGS_GTP_CSG_INFORMATION_REPORTING_ACTION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_csg_information_reporting_action_t),
@@ -998,7 +998,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_csg_id_0 =
 {
     OGS_TLV_VAR_STR,
     "CSG ID",
-    OGS_TLV_CSG_ID_TYPE,
+    OGS_GTP_CSG_ID_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_csg_id_t),
@@ -1009,7 +1009,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_cmi_0 =
 {
     OGS_TLV_VAR_STR,
     "CMI",
-    OGS_TLV_CMI_TYPE,
+    OGS_GTP_CMI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_cmi_t),
@@ -1020,7 +1020,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_service_indicator_0 =
 {
     OGS_TLV_VAR_STR,
     "Service indicator",
-    OGS_TLV_SERVICE_INDICATOR_TYPE,
+    OGS_GTP_SERVICE_INDICATOR_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_service_indicator_t),
@@ -1031,7 +1031,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_detach_type_0 =
 {
     OGS_TLV_VAR_STR,
     "Detach Type",
-    OGS_TLV_DETACH_TYPE_TYPE,
+    OGS_GTP_DETACH_TYPE_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_detach_type_t),
@@ -1042,7 +1042,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ldn_0 =
 {
     OGS_TLV_VAR_STR,
     "LDN",
-    OGS_TLV_LDN_TYPE,
+    OGS_GTP_LDN_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_ldn_t),
@@ -1053,7 +1053,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ldn_1 =
 {
     OGS_TLV_VAR_STR,
     "LDN",
-    OGS_TLV_LDN_TYPE,
+    OGS_GTP_LDN_TYPE,
     0,
     1,
     sizeof(ogs_gtp_tlv_ldn_t),
@@ -1064,7 +1064,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ldn_2 =
 {
     OGS_TLV_VAR_STR,
     "LDN",
-    OGS_TLV_LDN_TYPE,
+    OGS_GTP_LDN_TYPE,
     0,
     2,
     sizeof(ogs_gtp_tlv_ldn_t),
@@ -1075,7 +1075,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ldn_3 =
 {
     OGS_TLV_VAR_STR,
     "LDN",
-    OGS_TLV_LDN_TYPE,
+    OGS_GTP_LDN_TYPE,
     0,
     3,
     sizeof(ogs_gtp_tlv_ldn_t),
@@ -1086,7 +1086,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_node_features_0 =
 {
     OGS_TLV_VAR_STR,
     "Node Features",
-    OGS_TLV_NODE_FEATURES_TYPE,
+    OGS_GTP_NODE_FEATURES_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_node_features_t),
@@ -1097,7 +1097,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_time_to_data_transfer_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Time to Data Transfer",
-    OGS_TLV_MBMS_TIME_TO_DATA_TRANSFER_TYPE,
+    OGS_GTP_MBMS_TIME_TO_DATA_TRANSFER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mbms_time_to_data_transfer_t),
@@ -1108,7 +1108,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_throttling_0 =
 {
     OGS_TLV_VAR_STR,
     "Throttling",
-    OGS_TLV_THROTTLING_TYPE,
+    OGS_GTP_THROTTLING_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_throttling_t),
@@ -1119,7 +1119,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_arp_0 =
 {
     OGS_TLV_VAR_STR,
     "ARP",
-    OGS_TLV_ARP_TYPE,
+    OGS_GTP_ARP_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_arp_t),
@@ -1130,7 +1130,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_epc_timer_0 =
 {
     OGS_TLV_VAR_STR,
     "EPC Timer",
-    OGS_TLV_EPC_TIMER_TYPE,
+    OGS_GTP_EPC_TIMER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_epc_timer_t),
@@ -1141,7 +1141,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_signalling_priority_indication_0 =
 {
     OGS_TLV_VAR_STR,
     "Signalling Priority Indication",
-    OGS_TLV_SIGNALLING_PRIORITY_INDICATION_TYPE,
+    OGS_GTP_SIGNALLING_PRIORITY_INDICATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_signalling_priority_indication_t),
@@ -1152,7 +1152,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_tmgi_0 =
 {
     OGS_TLV_VAR_STR,
     "TMGI",
-    OGS_TLV_TMGI_TYPE,
+    OGS_GTP_TMGI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_tmgi_t),
@@ -1163,7 +1163,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_additional_mm_context_for_srvcc_0 =
 {
     OGS_TLV_VAR_STR,
     "Additional MM context for SRVCC",
-    OGS_TLV_ADDITIONAL_MM_CONTEXT_FOR_SRVCC_TYPE,
+    OGS_GTP_ADDITIONAL_MM_CONTEXT_FOR_SRVCC_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_additional_mm_context_for_srvcc_t),
@@ -1174,7 +1174,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_additional_flags_for_srvcc_0 =
 {
     OGS_TLV_VAR_STR,
     "Additional flags for SRVCC",
-    OGS_TLV_ADDITIONAL_FLAGS_FOR_SRVCC_TYPE,
+    OGS_GTP_ADDITIONAL_FLAGS_FOR_SRVCC_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_additional_flags_for_srvcc_t),
@@ -1185,7 +1185,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mdt_configuration_0 =
 {
     OGS_TLV_VAR_STR,
     "MDT Configuration",
-    OGS_TLV_MDT_CONFIGURATION_TYPE,
+    OGS_GTP_MDT_CONFIGURATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mdt_configuration_t),
@@ -1196,7 +1196,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_apco_0 =
 {
     OGS_TLV_VAR_STR,
     "APCO",
-    OGS_TLV_APCO_TYPE,
+    OGS_GTP_APCO_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_apco_t),
@@ -1207,7 +1207,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_absolute_time_of_mbms_data_transfer_0 =
 {
     OGS_TLV_VAR_STR,
     "Absolute Time of MBMS Data Transfer",
-    OGS_TLV_ABSOLUTE_TIME_OF_MBMS_DATA_TRANSFER_TYPE,
+    OGS_GTP_ABSOLUTE_TIME_OF_MBMS_DATA_TRANSFER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_absolute_time_of_mbms_data_transfer_t),
@@ -1218,7 +1218,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_enb_information_reporting_0 =
 {
     OGS_TLV_VAR_STR,
     "eNB Information Reporting",
-    OGS_TLV_ENB_INFORMATION_REPORTING_TYPE,
+    OGS_GTP_ENB_INFORMATION_REPORTING_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_enb_information_reporting_t),
@@ -1229,7 +1229,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ip4cp_0 =
 {
     OGS_TLV_VAR_STR,
     "IP4CP",
-    OGS_TLV_IP4CP_TYPE,
+    OGS_GTP_IP4CP_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_ip4cp_t),
@@ -1240,7 +1240,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_change_to_report_flags_0 =
 {
     OGS_TLV_VAR_STR,
     "Change to Report Flags",
-    OGS_TLV_CHANGE_TO_REPORT_FLAGS_TYPE,
+    OGS_GTP_CHANGE_TO_REPORT_FLAGS_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_change_to_report_flags_t),
@@ -1251,7 +1251,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_action_indication_0 =
 {
     OGS_TLV_VAR_STR,
     "Action Indication",
-    OGS_TLV_ACTION_INDICATION_TYPE,
+    OGS_GTP_ACTION_INDICATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_action_indication_t),
@@ -1262,7 +1262,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_twan_identifier_0 =
 {
     OGS_TLV_VAR_STR,
     "TWAN Identifier",
-    OGS_TLV_TWAN_IDENTIFIER_TYPE,
+    OGS_GTP_TWAN_IDENTIFIER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_twan_identifier_t),
@@ -1273,7 +1273,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_twan_identifier_1 =
 {
     OGS_TLV_VAR_STR,
     "TWAN Identifier",
-    OGS_TLV_TWAN_IDENTIFIER_TYPE,
+    OGS_GTP_TWAN_IDENTIFIER_TYPE,
     0,
     1,
     sizeof(ogs_gtp_tlv_twan_identifier_t),
@@ -1284,7 +1284,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_uli_timestamp_0 =
 {
     OGS_TLV_VAR_STR,
     "ULI Timestamp",
-    OGS_TLV_ULI_TIMESTAMP_TYPE,
+    OGS_GTP_ULI_TIMESTAMP_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_uli_timestamp_t),
@@ -1295,7 +1295,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_flags_0 =
 {
     OGS_TLV_VAR_STR,
     "MBMS Flags",
-    OGS_TLV_MBMS_FLAGS_TYPE,
+    OGS_GTP_MBMS_FLAGS_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_mbms_flags_t),
@@ -1306,7 +1306,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ran_nas_cause_0 =
 {
     OGS_TLV_VAR_STR,
     "RAN/NAS Cause",
-    OGS_TLV_RAN_NAS_CAUSE_TYPE,
+    OGS_GTP_RAN_NAS_CAUSE_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_ran_nas_cause_t),
@@ -1317,7 +1317,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_cn_operator_selection_entity_0 =
 {
     OGS_TLV_VAR_STR,
     "CN Operator Selection Entity",
-    OGS_TLV_CN_OPERATOR_SELECTION_ENTITY_TYPE,
+    OGS_GTP_CN_OPERATOR_SELECTION_ENTITY_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_cn_operator_selection_entity_t),
@@ -1328,7 +1328,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_twmi_0 =
 {
     OGS_TLV_VAR_STR,
     "TWMI",
-    OGS_TLV_TWMI_TYPE,
+    OGS_GTP_TWMI_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_twmi_t),
@@ -1339,7 +1339,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_node_number_0 =
 {
     OGS_TLV_VAR_STR,
     "Node Number",
-    OGS_TLV_NODE_NUMBER_TYPE,
+    OGS_GTP_NODE_NUMBER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_node_number_t),
@@ -1350,7 +1350,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_node_identifier_0 =
 {
     OGS_TLV_VAR_STR,
     "Node Identifier",
-    OGS_TLV_NODE_IDENTIFIER_TYPE,
+    OGS_GTP_NODE_IDENTIFIER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_node_identifier_t),
@@ -1361,7 +1361,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_presence_reporting_area_action_0 =
 {
     OGS_TLV_VAR_STR,
     "Presence Reporting Area Action",
-    OGS_TLV_PRESENCE_REPORTING_AREA_ACTION_TYPE,
+    OGS_GTP_PRESENCE_REPORTING_AREA_ACTION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_presence_reporting_area_action_t),
@@ -1372,7 +1372,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_presence_reporting_area_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Presence Reporting Area Information",
-    OGS_TLV_PRESENCE_REPORTING_AREA_INFORMATION_TYPE,
+    OGS_GTP_PRESENCE_REPORTING_AREA_INFORMATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_presence_reporting_area_information_t),
@@ -1383,7 +1383,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_twan_identifier_timestamp_0 =
 {
     OGS_TLV_VAR_STR,
     "TWAN Identifier Timestamp",
-    OGS_TLV_TWAN_IDENTIFIER_TIMESTAMP_TYPE,
+    OGS_GTP_TWAN_IDENTIFIER_TIMESTAMP_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_twan_identifier_timestamp_t),
@@ -1394,7 +1394,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_twan_identifier_timestamp_1 =
 {
     OGS_TLV_VAR_STR,
     "TWAN Identifier Timestamp",
-    OGS_TLV_TWAN_IDENTIFIER_TIMESTAMP_TYPE,
+    OGS_GTP_TWAN_IDENTIFIER_TIMESTAMP_TYPE,
     0,
     1,
     sizeof(ogs_gtp_tlv_twan_identifier_timestamp_t),
@@ -1405,7 +1405,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_metric_0 =
 {
     OGS_TLV_VAR_STR,
     "Metric",
-    OGS_TLV_METRIC_TYPE,
+    OGS_GTP_METRIC_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_metric_t),
@@ -1416,7 +1416,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_sequence_number_0 =
 {
     OGS_TLV_VAR_STR,
     "Sequence Number",
-    OGS_TLV_SEQUENCE_NUMBER_TYPE,
+    OGS_GTP_SEQUENCE_NUMBER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_sequence_number_t),
@@ -1427,7 +1427,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_apn_and_relative_capacity_0 =
 {
     OGS_TLV_VAR_STR,
     "APN and Relative Capacity",
-    OGS_TLV_APN_AND_RELATIVE_CAPACITY_TYPE,
+    OGS_GTP_APN_AND_RELATIVE_CAPACITY_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_apn_and_relative_capacity_t),
@@ -1438,7 +1438,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_wlan_offloadability_indication_0 =
 {
     OGS_TLV_VAR_STR,
     "WLAN Offloadability Indication",
-    OGS_TLV_WLAN_OFFLOADABILITY_INDICATION_TYPE,
+    OGS_GTP_WLAN_OFFLOADABILITY_INDICATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_wlan_offloadability_indication_t),
@@ -1449,7 +1449,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_paging_and_service_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Paging and Service Information",
-    OGS_TLV_PAGING_AND_SERVICE_INFORMATION_TYPE,
+    OGS_GTP_PAGING_AND_SERVICE_INFORMATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_paging_and_service_information_t),
@@ -1460,7 +1460,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_integer_number_0 =
 {
     OGS_TLV_VAR_STR,
     "Integer Number",
-    OGS_TLV_INTEGER_NUMBER_TYPE,
+    OGS_GTP_INTEGER_NUMBER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_integer_number_t),
@@ -1471,7 +1471,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_millisecond_time_stamp_0 =
 {
     OGS_TLV_VAR_STR,
     "Millisecond Time Stamp",
-    OGS_TLV_MILLISECOND_TIME_STAMP_TYPE,
+    OGS_GTP_MILLISECOND_TIME_STAMP_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_millisecond_time_stamp_t),
@@ -1482,7 +1482,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_monitoring_event_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Monitoring Event Information",
-    OGS_TLV_MONITORING_EVENT_INFORMATION_TYPE,
+    OGS_GTP_MONITORING_EVENT_INFORMATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_monitoring_event_information_t),
@@ -1493,7 +1493,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ecgi_list_0 =
 {
     OGS_TLV_VAR_STR,
     "ECGI List",
-    OGS_TLV_ECGI_LIST_TYPE,
+    OGS_GTP_ECGI_LIST_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_ecgi_list_t),
@@ -1504,7 +1504,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_user_id_0 =
 {
     OGS_TLV_VAR_STR,
     "Remote User ID",
-    OGS_TLV_REMOTE_USER_ID_TYPE,
+    OGS_GTP_REMOTE_USER_ID_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_remote_user_id_t),
@@ -1515,7 +1515,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_ip_information_0 =
 {
     OGS_TLV_VAR_STR,
     "Remote UE IP Information",
-    OGS_TLV_REMOTE_UE_IP_INFORMATION_TYPE,
+    OGS_GTP_REMOTE_UE_IP_INFORMATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_remote_ue_ip_information_t),
@@ -1526,7 +1526,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_ciot_optimizations_support_indication_0 =
 {
     OGS_TLV_VAR_STR,
     "CIoT Optimizations Support Indication",
-    OGS_TLV_CIOT_OPTIMIZATIONS_SUPPORT_INDICATION_TYPE,
+    OGS_GTP_CIOT_OPTIMIZATIONS_SUPPORT_INDICATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_ciot_optimizations_support_indication_t),
@@ -1537,7 +1537,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_header_compression_configuration_0 =
 {
     OGS_TLV_VAR_STR,
     "Header Compression Configuration",
-    OGS_TLV_HEADER_COMPRESSION_CONFIGURATION_TYPE,
+    OGS_GTP_HEADER_COMPRESSION_CONFIGURATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_header_compression_configuration_t),
@@ -1548,7 +1548,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_epco_0 =
 {
     OGS_TLV_VAR_STR,
     "ePCO",
-    OGS_TLV_EPCO_TYPE,
+    OGS_GTP_EPCO_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_epco_t),
@@ -1559,7 +1559,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_serving_plmn_rate_control_0 =
 {
     OGS_TLV_VAR_STR,
     "Serving PLMN Rate Control",
-    OGS_TLV_SERVING_PLMN_RATE_CONTROL_TYPE,
+    OGS_GTP_SERVING_PLMN_RATE_CONTROL_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_serving_plmn_rate_control_t),
@@ -1570,7 +1570,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_counter_0 =
 {
     OGS_TLV_VAR_STR,
     "Counter",
-    OGS_TLV_COUNTER_TYPE,
+    OGS_GTP_COUNTER_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_counter_t),
@@ -1581,7 +1581,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_0 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1619,7 +1619,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_1 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     1,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1657,7 +1657,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_2 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     2,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1695,7 +1695,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_3 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     3,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1733,7 +1733,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_4 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     4,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1771,7 +1771,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_5 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     5,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1809,7 +1809,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_6 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     6,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1847,7 +1847,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_7 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     7,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1885,7 +1885,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_8 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     8,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1923,7 +1923,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_9 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     9,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1961,7 +1961,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_10 =
 {
     OGS_TLV_COMPOUND,
     "Bearer Context",
-    OGS_TLV_BEARER_CONTEXT_TYPE,
+    OGS_GTP_BEARER_CONTEXT_TYPE,
     0,
     10,
     sizeof(ogs_gtp_tlv_bearer_context_t),
@@ -1999,7 +1999,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection_0 =
 {
     OGS_TLV_COMPOUND,
     "PDN Connection",
-    OGS_TLV_PDN_CONNECTION_TYPE,
+    OGS_GTP_PDN_CONNECTION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_pdn_connection_t),
@@ -2012,7 +2012,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_0 =
 {
     OGS_TLV_COMPOUND,
     "Overload Control Information",
-    OGS_TLV_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_overload_control_information_t),
@@ -2029,7 +2029,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_1 =
 {
     OGS_TLV_COMPOUND,
     "Overload Control Information",
-    OGS_TLV_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
     0,
     1,
     sizeof(ogs_gtp_tlv_overload_control_information_t),
@@ -2046,7 +2046,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_2 =
 {
     OGS_TLV_COMPOUND,
     "Overload Control Information",
-    OGS_TLV_OVERLOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP_OVERLOAD_CONTROL_INFORMATION_TYPE,
     0,
     2,
     sizeof(ogs_gtp_tlv_overload_control_information_t),
@@ -2063,7 +2063,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_0 =
 {
     OGS_TLV_COMPOUND,
     "Load Control Information",
-    OGS_TLV_LOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_load_control_information_t),
@@ -2079,7 +2079,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_1 =
 {
     OGS_TLV_COMPOUND,
     "Load Control Information",
-    OGS_TLV_LOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
     0,
     1,
     sizeof(ogs_gtp_tlv_load_control_information_t),
@@ -2095,7 +2095,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_2 =
 {
     OGS_TLV_COMPOUND,
     "Load Control Information",
-    OGS_TLV_LOAD_CONTROL_INFORMATION_TYPE,
+    OGS_GTP_LOAD_CONTROL_INFORMATION_TYPE,
     0,
     2,
     sizeof(ogs_gtp_tlv_load_control_information_t),
@@ -2111,7 +2111,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context_0 =
 {
     OGS_TLV_COMPOUND,
     "Remote UE Context",
-    OGS_TLV_REMOTE_UE_CONTEXT_TYPE,
+    OGS_GTP_REMOTE_UE_CONTEXT_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_remote_ue_context_t),
@@ -2126,7 +2126,7 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_scef_pdn_connection_0 =
 {
     OGS_TLV_COMPOUND,
     "SCEF PDN Connection",
-    OGS_TLV_SCEF_PDN_CONNECTION_TYPE,
+    OGS_GTP_SCEF_PDN_CONNECTION_TYPE,
     0,
     0,
     sizeof(ogs_gtp_tlv_scef_pdn_connection_t),
