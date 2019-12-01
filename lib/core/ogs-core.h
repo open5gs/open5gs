@@ -52,6 +52,7 @@
 #include "core/ogs-poll.h"
 #include "core/ogs-notify.h"
 #include "core/ogs-tlv.h"
+#include "core/ogs-tlv-msg.h"
 #include "core/ogs-env.h"
 #include "core/ogs-fsm.h"
 #include "core/ogs-hash.h"

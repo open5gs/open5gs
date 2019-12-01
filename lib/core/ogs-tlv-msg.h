@@ -17,16 +17,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
+#if !defined(OGS_CORE_INSIDE) && !defined(OGS_CORE_COMPILATION)
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_GTP_TLV_H
-#define OGS_GTP_TLV_H
+#ifndef OGS_TLV_MSG_H
+#define OGS_TLV_MSG_H
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #define OGS_TLV_MAX_HEADROOM 16
 #define OGS_TLV_VARIABLE_LEN 0

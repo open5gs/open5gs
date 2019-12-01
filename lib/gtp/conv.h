@@ -32,10 +32,10 @@ extern "C" {
 
 /* Create Indirect Data Forwarding Tunnel Request/Response */
 void ogs_gtp_bearers_in_create_indirect_tunnel_request(
-    ogs_tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
+    ogs_gtp_tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
     ogs_gtp_create_indirect_data_forwarding_tunnel_request_t *req);
 void ogs_gtp_bearers_in_create_indirect_tunnel_response(
-    ogs_tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
+    ogs_gtp_tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
     ogs_gtp_create_indirect_data_forwarding_tunnel_response_t *rsp);
 
 int ogs_gtp_f_teid_to_sockaddr(

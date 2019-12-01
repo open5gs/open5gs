@@ -379,8 +379,6 @@ f.write("""#if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
 #ifndef OGS_GTP_MESSAGE_H
 #define OGS_GTP_MESSAGE_H
 
-#include "gtp/tlv.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -445,7 +443,7 @@ for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("extern ogs_tlv_desc_t ogs_tlv_desc_" + v_lower(k))
+        f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k))
         f.write("_" + str(instance) + ";\n")
 f.write("\n")
 
@@ -455,13 +453,13 @@ sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
 f.write("/* Group Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("extern ogs_tlv_desc_t ogs_tlv_desc_" + v_lower(k))
+        f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k))
         f.write("_" + str(instance) + ";\n")
 f.write("\n")
 
 f.write("/* Message Descriptor */\n")
 for (k, v) in sorted_msg_list:
-    f.write("extern ogs_tlv_desc_t ogs_tlv_desc_" + v_lower(k) + ";\n")
+    f.write("extern ogs_tlv_desc_t ogs_gtp_tlv_desc_" + v_lower(k) + ";\n")
 f.write("\n")
 
 f.write("/* Structure for Infomration Element */\n")
@@ -470,25 +468,25 @@ for (k, v) in sorted_type_list:
         continue
     if "size" in type_list[k]:
         if type_list[k]["size"] == 1:
-            f.write("typedef ogs_tlv_uint8_t ogs_tlv_" + v_lower(k) + "_t;\n")
+            f.write("typedef ogs_tlv_uint8_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
         elif type_list[k]["size"] == 2:
-            f.write("typedef ogs_tlv_uint16_t ogs_tlv_" + v_lower(k) + "_t;\n")
+            f.write("typedef ogs_tlv_uint16_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
         elif type_list[k]["size"] == 3:
-            f.write("typedef ogs_tlv_uint24_t ogs_tlv_" + v_lower(k) + "_t;\n")
+            f.write("typedef ogs_tlv_uint24_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
         elif type_list[k]["size"] == 4:
-            f.write("typedef ogs_tlv_uint32_t ogs_tlv_" + v_lower(k) + "_t;\n")
+            f.write("typedef ogs_tlv_uint32_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
         else:
             assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
     else:
-        f.write("typedef ogs_tlv_octet_t ogs_tlv_" + v_lower(k) + "_t;\n")
+        f.write("typedef ogs_tlv_octet_t ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
 f.write("\n")
 
 f.write("/* Structure for Group Infomration Element */\n")
 for (k, v) in sorted_group_list:
-    f.write("typedef struct ogs_tlv_" + v_lower(k) + "_s {\n")
+    f.write("typedef struct ogs_gtp_tlv_" + v_lower(k) + "_s {\n")
     f.write("    ogs_tlv_presence_t presence;\n")
     for ies in group_list[k]["ies"]:
-        f.write("    ogs_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
+        f.write("    ogs_gtp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                 v_lower(ies["ie_value"]))
         if ies["ie_type"] == "F-TEID":
             if ies["ie_value"] == "S2b-U ePDG F-TEID":
@@ -500,7 +498,7 @@ for (k, v) in sorted_group_list:
             f.write(" /* Instance : " + ies["instance"] + " */\n")
         else:
             f.write(";\n")
-    f.write("} ogs_tlv_" + v_lower(k) + "_t;\n")
+    f.write("} ogs_gtp_tlv_" + v_lower(k) + "_t;\n")
     f.write("\n")
 
 f.write("/* Structure for Message */\n")
@@ -508,7 +506,7 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("typedef struct ogs_gtp_" + v_lower(k) + "_s {\n")
         for ies in msg_list[k]["ies"]:
-            f.write("    ogs_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
+            f.write("    ogs_gtp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
                     v_lower(ies["ie_value"]) + ";\n")
         f.write("} ogs_gtp_" + v_lower(k) + "_t;\n")
         f.write("\n")
@@ -543,7 +541,7 @@ for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("ogs_tlv_desc_t ogs_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
+        f.write("ogs_tlv_desc_t ogs_gtp_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
         f.write("{\n")
         if "size" in type_list[k]:
             if type_list[k]["size"] == 1:
@@ -565,36 +563,36 @@ for (k, v) in sorted_type_list:
         else:
             f.write("    0,\n")
         f.write("    %d,\n" % instance)
-        f.write("    sizeof(ogs_tlv_%s_t),\n" % v_lower(k))
+        f.write("    sizeof(ogs_gtp_tlv_%s_t),\n" % v_lower(k))
         f.write("    { NULL }\n")
         f.write("};\n\n")
 
 for (k, v) in sorted_group_list:
     for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("ogs_tlv_desc_t ogs_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
+        f.write("ogs_tlv_desc_t ogs_gtp_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
         f.write("{\n")
         f.write("    OGS_TLV_COMPOUND,\n")
         f.write("    \"%s\",\n" % k)
         f.write("    OGS_TLV_%s_TYPE,\n" % v_upper(k))
         f.write("    0,\n")
         f.write("    %d,\n" % instance)
-        f.write("    sizeof(ogs_tlv_%s_t),\n" % v_lower(k))
+        f.write("    sizeof(ogs_gtp_tlv_%s_t),\n" % v_lower(k))
         f.write("    {\n")
         for ies in group_list[k]["ies"]:
-                f.write("        &ogs_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+                f.write("        &ogs_gtp_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
         f.write("        NULL,\n")
         f.write("    }\n")
         f.write("};\n\n")
 
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
-        f.write("ogs_tlv_desc_t ogs_tlv_desc_%s =\n" % v_lower(k))
+        f.write("ogs_tlv_desc_t ogs_gtp_tlv_desc_%s =\n" % v_lower(k))
         f.write("{\n")
         f.write("    OGS_TLV_MESSAGE,\n")
         f.write("    \"%s\",\n" % k)
         f.write("    0, 0, 0, 0, {\n")
         for ies in msg_list[k]["ies"]:
-                f.write("        &ogs_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+                f.write("        &ogs_gtp_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
         f.write("    NULL,\n")
         f.write("}};\n\n")
 f.write("\n")
@@ -634,7 +632,7 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("    case OGS_GTP_%s_TYPE:\n" % v_upper(k))
         f.write("        rv = ogs_tlv_parse_msg(&gtp_message->%s,\n" % v_lower(k))
-        f.write("                &ogs_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
+        f.write("                &ogs_gtp_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("        break;\n")
 f.write("""    default:
         ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
@@ -656,7 +654,7 @@ f.write("""ogs_pkbuf_t *ogs_gtp_build_msg(ogs_gtp_message_t *gtp_message)
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("    case OGS_GTP_%s_TYPE:\n" % v_upper(k))
-        f.write("        pkbuf = ogs_tlv_build_msg(&ogs_tlv_desc_%s,\n" % v_lower(k))
+        f.write("        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_%s,\n" % v_lower(k))
         f.write("                &gtp_message->%s, OGS_TLV_MODE_T1_L2_I1);\n" % v_lower(k))
         f.write("        break;\n")
 f.write("""    default:

@@ -22,7 +22,7 @@
 
 #include "ipfw/ipfw2.h"
 
-static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_tlv_pco_t *tlv_pco);
+static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco);
 
 ogs_pkbuf_t *pgw_s5c_build_create_session_response(
         uint8_t type, pgw_sess_t *sess,
@@ -455,7 +455,7 @@ ogs_pkbuf_t *pgw_s5c_build_delete_bearer_request(
     return ogs_gtp_build_msg(&gtp_message);
 }
 
-static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_tlv_pco_t *tlv_pco)
+static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco)
 {
     int rv;
     ogs_pco_t ue, pgw;

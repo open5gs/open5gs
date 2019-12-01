@@ -24,6 +24,10 @@
 #ifndef OGS_TLV_H
 #define OGS_TLV_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define OGS_TLV_MODE_T1_L1              1
 #define OGS_TLV_MODE_T1_L2              2
 #define OGS_TLV_MODE_T1_L2_I1           3

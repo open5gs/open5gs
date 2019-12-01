@@ -248,6 +248,7 @@ libcore_sources = files('''
     ogs-poll.h
     ogs-notify.h
     ogs-tlv.h
+    ogs-tlv-msg.h
     ogs-env.h
     ogs-fsm.h
     ogs-hash.h
@@ -281,6 +282,7 @@ libcore_sources = files('''
     ogs-poll.c
     ogs-notify.c
     ogs-tlv.c
+    ogs-tlv-msg.c
     ogs-env.c
     ogs-fsm.c
     ogs-hash.c

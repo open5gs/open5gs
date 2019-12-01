@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-gtp.h"
+#include "ogs-core.h"
 
 ogs_tlv_desc_t ogs_tlv_desc_more1 = { 
     OGS_TLV_MORE, "More", 0, 1, 0, 0, { NULL } };
