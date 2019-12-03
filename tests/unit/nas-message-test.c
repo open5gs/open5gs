@@ -123,8 +123,7 @@ static void ogs_nas_message_test2(abts_case *tc, void *data)
     attach_accept->eps_network_feature_support.emc_bs = 1;
     attach_accept->eps_network_feature_support.ims_vops = 1;
 
-    rv = ogs_nas_plain_encode(&pkbuf, &message);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    pkbuf = ogs_nas_plain_encode(&message);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ogs_log_hexdump(OGS_LOG_DEBUG, pkbuf->data, pkbuf->len);
     ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
@@ -171,8 +170,7 @@ static void ogs_nas_message_test4(abts_case *tc, void *data)
     message.emm.h.message_type = OGS_NAS_ATTACH_REJECT;
     attach_reject->emm_cause = EMM_CAUSE_NETWORK_FAILURE; 
 
-    rv = ogs_nas_plain_encode(&pkbuf, &message);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    pkbuf = ogs_nas_plain_encode(&message);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
             pkbuf->data, pkbuf->len) == 0);
@@ -259,8 +257,7 @@ static void ogs_nas_message_test7(abts_case *tc, void *data)
     identity_response->mobile_identity.imsi.digit14 = 1;
     identity_response->mobile_identity.imsi.digit15 = 5;
 
-    rv = ogs_nas_plain_encode(&pkbuf, &message);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    pkbuf = ogs_nas_plain_encode(&message);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
             pkbuf->data, pkbuf->len) == 0);
@@ -307,8 +304,7 @@ static void ogs_nas_message_test8(abts_case *tc, void *data)
     ksi_and_sequence_number->sequence_number = 8;
     service_request->message_authentication_code = 0x640c;
 
-    rv = ogs_nas_plain_encode(&pkbuf, &message);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    pkbuf = ogs_nas_plain_encode(&message);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);
     ABTS_TRUE(tc, memcmp(OGS_HEX(payload, strlen(payload), buffer),
             pkbuf->data, pkbuf->len) == 0);

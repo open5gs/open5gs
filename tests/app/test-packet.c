@@ -289,14 +289,11 @@ int tests1ap_build_setup_req(
 
     *PagingDRX = S1AP_PagingDRX_v64;
 
-    rv = ogs_s1ap_encode(pkbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
+    *pkbuf = ogs_s1ap_encode(&pdu);
+    if (*pkbuf == NULL) {
         ogs_error("ogs_s1ap_encode() failed");
         return OGS_ERROR;
     }
-
     return OGS_OK;
 }
 
@@ -1171,14 +1168,11 @@ int tests1ap_build_initial_context_setup_response(
     ogs_assert(rv == OGS_OK);
     ogs_s1ap_uint32_to_OCTET_STRING(teid, &e_rab->gTP_TEID);
 
-    rv = ogs_s1ap_encode(pkbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
+    *pkbuf = ogs_s1ap_encode(&pdu);
+    if (*pkbuf == NULL) {
         ogs_error("ogs_s1ap_encode() failed");
         return OGS_ERROR;
     }
-
     return OGS_OK;
 }
 
@@ -1235,14 +1229,11 @@ int tests1ap_build_ue_context_modification_response(
     *MME_UE_S1AP_ID = mme_ue_s1ap_id;
     *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
 
-    rv = ogs_s1ap_encode(pkbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
+    *pkbuf = ogs_s1ap_encode(&pdu);
+    if (*pkbuf == NULL) {
         ogs_error("ogs_s1ap_encode() failed");
         return OGS_ERROR;
     }
-
     return OGS_OK;
 }
 
@@ -2140,14 +2131,11 @@ int tests1ap_build_e_rab_setup_response(
     ogs_assert(rv == OGS_OK);
     ogs_s1ap_uint32_to_OCTET_STRING(teid, &e_rab->gTP_TEID);
 
-    rv = ogs_s1ap_encode(pkbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
+    *pkbuf = ogs_s1ap_encode(&pdu);
+    if (*pkbuf == NULL) {
         ogs_error("ogs_s1ap_encode() failed");
         return OGS_ERROR;
     }
-
     return OGS_OK;
 }
 
@@ -2594,14 +2582,11 @@ int tests1ap_build_path_switch_request(
     UESecurityCapabilities->integrityProtectionAlgorithms.buf[0] =
         (mme_ue->ue_network_capability.eia << 1);
 
-    rv = ogs_s1ap_encode(pkbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
+    *pkbuf = ogs_s1ap_encode(&pdu);
+    if (*pkbuf == NULL) {
         ogs_error("ogs_s1ap_encode() failed");
         return OGS_ERROR;
     }
-
     return OGS_OK;
 }
 
@@ -2847,14 +2832,11 @@ int tests1ap_build_handover_request_ack(
             OGS_HEX(payload, strlen(payload), hexbuf), 132,
             Target_ToSource_TransparentContainer);
 
-    rv = ogs_s1ap_encode(pkbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
+    *pkbuf = ogs_s1ap_encode(&pdu);
+    if (*pkbuf == NULL) {
         ogs_error("ogs_s1ap_encode() failed");
         return OGS_ERROR;
     }
-
     return OGS_OK;
 }
 

@@ -26,33 +26,30 @@
 extern "C" {
 #endif
 
-int emm_build_attach_accept(ogs_pkbuf_t **emmbuf,
+ogs_pkbuf_t *emm_build_attach_accept(
         mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf);
-int emm_build_attach_reject(ogs_pkbuf_t **emmbuf,
+ogs_pkbuf_t *emm_build_attach_reject(
         ogs_nas_emm_cause_t emm_cause, ogs_pkbuf_t *esmbuf);
 
-int emm_build_identity_request(
-        ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue);
-int emm_build_security_mode_command(
-        ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue);
+ogs_pkbuf_t *emm_build_identity_request(mme_ue_t *mme_ue);
+ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue);
 
-int emm_build_authentication_request(
-        ogs_pkbuf_t **emmbuf, ogs_diam_e_utran_vector_t *e_utran_vector);
-int emm_build_authentication_reject(ogs_pkbuf_t **emmbuf);
+ogs_pkbuf_t *emm_build_authentication_request(
+        ogs_diam_e_utran_vector_t *e_utran_vector);
+ogs_pkbuf_t *emm_build_authentication_reject(void);
 
-int emm_build_detach_accept(
-        ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue);
+ogs_pkbuf_t *emm_build_detach_accept(mme_ue_t *mme_ue);
 
-int emm_build_tau_accept(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue);
-int emm_build_tau_reject(ogs_pkbuf_t **emmbuf, 
-        ogs_nas_emm_cause_t emm_cause,mme_ue_t *mme_ue);
-
-int emm_build_service_reject(ogs_pkbuf_t **emmbuf, 
+ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue);
+ogs_pkbuf_t *emm_build_tau_reject(
         ogs_nas_emm_cause_t emm_cause, mme_ue_t *mme_ue);
 
-int emm_build_cs_service_notification(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue);
-int emm_build_downlink_nas_transport(ogs_pkbuf_t **emmbuf, mme_ue_t *mme_ue,
-        uint8_t *buffer, uint8_t length);
+ogs_pkbuf_t *emm_build_service_reject(
+        ogs_nas_emm_cause_t emm_cause, mme_ue_t *mme_ue);
+
+ogs_pkbuf_t *emm_build_cs_service_notification(mme_ue_t *mme_ue);
+ogs_pkbuf_t *emm_build_downlink_nas_transport(
+        mme_ue_t *mme_ue, uint8_t *buffer, uint8_t length);
 
 #ifdef __cplusplus
 }

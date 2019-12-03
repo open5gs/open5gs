@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-gtp.h"
+#include "ogs-core.h"
 
 ogs_tlv_desc_t ogs_tlv_desc_more1 = { 
     OGS_TLV_MORE, "More", 0, 1, 0, 0, { NULL } };
@@ -253,13 +253,12 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
     return count;
 }
 
-int ogs_tlv_build_msg(ogs_pkbuf_t **pkbuf, ogs_tlv_desc_t *desc, void *msg,
-        int mode)
+ogs_pkbuf_t *ogs_tlv_build_msg(ogs_tlv_desc_t *desc, void *msg, int mode)
 {
     ogs_tlv_t *root = NULL;
     uint32_t r, length, rendlen;
+    ogs_pkbuf_t *pkbuf = NULL;
 
-    ogs_assert(pkbuf);
     ogs_assert(desc);
     ogs_assert(msg);
 
@@ -270,17 +269,17 @@ int ogs_tlv_build_msg(ogs_pkbuf_t **pkbuf, ogs_tlv_desc_t *desc, void *msg,
     ogs_assert(r > 0 && root);
 
     length = ogs_tlv_calc_length(root, mode);
-    *pkbuf = ogs_pkbuf_alloc(NULL, OGS_TLV_MAX_HEADROOM+length);
-    ogs_assert(*pkbuf);
-    ogs_pkbuf_reserve(*pkbuf, OGS_TLV_MAX_HEADROOM);
-    ogs_pkbuf_put(*pkbuf, length);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_TLV_MAX_HEADROOM+length);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_reserve(pkbuf, OGS_TLV_MAX_HEADROOM);
+    ogs_pkbuf_put(pkbuf, length);
 
-    rendlen = ogs_tlv_render(root, (*pkbuf)->data, length, mode);
+    rendlen = ogs_tlv_render(root, pkbuf->data, length, mode);
     ogs_assert(rendlen == length);
 
     ogs_tlv_free_all(root);
 
-    return OGS_OK;
+    return pkbuf;
 }
 
 static ogs_tlv_desc_t* tlv_find_desc(uint8_t *desc_index,

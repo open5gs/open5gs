@@ -221,7 +221,10 @@ int emm_handle_attach_complete(
         (int)local.tm_gmtoff);
 
     rv = nas_send_emm_to_esm(mme_ue, &attach_complete->esm_message_container);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("nas_send_emm_to_esm() failed");
+        return OGS_ERROR;
+    }
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type = 
@@ -272,9 +275,9 @@ int emm_handle_attach_complete(
             &mme_self()->short_name, sizeof(ogs_nas_network_name_t));
     }                
 
-    rv = nas_security_encode(&emmbuf, mme_ue, &message);
-    ogs_assert(rv == OGS_OK && emmbuf);
-    ogs_assert(nas_send_to_downlink_nas_transport(mme_ue, emmbuf) == OGS_OK);
+    emmbuf = nas_security_encode(mme_ue, &message);
+    if (emmbuf) 
+        nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
 
     ogs_debug("[EMM] EMM information");
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
@@ -299,15 +302,22 @@ int emm_handle_identity_response(
     if (mobile_identity->imsi.type == OGS_NAS_IDENTITY_TYPE_2_IMSI) {
         char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-        ogs_assert(sizeof(ogs_nas_mobile_identity_imsi_t) ==
-                mobile_identity->length);
+        if (sizeof(ogs_nas_mobile_identity_imsi_t) != mobile_identity->length) {
+            ogs_error("mobile_identity length (%d != %d)",
+                    (int)sizeof(ogs_nas_mobile_identity_imsi_t),
+                    mobile_identity->length);
+            return OGS_ERROR;
+        }
         memcpy(&mme_ue->nas_mobile_identity_imsi, 
             &mobile_identity->imsi, mobile_identity->length);
         ogs_nas_imsi_to_bcd(
             &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
         mme_ue_set_imsi(mme_ue, imsi_bcd);
 
-        ogs_assert(mme_ue->imsi_len);
+        if (mme_ue->imsi_len != OGS_MAX_IMSI_LEN) {
+            ogs_error("Invalid IMSI LEN[%d]", mme_ue->imsi_len);
+            return OGS_ERROR;
+        }
     } else {
         ogs_warn("Not supported Identity type[%d]", mobile_identity->imsi.type);
     }

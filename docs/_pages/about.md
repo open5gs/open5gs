@@ -9,7 +9,7 @@ Open5GS is a C-language Open Source implementation of the 3GPP Evolved Packet Co
 #### Supported Features
 ---
 
-- LTE release 14 complient
+- LTE release 14 compliant
 - AES, Snow3G, ZUC algorithms for encryption
 - Support of USIM cards using Milenage
 - Multiple PDN support

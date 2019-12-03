@@ -48,7 +48,8 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_pkbuf_pull(pkbuf, 1);
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
-    ogs_assert(root);
+    if (!root)
+        goto error;
 
     iter = root;
     while (iter) {
@@ -72,17 +73,20 @@ void sgsap_handle_location_update_accept(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_tlv_free_all(root);
 
-    ogs_assert(nas_mobile_identity_imsi && lai);
-    ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
+    if (!nas_mobile_identity_imsi || !lai)
+        goto error;
+    if (nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN)
+        goto error;
 
     if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
         ogs_nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else
-        ogs_assert_if_reached();
+        goto error;
 
-    ogs_assert(mme_ue);
+    if (!mme_ue)
+        goto error;
 
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     if (lai) {
@@ -132,7 +136,8 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_pkbuf_pull(pkbuf, 1);
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
-    ogs_assert(root);
+    if (!root)
+        goto error;
 
     iter = root;
     while (iter) {
@@ -156,17 +161,19 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_tlv_free_all(root);
 
-    ogs_assert(nas_mobile_identity_imsi && emm_cause);
-    ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
+    if (!nas_mobile_identity_imsi || !emm_cause)
+        goto error;
+    if (nas_mobile_identity_imsi_len != SGSAP_IE_IMSI_LEN)
+        goto error;
 
     if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
         ogs_nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
-    } else 
-        ogs_assert_if_reached();
+    } else
+        goto error;
 
-    ogs_assert(mme_ue);
+    ogs_expect_or_return(mme_ue);
 
     ogs_debug("    IMSI[%s] CAUSE[%d]", mme_ue->imsi_bcd, emm_cause);
     if (lai) {
@@ -177,6 +184,12 @@ void sgsap_handle_location_update_reject(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     nas_send_attach_reject(mme_ue,
             emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
     mme_send_delete_session_or_mme_ue_context_release(mme_ue);
+
+    return;
+    
+error:
+    ogs_error("Error processing SGsAP LU REJECT");
+    return;
 }
 
 void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
@@ -199,12 +212,12 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     else if (type == SGSAP_IMSI_DETACH_ACK)
         ogs_debug("[SGSAP] IMSI-DETACH-ACK");
     else
-        ogs_assert_if_reached();
+        ogs_expect_or_return(0);
 
     ogs_pkbuf_pull(pkbuf, 1);
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
-    ogs_assert(root);
+    ogs_expect_or_return(root);
 
     iter = root;
     while (iter) {
@@ -222,17 +235,17 @@ void sgsap_handle_detach_ack(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_tlv_free_all(root);
 
-    ogs_assert(nas_mobile_identity_imsi);
-    ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
+    ogs_expect_or_return(nas_mobile_identity_imsi);
+    ogs_expect_or_return(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
     if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
         ogs_nas_imsi_to_bcd(nas_mobile_identity_imsi,
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
-    } else 
-        ogs_assert_if_reached();
+    } else
+        ogs_expect_or_return(0);
 
-    ogs_assert(mme_ue);
+    ogs_expect_or_return(mme_ue);
 
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
@@ -260,7 +273,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_pkbuf_pull(pkbuf, 1);
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
-    ogs_assert(root);
+    ogs_expect_or_return(root);
 
     iter = root;
     while (iter) {
@@ -287,8 +300,8 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_tlv_free_all(root);
 
-    ogs_assert(nas_mobile_identity_imsi);
-    ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
+    ogs_expect_or_return(nas_mobile_identity_imsi);
+    ogs_expect_or_return(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
     if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
 
@@ -296,7 +309,7 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else 
-        ogs_assert_if_reached();
+        ogs_expect_or_return(0);
 
     if (mme_ue) {
         ogs_assert(service_indicator);
@@ -323,7 +336,12 @@ void sgsap_handle_paging_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 goto paging_reject;
 
         } else {
-            nas_send_cs_service_notification(mme_ue);
+            if (CS_CALL_SERVICE_INDICATOR(mme_ue)) {
+                nas_send_cs_service_notification(mme_ue);
+            } else if (SMS_SERVICE_INDICATOR(mme_ue)) {
+                /* Nothing to do */
+            } else
+                goto paging_reject;
         }
 
         return;
@@ -396,7 +414,7 @@ void sgsap_handle_downlink_unitdata(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     } else 
         ogs_assert_if_reached();
 
-    ogs_assert(mme_ue);
+    ogs_expect_or_return(mme_ue);
 
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
     ogs_log_hexdump(OGS_LOG_DEBUG,
@@ -435,7 +453,7 @@ void sgsap_handle_release_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_pkbuf_pull(pkbuf, 1);
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
-    ogs_assert(root);
+    ogs_expect_or_return(root);
 
     iter = root;
     while (iter) {
@@ -453,8 +471,8 @@ void sgsap_handle_release_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_tlv_free_all(root);
 
-    ogs_assert(nas_mobile_identity_imsi);
-    ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
+    ogs_expect_or_return(nas_mobile_identity_imsi);
+    ogs_expect_or_return(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
     if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
 
@@ -462,7 +480,7 @@ void sgsap_handle_release_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else 
-        ogs_assert_if_reached();
+        ogs_expect_or_return(0);
 
     if (mme_ue)
         ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
@@ -489,7 +507,7 @@ void sgsap_handle_mm_information_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
     ogs_pkbuf_pull(pkbuf, 1);
 
     root = ogs_tlv_parse_block(pkbuf->len, pkbuf->data, OGS_TLV_MODE_T1_L1);
-    ogs_assert(root);
+    ogs_expect_or_return(root);
 
     iter = root;
     while (iter) {
@@ -510,8 +528,8 @@ void sgsap_handle_mm_information_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
 
     ogs_tlv_free_all(root);
 
-    ogs_assert(nas_mobile_identity_imsi);
-    ogs_assert(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
+    ogs_expect_or_return(nas_mobile_identity_imsi);
+    ogs_expect_or_return(nas_mobile_identity_imsi_len == SGSAP_IE_IMSI_LEN);
 
     if (nas_mobile_identity_imsi->type == OGS_NAS_MOBILE_IDENTITY_IMSI) {
 
@@ -519,7 +537,7 @@ void sgsap_handle_mm_information_request(mme_vlr_t *vlr, ogs_pkbuf_t *pkbuf)
                 nas_mobile_identity_imsi_len, imsi_bcd);
         mme_ue = mme_ue_find_by_imsi_bcd(imsi_bcd);
     } else 
-        ogs_assert_if_reached();
+        ogs_expect_or_return(0);
 
     if (mme_ue)
         ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);

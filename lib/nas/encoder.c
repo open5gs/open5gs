@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-09-30 22:46:44.517916 by acetcom
+ * Created on: 2019-11-29 20:48:26.787333 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -3015,8 +3015,9 @@ int ogs_nas_encode_esm_status(ogs_pkbuf_t *pkbuf, ogs_nas_message_t *message)
     return encoded;
 }
 
-int ogs_nas_emm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
+ogs_pkbuf_t *ogs_nas_emm_encode(ogs_nas_message_t *message)
 {
+    ogs_pkbuf_t *pkbuf = NULL;
     int size = 0;
     int encoded = 0;
 
@@ -3024,23 +3025,23 @@ int ogs_nas_emm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
 
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_assert(*pkbuf);
-    ogs_pkbuf_reserve(*pkbuf, OGS_NAS_HEADROOM);
-    ogs_pkbuf_put(*pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 
     size = sizeof(ogs_nas_emm_header_t);
-    ogs_assert(ogs_pkbuf_pull(*pkbuf, size));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
 
-    memcpy((*pkbuf)->data - size, &message->emm.h, size);
+    memcpy(pkbuf->data - size, &message->emm.h, size);
     encoded += size;
 
     if (message->emm.h.security_header_type >=
             OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
-        ogs_assert(ogs_pkbuf_push(*pkbuf, 1));
+        ogs_assert(ogs_pkbuf_push(pkbuf, 1));
         encoded -= 1;
-        size = ogs_nas_encode_service_request(*pkbuf, message);
+        size = ogs_nas_encode_service_request(pkbuf, message);
         ogs_assert(size >= 0);
         encoded += size;
 
@@ -3050,160 +3051,161 @@ int ogs_nas_emm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
     switch(message->emm.h.message_type)
     {
         case OGS_NAS_ATTACH_REQUEST:
-            size = ogs_nas_encode_attach_request(*pkbuf, message);
+            size = ogs_nas_encode_attach_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_ATTACH_ACCEPT:
-            size = ogs_nas_encode_attach_accept(*pkbuf, message);
+            size = ogs_nas_encode_attach_accept(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_ATTACH_COMPLETE:
-            size = ogs_nas_encode_attach_complete(*pkbuf, message);
+            size = ogs_nas_encode_attach_complete(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_ATTACH_REJECT:
-            size = ogs_nas_encode_attach_reject(*pkbuf, message);
+            size = ogs_nas_encode_attach_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_DETACH_REQUEST:
-            size = ogs_nas_encode_detach_request_to_ue(*pkbuf, message);
+            size = ogs_nas_encode_detach_request_to_ue(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_DETACH_ACCEPT:
             break;
         case OGS_NAS_TRACKING_AREA_UPDATE_REQUEST:
-            size = ogs_nas_encode_tracking_area_update_request(*pkbuf, message);
+            size = ogs_nas_encode_tracking_area_update_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_TRACKING_AREA_UPDATE_ACCEPT:
-            size = ogs_nas_encode_tracking_area_update_accept(*pkbuf, message);
+            size = ogs_nas_encode_tracking_area_update_accept(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_TRACKING_AREA_UPDATE_COMPLETE:
             break;
         case OGS_NAS_TRACKING_AREA_UPDATE_REJECT:
-            size = ogs_nas_encode_tracking_area_update_reject(*pkbuf, message);
+            size = ogs_nas_encode_tracking_area_update_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_EXTENDED_SERVICE_REQUEST:
-            size = ogs_nas_encode_extended_service_request(*pkbuf, message);
+            size = ogs_nas_encode_extended_service_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_SERVICE_REJECT:
-            size = ogs_nas_encode_service_reject(*pkbuf, message);
+            size = ogs_nas_encode_service_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_GUTI_REALLOCATION_COMMAND:
-            size = ogs_nas_encode_guti_reallocation_command(*pkbuf, message);
+            size = ogs_nas_encode_guti_reallocation_command(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_GUTI_REALLOCATION_COMPLETE:
             break;
         case OGS_NAS_AUTHENTICATION_REQUEST:
-            size = ogs_nas_encode_authentication_request(*pkbuf, message);
+            size = ogs_nas_encode_authentication_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_AUTHENTICATION_RESPONSE:
-            size = ogs_nas_encode_authentication_response(*pkbuf, message);
+            size = ogs_nas_encode_authentication_response(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_AUTHENTICATION_REJECT:
             break;
         case OGS_NAS_IDENTITY_REQUEST:
-            size = ogs_nas_encode_identity_request(*pkbuf, message);
+            size = ogs_nas_encode_identity_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_IDENTITY_RESPONSE:
-            size = ogs_nas_encode_identity_response(*pkbuf, message);
+            size = ogs_nas_encode_identity_response(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_AUTHENTICATION_FAILURE:
-            size = ogs_nas_encode_authentication_failure(*pkbuf, message);
+            size = ogs_nas_encode_authentication_failure(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_SECURITY_MODE_COMMAND:
-            size = ogs_nas_encode_security_mode_command(*pkbuf, message);
+            size = ogs_nas_encode_security_mode_command(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_SECURITY_MODE_COMPLETE:
-            size = ogs_nas_encode_security_mode_complete(*pkbuf, message);
+            size = ogs_nas_encode_security_mode_complete(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_SECURITY_MODE_REJECT:
-            size = ogs_nas_encode_security_mode_reject(*pkbuf, message);
+            size = ogs_nas_encode_security_mode_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_EMM_STATUS:
-            size = ogs_nas_encode_emm_status(*pkbuf, message);
+            size = ogs_nas_encode_emm_status(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_EMM_INFORMATION:
-            size = ogs_nas_encode_emm_information(*pkbuf, message);
+            size = ogs_nas_encode_emm_information(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_DOWNLINK_NAS_TRANSPORT:
-            size = ogs_nas_encode_downlink_nas_transport(*pkbuf, message);
+            size = ogs_nas_encode_downlink_nas_transport(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_UPLINK_NAS_TRANSPORT:
-            size = ogs_nas_encode_uplink_nas_transport(*pkbuf, message);
+            size = ogs_nas_encode_uplink_nas_transport(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_CS_SERVICE_NOTIFICATION:
-            size = ogs_nas_encode_cs_service_notification(*pkbuf, message);
+            size = ogs_nas_encode_cs_service_notification(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_UPLINK_GENERIC_NAS_TRANSPORT:
-            size = ogs_nas_encode_uplink_generic_nas_transport(*pkbuf, message);
+            size = ogs_nas_encode_uplink_generic_nas_transport(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_DOWNLINK_GENERIC_NAS_TRANSPORT:
-            size = ogs_nas_encode_downlink_generic_nas_transport(*pkbuf, message);
+            size = ogs_nas_encode_downlink_generic_nas_transport(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         default:
             ogs_error("Unknown message type (0x%x) or not implemented", 
                     message->emm.h.message_type);
-            ogs_pkbuf_free((*pkbuf));
-            return OGS_ERROR;
+            ogs_pkbuf_free(pkbuf);
+            return NULL;
     }
 
 out:
-    ogs_assert(ogs_pkbuf_push(*pkbuf, encoded));
+    ogs_assert(ogs_pkbuf_push(pkbuf, encoded));
 
-    (*pkbuf)->len = encoded;
+    pkbuf->len = encoded;
 
-    return OGS_OK;
+    return pkbuf;
 }
 
-int ogs_nas_esm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
+ogs_pkbuf_t *ogs_nas_esm_encode(ogs_nas_message_t *message)
 {
+    ogs_pkbuf_t *pkbuf = NULL;
     int size = 0;
     int encoded = 0;
 
@@ -3211,139 +3213,139 @@ int ogs_nas_esm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
 
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_assert(*pkbuf);
-    ogs_pkbuf_reserve(*pkbuf, OGS_NAS_HEADROOM);
-    ogs_pkbuf_put(*pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 
     size = sizeof(ogs_nas_esm_header_t);
-    ogs_assert(ogs_pkbuf_pull(*pkbuf, size));
-    memcpy((*pkbuf)->data - size, &message->esm.h, size);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &message->esm.h, size);
     encoded += size;
 
     switch(message->esm.h.message_type)
     {
         case OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST:
-            size = ogs_nas_encode_activate_default_eps_bearer_context_request(*pkbuf, message);
+            size = ogs_nas_encode_activate_default_eps_bearer_context_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_ACCEPT:
-            size = ogs_nas_encode_activate_default_eps_bearer_context_accept(*pkbuf, message);
+            size = ogs_nas_encode_activate_default_eps_bearer_context_accept(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REJECT:
-            size = ogs_nas_encode_activate_default_eps_bearer_context_reject(*pkbuf, message);
+            size = ogs_nas_encode_activate_default_eps_bearer_context_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST:
-            size = ogs_nas_encode_activate_dedicated_eps_bearer_context_request(*pkbuf, message);
+            size = ogs_nas_encode_activate_dedicated_eps_bearer_context_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
-            size = ogs_nas_encode_activate_dedicated_eps_bearer_context_accept(*pkbuf, message);
+            size = ogs_nas_encode_activate_dedicated_eps_bearer_context_accept(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REJECT:
-            size = ogs_nas_encode_activate_dedicated_eps_bearer_context_reject(*pkbuf, message);
+            size = ogs_nas_encode_activate_dedicated_eps_bearer_context_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_MODIFY_EPS_BEARER_CONTEXT_REQUEST:
-            size = ogs_nas_encode_modify_eps_bearer_context_request(*pkbuf, message);
+            size = ogs_nas_encode_modify_eps_bearer_context_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_MODIFY_EPS_BEARER_CONTEXT_ACCEPT:
-            size = ogs_nas_encode_modify_eps_bearer_context_accept(*pkbuf, message);
+            size = ogs_nas_encode_modify_eps_bearer_context_accept(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_MODIFY_EPS_BEARER_CONTEXT_REJECT:
-            size = ogs_nas_encode_modify_eps_bearer_context_reject(*pkbuf, message);
+            size = ogs_nas_encode_modify_eps_bearer_context_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_DEACTIVATE_EPS_BEARER_CONTEXT_REQUEST:
-            size = ogs_nas_encode_deactivate_eps_bearer_context_request(*pkbuf, message);
+            size = ogs_nas_encode_deactivate_eps_bearer_context_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
-            size = ogs_nas_encode_deactivate_eps_bearer_context_accept(*pkbuf, message);
+            size = ogs_nas_encode_deactivate_eps_bearer_context_accept(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_PDN_CONNECTIVITY_REQUEST:
-            size = ogs_nas_encode_pdn_connectivity_request(*pkbuf, message);
+            size = ogs_nas_encode_pdn_connectivity_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_PDN_CONNECTIVITY_REJECT:
-            size = ogs_nas_encode_pdn_connectivity_reject(*pkbuf, message);
+            size = ogs_nas_encode_pdn_connectivity_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_PDN_DISCONNECT_REQUEST:
-            size = ogs_nas_encode_pdn_disconnect_request(*pkbuf, message);
+            size = ogs_nas_encode_pdn_disconnect_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_PDN_DISCONNECT_REJECT:
-            size = ogs_nas_encode_pdn_disconnect_reject(*pkbuf, message);
+            size = ogs_nas_encode_pdn_disconnect_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_BEARER_RESOURCE_ALLOCATION_REQUEST:
-            size = ogs_nas_encode_bearer_resource_allocation_request(*pkbuf, message);
+            size = ogs_nas_encode_bearer_resource_allocation_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_BEARER_RESOURCE_ALLOCATION_REJECT:
-            size = ogs_nas_encode_bearer_resource_allocation_reject(*pkbuf, message);
+            size = ogs_nas_encode_bearer_resource_allocation_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST:
-            size = ogs_nas_encode_bearer_resource_modification_request(*pkbuf, message);
+            size = ogs_nas_encode_bearer_resource_modification_request(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_BEARER_RESOURCE_MODIFICATION_REJECT:
-            size = ogs_nas_encode_bearer_resource_modification_reject(*pkbuf, message);
+            size = ogs_nas_encode_bearer_resource_modification_reject(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_ESM_INFORMATION_REQUEST:
             break;
         case OGS_NAS_ESM_INFORMATION_RESPONSE:
-            size = ogs_nas_encode_esm_information_response(*pkbuf, message);
+            size = ogs_nas_encode_esm_information_response(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         case OGS_NAS_ESM_STATUS:
-            size = ogs_nas_encode_esm_status(*pkbuf, message);
+            size = ogs_nas_encode_esm_status(pkbuf, message);
             ogs_assert(size >= 0);
             encoded += size;
             break;
         default:
             ogs_error("Unknown message type (0x%x) or not implemented", 
                     message->esm.h.message_type);
-            ogs_pkbuf_free((*pkbuf));
-            return OGS_ERROR;
+            ogs_pkbuf_free(pkbuf);
+            return NULL;
     }
 
-    ogs_assert(ogs_pkbuf_push(*pkbuf, encoded));
-    (*pkbuf)->len = encoded;
+    ogs_assert(ogs_pkbuf_push(pkbuf, encoded));
+    pkbuf->len = encoded;
 
-    return OGS_OK;
+    return pkbuf;
 }
 
-int ogs_nas_plain_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
+ogs_pkbuf_t *ogs_nas_plain_encode(ogs_nas_message_t *message)
 {
     ogs_assert(message);
 
@@ -3352,12 +3354,10 @@ int ogs_nas_plain_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
 
     if (message->emm.h.protocol_discriminator == 
             OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM)
-        return ogs_nas_emm_encode(pkbuf, message);
+        return ogs_nas_emm_encode(message);
     else if (message->emm.h.protocol_discriminator == 
             OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM)
-        return ogs_nas_esm_encode(pkbuf, message);
+        return ogs_nas_esm_encode(message);
 
-    ogs_assert_if_reached();
-
-    return OGS_OK;
+    return NULL;
 }

@@ -26,7 +26,6 @@
 void mme_s6a_handle_aia(mme_ue_t *mme_ue,
         ogs_diam_s6a_aia_message_t *aia_message)
 {
-    int rv;
     ogs_diam_e_utran_vector_t *e_utran_vector = NULL;
 
     ogs_assert(mme_ue);
@@ -41,8 +40,7 @@ void mme_s6a_handle_aia(mme_ue_t *mme_ue,
 
     CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
-    rv = nas_send_authentication_request(mme_ue, e_utran_vector);
-    ogs_assert(rv == OGS_OK);
+    nas_send_authentication_request(mme_ue, e_utran_vector);
 }
 
 void mme_s6a_handle_ula(mme_ue_t *mme_ue,

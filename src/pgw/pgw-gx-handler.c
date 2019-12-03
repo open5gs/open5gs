@@ -23,7 +23,7 @@
 #include "pgw-gx-handler.h"
 #include "pgw-ipfw.h"
 
-static int bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message);
+static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message);
 
 static void timeout(ogs_gtp_xact_t *xact, void *data)
 {
@@ -56,18 +56,17 @@ void pgw_gx_handle_cca_initial_request(
     h.type = OGS_GTP_CREATE_SESSION_RESPONSE_TYPE;
     h.teid = sess->sgw_s5c_teid;
 
-    rv = pgw_s5c_build_create_session_response(
-            &pkbuf, h.type, sess, gx_message, req);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = pgw_s5c_build_create_session_response(
+            h.type, sess, gx_message, req);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
-    rv = bearer_binding(sess, gx_message);
-    ogs_assert(rv == OGS_OK);
+    bearer_binding(sess, gx_message);
 }
 
 void pgw_gx_handle_cca_termination_request(
@@ -98,27 +97,24 @@ void pgw_gx_handle_cca_termination_request(
     h.type = OGS_GTP_DELETE_SESSION_RESPONSE_TYPE;
     h.teid = sgw_s5c_teid;
 
-    rv = pgw_s5c_build_delete_session_response(
-            &pkbuf, h.type, gx_message, req);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = pgw_s5c_build_delete_session_response(
+            h.type, gx_message, req);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void pgw_gx_handle_re_auth_request(
         pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
 {
-    int rv;
-
-    rv = bearer_binding(sess, gx_message);
-    ogs_assert(rv == OGS_OK);
+    bearer_binding(sess, gx_message);
 }
 
-static int bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
+static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
 {
     int rv;
     int i, j;
@@ -198,14 +194,14 @@ static int bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
                 pgw_rule_t rule;
                 pgw_pf_t *pf = NULL;
 
-                ogs_assert(flow);
-                ogs_assert(flow->description);
+                ogs_expect_or_return(flow);
+                ogs_expect_or_return(flow->description);
 
                 rv = pgw_compile_packet_filter(&rule, flow->description);
-                ogs_assert(rv == OGS_OK);
+                ogs_expect_or_return(rv == OGS_OK);
 
                 pf = pgw_pf_add(bearer, pcc_rule->precedence);
-                ogs_assert(pf);
+                ogs_expect_or_return(pf);
 
                 memcpy(&pf->rule, &rule, sizeof(pgw_rule_t));
                 pf->direction = flow->direction;
@@ -217,23 +213,23 @@ static int bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
                 h.type = OGS_GTP_CREATE_BEARER_REQUEST_TYPE;
                 h.teid = sess->sgw_s5c_teid;
 
-                rv = pgw_s5c_build_create_bearer_request(&pkbuf, h.type, bearer);
-                ogs_assert(rv == OGS_OK);
+                pkbuf = pgw_s5c_build_create_bearer_request(h.type, bearer);
+                ogs_expect_or_return(pkbuf);
             } else {
                 h.type = OGS_GTP_UPDATE_BEARER_REQUEST_TYPE;
                 h.teid = sess->sgw_s5c_teid;
 
-                rv = pgw_s5c_build_update_bearer_request(
-                        &pkbuf, h.type, bearer, qos_presence, tft_presence);
-                ogs_assert(rv == OGS_OK);
+                pkbuf = pgw_s5c_build_update_bearer_request(
+                        h.type, bearer, qos_presence, tft_presence);
+                ogs_expect_or_return(pkbuf);
             }
 
             xact = ogs_gtp_xact_local_create(
                     sess->gnode, &h, pkbuf, timeout, sess);
-            ogs_assert(xact);
+            ogs_expect_or_return(xact);
 
             rv = ogs_gtp_xact_commit(xact);
-            ogs_assert(rv == OGS_OK);
+            ogs_expect(rv == OGS_OK);
         } else if (pcc_rule->type == OGS_PCC_RULE_TYPE_REMOVE) {
             bearer = pgw_bearer_find_by_name(sess, pcc_rule->name);
             ogs_assert(bearer);
@@ -242,22 +238,18 @@ static int bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
             h.type = OGS_GTP_DELETE_BEARER_REQUEST_TYPE;
             h.teid = sess->sgw_s5c_teid;
 
-            rv = pgw_s5c_build_delete_bearer_request(&pkbuf, h.type, bearer);
-            ogs_assert(rv == OGS_OK);
+            pkbuf = pgw_s5c_build_delete_bearer_request(h.type, bearer);
+            ogs_expect_or_return(pkbuf);
 
             xact = ogs_gtp_xact_local_create(
                     sess->gnode, &h, pkbuf, timeout, sess);
-            ogs_assert(xact);
+            ogs_expect_or_return(xact);
 
             rv = ogs_gtp_xact_commit(xact);
-            ogs_assert(rv == OGS_OK);
-
-            return OGS_OK;
+            ogs_expect(rv == OGS_OK);
+        } else {
+            ogs_error("Invalid Type[%d]", pcc_rule->type);
         }
-        else
-            ogs_assert_if_reached();
     }
-
-    return OGS_OK;
 }
 

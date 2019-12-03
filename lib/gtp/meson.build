@@ -18,7 +18,6 @@
 libgtp_sources = files('''
     ogs-gtp.h
 
-    tlv.h
     message.h
     types.h
     conv.h
@@ -26,7 +25,6 @@ libgtp_sources = files('''
     path.h
     xact.h
 
-    tlv.c
     message.c
     types.c
     conv.c

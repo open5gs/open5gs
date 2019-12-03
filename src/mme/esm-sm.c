@@ -110,13 +110,10 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             /* Check if Initial Context Setup Response or 
              *          E-RAB Setup Response is received */
             if (MME_HAVE_ENB_S1U_PATH(bearer)) {
-                rv = mme_gtp_send_modify_bearer_request(bearer, 0);
-                ogs_assert(rv == OGS_OK);
+                mme_gtp_send_modify_bearer_request(bearer, 0);
             }
 
-            rv = nas_send_activate_all_dedicated_bearers(bearer);
-            ogs_assert(rv == OGS_OK);
-
+            nas_send_activate_all_dedicated_bearers(bearer);
             OGS_FSM_TRAN(s, esm_state_active);
             break;
         case OGS_NAS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_ACCEPT:
@@ -127,8 +124,7 @@ void esm_state_inactive(ogs_fsm_t *s, mme_event_t *e)
             /* Check if Initial Context Setup Response or 
              *          E-RAB Setup Response is received */
             if (MME_HAVE_ENB_S1U_PATH(bearer)) {
-                rv = mme_gtp_send_create_bearer_response(bearer);
-                ogs_assert(rv == OGS_OK);
+                mme_gtp_send_create_bearer_response(bearer);
             }
 
             OGS_FSM_TRAN(s, esm_state_active);
@@ -216,11 +212,9 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
             if (MME_HAVE_SGW_S1U_PATH(sess)) {
-                rv = mme_gtp_send_delete_session_request(sess);
-                ogs_assert(rv == OGS_OK);
+                mme_gtp_send_delete_session_request(sess);
             } else {
-                rv = nas_send_deactivate_bearer_context_request(bearer);
-                ogs_assert(rv == OGS_OK);
+                nas_send_deactivate_bearer_context_request(bearer);
             }
             OGS_FSM_TRAN(s, esm_state_pdn_will_disconnect);
             break;
@@ -229,16 +223,14 @@ void esm_state_active(ogs_fsm_t *s, mme_event_t *e)
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
 
-            rv = mme_gtp_send_update_bearer_response(bearer);
-            ogs_assert(rv == OGS_OK);
+            mme_gtp_send_update_bearer_response(bearer);
             break;
         case OGS_NAS_DEACTIVATE_EPS_BEARER_CONTEXT_ACCEPT:
             ogs_debug("[ESM] [A] Deactivate EPS bearer "
                     "context accept");
             ogs_debug("    IMSI[%s] PTI[%d] EBI[%d]",
                     mme_ue->imsi_bcd, sess->pti, bearer->ebi);
-            rv = mme_gtp_send_delete_bearer_response(bearer);
-            ogs_assert(rv == OGS_OK);
+            mme_gtp_send_delete_bearer_response(bearer);
             OGS_FSM_TRAN(s, esm_state_bearer_deactivated);
             break;
         default:

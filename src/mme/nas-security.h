@@ -46,8 +46,8 @@ typedef struct _nas_security_header_type_t {
     };
 } __attribute__ ((packed)) nas_security_header_type_t;
 
-int nas_security_encode(
-        ogs_pkbuf_t **pkbuf, mme_ue_t *mme_ue, ogs_nas_message_t *message);
+ogs_pkbuf_t *nas_security_encode(
+        mme_ue_t *mme_ue, ogs_nas_message_t *message);
 int nas_security_decode(mme_ue_t *mme_ue, 
         nas_security_header_type_t security_header_type, ogs_pkbuf_t *pkbuf);
 

@@ -31,7 +31,6 @@
 int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer, 
         ogs_nas_pdn_connectivity_request_t *pdn_connectivity_request)
 {
-    int rv;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     uint8_t security_protected_required = 0;
@@ -67,10 +66,8 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
             pdn_connectivity_request->access_point_name.apn);
         if (!sess->pdn) {
             /* Invalid APN */
-            rv = nas_send_pdn_connectivity_reject(
+            nas_send_pdn_connectivity_reject(
                     sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
-            ogs_assert(rv == OGS_OK);
-
             return OGS_ERROR;
         }
     }
@@ -98,13 +95,10 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 
     if (sess->pdn) {
         ogs_debug("    APN[%s]", sess->pdn->apn);
-        rv = mme_gtp_send_create_session_request(sess);
-        ogs_assert(rv == OGS_OK);
+        mme_gtp_send_create_session_request(sess);
     } else {
-        rv = nas_send_pdn_connectivity_reject(
+        nas_send_pdn_connectivity_reject(
                 sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
-        ogs_assert(rv == OGS_OK);
-
         return OGS_ERROR;
     }
 
@@ -114,7 +108,6 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 int esm_handle_information_response(mme_sess_t *sess, 
         ogs_nas_esm_information_response_t *esm_information_response)
 {
-    int rv;
     mme_ue_t *mme_ue = NULL;
 
     ogs_assert(sess);
@@ -147,14 +140,11 @@ int esm_handle_information_response(mme_sess_t *sess,
                 nas_send_attach_accept(mme_ue);
             }
         } else {
-            rv = mme_gtp_send_create_session_request(sess);
-            ogs_assert(rv == OGS_OK);
+            mme_gtp_send_create_session_request(sess);
         }
     } else {
-        rv = nas_send_pdn_connectivity_reject(
+        nas_send_pdn_connectivity_reject(
                 sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
-        ogs_assert(rv == OGS_OK);
-
         return OGS_ERROR;
     }
 

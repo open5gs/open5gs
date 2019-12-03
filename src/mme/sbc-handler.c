@@ -27,7 +27,6 @@ void sbc_handle_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
     ogs_pkbuf_t *s1apbuf = NULL;
     mme_enb_t *enb = NULL;
     int i, j, flag;
-    int rv;
 
     /* Find enB with matched TAI */
     ogs_list_for_each(&mme_self()->enb_list, enb) {
@@ -47,14 +46,12 @@ void sbc_handle_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
             flag = 1;
 
         if (flag) {
-            s1apbuf = NULL;
-
             /* Buidl S1AP Write Replace Warning Request message */
-            rv = s1ap_build_write_replace_warning_request(&s1apbuf, sbc_pws);
-            ogs_assert(rv == OGS_OK);
+            s1apbuf = s1ap_build_write_replace_warning_request(sbc_pws);
+            ogs_expect_or_return(s1apbuf);
 
             /* Send to enb */
-            ogs_assert(s1ap_send_to_enb(
+            ogs_expect(s1ap_send_to_enb(
                     enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == OGS_OK);
         }
     }
@@ -65,7 +62,6 @@ void sbc_handle_stop_warning_request(sbc_pws_data_t *sbc_pws)
     ogs_pkbuf_t *s1apbuf = NULL;
     mme_enb_t *enb = NULL;
     int i, j, flag;
-    int rv;
 
     /* Find enB with matched TAI */
     ogs_list_for_each(&mme_self()->enb_list, enb) {
@@ -85,14 +81,12 @@ void sbc_handle_stop_warning_request(sbc_pws_data_t *sbc_pws)
             flag = 1;
 
         if (flag) {
-            s1apbuf = NULL;
-
             /* Buidl S1AP Kill request message */
-            rv = s1ap_build_kill_request(&s1apbuf, sbc_pws);
-            ogs_assert(rv == OGS_OK && s1apbuf);
+            s1apbuf = s1ap_build_kill_request(sbc_pws);
+            ogs_expect_or_return(s1apbuf);
 
             /* Send to enb */
-            ogs_assert(s1ap_send_to_enb(
+            ogs_expect(s1ap_send_to_enb(
                     enb, s1apbuf, S1AP_NON_UE_SIGNALLING) == OGS_OK);
         }
     }

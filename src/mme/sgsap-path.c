@@ -98,7 +98,7 @@ int sgsap_send_to_vlr_with_sid(
                 node->sock, node->addr, NULL, 0, 0);
     }
 
-    return OGS_OK;
+    return rv;
 }
 
 int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
@@ -122,7 +122,7 @@ int sgsap_send_to_vlr(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
     return sgsap_send_to_vlr_with_sid(vlr, pkbuf, mme_ue->vlr_ostream_id);
 }
 
-int sgsap_send_location_update_request(mme_ue_t *mme_ue)
+void sgsap_send_location_update_request(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -132,13 +132,12 @@ int sgsap_send_location_update_request(mme_ue_t *mme_ue)
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     pkbuf = sgsap_build_location_update_request(mme_ue);
+    ogs_expect_or_return(pkbuf);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    ogs_expect(rv == OGS_OK);
 }
 
-int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue)
+void sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -148,26 +147,24 @@ int sgsap_send_tmsi_reallocation_complete(mme_ue_t *mme_ue)
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     pkbuf = sgsap_build_tmsi_reallocation_complete(mme_ue);
+    ogs_expect_or_return(pkbuf);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    ogs_expect(rv == OGS_OK);
 }
 
-int sgsap_send_detach_indication(mme_ue_t *mme_ue)
+void sgsap_send_detach_indication(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_assert(mme_ue);
 
     pkbuf = sgsap_build_detach_indication(mme_ue);
+    ogs_expect_or_return(pkbuf);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    ogs_expect(rv == OGS_OK);
 }
 
-int sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue)
+void sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -177,13 +174,12 @@ int sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue)
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     pkbuf = sgsap_build_mo_csfb_indication(mme_ue);
+    ogs_expect_or_return(pkbuf);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    ogs_expect(rv == OGS_OK);
 }
 
-int sgsap_send_service_request(mme_ue_t *mme_ue, uint8_t emm_mode)
+void sgsap_send_service_request(mme_ue_t *mme_ue, uint8_t emm_mode)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -195,13 +191,12 @@ int sgsap_send_service_request(mme_ue_t *mme_ue, uint8_t emm_mode)
     ogs_debug("    EMM_MODE[%d]", emm_mode);
 
     pkbuf = sgsap_build_service_request(mme_ue, emm_mode);
+    ogs_expect_or_return(pkbuf);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    ogs_expect(rv == OGS_OK);
 }
 
-int sgsap_send_reset_ack(mme_vlr_t *vlr)
+void sgsap_send_reset_ack(mme_vlr_t *vlr)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -210,13 +205,12 @@ int sgsap_send_reset_ack(mme_vlr_t *vlr)
     ogs_debug("[SGSAP] RESET-ACK");
 
     pkbuf = sgsap_build_reset_ack(vlr);
+    ogs_expect_or_return(pkbuf);
     rv =  sgsap_send_to_vlr_with_sid(vlr, pkbuf, 0);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    ogs_expect(rv == OGS_OK);
 }
 
-int sgsap_send_uplink_unitdata(
+void sgsap_send_uplink_unitdata(
         mme_ue_t *mme_ue, ogs_nas_message_container_t *nas_message_container)
 {
     int rv;
@@ -230,13 +224,12 @@ int sgsap_send_uplink_unitdata(
             nas_message_container->buffer, nas_message_container->length);
 
     pkbuf = sgsap_build_uplink_unidata(mme_ue, nas_message_container);
+    ogs_expect_or_return(pkbuf);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    ogs_expect(rv == OGS_OK);
 }
 
-int sgsap_send_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause)
+void sgsap_send_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -247,8 +240,7 @@ int sgsap_send_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause)
     ogs_debug("    CAUSE[%d]", sgs_cause);
 
     pkbuf = sgsap_build_ue_unreachable(mme_ue, sgs_cause);
+    ogs_expect_or_return(pkbuf);
     rv = sgsap_send_to_vlr(mme_ue, pkbuf);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    ogs_expect(rv == OGS_OK);
 }

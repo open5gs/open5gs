@@ -277,3 +277,16 @@ void ogs_socknode_set_cleanup(
 
     node->cleanup = cleanup;
 }
+
+ogs_sock_t *ogs_socknode_sock_first(ogs_list_t *list)
+{
+    ogs_socknode_t *snode = NULL;
+
+    ogs_assert(list);
+    ogs_list_for_each(list, snode) {
+        if (snode->sock)
+            return snode->sock;
+    }
+
+    return NULL;
+}

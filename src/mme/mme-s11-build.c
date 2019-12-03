@@ -21,8 +21,8 @@
 
 #include "mme-s11-build.h"
 
-int mme_s11_build_create_session_request(
-        ogs_pkbuf_t **pkbuf, uint8_t type, mme_sess_t *sess)
+ogs_pkbuf_t *mme_s11_build_create_session_request(
+        uint8_t type, mme_sess_t *sess)
 {
     int rv;
     ogs_pdn_t *pdn = NULL;
@@ -252,13 +252,10 @@ int mme_s11_build_create_session_request(
     req->charging_characteristics.len = 2;
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int mme_s11_build_modify_bearer_request(ogs_pkbuf_t **pkbuf,
+ogs_pkbuf_t *mme_s11_build_modify_bearer_request(
         uint8_t type, mme_bearer_t *bearer, int uli_presence)
 {
     int rv;
@@ -315,16 +312,12 @@ int mme_s11_build_modify_bearer_request(ogs_pkbuf_t **pkbuf,
     }
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int mme_s11_build_delete_session_request(
-        ogs_pkbuf_t **pkbuf, uint8_t type, mme_sess_t *sess)
+ogs_pkbuf_t *mme_s11_build_delete_session_request(
+        uint8_t type, mme_sess_t *sess)
 {
-    int rv;
     ogs_gtp_message_t gtp_message;
     ogs_gtp_delete_session_request_t *req = &gtp_message.delete_session_request;
 
@@ -369,14 +362,11 @@ int mme_s11_build_delete_session_request(
     req->indication_flags.len = sizeof(ogs_gtp_indication_t);
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int mme_s11_build_create_bearer_response(
-        ogs_pkbuf_t **pkbuf, uint8_t type, mme_bearer_t *bearer)
+ogs_pkbuf_t *mme_s11_build_create_bearer_response(
+        uint8_t type, mme_bearer_t *bearer)
 {
     int rv;
     ogs_gtp_message_t gtp_message;
@@ -470,16 +460,12 @@ int mme_s11_build_create_bearer_response(
     rsp->ue_time_zone.len = sizeof(ue_timezone);
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int mme_s11_build_update_bearer_response(
-        ogs_pkbuf_t **pkbuf, uint8_t type, mme_bearer_t *bearer)
+ogs_pkbuf_t *mme_s11_build_update_bearer_response(
+        uint8_t type, mme_bearer_t *bearer)
 {
-    int rv;
     ogs_gtp_message_t gtp_message;
     ogs_gtp_update_bearer_response_t *rsp = &gtp_message.update_bearer_response;
 
@@ -549,16 +535,12 @@ int mme_s11_build_update_bearer_response(
     rsp->ue_time_zone.len = sizeof(ue_timezone);
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int mme_s11_build_delete_bearer_response(
-        ogs_pkbuf_t **pkbuf, uint8_t type, mme_bearer_t *bearer)
+ogs_pkbuf_t *mme_s11_build_delete_bearer_response(
+        uint8_t type, mme_bearer_t *bearer)
 {
-    int rv;
     ogs_gtp_message_t gtp_message;
     ogs_gtp_delete_bearer_response_t *rsp = &gtp_message.delete_bearer_response;
 
@@ -628,16 +610,11 @@ int mme_s11_build_delete_bearer_response(
     rsp->ue_time_zone.len = sizeof(ue_timezone);
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int mme_s11_build_release_access_bearers_request(
-        ogs_pkbuf_t **pkbuf, uint8_t type)
+ogs_pkbuf_t *mme_s11_build_release_access_bearers_request(uint8_t type)
 {
-    int rv;
     ogs_gtp_message_t gtp_message;
     ogs_gtp_release_access_bearers_request_t *req = 
         &gtp_message.release_access_bearers_request;
@@ -649,16 +626,11 @@ int mme_s11_build_release_access_bearers_request(
     req->originating_node.u8 = OGS_GTP_NODE_TYPE_MME;
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int mme_s11_build_downlink_data_notification_ack(
-        ogs_pkbuf_t **pkbuf, uint8_t type)
+ogs_pkbuf_t *mme_s11_build_downlink_data_notification_ack(uint8_t type)
 {
-    int rv;
     ogs_gtp_message_t gtp_message;
     ogs_gtp_downlink_data_notification_acknowledge_t *ack = 
         &gtp_message.downlink_data_notification_acknowledge;
@@ -677,14 +649,11 @@ int mme_s11_build_downlink_data_notification_ack(
     ack->cause.len = sizeof(cause);
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int mme_s11_build_create_indirect_data_forwarding_tunnel_request(
-        ogs_pkbuf_t **pkbuf, uint8_t type, mme_ue_t *mme_ue)
+ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
+        uint8_t type, mme_ue_t *mme_ue)
 {
     int rv;
     int i;
@@ -696,7 +665,7 @@ int mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     ogs_gtp_create_indirect_data_forwarding_tunnel_request_t *req =
         &gtp_message.create_indirect_data_forwarding_tunnel_request;
     
-    ogs_tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    ogs_gtp_tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
     ogs_gtp_f_teid_t dl_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
     ogs_gtp_f_teid_t ul_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
     int len;
@@ -757,8 +726,5 @@ int mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     }
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }

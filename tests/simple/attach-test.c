@@ -1523,7 +1523,7 @@ static void attach_test5(abts_case *tc, void *data)
         mme_ue_s1ap_id = CALLOC(1, sizeof(S1AP_MME_UE_S1AP_ID_t));
         ogs_assert(mme_ue_s1ap_id);
         *mme_ue_s1ap_id = 2;
-        rv = s1ap_build_s1_reset_partial(&sendbuf,
+        sendbuf = s1ap_build_s1_reset_partial(
                 S1AP_Cause_PR_radioNetwork,
                 S1AP_CauseRadioNetwork_release_due_to_eutran_generated_reason,
                 mme_ue_s1ap_id, NULL);

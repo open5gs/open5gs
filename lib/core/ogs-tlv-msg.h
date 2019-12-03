@@ -17,16 +17,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
+#if !defined(OGS_CORE_INSIDE) && !defined(OGS_CORE_COMPILATION)
 #error "This header cannot be included directly."
 #endif
 
-#ifndef OGS_GTP_TLV_H
-#define OGS_GTP_TLV_H
+#ifndef OGS_TLV_MSG_H
+#define OGS_TLV_MSG_H
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
 #define OGS_TLV_MAX_HEADROOM 16
 #define OGS_TLV_VARIABLE_LEN 0
@@ -155,11 +155,9 @@ typedef struct ogs_tlv_null_s {
     ogs_tlv_presence_t presence;
 } ogs_tlv_null_t;
 
-int ogs_tlv_build_msg(ogs_pkbuf_t **pkbuf, ogs_tlv_desc_t *desc, void *msg,
-        int mode);
-
-int ogs_tlv_parse_msg(void *msg, ogs_tlv_desc_t *desc, ogs_pkbuf_t *pkbuf,
-        int mode);
+ogs_pkbuf_t *ogs_tlv_build_msg(ogs_tlv_desc_t *desc, void *msg, int mode);
+int ogs_tlv_parse_msg(
+        void *msg, ogs_tlv_desc_t *desc, ogs_pkbuf_t *pkbuf, int mode);
 
 #ifdef __cplusplus
 }
