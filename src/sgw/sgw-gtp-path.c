@@ -397,4 +397,5 @@ void sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel)
     
     rv = ogs_gtp_sendto(s1u_tunnel->gnode, pkbuf);
     ogs_expect(rv == OGS_OK);
+    ogs_pkbuf_free(pkbuf);
 }
