@@ -1,4 +1,4 @@
-open5gs (1.1.0) stable; urgency=medium
+open5gs (1.1.0) unstable; urgency=medium
 
   * Static IP addresses
   * Many BUGS Fixed
