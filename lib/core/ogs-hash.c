@@ -40,6 +40,7 @@ struct ogs_hash_t {
     unsigned int        count, max, seed;
     ogs_hashfunc_t      hash_func;
     ogs_hash_entry_t    *free;  /* List of recycled entries */
+    ogs_thread_mutex_t  one_big_mutex;
 };
 
 #define INITIAL_MAX 15 /* tunable == 2^n - 1 */
@@ -64,6 +65,7 @@ ogs_hash_t *ogs_hash_make()
     ht->array = alloc_array(ht, ht->max);
     ht->hash_func = NULL;
 
+    ogs_thread_mutex_init(&ht->one_big_mutex);
     return ht;
 }
 
@@ -92,6 +94,9 @@ void ogs_hash_destroy(ogs_hash_t *ht)
     }
 
     ogs_free(ht->array);
+
+    ogs_thread_mutex_destroy(&ht->one_big_mutex);
+
     ogs_free(ht);
 }
 
@@ -276,16 +281,22 @@ static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
 void *ogs_hash_get(ogs_hash_t *ht, const void *key, int klen)
 {
     ogs_hash_entry_t *he;
+    ogs_thread_mutex_lock(&ht->one_big_mutex);
     he = *find_entry(ht, key, klen, NULL);
-    if (he)
+    if (he) {
+        ogs_thread_mutex_unlock(&ht->one_big_mutex);
         return (void *)he->val;
-    else
+    }
+    else {
+        ogs_thread_mutex_unlock(&ht->one_big_mutex);
         return NULL;
+    }
 }
 
 void ogs_hash_set(ogs_hash_t *ht, const void *key, int klen, const void *val)
 {
     ogs_hash_entry_t **hep;
+    ogs_thread_mutex_lock(&ht->one_big_mutex);
     hep = find_entry(ht, key, klen, val);
     if (*hep) {
         if (!val) {
@@ -304,6 +315,7 @@ void ogs_hash_set(ogs_hash_t *ht, const void *key, int klen, const void *val)
             }
         }
     }
+    ogs_thread_mutex_unlock(&ht->one_big_mutex);
     /* else key not present and val==NULL */
 }
 
@@ -311,6 +323,7 @@ void *ogs_hash_get_or_set(ogs_hash_t *ht,
         const void *key, int klen, const void *val)
 {
     ogs_hash_entry_t **hep;
+    ogs_thread_mutex_lock(&ht->one_big_mutex);
     hep = find_entry(ht, key, klen, val);
     if (*hep) {
         val = (*hep)->val;
@@ -318,9 +331,12 @@ void *ogs_hash_get_or_set(ogs_hash_t *ht,
         if (ht->count > ht->max) {
             expand_array(ht);
         }
+        ogs_thread_mutex_unlock(&ht->one_big_mutex);
         return (void *)val;
     }
     /* else key not present and val==NULL */
+
+    ogs_thread_mutex_unlock(&ht->one_big_mutex);
     return NULL;
 }
 
@@ -329,6 +345,9 @@ unsigned int ogs_hash_count(ogs_hash_t *ht)
     return ht->count;
 }
 
+/*
+ * not thread safe
+ */
 void ogs_hash_clear(ogs_hash_t *ht)
 {
     ogs_hash_index_t *hi;
