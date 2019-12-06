@@ -287,10 +287,12 @@ int ogs_fqdn_parse(char *dst, char *src, int len);
 #define OGS_PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL  0xc223
 #define OGS_PCO_ID_P_CSCF_IPV6_ADDRESS_REQUEST                  0x0001
 #define OGS_PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST              0x0003
+#define OGS_PCO_ID_MS_SUPPORTS_BCM                              0x0005
 #define OGS_PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING     0x000a
 #define OGS_PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST                  0x000c
 #define OGS_PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST              0x000d
 #define OGS_PCO_ID_IPV4_LINK_MTU_REQUEST                        0x0010
+#define OGS_PCO_ID_MS_SUPPORT_LOCAL_ADDR_TFT_INDICATOR          0x0011
 typedef struct ogs_pco_ipcp_options_s {
     uint8_t type;
     uint8_t len;

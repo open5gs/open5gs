@@ -598,6 +598,12 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco)
         case OGS_PCO_ID_IPV4_LINK_MTU_REQUEST:
             /* TODO */
             break;
+        case OGS_PCO_ID_MS_SUPPORTS_BCM:
+            /* TODO */
+            break;
+        case OGS_PCO_ID_MS_SUPPORT_LOCAL_ADDR_TFT_INDICATOR:
+            /* TODO */
+            break;
         default:
             ogs_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);
         }
