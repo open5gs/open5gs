@@ -974,11 +974,11 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
     sgw_tunnel_t *tunnel = NULL;
     
     ogs_gtp_cause_t cause;
-    ogs_gtp_tlv_bearer_context_t *req_bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
-    ogs_gtp_tlv_bearer_context_t *rsp_bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    ogs_gtp_tlv_bearer_context_t *req_bearers[OGS_GTP_MAX_INDIRECT_TUNNEL];
+    ogs_gtp_tlv_bearer_context_t *rsp_bearers[OGS_GTP_MAX_INDIRECT_TUNNEL];
     ogs_gtp_f_teid_t *req_teid = NULL;
-    ogs_gtp_f_teid_t rsp_dl_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
-    ogs_gtp_f_teid_t rsp_ul_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    ogs_gtp_f_teid_t rsp_dl_teid[OGS_GTP_MAX_INDIRECT_TUNNEL];
+    ogs_gtp_f_teid_t rsp_ul_teid[OGS_GTP_MAX_INDIRECT_TUNNEL];
     int len;
 
     ogs_assert(s11_xact);

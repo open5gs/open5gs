@@ -15,16 +15,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-libinc = include_directories('.')
+libpfcp_sources = files('''
+    ogs-pfcp.h
 
-subdir('core')
-subdir('crypt')
-subdir('sctp')
-subdir('dbi')
-subdir('app')
-subdir('diameter')
-subdir('asn1c')
-subdir('s1ap')
-subdir('nas')
-subdir('gtp')
-subdir('pfcp')
+    message.h
+    types.h
+    conv.h
+    node.h
+    path.h
+    xact.h
+
+    message.c
+    types.c
+    conv.c
+    node.c
+    path.c
+    xact.c
+'''.split())
+
+libpfcp_inc = include_directories('.')
+
+libpfcp = library('ogspfcp',
+    sources : libpfcp_sources,
+    version : libogslib_version,
+    c_args : '-DOGS_PFCP_COMPILATION',
+    include_directories : [libpfcp_inc, libinc],
+    dependencies : libcore_dep,
+    install : true)
+
+libpfcp_dep = declare_dependency(
+    link_with : libpfcp,
+    include_directories : [libpfcp_inc, libinc],
+    dependencies : libcore_dep)

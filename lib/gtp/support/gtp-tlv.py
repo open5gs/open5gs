@@ -193,7 +193,7 @@ else:
     f.close()
 
 d_info("[IE Type List]")
-cachefile = cachedir + 'tlv_type_list.py'
+cachefile = cachedir + 'tlv-type-list.py'
 if os.path.isfile(cachefile) and os.access(cachefile, os.R_OK):
     execfile(cachefile)
     print "Read from " + cachefile
