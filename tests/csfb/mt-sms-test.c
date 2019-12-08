@@ -233,6 +233,8 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    ogs_msleep(300);
+
     /* Send SGsAP-Paging-Request */
     rv = testsgsap_paging_request(&sendbuf, 2);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
