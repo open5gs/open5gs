@@ -285,6 +285,8 @@ static void volte_test1(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    ogs_msleep(50);
+
     /* Send Deactivate EPS bearer context accept */
     rv = tests1ap_build_deactivate_bearer_accept(&sendbuf, msgindex+1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
