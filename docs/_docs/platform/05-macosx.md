@@ -76,7 +76,7 @@ To compile with meson:
 
 ```bash
 $ cd open5gs
-$ meson build --prefix=`pwd`/install
+$ meson build --prefix=`pwd`/install -D c_std=c99
 $ ninja -C build
 ```
 
