@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PGW_PATH_H
-#define PGW_PATH_H
+#ifndef PGW_GTP_PATH_H
+#define PGW_GTP_PATH_H
 
 #include "ogs-tun.h"
 #include "ogs-gtp.h"
@@ -34,4 +34,4 @@ void pgw_gtp_close(void);
 }
 #endif
 
-#endif /* PGW_PATH_H */
+#endif /* PGW_GTP_PATH_H */

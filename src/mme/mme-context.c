@@ -1519,7 +1519,7 @@ int mme_context_parse_config()
 
                     } while (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SEQUENCE_NODE);
-                } else if(!strcmp(mme_key, "selection_mode")) {
+                } else if (!strcmp(mme_key, "selection_mode")) {
                     const char *selection_mode =
                     ogs_yaml_iter_value(&sgw_iter);
 
