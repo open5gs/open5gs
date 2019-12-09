@@ -146,6 +146,7 @@ typedef struct mme_context_s {
     OGS_POOL(m_tmsi, mme_m_tmsi_t);
 
     ogs_list_t      mme_ue_list;
+    ogs_thread_mutex_t  mme_ue_list_mutex;
 
     ogs_hash_t      *enb_addr_hash;         /* hash table for ENB Address */
     ogs_hash_t      *enb_id_hash;           /* hash table for ENB-ID */
@@ -234,6 +235,7 @@ typedef struct mme_enb_s {
     ogs_tai_t       supported_ta_list[OGS_MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
 
     ogs_list_t      enb_ue_list;
+    ogs_thread_mutex_t  enb_ue_list_mutex;
 
 } mme_enb_t;
 

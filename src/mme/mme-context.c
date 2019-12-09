@@ -2030,7 +2030,10 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb)
 
     ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), enb_ue);
+
+    ogs_thread_mutex_lock(&enb->enb_ue_list_mutex);
     ogs_list_add(&enb->enb_ue_list, enb_ue);
+    ogs_thread_mutex_unlock(&enb->enb_ue_list_mutex);
 
     stats_add_ue();
 
@@ -2052,7 +2055,9 @@ void enb_ue_remove(enb_ue_t *enb_ue)
     /* De-associate S1 with NAS/EMM */
     enb_ue_deassociate(enb_ue);
 
+    ogs_thread_mutex_lock(&enb_ue->enb->enb_ue_list_mutex);
     ogs_list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
+    ogs_thread_mutex_unlock(&enb_ue->enb->enb_ue_list_mutex);
     ogs_hash_set(self.mme_ue_s1ap_id_hash, &enb_ue->mme_ue_s1ap_id, 
             sizeof(enb_ue->mme_ue_s1ap_id), NULL);
 
@@ -2082,10 +2087,14 @@ void enb_ue_switch_to_enb(enb_ue_t *enb_ue, mme_enb_t *new_enb)
     ogs_assert(new_enb);
 
     /* Remove from the old enb */
+    ogs_thread_mutex_lock(&enb_ue->enb->enb_ue_list_mutex);
     ogs_list_remove(&enb_ue->enb->enb_ue_list, enb_ue);
+    ogs_thread_mutex_unlock(&enb_ue->enb->enb_ue_list_mutex);
 
     /* Add to the new enb */
+    ogs_thread_mutex_lock(&new_enb->enb_ue_list_mutex);
     ogs_list_add(&new_enb->enb_ue_list, enb_ue);
+    ogs_thread_mutex_unlock(&new_enb->enb_ue_list_mutex);
 
     /* Switch to enb */
     enb_ue->enb = new_enb;
@@ -2116,7 +2125,10 @@ enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id)
 
 enb_ue_t *enb_ue_first_in_enb(mme_enb_t *enb)
 {
-    return ogs_list_first(&enb->enb_ue_list);
+    ogs_thread_mutex_lock(&enb->enb_ue_list_mutex);
+    enb_ue_t * rv = ogs_list_first(&enb->enb_ue_list);
+    ogs_thread_mutex_unlock(&enb->enb_ue_list_mutex);
+    return rv;
 }
 
 enb_ue_t *enb_ue_next_in_enb(enb_ue_t *enb_ue)
@@ -2237,7 +2249,9 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     ogs_fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
     ogs_fsm_init(&mme_ue->sm, &e);
 
+    ogs_thread_mutex_lock(&self.mme_ue_list_mutex);
     ogs_list_add(&self.mme_ue_list, mme_ue);
+    ogs_thread_mutex_unlock(&self.mme_ue_list_mutex);
 
     return mme_ue;
 }
@@ -2248,7 +2262,9 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     ogs_assert(mme_ue);
 
+    ogs_thread_mutex_lock(&self.mme_ue_list_mutex);
     ogs_list_remove(&self.mme_ue_list, mme_ue);
+    ogs_thread_mutex_unlock(&self.mme_ue_list_mutex);
 
     e.mme_ue = mme_ue;
     ogs_fsm_fini(&mme_ue->sm, &e);
@@ -2295,8 +2311,10 @@ void mme_ue_remove_all()
 {
     mme_ue_t *mme_ue = NULL, *next = NULL;;
 
+    ogs_thread_mutex_lock(&self.mme_ue_list_mutex);
     ogs_list_for_each_safe(&self.mme_ue_list, next, mme_ue)
         mme_ue_remove(mme_ue);
+    ogs_thread_mutex_unlock(&self.mme_ue_list_mutex);
 }
 
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd)
