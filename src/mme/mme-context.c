@@ -2068,15 +2068,12 @@ void enb_ue_remove(enb_ue_t *enb_ue)
 
 void enb_ue_remove_in_enb(mme_enb_t *enb)
 {
-    enb_ue_t *enb_ue = NULL, *next_enb_ue = NULL;
+    enb_ue_t *enb_ue = NULL;
     
     enb_ue = enb_ue_first_in_enb(enb);
     while (enb_ue) {
-        next_enb_ue = enb_ue_next_in_enb(enb_ue);
-
         enb_ue_remove(enb_ue);
-
-        enb_ue = next_enb_ue;
+        enb_ue = enb_ue_first_in_enb(enb);
     }
 }
 
@@ -2105,6 +2102,7 @@ enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
 {
     enb_ue_t *enb_ue = NULL;
     
+    ogs_thread_mutex_lock(&enb->enb_ue_list_mutex);
     enb_ue = enb_ue_first_in_enb(enb);
     while (enb_ue) {
         if (enb_ue_s1ap_id == enb_ue->enb_ue_s1ap_id)
@@ -2112,7 +2110,7 @@ enb_ue_t *enb_ue_find_by_enb_ue_s1ap_id(
 
         enb_ue = enb_ue_next_in_enb(enb_ue);
     }
-
+    ogs_thread_mutex_unlock(&enb->enb_ue_list_mutex);
     return enb_ue;
 }
 
@@ -2125,9 +2123,7 @@ enb_ue_t *enb_ue_find_by_mme_ue_s1ap_id(uint32_t mme_ue_s1ap_id)
 
 enb_ue_t *enb_ue_first_in_enb(mme_enb_t *enb)
 {
-    ogs_thread_mutex_lock(&enb->enb_ue_list_mutex);
     enb_ue_t * rv = ogs_list_first(&enb->enb_ue_list);
-    ogs_thread_mutex_unlock(&enb->enb_ue_list_mutex);
     return rv;
 }
 
@@ -2309,12 +2305,13 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
 void mme_ue_remove_all()
 {
-    mme_ue_t *mme_ue = NULL, *next = NULL;;
+    mme_ue_t *mme_ue = NULL;
 
-    ogs_thread_mutex_lock(&self.mme_ue_list_mutex);
-    ogs_list_for_each_safe(&self.mme_ue_list, next, mme_ue)
+    mme_ue = ogs_list_first(&self.mme_ue_list);
+    while (mme_ue) {
         mme_ue_remove(mme_ue);
-    ogs_thread_mutex_unlock(&self.mme_ue_list_mutex);
+        mme_ue = ogs_list_first(&self.mme_ue_list);
+    }
 }
 
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd)
