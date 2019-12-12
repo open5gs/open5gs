@@ -447,7 +447,7 @@ void s1ap_send_handover_request(
     ogs_assert(source_ue);
     ogs_assert(source_ue->target_ue == NULL);
 
-    target_ue = enb_ue_add(target_enb);
+    target_ue = enb_ue_add(target_enb, INVALID_UE_S1AP_ID);
     ogs_assert(target_ue);
 
     ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",

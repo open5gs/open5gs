@@ -226,10 +226,8 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
     ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
     if (!enb_ue) {
-        enb_ue = enb_ue_add(enb);
+        enb_ue = enb_ue_add(enb, *ENB_UE_S1AP_ID);
         ogs_assert(enb_ue);
-
-        enb_ue->enb_ue_s1ap_id = *ENB_UE_S1AP_ID;
 
         /* Find MME_UE if S_TMSI included */
         if (S_TMSI) {
