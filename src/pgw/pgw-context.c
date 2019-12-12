@@ -1278,7 +1278,7 @@ int pgw_ue_pool_generate(void)
                 if (memcmp(ue_ip->addr, subnet->gw.sub, maxbytes) == 0)
                     continue;
 
-                ogs_debug("[%d] - %x:%x:%x:%x",
+                ogs_trace("[%d] - %x:%x:%x:%x",
                         poolindex,
                         ue_ip->addr[0], ue_ip->addr[1],
                         ue_ip->addr[2], ue_ip->addr[3]);

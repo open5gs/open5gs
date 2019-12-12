@@ -665,9 +665,9 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     ogs_gtp_create_indirect_data_forwarding_tunnel_request_t *req =
         &gtp_message.create_indirect_data_forwarding_tunnel_request;
     
-    ogs_gtp_tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
-    ogs_gtp_f_teid_t dl_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
-    ogs_gtp_f_teid_t ul_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    ogs_gtp_tlv_bearer_context_t *bearers[OGS_GTP_MAX_INDIRECT_TUNNEL];
+    ogs_gtp_f_teid_t dl_teid[OGS_GTP_MAX_INDIRECT_TUNNEL];
+    ogs_gtp_f_teid_t ul_teid[OGS_GTP_MAX_INDIRECT_TUNNEL];
     int len;
 
     ogs_assert(mme_ue);

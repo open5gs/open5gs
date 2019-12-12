@@ -680,7 +680,7 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     enb_ue_t *source_ue = NULL;
     int i;
 
-    ogs_gtp_tlv_bearer_context_t *bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    ogs_gtp_tlv_bearer_context_t *bearers[OGS_GTP_MAX_INDIRECT_TUNNEL];
     ogs_gtp_f_teid_t *teid = NULL;
 
     ogs_assert(xact);

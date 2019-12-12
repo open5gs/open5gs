@@ -17,21 +17,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PGW_GTP_PATH_H
-#define PGW_GTP_PATH_H
+#if !defined(OGS_PFCP_INSIDE) && !defined(OGS_PFCP_COMPILATION)
+#error "This header cannot be included directly."
+#endif
 
-#include "ogs-tun.h"
-#include "ogs-gtp.h"
+#ifndef OGS_PFCP_CONV_H
+#define OGS_PFCP_CONV_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int pgw_gtp_open(void);
-void pgw_gtp_close(void);
+int ogs_pfcp_f_seid_to_sockaddr(
+    ogs_pfcp_f_seid_t *f_seid, uint16_t port, ogs_sockaddr_t **list);
+int ogs_pfcp_sockaddr_to_f_seid(
+    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
+    ogs_pfcp_f_seid_t *f_seid, int *len);
+int ogs_pfcp_f_seid_to_ip(ogs_pfcp_f_seid_t *f_seid, ogs_ip_t *ip);
+
+int ogs_pfcp_sockaddr_to_f_teid(
+    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
+    ogs_pfcp_f_teid_t *f_teid, int *len);
+int ogs_pfcp_outer_hdr_to_ip(ogs_pfcp_outer_hdr_t *outer_hdr, ogs_ip_t *ip);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PGW_GTP_PATH_H */
+#endif
+

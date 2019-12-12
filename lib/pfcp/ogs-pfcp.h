@@ -17,21 +17,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef PGW_GTP_PATH_H
-#define PGW_GTP_PATH_H
+#ifndef OGS_PFCP_H
+#define OGS_PFCP_H
 
-#include "ogs-tun.h"
-#include "ogs-gtp.h"
+#include "ogs-core.h"
+
+#define OGS_PFCP_UDP_PORT            8805
+
+#define OGS_PFCP_INSIDE
+
+#include "pfcp/message.h"
+#include "pfcp/types.h"
+#include "pfcp/conv.h"
+#include "pfcp/node.h"
+#include "pfcp/path.h"
+#include "pfcp/xact.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int pgw_gtp_open(void);
-void pgw_gtp_close(void);
+#undef OGS_PFCP_INSIDE
+
+extern int __ogs_pfcp_domain;
+
+#undef OGS_LOG_DOMAIN
+#define OGS_LOG_DOMAIN __ogs_pfcp_domain
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* PGW_GTP_PATH_H */
+#endif /* OGS_PFCP_H */

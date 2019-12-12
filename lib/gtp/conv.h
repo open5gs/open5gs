@@ -26,16 +26,16 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#endif
 
-#define GTP_MAX_NUM_OF_INDIRECT_TUNNEL      11
+#define OGS_GTP_MAX_INDIRECT_TUNNEL             11
 
 /* Create Indirect Data Forwarding Tunnel Request/Response */
 void ogs_gtp_bearers_in_create_indirect_tunnel_request(
-    ogs_gtp_tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
+    ogs_gtp_tlv_bearer_context_t *bearers[][OGS_GTP_MAX_INDIRECT_TUNNEL],
     ogs_gtp_create_indirect_data_forwarding_tunnel_request_t *req);
 void ogs_gtp_bearers_in_create_indirect_tunnel_response(
-    ogs_gtp_tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
+    ogs_gtp_tlv_bearer_context_t *bearers[][OGS_GTP_MAX_INDIRECT_TUNNEL],
     ogs_gtp_create_indirect_data_forwarding_tunnel_response_t *rsp);
 
 int ogs_gtp_f_teid_to_sockaddr(
@@ -49,5 +49,5 @@ int ogs_gtp_ip_to_f_teid(ogs_ip_t *ip, ogs_gtp_f_teid_t *f_teid, int *len);
 }
 #endif
 
-#endif /* OGS_GTP_CONV_H */
+#endif
 
