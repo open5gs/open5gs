@@ -64,57 +64,57 @@ ogs_pkbuf_t *nas_security_encode(
     if (mme_ue->selected_int_algorithm == 0)
         integrity_protected = 0;
 
-    if (ciphered || integrity_protected) {
-        ogs_nas_security_header_t h;
-        ogs_pkbuf_t *new = NULL;
+    // if (ciphered || integrity_protected) {
+    ogs_nas_security_header_t h;
+    ogs_pkbuf_t *new = NULL;
 
-        memset(&h, 0, sizeof(h));
-        h.security_header_type = message->h.security_header_type;
-        h.protocol_discriminator = message->h.protocol_discriminator;
-        h.sequence_number = (mme_ue->dl_count & 0xff);
+    memset(&h, 0, sizeof(h));
+    h.security_header_type = message->h.security_header_type;
+    h.protocol_discriminator = message->h.protocol_discriminator;
+    h.sequence_number = (mme_ue->dl_count & 0xff);
 
-        new = ogs_nas_plain_encode(message);
-        if (!new) {
-            ogs_error("ogs_nas_plain_encode() failed");
-            return NULL;
-        }
-
-        if (ciphered) {
-            /* encrypt NAS message */
-            nas_encrypt(mme_ue->selected_enc_algorithm,
-                mme_ue->knas_enc, mme_ue->dl_count, NAS_SECURITY_BEARER,
-                NAS_SECURITY_DOWNLINK_DIRECTION, new);
-        }
-
-        /* encode sequence number */
-        ogs_assert(ogs_pkbuf_push(new, 1));
-        *(uint8_t *)(new->data) = h.sequence_number;
-
-        if (integrity_protected) {
-            uint8_t mac[NAS_SECURITY_MAC_SIZE];
-
-            /* calculate NAS MAC(message authentication code) */
-            nas_mac_calculate(mme_ue->selected_int_algorithm,
-                mme_ue->knas_int, mme_ue->dl_count, NAS_SECURITY_BEARER, 
-                NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
-            memcpy(&h.message_authentication_code, mac, sizeof(mac));
-        }
-
-        /* increase dl_count */
-        mme_ue->dl_count = (mme_ue->dl_count + 1) & 0xffffff; /* Use 24bit */
-
-        /* encode all security header */
-        ogs_assert(ogs_pkbuf_push(new, 5));
-        memcpy(new->data, &h, sizeof(ogs_nas_security_header_t));
-
-        mme_ue->security_context_available = 1;
-
-        return new;
+    new = ogs_nas_plain_encode(message);
+    if (!new) {
+        ogs_error("ogs_nas_plain_encode() failed");
+        return NULL;
     }
 
-    ogs_error("Invalid param : type[%d] ciphered[%d] integrity_protected[%d]",
-            message->h.security_header_type, ciphered, integrity_protected);
-    return NULL;
+    if (ciphered) {
+        /* encrypt NAS message */
+        nas_encrypt(mme_ue->selected_enc_algorithm,
+            mme_ue->knas_enc, mme_ue->dl_count, NAS_SECURITY_BEARER,
+            NAS_SECURITY_DOWNLINK_DIRECTION, new);
+    }
+
+    /* encode sequence number */
+    ogs_assert(ogs_pkbuf_push(new, 1));
+    *(uint8_t *)(new->data) = h.sequence_number;
+
+    if (integrity_protected) {
+        uint8_t mac[NAS_SECURITY_MAC_SIZE];
+
+        /* calculate NAS MAC(message authentication code) */
+        nas_mac_calculate(mme_ue->selected_int_algorithm,
+            mme_ue->knas_int, mme_ue->dl_count, NAS_SECURITY_BEARER, 
+            NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
+        memcpy(&h.message_authentication_code, mac, sizeof(mac));
+    }
+
+    /* increase dl_count */
+    mme_ue->dl_count = (mme_ue->dl_count + 1) & 0xffffff; /* Use 24bit */
+
+    /* encode all security header */
+    ogs_assert(ogs_pkbuf_push(new, 5));
+    memcpy(new->data, &h, sizeof(ogs_nas_security_header_t));
+
+    mme_ue->security_context_available = 1;
+
+    return new;
+    // }
+
+    // ogs_error("Invalid param : type[%d] ciphered[%d] integrity_protected[%d]",
+    //         message->h.security_header_type, ciphered, integrity_protected);
+    // return NULL;
 }
 
 int nas_security_decode(mme_ue_t *mme_ue, 

@@ -466,7 +466,7 @@ void s1ap_handle_initial_context_setup_response(
 
     ogs_assert(ENB_UE_S1AP_ID);
     enb_ue = enb_ue_find_by_enb_ue_s1ap_id(enb, *ENB_UE_S1AP_ID);
-    ogs_assert(enb_ue);
+    ogs_expect_or_return(enb_ue);
     mme_ue = enb_ue->mme_ue;
     ogs_assert(mme_ue);
 
