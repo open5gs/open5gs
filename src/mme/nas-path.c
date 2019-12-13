@@ -253,7 +253,7 @@ void nas_send_detach_accept(mme_ue_t *mme_ue)
     if (mme_ue->nas_eps.detach.switch_off == 0) {
         int rv;
         emmbuf = emm_build_detach_accept(mme_ue);
-        ogs_expect(emmbuf);
+        ogs_expect_or_return(emmbuf);
 
         rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
         ogs_expect(rv == OGS_OK);
