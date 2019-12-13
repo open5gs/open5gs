@@ -25,6 +25,8 @@ ogs_pkbuf_t *nas_security_encode(
     int integrity_protected = 0;
     int new_security_context = 0;
     int ciphered = 0;
+    ogs_nas_security_header_t h;
+    ogs_pkbuf_t *new = NULL;
 
     ogs_assert(mme_ue);
     ogs_assert(message);
@@ -63,10 +65,6 @@ ogs_pkbuf_t *nas_security_encode(
         ciphered = 0;
     if (mme_ue->selected_int_algorithm == 0)
         integrity_protected = 0;
-
-    // if (ciphered || integrity_protected) {
-    ogs_nas_security_header_t h;
-    ogs_pkbuf_t *new = NULL;
 
     memset(&h, 0, sizeof(h));
     h.security_header_type = message->h.security_header_type;
@@ -110,11 +108,6 @@ ogs_pkbuf_t *nas_security_encode(
     mme_ue->security_context_available = 1;
 
     return new;
-    // }
-
-    // ogs_error("Invalid param : type[%d] ciphered[%d] integrity_protected[%d]",
-    //         message->h.security_header_type, ciphered, integrity_protected);
-    // return NULL;
 }
 
 int nas_security_decode(mme_ue_t *mme_ue, 

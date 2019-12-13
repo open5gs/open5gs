@@ -156,7 +156,7 @@ void nas_send_identity_request(mme_ue_t *mme_ue)
 
     if (mme_ue->t3470.pkbuf) {
         emmbuf = mme_ue->t3470.pkbuf;
-
+        ogs_expect_or_return(emmbuf);
     } else {
         emmbuf = emm_build_identity_request(mme_ue);
         ogs_expect_or_return(emmbuf);
@@ -182,11 +182,11 @@ void nas_send_authentication_request(
 
     if (mme_ue->t3460.pkbuf) {
         emmbuf = mme_ue->t3460.pkbuf;
-
+        ogs_expect_or_return(emmbuf);
     } else {
         ogs_assert(e_utran_vector);
         emmbuf = emm_build_authentication_request(e_utran_vector);
-        ogs_expect(emmbuf);
+        ogs_expect_or_return(emmbuf);
     }
 
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
@@ -209,10 +209,10 @@ void nas_send_security_mode_command(mme_ue_t *mme_ue)
 
     if (mme_ue->t3460.pkbuf) {
         emmbuf = mme_ue->t3460.pkbuf;
-
+        ogs_expect_or_return(emmbuf);
     } else {
         emmbuf = emm_build_security_mode_command(mme_ue);
-        ogs_expect(emmbuf);
+        ogs_expect_or_return(emmbuf);
     }
 
     mme_ue->t3460.pkbuf = ogs_pkbuf_copy(emmbuf);
@@ -234,7 +234,7 @@ void nas_send_authentication_reject(mme_ue_t *mme_ue)
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     emmbuf = emm_build_authentication_reject();
-    ogs_expect(emmbuf);
+    ogs_expect_or_return(emmbuf);
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
@@ -256,7 +256,7 @@ void nas_send_detach_accept(mme_ue_t *mme_ue)
         ogs_expect_or_return(emmbuf);
 
         rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
-        ogs_expect(rv == OGS_OK);
+        ogs_expect_or_return(rv == OGS_OK);
     }
 
     s1ap_send_ue_context_release_command(enb_ue,
@@ -278,7 +278,7 @@ void nas_send_pdn_connectivity_reject(
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
         esmbuf = esm_build_pdn_connectivity_reject(sess, esm_cause);
-        ogs_expect(esmbuf);
+        ogs_expect_or_return(esmbuf);
 
         rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
         ogs_expect(rv == OGS_OK);
@@ -302,9 +302,10 @@ void nas_send_esm_information_request(mme_bearer_t *bearer)
 
     if (bearer->t3489.pkbuf) {
         esmbuf = bearer->t3489.pkbuf;
+        ogs_expect_or_return(esmbuf);
     } else {
         esmbuf = esm_build_information_request(bearer);
-        ogs_expect(esmbuf);
+        ogs_expect_or_return(esmbuf);
     }
 
     bearer->t3489.pkbuf = ogs_pkbuf_copy(esmbuf);
@@ -330,7 +331,7 @@ void nas_send_activate_default_bearer_context_request(mme_bearer_t *bearer)
     ogs_assert(mme_ue);
 
     esmbuf = esm_build_activate_default_bearer_context_request(sess);
-    ogs_expect(esmbuf);
+    ogs_expect_or_return(esmbuf);
 
     s1apbuf = s1ap_build_e_rab_setup_request(bearer, esmbuf);
     ogs_expect_or_return(s1apbuf);
@@ -352,7 +353,7 @@ void nas_send_activate_dedicated_bearer_context_request(
     ogs_assert(mme_ue);
 
     esmbuf = esm_build_activate_dedicated_bearer_context_request(bearer);
-    ogs_expect(esmbuf);
+    ogs_expect_or_return(esmbuf);
 
     s1apbuf = s1ap_build_e_rab_setup_request(bearer, esmbuf);
     ogs_expect_or_return(s1apbuf);
@@ -387,7 +388,7 @@ void nas_send_modify_bearer_context_request(
 
     esmbuf = esm_build_modify_bearer_context_request(
             bearer, qos_presence, tft_presence);
-    ogs_expect(esmbuf);
+    ogs_expect_or_return(esmbuf);
 
     if (qos_presence == 1) {
         s1apbuf = s1ap_build_e_rab_modify_request(bearer, esmbuf);
@@ -414,7 +415,7 @@ void nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
 
     esmbuf = esm_build_deactivate_bearer_context_request(
             bearer, ESM_CAUSE_REGULAR_DEACTIVATION);
-    ogs_expect(esmbuf);
+    ogs_expect_or_return(esmbuf);
 
     s1apbuf = s1ap_build_e_rab_release_command(bearer, esmbuf,
             S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release);
@@ -436,7 +437,7 @@ void nas_send_tau_accept(
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     emmbuf = emm_build_tau_accept(mme_ue);
-    ogs_expect(emmbuf);
+    ogs_expect_or_return(emmbuf);
 
     if (procedureCode == S1AP_ProcedureCode_id_InitialContextSetup) {
         ogs_pkbuf_t *s1apbuf = NULL;
@@ -461,7 +462,7 @@ void nas_send_tau_reject(mme_ue_t *mme_ue, ogs_nas_emm_cause_t emm_cause)
 
     /* Build TAU reject */
     emmbuf = emm_build_tau_reject(emm_cause, mme_ue);
-    ogs_expect(emmbuf);
+    ogs_expect_or_return(emmbuf);
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
@@ -477,7 +478,7 @@ void nas_send_service_reject(mme_ue_t *mme_ue,
 
     /* Build Service Reject */
     emmbuf = emm_build_service_reject(emm_cause, mme_ue);
-    ogs_expect(emmbuf);
+    ogs_expect_or_return(emmbuf);
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
@@ -494,7 +495,7 @@ void nas_send_cs_service_notification(mme_ue_t *mme_ue)
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     emmbuf = emm_build_cs_service_notification(mme_ue);
-    ogs_expect(emmbuf);
+    ogs_expect_or_return(emmbuf);
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
@@ -514,7 +515,7 @@ void nas_send_downlink_nas_transport(
     ogs_debug("    IMSI[%s]", mme_ue->imsi_bcd);
 
     emmbuf = emm_build_downlink_nas_transport(mme_ue, buffer, length);
-    ogs_expect(emmbuf);
+    ogs_expect_or_return(emmbuf);
 
     rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
