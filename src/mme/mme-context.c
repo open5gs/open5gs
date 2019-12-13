@@ -2003,7 +2003,7 @@ int mme_enb_sock_type(ogs_sock_t *sock)
 }
 
 /** enb_ue_context handling function */
-enb_ue_t *enb_ue_add(mme_enb_t *enb, S1AP_ENB_UE_S1AP_ID_t enb_ue_s1ap_id)
+enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 {
     enb_ue_t *enb_ue = NULL;
 
