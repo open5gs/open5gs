@@ -1113,6 +1113,7 @@ root@epc-ims:~# cat /etc/hosts
 
 Assuming IMSI of the user as 001010123456791
 
+```
 Login to the HSS web console.
 Navigate to the User Identities page	
 Create the IMSU 
@@ -1148,6 +1149,7 @@ Add Visited Network to IMPU
 Enter:
 Visited Network = ims.mnc001.mcc001.3gppnetwork.org
 Click Add
+```
 
 #### 21. APN settings
 
