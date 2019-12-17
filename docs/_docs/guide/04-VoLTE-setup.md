@@ -1,11 +1,11 @@
 ---
-title: VoLTE Setup with Kamailio IMS and Open5gs
+title: VoLTE Setup with Kamailio IMS and Open5GS
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
 Setup description:
 - MCC: 001, MNC: 01
-- Single OpenStack VM with Kamailio IMS and Open5gs (Internal IP 10.4.128.21 and Floating IP 172.24.15.30)
+- Single OpenStack VM with Kamailio IMS and Open5GS (Internal IP 10.4.128.21 and Floating IP 172.24.15.30)
 - 4G Casa Smallcell
 - Sysmocom USIM - sysmoUSIM-SJS1
 - Oneplus 5 as UE
@@ -763,11 +763,11 @@ $ systemctl daemon-reload
 $ systemctl start kamailio_icscf kamailio_pcscf kamailio_scscf
 ```
 
-#### 18. Install Open5gs in the same machine as Kamailio IMS - Install Open5gs from source
+#### 18. Install Open5GS in the same machine as Kamailio IMS - Install Open5GS from source
 
 Please refer to instructions at https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/
 
-Installing Open5gs on the same machine is very important because the "frame_ip4_address" in the AAR request via Rx interface takes received IP address and port in ims_qos module, hence, if the Open5gs is on a separate VM/machine, the IP and port received in received_ip and received_port values seen by Kamailio IMS will be the NATed IP of the Open5gs machine resulting in failing of AAR request.
+Installing Open5GS on the same machine is very important because the "frame_ip4_address" in the AAR request via Rx interface takes received IP address and port in ims_qos module, hence, if the Open5GS is on a separate VM/machine, the IP and port received in received_ip and received_port values seen by Kamailio IMS will be the NATed IP of the Open5GS machine resulting in failing of AAR request.
 {: .notice--info}
 
 Install open5gs, with the fixes for forcing UE to PS domain attach, IPV4 usaeg and support for Rx MEDIA TYPE -CONTROL.
@@ -811,7 +811,7 @@ iptables -I INPUT -i ogstun2 -j ACCEPT
 ip6tables -I INPUT -i ogstun2 -j ACCEPT
 ```
 
-Add users with following APN settings in Open5gs:
+Add users with following APN settings in Open5GS:
 
 <pre>
 APN Configuration:
@@ -827,7 +827,7 @@ APN Configuration:
 -------------------------------------------------------------------------------------------------------------------------
 </pre>
 
-Finally, make sure of the following in Open5gs
+Finally, make sure of the following in Open5GS
 
 - PCO options which indicate the address of the Proxy-CSCF
 - Need to indicate support for Voice-over-Packet-Switched (VoPS) in NAS message to UE from EPC
@@ -1128,12 +1128,12 @@ Create the IMPI and Associate the IMPI to the IMSU
 Click Create & Bind new IMPI
 Enter:
 Identity = 001010123456791@ims.mnc001.mcc001.3gppnetwork.org
-Secret Key = 8baf473f2f8fd09487cccbd7097c6862 (Ki value as in Open5gs HSS database)
+Secret Key = 8baf473f2f8fd09487cccbd7097c6862 (Ki value as in Open5GS HSS database)
 Authentication Schemes - All
 Default = Digest
-AMF = 8000 (As in Open5gs HSS database)
-OP = 11111111111111111111111111111111 (As in Open5gs HSS database)
-SQN = 000000021090 (As in Open5gs HSS database, better to disable SQN check in USIM rather than syncing between Open5gs HSS and FoHSS)
+AMF = 8000 (As in Open5GS HSS database)
+OP = 11111111111111111111111111111111 (As in Open5GS HSS database)
+SQN = 000000021090 (As in Open5GS HSS database, better to disable SQN check in USIM rather than syncing between Open5GS HSS and FoHSS)
 Click Save
 
 Create and Associate IMPI to IMPU
@@ -1179,12 +1179,12 @@ $ ip r add 10.4.128.21/32 via 172.24.15.30
 - Tested with OnePlus 5 - With modfication to enable force IMS registration is a must or else UE will not even attempt to connect to P-CSCF. Need to apply the fix back after each update.
 (https://forum.xda-developers.com/oneplus-5t/how-to/guide-volte-vowifi-german-carriers-t3817542)
 
-#### 24. Start IMS components and FoHSS followed by Open5gs and eNB, then try connecting the phones
+#### 24. Start IMS components and FoHSS followed by Open5GS and eNB, then try connecting the phones
 
 
 #### 25. For debugging
 
-Debug using wireshark at Open5gs machine and following wireshark display filter
+Debug using wireshark at Open5GS machine and following wireshark display filter
 
 ```
 s1ap || gtpv2 || diameter || diameter.3gpp || sip

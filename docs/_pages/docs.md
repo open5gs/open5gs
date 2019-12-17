@@ -9,8 +9,8 @@ head_inline: "<style> ul { padding-bottom: 1em; } </style>"
   - [Quickstart](guide/01-quickstart)
   - [Building Open5GS from Sources](guide/02-building-open5gs-from-sources)
   - [Splitting Network Elements](guide/03-splitting-network-elements)
-  - [Setting up Kamailio IMS](guide/04-setting-up-kamailio-IMS)
-  - [Trouble Shooting](guide/05-troubleshooting)
+  - [VoLTE Setup with Kamailio IMS and Open5GS](guide/04-VoLTE-setup)
+  - [Troubleshooting Open5GS](guide/05-troubleshooting)
 
 - Tutorials
   - [Your First LTE](tutorial/01-your-first-lte)
