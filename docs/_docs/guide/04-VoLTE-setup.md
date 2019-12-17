@@ -791,7 +791,7 @@ https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/
 
 For reference, look at the configuration files at:
 ```
- https://github.com/herlesupreeth/Open5gs_Config)
+https://github.com/herlesupreeth/Open5gs_Config
 ```
 - Change realm of components to `epc.mnc001.mcc001.3gppnetwork.org`
 - Define IP pools for APNs used i.e one for default APN and another for IMS apn
