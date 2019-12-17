@@ -88,10 +88,6 @@ modules= $(filter-out $(modules_noinc), $(addprefix modules/, $(include_modules)
 modules_configured:=1
 ```
 
-Use the below example DNS Zone file to create a DNS Zone file in the /etc/bind folder and 
-edit /etc/bind/named.conf.local, /etc/bind/named.conf.options accordingly:
-
-```
 
 #### 7. Compile and install Kamailio
 
