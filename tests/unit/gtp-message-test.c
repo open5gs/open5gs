@@ -178,16 +178,16 @@ static void gtp_message_test1(abts_case *tc, void *data)
     req.charging_characteristics.data = (uint8_t *)"\x54\x00";
     req.charging_characteristics.len = 2;
 
-    rv = ogs_tlv_build_msg(&pkbuf, &ogs_tlv_desc_create_session_request, &req,
-            OGS_TLV_MODE_T1_L2_I1);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_create_session_request,
+            &req, OGS_TLV_MODE_T1_L2_I1);
+    ABTS_PTR_NOTNULL(tc, pkbuf);
 
     ABTS_TRUE(tc, memcmp(pkbuf->data, 
         OGS_HEX(_payload, strlen(_payload), hexbuf), pkbuf->len) == 0);
 
     memset(&req, 0, sizeof(req));
-    rv = ogs_tlv_parse_msg(&req, &ogs_tlv_desc_create_session_request, pkbuf,
-            OGS_TLV_MODE_T1_L2_I1);
+    rv = ogs_tlv_parse_msg(&req, &ogs_gtp_tlv_desc_create_session_request,
+            pkbuf, OGS_TLV_MODE_T1_L2_I1);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     ogs_pkbuf_free(pkbuf);

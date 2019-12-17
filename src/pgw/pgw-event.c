@@ -91,7 +91,7 @@ void pgw_event_free(pgw_event_t *e)
     ogs_pool_free(&pool, e);
 }
 
-const char* pgw_event_get_name(pgw_event_t *e)
+const char *pgw_event_get_name(pgw_event_t *e)
 {
     if (e == NULL)
         return OGS_FSM_NAME_INIT_SIG;
@@ -105,7 +105,7 @@ const char* pgw_event_get_name(pgw_event_t *e)
     case PGW_EVT_S5C_MESSAGE:
         return "PGW_EVT_S5C_MESSAGE";
     case PGW_EVT_GX_MESSAGE:
-        return "PGW_EVT_GX_SESSION_MSG";
+        return "PGW_EVT_GX_MESSAGE";
 
     default: 
        break;

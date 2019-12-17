@@ -105,7 +105,11 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
 
     rv = ogs_gtp_xact_update_tx(xact, hdesc, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_tx() failed");
+        ogs_gtp_xact_delete(xact);
+        return NULL;
+    }
 
     ogs_debug("[%d] %s Create  peer [%s]:%d",
             xact->xid,
@@ -185,15 +189,24 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
-            ogs_assert(xact->step == 0);
+            if (xact->step != 0) {
+                ogs_error("invalid step[%d]", xact->step);
+                ogs_pkbuf_free(pkbuf);
+                return OGS_ERROR;
+            }
             break;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
-            ogs_assert_if_reached();
-            break;
+            ogs_expect(0);
+            ogs_pkbuf_free(pkbuf);
+            return OGS_ERROR;
 
         case GTP_XACT_FINAL_STAGE:
-            ogs_assert(xact->step == 2);
+            if (xact->step != 2) {
+                ogs_error("invalid step[%d]", xact->step);
+                ogs_pkbuf_free(pkbuf);
+                return OGS_ERROR;
+            }
             break;
 
         default:
@@ -203,20 +216,29 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
     } else if (xact->org == OGS_GTP_REMOTE_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
-            ogs_assert_if_reached();
-            break;
+            ogs_expect(0);
+            ogs_pkbuf_free(pkbuf);
+            return OGS_ERROR;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
         case GTP_XACT_FINAL_STAGE:
-            ogs_assert(xact->step == 1);
+            if (xact->step != 1) {
+                ogs_error("invalid step[%d]", xact->step);
+                ogs_pkbuf_free(pkbuf);
+                return OGS_ERROR;
+            }
             break;
 
         default:
-            ogs_assert_if_reached();
-            break;
+            ogs_error("invalid stage[%d]", stage);
+            ogs_pkbuf_free(pkbuf);
+            return OGS_ERROR;
         }
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("invalid org[%d]", xact->org);
+        ogs_pkbuf_free(pkbuf);
+        return OGS_ERROR;
+    }
 
     ogs_pkbuf_push(pkbuf, OGS_GTPV2C_HEADER_LEN);
     h = (ogs_gtp_header_t *)pkbuf->data;
@@ -257,14 +279,18 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
-            ogs_assert_if_reached();
-            break;
+            ogs_expect(0);
+            return OGS_ERROR;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
             if (xact->seq[1].type == type) {
                 ogs_pkbuf_t *pkbuf = NULL;
 
-                ogs_assert(xact->step == 2 || xact->step == 3);
+                if (xact->step != 2 && xact->step != 3) {
+                    ogs_error("invalid step[%d]", xact->step);
+                    ogs_pkbuf_free(pkbuf);
+                    return OGS_ERROR;
+                }
 
                 pkbuf = xact->seq[2].pkbuf;
                 if (pkbuf) {
@@ -282,7 +308,7 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                                 buf),
                             OGS_PORT(&xact->gnode->remote_addr));
                     rv = ogs_gtp_sendto(xact->gnode, pkbuf);
-                    ogs_assert(rv == OGS_OK);
+                    ogs_expect(rv == OGS_OK);
                 } else {
                     ogs_warn("[%d] %s Request Duplicated. Discard!"
                             " for step %d type %d peer [%s]:%d",
@@ -298,7 +324,10 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 return OGS_RETRY;
             }
 
-            ogs_assert(xact->step == 1);
+            if (xact->step != 1) {
+                ogs_error("invalid step[%d]", xact->step);
+                return OGS_ERROR;
+            }
 
             if (xact->tm_holding)
                 ogs_timer_start(
@@ -307,12 +336,15 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
             break;
 
         case GTP_XACT_FINAL_STAGE:
-            ogs_assert(xact->step == 1);
+            if (xact->step != 1) {
+                ogs_error("invalid step[%d]", xact->step);
+                return OGS_ERROR;
+            }
             break;
 
         default:
-            ogs_assert_if_reached();
-            break;
+            ogs_error("invalid stage[%d]", stage);
+            return OGS_ERROR;
         }
     } else if (xact->org == OGS_GTP_REMOTE_ORIGINATOR) {
         switch (stage) {
@@ -320,7 +352,10 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
             if (xact->seq[0].type == type) {
                 ogs_pkbuf_t *pkbuf = NULL;
 
-                ogs_assert(xact->step == 1 || xact->step == 2);
+                if (xact->step != 1 && xact->step != 2) {
+                    ogs_error("invalid step[%d]", xact->step);
+                    return OGS_ERROR;
+                }
 
                 pkbuf = xact->seq[1].pkbuf;
                 if (pkbuf) {
@@ -338,7 +373,7 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                                 buf),
                             OGS_PORT(&xact->gnode->remote_addr));
                     rv = ogs_gtp_sendto(xact->gnode, pkbuf);
-                    ogs_assert(rv == OGS_OK);
+                    ogs_expect(rv == OGS_OK);
                 } else {
                     ogs_warn("[%d] %s Request Duplicated. Discard!"
                             " for step %d type %d peer [%s]:%d",
@@ -354,7 +389,10 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 return OGS_RETRY;
             }
 
-            ogs_assert(xact->step == 0);
+            if (xact->step != 0) {
+                ogs_error("invalid step[%d]", xact->step);
+                return OGS_ERROR;
+            }
             if (xact->tm_holding)
                 ogs_timer_start(
                         xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
@@ -362,21 +400,26 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
             break;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
-            ogs_assert_if_reached();
-            break;
+            ogs_expect(0);
+            return OGS_ERROR;
 
         case GTP_XACT_FINAL_STAGE:
-            ogs_assert(xact->step == 2);
+            if (xact->step != 2) {
+                ogs_error("invalid step[%d]", xact->step);
+                return OGS_ERROR;
+            }
 
             /* continue */
             break;
 
         default:
-            ogs_assert_if_reached();
-            break;
+            ogs_error("invalid stage[%d]", stage);
+            return OGS_ERROR;
         }
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("invalid org[%d]", xact->org);
+        return OGS_ERROR;
+    }
 
     if (xact->tm_response)
         ogs_timer_stop(xact->tm_response);
@@ -415,20 +458,28 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
     if (xact->org == OGS_GTP_LOCAL_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
-            ogs_assert(xact->step == 1);
+            if (xact->step != 1) {
+                ogs_error("invalid step[%d]", xact->step);
+                ogs_gtp_xact_delete(xact);
+                return OGS_ERROR;
+            }
 
             if (xact->tm_response)
-                ogs_timer_start(
-                        xact->tm_response, GTP_T3_RESPONSE_DURATION);
+                ogs_timer_start(xact->tm_response, GTP_T3_RESPONSE_DURATION);
 
             break;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
-            ogs_assert_if_reached();
-            break;
+            ogs_expect(0);
+            ogs_gtp_xact_delete(xact);
+            return OGS_ERROR;
 
         case GTP_XACT_FINAL_STAGE:
-            ogs_assert(xact->step == 2 || xact->step == 3);
+            if (xact->step != 2 && xact->step != 3) {
+                ogs_error("invalid step[%d]", xact->step);
+                ogs_gtp_xact_delete(xact);
+                return OGS_ERROR;
+            }
             if (xact->step == 2) {
                 ogs_gtp_xact_delete(xact);
                 return OGS_OK;
@@ -437,17 +488,23 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
             break;
 
         default:
-            ogs_assert_if_reached();
-            break;
+            ogs_error("invalid stage[%d]", stage);
+            ogs_gtp_xact_delete(xact);
+            return OGS_ERROR;
         }
     } else if (xact->org == OGS_GTP_REMOTE_ORIGINATOR) {
         switch (stage) {
         case GTP_XACT_INITIAL_STAGE:
-            ogs_assert_if_reached();
-            break;
+            ogs_expect(0);
+            ogs_gtp_xact_delete(xact);
+            return OGS_ERROR;
 
         case GTP_XACT_INTERMEDIATE_STAGE:
-            ogs_assert(xact->step == 2);
+            if (xact->step != 2) {
+                ogs_error("invalid step[%d]", xact->step);
+                ogs_gtp_xact_delete(xact);
+                return OGS_ERROR;
+            }
             if (xact->tm_response)
                 ogs_timer_start(
                         xact->tm_response, GTP_T3_RESPONSE_DURATION);
@@ -455,7 +512,11 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
             break;
 
         case GTP_XACT_FINAL_STAGE:
-            ogs_assert(xact->step == 2 || xact->step == 3);
+            if (xact->step != 2 && xact->step != 3) {
+                ogs_error("invalid step[%d]", xact->step);
+                ogs_gtp_xact_delete(xact);
+                return OGS_ERROR;
+            }
             if (xact->step == 3) {
                 ogs_gtp_xact_delete(xact);
                 return OGS_OK;
@@ -464,17 +525,21 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
             break;
 
         default:
-            ogs_assert_if_reached();
-            break;
+            ogs_error("invalid stage[%d]", stage);
+            ogs_gtp_xact_delete(xact);
+            return OGS_ERROR;
         }
-    } else
-        ogs_assert_if_reached();
+    } else {
+        ogs_error("invalid org[%d]", xact->org);
+        ogs_gtp_xact_delete(xact);
+        return OGS_ERROR;
+    }
 
     pkbuf = xact->seq[xact->step-1].pkbuf;
     ogs_assert(pkbuf);
 
     rv = ogs_gtp_sendto(xact->gnode, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     return OGS_OK;
 }
@@ -584,6 +649,8 @@ int ogs_gtp_xact_receive(
 
     rv = ogs_gtp_xact_update_rx(new, h->type);
     if (rv != OGS_OK) {
+        ogs_error("ogs_gtp_xact_update_rx() failed");
+        ogs_gtp_xact_delete(new);
         return rv;
     }
 

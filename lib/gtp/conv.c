@@ -20,7 +20,7 @@
 #include "ogs-gtp.h"
 
 void ogs_gtp_bearers_in_create_indirect_tunnel_request(
-        ogs_tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
+        ogs_gtp_tlv_bearer_context_t *bearers[][OGS_GTP_MAX_INDIRECT_TUNNEL],
         ogs_gtp_create_indirect_data_forwarding_tunnel_request_t *req)
 {
 
@@ -38,7 +38,7 @@ void ogs_gtp_bearers_in_create_indirect_tunnel_request(
 }
 
 void ogs_gtp_bearers_in_create_indirect_tunnel_response(
-        ogs_tlv_bearer_context_t *bearers[][GTP_MAX_NUM_OF_INDIRECT_TUNNEL],
+        ogs_gtp_tlv_bearer_context_t *bearers[][OGS_GTP_MAX_INDIRECT_TUNNEL],
         ogs_gtp_create_indirect_data_forwarding_tunnel_response_t *rsp)
 {
     (*bearers)[0] = &rsp->bearer_context_0;
@@ -159,23 +159,17 @@ int ogs_gtp_ip_to_f_teid(ogs_ip_t *ip, ogs_gtp_f_teid_t *f_teid, int *len)
     f_teid->ipv4 = ip->ipv4;
     f_teid->ipv6 = ip->ipv6;
 
-    if (f_teid->ipv4 && f_teid->ipv6)
-    {
+    if (f_teid->ipv4 && f_teid->ipv6) {
         f_teid->both.addr = ip->both.addr;
         memcpy(f_teid->both.addr6, ip->both.addr6, OGS_IPV6_LEN);
         *len = OGS_GTP_F_TEID_IPV4V6_LEN;
-    }
-    else if (f_teid->ipv4)
-    {
+    } else if (f_teid->ipv4) {
         f_teid->addr = ip->addr;
         *len = OGS_GTP_F_TEID_IPV4_LEN;
-    }
-    else if (f_teid->ipv6)
-    {
+    } else if (f_teid->ipv6) {
         memcpy(f_teid->addr6, ip->addr6, OGS_IPV6_LEN);
         *len = OGS_GTP_F_TEID_IPV6_LEN;
-    }
-    else
+    } else
         ogs_assert_if_reached();
 
     return OGS_OK;

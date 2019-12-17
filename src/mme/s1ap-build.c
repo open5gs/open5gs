@@ -23,9 +23,8 @@
 #include "mme-sm.h"
 #include "s1ap-build.h"
 
-int s1ap_build_setup_rsp(ogs_pkbuf_t **pkbuf)
+ogs_pkbuf_t *s1ap_build_setup_rsp(void)
 {
-    int rv;
     int i, j;
 
     S1AP_S1AP_PDU_t pdu;
@@ -110,22 +109,12 @@ int s1ap_build_setup_rsp(ogs_pkbuf_t **pkbuf)
 
     *RelativeMMECapacity = mme_self()->relative_capacity;
 
-    rv = ogs_s1ap_encode(pkbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_setup_failure(
-        ogs_pkbuf_t **pkbuf, S1AP_Cause_PR group, long cause, long time_to_wait)
+ogs_pkbuf_t *s1ap_build_setup_failure(
+        S1AP_Cause_PR group, long cause, long time_to_wait)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
     S1AP_S1SetupFailure_t *S1SetupFailure = NULL;
@@ -176,22 +165,12 @@ int s1ap_build_setup_failure(
     if (TimeToWait)
         *TimeToWait = time_to_wait;
 
-    rv = ogs_s1ap_encode(pkbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_downlink_nas_transport(
-            ogs_pkbuf_t **s1apbuf, enb_ue_t *enb_ue, ogs_pkbuf_t *emmbuf)
+ogs_pkbuf_t *s1ap_build_downlink_nas_transport(
+    enb_ue_t *enb_ue, ogs_pkbuf_t *emmbuf)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_DownlinkNASTransport_t *DownlinkNASTransport = NULL;
@@ -259,19 +238,11 @@ int s1ap_build_downlink_nas_transport(
     memcpy(NAS_PDU->buf, emmbuf->data, NAS_PDU->size);
     ogs_pkbuf_free(emmbuf);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_initial_context_setup_request(
-            ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue, ogs_pkbuf_t *emmbuf)
+ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
+            mme_ue_t *mme_ue, ogs_pkbuf_t *emmbuf)
 {
     int rv;
 
@@ -548,22 +519,11 @@ int s1ap_build_initial_context_setup_request(
                 UERadioCapability);
     }
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_ue_context_modification_request(
-            ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
+ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_UEContextModificationRequest_t *UEContextModificationRequest = NULL;
@@ -702,22 +662,12 @@ int s1ap_build_ue_context_modification_request(
         memcpy(SecurityKey->buf, mme_ue->kenb, SecurityKey->size);
     }
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_ue_context_release_command(
-    ogs_pkbuf_t **s1apbuf, enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause)
+ogs_pkbuf_t *s1ap_build_ue_context_release_command(
+    enb_ue_t *enb_ue, S1AP_Cause_PR group, long cause)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_UEContextReleaseCommand_t *UEContextReleaseCommand = NULL;
@@ -730,7 +680,7 @@ int s1ap_build_ue_context_release_command(
 
     if (enb_ue->mme_ue_s1ap_id == 0) {
         ogs_error("invalid mme ue s1ap id");
-        return OGS_ERROR;
+        return NULL;
     }
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
@@ -781,20 +731,12 @@ int s1ap_build_ue_context_release_command(
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
 
-int s1ap_build_e_rab_setup_request(
-            ogs_pkbuf_t **s1apbuf, mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf)
+ogs_pkbuf_t *s1ap_build_e_rab_setup_request(
+            mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf)
 {
     int rv;
 
@@ -927,22 +869,12 @@ int s1ap_build_e_rab_setup_request(
     memcpy(nasPdu->buf, esmbuf->data, nasPdu->size);
     ogs_pkbuf_free(esmbuf);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_e_rab_modify_request(
-            ogs_pkbuf_t **s1apbuf, mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf)
+ogs_pkbuf_t *s1ap_build_e_rab_modify_request(
+            mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_E_RABModifyRequest_t *E_RABModifyRequest = NULL;
@@ -1069,23 +1001,13 @@ int s1ap_build_e_rab_modify_request(
     memcpy(nasPdu->buf, esmbuf->data, nasPdu->size);
     ogs_pkbuf_free(esmbuf);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_e_rab_release_command(ogs_pkbuf_t **s1apbuf,
+ogs_pkbuf_t *s1ap_build_e_rab_release_command(
         mme_bearer_t *bearer, ogs_pkbuf_t *esmbuf, 
         S1AP_Cause_PR group, long cause)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_E_RABReleaseCommand_t *E_RABReleaseCommand = NULL;
@@ -1209,22 +1131,12 @@ int s1ap_build_e_rab_release_command(ogs_pkbuf_t **s1apbuf,
     memcpy(nasPdu->buf, esmbuf->data, nasPdu->size);
     ogs_pkbuf_free(esmbuf);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_paging(ogs_pkbuf_t **s1apbuf,
+ogs_pkbuf_t *s1ap_build_paging(
         mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_Paging_t *Paging = NULL;
@@ -1342,19 +1254,10 @@ int s1ap_build_paging(ogs_pkbuf_t **s1apbuf,
             &tai_item->tAI.pLMNidentity);
     ogs_s1ap_uint16_to_OCTET_STRING(mme_ue->tai.tac, &tai_item->tAI.tAC);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_mme_configuration_transfer(
-        ogs_pkbuf_t **s1apbuf, 
+ogs_pkbuf_t *s1ap_build_mme_configuration_transfer(
         S1AP_SONConfigurationTransfer_t *son_configuration_transfer)
 {
     int rv;
@@ -1366,7 +1269,6 @@ int s1ap_build_mme_configuration_transfer(
     S1AP_MMEConfigurationTransferIEs_t *ie = NULL;
     S1AP_SONConfigurationTransfer_t *SONConfigurationTransfer = NULL;
 
-    ogs_assert(s1apbuf);
     ogs_assert(son_configuration_transfer);
 
     ogs_debug("[MME] MME Configuration Transfer");
@@ -1396,29 +1298,15 @@ int s1ap_build_mme_configuration_transfer(
 
     SONConfigurationTransfer = &ie->value.choice.SONConfigurationTransfer;
 
-#if 0
     rv = ogs_s1ap_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
             son_configuration_transfer, SONConfigurationTransfer);
     ogs_assert(rv == OGS_OK);
-#else
-    memcpy(SONConfigurationTransfer, son_configuration_transfer, sizeof(*SONConfigurationTransfer));
-#endif
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_path_switch_ack(ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
+ogs_pkbuf_t *s1ap_build_path_switch_ack(mme_ue_t *mme_ue)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
     S1AP_PathSwitchRequestAcknowledge_t *PathSwitchRequestAcknowledge = NULL;
@@ -1495,23 +1383,13 @@ int s1ap_build_path_switch_ack(ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue)
     memcpy(SecurityContext->nextHopParameter.buf,
             mme_ue->nh, SecurityContext->nextHopParameter.size);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_path_switch_failure(ogs_pkbuf_t **s1apbuf,
+ogs_pkbuf_t *s1ap_build_path_switch_failure(
     uint32_t enb_ue_s1ap_id, uint32_t mme_ue_s1ap_id,
     S1AP_Cause_PR group, long cause)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
     S1AP_PathSwitchRequestFailure_t *PathSwitchRequestFailure = NULL;
@@ -1576,18 +1454,10 @@ int s1ap_build_path_switch_failure(ogs_pkbuf_t **s1apbuf,
     Cause->present = group;
     Cause->choice.radioNetwork = cause;
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_handover_command(ogs_pkbuf_t **s1apbuf, enb_ue_t *source_ue)
+ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
 {
     int rv;
 
@@ -1753,22 +1623,12 @@ int s1ap_build_handover_command(ogs_pkbuf_t **s1apbuf, enb_ue_t *source_ue)
     ogs_s1ap_buffer_to_OCTET_STRING(mme_ue->container.buf, mme_ue->container.size, 
             Target_ToSource_TransparentContainer);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_handover_preparation_failure(
-        ogs_pkbuf_t **s1apbuf, enb_ue_t *source_ue, S1AP_Cause_t *cause)
+ogs_pkbuf_t *s1ap_build_handover_preparation_failure(
+        enb_ue_t *source_ue, S1AP_Cause_t *cause)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
     S1AP_HandoverPreparationFailure_t *HandoverPreparationFailure = NULL;
@@ -1778,7 +1638,6 @@ int s1ap_build_handover_preparation_failure(
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_Cause_t *Cause = NULL;
 
-    ogs_assert(s1apbuf);
     ogs_assert(source_ue);
     ogs_assert(cause);
 
@@ -1838,19 +1697,11 @@ int s1ap_build_handover_preparation_failure(
     Cause->present = cause->present;
     Cause->choice.radioNetwork = cause->choice.radioNetwork;
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_handover_request(
-        ogs_pkbuf_t **s1apbuf, mme_ue_t *mme_ue, enb_ue_t *target_ue,
+ogs_pkbuf_t *s1ap_build_handover_request(
+        mme_ue_t *mme_ue, enb_ue_t *target_ue,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_HandoverType_t *handovertype,
@@ -2090,21 +1941,11 @@ int s1ap_build_handover_request(
     memcpy(SecurityContext->nextHopParameter.buf,
             mme_ue->nh, SecurityContext->nextHopParameter.size);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_handover_cancel_ack(ogs_pkbuf_t **s1apbuf, enb_ue_t *source_ue)
+ogs_pkbuf_t *s1ap_build_handover_cancel_ack(enb_ue_t *source_ue)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
     S1AP_HandoverCancelAcknowledge_t *HandoverCancelAcknowledge = NULL;
@@ -2157,18 +1998,10 @@ int s1ap_build_handover_cancel_ack(ogs_pkbuf_t **s1apbuf, enb_ue_t *source_ue)
     ogs_debug("    Source : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             source_ue->enb_ue_s1ap_id, source_ue->mme_ue_s1ap_id);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_mme_status_transfer(ogs_pkbuf_t **s1apbuf,
+ogs_pkbuf_t *s1ap_build_mme_status_transfer(
         enb_ue_t *target_ue,
         S1AP_ENB_StatusTransfer_TransparentContainer_t
             *enb_statustransfer_transparentContainer)
@@ -2244,25 +2077,14 @@ int s1ap_build_mme_status_transfer(ogs_pkbuf_t **s1apbuf,
             ENB_StatusTransfer_TransparentContainer);
     ogs_assert(rv == OGS_OK);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_error_indication(
-        ogs_pkbuf_t **s1apbuf,
+ogs_pkbuf_t *s1ap_build_error_indication(
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id,
         S1AP_Cause_PR group, long cause)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_ErrorIndication_t *ErrorIndication = NULL;
@@ -2330,24 +2152,13 @@ int s1ap_build_error_indication(
     ogs_debug("    Group[%d] Cause[%d]",
             Cause->present, (int)Cause->choice.radioNetwork);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_s1_reset(
-        ogs_pkbuf_t **s1apbuf,
+ogs_pkbuf_t *s1ap_build_s1_reset(
         S1AP_Cause_PR group, long cause,
         S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_Reset_t *Reset = NULL;
@@ -2403,19 +2214,10 @@ int s1ap_build_s1_reset(
         ResetType->choice.s1_Interface = S1AP_ResetAll_reset_all;
     }
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_s1_reset_partial(
-        ogs_pkbuf_t **s1apbuf,
+ogs_pkbuf_t *s1ap_build_s1_reset_partial(
         S1AP_Cause_PR group, long cause,
         S1AP_MME_UE_S1AP_ID_t *mme_ue_s1ap_id,
         S1AP_ENB_UE_S1AP_ID_t *enb_ue_s1ap_id)
@@ -2440,15 +2242,12 @@ int s1ap_build_s1_reset_partial(
     item->mME_UE_S1AP_ID = mme_ue_s1ap_id;
     item->eNB_UE_S1AP_ID = enb_ue_s1ap_id;
 
-    return s1ap_build_s1_reset(s1apbuf, group, cause, partOfS1_Interface);
+    return s1ap_build_s1_reset(group, cause, partOfS1_Interface);
 }
 
-int s1ap_build_s1_reset_ack(
-        ogs_pkbuf_t **s1apbuf,
+ogs_pkbuf_t *s1ap_build_s1_reset_ack(
         S1AP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
     S1AP_ResetAcknowledge_t *ResetAcknowledge = NULL;
@@ -2537,22 +2336,11 @@ int s1ap_build_s1_reset_ack(
         }
     }
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_write_replace_warning_request(
-        ogs_pkbuf_t **s1apbuf, sbc_pws_data_t *sbc_pws)
+ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_WriteReplaceWarningRequest_t *WriteReplaceWarningRequest = NULL;
@@ -2681,22 +2469,11 @@ int s1ap_build_write_replace_warning_request(
         SerialNumber->buf[0], SerialNumber->buf[1],
         (int)*RepetitionPeriod, (int)*NumberofBroadcastRequest);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }
 
-int s1ap_build_kill_request(
-        ogs_pkbuf_t **s1apbuf, sbc_pws_data_t *sbc_pws)
+ogs_pkbuf_t *s1ap_build_kill_request(sbc_pws_data_t *sbc_pws)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
     S1AP_KillRequest_t *KillRequest = NULL;
@@ -2760,13 +2537,5 @@ int s1ap_build_kill_request(
             MessageIdentifier->buf[0], MessageIdentifier->buf[1], 
             SerialNumber->buf[0], SerialNumber->buf[1]);
 
-    rv = ogs_s1ap_encode(s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
-    if (rv != OGS_OK) {
-        ogs_error("ogs_s1ap_encode() failed");
-        return OGS_ERROR;
-    }
-
-    return OGS_OK;
+    return ogs_s1ap_encode(&pdu);
 }

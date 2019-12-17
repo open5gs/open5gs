@@ -238,8 +238,7 @@ static void test1_func(abts_case *tc, void *data)
         ogs_s1ap_buffer_to_OCTET_STRING(buf, size, UERadioCapability);
     }
 
-    rv = ogs_s1ap_encode(&s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
+    s1apbuf = ogs_s1ap_encode(&pdu);
     ogs_pkbuf_free(s1apbuf);
 
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -249,6 +248,7 @@ static int test_build_mme_configuration_transfer(
         S1AP_SONConfigurationTransfer_t *son_configuration_transfer)
 {
     int rv;
+    ogs_pkbuf_t *s1apbuf;
 
     S1AP_S1AP_PDU_t pdu;
     S1AP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -288,10 +288,7 @@ static int test_build_mme_configuration_transfer(
             son_configuration_transfer, SONConfigurationTransfer);
     ogs_assert(rv == OGS_OK);
 
-    ogs_pkbuf_t *s1apbuf;
-    rv = ogs_s1ap_encode(&s1apbuf, &pdu);
-    ogs_s1ap_free(&pdu);
-
+    s1apbuf = ogs_s1ap_encode(&pdu);
     ogs_pkbuf_free(s1apbuf);
 
     return OGS_OK;

@@ -1519,7 +1519,7 @@ int mme_context_parse_config()
 
                     } while (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SEQUENCE_NODE);
-                } else if(!strcmp(mme_key, "selection_mode")) {
+                } else if (!strcmp(mme_key, "selection_mode")) {
                     const char *selection_mode =
                     ogs_yaml_iter_value(&sgw_iter);
 
@@ -2003,7 +2003,7 @@ int mme_enb_sock_type(ogs_sock_t *sock)
 }
 
 /** enb_ue_context handling function */
-enb_ue_t *enb_ue_add(mme_enb_t *enb)
+enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id)
 {
     enb_ue_t *enb_ue = NULL;
 
@@ -2014,7 +2014,7 @@ enb_ue_t *enb_ue_add(mme_enb_t *enb)
     ogs_assert(enb_ue);
     memset(enb_ue, 0, sizeof *enb_ue);
 
-    enb_ue->enb_ue_s1ap_id = INVALID_UE_S1AP_ID;
+    enb_ue->enb_ue_s1ap_id = enb_ue_s1ap_id;
     enb_ue->mme_ue_s1ap_id = OGS_NEXT_ID(self.mme_ue_s1ap_id, 1, 0xffffffff);
 
     /*

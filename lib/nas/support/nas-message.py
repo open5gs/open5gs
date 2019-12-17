@@ -622,12 +622,11 @@ typedef struct ogs_nas_message_s {
     };
 } ogs_nas_message_t;
 
-int ogs_nas_emm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message);
-int ogs_nas_esm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message);
+ogs_pkbuf_t *ogs_nas_emm_encode(ogs_nas_message_t *message);
+ogs_pkbuf_t *ogs_nas_esm_encode(ogs_nas_message_t *message);
 int ogs_nas_emm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf);
 int ogs_nas_esm_decode(ogs_nas_message_t *message, ogs_pkbuf_t *pkbuf);
-int ogs_nas_plain_encode(
-        ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message);
+ogs_pkbuf_t *ogs_nas_plain_encode(ogs_nas_message_t *message);
 
 #ifdef __cplusplus
 }
@@ -863,8 +862,9 @@ for (k, v) in sorted_msg_list:
 """)
 
 
-f.write("""int ogs_nas_emm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
+f.write("""ogs_pkbuf_t *ogs_nas_emm_encode(ogs_nas_message_t *message)
 {
+    ogs_pkbuf_t *pkbuf = NULL;
     int size = 0;
     int encoded = 0;
 
@@ -872,23 +872,23 @@ f.write("""int ogs_nas_emm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *messag
 
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_assert(*pkbuf);
-    ogs_pkbuf_reserve(*pkbuf, OGS_NAS_HEADROOM);
-    ogs_pkbuf_put(*pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 
     size = sizeof(ogs_nas_emm_header_t);
-    ogs_assert(ogs_pkbuf_pull(*pkbuf, size));
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
 
-    memcpy((*pkbuf)->data - size, &message->emm.h, size);
+    memcpy(pkbuf->data - size, &message->emm.h, size);
     encoded += size;
 
     if (message->emm.h.security_header_type >=
             OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE)
     {
-        ogs_assert(ogs_pkbuf_push(*pkbuf, 1));
+        ogs_assert(ogs_pkbuf_push(pkbuf, 1));
         encoded -= 1;
-        size = ogs_nas_encode_service_request(*pkbuf, message);
+        size = ogs_nas_encode_service_request(pkbuf, message);
         ogs_assert(size >= 0);
         encoded += size;
 
@@ -905,7 +905,7 @@ for (k, v) in sorted_msg_list:
     if float(msg_list[k]["type"]) < 192 and k.find("FROM UE") == -1 and k != "SERVICE REQUEST":
         f.write("        case OGS_NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
-            f.write("            size = ogs_nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
+            f.write("            size = ogs_nas_encode_%s(pkbuf, message);\n" % v_lower(k))
             f.write("            ogs_assert(size >= 0);\n")
             f.write("            encoded += size;\n")
         f.write("            break;\n")
@@ -913,22 +913,23 @@ for (k, v) in sorted_msg_list:
 f.write("""        default:
             ogs_error("Unknown message type (0x%x) or not implemented", 
                     message->emm.h.message_type);
-            ogs_pkbuf_free((*pkbuf));
-            return OGS_ERROR;
+            ogs_pkbuf_free(pkbuf);
+            return NULL;
     }
 
 out:
-    ogs_assert(ogs_pkbuf_push(*pkbuf, encoded));
+    ogs_assert(ogs_pkbuf_push(pkbuf, encoded));
 
-    (*pkbuf)->len = encoded;
+    pkbuf->len = encoded;
 
-    return OGS_OK;
+    return pkbuf;
 }
 
 """)
 
-f.write("""int ogs_nas_esm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
+f.write("""ogs_pkbuf_t *ogs_nas_esm_encode(ogs_nas_message_t *message)
 {
+    ogs_pkbuf_t *pkbuf = NULL;
     int size = 0;
     int encoded = 0;
 
@@ -936,14 +937,14 @@ f.write("""int ogs_nas_esm_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *messag
 
     /* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
      * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_assert(*pkbuf);
-    ogs_pkbuf_reserve(*pkbuf, OGS_NAS_HEADROOM);
-    ogs_pkbuf_put(*pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_assert(pkbuf);
+    ogs_pkbuf_reserve(pkbuf, OGS_NAS_HEADROOM);
+    ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN-OGS_NAS_HEADROOM);
 
     size = sizeof(ogs_nas_esm_header_t);
-    ogs_assert(ogs_pkbuf_pull(*pkbuf, size));
-    memcpy((*pkbuf)->data - size, &message->esm.h, size);
+    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
+    memcpy(pkbuf->data - size, &message->esm.h, size);
     encoded += size;
 
     switch(message->esm.h.message_type)
@@ -956,7 +957,7 @@ for (k, v) in sorted_msg_list:
     if float(msg_list[k]["type"]) >= 192:
         f.write("        case OGS_NAS_%s:\n" % v_upper(k))
         if len(msg_list[k]["ies"]) != 0:
-            f.write("            size = ogs_nas_encode_%s(*pkbuf, message);\n" % v_lower(k))
+            f.write("            size = ogs_nas_encode_%s(pkbuf, message);\n" % v_lower(k))
             f.write("            ogs_assert(size >= 0);\n")
             f.write("            encoded += size;\n")
         f.write("            break;\n")
@@ -964,17 +965,17 @@ for (k, v) in sorted_msg_list:
 f.write("""        default:
             ogs_error("Unknown message type (0x%x) or not implemented", 
                     message->esm.h.message_type);
-            ogs_pkbuf_free((*pkbuf));
-            return OGS_ERROR;
+            ogs_pkbuf_free(pkbuf);
+            return NULL;
     }
 
-    ogs_assert(ogs_pkbuf_push(*pkbuf, encoded));
-    (*pkbuf)->len = encoded;
+    ogs_assert(ogs_pkbuf_push(pkbuf, encoded));
+    pkbuf->len = encoded;
 
-    return OGS_OK;
+    return pkbuf;
 }
 
-int ogs_nas_plain_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
+ogs_pkbuf_t *ogs_nas_plain_encode(ogs_nas_message_t *message)
 {
     ogs_assert(message);
 
@@ -983,14 +984,12 @@ int ogs_nas_plain_encode(ogs_pkbuf_t **pkbuf, ogs_nas_message_t *message)
 
     if (message->emm.h.protocol_discriminator == 
             OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM)
-        return ogs_nas_emm_encode(pkbuf, message);
+        return ogs_nas_emm_encode(message);
     else if (message->emm.h.protocol_discriminator == 
             OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM)
-        return ogs_nas_esm_encode(pkbuf, message);
+        return ogs_nas_esm_encode(message);
 
-    ogs_assert_if_reached();
-
-    return OGS_OK;
+    return NULL;
 }
 """)
 

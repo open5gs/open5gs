@@ -193,17 +193,17 @@ void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
     message->h.type = OGS_GTP_CREATE_SESSION_REQUEST_TYPE;
     message->h.teid = sess->pgw_s5c_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
 
     s5c_xact = ogs_gtp_xact_local_create(
             sess->gnode, &message->h, pkbuf, timeout, sess);
-    ogs_assert(s5c_xact);
+    ogs_expect_or_return(s5c_xact);
 
     ogs_gtp_xact_associate(s11_xact, s5c_xact);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
@@ -349,9 +349,7 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
         ogs_debug("[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]",
             OGS_ADDR(&s1u_tunnel->gnode->remote_addr, buf),
             s1u_tunnel->remote_teid);
-        rv = sgw_gtp_send_end_marker(s1u_tunnel);
-        if (rv != OGS_OK)
-            ogs_error("gtp send end marker failed");
+        sgw_gtp_send_end_marker(s1u_tunnel);
     }
 
     /* Setup GTP Node */
@@ -363,14 +361,14 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
     message.h.type = OGS_GTP_MODIFY_BEARER_RESPONSE_TYPE;
     message.h.teid = sgw_ue->mme_s11_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, &message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(&message);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(s11_xact, &message.h, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s11_handle_delete_session_request(ogs_gtp_xact_t *s11_xact,
@@ -417,17 +415,17 @@ void sgw_s11_handle_delete_session_request(ogs_gtp_xact_t *s11_xact,
     message->h.type = OGS_GTP_DELETE_SESSION_REQUEST_TYPE;
     message->h.teid = sess->pgw_s5c_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
 
     s5c_xact = ogs_gtp_xact_local_create(
             sess->gnode, &message->h, pkbuf, timeout, sess);
-    ogs_assert(s5c_xact);
+    ogs_expect_or_return(s5c_xact);
 
     ogs_gtp_xact_associate(s11_xact, s5c_xact);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s11_handle_create_bearer_response(ogs_gtp_xact_t *s11_xact,
@@ -467,7 +465,7 @@ void sgw_s11_handle_create_bearer_response(ogs_gtp_xact_t *s11_xact,
     }
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     req = &message->create_bearer_response;
 
@@ -601,14 +599,14 @@ void sgw_s11_handle_create_bearer_response(ogs_gtp_xact_t *s11_xact,
     message->h.type = OGS_GTP_CREATE_BEARER_RESPONSE_TYPE;
     message->h.teid = sess->pgw_s5c_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(s5c_xact, &message->h, pkbuf);
-    ogs_assert(s5c_xact);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s11_handle_update_bearer_response(ogs_gtp_xact_t *s11_xact,
@@ -639,7 +637,7 @@ void sgw_s11_handle_update_bearer_response(ogs_gtp_xact_t *s11_xact,
     }
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     req = &message->update_bearer_response;
 
@@ -701,14 +699,14 @@ void sgw_s11_handle_update_bearer_response(ogs_gtp_xact_t *s11_xact,
     message->h.type = OGS_GTP_UPDATE_BEARER_RESPONSE_TYPE;
     message->h.teid = sess->pgw_s5c_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(s5c_xact, &message->h, pkbuf);
-    ogs_assert(s5c_xact);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s11_handle_delete_bearer_response(ogs_gtp_xact_t *s11_xact,
@@ -740,7 +738,7 @@ void sgw_s11_handle_delete_bearer_response(ogs_gtp_xact_t *s11_xact,
     }
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     req = &message->delete_bearer_response;
 
@@ -802,14 +800,14 @@ void sgw_s11_handle_delete_bearer_response(ogs_gtp_xact_t *s11_xact,
     message->h.type = OGS_GTP_DELETE_BEARER_RESPONSE_TYPE;
     message->h.teid = sess->pgw_s5c_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(s5c_xact, &message->h, pkbuf);
-    ogs_assert(s5c_xact);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(s5c_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     sgw_bearer_remove(bearer);
 }
@@ -881,14 +879,14 @@ void sgw_s11_handle_release_access_bearers_request(ogs_gtp_xact_t *s11_xact,
     message.h.type = OGS_GTP_RELEASE_ACCESS_BEARERS_RESPONSE_TYPE;
     message.h.teid = sgw_ue->mme_s11_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, &message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(&message);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(s11_xact, &message.h, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
@@ -926,15 +924,15 @@ void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     message.h.type = OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE;
     message.h.teid = sgw_ue->mme_s11_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, &message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(&message);
+    ogs_expect_or_return(pkbuf);
 
     xact = ogs_gtp_xact_local_create(
             sgw_ue->gnode, &message.h, pkbuf, timeout, sgw_ue);
-    ogs_assert(xact);
+    ogs_expect_or_return(xact);
 
     rv = ogs_gtp_xact_commit(xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s11_handle_downlink_data_notification_ack(
@@ -954,7 +952,7 @@ void sgw_s11_handle_downlink_data_notification_ack(
     }
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
@@ -976,11 +974,11 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
     sgw_tunnel_t *tunnel = NULL;
     
     ogs_gtp_cause_t cause;
-    ogs_tlv_bearer_context_t *req_bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
-    ogs_tlv_bearer_context_t *rsp_bearers[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    ogs_gtp_tlv_bearer_context_t *req_bearers[OGS_GTP_MAX_INDIRECT_TUNNEL];
+    ogs_gtp_tlv_bearer_context_t *rsp_bearers[OGS_GTP_MAX_INDIRECT_TUNNEL];
     ogs_gtp_f_teid_t *req_teid = NULL;
-    ogs_gtp_f_teid_t rsp_dl_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
-    ogs_gtp_f_teid_t rsp_ul_teid[GTP_MAX_NUM_OF_INDIRECT_TUNNEL];
+    ogs_gtp_f_teid_t rsp_dl_teid[OGS_GTP_MAX_INDIRECT_TUNNEL];
+    ogs_gtp_f_teid_t rsp_ul_teid[OGS_GTP_MAX_INDIRECT_TUNNEL];
     int len;
 
     ogs_assert(s11_xact);
@@ -1121,14 +1119,14 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
         OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE;
     message.h.teid = sgw_ue->mme_s11_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, &message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(&message);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(s11_xact, &message.h, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }
 
 void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
@@ -1203,12 +1201,12 @@ void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
         OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE;
     message.h.teid = sgw_ue->mme_s11_teid;
 
-    rv = ogs_gtp_build_msg(&pkbuf, &message);
-    ogs_assert(rv == OGS_OK);
+    pkbuf = ogs_gtp_build_msg(&message);
+    ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(s11_xact, &message.h, pkbuf);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_gtp_xact_commit(s11_xact);
-    ogs_assert(rv == OGS_OK);
+    ogs_expect(rv == OGS_OK);
 }

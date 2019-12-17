@@ -22,10 +22,10 @@
 
 #include "ipfw/ipfw2.h"
 
-static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_tlv_pco_t *tlv_pco);
+static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco);
 
-int pgw_s5c_build_create_session_response(
-        ogs_pkbuf_t **pkbuf, uint8_t type, pgw_sess_t *sess,
+ogs_pkbuf_t *pgw_s5c_build_create_session_response(
+        uint8_t type, pgw_sess_t *sess,
         ogs_diam_gx_message_t *gx_message,
         ogs_gtp_create_session_request_t *req)
 {
@@ -130,19 +130,13 @@ int pgw_s5c_build_create_session_response(
     rsp->bearer_contexts_created.s5_s8_u_sgw_f_teid.len = len;
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int pgw_s5c_build_delete_session_response(
-        ogs_pkbuf_t **pkbuf, uint8_t type,
-        ogs_diam_gx_message_t *gx_message,
+ogs_pkbuf_t *pgw_s5c_build_delete_session_response(
+        uint8_t type, ogs_diam_gx_message_t *gx_message,
         ogs_gtp_delete_session_request_t *req)
 {
-    int rv;
-
     ogs_gtp_message_t gtp_message;
     ogs_gtp_delete_session_response_t *rsp = NULL;
 
@@ -180,10 +174,7 @@ int pgw_s5c_build_delete_session_response(
 
     /* build */
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
 static void encode_traffic_flow_template(
@@ -289,8 +280,8 @@ static void encode_traffic_flow_template(
     tft->num_of_packet_filter = i;
 }
 
-int pgw_s5c_build_create_bearer_request(
-        ogs_pkbuf_t **pkbuf, uint8_t type, pgw_bearer_t *bearer)
+ogs_pkbuf_t *pgw_s5c_build_create_bearer_request(
+        uint8_t type, pgw_bearer_t *bearer)
 {
     int rv;
     pgw_sess_t *sess = NULL;
@@ -363,17 +354,13 @@ int pgw_s5c_build_create_bearer_request(
             &tft, tft_buf, OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int pgw_s5c_build_update_bearer_request(
-        ogs_pkbuf_t **pkbuf, uint8_t type, pgw_bearer_t *bearer,
+ogs_pkbuf_t *pgw_s5c_build_update_bearer_request(
+        uint8_t type, pgw_bearer_t *bearer,
         int qos_presence, int tft_presence)
 {
-    int rv;
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *linked_bearer = NULL;
 
@@ -430,16 +417,12 @@ int pgw_s5c_build_update_bearer_request(
     }
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-int pgw_s5c_build_delete_bearer_request(
-        ogs_pkbuf_t **pkbuf, uint8_t type, pgw_bearer_t *bearer)
+ogs_pkbuf_t *pgw_s5c_build_delete_bearer_request(
+        uint8_t type, pgw_bearer_t *bearer)
 {
-    int rv;
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *linked_bearer = NULL;
 
@@ -469,13 +452,10 @@ int pgw_s5c_build_delete_bearer_request(
     }
 
     gtp_message.h.type = type;
-    rv = ogs_gtp_build_msg(pkbuf, &gtp_message);
-    ogs_assert(rv == OGS_OK);
-
-    return OGS_OK;
+    return ogs_gtp_build_msg(&gtp_message);
 }
 
-static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_tlv_pco_t *tlv_pco)
+static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco)
 {
     int rv;
     ogs_pco_t ue, pgw;
@@ -616,6 +596,12 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_tlv_pco_t *tlv_pco)
             /* TODO */
             break;
         case OGS_PCO_ID_IPV4_LINK_MTU_REQUEST:
+            /* TODO */
+            break;
+        case OGS_PCO_ID_MS_SUPPORTS_BCM:
+            /* TODO */
+            break;
+        case OGS_PCO_ID_MS_SUPPORT_LOCAL_ADDR_TFT_INDICATOR:
             /* TODO */
             break;
         default:

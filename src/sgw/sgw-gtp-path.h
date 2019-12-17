@@ -27,7 +27,7 @@ extern "C" {
 int sgw_gtp_open(void);
 void sgw_gtp_close(void);
 
-int sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel);
+void sgw_gtp_send_end_marker(sgw_tunnel_t *s1u_tunnel);
 
 #ifdef __cplusplus
 }
