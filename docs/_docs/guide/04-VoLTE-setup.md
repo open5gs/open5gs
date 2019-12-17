@@ -784,12 +784,19 @@ Install open5gs, with the fixes for forcing UE to PS domain attach, IPV4 usaeg a
 Fixes can be found at "hacks" branch at https://github.com/herlesupreeth/open5gs
 {: .notice--info}
 
-Modify below mentioned parts of configuration files in addition to "Configure Open5GS" section in link https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/
-(For reference, look at the configuration files at https://github.com/herlesupreeth/Open5gs_Config)
-- Change realm of components to epc.mnc001.mcc001.3gppnetwork.org
+Modify below mentioned parts of configuration files in addition to "Configure Open5GS" section in the following link:
+```
+https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/
+```
+
+For reference, look at the configuration files at:
+```
+ https://github.com/herlesupreeth/Open5gs_Config)
+```
+- Change realm of components to `epc.mnc001.mcc001.3gppnetwork.org`
 - Define IP pools for APNs used i.e one for default APN and another for IMS apn
 - Define P-CSCF address in the pgw configuration
-- Define a ConnectPeer for pcscf.ims.mnc001.mcc001.3gppnetwork.org with its IP and port in PCRF freediameter configuration
+- Define a ConnectPeer for `pcscf.ims.mnc001.mcc001.3gppnetwork.org` with its IP and port in PCRF freediameter configuration
 - Setup IP tables for the UE pools defined and create appropriate tun interfaces
 
 Below startup script can be used for setting up interfaces:
