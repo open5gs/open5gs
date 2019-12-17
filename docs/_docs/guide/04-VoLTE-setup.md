@@ -213,7 +213,9 @@ If you changed the password for the 'kamailio' user of MySQL, you have to update
 #### 11. The init.d script
 
 The init.d script can be used to start/stop the Kamailio server in a nicer way. A sample of init.d script for Kamailio is provided at:
+```
 /usr/local/src/kamailio/pkg/kamailio/deb/debian/kamailio.init
+```
 
 Just copy the init file into the /etc/init.d/kamailio. Then change the permissions:
 
@@ -231,7 +233,9 @@ CFGFILE=/usr/local/etc/kamailio/kamailio.cfg
 ```
 
 You need to setup a configuration file in the /etc/default/ directory. This file can be found at:
+```
 /usr/local/src/kamailio/pkg/kamailio/deb/bionic/kamailio.default
+```
 
 You need to rename the /etc/default/kamailio file to 'kamailio' after you've copied it.
 Then edit this file and set RUN_KAMAILIO=yes. Edit the other options as per your setup.
