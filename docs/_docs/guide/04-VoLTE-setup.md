@@ -57,7 +57,10 @@ $ cd /usr/local/src/kamailio
 $ make cfg
 ```
 
-#### 6. Enable MySQL module and all required IMS modules. Edit modules.lst file present at /usr/local/src/kamailio/src
+#### 6. Enable MySQL module and all required IMS modules. 
+
+Edit `modules.lst` file present at `/usr/local/src/kamailio/src`
+{: .notice--info}
 
 The contents of modules.lst should be as follows:
 
@@ -121,7 +124,7 @@ The configuration files are installed at:
 
 In case you set the PREFIX variable in 'make cfg' command, then replace /usr/local in all paths above with the value of PREFIX in order to locate the files installed.
 
-#### 8. Populate MySQL database using kamctlrc command
+#### 8. Populate MySQL database using `kamctlrc` command
 
 Edit SIP_DOMAIN and DBENGINE in the /usr/local/etc/kamailio/kamctlrc configuration file (Used by kamctl and kamdbctl tools).
 
@@ -161,7 +164,7 @@ The kamdbctl will add two users in MySQL user tables:
 - kamailioro - (with default password 'kamailioro') - user which has read-only access rights to 'kamailio' database
 ```
 
-#### 9. Edit /etc/default/rtpproxy file as follows:
+#### 9. Edit `/etc/default/rtpproxy` file as follows:
 
 ```
 # Defaults for rtpproxy
@@ -184,7 +187,10 @@ Then run,
 $ systemctl restart rtpproxy
 ```
 
-#### 10. Edit configuration file to fit your requirements for the VoIP platform, you have to edit the /usr/local/etc/kamailio/kamailio.cfg configuration file
+#### 10. Edit configuration file to fit your requirements for the VoIP platform:
+
+You have to edit the `/usr/local/etc/kamailio/kamailio.cfg` configuration file.
+{: .notice--info}
 
 Follow the instruction in the comments to enable usage of MySQL. Basically you have to add several lines at the top of config file, like:
 
@@ -210,7 +216,7 @@ modparam("rtpproxy", "rtpproxy_sock", "udp:127.0.0.1:7722")
 
 If you changed the password for the 'kamailio' user of MySQL, you have to update the value for 'DBURL' parameters.
 
-#### 11. The init.d script
+#### 11. The `init.d` script
 
 The init.d script can be used to start/stop the Kamailio server in a nicer way. A sample of init.d script for Kamailio is provided at:
 ```
@@ -435,7 +441,7 @@ $ mysql
 <mysql> INSERT INTO `s_cscf_capabilities` VALUES (1,1,0),(2,1,1);
 ```
 
-#### 14. Copy pcscf, icscf and scscf configuration files to /etc/ folder and edit accordingly
+#### 14. Copy pcscf, icscf and scscf configuration files to `/etc/` folder and edit accordingly
 
 ```
 $ cd ~ && git clone https://github.com/herlesupreeth/Kamailio_IMS_Config
@@ -687,7 +693,7 @@ $ echo 'del 1' > /proc/rtpengine/control
 $ /usr/sbin/rtpengine --table=1 --interface=10.4.128.21!172.24.15.30 --listen-ng=127.0.0.1:2224 --tos=184 --pidfile=ngcp-rtpengine-daemon2.pid --no-fallback --foreground
 ```
 
-#### 17. Running I-CSCF, P-CSCF and S-CSCF as separate systemctl process
+#### 17. Running I-CSCF, P-CSCF and S-CSCF as separate `systemctl` process
 
 First, stop the default kamailio SIP server
 
