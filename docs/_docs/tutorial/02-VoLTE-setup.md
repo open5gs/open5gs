@@ -775,7 +775,7 @@ $ systemctl start kamailio_icscf kamailio_pcscf kamailio_scscf
 
 #### 18. Install Open5GS in the same machine as Kamailio IMS - Install Open5GS from source
 
-Please refer to instructions at https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/
+Please refer to instructions at [https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/](https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/)
 
 Installing Open5GS on the same machine is very important because the "frame_ip4_address" in the AAR request via Rx interface takes received IP address and port in ims_qos module, hence, if the Open5GS is on a separate VM/machine, the IP and port received in received_ip and received_port values seen by Kamailio IMS will be the NATed IP of the Open5GS machine resulting in failing of AAR request.
 {: .notice--info}
@@ -784,12 +784,7 @@ Install open5gs, with the fixes for forcing UE to PS domain attach, IPV4 usaeg a
 Fixes can be found at "hacks" branch at https://github.com/herlesupreeth/open5gs
 {: .notice--info}
 
-Modify below mentioned parts of configuration files in addition to "Configure Open5GS" section in the following link:
-```
-https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/
-```
-
-For reference, look at the configuration files at:
+Modify below mentioned parts of configuration files in addition to `Configure Open5GS` section. For reference, look at the configuration files at:
 ```
 https://github.com/herlesupreeth/Open5gs_Config
 ```
