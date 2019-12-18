@@ -714,6 +714,9 @@ int pcrf_gx_send_rar(
             case OGS_DIAM_RX_MEDIA_TYPE_AUDIO:
                 qci = OGS_PDN_QCI_1;
                 break;
+            case OGS_DIAM_RX_MEDIA_TYPE_CONTROL:
+                qci = OGS_PDN_QCI_5;
+                break;
             default:
                 ogs_error("Not implemented : [Media-Type:%d]",
                         media_component->media_type);

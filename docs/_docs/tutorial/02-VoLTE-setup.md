@@ -1,11 +1,11 @@
 ---
-title: VoLTE Setup with Kamailio IMS and Open5gs
+title: VoLTE Setup with Kamailio IMS and Open5GS
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
 Setup description:
 - MCC: 001, MNC: 01
-- Single OpenStack VM with Kamailio IMS and Open5gs (Internal IP 10.4.128.21 and Floating IP 172.24.15.30)
+- Single OpenStack VM with Kamailio IMS and Open5GS (Internal IP 10.4.128.21 and Floating IP 172.24.15.30)
 - 4G Casa Smallcell
 - Sysmocom USIM - sysmoUSIM-SJS1
 - Oneplus 5 as UE
@@ -57,7 +57,10 @@ $ cd /usr/local/src/kamailio
 $ make cfg
 ```
 
-#### 6. Enable MySQL module and all required IMS modules. Edit modules.lst file present at /usr/local/src/kamailio/src
+#### 6. Enable MySQL module and all required IMS modules. 
+
+Edit `modules.lst` file present at `/usr/local/src/kamailio/src`
+{: .notice--info}
 
 The contents of modules.lst should be as follows:
 
@@ -121,7 +124,7 @@ The configuration files are installed at:
 
 In case you set the PREFIX variable in 'make cfg' command, then replace /usr/local in all paths above with the value of PREFIX in order to locate the files installed.
 
-#### 8. Populate MySQL database using kamctlrc command
+#### 8. Populate MySQL database using `kamctlrc` command
 
 Edit SIP_DOMAIN and DBENGINE in the /usr/local/etc/kamailio/kamctlrc configuration file (Used by kamctl and kamdbctl tools).
 
@@ -161,7 +164,7 @@ The kamdbctl will add two users in MySQL user tables:
 - kamailioro - (with default password 'kamailioro') - user which has read-only access rights to 'kamailio' database
 ```
 
-#### 9. Edit /etc/default/rtpproxy file as follows:
+#### 9. Edit `/etc/default/rtpproxy` file as follows:
 
 ```
 # Defaults for rtpproxy
@@ -184,7 +187,10 @@ Then run,
 $ systemctl restart rtpproxy
 ```
 
-#### 10. Edit configuration file to fit your requirements for the VoIP platform, you have to edit the /usr/local/etc/kamailio/kamailio.cfg configuration file
+#### 10. Edit configuration file to fit your requirements for the VoIP platform:
+
+You have to edit the `/usr/local/etc/kamailio/kamailio.cfg` configuration file.
+{: .notice--info}
 
 Follow the instruction in the comments to enable usage of MySQL. Basically you have to add several lines at the top of config file, like:
 
@@ -210,10 +216,12 @@ modparam("rtpproxy", "rtpproxy_sock", "udp:127.0.0.1:7722")
 
 If you changed the password for the 'kamailio' user of MySQL, you have to update the value for 'DBURL' parameters.
 
-#### 11. The init.d script
+#### 11. The `init.d` script
 
 The init.d script can be used to start/stop the Kamailio server in a nicer way. A sample of init.d script for Kamailio is provided at:
+```
 /usr/local/src/kamailio/pkg/kamailio/deb/debian/kamailio.init
+```
 
 Just copy the init file into the /etc/init.d/kamailio. Then change the permissions:
 
@@ -231,7 +239,9 @@ CFGFILE=/usr/local/etc/kamailio/kamailio.cfg
 ```
 
 You need to setup a configuration file in the /etc/default/ directory. This file can be found at:
+```
 /usr/local/src/kamailio/pkg/kamailio/deb/bionic/kamailio.default
+```
 
 You need to rename the /etc/default/kamailio file to 'kamailio' after you've copied it.
 Then edit this file and set RUN_KAMAILIO=yes. Edit the other options as per your setup.
@@ -431,7 +441,7 @@ $ mysql
 <mysql> INSERT INTO `s_cscf_capabilities` VALUES (1,1,0),(2,1,1);
 ```
 
-#### 14. Copy pcscf, icscf and scscf configuration files to /etc/ folder and edit accordingly
+#### 14. Copy pcscf, icscf and scscf configuration files to `/etc/` folder and edit accordingly
 
 ```
 $ cd ~ && git clone https://github.com/herlesupreeth/Kamailio_IMS_Config
@@ -683,7 +693,7 @@ $ echo 'del 1' > /proc/rtpengine/control
 $ /usr/sbin/rtpengine --table=1 --interface=10.4.128.21!172.24.15.30 --listen-ng=127.0.0.1:2224 --tos=184 --pidfile=ngcp-rtpengine-daemon2.pid --no-fallback --foreground
 ```
 
-#### 17. Running I-CSCF, P-CSCF and S-CSCF as separate systemctl process
+#### 17. Running I-CSCF, P-CSCF and S-CSCF as separate `systemctl` process
 
 First, stop the default kamailio SIP server
 
@@ -763,23 +773,25 @@ $ systemctl daemon-reload
 $ systemctl start kamailio_icscf kamailio_pcscf kamailio_scscf
 ```
 
-#### 18. Install Open5gs in the same machine as Kamailio IMS - Install Open5gs from source
+#### 18. Install Open5GS in the same machine as Kamailio IMS - Install Open5GS from source
 
-Please refer to instructions at https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/
+Please refer to instructions at [https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/](https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/)
 
-Installing Open5gs on the same machine is very important because the "frame_ip4_address" in the AAR request via Rx interface takes received IP address and port in ims_qos module, hence, if the Open5gs is on a separate VM/machine, the IP and port received in received_ip and received_port values seen by Kamailio IMS will be the NATed IP of the Open5gs machine resulting in failing of AAR request.
+Installing Open5GS on the same machine is very important because the "frame_ip4_address" in the AAR request via Rx interface takes received IP address and port in ims_qos module, hence, if the Open5GS is on a separate VM/machine, the IP and port received in received_ip and received_port values seen by Kamailio IMS will be the NATed IP of the Open5GS machine resulting in failing of AAR request.
 {: .notice--info}
 
 Install open5gs, with the fixes for forcing UE to PS domain attach, IPV4 usaeg and support for Rx MEDIA TYPE -CONTROL.
 Fixes can be found at "hacks" branch at https://github.com/herlesupreeth/open5gs
 {: .notice--info}
 
-Modify below mentioned parts of configuration files in addition to "Configure Open5GS" section in link https://open5gs.org/open5gs/docs/guide/02-building-open5gs-from-sources/
-(For reference, look at the configuration files at https://github.com/herlesupreeth/Open5gs_Config)
-- Change realm of components to epc.mnc001.mcc001.3gppnetwork.org
+Modify below mentioned parts of configuration files in addition to `Configure Open5GS` section. For reference, look at the configuration files at:
+```
+https://github.com/herlesupreeth/Open5gs_Config
+```
+- Change realm of components to `epc.mnc001.mcc001.3gppnetwork.org`
 - Define IP pools for APNs used i.e one for default APN and another for IMS apn
 - Define P-CSCF address in the pgw configuration
-- Define a ConnectPeer for pcscf.ims.mnc001.mcc001.3gppnetwork.org with its IP and port in PCRF freediameter configuration
+- Define a ConnectPeer for `pcscf.ims.mnc001.mcc001.3gppnetwork.org` with its IP and port in PCRF freediameter configuration
 - Setup IP tables for the UE pools defined and create appropriate tun interfaces
 
 Below startup script can be used for setting up interfaces:
@@ -811,7 +823,7 @@ iptables -I INPUT -i ogstun2 -j ACCEPT
 ip6tables -I INPUT -i ogstun2 -j ACCEPT
 ```
 
-Add users with following APN settings in Open5gs:
+Add users with following APN settings in Open5GS:
 
 <pre>
 APN Configuration:
@@ -827,7 +839,7 @@ APN Configuration:
 -------------------------------------------------------------------------------------------------------------------------
 </pre>
 
-Finally, make sure of the following in Open5gs
+Finally, make sure of the following in Open5GS
 
 - PCO options which indicate the address of the Proxy-CSCF
 - Need to indicate support for Voice-over-Packet-Switched (VoPS) in NAS message to UE from EPC
@@ -1128,12 +1140,12 @@ Create the IMPI and Associate the IMPI to the IMSU
 Click Create & Bind new IMPI
 Enter:
 Identity = 001010123456791@ims.mnc001.mcc001.3gppnetwork.org
-Secret Key = 8baf473f2f8fd09487cccbd7097c6862 (Ki value as in Open5gs HSS database)
+Secret Key = 8baf473f2f8fd09487cccbd7097c6862 (Ki value as in Open5GS HSS database)
 Authentication Schemes - All
 Default = Digest
-AMF = 8000 (As in Open5gs HSS database)
-OP = 11111111111111111111111111111111 (As in Open5gs HSS database)
-SQN = 000000021090 (As in Open5gs HSS database, better to disable SQN check in USIM rather than syncing between Open5gs HSS and FoHSS)
+AMF = 8000 (As in Open5GS HSS database)
+OP = 11111111111111111111111111111111 (As in Open5GS HSS database)
+SQN = 000000021090 (As in Open5GS HSS database, better to disable SQN check in USIM rather than syncing between Open5GS HSS and FoHSS)
 Click Save
 
 Create and Associate IMPI to IMPU
@@ -1179,12 +1191,12 @@ $ ip r add 10.4.128.21/32 via 172.24.15.30
 - Tested with OnePlus 5 - With modfication to enable force IMS registration is a must or else UE will not even attempt to connect to P-CSCF. Need to apply the fix back after each update.
 (https://forum.xda-developers.com/oneplus-5t/how-to/guide-volte-vowifi-german-carriers-t3817542)
 
-#### 24. Start IMS components and FoHSS followed by Open5gs and eNB, then try connecting the phones
+#### 24. Start IMS components and FoHSS followed by Open5GS and eNB, then try connecting the phones
 
 
 #### 25. For debugging
 
-Debug using wireshark at Open5gs machine and following wireshark display filter
+Debug using wireshark at Open5GS machine and following wireshark display filter
 
 ```
 s1ap || gtpv2 || diameter || diameter.3gpp || sip
