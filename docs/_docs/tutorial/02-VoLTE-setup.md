@@ -788,6 +788,7 @@ If you are using OpenStack, installing Open5GS and Kamailio IMS on the same mach
 I made some modifications in order to force UE to PS domain attach and use IPv4. You can refer to the **hacks** branch of [https://github.com/herlesupreeth/open5gs](https://github.com/herlesupreeth/open5gs)
 
 Modify below mentioned parts of configuration files in addition to **Configure Open5GS** section. For reference, look at the configuration files at [https://github.com/herlesupreeth/Open5gs_Config](https://github.com/herlesupreeth/Open5gs_Config)
+{: .notice--info}
 
 - Change realm of components to `epc.mnc001.mcc001.3gppnetwork.org`
 - Define IP pools for APNs used i.e one for default APN and another for IMS apn
