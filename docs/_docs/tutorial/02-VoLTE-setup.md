@@ -837,11 +837,7 @@ APN Configuration:
 -------------------------------------------------------------------------------------------------------------------------
 | ims      | 9   | 8   | Disabled   | Disabled       | 3850/1530           |                 |               |           
 |          | 5   | 1   | Enabled    | Enabled        | 128/128             | 128/128         |               |
-|            Downlink permit out ip from any 1-65535 to any 1-65535
-|            Uplink permit out ip from any 1-65535 to any 1-65535
 |          | 1   | 2   | Enabled    | Enabled        | 128/128             | 128/128         |               |
-|            Downlink permit out ip from any 1-65535 to any 1-65535
-|            Uplink permit out ip from any 1-65535 to any 1-65535
 -------------------------------------------------------------------------------------------------------------------------
 </pre>
 
