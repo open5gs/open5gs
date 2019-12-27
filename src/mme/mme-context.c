@@ -2890,7 +2890,8 @@ mme_bearer_t *mme_bearer_find_or_add_by_message(
         sess->pti = pti;
 
         return bearer;
-    } else if (message->esm.h.message_type == OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST) {
+    } else if (message->esm.h.message_type ==
+            OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST) {
         ogs_nas_bearer_resource_modification_request_t *bearer_modification_request =
             &message->esm.bearer_resource_modification_request;
         ogs_nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity =
