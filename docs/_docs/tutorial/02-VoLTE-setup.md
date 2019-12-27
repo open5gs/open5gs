@@ -1125,7 +1125,7 @@ root@epc-ims:~# cat /etc/hosts
 
 #### 20. Add IMS subscription use in FoHSS as follows from the Web GUI
 
-Assuming IMSI of the user as 001010123456791
+Assuming IMSI of the user as 001010123456791 and MSISDN is 0198765432100
 
 ```
 Login to the HSS web console.
@@ -1163,6 +1163,70 @@ Add Visited Network to IMPU
 Enter:
 Visited Network = ims.mnc001.mcc001.3gppnetwork.org
 Click Add
+
+Now, goto Public User Identity and create further IMPUs as following
+
+1. tel:0198765432100
+
+Public User Identity -IMPU-
+Identity = tel:0198765432100
+Service Profile = default_sp
+Charging-Info Set = default_charging_set
+Can Register = Yes
+IMPU Type = Public_User_Identity
+Click Save
+
+Add Visited Network to IMPU
+Enter:
+Visited Network = ims.mnc001.mcc001.3gppnetwork.org
+Click Add
+
+Associate IMPI(s) to IMPU
+IMPI Identity = 001011234567891@ims.mnc001.mcc001.3gppnetwork.org
+Click Add
+
+2. sip:0198765432100
+
+Public User Identity -IMPU-
+Identity = sip:0198765432100
+Service Profile = default_sp
+Charging-Info Set = default_charging_set
+Can Register = Yes
+IMPU Type = Public_User_Identity
+Click Save
+
+Add Visited Network to IMPU
+Enter:
+Visited Network = ims.mnc001.mcc001.3gppnetwork.org
+Click Add
+
+Associate IMPI(s) to IMPU
+IMPI Identity = 001011234567891@ims.mnc001.mcc001.3gppnetwork.org
+Click Add
+
+3. sip:0198765432100@ims.mnc001.mcc001.3gppnetwork.org
+
+Public User Identity -IMPU-
+Identity = sip:0198765432100@ims.mnc001.mcc001.3gppnetwork.org
+Service Profile = default_sp
+Charging-Info Set = default_charging_set
+Can Register = Yes
+IMPU Type = Public_User_Identity
+Click Save
+
+Add Visited Network to IMPU
+Enter:
+Visited Network = ims.mnc001.mcc001.3gppnetwork.org
+Click Add
+
+Associate IMPI(s) to IMPU
+IMPI Identity = 001011234567891@ims.mnc001.mcc001.3gppnetwork.org
+Click Add
+
+And, finally add these IMPUs as implicit set of IMSI derived IMPU in HSS i.e sip:001011234567891@ims.mnc001.mcc001.3gppnetwork.org as follows:
+
+1. Goto to IMPU sip:001011234567891@ims.mnc001.mcc001.3gppnetwork.org
+2. In "Add IMPU(s) to Implicit-Set" section give IMPU Identity created above to be added to this IMPU
 ```
 
 #### 21. APN settings
@@ -1194,8 +1258,11 @@ $ ip r add 10.4.128.21/32 via 172.24.15.30
 
 #### 24. Start IMS components and FoHSS followed by Open5GS and eNB, then try connecting the phones
 
+#### 25. Test voice call
 
-#### 25. For debugging
+Assuming IMSI of the user1 as 001010123456791 and MSISDN is 0198765432100 and IMSI of the user2 as 001010123456792 and MSISDN is 0298765432100. Try calling user2 from user1 by dialing its MSISDN ie. 0298765432100
+
+#### 26. For debugging
 
 Debug using wireshark at Open5GS machine and following wireshark display filter
 
