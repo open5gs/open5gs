@@ -352,6 +352,7 @@ static void volte_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Session-Termination-Request */
+    ogs_msleep(50);
     pcscf_rx_send_str(rx_sid);
 
     /* Receive E-RAB Release Command +
