@@ -58,6 +58,10 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp_delete_indirect_data_forwarding_tunnel_response_t *rsp);
 
+void mme_s11_handle_bearer_resource_failure_indication(
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_bearer_resource_failure_indication_t *ind);
+
 #ifdef __cplusplus
 }
 #endif

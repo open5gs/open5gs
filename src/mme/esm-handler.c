@@ -29,7 +29,7 @@
 #define OGS_LOG_DOMAIN __esm_log_domain
 
 int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer, 
-        ogs_nas_pdn_connectivity_request_t *pdn_connectivity_request)
+        ogs_nas_pdn_connectivity_request_t *req)
 {
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -41,29 +41,27 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    ogs_assert(pdn_connectivity_request);
+    ogs_assert(req);
 
     ogs_assert(MME_UE_HAVE_IMSI(mme_ue));
     ogs_assert(SECURITY_CONTEXT_IS_VALID(mme_ue));
 
-    memcpy(&sess->request_type, &pdn_connectivity_request->request_type,
-            sizeof(sess->request_type));
+    memcpy(&sess->request_type, &req->request_type, sizeof(sess->request_type));
 
     security_protected_required = 0;
-    if (pdn_connectivity_request->presencemask &
+    if (req->presencemask &
         OGS_NAS_PDN_CONNECTIVITY_REQUEST_ESM_INFORMATION_TRANSFER_FLAG_PRESENT) {
         ogs_nas_esm_information_transfer_flag_t *esm_information_transfer_flag =
-            &pdn_connectivity_request->esm_information_transfer_flag;
+            &req->esm_information_transfer_flag;
         security_protected_required = 
                 esm_information_transfer_flag->security_protected_required;
         ogs_debug("    EIT(ESM information transfer)[%d]",
                 security_protected_required);
     }
 
-    if (pdn_connectivity_request->presencemask &
+    if (req->presencemask &
             OGS_NAS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT) {
-        sess->pdn = mme_pdn_find_by_apn(mme_ue, 
-            pdn_connectivity_request->access_point_name.apn);
+        sess->pdn = mme_pdn_find_by_apn(mme_ue, req->access_point_name.apn);
         if (!sess->pdn) {
             /* Invalid APN */
             nas_send_pdn_connectivity_reject(
@@ -72,11 +70,11 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
         }
     }
 
-    if (pdn_connectivity_request->presencemask &
+    if (req->presencemask &
         OGS_NAS_PDN_CONNECTIVITY_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT) {
         ogs_nas_protocol_configuration_options_t
             *protocol_configuration_options = 
-            &pdn_connectivity_request->protocol_configuration_options;
+            &req->protocol_configuration_options;
 
         OGS_NAS_STORE_DATA(&sess->ue_pco, protocol_configuration_options);
     }
@@ -106,7 +104,7 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
 }
 
 int esm_handle_information_response(mme_sess_t *sess, 
-        ogs_nas_esm_information_response_t *esm_information_response)
+        ogs_nas_esm_information_response_t *rsp)
 {
     mme_ue_t *mme_ue = NULL;
 
@@ -114,17 +112,18 @@ int esm_handle_information_response(mme_sess_t *sess,
     mme_ue = sess->mme_ue;
     ogs_assert(mme_ue);
 
-    if (esm_information_response->presencemask &
+    ogs_assert(rsp);
+
+    if (rsp->presencemask &
             OGS_NAS_ESM_INFORMATION_RESPONSE_ACCESS_POINT_NAME_PRESENT) {
-        sess->pdn = mme_pdn_find_by_apn(mme_ue, 
-                esm_information_response->access_point_name.apn);
+        sess->pdn = mme_pdn_find_by_apn(mme_ue, rsp->access_point_name.apn);
     }
 
-    if (esm_information_response->presencemask &
+    if (rsp->presencemask &
         OGS_NAS_ESM_INFORMATION_RESPONSE_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT) {
         ogs_nas_protocol_configuration_options_t
             *protocol_configuration_options = 
-                &esm_information_response->protocol_configuration_options;
+                &rsp->protocol_configuration_options;
         OGS_NAS_STORE_DATA(&sess->ue_pco, protocol_configuration_options);
     }
 
@@ -147,6 +146,30 @@ int esm_handle_information_response(mme_sess_t *sess,
                 sess, ESM_CAUSE_MISSING_OR_UNKNOWN_APN);
         return OGS_ERROR;
     }
+
+    return OGS_OK;
+}
+
+int esm_handle_bearer_resource_allocation_request(
+        mme_bearer_t *bearer, ogs_nas_message_t *message)
+{
+    ogs_assert(bearer);
+    nas_send_bearer_resource_allocation_reject(
+            bearer, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED);
+
+    return OGS_OK;
+}
+
+int esm_handle_bearer_resource_modification_request(
+        mme_bearer_t *bearer, ogs_nas_message_t *message)
+{
+    mme_ue_t *mme_ue = NULL;
+
+    ogs_assert(bearer);
+    mme_ue = bearer->mme_ue;
+    ogs_assert(mme_ue);
+
+    mme_gtp_send_bearer_resource_command(bearer, message);
 
     return OGS_OK;
 }

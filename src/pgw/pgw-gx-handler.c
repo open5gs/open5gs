@@ -220,7 +220,9 @@ static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
                 h.teid = sess->sgw_s5c_teid;
 
                 pkbuf = pgw_s5c_build_update_bearer_request(
-                        h.type, bearer, qos_presence, tft_presence);
+                        h.type, bearer,
+                        OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED,
+                        tft_presence, NULL, qos_presence);
                 ogs_expect_or_return(pkbuf);
             }
 
@@ -238,7 +240,8 @@ static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
             h.type = OGS_GTP_DELETE_BEARER_REQUEST_TYPE;
             h.teid = sess->sgw_s5c_teid;
 
-            pkbuf = pgw_s5c_build_delete_bearer_request(h.type, bearer);
+            pkbuf = pgw_s5c_build_delete_bearer_request(h.type, bearer,
+                    OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
             ogs_expect_or_return(pkbuf);
 
             xact = ogs_gtp_xact_local_create(

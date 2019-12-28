@@ -28,6 +28,26 @@
 extern "C" {
 #endif
 
+/* 
+ * p225-226 Chapter 7.6 in TS 29.274 V15.9.0
+ * 
+ * A Sequence Number used for a Command message shall have the most significant
+ * bit set to 1. A Sequence Number in a message, which was triggered by
+ * a Command message, as well as respective Triggered Reply message
+ * shall have the same Sequence Number as the Command message
+ * (i.e. shall also have the most significant bit set to 1).
+ *
+ * This setting of the most significant bit of the Sequence Number is done
+ * to avoid potential clashes between the Sequence Number selected for
+ * a Command message, and the Sequence Number selected by a GTPv2 peer
+ * for a Request message, which was not triggered by a Command message.
+ *
+ * A Sequence Number used for a Request message, which was not triggered
+ * by a Command message shall have the most significant bit set to 0.
+ */
+#define OGS_GTP_MIN_XACT_ID             1
+#define OGS_GTP_CMD_XACT_ID             0x800000
+
 /**
  * Transaction context
  */

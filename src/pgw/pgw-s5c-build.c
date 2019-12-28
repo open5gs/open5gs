@@ -358,15 +358,15 @@ ogs_pkbuf_t *pgw_s5c_build_create_bearer_request(
 }
 
 ogs_pkbuf_t *pgw_s5c_build_update_bearer_request(
-        uint8_t type, pgw_bearer_t *bearer,
-        int qos_presence, int tft_presence)
+        uint8_t type, pgw_bearer_t *bearer, uint8_t pti,
+        int tft_presence, ogs_gtp_tft_t *new_tft, int qos_presence)
 {
     pgw_sess_t *sess = NULL;
-    pgw_bearer_t *linked_bearer = NULL;
 
     ogs_gtp_message_t gtp_message;
     ogs_gtp_update_bearer_request_t *req = NULL;
 
+    ogs_gtp_ambr_t ambr;
     ogs_gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     ogs_gtp_tft_t tft;
@@ -375,8 +375,6 @@ ogs_pkbuf_t *pgw_s5c_build_update_bearer_request(
     ogs_assert(bearer);
     sess = bearer->sess;
     ogs_assert(sess);
-    linked_bearer = pgw_default_bearer_in_sess(sess);
-    ogs_assert(linked_bearer);
 
     ogs_debug("[PGW] Update Bearer Request");
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
@@ -388,6 +386,28 @@ ogs_pkbuf_t *pgw_s5c_build_update_bearer_request(
     req->bearer_contexts.presence = 1;
     req->bearer_contexts.eps_bearer_id.presence = 1;
     req->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
+
+    if (sess->pdn.ambr.uplink || sess->pdn.ambr.downlink) {
+        /*
+         * Ch 8.7. Aggregate Maximum Bit Rate(AMBR) in TS 29.274 V15.9.0
+         *
+         * AMBR is defined in clause 9.9.4.2 of 3GPP TS 24.301 [23],
+         * but it shall be encoded as shown in Figure 8.7-1 as
+         * Unsigned32 binary integer values in kbps (1000 bits per second).
+         */
+        memset(&ambr, 0, sizeof(ogs_gtp_ambr_t));
+        ambr.uplink = htobe32(sess->pdn.ambr.uplink / 1000);
+        ambr.downlink = htobe32(sess->pdn.ambr.downlink / 1000);
+        req->aggregate_maximum_bit_rate.presence = 1;
+        req->aggregate_maximum_bit_rate.data = &ambr;
+        req->aggregate_maximum_bit_rate.len = sizeof(ambr);
+    }
+
+    /* PTI */
+    if (pti) {
+        req->procedure_transaction_id.presence = 1;
+        req->procedure_transaction_id.u8 = pti;
+    }
 
     /* Bearer QoS */
     if (qos_presence == 1) {
@@ -410,10 +430,16 @@ ogs_pkbuf_t *pgw_s5c_build_update_bearer_request(
 
     /* Bearer TFT */
     if (tft_presence == 1) {
-        encode_traffic_flow_template(&tft, bearer);
+        if (new_tft) {
+            ogs_gtp_build_tft(&req->bearer_contexts.tft,
+                    new_tft, tft_buf, OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
+        } else {
+            encode_traffic_flow_template(&tft, bearer);
+            ogs_gtp_build_tft(&req->bearer_contexts.tft,
+                    &tft, tft_buf, OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
+        }
+
         req->bearer_contexts.tft.presence = 1;
-        ogs_gtp_build_tft(&req->bearer_contexts.tft,
-                &tft, tft_buf, OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
     }
 
     gtp_message.h.type = type;
@@ -421,7 +447,7 @@ ogs_pkbuf_t *pgw_s5c_build_update_bearer_request(
 }
 
 ogs_pkbuf_t *pgw_s5c_build_delete_bearer_request(
-        uint8_t type, pgw_bearer_t *bearer)
+        uint8_t type, pgw_bearer_t *bearer, uint8_t pti)
 {
     pgw_sess_t *sess = NULL;
     pgw_bearer_t *linked_bearer = NULL;
@@ -449,6 +475,11 @@ ogs_pkbuf_t *pgw_s5c_build_delete_bearer_request(
         /* Bearer EBI */
         req->eps_bearer_ids.presence = 1;
         req->eps_bearer_ids.u8 = bearer->ebi;
+    }
+
+    if (pti) {
+        req->procedure_transaction_id.presence = 1;
+        req->procedure_transaction_id.u8 = pti;
     }
 
     gtp_message.h.type = type;

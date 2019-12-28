@@ -41,6 +41,9 @@ void pgw_s5c_handle_update_bearer_response(
 void pgw_s5c_handle_delete_bearer_response(
         pgw_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp_delete_bearer_response_t *req);
+void pgw_s5c_handle_bearer_resource_command(
+        pgw_sess_t *sess, ogs_gtp_xact_t *xact,
+        ogs_gtp_bearer_resource_command_t *cmd);
 
 #ifdef __cplusplus
 }

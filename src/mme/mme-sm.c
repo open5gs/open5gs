@@ -589,6 +589,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 xact, mme_ue,
                 &gtp_message.delete_indirect_data_forwarding_tunnel_response);
             break;
+        case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+            mme_s11_handle_bearer_resource_failure_indication(
+                xact, mme_ue,
+                &gtp_message.bearer_resource_failure_indication);
+            break;
         default:
             ogs_warn("Not implmeneted(type:%d)", gtp_message.h.type);
             break;

@@ -1176,16 +1176,12 @@ void pgw_pf_remove_all(pgw_bearer_t *bearer)
 pgw_pf_t *pgw_pf_find_by_id(pgw_bearer_t *bearer, uint8_t id)
 {
     pgw_pf_t *pf = NULL;
-    
-    pf = pgw_pf_first(bearer);
-    while (pf) {
-        if (pf->identifier == id)
-            return pf;
 
-        pf = pgw_pf_next(pf);
+    ogs_list_for_each(&bearer->pf_list, pf) {
+        if (pf->identifier == id) return pf;
     }
 
-    return OGS_OK;
+    return NULL;
 }
 
 pgw_pf_t *pgw_pf_first(pgw_bearer_t *bearer)

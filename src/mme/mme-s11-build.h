@@ -41,6 +41,9 @@ ogs_pkbuf_t *mme_s11_build_downlink_data_notification_ack(uint8_t type);
 ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
         uint8_t type, mme_ue_t *mme_ue);
 
+ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
+        uint8_t type, mme_bearer_t *bearer, ogs_nas_message_t *nas_message);
+
 #ifdef __cplusplus
 }
 #endif

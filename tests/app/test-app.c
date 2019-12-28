@@ -86,6 +86,7 @@ void test_app_init(void)
     ogs_log_install_domain(&__ogs_s1ap_domain, "s1ap", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_diam_domain, "diam", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_dbi_domain, "dbi", OGS_LOG_ERROR);
+    ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
 
     ogs_assert(ogs_mongoc_init(ogs_config()->db_uri) == OGS_OK);
 }

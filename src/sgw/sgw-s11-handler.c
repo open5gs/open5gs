@@ -1210,3 +1210,77 @@ void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
     rv = ogs_gtp_xact_commit(s11_xact);
     ogs_expect(rv == OGS_OK);
 }
+
+void sgw_s11_handle_bearer_resource_command(ogs_gtp_xact_t *s11_xact,
+        sgw_ue_t *sgw_ue, ogs_gtp_message_t *message)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_gtp_bearer_resource_command_t *cmd = NULL;
+
+    uint8_t cause_value = 0;
+    ogs_gtp_xact_t *s5c_xact = NULL;
+
+    sgw_sess_t *sess = NULL;
+
+    ogs_assert(s11_xact);
+    ogs_assert(message);
+
+    ogs_debug("[SGW] Bearer Resource Command");
+
+    cmd = &message->bearer_resource_command;
+    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+
+    if (!sgw_ue) {
+        ogs_warn("No Context");
+        cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+    }
+
+    if (cmd->linked_eps_bearer_id.presence == 0) {
+        ogs_error("No Linked EPS Bearer ID");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    } else {
+        sess = sgw_sess_find_by_ebi(sgw_ue, cmd->linked_eps_bearer_id.u8);
+        if (!sess) {
+            ogs_error("No Context for Linked EPS Bearer ID[%d]",
+                    cmd->linked_eps_bearer_id.u8);
+            cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+        }
+    }
+
+    if (cmd->procedure_transaction_id.presence == 0) {
+        ogs_error("No PTI");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (cmd->traffic_aggregate_description.presence == 0) {
+        ogs_error("No Traffic aggregate description(TAD)");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        ogs_gtp_send_error_message(s11_xact, sgw_ue ? sgw_ue->mme_s11_teid : 0,
+                OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
+        return;
+    }
+
+    ogs_assert(sess);
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+        sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+        sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
+    message->h.type = OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE;
+    message->h.teid = sess->pgw_s5c_teid;
+
+    pkbuf = ogs_gtp_build_msg(message);
+    ogs_expect_or_return(pkbuf);
+
+    s5c_xact = ogs_gtp_xact_local_create(
+            sess->gnode, &message->h, pkbuf, timeout, sess);
+    ogs_expect_or_return(s5c_xact);
+
+    ogs_gtp_xact_associate(s11_xact, s5c_xact);
+
+    rv = ogs_gtp_xact_commit(s5c_xact);
+    ogs_expect(rv == OGS_OK);
+}

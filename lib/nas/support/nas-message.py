@@ -519,7 +519,6 @@ extern "C" {
 #define OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM 0x7
 
 #define OGS_NAS_EPS_BEARER_IDENTITY_UNASSIGNED 0
-#define OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 
 typedef struct ogs_nas_emm_header_s {
 ED2(uint8_t security_header_type:4;,

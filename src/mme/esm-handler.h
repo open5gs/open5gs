@@ -30,6 +30,10 @@ int esm_handle_pdn_connectivity_request(mme_bearer_t *bearer,
         ogs_nas_pdn_connectivity_request_t *pdn_connectivity_request);
 int esm_handle_information_response(mme_sess_t *sess, 
         ogs_nas_esm_information_response_t *bearer_information_response);
+int esm_handle_bearer_resource_allocation_request(
+        mme_bearer_t *bearer, ogs_nas_message_t *message);
+int esm_handle_bearer_resource_modification_request(
+        mme_bearer_t *bearer, ogs_nas_message_t *message);
 
 #ifdef __cplusplus
 }

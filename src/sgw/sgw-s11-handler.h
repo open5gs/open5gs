@@ -27,17 +27,17 @@ extern "C" {
 #endif
 
 void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
-        sgw_ue_t *sgw_ue, ogs_gtp_message_t *gtp_message);
+        sgw_ue_t *sgw_ue, ogs_gtp_message_t *message);
 void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact, 
         sgw_ue_t *sgw_ue, ogs_gtp_modify_bearer_request_t *req);
 void sgw_s11_handle_delete_session_request(ogs_gtp_xact_t *s11_xact, 
-        sgw_ue_t *sgw_ue, ogs_gtp_message_t *gtp_message);
+        sgw_ue_t *sgw_ue, ogs_gtp_message_t *message);
 void sgw_s11_handle_create_bearer_response(ogs_gtp_xact_t *s11_xact, 
-        sgw_ue_t *sgw_ue, ogs_gtp_message_t *gtp_message);
+        sgw_ue_t *sgw_ue, ogs_gtp_message_t *message);
 void sgw_s11_handle_update_bearer_response(ogs_gtp_xact_t *s11_xact, 
-        sgw_ue_t *sgw_ue, ogs_gtp_message_t *gtp_message);
+        sgw_ue_t *sgw_ue, ogs_gtp_message_t *message);
 void sgw_s11_handle_delete_bearer_response(ogs_gtp_xact_t *s11_xact, 
-        sgw_ue_t *sgw_ue, ogs_gtp_message_t *gtp_message);
+        sgw_ue_t *sgw_ue, ogs_gtp_message_t *message);
 
 void sgw_s11_handle_release_access_bearers_request(
         ogs_gtp_xact_t *s11_xact, sgw_ue_t *sgw_ue,
@@ -52,6 +52,9 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
         ogs_gtp_create_indirect_data_forwarding_tunnel_request_t *req);
 void sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
         ogs_gtp_xact_t *s11_xact, sgw_ue_t *sgw_ue);
+
+void sgw_s11_handle_bearer_resource_command(ogs_gtp_xact_t *s11_xact,
+        sgw_ue_t *sgw_ue, ogs_gtp_message_t *message);
 
 #ifdef __cplusplus
 }

@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-11-29 20:48:26.769392 by acetcom
+ * Created on: 2019-12-27 13:52:39.313560 by acetcom
  * from 24301-d80.docx
  ******************************************************************************/
 
@@ -51,7 +51,6 @@ extern "C" {
 #define OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM 0x7
 
 #define OGS_NAS_EPS_BEARER_IDENTITY_UNASSIGNED 0
-#define OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 
 typedef struct ogs_nas_emm_header_s {
 ED2(uint8_t security_header_type:4;,

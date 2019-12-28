@@ -450,11 +450,17 @@ void sgw_s5c_handle_update_bearer_request(ogs_gtp_xact_t *s5c_xact,
     pkbuf = ogs_gtp_build_msg(message);
     ogs_expect_or_return(pkbuf);
 
-    s11_xact = ogs_gtp_xact_local_create(
-            sgw_ue->gnode, &message->h, pkbuf, timeout, sess);
-    ogs_expect_or_return(s11_xact);
+    s11_xact = s5c_xact->assoc_xact;
+    if (!s11_xact) {
+        s11_xact = ogs_gtp_xact_local_create(
+                sgw_ue->gnode, &message->h, pkbuf, timeout, sess);
+        ogs_expect_or_return(s11_xact);
 
-    ogs_gtp_xact_associate(s5c_xact, s11_xact);
+        ogs_gtp_xact_associate(s5c_xact, s11_xact);
+    } else {
+        rv = ogs_gtp_xact_update_tx(s11_xact, &message->h, pkbuf);
+        ogs_expect_or_return(rv == OGS_OK);
+    }
 
     rv = ogs_gtp_xact_commit(s11_xact);
     ogs_expect(rv == OGS_OK);
@@ -519,5 +525,45 @@ void sgw_s5c_handle_delete_bearer_request(ogs_gtp_xact_t *s5c_xact,
 
     rv = ogs_gtp_xact_commit(s11_xact);
     ogs_expect(rv == OGS_OK);
+}
+
+void sgw_s5c_handle_bearer_resource_failure_indication(ogs_gtp_xact_t *s5c_xact,
+        sgw_sess_t *sess, ogs_gtp_message_t *message)
+{
+    uint8_t cause_value = 0;
+    ogs_gtp_xact_t *s11_xact = NULL;
+    ogs_gtp_bearer_resource_failure_indication_t *ind = NULL;
+
+    sgw_ue_t *sgw_ue = NULL;
+
+    ogs_assert(s5c_xact);
+    s11_xact = s5c_xact->assoc_xact;
+    ogs_assert(s11_xact);
+    ogs_assert(message);
+
+    ogs_debug("[SGW] Bearer Resource Failure Indication");
+
+    ind = &message->bearer_resource_failure_indication;
+
+    if (!sess) {
+        ogs_warn("No Context");
+        cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+    }
+
+    if (ind->cause.presence) {
+        ogs_gtp_cause_t *cause = ind->cause.data;
+        ogs_assert(cause);
+
+        cause_value = cause->value;
+    } else {
+        ogs_error("No Cause");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    sgw_ue = sess->sgw_ue;
+    ogs_assert(sgw_ue);
+
+    ogs_gtp_send_error_message(s11_xact, sgw_ue ? sgw_ue->mme_s11_teid : 0,
+            OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
 }
 
