@@ -763,7 +763,8 @@ int pcrf_gx_send_rar(
                 flow_presence = 1;
                 rv = install_flow(pcc_rule, media_component);
                 if (rv != OGS_OK) {
-                    rx_message->result_code = OGS_DIAM_RX_DIAMETER_FILTER_RESTRICTIONS;
+                    rx_message->result_code =
+                        OGS_DIAM_RX_DIAMETER_FILTER_RESTRICTIONS;
                     ogs_error("install_flow() failed");
                     goto out;
                 }
@@ -775,7 +776,8 @@ int pcrf_gx_send_rar(
                 /* Check Flow */
                 count = matched_flow(pcc_rule, media_component);
                 if (count == -1) {
-                    rx_message->result_code = OGS_DIAM_RX_DIAMETER_FILTER_RESTRICTIONS;
+                    rx_message->result_code =
+                        OGS_DIAM_RX_DIAMETER_FILTER_RESTRICTIONS;
                     ogs_error("matched_flow() failed");
                     goto out;
                 }
@@ -1321,8 +1323,8 @@ static int flow_rx_to_gx(ogs_flow_t *rx_flow, ogs_flow_t *gx_flow)
     return OGS_OK;
 }
 
-static int matched_flow(
-        ogs_pcc_rule_t *pcc_rule, ogs_diam_rx_media_component_t *media_component)
+static int matched_flow(ogs_pcc_rule_t *pcc_rule,
+        ogs_diam_rx_media_component_t *media_component)
 {
     int rv;
     int i, j, k;

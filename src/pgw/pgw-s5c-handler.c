@@ -546,7 +546,7 @@ void pgw_s5c_handle_bearer_resource_command(
 
     pkbuf = pgw_s5c_build_update_bearer_request(
             h.type, bearer, cmd->procedure_transaction_id.u8,
-            tft_presence, &tft, qos_presence);
+            tft_presence ? &tft : NULL, qos_presence);
     ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
