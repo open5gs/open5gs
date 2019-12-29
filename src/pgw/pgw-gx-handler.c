@@ -253,6 +253,13 @@ static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
                         pcc_rule->qos.arp.pre_emption_capability,
                         pcc_rule->qos.arp.pre_emption_vulnerability);
             if (!bearer) {
+                if (pcc_rule->num_of_flow == 0) {
+                    /* TFT is mandatory in
+                     * activate dedicated EPS bearer context request */
+                    ogs_error("No flow in PCC Rule");
+                    continue;
+                }
+
                 bearer = pgw_bearer_add(sess);
                 ogs_assert(bearer);
 
@@ -260,14 +267,15 @@ static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
                 ogs_assert(bearer->name);
 
                 memcpy(&bearer->qos, &pcc_rule->qos, sizeof(ogs_qos_t));
-                ogs_assert(pcc_rule->num_of_flow);
 
                 bearer_created = 1;
             } else {
                 ogs_assert(strcmp(bearer->name, pcc_rule->name) == 0);
 
                 if (pcc_rule->num_of_flow) {
-                    /* Remove all previous flow */
+                    /* 'Create new TFT' is only supported.
+                     * As such, all previous flows are removed
+                     * and replaced by the new flow */
                     pgw_pf_remove_all(bearer);
                 }
 
@@ -318,6 +326,10 @@ static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
             if (bearer_created == 1) {
                 h.type = OGS_GTP_CREATE_BEARER_REQUEST_TYPE;
                 h.teid = sess->sgw_s5c_teid;
+
+                /* TFT is mandatory in
+                 * activate dedicated EPS bearer context request */
+                ogs_assert(pcc_rule->num_of_flow);
 
                 pkbuf = pgw_s5c_build_create_bearer_request(
                         h.type, bearer, pcc_rule->num_of_flow ? &tft : NULL);
