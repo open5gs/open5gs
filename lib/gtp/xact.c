@@ -659,7 +659,7 @@ int ogs_gtp_xact_receive(
     }
 
     *xact = new;
-    return OGS_OK;
+    return rv;
 }
 
 ogs_gtp_xact_t *ogs_gtp_xact_find(ogs_index_t index)
