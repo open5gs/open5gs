@@ -509,7 +509,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
          *   However in this case, the cause code shall not be set to
          *   "Context not found".
          */
-        if (gtp_message.h.teid != 0) {
+        if (gtp_message.h.teid_presence && gtp_message.h.teid != 0) {
             /* Cause is not "Context not found" */
             mme_ue = mme_ue_find_by_teid(gtp_message.h.teid);
         }

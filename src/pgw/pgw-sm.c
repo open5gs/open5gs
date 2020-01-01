@@ -111,7 +111,7 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
          *   However in this case, the cause code shall not be set to
          *   "Context not found".
          */
-        if (message->h.teid != 0) {
+        if (message->h.teid_presence && message->h.teid != 0) {
             /* Cause is not "Context not found" */
             sess = pgw_sess_find_by_teid(message->h.teid);
         }

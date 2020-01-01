@@ -73,7 +73,7 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
         rv = ogs_gtp_parse_msg(&message, pkbuf);
         ogs_assert(rv == OGS_OK);
 
-        if (message.h.teid != 0) {
+        if (message.h.teid_presence && message.h.teid != 0) {
             /* Cause is not "Context not found" */
             sgw_ue = sgw_ue_find_by_teid(message.h.teid);
         }
@@ -158,7 +158,7 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
         rv = ogs_gtp_parse_msg(&message, pkbuf);
         ogs_assert(rv == OGS_OK);
 
-        if (message.h.teid != 0) {
+        if (message.h.teid_presence && message.h.teid != 0) {
             sess = sgw_sess_find_by_teid(message.h.teid);
         }
 
