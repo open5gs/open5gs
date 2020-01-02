@@ -48,12 +48,12 @@ http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.10/
 ```
 
-[Martin Hauke](https://build.opensuse.org/user/show/mnhauke) packaged Open5GS for *openSUSE* on [OBS](https://build.opensuse.org/package/show/home:mnhauke:nextepc/nextepc).
+[Martin Hauke](https://build.opensuse.org/user/show/mnhauke) packaged Open5GS for *openSUSE* on [OBS](https://build.opensuse.org/package/show/home:mnhauke:open5gs/open5gs).
 
 ```bash
-$ sudo zypper addrepo -f obs://home:mnhauke:nextepc home:mnhauke:nextepc
-$ sudo zypper install nextepc
+$ sudo zypper addrepo -f obs://home:mnhauke:open5gs home:mnhauke:open5gs
 $ sudo zypper install mongodb-server mongodb-shell
+$ sudo zypper install open5gs
 ```
 
 ### Configure Open5GS

@@ -19,14 +19,11 @@
 
 #include "ogs-gtp.h"
 
-#define GTP_MIN_XACT_ID             1
-#define GTP_MAX_XACT_ID             0x800000
-
-#define GTP_T3_RESPONSE_DURATION     ogs_time_from_sec(3) /* 3 seconds */
-#define GTP_T3_RESPONSE_RETRY_COUNT  3 
+#define GTP_T3_RESPONSE_DURATION        ogs_time_from_sec(3) /* 3 seconds */
+#define GTP_T3_RESPONSE_RETRY_COUNT     3
 #define GTP_T3_DUPLICATED_DURATION \
     (GTP_T3_RESPONSE_DURATION * GTP_T3_RESPONSE_RETRY_COUNT) /* 9 seconds */
-#define GTP_T3_DUPLICATED_RETRY_COUNT 1 
+#define GTP_T3_DUPLICATED_RETRY_COUNT   1
 
 typedef enum {
     GTP_XACT_UNKNOWN_STAGE,
@@ -81,6 +78,7 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     ogs_gtp_xact_t *xact = NULL;
 
     ogs_assert(gnode);
+    ogs_assert(hdesc);
 
     ogs_pool_alloc(&pool, &xact);
     ogs_assert(xact);
@@ -88,7 +86,13 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
     xact->index = ogs_pool_index(&pool, xact);
 
     xact->org = OGS_GTP_LOCAL_ORIGINATOR;
-    xact->xid = OGS_NEXT_ID(g_xact_id, GTP_MIN_XACT_ID, GTP_MAX_XACT_ID);
+    xact->xid = OGS_NEXT_ID(g_xact_id,
+            OGS_GTP_MIN_XACT_ID, OGS_GTP_CMD_XACT_ID);
+    if (hdesc->type == OGS_GTP_MODIFY_BEARER_COMMAND_TYPE ||
+        hdesc->type == OGS_GTP_DELETE_BEARER_COMMAND_TYPE ||
+        hdesc->type == OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE) {
+        xact->xid |= OGS_GTP_CMD_XACT_ID;
+    }
     xact->gnode = gnode;
     xact->cb = cb;
     xact->data = data;
@@ -655,7 +659,7 @@ int ogs_gtp_xact_receive(
     }
 
     *xact = new;
-    return OGS_OK;
+    return rv;
 }
 
 ogs_gtp_xact_t *ogs_gtp_xact_find(ogs_index_t index)
@@ -684,7 +688,7 @@ static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t xid)
     case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
     case OGS_GTP_UPDATE_BEARER_REQUEST_TYPE:
     case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
-        if (xid & GTP_MAX_XACT_ID)
+        if (xid & OGS_GTP_CMD_XACT_ID)
             stage = GTP_XACT_INTERMEDIATE_STAGE;
         else
             stage = GTP_XACT_INITIAL_STAGE;
@@ -731,10 +735,17 @@ ogs_gtp_xact_t *ogs_gtp_xact_find_by_xid(
         list = &gnode->local_list;
         break;
     case GTP_XACT_FINAL_STAGE:
-        if (xid & GTP_MAX_XACT_ID)
-            list = &gnode->remote_list;
-        else
+        if (xid & OGS_GTP_CMD_XACT_ID) {
+            if (type == OGS_GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE ||
+                type == OGS_GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE ||
+                type == OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE) {
+                list = &gnode->local_list;
+            } else {
+                list = &gnode->remote_list;
+            }
+        } else {
             list = &gnode->local_list;
+        }
         break;
     default:
         ogs_assert_if_reached();

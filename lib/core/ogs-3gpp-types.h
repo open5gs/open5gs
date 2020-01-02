@@ -58,6 +58,8 @@ extern "C" {
 #define OGS_TIME_TO_BCD(x) \
     (((((x) % 10) << 4) & 0xf0) | (((x) / 10) & 0x0f))
 
+#define OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
+
 /**********************************
  * PLMN_ID Structure             */
 typedef struct ogs_plmn_id_s {

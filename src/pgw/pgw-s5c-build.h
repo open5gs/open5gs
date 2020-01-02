@@ -35,12 +35,12 @@ ogs_pkbuf_t *pgw_s5c_build_delete_session_response(
         ogs_gtp_delete_session_request_t *req);
 
 ogs_pkbuf_t *pgw_s5c_build_create_bearer_request(
-        uint8_t type, pgw_bearer_t *bearer);
+        uint8_t type, pgw_bearer_t *bearer, ogs_gtp_tft_t *tft);
 ogs_pkbuf_t *pgw_s5c_build_update_bearer_request(
-        uint8_t type, pgw_bearer_t *bearer,
-        int qos_presence, int tft_presence);
+        uint8_t type, pgw_bearer_t *bearer, uint8_t pti,
+        ogs_gtp_tft_t *tft, int qos_presence);
 ogs_pkbuf_t *pgw_s5c_build_delete_bearer_request(
-        uint8_t type, pgw_bearer_t *bearer);
+        uint8_t type, pgw_bearer_t *bearer, uint8_t pti);
 #ifdef __cplusplus
 }
 #endif

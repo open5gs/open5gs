@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-12-05 15:41:02.692263 by acetcom
+ * Created on: 2019-12-23 11:28:04.943360 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -505,7 +505,7 @@ typedef ogs_tlv_octet_t ogs_gtp_tlv_charging_characteristics_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_trace_information_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_bearer_flags_t;
 typedef ogs_tlv_uint8_t ogs_gtp_tlv_pdn_type_t;
-typedef ogs_tlv_octet_t ogs_gtp_tlv_pti_t;
+typedef ogs_tlv_uint8_t ogs_gtp_tlv_pti_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_mm_context_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_pdu_numbers_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_p_tmsi_t;
@@ -893,6 +893,38 @@ typedef struct ogs_gtp_delete_bearer_failure_indication_s {
     ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
 } ogs_gtp_delete_bearer_failure_indication_t;
 
+typedef struct ogs_gtp_bearer_resource_command_s {
+    ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
+    ogs_gtp_tlv_pti_t procedure_transaction_id;
+    ogs_gtp_tlv_flow_qos_t flow_quality_of_service;
+    ogs_gtp_tlv_tad_t traffic_aggregate_description;
+    ogs_gtp_tlv_rat_type_t rat_type;
+    ogs_gtp_tlv_serving_network_t serving_network;
+    ogs_gtp_tlv_uli_t user_location_information;
+    ogs_gtp_tlv_ebi_t eps_bearer_id;
+    ogs_gtp_tlv_indication_t indication_flags;
+    ogs_gtp_tlv_f_teid_t s4_u_sgsn_f_teid;
+    ogs_gtp_tlv_f_teid_t s12_rnc_f_teid;
+    ogs_gtp_tlv_pco_t protocol_configuration_options;
+    ogs_gtp_tlv_signalling_priority_indication_t signalling_priority_indication__;
+    ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_f_container_t nbifom_container;
+    ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
+    ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
+} ogs_gtp_bearer_resource_command_t;
+
+typedef struct ogs_gtp_bearer_resource_failure_indication_s {
+    ogs_gtp_tlv_cause_t cause;
+    ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
+    ogs_gtp_tlv_pti_t procedure_transaction_id;
+    ogs_gtp_tlv_indication_t indication_flags;
+    ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
+    ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
+    ogs_gtp_tlv_recovery_t recovery;
+    ogs_gtp_tlv_f_container_t nbifom_container;
+} ogs_gtp_bearer_resource_failure_indication_t;
+
 typedef struct ogs_gtp_downlink_data_notification_failure_indication_s {
     ogs_gtp_tlv_cause_t cause;
     ogs_gtp_tlv_node_type_t originating_node;
@@ -1146,6 +1178,8 @@ typedef struct ogs_gtp_message_s {
         ogs_gtp_modify_bearer_failure_indication_t modify_bearer_failure_indication;
         ogs_gtp_delete_bearer_command_t delete_bearer_command;
         ogs_gtp_delete_bearer_failure_indication_t delete_bearer_failure_indication;
+        ogs_gtp_bearer_resource_command_t bearer_resource_command;
+        ogs_gtp_bearer_resource_failure_indication_t bearer_resource_failure_indication;
         ogs_gtp_downlink_data_notification_failure_indication_t downlink_data_notification_failure_indication;
         ogs_gtp_create_bearer_request_t create_bearer_request;
         ogs_gtp_create_bearer_response_t create_bearer_response;

@@ -232,6 +232,15 @@ void ogs_gtp_send_error_message(
     case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
         tlv = &errmsg.delete_indirect_data_forwarding_tunnel_response.cause;
         break;
+    case OGS_GTP_MODIFY_BEARER_FAILURE_INDICATION_TYPE:
+        tlv = &errmsg.modify_bearer_failure_indication.cause;
+        break;
+    case OGS_GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE:
+        tlv = &errmsg.delete_bearer_failure_indication.cause;
+        break;
+    case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+        tlv = &errmsg.bearer_resource_failure_indication.cause;
+        break;
     default:
         ogs_assert_if_reached();
         return;

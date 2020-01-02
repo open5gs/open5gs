@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-12-05 15:41:02.700546 by acetcom
+ * Created on: 2019-12-23 11:28:04.952636 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -534,10 +534,10 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_type_0 =
 
 ogs_tlv_desc_t ogs_gtp_tlv_desc_pti_0 =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "PTI",
     OGS_GTP_PTI_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_gtp_tlv_pti_t),
     { NULL }
@@ -2437,6 +2437,48 @@ ogs_tlv_desc_t ogs_gtp_tlv_desc_delete_bearer_failure_indication =
     NULL,
 }};
 
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_resource_command =
+{
+    OGS_TLV_MESSAGE,
+    "Bearer Resource Command",
+    0, 0, 0, 0, {
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_pti_0,
+        &ogs_gtp_tlv_desc_flow_qos_0,
+        &ogs_gtp_tlv_desc_tad_0,
+        &ogs_gtp_tlv_desc_rat_type_0,
+        &ogs_gtp_tlv_desc_serving_network_0,
+        &ogs_gtp_tlv_desc_uli_0,
+        &ogs_gtp_tlv_desc_ebi_1,
+        &ogs_gtp_tlv_desc_indication_0,
+        &ogs_gtp_tlv_desc_f_teid_0,
+        &ogs_gtp_tlv_desc_f_teid_1,
+        &ogs_gtp_tlv_desc_pco_0,
+        &ogs_gtp_tlv_desc_signalling_priority_indication_0,
+        &ogs_gtp_tlv_desc_overload_control_information_0,
+        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_f_container_0,
+        &ogs_gtp_tlv_desc_epco_0,
+        &ogs_gtp_tlv_desc_f_teid_2,
+    NULL,
+}};
+
+ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_resource_failure_indication =
+{
+    OGS_TLV_MESSAGE,
+    "Bearer Resource Failure Indication",
+    0, 0, 0, 0, {
+        &ogs_gtp_tlv_desc_cause_0,
+        &ogs_gtp_tlv_desc_ebi_0,
+        &ogs_gtp_tlv_desc_pti_0,
+        &ogs_gtp_tlv_desc_indication_0,
+        &ogs_gtp_tlv_desc_overload_control_information_0,
+        &ogs_gtp_tlv_desc_overload_control_information_1,
+        &ogs_gtp_tlv_desc_recovery_0,
+        &ogs_gtp_tlv_desc_f_container_0,
+    NULL,
+}};
+
 ogs_tlv_desc_t ogs_gtp_tlv_desc_downlink_data_notification_failure_indication =
 {
     OGS_TLV_MESSAGE,
@@ -2839,6 +2881,14 @@ int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
         rv = ogs_tlv_parse_msg(&gtp_message->delete_bearer_failure_indication,
                 &ogs_gtp_tlv_desc_delete_bearer_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
         break;
+    case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp_message->bearer_resource_command,
+                &ogs_gtp_tlv_desc_bearer_resource_command, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+        rv = ogs_tlv_parse_msg(&gtp_message->bearer_resource_failure_indication,
+                &ogs_gtp_tlv_desc_bearer_resource_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
+        break;
     case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_FAILURE_INDICATION_TYPE:
         rv = ogs_tlv_parse_msg(&gtp_message->downlink_data_notification_failure_indication,
                 &ogs_gtp_tlv_desc_downlink_data_notification_failure_indication, pkbuf, OGS_TLV_MODE_T1_L2_I1);
@@ -2968,6 +3018,14 @@ ogs_pkbuf_t *ogs_gtp_build_msg(ogs_gtp_message_t *gtp_message)
     case OGS_GTP_DELETE_BEARER_FAILURE_INDICATION_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_delete_bearer_failure_indication,
                 &gtp_message->delete_bearer_failure_indication, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_bearer_resource_command,
+                &gtp_message->bearer_resource_command, OGS_TLV_MODE_T1_L2_I1);
+        break;
+    case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+        pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_bearer_resource_failure_indication,
+                &gtp_message->bearer_resource_failure_indication, OGS_TLV_MODE_T1_L2_I1);
         break;
     case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_FAILURE_INDICATION_TYPE:
         pkbuf = ogs_tlv_build_msg(&ogs_gtp_tlv_desc_downlink_data_notification_failure_indication,

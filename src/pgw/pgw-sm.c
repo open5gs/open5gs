@@ -111,7 +111,7 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
          *   However in this case, the cause code shall not be set to
          *   "Context not found".
          */
-        if (message->h.teid != 0) {
+        if (message->h.teid_presence && message->h.teid != 0) {
             /* Cause is not "Context not found" */
             sess = pgw_sess_find_by_teid(message->h.teid);
         }
@@ -159,6 +159,11 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         case OGS_GTP_DELETE_BEARER_RESPONSE_TYPE:
             pgw_s5c_handle_delete_bearer_response(
                 sess, xact, &message->delete_bearer_response);
+            ogs_pkbuf_free(copybuf);
+            break;
+        case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
+            pgw_s5c_handle_bearer_resource_command(
+                sess, xact, &message->bearer_resource_command);
             ogs_pkbuf_free(copybuf);
             break;
         default:

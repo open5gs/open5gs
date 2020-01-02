@@ -21,7 +21,10 @@
 #include "pgw-context.h"
 #include "pgw-gtp-path.h"
 #include "pgw-fd-path.h"
+#include "pgw-s5c-build.h"
 #include "pgw-s5c-handler.h"
+
+#include "ipfw/ipfw2.h"
 
 void pgw_s5c_handle_create_session_request(
         pgw_sess_t *sess, ogs_gtp_xact_t *xact,
@@ -134,9 +137,16 @@ void pgw_s5c_handle_create_session_request(
 
     /* Set AMBR if available */
     if (req->aggregate_maximum_bit_rate.presence) {
+        /*
+         * Ch 8.7. Aggregate Maximum Bit Rate(AMBR) in TS 29.274 V15.9.0
+         *
+         * AMBR is defined in clause 9.9.4.2 of 3GPP TS 24.301 [23],
+         * but it shall be encoded as shown in Figure 8.7-1 as
+         * Unsigned32 binary integer values in kbps (1000 bits per second).
+         */
         ambr = req->aggregate_maximum_bit_rate.data;
-        sess->pdn.ambr.downlink = ntohl(ambr->downlink);
-        sess->pdn.ambr.uplink = ntohl(ambr->uplink);
+        sess->pdn.ambr.downlink = be32toh(ambr->downlink) * 1000;
+        sess->pdn.ambr.uplink = be32toh(ambr->uplink) * 1000;
     }
     
     /* Set User Location Information */
@@ -209,7 +219,7 @@ void pgw_s5c_handle_create_bearer_response(
         return;
     }
 
-    /* Correlate with PGW-S%U-TEID */
+    /* Correlate with PGW-S5U-TEID */
     pgw_s5u_teid = req->bearer_contexts.s5_s8_u_pgw_f_teid.data;
     ogs_assert(pgw_s5u_teid);
 
@@ -308,4 +318,240 @@ void pgw_s5c_handle_delete_bearer_response(
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
     pgw_bearer_remove(bearer);
+}
+
+static int reconfigure_packet_filter(pgw_pf_t *pf, ogs_gtp_tft_t *tft, int i)
+{
+    int j;
+
+    for (j = 0; j < tft->pf[i].num_of_component; j++) {
+        switch(tft->pf[i].component[j].type) {
+        case GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE:
+            pf->rule.proto = tft->pf[i].component[j].proto;
+            break;
+        case GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE:
+            pf->rule.ipv4_remote = 1;
+            pf->rule.ip.remote.addr[0] = tft->pf[i].component[j].ipv4.addr;
+            pf->rule.ip.remote.mask[0] = tft->pf[i].component[j].ipv4.mask;
+            break;
+        case GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE:
+            pf->rule.ipv4_local = 1;
+            pf->rule.ip.local.addr[0] = tft->pf[i].component[j].ipv4.addr;
+            pf->rule.ip.local.mask[0] = tft->pf[i].component[j].ipv4.mask;
+            break;
+        case GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE:
+            pf->rule.ipv6_remote = 1;
+            memcpy(pf->rule.ip.remote.addr,
+                tft->pf[i].component[j].ipv6_mask.addr,
+                sizeof(pf->rule.ip.remote.addr));
+            memcpy(pf->rule.ip.remote.mask,
+                tft->pf[i].component[j].ipv6_mask.mask,
+                sizeof(pf->rule.ip.remote.mask));
+            break;
+        case GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE:
+            pf->rule.ipv6_remote = 1;
+            memcpy(pf->rule.ip.remote.addr,
+                tft->pf[i].component[j].ipv6_mask.addr,
+                sizeof(pf->rule.ip.remote.addr));
+            n2mask((struct in6_addr *)pf->rule.ip.remote.mask,
+                tft->pf[i].component[j].ipv6.prefixlen);
+            break;
+        case GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_TYPE:
+            pf->rule.ipv6_local = 1;
+            memcpy(pf->rule.ip.local.addr,
+                tft->pf[i].component[j].ipv6_mask.addr,
+                sizeof(pf->rule.ip.local.addr));
+            memcpy(pf->rule.ip.local.mask,
+                tft->pf[i].component[j].ipv6_mask.mask,
+                sizeof(pf->rule.ip.local.mask));
+            break;
+        case GTP_PACKET_FILTER_IPV6_LOCAL_ADDRESS_PREFIX_LENGTH_TYPE:
+            pf->rule.ipv6_local = 1;
+            memcpy(pf->rule.ip.local.addr,
+                tft->pf[i].component[j].ipv6_mask.addr,
+                sizeof(pf->rule.ip.local.addr));
+            n2mask((struct in6_addr *)pf->rule.ip.local.mask,
+                tft->pf[i].component[j].ipv6.prefixlen);
+            break;
+        case GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE:
+            pf->rule.port.local.low = pf->rule.port.local.high =
+                    tft->pf[i].component[j].port.low;
+            break;
+        case GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE:
+            pf->rule.port.remote.low = pf->rule.port.remote.high =
+                    tft->pf[i].component[j].port.low;
+            break;
+        case GTP_PACKET_FILTER_LOCAL_PORT_RANGE_TYPE:
+            pf->rule.port.local.low = tft->pf[i].component[j].port.low;
+            pf->rule.port.local.high = tft->pf[i].component[j].port.high;
+            break;
+        case GTP_PACKET_FILTER_REMOTE_PORT_RANGE_TYPE:
+            pf->rule.port.remote.low = tft->pf[i].component[j].port.low;
+            pf->rule.port.remote.high = tft->pf[i].component[j].port.high;
+            break;
+        default:
+            ogs_error("Unknown Packet Filter Type(%d)",
+                    tft->pf[i].component[j].type);
+            return OGS_ERROR;
+        }
+    }
+
+    return j;
+}
+
+void pgw_s5c_handle_bearer_resource_command(
+        pgw_sess_t *sess, ogs_gtp_xact_t *xact,
+        ogs_gtp_bearer_resource_command_t *cmd)
+{
+    int rv;
+    uint8_t cause_value = 0;
+
+    ogs_gtp_header_t h;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    pgw_bearer_t *bearer = NULL;
+
+    int16_t decoded;
+    ogs_gtp_tft_t tft;
+
+    int tft_presence = 0;
+    int qos_presence = 0;
+
+    ogs_assert(xact);
+    ogs_assert(sess);
+    ogs_assert(cmd);
+
+    ogs_debug("[PGW] Bearer Resource Command");
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
+    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+
+    if (cmd->linked_eps_bearer_id.presence == 0) {
+        ogs_error("No Linked EPS Bearer ID");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    } else {
+        bearer = pgw_bearer_find_by_ebi(
+                sess, cmd->linked_eps_bearer_id.u8);
+        if (!bearer) {
+            ogs_error("No Context for Linked EPS Bearer ID[%d]",
+                    cmd->linked_eps_bearer_id.u8);
+            cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+        }
+    }
+
+    if (cmd->procedure_transaction_id.presence == 0) {
+        ogs_error("No PTI");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (cmd->traffic_aggregate_description.presence == 0) {
+        ogs_error("No Traffic aggregate description(TAD)");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+
+    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+                OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE, cause_value);
+        return;
+    }
+
+    ogs_assert(bearer);
+
+    decoded = ogs_gtp_parse_tft(&tft, &cmd->traffic_aggregate_description);
+    ogs_assert(cmd->traffic_aggregate_description.len == decoded);
+
+    if (tft.code == OGS_GTP_TFT_CODE_NO_TFT_OPERATION) {
+        /* No operation */
+
+    } else if (tft.code ==
+            OGS_GTP_TFT_CODE_REPLACE_PACKET_FILTERS_IN_EXISTING) {
+        int i;
+        for (i = 0; i < tft.num_of_packet_filter; i++) {
+            int num_of_comp = 0;
+            pgw_pf_t *pf = NULL;
+
+            pf = pgw_pf_find_by_id(bearer, tft.pf[i].identifier+1);
+            if (pf) {
+                num_of_comp = reconfigure_packet_filter(pf, &tft, i);
+                if (num_of_comp < 0) {
+                    ogs_gtp_send_error_message(
+                        xact, sess ? sess->sgw_s5c_teid : 0,
+                        OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
+                        OGS_GTP_CAUSE_SEMANTIC_ERROR_IN_THE_TAD_OPERATION);
+                    return;
+                }
+            }
+
+            if (num_of_comp > 0) tft_presence = 1;
+        }
+    } else if (tft.code ==
+            OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT) {
+        int i;
+        for (i = 0; i < tft.num_of_packet_filter; i++) {
+            int num_of_comp = 0;
+            pgw_pf_t *pf = NULL;
+
+            pf = pgw_pf_find_by_id(bearer, tft.pf[i].identifier+1);
+            if (!pf)
+                pf = pgw_pf_add(bearer, tft.pf[i].precedence);
+            ogs_assert(pf);
+
+            num_of_comp = reconfigure_packet_filter(pf, &tft, i);
+            if (num_of_comp < 0) {
+                ogs_gtp_send_error_message(
+                    xact, sess ? sess->sgw_s5c_teid : 0,
+                    OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
+                    OGS_GTP_CAUSE_SEMANTIC_ERROR_IN_THE_TAD_OPERATION);
+                return;
+            }
+
+            if (num_of_comp > 0) tft_presence = 1;
+        }
+    } else if (tft.code ==
+            OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING) {
+
+        /* TODO */
+        ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+                OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
+                OGS_GTP_CAUSE_SERVICE_NOT_SUPPORTED);
+        return;
+    }
+
+    if (cmd->flow_quality_of_service.presence) {
+        ogs_gtp_flow_qos_t flow_qos;
+
+        decoded = ogs_gtp_parse_flow_qos(
+                &flow_qos, &cmd->flow_quality_of_service);
+        ogs_assert(cmd->flow_quality_of_service.len == decoded);
+
+        bearer->qos.mbr.uplink = flow_qos.ul_mbr;
+        bearer->qos.mbr.downlink = flow_qos.dl_mbr;
+        bearer->qos.gbr.uplink = flow_qos.ul_gbr;
+        bearer->qos.gbr.downlink = flow_qos.dl_gbr;
+
+        qos_presence = 1;
+    }
+
+    if (tft_presence == 0 && qos_presence == 0) {
+        /* No modification */
+        ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+                OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
+                OGS_GTP_CAUSE_SERVICE_NOT_SUPPORTED);
+        return;
+    }
+
+    memset(&h, 0, sizeof(ogs_gtp_header_t));
+    h.type = OGS_GTP_UPDATE_BEARER_REQUEST_TYPE;
+    h.teid = sess->sgw_s5c_teid;
+
+    pkbuf = pgw_s5c_build_update_bearer_request(
+            h.type, bearer, cmd->procedure_transaction_id.u8,
+            tft_presence ? &tft : NULL, qos_presence);
+    ogs_expect_or_return(pkbuf);
+
+    rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return(rv == OGS_OK);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
 }

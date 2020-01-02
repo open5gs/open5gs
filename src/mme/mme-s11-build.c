@@ -201,9 +201,16 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     req->maximum_apn_restriction.u8 = OGS_GTP_APN_NO_RESTRICTION;
 
     if (pdn->ambr.uplink || pdn->ambr.downlink) {
+        /*
+         * Ch 8.7. Aggregate Maximum Bit Rate(AMBR) in TS 29.274 V15.9.0
+         *
+         * AMBR is defined in clause 9.9.4.2 of 3GPP TS 24.301 [23],
+         * but it shall be encoded as shown in Figure 8.7-1 as
+         * Unsigned32 binary integer values in kbps (1000 bits per second).
+         */
         memset(&ambr, 0, sizeof(ogs_gtp_ambr_t));
-        ambr.uplink = htonl(pdn->ambr.uplink);
-        ambr.downlink = htonl(pdn->ambr.downlink);
+        ambr.uplink = htobe32(pdn->ambr.uplink / 1000);
+        ambr.downlink = htobe32(pdn->ambr.downlink / 1000);
         req->aggregate_maximum_bit_rate.presence = 1;
         req->aggregate_maximum_bit_rate.data = &ambr;
         req->aggregate_maximum_bit_rate.len = sizeof(ambr);
@@ -386,7 +393,7 @@ ogs_pkbuf_t *mme_s11_build_create_bearer_response(
     ogs_assert(bearer);
     mme_ue = bearer->mme_ue;
     ogs_assert(mme_ue);
-    
+
     ogs_debug("[MME] Create Bearer Response");
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
@@ -728,3 +735,107 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     gtp_message.h.type = type;
     return ogs_gtp_build_msg(&gtp_message);
 }
+
+ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
+        uint8_t type, mme_bearer_t *bearer, ogs_nas_message_t *nas_message)
+{
+    ogs_gtp_message_t gtp_message;
+    ogs_gtp_bearer_resource_command_t *cmd =
+        &gtp_message.bearer_resource_command;
+    ogs_nas_bearer_resource_allocation_request_t *allocation = NULL;
+    ogs_nas_bearer_resource_modification_request_t *modification = NULL;
+
+    ogs_nas_eps_quality_of_service_t *qos = NULL;
+    ogs_nas_traffic_flow_aggregate_description_t *tad = NULL;
+
+    ogs_gtp_flow_qos_t flow_qos;
+    char flow_qos_buf[GTP_FLOW_QOS_LEN];
+
+    mme_ue_t *mme_ue = NULL;
+    mme_sess_t *sess = NULL;
+    mme_bearer_t *linked_bearer = NULL;
+
+    ogs_assert(bearer);
+    sess = bearer->sess;
+    ogs_assert(sess);
+    mme_ue = sess->mme_ue;
+    ogs_assert(mme_ue);
+
+    ogs_assert(nas_message);
+        switch (nas_message->esm.h.message_type) {
+        case OGS_NAS_BEARER_RESOURCE_ALLOCATION_REQUEST:
+            allocation = &nas_message->esm.bearer_resource_allocation_request;
+            qos = &allocation->required_traffic_flow_qos;
+            tad = &allocation->traffic_flow_aggregate;
+            break;
+        case OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST:
+            modification = &nas_message->esm.bearer_resource_modification_request;
+            if (modification->presencemask &
+                OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT) {
+                qos = &modification->required_traffic_flow_qos;
+            }
+            tad = &modification->traffic_flow_aggregate;
+            break;
+        default:
+            ogs_error("Invalid NAS ESM Type[%d]",
+                    nas_message->esm.h.message_type);
+            return NULL;
+        }
+
+        linked_bearer = mme_linked_bearer(bearer);
+        ogs_assert(linked_bearer);
+
+        ogs_debug("[MME] Bearer Resource Command");
+        ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+                mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+        memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
+
+        /* Linked Bearer Context : EBI */
+        cmd->linked_eps_bearer_id.presence = 1;
+        cmd->linked_eps_bearer_id.u8 = bearer->ebi;
+
+        /* Procedure Transaction ID(PTI) */
+        cmd->procedure_transaction_id.presence = 1;
+        cmd->procedure_transaction_id.u8 = sess->pti;
+
+        /* Flow Quality of Service(QoS) */
+        if (qos) {
+            memset(&flow_qos, 0, sizeof(flow_qos));
+            flow_qos.qci = qos->qci;
+
+            /* Octet 4
+             *
+             * In UE to network direction:
+             * 00000000 Subscribed maximum bit rate
+             *
+             * In network to UE direction:
+             * 00000000 Reserved
+             */
+            flow_qos.ul_mbr = qos->ul_mbr == 0 ? bearer->qos.mbr.uplink :
+                ogs_gtp_qos_to_bps(
+                    qos->ul_mbr, qos->ul_mbr_extended, qos->ul_mbr_extended2);
+            flow_qos.dl_mbr = qos->dl_mbr == 0 ? bearer->qos.mbr.downlink :
+                ogs_gtp_qos_to_bps(
+                    qos->dl_mbr, qos->dl_mbr_extended, qos->dl_mbr_extended2);
+            flow_qos.ul_gbr = qos->ul_gbr == 0 ? bearer->qos.gbr.uplink :
+                ogs_gtp_qos_to_bps(
+                    qos->ul_gbr, qos->ul_gbr_extended, qos->ul_gbr_extended2);
+            flow_qos.dl_gbr = qos->dl_gbr == 0 ? bearer->qos.gbr.downlink :
+                ogs_gtp_qos_to_bps(
+                    qos->dl_gbr, qos->dl_gbr_extended, qos->dl_gbr_extended2);
+
+            ogs_gtp_build_flow_qos(
+                    &cmd->flow_quality_of_service,
+                    &flow_qos, flow_qos_buf, GTP_FLOW_QOS_LEN);
+            cmd->flow_quality_of_service.presence = 1;
+        }
+
+        /* Traffic Aggregate Description(TAD) */
+        cmd->traffic_aggregate_description.presence = 1;
+        cmd->traffic_aggregate_description.data = tad->buffer;
+        cmd->traffic_aggregate_description.len = tad->length;
+
+        gtp_message.h.type = type;
+        return ogs_gtp_build_msg(&gtp_message);
+    }

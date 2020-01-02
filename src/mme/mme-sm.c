@@ -509,7 +509,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
          *   However in this case, the cause code shall not be set to
          *   "Context not found".
          */
-        if (gtp_message.h.teid != 0) {
+        if (gtp_message.h.teid_presence && gtp_message.h.teid != 0) {
             /* Cause is not "Context not found" */
             mme_ue = mme_ue_find_by_teid(gtp_message.h.teid);
         }
@@ -588,6 +588,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
                 xact, mme_ue,
                 &gtp_message.delete_indirect_data_forwarding_tunnel_response);
+            break;
+        case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+            mme_s11_handle_bearer_resource_failure_indication(
+                xact, mme_ue,
+                &gtp_message.bearer_resource_failure_indication);
             break;
         default:
             ogs_warn("Not implmeneted(type:%d)", gtp_message.h.type);

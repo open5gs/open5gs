@@ -73,7 +73,7 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
         rv = ogs_gtp_parse_msg(&message, pkbuf);
         ogs_assert(rv == OGS_OK);
 
-        if (message.h.teid != 0) {
+        if (message.h.teid_presence && message.h.teid != 0) {
             /* Cause is not "Context not found" */
             sgw_ue = sgw_ue_find_by_teid(message.h.teid);
         }
@@ -140,6 +140,9 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
             sgw_s11_handle_delete_indirect_data_forwarding_tunnel_request(
                 xact, sgw_ue);
             break;
+        case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
+            sgw_s11_handle_bearer_resource_command(xact, sgw_ue, &message);
+            break;
         default:
             ogs_warn("Not implmeneted(type:%d)", message.h.type);
             break;
@@ -155,7 +158,7 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
         rv = ogs_gtp_parse_msg(&message, pkbuf);
         ogs_assert(rv == OGS_OK);
 
-        if (message.h.teid != 0) {
+        if (message.h.teid_presence && message.h.teid != 0) {
             sess = sgw_sess_find_by_teid(message.h.teid);
         }
 
@@ -192,6 +195,10 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
             break;
         case OGS_GTP_DELETE_BEARER_REQUEST_TYPE:
             sgw_s5c_handle_delete_bearer_request(xact, sess,
+                    &message);
+            break;
+        case OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE:
+            sgw_s5c_handle_bearer_resource_failure_indication(xact, sess,
                     &message);
             break;
         default:

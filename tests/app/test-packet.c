@@ -2144,7 +2144,8 @@ int tests1ap_build_e_rab_modify_response(ogs_pkbuf_t **pkbuf, int i)
     const char *payload[TESTS1AP_MAX_MESSAGE] = { 
         "2006"
         "001b000003000040 0480000001000840 020001001f400600 002500010e",
-        "",
+        "2006"
+        "001b000003000040 0480000001000840 020001001f400600 002500010e",
         "",
 
         "",
@@ -2158,7 +2159,7 @@ int tests1ap_build_e_rab_modify_response(ogs_pkbuf_t **pkbuf, int i)
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         31,
-        0,
+        31,
         0,
 
         0,
@@ -2319,8 +2320,12 @@ int tests1ap_build_modify_bearer_accept(
         "000d"
         "4035000005000000 0480000001000800 020001001a000a09 27a5c0d564067200"
         "ca006440080064f0 430020a000004340 060064f043020a",
-        "",
-        "",
+        "000d"
+        "4035000005000000 0480000001000800 020001001a000a09 27a6746cea097204"
+        "ca006440080064f0 430020a000004340 060064f043020a",
+        "000d"
+        "4035000005000000 0480000001000800 020001001a000a09 2726b727fe0a7205"
+        "ca006440080064f0 430020a000004340 060064f043020a",
 
         "",
         "",
@@ -2336,8 +2341,8 @@ int tests1ap_build_modify_bearer_accept(
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         57,
-        0,
-        0,
+        57,
+        57,
 
         0,
         0,
@@ -2402,6 +2407,321 @@ int tests1ap_build_deactivate_bearer_accept(
     ogs_pkbuf_put_data(*pkbuf, 
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
+    return OGS_OK;
+}
+
+int tests1ap_build_bearer_resource_allocation_request(
+        ogs_pkbuf_t **pkbuf, int i)
+{
+    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+        "000d"
+        "403f000005000000 0200010008000200 01001a00161517fe b2b150070203d406"
+        "04212001000501ff ffffff0064400800 2143650003039000 4340060021436509"
+        "29",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        67,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[OGS_MAX_SDU_LEN];
+    
+    *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put_data(*pkbuf, 
+        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+
+    return OGS_OK;
+}
+
+static void build_bearer_resource_modification_request(ogs_pkbuf_t **pkbuf,
+    uint8_t pti, uint32_t mac, uint8_t seq, uint8_t ebi,
+    uint8_t tft_code, uint8_t qci,
+    uint8_t ul_mbr, uint8_t dl_mbr, uint8_t ul_gbr, uint8_t dl_gbr)
+{
+    int rv;
+    ogs_pkbuf_t *emmbuf = NULL;
+
+    ogs_nas_message_t message;
+    ogs_nas_bearer_resource_modification_request_t
+        *req = &message.esm.bearer_resource_modification_request;
+    ogs_nas_traffic_flow_aggregate_description_t *tad =
+        &req->traffic_flow_aggregate;
+    ogs_nas_eps_quality_of_service_t *qos = &req->required_traffic_flow_qos;
+
+    ogs_gtp_tft_t tft;
+    ogs_tlv_octet_t octet;
+    int len;
+    char tft_buf[OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE];
+    ogs_ipsubnet_t ipsubnet;
+
+    memset(&message, 0, sizeof(message));
+    message.esm.h.eps_bearer_identity = 0;
+    message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
+    message.esm.h.procedure_transaction_identity = pti;
+    message.esm.h.message_type = OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST;
+
+    req->eps_bearer_identity_for_packet_filter.eps_bearer_identity = ebi;
+
+    memset(&tft, 0, sizeof tft);
+    tft.code = tft_code;
+    if (tft.code == OGS_GTP_TFT_CODE_REPLACE_PACKET_FILTERS_IN_EXISTING) {
+        tft.num_of_packet_filter = 1;
+        tft.pf[0].direction = 1;
+        tft.pf[0].identifier = 0;
+        tft.pf[0].precedence = 0x0f;
+        tft.pf[0].length = 9;
+        tft.pf[0].component[0].type =
+            GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        rv = ogs_ipsubnet(&ipsubnet, "201.20.2.5", NULL);
+        ogs_assert(rv == OGS_OK);
+        tft.pf[0].component[0].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[0].component[0].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[0].num_of_component = 1;
+    } else if (tft.code ==
+            OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT) {
+        tft.num_of_packet_filter = 1;
+        tft.pf[0].direction = 1;
+        tft.pf[0].identifier = 4;
+        tft.pf[0].precedence = 0x0f;
+
+        rv = ogs_ipsubnet(&ipsubnet, "cafe::9", "120");
+        ogs_assert(rv == OGS_OK);
+#if 1
+        tft.pf[0].length = 18;
+        tft.pf[0].component[0].type =
+            GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_PREFIX_LENGTH_TYPE;
+        memcpy(tft.pf[0].component[0].ipv6.addr, ipsubnet.sub,
+                sizeof(tft.pf[0].component[0].ipv6.addr));
+        tft.pf[0].component[0].ipv6.prefixlen = 120;
+#else
+        tft.pf[0].length = 33;
+        tft.pf[0].component[0].type =
+            GTP_PACKET_FILTER_IPV6_REMOTE_ADDRESS_TYPE;
+        memcpy(tft.pf[0].component[0].ipv6_mask.addr, ipsubnet.sub,
+                sizeof(tft.pf[0].component[0].ipv6_mask.addr));
+        memcpy(tft.pf[0].component[0].ipv6_mask.mask, ipsubnet.mask,
+                sizeof(tft.pf[0].component[0].ipv6_mask.mask));
+#endif
+        tft.pf[0].num_of_component = 1;
+
+    } else if (tft.code == OGS_GTP_TFT_CODE_CREATE_NEW_TFT) {
+        tft.num_of_packet_filter = 4;
+
+        tft.pf[0].direction = 1;
+        tft.pf[0].identifier = 0;
+        tft.pf[0].precedence = 0x01;
+        tft.pf[0].length = 0x17;
+        tft.pf[0].component[0].type =
+            GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
+        tft.pf[0].component[0].proto = 0x11; /* UDP */
+        tft.pf[0].component[1].type =
+            GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        rv = ogs_ipsubnet(&ipsubnet, "172.20.166.84", NULL);
+        ogs_assert(rv == OGS_OK);
+        tft.pf[0].component[1].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[0].component[1].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[0].component[2].type =
+            GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        rv = ogs_ipsubnet(&ipsubnet, "172.18.128.20", NULL);
+        ogs_assert(rv == OGS_OK);
+        tft.pf[0].component[2].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[0].component[2].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[0].component[3].type =
+            GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
+        tft.pf[0].component[3].port.low = 20001;
+        tft.pf[0].num_of_component = 4;
+
+        tft.pf[1].direction = 2;
+        tft.pf[1].identifier = 1;
+        tft.pf[1].precedence = 0x02;
+        tft.pf[1].length = 0x17;
+        tft.pf[1].component[0].type =
+            GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
+        tft.pf[1].component[0].proto = 0x11; /* UDP */
+        tft.pf[1].component[1].type =
+            GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        rv = ogs_ipsubnet(&ipsubnet, "172.20.166.84", NULL);
+        ogs_assert(rv == OGS_OK);
+        tft.pf[1].component[1].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[1].component[1].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[1].component[2].type =
+            GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        rv = ogs_ipsubnet(&ipsubnet, "172.18.128.20", NULL);
+        ogs_assert(rv == OGS_OK);
+        tft.pf[1].component[2].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[1].component[2].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[1].component[3].type =
+            GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
+        tft.pf[1].component[3].port.low = 20360;
+        tft.pf[1].num_of_component = 4;
+
+        tft.pf[2].direction = 1;
+        tft.pf[2].identifier = 2;
+        tft.pf[2].precedence = 0x03;
+        tft.pf[2].length = 0x17;
+        tft.pf[2].component[0].type =
+            GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
+        tft.pf[2].component[0].proto = 0x11; /* UDP */
+        tft.pf[2].component[1].type =
+            GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        rv = ogs_ipsubnet(&ipsubnet, "172.20.166.84", NULL);
+        ogs_assert(rv == OGS_OK);
+        tft.pf[2].component[1].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[2].component[1].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[2].component[2].type =
+            GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        rv = ogs_ipsubnet(&ipsubnet, "172.18.128.20", NULL);
+        ogs_assert(rv == OGS_OK);
+        tft.pf[2].component[2].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[2].component[2].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[2].component[3].type =
+            GTP_PACKET_FILTER_SINGLE_REMOTE_PORT_TYPE;
+        tft.pf[2].component[3].port.low = 20002;
+        tft.pf[2].num_of_component = 4;
+
+        tft.pf[3].direction = 2;
+        tft.pf[3].identifier = 3;
+        tft.pf[3].precedence = 0x04;
+        tft.pf[3].length = 0x17;
+        tft.pf[3].component[0].type =
+            GTP_PACKET_FILTER_PROTOCOL_IDENTIFIER_NEXT_HEADER_TYPE;
+        tft.pf[3].component[0].proto = 0x11; /* UDP */
+        tft.pf[3].component[1].type =
+            GTP_PACKET_FILTER_IPV4_LOCAL_ADDRESS_TYPE;
+        rv = ogs_ipsubnet(&ipsubnet, "172.20.166.84", NULL);
+        ogs_assert(rv == OGS_OK);
+        tft.pf[3].component[1].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[3].component[1].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[3].component[2].type =
+            GTP_PACKET_FILTER_IPV4_REMOTE_ADDRESS_TYPE;
+        rv = ogs_ipsubnet(&ipsubnet, "172.18.128.20", NULL);
+        ogs_assert(rv == OGS_OK);
+        tft.pf[3].component[2].ipv4.addr = ipsubnet.sub[0];
+        tft.pf[3].component[2].ipv4.mask = ipsubnet.mask[0];
+        tft.pf[3].component[3].type =
+            GTP_PACKET_FILTER_SINGLE_LOCAL_PORT_TYPE;
+        tft.pf[3].component[3].port.low = 20361;
+        tft.pf[3].num_of_component = 4;
+    }
+    tad->length = ogs_gtp_build_tft(&octet,
+            &tft, tad->buffer, OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
+
+    if (ul_mbr || dl_mbr || ul_gbr || dl_gbr) {
+        req->presencemask |= OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT;
+        qos->length = 5;
+        qos->qci = qci;
+        qos->ul_mbr = ul_mbr;
+        qos->dl_mbr = dl_mbr;
+        qos->ul_gbr = ul_gbr;
+        qos->dl_gbr = dl_gbr;
+    }
+
+    emmbuf = ogs_nas_plain_encode(&message);
+
+    message.h.security_header_type =
+       OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
+    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
+    message.h.message_authentication_code = htobe32(mac);
+    message.h.sequence_number = seq;
+
+    ogs_assert(ogs_pkbuf_push(emmbuf, sizeof(ogs_nas_security_header_t)));
+    memcpy(emmbuf->data, &message.h, sizeof(ogs_nas_security_header_t));
+
+    *pkbuf = emmbuf;
+}
+
+int tests1ap_build_bearer_resource_modification_request(
+        ogs_pkbuf_t **pkbuf,
+        uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id,
+        uint8_t pti, uint32_t mac, uint8_t seq, uint8_t ebi,
+        uint8_t tft_code, uint8_t qci,
+        uint8_t ul_mbr, uint8_t dl_mbr, uint8_t ul_gbr, uint8_t dl_gbr)
+{
+    int rv;
+    ogs_pkbuf_t *emmbuf = NULL;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_UplinkNASTransport_t *UplinkNASTransport = NULL;
+
+    S1AP_UplinkNASTransport_IEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_NAS_PDU_t *NAS_PDU = NULL;
+    S1AP_EUTRAN_CGI_t *EUTRAN_CGI = NULL;
+    S1AP_TAI_t *TAI = NULL;
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_uplinkNASTransport;
+    initiatingMessage->criticality = S1AP_Criticality_ignore;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_UplinkNASTransport;
+
+    UplinkNASTransport = &initiatingMessage->value.choice.UplinkNASTransport;
+
+    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UplinkNASTransport_IEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UplinkNASTransport_IEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_NAS_PDU;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_NAS_PDU;
+
+    NAS_PDU = &ie->value.choice.NAS_PDU;
+
+    build_bearer_resource_modification_request(
+            &emmbuf, pti, mac, seq, ebi,
+            tft_code, qci, ul_mbr, dl_mbr, ul_gbr, dl_gbr);
+    ogs_assert(emmbuf);
+    NAS_PDU->size = emmbuf->len;
+    NAS_PDU->buf = CALLOC(NAS_PDU->size, sizeof(uint8_t));
+    memcpy(NAS_PDU->buf, emmbuf->data, NAS_PDU->size);
+    ogs_pkbuf_free(emmbuf);
+
+    *MME_UE_S1AP_ID = mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
+
+    *pkbuf = ogs_s1ap_encode(&pdu);
+    if (*pkbuf == NULL) {
+        ogs_error("ogs_s1ap_encode() failed");
+        return OGS_ERROR;
+    }
     return OGS_OK;
 }
 

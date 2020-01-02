@@ -506,6 +506,13 @@ void mme_s11_handle_update_bearer_request(
         } else {
             ogs_warn("[IGNORE] Update Bearer Request : "
                     "Both QoS and TFT is NULL");
+
+            if (xact->xid & OGS_GTP_CMD_XACT_ID) {
+                /* MME recieved Bearer resource modification request */
+                nas_send_bearer_resource_modification_reject(
+                        bearer, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED);
+            }
+
             mme_gtp_send_update_bearer_response(bearer);
         }
     } else {
@@ -790,4 +797,40 @@ void mme_s11_handle_delete_indirect_data_forwarding_tunnel_response(
 
     rv = mme_ue_clear_indirect_tunnel(mme_ue);
     ogs_expect(rv == OGS_OK);
+}
+
+void mme_s11_handle_bearer_resource_failure_indication(
+        ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
+        ogs_gtp_bearer_resource_failure_indication_t *ind)
+{
+    int rv;
+    uint8_t cause_value = 0;
+
+    mme_bearer_t *bearer = NULL;
+
+    ogs_assert(xact);
+    bearer = xact->data;
+    ogs_assert(ind);
+
+    ogs_debug("[MME] Bearer Resource Failure Indication");
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect_or_return(rv == OGS_OK);
+
+    if (ind->cause.presence) {
+        ogs_gtp_cause_t *cause = ind->cause.data;
+        ogs_assert(cause);
+
+        cause_value = cause->value;
+        if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED)
+            ogs_warn("GTP Failed [CAUSE:%d] - Ignored", cause_value);
+    } else {
+        ogs_error("No Cause");
+    }
+
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    nas_send_bearer_resource_modification_reject(
+            bearer, ESM_CAUSE_SERVICE_OPTION_NOT_SUPPORTED);
 }
