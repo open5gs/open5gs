@@ -452,7 +452,7 @@ void sgw_s11_handle_create_bearer_response(ogs_gtp_xact_t *s11_xact,
     ogs_assert(s5c_xact);
     ogs_assert(message);
 
-    ogs_debug("[SGW] Cerate Bearer Reqeust");
+    ogs_debug("[SGW] Cerate Bearer Response");
 
     if (!sgw_ue) {
         sgw_sess_t *sess = NULL;
@@ -625,7 +625,7 @@ void sgw_s11_handle_update_bearer_response(ogs_gtp_xact_t *s11_xact,
     ogs_assert(s5c_xact);
     ogs_assert(message);
 
-    ogs_debug("[SGW] Update Bearer Reqeust");
+    ogs_debug("[SGW] Update Bearer Response");
     if (!sgw_ue) {
         sgw_sess_t *sess = NULL;
 
@@ -928,7 +928,7 @@ void sgw_s11_handle_lo_dldata_notification(sgw_bearer_t *bearer)
     ogs_expect_or_return(pkbuf);
 
     xact = ogs_gtp_xact_local_create(
-            sgw_ue->gnode, &message.h, pkbuf, timeout, sgw_ue);
+            sgw_ue->gnode, &message.h, pkbuf, NULL, sgw_ue);
     ogs_expect_or_return(xact);
 
     rv = ogs_gtp_xact_commit(xact);
