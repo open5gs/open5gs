@@ -24,11 +24,16 @@
 
 static void timeout(ogs_gtp_xact_t *xact, void *data)
 {
-    sgw_ue_t *sgw_ue = data;
+    sgw_sess_t *sess = data;
+    sgw_ue_t *sgw_ue = NULL;
     uint8_t type = 0;
 
     ogs_assert(xact);
+    ogs_assert(sess);
+    sgw_ue = sess->sgw_ue;
     ogs_assert(sgw_ue);
+
+    type = xact->seq[0].type;
 
     ogs_error("GTP Timeout : IMSI[%s] Message-Type[%d]",
             sgw_ue->imsi_bcd, type);

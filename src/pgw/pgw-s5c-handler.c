@@ -188,7 +188,7 @@ void pgw_s5c_handle_delete_session_request(
 
 void pgw_s5c_handle_create_bearer_response(
         pgw_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp_create_bearer_response_t *req)
+        ogs_gtp_create_bearer_response_t *rsp)
 {
     int rv;
     ogs_gtp_f_teid_t *sgw_s5u_teid, *pgw_s5u_teid;
@@ -196,31 +196,50 @@ void pgw_s5c_handle_create_bearer_response(
     pgw_bearer_t *bearer = NULL;
 
     ogs_assert(xact);
-    ogs_assert(sess);
-    ogs_assert(req);
+    ogs_assert(rsp);
 
     ogs_debug("[PGW] Create Bearer Response");
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    if (!sess) {
+        ogs_warn("No Context in TEID");
+        return;
+    }
+
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    if (req->bearer_contexts.presence == 0) {
+
+    if (rsp->cause.presence) {
+        ogs_gtp_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
+
+        if (cause->value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+            ogs_warn("GTP Failed [CAUSE:%d]", cause->value);
+            return;
+        }
+    }
+
+    if (rsp->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
+    if (rsp->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
-    if (req->bearer_contexts.s5_s8_u_pgw_f_teid.presence == 0) {
+    if (rsp->bearer_contexts.s5_s8_u_pgw_f_teid.presence == 0) {
         ogs_error("No PGW TEID");
         return;
     }
-    if (req->bearer_contexts.s5_s8_u_sgw_f_teid.presence == 0) {
+    if (rsp->bearer_contexts.s5_s8_u_sgw_f_teid.presence == 0) {
         ogs_error("No SGW TEID");
         return;
     }
 
     /* Correlate with PGW-S5U-TEID */
-    pgw_s5u_teid = req->bearer_contexts.s5_s8_u_pgw_f_teid.data;
+    pgw_s5u_teid = rsp->bearer_contexts.s5_s8_u_pgw_f_teid.data;
     ogs_assert(pgw_s5u_teid);
 
     /* Find the Bearer by PGW-S5U-TEID */
@@ -228,10 +247,10 @@ void pgw_s5c_handle_create_bearer_response(
     ogs_assert(bearer);
 
     /* Set EBI */
-    bearer->ebi = req->bearer_contexts.eps_bearer_id.u8;
+    bearer->ebi = rsp->bearer_contexts.eps_bearer_id.u8;
 
     /* Data Plane(DL) : SGW-S5U */
-    sgw_s5u_teid = req->bearer_contexts.s5_s8_u_sgw_f_teid.data;
+    sgw_s5u_teid = rsp->bearer_contexts.s5_s8_u_sgw_f_teid.data;
     bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
     sgw = ogs_gtp_node_find_by_f_teid(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
     if (!sgw) {
@@ -248,72 +267,101 @@ void pgw_s5c_handle_create_bearer_response(
     /* Setup GTP Node */
     OGS_SETUP_GTP_NODE(bearer, sgw);
 
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
-    
     ogs_debug("[PGW] Create Bearer Response : SGW[0x%x] --> PGW[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 void pgw_s5c_handle_update_bearer_response(
         pgw_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp_update_bearer_response_t *req)
+        ogs_gtp_update_bearer_response_t *rsp)
 {
     int rv;
 
     ogs_assert(xact);
-    ogs_assert(sess);
-    ogs_assert(req);
+    ogs_assert(rsp);
 
-    ogs_debug("[PGW] Update Bearer Request");
+    ogs_debug("[PGW] Update Bearer Response");
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    if (!sess) {
+        ogs_warn("No Context in TEID");
+        return;
+    }
+
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    if (req->bearer_contexts.presence == 0) {
+
+    if (rsp->cause.presence) {
+        ogs_gtp_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
+
+        if (cause->value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+            ogs_warn("GTP Failed [CAUSE:%d]", cause->value);
+            return;
+        }
+    }
+
+    if (rsp->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
+    if (rsp->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
 
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
-    
     ogs_debug("[PGW] Update Bearer Response : SGW[0x%x] --> PGW[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 }
 
 void pgw_s5c_handle_delete_bearer_response(
         pgw_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_gtp_delete_bearer_response_t *req)
+        ogs_gtp_delete_bearer_response_t *rsp)
 {
     int rv;
     pgw_bearer_t *bearer = NULL;
 
     ogs_assert(xact);
-    ogs_assert(sess);
-    ogs_assert(req);
+    ogs_assert(rsp);
 
-    ogs_debug("[PGW] Delete Bearer Request");
+    ogs_debug("[PGW] Delete Bearer Response");
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+
+    if (!sess) {
+        ogs_warn("No Context in TEID");
+        return;
+    }
+
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    if (req->bearer_contexts.presence == 0) {
+
+    if (rsp->cause.presence) {
+        ogs_gtp_cause_t *cause = rsp->cause.data;
+        ogs_assert(cause);
+
+        if (cause->value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+            ogs_warn("GTP Failed [CAUSE:%d]", cause->value);
+            return;
+        }
+    }
+
+    if (rsp->bearer_contexts.presence == 0) {
         ogs_error("No Bearer");
         return;
     }
-    if (req->bearer_contexts.eps_bearer_id.presence == 0) {
+    if (rsp->bearer_contexts.eps_bearer_id.presence == 0) {
         ogs_error("No EPS Bearer ID");
         return;
     }
 
     bearer = pgw_bearer_find_by_ebi(
-            sess, req->bearer_contexts.eps_bearer_id.u8);
+            sess, rsp->bearer_contexts.eps_bearer_id.u8);
     ogs_assert(bearer);
 
-    rv = ogs_gtp_xact_commit(xact);
-    ogs_expect(rv == OGS_OK);
-    
     ogs_debug("[PGW] Delete Bearer Response : SGW[0x%x] --> PGW[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
