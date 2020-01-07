@@ -110,7 +110,7 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
 
     rv = ogs_gtp_xact_update_tx(xact, hdesc, pkbuf);
     if (rv != OGS_OK) {
-        ogs_error("ogs_gtp_xact_update_tx() failed");
+        ogs_error("ogs_gtp_xact_update_tx(rv=%d) failed", (int)rv);
         ogs_gtp_xact_delete(xact);
         return NULL;
     }
@@ -652,9 +652,11 @@ int ogs_gtp_xact_receive(
             OGS_PORT(&gnode->remote_addr));
 
     rv = ogs_gtp_xact_update_rx(new, h->type);
-    if (rv != OGS_OK) {
+    if (rv == OGS_ERROR) {
         ogs_error("ogs_gtp_xact_update_rx() failed");
         ogs_gtp_xact_delete(new);
+        return rv;
+    } else if (rv == OGS_RETRY) {
         return rv;
     }
 
