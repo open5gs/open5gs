@@ -731,6 +731,24 @@ int pcrf_gx_send_rar(
                 }
             }
 
+            if (!db_pcc_rule && (media_component->media_type
+                    == OGS_DIAM_RX_MEDIA_TYPE_CONTROL)) {
+                /*
+                 * Check for default bearer for IMS signalling
+                 * QCI 5 and ARP 1
+                 */
+                if (gx_message.pdn.qos.qci != OGS_PDN_QCI_5 ||
+                    gx_message.pdn.qos.arp.priority_level != 1) {
+                    ogs_error("CHECK WEBUI : No APN in DB with [QCI:%d]", qci);
+                    ogs_error("Please add APN using WEBUI");
+                    rx_message->result_code =
+                        OGS_DIAM_RX_DIAMETER_REQUESTED_SERVICE_NOT_AUTHORIZED;
+                    goto out;
+                } else {
+                    continue;
+                }
+            }
+
             if (!db_pcc_rule) {
                 ogs_error("CHECK WEBUI : No PCC Rule in DB [QCI:%d]", qci);
                 ogs_error("Please add PCC Rule using WEBUI");
