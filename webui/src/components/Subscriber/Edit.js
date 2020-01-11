@@ -133,6 +133,13 @@ const schema = {
               }
             }
           },
+          "type": {
+            "type": "number",
+            "title": "Type*",
+            "enum": [0, 1, 2],
+            "enumNames": ["IPv4", "IPv6", "IPv4v6"],
+            "default": 0,
+          },          
           "ambr": {
             "type": "object",
             "title": "",

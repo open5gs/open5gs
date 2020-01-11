@@ -255,6 +255,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                 <div className="small_data">ARP</div>
                 <div className="medium_data">Capability</div>
                 <div className="medium_data">Vulnerablility</div>
+                <div className="medium_data">Type</div>
                 <div className="large_data">MBR DL/UL(Kbps)</div>
                 <div className="large_data">GBR DL/UL(Kbps)</div>
               </div>
@@ -266,6 +267,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                     <div className="small_data">{pdn.qos.arp.priority_level}</div>
                     <div className="medium_data">{pdn.qos.arp.pre_emption_capability === 1 ? "Disabled" : "Enabled"}</div>
                     <div className="medium_data">{pdn.qos.arp.pre_emption_vulnerability === 1 ? "Disabled" : "Enabled"}</div>
+                    <div className="medium_data">{pdn.type === 0 ? "IPv4" : (pdn.type === 1 ? "IPv6" : "IPv4v6")}</div>
                     {pdn['ambr'] === undefined ? 
                       <div className="large_data">
                         unlimited/unlimited
@@ -305,6 +307,7 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                           <div className="small_data">{pcc_rule.qos.arp.priority_level}</div>
                           <div className="medium_data">{pcc_rule.qos.arp.pre_emption_capability === 1 ? "Disabled" : "Enabled"}</div>
                           <div className="medium_data">{pcc_rule.qos.arp.pre_emption_vulnerability === 1 ? "Disabled" : "Enabled"}</div>
+                          <div className="medium_data">{pdn.type === 0 ? "IPv4" : (pdn.type === 1 ? "IPv6" : "IPv4v6")}</div>
                           {pcc_rule.qos['mbr'] === undefined ? 
                             <div className="large_data">
                               unlimited/unlimited
