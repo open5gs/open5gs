@@ -1,3 +1,27 @@
+open5gs (1.2.0~eoan) eoan; urgency=medium
+
+  * VoLTE tested
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 12 Jan 2020 23:08:38 +0900
+
+open5gs (1.2.0~disco) disco; urgency=medium
+
+  * VoLTE tested
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 12 Jan 2020 23:07:41 +0900
+
+open5gs (1.2.0~bionic2) bionic; urgency=medium
+
+  * VoLTE tested
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 12 Jan 2020 23:05:19 +0900
+
+open5gs (1.2.0) unstable; urgency=medium
+
+  * VoLTE tested
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sun, 12 Jan 2020 22:45:29 +0900
+
 open5gs (1.1.0) unstable; urgency=medium
 
   * Static IP addresses
