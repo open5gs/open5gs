@@ -26,6 +26,7 @@ const formData = {
   "pdn": [
     {
       "apn": "internet",
+      "type": 2,
       "qos": {
         "qci": 9,
         "arp": {

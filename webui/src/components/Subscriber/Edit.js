@@ -93,6 +93,13 @@ const schema = {
             "title": "Access Point Name (APN)*",
             "required": true
           },
+          "type": {
+            "type": "number",
+            "title": "Type*",
+            "enum": [0, 1, 2],
+            "enumNames": ["IPv4", "IPv6", "IPv4v6"],
+            "default": 2,
+          },
           "qos": {
             "type": "object",
             "title": "",
