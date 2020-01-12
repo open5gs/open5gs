@@ -252,6 +252,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
               </div>
               <div className="body" style={{color:oc.gray[5]}}>
                 <div className="medium_data">APN</div>
+                <div className="medium_data">Type</div>
                 <div className="small_data">QCI</div>
                 <div className="small_data">ARP</div>
                 <div className="medium_data">Capability</div>
@@ -263,6 +264,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                 <div key={pdn.apn}>
                   <div className="body">
                     <div className="medium_data">{pdn.apn}</div>
+                    <div className="medium_data">{pdn.type === 0 ? "IPv4" : (pdn.type === 1 ? "IPv6" : "IPv4v6")}</div>
                     <div className="small_data">{pdn.qos.qci}</div>
                     <div className="small_data">{pdn.qos.arp.priority_level}</div>
                     <div className="medium_data">{pdn.qos.arp.pre_emption_capability === 1 ? "Disabled" : "Enabled"}</div>
@@ -301,6 +303,7 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                     pdn.pcc_rule.map((pcc_rule, index) =>
                       <div key={index}>
                         <div className="body">
+                          <div className="medium_data"></div>
                           <div className="medium_data"></div>
                           <div className="small_data">{pcc_rule.qos.qci}</div>
                           <div className="small_data">{pcc_rule.qos.arp.priority_level}</div>
