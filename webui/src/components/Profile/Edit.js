@@ -102,7 +102,7 @@ const schema = {
                 "type": "number",
                 "title": "QoS Class Identifier (QCI)*",
                 "enum": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 65, 66, 69, 70 ],
-                "default": 9,
+                "default": 5,
               },
               "arp" : {
                 "type": "object",
@@ -111,7 +111,7 @@ const schema = {
                   "priority_level": {
                     "type": "number",
                     "title": "ARP Priority Level (1-15)*",
-                    "default": 8,
+                    "default": 1,
                     "minimum": 1,
                     "maximum": 15,
                     "required": true
@@ -133,13 +133,6 @@ const schema = {
                 }
               }
             }
-          },
-          "type": {
-            "type": "number",
-            "title": "Type*",
-            "enum": [0, 1, 2],
-            "enumNames": ["IPv4", "IPv6", "IPv4v6"],
-            "default": 0,
           },
           "ambr": {
             "type": "object",
@@ -235,7 +228,7 @@ const schema = {
                       "type": "number",
                       "title": "QoS Class Identifier (QCI)*",
                       "enum": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 65, 66, 69, 70 ],
-                      "default": 9,
+                      "default": 1,
                     },
                     "arp" : {
                       "type": "object",
@@ -244,7 +237,7 @@ const schema = {
                         "priority_level": {
                           "type": "number",
                           "title": "ARP Priority Level (1-15)*",
-                          "default": 8,
+                          "default": 2,
                           "minimum": 1,
                           "maximum": 15,
                           "required": true
