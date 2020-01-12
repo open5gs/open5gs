@@ -319,7 +319,7 @@ const uiSchema = {
       classNames: "col-xs-5",
     },
     "op_type" : {
-      classNames: "col-xs-3",
+      classNames: "col-xs-4",
     },
     "op_value" : {
       classNames: "col-xs-8",
@@ -335,7 +335,14 @@ const uiSchema = {
   },
   "pdn": {
     "items": {
+      "apn": {
+        classNames: "col-xs-8",
+      },
+      "type": {
+        classNames: "col-xs-4",
+      },
       "qos": {
+        classNames: "col-xs-12",
         "qci": {
           "ui:widget": "radio",
           "ui:options": {
@@ -355,6 +362,7 @@ const uiSchema = {
         }
       },
       "ambr" : {
+        classNames: "col-xs-12",
         "downlink" : {
           classNames: "col-xs-6"
         },
@@ -363,6 +371,7 @@ const uiSchema = {
         },
       },
       "ue" : {
+        classNames: "col-xs-12",
         "addr" : {
           classNames: "col-xs-6"
         },
@@ -371,6 +380,7 @@ const uiSchema = {
         },
       },
       "pgw" : {
+        classNames: "col-xs-12",
         "addr" : {
           classNames: "col-xs-6"
         },
@@ -379,6 +389,7 @@ const uiSchema = {
         },
       },
       "pcc_rule": {
+        classNames: "col-xs-12",
         "items": {
           "flow": {
             "items": {
