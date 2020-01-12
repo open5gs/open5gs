@@ -128,7 +128,7 @@ const schema = {
                     "title": "Vulnerability*",
                     "enum": [1, 0],
                     "enumNames": ["Disabled", "Enabled"],
-                    "default": 0,
+                    "default": 1,
                   },
                 }
               }
@@ -242,19 +242,28 @@ const schema = {
                           "maximum": 15,
                           "required": true
                         },
+      // Ch 7.3.40 Allocation-Retenion-Proirty in TS 29.272 V15.9.0
+      //
+      // If the Pre-emption-Capability AVP is not present
+      // in the Allocation-Retention-Priority AVP, the default value shall be
+      // PRE-EMPTION_CAPABILITY_DISABLED (1).
+      //
+      // If the Pre-emption-Vulnerability AVP is not present
+      // in the Allocation-Retention-Priority AVP, the default value shall be
+      // PRE-EMPTION_VULNERABILITY_ENABLED (0).
+      //
+      // However, to easily set up VoLTE service,
+      // enable Pre-emption Capability/Vulnerablility in Default Bearer
                         "pre_emption_capability": {
                           "type": "number",
                           "title": "Capability*",
                           "enum": [1, 0],
                           "enumNames": ["Disabled", "Enabled"],
-                          "default": 1,
+                          "default": 0,
                         },
                         "pre_emption_vulnerability": {
                           "type": "number",
                           "title": "Vulnerability*",
-                          "default": 1,
-                          "minimum": 0,
-                          "maximum": 1,
                           "enum": [1, 0],
                           "enumNames": ["Disabled", "Enabled"],
                           "default": 0,
