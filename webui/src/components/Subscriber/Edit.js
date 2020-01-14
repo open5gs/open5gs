@@ -93,6 +93,13 @@ const schema = {
             "title": "Access Point Name (APN)*",
             "required": true
           },
+          "type": {
+            "type": "number",
+            "title": "Type*",
+            "enum": [0, 1, 2],
+            "enumNames": ["IPv4", "IPv6", "IPv4v6"],
+            "default": 2,
+          },
           "qos": {
             "type": "object",
             "title": "",
@@ -101,7 +108,7 @@ const schema = {
                 "type": "number",
                 "title": "QoS Class Identifier (QCI)*",
                 "enum": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 65, 66, 69, 70 ],
-                "default": 9,
+                "default": 5,
               },
               "arp" : {
                 "type": "object",
@@ -110,7 +117,7 @@ const schema = {
                   "priority_level": {
                     "type": "number",
                     "title": "ARP Priority Level (1-15)*",
-                    "default": 8,
+                    "default": 1,
                     "minimum": 1,
                     "maximum": 15,
                     "required": true
@@ -127,7 +134,7 @@ const schema = {
                     "title": "Vulnerability*",
                     "enum": [1, 0],
                     "enumNames": ["Disabled", "Enabled"],
-                    "default": 0,
+                    "default": 1,
                   },
                 }
               }
@@ -227,7 +234,7 @@ const schema = {
                       "type": "number",
                       "title": "QoS Class Identifier (QCI)*",
                       "enum": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 65, 66, 69, 70 ],
-                      "default": 9,
+                      "default": 1,
                     },
                     "arp" : {
                       "type": "object",
@@ -236,24 +243,33 @@ const schema = {
                         "priority_level": {
                           "type": "number",
                           "title": "ARP Priority Level (1-15)*",
-                          "default": 8,
+                          "default": 2,
                           "minimum": 1,
                           "maximum": 15,
                           "required": true
                         },
+      // Ch 7.3.40 Allocation-Retenion-Proirty in TS 29.272 V15.9.0
+      //
+      // If the Pre-emption-Capability AVP is not present
+      // in the Allocation-Retention-Priority AVP, the default value shall be
+      // PRE-EMPTION_CAPABILITY_DISABLED (1).
+      //
+      // If the Pre-emption-Vulnerability AVP is not present
+      // in the Allocation-Retention-Priority AVP, the default value shall be
+      // PRE-EMPTION_VULNERABILITY_ENABLED (0).
+      //
+      // However, to easily set up VoLTE service,
+      // enable Pre-emption Capability/Vulnerablility in Default Bearer
                         "pre_emption_capability": {
                           "type": "number",
                           "title": "Capability*",
                           "enum": [1, 0],
                           "enumNames": ["Disabled", "Enabled"],
-                          "default": 1,
+                          "default": 0,
                         },
                         "pre_emption_vulnerability": {
                           "type": "number",
                           "title": "Vulnerability*",
-                          "default": 1,
-                          "minimum": 0,
-                          "maximum": 1,
                           "enum": [1, 0],
                           "enumNames": ["Disabled", "Enabled"],
                           "default": 0,
@@ -311,7 +327,7 @@ const uiSchema = {
       classNames: "col-xs-5",
     },
     "op_type" : {
-      classNames: "col-xs-3",
+      classNames: "col-xs-4",
     },
     "op_value" : {
       classNames: "col-xs-8",
@@ -327,7 +343,14 @@ const uiSchema = {
   },
   "pdn": {
     "items": {
+      "apn": {
+        classNames: "col-xs-8",
+      },
+      "type": {
+        classNames: "col-xs-4",
+      },
       "qos": {
+        classNames: "col-xs-12",
         "qci": {
           "ui:widget": "radio",
           "ui:options": {
@@ -347,6 +370,7 @@ const uiSchema = {
         }
       },
       "ambr" : {
+        classNames: "col-xs-12",
         "downlink" : {
           classNames: "col-xs-6"
         },
@@ -355,6 +379,7 @@ const uiSchema = {
         },
       },
       "ue" : {
+        classNames: "col-xs-12",
         "addr" : {
           classNames: "col-xs-6"
         },
@@ -363,6 +388,7 @@ const uiSchema = {
         },
       },
       "pgw" : {
+        classNames: "col-xs-12",
         "addr" : {
           classNames: "col-xs-6"
         },
@@ -371,6 +397,7 @@ const uiSchema = {
         },
       },
       "pcc_rule": {
+        classNames: "col-xs-12",
         "items": {
           "flow": {
             "items": {
