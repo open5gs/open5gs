@@ -151,15 +151,29 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
             ogs_min(access_point_name->length, OGS_MAX_APN_LEN) + 1);
     ogs_debug("    APN[%s]", pdn->apn);
 
+    // SMS TODO: TEST?!?
+    // sess->request_type.pdn_type == OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6;
+    printf("SMS REQUEST TYPE: %d\n", sess->request_type.pdn_type);
+
     pdn_address->pdn_type = pdn->paa.pdn_type;
     if (pdn_address->pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
         pdn_address->addr = pdn->paa.addr;
         pdn_address->length = OGS_NAS_PDN_ADDRESS_IPV4_LEN;
+        if (sess->request_type.pdn_type == OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6) {
+            activate_default_eps_bearer_context_request->esm_cause = ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
+            activate_default_eps_bearer_context_request->presencemask = activate_default_eps_bearer_context_request->presencemask | OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
+        }
+
         ogs_debug("    IPv4");
     } else if (pdn_address->pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
         memcpy(pdn_address->addr6,
                 pdn->paa.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
         pdn_address->length = OGS_NAS_PDN_ADDRESS_IPV6_LEN;
+        if (sess->request_type.pdn_type == OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6) {
+            activate_default_eps_bearer_context_request->esm_cause = ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
+            activate_default_eps_bearer_context_request->presencemask = activate_default_eps_bearer_context_request->presencemask | OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
+        }
+
         ogs_debug("    IPv6");
     } else if (pdn_address->pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
         pdn_address->both.addr = pdn->paa.both.addr;
