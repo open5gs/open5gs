@@ -151,10 +151,6 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
             ogs_min(access_point_name->length, OGS_MAX_APN_LEN) + 1);
     ogs_debug("    APN[%s]", pdn->apn);
 
-    // SMS TODO: TEST?!?
-    // sess->request_type.pdn_type == OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6;
-    printf("SMS REQUEST TYPE: %d\n", sess->request_type.pdn_type);
-
     pdn_address->pdn_type = pdn->paa.pdn_type;
     if (pdn_address->pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
         pdn_address->addr = pdn->paa.addr;
