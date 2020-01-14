@@ -39,7 +39,8 @@ This removes all existing cloud users and allows only root user and sets a passw
 
 ```
 $ apt update && apt upgrade -y && apt install -y mysql-server tcpdump screen ntp ntpdate git-core dkms gcc flex bison libmysqlclient-dev make \
-libssl-dev libcurl4-openssl-dev libxml2-dev libpcre3-dev bash-completion g++ autoconf rtpproxy libmnl-dev libsctp-dev ipsec-tools
+libssl-dev libcurl4-openssl-dev libxml2-dev libpcre3-dev bash-completion g++ autoconf rtpproxy libmnl-dev libsctp-dev ipsec-tools libradcli-dev \
+libradcli4
 ```
 
 #### 4. Clone Kamailio repository and checkout 5.2 version of repository
@@ -98,6 +99,7 @@ modules_configured:=1
 
 ```
 $ cd /usr/local/src/kamailio
+$ export RADCLI=1
 $ make Q=0 all | tee make_all.txt
 $ make install | tee make_install.txt
 $ ldconfig
@@ -660,7 +662,7 @@ $ cp /etc/rtpengine/rtpengine.sample.conf /etc/rtpengine/rtpengine.conf
 Edit this file as follows under **[rtpengine]**:
 
 ```
-interface = 10.4.128.21!172.24.15.30
+interface = 10.4.128.21
 ```
 
 Port on which rtpengine binds i.e. listen_ng parameter is udp port 2223. This should be updated in `kamailio_pcscf.cfg` file at **modparam(rtpengine ...)**
@@ -695,7 +697,7 @@ Second instance of RTPENGINE can be run as follows (Optional)
 $ iptables -I rtpengine -p udp -j RTPENGINE --id 1
 $ ip6tables -I INPUT -p udp -j RTPENGINE --id 1
 $ echo 'del 1' > /proc/rtpengine/control
-$ /usr/sbin/rtpengine --table=1 --interface=10.4.128.21!172.24.15.30 --listen-ng=127.0.0.1:2224 --tos=184 --pidfile=ngcp-rtpengine-daemon2.pid --no-fallback --foreground
+$ /usr/sbin/rtpengine --table=1 --interface=10.4.128.21 --listen-ng=127.0.0.1:2224 --tos=184 --pidfile=ngcp-rtpengine-daemon2.pid --no-fallback --foreground
 ```
 
 #### 17. Running I-CSCF, P-CSCF and S-CSCF as separate `systemctl` process
@@ -1143,16 +1145,17 @@ Enter:
 Identity = 001010123456791@ims.mnc001.mcc001.3gppnetwork.org
 Secret Key = 8baf473f2f8fd09487cccbd7097c6862 (Ki value as in Open5GS HSS database)
 Authentication Schemes - All
-Default = Digest
+Default = Digest-AKAv1-MD5
 AMF = 8000 (As in Open5GS HSS database)
 OP = 11111111111111111111111111111111 (As in Open5GS HSS database)
-SQN = 000000021090 (As in Open5GS HSS database, better to disable SQN check in USIM rather than syncing between Open5GS HSS and FoHSS)
+SQN = 000000021090 (SQN value as in Open5GS HSS database)
 Click Save
 
 Create and Associate IMPI to IMPU
 Click Create & Bind new IMPU
 Enter:
 Identity = sip:001010123456791@ims.mnc001.mcc001.3gppnetwork.org
+Barring = Yes
 Service Profile = default_sp
 Charging-Info Set = default_charging_set
 IMPU Type = Public_User_Identity
@@ -1188,25 +1191,6 @@ Click Add
 
 Public User Identity -IMPU-
 Identity = sip:0198765432100
-Service Profile = default_sp
-Charging-Info Set = default_charging_set
-Can Register = Yes
-IMPU Type = Public_User_Identity
-Click Save
-
-Add Visited Network to IMPU
-Enter:
-Visited Network = ims.mnc001.mcc001.3gppnetwork.org
-Click Add
-
-Associate IMPI(s) to IMPU
-IMPI Identity = 001011234567891@ims.mnc001.mcc001.3gppnetwork.org
-Click Add
-
-3. sip:0198765432100@ims.mnc001.mcc001.3gppnetwork.org
-
-Public User Identity -IMPU-
-Identity = sip:0198765432100@ims.mnc001.mcc001.3gppnetwork.org
 Service Profile = default_sp
 Charging-Info Set = default_charging_set
 Can Register = Yes
