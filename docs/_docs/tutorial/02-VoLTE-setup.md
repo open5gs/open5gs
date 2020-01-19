@@ -1237,7 +1237,9 @@ $ ip r add 10.4.128.21/32 via 172.24.15.30
 #### 23. USIM and UE settings
 
 - Make sure to disable SQN check in Sysmocom SIM cards using sysmo-usim-tool tool [https://github.com/herlesupreeth/sysmo-usim-tool](https://github.com/herlesupreeth/sysmo-usim-tool)
-- Tested with OnePlus 5 - With modfication to enable force IMS registration is a must or else UE will not even attempt to connect to P-CSCF. Need to apply the fix back after each update.  [https://forum.xda-developers.com/oneplus-5t/how-to/guide-volte-vowifi-german-carriers-t3817542](https://forum.xda-developers.com/oneplus-5t/how-to/guide-volte-vowifi-german-carriers-t3817542)
+- Tested with OnePlus 5 with following methods (Official Google method is the recommended method to prevent damage to phone)
+  - (Official Google method) - Please follow the instructions in the following link [https://github.com/herlesupreeth/CoIMS_Wiki](https://github.com/herlesupreeth/CoIMS_Wiki) to force enable VoLTE using Carrier Privileges
+  - (Risky method) With modfication to enable force IMS registration is a must or else UE will not even attempt to connect to P-CSCF. Need to apply the fix back after each update.  [https://forum.xda-developers.com/oneplus-5t/how-to/guide-volte-vowifi-german-carriers-t3817542](https://forum.xda-developers.com/oneplus-5t/how-to/guide-volte-vowifi-german-carriers-t3817542)
 
 #### 24. Start IMS components and FoHSS followed by Open5GS and eNB, then try connecting the phones
 
