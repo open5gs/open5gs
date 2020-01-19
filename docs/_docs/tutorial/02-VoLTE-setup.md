@@ -39,7 +39,8 @@ This removes all existing cloud users and allows only root user and sets a passw
 
 ```
 $ apt update && apt upgrade -y && apt install -y mysql-server tcpdump screen ntp ntpdate git-core dkms gcc flex bison libmysqlclient-dev make \
-libssl-dev libcurl4-openssl-dev libxml2-dev libpcre3-dev bash-completion g++ autoconf rtpproxy libmnl-dev libsctp-dev ipsec-tools
+libssl-dev libcurl4-openssl-dev libxml2-dev libpcre3-dev bash-completion g++ autoconf rtpproxy libmnl-dev libsctp-dev ipsec-tools libradcli-dev \
+libradcli4
 ```
 
 #### 4. Clone Kamailio repository and checkout 5.2 version of repository
@@ -98,6 +99,7 @@ modules_configured:=1
 
 ```
 $ cd /usr/local/src/kamailio
+$ export RADCLI=1
 $ make Q=0 all | tee make_all.txt
 $ make install | tee make_install.txt
 $ ldconfig
@@ -660,7 +662,7 @@ $ cp /etc/rtpengine/rtpengine.sample.conf /etc/rtpengine/rtpengine.conf
 Edit this file as follows under **[rtpengine]**:
 
 ```
-interface = 10.4.128.21!172.24.15.30
+interface = 10.4.128.21
 ```
 
 Port on which rtpengine binds i.e. listen_ng parameter is udp port 2223. This should be updated in `kamailio_pcscf.cfg` file at **modparam(rtpengine ...)**
@@ -695,7 +697,7 @@ Second instance of RTPENGINE can be run as follows (Optional)
 $ iptables -I rtpengine -p udp -j RTPENGINE --id 1
 $ ip6tables -I INPUT -p udp -j RTPENGINE --id 1
 $ echo 'del 1' > /proc/rtpengine/control
-$ /usr/sbin/rtpengine --table=1 --interface=10.4.128.21!172.24.15.30 --listen-ng=127.0.0.1:2224 --tos=184 --pidfile=ngcp-rtpengine-daemon2.pid --no-fallback --foreground
+$ /usr/sbin/rtpengine --table=1 --interface=10.4.128.21 --listen-ng=127.0.0.1:2224 --tos=184 --pidfile=ngcp-rtpengine-daemon2.pid --no-fallback --foreground
 ```
 
 #### 17. Running I-CSCF, P-CSCF and S-CSCF as separate `systemctl` process
@@ -1143,16 +1145,17 @@ Enter:
 Identity = 001010123456791@ims.mnc001.mcc001.3gppnetwork.org
 Secret Key = 8baf473f2f8fd09487cccbd7097c6862 (Ki value as in Open5GS HSS database)
 Authentication Schemes - All
-Default = Digest
+Default = Digest-AKAv1-MD5
 AMF = 8000 (As in Open5GS HSS database)
 OP = 11111111111111111111111111111111 (As in Open5GS HSS database)
-SQN = 000000021090 (As in Open5GS HSS database, better to disable SQN check in USIM rather than syncing between Open5GS HSS and FoHSS)
+SQN = 000000021090 (SQN value as in Open5GS HSS database)
 Click Save
 
 Create and Associate IMPI to IMPU
 Click Create & Bind new IMPU
 Enter:
 Identity = sip:001010123456791@ims.mnc001.mcc001.3gppnetwork.org
+Barring = Yes
 Service Profile = default_sp
 Charging-Info Set = default_charging_set
 IMPU Type = Public_User_Identity
@@ -1203,25 +1206,6 @@ Associate IMPI(s) to IMPU
 IMPI Identity = 001011234567891@ims.mnc001.mcc001.3gppnetwork.org
 Click Add
 
-3. sip:0198765432100@ims.mnc001.mcc001.3gppnetwork.org
-
-Public User Identity -IMPU-
-Identity = sip:0198765432100@ims.mnc001.mcc001.3gppnetwork.org
-Service Profile = default_sp
-Charging-Info Set = default_charging_set
-Can Register = Yes
-IMPU Type = Public_User_Identity
-Click Save
-
-Add Visited Network to IMPU
-Enter:
-Visited Network = ims.mnc001.mcc001.3gppnetwork.org
-Click Add
-
-Associate IMPI(s) to IMPU
-IMPI Identity = 001011234567891@ims.mnc001.mcc001.3gppnetwork.org
-Click Add
-
 And, finally add these IMPUs as implicit set of IMSI derived IMPU in HSS i.e sip:001011234567891@ims.mnc001.mcc001.3gppnetwork.org as follows:
 
 1. Goto to IMPU sip:001011234567891@ims.mnc001.mcc001.3gppnetwork.org
@@ -1253,7 +1237,9 @@ $ ip r add 10.4.128.21/32 via 172.24.15.30
 #### 23. USIM and UE settings
 
 - Make sure to disable SQN check in Sysmocom SIM cards using sysmo-usim-tool tool [https://github.com/herlesupreeth/sysmo-usim-tool](https://github.com/herlesupreeth/sysmo-usim-tool)
-- Tested with OnePlus 5 - With modfication to enable force IMS registration is a must or else UE will not even attempt to connect to P-CSCF. Need to apply the fix back after each update.  [https://forum.xda-developers.com/oneplus-5t/how-to/guide-volte-vowifi-german-carriers-t3817542](https://forum.xda-developers.com/oneplus-5t/how-to/guide-volte-vowifi-german-carriers-t3817542)
+- Tested with OnePlus 5 with following methods (Official Google method is the recommended method to prevent damage to phone)
+  - (Official Google method) - Please follow the instructions in the following link [https://github.com/herlesupreeth/CoIMS_Wiki](https://github.com/herlesupreeth/CoIMS_Wiki) to force enable VoLTE using Carrier Privileges
+  - (Risky method) With modfication to enable force IMS registration is a must or else UE will not even attempt to connect to P-CSCF. Need to apply the fix back after each update.  [https://forum.xda-developers.com/oneplus-5t/how-to/guide-volte-vowifi-german-carriers-t3817542](https://forum.xda-developers.com/oneplus-5t/how-to/guide-volte-vowifi-german-carriers-t3817542)
 
 #### 24. Start IMS components and FoHSS followed by Open5GS and eNB, then try connecting the phones
 
