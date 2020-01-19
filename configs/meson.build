@@ -36,6 +36,7 @@ endif
 example_conf = '''
     simple.yaml
     installed.yaml
+    split.yaml
     mnc3.yaml
     csfb.yaml
     volte.yaml
