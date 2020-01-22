@@ -384,6 +384,15 @@ void mme_s11_handle_create_bearer_request(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
+    /* Set PTI */
+    sess = bearer->sess;
+    ogs_assert(sess);
+    sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+    if (req->procedure_transaction_id.presence) {
+        sess->pti = req->procedure_transaction_id.u8;
+        ogs_debug("    PTI[%d]", sess->pti);
+    }
+
     /* Data Plane(UL) : SGW-S1U */
     sgw_s1u_teid = req->bearer_contexts.s1_u_enodeb_f_teid.data;
     bearer->sgw_s1u_teid = ntohl(sgw_s1u_teid->teid);
@@ -430,6 +439,7 @@ void mme_s11_handle_update_bearer_request(
 {
     uint8_t cause_value = 0;
     mme_bearer_t *bearer = NULL;
+    mme_sess_t *sess = NULL;
     ogs_gtp_bearer_qos_t bearer_qos;
 
     ogs_assert(xact);
@@ -467,6 +477,15 @@ void mme_s11_handle_update_bearer_request(
 
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    /* Set PTI */
+    sess = bearer->sess;
+    ogs_assert(sess);
+    sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+    if (req->procedure_transaction_id.presence) {
+        sess->pti = req->procedure_transaction_id.u8;
+        ogs_debug("    PTI[%d]", sess->pti);
+    }
 
     /* Save Transaction. will be handled after EMM-attached */
     bearer->xact = xact;
@@ -530,6 +549,7 @@ void mme_s11_handle_delete_bearer_request(
         ogs_gtp_delete_bearer_request_t *req)
 {
     mme_bearer_t *bearer = NULL;
+    mme_sess_t *sess = NULL;
 
     ogs_assert(xact);
     ogs_assert(req);
@@ -556,6 +576,15 @@ void mme_s11_handle_delete_bearer_request(
 
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    /* Set PTI */
+    sess = bearer->sess;
+    ogs_assert(sess);
+    sess->pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
+    if (req->procedure_transaction_id.presence) {
+        sess->pti = req->procedure_transaction_id.u8;
+        ogs_debug("    PTI[%d]", sess->pti);
+    }
 
     /* Save Transaction. will be handled after EMM-attached */
     ogs_assert(bearer);
