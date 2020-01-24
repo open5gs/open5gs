@@ -266,7 +266,7 @@ static void attach_test1(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-#if LINUX == 1
+#if __linux__
     rv = testgtpu_build_ping(&sendbuf, "cafe::2", "cafe::1");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_gtpu_send(gtpu, sendbuf);

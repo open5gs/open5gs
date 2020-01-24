@@ -88,6 +88,8 @@ typedef struct pgw_context_s {
     ogs_list_t      ip_pool_list;
 
     ogs_hash_t      *sess_hash;     /* hash table (IMSI+APN) */
+    ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
+    ogs_hash_t      *ipv6_hash;     /* hash table (IPv6 Address) */
 
     ogs_list_t      sess_list;
 } pgw_context_t;
@@ -246,6 +248,8 @@ void pgw_sess_remove_all(void);
 pgw_sess_t *pgw_sess_find(uint32_t index);
 pgw_sess_t *pgw_sess_find_by_teid(uint32_t teid);
 pgw_sess_t *pgw_sess_find_by_imsi_apn(uint8_t *imsi, int imsi_len, char *apn);
+pgw_sess_t *pgw_sess_find_by_ipv4(uint32_t addr);
+pgw_sess_t *pgw_sess_find_by_ipv6(uint32_t *addr6);
 
 pgw_bearer_t *pgw_bearer_add(pgw_sess_t *sess);
 int pgw_bearer_remove(pgw_bearer_t *bearer);
