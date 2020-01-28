@@ -273,8 +273,8 @@ static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
                 ogs_assert(strcmp(bearer->name, pcc_rule->name) == 0);
 
                 if (pcc_rule->num_of_flow) {
-                    /* 'Create new TFT' is only supported.
-                     * As such, all previous flows are removed
+                    /* We'll use always 'Create new TFT'.
+                     * Therefore, all previous flows are removed
                      * and replaced by the new flow */
                     pgw_pf_remove_all(bearer);
                 }
@@ -295,8 +295,8 @@ static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
                 }
 
                 if (pcc_rule->num_of_flow == 0 && qos_presence == 0) {
-                    ogs_warn("[IGNORE] Update Bearer Request : "
-                            "Both QoS and TFT are NULL");
+                    ogs_warn("No need to send 'Update Bearer Request'");
+                    ogs_warn("  - Both QoS and TFT are same as before");
                     continue;
                 }
             }

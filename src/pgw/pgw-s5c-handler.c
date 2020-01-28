@@ -453,11 +453,13 @@ void pgw_s5c_handle_bearer_resource_command(
 {
     int rv;
     uint8_t cause_value = 0;
+    int i;
 
     ogs_gtp_header_t h;
     ogs_pkbuf_t *pkbuf = NULL;
 
     pgw_bearer_t *bearer = NULL;
+    pgw_pf_t *pf = NULL;
 
     int16_t decoded;
     ogs_gtp_tft_t tft;
@@ -510,18 +512,15 @@ void pgw_s5c_handle_bearer_resource_command(
 
     if (tft.code == OGS_GTP_TFT_CODE_NO_TFT_OPERATION) {
         /* No operation */
-
+    } else if (tft.code == OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT) {
+        pgw_pf_remove_all(bearer);
+        tft_presence = 1;
     } else if (tft.code ==
             OGS_GTP_TFT_CODE_REPLACE_PACKET_FILTERS_IN_EXISTING) {
-        int i;
         for (i = 0; i < tft.num_of_packet_filter; i++) {
-            int num_of_comp = 0;
-            pgw_pf_t *pf = NULL;
-
             pf = pgw_pf_find_by_id(bearer, tft.pf[i].identifier+1);
             if (pf) {
-                num_of_comp = reconfigure_packet_filter(pf, &tft, i);
-                if (num_of_comp < 0) {
+                if (reconfigure_packet_filter(pf, &tft, i) < 0) {
                     ogs_gtp_send_error_message(
                         xact, sess ? sess->sgw_s5c_teid : 0,
                         OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
@@ -530,22 +529,21 @@ void pgw_s5c_handle_bearer_resource_command(
                 }
             }
 
-            if (num_of_comp > 0) tft_presence = 1;
+            tft_presence = 1;
         }
     } else if (tft.code ==
-            OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT) {
-        int i;
-        for (i = 0; i < tft.num_of_packet_filter; i++) {
-            int num_of_comp = 0;
-            pgw_pf_t *pf = NULL;
+                OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT ||
+                tft.code == OGS_GTP_TFT_CODE_CREATE_NEW_TFT) {
+        if (tft.code == OGS_GTP_TFT_CODE_CREATE_NEW_TFT)
+            pgw_pf_remove_all(bearer);
 
+        for (i = 0; i < tft.num_of_packet_filter; i++) {
             pf = pgw_pf_find_by_id(bearer, tft.pf[i].identifier+1);
             if (!pf)
                 pf = pgw_pf_add(bearer, tft.pf[i].precedence);
             ogs_assert(pf);
 
-            num_of_comp = reconfigure_packet_filter(pf, &tft, i);
-            if (num_of_comp < 0) {
+            if (reconfigure_packet_filter(pf, &tft, i) < 0) {
                 ogs_gtp_send_error_message(
                     xact, sess ? sess->sgw_s5c_teid : 0,
                     OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
@@ -553,16 +551,17 @@ void pgw_s5c_handle_bearer_resource_command(
                 return;
             }
 
-            if (num_of_comp > 0) tft_presence = 1;
+            tft_presence = 1;
         }
     } else if (tft.code ==
             OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING) {
+        for (i = 0; i < tft.num_of_packet_filter; i++) {
+            pf = pgw_pf_find_by_id(bearer, tft.pf[i].identifier+1);
+            if (pf)
+                pgw_pf_remove(pf);
 
-        /* TODO */
-        ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
-                OGS_GTP_CAUSE_SERVICE_NOT_SUPPORTED);
-        return;
+            tft_presence = 1;
+        }
     }
 
     if (cmd->flow_quality_of_service.presence) {

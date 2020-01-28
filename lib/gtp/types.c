@@ -295,11 +295,23 @@ int16_t ogs_gtp_parse_tft(ogs_gtp_tft_t *tft, ogs_tlv_octet_t *octet)
     memcpy(&tft->flags, (unsigned char *)octet->data+size, sizeof(tft->flags));
     size++;
 
+    if (tft->code == OGS_GTP_TFT_CODE_IGNORE_THIS_IE) {
+        ogs_error("Invalid TFT Code(Spare)");
+        return size;
+    }
+
+    if (tft->code == OGS_GTP_TFT_CODE_NO_TFT_OPERATION ||
+        tft->code == OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT)
+        return size;
+
     for (i = 0; i < tft->num_of_packet_filter; i++) {
         ogs_assert(size+sizeof(tft->pf[i].flags) <= octet->len);
         memcpy(&tft->pf[i].flags, (unsigned char *)octet->data+size,
                 sizeof(tft->pf[i].flags));
         size += sizeof(tft->pf[i].flags);
+
+        if (tft->code == OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING)
+            continue;
 
         ogs_assert(size+sizeof(tft->pf[i].precedence) <= octet->len);
         memcpy(&tft->pf[i].precedence, (unsigned char *)octet->data+size,
@@ -440,6 +452,8 @@ int16_t ogs_gtp_build_tft(
     ogs_assert(data);
     ogs_assert(data_len >= OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
 
+    ogs_assert(tft->code != OGS_GTP_TFT_CODE_IGNORE_THIS_IE);
+
     octet->data = data;
     memcpy(&target, tft, sizeof(ogs_gtp_tft_t));
 
@@ -448,11 +462,18 @@ int16_t ogs_gtp_build_tft(
             sizeof(target.flags));
     size += sizeof(target.flags);
 
+    if (tft->code == OGS_GTP_TFT_CODE_NO_TFT_OPERATION ||
+        tft->code == OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT)
+        return size;
+
     for (i = 0; i < target.num_of_packet_filter; i++) {
         ogs_assert(size + sizeof(target.pf[i].flags) <= data_len);
         memcpy((unsigned char *)octet->data + size, &target.pf[i].flags,
                 sizeof(target.pf[i].flags));
         size += sizeof(target.pf[i].flags);
+
+        if (tft->code == OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING)
+            continue;
 
         ogs_assert(size + sizeof(target.pf[i].precedence) <= data_len);
         memcpy((unsigned char *)octet->data + size, &target.pf[i].precedence,
