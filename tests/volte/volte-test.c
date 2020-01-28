@@ -351,6 +351,31 @@ static void volte_test1(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    /* Send Bearer resource modification request */
+    rv = tests1ap_build_bearer_resource_modification_request2(
+            &sendbuf, msgindex);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive E-RAB Modify Request +
+     * Modify EPS bearer context request */
+    recvbuf = testenb_s1ap_read(s1ap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    ogs_pkbuf_free(recvbuf);
+
+    /* Send E-RAB Modify Response */
+    rv = tests1ap_build_e_rab_modify_response(&sendbuf, msgindex+1);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Send Modify EPS bearer context accept */
+    rv = tests1ap_build_modify_bearer_accept(&sendbuf, msgindex+3);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    rv = testenb_s1ap_send(s1ap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Send Session-Termination-Request */
     ogs_msleep(50);
     pcscf_rx_send_str(rx_sid);

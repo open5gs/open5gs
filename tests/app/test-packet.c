@@ -313,9 +313,9 @@ int tests1ap_build_invalid_packet(ogs_pkbuf_t **pkbuf, int i)
     };
 
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -463,9 +463,9 @@ int tests1ap_build_initial_ue_msg(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -556,9 +556,9 @@ int tests1ap_build_identity_response(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -663,9 +663,9 @@ int tests1ap_build_authentication_response(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -716,9 +716,9 @@ int tests1ap_build_authentication_failure(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -822,9 +822,9 @@ int tests1ap_build_security_mode_complete(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -930,9 +930,9 @@ int tests1ap_build_esm_information_response(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -1063,9 +1063,9 @@ int tests1ap_build_ue_capability_info_indication(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -1312,9 +1312,9 @@ int tests1ap_build_initial_context_setup_failure(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -1418,9 +1418,9 @@ int tests1ap_build_attach_complete(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -1428,7 +1428,7 @@ int tests1ap_build_attach_complete(ogs_pkbuf_t **pkbuf, int i)
 
 int tests1ap_build_emm_status(ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "",
         "",
         "",
@@ -1456,9 +1456,9 @@ int tests1ap_build_emm_status(ogs_pkbuf_t **pkbuf, int i)
         55,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -1466,7 +1466,7 @@ int tests1ap_build_emm_status(ogs_pkbuf_t **pkbuf, int i)
 
 int tests1ap_build_detach_request(ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000c404800000600 0800020002001a 001615172ba435db 040745090bf600f1"
         "10000201020003e6 004300060000f110 2b67006440080000 f1109d67aa500086"
         "4001300060000600 40020003e6",
@@ -1538,9 +1538,9 @@ int tests1ap_build_detach_request(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -1548,7 +1548,7 @@ int tests1ap_build_detach_request(ogs_pkbuf_t **pkbuf, int i)
 
 int tests1ap_build_ue_context_release_request(ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "0012"
         "4018000003000000 05c00100009d0008 0002000100024002 0280",
         "",
@@ -1615,9 +1615,9 @@ int tests1ap_build_ue_context_release_request(ogs_pkbuf_t **pkbuf, int i)
         27,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -1708,7 +1708,7 @@ int tests1ap_build_ue_context_release_complete(ogs_pkbuf_t **pkbuf, int i)
     char hexbuf[OGS_MAX_SDU_LEN];
 
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -1718,7 +1718,7 @@ int tests1ap_build_service_request(ogs_pkbuf_t **pkbuf,
         uint32_t enb_ue_s1ap_id, uint8_t seq,
         uint16_t mac, uint32_t m_tmsi)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000c"
         "4037000006000800 020004001a0005 04c7049551004300 060000f110303900"
         "6440080000f11007 87b8000086400140 0060000600400000 0001",
@@ -1736,9 +1736,9 @@ int tests1ap_build_service_request(ogs_pkbuf_t **pkbuf,
     int i = 0;
 
     if (enb_ue_s1ap_id & 0x400000) i = 1;
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     enb_ue_s1ap_id = htonl(enb_ue_s1ap_id << 8);
@@ -1756,7 +1756,7 @@ int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
     uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id, uint8_t active_flag,
     uint32_t m_tmsi, uint8_t seq, uint32_t mac, uint8_t *knas_int)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         /* Initial UE Message */
         "000c"
         "406d000006000800 020035001a003b3a 1797c955d80a0748 010bf600f1100002"
@@ -1786,9 +1786,9 @@ int tests1ap_build_tau_request(ogs_pkbuf_t **pkbuf, int i,
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     if (i == 0) {
@@ -1914,7 +1914,7 @@ int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf, int i,
     char hexbuf[OGS_MAX_SDU_LEN];
 
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
     if (i == 18) {
         memcpy((*pkbuf)->data + 26, &service_type, sizeof service_type);
@@ -1953,7 +1953,7 @@ int tests1ap_build_extended_service_request(ogs_pkbuf_t **pkbuf, int i,
 int tests1ap_build_pdn_connectivity_request(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000d40640000"
         "0500000002 0001000800020001 001a003b3a277c 81dab50a0205d011"
         "281208696e746572 6e6574036e673204 6d6e6574271a8080 2110010000108106"
@@ -1989,9 +1989,9 @@ int tests1ap_build_pdn_connectivity_request(
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -2000,7 +2000,7 @@ int tests1ap_build_pdn_connectivity_request(
 int tests1ap_build_pdn_disconnectivity_request(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000d40370000"
         "0500000005c08000 0108000800020001 001a000b0a2732 423c53040206d206"
         "006440080055f501 0019d01000434006 0055f5011022",
@@ -2032,9 +2032,9 @@ int tests1ap_build_pdn_disconnectivity_request(
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -2141,7 +2141,7 @@ int tests1ap_build_e_rab_setup_response(
 
 int tests1ap_build_e_rab_modify_response(ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "2006"
         "001b000003000040 0480000001000840 020001001f400600 002500010e",
         "2006"
@@ -2171,9 +2171,9 @@ int tests1ap_build_e_rab_modify_response(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -2181,7 +2181,7 @@ int tests1ap_build_e_rab_modify_response(ogs_pkbuf_t **pkbuf, int i)
 
 int tests1ap_build_e_rab_release_response(ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "200700190000"
         "0300004002 0001000840020001 0045400600000f 40010c",
         "200700190000"
@@ -2211,9 +2211,9 @@ int tests1ap_build_e_rab_release_response(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -2222,7 +2222,7 @@ int tests1ap_build_e_rab_release_response(ogs_pkbuf_t **pkbuf, int i)
 int tests1ap_build_activate_default_bearer_accept(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000d40360000"
         "0500000005c08000 0107000800020001 001a000a0927e7 f5bb400b6200c200"
         "6440080055f50100 19d0100043400600 55f5011022",
@@ -2252,9 +2252,9 @@ int tests1ap_build_activate_default_bearer_accept(
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -2263,7 +2263,7 @@ int tests1ap_build_activate_default_bearer_accept(
 int tests1ap_build_activate_dedicated_bearer_accept(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000d403600000500"
         "000005c000000001 00080002000100 1a000a0927078a5f 34037200c6006440"
         "080000f1109d67aa 50004340060000f1 102b67",
@@ -2305,9 +2305,9 @@ int tests1ap_build_activate_dedicated_bearer_accept(
         58,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -2316,7 +2316,7 @@ int tests1ap_build_activate_dedicated_bearer_accept(
 int tests1ap_build_modify_bearer_accept(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000d"
         "4035000005000000 0480000001000800 020001001a000a09 27a5c0d564067200"
         "ca006440080064f0 430020a000004340 060064f043020a",
@@ -2327,7 +2327,9 @@ int tests1ap_build_modify_bearer_accept(
         "4035000005000000 0480000001000800 020001001a000a09 2726b727fe0a7205"
         "ca006440080064f0 430020a000004340 060064f043020a",
 
-        "",
+        "000d"
+        "4035000005000000 0480000001000800 020001001a000a09 271070e13b0d7203"
+        "ca006440080064f0 430020a000004340 060064f043020a",
         "",
         "",
 
@@ -2344,7 +2346,7 @@ int tests1ap_build_modify_bearer_accept(
         57,
         57,
 
-        0,
+        57,
         0,
         0,
 
@@ -2357,9 +2359,9 @@ int tests1ap_build_modify_bearer_accept(
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -2368,7 +2370,7 @@ int tests1ap_build_modify_bearer_accept(
 int tests1ap_build_deactivate_bearer_accept(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000d40330000"
         "0500000002 0001000800020001 001a000a09274c b2ebbd056200ce00"
         "6440080055f50100 19d0100043400600 55f5011022",
@@ -2402,9 +2404,9 @@ int tests1ap_build_deactivate_bearer_accept(
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -2413,7 +2415,7 @@ int tests1ap_build_deactivate_bearer_accept(
 int tests1ap_build_bearer_resource_allocation_request(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000d"
         "403f000005000000 0200010008000200 01001a00161517fe b2b150070203d406"
         "04212001000501ff ffffff0064400800 2143650003039000 4340060021436509"
@@ -2436,9 +2438,9 @@ int tests1ap_build_bearer_resource_allocation_request(
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -2725,6 +2727,38 @@ int tests1ap_build_bearer_resource_modification_request(
     return OGS_OK;
 }
 
+int tests1ap_build_bearer_resource_modification_request2(
+        ogs_pkbuf_t **pkbuf, int i)
+{
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
+        "000d403c00000500 0000020001000800 020001001a001312 279d165c7b0c0203"
+        "d60705a400010203 5824006440080000 f110000019c00043 40060000f1100001",
+        "",
+        "",
+
+        "",
+        "",
+        "",
+
+    };
+    uint16_t len[TESTS1AP_MAX_MESSAGE] = {
+        64,
+        0,
+        0,
+
+        0,
+        0,
+        0,
+    };
+    char hexbuf[OGS_MAX_SDU_LEN];
+
+    *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put_data(*pkbuf,
+        OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
+
+    return OGS_OK;
+}
+
 int tests1ap_build_path_switch_request(
         ogs_pkbuf_t **pkbuf, int target,
         uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id,
@@ -2913,7 +2947,7 @@ int tests1ap_build_path_switch_request(
 int tests1ap_build_handover_required(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "0000"
         "0081030000060000 0005c0020000c400 080002000c000100 0100000240020220"
         "0004000d0000f110 0000043000f11030 3900680080d080ce 4080ab0f1014c598"
@@ -2970,9 +3004,9 @@ int tests1ap_build_handover_required(
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -2992,9 +3026,9 @@ int tests1ap_build_handover_failure(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3163,7 +3197,7 @@ int tests1ap_build_handover_request_ack(
 int tests1ap_build_handover_request_ack_static(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "2001"
         "0080e80000040000 4005c0020000c500 0840020008001240 47010014401f78a1"
         "f07f000001010007 080f807f00000101 0007090f807f0000 010100070a001440"
@@ -3217,9 +3251,9 @@ int tests1ap_build_handover_request_ack_static(
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3228,7 +3262,7 @@ int tests1ap_build_handover_request_ack_static(
 int tests1ap_build_enb_status_transfer(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "0018"
         "4027000003000000 05c0020000c40008 0002000c005a0011 00000059400b0500"
         "004b000000001100 00",
@@ -3260,9 +3294,9 @@ int tests1ap_build_enb_status_transfer(
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3271,7 +3305,7 @@ int tests1ap_build_enb_status_transfer(
 int tests1ap_build_enb_configuration_transfer(
         ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "0028"
         "403b000001008140 3440049699000004 3004969900020004 969900001f200496"
         "9900020000000098 401341f0ac110e02 0000009940070200 f8ac110e02",
@@ -3303,9 +3337,9 @@ int tests1ap_build_enb_configuration_transfer(
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3313,7 +3347,7 @@ int tests1ap_build_enb_configuration_transfer(
 
 int tests1ap_build_handover_notify(ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "0002"
         "4028000004000000 05c0020000c50008 0002000800644008 0000f11000043a00"
         "004340060000f110 3039",
@@ -3345,9 +3379,9 @@ int tests1ap_build_handover_notify(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3355,7 +3389,7 @@ int tests1ap_build_handover_notify(ogs_pkbuf_t **pkbuf, int i)
 
 int tests1ap_build_handover_cancel(ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "0004"
         "0018000003000000 05c0020000c60008 0002000d00024002 0120",
         "",
@@ -3384,9 +3418,9 @@ int tests1ap_build_handover_cancel(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3394,7 +3428,7 @@ int tests1ap_build_handover_cancel(ogs_pkbuf_t **pkbuf, int i)
 
 int tests1ap_build_s1_reset(ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000e001500000200 0240020060005c00 084000005b000220 04",
         "",
         "",
@@ -3422,9 +3456,9 @@ int tests1ap_build_s1_reset(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3432,7 +3466,7 @@ int tests1ap_build_s1_reset(ogs_pkbuf_t **pkbuf, int i)
 
 int tests1ap_build_uplink_nas_transport(ogs_pkbuf_t **pkbuf, int i)
 {
-    const char *payload[TESTS1AP_MAX_MESSAGE] = { 
+    const char *payload[TESTS1AP_MAX_MESSAGE] = {
         "000d40809d000005 0000000200010008 00020001001a0074 7327f908d4bd0307"
         "636a390167000300 0581005155f55d11 030c914477680205 490000055ad2e2b1"
         "252d467ff6de6c47 efd568375b303613 166fb51c6d160cc2 8ab462b006a3d98a"
@@ -3465,9 +3499,9 @@ int tests1ap_build_uplink_nas_transport(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3579,9 +3613,9 @@ int testgtpu_build_slacc_rs(ogs_pkbuf_t **pkbuf, int i)
         60,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3601,9 +3635,9 @@ int testsgsap_location_update_accept(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3623,9 +3657,9 @@ int testsgsap_location_update_reject(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3645,9 +3679,9 @@ int testsgsap_imsi_detach_ack(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3679,9 +3713,9 @@ int testsgsap_paging_request(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3701,9 +3735,9 @@ int testsgsap_reset_indication(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3723,9 +3757,9 @@ int testsgsap_release_request(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3746,9 +3780,9 @@ int testsgsap_downlink_unitdata(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
@@ -3769,9 +3803,9 @@ int testsgsap_mm_information_request(ogs_pkbuf_t **pkbuf, int i)
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
-    
+
     *pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put_data(*pkbuf, 
+    ogs_pkbuf_put_data(*pkbuf,
         OGS_HEX(payload[i], strlen(payload[i]), hexbuf), len[i]);
 
     return OGS_OK;
