@@ -464,8 +464,9 @@ void pgw_s5c_handle_bearer_resource_command(
     int16_t decoded;
     ogs_gtp_tft_t tft;
 
-    int tft_presence = 0;
-    int qos_presence = 0;
+    int tft_update = 0;
+    int tft_delete = 0;
+    int qos_update = 0;
 
     ogs_assert(xact);
     ogs_assert(sess);
@@ -514,7 +515,7 @@ void pgw_s5c_handle_bearer_resource_command(
         /* No operation */
     } else if (tft.code == OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT) {
         pgw_pf_remove_all(bearer);
-        tft_presence = 1;
+        tft_delete = 0;
     } else if (tft.code ==
             OGS_GTP_TFT_CODE_REPLACE_PACKET_FILTERS_IN_EXISTING) {
         for (i = 0; i < tft.num_of_packet_filter; i++) {
@@ -529,7 +530,7 @@ void pgw_s5c_handle_bearer_resource_command(
                 }
             }
 
-            tft_presence = 1;
+            tft_update = 1;
         }
     } else if (tft.code ==
                 OGS_GTP_TFT_CODE_ADD_PACKET_FILTERS_TO_EXISTING_TFT ||
@@ -551,7 +552,7 @@ void pgw_s5c_handle_bearer_resource_command(
                 return;
             }
 
-            tft_presence = 1;
+            tft_update = 1;
         }
     } else if (tft.code ==
             OGS_GTP_TFT_CODE_DELETE_PACKET_FILTERS_FROM_EXISTING) {
@@ -560,7 +561,10 @@ void pgw_s5c_handle_bearer_resource_command(
             if (pf)
                 pgw_pf_remove(pf);
 
-            tft_presence = 1;
+            if (ogs_list_count(&bearer->pf_list))
+                tft_update = 1;
+            else
+                tft_delete = 1;
         }
     }
 
@@ -576,10 +580,10 @@ void pgw_s5c_handle_bearer_resource_command(
         bearer->qos.gbr.uplink = flow_qos.ul_gbr;
         bearer->qos.gbr.downlink = flow_qos.dl_gbr;
 
-        qos_presence = 1;
+        qos_update = 1;
     }
 
-    if (tft_presence == 0 && qos_presence == 0) {
+    if (tft_update == 0 && tft_delete == 0 && qos_update == 0) {
         /* No modification */
         ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP_BEARER_RESOURCE_FAILURE_INDICATION_TYPE,
@@ -588,13 +592,20 @@ void pgw_s5c_handle_bearer_resource_command(
     }
 
     memset(&h, 0, sizeof(ogs_gtp_header_t));
-    h.type = OGS_GTP_UPDATE_BEARER_REQUEST_TYPE;
     h.teid = sess->sgw_s5c_teid;
 
-    pkbuf = pgw_s5c_build_update_bearer_request(
-            h.type, bearer, cmd->procedure_transaction_id.u8,
-            tft_presence ? &tft : NULL, qos_presence);
-    ogs_expect_or_return(pkbuf);
+    if (tft_delete) {
+        h.type = OGS_GTP_DELETE_BEARER_REQUEST_TYPE;
+        pkbuf = pgw_s5c_build_delete_bearer_request(
+                h.type, bearer, cmd->procedure_transaction_id.u8);
+        ogs_expect_or_return(pkbuf);
+    } else {
+        h.type = OGS_GTP_UPDATE_BEARER_REQUEST_TYPE;
+        pkbuf = pgw_s5c_build_update_bearer_request(
+                h.type, bearer, cmd->procedure_transaction_id.u8,
+                tft_update ? &tft : NULL, qos_update);
+        ogs_expect_or_return(pkbuf);
+    }
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
     ogs_expect_or_return(rv == OGS_OK);

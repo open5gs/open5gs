@@ -522,11 +522,17 @@ void sgw_s5c_handle_delete_bearer_request(ogs_gtp_xact_t *s5c_xact,
     pkbuf = ogs_gtp_build_msg(message);
     ogs_expect_or_return(pkbuf);
 
-    s11_xact = ogs_gtp_xact_local_create(
-            sgw_ue->gnode, &message->h, pkbuf, timeout, sess);
-    ogs_expect_or_return(s11_xact);
+    s11_xact = s5c_xact->assoc_xact;
+    if (!s11_xact) {
+        s11_xact = ogs_gtp_xact_local_create(
+                sgw_ue->gnode, &message->h, pkbuf, timeout, sess);
+        ogs_expect_or_return(s11_xact);
 
-    ogs_gtp_xact_associate(s5c_xact, s11_xact);
+        ogs_gtp_xact_associate(s5c_xact, s11_xact);
+    } else {
+        rv = ogs_gtp_xact_update_tx(s11_xact, &message->h, pkbuf);
+        ogs_expect_or_return(rv == OGS_OK);
+    }
 
     rv = ogs_gtp_xact_commit(s11_xact);
     ogs_expect(rv == OGS_OK);
