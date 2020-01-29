@@ -515,7 +515,7 @@ void pgw_s5c_handle_bearer_resource_command(
         /* No operation */
     } else if (tft.code == OGS_GTP_TFT_CODE_DELETE_EXISTING_TFT) {
         pgw_pf_remove_all(bearer);
-        tft_delete = 0;
+        tft_delete = 1;
     } else if (tft.code ==
             OGS_GTP_TFT_CODE_REPLACE_PACKET_FILTERS_IN_EXISTING) {
         for (i = 0; i < tft.num_of_packet_filter; i++) {
