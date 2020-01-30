@@ -353,6 +353,13 @@ static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
             ogs_expect(rv == OGS_OK);
         } else if (pcc_rule->type == OGS_PCC_RULE_TYPE_REMOVE) {
             bearer = pgw_bearer_find_by_name(sess, pcc_rule->name);
+            if (!bearer) {
+                ogs_warn("No need to send 'Delete Bearer Request'");
+                ogs_warn("  - Bearer[Name:%s] has already been removed.",
+                        pcc_rule->name);
+                return;
+
+            }
             ogs_assert(bearer);
 
             memset(&h, 0, sizeof(ogs_gtp_header_t));
