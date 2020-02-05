@@ -1,3 +1,27 @@
+open5gs (1.2.1~eoan) eoan; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 05 Feb 2020 19:59:15 +0900
+
+open5gs (1.2.1~disco) disco; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 05 Feb 2020 19:58:05 +0900
+
+open5gs (1.2.1~bionic) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 05 Feb 2020 19:56:44 +0900
+
+open5gs (1.2.1) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Wed, 05 Feb 2020 19:52:54 +0900
+
 open5gs (1.2.0~eoan) eoan; urgency=medium
 
   * VoLTE tested
