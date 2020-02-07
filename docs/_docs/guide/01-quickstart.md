@@ -8,7 +8,7 @@ title: Quickstart
 ### Install Open5GS with a Package Manager
 ---
 
-The Open5GS package is available on the recent versions of *Ubuntu*.
+*Ubuntu* makes it easy to install Open5GS as shown below,
 
 ```bash
 $ sudo apt update
@@ -18,17 +18,26 @@ $ sudo apt update
 $ sudo apt install open5gs
 ```
 
-The Open5GS package is also available on [OBS](https://build.opensuse.org/project/show/home:acetcom:open5gs). First, install the authentication key as shown below.
-
+Other Linux distributions, such as *Debian*, are additionally available on [OBS](https://build.opensuse.org/project/show/home:acetcom:open5gs).
 ```bash
 $ sudo apt update
 $ sudo apt install wget gnupg
 $ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/Release.key
 $ sudo apt-key add Release.key
-
 ```
 
-In Debian 10(buster), you can install it as follows:
+If there is no MongoDB package like *Debian* 10(Buster), you'll need to install this first as shown below,
+
+```bash
+$ sudo apt update
+$ sudo apt install wget gnupg
+wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
+$ echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main" | sudo tee /etc/apt/sources.list.d/mongodb-org.list
+$ sudo apt update
+$ sudo apt -y install mongodb-org
+```
+
+On *Debian* 10(buster), you can install Open5GS as shown below,
 
 ```bash
 $ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/ ./' > /etc/apt/sources.list.d/open5gs.list"
@@ -36,7 +45,7 @@ $ sudo apt update
 $ sudo apt install open5gs
 ```
 
-Other Linux distributions can be installed by changing the path.
+Other distributions can be installed by changing the path.
 
 ```
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/
