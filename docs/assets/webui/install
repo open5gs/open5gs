@@ -77,12 +77,12 @@ exec_cmd "rm -rf ./${PACKAGE}-${VERSION}"
 exec_cmd "rm -rf /usr/lib/node_modules/${PACKAGE}"
 }
 
-install() {
+setup() {
 
 PRE_INSTALL_PKGS=""
 
-if [ ! -x /usr/bin/mongod ]; then
-    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} mongodb"
+if [ ! -x /usr/bin/lsb_release ]; then
+    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} lsb-release"
 fi
 
 if [ ! -x /usr/bin/node ] && [ ! -x /usr/bin/wget ]; then
@@ -93,18 +93,126 @@ if [ ! -x /usr/bin/curl ] && [ ! -x /usr/bin/wget ]; then
     PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} curl"
 fi
 
+if [ ! -x /usr/bin/gpg ]; then
+    PRE_INSTALL_PKGS="${PRE_INSTALL_PKGS} gnupg"
+fi
+
 print_status "Populating apt-get cache..."
 exec_cmd 'apt-get update'
 
 if [ "X${PRE_INSTALL_PKGS}" != "X" ]; then
     print_status "Installing packages required for setup:${PRE_INSTALL_PKGS}..."
-    # This next command needs to be redirected to /dev/null or the script will bork
-    # in some environments
     exec_cmd "apt-get install -y${PRE_INSTALL_PKGS} > /dev/null 2>&1"
 fi
 
-uninstall
+DISTRO=$(lsb_release -c -s)
 
+check_alt() {
+    if [ "X${DISTRO}" == "X${2}" ]; then
+        echo
+        echo "## You seem to be using ${1} version ${DISTRO}."
+        echo "## This maps to ${3} \"${4}\"... Adjusting for you..."
+        DISTRO="${4}"
+    fi
+}
+
+check_alt "SolydXK"       "solydxk-9" "Debian" "stretch"
+check_alt "Kali"          "sana"     "Debian" "jessie"
+check_alt "Kali"          "kali-rolling" "Debian" "jessie"
+check_alt "Sparky Linux"  "Tyche"    "Debian" "stretch"
+check_alt "Sparky Linux"  "Nibiru"   "Debian" "buster"
+check_alt "MX Linux 17"   "Horizon"  "Debian" "stretch"
+check_alt "MX Linux 18"   "Continuum" "Debian" "stretch"
+check_alt "MX Linux 19"   "patito feo" "Debian" "buster"
+check_alt "Linux Mint"    "maya"     "Ubuntu" "precise"
+check_alt "Linux Mint"    "qiana"    "Ubuntu" "trusty"
+check_alt "Linux Mint"    "rafaela"  "Ubuntu" "trusty"
+check_alt "Linux Mint"    "rebecca"  "Ubuntu" "trusty"
+check_alt "Linux Mint"    "rosa"     "Ubuntu" "trusty"
+check_alt "Linux Mint"    "sarah"    "Ubuntu" "xenial"
+check_alt "Linux Mint"    "serena"   "Ubuntu" "xenial"
+check_alt "Linux Mint"    "sonya"    "Ubuntu" "xenial"
+check_alt "Linux Mint"    "sylvia"   "Ubuntu" "xenial"
+check_alt "Linux Mint"    "tara"     "Ubuntu" "bionic"
+check_alt "Linux Mint"    "tessa"    "Ubuntu" "bionic"
+check_alt "Linux Mint"    "tina"     "Ubuntu" "bionic"
+check_alt "Linux Mint"    "tricia"   "Ubuntu" "bionic"
+check_alt "LMDE"          "betsy"    "Debian" "jessie"
+check_alt "LMDE"          "cindy"    "Debian" "stretch"
+check_alt "elementaryOS"  "luna"     "Ubuntu" "precise"
+check_alt "elementaryOS"  "freya"    "Ubuntu" "trusty"
+check_alt "elementaryOS"  "loki"     "Ubuntu" "xenial"
+check_alt "elementaryOS"  "juno"     "Ubuntu" "bionic"
+check_alt "elementaryOS"  "hera"     "Ubuntu" "bionic"
+check_alt "Trisquel"      "toutatis" "Ubuntu" "precise"
+check_alt "Trisquel"      "belenos"  "Ubuntu" "trusty"
+check_alt "Trisquel"      "flidas"   "Ubuntu" "xenial"
+check_alt "Uruk GNU/Linux" "lugalbanda" "Ubuntu" "xenial"
+check_alt "BOSS"          "anokha"   "Debian" "wheezy"
+check_alt "BOSS"          "anoop"    "Debian" "jessie"
+check_alt "BOSS"          "drishti"  "Debian" "stretch"
+check_alt "bunsenlabs"    "bunsen-hydrogen" "Debian" "jessie"
+check_alt "bunsenlabs"    "helium"   "Debian" "stretch"
+check_alt "Tanglu"        "chromodoris" "Debian" "jessie"
+check_alt "PureOS"        "green"    "Debian" "sid"
+check_alt "Devuan"        "jessie"   "Debian" "jessie"
+check_alt "Devuan"        "ascii"    "Debian" "stretch"
+check_alt "Devuan"        "beowulf"  "Debian" "buster"
+check_alt "Devuan"        "ceres"    "Debian" "sid"
+check_alt "Deepin"        "panda"    "Debian" "sid"
+check_alt "Deepin"        "unstable" "Debian" "sid"
+check_alt "Deepin"        "stable"   "Debian" "buster"
+check_alt "Pardus"        "onyedi"   "Debian" "stretch"
+check_alt "Liquid Lemur"  "lemur-3"  "Debian" "stretch"
+
+if [ "X${DISTRO}" == "Xdebian" ]; then
+  print_status "Unknown Debian-based distribution, checking /etc/debian_version..."
+  NEWDISTRO=$([ -e /etc/debian_version ] && cut -d/ -f1 < /etc/debian_version)
+  if [ "X${NEWDISTRO}" == "X" ]; then
+    print_status "Could not determine distribution from /etc/debian_version..."
+  else
+    DISTRO=$NEWDISTRO
+    print_status "Found \"${DISTRO}\" in /etc/debian_version..."
+  fi
+fi
+
+if [ "X${DISTRO}" == "Xbuster" ]; then
+    if [ -f "/etc/apt/sources.list.d/mongodb-org.list" ]; then
+        print_status 'Removing Launchpad PPA Repository for MongoDB...'
+        exec_cmd "rm -f /etc/apt/sources.list.d/mongodb-org.list"
+    fi
+
+    print_status 'Adding the MongoDB signing key to your keyring...'
+
+    if [ -x /usr/bin/curl ]; then
+        exec_cmd 'curl -s https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add -'
+    else
+        exec_cmd 'wget -qO- https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add -'
+    fi
+
+    print_status "Creating apt sources list file for the MongoDB repo..."
+
+    exec_cmd "echo 'deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main' > /etc/apt/sources.list.d/mongodb-org.list"
+
+    if [ ! -x /usr/bin/mongod ]; then
+        MONGODB_INSTALL_PKGS="${MONGODB_INSTALL_PKGS} mongodb-org"
+    fi
+else
+    if [ ! -x /usr/bin/mongod ]; then
+        MONGODB_INSTALL_PKGS="${MONGODB_INSTALL_PKGS} mongodb"
+    fi
+fi
+
+if [ "X${MONGODB_INSTALL_PKGS}" != "X" ]; then
+    print_status "Populating apt-get cache..."
+    exec_cmd 'apt-get update'
+
+    print_status "Installing packages required for setup:${MONGODB_INSTALL_PKGS}..."
+    exec_cmd "apt-get install -y${MONGODB_INSTALL_PKGS} > /dev/null 2>&1"
+fi
+}
+
+install() {
 print_status "Download the Open5GS Source Code (v${VERSION})..."
 if [ -x /usr/bin/curl ]; then
     exec_cmd "curl -sLf 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
@@ -112,6 +220,11 @@ if [ -x /usr/bin/curl ]; then
 else
     exec_cmd "wget -qO- /dev/null 'https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz' | tar zxf -"
     RC=$?
+fi
+
+if [[ $RC != 0 ]]; then
+    print_status "Failed to download: https://github.com/open5gs/${PACKAGE}/archive/v${VERSION}.tar.gz"
+    exit 1
 fi
 
 print_status "Build the Open5GS WebUI..."
@@ -148,4 +261,5 @@ exec_cmd "rm -rf ./${PACKAGE}-${VERSION}"
 }
 
 ## Defer setup until we have the complete script
+setup
 install
