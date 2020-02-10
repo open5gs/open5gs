@@ -107,57 +107,88 @@ cleanup:
 #define TUN_ALIGN(size, boundary) \
         (((size) + ((boundary) - 1)) & ~((boundary) - 1))
 
-static int tun_set_ipv4(char *ifname,
-        ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub)
-{
-#if !defined(__linux__) && !defined(WIN32)
+static int tun_set_ipv4_linux(char *ifname, ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub) {
     int fd;
-    
-	struct ifaliasreq ifa;
-	struct ifreq ifr;
-	struct sockaddr_in addr;
-	struct sockaddr_in mask;
-
-    char buf[512];
-    int len;
-    struct rt_msghdr *rtm;
-    struct sockaddr_in dst, gw;
-	struct sockaddr_in *paddr;
+    struct ifreq ifr;
+    struct sockaddr_in* addr;
 
     ogs_assert(ipaddr);
     ogs_assert(ipsub);
 
     fd = socket(ipaddr->family, SOCK_DGRAM, 0);
 
-	(void)memset(&ifa, '\0', sizeof ifa);
-	(void)strlcpy(ifa.ifra_name, ifname, sizeof ifa.ifra_name);
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
 
-	(void)memset(&ifr, '\0', sizeof ifr);
-	(void)strlcpy(ifr.ifr_name, ifname, sizeof ifr.ifr_name);
+    addr = (struct sockaddr_in*)&ifr.ifr_addr;
+
+    addr.sin_family = ipaddr->family;
+    addr.sin_addr.s_addr = ipaddr->sub[0];
+    // inet_pton(AF_INET, "10.12.0.1", ifr.ifr_addr.sa_data + 2);
+    ioctl(fd, SIOCSIFADDR, &ifr);
+
+
+    addr.sin_family = ipsub->family;
+    addr.sin_addr.s_addr = ipsub->sub[0];
+    // inet_pton(AF_INET, "255.255.0.0", ifr.ifr_addr.sa_data + 2);
+    ioctl(fd, SIOCSIFNETMASK, &ifr);
+
+    // bring interface up
+    ioctl(fd, SIOCGIFFLAGS, &ifr);
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+    ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+    ioctl(fd, SIOCSIFFLAGS, &ifr);
+
+    return 0;
+}
+
+static int tun_set_ipv4_osx(char *ifname, ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub) {
+    int fd;
+    
+    struct ifaliasreq ifa;
+    struct ifreq ifr;
+    struct sockaddr_in addr;
+    struct sockaddr_in mask;
+
+    char buf[512];
+    int len;
+    struct rt_msghdr *rtm;
+    struct sockaddr_in dst, gw;
+    struct sockaddr_in *paddr;
+
+    ogs_assert(ipaddr);
+    ogs_assert(ipsub);
+
+    fd = socket(ipaddr->family, SOCK_DGRAM, 0);
+
+    (void)memset(&ifa, '\0', sizeof ifa);
+    (void)strlcpy(ifa.ifra_name, ifname, sizeof ifa.ifra_name);
+
+    (void)memset(&ifr, '\0', sizeof ifr);
+    (void)strlcpy(ifr.ifr_name, ifname, sizeof ifr.ifr_name);
 
 #if 0
-	/* Delete previously assigned address */
-	(void)ioctl(fd, SIOCDIFADDR, &ifr);
+    /* Delete previously assigned address */
+    (void)ioctl(fd, SIOCDIFADDR, &ifr);
 #endif
 
-	(void)memset(&addr, '\0', sizeof(addr));
-	addr.sin_family = ipaddr->family;
-	addr.sin_addr.s_addr = ipaddr->sub[0];
-	addr.sin_len = sizeof(addr);
-	(void)memcpy(&ifa.ifra_addr, &addr, sizeof(addr));
-	(void)memcpy(&ifa.ifra_broadaddr, &addr, sizeof(addr));
+    (void)memset(&addr, '\0', sizeof(addr));
+    addr.sin_family = ipaddr->family;
+    addr.sin_addr.s_addr = ipaddr->sub[0];
+    addr.sin_len = sizeof(addr);
+    (void)memcpy(&ifa.ifra_addr, &addr, sizeof(addr));
+    (void)memcpy(&ifa.ifra_broadaddr, &addr, sizeof(addr));
 
-	(void)memset(&mask, '\0', sizeof(mask));
-	mask.sin_family = ipaddr->family;
-	mask.sin_addr.s_addr = ipaddr->mask[0];
-	mask.sin_len = sizeof(mask);
-	(void)memcpy(&ifa.ifra_mask, &mask, sizeof(ifa.ifra_mask));
+    (void)memset(&mask, '\0', sizeof(mask));
+    mask.sin_family = ipaddr->family;
+    mask.sin_addr.s_addr = ipaddr->mask[0];
+    mask.sin_len = sizeof(mask);
+    (void)memcpy(&ifa.ifra_mask, &mask, sizeof(ifa.ifra_mask));
 
-	if (ioctl(fd, SIOCAIFADDR, &ifa) == -1) {
+    if (ioctl(fd, SIOCAIFADDR, &ifa) == -1) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "Can't IP address : dev[%s]", ifname);
-		return OGS_ERROR;
-	}
+                "Can't add IP address : dev[%s]", ifname);
+        return OGS_ERROR;
+    }
 
     close(fd); /* SOCK_DGRAM */
 
@@ -179,27 +210,27 @@ static int tun_set_ipv4(char *ifname,
     rtm->rtm_addrs = RTA_DST | RTA_GATEWAY | RTA_NETMASK;
     paddr = (struct sockaddr_in *)(rtm + 1);
 
-	(void)memset(&dst, '\0', sizeof(dst));
-	dst.sin_family = ipaddr->family;
-	dst.sin_addr.s_addr = ipsub->sub[0];
-	dst.sin_len = sizeof(dst);
-	(void)memcpy(paddr, &dst, sizeof(dst));
+    (void)memset(&dst, '\0', sizeof(dst));
+    dst.sin_family = ipaddr->family;
+    dst.sin_addr.s_addr = ipsub->sub[0];
+    dst.sin_len = sizeof(dst);
+    (void)memcpy(paddr, &dst, sizeof(dst));
     paddr = (struct sockaddr_in *)((char *)paddr +
             TUN_ALIGN(sizeof(*paddr), sizeof(uintptr_t)));
 
-	(void)memset(&gw, '\0', sizeof(gw));
-	gw.sin_family = ipaddr->family;
-	gw.sin_addr.s_addr = ipaddr->sub[0];
-	gw.sin_len = sizeof(gw);
-	(void)memcpy(paddr, &gw, sizeof(gw));
+    (void)memset(&gw, '\0', sizeof(gw));
+    gw.sin_family = ipaddr->family;
+    gw.sin_addr.s_addr = ipaddr->sub[0];
+    gw.sin_len = sizeof(gw);
+    (void)memcpy(paddr, &gw, sizeof(gw));
     paddr = (struct sockaddr_in *)((char *)paddr +
             TUN_ALIGN(sizeof(*paddr), sizeof(uintptr_t)));
 
-	(void)memset(&mask, '\0', sizeof(mask));
-	mask.sin_family = ipaddr->family;
-	mask.sin_addr.s_addr = ipsub->mask[0];
-	mask.sin_len = sizeof(mask);
-	(void)memcpy(paddr, &mask, sizeof(mask));
+    (void)memset(&mask, '\0', sizeof(mask));
+    mask.sin_family = ipaddr->family;
+    mask.sin_addr.s_addr = ipsub->mask[0];
+    mask.sin_len = sizeof(mask);
+    (void)memcpy(paddr, &mask, sizeof(mask));
     paddr = (struct sockaddr_in *)((char *)paddr +
             TUN_ALIGN(sizeof(*paddr), sizeof(uintptr_t)));
 
@@ -213,10 +244,18 @@ static int tun_set_ipv4(char *ifname,
     }
 
     close(fd); /* PF_ROUTE, SOCK_RAW */
+}
 
+static int tun_set_ipv4(char *ifname,
+        ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub)
+{
+#if !defined(__linux__) && !defined(WIN32)
+    tun_set_ipv4_osx(ifname, ipaddr, ipsub);
+#elif defined(__linux__)
+    tun_set_ipv4_linux(ifname, ipaddr, ipsub);
 #endif  /* defined(__linux__) */
-
-	return OGS_OK;
+    ogs_warn("could not set IPv4 address (unsupported OS, likely Windows)");
+    return OGS_OK;
 }
 
 static int tun_set_ipv6(char *ifname,
