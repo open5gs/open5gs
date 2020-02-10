@@ -107,41 +107,8 @@ cleanup:
 #define TUN_ALIGN(size, boundary) \
         (((size) + ((boundary) - 1)) & ~((boundary) - 1))
 
-static int tun_set_ipv4_linux(char *ifname, ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub) {
-    int fd;
-    struct ifreq ifr;
-    struct sockaddr_in* addr;
-
-    ogs_assert(ipaddr);
-    ogs_assert(ipsub);
-
-    fd = socket(ipaddr->family, SOCK_DGRAM, 0);
-
-    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
-
-    addr = (struct sockaddr_in*)&ifr.ifr_addr;
-
-    addr.sin_family = ipaddr->family;
-    addr.sin_addr.s_addr = ipaddr->sub[0];
-    // inet_pton(AF_INET, "10.12.0.1", ifr.ifr_addr.sa_data + 2);
-    ioctl(fd, SIOCSIFADDR, &ifr);
-
-
-    addr.sin_family = ipsub->family;
-    addr.sin_addr.s_addr = ipsub->sub[0];
-    // inet_pton(AF_INET, "255.255.0.0", ifr.ifr_addr.sa_data + 2);
-    ioctl(fd, SIOCSIFNETMASK, &ifr);
-
-    // bring interface up
-    ioctl(fd, SIOCGIFFLAGS, &ifr);
-    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
-    ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
-    ioctl(fd, SIOCSIFFLAGS, &ifr);
-
-    return 0;
-}
-
-static int tun_set_ipv4_osx(char *ifname, ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub) {
+#if !defined(__linux__) && !defined(WIN32) /* OSX */
+static int tun_set_ipv4(char *ifname, ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub) {
     int fd;
     
     struct ifaliasreq ifa;
@@ -244,19 +211,47 @@ static int tun_set_ipv4_osx(char *ifname, ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t
     }
 
     close(fd); /* PF_ROUTE, SOCK_RAW */
+    return OGS_OK;
 }
 
-static int tun_set_ipv4(char *ifname,
-        ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub)
-{
-#if !defined(__linux__) && !defined(WIN32)
-    tun_set_ipv4_osx(ifname, ipaddr, ipsub);
-#elif defined(__linux__)
-    tun_set_ipv4_linux(ifname, ipaddr, ipsub);
-#endif  /* defined(__linux__) */
+#elif defined(__linux__) /* Linux */
+static int tun_set_ipv4(char *ifname, ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub) {
+    int fd;
+    struct ifreq ifr;
+    struct sockaddr_in* addr;
+
+    ogs_assert(ipaddr);
+    ogs_assert(ipsub);
+
+    fd = socket(ipaddr->family, SOCK_DGRAM, 0);
+
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+
+    addr = (struct sockaddr_in*)&ifr.ifr_addr;
+
+    addr->sin_family = ipaddr->family;
+    addr->sin_addr.s_addr = ipaddr->sub[0];
+    ioctl(fd, SIOCSIFADDR, &ifr);
+
+    addr->sin_family = ipsub->family;
+    addr->sin_addr.s_addr = ipsub->mask[0];
+    ioctl(fd, SIOCSIFNETMASK, &ifr);
+
+    // bring interface up
+    ioctl(fd, SIOCGIFFLAGS, &ifr);
+    strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+    ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+    ioctl(fd, SIOCSIFFLAGS, &ifr);
+
+    return OGS_OK;
+}
+
+#else /* Windows? */
+static int tun_set_ipv4(char *ifname, ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub) {
     ogs_warn("could not set IPv4 address (unsupported OS, likely Windows)");
     return OGS_OK;
 }
+#endif
 
 static int tun_set_ipv6(char *ifname,
         ogs_ipsubnet_t *ipaddr, ogs_ipsubnet_t *ipsub)
