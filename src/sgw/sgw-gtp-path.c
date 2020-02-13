@@ -360,6 +360,8 @@ void sgw_gtp_close(void)
     ogs_socknode_remove_all(&sgw_self()->gtpc_list6);
     ogs_socknode_remove_all(&sgw_self()->gtpu_list);
     ogs_socknode_remove_all(&sgw_self()->gtpu_list6);
+    ogs_socknode_remove_all(&sgw_self()->adv_gtpu_list);
+    ogs_socknode_remove_all(&sgw_self()->adv_gtpu_list6);
 
     ogs_pkbuf_pool_destroy(packet_pool);
 }
