@@ -192,7 +192,8 @@ int sgw_context_parse_config(void)
                             } else if (!strcmp(gtpc_key, "addr") ||
                                     !strcmp(gtpc_key, "name")) {
                                 ogs_yaml_iter_t hostname_iter;
-                                ogs_yaml_iter_recurse(&gtpc_iter, &hostname_iter);
+                                ogs_yaml_iter_recurse(&gtpc_iter,
+                                        &hostname_iter);
                                 ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
                                     YAML_MAPPING_NODE);
 
@@ -309,7 +310,8 @@ int sgw_context_parse_config(void)
                                 if (v) family = atoi(v);
                                 if (family != AF_UNSPEC &&
                                     family != AF_INET && family != AF_INET6) {
-                                    ogs_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                    ogs_warn("Ignore family(%d) : "
+                                        "AF_UNSPEC(%d), "
                                         "AF_INET(%d), AF_INET6(%d) ", 
                                         family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;
@@ -317,7 +319,8 @@ int sgw_context_parse_config(void)
                             } else if (!strcmp(gtpu_key, "addr") ||
                                     !strcmp(gtpu_key, "name")) {
                                 ogs_yaml_iter_t hostname_iter;
-                                ogs_yaml_iter_recurse(&gtpu_iter, &hostname_iter);
+                                ogs_yaml_iter_recurse(&gtpu_iter,
+                                        &hostname_iter);
                                 ogs_assert(ogs_yaml_iter_type(&hostname_iter) !=
                                     YAML_MAPPING_NODE);
 
@@ -345,18 +348,22 @@ int sgw_context_parse_config(void)
                             } else if (!strcmp(gtpu_key, "advertise_addr") ||
                                     !strcmp(gtpu_key, "advertise_name")) {
                                 ogs_yaml_iter_t adv_hostname_iter;
-                                ogs_yaml_iter_recurse(&gtpu_iter, &adv_hostname_iter);
-                                ogs_assert(ogs_yaml_iter_type(&adv_hostname_iter) !=
-                                    YAML_MAPPING_NODE);
+                                ogs_yaml_iter_recurse(&gtpu_iter,
+                                        &adv_hostname_iter);
+                                ogs_assert(ogs_yaml_iter_type(
+                                    &adv_hostname_iter) != YAML_MAPPING_NODE);
 
                                 do {
-                                    if (ogs_yaml_iter_type(&adv_hostname_iter) ==
-                                            YAML_SEQUENCE_NODE) {
-                                        if (!ogs_yaml_iter_next(&adv_hostname_iter))
+                                    if (ogs_yaml_iter_type(
+                                            &adv_hostname_iter) ==
+                                                YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(
+                                                &adv_hostname_iter))
                                             break;
                                     }
 
-                                    ogs_assert(adv_num <= OGS_MAX_NUM_OF_HOSTNAME);
+                                    ogs_assert(adv_num <=
+                                            OGS_MAX_NUM_OF_HOSTNAME);
                                     adv_hostname[adv_num++] =
                                         ogs_yaml_iter_value(&adv_hostname_iter);
                                 } while (

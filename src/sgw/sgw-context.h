@@ -49,8 +49,10 @@ typedef struct sgw_context_s {
     ogs_list_t      gtpu_list6;     /* SGW GTPU IPv6 Server List */
     ogs_list_t      adv_gtpu_list;  /* Advertised SGW GTPU IPv4 Server List */
     ogs_list_t      adv_gtpu_list6; /* Advertised SGW GTPU IPv6 Server List */
-    ogs_hash_t      *adv_gtpu_hash; /* Hashtable (SGW GTPU : Advertised SGW GTPU) IPv4 */
-    ogs_hash_t      *adv_gtpu_hash6;/* Hashtable (SGW GTPU : Advertised SGW GTPU) IPv6 */
+    /* Hashtable (SGW GTPU : Advertised SGW GTPU) IPv4 */
+    ogs_hash_t      *adv_gtpu_hash;
+    /* Hashtable (SGW GTPU : Advertised SGW GTPU) IPv6 */
+    ogs_hash_t      *adv_gtpu_hash6;
     ogs_sock_t      *gtpu_sock;     /* SGW GTPU IPv4 Socket */
     ogs_sock_t      *gtpu_sock6;    /* SGW GTPU IPv6 Socket */
     ogs_sockaddr_t  *gtpu_addr;     /* SGW GTPU IPv4 Address */
