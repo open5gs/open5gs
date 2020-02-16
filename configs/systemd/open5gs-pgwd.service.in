@@ -1,6 +1,7 @@
 [Unit]
 Description=Open5GS P-GW Daemon
 After=networking.service
+Requires=systemd-networkd.service
 
 [Service]
 Type=simple
