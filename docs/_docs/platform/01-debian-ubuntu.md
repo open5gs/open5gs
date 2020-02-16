@@ -66,7 +66,7 @@ $ sudo sh -c "cat << EOF > /etc/systemd/network/99-open5gs.network
 [Match]
 Name=ogstun
 [Network]
-Address=45.45.0.1/16
+Address=10.45.0.1/16
 Address=cafe::1/64
 EOF"
 ```
@@ -83,7 +83,7 @@ Make sure it is set up properly.
 ```bash
 $ ifconfig ogstun
 ogstun: flags=4305<UP,POINTOPOINT,RUNNING,NOARP,MULTICAST>  mtu 1500
-        inet 45.45.0.1  netmask 255.255.0.0  destination 45.45.0.1
+        inet 10.45.0.1  netmask 255.255.0.0  destination 10.45.0.1
         inet6 cafe::1  prefixlen 64  scopeid 0x0<global>
         inet6 fe80::e86e:86d8:ea24:f8ee  prefixlen 64  scopeid 0x20<link>
         unspec 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  txqueuelen 500  (UNSPEC)

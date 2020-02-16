@@ -462,46 +462,46 @@ pgw:
 #  <UE Pool>
 #
 #  o IPv4 Pool
-#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #
 #    ue_pool:
-#      addr: 45.45.0.1/16
+#      addr: 10.45.0.1/16
 #
 #  o IPv4/IPv6 Pool
-#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #
 #    ue_pool:
-#      - addr: 45.45.0.1/16
+#      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #
 #
-#  o Specific APN(e.g 'volte') uses 45.46.0.1/16, cafe:2::1/64
-#    All other APNs use 45.45.0.1/16, cafe:1::1/64
-#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
-#    $ sudo ip addr add 45.46.0.1/16 dev ogstun
+#  o Specific APN(e.g 'volte') uses 10.46.0.1/16, cafe:2::1/64
+#    All other APNs use 10.45.0.1/16, cafe:1::1/64
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
+#    $ sudo ip addr add 10.46.0.1/16 dev ogstun
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #    $ sudo ip addr add cafe:2::1/64 dev ogstun
 #
 #    ue_pool:
-#      - addr: 45.45.0.1/16
+#      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
-#      - addr: 45.46.0.1/16
+#      - addr: 10.46.0.1/16
 #        apn: volte
 #      - addr: cafe:2::1/64
 #        apn: volte
 #
 #  o Multiple Devices (default: ogstun)
-#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun2
-#    $ sudo ip addr add 45.46.0.1/16 dev ogstun3
+#    $ sudo ip addr add 10.46.0.1/16 dev ogstun3
 #    $ sudo ip addr add cafe:2::1/64 dev ogstun3
 #
 #    ue_pool:
-#      - addr: 45.45.0.1/16
+#      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #        dev: ogstun2
-#      - addr: 45.46.0.1/16
+#      - addr: 10.46.0.1/16
 #        apn: volte
 #        dev: ogstun3
 #      - addr: cafe:2::1/64
@@ -510,26 +510,26 @@ pgw:
 #
 #  o Pool Range Sample
 #    ue_pool:
-#      - addr: 45.45.0.1/24
-#        range: 45.45.0.100-45.45.0.200
+#      - addr: 10.45.0.1/24
+#        range: 10.45.0.100-10.45.0.200
 #
 #    ue_pool:
-#      - addr: 45.45.0.1/24
+#      - addr: 10.45.0.1/24
 #        range:
-#          - 45.45.0.5-45.45.0.50
-#          - 45.45.0.100-
+#          - 10.45.0.5-10.45.0.50
+#          - 10.45.0.100-
 #
 #    ue_pool:
-#      - addr: 45.45.0.1/24
+#      - addr: 10.45.0.1/24
 #        range:
-#          - -45.45.0.200
-#          - 45.45.0.210-45.45.0.220
+#          - -10.45.0.200
+#          - 10.45.0.210-10.45.0.220
 #
 #    ue_pool:
-#      - addr: 45.45.0.1/16
+#      - addr: 10.45.0.1/16
 #        range:
-#          - 45.45.0.100-45.45.0.200
-#          - 45.45.1.100-45.45.1.200
+#          - 10.45.0.100-10.45.0.200
+#          - 10.45.1.100-10.45.1.200
 #      - addr: cafe::1/64
 #        range:
 #          - cafe::a0-cafe:b0
@@ -537,7 +537,7 @@ pgw:
 #
 #
     ue_pool:
-      - addr: 45.45.0.1/16
+      - addr: 10.45.0.1/16
       - addr: cafe::1/64
 
 #

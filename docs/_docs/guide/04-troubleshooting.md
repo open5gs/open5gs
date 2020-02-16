@@ -127,7 +127,7 @@ If your device shows as connected (Includes LTE/4G symbol) there are a few simpl
    ```
    $ sudo iptables -I INPUT -i ogstun -j ACCEPT
    ```
-* Check if the UE's IP can be pinged successfully by performing `ping <IP of UE>` e.g.`ping 45.45.0.2`
+* Check if the UE's IP can be pinged successfully by performing `ping <IP of UE>` e.g.`ping 10.45.0.2`
 * Configure the firewall correctly. Some operating systems (Ubuntu) by default enable firewall rules to block traffic
    - Explicitly disable it to see if it resolves the problem of granting data access to the UE by doing
    ```
