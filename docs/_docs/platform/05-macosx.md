@@ -45,7 +45,7 @@ $ sudo ifconfig lo0 alias 127.0.0.5 netmask 255.255.255.255
 Enable IP forwarding & Masquerading
 ```bash
 $ sudo sysctl -w net.inet.ip.forwarding=1
-$ sudo sh -c "echo 'nat on {en0} from 45.45.0.0/16 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
+$ sudo sh -c "echo 'nat on {en0} from 10.45.0.0/16 to any -> {en0}' > /etc/pf.anchors/org.open5gs"
 $ sudo pfctl -e -f /etc/pf.anchors/org.open5gs
 ```
 

@@ -274,7 +274,7 @@ int pgw_gtp_open(void)
      * Also, before running pgw, assign the one IP from IP pool of UE 
      * to ogstun. The IP should not be assigned to UE
      *
-     * $ sudo ifconfig ogstun 45.45.0.1/16 up
+     * $ sudo ifconfig ogstun 10.45.0.1/16 up
      *
      */
 

@@ -315,7 +315,7 @@ target     prot opt source               destination
 $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 
 ### Add NAT Rule
-$ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o ogstun -j MASQUERADE
+$ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 ```
 
 **Note:** For the first time, it is a good condition if you do not have any rules in the IP/NAT tables. If a program such as docker has already set up a rule, you will need to add a rule differently.

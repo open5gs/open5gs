@@ -228,7 +228,7 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Send AA-Request */
     ogs_msleep(300);
-    pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 1, 1);
+    pcscf_rx_send_aar(&rx_sid, "10.45.0.3", 1, 1);
 
     /* Receive E-RAB Setup Request +
      * Activate dedicated EPS bearer context request */
@@ -250,7 +250,7 @@ static void volte_test1(abts_case *tc, void *data)
 
     /* Send AA-Request without Flow */
     ogs_msleep(300);
-    pcscf_rx_send_aar(&rx_sid, "45.45.0.3", 2, 1);
+    pcscf_rx_send_aar(&rx_sid, "10.45.0.3", 2, 1);
 
     /* Receive E-RAB Modify Request +
      * Modify EPS bearer context request */
@@ -671,7 +671,7 @@ static void volte_test2(abts_case *tc, void *data)
 
     /* Send AA-Request */
     ogs_msleep(300);
-    pcscf_rx_send_aar(&rx_sid, "45.45.0.5", 0, 1);
+    pcscf_rx_send_aar(&rx_sid, "10.45.0.5", 0, 1);
 
     /* Receive downlink NAS transport +
      * Modify EPS bearer context request */

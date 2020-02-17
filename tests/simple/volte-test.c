@@ -365,7 +365,7 @@ static void volte_test2(abts_case *tc, void *data)
             "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/32 23454\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd31\" } },"
           "{ \"direction\" : 1,"
-            "\"description\" : \"permit out ip from 45.45.0.1 to any\","
+            "\"description\" : \"permit out ip from 10.45.0.1 to any\","
             "\"_id\" : { \"$oid\" : \"599eb929c850caabcbfdcd30\" } },"
           "{ \"direction\" : 2,"
             "\"description\" : \"permit out udp from any 1-65535 to 10.200.136.98/24 23455\","
@@ -534,7 +534,7 @@ static void volte_test2(abts_case *tc, void *data)
 #if 0 /* TFT Rule Tester */
     /* Send GTP-U ICMP Packet */
 #if 1
-    rv = testgtpu_build_ping(&sendbuf, "45.45.0.2", "45.45.0.1");
+    rv = testgtpu_build_ping(&sendbuf, "10.45.0.2", "10.45.0.1");
 #else
     rv = testgtpu_build_ping(&sendbuf, "cafe::2", "cafe::1");
 #endif

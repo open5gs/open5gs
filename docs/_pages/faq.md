@@ -62,7 +62,7 @@ $ diff -u oldtables newtables
  -A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
  -A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER
  -A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
-+-A POSTROUTING -s 45.45.0.0/16 ! -o ogstun -j MASQUERADE
++-A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
  -A DOCKER -i docker0 -j RETURN
  COMMIT
  # Completed on Sat Jun  1 23:43:50 2019
@@ -115,7 +115,7 @@ target     prot opt source               destination
 $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 
 ### Add NAT Rule
-$ sudo iptables -t nat -A POSTROUTING -s 45.45.0.0/16 ! -o ogstun -j MASQUERADE
+$ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 ```
 
 #### How to use a different APN for each PGW
@@ -166,46 +166,46 @@ The IP address of the UE can also use a different UE pool depending on the APN.
 #  <UE Pool>
 #
 #  o IPv4 Pool
-#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #
 #    ue_pool:
-#      addr: 45.45.0.1/16
+#      addr: 10.45.0.1/16
 #
 #  o IPv4/IPv6 Pool
-#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #
 #    ue_pool:
-#      - addr: 45.45.0.1/16
+#      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #
 #
-#  o Specific APN(e.g 'volte') uses 45.46.0.1/16, cafe:2::1/64
-#    All other APNs use 45.45.0.1/16, cafe:1::1/64
-#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
-#    $ sudo ip addr add 45.46.0.1/16 dev ogstun
+#  o Specific APN(e.g 'volte') uses 10.46.0.1/16, cafe:2::1/64
+#    All other APNs use 10.45.0.1/16, cafe:1::1/64
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
+#    $ sudo ip addr add 10.46.0.1/16 dev ogstun
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun
 #    $ sudo ip addr add cafe:2::1/64 dev ogstun
 #
 #    ue_pool:
-#      - addr: 45.45.0.1/16
+#      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
-#      - addr: 45.46.0.1/16
+#      - addr: 10.46.0.1/16
 #        apn: volte
 #      - addr: cafe:2::1/64
 #        apn: volte
 #
 #  o Multiple Devices (default: ogstun)
-#    $ sudo ip addr add 45.45.0.1/16 dev ogstun
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
 #    $ sudo ip addr add cafe:1::1/64 dev ogstun2
-#    $ sudo ip addr add 45.46.0.1/16 dev ogstun3
+#    $ sudo ip addr add 10.46.0.1/16 dev ogstun3
 #    $ sudo ip addr add cafe:2::1/64 dev ogstun3
 #
 #    ue_pool:
-#      - addr: 45.45.0.1/16
+#      - addr: 10.45.0.1/16
 #      - addr: cafe:1::1/64
 #        dev: ogstun2
-#      - addr: 45.46.0.1/16
+#      - addr: 10.46.0.1/16
 #        apn: volte
 #        dev: ogstun3
 #      - addr: cafe:2::1/64
@@ -377,7 +377,7 @@ Currently, the number of UE is limited to `128*128`.
 - UE Network
 
 ```
-* IPv4 : 45.45.0.1/16
+* IPv4 : 10.45.0.1/16
 * IPv6 : cafe::1/64
 ```
 
