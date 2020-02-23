@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Harald Welte <laforge@gnumonks.org>
 Uploaders: Sukchan Lee <acetcom@gmail.com>
 Build-Depends: debhelper (>= 11),
+               git,
                pkg-config,
                meson (>= 0.43.0),
                flex,
