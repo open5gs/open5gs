@@ -100,6 +100,7 @@ pgw:
       - 8.8.4.4
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
+    mtu: 1400
 pcrf:
     freeDiameter:
       identity: pcrf.localdomain

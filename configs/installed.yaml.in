@@ -383,6 +383,19 @@ sgw:
 #
 #  o GTP-U Server(all address avaiable)
 #    gtpu:
+#
+#  o Provide custom SGW GTP-U address to be advertised inside S1AP messages
+#    gtpu:
+#      addr: 10.4.128.21
+#      advertise_addr: 172.24.15.30
+#
+#    gtpu:
+#      addr: 10.4.128.21
+#      advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
+#
+#    gtpu:
+#     dev: ens3
+#     advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
 #    
     gtpu:
 
@@ -550,6 +563,17 @@ pgw:
       - 8.8.4.4
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
+
+#
+#  <MTU Size>
+#
+#  o Provisioning a limit on the size of the packets sent by the MS
+#    to avoid packet fragmentation in the backbone network
+#    between the MS and the GGSN/PGW and/or across the (S)Gi reference point)
+#    when some of the backbone links does not support
+#    packets larger then 1500 octets
+#
+    mtu: 1400
 
 #
 #  <P-CSCF>
