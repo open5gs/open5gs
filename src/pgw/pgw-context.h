@@ -91,6 +91,8 @@ typedef struct pgw_context_s {
     ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
     ogs_hash_t      *ipv6_hash;     /* hash table (IPv6 Address) */
 
+    uint16_t        mtu;            /* MTU to advertise in PCO */
+
     ogs_list_t      sess_list;
 } pgw_context_t;
 
