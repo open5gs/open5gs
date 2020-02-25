@@ -671,6 +671,11 @@ int pgw_context_parse_config(void)
 
                     } while (ogs_yaml_iter_type(&ue_pool_array) ==
                             YAML_SEQUENCE_NODE);
+                } else if (!strcmp(pgw_key, "mtu")) {
+                    ogs_assert(ogs_yaml_iter_type(&pgw_iter) !=
+                            YAML_SCALAR_NODE);
+                    self.mtu = atoi(ogs_yaml_iter_value(&pgw_iter));
+                    ogs_assert(self.mtu);
                 } else if (!strcmp(pgw_key, "dns")) {
                     ogs_yaml_iter_t dns_iter;
                     ogs_yaml_iter_recurse(&pgw_iter, &dns_iter);

@@ -516,7 +516,13 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco)
             /* TODO */
             break;
         case OGS_PCO_ID_IPV4_LINK_MTU_REQUEST:
-            /* TODO */
+            if (pgw_self()->mtu) {
+                uint16_t mtu = htons(pgw_self()->mtu);
+                pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
+                pgw.ids[pgw.num_of_id].len = sizeof(uint16_t);
+                pgw.ids[pgw.num_of_id].data = &mtu;
+                pgw.num_of_id++;
+            }
             break;
         case OGS_PCO_ID_MS_SUPPORTS_BCM:
             /* TODO */
