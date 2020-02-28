@@ -1,7 +1,7 @@
 [Unit]
 Description=Open5GS HSS Daemon
-BindTo=mongodb.service
-After=networking.service mongodb.service
+BindTo=mongod.service
+After=networking.service mongod.service
 
 [Service]
 Type=simple
