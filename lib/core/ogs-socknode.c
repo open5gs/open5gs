@@ -65,23 +65,18 @@ void ogs_socknode_free(ogs_socknode_t *node)
 ogs_socknode_t *ogs_socknode_add(
         ogs_list_t *list, int family, ogs_sockaddr_t *addr)
 {
-    int rv;
     ogs_socknode_t *node = NULL;
+    ogs_sockaddr_t *dup = NULL;
 
     ogs_assert(list);
     ogs_assert(addr);
 
-    if (family != AF_UNSPEC) {
-        rv = ogs_filteraddrinfo(&addr, family);
-        ogs_assert(rv == OGS_OK);
-    }
+    ogs_copyaddrinfo(&dup, addr);
+    if (family != AF_UNSPEC)
+        ogs_filteraddrinfo(&dup, family);
 
-    if (addr) {
-        node = ogs_calloc(1, sizeof(ogs_socknode_t));
-        ogs_assert(node);
-
-        node->addr = addr;
-
+    if (dup) {
+        node = ogs_socknode_new(dup);
         ogs_list_add(list, node);
     }
 

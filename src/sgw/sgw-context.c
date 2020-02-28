@@ -184,7 +184,8 @@ int sgw_context_parse_config(void)
                                 if (v) family = atoi(v);
                                 if (family != AF_UNSPEC &&
                                     family != AF_INET && family != AF_INET6) {
-                                    ogs_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                    ogs_warn("Ignore family(%d) : "
+                                        "AF_UNSPEC(%d), "
                                         "AF_INET(%d), AF_INET6(%d) ", 
                                         family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;
@@ -230,22 +231,12 @@ int sgw_context_parse_config(void)
                         }
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0) {
-                                ogs_sockaddr_t *dup = NULL;
-                                rv = ogs_copyaddrinfo(&dup, addr);
-                                ogs_assert(rv == OGS_OK);
+                            if (ogs_config()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
-                                        &self.gtpc_list, AF_INET, dup);
-                            }
-
-                            if (ogs_config()->parameter.no_ipv6 == 0) {
-                                ogs_sockaddr_t *dup = NULL;
-                                rv = ogs_copyaddrinfo(&dup, addr);
-                                ogs_assert(rv == OGS_OK);
+                                        &self.gtpc_list, AF_INET, addr);
+                            if (ogs_config()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
-                                        &self.gtpc_list6, AF_INET6, dup);
-                            }
-
+                                        &self.gtpc_list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -373,27 +364,6 @@ int sgw_context_parse_config(void)
                                 ogs_warn("unknown key `%s`", gtpu_key);
                         }
 
-                        adv_addr = NULL;
-                        for (i = 0; i < adv_num; i++) {
-                            rv = ogs_addaddrinfo(&adv_addr,
-                                    family, adv_hostname[i], port, 0);
-                            ogs_assert(rv == OGS_OK);
-                        }
-                        if (adv_addr) {
-                            ogs_sockaddr_t *dup = NULL;
-                            rv = ogs_copyaddrinfo(&dup, adv_addr);
-                            ogs_assert(rv == OGS_OK);
-                             if (ogs_config()->parameter.no_ipv4 == 0) {
-                                ogs_socknode_add(
-                                        &self.adv_gtpu_list, AF_INET, dup);
-                            }
-
-                            if (ogs_config()->parameter.no_ipv6 == 0) {
-                                ogs_socknode_add(
-                                        &self.adv_gtpu_list6, AF_INET6, dup);
-                            }
-                        }
-
                         addr = NULL;
                         for (i = 0; i < num; i++) {
                             rv = ogs_addaddrinfo(&addr,
@@ -401,22 +371,12 @@ int sgw_context_parse_config(void)
                             ogs_assert(rv == OGS_OK);
                         }
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0) {
-                                ogs_sockaddr_t *dup = NULL;
-                                rv = ogs_copyaddrinfo(&dup, addr);
-                                ogs_assert(rv == OGS_OK);
+                            if (ogs_config()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
-                                        &self.gtpu_list, AF_INET, dup);
-                            }
-
-                            if (ogs_config()->parameter.no_ipv6 == 0) {
-                                ogs_sockaddr_t *dup = NULL;
-                                rv = ogs_copyaddrinfo(&dup, addr);
-                                ogs_assert(rv == OGS_OK);
+                                        &self.gtpu_list, AF_INET, addr);
+                            if (ogs_config()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
-                                        &self.gtpu_list6, AF_INET6, dup);
-                            }
-
+                                        &self.gtpu_list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -430,8 +390,22 @@ int sgw_context_parse_config(void)
                             ogs_assert(rv == OGS_OK);
                         }
 
+                        adv_addr = NULL;
+                        for (i = 0; i < adv_num; i++) {
+                            rv = ogs_addaddrinfo(&adv_addr,
+                                    family, adv_hostname[i], port, 0);
+                            ogs_assert(rv == OGS_OK);
+                        }
                         if (adv_addr) {
                             ogs_socknode_t *node = NULL;
+
+                            if (ogs_config()->parameter.no_ipv4 == 0)
+                                ogs_socknode_add(
+                                    &self.adv_gtpu_list, AF_INET, adv_addr);
+                            if (ogs_config()->parameter.no_ipv6 == 0)
+                                ogs_socknode_add(
+                                    &self.adv_gtpu_list6, AF_INET6, adv_addr);
+
                             ogs_list_for_each(&self.gtpu_list, node) {
                                 ogs_socknode_t *adv_node =
                                     ogs_list_first(&self.adv_gtpu_list);
@@ -470,8 +444,8 @@ int sgw_context_parse_config(void)
                                 NULL, self.gtpu_port);
                         ogs_assert(rv == OGS_OK);
                     }
-                }
-                else
+
+                } else
                     ogs_warn("unknown key `%s`", sgw_key);
             }
         }

@@ -522,22 +522,12 @@ int mme_context_parse_config()
                         }
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0) {
-                                ogs_sockaddr_t *dup = NULL;
-                                rv = ogs_copyaddrinfo(&dup, addr);
-                                ogs_assert(rv == OGS_OK);
+                            if (ogs_config()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
-                                        &self.s1ap_list, AF_INET, dup);
-                            }
-
-                            if (ogs_config()->parameter.no_ipv6 == 0) {
-                                ogs_sockaddr_t *dup = NULL;
-                                rv = ogs_copyaddrinfo(&dup, addr);
-                                ogs_assert(rv == OGS_OK);
+                                        &self.s1ap_list, AF_INET, addr);
+                            if (ogs_config()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
-                                        &self.s1ap_list6, AF_INET6, dup);
-                            }
-
+                                        &self.s1ap_list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
                         }
 
@@ -645,22 +635,12 @@ int mme_context_parse_config()
                         }
 
                         if (addr) {
-                            if (ogs_config()->parameter.no_ipv4 == 0) {
-                                ogs_sockaddr_t *dup = NULL;
-                                rv = ogs_copyaddrinfo(&dup, addr);
-                                ogs_assert(rv == OGS_OK);
+                            if (ogs_config()->parameter.no_ipv4 == 0)
                                 ogs_socknode_add(
-                                        &self.gtpc_list, AF_INET, dup);
-                            }
-
-                            if (ogs_config()->parameter.no_ipv6 == 0) {
-                                ogs_sockaddr_t *dup = NULL;
-                                rv = ogs_copyaddrinfo(&dup, addr);
-                                ogs_assert(rv == OGS_OK);
+                                        &self.gtpc_list, AF_INET, addr);
+                            if (ogs_config()->parameter.no_ipv6 == 0)
                                 ogs_socknode_add(
-                                        &self.gtpc_list6, AF_INET6, dup);
-                            }
-
+                                        &self.gtpc_list6, AF_INET6, addr);
                             ogs_freeaddrinfo(addr);
                         }
 
