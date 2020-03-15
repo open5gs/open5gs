@@ -31,6 +31,8 @@ print(Open5GS_1.AddSubscriber(sub_data))                        #Add Subscriber 
 
 print(Open5GS_1.GetSubscriber('891012222222300'))               #Get added Subscriber's details
 
+print(Open5GS_1.UpdateSubscriber('891012222222300', sub_data))  #Update subscriber
+
 print(Open5GS_1.DeleteSubscriber('891012222222300'))            #Delete Subscriber
 
 Subscriber_List = Open5GS_1.GetSubscribers()
