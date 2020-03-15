@@ -46,7 +46,7 @@ void sbc_handle_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
             flag = 1;
 
         if (flag) {
-            /* Buidl S1AP Write Replace Warning Request message */
+            /* Build S1AP Write Replace Warning Request message */
             s1apbuf = s1ap_build_write_replace_warning_request(sbc_pws);
             ogs_expect_or_return(s1apbuf);
 
@@ -81,7 +81,7 @@ void sbc_handle_stop_warning_request(sbc_pws_data_t *sbc_pws)
             flag = 1;
 
         if (flag) {
-            /* Buidl S1AP Kill request message */
+            /* Build S1AP Kill request message */
             s1apbuf = s1ap_build_kill_request(sbc_pws);
             ogs_expect_or_return(s1apbuf);
 
