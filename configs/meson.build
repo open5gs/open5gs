@@ -52,7 +52,7 @@ endforeach
 
 configure_file(
     input : '../misc/dbconf.sh',
-    output : 'open5gs_db,
+    output : 'open5gs_db',
     configuration : conf_data)
 
 subdir('open5gs')
