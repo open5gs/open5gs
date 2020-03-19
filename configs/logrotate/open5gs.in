@@ -8,7 +8,7 @@
 
     postrotate
         for i in pcrfd pgwd sgwd hssd mmed; do
-            systemctl reload open5gs-$i
+            systemctl restart open5gs-$i
         done
     endscript
 }
