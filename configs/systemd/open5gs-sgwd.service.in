@@ -12,6 +12,7 @@ Restart=always
 ExecStart=@bindir@/open5gs-sgwd -c @sysconfdir@/open5gs/sgw.yaml
 RestartSec=2
 RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
 WantedBy=multi-user.target
