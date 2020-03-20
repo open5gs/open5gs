@@ -13,6 +13,7 @@ Restart=always
 ExecStart=@bindir@/open5gs-pgwd -c @sysconfdir@/open5gs/pgw.yaml
 RestartSec=2
 RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
 WantedBy=multi-user.target
