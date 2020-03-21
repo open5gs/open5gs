@@ -12,6 +12,7 @@ Restart=always
 ExecStart=@bindir@/open5gs-mmed -c @sysconfdir@/open5gs/mme.yaml
 RestartSec=2
 RestartPreventExitStatus=1
+ExecReload=/bin/kill -HUP $MAINPID
 
 [Install]
 WantedBy=multi-user.target
