@@ -22,36 +22,10 @@ conf_data.set('sysconfdir', sysconfdir)
 conf_data.set('libdir', libdir)
 conf_data.set('localstatedir', localstatedir)
 
-freediameter_extensions_builddir = join_paths(
-        meson.build_root(), 'subprojects', 'freeDiameter', 'extensions')
-conf_data.set('freediameter_extensions_builddir',
-        freediameter_extensions_builddir)
-
 if host_system == 'linux'
     conf_data.set('loopback_devname', 'lo')
 else
     conf_data.set('loopback_devname', 'lo0')
 endif
 
-example_conf = '''
-    simple.yaml
-    installed.yaml
-    split.yaml
-    mnc3.yaml
-    csfb.yaml
-    volte.yaml
-    srslte.yaml
-'''.split()
-
-foreach file : example_conf
-    gen = configure_file(
-            input : file + '.in',
-            output : file,
-            configuration : conf_data)
-endforeach
-
-subdir('open5gs')
-subdir('freeDiameter')
-subdir('systemd')
-subdir('logrotate')
-subdir('newsyslog')
+subdir('db')

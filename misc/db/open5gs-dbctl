@@ -3,7 +3,7 @@
 version=0.9.0
 
 display_help() {
-    echo "dbconf.sh: Open5GS Database Configuration Tool ($version)"
+    echo "open5gs-dbctl: Open5GS Database Configuration Tool ($version)"
     echo "COMMANDS:" >&2
     echo "   add {imsi key opc}: adds a user to the database with default values"
     echo "   remove {imsi}: removes a user from the database"
@@ -46,13 +46,13 @@ if [ "$1" = "add" ]; then
 		exit 0
 	fi
 
-	echo "dbconf.sh: incorrect number of args, format is \"dbconf.sh add imsi key opc\""
+	echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl add imsi key opc\""
 	exit 1
 fi
 
 if [ "$1" = "remove" ]; then
 	if [ "$#" -ne 2 ]; then
-		echo "dbconf.sh: incorrect number of args, format is \"dbconf.sh remove imsi\""
+		echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl remove imsi\""
 		exit 1
 	fi
 
@@ -63,7 +63,7 @@ fi
 
 if [ "$1" = "reset" ]; then
 	if [ "$#" -ne 1 ]; then
-		echo "dbconf.sh: incorrect number of args, format is \"dbconf.sh reset\""
+		echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl reset\""
 		exit 1
 	fi
 
@@ -73,7 +73,7 @@ fi
 
 if [ "$1" = "static_ip" ]; then
 	if [ "$#" -ne 3 ]; then
-		echo "dbconf.sh: incorrect number of args, format is \"dbconf.sh static_ip imsi ip\""
+		echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl static_ip imsi ip\""
 		exit 1
 	fi
 	IMSI=$2 
@@ -85,7 +85,7 @@ fi
 
 if [ "$1" = "static_ip6" ]; then
 	if [ "$#" -ne 3 ]; then
-		echo "dbconf.sh: incorrect number of args, format is \"dbconf.sh static_ip6 imsi ip\""
+		echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl static_ip6 imsi ip\""
 		exit 1
 	fi
 	IMSI=$2 
@@ -97,7 +97,7 @@ fi
 
 if [ "$1" = "type" ]; then
 	if [ "$#" -ne 3 ]; then
-		echo "dbconf.sh: incorrect number of args, format is \"dbconf.sh type imsi type\""
+		echo "open5gs-dbctl: incorrect number of args, format is \"open5gs-dbctl type imsi type\""
 		exit 1
 	fi
 	IMSI=$2 
