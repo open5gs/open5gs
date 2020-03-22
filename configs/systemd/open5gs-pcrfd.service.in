@@ -1,7 +1,6 @@
 [Unit]
 Description=Open5GS PCRF Daemon
-BindTo=mongod.service
-After=networking.service mongod.service
+Wants=mongodb.service mongod.service
 
 [Service]
 Type=simple

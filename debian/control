@@ -86,7 +86,7 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         mongodb | mongodb-org,
+         mongodb-org | mongodb,
          open5gs-common (= ${binary:Version})
 Description: Open Source based 3GPP EPC PCRF (Policy and Charging Rules Function)
  Open5GS is a C-language Open Source implementation of the 3GPP Evolved
@@ -102,7 +102,7 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         mongodb | mongodb-org,
+         mongodb-org | mongodb,
          open5gs-common (= ${binary:Version})
 Description: Open Source based 3GPP EPC HSS (Home Subscriber Server)
  Open5GS is a C-language Open Source implementation of the 3GPP Evolved
