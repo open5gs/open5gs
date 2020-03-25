@@ -530,6 +530,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         }
 
         switch (gtp_message.h.type) {
+        case OGS_GTP_ECHO_REQUEST_TYPE:
+            mme_s11_handle_echo_request(xact, &gtp_message.echo_request);
+            break;
+        case OGS_GTP_ECHO_RESPONSE_TYPE:
+            mme_s11_handle_echo_response(xact, &gtp_message.echo_response);
+            break;
         case OGS_GTP_CREATE_SESSION_RESPONSE_TYPE:
             mme_s11_handle_create_session_response(
                 xact, mme_ue, &gtp_message.create_session_response);

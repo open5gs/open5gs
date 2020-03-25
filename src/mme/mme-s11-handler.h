@@ -26,6 +26,10 @@
 extern "C" {
 #endif
 
+void mme_s11_handle_echo_request(
+        ogs_gtp_xact_t *xact, ogs_gtp_echo_request_t *req);
+void mme_s11_handle_echo_response(
+        ogs_gtp_xact_t *xact, ogs_gtp_echo_response_t *rsp);
 void mme_s11_handle_create_session_response(
         ogs_gtp_xact_t *xact, mme_ue_t *mme_ue,
         ogs_gtp_create_session_response_t *rsp);

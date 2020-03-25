@@ -227,7 +227,7 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
     ogs_assert(s11_xact);
     ogs_assert(req);
 
-    ogs_debug("[SGW] Modify Bearer Reqeust");
+    ogs_debug("[SGW] Modify Bearer Request");
 
     memset(&cause, 0, sizeof(cause));
     cause.value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
@@ -384,7 +384,7 @@ void sgw_s11_handle_delete_session_request(ogs_gtp_xact_t *s11_xact,
     ogs_assert(s11_xact);
     ogs_assert(message);
 
-    ogs_debug("[SGW] Delete Session Reqeust");
+    ogs_debug("[SGW] Delete Session Request");
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
     req = &message->delete_session_request;
@@ -1284,3 +1284,4 @@ void sgw_s11_handle_bearer_resource_command(ogs_gtp_xact_t *s11_xact,
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
 }
+

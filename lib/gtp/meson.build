@@ -22,6 +22,7 @@ libgtp_sources = files('''
     types.h
     conv.h
     node.h
+    build.h
     path.h
     xact.h
 
@@ -29,6 +30,7 @@ libgtp_sources = files('''
     types.c
     conv.c
     node.c
+    build.c
     path.c
     xact.c
 '''.split())

@@ -176,6 +176,7 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
     char buf[OGS_ADDRSTRLEN];
     ogs_gtp_xact_stage_t stage;
     ogs_gtp_header_t *h = NULL;
+    int gtp_hlen = 0;
     
     ogs_assert(xact);
     ogs_assert(xact->gnode);
@@ -244,17 +245,28 @@ int ogs_gtp_xact_update_tx(ogs_gtp_xact_t *xact,
         return OGS_ERROR;
     }
 
-    ogs_pkbuf_push(pkbuf, OGS_GTPV2C_HEADER_LEN);
-    h = (ogs_gtp_header_t *)pkbuf->data;
-    ogs_assert(h);
+    if (hdesc->type > OGS_GTP_VERSION_NOT_SUPPORTED_INDICATION_TYPE) {
+        gtp_hlen = OGS_GTPV2C_HEADER_LEN;
+    } else {
+        gtp_hlen = OGS_GTPV2C_HEADER_LEN - OGS_GTP_TEID_LEN;
+    }
 
-    memset(h, 0, sizeof(ogs_gtp_header_t));
+    ogs_pkbuf_push(pkbuf, gtp_hlen);
+    h = (ogs_gtp_header_t *)pkbuf->data;
+    memset(h, 0, gtp_hlen);
+
     h->version = 2;
-    h->teid_presence = 1;
     h->type = hdesc->type;
-    h->length = htons(pkbuf->len - 4);
-    h->teid = htonl(hdesc->teid);
-    h->sqn = OGS_GTP_XID_TO_SQN(xact->xid);
+
+    if (hdesc->type > OGS_GTP_VERSION_NOT_SUPPORTED_INDICATION_TYPE) {
+        h->teid_presence = 1;
+        h->teid = htobe32(hdesc->teid);
+        h->sqn = OGS_GTP_XID_TO_SQN(xact->xid);
+    } else {
+        h->teid_presence = 0;
+        h->sqn_only = OGS_GTP_XID_TO_SQN(xact->xid);
+    }
+    h->length = htobe16(pkbuf->len - 4);
 
     /* Save Message type and packet of this step */
     xact->seq[xact->step].type = h->type;
@@ -636,13 +648,17 @@ int ogs_gtp_xact_receive(
     char buf[OGS_ADDRSTRLEN];
     int rv;
     ogs_gtp_xact_t *new = NULL;
+    uint32_t sqn;
 
     ogs_assert(gnode);
     ogs_assert(h);
 
-    new = ogs_gtp_xact_find_by_xid(gnode, h->type, OGS_GTP_SQN_TO_XID(h->sqn));
+    if (h->teid_presence) sqn = h->sqn;
+    else sqn = h->sqn_only;
+
+    new = ogs_gtp_xact_find_by_xid(gnode, h->type, OGS_GTP_SQN_TO_XID(sqn));
     if (!new)
-        new = ogs_gtp_xact_remote_create(gnode, h->sqn);
+        new = ogs_gtp_xact_remote_create(gnode, sqn);
     ogs_assert(new);
 
     ogs_debug("[%d] %s Receive peer [%s]:%d",
@@ -685,6 +701,7 @@ static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t xid)
     case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
     case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_REQUEST_TYPE:
     case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_TYPE:
+    case OGS_GTP_ECHO_REQUEST_TYPE:
         stage = GTP_XACT_INITIAL_STAGE;
         break;
     case OGS_GTP_CREATE_BEARER_REQUEST_TYPE:
@@ -708,6 +725,7 @@ static ogs_gtp_xact_stage_t ogs_gtp_xact_get_stage(uint8_t type, uint32_t xid)
     case OGS_GTP_CREATE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
     case OGS_GTP_DELETE_INDIRECT_DATA_FORWARDING_TUNNEL_RESPONSE_TYPE:
     case OGS_GTP_DOWNLINK_DATA_NOTIFICATION_ACKNOWLEDGE_TYPE:
+    case OGS_GTP_ECHO_RESPONSE_TYPE:
         stage = GTP_XACT_FINAL_STAGE;
         break;
 

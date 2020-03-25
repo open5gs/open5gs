@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2019-12-23 11:28:04.943360 by acetcom
+ * Created on: 2020-03-25 15:39:06.337683 by acetcom
  * from 29274-d80.docx
  ******************************************************************************/
 
@@ -547,7 +547,7 @@ typedef ogs_tlv_octet_t ogs_gtp_tlv_cmi_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_service_indicator_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_detach_type_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_ldn_t;
-typedef ogs_tlv_octet_t ogs_gtp_tlv_node_features_t;
+typedef ogs_tlv_uint8_t ogs_gtp_tlv_node_features_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_mbms_time_to_data_transfer_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_throttling_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_arp_t;

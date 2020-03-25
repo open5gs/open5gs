@@ -132,6 +132,12 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         }
 
         switch(message->h.type) {
+        case OGS_GTP_ECHO_REQUEST_TYPE:
+            pgw_s5c_handle_echo_request(xact, &message->echo_request);
+            break;
+        case OGS_GTP_ECHO_RESPONSE_TYPE:
+            pgw_s5c_handle_echo_response(xact, &message->echo_response);
+            break;
         case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
             if (message->h.teid == 0) {
                 ogs_assert(!sess);

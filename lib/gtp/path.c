@@ -264,3 +264,52 @@ void ogs_gtp_send_error_message(
     ogs_expect(rv == OGS_OK);
 }
 
+void ogs_gtp_send_echo_request(
+        ogs_gtp_node_t *gnode, uint8_t recovery, uint8_t features)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_gtp_header_t h;
+    ogs_gtp_xact_t *xact = NULL;
+
+    ogs_assert(gnode);
+
+    ogs_debug("[GTP] Sending Echo Request");
+
+    memset(&h, 0, sizeof(ogs_gtp_header_t));
+    h.type = OGS_GTP_ECHO_REQUEST_TYPE;
+    h.teid = 0;
+
+    pkbuf = ogs_gtp_build_echo_request(h.type, recovery, features);
+    ogs_expect_or_return(pkbuf);
+
+    xact = ogs_gtp_xact_local_create(gnode, &h, pkbuf, NULL, NULL);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+}
+
+void ogs_gtp_send_echo_response(ogs_gtp_xact_t *xact,
+        uint8_t recovery, uint8_t features)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_gtp_header_t h;
+
+    ogs_assert(xact);
+
+    ogs_debug("[GTP] Sending Echo Response");
+
+    memset(&h, 0, sizeof(ogs_gtp_header_t));
+    h.type = OGS_GTP_ECHO_RESPONSE_TYPE;
+    h.teid = 0;
+
+    pkbuf = ogs_gtp_build_echo_response(h.type, recovery, features);
+    ogs_expect_or_return(pkbuf);
+
+    rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return(rv == OGS_OK);
+
+    rv = ogs_gtp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+}

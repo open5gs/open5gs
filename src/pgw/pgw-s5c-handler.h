@@ -26,6 +26,11 @@
 extern "C" {
 #endif
 
+void pgw_s5c_handle_echo_request(
+        ogs_gtp_xact_t *xact, ogs_gtp_echo_request_t *req);
+void pgw_s5c_handle_echo_response(
+        ogs_gtp_xact_t *xact, ogs_gtp_echo_response_t *req);
+
 void pgw_s5c_handle_create_session_request(
         pgw_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp_create_session_request_t *req);
