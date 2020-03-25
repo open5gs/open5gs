@@ -143,6 +143,14 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
                 return;
             }
 
+            if (!SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
+                ogs_warn("No Session Context : IMSI[%s]", mme_ue->imsi_bcd);
+                nas_send_service_reject(mme_ue,
+                    EMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                OGS_FSM_TRAN(s, &emm_state_exception);
+                return;
+            }
+
             s1ap_send_initial_context_setup_request(mme_ue);
             return;
         }

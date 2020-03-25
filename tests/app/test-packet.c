@@ -1276,6 +1276,7 @@ int tests1ap_build_initial_context_setup_failure(ogs_pkbuf_t **pkbuf, int i)
 
         /* 21 */
         "4009001500000300 00400200d0000840 0200d00002400203 40",
+        "4009001500000300 00400200d2000840 0200d20002400203 40",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         25,
@@ -1308,7 +1309,7 @@ int tests1ap_build_initial_context_setup_failure(ogs_pkbuf_t **pkbuf, int i)
 
         /* 21 */
         25,
-        0,
+        25,
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
@@ -1379,7 +1380,7 @@ int tests1ap_build_attach_complete(ogs_pkbuf_t **pkbuf, int i)
 
         /* 21 */
         "",
-        "000d403700000500 00000200d1000800 0200d1001a000e0d 277c78c659010743"
+        "000d403700000500 00000200d1000800 0200d1001a000e0d 27f6962d51010743"
         "00035200c2006440 080064f013000640 10004340060064f0 130002",
         "",
     };
@@ -1584,6 +1585,10 @@ int tests1ap_build_ue_context_release_request(ogs_pkbuf_t **pkbuf, int i)
         "0012401500000300 0000020001000800 0200010002400202 80",
         "0012401500000300 0000020002000800 0200020002400202 e0",
         "0012401700000300 00000200f8000800 048003e993000240 0202e0",
+
+        /* 21 */
+        "0012401500000300 00000200d1000800 0200d10002400202 80",
+        "0012401500000300 00000200d2000800 0200d20002400202 80",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         28,
@@ -1613,6 +1618,10 @@ int tests1ap_build_ue_context_release_request(ogs_pkbuf_t **pkbuf, int i)
         25,
         25,
         27,
+
+        25,
+        25,
+        0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
 
@@ -1669,7 +1678,8 @@ int tests1ap_build_ue_context_release_complete(ogs_pkbuf_t **pkbuf, int i)
 
         /* 21 */
         "2017000f00000200 00400200d0000840 0200d0",
-        "",
+        "2017000f00000200 00400200d1000840 0200d1",
+        "2017000f00000200 00400200d3000840 0200d3",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         23,
@@ -1703,7 +1713,7 @@ int tests1ap_build_ue_context_release_complete(ogs_pkbuf_t **pkbuf, int i)
         /* 21 */
         19,
         19,
-        0,
+        19,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
 
