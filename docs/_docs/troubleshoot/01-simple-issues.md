@@ -1,8 +1,8 @@
 ---
-title: Troubleshooting Open5GS
+title: Simple Issue
 ---
 
-**Note:** This guide assumes you've already installed Open5Gs and it's running with it's default values. If you're new to Open5Gs check out the [Quickstart Guide]({{ site.url }}{{ site.baseurl }}/docs/guide/01-quickstart)
+**Note:** This guide assumes you've already installed Open5GS and it's running with it's default values. If you're new to Open5GS check out the [Quickstart Guide]({{ site.url }}{{ site.baseurl }}/docs/guide/01-quickstart)
 {: .notice--warning}
 
 ## Services Running
@@ -42,6 +42,12 @@ Open5GS daemon v1.0.0
 [app] FATAL: Open5GS initialization failed. Aborted (../src/main.c:222)
 ```
 
+Or, you can use `journalctl` like below to view live log.
+
+```bash
+$ journalctl -u open5gs-mmed.service --since today -f
+```
+
 In the example above we can see the error - no SGW GTPC address is configured in the mme.yaml file, meaning Open5GS MME is failing to start.
 
 The errors you experience may be different, but if a service is failing to start it's most often due to a misconfiguration issue in one or more of the Open5GS *.yaml* configuration files. The log should tell you which section of the yaml file is missing or invalid.
@@ -49,19 +55,19 @@ The errors you experience may be different, but if a service is failing to start
 
 ## eNB Connection Issues
 ---
-When a UE connects to Open5Gs MME the log shows the presence of a new S1AP connection the log at */var/log/open5gs/mme.log*:
+When a UE connects to Open5GS MME the log shows the presence of a new S1AP connection the log at */var/log/open5gs/mme.log*:
 
 ##### No S1AP Connection
 If you're not seeing any S1AP connection attempts check the eNB can contact the IP the MME is on (No firewall / ACLs etc blocking) and that SCTP Traffic is able to be carried across your transmission network. 
 
 **Note:** 3GPP defines SCTP as the transport protocol for S1-AP/S1-CP traffic (not TCP/UDP). Not all devices / routers support S1AP, particularly over the Internet.
 
-If you're confident the service is running and connectivity is able to be established across your transmission network, you should see the *SCTP INIT* packets in TCPdump. If you're not seeing these packets go back and check your network.
+If you're confident the service is running and connectivity is able to be established across your transmission network, you should see the *SCTP INIT* packets in Wireshark. If you're not seeing these packets go back and check your network.
 
 If you are seeing the SCTP INIT messages and seeing an ABORT after each one, that suggests the SCTP connection is trying to be established. Check that the MME service is started and listening on the interface / IP you're sending traffic to.
 
 ##### S1AP Connection Rejected
-If you're seeing S1AP Connection attempts but seeing them rejected by Open5Gs, the S1AP message show in a packet capture will indicate the rejection reason, as well as in the mme log.
+If you're seeing S1AP Connection attempts but seeing them rejected by Open5GS, the S1AP message show in a packet capture will indicate the rejection reason, as well as in the mme log.
 ```
 $ tail -f /var/log/open5gs/mme.log
 [mme] INFO: eNB-S1[10.0.1.14] connection refused!!! (mme-sm.c:176)
@@ -97,7 +103,7 @@ Assuming while scanning for networks the UE can see the network, but not connect
 
 LTE/E-UTRAN employs *Mutual Authentication* of both the network and the subscriber. This means the credentials in the HSS must match the credentials on the USIM and the credentials in the USIM must match those in the HSS. This means unlike GSM, you cannot use just any SIM and disable crypto, you have to know the details on the USIM or be able to program this yourself in order to authenticate.
 
-If the issue is authentication, the mme and hss log will give you an indication as to which side is rejecting the authentication, the UE or the Network (Open5Gs);
+If the issue is authentication, the mme and hss log will give you an indication as to which side is rejecting the authentication, the UE or the Network (Open5GS);
 
 __IMSI/Subscriber not present in HSS:__
 If the USIM's IMSI is not present in the HSS the HSS will reject the Authentication.
@@ -122,12 +128,12 @@ Ensure the APNs requested by the UE are present in the HSS.
 #### UE shows "4G" or "LTE" Connection but has no IP Connectivity to the outside World
 If your device shows as connected (Includes LTE/4G symbol) there are a few simple things to check to diagnose connectivity issues:
 * The PGW can contact the outside world (Can resolve DNS, browse, etc)
-* Check if the interface connected to the internet is correctly `NAT` with the `ogstun` interface. Follow the documentation [Here](#UEInternet)
+* Check if the interface connected to the internet is correctly `NAT` with the `ogstun` interface.
    - Ensure that the packets in the `INPUT` chain to the `ogstun` interface are accepted 
    ```
    $ sudo iptables -I INPUT -i ogstun -j ACCEPT
    ```
-* Check if the UE's IP can be pinged successfully by performing `ping <IP of UE>` e.g.`ping 10.45.0.2`
+* Check if the UE's IP can be pinged successfully by performing `ping <IP of UE>` -- [e.g. `ping 10.45.0.2`]
 * Configure the firewall correctly. Some operating systems (Ubuntu) by default enable firewall rules to block traffic
    - Explicitly disable it to see if it resolves the problem of granting data access to the UE by doing
    ```
