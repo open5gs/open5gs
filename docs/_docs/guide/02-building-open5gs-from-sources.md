@@ -18,7 +18,7 @@ $ sudo systemctl start mongodb (if '/usr/bin/mongod' is not running)
 $ sudo systemctl enable mongodb (ensure to automatically start it on system boot)
 ```
 
-### Setting up TUN device (No persistent after rebooting)
+### Setting up TUN device (not persistent after rebooting)
 ---
 
 Create the TUN device with the interface name `ogstun`.
@@ -37,7 +37,7 @@ $ sudo ip link set ogstun up
 ### Building Open5GS
 ---
 
-Install the depedencies for building the source code.
+Install the dependencies for building the source code.
 
 ```bash
 $ sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev
@@ -126,7 +126,7 @@ diff -u /etc/open5gs/sgw.yaml.old /etc/open5gs/sgw.yaml
 +      addr: 192.168.0.100
 ```
 
-After changing conf files, please restart Open5GS daemons.
+If you modify the config files while Open5GS daemons are running, please restart them
 
 
 ### Running Open5GS
@@ -199,7 +199,7 @@ Options:
 ```
 
 
-### Building WebUI of Open5GS
+### Building the WebUI of Open5GS
 ---
 
 [Node.js](https://nodejs.org/) is required to build WebUI of Open5GS
@@ -242,13 +242,13 @@ To add subscriber information, you can do WebUI operations in the following orde
   3. Fill the IMSI, security context(K, OPc, AMF), and APN of the subscriber.
   4. Click `SAVE` Button
 
-**Tip:** This addition immediately affects Open5GS without restaring any daemon.
+**Tip:** This addition immediately affects Open5GS without restarting any daemon.
 {: .notice--warning}
 
-### Adding a route for UE to have internet connectivity
+### IP routing + NAT for UE internet connectivity
 ---
 
-If your phone can connect to internet, you must run the following command in Open5GS-PGW installed host. 
+To allow your phones to connect to the internet, you must run the following command on the host running Open5GS-PGW:
 
 ```bash
 ### Check IP Tables
