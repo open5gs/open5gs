@@ -9,7 +9,7 @@ This post explains how to compile and install the source code on **Debian/Ubuntu
 ### Getting MongoDB
 ---
 
-Install MongoDB with package manager.
+Install MongoDB with package manager.  It is used as database for the HSS and PCRF.
 
 ```bash
 $ sudo apt update
@@ -81,6 +81,11 @@ $ ninja install
 ---
 
 Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP/GTP-C IP address, PLMN ID, and TAC. 
+
+In the below example we
+
+- use MCC-MNC of 901-70, as this is the home network of the default IMSIs of the sysmoUSIM-SJS1 cards.
+- use 192.168.0.100 for the S1AP +GTP-U connection of MME/SGW to the eNB
 
 ```diff
 diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
@@ -251,7 +256,7 @@ To add subscriber information, you can do WebUI operations in the following orde
 To allow your phones to connect to the internet, you must run the following command on the host running Open5GS-PGW:
 
 ```bash
-### Check IP Tables
+### Check IP Table 'forward'
 $ sudo iptables -L
 Chain INPUT (policy ACCEPT)
 target     prot opt source               destination
@@ -262,7 +267,7 @@ target     prot opt source               destination
 Chain OUTPUT (policy ACCEPT)
 target     prot opt source               destination
 
-### Check NAT Tables
+### Check IP Table 'nat'
 $ sudo iptables -L -t nat
 Chain PREROUTING (policy ACCEPT)
 target     prot opt source               destination
@@ -283,7 +288,7 @@ $ sudo sh -c "echo 1 > /proc/sys/net/ipv4/ip_forward"
 $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 ```
 
-**Note:** It is a good condition if you do not have any rules in the IP/NAT tables. If a program such as docker has already set up a rule, you will need to add a rule differently.
+**Note:** The above assumes you do not have any existing rules in the filter and nat tables. If a program such as docker has already set up rules, you may need to add the Open5GS related rules differently.
 {: .notice--danger}
 
 ### Turn on your eNodeB and Phone
