@@ -11,7 +11,10 @@ There is no dual-licensing; open5gs is not available under any other license ter
 
 #### Aer there any companies providing commercial support for Open5GS?
 
-Sysmocom provides commercial support. Contact to [Harald Welte \<hwelte@sysmocom.de\>](mailto:hwelte@sysmocom.de)
+[sysmocom](https://sysmocom.de/) is providing commercial services around Open5GS,
+including support, development, consulting, training and system integration.
+
+Please contact [Harald Welte \<sales@sysmocom.de\>](mailto:sales@sysmocom.de) for any related inquiries.
 
 #### Are there any success stories about Open5GS deployments?
 
