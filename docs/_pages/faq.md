@@ -9,7 +9,7 @@ permalink: /faq/
 Open5GS is licensed under the GNU Affero General Public License (AGPL), Version 3.0.
 There is no dual-licensing; open5gs is not available under any other license terms.
 
-#### Aer there any companies providing commercial support for Open5GS?
+#### Are there any companies providing commercial support for Open5GS?
 
 [sysmocom](https://sysmocom.de/) is providing commercial services around Open5GS,
 including support, development, consulting, training and system integration.
