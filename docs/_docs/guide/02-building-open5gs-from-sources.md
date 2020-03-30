@@ -15,6 +15,7 @@ Install MongoDB with package manager.
 $ sudo apt update
 $ sudo apt install mongodb
 $ sudo systemctl start mongodb (if '/usr/bin/mongod' is not running)
+$ sudo systemctl enable mongodb (ensure to automatically start it on system boot)
 ```
 
 ### Setting up TUN device (No persistent after rebooting)
