@@ -4,14 +4,15 @@ title: FAQ
 permalink: /faq/
 ---
 
-#### What is Open5GS License?
+#### What are the Open5GS license terms?
 
-AGPL-3.0 (No Dual-License)
+Open5GS is licensed under the GNU Affero General Public License (AGPL), Version 3.0.
+There is no dual-licensing; open5gs is not available under any other license terms.
 
-#### Is there any companies for provide commercial support for Open5GS?
+#### Aer there any companies providing commercial support for Open5GS?
 
 Sysmocom provides commercial support. Contact to [Harald Welte \<hwelte@sysmocom.de\>](mailto:hwelte@sysmocom.de)
 
-#### Is there any success story with installation Open5GS?
+#### Are there any success stories about Open5GS deployments?
 
 See [https://github.com/open5gs/open5gs/issues/360](https://github.com/open5gs/open5gs/issues/360)
