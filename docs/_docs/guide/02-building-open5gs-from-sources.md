@@ -80,7 +80,7 @@ $ ninja install
 ### Configure Open5GS
 ---
 
-Modify [/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP/GTP-C IP address, PLMN ID, and TAC
+Modify [install/etc/open5gs/mme.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/mme.yaml.in) to set the S1AP/GTP-C IP address, PLMN ID, and TAC. 
 
 ```diff
 diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
@@ -114,7 +114,7 @@ diff -u /etc/open5gs/mme.yaml.old /etc/open5gs/mme.yaml
          ciphering_order : [ EEA0, EEA1, EEA2 ]
 ```
 
-Modify [/etc/open5gs/sgw.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgw.yaml.in) to set the GTP-U IP address.  
+Modify [install/etc/open5gs/sgw.yaml](https://github.com/{{ site.github_username }}/open5gs/blob/master/configs/open5gs/sgw.yaml.in) to set the GTP-U IP address.  
 ```diff
 diff -u /etc/open5gs/sgw.yaml.old /etc/open5gs/sgw.yaml
 --- sgw.yaml.old	2018-04-15 18:30:25.000000000 +0900
