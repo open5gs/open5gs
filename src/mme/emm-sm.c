@@ -522,7 +522,8 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
 
             CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
-            if (memcmp(authentication_response_parameter->res,
+            if (authentication_response_parameter->length == 0 ||
+                memcmp(authentication_response_parameter->res,
                 mme_ue->xres,
                 authentication_response_parameter->length) != 0) {
                 ogs_log_hexdump(OGS_LOG_WARN,
