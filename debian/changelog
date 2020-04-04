@@ -1,3 +1,27 @@
+open5gs (1.2.3~eoan) eoan; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 04 Apr 2020 18:11:28 -0400
+
+open5gs (1.2.3~disco) disco; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 04 Apr 2020 18:10:43 -0400
+
+open5gs (1.2.3~bionic1) bionic; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 04 Apr 2020 18:08:17 -0400
+
+open5gs (1.2.3) unstable; urgency=medium
+
+  * Bug Fixed
+
+ -- Sukchan Lee <acetcom@gmail.com>  Sat, 04 Apr 2020 18:03:59 -0400
+
 open5gs (1.2.2~eoan) eoan; urgency=medium
 
   * Bug Fixed

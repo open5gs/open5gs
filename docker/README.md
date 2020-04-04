@@ -66,6 +66,9 @@ export DEBEMAIL='acetcom@gmail.com'
   $ gpg --export > public.asc
   $ gpg --import public.asc
 
+* Version Change
+  $ vi meson.build
+
 * Upload OpenBuildService
   $ dch -i
   $ meson subprojects download freeDiameter
@@ -80,6 +83,9 @@ export DEBEMAIL='acetcom@gmail.com'
   $ meson subprojects download freeDiameter
   $ debuild -S -d
   $ dput ppa:open5gs/latest *.source.changes
+
+* Tagging
+  $ git tag v1.x.x -a
 
 * Build package
   $ dpkg-buildpackage -d
