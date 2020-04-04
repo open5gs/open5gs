@@ -384,6 +384,7 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco)
     ogs_ipsubnet_t p_cscf, p_cscf6;
     int size = 0;
     int i = 0;
+    uint16_t mtu = 0;
 
     ogs_assert(pco_buf);
     ogs_assert(tlv_pco);
@@ -517,7 +518,7 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco)
             break;
         case OGS_PCO_ID_IPV4_LINK_MTU_REQUEST:
             if (pgw_self()->mtu) {
-                uint16_t mtu = htons(pgw_self()->mtu);
+                mtu = htons(pgw_self()->mtu);
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                 pgw.ids[pgw.num_of_id].len = sizeof(uint16_t);
                 pgw.ids[pgw.num_of_id].data = &mtu;
