@@ -43,14 +43,14 @@ libssl-dev libcurl4-openssl-dev libxml2-dev libpcre3-dev bash-completion g++ aut
 libradcli4
 ```
 
-#### 4. Clone Kamailio repository and checkout 5.2 version of repository
+#### 4. Clone Kamailio repository and checkout 5.3 version of repository
 
 ```
 $ mkdir -p /usr/local/src/
 $ cd /usr/local/src/
 $ git clone https://github.com/herlesupreeth/kamailio
 $ cd kamailio
-$ git checkout -b 5.2 origin/5.2
+$ git checkout -b 5.3 origin/5.3
 ```
 
 #### 5. Generate build config files
@@ -351,6 +351,10 @@ SIP: test@ims.mnc001.mcc001.3gppnetwork.org (Created DNS Domain Name or IP to wh
 Save and exit
 
 - Now try calling from either phone
+
+
+Upon completion of this test, set "Receive incoming calls" option to disabled state and set "Use SIP calling" to "Only for SIP calls"
+{: .notice--warning}
 
 #### 13. Create new mysql database for pcscf, scscf and icscf, populate databases and grant permissions to respective users identified by a password
 
