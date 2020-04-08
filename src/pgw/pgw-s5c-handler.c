@@ -164,7 +164,7 @@ void pgw_s5c_handle_create_session_request(
     }
     
     /* Set User Location Information */
-    if (req->user_location_information.presence == 1) {
+    if (req->user_location_information.presence) {
         decoded = ogs_gtp_parse_uli(&uli, &req->user_location_information);
         ogs_assert(req->user_location_information.len == decoded);
         memcpy(&sess->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
