@@ -2185,6 +2185,13 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
                 mme_self()->sgw = ogs_list_next(mme_self()->sgw);
         }
 
+        if (!found) {
+            ogs_warn("No corresponding SGW found for eNB TAC[%d]",
+                    enb_ue->saved.tai.tac);
+            ogs_warn("Defaulting to first SGW in mme.yaml list");
+            mme_self()->sgw = ogs_list_first(&mme_self()->sgw_list);
+        }
+
         ogs_assert(mme_self()->sgw);
         OGS_SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
     } else
