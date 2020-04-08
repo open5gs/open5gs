@@ -94,10 +94,6 @@ void pgw_s5c_handle_create_session_request(
         ogs_error("No TEID");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
-    if (req->user_location_information.presence == 0) {
-        ogs_error("No User Location Inforamtion");
-        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
-    }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
@@ -168,12 +164,15 @@ void pgw_s5c_handle_create_session_request(
     }
     
     /* Set User Location Information */
-    decoded = ogs_gtp_parse_uli(&uli, &req->user_location_information);
-    ogs_assert(req->user_location_information.len == decoded);
-    memcpy(&sess->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
-    sess->tai.tac = uli.tai.tac;
-    memcpy(&sess->e_cgi.plmn_id, &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
-    sess->e_cgi.cell_id = uli.e_cgi.cell_id;
+    if (req->user_location_information.presence == 0) {
+        decoded = ogs_gtp_parse_uli(&uli, &req->user_location_information);
+        ogs_assert(req->user_location_information.len == decoded);
+        memcpy(&sess->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+        sess->tai.tac = uli.tai.tac;
+        memcpy(&sess->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
+                sizeof(uli.e_cgi.plmn_id));
+        sess->e_cgi.cell_id = uli.e_cgi.cell_id;
+    }
 
     pgw_gx_send_ccr(sess, xact, gtpbuf,
         OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);

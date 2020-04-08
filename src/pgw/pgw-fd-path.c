@@ -383,7 +383,8 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
 
         /* Set 3GPP-User-Location-Info */
-        {
+        if (message->create_session_request.
+                user_location_information.presence) {
             struct ogs_diam_gx_uli_t {
                 uint8_t type;
                 ogs_tai_t tai;
@@ -391,7 +392,8 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, ogs_gtp_xact_t *xact,
             } ogs_diam_gx_uli;
 
             memset(&ogs_diam_gx_uli, 0, sizeof(ogs_diam_gx_uli));
-            ogs_diam_gx_uli.type = OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI;
+            ogs_diam_gx_uli.type =
+                OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI;
             memcpy(&ogs_diam_gx_uli.tai.plmn_id, &sess->tai.plmn_id, 
                     sizeof(sess->tai.plmn_id));
             ogs_diam_gx_uli.tai.tac = htons(sess->tai.tac);
