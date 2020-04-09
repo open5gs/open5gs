@@ -167,11 +167,24 @@ void pgw_s5c_handle_create_session_request(
     if (req->user_location_information.presence) {
         decoded = ogs_gtp_parse_uli(&uli, &req->user_location_information);
         ogs_assert(req->user_location_information.len == decoded);
-        memcpy(&sess->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
-        sess->tai.tac = uli.tai.tac;
-        memcpy(&sess->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
-                sizeof(uli.e_cgi.plmn_id));
-        sess->e_cgi.cell_id = uli.e_cgi.cell_id;
+
+        if (uli.flags.tai && uli.flags.e_cgi)
+            sess->uli_type =
+                OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI;
+        else if (uli.flags.tai)
+            sess->uli_type = OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI;
+        else if (uli.flags.e_cgi)
+            sess->uli_type = OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_ECGI;
+
+        if (uli.flags.tai) {
+            memcpy(&sess->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+            sess->tai.tac = uli.tai.tac;
+        }
+        if (uli.flags.e_cgi) {
+            memcpy(&sess->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
+                    sizeof(uli.e_cgi.plmn_id));
+            sess->e_cgi.cell_id = uli.e_cgi.cell_id;
+        }
     }
 
     pgw_gx_send_ccr(sess, xact, gtpbuf,

@@ -159,7 +159,8 @@ typedef struct pgw_sess_s {
     pgw_ue_ip_t*    ipv4;
     pgw_ue_ip_t*    ipv6;
 
-    /* User-Lication-Info */
+    /* User Location Information */
+    int             uli_type;
     ogs_tai_t       tai;
     ogs_e_cgi_t     e_cgi;
 

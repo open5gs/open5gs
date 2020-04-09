@@ -383,28 +383,23 @@ void pgw_gx_send_ccr(pgw_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
 
         /* Set 3GPP-User-Location-Info */
-        if (message->create_session_request.
-                user_location_information.presence) {
-            struct ogs_diam_gx_uli_t {
-                uint8_t type;
-                ogs_tai_t tai;
-                ogs_e_cgi_t e_cgi;
-            } ogs_diam_gx_uli;
+        if (sess->uli_type) {
+            ogs_gtp_tlv_uli_t *user_location_information =
+                &message->create_session_request.user_location_information;
+            uint8_t uli_buf[OGS_GTP_MAX_ULI_LEN];
 
-            memset(&ogs_diam_gx_uli, 0, sizeof(ogs_diam_gx_uli));
-            ogs_diam_gx_uli.type =
-                OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI;
-            memcpy(&ogs_diam_gx_uli.tai.plmn_id, &sess->tai.plmn_id, 
-                    sizeof(sess->tai.plmn_id));
-            ogs_diam_gx_uli.tai.tac = htons(sess->tai.tac);
-            memcpy(&ogs_diam_gx_uli.e_cgi.plmn_id, &sess->e_cgi.plmn_id, 
-                    sizeof(sess->e_cgi.plmn_id));
-            ogs_diam_gx_uli.e_cgi.cell_id = htonl(sess->e_cgi.cell_id);
+            ogs_assert(user_location_information->data);
+            ogs_assert(user_location_information->len);
+            memcpy(&uli_buf, user_location_information->data,
+                    user_location_information->len);
+
+            /* Update Gx ULI Type */
+            uli_buf[0] = sess->uli_type;
 
             ret = fd_msg_avp_new(ogs_diam_gx_3gpp_user_location_info, 0, &avp);
             ogs_assert(ret == 0);
-            val.os.data = (uint8_t*)&ogs_diam_gx_uli;
-            val.os.len = sizeof(ogs_diam_gx_uli);
+            val.os.data = (uint8_t *)&uli_buf;
+            val.os.len = user_location_information->len;
             ret = fd_msg_avp_setvalue(avp, &val);
             ogs_assert(ret == 0);
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);

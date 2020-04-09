@@ -99,7 +99,9 @@ extern struct dict_object *ogs_diam_gx_pre_emption_capability;
 extern struct dict_object *ogs_diam_gx_pre_emption_vulnerability;
 extern struct dict_object *ogs_diam_gx_apn_aggregate_max_bitrate_ul;
 extern struct dict_object *ogs_diam_gx_apn_aggregate_max_bitrate_dl;
-#define OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI 130
+#define OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI            128
+#define OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_ECGI           129
+#define OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI   130
 extern struct dict_object *ogs_diam_gx_3gpp_user_location_info;
 extern struct dict_object *ogs_diam_gx_called_station_id;
 extern struct dict_object *ogs_diam_gx_default_eps_bearer_qos;
