@@ -29,7 +29,7 @@ $ mongod --dbpath ./data/db
 ```
 
 **Tip:** MongoDB is persistent after rebooting with the following commands:
-`$ brew services start mongodb-community 
+`$ brew services start mongodb-community`
 {: .notice--info}
 
 
