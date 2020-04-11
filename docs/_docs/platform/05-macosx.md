@@ -28,6 +28,11 @@ $ mkdir -p ./data/db
 $ mongod --dbpath ./data/db
 ```
 
+**Tip:** MongoDB is persistent after rebooting with the following commands:
+`$ brew services start mongodb-community 
+{: .notice--info}
+
+
 ### Setting up TUN device (No persistent after rebooting)
 ---
 
@@ -58,7 +63,7 @@ $ sudo pfctl -e -f /etc/pf.anchors/org.open5gs
 
 Install the depedencies for building the source code.
 ```bash
-$ brew install gnu-sed mongo-c-driver libusrsctp gnutls libgcrypt libidn libyaml pkg-config
+$ brew install mongo-c-driver gnutls libgcrypt libidn libyaml pkg-config
 ```
 
 Install Meson using Homebrew.
