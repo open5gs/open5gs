@@ -410,12 +410,14 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco)
             break;
         case OGS_PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL:
             if (data[0] == 1) { /* Code : Configuration Request */
-                uint16_t len = 16;
+                uint16_t len = 0;
+
+                ogs_assert(pgw_self()->dns[0] || pgw_self()->dns[1]);
 
                 memset(&pco_ipcp, 0, sizeof(ogs_pco_ipcp_t));
                 pco_ipcp.code = 2; /* Code : Configuration Ack */
-                pco_ipcp.len = htons(len);
 
+                len = 4;
                 /* Primary DNS Server IP Address */
                 if (pgw_self()->dns[0]) {
                     rv = ogs_ipsubnet(
@@ -424,6 +426,7 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco)
                     pco_ipcp.options[0].type = 129; 
                     pco_ipcp.options[0].len = 6; 
                     pco_ipcp.options[0].addr = dns_primary.sub[0];
+                    len += 6;
                 }
 
                 /* Secondary DNS Server IP Address */
@@ -434,7 +437,10 @@ static int16_t pgw_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco)
                     pco_ipcp.options[1].type = 131; 
                     pco_ipcp.options[1].len = 6; 
                     pco_ipcp.options[1].addr = dns_secondary.sub[0];
+                    len += 6;
                 }
+
+                pco_ipcp.len = htobe16(len);
 
                 pgw.ids[pgw.num_of_id].id = ue.ids[i].id;
                 pgw.ids[pgw.num_of_id].len = len;

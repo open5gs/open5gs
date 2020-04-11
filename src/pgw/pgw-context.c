@@ -672,7 +672,7 @@ int pgw_context_parse_config(void)
                         }
 
                         v = ogs_yaml_iter_value(&dns_iter);
-                        if (v) {
+                        if (v && strlen(v)) {
                             ogs_ipsubnet_t ipsub;
                             rv = ogs_ipsubnet(&ipsub, v, NULL);
                             ogs_assert(rv == OGS_OK);
