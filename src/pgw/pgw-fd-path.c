@@ -578,11 +578,6 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         error++;
     }
 
-    if (gx_message->result_code != ER_DIAMETER_SUCCESS) {
-        ogs_warn("ERROR DIAMETER Result Code(%d)", gx_message->result_code);
-        goto out;
-    }
-
     /* Value of CC-Request-Type */
     ret = fd_msg_search_avp(*msg, ogs_diam_gx_cc_request_type, &avp);
     ogs_assert(ret == 0);
@@ -593,6 +588,11 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
     } else {
         ogs_error("no_CC-Request-Type");
         error++;
+    }
+
+    if (gx_message->result_code != ER_DIAMETER_SUCCESS) {
+        ogs_warn("ERROR DIAMETER Result Code(%d)", gx_message->result_code);
+        goto out;
     }
 
     ret = fd_msg_search_avp(*msg, ogs_diam_gx_qos_information, &avp);

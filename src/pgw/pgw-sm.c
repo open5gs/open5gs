@@ -199,22 +199,20 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
             gtpbuf = e->gtpbuf;
             ogs_assert(gtpbuf);
             message = (ogs_gtp_message_t *)gtpbuf->data;
-            ogs_assert(message);
 
-            switch(message->h.type) {
-            case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
+            switch(gx_message->cc_request_type) {
+            case OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
                 pgw_gx_handle_cca_initial_request(
                         sess, gx_message, xact,
                         &message->create_session_request);
                 break;
-            case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
+            case OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
                 pgw_gx_handle_cca_termination_request(
                         sess, gx_message, xact,
                         &message->delete_session_request);
                 break;
             default:
-                ogs_error("Not implemented(%d)",
-                        gx_message->cc_request_type);
+                ogs_error("Not implemented(%d)", gx_message->cc_request_type);
                 break;
             }
 
