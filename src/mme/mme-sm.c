@@ -67,7 +67,6 @@ static uint8_t emm_cause_from_diameter(
         case ER_DIAMETER_MISSING_AVP:                           /* 5005 */
         case ER_DIAMETER_RESOURCES_EXCEEDED:                    /* 5006 */
         case ER_DIAMETER_AVP_OCCURS_TOO_MANY_TIMES:             /* 5009 */
-        default: /* FIXME: only permanent */
             return EMM_CAUSE_NETWORK_FAILURE;
         }
     }

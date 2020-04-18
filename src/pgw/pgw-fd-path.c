@@ -530,6 +530,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
         ret = fd_msg_avp_hdr(avp, &hdr);
         ogs_assert(ret == 0);
         gx_message->result_code = hdr->avp_value->i32;
+        gx_message->err = &gx_message->result_code;
         ogs_debug("    Result Code: %d", hdr->avp_value->i32);
     } else {
         ret = fd_msg_search_avp(*msg, ogs_diam_experimental_result, &avp);
@@ -541,6 +542,7 @@ static void pgw_gx_cca_cb(void *data, struct msg **msg)
                 ret = fd_msg_avp_hdr(avpch1, &hdr);
                 ogs_assert(ret == 0);
                 gx_message->result_code = hdr->avp_value->i32;
+                gx_message->exp_err = &gx_message->result_code;
                 ogs_debug("    Experimental Result Code: %d",
                         gx_message->result_code);
             }
