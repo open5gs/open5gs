@@ -15,7 +15,7 @@ Setup description:
 
 This tutorial introduces an install-and-run lab for Open5GS + Kamailio IMS
 VoLTE study, a follow-up project of [Open5GS Tutorial: VoLTE Setup with Kamailio IMS and Open5GS](https://open5gs.org/open5gs/docs/tutorial/02-VoLTE-setup/). 
-The tutorial is based on Herle Supreeth's [docker_open5gs](github.com/herlesupreeth/docker_open5gs) and his fork of Open5GS and Kamailio.
+The tutorial is based on Herle Supreeth's [docker_open5gs](https://github.com/herlesupreeth/docker_open5gs) and his fork of Open5GS and Kamailio.
 
 The main purpose is to save researchers' and students' time to debug for a
 minimum-viable environment before actual study can be proceeded.
@@ -180,12 +180,12 @@ RTPEngine and FHoSS are not tested.)
 
 #### 6. Successful calls
 
-Herle Supreeth has shared [PCAP files of successful calls](https://github.com/open5gs/open5gs/issues/337#issuecomment-615802489), including
-- IPSec UE registration for VoLTE
-- Non-IPSec UE registration for VoLTE
-- IPSec UE to IPSec UE calling
-- Non-IPSec UE to IPSec UE calling
-- IPSec UE to Non-IPSec UE calling
+Herle Supreeth has shared PCAP files of successful calls, including
+- [IPSec UE registration for VoLTE]({{ site.url }}{{ site.baseurl }}/assets/pcapng/ipsec_reg.pcapng)
+- [Non-IPSec UE registration for VoLTE]({{ site.url }}{{ site.baseurl }}/assets/pcapng/nonipsec_reg.pcapng)
+- [IPSec UE to IPSec UE calling]({{ site.url }}{{ site.baseurl }}/assets/pcapng/ipsec_to_ipsec_call.pcapng)
+- [Non-IPSec UE to IPSec UE calling]({{ site.url }}{{ site.baseurl }}/assets/pcapng/nonipsec_to_ipsec_call.pcapng)
+- [IPSec UE to Non-IPSec UE calling]({{ site.url }}{{ site.baseurl }}/assets/pcapng/ipsec_to_nonipsec_call.pcapng)
 
 The successful calls were made with a commercial eNB (in his case a Casa
 smallcell), while srsENB the ACK takes a very long time to reach the UE,
@@ -247,6 +247,6 @@ issue and let me know!
 
 #### 8. References
 
-- https://github.com/onmyway133/blog/issues/284
-- https://realtimecommunication.wordpress.com/2015/05/26/at-your-service/
-- https://www.sharetechnote.com/html/Handbook_LTE_VoLTE.html
+- [https://github.com/onmyway133/blog/issues/284](https://github.com/onmyway133/blog/issues/284)
+- [https://realtimecommunication.wordpress.com/2015/05/26/at-your-service/](https://realtimecommunication.wordpress.com/2015/05/26/at-your-service/)
+- [https://www.sharetechnote.com/html/Handbook_LTE_VoLTE.html](https://www.sharetechnote.com/html/Handbook_LTE_VoLTE.html)
