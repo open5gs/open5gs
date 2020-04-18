@@ -27,6 +27,7 @@ libdiameter_common_sources = files('''
     message.c
     logger.c
     config.c
+    util.c
     init.c
 '''.split())
 

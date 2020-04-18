@@ -122,6 +122,10 @@ void mme_s11_handle_create_session_response(
     }
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
+        if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
+            nas_send_attach_reject(mme_ue,
+                EMM_CAUSE_NETWORK_FAILURE, ESM_CAUSE_NETWORK_FAILURE);
+        }
         mme_send_delete_session_or_mme_ue_context_release(mme_ue);
         return;
     }

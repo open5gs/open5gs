@@ -92,6 +92,14 @@ void sgw_s5c_handle_create_session_response(ogs_gtp_xact_t *s5c_xact,
                 ogs_error("No Cause");
                 cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
             }
+        } else {
+            /* Deliver PGW cause value to the MME */
+            ogs_warn("Cause[%d] : No Accepted", cause_value);
+            ogs_gtp_send_error_message(
+                    s11_xact, sgw_ue ? sgw_ue->mme_s11_teid : 0,
+                    OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
+                    cause_value);
+            return;
         }
     } else {
         ogs_error("No Cause");
@@ -143,7 +151,8 @@ void sgw_s5c_handle_create_session_response(ogs_gtp_xact_t *s5c_xact,
 
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(s11_xact, sgw_ue ? sgw_ue->mme_s11_teid : 0,
-                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);
+                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
+                cause_value);
         return;
     }
 

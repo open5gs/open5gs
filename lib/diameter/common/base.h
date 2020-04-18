@@ -69,6 +69,7 @@ int ogs_diam_init(int mode, const char *conffile, ogs_diam_config_t *fd_config);
 void ogs_diam_final(void);
 
 int ogs_diam_config_init(ogs_diam_config_t *fd_config);
+bool ogs_diam_peer_connected(void);
 
 int fd_avp_search_avp ( struct avp * groupedavp, 
         struct dict_object * what, struct avp ** avp );

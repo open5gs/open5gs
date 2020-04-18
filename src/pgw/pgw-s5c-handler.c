@@ -95,6 +95,11 @@ void pgw_s5c_handle_create_session_request(
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
+    if (!ogs_diam_peer_connected()) {
+        ogs_error("No Diameter Peer");
+        cause_value = OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING;
+    }
+
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);
@@ -177,7 +182,8 @@ void pgw_s5c_handle_create_session_request(
             sess->uli_type = OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_ECGI;
 
         if (uli.flags.tai) {
-            memcpy(&sess->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
+            memcpy(&sess->tai.plmn_id, &uli.tai.plmn_id,
+                    sizeof(uli.tai.plmn_id));
             sess->tai.tac = uli.tai.tac;
         }
         if (uli.flags.e_cgi) {
@@ -195,6 +201,8 @@ void pgw_s5c_handle_delete_session_request(
         pgw_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_pkbuf_t *gtpbuf, ogs_gtp_delete_session_request_t *req)
 {
+    uint8_t cause_value = 0;
+
     ogs_debug("[PGW] Delete Session Request");
 
     ogs_assert(xact);
@@ -202,9 +210,17 @@ void pgw_s5c_handle_delete_session_request(
 
     if (!sess) {
         ogs_warn("No Context");
+        cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
+    }
+
+    if (!ogs_diam_peer_connected()) {
+        ogs_error("No Diameter Peer");
+        cause_value = OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING;
+    }
+
+    if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
-                OGS_GTP_DELETE_SESSION_RESPONSE_TYPE,
-                OGS_GTP_CAUSE_CONTEXT_NOT_FOUND);
+                OGS_GTP_DELETE_SESSION_RESPONSE_TYPE, cause_value);
         ogs_pkbuf_free(gtpbuf);
         return;
     }
