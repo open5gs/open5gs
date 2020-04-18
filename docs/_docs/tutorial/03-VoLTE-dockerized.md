@@ -6,7 +6,7 @@ head_inline: "<style> .blue { color: blue; } </style>"
 Setup description:
 - MCC: 001, MNC: 01
 - Docker-compose
-- srsENB + USRP B210
+- srsENB + USRP B210 or a commercial eNB
 - Sysmocom USIM - sysmoUSIM-SJS1
 - UE: Mi 9 Pro 5G.  Other UE are being tested.
 {: .blue}
@@ -22,19 +22,21 @@ minimum-viable environment before actual study can be proceeded.
 
 **Important notice before you start**
 
-1. @supreeth's "noipv6" hack of Open5GS is used, because my phone isn't able to
+1. Herle Supreeth's "noipv6" hack of Open5GS is used, because my phone isn't able to
    connect to IMS via IPv6.  Even if you choose "IPv4 Only" in APN
    configuration on the UE, Open5GS still allocates an IPv6 address to both APN
    *internet* and *ims*.
-1. @supreeth's fork of Kamailio is used to support IPsec.
+1. Herle Supreeth's fork of Kamailio is used to support IPsec.
 1. Java 7 is downloaded from an alternative location.  You have to agree with
    Oracle's term of service and have an Oracle account, to legally use Java SDK
    7u80.  By using this repo, I assume you have the legal right to use it and
    hold no liability.
 
-You have to prepare IMSI, Ki, OP (yes, not **OPc**), SQN of your SIM cards.  You
-may want to disable SQN checking in the SIM card.  Check out
-https://github.com/herlesupreeth/pysim for a slightly modified pysim.
+You have to prepare IMSI, Ki, OP (yes, not **OPc**), SQN of your SIM cards.
+Even though Open5GS supports OPc, FHoSS merely takes OP.  You may also want to
+disable SQN checking in the SIM card (even though we are not sure whether it is
+effective.)  Check out https://github.com/herlesupreeth/sysmo-usim-tool for a
+slightly modified sysmo-usim-tool.
 
 
 #### 1. Prepare SIM cards for VoLTE
@@ -50,7 +52,7 @@ Refer to: https://osmocom.org/projects/cellular-infrastructure/wiki/VoLTE_IMS_An
 * gp -a 00A4040009A00000015141434C0000 -a 80E2900033F031E22FE11E4F06FFFFFFFFFFFFC114E46872F28B350B7E1F140DE535C2A8D5804F0BE3E30DD00101DB080000000000000001
 * gp --acr-list
 
-If you get some error (invalid instruction) like me, run `gp --acr-list-aram`.
+If you use gp.jar from Herle Supreeth's [CoSIM Wiki](https://github.com/herlesupreeth/CoIMS_Wiki), replace `gp --acr-list` with `gp --acr-list-aram`.
 
 
 #### 2. Build Open5GS, Kamailio with docker-compose
@@ -176,7 +178,21 @@ RTPEngine and FHoSS are not tested.)
 ![401 Unauthorized](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/401-unauthorized.png)
 
 
-#### 6. Known issues
+#### 6. Successful calls
+
+Herle Supreeth has shared [PCAP files of successful calls](https://github.com/open5gs/open5gs/issues/337#issuecomment-615802489), including
+- IPSec UE registration for VoLTE
+- Non-IPSec UE registration for VoLTE
+- IPSec UE to IPSec UE calling
+- Non-IPSec UE to IPSec UE calling
+- IPSec UE to Non-IPSec UE calling
+
+The successful calls were made with a commercial eNB (in his case a Casa
+smallcell), while srsENB the ACK takes a very long time to reach the UE,
+resulting in disconnected calls.
+
+
+#### 7. Known issues
 
 - IPv6 is not supported.
 - If your cellphone mandates IPsec (such as Xiaomi Mi 9 Pro 5G), it might not work.
@@ -186,7 +202,7 @@ If anyone successfully made a VoLTE call by using this repo, please submit an
 issue and let me know!
 
 
-#### 7. References
+#### 8. References
 
 - https://github.com/onmyway133/blog/issues/284
 - https://realtimecommunication.wordpress.com/2015/05/26/at-your-service/
