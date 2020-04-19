@@ -22,10 +22,6 @@ minimum-viable environment before actual study can be proceeded.
 
 **Important notice before you start**
 
-1. Herle Supreeth's "noipv6" hack of Open5GS is used, because my phone isn't able to
-   connect to IMS via IPv6.  Even if you choose "IPv4 Only" in APN
-   configuration on the UE, Open5GS still allocates an IPv6 address to both APN
-   *internet* and *ims*.
 1. Herle Supreeth's fork of Kamailio is used to support IPsec.
 1. Java 7 is downloaded from an alternative location.  You have to agree with
    Oracle's term of service and have an Oracle account, to legally use Java SDK
@@ -126,13 +122,18 @@ Password : 1423
 
 Follow the instructions in [VoLTE Setup](https://open5gs.org/open5gs/docs/tutorial/02-VoLTE-setup/):
 - Step 18, set IMSI, Ki, OP, SQN and APN of your SIM cards.
+  **Important!** Set the type of both APN to IPv4.  Kamailio does not support VoLTE over
+  IPv6 at the moment. (See the screenshot below.)
 - Step 20, add IMS subscriptions to FHoSS.
+
+![Set both type to IPv4 only](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/subscriber-type-ipv4.png)
 
 For already running systems, copy SQN from Open5GS and type it in FHoSS.  You
 can type SQN in decimal.  FHoSS will automagically convert it to hex.
 
 Pay special attention to copy/paste.  You might have leading or trailing spaces
 in FHoSS, resulting in failed connections!
+
 
 
 #### 5. Debugging with Wireshark
@@ -143,10 +144,6 @@ Thanks to Open5GS, the topology is super similar to [SAE on Wikipedia](https://e
 
 
 **APN**
-
-APN Configurations in Open5GS should look like this one.
-
-![APN Configurations](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/open5gs-subscriber.png)
 
 On your cellphone, there should be *internet* and *ims*.
 
