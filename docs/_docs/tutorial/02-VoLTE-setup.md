@@ -791,9 +791,6 @@ Please refer to instructions at [https://open5gs.org/open5gs/docs/guide/02-build
 If you are using OpenStack, installing Open5GS and Kamailio IMS on the same machine is very important because the **Framed-IP-Address** in the AAR request via Rx interface takes received IP address and port in ims_qos module, hence, if the Open5GS is on a separate VM/machine, the IP and port received in received_ip and received_port values seen by Kamailio IMS will be the NATed IP of the Open5GS machine resulting in failing of AAR request.
 {: .notice--danger}
 
-I made some modifications in order to force UE to PS domain attach and use IPv4. You can refer to the **hacks** branch of [https://github.com/herlesupreeth/open5gs](https://github.com/herlesupreeth/open5gs)
-{: .notice--info}
-
 Modify below mentioned parts of configuration files in addition to **Configure Open5GS** section. For reference, look at the configuration files at [https://github.com/herlesupreeth/Open5gs_Config](https://github.com/herlesupreeth/Open5gs_Config)
 {: .notice--warning}
 
