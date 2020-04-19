@@ -146,6 +146,8 @@ typedef struct ogs_diam_gx_message_s {
 #define OGS_DIAM_GX_DIAMETER_ADC_RULE_EVENT                         5148
 #define OGS_DIAM_GX_DIAMETER_ERROR_NBIFOM_NOT_AUTHORIZED            5149
     uint32_t            result_code;
+    uint32_t            *err;
+    uint32_t            *exp_err;
 
 #define OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST                 1
 #define OGS_DIAM_GX_CC_REQUEST_TYPE_UPDATE_REQUEST                  2

@@ -42,6 +42,24 @@ static void timeout(ogs_gtp_xact_t *xact, void *data)
             "Message-Type[%d]", sess->sgw_s5c_teid, sess->pgw_s5c_teid, type);
 }
 
+static uint8_t gtp_cause_from_diameter(
+        const uint32_t *dia_err, const uint32_t *dia_exp_err)
+{
+    if (dia_exp_err) {
+    }
+    if (dia_err) {
+        switch (*dia_err) {
+        case OGS_DIAM_UNKNOWN_SESSION_ID:
+            return OGS_GTP_CAUSE_APN_ACCESS_DENIED_NO_SUBSCRIPTION;
+        }
+    }
+
+    ogs_error("Unexpected Diameter Result Code %d/%d, defaulting to severe "
+              "network failure",
+              dia_err ? *dia_err : -1, dia_exp_err ? *dia_exp_err : -1);
+    return OGS_GTP_CAUSE_UE_NOT_AUTHORISED_BY_OCS_OR_EXTERNAL_AAA_SERVER;
+}
+
 void pgw_gx_handle_cca_initial_request(
         pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message,
         ogs_gtp_xact_t *xact, ogs_gtp_create_session_request_t *req)
@@ -54,6 +72,19 @@ void pgw_gx_handle_cca_initial_request(
     ogs_assert(gx_message);
     ogs_assert(xact);
     ogs_assert(req);
+
+    ogs_debug("[PGW] Create Session Response");
+    ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
+            sess->sgw_s5c_teid, sess->pgw_s5c_teid);
+
+    if (gx_message->result_code != ER_DIAMETER_SUCCESS) {
+        uint8_t cause_value = gtp_cause_from_diameter(
+            gx_message->err, gx_message->exp_err);
+
+        ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);
+        return;
+    }
 
     /* Send Create Session Request with Creating Default Bearer */
     memset(&h, 0, sizeof(ogs_gtp_header_t));
@@ -96,6 +127,15 @@ void pgw_gx_handle_cca_termination_request(
 
     /* Remove a pgw session */
     pgw_sess_remove(sess);
+
+    if (gx_message->result_code != ER_DIAMETER_SUCCESS) {
+        uint8_t cause_value = gtp_cause_from_diameter(
+            gx_message->err, gx_message->exp_err);
+
+        ogs_gtp_send_error_message(xact, sgw_s5c_teid,
+                OGS_GTP_DELETE_SESSION_RESPONSE_TYPE, cause_value);
+        return;
+    }
 
     memset(&h, 0, sizeof(ogs_gtp_header_t));
     h.type = OGS_GTP_DELETE_SESSION_RESPONSE_TYPE;

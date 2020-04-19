@@ -134,9 +134,11 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         switch(message->h.type) {
         case OGS_GTP_ECHO_REQUEST_TYPE:
             pgw_s5c_handle_echo_request(xact, &message->echo_request);
+            ogs_pkbuf_free(copybuf);
             break;
         case OGS_GTP_ECHO_RESPONSE_TYPE:
             pgw_s5c_handle_echo_response(xact, &message->echo_response);
+            ogs_pkbuf_free(copybuf);
             break;
         case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
             if (message->h.teid == 0) {
@@ -200,25 +202,21 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
             ogs_assert(gtpbuf);
             message = (ogs_gtp_message_t *)gtpbuf->data;
 
-            if (gx_message->result_code == ER_DIAMETER_SUCCESS) {
-                switch(gx_message->cc_request_type) {
-                case OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
-                    pgw_gx_handle_cca_initial_request(
-                            sess, gx_message, xact, 
-                            &message->create_session_request);
-                    break;
-                case OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
-                    pgw_gx_handle_cca_termination_request(
-                            sess, gx_message, xact,
-                            &message->delete_session_request);
-                    break;
-                default:
-                    ogs_error("Not implemented(%d)",
-                            gx_message->cc_request_type);
-                    break;
-                }
-            } else
-                ogs_error("Diameter Error(%d)", gx_message->result_code);
+            switch(gx_message->cc_request_type) {
+            case OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
+                pgw_gx_handle_cca_initial_request(
+                        sess, gx_message, xact,
+                        &message->create_session_request);
+                break;
+            case OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
+                pgw_gx_handle_cca_termination_request(
+                        sess, gx_message, xact,
+                        &message->delete_session_request);
+                break;
+            default:
+                ogs_error("Not implemented(%d)", gx_message->cc_request_type);
+                break;
+            }
 
             ogs_pkbuf_free(gtpbuf);
             break;

@@ -208,6 +208,8 @@ void pgw_s5c_handle_delete_session_request(
     ogs_assert(xact);
     ogs_assert(req);
 
+    cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
+
     if (!sess) {
         ogs_warn("No Context");
         cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
