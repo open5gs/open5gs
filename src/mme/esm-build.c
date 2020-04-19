@@ -151,7 +151,56 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
             ogs_min(access_point_name->length, OGS_MAX_APN_LEN) + 1);
     ogs_debug("    APN[%s]", pdn->apn);
 
+    /*
+     * In TS24.301 V15.6.0
+     * 6.5.1.3 UE requested PDN connectivity procedure accepted by the network
+     *
+     * If connectivity with the requested PDN is accepted,
+     * but with a restriction of IP version (i.e. both an IPv4 address and
+     * an IPv6 prefix is requested, but only one particular IP version, or
+     * only single IP version bearers are supported/allowed by the network),
+     * ESM cause #50 "PDN type IPv4 only allowed",
+     * #51 "PDN type IPv6 only allowed", or
+     * #52 "single address bearers only allowed", respectively, shall be
+     * included in the ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST message.
+     */
+
     pdn_address->pdn_type = pdn->paa.pdn_type;
+    if (sess->request_type.pdn_type ==
+            OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6) {
+        if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+            pdn_address->pdn_type = OGS_GTP_PDN_TYPE_IPV4;
+            activate_default_eps_bearer_context_request->esm_cause =
+                ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
+            activate_default_eps_bearer_context_request->presencemask |=
+                OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
+        } else if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+            pdn_address->pdn_type = OGS_GTP_PDN_TYPE_IPV6;
+            activate_default_eps_bearer_context_request->esm_cause =
+                ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
+            activate_default_eps_bearer_context_request->presencemask |=
+                OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
+        }
+    } else if (sess->request_type.pdn_type ==
+            OGS_GTP_PDN_TYPE_IPV4) {
+        if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+            pdn_address->pdn_type = OGS_GTP_PDN_TYPE_IPV6;
+            activate_default_eps_bearer_context_request->esm_cause =
+                ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
+            activate_default_eps_bearer_context_request->presencemask |=
+                OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
+        }
+    } else if (sess->request_type.pdn_type ==
+            OGS_GTP_PDN_TYPE_IPV6) {
+        if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+            pdn_address->pdn_type = OGS_GTP_PDN_TYPE_IPV4;
+            activate_default_eps_bearer_context_request->esm_cause =
+                ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
+            activate_default_eps_bearer_context_request->presencemask |=
+                OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
+        }
+    }
+
     if (pdn_address->pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
         pdn_address->addr = pdn->paa.addr;
         pdn_address->length = OGS_NAS_PDN_ADDRESS_IPV4_LEN;
@@ -170,34 +219,6 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
     } else {
         ogs_error("Unexpected PDN Type %u", pdn_address->pdn_type);
         return NULL;
-    }
-
-    /*
-     * In TS24.301 V15.6.0
-     * 6.5.1.3 UE requested PDN connectivity procedure accepted by the network
-     *
-     * If connectivity with the requested PDN is accepted,
-     * but with a restriction of IP version (i.e. both an IPv4 address and
-     * an IPv6 prefix is requested, but only one particular IP version, or
-     * only single IP version bearers are supported/allowed by the network),
-     * ESM cause #50 "PDN type IPv4 only allowed",
-     * #51 "PDN type IPv6 only allowed", or
-     * #52 "single address bearers only allowed", respectively, shall be
-     * included in the ACTIVATE DEFAULT EPS BEARER CONTEXT REQUEST message.
-     */
-    if (sess->request_type.pdn_type ==
-            OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6) {
-        if (pdn_address->pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
-            activate_default_eps_bearer_context_request->esm_cause =
-                ESM_CAUSE_PDN_TYPE_IPV4_ONLY_ALLOWED;
-            activate_default_eps_bearer_context_request->presencemask |=
-                OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
-        } else if (pdn_address->pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
-            activate_default_eps_bearer_context_request->esm_cause =
-                ESM_CAUSE_PDN_TYPE_IPV6_ONLY_ALLOWED;
-            activate_default_eps_bearer_context_request->presencemask |=
-                OGS_NAS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_ESM_CAUSE_PRESENT;
-        }
     }
 
     if (pdn->ambr.downlink || pdn->ambr.uplink) {
