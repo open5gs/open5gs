@@ -40,13 +40,7 @@ $ sudo ip link set ogstun up
 Install the dependencies for building the source code.
 
 ```bash
-$ sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev
-```
-
-Install Meson using Python.
-
-```bash
-$ pip3 install --user meson
+$ sudo apt install python3-pip python3-setuptools python3-wheel ninja-build build-essential flex bison git libsctp-dev libgnutls28-dev libgcrypt-dev libssl-dev libidn11-dev libmongoc-dev libbson-dev libyaml-dev meson
 ```
 
 Git clone.
@@ -75,6 +69,7 @@ You need to perform the **installation process**.
 ```bash
 $ cd build
 $ ninja install
+$ cd ../
 ```
 
 ### Configure Open5GS
@@ -138,7 +133,7 @@ If you modify the config files while Open5GS daemons are running, please restart
 ---
 
 ```bash
-$ cd install
+$ cd install/bin/
 $ ./open5gs-pcrfd
 Open5GS daemon v1.0.0
 
@@ -203,6 +198,10 @@ Options:
    -h             : show this message and exit
 ```
 
+You can also copy the binaries to /usr/bin to be able to run them from anywhere on the system.
+```bash
+$ cp open5gs* /usr/bin/
+```
 
 ### Building the WebUI of Open5GS
 ---
