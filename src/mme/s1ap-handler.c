@@ -163,13 +163,23 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         }
     }
 
+    if (mme_is_maximum_number_of_enbs_reached()) {
+        ogs_warn("S1-Setup failure:");
+        ogs_warn("    Maximum number of eNBs reached");
+        group = S1AP_Cause_PR_misc;
+        cause = S1AP_CauseMisc_unspecified;
+
+        send_s1_setup_failure_response(enb, group, cause);
+        return;
+    }
+
     if (enb->num_of_supported_ta_list == 0) {
         ogs_warn("S1-Setup failure:");
         ogs_warn("    No supported TA exist in S1-Setup request");
         group = S1AP_Cause_PR_misc;
         cause = S1AP_CauseMisc_unspecified;
 
-        send_s1_setup_failure_response(enb, cause, group);
+        send_s1_setup_failure_response(enb, group, cause);
         return;
     }
 
@@ -179,7 +189,7 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         group = S1AP_Cause_PR_misc;
         cause = S1AP_CauseMisc_unknown_PLMN;
 
-        send_s1_setup_failure_response(enb, cause, group);
+        send_s1_setup_failure_response(enb, group, cause);
         return;
     }
 

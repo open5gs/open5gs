@@ -1919,7 +1919,6 @@ int mme_enb_remove(mme_enb_t *enb)
     }
 
     ogs_free(enb->addr);
-
     ogs_free(enb);
 
     stats_remove_enb();
@@ -3186,4 +3185,18 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     }
 
     return 0;
+}
+
+bool mme_is_maximum_number_of_enbs_reached(void)
+{
+    mme_enb_t *enb = NULL, *next_enb = NULL;
+    int number_of_enbs_online = 0;
+
+    ogs_list_for_each_safe(&self.enb_list, next_enb, enb) {
+        if (enb->s1_setup_success) {
+            number_of_enbs_online++;
+        }
+    }
+
+    return number_of_enbs_online >= ogs_config()->max.enb;
 }

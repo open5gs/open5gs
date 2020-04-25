@@ -226,6 +226,8 @@ typedef struct mme_enb_s {
     ogs_sockaddr_t  *addr;      /* eNB S1AP Address */
     ogs_poll_t      *poll;      /* eNB S1AP Poll */
 
+    bool s1_setup_success;      /* eNB S1AP Setup complete successfuly */
+
     uint16_t        max_num_of_ostreams;/* SCTP Max num of outbound streams */
     uint16_t        ostream_id;         /* enb_ostream_id generator */
 
@@ -791,6 +793,7 @@ void stats_remove_enb(void);
 void stats_add_mme_session(void);
 void stats_remove_mme_session(void);
 
+bool mme_is_maximum_number_of_enbs_reached(void);
 
 
 
