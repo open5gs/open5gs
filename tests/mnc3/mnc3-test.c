@@ -236,7 +236,7 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send GTP-U ICMP Packet */
-    rv = testgtpu_build_ping(&sendbuf, "10.45.0.2", "10.45.0.1");
+    rv = testgtpu_build_ping(&sendbuf, 1, "10.45.0.2", "10.45.0.1");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_gtpu_send(gtpu, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

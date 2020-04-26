@@ -244,6 +244,7 @@ libcore_sources = files('''
     ogs-socknode.h
     ogs-udp.h
     ogs-tcp.h
+    ogs-tun.h
     ogs-queue.h
     ogs-poll.h
     ogs-notify.h
@@ -277,6 +278,7 @@ libcore_sources = files('''
     ogs-socknode.c
     ogs-udp.c
     ogs-tcp.c
+    ogs-tun.c
     ogs-queue.c
     ogs-select.c
     ogs-poll.c

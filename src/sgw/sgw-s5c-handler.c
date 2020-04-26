@@ -178,8 +178,8 @@ void sgw_s5c_handle_create_session_response(ogs_gtp_xact_t *s5c_xact,
 
     pgw = ogs_gtp_node_find_by_f_teid(&sgw_self()->pgw_s5u_list, pgw_s5u_teid);
     if (!pgw) {
-        pgw = ogs_gtp_node_add(&sgw_self()->pgw_s5u_list, pgw_s5u_teid,
-            sgw_self()->gtpu_port,
+        pgw = ogs_gtp_node_add_by_f_teid(
+            &sgw_self()->pgw_s5u_list, pgw_s5u_teid, sgw_self()->gtpu_port,
             ogs_config()->parameter.no_ipv4,
             ogs_config()->parameter.no_ipv6,
             ogs_config()->parameter.prefer_ipv4);
@@ -386,8 +386,8 @@ void sgw_s5c_handle_create_bearer_request(ogs_gtp_xact_t *s5c_xact,
     s5u_tunnel->remote_teid = ntohl(pgw_s5u_teid->teid);
     pgw = ogs_gtp_node_find_by_f_teid(&sgw_self()->pgw_s5u_list, pgw_s5u_teid);
     if (!pgw) {
-        pgw = ogs_gtp_node_add(&sgw_self()->pgw_s5u_list, pgw_s5u_teid,
-            sgw_self()->gtpu_port,
+        pgw = ogs_gtp_node_add_by_f_teid(
+            &sgw_self()->pgw_s5u_list, pgw_s5u_teid, sgw_self()->gtpu_port,
             ogs_config()->parameter.no_ipv4,
             ogs_config()->parameter.no_ipv6,
             ogs_config()->parameter.prefer_ipv4);

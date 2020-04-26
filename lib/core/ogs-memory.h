@@ -28,6 +28,22 @@
 extern "C" {
 #endif
 
+#define OGS_MEM_CLEAR(__dATA) \
+    do { \
+        if ((__dATA)) { \
+            ogs_free((__dATA)); \
+            (__dATA) = NULL; \
+        } \
+    } while(0)
+#define OGS_MEM_STORE(__dST, __sRC) \
+    do { \
+        ogs_assert((__sRC)); \
+        OGS_MEM_CLEAR(__dST); \
+        (__dST) = ogs_calloc(sizeof(*(__sRC)), sizeof(uint8_t)); \
+        ogs_assert((__dST)); \
+        memcpy((__dST), (__sRC), sizeof(*(__sRC))*sizeof(uint8_t)); \
+    } while(0)
+
 void *ogs_malloc(size_t size);
 void ogs_free(void *ptr);
 void *ogs_calloc(size_t nmemb, size_t size);

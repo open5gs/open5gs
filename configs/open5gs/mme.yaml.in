@@ -1,8 +1,202 @@
+#
+# logger:
+#
+#  o Set OGS_LOG_INFO to all domain level
+#   - If `level` is omitted, the default level is OGS_LOG_INFO)
+#   - If `domain` is omitted, the all domain level is set from 'level'
+#    (Nothing is needed)
+#
+#  o Set OGS_LOG_ERROR to all domain level
+#   - `level` can be set with none, fatal, error, warn, info, debug, trace
+#    level: error
+#
+#  o Set OGS_LOG_DEBUG to mme/emm domain level
+#    level: debug
+#    domain: mme,emm
+#
+#  o Set OGS_LOG_TRACE to all domain level
+#    level: trace
+#    domain: core,s1ap,nas,fd,gtp,mme,emm,esm,event,tlv,mem,sock
+#
 logger:
     file: @localstatedir@/log/open5gs/mme.log
 
-parameter:
-
+#
+# mme:
+#
+#  <S1AP Server>>
+#
+#  o S1AP Server(all address avaiable)
+#    s1ap:
+#
+#  o S1AP Server(0.0.0.0:36412)
+#    s1ap:
+#      addr: 0.0.0.0
+#
+#  o S1AP Server(127.0.0.1:36412, [::1]:36412)
+#    s1ap:
+#      - addr: 127.0.0.1
+#      - addr: ::1
+#
+#  o S1AP Server(different port)
+#    s1ap:
+#      - addr: 127.0.0.1
+#        port: 36413
+#
+#  o S1AP Server(address avaiable in `eth0` interface)
+#    s1ap:
+#      dev: eth0
+#
+#  <GTP-C Server>>
+#
+#  o GTP-C Server(all address avaiable)
+#    gtpc:
+#
+#  o GTP-C Server(127.0.0.1:2123, [::1]:2123)
+#    gtpc:
+#      - addr: 127.0.0.1
+#      - addr: ::1
+#
+#  <SGsAP>
+#
+#  o Single MSC/VLR(127.0.0.2)
+#    sgsap:
+#      addr: 127.0.0.2
+#      map:
+#        tai:
+#          plmn_id:
+#            mcc: 001
+#            mnc: 01
+#          tac: 4130
+#        lai:
+#          plmn_id:
+#            mcc: 001
+#            mnc: 01
+#          lac: 43690
+#      map:
+#        tai:
+#          plmn_id:
+#            mcc: 002
+#            mnc: 02
+#          tac: 4132
+#        lai:
+#          plmn_id:
+#            mcc: 002
+#            mnc: 02
+#          lac: 43692
+#
+#  o Multiple MSC/VLR
+#    sgsap:
+#      - addr: 127.0.0.2
+#        port: 29119
+#        map:
+#          tai:
+#            plmn_id:
+#              mcc: 001
+#              mnc: 01
+#            tac: 4131
+#          lai:
+#            plmn_id:
+#              mcc: 001
+#              mnc: 01
+#            lac: 43691
+#        map:
+#          tai:
+#            plmn_id:
+#              mcc: 002
+#              mnc: 02
+#            tac: 4132
+#          lai:
+#            plmn_id:
+#              mcc: 002
+#              mnc: 02
+#            lac: 43692
+#      - addr
+#         - 127.0.0.3
+#         - fe80::2%@loopback_devname@
+#        map:
+#          tai:
+#            plmn_id:
+#              mcc: 001
+#              mnc: 01
+#            tac: 4132
+#          lai:
+#            plmn_id:
+#              mcc: 002
+#              mnc: 02
+#            lac: 43692
+#      - name: msc.open5gs.org
+#        map:
+#          tai:
+#            plmn_id:
+#              mcc: 001
+#              mnc: 01
+#            tac: 4133
+#          lai:
+#            plmn_id:
+#              mcc: 002
+#              mnc: 02
+#            lac: 43693
+#
+#
+#  <GUMMEI>
+#
+#  o Multiple GUMMEI
+#    gummei:
+#      - plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        mme_gid: 2
+#        mme_code: 1
+#      - plmn_id:
+#          - mcc: 002
+#            mnc: 02
+#          - mcc: 003
+#            mnc: 03
+#        mme_gid: [3, 4]
+#        mme_code:
+#          - 2
+#          - 3
+#
+#
+#  <TAI>
+#
+#  o Multiple TAI
+#    tai:
+#      - plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        tac: [1, 2, 3]
+#    tai:
+#      - plmn_id:
+#          mcc: 002
+#          mnc: 02
+#        tac: 4
+#      - plmn_id:
+#          mcc: 003
+#          mnc: 03
+#        tac: 5
+#    tai:
+#      - plmn_id:
+#          mcc: 004
+#          mnc: 04
+#        tac: [6, 7]
+#      - plmn_id:
+#          mcc: 005
+#          mnc: 05
+#        tac: 8
+#      - plmn_id:
+#          mcc: 006
+#          mnc: 06
+#        tac: [9, 10]
+#
+#
+#  <Network Name>
+#
+#    network_name:
+#        full: Open5GS
+#        short: Next
+#
 mme:
     freeDiameter: @sysconfdir@/freeDiameter/mme.conf
     s1ap:
@@ -24,12 +218,181 @@ mme:
     network_name:
         full: Open5GS
 
+#
+# sgw:
+#
+# <GTP-C Client>
+#
+#  o Specify SGW addresses the GTP-C must connect to
+#
+#  o One SGW is defined.
+#    If prefer_ipv4 is not true, [fe80::2%@loopback_devname@] is selected.
+#    gtpc:
+#      addr:
+#        - 127.0.0.2
+#        - fe80::2%@loopback_devname@
+#
+#  o Two SGW are defined. MME selects SGW with round-robin manner per UE
+#    gtpc:
+#      - addr: 127.0.0.2
+#      - addr: fe80::2%@loopback_devname@
+#
+#  o Three SGW are defined. MME selects SGW with round-robin manner per UE
+#    gtpc:
+#      - addr
+#        - 127.0.0.2
+#        - fe80::2%@loopback_devname@
+#      - addr
+#        - 127.0.0.12
+#        - fe80::12%@loopback_devname@
+#      - name: sgw3.open5gs.org
+#
+# <SGW Selection Mode>
+#
+# o Round-Robin
+#   (If `selection_mode` is omitted, the default mode is Round-Robin)
+#
+#   selection_mode: rr
+#   gtpc:
+#     addr: 127.0.0.2
+#     addr: 127.0.2.2
+#     addr: 127.0.4.2
+#
+# o SGW selection by eNodeB TAC
+#
+#   selection_mode: tac
+#   gtpc:
+#     - addr: 127.0.0.2
+#       tac: 26000
+#     - addr: 127.0.2.2
+#       tac: [25000, 27000, 28000]
+#
+#
 sgw:
     gtpc:
       addr: 127.0.0.2
 
+#
+# pgw:
+#
+#  <GTP-C Client>
+#
+#  o By default, the PGW uses the first PGW node.
+#    - To use a different APN for each PGW, specify gtpc.apn as the APN name.
+#    - If the HSS uses WebUI to set the PGW IP for eacho UE,
+#      you can use a specific PGW node for each UE.
+#
+#  o Two PGW are defined. 127.0.0.3:2123 is used.
+#    [fe80::3%@loopback_devname@]:2123 is ignored.
+#    gtpc:
+#      - addr: 127.0.0.3
+#      - addr: fe80::3%@loopback_devname@
+#
+#  o One PGW is defined. if prefer_ipv4 is not true,
+#    [fe80::3%@loopback_devname@] is selected.
+#    gtpc:
+#      - addr:
+#        - 127.0.0.3
+#        - fe80::3%@loopback_devname@
+#
+#  o Two PGW are defined with a different APN.
+#    - Note that if PGW IP for UE is configured in HSS,
+#      the following configurion for this UE is ignored.
+#    gtpc:
+#      - addr: 127.0.0.3
+#        apn: internet
+#      - addr: 127.0.0.5
+#        apn: volte
+#
+#  o If APN is omitted, the default APN uses the first PGW node.
+#    gtpc:
+#      - addr: 127.0.0.3
+#      - addr: 127.0.0.5
+#        apn: volte
 pgw:
     gtpc:
       addr:
         - 127.0.0.3
         - ::1
+
+#
+# parameter:
+#
+#  o Number of output streams per SCTP associations.
+#      sctp_streams: 30
+#
+#  o Disable use of IPv4 addresses (only IPv6)
+#      no_ipv4: true
+#
+#  o Disable use of IPv6 addresses (only IPv4)
+#      no_ipv6: true
+#
+#  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
+#      prefer_ipv4: true
+#
+#  o Enable Multicast traffic to the UE
+#      multicast: true
+#
+#  o Disable Stateless Address Autoconfiguration for IPv6
+#      no_slaac: true
+#
+#
+parameter:
+
+#
+# max:
+#
+# o Maximum Number of SGW per MME
+#    sgw: 32
+# o Maximum Number of PGW per MME
+#    pgw: 32
+# o Maximum Number of VLR per MME
+#    vlr: 32
+# o Maximum Number of eNodeB per MME
+#    enb: 32
+# o Maximum Number of UE per eNodeB
+#    ue: 128
+#
+max:
+
+#
+# pool:
+#
+# o The Number of Default Memory Pool Size
+#
+#   - Pool-size 128         => 8192 Number
+#   - Pool-size 256         => 4096 Number
+#   - Pool-size 512         => 2048 Number
+#   - Pool-size 1024        => 1024 Number
+#   - Pool-size 2048        => 512 Number
+#   - Pool-size 8192        => 128 Number
+#   - Pool-size 1024*1024   => 8 Number
+#
+#    128:  8192
+#    256:  4096
+#    512:  2048
+#    1024: 1024
+#    2048: 512
+#    8192: 128
+#    big:  8
+#
+# o Memory of Packet Buffering in SGW
+#   - Maximum Number of packet(SDU size = 8Kbytes) pool in SGW
+#   - SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
+#
+#   packet: 65536
+pool:
+
+#
+# sctp:
+#
+#  o heartbit_interval : 5000 (5secs)
+#  o rto_initial : 3000 (3secs)
+#  o rto_min : 1000 (1sec)
+#  o rto_max : 5000 (5secs)
+#  o max_num_of_ostreams : 30
+#  o max_num_of_istreams : 65535
+#  o max_attempts : 4
+#  o max_initial_timeout : 8000(8secs)
+#  o usrsctp_udp_port : 9899
+sctp:

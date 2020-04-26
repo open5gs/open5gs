@@ -205,7 +205,8 @@ int pcrf_context_parse_config(void)
                                             == YAML_SEQUENCE_NODE) {
                                         if (!ogs_yaml_iter_next(&conn_array))
                                             break;
-                                        ogs_yaml_iter_recurse(&conn_array, &conn_iter);
+                                        ogs_yaml_iter_recurse(
+                                                &conn_array, &conn_iter);
                                     } else if (ogs_yaml_iter_type(&conn_array)
                                             == YAML_SCALAR_NODE) {
                                         break;
@@ -439,7 +440,8 @@ int pcrf_db_qos_data(char *imsi_bcd, char *apn,
 
                             ogs_assert(child3_key);
                             pcc_rule_index = atoi(child3_key);
-                            ogs_assert(pcc_rule_index < OGS_MAX_NUM_OF_PCC_RULE);
+                            ogs_assert(pcc_rule_index <
+                                    OGS_MAX_NUM_OF_PCC_RULE);
 
                             pcc_rule = &gx_message->pcc_rule[pcc_rule_index];
                             bson_iter_recurse(&child3_iter, &child4_iter);
@@ -485,8 +487,8 @@ int pcrf_db_qos_data(char *imsi_bcd, char *apn,
                                                         bson_iter_int32(
                                                             &child6_iter);
                                                 } else if (!strcmp(child6_key,
-                                                            "pre_emption_vulnerability") &&
-                                                    BSON_ITER_HOLDS_INT32(
+                                                    "pre_emption_vulnerability")
+                                                    && BSON_ITER_HOLDS_INT32(
                                                         &child6_iter)) {
                                                     pcc_rule->qos.arp.
                                                     pre_emption_vulnerability =
@@ -568,7 +570,8 @@ int pcrf_db_qos_data(char *imsi_bcd, char *apn,
                                         while (bson_iter_next(&child6_iter)) {
                                             const char *child6_key =
                                                 bson_iter_key(&child6_iter);
-                                            if (!strcmp(child6_key, "direction") &&
+                                            if (!strcmp(child6_key,
+                                                    "direction") &&
                                                 BSON_ITER_HOLDS_INT32(
                                                     &child6_iter)) {
                                                 flow->direction =

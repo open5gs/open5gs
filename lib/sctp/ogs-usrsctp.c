@@ -334,7 +334,7 @@ int ogs_sctp_sendmsg(ogs_sock_t *sock, const void *msg, size_t len,
     ogs_assert(socket);
 
     memset((void *)&sndinfo, 0, sizeof(struct sctp_sndinfo));
-    sndinfo.snd_ppid = htonl(ppid);
+    sndinfo.snd_ppid = htobe32(ppid);
     sndinfo.snd_sid = stream_no;
     sent = usrsctp_sendv(socket, msg, len,
             to ? &to->sa : NULL, to ? 1 : 0,
@@ -384,7 +384,7 @@ int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
     }
 
     if (sinfo) {
-        sinfo->ppid = ntohl(rcv_info.rcv_ppid);
+        sinfo->ppid = be32toh(rcv_info.rcv_ppid);
         sinfo->stream_no = rcv_info.rcv_sid;
     }
 

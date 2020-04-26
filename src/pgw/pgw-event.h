@@ -42,8 +42,7 @@ typedef enum {
 
 typedef struct pgw_event_s {
     int id;
-    ogs_pkbuf_t *gtpbuf;
-    ogs_pkbuf_t *gxbuf;
+    ogs_pkbuf_t *pkbuf;
 
     ogs_gtp_node_t *gnode;
     ogs_gtp_xact_t *xact;

@@ -13,4 +13,4 @@ user@host ~/Documents/git/open5gs/lib/gtp/support$ \
 
 * Generate TLV support files
 user@host ~/Documents/git/open5gs/lib/pfcp/support$ \
-    python pfcp-tlv.py -f 29244-f40.docx -o ..
+    python pfcp-tlv.py -f 29244-g10.docx -o ..

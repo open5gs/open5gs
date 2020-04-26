@@ -28,10 +28,10 @@ extern "C" {
 
 void pgw_gx_handle_cca_initial_request(
         pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message,
-        ogs_gtp_xact_t *xact, ogs_gtp_create_session_request_t *req);
+        ogs_gtp_xact_t *xact);
 void pgw_gx_handle_cca_termination_request(
         pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message,
-        ogs_gtp_xact_t *xact, ogs_gtp_delete_session_request_t *req);
+        ogs_gtp_xact_t *xact);
 void pgw_gx_handle_re_auth_request(
         pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message);
 

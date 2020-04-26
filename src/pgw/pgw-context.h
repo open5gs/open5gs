@@ -124,12 +124,8 @@ typedef struct pgw_subnet_s {
 
 #define MAX_NUM_OF_SUBNET_RANGE         16
     struct {
-#if 0
-        ogs_ipsubnet_t low, high;
-#else
         const char *low;
         const char *high;
-#endif
     } range[MAX_NUM_OF_SUBNET_RANGE];
     int num_of_range;
 
@@ -159,13 +155,12 @@ typedef struct pgw_sess_s {
     pgw_ue_ip_t*    ipv4;
     pgw_ue_ip_t*    ipv6;
 
-    /* User Location Information */
-    int             uli_type;
-    ogs_tai_t       tai;
-    ogs_e_cgi_t     e_cgi;
-
     uint8_t         hash_keybuf[OGS_MAX_IMSI_LEN+OGS_MAX_APN_LEN+1];
     int             hash_keylen;
+
+    ogs_tlv_octet_t ue_pco; /* Save Protocol Configuration Options from UE */
+    ogs_tlv_octet_t user_location_information; /* User Location Information */
+    ogs_tlv_octet_t ue_timezone; /* UE Timezone */
 
     ogs_list_t      bearer_list;
 
@@ -295,7 +290,6 @@ pgw_subnet_t *pgw_subnet_next(pgw_subnet_t *subnet);
 int pgw_subnet_remove(pgw_subnet_t *subnet);
 void pgw_subnet_remove_all(void);
 pgw_subnet_t *pgw_subnet_first(void);
-pgw_subnet_t *gw_subnet_next(pgw_subnet_t *subnet);
 
 void stats_add_session(void);
 void stats_remove_session(void);

@@ -179,7 +179,7 @@ int ogs_nas_decode_location_area_identification(ogs_nas_location_area_identifica
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(location_area_identification, pkbuf->data - size, size);
 
-    location_area_identification->lac = ntohs(location_area_identification->lac);
+    location_area_identification->lac = be16toh(location_area_identification->lac);
 
     ogs_trace("  LOCATION_AREA_IDENTIFICATION - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
@@ -193,7 +193,7 @@ int ogs_nas_encode_location_area_identification(ogs_pkbuf_t *pkbuf, ogs_nas_loca
     ogs_nas_location_area_identification_t target;
 
     memcpy(&target, location_area_identification, size);
-    target.lac = htons(location_area_identification->lac);
+    target.lac = htobe16(location_area_identification->lac);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -219,7 +219,7 @@ int ogs_nas_decode_mobile_identity(ogs_nas_mobile_identity_t *mobile_identity, o
 
     if (mobile_identity->tmsi.type == OGS_NAS_MOBILE_IDENTITY_TMSI)
     {
-        mobile_identity->tmsi.tmsi = ntohl(mobile_identity->tmsi.tmsi);
+        mobile_identity->tmsi.tmsi = be32toh(mobile_identity->tmsi.tmsi);
     }
 
     ogs_trace("  MOBILE_IDENTITY - ");
@@ -236,7 +236,7 @@ int ogs_nas_encode_mobile_identity(ogs_pkbuf_t *pkbuf, ogs_nas_mobile_identity_t
     memcpy(&target, mobile_identity, sizeof(ogs_nas_mobile_identity_t));
     if (mobile_identity->tmsi.type == OGS_NAS_MOBILE_IDENTITY_TMSI)
     {
-        target.tmsi.tmsi = htonl(mobile_identity->tmsi.tmsi);
+        target.tmsi.tmsi = htobe32(mobile_identity->tmsi.tmsi);
         target.tmsi.spare = 0xf;
     }
 
@@ -510,8 +510,8 @@ int ogs_nas_decode_eps_mobile_identity(ogs_nas_eps_mobile_identity_t *eps_mobile
 
     if (eps_mobile_identity->guti.type == OGS_NAS_EPS_MOBILE_IDENTITY_GUTI)
     {
-        eps_mobile_identity->guti.mme_gid = ntohs(eps_mobile_identity->guti.mme_gid);
-        eps_mobile_identity->guti.m_tmsi = ntohl(eps_mobile_identity->guti.m_tmsi);
+        eps_mobile_identity->guti.mme_gid = be16toh(eps_mobile_identity->guti.mme_gid);
+        eps_mobile_identity->guti.m_tmsi = be32toh(eps_mobile_identity->guti.m_tmsi);
     }
 
     ogs_trace("  EPS_MOBILE_IDENTITY - ");
@@ -529,8 +529,8 @@ int ogs_nas_encode_eps_mobile_identity(ogs_pkbuf_t *pkbuf, ogs_nas_eps_mobile_id
     if (target.guti.type == OGS_NAS_EPS_MOBILE_IDENTITY_GUTI)
     {
         target.guti.spare = 0xf;
-        target.guti.mme_gid = htons(eps_mobile_identity->guti.mme_gid);
-        target.guti.m_tmsi = htonl(eps_mobile_identity->guti.m_tmsi);
+        target.guti.mme_gid = htobe16(eps_mobile_identity->guti.mme_gid);
+        target.guti.m_tmsi = htobe32(eps_mobile_identity->guti.m_tmsi);
     }
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -643,7 +643,7 @@ int ogs_nas_decode_esm_message_container(ogs_nas_esm_message_container_t *esm_me
     uint16_t size = 0;
     ogs_nas_esm_message_container_t *source = (ogs_nas_esm_message_container_t *)pkbuf->data;
 
-    esm_message_container->length = ntohs(source->length);
+    esm_message_container->length = be16toh(source->length);
     size = esm_message_container->length + sizeof(esm_message_container->length);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -665,7 +665,7 @@ int ogs_nas_encode_esm_message_container(ogs_pkbuf_t *pkbuf, ogs_nas_esm_message
 
     size = sizeof(esm_message_container->length);
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    target = htons(esm_message_container->length);
+    target = htobe16(esm_message_container->length);
     memcpy(pkbuf->data - size, &target, size);
 
     size = esm_message_container->length;
@@ -1120,7 +1120,7 @@ int ogs_nas_decode_nonce(ogs_nas_nonce_t *nonce, ogs_pkbuf_t *pkbuf)
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(nonce, pkbuf->data - size, size);
 
-    *nonce = ntohl(*nonce);
+    *nonce = be32toh(*nonce);
 
     ogs_trace("  NONCE - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
@@ -1134,7 +1134,7 @@ int ogs_nas_encode_nonce(ogs_pkbuf_t *pkbuf, ogs_nas_nonce_t *nonce)
     ogs_nas_nonce_t target;
 
     memcpy(&target, nonce, size);
-    target = htonl(*nonce);
+    target = htobe32(*nonce);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1184,7 +1184,7 @@ int ogs_nas_decode_p_tmsi_signature(ogs_nas_p_tmsi_signature_t *p_tmsi_signature
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(p_tmsi_signature, pkbuf->data - size, size);
 
-    *p_tmsi_signature = htonl(*p_tmsi_signature);
+    *p_tmsi_signature = htobe32(*p_tmsi_signature);
 
     ogs_trace("  P_TMSI_SIGNATURE - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
@@ -1198,7 +1198,7 @@ int ogs_nas_encode_p_tmsi_signature(ogs_pkbuf_t *pkbuf, ogs_nas_p_tmsi_signature
     ogs_nas_p_tmsi_signature_t target;
 
     memcpy(&target, p_tmsi_signature, size);
-    *p_tmsi_signature = ntohl(*p_tmsi_signature);
+    *p_tmsi_signature = be32toh(*p_tmsi_signature);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1273,7 +1273,7 @@ int ogs_nas_decode_short_mac(ogs_nas_short_mac_t *short_mac, ogs_pkbuf_t *pkbuf)
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(short_mac, pkbuf->data - size, size);
 
-    *short_mac = ntohs(*short_mac);
+    *short_mac = be16toh(*short_mac);
 
     ogs_trace("  SHORT_MAC - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
@@ -1287,7 +1287,7 @@ int ogs_nas_encode_short_mac(ogs_pkbuf_t *pkbuf, ogs_nas_short_mac_t *short_mac)
     ogs_nas_short_mac_t target;
 
     memcpy(&target, short_mac, size);
-    target = htons(*short_mac);
+    target = htobe16(*short_mac);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1422,7 +1422,7 @@ int ogs_nas_decode_tracking_area_identity(ogs_nas_tracking_area_identity_t *trac
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(tracking_area_identity, pkbuf->data - size, size);
 
-    tracking_area_identity->tac = ntohs(tracking_area_identity->tac);
+    tracking_area_identity->tac = be16toh(tracking_area_identity->tac);
 
     ogs_trace("  TRACKING_AREA_IDENTITY - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
@@ -1436,7 +1436,7 @@ int ogs_nas_encode_tracking_area_identity(ogs_pkbuf_t *pkbuf, ogs_nas_tracking_a
     ogs_nas_tracking_area_identity_t target;
 
     memcpy(&target, tracking_area_identity, size);
-    target.tac = htons(tracking_area_identity->tac);
+    target.tac = htobe16(tracking_area_identity->tac);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -1807,7 +1807,7 @@ int ogs_nas_decode_generic_message_container(ogs_nas_generic_message_container_t
     uint16_t size = 0;
     ogs_nas_generic_message_container_t *source = (ogs_nas_generic_message_container_t *)pkbuf->data;
 
-    generic_message_container->length = ntohs(source->length);
+    generic_message_container->length = be16toh(source->length);
     size = generic_message_container->length + sizeof(generic_message_container->length);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -1829,7 +1829,7 @@ int ogs_nas_encode_generic_message_container(ogs_pkbuf_t *pkbuf, ogs_nas_generic
 
     size = sizeof(generic_message_container->length);
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    target = htons(generic_message_container->length);
+    target = htobe16(generic_message_container->length);
     memcpy(pkbuf->data - size, &target, size);
 
     size = generic_message_container->length;
@@ -2517,7 +2517,7 @@ int ogs_nas_decode_header_compression_configuration(ogs_nas_header_compression_c
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(header_compression_configuration, pkbuf->data - size, size);
 
-    header_compression_configuration->max_cid = ntohs(header_compression_configuration->max_cid);
+    header_compression_configuration->max_cid = be16toh(header_compression_configuration->max_cid);
 
     ogs_trace("  HEADER_COMPRESSION_CONFIGURATION - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
@@ -2531,7 +2531,7 @@ int ogs_nas_encode_header_compression_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_
     ogs_nas_header_compression_configuration_t target;
 
     memcpy(&target, header_compression_configuration, sizeof(ogs_nas_header_compression_configuration_t));
-    target.max_cid = htons(header_compression_configuration->max_cid);
+    target.max_cid = htobe16(header_compression_configuration->max_cid);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
@@ -2574,7 +2574,7 @@ int ogs_nas_decode_extended_protocol_configuration_options(ogs_nas_extended_prot
     uint16_t size = 0;
     ogs_nas_extended_protocol_configuration_options_t *source = (ogs_nas_extended_protocol_configuration_options_t *)pkbuf->data;
 
-    extended_protocol_configuration_options->length = ntohs(source->length);
+    extended_protocol_configuration_options->length = be16toh(source->length);
     size = extended_protocol_configuration_options->length + sizeof(extended_protocol_configuration_options->length);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
@@ -2596,7 +2596,7 @@ int ogs_nas_encode_extended_protocol_configuration_options(ogs_pkbuf_t *pkbuf, o
 
     size = sizeof(extended_protocol_configuration_options->length);
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    target = htons(extended_protocol_configuration_options->length);
+    target = htobe16(extended_protocol_configuration_options->length);
     memcpy(pkbuf->data - size, &target, size);
 
     size = extended_protocol_configuration_options->length;

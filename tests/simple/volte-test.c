@@ -534,9 +534,9 @@ static void volte_test2(abts_case *tc, void *data)
 #if 0 /* TFT Rule Tester */
     /* Send GTP-U ICMP Packet */
 #if 1
-    rv = testgtpu_build_ping(&sendbuf, "10.45.0.2", "10.45.0.1");
+    rv = testgtpu_build_ping(&sendbuf, 1, "10.45.0.2", "10.45.0.1");
 #else
-    rv = testgtpu_build_ping(&sendbuf, "cafe::2", "cafe::1");
+    rv = testgtpu_build_ping(&sendbuf, 1, "cafe::2", "cafe::1");
 #endif
     rv = testgtpu_enb_send(gtpu, sendbuf);
 #endif

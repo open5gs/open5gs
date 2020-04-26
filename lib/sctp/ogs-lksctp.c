@@ -200,7 +200,7 @@ int ogs_sctp_sendmsg(ogs_sock_t *sock, const void *msg, size_t len,
     
     size = sctp_sendmsg(sock->fd, msg, len,
             to ? &to->sa : NULL, addrlen,
-            htonl(ppid),
+            htobe32(ppid),
             0,  /* flags */
             stream_no,
             0,  /* timetolive */
@@ -244,7 +244,7 @@ int ogs_sctp_recvmsg(ogs_sock_t *sock, void *msg, size_t len,
     }
 
     if (sinfo) {
-        sinfo->ppid = ntohl(sndrcvinfo.sinfo_ppid);
+        sinfo->ppid = be32toh(sndrcvinfo.sinfo_ppid);
         sinfo->stream_no = sndrcvinfo.sinfo_stream;
     }
 

@@ -19,15 +19,59 @@
 
 #include "ogs-pfcp.h"
 
-#define OGS_PFCP_F_TEID_HDR_LEN     5
-#define OGS_PFCP_F_TEID_IPV4_LEN    (OGS_IPV4_LEN + OGS_PFCP_F_TEID_HDR_LEN)
-#define OGS_PFCP_F_TEID_IPV6_LEN    (OGS_IPV6_LEN + OGS_PFCP_F_TEID_HDR_LEN)
-#define OGS_PFCP_F_TEID_IPV4V6_LEN  (OGS_IPV4V6_LEN + OGS_PFCP_F_TEID_HDR_LEN)
+int ogs_pfcp_sockaddr_to_node_id(
+    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, int prefer_ipv4,
+    ogs_pfcp_node_id_t *node_id, int *len)
+{
+    const int hdr_len = 1;
+    int rv;
+    char hostname[OGS_MAX_FQDN_LEN];
 
-#define OGS_PFCP_F_SEID_HDR_LEN     9
-#define OGS_PFCP_F_SEID_IPV4_LEN    (OGS_IPV4_LEN + OGS_PFCP_F_SEID_HDR_LEN)
-#define OGS_PFCP_F_SEID_IPV6_LEN    (OGS_IPV6_LEN + OGS_PFCP_F_SEID_HDR_LEN)
-#define OGS_PFCP_F_SEID_IPV4V6_LEN  (OGS_IPV4V6_LEN + OGS_PFCP_F_SEID_HDR_LEN)
+    ogs_assert(node_id);
+
+    memset(node_id, 0, sizeof *node_id);
+
+    if (addr && addr->hostname) {
+        rv = ogs_getnameinfo(hostname, OGS_MAX_FQDN_LEN, addr, 0);
+        if (rv == OGS_OK && strcmp(addr->hostname, hostname) == 0) {
+            node_id->type = OGS_PFCP_NODE_ID_FQDN;
+            *len = ogs_fqdn_build(node_id->fqdn,
+                        addr->hostname, strlen(addr->hostname)) + hdr_len;
+
+            return OGS_OK;
+        }
+    }
+
+    if (addr6 && addr6->hostname) {
+        rv = ogs_getnameinfo(hostname, OGS_MAX_FQDN_LEN, addr6, 0);
+        if (rv == OGS_OK && strcmp(addr6->hostname, hostname) == 0) {
+            node_id->type = OGS_PFCP_NODE_ID_FQDN;
+            *len = ogs_fqdn_build(node_id->fqdn,
+                        addr6->hostname, strlen(addr6->hostname)) + hdr_len;
+
+            return OGS_OK;
+        }
+    }
+
+    if (prefer_ipv4 && addr) {
+        node_id->type = OGS_PFCP_NODE_ID_IPV4;
+        node_id->addr = addr->sin.sin_addr.s_addr;
+        *len = OGS_IPV4_LEN + hdr_len;
+    } else if (addr6) {
+        node_id->type = OGS_PFCP_NODE_ID_IPV6;
+        memcpy(node_id->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+        *len = OGS_IPV6_LEN + hdr_len;
+    } else if (addr) {
+        node_id->type = OGS_PFCP_NODE_ID_IPV4;
+        node_id->addr = addr->sin.sin_addr.s_addr;
+        *len = OGS_IPV4_LEN + hdr_len;
+    } else {
+        ogs_assert_if_reached();
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
 
 int ogs_pfcp_f_seid_to_sockaddr(
     ogs_pfcp_f_seid_t *f_seid, uint16_t port, ogs_sockaddr_t **list)
@@ -40,12 +84,12 @@ int ogs_pfcp_f_seid_to_sockaddr(
     addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
     ogs_assert(addr);
     addr->ogs_sa_family = AF_INET;
-    addr->ogs_sin_port = htons(port);
+    addr->ogs_sin_port = htobe16(port);
 
     addr6 = ogs_calloc(1, sizeof(ogs_sockaddr_t));
     ogs_assert(addr6);
     addr6->ogs_sa_family = AF_INET6;
-    addr6->ogs_sin_port = htons(port);
+    addr6->ogs_sin_port = htobe16(port);
 
     if (f_seid->ipv4 && f_seid->ipv6) {
         addr->next = addr6;
@@ -77,24 +121,28 @@ int ogs_pfcp_sockaddr_to_f_seid(
     ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
     ogs_pfcp_f_seid_t *f_seid, int *len)
 {
+    const int hdr_len = 9;
+
     ogs_assert(f_seid);
+
+    memset(f_seid, 0, sizeof *f_seid);
 
     if (addr && addr6) {
         f_seid->ipv4 = 1;
         f_seid->both.addr = addr->sin.sin_addr.s_addr;
         f_seid->ipv6 = 1;
         memcpy(f_seid->both.addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
-        *len = OGS_PFCP_F_SEID_IPV4V6_LEN;
+        *len = OGS_IPV4V6_LEN + hdr_len;
     } else if (addr) {
         f_seid->ipv4 = 1;
         f_seid->ipv6 = 0;
         f_seid->addr = addr->sin.sin_addr.s_addr;
-        *len = OGS_PFCP_F_SEID_IPV4_LEN;
+        *len = OGS_IPV4_LEN + hdr_len;
     } else if (addr6) {
         f_seid->ipv4 = 0;
         f_seid->ipv6 = 1;
         memcpy(f_seid->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
-        *len = OGS_PFCP_F_SEID_IPV6_LEN;
+        *len = OGS_IPV6_LEN + hdr_len;
     } else
         ogs_assert_if_reached();
 
@@ -106,7 +154,7 @@ int ogs_pfcp_f_seid_to_ip(ogs_pfcp_f_seid_t *f_seid, ogs_ip_t *ip)
     ogs_assert(ip);
     ogs_assert(f_seid);
 
-    memset(ip, 0, sizeof(ogs_ip_t));
+    memset(ip, 0, sizeof *ip);
 
     ip->ipv4 = f_seid->ipv4;
     ip->ipv6 = f_seid->ipv6;
@@ -131,52 +179,204 @@ int ogs_pfcp_sockaddr_to_f_teid(
     ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
     ogs_pfcp_f_teid_t *f_teid, int *len)
 {
+    const int hdr_len = 5;
+
+    ogs_assert(addr || addr6);
     ogs_assert(f_teid);
+    memset(f_teid, 0, sizeof *f_teid);
 
     if (addr && addr6) {
         f_teid->ipv4 = 1;
         f_teid->both.addr = addr->sin.sin_addr.s_addr;
         f_teid->ipv6 = 1;
         memcpy(f_teid->both.addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
-        *len = OGS_PFCP_F_TEID_IPV4V6_LEN;
+        *len = OGS_IPV4V6_LEN + hdr_len;
     } else if (addr) {
         f_teid->ipv4 = 1;
         f_teid->ipv6 = 0;
         f_teid->addr = addr->sin.sin_addr.s_addr;
-        *len = OGS_PFCP_F_TEID_IPV4_LEN;
+        *len = OGS_IPV4_LEN + hdr_len;
     } else if (addr6) {
         f_teid->ipv4 = 0;
         f_teid->ipv6 = 1;
         memcpy(f_teid->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
-        *len = OGS_PFCP_F_TEID_IPV6_LEN;
+        *len = OGS_IPV6_LEN + hdr_len;
     } else
         ogs_assert_if_reached();
 
     return OGS_OK;
 }
 
-int ogs_pfcp_outer_hdr_to_ip(ogs_pfcp_outer_hdr_t *outer_hdr, ogs_ip_t *ip)
+int ogs_pfcp_sockaddr_to_user_plane_ip_resource_info(
+    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
+    ogs_pfcp_user_plane_ip_resource_info_t *info)
 {
-    ogs_assert(ip);
-    ogs_assert(outer_hdr);
+    ogs_assert(addr || addr6);
+    ogs_assert(info);
 
-    memset(ip, 0, sizeof(ogs_ip_t));
+    if (addr) {
+        info->v4 = 1;
+        info->addr = addr->sin.sin_addr.s_addr;
+    }
+    if (addr6) {
+        info->v6 = 1;
+        memcpy(info->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+    }
 
-    ip->ipv4 = outer_hdr->gtpu_ipv4;
-    ip->ipv6 = outer_hdr->gtpu_ipv6;
+    return OGS_OK;
+}
 
-    if (ip->ipv4 && ip->ipv6) {
-        ip->both.addr = outer_hdr->both.addr;
-        memcpy(ip->both.addr6, outer_hdr->both.addr6, OGS_IPV6_LEN);
-        ip->len = OGS_IPV4V6_LEN;
-    } else if (ip->ipv4) {
-        ip->addr = outer_hdr->addr;
-        ip->len = OGS_IPV4_LEN;
-    } else if (ip->ipv6) {
-        memcpy(ip->addr6, outer_hdr->addr6, OGS_IPV6_LEN);
-        ip->len = OGS_IPV6_LEN;
+int ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(
+    ogs_pfcp_user_plane_ip_resource_info_t *info,
+    ogs_sockaddr_t **addr, ogs_sockaddr_t **addr6)
+{
+    ogs_assert(addr && addr6);
+    ogs_assert(info);
+
+    *addr = NULL;
+    *addr6 = NULL;
+
+    if (info->v4) {
+        *addr = ogs_calloc(1, sizeof(**addr));
+        (*addr)->sin.sin_addr.s_addr = info->addr;
+        (*addr)->ogs_sa_family = AF_INET;
+    }
+
+    if (info->v6) {
+        *addr6 = ogs_calloc(1, sizeof(**addr6));
+        memcpy((*addr6)->sin6.sin6_addr.s6_addr, info->addr6, OGS_IPV6_LEN);
+        (*addr6)->ogs_sa_family = AF_INET6;
+    }
+
+    return OGS_OK;
+}
+
+int ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
+    ogs_pfcp_user_plane_ip_resource_info_t *info,
+    ogs_pfcp_f_teid_t *f_teid, int *len)
+{
+    const int hdr_len = 5;
+
+    ogs_assert(info);
+    ogs_assert(f_teid);
+    memset(f_teid, 0, sizeof *f_teid);
+
+    if (info->v4 && info->v6) {
+        f_teid->ipv4 = 1;
+        f_teid->both.addr = info->addr;
+        f_teid->ipv6 = 1;
+        memcpy(f_teid->both.addr6, info->addr6, OGS_IPV6_LEN);
+        *len = OGS_IPV4V6_LEN + hdr_len;
+    } else if (info->v4) {
+        f_teid->ipv4 = 1;
+        f_teid->ipv6 = 0;
+        f_teid->addr = info->addr;
+        *len = OGS_IPV4_LEN + hdr_len;
+    } else if (info->v6) {
+        f_teid->ipv4 = 0;
+        f_teid->ipv6 = 1;
+        memcpy(f_teid->addr6, info->addr6, OGS_IPV6_LEN);
+        *len = OGS_IPV6_LEN + hdr_len;
     } else
         ogs_assert_if_reached();
+
+    return OGS_OK;
+}
+
+int ogs_pfcp_paa_to_ue_ip_addr(
+    ogs_paa_t *paa, ogs_pfcp_ue_ip_addr_t *addr, int *len)
+{
+    const int hdr_len = 1;
+
+    ogs_assert(paa);
+    ogs_assert(addr);
+
+    memset(addr, 0, sizeof *addr);
+
+    if (paa->pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+        addr->ipv4 = 1;
+        addr->both.addr = paa->both.addr;
+        addr->ipv6 = 1;
+        memcpy(addr->both.addr6, paa->both.addr6, OGS_IPV6_LEN);
+        *len = OGS_IPV4V6_LEN + hdr_len;
+    } else if (paa->pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+        addr->ipv4 = 1;
+        addr->ipv6 = 0;
+        addr->addr = paa->addr;
+        *len = OGS_IPV4_LEN + hdr_len;
+    } else if (paa->pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+        addr->ipv4 = 0;
+        addr->ipv6 = 1;
+        memcpy(addr->addr6, paa->addr6, OGS_IPV6_LEN);
+        *len = OGS_IPV6_LEN + hdr_len;
+    } else
+        ogs_assert_if_reached();
+
+    return OGS_OK;
+}
+
+int ogs_pfcp_ip_to_outer_header_creation(ogs_ip_t *ip,
+        ogs_pfcp_outer_header_creation_t *outer_header_creation, int *len)
+{
+    const int hdr_len = 6;
+
+    ogs_assert(ip);
+    ogs_assert(outer_header_creation);
+    memset(outer_header_creation, 0, sizeof *outer_header_creation);
+
+    if (ip->ipv4 && ip->ipv6) {
+        outer_header_creation->gtpu4 = 1;
+        outer_header_creation->both.addr = ip->both.addr;
+        outer_header_creation->gtpu6 = 1;
+        memcpy(outer_header_creation->both.addr6, ip->both.addr6, OGS_IPV6_LEN);
+        *len = OGS_IPV4V6_LEN + hdr_len;
+    } else if (ip->ipv4) {
+        outer_header_creation->gtpu4 = 1;
+        outer_header_creation->gtpu6 = 0;
+        outer_header_creation->addr = ip->addr;
+        *len = OGS_IPV4_LEN + hdr_len;
+    } else if (ip->ipv6) {
+        outer_header_creation->gtpu4 = 0;
+        outer_header_creation->gtpu6 = 1;
+        memcpy(outer_header_creation->addr6, ip->addr6, OGS_IPV6_LEN);
+        *len = OGS_IPV6_LEN + hdr_len;
+    } else
+        ogs_assert_if_reached();
+
+    return OGS_OK;
+}
+
+int ogs_pfcp_outer_header_creation_to_ip(
+        ogs_pfcp_outer_header_creation_t *outer_header_creation, ogs_ip_t *ip)
+{
+    ogs_assert(outer_header_creation);
+    ogs_assert(ip);
+    memset(ip, 0, sizeof *ip);
+
+    if ((outer_header_creation->gtpu4 ||
+        outer_header_creation->ip4 ||
+        outer_header_creation->udp4) &&
+        (outer_header_creation->gtpu6 ||
+        outer_header_creation->ip6 ||
+        outer_header_creation->udp6)) {
+        ip->ipv4 = 1; ip->ipv6 = 1;
+        ip->len = OGS_IPV4V6_LEN;
+        ip->both.addr = outer_header_creation->both.addr;
+        memcpy(ip->both.addr6, outer_header_creation->both.addr6, OGS_IPV6_LEN);
+    } else if (outer_header_creation->gtpu4 ||
+                outer_header_creation->ip4 ||
+                outer_header_creation->udp4) {
+        ip->ipv4 = 1;
+        ip->len = OGS_IPV4_LEN;
+        ip->addr = outer_header_creation->addr;
+    } else if (outer_header_creation->gtpu6 ||
+                outer_header_creation->ip6 ||
+                outer_header_creation->udp6) {
+        ip->ipv6 = 1;
+        ip->len = OGS_IPV6_LEN;
+        memcpy(ip->addr6, outer_header_creation->addr6, OGS_IPV6_LEN);
+    } else
+        return OGS_ERROR;
 
     return OGS_OK;
 }

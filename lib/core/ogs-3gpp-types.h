@@ -31,6 +31,7 @@ extern "C" {
 #define OGS_MAX_FILEPATH_LEN            256
 
 #define OGS_MAX_NUM_OF_SESS             4   /* Num of APN(Session) per UE */
+#define OGS_MAX_NUM_OF_RULE             4   /* Num of Rule per Session */
 
 #define OGS_MAX_SDU_LEN                 8192
 #define OGS_PLMN_ID_LEN                 3
@@ -48,6 +49,7 @@ extern "C" {
 #define OGS_MAX_APN_LEN                 100
 #define OGS_MAX_PCO_LEN                 251
 #define OGS_MAX_FQDN_LEN                256
+#define OGS_MAX_IFNAME_LEN              32
 
 #define OGS_NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
@@ -114,18 +116,24 @@ ED3(uint8_t       ipv4:1;,
     uint8_t       reserved:6;)
 } ogs_ip_t;
 
+int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list);
+
 /**************************************************
  * 8.14 PDN Address Allocation (PAA) */
-#define OGS_PAA_IPV4_LEN                                    5
-#define OGS_PAA_IPV6_LEN                                    18
-#define OGS_PAA_IPV4V6_LEN                                  22
+#define OGS_PAA_IPV4_LEN                                5
+#define OGS_PAA_IPV6_LEN                                18
+#define OGS_PAA_IPV4V6_LEN                              22
 typedef struct ogs_paa_s {
-/* 8.34 PDN Type  */
-#define OGS_GTP_PDN_TYPE_IPV4                               1
-#define OGS_GTP_PDN_TYPE_IPV6                               2
-#define OGS_GTP_PDN_TYPE_IPV4V6                             3
-#define OGS_GTP_PDN_TYPE_NON_IP                             4
 ED2(uint8_t spare:5;,
+/* 8.34 PDN Type  */
+#define OGS_GTP_PDN_TYPE_IPV4                           1
+#define OGS_GTP_PDN_TYPE_IPV6                           2
+#define OGS_GTP_PDN_TYPE_IPV4V6                         3
+#define OGS_GTP_PDN_TYPE_NON_IP                         4
+#define OGS_PFCP_PDN_TYPE_IPV4                          OGS_GTP_PDN_TYPE_IPV4
+#define OGS_PFCP_PDN_TYPE_IPV6                          OGS_GTP_PDN_TYPE_IPV6
+#define OGS_PFCP_PDN_TYPE_IPV4V6                        OGS_GTP_PDN_TYPE_IPV4V6
+#define OGS_PFCP_PDN_TYPE_NONIP                         OGS_GTP_PDN_TYPE_NONIP
     uint8_t pdn_type:3;)
     union {
         /* GTP_PDN_TYPE_IPV4 */
@@ -241,14 +249,36 @@ typedef struct ogs_pcc_rule_s {
     ogs_qos_t  qos;
 } ogs_pcc_rule_t;
 
+#define OGS_STORE_PCC_RULE(__dST, __sRC) \
+    do { \
+        int __iNDEX; \
+        ogs_assert((__sRC)); \
+        ogs_assert((__dST)); \
+        OGS_PCC_RULE_FREE(__dST); \
+        (__dST)->type = (__sRC)->type; \
+        if ((__sRC)->name) { \
+            (__dST)->name = ogs_strdup((__sRC)->name); \
+            ogs_assert((__dST)->name); \
+        } else \
+            ogs_assert_if_reached(); \
+        for (__iNDEX = 0; __iNDEX < (__sRC)->num_of_flow; __iNDEX++) { \
+            (__dST)->flow[__iNDEX].direction = (__sRC)->flow[__iNDEX].direction; \
+            (__dST)->flow[__iNDEX].description = \
+                ogs_strdup((__sRC)->flow[__iNDEX].description);  \
+            ogs_assert((__dST)->flow[__iNDEX].description); \
+        } \
+        (__dST)->num_of_flow = (__sRC)->num_of_flow; \
+        (__dST)->flow_status = (__sRC)->flow_status; \
+        (__dST)->precedence = (__sRC)->precedence; \
+        memcpy(&(__dST)->qos, &(__sRC)->qos, sizeof(ogs_qos_t)); \
+    } while(0)
+
 #define OGS_PCC_RULE_FREE(__pCCrULE) \
     do { \
         int __pCCrULE_iNDEX; \
         ogs_assert((__pCCrULE)); \
-        if ((__pCCrULE)->name) { \
+        if ((__pCCrULE)->name) \
             ogs_free((__pCCrULE)->name); \
-        } else \
-            ogs_assert_if_reached(); \
         for (__pCCrULE_iNDEX = 0; \
             __pCCrULE_iNDEX < (__pCCrULE)->num_of_flow; __pCCrULE_iNDEX++) { \
             OGS_FLOW_FREE(&((__pCCrULE)->flow[__pCCrULE_iNDEX])); \
@@ -265,7 +295,7 @@ typedef struct ogs_pdn_s {
 #define OGS_DIAM_PDN_TYPE_IPV6                      1
 #define OGS_DIAM_PDN_TYPE_IPV4V6                    2
 #define OGS_DIAM_PDN_TYPE_IPV4_OR_IPV6              3
-    int             pdn_type;
+    uint8_t         pdn_type;
 
     ogs_qos_t       qos;
     ogs_bitrate_t   ambr; /* APN-AMBR */

@@ -1,9 +1,94 @@
 db_uri: mongodb://localhost/open5gs
 
+#
+# logger:
+#
+#  o Set OGS_LOG_INFO to all domain level
+#   - If `level` is omitted, the default level is OGS_LOG_INFO)
+#   - If `domain` is omitted, the all domain level is set from 'level'
+#    (Nothing is needed)
+#
+#  o Set OGS_LOG_ERROR to all domain level
+#   - `level` can be set with none, fatal, error, warn, info, debug, trace
+#    level: error
+#
+#  o Set OGS_LOG_DEBUG to mme/emm domain level
+#    level: debug
+#    domain: mme,emm
+#
+#  o Set OGS_LOG_TRACE to all domain level
+#    level: trace
+#    domain: core,fd,pcrf,event,mem,sock
 logger:
     file: @localstatedir@/log/open5gs/pcrf.log
 
-parameter:
-
 pcrf:
     freeDiameter: @sysconfdir@/freeDiameter/pcrf.conf
+
+#
+# parameter:
+#
+#  o Number of output streams per SCTP associations.
+#      sctp_streams: 30
+#
+#  o Disable use of IPv4 addresses (only IPv6)
+#      no_ipv4: true
+#
+#  o Disable use of IPv6 addresses (only IPv4)
+#      no_ipv6: true
+#
+#  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
+#      prefer_ipv4: true
+#
+#  o Enable Multicast traffic to the UE
+#      multicast: true
+#
+#  o Disable Stateless Address Autoconfiguration for IPv6
+#      no_slaac: true
+#
+#
+parameter:
+
+#
+# max:
+#
+# o Maximum Number of SGW per MME
+#    sgw: 32
+# o Maximum Number of PGW per MME
+#    pgw: 32
+# o Maximum Number of VLR per MME
+#    vlr: 32
+# o Maximum Number of eNodeB per MME
+#    enb: 32
+# o Maximum Number of UE per eNodeB
+#    ue: 128
+#
+max:
+
+#
+# pool:
+#
+# o The Number of Default Memory Pool Size
+#
+#   - Pool-size 128         => 8192 Number
+#   - Pool-size 256         => 4096 Number
+#   - Pool-size 512         => 2048 Number
+#   - Pool-size 1024        => 1024 Number
+#   - Pool-size 2048        => 512 Number
+#   - Pool-size 8192        => 128 Number
+#   - Pool-size 1024*1024   => 8 Number
+#
+#    128:  8192
+#    256:  4096
+#    512:  2048
+#    1024: 1024
+#    2048: 512
+#    8192: 128
+#    big:  8
+#
+# o Memory of Packet Buffering in SGW
+#   - Maximum Number of packet(SDU size = 8Kbytes) pool in SGW
+#   - SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
+#
+#   packet: 65536
+pool:

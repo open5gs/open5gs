@@ -122,12 +122,17 @@ Password : 1423
 
 Follow the instructions in [VoLTE Setup](https://open5gs.org/open5gs/docs/tutorial/02-VoLTE-setup/):
 - Step 18, set IMSI, Ki, OP, SQN and APN of your SIM cards.
+<<<<<<< HEAD
+- Step 20, add IMS subscriptions to FHoSS.
+
+=======
   **Important!** Set the type of both APN to IPv4.  Kamailio does not support VoLTE over
   IPv6 at the moment. (See the screenshot below.)
 - Step 20, add IMS subscriptions to FHoSS.
 
 ![Set both type to IPv4 only](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/subscriber-type-ipv4.png)
 
+>>>>>>> master
 For already running systems, copy SQN from Open5GS and type it in FHoSS.  You
 can type SQN in decimal.  FHoSS will automagically convert it to hex.
 
@@ -135,7 +140,10 @@ Pay special attention to copy/paste.  You might have leading or trailing spaces
 in FHoSS, resulting in failed connections!
 
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 #### 5. Debugging with Wireshark
 
 Thanks to Open5GS, the topology is super similar to [SAE on Wikipedia](https://en.wikipedia.org/wiki/System_Architecture_Evolution#/media/File:Evolved_Packet_Core.svg).
@@ -145,6 +153,13 @@ Thanks to Open5GS, the topology is super similar to [SAE on Wikipedia](https://e
 
 **APN**
 
+<<<<<<< HEAD
+APN Configurations in Open5GS should look like this one.
+
+![APN Configurations](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/open5gs-subscriber.png)
+
+=======
+>>>>>>> master
 On your cellphone, there should be *internet* and *ims*.
 
 <img src="https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/apn-on-cellphone.jpg" width="320" />

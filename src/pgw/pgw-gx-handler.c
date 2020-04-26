@@ -62,7 +62,7 @@ static uint8_t gtp_cause_from_diameter(
 
 void pgw_gx_handle_cca_initial_request(
         pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message,
-        ogs_gtp_xact_t *xact, ogs_gtp_create_session_request_t *req)
+        ogs_gtp_xact_t *xact)
 {
     int rv;
     ogs_gtp_header_t h;
@@ -71,7 +71,6 @@ void pgw_gx_handle_cca_initial_request(
     ogs_assert(sess);
     ogs_assert(gx_message);
     ogs_assert(xact);
-    ogs_assert(req);
 
     ogs_debug("[PGW] Create Session Response");
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
@@ -86,13 +85,12 @@ void pgw_gx_handle_cca_initial_request(
         return;
     }
 
-    /* Send Create Session Request with Creating Default Bearer */
     memset(&h, 0, sizeof(ogs_gtp_header_t));
     h.type = OGS_GTP_CREATE_SESSION_RESPONSE_TYPE;
     h.teid = sess->sgw_s5c_teid;
 
     pkbuf = pgw_s5c_build_create_session_response(
-            h.type, sess, gx_message, req);
+            h.type, sess, gx_message);
     ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
@@ -106,7 +104,7 @@ void pgw_gx_handle_cca_initial_request(
 
 void pgw_gx_handle_cca_termination_request(
         pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message,
-        ogs_gtp_xact_t *xact, ogs_gtp_delete_session_request_t *req)
+        ogs_gtp_xact_t *xact)
 {
     int rv;
     ogs_gtp_header_t h;
@@ -116,7 +114,6 @@ void pgw_gx_handle_cca_termination_request(
     ogs_assert(xact);
     ogs_assert(sess);
     ogs_assert(gx_message);
-    ogs_assert(req);
 
     /* backup sgw_s5c_teid in session context */
     sgw_s5c_teid = sess->sgw_s5c_teid;
@@ -142,7 +139,7 @@ void pgw_gx_handle_cca_termination_request(
     h.teid = sgw_s5c_teid;
 
     pkbuf = pgw_s5c_build_delete_session_response(
-            h.type, gx_message, req);
+            h.type, sess, gx_message);
     ogs_expect_or_return(pkbuf);
 
     rv = ogs_gtp_xact_update_tx(xact, &h, pkbuf);
@@ -330,7 +327,7 @@ static void bearer_binding(pgw_sess_t *sess, ogs_diam_gx_message_t *gx_message)
                     /* Update QoS parameter */
                     memcpy(&bearer->qos, &pcc_rule->qos, sizeof(ogs_qos_t));
 
-                    /* Update Bearer Request will encode updated QoS parameter */
+                    /* Update Bearer Request encodes updated QoS parameter */
                     qos_presence = 1;
                 }
 

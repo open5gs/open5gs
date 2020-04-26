@@ -17,6 +17,7 @@
 
 libinc = include_directories('.')
 
+subdir('ipfw')
 subdir('core')
 subdir('crypt')
 subdir('sctp')

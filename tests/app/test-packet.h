@@ -28,6 +28,8 @@
 extern "C" {
 #endif
 
+extern bool test_no_mme_self;
+
 ogs_socknode_t *testsctp_server(const char *ipstr);
 ogs_socknode_t *testsctp_client(const char *ipstr);
 ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type);
@@ -144,7 +146,7 @@ int tests1ap_build_s1_reset(ogs_pkbuf_t **pkbuf, int i);
 int tests1ap_build_uplink_nas_transport(ogs_pkbuf_t **pkbuf, int i);
 
 int testgtpu_build_ping(ogs_pkbuf_t **sendbuf,
-        const char *src_ip, const char *dst_ip);
+        const uint32_t teid, const char *src_ip, const char *dst_ip);
 int testgtpu_build_slacc_rs(ogs_pkbuf_t **sendbuf, int i);
 
 int testsgsap_location_update_accept(ogs_pkbuf_t **pkbuf, int i);

@@ -117,12 +117,12 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
     }
     ogs_assert(e);
     e->gnode = gnode;
-    e->gtpbuf = pkbuf;
+    e->pkbuf = pkbuf;
 
     rv = ogs_queue_push(pgw_self()->queue, e);
     if (rv != OGS_OK) {
         ogs_error("ogs_queue_push() failed:%d", (int)rv);
-        ogs_pkbuf_free(e->gtpbuf);
+        ogs_pkbuf_free(e->pkbuf);
         pgw_event_free(e);
     }
 }
@@ -161,7 +161,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 
     gtp_h = (ogs_gtp_header_t *)pkbuf->data;
     if (gtp_h->flags & OGS_GTPU_FLAGS_S) len += 4;
-    teid = ntohl(gtp_h->teid);
+    teid = be32toh(gtp_h->teid);
 
     ogs_debug("[PGW] RECV GPU-U from SGW : TEID[0x%x]", teid);
 
@@ -423,12 +423,12 @@ static int pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, ogs_pkbuf_t *sendbuf)
      */
     gtp_h->flags = 0x30;
     gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
-    gtp_h->length = htons(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
-    gtp_h->teid = htonl(bearer->sgw_s5u_teid);
+    gtp_h->length = htobe16(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
+    gtp_h->teid = htobe32(bearer->sgw_s5u_teid);
 
     /* Send to SGW */
     ogs_debug("[PGW] SEND GPU-U to SGW[%s] : TEID[0x%x]",
-        OGS_ADDR(&bearer->gnode->remote_addr, buf),
+        OGS_ADDR(&bearer->gnode->addr, buf),
         bearer->sgw_s5u_teid);
     rv =  ogs_gtp_sendto(bearer->gnode, sendbuf);
 
@@ -486,7 +486,7 @@ static int pgw_gtp_send_router_advertisement(
     advert_h->nd_ra_code = 0;
     advert_h->nd_ra_curhoplimit = 64;
     advert_h->nd_ra_flags_reserved = 0;
-    advert_h->nd_ra_router_lifetime = htons(64800);  /* 64800s */
+    advert_h->nd_ra_router_lifetime = htobe16(64800);  /* 64800s */
     advert_h->nd_ra_reachable = 0;
     advert_h->nd_ra_retransmit = 0;
 
@@ -495,13 +495,13 @@ static int pgw_gtp_send_router_advertisement(
     prefix->nd_opt_pi_prefix_len = subnet->prefixlen;
     prefix->nd_opt_pi_flags_reserved =
         ND_OPT_PI_FLAG_ONLINK|ND_OPT_PI_FLAG_AUTO;
-    prefix->nd_opt_pi_valid_time = htonl(0xffffffff); /* Infinite */
-    prefix->nd_opt_pi_preferred_time = htonl(0xffffffff); /* Infinite */
+    prefix->nd_opt_pi_valid_time = htobe32(0xffffffff); /* Infinite */
+    prefix->nd_opt_pi_preferred_time = htobe32(0xffffffff); /* Infinite */
     memcpy(prefix->nd_opt_pi_prefix.s6_addr,
             subnet->sub.sub, sizeof prefix->nd_opt_pi_prefix.s6_addr);
 
     /* For IPv6 Pseudo-Header */
-    plen = htons(sizeof *advert_h + sizeof *prefix);
+    plen = htobe16(sizeof *advert_h + sizeof *prefix);
     nxt = IPPROTO_ICMPV6;
 
     memcpy(p, src_ipsub.sub, sizeof src_ipsub.sub);
@@ -512,7 +512,7 @@ static int pgw_gtp_send_router_advertisement(
     p += 3; *p = nxt; p += 1;
     advert_h->nd_ra_cksum = in_cksum((uint16_t *)pkbuf->data, pkbuf->len);
 
-    ip6_h->ip6_flow = htonl(0x60000001);
+    ip6_h->ip6_flow = htobe32(0x60000001);
     ip6_h->ip6_plen = plen;
     ip6_h->ip6_nxt = nxt;  /* ICMPv6 */
     ip6_h->ip6_hlim = 0xff;

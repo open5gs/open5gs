@@ -65,12 +65,12 @@ int ogs_gtp_f_teid_to_sockaddr(
     addr = ogs_calloc(1, sizeof(ogs_sockaddr_t));
     ogs_assert(addr);
     addr->ogs_sa_family = AF_INET;
-    addr->ogs_sin_port = htons(port);
+    addr->ogs_sin_port = htobe16(port);
 
     addr6 = ogs_calloc(1, sizeof(ogs_sockaddr_t));
     ogs_assert(addr6);
     addr6->ogs_sa_family = AF_INET6;
-    addr6->ogs_sin_port = htons(port);
+    addr6->ogs_sin_port = htobe16(port);
 
     if (f_teid->ipv4 && f_teid->ipv6) {
         addr->next = addr6;
@@ -146,7 +146,7 @@ int ogs_gtp_f_teid_to_ip(ogs_gtp_f_teid_t *f_teid, ogs_ip_t *ip)
         memcpy(ip->addr6, f_teid->addr6, OGS_IPV6_LEN);
         ip->len = OGS_IPV6_LEN;
     } else
-        ogs_assert_if_reached();
+        return OGS_ERROR;
 
     return OGS_OK;
 }

@@ -56,7 +56,7 @@ static ogs_tlv_t *tlv_add_leaf(
     {
         ogs_tlv_uint16_t *v = (ogs_tlv_uint16_t *)msg;
 
-        v->u16 = htons(v->u16);
+        v->u16 = htobe16(v->u16);
 
         if (parent_tlv)
             tlv = ogs_tlv_embed(parent_tlv, 
@@ -72,7 +72,7 @@ static ogs_tlv_t *tlv_add_leaf(
         ogs_tlv_uint24_t *v = (ogs_tlv_uint24_t *)msg;
 
         v->u24 = v->u24 << 8;
-        v->u24 = htonl(v->u24);
+        v->u24 = htobe32(v->u24);
 
         if (parent_tlv)
             tlv = ogs_tlv_embed(parent_tlv, 
@@ -87,7 +87,7 @@ static ogs_tlv_t *tlv_add_leaf(
     {
         ogs_tlv_uint32_t *v = (ogs_tlv_uint32_t *)msg;
 
-        v->u32 = htonl(v->u32);
+        v->u32 = htobe32(v->u32);
 
         if (parent_tlv)
             tlv = ogs_tlv_embed(parent_tlv,
@@ -263,21 +263,26 @@ ogs_pkbuf_t *ogs_tlv_build_msg(ogs_tlv_desc_t *desc, void *msg, int mode)
     ogs_assert(msg);
 
     ogs_assert(desc->ctype == OGS_TLV_MESSAGE);
-    ogs_assert(desc->child_descs[0]);
     
-    r = tlv_add_compound(&root, NULL, desc, msg, 0);
-    ogs_assert(r > 0 && root);
+    if (desc->child_descs[0]) {
+        r = tlv_add_compound(&root, NULL, desc, msg, 0);
+        ogs_assert(r > 0 && root);
 
-    length = ogs_tlv_calc_length(root, mode);
+        length = ogs_tlv_calc_length(root, mode);
+    } else {
+        length = 0;
+    }
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_TLV_MAX_HEADROOM+length);
     ogs_assert(pkbuf);
     ogs_pkbuf_reserve(pkbuf, OGS_TLV_MAX_HEADROOM);
     ogs_pkbuf_put(pkbuf, length);
 
-    rendlen = ogs_tlv_render(root, pkbuf->data, length, mode);
-    ogs_assert(rendlen == length);
+    if (desc->child_descs[0]) {
+        rendlen = ogs_tlv_render(root, pkbuf->data, length, mode);
+        ogs_assert(rendlen == length);
 
-    ogs_tlv_free_all(root);
+        ogs_tlv_free_all(root);
+    }
 
     return pkbuf;
 }

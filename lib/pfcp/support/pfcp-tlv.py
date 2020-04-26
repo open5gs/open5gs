@@ -96,10 +96,6 @@ def v_lower(v):
     return re.sub('3gpp', '', re.sub('\'', '_', re.sub('/', '_', re.sub('-', '_', re.sub(' ', '_', v)))).lower())
 
 def get_cells(cells):
-    #instance = cells[4].text.encode('ascii', 'ignore')
-    #if instance.isdigit() is not True:
-    #    return None
-    instance = "0"  # PFCP has no instance
     note = cells[0].text.encode('ascii', 'ignore')
     if note.find('NOTE') != -1:
         return None
@@ -147,20 +143,31 @@ def get_cells(cells):
     if ie_value[len(ie_value)-1] == ' ':
         ie_value = ie_value[:len(ie_value)-1]
 
-    if ie_type == 'Create PDR' or ie_type == 'Create FAR' or ie_type == 'Update PDR':
-        instance = "1"
+    tlv_more = "0"  # PFCP has no tlv_more
+    if ie_type == 'Create PDR' or ie_type == 'Created PDR' or ie_type == 'Update PDR' or ie_type == "Remove PDR":
+        tlv_more = "3"
+    if ie_type == 'Create FAR' or ie_type == 'Update FAR' or ie_type == "Remove FAR":
+        tlv_more = "3"
+    if ie_type == 'Create URR' or ie_type == 'Update URR' or ie_type == "Remove URR":
+        tlv_more = "1"
+    if ie_type == 'Create QER' or ie_type == 'Update QER' or ie_type == "Remove QER":
+        tlv_more = "1"
+    if ie_type == 'User Plane IP Resource Information':
+        tlv_more = "3"
+    if ie_type == 'SDF Filter':
+        tlv_more = "3"
 
-    if int(instance) > int(type_list[ie_type]["max_instance"]):
-        type_list[ie_type]["max_instance"] = instance
-        write_file(f, "type_list[\"" + ie_type + "\"][\"max_instance\"] = \"" + instance + "\"\n")
+    if int(tlv_more) > int(type_list[ie_type]["max_tlv_more"]):
+        type_list[ie_type]["max_tlv_more"] = tlv_more
+        write_file(f, "type_list[\"" + ie_type + "\"][\"max_tlv_more\"] = \"" + tlv_more + "\"\n")
 
-    return { "ie_type" : ie_type, "ie_value" : ie_value, "presence" : presence, "instance" : instance, "comment" : comment }
+    return { "ie_type" : ie_type, "ie_value" : ie_value, "presence" : presence, "tlv_more" : tlv_more, "comment" : comment }
 
 def write_cells_to_file(name, cells):
     write_file(f, name + ".append({ \"ie_type\" : \"" + cells["ie_type"] + \
         "\", \"ie_value\" : \"" + cells["ie_value"] + \
         "\", \"presence\" : \"" + cells["presence"] + \
-        "\", \"instance\" : \"" + cells["instance"] + \
+        "\", \"tlv_more\" : \"" + cells["tlv_more"] + \
         "\", \"comment\" : \"" + cells["comment"] + "\"})\n")
 
 try:
@@ -253,9 +260,9 @@ else:
         key = re.sub('\s*$', '', key)
 
         type = row.cells[0].text.encode('ascii', 'ignore')
-        type_list[key] = { "type": type , "max_instance" : "0" }
+        type_list[key] = { "type": type , "max_tlv_more" : "0" }
         write_file(f, "type_list[\"" + key + "\"] = { \"type\" : \"" + type)
-        write_file(f, "\", \"max_instance\" : \"0\" }\n")
+        write_file(f, "\", \"max_tlv_more\" : \"0\" }\n")
     f.close()
 
 d_info("[Group IE List]")
@@ -312,7 +319,7 @@ else:
 
                 if ie_name.find('Access Forwarding Action Information 2') != -1:
                     ie_idx = str(int(ie_type)+100)
-                    write_file(f, "ies = []\n")
+                    group_list[ie_name] = { "index" : ie_idx, "type" : ie_type, "ies" : ies }
                     write_file(f, "group_list[\"" + ie_name + "\"] = { \"index\" : \"" + ie_idx + "\", \"type\" : \"" + ie_type + "\", \"ies\" : ies }\n")
                     continue
                 
@@ -324,13 +331,8 @@ else:
                         if cells is None:
                             continue
 
-                        ies_is_added = True
-                        for ie in ies:
-                            if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
-                                ies_is_added = False
-                        if ies_is_added is True:
-                            ies.append(cells)
-                            write_cells_to_file("ies", cells)
+                        ies.append(cells)
+                        write_cells_to_file("ies", cells)
 
                     ie_idx = str(int(ie_type)+100)
                     group_list[ie_name] = { "index" : ie_idx, "type" : ie_type, "ies" : ies }
@@ -372,8 +374,6 @@ for key in msg_list.keys():
             document = Document(filename)
             f = open(cachefile, 'w') 
 
-            ies = []
-            write_file(f, "ies = []\n")
             table = document.tables[msg_list[key]["table"]]
             if key.find('Association') != -1:
                 start_i = 1
@@ -382,38 +382,47 @@ for key in msg_list.keys():
             else:
                 start_i = 2
             
+            ies = []
+            write_file(f, "ies = []\n")
             if key != "PFCP Session Deletion Request" and key != "PFCP Version Not Supported Response":
                 for row in table.rows[start_i:]:
                     cells = get_cells(row.cells)
                     if cells is None:
                         continue
-    
-                    if (cells["ie_type"] == 'Create PDR' or cells["ie_type"] == 'Create FAR' or cells["ie_type"] == 'Update PDR'):
-                        cells["instance"] = '0' 
-                        cells["presence"] = 'O'
-                        ies.append(cells)
-                        write_cells_to_file("ies", cells)
-                    cells = get_cells(row.cells)
 
-                    ies_is_added = True
-                    for ie in ies:
-                        if (cells["ie_type"], cells["instance"]) == (ie["ie_type"], ie["instance"]):
-                            ies_is_added = False
-                    if ies_is_added is True:
-                        ies.append(cells)
-                        write_cells_to_file("ies", cells)
+                    item = {
+                        "ie_type" : cells["ie_type"],
+                        "ie_value" : cells["ie_value"],
+                        "presence" : cells["presence"],
+                        "tlv_more" : cells["tlv_more"],
+                        "comment" : cells["comment"]
+                        }
+                    ies.append(item)
+                    write_cells_to_file("ies", item)
+
             msg_list[key]["ies"] = ies
             write_file(f, "msg_list[key][\"ies\"] = ies\n")
             f.close()
 
-#type_list["Recovery"]["size"] = 1                       # Type : 3
-#type_list["EBI"]["size"] = 1                            # Type : 73
-#type_list["RAT Type"]["size"] = 1                       # Type : 82
-#type_list["PDN Type"]["size"] = 1                       # Type : 99
-#type_list["Port Number"]["size"] = 2                    # Type : 126
-#type_list["APN Restriction"]["size"] = 1                # Type : 127
-#type_list["Selection Mode"]["size"] = 1                 # Type : 128
-#type_list["Node Type"]["size"] = 1                 # Type : 128
+type_list["Cause"]["size"] = 1                              # Type 19
+type_list["Source Interface"]["size"] = 1                   # Type 20
+type_list["Gate Status"]["size"] = 1                        # Type 25
+type_list["QER Correlation ID"]["size"] = 4                 # Type 28
+type_list["Precedence"]["size"] = 4                         # Type 29
+type_list["Reporting Triggers"]["size"] = 1                 # Type 37
+type_list["Offending IE"]["size"] = 2                       # Type 40
+type_list["Destination Interface"]["size"] = 1              # Type 42
+type_list["UP Function Features"]["size"] = 2               # Type 43
+type_list["Apply Action"]["size"] = 1                       # Type 44
+type_list["PDR ID"]["size"] = 2                             # Type 56
+type_list["Measurement Method"]["size"] = 1                 # Type 62
+type_list["URR ID"]["size"] = 4                             # Type 81
+type_list["BAR ID"]["size"] = 1                             # Type 88
+type_list["CP Function Features"]["size"] = 1               # Type 89
+type_list["Recovery Time Stamp"]["size"] = 4                # Type 96
+type_list["FAR ID"]["size"] = 4                             # Type 108
+type_list["QER ID"]["size"] = 4                             # Type 109
+type_list["PDN Type"]["size"] = 1                           # Type 113
 
 f = open(outdir + 'message.h', 'w')
 output_header_to_file(f)
@@ -437,7 +446,7 @@ typedef struct ogs_pfcp_header_s {
         ED4(uint8_t version:3;,
             uint8_t spare1:3;,
             uint8_t mp:1;,
-            uint8_t seid_p:1;)
+            uint8_t seid_presence:1;)
         };
         uint8_t flags;
     };
@@ -447,8 +456,8 @@ typedef struct ogs_pfcp_header_s {
         struct {
             uint64_t seid;
             /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
-#define OGS_PFCP_XID_TO_SQN(__xid) htonl(((__xid) << 8))
-#define OGS_PFCP_SQN_TO_XID(__sqn) (ntohl(__sqn) >> 8)
+#define OGS_PFCP_XID_TO_SQN(__xid) htobe32(((__xid) << 8))
+#define OGS_PFCP_SQN_TO_XID(__sqn) (be32toh(__sqn) >> 8)
             uint32_t sqn;
         };
         /* sqn : 31bit ~ 8bit, spare : 7bit ~ 0bit */
@@ -475,12 +484,7 @@ f.write("/* Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
-    for instance in range(0, int(type_list[k]["max_instance"])+1):
-        if v_lower(k)=="cause" or v_lower(k)=="sequence_number" or v_lower(k)=="f_teid":
-            f.write("extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_" + v_lower(k))
-        else:
-            f.write("extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_" + v_lower(k))
-        f.write("_" + str(instance) + ";\n")
+    f.write("extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_" + v_lower(k) + ";\n")
 f.write("\n")
 
 for k, v in group_list.items():
@@ -522,14 +526,12 @@ sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]), reverse=False)
 
 f.write("/* Group Infomration Element TLV Descriptor */\n")
 for (k, v) in sorted_group_list:
-    for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_" + v_lower(k))
-        f.write("_" + str(instance) + ";\n")
+    f.write("extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_" + v_lower(k) + ";\n")
 f.write("\n")
 
 f.write("/* Message Descriptor */\n")
 for (k, v) in sorted_msg_list:
-    f.write("extern ogs_tlv_desc_t ogs_pfcp_tlv_desc_" + v_lower(k) + ";\n")
+    f.write("extern ogs_tlv_desc_t ogs_pfcp_msg_desc_" + v_lower(k) + ";\n")
 f.write("\n")
 
 f.write("/* Structure for Infomration Element */\n")
@@ -557,18 +559,11 @@ for (k, v) in sorted_group_list:
     f.write("typedef struct ogs_pfcp_tlv_" + v_lower(k) + "_s {\n")
     f.write("    ogs_tlv_presence_t presence;\n")
     for ies in group_list[k]["ies"]:
-        f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
-                v_lower(ies["ie_value"]))
-        if ies["ie_type"] == "F-TEID":
-            if ies["ie_value"] == "S2b-U ePDG F-TEID":
-                f.write("_" + ies["instance"] + ";")
-            elif ies["ie_value"] == "S2a-U TWAN F-TEID":
-                f.write("_" + ies["instance"] + ";")
-            else:
-                f.write(";")
-            f.write(" /* Instance : " + ies["instance"] + " */\n")
+        if type_list[ies["ie_type"]]["max_tlv_more"] != "0":
+            f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + v_lower(ies["ie_value"]) + "[" + str(int(ies["tlv_more"])+1) + "];\n")
         else:
-            f.write(";\n")
+            f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
+                    v_lower(ies["ie_value"]) + ";\n")
     f.write("} ogs_pfcp_tlv_" + v_lower(k) + "_t;\n")
     f.write("\n")
 
@@ -577,13 +572,11 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("typedef struct ogs_" + v_lower(k) + "_s {\n")
         for ies in msg_list[k]["ies"]:
-            # 0403 modify
-            if ies["instance"] != "0":
-                f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
-                    v_lower(ies["ie_value"]) + ies["instance"] + ";\n")
+            if type_list[ies["ie_type"]]["max_tlv_more"] != "0":
+                f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + v_lower(ies["ie_value"]) + "[" + str(int(ies["tlv_more"])+1) + "];\n")
             else:
-                f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + \
-                    v_lower(ies["ie_value"]) + ";\n")
+                f.write("    ogs_pfcp_tlv_" + v_lower(ies["ie_type"]) + "_t " + v_lower(ies["ie_value"]) + ";\n")
+
         f.write("} ogs_" + v_lower(k) + "_t;\n")
         f.write("\n")
 
@@ -616,68 +609,61 @@ f.write("""#include "ogs-pfcp.h"
 for (k, v) in sorted_type_list:
     if k in group_list.keys():
         continue
-    for instance in range(0, int(type_list[k]["max_instance"])+1):
-        if v_lower(k)=="cause" or v_lower(k)=="sequence_number" or v_lower(k)=="f_teid":
-            f.write("ogs_tlv_desc_t ogs_pfcp_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
+    f.write("ogs_tlv_desc_t ogs_pfcp_tlv_desc_%s =\n" % v_lower(k))
+    f.write("{\n")
+    if "size" in type_list[k]:
+        if type_list[k]["size"] == 1:
+            f.write("    OGS_TLV_UINT8,\n")
+        elif type_list[k]["size"] == 2:
+            f.write("    OGS_TLV_UINT16,\n")
+        elif type_list[k]["size"] == 3:
+            f.write("    OGS_TLV_UINT24,\n")
+        elif type_list[k]["size"] == 4:
+            f.write("    OGS_TLV_UINT32,\n")
         else:
-            f.write("ogs_tlv_desc_t ogs_pfcp_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
-        f.write("{\n")
-        if "size" in type_list[k]:
-            if type_list[k]["size"] == 1:
-                f.write("    OGS_TLV_UINT8,\n")
-            elif type_list[k]["size"] == 2:
-                f.write("    OGS_TLV_UINT16,\n")
-            elif type_list[k]["size"] == 3:
-                f.write("    OGS_TLV_UINT24,\n")
-            elif type_list[k]["size"] == 4:
-                f.write("    OGS_TLV_UINT32,\n")
-            else:
-                assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
-        else:
-            f.write("    OGS_TLV_VAR_STR,\n")
-        f.write("    \"%s\",\n" % k)
-        f.write("    OGS_PFCP_%s_TYPE,\n" % v_upper(k))
-        if "size" in type_list[k]:
-            f.write("    %d,\n" % type_list[k]["size"])
-        else:
-            f.write("    0,\n")
-        f.write("    %d,\n" % instance)
-        f.write("    sizeof(ogs_pfcp_tlv_%s_t),\n" % v_lower(k))
-        f.write("    { NULL }\n")
-        f.write("};\n\n")
+            assert False, "Unknown size = %d for key = %s" % (type_list[k]["size"], k)
+    else:
+        f.write("    OGS_TLV_VAR_STR,\n")
+    f.write("    \"%s\",\n" % k)
+    f.write("    OGS_PFCP_%s_TYPE,\n" % v_upper(k))
+    if "size" in type_list[k]:
+        f.write("    %d,\n" % type_list[k]["size"])
+    else:
+        f.write("    0,\n")
+    f.write("    0,\n")
+    f.write("    sizeof(ogs_pfcp_tlv_%s_t),\n" % v_lower(k))
+    f.write("    { NULL }\n")
+    f.write("};\n\n")
 
 for (k, v) in sorted_group_list:
-    for instance in range(0, int(type_list[k]["max_instance"])+1):
-        f.write("ogs_tlv_desc_t ogs_pfcp_tlv_desc_%s_%d =\n" % (v_lower(k), instance))
-        f.write("{\n")
-        f.write("    OGS_TLV_COMPOUND,\n")
-        f.write("    \"%s\",\n" % k)
-        f.write("    OGS_PFCP_%s_TYPE,\n" % v_upper(k))
-        f.write("    0,\n")
-        f.write("    %d,\n" % instance)
-        f.write("    sizeof(ogs_pfcp_tlv_%s_t),\n" % v_lower(k))
-        f.write("    {\n")
-        for ies in group_list[k]["ies"]:
-                if v_lower(ies["ie_type"])=="cause" or v_lower(ies["ie_type"])=="sequence_number" or v_lower(ies["ie_type"])=="f_teid":
-                    f.write("        &ogs_pfcp_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
-                else:
-                    f.write("        &ogs_pfcp_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
-        f.write("        NULL,\n")
-        f.write("    }\n")
-        f.write("};\n\n")
+    f.write("ogs_tlv_desc_t ogs_pfcp_tlv_desc_%s =\n" % v_lower(k))
+    f.write("{\n")
+    f.write("    OGS_TLV_COMPOUND,\n")
+    f.write("    \"%s\",\n" % k)
+    f.write("    OGS_PFCP_%s_TYPE,\n" % v_upper(k))
+    f.write("    0,\n")
+    f.write("    0,\n")
+    f.write("    sizeof(ogs_pfcp_tlv_%s_t),\n" % v_lower(k))
+    f.write("    {\n")
+    for ies in group_list[k]["ies"]:
+        f.write("        &ogs_pfcp_tlv_desc_%s,\n" % v_lower(ies["ie_type"]))
+        if type_list[ies["ie_type"]]["max_tlv_more"] != "0":
+            f.write("        &ogs_tlv_desc_more" + str(int(ies["tlv_more"])+1) + ",\n")
+    f.write("        NULL,\n")
+    f.write("    }\n")
+    f.write("};\n\n")
 
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
-        f.write("ogs_tlv_desc_t ogs_pfcp_tlv_desc_%s =\n" % v_lower(k))
+        f.write("ogs_tlv_desc_t ogs_pfcp_msg_desc_%s =\n" % v_lower(k))
         f.write("{\n")
         f.write("    OGS_TLV_MESSAGE,\n")
         f.write("    \"%s\",\n" % k)
         f.write("    0, 0, 0, 0, {\n")
         for ies in msg_list[k]["ies"]:
-                if v_lower(ies["ie_type"])=="cause" or v_lower(ies["ie_type"])=="sequence_number" or v_lower(ies["ie_type"])=="f_teid":
-                    f.write("        &ogs_pfcp_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
-                else:
-                    f.write("        &ogs_pfcp_tlv_desc_%s_%s,\n" % (v_lower(ies["ie_type"]), v_lower(ies["instance"])))
+            f.write("        &ogs_pfcp_tlv_desc_%s,\n" % v_lower(ies["ie_type"]))
+            if type_list[ies["ie_type"]]["max_tlv_more"] != "0":
+                f.write("        &ogs_tlv_desc_more" + str(int(ies["tlv_more"])+1) + ",\n")
         f.write("    NULL,\n")
         f.write("}};\n\n")
 f.write("\n")
@@ -697,7 +683,7 @@ f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t 
     
     memset(pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
-    if (h->seid_p)
+    if (h->seid_presence)
         size = OGS_PFCP_HEADER_LEN;
     else
         size = OGS_PFCP_HEADER_LEN-OGS_PFCP_SEID_LEN;
@@ -705,7 +691,7 @@ f.write("""int ogs_pfcp_parse_msg(ogs_pfcp_message_t *pfcp_message, ogs_pkbuf_t 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(&pfcp_message->h, pkbuf->data - size, size);
 
-    if (h->seid_p) {
+    if (h->seid_presence) {
         pfcp_message->h.seid = be64toh(pfcp_message->h.seid);
     } else {
         pfcp_message->h.sqn = pfcp_message->h.sqn_only;
@@ -722,7 +708,7 @@ for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("        case OGS_%s_TYPE:\n" % v_upper(k))
         f.write("            rv = ogs_tlv_parse_msg(&pfcp_message->%s,\n" % v_lower(k))
-        f.write("                    &ogs_pfcp_tlv_desc_%s, pkbuf, OGS_TLV_MODE_T2_L2);\n" % v_lower(k))
+        f.write("                    &ogs_pfcp_msg_desc_%s, pkbuf, OGS_TLV_MODE_T2_L2);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:
             ogs_warn("Not implmeneted(type:%d)", pfcp_message->h.type);
@@ -745,7 +731,7 @@ f.write("""ogs_pkbuf_t *ogs_pfcp_build_msg(ogs_pfcp_message_t *pfcp_message)
 for (k, v) in sorted_msg_list:
     if "ies" in msg_list[k]:
         f.write("        case OGS_%s_TYPE:\n" % v_upper(k))
-        f.write("            pkbuf = ogs_tlv_build_msg(&ogs_pfcp_tlv_desc_%s,\n" % v_lower(k))
+        f.write("            pkbuf = ogs_tlv_build_msg(&ogs_pfcp_msg_desc_%s,\n" % v_lower(k))
         f.write("                    &pfcp_message->%s, OGS_TLV_MODE_T2_L2);\n" % v_lower(k))
         f.write("            break;\n")
 f.write("""        default:

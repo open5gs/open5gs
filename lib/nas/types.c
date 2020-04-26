@@ -24,8 +24,7 @@ int __ogs_nas_domain;
 void *ogs_nas_from_plmn_id(ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *plmn_id)
 {
     memcpy(ogs_nas_plmn_id, plmn_id, OGS_PLMN_ID_LEN);
-    if (plmn_id->mnc1 != 0xf)
-    {
+    if (plmn_id->mnc1 != 0xf) {
         ogs_nas_plmn_id->mnc1 = plmn_id->mnc1;
         ogs_nas_plmn_id->mnc2 = plmn_id->mnc2;
         ogs_nas_plmn_id->mnc3 = plmn_id->mnc3;
@@ -35,8 +34,7 @@ void *ogs_nas_from_plmn_id(ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *pl
 void *ogs_nas_to_plmn_id(ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id)
 {
     memcpy(plmn_id, ogs_nas_plmn_id, OGS_PLMN_ID_LEN);
-    if (plmn_id->mnc1 != 0xf)
-    {
+    if (plmn_id->mnc1 != 0xf) {
         plmn_id->mnc1 = ogs_nas_plmn_id->mnc1;
         plmn_id->mnc2 = ogs_nas_plmn_id->mnc2;
         plmn_id->mnc3 = ogs_nas_plmn_id->mnc3;
@@ -448,8 +446,7 @@ void ogs_nas_tai_list_build(
     memset(&target0, 0, sizeof(tai0_list_t));
     memset(&target2, 0, sizeof(tai2_list_t));
 
-    for (i = 0; source0->tai[i].num; i++)
-    {
+    for (i = 0; source0->tai[i].num; i++) {
         ogs_assert(source0->tai[i].type == TAI0_TYPE);
         target0.tai[i].type = source0->tai[i].type;
 
@@ -460,14 +457,12 @@ void ogs_nas_tai_list_build(
                 ogs_nas_from_plmn_id(&ogs_nas_plmn_id, &source0->tai[i].plmn_id),
                 OGS_PLMN_ID_LEN);
 
-        for (j = 0; j < source0->tai[i].num; j++) 
-        {
-            target0.tai[i].tac[j] = htons(source0->tai[i].tac[j]);
+        for (j = 0; j < source0->tai[i].num; j++) {
+            target0.tai[i].tac[j] = htobe16(source0->tai[i].tac[j]);
         }
 
         size = (1 + 3 + 2 * source0->tai[i].num);
-        if ((target->length + size) > OGS_NAS_MAX_TAI_LIST_LEN)
-        {
+        if ((target->length + size) > OGS_NAS_MAX_TAI_LIST_LEN) {
             ogs_warn("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
                     target->length, size);
             return;
@@ -476,8 +471,7 @@ void ogs_nas_tai_list_build(
         target->length += size;
     }
 
-    if (source2->num)
-    {
+    if (source2->num) {
         memset(&target2, 0, sizeof(target2));
 
         ogs_assert(source2->type == TAI1_TYPE || source2->type == TAI2_TYPE);
@@ -488,18 +482,16 @@ void ogs_nas_tai_list_build(
         target2.num = source2->num - 1;
 
         size = (1 + (3 + 2) * source2->num);
-        if ((target->length + size) > OGS_NAS_MAX_TAI_LIST_LEN)
-        {
+        if ((target->length + size) > OGS_NAS_MAX_TAI_LIST_LEN) {
             ogs_warn("Overflow: Ignore remained TAI LIST(length:%d, size:%d)",
                     target->length, size);
             return;
         }
-        for (i = 0; i < source2->num; i++) 
-        {
+        for (i = 0; i < source2->num; i++) {
             memcpy(&target2.tai[i].plmn_id,
                     ogs_nas_from_plmn_id(&ogs_nas_plmn_id, &source2->tai[i].plmn_id),
                     OGS_PLMN_ID_LEN);
-            target2.tai[i].tac = htons(source2->tai[i].tac);
+            target2.tai[i].tac = htobe16(source2->tai[i].tac);
         }
         memcpy(target->buffer + target->length, &target2, size);
         target->length += size;

@@ -155,8 +155,8 @@ void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
 
     pgw = ogs_gtp_node_find_by_f_teid(&sgw_self()->pgw_s5c_list, pgw_s5c_teid);
     if (!pgw) {
-        pgw = ogs_gtp_node_add(&sgw_self()->pgw_s5c_list, pgw_s5c_teid,
-            sgw_self()->gtpc_port,
+        pgw = ogs_gtp_node_add_by_f_teid(
+            &sgw_self()->pgw_s5c_list, pgw_s5c_teid, sgw_self()->gtpc_port,
             ogs_config()->parameter.no_ipv4,
             ogs_config()->parameter.no_ipv6,
             ogs_config()->parameter.prefer_ipv4);
@@ -286,8 +286,8 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
     enb = ogs_gtp_node_find_by_f_teid(
             &sgw_self()->enb_s1u_list, enb_s1u_teid);
     if (!enb) {
-        enb = ogs_gtp_node_add(&sgw_self()->enb_s1u_list, enb_s1u_teid,
-            sgw_self()->gtpu_port,
+        enb = ogs_gtp_node_add_by_f_teid(
+            &sgw_self()->enb_s1u_list, enb_s1u_teid, sgw_self()->gtpu_port,
             ogs_config()->parameter.no_ipv4,
             ogs_config()->parameter.no_ipv6,
             ogs_config()->parameter.prefer_ipv4);
@@ -347,7 +347,7 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
         ogs_assert(s1u_tunnel->gnode->sock);
 
         ogs_debug("[SGW] SEND End Marker to ENB[%s]: TEID[0x%x]",
-            OGS_ADDR(&s1u_tunnel->gnode->remote_addr, buf),
+            OGS_ADDR(&s1u_tunnel->gnode->addr, buf),
             s1u_tunnel->remote_teid);
         sgw_gtp_send_end_marker(s1u_tunnel);
     }
@@ -550,8 +550,8 @@ void sgw_s11_handle_create_bearer_response(ogs_gtp_xact_t *s11_xact,
 
     enb = ogs_gtp_node_find_by_f_teid(&sgw_self()->enb_s1u_list, enb_s1u_teid);
     if (!enb) {
-        enb = ogs_gtp_node_add(&sgw_self()->enb_s1u_list, enb_s1u_teid,
-            sgw_self()->gtpu_port,
+        enb = ogs_gtp_node_add_by_f_teid(
+            &sgw_self()->enb_s1u_list, enb_s1u_teid, sgw_self()->gtpu_port,
             ogs_config()->parameter.no_ipv4,
             ogs_config()->parameter.no_ipv6,
             ogs_config()->parameter.prefer_ipv4);
@@ -1036,8 +1036,8 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             enb = ogs_gtp_node_find_by_f_teid(
                     &sgw_self()->enb_s1u_list, req_teid);
             if (!enb) {
-                enb = ogs_gtp_node_add(&sgw_self()->enb_s1u_list, req_teid,
-                    sgw_self()->gtpu_port,
+                enb = ogs_gtp_node_add_by_f_teid(
+                    &sgw_self()->enb_s1u_list, req_teid, sgw_self()->gtpu_port,
                     ogs_config()->parameter.no_ipv4,
                     ogs_config()->parameter.no_ipv6,
                     ogs_config()->parameter.prefer_ipv4);
@@ -1076,7 +1076,8 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             enb = ogs_gtp_node_find_by_f_teid(
                     &sgw_self()->enb_s1u_list, req_teid);
             if (!enb) {
-                enb = ogs_gtp_node_add(&sgw_self()->enb_s1u_list, req_teid,
+                enb = ogs_gtp_node_add_by_f_teid(
+                    &sgw_self()->enb_s1u_list, req_teid,
                     sgw_self()->gtpu_port,
                     ogs_config()->parameter.no_ipv4,
                     ogs_config()->parameter.no_ipv6,

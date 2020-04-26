@@ -476,8 +476,12 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     case MME_EVT_S11_MESSAGE:
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
-        rv = ogs_gtp_parse_msg(&gtp_message, pkbuf);
-        ogs_assert(rv == OGS_OK);
+
+        if (ogs_gtp_parse_msg(&gtp_message, pkbuf) != OGS_OK) {
+            ogs_error("ogs_gtp_parse_msg() failed");
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
 
         /*
          * 5.5.2 in spec 29.274

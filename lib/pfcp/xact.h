@@ -32,7 +32,7 @@ extern "C" {
  * Transaction context
  */
 typedef struct ogs_pfcp_xact_s {
-    ogs_lnode_t     node;           /**< A node of list */
+    ogs_lnode_t     lnode;          /**< A node of list */
     ogs_index_t     index;
     
 #define OGS_PFCP_LOCAL_ORIGINATOR  0
@@ -41,7 +41,7 @@ typedef struct ogs_pfcp_xact_s {
                                          local or remote */
 
     uint32_t        xid;            /**< Transaction ID */
-    ogs_pfcp_node_t  *pnode;        /**< Relevant PFCP node context */
+    ogs_pfcp_node_t *node;       /**< Relevant PFCP node context */
 
     void (*cb)(ogs_pfcp_xact_t *, void *); /**< Local timer expiration handler */
     void            *data;          /**< Transaction Data */
@@ -59,17 +59,19 @@ typedef struct ogs_pfcp_xact_s {
     uint8_t         response_rcount;
     ogs_timer_t     *tm_holding;    /**< Timer waiting for holding message */
     uint8_t         holding_rcount;
+
+    void            *assoc_xact;    /**< Associated GTP transaction */
 } ogs_pfcp_xact_t;
 
 int ogs_pfcp_xact_init(ogs_timer_mgr_t *timer_mgr, int size);
 int ogs_pfcp_xact_final(void);
 
-ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *pnode,
+ogs_pfcp_xact_t *ogs_pfcp_xact_local_create(ogs_pfcp_node_t *node,
         ogs_pfcp_header_t *hdesc, ogs_pkbuf_t *pkbuf,
         void (*cb)(ogs_pfcp_xact_t *xact, void *data), void *data);
 ogs_pfcp_xact_t *ogs_pfcp_xact_remote_create(
-        ogs_pfcp_node_t *pnode, uint32_t sqn);
-void ogs_pfcp_xact_delete_all(ogs_pfcp_node_t *pnode);
+        ogs_pfcp_node_t *node, uint32_t sqn);
+void ogs_pfcp_xact_delete_all(ogs_pfcp_node_t *node);
 
 int ogs_pfcp_xact_update_tx(ogs_pfcp_xact_t *xact,
         ogs_pfcp_header_t *hdesc, ogs_pkbuf_t *pkbuf);
@@ -77,12 +79,12 @@ int ogs_pfcp_xact_update_rx(ogs_pfcp_xact_t *xact, uint8_t type);
 
 int ogs_pfcp_xact_commit(ogs_pfcp_xact_t *xact);
 
-int ogs_pfcp_xact_receive(ogs_pfcp_node_t *pnode,
+int ogs_pfcp_xact_receive(ogs_pfcp_node_t *node,
         ogs_pfcp_header_t *h, ogs_pfcp_xact_t **xact);
 
 ogs_pfcp_xact_t *ogs_pfcp_xact_find(ogs_index_t index);
 ogs_pfcp_xact_t *ogs_pfcp_xact_find_by_xid(
-        ogs_pfcp_node_t *pnode, uint8_t type, uint32_t xid);
+        ogs_pfcp_node_t *node, uint8_t type, uint32_t xid);
 
 #ifdef __cplusplus
 }

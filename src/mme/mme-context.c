@@ -1512,7 +1512,7 @@ int mme_context_parse_config()
                                 selection_mode);
                 }
             }
-        } else if (!strcmp(root_key, "pgw")) {
+        } else if (!strcmp(root_key, "pgw") || !strcmp(root_key, "smf")) {
             ogs_yaml_iter_t pgw_iter;
             ogs_yaml_iter_recurse(&root_iter, &pgw_iter);
             while (ogs_yaml_iter_next(&pgw_iter)) {
@@ -1663,7 +1663,7 @@ mme_sgw_t *mme_sgw_find_by_addr(ogs_sockaddr_t *addr)
 
     ogs_list_for_each(&self.sgw_list, sgw) {
         ogs_assert(sgw->gnode);
-        if (ogs_sockaddr_is_equal(&sgw->gnode->remote_addr, addr) == true)
+        if (ogs_sockaddr_is_equal(&sgw->gnode->addr, addr) == true)
             break;
     }
 

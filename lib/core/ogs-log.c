@@ -114,10 +114,7 @@ static void file_writer(
 void ogs_log_init(void)
 {
     ogs_pool_init(&log_pool, ogs_core()->log.pool);
-    ogs_list_init(&log_list);
-
     ogs_pool_init(&domain_pool, ogs_core()->log.domain_pool);
-    ogs_list_init(&domain_list);
 
     ogs_log_add_domain("core", ogs_core()->log.level);
     ogs_log_add_stderr();

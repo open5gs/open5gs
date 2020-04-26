@@ -1,8 +1,152 @@
+#
+# logger:
+#
+#  o Set OGS_LOG_INFO to all domain level
+#   - If `level` is omitted, the default level is OGS_LOG_INFO)
+#   - If `domain` is omitted, the all domain level is set from 'level'
+#    (Nothing is needed)
+#
+#  o Set OGS_LOG_ERROR to all domain level
+#   - `level` can be set with none, fatal, error, warn, info, debug, trace
+#    level: error
+#
+#  o Set OGS_LOG_DEBUG to mme/emm domain level
+#    level: debug
+#    domain: mme,emm
+#
+#  o Set OGS_LOG_TRACE to all domain level
+#    level: trace
+#    domain: core,fd,gtp,pgw,event,tlv,mem,sock
+#
 logger:
     file: @localstatedir@/log/open5gs/pgw.log
 
-parameter:
 
+#
+# pgw:
+#
+#  <GTP-C Server>
+#
+#  o GTP-C Server(127.0.0.3:2123, [fe80::3%@loopback_devname@]:2123)
+#    gtpc:
+#      addr:
+#        - 127.0.0.3
+#        - fe80::3%@loopback_devname@
+#
+#  o On PGW, Same configuration
+#    (127.0.0.3:2123, [fe80::3%@loopback_devname@]:2123).
+#    gtpc:
+#      - addr: 127.0.0.3
+#      - addr: fe80::3%@loopback_devname@
+#
+#
+#  <GTP-U Server>>
+#
+#  o GTP-U Server(127.0.0.3:2152, [::1]:2152)
+#    gtpu:
+#      - addr: 127.0.0.3
+#      - addr: ::1
+#
+#  o Same configuration(127.0.0.3:2152, [::1]:2152) as below.
+#    gtpu:
+#      name: localhost
+#
+#  <PDN Configuration with UE Pool>
+#
+#  o IPv4 Pool
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
+#
+#    pdn:
+#      addr: 10.45.0.1/16
+#
+#  o IPv4/IPv6 Pool
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
+#    $ sudo ip addr add cafe:1::1/64 dev ogstun
+#
+#    pdn:
+#      - addr: 10.45.0.1/16
+#      - addr: cafe:1::1/64
+#
+#
+#  o Specific APN(e.g 'volte') uses 10.46.0.1/16, cafe:2::1/64
+#    All other APNs use 10.45.0.1/16, cafe:1::1/64
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
+#    $ sudo ip addr add 10.46.0.1/16 dev ogstun
+#    $ sudo ip addr add cafe:1::1/64 dev ogstun
+#    $ sudo ip addr add cafe:2::1/64 dev ogstun
+#
+#    pdn:
+#      - addr: 10.45.0.1/16
+#      - addr: cafe:1::1/64
+#      - addr: 10.46.0.1/16
+#        apn: volte
+#      - addr: cafe:2::1/64
+#        apn: volte
+#
+#  o Multiple Devices (default: ogstun)
+#    $ sudo ip addr add 10.45.0.1/16 dev ogstun
+#    $ sudo ip addr add cafe:1::1/64 dev ogstun2
+#    $ sudo ip addr add 10.46.0.1/16 dev ogstun3
+#    $ sudo ip addr add cafe:2::1/64 dev ogstun3
+#
+#    pdn:
+#      - addr: 10.45.0.1/16
+#      - addr: cafe:1::1/64
+#        dev: ogstun2
+#      - addr: 10.46.0.1/16
+#        apn: volte
+#        dev: ogstun3
+#      - addr: cafe:2::1/64
+#        apn: volte
+#        dev: ogstun3
+#
+#  o Pool Range Sample
+#    pdn:
+#      - addr: 10.45.0.1/24
+#        range: 10.45.0.100-10.45.0.200
+#
+#    pdn:
+#      - addr: 10.45.0.1/24
+#        range:
+#          - 10.45.0.5-10.45.0.50
+#          - 10.45.0.100-
+#
+#    pdn:
+#      - addr: 10.45.0.1/24
+#        range:
+#          - -10.45.0.200
+#          - 10.45.0.210-10.45.0.220
+#
+#    pdn:
+#      - addr: 10.45.0.1/16
+#        range:
+#          - 10.45.0.100-10.45.0.200
+#          - 10.45.1.100-10.45.1.200
+#      - addr: cafe::1/64
+#        range:
+#          - cafe::a0-cafe:b0
+#          - cafe::c0-cafe:d0
+#
+#  <Domain Name Server>
+#
+#  o Primary/Secondary can be configured. Others are ignored.
+#
+#  <MTU Size>
+#
+#  o Provisioning a limit on the size of the packets sent by the MS
+#    to avoid packet fragmentation in the backbone network
+#    between the MS and the GGSN/PGW and/or across the (S)Gi reference point)
+#    when some of the backbone links does not support
+#    packets larger then 1500 octets
+#
+#  <P-CSCF>
+#
+#  o Proxy Call Session Control Function
+#
+#    p-cscf:
+#      - 127.0.0.1
+#      - ::1
+#
 pgw:
     freeDiameter: @sysconfdir@/freeDiameter/pgw.conf
     gtpc:
@@ -11,7 +155,7 @@ pgw:
     gtpu:
       - addr: 127.0.0.3
       - addr: ::1
-    ue_pool:
+    pdn:
       - addr: 10.45.0.1/16
       - addr: cafe::1/64
     dns:
@@ -20,3 +164,71 @@ pgw:
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
     mtu: 1400
+
+#
+# parameter:
+#
+#  o Number of output streams per SCTP associations.
+#      sctp_streams: 30
+#
+#  o Disable use of IPv4 addresses (only IPv6)
+#      no_ipv4: true
+#
+#  o Disable use of IPv6 addresses (only IPv4)
+#      no_ipv6: true
+#
+#  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
+#      prefer_ipv4: true
+#
+#  o Enable Multicast traffic to the UE
+#      multicast: true
+#
+#  o Disable Stateless Address Autoconfiguration for IPv6
+#      no_slaac: true
+#
+#
+parameter:
+
+#
+# max:
+#
+# o Maximum Number of SGW per MME
+#    sgw: 32
+# o Maximum Number of PGW per MME
+#    pgw: 32
+# o Maximum Number of VLR per MME
+#    vlr: 32
+# o Maximum Number of eNodeB per MME
+#    enb: 32
+# o Maximum Number of UE per eNodeB
+#    ue: 128
+#
+max:
+
+#
+# pool:
+#
+# o The Number of Default Memory Pool Size
+#
+#   - Pool-size 128         => 8192 Number
+#   - Pool-size 256         => 4096 Number
+#   - Pool-size 512         => 2048 Number
+#   - Pool-size 1024        => 1024 Number
+#   - Pool-size 2048        => 512 Number
+#   - Pool-size 8192        => 128 Number
+#   - Pool-size 1024*1024   => 8 Number
+#
+#    128:  8192
+#    256:  4096
+#    512:  2048
+#    1024: 1024
+#    2048: 512
+#    8192: 128
+#    big:  8
+#
+# o Memory of Packet Buffering in SGW
+#   - Maximum Number of packet(SDU size = 8Kbytes) pool in SGW
+#   - SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
+#
+#   packet: 65536
+pool:

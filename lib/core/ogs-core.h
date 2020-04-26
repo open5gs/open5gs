@@ -48,6 +48,7 @@
 #include "core/ogs-socknode.h"
 #include "core/ogs-udp.h"
 #include "core/ogs-tcp.h"
+#include "core/ogs-tun.h"
 #include "core/ogs-queue.h"
 #include "core/ogs-poll.h"
 #include "core/ogs-notify.h"

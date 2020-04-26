@@ -125,8 +125,7 @@ typedef struct ogs_tlv_int32_s {
 #define OGS_TLV_CLEAR_DATA(__dATA) \
     do { \
         ogs_assert((__dATA)); \
-        if ((__dATA)->data) \
-        { \
+        if ((__dATA)->data) { \
             ogs_free((__dATA)->data); \
             (__dATA)->data = NULL; \
             (__dATA)->len = 0; \

@@ -60,6 +60,8 @@ static void initialize(const char *const argv[])
 {
     int rv;
 
+    test_no_mme_self = true;
+
     rv = ogs_app_initialize(NULL, argv);
     ogs_assert(rv == OGS_OK);
 

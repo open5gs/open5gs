@@ -26,3 +26,6 @@ subdir('hss')
 subdir('sgw')
 subdir('pgw')
 subdir('pcrf')
+
+subdir('smf')
+subdir('upf')

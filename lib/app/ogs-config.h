@@ -68,6 +68,8 @@ typedef struct ogs_config_s {
         int csmap;
         int enb;
         int ue;
+        int smf;
+        int upf;
     } max;
 
     struct {
@@ -75,6 +77,7 @@ typedef struct ogs_config_s {
         int packet;
 
         int ue;
+        int pfcp;
         int sess;
         int bearer;
         int tunnel;

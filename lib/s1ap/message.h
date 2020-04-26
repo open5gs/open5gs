@@ -32,8 +32,7 @@ extern "C" {
 #define OGS_S1AP_CLEAR_DATA(__dATA) \
     do { \
         ogs_assert((__dATA)); \
-        if ((__dATA)->buf) \
-        { \
+        if ((__dATA)->buf) { \
             FREEMEM((__dATA)->buf); \
             (__dATA)->buf = NULL; \
             (__dATA)->size = 0; \

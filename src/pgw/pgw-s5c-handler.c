@@ -46,7 +46,7 @@ void pgw_s5c_handle_echo_response(
 
 void pgw_s5c_handle_create_session_request(
         pgw_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_pkbuf_t *gtpbuf, ogs_gtp_create_session_request_t *req)
+        ogs_gtp_create_session_request_t *req)
 {
     int rv;
     uint8_t cause_value = 0;
@@ -55,7 +55,6 @@ void pgw_s5c_handle_create_session_request(
     pgw_bearer_t *bearer = NULL;
     ogs_gtp_bearer_qos_t bearer_qos;
     ogs_gtp_ambr_t *ambr = NULL;
-    ogs_gtp_uli_t uli;
     uint16_t decoded = 0;
 
     ogs_assert(xact);
@@ -103,7 +102,6 @@ void pgw_s5c_handle_create_session_request(
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);
-        ogs_pkbuf_free(gtpbuf);
         return;
     }
     
@@ -115,22 +113,22 @@ void pgw_s5c_handle_create_session_request(
     /* Control Plane(DL) : SGW-S5C */
     sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
     ogs_assert(sgw_s5c_teid);
-    sess->sgw_s5c_teid = ntohl(sgw_s5c_teid->teid);
+    sess->sgw_s5c_teid = be32toh(sgw_s5c_teid->teid);
 
     /* Control Plane(DL) : SGW-S5U */
     sgw_s5u_teid = req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data;
     ogs_assert(sgw_s5u_teid);
-    bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
+    bearer->sgw_s5u_teid = be32toh(sgw_s5u_teid->teid);
 
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
-    ogs_debug("    SGW_S5U_TEID[%d] PGW_S5U_TEID[%d]",
+    ogs_debug("    SGW_S5U_TEID[0x%x] PGW_S5U_TEID[0x%x]",
             bearer->sgw_s5u_teid, bearer->pgw_s5u_teid);
 
     sgw = ogs_gtp_node_find_by_f_teid(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
     if (!sgw) {
-        sgw = ogs_gtp_node_add(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
-            pgw_self()->gtpu_port,
+        sgw = ogs_gtp_node_add_by_f_teid(
+            &pgw_self()->sgw_s5u_list, sgw_s5u_teid, pgw_self()->gtpu_port,
             ogs_config()->parameter.no_ipv4,
             ogs_config()->parameter.no_ipv6,
             ogs_config()->parameter.prefer_ipv4);
@@ -167,39 +165,30 @@ void pgw_s5c_handle_create_session_request(
         sess->pdn.ambr.downlink = be32toh(ambr->downlink) * 1000;
         sess->pdn.ambr.uplink = be32toh(ambr->uplink) * 1000;
     }
-    
-    /* Set User Location Information */
-    if (req->user_location_information.presence) {
-        decoded = ogs_gtp_parse_uli(&uli, &req->user_location_information);
-        ogs_assert(req->user_location_information.len == decoded);
 
-        if (uli.flags.tai && uli.flags.e_cgi)
-            sess->uli_type =
-                OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI_AND_ECGI;
-        else if (uli.flags.tai)
-            sess->uli_type = OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_TAI;
-        else if (uli.flags.e_cgi)
-            sess->uli_type = OGS_DIAM_GX_3GPP_USER_LOCATION_INFO_TYPE_ECGI;
-
-        if (uli.flags.tai) {
-            memcpy(&sess->tai.plmn_id, &uli.tai.plmn_id,
-                    sizeof(uli.tai.plmn_id));
-            sess->tai.tac = uli.tai.tac;
-        }
-        if (uli.flags.e_cgi) {
-            memcpy(&sess->e_cgi.plmn_id, &uli.e_cgi.plmn_id,
-                    sizeof(uli.e_cgi.plmn_id));
-            sess->e_cgi.cell_id = uli.e_cgi.cell_id;
-        }
+    /* PCO */
+    if (req->protocol_configuration_options.presence) {
+        OGS_TLV_STORE_DATA(&sess->ue_pco, &req->protocol_configuration_options);
     }
 
-    pgw_gx_send_ccr(sess, xact, gtpbuf,
+    /* Set User Location Information */
+    if (req->user_location_information.presence) {
+        OGS_TLV_STORE_DATA(&sess->user_location_information,
+                &req->user_location_information);
+    }
+
+    /* Set UE Timezone */
+    if (req->ue_time_zone.presence) {
+        OGS_TLV_STORE_DATA(&sess->ue_timezone, &req->ue_time_zone);
+    }
+
+    pgw_gx_send_ccr(sess, xact,
         OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
 }
 
 void pgw_s5c_handle_delete_session_request(
         pgw_sess_t *sess, ogs_gtp_xact_t *xact,
-        ogs_pkbuf_t *gtpbuf, ogs_gtp_delete_session_request_t *req)
+        ogs_gtp_delete_session_request_t *req)
 {
     uint8_t cause_value = 0;
 
@@ -223,14 +212,13 @@ void pgw_s5c_handle_delete_session_request(
     if (cause_value != OGS_GTP_CAUSE_REQUEST_ACCEPTED) {
         ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
                 OGS_GTP_DELETE_SESSION_RESPONSE_TYPE, cause_value);
-        ogs_pkbuf_free(gtpbuf);
         return;
     }
 
     ogs_debug("    SGW_S5C_TEID[0x%x] PGW_S5C_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->pgw_s5c_teid);
 
-    pgw_gx_send_ccr(sess, xact, gtpbuf,
+    pgw_gx_send_ccr(sess, xact,
         OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST);
 }
 
@@ -291,7 +279,7 @@ void pgw_s5c_handle_create_bearer_response(
     ogs_assert(pgw_s5u_teid);
 
     /* Find the Bearer by PGW-S5U-TEID */
-    bearer = pgw_bearer_find_by_pgw_s5u_teid(ntohl(pgw_s5u_teid->teid));
+    bearer = pgw_bearer_find_by_pgw_s5u_teid(be32toh(pgw_s5u_teid->teid));
     ogs_assert(bearer);
 
     /* Set EBI */
@@ -299,11 +287,11 @@ void pgw_s5c_handle_create_bearer_response(
 
     /* Data Plane(DL) : SGW-S5U */
     sgw_s5u_teid = rsp->bearer_contexts.s5_s8_u_sgw_f_teid.data;
-    bearer->sgw_s5u_teid = ntohl(sgw_s5u_teid->teid);
+    bearer->sgw_s5u_teid = be32toh(sgw_s5u_teid->teid);
     sgw = ogs_gtp_node_find_by_f_teid(&pgw_self()->sgw_s5u_list, sgw_s5u_teid);
     if (!sgw) {
-        sgw = ogs_gtp_node_add(&pgw_self()->sgw_s5u_list, sgw_s5u_teid,
-            pgw_self()->gtpu_port,
+        sgw = ogs_gtp_node_add_by_f_teid(
+            &pgw_self()->sgw_s5u_list, sgw_s5u_teid, pgw_self()->gtpu_port,
             ogs_config()->parameter.no_ipv4,
             ogs_config()->parameter.no_ipv6,
             ogs_config()->parameter.prefer_ipv4);

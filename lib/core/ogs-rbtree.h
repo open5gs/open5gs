@@ -47,8 +47,7 @@ typedef struct ogs_rbtree_s {
 
 #define OGS_RBTREE(name) ogs_rbtree_t name = { NULL }
 
-#define ogs_rb_entry(n, type, link) \
-        (type *)((u_char *)n - offsetof(type, link))
+#define ogs_rb_entry(ptr, type, member) ogs_container_of(ptr, type, member)
 
 static ogs_inline void ogs_rbtree_link_node(
         void *rb_node, ogs_rbnode_t *parent, ogs_rbnode_t **rb_link)

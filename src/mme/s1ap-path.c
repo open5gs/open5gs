@@ -204,7 +204,7 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
         ogs_pkbuf_pull(nasbuf, 6);
         break;
     default:
-        ogs_error("Not implemented(securiry header type:0x%x)", 
+        ogs_error("Not implemented(security header type:0x%x)",
                 sh->security_header_type);
         return OGS_ERROR;
     }

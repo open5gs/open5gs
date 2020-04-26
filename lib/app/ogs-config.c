@@ -139,6 +139,7 @@ static void recalculate_pool_size(void)
 #define MAX_NUM_OF_PF           16  /* Num of PacketFilter per Bearer */
 
     self.pool.ue = self.max.ue * self.max.enb;
+    self.pool.pfcp = ogs_max(self.max.smf, self.max.upf);
     self.pool.sess = self.pool.ue * OGS_MAX_NUM_OF_SESS;
     self.pool.bearer = self.pool.sess * MAX_NUM_OF_BEARER;
     self.pool.tunnel = self.pool.bearer * MAX_NUM_OF_TUNNEL;
@@ -156,12 +157,16 @@ static int config_prepare(void)
 #define MAX_NUM_OF_CSMAP            128 /* Num of TAI-LAI MAP per MME */
 #define MAX_NUM_OF_ENB              32  /* Num of eNodeB per MME */
 #define MAX_NUM_OF_UE               128 /* Num of UE per eNodeB */
+#define MAX_NUM_OF_SMF              32  /* Num of SMF per AMF */
+#define MAX_NUM_OF_UPF              32  /* Num of PGW per AMF */
     self.max.sgw = MAX_NUM_OF_SGW;
     self.max.pgw = MAX_NUM_OF_PGW;
     self.max.vlr = MAX_NUM_OF_VLR;
     self.max.csmap = MAX_NUM_OF_CSMAP;
     self.max.enb = MAX_NUM_OF_ENB;
     self.max.ue = MAX_NUM_OF_UE;
+    self.max.smf = MAX_NUM_OF_SMF;
+    self.max.upf = MAX_NUM_OF_UPF;
 
 #define MAX_NUM_OF_PACKET_POOL      65536
     self.pool.packet = MAX_NUM_OF_PACKET_POOL;

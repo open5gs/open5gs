@@ -378,8 +378,6 @@ int ogs_tun_set_ip(char *ifname, ogs_ipsubnet_t *gw, ogs_ipsubnet_t *sub)
         rv = tun_set_ipv4(ifname, gw, sub);
     else if (gw->family == AF_INET6)
         rv = tun_set_ipv6(ifname, gw, sub);
-    else
-        ogs_assert_if_reached();
 
     return rv;
 }

@@ -28,6 +28,10 @@
 extern "C" {
 #endif
 
+int ogs_pfcp_sockaddr_to_node_id(
+    ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, int prefer_ipv4,
+    ogs_pfcp_node_id_t *node_id, int *len);
+
 int ogs_pfcp_f_seid_to_sockaddr(
     ogs_pfcp_f_seid_t *f_seid, uint16_t port, ogs_sockaddr_t **list);
 int ogs_pfcp_sockaddr_to_f_seid(
@@ -36,9 +40,25 @@ int ogs_pfcp_sockaddr_to_f_seid(
 int ogs_pfcp_f_seid_to_ip(ogs_pfcp_f_seid_t *f_seid, ogs_ip_t *ip);
 
 int ogs_pfcp_sockaddr_to_f_teid(
+    ogs_sockaddr_t *a, ogs_sockaddr_t *b, ogs_pfcp_f_teid_t *f_teid, int *len);
+
+int ogs_pfcp_sockaddr_to_user_plane_ip_resource_info(
     ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
+    ogs_pfcp_user_plane_ip_resource_info_t *info);
+int ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(
+    ogs_pfcp_user_plane_ip_resource_info_t *info,
+    ogs_sockaddr_t **addr, ogs_sockaddr_t **addr6);
+int ogs_pfcp_user_plane_ip_resource_info_to_f_teid(
+    ogs_pfcp_user_plane_ip_resource_info_t *info,
     ogs_pfcp_f_teid_t *f_teid, int *len);
-int ogs_pfcp_outer_hdr_to_ip(ogs_pfcp_outer_hdr_t *outer_hdr, ogs_ip_t *ip);
+
+int ogs_pfcp_paa_to_ue_ip_addr(
+    ogs_paa_t *paa, ogs_pfcp_ue_ip_addr_t *addr, int *len);
+
+int ogs_pfcp_ip_to_outer_header_creation(ogs_ip_t *ip,
+    ogs_pfcp_outer_header_creation_t *outer_header_creation, int *len);
+int ogs_pfcp_outer_header_creation_to_ip(
+    ogs_pfcp_outer_header_creation_t *outer_header_creation, ogs_ip_t *ip);
 
 #ifdef __cplusplus
 }

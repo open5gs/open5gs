@@ -160,6 +160,8 @@ ogs_pkbuf_t *testenb_gtpu_read(ogs_socknode_t *node)
     return recvbuf;
 }
 
+bool test_no_mme_self = 0;
+
 int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
 {
     int rv;
@@ -174,28 +176,33 @@ int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
     ogs_assert(node);
     ogs_assert(node->sock);
 
-    mme_ue = ogs_list_first(&mme_self()->mme_ue_list);
-    ogs_assert(mme_ue);
-    sess = mme_sess_first(mme_ue);
-    ogs_assert(sess);
-    bearer = mme_bearer_first(sess);
-    ogs_assert(bearer);
-
     memset(&sgw, 0, sizeof(ogs_sockaddr_t));
     sgw.ogs_sin_port = htons(OGS_GTPV1_U_UDP_PORT);
-    if (bearer->sgw_s1u_ip.ipv6) {
-        sgw.ogs_sa_family = AF_INET6;
-        if (bearer->sgw_s1u_ip.ipv4)
-            memcpy(sgw.sin6.sin6_addr.s6_addr,
-                    bearer->sgw_s1u_ip.both.addr6, OGS_IPV6_LEN);
-        else
-            memcpy(sgw.sin6.sin6_addr.s6_addr,
-                    bearer->sgw_s1u_ip.addr6, OGS_IPV6_LEN);
-        rv = ogs_socknode_fill_scope_id_in_local(&sgw);
-        ogs_assert(rv == OGS_OK);
-    } else {
+    if (test_no_mme_self) {
         sgw.ogs_sa_family = AF_INET;
-        sgw.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
+        sgw.sin.sin_addr.s_addr = inet_addr("127.0.0.2");
+    } else {
+        mme_ue = ogs_list_first(&mme_self()->mme_ue_list);
+        ogs_assert(mme_ue);
+        sess = mme_sess_first(mme_ue);
+        ogs_assert(sess);
+        bearer = mme_bearer_first(sess);
+        ogs_assert(bearer);
+
+        if (bearer->sgw_s1u_ip.ipv6) {
+            sgw.ogs_sa_family = AF_INET6;
+            if (bearer->sgw_s1u_ip.ipv4)
+                memcpy(sgw.sin6.sin6_addr.s6_addr,
+                        bearer->sgw_s1u_ip.both.addr6, OGS_IPV6_LEN);
+            else
+                memcpy(sgw.sin6.sin6_addr.s6_addr,
+                        bearer->sgw_s1u_ip.addr6, OGS_IPV6_LEN);
+            rv = ogs_socknode_fill_scope_id_in_local(&sgw);
+            ogs_assert(rv == OGS_OK);
+        } else {
+            sgw.ogs_sa_family = AF_INET;
+            sgw.sin.sin_addr.s_addr = bearer->sgw_s1u_ip.addr;
+        }
     }
 
     sent = ogs_sendto(node->sock->fd, sendbuf->data, sendbuf->len, 0, &sgw);
@@ -3519,8 +3526,8 @@ int tests1ap_build_uplink_nas_transport(ogs_pkbuf_t **pkbuf, int i)
 
 uint16_t in_cksum(uint16_t *addr, int len); /* from pgw_gtp_path.c */
 
-int testgtpu_build_ping(
-        ogs_pkbuf_t **sendbuf, const char *src_ip, const char *dst_ip)
+int testgtpu_build_ping(ogs_pkbuf_t **sendbuf,
+        const uint32_t teid, const char *src_ip, const char *dst_ip)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -3542,7 +3549,7 @@ int testgtpu_build_ping(
     gtp_h = (ogs_gtp_header_t *)pkbuf->data;
     gtp_h->flags = 0x30;
     gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
-    gtp_h->teid = htonl(1);
+    gtp_h->teid = htonl(teid);
 
     if (dst_ipsub.family == AF_INET) {
         struct ip *ip_h = NULL;

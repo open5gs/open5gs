@@ -45,14 +45,10 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
 {
     int rv;
     ogs_pkbuf_t *recvbuf = NULL;
-    ogs_pkbuf_t *copybuf = NULL;
-    uint16_t copybuf_len = 0;
     ogs_gtp_xact_t *xact = NULL;
-    ogs_gtp_message_t *message = NULL;
+    ogs_gtp_message_t gtp_message;
     pgw_sess_t *sess = NULL;
-    ogs_pkbuf_t *gxbuf = NULL;
     ogs_diam_gx_message_t *gx_message = NULL;
-    ogs_pkbuf_t *gtpbuf = NULL;
     ogs_gtp_node_t *gnode = NULL;
 
     pgw_sm_debug(e);
@@ -70,17 +66,14 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         break;
     case PGW_EVT_S5C_MESSAGE:
         ogs_assert(e);
-        recvbuf = e->gtpbuf;
+        recvbuf = e->pkbuf;
         ogs_assert(recvbuf);
 
-        copybuf_len = sizeof(ogs_gtp_message_t);
-        copybuf = ogs_pkbuf_alloc(NULL, copybuf_len);
-        ogs_pkbuf_put(copybuf, copybuf_len);
-        message = (ogs_gtp_message_t *)copybuf->data;
-        ogs_assert(message);
-
-        rv = ogs_gtp_parse_msg(message, recvbuf);
-        ogs_assert(rv == OGS_OK);
+        if (ogs_gtp_parse_msg(&gtp_message, recvbuf) != OGS_OK) {
+            ogs_error("ogs_gtp_parse_msg() failed");
+            ogs_pkbuf_free(recvbuf);
+            break;
+        }
 
         /*
          * 5.5.2 in spec 29.274
@@ -111,9 +104,9 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
          *   However in this case, the cause code shall not be set to
          *   "Context not found".
          */
-        if (message->h.teid_presence && message->h.teid != 0) {
+        if (gtp_message.h.teid_presence && gtp_message.h.teid != 0) {
             /* Cause is not "Context not found" */
-            sess = pgw_sess_find_by_teid(message->h.teid);
+            sess = pgw_sess_find_by_teid(gtp_message.h.teid);
         }
 
         if (sess) {
@@ -124,59 +117,51 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
             ogs_assert(gnode);
         }
 
-        rv = ogs_gtp_xact_receive(gnode, &message->h, &xact);
+        rv = ogs_gtp_xact_receive(gnode, &gtp_message.h, &xact);
         if (rv != OGS_OK) {
             ogs_pkbuf_free(recvbuf);
-            ogs_pkbuf_free(copybuf);
             break;
         }
 
-        switch(message->h.type) {
+        switch(gtp_message.h.type) {
         case OGS_GTP_ECHO_REQUEST_TYPE:
-            pgw_s5c_handle_echo_request(xact, &message->echo_request);
-            ogs_pkbuf_free(copybuf);
+            pgw_s5c_handle_echo_request(xact, &gtp_message.echo_request);
             break;
         case OGS_GTP_ECHO_RESPONSE_TYPE:
-            pgw_s5c_handle_echo_response(xact, &message->echo_response);
-            ogs_pkbuf_free(copybuf);
+            pgw_s5c_handle_echo_response(xact, &gtp_message.echo_response);
             break;
         case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
-            if (message->h.teid == 0) {
-                ogs_assert(!sess);
-                sess = pgw_sess_add_by_message(message);
+            if (gtp_message.h.teid == 0) {
+                ogs_expect(!sess);
+                sess = pgw_sess_add_by_message(&gtp_message);
                 if (sess)
                     OGS_SETUP_GTP_NODE(sess, gnode);
             }
             pgw_s5c_handle_create_session_request(
-                sess, xact, copybuf, &message->create_session_request);
+                sess, xact, &gtp_message.create_session_request);
             break;
         case OGS_GTP_DELETE_SESSION_REQUEST_TYPE:
             pgw_s5c_handle_delete_session_request(
-                sess, xact, copybuf, &message->delete_session_request);
+                sess, xact, &gtp_message.delete_session_request);
             break;
         case OGS_GTP_CREATE_BEARER_RESPONSE_TYPE:
             pgw_s5c_handle_create_bearer_response(
-                sess, xact, &message->create_bearer_response);
-            ogs_pkbuf_free(copybuf);
+                sess, xact, &gtp_message.create_bearer_response);
             break;
         case OGS_GTP_UPDATE_BEARER_RESPONSE_TYPE:
             pgw_s5c_handle_update_bearer_response(
-                sess, xact, &message->update_bearer_response);
-            ogs_pkbuf_free(copybuf);
+                sess, xact, &gtp_message.update_bearer_response);
             break;
         case OGS_GTP_DELETE_BEARER_RESPONSE_TYPE:
             pgw_s5c_handle_delete_bearer_response(
-                sess, xact, &message->delete_bearer_response);
-            ogs_pkbuf_free(copybuf);
+                sess, xact, &gtp_message.delete_bearer_response);
             break;
         case OGS_GTP_BEARER_RESOURCE_COMMAND_TYPE:
             pgw_s5c_handle_bearer_resource_command(
-                sess, xact, &message->bearer_resource_command);
-            ogs_pkbuf_free(copybuf);
+                sess, xact, &gtp_message.bearer_resource_command);
             break;
         default:
-            ogs_warn("Not implmeneted(type:%d)", message->h.type);
-            ogs_pkbuf_free(copybuf);
+            ogs_warn("Not implmeneted(type:%d)", gtp_message.h.type);
             break;
         }
         ogs_pkbuf_free(recvbuf);
@@ -185,9 +170,9 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
     case PGW_EVT_GX_MESSAGE:
         ogs_assert(e);
 
-        gxbuf = e->gxbuf;
-        ogs_assert(gxbuf);
-        gx_message = (ogs_diam_gx_message_t *)gxbuf->data;
+        recvbuf = e->pkbuf;
+        ogs_assert(recvbuf);
+        gx_message = (ogs_diam_gx_message_t *)recvbuf->data;
         ogs_assert(gx_message);
 
         sess = e->sess;
@@ -198,27 +183,20 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
             xact = e->xact;
             ogs_assert(xact);
 
-            gtpbuf = e->gtpbuf;
-            ogs_assert(gtpbuf);
-            message = (ogs_gtp_message_t *)gtpbuf->data;
-
             switch(gx_message->cc_request_type) {
             case OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST:
                 pgw_gx_handle_cca_initial_request(
-                        sess, gx_message, xact,
-                        &message->create_session_request);
+                        sess, gx_message, xact);
                 break;
             case OGS_DIAM_GX_CC_REQUEST_TYPE_TERMINATION_REQUEST:
                 pgw_gx_handle_cca_termination_request(
-                        sess, gx_message, xact,
-                        &message->delete_session_request);
+                        sess, gx_message, xact);
                 break;
             default:
-                ogs_error("Not implemented(%d)", gx_message->cc_request_type);
+                ogs_error("Not implemented(%d)",
+                        gx_message->cc_request_type);
                 break;
             }
-
-            ogs_pkbuf_free(gtpbuf);
             break;
         case OGS_DIAM_GX_CMD_RE_AUTH:
             pgw_gx_handle_re_auth_request(sess, gx_message);
@@ -229,7 +207,7 @@ void pgw_state_operational(ogs_fsm_t *s, pgw_event_t *e)
         }
 
         ogs_diam_gx_message_free(gx_message);
-        ogs_pkbuf_free(gxbuf);
+        ogs_pkbuf_free(recvbuf);
         break;
     default:
         ogs_error("No handler for event %s", pgw_event_get_name(e));

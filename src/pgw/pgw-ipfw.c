@@ -175,7 +175,7 @@ static int decode_ipv6_header(
 
     nxt = ip6_h->ip6_nxt;
     p = (uint8_t *)ip6_h + sizeof(*ip6_h);
-    endp = p + ntohs(ip6_h->ip6_plen);
+    endp = p + be16toh(ip6_h->ip6_plen);
 
     jp = p + sizeof(struct ip6_hbh);
     while (p == endp) { /* Jumbo Frame */
@@ -186,7 +186,7 @@ static int decode_ipv6_header(
 
         jumbo = (struct ip6_opt_jumbo *)jp;
         memcpy(&jp_len, jumbo->ip6oj_jumbo_len, sizeof(jp_len));
-        jp_len = ntohl(jp_len);
+        jp_len = be32toh(jp_len);
         switch (jumbo->ip6oj_type) {
         case IP6OPT_JUMBO:
             endp = p + jp_len;
@@ -279,11 +279,11 @@ pgw_bearer_t *pgw_bearer_find_by_packet(ogs_pkbuf_t *pkt)
         ogs_error("Invalid IP version = %d", ip_h->ip_v);
 
     ogs_debug("[PGW] PROTO:%d SRC:%08x %08x %08x %08x",
-            proto, ntohl(src_addr[0]), ntohl(src_addr[1]),
-            ntohl(src_addr[2]), ntohl(src_addr[3]));
+            proto, be32toh(src_addr[0]), be32toh(src_addr[1]),
+            be32toh(src_addr[2]), be32toh(src_addr[3]));
     ogs_debug("[PGW] HLEN:%d  DST:%08x %08x %08x %08x",
-            ip_hlen, ntohl(dst_addr[0]), ntohl(dst_addr[1]),
-            ntohl(dst_addr[2]), ntohl(dst_addr[3]));
+            ip_hlen, be32toh(dst_addr[0]), be32toh(dst_addr[1]),
+            be32toh(dst_addr[2]), be32toh(dst_addr[3]));
 
     if (sess) {
         pgw_bearer_t *default_bearer = NULL;
@@ -325,23 +325,23 @@ pgw_bearer_t *pgw_bearer_find_by_packet(ogs_pkbuf_t *pkt)
                         pf->rule.port.remote.low,
                         pf->rule.port.remote.high);
                 ogs_debug("SRC:%08x %08x %08x %08x/%08x %08x %08x %08x",
-                        ntohl(pf->rule.ip.local.addr[0]),
-                        ntohl(pf->rule.ip.local.addr[1]),
-                        ntohl(pf->rule.ip.local.addr[2]),
-                        ntohl(pf->rule.ip.local.addr[3]),
-                        ntohl(pf->rule.ip.local.mask[0]),
-                        ntohl(pf->rule.ip.local.mask[1]),
-                        ntohl(pf->rule.ip.local.mask[2]),
-                        ntohl(pf->rule.ip.local.mask[3]));
+                        be32toh(pf->rule.ip.local.addr[0]),
+                        be32toh(pf->rule.ip.local.addr[1]),
+                        be32toh(pf->rule.ip.local.addr[2]),
+                        be32toh(pf->rule.ip.local.addr[3]),
+                        be32toh(pf->rule.ip.local.mask[0]),
+                        be32toh(pf->rule.ip.local.mask[1]),
+                        be32toh(pf->rule.ip.local.mask[2]),
+                        be32toh(pf->rule.ip.local.mask[3]));
                 ogs_debug("DST:%08x %08x %08x %08x/%08x %08x %08x %08x",
-                        ntohl(pf->rule.ip.remote.addr[0]),
-                        ntohl(pf->rule.ip.remote.addr[1]),
-                        ntohl(pf->rule.ip.remote.addr[2]),
-                        ntohl(pf->rule.ip.remote.addr[3]),
-                        ntohl(pf->rule.ip.remote.mask[0]),
-                        ntohl(pf->rule.ip.remote.mask[1]),
-                        ntohl(pf->rule.ip.remote.mask[2]),
-                        ntohl(pf->rule.ip.remote.mask[3]));
+                        be32toh(pf->rule.ip.remote.addr[0]),
+                        be32toh(pf->rule.ip.remote.addr[1]),
+                        be32toh(pf->rule.ip.remote.addr[2]),
+                        be32toh(pf->rule.ip.remote.addr[3]),
+                        be32toh(pf->rule.ip.remote.mask[0]),
+                        be32toh(pf->rule.ip.remote.mask[1]),
+                        be32toh(pf->rule.ip.remote.mask[2]),
+                        be32toh(pf->rule.ip.remote.mask[3]));
 
                 if (pf->direction != 1) {
                     continue;
@@ -370,26 +370,26 @@ pgw_bearer_t *pgw_bearer_find_by_packet(ogs_pkbuf_t *pkt)
 
                             /* Source port */
                             if (pf->rule.port.local.low && 
-                                  ntohs(tcph->th_sport) < 
+                                  be16toh(tcph->th_sport) < 
                                           pf->rule.port.local.low) {
                                 continue;
                             }
 
                             if (pf->rule.port.local.high && 
-                                  ntohs(tcph->th_sport) > 
+                                  be16toh(tcph->th_sport) > 
                                           pf->rule.port.local.high) {
                                 continue;
                             }
 
                             /* Dst Port*/
                             if (pf->rule.port.remote.low && 
-                                  ntohs(tcph->th_dport) < 
+                                  be16toh(tcph->th_dport) < 
                                           pf->rule.port.remote.low) {
                                 continue;
                             }
 
                             if (pf->rule.port.remote.high && 
-                                  ntohs(tcph->th_dport) > 
+                                  be16toh(tcph->th_dport) > 
                                           pf->rule.port.remote.high) {
                                 continue;
                             }
@@ -403,26 +403,26 @@ pgw_bearer_t *pgw_bearer_find_by_packet(ogs_pkbuf_t *pkt)
 
                             /* Source port */
                             if (pf->rule.port.local.low && 
-                                  ntohs(udph->uh_sport) < 
+                                  be16toh(udph->uh_sport) < 
                                           pf->rule.port.local.low) {
                                 continue;
                             }
 
                             if (pf->rule.port.local.high && 
-                                  ntohs(udph->uh_sport) > 
+                                  be16toh(udph->uh_sport) > 
                                           pf->rule.port.local.high) {
                                 continue;
                             }
 
                             /* Dst Port*/
                             if (pf->rule.port.remote.low && 
-                                  ntohs(udph->uh_dport) < 
+                                  be16toh(udph->uh_dport) < 
                                           pf->rule.port.remote.low) {
                                 continue;
                             }
 
                             if (pf->rule.port.remote.high && 
-                                  ntohs(udph->uh_dport) > 
+                                  be16toh(udph->uh_dport) > 
                                           pf->rule.port.remote.high) {
                                 continue;
                             }

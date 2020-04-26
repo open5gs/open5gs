@@ -89,8 +89,12 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
         ogs_assert(e);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
-        rv = ogs_gtp_parse_msg(&message, pkbuf);
-        ogs_assert(rv == OGS_OK);
+
+        if (ogs_gtp_parse_msg(&message, pkbuf) != OGS_OK) {
+            ogs_error("ogs_gtp_parse_msg() failed");
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
 
         if (message.h.teid_presence && message.h.teid != 0) {
             /* Cause is not "Context not found" */
@@ -120,7 +124,7 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
             break;
         case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
             if (message.h.teid == 0) {
-                ogs_assert(!sgw_ue);
+                ogs_expect(!sgw_ue);
                 sgw_ue = sgw_ue_add_by_message(&message);
                 if (sgw_ue)
                     OGS_SETUP_GTP_NODE(sgw_ue, gnode);
@@ -178,10 +182,13 @@ void sgw_state_operational(ogs_fsm_t *s, sgw_event_t *e)
     case SGW_EVT_S5C_MESSAGE:
         ogs_assert(e);
         pkbuf = e->pkbuf;
-
         ogs_assert(pkbuf);
-        rv = ogs_gtp_parse_msg(&message, pkbuf);
-        ogs_assert(rv == OGS_OK);
+
+        if (ogs_gtp_parse_msg(&message, pkbuf) != OGS_OK) {
+            ogs_error("ogs_gtp_parse_msg() failed");
+            ogs_pkbuf_free(pkbuf);
+            break;
+        }
 
         if (message.h.teid_presence && message.h.teid != 0) {
             sess = sgw_sess_find_by_teid(message.h.teid);

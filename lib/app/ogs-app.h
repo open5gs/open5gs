@@ -57,6 +57,12 @@ void pgw_terminate(void);
 int pcrf_initialize(void);
 void pcrf_terminate(void);
 
+int smf_initialize(void);
+void smf_terminate(void);
+
+int upf_initialize(void);
+void upf_terminate(void);
+
 #ifdef __cplusplus
 }
 #endif

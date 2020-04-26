@@ -21,16 +21,18 @@ libpfcp_sources = files('''
     message.h
     types.h
     conv.h
-    node.h
+    n4-build.h
     path.h
     xact.h
+    context.h
 
     message.c
     types.c
     conv.c
-    node.c
+    n4-build.c
     path.c
     xact.c
+    context.c
 '''.split())
 
 libpfcp_inc = include_directories('.')
@@ -40,10 +42,10 @@ libpfcp = library('ogspfcp',
     version : libogslib_version,
     c_args : '-DOGS_PFCP_COMPILATION',
     include_directories : [libpfcp_inc, libinc],
-    dependencies : libcore_dep,
+    dependencies : [libcore_dep, libapp_dep],
     install : true)
 
 libpfcp_dep = declare_dependency(
     link_with : libpfcp,
     include_directories : [libpfcp_inc, libinc],
-    dependencies : libcore_dep)
+    dependencies : [libcore_dep, libapp_dep])
