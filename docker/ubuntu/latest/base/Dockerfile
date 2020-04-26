@@ -6,6 +6,7 @@ MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
 RUN apt-get update && \
     apt-get upgrade -y && \
+    DEBIAN_FRONTEND=noninteractive \
     apt-get install -y --no-install-recommends \
         python3-pip \
         python3-setuptools \
@@ -15,6 +16,7 @@ RUN apt-get update && \
         flex \
         bison \
         git \
+        meson \
         libsctp-dev \
         libgnutls28-dev \
         libgcrypt-dev \
@@ -28,5 +30,3 @@ RUN apt-get update && \
         netbase \
         pkg-config && \
     apt-get clean
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install meson
