@@ -16,7 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 project('open5gs', 'c',
-    version : '1.2.3',
+    version : '1.2.4',
     license : 'AGPL-3.0-or-later',
     meson_version : '>= 0.43.0',
     default_options : [
@@ -24,7 +24,7 @@ project('open5gs', 'c',
     ],
 )
 
-libogslib_version = '1.2.3'
+libogslib_version = '1.2.4'
 
 prefix = get_option('prefix')
 bindir = join_paths(prefix, get_option('bindir'))
