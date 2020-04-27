@@ -122,17 +122,12 @@ Password : 1423
 
 Follow the instructions in [VoLTE Setup](https://open5gs.org/open5gs/docs/tutorial/02-VoLTE-setup/):
 - Step 18, set IMSI, Ki, OP, SQN and APN of your SIM cards.
-<<<<<<< HEAD
-- Step 20, add IMS subscriptions to FHoSS.
-
-=======
   **Important!** Set the type of both APN to IPv4.  Kamailio does not support VoLTE over
   IPv6 at the moment. (See the screenshot below.)
 - Step 20, add IMS subscriptions to FHoSS.
 
 ![Set both type to IPv4 only](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/subscriber-type-ipv4.png)
 
->>>>>>> master
 For already running systems, copy SQN from Open5GS and type it in FHoSS.  You
 can type SQN in decimal.  FHoSS will automagically convert it to hex.
 
@@ -140,10 +135,7 @@ Pay special attention to copy/paste.  You might have leading or trailing spaces
 in FHoSS, resulting in failed connections!
 
 
-<<<<<<< HEAD
-=======
 
->>>>>>> master
 #### 5. Debugging with Wireshark
 
 Thanks to Open5GS, the topology is super similar to [SAE on Wikipedia](https://en.wikipedia.org/wiki/System_Architecture_Evolution#/media/File:Evolved_Packet_Core.svg).
@@ -153,13 +145,6 @@ Thanks to Open5GS, the topology is super similar to [SAE on Wikipedia](https://e
 
 **APN**
 
-<<<<<<< HEAD
-APN Configurations in Open5GS should look like this one.
-
-![APN Configurations](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/open5gs-subscriber.png)
-
-=======
->>>>>>> master
 On your cellphone, there should be *internet* and *ims*.
 
 <img src="https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/apn-on-cellphone.jpg" width="320" />
@@ -183,9 +168,9 @@ reach P-CSCF and fails.
 
 ![RST at port 5060](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/RST-5060.png)
 
-If your cellphone stuck on ipsec (like mine), the PCAP looks like the one
-below.  However, it means almost every function in the system works (only
-RTPEngine and FHoSS are not tested.)
+If there is an NAT between PGW and P-CSCF, IPsec-NAT would not work, and the
+PCAP looks like the one below.  N.B. that you need to run P-CSCF as root, in
+order to add xfrm state and policy.
 
 ![401 Unauthorized](https://raw.githubusercontent.com/miaoski/docker_open5gs/gh-pages/screenshots/401-unauthorized.png)
 
@@ -250,11 +235,6 @@ Trying, a UE that does not support IPSec is sent a SIP INVITE in clear text:
 #### 7. Known issues
 
 - IPv6 is not supported.
-- If your cellphone mandates IPsec (such as Xiaomi Mi 9 Pro 5G), it might not work.
-  However, you should at least see SIP REGISTRATION and a couple of 401 Unauthorized.
-
-If anyone successfully made a VoLTE call by using this repo, please submit an
-issue and let me know!
 
 
 #### 8. References
