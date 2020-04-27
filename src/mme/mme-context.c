@@ -41,7 +41,6 @@ static OGS_POOL(mme_pgw_pool, mme_pgw_t);
 static OGS_POOL(mme_vlr_pool, mme_vlr_t);
 static OGS_POOL(mme_csmap_pool, mme_csmap_t);
 
-static OGS_POOL(mme_enb_pool, mme_enb_t);
 static OGS_POOL(mme_ue_pool, mme_ue_t);
 static OGS_POOL(enb_ue_pool, enb_ue_t);
 static OGS_POOL(mme_sess_pool, mme_sess_t);
@@ -124,8 +123,6 @@ void mme_context_init()
     ogs_pool_init(&mme_vlr_pool, ogs_config()->max.vlr);
     ogs_pool_init(&mme_csmap_pool, ogs_config()->max.csmap);
 
-    ogs_pool_init(&mme_enb_pool, ogs_config()->max.enb);
-
     ogs_pool_init(&mme_ue_pool, ogs_config()->pool.ue);
     ogs_pool_init(&enb_ue_pool, ogs_config()->pool.ue);
     ogs_pool_init(&mme_sess_pool, ogs_config()->pool.sess);
@@ -172,8 +169,6 @@ void mme_context_final()
     ogs_pool_final(&mme_sess_pool);
     ogs_pool_final(&mme_ue_pool);
     ogs_pool_final(&enb_ue_pool);
-
-    ogs_pool_final(&mme_enb_pool);
 
     ogs_pool_final(&mme_sgw_pool);
     ogs_pool_final(&mme_pgw_pool);
@@ -1863,9 +1858,8 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
     ogs_assert(sock);
     ogs_assert(addr);
 
-    ogs_pool_alloc(&mme_enb_pool, &enb);
+    enb = ogs_calloc(1, sizeof(mme_enb_t));
     ogs_assert(enb);
-    memset(enb, 0, sizeof *enb);
 
     enb->sock = sock;
     enb->addr = addr;
@@ -1925,8 +1919,7 @@ int mme_enb_remove(mme_enb_t *enb)
     }
 
     ogs_free(enb->addr);
-
-    ogs_pool_free(&mme_enb_pool, enb);
+    ogs_free(enb);
 
     stats_remove_enb();
 
@@ -3192,4 +3185,18 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     }
 
     return 0;
+}
+
+bool mme_is_maximum_number_of_enbs_reached(void)
+{
+    mme_enb_t *enb = NULL, *next_enb = NULL;
+    int number_of_enbs_online = 0;
+
+    ogs_list_for_each_safe(&self.enb_list, next_enb, enb) {
+        if (enb->s1_setup_success) {
+            number_of_enbs_online++;
+        }
+    }
+
+    return number_of_enbs_online >= ogs_config()->max.enb;
 }
