@@ -226,7 +226,9 @@ typedef struct mme_enb_s {
     ogs_sockaddr_t  *addr;      /* eNB S1AP Address */
     ogs_poll_t      *poll;      /* eNB S1AP Poll */
 
-    bool s1_setup_success;      /* eNB S1AP Setup complete successfuly */
+    struct {
+        bool s1_setup_success;  /* eNB S1AP Setup complete successfuly */
+    } state;
 
     uint16_t        max_num_of_ostreams;/* SCTP Max num of outbound streams */
     uint16_t        ostream_id;         /* enb_ostream_id generator */
@@ -667,6 +669,7 @@ mme_enb_t *mme_enb_find_by_addr(ogs_sockaddr_t *addr);
 mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id);
 int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
 int mme_enb_sock_type(ogs_sock_t *sock);
+bool mme_is_maximum_number_of_enbs_reached(void);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
 unsigned int enb_ue_count(void);
@@ -792,10 +795,6 @@ void stats_add_enb(void);
 void stats_remove_enb(void);
 void stats_add_mme_session(void);
 void stats_remove_mme_session(void);
-
-bool mme_is_maximum_number_of_enbs_reached(void);
-
-
 
 #ifdef __cplusplus
 }

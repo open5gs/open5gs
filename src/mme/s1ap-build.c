@@ -100,7 +100,8 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void)
             S1AP_MME_Code_t *MME_Code = NULL ;
             MME_Code = (S1AP_MME_Code_t *)
                 CALLOC(1, sizeof(S1AP_MME_Code_t));
-            ogs_s1ap_uint8_to_OCTET_STRING(served_gummei->mme_code[j], MME_Code);
+            ogs_s1ap_uint8_to_OCTET_STRING(
+                    served_gummei->mme_code[j], MME_Code);
             ASN_SEQUENCE_ADD(&ServedGUMMEIsItem->servedMMECs.list, MME_Code);
             ogs_debug("    MME Code[%d]", served_gummei->mme_code[j]);
         }
@@ -401,7 +402,8 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
             rv = ogs_s1ap_ip_to_BIT_STRING(
                     &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress);
             ogs_assert(rv == OGS_OK);
-            ogs_s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
+            ogs_s1ap_uint32_to_OCTET_STRING(
+                    bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
 
             if (emmbuf && emmbuf->len) {
                 nasPdu = (S1AP_NAS_PDU_t *)CALLOC(
@@ -491,8 +493,8 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
         LAI = &ie->value.choice.LAI;
         ogs_assert(LAI);
 
-        ogs_s1ap_buffer_to_OCTET_STRING(&mme_ue->tai.plmn_id, sizeof(ogs_plmn_id_t),
-                &LAI->pLMNidentity);
+        ogs_s1ap_buffer_to_OCTET_STRING(
+            &mme_ue->tai.plmn_id, sizeof(ogs_plmn_id_t), &LAI->pLMNidentity);
         ogs_assert(mme_ue->csmap);
         ogs_assert(mme_ue->p_tmsi);
         ogs_s1ap_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
@@ -612,8 +614,8 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
         LAI = &ie->value.choice.LAI;
         ogs_assert(LAI);
 
-        ogs_s1ap_buffer_to_OCTET_STRING(&mme_ue->tai.plmn_id, sizeof(ogs_plmn_id_t),
-                &LAI->pLMNidentity);
+        ogs_s1ap_buffer_to_OCTET_STRING(
+            &mme_ue->tai.plmn_id, sizeof(ogs_plmn_id_t), &LAI->pLMNidentity);
         ogs_assert(mme_ue->csmap);
         ogs_assert(mme_ue->p_tmsi);
         ogs_s1ap_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
@@ -624,8 +626,7 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
 
         ie->id = S1AP_ProtocolIE_ID_id_UESecurityCapabilities;
         ie->criticality = S1AP_Criticality_reject;
-        ie->value.present =
-            S1AP_UEContextModificationRequestIEs__value_PR_UESecurityCapabilities;
+        ie->value.present = S1AP_UEContextModificationRequestIEs__value_PR_UESecurityCapabilities;
 
         UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
 
@@ -1471,7 +1472,8 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
     S1AP_HandoverType_t *HandoverType = NULL;
     S1AP_E_RABSubjecttoDataForwardingList_t
         *E_RABSubjecttoDataForwardingList = NULL;
-    S1AP_Target_ToSource_TransparentContainer_t *Target_ToSource_TransparentContainer = NULL;
+    S1AP_Target_ToSource_TransparentContainer_t
+        *Target_ToSource_TransparentContainer = NULL;
 
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -1546,7 +1548,8 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
                     ogs_assert(ie);
                     ASN_SEQUENCE_ADD(&HandoverCommand->protocolIEs, ie);
 
-                    ie->id = S1AP_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList;
+                    ie->id =
+                        S1AP_ProtocolIE_ID_id_E_RABSubjecttoDataForwardingList;
                     ie->criticality = S1AP_Criticality_ignore;
                     ie->value.present =
                         S1AP_HandoverCommandIEs__value_PR_E_RABSubjecttoDataForwardingList;
@@ -1620,8 +1623,8 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
     Target_ToSource_TransparentContainer =
         &ie->value.choice.Target_ToSource_TransparentContainer;
 
-    ogs_s1ap_buffer_to_OCTET_STRING(mme_ue->container.buf, mme_ue->container.size, 
-            Target_ToSource_TransparentContainer);
+    ogs_s1ap_buffer_to_OCTET_STRING(mme_ue->container.buf,
+            mme_ue->container.size, Target_ToSource_TransparentContainer);
 
     return ogs_s1ap_encode(&pdu);
 }
@@ -1903,7 +1906,8 @@ ogs_pkbuf_t *s1ap_build_handover_request(
             rv = ogs_s1ap_ip_to_BIT_STRING(
                     &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress);
             ogs_assert(rv == OGS_OK);
-            ogs_s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
+            ogs_s1ap_uint32_to_OCTET_STRING(
+                    bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
             ogs_debug("    SGW-S1U-TEID[%d]", bearer->sgw_s1u_teid);
 
             bearer = mme_bearer_next(bearer);
@@ -2363,19 +2367,22 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
         CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
 
     initiatingMessage = pdu.choice.initiatingMessage;
-    initiatingMessage->procedureCode = S1AP_ProcedureCode_id_WriteReplaceWarning;
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_WriteReplaceWarning;
     initiatingMessage->criticality = S1AP_Criticality_reject;
     initiatingMessage->value.present =
         S1AP_InitiatingMessage__value_PR_WriteReplaceWarningRequest;
 
-    WriteReplaceWarningRequest = &initiatingMessage->value.choice.WriteReplaceWarningRequest;
+    WriteReplaceWarningRequest =
+        &initiatingMessage->value.choice.WriteReplaceWarningRequest;
 
     ie = CALLOC(1, sizeof(S1AP_WriteReplaceWarningRequestIEs_t));
     ASN_SEQUENCE_ADD(&WriteReplaceWarningRequest->protocolIEs, ie);
 
     ie->id = S1AP_ProtocolIE_ID_id_MessageIdentifier;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_MessageIdentifier;
+    ie->value.present =
+        S1AP_WriteReplaceWarningRequestIEs__value_PR_MessageIdentifier;
 
     MessageIdentifier = &ie->value.choice.MessageIdentifier;
 
@@ -2391,7 +2398,8 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
 
     ie->id = S1AP_ProtocolIE_ID_id_SerialNumber;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_SerialNumber;
+    ie->value.present =
+        S1AP_WriteReplaceWarningRequestIEs__value_PR_SerialNumber;
 
     SerialNumber = &ie->value.choice.SerialNumber;
 
@@ -2409,7 +2417,8 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
 
     ie->id = S1AP_ProtocolIE_ID_id_RepetitionPeriod;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_RepetitionPeriod;
+    ie->value.present =
+        S1AP_WriteReplaceWarningRequestIEs__value_PR_RepetitionPeriod;
 
     RepetitionPeriod = &ie->value.choice.RepetitionPeriod;
 
@@ -2422,7 +2431,8 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
 
     ie->id = S1AP_ProtocolIE_ID_id_NumberofBroadcastRequest;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_NumberofBroadcastRequest;
+    ie->value.present =
+        S1AP_WriteReplaceWarningRequestIEs__value_PR_NumberofBroadcastRequest;
 
     NumberofBroadcastRequest = &ie->value.choice.NumberofBroadcastRequest;
 
@@ -2437,7 +2447,8 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
 
     ie->id = S1AP_ProtocolIE_ID_id_DataCodingScheme;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_DataCodingScheme;
+    ie->value.present =
+        S1AP_WriteReplaceWarningRequestIEs__value_PR_DataCodingScheme;
 
     DataCodingScheme = &ie->value.choice.DataCodingScheme;
 
@@ -2452,14 +2463,16 @@ ogs_pkbuf_t *s1ap_build_write_replace_warning_request(sbc_pws_data_t *sbc_pws)
 
     ie->id = S1AP_ProtocolIE_ID_id_WarningMessageContents;
     ie->criticality = S1AP_Criticality_reject;
-    ie->value.present = S1AP_WriteReplaceWarningRequestIEs__value_PR_WarningMessageContents;
+    ie->value.present =
+        S1AP_WriteReplaceWarningRequestIEs__value_PR_WarningMessageContents;
 
     WarningMessageContents = &ie->value.choice.WarningMessageContents;
 
     WarningMessageContents->size = sbc_pws->message_length;;
     WarningMessageContents->buf = 
         CALLOC(WarningMessageContents->size, sizeof(uint8_t));
-    memcpy(WarningMessageContents->buf, sbc_pws->message_contents, WarningMessageContents->size);
+    memcpy(WarningMessageContents->buf,
+            sbc_pws->message_contents, WarningMessageContents->size);
 
     /* TODO: optional Concurrent Warning Message Indicator */
 

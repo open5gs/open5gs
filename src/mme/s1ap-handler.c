@@ -33,29 +33,7 @@
 #include "mme-path.h"
 #include "mme-sm.h"
 
-static void send_s1_setup_failure_response(mme_enb_t *enb, S1AP_Cause_PR group, long cause)
-{
-    ogs_pkbuf_t *s1ap_buffer;
-
-    ogs_debug("[MME] S1-Setup failure");
-    s1ap_buffer = s1ap_build_setup_failure(group, cause, S1AP_TimeToWait_v10s);
-    ogs_expect_or_return(s1ap_buffer);
-
-    ogs_expect(OGS_OK == s1ap_send_to_enb(enb, s1ap_buffer, S1AP_NON_UE_SIGNALLING));
-}
-
-static void send_s1_setup_successful_response(mme_enb_t *enb)
-{
-    ogs_pkbuf_t *s1ap_buffer;
-
-    ogs_debug("[MME] S1-Setup response");
-    s1ap_buffer = s1ap_build_setup_rsp();
-    ogs_expect_or_return(s1ap_buffer);
-
-    ogs_expect(OGS_OK == s1ap_send_to_enb(enb, s1ap_buffer, S1AP_NON_UE_SIGNALLING));
-}
-
-static bool is_mme_serving_enb_supported_tai(mme_enb_t *enb)
+static bool served_tai_is_found(mme_enb_t *enb)
 {
     int i;
     int served_tai_index;
@@ -69,6 +47,20 @@ static bool is_mme_serving_enb_supported_tai(mme_enb_t *enb)
     }
 
     return false;
+}
+
+static bool maximum_number_of_enbs_is_reached(void)
+{
+    mme_enb_t *enb = NULL, *next_enb = NULL;
+    int number_of_enbs_online = 0;
+
+    ogs_list_for_each_safe(&mme_self()->enb_list, next_enb, enb) {
+        if (enb->state.s1_setup_success) {
+            number_of_enbs_online++;
+        }
+    }
+
+    return number_of_enbs_online >= ogs_config()->max.enb;
 }
 
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
@@ -163,13 +155,13 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         }
     }
 
-    if (mme_is_maximum_number_of_enbs_reached()) {
+    if (maximum_number_of_enbs_is_reached()) {
         ogs_warn("S1-Setup failure:");
         ogs_warn("    Maximum number of eNBs reached");
         group = S1AP_Cause_PR_misc;
         cause = S1AP_CauseMisc_unspecified;
 
-        send_s1_setup_failure_response(enb, group, cause);
+        s1ap_send_s1_setup_failure(enb, group, cause);
         return;
     }
 
@@ -179,22 +171,22 @@ void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
         group = S1AP_Cause_PR_misc;
         cause = S1AP_CauseMisc_unspecified;
 
-        send_s1_setup_failure_response(enb, group, cause);
+        s1ap_send_s1_setup_failure(enb, group, cause);
         return;
     }
 
-    if (!is_mme_serving_enb_supported_tai(enb)) {
+    if (!served_tai_is_found(enb)) {
         ogs_warn("S1-Setup failure:");
         ogs_warn("    Cannot find Served TAI. Check 'mme.tai' configuration");
         group = S1AP_Cause_PR_misc;
         cause = S1AP_CauseMisc_unknown_PLMN;
 
-        send_s1_setup_failure_response(enb, group, cause);
+        s1ap_send_s1_setup_failure(enb, group, cause);
         return;
     }
 
-    enb->s1_setup_success = true;
-    send_s1_setup_successful_response(enb);
+    enb->state.s1_setup_success = true;
+    s1ap_send_s1_setup_response(enb);
 }
 
 void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)

@@ -77,25 +77,6 @@ static uint8_t emm_cause_from_diameter(
     return EMM_CAUSE_SEVERE_NETWORK_FAILURE;
 }
 
-static void handle_mme_s1ap_accept(ogs_sock_t *sock, ogs_sockaddr_t *address)
-{
-    char address_string_buffer[OGS_ADDRSTRLEN];
-    const char *address_string;
-
-    address_string = OGS_ADDR(address, address_string_buffer);
-
-    if (mme_enb_find_by_addr(address)) {
-        ogs_warn("eNB context duplicated with IP-address [%s]!!!", address_string);
-        ogs_sock_destroy(sock);
-        ogs_warn("S1 Socket Closed");
-        return;
-    }
-
-    mme_enb_add(sock, address);
-    ogs_info("eNB-S1 accepted[%s] in master_sm module", address_string);
-}
-
-
 void mme_state_initial(ogs_fsm_t *s, mme_event_t *e)
 {
     mme_sm_debug(e);
@@ -181,7 +162,19 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         addr = e->addr;
         ogs_assert(addr);
 
-        handle_mme_s1ap_accept(sock, addr);
+        ogs_info("eNB-S1 accepted[%s] in master_sm module",
+        OGS_ADDR(addr, buf));
+
+        enb = mme_enb_find_by_addr(addr);
+        if (!enb) {
+            enb = mme_enb_add(sock, addr);
+            ogs_assert(enb);
+        } else {
+            ogs_warn("eNB context duplicated with IP-address [%s]!!!",
+                    OGS_ADDR(addr, buf));
+            ogs_sock_destroy(sock);
+            ogs_warn("S1 Socket Closed");
+        }
 
         break;
 

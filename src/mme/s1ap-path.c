@@ -245,6 +245,31 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     }
 }
 
+void s1ap_send_s1_setup_response(mme_enb_t *enb)
+{
+    ogs_pkbuf_t *s1ap_buffer;
+
+    ogs_debug("[MME] S1-Setup response");
+    s1ap_buffer = s1ap_build_setup_rsp();
+    ogs_expect_or_return(s1ap_buffer);
+
+    ogs_expect(OGS_OK ==
+            s1ap_send_to_enb(enb, s1ap_buffer, S1AP_NON_UE_SIGNALLING));
+}
+
+void s1ap_send_s1_setup_failure(
+        mme_enb_t *enb, S1AP_Cause_PR group, long cause)
+{
+    ogs_pkbuf_t *s1ap_buffer;
+
+    ogs_debug("[MME] S1-Setup failure");
+    s1ap_buffer = s1ap_build_setup_failure(group, cause, S1AP_TimeToWait_v10s);
+    ogs_expect_or_return(s1ap_buffer);
+
+    ogs_expect(OGS_OK ==
+            s1ap_send_to_enb(enb, s1ap_buffer, S1AP_NON_UE_SIGNALLING));
+}
+
 void s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
 {
     int rv;
