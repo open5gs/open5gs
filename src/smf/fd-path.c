@@ -37,6 +37,9 @@ struct sess_state {
     struct timespec ts; /* Time of sending the message */
 };
 
+static OGS_POOL(sess_state_pool, struct sess_state);
+static ogs_thread_mutex_t sess_state_mutex;
+
 static int decode_pcc_rule_definition(
         ogs_pcc_rule_t *pcc_rule, struct avp *avpch1, int *perror);
 static void smf_gx_cca_cb(void *data, struct msg **msg);
@@ -45,7 +48,11 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 {
     struct sess_state *new = NULL;
 
-    new = ogs_calloc(1, sizeof(*new));
+    ogs_thread_mutex_lock(&sess_state_mutex);
+    ogs_pool_alloc(&sess_state_pool, &new);
+    ogs_assert(new);
+    ogs_thread_mutex_unlock(&sess_state_mutex);
+
     new->gx_sid = (os0_t)ogs_strdup((char *)sid);
     ogs_assert(new->gx_sid);
 
@@ -57,7 +64,9 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     if (sess_data->gx_sid)
         ogs_free(sess_data->gx_sid);
 
-    ogs_free(sess_data);
+    ogs_thread_mutex_lock(&sess_state_mutex);
+    ogs_pool_free(&sess_state_pool, sess_data);
+    ogs_thread_mutex_unlock(&sess_state_mutex);
 }
 
 void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
@@ -1022,6 +1031,9 @@ int smf_fd_init(void)
     int ret;
 	struct disp_when data;
 
+    ogs_thread_mutex_init(&sess_state_mutex);
+    ogs_pool_init(&sess_state_pool, ogs_config()->pool.sess);
+
     ret = ogs_diam_init(FD_MODE_CLIENT|FD_MODE_SERVER,
                 smf_self()->diam_conf_path, smf_self()->diam_config);
     ogs_assert(ret == 0);
@@ -1065,6 +1077,9 @@ void smf_fd_final(void)
 		(void) fd_disp_unregister(&hdl_gx_rar, NULL);
 
     ogs_diam_final();
+
+    ogs_pool_final(&sess_state_pool);
+    ogs_thread_mutex_destroy(&sess_state_mutex);
 }
 
 static int decode_pcc_rule_definition(
@@ -1084,8 +1099,7 @@ static int decode_pcc_rule_definition(
         ogs_assert(ret == 0);
         switch (hdr->avp_code) {
         case OGS_DIAM_GX_AVP_CODE_CHARGING_RULE_NAME:
-            if (pcc_rule->name)
-            {
+            if (pcc_rule->name) {
                 ogs_error("PCC Rule Name has already been defined");
                 ogs_free(pcc_rule->name);
             }
@@ -1097,16 +1111,17 @@ static int decode_pcc_rule_definition(
             ogs_flow_t *flow =
                 &pcc_rule->flow[pcc_rule->num_of_flow];
 
-            ret = fd_avp_search_avp(avpch2, ogs_diam_gx_flow_direction, &avpch3);
+            ret = fd_avp_search_avp(
+                    avpch2, ogs_diam_gx_flow_direction, &avpch3);
             ogs_assert(ret == 0);
-            if (avpch3)
-            {
+            if (avpch3) {
                 ret = fd_msg_avp_hdr( avpch3, &hdr);
                 ogs_assert(ret == 0);
                 flow->direction = hdr->avp_value->i32;
             }
 
-            ret = fd_avp_search_avp(avpch2, ogs_diam_gx_flow_description, &avpch3);
+            ret = fd_avp_search_avp(
+                    avpch2, ogs_diam_gx_flow_description, &avpch3);
             ogs_assert(ret == 0);
             if (avpch3)
             {
@@ -1141,7 +1156,8 @@ static int decode_pcc_rule_definition(
                 ogs_diam_gx_allocation_retention_priority, &avpch3);
             ogs_assert(ret == 0);
             if (avpch3) {
-                ret = fd_avp_search_avp(avpch3, ogs_diam_gx_priority_level, &avpch4);
+                ret = fd_avp_search_avp(
+                        avpch3, ogs_diam_gx_priority_level, &avpch4);
                 ogs_assert(ret == 0);
                 if (avpch4) {
                     ret = fd_msg_avp_hdr(avpch4, &hdr);

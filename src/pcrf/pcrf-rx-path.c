@@ -35,6 +35,9 @@ struct sess_state {
     struct timespec ts;         /* Time of sending the message */
 };
 
+static OGS_POOL(sess_state_pool, struct sess_state);
+static ogs_thread_mutex_t sess_state_mutex;
+
 static struct session_handler *pcrf_rx_reg = NULL;
 static struct disp_hdl *hdl_rx_fb = NULL; 
 static struct disp_hdl *hdl_rx_aar = NULL; 
@@ -44,7 +47,14 @@ static void pcrf_rx_asa_cb(void *data, struct msg **msg);
 
 static __inline__ struct sess_state *new_state(os0_t sid)
 {
-    struct sess_state *new = ogs_calloc(1, sizeof(*new));;
+    struct sess_state *new = NULL;
+
+    ogs_thread_mutex_lock(&sess_state_mutex);
+    ogs_pool_alloc(&sess_state_pool, &new);
+    ogs_assert(new);
+    memset(new, 0, sizeof(*new));
+    ogs_thread_mutex_unlock(&sess_state_mutex);
+
     new->rx_sid = (os0_t)ogs_strdup((char *)sid);
     ogs_assert(new->rx_sid);
 
@@ -63,7 +73,9 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
     if (sess_data->peer_host)
         ogs_free(sess_data->peer_host);
 
-    ogs_free(sess_data);
+    ogs_thread_mutex_lock(&sess_state_mutex);
+    ogs_pool_free(&sess_state_pool, sess_data);
+    ogs_thread_mutex_unlock(&sess_state_mutex);
 }
 
 static int pcrf_rx_fb_cb(struct msg **msg, struct avp *avp, 
@@ -716,6 +728,9 @@ int pcrf_rx_init(void)
     int ret;
 	struct disp_when data;
 
+    ogs_thread_mutex_init(&sess_state_mutex);
+    ogs_pool_init(&sess_state_pool, ogs_config()->pool.sess);
+
 	/* Install objects definitions for this application */
 	ret = ogs_diam_rx_init();
     ogs_assert(ret == 0);
@@ -764,4 +779,7 @@ void pcrf_rx_final(void)
 		(void) fd_disp_unregister(&hdl_rx_aar, NULL);
 	if (hdl_rx_str)
 		(void) fd_disp_unregister(&hdl_rx_str, NULL);
+
+    ogs_pool_final(&sess_state_pool);
+    ogs_thread_mutex_destroy(&sess_state_mutex);
 }

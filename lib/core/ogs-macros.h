@@ -161,9 +161,8 @@ extern "C" {
 #define OGS_IS_DIR_SEPARATOR(c) ((c) == OGS_DIR_SEPARATOR)
 #endif
 
-#define ogs_container_of(ptr, type, member) ({ \
-    const typeof( ((type *)0)->member ) *__mptr = (ptr); \
-    (type *)( (char *)__mptr - offsetof(type, member) );})
+#define ogs_container_of(ptr, type, member) \
+    (type *)((u_char *)ptr - offsetof(type, member))
 
 #ifdef __cplusplus
 }

@@ -50,6 +50,10 @@ ED3(uint8_t     ipv4:1;,
     struct timespec ts;             /* Time of sending the message */
 };
 
+static OGS_POOL(sess_state_pool, struct sess_state);
+static OGS_POOL(rx_sess_state_pool, struct rx_sess_state);
+static ogs_thread_mutex_t sess_state_mutex;
+
 static struct session_handler *pcrf_gx_reg = NULL;
 static struct disp_hdl *hdl_gx_fb = NULL; 
 static struct disp_hdl *hdl_gx_ccr = NULL; 
@@ -71,7 +75,12 @@ static __inline__ struct sess_state *new_state(os0_t sid)
 
     ogs_assert(sid);
 
-    new = ogs_calloc(1, sizeof(*new));
+    ogs_thread_mutex_lock(&sess_state_mutex);
+    ogs_pool_alloc(&sess_state_pool, &new);
+    ogs_assert(new);
+    memset(new, 0, sizeof(*new));
+    ogs_thread_mutex_unlock(&sess_state_mutex);
+
     new->sid = (os0_t)ogs_strdup((char *)sid);
     ogs_assert(new->sid);
 
@@ -87,7 +96,12 @@ static struct rx_sess_state *add_rx_state(struct sess_state *gx, os0_t sid)
     ogs_assert(gx);
     ogs_assert(sid);
 
-    new = ogs_calloc(1, sizeof(*new));
+    ogs_thread_mutex_lock(&sess_state_mutex);
+    ogs_pool_alloc(&rx_sess_state_pool, &new);
+    ogs_assert(new);
+    memset(new, 0, sizeof(*new));
+    ogs_thread_mutex_unlock(&sess_state_mutex);
+
     new->sid = (os0_t)ogs_strdup((char *)sid);
     ogs_assert(new->sid);
 
@@ -105,6 +119,9 @@ static int remove_rx_state(struct rx_sess_state *rx_sess_data)
 
     ogs_assert(rx_sess_data);
     gx = rx_sess_data->gx;
+    ogs_assert(gx);
+
+    ogs_list_remove(&gx->rx_list, rx_sess_data);
 
     for (i = 0; i < rx_sess_data->num_of_pcc_rule; i++) {
         OGS_PCC_RULE_FREE(&rx_sess_data->pcc_rule[i]);
@@ -113,8 +130,9 @@ static int remove_rx_state(struct rx_sess_state *rx_sess_data)
     if (rx_sess_data->sid)
         ogs_free(rx_sess_data->sid);
 
-    ogs_list_remove(&gx->rx_list, rx_sess_data);
-    ogs_free(rx_sess_data);
+    ogs_thread_mutex_lock(&sess_state_mutex);
+    ogs_pool_free(&rx_sess_state_pool, rx_sess_data);
+    ogs_thread_mutex_unlock(&sess_state_mutex);
 
     return OGS_OK;
 }
@@ -168,7 +186,9 @@ static void state_cleanup(struct sess_state *sess_data, os0_t sid, void *opaque)
 
     remove_rx_state_all(sess_data);
     
-    ogs_free(sess_data);
+    ogs_thread_mutex_lock(&sess_state_mutex);
+    ogs_pool_free(&sess_state_pool, sess_data);
+    ogs_thread_mutex_unlock(&sess_state_mutex);
 }
 
 static int pcrf_gx_fb_cb(struct msg **msg, struct avp *avp, 
@@ -1110,6 +1130,10 @@ int pcrf_gx_init(void)
     int ret;
 	struct disp_when data;
 
+    ogs_thread_mutex_init(&sess_state_mutex);
+    ogs_pool_init(&sess_state_pool, ogs_config()->pool.sess);
+    ogs_pool_init(&rx_sess_state_pool, ogs_config()->pool.sess);
+
 	/* Install objects definitions for this application */
 	ret = ogs_diam_gx_init();
     ogs_assert(ret == 0);
@@ -1148,6 +1172,10 @@ void pcrf_gx_final(void)
 		(void) fd_disp_unregister(&hdl_gx_fb, NULL);
 	if (hdl_gx_ccr)
 		(void) fd_disp_unregister(&hdl_gx_ccr, NULL);
+
+    ogs_pool_final(&sess_state_pool);
+    ogs_pool_final(&rx_sess_state_pool);
+    ogs_thread_mutex_destroy(&sess_state_mutex);
 }
 
 static int encode_pcc_rule_definition(

@@ -786,7 +786,12 @@ pgw_sess_t *pgw_sess_add(
     ogs_assert(paa);
 
     ogs_pool_alloc(&pgw_sess_pool, &sess);
-    ogs_assert(sess);
+    if (!sess) {
+        ogs_error("Maximum number of session[%d] reached",
+                ogs_config()->pool.sess);
+        return NULL;
+    }
+
     memset(sess, 0, sizeof *sess);
 
     sess->index = ogs_pool_index(&pgw_sess_pool, sess);
@@ -1008,7 +1013,6 @@ pgw_sess_t *pgw_sess_add_by_message(ogs_gtp_message_t *message)
     sess = pgw_sess_add(req->imsi.data, req->imsi.len, apn,
                     req->pdn_type.u8,
                     req->bearer_contexts_to_be_created.eps_bearer_id.u8, paa);
-    ogs_assert(sess);
 
     return sess;
 }

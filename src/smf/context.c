@@ -35,12 +35,14 @@ static int context_initiaized = 0;
 int num_sessions = 0;
 void stats_add_session(void) {
     num_sessions = num_sessions + 1;
-    ogs_info("Added a session. Number of active sessions is now %d", num_sessions);
+    ogs_info("Added a session. Number of active sessions is now %d",
+            num_sessions);
 }
 
 void stats_remove_session(void) {
     num_sessions = num_sessions - 1;
-    ogs_info("Removed a session. Number of active sessions is now %d", num_sessions);
+    ogs_info("Removed a session. Number of active sessions is now %d",
+            num_sessions);
 }
 
 void smf_context_init(void)
@@ -542,7 +544,11 @@ smf_sess_t *smf_sess_add(
     ogs_assert(paa);
 
     ogs_pool_alloc(&smf_sess_pool, &sess);
-    ogs_assert(sess);
+    if (!sess) {
+        ogs_error("Maximum number of session[%d] reached",
+        ogs_config()->pool.sess);
+        return NULL;
+    }
     memset(sess, 0, sizeof *sess);
 
     sess->index = ogs_pool_index(&smf_sess_pool, sess);
