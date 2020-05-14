@@ -32,6 +32,9 @@
 #include "ogs-app.h"
 #include "ipfw/ogs-ipfw.h"
 
+#include "timer.h"
+#include "smf-sm.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

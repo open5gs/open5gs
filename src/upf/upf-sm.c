@@ -62,28 +62,13 @@ void upf_state_operational(ogs_fsm_t *s, upf_event_t *e)
         if (rv != OGS_OK) {
             ogs_fatal("Can't establish GTP-U path");
         }
-
-        ogs_list_for_each(&ogs_pfcp_self()->n4_list, node) {
-            upf_event_t e;
-            e.pfcp_node = node;
-
-            ogs_fsm_create(&node->sm,
-                    upf_pfcp_state_initial, upf_pfcp_state_final);
-            ogs_fsm_init(&node->sm, &e);
-        }
         break;
+
     case OGS_FSM_EXIT_SIG:
-        ogs_list_for_each(&ogs_pfcp_self()->n4_list, node) {
-            upf_event_t e;
-            e.pfcp_node = node;
-
-            ogs_fsm_fini(&node->sm, &e);
-            ogs_fsm_delete(&node->sm);
-        }
-
         upf_pfcp_close();
         upf_gtp_close();
         break;
+
     case UPF_EVT_N4_MESSAGE:
         ogs_assert(e);
         recvbuf = e->pkbuf;

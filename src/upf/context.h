@@ -33,6 +33,9 @@
 
 #include "ipfw/ogs-ipfw.h"
 
+#include "timer.h"
+#include "upf-sm.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -73,28 +73,13 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         if (rv != OGS_OK) {
             ogs_fatal("Can't establish N4-PFCP path");
         }
-
-        ogs_list_for_each(&ogs_pfcp_self()->n4_list, pfcp_node) {
-            smf_event_t e;
-            e.pfcp_node = pfcp_node;
-
-            ogs_fsm_create(&pfcp_node->sm,
-                    smf_pfcp_state_initial, smf_pfcp_state_final);
-            ogs_fsm_init(&pfcp_node->sm, &e);
-        }
         break;
+
     case OGS_FSM_EXIT_SIG:
-        ogs_list_for_each(&ogs_pfcp_self()->n4_list, pfcp_node) {
-            smf_event_t e;
-            e.pfcp_node = pfcp_node;
-
-            ogs_fsm_fini(&pfcp_node->sm, &e);
-            ogs_fsm_delete(&pfcp_node->sm);
-        }
-
         smf_gtp_close();
         smf_pfcp_close();
         break;
+
     case SMF_EVT_S5C_MESSAGE:
         ogs_assert(e);
         recvbuf = e->pkbuf;
@@ -217,6 +202,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(recvbuf);
         pfcp_node = e->pfcp_node;
         ogs_assert(pfcp_node);
+        ogs_assert(OGS_FSM_STATE(&pfcp_node->sm));
 
         if (ogs_pfcp_parse_msg(&pfcp_message, recvbuf) != OGS_OK) {
             ogs_error("ogs_pfcp_parse_msg() failed");
