@@ -33,6 +33,13 @@ extern "C" {
 
 typedef struct ogs_pfcp_node_s ogs_pfcp_node_t;
 
+typedef enum {
+    UPF_SELECT_RR = 0,  /* Default UPF Selection Method */
+    UPF_SELECT_TAC,     /* Select UPF by TAC */
+} upf_select_e;
+
+
+
 typedef struct ogs_pfcp_context_s {
     uint32_t        pfcp_port;      /* PFCP local port */
     const char      *tun_ifname;    /* PFCP TUN Interface Name */
@@ -47,6 +54,7 @@ typedef struct ogs_pfcp_context_s {
     uint32_t        pfcp_started;   /* UTC time when the PFCP entity started */
 
     ogs_list_t      n4_list;        /* PFCP Node List */
+    upf_select_e    upf_selection_mode;  /* Selection algorithm for selecting UPF */
     ogs_pfcp_node_t *node;    /* Iterator for Peer round-robin */
 
     ogs_list_t      dev_list;       /* Tun Device List */

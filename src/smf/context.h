@@ -197,7 +197,7 @@ smf_sess_t *smf_sess_add_by_message(ogs_gtp_message_t *message);
 
 smf_sess_t *smf_sess_add(
         uint8_t *imsi, int imsi_len, char *apn,
-        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *addr);
+        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *addr, ogs_gtp_create_session_request_t *message);
 
 int smf_sess_remove(smf_sess_t *sess);
 void smf_sess_remove_all(void);

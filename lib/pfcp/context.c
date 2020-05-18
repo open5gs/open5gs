@@ -242,6 +242,18 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 dev = ogs_yaml_iter_value(&pfcp_iter);
                             } else if (!strcmp(pfcp_key, "apn")) {
                                 /* Skip */
+                            } else if (!strcmp(pfcp_key, "upf_selection_mode")) {
+                                ogs_assert(ogs_yaml_iter_type(&pfcp_iter) !=
+                                        YAML_SCALAR_NODE);
+                                const char *upf_selection_mode = ogs_yaml_iter_value(&pfcp_iter);
+
+                                if (!strcmp(upf_selection_mode, "rr"))
+                                    self.upf_selection_mode = UPF_SELECT_RR;
+                                else if (!strcmp(upf_selection_mode, "tac"))
+                                    self.upf_selection_mode = UPF_SELECT_TAC;
+                                else
+                                    ogs_warn("unknown upf_selection_mode `%s`",
+                                            upf_selection_mode);
                             } else
                                 ogs_warn("unknown key `%s`", pfcp_key);
                         }

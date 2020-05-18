@@ -179,6 +179,11 @@ logger:
 #      - 127.0.0.1
 #      - ::1
 #
+#  o upf_selection_mode can be set to rr (round-robin), or TAC (see upf config section
+#    for how to configure a UPF to be used for certain TACs)
+#
+#
+
 smf:
     sbi:
       - addr: 127.0.0.3
@@ -198,6 +203,7 @@ smf:
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
     mtu: 1400
+    upf_selection_mode: rr
     freeDiameter: @sysconfdir@/freeDiameter/pgw.conf
 
 #
@@ -239,13 +245,16 @@ nrf:
 #  <PFCP Client>>
 #
 #  o PFCP Client(127.0.0.4:8805)
+#  - optional parameter for TACs to serve from this UPF
 # 
 #    pfcp:
 #      addr: 127.0.0.4
+#      tac: 1
 #
 upf:
     pfcp:
       addr: 127.0.0.4
+      tac: 1
 
 #
 # parameter:

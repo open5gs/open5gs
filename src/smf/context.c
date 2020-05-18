@@ -531,7 +531,7 @@ static void *sess_hash_keygen(uint8_t *out, int *out_len,
 
 smf_sess_t *smf_sess_add(
         uint8_t *imsi, int imsi_len, char *apn, 
-        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *paa)
+        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *paa, ogs_gtp_create_session_request_t *req)
 {
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
@@ -617,16 +617,47 @@ smf_sess_t *smf_sess_add(
             imsi, imsi_len, apn);
     ogs_hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, sess);
 
-    /* Select UPF with round-robin manner */
-    if (ogs_pfcp_self()->node == NULL)
-        ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+    if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_TAC) {
+        int i, found = 0;
+        ogs_gtp_uli_t uli;
+        /* Fetch the user location information from the incoming request */
+        ogs_gtp_parse_uli(&uli, &req->user_location_information);
 
-    for (; ogs_pfcp_self()->node;
-        ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node)) {
+        ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+        while (ogs_pfcp_self()->node && !found) {
+            for (i = 0; i < ogs_pfcp_self()->node->num_of_tac && !found; i++){
+                found = ogs_pfcp_self()->node->tac[i] == uli.tai.tac ? 1: 0;
+            }
+            if (!found)
+            ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
+        }
+
+        if (!found) {
+            ogs_warn("No corresponding UPF found for eNB TAC[%d]",
+                    uli.tai.tac);
+            ogs_warn("Defaulting to first UPF in smf.yaml list");
+            ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+
+        }
+        ogs_debug("Found a UPF for TAC: %d!", ogs_pfcp_self()->node->tac[i]);
         if (OGS_FSM_CHECK(
                 &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated)) {
             OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
-            break;
+        }
+    }
+    else
+    {
+        /* Select UPF with round-robin manner */
+        if (ogs_pfcp_self()->node == NULL)
+            ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+
+        for (; ogs_pfcp_self()->node;
+            ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node)) {
+            if (OGS_FSM_CHECK(
+                    &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated)) {
+                OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
+                break;
+            }
         }
     }
 
@@ -803,7 +834,7 @@ smf_sess_t *smf_sess_add_by_message(ogs_gtp_message_t *message)
     }
     sess = smf_sess_add(req->imsi.data, req->imsi.len, apn,
                     req->pdn_type.u8,
-                    req->bearer_contexts_to_be_created.eps_bearer_id.u8, paa);
+                    req->bearer_contexts_to_be_created.eps_bearer_id.u8, paa, req);
     return sess;
 }
 
