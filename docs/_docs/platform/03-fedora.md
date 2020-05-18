@@ -67,13 +67,12 @@ $ ip link show
 
 Install the depedencies for building the source code.
 ```bash
-$ sudo dnf install python3 ninja-build gcc flex bison git lksctp-tools-devel libidn-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel iproute mongo-c-driver-devel
+$ sudo dnf install python3 ninja-build gcc flex bison git lksctp-tools-devel libidn-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel mongo-c-driver-devel libmicrohttpd-devel libcurl-devel iproute
 ```
 
-Install Meson using Python.
+Install Meson
 ```bash
-$ sudo pip3 install --upgrade pip 
-$ sudo pip install meson
+$ sudo dnf install meson
 ```
 
 Git clone.

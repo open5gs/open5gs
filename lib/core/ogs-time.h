@@ -67,6 +67,13 @@ void ogs_gmtime(time_t s, struct tm *tm);
 void ogs_msleep(time_t msec);
 void ogs_usleep(time_t usec);
 
+#define OGS_TIME_ISO8601_FORMATTED_LENGTH 128
+#define OGS_TIME_ISO8601_FORMAT "%Y-%m-%dT%H:%M:%S%z"
+
+#define ogs_mktime mktime
+#define ogs_strptime strptime
+#define ogs_strftime strftime
+
 #ifdef __cplusplus
 }
 #endif

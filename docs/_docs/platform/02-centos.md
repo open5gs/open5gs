@@ -23,8 +23,13 @@ EOF'
 
 Install MongoDB with Package Manager.
 ```bash
-sudo yum -y install mongodb-org
-sudo systemctl start mongod (if '/usr/bin/mongod' is not running)
+sudo dnf -y install mongodb-org
+```
+
+Run MongoDB server.
+```bash
+$ mkdir -p ./data/db
+$ mongod --dbpath ./data/db
 ```
 
 ### Setting up TUN device (No persistent after rebooting)
@@ -85,15 +90,21 @@ $ sudo dnf config-manager --set-enabled PowerTools
 $ sudo update
 ```
 
-Install the depedencies for building the source code.
+Configure ELRepo(with testing) package.
 ```bash
-$ sudo dnf install python3 ninja-build gcc flex bison git lksctp-tools-devel libidn-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel iproute mongo-c-driver-devel
+$ sudo dnf install https://www.elrepo.org/elrepo-release-8.el8.elrepo.noarch.rpm
+$ sudo dnf config-manager --set-enabled elrepo-testing
+$ sudo dnf update
 ```
 
-Install Meson using Python.
+Install the depedencies for building the source code.
 ```bash
-$ sudo pip3 install --upgrade pip 
-$ sudo pip install meson
+$ sudo dnf install python3 ninja-build gcc flex bison git lksctp-tools-devel libidn-devel gnutls-devel libgcrypt-devel openssl-devel cyrus-sasl-devel libyaml-devel mongo-c-driver-devel libmicrohttpd-devel libcurl-devel iproute
+```
+
+Install Meson
+```bash
+$ sudo dnf install meson
 ```
 
 Git clone.

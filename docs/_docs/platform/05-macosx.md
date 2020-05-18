@@ -63,7 +63,7 @@ $ sudo pfctl -e -f /etc/pf.anchors/org.open5gs
 
 Install the depedencies for building the source code.
 ```bash
-$ brew install mongo-c-driver gnutls libgcrypt libidn libyaml pkg-config
+$ brew install mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd curl pkg-config
 ```
 
 Install Meson using Homebrew.

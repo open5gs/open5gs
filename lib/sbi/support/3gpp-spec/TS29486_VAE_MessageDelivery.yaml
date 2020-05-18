@@ -1,0 +1,383 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0.alpha-4
+  title: VAE_MessageDelivery
+  description: |
+    API for VAE Message Delivery Service
+    (C) 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.486 V16.0.0 V2X Application Enabler (VAE) Services
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.486/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/vae-message-delivery/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+paths:
+  /subscriptions:
+    post:
+      summary: Create a new Individual Message Delivery Data Subscription resource
+      operationId: CreateIndividualMessageDeliveryDataSubscription
+      tags:
+        - Message Delivery Data Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageDeliverySubscriptionData'
+      responses:
+        '201':
+          description: The subscription was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDeliverySubscriptionData'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        uplinkMessageDelivery:
+          '{$request.body#/notifUri}':
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UplinkMessageDeliveryData'
+              responses:
+                '204':
+                  description: No Content, Notification was successful
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    get:
+      summary: Get an existing individual Message Delivery Subscription resource
+      operationId: ReadIndividualMessageDeliverySubscription
+      tags:
+        - Individual Message Delivery Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying a subscription to the Individual Message Delivery Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The subscription information is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageDeliverySubscriptionData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Delete an individual Message Delivery Subscription resource
+      operationId: DeleteMessageDeliverySubscription
+      tags:
+        - Individual Message Delivery Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying a subscription to the Individual Message Delivery Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The subscription was terminated successfully.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+
+  /subscriptions/{subscriptionId}/message-deliveries:
+    post:
+      summary: VAE Message delivery resource create service Operation
+      tags:
+        - message deliveries collection (Collection)
+      operationId: CreateDownlinkMessageDelivery
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying a subscription to the Individual Message Delivery Subscription
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DownlinkMessageDeliveryData'
+        required: true
+      responses:
+        '201':
+          description: Downlink Message Delivery Resource Created
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/vae-message-delivery/v1/subscriptions/{subscriptionId}/message-deliveries/{dlDeliveryId}'
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownlinkMessageDeliveryData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /subscriptions/{subscriptionId}/message-deliveries/{dlDeliveryId}:
+    get:
+      summary: VAE Message delivery resource Read service Operation
+      tags:
+        - Individual downlink message delivery (Document)
+      operationId: ReadIndividualDownlinkMessageDelivery
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying a subscription to the Individual Message Delivery Subscription
+          required: true
+          schema:
+            type: string
+        - name: dlDeliveryId
+          in: path
+          description: Identifier of a downlink messge delivery resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownlinkMessageDeliveryData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: VAE Message delivery resource delete service Operation
+      tags:
+        - Individual message delivery (Document)
+      operationId: DeleteMessageDelivery
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: String identifying a subscription to the Individual Message Delivery Subscription
+          required: true
+          schema:
+            type: string
+        - name: dlDeliveryId
+          in: path
+          required: true
+          description: Unique ID of the message delivery to be deleted
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content (Successful deletion of the existing subscription)
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows: 
+        clientCredentials: 
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas:
+    DownlinkMessageDeliveryData:
+      type: object
+      properties:
+        ueId:
+          $ref: '#/components/schemas/V2xUeId'
+        groupId:
+          $ref: '#/components/schemas/V2xGroupId'
+        duration:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        geoId:
+          $ref: '#/components/schemas/GeoId'
+        payload:
+          $ref: '#/components/schemas/V2xMessagePayload'
+      required:
+        - payload
+    MessageDeliverySubscriptionData:
+      type: object
+      properties:
+        appSerId:
+          $ref: '#/components/schemas/AppServerId'
+        serviceId:
+          $ref: '#/components/schemas/V2xServiceId'
+        geoId:
+          $ref: '#/components/schemas/GeoId'
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by the NF service consumer to request the VAE server to send a test notification as defined in clause 6.1.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - appSerId
+        - serviceId
+        - notifUri
+    UplinkMessageDeliveryData:
+      type: object
+      properties:
+        resourceUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        ueId:
+          $ref: '#/components/schemas/V2xUeId'
+        geoId:
+          $ref: '#/components/schemas/GeoId'
+        payload:
+          $ref: '#/components/schemas/V2xMessagePayload'
+      required:
+        - resourceUri
+        - ueId
+        - payload
+    AppServerId:
+      type: string
+    V2xUeId:
+      type: string
+    V2xGroupId:
+      type: string
+    V2xServiceId:
+      type: string
+    GeoId:
+      type: string
+    V2xMessagePayload:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'

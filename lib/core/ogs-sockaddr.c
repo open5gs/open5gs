@@ -579,3 +579,32 @@ int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
 
     return OGS_OK;
 }
+
+char *ogs_gethostname(ogs_sockaddr_t *addr)
+{
+    int rv;
+    char hostname[OGS_MAX_FQDN_LEN];
+
+    ogs_assert(addr);
+
+    if (!addr->hostname)
+        return NULL;
+
+    rv = ogs_getnameinfo(hostname, OGS_MAX_FQDN_LEN, addr, 0);
+    if (rv == OGS_OK && strcmp(addr->hostname, hostname) == 0)
+        return addr->hostname;
+
+    return NULL;
+}
+
+char *ogs_ipstrdup(ogs_sockaddr_t *addr)
+{
+    char buf[OGS_ADDRSTRLEN + 1];
+
+    ogs_assert(addr);
+    memset(buf, 0, sizeof(buf));
+
+    OGS_ADDR(addr, buf);
+
+    return ogs_strdup(buf);
+}

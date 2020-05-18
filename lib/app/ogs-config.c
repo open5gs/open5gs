@@ -140,6 +140,7 @@ static void recalculate_pool_size(void)
 
     self.pool.ue = self.max.ue * self.max.enb;
     self.pool.pfcp = ogs_max(self.max.smf, self.max.upf);
+    self.pool.sbi = self.pool.pfcp;
     self.pool.sess = self.pool.ue * OGS_MAX_NUM_OF_SESS;
     self.pool.bearer = self.pool.sess * MAX_NUM_OF_BEARER;
     self.pool.tunnel = self.pool.bearer * MAX_NUM_OF_TUNNEL;
@@ -175,6 +176,10 @@ static int config_prepare(void)
 
     recalculate_pool_size();
 
+    self.time.nf_instance.heartbeat = 3;        /* 3 second */
+    self.time.nf_instance.validity = 3600;      /* 3600 seconds = 1 hour */
+    self.time.subscription.validity = 86400;    /* 86400 seconds = 1 day */
+
     return OGS_OK;
 }
 
@@ -184,6 +189,15 @@ static int ogs_app_ctx_validation(void)
         self.parameter.no_ipv6 == 1) {
         ogs_error("Both `no_ipv4` and `no_ipv6` set to `true` in `%s`",
                 self.file);
+        return OGS_ERROR;
+    }
+
+    if (self.time.nf_instance.validity == 0) {
+        ogs_error("NF Instance validity-time should not 0");
+        ogs_error("time:");
+        ogs_error("  nf_instance:");
+        ogs_error("    validity: 0");
+
         return OGS_ERROR;
     }
 
@@ -358,8 +372,49 @@ int ogs_config_parse()
                 } else
                     ogs_warn("unknown key `%s`", pool_key);
             }
+        } else if (!strcmp(root_key, "time")) {
+            ogs_yaml_iter_t time_iter;
+            ogs_yaml_iter_recurse(&root_iter, &time_iter);
+            while (ogs_yaml_iter_next(&time_iter)) {
+                const char *time_key = ogs_yaml_iter_key(&time_iter);
+                ogs_assert(time_key);
+                if (!strcmp(time_key, "nf_instance")) {
+                    ogs_yaml_iter_t sbi_iter;
+                    ogs_yaml_iter_recurse(&time_iter, &sbi_iter);
+
+                    while (ogs_yaml_iter_next(&sbi_iter)) {
+                        const char *sbi_key =
+                            ogs_yaml_iter_key(&sbi_iter);
+                        ogs_assert(sbi_key);
+
+                        if (!strcmp(sbi_key, "heartbeat")) {
+                            const char *v = ogs_yaml_iter_value(&sbi_iter);
+                            if (v) self.time.nf_instance.heartbeat = atoi(v);
+                        } else if (!strcmp(sbi_key, "validity")) {
+                            const char *v = ogs_yaml_iter_value(&sbi_iter);
+                            if (v) self.time.nf_instance.validity = atoi(v);
+                        } else
+                            ogs_warn("unknown key `%s`", sbi_key);
+                    }
+                } else if (!strcmp(time_key, "subscription")) {
+                    ogs_yaml_iter_t sbi_iter;
+                    ogs_yaml_iter_recurse(&time_iter, &sbi_iter);
+
+                    while (ogs_yaml_iter_next(&sbi_iter)) {
+                        const char *sbi_key =
+                            ogs_yaml_iter_key(&sbi_iter);
+                        ogs_assert(sbi_key);
+
+                        if (!strcmp(sbi_key, "validity")) {
+                            const char *v = ogs_yaml_iter_value(&sbi_iter);
+                            if (v) self.time.subscription.validity = atoi(v);
+                        } else
+                            ogs_warn("unknown key `%s`", sbi_key);
+                    }
+                } else
+                    ogs_warn("unknown key `%s`", time_key);
+            }
         }
-            
     }
 
     rv = ogs_app_ctx_validation();

@@ -44,7 +44,7 @@ typedef struct ogs_pollset_actions_s {
     void (*init)(ogs_pollset_t *pollset);
     void (*cleanup)(ogs_pollset_t *pollset);
 
-    int (*add)(ogs_poll_t *poll, short when);
+    int (*add)(ogs_poll_t *poll);
     int (*remove)(ogs_poll_t *poll);
 
     int (*poll)(ogs_pollset_t *pollset, ogs_time_t timeout);

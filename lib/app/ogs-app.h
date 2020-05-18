@@ -57,6 +57,9 @@ void pgw_terminate(void);
 int pcrf_initialize(void);
 void pcrf_terminate(void);
 
+int nrf_initialize(void);
+void nrf_terminate(void);
+
 int smf_initialize(void);
 void smf_terminate(void);
 

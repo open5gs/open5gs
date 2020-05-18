@@ -33,6 +33,7 @@ testcore_sources = files('''
     tlv-test.c
     fsm-test.c
     hash-test.c
+    uuid-test.c
     abts-main.c
 '''.split())
 

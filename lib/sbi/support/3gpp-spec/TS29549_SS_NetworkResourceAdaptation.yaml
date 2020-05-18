@@ -1,0 +1,294 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0.alpha-1
+  title: SS_NetworkResourceAdaptation
+  description: |
+    SS Network Resource Adaptation Service.
+    (C) 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.549 V1.1.0; Service Enabler Architecture Layer for Verticals (SEAL); Application Programming Interface (API) specification; Stage3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+servers:
+  - url: '{apiRoot}/ss-nra/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+paths:
+  /multicast-subscriptions:
+    post:
+      summary: Creates a new Individual Multicast Subscription resource
+      operationId: CreateMulticastSubscription
+      tags:
+        - Multicast Subscriptions (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MulticastSubscription'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MulticastSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the created individual multicast subscription resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        UserPlaneNotification:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UserPlaneNotification'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /multicast-subscriptions/{multiSubId}:
+    get:
+      summary: "Reads an existing Individual Multicast Subscription"
+      operationId: GetMulticastSubscription
+      tags:
+        - Individual Multicast Subscription (Document)
+      parameters:
+        - name: multiSubId
+          in: path
+          description: Multicast Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MulticastSubscription'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: "Delete an existing Individual Multicast Subscription"
+      operationId: DeleteMulticastSubscription
+      tags:
+        - Individual Multicast Subscription (Document)
+      parameters:
+        - name: multiSubId
+          in: path
+          description: Multicast Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was succesfully deleted
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+
+  schemas:
+    MulticastSubscription:
+      type: object
+      properties:
+        valGroupId:
+          type: string
+        anncMode:
+          $ref: '#/components/schemas/ServiceAnnoucementMode'
+        qosReq:
+          $ref: '#/components/schemas/QosRequirement'
+        locArea:
+          $ref: 'TS29122_GMDviaMBMSbyMB2.yaml#/components/schemas/MbmsLocArea'
+        duration:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        tmgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uint32'
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        reqTestNotif:
+          type: boolean
+        wsNotifCfg:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - valGroupId
+        - anncMode
+        - qosReq
+        - notifUri
+    UserPlaneNotification:
+      type: object
+      properties:
+        notifId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/NrmEventNotification'
+          minItems: 1
+      required:
+        - notifId
+        - eventNotifs
+    NrmEventNotification:
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/NrmEvent'
+        ts:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        deliveryMode:
+          $ref: '#/components/schemas/DeliveryMode'
+        streamIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+      required:
+        - event
+        - ts
+    QosRequirement:
+      type: string
+# QoS requirment definition is FFS
+
+# Simple data types and Enumerations
+
+    ServiceAnnoucementMode:
+      anyOf:
+      - type: string
+        enum:
+          - NRM
+          - VAL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - NRM: NRM server performs the service announcement.
+        - VAL: VAL server performs the service announcement.
+    DeliveryMode:
+      anyOf:
+      - type: string
+        enum:
+          - UNICAST
+          - MULTICAST
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - UNICAST: Unicast delivery.
+        - MULTICAST: Multicast delivery.
+    NrmEvent:
+      anyOf:
+      - type: string
+        enum:
+          - UP_DELIVERY_MODE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - UP_DELIVERY_MODE: User Plane delivery mode.

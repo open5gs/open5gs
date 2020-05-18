@@ -1,0 +1,263 @@
+openapi: 3.0.0
+info:
+  title: SS_Events
+  description: |
+    API for SEAL Events management.
+    (C) 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+  version: "1.0.0.alpha-1"
+externalDocs:
+  description: 3GPP TS 29.549 V1.1.0 Service Enabler Architecture Layer for Verticals (SEAL); Application Programming Interface (API) specification; Stage 3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+servers:
+  - url: '{apiRoot}/ss-events/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+paths:
+  /subscriptions:
+    post:
+      description: Creates a new individual SEAL Event Subscription.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SEALEventSubscription'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SEALEventNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: SEAL Events subscription resource created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SEALEventSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/ss-events/v1/subscriptions/{subscriptionId}'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /subscriptions/{subscriptionId}:
+    delete:
+      description: Deletes an individual SEAL Event Subscription.
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Identifier of an individual Events Subscription
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual SEAL Events Subscription matching the subscriptionId is deleted.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  schemas:
+    SEALEventSubscription:
+      type: object
+      properties:
+        subscriberId:
+          type: string
+          description: String identifying the subscriber of the event.
+        eventSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventSubscription'
+          minItems: 1
+          description: Subscribed events.
+        eventReq:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by Subscriber to request the SEAL server to send a test notification as defined in in clause 6.6. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - subscriberId
+        - eventSubs
+        - eventReq
+        - notificationDestination
+    SEALEventNotification:
+      type: object
+      properties:
+        subscriptionId:
+          type: string
+          description: Identifier of the subscription resource to which the notification is related - SEAL resource identifier
+        eventDetails:
+          type: array
+          items:
+            $ref: '#/components/schemas/SEALEventDetail'
+          minItems: 1
+          description: Detailed notifications of individual events.
+      required:
+        - subscriptionId
+        - eventDetails
+    EventSubscription:
+      type: object
+      properties:
+        eventId:
+          $ref: '#/components/schemas/SEALEvent'
+        valGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/VALGroupFilter'
+          minItems: 1
+          description: Each element of the array represents the VAL group identifier(s) of a VAL service that the subscriber wants to know in the interested event. This parameter shall be present only if the event subscribed is "GM_GROUP_INFO_CHANGE".
+        identities:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentityFilter'
+          minItems: 1
+          description: Each element of the array represents the VAL User / UE IDs of a VAL service that the event subscriber wants to know in the interested event. This parameter shall be present only if the event subscribed is "CM_USER_PROFILE_CHANGE".
+      required:
+        - eventId
+    SEALEventDetail:
+      type: object
+      properties:
+        eventId:
+          $ref: '#/components/schemas/SEALEvent'      
+        valGroupDocuments:
+          type: array
+          items:
+            $ref: 'TS29549_SS_GroupManagement.yaml#/components/schemas/VALGroupDocument'
+          minItems: 1
+          description: The VAL groups documents with modified membership and configuration information.This parameter shall be present only if the event in event notification is "GM_GROUP_INFO_CHANGE".
+        profileDocs:
+          type: array
+          items:
+            $ref: 'TS29549_SS_UserProfileRetrieval.yaml#/components/schemas/ProfileDoc'
+          minItems: 1
+          description: Updated profile information associated with VAL Users or VAL UEs. This parameter shall be present only if the event in event notification is "CM_USER_PROFILE_CHANGE".
+      required:
+        - eventId
+    VALGroupFilter:
+      type: object
+      properties:
+        valSvcId:
+          type: string
+          description: Identity of the VAL service
+        valGrpIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: VAL group identifiers that event subscriber wants to know in the interested event. 
+      required:
+        - valGrpIds
+    IdentityFilter:
+      type: object
+      properties:
+        valSvcId:
+          type: string
+          description: Identity of the VAL service
+        valUserIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: VAL User IDs that the event subscriber wants to know in the interested event.
+        valUEIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: VAL UE IDs that the event subscriber wants to know in the interested event.
+      oneOf:
+        - required: [valUserIds]
+        - required: [valUEIds]         
+    SEALEvent:
+      anyOf:
+      - type: string
+        enum:
+          - LM_LOCATION_INFO
+          - GM_GROUP_INFO_CHANGE
+          - CM_USER_PROFILE_CHANGE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - LM_LOCATION_INFO: Events related to the location information of VAL Users or VAL UEs from the Location Management Server.
+        - GM_GROUP_INFO_CHANGE: Events related to the modification of VAL group membership and configuration information from the Group Management Server.
+        - CM_USER_PROFILE_CHANGE: Events related to update of user profile information from the Configuration Management Server.

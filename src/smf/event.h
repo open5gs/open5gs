@@ -33,6 +33,12 @@ typedef struct ogs_pfcp_xact_s ogs_pfcp_xact_t;
 typedef struct ogs_pfcp_message_s ogs_pfcp_message_t;
 typedef struct smf_sess_s smf_sess_t;
 typedef struct smf_upf_s smf_upf_t;
+typedef struct ogs_sbi_server_s ogs_sbi_server_t;
+typedef struct ogs_sbi_session_s ogs_sbi_session_t;
+typedef struct ogs_sbi_request_s ogs_sbi_request_t;
+typedef struct ogs_sbi_response_s ogs_sbi_response_t;
+typedef struct ogs_sbi_message_s ogs_sbi_message_t;
+typedef struct ogs_sbi_subscription_s ogs_sbi_subscription_t;
 
 typedef enum {
     SMF_EVT_BASE = OGS_FSM_USER_SIG,
@@ -43,6 +49,10 @@ typedef enum {
     SMF_EVT_N4_MESSAGE,
     SMF_EVT_N4_TIMER,
     SMF_EVT_N4_NO_HEARTBEAT,
+
+    SMF_EVT_SBI_SERVER,
+    SMF_EVT_SBI_CLIENT,
+    SMF_EVT_SBI_TIMER,
 
     SMF_EVT_TOP,
 
@@ -60,11 +70,23 @@ typedef struct smf_event_s {
     ogs_pfcp_xact_t *pfcp_xact;
     ogs_pfcp_message_t *pfcp_message;
 
+    struct {
+        /* OGS_EVT_SBI_SERVER */
+        ogs_sbi_request_t *request;
+        ogs_sbi_session_t *session;
+        ogs_sbi_server_t *server;
+
+        /* OGS_EVT_SBI_CLIENT */
+        ogs_sbi_response_t *response;
+        void *data;
+
+        ogs_sbi_message_t *message;
+    } sbi;
+
     smf_sess_t *sess;
 } smf_event_t;
 
 void smf_event_init(void);
-void smf_event_term(void);
 void smf_event_final(void);
 
 smf_event_t *smf_event_new(smf_event_e id);

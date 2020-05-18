@@ -18,7 +18,6 @@
  */
 
 #include "context.h"
-#include "smf-sm.h"
 
 static smf_context_t self;
 static ogs_diam_config_t g_diam_conf;
@@ -30,7 +29,7 @@ static OGS_POOL(smf_bearer_pool, smf_bearer_t);
 
 static OGS_POOL(smf_pf_pool, smf_pf_t);
 
-static int context_initiaized = 0;
+static int context_initialized = 0;
 
 int num_sessions = 0;
 void stats_add_session(void) {
@@ -47,7 +46,7 @@ void stats_remove_session(void) {
 
 void smf_context_init(void)
 {
-    ogs_assert(context_initiaized == 0);
+    ogs_assert(context_initialized == 0);
 
     /* Initial FreeDiameter Config */
     memset(&g_diam_conf, 0, sizeof(ogs_diam_config_t));
@@ -78,12 +77,12 @@ void smf_context_init(void)
     self.ipv4_hash = ogs_hash_make();
     self.ipv6_hash = ogs_hash_make();
 
-    context_initiaized = 1;
+    context_initialized = 1;
 }
 
 void smf_context_final(void)
 {
-    ogs_assert(context_initiaized == 1);
+    ogs_assert(context_initialized == 1);
 
     smf_sess_remove_all();
 
@@ -103,7 +102,7 @@ void smf_context_final(void)
 
     ogs_gtp_node_final();
 
-    context_initiaized = 0;
+    context_initialized = 0;
 }
 
 smf_context_t *smf_self(void)
@@ -116,6 +115,7 @@ static int smf_context_prepare(void)
     self.gtpc_port = OGS_GTPV2_C_UDP_PORT;
     self.diam_config->cnf_port = DIAMETER_PORT;
     self.diam_config->cnf_port_tls = DIAMETER_SECURE_PORT;
+    self.nf_type = OpenAPI_nf_type_SMF;
 
     return OGS_OK;
 }
@@ -418,10 +418,6 @@ int smf_context_parse_config(void)
                                 NULL, self.gtpc_port);
                         ogs_assert(rv == OGS_OK);
                     }
-                } else if (!strcmp(smf_key, "pfcp")) {
-                    /* handle config in pfcp library */
-                } else if (!strcmp(smf_key, "pdn")) {
-                    /* handle config in pfcp library */
                 } else if (!strcmp(smf_key, "dns")) {
                     ogs_yaml_iter_t dns_iter;
                     ogs_yaml_iter_recurse(&smf_iter, &dns_iter);
@@ -505,8 +501,13 @@ int smf_context_parse_config(void)
                     } while (
                         ogs_yaml_iter_type(&dns_iter) ==
                             YAML_SEQUENCE_NODE);
-                }
-                else
+                } else if (!strcmp(smf_key, "pfcp")) {
+                    /* handle config in pfcp library */
+                } else if (!strcmp(smf_key, "pdn")) {
+                    /* handle config in pfcp library */
+                } else if (!strcmp(smf_key, "sbi")) {
+                    /* handle config in pfcp library */
+                } else
                     ogs_warn("unknown key `%s`", smf_key);
             }
         }

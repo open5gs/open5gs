@@ -35,12 +35,6 @@ void smf_event_init(void)
     ogs_assert(smf_self()->pollset);
 }
 
-void smf_event_term(void)
-{
-    ogs_queue_term(smf_self()->queue);
-    ogs_pollset_notify(smf_self()->pollset);
-}
-
 void smf_event_final(void)
 {
     if (smf_self()->pollset)
@@ -59,6 +53,8 @@ smf_event_t *smf_event_new(smf_event_e id)
 
     ogs_pool_alloc(&pool, &e);
     ogs_assert(e);
+    memset(e, 0, sizeof(*e));
+
     e->id = id;
 
     return e;
@@ -91,6 +87,13 @@ const char *smf_event_get_name(smf_event_t *e)
         return "SMF_EVT_N4_TIMER";
     case SMF_EVT_N4_NO_HEARTBEAT:
         return "SMF_EVT_N4_NO_HEARTBEAT";
+
+    case SMF_EVT_SBI_SERVER:
+        return "SMF_EVT_SBI_SERVER";
+    case SMF_EVT_SBI_CLIENT:
+        return "SMF_EVT_SBI_CLIENT";
+    case SMF_EVT_SBI_TIMER:
+        return "SMF_EVT_SBI_TIMER";
 
     default: 
        break;

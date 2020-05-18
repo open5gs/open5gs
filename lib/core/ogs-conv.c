@@ -131,3 +131,7 @@ void *ogs_buffer_to_bcd(uint8_t *in, int in_len, void *out)
     return out;
 }
 
+char ogs_from_hex(char ch)
+{
+    return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
+}

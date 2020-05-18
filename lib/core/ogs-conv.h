@@ -36,6 +36,8 @@ uint64_t ogs_buffer_to_uint64(void *buffer, int size);
 void *ogs_bcd_to_buffer(const char *in, void *out, int *out_len);
 void *ogs_buffer_to_bcd(uint8_t *in, int in_len, void *out);
 
+char ogs_from_hex(char ch);
+
 #ifdef __cplusplus
 }
 #endif

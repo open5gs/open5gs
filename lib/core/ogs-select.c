@@ -28,7 +28,7 @@
 
 static void select_init(ogs_pollset_t *pollset);
 static void select_cleanup(ogs_pollset_t *pollset);
-static int select_add(ogs_poll_t *poll, short when);
+static int select_add(ogs_poll_t *poll);
 static int select_remove(ogs_poll_t *poll);
 static int select_process(ogs_pollset_t *pollset, ogs_time_t timeout);
 
@@ -83,7 +83,7 @@ static void select_cleanup(ogs_pollset_t *pollset)
     ogs_free(context);
 }
 
-static int select_add(ogs_poll_t *poll, short when)
+static int select_add(ogs_poll_t *poll)
 {
     ogs_pollset_t *pollset = NULL;
     struct select_context_s *context = NULL;
@@ -94,11 +94,11 @@ static int select_add(ogs_poll_t *poll, short when)
     context = pollset->context;
     ogs_assert(context);
 
-    if (when & OGS_POLLIN) {
+    if (poll->when & OGS_POLLIN) {
         FD_SET(poll->fd, &context->master_read_fd_set);
     }
 
-    if (when & OGS_POLLOUT) {
+    if (poll->when & OGS_POLLOUT) {
         FD_SET(poll->fd, &context->master_write_fd_set);
     }
 
@@ -121,8 +121,11 @@ static int select_remove(ogs_poll_t *poll)
     context = pollset->context;
     ogs_assert(context);
 
-    FD_CLR(poll->fd, &context->master_read_fd_set);
-    FD_CLR(poll->fd, &context->master_write_fd_set);
+    if (poll->when & OGS_POLLIN)
+        FD_CLR(poll->fd, &context->master_read_fd_set);
+
+    if (poll->when & OGS_POLLOUT)
+        FD_CLR(poll->fd, &context->master_write_fd_set);
 
     if (context->max_fd == poll->fd) {
         context->max_fd = -1;

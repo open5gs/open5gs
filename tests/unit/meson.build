@@ -20,13 +20,14 @@ testunit_sources = files('''
     s1ap-message-test.c
     nas-message-test.c
     gtp-message-test.c
+    sbi-message-test.c
     security-test.c
     crash-test.c
 '''.split())
 
 testunit_exe = executable('unit',
     sources : testunit_sources,
-    c_args : testcore_cc_flags,
-    dependencies : libtestapp_dep)
+    c_args : [testcore_cc_flags, sbi_cc_flags],
+    dependencies : [libtestapp_dep, libsbi_dep])
 
 test('unit', testunit_exe, is_parallel : false, suite: 'unit')

@@ -30,6 +30,7 @@ const struct testlist {
     {NULL},
 };
 
+static ogs_thread_t *nrf_thread = NULL;
 static ogs_thread_t *pcrf_thread = NULL;
 static ogs_thread_t *upf_thread = NULL;
 static ogs_thread_t *smf_thread = NULL;
@@ -49,6 +50,7 @@ static void terminate(void)
     if (smf_thread) ogs_thread_destroy(smf_thread);
     if (upf_thread) ogs_thread_destroy(upf_thread);
     if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
+    if (nrf_thread) ogs_thread_destroy(nrf_thread);
 
     pcscf_fd_final();
 
@@ -67,6 +69,7 @@ static void initialize(const char *const argv[])
     rv = ogs_app_initialize(NULL, argv);
     ogs_assert(rv == OGS_OK);
 
+    nrf_thread = test_child_create("nrf", argv);
     pcrf_thread = test_child_create("pcrf", argv);
     upf_thread = test_child_create("upf", argv);
     smf_thread = test_child_create("smf", argv);

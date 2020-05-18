@@ -18,9 +18,7 @@
  */
 
 #include "context.h"
-#include "event.h"
 #include "timer.h"
-#include "smf-sm.h"
 
 #include "pfcp-path.h"
 #include "n4-handler.h"
@@ -43,7 +41,7 @@ void smf_pfcp_state_initial(ogs_fsm_t *s, smf_event_t *e)
     ogs_assert(rv == OGS_OK);
 
     node->t_heartbeat = ogs_timer_add(smf_self()->timer_mgr,
-            smf_timer_heartbeat, node);
+            smf_timer_pfcp_heartbeat, node);
     ogs_assert(node->t_heartbeat);
 
     OGS_FSM_TRAN(s, &smf_pfcp_state_will_associate);
@@ -87,7 +85,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (node->t_association) {
             ogs_timer_start(node->t_association,
-                    smf_timer_cfg(SMF_TIMER_ASSOCIATION)->duration);
+                    smf_timer_cfg(SMF_TIMER_PFCP_ASSOCIATION)->duration);
 
             smf_pfcp_send_association_setup_request(node);
         }
@@ -101,7 +99,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
 
     case SMF_EVT_N4_TIMER:
         switch(e->timer_id) {
-        case SMF_TIMER_ASSOCIATION:
+        case SMF_TIMER_PFCP_ASSOCIATION:
             node = e->pfcp_node;
             ogs_assert(node);
 
@@ -110,7 +108,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
 
             ogs_assert(node->t_association);
             ogs_timer_start(node->t_association,
-                smf_timer_cfg(SMF_TIMER_ASSOCIATION)->duration);
+                smf_timer_cfg(SMF_TIMER_PFCP_ASSOCIATION)->duration);
 
             smf_pfcp_send_association_setup_request(node);
             break;
@@ -174,7 +172,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         ogs_info("PFCP associated");
         ogs_timer_start(node->t_heartbeat,
-                smf_timer_cfg(SMF_TIMER_HEARTBEAT)->duration);
+                smf_timer_cfg(SMF_TIMER_PFCP_HEARTBEAT)->duration);
         break;
     case OGS_FSM_EXIT_SIG:
         ogs_info("PFCP de-associated");
@@ -229,7 +227,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         break;
     case SMF_EVT_N4_TIMER:
         switch(e->timer_id) {
-        case SMF_TIMER_HEARTBEAT:
+        case SMF_TIMER_PFCP_HEARTBEAT:
             node = e->pfcp_node;
             ogs_assert(node);
 

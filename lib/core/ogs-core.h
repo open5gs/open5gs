@@ -37,6 +37,7 @@
 #include "core/ogs-pkbuf.h"
 #include "core/ogs-memory.h"
 #include "core/ogs-rand.h"
+#include "core/ogs-uuid.h"
 #include "core/ogs-rbtree.h"
 #include "core/ogs-timer.h"
 #include "core/ogs-thread.h"

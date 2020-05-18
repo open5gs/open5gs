@@ -1,0 +1,277 @@
+openapi: 3.0.0
+info:
+  title: CAPIF_API_Invoker_Management_API
+  description: |
+    API for API invoker management.
+    (C) 2019, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+  version: "1.1.0.alpha-1"
+externalDocs:
+  description: 3GPP TS 29.222 V16.1.0 Common API Framework for 3GPP Northbound APIs
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.222/
+servers:
+  - url: '{apiRoot}/api-invoker-management/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 7.5 of 3GPP TS 29.222
+
+paths:
+  /onboardedInvokers:
+    post:
+      description: Creates a new individual API Invoker profile.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              description: Notify the API Invoker about the onboarding completion
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/OnboardingNotification'
+              responses:
+                '204':
+                  description: No Content (successful onboarding notification)
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: API invoker on-boarded successfully 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/api-invoker-management/v1/onboardedInvokers/{onboardingId}'
+              required: true
+              schema:
+                type: string
+        '202':
+          description: The CAPIF core has accepted the Onboarding request and is processing it.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /onboardedInvokers/{onboardingId}:
+    delete:
+      description: Deletes an individual API Invoker.
+      parameters:
+        - name: onboardingId
+          in: path
+          description: String identifying an individual on-boarded API invoker resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The individual API Invoker matching onboardingId was offboarded.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      description: Updates an individual API invoker details.
+      parameters:
+        - name: onboardingId
+          in: path
+          description: String identifying an individual on-boarded API invoker resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the API invoker details to be updated in CAPIF core function
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              description: Notify the API Invoker about the API invoker update completion
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/OnboardingNotification'
+              responses:
+                '204':
+                  description: No Content (successful API invoker update notification)
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '200':
+          description: API invoker details updated successfully 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+        '202':
+          description: The CAPIF core has accepted the API invoker update details request and is processing it.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  schemas:
+    OnboardingInformation:
+      type: object
+      properties:
+        apiInvokerPublicKey:
+          type: string
+          description: The API Invoker's public key
+        apiInvokerCertificate:
+          type: string
+          description: The API Invoker's generic client certificate, provided by the CAPIF core function.
+        onboardingSecret:
+          type: string
+          description: The API Invoker's onboarding secret, provided by the CAPIF core function.
+      required:
+        - apiInvokerPublicKey
+    APIList:
+      type: array
+      items:
+        $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/ServiceAPIDescription'
+      minItems: 1
+      description: The list of service APIs that the API Invoker is allowed to invoke
+    APIInvokerEnrolmentDetails:
+      type: object
+      properties:
+        apiInvokerId:
+          type: string
+          description: API invoker ID assigned by the CAPIF core function to the API invoker while on-boarding the API invoker. Shall not be present in the HTTP POST request from the API invoker to the CAPIF core function, to on-board itself. Shall be present in all other HTTP requests and responses.
+          readOnly: true
+        onboardingInformation:
+          $ref: '#/components/schemas/OnboardingInformation'
+        notificationDestination: 
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by Subscriber to request the CAPIF core function to send a test notification as defined in in subclause 7.6. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        apiList:
+          $ref: '#/components/schemas/APIList'
+        apiInvokerInformation:
+          type: string
+          description: Generic information related to the API invoker such as details of the device or the application.
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - onboardingInformation
+        - notificationDestination
+      description: Information about the API Invoker that requested to onboard
+    OnboardingNotification:
+      type: object
+      properties:
+        result:
+          type: boolean
+          description: Set to "true" indicate successful on-boarding. Otherwise set to "false"
+        resourceLocation:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Uri'
+        apiInvokerEnrolmentDetails:
+          $ref: '#/components/schemas/APIInvokerEnrolmentDetails'
+        apiList:
+          $ref: '#/components/schemas/APIList'
+      required:
+        - result

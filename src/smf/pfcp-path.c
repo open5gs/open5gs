@@ -31,7 +31,7 @@ static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
 
     if (try_to_assoicate == true) {
         node->t_association = ogs_timer_add(smf_self()->timer_mgr,
-                smf_timer_association, node);
+                smf_timer_pfcp_association, node);
         ogs_assert(node->t_association);
     }
 
@@ -110,7 +110,7 @@ static void pfcp_recv_cb(short when, ogs_socket_t fd, void *data)
 
     rv = ogs_queue_push(smf_self()->queue, e);
     if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
         smf_event_free(e);
     }

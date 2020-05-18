@@ -94,6 +94,9 @@ bool ogs_sockaddr_is_equal(void *p, void *q);
 int ogs_ipsubnet(ogs_ipsubnet_t *ipsub,
         const char *ipstr, const char *mask_or_numbits);
 
+char *ogs_gethostname(ogs_sockaddr_t *addr);
+char *ogs_ipstrdup(ogs_sockaddr_t *addr);
+
 #ifdef __cplusplus
 }
 #endif

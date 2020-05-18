@@ -6,6 +6,7 @@ FROM ${username}/${dist}-${tag}-open5gs-base
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
 RUN dnf -y install \
+        findutils \
         cscope \
         vim \
         sudo \

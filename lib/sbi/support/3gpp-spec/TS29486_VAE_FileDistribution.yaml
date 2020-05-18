@@ -1,0 +1,213 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0.alpha-3
+  title: VAE_FileDistribution
+  description: |
+    API for VAE File Distribution Service
+    (C) 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.486 V16.0.0 V2X Application Enabler (VAE) Services
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.486/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/vae-file-distribution/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+paths:
+  /file-distributions:
+    post:
+      summary: VAE File Distributions resource create service Operation
+      tags:
+        - file distributions collection (Document)
+      operationId: CreateFileDistributions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FileDistributionData'
+        required: true
+      responses:
+        '201':
+          description: File Distribution Resource Created
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/vae-file-distribution/v1/file-distributions/{distributionId}'
+              required: true
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileDistributionData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+  /file-distributions/{distributionId}:
+    get:
+      summary: Get an existing individual file distribution resource
+      operationId: ReadIndividualFileDistribution
+      tags:
+        - Individual File Distribution (Document)
+      parameters:
+        - name: distributionId
+          in: path
+          description: Identifier of a file distribution resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileDistributionData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: VAE File Distribution resource delete service Operation
+      tags:
+        - Individual file distribution (Document)
+      operationId: DeleteFileDistribution
+      parameters:
+        - name: distributionId
+          in: path
+          required: true
+          description: Unique ID of the file distribution to be deleted
+          schema:
+            type: string
+      responses:
+        '204':
+          description: The subscription was terminated successfully.
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          description: Unexpected error
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows: 
+        clientCredentials: 
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas:
+    FileDistributionData:
+      type: object
+      properties:
+        groupId:
+          $ref: 'TS29486_VAE_MessageDelivery.yaml#/components/schemas/V2xGroupId'
+        fileLists:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileList'
+          minItems: 1
+        serviceClass:
+          type: string
+        geoArea:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+        maxBitrate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxDelay:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - fileLists
+        - geoArea
+        - maxBitrate
+        - maxDelay
+    FileList:
+      type: object
+      properties:
+        fileUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        fileDisplayUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        fileEarFetchTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        fileLatFetchTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        fileSize:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        fileStatus:
+          $ref: '#/components/schemas/FileStatus'
+        completionTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        keepUpdateInterval:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        uniAvailability:
+          type: boolean
+        fileRepetition:
+          type: integer
+      required:
+        - fileUri
+        - fileDisplayUri
+        - fileEarFetchTime
+        - fileLatFetchTime
+        - fileStatus
+        - completionTime
+        - keepUpdateInterval
+
+    FileStatus:
+      anyOf:
+      - type: string
+        enum:
+          - PENDING
+          - FETCHED
+          - PREPARED
+          - TRANSMITTING
+          - SENT
+      - type: string

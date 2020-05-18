@@ -30,7 +30,7 @@
 
 static void epoll_init(ogs_pollset_t *pollset);
 static void epoll_cleanup(ogs_pollset_t *pollset);
-static int epoll_add(ogs_poll_t *poll, short when);
+static int epoll_add(ogs_poll_t *poll);
 static int epoll_remove(ogs_poll_t *poll);
 static int epoll_process(ogs_pollset_t *pollset, ogs_time_t timeout);
 
@@ -45,9 +45,15 @@ const ogs_pollset_actions_t ogs_epoll_actions = {
     ogs_notify_pollset,
 };
 
+struct epoll_map_s {
+    ogs_poll_t *read;
+    ogs_poll_t *write;
+};
+
 struct epoll_context_s {
     int epfd;
 
+    ogs_hash_t *map_hash;
 	struct epoll_event *event_list;
 };
 
@@ -63,6 +69,9 @@ static void epoll_init(ogs_pollset_t *pollset)
 	context->event_list = ogs_calloc(
         ogs_core()->socket.pool, sizeof(struct epoll_event));
 	ogs_assert(context->event_list);
+
+    context->map_hash = ogs_hash_make();
+    ogs_assert(context->map_hash);
 
     context->epfd = epoll_create(ogs_core()->socket.pool);
     ogs_assert(context->epfd >= 0);
@@ -81,15 +90,17 @@ static void epoll_cleanup(ogs_pollset_t *pollset)
     ogs_notify_final(pollset);
     close(context->epfd);
 	ogs_free(context->event_list);
+    ogs_hash_destroy(context->map_hash);
 
     ogs_free(context);
 }
 
-static int epoll_add(ogs_poll_t *poll, short when)
+static int epoll_add(ogs_poll_t *poll)
 {
+    int rv, op;
     ogs_pollset_t *pollset = NULL;
     struct epoll_context_s *context = NULL;
-    int rv;
+    struct epoll_map_s *map = NULL;
     struct epoll_event ee;
 
     ogs_assert(poll);
@@ -98,17 +109,33 @@ static int epoll_add(ogs_poll_t *poll, short when)
     context = pollset->context;
     ogs_assert(context);
 
+    map = ogs_hash_get(context->map_hash, &poll->fd, sizeof(poll->fd));
+    if (!map) {
+        map = ogs_calloc(1, sizeof(*map));
+        ogs_assert(map);
+
+        op = EPOLL_CTL_ADD;
+        ogs_hash_set(context->map_hash, &poll->fd, sizeof(poll->fd), map);
+    } else {
+        op = EPOLL_CTL_MOD;
+    }
+
+    if (poll->when & OGS_POLLIN)
+        map->read = poll;
+    if (poll->when & OGS_POLLOUT)
+        map->write = poll;
+
     ee.events = 0;
-    if (when == OGS_POLLIN)
+    if (map->read)
         ee.events |= (EPOLLIN|EPOLLRDHUP);
-    if (when == OGS_POLLOUT)
+    if (map->write)
         ee.events |= EPOLLOUT;
+    ee.data.ptr = map;
 
-    ee.data.ptr = poll;
-
-    rv = epoll_ctl(context->epfd, EPOLL_CTL_ADD, poll->fd, &ee);
+    rv = epoll_ctl(context->epfd, op, poll->fd, &ee);
     if (rv < 0) {
-		ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno, "epoll_ctl failed");
+		ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                "epoll_ctl[%d] failed", op);
 		return OGS_ERROR;
     }
 
@@ -117,9 +144,10 @@ static int epoll_add(ogs_poll_t *poll, short when)
 
 static int epoll_remove(ogs_poll_t *poll)
 {
-    int rv;
+    int rv, op;
     ogs_pollset_t *pollset = NULL;
     struct epoll_context_s *context = NULL;
+    struct epoll_map_s *map = NULL;
     struct epoll_event ee;
 
     ogs_assert(poll);
@@ -128,13 +156,35 @@ static int epoll_remove(ogs_poll_t *poll)
     context = pollset->context;
     ogs_assert(context);
 
-    ee.events = 0;
-    ee.data.ptr = NULL;
+    map = ogs_hash_get(context->map_hash, &poll->fd, sizeof(poll->fd));
+    ogs_assert(map);
 
-    rv = epoll_ctl(context->epfd, EPOLL_CTL_DEL, poll->fd, &ee);
+    if (poll->when & OGS_POLLIN)
+        map->read = NULL;
+    if (poll->when & OGS_POLLOUT)
+        map->write = NULL;
+
+    ee.events = 0;
+    if (map->read)
+        ee.events |= (EPOLLIN|EPOLLRDHUP);
+    if (map->write)
+        ee.events |= EPOLLOUT;
+
+    if (map->read || map->write) {
+        op = EPOLL_CTL_MOD;
+        ee.data.ptr = map;
+    } else {
+        op = EPOLL_CTL_DEL;
+        ee.data.ptr = NULL;
+
+        ogs_free(map);
+        ogs_hash_set(context->map_hash, &poll->fd, sizeof(poll->fd), NULL);
+    }
+
+    rv = epoll_ctl(context->epfd, op, poll->fd, &ee);
     if (rv < 0) {
 		ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
-                "epoll_remove failed");
+                "epoll_remove[%d] failed", op);
         return OGS_ERROR;
     }
 
@@ -163,7 +213,7 @@ static int epoll_process(ogs_pollset_t *pollset, ogs_time_t timeout)
     }
 
 	for (i = 0; i < num_of_poll; i++) {
-		ogs_poll_t *poll = NULL;
+        struct epoll_map_s *map = NULL;
 		uint32_t received;
         short when = 0;
 
@@ -182,11 +232,16 @@ static int epoll_process(ogs_pollset_t *pollset, ogs_time_t timeout)
         if (!when)
             continue;
 
-        poll = context->event_list[i].data.ptr;
-        ogs_assert(poll);
+        map = context->event_list[i].data.ptr;
+        ogs_assert(map);
 
-        if (poll->handler) {
-            poll->handler(when, poll->fd, poll->data);
+        if (map->read && map->write && map->read == map->write) {
+            map->read->handler(when, map->read->fd, map->read->data);
+        } else {
+            if (map->read && (when & OGS_POLLIN))
+                map->read->handler(when, map->read->fd, map->read->data);
+            if (map->write && (when & OGS_POLLOUT))
+                map->write->handler(when, map->write->fd, map->write->data);
         }
     }
     

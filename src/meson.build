@@ -27,5 +27,6 @@ subdir('sgw')
 subdir('pgw')
 subdir('pcrf')
 
+subdir('nrf')
 subdir('smf')
 subdir('upf')

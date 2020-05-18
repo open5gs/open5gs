@@ -1,3 +1,9 @@
+open5gs (1.2.5) unstable; urgency=medium
+
+  * NRF is added
+
+ -- Sukchan Lee <acetcom@gmail.com>  Mon, 18 May 2020 13:14:54 -0400
+
 open5gs (1.2.4~eoan) eoan; urgency=medium
 
   * Bug Fixed

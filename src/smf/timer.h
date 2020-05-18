@@ -30,8 +30,14 @@ extern "C" {
 typedef enum {
     SMF_TIMER_BASE = 0,
 
-    SMF_TIMER_ASSOCIATION,
-    SMF_TIMER_HEARTBEAT,
+    SMF_TIMER_PFCP_ASSOCIATION,
+    SMF_TIMER_PFCP_HEARTBEAT,
+
+    SMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL,
+    SMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL,
+    SMF_TIMER_NF_INSTANCE_HEARTBEAT,
+    SMF_TIMER_NF_INSTANCE_VALIDITY,
+    SMF_TIMER_SUBSCRIPTION_VALIDITY,
 
     MAX_NUM_OF_SMF_TIMER,
 
@@ -46,8 +52,14 @@ smf_timer_cfg_t *smf_timer_cfg(smf_timer_e id);
 
 const char *smf_timer_get_name(smf_timer_e id);
 
-void smf_timer_association(void *data);
-void smf_timer_heartbeat(void *data);
+void smf_timer_pfcp_association(void *data);
+void smf_timer_pfcp_heartbeat(void *data);
+
+void smf_timer_nf_instance_registration_interval(void *data);
+void smf_timer_nf_instance_heartbeat_interval(void *data);
+void smf_timer_nf_instance_heartbeat(void *data);
+void smf_timer_nf_instance_validity(void *data);
+void smf_timer_subscription_validity(void *data);
 
 #ifdef __cplusplus
 }

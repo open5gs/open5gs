@@ -44,6 +44,9 @@ libsmf_sources = files('''
     n4-build.h
     n4-handler.h
     bearer-binding.h
+    nnrf-build.h
+    nnrf-handler.h
+    sbi-path.h
 
     init.c
     event.c
@@ -60,21 +63,31 @@ libsmf_sources = files('''
     n4-build.c
     n4-handler.c
     bearer-binding.c
+    nnrf-build.c
+    nnrf-handler.c
+    sbi-path.c
+    nf-sm.c
 '''.split())
 
 libsmf = static_library('smf',
     sources : libsmf_sources,
     link_with : libipfw,
-    dependencies : [
-        libapp_dep, libdiameter_gx_dep, libgtp_dep, libpfcp_dep, libipfw_dep
-    ],
+    dependencies : [libapp_dep,
+                    libsbi_dep,
+                    libdiameter_gx_dep,
+                    libgtp_dep,
+                    libpfcp_dep,
+                    libipfw_dep],
     install : false)
 
 libsmf_dep = declare_dependency(
     link_with : libsmf,
-    dependencies : [
-        libapp_dep, libdiameter_gx_dep, libgtp_dep, libpfcp_dep, libipfw_dep
-    ])
+    dependencies : [libapp_dep,
+                    libsbi_dep,
+                    libdiameter_gx_dep,
+                    libgtp_dep,
+                    libpfcp_dep,
+                    libipfw_dep])
 
 smf_sources = files('''
     app.c

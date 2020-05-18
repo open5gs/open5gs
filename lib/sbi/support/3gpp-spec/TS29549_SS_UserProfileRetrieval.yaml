@@ -1,0 +1,82 @@
+openapi: 3.0.0
+info:
+  title: SS_UserProfileRetrieval
+  description: |
+    API for SEAL Configuration management.
+    (C) 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+  version: "1.0.0.alpha-1"
+externalDocs:
+  description: 3GPP TS 29.549 V1.1.0 Service Enabler Architecture Layer for Verticals (SEAL); Application Programming Interface (API) specification; Stage3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.549/
+servers:
+  - url: '{apiRoot}/configuration-management/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 6.5 of 3GPP TS 29.549
+paths:
+  /{valServiceId}:
+    get:
+      description: Retrieve a VAL User or VAL UE's profile information belonging to a VAL service.
+      parameters: 
+        - name: valServiceId
+          in: path
+          description: String identifying an individual VAL service resource
+          required: true
+          schema:
+            type: string
+        - name: valUserId
+          in: query
+          description: String identifying a VAL User. Shall be present if valUEId query parameter is not present. 
+          schema:
+            type: string
+        - name: valUEId
+          in: query
+          description: String identifying a VAL UE. Shall be present if valUserId query parameter is not present.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The Profile information of the VAL User or VAL UE corresponding to the identifier in the request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileDoc'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  schemas:
+    ProfileDoc:
+      type: object
+      properties:
+        profileInformation:
+          type: string
+          description: Profile information associated with the valUserId or valUEId.
+        valUserId:
+          type: string
+          description: Unique identifier of a VAL user.
+        valUEId:  
+          type: string
+          description: Unique identifuer of a VAL UE.
+      required:
+        - profileInformation
+      oneOf:
+        - required: [valUserId]
+        - required: [valUEId]

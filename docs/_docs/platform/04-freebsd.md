@@ -45,7 +45,7 @@ $ sudo sysctl -w net.inet.ip.forwarding=1
 
 Install the depedencies for building the source code.
 ```bash
-$ sudo pkg install py36-pip ninja gcc bison gsed pkgconf git mongo-c-driver gnutls libgcrypt libidn libyaml
+$ sudo pkg install py36-pip ninja gcc bison gsed pkgconf git mongo-c-driver gnutls libgcrypt libidn libyaml libmicrohttpd curl
 ```
 
 Install Meson using Python.

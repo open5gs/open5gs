@@ -164,6 +164,19 @@ extern "C" {
 #define ogs_container_of(ptr, type, member) \
     (type *)((u_char *)ptr - offsetof(type, member))
 
+#ifndef SWITCH_CASE_INIT
+#define SWITCH_CASE_INIT
+    #define SWITCH(X)    {char *__switch_p__,  __switch_next__; \
+                          for (__switch_p__ = (char *)X, __switch_next__ = 1; \
+                              __switch_p__; \
+                              __switch_p__ = 0, __switch_next__ = 1) { {
+    #define CASE(X)            } if (!__switch_next__ || \
+                                     !(__switch_next__ = \
+                                         strcmp(__switch_p__, X))) {
+    #define DEFAULT            } {
+    #define END          }}}
+#endif
+
 #ifdef __cplusplus
 }
 #endif

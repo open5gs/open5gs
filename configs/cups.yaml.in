@@ -66,6 +66,23 @@ sgw:
       addr: 127.0.0.2
 
 smf:
+    sbi:
+      - addr: 127.0.0.3
+        port: 7777
+    gtpc:
+      - addr: 127.0.0.3
+      - addr: ::1
+    pfcp:
+      - addr: 127.0.0.3
+    pdn:
+      - addr: 10.45.0.1/16
+      - addr: cafe::1/64
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 2001:4860:4860::8888
+      - 2001:4860:4860::8844
+    mtu: 1400
     freeDiameter:
       identity: pgw.open-ims.test
       realm: open-ims.test
@@ -82,28 +99,19 @@ smf:
       connect:
         - identity: pcrf.open-ims.test
           addr: 127.0.0.5
-
-    gtpc:
-      - addr: 127.0.0.3
-      - addr: ::1
-    pfcp:
-      - addr: 127.0.0.3
-    pdn:
-      - addr: 10.45.0.1/16
-      - addr: cafe::1/64
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-      - 2001:4860:4860::8888
-      - 2001:4860:4860::8844
-    mtu: 1400
+nrf:
+    sbi:
+      addr:
+        - 127.0.0.1
+        - ::1
+      port: 7777
 
 upf:
     pfcp:
-      addr: 127.0.0.2
+      addr: 127.0.0.4
     gtpu:
       - addr:
-        - 127.0.0.3
+        - 127.0.0.4
         - ::1
     pdn:
 

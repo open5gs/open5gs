@@ -1,0 +1,38 @@
+/*
+ * cnf_unit.h
+ *
+ *
+ */
+
+#ifndef _OpenAPI_cnf_unit_H_
+#define _OpenAPI_cnf_unit_H_
+
+#include <string.h>
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+#include "atom.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct OpenAPI_cnf_unit_s OpenAPI_cnf_unit_t;
+typedef struct OpenAPI_cnf_unit_s {
+    OpenAPI_list_t *cnf_unit;
+} OpenAPI_cnf_unit_t;
+
+OpenAPI_cnf_unit_t *OpenAPI_cnf_unit_create(
+    OpenAPI_list_t *cnf_unit
+    );
+void OpenAPI_cnf_unit_free(OpenAPI_cnf_unit_t *cnf_unit);
+OpenAPI_cnf_unit_t *OpenAPI_cnf_unit_parseFromJSON(cJSON *cnf_unitJSON);
+cJSON *OpenAPI_cnf_unit_convertToJSON(OpenAPI_cnf_unit_t *cnf_unit);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _OpenAPI_cnf_unit_H_ */
+

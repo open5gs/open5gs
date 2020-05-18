@@ -336,7 +336,6 @@ pgw:
 #  o Disable Stateless Address Autoconfiguration for IPv6
 #      no_slaac: true
 #
-#
 parameter:
 
 #
@@ -381,6 +380,7 @@ max:
 #   - SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
 #
 #   packet: 65536
+#
 pool:
 
 #
@@ -395,4 +395,5 @@ pool:
 #  o max_attempts : 4
 #  o max_initial_timeout : 8000(8secs)
 #  o usrsctp_udp_port : 9899
+#
 sctp:

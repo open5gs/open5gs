@@ -35,12 +35,12 @@ static OGS_POOL(ogs_pfcp_bar_pool, ogs_pfcp_bar_t);
 static OGS_POOL(ogs_pfcp_dev_pool, ogs_pfcp_dev_t);
 static OGS_POOL(ogs_pfcp_subnet_pool, ogs_pfcp_subnet_t);
 
-static int context_initiaized = 0;
+static int context_initialized = 0;
 
 void ogs_pfcp_context_init(int num_of_gtpu_resource)
 {
     struct timeval tv;
-    ogs_assert(context_initiaized == 0);
+    ogs_assert(context_initialized == 0);
 
     /* Initialize SMF context */
     memset(&self, 0, sizeof(ogs_pfcp_context_t));
@@ -88,12 +88,12 @@ void ogs_pfcp_context_init(int num_of_gtpu_resource)
 
     self.pdr_hash = ogs_hash_make();
 
-    context_initiaized = 1;
+    context_initialized = 1;
 }
 
 void ogs_pfcp_context_final(void)
 {
-    ogs_assert(context_initiaized == 1);
+    ogs_assert(context_initialized == 1);
 
     ogs_assert(self.pdr_hash);
     ogs_hash_destroy(self.pdr_hash);
@@ -116,7 +116,7 @@ void ogs_pfcp_context_final(void)
     ogs_pool_final(&ogs_pfcp_node_pool);
     ogs_pool_final(&ogs_pfcp_gtpu_resource_pool);
 
-    context_initiaized = 0;
+    context_initialized = 0;
 }
 
 ogs_pfcp_context_t *ogs_pfcp_self(void)

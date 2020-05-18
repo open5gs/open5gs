@@ -31,7 +31,7 @@
 
 static void kqueue_init(ogs_pollset_t *pollset);
 static void kqueue_cleanup(ogs_pollset_t *pollset);
-static int kqueue_add(ogs_poll_t *poll, short when);
+static int kqueue_add(ogs_poll_t *poll);
 static int kqueue_remove(ogs_poll_t *poll);
 static int kqueue_process(ogs_pollset_t *pollset, ogs_time_t timeout);
 
@@ -123,14 +123,14 @@ static int kqueue_set(ogs_poll_t *poll, int filter, int flags)
     return OGS_OK;
 }
 
-static int kqueue_add(ogs_poll_t *poll, short when)
+static int kqueue_add(ogs_poll_t *poll)
 {
     int filter = 0;
 
-    if (when & OGS_POLLIN) {
+    if (poll->when & OGS_POLLIN) {
         filter = EVFILT_READ;
     }
-    if (when & OGS_POLLOUT) {
+    if (poll->when & OGS_POLLOUT) {
         filter = EVFILT_WRITE;
     }
 

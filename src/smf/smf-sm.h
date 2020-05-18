@@ -31,6 +31,16 @@ void smf_state_final(ogs_fsm_t *s, smf_event_t *e);
 void smf_state_operational(ogs_fsm_t *s, smf_event_t *e);
 void smf_state_exception(ogs_fsm_t *s, smf_event_t *e);
 
+void smf_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance);
+void smf_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance);
+
+void smf_nf_state_initial(ogs_fsm_t *s, smf_event_t *e);
+void smf_nf_state_final(ogs_fsm_t *s, smf_event_t *e);
+void smf_nf_state_will_register(ogs_fsm_t *s, smf_event_t *e);
+void smf_nf_state_registered(ogs_fsm_t *s, smf_event_t *e);
+void smf_nf_state_de_registered(ogs_fsm_t *s, smf_event_t *e);
+void smf_nf_state_exception(ogs_fsm_t *s, smf_event_t *e);
+
 void smf_pfcp_state_initial(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_final(ogs_fsm_t *s, smf_event_t *e);
 void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e);

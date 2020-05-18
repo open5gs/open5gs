@@ -32,6 +32,7 @@ typedef struct ogs_poll_s {
     ogs_lnode_t node;
     int index;
 
+    short when;
     ogs_socket_t fd;
     ogs_poll_handler_f handler;
     void *data;

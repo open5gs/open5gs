@@ -62,7 +62,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
 
     rv = ogs_queue_push(smf_self()->queue, e);
     if (rv != OGS_OK) {
-        ogs_error("ogs_queue_push() failed:%d", (int)rv);
+        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
         ogs_pkbuf_free(e->pkbuf);
         smf_event_free(e);
     }

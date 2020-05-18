@@ -26,6 +26,7 @@ open5gs_conf = '''
     pgw.yaml
     pcrf.yaml
 
+    nrf.yaml
     smf.yaml
     upf.yaml
 '''.split()

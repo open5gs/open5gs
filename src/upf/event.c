@@ -20,12 +20,33 @@
 #include "event.h"
 #include "context.h"
 
+#if defined(HAVE_KQUEUE)
+/*
+ * kqueue does not support TUN/TAP character device
+ * So, PGW should use select action in I/O multiplexing
+ */
+extern const ogs_pollset_actions_t ogs_select_actions;
+
+extern ogs_pollset_actions_t ogs_pollset_actions;
+extern bool ogs_pollset_actions_initialized;
+
+static void pollset_action_setup(void)
+{
+    ogs_pollset_actions = ogs_select_actions;
+    ogs_pollset_actions_initialized = true;
+}
+#endif
+
 #define EVENT_POOL 32 /* FIXME : 32 */
 static OGS_POOL(pool, upf_event_t);
 
 void upf_event_init(void)
 {
     ogs_pool_init(&pool, EVENT_POOL);
+
+#if defined(HAVE_KQUEUE)
+    pollset_action_setup();
+#endif
 
     upf_self()->queue = ogs_queue_create(EVENT_POOL);
     ogs_assert(upf_self()->queue);
@@ -59,6 +80,8 @@ upf_event_t *upf_event_new(upf_event_e id)
 
     ogs_pool_alloc(&pool, &e);
     ogs_assert(e);
+    memset(e, 0, sizeof(*e));
+
     e->id = id;
 
     return e;

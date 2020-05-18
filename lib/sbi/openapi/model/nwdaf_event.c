@@ -1,0 +1,51 @@
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include "nwdaf_event.h"
+
+OpenAPI_nwdaf_event_t *OpenAPI_nwdaf_event_create(
+    )
+{
+    OpenAPI_nwdaf_event_t *nwdaf_event_local_var = OpenAPI_malloc(sizeof(OpenAPI_nwdaf_event_t));
+    if (!nwdaf_event_local_var) {
+        return NULL;
+    }
+
+    return nwdaf_event_local_var;
+}
+
+void OpenAPI_nwdaf_event_free(OpenAPI_nwdaf_event_t *nwdaf_event)
+{
+    if (NULL == nwdaf_event) {
+        return;
+    }
+    OpenAPI_lnode_t *node;
+    ogs_free(nwdaf_event);
+}
+
+cJSON *OpenAPI_nwdaf_event_convertToJSON(OpenAPI_nwdaf_event_t *nwdaf_event)
+{
+    cJSON *item = NULL;
+
+    if (nwdaf_event == NULL) {
+        ogs_error("OpenAPI_nwdaf_event_convertToJSON() failed [NwdafEvent]");
+        return NULL;
+    }
+
+    item = cJSON_CreateObject();
+end:
+    return item;
+}
+
+OpenAPI_nwdaf_event_t *OpenAPI_nwdaf_event_parseFromJSON(cJSON *nwdaf_eventJSON)
+{
+    OpenAPI_nwdaf_event_t *nwdaf_event_local_var = NULL;
+    nwdaf_event_local_var = OpenAPI_nwdaf_event_create (
+        );
+
+    return nwdaf_event_local_var;
+end:
+    return NULL;
+}
+

@@ -57,6 +57,8 @@ mme_event_t *mme_event_new(mme_event_e id)
 
     e = ogs_calloc(1, sizeof *e);
     ogs_assert(e);
+    memset(e, 0, sizeof(*e));
+
     e->id = id;
 
     return e;

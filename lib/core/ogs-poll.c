@@ -17,6 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "core-config-private.h"
+
 #include "ogs-core.h"
 
 #include "ogs-poll-private.h"
@@ -80,13 +82,14 @@ ogs_poll_t *ogs_pollset_add(ogs_pollset_t *pollset, short when,
     rc = ogs_closeonexec(fd);
     ogs_assert(rc == OGS_OK);
 
+    poll->when = when;
     poll->fd = fd;
     poll->handler = handler;
     poll->data = data;
 
     poll->pollset = pollset;
 
-    rc = ogs_pollset_actions.add(poll, when);
+    rc = ogs_pollset_actions.add(poll);
     if (rc != OGS_OK) {
         ogs_error("cannot add poll");
         ogs_pool_free(&pollset->pool, poll);

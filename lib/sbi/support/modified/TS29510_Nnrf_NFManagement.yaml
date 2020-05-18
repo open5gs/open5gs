@@ -1,0 +1,1616 @@
+openapi: 3.0.0
+info:
+  version: '1.1.0.alpha-1'
+  title: 'NRF NFManagement Service'
+  description: |
+    NRF NFManagement Service.
+    (C) 2019, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+servers:
+  - url: '{apiRoot}/nnrf-nfm/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 4.4 of 3GPP TS 29.501
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nnrf-nfm
+paths:
+  /nf-instances:
+    get:
+      summary: Retrieves a collection of NF Instances
+      operationId: GetNFInstances
+      tags:
+        - NF Instances (Store)
+      parameters:
+        - name: nf-type
+          in: query
+          description: Type of NF
+          required: false
+          schema:
+            $ref: '#/components/schemas/NFType'
+        - name: limit
+          in: query
+          description: How many items to return at one time
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/3gppHal+json:
+              schema:
+                type: object
+                properties:
+                  _links:
+                    type: object
+                    description: 'List of the URI of NF instances. It has two members whose names are item and self. The item one contains an array of URIs.'
+                    additionalProperties:
+                      $ref: 'TS29571_CommonData.yaml#/components/schemas/LinksValueSchema'
+                minProperties: 1
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    options:
+      summary: Discover communication options supported by NRF for NF Instances
+      operationId: OptionsNFInstances
+      tags:
+        - NF Instances (Store)
+      responses:
+        '200':
+          description: OK
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '405':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/405'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /nf-instances/{nfInstanceID}:
+    get:
+      summary: Read the profile of a given NF Instance
+      operationId: GetNFInstance
+      tags:
+        - NF Instance ID (Document)
+      parameters:
+        - name: nfInstanceID
+          in: path
+          description: Unique ID of the NF Instance
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NFProfile'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: Register a new NF Instance
+      operationId: RegisterNFInstance
+      tags:
+        - NF Instance ID (Document)
+      parameters:
+        - name: nfInstanceID
+          in: path
+          required: true
+          description: Unique ID of the NF Instance to register
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        - name: Content-Encoding
+          in: header
+          description: Content-Encoding, described in IETF RFC 7231 
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NFProfile'
+        required: true
+      responses:
+        '200':
+          description: OK (Profile Replacement)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NFProfile'
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+        '201':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NFProfile'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nnrf-nfm/v1/nf-instances/{nfInstanceId}'
+              required: true
+              schema:
+                type: string
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    patch:
+      summary: Update NF Instance profile
+      operationId: UpdateNFInstance
+      tags:
+        - NF Instance ID (Document)
+      parameters:
+        - name: nfInstanceID
+          in: path
+          required: true
+          description: Unique ID of the NF Instance to update
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+              minItems: 1
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NFProfile'
+        '204':
+          description: Expected response with empty body
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Deregisters a given NF Instance
+      operationId: DeregisterNFInstance
+      tags:
+        - NF Instance ID (Document)
+      parameters:
+        - name: nfInstanceID
+          in: path
+          required: true
+          description: Unique ID of the NF Instance to deregister
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+      responses:
+        '204':
+          description: Expected response to a successful deregistration
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /subscriptions:
+    post:
+      summary: Create a new subscription
+      operationId: CreateSubscription
+      tags:
+        - Subscriptions (Collection)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubscriptionData'
+        required: true
+      responses:
+        '201':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionData'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nnrf-nfm/v1/subscriptions/{subscriptionId}'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        onNFStatusEvent:
+          '{$request.body#/nfStatusNotificationUri}':
+            post:
+              requestBody:
+                description: Notification Payload
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/NotificationData'
+              responses:
+                '204':
+                  description: Expected response to a successful callback processing
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '501':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /subscriptions/{subscriptionID}:
+    patch:
+      summary: Updates a subscription
+      operationId: UpdateSubscription
+      tags:
+        - Subscription ID (Document)
+      parameters:
+        - name: subscriptionID
+          in: path
+          required: true
+          description: Unique ID of the subscription to update
+          schema:
+            type: string
+            pattern: '^([0-9]{5,6}-)?[^-]+$'
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/PatchItem'
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubscriptionData'
+        '204':
+          description: No Content
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: Deletes a subscription
+      operationId: RemoveSubscription
+      tags:
+        - Subscription ID (Document)
+      parameters:
+        - name: subscriptionID
+          in: path
+          required: true
+          description: Unique ID of the subscription to remove
+          schema:
+            type: string
+            pattern: '^([0-9]{5,6}-)?[^-]+$'
+      responses:
+        '204':
+          description: Expected response to a successful subscription removal
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '501':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/501'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows: 
+        clientCredentials: 
+          tokenUrl: '/oauth2/token'
+          scopes:
+            nnrf-nfm: Access to the Nnrf_NFManagement API
+  schemas:
+    NFProfile:
+      type: object
+      required:
+        - nfInstanceId
+        - nfType
+        - nfStatus
+      anyOf:
+        - required: [ fqdn ]
+        - required: [ ipv4Addresses ]
+        - required: [ ipv6Addresses ]
+      properties:
+        nfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        nfInstanceName:
+          type: string
+        nfType:
+          $ref: '#/components/schemas/NFType'
+        nfStatus:
+          $ref: '#/components/schemas/NFStatus'
+        heartBeatTimer:
+          type: integer
+        plmnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+          minItems: 1
+        sNssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        perPlmnSnssaiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlmnSnssai'
+          minItems: 1
+        nsiList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        fqdn:
+          $ref: '#/components/schemas/Fqdn'
+        interPlmnFqdn:
+          $ref: '#/components/schemas/Fqdn'
+        ipv4Addresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+        ipv6Addresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+        allowedPlmns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+          minItems: 1
+        allowedNfTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NFType'
+          minItems: 1
+        allowedNfDomains:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        allowedNssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        priority:
+          type: integer
+          minimum: 0
+          maximum: 65535
+        capacity:
+          type: integer
+          minimum: 0
+          maximum: 65535
+        load:
+          type: integer
+          minimum: 0
+          maximum: 100
+        locality:
+          type: string
+        udrInfo:
+          $ref: '#/components/schemas/UdrInfo'
+        udrInfoExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/UdrInfo'
+          minItems: 1
+        udmInfo:
+          $ref: '#/components/schemas/UdmInfo'
+        udmInfoExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/UdmInfo'
+          minItems: 1
+        ausfInfo:
+          $ref: '#/components/schemas/AusfInfo'
+        ausfInfoExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/AusfInfo'
+          minItems: 1
+        amfInfo:
+          $ref: '#/components/schemas/AmfInfo'
+        amfInfoExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/AmfInfo'
+          minItems: 1
+        smfInfo:
+          $ref: '#/components/schemas/SmfInfo'
+        smfInfoExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/SmfInfo'
+          minItems: 1
+        upfInfo:
+          $ref: '#/components/schemas/UpfInfo'
+        upfInfoExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpfInfo'
+          minItems: 1
+        pcfInfo:
+          $ref: '#/components/schemas/PcfInfo'
+        pcfInfoExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/PcfInfo'
+          minItems: 1
+        bsfInfo:
+          $ref: '#/components/schemas/BsfInfo'
+        bsfInfoExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/BsfInfo'
+          minItems: 1
+        chfInfo:
+          $ref: '#/components/schemas/ChfInfo'
+        chfInfoExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChfInfo'
+          minItems: 1
+        nrfInfo:
+          $ref: '#/components/schemas/NrfInfo'
+        nwdafInfo:
+          $ref: '#/components/schemas/NwdafInfo'
+        customInfo:
+          type: object
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        nfServicePersistence:
+          type: boolean
+          default: false
+        nfServices:
+          type: array
+          items:
+            $ref: '#/components/schemas/NFService'
+          minItems: 1
+        nfProfileChangesSupportInd:
+          type: boolean
+          default: false
+          writeOnly: true
+        nfProfileChangesInd:
+          type: boolean
+          default: false
+          readOnly: true
+        defaultNotificationSubscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/DefaultNotificationSubscription'
+    NFService:
+      type: object
+      required:
+        - serviceInstanceId
+        - serviceName
+        - versions
+        - scheme
+        - nfServiceStatus
+      properties:
+        serviceInstanceId:
+          type: string
+        serviceName:
+          $ref: '#/components/schemas/ServiceName'
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/NFServiceVersion'
+          minItems: 1
+        scheme:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UriScheme'
+        nfServiceStatus:
+          $ref: '#/components/schemas/NFServiceStatus'
+        fqdn:
+          $ref: '#/components/schemas/Fqdn'
+        interPlmnFqdn:
+          $ref: '#/components/schemas/Fqdn'
+        ipEndPoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/IpEndPoint'
+          minItems: 1
+        apiPrefix:
+          type: string
+        defaultNotificationSubscriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/DefaultNotificationSubscription'
+          minItems: 1
+        allowedPlmns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+          minItems: 1
+        allowedNfTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/NFType'
+          minItems: 1
+        allowedNfDomains:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        allowedNssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        priority:
+          type: integer
+          minimum: 0
+          maximum: 65535
+        capacity:
+          type: integer
+          minimum: 0
+          maximum: 65535
+        load:
+          type: integer
+          minimum: 0
+          maximum: 100
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        chfServiceInfo:
+          $ref: '#/components/schemas/ChfServiceInfo'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+    NFType:
+#      anyOf:
+#        - type: string
+          enum:
+            - NRF
+            - UDM
+            - AMF
+            - SMF
+            - AUSF
+            - NEF
+            - PCF
+            - SMSF
+            - NSSF
+            - UDR
+            - LMF
+            - GMLC
+            - 5G_EIR
+            - SEPP
+            - UPF
+            - N3IWF
+            - AF
+            - UDSF
+            - BSF
+            - CHF
+            - NWDAF
+          type: string
+    Fqdn:
+      type: string
+    IpEndPoint:
+      type: object
+      properties:
+        ipv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        transport:
+          $ref: '#/components/schemas/TransportProtocol'
+        port:
+          type: integer  
+          minimum: 0
+          maximum: 65535
+    SubscriptionData:
+      type: object
+      required:
+        - nfStatusNotificationUri
+#        - subscriptionId
+      properties:
+        nfStatusNotificationUri:
+          type: string
+        reqNfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+#        subscrCond:
+#          oneOf:
+#            - $ref: '#/components/schemas/NfInstanceIdCond'
+#            - $ref: '#/components/schemas/NfTypeCond'
+#            - $ref: '#/components/schemas/ServiceNameCond'
+#            - $ref: '#/components/schemas/AmfCond'
+#            - $ref: '#/components/schemas/GuamiListCond'
+#            - $ref: '#/components/schemas/NetworkSliceCond'
+#            - $ref: '#/components/schemas/NfGroupCond'
+        subscriptionId:
+          type: string
+          pattern: '^([0-9]{5,6}-)?[^-]+$'
+          readOnly: true
+        validityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        reqNotifEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationEventType'
+          minItems: 1
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        notifCondition:
+           $ref: '#/components/schemas/NotifCondition'
+        reqNfType:
+          $ref: '#/components/schemas/NFType'
+        reqNfFqdn:
+          $ref: '#/components/schemas/Fqdn'
+        reqSnssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+    NfInstanceIdCond:
+      type: object
+      required:
+        - nfInstanceId
+      properties:
+        nfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+    NfTypeCond:
+      type: object
+      required:
+        - nfType
+      not:
+        required: [ nfGroupId ]
+      properties:
+        nfType:
+          $ref: '#/components/schemas/NFType'
+    ServiceNameCond:
+      type: object
+      required:
+        - serviceName
+      properties:
+        serviceName:
+          $ref: '#/components/schemas/ServiceName'
+    AmfCond:
+      type: object
+      anyOf:
+        - required: [ amfSetId ]
+        - required: [ amfRegionId ]
+      properties:
+        amfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfSetId'
+        amfRegionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfRegionId'
+    GuamiListCond:
+      type: object
+      required:
+        - guamiList
+      properties:
+        guamiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+    NetworkSliceCond:
+      type: object
+      required:
+        - snssaiList
+      properties:
+        snssaiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        nsiList:
+          type: array
+          items:
+            type: string
+    NfGroupCond:
+      type: object
+      required:
+        - nfType
+        - nfGroupId
+      properties:
+        nfType:
+          type: string
+          enum:
+            - UDM
+            - AUSF
+            - UDR
+            - PCF
+        nfGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+    NotifCondition:
+      type: object
+      not:
+        required: [ monitoredAttributes, unmonitoredAttributes ]
+      properties:
+        monitoredAttributes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        unmonitoredAttributes:
+          type: array
+          items:
+            type: string
+          minItems: 1
+    UdrInfo:
+      type: object
+      properties:
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        supiRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupiRange'
+          minItems: 1
+        gpsiRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentityRange'
+          minItems: 1
+        externalGroupIdentifiersRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentityRange'
+          minItems: 1
+        supportedDataSets:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataSetId'
+          minItems: 1
+    SupiRange:
+      type: object
+      properties:
+        start:
+          type: string
+          pattern: '^[0-9]+$'
+        end:
+          type: string
+          pattern: '^[0-9]+$'
+        pattern:
+          type: string
+    IdentityRange:
+      type: object
+      properties:
+        start:
+          type: string
+          pattern: '^[0-9]+$'
+        end:
+          type: string
+          pattern: '^[0-9]+$'
+        pattern:
+          type: string
+    DataSetId:
+      anyOf:
+        - type: string
+          enum:
+            - SUBSCRIPTION
+            - POLICY
+            - EXPOSURE
+            - APPLICATION
+        - type: string    
+    UdmInfo:
+      type: object
+      properties:
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        supiRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupiRange'
+          minItems: 1
+        gpsiRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentityRange'
+          minItems: 1
+        externalGroupIdentifiersRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentityRange'
+          minItems: 1
+        routingIndicators:
+          type: array
+          items:
+            type: string
+            pattern: '^[0-9]{1,4}$'
+          minItems: 1
+    AusfInfo:
+      type: object
+      properties:
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        supiRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupiRange'
+          minItems: 1
+        routingIndicators:
+          type: array
+          items:
+            type: string
+            pattern: '^[0-9]{1,4}$'
+          minItems: 1
+    AmfInfo:
+      type: object
+      required:
+        - amfSetId
+        - amfRegionId
+        - guamiList
+      properties:
+        amfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfSetId'
+        amfRegionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfRegionId'
+        guamiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+          minItems: 1
+        taiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+        taiRangeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaiRange'
+          minItems: 1
+        backupInfoAmfFailure:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+          minItems: 1
+        backupInfoAmfRemoval:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+          minItems: 1
+        n2InterfaceAmfInfo:
+          $ref: '#/components/schemas/N2InterfaceAmfInfo'
+    SmfInfo:
+      type: object
+      required:
+        - sNssaiSmfInfoList
+      properties:
+        sNssaiSmfInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnssaiSmfInfoItem'
+          minItems: 1
+        taiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+        taiRangeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaiRange'
+          minItems: 1
+        pgwFqdn:
+          $ref: '#/components/schemas/Fqdn'
+        accessType:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+    SnssaiSmfInfoItem:
+      type: object
+      required:
+        - sNssai
+        - dnnSmfInfoList
+      properties:
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnnSmfInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnnSmfInfoItem'
+          minItems: 1
+    DnnSmfInfoItem:
+      type: object
+      required:
+        - dnn
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+    UpfInfo:
+      type: object
+      required:
+        - sNssaiUpfInfoList
+      properties:
+        sNssaiUpfInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SnssaiUpfInfoItem'
+          minItems: 1
+        smfServingArea:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        interfaceUpfInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/InterfaceUpfInfoItem'
+          minItems: 1
+        iwkEpsInd:
+          type: boolean
+          default: false
+        pduSessionTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+          minItems: 1
+        atsssCapability:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AtsssCapability'
+        ueIpAddrInd:
+          type: boolean
+          default: false
+    SnssaiUpfInfoItem:
+      type: object
+      required:
+        - sNssai
+        - dnnUpfInfoList
+      properties:
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        dnnUpfInfoList:
+          type: array
+          items:
+            $ref: '#/components/schemas/DnnUpfInfoItem'
+          minItems: 1
+    DnnUpfInfoItem:
+      type: object
+      required:
+        - dnn
+      properties:
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        dnaiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+          minItems: 1
+        pduSessionTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+          minItems: 1
+    InterfaceUpfInfoItem:
+      type: object
+      required:
+        - interfaceType
+      properties:
+        interfaceType:
+          $ref: '#/components/schemas/UPInterfaceType'
+        ipv4EndpointAddresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+        ipv6EndpointAddresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+        endpointFqdn:
+            $ref: '#/components/schemas/Fqdn'
+        networkInstance:
+          type: string
+    UPInterfaceType:
+      anyOf:
+        - type: string
+          enum:
+            - N3
+            - N6
+            - N9
+        - type: string
+    PcfInfo:
+      type: object
+      properties:
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        dnnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+        supiRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupiRange'
+          minItems: 1
+        gpsiRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentityRange'
+          minItems: 1
+        rxDiamHost:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DiameterIdentity'
+        rxDiamRealm:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DiameterIdentity'
+    BsfInfo:
+      type: object
+      properties:
+        dnnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+        ipDomainList:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        ipv4AddressRanges:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Ipv4AddressRange'
+          minItems: 1
+        ipv6PrefixRanges:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Ipv6PrefixRange'
+          minItems: 1
+    ChfInfo:
+      type: object
+      properties:
+        supiRangeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupiRange'
+          minItems: 1
+        gpsiRangeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentityRange'
+          minItems: 1
+        plmnRangeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlmnRange'
+          minItems: 1
+    Ipv4AddressRange:
+      type: object
+      properties:
+        start:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        end:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+    Ipv6PrefixRange:
+      type: object
+      properties:
+        start:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        end:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+    DefaultNotificationSubscription:
+      type: object
+      required:
+        - notificationType
+        - callbackUri
+      properties:
+        notificationType:
+          $ref: '#/components/schemas/NotificationType'
+        callbackUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        n1MessageClass:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N1MessageClass'
+        n2InformationClass:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InformationClass'
+    NotificationType:
+#      anyOf:
+#        - type: string
+          enum:
+            - N1_MESSAGES
+            - N2_INFORMATION
+            - LOCATION_NOTIFICATION
+            - DATA_REMOVAL_NOTIFICATION
+            - DATA_CHANGE_NOTIFICATION
+          type: string
+    TransportProtocol:
+#      anyOf:
+#        - type: string
+          enum:
+            - TCP
+          type: string
+    NotificationEventType:
+#      anyOf:
+#        - type: string
+          enum:
+            - NF_REGISTERED
+            - NF_DEREGISTERED
+            - NF_PROFILE_CHANGED
+          type: string    
+    NotificationData:
+      type: object
+      required:
+        - event
+        - nfInstanceUri
+      allOf:
+        #
+        # Condition: If 'event' takes value 'NF_PROFILE_CHANGED',
+        # then either 'nfProfile' or 'profileChanges' (but not both) must be present
+        #
+        - anyOf:
+          - not:
+              properties:
+                event:
+                  type: string
+                  enum:
+                    - NF_PROFILE_CHANGED 
+          - oneOf:
+              - required: [ nfProfile ]
+              - required: [ profileChanges ]
+        #
+        # Condition: If 'event' takes value 'NF_REGISTERED',
+        # then 'nfProfile' must be present
+        #
+        - anyOf:
+          - not:
+              properties:
+                event:
+                  type: string
+                  enum:
+                    - NF_REGISTERED 
+          - required: [ nfProfile ]
+      properties:
+        event:
+          $ref: '#/components/schemas/NotificationEventType'
+        nfInstanceUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        nfProfile:
+          allOf:
+            - $ref: '#/components/schemas/NFProfile'
+            - not:
+                required: [ interPlmnFqdn ] 
+            - not:
+                required: [ allowedPlmns ] 
+            - not:
+                required: [ allowedNfTypes ] 
+            - not:
+                required: [ allowedNfDomains ] 
+            - not:
+                required: [ allowedNssais ] 
+            - properties:
+                nfServices:
+                  type: array
+                  items:
+                    allOf:
+                      - $ref: '#/components/schemas/NFService'
+                      - not:
+                          required: [ interPlmnFqdn ]
+                      - not:
+                          required: [ allowedPlmns ]
+                      - not:
+                          required: [ allowedNfTypes ]
+                      - not:
+                          required: [ allowedNfDomains ]
+                      - not:
+                          required: [ allowedNssais ]
+        profileChanges:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ChangeItem'
+          minItems: 1
+    NFStatus:
+#      anyOf:
+#        - type: string
+          enum:
+            - REGISTERED
+            - SUSPENDED
+            - UNDISCOVERABLE
+          type: string
+    NFServiceVersion:
+      type: object
+      required:
+        - apiVersionInUri
+        - apiFullVersion
+      properties:
+        apiVersionInUri:
+          type: string
+        apiFullVersion:
+          type: string
+        expiry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+    ServiceName:
+#      anyOf:
+#        - type: string
+#          enum:
+#            - nnrf-nfm
+#            - nnrf-disc
+#            - nudm-sdm
+#            - nudm-uecm
+#            - nudm-ueau
+#            - nudm-ee
+#            - nudm-pp
+#            - nudm-niddau
+#            - namf-comm
+#            - namf-evts
+#            - namf-mt
+#            - namf-loc
+#            - nsmf-pdusession
+#            - nsmf-event-exposure
+#            - nausf-auth
+#            - nausf-sorprotection
+#            - nausf-upuprotection
+#            - nnef-pfdmanagement
+#            - npcf-am-policy-control
+#            - npcf-smpolicycontrol
+#            - npcf-policyauthorization
+#            - npcf-bdtpolicycontrol
+#            - npcf-eventexposure
+#            - npcf-ue-policy-control
+#            - nsmsf-sms
+#            - nnssf-nsselection
+#            - nnssf-nssaiavailability
+#            - nudr-dr
+#            - nlmf-loc
+#            - n5g-eir-eic
+#            - nbsf-management
+#            - nchf-spendinglimitcontrol
+#            - nchf-convergedcharging
+#            - nnwdaf-eventssubscription
+#            - nnwdaf-analyticsinfo
+          type: string
+    N2InterfaceAmfInfo:
+      type: object
+      properties:
+        ipv4EndpointAddress:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+        ipv6EndpointAddress:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+        amfName:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfName'
+    NFServiceStatus:
+#      anyOf:
+#        - type: string
+          enum:
+            - REGISTERED
+            - SUSPENDED
+            - UNDISCOVERABLE
+          type: string
+    TaiRange:
+      type: object
+      required:
+        - plmnId
+        - tacRangeList
+      properties:
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        tacRangeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TacRange'
+          minItems: 1
+    TacRange:
+      type: object
+      properties:
+        start:
+          type: string
+          pattern: '^([A-Fa-f0-9]{4}|[A-Fa-f0-9]{6})$'
+        end:
+          type: string
+          pattern: '^([A-Fa-f0-9]{4}|[A-Fa-f0-9]{6})$'
+        pattern:
+          type: string
+    ChfServiceInfo:
+      type: object
+      not:
+        required: [ primaryChfServiceInstance, secondaryChfServiceInstance ]
+      properties:
+        primaryChfServiceInstance:
+          type: string
+        secondaryChfServiceInstance:
+          type: string
+    PlmnRange:
+      type: object
+      properties:
+        start:
+          type: string
+          pattern: '^[0-9]{3}[0-9]{2,3}$'
+        end:
+          type: string
+          pattern: '^[0-9]{3}[0-9]{2,3}$'
+        pattern:
+          type: string
+    NrfInfo:
+      type: object
+      properties:
+        servedUdrInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UdrInfo'
+          minProperties: 1
+        servedUdmInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UdmInfo'
+          minProperties: 1
+        servedAusfInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AusfInfo'
+          minProperties: 1
+        servedAmfInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/AmfInfo'
+          minProperties: 1
+        servedSmfInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SmfInfo'
+          minProperties: 1
+        servedUpfInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UpfInfo'
+          minProperties: 1
+        servedPcfInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PcfInfo'
+          minProperties: 1
+        servedBsfInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/BsfInfo'
+          minProperties: 1
+        servedChfInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ChfInfo'
+          minProperties: 1
+        servedNwdafInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/NwdafInfo'
+          minProperties: 1
+    PlmnSnssai:
+      type: object
+      required:
+        - plmnId
+        - sNssaiList
+      properties:
+        plmnId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        sNssaiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+    NwdafInfo:
+      type: object
+      properties:
+        eventIds:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_AnalyticsInfo.yaml#/components/schemas/EventId'
+          minItems: 1
+        nwdafEvents:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NwdafEvent'
+          minItems: 1
+        taiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+        taiRangeList:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaiRange'
+          minItems: 1
+
+externalDocs:
+  description: 3GPP TS 29.510 V15.3.0; 5G System; Network Function Repository Services; Stage 3
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.510/'

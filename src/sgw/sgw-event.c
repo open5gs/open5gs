@@ -59,6 +59,8 @@ sgw_event_t *sgw_event_new(sgw_event_e id)
 
     ogs_pool_alloc(&pool, &e);
     ogs_assert(e);
+    memset(e, 0, sizeof(*e));
+
     e->id = id;
 
     return e;

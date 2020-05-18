@@ -1,0 +1,123 @@
+openapi: 3.0.0
+info:
+  title: CAPIF_Auditing_API
+  description: |
+    API for auditing.
+    (C) 2019, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+  version: "1.0.1"
+externalDocs:
+  description: 3GPP TS 29.222 V15.4.0 Common API Framework for 3GPP Northbound APIs
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.222/
+servers:
+  - url: '{apiRoot}/logs/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 7.5 of 3GPP TS 29.222.
+paths:
+  /apiInvocationLogs:
+    get:
+      description: Query and retrieve service API invocation logs stored on the CAPIF core function.
+      parameters:
+        - name: aef-id
+          in: query
+          description: String identifying the API exposing function.
+          schema:
+            type: string
+        - name: api-invoker-id
+          in: query
+          description: String identifying the API invoker which invoked the service API.
+          schema:
+            type: string
+        - name: time-range-start
+          in: query
+          description: Start time of the invocation time range.
+          schema:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        - name: time-range-end
+          in: query
+          description: End time of the invocation time range.
+          schema:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        - name: api-id
+          in: query
+          description: String identifying the API invoked.
+          schema:
+            type: string
+        - name: api-name
+          in: query
+          description: API name, it is set as {apiName} part of the URI structure as defined in subclause 4.4 of 3GPP TS 29.501.
+          schema:
+            type: string
+        - name: api-version
+          in: query
+          description: Version of the API which was invoked.
+          schema:
+            type: string
+        - name: protocol
+          in: query
+          description: Protocol invoked.
+          schema:
+            $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/Protocol'
+        - name: operation
+          in: query
+          description: Operation that was invoked on the API.
+          schema:
+            $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/Operation'
+        - name: result
+          in: query
+          description: Result or output of the invocation.
+          schema:
+            type: string
+        - name: resource-name
+          in: query
+          description: Name of the specific resource invoked.
+          schema:
+            type: string
+        - name: src-interface
+          in: query
+          description: Interface description of the API invoker.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/InterfaceDescription'
+        - name: dest-interface
+          in: query
+          description: Interface description of the API invoked.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29222_CAPIF_Publish_Service_API.yaml#/components/schemas/InterfaceDescription'
+        - name: supported-features
+          in: query
+          description: To filter irrelevant responses related to unsupported features
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      responses:
+        '200':
+          description: Result of the query operation along with fetched service API invocation log data.
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29222_CAPIF_Logging_API_Invocation_API.yaml#/components/schemas/InvocationLog'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '414':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/414'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'

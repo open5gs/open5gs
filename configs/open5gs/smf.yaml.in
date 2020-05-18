@@ -23,6 +23,45 @@ logger:
 #
 # smf:
 #
+#  <SBI Server>
+#
+#  o SBI Server(http://<all address available>:80)
+#    sbi:
+#
+#  o SBI Server(http://<any address>:80)
+#    sbi:
+#      - addr:
+#          - 0.0.0.0
+#          - ::0
+#        port: 7777
+#
+#  o SBI Server(https://<all address avaiable>:443)
+#    sbi:
+#        tls:
+#          key: smf.key
+#          pem: smf.pem
+#
+#  o SBI Server(https://127.0.0.3:443, http://[::1]:80)
+#    sbi:
+#      - addr: 127.0.0.3
+#        tls:
+#          key: smf.key
+#          pem: smf.pem
+#      - addr: ::1
+#
+#  o SBI Server(http://smf.open5gs.org:80)
+#    sbi:
+#      name: smf.open5gs.org
+#
+#  o SBI Server(http://127.0.0.3:7777)
+#    sbi:
+#      - addr: 127.0.0.3
+#        port: 7777
+#
+#  o SBI Server(http://<eth0 IP address>:80)
+#    sbi:
+#      dev: eth0
+#
 #  <PFCP Server>
 #
 #  o PFCP Server(127.0.0.3:8805, ::1:8805)
@@ -141,7 +180,9 @@ logger:
 #      - ::1
 #
 smf:
-    freeDiameter: @sysconfdir@/freeDiameter/pgw.conf
+    sbi:
+      - addr: 127.0.0.3
+        port: 7777
     gtpc:
       - addr: 127.0.0.3
       - addr: ::1
@@ -157,20 +198,54 @@ smf:
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
     mtu: 1400
+    freeDiameter: @sysconfdir@/freeDiameter/pgw.conf
+
+#
+# nrf:
+#
+#  <SBI Client>>
+#
+#  o SBI Client(http://127.0.0.1:7777)
+#    sbi:
+#      addr: 127.0.0.1
+#      port: 7777
+#
+#  o SBI Client(https://127.0.0.1:443, http://nrf.open5gs.org:80)
+#    sbi:
+#      - addr: 127.0.0.1
+#        tls:
+#          key: nrf.key
+#          pem: nrf.pem
+#      - name: nrf.open5gs.org
+#
+#  o SBI Client(http://[fe80::1%@loopback_devname@]:80)
+#    If prefer_ipv4 is true, http://127.0.0.1:80 is selected.
+#
+#    sbi:
+#      addr:
+#        - 127.0.0.1
+#        - fe80::1%@loopback_devname@
+#
+nrf:
+    sbi:
+      addr:
+        - 127.0.0.1
+        - ::1
+      port: 7777
 
 #
 # upf:
 #
 #  <PFCP Client>>
 #
-#  o PFCP Client(127.0.0.2:8805)
+#  o PFCP Client(127.0.0.4:8805)
 # 
 #    pfcp:
-#      addr: 127.0.0.2
+#      addr: 127.0.0.4
 #
 upf:
     pfcp:
-      addr: 127.0.0.2
+      addr: 127.0.0.4
 
 #
 # parameter:
@@ -192,7 +267,6 @@ upf:
 #
 #  o Disable Stateless Address Autoconfiguration for IPv6
 #      no_slaac: true
-#
 #
 parameter:
 
@@ -238,4 +312,19 @@ max:
 #   - SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
 #
 #   packet: 65536
+#
 pool:
+
+#
+# time:
+#
+#  o NF Instance Heartbeat (Default : 3 seconds)
+#
+#  o NF Instance Heartbeat (Disabled)
+#    nf_instance:
+#      heartbeat: 0
+#
+#  o NF Instance Heartbeat (5 seconds)
+#    nf_instance:
+#      heartbeat: 5
+time:

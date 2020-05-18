@@ -26,7 +26,7 @@ int __upf_log_domain;
 static OGS_POOL(upf_sess_pool, upf_sess_t);
 static OGS_POOL(upf_sdf_filter_pool, upf_sdf_filter_t);
 
-static int context_initiaized = 0;
+static int context_initialized = 0;
 
 int num_sessions = 0;
 void stats_add_session(void) {
@@ -43,7 +43,7 @@ void stats_remove_session(void) {
 
 void upf_context_init(void)
 {
-    ogs_assert(context_initiaized == 0);
+    ogs_assert(context_initialized == 0);
 
     /* Initialize UPF context */
     memset(&self, 0, sizeof(upf_context_t));
@@ -68,12 +68,12 @@ void upf_context_init(void)
     self.ipv4_hash = ogs_hash_make();
     self.ipv6_hash = ogs_hash_make();
 
-    context_initiaized = 1;
+    context_initialized = 1;
 }
 
 void upf_context_final(void)
 {
-    ogs_assert(context_initiaized == 1);
+    ogs_assert(context_initialized == 1);
 
     upf_sess_remove_all();
 
@@ -92,7 +92,7 @@ void upf_context_final(void)
     ogs_gtp_node_final();
     ogs_pfcp_gtpu_resource_remove_all(&self.gtpu_resource_list);
 
-    context_initiaized = 0;
+    context_initialized = 0;
 }
 
 upf_context_t *upf_self(void)

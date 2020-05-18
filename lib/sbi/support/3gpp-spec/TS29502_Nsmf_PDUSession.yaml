@@ -1,0 +1,2620 @@
+openapi: 3.0.0
+
+info:
+  version: '1.1.0.alpha-1'
+  title: 'Nsmf_PDUSession'
+  description: |
+    SMF PDU Session Service.
+    (C) 2019, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.502 V15.3.0; 5G System; Session Management Services; Stage 3
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.502/
+
+servers:
+  - url: '{apiRoot}/nsmf-pdusession/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description:  apiRoot as defined in subclause 4.4 of 3GPP TS 29.501. The sm-contexts and pdu-sessions resources can be distributed on different processing instances or hosts. Thus the authority and/or deployment-specific string of the apiRoot of the created individual sm context and pdu-session resources' URIs may differ from the authority and/or deployment-specific string of the apiRoot of the sm-contexts and pdu-sessions collections' URIs.
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nsmf-pdusession
+
+paths:
+  /sm-contexts:
+    post:
+      summary:  Create SM Context 
+      tags:
+        - SM contexts collection
+      operationId: PostSmContexts
+      requestBody:
+        description: representation of the SM context to be created in the SMF
+        required: true
+        content:
+          multipart/related:  # message with binary body part(s)
+            schema:
+              type: object
+              properties: # Request parts
+                jsonData:
+                  $ref: '#/components/schemas/SmContextCreateData'
+                binaryDataN1SmMessage:
+                  type: string
+                  format: binary
+                binaryDataN2SmInformation:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType:  application/json
+              binaryDataN1SmMessage:
+                contentType:  application/vnd.3gpp.5gnas
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+              binaryDataN2SmInformation:
+                contentType:  application/vnd.3gpp.ngap
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+      callbacks:
+        smContextStatusNotification:
+          '{$request.body#/smContextStatusUri}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SmContextStatusNotification'
+              responses:
+                '204':
+                  description: successful notification 
+                '307':
+                  description: temporary redirect
+                  headers:
+                    Location: 
+                      required: true
+                      description: 'A URI pointing to the endpoint of another NF service consumer to which the notification should be sent'
+                      schema:
+                        type: string
+                '400': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '403': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+
+      responses:
+        '201':
+          description: successful creation of an SM context
+          content:
+            application/json: # message without binary body part 
+              schema:
+                $ref: '#/components/schemas/SmContextCreatedData'
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextCreatedData'
+                  binaryDataN2SmInformation:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN2SmInformation:
+                  contentType:  application/vnd.3gpp.ngap
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string  
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nsmf-pdusession/{apiVersion}/sm-contexts/{smContextRef}'
+              required: true
+              schema:
+                type: string
+
+        '307':
+          description: temporary redirect
+          headers:
+            Location:
+              description: 'An alternative URI of the resource located on an alternative service instance within the SMF that was selected by the AMF'
+              required: true
+              schema:
+                type: string
+        '308':
+          description: permanent redirect
+          headers:
+            Location:
+              description: 'An alternative URI of the resource located on an alternative service instance within the SMF that was selected by the AMF'
+              required: true
+              schema:
+                type: string
+        '400':
+          description: unsuccessful creation of an SM context - bad request
+          content:
+            application/json: # message without binary body part 
+              schema:
+                $ref: '#/components/schemas/SmContextCreateError'
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextCreateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string  
+        '403':
+          description: unsuccessful creation of an SM context - forbidden
+          content:
+            application/json: # message without binary body part 
+              schema:
+                $ref: '#/components/schemas/SmContextCreateError'
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextCreateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string 
+        '404':
+          description: unsuccessful creation of an SM context - not found
+          content:
+            application/json: # message without binary body part 
+              schema:
+                $ref: '#/components/schemas/SmContextCreateError'
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextCreateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string 
+        '411': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+
+        '500':
+          description: unsuccessful creation of an SM context - internal server error
+          content:
+            application/json: # message without binary body part 
+              schema:
+                $ref: '#/components/schemas/SmContextCreateError'
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextCreateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string 
+        '503':
+          description: unsuccessful creation of an SM context - service unavailable
+          content:
+            application/json: # message without binary body part 
+              schema:
+                $ref: '#/components/schemas/SmContextCreateError'
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextCreateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string               
+                        
+        '504':
+          description: unsuccessful creation of an SM context - gateway timeout
+          content:
+            application/json: # message without binary body part 
+              schema:
+                $ref: '#/components/schemas/SmContextCreateError'
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextCreateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string                      
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+               
+            
+  /sm-contexts/{smContextRef}/retrieve:
+    post:
+      summary:  Retrieve SM Context 
+      tags:
+        - Individual SM context
+      operationId: RetrieveSmContext
+      parameters:
+        - name: smContextRef
+          in: path
+          description:  SM context reference 
+          required: true 
+          schema:
+            type: string 
+      requestBody:
+        description: parameters used to retrieve the SM context
+        required: false
+        content:
+          application/json: 
+            schema:
+              $ref: '#/components/schemas/SmContextRetrieveData'
+      responses:
+        '200':
+          description: successful retrieval of an SM context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmContextRetrievedData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  
+  /sm-contexts/{smContextRef}/modify:  
+    post:
+      summary:  Update SM Context 
+      tags:
+        - Individual SM context
+      operationId: UpdateSmContext
+      parameters:
+        - name: smContextRef
+          in: path
+          description:  SM context reference 
+          required: true 
+          schema:
+            type: string 
+      requestBody:
+        description: representation of the updates to apply to the SM context
+        required: true
+        content:
+          application/json: # message without binary body part 
+            schema:
+              $ref: '#/components/schemas/SmContextUpdateData'
+          multipart/related:  # message with binary body part(s)
+            schema:
+              type: object
+              properties: # Request parts
+                jsonData:
+                  $ref: '#/components/schemas/SmContextUpdateData'
+                binaryDataN1SmMessage:
+                  type: string
+                  format: binary
+                binaryDataN2SmInformation:
+                  type: string
+                  format: binary
+                binaryDataN2SmInformationExt1:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType:  application/json
+              binaryDataN1SmMessage:
+                contentType:  application/vnd.3gpp.5gnas
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string   
+              binaryDataN2SmInformation:
+                contentType:  application/vnd.3gpp.ngap
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+              binaryDataN2SmInformationExt1:
+                contentType:  application/vnd.3gpp.ngap
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+      responses:
+        '200':
+          description: successful update of an SM context with content in the response
+          content:
+            application/json: # message without binary body part
+              schema:
+                $ref: '#/components/schemas/SmContextUpdatedData'
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextUpdatedData'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+                  binaryDataN2SmInformation:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string   
+                binaryDataN2SmInformation:
+                  contentType:  application/vnd.3gpp.ngap
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string      
+        '204':
+          description: successful update of an SM context without content in the response
+        '400':
+          description: unsuccessful update of an SM context - bad request
+          content:
+            application/json: # message without binary body part
+              schema:
+                $ref: '#/components/schemas/SmContextUpdateError' 
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextUpdateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+                  binaryDataN2SmInformation:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string   
+                binaryDataN2SmInformation:
+                  contentType:  application/vnd.3gpp.ngap
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string        
+        '403':
+          description: unsuccessful update of an SM context - forbidden
+          content:
+            application/json: # message without binary body part
+              schema:
+                $ref: '#/components/schemas/SmContextUpdateError' 
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextUpdateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+                  binaryDataN2SmInformation:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string   
+                binaryDataN2SmInformation:
+                  contentType:  application/vnd.3gpp.ngap
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string                        
+        '404':
+          description: unsuccessful update of an SM context - not found
+          content:
+            application/json: # message without binary body part
+              schema:
+                $ref: '#/components/schemas/SmContextUpdateError' 
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextUpdateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+                  binaryDataN2SmInformation:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string   
+                binaryDataN2SmInformation:
+                  contentType:  application/vnd.3gpp.ngap
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string        
+        '411': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          description: unsuccessful update of an SM context - Internal server error
+          content:
+            application/json: # message without binary body part
+              schema:
+                $ref: '#/components/schemas/SmContextUpdateError' 
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextUpdateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+                  binaryDataN2SmInformation:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string   
+                binaryDataN2SmInformation:
+                  contentType:  application/vnd.3gpp.ngap
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string      
+        '503':
+          description: unsuccessful update of an SM context - Service Unavailable
+          content:
+            application/json: # message without binary body part
+              schema:
+                $ref: '#/components/schemas/SmContextUpdateError' 
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/SmContextUpdateError'
+                  binaryDataN1SmMessage:
+                    type: string
+                    format: binary
+                  binaryDataN2SmInformation:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmMessage:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string   
+                binaryDataN2SmInformation:
+                  contentType:  application/vnd.3gpp.ngap
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string        
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  
+  /sm-contexts/{smContextRef}/release:
+    post:
+      summary:  Release SM Context 
+      tags:
+        - Individual SM context
+      operationId: ReleaseSmContext
+      parameters:
+        - name: smContextRef
+          in: path
+          description:  SM context reference 
+          required: true 
+          schema:
+            type: string 
+      requestBody:
+        description: representation of the data to be sent to the SMF when releasing the SM context
+        required: false
+        content:
+          application/json: # message without binary body part
+            schema:
+              $ref: '#/components/schemas/SmContextReleaseData'
+          multipart/related:  # message with binary body part(s)
+            schema:
+              type: object
+              properties: # Request parts
+                jsonData:
+                  $ref: '#/components/schemas/SmContextReleaseData'
+                binaryDataN2SmInformation:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType:  application/json
+              binaryDataN2SmInformation:
+                contentType:  application/vnd.3gpp.ngap
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string      
+
+      responses:      
+        '204':
+          description: successful release of an SM context without content in the response
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  
+  /pdu-sessions:
+    post:
+      summary:  Create  
+      tags:
+        - PDU sessions collection
+      operationId: PostPduSessions
+      requestBody:
+        description: representation of the PDU session to be created in the H-SMF
+        required: true
+        content:
+          application/json: # message without binary body part 
+            schema:
+              $ref: '#/components/schemas/PduSessionCreateData'
+          multipart/related:  # message with binary body part(s)
+            schema:
+              type: object
+              properties: # Request parts
+                jsonData:
+                  $ref: '#/components/schemas/PduSessionCreateData'
+                binaryDataN1SmInfoFromUe:
+                  type: string
+                  format: binary
+                binaryDataUnknownN1SmInfo:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType:  application/json
+              binaryDataN1SmInfoFromUe:
+                contentType:  application/vnd.3gpp.5gnas
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string  
+              binaryDataUnknownN1SmInfo:
+                contentType:  application/vnd.3gpp.5gnas
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string  
+      callbacks:
+        statusNotification:
+          '{$request.body#/vsmfPduSessionUri}':
+            post:
+              summary:  Notify Status  
+              tags:
+                - Individual PDU session (V-SMF)
+              operationId: NotifyStatus
+              requestBody:
+                description: representation of the status notification
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/StatusNotification'
+              responses:
+                '204':
+                  description: successful notificationof the status change
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '403': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  
+  
+        update:  
+          '{$request.body#/vsmfPduSessionUri}/modify':
+            post:
+              summary:  Update (initiated by H-SMF)  
+              tags:
+                - Individual PDU session (V-SMF)
+              operationId: ModifyPduSession
+              requestBody:
+                description: representation of updates to apply to the PDU session
+                required: true
+                content:
+                  application/+json: # message without binary body part 
+                    schema:
+                      $ref: '#/components/schemas/VsmfUpdateData'
+                  multipart/related:  # message with binary body part(s)
+                    schema:
+                      type: object
+                      properties: # Request parts
+                        jsonData:
+                          $ref: '#/components/schemas/VsmfUpdateData'
+                        binaryDataN1SmInfoToUe:
+                          type: string
+                          format: binary
+                    encoding:
+                      jsonData:
+                        contentType:  application/json
+                      binaryDataN1SmInfoToUe:
+                        contentType:  application/vnd.3gpp.5gnas
+                        headers:
+                          Content-Id:
+                            schema:
+                              type: string  
+              responses:
+                '200':
+                  description: successful update of a PDU session with content in the response
+                  content:
+                    application/json: # message without binary body part 
+                      schema:
+                        $ref: '#/components/schemas/VsmfUpdatedData'
+                    multipart/related:  # message with binary body part(s)
+                      schema:
+                        type: object
+                        properties: # Request parts
+                          jsonData:
+                            $ref: '#/components/schemas/VsmfUpdatedData'
+                          binaryDataN1SmInfoFromUe:
+                            type: string
+                            format: binary
+                          binaryDataUnknownN1SmInfo:
+                            type: string
+                            format: binary
+                      encoding:
+                        jsonData:
+                          contentType:  application/json
+                        binaryDataN1SmInfoFromUe:
+                          contentType:  application/vnd.3gpp.5gnas
+                          headers:
+                            Content-Id:
+                              schema:
+                                type: string  
+                        binaryDataUnknownN1SmInfo:
+                          contentType:  application/vnd.3gpp.5gnas
+                          headers:
+                            Content-Id:
+                              schema:
+                                type: string  
+                '204':
+                  description: successful update of a PDU session without content in the response
+                '400':
+                  $ref: '#/components/responses/VsmfUpdateError'
+                '403':
+                  $ref: '#/components/responses/VsmfUpdateError'
+                '404':
+                  $ref: '#/components/responses/VsmfUpdateError'
+                '411': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429': 
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: '#/components/responses/VsmfUpdateError'
+                '503':
+                  $ref: '#/components/responses/VsmfUpdateError'
+                '504':
+                  $ref: '#/components/responses/VsmfUpdateError'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+      responses:
+        '201':
+          description: successful creation of a PDU session
+          content:
+            application/json: # message without binary body part 
+              schema:
+                $ref: '#/components/schemas/PduSessionCreatedData'
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/PduSessionCreatedData'
+                  binaryDataN1SmInfoToUe:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmInfoToUe:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string  
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nsmf-pdusession/{apiVersion}/pdu-sessions/{pduSessionRef}'
+              required: true
+              schema:
+                type: string
+        '307':
+          description: temporary redirect
+          headers:
+            Location:
+              description: 'An alternative URI of the resource located on an alternative service instance within the SMF that was selected by the AMF'
+              required: true
+              schema:
+                type: string
+        '308':
+          description: permanent redirect
+          headers:
+            Location:
+              description: 'An alternative URI of the resource located on an alternative service instance within the SMF that was selected by the AMF'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/PduSessionCreateError'
+        '403':
+          $ref: '#/components/responses/PduSessionCreateError'
+        '404':
+          $ref: '#/components/responses/PduSessionCreateError'
+        '411': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/PduSessionCreateError'
+        '503':
+          $ref: '#/components/responses/PduSessionCreateError'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  
+  /pdu-sessions/{pduSessionRef}/modify:
+    post:
+      summary:  Update (initiated by V-SMF)
+      tags:
+        - Individual PDU session (H-SMF)
+      operationId: UpdatePduSession
+      parameters:
+        - name: pduSessionRef
+          in: path
+          description:  PDU session reference 
+          required: true 
+          schema:
+            type: string 
+      requestBody:
+        description: representation of the updates to apply to the PDU session
+        required: true
+        content:
+          application/json: # message without binary body part 
+            schema:
+              $ref: '#/components/schemas/HsmfUpdateData'
+          multipart/related:  # message with binary body part(s)
+            schema:
+              type: object
+              properties: # Request parts
+                jsonData:
+                  $ref: '#/components/schemas/HsmfUpdateData'
+                binaryDataN1SmInfoFromUe:
+                  type: string
+                  format: binary
+                binaryDataUnknownN1SmInfo:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType:  application/json
+              binaryDataN1SmInfoFromUe:
+                contentType:  application/vnd.3gpp.5gnas
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string  
+              binaryDataUnknownN1SmInfo:
+                contentType:  application/vnd.3gpp.5gnas
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string  
+      responses:
+        '200':
+          description: successful update of a PDU session with content in the response
+          content:
+            application/json: # message without binary body part 
+              schema:
+                $ref: '#/components/schemas/HsmfUpdatedData'
+            multipart/related:  # message with binary body part(s)
+              schema:
+                type: object
+                properties: # Request parts
+                  jsonData:
+                    $ref: '#/components/schemas/HsmfUpdatedData'
+                  binaryDataN1SmInfoToUe:
+                    type: string
+                    format: binary
+              encoding:
+                jsonData:
+                  contentType:  application/json
+                binaryDataN1SmInfoToUe:
+                  contentType:  application/vnd.3gpp.5gnas
+                  headers:
+                    Content-Id:
+                      schema:
+                        type: string  
+        '204':
+          description: successful update of a PDU session without content in the response
+        '400':
+          $ref: '#/components/responses/HsmfUpdateError'
+        '403':
+          $ref: '#/components/responses/HsmfUpdateError'
+        '404':
+          $ref: '#/components/responses/HsmfUpdateError'
+        '411': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429': 
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: '#/components/responses/HsmfUpdateError'
+        '503':
+          $ref: '#/components/responses/HsmfUpdateError'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+  /pdu-sessions/{pduSessionRef}/release:
+    post:
+      summary:  Release  
+      tags:
+        - Individual PDU session (H-SMF)
+      operationId: ReleasePduSession
+      parameters:
+        - name: pduSessionRef
+          in: path
+          description:  PDU session reference 
+          required: true 
+          schema:
+            type: string 
+      requestBody:
+        description: representation of the data to be sent to H-SMF when releasing the PDU session
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReleaseData'
+      responses:
+        '204':
+          description: successful release of a PDU session
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows: 
+        clientCredentials: 
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nsmf-pdusession: Access to the nsmf-pdusession API
+
+  schemas:
+#
+# STRUCTURED DATA TYPES
+#
+    SmContextCreateData:
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        unauthenticatedSupi:
+          type: boolean
+          default:  false
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        pduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        hplmnSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        servingNfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        serviceName:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ServiceName'
+        servingNetwork:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        requestType:
+          $ref: '#/components/schemas/RequestType'
+        n1SmMsg:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        anType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        secondAnType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        presenceInLadn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceState'
+        ueLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        addUeLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        smContextStatusUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        hSmfUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        additionalHsmfUri:
+          type: array
+          items: 
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+          minItems: 1
+        oldPduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        pduSessionsActivateList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+          minItems: 1
+        ueEpsPdnConnection:
+          $ref: '#/components/schemas/EpsPdnCnxContainer'
+        hoState:
+          $ref: '#/components/schemas/HoState'
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        nrfUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        selMode:
+          $ref: '#/components/schemas/DnnSelectionMode'
+        backupAmfInfo:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BackupAmfInfo'
+          minItems: 1
+        traceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        udmGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        routingIndicator:
+          type: string
+        epsInterworkingInd:
+          $ref: '#/components/schemas/EpsInterworkingIndication'
+        indirectForwardingFlag:
+          type: boolean
+        targetId:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/NgRanTargetId'
+        epsBearerCtxStatus:
+          $ref: '#/components/schemas/EpsBearerContextStatus'
+        cpCiotEnabled:
+          type: boolean
+          default: false
+        invokeNef:
+          type: boolean
+          default: false
+        maPduIndication:
+          type: boolean
+          default: false
+        n2SmInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        smContextRef:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+      required:
+        - servingNfId
+        - servingNetwork
+        - anType
+        - smContextStatusUri
+
+    SmContextCreatedData:
+      type: object
+      properties:
+        hSmfUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        pduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        upCnxState:
+          $ref: '#/components/schemas/UpCnxState'
+        n2SmInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        n2SmInfoType:
+          $ref: '#/components/schemas/N2SmInfoType'
+        allocatedEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EbiArpMapping'
+          minItems: 1
+        hoState:
+          $ref: '#/components/schemas/HoState'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        smfServiceInstanceId:
+          type: string
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'        
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+
+    SmContextUpdateData:
+      type: object
+      properties:
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        servingNfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        servingNetwork:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        backupAmfInfo:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BackupAmfInfo'
+          minItems: 1
+          nullable: true
+        anType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        secondAnType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        presenceInLadn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceState'
+        ueLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        addUeLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        upCnxState:
+          $ref: '#/components/schemas/UpCnxState'
+        hoState:
+          $ref: '#/components/schemas/HoState'
+        toBeSwitched:
+          type: boolean
+          default: false
+        failedToBeSwitched:
+          type: boolean
+        n1SmMsg:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        n2SmInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        n2SmInfoType:
+          $ref: '#/components/schemas/N2SmInfoType'
+        targetId:
+          $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/NgRanTargetId'
+        targetServingNfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        smContextStatusUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        dataForwarding:
+          type: boolean
+          default: false
+        epsBearerSetup:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerContainer'
+          minItems: 0
+        revokeEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerId'
+          minItems: 1
+        release:
+          type: boolean
+          default: false
+        cause:
+          $ref: '#/components/schemas/Cause'
+        ngApCause:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NgApCause'
+        5gMmCauseValue:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5GMmCause'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        traceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        epsInterworkingInd:
+          $ref: '#/components/schemas/EpsInterworkingIndication'
+        anTypeCanBeChanged:
+          type: boolean
+          default: false
+        n2SmInfoExt1:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        n2SmInfoTypeExt1:
+          $ref: '#/components/schemas/N2SmInfoType'
+        maReleaseInd:
+          $ref: '#/components/schemas/MaReleaseIndication'
+        exemptionInd:
+          $ref: '#/components/schemas/ExemptionInd'
+
+    SmContextUpdatedData:
+      type: object
+      properties:
+        upCnxState:
+          $ref: '#/components/schemas/UpCnxState'
+        hoState:
+          $ref: '#/components/schemas/HoState'
+        releaseEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerId'
+          minItems: 1
+        allocatedEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EbiArpMapping'
+          minItems: 1
+        modifiedEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EbiArpMapping'
+          minItems: 1
+        n1SmMsg:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        n2SmInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        n2SmInfoType:
+          $ref: '#/components/schemas/N2SmInfoType'
+        epsBearerSetup:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerContainer'
+          minItems: 1
+        dataForwarding:
+          type: boolean
+        cause:
+          $ref: '#/components/schemas/Cause'
+
+    SmContextReleaseData:
+      type: object
+      properties:
+        cause:
+          $ref: '#/components/schemas/Cause'
+        ngApCause:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NgApCause'
+        5gMmCauseValue:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5GMmCause'
+        ueLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        addUeLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        vsmfReleaseOnly:
+          type: boolean
+          default: false
+        n2SmInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        n2SmInfoType:
+          $ref: '#/components/schemas/N2SmInfoType'
+        ismfReleaseOnly:
+          type: boolean
+          default: false
+      
+    SmContextStatusNotification:
+      type: object
+      properties:
+        statusInfo :
+          $ref: '#/components/schemas/StatusInfo'
+      required:
+        - statusInfo 
+
+    PduSessionCreateData:
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        unauthenticatedSupi:
+          type: boolean
+          default: false
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        pduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        vsmfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        servingNetwork:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        requestType:
+          $ref: '#/components/schemas/RequestType'
+        epsBearerId:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerId'
+          minItems: 1
+        pgwS8cFteid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        vsmfPduSessionUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        vcnTunnelInfo:
+          $ref: '#/components/schemas/TunnelInfo'
+        anType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        secondAnType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        ueLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        addUeLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        n1SmInfoFromUe:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        unknownN1SmInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        hPcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        hoPreparationIndication:
+          type: boolean
+        selMode:
+          $ref: '#/components/schemas/DnnSelectionMode'
+        alwaysOnRequested:
+          type: boolean
+          default: false
+        udmGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        routingIndicator:
+          type: string
+        epsInterworkingInd:
+          $ref: '#/components/schemas/EpsInterworkingIndication'
+        vSmfServiceInstanceId:
+          type: string
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        roamingChargingProfile:
+          $ref: 'TS32291_Nchf_ConvergedCharging.yaml#/components/schemas/RoamingChargingProfile'
+        chargingId:
+          type: string
+        oldPduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        epsBearerCtxStatus:
+          $ref: '#/components/schemas/EpsBearerContextStatus'
+        amfNfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        cpCiotEnabled:
+          type: boolean
+          default: false
+        invokeNef:
+          type: boolean
+          default: false        
+        maPduIndication:
+          type: boolean
+          default: false
+      required:
+        - dnn
+        - vsmfId
+        - servingNetwork
+        - vsmfPduSessionUri
+        - anType
+
+    PduSessionCreatedData:
+      type: object
+      properties:
+        pduSessionType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+        sscMode:
+          type: string
+          pattern: '^[0-7]$'
+        hcnTunnelInfo:
+          $ref: '#/components/schemas/TunnelInfo'
+        sessionAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        qosFlowsSetupList:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowSetupItem'
+          minItems: 1
+        hSmfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        pduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        enablePauseCharging:
+          type: boolean
+          default: false
+        ueIpv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        n1SmInfoToUe:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        epsPdnCnxInfo:
+          $ref: '#/components/schemas/EpsPdnCnxInfo'
+        epsBearerInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerInfo'
+          minItems: 1
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        maxIntegrityProtectedDataRate:
+          $ref: '#/components/schemas/MaxIntegrityProtectedDataRate'
+        alwaysOnGranted:
+          type: boolean
+          default: false
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        upSecurity:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UpSecurity'
+        roamingChargingProfile:
+          $ref: 'TS32291_Nchf_ConvergedCharging.yaml#/components/schemas/RoamingChargingProfile'
+        hSmfServiceInstanceId:
+          type: string
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - pduSessionType
+        - sscMode
+        - hSmfInstanceId
+
+    HsmfUpdateData:
+      type: object
+      properties:
+        requestIndication:
+          $ref: '#/components/schemas/RequestIndication'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        vcnTunnelInfo:
+          $ref: '#/components/schemas/TunnelInfo'
+        servingNetwork:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        anType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        secondAnType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        ueLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        addUeLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        pauseCharging:
+          type: boolean
+        pti:
+          $ref: '#/components/schemas/ProcedureTransactionId'
+        n1SmInfoFromUe:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        unknownN1SmInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        qosFlowsRelNotifyList:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowItem'
+          minItems: 1
+        qosFlowsNotifyList:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowNotifyItem'
+          minItems: 1
+        NotifyList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PduSessionNotifyItem'
+          minItems: 1
+        epsBearerId:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerId'
+          minItems: 0
+        hoPreparationIndication:
+          type: boolean
+        revokeEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerId'
+          minItems: 1        
+        cause:
+          $ref: '#/components/schemas/Cause'
+        ngApCause:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NgApCause'
+        5gMmCauseValue:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5GMmCause'
+        alwaysOnRequested:
+          type: boolean
+          default: false
+        epsInterworkingInd:
+          $ref: '#/components/schemas/EpsInterworkingIndication'
+        secondaryRatUsageReport:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SecondaryRatUsageReport'
+          minItems: 1
+        secondaryRatUsageInfo:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SecondaryRatUsageInfo'
+          minItems: 1        
+        anTypeCanBeChanged:
+          type: boolean
+          default: false
+        maReleaseInd:
+          $ref: '#/components/schemas/MaReleaseIndication'
+      required:
+        - requestIndication
+
+    HsmfUpdatedData:
+      type: object
+      properties:
+        n1SmInfoToUe:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+
+    ReleaseData:
+      type: object
+      properties:
+        cause:
+          $ref: '#/components/schemas/Cause'
+        ngApCause:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NgApCause'
+        5gMmCauseValue:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5GMmCause'
+        ueLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        addUeLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        secondaryRatUsageReport:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SecondaryRatUsageReport'
+          minItems: 1
+        secondaryRatUsageInfo:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SecondaryRatUsageInfo'
+          minItems: 1        
+
+      
+    VsmfUpdateData:
+      type: object
+      properties:
+        requestIndication:
+          $ref: '#/components/schemas/RequestIndication'
+        sessionAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        qosFlowsAddModRequestList:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowAddModifyRequestItem'
+          minItems: 1
+        qosFlowsRelRequestList:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowReleaseRequestItem'
+          minItems: 1
+        epsBearerInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerInfo'
+          minItems: 1
+        assignEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerId'
+          minItems: 1
+        revokeEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerId'
+          minItems: 1
+        modifiedEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EbiArpMapping'
+          minItems: 1
+        pti:
+          $ref: '#/components/schemas/ProcedureTransactionId'
+        n1SmInfoToUe:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        alwaysOnGranted:
+          type: boolean
+          default: false
+        hsmfPduSessionUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        cause:
+          $ref: '#/components/schemas/Cause'
+        n1smCause:
+          type: string
+        backOffTimer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        maReleaseInd:
+          $ref: '#/components/schemas/MaReleaseIndication'
+      required:
+        - requestIndication
+
+    VsmfUpdatedData:
+      type: object
+      properties:
+        qosFlowsAddModList:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowItem'
+          minItems: 1
+        qosFlowsRelList:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowItem'
+          minItems: 1
+        qosFlowsFailedtoAddModList:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowItem'
+          minItems: 1
+        qosFlowsFailedtoRelList:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowItem'
+          minItems: 1
+        n1SmInfoFromUe:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        unknownN1SmInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        ueLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        addUeLocation:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        assignedEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EbiArpMapping'
+          minItems: 1
+        failedToAssignEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerId'
+          minItems: 1
+        releasedEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerId'
+          minItems: 1
+        secondaryRatUsageReport:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SecondaryRatUsageReport'
+          minItems: 1
+        secondaryRatUsageInfo:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/SecondaryRatUsageInfo'
+          minItems: 1        
+
+    StatusNotification:
+      type: object
+      properties:
+        statusInfo :
+          $ref: '#/components/schemas/StatusInfo'
+      required:
+        - statusInfo 
+
+    QosFlowItem:
+      type: object
+      properties:
+        qfi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Qfi'
+        cause:
+          $ref: '#/components/schemas/Cause'
+      required:
+        - qfi
+    
+    QosFlowSetupItem:
+      type: object
+      properties:
+        qfi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Qfi'
+        qosRules:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        ebi:
+          $ref: '#/components/schemas/EpsBearerId'
+        qosFlowDescription:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        qosFlowProfile:
+          $ref: '#/components/schemas/QosFlowProfile'
+      required:
+        - qfi
+        - qosRules
+    
+    QosFlowAddModifyRequestItem:
+      type: object
+      properties:
+        qfi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Qfi'
+        ebi:
+          $ref: '#/components/schemas/EpsBearerId'
+        qosRules:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        qosFlowDescription:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        qosFlowProfile:
+          $ref: '#/components/schemas/QosFlowProfile'
+      required:
+        - qfi
+    
+    QosFlowReleaseRequestItem:
+      type: object
+      properties:
+        qfi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Qfi'
+        qosRules:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        qosFlowDescription:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+      required:
+        - qfi
+    
+    QosFlowProfile:
+      type: object
+      properties:
+        5qi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5Qi'
+        nonDynamic5Qi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NonDynamic5Qi'
+        dynamic5Qi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dynamic5Qi'
+        arp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Arp'
+        gbrQosFlowInfo:
+          $ref: '#/components/schemas/GbrQosFlowInformation'
+        rqa:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ReflectiveQoSAttribute'
+        additionalQosFlowInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AdditionalQosFlowInfo'
+      required:
+        - 5qi
+    
+    GbrQosFlowInformation:
+      type: object
+      properties:
+        maxFbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        maxFbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        guaFbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        guaFbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        notifControl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NotificationControl'
+        maxPacketLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+        maxPacketLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRate'
+      required:
+        - maxFbrDl
+        - maxFbrUl
+        - guaFbrDl
+        - guaFbrUl
+    
+    QosFlowNotifyItem:
+      type: object
+      properties:
+        qfi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Qfi'
+        notificationCause:
+          $ref: '#/components/schemas/NotificationCause'
+      required:
+        - qfi
+        - notificationCause
+    
+    
+    SmContextRetrieveData:
+      type: object
+      properties:
+        targetMmeCap:
+          $ref: '#/components/schemas/MmeCapabilities'
+        smContextType:
+          $ref: '#/components/schemas/SmContextType'
+
+    SmContextRetrievedData:
+      type: object
+      properties:
+        ueEpsPdnConnection:
+          $ref: '#/components/schemas/EpsPdnCnxContainer'
+        smContext:
+          $ref: '#/components/schemas/SmContext'
+      required:
+        - ueEpsPdnConnection
+    
+    MmeCapabilities:
+      type: object
+      properties:
+        nonIpSupported:
+          type: boolean
+          default: false
+
+    TunnelInfo:
+      type: object
+      properties:
+        ipv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        gtpTeid:
+          $ref: '#/components/schemas/Teid'
+      required:
+        - gtpTeid
+    
+    StatusInfo:
+      type: object
+      properties:
+        resourceStatus:
+          $ref: '#/components/schemas/ResourceStatus'
+        cause:
+          $ref: '#/components/schemas/Cause'
+      required:
+        - resourceStatus
+    
+   
+    EpsPdnCnxInfo:
+      type: object
+      properties:
+        pgwS8cFteid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        pgwNodeName:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+      required:
+        - pgwS8cFteid
+    
+    EpsBearerInfo:
+      type: object
+      properties:
+        ebi:
+          $ref: '#/components/schemas/EpsBearerId'
+        pgwS8uFteid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        bearerLevelQoS:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+      required:
+        - ebi
+        - pgwS8uFteid
+        - bearerLevelQoS
+    
+    PduSessionNotifyItem:
+      type: object
+      properties:
+        notificationCause:
+          $ref: '#/components/schemas/NotificationCause'
+      required:
+        - notificationCause
+    
+    EbiArpMapping:
+      type: object
+      properties:
+        epsBearerId:
+          $ref: '#/components/schemas/EpsBearerId'
+        arp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Arp'
+      required:
+        - epsBearerId
+        - arp
+    
+    SmContextCreateError:
+      type: object
+      properties:
+        error:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        n1SmMsg:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - error
+    
+    SmContextUpdateError:
+      type: object
+      properties:
+        error:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        n1SmMsg:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        n2SmInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        n2SmInfoType:
+          $ref: '#/components/schemas/N2SmInfoType'
+        upCnxState:
+          $ref: '#/components/schemas/UpCnxState'
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - error
+    
+    PduSessionCreateError:
+      type: object
+      properties:
+        error:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        n1smCause:
+          type: string
+          pattern: '^[A-F0-9]{2}$'
+        n1SmInfoToUe:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        backOffTimer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - error
+    
+    HsmfUpdateError:
+      type: object
+      properties:
+        error:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        pti:
+          $ref: '#/components/schemas/ProcedureTransactionId'
+        n1smCause:
+          type: string
+          pattern: '^[A-F0-9]{2}$'
+        n1SmInfoToUe:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        backOffTimer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - error
+
+    VsmfUpdateError:
+      type: object
+      properties:
+        error:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        pti:
+          $ref: '#/components/schemas/ProcedureTransactionId'
+        n1smCause:
+          type: string
+          pattern: '^[A-F0-9]{2}$'
+        n1SmInfoFromUe:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        unknownN1SmInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+        failedToAssignEbiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerId'
+          minItems: 1
+        ngApCause:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NgApCause'
+        5gMmCauseValue:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5GMmCause'
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - error
+
+    SmContext:
+      type: object
+      properties:
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        unauthenticatedSupi:
+          type: boolean
+          default:  false
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        pduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        sNssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        hplmnSnssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        servingNfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        serviceName:
+          $ref: 'TS29510_Nnrf_NFManagement.yaml#/components/schemas/ServiceName'
+        servingNetwork:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        anType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        smContextStatusUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        hSmfUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        pcfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        selMode:
+          $ref: '#/components/schemas/DnnSelectionMode'
+        traceData:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        udmGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        routingIndicator:
+          type: string
+        epsInterworkingInd:
+          $ref: '#/components/schemas/EpsInterworkingIndication'
+        pduSessionType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+        sscMode:
+          type: string
+          pattern: '^[0-7]$'
+        sessionAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        qosFlowsSetupList:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosFlowSetupItem'
+          minItems: 1
+        hSmfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        enablePauseCharging:
+          type: boolean
+          default: false
+        ueIpv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6Prefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        epsPdnCnxInfo:
+          $ref: '#/components/schemas/EpsPdnCnxInfo'
+        epsBearerInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/EpsBearerInfo'
+          minItems: 1
+        maxIntegrityProtectedDataRate:
+          $ref: '#/components/schemas/MaxIntegrityProtectedDataRate'
+        alwaysOnGranted:
+          type: boolean
+          default: false
+        upSecurity:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UpSecurity'
+        hSmfServiceInstanceId:
+          type: string
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+      required:
+        - pduSessionId
+        - dnn
+        - sNssai
+        - servingNfId
+        - servingNetwork
+        - anType
+        - smContextStatusUri
+        - pduSessionType
+        - sscMode
+        - sessionAmbr
+        - qosFlowsSetupList
+
+    ExemptionInd:
+      type: object
+      properties:
+        dnnCongestion:
+          type: boolean
+          default: false
+        snssaiOnlyCongestion:
+          type: boolean
+          default: false
+        snssaiDnnCongestion:
+          type: boolean
+          default: false
+
+#
+# SIMPLE DATA TYPES 
+#
+    ProcedureTransactionId:
+      type: integer
+      minimum: 0
+      maximum: 255
+      
+    EpsBearerId:
+      type: integer
+      minimum: 0
+      maximum: 15
+      
+    EpsPdnCnxContainer:
+      type: string
+     
+    EpsBearerContainer:
+      type: string
+    
+    Teid:
+      type: string
+      pattern: '^[A-F0-9]{8}$'
+
+    EpsBearerContextStatus:
+      type: string
+      pattern: '^[A-Fa-f0-9]{4}$'
+#
+# ENUMERATIONS
+#
+    UpCnxState:
+      anyOf:
+      - type: string
+        enum:
+          - ACTIVATED
+          - DEACTIVATED
+          - ACTIVATING
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - ACTIVATED
+        - DEACTIVATED
+        - ACTIVATING
+
+    HoState:
+      anyOf:
+      - type: string
+        enum:
+          - NONE
+          - PREPARING
+          - PREPARED
+          - COMPLETED
+          - CANCELLED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - NONE
+        - PREPARING
+        - PREPARED
+        - COMPLETED
+        - CANCELLED
+
+    RequestType:
+      anyOf:
+      - type: string
+        enum:
+          - INITIAL_REQUEST
+          - EXISTING_PDU_SESSION
+          - INITIAL_EMERGENCY_REQUEST
+          - EXISTING_EMERGENCY_PDU_SESSION
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - INITIAL_REQUEST
+        - EXISTING_PDU_SESSION
+        - INITIAL_EMERGENCY_REQUEST
+        - EXISTING_EMERGENCY_PDU_SESSION
+
+    RequestIndication:
+      anyOf:
+      - type: string
+        enum:
+          - UE_REQ_PDU_SES_MOD
+          - UE_REQ_PDU_SES_REL
+          - PDU_SES_MOB
+          - NW_REQ_PDU_SES_AUTH
+          - NW_REQ_PDU_SES_MOD
+          - NW_REQ_PDU_SES_REL
+          - EBI_ASSIGNMENT_REQ
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - UE_REQ_PDU_SES_MOD
+        - UE_REQ_PDU_SES_REL
+        - PDU_SES_MOB
+        - NW_REQ_PDU_SES_AUTH
+        - NW_REQ_PDU_SES_MOD
+        - NW_REQ_PDU_SES_REL
+        - EBI_ASSIGNMENT_REQ
+
+    NotificationCause:
+      anyOf:
+      - type: string
+        enum:
+          - QOS_FULFILLED
+          - QOS_NOT_FULFILLED
+          - UP_SEC_FULFILLED
+          - UP_SEC_NOT_FULFILLED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - QOS_FULFILLED
+        - QOS_NOT_FULFILLED
+        - UP_SEC_FULFILLED
+        - UP_SEC_NOT_FULFILLED
+
+    Cause:
+      anyOf:
+      - type: string
+        enum:
+          - REL_DUE_TO_HO
+          - EPS_FALLBACK
+          - REL_DUE_TO_UP_SEC
+          - DNN_CONGESTION
+          - S_NSSAI_CONGESTION
+          - REL_DUE_TO_REACTIVATION
+          - 5G_AN_NOT_RESPONDING
+          - REL_DUE_TO_SLICE_NOT_AVAILABLE
+          - REL_DUE_TO_DUPLICATE_SESSION_ID
+          - PDU_SESSION_STATUS_MISMATCH
+          - HO_FAILURE
+          - INSUFFICIENT_UP_RESOURCES
+          - PDU_SESSION_HANDED_OVER
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - REL_DUE_TO_HO
+        - EPS_FALLBACK
+        - REL_DUE_TO_UP_SEC
+        - DNN_CONGESTION
+        - S_NSSAI_CONGESTION
+        - REL_DUE_TO_REACTIVATION
+        - 5G_AN_NOT_RESPONDING
+        - REL_DUE_TO_SLICE_NOT_AVAILABLE
+        - REL_DUE_TO_DUPLICATE_SESSION_ID
+        - PDU_SESSION_STATUS_MISMATCH
+        - HO_FAILURE
+        - INSUFFICIENT_UP_RESOURCES
+        - PDU_SESSION_HANDED_OVER
+
+    ResourceStatus:
+      anyOf:
+      - type: string
+        enum:
+          - RELEASED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - RELEASED
+
+    DnnSelectionMode:
+      anyOf:
+      - type: string
+        enum:
+          - VERIFIED
+          - UE_DNN_NOT_VERIFIED
+          - NW_DNN_NOT_VERIFIED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - VERIFIED
+        - UE_DNN_NOT_VERIFIED
+        - NW_DNN_NOT_VERIFIED
+
+    EpsInterworkingIndication:
+      anyOf:
+      - type: string
+        enum:
+          - NONE
+          - WITH_N26
+          - WITHOUT_N26
+          - IWK_NON_3GPP
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - NONE
+        - WITH_N26
+        - WITHOUT_N26
+        - IWK_NON_3GPP
+
+    N2SmInfoType:
+      anyOf:
+      - type: string
+        enum:
+          - PDU_RES_SETUP_REQ
+          - PDU_RES_SETUP_RSP
+          - PDU_RES_SETUP_FAIL
+          - PDU_RES_REL_CMD
+          - PDU_RES_REL_RSP
+          - PDU_RES_MOD_REQ
+          - PDU_RES_MOD_RSP
+          - PDU_RES_MOD_FAIL
+          - PDU_RES_NTY
+          - PDU_RES_NTY_REL
+          - PDU_RES_MOD_IND
+          - PDU_RES_MOD_CFM
+          - PATH_SWITCH_REQ
+          - PATH_SWITCH_SETUP_FAIL
+          - PATH_SWITCH_REQ_ACK
+          - PATH_SWITCH_REQ_FAIL
+          - HANDOVER_REQUIRED
+          - HANDOVER_CMD
+          - HANDOVER_PREP_FAIL
+          - HANDOVER_REQ_ACK
+          - HANDOVER_RES_ALLOC_FAIL
+          - SECONDARY_RAT_USAGE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - PDU_RES_SETUP_REQ
+        - PDU_RES_SETUP_RSP
+        - PDU_RES_SETUP_FAIL
+        - PDU_RES_REL_CMD
+        - PDU_RES_REL_RSP
+        - PDU_RES_MOD_REQ
+        - PDU_RES_MOD_RSP
+        - PDU_RES_MOD_FAIL
+        - PDU_RES_NTY
+        - PDU_RES_NTY_REL
+        - PDU_RES_MOD_IND
+        - PDU_RES_MOD_CFM
+        - PATH_SWITCH_REQ
+        - PATH_SWITCH_SETUP_FAIL
+        - PATH_SWITCH_REQ_ACK
+        - PATH_SWITCH_REQ_FAIL
+        - HANDOVER_REQUIRED
+        - HANDOVER_CMD
+        - HANDOVER_PREP_FAIL
+        - HANDOVER_REQ_ACK
+        - HANDOVER_RES_ALLOC_FAIL
+        - SECONDARY_RAT_USAGE
+
+    MaxIntegrityProtectedDataRate:
+      anyOf:
+      - type: string
+        enum:
+          - 64_KBPS
+          - MAX_UE_RATE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+          - 64_KBPS
+          - MAX_UE_RATE
+
+    MaReleaseIndication:
+      anyOf:
+      - type: string
+        enum:
+          - REL_MAPDU_OVER_3GPP
+          - REL_MAPDU_OVER_N3GPP
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+          - REL_MAPDU_OVER_3GPP
+          - REL_MAPDU_OVER_N3GPP
+
+    SmContextType:
+      anyOf:
+      - type: string
+        enum:
+          - EPS_PDN_CONNECTION
+          - SM_CONTEXT
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+          - EPS_PDN_CONNECTION
+          - SM_CONTEXT
+
+#
+# HTTP responses
+#
+  responses:
+    'PduSessionCreateError':      
+      description: unsuccessful creation of a PDU session 
+      content:
+        application/json: # message without binary body part 
+          schema:
+            $ref: '#/components/schemas/PduSessionCreateError'
+        multipart/related:  # message with binary body part(s)
+          schema:
+            type: object
+            properties: # Request parts
+              jsonData:
+                $ref: '#/components/schemas/PduSessionCreateError'
+              binaryDataN1SmInfoToUe:
+                type: string
+                format: binary
+          encoding:
+            jsonData:
+              contentType:  application/json
+            binaryDataN1SmInfoToUe:
+              contentType:  application/vnd.3gpp.5gnas
+              headers:
+                Content-Id:
+                  schema:
+                    type: string  
+
+    'HsmfUpdateError':      
+      description: unsuccessful update of a PDU session 
+      content:
+        application/json: # message without binary body part 
+          schema:
+            $ref: '#/components/schemas/HsmfUpdateError'
+        multipart/related:  # message with binary body part(s)
+          schema:
+            type: object
+            properties: # Request parts
+              jsonData:
+                $ref: '#/components/schemas/HsmfUpdateError'
+              binaryDataN1SmInfoToUe:
+                type: string
+                format: binary
+          encoding:
+            jsonData:
+              contentType:  application/json
+            binaryDataN1SmInfoToUe:
+              contentType:  application/vnd.3gpp.5gnas
+              headers:
+                Content-Id:
+                  schema:
+                    type: string  
+
+    'VsmfUpdateError':      
+      description: unsuccessful update of a PDU session 
+      content:
+        application/json: # message without binary body part 
+          schema:
+            $ref: '#/components/schemas/VsmfUpdateError'
+        multipart/related:  # message with binary body part(s)
+          schema:
+            type: object
+            properties: # Request parts
+              jsonData:
+                $ref: '#/components/schemas/VsmfUpdateError'
+              binaryDataN1SmInfoFromUe:
+                type: string
+                format: binary
+              binaryDataUnknownN1SmInfo:
+                type: string
+                format: binary
+          encoding:
+            jsonData:
+              contentType:  application/json
+            binaryDataN1SmInfoFromUe:
+              contentType:  application/vnd.3gpp.5gnas
+              headers:
+                Content-Id:
+                  schema:
+                    type: string  
+            binaryDataUnknownN1SmInfo:
+              contentType:  application/vnd.3gpp.5gnas
+              headers:
+                Content-Id:
+                  schema:
+                    type: string  

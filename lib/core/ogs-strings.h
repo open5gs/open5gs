@@ -55,6 +55,11 @@ void *ogs_memdup(const void *m, size_t n);
 
 char *ogs_cpystrn(char *dst, const char *src, size_t dst_size);
 
+char *ogs_msprintf(const char *message, ...)
+    OGS_GNUC_PRINTF(1, 2);
+char *ogs_mstrcatf(char *source, const char *message, ...)
+    OGS_GNUC_PRINTF(2, 3);
+
 #ifdef __cplusplus
 }
 #endif

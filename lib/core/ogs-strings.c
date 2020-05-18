@@ -154,3 +154,77 @@ char *ogs_cpystrn(char *dst, const char *src, size_t dst_size)
 
     return (d);
 }
+
+/*
+ * char *ogs_msprintf(const char *message, ...)
+ * char *mstrcatf(char *source, const char *message, ...)
+ *
+ * Orcania library
+ * Copyright 2015-2018 Nicolas Mora <mail@babelouest.org>
+ * License: LGPL-2.1
+ *
+ * https://github.com/babelouest/orcania.git
+ */
+char *ogs_msprintf(const char *message, ...)
+{
+    va_list argp, argp_cpy;
+    size_t out_len = 0;
+    char *out = NULL;
+    if (message != NULL) {
+        va_start(argp, message);
+        va_copy(argp_cpy, argp); /* We make a copy because
+                                    in some architectures,
+                                    vsnprintf can modify argp */
+        out_len = vsnprintf(NULL, 0, message, argp);
+        out = ogs_malloc(out_len + sizeof(char));
+        if (out == NULL) {
+            va_end(argp);
+            va_end(argp_cpy);
+            return NULL;
+        }
+        vsnprintf(out, (out_len + sizeof(char)), message, argp_cpy);
+        va_end(argp);
+        va_end(argp_cpy);
+    }
+    return out;
+}
+
+char *ogs_mstrcatf(char *source, const char *message, ...)
+{
+    va_list argp, argp_cpy;
+    char *out = NULL, *message_formatted = NULL;
+    size_t message_formatted_len = 0, out_len = 0;
+
+    if (message != NULL) {
+        if (source != NULL) {
+            va_start(argp, message);
+            va_copy(argp_cpy, argp); /* We make a copy because
+                                        in some architectures,
+                                        vsnprintf can modify argp */
+            message_formatted_len = vsnprintf(NULL, 0, message, argp);
+            message_formatted = ogs_malloc(message_formatted_len+sizeof(char));
+            if (message_formatted != NULL) {
+                vsnprintf(message_formatted,
+                    (message_formatted_len+sizeof(char)), message, argp_cpy);
+                out = ogs_msprintf("%s%s", source, message_formatted);
+                ogs_free(message_formatted);
+                ogs_free(source);
+            }
+            va_end(argp);
+            va_end(argp_cpy);
+        } else {
+            va_start(argp, message);
+            va_copy(argp_cpy, argp); /* We make a copy because
+                                        in some architectures,
+                                        vsnprintf can modify argp */
+            out_len = vsnprintf(NULL, 0, message, argp);
+            out = ogs_malloc(out_len+sizeof(char));
+            if (out != NULL) {
+                vsnprintf(out, (out_len+sizeof(char)), message, argp_cpy);
+            }
+            va_end(argp);
+            va_end(argp_cpy);
+        }
+    }
+    return out;
+}
