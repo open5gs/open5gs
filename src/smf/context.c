@@ -646,22 +646,37 @@ smf_sess_t *smf_sess_add(
             ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
         }
 
-        if (found) {
-            ogs_debug("Found a UPF for TAC[%d]",
-                    uli.tai.tac);
-        }else{
-            ogs_warn("No corresponding UPF found for eNB/gNB TAC[%d]",
-                    uli.tai.tac);
-            ogs_warn("Defaulting to first UPF (PFCP) in smf.yaml list");
-            ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-        }
-
-        if (OGS_FSM_CHECK(
+        int connected = 0;
+        while (!connected)
+        {
+            if (found) {
+                char buf[OGS_ADDRSTRLEN];
+                OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
+                ogs_debug("Found a UPF record for TAC[%d], which serves %d TACs, on IP %s", 
+                    uli.tai.tac, ogs_pfcp_self()->node->num_of_tac, buf);
+            } else {
+                ogs_warn("No corresponding UPF found for eNB/gNB TAC[%d]",
+                        uli.tai.tac);
+                ogs_warn("Defaulting to first UPF (PFCP) in smf.yaml list");
+                ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+            }
+            /* If this UPF exists, then proceed with it */
+            if (OGS_FSM_CHECK(
                 &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated)) {
-            OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
+                OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
+                connected = 1;
+            }
+            /* Otherwise continue the loop */
+            else
+            {
+                /* Reset found flag if the connection fails, so the default (first) UPF will be used */
+                found = 0;
+                ogs_warn("Could not connect to specified UPF, falling back to first (default).");
+                continue;
+            }
+
         }
-    } else
-        ogs_assert_if_reached();
+    }
 
     /* Set Default Bearer */
     ogs_list_init(&sess->bearer_list);
