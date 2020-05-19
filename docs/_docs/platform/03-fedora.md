@@ -3,7 +3,7 @@ title: Fedora
 head_inline: "<style> .blue { color: blue; } </style>"
 ---
 
-This guide is based on **Fedora 30** Distribution.
+This guide is based on **Fedora 31** Distribution.
 {: .blue}
 
 ### Getting MongoDB
