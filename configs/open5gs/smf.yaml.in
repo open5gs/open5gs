@@ -199,6 +199,7 @@ smf:
       - addr: 127.0.0.3
       - addr: ::1
     pfcp:
+      - upf_selection_mode: rr
       - addr: 127.0.0.3
       - addr: ::1
     pdn:
@@ -210,7 +211,6 @@ smf:
       - 2001:4860:4860::8888
       - 2001:4860:4860::8844
     mtu: 1400
-    upf_selection_mode: rr
     freeDiameter: @sysconfdir@/freeDiameter/pgw.conf
 
 #
