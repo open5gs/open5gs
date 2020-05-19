@@ -617,36 +617,7 @@ smf_sess_t *smf_sess_add(
             imsi, imsi_len, apn);
     ogs_hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, sess);
 
-    if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_TAC) {
-        int i, found = 0;
-        ogs_gtp_uli_t uli;
-        /* Fetch the user location information from the incoming request */
-        ogs_gtp_parse_uli(&uli, &req->user_location_information);
-
-        ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-        while (ogs_pfcp_self()->node && !found) {
-            for (i = 0; i < ogs_pfcp_self()->node->num_of_tac && !found; i++){
-                found = ogs_pfcp_self()->node->tac[i] == uli.tai.tac ? 1: 0;
-            }
-            if (!found)
-            ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-        }
-
-        if (!found) {
-            ogs_warn("No corresponding UPF found for eNB TAC[%d]",
-                    uli.tai.tac);
-            ogs_warn("Defaulting to first UPF in smf.yaml list");
-            ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-
-        }
-        ogs_debug("Found a UPF for TAC: %d!", ogs_pfcp_self()->node->tac[i]);
-        if (OGS_FSM_CHECK(
-                &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated)) {
-            OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
-        }
-    }
-    else
-    {
+    if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_RR) {
         /* Select UPF with round-robin manner */
         if (ogs_pfcp_self()->node == NULL)
             ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
@@ -659,7 +630,38 @@ smf_sess_t *smf_sess_add(
                 break;
             }
         }
-    }
+    } else if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_TAC) {
+        /* Select UPF by eNB/gNB TAC */
+        int i, found = 0;
+        ogs_gtp_uli_t uli;
+        /* Fetch the user location information from the incoming S5c request */
+        ogs_gtp_parse_uli(&uli, &req->user_location_information);
+
+        ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+        while (ogs_pfcp_self()->node && !found) {
+            for (i = 0; i < ogs_pfcp_self()->node->num_of_tac && !found; i++){
+                found = ogs_pfcp_self()->node->tac[i] == uli.tai.tac ? 1: 0;
+            }
+            if (!found)
+            ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
+        }
+
+        if (found) {
+            ogs_debug("Found a UPF for TAC[%d]",
+                    uli.tai.tac);
+        }else{
+            ogs_warn("No corresponding UPF found for eNB/gNB TAC[%d]",
+                    uli.tai.tac);
+            ogs_warn("Defaulting to first UPF (PFCP) in smf.yaml list");
+            ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+        }
+
+        if (OGS_FSM_CHECK(
+                &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated)) {
+            OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
+        }
+    } else
+        ogs_assert_if_reached();
 
     /* Set Default Bearer */
     ogs_list_init(&sess->bearer_list);
@@ -674,7 +676,7 @@ smf_sess_t *smf_sess_add(
         pdr->precedence = 0xffffffff;
 
     ogs_list_add(&self.sess_list, sess);
-    
+
     stats_add_session();
 
     return sess;

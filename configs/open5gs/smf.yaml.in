@@ -69,6 +69,13 @@ logger:
 #      - addr: 127.0.0.3
 #      - addr: ::1
 #
+#  o UPF (PFCP) selection based on round robin or TAC
+#    pfcp:
+#      - addr: 127.0.0.3
+#      - upf_selection_mode: rr (default)
+#      - upf_selection_mode: tac
+#
+#
 #  <GTP-C Server>
 #
 #  o GTP-C Server(127.0.0.3:2123, [fe80::3%@loopback_devname@]:2123)
