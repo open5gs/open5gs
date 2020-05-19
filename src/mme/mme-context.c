@@ -508,10 +508,7 @@ int mme_context_parse_config()
                                         YAML_SEQUENCE_NODE);
                             } else if (!strcmp(s1ap_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&s1ap_iter);
-                                if (v) {
-                                    port = atoi(v);
-                                    self.s1ap_port = port;
-                                }
+                                if (v) port = atoi(v);
                             } else if (!strcmp(s1ap_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&s1ap_iter);
                             } else
@@ -541,7 +538,7 @@ int mme_context_parse_config()
                                         NULL : &self.s1ap_list,
                                     ogs_config()->parameter.no_ipv6 ?
                                         NULL : &self.s1ap_list6,
-                                    dev, self.s1ap_port);
+                                    dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -622,10 +619,7 @@ int mme_context_parse_config()
                                         YAML_SEQUENCE_NODE);
                             } else if (!strcmp(gtpc_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&gtpc_iter);
-                                if (v) {
-                                    port = atoi(v);
-                                    self.gtpc_port = port;
-                                }
+                                if (v) port = atoi(v);
                             } else if (!strcmp(gtpc_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&gtpc_iter);
                             } else
@@ -655,7 +649,7 @@ int mme_context_parse_config()
                                         NULL : &self.gtpc_list,
                                     ogs_config()->parameter.no_ipv6 ?
                                         NULL : &self.gtpc_list6,
-                                    dev, self.gtpc_port);
+                                    dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
                     } while (ogs_yaml_iter_type(&gtpc_array) ==
@@ -1437,7 +1431,8 @@ int mme_context_parse_config()
                                 if (v) family = atoi(v);
                                 if (family != AF_UNSPEC &&
                                     family != AF_INET && family != AF_INET6) {
-                                    ogs_warn("Ignore family(%d) : AF_UNSPEC(%d), "
+                                    ogs_warn("Ignore family(%d) : "
+                                        "AF_UNSPEC(%d), "
                                         "AF_INET(%d), AF_INET6(%d) ", 
                                         family, AF_UNSPEC, AF_INET, AF_INET6);
                                     family = AF_UNSPEC;

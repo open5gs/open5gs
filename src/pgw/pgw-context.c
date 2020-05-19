@@ -397,10 +397,7 @@ int pgw_context_parse_config(void)
                                         YAML_SEQUENCE_NODE);
                             } else if (!strcmp(gtpc_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&gtpc_iter);
-                                if (v) {
-                                    port = atoi(v);
-                                    self.gtpc_port = port;
-                                }
+                                if (v) port = atoi(v);
                             } else if (!strcmp(gtpc_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&gtpc_iter);
                             } else if (!strcmp(gtpc_key, "apn")) {
@@ -432,7 +429,7 @@ int pgw_context_parse_config(void)
                                         NULL : &self.gtpc_list,
                                     ogs_config()->parameter.no_ipv6 ?
                                         NULL : &self.gtpc_list6,
-                                    dev, self.gtpc_port);
+                                    dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 
@@ -513,10 +510,7 @@ int pgw_context_parse_config(void)
                                         YAML_SEQUENCE_NODE);
                             } else if (!strcmp(gtpu_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&gtpu_iter);
-                                if (v) {
-                                    port = atoi(v);
-                                    self.gtpu_port = port;
-                                }
+                                if (v) port = atoi(v);
                             } else if (!strcmp(gtpu_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&gtpu_iter);
                             } else
@@ -546,7 +540,7 @@ int pgw_context_parse_config(void)
                                         NULL : &self.gtpu_list,
                                     ogs_config()->parameter.no_ipv6 ?
                                         NULL : &self.gtpu_list6,
-                                    dev, self.gtpu_port);
+                                    dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 

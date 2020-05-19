@@ -221,10 +221,7 @@ int upf_context_parse_config(void)
                                         YAML_SEQUENCE_NODE);
                             } else if (!strcmp(gtpu_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&gtpu_iter);
-                                if (v) {
-                                    port = atoi(v);
-                                    self.gtpu_port = port;
-                                }
+                                if (v) port = atoi(v);
                             } else if (!strcmp(gtpu_key, "dev")) {
                                 dev = ogs_yaml_iter_value(&gtpu_iter);
                             } else if (!strcmp(gtpu_key,
@@ -268,7 +265,7 @@ int upf_context_parse_config(void)
                             rv = ogs_socknode_probe(
                                 ogs_config()->parameter.no_ipv4 ? NULL : &list,
                                 ogs_config()->parameter.no_ipv6 ? NULL : &list6,
-                                dev, self.gtpu_port);
+                                dev, port);
                             ogs_assert(rv == OGS_OK);
                         }
 
