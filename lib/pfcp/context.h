@@ -36,6 +36,7 @@ typedef struct ogs_pfcp_node_s ogs_pfcp_node_t;
 typedef enum {
     UPF_SELECT_RR = 0,  /* Default UPF Selection Method */
     UPF_SELECT_TAC,     /* Select UPF by TAC */
+    UPF_SELECT_APN,     /* Select UPF by APN */
 } upf_select_e;
 
 
@@ -87,6 +88,8 @@ typedef struct ogs_pfcp_node_s {
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
+    const char*     apn[OGS_MAX_APN_LEN];
+    uint8_t         num_of_apn;
 
     ogs_list_t      gtpu_resource_list; /* User Plane IP Resource Information */
 } ogs_pfcp_node_t;

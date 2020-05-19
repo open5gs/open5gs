@@ -69,11 +69,19 @@ logger:
 #      - addr: 127.0.0.3
 #      - addr: ::1
 #
-#  o UPF (PFCP) selection based on round robin or TAC
-#    pfcp:
-#      - addr: 127.0.0.3
-#      - upf_selection_mode: rr (default)
-#      - upf_selection_mode: tac
+#  o UPF (PFCP) selection can be based on three options. Round Robin is default.
+#      Round Robin (rr)
+#        OR
+#      UE's serving eNB/gNB TAC (tac)
+#        OR
+#      UE's APN (apn)
+#
+#    smf:
+#      pfcp:
+#        - addr: 127.0.0.3
+#        - upf_selection_mode: rr   < one of these
+#        - upf_selection_mode: tac
+#        - upf_selection_mode: apn
 #
 #
 #  <GTP-C Server>
@@ -186,8 +194,6 @@ logger:
 #      - 127.0.0.1
 #      - ::1
 #
-#  o upf_selection_mode can be set to rr (round-robin), or TAC (see upf config section
-#    for how to configure a UPF to be used for certain TACs)
 #
 #
 
@@ -252,16 +258,26 @@ nrf:
 #  <PFCP Client>>
 #
 #  o PFCP Client(127.0.0.4:8805)
-#  - optional parameter for TACs to serve from this UPF
+#  - optional parameter for TAC(s) to serve from this UPF
+#  - optional parameter for APN(s) to serve from this UPF
 # 
+#  upf:
 #    pfcp:
-#      addr: 127.0.0.4
-#      tac: 1
+#      - addr: 127.0.0.4
+#        tac: 1                   < either single TAC or multiple TACs
+#      - addr: 127.0.0.12
+#        tac: [3,5,8]
+#
+#  upf:
+#    pfcp:
+#      - addr: 127.0.0.4
+#        apn: ims            < either single APN or multiple APNs
+#      - addr: 127.0.0.12
+#        apn: [internet, web]
 #
 upf:
     pfcp:
       addr: 127.0.0.4
-      tac: 1
 
 #
 # parameter:

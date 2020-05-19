@@ -619,6 +619,7 @@ smf_sess_t *smf_sess_add(
 
     if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_RR) {
         /* Select UPF with round-robin manner */
+        ogs_debug("select UPF by RR");
         if (ogs_pfcp_self()->node == NULL)
             ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
 
@@ -632,6 +633,7 @@ smf_sess_t *smf_sess_add(
         }
     } else if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_TAC) {
         /* Select UPF by eNB/gNB TAC */
+        ogs_debug("select UPF by TAC");
         int i, found = 0;
         ogs_gtp_uli_t uli;
         /* Fetch the user location information from the incoming S5c request */
@@ -652,10 +654,10 @@ smf_sess_t *smf_sess_add(
             if (found) {
                 char buf[OGS_ADDRSTRLEN];
                 OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                ogs_debug("Found a UPF record for TAC[%d], which serves %d TACs, on IP %s", 
+                ogs_debug("Found a UPF (PFCP) record for TAC[%d], which serves %d TACs, on IP[%s]", 
                     uli.tai.tac, ogs_pfcp_self()->node->num_of_tac, buf);
             } else {
-                ogs_warn("No corresponding UPF found for eNB/gNB TAC[%d]",
+                ogs_warn("No corresponding UPF (PFCP) found for eNB/gNB TAC[%d]",
                         uli.tai.tac);
                 ogs_warn("Defaulting to first UPF (PFCP) in smf.yaml list");
                 ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
@@ -671,10 +673,53 @@ smf_sess_t *smf_sess_add(
             {
                 /* Reset found flag if the connection fails, so the default (first) UPF will be used */
                 found = 0;
-                ogs_warn("Could not connect to specified UPF, falling back to first (default).");
+                ogs_warn("Could not connect to specified UPF (PFCP), falling back to first (default).");
                 continue;
             }
 
+        }
+    } else if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_APN) {
+        /* Select UPF by UE APN */
+        ogs_debug("Select UPF by APN");
+        ogs_debug("UE connecting with APN [%s]",apn);
+        int i, found = 0;
+        ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+        while (ogs_pfcp_self()->node && !found) {
+            for (i = 0; i < ogs_pfcp_self()->node->num_of_apn && !found; i++){
+                found = strncmp( ogs_pfcp_self()->node->apn[i], apn, OGS_MAX_APN_LEN ) ? 0: 1;
+            }
+            if (!found)
+                ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
+        }
+
+        int connected = 0;
+        while (!connected)
+        {
+            if (found) {
+                char buf[OGS_ADDRSTRLEN];
+                OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
+                ogs_debug("Found a UPF (PFCP) record for APN [%s], which serves %d APNs, on IP[%s]", 
+                    apn, ogs_pfcp_self()->node->num_of_apn, buf);
+            } else {
+                ogs_warn("No corresponding UPF (PFCP) found for APN [%s]",
+                        apn);
+                ogs_warn("Defaulting to first UPF (PFCP) in smf.yaml list");
+                ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+            }
+            /* If this UPF exists, then proceed with it */
+            if (OGS_FSM_CHECK(
+                &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated)) {
+                OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
+                connected = 1;
+            }
+            /* Otherwise continue the loop */
+            else
+            {
+                /* Reset found flag if the connection fails, so the default (first) UPF will be used */
+                found = 0;
+                ogs_warn("Could not connect to specified UPF (PFCP), falling back to first (default).");
+                continue;
+            }
         }
     }
 

@@ -251,6 +251,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                     self.upf_selection_mode = UPF_SELECT_RR;
                                 else if (!strcmp(upf_selection_mode, "tac"))
                                     self.upf_selection_mode = UPF_SELECT_TAC;
+                                else if (!strcmp(upf_selection_mode, "apn"))
+                                    self.upf_selection_mode = UPF_SELECT_APN;
                                 else
                                     ogs_warn("unknown upf_selection_mode `%s`",
                                             upf_selection_mode);
@@ -449,6 +451,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         uint16_t port = self.pfcp_port;
                         uint16_t tac[OGS_MAX_NUM_OF_TAI] = {0,};
                         uint8_t num_of_tac = 0;
+                        const char * apn[OGS_MAX_NUM_OF_APN];
+                        uint8_t num_of_apn = 0;
 
                         if (ogs_yaml_iter_type(&pfcp_array) ==
                                 YAML_MAPPING_NODE) {
@@ -504,6 +508,32 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                             } else if (!strcmp(pfcp_key, "port")) {
                                 const char *v = ogs_yaml_iter_value(&pfcp_iter);
                                 if (v) port = atoi(v);
+                            } else if (!strcmp(pfcp_key, "apn")) {
+                                ogs_yaml_iter_t apn_iter;
+                                ogs_yaml_iter_recurse(&pfcp_iter, &apn_iter);
+                                ogs_assert(ogs_yaml_iter_type(&apn_iter) !=
+                                    YAML_MAPPING_NODE);
+
+                                do {
+                                    const char *v = NULL;
+
+                                    ogs_assert(num_of_apn <=
+                                            OGS_MAX_APN_LEN);
+                                    if (ogs_yaml_iter_type(&apn_iter) ==
+                                            YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(&apn_iter))
+                                            break;
+                                    }
+
+                                    v = ogs_yaml_iter_value(&apn_iter);
+                                    if (v) {
+                                        apn[num_of_apn] = v;
+                                        num_of_apn++;
+                                    }
+                                } while (
+                                    ogs_yaml_iter_type(&apn_iter) ==
+                                        YAML_SEQUENCE_NODE);
+
                             } else if (!strcmp(pfcp_key, "tac")) {
                                 ogs_yaml_iter_t tac_iter;
                                 ogs_yaml_iter_recurse(&pfcp_iter, &tac_iter);
@@ -548,6 +578,10 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         node = ogs_pfcp_node_new(addr);
                         ogs_assert(node);
                         ogs_list_add(&self.n4_list, node);
+
+                        node->num_of_apn = num_of_apn;
+                        if (num_of_apn != 0)
+                            memcpy(node->apn, apn, sizeof(node->apn));
 
                         node->num_of_tac = num_of_tac;
                         if (num_of_tac != 0)
