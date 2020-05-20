@@ -88,7 +88,7 @@ typedef struct ogs_pfcp_node_s {
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
-    const char*     apn[OGS_MAX_APN_LEN];
+    const char*     apn[OGS_MAX_NUM_OF_APN];
     uint8_t         num_of_apn;
 
     ogs_list_t      gtpu_resource_list; /* User Plane IP Resource Information */
