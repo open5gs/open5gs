@@ -7,7 +7,6 @@ permalink: /faq/
 #### What are the Open5GS license terms?
 
 Open5GS is licensed under the GNU Affero General Public License (AGPL), Version 3.0.
-There is no dual-licensing; open5gs is not available under any other license terms.
 
 #### Are there any companies providing commercial support for Open5GS?
 

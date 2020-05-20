@@ -12,15 +12,8 @@ Voice and text chat available in Open5GS's [Discord](https://discordapp.com/) wo
 
 ## Contributing
 
-Open5GS is a pure/classic FOSS project, open to contributions from anyone.
-
-[Pull requests](https://github.com/open5gs/open5gs/pulls) are always welcome, and I appreciates any help the community can give to help make Open5GS better.
-
-Do you want to be a committer? Please [send me an email](mailto:acetcom@gmail.com). You will be added as a committer to this project. However, if someone consistently causes difficulties with these source repositories due to poor behavior or other serious problems then commit access may be revoked.
+If you're contributing through a pull request to Open5GS project on GitHub, please read the [Contributor Agreement Document](https://gist.github.com/acetcom/9486d8c3363b88756d3bc758183901b2) in advance and indicate its acceptance by going back to GitHub and accepting electronically.
 
 ## License
 
 Open5GS source files are made available under the terms of the GNU Affero General Public License (GNU AGPLv3).
-
-When you contribute code for Open5GS, the same license applies.
-
