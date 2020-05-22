@@ -15,6 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-subdir('common')
-subdir('5gs')
-subdir('eps')
+libnas_5gs_sources = files('''
+    ies.c
+    decoder.c
+    encoder.c
+'''.split())
+
+libnas_5gs_inc = include_directories('.')
+
+libnas_5gs = library('ogsnas-5gs',
+    sources : libnas_5gs_sources,
+    version : libogslib_version,
+    c_args : '-DOGS_NAS_COMPILATION',
+    include_directories : libnas_5gs_inc,
+    dependencies : libnas_common_dep,
+    install : true)
+
+libnas_5gs_dep = declare_dependency(
+    link_with : libnas_5gs,
+    include_directories : libnas_5gs_inc,
+    dependencies : libnas_common_dep)

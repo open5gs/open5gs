@@ -18,7 +18,7 @@
  */
 
 #include "ogs-gtp.h"
-#include "ogs-nas.h"
+#include "ogs-nas-eps.h"
 
 #include "s1ap-build.h"
 #include "s1ap-handler.h"

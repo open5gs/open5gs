@@ -25,7 +25,7 @@
 #include "ogs-s1ap.h"
 #include "ogs-diameter-s6a.h"
 #include "ogs-gtp.h"
-#include "ogs-nas.h"
+#include "ogs-nas-eps.h"
 #include "ogs-app.h"
 
 /* S1AP */

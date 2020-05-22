@@ -83,7 +83,7 @@ libmme = static_library('mme',
                     libcrypt_dep,
                     libsctp_dep,
                     libs1ap_dep,
-                    libnas_dep,
+                    libnas_eps_dep,
                     libdiameter_s6a_dep,
                     libgtp_dep],
     install : false)
@@ -94,7 +94,7 @@ libmme_dep = declare_dependency(
                     libcrypt_dep,
                     libsctp_dep,
                     libs1ap_dep,
-                    libnas_dep,
+                    libnas_eps_dep,
                     libdiameter_s6a_dep,
                     libgtp_dep])
 
