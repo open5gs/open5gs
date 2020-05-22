@@ -213,7 +213,11 @@ void ogs_sbi_server_start(ogs_sbi_server_t *server, int (*cb)(
     char buf[OGS_ADDRSTRLEN];
     ogs_sockaddr_t *addr = NULL;
 
+#if MHD_VERSION >= 0x00095300
     unsigned int mhd_flags = MHD_USE_ERROR_LOG;
+#else
+    unsigned int mhd_flags = MHD_USE_DEBUG;
+#endif
     const union MHD_DaemonInfo *mhd_info = NULL;
 #define MAX_NUM_OF_MHD_OPTION_ITEM 8
     struct MHD_OptionItem mhd_ops[MAX_NUM_OF_MHD_OPTION_ITEM];
@@ -244,10 +248,8 @@ void ogs_sbi_server_start(ogs_sbi_server_t *server, int (*cb)(
 
     addr = server->addr;
     ogs_assert(addr);
-#if MHD_VERSION >= 0x00095208
     if (addr->ogs_sa_family == AF_INET6)
         mhd_flags |= MHD_USE_IPv6;
-#endif
     mhd_ops[index].option = MHD_OPTION_SOCK_ADDR;
     mhd_ops[index].value = 0;
     mhd_ops[index].ptr_value = (void *)&addr->sa;

@@ -5,7 +5,7 @@ FROM ${dist}:${tag}
 MAINTAINER Sukchan Lee <acetcom@gmail.com>
 
 RUN yum -y install epel-release
-RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+#RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 RUN yum -y update
 
 RUN yum -y install \
