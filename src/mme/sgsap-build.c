@@ -115,7 +115,7 @@ ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue)
     vlr = csmap->vlr;
     ogs_assert(vlr);
 
-    switch (mme_ue->nas_eps.detach.detach_type) {
+    switch (mme_ue->nas_eps.detach.value) {
     /* 0 0 1 : EPS detach */
     case OGS_NAS_DETACH_TYPE_FROM_UE_EPS_DETACH: 
         type = SGSAP_EPS_DETACH_INDICATION;
@@ -128,7 +128,7 @@ ogs_pkbuf_t *sgsap_build_detach_indication(mme_ue_t *mme_ue)
         break;
     case 6: /* 1 1 0 : reserved */
     case 7: /* 1 1 1 : reserved */
-        ogs_warn("Unknown Detach type[%d]", mme_ue->nas_eps.detach.detach_type);
+        ogs_warn("Unknown Detach type[%d]", mme_ue->nas_eps.detach.value);
         break;
     /* 0 1 1 : combined EPS/IMSI detach */
     case OGS_NAS_DETACH_TYPE_FROM_UE_COMBINED_EPS_IMSI_DETACH: 
@@ -293,8 +293,8 @@ ogs_pkbuf_t *sgsap_build_reset_ack(mme_vlr_t *vlr)
     return pkbuf;
 }
 
-ogs_pkbuf_t *sgsap_build_uplink_unidata(
-        mme_ue_t *mme_ue, ogs_nas_message_container_t *nas_message_container)
+ogs_pkbuf_t *sgsap_build_uplink_unidata(mme_ue_t *mme_ue,
+        ogs_nas_eps_message_container_t *nas_message_container)
 {
     mme_csmap_t *csmap = NULL;
     mme_vlr_t *vlr = NULL;

@@ -29,7 +29,7 @@ void mme_send_delete_session_or_detach(mme_ue_t *mme_ue)
     if (SESSION_CONTEXT_IS_AVAILABLE(mme_ue)) {
         mme_gtp_send_delete_all_sessions(mme_ue);
     } else {
-        nas_send_detach_accept(mme_ue);
+        nas_eps_send_detach_accept(mme_ue);
     }
 }
 

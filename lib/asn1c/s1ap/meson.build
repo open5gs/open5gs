@@ -1056,10 +1056,10 @@ libasn1c_s1ap = library('ogsasn1c-s1ap',
     version : libogslib_version,
     c_args : libasn1c_common_cc_flags,
     include_directories : libasn1c_s1ap_inc,
-    dependencies : libasn1c_common_dep,
+    dependencies : [libasn1c_common_dep, libasn1c_util_dep],
     install : true)
 
 libasn1c_s1ap_dep = declare_dependency(
     link_with : libasn1c_s1ap,
     include_directories : libasn1c_s1ap_inc,
-    dependencies : libasn1c_common_dep)
+    dependencies : [libasn1c_common_dep, libasn1c_util_dep])

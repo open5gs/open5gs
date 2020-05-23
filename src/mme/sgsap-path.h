@@ -47,8 +47,8 @@ void sgsap_send_detach_indication(mme_ue_t *mme_ue);
 void sgsap_send_mo_csfb_indication(mme_ue_t *mme_ue);
 void sgsap_send_service_request(mme_ue_t *mme_ue, uint8_t emm_mode);
 void sgsap_send_reset_ack(mme_vlr_t *vlr);
-void sgsap_send_uplink_unitdata(
-        mme_ue_t *mme_ue, ogs_nas_message_container_t *nas_message_container);
+void sgsap_send_uplink_unitdata(mme_ue_t *mme_ue,
+        ogs_nas_eps_message_container_t *nas_message_container);
 void sgsap_send_ue_unreachable(mme_ue_t *mme_ue, uint8_t sgs_cause);
 
 #ifdef __cplusplus

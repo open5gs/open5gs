@@ -40,7 +40,7 @@ void mme_s6a_handle_aia(mme_ue_t *mme_ue,
 
     CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
-    nas_send_authentication_request(mme_ue, e_utran_vector);
+    nas_eps_send_authentication_request(mme_ue, e_utran_vector);
 }
 
 void mme_s6a_handle_ula(mme_ue_t *mme_ue,

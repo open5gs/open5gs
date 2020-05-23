@@ -19,13 +19,19 @@
 
 #include "nas-security.h"
 
-ogs_pkbuf_t *nas_security_encode(
-        mme_ue_t *mme_ue, ogs_nas_message_t *message)
+#define NAS_SECURITY_BEARER 0
+#define NAS_SECURITY_DOWNLINK_DIRECTION 1
+#define NAS_SECURITY_UPLINK_DIRECTION 0
+
+#define NAS_SECURITY_MAC_SIZE 4
+
+ogs_pkbuf_t *nas_eps_security_encode(
+        mme_ue_t *mme_ue, ogs_nas_eps_message_t *message)
 {
     int integrity_protected = 0;
     int new_security_context = 0;
     int ciphered = 0;
-    ogs_nas_security_header_t h;
+    ogs_nas_eps_security_header_t h;
     ogs_pkbuf_t *new = NULL;
 
     ogs_assert(mme_ue);
@@ -33,7 +39,7 @@ ogs_pkbuf_t *nas_security_encode(
 
     switch (message->h.security_header_type) {
     case OGS_NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
-        return ogs_nas_plain_encode(message);
+        return ogs_nas_eps_plain_encode(message);
     case OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED:
         integrity_protected = 1;
         break;
@@ -71,15 +77,15 @@ ogs_pkbuf_t *nas_security_encode(
     h.protocol_discriminator = message->h.protocol_discriminator;
     h.sequence_number = (mme_ue->dl_count & 0xff);
 
-    new = ogs_nas_plain_encode(message);
+    new = ogs_nas_eps_plain_encode(message);
     if (!new) {
-        ogs_error("ogs_nas_plain_encode() failed");
+        ogs_error("ogs_nas_eps_plain_encode() failed");
         return NULL;
     }
 
     if (ciphered) {
         /* encrypt NAS message */
-        nas_encrypt(mme_ue->selected_enc_algorithm,
+        ogs_nas_encrypt(mme_ue->selected_enc_algorithm,
             mme_ue->knas_enc, mme_ue->dl_count, NAS_SECURITY_BEARER,
             NAS_SECURITY_DOWNLINK_DIRECTION, new);
     }
@@ -92,7 +98,7 @@ ogs_pkbuf_t *nas_security_encode(
         uint8_t mac[NAS_SECURITY_MAC_SIZE];
 
         /* calculate NAS MAC(message authentication code) */
-        nas_mac_calculate(mme_ue->selected_int_algorithm,
+        ogs_nas_mac_calculate(mme_ue->selected_int_algorithm,
             mme_ue->knas_int, mme_ue->dl_count, NAS_SECURITY_BEARER, 
             NAS_SECURITY_DOWNLINK_DIRECTION, new, mac);
         memcpy(&h.message_authentication_code, mac, sizeof(mac));
@@ -103,15 +109,15 @@ ogs_pkbuf_t *nas_security_encode(
 
     /* encode all security header */
     ogs_assert(ogs_pkbuf_push(new, 5));
-    memcpy(new->data, &h, sizeof(ogs_nas_security_header_t));
+    memcpy(new->data, &h, sizeof(ogs_nas_eps_security_header_t));
 
     mme_ue->security_context_available = 1;
 
     return new;
 }
 
-int nas_security_decode(mme_ue_t *mme_ue, 
-    nas_security_header_type_t security_header_type, ogs_pkbuf_t *pkbuf)
+int nas_eps_security_decode(mme_ue_t *mme_ue, 
+    ogs_nas_security_header_type_t security_header_type, ogs_pkbuf_t *pkbuf)
 {
     ogs_assert(mme_ue);
     ogs_assert(pkbuf);
@@ -148,7 +154,7 @@ int nas_security_decode(mme_ue_t *mme_ue,
         memcpy(original_mac, pkbuf->data + 2, SHORT_MAC_SIZE);
 
         ogs_pkbuf_trim(pkbuf, 2);
-        nas_mac_calculate(mme_ue->selected_int_algorithm,
+        ogs_nas_mac_calculate(mme_ue->selected_int_algorithm,
             mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
             NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
 
@@ -182,11 +188,11 @@ int nas_security_decode(mme_ue_t *mme_ue,
 
     if (security_header_type.ciphered || 
         security_header_type.integrity_protected) {
-        ogs_nas_security_header_t *h = NULL;
+        ogs_nas_eps_security_header_t *h = NULL;
 
         /* NAS Security Header */
         ogs_assert(ogs_pkbuf_push(pkbuf, 6));
-        h = (ogs_nas_security_header_t *)pkbuf->data;
+        h = (ogs_nas_eps_security_header_t *)pkbuf->data;
 
         /* NAS Security Header.Sequence_Number */
         ogs_assert(ogs_pkbuf_pull(pkbuf, 5));
@@ -202,7 +208,7 @@ int nas_security_decode(mme_ue_t *mme_ue,
             uint32_t original_mac = h->message_authentication_code;
 
             /* calculate NAS MAC(message authentication code) */
-            nas_mac_calculate(mme_ue->selected_int_algorithm,
+            ogs_nas_mac_calculate(mme_ue->selected_int_algorithm,
                 mme_ue->knas_int, mme_ue->ul_count.i32, NAS_SECURITY_BEARER, 
                 NAS_SECURITY_UPLINK_DIRECTION, pkbuf, mac);
             h->message_authentication_code = original_mac;
@@ -220,103 +226,11 @@ int nas_security_decode(mme_ue_t *mme_ue,
 
         if (security_header_type.ciphered) {
             /* decrypt NAS message */
-            nas_encrypt(mme_ue->selected_enc_algorithm,
+            ogs_nas_encrypt(mme_ue->selected_enc_algorithm,
                 mme_ue->knas_enc, mme_ue->ul_count.i32, NAS_SECURITY_BEARER,
                 NAS_SECURITY_UPLINK_DIRECTION, pkbuf);
         }
     }
 
     return OGS_OK;
-}
-
-void nas_mac_calculate(uint8_t algorithm_identity,
-        uint8_t *knas_int, uint32_t count, uint8_t bearer, 
-        uint8_t direction, ogs_pkbuf_t *pkbuf, uint8_t *mac)
-{
-    uint8_t *ivec = NULL;;
-    uint8_t cmac[16];
-    uint32_t mac32;
-
-    ogs_assert(knas_int);
-    ogs_assert(bearer <= 0x1f);
-    ogs_assert(direction == 0 || direction == 1);
-    ogs_assert(pkbuf);
-    ogs_assert(pkbuf->data);
-    ogs_assert(pkbuf->len);
-    ogs_assert(mac);
-
-    switch (algorithm_identity) {
-    case OGS_NAS_SECURITY_ALGORITHMS_128_EIA1:
-        snow_3g_f9(knas_int, count, (bearer << 27), direction, 
-                pkbuf->data, (pkbuf->len << 3), mac);
-        break;
-    case OGS_NAS_SECURITY_ALGORITHMS_128_EIA2:
-        count = htonl(count);
-
-        ogs_pkbuf_push(pkbuf, 8);
-
-        ivec = pkbuf->data;
-        memset(ivec, 0, 8);
-        memcpy(ivec + 0, &count, sizeof(count));
-        ivec[4] = (bearer << 3) | (direction << 2);
-
-        ogs_aes_cmac_calculate(cmac, knas_int, pkbuf->data, pkbuf->len);
-        memcpy(mac, cmac, 4);
-
-        ogs_pkbuf_pull(pkbuf, 8);
-
-        break;
-    case OGS_NAS_SECURITY_ALGORITHMS_128_EIA3:
-        zuc_eia3(knas_int, count, bearer, direction, 
-                (pkbuf->len << 3), pkbuf->data, &mac32);
-        mac32 = ntohl(mac32);
-        memcpy(mac, &mac32, sizeof(uint32_t));
-        break;
-    case OGS_NAS_SECURITY_ALGORITHMS_EIA0:
-        ogs_error("Invalid identity : NAS_SECURITY_ALGORITHMS_EIA0");
-        break;
-    default:
-        ogs_assert_if_reached();
-        break;
-    }
-}
-
-void nas_encrypt(uint8_t algorithm_identity,
-        uint8_t *knas_enc, uint32_t count, uint8_t bearer, 
-        uint8_t direction, ogs_pkbuf_t *pkbuf)
-{
-    uint8_t ivec[16];
-
-    ogs_assert(knas_enc);
-    ogs_assert(bearer <= 0x1f);
-    ogs_assert(direction == 0 || direction == 1);
-    ogs_assert(pkbuf);
-    ogs_assert(pkbuf->data);
-    ogs_assert(pkbuf->len);
-
-    switch (algorithm_identity) {
-    case OGS_NAS_SECURITY_ALGORITHMS_128_EEA1:
-        snow_3g_f8(knas_enc, count, bearer, direction, 
-                pkbuf->data, (pkbuf->len << 3));
-        break;
-    case OGS_NAS_SECURITY_ALGORITHMS_128_EEA2:
-        count = htonl(count);
-
-        memset(ivec, 0, 16);
-        memcpy(ivec + 0, &count, sizeof(count));
-        ivec[4] = (bearer << 3) | (direction << 2);
-        ogs_aes_ctr128_encrypt(knas_enc, ivec, 
-                pkbuf->data, pkbuf->len, pkbuf->data);
-        break;
-    case OGS_NAS_SECURITY_ALGORITHMS_128_EEA3:
-        zuc_eea3(knas_enc, count, bearer, direction, 
-                (pkbuf->len << 3), pkbuf->data, pkbuf->data);
-        break;
-    case OGS_NAS_SECURITY_ALGORITHMS_EEA0:
-        ogs_error("Invalid identity : NAS_SECURITY_ALGORITHMS_EEA0");
-        break;
-    default:
-        ogs_assert_if_reached();
-        break;
-    }
 }

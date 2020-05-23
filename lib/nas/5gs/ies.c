@@ -28,13 +28,13 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-05-21 21:20:09.023713 by acetcom
+ * Created on: 2020-05-22 16:56:21.995840 by acetcom
  * from 24501-g41.docx
  ******************************************************************************/
 
 #include "ogs-nas-5gs.h"
 
-int ogs_nas_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type)
+int ogs_nas_5gs_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type)
 {
     uint16_t size = sizeof(uint8_t);
 
@@ -45,7 +45,7 @@ int ogs_nas_encode_optional_type(ogs_pkbuf_t *pkbuf, uint8_t type)
 }
 /* 9.11.2.1 Additional information
  * O TLV 3-n */
-int ogs_nas_decode_additional_information(ogs_nas_additional_information_t *additional_information, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_additional_information(ogs_nas_additional_information_t *additional_information, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_additional_information_t *source = (ogs_nas_additional_information_t *)pkbuf->data;
@@ -62,7 +62,7 @@ int ogs_nas_decode_additional_information(ogs_nas_additional_information_t *addi
     return size;
 }
 
-int ogs_nas_encode_additional_information(ogs_pkbuf_t *pkbuf, ogs_nas_additional_information_t *additional_information)
+int ogs_nas_5gs_encode_additional_information(ogs_pkbuf_t *pkbuf, ogs_nas_additional_information_t *additional_information)
 {
     uint16_t size = additional_information->length + sizeof(additional_information->length);
     ogs_nas_additional_information_t target;
@@ -79,7 +79,7 @@ int ogs_nas_encode_additional_information(ogs_pkbuf_t *pkbuf, ogs_nas_additional
 
 /* 9.11.2.1A Access type
  * M V 1/2 */
-int ogs_nas_decode_access_type(ogs_nas_access_type_t *access_type, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_access_type(ogs_nas_access_type_t *access_type, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_access_type_t);
 
@@ -92,7 +92,7 @@ int ogs_nas_decode_access_type(ogs_nas_access_type_t *access_type, ogs_pkbuf_t *
     return size;
 }
 
-int ogs_nas_encode_access_type(ogs_pkbuf_t *pkbuf, ogs_nas_access_type_t *access_type)
+int ogs_nas_5gs_encode_access_type(ogs_pkbuf_t *pkbuf, ogs_nas_access_type_t *access_type)
 {
     uint16_t size = sizeof(ogs_nas_access_type_t);
     ogs_nas_access_type_t target;
@@ -109,7 +109,7 @@ int ogs_nas_encode_access_type(ogs_pkbuf_t *pkbuf, ogs_nas_access_type_t *access
 
 /* 9.11.2.1B DNN
  * O TLV 3-102 */
-int ogs_nas_decode_dnn(ogs_nas_dnn_t *dnn, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_dnn(ogs_nas_dnn_t *dnn, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_dnn_t *source = (ogs_nas_dnn_t *)pkbuf->data;
@@ -132,7 +132,7 @@ int ogs_nas_decode_dnn(ogs_nas_dnn_t *dnn, ogs_pkbuf_t *pkbuf)
     return size;
 }
 
-int ogs_nas_encode_dnn(ogs_pkbuf_t *pkbuf, ogs_nas_dnn_t *dnn)
+int ogs_nas_5gs_encode_dnn(ogs_pkbuf_t *pkbuf, ogs_nas_dnn_t *dnn)
 {
     uint16_t size = dnn->length + sizeof(dnn->length);
     ogs_nas_dnn_t target;
@@ -152,7 +152,7 @@ int ogs_nas_encode_dnn(ogs_pkbuf_t *pkbuf, ogs_nas_dnn_t *dnn)
 
 /* 9.11.2.2 EAP message
  * O TLV-E 7-1503 */
-int ogs_nas_decode_eap_message(ogs_nas_eap_message_t *eap_message, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_eap_message(ogs_nas_eap_message_t *eap_message, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_eap_message_t *source = (ogs_nas_eap_message_t *)pkbuf->data;
@@ -169,7 +169,7 @@ int ogs_nas_decode_eap_message(ogs_nas_eap_message_t *eap_message, ogs_pkbuf_t *
     return size;
 }
 
-int ogs_nas_encode_eap_message(ogs_pkbuf_t *pkbuf, ogs_nas_eap_message_t *eap_message)
+int ogs_nas_5gs_encode_eap_message(ogs_pkbuf_t *pkbuf, ogs_nas_eap_message_t *eap_message)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -194,7 +194,7 @@ int ogs_nas_encode_eap_message(ogs_pkbuf_t *pkbuf, ogs_nas_eap_message_t *eap_me
 
 /* 9.11.2.3 GPRS timer
  * O TV 2 */
-int ogs_nas_decode_gprs_timer(ogs_nas_gprs_timer_t *gprs_timer, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_gprs_timer(ogs_nas_gprs_timer_t *gprs_timer, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_gprs_timer_t);
 
@@ -207,7 +207,7 @@ int ogs_nas_decode_gprs_timer(ogs_nas_gprs_timer_t *gprs_timer, ogs_pkbuf_t *pkb
     return size;
 }
 
-int ogs_nas_encode_gprs_timer(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_t *gprs_timer)
+int ogs_nas_5gs_encode_gprs_timer(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_t *gprs_timer)
 {
     uint16_t size = sizeof(ogs_nas_gprs_timer_t);
     ogs_nas_gprs_timer_t target;
@@ -224,7 +224,7 @@ int ogs_nas_encode_gprs_timer(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_t *gprs_tim
 
 /* 9.11.2.4 GPRS timer 2
  * O TLV 3 */
-int ogs_nas_decode_gprs_timer_2(ogs_nas_gprs_timer_2_t *gprs_timer_2, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_gprs_timer_2(ogs_nas_gprs_timer_2_t *gprs_timer_2, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_gprs_timer_2_t *source = (ogs_nas_gprs_timer_2_t *)pkbuf->data;
@@ -241,7 +241,7 @@ int ogs_nas_decode_gprs_timer_2(ogs_nas_gprs_timer_2_t *gprs_timer_2, ogs_pkbuf_
     return size;
 }
 
-int ogs_nas_encode_gprs_timer_2(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_2_t *gprs_timer_2)
+int ogs_nas_5gs_encode_gprs_timer_2(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_2_t *gprs_timer_2)
 {
     uint16_t size = gprs_timer_2->length + sizeof(gprs_timer_2->length);
     ogs_nas_gprs_timer_2_t target;
@@ -258,7 +258,7 @@ int ogs_nas_encode_gprs_timer_2(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_2_t *gprs
 
 /* 9.11.2.5 GPRS timer 3
  * O TLV 3 */
-int ogs_nas_decode_gprs_timer_3(ogs_nas_gprs_timer_3_t *gprs_timer_3, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_gprs_timer_3(ogs_nas_gprs_timer_3_t *gprs_timer_3, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_gprs_timer_3_t *source = (ogs_nas_gprs_timer_3_t *)pkbuf->data;
@@ -275,7 +275,7 @@ int ogs_nas_decode_gprs_timer_3(ogs_nas_gprs_timer_3_t *gprs_timer_3, ogs_pkbuf_
     return size;
 }
 
-int ogs_nas_encode_gprs_timer_3(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_3_t *gprs_timer_3)
+int ogs_nas_5gs_encode_gprs_timer_3(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_3_t *gprs_timer_3)
 {
     uint16_t size = gprs_timer_3->length + sizeof(gprs_timer_3->length);
     ogs_nas_gprs_timer_3_t target;
@@ -292,7 +292,7 @@ int ogs_nas_encode_gprs_timer_3(ogs_pkbuf_t *pkbuf, ogs_nas_gprs_timer_3_t *gprs
 
 /* 9.11.2.8 S-NSSAI
  * O TLV 3-10 */
-int ogs_nas_decode_s_nssai(ogs_nas_s_nssai_t *s_nssai, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_s_nssai(ogs_nas_s_nssai_t *s_nssai, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_s_nssai_t *source = (ogs_nas_s_nssai_t *)pkbuf->data;
@@ -309,7 +309,7 @@ int ogs_nas_decode_s_nssai(ogs_nas_s_nssai_t *s_nssai, ogs_pkbuf_t *pkbuf)
     return size;
 }
 
-int ogs_nas_encode_s_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_s_nssai_t *s_nssai)
+int ogs_nas_5gs_encode_s_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_s_nssai_t *s_nssai)
 {
     uint16_t size = s_nssai->length + sizeof(s_nssai->length);
     ogs_nas_s_nssai_t target;
@@ -326,7 +326,7 @@ int ogs_nas_encode_s_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_s_nssai_t *s_nssai)
 
 /* 9.11.3.1 5GMM capability
  * O TLV 3-15 */
-int ogs_nas_decode_5gmm_capability(ogs_nas_5gmm_capability_t *gmm_capability, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gmm_capability(ogs_nas_5gmm_capability_t *gmm_capability, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_5gmm_capability_t *source = (ogs_nas_5gmm_capability_t *)pkbuf->data;
@@ -343,7 +343,7 @@ int ogs_nas_decode_5gmm_capability(ogs_nas_5gmm_capability_t *gmm_capability, og
     return size;
 }
 
-int ogs_nas_encode_5gmm_capability(ogs_pkbuf_t *pkbuf, ogs_nas_5gmm_capability_t *gmm_capability)
+int ogs_nas_5gs_encode_5gmm_capability(ogs_pkbuf_t *pkbuf, ogs_nas_5gmm_capability_t *gmm_capability)
 {
     uint16_t size = gmm_capability->length + sizeof(gmm_capability->length);
     ogs_nas_5gmm_capability_t target;
@@ -360,7 +360,7 @@ int ogs_nas_encode_5gmm_capability(ogs_pkbuf_t *pkbuf, ogs_nas_5gmm_capability_t
 
 /* 9.11.3.10 ABBA
  * M LV 3-n */
-int ogs_nas_decode_abba(ogs_nas_abba_t *abba, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_abba(ogs_nas_abba_t *abba, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_abba_t *source = (ogs_nas_abba_t *)pkbuf->data;
@@ -377,7 +377,7 @@ int ogs_nas_decode_abba(ogs_nas_abba_t *abba, ogs_pkbuf_t *pkbuf)
     return size;
 }
 
-int ogs_nas_encode_abba(ogs_pkbuf_t *pkbuf, ogs_nas_abba_t *abba)
+int ogs_nas_5gs_encode_abba(ogs_pkbuf_t *pkbuf, ogs_nas_abba_t *abba)
 {
     uint16_t size = abba->length + sizeof(abba->length);
     ogs_nas_abba_t target;
@@ -394,7 +394,7 @@ int ogs_nas_encode_abba(ogs_pkbuf_t *pkbuf, ogs_nas_abba_t *abba)
 
 /* 9.11.3.12 Additional 5G security information
  * O TLV 3 */
-int ogs_nas_decode_additional_5g_security_information(ogs_nas_additional_5g_security_information_t *additional_security_information, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_additional_5g_security_information(ogs_nas_additional_5g_security_information_t *additional_security_information, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_additional_5g_security_information_t *source = (ogs_nas_additional_5g_security_information_t *)pkbuf->data;
@@ -411,7 +411,7 @@ int ogs_nas_decode_additional_5g_security_information(ogs_nas_additional_5g_secu
     return size;
 }
 
-int ogs_nas_encode_additional_5g_security_information(ogs_pkbuf_t *pkbuf, ogs_nas_additional_5g_security_information_t *additional_security_information)
+int ogs_nas_5gs_encode_additional_5g_security_information(ogs_pkbuf_t *pkbuf, ogs_nas_additional_5g_security_information_t *additional_security_information)
 {
     uint16_t size = additional_security_information->length + sizeof(additional_security_information->length);
     ogs_nas_additional_5g_security_information_t target;
@@ -428,7 +428,7 @@ int ogs_nas_encode_additional_5g_security_information(ogs_pkbuf_t *pkbuf, ogs_na
 
 /* 9.11.3.12A Additional information requested
  * O TLV 3 */
-int ogs_nas_decode_additional_information_requested(ogs_nas_additional_information_requested_t *additional_information_requested, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_additional_information_requested(ogs_nas_additional_information_requested_t *additional_information_requested, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_additional_information_requested_t *source = (ogs_nas_additional_information_requested_t *)pkbuf->data;
@@ -445,7 +445,7 @@ int ogs_nas_decode_additional_information_requested(ogs_nas_additional_informati
     return size;
 }
 
-int ogs_nas_encode_additional_information_requested(ogs_pkbuf_t *pkbuf, ogs_nas_additional_information_requested_t *additional_information_requested)
+int ogs_nas_5gs_encode_additional_information_requested(ogs_pkbuf_t *pkbuf, ogs_nas_additional_information_requested_t *additional_information_requested)
 {
     uint16_t size = additional_information_requested->length + sizeof(additional_information_requested->length);
     ogs_nas_additional_information_requested_t target;
@@ -462,7 +462,7 @@ int ogs_nas_encode_additional_information_requested(ogs_pkbuf_t *pkbuf, ogs_nas_
 
 /* 9.11.3.13 Allowed PDU session status
  * O TLV 4-34 */
-int ogs_nas_decode_allowed_pdu_session_status(ogs_nas_allowed_pdu_session_status_t *allowed_pdu_session_status, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_allowed_pdu_session_status(ogs_nas_allowed_pdu_session_status_t *allowed_pdu_session_status, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_allowed_pdu_session_status_t *source = (ogs_nas_allowed_pdu_session_status_t *)pkbuf->data;
@@ -479,7 +479,7 @@ int ogs_nas_decode_allowed_pdu_session_status(ogs_nas_allowed_pdu_session_status
     return size;
 }
 
-int ogs_nas_encode_allowed_pdu_session_status(ogs_pkbuf_t *pkbuf, ogs_nas_allowed_pdu_session_status_t *allowed_pdu_session_status)
+int ogs_nas_5gs_encode_allowed_pdu_session_status(ogs_pkbuf_t *pkbuf, ogs_nas_allowed_pdu_session_status_t *allowed_pdu_session_status)
 {
     uint16_t size = allowed_pdu_session_status->length + sizeof(allowed_pdu_session_status->length);
     ogs_nas_allowed_pdu_session_status_t target;
@@ -496,7 +496,7 @@ int ogs_nas_encode_allowed_pdu_session_status(ogs_pkbuf_t *pkbuf, ogs_nas_allowe
 
 /* 9.11.3.14 Authentication failure parameter
  * O TLV 16 */
-int ogs_nas_decode_authentication_failure_parameter(ogs_nas_authentication_failure_parameter_t *authentication_failure_parameter, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_authentication_failure_parameter(ogs_nas_authentication_failure_parameter_t *authentication_failure_parameter, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_authentication_failure_parameter_t *source = (ogs_nas_authentication_failure_parameter_t *)pkbuf->data;
@@ -513,7 +513,7 @@ int ogs_nas_decode_authentication_failure_parameter(ogs_nas_authentication_failu
     return size;
 }
 
-int ogs_nas_encode_authentication_failure_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_authentication_failure_parameter_t *authentication_failure_parameter)
+int ogs_nas_5gs_encode_authentication_failure_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_authentication_failure_parameter_t *authentication_failure_parameter)
 {
     uint16_t size = authentication_failure_parameter->length + sizeof(authentication_failure_parameter->length);
     ogs_nas_authentication_failure_parameter_t target;
@@ -530,7 +530,7 @@ int ogs_nas_encode_authentication_failure_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_
 
 /* 9.11.3.15 Authentication parameter AUTN
  * O TLV 18 */
-int ogs_nas_decode_authentication_parameter_autn(ogs_nas_authentication_parameter_autn_t *authentication_parameter_autn, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_authentication_parameter_autn(ogs_nas_authentication_parameter_autn_t *authentication_parameter_autn, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_authentication_parameter_autn_t *source = (ogs_nas_authentication_parameter_autn_t *)pkbuf->data;
@@ -547,7 +547,7 @@ int ogs_nas_decode_authentication_parameter_autn(ogs_nas_authentication_paramete
     return size;
 }
 
-int ogs_nas_encode_authentication_parameter_autn(ogs_pkbuf_t *pkbuf, ogs_nas_authentication_parameter_autn_t *authentication_parameter_autn)
+int ogs_nas_5gs_encode_authentication_parameter_autn(ogs_pkbuf_t *pkbuf, ogs_nas_authentication_parameter_autn_t *authentication_parameter_autn)
 {
     uint16_t size = authentication_parameter_autn->length + sizeof(authentication_parameter_autn->length);
     ogs_nas_authentication_parameter_autn_t target;
@@ -564,7 +564,7 @@ int ogs_nas_encode_authentication_parameter_autn(ogs_pkbuf_t *pkbuf, ogs_nas_aut
 
 /* 9.11.3.16 Authentication parameter RAND
  * O TV 17 */
-int ogs_nas_decode_authentication_parameter_rand(ogs_nas_authentication_parameter_rand_t *authentication_parameter_rand, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_authentication_parameter_rand(ogs_nas_authentication_parameter_rand_t *authentication_parameter_rand, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_authentication_parameter_rand_t);
 
@@ -577,7 +577,7 @@ int ogs_nas_decode_authentication_parameter_rand(ogs_nas_authentication_paramete
     return size;
 }
 
-int ogs_nas_encode_authentication_parameter_rand(ogs_pkbuf_t *pkbuf, ogs_nas_authentication_parameter_rand_t *authentication_parameter_rand)
+int ogs_nas_5gs_encode_authentication_parameter_rand(ogs_pkbuf_t *pkbuf, ogs_nas_authentication_parameter_rand_t *authentication_parameter_rand)
 {
     uint16_t size = sizeof(ogs_nas_authentication_parameter_rand_t);
     ogs_nas_authentication_parameter_rand_t target;
@@ -594,7 +594,7 @@ int ogs_nas_encode_authentication_parameter_rand(ogs_pkbuf_t *pkbuf, ogs_nas_aut
 
 /* 9.11.3.17 Authentication response parameter
  * O TLV 18 */
-int ogs_nas_decode_authentication_response_parameter(ogs_nas_authentication_response_parameter_t *authentication_response_parameter, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_authentication_response_parameter(ogs_nas_authentication_response_parameter_t *authentication_response_parameter, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_authentication_response_parameter_t *source = (ogs_nas_authentication_response_parameter_t *)pkbuf->data;
@@ -611,7 +611,7 @@ int ogs_nas_decode_authentication_response_parameter(ogs_nas_authentication_resp
     return size;
 }
 
-int ogs_nas_encode_authentication_response_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_authentication_response_parameter_t *authentication_response_parameter)
+int ogs_nas_5gs_encode_authentication_response_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_authentication_response_parameter_t *authentication_response_parameter)
 {
     uint16_t size = authentication_response_parameter->length + sizeof(authentication_response_parameter->length);
     ogs_nas_authentication_response_parameter_t target;
@@ -628,7 +628,7 @@ int ogs_nas_encode_authentication_response_parameter(ogs_pkbuf_t *pkbuf, ogs_nas
 
 /* 9.11.3.18 Configuration update indication
  * O TV 1 */
-int ogs_nas_decode_configuration_update_indication(ogs_nas_configuration_update_indication_t *configuration_update_indication, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_configuration_update_indication(ogs_nas_configuration_update_indication_t *configuration_update_indication, ogs_pkbuf_t *pkbuf)
 {
     memcpy(configuration_update_indication, pkbuf->data - 1, 1);
 
@@ -638,7 +638,7 @@ int ogs_nas_decode_configuration_update_indication(ogs_nas_configuration_update_
     return 0;
 }
 
-int ogs_nas_encode_configuration_update_indication(ogs_pkbuf_t *pkbuf, ogs_nas_configuration_update_indication_t *configuration_update_indication)
+int ogs_nas_5gs_encode_configuration_update_indication(ogs_pkbuf_t *pkbuf, ogs_nas_configuration_update_indication_t *configuration_update_indication)
 {
     uint16_t size = sizeof(ogs_nas_configuration_update_indication_t);
 
@@ -653,7 +653,7 @@ int ogs_nas_encode_configuration_update_indication(ogs_pkbuf_t *pkbuf, ogs_nas_c
 
 /* 9.11.3.18A CAG information list
  * O TLV-E 3-n */
-int ogs_nas_decode_cag_information_list(ogs_nas_cag_information_list_t *cag_information_list, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_cag_information_list(ogs_nas_cag_information_list_t *cag_information_list, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_cag_information_list_t *source = (ogs_nas_cag_information_list_t *)pkbuf->data;
@@ -670,7 +670,7 @@ int ogs_nas_decode_cag_information_list(ogs_nas_cag_information_list_t *cag_info
     return size;
 }
 
-int ogs_nas_encode_cag_information_list(ogs_pkbuf_t *pkbuf, ogs_nas_cag_information_list_t *cag_information_list)
+int ogs_nas_5gs_encode_cag_information_list(ogs_pkbuf_t *pkbuf, ogs_nas_cag_information_list_t *cag_information_list)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -695,7 +695,7 @@ int ogs_nas_encode_cag_information_list(ogs_pkbuf_t *pkbuf, ogs_nas_cag_informat
 
 /* 9.11.3.18B CIoT small data container
  * O TLV 4-257 */
-int ogs_nas_decode_ciot_small_data_container(ogs_nas_ciot_small_data_container_t *ciot_small_data_container, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ciot_small_data_container(ogs_nas_ciot_small_data_container_t *ciot_small_data_container, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_ciot_small_data_container_t *source = (ogs_nas_ciot_small_data_container_t *)pkbuf->data;
@@ -712,7 +712,7 @@ int ogs_nas_decode_ciot_small_data_container(ogs_nas_ciot_small_data_container_t
     return size;
 }
 
-int ogs_nas_encode_ciot_small_data_container(ogs_pkbuf_t *pkbuf, ogs_nas_ciot_small_data_container_t *ciot_small_data_container)
+int ogs_nas_5gs_encode_ciot_small_data_container(ogs_pkbuf_t *pkbuf, ogs_nas_ciot_small_data_container_t *ciot_small_data_container)
 {
     uint16_t size = ciot_small_data_container->length + sizeof(ciot_small_data_container->length);
     ogs_nas_ciot_small_data_container_t target;
@@ -729,7 +729,7 @@ int ogs_nas_encode_ciot_small_data_container(ogs_pkbuf_t *pkbuf, ogs_nas_ciot_sm
 
 /* 9.11.3.18C Ciphering key data
  * O TLV-E x-n */
-int ogs_nas_decode_ciphering_key_data(ogs_nas_ciphering_key_data_t *ciphering_key_data, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ciphering_key_data(ogs_nas_ciphering_key_data_t *ciphering_key_data, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_ciphering_key_data_t *source = (ogs_nas_ciphering_key_data_t *)pkbuf->data;
@@ -746,7 +746,7 @@ int ogs_nas_decode_ciphering_key_data(ogs_nas_ciphering_key_data_t *ciphering_ke
     return size;
 }
 
-int ogs_nas_encode_ciphering_key_data(ogs_pkbuf_t *pkbuf, ogs_nas_ciphering_key_data_t *ciphering_key_data)
+int ogs_nas_5gs_encode_ciphering_key_data(ogs_pkbuf_t *pkbuf, ogs_nas_ciphering_key_data_t *ciphering_key_data)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -771,7 +771,7 @@ int ogs_nas_encode_ciphering_key_data(ogs_pkbuf_t *pkbuf, ogs_nas_ciphering_key_
 
 /* 9.11.3.18D Control plane service type
  * M V 1/2 */
-int ogs_nas_decode_control_plane_service_type(ogs_nas_control_plane_service_type_t *control_plane_service_type, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_control_plane_service_type(ogs_nas_control_plane_service_type_t *control_plane_service_type, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_control_plane_service_type_t);
 
@@ -784,7 +784,7 @@ int ogs_nas_decode_control_plane_service_type(ogs_nas_control_plane_service_type
     return size;
 }
 
-int ogs_nas_encode_control_plane_service_type(ogs_pkbuf_t *pkbuf, ogs_nas_control_plane_service_type_t *control_plane_service_type)
+int ogs_nas_5gs_encode_control_plane_service_type(ogs_pkbuf_t *pkbuf, ogs_nas_control_plane_service_type_t *control_plane_service_type)
 {
     uint16_t size = sizeof(ogs_nas_control_plane_service_type_t);
     ogs_nas_control_plane_service_type_t target;
@@ -801,7 +801,7 @@ int ogs_nas_encode_control_plane_service_type(ogs_pkbuf_t *pkbuf, ogs_nas_contro
 
 /* 9.11.3.19 Daylight saving time
  * O TLV 3 */
-int ogs_nas_decode_daylight_saving_time(ogs_nas_daylight_saving_time_t *daylight_saving_time, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_daylight_saving_time(ogs_nas_daylight_saving_time_t *daylight_saving_time, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_daylight_saving_time_t *source = (ogs_nas_daylight_saving_time_t *)pkbuf->data;
@@ -818,7 +818,7 @@ int ogs_nas_decode_daylight_saving_time(ogs_nas_daylight_saving_time_t *daylight
     return size;
 }
 
-int ogs_nas_encode_daylight_saving_time(ogs_pkbuf_t *pkbuf, ogs_nas_daylight_saving_time_t *daylight_saving_time)
+int ogs_nas_5gs_encode_daylight_saving_time(ogs_pkbuf_t *pkbuf, ogs_nas_daylight_saving_time_t *daylight_saving_time)
 {
     uint16_t size = daylight_saving_time->length + sizeof(daylight_saving_time->length);
     ogs_nas_daylight_saving_time_t target;
@@ -835,7 +835,7 @@ int ogs_nas_encode_daylight_saving_time(ogs_pkbuf_t *pkbuf, ogs_nas_daylight_sav
 
 /* 9.11.3.2 5GMM cause
  * M V 1 */
-int ogs_nas_decode_5gmm_cause(ogs_nas_5gmm_cause_t *gmm_cause, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gmm_cause(ogs_nas_5gmm_cause_t *gmm_cause, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_5gmm_cause_t);
 
@@ -848,7 +848,7 @@ int ogs_nas_decode_5gmm_cause(ogs_nas_5gmm_cause_t *gmm_cause, ogs_pkbuf_t *pkbu
     return size;
 }
 
-int ogs_nas_encode_5gmm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_5gmm_cause_t *gmm_cause)
+int ogs_nas_5gs_encode_5gmm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_5gmm_cause_t *gmm_cause)
 {
     uint16_t size = sizeof(ogs_nas_5gmm_cause_t);
     ogs_nas_5gmm_cause_t target;
@@ -865,7 +865,7 @@ int ogs_nas_encode_5gmm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_5gmm_cause_t *gmm_caus
 
 /* 9.11.3.20 De-registration type
  * M V 1/2 */
-int ogs_nas_decode_de_registration_type(ogs_nas_de_registration_type_t *de_registration_type, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_de_registration_type(ogs_nas_de_registration_type_t *de_registration_type, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_de_registration_type_t);
 
@@ -878,7 +878,7 @@ int ogs_nas_decode_de_registration_type(ogs_nas_de_registration_type_t *de_regis
     return size;
 }
 
-int ogs_nas_encode_de_registration_type(ogs_pkbuf_t *pkbuf, ogs_nas_de_registration_type_t *de_registration_type)
+int ogs_nas_5gs_encode_de_registration_type(ogs_pkbuf_t *pkbuf, ogs_nas_de_registration_type_t *de_registration_type)
 {
     uint16_t size = sizeof(ogs_nas_de_registration_type_t);
     ogs_nas_de_registration_type_t target;
@@ -895,7 +895,7 @@ int ogs_nas_encode_de_registration_type(ogs_pkbuf_t *pkbuf, ogs_nas_de_registrat
 
 /* 9.11.3.23 Emergency number list
  * O TLV 5-50 */
-int ogs_nas_decode_emergency_number_list(ogs_nas_emergency_number_list_t *emergency_number_list, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_emergency_number_list(ogs_nas_emergency_number_list_t *emergency_number_list, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_emergency_number_list_t *source = (ogs_nas_emergency_number_list_t *)pkbuf->data;
@@ -912,7 +912,7 @@ int ogs_nas_decode_emergency_number_list(ogs_nas_emergency_number_list_t *emerge
     return size;
 }
 
-int ogs_nas_encode_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_nas_emergency_number_list_t *emergency_number_list)
+int ogs_nas_5gs_encode_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_nas_emergency_number_list_t *emergency_number_list)
 {
     uint16_t size = emergency_number_list->length + sizeof(emergency_number_list->length);
     ogs_nas_emergency_number_list_t target;
@@ -929,7 +929,7 @@ int ogs_nas_encode_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_nas_emergency_n
 
 /* 9.11.3.23A EPS bearer context status
  * O TLV 4 */
-int ogs_nas_decode_eps_bearer_context_status(ogs_nas_eps_bearer_context_status_t *eps_bearer_context_status, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_eps_bearer_context_status(ogs_nas_eps_bearer_context_status_t *eps_bearer_context_status, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_eps_bearer_context_status_t *source = (ogs_nas_eps_bearer_context_status_t *)pkbuf->data;
@@ -946,7 +946,7 @@ int ogs_nas_decode_eps_bearer_context_status(ogs_nas_eps_bearer_context_status_t
     return size;
 }
 
-int ogs_nas_encode_eps_bearer_context_status(ogs_pkbuf_t *pkbuf, ogs_nas_eps_bearer_context_status_t *eps_bearer_context_status)
+int ogs_nas_5gs_encode_eps_bearer_context_status(ogs_pkbuf_t *pkbuf, ogs_nas_eps_bearer_context_status_t *eps_bearer_context_status)
 {
     uint16_t size = eps_bearer_context_status->length + sizeof(eps_bearer_context_status->length);
     ogs_nas_eps_bearer_context_status_t target;
@@ -963,7 +963,7 @@ int ogs_nas_encode_eps_bearer_context_status(ogs_pkbuf_t *pkbuf, ogs_nas_eps_bea
 
 /* 9.11.3.24 EPS NAS message container
  * O TLV-E 4-n */
-int ogs_nas_decode_eps_nas_message_container(ogs_nas_eps_nas_message_container_t *eps_nas_message_container, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_eps_nas_message_container(ogs_nas_eps_nas_message_container_t *eps_nas_message_container, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_eps_nas_message_container_t *source = (ogs_nas_eps_nas_message_container_t *)pkbuf->data;
@@ -980,7 +980,7 @@ int ogs_nas_decode_eps_nas_message_container(ogs_nas_eps_nas_message_container_t
     return size;
 }
 
-int ogs_nas_encode_eps_nas_message_container(ogs_pkbuf_t *pkbuf, ogs_nas_eps_nas_message_container_t *eps_nas_message_container)
+int ogs_nas_5gs_encode_eps_nas_message_container(ogs_pkbuf_t *pkbuf, ogs_nas_eps_nas_message_container_t *eps_nas_message_container)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -1005,7 +1005,7 @@ int ogs_nas_encode_eps_nas_message_container(ogs_pkbuf_t *pkbuf, ogs_nas_eps_nas
 
 /* 9.11.3.25 EPS NAS security algorithms
  * O TV 2 */
-int ogs_nas_decode_eps_nas_security_algorithms(ogs_nas_eps_nas_security_algorithms_t *eps_nas_security_algorithms, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_eps_nas_security_algorithms(ogs_nas_eps_nas_security_algorithms_t *eps_nas_security_algorithms, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_eps_nas_security_algorithms_t);
 
@@ -1018,7 +1018,7 @@ int ogs_nas_decode_eps_nas_security_algorithms(ogs_nas_eps_nas_security_algorith
     return size;
 }
 
-int ogs_nas_encode_eps_nas_security_algorithms(ogs_pkbuf_t *pkbuf, ogs_nas_eps_nas_security_algorithms_t *eps_nas_security_algorithms)
+int ogs_nas_5gs_encode_eps_nas_security_algorithms(ogs_pkbuf_t *pkbuf, ogs_nas_eps_nas_security_algorithms_t *eps_nas_security_algorithms)
 {
     uint16_t size = sizeof(ogs_nas_eps_nas_security_algorithms_t);
     ogs_nas_eps_nas_security_algorithms_t target;
@@ -1035,7 +1035,7 @@ int ogs_nas_encode_eps_nas_security_algorithms(ogs_pkbuf_t *pkbuf, ogs_nas_eps_n
 
 /* 9.11.3.26 Extended emergency number list
  * O TLV-E 7-65538 */
-int ogs_nas_decode_extended_emergency_number_list(ogs_nas_extended_emergency_number_list_t *extended_emergency_number_list, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_extended_emergency_number_list(ogs_nas_extended_emergency_number_list_t *extended_emergency_number_list, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_extended_emergency_number_list_t *source = (ogs_nas_extended_emergency_number_list_t *)pkbuf->data;
@@ -1052,7 +1052,7 @@ int ogs_nas_decode_extended_emergency_number_list(ogs_nas_extended_emergency_num
     return size;
 }
 
-int ogs_nas_encode_extended_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_nas_extended_emergency_number_list_t *extended_emergency_number_list)
+int ogs_nas_5gs_encode_extended_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_nas_extended_emergency_number_list_t *extended_emergency_number_list)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -1077,7 +1077,7 @@ int ogs_nas_encode_extended_emergency_number_list(ogs_pkbuf_t *pkbuf, ogs_nas_ex
 
 /* 9.11.3.26A Extended DRX parameters
  * O TLV 3 */
-int ogs_nas_decode_extended_drx_parameters(ogs_nas_extended_drx_parameters_t *extended_drx_parameters, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_extended_drx_parameters(ogs_nas_extended_drx_parameters_t *extended_drx_parameters, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_extended_drx_parameters_t *source = (ogs_nas_extended_drx_parameters_t *)pkbuf->data;
@@ -1094,7 +1094,7 @@ int ogs_nas_decode_extended_drx_parameters(ogs_nas_extended_drx_parameters_t *ex
     return size;
 }
 
-int ogs_nas_encode_extended_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_extended_drx_parameters_t *extended_drx_parameters)
+int ogs_nas_5gs_encode_extended_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_extended_drx_parameters_t *extended_drx_parameters)
 {
     uint16_t size = extended_drx_parameters->length + sizeof(extended_drx_parameters->length);
     ogs_nas_extended_drx_parameters_t target;
@@ -1111,7 +1111,7 @@ int ogs_nas_encode_extended_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_extended_
 
 /* 9.11.3.28 IMEISV request
  * O TV 1 */
-int ogs_nas_decode_imeisv_request(ogs_nas_imeisv_request_t *imeisv_request, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_imeisv_request(ogs_nas_imeisv_request_t *imeisv_request, ogs_pkbuf_t *pkbuf)
 {
     memcpy(imeisv_request, pkbuf->data - 1, 1);
 
@@ -1121,7 +1121,7 @@ int ogs_nas_decode_imeisv_request(ogs_nas_imeisv_request_t *imeisv_request, ogs_
     return 0;
 }
 
-int ogs_nas_encode_imeisv_request(ogs_pkbuf_t *pkbuf, ogs_nas_imeisv_request_t *imeisv_request)
+int ogs_nas_5gs_encode_imeisv_request(ogs_pkbuf_t *pkbuf, ogs_nas_imeisv_request_t *imeisv_request)
 {
     uint16_t size = sizeof(ogs_nas_imeisv_request_t);
 
@@ -1136,7 +1136,7 @@ int ogs_nas_encode_imeisv_request(ogs_pkbuf_t *pkbuf, ogs_nas_imeisv_request_t *
 
 /* 9.11.3.29 LADN indication
  * O TLV-E 3-811 */
-int ogs_nas_decode_ladn_indication(ogs_nas_ladn_indication_t *ladn_indication, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ladn_indication(ogs_nas_ladn_indication_t *ladn_indication, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_ladn_indication_t *source = (ogs_nas_ladn_indication_t *)pkbuf->data;
@@ -1153,7 +1153,7 @@ int ogs_nas_decode_ladn_indication(ogs_nas_ladn_indication_t *ladn_indication, o
     return size;
 }
 
-int ogs_nas_encode_ladn_indication(ogs_pkbuf_t *pkbuf, ogs_nas_ladn_indication_t *ladn_indication)
+int ogs_nas_5gs_encode_ladn_indication(ogs_pkbuf_t *pkbuf, ogs_nas_ladn_indication_t *ladn_indication)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -1178,7 +1178,7 @@ int ogs_nas_encode_ladn_indication(ogs_pkbuf_t *pkbuf, ogs_nas_ladn_indication_t
 
 /* 9.11.3.2A 5GS DRX parameters
  * O TLV 3 */
-int ogs_nas_decode_5gs_drx_parameters(ogs_nas_5gs_drx_parameters_t *drx_parameters, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gs_drx_parameters(ogs_nas_5gs_drx_parameters_t *drx_parameters, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_5gs_drx_parameters_t *source = (ogs_nas_5gs_drx_parameters_t *)pkbuf->data;
@@ -1195,7 +1195,7 @@ int ogs_nas_decode_5gs_drx_parameters(ogs_nas_5gs_drx_parameters_t *drx_paramete
     return size;
 }
 
-int ogs_nas_encode_5gs_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_drx_parameters_t *drx_parameters)
+int ogs_nas_5gs_encode_5gs_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_drx_parameters_t *drx_parameters)
 {
     uint16_t size = drx_parameters->length + sizeof(drx_parameters->length);
     ogs_nas_5gs_drx_parameters_t target;
@@ -1212,7 +1212,7 @@ int ogs_nas_encode_5gs_drx_parameters(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_drx_parame
 
 /* 9.11.3.3 5GS identity type
  * M V 1/2 */
-int ogs_nas_decode_5gs_identity_type(ogs_nas_5gs_identity_type_t *identity_type, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gs_identity_type(ogs_nas_5gs_identity_type_t *identity_type, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_5gs_identity_type_t);
 
@@ -1225,7 +1225,7 @@ int ogs_nas_decode_5gs_identity_type(ogs_nas_5gs_identity_type_t *identity_type,
     return size;
 }
 
-int ogs_nas_encode_5gs_identity_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_identity_type_t *identity_type)
+int ogs_nas_5gs_encode_5gs_identity_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_identity_type_t *identity_type)
 {
     uint16_t size = sizeof(ogs_nas_5gs_identity_type_t);
     ogs_nas_5gs_identity_type_t target;
@@ -1242,7 +1242,7 @@ int ogs_nas_encode_5gs_identity_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_identity_ty
 
 /* 9.11.3.30 LADN information
  * O TLV-E 12-1715 */
-int ogs_nas_decode_ladn_information(ogs_nas_ladn_information_t *ladn_information, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ladn_information(ogs_nas_ladn_information_t *ladn_information, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_ladn_information_t *source = (ogs_nas_ladn_information_t *)pkbuf->data;
@@ -1259,7 +1259,7 @@ int ogs_nas_decode_ladn_information(ogs_nas_ladn_information_t *ladn_information
     return size;
 }
 
-int ogs_nas_encode_ladn_information(ogs_pkbuf_t *pkbuf, ogs_nas_ladn_information_t *ladn_information)
+int ogs_nas_5gs_encode_ladn_information(ogs_pkbuf_t *pkbuf, ogs_nas_ladn_information_t *ladn_information)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -1284,7 +1284,7 @@ int ogs_nas_encode_ladn_information(ogs_pkbuf_t *pkbuf, ogs_nas_ladn_information
 
 /* 9.11.3.31 MICO indication
  * O TV 1 */
-int ogs_nas_decode_mico_indication(ogs_nas_mico_indication_t *mico_indication, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_mico_indication(ogs_nas_mico_indication_t *mico_indication, ogs_pkbuf_t *pkbuf)
 {
     memcpy(mico_indication, pkbuf->data - 1, 1);
 
@@ -1294,7 +1294,7 @@ int ogs_nas_decode_mico_indication(ogs_nas_mico_indication_t *mico_indication, o
     return 0;
 }
 
-int ogs_nas_encode_mico_indication(ogs_pkbuf_t *pkbuf, ogs_nas_mico_indication_t *mico_indication)
+int ogs_nas_5gs_encode_mico_indication(ogs_pkbuf_t *pkbuf, ogs_nas_mico_indication_t *mico_indication)
 {
     uint16_t size = sizeof(ogs_nas_mico_indication_t);
 
@@ -1309,7 +1309,7 @@ int ogs_nas_encode_mico_indication(ogs_pkbuf_t *pkbuf, ogs_nas_mico_indication_t
 
 /* 9.11.3.31A MA PDU session information
  * O TV 1 */
-int ogs_nas_decode_ma_pdu_session_information(ogs_nas_ma_pdu_session_information_t *ma_pdu_session_information, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ma_pdu_session_information(ogs_nas_ma_pdu_session_information_t *ma_pdu_session_information, ogs_pkbuf_t *pkbuf)
 {
     memcpy(ma_pdu_session_information, pkbuf->data - 1, 1);
 
@@ -1319,7 +1319,7 @@ int ogs_nas_decode_ma_pdu_session_information(ogs_nas_ma_pdu_session_information
     return 0;
 }
 
-int ogs_nas_encode_ma_pdu_session_information(ogs_pkbuf_t *pkbuf, ogs_nas_ma_pdu_session_information_t *ma_pdu_session_information)
+int ogs_nas_5gs_encode_ma_pdu_session_information(ogs_pkbuf_t *pkbuf, ogs_nas_ma_pdu_session_information_t *ma_pdu_session_information)
 {
     uint16_t size = sizeof(ogs_nas_ma_pdu_session_information_t);
 
@@ -1334,7 +1334,7 @@ int ogs_nas_encode_ma_pdu_session_information(ogs_pkbuf_t *pkbuf, ogs_nas_ma_pdu
 
 /* 9.11.3.31B Mapped NSSAI
  * O TLV 3-42 */
-int ogs_nas_decode_mapped_nssai(ogs_nas_mapped_nssai_t *mapped_nssai, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_mapped_nssai(ogs_nas_mapped_nssai_t *mapped_nssai, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_mapped_nssai_t *source = (ogs_nas_mapped_nssai_t *)pkbuf->data;
@@ -1351,7 +1351,7 @@ int ogs_nas_decode_mapped_nssai(ogs_nas_mapped_nssai_t *mapped_nssai, ogs_pkbuf_
     return size;
 }
 
-int ogs_nas_encode_mapped_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_mapped_nssai_t *mapped_nssai)
+int ogs_nas_5gs_encode_mapped_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_mapped_nssai_t *mapped_nssai)
 {
     uint16_t size = mapped_nssai->length + sizeof(mapped_nssai->length);
     ogs_nas_mapped_nssai_t target;
@@ -1368,7 +1368,7 @@ int ogs_nas_encode_mapped_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_mapped_nssai_t *mapp
 
 /* 9.11.3.31C Mobile station classmark 2
  * O TLV 5 */
-int ogs_nas_decode_mobile_station_classmark_2(ogs_nas_mobile_station_classmark_2_t *mobile_station_classmark_2, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_mobile_station_classmark_2(ogs_nas_mobile_station_classmark_2_t *mobile_station_classmark_2, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_mobile_station_classmark_2_t *source = (ogs_nas_mobile_station_classmark_2_t *)pkbuf->data;
@@ -1385,7 +1385,7 @@ int ogs_nas_decode_mobile_station_classmark_2(ogs_nas_mobile_station_classmark_2
     return size;
 }
 
-int ogs_nas_encode_mobile_station_classmark_2(ogs_pkbuf_t *pkbuf, ogs_nas_mobile_station_classmark_2_t *mobile_station_classmark_2)
+int ogs_nas_5gs_encode_mobile_station_classmark_2(ogs_pkbuf_t *pkbuf, ogs_nas_mobile_station_classmark_2_t *mobile_station_classmark_2)
 {
     uint16_t size = mobile_station_classmark_2->length + sizeof(mobile_station_classmark_2->length);
     ogs_nas_mobile_station_classmark_2_t target;
@@ -1402,7 +1402,7 @@ int ogs_nas_encode_mobile_station_classmark_2(ogs_pkbuf_t *pkbuf, ogs_nas_mobile
 
 /* 9.11.3.32 key set identifier
  * O TV 1 */
-int ogs_nas_decode_key_set_identifier(ogs_nas_key_set_identifier_t *key_set_identifier, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_key_set_identifier(ogs_nas_key_set_identifier_t *key_set_identifier, ogs_pkbuf_t *pkbuf)
 {
     memcpy(key_set_identifier, pkbuf->data - 1, 1);
 
@@ -1412,7 +1412,7 @@ int ogs_nas_decode_key_set_identifier(ogs_nas_key_set_identifier_t *key_set_iden
     return 0;
 }
 
-int ogs_nas_encode_key_set_identifier(ogs_pkbuf_t *pkbuf, ogs_nas_key_set_identifier_t *key_set_identifier)
+int ogs_nas_5gs_encode_key_set_identifier(ogs_pkbuf_t *pkbuf, ogs_nas_key_set_identifier_t *key_set_identifier)
 {
     uint16_t size = sizeof(ogs_nas_key_set_identifier_t);
 
@@ -1427,7 +1427,7 @@ int ogs_nas_encode_key_set_identifier(ogs_pkbuf_t *pkbuf, ogs_nas_key_set_identi
 
 /* 9.11.3.33 message container
  * O TLV-E 4-n */
-int ogs_nas_decode_message_container(ogs_nas_message_container_t *message_container, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_message_container(ogs_nas_message_container_t *message_container, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_message_container_t *source = (ogs_nas_message_container_t *)pkbuf->data;
@@ -1444,7 +1444,7 @@ int ogs_nas_decode_message_container(ogs_nas_message_container_t *message_contai
     return size;
 }
 
-int ogs_nas_encode_message_container(ogs_pkbuf_t *pkbuf, ogs_nas_message_container_t *message_container)
+int ogs_nas_5gs_encode_message_container(ogs_pkbuf_t *pkbuf, ogs_nas_message_container_t *message_container)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -1469,7 +1469,7 @@ int ogs_nas_encode_message_container(ogs_pkbuf_t *pkbuf, ogs_nas_message_contain
 
 /* 9.11.3.34 security algorithms
  * M V 1 */
-int ogs_nas_decode_security_algorithms(ogs_nas_security_algorithms_t *security_algorithms, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_security_algorithms(ogs_nas_security_algorithms_t *security_algorithms, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_security_algorithms_t);
 
@@ -1482,7 +1482,7 @@ int ogs_nas_decode_security_algorithms(ogs_nas_security_algorithms_t *security_a
     return size;
 }
 
-int ogs_nas_encode_security_algorithms(ogs_pkbuf_t *pkbuf, ogs_nas_security_algorithms_t *security_algorithms)
+int ogs_nas_5gs_encode_security_algorithms(ogs_pkbuf_t *pkbuf, ogs_nas_security_algorithms_t *security_algorithms)
 {
     uint16_t size = sizeof(ogs_nas_security_algorithms_t);
     ogs_nas_security_algorithms_t target;
@@ -1499,7 +1499,7 @@ int ogs_nas_encode_security_algorithms(ogs_pkbuf_t *pkbuf, ogs_nas_security_algo
 
 /* 9.11.3.35 Network name
  * O TLV 3-n */
-int ogs_nas_decode_network_name(ogs_nas_network_name_t *network_name, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_network_name(ogs_nas_network_name_t *network_name, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_network_name_t *source = (ogs_nas_network_name_t *)pkbuf->data;
@@ -1516,7 +1516,7 @@ int ogs_nas_decode_network_name(ogs_nas_network_name_t *network_name, ogs_pkbuf_
     return size;
 }
 
-int ogs_nas_encode_network_name(ogs_pkbuf_t *pkbuf, ogs_nas_network_name_t *network_name)
+int ogs_nas_5gs_encode_network_name(ogs_pkbuf_t *pkbuf, ogs_nas_network_name_t *network_name)
 {
     uint16_t size = network_name->length + sizeof(network_name->length);
     ogs_nas_network_name_t target;
@@ -1533,7 +1533,7 @@ int ogs_nas_encode_network_name(ogs_pkbuf_t *pkbuf, ogs_nas_network_name_t *netw
 
 /* 9.11.3.36 Network slicing indication
  * O TV 1 */
-int ogs_nas_decode_network_slicing_indication(ogs_nas_network_slicing_indication_t *network_slicing_indication, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_network_slicing_indication(ogs_nas_network_slicing_indication_t *network_slicing_indication, ogs_pkbuf_t *pkbuf)
 {
     memcpy(network_slicing_indication, pkbuf->data - 1, 1);
 
@@ -1543,7 +1543,7 @@ int ogs_nas_decode_network_slicing_indication(ogs_nas_network_slicing_indication
     return 0;
 }
 
-int ogs_nas_encode_network_slicing_indication(ogs_pkbuf_t *pkbuf, ogs_nas_network_slicing_indication_t *network_slicing_indication)
+int ogs_nas_5gs_encode_network_slicing_indication(ogs_pkbuf_t *pkbuf, ogs_nas_network_slicing_indication_t *network_slicing_indication)
 {
     uint16_t size = sizeof(ogs_nas_network_slicing_indication_t);
 
@@ -1558,7 +1558,7 @@ int ogs_nas_encode_network_slicing_indication(ogs_pkbuf_t *pkbuf, ogs_nas_networ
 
 /* 9.11.3.36A Non-3GPP NW provided policies
  * O TV 1 */
-int ogs_nas_decode_non_3gpp_nw_provided_policies(ogs_nas_non_3gpp_nw_provided_policies_t *non_3gpp_nw_provided_policies, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_non_3gpp_nw_provided_policies(ogs_nas_non_3gpp_nw_provided_policies_t *non_3gpp_nw_provided_policies, ogs_pkbuf_t *pkbuf)
 {
     memcpy(non_3gpp_nw_provided_policies, pkbuf->data - 1, 1);
 
@@ -1568,7 +1568,7 @@ int ogs_nas_decode_non_3gpp_nw_provided_policies(ogs_nas_non_3gpp_nw_provided_po
     return 0;
 }
 
-int ogs_nas_encode_non_3gpp_nw_provided_policies(ogs_pkbuf_t *pkbuf, ogs_nas_non_3gpp_nw_provided_policies_t *non_3gpp_nw_provided_policies)
+int ogs_nas_5gs_encode_non_3gpp_nw_provided_policies(ogs_pkbuf_t *pkbuf, ogs_nas_non_3gpp_nw_provided_policies_t *non_3gpp_nw_provided_policies)
 {
     uint16_t size = sizeof(ogs_nas_non_3gpp_nw_provided_policies_t);
 
@@ -1583,7 +1583,7 @@ int ogs_nas_encode_non_3gpp_nw_provided_policies(ogs_pkbuf_t *pkbuf, ogs_nas_non
 
 /* 9.11.3.37 NSSAI
  * O TLV 4-74 */
-int ogs_nas_decode_nssai(ogs_nas_nssai_t *nssai, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_nssai(ogs_nas_nssai_t *nssai, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_nssai_t *source = (ogs_nas_nssai_t *)pkbuf->data;
@@ -1600,7 +1600,7 @@ int ogs_nas_decode_nssai(ogs_nas_nssai_t *nssai, ogs_pkbuf_t *pkbuf)
     return size;
 }
 
-int ogs_nas_encode_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_nssai_t *nssai)
+int ogs_nas_5gs_encode_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_nssai_t *nssai)
 {
     uint16_t size = nssai->length + sizeof(nssai->length);
     ogs_nas_nssai_t target;
@@ -1617,7 +1617,7 @@ int ogs_nas_encode_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_nssai_t *nssai)
 
 /* 9.11.3.37A NSSAI inclusion mode
  * O TV 1 */
-int ogs_nas_decode_nssai_inclusion_mode(ogs_nas_nssai_inclusion_mode_t *nssai_inclusion_mode, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_nssai_inclusion_mode(ogs_nas_nssai_inclusion_mode_t *nssai_inclusion_mode, ogs_pkbuf_t *pkbuf)
 {
     memcpy(nssai_inclusion_mode, pkbuf->data - 1, 1);
 
@@ -1627,7 +1627,7 @@ int ogs_nas_decode_nssai_inclusion_mode(ogs_nas_nssai_inclusion_mode_t *nssai_in
     return 0;
 }
 
-int ogs_nas_encode_nssai_inclusion_mode(ogs_pkbuf_t *pkbuf, ogs_nas_nssai_inclusion_mode_t *nssai_inclusion_mode)
+int ogs_nas_5gs_encode_nssai_inclusion_mode(ogs_pkbuf_t *pkbuf, ogs_nas_nssai_inclusion_mode_t *nssai_inclusion_mode)
 {
     uint16_t size = sizeof(ogs_nas_nssai_inclusion_mode_t);
 
@@ -1642,7 +1642,7 @@ int ogs_nas_encode_nssai_inclusion_mode(ogs_pkbuf_t *pkbuf, ogs_nas_nssai_inclus
 
 /* 9.11.3.38 Operator-defined access category definitions
  * O TLV-E 3-n */
-int ogs_nas_decode_operator_defined_access_category_definitions(ogs_nas_operator_defined_access_category_definitions_t *operator_defined_access_category_definitions, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_operator_defined_access_category_definitions(ogs_nas_operator_defined_access_category_definitions_t *operator_defined_access_category_definitions, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_operator_defined_access_category_definitions_t *source = (ogs_nas_operator_defined_access_category_definitions_t *)pkbuf->data;
@@ -1659,7 +1659,7 @@ int ogs_nas_decode_operator_defined_access_category_definitions(ogs_nas_operator
     return size;
 }
 
-int ogs_nas_encode_operator_defined_access_category_definitions(ogs_pkbuf_t *pkbuf, ogs_nas_operator_defined_access_category_definitions_t *operator_defined_access_category_definitions)
+int ogs_nas_5gs_encode_operator_defined_access_category_definitions(ogs_pkbuf_t *pkbuf, ogs_nas_operator_defined_access_category_definitions_t *operator_defined_access_category_definitions)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -1684,7 +1684,7 @@ int ogs_nas_encode_operator_defined_access_category_definitions(ogs_pkbuf_t *pkb
 
 /* 9.11.3.39 Payload container
  * O TLV-E 4-65538 */
-int ogs_nas_decode_payload_container(ogs_nas_payload_container_t *payload_container, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_payload_container(ogs_nas_payload_container_t *payload_container, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_payload_container_t *source = (ogs_nas_payload_container_t *)pkbuf->data;
@@ -1701,7 +1701,7 @@ int ogs_nas_decode_payload_container(ogs_nas_payload_container_t *payload_contai
     return size;
 }
 
-int ogs_nas_encode_payload_container(ogs_pkbuf_t *pkbuf, ogs_nas_payload_container_t *payload_container)
+int ogs_nas_5gs_encode_payload_container(ogs_pkbuf_t *pkbuf, ogs_nas_payload_container_t *payload_container)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -1726,7 +1726,7 @@ int ogs_nas_encode_payload_container(ogs_pkbuf_t *pkbuf, ogs_nas_payload_contain
 
 /* 9.11.3.4 5GS mobile identity
  * M LV-E 6-n */
-int ogs_nas_decode_5gs_mobile_identity(ogs_nas_5gs_mobile_identity_t *mobile_identity, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gs_mobile_identity(ogs_nas_5gs_mobile_identity_t *mobile_identity, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_5gs_mobile_identity_t *source = (ogs_nas_5gs_mobile_identity_t *)pkbuf->data;
@@ -1749,7 +1749,7 @@ int ogs_nas_decode_5gs_mobile_identity(ogs_nas_5gs_mobile_identity_t *mobile_ide
     return size;
 }
 
-int ogs_nas_encode_5gs_mobile_identity(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_mobile_identity_t *mobile_identity)
+int ogs_nas_5gs_encode_5gs_mobile_identity(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_mobile_identity_t *mobile_identity)
 {
     uint16_t size = mobile_identity->length + sizeof(mobile_identity->length);
     ogs_nas_5gs_mobile_identity_t target;
@@ -1774,7 +1774,7 @@ int ogs_nas_encode_5gs_mobile_identity(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_mobile_id
 
 /* 9.11.3.40 Payload container type
  * O TV 1 */
-int ogs_nas_decode_payload_container_type(ogs_nas_payload_container_type_t *payload_container_type, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_payload_container_type(ogs_nas_payload_container_type_t *payload_container_type, ogs_pkbuf_t *pkbuf)
 {
     memcpy(payload_container_type, pkbuf->data - 1, 1);
 
@@ -1784,7 +1784,7 @@ int ogs_nas_decode_payload_container_type(ogs_nas_payload_container_type_t *payl
     return 0;
 }
 
-int ogs_nas_encode_payload_container_type(ogs_pkbuf_t *pkbuf, ogs_nas_payload_container_type_t *payload_container_type)
+int ogs_nas_5gs_encode_payload_container_type(ogs_pkbuf_t *pkbuf, ogs_nas_payload_container_type_t *payload_container_type)
 {
     uint16_t size = sizeof(ogs_nas_payload_container_type_t);
 
@@ -1799,7 +1799,7 @@ int ogs_nas_encode_payload_container_type(ogs_pkbuf_t *pkbuf, ogs_nas_payload_co
 
 /* 9.11.3.41 PDU session identity 2
  * C TV 2 */
-int ogs_nas_decode_pdu_session_identity_2(ogs_nas_pdu_session_identity_2_t *pdu_session_identity_2, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_pdu_session_identity_2(ogs_nas_pdu_session_identity_2_t *pdu_session_identity_2, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_pdu_session_identity_2_t);
 
@@ -1812,7 +1812,7 @@ int ogs_nas_decode_pdu_session_identity_2(ogs_nas_pdu_session_identity_2_t *pdu_
     return size;
 }
 
-int ogs_nas_encode_pdu_session_identity_2(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_identity_2_t *pdu_session_identity_2)
+int ogs_nas_5gs_encode_pdu_session_identity_2(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_identity_2_t *pdu_session_identity_2)
 {
     uint16_t size = sizeof(ogs_nas_pdu_session_identity_2_t);
     ogs_nas_pdu_session_identity_2_t target;
@@ -1829,7 +1829,7 @@ int ogs_nas_encode_pdu_session_identity_2(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_sessio
 
 /* 9.11.3.42 PDU session reactivation result
  * O TLV 4-34 */
-int ogs_nas_decode_pdu_session_reactivation_result(ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_pdu_session_reactivation_result(ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_pdu_session_reactivation_result_t *source = (ogs_nas_pdu_session_reactivation_result_t *)pkbuf->data;
@@ -1846,7 +1846,7 @@ int ogs_nas_decode_pdu_session_reactivation_result(ogs_nas_pdu_session_reactivat
     return size;
 }
 
-int ogs_nas_encode_pdu_session_reactivation_result(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result)
+int ogs_nas_5gs_encode_pdu_session_reactivation_result(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result)
 {
     uint16_t size = pdu_session_reactivation_result->length + sizeof(pdu_session_reactivation_result->length);
     ogs_nas_pdu_session_reactivation_result_t target;
@@ -1863,7 +1863,7 @@ int ogs_nas_encode_pdu_session_reactivation_result(ogs_pkbuf_t *pkbuf, ogs_nas_p
 
 /* 9.11.3.43 PDU session reactivation result error cause
  * O TLV-E 5-515 */
-int ogs_nas_decode_pdu_session_reactivation_result_error_cause(ogs_nas_pdu_session_reactivation_result_error_cause_t *pdu_session_reactivation_result_error_cause, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_pdu_session_reactivation_result_error_cause(ogs_nas_pdu_session_reactivation_result_error_cause_t *pdu_session_reactivation_result_error_cause, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_pdu_session_reactivation_result_error_cause_t *source = (ogs_nas_pdu_session_reactivation_result_error_cause_t *)pkbuf->data;
@@ -1880,7 +1880,7 @@ int ogs_nas_decode_pdu_session_reactivation_result_error_cause(ogs_nas_pdu_sessi
     return size;
 }
 
-int ogs_nas_encode_pdu_session_reactivation_result_error_cause(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_reactivation_result_error_cause_t *pdu_session_reactivation_result_error_cause)
+int ogs_nas_5gs_encode_pdu_session_reactivation_result_error_cause(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_reactivation_result_error_cause_t *pdu_session_reactivation_result_error_cause)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -1905,7 +1905,7 @@ int ogs_nas_encode_pdu_session_reactivation_result_error_cause(ogs_pkbuf_t *pkbu
 
 /* 9.11.3.44 PDU session status
  * O TLV 4-34 */
-int ogs_nas_decode_pdu_session_status(ogs_nas_pdu_session_status_t *pdu_session_status, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_pdu_session_status(ogs_nas_pdu_session_status_t *pdu_session_status, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_pdu_session_status_t *source = (ogs_nas_pdu_session_status_t *)pkbuf->data;
@@ -1922,7 +1922,7 @@ int ogs_nas_decode_pdu_session_status(ogs_nas_pdu_session_status_t *pdu_session_
     return size;
 }
 
-int ogs_nas_encode_pdu_session_status(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_status_t *pdu_session_status)
+int ogs_nas_5gs_encode_pdu_session_status(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_status_t *pdu_session_status)
 {
     uint16_t size = pdu_session_status->length + sizeof(pdu_session_status->length);
     ogs_nas_pdu_session_status_t target;
@@ -1939,7 +1939,7 @@ int ogs_nas_encode_pdu_session_status(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_st
 
 /* 9.11.3.45 PLMN list
  * O TLV 5-47 */
-int ogs_nas_decode_plmn_list(ogs_nas_plmn_list_t *plmn_list, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_plmn_list(ogs_nas_plmn_list_t *plmn_list, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_plmn_list_t *source = (ogs_nas_plmn_list_t *)pkbuf->data;
@@ -1956,7 +1956,7 @@ int ogs_nas_decode_plmn_list(ogs_nas_plmn_list_t *plmn_list, ogs_pkbuf_t *pkbuf)
     return size;
 }
 
-int ogs_nas_encode_plmn_list(ogs_pkbuf_t *pkbuf, ogs_nas_plmn_list_t *plmn_list)
+int ogs_nas_5gs_encode_plmn_list(ogs_pkbuf_t *pkbuf, ogs_nas_plmn_list_t *plmn_list)
 {
     uint16_t size = plmn_list->length + sizeof(plmn_list->length);
     ogs_nas_plmn_list_t target;
@@ -1973,7 +1973,7 @@ int ogs_nas_encode_plmn_list(ogs_pkbuf_t *pkbuf, ogs_nas_plmn_list_t *plmn_list)
 
 /* 9.11.3.46 Rejected NSSAI
  * O TLV 4-42 */
-int ogs_nas_decode_rejected_nssai(ogs_nas_rejected_nssai_t *rejected_nssai, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_rejected_nssai(ogs_nas_rejected_nssai_t *rejected_nssai, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_rejected_nssai_t *source = (ogs_nas_rejected_nssai_t *)pkbuf->data;
@@ -1990,7 +1990,7 @@ int ogs_nas_decode_rejected_nssai(ogs_nas_rejected_nssai_t *rejected_nssai, ogs_
     return size;
 }
 
-int ogs_nas_encode_rejected_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_rejected_nssai_t *rejected_nssai)
+int ogs_nas_5gs_encode_rejected_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_rejected_nssai_t *rejected_nssai)
 {
     uint16_t size = rejected_nssai->length + sizeof(rejected_nssai->length);
     ogs_nas_rejected_nssai_t target;
@@ -2007,7 +2007,7 @@ int ogs_nas_encode_rejected_nssai(ogs_pkbuf_t *pkbuf, ogs_nas_rejected_nssai_t *
 
 /* 9.11.3.46A Release assistance indication
  * O TV 1 */
-int ogs_nas_decode_release_assistance_indication(ogs_nas_release_assistance_indication_t *release_assistance_indication, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_release_assistance_indication(ogs_nas_release_assistance_indication_t *release_assistance_indication, ogs_pkbuf_t *pkbuf)
 {
     memcpy(release_assistance_indication, pkbuf->data - 1, 1);
 
@@ -2017,7 +2017,7 @@ int ogs_nas_decode_release_assistance_indication(ogs_nas_release_assistance_indi
     return 0;
 }
 
-int ogs_nas_encode_release_assistance_indication(ogs_pkbuf_t *pkbuf, ogs_nas_release_assistance_indication_t *release_assistance_indication)
+int ogs_nas_5gs_encode_release_assistance_indication(ogs_pkbuf_t *pkbuf, ogs_nas_release_assistance_indication_t *release_assistance_indication)
 {
     uint16_t size = sizeof(ogs_nas_release_assistance_indication_t);
 
@@ -2032,7 +2032,7 @@ int ogs_nas_encode_release_assistance_indication(ogs_pkbuf_t *pkbuf, ogs_nas_rel
 
 /* 9.11.3.47 Request type
  * O TV 1 */
-int ogs_nas_decode_request_type(ogs_nas_request_type_t *request_type, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_request_type(ogs_nas_request_type_t *request_type, ogs_pkbuf_t *pkbuf)
 {
     memcpy(request_type, pkbuf->data - 1, 1);
 
@@ -2042,7 +2042,7 @@ int ogs_nas_decode_request_type(ogs_nas_request_type_t *request_type, ogs_pkbuf_
     return 0;
 }
 
-int ogs_nas_encode_request_type(ogs_pkbuf_t *pkbuf, ogs_nas_request_type_t *request_type)
+int ogs_nas_5gs_encode_request_type(ogs_pkbuf_t *pkbuf, ogs_nas_request_type_t *request_type)
 {
     uint16_t size = sizeof(ogs_nas_request_type_t);
 
@@ -2057,7 +2057,7 @@ int ogs_nas_encode_request_type(ogs_pkbuf_t *pkbuf, ogs_nas_request_type_t *requ
 
 /* 9.11.3.48 S1 UE network capability
  * O TLV 4-15 */
-int ogs_nas_decode_s1_ue_network_capability(ogs_nas_s1_ue_network_capability_t *s1_ue_network_capability, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_s1_ue_network_capability(ogs_nas_s1_ue_network_capability_t *s1_ue_network_capability, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_s1_ue_network_capability_t *source = (ogs_nas_s1_ue_network_capability_t *)pkbuf->data;
@@ -2074,7 +2074,7 @@ int ogs_nas_decode_s1_ue_network_capability(ogs_nas_s1_ue_network_capability_t *
     return size;
 }
 
-int ogs_nas_encode_s1_ue_network_capability(ogs_pkbuf_t *pkbuf, ogs_nas_s1_ue_network_capability_t *s1_ue_network_capability)
+int ogs_nas_5gs_encode_s1_ue_network_capability(ogs_pkbuf_t *pkbuf, ogs_nas_s1_ue_network_capability_t *s1_ue_network_capability)
 {
     uint16_t size = s1_ue_network_capability->length + sizeof(s1_ue_network_capability->length);
     ogs_nas_s1_ue_network_capability_t target;
@@ -2091,7 +2091,7 @@ int ogs_nas_encode_s1_ue_network_capability(ogs_pkbuf_t *pkbuf, ogs_nas_s1_ue_ne
 
 /* 9.11.3.48A S1 UE security capability
  * O TLV 4-7 */
-int ogs_nas_decode_s1_ue_security_capability(ogs_nas_s1_ue_security_capability_t *s1_ue_security_capability, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_s1_ue_security_capability(ogs_nas_s1_ue_security_capability_t *s1_ue_security_capability, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_s1_ue_security_capability_t *source = (ogs_nas_s1_ue_security_capability_t *)pkbuf->data;
@@ -2108,7 +2108,7 @@ int ogs_nas_decode_s1_ue_security_capability(ogs_nas_s1_ue_security_capability_t
     return size;
 }
 
-int ogs_nas_encode_s1_ue_security_capability(ogs_pkbuf_t *pkbuf, ogs_nas_s1_ue_security_capability_t *s1_ue_security_capability)
+int ogs_nas_5gs_encode_s1_ue_security_capability(ogs_pkbuf_t *pkbuf, ogs_nas_s1_ue_security_capability_t *s1_ue_security_capability)
 {
     uint16_t size = s1_ue_security_capability->length + sizeof(s1_ue_security_capability->length);
     ogs_nas_s1_ue_security_capability_t target;
@@ -2125,7 +2125,7 @@ int ogs_nas_encode_s1_ue_security_capability(ogs_pkbuf_t *pkbuf, ogs_nas_s1_ue_s
 
 /* 9.11.3.49 Service area list
  * O TLV 6-114 */
-int ogs_nas_decode_service_area_list(ogs_nas_service_area_list_t *service_area_list, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_service_area_list(ogs_nas_service_area_list_t *service_area_list, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_service_area_list_t *source = (ogs_nas_service_area_list_t *)pkbuf->data;
@@ -2142,7 +2142,7 @@ int ogs_nas_decode_service_area_list(ogs_nas_service_area_list_t *service_area_l
     return size;
 }
 
-int ogs_nas_encode_service_area_list(ogs_pkbuf_t *pkbuf, ogs_nas_service_area_list_t *service_area_list)
+int ogs_nas_5gs_encode_service_area_list(ogs_pkbuf_t *pkbuf, ogs_nas_service_area_list_t *service_area_list)
 {
     uint16_t size = service_area_list->length + sizeof(service_area_list->length);
     ogs_nas_service_area_list_t target;
@@ -2159,7 +2159,7 @@ int ogs_nas_encode_service_area_list(ogs_pkbuf_t *pkbuf, ogs_nas_service_area_li
 
 /* 9.11.3.5 5GS network feature support
  * O TLV 3-5 */
-int ogs_nas_decode_5gs_network_feature_support(ogs_nas_5gs_network_feature_support_t *network_feature_support, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gs_network_feature_support(ogs_nas_5gs_network_feature_support_t *network_feature_support, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_5gs_network_feature_support_t *source = (ogs_nas_5gs_network_feature_support_t *)pkbuf->data;
@@ -2176,7 +2176,7 @@ int ogs_nas_decode_5gs_network_feature_support(ogs_nas_5gs_network_feature_suppo
     return size;
 }
 
-int ogs_nas_encode_5gs_network_feature_support(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_network_feature_support_t *network_feature_support)
+int ogs_nas_5gs_encode_5gs_network_feature_support(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_network_feature_support_t *network_feature_support)
 {
     uint16_t size = network_feature_support->length + sizeof(network_feature_support->length);
     ogs_nas_5gs_network_feature_support_t target;
@@ -2193,7 +2193,7 @@ int ogs_nas_encode_5gs_network_feature_support(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_n
 
 /* 9.11.3.50A SMS indication
  * O TV 1 */
-int ogs_nas_decode_sms_indication(ogs_nas_sms_indication_t *sms_indication, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_sms_indication(ogs_nas_sms_indication_t *sms_indication, ogs_pkbuf_t *pkbuf)
 {
     memcpy(sms_indication, pkbuf->data - 1, 1);
 
@@ -2203,7 +2203,7 @@ int ogs_nas_decode_sms_indication(ogs_nas_sms_indication_t *sms_indication, ogs_
     return 0;
 }
 
-int ogs_nas_encode_sms_indication(ogs_pkbuf_t *pkbuf, ogs_nas_sms_indication_t *sms_indication)
+int ogs_nas_5gs_encode_sms_indication(ogs_pkbuf_t *pkbuf, ogs_nas_sms_indication_t *sms_indication)
 {
     uint16_t size = sizeof(ogs_nas_sms_indication_t);
 
@@ -2218,7 +2218,7 @@ int ogs_nas_encode_sms_indication(ogs_pkbuf_t *pkbuf, ogs_nas_sms_indication_t *
 
 /* 9.11.3.51 SOR transparent container
  * O TLV-E 20-n */
-int ogs_nas_decode_sor_transparent_container(ogs_nas_sor_transparent_container_t *sor_transparent_container, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_sor_transparent_container(ogs_nas_sor_transparent_container_t *sor_transparent_container, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_sor_transparent_container_t *source = (ogs_nas_sor_transparent_container_t *)pkbuf->data;
@@ -2235,7 +2235,7 @@ int ogs_nas_decode_sor_transparent_container(ogs_nas_sor_transparent_container_t
     return size;
 }
 
-int ogs_nas_encode_sor_transparent_container(ogs_pkbuf_t *pkbuf, ogs_nas_sor_transparent_container_t *sor_transparent_container)
+int ogs_nas_5gs_encode_sor_transparent_container(ogs_pkbuf_t *pkbuf, ogs_nas_sor_transparent_container_t *sor_transparent_container)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -2260,7 +2260,7 @@ int ogs_nas_encode_sor_transparent_container(ogs_pkbuf_t *pkbuf, ogs_nas_sor_tra
 
 /* 9.11.3.51A Supported codec list
  * O TLV 5-n */
-int ogs_nas_decode_supported_codec_list(ogs_nas_supported_codec_list_t *supported_codec_list, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_supported_codec_list(ogs_nas_supported_codec_list_t *supported_codec_list, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_supported_codec_list_t *source = (ogs_nas_supported_codec_list_t *)pkbuf->data;
@@ -2277,7 +2277,7 @@ int ogs_nas_decode_supported_codec_list(ogs_nas_supported_codec_list_t *supporte
     return size;
 }
 
-int ogs_nas_encode_supported_codec_list(ogs_pkbuf_t *pkbuf, ogs_nas_supported_codec_list_t *supported_codec_list)
+int ogs_nas_5gs_encode_supported_codec_list(ogs_pkbuf_t *pkbuf, ogs_nas_supported_codec_list_t *supported_codec_list)
 {
     uint16_t size = supported_codec_list->length + sizeof(supported_codec_list->length);
     ogs_nas_supported_codec_list_t target;
@@ -2294,7 +2294,7 @@ int ogs_nas_encode_supported_codec_list(ogs_pkbuf_t *pkbuf, ogs_nas_supported_co
 
 /* 9.11.3.52 Time zone
  * O TV 2 */
-int ogs_nas_decode_time_zone(ogs_nas_time_zone_t *time_zone, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_time_zone(ogs_nas_time_zone_t *time_zone, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_time_zone_t);
 
@@ -2307,7 +2307,7 @@ int ogs_nas_decode_time_zone(ogs_nas_time_zone_t *time_zone, ogs_pkbuf_t *pkbuf)
     return size;
 }
 
-int ogs_nas_encode_time_zone(ogs_pkbuf_t *pkbuf, ogs_nas_time_zone_t *time_zone)
+int ogs_nas_5gs_encode_time_zone(ogs_pkbuf_t *pkbuf, ogs_nas_time_zone_t *time_zone)
 {
     uint16_t size = sizeof(ogs_nas_time_zone_t);
     ogs_nas_time_zone_t target;
@@ -2324,7 +2324,7 @@ int ogs_nas_encode_time_zone(ogs_pkbuf_t *pkbuf, ogs_nas_time_zone_t *time_zone)
 
 /* 9.11.3.53 Time zone and time
  * O TV 8 */
-int ogs_nas_decode_time_zone_and_time(ogs_nas_time_zone_and_time_t *time_zone_and_time, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_time_zone_and_time(ogs_nas_time_zone_and_time_t *time_zone_and_time, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_time_zone_and_time_t);
 
@@ -2337,7 +2337,7 @@ int ogs_nas_decode_time_zone_and_time(ogs_nas_time_zone_and_time_t *time_zone_an
     return size;
 }
 
-int ogs_nas_encode_time_zone_and_time(ogs_pkbuf_t *pkbuf, ogs_nas_time_zone_and_time_t *time_zone_and_time)
+int ogs_nas_5gs_encode_time_zone_and_time(ogs_pkbuf_t *pkbuf, ogs_nas_time_zone_and_time_t *time_zone_and_time)
 {
     uint16_t size = sizeof(ogs_nas_time_zone_and_time_t);
     ogs_nas_time_zone_and_time_t target;
@@ -2354,7 +2354,7 @@ int ogs_nas_encode_time_zone_and_time(ogs_pkbuf_t *pkbuf, ogs_nas_time_zone_and_
 
 /* 9.11.3.54 UE security capability
  * O TLV 4-10 */
-int ogs_nas_decode_ue_security_capability(ogs_nas_ue_security_capability_t *ue_security_capability, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ue_security_capability(ogs_nas_ue_security_capability_t *ue_security_capability, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_ue_security_capability_t *source = (ogs_nas_ue_security_capability_t *)pkbuf->data;
@@ -2371,7 +2371,7 @@ int ogs_nas_decode_ue_security_capability(ogs_nas_ue_security_capability_t *ue_s
     return size;
 }
 
-int ogs_nas_encode_ue_security_capability(ogs_pkbuf_t *pkbuf, ogs_nas_ue_security_capability_t *ue_security_capability)
+int ogs_nas_5gs_encode_ue_security_capability(ogs_pkbuf_t *pkbuf, ogs_nas_ue_security_capability_t *ue_security_capability)
 {
     uint16_t size = ue_security_capability->length + sizeof(ue_security_capability->length);
     ogs_nas_ue_security_capability_t target;
@@ -2388,7 +2388,7 @@ int ogs_nas_encode_ue_security_capability(ogs_pkbuf_t *pkbuf, ogs_nas_ue_securit
 
 /* 9.11.3.55 UE usage setting
  * O TLV 3 */
-int ogs_nas_decode_ue_usage_setting(ogs_nas_ue_usage_setting_t *ue_usage_setting, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ue_usage_setting(ogs_nas_ue_usage_setting_t *ue_usage_setting, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_ue_usage_setting_t *source = (ogs_nas_ue_usage_setting_t *)pkbuf->data;
@@ -2405,7 +2405,7 @@ int ogs_nas_decode_ue_usage_setting(ogs_nas_ue_usage_setting_t *ue_usage_setting
     return size;
 }
 
-int ogs_nas_encode_ue_usage_setting(ogs_pkbuf_t *pkbuf, ogs_nas_ue_usage_setting_t *ue_usage_setting)
+int ogs_nas_5gs_encode_ue_usage_setting(ogs_pkbuf_t *pkbuf, ogs_nas_ue_usage_setting_t *ue_usage_setting)
 {
     uint16_t size = ue_usage_setting->length + sizeof(ue_usage_setting->length);
     ogs_nas_ue_usage_setting_t target;
@@ -2422,7 +2422,7 @@ int ogs_nas_encode_ue_usage_setting(ogs_pkbuf_t *pkbuf, ogs_nas_ue_usage_setting
 
 /* 9.11.3.56 UE status
  * O TLV 3 */
-int ogs_nas_decode_ue_status(ogs_nas_ue_status_t *ue_status, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ue_status(ogs_nas_ue_status_t *ue_status, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_ue_status_t *source = (ogs_nas_ue_status_t *)pkbuf->data;
@@ -2439,7 +2439,7 @@ int ogs_nas_decode_ue_status(ogs_nas_ue_status_t *ue_status, ogs_pkbuf_t *pkbuf)
     return size;
 }
 
-int ogs_nas_encode_ue_status(ogs_pkbuf_t *pkbuf, ogs_nas_ue_status_t *ue_status)
+int ogs_nas_5gs_encode_ue_status(ogs_pkbuf_t *pkbuf, ogs_nas_ue_status_t *ue_status)
 {
     uint16_t size = ue_status->length + sizeof(ue_status->length);
     ogs_nas_ue_status_t target;
@@ -2456,7 +2456,7 @@ int ogs_nas_encode_ue_status(ogs_pkbuf_t *pkbuf, ogs_nas_ue_status_t *ue_status)
 
 /* 9.11.3.57 Uplink data status
  * O TLV 4-34 */
-int ogs_nas_decode_uplink_data_status(ogs_nas_uplink_data_status_t *uplink_data_status, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_uplink_data_status(ogs_nas_uplink_data_status_t *uplink_data_status, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_uplink_data_status_t *source = (ogs_nas_uplink_data_status_t *)pkbuf->data;
@@ -2473,7 +2473,7 @@ int ogs_nas_decode_uplink_data_status(ogs_nas_uplink_data_status_t *uplink_data_
     return size;
 }
 
-int ogs_nas_encode_uplink_data_status(ogs_pkbuf_t *pkbuf, ogs_nas_uplink_data_status_t *uplink_data_status)
+int ogs_nas_5gs_encode_uplink_data_status(ogs_pkbuf_t *pkbuf, ogs_nas_uplink_data_status_t *uplink_data_status)
 {
     uint16_t size = uplink_data_status->length + sizeof(uplink_data_status->length);
     ogs_nas_uplink_data_status_t target;
@@ -2490,7 +2490,7 @@ int ogs_nas_encode_uplink_data_status(ogs_pkbuf_t *pkbuf, ogs_nas_uplink_data_st
 
 /* 9.11.3.6 5GS registration result
  * M LV 2 */
-int ogs_nas_decode_5gs_registration_result(ogs_nas_5gs_registration_result_t *registration_result, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gs_registration_result(ogs_nas_5gs_registration_result_t *registration_result, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_5gs_registration_result_t *source = (ogs_nas_5gs_registration_result_t *)pkbuf->data;
@@ -2507,7 +2507,7 @@ int ogs_nas_decode_5gs_registration_result(ogs_nas_5gs_registration_result_t *re
     return size;
 }
 
-int ogs_nas_encode_5gs_registration_result(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_registration_result_t *registration_result)
+int ogs_nas_5gs_encode_5gs_registration_result(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_registration_result_t *registration_result)
 {
     uint16_t size = registration_result->length + sizeof(registration_result->length);
     ogs_nas_5gs_registration_result_t target;
@@ -2524,7 +2524,7 @@ int ogs_nas_encode_5gs_registration_result(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_regis
 
 /* 9.11.3.68 UE radio capability ID
  * O TLV 3-n */
-int ogs_nas_decode_ue_radio_capability_id(ogs_nas_ue_radio_capability_id_t *ue_radio_capability_id, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ue_radio_capability_id(ogs_nas_ue_radio_capability_id_t *ue_radio_capability_id, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_ue_radio_capability_id_t *source = (ogs_nas_ue_radio_capability_id_t *)pkbuf->data;
@@ -2541,7 +2541,7 @@ int ogs_nas_decode_ue_radio_capability_id(ogs_nas_ue_radio_capability_id_t *ue_r
     return size;
 }
 
-int ogs_nas_encode_ue_radio_capability_id(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_t *ue_radio_capability_id)
+int ogs_nas_5gs_encode_ue_radio_capability_id(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_t *ue_radio_capability_id)
 {
     uint16_t size = ue_radio_capability_id->length + sizeof(ue_radio_capability_id->length);
     ogs_nas_ue_radio_capability_id_t target;
@@ -2558,7 +2558,7 @@ int ogs_nas_encode_ue_radio_capability_id(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_c
 
 /* 9.11.3.69 UE radio capability ID deletion indication
  * O TV 1 */
-int ogs_nas_decode_ue_radio_capability_id_deletion_indication(ogs_nas_ue_radio_capability_id_deletion_indication_t *ue_radio_capability_id_deletion_indication, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ue_radio_capability_id_deletion_indication(ogs_nas_ue_radio_capability_id_deletion_indication_t *ue_radio_capability_id_deletion_indication, ogs_pkbuf_t *pkbuf)
 {
     memcpy(ue_radio_capability_id_deletion_indication, pkbuf->data - 1, 1);
 
@@ -2568,7 +2568,7 @@ int ogs_nas_decode_ue_radio_capability_id_deletion_indication(ogs_nas_ue_radio_c
     return 0;
 }
 
-int ogs_nas_encode_ue_radio_capability_id_deletion_indication(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_deletion_indication_t *ue_radio_capability_id_deletion_indication)
+int ogs_nas_5gs_encode_ue_radio_capability_id_deletion_indication(ogs_pkbuf_t *pkbuf, ogs_nas_ue_radio_capability_id_deletion_indication_t *ue_radio_capability_id_deletion_indication)
 {
     uint16_t size = sizeof(ogs_nas_ue_radio_capability_id_deletion_indication_t);
 
@@ -2583,7 +2583,7 @@ int ogs_nas_encode_ue_radio_capability_id_deletion_indication(ogs_pkbuf_t *pkbuf
 
 /* 9.11.3.7 5GS registration type
  * M V 1/2 */
-int ogs_nas_decode_5gs_registration_type(ogs_nas_5gs_registration_type_t *registration_type, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gs_registration_type(ogs_nas_5gs_registration_type_t *registration_type, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_5gs_registration_type_t);
 
@@ -2596,7 +2596,7 @@ int ogs_nas_decode_5gs_registration_type(ogs_nas_5gs_registration_type_t *regist
     return size;
 }
 
-int ogs_nas_encode_5gs_registration_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_registration_type_t *registration_type)
+int ogs_nas_5gs_encode_5gs_registration_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_registration_type_t *registration_type)
 {
     uint16_t size = sizeof(ogs_nas_5gs_registration_type_t);
     ogs_nas_5gs_registration_type_t target;
@@ -2613,7 +2613,7 @@ int ogs_nas_encode_5gs_registration_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_registr
 
 /* 9.11.3.70 Truncated 5G-S-TMSI configuration
  * O TLV 3 */
-int ogs_nas_decode_truncated_5g_s_tmsi_configuration(ogs_nas_truncated_5g_s_tmsi_configuration_t *truncated_s_tmsi_configuration, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_truncated_5g_s_tmsi_configuration(ogs_nas_truncated_5g_s_tmsi_configuration_t *truncated_s_tmsi_configuration, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_truncated_5g_s_tmsi_configuration_t *source = (ogs_nas_truncated_5g_s_tmsi_configuration_t *)pkbuf->data;
@@ -2630,7 +2630,7 @@ int ogs_nas_decode_truncated_5g_s_tmsi_configuration(ogs_nas_truncated_5g_s_tmsi
     return size;
 }
 
-int ogs_nas_encode_truncated_5g_s_tmsi_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_truncated_5g_s_tmsi_configuration_t *truncated_s_tmsi_configuration)
+int ogs_nas_5gs_encode_truncated_5g_s_tmsi_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_truncated_5g_s_tmsi_configuration_t *truncated_s_tmsi_configuration)
 {
     uint16_t size = truncated_s_tmsi_configuration->length + sizeof(truncated_s_tmsi_configuration->length);
     ogs_nas_truncated_5g_s_tmsi_configuration_t target;
@@ -2647,7 +2647,7 @@ int ogs_nas_encode_truncated_5g_s_tmsi_configuration(ogs_pkbuf_t *pkbuf, ogs_nas
 
 /* 9.11.3.71 WUS assistance information
  * O TLV 3-n */
-int ogs_nas_decode_wus_assistance_information(ogs_nas_wus_assistance_information_t *wus_assistance_information, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_wus_assistance_information(ogs_nas_wus_assistance_information_t *wus_assistance_information, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_wus_assistance_information_t *source = (ogs_nas_wus_assistance_information_t *)pkbuf->data;
@@ -2664,7 +2664,7 @@ int ogs_nas_decode_wus_assistance_information(ogs_nas_wus_assistance_information
     return size;
 }
 
-int ogs_nas_encode_wus_assistance_information(ogs_pkbuf_t *pkbuf, ogs_nas_wus_assistance_information_t *wus_assistance_information)
+int ogs_nas_5gs_encode_wus_assistance_information(ogs_pkbuf_t *pkbuf, ogs_nas_wus_assistance_information_t *wus_assistance_information)
 {
     uint16_t size = wus_assistance_information->length + sizeof(wus_assistance_information->length);
     ogs_nas_wus_assistance_information_t target;
@@ -2681,7 +2681,7 @@ int ogs_nas_encode_wus_assistance_information(ogs_pkbuf_t *pkbuf, ogs_nas_wus_as
 
 /* 9.11.3.72 N5GC indication
  * O T 1 */
-int ogs_nas_decode_n5gc_indication(ogs_nas_n5gc_indication_t *n5gc_indication, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_n5gc_indication(ogs_nas_n5gc_indication_t *n5gc_indication, ogs_pkbuf_t *pkbuf)
 {
     memcpy(n5gc_indication, pkbuf->data - 1, 1);
 
@@ -2691,7 +2691,7 @@ int ogs_nas_decode_n5gc_indication(ogs_nas_n5gc_indication_t *n5gc_indication, o
     return 0;
 }
 
-int ogs_nas_encode_n5gc_indication(ogs_pkbuf_t *pkbuf, ogs_nas_n5gc_indication_t *n5gc_indication)
+int ogs_nas_5gs_encode_n5gc_indication(ogs_pkbuf_t *pkbuf, ogs_nas_n5gc_indication_t *n5gc_indication)
 {
     uint16_t size = sizeof(ogs_nas_n5gc_indication_t);
 
@@ -2706,7 +2706,7 @@ int ogs_nas_encode_n5gc_indication(ogs_pkbuf_t *pkbuf, ogs_nas_n5gc_indication_t
 
 /* 9.11.3.8 5GS tracking area identity
  * O TV 7 */
-int ogs_nas_decode_5gs_tracking_area_identity(ogs_nas_5gs_tracking_area_identity_t *tracking_area_identity, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gs_tracking_area_identity(ogs_nas_5gs_tracking_area_identity_t *tracking_area_identity, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_5gs_tracking_area_identity_t);
 
@@ -2721,7 +2721,7 @@ int ogs_nas_decode_5gs_tracking_area_identity(ogs_nas_5gs_tracking_area_identity
     return size;
 }
 
-int ogs_nas_encode_5gs_tracking_area_identity(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_tracking_area_identity_t *tracking_area_identity)
+int ogs_nas_5gs_encode_5gs_tracking_area_identity(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_tracking_area_identity_t *tracking_area_identity)
 {
     uint16_t size = sizeof(ogs_nas_5gs_tracking_area_identity_t);
     ogs_nas_5gs_tracking_area_identity_t target;
@@ -2740,7 +2740,7 @@ int ogs_nas_encode_5gs_tracking_area_identity(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_tr
 
 /* 9.11.3.9 5GS tracking area identity list
  * O TLV 9-114 */
-int ogs_nas_decode_5gs_tracking_area_identity_list(ogs_nas_5gs_tracking_area_identity_list_t *tracking_area_identity_list, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gs_tracking_area_identity_list(ogs_nas_5gs_tracking_area_identity_list_t *tracking_area_identity_list, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_5gs_tracking_area_identity_list_t *source = (ogs_nas_5gs_tracking_area_identity_list_t *)pkbuf->data;
@@ -2757,7 +2757,7 @@ int ogs_nas_decode_5gs_tracking_area_identity_list(ogs_nas_5gs_tracking_area_ide
     return size;
 }
 
-int ogs_nas_encode_5gs_tracking_area_identity_list(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_tracking_area_identity_list_t *tracking_area_identity_list)
+int ogs_nas_5gs_encode_5gs_tracking_area_identity_list(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_tracking_area_identity_list_t *tracking_area_identity_list)
 {
     uint16_t size = tracking_area_identity_list->length + sizeof(tracking_area_identity_list->length);
     ogs_nas_5gs_tracking_area_identity_list_t target;
@@ -2774,7 +2774,7 @@ int ogs_nas_encode_5gs_tracking_area_identity_list(ogs_pkbuf_t *pkbuf, ogs_nas_5
 
 /* 9.11.3.9A 5GS update type
  * O TLV 3 */
-int ogs_nas_decode_5gs_update_type(ogs_nas_5gs_update_type_t *update_type, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gs_update_type(ogs_nas_5gs_update_type_t *update_type, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_5gs_update_type_t *source = (ogs_nas_5gs_update_type_t *)pkbuf->data;
@@ -2791,7 +2791,7 @@ int ogs_nas_decode_5gs_update_type(ogs_nas_5gs_update_type_t *update_type, ogs_p
     return size;
 }
 
-int ogs_nas_encode_5gs_update_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_update_type_t *update_type)
+int ogs_nas_5gs_encode_5gs_update_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_update_type_t *update_type)
 {
     uint16_t size = update_type->length + sizeof(update_type->length);
     ogs_nas_5gs_update_type_t target;
@@ -2808,7 +2808,7 @@ int ogs_nas_encode_5gs_update_type(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_update_type_t
 
 /* 9.11.4.1 5GSM capability
  * O TLV 3-15 */
-int ogs_nas_decode_5gsm_capability(ogs_nas_5gsm_capability_t *gsm_capability, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gsm_capability(ogs_nas_5gsm_capability_t *gsm_capability, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_5gsm_capability_t *source = (ogs_nas_5gsm_capability_t *)pkbuf->data;
@@ -2825,7 +2825,7 @@ int ogs_nas_decode_5gsm_capability(ogs_nas_5gsm_capability_t *gsm_capability, og
     return size;
 }
 
-int ogs_nas_encode_5gsm_capability(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_capability_t *gsm_capability)
+int ogs_nas_5gs_encode_5gsm_capability(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_capability_t *gsm_capability)
 {
     uint16_t size = gsm_capability->length + sizeof(gsm_capability->length);
     ogs_nas_5gsm_capability_t target;
@@ -2842,7 +2842,7 @@ int ogs_nas_encode_5gsm_capability(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_capability_t
 
 /* 9.11.4.10 PDU address
  * O TLV 7, 11 or 15 */
-int ogs_nas_decode_pdu_address(ogs_nas_pdu_address_t *pdu_address, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_pdu_address(ogs_nas_pdu_address_t *pdu_address, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_pdu_address_t *source = (ogs_nas_pdu_address_t *)pkbuf->data;
@@ -2859,7 +2859,7 @@ int ogs_nas_decode_pdu_address(ogs_nas_pdu_address_t *pdu_address, ogs_pkbuf_t *
     return size;
 }
 
-int ogs_nas_encode_pdu_address(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_address_t *pdu_address)
+int ogs_nas_5gs_encode_pdu_address(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_address_t *pdu_address)
 {
     uint16_t size = pdu_address->length + sizeof(pdu_address->length);
     ogs_nas_pdu_address_t target;
@@ -2876,7 +2876,7 @@ int ogs_nas_encode_pdu_address(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_address_t *pdu_ad
 
 /* 9.11.4.11 PDU session type
  * O TV 1 */
-int ogs_nas_decode_pdu_session_type(ogs_nas_pdu_session_type_t *pdu_session_type, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_pdu_session_type(ogs_nas_pdu_session_type_t *pdu_session_type, ogs_pkbuf_t *pkbuf)
 {
     memcpy(pdu_session_type, pkbuf->data - 1, 1);
 
@@ -2886,7 +2886,7 @@ int ogs_nas_decode_pdu_session_type(ogs_nas_pdu_session_type_t *pdu_session_type
     return 0;
 }
 
-int ogs_nas_encode_pdu_session_type(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_type_t *pdu_session_type)
+int ogs_nas_5gs_encode_pdu_session_type(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_type_t *pdu_session_type)
 {
     uint16_t size = sizeof(ogs_nas_pdu_session_type_t);
 
@@ -2901,7 +2901,7 @@ int ogs_nas_encode_pdu_session_type(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_session_type
 
 /* 9.11.4.12 QoS flow descriptions
  * O TLV-E 6-65538 */
-int ogs_nas_decode_qos_flow_descriptions(ogs_nas_qos_flow_descriptions_t *qos_flow_descriptions, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_qos_flow_descriptions(ogs_nas_qos_flow_descriptions_t *qos_flow_descriptions, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_qos_flow_descriptions_t *source = (ogs_nas_qos_flow_descriptions_t *)pkbuf->data;
@@ -2918,7 +2918,7 @@ int ogs_nas_decode_qos_flow_descriptions(ogs_nas_qos_flow_descriptions_t *qos_fl
     return size;
 }
 
-int ogs_nas_encode_qos_flow_descriptions(ogs_pkbuf_t *pkbuf, ogs_nas_qos_flow_descriptions_t *qos_flow_descriptions)
+int ogs_nas_5gs_encode_qos_flow_descriptions(ogs_pkbuf_t *pkbuf, ogs_nas_qos_flow_descriptions_t *qos_flow_descriptions)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -2943,7 +2943,7 @@ int ogs_nas_encode_qos_flow_descriptions(ogs_pkbuf_t *pkbuf, ogs_nas_qos_flow_de
 
 /* 9.11.4.13 QoS rules
  * M LV-E 6-65538 */
-int ogs_nas_decode_qos_rules(ogs_nas_qos_rules_t *qos_rules, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_qos_rules(ogs_nas_qos_rules_t *qos_rules, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_qos_rules_t *source = (ogs_nas_qos_rules_t *)pkbuf->data;
@@ -2960,7 +2960,7 @@ int ogs_nas_decode_qos_rules(ogs_nas_qos_rules_t *qos_rules, ogs_pkbuf_t *pkbuf)
     return size;
 }
 
-int ogs_nas_encode_qos_rules(ogs_pkbuf_t *pkbuf, ogs_nas_qos_rules_t *qos_rules)
+int ogs_nas_5gs_encode_qos_rules(ogs_pkbuf_t *pkbuf, ogs_nas_qos_rules_t *qos_rules)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -2985,7 +2985,7 @@ int ogs_nas_encode_qos_rules(ogs_pkbuf_t *pkbuf, ogs_nas_qos_rules_t *qos_rules)
 
 /* 9.11.4.14 Session-AMBR
  * M LV 7 */
-int ogs_nas_decode_session_ambr(ogs_nas_session_ambr_t *session_ambr, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_session_ambr(ogs_nas_session_ambr_t *session_ambr, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_session_ambr_t *source = (ogs_nas_session_ambr_t *)pkbuf->data;
@@ -3002,7 +3002,7 @@ int ogs_nas_decode_session_ambr(ogs_nas_session_ambr_t *session_ambr, ogs_pkbuf_
     return size;
 }
 
-int ogs_nas_encode_session_ambr(ogs_pkbuf_t *pkbuf, ogs_nas_session_ambr_t *session_ambr)
+int ogs_nas_5gs_encode_session_ambr(ogs_pkbuf_t *pkbuf, ogs_nas_session_ambr_t *session_ambr)
 {
     uint16_t size = session_ambr->length + sizeof(session_ambr->length);
     ogs_nas_session_ambr_t target;
@@ -3019,7 +3019,7 @@ int ogs_nas_encode_session_ambr(ogs_pkbuf_t *pkbuf, ogs_nas_session_ambr_t *sess
 
 /* 9.11.4.15 SM PDU DN request container
  * O TLV 3-255 */
-int ogs_nas_decode_sm_pdu_dn_request_container(ogs_nas_sm_pdu_dn_request_container_t *sm_pdu_dn_request_container, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_sm_pdu_dn_request_container(ogs_nas_sm_pdu_dn_request_container_t *sm_pdu_dn_request_container, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_sm_pdu_dn_request_container_t *source = (ogs_nas_sm_pdu_dn_request_container_t *)pkbuf->data;
@@ -3036,7 +3036,7 @@ int ogs_nas_decode_sm_pdu_dn_request_container(ogs_nas_sm_pdu_dn_request_contain
     return size;
 }
 
-int ogs_nas_encode_sm_pdu_dn_request_container(ogs_pkbuf_t *pkbuf, ogs_nas_sm_pdu_dn_request_container_t *sm_pdu_dn_request_container)
+int ogs_nas_5gs_encode_sm_pdu_dn_request_container(ogs_pkbuf_t *pkbuf, ogs_nas_sm_pdu_dn_request_container_t *sm_pdu_dn_request_container)
 {
     uint16_t size = sm_pdu_dn_request_container->length + sizeof(sm_pdu_dn_request_container->length);
     ogs_nas_sm_pdu_dn_request_container_t target;
@@ -3053,7 +3053,7 @@ int ogs_nas_encode_sm_pdu_dn_request_container(ogs_pkbuf_t *pkbuf, ogs_nas_sm_pd
 
 /* 9.11.4.16 SSC mode
  * O TV 1 */
-int ogs_nas_decode_ssc_mode(ogs_nas_ssc_mode_t *ssc_mode, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ssc_mode(ogs_nas_ssc_mode_t *ssc_mode, ogs_pkbuf_t *pkbuf)
 {
     memcpy(ssc_mode, pkbuf->data - 1, 1);
 
@@ -3063,7 +3063,7 @@ int ogs_nas_decode_ssc_mode(ogs_nas_ssc_mode_t *ssc_mode, ogs_pkbuf_t *pkbuf)
     return 0;
 }
 
-int ogs_nas_encode_ssc_mode(ogs_pkbuf_t *pkbuf, ogs_nas_ssc_mode_t *ssc_mode)
+int ogs_nas_5gs_encode_ssc_mode(ogs_pkbuf_t *pkbuf, ogs_nas_ssc_mode_t *ssc_mode)
 {
     uint16_t size = sizeof(ogs_nas_ssc_mode_t);
 
@@ -3078,7 +3078,7 @@ int ogs_nas_encode_ssc_mode(ogs_pkbuf_t *pkbuf, ogs_nas_ssc_mode_t *ssc_mode)
 
 /* 9.11.4.17 Re-attempt indicator
  * O TLV 3 */
-int ogs_nas_decode_re_attempt_indicator(ogs_nas_re_attempt_indicator_t *re_attempt_indicator, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_re_attempt_indicator(ogs_nas_re_attempt_indicator_t *re_attempt_indicator, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_re_attempt_indicator_t *source = (ogs_nas_re_attempt_indicator_t *)pkbuf->data;
@@ -3095,7 +3095,7 @@ int ogs_nas_decode_re_attempt_indicator(ogs_nas_re_attempt_indicator_t *re_attem
     return size;
 }
 
-int ogs_nas_encode_re_attempt_indicator(ogs_pkbuf_t *pkbuf, ogs_nas_re_attempt_indicator_t *re_attempt_indicator)
+int ogs_nas_5gs_encode_re_attempt_indicator(ogs_pkbuf_t *pkbuf, ogs_nas_re_attempt_indicator_t *re_attempt_indicator)
 {
     uint16_t size = re_attempt_indicator->length + sizeof(re_attempt_indicator->length);
     ogs_nas_re_attempt_indicator_t target;
@@ -3112,7 +3112,7 @@ int ogs_nas_encode_re_attempt_indicator(ogs_pkbuf_t *pkbuf, ogs_nas_re_attempt_i
 
 /* 9.11.4.18 5GSM network feature support
  * O TLV 3-15 */
-int ogs_nas_decode_5gsm_network_feature_support(ogs_nas_5gsm_network_feature_support_t *gsm_network_feature_support, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gsm_network_feature_support(ogs_nas_5gsm_network_feature_support_t *gsm_network_feature_support, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_5gsm_network_feature_support_t *source = (ogs_nas_5gsm_network_feature_support_t *)pkbuf->data;
@@ -3129,7 +3129,7 @@ int ogs_nas_decode_5gsm_network_feature_support(ogs_nas_5gsm_network_feature_sup
     return size;
 }
 
-int ogs_nas_encode_5gsm_network_feature_support(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_network_feature_support_t *gsm_network_feature_support)
+int ogs_nas_5gs_encode_5gsm_network_feature_support(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_network_feature_support_t *gsm_network_feature_support)
 {
     uint16_t size = gsm_network_feature_support->length + sizeof(gsm_network_feature_support->length);
     ogs_nas_5gsm_network_feature_support_t target;
@@ -3146,7 +3146,7 @@ int ogs_nas_encode_5gsm_network_feature_support(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm
 
 /* 9.11.4.2 5GSM cause
  * O TV 2 */
-int ogs_nas_decode_5gsm_cause(ogs_nas_5gsm_cause_t *gsm_cause, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gsm_cause(ogs_nas_5gsm_cause_t *gsm_cause, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_5gsm_cause_t);
 
@@ -3159,7 +3159,7 @@ int ogs_nas_decode_5gsm_cause(ogs_nas_5gsm_cause_t *gsm_cause, ogs_pkbuf_t *pkbu
     return size;
 }
 
-int ogs_nas_encode_5gsm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_cause_t *gsm_cause)
+int ogs_nas_5gs_encode_5gsm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_cause_t *gsm_cause)
 {
     uint16_t size = sizeof(ogs_nas_5gsm_cause_t);
     ogs_nas_5gsm_cause_t target;
@@ -3176,7 +3176,7 @@ int ogs_nas_encode_5gsm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_cause_t *gsm_caus
 
 /* 9.11.4.20 Serving PLMN rate control
  * O TLV 4 */
-int ogs_nas_decode_serving_plmn_rate_control(ogs_nas_serving_plmn_rate_control_t *serving_plmn_rate_control, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_serving_plmn_rate_control(ogs_nas_serving_plmn_rate_control_t *serving_plmn_rate_control, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_serving_plmn_rate_control_t *source = (ogs_nas_serving_plmn_rate_control_t *)pkbuf->data;
@@ -3193,7 +3193,7 @@ int ogs_nas_decode_serving_plmn_rate_control(ogs_nas_serving_plmn_rate_control_t
     return size;
 }
 
-int ogs_nas_encode_serving_plmn_rate_control(ogs_pkbuf_t *pkbuf, ogs_nas_serving_plmn_rate_control_t *serving_plmn_rate_control)
+int ogs_nas_5gs_encode_serving_plmn_rate_control(ogs_pkbuf_t *pkbuf, ogs_nas_serving_plmn_rate_control_t *serving_plmn_rate_control)
 {
     uint16_t size = serving_plmn_rate_control->length + sizeof(serving_plmn_rate_control->length);
     ogs_nas_serving_plmn_rate_control_t target;
@@ -3210,7 +3210,7 @@ int ogs_nas_encode_serving_plmn_rate_control(ogs_pkbuf_t *pkbuf, ogs_nas_serving
 
 /* 9.11.4.21 5GSM congestion re-attempt indicator
  * O TLV 3 */
-int ogs_nas_decode_5gsm_congestion_re_attempt_indicator(ogs_nas_5gsm_congestion_re_attempt_indicator_t *gsm_congestion_re_attempt_indicator, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_5gsm_congestion_re_attempt_indicator(ogs_nas_5gsm_congestion_re_attempt_indicator_t *gsm_congestion_re_attempt_indicator, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_5gsm_congestion_re_attempt_indicator_t *source = (ogs_nas_5gsm_congestion_re_attempt_indicator_t *)pkbuf->data;
@@ -3227,7 +3227,7 @@ int ogs_nas_decode_5gsm_congestion_re_attempt_indicator(ogs_nas_5gsm_congestion_
     return size;
 }
 
-int ogs_nas_encode_5gsm_congestion_re_attempt_indicator(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_congestion_re_attempt_indicator_t *gsm_congestion_re_attempt_indicator)
+int ogs_nas_5gs_encode_5gsm_congestion_re_attempt_indicator(ogs_pkbuf_t *pkbuf, ogs_nas_5gsm_congestion_re_attempt_indicator_t *gsm_congestion_re_attempt_indicator)
 {
     uint16_t size = gsm_congestion_re_attempt_indicator->length + sizeof(gsm_congestion_re_attempt_indicator->length);
     ogs_nas_5gsm_congestion_re_attempt_indicator_t target;
@@ -3244,7 +3244,7 @@ int ogs_nas_encode_5gsm_congestion_re_attempt_indicator(ogs_pkbuf_t *pkbuf, ogs_
 
 /* 9.11.4.22 ATSSS container
  * O TLV-E 3-65538 */
-int ogs_nas_decode_atsss_container(ogs_nas_atsss_container_t *atsss_container, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_atsss_container(ogs_nas_atsss_container_t *atsss_container, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_atsss_container_t *source = (ogs_nas_atsss_container_t *)pkbuf->data;
@@ -3261,7 +3261,7 @@ int ogs_nas_decode_atsss_container(ogs_nas_atsss_container_t *atsss_container, o
     return size;
 }
 
-int ogs_nas_encode_atsss_container(ogs_pkbuf_t *pkbuf, ogs_nas_atsss_container_t *atsss_container)
+int ogs_nas_5gs_encode_atsss_container(ogs_pkbuf_t *pkbuf, ogs_nas_atsss_container_t *atsss_container)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -3286,7 +3286,7 @@ int ogs_nas_encode_atsss_container(ogs_pkbuf_t *pkbuf, ogs_nas_atsss_container_t
 
 /* 9.11.4.23 Control plane only indication
  * O TV 1 */
-int ogs_nas_decode_control_plane_only_indication(ogs_nas_control_plane_only_indication_t *control_plane_only_indication, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_control_plane_only_indication(ogs_nas_control_plane_only_indication_t *control_plane_only_indication, ogs_pkbuf_t *pkbuf)
 {
     memcpy(control_plane_only_indication, pkbuf->data - 1, 1);
 
@@ -3296,7 +3296,7 @@ int ogs_nas_decode_control_plane_only_indication(ogs_nas_control_plane_only_indi
     return 0;
 }
 
-int ogs_nas_encode_control_plane_only_indication(ogs_pkbuf_t *pkbuf, ogs_nas_control_plane_only_indication_t *control_plane_only_indication)
+int ogs_nas_5gs_encode_control_plane_only_indication(ogs_pkbuf_t *pkbuf, ogs_nas_control_plane_only_indication_t *control_plane_only_indication)
 {
     uint16_t size = sizeof(ogs_nas_control_plane_only_indication_t);
 
@@ -3311,7 +3311,7 @@ int ogs_nas_encode_control_plane_only_indication(ogs_pkbuf_t *pkbuf, ogs_nas_con
 
 /* 9.11.4.24 Header compression configuration
  * O TLV 5-257 */
-int ogs_nas_decode_header_compression_configuration(ogs_nas_header_compression_configuration_t *header_compression_configuration, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_header_compression_configuration(ogs_nas_header_compression_configuration_t *header_compression_configuration, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_header_compression_configuration_t *source = (ogs_nas_header_compression_configuration_t *)pkbuf->data;
@@ -3330,7 +3330,7 @@ int ogs_nas_decode_header_compression_configuration(ogs_nas_header_compression_c
     return size;
 }
 
-int ogs_nas_encode_header_compression_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_header_compression_configuration_t *header_compression_configuration)
+int ogs_nas_5gs_encode_header_compression_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_header_compression_configuration_t *header_compression_configuration)
 {
     uint16_t size = header_compression_configuration->length + sizeof(header_compression_configuration->length);
     ogs_nas_header_compression_configuration_t target;
@@ -3349,7 +3349,7 @@ int ogs_nas_encode_header_compression_configuration(ogs_pkbuf_t *pkbuf, ogs_nas_
 
 /* 9.11.4.25 DS-TT Ethernet port MAC address
  * O TLV 8 */
-int ogs_nas_decode_ds_tt_ethernet_port_mac_address(ogs_nas_ds_tt_ethernet_port_mac_address_t *ds_tt_ethernet_port_mac_address, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ds_tt_ethernet_port_mac_address(ogs_nas_ds_tt_ethernet_port_mac_address_t *ds_tt_ethernet_port_mac_address, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_ds_tt_ethernet_port_mac_address_t *source = (ogs_nas_ds_tt_ethernet_port_mac_address_t *)pkbuf->data;
@@ -3366,7 +3366,7 @@ int ogs_nas_decode_ds_tt_ethernet_port_mac_address(ogs_nas_ds_tt_ethernet_port_m
     return size;
 }
 
-int ogs_nas_encode_ds_tt_ethernet_port_mac_address(ogs_pkbuf_t *pkbuf, ogs_nas_ds_tt_ethernet_port_mac_address_t *ds_tt_ethernet_port_mac_address)
+int ogs_nas_5gs_encode_ds_tt_ethernet_port_mac_address(ogs_pkbuf_t *pkbuf, ogs_nas_ds_tt_ethernet_port_mac_address_t *ds_tt_ethernet_port_mac_address)
 {
     uint16_t size = ds_tt_ethernet_port_mac_address->length + sizeof(ds_tt_ethernet_port_mac_address->length);
     ogs_nas_ds_tt_ethernet_port_mac_address_t target;
@@ -3383,7 +3383,7 @@ int ogs_nas_encode_ds_tt_ethernet_port_mac_address(ogs_pkbuf_t *pkbuf, ogs_nas_d
 
 /* 9.11.4.26 UE-DS-TT residence time
  * O TLV 10 */
-int ogs_nas_decode_ue_ds_tt_residence_time(ogs_nas_ue_ds_tt_residence_time_t *ue_ds_tt_residence_time, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_ue_ds_tt_residence_time(ogs_nas_ue_ds_tt_residence_time_t *ue_ds_tt_residence_time, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_ue_ds_tt_residence_time_t *source = (ogs_nas_ue_ds_tt_residence_time_t *)pkbuf->data;
@@ -3400,7 +3400,7 @@ int ogs_nas_decode_ue_ds_tt_residence_time(ogs_nas_ue_ds_tt_residence_time_t *ue
     return size;
 }
 
-int ogs_nas_encode_ue_ds_tt_residence_time(ogs_pkbuf_t *pkbuf, ogs_nas_ue_ds_tt_residence_time_t *ue_ds_tt_residence_time)
+int ogs_nas_5gs_encode_ue_ds_tt_residence_time(ogs_pkbuf_t *pkbuf, ogs_nas_ue_ds_tt_residence_time_t *ue_ds_tt_residence_time)
 {
     uint16_t size = ue_ds_tt_residence_time->length + sizeof(ue_ds_tt_residence_time->length);
     ogs_nas_ue_ds_tt_residence_time_t target;
@@ -3417,7 +3417,7 @@ int ogs_nas_encode_ue_ds_tt_residence_time(ogs_pkbuf_t *pkbuf, ogs_nas_ue_ds_tt_
 
 /* 9.11.4.27 Port management information container
  * O TLV-E 4-65538 */
-int ogs_nas_decode_port_management_information_container(ogs_nas_port_management_information_container_t *port_management_information_container, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_port_management_information_container(ogs_nas_port_management_information_container_t *port_management_information_container, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_port_management_information_container_t *source = (ogs_nas_port_management_information_container_t *)pkbuf->data;
@@ -3434,7 +3434,7 @@ int ogs_nas_decode_port_management_information_container(ogs_nas_port_management
     return size;
 }
 
-int ogs_nas_encode_port_management_information_container(ogs_pkbuf_t *pkbuf, ogs_nas_port_management_information_container_t *port_management_information_container)
+int ogs_nas_5gs_encode_port_management_information_container(ogs_pkbuf_t *pkbuf, ogs_nas_port_management_information_container_t *port_management_information_container)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -3459,7 +3459,7 @@ int ogs_nas_encode_port_management_information_container(ogs_pkbuf_t *pkbuf, ogs
 
 /* 9.11.4.3 Always-on PDU session indication
  * O TV 1 */
-int ogs_nas_decode_always_on_pdu_session_indication(ogs_nas_always_on_pdu_session_indication_t *always_on_pdu_session_indication, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_always_on_pdu_session_indication(ogs_nas_always_on_pdu_session_indication_t *always_on_pdu_session_indication, ogs_pkbuf_t *pkbuf)
 {
     memcpy(always_on_pdu_session_indication, pkbuf->data - 1, 1);
 
@@ -3469,7 +3469,7 @@ int ogs_nas_decode_always_on_pdu_session_indication(ogs_nas_always_on_pdu_sessio
     return 0;
 }
 
-int ogs_nas_encode_always_on_pdu_session_indication(ogs_pkbuf_t *pkbuf, ogs_nas_always_on_pdu_session_indication_t *always_on_pdu_session_indication)
+int ogs_nas_5gs_encode_always_on_pdu_session_indication(ogs_pkbuf_t *pkbuf, ogs_nas_always_on_pdu_session_indication_t *always_on_pdu_session_indication)
 {
     uint16_t size = sizeof(ogs_nas_always_on_pdu_session_indication_t);
 
@@ -3484,7 +3484,7 @@ int ogs_nas_encode_always_on_pdu_session_indication(ogs_pkbuf_t *pkbuf, ogs_nas_
 
 /* 9.11.4.4 Always-on PDU session requested
  * O TV 1 */
-int ogs_nas_decode_always_on_pdu_session_requested(ogs_nas_always_on_pdu_session_requested_t *always_on_pdu_session_requested, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_always_on_pdu_session_requested(ogs_nas_always_on_pdu_session_requested_t *always_on_pdu_session_requested, ogs_pkbuf_t *pkbuf)
 {
     memcpy(always_on_pdu_session_requested, pkbuf->data - 1, 1);
 
@@ -3494,7 +3494,7 @@ int ogs_nas_decode_always_on_pdu_session_requested(ogs_nas_always_on_pdu_session
     return 0;
 }
 
-int ogs_nas_encode_always_on_pdu_session_requested(ogs_pkbuf_t *pkbuf, ogs_nas_always_on_pdu_session_requested_t *always_on_pdu_session_requested)
+int ogs_nas_5gs_encode_always_on_pdu_session_requested(ogs_pkbuf_t *pkbuf, ogs_nas_always_on_pdu_session_requested_t *always_on_pdu_session_requested)
 {
     uint16_t size = sizeof(ogs_nas_always_on_pdu_session_requested_t);
 
@@ -3509,7 +3509,7 @@ int ogs_nas_encode_always_on_pdu_session_requested(ogs_pkbuf_t *pkbuf, ogs_nas_a
 
 /* 9.11.4.5 Allowed SSC mode
  * O TV 1 */
-int ogs_nas_decode_allowed_ssc_mode(ogs_nas_allowed_ssc_mode_t *allowed_ssc_mode, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_allowed_ssc_mode(ogs_nas_allowed_ssc_mode_t *allowed_ssc_mode, ogs_pkbuf_t *pkbuf)
 {
     memcpy(allowed_ssc_mode, pkbuf->data - 1, 1);
 
@@ -3519,7 +3519,7 @@ int ogs_nas_decode_allowed_ssc_mode(ogs_nas_allowed_ssc_mode_t *allowed_ssc_mode
     return 0;
 }
 
-int ogs_nas_encode_allowed_ssc_mode(ogs_pkbuf_t *pkbuf, ogs_nas_allowed_ssc_mode_t *allowed_ssc_mode)
+int ogs_nas_5gs_encode_allowed_ssc_mode(ogs_pkbuf_t *pkbuf, ogs_nas_allowed_ssc_mode_t *allowed_ssc_mode)
 {
     uint16_t size = sizeof(ogs_nas_allowed_ssc_mode_t);
 
@@ -3534,7 +3534,7 @@ int ogs_nas_encode_allowed_ssc_mode(ogs_pkbuf_t *pkbuf, ogs_nas_allowed_ssc_mode
 
 /* 9.11.4.6 Extended protocol configuration options
  * O TLV-E 4-65538 */
-int ogs_nas_decode_extended_protocol_configuration_options(ogs_nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_extended_protocol_configuration_options(ogs_nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_extended_protocol_configuration_options_t *source = (ogs_nas_extended_protocol_configuration_options_t *)pkbuf->data;
@@ -3551,7 +3551,7 @@ int ogs_nas_decode_extended_protocol_configuration_options(ogs_nas_extended_prot
     return size;
 }
 
-int ogs_nas_encode_extended_protocol_configuration_options(ogs_pkbuf_t *pkbuf, ogs_nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options)
+int ogs_nas_5gs_encode_extended_protocol_configuration_options(ogs_pkbuf_t *pkbuf, ogs_nas_extended_protocol_configuration_options_t *extended_protocol_configuration_options)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -3576,7 +3576,7 @@ int ogs_nas_encode_extended_protocol_configuration_options(ogs_pkbuf_t *pkbuf, o
 
 /* 9.11.4.7 Integrity protection maximum data rate
  * M V 2 */
-int ogs_nas_decode_integrity_protection_maximum_data_rate(ogs_nas_integrity_protection_maximum_data_rate_t *integrity_protection_maximum_data_rate, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_integrity_protection_maximum_data_rate(ogs_nas_integrity_protection_maximum_data_rate_t *integrity_protection_maximum_data_rate, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_integrity_protection_maximum_data_rate_t);
 
@@ -3589,7 +3589,7 @@ int ogs_nas_decode_integrity_protection_maximum_data_rate(ogs_nas_integrity_prot
     return size;
 }
 
-int ogs_nas_encode_integrity_protection_maximum_data_rate(ogs_pkbuf_t *pkbuf, ogs_nas_integrity_protection_maximum_data_rate_t *integrity_protection_maximum_data_rate)
+int ogs_nas_5gs_encode_integrity_protection_maximum_data_rate(ogs_pkbuf_t *pkbuf, ogs_nas_integrity_protection_maximum_data_rate_t *integrity_protection_maximum_data_rate)
 {
     uint16_t size = sizeof(ogs_nas_integrity_protection_maximum_data_rate_t);
     ogs_nas_integrity_protection_maximum_data_rate_t target;
@@ -3606,7 +3606,7 @@ int ogs_nas_encode_integrity_protection_maximum_data_rate(ogs_pkbuf_t *pkbuf, og
 
 /* 9.11.4.8 Mapped EPS bearer contexts
  * O TLV-E 7-65538 */
-int ogs_nas_decode_mapped_eps_bearer_contexts(ogs_nas_mapped_eps_bearer_contexts_t *mapped_eps_bearer_contexts, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_mapped_eps_bearer_contexts(ogs_nas_mapped_eps_bearer_contexts_t *mapped_eps_bearer_contexts, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = 0;
     ogs_nas_mapped_eps_bearer_contexts_t *source = (ogs_nas_mapped_eps_bearer_contexts_t *)pkbuf->data;
@@ -3623,7 +3623,7 @@ int ogs_nas_decode_mapped_eps_bearer_contexts(ogs_nas_mapped_eps_bearer_contexts
     return size;
 }
 
-int ogs_nas_encode_mapped_eps_bearer_contexts(ogs_pkbuf_t *pkbuf, ogs_nas_mapped_eps_bearer_contexts_t *mapped_eps_bearer_contexts)
+int ogs_nas_5gs_encode_mapped_eps_bearer_contexts(ogs_pkbuf_t *pkbuf, ogs_nas_mapped_eps_bearer_contexts_t *mapped_eps_bearer_contexts)
 {
     uint16_t size = 0;
     uint16_t target;
@@ -3648,7 +3648,7 @@ int ogs_nas_encode_mapped_eps_bearer_contexts(ogs_pkbuf_t *pkbuf, ogs_nas_mapped
 
 /* 9.11.4.9 Maximum number of supported packet filters
  * O TV 3 */
-int ogs_nas_decode_maximum_number_of_supported_packet_filters(ogs_nas_maximum_number_of_supported_packet_filters_t *maximum_number_of_supported_packet_filters, ogs_pkbuf_t *pkbuf)
+int ogs_nas_5gs_decode_maximum_number_of_supported_packet_filters(ogs_nas_maximum_number_of_supported_packet_filters_t *maximum_number_of_supported_packet_filters, ogs_pkbuf_t *pkbuf)
 {
     uint16_t size = sizeof(ogs_nas_maximum_number_of_supported_packet_filters_t);
 
@@ -3661,7 +3661,7 @@ int ogs_nas_decode_maximum_number_of_supported_packet_filters(ogs_nas_maximum_nu
     return size;
 }
 
-int ogs_nas_encode_maximum_number_of_supported_packet_filters(ogs_pkbuf_t *pkbuf, ogs_nas_maximum_number_of_supported_packet_filters_t *maximum_number_of_supported_packet_filters)
+int ogs_nas_5gs_encode_maximum_number_of_supported_packet_filters(ogs_pkbuf_t *pkbuf, ogs_nas_maximum_number_of_supported_packet_filters_t *maximum_number_of_supported_packet_filters)
 {
     uint16_t size = sizeof(ogs_nas_maximum_number_of_supported_packet_filters_t);
     ogs_nas_maximum_number_of_supported_packet_filters_t target;

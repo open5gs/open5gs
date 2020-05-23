@@ -89,7 +89,7 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void)
             S1AP_MME_Group_ID_t *MME_Group_ID = NULL;
             MME_Group_ID = (S1AP_MME_Group_ID_t *)
                 CALLOC(1, sizeof(S1AP_MME_Group_ID_t));
-            ogs_s1ap_uint16_to_OCTET_STRING(
+            ogs_asn_uint16_to_OCTET_STRING(
                     served_gummei->mme_gid[j], MME_Group_ID);
             ASN_SEQUENCE_ADD(
                     &ServedGUMMEIsItem->servedGroupIDs.list, MME_Group_ID);
@@ -100,7 +100,7 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void)
             S1AP_MME_Code_t *MME_Code = NULL ;
             MME_Code = (S1AP_MME_Code_t *)
                 CALLOC(1, sizeof(S1AP_MME_Code_t));
-            ogs_s1ap_uint8_to_OCTET_STRING(
+            ogs_asn_uint8_to_OCTET_STRING(
                     served_gummei->mme_code[j], MME_Code);
             ASN_SEQUENCE_ADD(&ServedGUMMEIsItem->servedMMECs.list, MME_Code);
             ogs_debug("    MME Code[%d]", served_gummei->mme_code[j]);
@@ -399,10 +399,10 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
                         gbrQosInformation;
             }
 
-            rv = ogs_s1ap_ip_to_BIT_STRING(
+            rv = ogs_asn_ip_to_BIT_STRING(
                     &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress);
             ogs_assert(rv == OGS_OK);
-            ogs_s1ap_uint32_to_OCTET_STRING(
+            ogs_asn_uint32_to_OCTET_STRING(
                     bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
 
             if (emmbuf && emmbuf->len) {
@@ -497,7 +497,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
             &mme_ue->tai.plmn_id, sizeof(ogs_plmn_id_t), &LAI->pLMNidentity);
         ogs_assert(mme_ue->csmap);
         ogs_assert(mme_ue->p_tmsi);
-        ogs_s1ap_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
+        ogs_asn_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
 
     }
 
@@ -618,7 +618,7 @@ ogs_pkbuf_t *s1ap_build_ue_context_modification_request(mme_ue_t *mme_ue)
             &mme_ue->tai.plmn_id, sizeof(ogs_plmn_id_t), &LAI->pLMNidentity);
         ogs_assert(mme_ue->csmap);
         ogs_assert(mme_ue->p_tmsi);
-        ogs_s1ap_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
+        ogs_asn_uint16_to_OCTET_STRING(mme_ue->csmap->lai.lac, &LAI->lAC);
 
     } else {
         ie = CALLOC(1, sizeof(S1AP_UEContextModificationRequestIEs_t));
@@ -858,10 +858,10 @@ ogs_pkbuf_t *s1ap_build_e_rab_setup_request(
         e_rab->e_RABlevelQoSParameters.gbrQosInformation = gbrQosInformation;
     }
 
-    rv = ogs_s1ap_ip_to_BIT_STRING(
+    rv = ogs_asn_ip_to_BIT_STRING(
             &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress);
     ogs_assert(rv == OGS_OK);
-    ogs_s1ap_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
+    ogs_asn_uint32_to_OCTET_STRING(bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
     ogs_debug("    SGW-S1U-TEID[%d]", bearer->sgw_s1u_teid);
 
     nasPdu = &e_rab->nAS_PDU;
@@ -1228,10 +1228,10 @@ ogs_pkbuf_t *s1ap_build_paging(
     UEPagingID->present = S1AP_UEPagingID_PR_s_TMSI;
     UEPagingID->choice.s_TMSI = 
         CALLOC(1, sizeof(S1AP_S_TMSI_t));
-    ogs_s1ap_uint8_to_OCTET_STRING(mme_ue->guti.mme_code, 
+    ogs_asn_uint8_to_OCTET_STRING(mme_ue->guti.mme_code, 
             &UEPagingID->choice.s_TMSI->mMEC);
 
-    ogs_s1ap_uint32_to_OCTET_STRING(mme_ue->guti.m_tmsi, 
+    ogs_asn_uint32_to_OCTET_STRING(mme_ue->guti.m_tmsi, 
             &UEPagingID->choice.s_TMSI->m_TMSI);
 
     ogs_debug("    MME_CODE[%d] M_TMSI[0x%x]",
@@ -1253,7 +1253,7 @@ ogs_pkbuf_t *s1ap_build_paging(
 
     ogs_s1ap_buffer_to_OCTET_STRING(&mme_ue->tai.plmn_id, sizeof(ogs_plmn_id_t),
             &tai_item->tAI.pLMNidentity);
-    ogs_s1ap_uint16_to_OCTET_STRING(mme_ue->tai.tac, &tai_item->tAI.tAC);
+    ogs_asn_uint16_to_OCTET_STRING(mme_ue->tai.tac, &tai_item->tAI.tAC);
 
     return ogs_s1ap_encode(&pdu);
 }
@@ -1299,7 +1299,7 @@ ogs_pkbuf_t *s1ap_build_mme_configuration_transfer(
 
     SONConfigurationTransfer = &ie->value.choice.SONConfigurationTransfer;
 
-    rv = ogs_s1ap_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
+    rv = ogs_asn_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
             son_configuration_transfer, SONConfigurationTransfer);
     ogs_assert(rv == OGS_OK);
 
@@ -1580,13 +1580,13 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
                 e_rab->dL_transportLayerAddress =
                     (S1AP_TransportLayerAddress_t *)
                     CALLOC(1, sizeof(S1AP_TransportLayerAddress_t));
-                rv = ogs_s1ap_ip_to_BIT_STRING(
+                rv = ogs_asn_ip_to_BIT_STRING(
                         &bearer->sgw_dl_ip, e_rab->dL_transportLayerAddress);
                 ogs_assert(rv == OGS_OK);
 
                 e_rab->dL_gTP_TEID = (S1AP_GTP_TEID_t *)
                     CALLOC(1, sizeof(S1AP_GTP_TEID_t));
-                ogs_s1ap_uint32_to_OCTET_STRING(
+                ogs_asn_uint32_to_OCTET_STRING(
                         bearer->sgw_dl_teid, e_rab->dL_gTP_TEID);
                 ogs_debug("    SGW-DL-TEID[%d]", bearer->sgw_dl_teid);
             }
@@ -1596,13 +1596,13 @@ ogs_pkbuf_t *s1ap_build_handover_command(enb_ue_t *source_ue)
                 e_rab->uL_TransportLayerAddress =
                     (S1AP_TransportLayerAddress_t *)
                     CALLOC(1, sizeof(S1AP_TransportLayerAddress_t));
-                rv = ogs_s1ap_ip_to_BIT_STRING(
+                rv = ogs_asn_ip_to_BIT_STRING(
                     &bearer->sgw_ul_ip, e_rab->uL_TransportLayerAddress);
                 ogs_assert(rv == OGS_OK);
 
                 e_rab->uL_GTP_TEID = (S1AP_GTP_TEID_t *)
                     CALLOC(1, sizeof(S1AP_GTP_TEID_t));
-                ogs_s1ap_uint32_to_OCTET_STRING(
+                ogs_asn_uint32_to_OCTET_STRING(
                         bearer->sgw_ul_teid, e_rab->uL_GTP_TEID);
                 ogs_debug("    SGW-UL-TEID[%d]", bearer->sgw_dl_teid);
             }
@@ -1903,10 +1903,10 @@ ogs_pkbuf_t *s1ap_build_handover_request(
                         gbrQosInformation;
             }
 
-            rv = ogs_s1ap_ip_to_BIT_STRING(
+            rv = ogs_asn_ip_to_BIT_STRING(
                     &bearer->sgw_s1u_ip, &e_rab->transportLayerAddress);
             ogs_assert(rv == OGS_OK);
-            ogs_s1ap_uint32_to_OCTET_STRING(
+            ogs_asn_uint32_to_OCTET_STRING(
                     bearer->sgw_s1u_teid, &e_rab->gTP_TEID);
             ogs_debug("    SGW-S1U-TEID[%d]", bearer->sgw_s1u_teid);
 
@@ -2075,7 +2075,7 @@ ogs_pkbuf_t *s1ap_build_mme_status_transfer(
     ogs_debug("    Target : ENB_UE_S1AP_ID[%d] MME_UE_S1AP_ID[%d]",
             target_ue->enb_ue_s1ap_id, target_ue->mme_ue_s1ap_id);
 
-    rv = ogs_s1ap_copy_ie(
+    rv = ogs_asn_copy_ie(
             &asn_DEF_S1AP_ENB_StatusTransfer_TransparentContainer,
             enb_statustransfer_transparentContainer,
             ENB_StatusTransfer_TransparentContainer);

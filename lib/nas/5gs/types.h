@@ -348,20 +348,7 @@ typedef struct ogs_nas_eps_nas_message_container_s {
 
 /* 9.11.3.25 EPS NAS security algorithms
  * O TV 2 */
-#define OGS_NAS_SECURITY_ALGORITHMS_EIA0        0
-#define OGS_NAS_SECURITY_ALGORITHMS_128_EIA1    1
-#define OGS_NAS_SECURITY_ALGORITHMS_128_EIA2    2
-#define OGS_NAS_SECURITY_ALGORITHMS_128_EIA3    3
-#define OGS_NAS_SECURITY_ALGORITHMS_EEA0        0
-#define OGS_NAS_SECURITY_ALGORITHMS_128_EEA1    1
-#define OGS_NAS_SECURITY_ALGORITHMS_128_EEA2    2
-#define OGS_NAS_SECURITY_ALGORITHMS_128_EEA3    3
-typedef struct ogs_nas_eps_nas_security_algorithms_s {
-ED4(uint8_t spare1:1;,
-    uint8_t type_of_ciphering_algorithm:3;,
-    uint8_t spare2:1;,
-    uint8_t type_of_integrity_protection_algorithm:3;)
-} __attribute__ ((packed)) ogs_nas_eps_nas_security_algorithms_t;
+typedef ogs_nas_security_algorithms_t ogs_nas_eps_nas_security_algorithms_t;
 
 /* 9.11.3.29 LADN indication
  * O TLV-E 3-811 */
@@ -406,31 +393,6 @@ typedef struct ogs_nas_message_container_s {
     uint16_t length;
     uint8_t *buffer;
 } __attribute__ ((packed)) ogs_nas_message_container_t;
-
-/* 9.11.3.34 security algorithms
- * M V 1 */
-#define OGS_NAS_SECURITY_ALGORITHMS_IA0         0
-#define OGS_NAS_SECURITY_ALGORITHMS_128_IA1     1
-#define OGS_NAS_SECURITY_ALGORITHMS_128_IA2     2
-#define OGS_NAS_SECURITY_ALGORITHMS_128_IA3     3
-#define OGS_NAS_SECURITY_ALGORITHMS_IA4         4
-#define OGS_NAS_SECURITY_ALGORITHMS_IA5         5
-#define OGS_NAS_SECURITY_ALGORITHMS_IA6         6
-#define OGS_NAS_SECURITY_ALGORITHMS_IA7         7
-#define OGS_NAS_SECURITY_ALGORITHMS_EA0         0
-#define OGS_NAS_SECURITY_ALGORITHMS_128_EA1     1
-#define OGS_NAS_SECURITY_ALGORITHMS_128_EA2     2
-#define OGS_NAS_SECURITY_ALGORITHMS_128_EA3     3
-#define OGS_NAS_SECURITY_ALGORITHMS_EA4         4
-#define OGS_NAS_SECURITY_ALGORITHMS_EA5         5
-#define OGS_NAS_SECURITY_ALGORITHMS_EA6         6
-#define OGS_NAS_SECURITY_ALGORITHMS_EA7         7
-typedef struct ogs_nas_security_algorithms_s {
-ED4(uint8_t spare1:1;,
-    uint8_t type_of_ciphering_algorithm:3;,
-    uint8_t spare2:1;,
-    uint8_t type_of_integrity_protection_algorithm:3;)
-} __attribute__ ((packed)) ogs_nas_security_algorithms_t;
 
 /* 9.11.3.36 Network slicing indication
  * O TV 1 */
@@ -512,19 +474,6 @@ typedef struct ogs_nas_rejected_nssai_s {
     uint8_t buffer[OGS_MAX_NAS_REJECTED_NSSAI_LEN];
 } ogs_nas_rejected_nssai_t;
 
-/* 9.11.3.47 Request type
- * O TV 1 */
-#define OGS_NAS_REQUEST_TYPE_INITIAL 1
-#define OGS_NAS_REQUEST_TYPE_EXISTING_PDU_SESSION 2
-#define OGS_NAS_REQUEST_TYPE_INITIAL_EMERGENCY 3
-#define OGS_NAS_REQUEST_TYPE_EXISTING_PDU_SESSION_EMERGENCY 4
-#define OGS_NAS_REQUEST_TYPE_MODIFICATION 5
-typedef struct ogs_nas_request_type_s {
-ED3(uint8_t type:4;,
-    uint8_t spare:1;,
-    uint8_t value:3;)
-} __attribute__ ((packed)) ogs_nas_request_type_t;
-
 /* 9.11.3.49 Service area list
  * O TLV 6-114 */
 #define OGS_NAS_MAX_SERVICE_AREA_LIST_LEN 112
@@ -547,10 +496,6 @@ typedef struct ogs_nas_service_area_list_s {
  * 9(unused) shall be interpreted as "signalling", if received by the network
  * 10(unused) shall be interpreted as "data", if received by the network
  * 11(unused) shall be interpreted as "data", if received by the network */
-typedef struct ogs_nas_service_type_s {
-ED2(uint8_t type:4;,
-    uint8_t value:4;)
-} __attribute__ ((packed)) ogs_nas_service_type_t;
 
 /* 9.11.3.50A SMS indication
  * O TV 1 */
@@ -566,63 +511,15 @@ typedef struct ogs_nas_sor_transparent_container_s {
     uint8_t *buffer;
 } ogs_nas_sor_transparent_container_t;
 
-/* 9.11.3.54 UE security capability
- * O TLV 4-10 */
-typedef struct ogs_nas_ue_security_capability_s {
-    uint8_t length;
-    union { 
-        struct {
-        ED8(uint8_t ea0_5g:1;,
-            uint8_t ea1_5g_128:1;,
-            uint8_t ea2_5g_128:1;,
-            uint8_t ea3_5g_128:1;,
-            uint8_t ea4_5g:1;,
-            uint8_t ea5_5g:1;,
-            uint8_t ea6_5g:1;,
-            uint8_t ea7_5g:1;)
-        };
-        uint8_t ea_5g; 
-    };
-    union { 
-        struct {
-        ED8(uint8_t ia0_5g:1;,
-            uint8_t ia1_5g_128:1;,
-            uint8_t ia2_5g_128:1;,
-            uint8_t ia3_5g_128:1;,
-            uint8_t ia4_5g:1;,
-            uint8_t ia5_5g:1;,
-            uint8_t ia6_5g:1;,
-            uint8_t ia7_5g:1;)
-        };
-        uint8_t ia_5g; 
-    };
-    union { 
-        struct {
-        ED8(uint8_t eea0:1;,
-            uint8_t eea1_128:1;,
-            uint8_t eea2_128:1;,
-            uint8_t eea3_128:1;,
-            uint8_t eea4:1;,
-            uint8_t eea5:1;,
-            uint8_t eea6:1;,
-            uint8_t eea7:1;)
-        };
-        uint8_t ea; 
-    };
-    union { 
-        struct {
-        ED8(uint8_t eia0:1;,
-            uint8_t eia1_128:1;,
-            uint8_t eia2_128:1;,
-            uint8_t eia3_128:1;,
-            uint8_t eia4:1;,
-            uint8_t eia5:1;,
-            uint8_t eia6:1;,
-            uint8_t eia7:1;)
-        };
-        uint8_t ia; 
-    };
-} __attribute__ ((packed)) ogs_nas_ue_security_capability_t;
+/* 9.11.3.48 S1 UE network capability
+ * O TLV 4-15 */
+typedef ogs_nas_ue_network_capability_t ogs_nas_s1_ue_network_capability_t;
+
+/* 9.9.3.36 UE security capability
+ * M LV 3-6
+ * 9.11.3.48A S1 UE security capability
+ * O TLV 4-7 */
+typedef ogs_nas_ue_security_capability_t ogs_nas_s1_ue_security_capability_t;
 
 /* 9.11.3.55 UE usage setting
  * O TLV 3 */

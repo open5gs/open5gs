@@ -16,4 +16,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 subdir('common')
+subdir('util')
+subdir('ngap')
 subdir('s1ap')

@@ -27,6 +27,7 @@
 
 #include "nas/common/types.h"
 #include "nas/common/conv.h"
+#include "nas/common/security.h"
 
 #undef OGS_NAS_INSIDE
 

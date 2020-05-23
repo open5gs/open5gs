@@ -26,7 +26,7 @@
 #include "mme-timer.h"
 #include "mme-sm.h"
 
-int nas_send_to_enb(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
+int nas_eps_send_to_enb(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
 {
     enb_ue_t *enb_ue = NULL;
 
@@ -37,7 +37,7 @@ int nas_send_to_enb(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
     return s1ap_send_to_enb_ue(enb_ue, pkbuf);
 }
 
-int nas_send_emm_to_esm(mme_ue_t *mme_ue,
+int nas_eps_send_emm_to_esm(mme_ue_t *mme_ue,
         ogs_nas_esm_message_container_t *esm_message_container)
 {
     int rv;
@@ -63,7 +63,7 @@ int nas_send_emm_to_esm(mme_ue_t *mme_ue,
     return rv;
 }
 
-int nas_send_to_downlink_nas_transport(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
+int nas_eps_send_to_downlink_nas_transport(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
@@ -83,9 +83,9 @@ int nas_send_to_downlink_nas_transport(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
             return OGS_ERROR;
         }
 
-        rv = nas_send_to_enb(mme_ue, s1apbuf);
+        rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
         if (rv != OGS_OK) {
-            ogs_error("nas_send_to_enb() failed");
+            ogs_error("nas_eps_send_to_enb() failed");
             return OGS_ERROR;
         }
     }
@@ -93,7 +93,7 @@ int nas_send_to_downlink_nas_transport(mme_ue_t *mme_ue, ogs_pkbuf_t *pkbuf)
     return OGS_OK;
 }
 
-void nas_send_attach_accept(mme_ue_t *mme_ue)
+void nas_eps_send_attach_accept(mme_ue_t *mme_ue)
 {
     int rv;
     mme_sess_t *sess = NULL;
@@ -118,11 +118,11 @@ void nas_send_attach_accept(mme_ue_t *mme_ue)
     s1apbuf = s1ap_build_initial_context_setup_request(mme_ue, emmbuf);
     ogs_expect_or_return(s1apbuf);
 
-    rv = nas_send_to_enb(mme_ue, s1apbuf);
+    rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect_or_return(rv == OGS_OK);
 }
 
-void nas_send_attach_reject(mme_ue_t *mme_ue,
+void nas_eps_send_attach_reject(mme_ue_t *mme_ue,
     ogs_nas_emm_cause_t emm_cause, ogs_nas_esm_cause_t esm_cause)
 {
     int rv;
@@ -142,11 +142,11 @@ void nas_send_attach_reject(mme_ue_t *mme_ue,
 
     emmbuf = emm_build_attach_reject(emm_cause, esmbuf);
     ogs_expect_or_return(emmbuf);
-    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect_or_return(rv == OGS_OK);
 }
 
-void nas_send_identity_request(mme_ue_t *mme_ue)
+void nas_eps_send_identity_request(mme_ue_t *mme_ue)
 {
     ogs_pkbuf_t *emmbuf = NULL;
 
@@ -166,10 +166,10 @@ void nas_send_identity_request(mme_ue_t *mme_ue)
     ogs_timer_start(mme_ue->t3470.timer, 
             mme_timer_cfg(MME_TIMER_T3470)->duration);
 
-    nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
 }
 
-void nas_send_authentication_request(
+void nas_eps_send_authentication_request(
         mme_ue_t *mme_ue, ogs_diam_e_utran_vector_t *e_utran_vector)
 {
     int rv;
@@ -193,11 +193,11 @@ void nas_send_authentication_request(
     ogs_timer_start(mme_ue->t3460.timer, 
             mme_timer_cfg(MME_TIMER_T3460)->duration);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_security_mode_command(mme_ue_t *mme_ue)
+void nas_eps_send_security_mode_command(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
@@ -219,11 +219,11 @@ void nas_send_security_mode_command(mme_ue_t *mme_ue)
     ogs_timer_start(mme_ue->t3460.timer, 
             mme_timer_cfg(MME_TIMER_T3460)->duration);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_authentication_reject(mme_ue_t *mme_ue)
+void nas_eps_send_authentication_reject(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
@@ -236,11 +236,11 @@ void nas_send_authentication_reject(mme_ue_t *mme_ue)
     emmbuf = emm_build_authentication_reject();
     ogs_expect_or_return(emmbuf);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_detach_accept(mme_ue_t *mme_ue)
+void nas_eps_send_detach_accept(mme_ue_t *mme_ue)
 {
     enb_ue_t *enb_ue = NULL;
     ogs_pkbuf_t *emmbuf = NULL;
@@ -255,7 +255,7 @@ void nas_send_detach_accept(mme_ue_t *mme_ue)
         emmbuf = emm_build_detach_accept(mme_ue);
         ogs_expect_or_return(emmbuf);
 
-        rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+        rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
         ogs_expect_or_return(rv == OGS_OK);
     }
 
@@ -265,7 +265,7 @@ void nas_send_detach_accept(mme_ue_t *mme_ue)
 }
 
 
-void nas_send_pdn_connectivity_reject(
+void nas_eps_send_pdn_connectivity_reject(
     mme_sess_t *sess, ogs_nas_esm_cause_t esm_cause)
 {
     int rv;
@@ -280,17 +280,17 @@ void nas_send_pdn_connectivity_reject(
         esmbuf = esm_build_pdn_connectivity_reject(sess, esm_cause);
         ogs_expect_or_return(esmbuf);
 
-        rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
+        rv = nas_eps_send_to_downlink_nas_transport(mme_ue, esmbuf);
         ogs_expect(rv == OGS_OK);
     } else {
         /* During the UE-attach process, we'll send Attach-Reject 
          * with pyggybacking PDN-connectivity-Reject */
-        nas_send_attach_reject(mme_ue,
+        nas_eps_send_attach_reject(mme_ue,
             EMM_CAUSE_EPS_SERVICES_AND_NON_EPS_SERVICES_NOT_ALLOWED, esm_cause);
     }
 }
 
-void nas_send_esm_information_request(mme_bearer_t *bearer)
+void nas_eps_send_esm_information_request(mme_bearer_t *bearer)
 {
     int rv;
     mme_ue_t *mme_ue = NULL;
@@ -312,11 +312,11 @@ void nas_send_esm_information_request(mme_bearer_t *bearer)
     ogs_timer_start(bearer->t3489.timer, 
             mme_timer_cfg(MME_TIMER_T3489)->duration);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, esmbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_activate_default_bearer_context_request(mme_bearer_t *bearer)
+void nas_eps_send_activate_default_bearer_context_request(mme_bearer_t *bearer)
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
@@ -336,11 +336,11 @@ void nas_send_activate_default_bearer_context_request(mme_bearer_t *bearer)
     s1apbuf = s1ap_build_e_rab_setup_request(bearer, esmbuf);
     ogs_expect_or_return(s1apbuf);
 
-    rv = nas_send_to_enb(mme_ue, s1apbuf);
+    rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_activate_dedicated_bearer_context_request(
+void nas_eps_send_activate_dedicated_bearer_context_request(
         mme_bearer_t *bearer)
 {
     int rv;
@@ -358,23 +358,23 @@ void nas_send_activate_dedicated_bearer_context_request(
     s1apbuf = s1ap_build_e_rab_setup_request(bearer, esmbuf);
     ogs_expect_or_return(s1apbuf);
 
-    rv = nas_send_to_enb(mme_ue, s1apbuf);
+    rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_activate_all_dedicated_bearers(mme_bearer_t *default_bearer)
+void nas_eps_send_activate_all_dedicated_bearers(mme_bearer_t *default_bearer)
 {
     ogs_assert(default_bearer);
 
     mme_bearer_t *dedicated_bearer = mme_bearer_next(default_bearer);
     while (dedicated_bearer) {
-        nas_send_activate_dedicated_bearer_context_request(
+        nas_eps_send_activate_dedicated_bearer_context_request(
                 dedicated_bearer);
         dedicated_bearer = mme_bearer_next(dedicated_bearer);
     }
 }
 
-void nas_send_modify_bearer_context_request(
+void nas_eps_send_modify_bearer_context_request(
         mme_bearer_t *bearer, int qos_presence, int tft_presence)
 {
     int rv;
@@ -394,15 +394,15 @@ void nas_send_modify_bearer_context_request(
         s1apbuf = s1ap_build_e_rab_modify_request(bearer, esmbuf);
         ogs_expect_or_return(s1apbuf);
 
-        rv = nas_send_to_enb(mme_ue, s1apbuf);
+        rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
         ogs_expect(rv == OGS_OK);
     } else {
-        rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
+        rv = nas_eps_send_to_downlink_nas_transport(mme_ue, esmbuf);
         ogs_expect(rv == OGS_OK);
     }
 }
 
-void nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
+void nas_eps_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
 {
     int rv;
     ogs_pkbuf_t *s1apbuf = NULL;
@@ -421,11 +421,11 @@ void nas_send_deactivate_bearer_context_request(mme_bearer_t *bearer)
             S1AP_Cause_PR_nas, S1AP_CauseNas_normal_release);
     ogs_expect_or_return(s1apbuf);
 
-    rv = nas_send_to_enb(mme_ue, s1apbuf);
+    rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_bearer_resource_allocation_reject(
+void nas_eps_send_bearer_resource_allocation_reject(
     mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause)
 {
     int rv;
@@ -439,11 +439,11 @@ void nas_send_bearer_resource_allocation_reject(
     esmbuf = esm_build_bearer_resource_allocation_reject(bearer, esm_cause);
     ogs_expect_or_return(esmbuf);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, esmbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_bearer_resource_modification_reject(
+void nas_eps_send_bearer_resource_modification_reject(
     mme_bearer_t *bearer, ogs_nas_esm_cause_t esm_cause)
 {
     int rv;
@@ -457,11 +457,11 @@ void nas_send_bearer_resource_modification_reject(
     esmbuf = esm_build_bearer_resource_modification_reject(bearer, esm_cause);
     ogs_expect_or_return(esmbuf);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, esmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, esmbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_tau_accept(
+void nas_eps_send_tau_accept(
         mme_ue_t *mme_ue, S1AP_ProcedureCode_t procedureCode)
 {
     int rv;
@@ -480,16 +480,16 @@ void nas_send_tau_accept(
         s1apbuf = s1ap_build_initial_context_setup_request(mme_ue, emmbuf);
         ogs_expect_or_return(s1apbuf);
 
-        rv = nas_send_to_enb(mme_ue, s1apbuf);
+        rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
         ogs_expect(rv == OGS_OK);
     } else if (procedureCode == S1AP_ProcedureCode_id_downlinkNASTransport) {
-        rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+        rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
         ogs_expect(rv == OGS_OK);
     } else
         ogs_assert_if_reached();
 }
 
-void nas_send_tau_reject(mme_ue_t *mme_ue, ogs_nas_emm_cause_t emm_cause)
+void nas_eps_send_tau_reject(mme_ue_t *mme_ue, ogs_nas_emm_cause_t emm_cause)
 {
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
@@ -500,11 +500,11 @@ void nas_send_tau_reject(mme_ue_t *mme_ue, ogs_nas_emm_cause_t emm_cause)
     emmbuf = emm_build_tau_reject(emm_cause, mme_ue);
     ogs_expect_or_return(emmbuf);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_service_reject(mme_ue_t *mme_ue,
+void nas_eps_send_service_reject(mme_ue_t *mme_ue,
         ogs_nas_emm_cause_t emm_cause)
 {
     int rv;
@@ -516,11 +516,11 @@ void nas_send_service_reject(mme_ue_t *mme_ue,
     emmbuf = emm_build_service_reject(emm_cause, mme_ue);
     ogs_expect_or_return(emmbuf);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_cs_service_notification(mme_ue_t *mme_ue)
+void nas_eps_send_cs_service_notification(mme_ue_t *mme_ue)
 {
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
@@ -533,11 +533,11 @@ void nas_send_cs_service_notification(mme_ue_t *mme_ue)
     emmbuf = emm_build_cs_service_notification(mme_ue);
     ogs_expect_or_return(emmbuf);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_send_downlink_nas_transport(
+void nas_eps_send_downlink_nas_transport(
         mme_ue_t *mme_ue, uint8_t *buffer, uint8_t length)
 {
     int rv;
@@ -553,6 +553,6 @@ void nas_send_downlink_nas_transport(
     emmbuf = emm_build_downlink_nas_transport(mme_ue, buffer, length);
     ogs_expect_or_return(emmbuf);
 
-    rv = nas_send_to_downlink_nas_transport(mme_ue, emmbuf);
+    rv = nas_eps_send_to_downlink_nas_transport(mme_ue, emmbuf);
     ogs_expect(rv == OGS_OK);
 }

@@ -107,7 +107,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     ogs_pkbuf_t *pkbuf = NULL;
     int rc;
 
-    ogs_nas_message_t nas_message;
+    ogs_nas_eps_message_t nas_message;
     enb_ue_t *enb_ue = NULL;
     mme_ue_t *mme_ue = NULL;
 
@@ -285,14 +285,14 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
                  * TRACKING_AREA_UPDATE_REQUEST message
                  *
                  * Now, We will check the MAC in the NAS message*/
-                nas_security_header_type_t h;
+                ogs_nas_security_header_type_t h;
                 h.type = e->nas_type;
                 if (h.integrity_protected) {
                     /* Decryption was performed in S1AP handler.
                      * So, we disabled 'ciphered' 
                      * not to decrypt NAS message */
                     h.ciphered = 0;
-                    if (nas_security_decode(mme_ue, h, pkbuf) != OGS_OK) {
+                    if (nas_eps_security_decode(mme_ue, h, pkbuf) != OGS_OK) {
                         ogs_error("nas_security_decode() failed");
                         ogs_pkbuf_free(pkbuf);
                         return;
@@ -415,7 +415,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             uint8_t emm_cause = emm_cause_from_diameter(
                     s6a_message->err, s6a_message->exp_err);
 
-            nas_send_attach_reject(mme_ue,
+            nas_eps_send_attach_reject(mme_ue,
                 emm_cause, ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
             ogs_warn("EMM_CAUSE : %d", emm_cause);
 
@@ -439,11 +439,11 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
 
             if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_initial_context_setup)) {
                 if (mme_ue->nas_eps.type == MME_EPS_TYPE_ATTACH_REQUEST) {
-                    rv = nas_send_emm_to_esm(mme_ue,
+                    rv = nas_eps_send_emm_to_esm(mme_ue,
                             &mme_ue->pdn_connectivity_request);
                     if (rv != OGS_OK) {
-                        ogs_error("nas_send_emm_to_esm() failed");
-                        nas_send_attach_reject(mme_ue,
+                        ogs_error("nas_eps_send_emm_to_esm() failed");
+                        nas_eps_send_attach_reject(mme_ue,
                             EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
                             ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
                     }
@@ -454,7 +454,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
             }
             else if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {
                 if (mme_ue->nas_eps.type == MME_EPS_TYPE_TAU_REQUEST) {
-                    nas_send_tau_accept(mme_ue,
+                    nas_eps_send_tau_accept(mme_ue,
                             S1AP_ProcedureCode_id_InitialContextSetup);
                 } else if (mme_ue->nas_eps.type ==
                     MME_EPS_TYPE_SERVICE_REQUEST) {

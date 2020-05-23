@@ -157,8 +157,8 @@ int s1ap_send_to_esm(mme_ue_t *mme_ue, ogs_pkbuf_t *esmbuf)
 int s1ap_send_to_nas(enb_ue_t *enb_ue,
         S1AP_ProcedureCode_t procedureCode, S1AP_NAS_PDU_t *nasPdu)
 {
-    ogs_nas_security_header_t *sh = NULL;
-    nas_security_header_type_t security_header_type;
+    ogs_nas_eps_security_header_t *sh = NULL;
+    ogs_nas_security_header_type_t security_header_type;
 
     ogs_nas_emm_header_t *h = NULL;
     ogs_pkbuf_t *nasbuf = NULL;
@@ -173,10 +173,10 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     ogs_pkbuf_reserve(nasbuf, OGS_NAS_HEADROOM);
     ogs_pkbuf_put_data(nasbuf, nasPdu->buf, nasPdu->size);
 
-    sh = (ogs_nas_security_header_t *)nasbuf->data;
+    sh = (ogs_nas_eps_security_header_t *)nasbuf->data;
     ogs_assert(sh);
 
-    memset(&security_header_type, 0, sizeof(nas_security_header_type_t));
+    memset(&security_header_type, 0, sizeof(ogs_nas_security_header_type_t));
     switch(sh->security_header_type) {
     case OGS_NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE:
         break;
@@ -210,9 +210,9 @@ int s1ap_send_to_nas(enb_ue_t *enb_ue,
     }
 
     if (enb_ue->mme_ue) {
-        if (nas_security_decode(enb_ue->mme_ue,
+        if (nas_eps_security_decode(enb_ue->mme_ue,
                 security_header_type, nasbuf) != OGS_OK) {
-            ogs_error("nas_security_decode failed()");
+            ogs_error("nas_eps_security_decode failed()");
 	        return OGS_ERROR;
         }
     }
@@ -280,7 +280,7 @@ void s1ap_send_initial_context_setup_request(mme_ue_t *mme_ue)
     s1apbuf = s1ap_build_initial_context_setup_request(mme_ue, NULL);
     ogs_expect_or_return(s1apbuf);
 
-    rv = nas_send_to_enb(mme_ue, s1apbuf);
+    rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
 }
 
@@ -294,7 +294,7 @@ void s1ap_send_ue_context_modification_request(mme_ue_t *mme_ue)
     s1apbuf = s1ap_build_ue_context_modification_request(mme_ue);
     ogs_expect_or_return(s1apbuf);
 
-    rv = nas_send_to_enb(mme_ue, s1apbuf);
+    rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
 }
 
@@ -399,7 +399,7 @@ void s1ap_send_path_switch_ack(mme_ue_t *mme_ue)
     s1apbuf = s1ap_build_path_switch_ack(mme_ue);
     ogs_expect_or_return(s1apbuf);
 
-    rv = nas_send_to_enb(mme_ue, s1apbuf);
+    rv = nas_eps_send_to_enb(mme_ue, s1apbuf);
     ogs_expect(rv == OGS_OK);
 }
 

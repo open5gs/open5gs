@@ -514,7 +514,7 @@ void s1ap_handle_initial_context_setup_response(
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
-        rv = ogs_s1ap_BIT_STRING_to_ip(
+        rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         ogs_assert(rv == OGS_OK);
 
@@ -810,7 +810,7 @@ void s1ap_handle_e_rab_setup_response(
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
-        rv = ogs_s1ap_BIT_STRING_to_ip(
+        rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         ogs_assert(rv == OGS_OK);
 
@@ -1198,7 +1198,7 @@ void s1ap_handle_path_switch_request(
         memcpy(&bearer->enb_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->enb_s1u_teid));
         bearer->enb_s1u_teid = ntohl(bearer->enb_s1u_teid);
-        rv = ogs_s1ap_BIT_STRING_to_ip(
+        rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->enb_s1u_ip);
         ogs_expect(rv == OGS_OK);
 
@@ -1502,7 +1502,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, ogs_s1ap_message_t *messag
         memcpy(&bearer->target_s1u_teid, e_rab->gTP_TEID.buf, 
                 sizeof(bearer->target_s1u_teid));
         bearer->target_s1u_teid = ntohl(bearer->target_s1u_teid);
-        rv = ogs_s1ap_BIT_STRING_to_ip(
+        rv = ogs_asn_BIT_STRING_to_ip(
                 &e_rab->transportLayerAddress, &bearer->target_s1u_ip);
         ogs_assert(rv == OGS_OK);
 
@@ -1512,7 +1512,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, ogs_s1ap_message_t *messag
             memcpy(&bearer->enb_dl_teid, e_rab->dL_gTP_TEID->buf, 
                     sizeof(bearer->enb_dl_teid));
             bearer->enb_dl_teid = ntohl(bearer->enb_dl_teid);
-            rv = ogs_s1ap_BIT_STRING_to_ip(
+            rv = ogs_asn_BIT_STRING_to_ip(
                     e_rab->dL_transportLayerAddress, &bearer->enb_dl_ip);
             ogs_assert(rv == OGS_OK);
         }
@@ -1523,7 +1523,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, ogs_s1ap_message_t *messag
             memcpy(&bearer->enb_ul_teid, e_rab->uL_GTP_TEID->buf, 
                     sizeof(bearer->enb_ul_teid));
             bearer->enb_ul_teid = ntohl(bearer->enb_ul_teid);
-            rv = ogs_s1ap_BIT_STRING_to_ip(
+            rv = ogs_asn_BIT_STRING_to_ip(
                     e_rab->uL_TransportLayerAddress, &bearer->enb_ul_ip);
             ogs_assert(rv == OGS_OK);
         }

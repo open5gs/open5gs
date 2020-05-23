@@ -30,6 +30,20 @@
 extern "C" {
 #endif
 
+/* The Packet Buffer(ogs_pkbuf_t) for NAS message MUST make a HEADROOM. 
+ * When calculating AES_CMAC, we need to use the headroom of the packet. */
+#define OGS_NAS_HEADROOM 16
+
+#define OGS_NAS_SECURITY_HEADER_PLAIN_NAS_MESSAGE 0
+#define OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED 1
+#define OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED 2
+#define OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT 3
+#define OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT 4
+#define OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_PARTICALLY_CIPHTERD 5
+#define OGS_NAS_SECURITY_HEADER_FOR_SERVICE_REQUEST_MESSAGE 12
+
+#define OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
+
 #define OGS_NAS_CLEAR_DATA(__dATA) \
     do { \
         ogs_assert((__dATA)); \
@@ -52,8 +66,23 @@ extern "C" {
 
 #define OGS_NAS_KSI_NO_KEY_IS_AVAILABLE             0x7
 
-/**********************************
- * NAS PLMN_ID Structure             */
+/****************************
+ * NAS Security Header Type */
+typedef struct ogs_nas_security_header_type_s {
+    union {
+        struct {
+        ED5(uint8_t integrity_protected:1;,
+            uint8_t ciphered:1;,
+            uint8_t new_security_context:1;,
+            uint8_t service_request:1;,
+            uint8_t reserved:4;)
+        };
+        uint8_t type;
+    };
+} __attribute__ ((packed)) ogs_nas_security_header_type_t;
+
+/*************************
+ * NAS PLMN_ID Structure */
 typedef struct ogs_nas_plmn_id_s {
 ED2(uint8_t mcc2:4;,
     uint8_t mcc1:4;)
@@ -354,6 +383,51 @@ ED3(uint8_t type:4;,
     uint8_t value:3;)
 } __attribute__ ((packed)) ogs_nas_key_set_identifier_t;
 
+/* 9.9.3.23 NAS security algorithms
+ * M V 1
+ * 9.11.3.34 security algorithms
+ * M V 1 */
+#define OGS_NAS_SECURITY_ALGORITHMS_EIA0        0
+#define OGS_NAS_SECURITY_ALGORITHMS_128_EIA1    1
+#define OGS_NAS_SECURITY_ALGORITHMS_128_EIA2    2
+#define OGS_NAS_SECURITY_ALGORITHMS_128_EIA3    3
+#define OGS_NAS_SECURITY_ALGORITHMS_EEA0        0
+#define OGS_NAS_SECURITY_ALGORITHMS_128_EEA1    1
+#define OGS_NAS_SECURITY_ALGORITHMS_128_EEA2    2
+#define OGS_NAS_SECURITY_ALGORITHMS_128_EEA3    3
+#define OGS_NAS_SECURITY_ALGORITHMS_IA0         0
+#define OGS_NAS_SECURITY_ALGORITHMS_128_IA1     1
+#define OGS_NAS_SECURITY_ALGORITHMS_128_IA2     2
+#define OGS_NAS_SECURITY_ALGORITHMS_128_IA3     3
+#define OGS_NAS_SECURITY_ALGORITHMS_IA4         4
+#define OGS_NAS_SECURITY_ALGORITHMS_IA5         5
+#define OGS_NAS_SECURITY_ALGORITHMS_IA6         6
+#define OGS_NAS_SECURITY_ALGORITHMS_IA7         7
+#define OGS_NAS_SECURITY_ALGORITHMS_EA0         0
+#define OGS_NAS_SECURITY_ALGORITHMS_128_EA1     1
+#define OGS_NAS_SECURITY_ALGORITHMS_128_EA2     2
+#define OGS_NAS_SECURITY_ALGORITHMS_128_EA3     3
+#define OGS_NAS_SECURITY_ALGORITHMS_EA4         4
+#define OGS_NAS_SECURITY_ALGORITHMS_EA5         5
+#define OGS_NAS_SECURITY_ALGORITHMS_EA6         6
+#define OGS_NAS_SECURITY_ALGORITHMS_EA7         7
+typedef struct ogs_nas_security_algorithms_s {
+ED2(uint8_t type_of_ciphering_algorithm:4;,
+    uint8_t type_of_integrity_protection_algorithm:4;)
+} __attribute__ ((packed)) ogs_nas_security_algorithms_t;
+
+/* 9.9.3.27 Service type
+ * M V 1/2 
+ * 9.9.3.21 NAS key set identifier 
+ * M V 1/2
+ * 9.11.3.50 Service type
+ * M V 1/2 */
+typedef struct ogs_nas_service_type_s {
+ED3(uint8_t tsc:1;,
+    uint8_t nas_key_set_identifier:3;,
+    uint8_t value:4;)
+} __attribute__ ((packed)) ogs_nas_service_type_t;
+
 /* 9.9.3.24 Network name
  * See subclause 10.5.3.5a in 3GPP TS 24.008 [13].
  * O TLV 3-n */
@@ -447,8 +521,10 @@ void ogs_nas_tai_list_build(
         tai0_list_t *source0, tai2_list_t *source2);
 
 /* 9.9.3.34 UE network capability
- * M LV  3-14 */
-typedef struct ogs_nas_s1_ue_network_capability_s {
+ * M LV 3-14
+ * 9.11.3.48 S1 UE network capability
+ * O TLV 4-15 */
+typedef struct ogs_nas_ue_network_capability_s {
     uint8_t length;
     union { 
         struct {
@@ -520,11 +596,13 @@ ED8(uint8_t epco:1;,
     uint8_t prose_dc:1;)
 ED2(uint8_t spare:7;,
     uint8_t multiple_drb:1;)
-} __attribute__ ((packed)) ogs_nas_s1_ue_network_capability_t;
+} __attribute__ ((packed)) ogs_nas_ue_network_capability_t;
 
 /* 9.9.3.36 UE security capability
- * M LV 3-6 */
-typedef struct ogs_nas_s1_ue_security_capability_s {
+ * M LV 3-6
+ * 9.11.3.48A UE security capability
+ * O TLV 4-10 */
+typedef struct ogs_nas_ue_security_capability_s {
     uint8_t length;
     union {
         struct {
@@ -538,6 +616,18 @@ typedef struct ogs_nas_s1_ue_security_capability_s {
             uint8_t eea7:1;)
         };
         uint8_t eea;
+
+        struct {
+        ED8(uint8_t ea0_5g:1;,
+            uint8_t ea1_5g_128:1;,
+            uint8_t ea2_5g_128:1;,
+            uint8_t ea3_5g_128:1;,
+            uint8_t ea4_5g:1;,
+            uint8_t ea5_5g:1;,
+            uint8_t ea6_5g:1;,
+            uint8_t ea7_5g:1;)
+        };
+        uint8_t ea_5g; 
     };
     union {
         struct {
@@ -551,6 +641,18 @@ typedef struct ogs_nas_s1_ue_security_capability_s {
             uint8_t eia7:1;)
         };
         uint8_t eia;
+
+        struct {
+        ED8(uint8_t ia0_5g:1;,
+            uint8_t ia1_5g_128:1;,
+            uint8_t ia2_5g_128:1;,
+            uint8_t ia3_5g_128:1;,
+            uint8_t ia4_5g:1;,
+            uint8_t ia5_5g:1;,
+            uint8_t ia6_5g:1;,
+            uint8_t ia7_5g:1;)
+        };
+        uint8_t ia_5g; 
     };
     union {
         struct {
@@ -564,6 +666,18 @@ typedef struct ogs_nas_s1_ue_security_capability_s {
             uint8_t uea7:1;)
         };
         uint8_t uea;
+
+        struct {
+        ED8(uint8_t ea0:1;,
+            uint8_t ea1_128:1;,
+            uint8_t ea2_128:1;,
+            uint8_t ea3_128:1;,
+            uint8_t ea4:1;,
+            uint8_t ea5:1;,
+            uint8_t ea6:1;,
+            uint8_t ea7:1;)
+        };
+        uint8_t ea; 
     };
     union {
         struct {
@@ -577,6 +691,18 @@ typedef struct ogs_nas_s1_ue_security_capability_s {
             uint8_t uia7:1;)
         };
         uint8_t uia;
+
+        struct {
+        ED8(uint8_t ia0:1;,
+            uint8_t ia1_128:1;,
+            uint8_t ia2_128:1;,
+            uint8_t ia3_128:1;,
+            uint8_t ia4:1;,
+            uint8_t ia5:1;,
+            uint8_t ia6:1;,
+            uint8_t ia7:1;)
+        };
+        uint8_t ia; 
     };
     union {
         struct {
@@ -591,7 +717,7 @@ typedef struct ogs_nas_s1_ue_security_capability_s {
         };
         uint8_t gea;
     };
-} __attribute__ ((packed)) ogs_nas_s1_ue_security_capability_t;
+} __attribute__ ((packed)) ogs_nas_ue_security_capability_t;
 
 /* 9.9.3.62 WUS assistance information
  * O TLV 3-n */
@@ -673,6 +799,31 @@ typedef struct ogs_nas_eps_quality_of_service_s {
 void eps_qos_build(ogs_nas_eps_quality_of_service_t *eps_qos,
     uint8_t qci,
     uint64_t dl_mbr, uint64_t ul_mbr, uint64_t dl_gbr, uint64_t ul_gbr);
+
+/* 9.9.4.14 Request type
+ * M V 1/2
+ * See subclause 10.5.6.17 in 3GPP TS 24.008 [13].
+ * 9.9.4.10 PDN type "PDN type
+ * M V 1/2
+ * 9.11.3.47 Request type
+ * O TV 1 */
+#define OGS_NAS_EPS_REQUEST_TYPE_INITIAL                        1
+#define OGS_NAS_EPS_REQUEST_TYPE_HANDOVER                       2
+#define OGS_NAS_EPS_REQUEST_TYPE_EMERGENCY                      4
+#define OGS_NAS_EPS_PDN_TYPE_IPV4                               1
+#define OGS_NAS_EPS_PDN_TYPE_IPV6                               2
+#define OGS_NAS_EPS_PDN_TYPE_IPV4V6                             3
+#define OGS_NAS_EPS_PDN_TYPE_NON_IP                             5
+#define OGS_NAS_5GS_REQUEST_TYPE_INITIAL                        1
+#define OGS_NAS_5GS_REQUEST_TYPE_EXISTING_PDU_SESSION           2
+#define OGS_NAS_5GS_REQUEST_TYPE_INITIAL_EMERGENCY              3
+#define OGS_NAS_5GS_REQUEST_TYPE_EXISTING_PDU_SESSION_EMERGENCY 4
+#define OGS_NAS_5GS_REQUEST_TYPE_MODIFICATION                   5
+typedef struct ogs_nas_request_type_s {
+ED3(uint8_t type:4;,
+    uint8_t spare:1;,
+    uint8_t value:3;)
+} __attribute__ ((packed)) ogs_nas_request_type_t;
 
 /* 9.9.4.13A Re-attempt indicator
  * O TLV 3 */

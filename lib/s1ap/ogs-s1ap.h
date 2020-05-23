@@ -541,6 +541,8 @@
 #include "S1AP_X2TNLConfigurationInfo.h"
 #include "S1AP_asn_constant.h"
 
+#include "asn1c/util/conv.h"
+
 #define OGS_S1AP_INSIDE
 
 #include "s1ap/conv.h"

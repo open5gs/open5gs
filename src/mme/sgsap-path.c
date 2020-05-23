@@ -210,8 +210,8 @@ void sgsap_send_reset_ack(mme_vlr_t *vlr)
     ogs_expect(rv == OGS_OK);
 }
 
-void sgsap_send_uplink_unitdata(
-        mme_ue_t *mme_ue, ogs_nas_message_container_t *nas_message_container)
+void sgsap_send_uplink_unitdata(mme_ue_t *mme_ue,
+        ogs_nas_eps_message_container_t *nas_message_container)
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;

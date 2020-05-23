@@ -151,19 +151,16 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     req->selection_mode.u8 = 
         OGS_GTP_SELECTION_MODE_MS_OR_NETWORK_PROVIDED_APN | 0xfc;
 
-    ogs_assert(sess->request_type.pdn_type ==
-            OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4 ||
-            sess->request_type.pdn_type ==
-            OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV6 ||
-            sess->request_type.pdn_type ==
-            OGS_NAS_PDN_CONNECTIVITY_PDN_TYPE_IPV4V6);
+    ogs_assert(sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4 ||
+            sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV6 ||
+            sess->request_type.type == OGS_NAS_EPS_PDN_TYPE_IPV4V6);
     if (pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4 ||
         pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV6 ||
         pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4V6) {
-        req->pdn_type.u8 = ((pdn->pdn_type + 1) & sess->request_type.pdn_type);
+        req->pdn_type.u8 = ((pdn->pdn_type + 1) & sess->request_type.type);
         ogs_assert(req->pdn_type.u8 != 0);
     } else if (pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4_OR_IPV6) {
-        req->pdn_type.u8 = sess->request_type.pdn_type;
+        req->pdn_type.u8 = sess->request_type.type;
     } else {
         ogs_fatal("Invalid PDN_TYPE[%d]\n", pdn->pdn_type);
         ogs_assert_if_reached();
@@ -737,13 +734,13 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
 }
 
 ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
-        uint8_t type, mme_bearer_t *bearer, ogs_nas_message_t *nas_message)
+        uint8_t type, mme_bearer_t *bearer, ogs_nas_eps_message_t *nas_message)
 {
     ogs_gtp_message_t gtp_message;
     ogs_gtp_bearer_resource_command_t *cmd =
         &gtp_message.bearer_resource_command;
-    ogs_nas_bearer_resource_allocation_request_t *allocation = NULL;
-    ogs_nas_bearer_resource_modification_request_t *modification = NULL;
+    ogs_nas_eps_bearer_resource_allocation_request_t *allocation = NULL;
+    ogs_nas_eps_bearer_resource_modification_request_t *modification = NULL;
 
     ogs_nas_eps_quality_of_service_t *qos = NULL;
     ogs_nas_traffic_flow_aggregate_description_t *tad = NULL;
@@ -763,15 +760,15 @@ ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
 
     ogs_assert(nas_message);
         switch (nas_message->esm.h.message_type) {
-        case OGS_NAS_BEARER_RESOURCE_ALLOCATION_REQUEST:
+        case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST:
             allocation = &nas_message->esm.bearer_resource_allocation_request;
             qos = &allocation->required_traffic_flow_qos;
             tad = &allocation->traffic_flow_aggregate;
             break;
-        case OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST:
+        case OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST:
             modification = &nas_message->esm.bearer_resource_modification_request;
             if (modification->presencemask &
-                OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT) {
+                OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT) {
                 qos = &modification->required_traffic_flow_qos;
             }
             tad = &modification->traffic_flow_aggregate;

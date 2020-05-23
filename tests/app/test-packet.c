@@ -285,7 +285,7 @@ int tests1ap_build_setup_req(
 
     SupportedTAs_Item = (S1AP_SupportedTAs_Item_t *)
         CALLOC(1, sizeof(S1AP_SupportedTAs_Item_t));
-    ogs_s1ap_uint16_to_OCTET_STRING(tac, &SupportedTAs_Item->tAC);
+    ogs_asn_uint16_to_OCTET_STRING(tac, &SupportedTAs_Item->tAC);
     PLMNidentity = (S1AP_PLMNidentity_t *)
         CALLOC(1, sizeof(S1AP_PLMNidentity_t));
     ogs_s1ap_buffer_to_OCTET_STRING(
@@ -1171,9 +1171,9 @@ int tests1ap_build_initial_context_setup_response(
     rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
     ogs_assert(rv == OGS_OK);
 
-    rv = ogs_s1ap_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
+    rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
     ogs_assert(rv == OGS_OK);
-    ogs_s1ap_uint32_to_OCTET_STRING(teid, &e_rab->gTP_TEID);
+    ogs_asn_uint32_to_OCTET_STRING(teid, &e_rab->gTP_TEID);
 
     *pkbuf = ogs_s1ap_encode(&pdu);
     if (*pkbuf == NULL) {
@@ -2144,9 +2144,9 @@ int tests1ap_build_e_rab_setup_response(
     rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
     ogs_assert(rv == OGS_OK);
 
-    rv = ogs_s1ap_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
+    rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
     ogs_assert(rv == OGS_OK);
-    ogs_s1ap_uint32_to_OCTET_STRING(teid, &e_rab->gTP_TEID);
+    ogs_asn_uint32_to_OCTET_STRING(teid, &e_rab->gTP_TEID);
 
     *pkbuf = ogs_s1ap_encode(&pdu);
     if (*pkbuf == NULL) {
@@ -2471,8 +2471,8 @@ static void build_bearer_resource_modification_request(ogs_pkbuf_t **pkbuf,
     int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
-    ogs_nas_message_t message;
-    ogs_nas_bearer_resource_modification_request_t
+    ogs_nas_eps_message_t message;
+    ogs_nas_eps_bearer_resource_modification_request_t
         *req = &message.esm.bearer_resource_modification_request;
     ogs_nas_traffic_flow_aggregate_description_t *tad =
         &req->traffic_flow_aggregate;
@@ -2488,7 +2488,8 @@ static void build_bearer_resource_modification_request(ogs_pkbuf_t **pkbuf,
     message.esm.h.eps_bearer_identity = 0;
     message.esm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_ESM;
     message.esm.h.procedure_transaction_identity = pti;
-    message.esm.h.message_type = OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST;
+    message.esm.h.message_type =
+        OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST;
 
     req->eps_bearer_identity_for_packet_filter.eps_bearer_identity = ebi;
 
@@ -2637,7 +2638,8 @@ static void build_bearer_resource_modification_request(ogs_pkbuf_t **pkbuf,
             &tft, tad->buffer, OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE);
 
     if (ul_mbr || dl_mbr || ul_gbr || dl_gbr) {
-        req->presencemask |= OGS_NAS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT;
+        req->presencemask |=
+            OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT;
         qos->length = 5;
         qos->qci = qci;
         qos->ul_mbr = ul_mbr;
@@ -2646,7 +2648,7 @@ static void build_bearer_resource_modification_request(ogs_pkbuf_t **pkbuf,
         qos->dl_gbr = dl_gbr;
     }
 
-    emmbuf = ogs_nas_plain_encode(&message);
+    emmbuf = ogs_nas_eps_plain_encode(&message);
 
     message.h.security_header_type =
        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
@@ -2654,8 +2656,8 @@ static void build_bearer_resource_modification_request(ogs_pkbuf_t **pkbuf,
     message.h.message_authentication_code = htobe32(mac);
     message.h.sequence_number = seq;
 
-    ogs_assert(ogs_pkbuf_push(emmbuf, sizeof(ogs_nas_security_header_t)));
-    memcpy(emmbuf->data, &message.h, sizeof(ogs_nas_security_header_t));
+    ogs_assert(ogs_pkbuf_push(emmbuf, sizeof(ogs_nas_eps_security_header_t)));
+    memcpy(emmbuf->data, &message.h, sizeof(ogs_nas_eps_security_header_t));
 
     *pkbuf = emmbuf;
 }
@@ -2915,9 +2917,9 @@ int tests1ap_build_path_switch_request(
         rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
         ogs_assert(rv == OGS_OK);
 
-        rv = ogs_s1ap_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
+        rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
         ogs_assert(rv == OGS_OK);
-        ogs_s1ap_uint32_to_OCTET_STRING(teid+i, &e_rab->gTP_TEID);
+        ogs_asn_uint32_to_OCTET_STRING(teid+i, &e_rab->gTP_TEID);
     }
 
     ogs_s1ap_buffer_to_OCTET_STRING(
@@ -2932,7 +2934,7 @@ int tests1ap_build_path_switch_request(
     EUTRAN_CGI->cell_ID.buf[3] = (mme_ue->e_cgi.cell_id);
     EUTRAN_CGI->cell_ID.bits_unused = 4;
 
-    ogs_s1ap_uint16_to_OCTET_STRING(
+    ogs_asn_uint16_to_OCTET_STRING(
             mme_ue->tai.tac, &TAI->tAC);
     ogs_s1ap_buffer_to_OCTET_STRING(
             &mme_ue->tai.plmn_id, OGS_PLMN_ID_LEN, &TAI->pLMNidentity);
@@ -3176,27 +3178,27 @@ int tests1ap_build_handover_request_ack(
         rv = ogs_gtp_f_teid_to_ip(&f_teid, &ip);
         ogs_assert(rv == OGS_OK);
 
-        rv = ogs_s1ap_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
+        rv = ogs_asn_ip_to_BIT_STRING(&ip, &e_rab->transportLayerAddress);
         ogs_assert(rv == OGS_OK);
-        ogs_s1ap_uint32_to_OCTET_STRING(teid+i, &e_rab->gTP_TEID);
+        ogs_asn_uint32_to_OCTET_STRING(teid+i, &e_rab->gTP_TEID);
 
         e_rab->dL_transportLayerAddress =
             (S1AP_TransportLayerAddress_t *)
             CALLOC(1, sizeof(S1AP_TransportLayerAddress_t));
-        rv = ogs_s1ap_ip_to_BIT_STRING(&ip, e_rab->dL_transportLayerAddress);
+        rv = ogs_asn_ip_to_BIT_STRING(&ip, e_rab->dL_transportLayerAddress);
         ogs_assert(rv == OGS_OK);
         e_rab->dL_gTP_TEID = (S1AP_GTP_TEID_t *)
             CALLOC(1, sizeof(S1AP_GTP_TEID_t));
-        ogs_s1ap_uint32_to_OCTET_STRING(teid+i+10, e_rab->dL_gTP_TEID);
+        ogs_asn_uint32_to_OCTET_STRING(teid+i+10, e_rab->dL_gTP_TEID);
 
         e_rab->uL_TransportLayerAddress =
             (S1AP_TransportLayerAddress_t *)
             CALLOC(1, sizeof(S1AP_TransportLayerAddress_t));
-        rv = ogs_s1ap_ip_to_BIT_STRING(&ip, e_rab->uL_TransportLayerAddress);
+        rv = ogs_asn_ip_to_BIT_STRING(&ip, e_rab->uL_TransportLayerAddress);
         ogs_assert(rv == OGS_OK);
         e_rab->uL_GTP_TEID = (S1AP_GTP_TEID_t *)
             CALLOC(1, sizeof(S1AP_GTP_TEID_t));
-        ogs_s1ap_uint32_to_OCTET_STRING(teid+i+20, e_rab->uL_GTP_TEID);
+        ogs_asn_uint32_to_OCTET_STRING(teid+i+20, e_rab->uL_GTP_TEID);
     }
 
     ogs_s1ap_buffer_to_OCTET_STRING(

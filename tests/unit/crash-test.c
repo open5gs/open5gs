@@ -140,9 +140,9 @@ static void test1_func(abts_case *tc, void *data)
         memset(&sgw_s1u_ip, 0, sizeof(sgw_s1u_ip));
         sgw_s1u_ip.ipv4 = 1;
         sgw_s1u_ip.ipv6 = 0;
-        rv = ogs_s1ap_ip_to_BIT_STRING(
+        rv = ogs_asn_ip_to_BIT_STRING(
                 &sgw_s1u_ip, &e_rab->transportLayerAddress);
-        ogs_s1ap_uint32_to_OCTET_STRING(sgw_s1u_teid, &e_rab->gTP_TEID);
+        ogs_asn_uint32_to_OCTET_STRING(sgw_s1u_teid, &e_rab->gTP_TEID);
     }
 
     ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
@@ -215,7 +215,7 @@ static void test1_func(abts_case *tc, void *data)
 
         ogs_s1ap_buffer_to_OCTET_STRING(&plmn_id, sizeof(ogs_plmn_id_t),
                 &LAI->pLMNidentity);
-        ogs_s1ap_uint16_to_OCTET_STRING(lac, &LAI->lAC);
+        ogs_asn_uint16_to_OCTET_STRING(lac, &LAI->lAC);
 
     }
     
@@ -284,7 +284,7 @@ static int test_build_mme_configuration_transfer(
 
     SONConfigurationTransfer = &ie->value.choice.SONConfigurationTransfer;
 
-    rv = ogs_s1ap_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
+    rv = ogs_asn_copy_ie(&asn_DEF_S1AP_SONConfigurationTransfer,
             son_configuration_transfer, SONConfigurationTransfer);
     ogs_assert(rv == OGS_OK);
 
