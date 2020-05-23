@@ -15,7 +15,9 @@ The agreements used by the Open5GS project are standard documents provided by Pr
 
 ### 2. How do I complete and submit the CLA?
 
-The Open5GS CLAs can be found [here]({{ site.url }}{{ site.baseurl }}/assets/cla/). 
+The Open5GS CLAs can be found as below.
+- [I am an individual]({{ site.url }}{{ site.baseurl }}/assets/cla/Open5GS-Individual.pdf). 
+- [I am a legal entity (corporation)]({{ site.url }}{{ site.baseurl }}/assets/cla//Open5GS-Entity.pdf)
 
 **(Email)** Download the appropriate CLA, then print, sign and scan the document before sending by email to [acetcom@gmail.com](mailto:acetcom@gmail.com).
 

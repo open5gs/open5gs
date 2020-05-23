@@ -12,7 +12,7 @@ Voice and text chat available in Open5GS's [Discord](https://discordapp.com/) wo
 
 ## Contributing
 
-If you're contributing through a pull request to Open5GS project on GitHub, please read the [Contributor License Agreement](https://open5gs.org/open5gs/cla) in advance.
+If you're contributing through a pull request to Open5GS project on GitHub, please read the [Contributor License Agreement](https://open5gs.org/open5gs/cla/) in advance.
 
 ## License
 
