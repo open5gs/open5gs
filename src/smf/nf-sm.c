@@ -201,10 +201,11 @@ void smf_nf_state_registered(ogs_fsm_t *s, smf_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        client = nf_instance->client;
-        ogs_assert(client);
         if (NF_INSTANCE_IS_SELF(nf_instance->id)) {
             ogs_info("NF registered [%s]", nf_instance->id);
+
+            client = nf_instance->client;
+            ogs_assert(client);
 
             if (nf_instance->time.heartbeat) {
                 ogs_timer_start(nf_instance->t_heartbeat_interval,

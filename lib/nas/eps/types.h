@@ -28,6 +28,15 @@
 extern "C" {
 #endif
 
+/**********************
+ * NAS GUTI Structure */
+typedef struct ogs_nas_eps_guti_s {
+    ogs_nas_plmn_id_t nas_plmn_id;
+    uint16_t mme_gid;
+    uint8_t mme_code;
+    uint32_t m_tmsi;
+} __attribute__ ((packed)) ogs_nas_eps_guti_t;
+
 /* 9.9.2.0A Device properties
  * See subclause 10.5.7.8 in 3GPP TS 24.008 [13].
  * O TV 1 */
@@ -417,6 +426,57 @@ ED3(uint8_t type:4;,
     uint8_t spare:3;,
     uint8_t tmsi_flag:1;)
 } __attribute__ ((packed)) ogs_nas_tmsi_status_t;
+
+/* 9.9.3.32 Tracking area identity
+ * O TV 6 */
+typedef struct ogs_nas_tracking_area_identity_s {
+    ogs_nas_plmn_id_t nas_plmn_id;
+    uint16_t tac;
+} __attribute__ ((packed)) ogs_nas_tracking_area_identity_t;
+
+typedef ogs_nas_tracking_area_identity_t ogs_nas_eps_tai_t;
+
+/* 9.9.3.33 Tracking area identity list
+ * M LV 7-97 */
+#define OGS_NAS_EPS_MAX_TAI_LIST_LEN    96
+typedef struct ogs_eps_tai0_list_s {
+    struct {
+    ED3(uint8_t spare:1;,
+        uint8_t type:2;,
+        uint8_t num:5;)
+        /*
+         * Do not change 'ogs_plmn_id_t' to 'ogs_nas_plmn_id_t'.
+         * Use 'ogs_plmn_id_t' for easy implementation.
+         * ogs_nas_tai_list_build() changes to NAS format(ogs_nas_plmn_id_t)
+         * and is sent to the UE.
+         */
+        ogs_plmn_id_t plmn_id;
+        uint16_t tac[OGS_MAX_NUM_OF_TAI];
+    } __attribute__ ((packed)) tai[OGS_MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) ogs_eps_tai0_list_t;
+
+typedef struct ogs_eps_tai2_list_s {
+ED3(uint8_t spare:1;,
+    uint8_t type:2;,
+    uint8_t num:5;)
+    /*
+     * Do not change 'ogs_eps_tai_t' to 'ogs_nas_tracking_area_identity_t'.
+     * Use 'ogs_eps_tai_t' for easy implementation.
+     * ogs_nas_tai_list_build() changes to NAS 
+     * format(ogs_nas_tracking_area_identity_t)
+     * and is sent to the UE.
+     */
+    ogs_eps_tai_t tai[OGS_MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) ogs_eps_tai2_list_t;
+
+typedef struct ogs_nas_tracking_area_identity_list_s {
+    uint8_t length;
+    uint8_t buffer[OGS_NAS_EPS_MAX_TAI_LIST_LEN];
+} __attribute__ ((packed)) ogs_nas_tracking_area_identity_list_t;
+
+void ogs_nas_tai_list_build(ogs_nas_tracking_area_identity_list_t *target,
+        ogs_eps_tai0_list_t *source0, ogs_eps_tai2_list_t *source2);
+
 
 /* 9.9.3.35 UE radio capability information update needed
  * O TV 1 */

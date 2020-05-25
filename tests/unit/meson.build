@@ -28,6 +28,6 @@ testunit_sources = files('''
 testunit_exe = executable('unit',
     sources : testunit_sources,
     c_args : [testcore_cc_flags, sbi_cc_flags],
-    dependencies : [libtestapp_dep, libsbi_dep])
+    dependencies : [libtestepc_dep, libsbi_dep])
 
 test('unit', testunit_exe, is_parallel : false, suite: 'unit')

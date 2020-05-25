@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,22 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-app.h"
+#include "test-5gc.h"
 
-abts_suite *test_s1setup(abts_suite *suite);
-abts_suite *test_attach(abts_suite *suite);
-abts_suite *test_volte(abts_suite *suite);
-abts_suite *test_handover(abts_suite *suite);
-abts_suite *test_crash(abts_suite *suite);
+abts_suite *test_minimal(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
-    {test_s1setup},
-    {test_attach},
-    {test_volte},
-    {test_handover},
-    {test_crash},
+    {test_minimal},
     {NULL},
 };
 
@@ -43,7 +35,7 @@ static void terminate(void)
     test_child_terminate();
     app_terminate();
 
-    test_app_final();
+    test_5gc_final();
     ogs_app_terminate();
 }
 
@@ -53,7 +45,7 @@ static void initialize(const char *const argv[])
 
     rv = ogs_app_initialize(NULL, argv);
     ogs_assert(rv == OGS_OK);
-    test_app_init();
+    test_5gc_init();
 
     rv = app_initialize(argv);
     ogs_assert(rv == OGS_OK);
@@ -65,7 +57,7 @@ int main(int argc, const char *const argv[])
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_app_run(argc, argv, "simple.yaml", initialize);
+    test_5gc_run(argc, argv, "minimal.yaml", initialize);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

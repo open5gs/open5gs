@@ -97,13 +97,6 @@ void *ogs_nas_from_plmn_id(
 void *ogs_nas_to_plmn_id(
         ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id);
 
-typedef struct ogs_nas_guti_s {
-    ogs_nas_plmn_id_t nas_plmn_id;
-    uint16_t mme_gid;
-    uint8_t mme_code;
-    uint32_t m_tmsi;
-} __attribute__ ((packed)) ogs_nas_guti_t;
-
 /* 9.9.2.0 Additional information
  * O TLV 3-n */
 #define NAX_MAX_ADDITIONAL_INFORMATION_LEN 255
@@ -466,59 +459,13 @@ typedef struct ogs_nas_time_zone_and_time_s {
     uint8_t timezone;  
 } ogs_nas_time_zone_and_time_t;
 
-/* 9.9.3.32 Tracking area identity
- * O TV 6 */
-typedef struct ogs_nas_tracking_area_identity_s {
-    ogs_nas_plmn_id_t nas_plmn_id;
-    uint16_t tac;
-} __attribute__ ((packed)) ogs_nas_tracking_area_identity_t;
-
-typedef ogs_nas_tracking_area_identity_t ogs_nas_tai_t;
-
 /* 9.9.3.33 Tracking area identity list
- * M LV 7-97 */
-#define OGS_NAS_MAX_TAI_LIST_LEN        96
-#define TAI0_TYPE                   0
-#define TAI1_TYPE                   1
-#define TAI2_TYPE                   2
-typedef struct tai0_list_s {
-    struct {
-    ED3(uint8_t spare:1;,
-        uint8_t type:2;,
-        uint8_t num:5;)
-        /*
-         * Do not change 'ogs_plmn_id_t' to 'ogs_nas_plmn_id_t'.
-         * Use 'ogs_plmn_id_t' for easy implementation.
-         * ogs_nas_tai_list_build() changes to NAS format(ogs_nas_plmn_id_t)
-         * and is sent to the UE.
-         */
-        ogs_plmn_id_t plmn_id;
-        uint16_t tac[OGS_MAX_NUM_OF_TAI];
-    } __attribute__ ((packed)) tai[OGS_MAX_NUM_OF_TAI];
-} __attribute__ ((packed)) tai0_list_t;
-
-typedef struct tai2_list_s {
-ED3(uint8_t spare:1;,
-    uint8_t type:2;,
-    uint8_t num:5;)
-    /*
-     * Do not change 'ogs_tai_t' to 'ogs_nas_tracking_area_identity_t'.
-     * Use 'ogs_tai_t' for easy implementation.
-     * ogs_nas_tai_list_build() changes to NAS 
-     * format(ogs_nas_tracking_area_identity_t)
-     * and is sent to the UE.
-     */
-    ogs_tai_t tai[OGS_MAX_NUM_OF_TAI];
-} __attribute__ ((packed)) tai2_list_t;
-
-typedef struct ogs_nas_tracking_area_identity_list_s {
-    uint8_t length;
-    uint8_t buffer[OGS_NAS_MAX_TAI_LIST_LEN];
-} __attribute__ ((packed)) ogs_nas_tracking_area_identity_list_t;
-
-void ogs_nas_tai_list_build(
-        ogs_nas_tracking_area_identity_list_t *target,
-        tai0_list_t *source0, tai2_list_t *source2);
+ * M LV 7-97
+ * 9.11.3.9 5GS tracking area identity list
+ * O TLV 9-114 */
+#define OGS_TAI0_TYPE                   0
+#define OGS_TAI1_TYPE                   1
+#define OGS_TAI2_TYPE                   2
 
 /* 9.9.3.34 UE network capability
  * M LV 3-14

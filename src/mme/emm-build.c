@@ -70,7 +70,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
     ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
     ogs_assert(served_tai_index >= 0 &&
-            served_tai_index < MAX_NUM_OF_SERVED_TAI);
+            served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI);
     ogs_nas_tai_list_build(&attach_accept->tai_list,
             &mme_self()->served_tai[served_tai_index].list0,
             &mme_self()->served_tai[served_tai_index].list2);
@@ -368,7 +368,7 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     served_tai_index = mme_find_served_tai(&mme_ue->tai);
     ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
     ogs_assert(served_tai_index >= 0 &&
-            served_tai_index < MAX_NUM_OF_SERVED_TAI);
+            served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI);
     ogs_nas_tai_list_build(&tau_accept->tai_list,
             &mme_self()->served_tai[served_tai_index].list0,
             &mme_self()->served_tai[served_tai_index].list2);

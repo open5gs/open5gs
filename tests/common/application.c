@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,18 +17,92 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "ogs-sctp.h"
-
-#include "test-epc.h"
 #include "test-config-private.h"
+#include "test-common.h"
+
+static int connected_count = 0;
+static void test_diam_logger_handler(enum fd_hook_type type, struct msg * msg, 
+    struct peer_hdr * peer, void * other, struct fd_hook_permsgdata *pmd, 
+    void * regdata)
+{
+    if (type == HOOK_PEER_CONNECT_SUCCESS) {
+        connected_count++;
+    }
+}
+
+static void test_app_run(int argc, const char *const argv[],
+        const char *name, void (*init)(const char * const argv[]))
+{
+    int rv;
+    bool user_config;
+
+    /* '-f sample-XXXX.conf -e error' is always added */
+    const char *argv_out[argc+4], *new_argv[argc+4];
+    int argc_out;
+
+    char conf_file[OGS_MAX_FILEPATH_LEN];
+    
+    user_config = false;
+    for (argc_out = 0; argc_out < argc; argc_out++) {
+        if (strcmp("-c", argv[argc_out]) == 0) {
+            user_config = true; 
+        }
+        argv_out[argc_out] = argv[argc_out];
+    }
+    argv_out[argc_out] = NULL;
+
+    if (!user_config) {
+        /* buildroot/configs/XXX-conf.yaml */
+        ogs_snprintf(conf_file, sizeof conf_file, "%s%s",
+            MESON_BUILD_ROOT OGS_DIR_SEPARATOR_S
+            "configs" OGS_DIR_SEPARATOR_S, name);
+        argv_out[argc_out++] = "-c";
+        argv_out[argc_out++] = conf_file;
+        argv_out[argc_out] = NULL;
+    }
+
+    /* buildroot/src/open5gs-main */
+    argv_out[0] = MESON_BUILD_ROOT OGS_DIR_SEPARATOR_S 
+            "src" OGS_DIR_SEPARATOR_S "open5gs-main";
+
+    rv = abts_main(argc_out, argv_out, new_argv);
+    ogs_assert(rv == OGS_OK);
+
+    (*init)(new_argv);
+}
+
+void test_epc_run(int argc, const char *const argv[],
+        const char *name, void (*init)(const char * const argv[]))
+{
+    ogs_diam_logger_register(test_diam_logger_handler);
+
+    test_app_run(argc, argv, name, init);
+
+    while(1) {
+        if (connected_count == 1) break;
+        ogs_msleep(50);
+    }
+
+    ogs_msleep(500); /* Wait for listening all sockets */
+}
+
+void test_5gc_run(int argc, const char *const argv[],
+        const char *name, void (*init)(const char * const argv[]))
+{
+    int rv;
+
+    test_app_run(argc, argv, name, init);
+
+    test_context_init();
+
+    rv = test_context_parse_config();
+    ogs_assert(rv == OGS_OK);
+
+    ogs_msleep(500); /* Wait for listening all sockets */
+}
 
 #define MAX_CHILD_PROCESS               8
 #define OGS_ARG_MAX                     256
-
-static ogs_thread_t *pcrf_thread = NULL;
-static ogs_thread_t *pgw_thread = NULL;
-static ogs_thread_t *sgw_thread = NULL;
-static ogs_thread_t *hss_thread = NULL;
 
 static ogs_proc_t process[MAX_CHILD_PROCESS];
 static int process_num = 0;
@@ -95,57 +169,4 @@ void test_child_terminate(void)
         current = &process[i];
         ogs_proc_terminate(current);
     }
-}
-
-int app_initialize(const char *const argv[])
-{
-    int rv;
-
-    const char *argv_out[OGS_ARG_MAX];
-    bool user_config = false;
-    int i = 0;
-
-    for (i = 0; argv[i]; i++) {
-        if (strcmp("-c", argv[i]) == 0) {
-            user_config = true; 
-        }
-        argv_out[i] = argv[i];
-    }
-    argv_out[i] = NULL;
-
-    if (!user_config) {
-        argv_out[i++] = "-c";
-        argv_out[i++] = DEFAULT_CONFIG_FILENAME;
-        argv_out[i] = NULL;
-    }
-
-    if (ogs_config()->parameter.no_pcrf == 0)
-        pcrf_thread = test_child_create("pcrf", argv_out);
-    if (ogs_config()->parameter.no_pgw == 0)
-        pgw_thread = test_child_create("pgw", argv_out);
-    if (ogs_config()->parameter.no_sgw == 0)
-        sgw_thread = test_child_create("sgw", argv_out);
-    if (ogs_config()->parameter.no_hss == 0)
-        hss_thread = test_child_create("hss", argv_out);
-
-    ogs_sctp_init(ogs_config()->usrsctp.udp_port);
-
-    rv = mme_initialize();
-    ogs_assert(rv == OGS_OK);
-    ogs_info("MME initialize...done");
-
-    return OGS_OK;;
-}
-
-void app_terminate(void)
-{
-    mme_terminate();
-
-    ogs_sctp_final();
-    ogs_info("MME terminate...done");
-
-    if (hss_thread) ogs_thread_destroy(hss_thread);
-    if (sgw_thread) ogs_thread_destroy(sgw_thread);
-    if (pgw_thread) ogs_thread_destroy(pgw_thread);
-    if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
 }

@@ -503,7 +503,7 @@ int smf_context_parse_config(void)
                 } else if (!strcmp(smf_key, "pdn")) {
                     /* handle config in pfcp library */
                 } else if (!strcmp(smf_key, "sbi")) {
-                    /* handle config in pfcp library */
+                    /* handle config in sbi library */
                 } else
                     ogs_warn("unknown key `%s`", smf_key);
             }

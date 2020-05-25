@@ -11,10 +11,10 @@ Sometimes you may get a message like the one below due to a problem with the fre
 $ meson test
 
 ...
-5/8 open5gs:system / simple                 OK       7.69 s 
+5/8 open5gs:epc / simple                    OK       7.69 s
 
 --- command ---
-08:06:23 /home/parallels/open5gs/build/tests/simple/simple
+08:06:23 /home/parallels/open5gs/build/tests/epc-simple/simple
 --- stdout ---
 s1setup-test        :  SUCCESS
 attach-test         :  SUCCESS
@@ -123,10 +123,10 @@ ninja: no work to do.
 2/8 open5gs:unit / crypt                    OK       0.08 s
 3/8 open5gs:system / sctp                   OK       1.09 s
 4/8 open5gs:unit / unit                     OK       0.04 s
-5/8 open5gs:system / simple                 OK       5.07 s
-6/8 open5gs:system / mnc3                   OK       1.18 s
-7/8 open5gs:system / volte                  OK       2.99 s
-8/8 open5gs:system / csfb                   OK       6.53 s
+5/8 open5gs:epc / simple                    OK       5.07 s
+6/8 open5gs:epc / mnc3                      OK       1.18 s
+7/8 open5gs:epc / volte                     OK       2.99 s
+8/8 open5gs:epc / csfb                      OK       6.53 s
 
 Ok:                    8
 Expected Fail:         0
@@ -385,17 +385,17 @@ You can start MongoDB using systemctl.
 $ sudo systemctl start mongodb
 ```
 
-#### I have some error when running `./build/test/simple/simple`
+#### I have some error when running `./build/test/epc-simple/simple`
 
-Did you see the following error after executing `./build/test/simple/simple`?
+Did you see the following error after executing `./build/test/epc-simple/simple`?
 ```bash
-$ ./build/test/simple/simple
+$ ./build/test/epc-simple/simple
 s1setup_test        : SUCCESS  
 attach_test         : -Line 134: Condition is false, but expected true  
 \04/09 15:49:09.285: [esm] FATAL: esm_handle_pdn_connectivity_request: Assertion `SECURITY_CONTEXT_IS_VALID(mme_ue)' failed. (esm_handler.c:29)  
 /home/acetcom/Documents/git/open5gs/open5gs/lib/ogslib/src/core/.libs/libogscore-1.0.so.0(ogs_abort+0x2b)[0x7f608518271b]  
-/home/acetcom/Documents/git/open5gs/open5gs/test/.libs/testcomplex(+0x92121)[0x55dc9e274121]  
-/home/acetcom/Documents/git/open5gs/open5gs/test/.libs/testcomplex(+0x4f5b9)[0x55dc9e2315b9]  
+/home/acetcom/Documents/git/open5gs/open5gs/test/.libs/simple(+0x92121)[0x55dc9e274121]
+/home/acetcom/Documents/git/open5gs/open5gs/test/.libs/simple(+0x4f5b9)[0x55dc9e2315b9]
 ```
 
 
@@ -415,9 +415,9 @@ $ sudo pkill -9 simple
 $ sudo pkill -9 open5gs-mmed ...
 ```
 
-Execute `./build/test/simple/simple`
+Execute `./build/test/epc-simple/simple`
 ```bash
-$ ./build/test/simple/simple
+$ ./build/test/epc-simple/simple
 ```
 
 #### My eNB does not support IPv6.

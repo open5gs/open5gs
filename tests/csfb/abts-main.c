@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-app.h"
+#include "test-epc.h"
 
 abts_suite *test_mo_idle(abts_suite *suite);
 abts_suite *test_mt_idle(abts_suite *suite);
@@ -58,7 +58,7 @@ static void terminate(void)
     testvlr_sgsap_close(sgsap);
 
     ogs_sctp_final();
-    test_app_final();
+    test_epc_final();
     ogs_info("MME terminate...done");
 
     if (hss_thread) ogs_thread_destroy(hss_thread);
@@ -81,7 +81,7 @@ static void initialize(const char *const argv[])
     sgw_thread = test_child_create("sgw", argv);
     hss_thread = test_child_create("hss", argv);
 
-    test_app_init();
+    test_epc_init();
     ogs_sctp_init(ogs_config()->usrsctp.udp_port);
 
     sgsap = testvlr_sgsap_server("127.0.0.2");
@@ -98,7 +98,7 @@ int main(int argc, const char *const argv[])
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_app_run(argc, argv, "csfb.yaml", initialize);
+    test_epc_run(argc, argv, "csfb.yaml", initialize);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

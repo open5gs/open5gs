@@ -40,7 +40,8 @@ static bool served_tai_is_found(mme_enb_t *enb)
 
     for (i = 0; i < enb->num_of_supported_ta_list; i++) {
         served_tai_index = mme_find_served_tai(&enb->supported_ta_list[i]);
-        if (served_tai_index >= 0 && served_tai_index < MAX_NUM_OF_SERVED_TAI) {
+        if (served_tai_index >= 0 &&
+                served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI) {
             ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
             return true;
         }
@@ -60,7 +61,7 @@ static bool maximum_number_of_enbs_is_reached(void)
         }
     }
 
-    return number_of_enbs_online >= ogs_config()->max.enb;
+    return number_of_enbs_online >= ogs_config()->max.gnb;
 }
 
 void s1ap_handle_s1_setup_request(mme_enb_t *enb, ogs_s1ap_message_t *message)
@@ -256,13 +257,14 @@ void s1ap_handle_initial_ue_message(mme_enb_t *enb, ogs_s1ap_message_t *message)
         /* Find MME_UE if S_TMSI included */
         if (S_TMSI) {
             served_gummei_t *served_gummei = &mme_self()->served_gummei[0];
-            ogs_nas_guti_t nas_guti;
+            ogs_nas_eps_guti_t nas_guti;
             mme_ue_t *mme_ue = NULL;
 
-            memset(&nas_guti, 0, sizeof(ogs_nas_guti_t));
+            memset(&nas_guti, 0, sizeof(ogs_nas_eps_guti_t));
 
             /* Use the first configured plmn_id and mme group id */
-            ogs_nas_from_plmn_id(&nas_guti.nas_plmn_id, &served_gummei->plmn_id[0]);
+            ogs_nas_from_plmn_id(&nas_guti.nas_plmn_id,
+                    &served_gummei->plmn_id[0]);
             nas_guti.mme_gid = served_gummei->mme_gid[0];
 
             /* size must be 1 */
@@ -434,7 +436,7 @@ void s1ap_handle_ue_capability_info_indication(
 
     if (enb_ue->mme_ue) {
         ogs_assert(UERadioCapability);
-        OGS_S1AP_STORE_DATA(&enb_ue->mme_ue->ueRadioCapability,
+        OGS_ASN_STORE_DATA(&enb_ue->mme_ue->ueRadioCapability,
                 UERadioCapability);
     }
 }
@@ -1165,7 +1167,7 @@ void s1ap_handle_path_switch_request(
             enb_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_tai_t));
+    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
     memcpy(&eea, encryptionAlgorithms->buf, sizeof(eea));
@@ -1529,7 +1531,7 @@ void s1ap_handle_handover_request_ack(mme_enb_t *enb, ogs_s1ap_message_t *messag
         }
     }
 
-    OGS_S1AP_STORE_DATA(&mme_ue->container,
+    OGS_ASN_STORE_DATA(&mme_ue->container,
             Target_ToSource_TransparentContainer);
 
     if (mme_ue_have_indirect_tunnel(mme_ue) == 1) {
@@ -1858,7 +1860,7 @@ void s1ap_handle_handover_notification(mme_enb_t *enb, ogs_s1ap_message_t *messa
             target_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &target_ue->saved.tai, sizeof(ogs_tai_t));
+    memcpy(&mme_ue->tai, &target_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &target_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
     sess = mme_sess_first(mme_ue);

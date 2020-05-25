@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-05-22 16:56:21.995840 by acetcom
+ * Created on: 2020-05-24 17:29:31.588956 by acetcom
  * from 24501-g41.docx
  ******************************************************************************/
 
@@ -2713,7 +2713,7 @@ int ogs_nas_5gs_decode_5gs_tracking_area_identity(ogs_nas_5gs_tracking_area_iden
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(tracking_area_identity, pkbuf->data - size, size);
 
-    tracking_area_identity->tac = be16toh(tracking_area_identity->tac);
+    tracking_area_identity->tac = ogs_be24toh(tracking_area_identity->tac);
 
     ogs_trace("  5GS_TRACKING_AREA_IDENTITY - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
@@ -2727,7 +2727,7 @@ int ogs_nas_5gs_encode_5gs_tracking_area_identity(ogs_pkbuf_t *pkbuf, ogs_nas_5g
     ogs_nas_5gs_tracking_area_identity_t target;
 
     memcpy(&target, tracking_area_identity, size);
-    target.tac = htobe16(tracking_area_identity->tac);
+    target.tac = ogs_htobe24(tracking_area_identity->tac);
 
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);

@@ -103,7 +103,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
     mme_enb_t *enb = NULL;
     uint16_t max_num_of_ostreams = 0;
 
-    s1ap_message_t s1ap_message;
+    ogs_s1ap_message_t s1ap_message;
     ogs_pkbuf_t *pkbuf = NULL;
     int rc;
 

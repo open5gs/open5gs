@@ -38,6 +38,17 @@ void ogs_asn_uint16_to_OCTET_STRING(
     octet_string->buf[1] = uint16;
 }
 
+void ogs_asn_uint24_to_OCTET_STRING(
+        ogs_uint24_t uint24, OCTET_STRING_t *octet_string)
+{
+    octet_string->size = 3;
+    octet_string->buf = CALLOC(octet_string->size, sizeof(uint8_t));
+
+    octet_string->buf[0] = uint24.v >> 16;
+    octet_string->buf[1] = uint24.v >> 8;
+    octet_string->buf[2] = uint24.v;
+}
+
 void ogs_asn_uint32_to_OCTET_STRING(
         uint32_t uint32, OCTET_STRING_t *octet_string)
 {
@@ -48,6 +59,15 @@ void ogs_asn_uint32_to_OCTET_STRING(
     octet_string->buf[1] = uint32 >> 16;
     octet_string->buf[2] = uint32 >> 8;
     octet_string->buf[3] = uint32;
+}
+
+void ogs_asn_buffer_to_OCTET_STRING(
+        void *buf, int size, OCTET_STRING_t *octet_string)
+{
+    octet_string->size = size;
+    octet_string->buf = CALLOC(octet_string->size, sizeof(uint8_t));
+
+    memcpy(octet_string->buf, buf, size);
 }
 
 int ogs_asn_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ogs_ip_t *ip)

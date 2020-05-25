@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-app.h"
+#include "test-epc.h"
 
 #include "pcscf-fd-path.h"
 
@@ -56,7 +56,7 @@ static void terminate(void)
 
     ogs_sctp_final();
 
-    test_app_final();
+    test_epc_final();
     ogs_app_terminate();
 }
 
@@ -77,7 +77,7 @@ static void initialize(const char *const argv[])
     hss_thread = test_child_create("hss", argv);
     mme_thread = test_child_create("mme", argv);
 
-    test_app_init();
+    test_epc_init();
     ogs_sctp_init(ogs_config()->usrsctp.udp_port);
 
     rv = pcscf_fd_init();
@@ -90,7 +90,7 @@ int main(int argc, const char *const argv[])
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_app_run(argc, argv, "cups.yaml", initialize);
+    test_epc_run(argc, argv, "cups.yaml", initialize);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

@@ -125,7 +125,7 @@ typedef struct sgw_bearer_s {
     uint8_t         ebi;
 
     /* User-Lication-Info */
-    ogs_tai_t       tai;
+    ogs_eps_tai_t   tai;
     ogs_e_cgi_t     e_cgi;
 
     /* Pkts which will be buffered in case of UE-IDLE */

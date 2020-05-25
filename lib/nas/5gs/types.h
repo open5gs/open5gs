@@ -28,6 +28,14 @@
 extern "C" {
 #endif
 
+/**********************
+ * NAS GUTI Structure */
+typedef struct ogs_nas_5gs_guti_s {
+    ogs_nas_plmn_id_t nas_plmn_id;
+    ogs_amf_id_t amf_id;
+    uint32_t m_tmsi;
+} __attribute__ ((packed)) ogs_nas_5gs_guti_t;
+
 /* 9.11.2.1A DNN
  * O TLV 3-102 */
 typedef struct ogs_nas_dnn_s {
@@ -48,11 +56,10 @@ typedef struct ogs_nas_eap_message_s {
 #define OGS_NAS_S_NSSAI_SST_AND_MAPPED_HPLMN_SST_LEN 2
 #define OGS_NAS_S_NSSAI_SST_AND_SD 4
 #define OGS_NAS_S_NSSAI_SST_SD_AND_MAPPED_HPLMN_SST_LEN 5
-#define OGS_NAS_MAX_S_NSSAI_LEN 8
 typedef struct ogs_nas_s_nssai_s {
     uint8_t length;
-    uint32_t sst_sd;
-    uint32_t mapped_sst_sd;
+    ogs_s_nssai_t s_nssai;
+    ogs_s_nssai_t mapped_s_nssai;
 } __attribute__ ((packed)) ogs_nas_s_nssai_t;
 
 /* 9.11.3.1 5GMM capability
@@ -133,20 +140,12 @@ ED3(uint8_t type:4;,
 
 /* 9.11.3.4 5GS mobile identity
  * M LV-E 6-n */
-#define OGS_NAS_GET_AMF_SET_ID(_iDentity) \
-    ((_iDentity)->amf_set_id2 + ((_iDentity)->amf_set_id1 << 2))
-#define OGS_NAS_SET_AMF_SET_ID(_iDentity, _aMFSetId) \
-    do { \
-        ogs_assert((_iDentity)); \
-        (_iDentity)->amf_set_id1 = (_aMFSetId >> 2) & 0x000f; \
-        (_iDentity)->amf_set_id2 = _aMFSetId & 0x0003; \
-    } while(0)
 typedef struct ogs_nas_5gs_mobile_identity_guti_s {
 ED3(uint8_t _0xf:4;,
     uint8_t spare:1;,
     uint8_t type:3;)
     ogs_nas_plmn_id_t nas_plmn_id;
-    uint16_t amf_region_id;
+    uint8_t amf_region_id;
     uint8_t amf_set_id1;
 ED2(uint8_t amf_set_id2:2;,
     uint8_t amf_pointer:6;)
@@ -156,7 +155,7 @@ typedef struct ogs_nas_5gs_mobile_identity_s_tmsi_s {
 ED3(uint8_t _0xf:4;,
     uint8_t spare:1;,
     uint8_t type:3;)
-    uint16_t amf_region_id;
+    uint8_t amf_region_id;
     uint8_t amf_set_id1;
 ED2(uint8_t amf_set_id2:2;,
     uint8_t amf_pointer:6;)
@@ -214,11 +213,54 @@ ED3(uint8_t type:4;,
 
 /* 9.11.3.8 5GS tracking area identity
  * O TV 6 */
-typedef ogs_nas_tracking_area_identity_t ogs_nas_5gs_tracking_area_identity_t;
+typedef struct ogs_nas_5gs_tracking_area_identity_s {
+    ogs_nas_plmn_id_t nas_plmn_id;
+    ogs_uint24_t tac;
+} __attribute__ ((packed)) ogs_nas_5gs_tracking_area_identity_t;
+
+typedef ogs_nas_5gs_tracking_area_identity_t ogs_nas_5gs_tai_t;
 
 /* 9.11.3.9 5GS tracking area identity list
  * O TLV 9-114 */
-typedef ogs_nas_tracking_area_identity_list_t ogs_nas_5gs_tracking_area_identity_list_t;
+#define OGS_NAS_5GS_MAX_TAI_LIST_LEN    114
+typedef struct ogs_5gs_tai0_list_s {
+    struct {
+    ED3(uint8_t spare:1;,
+        uint8_t type:2;,
+        uint8_t num:5;)
+        /*
+         * Do not change 'ogs_plmn_id_t' to 'ogs_nas_plmn_id_t'.
+         * Use 'ogs_plmn_id_t' for easy implementation.
+         * ogs_nas_tai_list_build() changes to NAS format(ogs_nas_plmn_id_t)
+         * and is sent to the UE.
+         */
+        ogs_plmn_id_t plmn_id;
+        ogs_uint24_t tac[OGS_MAX_NUM_OF_TAI];
+    } __attribute__ ((packed)) tai[OGS_MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) ogs_5gs_tai0_list_t;
+
+typedef struct ogs_5gs_tai2_list_s {
+ED3(uint8_t spare:1;,
+    uint8_t type:2;,
+    uint8_t num:5;)
+    /*
+     * Do not change 'ogs_5gs_tai_t' to 'ogs_nas_tracking_area_identity_t'.
+     * Use 'ogs_5gs_tai_t' for easy implementation.
+     * ogs_nas_tai_list_build() changes to NAS 
+     * format(ogs_nas_tracking_area_identity_t)
+     * and is sent to the UE.
+     */
+    ogs_5gs_tai_t tai[OGS_MAX_NUM_OF_TAI];
+} __attribute__ ((packed)) ogs_5gs_tai2_list_t;
+
+typedef struct ogs_nas_5gs_tracking_area_identity_list_s {
+    uint8_t length;
+    uint8_t buffer[OGS_NAS_5GS_MAX_TAI_LIST_LEN];
+} __attribute__ ((packed)) ogs_nas_5gs_tracking_area_identity_list_t;
+
+void ogs_nas_5gs_tai_list_build(
+        ogs_nas_5gs_tracking_area_identity_list_t *target,
+        ogs_5gs_tai0_list_t *source0, ogs_5gs_tai2_list_t *source2);
 
 /* 9.11.3.9A 5GS update type
  * O TLV 3 */
@@ -381,10 +423,10 @@ ED2(uint8_t type:4;,
 
 /* 9.11.3.31B Mapped NSSAI
  * O TLV 3-42 */
-#define OGS_NAS_MAX_MAPPED_NSSAI_LEN 40
+#define OGS_NAX_MAX_NUM_OF_MAPPED_S_NSSAI 10
 typedef struct ogs_nas_mapped_nssai_s {
     uint8_t length;
-    uint8_t buffer[OGS_NAS_MAX_MAPPED_NSSAI_LEN];
+    ogs_s_nssai_t s_nssai[OGS_NAX_MAX_NUM_OF_MAPPED_S_NSSAI];
 } ogs_nas_mapped_nssai_t;
 
 /* 9.11.3.33 message container
@@ -405,10 +447,10 @@ ED4(uint8_t type:4;,
 
 /* 9.11.3.37 NSSAI
  * O TLV 4-72 */
-#define MAX_NAS_NSSAI_LEN 72
+#define OGS_NAS_MAX_NUM_OF_S_NSSAI 18
 typedef struct ogs_nas_nssai_s {
     uint8_t length;
-    uint8_t buffer[MAX_NAS_NSSAI_LEN];
+    ogs_s_nssai_t s_nssai[OGS_NAS_MAX_NUM_OF_S_NSSAI];
 } __attribute__ ((packed)) ogs_nas_nssai_t;
 
 /* 9.11.3.37A NSSAI inclusion mode
@@ -468,10 +510,13 @@ typedef ogs_nas_allowed_pdu_session_status_t ogs_nas_pdu_session_status_t;
 
 /* 9.11.3.46 Rejected NSSAI
  * O TLV 4-42 */
-#define OGS_MAX_NAS_REJECTED_NSSAI_LEN 40
 typedef struct ogs_nas_rejected_nssai_s {
     uint8_t length;
-    uint8_t buffer[OGS_MAX_NAS_REJECTED_NSSAI_LEN];
+    struct {
+ED2(uint8_t len:4;,
+    uint8_t value:4;)
+        ogs_s_nssai_t s_nssai;
+    } rejected[OGS_MAX_NUM_OF_S_NSSAI];
 } ogs_nas_rejected_nssai_t;
 
 /* 9.11.3.49 Service area list

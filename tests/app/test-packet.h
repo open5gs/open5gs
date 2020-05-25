@@ -22,7 +22,8 @@
 
 #include "ogs-s1ap.h"
 #include "mme/s1ap-build.h"
-#include "core/abts.h"
+
+#include "test-common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,24 +31,10 @@ extern "C" {
 
 extern bool test_no_mme_self;
 
-ogs_socknode_t *testsctp_server(const char *ipstr);
-ogs_socknode_t *testsctp_client(const char *ipstr);
-ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type);
-
-#define testenb_s1ap_client testsctp_client
-#define testenb_s1ap_read(x) testsctp_read(x, 0);
-int testenb_s1ap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
-#define testenb_s1ap_close ogs_socknode_free
-
-#define testvlr_sgsap_server testsctp_server
-#define testvlr_sgsap_read(x) testsctp_read(x, 1);
-int testvlr_sgsap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
-#define testvlr_sgsap_close ogs_socknode_free
-
-ogs_socknode_t *testenb_gtpu_server(const char *ipstr);
-ogs_pkbuf_t *testenb_gtpu_read(ogs_socknode_t *node);
+#define testenb_gtpu_server(x) test_gtpu_server(x, OGS_GTPV1_U_UDP_PORT)
+#define testenb_gtpu_read(x) test_gtpu_read(x)
 int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
-void testenb_gtpu_close(ogs_socknode_t *node);
+#define testenb_gtpu_close(x) test_gtpu_close(x)
 
 int tests1ap_build_invalid_packet(ogs_pkbuf_t **pkbuf, int i);
 

@@ -16,6 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 libnas_5gs_sources = files('''
+    types.c
     ies.c
     decoder.c
     encoder.c

@@ -67,8 +67,8 @@ static void ogs_nas_eps_message_test2(abts_case *tc, void *data)
 
     ogs_nas_eps_message_t message;
     ogs_nas_eps_attach_accept_t *attach_accept = &message.emm.attach_accept;
-    tai0_list_t tai0_list;
-    tai2_list_t tai2_list;
+    ogs_eps_tai0_list_t tai0_list;
+    ogs_eps_tai2_list_t tai2_list;
     ogs_plmn_id_t plmn_id;
 
     ogs_pkbuf_t *pkbuf = NULL;
@@ -83,9 +83,9 @@ static void ogs_nas_eps_message_test2(abts_case *tc, void *data)
         OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     attach_accept->t3412_value.value = 3;
 
-    memset(&tai0_list, 0, sizeof(tai0_list_t));
-    memset(&tai2_list, 0, sizeof(tai2_list_t));
-    tai0_list.tai[0].type = TAI0_TYPE;
+    memset(&tai0_list, 0, sizeof(ogs_eps_tai0_list_t));
+    memset(&tai2_list, 0, sizeof(ogs_eps_tai2_list_t));
+    tai0_list.tai[0].type = OGS_TAI0_TYPE;
     tai0_list.tai[0].num = 1;
     ogs_plmn_id_build(&tai0_list.tai[0].plmn_id, 417, 99, 2);
     tai0_list.tai[0].tac[0] = 12345;

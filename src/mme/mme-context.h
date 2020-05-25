@@ -35,15 +35,10 @@
 extern "C" {
 #endif
 
-#define MAX_PLMN_ID                 6
 #define GRP_PER_MME                 256    /* According to spec it is 65535 */
 #define CODE_PER_MME                256    /* According to spec it is 256 */
 
-#define MAX_NUM_OF_SERVED_TAI       16
 #define MAX_NUM_OF_SERVED_GUMMEI    8
-#define MAX_NUM_OF_ALGORITHM        8
-
-#define MAX_NUM_OF_BPLMN            6
 
 extern int __mme_log_domain;
 extern int __emm_log_domain;
@@ -72,7 +67,7 @@ typedef enum {
 
 typedef struct served_gummei_s {
     uint32_t        num_of_plmn_id;
-    ogs_plmn_id_t   plmn_id[MAX_PLMN_ID];
+    ogs_plmn_id_t   plmn_id[OGS_MAX_NUM_OF_PLMN];
 
     uint32_t        num_of_mme_gid;
     uint16_t        mme_gid[GRP_PER_MME];
@@ -117,9 +112,9 @@ typedef struct mme_context_s {
     /* Served TAI */
     uint8_t         num_of_served_tai;
     struct {
-        tai0_list_t list0;
-        tai2_list_t list2;
-    } served_tai[MAX_NUM_OF_SERVED_TAI];
+        ogs_eps_tai0_list_t list0;
+        ogs_eps_tai2_list_t list2;
+    } served_tai[OGS_MAX_NUM_OF_SERVED_TAI];
 
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
@@ -127,14 +122,14 @@ typedef struct mme_context_s {
      * #define NAS_SECURITY_ALGORITHMS_128_EEA2    2
      * #define NAS_SECURITY_ALGORITHMS_128_EEA3    3 */
     uint8_t         num_of_ciphering_order;
-    uint8_t         ciphering_order[MAX_NUM_OF_ALGORITHM];
+    uint8_t         ciphering_order[OGS_MAX_NUM_OF_ALGORITHM];
     /* defined in 'nas_ies.h'
      * #define NAS_SECURITY_ALGORITHMS_EIA0        0
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    1
      * #define NAS_SECURITY_ALGORITHMS_128_EIA1    2
      * #define NAS_SECURITY_ALGORITHMS_128_EIA3    3 */
     uint8_t         num_of_integrity_order;
-    uint8_t         integrity_order[MAX_NUM_OF_ALGORITHM];
+    uint8_t         integrity_order[OGS_MAX_NUM_OF_ALGORITHM];
 
     /* S1SetupResponse */
     uint8_t         relative_capacity;
@@ -209,7 +204,7 @@ typedef struct mme_vlr_s {
 typedef struct mme_csmap_s {
     ogs_lnode_t     lnode;
 
-    ogs_nas_tai_t   tai;
+    ogs_nas_eps_tai_t tai;
     ogs_nas_lai_t   lai;
 
     mme_vlr_t       *vlr;
@@ -235,7 +230,7 @@ typedef struct mme_enb_s {
 
 
     uint8_t         num_of_supported_ta_list;
-    ogs_tai_t       supported_ta_list[OGS_MAX_NUM_OF_TAI * MAX_NUM_OF_BPLMN];
+    ogs_eps_tai_t   supported_ta_list[OGS_MAX_NUM_OF_TAI*OGS_MAX_NUM_OF_BPLMN];
 
     ogs_list_t      enb_ue_list;
 
@@ -261,7 +256,7 @@ struct enb_ue_s {
      * 
      * Save TAI and ECGI. And then, this will copy 'mme_ue_t' context later */
     struct {
-        ogs_tai_t       tai;
+        ogs_eps_tai_t   tai;
         ogs_e_cgi_t     e_cgi;
     } saved;
 
@@ -317,7 +312,7 @@ struct mme_ue_s {
 
     mme_m_tmsi_t    *m_tmsi;
     mme_p_tmsi_t    p_tmsi;
-    ogs_nas_guti_t  guti;
+    ogs_nas_eps_guti_t guti;
     int             guti_present;
 
     uint32_t        mme_s11_teid;   /* MME-S11-TEID is derived from INDEX */
@@ -326,7 +321,7 @@ struct mme_ue_s {
     uint16_t        vlr_ostream_id; /* SCTP output stream id for VLR */
 
     /* UE Info */
-    ogs_tai_t       tai;
+    ogs_eps_tai_t   tai;
     ogs_e_cgi_t     e_cgi;
     ogs_plmn_id_t   last_visited_plmn_id;
 
@@ -659,7 +654,7 @@ mme_csmap_t *mme_csmap_add(mme_vlr_t *vlr);
 void mme_csmap_remove(mme_csmap_t *csmap);
 void mme_csmap_remove_all(void);
 
-mme_csmap_t *mme_csmap_find_by_tai(ogs_tai_t *tai);
+mme_csmap_t *mme_csmap_find_by_tai(ogs_eps_tai_t *tai);
 mme_csmap_t *mme_csmap_find_by_nas_lai(ogs_nas_lai_t *lai);
 
 mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr);
@@ -669,7 +664,6 @@ mme_enb_t *mme_enb_find_by_addr(ogs_sockaddr_t *addr);
 mme_enb_t *mme_enb_find_by_enb_id(uint32_t enb_id);
 int mme_enb_set_enb_id(mme_enb_t *enb, uint32_t enb_id);
 int mme_enb_sock_type(ogs_sock_t *sock);
-bool mme_is_maximum_number_of_enbs_reached(void);
 
 enb_ue_t *enb_ue_add(mme_enb_t *enb, uint32_t enb_ue_s1ap_id);
 unsigned int enb_ue_count(void);
@@ -688,7 +682,7 @@ void mme_ue_remove_all(void);
 
 mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 mme_ue_t *mme_ue_find_by_imsi_bcd(char *imsi_bcd);
-mme_ue_t *mme_ue_find_by_guti(ogs_nas_guti_t *nas_guti);
+mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *nas_guti);
 mme_ue_t *mme_ue_find_by_teid(uint32_t teid);
 
 mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message);
@@ -780,7 +774,7 @@ void mme_pdn_remove_all(mme_ue_t *mme_ue);
 ogs_pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn);
 ogs_pdn_t *mme_default_pdn(mme_ue_t *mme_ue);
 
-int mme_find_served_tai(ogs_tai_t *tai);
+int mme_find_served_tai(ogs_eps_tai_t *tai);
 
 int mme_m_tmsi_pool_generate(void);
 mme_m_tmsi_t *mme_m_tmsi_alloc(void);

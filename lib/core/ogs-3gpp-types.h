@@ -28,8 +28,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define OGS_MAX_FILEPATH_LEN            256
-
 #define OGS_MAX_NUM_OF_SESS             4   /* Num of APN(Session) per UE */
 #define OGS_MAX_NUM_OF_RULE             4   /* Num of Rule per Session */
 
@@ -50,7 +48,11 @@ extern "C" {
 #define OGS_MAX_DNN_LEN                 100
 #define OGS_MAX_PCO_LEN                 251
 #define OGS_MAX_FQDN_LEN                256
-#define OGS_MAX_IFNAME_LEN              32
+
+#define OGS_MAX_NUM_OF_SERVED_TAI       16
+#define OGS_MAX_NUM_OF_ALGORITHM        8
+
+#define OGS_MAX_NUM_OF_BPLMN            6
 
 #define OGS_NEXT_ID(__id, __min, __max) \
     ((__id) = ((__id) == (__max) ? (__min) : ((__id) + 1)))
@@ -63,8 +65,49 @@ extern "C" {
 
 #define OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
 
-/**********************************
- * PLMN_ID Structure             */
+typedef struct ogs_uint24_s {
+    uint32_t v:24;
+}  __attribute__ ((packed)) ogs_uint24_t;
+
+static ogs_inline ogs_uint24_t ogs_be24toh(ogs_uint24_t x)
+{
+    uint32_t tmp = x.v;
+    tmp = be32toh(tmp);
+    x.v = tmp >> 8;
+    return x;
+}
+
+static ogs_inline ogs_uint24_t ogs_htobe24(ogs_uint24_t x)
+{
+    uint32_t tmp = x.v;
+    tmp = htobe32(tmp);
+    x.v = tmp >> 8;
+    return x;
+}
+
+static ogs_inline ogs_uint24_t ogs_uint24_from_string(char *str)
+{
+    ogs_uint24_t x;
+
+    ogs_assert(str);
+    OGS_HEX(str, strlen(str), &x);
+    return ogs_be24toh(x);
+}
+
+#define OGS_24BITSTRLEN    (sizeof(ogs_uint24_t)*2+1)
+static ogs_inline char *ogs_uint24_to_string(ogs_uint24_t x, char *str)
+{
+    ogs_assert(str);
+
+    x = ogs_htobe24(x);
+    ogs_hex_to_ascii(&x, sizeof(x), str, OGS_24BITSTRLEN);
+
+    return str;
+}
+
+/************************************
+ * PLMN_ID Structure                */
+#define OGS_MAX_NUM_OF_PLMN         6
 typedef struct ogs_plmn_id_s {
 ED2(uint8_t mcc2:4;,
     uint8_t mcc1:4;)
@@ -83,17 +126,54 @@ uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id);
 void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id, 
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len);
 
-#define OGS_MAX_NUM_OF_TAI              16
+/************************************
+ * AMF_ID Structure                 */
+typedef struct ogs_amf_id_s {
+    uint8_t region;
+    uint8_t set1;
+ED2(uint8_t set2:2;,
+    uint8_t pointer:6;)
+} __attribute__ ((packed)) ogs_amf_id_t;
 
-typedef struct ogs_tai_s {
+uint32_t ogs_amf_id_hexdump(ogs_amf_id_t *amf_id);
+
+#define OGS_AMFIDSTRLEN    (sizeof(ogs_amf_id_t)*2+1)
+ogs_amf_id_t *ogs_amf_id_from_string(ogs_amf_id_t *amf_id, const char *hex);
+char *ogs_amf_id_to_string(ogs_amf_id_t *amf_id, char *buf);
+
+uint8_t ogs_amf_region_id(ogs_amf_id_t *amf_id);
+uint16_t ogs_amf_set_id(ogs_amf_id_t *amf_id);
+uint8_t ogs_amf_pointer(ogs_amf_id_t *amf_id);
+
+ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
+        uint8_t region, uint16_t set, uint8_t pointer);
+
+/************************************
+ * TAI Structure                    */
+#define OGS_MAX_NUM_OF_TAI              16
+typedef struct ogs_eps_tai_s {
     ogs_plmn_id_t plmn_id;
     uint16_t tac;
-} __attribute__ ((packed)) ogs_tai_t;
+} __attribute__ ((packed)) ogs_eps_tai_t;
+
+typedef struct ogs_5gs_tai_s {
+    ogs_plmn_id_t plmn_id;
+    ogs_uint24_t tac;
+} __attribute__ ((packed)) ogs_5gs_tai_t;
 
 typedef struct ogs_e_cgi_s {
     ogs_plmn_id_t plmn_id;
     uint32_t cell_id; /* 28 bit */
 } __attribute__ ((packed)) ogs_e_cgi_t;
+
+/************************************
+ * S-NSSAI Structure                */
+#define OGS_MAX_NUM_OF_S_NSSAI      8
+#define OGS_S_NSSAI_NO_SD_VALUE     0xffffff
+typedef struct ogs_s_nssai_s {
+    uint8_t sst;
+    ogs_uint24_t sd;
+} __attribute__ ((packed)) ogs_s_nssai_t;
 
 /**************************************************
  * Common Structure

@@ -23,6 +23,6 @@ testmnc3_sources = files('''
 testmnc3_exe = executable('mnc3',
     sources : testmnc3_sources,
     c_args : testcore_cc_flags,
-    dependencies : libtestapp_dep)
+    dependencies : libtestepc_dep)
 
-test('mnc3', testmnc3_exe, is_parallel : false, suite: 'system')
+test('mnc3', testmnc3_exe, is_parallel : false, suite: 'epc')

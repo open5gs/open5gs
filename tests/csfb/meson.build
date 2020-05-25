@@ -29,6 +29,6 @@ testcsfb_sources = files('''
 testcsfb_exe = executable('csfb',
     sources : testcsfb_sources,
     c_args : testcore_cc_flags,
-    dependencies : libtestapp_dep)
+    dependencies : libtestepc_dep)
 
-test('csfb', testcsfb_exe, is_parallel : false, suite: 'system')
+test('csfb', testcsfb_exe, is_parallel : false, suite: 'epc')

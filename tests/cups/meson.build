@@ -27,6 +27,6 @@ testcups_exe = executable('cups',
     sources : testcups_sources,
     c_args : [testcore_cc_flags,
         '-DFD_EXT_DIR="@0@"'.format(freediameter_extensions_builddir)],
-    dependencies : libtestapp_dep)
+    dependencies : libtestepc_dep)
 
 test('cups', testcups_exe, is_parallel : false, suite: '5gc')

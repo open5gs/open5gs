@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-app.h"
+#include "test-epc.h"
 
 static void handover_test1(abts_case *tc, void *data)
 {

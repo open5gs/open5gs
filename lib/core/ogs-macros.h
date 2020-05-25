@@ -177,6 +177,10 @@ extern "C" {
     #define END          }}}
 #endif
 
+#define OGS_ARG_MAX                     256
+#define OGS_MAX_FILEPATH_LEN            256
+#define OGS_MAX_IFNAME_LEN              32
+
 #ifdef __cplusplus
 }
 #endif

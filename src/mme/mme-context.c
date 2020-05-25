@@ -125,7 +125,7 @@ void mme_context_init()
     ogs_pool_init(&mme_csmap_pool, ogs_config()->max.csmap);
 
     /* Allocate TWICE the pool to check if maximum number of eNBs is reached */
-    ogs_pool_init(&mme_enb_pool, ogs_config()->max.enb*2);
+    ogs_pool_init(&mme_enb_pool, ogs_config()->max.gnb*2);
 
     ogs_pool_init(&mme_ue_pool, ogs_config()->pool.ue);
     ogs_pool_init(&enb_ue_pool, ogs_config()->pool.ue);
@@ -704,7 +704,7 @@ int mme_context_parse_config()
                                     ogs_plmn_id_t *plmn_id = NULL;
                                     const char *mcc = NULL, *mnc = NULL;
                                     ogs_assert(gummei->num_of_plmn_id <=
-                                            MAX_PLMN_ID);
+                                            OGS_MAX_NUM_OF_PLMN);
                                     plmn_id = &gummei->plmn_id[
                                         gummei->num_of_plmn_id];
                                     ogs_assert(plmn_id);
@@ -833,11 +833,11 @@ int mme_context_parse_config()
                             YAML_SEQUENCE_NODE);
                 } else if (!strcmp(mme_key, "tai")) {
                     int num_of_list0 = 0;
-                    tai0_list_t *list0 = NULL;
-                    tai2_list_t *list2 = NULL;
+                    ogs_eps_tai0_list_t *list0 = NULL;
+                    ogs_eps_tai2_list_t *list2 = NULL;
 
                     ogs_assert(self.num_of_served_tai <=
-                            MAX_NUM_OF_SERVED_TAI);
+                            OGS_MAX_NUM_OF_SERVED_TAI);
                     list0 = &self.served_tai[self.num_of_served_tai].list0;
                     ogs_assert(list0);
                     list2 = &self.served_tai[self.num_of_served_tai].list2;
@@ -923,9 +923,9 @@ int mme_context_parse_config()
 
                                 list2->num++;
                                 if (list2->num > 1)
-                                    list2->type = TAI2_TYPE;
+                                    list2->type = OGS_TAI2_TYPE;
                                 else
-                                    list2->type = TAI1_TYPE;
+                                    list2->type = OGS_TAI1_TYPE;
                             } else if (num_of_tac > 1) {
                                 int i;
                                 ogs_plmn_id_build(
@@ -936,7 +936,7 @@ int mme_context_parse_config()
                                 }
 
                                 list0->tai[num_of_list0].num = num_of_tac;
-                                list0->tai[num_of_list0].type = TAI0_TYPE;
+                                list0->tai[num_of_list0].type = OGS_TAI0_TYPE;
 
                                 num_of_list0++;
                             }
@@ -1839,16 +1839,16 @@ void mme_csmap_remove_all(void)
         mme_csmap_remove(csmap);
 }
 
-mme_csmap_t *mme_csmap_find_by_tai(ogs_tai_t *tai)
+mme_csmap_t *mme_csmap_find_by_tai(ogs_eps_tai_t *tai)
 {
     mme_csmap_t *csmap = NULL;
     ogs_assert(tai);
 
     ogs_list_for_each(&self.csmap_list, csmap) {
-        ogs_nas_tai_t ogs_nas_tai;
+        ogs_nas_eps_tai_t ogs_nas_tai;
         ogs_nas_from_plmn_id(&ogs_nas_tai.nas_plmn_id, &tai->plmn_id);
         ogs_nas_tai.tac = tai->tac;
-        if (memcmp(&csmap->tai, &ogs_nas_tai, sizeof(ogs_nas_tai_t)) == 0)
+        if (memcmp(&csmap->tai, &ogs_nas_tai, sizeof(ogs_nas_eps_tai_t)) == 0)
             return csmap;
     }
 
@@ -2134,11 +2134,11 @@ static int mme_ue_new_guti(mme_ue_t *mme_ue)
         /* MME has a VALID GUTI
          * As such, we need to remove previous GUTI in hash table */
         ogs_hash_set(self.guti_ue_hash,
-                &mme_ue->guti, sizeof(ogs_nas_guti_t), NULL);
+                &mme_ue->guti, sizeof(ogs_nas_eps_guti_t), NULL);
         ogs_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == OGS_OK);
     }
 
-    memset(&mme_ue->guti, 0, sizeof(ogs_nas_guti_t));
+    memset(&mme_ue->guti, 0, sizeof(ogs_nas_eps_guti_t));
 
     /* Use the first configured plmn_id and mme group id */
     ogs_nas_from_plmn_id(&mme_ue->guti.nas_plmn_id, &served_gummei->plmn_id[0]);
@@ -2149,7 +2149,7 @@ static int mme_ue_new_guti(mme_ue_t *mme_ue)
     ogs_assert(mme_ue->m_tmsi);
     mme_ue->guti.m_tmsi = *(mme_ue->m_tmsi);
     ogs_hash_set(self.guti_ue_hash,
-            &mme_ue->guti, sizeof(ogs_nas_guti_t), mme_ue);
+            &mme_ue->guti, sizeof(ogs_nas_eps_guti_t), mme_ue);
 
     return OGS_OK;
 }
@@ -2258,7 +2258,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     /* Clear hash table */
     if (mme_ue->m_tmsi) {
         ogs_hash_set(self.guti_ue_hash,
-                &mme_ue->guti, sizeof(ogs_nas_guti_t), NULL);
+                &mme_ue->guti, sizeof(ogs_nas_eps_guti_t), NULL);
         ogs_assert(mme_m_tmsi_free(mme_ue->m_tmsi) == OGS_OK);
     }
     if (mme_ue->imsi_len != 0)
@@ -2271,10 +2271,10 @@ void mme_ue_remove(mme_ue_t *mme_ue)
     CLEAR_SERVICE_INDICATOR(mme_ue);
 
     /* Free UeRadioCapability */
-    OGS_S1AP_CLEAR_DATA(&mme_ue->ueRadioCapability);
+    OGS_ASN_CLEAR_DATA(&mme_ue->ueRadioCapability);
 
     /* Clear Transparent Container */
-    OGS_S1AP_CLEAR_DATA(&mme_ue->container);
+    OGS_ASN_CLEAR_DATA(&mme_ue->container);
 
     /* Delete All Timers */
     CLEAR_MME_UE_ALL_TIMERS(mme_ue);
@@ -2319,12 +2319,12 @@ mme_ue_t *mme_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
     return (mme_ue_t *)ogs_hash_get(self.imsi_ue_hash, imsi, imsi_len);
 }
 
-mme_ue_t *mme_ue_find_by_guti(ogs_nas_guti_t *guti)
+mme_ue_t *mme_ue_find_by_guti(ogs_nas_eps_guti_t *guti)
 {
     ogs_assert(guti);
 
     return (mme_ue_t *)ogs_hash_get(
-            self.guti_ue_hash, guti, sizeof(ogs_nas_guti_t));
+            self.guti_ue_hash, guti, sizeof(ogs_nas_eps_guti_t));
 }
 
 mme_ue_t *mme_ue_find_by_teid(uint32_t teid)
@@ -2345,7 +2345,7 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
     ogs_nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
     ogs_nas_mobile_identity_tmsi_t *mobile_identity_tmsi = NULL;
     served_gummei_t *served_gummei = NULL;
-    ogs_nas_guti_t ogs_nas_guti;
+    ogs_nas_eps_guti_t ogs_nas_guti;
 
     switch (message->emm.h.message_type) {
     case OGS_NAS_EPS_ATTACH_REQUEST:
@@ -3079,20 +3079,20 @@ ogs_pdn_t *mme_default_pdn(mme_ue_t *mme_ue)
     return NULL;
 }
 
-int mme_find_served_tai(ogs_tai_t *tai)
+int mme_find_served_tai(ogs_eps_tai_t *tai)
 {
     int i = 0, j = 0, k = 0;
 
     ogs_assert(tai);
 
     for (i = 0; i < self.num_of_served_tai; i++) {
-        tai0_list_t *list0 = &self.served_tai[i].list0;
+        ogs_eps_tai0_list_t *list0 = &self.served_tai[i].list0;
         ogs_assert(list0);
-        tai2_list_t *list2 = &self.served_tai[i].list2;
+        ogs_eps_tai2_list_t *list2 = &self.served_tai[i].list2;
         ogs_assert(list2);
 
         for (j = 0; list0->tai[j].num; j++) {
-            ogs_assert(list0->tai[j].type == TAI0_TYPE);
+            ogs_assert(list0->tai[j].type == OGS_TAI0_TYPE);
             ogs_assert(list0->tai[j].num < OGS_MAX_NUM_OF_TAI);
 
             for (k = 0; k < list0->tai[j].num; k++) {
@@ -3105,7 +3105,8 @@ int mme_find_served_tai(ogs_tai_t *tai)
         }
 
         if (list2->num) {
-            ogs_assert(list2->type == TAI1_TYPE || list2->type == TAI2_TYPE);
+            ogs_assert(list2->type == OGS_TAI1_TYPE ||
+                        list2->type == OGS_TAI2_TYPE);
             ogs_assert(list2->num < OGS_MAX_NUM_OF_TAI);
 
             for (j = 0; j < list2->num; j++) {
@@ -3207,18 +3208,4 @@ uint8_t mme_selected_enc_algorithm(mme_ue_t *mme_ue)
     }
 
     return 0;
-}
-
-bool mme_is_maximum_number_of_enbs_reached(void)
-{
-    mme_enb_t *enb = NULL, *next_enb = NULL;
-    int number_of_enbs_online = 0;
-
-    ogs_list_for_each_safe(&self.enb_list, next_enb, enb) {
-        if (enb->state.s1_setup_success) {
-            number_of_enbs_online++;
-        }
-    }
-
-    return number_of_enbs_online >= ogs_config()->max.enb;
 }

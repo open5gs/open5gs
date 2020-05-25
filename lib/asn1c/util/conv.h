@@ -30,12 +30,36 @@
 extern "C" {
 #endif
 
+#define OGS_ASN_CLEAR_DATA(__dATA) \
+    do { \
+        ogs_assert((__dATA)); \
+        if ((__dATA)->buf) { \
+            FREEMEM((__dATA)->buf); \
+            (__dATA)->buf = NULL; \
+            (__dATA)->size = 0; \
+        } \
+    } while(0)
+#define OGS_ASN_STORE_DATA(__dST, __sRC) \
+    do { \
+        ogs_assert((__sRC)); \
+        ogs_assert((__sRC)->buf); \
+        ogs_assert((__dST)); \
+        OGS_ASN_CLEAR_DATA(__dST); \
+        (__dST)->size = (__sRC)->size; \
+        (__dST)->buf = CALLOC((__dST)->size, sizeof(uint8_t)); \
+        memcpy((__dST)->buf, (__sRC)->buf, (__dST)->size); \
+    } while(0)
+
 void ogs_asn_uint8_to_OCTET_STRING(
         uint8_t uint8, OCTET_STRING_t *octet_string);
 void ogs_asn_uint16_to_OCTET_STRING(
         uint16_t uint16, OCTET_STRING_t *octet_string);
+void ogs_asn_uint24_to_OCTET_STRING(
+        ogs_uint24_t uint24, OCTET_STRING_t *octet_string);
 void ogs_asn_uint32_to_OCTET_STRING(
         uint32_t uint32, OCTET_STRING_t *octet_string);
+void ogs_asn_buffer_to_OCTET_STRING(
+        void *buf, int size, OCTET_STRING_t *octet_string);
 
 int ogs_asn_BIT_STRING_to_ip(
         BIT_STRING_t *bit_string, ogs_ip_t *ip);

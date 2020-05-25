@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -16,6 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 libngap_sources = files('''
+    conv.c
     message.c
 '''.split())
 

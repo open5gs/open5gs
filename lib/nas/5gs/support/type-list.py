@@ -17,9 +17,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 type_list["5GS tracking area identity"]["decode"] = \
-"    tracking_area_identity->tac = be16toh(tracking_area_identity->tac);\n\n"
+"    tracking_area_identity->tac = ogs_be24toh(tracking_area_identity->tac);\n\n"
 type_list["5GS tracking area identity"]["encode"] = \
-"    target.tac = htobe16(tracking_area_identity->tac);\n\n"
+"    target.tac = ogs_htobe24(tracking_area_identity->tac);\n\n"
 
 type_list["5GS mobile identity"]["decode"] = \
 "    if (mobile_identity->guti.type == OGS_NAS_5GS_MOBILE_IDENTITY_GUTI) {\n" \

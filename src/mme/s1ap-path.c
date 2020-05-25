@@ -350,7 +350,7 @@ void s1ap_send_paging(mme_ue_t *mme_ue, S1AP_CNDomain_t cn_domain)
         for (i = 0; i < enb->num_of_supported_ta_list; i++) {
 
             if (memcmp(&enb->supported_ta_list[i], &mme_ue->tai,
-                        sizeof(ogs_tai_t)) == 0) {
+                        sizeof(ogs_eps_tai_t)) == 0) {
 
                 if (mme_ue->t3413.pkbuf) {
                     s1apbuf = mme_ue->t3413.pkbuf;

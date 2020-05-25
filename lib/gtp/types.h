@@ -344,7 +344,7 @@ typedef struct ogs_gtp_uli_s {
     ogs_gtp_uli_cgi_t cgi;
     ogs_gtp_uli_sai_t sai;
     ogs_gtp_uli_rai_t rai;
-    ogs_tai_t tai;
+    ogs_eps_tai_t tai;
     ogs_e_cgi_t e_cgi;
     ogs_gtp_uli_lai_t lai;
 } ogs_gtp_uli_t;

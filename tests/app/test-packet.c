@@ -44,128 +44,13 @@
 
 #include "mme/sgsap-path.h"
 
-ogs_socknode_t *testsctp_server(const char *ipstr)
-{
-    int rv;
-    ogs_sockaddr_t *addr = NULL;
-    ogs_socknode_t *node = NULL;
-
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, ipstr, OGS_SGSAP_SCTP_PORT, 0);
-    ogs_assert(rv == OGS_OK);
-
-    node = ogs_socknode_new(addr);
-    ogs_assert(node);
-    ogs_socknode_nodelay(node, true);
-
-    ogs_sctp_server(SOCK_SEQPACKET, node);
-    ogs_assert(node->sock);
-
-    return node;
-}
-
-ogs_socknode_t *testsctp_client(const char *ipstr)
-{
-    int rv;
-    ogs_sockaddr_t *addr = NULL;
-    ogs_socknode_t *node = NULL;
-
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, ipstr, OGS_S1AP_SCTP_PORT, 0);
-    ogs_assert(rv == OGS_OK);
-
-    node = ogs_socknode_new(addr);
-    ogs_assert(node);
-    ogs_socknode_nodelay(node, true);
-
-    ogs_sctp_client(SOCK_STREAM, node);
-    ogs_assert(node->sock);
-
-    return node;
-}
-
-static ogs_sockaddr_t sctp_last_addr;
-
-ogs_pkbuf_t *testsctp_read(ogs_socknode_t *node, int type)
-{
-    int size;
-    ogs_pkbuf_t *recvbuf = NULL;
-
-    ogs_assert(node);
-    ogs_assert(node->sock);
-
-    recvbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN);
-
-    size = ogs_sctp_recvdata(node->sock, recvbuf->data, OGS_MAX_SDU_LEN,
-            type == 1 ? &sctp_last_addr : NULL, NULL);
-    if (size <= 0) {
-        ogs_error("sgsap_recv() failed");
-        return NULL;
-    }
-
-    ogs_pkbuf_trim(recvbuf, size);
-    return recvbuf;;
-}
-
-int testenb_s1ap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
-{
-    return s1ap_send(node->sock, sendbuf, NULL, 0);
-}
-
-int testvlr_sgsap_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
-{
-    return sgsap_send(node->sock, sendbuf, &sctp_last_addr, 0);
-}
-
-ogs_socknode_t *testenb_gtpu_server(const char *ipstr)
-{
-    int rv;
-    ogs_sockaddr_t *addr = NULL;
-    ogs_socknode_t *node = NULL;
-    ogs_sock_t *sock = NULL;
-
-    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, ipstr, OGS_GTPV1_U_UDP_PORT, 0);
-    ogs_assert(rv == OGS_OK);
-
-    node = ogs_socknode_new(addr);
-    ogs_assert(node);
-
-    sock = ogs_udp_server(node);
-    ogs_assert(sock);
-
-    return node;
-}
-
-ogs_pkbuf_t *testenb_gtpu_read(ogs_socknode_t *node)
-{
-    int rc = 0;
-    ogs_pkbuf_t *recvbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN);
-
-    ogs_assert(node);
-    ogs_assert(node->sock);
-
-    while (1) {
-        rc = ogs_recv(node->sock->fd, recvbuf->data, recvbuf->len, 0);
-        if (rc <= 0) {
-            if (errno == EAGAIN) {
-                continue;
-            }
-            break;
-        } else {
-            break;
-        }
-    }
-    recvbuf->len = rc;
-
-    return recvbuf;
-}
+#include "test-packet.h"
 
 bool test_no_mme_self = 0;
 
 int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
 {
     int rv;
-    ogs_hash_index_t *hi = NULL;
     mme_ue_t *mme_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
@@ -213,17 +98,10 @@ int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
     return OGS_OK;
 }
 
-void testenb_gtpu_close(ogs_socknode_t *node)
-{
-    ogs_socknode_free(node);
-}
-
 int tests1ap_build_setup_req(
         ogs_pkbuf_t **pkbuf, S1AP_ENB_ID_PR present, uint32_t enb_id,
         int tac, uint16_t mcc, uint16_t mnc, uint16_t mnc_len)
 {
-    int rv;
-
     ogs_plmn_id_t plmn_id;
 
     S1AP_S1AP_PDU_t pdu;
@@ -1187,12 +1065,9 @@ int tests1ap_build_ue_context_modification_response(
         ogs_pkbuf_t **pkbuf, 
         uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id)
 {
-    int rv;
-
     S1AP_S1AP_PDU_t pdu;
     S1AP_SuccessfulOutcome_t *successfulOutcome = NULL;
     S1AP_UEContextModificationResponse_t *UEContextModificationResponse = NULL;
-    ogs_sockaddr_t *addr = NULL;
 
     S1AP_UEContextModificationResponseIEs_t *ie = NULL;
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
@@ -2480,8 +2355,6 @@ static void build_bearer_resource_modification_request(ogs_pkbuf_t **pkbuf,
 
     ogs_gtp_tft_t tft;
     ogs_tlv_octet_t octet;
-    int len;
-    char tft_buf[OGS_GTP_MAX_TRAFFIC_FLOW_TEMPLATE];
     ogs_ipsubnet_t ipsubnet;
 
     memset(&message, 0, sizeof(message));
@@ -2669,7 +2542,6 @@ int tests1ap_build_bearer_resource_modification_request(
         uint8_t tft_code, uint8_t qci,
         uint8_t ul_mbr, uint8_t dl_mbr, uint8_t ul_gbr, uint8_t dl_gbr)
 {
-    int rv;
     ogs_pkbuf_t *emmbuf = NULL;
 
     S1AP_S1AP_PDU_t pdu;
@@ -2680,8 +2552,6 @@ int tests1ap_build_bearer_resource_modification_request(
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_NAS_PDU_t *NAS_PDU = NULL;
-    S1AP_EUTRAN_CGI_t *EUTRAN_CGI = NULL;
-    S1AP_TAI_t *TAI = NULL;
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
@@ -3070,8 +2940,6 @@ int tests1ap_build_handover_request_ack(
     S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
     S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
     S1AP_E_RABAdmittedList_t *E_RABAdmittedList = NULL;
-    S1AP_E_RABFailedtoSetupListHOReqAck_t
-        *E_RABFailedtoSetupListHOReqAck = NULL;
     S1AP_Target_ToSource_TransparentContainer_t
         *Target_ToSource_TransparentContainer = NULL;
 

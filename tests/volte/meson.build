@@ -27,6 +27,6 @@ testvolte_exe = executable('volte',
     sources : testvolte_sources,
     c_args : [testcore_cc_flags,
         '-DFD_EXT_DIR="@0@"'.format(freediameter_extensions_builddir)],
-    dependencies : libtestapp_dep)
+    dependencies : libtestepc_dep)
 
-test('volte', testvolte_exe, is_parallel : false, suite: 'system')
+test('volte', testvolte_exe, is_parallel : false, suite: 'epc')

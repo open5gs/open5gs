@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -27,27 +27,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/* Octets */
-#define OGS_NGAP_CLEAR_DATA(__dATA) \
-    do { \
-        ogs_assert((__dATA)); \
-        if ((__dATA)->buf) { \
-            FREEMEM((__dATA)->buf); \
-            (__dATA)->buf = NULL; \
-            (__dATA)->size = 0; \
-        } \
-    } while(0)
-#define OGS_NGAP_STORE_DATA(__dST, __sRC) \
-    do { \
-        ogs_assert((__sRC)); \
-        ogs_assert((__sRC)->buf); \
-        ogs_assert((__dST)); \
-        OGS_NGAP_CLEAR_DATA(__dST); \
-        (__dST)->size = (__sRC)->size; \
-        (__dST)->buf = CALLOC((__dST)->size, sizeof(uint8_t)); \
-        memcpy((__dST)->buf, (__sRC)->buf, (__dST)->size); \
-    } while(0)
 
 typedef struct NGAP_NGAP_PDU ogs_ngap_message_t;
 

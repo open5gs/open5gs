@@ -64,6 +64,82 @@ void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
     return plmn_id;
 }
 
+uint32_t ogs_amf_id_hexdump(ogs_amf_id_t *amf_id)
+{
+    uint32_t hex;
+
+    ogs_assert(amf_id);
+
+    memcpy(&hex, amf_id, sizeof(ogs_amf_id_t));
+    hex = be32toh(hex) >> 8;
+
+    return hex;
+}
+
+ogs_amf_id_t *ogs_amf_id_from_string(ogs_amf_id_t *amf_id, const char *hex)
+{
+    char hexbuf[sizeof(ogs_amf_id_t)];
+
+    ogs_assert(amf_id);
+    ogs_assert(hex);
+
+    OGS_HEX(hex, strlen(hex), hexbuf);
+
+    amf_id->region = hexbuf[0];
+    amf_id->set1 = hexbuf[1];
+    amf_id->set2 = (hexbuf[2] & 0xc0) >> 6;
+    amf_id->pointer = hexbuf[2] & 0x3f;
+
+    return amf_id;
+}
+
+char *ogs_amf_id_to_string(ogs_amf_id_t *amf_id, char *buf)
+{
+    int i;
+    ogs_assert(amf_id);
+    ogs_assert(buf);
+
+    ogs_hex_to_ascii(amf_id, sizeof(ogs_amf_id_t), buf, OGS_AMFIDSTRLEN);
+
+    /* I'd just like to use lower character */
+    for (i = 0; buf[i]; i++)
+        if (buf[i] >= 'A' && buf[i] <= 'Z')
+            buf[i] = buf[i] + 'a' - 'A';
+
+    return buf;
+}
+
+uint8_t ogs_amf_region_id(ogs_amf_id_t *amf_id)
+{
+    ogs_assert(amf_id);
+    return amf_id->region;
+}
+uint16_t ogs_amf_set_id(ogs_amf_id_t *amf_id)
+{
+    ogs_assert(amf_id);
+    return (amf_id->set1 << 2) + amf_id->set2;
+}
+uint8_t ogs_amf_pointer(ogs_amf_id_t *amf_id)
+{
+    ogs_assert(amf_id);
+    return amf_id->pointer;
+}
+
+ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
+        uint8_t region, uint16_t set, uint8_t pointer)
+{
+    ogs_assert(amf_id);
+    ogs_assert(region);
+    ogs_assert(set);
+
+    amf_id->region = region;
+    amf_id->set1 = set >> 2;
+    amf_id->set2 = set & 0x3;
+    amf_id->pointer = pointer;
+
+    return amf_id;
+}
+
 int ogs_fqdn_build(char *dst, char *src, int length)
 {
     int i = 0, j = 0;

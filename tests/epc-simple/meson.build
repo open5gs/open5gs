@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testsimple_sources = files('''
+testepc_simple_sources = files('''
     abts-main.c
     s1setup-test.c
     attach-test.c
@@ -25,9 +25,9 @@ testsimple_sources = files('''
 
 '''.split())
 
-testsimple_exe = executable('simple',
-    sources : testsimple_sources,
+testepc_simple_exe = executable('simple',
+    sources : testepc_simple_sources,
     c_args : testcore_cc_flags,
-    dependencies : libtestapp_dep)
+    dependencies : libtestepc_dep)
 
-test('simple', testsimple_exe, is_parallel : false, suite: 'system')
+test('simple', testepc_simple_exe, is_parallel : false, suite: 'epc')

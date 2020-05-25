@@ -60,11 +60,14 @@ void pcrf_terminate(void);
 int nrf_initialize(void);
 void nrf_terminate(void);
 
+int upf_initialize(void);
+void upf_terminate(void);
+
 int smf_initialize(void);
 void smf_terminate(void);
 
-int upf_initialize(void);
-void upf_terminate(void);
+int amf_initialize(void);
+void amf_terminate(void);
 
 #ifdef __cplusplus
 }

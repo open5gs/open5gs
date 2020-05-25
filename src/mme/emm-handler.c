@@ -39,7 +39,7 @@ int emm_handle_attach_request(
     int served_tai_index = 0;
 
     ogs_nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
-    ogs_nas_guti_t nas_guti;
+    ogs_nas_eps_guti_t nas_guti;
 
     enb_ue_t *enb_ue = NULL;
     ogs_nas_eps_attach_type_t *eps_attach_type =
@@ -101,7 +101,7 @@ int emm_handle_attach_request(
             enb_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_tai_t));
+    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
     /* Check TAI */
@@ -120,7 +120,7 @@ int emm_handle_attach_request(
     /* Store UE specific information */
     if (attach_request->presencemask &
         OGS_NAS_EPS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
-        ogs_nas_tracking_area_identity_t *last_visited_registered_tai = 
+        ogs_nas_eps_tai_t *last_visited_registered_tai = 
             &attach_request->last_visited_registered_tai;
 
         ogs_nas_to_plmn_id(&mme_ue->last_visited_plmn_id,
@@ -426,7 +426,7 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     int served_tai_index = 0;
 
     ogs_nas_eps_mobile_identity_guti_t *eps_mobile_identity_guti = NULL;
-    ogs_nas_guti_t nas_guti;
+    ogs_nas_eps_guti_t nas_guti;
 
     ogs_nas_eps_update_type_t *eps_update_type =
                     &tau_request->eps_update_type;
@@ -486,7 +486,7 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
             enb_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_tai_t));
+    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
     /* Check TAI */
@@ -503,7 +503,7 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     /* Store UE specific information */
     if (tau_request->presencemask &
         OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
-        ogs_nas_tracking_area_identity_t *last_visited_registered_tai = 
+        ogs_nas_eps_tai_t *last_visited_registered_tai = 
             &tau_request->last_visited_registered_tai;
 
         ogs_nas_to_plmn_id(&mme_ue->last_visited_plmn_id,
@@ -609,7 +609,7 @@ int emm_handle_extended_service_request(mme_ue_t *mme_ue,
             enb_ue->saved.e_cgi.cell_id);
 
     /* Copy TAI and ECGI from enb_ue */
-    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_tai_t));
+    memcpy(&mme_ue->tai, &enb_ue->saved.tai, sizeof(ogs_eps_tai_t));
     memcpy(&mme_ue->e_cgi, &enb_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
 
     /* Check TAI */
