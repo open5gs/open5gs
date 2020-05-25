@@ -43,7 +43,7 @@ amf:
         ciphering_order : [ EEA0, EEA1, EEA2 ]
     network_name:
         full: Open5GS
-    amf_name: amf.open5gs.org
+    amf_name: open5gs-amf0
 
 smf:
     sbi:

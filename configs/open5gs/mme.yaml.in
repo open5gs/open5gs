@@ -197,6 +197,10 @@ logger:
 #        full: Open5GS
 #        short: Next
 #
+#  <MME Name>
+#
+#    mme_name: open5gs-mme0
+#
 mme:
     freeDiameter: @sysconfdir@/freeDiameter/mme.conf
     s1ap:
@@ -217,6 +221,7 @@ mme:
         ciphering_order : [ EEA0, EEA1, EEA2 ]
     network_name:
         full: Open5GS
+    mme_name: open5gs-mme0
 
 #
 # sgw:

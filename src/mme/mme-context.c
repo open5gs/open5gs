@@ -1385,6 +1385,8 @@ int mme_context_parse_config()
                         }
                     } while (ogs_yaml_iter_type(&sgsap_array) ==
                             YAML_SEQUENCE_NODE);
+                } else if (!strcmp(mme_key, "mme_name")) {
+                    self.mme_name = ogs_yaml_iter_value(&mme_iter);
                 } else
                     ogs_warn("unknown key `%s`", mme_key);
             }

@@ -34,6 +34,7 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void)
     S1AP_S1SetupResponseIEs_t *ie = NULL;
     S1AP_ServedGUMMEIs_t *ServedGUMMEIs = NULL;
     S1AP_RelativeMMECapacity_t *RelativeMMECapacity = NULL;
+    S1AP_MMEname_t *MMEname = NULL;
 
     memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
     pdu.present = S1AP_S1AP_PDU_PR_successfulOutcome;
@@ -47,6 +48,17 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void)
         S1AP_SuccessfulOutcome__value_PR_S1SetupResponse;
 
     S1SetupResponse = &successfulOutcome->value.choice.S1SetupResponse;
+
+    if (mme_self()->mme_name) {
+        ie = CALLOC(1, sizeof(S1AP_S1SetupResponseIEs_t));
+        ASN_SEQUENCE_ADD(&S1SetupResponse->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_MMEname;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present = S1AP_S1SetupResponseIEs__value_PR_MMEname;
+
+        MMEname = &ie->value.choice.MMEname;
+    }
 
     ie = CALLOC(1, sizeof(S1AP_S1SetupResponseIEs_t));
     ASN_SEQUENCE_ADD(&S1SetupResponse->protocolIEs, ie);
@@ -65,6 +77,11 @@ ogs_pkbuf_t *s1ap_build_setup_rsp(void)
     ie->value.present = S1AP_S1SetupResponseIEs__value_PR_RelativeMMECapacity;
 
     RelativeMMECapacity = &ie->value.choice.RelativeMMECapacity;
+
+    if (MMEname) {
+        ogs_asn_buffer_to_OCTET_STRING((char*)mme_self()->mme_name,
+                strlen(mme_self()->mme_name), MMEname);
+    }
 
     for (i = 0; i < mme_self()->max_num_of_served_gummei; i++) {
         S1AP_ServedGUMMEIsItem_t *ServedGUMMEIsItem = NULL;

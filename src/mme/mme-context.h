@@ -131,6 +131,16 @@ typedef struct mme_context_s {
     uint8_t         num_of_integrity_order;
     uint8_t         integrity_order[OGS_MAX_NUM_OF_ALGORITHM];
 
+    /* Network Name */
+    ogs_nas_network_name_t short_name; /* Network short name */
+    ogs_nas_network_name_t full_name; /* Network Full Name */
+
+    /* MME Name */
+    const char *mme_name;
+
+    /* SGW Selection */
+    sgw_select_e    sgw_selection;
+
     /* S1SetupResponse */
     uint8_t         relative_capacity;
 
@@ -153,13 +163,6 @@ typedef struct mme_context_s {
     ogs_timer_mgr_t *timer_mgr;     /* Timer Manager */
     ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
     
-    /* Network Name */    
-    ogs_nas_network_name_t short_name; /* Network short name */
-    ogs_nas_network_name_t full_name; /* Network Full Name */
-
-    /* SGW Selection */
-    sgw_select_e    sgw_selection;
-                        
 } mme_context_t;
 
 typedef struct mme_sgw_s {

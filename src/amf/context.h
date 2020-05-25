@@ -48,7 +48,6 @@ typedef struct amf_context_s {
     ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
 
     OpenAPI_nf_type_e   nf_type;
-    const char *amf_name;
 
     /* Served GUMME */
     uint8_t num_of_served_guami;
@@ -90,6 +89,9 @@ typedef struct amf_context_s {
     /* Network Name */    
     ogs_nas_network_name_t short_name; /* Network short name */
     ogs_nas_network_name_t full_name; /* Network Full Name */
+
+    /* AMF Name */
+    const char *amf_name;
 
     /* M-TMSI Pool */
     OGS_POOL(m_tmsi, amf_m_tmsi_t);
