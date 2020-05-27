@@ -236,11 +236,11 @@ const View = ({ visible, disableOnClickOutside, subscriber, onEdit, onDelete, on
                 <div className="right">
                   <div className="data">
                     {ambr.downlink} Kbps
-                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>UL</span>
+                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>DL</span>
                   </div>
                   <div className="data">
                     {ambr.uplink} Kbps
-                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>DL</span>
+                    <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>UL</span>
                   </div>
                 </div>
               </div>
