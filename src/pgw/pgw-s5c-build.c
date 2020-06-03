@@ -36,6 +36,7 @@ ogs_pkbuf_t *pgw_s5c_build_create_session_response(
 
     ogs_gtp_cause_t cause;
     ogs_gtp_f_teid_t pgw_s5c_teid, pgw_s5u_teid;
+    ogs_gtp_ambr_t ambr;
     ogs_gtp_bearer_qos_t bearer_qos;
     char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     int len;
@@ -93,8 +94,20 @@ ogs_pkbuf_t *pgw_s5c_build_create_session_response(
     rsp->apn_restriction.presence = 1;
     rsp->apn_restriction.u8 = OGS_GTP_APN_NO_RESTRICTION;
     
-    /* TODO : APN-AMBR
+    /* APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
+    if ((gx_message->pdn.ambr.uplink &&
+        sess->pdn.ambr.uplink != gx_message->pdn.ambr.uplink) ||
+        (gx_message->pdn.ambr.downlink &&
+        sess->pdn.ambr.downlink != gx_message->pdn.ambr.downlink)) {
+
+        memset(&ambr, 0, sizeof(ogs_gtp_ambr_t));
+        ambr.uplink = htobe32(gx_message->pdn.ambr.uplink / 1000);
+        ambr.downlink = htobe32(gx_message->pdn.ambr.downlink / 1000);
+        rsp->aggregate_maximum_bit_rate.presence = 1;
+        rsp->aggregate_maximum_bit_rate.data = &ambr;
+        rsp->aggregate_maximum_bit_rate.len = sizeof(ambr);
+    }
 
     /* PCO */
     if (sess->ue_pco.presence && sess->ue_pco.len && sess->ue_pco.data) {

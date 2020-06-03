@@ -62,6 +62,7 @@ void mme_s11_handle_create_session_response(
     mme_sess_t *sess = NULL;
     ogs_pdn_t *pdn = NULL;
     ogs_gtp_bearer_qos_t bearer_qos;
+    ogs_gtp_ambr_t *ambr = NULL;
     uint16_t decoded = 0;
     
     ogs_assert(xact);
@@ -165,6 +166,13 @@ void mme_s11_handle_create_session_response(
                         bearer_qos.pre_emption_capability;
         pdn->qos.arp.pre_emption_vulnerability =
                         bearer_qos.pre_emption_vulnerability;
+    }
+
+    /* AMBR */
+    if (rsp->aggregate_maximum_bit_rate.presence) {
+        ambr = rsp->aggregate_maximum_bit_rate.data;
+        pdn->ambr.downlink = be32toh(ambr->downlink) * 1000;
+        pdn->ambr.uplink = be32toh(ambr->uplink) * 1000;
     }
 
     /* Data Plane(UL) : SGW-S1U */
