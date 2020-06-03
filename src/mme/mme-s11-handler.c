@@ -61,6 +61,9 @@ void mme_s11_handle_create_session_response(
     mme_bearer_t *bearer = NULL;
     mme_sess_t *sess = NULL;
     ogs_pdn_t *pdn = NULL;
+    ogs_gtp_bearer_qos_t bearer_qos;
+    ogs_gtp_ambr_t *ambr = NULL;
+    uint16_t decoded = 0;
     
     ogs_assert(xact);
     ogs_assert(rsp);
@@ -149,6 +152,27 @@ void mme_s11_handle_create_session_response(
     if (rsp->protocol_configuration_options.presence) {
         OGS_TLV_STORE_DATA(&sess->pgw_pco,
                 &rsp->protocol_configuration_options);
+    }
+
+    /* Bearer QoS */
+    if (rsp->bearer_contexts_created.bearer_level_qos.presence) {
+        decoded = ogs_gtp_parse_bearer_qos(&bearer_qos,
+            &rsp->bearer_contexts_created.bearer_level_qos);
+        ogs_assert(rsp->bearer_contexts_created.bearer_level_qos.len ==
+                decoded);
+        pdn->qos.qci = bearer_qos.qci;
+        pdn->qos.arp.priority_level = bearer_qos.priority_level;
+        pdn->qos.arp.pre_emption_capability =
+                        bearer_qos.pre_emption_capability;
+        pdn->qos.arp.pre_emption_vulnerability =
+                        bearer_qos.pre_emption_vulnerability;
+    }
+
+    /* AMBR */
+    if (rsp->aggregate_maximum_bit_rate.presence) {
+        ambr = rsp->aggregate_maximum_bit_rate.data;
+        pdn->ambr.downlink = be32toh(ambr->downlink) * 1000;
+        pdn->ambr.uplink = be32toh(ambr->uplink) * 1000;
     }
 
     /* Data Plane(UL) : SGW-S1U */
