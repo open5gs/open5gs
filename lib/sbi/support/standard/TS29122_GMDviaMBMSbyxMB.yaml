@@ -1,0 +1,705 @@
+openapi: 3.0.0
+info:
+  title: GMDviaMBMSbyxMB
+  description: |
+    API for Group Message Delivery via MBMS by xMB
+    © 2019, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+  version: 1.0.1
+externalDocs:
+  description: 3GPP TS 29.122 V15.4.0 T8 reference point for Northbound APIs
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-group-message-delivery-xmb/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/services/:
+    get:
+      summary: read all service resources for a given SCS/AS
+      tags:
+        - Service Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (successful query of service creation resource)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceCreation'
+                minItems: 0
+                description: The service resource for the SCS/AS in the request URI is returned.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: creates a new service creation resource for a given SCS/AS
+      tags:
+        - Service Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the service to be created in the SCEF
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceCreation'
+      responses:
+        '201':
+          description: successful creation of a service
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceCreation'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/services/{serviceId}:
+    get:
+      summary: read a service resource for a given SCS/AS and a Service Id
+      tags:
+        - Individual Service Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          description: Service Id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (successful query of service resource)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceCreation'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: deletes an existing service resource for a given SCS/AS and a service id
+      tags:
+        - Individual service Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          description: Service Id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content, successful deletion of a service resource
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/services/{serviceId}/delivery-via-mbms:
+    get:
+      summary: read all group message delivery via MBMS resource for a given SCS/AS and a service id
+      tags:
+        - Delivery via MBMS Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          description: Service Id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (successful query of Delivery via MBMS resource)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GMDViaMBMSByxMB'
+                minItems: 0
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary:  Creates a new delivery via MBMS for a given SCS/AS and a service Id
+      tags:
+        - Delivery via MBMS Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          description: Service Id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the GMD via MBMS by xMB resource to be Created in the SCEF
+        required: true
+        content:
+          application/json: 
+            schema:
+              $ref: '#/components/schemas/GMDViaMBMSByxMB'
+      callbacks:
+        gMDByxMBNotification:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/GMDByxMBNotification'
+              responses:
+                '200':
+                  description: OK (The successful acknowledgement of the notification with a body)
+                  content:
+                    application/json:
+                      schema:
+                        $ref: 'TS29122_CommonData.yaml#/components/schemas/Acknowledgement'
+                '204':
+                  description: successful notification
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: successful creation of an GMD via MBMS by xMB resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GMDViaMBMSByxMB'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/services/{serviceId}/delivery-via-mbms/{transactionId}:
+    get:
+      summary: read all group message delivery via MBMS resource for a given SCS/AS and a service Id
+      tags:
+        - Individual Delivery via MBMS resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          description: Service Id
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (successful query of an Delivery via MBMS resource)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GMDViaMBMSByxMB'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary:  Updates an existing delivery via MBMS for a given SCS/AS, a service Id and transaction Id.
+      tags:
+        - Individual Delivery via MBMS resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          description: Service Id
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the GMD via MBMS by xMB resource to be udpated in the SCEF
+        required: true
+        content:
+          application/json: 
+            schema:
+              $ref: '#/components/schemas/GMDViaMBMSByxMB'
+      responses:
+        '200':
+          description: successful update of an individual GMD via MBMS by xMB resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GMDViaMBMSByxMB'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary:  Updates an existing delivery via MBMS for a given SCS/AS, a service Id and transaction Id.
+      tags:
+        - Individual Delivery via MBMS resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          description: Service Id
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: representation of the GMD via MBMS by xMB resource to be udpated in the SCEF
+        required: true
+        content:
+          application/merge-patch+json: 
+            schema:
+              $ref: '#/components/schemas/GMDViaMBMSByxMBPatch'
+      responses:
+        '200':
+          description: successful update of an individual GMD via MBMS by xMB resource
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GMDViaMBMSByxMB'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary:  deletes a delivery via MBMS resource for a given SCS/AS, a service Id and a transcation Id.
+      tags:
+        - Individual Delivery via MBMS resource Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: serviceId
+          in: path
+          description: Service Id
+          required: true
+          schema:
+            type: string
+        - name: transactionId
+          in: path
+          description: Identifier of transaction
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content, successful deletion of an resouce of deliery via MBMS
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    ServiceCreation:
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        userServiceId:
+          type: string
+          description: Identifies the MBMS User Service supplied by the SCEF.
+          readOnly: true
+        serviceClass:
+          type: string
+          description: The service class that service belongs to supplied by the SCEF.
+          readOnly: true
+        serviceLanguages:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: List of language of the service content supplied by the SCEF.
+          readOnly: true
+        serviceNames:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: List of Service Names supplied by the SCEF.
+          readOnly: true
+        receiveOnlyMode:
+          type: boolean
+          description: When set to 'true', the Content Provider indicates that the service is a Receive Only Mode service. This parameter is supplied by the SCEF.
+          readOnly: true
+        serviceAnnouncementMode:
+          $ref: '#/components/schemas/ServiceAnnouncementMode'
+    GMDViaMBMSByxMB:
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by the SCS/AS to request the SCEF to send a test notification as defined in subclause 5.2.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        mbmsLocArea:
+          $ref: '#/components/schemas/MbmsLocArea'
+        messageDeliveryStartTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        messageDeliveryStopTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        groupMessagePayload:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+        scefMessageDeliveryIPv4:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4AddrRo'
+        scefMessageDeliveryIPv6:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6AddrRo'
+        scefMessageDeliveryPort:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/PortRo'
+      required:
+        - scsAsId
+        - notificationDestination
+    GMDByxMBNotification:
+      type: object
+      properties:
+        transaction:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        deliveryTriggerStatus:
+          type: boolean
+          description: Indicates whether delivery of group message payload was successful(TRUE) or not (FALSE)
+      required:
+        - transaction
+        - deliveryTriggerStatus
+    GMDViaMBMSByxMBPatch:
+      type: object
+      properties:
+        mbmsLocArea:
+          $ref: '#/components/schemas/MbmsLocArea'
+        messageDeliveryStartTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        messageDeliveryStopTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        groupMessagePayload:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bytes'
+    MbmsLocArea:
+      type: object
+      properties:
+        cellId:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates a Cell Global Identification of the user which identifies the cell the UE is registered.
+        enodeBId:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates an eNodeB in which the UE is currently located.
+        geographicArea:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+          description: Identifies a geographic area of the user where the UE is located.
+        mbmsServiceAreaId:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies an MBMS Service Area Identity of the user where the UE is located.
+        civicAddress:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+          minItems: 1
+          description: Identifies a civic address of the user where the UE is located.
+    ServiceAnnouncementMode:
+      anyOf:
+      - type: string
+        enum:
+          - SACH
+          - CONTENT_PROVIDER
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - SACH: BM-SC performs the service announcement for the current service using the SACH channel.
+        - CONTENT_PROVIDER: BM-SC provides the necessary service access information used by the Content Provider to create the service announcement information.
+      readOnly: true

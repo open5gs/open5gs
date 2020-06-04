@@ -60,7 +60,7 @@ cJSON *OpenAPI_atom_convertToJSON(OpenAPI_atom_t *atom)
         goto end;
     }
 
-    if (atom->negative) {
+    if (atom->negative >= 0) {
         if (cJSON_AddBoolToObject(item, "negative", atom->negative) == NULL) {
             ogs_error("OpenAPI_atom_convertToJSON() failed [negative]");
             goto end;

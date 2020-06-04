@@ -1,0 +1,374 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-bdt
+  version: 1.1.0.alpha-4
+  description: |
+    API for BDT resouce management.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V16.5.0 T8 reference point for Northbound APIs
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-bdt/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/subscriptions:
+    parameters:
+      - name: scsAsId
+        description: String identifying the SCS/AS.
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      responses:
+        '200':
+          description: all BDT policy subscriptions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bdt'
+                minItems: 0
+                description: individual BDT policy subscription.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    post:
+      requestBody:
+        description: Contains the data to create a BDT subscription.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bdt'
+      callbacks:
+        bDTWarningNotification:
+          '{$request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/ExNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Background data transfer policies offered to the SCS/AS.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bdt'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/409'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{scsAsId}/subscriptions/{subscriptionId}:
+    parameters:
+      - name: scsAsId
+        description: String identifying the SCS/AS.
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: subscriptionId
+        description: String identifying the individual BDT policy resource in the SCEF.
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      responses:
+        '200':
+          description: Background data transfer policies offered to and selected by the SCEF.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bdt'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      requestBody:
+        description: Parameters to update/replace the existing BDT subscription
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bdt'
+      responses:
+        '200':
+          description: OK (Successful update of the BDT subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bdt'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    patch:
+      requestBody:
+        description: Contains information to be performed on the Bdt data structure to select a transfer policy.
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/BdtPatch'
+      responses:
+        '200':
+          description: The Individual BDT Policy resource is modified with a selected policy and a representation of that resource is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bdt'
+        '204':
+          description: The Individual BDT Policy resource is modified with a selected policy.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      responses:
+        '204':
+          description: The Individual BDT Policy resource is deleted.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    Bdt:
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        volumePerUE:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        numberOfUEs:
+          type: integer
+          minimum: 1
+          description: Identifies the number of UEs.
+        desiredTimeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        locationArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea'
+        locationArea5G:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        referenceId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        transferPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransferPolicy'
+          minItems: 1
+          description: Identifies an offered transfer policy.
+          readOnly: true
+        selectedPolicy:
+          type: integer
+          description: Identity of the selected background data transfer policy. Shall not be present in initial message exchange, can be provided by NF service consumer in a subsequent message exchange.
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        warnNotifEnabled:
+          type: boolean
+          description: Indicates whether the BDT warning notification is enabled or not.
+      required:
+        - volumePerUE
+        - numberOfUEs
+        - desiredTimeWindow
+    BdtPatch:
+      type: object
+      properties:
+        selectedPolicy:
+          type: integer
+          description: Identity of the selected background data transfer policy. 
+        warnNotifEnabled:
+          type: boolean
+          description: Indicates whether the BDT warning notification is enabled or not.
+      required:
+        - selectedPolicy
+    TransferPolicy:
+      type: object
+      properties:
+        bdtPolicyId:
+          type: integer
+          description: Identifier for the transfer policy
+        maxUplinkBandwidth:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bandwidth'
+        maxDownlinkBandwidth:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Bandwidth'
+        ratingGroup:
+          type: integer
+          minimum: 0
+          description: Indicates the rating group during the time window.
+        timeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+      required:
+        - bdtPolicyId
+        - ratingGroup
+        - timeWindow
+    ExNotification:
+      type: object
+      properties:
+        bdtRefId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/BdtReferenceId'
+        locationArea5G:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        timeWindow:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        candPolicies:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransferPolicy'
+          minItems: 1
+          description: This IE indicates a list of the candidate transfer policies from which the AF may select a new transfer policy due to network performance degradation.
+      required:
+        - bdtRefId

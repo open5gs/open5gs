@@ -1,7 +1,7 @@
 /*
  * nf_service_version.h
  *
- *
+ * Contains the version details of an NF service
  */
 
 #ifndef _OpenAPI_nf_service_version_H_

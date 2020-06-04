@@ -33,10 +33,22 @@ void ogs_ngap_GNB_ID_to_uint32(NGAP_GNB_ID_t *gNB_ID, uint32_t *gnb_id);
 
 void ogs_ngap_uint8_to_AMFRegionID(
         uint8_t region, NGAP_AMFRegionID_t *aMFRegionID);
-void ogs_ngap_uint16_to_NGAP_AMFSetID(
+void ogs_ngap_uint16_to_AMFSetID(
         uint16_t set, NGAP_AMFSetID_t *aMFSetID);
-void ogs_ngap_uint8_to_NGAP_NGAP_AMFPointer(
+void ogs_ngap_uint8_to_AMFPointer(
         uint8_t pointer, NGAP_AMFPointer_t *aMFPointer);
+void ogs_ngap_AMFRegionID_to_uint8(
+        NGAP_AMFRegionID_t *aMFRegionID, uint8_t *region);
+void ogs_ngap_AMFSetID_to_uint16(
+        NGAP_AMFSetID_t *aMFSetID, uint16_t *set);
+void ogs_ngap_AMFPointer_to_uint8(
+        NGAP_AMFPointer_t *aMFPointer, uint8_t *pointer);
+
+void ogs_ngap_nr_cgi_to_ASN(ogs_nr_cgi_t *cgi, NGAP_NR_CGI_t *nR_CGI);
+void ogs_ngap_ASN_to_nr_cgi(NGAP_NR_CGI_t *nR_CGI, ogs_nr_cgi_t *cgi);
+
+void ogs_ngap_5gs_tai_to_ASN(ogs_5gs_tai_t *tai, NGAP_TAI_t *tAI);
+void ogs_ngap_ASN_to_5gs_tai(NGAP_TAI_t *tAI, ogs_5gs_tai_t *tai);
 
 #ifdef __cplusplus
 }

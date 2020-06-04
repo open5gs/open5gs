@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -17,6 +17,7 @@
 
 libnas_5gs_sources = files('''
     types.c
+    conv.c
     ies.c
     decoder.c
     encoder.c

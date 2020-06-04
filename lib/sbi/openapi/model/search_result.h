@@ -1,7 +1,7 @@
 /*
  * search_result.h
  *
- *
+ * Contains the list of NF Profiles returned in a Discovery response
  */
 
 #ifndef _OpenAPI_search_result_H_
@@ -13,6 +13,7 @@
 #include "../include/keyValuePair.h"
 #include "../include/binary.h"
 #include "nf_profile.h"
+#include "preferred_search.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,6 +25,7 @@ typedef struct OpenAPI_search_result_s {
     OpenAPI_list_t *nf_instances;
     char *search_id;
     int num_nf_inst_complete;
+    struct OpenAPI_preferred_search_s *preferred_search;
     char *nrf_supported_features;
 } OpenAPI_search_result_t;
 
@@ -32,6 +34,7 @@ OpenAPI_search_result_t *OpenAPI_search_result_create(
     OpenAPI_list_t *nf_instances,
     char *search_id,
     int num_nf_inst_complete,
+    OpenAPI_preferred_search_t *preferred_search,
     char *nrf_supported_features
     );
 void OpenAPI_search_result_free(OpenAPI_search_result_t *search_result);

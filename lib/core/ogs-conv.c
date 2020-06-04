@@ -58,8 +58,7 @@ void *ogs_hex_to_ascii(void *in, int in_len, void *out, int out_len)
 
     l = (in_len - off) > out_len ? out_len : in_len - off;
     for (i = 0; i < l; i++) {
-        p += sprintf(p, "%02X", ((char*)in)[off+i] & 0xff);
-        if ((i & 0x3) == 3 && (i != (l-1))) p += sprintf(p, " ");
+        p += sprintf(p, "%02x", ((char*)in)[off+i] & 0xff);
     }
 
     return out;

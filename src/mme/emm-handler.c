@@ -20,7 +20,6 @@
 #include "mme-event.h"
 #include "mme-sm.h"
 
-#include "mme-kdf.h"
 #include "nas-security.h"
 
 #include "s1ap-path.h"
@@ -84,8 +83,8 @@ int emm_handle_attach_request(
     CLEAR_EPS_BEARER_ID(mme_ue);
     CLEAR_SERVICE_INDICATOR(mme_ue);
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
-        mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+        ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+        ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
         mme_ue->nhcc = 1;
     }
 
@@ -158,7 +157,7 @@ int emm_handle_attach_request(
                 eps_mobile_identity->length);
         memcpy(&mme_ue->nas_mobile_identity_imsi, 
             &eps_mobile_identity->imsi, eps_mobile_identity->length);
-        ogs_nas_imsi_to_bcd(
+        ogs_nas_eps_imsi_to_bcd(
             &eps_mobile_identity->imsi, eps_mobile_identity->length,
             imsi_bcd);
         mme_ue_set_imsi(mme_ue, imsi_bcd);
@@ -179,7 +178,7 @@ int emm_handle_attach_request(
                 nas_guti.mme_code,
                 nas_guti.m_tmsi,
                 MME_UE_HAVE_IMSI(mme_ue) 
-                    ? mme_ue->imsi_bcd : "Unknown");
+                    ? mme_ue->imsi_bcd : "Unknown IMSI");
         break;
     default:
         ogs_warn("Not implemented[%d]", eps_mobile_identity->imsi.type);
@@ -317,7 +316,7 @@ int emm_handle_identity_response(
         }
         memcpy(&mme_ue->nas_mobile_identity_imsi, 
             &mobile_identity->imsi, mobile_identity->length);
-        ogs_nas_imsi_to_bcd(
+        ogs_nas_eps_imsi_to_bcd(
             &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
         mme_ue_set_imsi(mme_ue, imsi_bcd);
 
@@ -406,8 +405,8 @@ int emm_handle_service_request(
     CLEAR_MME_UE_ALL_TIMERS(mme_ue);
 
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
-        mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
-        mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+        ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32, mme_ue->kenb);
+        ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
         mme_ue->nhcc = 1;
     }
 

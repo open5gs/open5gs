@@ -4,27 +4,48 @@
 #include <stdio.h>
 #include "transport_protocol.h"
 
-char* OpenAPI_transport_protocol_ToString(OpenAPI_transport_protocol_e transport_protocol)
+OpenAPI_transport_protocol_t *OpenAPI_transport_protocol_create(
+    )
 {
-    const char *transport_protocolArray[] =  { "NULL", "TCP" };
-    size_t sizeofArray = sizeof(transport_protocolArray) / sizeof(transport_protocolArray[0]);
-    if (transport_protocol < sizeofArray)
-        return (char *)transport_protocolArray[transport_protocol];
-    else
-        return (char *)"Unknown";
+    OpenAPI_transport_protocol_t *transport_protocol_local_var = OpenAPI_malloc(sizeof(OpenAPI_transport_protocol_t));
+    if (!transport_protocol_local_var) {
+        return NULL;
+    }
+
+    return transport_protocol_local_var;
 }
 
-OpenAPI_transport_protocol_e OpenAPI_transport_protocol_FromString(char* transport_protocol)
+void OpenAPI_transport_protocol_free(OpenAPI_transport_protocol_t *transport_protocol)
 {
-    int stringToReturn = 0;
-    const char *transport_protocolArray[] =  { "NULL", "TCP" };
-    size_t sizeofArray = sizeof(transport_protocolArray) / sizeof(transport_protocolArray[0]);
-    while (stringToReturn < sizeofArray) {
-        if (strcmp(transport_protocol, transport_protocolArray[stringToReturn]) == 0) {
-            return stringToReturn;
-        }
-        stringToReturn++;
+    if (NULL == transport_protocol) {
+        return;
     }
-    return 0;
+    OpenAPI_lnode_t *node;
+    ogs_free(transport_protocol);
+}
+
+cJSON *OpenAPI_transport_protocol_convertToJSON(OpenAPI_transport_protocol_t *transport_protocol)
+{
+    cJSON *item = NULL;
+
+    if (transport_protocol == NULL) {
+        ogs_error("OpenAPI_transport_protocol_convertToJSON() failed [TransportProtocol]");
+        return NULL;
+    }
+
+    item = cJSON_CreateObject();
+end:
+    return item;
+}
+
+OpenAPI_transport_protocol_t *OpenAPI_transport_protocol_parseFromJSON(cJSON *transport_protocolJSON)
+{
+    OpenAPI_transport_protocol_t *transport_protocol_local_var = NULL;
+    transport_protocol_local_var = OpenAPI_transport_protocol_create (
+        );
+
+    return transport_protocol_local_var;
+end:
+    return NULL;
 }
 

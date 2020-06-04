@@ -22,9 +22,6 @@
 
 #include "ogs-core.h"
 
-#define HSS_SQN_LEN 6
-#define HSS_AK_LEN 6
-
 #ifdef __cplusplus
 extern "C" {
 #endif

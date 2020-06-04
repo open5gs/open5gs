@@ -58,8 +58,20 @@ void ogs_asn_uint24_to_OCTET_STRING(
         ogs_uint24_t uint24, OCTET_STRING_t *octet_string);
 void ogs_asn_uint32_to_OCTET_STRING(
         uint32_t uint32, OCTET_STRING_t *octet_string);
+
+void ogs_asn_OCTET_STRING_to_uint8(
+        OCTET_STRING_t *octet_string, uint8_t *uint8);
+void ogs_asn_OCTET_STRING_to_uint16(
+        OCTET_STRING_t *octet_string, uint16_t *uint16);
+void ogs_asn_OCTET_STRING_to_uint24(
+        OCTET_STRING_t *octet_string, ogs_uint24_t *uint24);
+void ogs_asn_OCTET_STRING_to_uint32(
+        OCTET_STRING_t *octet_string, uint32_t *uint32);
+
 void ogs_asn_buffer_to_OCTET_STRING(
         void *buf, int size, OCTET_STRING_t *octet_string);
+void ogs_asn_buffer_to_BIT_STRING(
+        void *buf, int size, int unused, BIT_STRING_t *bit_string);
 
 int ogs_asn_BIT_STRING_to_ip(
         BIT_STRING_t *bit_string, ogs_ip_t *ip);

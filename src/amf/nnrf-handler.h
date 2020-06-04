@@ -20,7 +20,6 @@
 #ifndef AMF_NNRF_HANDLER_H
 #define AMF_NNRF_HANDLER_H
 
-#include "ogs-sbi.h"
 #include "context.h"
 
 #ifdef __cplusplus
@@ -32,10 +31,10 @@ void amf_nnrf_handle_nf_register(
 void amf_nnrf_handle_nf_status_subscribe(
         ogs_sbi_subscription_t *subscription, ogs_sbi_message_t *message);
 
-bool amf_nnrf_handle_nf_status_notify(ogs_sbi_server_t *server,
+bool amf_nnrf_handle_nf_status_notify(
         ogs_sbi_session_t *session, ogs_sbi_message_t *message);
 
-void amf_nnrf_handle_nf_discover(ogs_sbi_message_t *message);
+void amf_nnrf_handle_nf_discover(amf_ue_t *amf_ue, ogs_sbi_message_t *message);
 
 #ifdef __cplusplus
 }

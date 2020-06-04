@@ -1,0 +1,191 @@
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include "service_type_unrelated_class.h"
+
+OpenAPI_service_type_unrelated_class_t *OpenAPI_service_type_unrelated_class_create(
+    int service_type,
+    OpenAPI_list_t *allowed_geographic_area,
+    OpenAPI_privacy_check_related_action_e privacy_check_related_action,
+    OpenAPI_code_word_ind_e code_word_ind,
+    OpenAPI_valid_time_period_t *valid_time_period
+    )
+{
+    OpenAPI_service_type_unrelated_class_t *service_type_unrelated_class_local_var = OpenAPI_malloc(sizeof(OpenAPI_service_type_unrelated_class_t));
+    if (!service_type_unrelated_class_local_var) {
+        return NULL;
+    }
+    service_type_unrelated_class_local_var->service_type = service_type;
+    service_type_unrelated_class_local_var->allowed_geographic_area = allowed_geographic_area;
+    service_type_unrelated_class_local_var->privacy_check_related_action = privacy_check_related_action;
+    service_type_unrelated_class_local_var->code_word_ind = code_word_ind;
+    service_type_unrelated_class_local_var->valid_time_period = valid_time_period;
+
+    return service_type_unrelated_class_local_var;
+}
+
+void OpenAPI_service_type_unrelated_class_free(OpenAPI_service_type_unrelated_class_t *service_type_unrelated_class)
+{
+    if (NULL == service_type_unrelated_class) {
+        return;
+    }
+    OpenAPI_lnode_t *node;
+    OpenAPI_list_for_each(service_type_unrelated_class->allowed_geographic_area, node) {
+        OpenAPI_geographic_area_free(node->data);
+    }
+    OpenAPI_list_free(service_type_unrelated_class->allowed_geographic_area);
+    OpenAPI_valid_time_period_free(service_type_unrelated_class->valid_time_period);
+    ogs_free(service_type_unrelated_class);
+}
+
+cJSON *OpenAPI_service_type_unrelated_class_convertToJSON(OpenAPI_service_type_unrelated_class_t *service_type_unrelated_class)
+{
+    cJSON *item = NULL;
+
+    if (service_type_unrelated_class == NULL) {
+        ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [ServiceTypeUnrelatedClass]");
+        return NULL;
+    }
+
+    item = cJSON_CreateObject();
+    if (!service_type_unrelated_class->service_type) {
+        ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [service_type]");
+        goto end;
+    }
+    if (cJSON_AddNumberToObject(item, "serviceType", service_type_unrelated_class->service_type) == NULL) {
+        ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [service_type]");
+        goto end;
+    }
+
+    if (service_type_unrelated_class->allowed_geographic_area) {
+        cJSON *allowed_geographic_areaList = cJSON_AddArrayToObject(item, "allowedGeographicArea");
+        if (allowed_geographic_areaList == NULL) {
+            ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [allowed_geographic_area]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *allowed_geographic_area_node;
+        if (service_type_unrelated_class->allowed_geographic_area) {
+            OpenAPI_list_for_each(service_type_unrelated_class->allowed_geographic_area, allowed_geographic_area_node) {
+                cJSON *itemLocal = OpenAPI_geographic_area_convertToJSON(allowed_geographic_area_node->data);
+                if (itemLocal == NULL) {
+                    ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [allowed_geographic_area]");
+                    goto end;
+                }
+                cJSON_AddItemToArray(allowed_geographic_areaList, itemLocal);
+            }
+        }
+    }
+
+    if (service_type_unrelated_class->privacy_check_related_action) {
+        if (cJSON_AddStringToObject(item, "privacyCheckRelatedAction", OpenAPI_privacy_check_related_action_ToString(service_type_unrelated_class->privacy_check_related_action)) == NULL) {
+            ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [privacy_check_related_action]");
+            goto end;
+        }
+    }
+
+    if (service_type_unrelated_class->code_word_ind) {
+        if (cJSON_AddStringToObject(item, "codeWordInd", OpenAPI_code_word_ind_ToString(service_type_unrelated_class->code_word_ind)) == NULL) {
+            ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [code_word_ind]");
+            goto end;
+        }
+    }
+
+    if (service_type_unrelated_class->valid_time_period) {
+        cJSON *valid_time_period_local_JSON = OpenAPI_valid_time_period_convertToJSON(service_type_unrelated_class->valid_time_period);
+        if (valid_time_period_local_JSON == NULL) {
+            ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [valid_time_period]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "validTimePeriod", valid_time_period_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_service_type_unrelated_class_convertToJSON() failed [valid_time_period]");
+            goto end;
+        }
+    }
+
+end:
+    return item;
+}
+
+OpenAPI_service_type_unrelated_class_t *OpenAPI_service_type_unrelated_class_parseFromJSON(cJSON *service_type_unrelated_classJSON)
+{
+    OpenAPI_service_type_unrelated_class_t *service_type_unrelated_class_local_var = NULL;
+    cJSON *service_type = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_classJSON, "serviceType");
+    if (!service_type) {
+        ogs_error("OpenAPI_service_type_unrelated_class_parseFromJSON() failed [service_type]");
+        goto end;
+    }
+
+
+    if (!cJSON_IsNumber(service_type)) {
+        ogs_error("OpenAPI_service_type_unrelated_class_parseFromJSON() failed [service_type]");
+        goto end;
+    }
+
+    cJSON *allowed_geographic_area = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_classJSON, "allowedGeographicArea");
+
+    OpenAPI_list_t *allowed_geographic_areaList;
+    if (allowed_geographic_area) {
+        cJSON *allowed_geographic_area_local_nonprimitive;
+        if (!cJSON_IsArray(allowed_geographic_area)) {
+            ogs_error("OpenAPI_service_type_unrelated_class_parseFromJSON() failed [allowed_geographic_area]");
+            goto end;
+        }
+
+        allowed_geographic_areaList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(allowed_geographic_area_local_nonprimitive, allowed_geographic_area ) {
+            if (!cJSON_IsObject(allowed_geographic_area_local_nonprimitive)) {
+                ogs_error("OpenAPI_service_type_unrelated_class_parseFromJSON() failed [allowed_geographic_area]");
+                goto end;
+            }
+            OpenAPI_geographic_area_t *allowed_geographic_areaItem = OpenAPI_geographic_area_parseFromJSON(allowed_geographic_area_local_nonprimitive);
+
+            OpenAPI_list_add(allowed_geographic_areaList, allowed_geographic_areaItem);
+        }
+    }
+
+    cJSON *privacy_check_related_action = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_classJSON, "privacyCheckRelatedAction");
+
+    OpenAPI_privacy_check_related_action_e privacy_check_related_actionVariable;
+    if (privacy_check_related_action) {
+        if (!cJSON_IsString(privacy_check_related_action)) {
+            ogs_error("OpenAPI_service_type_unrelated_class_parseFromJSON() failed [privacy_check_related_action]");
+            goto end;
+        }
+        privacy_check_related_actionVariable = OpenAPI_privacy_check_related_action_FromString(privacy_check_related_action->valuestring);
+    }
+
+    cJSON *code_word_ind = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_classJSON, "codeWordInd");
+
+    OpenAPI_code_word_ind_e code_word_indVariable;
+    if (code_word_ind) {
+        if (!cJSON_IsString(code_word_ind)) {
+            ogs_error("OpenAPI_service_type_unrelated_class_parseFromJSON() failed [code_word_ind]");
+            goto end;
+        }
+        code_word_indVariable = OpenAPI_code_word_ind_FromString(code_word_ind->valuestring);
+    }
+
+    cJSON *valid_time_period = cJSON_GetObjectItemCaseSensitive(service_type_unrelated_classJSON, "validTimePeriod");
+
+    OpenAPI_valid_time_period_t *valid_time_period_local_nonprim = NULL;
+    if (valid_time_period) {
+        valid_time_period_local_nonprim = OpenAPI_valid_time_period_parseFromJSON(valid_time_period);
+    }
+
+    service_type_unrelated_class_local_var = OpenAPI_service_type_unrelated_class_create (
+        service_type->valuedouble,
+        allowed_geographic_area ? allowed_geographic_areaList : NULL,
+        privacy_check_related_action ? privacy_check_related_actionVariable : 0,
+        code_word_ind ? code_word_indVariable : 0,
+        valid_time_period ? valid_time_period_local_nonprim : NULL
+        );
+
+    return service_type_unrelated_class_local_var;
+end:
+    return NULL;
+}
+

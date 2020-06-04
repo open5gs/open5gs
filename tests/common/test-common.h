@@ -39,6 +39,10 @@ extern "C" {
 #include "common/sctp.h"
 #include "common/gtpu.h"
 #include "common/application.h"
+#include "common/gmm-build.h"
+#include "common/gmm-handler.h"
+#include "common/nas-path.h"
+#include "common/nas-security.h"
 
 #undef OGS_TEST_INSIDE
 

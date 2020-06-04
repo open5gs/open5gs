@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef NAS_PATH_H
-#define NAS_PATH_H
+#ifndef NAS_EPS_PATH_H
+#define NAS_EPS_PATH_H
 
 #include "mme-context.h"
 
@@ -76,4 +76,4 @@ void nas_eps_send_downlink_nas_transport(
 }
 #endif
 
-#endif /* NAS_PATH_H */
+#endif /* NAS_EPS_PATH_H */

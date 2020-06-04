@@ -1,7 +1,7 @@
 /*
  * ip_end_point.h
  *
- *
+ * IP addressing information of a given NFService; it consists on, e.g. IP address, TCP port, transport protocol...
  */
 
 #ifndef _OpenAPI_ip_end_point_H_
@@ -22,14 +22,14 @@ typedef struct OpenAPI_ip_end_point_s OpenAPI_ip_end_point_t;
 typedef struct OpenAPI_ip_end_point_s {
     char *ipv4_address;
     char *ipv6_address;
-    OpenAPI_transport_protocol_e transport;
+    struct OpenAPI_transport_protocol_s *transport;
     int port;
 } OpenAPI_ip_end_point_t;
 
 OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_create(
     char *ipv4_address,
     char *ipv6_address,
-    OpenAPI_transport_protocol_e transport,
+    OpenAPI_transport_protocol_t *transport,
     int port
     );
 void OpenAPI_ip_end_point_free(OpenAPI_ip_end_point_t *ip_end_point);

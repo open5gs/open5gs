@@ -17,8 +17,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "context.h"
 #include "sbi-path.h"
+#include "nas-path.h"
+#include "nausf-build.h"
 
 static int server_cb(ogs_sbi_server_t *server,
         ogs_sbi_session_t *session, ogs_sbi_request_t *request)
@@ -71,25 +72,22 @@ static int client_cb(ogs_sbi_response_t *response, void *data)
 int amf_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_client_t *client = NULL;
 
     ogs_sbi_server_start_all(server_cb);
 
-    ogs_list_for_each(&ogs_sbi_self()->client_list, client) {
+    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
         ogs_sbi_nf_service_t *service = NULL;
 
-        nf_instance = ogs_sbi_nf_instance_build_default(
-                amf_self()->nf_type, client);
-        ogs_assert(nf_instance);
+        ogs_sbi_nf_instance_build_default(nf_instance, amf_self()->nf_type);
 
         service = ogs_sbi_nf_service_build_default(nf_instance,
-                (char*)OGS_SBI_SERVICE_NAME_SMF_PDUSESSION, client);
+                (char*)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_VERSION,
                 (char*)OGS_SBI_API_FULL_VERSION, NULL);
 
-        amf_sbi_nf_associate_client(nf_instance, client);
         amf_nf_fsm_init(nf_instance);
+        amf_sbi_setup_client_callback(nf_instance);
     }
 
     return OGS_OK;
@@ -100,100 +98,120 @@ void amf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-void amf_sbi_nf_associate_client(
-        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_client_t *client)
+void amf_sbi_setup_client_callback(ogs_sbi_nf_instance_t *nf_instance)
 {
+    ogs_sbi_client_t *client = NULL;
+    ogs_sbi_nf_service_t *nf_service = NULL;
     ogs_assert(nf_instance);
+
+    client = nf_instance->client;
     ogs_assert(client);
 
-    OGS_SETUP_SBI_CLIENT(nf_instance, client);
     client->cb = client_cb;
+
+    ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
+        client = nf_service->client;
+        if (client)
+            client->cb = client_cb;
+    }
 }
 
-void amf_sbi_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
+static ogs_sbi_nf_instance_t *find_or_discover_nf_instance(
+        amf_ue_t *amf_ue, OpenAPI_nf_type_e nf_type)
+{
+    bool nrf = true;
+    bool nf = true;
+
+    if (!OGS_SBI_NF_INSTANCE_GET(amf_ue->nf_types, OpenAPI_nf_type_NRF))
+        nrf = ogs_sbi_nf_types_associate(
+            amf_ue->nf_types, OpenAPI_nf_type_NRF, amf_nf_state_registered);
+    if (!OGS_SBI_NF_INSTANCE_GET(amf_ue->nf_types, nf_type))
+        nf = ogs_sbi_nf_types_associate(
+            amf_ue->nf_types, nf_type, amf_nf_state_registered);
+
+    if (nrf == false && nf == false) {
+        ogs_error("[%s] Cannot discover AUSF", amf_ue->suci);
+        nas_5gs_send_nas_reject(
+                amf_ue, OGS_5GMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+        return NULL;
+    }
+
+    if (nf == false) {
+        ogs_warn("[%s] Try to discover AUSF", amf_ue->suci);
+        ogs_timer_start(amf_ue->sbi_client_wait.timer,
+                amf_timer_cfg(AMF_TIMER_SBI_CLIENT_WAIT)->duration);
+
+        ogs_nnrf_disc_send_nf_discover(
+            amf_ue->nf_types[OpenAPI_nf_type_NRF].nf_instance,
+            nf_type, OpenAPI_nf_type_AMF, amf_ue);
+
+        return NULL;
+    }
+
+    return amf_ue->nf_types[nf_type].nf_instance;
+}
+
+int amf_nausf_auth_send_authenticate(
+        amf_ue_t *amf_ue, ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_client_t *client = NULL;
+    ogs_sockaddr_t *addr = NULL;
+    char buf[OGS_ADDRSTRLEN];
 
+    ogs_assert(amf_ue);
     ogs_assert(nf_instance);
-    client = nf_instance->client;
-    ogs_assert(client);
 
-    request = amf_nnrf_build_nf_register(nf_instance);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, nf_instance);
+    if (amf_ue->confirmation_url_for_5g_aka) {
+        addr = ogs_sbi_getaddr_from_uri(amf_ue->confirmation_url_for_5g_aka);
+        if (!addr) {
+            ogs_error("[%s] Invalid confirmation URL [%s]", amf_ue->suci,
+                amf_ue->confirmation_url_for_5g_aka);
+            return OGS_ERROR;
+        }
+        client = ogs_sbi_client_find(addr);
+        if (!client) {
+            ogs_error("[%s] Cannot find client [%s:%d]", amf_ue->suci,
+                    OGS_ADDR(addr, buf), OGS_PORT(addr));
+            ogs_freeaddrinfo(addr);
+            return OGS_ERROR;
+        }
+        ogs_freeaddrinfo(addr);
+
+        request = amf_nausf_auth_build_authenticate_confirmation(amf_ue);
+        ogs_assert(request);
+    } else {
+        client = ogs_sbi_client_find_by_service_name(
+                nf_instance, (char *)OGS_SBI_SERVICE_NAME_NAUSF_AUTH);
+        if (!client) {
+            ogs_error("[%s] Cannot find client [%s:%s]", amf_ue->suci,
+                    nf_instance->id, OGS_SBI_SERVICE_NAME_NAUSF_AUTH);
+            return OGS_ERROR;
+        }
+
+        request = amf_nausf_auth_build_authenticate(amf_ue);
+        ogs_assert(request);
+    }
+
+    ogs_timer_start(amf_ue->sbi_client_wait.timer,
+            amf_timer_cfg(AMF_TIMER_SBI_CLIENT_WAIT)->duration);
+
+    ogs_sbi_client_send_request(client, request, amf_ue);
+
+    return OGS_OK;
 }
 
-void amf_sbi_send_nf_update(ogs_sbi_nf_instance_t *nf_instance)
+int amf_nausf_auth_discover_and_send_authenticate(amf_ue_t *amf_ue)
 {
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
 
-    ogs_assert(nf_instance);
-    client = nf_instance->client;
-    ogs_assert(client);
+    ogs_assert(amf_ue);
 
-    request = amf_nnrf_build_nf_update(nf_instance);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, nf_instance);
-}
+    if (!nf_instance)
+        nf_instance = find_or_discover_nf_instance(
+                            amf_ue, OpenAPI_nf_type_AUSF);
 
-void amf_sbi_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance)
-{
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
+    if (!nf_instance) return OGS_RETRY;
 
-    ogs_assert(nf_instance);
-    client = nf_instance->client;
-    ogs_assert(client);
-
-    request = amf_nnrf_build_nf_de_register(nf_instance);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, nf_instance);
-}
-
-void amf_sbi_send_nf_status_subscribe(ogs_sbi_client_t *client,
-        OpenAPI_nf_type_e nf_type, char *nf_instance_id)
-{
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_subscription_t *subscription = NULL;
-
-    ogs_assert(client);
-
-    subscription = ogs_sbi_subscription_add();
-    ogs_assert(subscription);
-    subscription->client = client;
-    subscription->nf_type = nf_type;
-    if (nf_instance_id)
-        subscription->nf_instance_id = ogs_strdup(nf_instance_id);
-
-    request = amf_nnrf_build_nf_status_subscribe(subscription);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, subscription);
-}
-
-void amf_sbi_send_nf_status_unsubscribe(ogs_sbi_subscription_t *subscription)
-{
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
-
-    ogs_assert(subscription);
-    client = subscription->client;
-    ogs_assert(client);
-
-    request = amf_nnrf_build_nf_status_unsubscribe(subscription);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, subscription);
-}
-
-void amf_sbi_send_nf_discover(ogs_sbi_client_t *client,
-        OpenAPI_nf_type_e target_nf_type, OpenAPI_nf_type_e requester_nf_type)
-{
-    ogs_sbi_request_t *request = NULL;
-
-    ogs_assert(client);
-
-    request = amf_nnrf_build_nf_discover(target_nf_type, requester_nf_type);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, NULL);
+    return amf_nausf_auth_send_authenticate(amf_ue, nf_instance);
 }

@@ -53,6 +53,20 @@ static int test_context_prepare(void)
 
 static int test_context_validation(void)
 {
+    if (test_self()->served_tai[0].list2.num) {
+        memcpy(&test_self()->tai, 
+            &test_self()->served_tai[0].list2.tai[0], sizeof(ogs_5gs_tai_t));
+    } else if (test_self()->served_tai[0].list0.tai[0].num) {
+        test_self()->tai.tac = test_self()->served_tai[0].list0.tai[0].tac[0];
+        memcpy(&test_self()->tai.plmn_id,
+                &test_self()->served_tai[0].list0.tai[0].plmn_id,
+                OGS_PLMN_ID_LEN);
+    }
+
+    memcpy(&test_self()->cgi.plmn_id, &test_self()->tai.plmn_id,
+            OGS_PLMN_ID_LEN);
+    test_self()->cgi.cell_id = 1;
+
     return OGS_OK;
 }
 
@@ -448,4 +462,31 @@ int test_context_parse_config(void)
     if (rv != OGS_OK) return rv;
 
     return OGS_OK;
+}
+
+void test_ue_set_mobile_identity(test_ue_t *test_ue,
+        ogs_nas_5gs_mobile_identity_t *mobile_identity)
+{
+    ogs_assert(test_ue);
+    ogs_assert(mobile_identity);
+
+    if (test_ue->suci)
+        ogs_free(test_ue->suci);
+    test_ue->suci = ogs_nas_5gs_ueid_from_mobile_identity(mobile_identity);
+    if (test_ue->supi)
+        ogs_free(test_ue->supi);
+    test_ue->supi = ogs_supi_from_suci(test_ue->suci);
+    if (test_ue->imsi)
+        ogs_free(test_ue->imsi);
+    test_ue->imsi = ogs_ueid_from_supi(test_ue->supi);
+}
+
+void test_ue_remove(test_ue_t *test_ue)
+{
+    if (test_ue->suci)
+        ogs_free(test_ue->suci);
+    if (test_ue->supi)
+        ogs_free(test_ue->supi);
+    if (test_ue->imsi)
+        ogs_free(test_ue->imsi);
 }

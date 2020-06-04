@@ -28,6 +28,8 @@ static smf_timer_cfg_t g_smf_timer_cfg[MAX_NUM_OF_SMF_TIMER] = {
         { .duration = ogs_time_from_sec(12) },
     [SMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL] =
         { .duration = ogs_time_from_sec(3) },
+    [SMF_TIMER_SBI_CLIENT_WAIT] =
+        { .duration = ogs_time_from_sec(2) },
 };
 
 smf_timer_cfg_t *smf_timer_cfg(smf_timer_e id)
@@ -53,6 +55,8 @@ const char *smf_timer_get_name(smf_timer_e id)
         return "SMF_TIMER_NF_INSTANCE_VALIDITY";
     case SMF_TIMER_SUBSCRIPTION_VALIDITY:
         return "SMF_TIMER_SUBSCRIPTION_VALIDITY";
+    case SMF_TIMER_SBI_CLIENT_WAIT:
+        return "SMF_TIMER_SBI_CLIENT_WAIT";
     default: 
        break;
     }
@@ -79,6 +83,12 @@ static void timer_send_event(int timer_id, void *data)
     case SMF_TIMER_NF_INSTANCE_HEARTBEAT:
     case SMF_TIMER_NF_INSTANCE_VALIDITY:
     case SMF_TIMER_SUBSCRIPTION_VALIDITY:
+        e = smf_event_new(SMF_EVT_SBI_TIMER);
+        ogs_assert(e);
+        e->timer_id = timer_id;
+        e->sbi.data = data;
+        break;
+    case SMF_TIMER_SBI_CLIENT_WAIT:
         e = smf_event_new(SMF_EVT_SBI_TIMER);
         ogs_assert(e);
         e->timer_id = timer_id;
@@ -131,4 +141,9 @@ void smf_timer_nf_instance_validity(void *data)
 void smf_timer_subscription_validity(void *data)
 {
     timer_send_event(SMF_TIMER_SUBSCRIPTION_VALIDITY, data);
+}
+
+void smf_timer_sbi_client_wait_expire(void *data)
+{
+    timer_send_event(SMF_TIMER_SBI_CLIENT_WAIT, data);
 }

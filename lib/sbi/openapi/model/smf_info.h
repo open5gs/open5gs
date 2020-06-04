@@ -1,7 +1,7 @@
 /*
  * smf_info.h
  *
- *
+ * Information of an SMF NF Instance
  */
 
 #ifndef _OpenAPI_smf_info_H_
@@ -28,6 +28,7 @@ typedef struct OpenAPI_smf_info_s {
     OpenAPI_list_t *tai_range_list;
     char *pgw_fqdn;
     OpenAPI_list_t *access_type;
+    int priority;
 } OpenAPI_smf_info_t;
 
 OpenAPI_smf_info_t *OpenAPI_smf_info_create(
@@ -35,7 +36,8 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_create(
     OpenAPI_list_t *tai_list,
     OpenAPI_list_t *tai_range_list,
     char *pgw_fqdn,
-    OpenAPI_list_t *access_type
+    OpenAPI_list_t *access_type,
+    int priority
     );
 void OpenAPI_smf_info_free(OpenAPI_smf_info_t *smf_info);
 OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON);

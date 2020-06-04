@@ -31,6 +31,8 @@ extern "C" {
 #define OGS_TEST_INSIDE
 
 #include "common/ngap-build.h"
+#include "common/ngap-handler.h"
+#include "common/ngap-path.h"
 
 #undef OGS_TEST_INSIDE
 

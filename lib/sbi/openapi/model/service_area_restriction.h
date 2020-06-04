@@ -1,0 +1,45 @@
+/*
+ * service_area_restriction.h
+ *
+ *
+ */
+
+#ifndef _OpenAPI_service_area_restriction_H_
+#define _OpenAPI_service_area_restriction_H_
+
+#include <string.h>
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+#include "area.h"
+#include "restriction_type.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct OpenAPI_service_area_restriction_s OpenAPI_service_area_restriction_t;
+typedef struct OpenAPI_service_area_restriction_s {
+    struct OpenAPI_restriction_type_s *restriction_type;
+    OpenAPI_list_t *areas;
+    int max_num_of_t_as;
+    int max_num_of_t_as_for_not_allowed_areas;
+} OpenAPI_service_area_restriction_t;
+
+OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_create(
+    OpenAPI_restriction_type_t *restriction_type,
+    OpenAPI_list_t *areas,
+    int max_num_of_t_as,
+    int max_num_of_t_as_for_not_allowed_areas
+    );
+void OpenAPI_service_area_restriction_free(OpenAPI_service_area_restriction_t *service_area_restriction);
+OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJSON(cJSON *service_area_restrictionJSON);
+cJSON *OpenAPI_service_area_restriction_convertToJSON(OpenAPI_service_area_restriction_t *service_area_restriction);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _OpenAPI_service_area_restriction_H_ */
+

@@ -1,7 +1,7 @@
 /*
  * up_interface_type.h
  *
- *
+ * Types of User-Plane interfaces of the UPF
  */
 
 #ifndef _OpenAPI_up_interface_type_H_

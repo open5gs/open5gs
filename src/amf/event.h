@@ -34,6 +34,16 @@ typedef struct ogs_sbi_message_s ogs_sbi_message_t;
 typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
 typedef struct ogs_sbi_subscription_s ogs_sbi_subscription_t;
 
+typedef struct ogs_nas_5gs_message_s ogs_nas_5gs_message_t;
+typedef struct NGAP_NGAP_PDU ogs_ngap_message_t;
+typedef long NGAP_ProcedureCode_t;
+
+typedef struct amf_gnb_s amf_gnb_t;
+typedef struct ran_ue_s ran_ue_t;
+typedef struct amf_ue_s amf_ue_t;
+typedef struct amf_sess_s amf_sess_t;
+typedef struct amf_bearer_s amf_bearer_t;
+
 typedef enum {
     AMF_EVT_BASE = OGS_FSM_USER_SIG,
 
@@ -47,29 +57,19 @@ typedef enum {
     AMF_EVT_NGAP_LO_SCTP_COMM_UP,
     AMF_EVT_NGAP_LO_CONNREFUSED,
 
+    AMF_EVT_5GMM_MESSAGE,
+    AMF_EVT_5GMM_TIMER,
+    AMF_EVT_5GSM_MESSAGE,
+    AMF_EVT_5GSM_TIMER,
+
     AMF_EVT_TOP,
 
 } amf_event_e;
-
-typedef struct amf_gnb_s amf_gnb_t;
-typedef struct ogs_nas_5gs_message_s ogs_nas_5gs_message_t;
-typedef struct NGAP_NGAP_PDU ogs_ngap_message_t;
-typedef long NGAP_ProcedureCode_t;
 
 typedef struct amf_event_s {
     int id;
     ogs_pkbuf_t *pkbuf;
     int timer_id;
-
-    struct {
-        ogs_sock_t *sock;
-        ogs_sockaddr_t *addr;
-        uint16_t max_num_of_istreams;
-        uint16_t max_num_of_ostreams;
-
-        NGAP_ProcedureCode_t code;
-        ogs_ngap_message_t *message;
-    } ngap;
 
     struct {
         /* OGS_EVT_SBI_SERVER */
@@ -84,7 +84,28 @@ typedef struct amf_event_s {
         ogs_sbi_message_t *message;
     } sbi;
 
+    struct {
+        ogs_sock_t *sock;
+        ogs_sockaddr_t *addr;
+        uint16_t max_num_of_istreams;
+        uint16_t max_num_of_ostreams;
+
+        NGAP_ProcedureCode_t code;
+        ogs_ngap_message_t *message;
+    } ngap;
+
+    struct {
+        uint8_t type;
+        ogs_nas_5gs_message_t *message;
+    } nas;
+
     amf_gnb_t *gnb;
+    ran_ue_t *ran_ue;
+    amf_ue_t *amf_ue;
+    amf_sess_t *sess;
+    amf_bearer_t *bearer;
+
+    ogs_timer_t *timer;
 } amf_event_t;
 
 void amf_event_init(void);

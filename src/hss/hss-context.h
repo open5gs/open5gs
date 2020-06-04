@@ -27,22 +27,17 @@
 extern "C" {
 #endif
 
-#define HSS_KEY_LEN                 16
-#define HSS_AMF_LEN                 2
-
-#define HSS_MAX_SQN                 0x7ffffffffff
-
 extern int __hss_log_domain;
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __hss_log_domain
 
 typedef struct _hss_db_auth_info_t {
-    uint8_t       k[HSS_KEY_LEN];
+    uint8_t       k[OGS_KEY_LEN];
     uint8_t       use_opc;
-    uint8_t       opc[HSS_KEY_LEN];
-    uint8_t       op[HSS_KEY_LEN];
-    uint8_t       amf[HSS_AMF_LEN];
+    uint8_t       opc[OGS_KEY_LEN];
+    uint8_t       op[OGS_KEY_LEN];
+    uint8_t       amf[OGS_AMF_LEN];
     uint8_t       rand[OGS_RAND_LEN];
     uint64_t      sqn;
 } hss_db_auth_info_t;

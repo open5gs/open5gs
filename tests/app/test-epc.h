@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 void test_epc_init(void);
-#define test_epc_final ogs_mongoc_final
+#define test_epc_final ogs_dbi_final
 
 #ifdef __cplusplus
 }

@@ -86,8 +86,7 @@ void bomb_timing(bomb_t *s, tick_event_t *e)
         s->code <<= 1;
         break;
     case ARM_SIG:
-        if (s->code == s->defuse)
-        {
+        if (s->code == s->defuse) {
             OGS_FSM_TRAN(s, &bomb_setting);
             break;
         }
@@ -217,8 +216,7 @@ void alarm_off(alarm_t *s, set_event_t *e)
     case ALARM_SET_SIG:
         alarm = (10 * s->time
                           + e->digit) % 10000;
-        if ((alarm / 100 < 24) && (alarm % 100 < 60))
-        {
+        if ((alarm / 100 < 24) && (alarm % 100 < 60)) {
             s->time = alarm;
         }
         else

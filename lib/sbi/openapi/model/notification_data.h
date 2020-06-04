@@ -1,7 +1,7 @@
 /*
  * notification_data.h
  *
- *
+ * Data sent in notifications from NRF to subscribed NF Instances
  */
 
 #ifndef _OpenAPI_notification_data_H_

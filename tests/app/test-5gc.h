@@ -23,14 +23,12 @@
 #include "test-common.h"
 #include "test-ngap.h"
 
-#include "amf/context.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void test_5gc_init(void);
-#define test_5gc_final ogs_mongoc_final
+void test_5gc_final(void);
 
 #ifdef __cplusplus
 }

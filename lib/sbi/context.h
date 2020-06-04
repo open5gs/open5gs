@@ -28,6 +28,8 @@
 extern "C" {
 #endif
 
+#define OGS_SBI_MAX_NF_TYPE 64
+
 typedef struct ogs_sbi_client_s ogs_sbi_client_t;
 typedef struct ogs_sbi_context_s {
     ogs_pollset_t       *pollset;       /* Poll Set for I/O Multiplexing */
@@ -48,6 +50,14 @@ typedef struct ogs_sbi_context_s {
     const char          *content_encoding;
 } ogs_sbi_context_t;
 
+#define OGS_SETUP_SBI_NF_INSTANCE(__cTX, __pNF_INSTANCE) \
+    do { \
+        ogs_assert((__cTX)); \
+        ogs_assert((__pNF_INSTANCE)); \
+        if ((__cTX)->nf_instance != __pNF_INSTANCE) \
+            __pNF_INSTANCE->reference_count++; \
+        (__cTX)->nf_instance = __pNF_INSTANCE; \
+    } while(0)
 typedef struct ogs_sbi_nf_instance_s {
     ogs_lnode_t     lnode;
 
@@ -84,8 +94,15 @@ typedef struct ogs_sbi_nf_instance_s {
 
     ogs_list_t nf_service_list;
 
-    void *client; /* only used in CLIENT */
+    void *client;                   /* only used in CLIENT */
+    unsigned int reference_count;   /* reference count for memory free */
 } ogs_sbi_nf_instance_t;
+
+#define OGS_SBI_NF_INSTANCE_GET(__aRRAY, __nFType) \
+    ((__aRRAY)[__nFType].nf_instance) 
+typedef struct ogs_sbi_nf_types_s {
+    ogs_sbi_nf_instance_t *nf_instance;
+} ogs_sbi_nf_types_t[OGS_SBI_MAX_NF_TYPE];
 
 typedef struct ogs_sbi_nf_service_s {
     ogs_lnode_t lnode;
@@ -145,28 +162,30 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_sbi_nf_instance_remove_all(void);
 ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find(char *id);
-
-ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_build_default(
-        OpenAPI_nf_type_e nf_type, ogs_sbi_client_t *client);
+ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_find_by_nf_type(
+        OpenAPI_nf_type_e nf_type);
 
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_add(ogs_sbi_nf_instance_t *nf_instance,
         char *id, char *name, OpenAPI_uri_scheme_e scheme);
 void ogs_sbi_nf_service_add_version(ogs_sbi_nf_service_t *nf_service,
         char *in_uri, char *full, char *expiry);
-void ogs_sbi_nf_service_remove(ogs_sbi_nf_instance_t *nf_instance,
-        ogs_sbi_nf_service_t *nf_service);
+void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service);
+void ogs_sbi_nf_service_remove(ogs_sbi_nf_service_t *nf_service);
 void ogs_sbi_nf_service_remove_all(ogs_sbi_nf_instance_t *nf_instance);
 ogs_sbi_nf_service_t *ogs_sbi_nf_service_find(
         ogs_sbi_nf_instance_t *nf_instance, char *name);
-ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
-        ogs_sbi_nf_instance_t *nf_instance,
-        char *name, ogs_sbi_client_t *client);
 
-ogs_sbi_client_t *ogs_sbi_nf_instance_find_client(
-        ogs_sbi_nf_instance_t *nf_instance);
-ogs_sbi_client_t *ogs_sbi_nf_service_find_client(
-        ogs_sbi_nf_service_t *nf_service);
-void ogs_sbi_nf_service_find_client_all(ogs_sbi_nf_instance_t *nf_instance);
+void ogs_sbi_nf_instance_build_default(
+        ogs_sbi_nf_instance_t *nf_instance, OpenAPI_nf_type_e nf_type);
+ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
+        ogs_sbi_nf_instance_t *nf_instance, char *name);
+
+ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
+        ogs_sbi_nf_instance_t *nf_instance, char *name);
+
+bool ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
+bool ogs_sbi_nf_types_associate(
+        ogs_sbi_nf_types_t nf_types, OpenAPI_nf_type_e nf_type, void *state);
 
 ogs_sbi_subscription_t *ogs_sbi_subscription_add(void);
 void ogs_sbi_subscription_set_id(

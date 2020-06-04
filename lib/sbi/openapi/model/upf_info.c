@@ -11,7 +11,13 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     int iwk_eps_ind,
     OpenAPI_list_t *pdu_session_types,
     OpenAPI_atsss_capability_t *atsss_capability,
-    int ue_ip_addr_ind
+    int ue_ip_addr_ind,
+    OpenAPI_list_t *tai_list,
+    OpenAPI_w_agf_info_t *w_agf_info,
+    OpenAPI_tngf_info_t *tngf_info,
+    OpenAPI_twif_info_t *twif_info,
+    int priority,
+    int redundant_gtpu
     )
 {
     OpenAPI_upf_info_t *upf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_upf_info_t));
@@ -25,6 +31,12 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     upf_info_local_var->pdu_session_types = pdu_session_types;
     upf_info_local_var->atsss_capability = atsss_capability;
     upf_info_local_var->ue_ip_addr_ind = ue_ip_addr_ind;
+    upf_info_local_var->tai_list = tai_list;
+    upf_info_local_var->w_agf_info = w_agf_info;
+    upf_info_local_var->tngf_info = tngf_info;
+    upf_info_local_var->twif_info = twif_info;
+    upf_info_local_var->priority = priority;
+    upf_info_local_var->redundant_gtpu = redundant_gtpu;
 
     return upf_info_local_var;
 }
@@ -52,6 +64,13 @@ void OpenAPI_upf_info_free(OpenAPI_upf_info_t *upf_info)
     }
     OpenAPI_list_free(upf_info->pdu_session_types);
     OpenAPI_atsss_capability_free(upf_info->atsss_capability);
+    OpenAPI_list_for_each(upf_info->tai_list, node) {
+        OpenAPI_tai_free(node->data);
+    }
+    OpenAPI_list_free(upf_info->tai_list);
+    OpenAPI_w_agf_info_free(upf_info->w_agf_info);
+    OpenAPI_tngf_info_free(upf_info->tngf_info);
+    OpenAPI_twif_info_free(upf_info->twif_info);
     ogs_free(upf_info);
 }
 
@@ -123,7 +142,7 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
         }
     }
 
-    if (upf_info->iwk_eps_ind) {
+    if (upf_info->iwk_eps_ind >= 0) {
         if (cJSON_AddBoolToObject(item, "iwkEpsInd", upf_info->iwk_eps_ind) == NULL) {
             ogs_error("OpenAPI_upf_info_convertToJSON() failed [iwk_eps_ind]");
             goto end;
@@ -163,9 +182,82 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
         }
     }
 
-    if (upf_info->ue_ip_addr_ind) {
+    if (upf_info->ue_ip_addr_ind >= 0) {
         if (cJSON_AddBoolToObject(item, "ueIpAddrInd", upf_info->ue_ip_addr_ind) == NULL) {
             ogs_error("OpenAPI_upf_info_convertToJSON() failed [ue_ip_addr_ind]");
+            goto end;
+        }
+    }
+
+    if (upf_info->tai_list) {
+        cJSON *tai_listList = cJSON_AddArrayToObject(item, "taiList");
+        if (tai_listList == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [tai_list]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *tai_list_node;
+        if (upf_info->tai_list) {
+            OpenAPI_list_for_each(upf_info->tai_list, tai_list_node) {
+                cJSON *itemLocal = OpenAPI_tai_convertToJSON(tai_list_node->data);
+                if (itemLocal == NULL) {
+                    ogs_error("OpenAPI_upf_info_convertToJSON() failed [tai_list]");
+                    goto end;
+                }
+                cJSON_AddItemToArray(tai_listList, itemLocal);
+            }
+        }
+    }
+
+    if (upf_info->w_agf_info) {
+        cJSON *w_agf_info_local_JSON = OpenAPI_w_agf_info_convertToJSON(upf_info->w_agf_info);
+        if (w_agf_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [w_agf_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "wAgfInfo", w_agf_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [w_agf_info]");
+            goto end;
+        }
+    }
+
+    if (upf_info->tngf_info) {
+        cJSON *tngf_info_local_JSON = OpenAPI_tngf_info_convertToJSON(upf_info->tngf_info);
+        if (tngf_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [tngf_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "tngfInfo", tngf_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [tngf_info]");
+            goto end;
+        }
+    }
+
+    if (upf_info->twif_info) {
+        cJSON *twif_info_local_JSON = OpenAPI_twif_info_convertToJSON(upf_info->twif_info);
+        if (twif_info_local_JSON == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [twif_info]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "twifInfo", twif_info_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [twif_info]");
+            goto end;
+        }
+    }
+
+    if (upf_info->priority) {
+        if (cJSON_AddNumberToObject(item, "priority", upf_info->priority) == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [priority]");
+            goto end;
+        }
+    }
+
+    if (upf_info->redundant_gtpu >= 0) {
+        if (cJSON_AddBoolToObject(item, "redundantGtpu", upf_info->redundant_gtpu) == NULL) {
+            ogs_error("OpenAPI_upf_info_convertToJSON() failed [redundant_gtpu]");
             goto end;
         }
     }
@@ -294,6 +386,68 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         }
     }
 
+    cJSON *tai_list = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "taiList");
+
+    OpenAPI_list_t *tai_listList;
+    if (tai_list) {
+        cJSON *tai_list_local_nonprimitive;
+        if (!cJSON_IsArray(tai_list)) {
+            ogs_error("OpenAPI_upf_info_parseFromJSON() failed [tai_list]");
+            goto end;
+        }
+
+        tai_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(tai_list_local_nonprimitive, tai_list ) {
+            if (!cJSON_IsObject(tai_list_local_nonprimitive)) {
+                ogs_error("OpenAPI_upf_info_parseFromJSON() failed [tai_list]");
+                goto end;
+            }
+            OpenAPI_tai_t *tai_listItem = OpenAPI_tai_parseFromJSON(tai_list_local_nonprimitive);
+
+            OpenAPI_list_add(tai_listList, tai_listItem);
+        }
+    }
+
+    cJSON *w_agf_info = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "wAgfInfo");
+
+    OpenAPI_w_agf_info_t *w_agf_info_local_nonprim = NULL;
+    if (w_agf_info) {
+        w_agf_info_local_nonprim = OpenAPI_w_agf_info_parseFromJSON(w_agf_info);
+    }
+
+    cJSON *tngf_info = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "tngfInfo");
+
+    OpenAPI_tngf_info_t *tngf_info_local_nonprim = NULL;
+    if (tngf_info) {
+        tngf_info_local_nonprim = OpenAPI_tngf_info_parseFromJSON(tngf_info);
+    }
+
+    cJSON *twif_info = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "twifInfo");
+
+    OpenAPI_twif_info_t *twif_info_local_nonprim = NULL;
+    if (twif_info) {
+        twif_info_local_nonprim = OpenAPI_twif_info_parseFromJSON(twif_info);
+    }
+
+    cJSON *priority = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "priority");
+
+    if (priority) {
+        if (!cJSON_IsNumber(priority)) {
+            ogs_error("OpenAPI_upf_info_parseFromJSON() failed [priority]");
+            goto end;
+        }
+    }
+
+    cJSON *redundant_gtpu = cJSON_GetObjectItemCaseSensitive(upf_infoJSON, "redundantGtpu");
+
+    if (redundant_gtpu) {
+        if (!cJSON_IsBool(redundant_gtpu)) {
+            ogs_error("OpenAPI_upf_info_parseFromJSON() failed [redundant_gtpu]");
+            goto end;
+        }
+    }
+
     upf_info_local_var = OpenAPI_upf_info_create (
         s_nssai_upf_info_listList,
         smf_serving_area ? smf_serving_areaList : NULL,
@@ -301,7 +455,13 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         iwk_eps_ind ? iwk_eps_ind->valueint : 0,
         pdu_session_types ? pdu_session_typesList : NULL,
         atsss_capability ? atsss_capability_local_nonprim : NULL,
-        ue_ip_addr_ind ? ue_ip_addr_ind->valueint : 0
+        ue_ip_addr_ind ? ue_ip_addr_ind->valueint : 0,
+        tai_list ? tai_listList : NULL,
+        w_agf_info ? w_agf_info_local_nonprim : NULL,
+        tngf_info ? tngf_info_local_nonprim : NULL,
+        twif_info ? twif_info_local_nonprim : NULL,
+        priority ? priority->valuedouble : 0,
+        redundant_gtpu ? redundant_gtpu->valueint : 0
         );
 
     return upf_info_local_var;

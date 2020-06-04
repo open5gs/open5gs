@@ -1,7 +1,7 @@
 /*
  * dnn_smf_info_item.h
  *
- *
+ * Set of parameters supported by SMF for a given DNN
  */
 
 #ifndef _OpenAPI_dnn_smf_info_item_H_

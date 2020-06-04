@@ -20,7 +20,7 @@
 #ifndef AMF_SBI_PATH_H
 #define AMF_SBI_PATH_H
 
-#include "nnrf-build.h"
+#include "nausf-build.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,20 +29,11 @@ extern "C" {
 int amf_sbi_open(void);
 void amf_sbi_close(void);
 
-void amf_sbi_nf_associate_client(
-        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_client_t *client);
+void amf_sbi_setup_client_callback(ogs_sbi_nf_instance_t *nf_instance);
 
-void amf_sbi_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
-void amf_sbi_send_nf_update(ogs_sbi_nf_instance_t *nf_instance);
-void amf_sbi_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance);
-
-void amf_sbi_send_nf_status_subscribe(ogs_sbi_client_t *client,
-        OpenAPI_nf_type_e nf_type, char *nf_instance_id);
-void amf_sbi_send_nf_status_unsubscribe(ogs_sbi_subscription_t *subscription);
-
-void amf_sbi_send_nf_discover(ogs_sbi_client_t *client,
-        OpenAPI_nf_type_e target_nf_type, OpenAPI_nf_type_e requester_nf_type);
-
+int amf_nausf_auth_send_authenticate(
+        amf_ue_t *amf_ue, ogs_sbi_nf_instance_t *nf_instance);
+int amf_nausf_auth_discover_and_send_authenticate(amf_ue_t *amf_ue);
 
 #ifdef __cplusplus
 }

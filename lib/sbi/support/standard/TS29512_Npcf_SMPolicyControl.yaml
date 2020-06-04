@@ -1,0 +1,1986 @@
+openapi: 3.0.0
+info:
+  title: Npcf_SMPolicyControl API
+  version: 1.1.1.alpha-5
+  description: |
+    Session Management Policy Control Service
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.512 V16.4.0; 5G System; Session Management Policy Control Service.
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.512/'
+security:
+  - {}
+  - oAuth2Clientcredentials:
+    - npcf-smpolicycontrol
+servers:
+  - url: '{apiRoot}/npcf-smpolicycontrol/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 4.4 of 3GPP TS 29.501
+paths:
+  /sm-policies:
+    post:
+      summary: Create a new Individual SM Policy
+      operationId: CreateSMPolicy
+      tags:
+        - SM Policies (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmPolicyContextData'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmPolicyDecision'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '308':
+          description: Permanent Redirect
+          headers:
+            Location:
+              description: 'Contains the URI of the PCF within the existing PCF binding information stored in the BSF for the same UE ID, S-NSSAI and DNN combination '
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          description: Not Found
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        SmPolicyUpdateNotification:
+          '{$request.body#/notificationUri}/update': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/SmPolicyNotification'
+              responses:
+                '200':
+                  description: OK. The current applicable values corresponding to the policy control request trigger is reported
+                  content:
+                    application/json:
+                      schema:
+                        oneOf:
+                          - $ref: '#/components/schemas/UeCampingRep'
+                          - type: array
+                            items:
+                              $ref: '#/components/schemas/PartialSuccessReport'
+                            minItems: 1
+                '204':
+                  description: No Content, Notification was succesfull
+                '400':
+                  description: Bad Request.
+                  content:
+                    application/json:
+                      schema:
+                        $ref: '#/components/schemas/ErrorReport'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+        SmPolicyControlTerminationRequestNotification:
+          '{$request.body#/notificationUri}/terminate': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/TerminationNotification'
+              responses:
+                '204':
+                  description: No Content, Notification was succesful
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /sm-policies/{smPolicyId}:
+    get:
+      summary: Read an Individual SM Policy
+      operationId: GetSMPolicy
+      tags:
+        - Individual SM Policy (Document)
+      parameters:
+        - name: smPolicyId
+          in: path
+          description: Identifier of a policy association
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmPolicyControl'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /sm-policies/{smPolicyId}/update:
+    post:
+      summary: Update an existing Individual SM Policy
+      operationId: UpdateSMPolicy
+      tags:
+        - Individual SM Policy (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmPolicyUpdateContextData'
+      parameters:
+        - name: smPolicyId
+          in: path
+          description: Identifier of a policy association
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Updated policies are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SmPolicyDecision'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /sm-policies/{smPolicyId}/delete:
+    post:
+      summary: Delete an existing Individual SM Policy
+      operationId: DeleteSMPolicy
+      tags:
+        - Individual SM Policy (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmPolicyDeleteData'
+      parameters:
+        - name: smPolicyId
+          in: path
+          description: Identifier of a policy association
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No content
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2Clientcredentials:
+      type: oauth2
+      flows: 
+        clientCredentials: 
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            npcf-smpolicycontrol: Access to the Npcf_SMPolicyControl API
+  schemas:
+    SmPolicyControl:
+      type: object
+      properties:
+        context:
+          $ref: '#/components/schemas/SmPolicyContextData'
+        policy:
+          $ref: '#/components/schemas/SmPolicyDecision'
+      required:
+        - context
+        - policy
+    SmPolicyContextData:
+      type: object
+      properties:
+        accNetChId:
+          $ref: '#/components/schemas/AccNetChId'
+        chargEntityAddr:
+          $ref: '#/components/schemas/AccNetChargingAddress'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        interGrpIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+          minItems: 1
+        pduSessionId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionId'
+        pduSessionType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
+        chargingcharacteristics:
+          type: string
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        dnnSelMode:
+          $ref: 'TS29502_Nsmf_PDUSession.yaml#/components/schemas/DnnSelectionMode'
+        notificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        addAccessInfo:
+          $ref: '#/components/schemas/AdditionalAccessInfo'
+        servingNetwork:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        userLocationInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        ipv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6AddressPrefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        ipDomain:
+          type: string
+          description: Indicates the IPv4 address domain
+        subsSessAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        authProfIndex:
+          type: string
+          description: Indicates the DN-AAA authorization profile index
+        subsDefQos:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SubscribedDefaultQos'
+        numOfPackFilter:
+          type: integer
+          description: Contains the number of supported packet filter for signalled QoS rules.
+        online:
+          type: boolean
+          description: If it is included and set to true, the online charging is applied to the PDU session.
+        offline:
+          type: boolean
+          description: If it is included and set to true, the offline charging is applied to the PDU session.
+        3gppPsDataOffStatus:
+          type: boolean
+          description: If it is included and set to true, the 3GPP PS Data Off is activated by the UE.
+        refQosIndication:
+          type: boolean
+          description: If it is included and set to true, the reflective QoS is supported by the UE.
+        traceReq:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        sliceInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        qosFlowUsage:
+          $ref: '#/components/schemas/QosFlowUsage'
+        servNfId:
+          $ref: '#/components/schemas/ServingNfIdentity'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        smfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        recoveryTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        maPduInd:
+          $ref: '#/components/schemas/MaPduIndication'
+        atsssCapab:
+          $ref: '#/components/schemas/AtsssCapability'
+      required:
+        - supi
+        - pduSessionId
+        - pduSessionType
+        - dnn
+        - notificationUri
+        - sliceInfo
+    SmPolicyDecision:
+      type: object
+      properties:
+        sessRules:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/SessionRule'
+          minProperties: 1
+          description: A map of Sessionrules with the content being the SessionRule as described in subclause 5.6.2.7.
+        pccRules:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PccRule'
+          minProperties: 1
+          description: A map of PCC rules with the content being the PCCRule as described in subclause 5.6.2.6.
+          nullable: true
+        pcscfRestIndication:
+          type: boolean
+          description: If it is included and set to true, it indicates the P-CSCF Restoration is requested.
+        qosDecs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/QosData'
+          minProperties: 1
+          description: Map of QoS data policy decisions.
+        chgDecs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ChargingData'
+          minProperties: 1
+          description: Map of Charging data policy decisions.
+          nullable: true
+        chargingInfo:
+          $ref: '#/components/schemas/ChargingInformation'
+        traffContDecs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TrafficControlData'
+          minProperties: 1
+          description: Map of Traffic Control data policy decisions.
+        umDecs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/UsageMonitoringData'
+          minProperties: 1
+          description: Map of Usage Monitoring data policy decisions.
+          nullable: true
+        qosChars:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/QosCharacteristics'
+          minProperties: 1
+          description: Map of QoS characteristics for non standard 5QIs. This map uses the 5QI values as keys.
+        qosMonDecs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/QosMonitoringData'
+          minProperties: 1
+          description: Map of QoS Monitoring data policy decisions.
+          nullable: true
+        reflectiveQoSTimer:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        conds:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ConditionData'
+          minProperties: 1
+          description: A map of condition data with the content being as described in subclause 5.6.2.9.
+          nullable: true
+        revalidationTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        offline:
+          type: boolean
+          description: Indicates the offline charging is applicable to the PDU session or PCC rule.
+        online:
+          type: boolean
+          description: Indicates the online charging is applicable to the PDU session or PCC rule.
+        policyCtrlReqTriggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyControlRequestTrigger'
+          minItems: 1
+          description: Defines the policy control request triggers subscribed by the PCF.
+          nullable: true
+        lastReqRuleData:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestedRuleData'
+          minItems: 1
+          description: Defines the last list of rule control data requested by the PCF.
+        lastReqUsageData:
+          $ref: '#/components/schemas/RequestedUsageData'
+        praInfos:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfoRm'
+          minProperties: 1
+          description: Map of PRA information.
+          nullable: true
+        ipv4Index:
+          $ref: 'TS29519_Policy_Data.yaml#/components/schemas/IpIndex'
+        ipv6Index:
+          $ref: 'TS29519_Policy_Data.yaml#/components/schemas/IpIndex'
+        qosFlowUsage:
+          $ref: '#/components/schemas/QosFlowUsage'
+        relCause:
+          $ref: '#/components/schemas/SmPolicyAssociationReleaseCause'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        tsnPortManContDstt:
+          $ref: '#/components/schemas/PortManagementContainer'
+        tsnPortManContNwtts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PortManagementContainer'
+          minItems: 1
+    SmPolicyNotification:
+      type: object
+      properties:
+        resourceUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        smPolicyDecision:
+          $ref: '#/components/schemas/SmPolicyDecision'
+    PccRule:
+      type: object
+      properties:
+        flowInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlowInformation'
+          minItems: 1
+          description: An array of IP flow packet filter information.
+        appId:
+          type: string
+          description: A reference to the application detection filter configured at the UPF.
+        contVer:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/ContentVersion'
+        pccRuleId:
+          type: string
+          description: Univocally identifies the PCC rule within a PDU session.
+        precedence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        afSigProtocol:
+          $ref: '#/components/schemas/AfSigProtocol'
+        appReloc:
+          type: boolean
+          description: Indication of application relocation possibility.
+        refQosData:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 1
+          description: A reference to the QoSData policy type decision type. It is the qosId described in subclause 5.6.2.8.
+        refAltQosParams:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: A Reference to the QoS Data policy decision type for the Alternative QoS parameter sets of the service data flow.
+        refTcData:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 1
+          description: A reference to the TrafficControlData policy decision type. It is the tcId described in subclause 5.6.2.10.
+        refChgData:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 1
+          description: A reference to the ChargingData policy decision type. It is the chgId described in subclause 5.6.2.11.
+          nullable: true
+        refChgN3gData:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 1
+          description: A reference to the ChargingData policy decision type only applicable to Non-3GPP access if "ATSSS" feature is supported. It is the chgId described in subclause 5.6.2.11.
+          nullable: true
+        refUmData:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 1
+          description: A reference to UsageMonitoringData policy decision type. It is the umId described in subclause 5.6.2.12.
+          nullable: true
+        refUmN3gData:
+          type: array
+          items:	
+            type: string
+          minItems: 1
+          maxItems: 1
+          description: A reference to UsageMonitoringData policy decision type only applicable to Non-3GPP access if "ATSSS" feature is supported. It is the umId described in subclause 5.6.2.12. 
+          nullable: true
+        refCondData:
+          type: string
+          description: A reference to the condition data. It is the condId described in subclause 5.6.2.9.
+          nullable: true
+        refQosMon:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 1
+          description: A reference to the QosMonitoringData policy type decision type. It is the qmId described in subclause 5.6.2.40. 
+          nullable: true
+        addrPreserInd:
+          type: boolean
+          nullable: true
+        tscaiInputDl:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/TscaiInputContainer'
+        tscaiInputUl:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/TscaiInputContainer'
+      required:
+        - pccRuleId
+      nullable: true
+    SessionRule:
+      type: object
+      properties:
+        authSessAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        authDefQos:
+          $ref: '#/components/schemas/AuthorizedDefaultQos'
+        sessRuleId:
+          type: string
+          description: Univocally identifies the session rule within a PDU session.
+        refUmData:
+          type: string
+          description: A reference to UsageMonitoringData policy decision type. It is the umId described in subclause 5.6.2.12.
+          nullable: true
+        refUmN3gData:
+          type: string
+          description: A reference to UsageMonitoringData policy decision type to apply for Non-3GPP access. It is the umId described in subclause 5.6.2.12.
+          nullable: true
+        refCondData:
+          type: string
+          description: A reference to the condition data. It is the condId described in subclause 5.6.2.9.
+          nullable: true
+      required:
+        - sessRuleId
+      nullable: true
+    QosData:
+      type: object
+      properties:
+        qosId:
+          type: string
+          description: Univocally identifies the QoS control policy data within a PDU session.
+        5qi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5Qi'
+        maxbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        maxbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        gbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        gbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        arp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Arp'
+        qnc:
+          type: boolean
+          description: Indicates whether notifications are requested from 3GPP NG-RAN when the GFBR can no longer (or again) be guaranteed for a QoS Flow during the lifetime of the QoS Flow.
+        priorityLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5QiPriorityLevelRm'
+        averWindow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AverWindowRm'
+        maxDataBurstVol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MaxDataBurstVolRm'
+        reflectiveQos:
+          type: boolean
+          description: Indicates whether the QoS information is reflective for the corresponding service data flow.
+        sharingKeyDl:
+          type: string
+          description: Indicates, by containing the same value, what PCC rules may share resource in downlink direction.
+        sharingKeyUl:
+          type: string
+          description: Indicates, by containing the same value, what PCC rules may share resource in uplink direction.
+        maxPacketLossRateDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRateRm'
+        maxPacketLossRateUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketLossRateRm'
+        defQosFlowIndication:
+          type: boolean
+          description: Indicates that the dynamic PCC rule shall always have its binding with the QoS Flow associated with the default QoS rule
+        extMaxDataBurstVol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtMaxDataBurstVolRm'
+      required:
+        - qosId
+      nullable: true
+    ConditionData:
+      type: object
+      properties:
+        condId:
+          type: string
+          description: Uniquely identifies the condition data within a PDU session.
+        activationTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTimeRm'
+        deactivationTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTimeRm'
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+      required:
+        - condId
+      nullable: true
+    TrafficControlData:
+      type: object
+      properties:
+        tcId:
+          type: string
+          description: Univocally identifies the traffic control policy data within a PDU session.
+        flowStatus:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/FlowStatus'
+        redirectInfo:
+          $ref: '#/components/schemas/RedirectInformation'
+        addRedirectInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/RedirectInformation'
+          minItems: 1
+        muteNotif:
+          type: boolean
+          description: Indicates whether applicat'on's start or stop notification is to be muted.
+        trafficSteeringPolIdDl:
+          type: string
+          description: Reference to a pre-configured traffic steering policy for downlink traffic at the SMF.
+          nullable: true
+        trafficSteeringPolIdUl:
+          type: string
+          description: Reference to a pre-configured traffic steering policy for uplink traffic at the SMF.
+          nullable: true
+        routeToLocs:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RouteToLocation'
+          minItems: 1
+          description: A list of location which the traffic shall be routed to for the AF request
+        traffCorreInd:
+          type: boolean
+        upPathChgEvent:
+          $ref: '#/components/schemas/UpPathChgEvent'
+        steerFun:
+          $ref: '#/components/schemas/SteeringFunctionality'
+        steerModeDl:
+          $ref: '#/components/schemas/SteeringMode'
+        steerModeUl:
+          $ref: '#/components/schemas/SteeringMode'
+        mulAccCtrl:
+          $ref: '#/components/schemas/MulticastAccessControl'
+      required:
+        - tcId
+      nullable: true
+    ChargingData:
+      type: object
+      properties:
+        chgId:
+          type: string
+          description: Univocally identifies the charging control policy data within a PDU session.
+        meteringMethod:
+          $ref: '#/components/schemas/MeteringMethod'
+        offline:
+          type: boolean
+          description: Indicates the offline charging is applicable to the PCC rule.
+        online:
+          type: boolean
+          description: Indicates the online charging is applicable to the PCC rule.
+        sdfHandl:
+          type: boolean
+          description: Indicates whether the service data flow is allowed to start while the SMF is waiting for the response to the credit request.
+        ratingGroup:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatingGroup'
+        reportingLevel:
+          $ref: '#/components/schemas/ReportingLevel'
+        serviceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ServiceId'
+        sponsorId:
+          type: string
+          description: Indicates the sponsor identity.
+        appSvcProvId:
+          type: string
+          description: Indicates the application service provider identity.
+        afChargingIdentifier:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ChargingId'
+        afChargId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationChargingId'
+      required:
+        - chgId
+      nullable: true
+    UsageMonitoringData:
+      type: object
+      properties:
+        umId:
+          type: string
+          description: Univocally identifies the usage monitoring policy data within a PDU session.
+        volumeThreshold:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/VolumeRm'
+        volumeThresholdUplink:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/VolumeRm'
+        volumeThresholdDownlink:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/VolumeRm'
+        timeThreshold:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        monitoringTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTimeRm'
+        nextVolThreshold:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/VolumeRm'
+        nextVolThresholdUplink:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/VolumeRm'
+        nextVolThresholdDownlink:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/VolumeRm'
+        nextTimeThreshold:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        inactivityTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        exUsagePccRuleIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Contains the PCC rule identifier(s) which corresponding service data flow(s) shall be excluded from PDU Session usage monitoring. It is only included in the UsageMonitoringData instance for session level usage monitoring.
+          nullable: true
+      required:
+        - umId
+      nullable: true
+    RedirectInformation:
+      type: object
+      properties:
+        redirectEnabled:
+          type: boolean
+          description: Indicates the redirect is enable.
+        redirectAddressType:
+          $ref: '#/components/schemas/RedirectAddressType'
+        redirectServerAddress:
+          type: string
+          description: Indicates the address of the redirect server.
+    FlowInformation:
+      type: object
+      properties:
+        flowDescription:
+          $ref: '#/components/schemas/FlowDescription'
+        ethFlowDescription:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+        packFiltId:
+          type: string
+          description: An identifier of packet filter.
+        packetFilterUsage:
+          type: boolean
+          description: The packet shall be sent to the UE.
+        tosTrafficClass:
+          type: string
+          description: Contains the Ipv4 Type-of-Service and mask field or the Ipv6 Traffic-Class field and mask field.
+          nullable: true
+        spi:
+          type: string
+          description: the security parameter index of the IPSec packet.
+          nullable: true
+        flowLabel:
+          type: string
+          description: the Ipv6 flow label header field.
+          nullable: true
+        flowDirection:
+          $ref: '#/components/schemas/FlowDirectionRm'
+    SmPolicyDeleteData:
+      type: object
+      properties:
+        userLocationInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        servingNetwork:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        userLocationInfoTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        ranNasRelCauses:
+          type: array
+          items:
+            $ref: '#/components/schemas/RanNasRelCause'
+          minItems: 1
+          description: Contains the RAN and/or NAS release cause.
+        accuUsageReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccuUsageReport'
+          minItems: 1
+          description: Contains the usage report
+        pduSessRelCause:
+          $ref: '#/components/schemas/PduSessionRelCause'
+    QosCharacteristics:
+      type: object
+      properties:
+        5qi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5Qi'
+        resourceType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/QosResourceType'
+        priorityLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5QiPriorityLevel'
+        packetDelayBudget:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketDelBudget'
+        packetErrorRate:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PacketErrRate'
+        averagingWindow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AverWindow'
+        maxDataBurstVol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MaxDataBurstVol'
+        extMaxDataBurstVol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtMaxDataBurstVol'
+      required:
+        - 5qi
+        - resourceType
+        - priorityLevel
+        - packetDelayBudget
+        - packetErrorRate
+    ChargingInformation:
+      type: object
+      properties:
+        primaryChfAddress:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        secondaryChfAddress:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        primaryChfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        primaryChfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        secondaryChfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+        secondaryChfInstanceId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+      required:
+        - primaryChfAddress
+        - secondaryChfAddress
+    AccuUsageReport:
+      type: object
+      properties:
+        refUmIds:
+          type: string
+          description: An id referencing UsageMonitoringData objects associated with this usage report.
+        volUsage:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Volume'
+        volUsageUplink:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Volume'
+        volUsageDownlink:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Volume'
+        timeUsage:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        nextVolUsage:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Volume'
+        nextVolUsageUplink:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Volume'
+        nextVolUsageDownlink:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Volume'
+        nextTimeUsage:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+      required:
+        - refUmIds
+    SmPolicyUpdateContextData:
+      type: object
+      properties:
+        repPolicyCtrlReqTriggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyControlRequestTrigger'
+          minItems: 1
+          description: The policy control reqeust trigges which are met.
+        accNetChIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccNetChId'
+          minItems: 1
+          description: Indicates the access network charging identifier for the PCC rule(s) or whole PDU session.
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        addAccessInfo:
+          $ref: '#/components/schemas/AdditionalAccessInfo'
+        relAccessInfo:
+          $ref: '#/components/schemas/AdditionalAccessInfo'
+        servingNetwork:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        userLocationInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+        relIpv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv4Address:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipDomain:
+          type: string
+          description: Indicates the IPv4 address domain
+        ipv6AddressPrefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        relIpv6AddressPrefix:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        addIpv6AddrPrefixes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        addRelIpv6AddrPrefixes:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
+        relUeMac:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        ueMac:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        subsSessAmbr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ambr'
+        authProfIndex:
+          type: string
+          description: Indicates the DN-AAA authorization profile index
+        subsDefQos:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SubscribedDefaultQos'
+        numOfPackFilter:
+          type: integer
+          description: Contains the number of supported packet filter for signalled QoS rules.
+        accuUsageReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccuUsageReport'
+          minItems: 1
+          description: Contains the usage report
+        3gppPsDataOffStatus:
+          type: boolean
+          description: If it is included and set to true, the 3GPP PS Data Off is activated by the UE.
+        appDetectionInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/AppDetectionInfo'
+          minItems: 1
+          description: Report the start/stop of the application traffic and detected SDF descriptions if applicable.
+        ruleReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleReport'
+          minItems: 1
+          description: Used to report the PCC rule failure.
+        sessRuleReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionRuleReport'
+          minItems: 1
+          description: Used to report the session rule failure.
+        qncReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosNotificationControlInfo'
+          minItems: 1
+          description: QoS Notification Control information.
+        qosMonReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosMonitoringReport'
+        userLocationInfoTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        repPraInfos:
+          type: object
+          additionalProperties:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PresenceInfo'
+          minProperties: 1
+          description: Reports the changes of presence reporting area.
+        ueInitResReq:
+          $ref: '#/components/schemas/UeInitiatedResourceRequest'
+        refQosIndication:
+          type: boolean
+          description: If it is included and set to true, the reflective QoS is supported by the UE. If it is included and set to false, the reflective QoS is revoked by the UE.
+        qosFlowUsage:
+          $ref: '#/components/schemas/QosFlowUsage'
+        creditManageStatus:
+          $ref: '#/components/schemas/CreditManagementStatus'
+        servNfId:
+          $ref: '#/components/schemas/ServingNfIdentity'
+        traceReq:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TraceData'
+        maPduInd:
+          $ref: '#/components/schemas/MaPduIndication'
+        atsssCapab:
+          $ref: '#/components/schemas/AtsssCapability'
+        tsnBridgeInfo:
+          $ref: '#/components/schemas/TsnBridgeInfo'
+        tsnPortManContDstt:
+          $ref: '#/components/schemas/PortManagementContainer'
+        tsnPortManContNwtts:
+          type: array
+          items:
+            $ref: '#/components/schemas/PortManagementContainer'
+          minItems: 1
+        mulAddrInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/IpMulticastAddressInfo'
+          minItems: 1
+    UpPathChgEvent:
+      type: object
+      properties:
+        notificationUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifCorreId:
+          type: string
+          description: It is used to set the value of Notification Correlation ID in the notification sent by the SMF.
+        dnaiChgType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DnaiChangeType'
+        afAckInd:
+          type: boolean
+      required:
+        - notificationUri
+        - notifCorreId
+        - dnaiChgType
+      nullable: true
+    TerminationNotification:
+      type: object
+      properties:
+        resourceUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        cause:
+          $ref: '#/components/schemas/SmPolicyAssociationReleaseCause'
+      required:
+        - resourceUri
+        - cause
+    AppDetectionInfo:
+      type: object
+      properties:
+        appId:
+          type: string
+          description: A reference to the application detection filter configured at the UPF
+        instanceId:
+          type: string
+          description: Identifier sent by the SMF in order to allow correlation of application Start and Stop events to the specific service data flow description, if service data flow descriptions are deducible.
+        sdfDescriptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FlowInformation'
+          minItems: 1
+          description: Contains the detected service data flow descriptions if they are deducible.
+      required:
+        - appId
+    AccNetChId:
+      type: object
+      properties:
+        accNetChaIdValue:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ChargingId'
+        refPccRuleIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Contains the identifier of the PCC rule(s) associated to the provided Access Network Charging Identifier.
+        sessionChScope:
+          type: boolean
+          description: When it is included and set to true, indicates the Access Network Charging Identifier applies to the whole PDU Session
+      required:
+        - accNetChaIdValue
+    AccNetChargingAddress:
+      description: Describes the network entity within the access network performing charging
+      type: object
+      anyOf:
+        - required: [anChargIpv4Addr]
+        - required: [anChargIpv6Addr]
+      properties:
+        anChargIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        anChargIpv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+    RequestedRuleData:
+      type: object
+      properties:
+        refPccRuleIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: An array of PCC rule id references to the PCC rules associated with the control data. 
+        reqData:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestedRuleDataType'
+          minItems: 1
+          description: Array of requested rule data type elements indicating what type of rule data is requested for the corresponding referenced PCC rules.
+      required:
+        - refPccRuleIds
+        - reqData
+    RequestedUsageData:
+      type: object
+      properties:
+        refUmIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: An array of usage monitoring data id references to the usage monitoring data instances for which the PCF is requesting a usage report. This attribute shall only be provided when allUmIds is not set to true.
+        allUmIds:
+          type: boolean
+          description: Thooleanean indicates whether requested usage data applies to all usage monitoring data instances. When it's not included, it means requested usage data shall only apply to the usage monitoring data instances referenced by the refUmIds attribute.
+    UeCampingRep:
+      type: object
+      properties:
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+        servNfId:
+          $ref: '#/components/schemas/ServingNfIdentity'
+        servingNetwork:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+        userLocationInfo:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/UserLocation'
+        ueTimeZone:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/TimeZone'
+    RuleReport:
+      type: object
+      properties:
+        pccRuleIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Contains the identifier of the affected PCC rule(s).
+        ruleStatus:
+          $ref: '#/components/schemas/RuleStatus'
+        contVers:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/ContentVersion'
+          minItems: 1
+          description: Indicates the version of a PCC rule.
+        failureCode:
+          $ref: '#/components/schemas/FailureCode'
+        finUnitAct:
+          $ref: 'TS32291_Nchf_ConvergedCharging.yaml#/components/schemas/FinalUnitAction'
+        ranNasRelCauses:
+          type: array
+          items:
+            $ref: '#/components/schemas/RanNasRelCause'
+          minItems: 1
+          description: indicates the RAN or NAS release cause code information.
+      required:
+        - pccRuleIds
+        - ruleStatus
+    RanNasRelCause:
+      type: object
+      properties:
+        ngApCause:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NgApCause'
+        5gMmCause:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5GMmCause'
+        5gSmCause:
+          $ref: '#/components/schemas/5GSmCause'
+    UeInitiatedResourceRequest:
+      type: object
+      properties:
+        pccRuleId:
+          type: string
+        ruleOp:
+          $ref: '#/components/schemas/RuleOperation'
+        precedence:
+          type: integer
+        packFiltInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/PacketFilterInfo'
+          minItems: 1
+        reqQos:
+          $ref: '#/components/schemas/RequestedQos'
+      required:
+        - ruleOp
+        - packFiltInfo
+    PacketFilterInfo:
+      type: object
+      properties:
+        packFiltId:
+          type: string
+          description: An identifier of packet filter.
+        packFiltCont:
+          $ref: '#/components/schemas/PacketFilterContent'
+        tosTrafficClass:
+          type: string
+          description: Contains the Ipv4 Type-of-Service and mask field or the Ipv6 Traffic-Class field and mask field.
+        spi:
+          type: string
+          description: The security parameter index of the IPSec packet.
+        flowLabel:
+          type: string
+          description: The Ipv6 flow label header field.
+        flowDirection:
+          $ref: '#/components/schemas/FlowDirection'
+    RequestedQos:
+      type: object
+      properties:
+        5qi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5Qi'
+        gbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        gbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+      required:
+        - 5qi
+    QosNotificationControlInfo:
+      type: object
+      properties:
+        refPccRuleIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: An array of PCC rule id references to the PCC rules associated with the QoS notification control info.
+        notifType:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/QosNotifType'
+        contVer:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/ContentVersion'
+        altQosParamId:
+          type: string
+      required:
+        - refPccRuleIds
+        - notifType
+    PartialSuccessReport:
+      type: object
+      properties:
+        failureCause:
+          $ref: '#/components/schemas/FailureCause'
+        ruleReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleReport'
+          minItems: 1
+          description: Information about the PCC rules provisioned by the PCF not successfully installed/activated.
+        sessRuleReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionRuleReport'
+          minItems: 1
+          description: Information about the session rules provisioned by the PCF not successfully installed.
+        ueCampingRep:
+          $ref: '#/components/schemas/UeCampingRep'
+      required:
+        - failureCause
+    AuthorizedDefaultQos:
+      type: object
+      properties:
+        5qi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5Qi'
+        arp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Arp'
+        priorityLevel:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/5QiPriorityLevelRm'
+        averWindow:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AverWindowRm'
+        maxDataBurstVol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MaxDataBurstVolRm'
+        maxbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        maxbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        gbrUl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        gbrDl:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRateRm'
+        qnc:
+          type: boolean
+          description: Indicates whether notifications are requested from 3GPP NG-RAN when the GFBR can no longer (or again) be guaranteed for a QoS Flow during the lifetime of the QoS Flow.
+        extMaxDataBurstVol:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ExtMaxDataBurstVolRm'
+    ErrorReport:
+      type: object
+      properties:
+        error:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+        ruleReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/RuleReport'
+          minItems: 1
+          description: Used to report the PCC rule failure.
+        sessRuleReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/SessionRuleReport'
+          minItems: 1
+          description: Used to report the session rule failure.
+    SessionRuleReport:
+      type: object
+      properties:
+        ruleIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Contains the identifier of the affected session rule(s).
+        ruleStatus:
+          $ref: '#/components/schemas/RuleStatus'
+        sessRuleFailureCode:
+          $ref: '#/components/schemas/SessionRuleFailureCode'
+      required:
+        - ruleIds
+        - ruleStatus
+    ServingNfIdentity:
+      type: object
+      properties:
+        servNfInstId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        guami:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
+        anGwAddr:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/AnGwAddress'
+    SteeringMode:
+      type: object
+      properties:
+        steerModeValue:
+          $ref: '#/components/schemas/SteerModeValue'
+        active:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        standby:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        3gLoad:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        prioAcc:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+      required:
+        - steerModeValue
+    AdditionalAccessInfo:
+      type: object
+      properties:
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        ratType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+      required:
+        - accessType
+    QosMonitoringData:
+      type: object
+      properties:
+        qmId:
+          type: string
+          description: Univocally identifies the QoS monitoring policy data within a PDU session.
+        reqQosMonParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequestedQosMonitoringParameter'
+          minItems: 1
+          maxItems: 3
+          description: indicates the UL packet delay, DL packet delay and/or round trip packet delay between the UE and the UPF is to be monitored when the QoS Monitoring for URLLC is enabled for the service data flow..
+        repFreqs:
+          type: array
+          items:
+             $ref: '#/components/schemas/ReportingFrequency'
+          minItems: 1
+        repThreshDl:
+          type: integer
+          description: Unsigned integer identifying a period of time in units of miliiseconds for DL packet delay.
+          nullable: true
+        repThreshUl:
+          type: integer
+          description: Unsigned integer identifying a period of time in units of miliiseconds for UL packet delay.
+          nullable: true
+        repThreshRp:
+          type: integer
+          description: Unsigned integer identifying a period of time in units of miliiseconds for round trip packet delay.
+          nullable: true
+        waitTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+        notifyUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifyCorreId:
+          type: string
+      required:
+        - qmId
+      nullable: true
+    QosMonitoringReport:
+      type: object
+      properties:
+        refPccRuleIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: An array of PCC rule id references to the PCC rules associated with the QoS monitoring report.
+        ulDelays:
+          type: array
+          items:
+            type: integer
+        dlDelays:
+          type: array
+          items:
+            type: integer
+        rtDelays:
+          type: array
+          items:
+            type: integer
+      required:
+        - refPccRuleIds
+#
+    TsnBridgeInfo:
+      type: object
+      properties:
+        bridgeName:
+          type: string
+          description: Name of the bridge.
+        bridgeMac:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        nwttPorts:
+          type: array
+          items:
+            $ref: '#/components/schemas/TsnPortIdentifier'
+          minItems: 1
+          description: NW-TT ports available for a PDU session.
+        dsttPort:
+          $ref: '#/components/schemas/TsnPortIdentifier'
+        dsttResidTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+#
+    TsnPortIdentifier:
+      type: object
+      properties:
+        portMac:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        portNumber:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - portMac
+#
+    PortManagementContainer:
+      type: object
+      properties:
+        portManCont:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Bytes'
+        portIdentifier:
+          $ref: '#/components/schemas/TsnPortIdentifier'
+      required:
+        - portManCont
+        - portIdentifier
+    IpMulticastAddressInfo:
+      type: object
+      properties:
+        srcIpv4Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv4MulAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+        srcIpv6Addr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+        ipv6MulAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+    5GSmCause:
+      $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+    PacketFilterContent:
+      type: string
+      description: Defines a packet filter for an IP flow. Refer to subclause 5.3.54 of 3GPP TS 29.212 for encoding.
+    FlowDescription:
+      type: string
+      description: Defines a packet filter for an IP flow. Refer to subclause 5.4.2 of 3GPP TS 29.212 for encoding.
+    FlowDirection:
+      anyOf:
+      - type: string
+        enum:
+          - DOWNLINK
+          - UPLINK
+          - BIDIRECTIONAL
+          - UNSPECIFIED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - DOWNLINK: The corresponding filter applies for traffic to the UE.
+        - UPLINK: The corresponding filter applies for traffic from the UE.
+        - BIDIRECTIONAL: The corresponding filter applies for traffic both to and from the UE.
+        - UNSPECIFIED: The corresponding filter applies for traffic to the UE (downlink), but has no specific direction declared. The service data flow detection shall apply the filter for uplink traffic as if the filter was bidirectional. The PCF shall not use the value UNSPECIFIED in filters created by the network in NW-initiated procedures. The PCF shall only include the value UNSPECIFIED in filters in UE-initiated procedures if the same value is received from the SMF.
+    FlowDirectionRm:
+      anyOf:
+        - $ref: '#/components/schemas/FlowDirection'
+        - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+    ReportingLevel:
+      anyOf:
+      - type: string
+        enum:
+          - SER_ID_LEVEL
+          - RAT_GR_LEVEL
+          - SPON_CON_LEVEL
+      - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - SER_ID_LEVEL: Indicates that the usage shall be reported on service id and rating group combination level.
+        - RAT_GR_LEVEL: Indicates that the usage shall be reported on rating group level.
+        - SPON_CON_LEVEL: Indicates that the usage shall be reported on sponsor identity and rating group combination level.
+    MeteringMethod:
+      anyOf:
+      - type: string
+        enum:
+          - DURATION
+          - VOLUME
+          - DURATION_VOLUME
+          - EVENT
+      - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - DURATION: Indicates that the duration of the service data flow traffic shall be metered.
+        - VOLUME: Indicates that volume of the service data flow traffic shall be metered.
+        - DURATION_VOLUME: Indicates that the duration and the volume of the service data flow traffic shall be metered.
+        - EVENT: Indicates that events of the service data flow traffic shall be metered.
+    PolicyControlRequestTrigger:
+      anyOf:
+      - type: string
+        enum:
+          - PLMN_CH
+          - RES_MO_RE
+          - AC_TY_CH
+          - UE_IP_CH
+          - UE_MAC_CH
+          - AN_CH_COR
+          - US_RE
+          - APP_STA
+          - APP_STO
+          - AN_INFO
+          - CM_SES_FAIL
+          - PS_DA_OFF
+          - DEF_QOS_CH
+          - SE_AMBR_CH
+          - QOS_NOTIF
+          - NO_CREDIT
+          - REALLO_OF_CREDIT
+          - PRA_CH
+          - SAREA_CH
+          - SCNN_CH
+          - RE_TIMEOUT
+          - RES_RELEASE
+          - SUCC_RES_ALLO
+          - RAT_TY_CH
+          - REF_QOS_IND_CH
+          - NUM_OF_PACKET_FILTER
+          - UE_STATUS_RESUME
+          - UE_TZ_CH
+          - AUTH_PROF_CH
+          - QOS_MONITORING
+          - SCELL_CH
+          - EPS_FALLBACK
+          - MA_PDU
+          - TSN_ETHER_PORT
+          - TSN_CONTAINER
+          - 5G_RG_JOIN
+          - 5G_RG_LEAVE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - PLMN_CH: PLMN Change
+        - RES_MO_RE: A request for resource modification has been received by the SMF. The SMF always reports to the PCF.
+        - AC_TY_CH: Access Type Change
+        - UE_IP_CH: UE IP address change. The SMF always reports to the PCF.
+        - UE_MAC_CH: A new UE MAC address is detected or a used UE MAC address is inactive for a specific period
+        - AN_CH_COR: Access Network Charging Correlation Information
+        - US_RE: The PDU Session or the Monitoring key specific resources consumed by a UE either reached the threshold or needs to be reported for other reasons.
+        - APP_STA: The start of application traffic has been detected.
+        - APP_STO: The stop of application traffic has been detected.
+        - AN_INFO: Access Network Information report
+        - CM_SES_FAIL: Credit management session failure
+        - PS_DA_OFF: The SMF reports when the 3GPP PS Data Off status changes. The SMF always reports to the PCF.
+        - DEF_QOS_CH: Default QoS Change. The SMF always reports to the PCF.
+        - SE_AMBR_CH: Session AMBR Change. The SMF always reports to the PCF.
+        - QOS_NOTIF: The SMF notify the PCF when receiving notification from RAN that QoS targets of the QoS Flow cannot be guranteed or gurateed again.
+        - NO_CREDIT: Out of credit
+        - REALLO_OF_CREDIT: Reallocation of credit
+        - PRA_CH: Change of UE presence in Presence Reporting Area
+        - SAREA_CH: Location Change with respect to the Serving Area
+        - SCNN_CH: Location Change with respect to the Serving CN node
+        - RE_TIMEOUT: Indicates the SMF generated the request because there has been a PCC revalidation timeout
+        - RES_RELEASE: Indicate that the SMF can inform the PCF of the outcome of the release of resources for those rules that require so.
+        - SUCC_RES_ALLO: Indicates that the requested rule data is the successful resource allocation.
+        - RAT_TY_CH: RAT Type Change.
+        - REF_QOS_IND_CH: Reflective QoS indication Change
+        - NUM_OF_PACKET_FILTER: Indicates that the SMF shall report the number of supported packet filter for signalled QoS rules
+        - UE_STATUS_RESUME: Indicates that the UE’s status is resumed.
+        - UE_TZ_CH: UE Time Zone Change
+        - AUTH_PROF_CH: The DN-AAA authorization profile index has changed
+        - QOS_MONITORING: Indicate that the SMF notifies the PCF of the QoS Monitoring information.
+        - SCELL_CH: Location Change with respect to the Serving Cell. Only applicable to the interworking scenario as defined in Annex B.
+        - EPS_FALLBACK: EPS Fallback report is enabled in the SMF.
+        - MA_PDU: UE Indicates that the SMF notifies the PCF of the MA PDU session request
+        - TSN_ETHER_PORT: Manageable Ethernet port detected
+        - TSN_CONTAINER: Port management container detected.
+        - 5G_RG_JOIN: The 5G-RG has joined to an IP Multicast Group.
+        - 5G_RG_LEAVE: The 5G-RG has left an IP Multicast Group.
+    RequestedRuleDataType:
+      anyOf:
+      - type: string
+        enum:
+          - CH_ID
+          - MS_TIME_ZONE
+          - USER_LOC_INFO
+          - RES_RELEASE
+          - SUCC_RES_ALLO
+          - EPS_FALLBACK
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - CH_ID: Indicates that the requested rule data is the charging identifier. 
+        - MS_TIME_ZONE: Indicates that the requested access network info type is the UE's timezone.
+        - USER_LOC_INFO: Indicates that the requested access network info type is the UE's location.
+        - RES_RELEASE: Indicates that the requested rule data is the result of the release of resource.
+        - SUCC_RES_ALLO: Indicates that the requested rule data is the successful resource allocation.
+        - EPS_FALLBACK: Indicates that the requested rule data is the report of QoS flow rejection due to EPS fallback.
+    RuleStatus:
+      anyOf:
+      - type: string
+        enum:
+          - ACTIVE
+          - INACTIVE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - ACTIVE: Indicates that the PCC rule(s) are successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF), or the session rule(s) are successfully installed 
+        - INACTIVE: Indicates that the PCC rule(s) are removed (for those provisioned from PCF) or inactive (for those pre-defined in SMF) or the session rule(s) are removed.
+    FailureCode:
+      anyOf:
+      - type: string
+        enum:
+          - UNK_RULE_ID
+          - RA_GR_ERR
+          - SER_ID_ERR
+          - NF_MAL
+          - RES_LIM
+          - MAX_NR_QoS_FLOW
+          - MISS_FLOW_INFO
+          - RES_ALLO_FAIL
+          - UNSUCC_QOS_VAL
+          - INCOR_FLOW_INFO
+          - PS_TO_CS_HAN
+          - APP_ID_ERR
+          - NO_QOS_FLOW_BOUND
+          - FILTER_RES
+          - MISS_REDI_SER_ADDR
+          - CM_END_USER_SER_DENIED
+          - CM_CREDIT_CON_NOT_APP
+          - CM_AUTH_REJ
+          - CM_USER_UNK
+          - CM_RAT_FAILED
+          - UE_STA_SUSP
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+          - UNK_RULE_ID: Indicates that the pre-provisioned PCC rule could not be successfully activated because the PCC rule identifier is unknown to the SMF.
+          - RA_GR_ERR: Indicate that the PCC rule could not be successfully installed or enforced because the Rating Group specified within the Charging Data policy decision which the PCC rule refers to is unknown or, invalid.
+          - SER_ID_ERR: Indicate that the PCC rule could not be successfully installed or enforced because the Service Identifier specified within the Charging Data policy decision which the PCC rule refers to is invalid, unknown, or not applicable to the service being charged.
+          - NF_MAL: Indicate that the PCC rule could not be successfully installed (for those provisioned from the PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to SMF/UPF malfunction.
+          - RES_LIM: Indicate that the PCC rule could not be successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to a limitation of resources at the SMF/UPF.
+          - MAX_NR_QoS_FLOW: Indicate that the PCC rule could not be successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to the fact that the maximum number of QoS flows has been reached for the PDU session.
+          - MISS_FLOW_INFO: Indicate that the PCC rule could not be successfully installed or enforced because neither the "flowInfos" attribute nor the "appId" attribute is specified within the PccRule data structure by the PCF during the first install request of the PCC rule.
+          - RES_ALLO_FAIL: Indicate that the PCC rule could not be successfully installed or maintained since the QoS flow establishment/modification failed, or the QoS flow was released.
+          - UNSUCC_QOS_VAL: indicate that the QoS validation has failed or when Guaranteed Bandwidth > Max-Requested-Bandwidth.
+          - INCOR_FLOW_INFO: Indicate that the PCC rule could not be successfully installed or modified at the SMF because the provided flow information is not supported by the network (e.g. the provided IP address(es) or Ipv6 prefix(es) do not correspond to an IP version applicable for the PDU session).
+          - PS_TO_CS_HAN: Indicate that the PCC rule could not be maintained because of PS to CS handover.
+          - APP_ID_ERR: Indicate that the rule could not be successfully installed or enforced because the Application Identifier is invalid, unknown, or not applicable to the application required for detection.
+          - NO_QOS_FLOW_BOUND: Indicate that there is no QoS flow which the SMF can bind the PCC rule(s) to.
+          - FILTER_RES: Indicate that the Flow Information within the "flowInfos" attribute cannot be handled by the SMF because any of the restrictions defined in subclause 5.4.2 of 3GPP TS 29.212 was not met.
+          - MISS_REDI_SER_ADDR: Indicate that the PCC rule could not be successfully installed or enforced at the SMF because there is no valid Redirect Server Address within the Traffic Control Data policy decision which the PCC rule refers to provided by the PCF and no preconfigured redirection address for this PCC rule at the SMF.
+          - CM_END_USER_SER_DENIED: Indicate that the charging system denied the service request due to service restrictions (e.g. terminate rating group) or limitations related to the end-user, for example the end-user's account could not cover the requested service.
+          - CM_CREDIT_CON_NOT_APP: Indicate that the charging system determined that the service can be granted to the end user but no further credit control is needed for the service (e.g. service is free of charge or is treated for offline charging).
+          - CM_AUTH_REJ: Indicate that the charging system denied the service request in order to terminate the service for which credit is requested.
+          - CM_USER_UNK: Indicate that the specified end user could not be found in the charging system.
+          - CM_RAT_FAILED: Indicate that the charging system cannot rate the service request due to insufficient rating input, incorrect AVP combination or due to an attribute or an attribute value that is not recognized or supported in the rating.
+          - UE_STA_SUSP: Indicates that the UE is in suspend state.
+    AfSigProtocol:
+      anyOf:
+      - type: string
+        enum:
+          - NO_INFORMATION
+          - SIP
+      - $ref: 'TS29571_CommonData.yaml#/components/schemas/NullValue'
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - NO_INFORMATION: Indicate that no information about the AF signalling protocol is being provided. 
+        - SIP: Indicate that the signalling protocol is Session Initiation Protocol.
+    RuleOperation:
+      anyOf:
+      - type: string
+        enum:
+          - CREATE_PCC_RULE
+          - DELETE_PCC_RULE
+          - MODIFY_PCC_RULE_AND_ADD_PACKET_FILTERS
+          - MODIFY_ PCC_RULE_AND_REPLACE_PACKET_FILTERS
+          - MODIFY_ PCC_RULE_AND_DELETE_PACKET_FILTERS
+          - MODIFY_PCC_RULE_WITHOUT_MODIFY_PACKET_FILTERS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - CREATE_PCC_RULE: Indicates to create a new PCC rule to reserve the resource requested by the UE. 
+        - DELETE_PCC_RULE: Indicates to delete a PCC rule corresponding to reserve the resource requested by the UE..
+        - MODIFY_PCC_RULE_AND_ADD_PACKET_FILTERS: Indicates to modify the PCC rule by adding new packet filter(s).
+        - MODIFY_ PCC_RULE_AND_REPLACE_PACKET_FILTERS: Indicates to modify the PCC rule by replacing the existing packet filter(s).
+        - MODIFY_ PCC_RULE_AND_DELETE_PACKET_FILTERS: Indicates to modify the PCC rule by deleting the existing packet filter(s).
+        - MODIFY_PCC_RULE_WITHOUT_MODIFY_PACKET_FILTERS: Indicates to modify the PCC rule by modifying the QoS of the PCC rule.
+    RedirectAddressType:
+      anyOf:
+      - type: string
+        enum:
+          - IPV4_ADDR
+          - IPV6_ADDR
+          - URL
+          - SIP_URI
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - IPV4_ADDR: Indicates that the address type is in the form of "dotted-decimal" IPv4 address.
+        - IPV6_ADDR: Indicates that the address type is in the form of IPv6 address.
+        - URL: Indicates that the address type is in the form of Uniform Resource Locator.
+        - SIP_URI: Indicates that the address type is in the form of SIP Uniform Resource Identifier.
+    QosFlowUsage:
+      anyOf:
+      - type: string
+        enum:
+          - GENERAL
+          - IMS_SIG
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - GENERAL: Indicate no specific QoS flow usage information is available. 
+        - IMS_SIG: Indicate that the QoS flow is used for IMS signalling only.
+    FailureCause:
+      anyOf:
+      - type: string
+        enum:
+          - PCC_RULE_EVENT
+          - PCC_QOS_FLOW_EVENT
+          - RULE_PERMANENT_ERROR
+          - RULE_TEMPORARY_ERROR
+      - type: string
+    CreditManagementStatus:
+      anyOf:
+      - type: string
+        enum:
+          - END_USER_SER_DENIED
+          - CREDIT_CTRL_NOT_APP
+          - AUTH_REJECTED
+          - USER_UNKNOWN
+          - RATING_FAILED
+      - type: string
+    SessionRuleFailureCode:
+      anyOf:
+      - type: string
+        enum:
+          - NF_MAL
+          - RES_LIM
+          - UNSUCC_QOS_VAL
+          - UE_STA_SUSP
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+          - NF_MAL: Indicate that the PCC rule could not be successfully installed (for those provisioned from the PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to SMF/UPF malfunction.
+          - RES_LIM: Indicate that the PCC rule could not be successfully installed (for those provisioned from PCF) or activated (for those pre-defined in SMF) or enforced (for those already successfully installed) due to a limitation of resources at the SMF/UPF.
+          - UNSUCC_QOS_VAL: indicate that the QoS validation has failed.
+          - UE_STA_SUSP: Indicates that the UE is in suspend state.
+    SteeringFunctionality:
+      anyOf:
+      - type: string
+        enum:
+          - MPTCP
+          - ATSSS_LL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+          - MPTCP: Indicates that PCF authorizes the MPTCP functionality to support traffic steering, switching and splitting.
+          - ATSSS_LL: Indicates that PCF authorizes the ATSSS-LL functionality to support traffic steering, switching and splitting.
+    SteerModeValue:
+      anyOf:
+      - type: string
+        enum:
+          - ACTIVE_STANDBY
+          - LOAD_BALANCING
+          - SMALLEST_DELAY
+          - PRIORITY_BASED
+      - type: string
+    MulticastAccessControl:
+      anyOf:
+      - type: string
+        enum:
+          - ALLOWED
+          - NOT_ALLOWED
+      - type: string
+    RequestedQosMonitoringParameter:
+      anyOf:
+      - type: string
+        enum:
+          - DOWNLINK
+          - UPLINK
+          - ROUND_TRIP
+      - type: string
+    ReportingFrequency:
+      anyOf:
+      - type: string
+        enum:
+          - EVENT_TRIGGERED
+          - PERIODIC
+          - SESSION_RELEASE
+      - type: string
+    SmPolicyAssociationReleaseCause:
+      anyOf:
+      - type: string
+        enum:
+          - UNSPECIFIED
+          - UE_SUBSCRIPTION
+          - INSUFFICIENT_RES
+          - VALIDATION_CONDITION_NOT_MET
+      - type: string
+    PduSessionRelCause:
+      anyOf:
+      - type: string
+        enum:
+          - PS_TO_CS_HO
+      - type: string
+    MaPduIndication:
+      anyOf:
+      - type: string
+        enum:
+          - MA_PDU_REQUEST
+          - MA_PDU_ NETWORK_UPGRADE ALLOWED
+      - type: string
+    AtsssCapability:
+      anyOf:
+      - type: string
+        enum:
+          - MPTCP_ATSSS_LL_WITH_ASMODE_UL
+          - MPTCP_ATSSS_LL_WITH_ASMODE_DLUL
+          - ATSSS_LL
+          - MPTCP_ATSSS_LL
+      - type: string
+#

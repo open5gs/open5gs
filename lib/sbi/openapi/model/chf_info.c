@@ -7,7 +7,8 @@
 OpenAPI_chf_info_t *OpenAPI_chf_info_create(
     OpenAPI_list_t *supi_range_list,
     OpenAPI_list_t *gpsi_range_list,
-    OpenAPI_list_t *plmn_range_list
+    OpenAPI_list_t *plmn_range_list,
+    char *group_id
     )
 {
     OpenAPI_chf_info_t *chf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_chf_info_t));
@@ -17,6 +18,7 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_create(
     chf_info_local_var->supi_range_list = supi_range_list;
     chf_info_local_var->gpsi_range_list = gpsi_range_list;
     chf_info_local_var->plmn_range_list = plmn_range_list;
+    chf_info_local_var->group_id = group_id;
 
     return chf_info_local_var;
 }
@@ -39,6 +41,7 @@ void OpenAPI_chf_info_free(OpenAPI_chf_info_t *chf_info)
         OpenAPI_plmn_range_free(node->data);
     }
     OpenAPI_list_free(chf_info->plmn_range_list);
+    ogs_free(chf_info->group_id);
     ogs_free(chf_info);
 }
 
@@ -109,6 +112,13 @@ cJSON *OpenAPI_chf_info_convertToJSON(OpenAPI_chf_info_t *chf_info)
                 }
                 cJSON_AddItemToArray(plmn_range_listList, itemLocal);
             }
+        }
+    }
+
+    if (chf_info->group_id) {
+        if (cJSON_AddStringToObject(item, "groupId", chf_info->group_id) == NULL) {
+            ogs_error("OpenAPI_chf_info_convertToJSON() failed [group_id]");
+            goto end;
         }
     }
 
@@ -188,10 +198,20 @@ OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON)
         }
     }
 
+    cJSON *group_id = cJSON_GetObjectItemCaseSensitive(chf_infoJSON, "groupId");
+
+    if (group_id) {
+        if (!cJSON_IsString(group_id)) {
+            ogs_error("OpenAPI_chf_info_parseFromJSON() failed [group_id]");
+            goto end;
+        }
+    }
+
     chf_info_local_var = OpenAPI_chf_info_create (
         supi_range_list ? supi_range_listList : NULL,
         gpsi_range_list ? gpsi_range_listList : NULL,
-        plmn_range_list ? plmn_range_listList : NULL
+        plmn_range_list ? plmn_range_listList : NULL,
+        group_id ? ogs_strdup(group_id->valuestring) : NULL
         );
 
     return chf_info_local_var;

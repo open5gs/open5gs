@@ -1,21 +1,29 @@
 openapi: 3.0.0
+
 info:
-  version: '1.1.0.alpha-1'
+  version: '1.1.0.alpha-4'
   title: 'NRF NFManagement Service'
   description: |
     NRF NFManagement Service.
-    (C) 2019, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
     All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.510 V16.3.0; 5G System; Network Function Repository Services; Stage 3
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.510/'
+
 servers:
   - url: '{apiRoot}/nnrf-nfm/v1'
     variables:
       apiRoot:
         default: https://example.com
-        description: apiRoot as defined in subclause 4.4 of 3GPP TS 29.501
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
 security:
   - {}
   - oAuth2ClientCredentials:
       - nnrf-nfm
+
 paths:
   /nf-instances:
     get:
@@ -169,7 +177,12 @@ paths:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
         - name: Content-Encoding
           in: header
-          description: Content-Encoding, described in IETF RFC 7231 
+          description: Content-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+        - name: Accept-Encoding
+          in: header
+          description: Accept-Encoding, described in IETF RFC 7231
           schema:
             type: string
       requestBody:
@@ -190,6 +203,10 @@ paths:
               description: Accept-Encoding, described in IETF RFC 7694
               schema:
                 type: string
+            Content-Encoding:
+              description: Content-Encoding, described in IETF RFC 7231
+              schema:
+                type: string
         '201':
           description: Expected response to a valid request
           content:
@@ -204,6 +221,10 @@ paths:
                 type: string
             Accept-Encoding:
               description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+            Content-Encoding:
+              description: Content-Encoding, described in IETF RFC 7231
               schema:
                 type: string
         '400':
@@ -242,6 +263,16 @@ paths:
           description: Unique ID of the NF Instance to update
           schema:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        - name: Content-Encoding
+          in: header
+          description: Content-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+        - name: Accept-Encoding
+          in: header
+          description: Accept-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
       requestBody:
         content:
           application/json-patch+json:
@@ -258,8 +289,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NFProfile'
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+            Content-Encoding:
+              description: Content-Encoding, described in IETF RFC 7231
+              schema:
+                type: string
         '204':
           description: Expected response with empty body
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
         '400':
           $ref: 'TS29571_CommonData.yaml#/components/responses/400'
         '403':
@@ -323,6 +368,17 @@ paths:
       operationId: CreateSubscription
       tags:
         - Subscriptions (Collection)
+      parameters:
+        - name: Content-Encoding
+          in: header
+          description: Content-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+        - name: Accept-Encoding
+          in: header
+          description: Accept-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -340,6 +396,14 @@ paths:
             Location:
               description: 'Contains the URI of the newly created resource, according to the structure: {apiRoot}/nnrf-nfm/v1/subscriptions/{subscriptionId}'
               required: true
+              schema:
+                type: string
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+            Content-Encoding:
+              description: Content-Encoding, described in IETF RFC 7231
               schema:
                 type: string
         '400':
@@ -370,6 +434,12 @@ paths:
         onNFStatusEvent:
           '{$request.body#/nfStatusNotificationUri}':
             post:
+              parameters:
+                - name: Content-Encoding
+                  in: header
+                  description: Content-Encoding, described in IETF RFC 7231
+                  schema:
+                    type: string
               requestBody:
                 description: Notification Payload
                 content:
@@ -379,6 +449,11 @@ paths:
               responses:
                 '204':
                   description: Expected response to a successful callback processing
+                  headers:
+                    Accept-Encoding:
+                      description: Accept-Encoding, described in IETF RFC 7694
+                      schema:
+                        type: string
                 '400':
                   $ref: 'TS29571_CommonData.yaml#/components/responses/400'
                 '401':
@@ -417,6 +492,16 @@ paths:
           schema:
             type: string
             pattern: '^([0-9]{5,6}-)?[^-]+$'
+        - name: Content-Encoding
+          in: header
+          description: Content-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
+        - name: Accept-Encoding
+          in: header
+          description: Accept-Encoding, described in IETF RFC 7231
+          schema:
+            type: string
       requestBody:
         content:
           application/json-patch+json:
@@ -432,8 +517,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SubscriptionData'
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
+            Content-Encoding:
+              description: Content-Encoding, described in IETF RFC 7231
+              schema:
+                type: string
         '204':
           description: No Content
+          headers:
+            Accept-Encoding:
+              description: Accept-Encoding, described in IETF RFC 7694
+              schema:
+                type: string
         '400':
           $ref: 'TS29571_CommonData.yaml#/components/responses/400'
         '403':
@@ -500,13 +599,14 @@ components:
   securitySchemes:
     oAuth2ClientCredentials:
       type: oauth2
-      flows: 
-        clientCredentials: 
+      flows:
+        clientCredentials:
           tokenUrl: '/oauth2/token'
           scopes:
             nnrf-nfm: Access to the Nnrf_NFManagement API
   schemas:
     NFProfile:
+      description: Information of an NF Instance registered in the NRF 
       type: object
       required:
         - nfInstanceId
@@ -531,6 +631,11 @@ components:
           type: array
           items:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+          minItems: 1
+        snpnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
           minItems: 1
         sNssais:
           type: array
@@ -566,6 +671,11 @@ components:
           items:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
           minItems: 1
+        allowedSnpns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+          minItems: 1
         allowedNfTypes:
           type: array
           items:
@@ -593,6 +703,8 @@ components:
           type: integer
           minimum: 0
           maximum: 100
+        loadTimeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
         locality:
           type: string
         udrInfo:
@@ -658,10 +770,29 @@ components:
           items:
             $ref: '#/components/schemas/ChfInfo'
           minItems: 1
+        nefInfo:
+          $ref: '#/components/schemas/NefInfo'
         nrfInfo:
           $ref: '#/components/schemas/NrfInfo'
+        udsfInfo:
+          $ref: '#/components/schemas/UdsfInfo'
+        udsfInfoExt:
+          type: array
+          items:
+            $ref: '#/components/schemas/UdsfInfo'
+          minItems: 1
         nwdafInfo:
           $ref: '#/components/schemas/NwdafInfo'
+        pcscfInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/PcscfInfo'
+          minItems: 1
+        hssInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/HssInfo'
+          minItems: 1
         customInfo:
           type: object
         recoveryTime:
@@ -686,7 +817,28 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DefaultNotificationSubscription'
+        lmfInfo:
+          $ref: '#/components/schemas/LmfInfo'
+        gmlcInfo:
+          $ref: '#/components/schemas/GmlcInfo'
+        nfSetIdList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+          minItems: 1
+        servingScope:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        lcHSupportInd:
+          type: boolean
+          default: false
+        olcHSupportInd:
+          type: boolean
+          default: false
     NFService:
+      description: Information of a given NF Service Instance; it is part of the NFProfile of an NF Instance
       type: object
       required:
         - serviceInstanceId
@@ -729,6 +881,11 @@ components:
           items:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
           minItems: 1
+        allowedSnpns:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnIdNid'
+          minItems: 1
         allowedNfTypes:
           type: array
           items:
@@ -756,13 +913,42 @@ components:
           type: integer
           minimum: 0
           maximum: 100
+        loadTimeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
         recoveryTime:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
         chfServiceInfo:
           $ref: '#/components/schemas/ChfServiceInfo'
         supportedFeatures:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        nfServiceSetIdList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/NfServiceSetId'
+          minItems: 1
+        sNssais:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        perPlmnSnssaiList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlmnSnssai'
+          minItems: 1
+        vendorId:
+          $ref: '#/components/schemas/VendorId'
+        supportedVendorSpecificFeatures:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/VendorSpecificFeature'
+          minProperties: 1
+        oauth2Required:
+          type: boolean
     NFType:
+#      description: NF types known to NRF
 #      anyOf:
 #        - type: string
           enum:
@@ -787,10 +973,25 @@ components:
             - BSF
             - CHF
             - NWDAF
+            - PCSCF
+            - CBCF
+            - HSS
+            - UCMF
+            - SOR_AF
+            - SPAF
+            - MME
+            - SCSAS
+            - SCEF
+            - SCP
           type: string
     Fqdn:
+      description: Fully Qualified Domain Name
+      type: string
+    NefId:
+      description: Identity of the NEF
       type: string
     IpEndPoint:
+      description: IP addressing information of a given NFService; it consists on, e.g. IP address, TCP port, transport protocol...
       type: object
       properties:
         ipv4Address:
@@ -800,10 +1001,11 @@ components:
         transport:
           $ref: '#/components/schemas/TransportProtocol'
         port:
-          type: integer  
+          type: integer
           minimum: 0
           maximum: 65535
     SubscriptionData:
+      description: Information of a subscription to notifications to NRF events, included in subscription requests and responses
       type: object
       required:
         - nfStatusNotificationUri
@@ -822,6 +1024,9 @@ components:
 #            - $ref: '#/components/schemas/GuamiListCond'
 #            - $ref: '#/components/schemas/NetworkSliceCond'
 #            - $ref: '#/components/schemas/NfGroupCond'
+#            - $ref: '#/components/schemas/NfSetCond'
+#            - $ref: '#/components/schemas/NfServiceSetCond'
+#            - $ref: '#/components/schemas/UpfCond'
         subscriptionId:
           type: string
           pattern: '^([0-9]{5,6}-)?[^-]+$'
@@ -835,6 +1040,8 @@ components:
           minItems: 1
         plmnId:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+        nid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Nid'
         notifCondition:
            $ref: '#/components/schemas/NotifCondition'
         reqNfType:
@@ -846,7 +1053,13 @@ components:
           items:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
           minItems: 1
+        reqPlmnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/PlmnId'
+          minItems: 1
     NfInstanceIdCond:
+      description: Subscription to a given NF Instance Id
       type: object
       required:
         - nfInstanceId
@@ -854,6 +1067,7 @@ components:
         nfInstanceId:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
     NfTypeCond:
+      description: Subscription to a set of NFs based on their NF Type
       type: object
       required:
         - nfType
@@ -863,6 +1077,7 @@ components:
         nfType:
           $ref: '#/components/schemas/NFType'
     ServiceNameCond:
+      description: Subscription to a set of NFs based on their support for a given Service Name
       type: object
       required:
         - serviceName
@@ -870,6 +1085,7 @@ components:
         serviceName:
           $ref: '#/components/schemas/ServiceName'
     AmfCond:
+      description: Subscription to a set of AMFs, based on AMF Set Id and/or AMF Region Id
       type: object
       anyOf:
         - required: [ amfSetId ]
@@ -880,6 +1096,7 @@ components:
         amfRegionId:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfRegionId'
     GuamiListCond:
+      description: Subscription to a set of AMFs, based on their GUAMIs
       type: object
       required:
         - guamiList
@@ -889,6 +1106,7 @@ components:
           items:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/Guami'
     NetworkSliceCond:
+      description: Subscription to a set of NFs, based on the slices (S-NSSAI and NSI) they support
       type: object
       required:
         - snssaiList
@@ -902,6 +1120,7 @@ components:
           items:
             type: string
     NfGroupCond:
+      description: Subscription to a set of NFs based on their Group Id
       type: object
       required:
         - nfType
@@ -914,9 +1133,11 @@ components:
             - AUSF
             - UDR
             - PCF
+            - CHF
         nfGroupId:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
     NotifCondition:
+      description: Condition (list of attributes in the NF Profile) to determine whether a notification must be sent by NRF
       type: object
       not:
         required: [ monitoredAttributes, unmonitoredAttributes ]
@@ -932,6 +1153,7 @@ components:
             type: string
           minItems: 1
     UdrInfo:
+      description: Information of an UDR NF Instance
       type: object
       properties:
         groupId:
@@ -957,6 +1179,7 @@ components:
             $ref: '#/components/schemas/DataSetId'
           minItems: 1
     SupiRange:
+      description: A range of SUPIs (subscriber identities), either based on a numeric range, or based on regular-expression matching 
       type: object
       properties:
         start:
@@ -968,6 +1191,7 @@ components:
         pattern:
           type: string
     IdentityRange:
+      description: A range of GPSIs (subscriber identities), either based on a numeric range, or based on regular-expression matching
       type: object
       properties:
         start:
@@ -978,7 +1202,18 @@ components:
           pattern: '^[0-9]+$'
         pattern:
           type: string
+    InternalGroupIdRange:
+      description: A range of Group IDs (internal group identities), either based on a numeric range, or based on regular-expression matching
+      type: object
+      properties:
+        start:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        end:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        pattern:
+          type: string
     DataSetId:
+      description: Types of data sets stored in UDR
       anyOf:
         - type: string
           enum:
@@ -986,8 +1221,9 @@ components:
             - POLICY
             - EXPOSURE
             - APPLICATION
-        - type: string    
+        - type: string
     UdmInfo:
+      description: Information of an UDM NF Instance
       type: object
       properties:
         groupId:
@@ -1013,7 +1249,13 @@ components:
             type: string
             pattern: '^[0-9]{1,4}$'
           minItems: 1
+        internalGroupIdentifiersRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/InternalGroupIdRange'
+          minItems: 1
     AusfInfo:
+      description: Information of an AUSF NF Instance
       type: object
       properties:
         groupId:
@@ -1030,6 +1272,7 @@ components:
             pattern: '^[0-9]{1,4}$'
           minItems: 1
     AmfInfo:
+      description: Information of an AMF NF Instance
       type: object
       required:
         - amfSetId
@@ -1068,6 +1311,7 @@ components:
         n2InterfaceAmfInfo:
           $ref: '#/components/schemas/N2InterfaceAmfInfo'
     SmfInfo:
+      description: Information of an SMF NF Instance
       type: object
       required:
         - sNssaiSmfInfoList
@@ -1094,7 +1338,12 @@ components:
           items:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
           minItems: 1
+        priority:
+          type: integer
+          minimum: 0
+          maximum: 65535
     SnssaiSmfInfoItem:
+      description: Set of parameters supported by SMF for a given S-NSSAI
       type: object
       required:
         - sNssai
@@ -1108,6 +1357,7 @@ components:
             $ref: '#/components/schemas/DnnSmfInfoItem'
           minItems: 1
     DnnSmfInfoItem:
+      description: Set of parameters supported by SMF for a given DNN
       type: object
       required:
         - dnn
@@ -1115,6 +1365,7 @@ components:
         dnn:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
     UpfInfo:
+      description: Information of an UPF NF Instance
       type: object
       required:
         - sNssaiUpfInfoList
@@ -1147,7 +1398,26 @@ components:
         ueIpAddrInd:
           type: boolean
           default: false
+        taiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
+        wAgfInfo:
+          $ref: '#/components/schemas/WAgfInfo'
+        tngfInfo:
+          $ref: '#/components/schemas/TngfInfo'
+        twifInfo:
+          $ref: '#/components/schemas/TwifInfo'
+        priority:
+          type: integer
+          minimum: 0
+          maximum: 65535
+        redundantGtpu:
+          type: boolean
+          default: false
     SnssaiUpfInfoItem:
+      description: Set of parameters supported by UPF for a given S-NSSAI
       type: object
       required:
         - sNssai
@@ -1160,7 +1430,11 @@ components:
           items:
             $ref: '#/components/schemas/DnnUpfInfoItem'
           minItems: 1
+        redundantTransport:
+          type: boolean
+          default: false
     DnnUpfInfoItem:
+      description: Set of parameters supported by UPF for a given DNN
       type: object
       required:
         - dnn
@@ -1177,7 +1451,18 @@ components:
           items:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/PduSessionType'
           minItems: 1
+        ipv4AddressRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ipv4AddressRange'
+          minItems: 1
+        ipv6PrefixRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ipv6PrefixRange'
+          minItems: 1
     InterfaceUpfInfoItem:
+      description: Information of a given IP interface of an UPF
       type: object
       required:
         - interfaceType
@@ -1199,6 +1484,7 @@ components:
         networkInstance:
           type: string
     UPInterfaceType:
+      description: Types of User-Plane interfaces of the UPF
       anyOf:
         - type: string
           enum:
@@ -1206,7 +1492,40 @@ components:
             - N6
             - N9
         - type: string
+    WAgfInfo:
+      description: Information of the W-AGF end-points
+      type: object
+      properties:
+        ipv4EndpointAddresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+        ipv6EndpointAddresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+        endpointFqdn:
+          $ref: '#/components/schemas/Fqdn'
+    TngfInfo:
+      description: Infomation of the TNGF endpoints
+      type: object
+      properties:
+        ipv4EndpointAddresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+        ipv6EndpointAddresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+        endpointFqdn:
+          $ref: '#/components/schemas/Fqdn'
     PcfInfo:
+      description: Information of a PCF NF Instance
       type: object
       properties:
         groupId:
@@ -1230,7 +1549,11 @@ components:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DiameterIdentity'
         rxDiamRealm:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DiameterIdentity'
+        v2xSupportInd:
+          type: boolean
+          default: false
     BsfInfo:
+      description: Information of a BSF NF Instance
       type: object
       properties:
         dnnList:
@@ -1245,15 +1568,16 @@ components:
           minItems: 1
         ipv4AddressRanges:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/Ipv4AddressRange'
           minItems: 1
         ipv6PrefixRanges:
           type: array
-          items: 
+          items:
             $ref: '#/components/schemas/Ipv6PrefixRange'
           minItems: 1
     ChfInfo:
+      description: Information of a CHF NF Instance
       type: object
       properties:
         supiRangeList:
@@ -1271,7 +1595,10 @@ components:
           items:
             $ref: '#/components/schemas/PlmnRange'
           minItems: 1
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
     Ipv4AddressRange:
+      description: Range of IPv4 addresses
       type: object
       properties:
         start:
@@ -1279,6 +1606,7 @@ components:
         end:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
     Ipv6PrefixRange:
+      description: Range of IPv6 prefixes
       type: object
       properties:
         start:
@@ -1286,6 +1614,7 @@ components:
         end:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Prefix'
     DefaultNotificationSubscription:
+      description: Data structure for specifying the notifications the NF service subscribes by default along with callback URI
       type: object
       required:
         - notificationType
@@ -1299,7 +1628,42 @@ components:
           $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N1MessageClass'
         n2InformationClass:
           $ref: 'TS29518_Namf_Communication.yaml#/components/schemas/N2InformationClass'
+        versions:
+          type: array
+          items:
+            type: string
+          minItems: 1
+    NfSetCond:
+      description: Subscription to a set of NFs based on their Set Id
+      type: object
+      required:
+        - nfSetId
+      properties:
+        nfSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfSetId'
+    NfServiceSetCond:
+      description: Subscription to a set of NFs based on their Service Set Id
+      type: object
+      required:
+        - nfServiceSetId
+      properties:
+        nfServiceSetId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfServiceSetId'
+    UpfCond:
+      type: object
+      properties:
+        smfServingArea:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        taiList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+          minItems: 1
     NotificationType:
+#      description: Types of notifications used in Default Notification URIs in the NF Profile of an NF Instance
 #      anyOf:
 #        - type: string
           enum:
@@ -1308,22 +1672,26 @@ components:
             - LOCATION_NOTIFICATION
             - DATA_REMOVAL_NOTIFICATION
             - DATA_CHANGE_NOTIFICATION
+            - LOCATION_UPDATE_NOTIFICATION
           type: string
     TransportProtocol:
-#      anyOf:
-#        - type: string
+      description: Types of transport protocol used in a given IP endpoint of an NF Service Instance
+      anyOf:
+        - type: string
           enum:
             - TCP
-          type: string
+        - type: string
     NotificationEventType:
+#      description: Types of events sent in notifications from NRF to subscribed NF Instances
 #      anyOf:
 #        - type: string
           enum:
             - NF_REGISTERED
             - NF_DEREGISTERED
             - NF_PROFILE_CHANGED
-          type: string    
+          type: string
     NotificationData:
+      description: Data sent in notifications from NRF to subscribed NF Instances
       type: object
       required:
         - event
@@ -1339,7 +1707,7 @@ components:
                 event:
                   type: string
                   enum:
-                    - NF_PROFILE_CHANGED 
+                    - NF_PROFILE_CHANGED
           - oneOf:
               - required: [ nfProfile ]
               - required: [ profileChanges ]
@@ -1353,7 +1721,7 @@ components:
                 event:
                   type: string
                   enum:
-                    - NF_REGISTERED 
+                    - NF_REGISTERED
           - required: [ nfProfile ]
       properties:
         event:
@@ -1364,15 +1732,15 @@ components:
           allOf:
             - $ref: '#/components/schemas/NFProfile'
             - not:
-                required: [ interPlmnFqdn ] 
+                required: [ interPlmnFqdn ]
             - not:
-                required: [ allowedPlmns ] 
+                required: [ allowedPlmns ]
             - not:
-                required: [ allowedNfTypes ] 
+                required: [ allowedNfTypes ]
             - not:
-                required: [ allowedNfDomains ] 
+                required: [ allowedNfDomains ]
             - not:
-                required: [ allowedNssais ] 
+                required: [ allowedNssais ]
             - properties:
                 nfServices:
                   type: array
@@ -1395,6 +1763,7 @@ components:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/ChangeItem'
           minItems: 1
     NFStatus:
+#      description: Status of a given NF Instance stored in NRF
 #      anyOf:
 #        - type: string
           enum:
@@ -1403,6 +1772,7 @@ components:
             - UNDISCOVERABLE
           type: string
     NFServiceVersion:
+      description: Contains the version details of an NF service
       type: object
       required:
         - apiVersionInUri
@@ -1415,17 +1785,20 @@ components:
         expiry:
           $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
     ServiceName:
+#      description: Service names known to NRF
 #      anyOf:
 #        - type: string
 #          enum:
 #            - nnrf-nfm
 #            - nnrf-disc
+#            - nnrf-oauth2
 #            - nudm-sdm
 #            - nudm-uecm
 #            - nudm-ueau
 #            - nudm-ee
 #            - nudm-pp
 #            - nudm-niddau
+#            - nudm-mt
 #            - namf-comm
 #            - namf-evts
 #            - namf-mt
@@ -1436,6 +1809,8 @@ components:
 #            - nausf-sorprotection
 #            - nausf-upuprotection
 #            - nnef-pfdmanagement
+#            - nnef-smcontext
+#            - nnef-eventexposure
 #            - npcf-am-policy-control
 #            - npcf-smpolicycontrol
 #            - npcf-policyauthorization
@@ -1446,15 +1821,30 @@ components:
 #            - nnssf-nsselection
 #            - nnssf-nssaiavailability
 #            - nudr-dr
+#            - nudr-group-id-map
 #            - nlmf-loc
 #            - n5g-eir-eic
 #            - nbsf-management
 #            - nchf-spendinglimitcontrol
 #            - nchf-convergedcharging
+#            - nchf-offlineonlycharging
 #            - nnwdaf-eventssubscription
 #            - nnwdaf-analyticsinfo
+#            - ngmlc-loc
+#            - nucmf-provisioning
+#            - nucmf-uecapabilitymanagement
+#            - nhss-sdm
+#            - nhss-uecm
+#            - nhss-ueau
+#            - nhss-ims-sdm
+#            - nhss-ims-uecm
+#            - nhss-ims-ueau
+#            - nsepp-telescopic
+#            - nsoraf-sor
+#            - nspaf-secured-packet
           type: string
     N2InterfaceAmfInfo:
+      description: AMF N2 interface information
       type: object
       properties:
         ipv4EndpointAddress:
@@ -1470,6 +1860,7 @@ components:
         amfName:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/AmfName'
     NFServiceStatus:
+#      description: Status of a given NF Service Instance of an NF Instance stored in NRF
 #      anyOf:
 #        - type: string
           enum:
@@ -1478,6 +1869,7 @@ components:
             - UNDISCOVERABLE
           type: string
     TaiRange:
+      description: Range of TAIs (Tracking Area Identities)
       type: object
       required:
         - plmnId
@@ -1490,7 +1882,10 @@ components:
           items:
             $ref: '#/components/schemas/TacRange'
           minItems: 1
+        nid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Nid'
     TacRange:
+      description: Range of TACs (Tracking Area Codes)
       type: object
       properties:
         start:
@@ -1502,6 +1897,7 @@ components:
         pattern:
           type: string
     ChfServiceInfo:
+      description: Information of primary and secondary CHF services
       type: object
       not:
         required: [ primaryChfServiceInstance, secondaryChfServiceInstance ]
@@ -1511,6 +1907,7 @@ components:
         secondaryChfServiceInstance:
           type: string
     PlmnRange:
+      description: Range of PLMN IDs
       type: object
       properties:
         start:
@@ -1522,6 +1919,7 @@ components:
         pattern:
           type: string
     NrfInfo:
+      description: Information of an NRF NF Instance, used in hierarchical NRF deployments
       type: object
       properties:
         servedUdrInfo:
@@ -1569,12 +1967,43 @@ components:
           additionalProperties:
             $ref: '#/components/schemas/ChfInfo'
           minProperties: 1
+        servedNefInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/NefInfo'
+          minProperties: 1
         servedNwdafInfo:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/NwdafInfo'
           minProperties: 1
+        servedPcscfInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PcscfInfo'
+          minProperties: 1
+        servedGmlcInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/GmlcInfo'
+          minProperties: 1
+        servedLmfInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/LmfInfo'
+          minProperties: 1
+        servedNfInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/NfInfo'
+          minProperties: 1
+        servedHssInfo:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/HssInfo'
+          minProperties: 1
     PlmnSnssai:
+      description: List of network slices (S-NSSAIs) for a given PLMN ID
       type: object
       required:
         - plmnId
@@ -1587,7 +2016,34 @@ components:
           items:
             $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
           minItems: 1
+        nid:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Nid'
+    NefInfo:
+      description: Information of an NEF NF Instance
+      type: object
+      properties:
+        nefId:
+          $ref: '#/components/schemas/NefId'
+        pfdData:
+          $ref: '#/components/schemas/PfdData'
+        afEeData:
+          $ref: '#/components/schemas/AfEventExposureData'
+    PfdData:
+      description: List of Application IDs and/or AF IDs managed by a given NEF Instance
+      type: object
+      properties:
+        appIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        afIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
     NwdafInfo:
+      description: Information of a NWDAF NF Instance
       type: object
       properties:
         eventIds:
@@ -1610,7 +2066,147 @@ components:
           items:
             $ref: '#/components/schemas/TaiRange'
           minItems: 1
-
-externalDocs:
-  description: 3GPP TS 29.510 V15.3.0; 5G System; Network Function Repository Services; Stage 3
-  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.510/'
+    LmfInfo:
+      type: object
+      properties:
+        servingClientTypes:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/ExternalClientType'
+          minItems: 1
+        lmfId:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/LMFIdentification'
+        servingAccessTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+        servingAnNodeTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnNodeType'
+          minItems: 1
+        servingRatTypes:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/RatType'
+          minItems: 1
+    GmlcInfo:
+      type: object
+      properties:
+        servingClientTypes:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/ExternalClientType'
+          minItems: 1
+    AfEventExposureData:
+      description: AF Event Exposure data managed by a given NEF Instance
+      type: object
+      required:
+        - afEvents
+      properties:
+        afEvents:
+          type: array
+          items:
+            $ref: 'TS29517_Naf_EventExposure.yaml#/components/schemas/AfEvent'
+          minItems: 1
+        afIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        appIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+    PcscfInfo:
+      description: Information of a P-CSCF NF Instance
+      type: object
+      properties:
+        accessType:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+          minItems: 1
+        dnnList:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+          minItems: 1
+    NfInfo:
+      description: Information of a generic NF Instance
+      type: object
+      properties:
+        nfType:
+          $ref: '#/components/schemas/NFType'
+    HssInfo:
+      description: Information of an HSS NF Instance
+      type: object
+      properties:
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        imsRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImsiRange'
+          minItems: 1
+    ImsiRange:
+      description: A range of IMSIs (subscriber identities), either based on a numeric range, or based on regular-expression matching
+      type: object
+      properties:
+        start:
+          type: string
+          pattern: '^[0-9]+$'
+        end:
+          type: string
+          pattern: '^[0-9]+$'
+        pattern:
+          type: string
+    TwifInfo:
+      type: object
+      properties:
+        ipv4EndpointAddresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv4Addr'
+          minItems: 1
+        ipv6EndpointAddresses:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+        endpointFqdn:
+          $ref: '#/components/schemas/Fqdn'
+    VendorId:
+      description: Vendor ID of the NF Service instance (Private Enterprise Number assigned by IANA)
+      type: string
+      pattern: '^[0-9]{6}$'
+    VendorSpecificFeature:
+      description: Information about a vendor-specific feature
+      type: object
+      required:
+        - featureName
+        - featureVersion
+      properties:
+        featureName:
+          type: string
+        featureVersion:
+          type: string
+    AnNodeType:
+      anyOf:
+        - type: string
+          enum:
+            - GNB
+            - NG_ENB
+        - type: string
+    UdsfInfo:
+      type: object
+      properties:
+        groupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfGroupId'
+        supiRanges:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupiRange'
+          minItems: 1

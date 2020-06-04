@@ -1,7 +1,7 @@
 /*
  * tac_range.h
  *
- *
+ * Range of TACs (Tracking Area Codes)
  */
 
 #ifndef _OpenAPI_tac_range_H_

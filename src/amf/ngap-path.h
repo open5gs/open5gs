@@ -40,14 +40,12 @@ int ngap_send(ogs_sock_t *sock,
 
 int ngap_send_to_gnb(
         amf_gnb_t *gnb, ogs_pkbuf_t *pkb, uint16_t stream_no);
-#if 0
-int ngap_send_to_gnb_ue(gnb_ue_t *gnb_ue, ogs_pkbuf_t *pkbuf);
-int ngap_delayed_send_to_gnb_ue(gnb_ue_t *gnb_ue,
+int ngap_send_to_ran_ue(ran_ue_t *ran_ue, ogs_pkbuf_t *pkbuf);
+int ngap_delayed_send_to_ran_ue(ran_ue_t *ran_ue,
         ogs_pkbuf_t *pkbuf, ogs_time_t duration);
-int ngap_send_to_nas(gnb_ue_t *gnb_ue,
+int ngap_send_to_nas(ran_ue_t *ran_ue,
         NGAP_ProcedureCode_t procedureCode, NGAP_NAS_PDU_t *nasPdu);
-int ngap_send_to_esm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf);
-#endif
+int ngap_send_to_5gsm(amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf);
 
 void ngap_send_ng_setup_response(amf_gnb_t *gnb);
 void ngap_send_ng_setup_failure(
@@ -57,7 +55,7 @@ void ngap_send_ng_setup_failure(
 void ngap_send_initial_context_setup_request(amf_ue_t *amf_ue);
 void ngap_send_ue_context_modification_request(amf_ue_t *amf_ue);
 void ngap_send_ue_context_release_command(
-    gnb_ue_t *gnb_ue, NGAP_Cause_PR group, long cause,
+    ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause,
     uint8_t action, uint32_t delay);
 
 void ngap_send_paging(amf_ue_t *amf_ue, NGAP_CNDomain_t cn_domain);
@@ -68,31 +66,33 @@ void ngap_send_amf_configuration_transfer(
 
 void ngap_send_path_switch_ack(amf_ue_t *amf_ue);
 
-void ngap_send_handover_command(gnb_ue_t *source_ue);
+void ngap_send_handover_command(ran_ue_t *source_ue);
 void ngap_send_handover_preparation_failure(
-        gnb_ue_t *source_ue, NGAP_Cause_t *cause);
+        ran_ue_t *source_ue, NGAP_Cause_t *cause);
 
 void ngap_send_handover_request(
         amf_ue_t *amf_ue,
         amf_gnb_t *target_gnb,
-        NGAP_ENB_UE_NGAP_ID_t *gnb_ue_ngap_id,
+        NGAP_RAN_UE_NGAP_ID_t *ran_ue_ngap_id,
         NGAP_AMF_UE_NGAP_ID_t *amf_ue_ngap_id,
         NGAP_HandoverType_t *handovertype,
         NGAP_Cause_t *cause,
         NGAP_Source_ToTarget_TransparentContainer_t
             *source_totarget_transparentContainer);
 
-void ngap_send_handover_cancel_ack(gnb_ue_t *source_ue);
+void ngap_send_handover_cancel_ack(ran_ue_t *source_ue);
 
 void ngap_send_amf_status_transfer(
-        gnb_ue_t *target_ue,
-        NGAP_ENB_StatusTransfer_TransparentContainer_t
+        ran_ue_t *target_ue,
+        NGAP_RAN_StatusTransfer_TransparentContainer_t
             *gnb_statustransfer_transparentContainer);
+#endif
 void ngap_send_error_indication(
         amf_gnb_t *gnb,
-        NGAP_AMF_UE_NGAP_ID_t *amf_ue_ngap_id,
-        NGAP_ENB_UE_NGAP_ID_t *gnb_ue_ngap_id,
+        uint64_t *amf_ue_ngap_id,
+        NGAP_RAN_UE_NGAP_ID_t *ran_ue_ngap_id,
         NGAP_Cause_PR group, long cause);
+#if 0
 void ngap_send_ng_reset_ack(
         amf_gnb_t *gnb,
         NGAP_UE_associatedLogicalNG_ConnectionListRes_t *partOfNG_Interface);

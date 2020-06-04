@@ -137,14 +137,21 @@ static void recalculate_pool_size(void)
 #define MAX_NUM_OF_BEARER       4   /* Num of Bearer per APN(Session) */
 #define MAX_NUM_OF_TUNNEL       3   /* Num of Tunnel per Bearer */
 #define MAX_NUM_OF_PF           16  /* Num of PacketFilter per Bearer */
+#define MAX_NUM_OF_NF_SERVICE   16  /* Num of NF Service per NF Instance */
+#define MAX_NUM_OF_SBI_MESSAGE  8   /* Num of HTTP(s) Request/Response per NF */
+#define MAX_NUM_OF_NF_SUBSCRIPTION  4 /* Num of Subscription per NF */
+#define MAX_NUM_OF_AUTH         4   /* Num of Subscription per UE */
 
     self.pool.ue = self.max.ue * self.max.gnb;
+    self.pool.auth = self.pool.ue * MAX_NUM_OF_AUTH;
     self.pool.pfcp = ogs_max(self.max.smf, self.max.upf);
-    self.pool.sbi = self.pool.pfcp;
     self.pool.sess = self.pool.ue * OGS_MAX_NUM_OF_SESS;
     self.pool.bearer = self.pool.sess * MAX_NUM_OF_BEARER;
     self.pool.tunnel = self.pool.bearer * MAX_NUM_OF_TUNNEL;
     self.pool.pf = self.pool.bearer * MAX_NUM_OF_PF;
+    self.pool.nf_service = self.max.nf * MAX_NUM_OF_NF_SERVICE;
+    self.pool.sbi_message = self.max.nf * MAX_NUM_OF_SBI_MESSAGE;
+    self.pool.nf_subscription = self.max.nf * MAX_NUM_OF_NF_SUBSCRIPTION;
 }
 
 static int config_prepare(void)
@@ -161,6 +168,7 @@ static int config_prepare(void)
 #define MAX_NUM_OF_SMF              32  /* Num of SMF per AMF */
 #define MAX_NUM_OF_UPF              32  /* Num of PGW per AMF */
 #define MAX_NUM_OF_GNB              32  /* Num of gNB per AMF */
+#define MAX_NUM_OF_NF               512 /* Num of NF Instance */
     self.max.sgw = MAX_NUM_OF_SGW;
     self.max.pgw = MAX_NUM_OF_PGW;
     self.max.vlr = MAX_NUM_OF_VLR;
@@ -170,6 +178,7 @@ static int config_prepare(void)
     self.max.ue = MAX_NUM_OF_UE;
     self.max.smf = MAX_NUM_OF_SMF;
     self.max.upf = MAX_NUM_OF_UPF;
+    self.max.nf = MAX_NUM_OF_NF;
 
 #define MAX_NUM_OF_PACKET_POOL      65536
     self.pool.packet = MAX_NUM_OF_PACKET_POOL;
@@ -259,6 +268,21 @@ int ogs_config_parse()
                 } else if (!strcmp(parameter_key, "no_pcrf")) {
                     self.parameter.no_pcrf =
                         ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_upf")) {
+                    self.parameter.no_upf =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_smf")) {
+                    self.parameter.no_smf =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_ausf")) {
+                    self.parameter.no_ausf =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_udm")) {
+                    self.parameter.no_udm =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_udr")) {
+                    self.parameter.no_udr =
+                        ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_ipv4")) {
                     self.parameter.no_ipv4 =
                         ogs_yaml_iter_bool(&parameter_iter);
@@ -329,6 +353,9 @@ int ogs_config_parse()
                             !strcmp(max_key, "enb")) {
                     const char *v = ogs_yaml_iter_value(&max_iter);
                     if (v) self.max.gnb = atoi(v);
+                } else if (!strcmp(max_key, "nf")) {
+                    const char *v = ogs_yaml_iter_value(&max_iter);
+                    if (v) self.max.nf = atoi(v);
                 } else
                     ogs_warn("unknown key `%s`", max_key);
             }

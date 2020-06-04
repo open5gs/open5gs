@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "nnrf-handler.h"
+#include "ogs-sbi.h"
 
 bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         OpenAPI_nf_profile_t *NFProfile,
@@ -113,14 +113,22 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
         ogs_sbi_nf_service_t *nf_service = NULL;
 
         if (!NFService) continue;
+        if (!NFService->service_instance_id) continue;
+        if (!NFService->service_name) continue;
 
         VersionList = NFService->versions;
         IpEndPointList = NFService->ip_end_points;
 
-        nf_service = ogs_sbi_nf_service_add(nf_instance,
-            NFService->service_instance_id,
-            NFService->service_name, NFService->scheme);
-        ogs_assert(nf_service);
+        nf_service = ogs_sbi_nf_service_find(nf_instance,
+                NFService->service_name);
+        if (!nf_service) {
+            nf_service = ogs_sbi_nf_service_add(nf_instance,
+                NFService->service_instance_id,
+                NFService->service_name, NFService->scheme);
+            ogs_assert(nf_service);
+        }
+
+        ogs_sbi_nf_service_clear(nf_service);
 
         OpenAPI_list_for_each(VersionList, node2) {
             OpenAPI_nf_service_version_t *NFServiceVersion = node2->data;
@@ -174,8 +182,8 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
                         ipv4 = addr;
                     nf_service->addr[nf_service->num_of_addr].
                         ipv6 = addr6;
+                    nf_service->num_of_addr++;
                 }
-                nf_service->num_of_addr++;
             }
         }
     }

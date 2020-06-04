@@ -1,7 +1,7 @@
 /*
  * nf_profile.h
  *
- *
+ * Information of an NF Instance registered in the NRF
  */
 
 #ifndef _OpenAPI_nf_profile_H_
@@ -17,6 +17,10 @@
 #include "bsf_info.h"
 #include "chf_info.h"
 #include "default_notification_subscription.h"
+#include "gmlc_info.h"
+#include "hss_info.h"
+#include "lmf_info.h"
+#include "nef_info.h"
 #include "nf_service.h"
 #include "nf_status.h"
 #include "nf_type.h"
@@ -24,12 +28,15 @@
 #include "nwdaf_info.h"
 #include "object.h"
 #include "pcf_info.h"
+#include "pcscf_info.h"
 #include "plmn_id.h"
+#include "plmn_id_nid.h"
 #include "plmn_snssai.h"
 #include "smf_info.h"
 #include "snssai.h"
 #include "udm_info.h"
 #include "udr_info.h"
+#include "udsf_info.h"
 #include "upf_info.h"
 
 #ifdef __cplusplus
@@ -44,6 +51,7 @@ typedef struct OpenAPI_nf_profile_s {
     OpenAPI_nf_status_e nf_status;
     int heart_beat_timer;
     OpenAPI_list_t *plmn_list;
+    OpenAPI_list_t *snpn_list;
     OpenAPI_list_t *s_nssais;
     OpenAPI_list_t *per_plmn_snssai_list;
     OpenAPI_list_t *nsi_list;
@@ -52,12 +60,14 @@ typedef struct OpenAPI_nf_profile_s {
     OpenAPI_list_t *ipv4_addresses;
     OpenAPI_list_t *ipv6_addresses;
     OpenAPI_list_t *allowed_plmns;
+    OpenAPI_list_t *allowed_snpns;
     OpenAPI_list_t *allowed_nf_types;
     OpenAPI_list_t *allowed_nf_domains;
     OpenAPI_list_t *allowed_nssais;
     int priority;
     int capacity;
     int load;
+    char *load_time_stamp;
     char *locality;
     struct OpenAPI_udr_info_s *udr_info;
     OpenAPI_list_t *udr_info_ext;
@@ -77,8 +87,13 @@ typedef struct OpenAPI_nf_profile_s {
     OpenAPI_list_t *bsf_info_ext;
     struct OpenAPI_chf_info_s *chf_info;
     OpenAPI_list_t *chf_info_ext;
+    struct OpenAPI_nef_info_s *nef_info;
     struct OpenAPI_nrf_info_s *nrf_info;
+    struct OpenAPI_udsf_info_s *udsf_info;
+    OpenAPI_list_t *udsf_info_ext;
     struct OpenAPI_nwdaf_info_s *nwdaf_info;
+    OpenAPI_list_t *pcscf_info;
+    OpenAPI_list_t *hss_info;
     OpenAPI_object_t *custom_info;
     char *recovery_time;
     int nf_service_persistence;
@@ -86,6 +101,12 @@ typedef struct OpenAPI_nf_profile_s {
     int nf_profile_changes_support_ind;
     int nf_profile_changes_ind;
     OpenAPI_list_t *default_notification_subscriptions;
+    struct OpenAPI_lmf_info_s *lmf_info;
+    struct OpenAPI_gmlc_info_s *gmlc_info;
+    OpenAPI_list_t *nf_set_id_list;
+    OpenAPI_list_t *serving_scope;
+    int lc_h_support_ind;
+    int olc_h_support_ind;
 } OpenAPI_nf_profile_t;
 
 OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
@@ -95,6 +116,7 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_nf_status_e nf_status,
     int heart_beat_timer,
     OpenAPI_list_t *plmn_list,
+    OpenAPI_list_t *snpn_list,
     OpenAPI_list_t *s_nssais,
     OpenAPI_list_t *per_plmn_snssai_list,
     OpenAPI_list_t *nsi_list,
@@ -103,12 +125,14 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_list_t *ipv4_addresses,
     OpenAPI_list_t *ipv6_addresses,
     OpenAPI_list_t *allowed_plmns,
+    OpenAPI_list_t *allowed_snpns,
     OpenAPI_list_t *allowed_nf_types,
     OpenAPI_list_t *allowed_nf_domains,
     OpenAPI_list_t *allowed_nssais,
     int priority,
     int capacity,
     int load,
+    char *load_time_stamp,
     char *locality,
     OpenAPI_udr_info_t *udr_info,
     OpenAPI_list_t *udr_info_ext,
@@ -128,15 +152,26 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
     OpenAPI_list_t *bsf_info_ext,
     OpenAPI_chf_info_t *chf_info,
     OpenAPI_list_t *chf_info_ext,
+    OpenAPI_nef_info_t *nef_info,
     OpenAPI_nrf_info_t *nrf_info,
+    OpenAPI_udsf_info_t *udsf_info,
+    OpenAPI_list_t *udsf_info_ext,
     OpenAPI_nwdaf_info_t *nwdaf_info,
+    OpenAPI_list_t *pcscf_info,
+    OpenAPI_list_t *hss_info,
     OpenAPI_object_t *custom_info,
     char *recovery_time,
     int nf_service_persistence,
     OpenAPI_list_t *nf_services,
     int nf_profile_changes_support_ind,
     int nf_profile_changes_ind,
-    OpenAPI_list_t *default_notification_subscriptions
+    OpenAPI_list_t *default_notification_subscriptions,
+    OpenAPI_lmf_info_t *lmf_info,
+    OpenAPI_gmlc_info_t *gmlc_info,
+    OpenAPI_list_t *nf_set_id_list,
+    OpenAPI_list_t *serving_scope,
+    int lc_h_support_ind,
+    int olc_h_support_ind
     );
 void OpenAPI_nf_profile_free(OpenAPI_nf_profile_t *nf_profile);
 OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON);

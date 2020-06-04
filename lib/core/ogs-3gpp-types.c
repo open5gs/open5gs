@@ -64,6 +64,14 @@ void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
     return plmn_id;
 }
 
+char *ogs_plmn_id_string(ogs_plmn_id_t *plmn_id)
+{
+    ogs_assert(plmn_id);
+
+    return ogs_msprintf("5G:mnc%03d.mcc%03d.3gppnetwork.org",
+            ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+}
+
 uint32_t ogs_amf_id_hexdump(ogs_amf_id_t *amf_id)
 {
     uint32_t hex;
@@ -95,16 +103,10 @@ ogs_amf_id_t *ogs_amf_id_from_string(ogs_amf_id_t *amf_id, const char *hex)
 
 char *ogs_amf_id_to_string(ogs_amf_id_t *amf_id, char *buf)
 {
-    int i;
     ogs_assert(amf_id);
     ogs_assert(buf);
 
     ogs_hex_to_ascii(amf_id, sizeof(ogs_amf_id_t), buf, OGS_AMFIDSTRLEN);
-
-    /* I'd just like to use lower character */
-    for (i = 0; buf[i]; i++)
-        if (buf[i] >= 'A' && buf[i] <= 'Z')
-            buf[i] = buf[i] + 'a' - 'A';
 
     return buf;
 }
@@ -138,6 +140,68 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
     amf_id->pointer = pointer;
 
     return amf_id;
+}
+
+char *ogs_supi_from_suci(char *suci)
+{
+#define MAX_SUCI_TOKEN 16
+    char *array[MAX_SUCI_TOKEN];
+    char *saveptr = NULL;
+    char *p, *tmp;
+    int i;
+    char *supi = NULL;
+
+    ogs_assert(suci);
+    tmp = ogs_strdup(suci);
+
+    p = strtok_r(tmp, "-", &saveptr);
+
+    memset(array, 0, sizeof(array));
+    for (i = 0; i < MAX_SUCI_TOKEN && p; i++) {
+        array[i] = p;
+        p = strtok_r(NULL, "-", &saveptr);
+    }
+
+    SWITCH(array[0])
+    CASE("suci")
+        SWITCH(array[1])
+        CASE("0")   /* SUPI format : IMSI */
+            if (array[2] && array[3] && array[7])
+                supi = ogs_msprintf("imsi-%s%s%s",
+                        array[2], array[3], array[7]);
+
+            break;
+        DEFAULT
+            ogs_error("Not implemented [%s]", array[1]);
+            break;
+        END
+        break;
+    DEFAULT
+        ogs_error("Not implemented [%s]", array[0]);
+        break;
+    END
+
+    ogs_free(tmp);
+    return supi;
+}
+
+char *ogs_ueid_from_supi(char *supi)
+{
+    char *saveptr = NULL;
+    char *p, *tmp;
+    char *ueid = NULL;
+
+    ogs_assert(supi);
+    tmp = ogs_strdup(supi);
+
+    p = strtok_r(tmp, "-", &saveptr);
+    ogs_assert(p);
+    p = strtok_r(NULL, "-", &saveptr);
+    ogs_assert(p);
+    ueid = ogs_strdup(p);
+
+    ogs_free(tmp);
+    return ueid;
 }
 
 int ogs_fqdn_build(char *dst, char *src, int length)

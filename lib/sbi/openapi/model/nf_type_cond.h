@@ -1,7 +1,7 @@
 /*
  * nf_type_cond.h
  *
- *
+ * Subscription to a set of NFs based on their NF Type
  */
 
 #ifndef _OpenAPI_nf_type_cond_H_

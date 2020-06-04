@@ -18,8 +18,10 @@
  */
 
 #include "sbi-path.h"
+#include "nas-path.h"
 #include "nnrf-handler.h"
 #include "ngap-path.h"
+#include "nas-security.h"
 
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
 {
@@ -40,9 +42,6 @@ void amf_state_final(ogs_fsm_t *s, amf_event_t *e)
 void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 {
     int rv;
-#if 0
-    ogs_pkbuf_t *recvbuf = NULL;
-#endif
     char buf[OGS_ADDRSTRLEN];
 
     ogs_sock_t *sock = NULL;
@@ -54,11 +53,10 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     ogs_pkbuf_t *pkbuf = NULL;
     int rc;
 
-#if 0
     ogs_nas_5gs_message_t nas_message;
-#endif
+    ran_ue_t *ran_ue = NULL;
+    amf_ue_t *amf_ue = NULL;
 
-    ogs_sbi_server_t *server = NULL;
     ogs_sbi_session_t *session = NULL;
     ogs_sbi_request_t *sbi_request = NULL;
 
@@ -96,8 +94,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(sbi_request);
         session = e->sbi.session;
         ogs_assert(session);
-        server = e->sbi.server;
-        ogs_assert(server);
 
         rv = ogs_sbi_parse_request(&sbi_message, sbi_request);
         if (rv != OGS_OK) {
@@ -117,14 +113,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         }
 
         SWITCH(sbi_message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NRF_NFM)
+        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
 
-            SWITCH(sbi_message.h.resource.name)
+            SWITCH(sbi_message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY)
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_POST)
-                    amf_nnrf_handle_nf_status_notify(
-                            server, session, &sbi_message);
+                    amf_nnrf_handle_nf_status_notify(session, &sbi_message);
                     break;
 
                 DEFAULT
@@ -139,10 +134,11 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.name);
+                        sbi_message.h.resource.component[0]);
                 ogs_sbi_server_send_error(session,
                         OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, &sbi_message,
-                        "Unknown resource name", sbi_message.h.resource.name);
+                        "Unknown resource name",
+                        sbi_message.h.resource.component[0]);
             END
             break;
 
@@ -150,7 +146,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_error("Invalid API name [%s]", sbi_message.h.service.name);
             ogs_sbi_server_send_error(session,
                     OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, &sbi_message,
-                    "Invalid API name", sbi_message.h.resource.name);
+                    "Invalid API name", sbi_message.h.resource.component[0]);
         END
 
         /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */
@@ -178,9 +174,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         }
 
         SWITCH(sbi_message.h.service.name)
-        CASE(OGS_SBI_SERVICE_NAME_NRF_NFM)
+        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
 
-            SWITCH(sbi_message.h.resource.name)
+            SWITCH(sbi_message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
                 nf_instance = e->sbi.data;
                 ogs_assert(nf_instance);
@@ -190,7 +186,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 ogs_fsm_dispatch(&nf_instance->sm, e);
 
                 if (OGS_FSM_CHECK(&nf_instance->sm, amf_nf_state_exception)) {
-                    ogs_error("State machine exception");
+                    ogs_error("[%s] State machine exception", nf_instance->id);
                 }
                 break;
 
@@ -205,8 +201,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                         amf_nnrf_handle_nf_status_subscribe(
                                 subscription, &sbi_message);
                     } else {
-                        ogs_error("HTTP response error : %d",
-                                sbi_message.res_status);
+                        ogs_error("[%s] HTTP response error [%d]",
+                                subscription->id, sbi_message.res_status);
                     }
                     break;
 
@@ -215,41 +211,106 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                             OGS_SBI_HTTP_STATUS_NO_CONTENT) {
                         ogs_sbi_subscription_remove(subscription);
                     } else {
-                        ogs_error("HTTP response error : %d",
-                                sbi_message.res_status);
+                        ogs_error("[%s] HTTP response error [%d]",
+                                subscription->id, sbi_message.res_status);
                     }
                     break;
 
                 DEFAULT
                     ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_assert_if_reached();
                 END
                 break;
             
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.name);
+                        sbi_message.h.resource.component[0]);
+                ogs_assert_if_reached();
             END
             break;
 
-        CASE(OGS_SBI_SERVICE_NAME_NRF_DISC)
-            SWITCH(sbi_message.h.resource.name)
+        CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
+            SWITCH(sbi_message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
-                    amf_nnrf_handle_nf_discover(&sbi_message);
-                } else {
-                    ogs_error("HTTP response error : %d",
-                            sbi_message.res_status);
-                }
+                amf_ue = e->sbi.data;
+                ogs_assert(amf_ue);
+
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_GET)
+                    if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        ogs_timer_stop(amf_ue->sbi_client_wait.timer);
+
+                        amf_nnrf_handle_nf_discover(amf_ue, &sbi_message);
+                    } else {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                amf_ue->suci, sbi_message.res_status);
+                    }
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_assert_if_reached();
+                END
                 break;
 
             DEFAULT
                 ogs_error("Invalid resource name [%s]",
-                        sbi_message.h.resource.name);
+                        sbi_message.h.resource.component[0]);
+                ogs_assert_if_reached();
             END
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
+            amf_ue = e->sbi.data;
+            ogs_assert(amf_ue);
+            ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
+
+            e->amf_ue = amf_ue;
+            e->sbi.message = &sbi_message;;
+
+            ogs_fsm_dispatch(&amf_ue->sm, e);
+            if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
+                amf_ue_remove(amf_ue);
+            }
+            break;
+#if 0
+            SWITCH(sbi_message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
+                amf_ue = e->sbi.data;
+                ogs_assert(amf_ue);
+
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        ogs_timer_stop(amf_ue->sbi_client_wait.timer);
+
+                        ogs_fatal("TODO");
+                    } else {
+                        ogs_error("[%s] HTTP response error [%d]",
+                                amf_ue->suci, sbi_message.res_status);
+                        nas_5gs_send_nas_reject_from_sbi(amf_ue,
+                                sbi_message.res_status);
+                    }
+                    break;
+
+                DEFAULT
+                    ogs_error("[%s] Invalid HTTP method [%s]",
+                            amf_ue->suci, sbi_message.h.method);
+                    ogs_assert_if_reached();
+                END
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message.h.resource.component[0]);
+                ogs_assert_if_reached();
+            END
+            break;
+#endif
+
         DEFAULT
             ogs_error("Invalid API name [%s]", sbi_message.h.service.name);
+            ogs_assert_if_reached();
         END
 
         ogs_sbi_message_free(&sbi_message);
@@ -269,27 +330,30 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_assert(OGS_FSM_STATE(&nf_instance->sm));
 
             ogs_fsm_dispatch(&nf_instance->sm, e);
-            if (OGS_FSM_CHECK(&nf_instance->sm, amf_nf_state_de_registered)) {
-                amf_nf_fsm_fini(nf_instance);
-                ogs_sbi_nf_instance_remove(nf_instance);
-
-            } else if (OGS_FSM_CHECK(&nf_instance->sm,
-                        amf_nf_state_exception)) {
-                ogs_error("State machine exception");
-            }
+            if (OGS_FSM_CHECK(&nf_instance->sm, amf_nf_state_exception))
+                ogs_error("[%s] State machine exception [%d]",
+                        nf_instance->id, e->timer_id);
             break;
 
         case AMF_TIMER_SUBSCRIPTION_VALIDITY:
             subscription = e->sbi.data;
             ogs_assert(subscription);
 
-            ogs_info("Subscription validity expired [%s]", subscription->id);
+            ogs_info("[%s] Subscription validity expired", subscription->id);
             ogs_sbi_subscription_remove(subscription);
 
-            amf_sbi_send_nf_status_subscribe(subscription->client,
+            ogs_nnrf_nfm_send_nf_status_subscribe(subscription->client,
                     amf_self()->nf_type, subscription->nf_instance_id);
             break;
 
+        case AMF_TIMER_SBI_CLIENT_WAIT:
+            amf_ue = e->sbi.data;
+            ogs_assert(amf_ue);
+
+            ogs_error("[%s] Cannot receive SBI message", amf_ue->suci);
+            nas_5gs_send_nas_reject_from_sbi(amf_ue,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+            break;
         default:
             ogs_error("Unknown timer[%s:%d]",
                     amf_timer_get_name(e->timer_id), e->timer_id);
@@ -382,11 +446,9 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_fsm_dispatch(&gnb->sm, e);
         } else {
             ogs_error("Cannot decode NGAP message");
-#if 0
             ngap_send_error_indication(
                     gnb, NULL, NULL, NGAP_Cause_PR_protocol, 
                     NGAP_CauseProtocol_abstract_syntax_error_falsely_constructed_message);
-#endif
         }
 
         ogs_ngap_free(&ngap_message);
@@ -394,19 +456,92 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         break;
 
     case AMF_EVT_NGAP_TIMER:
-#if 0
-        gnb_ue = e->gnb_ue;
-        ogs_assert(gnb_ue);
+        ran_ue = e->ran_ue;
+        ogs_assert(ran_ue);
         gnb = e->gnb;
         ogs_assert(gnb);
         ogs_assert(OGS_FSM_STATE(&gnb->sm));
 
         ogs_fsm_dispatch(&gnb->sm, e);
-#else
-        ogs_fatal("Not implemeted");
-#endif
         break;
 
+    case AMF_EVT_5GMM_MESSAGE:
+        ran_ue = e->ran_ue;
+        ogs_assert(ran_ue);
+        pkbuf = e->pkbuf;
+        ogs_assert(pkbuf);
+        if (ogs_nas_5gmm_decode(&nas_message, pkbuf) != OGS_OK) {
+            ogs_error("ogs_nas_5gmm_decode() failed");
+            ogs_pkbuf_free(pkbuf);
+            return;
+        }
+
+        amf_ue = ran_ue->amf_ue;
+        if (!amf_ue) {
+            amf_ue = amf_ue_find_by_message(&nas_message);
+            if (!amf_ue) {
+                amf_ue = amf_ue_add(ran_ue);
+                ogs_assert(amf_ue);
+            } else {
+                /* Here, if the AMF_UE Context is found,
+                 * the integrity check is not performed
+                 * For example, REGISTRATION_REQUEST,
+                 * TRACKING_AREA_UPDATE_REQUEST message
+                 *
+                 * Now, We will check the MAC in the NAS message*/
+                ogs_nas_security_header_type_t h;
+                h.type = e->nas.type;
+                if (h.integrity_protected) {
+                    /* Decryption was performed in NGAP handler.
+                     * So, we disabled 'ciphered'
+                     * not to decrypt NAS message */
+                    h.ciphered = 0;
+                    if (nas_5gs_security_decode(amf_ue, h, pkbuf) != OGS_OK) {
+                        ogs_error("[%s] nas_security_decode() failed",
+                                amf_ue->suci);
+                        ogs_pkbuf_free(pkbuf);
+                        return;
+                    }
+                }
+            }
+
+            /* If NAS(amf_ue_t) has already been associated with
+             * older NG(ran_ue_t) context */
+            if (ECM_CONNECTED(amf_ue)) {
+               /* Implcit NG release */
+                ogs_debug("[%s] Implicit NG release", amf_ue->suci);
+                ogs_debug("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+                        amf_ue->suci, amf_ue->ran_ue->ran_ue_ngap_id,
+                        (long long)amf_ue->ran_ue->amf_ue_ngap_id);
+                ran_ue_remove(amf_ue->ran_ue);
+            }
+            amf_ue_associate_ran_ue(amf_ue, ran_ue);
+        }
+
+        ogs_assert(amf_ue);
+        ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
+
+        e->amf_ue = amf_ue;
+        e->nas.message = &nas_message;
+
+        ogs_fsm_dispatch(&amf_ue->sm, e);
+        if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
+#if 0
+            mme_send_delete_session_or_amf_ue_context_release(amf_ue);
+#else
+            amf_ue_remove(amf_ue);
+#endif
+        }
+
+        ogs_pkbuf_free(pkbuf);
+        break;
+    case AMF_EVT_5GMM_TIMER:
+        amf_ue = e->amf_ue;
+        ogs_assert(amf_ue);
+        ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
+
+        ogs_fsm_dispatch(&amf_ue->sm, e);
+        break;
 
     default:
         ogs_error("No handler for event %s", amf_event_get_name(e));

@@ -16,15 +16,23 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     char *api_prefix,
     OpenAPI_list_t *default_notification_subscriptions,
     OpenAPI_list_t *allowed_plmns,
+    OpenAPI_list_t *allowed_snpns,
     OpenAPI_list_t *allowed_nf_types,
     OpenAPI_list_t *allowed_nf_domains,
     OpenAPI_list_t *allowed_nssais,
     int priority,
     int capacity,
     int load,
+    char *load_time_stamp,
     char *recovery_time,
     OpenAPI_chf_service_info_t *chf_service_info,
-    char *supported_features
+    char *supported_features,
+    OpenAPI_list_t *nf_service_set_id_list,
+    OpenAPI_list_t *s_nssais,
+    OpenAPI_list_t *per_plmn_snssai_list,
+    char *vendor_id,
+    OpenAPI_list_t* supported_vendor_specific_features,
+    int oauth2_required
     )
 {
     OpenAPI_nf_service_t *nf_service_local_var = OpenAPI_malloc(sizeof(OpenAPI_nf_service_t));
@@ -42,15 +50,23 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     nf_service_local_var->api_prefix = api_prefix;
     nf_service_local_var->default_notification_subscriptions = default_notification_subscriptions;
     nf_service_local_var->allowed_plmns = allowed_plmns;
+    nf_service_local_var->allowed_snpns = allowed_snpns;
     nf_service_local_var->allowed_nf_types = allowed_nf_types;
     nf_service_local_var->allowed_nf_domains = allowed_nf_domains;
     nf_service_local_var->allowed_nssais = allowed_nssais;
     nf_service_local_var->priority = priority;
     nf_service_local_var->capacity = capacity;
     nf_service_local_var->load = load;
+    nf_service_local_var->load_time_stamp = load_time_stamp;
     nf_service_local_var->recovery_time = recovery_time;
     nf_service_local_var->chf_service_info = chf_service_info;
     nf_service_local_var->supported_features = supported_features;
+    nf_service_local_var->nf_service_set_id_list = nf_service_set_id_list;
+    nf_service_local_var->s_nssais = s_nssais;
+    nf_service_local_var->per_plmn_snssai_list = per_plmn_snssai_list;
+    nf_service_local_var->vendor_id = vendor_id;
+    nf_service_local_var->supported_vendor_specific_features = supported_vendor_specific_features;
+    nf_service_local_var->oauth2_required = oauth2_required;
 
     return nf_service_local_var;
 }
@@ -82,6 +98,10 @@ void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service)
         OpenAPI_plmn_id_free(node->data);
     }
     OpenAPI_list_free(nf_service->allowed_plmns);
+    OpenAPI_list_for_each(nf_service->allowed_snpns, node) {
+        OpenAPI_plmn_id_nid_free(node->data);
+    }
+    OpenAPI_list_free(nf_service->allowed_snpns);
     OpenAPI_list_free(nf_service->allowed_nf_types);
     OpenAPI_list_for_each(nf_service->allowed_nf_domains, node) {
         ogs_free(node->data);
@@ -91,9 +111,29 @@ void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service)
         OpenAPI_snssai_free(node->data);
     }
     OpenAPI_list_free(nf_service->allowed_nssais);
+    ogs_free(nf_service->load_time_stamp);
     ogs_free(nf_service->recovery_time);
     OpenAPI_chf_service_info_free(nf_service->chf_service_info);
     ogs_free(nf_service->supported_features);
+    OpenAPI_list_for_each(nf_service->nf_service_set_id_list, node) {
+        ogs_free(node->data);
+    }
+    OpenAPI_list_free(nf_service->nf_service_set_id_list);
+    OpenAPI_list_for_each(nf_service->s_nssais, node) {
+        OpenAPI_snssai_free(node->data);
+    }
+    OpenAPI_list_free(nf_service->s_nssais);
+    OpenAPI_list_for_each(nf_service->per_plmn_snssai_list, node) {
+        OpenAPI_plmn_snssai_free(node->data);
+    }
+    OpenAPI_list_free(nf_service->per_plmn_snssai_list);
+    ogs_free(nf_service->vendor_id);
+    OpenAPI_list_for_each(nf_service->supported_vendor_specific_features, node) {
+        OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)node->data;
+        ogs_free(localKeyValue->value);
+        ogs_free(localKeyValue);
+    }
+    OpenAPI_list_free(nf_service->supported_vendor_specific_features);
     ogs_free(nf_service);
 }
 
@@ -246,6 +286,26 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
         }
     }
 
+    if (nf_service->allowed_snpns) {
+        cJSON *allowed_snpnsList = cJSON_AddArrayToObject(item, "allowedSnpns");
+        if (allowed_snpnsList == NULL) {
+            ogs_error("OpenAPI_nf_service_convertToJSON() failed [allowed_snpns]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *allowed_snpns_node;
+        if (nf_service->allowed_snpns) {
+            OpenAPI_list_for_each(nf_service->allowed_snpns, allowed_snpns_node) {
+                cJSON *itemLocal = OpenAPI_plmn_id_nid_convertToJSON(allowed_snpns_node->data);
+                if (itemLocal == NULL) {
+                    ogs_error("OpenAPI_nf_service_convertToJSON() failed [allowed_snpns]");
+                    goto end;
+                }
+                cJSON_AddItemToArray(allowed_snpnsList, itemLocal);
+            }
+        }
+    }
+
     if (nf_service->allowed_nf_types) {
         cJSON *allowed_nf_types = cJSON_AddArrayToObject(item, "allowedNfTypes");
         if (allowed_nf_types == NULL) {
@@ -318,6 +378,13 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
         }
     }
 
+    if (nf_service->load_time_stamp) {
+        if (cJSON_AddStringToObject(item, "loadTimeStamp", nf_service->load_time_stamp) == NULL) {
+            ogs_error("OpenAPI_nf_service_convertToJSON() failed [load_time_stamp]");
+            goto end;
+        }
+    }
+
     if (nf_service->recovery_time) {
         if (cJSON_AddStringToObject(item, "recoveryTime", nf_service->recovery_time) == NULL) {
             ogs_error("OpenAPI_nf_service_convertToJSON() failed [recovery_time]");
@@ -341,6 +408,91 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
     if (nf_service->supported_features) {
         if (cJSON_AddStringToObject(item, "supportedFeatures", nf_service->supported_features) == NULL) {
             ogs_error("OpenAPI_nf_service_convertToJSON() failed [supported_features]");
+            goto end;
+        }
+    }
+
+    if (nf_service->nf_service_set_id_list) {
+        cJSON *nf_service_set_id_list = cJSON_AddArrayToObject(item, "nfServiceSetIdList");
+        if (nf_service_set_id_list == NULL) {
+            ogs_error("OpenAPI_nf_service_convertToJSON() failed [nf_service_set_id_list]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *nf_service_set_id_list_node;
+        OpenAPI_list_for_each(nf_service->nf_service_set_id_list, nf_service_set_id_list_node)  {
+            if (cJSON_AddStringToObject(nf_service_set_id_list, "", (char*)nf_service_set_id_list_node->data) == NULL) {
+                ogs_error("OpenAPI_nf_service_convertToJSON() failed [nf_service_set_id_list]");
+                goto end;
+            }
+        }
+    }
+
+    if (nf_service->s_nssais) {
+        cJSON *s_nssaisList = cJSON_AddArrayToObject(item, "sNssais");
+        if (s_nssaisList == NULL) {
+            ogs_error("OpenAPI_nf_service_convertToJSON() failed [s_nssais]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *s_nssais_node;
+        if (nf_service->s_nssais) {
+            OpenAPI_list_for_each(nf_service->s_nssais, s_nssais_node) {
+                cJSON *itemLocal = OpenAPI_snssai_convertToJSON(s_nssais_node->data);
+                if (itemLocal == NULL) {
+                    ogs_error("OpenAPI_nf_service_convertToJSON() failed [s_nssais]");
+                    goto end;
+                }
+                cJSON_AddItemToArray(s_nssaisList, itemLocal);
+            }
+        }
+    }
+
+    if (nf_service->per_plmn_snssai_list) {
+        cJSON *per_plmn_snssai_listList = cJSON_AddArrayToObject(item, "perPlmnSnssaiList");
+        if (per_plmn_snssai_listList == NULL) {
+            ogs_error("OpenAPI_nf_service_convertToJSON() failed [per_plmn_snssai_list]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *per_plmn_snssai_list_node;
+        if (nf_service->per_plmn_snssai_list) {
+            OpenAPI_list_for_each(nf_service->per_plmn_snssai_list, per_plmn_snssai_list_node) {
+                cJSON *itemLocal = OpenAPI_plmn_snssai_convertToJSON(per_plmn_snssai_list_node->data);
+                if (itemLocal == NULL) {
+                    ogs_error("OpenAPI_nf_service_convertToJSON() failed [per_plmn_snssai_list]");
+                    goto end;
+                }
+                cJSON_AddItemToArray(per_plmn_snssai_listList, itemLocal);
+            }
+        }
+    }
+
+    if (nf_service->vendor_id) {
+        if (cJSON_AddStringToObject(item, "vendorId", nf_service->vendor_id) == NULL) {
+            ogs_error("OpenAPI_nf_service_convertToJSON() failed [vendor_id]");
+            goto end;
+        }
+    }
+
+    if (nf_service->supported_vendor_specific_features) {
+        cJSON *supported_vendor_specific_features = cJSON_AddObjectToObject(item, "supportedVendorSpecificFeatures");
+        if (supported_vendor_specific_features == NULL) {
+            ogs_error("OpenAPI_nf_service_convertToJSON() failed [supported_vendor_specific_features]");
+            goto end;
+        }
+        cJSON *localMapObject = supported_vendor_specific_features;
+        OpenAPI_lnode_t *supported_vendor_specific_features_node;
+        if (nf_service->supported_vendor_specific_features) {
+            OpenAPI_list_for_each(nf_service->supported_vendor_specific_features, supported_vendor_specific_features_node) {
+                OpenAPI_map_t *localKeyValue = (OpenAPI_map_t*)supported_vendor_specific_features_node->data;
+            }
+        }
+    }
+
+    if (nf_service->oauth2_required >= 0) {
+        if (cJSON_AddBoolToObject(item, "oauth2Required", nf_service->oauth2_required) == NULL) {
+            ogs_error("OpenAPI_nf_service_convertToJSON() failed [oauth2_required]");
             goto end;
         }
     }
@@ -526,6 +678,29 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         }
     }
 
+    cJSON *allowed_snpns = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "allowedSnpns");
+
+    OpenAPI_list_t *allowed_snpnsList;
+    if (allowed_snpns) {
+        cJSON *allowed_snpns_local_nonprimitive;
+        if (!cJSON_IsArray(allowed_snpns)) {
+            ogs_error("OpenAPI_nf_service_parseFromJSON() failed [allowed_snpns]");
+            goto end;
+        }
+
+        allowed_snpnsList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(allowed_snpns_local_nonprimitive, allowed_snpns ) {
+            if (!cJSON_IsObject(allowed_snpns_local_nonprimitive)) {
+                ogs_error("OpenAPI_nf_service_parseFromJSON() failed [allowed_snpns]");
+                goto end;
+            }
+            OpenAPI_plmn_id_nid_t *allowed_snpnsItem = OpenAPI_plmn_id_nid_parseFromJSON(allowed_snpns_local_nonprimitive);
+
+            OpenAPI_list_add(allowed_snpnsList, allowed_snpnsItem);
+        }
+    }
+
     cJSON *allowed_nf_types = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "allowedNfTypes");
 
     OpenAPI_list_t *allowed_nf_typesList;
@@ -618,6 +793,15 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         }
     }
 
+    cJSON *load_time_stamp = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "loadTimeStamp");
+
+    if (load_time_stamp) {
+        if (!cJSON_IsString(load_time_stamp)) {
+            ogs_error("OpenAPI_nf_service_parseFromJSON() failed [load_time_stamp]");
+            goto end;
+        }
+    }
+
     cJSON *recovery_time = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "recoveryTime");
 
     if (recovery_time) {
@@ -643,6 +827,107 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         }
     }
 
+    cJSON *nf_service_set_id_list = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "nfServiceSetIdList");
+
+    OpenAPI_list_t *nf_service_set_id_listList;
+    if (nf_service_set_id_list) {
+        cJSON *nf_service_set_id_list_local;
+        if (!cJSON_IsArray(nf_service_set_id_list)) {
+            ogs_error("OpenAPI_nf_service_parseFromJSON() failed [nf_service_set_id_list]");
+            goto end;
+        }
+        nf_service_set_id_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(nf_service_set_id_list_local, nf_service_set_id_list) {
+            if (!cJSON_IsString(nf_service_set_id_list_local)) {
+                ogs_error("OpenAPI_nf_service_parseFromJSON() failed [nf_service_set_id_list]");
+                goto end;
+            }
+            OpenAPI_list_add(nf_service_set_id_listList, ogs_strdup(nf_service_set_id_list_local->valuestring));
+        }
+    }
+
+    cJSON *s_nssais = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "sNssais");
+
+    OpenAPI_list_t *s_nssaisList;
+    if (s_nssais) {
+        cJSON *s_nssais_local_nonprimitive;
+        if (!cJSON_IsArray(s_nssais)) {
+            ogs_error("OpenAPI_nf_service_parseFromJSON() failed [s_nssais]");
+            goto end;
+        }
+
+        s_nssaisList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(s_nssais_local_nonprimitive, s_nssais ) {
+            if (!cJSON_IsObject(s_nssais_local_nonprimitive)) {
+                ogs_error("OpenAPI_nf_service_parseFromJSON() failed [s_nssais]");
+                goto end;
+            }
+            OpenAPI_snssai_t *s_nssaisItem = OpenAPI_snssai_parseFromJSON(s_nssais_local_nonprimitive);
+
+            OpenAPI_list_add(s_nssaisList, s_nssaisItem);
+        }
+    }
+
+    cJSON *per_plmn_snssai_list = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "perPlmnSnssaiList");
+
+    OpenAPI_list_t *per_plmn_snssai_listList;
+    if (per_plmn_snssai_list) {
+        cJSON *per_plmn_snssai_list_local_nonprimitive;
+        if (!cJSON_IsArray(per_plmn_snssai_list)) {
+            ogs_error("OpenAPI_nf_service_parseFromJSON() failed [per_plmn_snssai_list]");
+            goto end;
+        }
+
+        per_plmn_snssai_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(per_plmn_snssai_list_local_nonprimitive, per_plmn_snssai_list ) {
+            if (!cJSON_IsObject(per_plmn_snssai_list_local_nonprimitive)) {
+                ogs_error("OpenAPI_nf_service_parseFromJSON() failed [per_plmn_snssai_list]");
+                goto end;
+            }
+            OpenAPI_plmn_snssai_t *per_plmn_snssai_listItem = OpenAPI_plmn_snssai_parseFromJSON(per_plmn_snssai_list_local_nonprimitive);
+
+            OpenAPI_list_add(per_plmn_snssai_listList, per_plmn_snssai_listItem);
+        }
+    }
+
+    cJSON *vendor_id = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "vendorId");
+
+    if (vendor_id) {
+        if (!cJSON_IsString(vendor_id)) {
+            ogs_error("OpenAPI_nf_service_parseFromJSON() failed [vendor_id]");
+            goto end;
+        }
+    }
+
+    cJSON *supported_vendor_specific_features = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "supportedVendorSpecificFeatures");
+
+    OpenAPI_list_t *supported_vendor_specific_featuresList;
+    if (supported_vendor_specific_features) {
+        cJSON *supported_vendor_specific_features_local_map;
+        if (!cJSON_IsObject(supported_vendor_specific_features)) {
+            ogs_error("OpenAPI_nf_service_parseFromJSON() failed [supported_vendor_specific_features]");
+            goto end;
+        }
+        supported_vendor_specific_featuresList = OpenAPI_list_create();
+        OpenAPI_map_t *localMapKeyPair = NULL;
+        cJSON_ArrayForEach(supported_vendor_specific_features_local_map, supported_vendor_specific_features) {
+            cJSON *localMapObject = supported_vendor_specific_features_local_map;
+            OpenAPI_list_add(supported_vendor_specific_featuresList, localMapKeyPair);
+        }
+    }
+
+    cJSON *oauth2_required = cJSON_GetObjectItemCaseSensitive(nf_serviceJSON, "oauth2Required");
+
+    if (oauth2_required) {
+        if (!cJSON_IsBool(oauth2_required)) {
+            ogs_error("OpenAPI_nf_service_parseFromJSON() failed [oauth2_required]");
+            goto end;
+        }
+    }
+
     nf_service_local_var = OpenAPI_nf_service_create (
         ogs_strdup(service_instance_id->valuestring),
         ogs_strdup(service_name->valuestring),
@@ -655,15 +940,23 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
         api_prefix ? ogs_strdup(api_prefix->valuestring) : NULL,
         default_notification_subscriptions ? default_notification_subscriptionsList : NULL,
         allowed_plmns ? allowed_plmnsList : NULL,
+        allowed_snpns ? allowed_snpnsList : NULL,
         allowed_nf_types ? allowed_nf_typesList : NULL,
         allowed_nf_domains ? allowed_nf_domainsList : NULL,
         allowed_nssais ? allowed_nssaisList : NULL,
         priority ? priority->valuedouble : 0,
         capacity ? capacity->valuedouble : 0,
         load ? load->valuedouble : 0,
+        load_time_stamp ? ogs_strdup(load_time_stamp->valuestring) : NULL,
         recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,
         chf_service_info ? chf_service_info_local_nonprim : NULL,
-        supported_features ? ogs_strdup(supported_features->valuestring) : NULL
+        supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
+        nf_service_set_id_list ? nf_service_set_id_listList : NULL,
+        s_nssais ? s_nssaisList : NULL,
+        per_plmn_snssai_list ? per_plmn_snssai_listList : NULL,
+        vendor_id ? ogs_strdup(vendor_id->valuestring) : NULL,
+        supported_vendor_specific_features ? supported_vendor_specific_featuresList : NULL,
+        oauth2_required ? oauth2_required->valueint : 0
         );
 
     return nf_service_local_var;

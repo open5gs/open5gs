@@ -1,7 +1,7 @@
 /*
  * subscription_data.h
  *
- *
+ * Information of a subscription to notifications to NRF events, included in subscription requests and responses
  */
 
 #ifndef _OpenAPI_subscription_data_H_
@@ -30,10 +30,12 @@ typedef struct OpenAPI_subscription_data_s {
     char *validity_time;
     OpenAPI_list_t *req_notif_events;
     struct OpenAPI_plmn_id_s *plmn_id;
+    char *nid;
     struct OpenAPI_notif_condition_s *notif_condition;
     OpenAPI_nf_type_e req_nf_type;
     char *req_nf_fqdn;
     OpenAPI_list_t *req_snssais;
+    OpenAPI_list_t *req_plmn_list;
 } OpenAPI_subscription_data_t;
 
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
@@ -43,10 +45,12 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     char *validity_time,
     OpenAPI_list_t *req_notif_events,
     OpenAPI_plmn_id_t *plmn_id,
+    char *nid,
     OpenAPI_notif_condition_t *notif_condition,
     OpenAPI_nf_type_e req_nf_type,
     char *req_nf_fqdn,
-    OpenAPI_list_t *req_snssais
+    OpenAPI_list_t *req_snssais,
+    OpenAPI_list_t *req_plmn_list
     );
 void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_data);
 OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subscription_dataJSON);

@@ -2356,7 +2356,7 @@ mme_ue_t *mme_ue_find_by_message(ogs_nas_eps_message_t *message)
 
         switch(eps_mobile_identity->imsi.type) {
         case OGS_NAS_EPS_MOBILE_IDENTITY_IMSI:
-            ogs_nas_imsi_to_bcd(
+            ogs_nas_eps_imsi_to_bcd(
                 &eps_mobile_identity->imsi, eps_mobile_identity->length,
                 imsi_bcd);
 

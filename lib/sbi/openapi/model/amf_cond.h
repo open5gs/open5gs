@@ -1,7 +1,7 @@
 /*
  * amf_cond.h
  *
- *
+ * Subscription to a set of AMFs, based on AMF Set Id and/or AMF Region Id
  */
 
 #ifndef _OpenAPI_amf_cond_H_

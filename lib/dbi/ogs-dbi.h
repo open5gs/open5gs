@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -17,14 +17,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_DB_H
-#define OGS_DB_H
+#ifndef OGS_DBI_H
+#define OGS_DBI_H
 
 #include "ogs-core.h"
+#include "ogs-crypt.h"
 
 #define OGS_DBI_INSIDE
 
 #include "dbi/ogs-mongoc.h"
+#include "dbi/subscription.h"
 
 #undef OGS_DBI_INSIDE
 
@@ -41,4 +43,4 @@ extern int __ogs_dbi_domain;
 }
 #endif
 
-#endif /* OGS_DB_H */
+#endif /* OGS_DBI_H */

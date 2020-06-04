@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef NAS_SECURITY_H
-#define NAS_SECURITY_H
+#ifndef NAS_EPS_SECURITY_H
+#define NAS_EPS_SECURITY_H
 
 #include "ogs-crypt.h"
 #include "mme-context.h"
@@ -36,5 +36,5 @@ int nas_eps_security_decode(mme_ue_t *mme_ue,
 }
 #endif
 
-#endif /* NAS_SECURITY_H */
+#endif /* NAS_EPS_SECURITY_H */
 

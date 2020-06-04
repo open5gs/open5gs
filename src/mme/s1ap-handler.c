@@ -19,7 +19,6 @@
 
 #include "mme-event.h"
 
-#include "mme-kdf.h"
 #include "s1ap-path.h"
 #include "nas-path.h"
 #include "mme-gtp-path.h"
@@ -1129,7 +1128,7 @@ void s1ap_handle_path_switch_request(
 
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         mme_ue->nhcc++;
-        mme_kdf_nh(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
+        ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
     } else {
         s1apbuf = s1ap_build_path_switch_failure(
                 *ENB_UE_S1AP_ID, *MME_UE_S1AP_ID,
@@ -1394,7 +1393,7 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
 
     if (SECURITY_CONTEXT_IS_VALID(mme_ue)) {
         mme_ue->nhcc++;
-        mme_kdf_nh(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
+        ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->nh, mme_ue->nh);
     } else {
         ogs_assert(Cause);
 

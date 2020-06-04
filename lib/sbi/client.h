@@ -32,6 +32,8 @@ extern "C" {
     do { \
         ogs_assert((__cTX)); \
         ogs_assert((__pCLIENT)); \
+        if ((__cTX)->client != __pCLIENT) \
+            __pCLIENT->reference_count++; \
         (__cTX)->client = __pCLIENT; \
     } while(0)
 typedef struct ogs_sbi_client_s {
@@ -46,20 +48,20 @@ typedef struct ogs_sbi_client_s {
 
     int             (*cb)(ogs_sbi_response_t *response, void *data);
 
-    ogs_timer_t     *t_curl;                /* timer for CURL */
-    ogs_list_t      connection_list;        /* CURL connection list */
+    ogs_timer_t     *t_curl;            /* timer for CURL */
+    ogs_list_t      connection_list;    /* CURL connection list */
 
-    void            *multi;                 /* CURL multi handle */
-    int             still_running;          /* number of running CURL handle */
+    void            *multi;             /* CURL multi handle */
+    int             still_running;      /* number of running CURL handle */
+
+    unsigned int    reference_count;    /* reference count for memory free */
 } ogs_sbi_client_t;
 
 void ogs_sbi_client_init(int num_of_sockinfo_pool, int num_of_connection_pool);
 void ogs_sbi_client_final(void);
 
 ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr);
-ogs_sbi_client_t *ogs_sbi_client_find_or_add(char *uri);
 void ogs_sbi_client_remove(ogs_sbi_client_t *client);
-void ogs_sbi_client_remove_all(void);
 ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr);
 
 void ogs_sbi_client_send_request(

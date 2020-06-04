@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -21,6 +21,7 @@ libdbi_sources = files('''
     ogs-mongoc.h
 
     ogs-mongoc.c
+    subscription.c
 '''.split())
 
 libmongoc_dep = dependency('libmongoc-1.0')
@@ -32,10 +33,10 @@ libdbi = library('ogsdbi',
     version : libogslib_version,
     c_args : '-DOGS_DBI_COMPILATION',
     include_directories : [libdbi_inc, libinc],
-    dependencies : [libcore_dep, libmongoc_dep],
+    dependencies : [libcrypt_dep, libmongoc_dep],
     install : true)
 
 libdbi_dep = declare_dependency(
     link_with : libdbi,
     include_directories : [libdbi_inc, libinc],
-    dependencies : [libcore_dep, libmongoc_dep])
+    dependencies : [libcrypt_dep, libmongoc_dep])

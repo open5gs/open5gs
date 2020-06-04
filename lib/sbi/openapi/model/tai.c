@@ -6,7 +6,8 @@
 
 OpenAPI_tai_t *OpenAPI_tai_create(
     OpenAPI_plmn_id_t *plmn_id,
-    char *tac
+    char *tac,
+    char *nid
     )
 {
     OpenAPI_tai_t *tai_local_var = OpenAPI_malloc(sizeof(OpenAPI_tai_t));
@@ -15,6 +16,7 @@ OpenAPI_tai_t *OpenAPI_tai_create(
     }
     tai_local_var->plmn_id = plmn_id;
     tai_local_var->tac = tac;
+    tai_local_var->nid = nid;
 
     return tai_local_var;
 }
@@ -27,6 +29,7 @@ void OpenAPI_tai_free(OpenAPI_tai_t *tai)
     OpenAPI_lnode_t *node;
     OpenAPI_plmn_id_free(tai->plmn_id);
     ogs_free(tai->tac);
+    ogs_free(tai->nid);
     ogs_free(tai);
 }
 
@@ -64,6 +67,13 @@ cJSON *OpenAPI_tai_convertToJSON(OpenAPI_tai_t *tai)
         goto end;
     }
 
+    if (tai->nid) {
+        if (cJSON_AddStringToObject(item, "nid", tai->nid) == NULL) {
+            ogs_error("OpenAPI_tai_convertToJSON() failed [nid]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -93,9 +103,19 @@ OpenAPI_tai_t *OpenAPI_tai_parseFromJSON(cJSON *taiJSON)
         goto end;
     }
 
+    cJSON *nid = cJSON_GetObjectItemCaseSensitive(taiJSON, "nid");
+
+    if (nid) {
+        if (!cJSON_IsString(nid)) {
+            ogs_error("OpenAPI_tai_parseFromJSON() failed [nid]");
+            goto end;
+        }
+    }
+
     tai_local_var = OpenAPI_tai_create (
         plmn_id_local_nonprim,
-        ogs_strdup(tac->valuestring)
+        ogs_strdup(tac->valuestring),
+        nid ? ogs_strdup(nid->valuestring) : NULL
         );
 
     return tai_local_var;

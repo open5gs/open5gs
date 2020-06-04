@@ -33,6 +33,7 @@ extern "C" {
 
 #define OGS_MAX_SDU_LEN                 8192
 #define OGS_PLMN_ID_LEN                 3
+#define OGS_MAX_PLMN_ID_BCD_LEN         6
 
 #define OGS_BCD_TO_BUFFER_LEN(x)        (((x)+1)/2)
 #define OGS_MAX_IMSI_BCD_LEN            15
@@ -126,6 +127,8 @@ uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id);
 void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id, 
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len);
 
+char *ogs_plmn_id_string(ogs_plmn_id_t *plmn_id);
+
 /************************************
  * AMF_ID Structure                 */
 typedef struct ogs_amf_id_s {
@@ -149,6 +152,11 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
         uint8_t region, uint16_t set, uint8_t pointer);
 
 /************************************
+ * SUPI/SUCI                       */
+char *ogs_supi_from_suci(char *suci);
+char *ogs_ueid_from_supi(char *supi);
+
+/************************************
  * TAI Structure                    */
 #define OGS_MAX_NUM_OF_TAI              16
 typedef struct ogs_eps_tai_s {
@@ -165,6 +173,11 @@ typedef struct ogs_e_cgi_s {
     ogs_plmn_id_t plmn_id;
     uint32_t cell_id; /* 28 bit */
 } __attribute__ ((packed)) ogs_e_cgi_t;
+
+typedef struct ogs_nr_cgi_s {
+    ogs_plmn_id_t plmn_id;
+    uint64_t cell_id; /* 36 bit */
+} __attribute__ ((packed)) ogs_nr_cgi_t;
 
 /************************************
  * S-NSSAI Structure                */

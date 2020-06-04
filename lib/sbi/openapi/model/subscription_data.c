@@ -11,10 +11,12 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     char *validity_time,
     OpenAPI_list_t *req_notif_events,
     OpenAPI_plmn_id_t *plmn_id,
+    char *nid,
     OpenAPI_notif_condition_t *notif_condition,
     OpenAPI_nf_type_e req_nf_type,
     char *req_nf_fqdn,
-    OpenAPI_list_t *req_snssais
+    OpenAPI_list_t *req_snssais,
+    OpenAPI_list_t *req_plmn_list
     )
 {
     OpenAPI_subscription_data_t *subscription_data_local_var = OpenAPI_malloc(sizeof(OpenAPI_subscription_data_t));
@@ -27,10 +29,12 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_create(
     subscription_data_local_var->validity_time = validity_time;
     subscription_data_local_var->req_notif_events = req_notif_events;
     subscription_data_local_var->plmn_id = plmn_id;
+    subscription_data_local_var->nid = nid;
     subscription_data_local_var->notif_condition = notif_condition;
     subscription_data_local_var->req_nf_type = req_nf_type;
     subscription_data_local_var->req_nf_fqdn = req_nf_fqdn;
     subscription_data_local_var->req_snssais = req_snssais;
+    subscription_data_local_var->req_plmn_list = req_plmn_list;
 
     return subscription_data_local_var;
 }
@@ -47,12 +51,17 @@ void OpenAPI_subscription_data_free(OpenAPI_subscription_data_t *subscription_da
     ogs_free(subscription_data->validity_time);
     OpenAPI_list_free(subscription_data->req_notif_events);
     OpenAPI_plmn_id_free(subscription_data->plmn_id);
+    ogs_free(subscription_data->nid);
     OpenAPI_notif_condition_free(subscription_data->notif_condition);
     ogs_free(subscription_data->req_nf_fqdn);
     OpenAPI_list_for_each(subscription_data->req_snssais, node) {
         OpenAPI_snssai_free(node->data);
     }
     OpenAPI_list_free(subscription_data->req_snssais);
+    OpenAPI_list_for_each(subscription_data->req_plmn_list, node) {
+        OpenAPI_plmn_id_free(node->data);
+    }
+    OpenAPI_list_free(subscription_data->req_plmn_list);
     ogs_free(subscription_data);
 }
 
@@ -124,6 +133,13 @@ cJSON *OpenAPI_subscription_data_convertToJSON(OpenAPI_subscription_data_t *subs
         }
     }
 
+    if (subscription_data->nid) {
+        if (cJSON_AddStringToObject(item, "nid", subscription_data->nid) == NULL) {
+            ogs_error("OpenAPI_subscription_data_convertToJSON() failed [nid]");
+            goto end;
+        }
+    }
+
     if (subscription_data->notif_condition) {
         cJSON *notif_condition_local_JSON = OpenAPI_notif_condition_convertToJSON(subscription_data->notif_condition);
         if (notif_condition_local_JSON == NULL) {
@@ -167,6 +183,26 @@ cJSON *OpenAPI_subscription_data_convertToJSON(OpenAPI_subscription_data_t *subs
                     goto end;
                 }
                 cJSON_AddItemToArray(req_snssaisList, itemLocal);
+            }
+        }
+    }
+
+    if (subscription_data->req_plmn_list) {
+        cJSON *req_plmn_listList = cJSON_AddArrayToObject(item, "reqPlmnList");
+        if (req_plmn_listList == NULL) {
+            ogs_error("OpenAPI_subscription_data_convertToJSON() failed [req_plmn_list]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *req_plmn_list_node;
+        if (subscription_data->req_plmn_list) {
+            OpenAPI_list_for_each(subscription_data->req_plmn_list, req_plmn_list_node) {
+                cJSON *itemLocal = OpenAPI_plmn_id_convertToJSON(req_plmn_list_node->data);
+                if (itemLocal == NULL) {
+                    ogs_error("OpenAPI_subscription_data_convertToJSON() failed [req_plmn_list]");
+                    goto end;
+                }
+                cJSON_AddItemToArray(req_plmn_listList, itemLocal);
             }
         }
     }
@@ -246,6 +282,15 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         plmn_id_local_nonprim = OpenAPI_plmn_id_parseFromJSON(plmn_id);
     }
 
+    cJSON *nid = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "nid");
+
+    if (nid) {
+        if (!cJSON_IsString(nid)) {
+            ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [nid]");
+            goto end;
+        }
+    }
+
     cJSON *notif_condition = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "notifCondition");
 
     OpenAPI_notif_condition_t *notif_condition_local_nonprim = NULL;
@@ -296,6 +341,29 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         }
     }
 
+    cJSON *req_plmn_list = cJSON_GetObjectItemCaseSensitive(subscription_dataJSON, "reqPlmnList");
+
+    OpenAPI_list_t *req_plmn_listList;
+    if (req_plmn_list) {
+        cJSON *req_plmn_list_local_nonprimitive;
+        if (!cJSON_IsArray(req_plmn_list)) {
+            ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_plmn_list]");
+            goto end;
+        }
+
+        req_plmn_listList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(req_plmn_list_local_nonprimitive, req_plmn_list ) {
+            if (!cJSON_IsObject(req_plmn_list_local_nonprimitive)) {
+                ogs_error("OpenAPI_subscription_data_parseFromJSON() failed [req_plmn_list]");
+                goto end;
+            }
+            OpenAPI_plmn_id_t *req_plmn_listItem = OpenAPI_plmn_id_parseFromJSON(req_plmn_list_local_nonprimitive);
+
+            OpenAPI_list_add(req_plmn_listList, req_plmn_listItem);
+        }
+    }
+
     subscription_data_local_var = OpenAPI_subscription_data_create (
         ogs_strdup(nf_status_notification_uri->valuestring),
         req_nf_instance_id ? ogs_strdup(req_nf_instance_id->valuestring) : NULL,
@@ -303,10 +371,12 @@ OpenAPI_subscription_data_t *OpenAPI_subscription_data_parseFromJSON(cJSON *subs
         validity_time ? ogs_strdup(validity_time->valuestring) : NULL,
         req_notif_events ? req_notif_eventsList : NULL,
         plmn_id ? plmn_id_local_nonprim : NULL,
+        nid ? ogs_strdup(nid->valuestring) : NULL,
         notif_condition ? notif_condition_local_nonprim : NULL,
         req_nf_type ? req_nf_typeVariable : 0,
         req_nf_fqdn ? ogs_strdup(req_nf_fqdn->valuestring) : NULL,
-        req_snssais ? req_snssaisList : NULL
+        req_snssais ? req_snssaisList : NULL,
+        req_plmn_list ? req_plmn_listList : NULL
         );
 
     return subscription_data_local_var;

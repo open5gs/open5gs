@@ -1,7 +1,7 @@
 /*
  * service_name_cond.h
  *
- *
+ * Subscription to a set of NFs based on their support for a given Service Name
  */
 
 #ifndef _OpenAPI_service_name_cond_H_

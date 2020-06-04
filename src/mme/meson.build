@@ -16,7 +16,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 libmme_sources = files('''
-    mme-kdf.h
     mme-event.h
     mme-timer.h
     mme-context.h
@@ -43,7 +42,6 @@ libmme_sources = files('''
     mme-sm.h
     mme-path.h 
 
-    mme-kdf.c
     mme-init.c
     mme-event.c
     mme-timer.c

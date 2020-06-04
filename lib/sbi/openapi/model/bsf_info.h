@@ -1,7 +1,7 @@
 /*
  * bsf_info.h
  *
- *
+ * Information of a BSF NF Instance
  */
 
 #ifndef _OpenAPI_bsf_info_H_

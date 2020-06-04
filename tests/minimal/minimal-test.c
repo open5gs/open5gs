@@ -24,11 +24,17 @@ static void test1_func(abts_case *tc, void *data)
     int rv;
     ogs_socknode_t *ngap;
     ogs_socknode_t *gtpu;
+    ogs_pkbuf_t *gmmbuf;
+    ogs_pkbuf_t *nasbuf;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     ogs_ngap_message_t message;
     int i;
     int msgindex = 0;
+
+    ogs_nas_5gs_mobile_identity_t mobile_identity;
+    ogs_nas_5gs_mobile_identity_imsi_t mobile_identity_imsi;
+    test_ue_t test_ue;
 
     uint8_t tmp[OGS_MAX_SDU_LEN];
     const char *_ng_setup_request =
@@ -59,6 +65,11 @@ static void test1_func(abts_case *tc, void *data)
         "000b403b00000300 000005c00100009d 000800020001001a 002524271f9b491e"
         "030761430f10004f 00700065006e0035 0047005347812072 11240563490100";
 
+    const char *_k_string = "5122250214c33e723a5dd523fc145fc0";
+    uint8_t k[OGS_KEY_LEN];
+    const char *_opc_string = "981d464c7c52eb6e5036234984ad0bcf";
+    uint8_t opc[OGS_KEY_LEN];
+
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
     int64_t count = 0;
@@ -66,7 +77,7 @@ static void test1_func(abts_case *tc, void *data)
     const char *json =
       "{"
         "\"_id\" : { \"$oid\" : \"597223158b8861d7605378c6\" }, "
-        "\"imsi\" : \"001010123456819\", "
+        "\"imsi\" : \"2089300007487\", "
         "\"pdn\" : ["
           "{"
             "\"apn\" : \"internet\", "
@@ -95,10 +106,10 @@ static void test1_func(abts_case *tc, void *data)
         "\"subscriber_status\" : 0, "
         "\"access_restriction_data\" : 32, "
         "\"security\" : { "
-          "\"k\" : \"465B5CE8 B199B49F AA5F0A2E E238A6BC\", "
-          "\"opc\" : \"E8ED289D EBA952E4 283B54E8 8E6183CA\", "
+          "\"k\" : \"5122250214c33e723a5dd523fc145fc0\", "
+          "\"opc\" : \"981d464c7c52eb6e5036234984ad0bcf\", "
           "\"amf\" : \"8000\", "
-          "\"sqn\" : { \"$numberLong\" : \"64\" }, "
+          "\"sqn\" : { \"$numberLong\" : \"25235952177090\" }, "
           "\"rand\" : \"20080C38 18183B52 2614162C 07601D0D\" "
         "}, "
         "\"__v\" : 0 "
@@ -115,8 +126,8 @@ static void test1_func(abts_case *tc, void *data)
 #endif
 
     /* Send NG-Setup Reqeust */
-    rv = testngap_build_setup_req(&sendbuf, 0x000102);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    sendbuf = testngap_build_ng_setup_request(0x000102);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
     ABTS_TRUE(tc, memcmp(sendbuf->data,
         OGS_HEX(_ng_setup_request, strlen(_ng_setup_request), tmp),
         sendbuf->len) == 0);
@@ -131,19 +142,48 @@ static void test1_func(abts_case *tc, void *data)
         recvbuf->len) == 0);
     ogs_pkbuf_free(recvbuf);
 
-#if 0
+    /* Setup Test UE Context */
+    memset(&test_ue, 0, sizeof(test_ue));
+
+    memset(&mobile_identity_imsi, 0, sizeof(mobile_identity_imsi));
+    mobile_identity.length = 12;
+    mobile_identity.buffer = &mobile_identity_imsi;
+
+    mobile_identity_imsi.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
+    mobile_identity_imsi.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
+    ogs_nas_from_plmn_id(&mobile_identity_imsi.nas_plmn_id,
+            &test_self()->tai.plmn_id);
+    mobile_identity_imsi.routing_indicator1 = 0;
+    mobile_identity_imsi.routing_indicator2 = 0xf;
+    mobile_identity_imsi.routing_indicator3 = 0xf;
+    mobile_identity_imsi.routing_indicator4 = 0xf;
+    mobile_identity_imsi.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_imsi.home_network_pki_value = 0;
+    mobile_identity_imsi.scheme_output[0] = 0;
+    mobile_identity_imsi.scheme_output[1] = 0;
+    mobile_identity_imsi.scheme_output[2] = 0x47;
+    mobile_identity_imsi.scheme_output[3] = 0x78;
+
+    test_ue_set_mobile_identity(&test_ue, &mobile_identity);
+
+    test_ue.abba_len = 2;
+    test_ue.nas.connection_identifier = OGS_NAS_SECURITY_BEARER_3GPP;
+
+    OGS_HEX(_k_string, strlen(_k_string), test_ue.k);
+    OGS_HEX(_opc_string, strlen(_opc_string), test_ue.opc);
+
+    /********** Insert Subscriber in Database */
     collection = mongoc_client_get_collection(
         ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
 
-    /********** Insert Subscriber in Database */
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection, 
+    ABTS_TRUE(tc, mongoc_collection_insert(collection,
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
-    doc = BCON_NEW("imsi", BCON_UTF8("310014987654004"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     do {
         count = mongoc_collection_count (
@@ -151,33 +191,55 @@ static void test1_func(abts_case *tc, void *data)
     } while (count == 0);
     bson_destroy(doc);
 
-    mme_self()->mme_ue_ngap_id = 27263233;
-    rv = testngap_build_initial_ue_msg(&sendbuf, msgindex);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    /* Send Registration request */
+    gmmbuf = testgmm_build_registration_request(&test_ue, &mobile_identity);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_initial_ue_message(gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Authentication Request */
+    /* Receive Authentication request */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(&test_ue, recvbuf);
+#if 0
     ABTS_TRUE(tc, memcmp(recvbuf->data, 
         OGS_HEX(_authentication_request, strlen(_authentication_request), tmp),
         recvbuf->len) == 0);
-    ogs_pkbuf_free(recvbuf);
+#endif
 
-    /* Send Authentication Response */
-    rv = testngap_build_authentication_response(&sendbuf, msgindex);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    /* Send Authentication response */
+    gmmbuf = testgmm_build_authentication_response(&test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Security mode Command */
+    /* Receive Security mode command */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(&test_ue, recvbuf);
+#if 0
     ABTS_TRUE(tc, memcmp(recvbuf->data,
         OGS_HEX(_security_mode_command, strlen(_security_mode_command), tmp),
         recvbuf->len) == 0);
-    ogs_pkbuf_free(recvbuf);
+#endif
+
+    /* Send Security mode complete */
+    nasbuf = testgmm_build_registration_request(&test_ue, &mobile_identity);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+    gmmbuf = testgmm_build_security_mode_complete(&test_ue, nasbuf);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+    ogs_pkbuf_free(nasbuf);
+
+    ogs_msleep(300);
+#if 0
 
     /* Send Security mode Complete */
     rv = testngap_build_security_mode_complete(&sendbuf, msgindex);
@@ -252,16 +314,21 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testgnb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+#endif
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8("310014987654004"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection, 
+    ABTS_TRUE(tc, mongoc_collection_remove(collection,
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
     bson_destroy(doc);
 
     mongoc_collection_destroy(collection);
 
+    /* Clear Test UE Context */
+    test_ue_remove(&test_ue);
+
+#if 0
     /* eNB disonncect from SGW */
     testgnb_gtpu_close(gtpu);
 #endif

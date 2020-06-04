@@ -1,8 +1,0 @@
-openapi: 3.0.0
-
-info:
-  version: '2.1.0.alpha-1'
-  title: 'Nudm_SDM'
-  description: |
-    Nudm Subscriber Data Management Service.
-    

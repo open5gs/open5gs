@@ -1,0 +1,557 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-as-session-with-qos
+  version: 1.1.0.alpha-2
+  description: |
+    API for setting us an AS session with required QoS.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V16.5.0 T8 reference point for Northbound APIs
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-as-session-with-qos/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/subscriptions:
+    get:
+      summary: read all of the active subscriptions for the SCS/AS
+      tags:
+        - AsSessionWithQoS API SCS/AS level GET Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AsSessionWithQoSSubscription'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Creates a new subscription resource 
+      tags:
+        - AsSessionWithQoS API Subscription level POST Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Request to create a new subscription resource
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AsSessionWithQoSSubscription'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/UserPlaneNotificationData'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Created (Successful creation of subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsSessionWithQoSSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/subscriptions/{subscriptionId}:
+    get:
+      summary: read an active subscriptions for the SCS/AS and the subscription Id
+      tags:
+        - AsSessionWithQoS API Subscription level GET Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (Successful get the active subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsSessionWithQoSSubscription'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Updates/replaces an existing subscription resource
+      tags:
+        - AsSessionWithQoS API subscription level PUT Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to update/replace the existing subscription
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AsSessionWithQoSSubscription'
+      responses:
+        '200':
+          description: OK (Successful update of the subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsSessionWithQoSSubscription'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    patch:
+      summary: Updates/replaces an existing subscription resource
+      tags:
+        - AsSessionWithQoS API subscription level PATCH Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/AsSessionWithQoSSubscriptionPatch'
+      responses:
+        '200':
+          description: OK. The subscription was modified successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AsSessionWithQoSSubscription'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an already existing subscription
+      tags:
+        - AsSessionWithQoS API Subscription level DELETE Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content (Successful deletion of the existing subscription)
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    AsSessionWithQoSSubscription:
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        flowInfo:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/FlowInfo'
+          minItems: 1
+          description: Describe the data flow which requires QoS.
+        ethFlowInfo:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+          description: Identifies Ethernet packet flows.
+        qosReference:
+          type: string
+          description: Identifies a pre-defined QoS information
+        altQoSReferences:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies an ordered list of pre-defined QoS information. The lower the index of the array for a given entry, the higher the priority.
+        ueIpv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ueIpv6Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6Addr'
+        macAddr:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/MacAddr48'
+        usageThreshold:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThreshold'
+        sponsorInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/SponsorInformation'
+        qosMonInfo:
+          $ref: '#/components/schemas/QosMonitoringInformation'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by the SCS/AS to request the SCEF to send a test notification as defined in subclause 5.2.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+      required:
+        - notificationDestination
+    AsSessionWithQoSSubscriptionPatch:
+      type: object
+      properties:
+        flowInfo:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/FlowInfo'
+          minItems: 1
+          description: Describe the data flow which requires QoS.
+        ethFlowInfo:
+          type: array
+          items:
+            $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+          minItems: 1
+          description: Identifies Ethernet packet flows.
+        qosReference:
+          type: string
+          description: Pre-defined QoS reference 
+        altQoSReferences:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies an ordered list of pre-defined QoS information. The lower the index of the array for a given entry, the higher the priority.
+        usageThreshold:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/UsageThresholdRm'
+        qosMonInfo:
+          $ref: '#/components/schemas/QosMonitoringInformationRm'
+    QosMonitoringInformation:
+      type: object
+      properties:
+        reqQosMonParams:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/RequestedQosMonitoringParameter'
+          minItems: 1
+        repFreqs:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/ReportingFrequency'
+          minItems: 1
+        repThreshDl:
+          type: integer
+        repThreshUl:
+          type: integer
+        repThreshRp:
+          type: integer
+        waitTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+    QosMonitoringInformationRm:
+      type: object
+      properties:
+        reqQosMonParams:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/RequestedQosMonitoringParameter'
+          minItems: 1
+        repFreqs:
+          type: array
+          items:
+            $ref: 'TS29512_Npcf_SMPolicyControl.yaml#/components/schemas/ReportingFrequency'
+          minItems: 1
+        repThreshDl:
+          type: integer
+          nullable: true
+        repThreshUl:
+          type: integer
+          nullable: true
+        repThreshRp:
+          type: integer
+          nullable: true
+        waitTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSec'
+        repPeriod:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DurationSecRm'
+    QosMonitoringReport:
+      type: object
+      properties:
+        ulDelays:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+        dlDelays:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+        rtDelays:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+    UserPlaneNotificationData:
+      type: object
+      properties:
+        transaction:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        eventReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserPlaneEventReport'
+          minItems: 1
+          description: Contains the reported event and applicable information
+      required:
+        - transaction
+        - eventReports
+    UserPlaneEventReport:
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/UserPlaneEvent'
+        accumulatedUsage:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/AccumulatedUsage'
+        flowIds:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+          description: Identifies the IP flows that were sent during event subscription
+        appliedQosRef:
+          type: string
+          description: The currently applied QoS reference. Applicable for event QOS_NOT_GUARANTEED.
+        qosMonReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosMonitoringReport'
+          minItems: 1
+          description: Contains the QoS Monitoring Reporting information
+      required:
+        - event
+    UserPlaneEvent:
+      anyOf:
+      - type: string
+        enum:
+          - SESSION_TERMINATION
+          - LOSS_OF_BEARER 
+          - RECOVERY_OF_BEARER
+          - RELEASE_OF_BEARER
+          - USAGE_REPORT
+          - FAILED_RESOURCES_ALLOCATION
+          - QOS_GUARANTEED
+          - QOS_NOT_GUARANTEED
+          - QOS_MONITORING
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - SESSION_TERMINATION: Indicates that Rx session is terminated.
+        - LOSS_OF_BEARER : Indicates a loss of a bearer.
+        - RECOVERY_OF_BEARER: Indicates a recovery of a bearer.
+        - RELEASE_OF_BEARER: Indicates a release of a bearer.
+        - USAGE_REPORT: Indicates the usage report event. 
+        - FAILED_RESOURCES_ALLOCATION: Indicates the resource allocation is failed.
+        - QOS_GUARANTEED: The QoS targets of one or more SDFs are guaranteed again.
+        - QOS_NOT_GUARANTEED: The QoS targets of one or more SDFs are not being guaranteed.
+        - QOS_MONITORING: Indicates a QoS monitoring event.

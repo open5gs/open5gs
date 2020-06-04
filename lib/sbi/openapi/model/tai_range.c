@@ -6,7 +6,8 @@
 
 OpenAPI_tai_range_t *OpenAPI_tai_range_create(
     OpenAPI_plmn_id_t *plmn_id,
-    OpenAPI_list_t *tac_range_list
+    OpenAPI_list_t *tac_range_list,
+    char *nid
     )
 {
     OpenAPI_tai_range_t *tai_range_local_var = OpenAPI_malloc(sizeof(OpenAPI_tai_range_t));
@@ -15,6 +16,7 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_create(
     }
     tai_range_local_var->plmn_id = plmn_id;
     tai_range_local_var->tac_range_list = tac_range_list;
+    tai_range_local_var->nid = nid;
 
     return tai_range_local_var;
 }
@@ -30,6 +32,7 @@ void OpenAPI_tai_range_free(OpenAPI_tai_range_t *tai_range)
         OpenAPI_tac_range_free(node->data);
     }
     OpenAPI_list_free(tai_range->tac_range_list);
+    ogs_free(tai_range->nid);
     ogs_free(tai_range);
 }
 
@@ -80,6 +83,13 @@ cJSON *OpenAPI_tai_range_convertToJSON(OpenAPI_tai_range_t *tai_range)
         }
     }
 
+    if (tai_range->nid) {
+        if (cJSON_AddStringToObject(item, "nid", tai_range->nid) == NULL) {
+            ogs_error("OpenAPI_tai_range_convertToJSON() failed [nid]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -123,9 +133,19 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON)
         OpenAPI_list_add(tac_range_listList, tac_range_listItem);
     }
 
+    cJSON *nid = cJSON_GetObjectItemCaseSensitive(tai_rangeJSON, "nid");
+
+    if (nid) {
+        if (!cJSON_IsString(nid)) {
+            ogs_error("OpenAPI_tai_range_parseFromJSON() failed [nid]");
+            goto end;
+        }
+    }
+
     tai_range_local_var = OpenAPI_tai_range_create (
         plmn_id_local_nonprim,
-        tac_range_listList
+        tac_range_listList,
+        nid ? ogs_strdup(nid->valuestring) : NULL
         );
 
     return tai_range_local_var;

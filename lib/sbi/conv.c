@@ -21,18 +21,15 @@
 
 #include "sbi-private.h"
 
-static char *ogs_uridup(bool https, ogs_sockaddr_t *addr,
-    const char *service_name, const char *api_version,
-    const char *resource_name, const char *resource_id)
+static char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
 {
     char buf[OGS_ADDRSTRLEN];
     char url[OGS_HUGE_LEN];
     char *p, *last;
+    int i;
 
     ogs_assert(addr);
-    ogs_assert(service_name);
-    ogs_assert(api_version);
-    ogs_assert(resource_name);
+    ogs_assert(h);
 
     p = url;
     last = url + OGS_HUGE_LEN;
@@ -55,42 +52,44 @@ static char *ogs_uridup(bool https, ogs_sockaddr_t *addr,
     }
 
     /* API */
-    ogs_assert(service_name);
-    p = ogs_slprintf(p, last, "/%s", service_name);
-    ogs_assert(api_version);
-    p = ogs_slprintf(p, last, "/%s", api_version);
+    ogs_assert(h->service.name);
+    p = ogs_slprintf(p, last, "/%s", h->service.name);
+    ogs_assert(h->api.version);
+    p = ogs_slprintf(p, last, "/%s", h->api.version);
 
     /* Resource */
-    ogs_assert(resource_name);
-    p = ogs_slprintf(p, last, "/%s", resource_name);
-    if (resource_id)
-        p = ogs_slprintf(p, last, "/%s", resource_id);
+    ogs_assert(h->resource.component[0]);
+    for (i = 0; i < OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT &&
+                        h->resource.component[i]; i++)
+        p = ogs_slprintf(p, last, "/%s", h->resource.component[i]);
 
     return ogs_strdup(url);
 }
 
-char *ogs_sbi_server_uri(ogs_sbi_server_t *server,
-    const char *service_name, const char *api_version,
-    const char *resource_name, const char *resource_id)
+char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
 {
     bool https = false;
+
+    ogs_assert(server);
+    ogs_assert(h);
+
     if (server->tls.key && server->tls.pem)
         https = true;
 
-    return ogs_uridup(https, server->addr, service_name, api_version,
-            resource_name, resource_id);
+    return ogs_uridup(https, server->addr, h);
 }
 
-char *ogs_sbi_client_uri(ogs_sbi_client_t *client,
-    const char *service_name, const char *api_version,
-    const char *resource_name, const char *resource_id)
+char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h)
 {
     bool https = false;
+
+    ogs_assert(client);
+    ogs_assert(h);
+
     if (client->tls.key && client->tls.pem)
         https = true;
 
-    return ogs_uridup(https, client->addr, service_name, api_version,
-            resource_name, resource_id);
+    return ogs_uridup(https, client->addr, h);
 }
 
 /**

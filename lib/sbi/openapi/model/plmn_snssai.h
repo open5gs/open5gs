@@ -1,7 +1,7 @@
 /*
  * plmn_snssai.h
  *
- *
+ * List of network slices (S-NSSAIs) for a given PLMN ID
  */
 
 #ifndef _OpenAPI_plmn_snssai_H_
@@ -23,11 +23,13 @@ typedef struct OpenAPI_plmn_snssai_s OpenAPI_plmn_snssai_t;
 typedef struct OpenAPI_plmn_snssai_s {
     struct OpenAPI_plmn_id_s *plmn_id;
     OpenAPI_list_t *s_nssai_list;
+    char *nid;
 } OpenAPI_plmn_snssai_t;
 
 OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_create(
     OpenAPI_plmn_id_t *plmn_id,
-    OpenAPI_list_t *s_nssai_list
+    OpenAPI_list_t *s_nssai_list,
+    char *nid
     );
 void OpenAPI_plmn_snssai_free(OpenAPI_plmn_snssai_t *plmn_snssai);
 OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON);

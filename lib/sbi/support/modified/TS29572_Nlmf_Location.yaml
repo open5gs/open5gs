@@ -1,0 +1,1139 @@
+openapi: 3.0.0
+
+info:
+  version: '1.1.0.alpha-3'
+  title: 'LMF Location'
+  description: |
+    LMF Location Service.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.572 V16.2.0; 5G System; Location Management Services; Stage 3
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.572/'
+
+servers:
+  - url: '{apiRoot}/nlmf-loc/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nlmf-loc
+
+paths:
+  /determine-location:
+    post:
+      summary: Determine Location of an UE
+      operationId: DetermineLocation
+      tags:
+        - Determine Location
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputData'
+          multipart/related:  # message with binary body part(s)
+            schema:
+              type: object
+              properties: # Request parts
+                jsonData:
+                  $ref: '#/components/schemas/InputData'
+                binaryDataLppMessage:
+                  type: string
+                  format: binary
+            encoding:
+              jsonData:
+                contentType:  application/json
+              binaryDataLppMessage:
+                contentType:  application/vnd.3gpp.lpp
+                headers:
+                  Content-Id:
+                    schema:
+                      type: string
+        required: true
+      responses:
+        '200':
+          description: Expected response to a valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationData'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        EventNotify: 
+          '{$request.body#/hgmlcCallBackURI}':
+            post:
+              requestBody: 
+                description: UE Event Notification
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EventNotifyData'
+              responses:
+                '204':
+                  description: Expected response to a valid notification
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                '504':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /cancel-location:
+    post:
+      summary: request cancellation of periodic or triggered location
+      operationId: CancelLocation
+      tags:
+        - Cancel Location
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancelLocData'
+        required: true
+      responses:
+        '204':
+          description: Expected response to a successful cancellation
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /location-context-transfer:
+    post:
+      summary: transfer context information for periodic or triggered location
+      operationId: LocationContextTransfer
+      tags:
+        - Location Context Transfer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocContextData'
+        required: true
+      responses:
+        '204':
+          description: Expected response to successful location context transfer
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        '504':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/504'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows: 
+        clientCredentials: 
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nlmf-loc: Access to the Nlmf_Location API
+  schemas:
+#
+# COMPLEX TYPES
+#
+    InputData:
+      type: object
+      not:
+        required: [ ecgi, ncgi ]
+      properties:
+        externalClientType:
+          $ref: '#/components/schemas/ExternalClientType'
+        correlationID:
+          $ref: '#/components/schemas/CorrelationID'        
+        amfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        locationQoS:
+          $ref: '#/components/schemas/LocationQoS'
+        supportedGADShapes:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportedGADShapes'
+          minItems: 1
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        pei:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Pei'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        ecgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+        ecgiOnSecondNode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+        ncgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+        ncgiOnSecondNode:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+        priority:
+          $ref: '#/components/schemas/LcsPriority'
+        velocityRequested:
+          $ref: '#/components/schemas/VelocityRequested'
+        ueLcsCap:
+          $ref: '#/components/schemas/UeLcsCapability'
+        lcsServiceType:
+          $ref: '#/components/schemas/LcsServiceType'
+        ldrType:
+          $ref: '#/components/schemas/LdrType'
+        hgmlcCallBackURI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        ldrReference:
+          $ref: '#/components/schemas/LdrReference'
+        periodicEventInfo:
+          $ref: '#/components/schemas/PeriodicEventInfo'
+        areaEventInfo:
+          $ref: '#/components/schemas/AreaEventInfo'
+        motionEventInfo:
+          $ref: '#/components/schemas/MotionEventInfo'
+        reportingAccessTypes:
+          $ref: '#/components/schemas/ReportingAccessTypes'
+        ueConnectivityStates:
+          $ref: '#/components/schemas/UeConnectivityState'
+        ueLocationServiceInd:
+          $ref: '#/components/schemas/UeLocationServiceInd'
+        lppMessage:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+
+    LocationData:
+      type: object
+      required:
+        - locationEstimate
+      properties:
+        locationEstimate:
+          $ref: '#/components/schemas/GeographicArea'
+        accuracyFulfilmentIndicator:
+          $ref: '#/components/schemas/AccuracyFulfilmentIndicator'
+        ageOfLocationEstimate:
+          $ref: '#/components/schemas/AgeOfLocationEstimate'
+        velocityEstimate:
+          $ref: '#/components/schemas/VelocityEstimate'
+        civicAddress:
+          $ref: '#/components/schemas/CivicAddress'
+        positioningDataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PositioningMethodAndUsage'
+          minItems: 1
+        gnssPositioningDataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/GnssPositioningMethodAndUsage'
+          minItems: 1
+        ecgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+        ncgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+        altitude:
+          $ref: '#/components/schemas/Altitude'
+        barometricPressure:
+          $ref: '#/components/schemas/BarometricPressure'
+        servingLMFIdentification:
+          $ref: '#/components/schemas/LMFIdentification'
+    GeographicArea:
+      anyOf:
+        - $ref: '#/components/schemas/Point'
+        - $ref: '#/components/schemas/PointUncertaintyCircle'
+        - $ref: '#/components/schemas/PointUncertaintyEllipse'
+        - $ref: '#/components/schemas/Polygon'
+        - $ref: '#/components/schemas/PointAltitude'
+        - $ref: '#/components/schemas/PointAltitudeUncertainty'
+        - $ref: '#/components/schemas/EllipsoidArc'
+    GADShape:
+      type: object
+      required:
+        - shape
+      properties:
+        shape:
+          $ref: '#/components/schemas/SupportedGADShapes'
+      discriminator:
+        propertyName: shape
+        mapping:
+          POINT: '#/components/schemas/Point'
+          POINT_UNCERTAINTY_CIRCLE: '#/components/schemas/PointUncertaintyCircle'          
+          POINT_UNCERTAINTY_ELLIPSE: '#/components/schemas/PointUncertaintyEllipse'          
+          POLYGON: '#/components/schemas/Polygon'          
+          POINT_ALTITUDE: '#/components/schemas/PointAltitude'          
+          POINT_ALTITUDE_UNCERTAINTY: '#/components/schemas/PointAltitudeUncertainty'          
+          ELLIPSOID_ARC: '#/components/schemas/EllipsoidArc'
+    Point:
+      allOf:
+        - $ref: '#/components/schemas/GADShape'
+        - type: object
+          required:
+            - point
+          properties:
+            point:
+              $ref: '#/components/schemas/GeographicalCoordinates'
+    PointUncertaintyCircle:
+      allOf:
+        - $ref: '#/components/schemas/GADShape'
+        - type: object
+          required:
+            - point
+            - uncertainty
+          properties:
+            point:
+              $ref: '#/components/schemas/GeographicalCoordinates'
+            uncertainty:
+              $ref: '#/components/schemas/Uncertainty'
+    PointUncertaintyEllipse:
+      allOf:
+        - $ref: '#/components/schemas/GADShape'
+        - type: object
+          required:
+            - point
+            - uncertaintyEllipse
+            - confidence
+          properties:
+            point:
+              $ref: '#/components/schemas/GeographicalCoordinates'
+            uncertaintyEllipse:
+              $ref: '#/components/schemas/UncertaintyEllipse'
+            confidence:
+              $ref: '#/components/schemas/Confidence'
+    Polygon:
+      allOf:
+        - $ref: '#/components/schemas/GADShape'
+        - type: object
+          required:
+            - pointList
+          properties:
+            pointList:
+              $ref: '#/components/schemas/PointList'
+    PointAltitude:
+      allOf:
+        - $ref: '#/components/schemas/GADShape'
+        - type: object
+          required:
+            - point
+            - altitude
+          properties:
+            point:
+              $ref: '#/components/schemas/GeographicalCoordinates'
+            altitude:
+              $ref: '#/components/schemas/Altitude'
+    PointAltitudeUncertainty:
+      allOf:
+        - $ref: '#/components/schemas/GADShape'
+        - type: object
+          required:
+            - point
+            - altitude
+            - uncertaintyEllipse
+            - uncertaintyAltitude
+            - confidence
+          properties:
+            point:
+              $ref: '#/components/schemas/GeographicalCoordinates'
+            altitude:
+              $ref: '#/components/schemas/Altitude'
+            uncertaintyEllipse:
+              $ref: '#/components/schemas/UncertaintyEllipse'
+            uncertaintyAltitude:
+              $ref: '#/components/schemas/Uncertainty'
+            confidence:
+              $ref: '#/components/schemas/Confidence'
+    EllipsoidArc:
+      allOf:
+        - $ref: '#/components/schemas/GADShape'
+        - type: object
+          required:
+            - point
+            - innerRadius
+            - uncertaintyRadius
+            - offsetAngle
+            - includedAngle
+            - confidence
+          properties:
+            point:
+              $ref: '#/components/schemas/GeographicalCoordinates'
+            innerRadius:
+              $ref: '#/components/schemas/InnerRadius'
+            uncertaintyRadius:
+              $ref: '#/components/schemas/Uncertainty'
+            offsetAngle:
+              $ref: '#/components/schemas/Angle'
+            includedAngle:
+              $ref: '#/components/schemas/Angle'
+            confidence:
+              $ref: '#/components/schemas/Confidence'     
+    GeographicalCoordinates:
+      type: object
+      required:
+        - lon
+        - lat
+      properties:
+        lon:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+        lat:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+    UncertaintyEllipse:
+      type: object
+      required:
+        - semiMajor
+        - semiMinor
+        - orientationMajor
+      properties:
+        semiMajor:
+          $ref: '#/components/schemas/Uncertainty'
+        semiMinor:
+          $ref: '#/components/schemas/Uncertainty'
+        orientationMajor:
+          $ref: '#/components/schemas/Orientation'
+    PointList:
+      type: array
+      items:
+        $ref: '#/components/schemas/GeographicalCoordinates'
+      minItems: 3
+      maxItems: 15
+    LocationQoS:
+      type: object
+      properties:
+        hAccuracy:
+          $ref: '#/components/schemas/Accuracy'
+        vAccuracy:
+          $ref: '#/components/schemas/Accuracy'
+        verticalRequested:
+          type: boolean
+        responseTime:
+          $ref: '#/components/schemas/ResponseTime'
+        lcsQosClass:
+          $ref: '#/components/schemas/LcsQosClass'
+    PositioningMethodAndUsage:
+      type: object
+      required:
+        - method
+        - mode
+        - usage
+      properties:
+        method:
+          $ref: '#/components/schemas/PositioningMethod'
+        mode:
+          $ref: '#/components/schemas/PositioningMode'
+        usage:
+          $ref: '#/components/schemas/Usage'
+    GnssPositioningMethodAndUsage:
+      type: object
+      required:
+        - mode
+        - gnss
+        - usage
+      properties:
+        mode:
+          $ref: '#/components/schemas/PositioningMode'
+        gnss:
+          $ref: '#/components/schemas/GnssId'
+        usage:
+          $ref: '#/components/schemas/Usage'
+    CivicAddress:
+      type: object
+      properties:
+        country:
+          type: string
+        A1:
+          type: string
+        A2:
+          type: string
+        A3:
+          type: string
+        A4:
+          type: string
+        A5:
+          type: string
+        A6:
+          type: string
+        PRD:
+          type: string
+        POD:
+          type: string
+        STS:
+          type: string
+        HNO:
+          type: string
+        HNS:
+          type: string
+        LMK:
+          type: string
+        LOC:
+          type: string
+        NAM:
+          type: string
+        PC:
+          type: string
+        BLD:
+          type: string
+        UNIT:
+          type: string
+        FLR:
+          type: string
+        ROOM:
+          type: string
+        PLC:
+          type: string
+        PCN:
+          type: string
+        POBOX:
+          type: string
+        ADDCODE:
+          type: string
+        SEAT:
+          type: string
+        RD:
+          type: string
+        RDSEC:
+          type: string
+        RDBR:
+          type: string
+        RDSUBBR:
+          type: string
+        PRM:
+          type: string
+        POM:
+          type: string
+    VelocityEstimate:
+      oneOf:
+        - $ref: '#/components/schemas/HorizontalVelocity'
+        - $ref: '#/components/schemas/HorizontalWithVerticalVelocity'
+        - $ref: '#/components/schemas/HorizontalVelocityWithUncertainty'
+        - $ref: '#/components/schemas/HorizontalWithVerticalVelocityAndUncertainty'
+    HorizontalVelocity:
+      type: object
+      required:
+        - hSpeed
+        - bearing
+      properties:
+        hSpeed:
+          $ref: '#/components/schemas/HorizontalSpeed'
+        bearing:
+          $ref: '#/components/schemas/Angle'
+    HorizontalWithVerticalVelocity:
+      type: object
+      required:
+        - hSpeed
+        - bearing
+        - vSpeed
+        - vDirection
+      properties:
+        hSpeed:
+          $ref: '#/components/schemas/HorizontalSpeed'
+        bearing:
+          $ref: '#/components/schemas/Angle'
+        vSpeed:
+          $ref: '#/components/schemas/VerticalSpeed'
+        vDirection:
+          $ref: '#/components/schemas/VerticalDirection'
+    HorizontalVelocityWithUncertainty:
+      type: object
+      required:
+        - hSpeed
+        - bearing
+        - hUncertainty
+      properties:
+        hSpeed:
+          $ref: '#/components/schemas/HorizontalSpeed'
+        bearing:
+          $ref: '#/components/schemas/Angle'
+        hUncertainty:
+          $ref: '#/components/schemas/SpeedUncertainty'
+    HorizontalWithVerticalVelocityAndUncertainty:
+      type: object
+      required:
+        - hSpeed
+        - bearing
+        - vSpeed
+        - vDirection
+        - hUncertainty
+        - vUncertainty
+      properties:
+        hSpeed:
+          $ref: '#/components/schemas/HorizontalSpeed'
+        bearing:
+          $ref: '#/components/schemas/Angle'
+        vSpeed:
+          $ref: '#/components/schemas/VerticalSpeed'
+        vDirection:
+          $ref: '#/components/schemas/VerticalDirection'
+        hUncertainty:
+          $ref: '#/components/schemas/SpeedUncertainty'
+        vUncertainty:
+          $ref: '#/components/schemas/SpeedUncertainty'
+    UeLcsCapability:
+      type: object
+      properties:
+        lppSupport:
+          type: boolean
+          default: true
+        ciotOptimisation:
+          type: boolean
+          default: false
+    PeriodicEventInfo:
+      type: object
+      required:
+        - reportingAmount
+        - reportingInterval
+      properties:
+        reportingAmount:
+          $ref: '#/components/schemas/ReportingAmount'
+        reportingInterval:
+          $ref: '#/components/schemas/ReportingInterval'
+    AreaEventInfo:
+      type: object
+      required:
+        - areaDefinition        
+      properties: 
+        areaDefinition:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReportingArea'
+          minItems: 1
+          maxItems: 250
+        occurrenceInfo:
+          $ref: '#/components/schemas/OccurrenceInfo'
+        minimumInterval:
+          $ref: '#/components/schemas/MinimumInterval'
+        maximumInterval:
+          $ref: '#/components/schemas/MaximumInterval'
+        samplingInterval:
+          $ref: '#/components/schemas/SamplingInterval'
+        reportingDuration:
+          $ref: '#/components/schemas/ReportingDuration'
+        reportingLocationReq:
+          type: boolean
+          default: true
+    ReportingArea:
+      type: object
+      required:
+        - areaType        
+      properties: 
+        areaType:
+          $ref: '#/components/schemas/ReportingAreaType'
+        tai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Tai'
+        ecgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ecgi'
+        ncgi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Ncgi'
+    MotionEventInfo:
+      type: object
+      required:
+        - linearDistance        
+      properties: 
+        linearDistance:
+          $ref: '#/components/schemas/LinearDistance'
+        occurrenceInfo:
+          $ref: '#/components/schemas/OccurrenceInfo'
+        minimumInterval:
+          $ref: '#/components/schemas/MinimumInterval'
+        maximumInterval:
+          $ref: '#/components/schemas/MaximumInterval'
+        samplingInterval:
+          $ref: '#/components/schemas/SamplingInterval'
+        reportingDuration:
+          $ref: '#/components/schemas/ReportingDuration'
+        reportingLocationReq:
+          type: boolean
+          default: true
+    ReportingAccessTypes:
+      type: array
+      items:
+        $ref: '#/components/schemas/ReportingAccessType'
+      minItems: 1
+    CancelLocData:
+      type: object
+      required:
+        - hgmlcCallBackURI
+        - ldrReference
+      properties: 
+        hgmlcCallBackURI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        ldrReference:
+          $ref: '#/components/schemas/LdrReference'
+    LocContextData:
+      type: object
+      required:
+        - amfId
+        - ldrType
+        - hgmlcCallBackURI
+        - ldrReference
+        - eventReportMessage
+      properties: 
+        amfId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/NfInstanceId'
+        locationQoS:
+          $ref: '#/components/schemas/LocationQoS'
+        supportedGADShapes:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportedGADShapes'
+          minItems: 1
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        ldrType:
+          $ref: '#/components/schemas/LdrType'
+        hgmlcCallBackURI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        ldrReference:
+          $ref: '#/components/schemas/LdrReference'
+        periodicEventInfo:
+          $ref: '#/components/schemas/PeriodicEventInfo'
+        areaEventInfo:
+          $ref: '#/components/schemas/AreaEventInfo'
+        motionEventInfo:
+          $ref: '#/components/schemas/MotionEventInfo'
+        eventReportMessage:
+          $ref: '#/components/schemas/EventReportMessage'
+        eventReportingStatus:
+          $ref: '#/components/schemas/EventReportingStatus'
+        ueLocationInfo:
+          $ref: '#/components/schemas/UELocationInfo'
+    EventReportMessage:
+      type: object
+      required:
+        - eventClass
+        - eventContent
+      properties: 
+        eventClass:
+          $ref: '#/components/schemas/EventClass'
+        eventContent:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/RefToBinaryData'
+    EventReportingStatus:
+      type: object
+      properties: 
+        eventReportCounter:
+          $ref: '#/components/schemas/EventReportCounter'
+        eventReportDuration:
+          $ref: '#/components/schemas/EventReportDuration'
+    UELocationInfo:
+      type: object
+      properties: 
+        locationEstimate:
+          $ref: '#/components/schemas/GeographicArea'
+        ageOfLocationEstimate:
+          $ref: '#/components/schemas/AgeOfLocationEstimate'
+        velocityEstimate:
+          $ref: '#/components/schemas/VelocityEstimate'
+        ageOfVelocityEstimate:
+          $ref: '#/components/schemas/AgeOfLocationEstimate'
+
+    EventNotifyData:
+      type: object
+      required: 
+        - reportedEventType
+        - ldrReference
+      properties:
+        reportedEventType:
+          $ref: '#/components/schemas/ReportedEventType'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        hgmlcCallBackURI:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        ldrReference:
+          $ref: '#/components/schemas/LdrReference'
+        locationEstimate:
+          $ref: '#/components/schemas/GeographicArea'
+        ageOfLocationEstimate:
+          $ref: '#/components/schemas/AgeOfLocationEstimate'
+        civicAddress:
+          $ref: '#/components/schemas/CivicAddress'
+        positioningDataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/PositioningMethodAndUsage'
+          minItems: 1
+        gnssPositioningDataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/GnssPositioningMethodAndUsage'
+          minItems: 1
+        servingLMFidentification:
+          $ref: '#/components/schemas/LMFIdentification'
+        terminationCause:
+          $ref: '#/components/schemas/TerminationCause'
+
+    UeConnectivityState:
+      type: object
+      required: 
+        - accessType
+      properties:
+        accessType:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/AccessType'
+        connectivitystate:
+          $ref: 'TS29518_Namf_EventExposure.yaml#/components/schemas/CmState'
+#
+#
+# SIMPLE TYPES
+#
+    Altitude:
+      type: number
+      format: double
+      minimum: -32767
+      maximum: 32767
+    Angle:
+      type: integer
+      minimum: 0
+      maximum: 360
+    Uncertainty:
+      type: number
+      format: float
+      minimum: 0
+    Orientation:
+      type: integer
+      minimum: 0
+      maximum: 180
+    Confidence:
+      type: integer
+      minimum: 0
+      maximum: 100
+    Accuracy:
+      type: number
+      format: float
+      minimum: 0
+    InnerRadius:
+      type: integer
+      format: int32
+      minimum: 0
+      maximum: 327675
+    CorrelationID:
+      type: string
+      minLength: 1
+      maxLength: 255
+    AgeOfLocationEstimate:
+      type: integer
+      minimum: 0
+      maximum: 32767
+    HorizontalSpeed:
+      type: number
+      format: float
+      minimum: 0
+      maximum: 2047
+    VerticalSpeed:
+      type: number
+      format: float
+      minimum: 0
+      maximum: 255
+    SpeedUncertainty:
+      type: number
+      format: float
+      minimum: 0
+      maximum: 255
+    BarometricPressure:
+      type: integer
+      minimum: 30000
+      maximum: 115000
+    LcsServiceType:
+      type: integer
+      minimum: 0
+      maximum: 127
+    LdrReference:
+      type: string
+      minLength: 2
+      maxLength: 510
+    ReportingAmount:
+      type: integer
+      minimum: 1
+      maximum: 8639999
+    ReportingInterval:
+      type: integer
+      minimum: 1
+      maximum: 8639999
+    MinimumInterval:
+      type: integer
+      minimum: 1
+      maximum: 32767
+    MaximumInterval:
+      type: integer
+      minimum: 1
+      maximum: 86400
+    SamplingInterval:
+      type: integer
+      minimum: 1
+      maximum: 3600
+    ReportingDuration:
+      type: integer
+      minimum: 1
+      maximum: 8640000
+    LinearDistance:
+      type: integer
+      minimum: 1
+      maximum: 10000
+    LMFIdentification:
+      type: string
+    EventReportCounter:
+      type: integer
+      minimum: 1
+      maximum: 8640000
+    EventReportDuration:
+      type: integer
+      minimum: 1
+      maximum: 8640000
+#
+# ENUMS
+#
+    ExternalClientType:
+      anyOf:
+        - type: string
+          enum:
+            - EMERGENCY_SERVICES
+            - VALUE_ADDED_SERVICES
+            - PLMN_OPERATOR_SERVICES
+            - LAWFUL_INTERCEPT_SERVICES
+            - PLMN_OPERATOR_BROADCAST_SERVICES
+            - PLMN_OPERATOR_OM
+            - PLMN_OPERATOR_ANONYMOUS_STATISTICS
+            - PLMN_OPERATOR_TARGET_MS_SERVICE_SUPPORT
+        - type: string
+    SupportedGADShapes:
+      anyOf:
+        - type: string
+          enum:
+            - POINT
+            - POINT_UNCERTAINTY_CIRCLE
+            - POINT_UNCERTAINTY_ELLIPSE
+            - POLYGON
+            - POINT_ALTITUDE
+            - POINT_ALTITUDE_UNCERTAINTY
+            - ELLIPSOID_ARC
+        - type: string
+    ResponseTime:
+      anyOf:
+        - type: string
+          enum:
+            - LOW_DELAY
+            - DELAY_TOLERANT
+        - type: string
+    PositioningMethod:
+      anyOf:
+        - type: string
+          enum:
+            - CELLID
+            - ECID
+            - OTDOA 
+            - BAROMETRIC_PRESSURE
+            - WLAN
+            - BLUETOOTH
+            - MBS 
+            - MOTION_SENSOR
+        - type: string
+    PositioningMode:
+      anyOf:
+        - type: string
+          enum:
+            - UE_BASED
+            - UE_ASSISTED
+            - CONVENTIONAL
+        - type: string
+    GnssId:
+      anyOf:
+        - type: string
+          enum:
+            - GPS
+            - GALILEO
+            - SBAS
+            - MODERNIZED_GPS
+            - QZSS
+            - GLONASS
+        - type: string
+    Usage:
+      anyOf:
+        - type: string
+          enum:
+            - UNSUCCESS
+            - SUCCESS_RESULTS_NOT_USED
+            - SUCCESS_RESULTS_USED_TO_VERIFY_LOCATION
+            - SUCCESS_RESULTS_USED_TO_GENERATE_LOCATION
+            - SUCCESS_METHOD_NOT_DETERMINED
+        - type: string
+    LcsPriority:
+      anyOf:
+        - type: string
+          enum:
+            - HIGHEST_PRIORITY
+            - NORMAL_PRIORITY
+        - type: string
+    VelocityRequested:
+      anyOf:
+        - type: string
+          enum:
+            - VELOCITY_IS_NOT_REQUESTED
+            - VELOCITY_IS_REQUESTED
+        - type: string
+    AccuracyFulfilmentIndicator:
+      anyOf:
+        - type: string
+          enum:
+            - REQUESTED_ACCURACY_FULFILLED
+            - REQUESTED_ACCURACY_NOT_FULFILLED
+        - type: string
+    VerticalDirection:
+      type: string
+      enum:
+        - UPWARD
+        - DOWNWARD
+    LdrType:
+      anyOf:
+        - type: string
+          enum:
+            - UE_AVAILABLE
+            - PERIODIC
+            - ENTERING_INTO_AREA
+            - LEAVING_FROM_AREA
+            - BEING_INSIDE_AREA
+            - MOTION
+        - type: string
+    ReportingAreaType:
+      anyOf:
+        - type: string
+          enum:
+            - EPS_TRACKING_AREA_IDENTITY
+            - E-UTRAN_CELL_GLOBAL_IDENTIFICATION
+            - 5GS_TRACKING_AREA_IDENTITY
+            - NR_CELL_GLOBAL_IDENTITY
+        - type: string
+    OccurrenceInfo:
+      anyOf:
+        - type: string
+          enum:
+            - ONE_TIME_EVENT
+            - MULTIPLE_TIME_EVENT
+        - type: string
+    ReportingAccessType:
+      anyOf:
+        - type: string
+          enum:
+            - NR
+            - EUTRA_CONNECTED_TO_5GC
+            - NON_3GPP_CONNECTED_TO_5GC
+        - type: string
+    EventClass:
+      anyOf:
+        - type: string
+          enum:
+            - SUPPLEMENTARY_SERVICES
+        - type: string
+    ReportedEventType:
+      anyOf:
+        - type: string
+          enum:
+            - PERIODIC_EVENT
+            - ENTERING_AREA_EVENT
+            - LEAVING_AREA_EVENT
+            - BEING_INSIDE_AREA_EVENT
+            - MOTION_EVENT
+            - MAXIMUM_INTERVAL_EXPIRATION_EVENT
+            - LOCATION_CANCELLATION_EVENT
+        - type: string
+    TerminationCause:
+      anyOf:
+        - type: string
+          enum:
+            - TERMINATION_BY_UE
+            - TERMINATION_BY_NETWORK
+            - NORMAL_TERMINATION
+        - type: string
+    LcsQosClass:
+      anyOf:
+        - type: string
+          enum:
+            - BEST_EFFORT
+            - ASSURED
+        - type: string
+
+    UeLocationServiceInd:
+      anyOf:
+        - type: string
+          enum:
+            - LOCATION_ESTIMATE
+            - LOCATION_ASSISTANCE_DATA
+        - type: string

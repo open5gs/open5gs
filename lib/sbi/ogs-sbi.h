@@ -35,6 +35,14 @@
 #include "model/subscription_data.h"
 #include "model/notification_data.h"
 #include "model/search_result.h"
+#include "model/authentication_info.h"
+#include "model/authentication_info_request.h"
+#include "model/authentication_info_result.h"
+#include "model/authentication_subscription.h"
+#include "model/ue_authentication_ctx.h"
+#include "model/confirmation_data.h"
+#include "model/confirmation_data_response.h"
+#include "model/auth_event.h"
 
 #include "custom/links.h"
 
@@ -53,6 +61,7 @@
 
 #include "sbi/nnrf-build.h"
 #include "sbi/nnrf-handler.h"
+#include "sbi/path.h"
 
 #undef OGS_SBI_INSIDE
 

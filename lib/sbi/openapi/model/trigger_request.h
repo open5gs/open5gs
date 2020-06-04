@@ -1,0 +1,37 @@
+/*
+ * trigger_request.h
+ *
+ *
+ */
+
+#ifndef _OpenAPI_trigger_request_H_
+#define _OpenAPI_trigger_request_H_
+
+#include <string.h>
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct OpenAPI_trigger_request_s OpenAPI_trigger_request_t;
+typedef struct OpenAPI_trigger_request_s {
+    char *supi;
+} OpenAPI_trigger_request_t;
+
+OpenAPI_trigger_request_t *OpenAPI_trigger_request_create(
+    char *supi
+    );
+void OpenAPI_trigger_request_free(OpenAPI_trigger_request_t *trigger_request);
+OpenAPI_trigger_request_t *OpenAPI_trigger_request_parseFromJSON(cJSON *trigger_requestJSON);
+cJSON *OpenAPI_trigger_request_convertToJSON(OpenAPI_trigger_request_t *trigger_request);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _OpenAPI_trigger_request_H_ */
+

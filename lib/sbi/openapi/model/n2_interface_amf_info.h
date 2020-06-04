@@ -1,7 +1,7 @@
 /*
  * n2_interface_amf_info.h
  *
- *
+ * AMF N2 interface information
  */
 
 #ifndef _OpenAPI_n2_interface_amf_info_H_

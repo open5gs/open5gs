@@ -1,7 +1,7 @@
 /*
  * guami_list_cond.h
  *
- *
+ * Subscription to a set of AMFs, based on their GUAMIs
  */
 
 #ifndef _OpenAPI_guami_list_cond_H_

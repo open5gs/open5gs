@@ -53,13 +53,75 @@ typedef struct test_context_s {
         ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_S_NSSAI];
     } plmn_support[OGS_MAX_NUM_OF_PLMN];
 
+    ogs_5gs_tai_t tai;
+    ogs_nr_cgi_t cgi;
 } test_context_t;
+
+typedef struct test_ue_s {
+    uint32_t ran_ue_ngap_id; /* eNB-UE-NGAP-ID received from eNB */
+    uint64_t amf_ue_ngap_id; /* AMF-UE-NGAP-ID received from AMF */
+
+    char *imsi;
+    char *suci; /* TS33.501 : SUCI */
+    char *supi; /* TS33.501 : SUPI */
+
+    uint8_t k[OGS_KEY_LEN];
+    uint8_t opc[OGS_KEY_LEN];
+
+    uint8_t rand[OGS_RAND_LEN];
+    uint8_t autn[OGS_AUTN_LEN];
+    uint8_t abba[OGS_NAS_MAX_ABBA_LEN];
+    uint8_t abba_len;
+    uint8_t kamf[OGS_SHA256_DIGEST_SIZE];
+
+    struct {
+#define OGS_NAS_SECURITY_BEARER_3GPP 1
+#define OGS_NAS_SECURITY_BEARER_NON_3GPP 2
+        uint8_t     connection_identifier;
+        uint8_t     ksi;
+    } nas;
+
+    uint8_t         knas_int[OGS_SHA256_DIGEST_SIZE/2];
+    uint8_t         knas_enc[OGS_SHA256_DIGEST_SIZE/2];
+    uint32_t        ul_count;
+    union {
+        struct {
+        ED3(uint8_t spare;,
+            uint16_t overflow;,
+            uint8_t sqn;)
+        } __attribute__ ((packed));
+        uint32_t i32;
+    } dl_count;
+    uint8_t         kgnb[OGS_SHA256_DIGEST_SIZE];
+
+    uint8_t selected_enc_algorithm;
+    uint8_t selected_int_algorithm;
+
+#define TEST_SECURITY_CONTEXT_IS_VALID(__tEST) \
+    ((__tEST) && \
+    ((__tEST)->security_context_available == 1) && \
+     ((__tEST)->mac_failed == 0) && \
+     ((__tEST)->nas.ksi != OGS_NAS_KSI_NO_KEY_IS_AVAILABLE))
+#define TEST_CLEAR_SECURITY_CONTEXT(__tEST) \
+    do { \
+        ogs_assert((__tEST)); \
+        (__tEST)->security_context_available = 0; \
+        (__tEST)->mac_failed = 0; \
+        (__tEST)->nas.ksi = 0; \
+    } while(0)
+    int             security_context_available;
+    int             mac_failed;
+} test_ue_t;
 
 void test_context_init(void);
 void test_context_final(void);
 test_context_t *test_self(void);
 
 int test_context_parse_config(void);
+
+void test_ue_set_mobile_identity(test_ue_t *test_ue,
+        ogs_nas_5gs_mobile_identity_t *mobile_identity);
+void test_ue_remove(test_ue_t *test_ue);
 
 #ifdef __cplusplus
 }

@@ -1,0 +1,179 @@
+#
+# logger:
+#
+#  o Set OGS_LOG_INFO to all domain level
+#   - If `level` is omitted, the default level is OGS_LOG_INFO)
+#   - If `domain` is omitted, the all domain level is set from 'level'
+#    (Nothing is needed)
+#
+#  o Set OGS_LOG_ERROR to all domain level
+#   - `level` can be set with none, fatal, error, warn, info, debug, trace
+#    level: error
+#
+#  o Set OGS_LOG_DEBUG to mme/emm domain level
+#    level: debug
+#    domain: mme,emm
+#
+#  o Set OGS_LOG_TRACE to all domain level
+#    level: trace
+#    domain: core,pfcp,fd,gtp,udm,event,tlv,mem,sock
+#
+logger:
+    file: @localstatedir@/log/open5gs/udm.log
+#
+# udm:
+#
+#  <SBI Server>
+#
+#  o SBI Server(http://<all address available>:80)
+#    sbi:
+#
+#  o SBI Server(http://<any address>:80)
+#    sbi:
+#      - addr:
+#          - 0.0.0.0
+#          - ::0
+#        port: 7777
+#
+#  o SBI Server(https://<all address avaiable>:443)
+#    sbi:
+#        tls:
+#          key: udm.key
+#          pem: udm.pem
+#
+#  o SBI Server(https://127.0.0.6:443, http://[::1]:80)
+#    sbi:
+#      - addr: 127.0.0.6
+#        tls:
+#          key: udm.key
+#          pem: udm.pem
+#      - addr: ::1
+#
+#  o SBI Server(http://udm.open5gs.org:80)
+#    sbi:
+#      name: udm.open5gs.org
+#
+#  o SBI Server(http://127.0.0.6:7777)
+#    sbi:
+#      - addr: 127.0.0.6
+#        port: 7777
+#
+#  o SBI Server(http://<eth0 IP address>:80)
+#    sbi:
+#      dev: eth0
+#
+udm:
+    sbi:
+      - addr: 127.0.0.6
+        port: 7777
+
+#
+# nrf:
+#
+#  <SBI Client>>
+#
+#  o SBI Client(http://127.0.0.1:7777)
+#    sbi:
+#      addr: 127.0.0.1
+#      port: 7777
+#
+#  o SBI Client(https://127.0.0.1:443, http://nrf.open5gs.org:80)
+#    sbi:
+#      - addr: 127.0.0.1
+#        tls:
+#          key: nrf.key
+#          pem: nrf.pem
+#      - name: nrf.open5gs.org
+#
+#  o SBI Client(http://[fe80::1%@loopback_devname@]:80)
+#    If prefer_ipv4 is true, http://127.0.0.1:80 is selected.
+#
+#    sbi:
+#      addr:
+#        - 127.0.0.1
+#        - fe80::1%@loopback_devname@
+#
+nrf:
+    sbi:
+      - addr:
+          - 127.0.0.1
+          - ::1
+        port: 7777
+
+#
+# parameter:
+#
+#  o Number of output streams per SCTP associations.
+#      sctp_streams: 30
+#
+#  o Disable use of IPv4 addresses (only IPv6)
+#      no_ipv4: true
+#
+#  o Disable use of IPv6 addresses (only IPv4)
+#      no_ipv6: true
+#
+#  o Prefer IPv4 instead of IPv6 for estabishing new GTP connections.
+#      prefer_ipv4: true
+#
+#  o Enable Multicast traffic to the UE
+#      multicast: true
+#
+#  o Disable Stateless Address Autoconfiguration for IPv6
+#      no_slaac: true
+#
+parameter:
+
+#
+# max:
+#
+# o Maximum Number of gNB per AMF
+#    gnb: 32
+# o Maximum Number of UE per gNB
+#    ue: 128
+# o Maximum Number of NF Instance
+#    nf: 512
+#
+max:
+
+#
+# pool:
+#
+# o The Number of Default Memory Pool Size
+#
+#   - Pool-size 128         => 8192 Number
+#   - Pool-size 256         => 4096 Number
+#   - Pool-size 512         => 2048 Number
+#   - Pool-size 1024        => 1024 Number
+#   - Pool-size 2048        => 512 Number
+#   - Pool-size 8192        => 128 Number
+#   - Pool-size 1024*1024   => 8 Number
+#
+#    128:  8192
+#    256:  4096
+#    512:  2048
+#    1024: 1024
+#    2048: 512
+#    8192: 128
+#    big:  8
+#
+# o Memory of Packet Buffering in SGW
+#   - Maximum Number of packet(SDU size = 8Kbytes) pool in SGW
+#   - SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
+#
+#   packet: 65536
+#
+pool:
+
+#
+# time:
+#
+#  o NF Instance Heartbeat (Default : 3 seconds)
+#
+#  o NF Instance Heartbeat (Disabled)
+#    nf_instance:
+#      heartbeat: 0
+#
+#  o NF Instance Heartbeat (5 seconds)
+#    nf_instance:
+#      heartbeat: 5
+time:

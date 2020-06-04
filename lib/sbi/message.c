@@ -57,6 +57,26 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
         OpenAPI_notification_data_free(message->NotificationData);
     if (message->SearchResult)
         OpenAPI_search_result_free(message->SearchResult);
+    if (message->AuthenticationInfo)
+        OpenAPI_authentication_info_free(message->AuthenticationInfo);
+    if (message->AuthenticationInfoRequest)
+        OpenAPI_authentication_info_request_free(
+                message->AuthenticationInfoRequest);
+    if (message->AuthenticationInfoResult)
+        OpenAPI_authentication_info_result_free(
+                message->AuthenticationInfoResult);
+    if (message->AuthenticationSubscription)
+        OpenAPI_authentication_subscription_free(
+                message->AuthenticationSubscription);
+    if (message->UeAuthenticationCtx)
+        OpenAPI_ue_authentication_ctx_free(message->UeAuthenticationCtx);
+    if (message->ConfirmationData)
+        OpenAPI_confirmation_data_free(message->ConfirmationData);
+    if (message->ConfirmationDataResponse)
+        OpenAPI_confirmation_data_response_free(
+                message->ConfirmationDataResponse);
+    if (message->AuthEvent)
+        OpenAPI_auth_event_free(message->AuthEvent);
 }
 
 ogs_sbi_request_t *ogs_sbi_request_new(void)
@@ -119,13 +139,16 @@ void ogs_sbi_response_free(ogs_sbi_response_t *response)
 
 static void sbi_header_free(ogs_sbi_header_t *h)
 {
+    int i;
     ogs_assert(h);
 
     if (h->method) ogs_free(h->method);
     if (h->service.name) ogs_free(h->service.name);
     if (h->api.version) ogs_free(h->api.version);
-    if (h->resource.name) ogs_free(h->resource.name);
-    if (h->resource.id) ogs_free(h->resource.id);
+
+    for (i = 0; i < OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT &&
+                        h->resource.component[i]; i++)
+        ogs_free(h->resource.component[i]);
 }
 
 static void http_message_free(http_message_t *http)
@@ -168,14 +191,18 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
     if (message->h.url) {
         request->h.url = ogs_strdup(message->h.url);
     } else {
+        int i;
+
         ogs_assert(message->h.service.name);
         request->h.service.name = ogs_strdup(message->h.service.name);
         ogs_assert(message->h.api.version);
         request->h.api.version = ogs_strdup(message->h.api.version);
-        ogs_assert(message->h.resource.name);
-        request->h.resource.name = ogs_strdup(message->h.resource.name);
-        if (message->h.resource.id)
-            request->h.resource.id = ogs_strdup(message->h.resource.id);
+
+        ogs_assert(message->h.resource.component[0]);
+        for (i = 0; i < OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT &&
+                            message->h.resource.component[i]; i++)
+            request->h.resource.component[i] = ogs_strdup(
+                    message->h.resource.component[i]);
     }
 
     /* URL Param */
@@ -213,6 +240,22 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
                     OGS_SBI_CONTENT_TYPE, OGS_SBI_CONTENT_JSON_TYPE);
     }
 
+    if (message->http.accept) {
+        ogs_sbi_header_set(request->http.headers, OGS_SBI_ACCEPT,
+                message->http.accept);
+    } else {
+        SWITCH(message->h.method)
+        CASE(OGS_SBI_HTTP_METHOD_DELETE)
+            ogs_sbi_header_set(request->http.headers, OGS_SBI_ACCEPT,
+                OGS_SBI_CONTENT_PROBLEM_TYPE);
+            break;
+        DEFAULT
+            ogs_sbi_header_set(request->http.headers, OGS_SBI_ACCEPT,
+                OGS_SBI_CONTENT_JSON_TYPE "," OGS_SBI_CONTENT_PROBLEM_TYPE);
+            break;
+        END
+    }
+
     if (message->http.content_encoding)
         ogs_sbi_header_set(request->http.headers,
                 OGS_SBI_ACCEPT_ENCODING, message->http.content_encoding);
@@ -220,7 +263,8 @@ ogs_sbi_request_t *ogs_sbi_build_request(ogs_sbi_message_t *message)
     return request;
 }
 
-ogs_sbi_response_t *ogs_sbi_build_response(ogs_sbi_message_t *message)
+ogs_sbi_response_t *ogs_sbi_build_response(
+        ogs_sbi_message_t *message, int status)
 {
     ogs_sbi_response_t *response = NULL;
 
@@ -229,19 +273,25 @@ ogs_sbi_response_t *ogs_sbi_build_response(ogs_sbi_message_t *message)
     response = ogs_sbi_response_new();
     ogs_assert(response);
 
+    response->status = status;
+
     /* HTTP Message */
-    response->http.content = build_content(message);
-    if (response->http.content) {
-        if (message->http.content_type)
-            ogs_sbi_header_set(response->http.headers,
-                    OGS_SBI_CONTENT_TYPE, message->http.content_type);
-        else
-            ogs_sbi_header_set(response->http.headers,
-                    OGS_SBI_CONTENT_TYPE, OGS_SBI_CONTENT_JSON_TYPE);
+    if (response->status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
+        response->http.content = build_content(message);
+        if (response->http.content) {
+            if (message->http.content_type)
+                ogs_sbi_header_set(response->http.headers,
+                        OGS_SBI_CONTENT_TYPE, message->http.content_type);
+            else
+                ogs_sbi_header_set(response->http.headers,
+                        OGS_SBI_CONTENT_TYPE, OGS_SBI_CONTENT_JSON_TYPE);
+        }
     }
 
-    if (message->http.location == true)
-        ogs_sbi_header_set(response->http.headers, "Location", message->h.url);
+    if (message->http.location) {
+        ogs_sbi_header_set(response->http.headers, "Location",
+                message->http.location);
+    }
     if (message->http.cache_control)
         ogs_sbi_header_set(response->http.headers, "Cache-Control",
                 message->http.cache_control);
@@ -285,6 +335,37 @@ static char *build_content(ogs_sbi_message_t *message)
         ogs_assert(item);
     } else if (message->links) {
         item = ogs_sbi_links_convertToJSON(message->links);
+        ogs_assert(item);
+    } else if (message->AuthenticationInfo) {
+        item = OpenAPI_authentication_info_convertToJSON(
+                message->AuthenticationInfo);
+        ogs_assert(item);
+    } else if (message->AuthenticationInfoRequest) {
+        item = OpenAPI_authentication_info_request_convertToJSON(
+                message->AuthenticationInfoRequest);
+        ogs_assert(item);
+    } else if (message->AuthenticationInfoResult) {
+        item = OpenAPI_authentication_info_result_convertToJSON(
+                message->AuthenticationInfoResult);
+        ogs_assert(item);
+    } else if (message->AuthenticationSubscription) {
+        item = OpenAPI_authentication_subscription_convertToJSON(
+                message->AuthenticationSubscription);
+        ogs_assert(item);
+    } else if (message->UeAuthenticationCtx) {
+        item = OpenAPI_ue_authentication_ctx_convertToJSON(
+                message->UeAuthenticationCtx);
+        ogs_assert(item);
+    } else if (message->ConfirmationData) {
+        item = OpenAPI_confirmation_data_convertToJSON(
+                message->ConfirmationData);
+        ogs_assert(item);
+    } else if (message->ConfirmationDataResponse) {
+        item = OpenAPI_confirmation_data_response_convertToJSON(
+                message->ConfirmationDataResponse);
+        ogs_assert(item);
+    } else if (message->AuthEvent) {
+        item = OpenAPI_auth_event_convertToJSON(message->AuthEvent);
         ogs_assert(item);
     }
 
@@ -341,6 +422,8 @@ int ogs_sbi_parse_request(
             message->http.content_encoding = ogs_hash_this_val(hi);
         } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_CONTENT_TYPE)) {
             message->http.content_type = ogs_hash_this_val(hi);
+        } else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_ACCEPT)) {
+            message->http.accept = ogs_hash_this_val(hi);
         }
     }
 
@@ -369,17 +452,18 @@ int ogs_sbi_parse_response(
 
     for (hi = ogs_hash_first(response->http.headers);
             hi; hi = ogs_hash_next(hi)) {
-        if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_CONTENT_TYPE)) {
+        if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_CONTENT_TYPE))
             message->http.content_type = ogs_hash_this_val(hi);
-        }
+        else if (!strcmp(ogs_hash_this_key(hi), OGS_SBI_LOCATION))
+            message->http.location = ogs_hash_this_val(hi);
     }
+
+    message->res_status = response->status;
 
     if (parse_content(message, response->http.content) != OGS_OK) {
         ogs_error("parse_content() failed");
         return OGS_ERROR;
     }
-
-    message->res_status = response->status;
 
     return OGS_OK;
 }
@@ -390,6 +474,9 @@ static int parse_sbi_header(
     struct yuarel yuarel;
     char *saveptr = NULL;
     char *url = NULL, *p = NULL;;
+
+    char *component = NULL;
+    int i = 0;
 
     ogs_assert(message);
     ogs_assert(header);
@@ -432,16 +519,12 @@ static int parse_sbi_header(
     }
     message->h.api.version = header->api.version;
 
-    header->resource.name = ogs_sbi_parse_url(NULL, "/", &saveptr);
-    if (!header->resource.name) {
-        ogs_error("ogs_sbi_parse_url() failed");
-        ogs_free(url);
-        return OGS_ERROR;
+    for (i = 0; i < OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT &&
+            (component = ogs_sbi_parse_url(NULL, "/", &saveptr)) != NULL;
+         i++) {
+        header->resource.component[i] = component;
+        message->h.resource.component[i] = component;
     }
-    message->h.resource.name = header->resource.name;
-
-    header->resource.id = ogs_sbi_parse_url(NULL, "/", &saveptr);
-    message->h.resource.id = header->resource.id;
 
     ogs_free(url);
 
@@ -495,9 +578,9 @@ static int parse_content(ogs_sbi_message_t *message, char *content)
             }
         } else {
             SWITCH(message->h.service.name)
-            CASE(OGS_SBI_SERVICE_NAME_NRF_NFM)
+            CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
 
-                SWITCH(message->h.resource.name)
+                SWITCH(message->h.resource.component[0])
                 CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
                     message->NFProfile =
                         OpenAPI_nf_profile_parseFromJSON(item);
@@ -528,12 +611,12 @@ static int parse_content(ogs_sbi_message_t *message, char *content)
                 DEFAULT
                     rv = OGS_ERROR;
                     ogs_error("Unknown resource name [%s]",
-                            message->h.resource.name);
+                            message->h.resource.component[0]);
                 END
                 break;
 
-            CASE(OGS_SBI_SERVICE_NAME_NRF_DISC)
-                SWITCH(message->h.resource.name)
+            CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
+                SWITCH(message->h.resource.component[0])
                 CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
                     message->SearchResult =
                         OpenAPI_search_result_parseFromJSON(item);
@@ -546,9 +629,152 @@ static int parse_content(ogs_sbi_message_t *message, char *content)
                 DEFAULT
                     rv = OGS_ERROR;
                     ogs_error("Unknown resource name [%s]",
-                            message->h.resource.name);
+                            message->h.resource.component[0]);
                 END
                 break;
+
+            CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
+                SWITCH(message->h.resource.component[0])
+                CASE(OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS)
+                    SWITCH(message->h.method)
+                    CASE(OGS_SBI_HTTP_METHOD_POST)
+                        if (message->res_status ==
+                                OGS_SBI_HTTP_STATUS_CREATED) {
+                            message->UeAuthenticationCtx =
+                            OpenAPI_ue_authentication_ctx_parseFromJSON(item);
+                            if (!message->UeAuthenticationCtx) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else {
+                            message->AuthenticationInfo =
+                                OpenAPI_authentication_info_parseFromJSON(item);
+                            if (!message->AuthenticationInfo) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    CASE(OGS_SBI_HTTP_METHOD_PUT)
+                        if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                            message->ConfirmationDataResponse =
+                                OpenAPI_confirmation_data_response_parseFromJSON(item);
+                            if (!message->ConfirmationDataResponse) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else {
+                            message->ConfirmationData =
+                                OpenAPI_confirmation_data_parseFromJSON(item);
+                            if (!message->ConfirmationData) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown method [%s]", message->h.method);
+                    END
+                    break;
+
+                DEFAULT
+                    rv = OGS_ERROR;
+                    ogs_error("Unknown resource name [%s]",
+                            message->h.resource.component[0]);
+                END
+                break;
+
+            CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
+                SWITCH(message->h.resource.component[1])
+                CASE(OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION)
+                    SWITCH(message->h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_GENERATE_AUTH_DATA)
+                        if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                            message->AuthenticationInfoResult =
+                            OpenAPI_authentication_info_result_parseFromJSON(
+                                    item);
+                            if (!message->AuthenticationInfoResult) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        } else {
+                            message->AuthenticationInfoRequest =
+                            OpenAPI_authentication_info_request_parseFromJSON(
+                                    item);
+                            if (!message->AuthenticationInfoRequest) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                        }
+                        break;
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown resource name [%s]",
+                                message->h.resource.component[2]);
+                    END
+                    break;
+
+                CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
+                    message->AuthEvent = OpenAPI_auth_event_parseFromJSON(item);
+                    if (!message->AuthEvent) {
+                        rv = OGS_ERROR;
+                        ogs_error("JSON parse error");
+                    }
+                    break;
+
+                DEFAULT
+                    rv = OGS_ERROR;
+                    ogs_error("Unknown resource name [%s]",
+                            message->h.resource.component[1]);
+                END
+                break;
+
+            CASE(OGS_SBI_SERVICE_NAME_NUDR_DR)
+                SWITCH(message->h.resource.component[0])
+                CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA)
+                    SWITCH(message->h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_DATA)
+                        SWITCH(message->h.resource.component[3])
+                        CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_SUBSCRIPTION)
+                            if (message->res_status == OGS_SBI_HTTP_STATUS_OK) {
+                                message->AuthenticationSubscription =
+                                    OpenAPI_authentication_subscription_parseFromJSON(item);
+                                if (!message->AuthenticationSubscription) {
+                                    rv = OGS_ERROR;
+                                    ogs_error("JSON parse error");
+                                }
+                            }
+                            break;
+                        CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS)
+                            message->AuthEvent =
+                                OpenAPI_auth_event_parseFromJSON(item);
+                            if (!message->AuthEvent) {
+                                rv = OGS_ERROR;
+                                ogs_error("JSON parse error");
+                            }
+                            break;
+                        DEFAULT
+                            rv = OGS_ERROR;
+                            ogs_error("Unknown resource name [%s]",
+                                    message->h.resource.component[3]);
+                        END
+                        break;
+
+                    DEFAULT
+                        rv = OGS_ERROR;
+                        ogs_error("Unknown resource name [%s]",
+                                message->h.resource.component[2]);
+                    END
+                    break;
+
+                DEFAULT
+                    rv = OGS_ERROR;
+                    ogs_error("Unknown resource name [%s]",
+                            message->h.resource.component[0]);
+                END
+                break;
+
 
             DEFAULT
                 rv = OGS_ERROR;

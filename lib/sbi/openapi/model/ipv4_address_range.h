@@ -1,7 +1,7 @@
 /*
  * ipv4_address_range.h
  *
- *
+ * Range of IPv4 addresses
  */
 
 #ifndef _OpenAPI_ipv4_address_range_H_

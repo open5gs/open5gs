@@ -1,7 +1,7 @@
 /*
  * tai_range.h
  *
- *
+ * Range of TAIs (Tracking Area Identities)
  */
 
 #ifndef _OpenAPI_tai_range_H_
@@ -23,11 +23,13 @@ typedef struct OpenAPI_tai_range_s OpenAPI_tai_range_t;
 typedef struct OpenAPI_tai_range_s {
     struct OpenAPI_plmn_id_s *plmn_id;
     OpenAPI_list_t *tac_range_list;
+    char *nid;
 } OpenAPI_tai_range_t;
 
 OpenAPI_tai_range_t *OpenAPI_tai_range_create(
     OpenAPI_plmn_id_t *plmn_id,
-    OpenAPI_list_t *tac_range_list
+    OpenAPI_list_t *tac_range_list,
+    char *nid
     );
 void OpenAPI_tai_range_free(OpenAPI_tai_range_t *tai_range);
 OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON);

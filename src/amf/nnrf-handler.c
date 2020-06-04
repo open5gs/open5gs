@@ -18,6 +18,7 @@
  */
 
 #include "sbi-path.h"
+#include "nas-path.h"
 #include "nnrf-handler.h"
 
 void amf_nnrf_handle_nf_register(
@@ -79,10 +80,12 @@ void amf_nnrf_handle_nf_status_subscribe(
             duration = diff - (int)VALIDITY_MARGIN;
 
             if (duration < (int)VALIDITY_MINIMUM) {
-                ogs_warn("Validation period [%d seconds, %s] is too small",
+                ogs_warn("[%s] Validation period [%d seconds, %s] is too small",
+                        subscription->id,
                         (int)diff, SubscriptionData->validity_time);
                 duration = VALIDITY_MINIMUM;
-                ogs_warn("Forced to %d seconds", VALIDITY_MINIMUM);
+                ogs_warn("[%s] Forced to %d seconds",
+                        subscription->id, VALIDITY_MINIMUM);
             }
 
             subscription->t_validity = ogs_timer_add(amf_self()->timer_mgr,
@@ -94,7 +97,7 @@ void amf_nnrf_handle_nf_status_subscribe(
     }
 }
 
-bool amf_nnrf_handle_nf_status_notify(ogs_sbi_server_t *server,
+bool amf_nnrf_handle_nf_status_notify(
         ogs_sbi_session_t *session, ogs_sbi_message_t *message)
 {
     ogs_sbi_response_t *response = NULL;
@@ -137,7 +140,7 @@ bool amf_nnrf_handle_nf_status_notify(ogs_sbi_server_t *server,
     }
 
     if (NF_INSTANCE_IS_SELF(NFProfile->nf_instance_id)) {
-        ogs_error("The notification is not allowed [%s]",
+        ogs_error("[%s] The notification is not allowed",
                 NFProfile->nf_instance_id);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
                 message, "The notification is not allowed",
@@ -147,7 +150,6 @@ bool amf_nnrf_handle_nf_status_notify(ogs_sbi_server_t *server,
 
     if (NotificationData->event ==
             OpenAPI_notification_event_type_NF_REGISTERED) {
-        ogs_sbi_client_t *client = NULL;
 
         nf_instance = ogs_sbi_nf_instance_find(NFProfile->nf_instance_id);
         if (!nf_instance) {
@@ -155,41 +157,47 @@ bool amf_nnrf_handle_nf_status_notify(ogs_sbi_server_t *server,
             ogs_assert(nf_instance);
 
             amf_nf_fsm_init(nf_instance);
-            ogs_info("(NRF-notify) NF registered [%s]", nf_instance->id);
-        } else
-            ogs_warn("(NRF-notify) NF [%s] has already been added",
+
+            ogs_info("[%s] (NRF-notify) NF registered", nf_instance->id);
+        } else {
+            OGS_FSM_TRAN(&nf_instance->sm, amf_nf_state_registered);
+            ogs_fsm_dispatch(&nf_instance->sm, NULL);
+
+            ogs_warn("[%s] (NRF-notify) NF has already been added",
                     NFProfile->nf_instance_id);
+        }
 
         handled = ogs_sbi_nnrf_handle_nf_profile(
                     nf_instance, NFProfile, session, message);
-        if (!handled) return false;
-
-        ogs_info("(NRF-notify) NF Profile updated [%s]", nf_instance->id);
-
-        client = ogs_sbi_nf_instance_find_client(nf_instance);
-        if (!client) {
-            ogs_error("Cannot find client [%s]", nf_instance->id);
-            ogs_sbi_server_send_error(session,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                    message, "Cannot find client", nf_instance->id);
+        if (!handled) {
+            AMF_NF_INSTANCE_CLEAR("NRF-notify", nf_instance);
             return false;
         }
-        amf_sbi_nf_associate_client(nf_instance, client);
+
+        ogs_info("[%s] (NRF-notify) NF Profile updated", nf_instance->id);
+
+        handled = ogs_sbi_client_associate(nf_instance);
+        if (!handled) {
+            ogs_error("[%s] Cannot associate NF EndPoint", nf_instance->id);
+            ogs_sbi_server_send_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    message, "Cannot find NF EndPoint", nf_instance->id);
+            AMF_NF_INSTANCE_CLEAR("NRF-notify", nf_instance);
+            return false;
+        }
+
+        amf_sbi_setup_client_callback(nf_instance);
 
     } else if (NotificationData->event ==
             OpenAPI_notification_event_type_NF_DEREGISTERED) {
         nf_instance = ogs_sbi_nf_instance_find(NFProfile->nf_instance_id);
         if (nf_instance) {
-            ogs_info("(NRF-notify) NF de-registered [%s]", nf_instance->id);
-            amf_nf_fsm_fini(nf_instance);
-            ogs_sbi_nf_instance_remove(nf_instance);
-
-            /* FIXME : Remove unnecessary Client */
+            AMF_NF_INSTANCE_CLEAR("NRF-notify", nf_instance);
         } else {
-            ogs_warn("(NRF-notify) Not found [%s]", NFProfile->nf_instance_id);
+            ogs_warn("[%s] (NRF-notify) Not found", NFProfile->nf_instance_id);
             ogs_sbi_server_send_error(session,
                 OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                message, "Not found", message->h.resource.id);
+                message, "Not found", message->h.resource.component[1]);
             return false;
         }
     } else {
@@ -203,20 +211,23 @@ bool amf_nnrf_handle_nf_status_notify(ogs_sbi_server_t *server,
         return false;
     }
 
-    response = ogs_sbi_build_response(message);
+    response = ogs_sbi_build_response(message, OGS_SBI_HTTP_STATUS_NO_CONTENT);
     ogs_assert(response);
-    ogs_sbi_server_send_response(session, response,
-            OGS_SBI_HTTP_STATUS_NO_CONTENT);
+    ogs_sbi_server_send_response(session, response);
 
     return true;
 }
 
-void amf_nnrf_handle_nf_discover(ogs_sbi_message_t *message)
+void amf_nnrf_handle_nf_discover(amf_ue_t *amf_ue, ogs_sbi_message_t *message)
 {
+    int rv;
+    ogs_sbi_nf_instance_t *nf_instance = NULL;
+
     OpenAPI_search_result_t *SearchResult = NULL;
     OpenAPI_lnode_t *node = NULL;
     bool handled;
 
+    ogs_assert(amf_ue);
     ogs_assert(message);
 
     SearchResult = message->SearchResult;
@@ -227,8 +238,6 @@ void amf_nnrf_handle_nf_discover(ogs_sbi_message_t *message)
 
     OpenAPI_list_for_each(SearchResult->nf_instances, node) {
         OpenAPI_nf_profile_t *NFProfile = NULL;
-        ogs_sbi_nf_instance_t *nf_instance = NULL;
-        ogs_sbi_client_t *client = NULL;
 
         if (!node->data) continue;
 
@@ -240,10 +249,15 @@ void amf_nnrf_handle_nf_discover(ogs_sbi_message_t *message)
             ogs_assert(nf_instance);
 
             amf_nf_fsm_init(nf_instance);
-            ogs_info("(NF-discover) NF registered [%s]", nf_instance->id);
-        } else
-            ogs_warn("(NF-discover) NF [%s] has already been added",
+
+            ogs_info("[%s] (NF-discover) NF registered", nf_instance->id);
+        } else {
+            OGS_FSM_TRAN(&nf_instance->sm, amf_nf_state_registered);
+            ogs_fsm_dispatch(&nf_instance->sm, NULL);
+
+            ogs_warn("[%s] (NF-discover) NF has already been added",
                     NFProfile->nf_instance_id);
+        }
 
         if (NF_INSTANCE_IS_OTHERS(nf_instance->id)) {
             handled = ogs_sbi_nnrf_handle_nf_profile(
@@ -251,15 +265,23 @@ void amf_nnrf_handle_nf_discover(ogs_sbi_message_t *message)
             if (!handled) {
                 ogs_error("ogs_sbi_nnrf_handle_nf_profile() failed [%s]",
                         nf_instance->id);
+                AMF_NF_INSTANCE_CLEAR("NRF-discover", nf_instance);
                 continue;
             }
 
-            client = ogs_sbi_nf_instance_find_client(nf_instance);
-            if (!client) {
-                ogs_error("Cannot find client [%s]", nf_instance->id);
+            handled = ogs_sbi_client_associate(nf_instance);
+            if (!handled) {
+                ogs_error("[%s] Cannot assciate NF EndPoint", nf_instance->id);
+                AMF_NF_INSTANCE_CLEAR("NRF-discover", nf_instance);
                 continue;
             }
-            amf_sbi_nf_associate_client(nf_instance, client);
+
+            amf_sbi_setup_client_callback(nf_instance);
+
+            if (!OGS_SBI_NF_INSTANCE_GET(
+                        amf_ue->nf_types, nf_instance->nf_type))
+                ogs_sbi_nf_types_associate(amf_ue->nf_types,
+                        nf_instance->nf_type, amf_nf_state_registered);
 
             /* TIME : Update validity from NRF */
             if (SearchResult->validity_period) {
@@ -270,9 +292,32 @@ void amf_nnrf_handle_nf_discover(ogs_sbi_message_t *message)
                         ogs_time_from_sec(nf_instance->time.validity));
 
             } else
-                ogs_warn("NF Instance validity-time should not 0");
+                ogs_warn("[%s] NF Instance validity-time should not 0",
+                        nf_instance->id);
 
-            ogs_info("(NF-discover) NF Profile updated [%s]", nf_instance->id);
+            ogs_info("[%s] (NF-discover) NF Profile updated", nf_instance->id);
         }
+    }
+
+    if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
+        nf_instance = OGS_SBI_NF_INSTANCE_GET(
+                amf_ue->nf_types, OpenAPI_nf_type_AUSF);
+        if (!nf_instance) {
+            ogs_error("[%s] (NF discover) No AUSF", amf_ue->suci);
+            nas_5gs_send_nas_reject(
+                    amf_ue, OGS_5GMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+            amf_ue_remove(amf_ue);
+        } else {
+            rv = amf_nausf_auth_send_authenticate(amf_ue, nf_instance);
+            if (rv != OGS_OK) {
+                ogs_error("[%s] Cannot send SBI message", amf_ue->suci);
+                nas_5gs_send_nas_reject(
+                        amf_ue, OGS_5GMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
+                amf_ue_remove(amf_ue);
+            }
+        }
+    } else {
+        ogs_fatal("Should implement other case");
+        ogs_assert_if_reached();
     }
 }

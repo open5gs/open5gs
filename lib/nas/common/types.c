@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -21,7 +21,8 @@
 
 int __ogs_nas_domain;
 
-void *ogs_nas_from_plmn_id(ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *plmn_id)
+void *ogs_nas_from_plmn_id(
+        ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *plmn_id)
 {
     memcpy(ogs_nas_plmn_id, plmn_id, OGS_PLMN_ID_LEN);
     if (plmn_id->mnc1 != 0xf) {
@@ -31,7 +32,8 @@ void *ogs_nas_from_plmn_id(ogs_nas_plmn_id_t *ogs_nas_plmn_id, ogs_plmn_id_t *pl
     }
     return ogs_nas_plmn_id;
 }
-void *ogs_nas_to_plmn_id(ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id)
+void *ogs_nas_to_plmn_id(
+        ogs_plmn_id_t *plmn_id, ogs_nas_plmn_id_t *ogs_nas_plmn_id)
 {
     memcpy(plmn_id, ogs_nas_plmn_id, OGS_PLMN_ID_LEN);
     if (plmn_id->mnc1 != 0xf) {

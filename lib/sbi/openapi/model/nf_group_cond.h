@@ -1,7 +1,7 @@
 /*
  * nf_group_cond.h
  *
- *
+ * Subscription to a set of NFs based on their Group Id
  */
 
 #ifndef _OpenAPI_nf_group_cond_H_
@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_nf_group_cond_s OpenAPI_nf_group_cond_t;
-typedef enum { OpenAPI_nf_group_cond_NFTYPE_NULL = 0, OpenAPI_nf_group_cond_NFTYPE_UDM, OpenAPI_nf_group_cond_NFTYPE_AUSF, OpenAPI_nf_group_cond_NFTYPE_UDR, OpenAPI_nf_group_cond_NFTYPE_PCF } OpenAPI_nf_group_cond_nf_type_e;
+typedef enum { OpenAPI_nf_group_cond_NFTYPE_NULL = 0, OpenAPI_nf_group_cond_NFTYPE_UDM, OpenAPI_nf_group_cond_NFTYPE_AUSF, OpenAPI_nf_group_cond_NFTYPE_UDR, OpenAPI_nf_group_cond_NFTYPE_PCF, OpenAPI_nf_group_cond_NFTYPE_CHF } OpenAPI_nf_group_cond_nf_type_e;
 
 char* OpenAPI_nf_group_cond_nf_type_ToString(OpenAPI_nf_group_cond_nf_type_e nf_type);
 

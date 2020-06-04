@@ -1,7 +1,7 @@
 /*
  * pcf_info.h
  *
- *
+ * Information of a PCF NF Instance
  */
 
 #ifndef _OpenAPI_pcf_info_H_
@@ -27,6 +27,7 @@ typedef struct OpenAPI_pcf_info_s {
     OpenAPI_list_t *gpsi_ranges;
     char *rx_diam_host;
     char *rx_diam_realm;
+    int v2x_support_ind;
 } OpenAPI_pcf_info_t;
 
 OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
@@ -35,7 +36,8 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
     OpenAPI_list_t *supi_ranges,
     OpenAPI_list_t *gpsi_ranges,
     char *rx_diam_host,
-    char *rx_diam_realm
+    char *rx_diam_realm,
+    int v2x_support_ind
     );
 void OpenAPI_pcf_info_free(OpenAPI_pcf_info_t *pcf_info);
 OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON);

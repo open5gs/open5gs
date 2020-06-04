@@ -1,7 +1,7 @@
 /*
  * chf_service_info.h
  *
- *
+ * Information of primary and secondary CHF services
  */
 
 #ifndef _OpenAPI_chf_service_info_H_

@@ -1,0 +1,93 @@
+openapi: 3.0.0
+info:
+  title: 'Nspaf_SecuredPacket'
+  version: 1.0.0.alpha-2
+  description: |
+    Nspaf Secured Packet  Service.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.544, SP-AF Services, version 16.0.0
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.544/
+servers:
+  - url: '{apiRoot}/nspaf-secured-packet/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+security:
+  - {}
+  - oAuth2ClientCredentials:
+    - nspaf-secured-packet
+paths:
+  /{supi}/provide-secured-packet:
+    post:
+      summary: request generation of a secured packet
+      operationId: ProvideSecuredPacket
+      tags:
+        - SecuredPacket Generation (Custom Operation)
+      parameters:
+        - name: supi
+          in: path
+          description: SUPI of the user
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UiccConfigurationParameter'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/SecuredPacket'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nspaf-secured-packet: Access to the nspaf-secured-packet API
+  schemas:
+
+# COMPLEX TYPES:
+
+    UiccConfigurationParameter:
+      type: object
+      properties:
+        routingId:
+          $ref: '#/components/schemas/RoutingId'
+        steeringContainer:
+          type: array
+          items:
+            $ref: 'TS29509_Nausf_SoRProtection.yaml#/components/schemas/SteeringInfo'
+          minItems: 1
+
+# SIMPLE TYPES:
+
+    RoutingId:
+      type: string
+      pattern: '^[0-9]{1,4}$'
+
+# ENUMS:
+
+
+

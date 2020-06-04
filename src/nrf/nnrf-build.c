@@ -19,7 +19,7 @@
 
 #include "nnrf-build.h"
 
-ogs_sbi_request_t *nrf_nnrf_build_nf_status_notify(
+ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
         ogs_sbi_client_t *client, ogs_sbi_subscription_t *subscription,
         OpenAPI_notification_event_type_e event,
         ogs_sbi_nf_instance_t *nf_instance)
@@ -41,13 +41,15 @@ ogs_sbi_request_t *nrf_nnrf_build_nf_status_notify(
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.url = subscription->notification_uri;
 
+    message.http.accept = (char *)OGS_SBI_CONTENT_PROBLEM_TYPE;
+
     NotificationData = ogs_calloc(1, sizeof(*NotificationData));
     ogs_assert(NotificationData);
 
     NotificationData->event = event;
     NotificationData->nf_instance_uri = message.h.url;
 
-    NFProfile = ogs_sbi_nnrf_build_nf_profile(nf_instance);
+    NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
     ogs_assert(NFProfile);
 
     NotificationData->nf_profile = NFProfile;

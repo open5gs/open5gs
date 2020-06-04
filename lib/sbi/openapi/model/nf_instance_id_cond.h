@@ -1,7 +1,7 @@
 /*
  * nf_instance_id_cond.h
  *
- *
+ * Subscription to a given NF Instance Id
  */
 
 #ifndef _OpenAPI_nf_instance_id_cond_H_

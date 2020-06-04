@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -121,4 +121,31 @@ void ogs_mongoc_final(void)
 ogs_mongoc_t *ogs_mongoc(void)
 {
     return &self;
+}
+
+int ogs_dbi_init(const char *db_uri)
+{
+    int rv;
+
+    ogs_assert(db_uri);
+
+    rv = ogs_mongoc_init(db_uri);
+    if (rv != OGS_OK) return rv;
+
+    if (ogs_mongoc()->client && ogs_mongoc()->name) {
+        self.collection.subscriber = mongoc_client_get_collection(
+            ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
+        ogs_assert(self.collection.subscriber);
+    }
+
+    return OGS_OK;
+}
+
+void ogs_dbi_final()
+{
+    if (self.collection.subscriber) {
+        mongoc_collection_destroy(self.collection.subscriber);
+    }
+
+    ogs_mongoc_final();
 }

@@ -1,7 +1,7 @@
 /*
  * chf_info.h
  *
- *
+ * Information of a CHF NF Instance
  */
 
 #ifndef _OpenAPI_chf_info_H_
@@ -25,12 +25,14 @@ typedef struct OpenAPI_chf_info_s {
     OpenAPI_list_t *supi_range_list;
     OpenAPI_list_t *gpsi_range_list;
     OpenAPI_list_t *plmn_range_list;
+    char *group_id;
 } OpenAPI_chf_info_t;
 
 OpenAPI_chf_info_t *OpenAPI_chf_info_create(
     OpenAPI_list_t *supi_range_list,
     OpenAPI_list_t *gpsi_range_list,
-    OpenAPI_list_t *plmn_range_list
+    OpenAPI_list_t *plmn_range_list,
+    char *group_id
     );
 void OpenAPI_chf_info_free(OpenAPI_chf_info_t *chf_info);
 OpenAPI_chf_info_t *OpenAPI_chf_info_parseFromJSON(cJSON *chf_infoJSON);

@@ -1,7 +1,7 @@
 /*
  * upf_info.h
  *
- *
+ * Information of an UPF NF Instance
  */
 
 #ifndef _OpenAPI_upf_info_H_
@@ -16,6 +16,10 @@
 #include "interface_upf_info_item.h"
 #include "pdu_session_type.h"
 #include "snssai_upf_info_item.h"
+#include "tai.h"
+#include "tngf_info.h"
+#include "twif_info.h"
+#include "w_agf_info.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +34,12 @@ typedef struct OpenAPI_upf_info_s {
     OpenAPI_list_t *pdu_session_types;
     struct OpenAPI_atsss_capability_s *atsss_capability;
     int ue_ip_addr_ind;
+    OpenAPI_list_t *tai_list;
+    struct OpenAPI_w_agf_info_s *w_agf_info;
+    struct OpenAPI_tngf_info_s *tngf_info;
+    struct OpenAPI_twif_info_s *twif_info;
+    int priority;
+    int redundant_gtpu;
 } OpenAPI_upf_info_t;
 
 OpenAPI_upf_info_t *OpenAPI_upf_info_create(
@@ -39,7 +49,13 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
     int iwk_eps_ind,
     OpenAPI_list_t *pdu_session_types,
     OpenAPI_atsss_capability_t *atsss_capability,
-    int ue_ip_addr_ind
+    int ue_ip_addr_ind,
+    OpenAPI_list_t *tai_list,
+    OpenAPI_w_agf_info_t *w_agf_info,
+    OpenAPI_tngf_info_t *tngf_info,
+    OpenAPI_twif_info_t *twif_info,
+    int priority,
+    int redundant_gtpu
     );
 void OpenAPI_upf_info_free(OpenAPI_upf_info_t *upf_info);
 OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON);

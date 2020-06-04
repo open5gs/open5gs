@@ -1,7 +1,7 @@
 /*
  * network_slice_cond.h
  *
- *
+ * Subscription to a set of NFs, based on the slices (S-NSSAI and NSI) they support
  */
 
 #ifndef _OpenAPI_network_slice_cond_H_

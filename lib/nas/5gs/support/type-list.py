@@ -21,21 +21,6 @@ type_list["5GS tracking area identity"]["decode"] = \
 type_list["5GS tracking area identity"]["encode"] = \
 "    target.tac = ogs_htobe24(tracking_area_identity->tac);\n\n"
 
-type_list["5GS mobile identity"]["decode"] = \
-"    if (mobile_identity->guti.type == OGS_NAS_5GS_MOBILE_IDENTITY_GUTI) {\n" \
-"        mobile_identity->guti.m_tmsi = be32toh(mobile_identity->guti.m_tmsi);\n" \
-"    } else if (mobile_identity->s_tmsi.type == OGS_NAS_5GS_MOBILE_IDENTITY_S_TMSI) {\n" \
-"        mobile_identity->s_tmsi.m_tmsi = be32toh(mobile_identity->s_tmsi.m_tmsi);\n" \
-"    }\n\n"
-type_list["5GS mobile identity"]["encode"] = \
-"    if (mobile_identity->guti.type == OGS_NAS_5GS_MOBILE_IDENTITY_GUTI) {\n" \
-"        target.guti.m_tmsi = htobe32(mobile_identity->guti.m_tmsi);\n" \
-"        target.guti._0xf = 0xf;\n" \
-"    } else if (mobile_identity->s_tmsi.type == OGS_NAS_5GS_MOBILE_IDENTITY_S_TMSI) {\n" \
-"        target.s_tmsi.m_tmsi = htobe32(mobile_identity->s_tmsi.m_tmsi);\n" \
-"        target.s_tmsi._0xf = 0xf;\n" \
-"    }\n\n"
-
 type_list["Header compression configuration"]["decode"] = \
 "    header_compression_configuration->max_cid = be16toh(header_compression_configuration->max_cid);\n\n"
 type_list["Header compression configuration"]["encode"] = \

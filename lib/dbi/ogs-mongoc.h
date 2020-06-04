@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -36,11 +36,18 @@ typedef struct ogs_mongoc_s {
     void *uri;
     void *client;
     void *database;
+
+    struct {
+        void *subscriber;
+    } collection;
 } ogs_mongoc_t;
 
 int ogs_mongoc_init(const char *db_uri);
 void ogs_mongoc_final(void);
 ogs_mongoc_t *ogs_mongoc(void);
+
+int ogs_dbi_init(const char *db_uri);
+void ogs_dbi_final(void);
 
 #ifdef __cplusplus
 }

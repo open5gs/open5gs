@@ -19,7 +19,6 @@
 
 #include "mme-context.h"
 
-#include "mme-kdf.h"
 #include "mme-sm.h"
 #include "s1ap-build.h"
 

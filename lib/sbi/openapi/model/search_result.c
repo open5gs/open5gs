@@ -9,6 +9,7 @@ OpenAPI_search_result_t *OpenAPI_search_result_create(
     OpenAPI_list_t *nf_instances,
     char *search_id,
     int num_nf_inst_complete,
+    OpenAPI_preferred_search_t *preferred_search,
     char *nrf_supported_features
     )
 {
@@ -20,6 +21,7 @@ OpenAPI_search_result_t *OpenAPI_search_result_create(
     search_result_local_var->nf_instances = nf_instances;
     search_result_local_var->search_id = search_id;
     search_result_local_var->num_nf_inst_complete = num_nf_inst_complete;
+    search_result_local_var->preferred_search = preferred_search;
     search_result_local_var->nrf_supported_features = nrf_supported_features;
 
     return search_result_local_var;
@@ -36,6 +38,7 @@ void OpenAPI_search_result_free(OpenAPI_search_result_t *search_result)
     }
     OpenAPI_list_free(search_result->nf_instances);
     ogs_free(search_result->search_id);
+    OpenAPI_preferred_search_free(search_result->preferred_search);
     ogs_free(search_result->nrf_supported_features);
     ogs_free(search_result);
 }
@@ -89,6 +92,19 @@ cJSON *OpenAPI_search_result_convertToJSON(OpenAPI_search_result_t *search_resul
     if (search_result->num_nf_inst_complete) {
         if (cJSON_AddNumberToObject(item, "numNfInstComplete", search_result->num_nf_inst_complete) == NULL) {
             ogs_error("OpenAPI_search_result_convertToJSON() failed [num_nf_inst_complete]");
+            goto end;
+        }
+    }
+
+    if (search_result->preferred_search) {
+        cJSON *preferred_search_local_JSON = OpenAPI_preferred_search_convertToJSON(search_result->preferred_search);
+        if (preferred_search_local_JSON == NULL) {
+            ogs_error("OpenAPI_search_result_convertToJSON() failed [preferred_search]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "preferredSearch", preferred_search_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_search_result_convertToJSON() failed [preferred_search]");
             goto end;
         }
     }
@@ -160,6 +176,13 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
         }
     }
 
+    cJSON *preferred_search = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "preferredSearch");
+
+    OpenAPI_preferred_search_t *preferred_search_local_nonprim = NULL;
+    if (preferred_search) {
+        preferred_search_local_nonprim = OpenAPI_preferred_search_parseFromJSON(preferred_search);
+    }
+
     cJSON *nrf_supported_features = cJSON_GetObjectItemCaseSensitive(search_resultJSON, "nrfSupportedFeatures");
 
     if (nrf_supported_features) {
@@ -174,6 +197,7 @@ OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resul
         nf_instancesList,
         search_id ? ogs_strdup(search_id->valuestring) : NULL,
         num_nf_inst_complete ? num_nf_inst_complete->valuedouble : 0,
+        preferred_search ? preferred_search_local_nonprim : NULL,
         nrf_supported_features ? ogs_strdup(nrf_supported_features->valuestring) : NULL
         );
 

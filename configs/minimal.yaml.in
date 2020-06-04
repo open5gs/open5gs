@@ -4,13 +4,6 @@ logger:
 
 parameter:
 
-nrf:
-    sbi:
-      - addr:
-          - 127.0.0.1
-          - ::1
-        port: 7777
-
 amf:
     sbi:
       - addr: 127.0.0.2
@@ -39,8 +32,8 @@ amf:
           - sst: 1
             sd: 112233
     security:
-        integrity_order : [ EIA1, EIA2, EIA0 ]
-        ciphering_order : [ EEA0, EEA1, EEA2 ]
+        integrity_order : [ EIA2, EIA1 ]
+        ciphering_order : [ EEA2, EEA1, EEA0 ]
     network_name:
         full: Open5GS
     amf_name: open5gs-amf0
@@ -87,3 +80,24 @@ upf:
         - 127.0.0.4
         - ::1
     pdn:
+
+ausf:
+    sbi:
+      - addr: 127.0.0.5
+        port: 7777
+
+udm:
+    sbi:
+      - addr: 127.0.0.6
+        port: 7777
+
+udr:
+    sbi:
+      - addr: 127.0.0.7
+        port: 7777
+nrf:
+    sbi:
+      - addr:
+          - 127.0.0.1
+          - ::1
+        port: 7777

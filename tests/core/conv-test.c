@@ -56,15 +56,15 @@ static void conv_test3(abts_case *tc, void *data)
     uint8_t lower[4] = "\x12\xab\xcd\xef";
     uint8_t buffer[128];
 
-    ABTS_TRUE(tc, strcmp("465B5CE8 B199B49F AA5F0A2E E238A6BC", 
+    ABTS_TRUE(tc, strcmp("465b5ce8b199b49faa5f0a2ee238a6bc",
         ogs_hex_to_ascii(k, sizeof(k), buffer, sizeof(buffer))) == 0);
-    ABTS_TRUE(tc, strcmp("5F1D289C 5D354D0A 140C2548 F5F3E3BA",
+    ABTS_TRUE(tc, strcmp("5f1d289c5d354d0a140c2548f5f3e3ba",
         ogs_hex_to_ascii(op, sizeof(op), buffer, sizeof(buffer))) == 0);
-    ABTS_TRUE(tc, strcmp("E8ED289D EBA952E4 283B54E8 8E6183CA",
+    ABTS_TRUE(tc, strcmp("e8ed289deba952e4283b54e88e6183ca",
         ogs_hex_to_ascii(opc, sizeof(opc), buffer, sizeof(buffer))) == 0);
     ABTS_TRUE(tc, strcmp("8000",
         ogs_hex_to_ascii(amf, sizeof(amf), buffer, sizeof(buffer))) == 0);
-    ABTS_TRUE(tc, strcmp("12ABCDEF",
+    ABTS_TRUE(tc, strcmp("12abcdef",
         ogs_hex_to_ascii(lower, sizeof(lower), buffer, sizeof(buffer))) == 0);
 }
 

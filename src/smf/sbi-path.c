@@ -71,25 +71,22 @@ static int client_cb(ogs_sbi_response_t *response, void *data)
 int smf_sbi_open(void)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
-    ogs_sbi_client_t *client = NULL;
 
     ogs_sbi_server_start_all(server_cb);
 
-    ogs_list_for_each(&ogs_sbi_self()->client_list, client) {
+    ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
         ogs_sbi_nf_service_t *service = NULL;
 
-        nf_instance = ogs_sbi_nf_instance_build_default(
-                smf_self()->nf_type, client);
-        ogs_assert(nf_instance);
+        ogs_sbi_nf_instance_build_default(nf_instance, smf_self()->nf_type);
 
         service = ogs_sbi_nf_service_build_default(nf_instance,
-                (char*)OGS_SBI_SERVICE_NAME_SMF_PDUSESSION, client);
+                (char*)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_VERSION,
                 (char*)OGS_SBI_API_FULL_VERSION, NULL);
 
-        smf_sbi_nf_associate_client(nf_instance, client);
         smf_nf_fsm_init(nf_instance);
+        smf_sbi_setup_client_callback(nf_instance);
     }
 
     return OGS_OK;
@@ -100,100 +97,20 @@ void smf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-void smf_sbi_nf_associate_client(
-        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_client_t *client)
+void smf_sbi_setup_client_callback(ogs_sbi_nf_instance_t *nf_instance)
 {
+    ogs_sbi_client_t *client = NULL;
+    ogs_sbi_nf_service_t *nf_service = NULL;
     ogs_assert(nf_instance);
+
+    client = nf_instance->client;
     ogs_assert(client);
 
-    OGS_SETUP_SBI_CLIENT(nf_instance, client);
     client->cb = client_cb;
-}
 
-void smf_sbi_send_nf_register(ogs_sbi_nf_instance_t *nf_instance)
-{
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
-
-    ogs_assert(nf_instance);
-    client = nf_instance->client;
-    ogs_assert(client);
-
-    request = smf_nnrf_build_nf_register(nf_instance);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, nf_instance);
-}
-
-void smf_sbi_send_nf_update(ogs_sbi_nf_instance_t *nf_instance)
-{
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
-
-    ogs_assert(nf_instance);
-    client = nf_instance->client;
-    ogs_assert(client);
-
-    request = smf_nnrf_build_nf_update(nf_instance);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, nf_instance);
-}
-
-void smf_sbi_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance)
-{
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
-
-    ogs_assert(nf_instance);
-    client = nf_instance->client;
-    ogs_assert(client);
-
-    request = smf_nnrf_build_nf_de_register(nf_instance);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, nf_instance);
-}
-
-void smf_sbi_send_nf_status_subscribe(ogs_sbi_client_t *client,
-        OpenAPI_nf_type_e nf_type, char *nf_instance_id)
-{
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_subscription_t *subscription = NULL;
-
-    ogs_assert(client);
-
-    subscription = ogs_sbi_subscription_add();
-    ogs_assert(subscription);
-    subscription->client = client;
-    subscription->nf_type = nf_type;
-    if (nf_instance_id)
-        subscription->nf_instance_id = ogs_strdup(nf_instance_id);
-
-    request = smf_nnrf_build_nf_status_subscribe(subscription);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, subscription);
-}
-
-void smf_sbi_send_nf_status_unsubscribe(ogs_sbi_subscription_t *subscription)
-{
-    ogs_sbi_request_t *request = NULL;
-    ogs_sbi_client_t *client = NULL;
-
-    ogs_assert(subscription);
-    client = subscription->client;
-    ogs_assert(client);
-
-    request = smf_nnrf_build_nf_status_unsubscribe(subscription);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, subscription);
-}
-
-void smf_sbi_send_nf_discover(ogs_sbi_client_t *client,
-        OpenAPI_nf_type_e target_nf_type, OpenAPI_nf_type_e requester_nf_type)
-{
-    ogs_sbi_request_t *request = NULL;
-
-    ogs_assert(client);
-
-    request = smf_nnrf_build_nf_discover(target_nf_type, requester_nf_type);
-    ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, NULL);
+    ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
+        client = nf_service->client;
+        if (client)
+            client->cb = client_cb;
+    }
 }

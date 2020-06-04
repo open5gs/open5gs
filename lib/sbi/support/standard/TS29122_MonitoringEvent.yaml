@@ -1,0 +1,769 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-monitoring-event
+  version: 1.1.0.alpha-5
+  description: | 
+    API for Monitoring Event.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V16.5.0 T8 reference point for Northbound APIs
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-monitoring-event/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/subscriptions:
+    get:
+      summary: read all of the active subscriptions for the SCS/AS
+      tags:
+        - MonitoringEvent API SCS/AS level GET Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (Successful get all of the active subscriptions for the SCS/AS)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MonitoringEventSubscription'
+                minItems: 0
+                description: Monitoring event subscriptions
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Creates a new subscription resource for monitoring event notification
+      tags:
+        - MonitoringEvent API Subscription level POST Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Subscription for notification about monitoring event
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitoringEventSubscription'
+      callbacks:
+        notificationDestination:
+          '{request.body#/notificationDestination}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/MonitoringNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Created (Successful creation of subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringEventSubscription'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '200':
+          description: The operation is successful and immediate report is included.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringEventReport'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{scsAsId}/subscriptions/{subscriptionId}:
+    get:
+      summary: read an active subscriptions for the SCS/AS and the subscription Id
+      tags:
+        - MonitoringEvent API Subscription level GET Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (Successful get the active subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringEventSubscription'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Updates/replaces an existing subscription resource
+      tags:
+        - MonitoringEvent API subscription level PUT Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to update/replace the existing subscription
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MonitoringEventSubscription'
+      responses:
+        '200':
+          description: OK (Successful update of the subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonitoringEventSubscription'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an already existing monitoring event subscription
+      tags:
+        - MonitoringEvent API Subscription level DELETE Operation
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content (Successful deletion of the existing subscription)
+        '200':
+          description: OK (Successful deletion of the existing subscription)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MonitoringEventReport'
+                minItems: 1
+                description: The subscription was terminated successfully, the monitoring event report(s) shall be included if received.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    MonitoringEventSubscription:
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        mtcProviderId:
+          type: string
+          description: Identifies the MTC Service Provider and/or MTC Application.
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        addExtGroupId:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+          minItems: 2
+        ipv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Addr :
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6Addr'
+        notificationDestination:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        requestTestNotification:
+          type: boolean
+          description: Set to true by the SCS/AS to request the SCEF to send a test notification as defined in subclause 5.2.5.3. Set to false or omitted otherwise.
+        websockNotifConfig:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/WebsockNotifConfig'
+        monitoringType:
+          $ref: '#/components/schemas/MonitoringType'
+        maximumNumberOfReports:
+          type: integer
+          minimum: 1
+          description: Identifies the maximum number of event reports to be generated by the HSS, MME/SGSN as specified in subclause 5.6.0 of 3GPP TS 23.682 [2].
+        monitorExpireTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        groupReportGuardTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        maximumDetectionTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        reachabilityType:
+          $ref: '#/components/schemas/ReachabilityType'
+        maximumLatency:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        maximumResponseTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        suggestedNumberOfDlPackets:
+          type: integer
+          minimum: 0
+          description: If "monitoringType" is "UE_REACHABILITY", this parameter may be included to identify the number of packets that the serving gateway shall buffer in case that the UE is not reachable.
+        idleStatusIndication:
+          type: boolean
+          description: If "monitoringType" is set to "UE_REACHABILITY" or "AVAILABILITY_AFTER_DDN_FAILURE", this parameter may be included to indicate the notification of when a UE, for which PSM is enabled, transitions into idle mode. -	"true"  indicate enabling of notification -	"false"  indicate no need to notify Default  "false".
+        locationType:
+          $ref: '#/components/schemas/LocationType'
+        accuracy:
+          $ref: '#/components/schemas/Accuracy'
+        minimumReportInterval:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        associationType:
+          $ref: '#/components/schemas/AssociationType'
+        plmnIndication:
+          type: boolean
+          description: If "monitoringType" is "ROAMING_STATUS", this parameter may be included to indicate the notification of UE's Serving PLMN ID. -	"true"  The value shall be used to indicate enabling of notification; -	"false"  The value shall be used to indicate disabling of notification.  Default  "false".
+        locationArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea'
+        locationArea5G:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        dddTraDescriptors: 
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DddTrafficDescriptor'
+          minItems: 1
+        dddStati:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/DlDataDeliveryStatus'
+          minItems: 1
+        apiNames:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        monitoringEventReport:
+          $ref: '#/components/schemas/MonitoringEventReport'
+      required:
+        - notificationDestination
+        - monitoringType
+      anyOf:
+        - required: [maximumNumberOfReports]
+        - required: [monitorExpireTime]
+    MonitoringNotification:
+      type: object
+      properties:
+        subscription:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        configResults:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/ConfigResult'
+          minItems: 1
+          description: Each element identifies a notification of grouping configuration result.
+        monitoringEventReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonitoringEventReport'
+          minItems: 1
+          description: Monitoring event reports.
+        cancelInd:
+          type: boolean
+          description: Indicates whether to request to cancel the corresponding monitoring subscription. Set to false or omitted otherwise. 
+        appliedParam:
+          $ref: '#/components/schemas/AppliedParameterConfiguration'
+      required:
+        - subscription
+    MonitoringEventReport:
+      type: object
+      properties:
+        imeiChange:
+          $ref: '#/components/schemas/AssociationType'
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        idleStatusInfo:
+          $ref: '#/components/schemas/IdleStatusInfo'
+        locationInfo:
+          $ref: '#/components/schemas/LocationInfo'
+        lossOfConnectReason:
+          type: integer
+          description: If "monitoringType" is "LOSS_OF_CONNECTIVITY", this parameter shall be included if available to identify the reason why loss of connectivity is reported. Refer to 3GPP TS 29.336 [11] Subclause 8.4.58.
+        maxUEAvailabilityTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        monitoringType:
+          $ref: '#/components/schemas/MonitoringType'
+        uePerLocationReport:
+          $ref: '#/components/schemas/UePerLocationReport'
+        plmnId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/PlmnId'
+        reachabilityType:
+          $ref: '#/components/schemas/ReachabilityType'
+        roamingStatus:
+          type: boolean
+          description: If "monitoringType" is "ROAMING_STATUS", this parameter shall be set to "true" if the UE is on roaming status. Set to false or omitted otherwise.
+        failureCause:
+          $ref: '#/components/schemas/FailureCause'
+        eventTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        pdnConnInfo:
+          $ref: '#/components/schemas/PdnConnectionInformation'
+        dddStatus:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DlDataDeliveryStatus'
+        dddTrafDescriptor:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DddTrafficDescriptor'
+        maxWaitTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        apiCaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApiCapabilityInfo'
+      required:
+        - monitoringType
+    IdleStatusInfo:
+      type: object
+      properties:
+        activeTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        edrxCycleLength:
+          format: float
+          type: number
+          minimum: 0
+        suggestedNumberOfDlPackets:
+          type: integer
+          minimum: 0
+          description: Identifies the number of packets shall be buffered in the serving gateway. It shall be present if the idle status indication is requested by the SCS/AS with "idleStatusIndication" in the "monitoringEventSubscription" sets to "true".
+        idleStatusTimestamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        periodicAUTimer:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+    UePerLocationReport:
+      type: object
+      properties:
+        ueCount:
+          type: integer
+          minimum: 0
+          description: Identifies the number of UEs.
+        externalIds:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+          minItems: 1
+          description: Each element uniquely identifies a user.
+        msisdns:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+          minItems: 1
+          description: Each element identifies the MS internal PSTN/ISDN number allocated for a UE.
+      required:
+        - ueCount
+    LocationInfo:
+      type: object
+      properties:
+        ageOfLocationInfo:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationMin'
+        cellId:
+          type: string
+          description: Indicates the Cell Global Identification of the user which identifies the cell the UE is registered.
+        enodeBId:
+          type: string
+          description: Indicates the eNodeB in which the UE is currently located.
+        routingAreaId:
+          type: string
+          description: Identifies the Routing Area Identity of the user where the UE is located.
+        trackingAreaId:
+          type: string
+          description: Identifies the Tracking Area Identity of the user where the UE is located.
+        plmnId:
+          type: string
+          description: Identifies the PLMN Identity of the user where the UE is located.
+        twanId:
+          type: string
+          description: Identifies the TWAN Identity of the user where the UE is located.
+        geographicArea:
+          $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+    FailureCause:
+      type: object
+      properties:
+        bssgpCause:
+          type: integer
+          description: Identifies a non-transparent copy of the BSSGP cause code. Refer to 3GPP TS 29.128 [12].
+        causeType:
+          type: integer
+          description: Identify the type of the S1AP-Cause. Refer to 3GPP TS 29.128 [12].
+        gmmCause:
+          type: integer
+          description: Identifies a non-transparent copy of the GMM cause code. Refer to 3GPP TS 29.128 [12].
+        ranapCause:
+          type: integer
+          description: Identifies a non-transparent copy of the RANAP cause code. Refer to 3GPP TS 29.128 [12].
+        ranNasCause:
+          type: string
+          description: Indicates RAN and/or NAS release cause code information, TWAN release cause code information or untrusted WLAN release cause code information. Refer to 3GPP TS 29.214 [10].
+        s1ApCause:
+          type: integer
+          description: Identifies a non-transparent copy of the S1AP cause code. Refer to 3GPP TS 29.128 [12].
+        smCause:
+          type: integer
+          description: Identifies a non-transparent copy of the SM cause code. Refer to 3GPP TS 29.128 [12].
+    PdnConnectionInformation:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/PdnConnectionStatus'
+        apn:
+          type: string
+          description: Identify the APN, it is depending on the SCEF local configuration whether or not this attribute is sent to the SCS/AS.
+        pdnType:
+          $ref: '#/components/schemas/PdnType'
+        interfaceInd:
+          $ref: '#/components/schemas/InterfaceIndication'
+        ipv4Addr:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv4Addr'
+        ipv6Addrs: 
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/Ipv6Addr'
+          minItems: 1
+      required:
+        - status
+        - pdnType
+    AppliedParameterConfiguration:
+      type: object
+      properties:
+        externalIds:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+          minItems: 1
+          description: Each element uniquely identifies a user.
+        msisdns:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+          minItems: 1
+          description: Each element identifies the MS internal PSTN/ISDN number allocated for a UE.
+        maximumLatency:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        maximumResponseTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        maximumDetectionTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+    ApiCapabilityInfo:
+      type: object
+      properties:
+        apiName:
+          type: string
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - apiName
+        - suppFeat
+    MonitoringType:
+      anyOf:
+      - type: string
+        enum:
+          - LOSS_OF_CONNECTIVITY
+          - UE_REACHABILITY
+          - LOCATION_REPORTING
+          - CHANGE_OF_IMSI_IMEI_ASSOCIATION
+          - ROAMING_STATUS
+          - COMMUNICATION_FAILURE
+          - AVAILABILITY_AFTER_DDN_FAILURE
+          - NUMBER_OF_UES_IN_AN_AREA
+          - PDN_CONNECTIVITY_STATUS
+          - DOWNLINK_DATA_DELIVERY_STATUS
+          - API_SUPPORT_CAPABILITY
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - LOSS_OF_CONNECTIVITY: The SCS/AS requests to be notified when the 3GPP network detects that the UE is no longer reachable for signalling or user plane communication
+        - UE_REACHABILITY: The SCS/AS requests to be notified when the UE becomes reachable for sending either SMS or downlink data to the UE
+        - LOCATION_REPORTING: The SCS/AS requests to be notified of the current location or the last known location of the UE
+        - CHANGE_OF_IMSI_IMEI_ASSOCIATION: The SCS/AS requests to be notified when the association of an ME (IMEI(SV)) that uses a specific subscription (IMSI) is changed
+        - ROAMING_STATUS: The SCS/AS queries the UE's current roaming status and requests to get notified when the status changes
+        - COMMUNICATION_FAILURE: The SCS/AS requests to be notified of communication failure events
+        - AVAILABILITY_AFTER_DDN_FAILURE: The SCS/AS requests to be notified when the UE has become available after a DDN failure
+        - NUMBER_OF_UES_IN_AN_AREA: The SCS/AS requests to be notified the number of UEs in a given geographic area 
+        - PDN_CONNECTIVITY_STATUS: The SCS/AS requests to be notified when the 3GPP network detects that the UE’s PDN connection is set up or torn down
+        - DOWNLINK_DATA_DELIVERY_STATUS: The AF requests to be notified when the 3GPP network detects that the downlink data delivery status is changed.
+        - API_SUPPORT_CAPABILITY: The SCS/AS requests to be notified of the availability of support of service APIs.
+    ReachabilityType:
+      anyOf:
+      - type: string
+        enum:
+          - SMS 
+          - DATA
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - SMS : The SCS/AS requests to be notified when the UE becomes reachable for sending SMS to the UE
+        - DATA: The SCS/AS requests to be notified when the UE becomes reachable for sending downlink data to the UE
+    LocationType:
+      anyOf:
+      - type: string
+        enum:
+          - CURRENT_LOCATION
+          - LAST_KNOWN_LOCATION
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - CURRENT_LOCATION: The SCS/AS requests to be notified for current location
+        - LAST_KNOWN_LOCATION: The SCS/AS requests to be notified for last known location
+    AssociationType:
+      anyOf:
+      - type: string
+        enum:
+          - IMEI
+          - IMEISV
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - IMEI: The value shall be used when the change of IMSI-IMEI association shall be detected
+        - IMEISV: The value shall be used when the change of IMSI-IMEISV association shall be detected
+    Accuracy:
+      anyOf:
+      - type: string
+        enum:
+          - CGI_ECGI
+          - ENODEB
+          - TA_RA
+          - PLMN
+          - TWAN_ID
+          - GEO_AREA
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - CGI_ECGI: The SCS/AS requests to be notified at cell level location accuracy.
+        - ENODEB: The SCS/AS requests to be notified at eNodeB level location accuracy.
+        - TA_RA: The SCS/AS requests to be notified at TA/RA level location accuracy.
+        - PLMN: The SCS/AS requests to be notified at PLMN level location accuracy.
+        - TWAN_ID: The SCS/AS requests to be notified at TWAN identifier level location accuracy.
+        - GEO_AREA: The SCS/AS requests to be notified of the geographical area accuracy.
+    PdnConnectionStatus:
+      anyOf:
+      - type: string
+        enum:
+          - CREATED
+          - RELEASED
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - CREATED: The PDN connection is created.
+        - RELEASED: The PDN connection is released.
+    PdnType:
+      anyOf:
+      - type: string
+        enum:
+          - IPV4
+          - IPV6
+          - IPV4V6
+          - NON_IP
+          - ETHERNET
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - IPV4: PDN connection of IPv4 type. 
+        - IPV6: PDN connection of IPv6 type.
+        - IPV4V6: PDN connection of IPv4v6 type.
+        - NON_IP: PDN connection of non-IP type. 
+        - ETHERNET: PDN connection of Ethernet type.
+    InterfaceIndication:
+      anyOf:
+      - type: string
+        enum:
+          - EXPOSURE_FUNCTION
+          - PDN_GATEWAY
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - EXPOSURE_FUNCTION: SCEF is used for the PDN connection towards the SCS/AS.
+        - PDN_GATEWAY: PDN gateway is used for the PDN connection towards the SCS/AS.

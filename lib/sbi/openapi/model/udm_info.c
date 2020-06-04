@@ -9,7 +9,8 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     OpenAPI_list_t *supi_ranges,
     OpenAPI_list_t *gpsi_ranges,
     OpenAPI_list_t *external_group_identifiers_ranges,
-    OpenAPI_list_t *routing_indicators
+    OpenAPI_list_t *routing_indicators,
+    OpenAPI_list_t *internal_group_identifiers_ranges
     )
 {
     OpenAPI_udm_info_t *udm_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_udm_info_t));
@@ -21,6 +22,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
     udm_info_local_var->gpsi_ranges = gpsi_ranges;
     udm_info_local_var->external_group_identifiers_ranges = external_group_identifiers_ranges;
     udm_info_local_var->routing_indicators = routing_indicators;
+    udm_info_local_var->internal_group_identifiers_ranges = internal_group_identifiers_ranges;
 
     return udm_info_local_var;
 }
@@ -48,6 +50,10 @@ void OpenAPI_udm_info_free(OpenAPI_udm_info_t *udm_info)
         ogs_free(node->data);
     }
     OpenAPI_list_free(udm_info->routing_indicators);
+    OpenAPI_list_for_each(udm_info->internal_group_identifiers_ranges, node) {
+        OpenAPI_internal_group_id_range_free(node->data);
+    }
+    OpenAPI_list_free(udm_info->internal_group_identifiers_ranges);
     ogs_free(udm_info);
 }
 
@@ -140,6 +146,26 @@ cJSON *OpenAPI_udm_info_convertToJSON(OpenAPI_udm_info_t *udm_info)
             if (cJSON_AddStringToObject(routing_indicators, "", (char*)routing_indicators_node->data) == NULL) {
                 ogs_error("OpenAPI_udm_info_convertToJSON() failed [routing_indicators]");
                 goto end;
+            }
+        }
+    }
+
+    if (udm_info->internal_group_identifiers_ranges) {
+        cJSON *internal_group_identifiers_rangesList = cJSON_AddArrayToObject(item, "internalGroupIdentifiersRanges");
+        if (internal_group_identifiers_rangesList == NULL) {
+            ogs_error("OpenAPI_udm_info_convertToJSON() failed [internal_group_identifiers_ranges]");
+            goto end;
+        }
+
+        OpenAPI_lnode_t *internal_group_identifiers_ranges_node;
+        if (udm_info->internal_group_identifiers_ranges) {
+            OpenAPI_list_for_each(udm_info->internal_group_identifiers_ranges, internal_group_identifiers_ranges_node) {
+                cJSON *itemLocal = OpenAPI_internal_group_id_range_convertToJSON(internal_group_identifiers_ranges_node->data);
+                if (itemLocal == NULL) {
+                    ogs_error("OpenAPI_udm_info_convertToJSON() failed [internal_group_identifiers_ranges]");
+                    goto end;
+                }
+                cJSON_AddItemToArray(internal_group_identifiers_rangesList, itemLocal);
             }
         }
     }
@@ -249,12 +275,36 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON)
         }
     }
 
+    cJSON *internal_group_identifiers_ranges = cJSON_GetObjectItemCaseSensitive(udm_infoJSON, "internalGroupIdentifiersRanges");
+
+    OpenAPI_list_t *internal_group_identifiers_rangesList;
+    if (internal_group_identifiers_ranges) {
+        cJSON *internal_group_identifiers_ranges_local_nonprimitive;
+        if (!cJSON_IsArray(internal_group_identifiers_ranges)) {
+            ogs_error("OpenAPI_udm_info_parseFromJSON() failed [internal_group_identifiers_ranges]");
+            goto end;
+        }
+
+        internal_group_identifiers_rangesList = OpenAPI_list_create();
+
+        cJSON_ArrayForEach(internal_group_identifiers_ranges_local_nonprimitive, internal_group_identifiers_ranges ) {
+            if (!cJSON_IsObject(internal_group_identifiers_ranges_local_nonprimitive)) {
+                ogs_error("OpenAPI_udm_info_parseFromJSON() failed [internal_group_identifiers_ranges]");
+                goto end;
+            }
+            OpenAPI_internal_group_id_range_t *internal_group_identifiers_rangesItem = OpenAPI_internal_group_id_range_parseFromJSON(internal_group_identifiers_ranges_local_nonprimitive);
+
+            OpenAPI_list_add(internal_group_identifiers_rangesList, internal_group_identifiers_rangesItem);
+        }
+    }
+
     udm_info_local_var = OpenAPI_udm_info_create (
         group_id ? ogs_strdup(group_id->valuestring) : NULL,
         supi_ranges ? supi_rangesList : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,
         external_group_identifiers_ranges ? external_group_identifiers_rangesList : NULL,
-        routing_indicators ? routing_indicatorsList : NULL
+        routing_indicators ? routing_indicatorsList : NULL,
+        internal_group_identifiers_ranges ? internal_group_identifiers_rangesList : NULL
         );
 
     return udm_info_local_var;

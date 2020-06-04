@@ -167,7 +167,9 @@ extern "C" {
 #ifndef SWITCH_CASE_INIT
 #define SWITCH_CASE_INIT
     #define SWITCH(X)    {char *__switch_p__,  __switch_next__; \
-                          for (__switch_p__ = (char *)X, __switch_next__ = 1; \
+                          for (__switch_p__ = \
+                                  X ? (char *)X : (char *)"OGS_SWITCH_NULL", \
+                                  __switch_next__ = 1; \
                               __switch_p__; \
                               __switch_p__ = 0, __switch_next__ = 1) { {
     #define CASE(X)            } if (!__switch_next__ || \

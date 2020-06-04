@@ -1,7 +1,7 @@
 /*
  * amf_info.h
  *
- *
+ * Information of an AMF NF Instance
  */
 
 #ifndef _OpenAPI_amf_info_H_

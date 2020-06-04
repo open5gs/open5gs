@@ -1,0 +1,43 @@
+/*
+ * arp.h
+ *
+ *
+ */
+
+#ifndef _OpenAPI_arp_H_
+#define _OpenAPI_arp_H_
+
+#include <string.h>
+#include "../external/cJSON.h"
+#include "../include/list.h"
+#include "../include/keyValuePair.h"
+#include "../include/binary.h"
+#include "preemption_capability.h"
+#include "preemption_vulnerability.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct OpenAPI_arp_s OpenAPI_arp_t;
+typedef struct OpenAPI_arp_s {
+    int priority_level;
+    struct OpenAPI_preemption_capability_s *preempt_cap;
+    struct OpenAPI_preemption_vulnerability_s *preempt_vuln;
+} OpenAPI_arp_t;
+
+OpenAPI_arp_t *OpenAPI_arp_create(
+    int priority_level,
+    OpenAPI_preemption_capability_t *preempt_cap,
+    OpenAPI_preemption_vulnerability_t *preempt_vuln
+    );
+void OpenAPI_arp_free(OpenAPI_arp_t *arp);
+OpenAPI_arp_t *OpenAPI_arp_parseFromJSON(cJSON *arpJSON);
+cJSON *OpenAPI_arp_convertToJSON(OpenAPI_arp_t *arp);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _OpenAPI_arp_H_ */
+

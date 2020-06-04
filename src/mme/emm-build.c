@@ -18,7 +18,6 @@
  */
 
 #include "nas-security.h"
-#include "mme-kdf.h"
 #include "emm-build.h"
 #include "mme-sm.h"
 
@@ -300,9 +299,9 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
         return NULL;
     }
 
-    mme_kdf_nas(MME_KDF_NAS_INT_ALG, mme_ue->selected_int_algorithm,
+    ogs_kdf_nas_eps(OGS_KDF_NAS_INT_ALG, mme_ue->selected_int_algorithm,
             mme_ue->kasme, mme_ue->knas_int);
-    mme_kdf_nas(MME_KDF_NAS_ENC_ALG, mme_ue->selected_enc_algorithm,
+    ogs_kdf_nas_eps(OGS_KDF_NAS_ENC_ALG, mme_ue->selected_enc_algorithm,
             mme_ue->kasme, mme_ue->knas_enc);
 
     return nas_eps_security_encode(mme_ue, &message);

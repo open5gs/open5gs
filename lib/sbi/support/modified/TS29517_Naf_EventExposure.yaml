@@ -1,0 +1,476 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0.alpha-2
+  title: Naf_EventExposure
+  description: |
+    AF Event Exposure Service.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.517 V16.0.0; 5G System; Application Function Event Exposure Service; Stage 3.
+  url: http://www.3gpp.org/ftp/Specs/archive/29_series/29.517/
+
+servers:
+  - url: '{apiRoot}/naf-eventexposure/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 4.4 of 3GPP TS 29.501
+        
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+
+
+paths:
+  /subscriptions:
+    post:
+      summary: Creates a new Individual Application Event Exposure Subscription resource
+      operationId: PostAfEventExposureSubsc
+      tags:
+        - Application Event Subscription (Collection)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AfEventExposureSubsc'
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AfEventExposureSubsc'
+          headers:
+            Location:
+              description: 'Contains the URI of the created individual application event subscription resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+      callbacks:
+        AfEventExposureNotif:
+          '{$request.body#/notifUri}': 
+            post:
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AfEventExposureNotif'
+              responses:
+                '204':
+                  description: No Content, Notification was succesfull
+                '400':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+  /subscriptions/{subscriptionId}:
+    get:
+      summary: "Reads an existing Individual Application Event Subscription"
+      operationId: GetAfEventExposureSubsc
+      tags:
+        - Individual Application Event Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Application Event Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AfEventExposureSubsc'
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    put:
+      summary: "Modifies an existing Individual Application Event Subscription "
+      operationId: PutAfEventExposureSubsc
+      tags:
+        - Individual Application Event Subscription (Document)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AfEventExposureSubsc'
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Application Event Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. Resource was succesfully modified and representation is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AfEventExposureSubsc'
+        '204':
+          description: No Content. Resource was succesfully modified
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+    delete:
+      summary: "Cancels an existing Individual Application Event Subscription "
+      operationId: DeleteAfEventExposureSubsc
+      tags:
+        - Individual Application Event Subscription (Document)
+      parameters:
+        - name: subscriptionId
+          in: path
+          description: Application Event Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. Resource was succesfully deleted
+        '400':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29571_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29571_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUri}'
+          scopes: {}
+      description: for trusted AF, the 'naf-eventexposure' shall be used as 'scopes' and '{nrfApiRoot}/oauth2/token' shall be used as 'tokenUri'.
+
+  schemas:
+    AfEventExposureNotif:
+      type: object
+      properties:
+        notifId:
+          type: string
+        eventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AfEventNotification'
+          minItems: 1
+      required:
+        - notifId
+        - eventNotifs
+    AfEventExposureSubsc:
+      type: object
+      properties:
+        eventSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventsSubs'
+          minItems: 1
+        eventsRepInfo:
+          $ref: 'TS29523_Npcf_EventExposure.yaml#/components/schemas/ReportingInformation'
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifId:
+          type: string
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - eventSubs
+        - eventsRepInfo
+        - notifId
+        - notifUri
+        - suppFeat
+    AfEventNotification:
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/AfEvent'
+        timeStamp:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        svcExprcInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceExperienceInfoPerApp'
+          minItems: 1
+        ueMobilityInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeMobilityCollection'
+          minItems: 1
+        ueCommInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeCommunicationCollection'
+          minItems: 1
+        excepInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExceptionInfo'
+          minItems: 1
+      required:
+        - event
+        - timeStamp
+    EventsSubs:
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/AfEvent'
+        eventFilter:
+          $ref: '#/components/schemas/EventFilter'
+      required:
+        - event
+        - eventFilter
+    EventFilter:
+      type: object
+      properties:
+        gpsis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        supis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+        exterGroupIds:
+          type: array
+          items:
+            $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExtGroupId'
+          minItems: 1
+        interGroupIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        anyUeInd:
+          type: boolean
+        appIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+    ServiceExperienceInfoPerApp:
+      type: object
+      properties:
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        svcExpPerFlows:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceExperienceInfoPerFlow'
+          minItems: 1
+        gpsis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        supis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+          minItems: 1
+      required:
+        - svcExpPerFlows
+    ServiceExperienceInfoPerFlow:
+      type: object
+      properties:
+        svcExprc:
+          $ref: '#/components/schemas/SvcExperience'
+        timeIntev:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        dnai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnai'
+        ipTrafficFilter:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/FlowInfo'
+        ethTrafficFilter:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+    SvcExperience:
+      type: object
+      properties:
+        mos:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        upperRange:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        lowerRange:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+    UeMobilityCollection:
+      type: object
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        ueTrajs:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeTrajectoryCollection'
+          minItems: 1
+      required:
+        - appId
+        - ueTrajs
+    UeCommunicationCollection:
+      type: object
+      properties:
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        supi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+        exterGroupId:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExtGroupId'
+        interGroupId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/GroupId'
+        appId:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+        comms:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommunicationCollection'
+          minItems: 1
+      required:
+        - appId
+        - comms
+    UeTrajectoryCollection:
+      type: object
+      properties:
+        ts:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+      required:
+        - ts
+        - locArea
+    CommunicationCollection:
+      type: object
+      properties:
+        startTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        endTime:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        ulVol:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Volume'
+        dlVol:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Volume'
+      required:
+        - startTime
+        - endTime
+        - ulVol
+        - dlVol
+    ExceptionInfo:
+      type: object
+      properties:
+        ipTrafficFilter:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/FlowInfo'
+        ethTrafficFilter:
+          $ref: 'TS29514_Npcf_PolicyAuthorization.yaml#/components/schemas/EthFlowDescription'
+        exceps:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/Exception'
+          minItems: 1
+
+# Simple data types and Enumerations
+
+    AfEvent:
+      anyOf:
+      - type: string
+        enum:
+          - SVC_EXPERIENCE
+          - UE_MOBILITY
+          - UE_COMM
+          - EXCEPTIONS
+      - type: string

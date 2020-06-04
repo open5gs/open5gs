@@ -19,7 +19,6 @@
 
 #include "mme-event.h"
 #include "mme-timer.h"
-#include "mme-kdf.h"
 #include "s1ap-handler.h"
 #include "mme-fd-path.h"
 #include "emm-handler.h"
@@ -709,17 +708,12 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
                 break;
             }
 
-            rv = emm_handle_security_mode_complete(
+            emm_handle_security_mode_complete(
                     mme_ue, &message->emm.security_mode_complete);
-            if (rv != OGS_OK) {
-                ogs_error("emm_handle_security_mode_complete() failed");
-                OGS_FSM_TRAN(s, emm_state_exception);
-                return;
-            }
 
-            mme_kdf_enb(mme_ue->kasme, mme_ue->ul_count.i32, 
+            ogs_kdf_kenb(mme_ue->kasme, mme_ue->ul_count.i32,
                     mme_ue->kenb);
-            mme_kdf_nh(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
+            ogs_kdf_nh_enb(mme_ue->kasme, mme_ue->kenb, mme_ue->nh);
             mme_ue->nhcc = 1;
 
             mme_s6a_send_ulr(mme_ue);

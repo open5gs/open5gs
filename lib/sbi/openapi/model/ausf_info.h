@@ -1,7 +1,7 @@
 /*
  * ausf_info.h
  *
- *
+ * Information of an AUSF NF Instance
  */
 
 #ifndef _OpenAPI_ausf_info_H_

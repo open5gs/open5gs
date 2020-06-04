@@ -1,7 +1,7 @@
 /*
  * nwdaf_info.h
  *
- *
+ * Information of a NWDAF NF Instance
  */
 
 #ifndef _OpenAPI_nwdaf_info_H_

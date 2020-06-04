@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+ * Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
  *
  * This file is part of Open5GS.
  *
@@ -25,6 +25,7 @@
 #define OGS_NAS_INSIDE
 
 #include "nas/5gs/types.h"
+#include "nas/5gs/conv.h"
 #include "nas/5gs/ies.h"
 #include "nas/5gs/message.h"
 

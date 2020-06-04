@@ -28,6 +28,13 @@
 extern "C" {
 #endif
 
+#define OGS_SETUP_SBI_SESSION(__cTX, __pSESSION) \
+    do { \
+        ogs_assert((__cTX)); \
+        ogs_assert((__pSESSION)); \
+        (__cTX)->session = __pSESSION; \
+    } while(0)
+
 typedef struct ogs_sbi_server_s ogs_sbi_server_t;
 typedef struct ogs_sbi_session_s ogs_sbi_session_t;
 
@@ -68,13 +75,17 @@ void ogs_sbi_server_start_all(int (*cb)(
 void ogs_sbi_server_stop(ogs_sbi_server_t *server);
 void ogs_sbi_server_stop_all(void);
 
-void ogs_sbi_server_send_response(ogs_sbi_session_t *session,
-        ogs_sbi_response_t *response, uint32_t status);
+void ogs_sbi_server_send_response(
+        ogs_sbi_session_t *session, ogs_sbi_response_t *response);
 void ogs_sbi_server_send_error(ogs_sbi_session_t *session,
         int status, ogs_sbi_message_t *message,
         const char *title, const char *detail);
 void ogs_sbi_server_send_problem(
         ogs_sbi_session_t *session, OpenAPI_problem_details_t *problem);
+
+void ogs_sbi_session_set_data(ogs_sbi_session_t *session, void *data);
+void *ogs_sbi_session_get_data(ogs_sbi_session_t *session);
+ogs_sbi_server_t *ogs_sbi_session_get_server(ogs_sbi_session_t *session);
 
 #ifdef __cplusplus
 }

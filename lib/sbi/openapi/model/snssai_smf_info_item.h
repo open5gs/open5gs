@@ -1,7 +1,7 @@
 /*
  * snssai_smf_info_item.h
  *
- *
+ * Set of parameters supported by SMF for a given S-NSSAI
  */
 
 #ifndef _OpenAPI_snssai_smf_info_item_H_

@@ -1,0 +1,116 @@
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include "nidd_information.h"
+
+OpenAPI_nidd_information_t *OpenAPI_nidd_information_create(
+    char *af_id,
+    char *gpsi,
+    char *ext_group_id
+    )
+{
+    OpenAPI_nidd_information_t *nidd_information_local_var = OpenAPI_malloc(sizeof(OpenAPI_nidd_information_t));
+    if (!nidd_information_local_var) {
+        return NULL;
+    }
+    nidd_information_local_var->af_id = af_id;
+    nidd_information_local_var->gpsi = gpsi;
+    nidd_information_local_var->ext_group_id = ext_group_id;
+
+    return nidd_information_local_var;
+}
+
+void OpenAPI_nidd_information_free(OpenAPI_nidd_information_t *nidd_information)
+{
+    if (NULL == nidd_information) {
+        return;
+    }
+    OpenAPI_lnode_t *node;
+    ogs_free(nidd_information->af_id);
+    ogs_free(nidd_information->gpsi);
+    ogs_free(nidd_information->ext_group_id);
+    ogs_free(nidd_information);
+}
+
+cJSON *OpenAPI_nidd_information_convertToJSON(OpenAPI_nidd_information_t *nidd_information)
+{
+    cJSON *item = NULL;
+
+    if (nidd_information == NULL) {
+        ogs_error("OpenAPI_nidd_information_convertToJSON() failed [NiddInformation]");
+        return NULL;
+    }
+
+    item = cJSON_CreateObject();
+    if (!nidd_information->af_id) {
+        ogs_error("OpenAPI_nidd_information_convertToJSON() failed [af_id]");
+        goto end;
+    }
+    if (cJSON_AddStringToObject(item, "afId", nidd_information->af_id) == NULL) {
+        ogs_error("OpenAPI_nidd_information_convertToJSON() failed [af_id]");
+        goto end;
+    }
+
+    if (nidd_information->gpsi) {
+        if (cJSON_AddStringToObject(item, "gpsi", nidd_information->gpsi) == NULL) {
+            ogs_error("OpenAPI_nidd_information_convertToJSON() failed [gpsi]");
+            goto end;
+        }
+    }
+
+    if (nidd_information->ext_group_id) {
+        if (cJSON_AddStringToObject(item, "extGroupId", nidd_information->ext_group_id) == NULL) {
+            ogs_error("OpenAPI_nidd_information_convertToJSON() failed [ext_group_id]");
+            goto end;
+        }
+    }
+
+end:
+    return item;
+}
+
+OpenAPI_nidd_information_t *OpenAPI_nidd_information_parseFromJSON(cJSON *nidd_informationJSON)
+{
+    OpenAPI_nidd_information_t *nidd_information_local_var = NULL;
+    cJSON *af_id = cJSON_GetObjectItemCaseSensitive(nidd_informationJSON, "afId");
+    if (!af_id) {
+        ogs_error("OpenAPI_nidd_information_parseFromJSON() failed [af_id]");
+        goto end;
+    }
+
+
+    if (!cJSON_IsString(af_id)) {
+        ogs_error("OpenAPI_nidd_information_parseFromJSON() failed [af_id]");
+        goto end;
+    }
+
+    cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(nidd_informationJSON, "gpsi");
+
+    if (gpsi) {
+        if (!cJSON_IsString(gpsi)) {
+            ogs_error("OpenAPI_nidd_information_parseFromJSON() failed [gpsi]");
+            goto end;
+        }
+    }
+
+    cJSON *ext_group_id = cJSON_GetObjectItemCaseSensitive(nidd_informationJSON, "extGroupId");
+
+    if (ext_group_id) {
+        if (!cJSON_IsString(ext_group_id)) {
+            ogs_error("OpenAPI_nidd_information_parseFromJSON() failed [ext_group_id]");
+            goto end;
+        }
+    }
+
+    nidd_information_local_var = OpenAPI_nidd_information_create (
+        ogs_strdup(af_id->valuestring),
+        gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
+        ext_group_id ? ogs_strdup(ext_group_id->valuestring) : NULL
+        );
+
+    return nidd_information_local_var;
+end:
+    return NULL;
+}
+

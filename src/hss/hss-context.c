@@ -193,12 +193,15 @@ int hss_context_parse_config(void)
                                         YAML_MAPPING_NODE) {
                                         memcpy(&conn_iter, &conn_array,
                                                 sizeof(ogs_yaml_iter_t));
-                                    } else if (ogs_yaml_iter_type(&conn_array) ==
+                                    } else if (ogs_yaml_iter_type(
+                                                &conn_array) ==
                                         YAML_SEQUENCE_NODE) {
                                         if (!ogs_yaml_iter_next(&conn_array))
                                             break;
-                                        ogs_yaml_iter_recurse(&conn_array, &conn_iter);
-                                    } else if (ogs_yaml_iter_type(&conn_array) ==
+                                        ogs_yaml_iter_recurse(
+                                                &conn_array, &conn_iter);
+                                    } else if (ogs_yaml_iter_type(
+                                                &conn_array) ==
                                         YAML_SCALAR_NODE) {
                                         break;
                                     } else
@@ -212,13 +215,15 @@ int hss_context_parse_config(void)
                                             identity = ogs_yaml_iter_value(
                                                     &conn_iter);
                                         } else if (!strcmp(conn_key, "addr")) {
-                                            addr = ogs_yaml_iter_value(&conn_iter);
+                                            addr = ogs_yaml_iter_value(
+                                                    &conn_iter);
                                         } else if (!strcmp(conn_key, "port")) {
                                             const char *v =
                                                 ogs_yaml_iter_value(&conn_iter);
                                             if (v) port = atoi(v);
                                         } else
-                                            ogs_warn("unknown key `%s`", conn_key);
+                                            ogs_warn("unknown key `%s`",
+                                                    conn_key);
                                     }
 
                                     if (identity && addr) {
@@ -288,7 +293,7 @@ int hss_db_auth_info(
     const bson_t *document;
     bson_iter_t iter;
     bson_iter_t inner_iter;
-    char buf[HSS_KEY_LEN];
+    char buf[OGS_KEY_LEN];
     char *utf8 = NULL;
     uint32_t length = 0;
 
@@ -334,17 +339,17 @@ int hss_db_auth_info(
 
         if (!strcmp(key, "k") && BSON_ITER_HOLDS_UTF8(&inner_iter)) {
             utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
-            memcpy(auth_info->k, OGS_HEX(utf8, length, buf), HSS_KEY_LEN);
+            memcpy(auth_info->k, OGS_HEX(utf8, length, buf), OGS_KEY_LEN);
         } else if (!strcmp(key, "opc") && BSON_ITER_HOLDS_UTF8(&inner_iter)) {
             utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
             auth_info->use_opc = 1;
-            memcpy(auth_info->opc, OGS_HEX(utf8, length, buf), HSS_KEY_LEN);
+            memcpy(auth_info->opc, OGS_HEX(utf8, length, buf), OGS_KEY_LEN);
         } else if (!strcmp(key, "op") && BSON_ITER_HOLDS_UTF8(&inner_iter)) {
             utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
-            memcpy(auth_info->op, OGS_HEX(utf8, length, buf), HSS_KEY_LEN);
+            memcpy(auth_info->op, OGS_HEX(utf8, length, buf), OGS_KEY_LEN);
         } else if (!strcmp(key, "amf") && BSON_ITER_HOLDS_UTF8(&inner_iter)) {
             utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
-            memcpy(auth_info->amf, OGS_HEX(utf8, length, buf), HSS_AMF_LEN);
+            memcpy(auth_info->amf, OGS_HEX(utf8, length, buf), OGS_AMF_LEN);
         } else if (!strcmp(key, "rand") && BSON_ITER_HOLDS_UTF8(&inner_iter)) {
             utf8 = (char *)bson_iter_utf8(&inner_iter, &length);
             memcpy(auth_info->rand, OGS_HEX(utf8, length, buf), OGS_RAND_LEN);
@@ -372,7 +377,8 @@ int hss_db_update_rand_and_sqn(
     char printable_rand[128];
 
     ogs_assert(rand);
-    ogs_hex_to_ascii(rand, OGS_RAND_LEN, printable_rand, sizeof(printable_rand));
+    ogs_hex_to_ascii(rand, OGS_RAND_LEN,
+            printable_rand, sizeof(printable_rand));
 
     ogs_thread_mutex_lock(&self.db_lock);
 
@@ -404,7 +410,7 @@ int hss_db_increment_sqn(char *imsi_bcd)
     bson_t *query = NULL;
     bson_t *update = NULL;
     bson_error_t error;
-    uint64_t max_sqn = HSS_MAX_SQN;
+    uint64_t max_sqn = OGS_MAX_SQN;
 
     ogs_thread_mutex_lock(&self.db_lock);
 

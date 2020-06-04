@@ -1,0 +1,505 @@
+openapi: 3.0.0
+info:
+  title: TS 29.122 Common Data Types
+  version: 1.1.0.alpha-2
+  description: |
+    Data types applicable to several APIs.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V16.5.0 T8 reference point for Northbound APIs
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+paths: {}
+components:
+  schemas:
+    SponsorInformation:
+      type: object
+      properties:
+        sponsorId:
+          type: string
+          description: It indicates Sponsor ID.
+        aspId:
+          type: string
+          description: It indicates Application Service Provider ID.
+      required:
+        - sponsorId
+        - aspId
+    UsageThreshold:
+      type: object
+      properties:
+        duration:
+          $ref: '#/components/schemas/DurationSec'
+        totalVolume:
+          $ref: '#/components/schemas/Volume'
+        downlinkVolume:
+          $ref: '#/components/schemas/Volume'
+        uplinkVolume:
+          $ref: '#/components/schemas/Volume'
+    UsageThresholdRm:
+      type: object
+      properties:
+        duration:
+          $ref: '#/components/schemas/DurationSecRm'
+        totalVolume:
+          $ref: '#/components/schemas/VolumeRm'
+        downlinkVolume:
+          $ref: '#/components/schemas/VolumeRm'
+        uplinkVolume:
+          $ref: '#/components/schemas/VolumeRm'
+      nullable: true
+    TimeWindow:
+      type: object
+      properties:
+        startTime:
+          $ref: '#/components/schemas/DateTime'
+        stopTime:
+          $ref: '#/components/schemas/DateTime'
+      required:
+        - startTime
+        - stopTime
+    Acknowledgement:
+      type: object
+      properties:
+        details:
+          type: string
+          description: A human-readable explanation specific to this successful acknowledgement
+      required:
+        - details
+    NotificationData:
+      type: object
+      properties:
+        transaction:
+          $ref: '#/components/schemas/Link'
+        eventReports:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventReport'
+          minItems: 1
+          description: Contains the reported event and applicable information
+      required:
+        - transaction
+        - eventReports
+    EventReport:
+      type: object
+      properties:
+        event:
+          $ref: '#/components/schemas/Event'
+        accumulatedUsage:
+          $ref: '#/components/schemas/AccumulatedUsage'
+        flowIds:
+          type: array
+          items:
+            type: integer
+          minItems: 1
+          description: Identifies the IP flows that were sent during event subscription
+      required:
+        - event
+    AccumulatedUsage:
+      type: object
+      properties:
+        duration:
+          $ref: '#/components/schemas/DurationSec'
+        totalVolume:
+          $ref: '#/components/schemas/Volume'
+        downlinkVolume:
+          $ref: '#/components/schemas/Volume'
+        uplinkVolume:
+          $ref: '#/components/schemas/Volume'
+    FlowInfo:
+      type: object
+      properties:
+        flowId:
+          type: integer
+          description: Indicates the IP flow.
+        flowDescriptions:
+          type: array
+          items:
+            type: string
+          description: Indicates the packet filters of the IP flow. Refer to subclause 5.3.8 of 3GPP TS 29.214 for encoding. It shall contain UL and/or DL IP flow description.
+          minItems: 1
+          maxItems: 2
+      required:
+        - flowId
+    TestNotification:
+      type: object
+      properties:
+        subscription:
+          $ref: '#/components/schemas/Link'
+      required:
+        - subscription
+    WebsockNotifConfig:
+      type: object
+      properties:
+        websocketUri:
+          $ref: '#/components/schemas/Link'
+        requestWebsocketUri:
+          type: boolean
+          description: Set by the SCS/AS to indicate that the Websocket delivery is requested.
+    LocationArea:
+      type: object
+      properties:
+        cellIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates a list of Cell Global Identities of the user which identifies the cell the UE is registered.
+        enodeBIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Indicates a list of eNodeB identities in which the UE is currently located.
+        routingAreaIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies a list of Routing Area Identities of the user where the UE is located.
+        trackingAreaIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies a list of Tracking Area Identities of the user where the UE is located.
+        geographicAreas:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 1
+          description: Identifies a list of geographic area of the user where the UE is located.
+        civicAddresses:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+          minItems: 1
+          description: Identifies a list of civic addresses of the user where the UE is located.
+    LocationArea5G:
+      type: object
+      properties:
+        geographicAreas:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/GeographicArea'
+          minItems: 0
+          description: Identifies a list of geographic area of the user where the UE is located.
+        civicAddresses:
+          type: array
+          items:
+            $ref: 'TS29572_Nlmf_Location.yaml#/components/schemas/CivicAddress'
+          minItems: 0
+          description: Identifies a list of civic addresses of the user where the UE is located.
+        nwAreaInfo:
+          $ref: 'TS29554_Npcf_BDTPolicyControl.yaml#/components/schemas/NetworkAreaInfo'
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/Uri'
+        title:
+          type: string
+          description: A short, human-readable summary of the problem type. It should not change from occurrence to occurrence of the problem. 
+        status:
+          type: integer
+          description: The HTTP status code for this occurrence of the problem.
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem.
+        instance:
+          $ref: '#/components/schemas/Uri'
+        cause:
+          type: string
+          description: A machine-readable application error cause specific to this occurrence of the problem. This IE should be present and provide application-related error information, if available.
+        invalidParams:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvalidParam'
+          minItems: 1
+          description: Description of invalid parameters, for a request rejected due to invalid parameters.
+    InvalidParam:
+      type: object
+      properties:
+        param:
+          type: string
+          description: Attribute's name encoded as a JSON Pointer, or header's name.
+        reason:
+          type: string
+          description: A human-readable reason, e.g. "must be a positive integer".
+      required:
+        - param
+    PlmnId:
+      type: object
+      properties:
+        mcc:
+          $ref: '#/components/schemas/Mcc'
+        mnc:
+          $ref: '#/components/schemas/Mnc'
+      required:
+        - mcc
+        - mnc
+    ConfigResult:
+      type: object
+      properties:
+        externalIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalId'
+          minItems: 1
+          description: Each element indicates an external identifier of the UE.
+        msisdns:
+          type: array
+          items:
+            $ref: '#/components/schemas/Msisdn'
+          minItems: 1
+          description: Each element identifies the MS internal PSTN/ISDN number allocated for the UE.
+        resultReason:
+          $ref: '#/components/schemas/ResultReason'
+      required:
+        - resultReason
+      oneOf:
+        - required: [externalIds]
+        - required: [msisdns]
+    Bandwidth:
+      type: integer
+      minimum: 0
+      description: integer indicating a bandwidth in bits per second.
+    BdtReferenceId:
+      type: string
+      description: string identifying a BDT Reference ID as defined in subclause 5.3.3 of 3GPP TS 29.154. 
+    BdtReferenceIdRm:
+      type: string
+      description: This data type is defined in the same way as the BdtReferenceId data type, but with the nullable property set to true.
+      nullable: true
+    Binary:
+      type: string
+      description: string with format "binary" as defined in OpenAPI Specification.
+    Bytes:
+      type: string
+      description: String with format "byte" as defined in OpenAPI Specification, i.e, base64-encoded characters.
+    DayOfWeek:
+      type: integer
+      minimum: 1
+      maximum: 7
+      description: integer between and including 1 and 7 denoting a weekday. 1 shall indicate Monday, and the subsequent weekdays shall be indicated with the next higher numbers. 7 shall indicate Sunday.
+    DateTime:
+      type: string
+      description: string with format "date-time" as defined in OpenAPI.
+    DateTimeRm:
+      type: string
+      description: string with format "date-time" as defined in OpenAPI with "nullable=true" property.
+      nullable: true
+    DateTimeRo:
+      type: string
+      description: string with format "date-time" as defined in OpenAPI with "readOnly=true" property.
+      readOnly: true
+    DurationSec:
+      type: integer
+      minimum: 0
+      description: Unsigned integer identifying a period of time in units of seconds.
+    DurationSecRm:
+      type: integer
+      minimum: 0
+      description: Unsigned integer identifying a period of time in units of seconds with "nullable=true" property.
+      nullable: true
+    DurationSecRo:
+      type: integer
+      minimum: 0
+      description: Unsigned integer identifying a period of time in units of seconds with "readOnly=true" property.
+      readOnly: true
+    DurationMin:
+      type: integer
+      format: int32
+      minimum: 0
+      description: Unsigned integer identifying a period of time in units of minutes.
+    ExternalId:
+      type: string
+      description: string containing a local identifier followed by "@" and a domain identifier. Both the local identifier and the domain identifier shall be encoded as strings that do not contain any "@" characters. See Clause 4.6.2 of 3GPP TS 23.682 for more information.
+    ExternalGroupId:
+      type: string
+      description: string containing a local identifier followed by "@" and a domain identifier. Both the local identifier and the domain identifier shall be encoded as strings that do not contain any "@" characters. See Clauses 4.6.2 and 4.6.3 of 3GPP TS 23.682 for more information.
+    Ipv4Addr:
+      type: string
+      description: string identifying a Ipv4 address formatted in the "dotted decimal" notation as defined in IETF RFC 1166.
+    Ipv6Addr:
+      type: string
+      description: string identifying a Ipv6 address formatted according to clause 4 in IETF RFC 5952. The mixed Ipv4 Ipv6 notation according to clause 5 of IETF RFC 5952 shall not be used.
+    Ipv4AddrRo:
+      type: string
+      description: string identifying a Ipv4 address formatted in the "dotted decimal" notation as defined in IETF RFC 1166, with "readOnly=true" property.
+      readOnly: true
+    Ipv6AddrRo:
+      type: string
+      description: string identifying a Ipv6 address formatted according to clause 4 in IETF RFC 5952, with "readOnly=true" property. The mixed Ipv4 Ipv6 notation according to clause 5 of IETF RFC 5952 shall not be used.
+      readOnly: true
+    Link:
+      type: string
+      description: string formatted according to IETF RFC 3986 identifying a referenced resource.
+    Mcc:
+      type: string
+      description: String encoding a Mobile Country Code part of the PLMN, comprising 3 digits, as defined in 3GPP TS 38.413.
+    Mnc:
+      type: string
+      description: String encoding a Mobile Network Code part of the PLMN, comprising 2 or 3 digits, as defined in 3GPP TS 38.413.
+    Msisdn:
+      type: string
+      description: string formatted according to subclause 3.3 of 3GPP TS 23.003 that describes an MSISDN.
+    Port:
+      type: integer
+      description: Unsigned integer with valid values between 0 and 65535.
+      minimum: 0
+      maximum: 65535
+    PortRo:
+      type: integer
+      description: Unsigned integer with valid values between 0 and 65535, with "readOnly=true" property.
+      minimum: 0
+      maximum: 65535
+      readOnly: true
+    ResourceId:
+      type: string
+      description: string chosen by the SCEF to serve as identifier in a resource URI.
+    ScsAsId:
+      type: string
+      description: string that identifies an SCS/AS.
+    TimeOfDay:
+      type: string
+      description: String with format partial-time or full-time as defined in subclause 5.6 of IETF RFC 3339. Examples, 20:15:00, 20:15:00-08:00 (for 8 hours behind UTC).
+    Uri:
+      type: string
+      description: string providing an URI formatted according to IETF RFC 3986. 
+    Volume:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Unsigned integer identifying a volume in units of bytes.
+    VolumeRm:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Unsigned integer identifying a volume in units of bytes with "nullable=true" property.
+      nullable: true
+    Event:
+      anyOf:
+      - type: string
+        enum:
+          - SESSION_TERMINATION
+          - LOSS_OF_BEARER 
+          - RECOVERY_OF_BEARER
+          - RELEASE_OF_BEARER
+          - USAGE_REPORT
+          - FAILED_RESOURCES_ALLOCATION
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - SESSION_TERMINATION: Indicates that Rx session is terminated.
+        - LOSS_OF_BEARER : Indicates a loss of a bearer.
+        - RECOVERY_OF_BEARER: Indicates a recovery of a bearer.
+        - RELEASE_OF_BEARER: Indicates a release of a bearer.
+        - USAGE_REPORT: Indicates the usage report event. 
+        - FAILED_RESOURCES_ALLOCATION: Indicates the resource allocation is failed.
+    ResultReason:
+      anyOf:
+      - type: string
+        enum:
+          - ROAMING_NOT_ALLOWED
+          - OTHER_REASON
+      - type: string
+        description: >
+          This string provides a failure reason.
+      description: >
+        Possible values are
+        - ROAMING_NOT_ALLOWED: Identifies the configuration parameters are not allowed by roaming agreement.
+        - OTHER_REASON: Identifies the configuration parameters are not configured due to other reason.
+#
+# HTTP responses
+#
+  responses:
+    '400':
+      description: Bad request
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '401':
+      description: Unauthorized
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '403':
+      description: Forbidden
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '404':
+      description: Not Found
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '406':
+      description: Not Acceptable
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '409':
+      description: Conflict
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '411':
+      description: Length Required
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '412':
+      description: Precondition Failed
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '413':
+      description: Payload Too Large
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '414':
+      description: URI Too Long
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '415':
+      description: Unsupported Media Type
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '429':
+      description: Too Many Requests
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '500':
+      description: Internal Server Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    '503':
+      description: Service Unavailable
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+    default:
+      description: Generic Error

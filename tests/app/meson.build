@@ -69,15 +69,13 @@ libtest5gc = static_library('test5gc',
     c_args : libtest5gc_cc_args,
     include_directories : [libtestapp_inc, srcinc],
     link_with : libamf,
-    dependencies : [libtestcommon_dep,
-                    libamf_dep],
+    dependencies : libtestcommon_dep,
     install : false)
 
 libtest5gc_dep = declare_dependency(
     link_with : libtest5gc,
     include_directories : [libtestapp_inc, srcinc],
-    dependencies : [libtestcommon_dep,
-                    libamf_dep])
+    dependencies : libtestcommon_dep)
 
 test5gc_sources = files('''
     ../../src/main.c

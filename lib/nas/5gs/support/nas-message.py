@@ -385,10 +385,14 @@ for (k, v) in sorted_type_list:
     if (type_list[k]["format"] == "TV" or type_list[k]["format"] == "T") and type_list[k]["length"] == "1":
         f.write("int ogs_nas_5gs_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), get_value(k)))
         f.write("{\n")
-        f.write("    memcpy(%s, pkbuf->data - 1, 1);\n\n" % get_value(k))
+        f.write("    uint16_t size = sizeof(ogs_nas_%s_t);\n\n" % v_lower(k))
+        f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
+        f.write("    memcpy(%s, pkbuf->data - size, size);\n\n" % get_value(k))
+        if "decode" in type_list[k]:
+            f.write("%s" % type_list[k]["decode"])
         f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
-        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - 1, 1);\n\n");
-        f.write("    return 0;\n")
+        f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
+        f.write("    return size;\n")
         f.write("}\n\n")
         f.write("int ogs_nas_5gs_encode_%s(ogs_pkbuf_t *pkbuf, ogs_nas_%s_t *%s)\n" % (v_lower(k), v_lower(k), get_value(k)))
         f.write("{\n")
@@ -430,7 +434,7 @@ for (k, v) in sorted_type_list:
         f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
         f.write("    return size;\n")
         f.write("}\n\n")
-    elif (type_list[k]["format"] == "LV-E" or type_list[k]["format"] == "TLV-E") and type_list[k]["value"] != "5GS mobile identity":
+    elif type_list[k]["format"] == "LV-E" or type_list[k]["format"] == "TLV-E":
         f.write("int ogs_nas_5gs_decode_%s(ogs_nas_%s_t *%s, ogs_pkbuf_t *pkbuf)\n" % (v_lower(k), v_lower(k), get_value(k)))
         f.write("{\n")
         f.write("    uint16_t size = 0;\n")
@@ -503,8 +507,8 @@ f.write("""#if !defined(OGS_NAS_INSIDE) && !defined(OGS_NAS_COMPILATION)
 extern "C" {
 #endif
 
-#define OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_ESM 0x2e
-#define OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_EMM 0x7e
+#define OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM 0x2e
+#define OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM 0x7e
 
 #define OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED 0
 
@@ -939,10 +943,10 @@ ogs_pkbuf_t *ogs_nas_5gs_plain_encode(ogs_nas_5gs_message_t *message)
             message->gsm.h.extended_protocol_discriminator);
 
     if (message->gmm.h.extended_protocol_discriminator == 
-            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_EMM)
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM)
         return ogs_nas_5gmm_encode(message);
     else if (message->gmm.h.extended_protocol_discriminator == 
-            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_ESM)
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM)
         return ogs_nas_5gsm_encode(message);
 
     return NULL;

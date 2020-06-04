@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-typedef enum { OpenAPI_n1_message_class_NULL = 0, OpenAPI_n1_message_class_5GMM, OpenAPI_n1_message_class_SM, OpenAPI_n1_message_class_LPP, OpenAPI_n1_message_class_SMS, OpenAPI_n1_message_class_UPDP } OpenAPI_n1_message_class_e;
+typedef enum { OpenAPI_n1_message_class_NULL = 0, OpenAPI_n1_message_class_5GMM, OpenAPI_n1_message_class_SM, OpenAPI_n1_message_class_LPP, OpenAPI_n1_message_class_SMS, OpenAPI_n1_message_class_UPDP, OpenAPI_n1_message_class_LCS } OpenAPI_n1_message_class_e;
 
 char* OpenAPI_n1_message_class_ToString(OpenAPI_n1_message_class_e n1_message_class);
 

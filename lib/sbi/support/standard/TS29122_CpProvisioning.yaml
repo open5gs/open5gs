@@ -1,0 +1,633 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-cp-parameter-provisioning
+  version: 1.1.0.alpha-2
+  description: |
+    API for provisioning communication pattern parameters.
+    © 2019, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.122 V16.4.0 T8 reference point for Northbound APIs
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.122/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-cp-parameter-provisioning/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{scsAsId}/subscriptions:
+    get:
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS as defined in subclause subclause 5.2.4 of 3GPP TS 29.122.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. The subscription information related to the request URI is returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CpInfo'
+                minItems: 0
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    post:
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS as defined in subclause subclause 5.2.4 of 3GPP TS 29.122.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: create new subscriptions for a given SCS/AS and the provisioning CP parameter sets.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CpInfo'
+      responses:
+        '201':
+          description: Created. The subscription was created successfully. The SCEF shall return the created subscription in the response payload body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CpInfo'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The CP parameters for all sets were not created successfully. CpReport may be included with detailed information.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CpReport'
+                minItems: 1
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{scsAsId}/subscriptions/{subscriptionId}:
+    get:
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS as defined in subclause subclause 5.2.4 of 3GPP TS 29.122.
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. The subscription information related to the request URI is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CpInfo'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      requestBody:
+        description: Modify a CP parameter provisioning subscription resource.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CpInfo'
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS as defined in subclause subclause 5.2.4 of 3GPP TS 29.122.
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. The subscription was modified successfully. The SCEF shall return an updated subscription in the response payload body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CpInfo'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The CP parameters for all sets were not updated successfully. CpReport may be included with detailed information.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CpReport'
+                minItems: 1
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS as defined in subclause subclause 5.2.4 of 3GPP TS 29.122.
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. The subscription was deleted successfully. The payload body shall be empty.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+  /{scsAsId}/subscriptions/{subscriptionId}/cpSets/{setId}:
+    get:
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS as defined in subclause subclause 5.2.4 of 3GPP TS 29.122.
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: string
+        - name: setId
+          in: path
+          description: Identifier of the CP parameter set
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. The subscription information related to the request URI is returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CpParameterSet'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    put:
+      requestBody:
+        description: Change information for a CP parameter set.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CpParameterSet'
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS as defined in subclause subclause 5.2.4 of 3GPP TS 29.122.
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: string
+        - name: setId
+          in: path
+          description: Identifier of the CP parameter set
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK. The CP parameter set resource was modified successfully. The SCEF shall return an updated CP parameter set resource in the response payload body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CpParameterSet'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '409':
+          description: The CP parameters for the CP set were not updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CpReport'
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          description: The CP parameters for the CP set were not updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CpReport'
+            application/problem+json:
+              schema:
+                $ref: 'TS29122_CommonData.yaml#/components/schemas/ProblemDetails'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+    delete:
+      parameters:
+        - name: scsAsId
+          in: path
+          description: Identifier of the SCS/AS as defined in subclause subclause 5.2.4 of 3GPP TS 29.122.
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Subscription ID
+          required: true
+          schema:
+            type: string
+        - name: setId
+          in: path
+          description: Identifier of the CP parameter set
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content. The subscription was deleted successfully. The payload body shall be empty.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    CpInfo:
+      type: object
+      properties:
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        supportedFeatures:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+        mtcProviderId:
+          type: string
+          description: Identifies the MTC Service Provider and/or MTC Application.
+        externalId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalId'
+        msisdn:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Msisdn'
+        externalGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+        cpParameterSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CpParameterSet'
+          minProperties: 1
+          description: Identifies a set of CP parameter information that may be part of this CpInfo structure.
+        cpReports:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CpReport'
+          minProperties: 1
+          description: Supplied by the SCEF and contains the CP set identifiers for which CP parameter(s) are not added or modified successfully. The failure reason is also included. Each element provides the related information for one or more CP set identifier(s) and is identified in the map via the failure identifier as key.
+          readOnly: true
+      required:
+        - cpParameterSets
+      oneOf:
+        - required: [externalId]
+        - required: [msisdn]
+        - required: [externalGroupId]
+    CpParameterSet:
+      type: object
+      properties:
+        setId:
+          type: string
+          description: SCS/AS-chosen correlator provided by the SCS/AS in the request to create a resource fo CP parameter set(s). 
+        self:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/Link'
+        validityTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        periodicCommunicationIndicator:
+          $ref: '#/components/schemas/CommunicationIndicator'
+        communicationDurationTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        periodicTime:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        scheduledCommunicationTime:
+          $ref: '#/components/schemas/ScheduledCommunicationTime'
+        scheduledCommunicationType:
+          $ref: '#/components/schemas/ScheduledCommunicationType'
+        stationaryIndication:
+          $ref: '#/components/schemas/StationaryIndication'
+        batteryInds:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatteryIndication'
+          minItems: 1
+        trafficProfile:
+          $ref: '#/components/schemas/TrafficProfile'
+        expectedUmts:
+          type: array
+          items:
+            $ref: '#/components/schemas/UmtLocationArea5G'
+          minItems: 1
+          description: Identifies the UE's expected geographical movement. The attribute is only applicable in 5G.
+        expectedUmtDays:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DayOfWeek'
+      required:
+        - setId
+    ScheduledCommunicationTime:
+      type: object
+      properties:
+        daysOfWeek:
+          type: array
+          items:
+            $ref: 'TS29122_CommonData.yaml#/components/schemas/DayOfWeek'
+          minItems: 1
+          maxItems: 6
+          description: Identifies the day(s) of the week. If absent, it indicates every day of the week.
+        timeOfDayStart:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeOfDay'
+        timeOfDayEnd:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeOfDay'
+    CpReport:
+      type: object
+      properties:
+        setIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Identifies the CP set identifier(s) which CP parameter(s) are not added or modified successfully
+        failureCode:
+          $ref: '#/components/schemas/CpFailureCode'
+      required:
+        - failureCode
+    UmtLocationArea5G:
+      allOf:
+        - $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        - type: object
+          properties:
+            umtTime:
+              $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeOfDay'
+            umtDuration:
+              $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+    CommunicationIndicator:
+      anyOf:
+      - type: string
+        enum:
+          - PERIODICALLY
+          - ON_DEMAND
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - PERIODICALLY: Identifies the UE communicates periodically
+        - ON_DEMAND: Identifies the UE communicates on demand
+    StationaryIndication:
+      anyOf:
+      - type: string
+        enum:
+          - STATIONARY
+          - MOBILE
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - STATIONARY: Identifies the UE is stationary
+        - MOBILE: Identifies the UE is mobile
+    CpFailureCode:
+      anyOf:
+      - type: string
+        enum:
+          - MALFUNCTION
+          - SET_ID_DUPLICATED
+          - OTHER_REASON
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - MALFUNCTION: This value indicates that something functions wrongly in CP parameter provisioning or the CP parameter provisioning does not function at all.
+        - SET_ID_DUPLICATED: The received CP set identifier(s) are already provisioned.
+        - OTHER_REASON: Other reason unspecified.
+    BatteryIndication:
+      anyOf:
+      - type: string
+        enum:
+          - BATTERY_RECHARGE
+          - BATTERY_REPLACE
+          - BATTERY_NO_RECHARGE
+          - BATTERY_NO_REPLACE
+          - NO_BATTERY
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - BATTERY_RECHARGE: UE powered with rechargeable battery.
+        - BATTERY_REPLACE: UE powered with replaceable battery.
+        - BATTERY_NO_RECHARGE: UE powered with no rechargeable battery.
+        - BATTERY_NO_REPLACE: UE powered with no replaceable battery.
+        - NO_BATTERY: UE not battery powered.
+    TrafficProfile:
+      anyOf:
+      - type: string
+        enum:
+          - SINGLE_TRANS_UL
+          - SINGLE_TRANS_DL
+          - DUAL_TRANS_UL_FIRST
+          - DUAL_TRANS_DL_FIRST
+          - MULTI_TRANS
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - SINGLE_TRANS_UL: Uplink single packet transmission.
+        - SINGLE_TRANS_DL: Downlink single packet transmission.
+        - DUAL_TRANS_UL_FIRST: Dual packet transmission, firstly uplink packet transmission with subsequent downlink packet transmission.
+        - DUAL_TRANS_DL_FIRST: Dual packet transmission, firstly downlink packet transmission with subsequent uplink packet transmission.
+        - MULTI_TRANS: Multiple packet transmission.
+    ScheduledCommunicationType:
+      anyOf:
+      - type: string
+        enum:
+          - DOWNLINK
+          - UPLINK
+          - BIDIRECTIONAL
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - DOWNLINK: Downlink only.
+        - UPLINK: Uplink only.
+        - BIDIRECTIONAL: Bi-directional.

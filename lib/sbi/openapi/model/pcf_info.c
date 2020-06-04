@@ -10,7 +10,8 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
     OpenAPI_list_t *supi_ranges,
     OpenAPI_list_t *gpsi_ranges,
     char *rx_diam_host,
-    char *rx_diam_realm
+    char *rx_diam_realm,
+    int v2x_support_ind
     )
 {
     OpenAPI_pcf_info_t *pcf_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_pcf_info_t));
@@ -23,6 +24,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
     pcf_info_local_var->gpsi_ranges = gpsi_ranges;
     pcf_info_local_var->rx_diam_host = rx_diam_host;
     pcf_info_local_var->rx_diam_realm = rx_diam_realm;
+    pcf_info_local_var->v2x_support_ind = v2x_support_ind;
 
     return pcf_info_local_var;
 }
@@ -138,6 +140,13 @@ cJSON *OpenAPI_pcf_info_convertToJSON(OpenAPI_pcf_info_t *pcf_info)
         }
     }
 
+    if (pcf_info->v2x_support_ind >= 0) {
+        if (cJSON_AddBoolToObject(item, "v2xSupportInd", pcf_info->v2x_support_ind) == NULL) {
+            ogs_error("OpenAPI_pcf_info_convertToJSON() failed [v2x_support_ind]");
+            goto end;
+        }
+    }
+
 end:
     return item;
 }
@@ -238,13 +247,23 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON)
         }
     }
 
+    cJSON *v2x_support_ind = cJSON_GetObjectItemCaseSensitive(pcf_infoJSON, "v2xSupportInd");
+
+    if (v2x_support_ind) {
+        if (!cJSON_IsBool(v2x_support_ind)) {
+            ogs_error("OpenAPI_pcf_info_parseFromJSON() failed [v2x_support_ind]");
+            goto end;
+        }
+    }
+
     pcf_info_local_var = OpenAPI_pcf_info_create (
         group_id ? ogs_strdup(group_id->valuestring) : NULL,
         dnn_list ? dnn_listList : NULL,
         supi_ranges ? supi_rangesList : NULL,
         gpsi_ranges ? gpsi_rangesList : NULL,
         rx_diam_host ? ogs_strdup(rx_diam_host->valuestring) : NULL,
-        rx_diam_realm ? ogs_strdup(rx_diam_realm->valuestring) : NULL
+        rx_diam_realm ? ogs_strdup(rx_diam_realm->valuestring) : NULL,
+        v2x_support_ind ? v2x_support_ind->valueint : 0
         );
 
     return pcf_info_local_var;

@@ -53,12 +53,12 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     union avp_value val;
 
     char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
-    uint8_t opc[HSS_KEY_LEN];
-    uint8_t sqn[HSS_SQN_LEN];
+    uint8_t opc[OGS_KEY_LEN];
+    uint8_t sqn[OGS_SQN_LEN];
     uint8_t autn[OGS_AUTN_LEN];
-    uint8_t ik[HSS_KEY_LEN];
-    uint8_t ck[HSS_KEY_LEN];
-    uint8_t ak[HSS_AK_LEN];
+    uint8_t ik[OGS_KEY_LEN];
+    uint8_t ck[OGS_KEY_LEN];
+    uint8_t ak[OGS_AK_LEN];
     uint8_t xres[OGS_MAX_RES_LEN];
     uint8_t kasme[OGS_SHA256_DIGEST_SIZE];
     size_t xres_len = 8;
@@ -107,28 +107,29 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_search_avp(qry, ogs_diam_s6a_req_eutran_auth_info, &avp);
     ogs_assert(ret == 0);
     if (avp) {
-        ret = fd_avp_search_avp(avp, ogs_diam_s6a_re_synchronization_info, &avpch);
+        ret = fd_avp_search_avp(
+                avp, ogs_diam_s6a_re_synchronization_info, &avpch);
         ogs_assert(ret == 0);
         if (avpch) {
             ret = fd_msg_avp_hdr(avpch, &hdr);
             ogs_assert(ret == 0);
             hss_auc_sqn(opc, auth_info.k, hdr->avp_value->os.data, sqn, mac_s);
             if (memcmp(mac_s, hdr->avp_value->os.data +
-                        OGS_RAND_LEN + HSS_SQN_LEN, MAC_S_LEN) == 0) {
+                        OGS_RAND_LEN + OGS_SQN_LEN, MAC_S_LEN) == 0) {
                 ogs_random(auth_info.rand, OGS_RAND_LEN);
-                auth_info.sqn = ogs_buffer_to_uint64(sqn, HSS_SQN_LEN);
+                auth_info.sqn = ogs_buffer_to_uint64(sqn, OGS_SQN_LEN);
                 /* 33.102 C.3.4 Guide : IND + 1 */
-                auth_info.sqn = (auth_info.sqn + 32 + 1) & HSS_MAX_SQN;
+                auth_info.sqn = (auth_info.sqn + 32 + 1) & OGS_MAX_SQN;
             } else {
                 ogs_error("Re-synch MAC failed for IMSI:`%s`", imsi_bcd);
                 ogs_log_print(OGS_LOG_ERROR, "MAC_S: ");
                 ogs_log_hexdump(OGS_LOG_ERROR, mac_s, MAC_S_LEN);
                 ogs_log_hexdump(OGS_LOG_ERROR,
                     (void*)(hdr->avp_value->os.data + 
-                        OGS_RAND_LEN + HSS_SQN_LEN),
+                        OGS_RAND_LEN + OGS_SQN_LEN),
                     MAC_S_LEN);
                 ogs_log_print(OGS_LOG_ERROR, "SQN: ");
-                ogs_log_hexdump(OGS_LOG_ERROR, sqn, HSS_SQN_LEN);
+                ogs_log_hexdump(OGS_LOG_ERROR, sqn, OGS_SQN_LEN);
                 result_code = OGS_DIAM_S6A_AUTHENTICATION_DATA_UNAVAILABLE;
                 goto out;
             }
@@ -158,7 +159,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
 #endif
 
     milenage_generate(opc, auth_info.amf, auth_info.k,
-        ogs_uint64_to_buffer(auth_info.sqn, HSS_SQN_LEN, sqn), auth_info.rand,
+        ogs_uint64_to_buffer(auth_info.sqn, OGS_SQN_LEN, sqn), auth_info.rand,
         autn, ik, ck, ak, xres, &xres_len);
     hss_auc_kasme(ck, ik, hdr->avp_value->os.data, sqn, ak, kasme);
 
@@ -171,7 +172,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_new(ogs_diam_s6a_rand, 0, &avp_rand);
     ogs_assert(ret == 0);
     val.os.data = auth_info.rand;
-    val.os.len = HSS_KEY_LEN;
+    val.os.len = OGS_KEY_LEN;
     ret = fd_msg_avp_setvalue(avp_rand, &val);
     ogs_assert(ret == 0);
     ret = fd_msg_avp_add(avp_e_utran_vector, MSG_BRW_LAST_CHILD, avp_rand);
@@ -223,7 +224,8 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     ogs_assert(ret == 0);
 
     /* Set Vendor-Specific-Application-Id AVP */
-    ret = ogs_diam_message_vendor_specific_appid_set(ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
 
 	/* Send the answer */
@@ -253,7 +255,8 @@ out:
     ogs_assert(ret == 0);
 
     /* Set Vendor-Specific-Application-Id AVP */
-    ret = ogs_diam_message_vendor_specific_appid_set(ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
 
 	ret = fd_msg_send(msg, NULL, NULL);
@@ -361,7 +364,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
             ogs_assert(ret == 0);
         }
 
-        ret = fd_msg_avp_new(ogs_diam_s6a_subscriber_status, 0, &avp_subscriber_status);
+        ret = fd_msg_avp_new(
+                ogs_diam_s6a_subscriber_status, 0, &avp_subscriber_status);
         ogs_assert(ret == 0);
         val.i32 = subscription_data.subscriber_status;
         ret = fd_msg_avp_setvalue(avp_subscriber_status, &val);
@@ -381,7 +385,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
             /* Set the AMBR */
         ret = fd_msg_avp_new(ogs_diam_s6a_ambr, 0, &avp_ambr);
         ogs_assert(ret == 0);
-        ret = fd_msg_avp_new(ogs_diam_s6a_max_bandwidth_ul, 0, &avp_max_bandwidth_ul);
+        ret = fd_msg_avp_new(
+                ogs_diam_s6a_max_bandwidth_ul, 0, &avp_max_bandwidth_ul);
         ogs_assert(ret == 0);
         val.u32 = subscription_data.ambr.uplink;
         ret = fd_msg_avp_setvalue(avp_max_bandwidth_ul, &val);
@@ -389,7 +394,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_add(
                 avp_ambr, MSG_BRW_LAST_CHILD, avp_max_bandwidth_ul);
         ogs_assert(ret == 0);
-        ret = fd_msg_avp_new(ogs_diam_s6a_max_bandwidth_dl, 0, &avp_max_bandwidth_dl);
+        ret = fd_msg_avp_new(
+                ogs_diam_s6a_max_bandwidth_dl, 0, &avp_max_bandwidth_dl);
         ogs_assert(ret == 0);
         val.u32 = subscription_data.ambr.downlink;
         ret = fd_msg_avp_setvalue(avp_max_bandwidth_dl, &val);
@@ -545,11 +551,13 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 ogs_assert(ret == 0);
 
                         /* Set Allocation retention priority */
-                ret = fd_msg_avp_new(ogs_diam_s6a_allocation_retention_priority, 0, 
+                ret = fd_msg_avp_new(
+                        ogs_diam_s6a_allocation_retention_priority, 0, 
                         &allocation_retention_priority);
                 ogs_assert(ret == 0);
 
-                ret = fd_msg_avp_new(ogs_diam_s6a_priority_level, 0, &priority_level);
+                ret = fd_msg_avp_new(
+                        ogs_diam_s6a_priority_level, 0, &priority_level);
                 ogs_assert(ret == 0);
                 val.u32 = pdn->qos.arp.priority_level;
                 ret = fd_msg_avp_setvalue(priority_level, &val);
@@ -668,7 +676,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     }
 
     /* Set Vendor-Specific-Application-Id AVP */
-    ret = ogs_diam_message_vendor_specific_appid_set(ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
 
 	/* Send the answer */
@@ -698,7 +707,8 @@ out:
     ogs_assert(ret == 0);
 
     /* Set Vendor-Specific-Application-Id AVP */
-    ret = ogs_diam_message_vendor_specific_appid_set(ans, OGS_DIAM_S6A_APPLICATION_ID);
+    ret = ogs_diam_message_vendor_specific_appid_set(
+            ans, OGS_DIAM_S6A_APPLICATION_ID);
     ogs_assert(ret == 0);
 
 	ret = fd_msg_send(msg, NULL, NULL);

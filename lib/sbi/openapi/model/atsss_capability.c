@@ -38,14 +38,14 @@ cJSON *OpenAPI_atsss_capability_convertToJSON(OpenAPI_atsss_capability_t *atsss_
     }
 
     item = cJSON_CreateObject();
-    if (atsss_capability->atsss_ll) {
+    if (atsss_capability->atsss_ll >= 0) {
         if (cJSON_AddBoolToObject(item, "atsssLL", atsss_capability->atsss_ll) == NULL) {
             ogs_error("OpenAPI_atsss_capability_convertToJSON() failed [atsss_ll]");
             goto end;
         }
     }
 
-    if (atsss_capability->mptcp) {
+    if (atsss_capability->mptcp >= 0) {
         if (cJSON_AddBoolToObject(item, "mptcp", atsss_capability->mptcp) == NULL) {
             ogs_error("OpenAPI_atsss_capability_convertToJSON() failed [mptcp]");
             goto end;

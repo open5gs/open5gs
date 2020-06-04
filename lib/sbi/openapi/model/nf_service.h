@@ -1,7 +1,7 @@
 /*
  * nf_service.h
  *
- *
+ * Information of a given NF Service Instance; it is part of the NFProfile of an NF Instance
  */
 
 #ifndef _OpenAPI_nf_service_H_
@@ -19,8 +19,11 @@
 #include "nf_service_version.h"
 #include "nf_type.h"
 #include "plmn_id.h"
+#include "plmn_id_nid.h"
+#include "plmn_snssai.h"
 #include "snssai.h"
 #include "uri_scheme.h"
+#include "vendor_specific_feature.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,15 +42,23 @@ typedef struct OpenAPI_nf_service_s {
     char *api_prefix;
     OpenAPI_list_t *default_notification_subscriptions;
     OpenAPI_list_t *allowed_plmns;
+    OpenAPI_list_t *allowed_snpns;
     OpenAPI_list_t *allowed_nf_types;
     OpenAPI_list_t *allowed_nf_domains;
     OpenAPI_list_t *allowed_nssais;
     int priority;
     int capacity;
     int load;
+    char *load_time_stamp;
     char *recovery_time;
     struct OpenAPI_chf_service_info_s *chf_service_info;
     char *supported_features;
+    OpenAPI_list_t *nf_service_set_id_list;
+    OpenAPI_list_t *s_nssais;
+    OpenAPI_list_t *per_plmn_snssai_list;
+    char *vendor_id;
+    OpenAPI_list_t* supported_vendor_specific_features;
+    int oauth2_required;
 } OpenAPI_nf_service_t;
 
 OpenAPI_nf_service_t *OpenAPI_nf_service_create(
@@ -62,15 +73,23 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
     char *api_prefix,
     OpenAPI_list_t *default_notification_subscriptions,
     OpenAPI_list_t *allowed_plmns,
+    OpenAPI_list_t *allowed_snpns,
     OpenAPI_list_t *allowed_nf_types,
     OpenAPI_list_t *allowed_nf_domains,
     OpenAPI_list_t *allowed_nssais,
     int priority,
     int capacity,
     int load,
+    char *load_time_stamp,
     char *recovery_time,
     OpenAPI_chf_service_info_t *chf_service_info,
-    char *supported_features
+    char *supported_features,
+    OpenAPI_list_t *nf_service_set_id_list,
+    OpenAPI_list_t *s_nssais,
+    OpenAPI_list_t *per_plmn_snssai_list,
+    char *vendor_id,
+    OpenAPI_list_t* supported_vendor_specific_features,
+    int oauth2_required
     );
 void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service);
 OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON);

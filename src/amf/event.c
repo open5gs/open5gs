@@ -95,6 +95,15 @@ const char *amf_event_get_name(amf_event_t *e)
     case AMF_EVT_NGAP_LO_CONNREFUSED:
         return "AMF_EVT_NGAP_LO_CONNREFUSED";
 
+    case AMF_EVT_5GMM_MESSAGE:
+        return "AMF_EVT_5GMM_MESSAGE";
+    case AMF_EVT_5GMM_TIMER:
+        return "AMF_EVT_5GMM_TIMER";
+    case AMF_EVT_5GSM_MESSAGE:
+        return "AMF_EVT_5GSM_MESSAGE";
+    case AMF_EVT_5GSM_TIMER:
+        return "AMF_EVT_5GSM_TIMER";
+
     default: 
        break;
     }

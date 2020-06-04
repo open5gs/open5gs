@@ -1,0 +1,701 @@
+openapi: 3.0.0
+info:
+  title: 3gpp-analyticsexposure
+  version: 1.0.0.alpha-2
+  description: |
+    API for Analytics Exposure.
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+externalDocs:
+  description: 3GPP TS 29.522 V16.3.0; 5G System; Network Exposure Function Northbound APIs.
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.522/'
+security:
+  - {}
+  - oAuth2ClientCredentials: []
+servers:
+  - url: '{apiRoot}/3gpp-analyticsexposure/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in subclause 5.2.4 of 3GPP TS 29.122.
+paths:
+  /{afId}/subscriptions:
+    get:
+      summary: read all of the active subscriptions for the AF
+      tags:
+        - AF level GET Operation
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (Successful get all of the active subscriptions for the AF)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AnalyticsExposureSubsc'
+                minItems: 0
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    post:
+      summary: Creates a new subscription resource
+      tags:
+        - subscription level POST Operation
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: new subscription creation
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyticsExposureSubsc'
+      callbacks:
+        notification:
+          '{request.body#/notifUri}':
+            post:
+              requestBody:  # contents of the callback message
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/AnalyticsEventNotification'
+              responses:
+                '204':
+                  description: No Content (successful notification)
+                '400':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+                '401':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+                '403':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+                '404':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+                '411':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+                '413':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+                '415':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+                '429':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+                '500':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+                '503':
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+                default:
+                  $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+      responses:
+        '201':
+          description: Created (Successful creation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsExposureSubsc'
+          headers:
+            Location:
+              description: 'Contains the URI of the newly created resource'
+              required: true
+              schema:
+                type: string
+        '204':
+          description: Successful case. The resource has been successfully created and no additional content is to be sent in the response message.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{afId}/subscriptions/{subscriptionId}:
+    get:
+      summary: read an active subscription for the AF and the subscription Id
+      tags:
+        - Subscription level GET Operation
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK (Successful get the active subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsExposureSubsc'
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '406':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/406'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    put:
+      summary: Updates/replaces an existing subscription resource
+      tags:
+        - Subscription level PUT Operation
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Parameters to update/replace the existing subscription
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyticsExposureSubsc'
+      responses:
+        '200':
+          description: OK (Successful deletion of the existing subscription)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsExposureSubsc'
+        '204':
+          description: Successful case. The resource has been successfully updated and no additional content is to be sent in the response message.
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+    delete:
+      summary: Deletes an already existing subscription
+      tags:
+        - Subscription level DELETE Operation
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+        - name: subscriptionId
+          in: path
+          description: Identifier of the subscription resource
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content (Successful deletion of the existing subscription)
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+  /{afId}/fetch:
+    post:
+      summary: Fetch analytics information
+      tags:
+        - custom operation
+      parameters:
+        - name: afId
+          in: path
+          description: Identifier of the AF
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyticsRequest'
+      responses:
+        '200':
+          description: The requested information was returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsData'
+        '204':
+          description: No Content (The requested Analytics data does not exist)
+        '400':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/400'
+        '401':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/401'
+        '403':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/403'
+        '404':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/404'
+        '411':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/411'
+        '413':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/413'
+        '415':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/415'
+        '429':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/429'
+        '500':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/500'
+        '503':
+          $ref: 'TS29122_CommonData.yaml#/components/responses/503'
+        default:
+          $ref: 'TS29122_CommonData.yaml#/components/responses/default'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{tokenUrl}'
+          scopes: {}
+  schemas: 
+    AnalyticsExposureSubsc:
+      type: object
+      properties:
+        analyEventsSubs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsEventSubsc'
+          minItems: 1
+        analyRepInfo:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/EventReportingRequirement'
+        notifUri:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uri'
+        notifId:
+          type: string
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - analyEventsSubs
+        - notifUri
+        - notifId
+    AnalyticsEventNotification:
+      type: object
+      properties:
+        notifId:
+          type: string
+        analyEventNotifs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalyticsEventNotif'
+          minItems: 1
+    AnalyticsEventNotif:
+      type: object
+      properties:
+        analyEvent:
+          $ref: '#/components/schemas/AnalyticsEvent'
+        timeStamp:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        ueMobilityInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeMobilityExposure'
+          minItems: 1
+        ueCommInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeCommunication'
+          minItems: 1
+        abnormalInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/AbnormalExposure'
+          minItems: 1
+        congestInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/CongestInfo'
+          minItems: 1
+        nwPerfInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetworkPerfExposure'
+          minItems: 1
+        qosSustainInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosSustainabilityExposure'
+          minItems: 1
+      required:
+        - analyEvent
+        - timeStamp
+    AnalyticsEventSubsc:
+      type: object
+      properties:
+        analyEvent:
+          $ref: '#/components/schemas/AnalyticsEvent'
+        analyEventFilter:
+          $ref: '#/components/schemas/AnalyticsEventFilterSubsc'
+        tgtUe:
+          $ref: '#/components/schemas/TargetUeId'
+      required:
+        - analyEvent
+        - tgtUe
+    AnalyticsEventFilterSubsc:
+      type: object
+      properties:
+        nwPerfReqs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NetworkPerfRequirement'
+          minItems: 1
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        appIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+        excepRequs:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/Exception'
+          minItems: 1
+        exptAnaType:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ExpectedAnalyticsType'
+        exptUeBehav:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExpectedUeBehaviourData'
+        reptThlds:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ThresholdLevel'
+          minItems: 1
+        maxAnaEntry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        qosReq:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/QosRequirement'
+        qosFlowRetThds:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RetainabilityThreshold'
+          minItems: 1
+        ranUeThrouThds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+          minItems: 1
+    TargetUeId:
+      type: object
+      properties:
+        anyUeInd:
+          type: boolean
+        gpsi:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+        exterGroupId:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/ExternalGroupId'
+    UeMobilityExposure:
+      type: object
+      properties:
+        ts:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DateTime'
+        recurringTime:
+          $ref: 'TS29122_CpProvisioning.yaml#/components/schemas/ScheduledCommunicationTime'
+        duration:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/DurationSec'
+        durationVariance:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Float'
+        locInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeLocationInfo'
+          minItems: 1
+      required:
+        - duration
+        - locInfo
+    UeLocationInfo:
+      type: object
+      properties:
+        loc:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        ratio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - loc
+    AnalyticsRequest:
+      type: object
+      properties:
+        analyEvent:
+          $ref: '#/components/schemas/AnalyticsEvent'
+        analyEventFilter:
+          $ref: '#/components/schemas/AnalyticsEventFilter'
+        analyRep:
+          $ref: 'TS29520_Nnwdaf_AnalyticsInfo.yaml#/components/schemas/AnalyticsReportingRequirement'
+        tgtUe:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/TargetUeInformation'
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - analyEvent
+        - suppFeat
+    AnalyticsEventFilter:
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        maxAnaEntry:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        dnn:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Dnn'
+        nwPerfTypes:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NetworkPerfType'
+          minItems: 1
+        appIds:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/ApplicationId'
+          minItems: 1
+        excepIds:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ExceptionId'
+          minItems: 1
+        exptAnaType:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ExpectedAnalyticsType'
+        exptUeBehav:
+          $ref: 'TS29503_Nudm_SDM.yaml#/components/schemas/ExpectedUeBehaviourData'
+        snssai:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+        qosReq:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/QosRequirement'
+    AnalyticsData:
+      type: object
+      properties:
+        ueMobilityInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/UeMobilityExposure'
+          minItems: 1
+        ueCommInfos:
+          type: array
+          items:
+            $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/UeCommunication'
+          minItems: 1
+        nwPerfInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/NetworkPerfExposure'
+          minItems: 1
+        abnormalInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/AbnormalExposure'
+          minItems: 1
+        congestInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/CongestInfo'
+          minItems: 1
+        qosSustainInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/QosSustainabilityExposure'
+          minItems: 1
+        suppFeat:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SupportedFeatures'
+      required:
+        - suppFeat
+    NetworkPerfExposure:
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        nwPerfType:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/NetworkPerfType'
+        relativeRatio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        absoluteNum:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - locArea
+        - nwPerfType
+    AbnormalExposure:
+      type: object
+      properties:
+        gpsis:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Gpsi'
+          minItems: 1
+        excep:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/Exception'
+        ratio:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/SamplingRatio'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+        addtMeasInfo:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/AdditionalMeasurement'
+      required:
+        - excep
+    CongestInfo:
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        cngAnas:
+          type: array
+          items:
+            $ref: '#/components/schemas/CongestionAnalytics'
+      required:
+        - locArea
+        - cngAnas
+    CongestionAnalytics:
+      type: object
+      properties:
+        cngType:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/CongestionType'
+        tmWdw:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/TimeWindow'
+        nsi:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/ThresholdLevel'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - cngType
+        - tmWdw
+        - nsi
+    QosSustainabilityExposure:
+      type: object
+      properties:
+        locArea:
+          $ref: 'TS29122_CommonData.yaml#/components/schemas/LocationArea5G'
+        startTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        endTs:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/DateTime'
+        qosFlowRetThd:
+          $ref: 'TS29520_Nnwdaf_EventsSubscription.yaml#/components/schemas/RetainabilityThreshold'
+        ranUeThrouThd:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/BitRate'
+        confidence:
+          $ref: 'TS29571_CommonData.yaml#/components/schemas/Uinteger'
+      required:
+        - locArea
+        - startTs
+        - endTs
+    AnalyticsEvent:
+      anyOf:
+      - type: string
+        enum:
+          - UE_MOBILITY
+          - UE_COMM
+          - ABNORMAL_BEHAVIOR
+          - CONGESTION
+          - NETWORK_PERFORMANCE
+          - QOS_SUSTAINABILITY
+      - type: string
+        description: >
+          This string provides forward-compatibility with future
+          extensions to the enumeration but is not used to encode
+          content defined in the present version of this API.
+      description: >
+        Possible values are
+        - UE_MOBILITY: The AF requests to be notified about analytics information of UE mobility.
+        - UE_COMM: The AF requests to be notified about analytics information of UE communication.
+        - ABNORMAL_BEHAVIOR: The AF requests to be notified about analytics information of UE’s abnormal behavior.
+        - CONGESTION: The AF requests to be notified about analytics information of user data congestion information. 
+        - NETWORK_PERFORMANCE: The AF requests to be notified about analytics information of network performance. 
+        - QOS_SUSTAINABILITY: The AF requests to be notified about analytics information of QoS sustainability.

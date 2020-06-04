@@ -1,7 +1,7 @@
 /*
  * ipv6_prefix_range.h
  *
- *
+ * Range of IPv6 prefixes
  */
 
 #ifndef _OpenAPI_ipv6_prefix_range_H_

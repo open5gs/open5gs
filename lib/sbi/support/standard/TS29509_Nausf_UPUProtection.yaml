@@ -1,0 +1,111 @@
+openapi: 3.0.0
+info:
+  version: 1.1.0.alpha-2
+  title: Nausf_UPUProtection Service
+  description: |
+    AUSF UPU Protection Service
+    © 2020, 3GPP Organizational Partners (ARIB, ATIS, CCSA, ETSI, TSDSI, TTA, TTC).
+    All rights reserved.
+
+externalDocs:
+  description: 3GPP TS 29.509 V16.3.0; 5G System; Authentication Server Services
+  url: 'http://www.3gpp.org/ftp/Specs/archive/29_series/29.509'
+
+servers:
+  - url: '{apiRoot}/nausf-upuprotection/v1'
+    variables:
+      apiRoot:
+        default: https://example.com
+        description: apiRoot as defined in clause 4.4 of 3GPP TS 29.501
+security:
+  - {}
+  - oAuth2ClientCredentials:
+      - nausf-upuprotection
+paths:
+  /{supi}/ue-upu:
+    post:
+      parameters:
+        - name: supi
+          in: path
+          description: Identifier of the UE
+          required: true
+          schema:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Supi'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpuInfo'
+        required: true
+      responses:
+        '200':
+          description: UpuSecurityInfo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpuSecurityInfo'
+        '503':
+          description: Service Unavailable
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'TS29571_CommonData.yaml#/components/schemas/ProblemDetails'
+
+components:
+  securitySchemes:
+    oAuth2ClientCredentials:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: '{nrfApiRoot}/oauth2/token'
+          scopes:
+            nausf-upuprotection: Access to the Nausf_UPUProtection API
+  schemas:
+    UpuInfo:
+      type: object
+      properties:
+        upuDataList:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpuData'
+          minItems: 1
+        upuAckInd:
+          $ref: '#/components/schemas/UpuAckInd'
+      required:
+        - upuDataList
+        - upuAckInd
+    UpuSecurityInfo:
+      type: object
+      properties:
+        upuMacIausf:
+          $ref: '#/components/schemas/UpuMac'
+        counterUpu:
+          $ref: '#/components/schemas/CounterUpu'
+        upuXmacIue:
+          $ref: '#/components/schemas/UpuMac'
+      required:
+        - upuMacIausf
+        - counterUpu
+    UpuData:
+      type: object
+      properties:
+        secPacket:
+          $ref: 'TS29509_Nausf_SoRProtection.yaml#/components/schemas/SecuredPacket'
+        defaultConfNssai:
+          type: array
+          items:
+            $ref: 'TS29571_CommonData.yaml#/components/schemas/Snssai'
+          minItems: 1
+        routingId:
+          $ref: 'TS29544_Nspaf_SecuredPacket.yaml#/components/schemas/RoutingId'
+      oneOf:
+        - required: [secPacket]
+        - required: [defaultConfNssai]
+    UpuMac:
+      type: string
+      pattern: '^[A-Fa-f0-9]{32}$'
+    CounterUpu:
+      type: string
+      pattern: '^[A-Fa-f0-9]{4}$'
+    UpuAckInd:
+      type: boolean

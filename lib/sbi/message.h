@@ -77,22 +77,45 @@ extern "C" {
 
 #define OGS_SBI_API_VERSION                         "v1"
 #define OGS_SBI_API_FULL_VERSION                    "1.0.0"
-#define OGS_SBI_SERVICE_NAME_NRF_NFM                "nnrf-nfm"
-#define OGS_SBI_SERVICE_NAME_NRF_DISC               "nnrf-disc"
-#define OGS_SBI_SERVICE_NAME_SMF_PDUSESSION         "nsmf-pdusession"
-#define OGS_SBI_SERVICE_NAME_SMF_EVENT_EXPOSURE     "nsmf-event-exposure"
 
+#define OGS_SBI_SERVICE_NAME_NNRF_NFM               "nnrf-nfm"
+#define OGS_SBI_SERVICE_NAME_NNRF_DISC              "nnrf-disc"
 #define OGS_SBI_RESOURCE_NAME_NF_INSTANCES          "nf-instances"
 #define OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS         "subscriptions"
 #define OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY      "nf-status-notify"
+
+#define OGS_SBI_SERVICE_NAME_NAUSF_AUTH             "nausf-auth"
+#define OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS    "ue-authentications"
+#define OGS_SBI_RESOURCE_NAME_5G_AKA                "5g-aka"
+#define OGS_SBI_RESOURCE_NAME_5G_AKA_CONFIRMATION   "5g-aka-confirmation"
+#define OGS_SBI_RESOURCE_NAME_EAP_SESSION           "eap-session"
+
+#define OGS_SBI_SERVICE_NAME_NUDM_SDM               "nudm-sdm"
+#define OGS_SBI_SERVICE_NAME_NUDM_UECM              "nudm-uecm"
+#define OGS_SBI_SERVICE_NAME_NUDM_UEAU              "nudm-ueau"
+#define OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION  "security-information"
+#define OGS_SBI_RESOURCE_NAME_GENERATE_AUTH_DATA    "generate-auth-data"
+#define OGS_SBI_RESOURCE_NAME_AUTH_EVENTS           "auth-events"
+
+#define OGS_SBI_SERVICE_NAME_NUDR_DR                "nudr-dr"
+#define OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA     "subscription-data"
+#define OGS_SBI_RESOURCE_NAME_AUTHENTICATION_DATA   "authentication-data"
+#define OGS_SBI_RESOURCE_NAME_AUTHENTICATION_SUBSCRIPTION \
+                                            "authentication-subscription"
+#define OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS "authentication-status"
+
+#define OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION        "nsmf-pdusession"
+#define OGS_SBI_SERVICE_NAME_NSMF_EVENT_EXPOSURE    "nsmf-event-exposure"
 
 #define OGS_SBI_PARAM_NF_TYPE                       "nf-type"
 #define OGS_SBI_PARAM_TARGET_NF_TYPE                "target-nf-type"
 #define OGS_SBI_PARAM_REQUESTER_NF_TYPE             "requester-nf-type"
 #define OGS_SBI_PARAM_LIMIT                         "limit"
 
+#define OGS_SBI_ACCEPT                              "Accept"
 #define OGS_SBI_ACCEPT_ENCODING                     "Accept-Encoding"
 #define OGS_SBI_CONTENT_TYPE                        "Content-Type"
+#define OGS_SBI_LOCATION                            "Location"
 #define OGS_SBI_CONTENT_JSON_TYPE                   "application/json"
 #define OGS_SBI_CONTENT_PROBLEM_TYPE                "application/problem+json"
 #define OGS_SBI_CONTENT_PATCH_TYPE                  \
@@ -115,18 +138,20 @@ typedef struct ogs_sbi_header_s {
     } api;
 
     struct {
-        char *name;
-        char *id;
+#define OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT 8
+        char *component[OGS_SBI_MAX_NUM_OF_RESOURCE_COMPONENT];
     } resource;
+
 } ogs_sbi_header_t;
 
 typedef struct ogs_sbi_message_s {
     ogs_sbi_header_t h;
 
     struct {
+        char *accept;
         char *content_encoding;
         char *content_type;
-        bool location;
+        char *location;
         char *cache_control;
     } http;
 
@@ -146,6 +171,14 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_subscription_data_t *SubscriptionData;
     OpenAPI_notification_data_t *NotificationData;
     OpenAPI_search_result_t *SearchResult;
+    OpenAPI_authentication_info_t *AuthenticationInfo;
+    OpenAPI_authentication_info_request_t *AuthenticationInfoRequest;
+    OpenAPI_authentication_info_result_t *AuthenticationInfoResult;
+    OpenAPI_authentication_subscription_t *AuthenticationSubscription;
+    OpenAPI_ue_authentication_ctx_t *UeAuthenticationCtx;
+    OpenAPI_confirmation_data_t *ConfirmationData;
+    OpenAPI_confirmation_data_response_t *ConfirmationDataResponse;
+    OpenAPI_auth_event_t *AuthEvent;
 
     ogs_sbi_links_t *links;
 } ogs_sbi_message_t;
@@ -163,7 +196,8 @@ int ogs_sbi_parse_request(
 
 ogs_sbi_response_t *ogs_sbi_response_new(void);
 void ogs_sbi_response_free(ogs_sbi_response_t *response);
-ogs_sbi_response_t *ogs_sbi_build_response(ogs_sbi_message_t *message);
+ogs_sbi_response_t *ogs_sbi_build_response(
+        ogs_sbi_message_t *message, int status);
 int ogs_sbi_parse_response(
         ogs_sbi_message_t *message, ogs_sbi_response_t *response);
 

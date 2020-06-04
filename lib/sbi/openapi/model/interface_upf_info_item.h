@@ -1,7 +1,7 @@
 /*
  * interface_upf_info_item.h
  *
- *
+ * Information of a given IP interface of an UPF
  */
 
 #ifndef _OpenAPI_interface_upf_info_item_H_

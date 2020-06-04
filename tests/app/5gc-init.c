@@ -20,16 +20,15 @@
 #include "test-5gc.h"
 
 static ogs_thread_t *nrf_thread = NULL;
-static ogs_thread_t *smf_thread = NULL;
+static ogs_thread_t *ausf_thread = NULL;
+static ogs_thread_t *udm_thread = NULL;
+static ogs_thread_t *udr_thread = NULL;
 static ogs_thread_t *upf_thread = NULL;
-#if 0
+static ogs_thread_t *smf_thread = NULL;
 static ogs_thread_t *amf_thread = NULL;
-#endif
 
 int app_initialize(const char *const argv[])
 {
-    int rv;
-
     const char *argv_out[OGS_ARG_MAX];
     bool user_config = false;
     int i = 0;
@@ -50,29 +49,30 @@ int app_initialize(const char *const argv[])
 
     if (ogs_config()->parameter.no_nrf == 0)
         nrf_thread = test_child_create("nrf", argv_out);
+    if (ogs_config()->parameter.no_ausf == 0)
+        ausf_thread = test_child_create("ausf", argv_out);
+    if (ogs_config()->parameter.no_udm == 0)
+        udm_thread = test_child_create("udm", argv_out);
+    if (ogs_config()->parameter.no_udr == 0)
+        udr_thread = test_child_create("udr", argv_out);
     if (ogs_config()->parameter.no_upf == 0)
         upf_thread = test_child_create("upf", argv_out);
     if (ogs_config()->parameter.no_smf == 0)
         smf_thread = test_child_create("smf", argv_out);
-
-    ogs_sctp_init(ogs_config()->usrsctp.udp_port);
-
-    rv = amf_initialize();
-    ogs_assert(rv == OGS_OK);
-    ogs_info("AMF initialize...done");
+    if (ogs_config()->parameter.no_amf == 0)
+        amf_thread = test_child_create("amf", argv_out);
 
     return OGS_OK;;
 }
 
 void app_terminate(void)
 {
-    amf_terminate();
-
-    ogs_sctp_final();
-    ogs_info("AMF terminate...done");
-
+    if (amf_thread) ogs_thread_destroy(amf_thread);
     if (smf_thread) ogs_thread_destroy(smf_thread);
     if (upf_thread) ogs_thread_destroy(upf_thread);
+    if (udm_thread) ogs_thread_destroy(udm_thread);
+    if (udr_thread) ogs_thread_destroy(udr_thread);
+    if (ausf_thread) ogs_thread_destroy(ausf_thread);
     if (nrf_thread) ogs_thread_destroy(nrf_thread);
 }
 
@@ -82,7 +82,13 @@ void test_5gc_init(void)
     ogs_log_install_domain(&__ogs_ngap_domain, "ngap", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_dbi_domain, "dbi", OGS_LOG_ERROR);
     ogs_log_install_domain(&__ogs_nas_domain, "nas", OGS_LOG_ERROR);
-    ogs_log_install_domain(&__ogs_sbi_domain, "sbi", OGS_LOG_ERROR);
 
-    ogs_assert(ogs_mongoc_init(ogs_config()->db_uri) == OGS_OK);
+    ogs_sctp_init(ogs_config()->usrsctp.udp_port);
+    ogs_assert(ogs_dbi_init(ogs_config()->db_uri) == OGS_OK);
+}
+
+void test_5gc_final(void)
+{
+    ogs_dbi_final();
+    ogs_sctp_final();
 }

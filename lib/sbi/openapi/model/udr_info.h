@@ -1,7 +1,7 @@
 /*
  * udr_info.h
  *
- *
+ * Information of an UDR NF Instance
  */
 
 #ifndef _OpenAPI_udr_info_H_

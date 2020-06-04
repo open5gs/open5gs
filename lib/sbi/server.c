@@ -45,6 +45,8 @@ typedef struct ogs_sbi_session_s {
      * terminates the program.
      */
     ogs_timer_t             *timer;
+
+    void *data;
 } ogs_sbi_session_t;
 
 static OGS_POOL(server_pool, ogs_sbi_server_t);
@@ -75,7 +77,7 @@ static void session_timer_expired(void *data);
 void ogs_sbi_server_init(int num_of_session_pool)
 {
     ogs_list_init(&ogs_sbi_self()->server_list);
-    ogs_pool_init(&server_pool, ogs_config()->pool.sbi);
+    ogs_pool_init(&server_pool, ogs_config()->max.nf);
 
     ogs_pool_init(&session_pool, num_of_session_pool);
 }
@@ -108,9 +110,9 @@ static ogs_sbi_session_t *session_add(ogs_sbi_server_t *server,
             ogs_sbi_self()->timer_mgr, session_timer_expired, session);
     ogs_assert(session->timer);
 
-    /* If User does not send http response within 1 second,
+    /* If User does not send http response within 5 second,
      * we will assert this program. */
-    ogs_timer_start(session->timer, ogs_time_from_sec(1));
+    ogs_timer_start(session->timer, ogs_time_from_sec(5));
 
     ogs_list_add(&server->suspended_session_list, session);
 
@@ -327,8 +329,8 @@ void ogs_sbi_server_stop_all(void)
         ogs_sbi_server_stop(server);
 }
 
-void ogs_sbi_server_send_response(ogs_sbi_session_t *session,
-        ogs_sbi_response_t *response, uint32_t status)
+void ogs_sbi_server_send_response(
+        ogs_sbi_session_t *session, ogs_sbi_response_t *response)
 {
     int ret;
 
@@ -342,7 +344,6 @@ void ogs_sbi_server_send_response(ogs_sbi_session_t *session,
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(response);
-    ogs_assert(status);
 
     ogs_assert(session);
     connection = session->connection;
@@ -387,7 +388,7 @@ void ogs_sbi_server_send_response(ogs_sbi_session_t *session,
                     OGS_POLLOUT, mhd_socket, run, mhd_daemon);
     ogs_assert(request->poll);
 
-    ret = MHD_queue_response(connection, status, mhd_response);
+    ret = MHD_queue_response(connection, response->status, mhd_response);
     ogs_assert(ret == MHD_YES);
     MHD_destroy_response(mhd_response);
 }
@@ -406,10 +407,10 @@ void ogs_sbi_server_send_problem(
     message.http.content_type = (char*)"application/problem+json";
     message.ProblemDetails = problem;
 
-    response = ogs_sbi_build_response(&message);
+    response = ogs_sbi_build_response(&message, problem->status);
     ogs_assert(response);
 
-    ogs_sbi_server_send_response(session, response, problem->status);
+    ogs_sbi_server_send_response(session, response);
 }
 
 void ogs_sbi_server_send_error(ogs_sbi_session_t *session,
@@ -425,11 +426,13 @@ void ogs_sbi_server_send_error(ogs_sbi_session_t *session,
     if (message) {
         problem.type = ogs_msprintf("/%s/%s",
                 message->h.service.name, message->h.api.version);
-        if (message->h.resource.id)
+        if (message->h.resource.component[1])
             problem.instance = ogs_msprintf("/%s/%s",
-                    message->h.resource.name, message->h.resource.id);
+                    message->h.resource.component[0],
+                    message->h.resource.component[1]);
         else
-            problem.instance = ogs_msprintf("/%s", message->h.resource.name);
+            problem.instance =
+                    ogs_msprintf("/%s", message->h.resource.component[0]);
     }
     problem.status = status;
     problem.title = (char*)title;
@@ -622,4 +625,27 @@ static void notify_completed(
         ogs_pollset_remove(poll);
 
     ogs_sbi_request_free(request);
+}
+
+void ogs_sbi_session_set_data(ogs_sbi_session_t *session, void *data)
+{
+    ogs_assert(session);
+    ogs_assert(data);
+
+    session->data = data;
+}
+
+void *ogs_sbi_session_get_data(ogs_sbi_session_t *session)
+{
+    ogs_assert(session);
+
+    return session->data;
+}
+
+ogs_sbi_server_t *ogs_sbi_session_get_server(ogs_sbi_session_t *session)
+{
+    ogs_assert(session);
+    ogs_assert(session->server);
+
+    return session->server;
 }

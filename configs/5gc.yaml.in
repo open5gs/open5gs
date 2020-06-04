@@ -4,13 +4,6 @@ logger:
 
 parameter:
 
-nrf:
-    sbi:
-      - addr:
-          - 127.0.0.1
-          - ::1
-        port: 7777
-
 amf:
     sbi:
       - addr: 127.0.0.2
@@ -83,3 +76,24 @@ upf:
         - 127.0.0.4
         - ::1
     pdn:
+
+ausf:
+    sbi:
+      - addr: 127.0.0.5
+        port: 7777
+
+udm:
+    sbi:
+      - addr: 127.0.0.6
+        port: 7777
+
+udr:
+    sbi:
+      - addr: 127.0.0.7
+        port: 7777
+nrf:
+    sbi:
+      - addr:
+          - 127.0.0.1
+          - ::1
+        port: 7777

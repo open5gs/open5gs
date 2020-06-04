@@ -1,8 +1,0 @@
-openapi: 3.0.0
-
-info:
-  version: '1.0.2'
-  title: 'Nudm_UECM'
-  description: |
-    Nudm Context Management Service.
-    

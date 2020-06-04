@@ -1,7 +1,7 @@
 /*
  * plmn_range.h
  *
- *
+ * Range of PLMN IDs
  */
 
 #ifndef _OpenAPI_plmn_range_H_
