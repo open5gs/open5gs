@@ -36,6 +36,9 @@ ogs_pkbuf_t *pgw_s5c_build_create_session_response(
 
     ogs_gtp_cause_t cause;
     ogs_gtp_f_teid_t pgw_s5c_teid, pgw_s5u_teid;
+    ogs_gtp_ambr_t ambr;
+    ogs_gtp_bearer_qos_t bearer_qos;
+    char bearer_qos_buf[GTP_BEARER_QOS_LEN];
     int len;
     uint8_t pco_buf[OGS_MAX_PCO_LEN];
     int16_t pco_len;
@@ -91,8 +94,20 @@ ogs_pkbuf_t *pgw_s5c_build_create_session_response(
     rsp->apn_restriction.presence = 1;
     rsp->apn_restriction.u8 = OGS_GTP_APN_NO_RESTRICTION;
     
-    /* TODO : APN-AMBR
+    /* APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
+    if ((gx_message->pdn.ambr.uplink &&
+        sess->pdn.ambr.uplink != gx_message->pdn.ambr.uplink) ||
+        (gx_message->pdn.ambr.downlink &&
+        sess->pdn.ambr.downlink != gx_message->pdn.ambr.downlink)) {
+
+        memset(&ambr, 0, sizeof(ogs_gtp_ambr_t));
+        ambr.uplink = htobe32(gx_message->pdn.ambr.uplink / 1000);
+        ambr.downlink = htobe32(gx_message->pdn.ambr.downlink / 1000);
+        rsp->aggregate_maximum_bit_rate.presence = 1;
+        rsp->aggregate_maximum_bit_rate.data = &ambr;
+        rsp->aggregate_maximum_bit_rate.len = sizeof(ambr);
+    }
 
     /* PCO */
     if (sess->ue_pco.presence && sess->ue_pco.len && sess->ue_pco.data) {
@@ -113,8 +128,27 @@ ogs_pkbuf_t *pgw_s5c_build_create_session_response(
     rsp->bearer_contexts_created.cause.len = sizeof(cause);
     rsp->bearer_contexts_created.cause.data = &cause;
 
-    /* TODO : Bearer QoS 
+    /* Bearer QoS
      * if PCRF changes Bearer QoS, this should be included. */
+    if ((gx_message->pdn.qos.qci &&
+        sess->pdn.qos.qci != gx_message->pdn.qos.qci) ||
+        (gx_message->pdn.qos.arp.priority_level &&
+        sess->pdn.qos.arp.priority_level != gx_message->pdn.qos.arp.priority_level) ||
+        sess->pdn.qos.arp.pre_emption_capability != gx_message->pdn.qos.arp.pre_emption_capability ||
+        sess->pdn.qos.arp.pre_emption_vulnerability != gx_message->pdn.qos.arp.pre_emption_vulnerability) {
+
+        memset(&bearer_qos, 0, sizeof(bearer_qos));
+        bearer_qos.qci = gx_message->pdn.qos.qci;
+        bearer_qos.priority_level = gx_message->pdn.qos.arp.priority_level;
+        bearer_qos.pre_emption_capability =
+            gx_message->pdn.qos.arp.pre_emption_capability;
+        bearer_qos.pre_emption_vulnerability =
+            gx_message->pdn.qos.arp.pre_emption_vulnerability;
+
+        rsp->bearer_contexts_created.bearer_level_qos.presence = 1;
+        ogs_gtp_build_bearer_qos(&rsp->bearer_contexts_created.bearer_level_qos,
+                &bearer_qos, bearer_qos_buf, GTP_BEARER_QOS_LEN);
+    }
 
     /* Data Plane(UL) : PGW-S5U */
     memset(&pgw_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
