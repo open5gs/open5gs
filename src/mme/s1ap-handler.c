@@ -1008,8 +1008,7 @@ void s1ap_handle_ue_context_release_complete(
         }
         break;
     default:
-        ogs_fatal("Invalid Action[%d]", enb_ue->ue_ctx_rel_action);
-        ogs_assert_if_reached();
+        ogs_error("Invalid Action[%d]", enb_ue->ue_ctx_rel_action);
         break;
     }
 }
