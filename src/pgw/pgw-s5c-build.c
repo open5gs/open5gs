@@ -97,9 +97,11 @@ ogs_pkbuf_t *pgw_s5c_build_create_session_response(
     /* APN-AMBR
      * if PCRF changes APN-AMBR, this should be included. */
     if ((gx_message->pdn.ambr.uplink &&
-        sess->pdn.ambr.uplink != gx_message->pdn.ambr.uplink) ||
+            (sess->pdn.ambr.uplink / 1000) !=
+                (gx_message->pdn.ambr.uplink / 1000)) ||
         (gx_message->pdn.ambr.downlink &&
-        sess->pdn.ambr.downlink != gx_message->pdn.ambr.downlink)) {
+            (sess->pdn.ambr.downlink / 1000) !=
+                (gx_message->pdn.ambr.downlink / 1000))) {
 
         memset(&ambr, 0, sizeof(ogs_gtp_ambr_t));
         ambr.uplink = htobe32(gx_message->pdn.ambr.uplink / 1000);
@@ -133,9 +135,12 @@ ogs_pkbuf_t *pgw_s5c_build_create_session_response(
     if ((gx_message->pdn.qos.qci &&
         sess->pdn.qos.qci != gx_message->pdn.qos.qci) ||
         (gx_message->pdn.qos.arp.priority_level &&
-        sess->pdn.qos.arp.priority_level != gx_message->pdn.qos.arp.priority_level) ||
-        sess->pdn.qos.arp.pre_emption_capability != gx_message->pdn.qos.arp.pre_emption_capability ||
-        sess->pdn.qos.arp.pre_emption_vulnerability != gx_message->pdn.qos.arp.pre_emption_vulnerability) {
+        sess->pdn.qos.arp.priority_level !=
+            gx_message->pdn.qos.arp.priority_level) ||
+        sess->pdn.qos.arp.pre_emption_capability !=
+            gx_message->pdn.qos.arp.pre_emption_capability ||
+        sess->pdn.qos.arp.pre_emption_vulnerability !=
+            gx_message->pdn.qos.arp.pre_emption_vulnerability) {
 
         memset(&bearer_qos, 0, sizeof(bearer_qos));
         bearer_qos.qci = gx_message->pdn.qos.qci;
