@@ -704,7 +704,7 @@ $ echo 'del 1' > /proc/rtpengine/control
 $ /usr/sbin/rtpengine --table=1 --interface=10.4.128.21 --listen-ng=127.0.0.1:2224 --tos=184 --pidfile=ngcp-rtpengine-daemon2.pid --no-fallback --foreground
 ```
 
-#### 17. Running I-CSCF, P-CSCF and S-CSCF as separate `systemctl` process
+#### 17. Running I-CSCF, P-CSCF and S-CSCF as separate process
 
 First, stop the default kamailio SIP server
 
@@ -714,74 +714,23 @@ $ systemctl disable kamailio
 $ systemctl mask kamailio
 ```
 
-Copy the init file each of the process you need
+Run all the process as root and NOT sudo
+{: .notice--info}
+
 
 ```
-$ cp /etc/init.d/kamailio /etc/init.d/kamailio_icscf
-$ cp /etc/init.d/kamailio /etc/init.d/kamailio_pcscf
-$ cp /etc/init.d/kamailio /etc/init.d/kamailio_scscf
-```
-
-Changes required in `/etc/init.d/kamailio_icscf`
-
-```
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin
-NAME="kamailio_icscf"
-CFGFILE=/etc/$NAME/kamailio_icscf.cfg
-```
-
-Changes required in `/etc/init.d/kamailio_pcscf`
-
-```
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin
-NAME="kamailio_pcscf"
-CFGFILE=/etc/$NAME/kamailio_pcscf.cfg
-```
-
-Changes required in `/etc/init.d/kamailio_scscf`
-
-```
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin
-NAME="kamailio_scscf"
-CFGFILE=/etc/$NAME/kamailio_scscf.cfg
+$ mkdir -p /var/run/kamailio_pcscf
+$ kamailio -f /etc/kamailio_pcscf/kamailio_pcscf.cfg -P /kamailio_pcscf.pid -DD -E -e
 ```
 
 ```
-$ cd /etc/default/
-$ cp kamailio kamailio_icscf
-$ cp kamailio kamailio_pcscf
-$ cp kamailio kamailio_scscf
+$ mkdir -p /var/run/kamailio_scscf
+$ kamailio -f /etc/kamailio_scscf/kamailio_scscf.cfg -P /kamailio_scscf.pid -DD -E -e
 ```
 
-Changes required in `/etc/default/kamailio_icscf`
-
 ```
-CFGFILE=/etc/kamailio_icscf/kamailio_icscf.cfg
-
-RUN_KAMAILIO=yes
-```
-
-Changes required in `/etc/default/kamailio_pcscf`
-
-```
-CFGFILE=/etc/kamailio_pcscf/kamailio_pcscf.cfg
-
-RUN_KAMAILIO=yes
-```
-
-Changes required in `/etc/default/kamailio_scscf`
-
-```
-CFGFILE=/etc/kamailio_scscf/kamailio_scscf.cfg
-
-RUN_KAMAILIO=yes
-```
-
-Finally,
-
-```
-$ systemctl daemon-reload
-$ systemctl start kamailio_icscf kamailio_pcscf kamailio_scscf
+$ mkdir -p /var/run/kamailio_icscf
+$ kamailio -f /etc/kamailio_icscf/kamailio_icscf.cfg -P /kamailio_icscf.pid -DD -E -e
 ```
 
 #### 18. Install Open5GS in the same machine as Kamailio IMS - Install Open5GS from source
