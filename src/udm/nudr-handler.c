@@ -29,7 +29,9 @@ bool udm_nudr_dr_handle_subscription_authentication(
     ogs_sbi_header_t header;
     ogs_sbi_response_t *response = NULL;
 
+#if 0
     const char *tmp = "4d45b0eeb8386b629f136968837a7b0b"; /* For test */
+#endif
     uint8_t k[OGS_KEY_LEN];
     uint8_t opc[OGS_KEY_LEN];
     uint8_t amf[OGS_AMF_LEN];
@@ -141,7 +143,9 @@ bool udm_nudr_dr_handle_subscription_authentication(
 
         /* FIX IT! TODO! NEW! */
         ogs_random(rand, OGS_RAND_LEN);
+#if 0
         OGS_HEX(tmp, strlen(tmp), rand);
+#endif
 
         ogs_ascii_to_hex(
             AuthenticationSubscription->enc_opc_key,
