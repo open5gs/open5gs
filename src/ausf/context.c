@@ -127,7 +127,7 @@ ausf_ue_t *ausf_ue_add(char *suci)
     memset(ausf_ue, 0, sizeof *ausf_ue);
 
     ausf_ue->ctx_id =
-        ogs_msprintf("%ld", ogs_pool_index(&ausf_ue_pool, ausf_ue));
+        ogs_msprintf("%td", ogs_pool_index(&ausf_ue_pool, ausf_ue));
     ogs_assert(ausf_ue->ctx_id);
 
     ausf_ue->suci = ogs_strdup(suci);

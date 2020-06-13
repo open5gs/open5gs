@@ -126,7 +126,7 @@ udm_ue_t *udm_ue_add(char *suci)
     ogs_assert(udm_ue);
     memset(udm_ue, 0, sizeof *udm_ue);
 
-    udm_ue->ctx_id = ogs_msprintf("%ld", ogs_pool_index(&udm_ue_pool, udm_ue));
+    udm_ue->ctx_id = ogs_msprintf("%td", ogs_pool_index(&udm_ue_pool, udm_ue));
     ogs_assert(udm_ue->ctx_id);
 
     udm_ue->suci = ogs_strdup(suci);
