@@ -104,6 +104,23 @@ typedef struct ogs_sbi_nf_types_s {
     ogs_sbi_nf_instance_t *nf_instance;
 } ogs_sbi_nf_types_t[OGS_SBI_MAX_NF_TYPE];
 
+typedef struct ogs_sbi_object_s {
+    ogs_lnode_t lnode;
+
+    struct {
+        ogs_timer_t *timer;
+        ogs_time_t duration;
+    } client_wait;
+
+    OpenAPI_nf_type_e nf_type;
+    ogs_sbi_request_t *request;
+
+    ogs_sbi_nf_types_t nf_types;
+
+    ogs_sbi_session_t *session;
+    void *nf_state_registered;
+} ogs_sbi_object_t;
+
 typedef struct ogs_sbi_nf_service_s {
     ogs_lnode_t lnode;
 
@@ -152,6 +169,20 @@ typedef struct ogs_sbi_subscription_s {
     void *client;                       /* only used in SERVER */
 } ogs_sbi_subscription_t;
 
+typedef struct ogs_sbi_discover_s {
+    OpenAPI_nf_type_e nf_type;
+
+    char *uri;
+    struct {
+        char *name;
+    } service;
+    struct {
+        char *version;
+    } api;
+
+    ogs_sbi_request_t *request;
+} ogs_sbi_discover_t;
+
 void ogs_sbi_context_init(ogs_pollset_t *pollset, ogs_timer_mgr_t *timer_mgr);
 void ogs_sbi_context_final(void);
 ogs_sbi_context_t *ogs_sbi_self(void);
@@ -181,11 +212,13 @@ ogs_sbi_nf_service_t *ogs_sbi_nf_service_build_default(
         ogs_sbi_nf_instance_t *nf_instance, char *name);
 
 ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
-        ogs_sbi_nf_instance_t *nf_instance, char *name);
+        ogs_sbi_nf_instance_t *nf_instance, char *name, char *version);
 
 bool ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
 bool ogs_sbi_nf_types_associate(
         ogs_sbi_nf_types_t nf_types, OpenAPI_nf_type_e nf_type, void *state);
+
+void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object);
 
 ogs_sbi_subscription_t *ogs_sbi_subscription_add(void);
 void ogs_sbi_subscription_set_id(

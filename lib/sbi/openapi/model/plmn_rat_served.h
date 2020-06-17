@@ -32,6 +32,7 @@ OpenAPI_plmn_rat_served_t *OpenAPI_plmn_rat_served_create(
 void OpenAPI_plmn_rat_served_free(OpenAPI_plmn_rat_served_t *plmn_rat_served);
 OpenAPI_plmn_rat_served_t *OpenAPI_plmn_rat_served_parseFromJSON(cJSON *plmn_rat_servedJSON);
 cJSON *OpenAPI_plmn_rat_served_convertToJSON(OpenAPI_plmn_rat_served_t *plmn_rat_served);
+OpenAPI_plmn_rat_served_t *OpenAPI_plmn_rat_served_copy(OpenAPI_plmn_rat_served_t *dst, OpenAPI_plmn_rat_served_t *src);
 
 #ifdef __cplusplus
 }

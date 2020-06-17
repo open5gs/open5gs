@@ -34,6 +34,7 @@ OpenAPI_point_t *OpenAPI_point_create(
 void OpenAPI_point_free(OpenAPI_point_t *point);
 OpenAPI_point_t *OpenAPI_point_parseFromJSON(cJSON *pointJSON);
 cJSON *OpenAPI_point_convertToJSON(OpenAPI_point_t *point);
+OpenAPI_point_t *OpenAPI_point_copy(OpenAPI_point_t *dst, OpenAPI_point_t *src);
 
 #ifdef __cplusplus
 }

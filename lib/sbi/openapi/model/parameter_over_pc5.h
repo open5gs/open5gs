@@ -48,6 +48,7 @@ OpenAPI_parameter_over_pc5_t *OpenAPI_parameter_over_pc5_create(
 void OpenAPI_parameter_over_pc5_free(OpenAPI_parameter_over_pc5_t *parameter_over_pc5);
 OpenAPI_parameter_over_pc5_t *OpenAPI_parameter_over_pc5_parseFromJSON(cJSON *parameter_over_pc5JSON);
 cJSON *OpenAPI_parameter_over_pc5_convertToJSON(OpenAPI_parameter_over_pc5_t *parameter_over_pc5);
+OpenAPI_parameter_over_pc5_t *OpenAPI_parameter_over_pc5_copy(OpenAPI_parameter_over_pc5_t *dst, OpenAPI_parameter_over_pc5_t *src);
 
 #ifdef __cplusplus
 }

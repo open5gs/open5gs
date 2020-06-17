@@ -35,6 +35,7 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_create(
 void OpenAPI_pfd_change_notification_free(OpenAPI_pfd_change_notification_t *pfd_change_notification);
 OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_parseFromJSON(cJSON *pfd_change_notificationJSON);
 cJSON *OpenAPI_pfd_change_notification_convertToJSON(OpenAPI_pfd_change_notification_t *pfd_change_notification);
+OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_copy(OpenAPI_pfd_change_notification_t *dst, OpenAPI_pfd_change_notification_t *src);
 
 #ifdef __cplusplus
 }

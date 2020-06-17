@@ -26,9 +26,9 @@
 extern "C" {
 #endif
 
-ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue);
+ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue, void *data);
 ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
-        ausf_ue_t *ausf_ue);
+        ausf_ue_t *ausf_ue, void *data);
 
 #ifdef __cplusplus
 }

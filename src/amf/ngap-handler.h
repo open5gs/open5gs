@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef NGAP_HANDLER_H
-#define NGAP_HANDLER_H
+#ifndef AMF_NGAP_HANDLER_H
+#define AMF_NGAP_HANDLER_H
 
 #include "context.h"
 
@@ -32,12 +32,14 @@ void ngap_handle_initial_ue_message(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 void ngap_handle_uplink_nas_transport(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
-#if 0
-void ngap_handle_ue_capability_info_indication(
+void ngap_handle_ue_radio_capability_info_indication(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 void ngap_handle_initial_context_setup_response(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 void ngap_handle_initial_context_setup_failure(
+        amf_gnb_t *gnb, ogs_ngap_message_t *message);
+
+void ngap_handle_pdu_session_resource_setup_response(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 
 void ngap_handle_ue_context_modification_response(
@@ -48,9 +50,6 @@ void ngap_handle_ue_context_modification_failure(
 void ngap_handle_ue_context_release_request(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 void ngap_handle_ue_context_release_complete(
-        amf_gnb_t *gnb, ogs_ngap_message_t *message);
-
-void ngap_handle_e_rab_setup_response(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 
 void ngap_handle_path_switch_request(
@@ -75,14 +74,8 @@ void ngap_handle_handover_notification(
 void ngap_handle_s1_reset(
         amf_gnb_t *gnb, ogs_ngap_message_t *message);
 
-void ngap_handle_write_replace_warning_response(
-        amf_gnb_t *gnb, ogs_ngap_message_t *message);
-void ngap_handle_kill_response(
-        amf_gnb_t *gnb, ogs_ngap_message_t *message);
-#endif
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* NGAP_HANDLER_H */
+#endif /* AMF_NGAP_HANDLER_H */

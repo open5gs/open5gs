@@ -30,6 +30,7 @@ OpenAPI_service_id_to_layer2_id_t *OpenAPI_service_id_to_layer2_id_create(
 void OpenAPI_service_id_to_layer2_id_free(OpenAPI_service_id_to_layer2_id_t *service_id_to_layer2_id);
 OpenAPI_service_id_to_layer2_id_t *OpenAPI_service_id_to_layer2_id_parseFromJSON(cJSON *service_id_to_layer2_idJSON);
 cJSON *OpenAPI_service_id_to_layer2_id_convertToJSON(OpenAPI_service_id_to_layer2_id_t *service_id_to_layer2_id);
+OpenAPI_service_id_to_layer2_id_t *OpenAPI_service_id_to_layer2_id_copy(OpenAPI_service_id_to_layer2_id_t *dst, OpenAPI_service_id_to_layer2_id_t *src);
 
 #ifdef __cplusplus
 }

@@ -32,6 +32,7 @@ OpenAPI_cm_info_t *OpenAPI_cm_info_create(
 void OpenAPI_cm_info_free(OpenAPI_cm_info_t *cm_info);
 OpenAPI_cm_info_t *OpenAPI_cm_info_parseFromJSON(cJSON *cm_infoJSON);
 cJSON *OpenAPI_cm_info_convertToJSON(OpenAPI_cm_info_t *cm_info);
+OpenAPI_cm_info_t *OpenAPI_cm_info_copy(OpenAPI_cm_info_t *dst, OpenAPI_cm_info_t *src);
 
 #ifdef __cplusplus
 }

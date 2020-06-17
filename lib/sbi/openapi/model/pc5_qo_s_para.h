@@ -31,6 +31,7 @@ OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_create(
 void OpenAPI_pc5_qo_s_para_free(OpenAPI_pc5_qo_s_para_t *pc5_qo_s_para);
 OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_parseFromJSON(cJSON *pc5_qo_s_paraJSON);
 cJSON *OpenAPI_pc5_qo_s_para_convertToJSON(OpenAPI_pc5_qo_s_para_t *pc5_qo_s_para);
+OpenAPI_pc5_qo_s_para_t *OpenAPI_pc5_qo_s_para_copy(OpenAPI_pc5_qo_s_para_t *dst, OpenAPI_pc5_qo_s_para_t *src);
 
 #ifdef __cplusplus
 }

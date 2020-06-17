@@ -29,6 +29,7 @@ OpenAPI_cnf_unit_t *OpenAPI_cnf_unit_create(
 void OpenAPI_cnf_unit_free(OpenAPI_cnf_unit_t *cnf_unit);
 OpenAPI_cnf_unit_t *OpenAPI_cnf_unit_parseFromJSON(cJSON *cnf_unitJSON);
 cJSON *OpenAPI_cnf_unit_convertToJSON(OpenAPI_cnf_unit_t *cnf_unit);
+OpenAPI_cnf_unit_t *OpenAPI_cnf_unit_copy(OpenAPI_cnf_unit_t *dst, OpenAPI_cnf_unit_t *src);
 
 #ifdef __cplusplus
 }

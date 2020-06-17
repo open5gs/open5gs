@@ -30,6 +30,7 @@ OpenAPI_updated_item_t *OpenAPI_updated_item_create(
 void OpenAPI_updated_item_free(OpenAPI_updated_item_t *updated_item);
 OpenAPI_updated_item_t *OpenAPI_updated_item_parseFromJSON(cJSON *updated_itemJSON);
 cJSON *OpenAPI_updated_item_convertToJSON(OpenAPI_updated_item_t *updated_item);
+OpenAPI_updated_item_t *OpenAPI_updated_item_copy(OpenAPI_updated_item_t *dst, OpenAPI_updated_item_t *src);
 
 #ifdef __cplusplus
 }

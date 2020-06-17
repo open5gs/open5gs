@@ -60,7 +60,7 @@ cJSON *OpenAPI_atom_convertToJSON(OpenAPI_atom_t *atom)
         goto end;
     }
 
-    if (atom->negative >= 0) {
+    if (atom->negative) {
         if (cJSON_AddBoolToObject(item, "negative", atom->negative) == NULL) {
             ogs_error("OpenAPI_atom_convertToJSON() failed [negative]");
             goto end;
@@ -116,5 +116,39 @@ OpenAPI_atom_t *OpenAPI_atom_parseFromJSON(cJSON *atomJSON)
     return atom_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_atom_t *OpenAPI_atom_copy(OpenAPI_atom_t *dst, OpenAPI_atom_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_atom_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_atom_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_atom_free(dst);
+    dst = OpenAPI_atom_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

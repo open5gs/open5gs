@@ -19,7 +19,7 @@
 
 #include "nudm-build.h"
 
-ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue)
+ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue, void *data)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
@@ -31,7 +31,7 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue)
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UEAU;
-    message.h.api.version = (char *)OGS_SBI_API_VERSION;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = ausf_ue->suci;
     message.h.resource.component[1] =
         (char *)OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION;
@@ -58,7 +58,7 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue)
 }
 
 ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
-        ausf_ue_t *ausf_ue)
+        ausf_ue_t *ausf_ue, void *data)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
@@ -74,7 +74,7 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UEAU;
-    message.h.api.version = (char *)OGS_SBI_API_VERSION;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = ausf_ue->supi;
     message.h.resource.component[1] = (char *)OGS_SBI_RESOURCE_NAME_AUTH_EVENTS;
 

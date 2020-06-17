@@ -26,6 +26,7 @@ OpenAPI_external_client_type_t *OpenAPI_external_client_type_create(
 void OpenAPI_external_client_type_free(OpenAPI_external_client_type_t *external_client_type);
 OpenAPI_external_client_type_t *OpenAPI_external_client_type_parseFromJSON(cJSON *external_client_typeJSON);
 cJSON *OpenAPI_external_client_type_convertToJSON(OpenAPI_external_client_type_t *external_client_type);
+OpenAPI_external_client_type_t *OpenAPI_external_client_type_copy(OpenAPI_external_client_type_t *dst, OpenAPI_external_client_type_t *src);
 
 #ifdef __cplusplus
 }

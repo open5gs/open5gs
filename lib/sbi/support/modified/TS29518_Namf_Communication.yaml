@@ -949,7 +949,7 @@ paths:
               summary: Namf_Communication N2 Info Notify (UE Specific) service Operation
               tags:
                 - N2 Info Notify
-              operationId: N2InfoNotify
+#              operationId: N2InfoNotify
               requestBody:
                 description: UE Specific N2 Information Notification
                 content:
@@ -1237,7 +1237,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubscriptionData'
+              $ref: '#/components/schemas/AMFStatusChangeSubscriptionData'
         required: true
       responses:
         '201':
@@ -1251,7 +1251,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscriptionData'
+                $ref: '#/components/schemas/AMFStatusChangeSubscriptionData'
         '400':
           $ref: 'TS29571_CommonData.yaml#/components/responses/400'
         '403':
@@ -1347,7 +1347,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SubscriptionData'
+              $ref: '#/components/schemas/AMFStatusChangeSubscriptionData'
         required: true
       responses:
         '202':
@@ -1355,7 +1355,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubscriptionData'
+                $ref: '#/components/schemas/AMFStatusChangeSubscriptionData'
         '400':
           $ref: 'TS29571_CommonData.yaml#/components/responses/400'
         '403':
@@ -1420,7 +1420,7 @@ components:
 #
 # STRUCTURED DATA TYPES
 #
-    SubscriptionData:
+    AMFStatusChangeSubscriptionData:
       type: object
       properties:
         amfStatusUri:
@@ -2460,15 +2460,15 @@ components:
 # ENUMERATIONS
 #
     StatusChange:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - AMF_UNAVAILABLE
           - AMF_AVAILABLE
-      - type: string
+        type: string
     N2InformationClass:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - SM
           - NRPPa
@@ -2476,7 +2476,7 @@ components:
           - PWS-BCAL
           - PWS-RF
           - RAN
-      - type: string
+        type: string
     N1MessageClass:
 #      anyOf:
 #      - type: string
@@ -2489,8 +2489,8 @@ components:
           - LCS
         type: string
     N1N2MessageTransferCause:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - ATTEMPTING_TO_REACH_UE
           - N1_N2_TRANSFER_INITIATED
@@ -2500,89 +2500,89 @@ components:
           - UE_NOT_REACHABLE_FOR_SESSION
           - TEMPORARY_REJECT_REGISTRATION_ONGOING
           - TEMPORARY_REJECT_HANDOVER_ONGOING
-      - type: string
+        type: string
     UeContextTransferStatus:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - TRANSFERRED
           - NOT_TRANSFERRED
-      - type: string
+        type: string
     N2InformationTransferResult:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - N2_INFO_TRANSFER_INITIATED
-      - type: string
+        type: string
     CipheringAlgorithm:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - NEA0
           - NEA1
           - NEA2
           - NEA3
-      - type: string
+        type: string
     IntegrityAlgorithm:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - NIA0
           - NIA1
           - NIA2
           - NIA3
-      - type: string
+        type: string
     SmsSupport:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - 3GPP
           - NON_3GPP
           - BOTH
           - NONE
-      - type: string
+        type: string
     ScType:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - NATIVE
           - MAPPED
-      - type: string
+        type: string
     KeyAmfType:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - KAMF
           - KPRIMEAMF
-      - type: string
+        type: string
     TransferReason:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - INIT_REG
           - MOBI_REG
           - MOBI_REG_UE_VALIDATED
-      - type: string
+        type: string
     PolicyReqTrigger:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - LOCATION_CHANGE
           - PRA_CHANGE
           - SARI_CHANGE
           - RFSP_INDEX_CHANGE
           - ALLOWED_NSSAI_CHANGE
-      - type: string
+        type: string
     RatSelector:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - E-UTRA
           - NR
-      - type: string
+        type: string
     NgapIeType:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - PDU_RES_SETUP_REQ
           - PDU_RES_REL_CMD
@@ -2598,25 +2598,25 @@ components:
           - UE_RADIO_CAPABILITY
           - RIM_INFO_TRANSFER
           - SECONDARY_RAT_USAGE
-      - type: string
+        type: string
     N2InfoNotifyReason:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - HANDOVER_COMPLETED
-      - type: string
+        type: string
     SmfChangeIndication:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - CHANGED
           - REMOVED
-      - type: string
+        type: string
     SbiBindingLevel:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - NF_INSTANCE_BINDING
           - NF_SET_BINDING
           - NF_SERVICE_SET_BINDING
-      - type: string
+        type: string

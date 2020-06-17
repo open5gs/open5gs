@@ -32,6 +32,7 @@ OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_create(
 void OpenAPI_w_agf_info_free(OpenAPI_w_agf_info_t *w_agf_info);
 OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_parseFromJSON(cJSON *w_agf_infoJSON);
 cJSON *OpenAPI_w_agf_info_convertToJSON(OpenAPI_w_agf_info_t *w_agf_info);
+OpenAPI_w_agf_info_t *OpenAPI_w_agf_info_copy(OpenAPI_w_agf_info_t *dst, OpenAPI_w_agf_info_t *src);
 
 #ifdef __cplusplus
 }

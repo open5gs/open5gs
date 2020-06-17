@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-06-03 23:05:14.860106 by acetcom
+ * Created on: 2020-06-15 13:46:04.075315 by acetcom
  * from 24501-g41.docx
  ******************************************************************************/
 
@@ -122,7 +122,7 @@ int ogs_nas_5gs_decode_dnn(ogs_nas_dnn_t *dnn, ogs_pkbuf_t *pkbuf)
 
     {
         char data_network_name[OGS_MAX_DNN_LEN];
-        dnn->length  = ogs_fqdn_parse(data_network_name, dnn->value, dnn->length);
+        dnn->length = ogs_fqdn_parse(data_network_name, dnn->value, dnn->length);
         ogs_cpystrn(dnn->value, data_network_name, ogs_min(dnn->length, OGS_MAX_DNN_LEN) + 1);
     }
 
@@ -3035,6 +3035,9 @@ int ogs_nas_5gs_decode_session_ambr(ogs_nas_session_ambr_t *session_ambr, ogs_pk
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(session_ambr, pkbuf->data - size, size);
 
+    session_ambr->downlink.bitrate = be16toh(source->downlink.bitrate);
+    session_ambr->uplink.bitrate = be16toh(source->uplink.bitrate);
+
     ogs_trace("  SESSION_AMBR - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
@@ -3047,6 +3050,9 @@ int ogs_nas_5gs_encode_session_ambr(ogs_pkbuf_t *pkbuf, ogs_nas_session_ambr_t *
     ogs_nas_session_ambr_t target;
 
     memcpy(&target, session_ambr, sizeof(ogs_nas_session_ambr_t));
+    target.downlink.bitrate = htobe16(session_ambr->downlink.bitrate);
+    target.uplink.bitrate = htobe16(session_ambr->uplink.bitrate);
+
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
 

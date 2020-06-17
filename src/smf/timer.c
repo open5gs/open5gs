@@ -29,7 +29,7 @@ static smf_timer_cfg_t g_smf_timer_cfg[MAX_NUM_OF_SMF_TIMER] = {
     [SMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL] =
         { .duration = ogs_time_from_sec(3) },
     [SMF_TIMER_SBI_CLIENT_WAIT] =
-        { .duration = ogs_time_from_sec(2) },
+        { .duration = ogs_time_from_msec(500) },
 };
 
 smf_timer_cfg_t *smf_timer_cfg(smf_timer_e id)

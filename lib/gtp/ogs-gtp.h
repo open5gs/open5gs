@@ -25,9 +25,6 @@
 #define OGS_GTPV1_U_UDP_PORT            2152
 #define OGS_GTPV2_C_UDP_PORT            2123
 
-/* Num of PacketFilter per Bearer */
-#define OGS_MAX_NUM_OF_PACKET_FILTER    16 
-
 #define OGS_GTP_INSIDE
 
 #include "gtp/message.h"

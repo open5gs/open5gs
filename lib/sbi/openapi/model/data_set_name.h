@@ -26,6 +26,7 @@ OpenAPI_data_set_name_t *OpenAPI_data_set_name_create(
 void OpenAPI_data_set_name_free(OpenAPI_data_set_name_t *data_set_name);
 OpenAPI_data_set_name_t *OpenAPI_data_set_name_parseFromJSON(cJSON *data_set_nameJSON);
 cJSON *OpenAPI_data_set_name_convertToJSON(OpenAPI_data_set_name_t *data_set_name);
+OpenAPI_data_set_name_t *OpenAPI_data_set_name_copy(OpenAPI_data_set_name_t *dst, OpenAPI_data_set_name_t *src);
 
 #ifdef __cplusplus
 }

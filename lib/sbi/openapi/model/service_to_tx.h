@@ -33,6 +33,7 @@ OpenAPI_service_to_tx_t *OpenAPI_service_to_tx_create(
 void OpenAPI_service_to_tx_free(OpenAPI_service_to_tx_t *service_to_tx);
 OpenAPI_service_to_tx_t *OpenAPI_service_to_tx_parseFromJSON(cJSON *service_to_txJSON);
 cJSON *OpenAPI_service_to_tx_convertToJSON(OpenAPI_service_to_tx_t *service_to_tx);
+OpenAPI_service_to_tx_t *OpenAPI_service_to_tx_copy(OpenAPI_service_to_tx_t *dst, OpenAPI_service_to_tx_t *src);
 
 #ifdef __cplusplus
 }

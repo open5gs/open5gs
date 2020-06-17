@@ -35,7 +35,7 @@ bool ausf_nnrf_handle_nf_status_notify(
         ogs_sbi_session_t *session, ogs_sbi_message_t *message);
 
 void ausf_nnrf_handle_nf_discover(
-        ausf_ue_t *ausf_ue, ogs_sbi_message_t *message);
+        ogs_sbi_object_t *sbi_object, ogs_sbi_message_t *message);
 
 #ifdef __cplusplus
 }

@@ -32,6 +32,7 @@ OpenAPI_imsi_range_t *OpenAPI_imsi_range_create(
 void OpenAPI_imsi_range_free(OpenAPI_imsi_range_t *imsi_range);
 OpenAPI_imsi_range_t *OpenAPI_imsi_range_parseFromJSON(cJSON *imsi_rangeJSON);
 cJSON *OpenAPI_imsi_range_convertToJSON(OpenAPI_imsi_range_t *imsi_range);
+OpenAPI_imsi_range_t *OpenAPI_imsi_range_copy(OpenAPI_imsi_range_t *dst, OpenAPI_imsi_range_t *src);
 
 #ifdef __cplusplus
 }

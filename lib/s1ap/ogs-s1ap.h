@@ -542,6 +542,7 @@
 #include "S1AP_asn_constant.h"
 
 #include "asn1c/util/conv.h"
+#include "asn1c/util/message.h"
 
 #define OGS_S1AP_INSIDE
 

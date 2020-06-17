@@ -37,6 +37,7 @@ OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_create(
 void OpenAPI_multicast_access_control_free(OpenAPI_multicast_access_control_t *multicast_access_control);
 OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_parseFromJSON(cJSON *multicast_access_controlJSON);
 cJSON *OpenAPI_multicast_access_control_convertToJSON(OpenAPI_multicast_access_control_t *multicast_access_control);
+OpenAPI_multicast_access_control_t *OpenAPI_multicast_access_control_copy(OpenAPI_multicast_access_control_t *dst, OpenAPI_multicast_access_control_t *src);
 
 #ifdef __cplusplus
 }

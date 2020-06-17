@@ -32,6 +32,7 @@ OpenAPI_identity_range_t *OpenAPI_identity_range_create(
 void OpenAPI_identity_range_free(OpenAPI_identity_range_t *identity_range);
 OpenAPI_identity_range_t *OpenAPI_identity_range_parseFromJSON(cJSON *identity_rangeJSON);
 cJSON *OpenAPI_identity_range_convertToJSON(OpenAPI_identity_range_t *identity_range);
+OpenAPI_identity_range_t *OpenAPI_identity_range_copy(OpenAPI_identity_range_t *dst, OpenAPI_identity_range_t *src);
 
 #ifdef __cplusplus
 }

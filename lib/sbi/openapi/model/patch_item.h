@@ -35,6 +35,7 @@ OpenAPI_patch_item_t *OpenAPI_patch_item_create(
 void OpenAPI_patch_item_free(OpenAPI_patch_item_t *patch_item);
 OpenAPI_patch_item_t *OpenAPI_patch_item_parseFromJSON(cJSON *patch_itemJSON);
 cJSON *OpenAPI_patch_item_convertToJSON(OpenAPI_patch_item_t *patch_item);
+OpenAPI_patch_item_t *OpenAPI_patch_item_copy(OpenAPI_patch_item_t *dst, OpenAPI_patch_item_t *src);
 
 #ifdef __cplusplus
 }

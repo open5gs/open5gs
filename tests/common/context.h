@@ -57,6 +57,8 @@ typedef struct test_context_s {
     ogs_nr_cgi_t cgi;
 } test_context_t;
 
+typedef struct test_sess_s test_sess_t;
+
 typedef struct test_ue_s {
     uint32_t ran_ue_ngap_id; /* eNB-UE-NGAP-ID received from eNB */
     uint64_t amf_ue_ngap_id; /* AMF-UE-NGAP-ID received from AMF */
@@ -75,11 +77,20 @@ typedef struct test_ue_s {
     uint8_t kamf[OGS_SHA256_DIGEST_SIZE];
 
     struct {
-#define OGS_NAS_SECURITY_BEARER_3GPP 1
-#define OGS_NAS_SECURITY_BEARER_NON_3GPP 2
-        uint8_t     connection_identifier;
-        uint8_t     ksi;
-    } nas;
+        uint8_t message_type; /* Type of last NAS message received */
+        int access_type; /* 3GPP or Non-3GPP */
+
+        union {
+            struct {
+            ED3(uint8_t tsc:1;,
+                uint8_t ksi:3;,
+                uint8_t spare:4;)
+            };
+            ogs_nas_5gs_registration_type_t registration;
+            uint8_t data;
+        };
+
+    } __attribute__ ((packed)) nas;
 
     uint8_t         knas_int[OGS_SHA256_DIGEST_SIZE/2];
     uint8_t         knas_enc[OGS_SHA256_DIGEST_SIZE/2];
@@ -111,7 +122,27 @@ typedef struct test_ue_s {
     } while(0)
     int             security_context_available;
     int             mac_failed;
+
+    ogs_nas_5gs_guti_t nas_guti;
+
+    test_sess_t *sess;
 } test_ue_t;
+
+typedef struct test_sess_s {
+    uint8_t psi;
+
+    uint8_t pti;
+    uint8_t pdu_session_type;
+    char *dnn;
+
+    ogs_ip_t ue_ip;
+    ogs_ip_t upf_n3_ip;
+    uint32_t upf_n3_teid;
+    ogs_ip_t gnb_n3_ip;
+    uint32_t gnb_n3_teid;
+
+    test_ue_t *test_ue;
+} test_sess_t;
 
 void test_context_init(void);
 void test_context_final(void);

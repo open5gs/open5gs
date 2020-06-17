@@ -70,6 +70,12 @@ extern "C" {
 #define OGS_GNUC_NORETURN
 #endif
 
+#if __GNUC__ > 6
+#define OGS_GNUC_FALLTHROUGH __attribute__ ((fallthrough))
+#else
+#define OGS_GNUC_FALLTHROUGH
+#endif
+
 #if defined(_WIN32)
 #define htole16(x) (x)
 #define htole32(x) (x)
@@ -147,9 +153,9 @@ extern "C" {
 #define OGS_PASTE(n1, n2)           OGS_PASTE_HELPER(n1, n2)
 #define OGS_PASTE_HELPER(n1, n2)    n1##n2
 
-#define INET_NTOP(src, dst) \
+#define OGS_INET_NTOP(src, dst) \
     inet_ntop(AF_INET, (void *)(uintptr_t)(src), (dst), INET_ADDRSTRLEN)
-#define INET6_NTOP(src, dst) \
+#define OGS_INET6_NTOP(src, dst) \
     inet_ntop(AF_INET6, (void *)(src), (dst), INET6_ADDRSTRLEN)
 
 #define ogs_max(x , y)  (((x) > (y)) ? (x) : (y))

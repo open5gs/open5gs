@@ -45,6 +45,7 @@ OpenAPI_presence_info_t *OpenAPI_presence_info_create(
 void OpenAPI_presence_info_free(OpenAPI_presence_info_t *presence_info);
 OpenAPI_presence_info_t *OpenAPI_presence_info_parseFromJSON(cJSON *presence_infoJSON);
 cJSON *OpenAPI_presence_info_convertToJSON(OpenAPI_presence_info_t *presence_info);
+OpenAPI_presence_info_t *OpenAPI_presence_info_copy(OpenAPI_presence_info_t *dst, OpenAPI_presence_info_t *src);
 
 #ifdef __cplusplus
 }

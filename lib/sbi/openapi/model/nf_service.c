@@ -490,7 +490,7 @@ cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service)
         }
     }
 
-    if (nf_service->oauth2_required >= 0) {
+    if (nf_service->oauth2_required) {
         if (cJSON_AddBoolToObject(item, "oauth2Required", nf_service->oauth2_required) == NULL) {
             ogs_error("OpenAPI_nf_service_convertToJSON() failed [oauth2_required]");
             goto end;
@@ -962,5 +962,39 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON)
     return nf_service_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_nf_service_t *OpenAPI_nf_service_copy(OpenAPI_nf_service_t *dst, OpenAPI_nf_service_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_nf_service_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_nf_service_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_nf_service_free(dst);
+    dst = OpenAPI_nf_service_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

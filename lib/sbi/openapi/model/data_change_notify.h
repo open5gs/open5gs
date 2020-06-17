@@ -41,6 +41,7 @@ OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_create(
 void OpenAPI_data_change_notify_free(OpenAPI_data_change_notify_t *data_change_notify);
 OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_parseFromJSON(cJSON *data_change_notifyJSON);
 cJSON *OpenAPI_data_change_notify_convertToJSON(OpenAPI_data_change_notify_t *data_change_notify);
+OpenAPI_data_change_notify_t *OpenAPI_data_change_notify_copy(OpenAPI_data_change_notify_t *dst, OpenAPI_data_change_notify_t *src);
 
 #ifdef __cplusplus
 }

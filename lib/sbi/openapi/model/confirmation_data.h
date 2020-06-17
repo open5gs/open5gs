@@ -28,6 +28,7 @@ OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_create(
 void OpenAPI_confirmation_data_free(OpenAPI_confirmation_data_t *confirmation_data);
 OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_parseFromJSON(cJSON *confirmation_dataJSON);
 cJSON *OpenAPI_confirmation_data_convertToJSON(OpenAPI_confirmation_data_t *confirmation_data);
+OpenAPI_confirmation_data_t *OpenAPI_confirmation_data_copy(OpenAPI_confirmation_data_t *dst, OpenAPI_confirmation_data_t *src);
 
 #ifdef __cplusplus
 }

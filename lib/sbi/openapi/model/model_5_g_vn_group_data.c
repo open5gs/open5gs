@@ -31,9 +31,6 @@ void OpenAPI_model_5_g_vn_group_data_free(OpenAPI_model_5_g_vn_group_data_t *mod
     OpenAPI_lnode_t *node;
     ogs_free(model_5_g_vn_group_data->dnn);
     OpenAPI_snssai_free(model_5_g_vn_group_data->s_nssai);
-    OpenAPI_list_for_each(model_5_g_vn_group_data->pdu_session_types, node) {
-        OpenAPI_pdu_session_type_free(node->data);
-    }
     OpenAPI_list_free(model_5_g_vn_group_data->pdu_session_types);
     OpenAPI_list_for_each(model_5_g_vn_group_data->app_descriptors, node) {
         OpenAPI_app_descriptor_free(node->data);
@@ -77,21 +74,16 @@ cJSON *OpenAPI_model_5_g_vn_group_data_convertToJSON(OpenAPI_model_5_g_vn_group_
     }
 
     if (model_5_g_vn_group_data->pdu_session_types) {
-        cJSON *pdu_session_typesList = cJSON_AddArrayToObject(item, "pduSessionTypes");
-        if (pdu_session_typesList == NULL) {
+        cJSON *pdu_session_types = cJSON_AddArrayToObject(item, "pduSessionTypes");
+        if (pdu_session_types == NULL) {
             ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed [pdu_session_types]");
             goto end;
         }
-
         OpenAPI_lnode_t *pdu_session_types_node;
-        if (model_5_g_vn_group_data->pdu_session_types) {
-            OpenAPI_list_for_each(model_5_g_vn_group_data->pdu_session_types, pdu_session_types_node) {
-                cJSON *itemLocal = OpenAPI_pdu_session_type_convertToJSON(pdu_session_types_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed [pdu_session_types]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(pdu_session_typesList, itemLocal);
+        OpenAPI_list_for_each(model_5_g_vn_group_data->pdu_session_types, pdu_session_types_node) {
+            if (cJSON_AddStringToObject(pdu_session_types, "", OpenAPI_pdu_session_type_ToString((OpenAPI_pdu_session_type_e)pdu_session_types_node->data)) == NULL) {
+                ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed [pdu_session_types]");
+                goto end;
             }
         }
     }
@@ -158,13 +150,12 @@ OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_parseFromJSON
         pdu_session_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(pdu_session_types_local_nonprimitive, pdu_session_types ) {
-            if (!cJSON_IsObject(pdu_session_types_local_nonprimitive)) {
+            if (!cJSON_IsString(pdu_session_types_local_nonprimitive)) {
                 ogs_error("OpenAPI_model_5_g_vn_group_data_parseFromJSON() failed [pdu_session_types]");
                 goto end;
             }
-            OpenAPI_pdu_session_type_t *pdu_session_typesItem = OpenAPI_pdu_session_type_parseFromJSON(pdu_session_types_local_nonprimitive);
 
-            OpenAPI_list_add(pdu_session_typesList, pdu_session_typesItem);
+            OpenAPI_list_add(pdu_session_typesList, (void *)OpenAPI_pdu_session_type_FromString(pdu_session_types_local_nonprimitive->valuestring));
         }
     }
 
@@ -201,5 +192,39 @@ OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_parseFromJSON
     return model_5_g_vn_group_data_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_copy(OpenAPI_model_5_g_vn_group_data_t *dst, OpenAPI_model_5_g_vn_group_data_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_model_5_g_vn_group_data_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_model_5_g_vn_group_data_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_model_5_g_vn_group_data_free(dst);
+    dst = OpenAPI_model_5_g_vn_group_data_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

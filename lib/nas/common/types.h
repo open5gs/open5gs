@@ -333,7 +333,8 @@ ED2(uint8_t unit:3;,
  * O TLV 3 */
 typedef struct ogs_nas_gprs_timer_2_s {
     uint8_t length;
-    uint8_t gprs_timer_2_value;
+ED2(uint8_t unit:3;,
+    uint8_t value:5;)
 } __attribute__ ((packed)) ogs_nas_gprs_timer_2_t;
 
 /* 9.9.3.16B GPRS timer 3
@@ -351,7 +352,7 @@ typedef struct ogs_nas_gprs_timer_2_s {
 typedef struct ogs_nas_gprs_timer_3_s {
     uint8_t length;
 ED2(uint8_t unit:3;,
-    uint8_t timer_value:5;)
+    uint8_t value:5;)
 } __attribute__ ((packed)) ogs_nas_gprs_timer_3_t;
 
 /* 9.9.3.18 IMEISV request
@@ -363,7 +364,7 @@ ED3(uint8_t type:4;,
     uint8_t spare:1;,
 #define OGS_NAS_IMEISV_NOT_REQUESTED            0
 #define OGS_NAS_IMEISV_REQUESTED                1
-    uint8_t imeisv_request_value:3;)
+    uint8_t value:3;)
 } __attribute__ ((packed)) ogs_nas_imeisv_request_t;
 
 /* 9.9.3.21 NAS key set identifier
@@ -697,7 +698,7 @@ typedef struct ogs_nas_emergency_number_list_s {
  * O TLV-E 7-65535 */
 typedef struct ogs_nas_extended_emergency_number_list_s {
     uint8_t length;
-    uint8_t *buffer;
+    void *buffer;
 } ogs_nas_extended_emergency_number_list_t;
 
 /* 9.9.3.46 Extended DRX parameters
@@ -747,6 +748,29 @@ typedef struct ogs_nas_eps_quality_of_service_s {
 void eps_qos_build(ogs_nas_eps_quality_of_service_t *eps_qos,
     uint8_t qci,
     uint64_t dl_mbr, uint64_t ul_mbr, uint64_t dl_gbr, uint64_t ul_gbr);
+
+/* 9.9.4.9 PDN address
+ * M LV 6-14 */
+/* 9.11.4.10 PDU address
+ * O TLV 7, 11 or 15 */
+#define OGS_NAS_PDU_ADDRESS_IPV4_LEN 5
+#define OGS_NAS_PDU_ADDRESS_IPV6_LEN 9
+#define OGS_NAS_PDU_ADDRESS_IPV4V6_LEN 13
+typedef struct ogs_nas_pdu_address_s {
+    uint8_t length;
+ED2(uint8_t reserved:5;,
+    uint8_t pdn_type:3;)
+    union {
+        uint32_t addr;
+        struct {
+            uint8_t addr6[OGS_IPV6_LEN>>1]; /* Interface Identifer Only */
+        };
+        struct {
+            uint8_t addr6[OGS_IPV6_LEN>>1]; /* Interface Identifer Only */
+            uint32_t addr;
+        } both;
+    };
+} __attribute__ ((packed)) ogs_nas_pdu_address_t;
 
 /* 9.9.4.14 Request type
  * M V 1/2
@@ -830,7 +854,7 @@ ED3(uint8_t type:4;,
  * O TLV-E 4-65538 */
 typedef struct ogs_nas_extended_protocol_configuration_options_s {
     uint16_t length;
-    uint8_t *buffer;
+    void *buffer;
 } __attribute__ ((packed)) ogs_nas_extended_protocol_configuration_options_t;
 
 /* 9.9.4.28 Serving PLMN rate control

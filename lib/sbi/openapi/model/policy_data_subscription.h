@@ -39,6 +39,7 @@ OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_create(
 void OpenAPI_policy_data_subscription_free(OpenAPI_policy_data_subscription_t *policy_data_subscription);
 OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_parseFromJSON(cJSON *policy_data_subscriptionJSON);
 cJSON *OpenAPI_policy_data_subscription_convertToJSON(OpenAPI_policy_data_subscription_t *policy_data_subscription);
+OpenAPI_policy_data_subscription_t *OpenAPI_policy_data_subscription_copy(OpenAPI_policy_data_subscription_t *dst, OpenAPI_policy_data_subscription_t *src);
 
 #ifdef __cplusplus
 }

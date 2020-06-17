@@ -34,6 +34,7 @@ OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_create(
 void OpenAPI_pp_subs_reg_timer_free(OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer);
 OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_parseFromJSON(cJSON *pp_subs_reg_timerJSON);
 cJSON *OpenAPI_pp_subs_reg_timer_convertToJSON(OpenAPI_pp_subs_reg_timer_t *pp_subs_reg_timer);
+OpenAPI_pp_subs_reg_timer_t *OpenAPI_pp_subs_reg_timer_copy(OpenAPI_pp_subs_reg_timer_t *dst, OpenAPI_pp_subs_reg_timer_t *src);
 
 #ifdef __cplusplus
 }

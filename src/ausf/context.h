@@ -52,12 +52,8 @@ typedef struct ausf_context_s {
 } ausf_context_t;
 
 struct ausf_ue_s {
-    ogs_lnode_t     lnode;
-    ogs_fsm_t       sm;     /* A state machine */
-
-    struct {
-        char *method;
-    } state;
+    ogs_sbi_object_t sbi;
+    ogs_fsm_t sm;
 
     char *ctx_id;
     char *suci;
@@ -74,10 +70,6 @@ struct ausf_ue_s {
     uint8_t kausf[OGS_SHA256_DIGEST_SIZE];
     uint8_t kseaf[OGS_SHA256_DIGEST_SIZE];
 
-    struct {
-        ogs_timer_t *timer;
-    } sbi_client_wait;
-
 #define AUSF_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
     do { \
         ogs_assert(_nFInstance); \
@@ -93,10 +85,6 @@ struct ausf_ue_s {
         } \
         ogs_sbi_nf_instance_remove(_nFInstance); \
     } while(0)
-
-    ogs_sbi_nf_types_t nf_types;
-
-    ogs_sbi_session_t *session;
 };
 
 void ausf_context_init(void);

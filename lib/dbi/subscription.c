@@ -19,8 +19,7 @@
 
 #include "ogs-dbi.h"
 
-int ogs_dbi_auth_info(const char *id_type, const char *ue_id,
-        ogs_dbi_auth_info_t *auth_info)
+int ogs_dbi_auth_info(char *supi, ogs_dbi_auth_info_t *auth_info)
 {
     int rv = OGS_OK;
     mongoc_cursor_t *cursor = NULL;
@@ -33,11 +32,18 @@ int ogs_dbi_auth_info(const char *id_type, const char *ue_id,
     char *utf8 = NULL;
     uint32_t length = 0;
 
-    ogs_assert(id_type);
-    ogs_assert(ue_id);
+    char *supi_type = NULL;
+    char *supi_id = NULL;
+
+    ogs_assert(supi);
     ogs_assert(auth_info);
 
-    query = BCON_NEW(id_type, BCON_UTF8(ue_id));
+    supi_type = ogs_supi_get_type(supi);
+    ogs_assert(supi_type);
+    supi_id = ogs_supi_get_id(supi);
+    ogs_assert(supi_id);
+
+    query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
 #if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
     cursor = mongoc_collection_find_with_opts(
             ogs_mongoc()->collection.subscriber, query, NULL, NULL);
@@ -47,7 +53,7 @@ int ogs_dbi_auth_info(const char *id_type, const char *ue_id,
 #endif
 
     if (!mongoc_cursor_next(cursor, &document)) {
-        ogs_warn("Cannot find IMSI in DB : %s-%s", id_type, ue_id);
+        ogs_warn("[%s] Cannot find IMSI in DB", supi);
 
         rv = OGS_ERROR;
         goto out;
@@ -97,23 +103,30 @@ out:
     if (query) bson_destroy(query);
     if (cursor) mongoc_cursor_destroy(cursor);
 
+    ogs_free(supi_type);
+    ogs_free(supi_id);
+
     return rv;
 }
 
-int ogs_dbi_update_sqn(const char *id_type, const char *ue_id, uint64_t sqn)
+int ogs_dbi_update_sqn(char *supi, uint64_t sqn)
 {
     int rv = OGS_OK;
     bson_t *query = NULL;
     bson_t *update = NULL;
     bson_error_t error;
-    char printable_rand[OGS_KEYSTRLEN(OGS_RAND_LEN)];
 
-    ogs_assert(id_type);
-    ogs_assert(ue_id);
-    ogs_hex_to_ascii(rand,
-            OGS_RAND_LEN, printable_rand, sizeof(printable_rand));
+    char *supi_type = NULL;
+    char *supi_id = NULL;
 
-    query = BCON_NEW(id_type, BCON_UTF8(ue_id));
+    ogs_assert(supi);
+
+    supi_type = ogs_supi_get_type(supi);
+    ogs_assert(supi_type);
+    supi_id = ogs_supi_get_id(supi);
+    ogs_assert(supi_id);
+
+    query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
     update = BCON_NEW("$set",
             "{",
                 "security.sqn", BCON_INT64(sqn),
@@ -129,10 +142,13 @@ int ogs_dbi_update_sqn(const char *id_type, const char *ue_id, uint64_t sqn)
     if (query) bson_destroy(query);
     if (update) bson_destroy(update);
 
+    ogs_free(supi_type);
+    ogs_free(supi_id);
+
     return rv;
 }
 
-int ogs_dbi_increment_sqn(const char *id_type, const char *ue_id)
+int ogs_dbi_increment_sqn(char *supi)
 {
     int rv = OGS_OK;
     bson_t *query = NULL;
@@ -140,10 +156,17 @@ int ogs_dbi_increment_sqn(const char *id_type, const char *ue_id)
     bson_error_t error;
     uint64_t max_sqn = OGS_MAX_SQN;
 
-    ogs_assert(id_type);
-    ogs_assert(ue_id);
+    char *supi_type = NULL;
+    char *supi_id = NULL;
 
-    query = BCON_NEW(id_type, BCON_UTF8(ue_id));
+    ogs_assert(supi);
+
+    supi_type = ogs_supi_get_type(supi);
+    ogs_assert(supi_type);
+    supi_id = ogs_supi_get_id(supi);
+    ogs_assert(supi_id);
+
+    query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
     update = BCON_NEW("$inc",
             "{",
                 "security.sqn", BCON_INT64(32),
@@ -173,10 +196,13 @@ out:
     if (query) bson_destroy(query);
     if (update) bson_destroy(update);
 
+    ogs_free(supi_type);
+    ogs_free(supi_id);
+
     return rv;
 }
 
-int ogs_dbi_subscription_data(const char *id_type, const char *ue_id,
+int ogs_dbi_subscription_data(char *supi,
         ogs_dbi_subscription_data_t *subscription_data)
 {
     int rv = OGS_OK;
@@ -189,11 +215,18 @@ int ogs_dbi_subscription_data(const char *id_type, const char *ue_id,
     const char *utf8 = NULL;
     uint32_t length = 0;
 
-    ogs_assert(id_type);
-    ogs_assert(ue_id);
-    ogs_assert(subscription_data);
+    char *supi_type = NULL;
+    char *supi_id = NULL;
 
-    query = BCON_NEW(id_type, BCON_UTF8(ue_id));
+    ogs_assert(subscription_data);
+    ogs_assert(supi);
+
+    supi_type = ogs_supi_get_type(supi);
+    ogs_assert(supi_type);
+    supi_id = ogs_supi_get_id(supi);
+    ogs_assert(supi_id);
+
+    query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
 #if MONGOC_MAJOR_VERSION >= 1 && MONGOC_MINOR_VERSION >= 5
     cursor = mongoc_collection_find_with_opts(
             ogs_mongoc()->collection.subscriber, query, NULL, NULL);
@@ -203,7 +236,7 @@ int ogs_dbi_subscription_data(const char *id_type, const char *ue_id,
 #endif
 
     if (!mongoc_cursor_next(cursor, &document)) {
-        ogs_error("Cannot find IMSI in DB : %s-%s", id_type, ue_id);
+        ogs_error("[%s] Cannot find IMSI in DB", supi);
 
         rv = OGS_ERROR;
         goto out;
@@ -384,6 +417,7 @@ int ogs_dbi_subscription_data(const char *id_type, const char *ue_id,
                                             OGS_GTP_PDN_TYPE_IPV4;
                                     }
                                     pdn->paa.both.addr = ipsub.sub[0];
+                                    pdn->ue_ip.addr = ipsub.sub[0];
                                 }
                             } else if (!strcmp(child3_key, "addr6") &&
                                 BSON_ITER_HOLDS_UTF8(&child3_iter)) {
@@ -402,6 +436,8 @@ int ogs_dbi_subscription_data(const char *id_type, const char *ue_id,
                                     }
                                     memcpy(&(pdn->paa.both.addr6),
                                             ipsub.sub, OGS_IPV6_LEN);
+                                    memcpy(pdn->ue_ip.addr6,
+                                            ipsub.sub, OGS_IPV6_LEN);
                                 }
 
                             }
@@ -417,6 +453,9 @@ int ogs_dbi_subscription_data(const char *id_type, const char *ue_id,
 out:
     if (query) bson_destroy(query);
     if (cursor) mongoc_cursor_destroy(cursor);
+
+    ogs_free(supi_type);
+    ogs_free(supi_id);
 
     return rv;
 }

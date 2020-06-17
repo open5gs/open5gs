@@ -35,6 +35,7 @@ OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_create(
 void OpenAPI_external_unrelated_class_free(OpenAPI_external_unrelated_class_t *external_unrelated_class);
 OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_parseFromJSON(cJSON *external_unrelated_classJSON);
 cJSON *OpenAPI_external_unrelated_class_convertToJSON(OpenAPI_external_unrelated_class_t *external_unrelated_class);
+OpenAPI_external_unrelated_class_t *OpenAPI_external_unrelated_class_copy(OpenAPI_external_unrelated_class_t *dst, OpenAPI_external_unrelated_class_t *src);
 
 #ifdef __cplusplus
 }

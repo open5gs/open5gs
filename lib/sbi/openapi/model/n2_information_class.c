@@ -4,48 +4,27 @@
 #include <stdio.h>
 #include "n2_information_class.h"
 
-OpenAPI_n2_information_class_t *OpenAPI_n2_information_class_create(
-    )
+char* OpenAPI_n2_information_class_ToString(OpenAPI_n2_information_class_e n2_information_class)
 {
-    OpenAPI_n2_information_class_t *n2_information_class_local_var = OpenAPI_malloc(sizeof(OpenAPI_n2_information_class_t));
-    if (!n2_information_class_local_var) {
-        return NULL;
-    }
-
-    return n2_information_class_local_var;
+    const char *n2_information_classArray[] =  { "NULL", "SM", "NRPPa", "PWS", "PWS_BCAL", "PWS_RF", "RAN" };
+    size_t sizeofArray = sizeof(n2_information_classArray) / sizeof(n2_information_classArray[0]);
+    if (n2_information_class < sizeofArray)
+        return (char *)n2_information_classArray[n2_information_class];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_n2_information_class_free(OpenAPI_n2_information_class_t *n2_information_class)
+OpenAPI_n2_information_class_e OpenAPI_n2_information_class_FromString(char* n2_information_class)
 {
-    if (NULL == n2_information_class) {
-        return;
+    int stringToReturn = 0;
+    const char *n2_information_classArray[] =  { "NULL", "SM", "NRPPa", "PWS", "PWS_BCAL", "PWS_RF", "RAN" };
+    size_t sizeofArray = sizeof(n2_information_classArray) / sizeof(n2_information_classArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(n2_information_class, n2_information_classArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(n2_information_class);
-}
-
-cJSON *OpenAPI_n2_information_class_convertToJSON(OpenAPI_n2_information_class_t *n2_information_class)
-{
-    cJSON *item = NULL;
-
-    if (n2_information_class == NULL) {
-        ogs_error("OpenAPI_n2_information_class_convertToJSON() failed [N2InformationClass]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_n2_information_class_t *OpenAPI_n2_information_class_parseFromJSON(cJSON *n2_information_classJSON)
-{
-    OpenAPI_n2_information_class_t *n2_information_class_local_var = NULL;
-    n2_information_class_local_var = OpenAPI_n2_information_class_create (
-        );
-
-    return n2_information_class_local_var;
-end:
-    return NULL;
+    return 0;
 }
 

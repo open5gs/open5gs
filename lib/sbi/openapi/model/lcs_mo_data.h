@@ -29,6 +29,7 @@ OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_create(
 void OpenAPI_lcs_mo_data_free(OpenAPI_lcs_mo_data_t *lcs_mo_data);
 OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_parseFromJSON(cJSON *lcs_mo_dataJSON);
 cJSON *OpenAPI_lcs_mo_data_convertToJSON(OpenAPI_lcs_mo_data_t *lcs_mo_data);
+OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_copy(OpenAPI_lcs_mo_data_t *dst, OpenAPI_lcs_mo_data_t *src);
 
 #ifdef __cplusplus
 }

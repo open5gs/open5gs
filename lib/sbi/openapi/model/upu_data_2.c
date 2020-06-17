@@ -139,3 +139,37 @@ end:
     return NULL;
 }
 
+OpenAPI_upu_data_2_t *OpenAPI_upu_data_2_copy(OpenAPI_upu_data_2_t *dst, OpenAPI_upu_data_2_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_upu_data_2_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_upu_data_2_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_upu_data_2_free(dst);
+    dst = OpenAPI_upu_data_2_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

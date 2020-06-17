@@ -26,6 +26,15 @@
 extern "C" {
 #endif
 
+typedef ogs_sbi_request_t *(*ogs_sbi_build_f)(
+        ogs_sbi_object_t *sbi_object, void *data);
+
+void ogs_sbi_send(
+        ogs_sbi_object_t *sbi_object, ogs_sbi_nf_instance_t *nf_instance);
+bool ogs_sbi_discover_and_send(
+        OpenAPI_nf_type_e nf_type, ogs_sbi_object_t *sbi_object, void *data,
+        ogs_sbi_build_f build);
+
 void ogs_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_nnrf_nfm_send_nf_update(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_nnrf_nfm_send_nf_de_register(ogs_sbi_nf_instance_t *nf_instance);
@@ -36,8 +45,7 @@ void ogs_nnrf_nfm_send_nf_status_unsubscribe(
         ogs_sbi_subscription_t *subscription);
 
 void ogs_nnrf_disc_send_nf_discover(ogs_sbi_nf_instance_t *nf_instance,
-        OpenAPI_nf_type_e target_nf_type, OpenAPI_nf_type_e requester_nf_type,
-        void *data);
+        OpenAPI_nf_type_e target_nf_type, void *data);
 
 #ifdef __cplusplus
 }

@@ -46,7 +46,7 @@ bool nrf_nnrf_handle_nf_register(ogs_sbi_nf_instance_t *nf_instance,
     if (!handled) return false;
 
     if (OGS_FSM_CHECK(&nf_instance->sm, nrf_nf_state_will_register)) {
-        message->http.location = message->h.url;
+        message->http.location = message->h.uri;
         status = OGS_SBI_HTTP_STATUS_CREATED;
     } else if (OGS_FSM_CHECK(&nf_instance->sm, nrf_nf_state_registered)) {
         status = OGS_SBI_HTTP_STATUS_OK;
@@ -199,7 +199,7 @@ bool nrf_nnrf_handle_nf_status_subscribe(
                 ogs_time_from_sec(subscription->time.validity));
     }
 
-    message->http.location = message->h.url;
+    message->http.location = message->h.uri;
     status = OGS_SBI_HTTP_STATUS_CREATED;
 
     response = ogs_sbi_build_response(message, status);
@@ -348,13 +348,13 @@ bool nrf_nnrf_handle_nf_discover(
     ogs_assert(recvmsg);
 
     if (!recvmsg->param.target_nf_type) {
-        ogs_error("No target-nf-type [%s]", recvmsg->h.url);
+        ogs_error("No target-nf-type [%s]", recvmsg->h.uri);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 recvmsg, "No target-nf-type", NULL);
         return false;
     }
     if (!recvmsg->param.requester_nf_type) {
-        ogs_error("No requester-nf-type [%s]", recvmsg->h.url);
+        ogs_error("No requester-nf-type [%s]", recvmsg->h.uri);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 recvmsg, "No requester-nf-type", NULL);
         return false;

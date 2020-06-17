@@ -17,15 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ssc_mode_s OpenAPI_ssc_mode_t;
-typedef struct OpenAPI_ssc_mode_s {
-} OpenAPI_ssc_mode_t;
+typedef enum { OpenAPI_ssc_mode_NULL = 0, OpenAPI_ssc_mode_SSC_MODE_1, OpenAPI_ssc_mode_SSC_MODE_2, OpenAPI_ssc_mode_SSC_MODE_3 } OpenAPI_ssc_mode_e;
 
-OpenAPI_ssc_mode_t *OpenAPI_ssc_mode_create(
-    );
-void OpenAPI_ssc_mode_free(OpenAPI_ssc_mode_t *ssc_mode);
-OpenAPI_ssc_mode_t *OpenAPI_ssc_mode_parseFromJSON(cJSON *ssc_modeJSON);
-cJSON *OpenAPI_ssc_mode_convertToJSON(OpenAPI_ssc_mode_t *ssc_mode);
+char* OpenAPI_ssc_mode_ToString(OpenAPI_ssc_mode_e ssc_mode);
+
+OpenAPI_ssc_mode_e OpenAPI_ssc_mode_FromString(char* ssc_mode);
 
 #ifdef __cplusplus
 }

@@ -26,6 +26,7 @@ OpenAPI_an_node_type_t *OpenAPI_an_node_type_create(
 void OpenAPI_an_node_type_free(OpenAPI_an_node_type_t *an_node_type);
 OpenAPI_an_node_type_t *OpenAPI_an_node_type_parseFromJSON(cJSON *an_node_typeJSON);
 cJSON *OpenAPI_an_node_type_convertToJSON(OpenAPI_an_node_type_t *an_node_type);
+OpenAPI_an_node_type_t *OpenAPI_an_node_type_copy(OpenAPI_an_node_type_t *dst, OpenAPI_an_node_type_t *src);
 
 #ifdef __cplusplus
 }

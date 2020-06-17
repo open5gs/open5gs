@@ -128,3 +128,37 @@ end:
     return NULL;
 }
 
+OpenAPI_pdu_session_t *OpenAPI_pdu_session_copy(OpenAPI_pdu_session_t *dst, OpenAPI_pdu_session_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_pdu_session_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_pdu_session_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_pdu_session_free(dst);
+    dst = OpenAPI_pdu_session_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

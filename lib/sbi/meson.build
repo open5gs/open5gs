@@ -18,6 +18,7 @@
 subdir('openapi')
 
 libsbi_sources = files('''
+    contrib/multipart_parser.c
     custom/links.c
 
     yuarel.c
@@ -47,6 +48,7 @@ libsbi = library('ogssbi',
     c_args : sbi_cc_flags,
     include_directories : [libsbi_inc, libinc],
     dependencies : [libcore_dep,
+                    libcrypt_dep,
                     libapp_dep,
                     libsbi_openapi_dep,
                     libgnutls_dep,
@@ -58,6 +60,7 @@ libsbi_dep = declare_dependency(
     link_with : libsbi,
     include_directories : [libsbi_inc, libinc],
     dependencies : [libcore_dep,
+                    libcrypt_dep,
                     libapp_dep,
                     libsbi_openapi_dep,
                     libgnutls_dep,

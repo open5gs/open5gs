@@ -32,6 +32,7 @@ OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_create(
 void OpenAPI_amf_subscription_info_free(OpenAPI_amf_subscription_info_t *amf_subscription_info);
 OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_parseFromJSON(cJSON *amf_subscription_infoJSON);
 cJSON *OpenAPI_amf_subscription_info_convertToJSON(OpenAPI_amf_subscription_info_t *amf_subscription_info);
+OpenAPI_amf_subscription_info_t *OpenAPI_amf_subscription_info_copy(OpenAPI_amf_subscription_info_t *dst, OpenAPI_amf_subscription_info_t *src);
 
 #ifdef __cplusplus
 }

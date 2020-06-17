@@ -33,13 +33,9 @@ void udm_sbi_close(void);
 
 void udm_sbi_setup_client_callback(ogs_sbi_nf_instance_t *nf_instance);
 
-void udm_nudr_dr_send_query(
-        udm_ue_t *udm_ue, ogs_sbi_nf_instance_t *nf_instance);
-void udm_nudr_dr_discover_and_send_query(udm_ue_t *udm_ue);
-
-void udm_nudr_dr_send_update(
-        udm_ue_t *udm_ue, ogs_sbi_nf_instance_t *nf_instance);
-void udm_nudr_dr_discover_and_send_update(udm_ue_t *udm_ue);
+void udm_sbi_discover_and_send(
+        OpenAPI_nf_type_e nf_type, udm_ue_t *udm_ue, void *data,
+        ogs_sbi_request_t *(*build)(udm_ue_t *udm_ue, void *data));
 
 #ifdef __cplusplus
 }

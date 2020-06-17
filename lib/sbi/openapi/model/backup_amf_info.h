@@ -31,6 +31,7 @@ OpenAPI_backup_amf_info_t *OpenAPI_backup_amf_info_create(
 void OpenAPI_backup_amf_info_free(OpenAPI_backup_amf_info_t *backup_amf_info);
 OpenAPI_backup_amf_info_t *OpenAPI_backup_amf_info_parseFromJSON(cJSON *backup_amf_infoJSON);
 cJSON *OpenAPI_backup_amf_info_convertToJSON(OpenAPI_backup_amf_info_t *backup_amf_info);
+OpenAPI_backup_amf_info_t *OpenAPI_backup_amf_info_copy(OpenAPI_backup_amf_info_t *dst, OpenAPI_backup_amf_info_t *src);
 
 #ifdef __cplusplus
 }

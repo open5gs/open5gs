@@ -326,3 +326,37 @@ end:
     return NULL;
 }
 
+OpenAPI_expected_ue_behaviour_t *OpenAPI_expected_ue_behaviour_copy(OpenAPI_expected_ue_behaviour_t *dst, OpenAPI_expected_ue_behaviour_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_expected_ue_behaviour_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_expected_ue_behaviour_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_expected_ue_behaviour_free(dst);
+    dst = OpenAPI_expected_ue_behaviour_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

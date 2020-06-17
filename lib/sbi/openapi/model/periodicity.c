@@ -49,3 +49,37 @@ end:
     return NULL;
 }
 
+OpenAPI_periodicity_t *OpenAPI_periodicity_copy(OpenAPI_periodicity_t *dst, OpenAPI_periodicity_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_periodicity_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_periodicity_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_periodicity_free(dst);
+    dst = OpenAPI_periodicity_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

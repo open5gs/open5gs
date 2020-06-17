@@ -375,7 +375,11 @@ static void upf_gtp_send_to_pdr(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
     far = pdr->far;
     ogs_assert(far);
 
-    upf_gtp_send_to_far(far, sendbuf);
+    if (far->gnode) {
+        upf_gtp_send_to_far(far, sendbuf);
+    } else {
+        ogs_fatal("TODO Buffering");
+    }
 }
 
 static int upf_gtp_send_router_advertisement(

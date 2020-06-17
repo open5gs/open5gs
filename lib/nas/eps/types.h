@@ -293,7 +293,7 @@ ED4(uint8_t tsc:1;,
  * M LV-E 5-n */
 typedef struct ogs_nas_esm_message_container_s {
     uint16_t length;
-    uint8_t *buffer;
+    void *buffer;
 } ogs_nas_esm_message_container_t;
 
 /* 9.9.3.17 Identity type 2
@@ -526,7 +526,7 @@ typedef uint8_t ogs_nas_generic_message_container_type_t;
  * M LV-E 3-n */
 typedef struct ogs_nas_generic_message_container_s {
     uint16_t length;
-    uint8_t *buffer;
+    void *buffer;
 } ogs_nas_generic_message_container_t;
 
 /* 9.9.3.44 Voice domain preference and UE's usage setting
@@ -663,24 +663,7 @@ ED3(uint8_t type:4;,
 
 /* 9.9.4.9 PDN address
  * M LV 6-14 */
-#define OGS_NAS_PDN_ADDRESS_IPV4_LEN 5
-#define OGS_NAS_PDN_ADDRESS_IPV6_LEN 9
-#define OGS_NAS_PDN_ADDRESS_IPV4V6_LEN 13
-typedef struct ogs_nas_pdn_address_s {
-    uint8_t length;
-ED2(uint8_t reserved:5;,
-    uint8_t pdn_type:3;)
-    union {
-        uint32_t addr;      
-        struct {
-            uint8_t addr6[OGS_IPV6_LEN>>1]; /* Interface Identifer Only */
-        };
-        struct {
-            uint8_t addr6[OGS_IPV6_LEN>>1]; /* Interface Identifer Only */
-            uint32_t addr;      
-        } both;
-    };
-} __attribute__ ((packed)) ogs_nas_pdn_address_t;
+typedef ogs_nas_pdu_address_t ogs_nas_pdn_address_t;
 
 /* 9.9.4.11 Protocol configuration options
  * See subclause 10.5.6.3 in 3GPP TS 24.008 [13].

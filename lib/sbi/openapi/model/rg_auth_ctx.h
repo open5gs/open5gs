@@ -33,6 +33,7 @@ OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_create(
 void OpenAPI_rg_auth_ctx_free(OpenAPI_rg_auth_ctx_t *rg_auth_ctx);
 OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_parseFromJSON(cJSON *rg_auth_ctxJSON);
 cJSON *OpenAPI_rg_auth_ctx_convertToJSON(OpenAPI_rg_auth_ctx_t *rg_auth_ctx);
+OpenAPI_rg_auth_ctx_t *OpenAPI_rg_auth_ctx_copy(OpenAPI_rg_auth_ctx_t *dst, OpenAPI_rg_auth_ctx_t *src);
 
 #ifdef __cplusplus
 }

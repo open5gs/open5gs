@@ -32,6 +32,7 @@ OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_create(
 void OpenAPI_id_translation_result_free(OpenAPI_id_translation_result_t *id_translation_result);
 OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_parseFromJSON(cJSON *id_translation_resultJSON);
 cJSON *OpenAPI_id_translation_result_convertToJSON(OpenAPI_id_translation_result_t *id_translation_result);
+OpenAPI_id_translation_result_t *OpenAPI_id_translation_result_copy(OpenAPI_id_translation_result_t *dst, OpenAPI_id_translation_result_t *src);
 
 #ifdef __cplusplus
 }

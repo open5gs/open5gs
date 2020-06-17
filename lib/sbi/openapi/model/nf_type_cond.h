@@ -29,6 +29,7 @@ OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_create(
 void OpenAPI_nf_type_cond_free(OpenAPI_nf_type_cond_t *nf_type_cond);
 OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_parseFromJSON(cJSON *nf_type_condJSON);
 cJSON *OpenAPI_nf_type_cond_convertToJSON(OpenAPI_nf_type_cond_t *nf_type_cond);
+OpenAPI_nf_type_cond_t *OpenAPI_nf_type_cond_copy(OpenAPI_nf_type_cond_t *dst, OpenAPI_nf_type_cond_t *src);
 
 #ifdef __cplusplus
 }

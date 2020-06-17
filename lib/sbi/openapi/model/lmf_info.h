@@ -40,6 +40,7 @@ OpenAPI_lmf_info_t *OpenAPI_lmf_info_create(
 void OpenAPI_lmf_info_free(OpenAPI_lmf_info_t *lmf_info);
 OpenAPI_lmf_info_t *OpenAPI_lmf_info_parseFromJSON(cJSON *lmf_infoJSON);
 cJSON *OpenAPI_lmf_info_convertToJSON(OpenAPI_lmf_info_t *lmf_info);
+OpenAPI_lmf_info_t *OpenAPI_lmf_info_copy(OpenAPI_lmf_info_t *dst, OpenAPI_lmf_info_t *src);
 
 #ifdef __cplusplus
 }

@@ -34,6 +34,7 @@ OpenAPI_complex_query_t *OpenAPI_complex_query_create(
 void OpenAPI_complex_query_free(OpenAPI_complex_query_t *complex_query);
 OpenAPI_complex_query_t *OpenAPI_complex_query_parseFromJSON(cJSON *complex_queryJSON);
 cJSON *OpenAPI_complex_query_convertToJSON(OpenAPI_complex_query_t *complex_query);
+OpenAPI_complex_query_t *OpenAPI_complex_query_copy(OpenAPI_complex_query_t *dst, OpenAPI_complex_query_t *src);
 
 #ifdef __cplusplus
 }

@@ -42,6 +42,7 @@ OpenAPI_pcf_info_t *OpenAPI_pcf_info_create(
 void OpenAPI_pcf_info_free(OpenAPI_pcf_info_t *pcf_info);
 OpenAPI_pcf_info_t *OpenAPI_pcf_info_parseFromJSON(cJSON *pcf_infoJSON);
 cJSON *OpenAPI_pcf_info_convertToJSON(OpenAPI_pcf_info_t *pcf_info);
+OpenAPI_pcf_info_t *OpenAPI_pcf_info_copy(OpenAPI_pcf_info_t *dst, OpenAPI_pcf_info_t *src);
 
 #ifdef __cplusplus
 }

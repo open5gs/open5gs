@@ -26,6 +26,7 @@ OpenAPI_event_id_t *OpenAPI_event_id_create(
 void OpenAPI_event_id_free(OpenAPI_event_id_t *event_id);
 OpenAPI_event_id_t *OpenAPI_event_id_parseFromJSON(cJSON *event_idJSON);
 cJSON *OpenAPI_event_id_convertToJSON(OpenAPI_event_id_t *event_id);
+OpenAPI_event_id_t *OpenAPI_event_id_copy(OpenAPI_event_id_t *dst, OpenAPI_event_id_t *src);
 
 #ifdef __cplusplus
 }

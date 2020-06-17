@@ -93,7 +93,6 @@ int amf_nausf_auth_handle_authenticate(
 
     if (amf_ue->confirmation_url_for_5g_aka)
         ogs_free(amf_ue->confirmation_url_for_5g_aka);
-
     amf_ue->confirmation_url_for_5g_aka =
         ogs_strdup(LinksValueSchemeValue->href);
 

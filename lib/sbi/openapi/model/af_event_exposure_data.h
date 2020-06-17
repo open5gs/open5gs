@@ -33,6 +33,7 @@ OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_create(
 void OpenAPI_af_event_exposure_data_free(OpenAPI_af_event_exposure_data_t *af_event_exposure_data);
 OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_parseFromJSON(cJSON *af_event_exposure_dataJSON);
 cJSON *OpenAPI_af_event_exposure_data_convertToJSON(OpenAPI_af_event_exposure_data_t *af_event_exposure_data);
+OpenAPI_af_event_exposure_data_t *OpenAPI_af_event_exposure_data_copy(OpenAPI_af_event_exposure_data_t *dst, OpenAPI_af_event_exposure_data_t *src);
 
 #ifdef __cplusplus
 }

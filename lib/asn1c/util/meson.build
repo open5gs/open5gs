@@ -17,6 +17,7 @@
 
 libasn1c_util_sources = files('''
     conv.c
+    message.c
 '''.split())
 
 libasn1c_util_inc = include_directories('.')

@@ -31,6 +31,7 @@ OpenAPI_cag_ack_data_t *OpenAPI_cag_ack_data_create(
 void OpenAPI_cag_ack_data_free(OpenAPI_cag_ack_data_t *cag_ack_data);
 OpenAPI_cag_ack_data_t *OpenAPI_cag_ack_data_parseFromJSON(cJSON *cag_ack_dataJSON);
 cJSON *OpenAPI_cag_ack_data_convertToJSON(OpenAPI_cag_ack_data_t *cag_ack_data);
+OpenAPI_cag_ack_data_t *OpenAPI_cag_ack_data_copy(OpenAPI_cag_ack_data_t *dst, OpenAPI_cag_ack_data_t *src);
 
 #ifdef __cplusplus
 }

@@ -14,7 +14,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_creat
     char *ipv4_addr,
     OpenAPI_list_t *ipv6_prefix,
     OpenAPI_list_t *ipv6_addrs,
-    OpenAPI_pdu_session_type_t *pdu_sess_type,
+    OpenAPI_pdu_session_type_e pdu_sess_type,
     char *ip_addr_ts,
     char *dnn,
     int pdu_session_id
@@ -65,7 +65,6 @@ void OpenAPI_pdu_session_management_data_free(OpenAPI_pdu_session_management_dat
         ogs_free(node->data);
     }
     OpenAPI_list_free(pdu_session_management_data->ipv6_addrs);
-    OpenAPI_pdu_session_type_free(pdu_session_management_data->pdu_sess_type);
     ogs_free(pdu_session_management_data->ip_addr_ts);
     ogs_free(pdu_session_management_data->dnn);
     ogs_free(pdu_session_management_data);
@@ -182,13 +181,7 @@ cJSON *OpenAPI_pdu_session_management_data_convertToJSON(OpenAPI_pdu_session_man
     }
 
     if (pdu_session_management_data->pdu_sess_type) {
-        cJSON *pdu_sess_type_local_JSON = OpenAPI_pdu_session_type_convertToJSON(pdu_session_management_data->pdu_sess_type);
-        if (pdu_sess_type_local_JSON == NULL) {
-            ogs_error("OpenAPI_pdu_session_management_data_convertToJSON() failed [pdu_sess_type]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "pduSessType", pdu_sess_type_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "pduSessType", OpenAPI_pdu_session_type_ToString(pdu_session_management_data->pdu_sess_type)) == NULL) {
             ogs_error("OpenAPI_pdu_session_management_data_convertToJSON() failed [pdu_sess_type]");
             goto end;
         }
@@ -339,9 +332,13 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
 
     cJSON *pdu_sess_type = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "pduSessType");
 
-    OpenAPI_pdu_session_type_t *pdu_sess_type_local_nonprim = NULL;
+    OpenAPI_pdu_session_type_e pdu_sess_typeVariable;
     if (pdu_sess_type) {
-        pdu_sess_type_local_nonprim = OpenAPI_pdu_session_type_parseFromJSON(pdu_sess_type);
+        if (!cJSON_IsString(pdu_sess_type)) {
+            ogs_error("OpenAPI_pdu_session_management_data_parseFromJSON() failed [pdu_sess_type]");
+            goto end;
+        }
+        pdu_sess_typeVariable = OpenAPI_pdu_session_type_FromString(pdu_sess_type->valuestring);
     }
 
     cJSON *ip_addr_ts = cJSON_GetObjectItemCaseSensitive(pdu_session_management_dataJSON, "ipAddrTs");
@@ -381,7 +378,7 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
         ipv4_addr ? ogs_strdup(ipv4_addr->valuestring) : NULL,
         ipv6_prefix ? ipv6_prefixList : NULL,
         ipv6_addrs ? ipv6_addrsList : NULL,
-        pdu_sess_type ? pdu_sess_type_local_nonprim : NULL,
+        pdu_sess_type ? pdu_sess_typeVariable : 0,
         ip_addr_ts ? ogs_strdup(ip_addr_ts->valuestring) : NULL,
         dnn ? ogs_strdup(dnn->valuestring) : NULL,
         pdu_session_id ? pdu_session_id->valuedouble : 0
@@ -390,5 +387,39 @@ OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_parse
     return pdu_session_management_data_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_pdu_session_management_data_t *OpenAPI_pdu_session_management_data_copy(OpenAPI_pdu_session_management_data_t *dst, OpenAPI_pdu_session_management_data_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_pdu_session_management_data_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_pdu_session_management_data_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_pdu_session_management_data_free(dst);
+    dst = OpenAPI_pdu_session_management_data_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

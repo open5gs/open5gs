@@ -31,14 +31,9 @@ void ausf_sbi_close(void);
 
 void ausf_sbi_setup_client_callback(ogs_sbi_nf_instance_t *nf_instance);
 
-void ausf_nudm_ueau_send_get(
-        ausf_ue_t *ausf_ue, ogs_sbi_nf_instance_t *nf_instance);
-void ausf_nudm_ueau_discover_and_send_get(ausf_ue_t *ausf_ue);
-
-void ausf_nudm_ueau_send_result_confirmation_inform(
-        ausf_ue_t *ausf_ue, ogs_sbi_nf_instance_t *nf_instance);
-void ausf_nudm_ueau_discover_and_send_result_confirmation_inform(
-        ausf_ue_t *ausf_ue);
+void ausf_sbi_discover_and_send(
+        OpenAPI_nf_type_e nf_type, ausf_ue_t *ausf_ue, void *data,
+        ogs_sbi_request_t *(*build)(ausf_ue_t *ausf_ue, void *data));
 
 #ifdef __cplusplus
 }

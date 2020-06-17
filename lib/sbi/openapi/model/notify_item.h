@@ -31,6 +31,7 @@ OpenAPI_notify_item_t *OpenAPI_notify_item_create(
 void OpenAPI_notify_item_free(OpenAPI_notify_item_t *notify_item);
 OpenAPI_notify_item_t *OpenAPI_notify_item_parseFromJSON(cJSON *notify_itemJSON);
 cJSON *OpenAPI_notify_item_convertToJSON(OpenAPI_notify_item_t *notify_item);
+OpenAPI_notify_item_t *OpenAPI_notify_item_copy(OpenAPI_notify_item_t *dst, OpenAPI_notify_item_t *src);
 
 #ifdef __cplusplus
 }

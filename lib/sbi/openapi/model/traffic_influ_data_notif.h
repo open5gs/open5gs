@@ -31,6 +31,7 @@ OpenAPI_traffic_influ_data_notif_t *OpenAPI_traffic_influ_data_notif_create(
 void OpenAPI_traffic_influ_data_notif_free(OpenAPI_traffic_influ_data_notif_t *traffic_influ_data_notif);
 OpenAPI_traffic_influ_data_notif_t *OpenAPI_traffic_influ_data_notif_parseFromJSON(cJSON *traffic_influ_data_notifJSON);
 cJSON *OpenAPI_traffic_influ_data_notif_convertToJSON(OpenAPI_traffic_influ_data_notif_t *traffic_influ_data_notif);
+OpenAPI_traffic_influ_data_notif_t *OpenAPI_traffic_influ_data_notif_copy(OpenAPI_traffic_influ_data_notif_t *dst, OpenAPI_traffic_influ_data_notif_t *src);
 
 #ifdef __cplusplus
 }

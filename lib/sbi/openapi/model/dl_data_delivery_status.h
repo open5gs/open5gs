@@ -26,6 +26,7 @@ OpenAPI_dl_data_delivery_status_t *OpenAPI_dl_data_delivery_status_create(
 void OpenAPI_dl_data_delivery_status_free(OpenAPI_dl_data_delivery_status_t *dl_data_delivery_status);
 OpenAPI_dl_data_delivery_status_t *OpenAPI_dl_data_delivery_status_parseFromJSON(cJSON *dl_data_delivery_statusJSON);
 cJSON *OpenAPI_dl_data_delivery_status_convertToJSON(OpenAPI_dl_data_delivery_status_t *dl_data_delivery_status);
+OpenAPI_dl_data_delivery_status_t *OpenAPI_dl_data_delivery_status_copy(OpenAPI_dl_data_delivery_status_t *dst, OpenAPI_dl_data_delivery_status_t *src);
 
 #ifdef __cplusplus
 }

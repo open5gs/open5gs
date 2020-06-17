@@ -30,6 +30,7 @@ OpenAPI_ue_id_t *OpenAPI_ue_id_create(
 void OpenAPI_ue_id_free(OpenAPI_ue_id_t *ue_id);
 OpenAPI_ue_id_t *OpenAPI_ue_id_parseFromJSON(cJSON *ue_idJSON);
 cJSON *OpenAPI_ue_id_convertToJSON(OpenAPI_ue_id_t *ue_id);
+OpenAPI_ue_id_t *OpenAPI_ue_id_copy(OpenAPI_ue_id_t *dst, OpenAPI_ue_id_t *src);
 
 #ifdef __cplusplus
 }

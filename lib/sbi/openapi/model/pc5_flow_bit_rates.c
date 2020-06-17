@@ -89,3 +89,37 @@ end:
     return NULL;
 }
 
+OpenAPI_pc5_flow_bit_rates_t *OpenAPI_pc5_flow_bit_rates_copy(OpenAPI_pc5_flow_bit_rates_t *dst, OpenAPI_pc5_flow_bit_rates_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_pc5_flow_bit_rates_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_pc5_flow_bit_rates_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_pc5_flow_bit_rates_free(dst);
+    dst = OpenAPI_pc5_flow_bit_rates_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

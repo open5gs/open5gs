@@ -80,7 +80,7 @@ cJSON *OpenAPI_sdm_subscription_convertToJSON(OpenAPI_sdm_subscription_t *sdm_su
         goto end;
     }
 
-    if (sdm_subscription->implicit_unsubscribe >= 0) {
+    if (sdm_subscription->implicit_unsubscribe) {
         if (cJSON_AddBoolToObject(item, "implicitUnsubscribe", sdm_subscription->implicit_unsubscribe) == NULL) {
             ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [implicit_unsubscribe]");
             goto end;
@@ -168,7 +168,7 @@ cJSON *OpenAPI_sdm_subscription_convertToJSON(OpenAPI_sdm_subscription_t *sdm_su
         }
     }
 
-    if (sdm_subscription->immediate_report >= 0) {
+    if (sdm_subscription->immediate_report) {
         if (cJSON_AddBoolToObject(item, "immediateReport", sdm_subscription->immediate_report) == NULL) {
             ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed [immediate_report]");
             goto end;
@@ -335,5 +335,39 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_su
     return sdm_subscription_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_copy(OpenAPI_sdm_subscription_t *dst, OpenAPI_sdm_subscription_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_sdm_subscription_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_sdm_subscription_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_sdm_subscription_free(dst);
+    dst = OpenAPI_sdm_subscription_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

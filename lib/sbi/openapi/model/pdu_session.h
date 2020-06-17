@@ -33,6 +33,7 @@ OpenAPI_pdu_session_t *OpenAPI_pdu_session_create(
 void OpenAPI_pdu_session_free(OpenAPI_pdu_session_t *pdu_session);
 OpenAPI_pdu_session_t *OpenAPI_pdu_session_parseFromJSON(cJSON *pdu_sessionJSON);
 cJSON *OpenAPI_pdu_session_convertToJSON(OpenAPI_pdu_session_t *pdu_session);
+OpenAPI_pdu_session_t *OpenAPI_pdu_session_copy(OpenAPI_pdu_session_t *dst, OpenAPI_pdu_session_t *src);
 
 #ifdef __cplusplus
 }

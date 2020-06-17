@@ -26,6 +26,7 @@ OpenAPI_transport_protocol_t *OpenAPI_transport_protocol_create(
 void OpenAPI_transport_protocol_free(OpenAPI_transport_protocol_t *transport_protocol);
 OpenAPI_transport_protocol_t *OpenAPI_transport_protocol_parseFromJSON(cJSON *transport_protocolJSON);
 cJSON *OpenAPI_transport_protocol_convertToJSON(OpenAPI_transport_protocol_t *transport_protocol);
+OpenAPI_transport_protocol_t *OpenAPI_transport_protocol_copy(OpenAPI_transport_protocol_t *dst, OpenAPI_transport_protocol_t *src);
 
 #ifdef __cplusplus
 }

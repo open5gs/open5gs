@@ -31,6 +31,7 @@ OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_create(
 void OpenAPI_lte_v2x_auth_free(OpenAPI_lte_v2x_auth_t *lte_v2x_auth);
 OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_parseFromJSON(cJSON *lte_v2x_authJSON);
 cJSON *OpenAPI_lte_v2x_auth_convertToJSON(OpenAPI_lte_v2x_auth_t *lte_v2x_auth);
+OpenAPI_lte_v2x_auth_t *OpenAPI_lte_v2x_auth_copy(OpenAPI_lte_v2x_auth_t *dst, OpenAPI_lte_v2x_auth_t *src);
 
 #ifdef __cplusplus
 }

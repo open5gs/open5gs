@@ -37,6 +37,7 @@ OpenAPI_av5_g_he_aka_t *OpenAPI_av5_g_he_aka_create(
 void OpenAPI_av5_g_he_aka_free(OpenAPI_av5_g_he_aka_t *av5_g_he_aka);
 OpenAPI_av5_g_he_aka_t *OpenAPI_av5_g_he_aka_parseFromJSON(cJSON *av5_g_he_akaJSON);
 cJSON *OpenAPI_av5_g_he_aka_convertToJSON(OpenAPI_av5_g_he_aka_t *av5_g_he_aka);
+OpenAPI_av5_g_he_aka_t *OpenAPI_av5_g_he_aka_copy(OpenAPI_av5_g_he_aka_t *dst, OpenAPI_av5_g_he_aka_t *src);
 
 #ifdef __cplusplus
 }

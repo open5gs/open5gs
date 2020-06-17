@@ -23,12 +23,14 @@
 
 abts_suite *test_aes(abts_suite *suite);
 abts_suite *test_sha(abts_suite *suite);
+abts_suite *test_base64(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
     {test_aes},
     {test_sha},
+    {test_base64},
     {NULL},
 };
 

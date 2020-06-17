@@ -207,15 +207,27 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                     &message->pfcp_association_setup_response);
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
-            smf_n4_handle_session_establishment_response(
+            if (SMF_5GC_SESS(sess))
+                smf_5gc_n4_handle_session_establishment_response(
+                    sess, xact, &message->pfcp_session_establishment_response);
+            else
+                smf_epc_n4_handle_session_establishment_response(
                     sess, xact, &message->pfcp_session_establishment_response);
             break;
         case OGS_PFCP_SESSION_MODIFICATION_RESPONSE_TYPE:
-            smf_n4_handle_session_modification_response(
+            if (SMF_5GC_SESS(sess))
+                smf_5gc_n4_handle_session_modification_response(
+                    sess, xact, &message->pfcp_session_modification_response);
+            else
+                smf_epc_n4_handle_session_modification_response(
                     sess, xact, &message->pfcp_session_modification_response);
             break;
         case OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE:
-            smf_n4_handle_session_deletion_response(
+            if (SMF_5GC_SESS(sess))
+                smf_5gc_n4_handle_session_deletion_response(
+                    sess, xact, &message->pfcp_session_deletion_response);
+            else
+                smf_epc_n4_handle_session_deletion_response(
                     sess, xact, &message->pfcp_session_deletion_response);
             break;
         default:

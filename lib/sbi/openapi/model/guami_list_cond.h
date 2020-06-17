@@ -29,6 +29,7 @@ OpenAPI_guami_list_cond_t *OpenAPI_guami_list_cond_create(
 void OpenAPI_guami_list_cond_free(OpenAPI_guami_list_cond_t *guami_list_cond);
 OpenAPI_guami_list_cond_t *OpenAPI_guami_list_cond_parseFromJSON(cJSON *guami_list_condJSON);
 cJSON *OpenAPI_guami_list_cond_convertToJSON(OpenAPI_guami_list_cond_t *guami_list_cond);
+OpenAPI_guami_list_cond_t *OpenAPI_guami_list_cond_copy(OpenAPI_guami_list_cond_t *dst, OpenAPI_guami_list_cond_t *src);
 
 #ifdef __cplusplus
 }

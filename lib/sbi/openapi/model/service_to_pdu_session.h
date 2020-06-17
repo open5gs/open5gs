@@ -23,22 +23,23 @@ extern "C" {
 typedef struct OpenAPI_service_to_pdu_session_s OpenAPI_service_to_pdu_session_t;
 typedef struct OpenAPI_service_to_pdu_session_s {
     OpenAPI_list_t *ser_ids;
-    struct OpenAPI_pdu_session_type_s *pdu_session_type;
-    struct OpenAPI_ssc_mode_s *ssc_mode;
+    OpenAPI_pdu_session_type_e pdu_session_type;
+    OpenAPI_ssc_mode_e ssc_mode;
     OpenAPI_list_t *slice_info;
     OpenAPI_list_t *dnns;
 } OpenAPI_service_to_pdu_session_t;
 
 OpenAPI_service_to_pdu_session_t *OpenAPI_service_to_pdu_session_create(
     OpenAPI_list_t *ser_ids,
-    OpenAPI_pdu_session_type_t *pdu_session_type,
-    OpenAPI_ssc_mode_t *ssc_mode,
+    OpenAPI_pdu_session_type_e pdu_session_type,
+    OpenAPI_ssc_mode_e ssc_mode,
     OpenAPI_list_t *slice_info,
     OpenAPI_list_t *dnns
     );
 void OpenAPI_service_to_pdu_session_free(OpenAPI_service_to_pdu_session_t *service_to_pdu_session);
 OpenAPI_service_to_pdu_session_t *OpenAPI_service_to_pdu_session_parseFromJSON(cJSON *service_to_pdu_sessionJSON);
 cJSON *OpenAPI_service_to_pdu_session_convertToJSON(OpenAPI_service_to_pdu_session_t *service_to_pdu_session);
+OpenAPI_service_to_pdu_session_t *OpenAPI_service_to_pdu_session_copy(OpenAPI_service_to_pdu_session_t *dst, OpenAPI_service_to_pdu_session_t *src);
 
 #ifdef __cplusplus
 }

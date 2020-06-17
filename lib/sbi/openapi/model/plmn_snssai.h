@@ -34,6 +34,7 @@ OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_create(
 void OpenAPI_plmn_snssai_free(OpenAPI_plmn_snssai_t *plmn_snssai);
 OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_parseFromJSON(cJSON *plmn_snssaiJSON);
 cJSON *OpenAPI_plmn_snssai_convertToJSON(OpenAPI_plmn_snssai_t *plmn_snssai);
+OpenAPI_plmn_snssai_t *OpenAPI_plmn_snssai_copy(OpenAPI_plmn_snssai_t *dst, OpenAPI_plmn_snssai_t *src);
 
 #ifdef __cplusplus
 }

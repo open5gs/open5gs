@@ -40,6 +40,7 @@ OpenAPI_af_non_external_t *OpenAPI_af_non_external_create(
 void OpenAPI_af_non_external_free(OpenAPI_af_non_external_t *af_non_external);
 OpenAPI_af_non_external_t *OpenAPI_af_non_external_parseFromJSON(cJSON *af_non_externalJSON);
 cJSON *OpenAPI_af_non_external_convertToJSON(OpenAPI_af_non_external_t *af_non_external);
+OpenAPI_af_non_external_t *OpenAPI_af_non_external_copy(OpenAPI_af_non_external_t *dst, OpenAPI_af_non_external_t *src);
 
 #ifdef __cplusplus
 }

@@ -17,15 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_sms_support_s OpenAPI_sms_support_t;
-typedef struct OpenAPI_sms_support_s {
-} OpenAPI_sms_support_t;
+typedef enum { OpenAPI_sms_support_NULL = 0, OpenAPI_sms_support__3GPP, OpenAPI_sms_support_NON_3GPP, OpenAPI_sms_support_BOTH, OpenAPI_sms_support_NONE } OpenAPI_sms_support_e;
 
-OpenAPI_sms_support_t *OpenAPI_sms_support_create(
-    );
-void OpenAPI_sms_support_free(OpenAPI_sms_support_t *sms_support);
-OpenAPI_sms_support_t *OpenAPI_sms_support_parseFromJSON(cJSON *sms_supportJSON);
-cJSON *OpenAPI_sms_support_convertToJSON(OpenAPI_sms_support_t *sms_support);
+char* OpenAPI_sms_support_ToString(OpenAPI_sms_support_e sms_support);
+
+OpenAPI_sms_support_e OpenAPI_sms_support_FromString(char* sms_support);
 
 #ifdef __cplusplus
 }

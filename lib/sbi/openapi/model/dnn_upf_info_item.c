@@ -36,9 +36,6 @@ void OpenAPI_dnn_upf_info_item_free(OpenAPI_dnn_upf_info_item_t *dnn_upf_info_it
         ogs_free(node->data);
     }
     OpenAPI_list_free(dnn_upf_info_item->dnai_list);
-    OpenAPI_list_for_each(dnn_upf_info_item->pdu_session_types, node) {
-        OpenAPI_pdu_session_type_free(node->data);
-    }
     OpenAPI_list_free(dnn_upf_info_item->pdu_session_types);
     OpenAPI_list_for_each(dnn_upf_info_item->ipv4_address_ranges, node) {
         OpenAPI_ipv4_address_range_free(node->data);
@@ -87,21 +84,16 @@ cJSON *OpenAPI_dnn_upf_info_item_convertToJSON(OpenAPI_dnn_upf_info_item_t *dnn_
     }
 
     if (dnn_upf_info_item->pdu_session_types) {
-        cJSON *pdu_session_typesList = cJSON_AddArrayToObject(item, "pduSessionTypes");
-        if (pdu_session_typesList == NULL) {
+        cJSON *pdu_session_types = cJSON_AddArrayToObject(item, "pduSessionTypes");
+        if (pdu_session_types == NULL) {
             ogs_error("OpenAPI_dnn_upf_info_item_convertToJSON() failed [pdu_session_types]");
             goto end;
         }
-
         OpenAPI_lnode_t *pdu_session_types_node;
-        if (dnn_upf_info_item->pdu_session_types) {
-            OpenAPI_list_for_each(dnn_upf_info_item->pdu_session_types, pdu_session_types_node) {
-                cJSON *itemLocal = OpenAPI_pdu_session_type_convertToJSON(pdu_session_types_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_dnn_upf_info_item_convertToJSON() failed [pdu_session_types]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(pdu_session_typesList, itemLocal);
+        OpenAPI_list_for_each(dnn_upf_info_item->pdu_session_types, pdu_session_types_node) {
+            if (cJSON_AddStringToObject(pdu_session_types, "", OpenAPI_pdu_session_type_ToString((OpenAPI_pdu_session_type_e)pdu_session_types_node->data)) == NULL) {
+                ogs_error("OpenAPI_dnn_upf_info_item_convertToJSON() failed [pdu_session_types]");
+                goto end;
             }
         }
     }
@@ -198,13 +190,12 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
         pdu_session_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(pdu_session_types_local_nonprimitive, pdu_session_types ) {
-            if (!cJSON_IsObject(pdu_session_types_local_nonprimitive)) {
+            if (!cJSON_IsString(pdu_session_types_local_nonprimitive)) {
                 ogs_error("OpenAPI_dnn_upf_info_item_parseFromJSON() failed [pdu_session_types]");
                 goto end;
             }
-            OpenAPI_pdu_session_type_t *pdu_session_typesItem = OpenAPI_pdu_session_type_parseFromJSON(pdu_session_types_local_nonprimitive);
 
-            OpenAPI_list_add(pdu_session_typesList, pdu_session_typesItem);
+            OpenAPI_list_add(pdu_session_typesList, (void *)OpenAPI_pdu_session_type_FromString(pdu_session_types_local_nonprimitive->valuestring));
         }
     }
 
@@ -265,5 +256,39 @@ OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_parseFromJSON(cJSON *dnn_
     return dnn_upf_info_item_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_dnn_upf_info_item_t *OpenAPI_dnn_upf_info_item_copy(OpenAPI_dnn_upf_info_item_t *dst, OpenAPI_dnn_upf_info_item_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_dnn_upf_info_item_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_dnn_upf_info_item_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_dnn_upf_info_item_free(dst);
+    dst = OpenAPI_dnn_upf_info_item_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

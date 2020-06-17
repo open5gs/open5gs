@@ -26,6 +26,7 @@ OpenAPI_presence_state_t *OpenAPI_presence_state_create(
 void OpenAPI_presence_state_free(OpenAPI_presence_state_t *presence_state);
 OpenAPI_presence_state_t *OpenAPI_presence_state_parseFromJSON(cJSON *presence_stateJSON);
 cJSON *OpenAPI_presence_state_convertToJSON(OpenAPI_presence_state_t *presence_state);
+OpenAPI_presence_state_t *OpenAPI_presence_state_copy(OpenAPI_presence_state_t *dst, OpenAPI_presence_state_t *src);
 
 #ifdef __cplusplus
 }

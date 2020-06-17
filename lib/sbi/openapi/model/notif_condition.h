@@ -30,6 +30,7 @@ OpenAPI_notif_condition_t *OpenAPI_notif_condition_create(
 void OpenAPI_notif_condition_free(OpenAPI_notif_condition_t *notif_condition);
 OpenAPI_notif_condition_t *OpenAPI_notif_condition_parseFromJSON(cJSON *notif_conditionJSON);
 cJSON *OpenAPI_notif_condition_convertToJSON(OpenAPI_notif_condition_t *notif_condition);
+OpenAPI_notif_condition_t *OpenAPI_notif_condition_copy(OpenAPI_notif_condition_t *dst, OpenAPI_notif_condition_t *src);
 
 #ifdef __cplusplus
 }

@@ -6,7 +6,6 @@ api/**
 include/apiClient.h
 
 src/apiClient.c
-src/binary.c
 
 unit-test/**
 

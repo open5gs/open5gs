@@ -113,3 +113,37 @@ end:
     return NULL;
 }
 
+OpenAPI_route_information_t *OpenAPI_route_information_copy(OpenAPI_route_information_t *dst, OpenAPI_route_information_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_route_information_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_route_information_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_route_information_free(dst);
+    dst = OpenAPI_route_information_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

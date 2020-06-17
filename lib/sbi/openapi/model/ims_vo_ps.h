@@ -26,6 +26,7 @@ OpenAPI_ims_vo_ps_t *OpenAPI_ims_vo_ps_create(
 void OpenAPI_ims_vo_ps_free(OpenAPI_ims_vo_ps_t *ims_vo_ps);
 OpenAPI_ims_vo_ps_t *OpenAPI_ims_vo_ps_parseFromJSON(cJSON *ims_vo_psJSON);
 cJSON *OpenAPI_ims_vo_ps_convertToJSON(OpenAPI_ims_vo_ps_t *ims_vo_ps);
+OpenAPI_ims_vo_ps_t *OpenAPI_ims_vo_ps_copy(OpenAPI_ims_vo_ps_t *dst, OpenAPI_ims_vo_ps_t *src);
 
 #ifdef __cplusplus
 }

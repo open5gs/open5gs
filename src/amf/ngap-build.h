@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef NGAP_BUILD_H
-#define NGAP_BUILD_H
+#ifndef AMF_NGAP_BUILD_H
+#define AMF_NGAP_BUILD_H
 
 #include "context.h"
 
@@ -33,22 +33,23 @@ ogs_pkbuf_t *ngap_build_ng_setup_failure(
 ogs_pkbuf_t *ngap_build_downlink_nas_transport(
     ran_ue_t *ran_ue, ogs_pkbuf_t *gmmbuf);
 
-#if 0
 ogs_pkbuf_t *ngap_build_initial_context_setup_request(
     amf_ue_t *amf_ue, ogs_pkbuf_t *gmmbuf);
 ogs_pkbuf_t *ngap_build_ue_context_modification_request(amf_ue_t *amf_ue);
 ogs_pkbuf_t *ngap_build_ue_context_release_command(
     ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause);
 
-ogs_pkbuf_t *ngap_build_e_rab_setup_request(
-    amf_bearer_t *bearer, ogs_pkbuf_t *gsmbuf);
+ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
+    amf_sess_t *sess, ogs_pkbuf_t *gmmbuf, ogs_pkbuf_t *n2smbuf);
 ogs_pkbuf_t *ngap_build_e_rab_modify_request(
     amf_bearer_t *bearer, ogs_pkbuf_t *gsmbuf);
 ogs_pkbuf_t *ngap_build_e_rab_release_command(
     amf_bearer_t *bearer, ogs_pkbuf_t *gsmbuf, NGAP_Cause_PR group, long cause);
 
+#if 0
 ogs_pkbuf_t *ngap_build_paging(
         amf_ue_t *amf_ue, NGAP_CNDomain_t cn_domain);
+#endif
 
 ogs_pkbuf_t *ngap_build_amf_configuration_transfer(
     NGAP_SONConfigurationTransfer_t *son_configuration_transfer);
@@ -68,7 +69,7 @@ ogs_pkbuf_t *ngap_build_handover_request(
     NGAP_AMF_UE_NGAP_ID_t *amf_ue_ngap_id,
     NGAP_HandoverType_t *handovertype,
     NGAP_Cause_t *cause,
-    NGAP_Source_ToTarget_TransparentContainer_t
+    NGAP_SourceToTarget_TransparentContainer_t
         *source_totarget_transparentContainer);
 
 ogs_pkbuf_t *ngap_build_handover_cancel_ack(
@@ -76,19 +77,17 @@ ogs_pkbuf_t *ngap_build_handover_cancel_ack(
 
 ogs_pkbuf_t *ngap_build_amf_status_transfer(
     ran_ue_t *target_ue,
-    NGAP_RAN_StatusTransfer_TransparentContainer_t
+    NGAP_RANStatusTransfer_TransparentContainer_t
         *gnb_statustransfer_transparentContainer);
-#endif
 
 ogs_pkbuf_t *ngap_build_error_indication(
     uint64_t *amf_ue_ngap_id,
     NGAP_RAN_UE_NGAP_ID_t *ran_ue_ngap_id,
     NGAP_Cause_PR group, long cause);
 
-#if 0
 ogs_pkbuf_t *ngap_build_s1_reset(
     NGAP_Cause_PR group, long cause,
-    NGAP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface);
+    NGAP_UE_associatedLogicalNG_connectionList_t *partOfS1_Interface);
 
 ogs_pkbuf_t *ngap_build_s1_reset_partial(
     NGAP_Cause_PR group, long cause,
@@ -96,16 +95,10 @@ ogs_pkbuf_t *ngap_build_s1_reset_partial(
     NGAP_RAN_UE_NGAP_ID_t *ran_ue_ngap_id);
 
 ogs_pkbuf_t *ngap_build_s1_reset_ack(
-    NGAP_UE_associatedLogicalS1_ConnectionListRes_t *partOfS1_Interface);
-
-ogs_pkbuf_t *ngap_build_write_replace_warning_request(
-    sbc_pws_data_t *sbc_pws);
-
-ogs_pkbuf_t *ngap_build_kill_request(sbc_pws_data_t *sbc_pws);
-#endif
+    NGAP_UE_associatedLogicalNG_connectionList_t *partOfS1_Interface);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* NGAP_BUILD_H */
+#endif /* AMF_NGAP_BUILD_H */

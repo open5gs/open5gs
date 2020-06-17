@@ -54,28 +54,28 @@ cJSON *OpenAPI_dnn_info_convertToJSON(OpenAPI_dnn_info_t *dnn_info)
         goto end;
     }
 
-    if (dnn_info->default_dnn_indicator >= 0) {
+    if (dnn_info->default_dnn_indicator) {
         if (cJSON_AddBoolToObject(item, "defaultDnnIndicator", dnn_info->default_dnn_indicator) == NULL) {
             ogs_error("OpenAPI_dnn_info_convertToJSON() failed [default_dnn_indicator]");
             goto end;
         }
     }
 
-    if (dnn_info->lbo_roaming_allowed >= 0) {
+    if (dnn_info->lbo_roaming_allowed) {
         if (cJSON_AddBoolToObject(item, "lboRoamingAllowed", dnn_info->lbo_roaming_allowed) == NULL) {
             ogs_error("OpenAPI_dnn_info_convertToJSON() failed [lbo_roaming_allowed]");
             goto end;
         }
     }
 
-    if (dnn_info->iwk_eps_ind >= 0) {
+    if (dnn_info->iwk_eps_ind) {
         if (cJSON_AddBoolToObject(item, "iwkEpsInd", dnn_info->iwk_eps_ind) == NULL) {
             ogs_error("OpenAPI_dnn_info_convertToJSON() failed [iwk_eps_ind]");
             goto end;
         }
     }
 
-    if (dnn_info->dnn_barred >= 0) {
+    if (dnn_info->dnn_barred) {
         if (cJSON_AddBoolToObject(item, "dnnBarred", dnn_info->dnn_barred) == NULL) {
             ogs_error("OpenAPI_dnn_info_convertToJSON() failed [dnn_barred]");
             goto end;
@@ -148,5 +148,39 @@ OpenAPI_dnn_info_t *OpenAPI_dnn_info_parseFromJSON(cJSON *dnn_infoJSON)
     return dnn_info_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_dnn_info_t *OpenAPI_dnn_info_copy(OpenAPI_dnn_info_t *dst, OpenAPI_dnn_info_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_dnn_info_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_dnn_info_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_dnn_info_free(dst);
+    dst = OpenAPI_dnn_info_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

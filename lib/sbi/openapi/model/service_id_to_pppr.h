@@ -30,6 +30,7 @@ OpenAPI_service_id_to_pppr_t *OpenAPI_service_id_to_pppr_create(
 void OpenAPI_service_id_to_pppr_free(OpenAPI_service_id_to_pppr_t *service_id_to_pppr);
 OpenAPI_service_id_to_pppr_t *OpenAPI_service_id_to_pppr_parseFromJSON(cJSON *service_id_to_ppprJSON);
 cJSON *OpenAPI_service_id_to_pppr_convertToJSON(OpenAPI_service_id_to_pppr_t *service_id_to_pppr);
+OpenAPI_service_id_to_pppr_t *OpenAPI_service_id_to_pppr_copy(OpenAPI_service_id_to_pppr_t *dst, OpenAPI_service_id_to_pppr_t *src);
 
 #ifdef __cplusplus
 }

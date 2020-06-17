@@ -33,6 +33,7 @@ OpenAPI_ncgi_t *OpenAPI_ncgi_create(
 void OpenAPI_ncgi_free(OpenAPI_ncgi_t *ncgi);
 OpenAPI_ncgi_t *OpenAPI_ncgi_parseFromJSON(cJSON *ncgiJSON);
 cJSON *OpenAPI_ncgi_convertToJSON(OpenAPI_ncgi_t *ncgi);
+OpenAPI_ncgi_t *OpenAPI_ncgi_copy(OpenAPI_ncgi_t *dst, OpenAPI_ncgi_t *src);
 
 #ifdef __cplusplus
 }

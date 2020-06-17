@@ -35,8 +35,16 @@ typedef struct ogs_sbi_header_s ogs_sbi_header_t;
 char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h);
 char *ogs_sbi_client_uri(ogs_sbi_client_t *client, ogs_sbi_header_t *h);
 
-char *ogs_sbi_parse_url(char *url, const char *delim, char **saveptr);
+char *ogs_sbi_parse_uri(char *uri, const char *delim, char **saveptr);
 ogs_sockaddr_t *ogs_sbi_getaddr_from_uri(char *uri);
+
+#define OGS_SBI_BITRATE_BPS     0
+#define OGS_SBI_BITRATE_KBPS    1
+#define OGS_SBI_BITRATE_MBPS    2
+#define OGS_SBI_BITRATE_GBPS    3
+#define OGS_SBI_BITRATE_TBPS    4
+char *ogs_sbi_bitrate_to_string(uint64_t bitrate, int unit);
+uint64_t ogs_sbi_bitrate_from_string(char *str);
 
 #ifdef __cplusplus
 }

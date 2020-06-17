@@ -31,6 +31,7 @@ OpenAPI_pc5_qos_mapping_t *OpenAPI_pc5_qos_mapping_create(
 void OpenAPI_pc5_qos_mapping_free(OpenAPI_pc5_qos_mapping_t *pc5_qos_mapping);
 OpenAPI_pc5_qos_mapping_t *OpenAPI_pc5_qos_mapping_parseFromJSON(cJSON *pc5_qos_mappingJSON);
 cJSON *OpenAPI_pc5_qos_mapping_convertToJSON(OpenAPI_pc5_qos_mapping_t *pc5_qos_mapping);
+OpenAPI_pc5_qos_mapping_t *OpenAPI_pc5_qos_mapping_copy(OpenAPI_pc5_qos_mapping_t *dst, OpenAPI_pc5_qos_mapping_t *src);
 
 #ifdef __cplusplus
 }

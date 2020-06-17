@@ -29,10 +29,18 @@ type_list["Header compression configuration"]["encode"] = \
 type_list["DNN"]["decode"] = \
 "    {\n" \
 "        char data_network_name[OGS_MAX_DNN_LEN];\n" \
-"        dnn->length  = ogs_fqdn_parse(data_network_name, dnn->value, dnn->length);\n" \
+"        dnn->length = ogs_fqdn_parse(data_network_name, dnn->value, dnn->length);\n" \
 "        ogs_cpystrn(dnn->value, data_network_name, ogs_min(dnn->length, OGS_MAX_DNN_LEN) + 1);\n" \
 "    }\n\n"
 
 type_list["DNN"]["encode"] = \
 "    target.length = ogs_fqdn_build(target.value, dnn->value, dnn->length);\n" \
 "    size = target.length + sizeof(target.length);\n\n"
+
+type_list["Session-AMBR"]["decode"] = \
+"    session_ambr->downlink.bitrate = be16toh(source->downlink.bitrate);\n" \
+"    session_ambr->uplink.bitrate = be16toh(source->uplink.bitrate);\n\n"
+
+type_list["Session-AMBR"]["encode"] = \
+"    target.downlink.bitrate = htobe16(session_ambr->downlink.bitrate);\n" \
+"    target.uplink.bitrate = htobe16(session_ambr->uplink.bitrate);\n\n"

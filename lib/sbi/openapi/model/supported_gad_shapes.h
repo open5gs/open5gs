@@ -26,6 +26,7 @@ OpenAPI_supported_gad_shapes_t *OpenAPI_supported_gad_shapes_create(
 void OpenAPI_supported_gad_shapes_free(OpenAPI_supported_gad_shapes_t *supported_gad_shapes);
 OpenAPI_supported_gad_shapes_t *OpenAPI_supported_gad_shapes_parseFromJSON(cJSON *supported_gad_shapesJSON);
 cJSON *OpenAPI_supported_gad_shapes_convertToJSON(OpenAPI_supported_gad_shapes_t *supported_gad_shapes);
+OpenAPI_supported_gad_shapes_t *OpenAPI_supported_gad_shapes_copy(OpenAPI_supported_gad_shapes_t *dst, OpenAPI_supported_gad_shapes_t *src);
 
 #ifdef __cplusplus
 }

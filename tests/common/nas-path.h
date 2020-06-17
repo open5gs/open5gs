@@ -25,7 +25,10 @@ extern "C" {
 #endif
 
 void testgmm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf);
-void testgsm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf);
+void testgsm_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf);
+
+void testgmm_send_to_gsm(test_sess_t *sess,
+        ogs_nas_payload_container_t *payload_container);
 
 #ifdef __cplusplus
 }

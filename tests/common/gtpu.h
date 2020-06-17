@@ -24,9 +24,17 @@
 extern "C" {
 #endif
 
+#define testgnb_gtpu_server(x) test_gtpu_server(x, OGS_GTPV1_U_UDP_PORT)
+#define testgnb_gtpu_read(x) test_gtpu_read(x)
+#define testgnb_gtpu_close(x) test_gtpu_close(x)
+
 ogs_socknode_t *test_gtpu_server(const char *ipstr, int port);
 ogs_pkbuf_t *test_gtpu_read(ogs_socknode_t *node);
+int testgnb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
 void test_gtpu_close(ogs_socknode_t *node);
+
+int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
+        test_sess_t *sess, const char *dst_ip);
 
 #ifdef __cplusplus
 }

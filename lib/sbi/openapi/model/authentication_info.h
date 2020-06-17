@@ -44,6 +44,7 @@ OpenAPI_authentication_info_t *OpenAPI_authentication_info_create(
 void OpenAPI_authentication_info_free(OpenAPI_authentication_info_t *authentication_info);
 OpenAPI_authentication_info_t *OpenAPI_authentication_info_parseFromJSON(cJSON *authentication_infoJSON);
 cJSON *OpenAPI_authentication_info_convertToJSON(OpenAPI_authentication_info_t *authentication_info);
+OpenAPI_authentication_info_t *OpenAPI_authentication_info_copy(OpenAPI_authentication_info_t *dst, OpenAPI_authentication_info_t *src);
 
 #ifdef __cplusplus
 }

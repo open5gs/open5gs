@@ -18,21 +18,20 @@
  */
 
 #include "ogs-sbi.h"
-
-#include "sbi-private.h"
+#include "yuarel.h"
 
 static char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
 {
     char buf[OGS_ADDRSTRLEN];
-    char url[OGS_HUGE_LEN];
+    char uri[OGS_HUGE_LEN];
     char *p, *last;
     int i;
 
     ogs_assert(addr);
     ogs_assert(h);
 
-    p = url;
-    last = url + OGS_HUGE_LEN;
+    p = uri;
+    last = uri + OGS_HUGE_LEN;
 
     /* HTTP scheme is selected based on TLS information */
     if (https == true)
@@ -63,7 +62,7 @@ static char *ogs_uridup(bool https, ogs_sockaddr_t *addr, ogs_sbi_header_t *h)
                         h->resource.component[i]; i++)
         p = ogs_slprintf(p, last, "/%s", h->resource.component[i]);
 
-    return ogs_strdup(url);
+    return ogs_strdup(uri);
 }
 
 char *ogs_sbi_server_uri(ogs_sbi_server_t *server, ogs_sbi_header_t *h)
@@ -125,11 +124,11 @@ static char *url_decode(const char *str)
     }
 }
 
-char *ogs_sbi_parse_url(char *url, const char *delim, char **saveptr)
+char *ogs_sbi_parse_uri(char *uri, const char *delim, char **saveptr)
 {
     char *item = NULL;
 
-    item = url_decode(strtok_r(url, delim, saveptr));
+    item = url_decode(strtok_r(uri, delim, saveptr));
     if (!item) {
         return NULL;
     }
@@ -188,4 +187,46 @@ ogs_sockaddr_t *ogs_sbi_getaddr_from_uri(char *uri)
 
     ogs_free(p);
     return addr;
+}
+
+char *ogs_sbi_bitrate_to_string(uint64_t bitrate, int unit)
+{
+    if (unit == OGS_SBI_BITRATE_KBPS) {
+        return ogs_msprintf("%lld Kbps",
+                (long long)bitrate / 1024);
+    } else if (unit == OGS_SBI_BITRATE_MBPS) {
+        return ogs_msprintf("%lld Mbps",
+                (long long)bitrate / 1024 / 1024);
+    } else if (unit == OGS_SBI_BITRATE_GBPS) {
+        return ogs_msprintf("%lld Gbps",
+                (long long)bitrate / 1024 / 1024 / 1024);
+    } else if (unit == OGS_SBI_BITRATE_TBPS) {
+        return ogs_msprintf("%lld Tbps",
+                (long long)bitrate / 1024 / 1024 / 1024 / 1024);
+    }
+
+    return ogs_msprintf("%lld bps", (long long)bitrate);
+}
+
+uint64_t ogs_sbi_bitrate_from_string(char *str)
+{
+    char *unit = NULL;
+    uint64_t bitrate = 0;
+    ogs_assert(str);
+
+    unit = strrchr(str, ' ');
+    bitrate = atoll(str);
+
+    SWITCH(unit+1)
+    CASE("Kbps")
+        return bitrate * 1024;
+    CASE("Mbps")
+        return bitrate * 1024 * 1024;
+    CASE("Gbps")
+        return bitrate * 1024 * 1024 * 1024;
+    CASE("Tbps")
+        return bitrate * 1024 * 1024 * 1024 * 1024;
+    DEFAULT
+    END
+    return bitrate;
 }

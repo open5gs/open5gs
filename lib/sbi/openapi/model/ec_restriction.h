@@ -33,6 +33,7 @@ OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_create(
 void OpenAPI_ec_restriction_free(OpenAPI_ec_restriction_t *ec_restriction);
 OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_parseFromJSON(cJSON *ec_restrictionJSON);
 cJSON *OpenAPI_ec_restriction_convertToJSON(OpenAPI_ec_restriction_t *ec_restriction);
+OpenAPI_ec_restriction_t *OpenAPI_ec_restriction_copy(OpenAPI_ec_restriction_t *dst, OpenAPI_ec_restriction_t *src);
 
 #ifdef __cplusplus
 }

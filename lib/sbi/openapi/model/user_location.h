@@ -35,6 +35,7 @@ OpenAPI_user_location_t *OpenAPI_user_location_create(
 void OpenAPI_user_location_free(OpenAPI_user_location_t *user_location);
 OpenAPI_user_location_t *OpenAPI_user_location_parseFromJSON(cJSON *user_locationJSON);
 cJSON *OpenAPI_user_location_convertToJSON(OpenAPI_user_location_t *user_location);
+OpenAPI_user_location_t *OpenAPI_user_location_copy(OpenAPI_user_location_t *dst, OpenAPI_user_location_t *src);
 
 #ifdef __cplusplus
 }

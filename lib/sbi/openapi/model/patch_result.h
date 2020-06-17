@@ -29,6 +29,7 @@ OpenAPI_patch_result_t *OpenAPI_patch_result_create(
 void OpenAPI_patch_result_free(OpenAPI_patch_result_t *patch_result);
 OpenAPI_patch_result_t *OpenAPI_patch_result_parseFromJSON(cJSON *patch_resultJSON);
 cJSON *OpenAPI_patch_result_convertToJSON(OpenAPI_patch_result_t *patch_result);
+OpenAPI_patch_result_t *OpenAPI_patch_result_copy(OpenAPI_patch_result_t *dst, OpenAPI_patch_result_t *src);
 
 #ifdef __cplusplus
 }

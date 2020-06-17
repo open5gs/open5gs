@@ -30,6 +30,7 @@ OpenAPI_app_descriptor_t *OpenAPI_app_descriptor_create(
 void OpenAPI_app_descriptor_free(OpenAPI_app_descriptor_t *app_descriptor);
 OpenAPI_app_descriptor_t *OpenAPI_app_descriptor_parseFromJSON(cJSON *app_descriptorJSON);
 cJSON *OpenAPI_app_descriptor_convertToJSON(OpenAPI_app_descriptor_t *app_descriptor);
+OpenAPI_app_descriptor_t *OpenAPI_app_descriptor_copy(OpenAPI_app_descriptor_t *dst, OpenAPI_app_descriptor_t *src);
 
 #ifdef __cplusplus
 }

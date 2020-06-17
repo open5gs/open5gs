@@ -60,6 +60,7 @@ OpenAPI_geographic_area_t *OpenAPI_geographic_area_create(
 void OpenAPI_geographic_area_free(OpenAPI_geographic_area_t *geographic_area);
 OpenAPI_geographic_area_t *OpenAPI_geographic_area_parseFromJSON(cJSON *geographic_areaJSON);
 cJSON *OpenAPI_geographic_area_convertToJSON(OpenAPI_geographic_area_t *geographic_area);
+OpenAPI_geographic_area_t *OpenAPI_geographic_area_copy(OpenAPI_geographic_area_t *dst, OpenAPI_geographic_area_t *src);
 
 #ifdef __cplusplus
 }

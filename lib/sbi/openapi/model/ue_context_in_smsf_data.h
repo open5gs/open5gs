@@ -31,6 +31,7 @@ OpenAPI_ue_context_in_smsf_data_t *OpenAPI_ue_context_in_smsf_data_create(
 void OpenAPI_ue_context_in_smsf_data_free(OpenAPI_ue_context_in_smsf_data_t *ue_context_in_smsf_data);
 OpenAPI_ue_context_in_smsf_data_t *OpenAPI_ue_context_in_smsf_data_parseFromJSON(cJSON *ue_context_in_smsf_dataJSON);
 cJSON *OpenAPI_ue_context_in_smsf_data_convertToJSON(OpenAPI_ue_context_in_smsf_data_t *ue_context_in_smsf_data);
+OpenAPI_ue_context_in_smsf_data_t *OpenAPI_ue_context_in_smsf_data_copy(OpenAPI_ue_context_in_smsf_data_t *dst, OpenAPI_ue_context_in_smsf_data_t *src);
 
 #ifdef __cplusplus
 }

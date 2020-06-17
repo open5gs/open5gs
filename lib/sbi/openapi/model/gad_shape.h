@@ -29,6 +29,7 @@ OpenAPI_gad_shape_t *OpenAPI_gad_shape_create(
 void OpenAPI_gad_shape_free(OpenAPI_gad_shape_t *gad_shape);
 OpenAPI_gad_shape_t *OpenAPI_gad_shape_parseFromJSON(cJSON *gad_shapeJSON);
 cJSON *OpenAPI_gad_shape_convertToJSON(OpenAPI_gad_shape_t *gad_shape);
+OpenAPI_gad_shape_t *OpenAPI_gad_shape_copy(OpenAPI_gad_shape_t *dst, OpenAPI_gad_shape_t *src);
 
 #ifdef __cplusplus
 }

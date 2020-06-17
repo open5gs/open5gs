@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-#define OGS_DBI_UE_ID_TYPE_IMSI         "imsi"
+#define OGS_DBI_SUPI_TYPE_IMSI  "imsi"
 
 typedef struct ogs_dbi_subscription_data_s {
 #define OGS_DBI_ACCESS_RESTRICTION_UTRAN_NOT_ALLOWED                (1)
@@ -66,12 +66,11 @@ typedef struct ogs_dbi_auth_info_s {
     uint64_t      sqn;
 } ogs_dbi_auth_info_t;
 
-int ogs_dbi_auth_info(const char *id_type, const char *ue_id,
-        ogs_dbi_auth_info_t *auth_info);
-int ogs_dbi_update_sqn(const char *id_type, const char *ue_id, uint64_t sqn);
-int ogs_dbi_increment_sqn(const char *id_type, const char *ue_id);
+int ogs_dbi_auth_info(char *supi, ogs_dbi_auth_info_t *auth_info);
+int ogs_dbi_update_sqn(char *supi, uint64_t sqn);
+int ogs_dbi_increment_sqn(char *supi);
 
-int ogs_dbi_subscription_data(const char *id_type, const char *ue_id,
+int ogs_dbi_subscription_data(char *supi,
         ogs_dbi_subscription_data_t *subscription_data);
 
 #ifdef __cplusplus

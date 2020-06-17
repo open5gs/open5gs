@@ -4,48 +4,27 @@
 #include <stdio.h>
 #include "sms_support.h"
 
-OpenAPI_sms_support_t *OpenAPI_sms_support_create(
-    )
+char* OpenAPI_sms_support_ToString(OpenAPI_sms_support_e sms_support)
 {
-    OpenAPI_sms_support_t *sms_support_local_var = OpenAPI_malloc(sizeof(OpenAPI_sms_support_t));
-    if (!sms_support_local_var) {
-        return NULL;
-    }
-
-    return sms_support_local_var;
+    const char *sms_supportArray[] =  { "NULL", "_3GPP", "NON_3GPP", "BOTH", "NONE" };
+    size_t sizeofArray = sizeof(sms_supportArray) / sizeof(sms_supportArray[0]);
+    if (sms_support < sizeofArray)
+        return (char *)sms_supportArray[sms_support];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_sms_support_free(OpenAPI_sms_support_t *sms_support)
+OpenAPI_sms_support_e OpenAPI_sms_support_FromString(char* sms_support)
 {
-    if (NULL == sms_support) {
-        return;
+    int stringToReturn = 0;
+    const char *sms_supportArray[] =  { "NULL", "_3GPP", "NON_3GPP", "BOTH", "NONE" };
+    size_t sizeofArray = sizeof(sms_supportArray) / sizeof(sms_supportArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(sms_support, sms_supportArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(sms_support);
-}
-
-cJSON *OpenAPI_sms_support_convertToJSON(OpenAPI_sms_support_t *sms_support)
-{
-    cJSON *item = NULL;
-
-    if (sms_support == NULL) {
-        ogs_error("OpenAPI_sms_support_convertToJSON() failed [SmsSupport]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_sms_support_t *OpenAPI_sms_support_parseFromJSON(cJSON *sms_supportJSON)
-{
-    OpenAPI_sms_support_t *sms_support_local_var = NULL;
-    sms_support_local_var = OpenAPI_sms_support_create (
-        );
-
-    return sms_support_local_var;
-end:
-    return NULL;
+    return 0;
 }
 

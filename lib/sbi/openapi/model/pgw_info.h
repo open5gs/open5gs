@@ -33,6 +33,7 @@ OpenAPI_pgw_info_t *OpenAPI_pgw_info_create(
 void OpenAPI_pgw_info_free(OpenAPI_pgw_info_t *pgw_info);
 OpenAPI_pgw_info_t *OpenAPI_pgw_info_parseFromJSON(cJSON *pgw_infoJSON);
 cJSON *OpenAPI_pgw_info_convertToJSON(OpenAPI_pgw_info_t *pgw_info);
+OpenAPI_pgw_info_t *OpenAPI_pgw_info_copy(OpenAPI_pgw_info_t *dst, OpenAPI_pgw_info_t *src);
 
 #ifdef __cplusplus
 }

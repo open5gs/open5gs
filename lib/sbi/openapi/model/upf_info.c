@@ -59,9 +59,6 @@ void OpenAPI_upf_info_free(OpenAPI_upf_info_t *upf_info)
         OpenAPI_interface_upf_info_item_free(node->data);
     }
     OpenAPI_list_free(upf_info->interface_upf_info_list);
-    OpenAPI_list_for_each(upf_info->pdu_session_types, node) {
-        OpenAPI_pdu_session_type_free(node->data);
-    }
     OpenAPI_list_free(upf_info->pdu_session_types);
     OpenAPI_atsss_capability_free(upf_info->atsss_capability);
     OpenAPI_list_for_each(upf_info->tai_list, node) {
@@ -142,7 +139,7 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
         }
     }
 
-    if (upf_info->iwk_eps_ind >= 0) {
+    if (upf_info->iwk_eps_ind) {
         if (cJSON_AddBoolToObject(item, "iwkEpsInd", upf_info->iwk_eps_ind) == NULL) {
             ogs_error("OpenAPI_upf_info_convertToJSON() failed [iwk_eps_ind]");
             goto end;
@@ -150,21 +147,16 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
     }
 
     if (upf_info->pdu_session_types) {
-        cJSON *pdu_session_typesList = cJSON_AddArrayToObject(item, "pduSessionTypes");
-        if (pdu_session_typesList == NULL) {
+        cJSON *pdu_session_types = cJSON_AddArrayToObject(item, "pduSessionTypes");
+        if (pdu_session_types == NULL) {
             ogs_error("OpenAPI_upf_info_convertToJSON() failed [pdu_session_types]");
             goto end;
         }
-
         OpenAPI_lnode_t *pdu_session_types_node;
-        if (upf_info->pdu_session_types) {
-            OpenAPI_list_for_each(upf_info->pdu_session_types, pdu_session_types_node) {
-                cJSON *itemLocal = OpenAPI_pdu_session_type_convertToJSON(pdu_session_types_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_upf_info_convertToJSON() failed [pdu_session_types]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(pdu_session_typesList, itemLocal);
+        OpenAPI_list_for_each(upf_info->pdu_session_types, pdu_session_types_node) {
+            if (cJSON_AddStringToObject(pdu_session_types, "", OpenAPI_pdu_session_type_ToString((OpenAPI_pdu_session_type_e)pdu_session_types_node->data)) == NULL) {
+                ogs_error("OpenAPI_upf_info_convertToJSON() failed [pdu_session_types]");
+                goto end;
             }
         }
     }
@@ -182,7 +174,7 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
         }
     }
 
-    if (upf_info->ue_ip_addr_ind >= 0) {
+    if (upf_info->ue_ip_addr_ind) {
         if (cJSON_AddBoolToObject(item, "ueIpAddrInd", upf_info->ue_ip_addr_ind) == NULL) {
             ogs_error("OpenAPI_upf_info_convertToJSON() failed [ue_ip_addr_ind]");
             goto end;
@@ -255,7 +247,7 @@ cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info)
         }
     }
 
-    if (upf_info->redundant_gtpu >= 0) {
+    if (upf_info->redundant_gtpu) {
         if (cJSON_AddBoolToObject(item, "redundantGtpu", upf_info->redundant_gtpu) == NULL) {
             ogs_error("OpenAPI_upf_info_convertToJSON() failed [redundant_gtpu]");
             goto end;
@@ -360,13 +352,12 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
         pdu_session_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(pdu_session_types_local_nonprimitive, pdu_session_types ) {
-            if (!cJSON_IsObject(pdu_session_types_local_nonprimitive)) {
+            if (!cJSON_IsString(pdu_session_types_local_nonprimitive)) {
                 ogs_error("OpenAPI_upf_info_parseFromJSON() failed [pdu_session_types]");
                 goto end;
             }
-            OpenAPI_pdu_session_type_t *pdu_session_typesItem = OpenAPI_pdu_session_type_parseFromJSON(pdu_session_types_local_nonprimitive);
 
-            OpenAPI_list_add(pdu_session_typesList, pdu_session_typesItem);
+            OpenAPI_list_add(pdu_session_typesList, (void *)OpenAPI_pdu_session_type_FromString(pdu_session_types_local_nonprimitive->valuestring));
         }
     }
 
@@ -467,5 +458,39 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON)
     return upf_info_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_upf_info_t *OpenAPI_upf_info_copy(OpenAPI_upf_info_t *dst, OpenAPI_upf_info_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_upf_info_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_upf_info_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_upf_info_free(dst);
+    dst = OpenAPI_upf_info_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

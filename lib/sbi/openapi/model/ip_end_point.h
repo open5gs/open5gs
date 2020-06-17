@@ -35,6 +35,7 @@ OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_create(
 void OpenAPI_ip_end_point_free(OpenAPI_ip_end_point_t *ip_end_point);
 OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_parseFromJSON(cJSON *ip_end_pointJSON);
 cJSON *OpenAPI_ip_end_point_convertToJSON(OpenAPI_ip_end_point_t *ip_end_point);
+OpenAPI_ip_end_point_t *OpenAPI_ip_end_point_copy(OpenAPI_ip_end_point_t *dst, OpenAPI_ip_end_point_t *src);
 
 #ifdef __cplusplus
 }

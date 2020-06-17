@@ -30,6 +30,7 @@ OpenAPI_invalid_param_t *OpenAPI_invalid_param_create(
 void OpenAPI_invalid_param_free(OpenAPI_invalid_param_t *invalid_param);
 OpenAPI_invalid_param_t *OpenAPI_invalid_param_parseFromJSON(cJSON *invalid_paramJSON);
 cJSON *OpenAPI_invalid_param_convertToJSON(OpenAPI_invalid_param_t *invalid_param);
+OpenAPI_invalid_param_t *OpenAPI_invalid_param_copy(OpenAPI_invalid_param_t *dst, OpenAPI_invalid_param_t *src);
 
 #ifdef __cplusplus
 }

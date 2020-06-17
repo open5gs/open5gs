@@ -711,8 +711,8 @@ components:
         - $ref: '#/components/schemas/AccessType'
         - $ref: '#/components/schemas/NullValue'
     RatType:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - NR
             - EUTRA
@@ -730,21 +730,21 @@ components:
             - TRUSTED_WLAN
             - UTRA
             - GERA
-        - type: string
+          type: string
     RatTypeRm:
       allOf:
         - $ref: '#/components/schemas/RatType'
       nullable: true
     PduSessionType:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - IPV4
             - IPV6
             - IPV4V6
             - UNSTRUCTURED
             - ETHERNET
-        - type: string
+          type: string
     PduSessionTypeRm:
       anyOf:
         - $ref: '#/components/schemas/PduSessionType'
@@ -774,13 +774,13 @@ components:
         - $ref: '#/components/schemas/UpConfidentiality'
         - $ref: '#/components/schemas/NullValue'
     SscMode:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - SSC_MODE_1
             - SSC_MODE_2
             - SSC_MODE_3
-        - type: string
+          type: string
     SscModeRm:
       anyOf:
         - $ref: '#/components/schemas/SscMode'
@@ -1928,23 +1928,23 @@ components:
 #
 
     PreemptionCapability:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - NOT_PREEMPT
             - MAY_PREEMPT
-        - type: string
+          type: string
     PreemptionCapabilityRm:
       anyOf:
         - $ref: '#/components/schemas/PreemptionCapability'
         - $ref: '#/components/schemas/NullValue'
     PreemptionVulnerability:
-      anyOf:
-        - type: string
+#      anyOf:
+#        - type: string
           enum:
             - NOT_PREEMPTABLE
             - PREEMPTABLE
-        - type: string
+          type: string
     PreemptionVulnerabilityRm:
       anyOf:
         - $ref: '#/components/schemas/PreemptionVulnerability'

@@ -39,6 +39,7 @@ OpenAPI_upu_info_t *OpenAPI_upu_info_create(
 void OpenAPI_upu_info_free(OpenAPI_upu_info_t *upu_info);
 OpenAPI_upu_info_t *OpenAPI_upu_info_parseFromJSON(cJSON *upu_infoJSON);
 cJSON *OpenAPI_upu_info_convertToJSON(OpenAPI_upu_info_t *upu_info);
+OpenAPI_upu_info_t *OpenAPI_upu_info_copy(OpenAPI_upu_info_t *dst, OpenAPI_upu_info_t *src);
 
 #ifdef __cplusplus
 }

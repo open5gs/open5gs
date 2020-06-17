@@ -23,7 +23,6 @@ static amf_context_t self;
 
 int __amf_log_domain;
 int __gmm_log_domain;
-int __gsm_log_domain;
 
 static OGS_POOL(amf_gnb_pool, amf_gnb_t);
 static OGS_POOL(amf_ue_pool, amf_ue_t);
@@ -45,7 +44,6 @@ void amf_context_init(void)
     ogs_log_install_domain(&__ogs_nas_domain, "nas", ogs_core()->log.level);
     ogs_log_install_domain(&__amf_log_domain, "amf", ogs_core()->log.level);
     ogs_log_install_domain(&__gmm_log_domain, "gmm", ogs_core()->log.level);
-    ogs_log_install_domain(&__gsm_log_domain, "gsm", ogs_core()->log.level);
 
     ogs_list_init(&self.ngap_list);
     ogs_list_init(&self.ngap_list6);
@@ -64,7 +62,6 @@ void amf_context_init(void)
     self.gnb_addr_hash = ogs_hash_make();
     self.gnb_id_hash = ogs_hash_make();
     self.amf_ue_ngap_id_hash = ogs_hash_make();
-    self.imsi_ue_hash = ogs_hash_make();
     self.guti_ue_hash = ogs_hash_make();
     self.suci_hash = ogs_hash_make();
     self.supi_hash = ogs_hash_make();
@@ -86,8 +83,6 @@ void amf_context_final(void)
 
     ogs_assert(self.amf_ue_ngap_id_hash);
     ogs_hash_destroy(self.amf_ue_ngap_id_hash);
-    ogs_assert(self.imsi_ue_hash);
-    ogs_hash_destroy(self.imsi_ue_hash);
     ogs_assert(self.guti_ue_hash);
     ogs_hash_destroy(self.guti_ue_hash);
     ogs_assert(self.suci_hash);
@@ -634,14 +629,13 @@ int amf_context_parse_config(void)
 
                                     if (sst) {
                                         s_nssai->sst = atoi(sst);
-                                        if (sd) {
+                                        if (sd)
                                             s_nssai->sd =
                                                 ogs_uint24_from_string(
                                                         (char*)sd);
-                                        } else {
+                                        else
                                             s_nssai->sd.v =
                                                 OGS_S_NSSAI_NO_SD_VALUE;
-                                        }
 
                                         self.plmn_support[
                                             self.num_of_plmn_support].
@@ -698,21 +692,21 @@ int amf_context_parse_config(void)
                                 if (v) {
                                     int integrity_index = 
                                         self.num_of_integrity_order;
-                                    if (strcmp(v, "EIA0") == 0) {
+                                    if (strcmp(v, "NIA0") == 0) {
                                         self.integrity_order[integrity_index] = 
-                                        OGS_NAS_SECURITY_ALGORITHMS_EIA0;
+                                        OGS_NAS_SECURITY_ALGORITHMS_NIA0;
                                         self.num_of_integrity_order++;
-                                    } else if (strcmp(v, "EIA1") == 0) {
+                                    } else if (strcmp(v, "NIA1") == 0) {
                                         self.integrity_order[integrity_index] = 
-                                        OGS_NAS_SECURITY_ALGORITHMS_128_EIA1;
+                                        OGS_NAS_SECURITY_ALGORITHMS_128_NIA1;
                                         self.num_of_integrity_order++;
-                                    } else if (strcmp(v, "EIA2") == 0) {
+                                    } else if (strcmp(v, "NIA2") == 0) {
                                         self.integrity_order[integrity_index] = 
-                                        OGS_NAS_SECURITY_ALGORITHMS_128_EIA2;
+                                        OGS_NAS_SECURITY_ALGORITHMS_128_NIA2;
                                         self.num_of_integrity_order++;
-                                    } else if (strcmp(v, "EIA3") == 0) {
+                                    } else if (strcmp(v, "NIA3") == 0) {
                                         self.integrity_order[integrity_index] = 
-                                        OGS_NAS_SECURITY_ALGORITHMS_128_EIA3;
+                                        OGS_NAS_SECURITY_ALGORITHMS_128_NIA3;
                                         self.num_of_integrity_order++;
                                     }
                                 }
@@ -740,21 +734,21 @@ int amf_context_parse_config(void)
                                 if (v) {
                                     int ciphering_index = 
                                         self.num_of_ciphering_order;
-                                    if (strcmp(v, "EEA0") == 0) {
+                                    if (strcmp(v, "NEA0") == 0) {
                                         self.ciphering_order[ciphering_index] = 
-                                            OGS_NAS_SECURITY_ALGORITHMS_EEA0;
+                                            OGS_NAS_SECURITY_ALGORITHMS_NEA0;
                                         self.num_of_ciphering_order++;
-                                    } else if (strcmp(v, "EEA1") == 0) {
+                                    } else if (strcmp(v, "NEA1") == 0) {
                                         self.ciphering_order[ciphering_index] = 
-                                        OGS_NAS_SECURITY_ALGORITHMS_128_EEA1;
+                                        OGS_NAS_SECURITY_ALGORITHMS_128_NEA1;
                                         self.num_of_ciphering_order++;
-                                    } else if (strcmp(v, "EEA2") == 0) {
+                                    } else if (strcmp(v, "NEA2") == 0) {
                                         self.ciphering_order[ciphering_index] = 
-                                        OGS_NAS_SECURITY_ALGORITHMS_128_EEA2;
+                                        OGS_NAS_SECURITY_ALGORITHMS_128_NEA2;
                                         self.num_of_ciphering_order++;
-                                    } else if (strcmp(v, "EEA3") == 0) {
+                                    } else if (strcmp(v, "NEA3") == 0) {
                                         self.ciphering_order[ciphering_index] = 
-                                        OGS_NAS_SECURITY_ALGORITHMS_128_EEA3;
+                                        OGS_NAS_SECURITY_ALGORITHMS_128_NEA3;
                                         self.num_of_ciphering_order++;
                                     }
                                 }
@@ -1064,18 +1058,6 @@ ran_ue_t *ran_ue_next_in_gnb(ran_ue_t *ran_ue)
 
 static int amf_ue_new_guti(amf_ue_t *amf_ue)
 {
-#if 0
-    served_guami_t *served_guami = NULL;
-
-    ogs_assert(amf_ue);
-    ogs_assert(amf_self()->num_of_served_guami > 0);
-
-    served_guami = &amf_self()->served_guami[0];
-
-    ogs_assert(served_guami->num_of_plmn_id > 0);
-    ogs_assert(served_guami->num_of_amf_gid > 0);
-    ogs_assert(served_guami->num_of_amf_code > 0);
-
     if (amf_ue->m_tmsi) {
         /* AMF has a VALID GUTI
          * As such, we need to remove previous GUTI in hash table */
@@ -1086,17 +1068,15 @@ static int amf_ue_new_guti(amf_ue_t *amf_ue)
 
     memset(&amf_ue->guti, 0, sizeof(ogs_nas_5gs_guti_t));
 
-    /* Use the first configured plmn_id and amf group id */
-    ogs_nas_from_plmn_id(&amf_ue->guti.nas_plmn_id, &served_guami->plmn_id[0]);
-    amf_ue->guti.amf_gid = served_guami->amf_gid[0];
-    amf_ue->guti.amf_code = served_guami->amf_code[0];
+    ogs_assert(amf_ue->guami);
+    ogs_nas_from_plmn_id(&amf_ue->guti.nas_plmn_id, &amf_ue->guami->plmn_id);
+    memcpy(&amf_ue->guti.amf_id, &amf_ue->guami->amf_id, sizeof(ogs_amf_id_t));
 
     amf_ue->m_tmsi = amf_m_tmsi_alloc();
     ogs_assert(amf_ue->m_tmsi);
     amf_ue->guti.m_tmsi = *(amf_ue->m_tmsi);
     ogs_hash_set(self.guti_ue_hash,
             &amf_ue->guti, sizeof(ogs_nas_5gs_guti_t), amf_ue);
-#endif
 
     return OGS_OK;
 }
@@ -1117,11 +1097,9 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 
     ogs_list_init(&amf_ue->sess_list);
 
-    /* Initialize NAS Context */
-    amf_ue->nas.connection_identifier = OGS_NAS_SECURITY_BEARER_3GPP;
-    amf_ue->nas.ksi = 1;
-
-    /* Initialize Abba */
+    /* TODO : Hard-coded */
+    amf_ue->guami = &amf_self()->served_guami[0];
+    amf_ue->nas.access_type = OGS_ACCESS_TYPE_3GPP;
     amf_ue->abba_len = 2;
 
     /* Create New GUTI */
@@ -1134,7 +1112,7 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 #endif
 
     /* Add All Timers */
-    amf_ue->sbi_client_wait.timer = ogs_timer_add(
+    amf_ue->sbi.client_wait.timer = ogs_timer_add(
             self.timer_mgr, amf_timer_sbi_client_wait_expire, amf_ue);
 
     amf_ue->t3513.timer = ogs_timer_add(
@@ -1146,6 +1124,9 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     amf_ue->t3550.timer = ogs_timer_add(
             self.timer_mgr, amf_timer_t3550_expire, amf_ue);
     amf_ue->t3550.pkbuf = NULL;
+    amf_ue->t3555.timer = ogs_timer_add(
+            self.timer_mgr, amf_timer_t3555_expire, amf_ue);
+    amf_ue->t3555.pkbuf = NULL;
     amf_ue->t3560.timer = ogs_timer_add(
             self.timer_mgr, amf_timer_t3560_expire, amf_ue);
     amf_ue->t3560.pkbuf = NULL;
@@ -1166,7 +1147,6 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 void amf_ue_remove(amf_ue_t *amf_ue)
 {
     amf_event_t e;
-    int i;
 
     ogs_assert(amf_ue);
 
@@ -1182,8 +1162,6 @@ void amf_ue_remove(amf_ue_t *amf_ue)
                 &amf_ue->guti, sizeof(ogs_nas_5gs_guti_t), NULL);
         ogs_assert(amf_m_tmsi_free(amf_ue->m_tmsi) == OGS_OK);
     }
-    if (amf_ue->imsi_len != 0)
-        ogs_hash_set(self.imsi_ue_hash, amf_ue->imsi, amf_ue->imsi_len, NULL);
     if (amf_ue->suci) {
         ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), NULL);
         ogs_free(amf_ue->suci);
@@ -1192,6 +1170,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
         ogs_hash_set(self.supi_hash, amf_ue->supi, strlen(amf_ue->supi), NULL);
         ogs_free(amf_ue->supi);
     }
+
+    if (amf_ue->pei)
+        ogs_free(amf_ue->pei);
 
     if (amf_ue->confirmation_url_for_5g_aka)
         ogs_free(amf_ue->confirmation_url_for_5g_aka);
@@ -1204,22 +1185,21 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     /* Delete All Timers */
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
-    ogs_timer_delete(amf_ue->sbi_client_wait.timer);
     ogs_timer_delete(amf_ue->t3513.timer);
     ogs_timer_delete(amf_ue->t3522.timer);
     ogs_timer_delete(amf_ue->t3550.timer);
+    ogs_timer_delete(amf_ue->t3555.timer);
     ogs_timer_delete(amf_ue->t3560.timer);
     ogs_timer_delete(amf_ue->t3570.timer);
+
+    /* Free SBI object memory */
+    ogs_sbi_object_free(&amf_ue->sbi);
+    ogs_timer_delete(amf_ue->sbi.client_wait.timer);
 
     amf_ue_deassociate(amf_ue);
 
     amf_sess_remove_all(amf_ue);
     amf_pdn_remove_all(amf_ue);
-
-    for (i = 0; i < OGS_SBI_MAX_NF_TYPE; i++) {
-        if (amf_ue->nf_types[i].nf_instance)
-            ogs_sbi_nf_instance_remove(amf_ue->nf_types[i].nf_instance);
-    }
 
     ogs_pool_free(&amf_ue_pool, amf_ue);
 }
@@ -1230,25 +1210,6 @@ void amf_ue_remove_all()
 
     ogs_list_for_each_safe(&self.amf_ue_list, next, amf_ue)
         amf_ue_remove(amf_ue);
-}
-
-amf_ue_t *amf_ue_find_by_imsi_bcd(char *imsi_bcd)
-{
-    uint8_t imsi[OGS_MAX_IMSI_LEN];
-    int imsi_len = 0;
-
-    ogs_assert(imsi_bcd);
-
-    ogs_bcd_to_buffer(imsi_bcd, imsi, &imsi_len);
-
-    return amf_ue_find_by_imsi(imsi, imsi_len);
-}
-
-amf_ue_t *amf_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
-{
-    ogs_assert(imsi && imsi_len);
-
-    return (amf_ue_t *)ogs_hash_get(self.imsi_ue_hash, imsi, imsi_len);
 }
 
 amf_ue_t *amf_ue_find_by_guti(ogs_nas_5gs_guti_t *guti)
@@ -1289,8 +1250,7 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
     ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti = NULL;
     ogs_nas_5gs_guti_t nas_guti;
 
-    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
-    char *ueid = NULL;
+    char *suci = NULL;
 
     ogs_assert(message);
 
@@ -1306,15 +1266,14 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
     case OGS_NAS_5GS_REGISTRATION_REQUEST:
         switch (mobile_identity_header->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
-            ogs_nas_5gs_imsi_to_bcd(mobile_identity, imsi_bcd);
-            ueid = ogs_nas_5gs_ueid_from_mobile_identity(mobile_identity);
-            amf_ue = amf_ue_find_by_imsi_bcd(imsi_bcd);
+            suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
+            amf_ue = amf_ue_find_by_suci(suci);
             if (amf_ue) {
-                ogs_trace("known UE by IMSI[%s]", imsi_bcd);
+                ogs_trace("[%s] known UE by SUCI", suci);
             } else {
-                ogs_trace("Unknown UE by IMSI[%s]", imsi_bcd);
+                ogs_trace("[%s] Unknown UE by SUCI", suci);
             }
-            ogs_free(ueid);
+            ogs_free(suci);
             break;
         case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
             mobile_identity_guti =
@@ -1418,38 +1377,33 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 void amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity)
 {
-    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
     amf_ue_t *old_amf_ue = NULL;
+    char *suci = NULL;
 
     ogs_assert(amf_ue);
     ogs_assert(mobile_identity);
 
-    ogs_nas_5gs_imsi_to_bcd(mobile_identity, imsi_bcd);
-
-    ogs_cpystrn(amf_ue->imsi_bcd, imsi_bcd, OGS_MAX_IMSI_BCD_LEN+1);
-    ogs_bcd_to_buffer(amf_ue->imsi_bcd, amf_ue->imsi, &amf_ue->imsi_len);
+    suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
+    ogs_assert(suci);
 
     /* Check if OLD amf_ue_t is existed */
-    old_amf_ue = amf_ue_find_by_imsi(amf_ue->imsi, amf_ue->imsi_len);
+    old_amf_ue = amf_ue_find_by_suci(suci);
     if (old_amf_ue) {
         /* Check if OLD amf_ue_t is different with NEW amf_ue_t */
         if (ogs_pool_index(&amf_ue_pool, amf_ue) !=
             ogs_pool_index(&amf_ue_pool, old_amf_ue)) {
-            ogs_warn("OLD UE Context Release [IMSI:%s]", amf_ue->imsi_bcd);
+            ogs_warn("[%s] OLD UE Context Release", suci);
             if (old_amf_ue->ran_ue)
                 ran_ue_deassociate(old_amf_ue->ran_ue);
             amf_ue_remove(old_amf_ue);
         }
     }
 
-    ogs_hash_set(self.imsi_ue_hash, amf_ue->imsi, amf_ue->imsi_len, amf_ue);
-
     if (amf_ue->suci) {
         ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), NULL);
         ogs_free(amf_ue->suci);
     }
-    amf_ue->suci = ogs_nas_5gs_ueid_from_mobile_identity(mobile_identity);
-    ogs_assert(amf_ue->suci);
+    amf_ue->suci = suci;
     ogs_hash_set(self.suci_hash, amf_ue->suci, strlen(amf_ue->suci), amf_ue);
 
     amf_ue->guti_present = 1;
@@ -1472,9 +1426,9 @@ int amf_ue_have_indirect_tunnel(amf_ue_t *amf_ue)
 {
     amf_sess_t *sess = NULL;
 
-    sess = amf_sess_first(amf_ue);
+    sess = ogs_list_first(&amf_ue->sess_list);
     while (sess) {
-        amf_bearer_t *bearer = amf_bearer_first(sess);
+        amf_bearer_t *bearer = ogs_list_first(&sess->bearer_list);
         while (bearer) {
             if (AMF_HAVE_GNB_DL_INDIRECT_TUNNEL(bearer) ||
                 AMF_HAVE_GNB_UL_INDIRECT_TUNNEL(bearer) ||
@@ -1483,9 +1437,9 @@ int amf_ue_have_indirect_tunnel(amf_ue_t *amf_ue)
                 return 1;
             }
 
-            bearer = amf_bearer_next(bearer);
+            bearer = ogs_list_next(bearer);
         }
-        sess = amf_sess_next(sess);
+        sess = ogs_list_next(sess);
     }
 
     return 0;
@@ -1497,15 +1451,15 @@ int amf_ue_clear_indirect_tunnel(amf_ue_t *amf_ue)
 
     ogs_assert(amf_ue);
 
-    sess = amf_sess_first(amf_ue);
+    sess = ogs_list_first(&amf_ue->sess_list);
     while (sess) {
-        amf_bearer_t *bearer = amf_bearer_first(sess);
+        amf_bearer_t *bearer = ogs_list_first(&sess->bearer_list);
         while (bearer) {
             CLEAR_INDIRECT_TUNNEL(bearer);
 
-            bearer = amf_bearer_next(bearer);
+            bearer = ogs_list_next(bearer);
         }
-        sess = amf_sess_next(sess);
+        sess = ogs_list_next(sess);
     }
 
     return OGS_OK;
@@ -1572,25 +1526,34 @@ void source_ue_deassociate_target_ue(ran_ue_t *ran_ue)
     }
 }
 
-amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t pti)
+amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi)
 {
     amf_sess_t *sess = NULL;
+#if 0
     amf_bearer_t *bearer = NULL;
+#endif
 
     ogs_assert(amf_ue);
-    ogs_assert(pti != OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED);
+    ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
 
     ogs_pool_alloc(&amf_sess_pool, &sess);
     ogs_assert(sess);
     memset(sess, 0, sizeof *sess);
 
+#if 0
     ogs_list_init(&sess->bearer_list);
+#endif
 
     sess->amf_ue = amf_ue;
-    sess->pti = pti;
+    sess->psi = psi;
 
+    sess->sbi.client_wait.timer = ogs_timer_add(
+            self.timer_mgr, amf_timer_sbi_client_wait_expire, sess);
+
+#if 0
     bearer = amf_bearer_add(sess);
     ogs_assert(bearer);
+#endif
 
     ogs_list_add(&amf_ue->sess_list, sess);
 
@@ -1604,7 +1567,21 @@ void amf_sess_remove(amf_sess_t *sess)
     
     ogs_list_remove(&sess->amf_ue->sess_list, sess);
 
+#if 0
     amf_bearer_remove_all(sess);
+#endif
+
+    /* Free SBI object memory */
+    ogs_sbi_object_free(&sess->sbi);
+    ogs_timer_delete(sess->sbi.client_wait.timer);
+
+    if (sess->sm_context_ref)
+        ogs_free(sess->sm_context_ref);
+
+    if (sess->payload_container)
+        ogs_pkbuf_free(sess->payload_container);
+    if (sess->dnn)
+        ogs_free(sess->dnn);
 
     OGS_NAS_CLEAR_DATA(&sess->ue_pco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
@@ -1615,32 +1592,24 @@ void amf_sess_remove(amf_sess_t *sess)
 void amf_sess_remove_all(amf_ue_t *amf_ue)
 {
     amf_sess_t *sess = NULL, *next_sess = NULL;
-    
-    sess = amf_sess_first(amf_ue);
-    while (sess) {
-        next_sess = amf_sess_next(sess);
 
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each_safe(&amf_ue->sess_list, next_sess, sess)
         amf_sess_remove(sess);
-
-        sess = next_sess;
-    }
 }
 
-amf_sess_t *amf_sess_find_by_pti(amf_ue_t *amf_ue, uint8_t pti)
+amf_sess_t *amf_sess_find_by_psi(amf_ue_t *amf_ue, uint8_t psi)
 {
     amf_sess_t *sess = NULL;
 
-    sess = amf_sess_first(amf_ue);
-    while(sess) {
-        if (pti == sess->pti)
-            return sess;
-
-        sess = amf_sess_next(sess);
-    }
+    ogs_list_for_each(&amf_ue->sess_list, sess)
+        if (psi == sess->psi) return sess;
 
     return NULL;
 }
 
+#if 0
 amf_sess_t *amf_sess_find_by_ebi(amf_ue_t *amf_ue, uint8_t ebi)
 {
     amf_bearer_t *bearer = NULL;
@@ -1651,9 +1620,11 @@ amf_sess_t *amf_sess_find_by_ebi(amf_ue_t *amf_ue, uint8_t ebi)
 
     return NULL;
 }
+#endif
 
 amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn)
 {
+#if 0
     amf_sess_t *sess = NULL;
 
     sess = amf_sess_first(amf_ue);
@@ -1663,34 +1634,12 @@ amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn)
 
         sess = amf_sess_next(sess);
     }
+#endif
 
     return NULL;
 }
 
-amf_sess_t *amf_sess_first(amf_ue_t *amf_ue)
-{
-    return ogs_list_first(&amf_ue->sess_list);
-}
-
-amf_sess_t *amf_sess_next(amf_sess_t *sess)
-{
-    return ogs_list_next(sess);
-}
-
-unsigned int amf_sess_count(amf_ue_t *amf_ue)
-{
-    unsigned int count = 0;
-    amf_sess_t *sess = NULL;
-
-    sess = amf_sess_first(amf_ue);
-    while (sess) {
-        sess = amf_sess_next(sess);
-        count++;
-    }
-
-    return count;
-}
-
+#if 0
 amf_bearer_t *amf_bearer_add(amf_sess_t *sess)
 {
     amf_event_t e;
@@ -2003,6 +1952,7 @@ int amf_bearer_set_inactive(amf_ue_t *amf_ue)
 
     return OGS_OK;
 }
+#endif
 
 void amf_pdn_remove_all(amf_ue_t *amf_ue)
 {
@@ -2102,6 +2052,37 @@ int amf_find_served_tai(ogs_5gs_tai_t *tai)
     }
 
     return -1;
+}
+
+ogs_s_nssai_t *amf_find_s_nssai(
+        ogs_plmn_id_t *served_plmn_id, ogs_nas_s_nssai_t *s_nssai)
+{
+    int i, j;
+
+    ogs_assert(served_plmn_id);
+    ogs_assert(s_nssai);
+
+    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
+        if (memcmp(&amf_self()->plmn_support[i].plmn_id,
+                    served_plmn_id, OGS_PLMN_ID_LEN) != 0)
+            continue;
+
+        for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
+            if (amf_self()->plmn_support[i].s_nssai[j].sst != s_nssai->sst)
+                continue;
+
+            if (s_nssai->length > 1 &&
+                    s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
+                if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
+                        s_nssai->sd.v)
+                    continue;
+            }
+
+            return &amf_self()->plmn_support[i].s_nssai[j];
+        }
+    }
+
+    return NULL;
 }
 
 int amf_m_tmsi_pool_generate()

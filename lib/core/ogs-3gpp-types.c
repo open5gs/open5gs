@@ -64,12 +64,41 @@ void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id,
     return plmn_id;
 }
 
-char *ogs_plmn_id_string(ogs_plmn_id_t *plmn_id)
+char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id)
 {
     ogs_assert(plmn_id);
-
     return ogs_msprintf("5G:mnc%03d.mcc%03d.3gppnetwork.org",
             ogs_plmn_id_mnc(plmn_id), ogs_plmn_id_mcc(plmn_id));
+}
+
+char *ogs_plmn_id_mcc_string(ogs_plmn_id_t *plmn_id)
+{
+    ogs_assert(plmn_id);
+    return ogs_msprintf("%03d", ogs_plmn_id_mcc(plmn_id));
+}
+
+char *ogs_plmn_id_mnc_string(ogs_plmn_id_t *plmn_id)
+{
+    ogs_assert(plmn_id);
+    if (ogs_plmn_id_mnc_len(plmn_id) == 2)
+        return ogs_msprintf("%02d", ogs_plmn_id_mnc(plmn_id));
+    else
+        return ogs_msprintf("%03d", ogs_plmn_id_mnc(plmn_id));
+}
+
+char *ogs_plmn_id_to_string(ogs_plmn_id_t *plmn_id, char *buf)
+{
+    ogs_assert(plmn_id);
+    ogs_assert(buf);
+
+    if (ogs_plmn_id_mnc_len(plmn_id) == 2)
+        ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%02d",
+                ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id));
+    else
+        ogs_snprintf(buf, OGS_PLMNIDSTRLEN, "%03d%03d",
+                ogs_plmn_id_mcc(plmn_id), ogs_plmn_id_mnc(plmn_id));
+
+    return buf;
 }
 
 uint32_t ogs_amf_id_hexdump(ogs_amf_id_t *amf_id)
@@ -142,6 +171,29 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
     return amf_id;
 }
 
+char *ogs_s_nssai_sd_to_string(ogs_uint24_t sd)
+{
+    if (sd.v != OGS_S_NSSAI_NO_SD_VALUE)
+        return ogs_msprintf("%06x", sd.v);
+    else
+        return NULL;
+}
+
+ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex)
+{
+    ogs_uint24_t sd;
+    char hexbuf[sizeof(ogs_uint24_t)];
+
+    sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+    if (hex == NULL)
+        return sd;
+
+    OGS_HEX(hex, strlen(hex), hexbuf);
+    memcpy(&sd, hexbuf, 3);
+
+    return ogs_be24toh(sd);
+}
+
 char *ogs_supi_from_suci(char *suci)
 {
 #define MAX_SUCI_TOKEN 16
@@ -185,7 +237,24 @@ char *ogs_supi_from_suci(char *suci)
     return supi;
 }
 
-char *ogs_ueid_from_supi(char *supi)
+char *ogs_supi_get_type(char *supi)
+{
+    char *saveptr = NULL;
+    char *p, *tmp;
+    char *type = NULL;
+
+    ogs_assert(supi);
+    tmp = ogs_strdup(supi);
+
+    p = strtok_r(tmp, "-", &saveptr);
+    ogs_assert(p);
+    type = ogs_strdup(p);
+
+    ogs_free(tmp);
+    return type;
+}
+
+char *ogs_supi_get_id(char *supi)
 {
     char *saveptr = NULL;
     char *p, *tmp;
@@ -359,4 +428,51 @@ int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list)
     }
 
     return OGS_OK;
+}
+
+void ogs_sockaddr_to_ip(
+        ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, ogs_ip_t *ip)
+{
+    ogs_assert(ip);
+    ogs_assert(addr || addr6);
+
+    memset(ip, 0, sizeof(ogs_ip_t));
+
+    if (addr && addr6) {
+        ip->ipv4 = 1;
+        ip->ipv6 = 1;
+        ip->len = OGS_IPV4V6_LEN;
+        ip->both.addr = addr->sin.sin_addr.s_addr;
+        memcpy(ip->both.addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+    } else if (addr) {
+        ip->ipv4 = 1;
+        ip->len = OGS_IPV4_LEN;
+        ip->addr = addr->sin.sin_addr.s_addr;
+    } else if (addr6) {
+        ip->ipv6 = 1;
+        ip->len = OGS_IPV6_LEN;
+        memcpy(ip->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+    } else
+        ogs_assert_if_reached();
+}
+
+char *ogs_ipv4_to_string(uint32_t addr)
+{
+    char *buf = NULL;
+
+    buf = ogs_calloc(1, OGS_ADDRSTRLEN);
+    ogs_assert(buf);
+
+    return (char*)OGS_INET_NTOP(&addr, buf);
+}
+
+char *ogs_ipv6_to_string(uint8_t *addr6)
+{
+    char *buf = NULL;
+    ogs_assert(addr6);
+
+    buf = ogs_calloc(1, OGS_ADDRSTRLEN);
+    ogs_assert(buf);
+
+    return (char *)OGS_INET6_NTOP(addr6, buf);
 }

@@ -35,6 +35,7 @@ OpenAPI_sor_data_t *OpenAPI_sor_data_create(
 void OpenAPI_sor_data_free(OpenAPI_sor_data_t *sor_data);
 OpenAPI_sor_data_t *OpenAPI_sor_data_parseFromJSON(cJSON *sor_dataJSON);
 cJSON *OpenAPI_sor_data_convertToJSON(OpenAPI_sor_data_t *sor_data);
+OpenAPI_sor_data_t *OpenAPI_sor_data_copy(OpenAPI_sor_data_t *dst, OpenAPI_sor_data_t *src);
 
 #ifdef __cplusplus
 }

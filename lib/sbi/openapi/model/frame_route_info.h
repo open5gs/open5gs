@@ -30,6 +30,7 @@ OpenAPI_frame_route_info_t *OpenAPI_frame_route_info_create(
 void OpenAPI_frame_route_info_free(OpenAPI_frame_route_info_t *frame_route_info);
 OpenAPI_frame_route_info_t *OpenAPI_frame_route_info_parseFromJSON(cJSON *frame_route_infoJSON);
 cJSON *OpenAPI_frame_route_info_convertToJSON(OpenAPI_frame_route_info_t *frame_route_info);
+OpenAPI_frame_route_info_t *OpenAPI_frame_route_info_copy(OpenAPI_frame_route_info_t *dst, OpenAPI_frame_route_info_t *src);
 
 #ifdef __cplusplus
 }

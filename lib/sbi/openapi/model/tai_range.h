@@ -34,6 +34,7 @@ OpenAPI_tai_range_t *OpenAPI_tai_range_create(
 void OpenAPI_tai_range_free(OpenAPI_tai_range_t *tai_range);
 OpenAPI_tai_range_t *OpenAPI_tai_range_parseFromJSON(cJSON *tai_rangeJSON);
 cJSON *OpenAPI_tai_range_convertToJSON(OpenAPI_tai_range_t *tai_range);
+OpenAPI_tai_range_t *OpenAPI_tai_range_copy(OpenAPI_tai_range_t *dst, OpenAPI_tai_range_t *src);
 
 #ifdef __cplusplus
 }

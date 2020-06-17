@@ -39,6 +39,9 @@ typedef struct ogs_sbi_request_s ogs_sbi_request_t;
 typedef struct ogs_sbi_response_s ogs_sbi_response_t;
 typedef struct ogs_sbi_message_s ogs_sbi_message_t;
 typedef struct ogs_sbi_subscription_s ogs_sbi_subscription_t;
+typedef struct ogs_nas_5gs_message_s ogs_nas_5gs_message_t;
+typedef struct NGAP_NGAP_PDU ogs_ngap_message_t;
+typedef long NGAP_ProcedureCode_t;
 
 typedef enum {
     SMF_EVT_BASE = OGS_FSM_USER_SIG,
@@ -53,6 +56,12 @@ typedef enum {
     SMF_EVT_SBI_SERVER,
     SMF_EVT_SBI_CLIENT,
     SMF_EVT_SBI_TIMER,
+
+    SMF_EVT_NGAP_MESSAGE,
+    SMF_EVT_NGAP_TIMER,
+
+    SMF_EVT_5GSM_MESSAGE,
+    SMF_EVT_5GSM_TIMER,
 
     SMF_EVT_TOP,
 
@@ -82,6 +91,16 @@ typedef struct smf_event_s {
 
         ogs_sbi_message_t *message;
     } sbi;
+
+    struct {
+        int type;
+        ogs_ngap_message_t *message;
+    } ngap;
+
+    struct {
+        uint8_t type;
+        ogs_nas_5gs_message_t *message;
+    } nas;
 
     smf_sess_t *sess;
 } smf_event_t;

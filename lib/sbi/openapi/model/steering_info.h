@@ -32,6 +32,7 @@ OpenAPI_steering_info_t *OpenAPI_steering_info_create(
 void OpenAPI_steering_info_free(OpenAPI_steering_info_t *steering_info);
 OpenAPI_steering_info_t *OpenAPI_steering_info_parseFromJSON(cJSON *steering_infoJSON);
 cJSON *OpenAPI_steering_info_convertToJSON(OpenAPI_steering_info_t *steering_info);
+OpenAPI_steering_info_t *OpenAPI_steering_info_copy(OpenAPI_steering_info_t *dst, OpenAPI_steering_info_t *src);
 
 #ifdef __cplusplus
 }

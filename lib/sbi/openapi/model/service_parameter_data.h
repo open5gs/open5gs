@@ -51,6 +51,7 @@ OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_create(
 void OpenAPI_service_parameter_data_free(OpenAPI_service_parameter_data_t *service_parameter_data);
 OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_parseFromJSON(cJSON *service_parameter_dataJSON);
 cJSON *OpenAPI_service_parameter_data_convertToJSON(OpenAPI_service_parameter_data_t *service_parameter_data);
+OpenAPI_service_parameter_data_t *OpenAPI_service_parameter_data_copy(OpenAPI_service_parameter_data_t *dst, OpenAPI_service_parameter_data_t *src);
 
 #ifdef __cplusplus
 }

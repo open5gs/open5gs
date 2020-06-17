@@ -229,7 +229,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_register(
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    message.h.api.version = (char *)OGS_SBI_API_VERSION;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
     message.h.resource.component[1] = ogs_sbi_self()->nf_instance_id;
@@ -264,7 +264,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_update(ogs_sbi_nf_instance_t *nf_instance)
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PATCH;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    message.h.api.version = (char *)OGS_SBI_API_VERSION;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
     message.h.resource.component[1] = ogs_sbi_self()->nf_instance_id;
@@ -301,7 +301,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_de_register(
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    message.h.api.version = (char *)OGS_SBI_API_VERSION;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
     message.h.resource.component[1] = nf_instance->id;
@@ -328,7 +328,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    message.h.api.version = (char *)OGS_SBI_API_VERSION;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
 
@@ -340,7 +340,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_subscribe(
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    header.api.version = (char *)OGS_SBI_API_VERSION;
+    header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] =
             (char *)OGS_SBI_RESOURCE_NAME_NF_STATUS_NOTIFY;
     SubscriptionData->nf_status_notification_uri =
@@ -372,7 +372,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_status_unsubscribe(
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_DELETE;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_NFM;
-    message.h.api.version = (char *)OGS_SBI_API_VERSION;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS;
     message.h.resource.component[1] = subscription->id;
@@ -395,7 +395,7 @@ ogs_sbi_request_t *ogs_nnrf_disc_build_discover(
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NNRF_DISC;
-    message.h.api.version = (char *)OGS_SBI_API_VERSION;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_NF_INSTANCES;
 

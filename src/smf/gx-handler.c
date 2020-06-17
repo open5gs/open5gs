@@ -88,7 +88,7 @@ void smf_gx_handle_cca_initial_request(
     for (i = 0; i < gx_message->num_of_pcc_rule; i++)
         OGS_STORE_PCC_RULE(&sess->pcc_rule[i], &gx_message->pcc_rule[i]);
 
-    smf_pfcp_send_session_establishment_request(sess, gtp_xact);
+    smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact);
 }
 
 void smf_gx_handle_cca_termination_request(

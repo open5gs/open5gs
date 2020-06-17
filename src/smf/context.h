@@ -31,6 +31,8 @@
 #include "ogs-pfcp.h"
 #include "ogs-sbi.h"
 #include "ogs-app.h"
+#include "ogs-ngap.h"
+#include "ogs-nas-5gs.h"
 #include "ipfw/ogs-ipfw.h"
 
 #include "timer.h"
@@ -41,6 +43,7 @@ extern "C" {
 #endif
 
 extern int __smf_log_domain;
+extern int __gsm_log_domain;
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __smf_log_domain
@@ -81,36 +84,23 @@ typedef struct smf_context_s {
     ogs_list_t      sgw_s5c_list;   /* SGW GTPC Node List */
     ogs_list_t      ip_pool_list;
 
-    ogs_hash_t      *sess_hash;     /* hash table (IMSI+APN) */
+    ogs_hash_t      *imsi_apn_hash; /* hash table (IMSI+APN) */
+    ogs_hash_t      *supi_psi_hash; /* hash table (SUPI+PSI) */
     ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
     ogs_hash_t      *ipv6_hash;     /* hash table (IPv6 Address) */
 
     uint16_t        mtu;            /* MTU to advertise in PCO */
 
     ogs_list_t      sess_list;
-
-#define SMF_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
-    do { \
-        ogs_assert(_nFInstance); \
-        if ((_nFInstance)->reference_count == 1) { \
-            ogs_info("[%s] (%s) NF removed", (_nFInstance)->id, (_cAUSE)); \
-            smf_nf_fsm_fini((_nFInstance)); \
-        } else { \
-            /* There is an assocation with other context */ \
-            ogs_info("[%s:%d] (%s) NF suspended", \
-                    _nFInstance->id, _nFInstance->reference_count, (_cAUSE)); \
-            OGS_FSM_TRAN(&_nFInstance->sm, smf_nf_state_de_registered); \
-            ogs_fsm_dispatch(&_nFInstance->sm, NULL); \
-        } \
-        ogs_sbi_nf_instance_remove(_nFInstance); \
-    } while(0)
 } smf_context_t;
 
 typedef struct smf_sess_s {
-    ogs_lnode_t     lnode;
+    ogs_sbi_object_t sbi;
     uint32_t        index;          /**< An index of this node */
+    ogs_fsm_t       sm;             /* A state machine */
 
     uint32_t        smf_n4_teid;    /* SMF-N4-TEID is derived from INDEX */
+#define SMF_5GC_SESS(__sESS)  ((__sESS)->sgw_s5c_teid == 0)
     uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is received from SGW */
 
     uint64_t        smf_n4_seid;    /* SMF SEID is dervied from INDEX */
@@ -129,13 +119,39 @@ typedef struct smf_sess_s {
     int             imsi_len;
     char            imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-    /* APN Configuration */
-    ogs_pdn_t       pdn;
+    uint8_t         imsi_apn_keybuf[OGS_MAX_IMSI_LEN+OGS_MAX_APN_LEN+1];
+    int             imsi_apn_keylen;
+
+    /* SUPI */
+    char            *sm_context_ref;
+    char            *supi;
+    uint8_t         psi;    /* PDU session identity */
+    char            *supi_psi_keybuf;
+
+    /* Procedure transaction identity */
+    uint8_t         pti;
+
+    /* PLMN ID & NID */
+    ogs_plmn_id_t   plmn_id;
+    char            *nid;
+
+    /* S_NSSAI & DNN */
+    ogs_s_nssai_t   s_nssai;
+    char            *dnn;
+
+    /* Integrity protection maximum data rate */
+    struct {
+        uint8_t mbr_dl;
+        uint8_t mbr_ul;
+    } integrity_protection;
+
+    /* PDN Configuration */
+    ogs_pdn_t pdn;
+    uint8_t ue_pdu_session_type;
+    uint8_t ue_ssc_mode;
+
     ogs_pfcp_ue_ip_t *ipv4;
     ogs_pfcp_ue_ip_t *ipv6;
-
-    uint8_t         hash_keybuf[OGS_MAX_IMSI_LEN+OGS_MAX_APN_LEN+1];
-    int             hash_keylen;
 
     ogs_tlv_octet_t ue_pco; /* Saved from S5-C */
     ogs_tlv_octet_t user_location_information; /* Saved from S5-C */
@@ -149,6 +165,22 @@ typedef struct smf_sess_s {
     /* Related Context */
     ogs_gtp_node_t  *gnode;
     ogs_pfcp_node_t *pfcp_node;
+
+#define SMF_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
+    do { \
+        ogs_assert(_nFInstance); \
+        if ((_nFInstance)->reference_count == 1) { \
+            ogs_info("[%s] (%s) NF removed", (_nFInstance)->id, (_cAUSE)); \
+            smf_nf_fsm_fini((_nFInstance)); \
+        } else { \
+            /* There is an assocation with other context */ \
+            ogs_info("[%s:%d] (%s) NF suspended", \
+                    _nFInstance->id, _nFInstance->reference_count, (_cAUSE)); \
+            OGS_FSM_TRAN(&_nFInstance->sm, smf_nf_state_de_registered); \
+            ogs_fsm_dispatch(&_nFInstance->sm, NULL); \
+        } \
+        ogs_sbi_nf_instance_remove(_nFInstance); \
+    } while(0)
 } smf_sess_t;
 
 #define SMF_BEARER(pfcp_sess) ogs_container_of(pfcp_sess, smf_bearer_t, pfcp)
@@ -187,6 +219,7 @@ typedef struct smf_bearer_s {
         bool tft_updated;
         bool qos_updated;
         bool removed;
+        bool outer_header_creation_updated;
     } state;
 
     smf_sess_t      *sess;
@@ -209,11 +242,14 @@ smf_context_t *smf_self(void);
 
 int smf_context_parse_config(void);
 
-smf_sess_t *smf_sess_add_by_message(ogs_gtp_message_t *message);
-
-smf_sess_t *smf_sess_add(
+smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message);
+smf_sess_t *smf_sess_add_by_imsi_apn(
         uint8_t *imsi, int imsi_len, char *apn,
         uint8_t pdn_type, uint8_t ebi, ogs_paa_t *addr);
+
+smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message);
+smf_sess_t *smf_sess_add_by_supi_psi(char *supi, uint8_t psi);
+void smf_sess_set_ue_ip(smf_sess_t *sess);
 
 int smf_sess_remove(smf_sess_t *sess);
 void smf_sess_remove_all(void);
@@ -221,6 +257,8 @@ smf_sess_t *smf_sess_find(uint32_t index);
 smf_sess_t *smf_sess_find_by_teid(uint32_t teid);
 smf_sess_t *smf_sess_find_by_seid(uint64_t seid);
 smf_sess_t *smf_sess_find_by_imsi_apn(uint8_t *imsi, int imsi_len, char *apn);
+smf_sess_t *smf_sess_find_by_supi_psi(char *supi, uint8_t psi);
+smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref);
 smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr);
 smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6);
 

@@ -37,6 +37,7 @@ OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_create(
 void OpenAPI_bdt_policy_data_free(OpenAPI_bdt_policy_data_t *bdt_policy_data);
 OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_parseFromJSON(cJSON *bdt_policy_dataJSON);
 cJSON *OpenAPI_bdt_policy_data_convertToJSON(OpenAPI_bdt_policy_data_t *bdt_policy_data);
+OpenAPI_bdt_policy_data_t *OpenAPI_bdt_policy_data_copy(OpenAPI_bdt_policy_data_t *dst, OpenAPI_bdt_policy_data_t *src);
 
 #ifdef __cplusplus
 }

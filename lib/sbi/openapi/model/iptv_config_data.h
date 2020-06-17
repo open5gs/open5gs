@@ -42,6 +42,7 @@ OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_create(
 void OpenAPI_iptv_config_data_free(OpenAPI_iptv_config_data_t *iptv_config_data);
 OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_parseFromJSON(cJSON *iptv_config_dataJSON);
 cJSON *OpenAPI_iptv_config_data_convertToJSON(OpenAPI_iptv_config_data_t *iptv_config_data);
+OpenAPI_iptv_config_data_t *OpenAPI_iptv_config_data_copy(OpenAPI_iptv_config_data_t *dst, OpenAPI_iptv_config_data_t *src);
 
 #ifdef __cplusplus
 }

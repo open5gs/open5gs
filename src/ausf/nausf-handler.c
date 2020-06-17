@@ -30,7 +30,7 @@ bool ausf_nausf_auth_handle_authenticate(
     char *serving_network_name = NULL;
 
     ogs_assert(ausf_ue);
-    session = ausf_ue->session;
+    session = ausf_ue->sbi.session;
     ogs_assert(session);
     ogs_assert(recvmsg);
 
@@ -50,10 +50,12 @@ bool ausf_nausf_auth_handle_authenticate(
         return false;
     }
 
+    if (ausf_ue->serving_network_name)
+        ogs_free(ausf_ue->serving_network_name);
     ausf_ue->serving_network_name = ogs_strdup(serving_network_name);
-    ogs_assert(ausf_ue->serving_network_name);
 
-    ausf_nudm_ueau_discover_and_send_get(ausf_ue);
+    ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, ausf_ue, NULL,
+            ausf_nudm_ueau_build_get);
 
     return true;
 }
@@ -68,7 +70,7 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(
     uint8_t res_star[OGS_KEYSTRLEN(OGS_MAX_RES_LEN)];
 
     ogs_assert(ausf_ue);
-    session = ausf_ue->session;
+    session = ausf_ue->sbi.session;
     ogs_assert(session);
     ogs_assert(recvmsg);
 
@@ -100,7 +102,8 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(
         ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_SUCCESS;
     }
 
-    ausf_nudm_ueau_discover_and_send_result_confirmation_inform(ausf_ue);
+    ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, ausf_ue, NULL,
+            ausf_nudm_ueau_build_result_confirmation_inform);
 
     return true;
 }

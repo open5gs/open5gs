@@ -46,6 +46,7 @@ OpenAPI_amf_info_t *OpenAPI_amf_info_create(
 void OpenAPI_amf_info_free(OpenAPI_amf_info_t *amf_info);
 OpenAPI_amf_info_t *OpenAPI_amf_info_parseFromJSON(cJSON *amf_infoJSON);
 cJSON *OpenAPI_amf_info_convertToJSON(OpenAPI_amf_info_t *amf_info);
+OpenAPI_amf_info_t *OpenAPI_amf_info_copy(OpenAPI_amf_info_t *dst, OpenAPI_amf_info_t *src);
 
 #ifdef __cplusplus
 }

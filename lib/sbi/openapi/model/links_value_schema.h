@@ -29,6 +29,7 @@ OpenAPI_links_value_schema_t *OpenAPI_links_value_schema_create(
 void OpenAPI_links_value_schema_free(OpenAPI_links_value_schema_t *links_value_schema);
 OpenAPI_links_value_schema_t *OpenAPI_links_value_schema_parseFromJSON(cJSON *links_value_schemaJSON);
 cJSON *OpenAPI_links_value_schema_convertToJSON(OpenAPI_links_value_schema_t *links_value_schema);
+OpenAPI_links_value_schema_t *OpenAPI_links_value_schema_copy(OpenAPI_links_value_schema_t *dst, OpenAPI_links_value_schema_t *src);
 
 #ifdef __cplusplus
 }

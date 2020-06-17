@@ -26,6 +26,7 @@ OpenAPI_association_type_t *OpenAPI_association_type_create(
 void OpenAPI_association_type_free(OpenAPI_association_type_t *association_type);
 OpenAPI_association_type_t *OpenAPI_association_type_parseFromJSON(cJSON *association_typeJSON);
 cJSON *OpenAPI_association_type_convertToJSON(OpenAPI_association_type_t *association_type);
+OpenAPI_association_type_t *OpenAPI_association_type_copy(OpenAPI_association_type_t *dst, OpenAPI_association_type_t *src);
 
 #ifdef __cplusplus
 }

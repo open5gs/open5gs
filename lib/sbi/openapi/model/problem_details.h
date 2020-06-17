@@ -43,6 +43,7 @@ OpenAPI_problem_details_t *OpenAPI_problem_details_create(
 void OpenAPI_problem_details_free(OpenAPI_problem_details_t *problem_details);
 OpenAPI_problem_details_t *OpenAPI_problem_details_parseFromJSON(cJSON *problem_detailsJSON);
 cJSON *OpenAPI_problem_details_convertToJSON(OpenAPI_problem_details_t *problem_details);
+OpenAPI_problem_details_t *OpenAPI_problem_details_copy(OpenAPI_problem_details_t *dst, OpenAPI_problem_details_t *src);
 
 #ifdef __cplusplus
 }

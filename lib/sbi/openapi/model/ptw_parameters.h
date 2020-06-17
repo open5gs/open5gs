@@ -31,6 +31,7 @@ OpenAPI_ptw_parameters_t *OpenAPI_ptw_parameters_create(
 void OpenAPI_ptw_parameters_free(OpenAPI_ptw_parameters_t *ptw_parameters);
 OpenAPI_ptw_parameters_t *OpenAPI_ptw_parameters_parseFromJSON(cJSON *ptw_parametersJSON);
 cJSON *OpenAPI_ptw_parameters_convertToJSON(OpenAPI_ptw_parameters_t *ptw_parameters);
+OpenAPI_ptw_parameters_t *OpenAPI_ptw_parameters_copy(OpenAPI_ptw_parameters_t *dst, OpenAPI_ptw_parameters_t *src);
 
 #ifdef __cplusplus
 }

@@ -29,6 +29,7 @@ OpenAPI_snssai_info_t *OpenAPI_snssai_info_create(
 void OpenAPI_snssai_info_free(OpenAPI_snssai_info_t *snssai_info);
 OpenAPI_snssai_info_t *OpenAPI_snssai_info_parseFromJSON(cJSON *snssai_infoJSON);
 cJSON *OpenAPI_snssai_info_convertToJSON(OpenAPI_snssai_info_t *snssai_info);
+OpenAPI_snssai_info_t *OpenAPI_snssai_info_copy(OpenAPI_snssai_info_t *dst, OpenAPI_snssai_info_t *src);
 
 #ifdef __cplusplus
 }

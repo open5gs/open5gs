@@ -8,8 +8,8 @@ extern "C" {
 #endif
 
 typedef struct OpenAPI_binary_s {
-    uint8_t* data;
-    unsigned int len;
+    char* data;
+    int len;
 } OpenAPI_binary_t;
 
 OpenAPI_binary_t *OpenAPI_instantiate_binary_t(char *data, int len);

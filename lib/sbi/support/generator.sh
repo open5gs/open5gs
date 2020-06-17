@@ -11,3 +11,5 @@ $openapi_generator_cli generate -i ./modified/TS29509_Nausf_UEAuthentication.yam
 $openapi_generator_cli generate -i ./modified/TS29510_Nnrf_NFDiscovery.yaml -c ../openapi/.openapi-generator/config.yaml -g c -o ../openapi
 $openapi_generator_cli generate -i ./modified/TS29510_Nnrf_NFManagement.yaml -c ../openapi/.openapi-generator/config.yaml -g c -o ../openapi
 $openapi_generator_cli generate -i ./modified/TS29504_Nudr_DR.yaml -c ../openapi/.openapi-generator/config.yaml -g c -o ../openapi
+$openapi_generator_cli generate -i ./modified/TS29502_Nsmf_PDUSession.yaml -c ../openapi/.openapi-generator/config.yaml -g c -o ../openapi
+$openapi_generator_cli generate -i ./modified/TS29518_Namf_Communication.yaml -c ../openapi/.openapi-generator/config.yaml -g c -o ../openapi

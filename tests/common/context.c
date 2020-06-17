@@ -415,14 +415,13 @@ int test_context_parse_config(void)
 
                                     if (sst) {
                                         s_nssai->sst = atoi(sst);
-                                        if (sd) {
+                                        if (sd)
                                             s_nssai->sd =
                                                 ogs_uint24_from_string(
                                                         (char*)sd);
-                                        } else {
+                                        else
                                             s_nssai->sd.v =
                                                 OGS_S_NSSAI_NO_SD_VALUE;
-                                        }
 
                                         self.plmn_support[
                                             self.num_of_plmn_support].
@@ -472,13 +471,13 @@ void test_ue_set_mobile_identity(test_ue_t *test_ue,
 
     if (test_ue->suci)
         ogs_free(test_ue->suci);
-    test_ue->suci = ogs_nas_5gs_ueid_from_mobile_identity(mobile_identity);
+    test_ue->suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
     if (test_ue->supi)
         ogs_free(test_ue->supi);
     test_ue->supi = ogs_supi_from_suci(test_ue->suci);
     if (test_ue->imsi)
         ogs_free(test_ue->imsi);
-    test_ue->imsi = ogs_ueid_from_supi(test_ue->supi);
+    test_ue->imsi = ogs_supi_get_id(test_ue->supi);
 }
 
 void test_ue_remove(test_ue_t *test_ue)

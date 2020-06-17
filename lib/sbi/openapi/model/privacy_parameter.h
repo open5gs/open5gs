@@ -32,6 +32,7 @@ OpenAPI_privacy_parameter_t *OpenAPI_privacy_parameter_create(
 void OpenAPI_privacy_parameter_free(OpenAPI_privacy_parameter_t *privacy_parameter);
 OpenAPI_privacy_parameter_t *OpenAPI_privacy_parameter_parseFromJSON(cJSON *privacy_parameterJSON);
 cJSON *OpenAPI_privacy_parameter_convertToJSON(OpenAPI_privacy_parameter_t *privacy_parameter);
+OpenAPI_privacy_parameter_t *OpenAPI_privacy_parameter_copy(OpenAPI_privacy_parameter_t *dst, OpenAPI_privacy_parameter_t *src);
 
 #ifdef __cplusplus
 }

@@ -17,15 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_pdu_session_type_s OpenAPI_pdu_session_type_t;
-typedef struct OpenAPI_pdu_session_type_s {
-} OpenAPI_pdu_session_type_t;
+typedef enum { OpenAPI_pdu_session_type_NULL = 0, OpenAPI_pdu_session_type_IPV4, OpenAPI_pdu_session_type_IPV6, OpenAPI_pdu_session_type_IPV4V6, OpenAPI_pdu_session_type_UNSTRUCTURED, OpenAPI_pdu_session_type_ETHERNET } OpenAPI_pdu_session_type_e;
 
-OpenAPI_pdu_session_type_t *OpenAPI_pdu_session_type_create(
-    );
-void OpenAPI_pdu_session_type_free(OpenAPI_pdu_session_type_t *pdu_session_type);
-OpenAPI_pdu_session_type_t *OpenAPI_pdu_session_type_parseFromJSON(cJSON *pdu_session_typeJSON);
-cJSON *OpenAPI_pdu_session_type_convertToJSON(OpenAPI_pdu_session_type_t *pdu_session_type);
+char* OpenAPI_pdu_session_type_ToString(OpenAPI_pdu_session_type_e pdu_session_type);
+
+OpenAPI_pdu_session_type_e OpenAPI_pdu_session_type_FromString(char* pdu_session_type);
 
 #ifdef __cplusplus
 }

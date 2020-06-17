@@ -33,7 +33,7 @@ extern "C" {
 void ogs_nas_5gs_imsi_to_bcd(
     ogs_nas_5gs_mobile_identity_t *mobile_identity, char *bcd);
 
-char *ogs_nas_5gs_ueid_from_mobile_identity(
+char *ogs_nas_5gs_suci_from_mobile_identity(
         ogs_nas_5gs_mobile_identity_t *mobile_identity);
 
 #ifdef __cplusplus

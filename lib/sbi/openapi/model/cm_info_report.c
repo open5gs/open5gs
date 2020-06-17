@@ -154,3 +154,37 @@ end:
     return NULL;
 }
 
+OpenAPI_cm_info_report_t *OpenAPI_cm_info_report_copy(OpenAPI_cm_info_report_t *dst, OpenAPI_cm_info_report_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_cm_info_report_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_cm_info_report_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_cm_info_report_free(dst);
+    dst = OpenAPI_cm_info_report_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

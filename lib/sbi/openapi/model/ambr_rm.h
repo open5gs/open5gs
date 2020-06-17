@@ -30,6 +30,7 @@ OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_create(
 void OpenAPI_ambr_rm_free(OpenAPI_ambr_rm_t *ambr_rm);
 OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_parseFromJSON(cJSON *ambr_rmJSON);
 cJSON *OpenAPI_ambr_rm_convertToJSON(OpenAPI_ambr_rm_t *ambr_rm);
+OpenAPI_ambr_rm_t *OpenAPI_ambr_rm_copy(OpenAPI_ambr_rm_t *dst, OpenAPI_ambr_rm_t *src);
 
 #ifdef __cplusplus
 }

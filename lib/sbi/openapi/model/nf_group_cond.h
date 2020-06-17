@@ -35,6 +35,7 @@ OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_create(
 void OpenAPI_nf_group_cond_free(OpenAPI_nf_group_cond_t *nf_group_cond);
 OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_parseFromJSON(cJSON *nf_group_condJSON);
 cJSON *OpenAPI_nf_group_cond_convertToJSON(OpenAPI_nf_group_cond_t *nf_group_cond);
+OpenAPI_nf_group_cond_t *OpenAPI_nf_group_cond_copy(OpenAPI_nf_group_cond_t *dst, OpenAPI_nf_group_cond_t *src);
 
 #ifdef __cplusplus
 }

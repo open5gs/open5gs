@@ -30,7 +30,8 @@ bool udm_nudr_dr_handle_subscription_authentication(
     ogs_sbi_response_t *response = NULL;
 
 #if 0
-    const char *tmp = "4d45b0eeb8386b629f136968837a7b0b"; /* For test */
+    const char *tmp = "de8ca9df474091fe4e9263c5daa907e9";
+    const char *tmp = "cc3766b98a8031a7286a68c7f577ed2e"; /* For test */
 #endif
     uint8_t k[OGS_KEY_LEN];
     uint8_t opc[OGS_KEY_LEN];
@@ -54,10 +55,9 @@ bool udm_nudr_dr_handle_subscription_authentication(
     OpenAPI_authentication_subscription_t *AuthenticationSubscription = NULL;
     OpenAPI_authentication_info_result_t AuthenticationInfoResult;
     OpenAPI_authentication_vector_t AuthenticationVector;
-    OpenAPI_auth_event_t *AuthEvent = NULL;
 
     ogs_assert(udm_ue);
-    session = udm_ue->session;
+    session = udm_ue->sbi.session;
     ogs_assert(session);
     server = ogs_sbi_session_get_server(session);
     ogs_assert(server);
@@ -212,37 +212,27 @@ bool udm_nudr_dr_handle_subscription_authentication(
         return true;
 
     CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS)
-
         memset(&sendmsg, 0, sizeof(sendmsg));
-
-        AuthEvent = ogs_calloc(1, sizeof(*AuthEvent));
-        ogs_assert(AuthEvent);
-
-        AuthEvent->nf_instance_id = udm_ue->ausf_instance_id;
-        AuthEvent->success = udm_ue->auth_success;
-        AuthEvent->auth_type = udm_ue->auth_type;
-        AuthEvent->serving_network_name = udm_ue->serving_network_name;
-        AuthEvent->time_stamp = udm_ue->auth_timestamp;
-
-        sendmsg.AuthEvent = AuthEvent;
 
         memset(&header, 0, sizeof(header));
         header.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UEAU;
-        header.api.version = (char *)OGS_SBI_API_VERSION;
+        header.api.version = (char *)OGS_SBI_API_V1;
         header.resource.component[0] = udm_ue->supi;
         header.resource.component[1] =
             (char *)OGS_SBI_RESOURCE_NAME_AUTH_EVENTS;
         header.resource.component[2] = udm_ue->ctx_id;
 
         sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+        sendmsg.AuthEvent = OpenAPI_auth_event_copy(
+                sendmsg.AuthEvent, udm_ue->auth_event);
 
         response = ogs_sbi_build_response(&sendmsg,
                 OGS_SBI_HTTP_STATUS_CREATED);
         ogs_assert(response);
         ogs_sbi_server_send_response(session, response);
 
-        ogs_free(AuthEvent);
         ogs_free(sendmsg.http.location);
+        OpenAPI_auth_event_free(sendmsg.AuthEvent);
 
         return true;
 
@@ -252,4 +242,157 @@ bool udm_nudr_dr_handle_subscription_authentication(
     END
 
     return false;
+}
+
+bool udm_nudr_dr_handle_subscription_context(
+        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
+{
+    ogs_sbi_server_t *server = NULL;
+    ogs_sbi_session_t *session = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_header_t header;
+    ogs_sbi_response_t *response = NULL;
+
+    int status;
+
+    OpenAPI_amf3_gpp_access_registration_t *Amf3GppAccessRegistration = NULL;
+
+    ogs_assert(udm_ue);
+    session = udm_ue->sbi.session;
+    ogs_assert(session);
+    server = ogs_sbi_session_get_server(session);
+    ogs_assert(server);
+
+    ogs_assert(recvmsg);
+
+    SWITCH(recvmsg->h.resource.component[3])
+    CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
+        Amf3GppAccessRegistration = udm_ue->amf_3gpp_access_registration;
+        if (!Amf3GppAccessRegistration) {
+            ogs_error("[%s] No Amf3GppAccessRegistration", udm_ue->supi);
+            ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No Amf3GppAccessRegistration", udm_ue->supi);
+            return false;
+        }
+
+        if (!Amf3GppAccessRegistration->amf_instance_id) {
+            ogs_error("[%s] No amfInstanceId", udm_ue->supi);
+            ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No amfInstanceId", udm_ue->supi);
+            return false;
+        }
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        memset(&header, 0, sizeof(header));
+        header.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_UECM;
+        header.api.version = (char *)OGS_SBI_API_V1;
+        header.resource.component[0] = udm_ue->supi;
+        header.resource.component[1] =
+            (char *)OGS_SBI_RESOURCE_NAME_REGISTRATIONS;
+        header.resource.component[2] =
+            (char *)OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS;
+
+        if (udm_ue->amf_instance_id &&
+            strcmp(udm_ue->amf_instance_id,
+                Amf3GppAccessRegistration->amf_instance_id) == 0)
+            status = OGS_SBI_HTTP_STATUS_OK;
+        else
+            status = OGS_SBI_HTTP_STATUS_CREATED;
+
+        if (status == OGS_SBI_HTTP_STATUS_CREATED)
+            sendmsg.http.location = ogs_sbi_server_uri(server, &header);
+
+        sendmsg.Amf3GppAccessRegistration =
+            OpenAPI_amf3_gpp_access_registration_copy(
+                sendmsg.Amf3GppAccessRegistration,
+                    udm_ue->amf_3gpp_access_registration);
+
+        response = ogs_sbi_build_response(&sendmsg, status);
+        ogs_assert(response);
+        ogs_sbi_server_send_response(session, response);
+
+        ogs_free(sendmsg.http.location);
+        OpenAPI_amf3_gpp_access_registration_free(
+                sendmsg.Amf3GppAccessRegistration);
+        return true;
+
+    DEFAULT
+        ogs_error("Invalid resource name [%s]",
+                recvmsg->h.resource.component[3]);
+    END
+
+    return false;
+}
+
+bool udm_nudr_dr_handle_subscription_provisioned(
+        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
+{
+    ogs_sbi_server_t *server = NULL;
+    ogs_sbi_session_t *session = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_assert(udm_ue);
+    session = udm_ue->sbi.session;
+    ogs_assert(session);
+    server = ogs_sbi_session_get_server(session);
+    ogs_assert(server);
+
+    ogs_assert(recvmsg);
+
+    SWITCH(recvmsg->h.resource.component[4])
+    CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        if (recvmsg->AccessAndMobilitySubscriptionData)
+            sendmsg.AccessAndMobilitySubscriptionData =
+                OpenAPI_access_and_mobility_subscription_data_copy(
+                    sendmsg.AccessAndMobilitySubscriptionData,
+                        recvmsg->AccessAndMobilitySubscriptionData);
+
+        response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
+        ogs_assert(response);
+        ogs_sbi_server_send_response(session, response);
+
+        OpenAPI_access_and_mobility_subscription_data_free(
+                sendmsg.AccessAndMobilitySubscriptionData);
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
+        ogs_assert(response);
+        ogs_sbi_server_send_response(session, response);
+
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        if (recvmsg->SessionManagementSubscriptionData)
+            sendmsg.SessionManagementSubscriptionData =
+                OpenAPI_session_management_subscription_data_copy(
+                    sendmsg.SessionManagementSubscriptionData,
+                        recvmsg->SessionManagementSubscriptionData);
+
+        response = ogs_sbi_build_response(&sendmsg, recvmsg->res_status);
+        ogs_assert(response);
+        ogs_sbi_server_send_response(session, response);
+
+        OpenAPI_session_management_subscription_data_free(
+                sendmsg.SessionManagementSubscriptionData);
+
+        break;
+
+    DEFAULT
+        ogs_error("Invalid resource name [%s]",
+                recvmsg->h.resource.component[3]);
+        return false;
+    END
+
+    return true;
 }

@@ -35,6 +35,7 @@ OpenAPI_location_area_t *OpenAPI_location_area_create(
 void OpenAPI_location_area_free(OpenAPI_location_area_t *location_area);
 OpenAPI_location_area_t *OpenAPI_location_area_parseFromJSON(cJSON *location_areaJSON);
 cJSON *OpenAPI_location_area_convertToJSON(OpenAPI_location_area_t *location_area);
+OpenAPI_location_area_t *OpenAPI_location_area_copy(OpenAPI_location_area_t *dst, OpenAPI_location_area_t *src);
 
 #ifdef __cplusplus
 }

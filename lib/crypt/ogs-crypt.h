@@ -37,6 +37,7 @@
 #include "crypt/kasumi.h"
 
 #include "crypt/ogs-kdf.h"
+#include "crypt/ogs-base64.h"
 
 #undef OGS_CRYPT_INSIDE
 

@@ -34,6 +34,7 @@ OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_create(
 void OpenAPI_acknowledge_info_free(OpenAPI_acknowledge_info_t *acknowledge_info);
 OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_parseFromJSON(cJSON *acknowledge_infoJSON);
 cJSON *OpenAPI_acknowledge_info_convertToJSON(OpenAPI_acknowledge_info_t *acknowledge_info);
+OpenAPI_acknowledge_info_t *OpenAPI_acknowledge_info_copy(OpenAPI_acknowledge_info_t *dst, OpenAPI_acknowledge_info_t *src);
 
 #ifdef __cplusplus
 }

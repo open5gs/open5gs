@@ -46,13 +46,24 @@ libsmf_sources = files('''
     bearer-binding.h
     nnrf-build.h
     nnrf-handler.h
+    nudm-build.h
+    nudm-handler.h
+    namf-build.h
     sbi-path.h
+    gsm-build.h
+    gsm-handler.h
+    nas-path.h
+    ngap-build.h
+    ngap-handler.h
+    ngap-path.h
 
     init.c
     event.c
     timer.c
     context.c
     smf-sm.c
+    nf-sm.c
+    gsm-sm.c
     pfcp-sm.c
     gtp-path.c
     s5c-build.c
@@ -65,8 +76,17 @@ libsmf_sources = files('''
     bearer-binding.c
     nnrf-build.c
     nnrf-handler.c
+    nudm-build.c
+    nudm-handler.c
+    nsmf-handler.c
+    namf-build.c
     sbi-path.c
-    nf-sm.c
+    gsm-build.c
+    gsm-handler.c
+    nas-path.c
+    ngap-build.c
+    ngap-handler.c
+    ngap-path.c
 '''.split())
 
 libsmf = static_library('smf',
@@ -74,6 +94,8 @@ libsmf = static_library('smf',
     link_with : libipfw,
     dependencies : [libapp_dep,
                     libsbi_dep,
+                    libngap_dep,
+                    libnas_5gs_dep,
                     libdiameter_gx_dep,
                     libgtp_dep,
                     libpfcp_dep,
@@ -84,6 +106,8 @@ libsmf_dep = declare_dependency(
     link_with : libsmf,
     dependencies : [libapp_dep,
                     libsbi_dep,
+                    libngap_dep,
+                    libnas_5gs_dep,
                     libdiameter_gx_dep,
                     libgtp_dep,
                     libpfcp_dep,

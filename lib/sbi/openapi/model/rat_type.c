@@ -4,48 +4,27 @@
 #include <stdio.h>
 #include "rat_type.h"
 
-OpenAPI_rat_type_t *OpenAPI_rat_type_create(
-    )
+char* OpenAPI_rat_type_ToString(OpenAPI_rat_type_e rat_type)
 {
-    OpenAPI_rat_type_t *rat_type_local_var = OpenAPI_malloc(sizeof(OpenAPI_rat_type_t));
-    if (!rat_type_local_var) {
-        return NULL;
-    }
-
-    return rat_type_local_var;
+    const char *rat_typeArray[] =  { "NULL", "NR", "EUTRA", "WLAN", "VIRTUAL", "NBIOT", "WIRELINE", "WIRELINE_CABLE", "WIRELINE_DSL", "WIRELINE_PON", "LTE_M", "NR_U", "EUTRA_U", "TRUSTED_N3GA", "TRUSTED_WLAN", "UTRA", "GERA" };
+    size_t sizeofArray = sizeof(rat_typeArray) / sizeof(rat_typeArray[0]);
+    if (rat_type < sizeofArray)
+        return (char *)rat_typeArray[rat_type];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_rat_type_free(OpenAPI_rat_type_t *rat_type)
+OpenAPI_rat_type_e OpenAPI_rat_type_FromString(char* rat_type)
 {
-    if (NULL == rat_type) {
-        return;
+    int stringToReturn = 0;
+    const char *rat_typeArray[] =  { "NULL", "NR", "EUTRA", "WLAN", "VIRTUAL", "NBIOT", "WIRELINE", "WIRELINE_CABLE", "WIRELINE_DSL", "WIRELINE_PON", "LTE_M", "NR_U", "EUTRA_U", "TRUSTED_N3GA", "TRUSTED_WLAN", "UTRA", "GERA" };
+    size_t sizeofArray = sizeof(rat_typeArray) / sizeof(rat_typeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(rat_type, rat_typeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(rat_type);
-}
-
-cJSON *OpenAPI_rat_type_convertToJSON(OpenAPI_rat_type_t *rat_type)
-{
-    cJSON *item = NULL;
-
-    if (rat_type == NULL) {
-        ogs_error("OpenAPI_rat_type_convertToJSON() failed [RatType]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_rat_type_t *OpenAPI_rat_type_parseFromJSON(cJSON *rat_typeJSON)
-{
-    OpenAPI_rat_type_t *rat_type_local_var = NULL;
-    rat_type_local_var = OpenAPI_rat_type_create (
-        );
-
-    return rat_type_local_var;
-end:
-    return NULL;
+    return 0;
 }
 

@@ -218,7 +218,7 @@ bool ausf_nnrf_handle_nf_status_notify(
 }
 
 void ausf_nnrf_handle_nf_discover(
-        ausf_ue_t *ausf_ue, ogs_sbi_message_t *message)
+        ogs_sbi_object_t *sbi_object, ogs_sbi_message_t *message)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_session_t *session = NULL;
@@ -227,8 +227,8 @@ void ausf_nnrf_handle_nf_discover(
     OpenAPI_lnode_t *node = NULL;
     bool handled;
 
-    ogs_assert(ausf_ue);
-    session = ausf_ue->session;
+    ogs_assert(sbi_object);
+    session = sbi_object->session;
     ogs_assert(session);
     ogs_assert(message);
 
@@ -281,9 +281,9 @@ void ausf_nnrf_handle_nf_discover(
             ausf_sbi_setup_client_callback(nf_instance);
 
             if (!OGS_SBI_NF_INSTANCE_GET(
-                        ausf_ue->nf_types, nf_instance->nf_type))
-                ogs_sbi_nf_types_associate(ausf_ue->nf_types,
-                        nf_instance->nf_type, ausf_nf_state_registered);
+                        sbi_object->nf_types, nf_instance->nf_type))
+                ogs_sbi_nf_types_associate(sbi_object->nf_types,
+                        nf_instance->nf_type, sbi_object->nf_state_registered);
 
             /* TIME : Update validity from NRF */
             if (SearchResult->validity_period) {
@@ -301,28 +301,17 @@ void ausf_nnrf_handle_nf_discover(
         }
     }
 
+    ogs_assert(sbi_object->nf_type);
     nf_instance = OGS_SBI_NF_INSTANCE_GET(
-            ausf_ue->nf_types, OpenAPI_nf_type_UDM);
+            sbi_object->nf_types, sbi_object->nf_type);
     if (!nf_instance) {
-        ogs_error("[%s] (NF discover) No UDM", ausf_ue->suci);
+        ogs_error("(NF discover) No [%s]",
+                OpenAPI_nf_type_ToString(sbi_object->nf_type));
         ogs_sbi_server_send_error(session,
                 OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE, NULL,
-                "(NF discover) No UDM", ausf_ue->suci);
-        ausf_ue_remove(ausf_ue);
+                "(NF discover) No NF",
+                OpenAPI_nf_type_ToString(sbi_object->nf_type));
     } else {
-        ogs_assert(ausf_ue->state.method);
-        SWITCH(ausf_ue->state.method)
-        CASE(OGS_SBI_HTTP_METHOD_POST)
-            ausf_nudm_ueau_send_get(ausf_ue, nf_instance);
-            break;
-        CASE(OGS_SBI_HTTP_METHOD_PUT)
-            ausf_nudm_ueau_send_result_confirmation_inform(
-                    ausf_ue, nf_instance);
-            break;
-        DEFAULT
-            ogs_fatal("[%s] Unknown state [%s]",
-                    ausf_ue->suci, ausf_ue->state.method);
-            ogs_assert_if_reached();
-        END
+        ogs_sbi_send(sbi_object, nf_instance);
     }
 }

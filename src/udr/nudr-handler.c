@@ -30,15 +30,13 @@ bool udr_nudr_dr_handle_subscription_authentication(
     ogs_sbi_response_t *response = NULL;
     ogs_dbi_auth_info_t auth_info;
 
-    const char *id_type = NULL;
-    const char *ue_id = NULL;
-
     char k_string[OGS_KEYSTRLEN(OGS_KEY_LEN)];
     char opc_string[OGS_KEYSTRLEN(OGS_KEY_LEN)];
     char amf_string[OGS_KEYSTRLEN(OGS_AMF_LEN)];
     char sqn_string[OGS_KEYSTRLEN(OGS_SQN_LEN)];
 
     char sqn[OGS_SQN_LEN];
+    char *supi = NULL;
 
     OpenAPI_authentication_subscription_t AuthenticationSubscription;
     OpenAPI_sequence_number_t SequenceNumber;
@@ -47,31 +45,27 @@ bool udr_nudr_dr_handle_subscription_authentication(
     ogs_assert(session);
     ogs_assert(recvmsg);
 
-    if (!recvmsg->h.resource.component[1]) {
-        ogs_error("No ueId");
+    supi = recvmsg->h.resource.component[1];
+    if (!supi) {
+        ogs_error("No SUPI");
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                recvmsg, "No ueId", NULL);
+                recvmsg, "No SUPI", NULL);
         return false;
     }
 
-    if (strncmp(recvmsg->h.resource.component[1],
-            OGS_DBI_UE_ID_TYPE_IMSI, strlen(OGS_DBI_UE_ID_TYPE_IMSI)) == 0) {
-        id_type = OGS_DBI_UE_ID_TYPE_IMSI;
-        ue_id = recvmsg->h.resource.component[1] +
-            strlen(OGS_DBI_UE_ID_TYPE_IMSI) + 1;
-    } else {
-        ogs_error("Unknown ueId Type");
+    if (strncmp(supi,
+            OGS_DBI_SUPI_TYPE_IMSI, strlen(OGS_DBI_SUPI_TYPE_IMSI)) != 0) {
+        ogs_error("[%s] Unknown SUPI Type", supi);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
-                recvmsg, "Unknwon ueId Type", NULL);
+                recvmsg, "Unknwon SUPI Type", supi);
         return false;
     }
 
-    rv = ogs_dbi_auth_info(id_type, ue_id, &auth_info);
+    rv = ogs_dbi_auth_info(supi, &auth_info);
     if (rv != OGS_OK) {
-        ogs_fatal("Cannot find IMSI in DB : %s-%s", id_type, ue_id);
-        ogs_sbi_server_send_error(session,
-                OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                recvmsg, "Unknwon ueId Type", ue_id);
+        ogs_fatal("[%s] Cannot find SUPI in DB", supi);
+        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                recvmsg, "Cannot find SUPI Type", supi);
         return false;
     }
 
@@ -135,20 +129,20 @@ bool udr_nudr_dr_handle_subscription_authentication(
         CASE(OGS_SBI_HTTP_METHOD_PUT)
             AuthEvent = recvmsg->AuthEvent;
             if (!AuthEvent) {
-                ogs_error("[%s-%s] No AuthEvent", id_type, ue_id);
+                ogs_error("[%s] No AuthEvent", supi);
                 ogs_sbi_server_send_error(
                         session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                        recvmsg, "No AuthEvent", ue_id);
+                        recvmsg, "No AuthEvent", supi);
                 return false;
             }
 
             memset(&sendmsg, 0, sizeof(sendmsg));
-            rv = ogs_dbi_increment_sqn(id_type, ue_id);
+            rv = ogs_dbi_increment_sqn(supi);
             if (rv != OGS_OK) {
-                ogs_fatal("Cannot increment SQN : %s-%s", id_type, ue_id);
+                ogs_fatal("[%s] Cannot increment SQN", supi);
                 ogs_sbi_server_send_error(session,
                         OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                        recvmsg, "Cannot increment SQN", ue_id);
+                        recvmsg, "Cannot increment SQN", supi);
                 return false;
             }
 
@@ -177,4 +171,424 @@ bool udr_nudr_dr_handle_subscription_authentication(
     END
 
     return false;
+}
+
+bool udr_nudr_dr_handle_subscription_context(
+        ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    char *supi = NULL;
+
+    ogs_assert(session);
+    ogs_assert(recvmsg);
+
+    supi = recvmsg->h.resource.component[1];
+    if (!supi) {
+        ogs_error("No SUPI");
+        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No SUPI", NULL);
+        return false;
+    }
+
+    if (strncmp(supi,
+            OGS_DBI_SUPI_TYPE_IMSI, strlen(OGS_DBI_SUPI_TYPE_IMSI)) != 0) {
+        ogs_error("[%s] Unknown SUPI Type", supi);
+        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                recvmsg, "Unknwon SUPI Type", supi);
+        return false;
+    }
+
+    SWITCH(recvmsg->h.resource.component[3])
+    CASE(OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS)
+        SWITCH(recvmsg->h.method)
+        CASE(OGS_SBI_HTTP_METHOD_PUT)
+            memset(&sendmsg, 0, sizeof(sendmsg));
+
+            response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            ogs_assert(response);
+            ogs_sbi_server_send_response(session, response);
+
+            return true;
+
+        DEFAULT
+            ogs_error("Invalid HTTP method [%s]", recvmsg->h.method);
+            ogs_sbi_server_send_error(session,
+                    OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
+                    recvmsg, "Invalid HTTP method", recvmsg->h.method);
+        END
+        break;
+
+    DEFAULT
+        ogs_error("Invalid resource name [%s]",
+                recvmsg->h.resource.component[3]);
+        ogs_sbi_server_send_error(session,
+                OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
+                recvmsg, "Unknown resource name",
+                recvmsg->h.resource.component[3]);
+    END
+
+    return false;
+}
+
+static OpenAPI_pdu_session_type_e pdu_session_type_from_dbi(uint8_t pdn_type)
+{
+    if (pdn_type == OGS_DIAM_PDN_TYPE_IPV4)
+        return OpenAPI_pdu_session_type_IPV4;
+    else if (pdn_type == OGS_DIAM_PDN_TYPE_IPV6)
+        return OpenAPI_pdu_session_type_IPV6;
+    else if (pdn_type == OGS_DIAM_PDN_TYPE_IPV4V6)
+        return OpenAPI_pdu_session_type_IPV4V6;
+    else {
+        ogs_fatal("Unsupported PDN_TYPE[%d]", pdn_type);
+        ogs_assert_if_reached();
+    }
+}
+
+bool udr_nudr_dr_handle_subscription_provisioned(
+        ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
+{
+    int rv, i;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+    ogs_dbi_subscription_data_t subscription_data;
+
+    char *supi = NULL;
+
+    ogs_assert(session);
+    ogs_assert(recvmsg);
+
+    supi = recvmsg->h.resource.component[1];
+    if (!supi) {
+        ogs_error("No SUPI");
+        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No SUPI", NULL);
+        return false;
+    }
+
+    if (strncmp(supi,
+            OGS_DBI_SUPI_TYPE_IMSI, strlen(OGS_DBI_SUPI_TYPE_IMSI)) != 0) {
+        ogs_error("[%s] Unknown SUPI Type", supi);
+        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
+                recvmsg, "Unknwon SUPI Type", supi);
+        return false;
+    }
+
+    rv = ogs_dbi_subscription_data(supi, &subscription_data);
+    if (rv != OGS_OK) {
+        ogs_error("[%s] Cannot find SUPI in DB", supi);
+        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                recvmsg, "Cannot find SUPI Type", supi);
+        return false;
+    }
+
+    SWITCH(recvmsg->h.resource.component[4])
+    CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
+        OpenAPI_access_and_mobility_subscription_data_t
+            AccessAndMobilitySubscriptionData;
+        OpenAPI_ambr_rm_t subscribed_ue_ambr;
+
+        subscribed_ue_ambr.uplink = ogs_sbi_bitrate_to_string(
+                subscription_data.ambr.uplink, OGS_SBI_BITRATE_KBPS);
+        subscribed_ue_ambr.downlink = ogs_sbi_bitrate_to_string(
+                subscription_data.ambr.downlink, OGS_SBI_BITRATE_KBPS);
+
+        memset(&AccessAndMobilitySubscriptionData, 0,
+                sizeof(AccessAndMobilitySubscriptionData));
+        AccessAndMobilitySubscriptionData.subscribed_ue_ambr =
+            &subscribed_ue_ambr;
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.AccessAndMobilitySubscriptionData =
+            &AccessAndMobilitySubscriptionData;
+
+        response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+        ogs_assert(response);
+        ogs_sbi_server_send_response(session, response);
+
+        ogs_free(subscribed_ue_ambr.uplink);
+        ogs_free(subscribed_ue_ambr.downlink);
+
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+        ogs_assert(response);
+        ogs_sbi_server_send_response(session, response);
+
+        break;
+
+    CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
+        OpenAPI_session_management_subscription_data_t
+            SessionManagementSubscriptionData;
+        OpenAPI_snssai_t singleNSSAI;
+        OpenAPI_list_t *dnnConfigurationList = NULL;
+        OpenAPI_map_t *dnnConfigurationMap = NULL;
+        OpenAPI_dnn_configuration_t *dnnConfiguration = NULL;
+        OpenAPI_pdu_session_types_t *pduSessionTypeList = NULL;
+        OpenAPI_ssc_modes_t *sscModeList = NULL;
+        OpenAPI_subscribed_default_qos_t *_5gQoSProfile = NULL;
+        OpenAPI_ambr_t *sessionAmbr = NULL;
+        OpenAPI_list_t *staticIpAddress = NULL;
+        OpenAPI_ip_address_t *ipAddress = NULL;
+        OpenAPI_lnode_t *node = NULL, *node2 = NULL;
+
+        if (!recvmsg->param.s_nssai_presence) {
+            ogs_error("[%s] Cannot find S_NSSAI", supi);
+            ogs_sbi_server_send_error(session,
+                    OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                    recvmsg, "Cannot find S_NSSAI", supi);
+            return false;
+        }
+
+        singleNSSAI.sst = recvmsg->param.s_nssai.sst;
+        singleNSSAI.sd = ogs_s_nssai_sd_to_string(recvmsg->param.s_nssai.sd);
+
+        dnnConfigurationList = OpenAPI_list_create();
+
+        for (i = 0; i < subscription_data.num_of_pdn; i++) {
+            ogs_pdn_t *pdn = &subscription_data.pdn[i];
+            ogs_assert(pdn);
+
+            if (recvmsg->param.dnn &&
+                    strcmp(recvmsg->param.dnn, pdn->apn) != 0) continue;
+
+            if (!pdn->qos.qci) {
+                ogs_error("No QCI");
+                continue;
+            }
+            if (!pdn->qos.arp.priority_level) {
+                ogs_error("No Priority Level");
+                continue;
+            }
+
+            if (!pdn->ambr.uplink && !pdn->ambr.downlink) {
+                if (!subscription_data.ambr.uplink &&
+                        subscription_data.ambr.downlink) {
+                    ogs_error("No Session-AMBR");
+                    ogs_error("No UE-AMBR");
+                    continue;
+                }
+
+                pdn->ambr.uplink = subscription_data.ambr.uplink;
+                pdn->ambr.downlink = subscription_data.ambr.downlink;
+                ogs_warn("No Session-AMBR : Set UE-AMBR to Session-AMBR "
+                        "[DL-%lld:UL-%lld]",
+                        (long long)pdn->ambr.downlink,
+                        (long long)pdn->ambr.uplink);
+            }
+
+            dnnConfiguration = ogs_calloc(1, sizeof(*dnnConfiguration));
+            ogs_assert(dnnConfiguration);
+
+            pduSessionTypeList = ogs_calloc(1, sizeof(*pduSessionTypeList));
+            ogs_assert(pduSessionTypeList);
+            pduSessionTypeList->default_session_type =
+                pdu_session_type_from_dbi(pdn->pdn_type);
+
+            pduSessionTypeList->allowed_session_types = OpenAPI_list_create();
+            ogs_assert(pduSessionTypeList->allowed_session_types);
+            switch (pduSessionTypeList->default_session_type) {
+            case OpenAPI_pdu_session_type_IPV4:
+                OpenAPI_list_add(pduSessionTypeList->allowed_session_types,
+                        (void *)OpenAPI_pdu_session_type_IPV4);
+                break;
+            case OpenAPI_pdu_session_type_IPV6:
+                OpenAPI_list_add(pduSessionTypeList->allowed_session_types,
+                        (void *)OpenAPI_pdu_session_type_IPV6);
+                break;
+            case OpenAPI_pdu_session_type_IPV4V6:
+                OpenAPI_list_add(pduSessionTypeList->allowed_session_types,
+                        (void *)OpenAPI_pdu_session_type_IPV4);
+                OpenAPI_list_add(pduSessionTypeList->allowed_session_types,
+                        (void *)OpenAPI_pdu_session_type_IPV6);
+                OpenAPI_list_add(pduSessionTypeList->allowed_session_types,
+                        (void *)OpenAPI_pdu_session_type_IPV4V6);
+                break;
+            default:
+                ogs_fatal("Unsupported PDN_TYPE[%d]",
+                        pduSessionTypeList->default_session_type);
+                ogs_assert_if_reached();
+            }
+
+            dnnConfiguration->pdu_session_types = pduSessionTypeList;
+
+            sscModeList = ogs_calloc(1, sizeof(*sscModeList));
+            ogs_assert(sscModeList);
+            sscModeList->default_ssc_mode = OpenAPI_ssc_mode_SSC_MODE_1;
+
+            sscModeList->allowed_ssc_modes = OpenAPI_list_create();
+            ogs_assert(sscModeList->allowed_ssc_modes);
+            OpenAPI_list_add(sscModeList->allowed_ssc_modes,
+                    (void *)OpenAPI_ssc_mode_SSC_MODE_1);
+            OpenAPI_list_add(sscModeList->allowed_ssc_modes,
+                    (void *)OpenAPI_ssc_mode_SSC_MODE_2);
+            OpenAPI_list_add(sscModeList->allowed_ssc_modes,
+                    (void *)OpenAPI_ssc_mode_SSC_MODE_3);
+
+            dnnConfiguration->ssc_modes = sscModeList;
+
+            _5gQoSProfile = ogs_calloc(1, sizeof(*_5gQoSProfile));
+            ogs_assert(_5gQoSProfile);
+            _5gQoSProfile->_5qi = pdn->qos.qci;
+            _5gQoSProfile->priority_level = pdn->qos.arp.priority_level;
+            _5gQoSProfile->arp = ogs_calloc(1, sizeof(OpenAPI_arp_t));
+            ogs_assert(_5gQoSProfile->arp);
+            _5gQoSProfile->arp->priority_level = pdn->qos.arp.priority_level;
+            if (pdn->qos.arp.pre_emption_capability ==
+                    OGS_PDN_PRE_EMPTION_CAPABILITY_DISABLED)
+                _5gQoSProfile->arp->preempt_cap =
+                        OpenAPI_preemption_capability_NOT_PREEMPT;
+            else
+                _5gQoSProfile->arp->preempt_cap =
+                        OpenAPI_preemption_capability_MAY_PREEMPT;
+            if (pdn->qos.arp.pre_emption_vulnerability ==
+                OGS_PDN_PRE_EMPTION_VULNERABILITY_DISABLED)
+                _5gQoSProfile->arp->preempt_vuln =
+                    OpenAPI_preemption_vulnerability_NOT_PREEMPTABLE;
+            else
+                _5gQoSProfile->arp->preempt_vuln =
+                    OpenAPI_preemption_vulnerability_PREEMPTABLE;
+
+            dnnConfiguration->_5g_qos_profile = _5gQoSProfile;
+
+            ogs_assert(pdn->ambr.uplink || pdn->ambr.downlink);
+            sessionAmbr = ogs_calloc(1, sizeof(*sessionAmbr));
+            ogs_assert(sessionAmbr);
+            sessionAmbr->uplink = ogs_sbi_bitrate_to_string(
+                    pdn->ambr.uplink, OGS_SBI_BITRATE_KBPS);
+            sessionAmbr->downlink = ogs_sbi_bitrate_to_string(
+                    pdn->ambr.downlink, OGS_SBI_BITRATE_KBPS);
+
+            dnnConfiguration->session_ambr = sessionAmbr;
+
+            staticIpAddress = OpenAPI_list_create();
+            ogs_assert(staticIpAddress);
+
+            if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4 ||
+                pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6 ||
+                pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+                ipAddress = ogs_calloc(1, sizeof(*ipAddress));
+                ogs_assert(ipAddress);
+
+                if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4 ||
+                    pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+                    ipAddress->ipv4_addr = ogs_ipv4_to_string(pdn->ue_ip.addr);
+                }
+                if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6 ||
+                    pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+                    ipAddress->ipv6_addr = ogs_ipv6_to_string(pdn->ue_ip.addr6);
+                }
+
+                if (ipAddress->ipv4_addr || ipAddress->ipv6_addr)
+                    OpenAPI_list_add(staticIpAddress, ipAddress);
+                else
+                    ogs_free(ipAddress);
+            }
+
+            if (staticIpAddress->count)
+                dnnConfiguration->static_ip_address = staticIpAddress;
+            else
+                OpenAPI_list_free(staticIpAddress);
+
+            dnnConfigurationMap = OpenAPI_map_create(
+                    pdn->apn, dnnConfiguration);
+            ogs_assert(dnnConfigurationMap);
+            OpenAPI_list_add(dnnConfigurationList, dnnConfigurationMap);
+        }
+
+        memset(&SessionManagementSubscriptionData, 0,
+                sizeof(SessionManagementSubscriptionData));
+        SessionManagementSubscriptionData.single_nssai = &singleNSSAI;
+        if (dnnConfigurationList->count)
+            SessionManagementSubscriptionData.dnn_configurations =
+                dnnConfigurationList;
+
+        memset(&sendmsg, 0, sizeof(sendmsg));
+        sendmsg.SessionManagementSubscriptionData =
+            &SessionManagementSubscriptionData;
+
+        response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+        ogs_assert(response);
+        ogs_sbi_server_send_response(session, response);
+
+        if (singleNSSAI.sd)
+            ogs_free(singleNSSAI.sd);
+
+        OpenAPI_list_for_each(dnnConfigurationList, node) {
+            dnnConfigurationMap = node->data;
+            if (dnnConfigurationMap) {
+                dnnConfiguration = dnnConfigurationMap->value;
+                if (dnnConfiguration) {
+                    pduSessionTypeList = dnnConfiguration->pdu_session_types;
+                    if (pduSessionTypeList) {
+                        if (pduSessionTypeList->allowed_session_types)
+                            OpenAPI_list_free(
+                                    pduSessionTypeList->allowed_session_types);
+                        ogs_free(pduSessionTypeList);
+                    }
+                    sscModeList = dnnConfiguration->ssc_modes;;
+                    if (sscModeList) {
+                        if (sscModeList->allowed_ssc_modes)
+                            OpenAPI_list_free(sscModeList->allowed_ssc_modes);
+                        ogs_free(sscModeList);
+                    }
+                    _5gQoSProfile = dnnConfiguration->_5g_qos_profile;
+                    if (_5gQoSProfile) {
+                        if (_5gQoSProfile->arp)
+                            ogs_free(_5gQoSProfile->arp);
+                        ogs_free(_5gQoSProfile);
+                    }
+
+                    sessionAmbr = dnnConfiguration->session_ambr;
+                    if (sessionAmbr) {
+                        if (sessionAmbr->uplink)
+                            ogs_free(sessionAmbr->uplink);
+                        if (sessionAmbr->downlink)
+                            ogs_free(sessionAmbr->downlink);
+                        ogs_free(sessionAmbr);
+                    }
+
+                    staticIpAddress = dnnConfiguration->static_ip_address;
+                    if (staticIpAddress) {
+                        OpenAPI_list_for_each(staticIpAddress, node2) {
+                            if (node2->data) {
+                                ipAddress = node2->data;
+                                if (ipAddress) {
+                                    if (ipAddress->ipv4_addr)
+                                        ogs_free(ipAddress->ipv4_addr);
+                                    if (ipAddress->ipv6_addr)
+                                        ogs_free(ipAddress->ipv6_addr);
+                                    ogs_free(ipAddress);
+                                }
+                            }
+                        }
+                        OpenAPI_list_free(staticIpAddress);
+                    }
+
+                    ogs_free(dnnConfiguration);
+                }
+                ogs_free(dnnConfigurationMap);
+            }
+        }
+
+        OpenAPI_list_free(dnnConfigurationList);
+        break;
+
+    DEFAULT
+        ogs_error("Invalid resource name [%s]",
+                recvmsg->h.resource.component[3]);
+        ogs_sbi_server_send_error(session,
+                OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
+                recvmsg, "Unknown resource name",
+                recvmsg->h.resource.component[3]);
+        return false;
+    END
+
+    return true;
 }

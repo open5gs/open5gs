@@ -96,7 +96,7 @@ cJSON *OpenAPI_ue_policy_set_patch_convertToJSON(OpenAPI_ue_policy_set_patch_t *
         }
     }
 
-    if (ue_policy_set_patch->andsp_ind >= 0) {
+    if (ue_policy_set_patch->andsp_ind) {
         if (cJSON_AddBoolToObject(item, "andspInd", ue_policy_set_patch->andsp_ind) == NULL) {
             ogs_error("OpenAPI_ue_policy_set_patch_convertToJSON() failed [andsp_ind]");
             goto end;
@@ -225,5 +225,39 @@ OpenAPI_ue_policy_set_patch_t *OpenAPI_ue_policy_set_patch_parseFromJSON(cJSON *
     return ue_policy_set_patch_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_ue_policy_set_patch_t *OpenAPI_ue_policy_set_patch_copy(OpenAPI_ue_policy_set_patch_t *dst, OpenAPI_ue_policy_set_patch_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_ue_policy_set_patch_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_ue_policy_set_patch_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_ue_policy_set_patch_free(dst);
+    dst = OpenAPI_ue_policy_set_patch_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

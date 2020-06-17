@@ -19,6 +19,7 @@
 
 #include "sbi-path.h"
 #include "nas-path.h"
+#include "ngap-path.h"
 #include "nnrf-handler.h"
 
 void amf_nnrf_handle_nf_register(
@@ -218,16 +219,19 @@ bool amf_nnrf_handle_nf_status_notify(
     return true;
 }
 
-void amf_nnrf_handle_nf_discover(amf_ue_t *amf_ue, ogs_sbi_message_t *message)
+void amf_nnrf_handle_nf_discover(
+        ogs_sbi_object_t *sbi_object, ogs_sbi_message_t *message)
 {
-    int rv;
+    bool handled;
+
+    amf_ue_t *amf_ue = NULL;
+    amf_sess_t *sess = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
 
     OpenAPI_search_result_t *SearchResult = NULL;
     OpenAPI_lnode_t *node = NULL;
-    bool handled;
 
-    ogs_assert(amf_ue);
+    ogs_assert(sbi_object);
     ogs_assert(message);
 
     SearchResult = message->SearchResult;
@@ -279,9 +283,9 @@ void amf_nnrf_handle_nf_discover(amf_ue_t *amf_ue, ogs_sbi_message_t *message)
             amf_sbi_setup_client_callback(nf_instance);
 
             if (!OGS_SBI_NF_INSTANCE_GET(
-                        amf_ue->nf_types, nf_instance->nf_type))
-                ogs_sbi_nf_types_associate(amf_ue->nf_types,
-                        nf_instance->nf_type, amf_nf_state_registered);
+                        sbi_object->nf_types, nf_instance->nf_type))
+                ogs_sbi_nf_types_associate(sbi_object->nf_types,
+                        nf_instance->nf_type, sbi_object->nf_state_registered);
 
             /* TIME : Update validity from NRF */
             if (SearchResult->validity_period) {
@@ -299,25 +303,39 @@ void amf_nnrf_handle_nf_discover(amf_ue_t *amf_ue, ogs_sbi_message_t *message)
         }
     }
 
-    if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
-        nf_instance = OGS_SBI_NF_INSTANCE_GET(
-                amf_ue->nf_types, OpenAPI_nf_type_AUSF);
-        if (!nf_instance) {
-            ogs_error("[%s] (NF discover) No AUSF", amf_ue->suci);
-            nas_5gs_send_nas_reject(
-                    amf_ue, OGS_5GMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-            amf_ue_remove(amf_ue);
-        } else {
-            rv = amf_nausf_auth_send_authenticate(amf_ue, nf_instance);
-            if (rv != OGS_OK) {
-                ogs_error("[%s] Cannot send SBI message", amf_ue->suci);
-                nas_5gs_send_nas_reject(
-                        amf_ue, OGS_5GMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-                amf_ue_remove(amf_ue);
+    ogs_assert(sbi_object->nf_type);
+    nf_instance = OGS_SBI_NF_INSTANCE_GET(
+            sbi_object->nf_types, sbi_object->nf_type);
+    if (!nf_instance) {
+        switch(sbi_object->nf_type) {
+        case OpenAPI_nf_type_AUSF:
+        case OpenAPI_nf_type_UDM:
+            amf_ue = (amf_ue_t *)sbi_object;
+            ogs_assert(amf_ue);
+            ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
+                    OpenAPI_nf_type_ToString(sbi_object->nf_type));
+            nas_5gs_send_gmm_reject_from_sbi(amf_ue,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+            break;
+        case OpenAPI_nf_type_SMF:
+            sess = (amf_sess_t *)sbi_object;
+            ogs_assert(sess);
+            ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
+                    OpenAPI_nf_type_ToString(sbi_object->nf_type));
+            if (sess->payload_container_type) {
+                nas_5gs_send_back_5gsm_message_from_sbi(sess,
+                        OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+            } else {
+                ngap_send_error_indication2(amf_ue,
+                        NGAP_Cause_PR_transport,
+                        NGAP_CauseTransport_transport_resource_unavailable);
             }
+            break;
+        default:
+            ogs_fatal("(NF discover) Not implemented [%s]",
+                OpenAPI_nf_type_ToString(sbi_object->nf_type));
         }
     } else {
-        ogs_fatal("Should implement other case");
-        ogs_assert_if_reached();
+        ogs_sbi_send(sbi_object, nf_instance);
     }
 }

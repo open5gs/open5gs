@@ -44,6 +44,7 @@ OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_create(
 void OpenAPI_ellipsoid_arc_free(OpenAPI_ellipsoid_arc_t *ellipsoid_arc);
 OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_parseFromJSON(cJSON *ellipsoid_arcJSON);
 cJSON *OpenAPI_ellipsoid_arc_convertToJSON(OpenAPI_ellipsoid_arc_t *ellipsoid_arc);
+OpenAPI_ellipsoid_arc_t *OpenAPI_ellipsoid_arc_copy(OpenAPI_ellipsoid_arc_t *dst, OpenAPI_ellipsoid_arc_t *src);
 
 #ifdef __cplusplus
 }

@@ -264,7 +264,12 @@ void smf_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node)
     ogs_expect(rv == OGS_OK);
 }
 
-void smf_pfcp_send_session_establishment_request(
+void smf_5gc_pfcp_send_session_establishment_request(smf_sess_t *sess)
+{
+    smf_epc_pfcp_send_session_establishment_request(sess, NULL);
+}
+
+void smf_epc_pfcp_send_session_establishment_request(
         smf_sess_t *sess, void *gtp_xact)
 {
     int rv;

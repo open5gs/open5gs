@@ -26,6 +26,7 @@ OpenAPI_hss_auth_type_t *OpenAPI_hss_auth_type_create(
 void OpenAPI_hss_auth_type_free(OpenAPI_hss_auth_type_t *hss_auth_type);
 OpenAPI_hss_auth_type_t *OpenAPI_hss_auth_type_parseFromJSON(cJSON *hss_auth_typeJSON);
 cJSON *OpenAPI_hss_auth_type_convertToJSON(OpenAPI_hss_auth_type_t *hss_auth_type);
+OpenAPI_hss_auth_type_t *OpenAPI_hss_auth_type_copy(OpenAPI_hss_auth_type_t *dst, OpenAPI_hss_auth_type_t *src);
 
 #ifdef __cplusplus
 }

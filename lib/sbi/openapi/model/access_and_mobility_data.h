@@ -38,7 +38,7 @@ typedef struct OpenAPI_access_and_mobility_data_s {
     char *conn_states_ts;
     struct OpenAPI_ue_reachability_s *reachability_status;
     char *reachability_status_ts;
-    struct OpenAPI_sms_support_s *sms_over_nas_status;
+    OpenAPI_sms_support_e sms_over_nas_status;
     char *sms_over_nas_status_ts;
     int roaming_status;
     char *roaming_status_ts;
@@ -60,7 +60,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
     char *conn_states_ts,
     OpenAPI_ue_reachability_t *reachability_status,
     char *reachability_status_ts,
-    OpenAPI_sms_support_t *sms_over_nas_status,
+    OpenAPI_sms_support_e sms_over_nas_status,
     char *sms_over_nas_status_ts,
     int roaming_status,
     char *roaming_status_ts,
@@ -72,6 +72,7 @@ OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_create(
 void OpenAPI_access_and_mobility_data_free(OpenAPI_access_and_mobility_data_t *access_and_mobility_data);
 OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_parseFromJSON(cJSON *access_and_mobility_dataJSON);
 cJSON *OpenAPI_access_and_mobility_data_convertToJSON(OpenAPI_access_and_mobility_data_t *access_and_mobility_data);
+OpenAPI_access_and_mobility_data_t *OpenAPI_access_and_mobility_data_copy(OpenAPI_access_and_mobility_data_t *dst, OpenAPI_access_and_mobility_data_t *src);
 
 #ifdef __cplusplus
 }

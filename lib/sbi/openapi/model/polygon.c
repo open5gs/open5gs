@@ -133,3 +133,37 @@ end:
     return NULL;
 }
 
+OpenAPI_polygon_t *OpenAPI_polygon_copy(OpenAPI_polygon_t *dst, OpenAPI_polygon_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_polygon_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_polygon_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_polygon_free(dst);
+    dst = OpenAPI_polygon_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

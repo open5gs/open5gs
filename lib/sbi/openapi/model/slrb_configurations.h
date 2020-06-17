@@ -31,6 +31,7 @@ OpenAPI_slrb_configurations_t *OpenAPI_slrb_configurations_create(
 void OpenAPI_slrb_configurations_free(OpenAPI_slrb_configurations_t *slrb_configurations);
 OpenAPI_slrb_configurations_t *OpenAPI_slrb_configurations_parseFromJSON(cJSON *slrb_configurationsJSON);
 cJSON *OpenAPI_slrb_configurations_convertToJSON(OpenAPI_slrb_configurations_t *slrb_configurations);
+OpenAPI_slrb_configurations_t *OpenAPI_slrb_configurations_copy(OpenAPI_slrb_configurations_t *dst, OpenAPI_slrb_configurations_t *src);
 
 #ifdef __cplusplus
 }

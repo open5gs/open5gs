@@ -37,6 +37,7 @@ OpenAPI_auth_event_t *OpenAPI_auth_event_create(
 void OpenAPI_auth_event_free(OpenAPI_auth_event_t *auth_event);
 OpenAPI_auth_event_t *OpenAPI_auth_event_parseFromJSON(cJSON *auth_eventJSON);
 cJSON *OpenAPI_auth_event_convertToJSON(OpenAPI_auth_event_t *auth_event);
+OpenAPI_auth_event_t *OpenAPI_auth_event_copy(OpenAPI_auth_event_t *dst, OpenAPI_auth_event_t *src);
 
 #ifdef __cplusplus
 }

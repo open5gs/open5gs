@@ -36,6 +36,7 @@ OpenAPI_point_uncertainty_circle_t *OpenAPI_point_uncertainty_circle_create(
 void OpenAPI_point_uncertainty_circle_free(OpenAPI_point_uncertainty_circle_t *point_uncertainty_circle);
 OpenAPI_point_uncertainty_circle_t *OpenAPI_point_uncertainty_circle_parseFromJSON(cJSON *point_uncertainty_circleJSON);
 cJSON *OpenAPI_point_uncertainty_circle_convertToJSON(OpenAPI_point_uncertainty_circle_t *point_uncertainty_circle);
+OpenAPI_point_uncertainty_circle_t *OpenAPI_point_uncertainty_circle_copy(OpenAPI_point_uncertainty_circle_t *dst, OpenAPI_point_uncertainty_circle_t *src);
 
 #ifdef __cplusplus
 }

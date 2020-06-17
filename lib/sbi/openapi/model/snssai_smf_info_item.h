@@ -32,6 +32,7 @@ OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_create(
 void OpenAPI_snssai_smf_info_item_free(OpenAPI_snssai_smf_info_item_t *snssai_smf_info_item);
 OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_parseFromJSON(cJSON *snssai_smf_info_itemJSON);
 cJSON *OpenAPI_snssai_smf_info_item_convertToJSON(OpenAPI_snssai_smf_info_item_t *snssai_smf_info_item);
+OpenAPI_snssai_smf_info_item_t *OpenAPI_snssai_smf_info_item_copy(OpenAPI_snssai_smf_info_item_t *dst, OpenAPI_snssai_smf_info_item_t *src);
 
 #ifdef __cplusplus
 }

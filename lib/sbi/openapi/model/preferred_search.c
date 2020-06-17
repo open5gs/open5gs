@@ -36,7 +36,7 @@ cJSON *OpenAPI_preferred_search_convertToJSON(OpenAPI_preferred_search_t *prefer
     }
 
     item = cJSON_CreateObject();
-    if (preferred_search->preferred_tai_match_ind >= 0) {
+    if (preferred_search->preferred_tai_match_ind) {
         if (cJSON_AddBoolToObject(item, "preferredTaiMatchInd", preferred_search->preferred_tai_match_ind) == NULL) {
             ogs_error("OpenAPI_preferred_search_convertToJSON() failed [preferred_tai_match_ind]");
             goto end;
@@ -66,5 +66,39 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *prefer
     return preferred_search_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_preferred_search_t *OpenAPI_preferred_search_copy(OpenAPI_preferred_search_t *dst, OpenAPI_preferred_search_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_preferred_search_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_preferred_search_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_preferred_search_free(dst);
+    dst = OpenAPI_preferred_search_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

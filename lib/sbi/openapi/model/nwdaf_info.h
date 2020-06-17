@@ -38,6 +38,7 @@ OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_create(
 void OpenAPI_nwdaf_info_free(OpenAPI_nwdaf_info_t *nwdaf_info);
 OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_parseFromJSON(cJSON *nwdaf_infoJSON);
 cJSON *OpenAPI_nwdaf_info_convertToJSON(OpenAPI_nwdaf_info_t *nwdaf_info);
+OpenAPI_nwdaf_info_t *OpenAPI_nwdaf_info_copy(OpenAPI_nwdaf_info_t *dst, OpenAPI_nwdaf_info_t *src);
 
 #ifdef __cplusplus
 }

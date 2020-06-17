@@ -31,6 +31,7 @@ OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_create(
 void OpenAPI_pcscf_info_free(OpenAPI_pcscf_info_t *pcscf_info);
 OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_parseFromJSON(cJSON *pcscf_infoJSON);
 cJSON *OpenAPI_pcscf_info_convertToJSON(OpenAPI_pcscf_info_t *pcscf_info);
+OpenAPI_pcscf_info_t *OpenAPI_pcscf_info_copy(OpenAPI_pcscf_info_t *dst, OpenAPI_pcscf_info_t *src);
 
 #ifdef __cplusplus
 }

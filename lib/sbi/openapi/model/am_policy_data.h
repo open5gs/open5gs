@@ -31,6 +31,7 @@ OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_create(
 void OpenAPI_am_policy_data_free(OpenAPI_am_policy_data_t *am_policy_data);
 OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_parseFromJSON(cJSON *am_policy_dataJSON);
 cJSON *OpenAPI_am_policy_data_convertToJSON(OpenAPI_am_policy_data_t *am_policy_data);
+OpenAPI_am_policy_data_t *OpenAPI_am_policy_data_copy(OpenAPI_am_policy_data_t *dst, OpenAPI_am_policy_data_t *src);
 
 #ifdef __cplusplus
 }

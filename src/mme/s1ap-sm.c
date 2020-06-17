@@ -117,7 +117,7 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 s1ap_handle_s1_reset(enb, pdu);
                 break;
             default:
-                ogs_warn("Not implemented(choice:%d, proc:%d)",
+                ogs_error("Not implemented(choice:%d, proc:%d)",
                         pdu->present, (int)initiatingMessage->procedureCode);
                 break;
             }
@@ -154,7 +154,7 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 s1ap_handle_kill_response(enb, pdu);
                 break;
             default:
-                ogs_warn("Not implemented(choice:%d, proc:%d)",
+                ogs_error("Not implemented(choice:%d, proc:%d)",
                         pdu->present, (int)successfulOutcome->procedureCode);
                 break;
             }
@@ -174,13 +174,13 @@ void s1ap_state_operational(ogs_fsm_t *s, mme_event_t *e)
                 s1ap_handle_handover_failure(enb, pdu);
                 break;
             default:
-                ogs_warn("Not implemented(choice:%d, proc:%d)",
+                ogs_error("Not implemented(choice:%d, proc:%d)",
                         pdu->present, (int)unsuccessfulOutcome->procedureCode);
                 break;
             }
             break;
         default:
-            ogs_warn("Not implemented(choice:%d)", pdu->present);
+            ogs_error("Not implemented(choice:%d)", pdu->present);
             break;
         }
 

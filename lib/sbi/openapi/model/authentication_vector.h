@@ -45,6 +45,7 @@ OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_create(
 void OpenAPI_authentication_vector_free(OpenAPI_authentication_vector_t *authentication_vector);
 OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_parseFromJSON(cJSON *authentication_vectorJSON);
 cJSON *OpenAPI_authentication_vector_convertToJSON(OpenAPI_authentication_vector_t *authentication_vector);
+OpenAPI_authentication_vector_t *OpenAPI_authentication_vector_copy(OpenAPI_authentication_vector_t *dst, OpenAPI_authentication_vector_t *src);
 
 #ifdef __cplusplus
 }

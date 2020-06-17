@@ -30,6 +30,7 @@ OpenAPI_app_port_id_t *OpenAPI_app_port_id_create(
 void OpenAPI_app_port_id_free(OpenAPI_app_port_id_t *app_port_id);
 OpenAPI_app_port_id_t *OpenAPI_app_port_id_parseFromJSON(cJSON *app_port_idJSON);
 cJSON *OpenAPI_app_port_id_convertToJSON(OpenAPI_app_port_id_t *app_port_id);
+OpenAPI_app_port_id_t *OpenAPI_app_port_id_copy(OpenAPI_app_port_id_t *dst, OpenAPI_app_port_id_t *src);
 
 #ifdef __cplusplus
 }

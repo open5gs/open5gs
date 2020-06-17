@@ -39,7 +39,7 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
-    message.h.url = subscription->notification_uri;
+    message.h.uri = subscription->notification_uri;
 
     message.http.accept = (char *)OGS_SBI_CONTENT_PROBLEM_TYPE;
 
@@ -47,7 +47,7 @@ ogs_sbi_request_t *nrf_nnrf_nfm_build_nf_status_notify(
     ogs_assert(NotificationData);
 
     NotificationData->event = event;
-    NotificationData->nf_instance_uri = message.h.url;
+    NotificationData->nf_instance_uri = message.h.uri;
 
     NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
     ogs_assert(NFProfile);

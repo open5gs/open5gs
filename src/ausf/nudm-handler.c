@@ -51,7 +51,7 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg)
     OpenAPI_links_value_schema_t LinksValueSchemeValue;
 
     ogs_assert(ausf_ue);
-    session = ausf_ue->session;
+    session = ausf_ue->sbi.session;
     ogs_assert(session);
     server = ogs_sbi_session_get_server(session);
     ogs_assert(server);
@@ -164,7 +164,7 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg)
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAUSF_AUTH;
-    header.api.version = (char *)OGS_SBI_API_VERSION;
+    header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] =
             (char *)OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS;
     header.resource.component[1] = ausf_ue->ctx_id;
@@ -182,7 +182,7 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg)
 
     memset(&header, 0, sizeof(header));
     header.service.name = (char *)OGS_SBI_SERVICE_NAME_NAUSF_AUTH;
-    header.api.version = (char *)OGS_SBI_API_VERSION;
+    header.api.version = (char *)OGS_SBI_API_V1;
     header.resource.component[0] =
             (char *)OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS;
     header.resource.component[1] = ausf_ue->ctx_id;
@@ -220,7 +220,7 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(
     OpenAPI_auth_event_t *AuthEvent = NULL;
 
     ogs_assert(ausf_ue);
-    session = ausf_ue->session;
+    session = ausf_ue->sbi.session;
     ogs_assert(session);
 
     ogs_assert(recvmsg);

@@ -30,6 +30,7 @@ OpenAPI_flow_info_t *OpenAPI_flow_info_create(
 void OpenAPI_flow_info_free(OpenAPI_flow_info_t *flow_info);
 OpenAPI_flow_info_t *OpenAPI_flow_info_parseFromJSON(cJSON *flow_infoJSON);
 cJSON *OpenAPI_flow_info_convertToJSON(OpenAPI_flow_info_t *flow_info);
+OpenAPI_flow_info_t *OpenAPI_flow_info_copy(OpenAPI_flow_info_t *dst, OpenAPI_flow_info_t *src);
 
 #ifdef __cplusplus
 }

@@ -28,6 +28,7 @@ OpenAPI_nf_service_set_cond_t *OpenAPI_nf_service_set_cond_create(
 void OpenAPI_nf_service_set_cond_free(OpenAPI_nf_service_set_cond_t *nf_service_set_cond);
 OpenAPI_nf_service_set_cond_t *OpenAPI_nf_service_set_cond_parseFromJSON(cJSON *nf_service_set_condJSON);
 cJSON *OpenAPI_nf_service_set_cond_convertToJSON(OpenAPI_nf_service_set_cond_t *nf_service_set_cond);
+OpenAPI_nf_service_set_cond_t *OpenAPI_nf_service_set_cond_copy(OpenAPI_nf_service_set_cond_t *dst, OpenAPI_nf_service_set_cond_t *src);
 
 #ifdef __cplusplus
 }

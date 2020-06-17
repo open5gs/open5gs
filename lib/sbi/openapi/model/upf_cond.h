@@ -31,6 +31,7 @@ OpenAPI_upf_cond_t *OpenAPI_upf_cond_create(
 void OpenAPI_upf_cond_free(OpenAPI_upf_cond_t *upf_cond);
 OpenAPI_upf_cond_t *OpenAPI_upf_cond_parseFromJSON(cJSON *upf_condJSON);
 cJSON *OpenAPI_upf_cond_convertToJSON(OpenAPI_upf_cond_t *upf_cond);
+OpenAPI_upf_cond_t *OpenAPI_upf_cond_copy(OpenAPI_upf_cond_t *dst, OpenAPI_upf_cond_t *src);
 
 #ifdef __cplusplus
 }

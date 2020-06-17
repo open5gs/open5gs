@@ -28,6 +28,7 @@ OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_create(
 void OpenAPI_nf_instance_id_cond_free(OpenAPI_nf_instance_id_cond_t *nf_instance_id_cond);
 OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_parseFromJSON(cJSON *nf_instance_id_condJSON);
 cJSON *OpenAPI_nf_instance_id_cond_convertToJSON(OpenAPI_nf_instance_id_cond_t *nf_instance_id_cond);
+OpenAPI_nf_instance_id_cond_t *OpenAPI_nf_instance_id_cond_copy(OpenAPI_nf_instance_id_cond_t *dst, OpenAPI_nf_instance_id_cond_t *src);
 
 #ifdef __cplusplus
 }

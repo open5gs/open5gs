@@ -29,6 +29,7 @@ OpenAPI_dnf_unit_t *OpenAPI_dnf_unit_create(
 void OpenAPI_dnf_unit_free(OpenAPI_dnf_unit_t *dnf_unit);
 OpenAPI_dnf_unit_t *OpenAPI_dnf_unit_parseFromJSON(cJSON *dnf_unitJSON);
 cJSON *OpenAPI_dnf_unit_convertToJSON(OpenAPI_dnf_unit_t *dnf_unit);
+OpenAPI_dnf_unit_t *OpenAPI_dnf_unit_copy(OpenAPI_dnf_unit_t *dst, OpenAPI_dnf_unit_t *src);
 
 #ifdef __cplusplus
 }

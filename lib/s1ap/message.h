@@ -32,7 +32,7 @@ typedef struct S1AP_S1AP_PDU ogs_s1ap_message_t;
 
 int ogs_s1ap_decode(ogs_s1ap_message_t *message, ogs_pkbuf_t *pkbuf);
 ogs_pkbuf_t *ogs_s1ap_encode(ogs_s1ap_message_t *message);
-int ogs_s1ap_free(ogs_s1ap_message_t *message);
+void ogs_s1ap_free(ogs_s1ap_message_t *message);
 
 #ifdef __cplusplus
 }

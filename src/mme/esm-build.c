@@ -200,18 +200,18 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
 
     if (pdn_address->pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
         pdn_address->addr = pdn->paa.addr;
-        pdn_address->length = OGS_NAS_PDN_ADDRESS_IPV4_LEN;
+        pdn_address->length = OGS_NAS_PDU_ADDRESS_IPV4_LEN;
         ogs_debug("    IPv4");
     } else if (pdn_address->pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
         memcpy(pdn_address->addr6,
                 pdn->paa.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
-        pdn_address->length = OGS_NAS_PDN_ADDRESS_IPV6_LEN;
+        pdn_address->length = OGS_NAS_PDU_ADDRESS_IPV6_LEN;
         ogs_debug("    IPv6");
     } else if (pdn_address->pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
         pdn_address->both.addr = pdn->paa.both.addr;
         memcpy(pdn_address->both.addr6,
                 pdn->paa.both.addr6+(OGS_IPV6_LEN>>1), OGS_IPV6_LEN>>1);
-        pdn_address->length = OGS_NAS_PDN_ADDRESS_IPV4V6_LEN;
+        pdn_address->length = OGS_NAS_PDU_ADDRESS_IPV4V6_LEN;
         ogs_debug("    IPv4v6");
     } else {
         ogs_error("Unexpected PDN Type %u", pdn_address->pdn_type);

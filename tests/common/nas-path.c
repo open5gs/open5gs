@@ -37,6 +37,15 @@ void testgmm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         break;
     case OGS_NAS_5GS_SECURITY_MODE_COMMAND:
         break;
+    case OGS_NAS_5GS_REGISTRATION_ACCEPT:
+        testgmm_handle_registration_accept(test_ue,
+                &message.gmm.authentication_request);
+        break;
+    case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND:
+        break;
+    case OGS_NAS_5GS_DL_NAS_TRANSPORT:
+        testgmm_handle_dl_nas_transport(test_ue, &message.gmm.dl_nas_transport);
+        break;
     default:
         ogs_error("Unknown message[%d]", message.gmm.h.message_type);
         break;
@@ -45,10 +54,43 @@ void testgmm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
     ogs_pkbuf_free(pkbuf);
 }
 
-void testgsm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
+void testgsm_recv(test_sess_t *sess, ogs_pkbuf_t *pkbuf)
 {
-    ogs_assert(test_ue);
+    int rv;
+    ogs_nas_5gs_message_t message;
+
+    ogs_assert(sess);
     ogs_assert(pkbuf);
 
+    rv = ogs_nas_5gsm_decode(&message, pkbuf);
+    ogs_assert(rv == OGS_OK);
+
+    switch (message.gsm.h.message_type) {
+    case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT:
+        testgsm_handle_pdu_session_establishment_accept(sess,
+                &message.gsm.pdu_session_establishment_accept);
+        break;
+    default:
+        ogs_error("Unknown message[%d]", message.gsm.h.message_type);
+        break;
+    }
+
     ogs_pkbuf_free(pkbuf);
+}
+
+void testgmm_send_to_gsm(test_sess_t *sess,
+        ogs_nas_payload_container_t *payload_container)
+{
+    ogs_pkbuf_t *gsmbuf = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(payload_container);
+    ogs_assert(payload_container->buffer);
+    ogs_assert(payload_container->length);
+
+    gsmbuf = ogs_pkbuf_alloc(NULL, payload_container->length);
+    ogs_pkbuf_put_data(gsmbuf,
+            payload_container->buffer, payload_container->length);
+
+    testgsm_recv(sess, gsmbuf);
 }

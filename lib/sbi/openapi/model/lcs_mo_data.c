@@ -95,3 +95,37 @@ end:
     return NULL;
 }
 
+OpenAPI_lcs_mo_data_t *OpenAPI_lcs_mo_data_copy(OpenAPI_lcs_mo_data_t *dst, OpenAPI_lcs_mo_data_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_lcs_mo_data_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_lcs_mo_data_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_lcs_mo_data_free(dst);
+    dst = OpenAPI_lcs_mo_data_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

@@ -53,6 +53,7 @@ OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_create(
 void OpenAPI_sdm_subscription_free(OpenAPI_sdm_subscription_t *sdm_subscription);
 OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_parseFromJSON(cJSON *sdm_subscriptionJSON);
 cJSON *OpenAPI_sdm_subscription_convertToJSON(OpenAPI_sdm_subscription_t *sdm_subscription);
+OpenAPI_sdm_subscription_t *OpenAPI_sdm_subscription_copy(OpenAPI_sdm_subscription_t *dst, OpenAPI_sdm_subscription_t *src);
 
 #ifdef __cplusplus
 }

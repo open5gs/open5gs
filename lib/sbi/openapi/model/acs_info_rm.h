@@ -34,6 +34,7 @@ OpenAPI_acs_info_rm_t *OpenAPI_acs_info_rm_create(
 void OpenAPI_acs_info_rm_free(OpenAPI_acs_info_rm_t *acs_info_rm);
 OpenAPI_acs_info_rm_t *OpenAPI_acs_info_rm_parseFromJSON(cJSON *acs_info_rmJSON);
 cJSON *OpenAPI_acs_info_rm_convertToJSON(OpenAPI_acs_info_rm_t *acs_info_rm);
+OpenAPI_acs_info_rm_t *OpenAPI_acs_info_rm_copy(OpenAPI_acs_info_rm_t *dst, OpenAPI_acs_info_rm_t *src);
 
 #ifdef __cplusplus
 }

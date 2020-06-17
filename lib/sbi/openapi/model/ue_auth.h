@@ -26,6 +26,7 @@ OpenAPI_ue_auth_t *OpenAPI_ue_auth_create(
 void OpenAPI_ue_auth_free(OpenAPI_ue_auth_t *ue_auth);
 OpenAPI_ue_auth_t *OpenAPI_ue_auth_parseFromJSON(cJSON *ue_authJSON);
 cJSON *OpenAPI_ue_auth_convertToJSON(OpenAPI_ue_auth_t *ue_auth);
+OpenAPI_ue_auth_t *OpenAPI_ue_auth_copy(OpenAPI_ue_auth_t *dst, OpenAPI_ue_auth_t *src);
 
 #ifdef __cplusplus
 }

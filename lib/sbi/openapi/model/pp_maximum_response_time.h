@@ -34,6 +34,7 @@ OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_create(
 void OpenAPI_pp_maximum_response_time_free(OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time);
 OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_parseFromJSON(cJSON *pp_maximum_response_timeJSON);
 cJSON *OpenAPI_pp_maximum_response_time_convertToJSON(OpenAPI_pp_maximum_response_time_t *pp_maximum_response_time);
+OpenAPI_pp_maximum_response_time_t *OpenAPI_pp_maximum_response_time_copy(OpenAPI_pp_maximum_response_time_t *dst, OpenAPI_pp_maximum_response_time_t *src);
 
 #ifdef __cplusplus
 }

@@ -37,6 +37,7 @@ OpenAPI_vn_group_data_t *OpenAPI_vn_group_data_create(
 void OpenAPI_vn_group_data_free(OpenAPI_vn_group_data_t *vn_group_data);
 OpenAPI_vn_group_data_t *OpenAPI_vn_group_data_parseFromJSON(cJSON *vn_group_dataJSON);
 cJSON *OpenAPI_vn_group_data_convertToJSON(OpenAPI_vn_group_data_t *vn_group_data);
+OpenAPI_vn_group_data_t *OpenAPI_vn_group_data_copy(OpenAPI_vn_group_data_t *dst, OpenAPI_vn_group_data_t *src);
 
 #ifdef __cplusplus
 }

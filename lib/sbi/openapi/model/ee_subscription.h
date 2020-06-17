@@ -38,6 +38,7 @@ OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_create(
 void OpenAPI_ee_subscription_free(OpenAPI_ee_subscription_t *ee_subscription);
 OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_parseFromJSON(cJSON *ee_subscriptionJSON);
 cJSON *OpenAPI_ee_subscription_convertToJSON(OpenAPI_ee_subscription_t *ee_subscription);
+OpenAPI_ee_subscription_t *OpenAPI_ee_subscription_copy(OpenAPI_ee_subscription_t *dst, OpenAPI_ee_subscription_t *src);
 
 #ifdef __cplusplus
 }

@@ -32,6 +32,7 @@ OpenAPI_plmn_range_t *OpenAPI_plmn_range_create(
 void OpenAPI_plmn_range_free(OpenAPI_plmn_range_t *plmn_range);
 OpenAPI_plmn_range_t *OpenAPI_plmn_range_parseFromJSON(cJSON *plmn_rangeJSON);
 cJSON *OpenAPI_plmn_range_convertToJSON(OpenAPI_plmn_range_t *plmn_range);
+OpenAPI_plmn_range_t *OpenAPI_plmn_range_copy(OpenAPI_plmn_range_t *dst, OpenAPI_plmn_range_t *src);
 
 #ifdef __cplusplus
 }

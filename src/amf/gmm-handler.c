@@ -82,10 +82,10 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     /* Set 5GS Registration Type */
     memcpy(&amf_ue->nas.registration, registration_type,
             sizeof(ogs_nas_5gs_registration_type_t));
-    amf_ue->nas.type = OGS_NAS_5GS_REGISTRATION_REQUEST;
-    amf_ue->nas.ksi = registration_type->type;
-    ogs_debug("[%s]    OGS_NAS_5GS TYPE[%d] KSI[%d] REGISTRATION[0x%x]",
-            amf_ue->suci, amf_ue->nas.type, amf_ue->nas.ksi, amf_ue->nas.data);
+    amf_ue->nas.message_type = OGS_NAS_5GS_REGISTRATION_REQUEST;
+    ogs_debug("[%s]    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] REGISTRATION[0x%x]",
+            amf_ue->suci, amf_ue->nas.message_type,
+            amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
     /*
      * REGISTRATION_REQUEST
      *   Clear EBI generator
@@ -106,7 +106,7 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
         ogs_kdf_kgnb_and_kn3iwf(
                 amf_ue->kamf, amf_ue->ul_count.i32,
-                OGS_KDF_ACCESS_TYPE_3GPP, amf_ue->kgnb);
+                amf_ue->nas.access_type, amf_ue->kgnb);
         ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
         amf_ue->nhcc = 1;
     }
@@ -194,7 +194,6 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
 int gmm_handle_authentication_response(amf_ue_t *amf_ue,
         ogs_nas_5gs_authentication_response_t *authentication_response)
 {
-    int rv;
     ogs_nas_authentication_response_parameter_t
         *authentication_response_parameter = NULL;
     uint8_t hxres_star[OGS_MAX_RES_LEN];
@@ -231,116 +230,13 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
     memcpy(amf_ue->xres_star, authentication_response_parameter->res,
             authentication_response_parameter->length);
 
-    rv = amf_nausf_auth_discover_and_send_authenticate(amf_ue);
-    if (rv == OGS_ERROR) {
-        ogs_error("[%s] Cannot send SBI message", amf_ue->suci);
-        return OGS_ERROR;
-    }
+    amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
+            amf_nausf_auth_build_authenticate_confirmation);
 
     return OGS_OK;
 }
 
 #if 0
-int gmm_handle_registration_complete(amf_ue_t *amf_ue,
-        ogs_nas_5gs_registration_complete_t *registration_complete)
-{
-    int rv;
-    ogs_pkbuf_t *gmmbuf = NULL;
-
-    ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_gmm_information_t *gmm_information =
-        &message.gmm.gmm_information;
-    ogs_nas_time_zone_and_time_t *universal_time_and_local_time_zone =
-        &gmm_information->universal_time_and_local_time_zone;
-    ogs_nas_daylight_saving_time_t *network_daylight_saving_time = 
-        &gmm_information->network_daylight_saving_time;
-
-    struct timeval tv;
-    struct tm gmt, local;
-
-    ogs_gettimeofday(&tv);
-    ogs_gmtime(tv.tv_sec, &gmt);
-    ogs_localtime(tv.tv_sec, &local);
-
-    ogs_assert(amf_ue);
-
-    ogs_debug("    GMT Time[Y:M:D H:M:S GMT] - %d:%d:%d, %d:%d:%d, %d",
-        gmt.tm_year, gmt.tm_mon, gmt.tm_mday,
-        gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
-        (int)gmt.tm_gmtoff);
-    ogs_debug("    LOCAL Time[Y:M:D H:M:S GMT] - %d:%d:%d, %d:%d:%d, %d",
-        local.tm_year, local.tm_mon, local.tm_mday,
-        local.tm_hour, local.tm_min, local.tm_sec,
-        (int)local.tm_gmtoff);
-
-    rv = nas_5gs_send_gmm_to_esm(
-            amf_ue, &registration_complete->esm_message_container);
-    if (rv != OGS_OK) {
-        ogs_error("nas_5gs_send_gmm_to_esm() failed");
-        return OGS_ERROR;
-    }
-
-    memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
-       OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-
-    message.gmm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
-    message.gmm.h.message_type = OGS_NAS_5GS_EMM_INFORMATION;
-
-    gmm_information->presencemask |=
-        OGS_NAS_5GS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
-    universal_time_and_local_time_zone->year = 
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
-    universal_time_and_local_time_zone->mon =
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
-    universal_time_and_local_time_zone->mday = 
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
-    universal_time_and_local_time_zone->hour = 
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
-    universal_time_and_local_time_zone->min =
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_min);
-    universal_time_and_local_time_zone->sec =
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
-    if (local.tm_gmtoff >= 0) {
-        universal_time_and_local_time_zone->timezone = 
-                    OGS_OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
-    } else {
-        universal_time_and_local_time_zone->timezone = 
-                    OGS_OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
-        universal_time_and_local_time_zone->timezone |= 0x08;
-    }
-    ogs_debug("    Timezone:0x%x", 
-        universal_time_and_local_time_zone->timezone);
-
-    gmm_information->presencemask |=
-        OGS_NAS_5GS_EMM_INFORMATION_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
-    network_daylight_saving_time->length = 1;
-
-    if (amf_self()->full_name.length) {
-        gmm_information->presencemask |=
-            OGS_NAS_5GS_EMM_INFORMATION_FULL_NAME_FOR_NETWORK_PRESENT;
-        memcpy(&gmm_information->full_name_for_network,
-            &amf_self()->full_name, sizeof(ogs_nas_network_name_t));
-    }
-    
-    if (amf_self()->short_name.length) {
-        gmm_information->presencemask |=
-            OGS_NAS_5GS_EMM_INFORMATION_SHORT_NAME_FOR_NETWORK_PRESENT;
-        memcpy(&gmm_information->short_name_for_network,
-            &amf_self()->short_name, sizeof(ogs_nas_network_name_t));
-    }                
-
-    gmmbuf = nas_5gs_security_encode(amf_ue, &message);
-    if (gmmbuf) 
-        nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
-
-    ogs_debug("[EMM] EMM information");
-    ogs_debug("    IMSI[%s]", amf_ue->imsi_bcd);
-
-    return OGS_OK;
-}
-
 int gmm_handle_identity_response(amf_ue_t *amf_ue,
         ogs_nas_5gs_identity_response_t *identity_response)
 {
@@ -393,10 +289,10 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
 
     /* Set 5GS Attach Type */
     memcpy(&amf_ue->nas.deregistration, deregistration_type, sizeof(ogs_nas_deregistration_type_t));
-    amf_ue->nas.type = AMF_5GS_TYPE_DETACH_REQUEST_FROM_UE;
+    amf_ue->nas.message_type = AMF_5GS_TYPE_DETACH_REQUEST_FROM_UE;
     amf_ue->nas.ksi = deregistration_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_5GS TYPE[%d] KSI[%d] DETACH[0x%x]",
-            amf_ue->nas.type, amf_ue->nas.ksi, amf_ue->nas.data);
+    ogs_debug("    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] DETACH[0x%x]",
+        amf_ue->nas.message_type, amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
 
     switch (deregistration_request->deregistration_type.value) {
     /* 0 0 1 : 5GS deregistration */
@@ -433,10 +329,10 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
     ogs_assert(amf_ue);
 
     /* Set 5GS Update Type */
-    amf_ue->nas.type = AMF_5GS_TYPE_SERVICE_REQUEST;
+    amf_ue->nas.message_type = AMF_5GS_TYPE_SERVICE_REQUEST;
     amf_ue->nas.ksi = ksi_and_sequence_number->ksi;
     ogs_debug("    OGS_NAS_5GS TYPE[%d] KSI[%d]",
-            amf_ue->nas.type, amf_ue->nas.ksi);
+            amf_ue->nas.message_type, amf_ue->nas.ksi);
 
     /*
      * REGISTRATION_REQUEST
@@ -492,10 +388,10 @@ int gmm_handle_tau_request(amf_ue_t *amf_ue,
     /* Set 5GS Update Type */
     memcpy(&amf_ue->nas.update, 5gs_update_type,
             sizeof(ogs_nas_5gs_update_type_t));
-    amf_ue->nas.type = AMF_5GS_TYPE_TAU_REQUEST;
+    amf_ue->nas.message_type = AMF_5GS_TYPE_TAU_REQUEST;
     amf_ue->nas.ksi = 5gs_update_type->nas_key_set_identifier;
     ogs_debug("    OGS_NAS_5GS TYPE[%d] KSI[%d] UPDATE[0x%x]",
-            amf_ue->nas.type, amf_ue->nas.ksi,
+            amf_ue->nas.message_type, amf_ue->nas.ksi,
             amf_ue->nas.data);
     
     /*
@@ -626,10 +522,10 @@ int gmm_handle_extended_service_request(amf_ue_t *amf_ue,
     /* Set Service Type */
     memcpy(&amf_ue->nas.service, service_type,
             sizeof(ogs_nas_service_type_t));
-    amf_ue->nas.type = AMF_5GS_TYPE_EXTENDED_SERVICE_REQUEST;
+    amf_ue->nas.message_type = AMF_5GS_TYPE_EXTENDED_SERVICE_REQUEST;
     amf_ue->nas.ksi = service_type->nas_key_set_identifier;
     ogs_debug("    OGS_NAS_5GS TYPE[%d] KSI[%d] SERVICE[0x%x]",
-            amf_ue->nas.type, amf_ue->nas.ksi, amf_ue->nas.value);
+            amf_ue->nas.message_type, amf_ue->nas.ksi, amf_ue->nas.value);
     
     /*
      * REGISTRATION_REQUEST
@@ -716,7 +612,9 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
                     amf_ue->imeisv_bcd);
             ogs_bcd_to_buffer(amf_ue->imeisv_bcd,
                     amf_ue->imeisv, &amf_ue->imeisv_len);
-            amf_ue->imeisv_presence = true;
+            if (amf_ue->pei)
+                ogs_free(amf_ue->pei);
+            amf_ue->pei = ogs_msprintf("imeisv-%s", amf_ue->imeisv_bcd);
             break;
         default:
             ogs_warn("[%s] Invalid IMEISV Type [%d]",
@@ -724,6 +622,113 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
             break;
 
         }
+    }
+
+    return OGS_OK;
+}
+
+int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
+        ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport)
+{
+    ogs_nas_payload_container_type_t *payload_container_type = NULL;
+    ogs_nas_payload_container_t *payload_container = NULL;
+    ogs_nas_pdu_session_identity_2_t *pdu_session_id = NULL;
+    ogs_nas_s_nssai_t *s_nssai = NULL;
+    ogs_s_nssai_t *selected_s_nssai = NULL;
+    ogs_nas_dnn_t *dnn = NULL;
+
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(ul_nas_transport);
+
+    payload_container_type = &ul_nas_transport->payload_container_type;
+    ogs_assert(payload_container_type);
+    payload_container = &ul_nas_transport->payload_container;
+    ogs_assert(payload_container);
+
+    if (!payload_container_type->value) {
+        ogs_error("[%s] No Payload container type", amf_ue->supi);
+        return OGS_ERROR;
+    }
+
+    if (!payload_container->length) {
+        ogs_error("[%s] No Payload container length", amf_ue->supi);
+        return OGS_ERROR;
+    }
+
+    if (!payload_container->buffer) {
+        ogs_error("[%s] No Payload container buffer", amf_ue->supi);
+        return OGS_ERROR;
+    }
+
+    switch (payload_container_type->value) {
+    case OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION:
+        pdu_session_id = &ul_nas_transport->pdu_session_id;
+        ogs_assert(pdu_session_id);
+        s_nssai = &ul_nas_transport->s_nssai;
+        ogs_assert(s_nssai);
+        dnn = &ul_nas_transport->dnn;
+        ogs_assert(dnn);
+
+        if ((ul_nas_transport->presencemask &
+                OGS_NAS_5GS_UL_NAS_TRANSPORT_PDU_SESSION_ID_PRESENT) == 0) {
+            ogs_error("[%s] No PDU session ID", amf_ue->supi);
+            return OGS_ERROR;
+        }
+
+        pdu_session_id = &ul_nas_transport->pdu_session_id;
+        if (*pdu_session_id == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
+            ogs_error("[%s] PDU session identity is unassigned", amf_ue->supi);
+            return OGS_ERROR;
+        }
+
+        sess = amf_sess_find_by_psi(amf_ue, *pdu_session_id);
+        if (!sess) {
+            sess = amf_sess_add(amf_ue, *pdu_session_id);
+            ogs_assert(sess);
+        }
+
+        if (sess->payload_container)
+            ogs_pkbuf_free(sess->payload_container);
+
+        sess->payload_container_type = payload_container_type->value;
+        sess->payload_container =
+            ogs_pkbuf_alloc(NULL, payload_container->length);
+        ogs_assert(sess->payload_container);
+        ogs_pkbuf_put_data(sess->payload_container,
+                payload_container->buffer, payload_container->length);
+
+        if (ul_nas_transport->presencemask &
+                OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT) {
+            s_nssai->sd = ogs_be24toh(s_nssai->sd);
+            selected_s_nssai = amf_find_s_nssai(&amf_ue->tai.plmn_id, s_nssai);
+        }
+
+        if (!selected_s_nssai) {
+            ogs_warn("No S_NSSAI : Set default S_NSSAI using AMF config");
+            selected_s_nssai = &amf_self()->plmn_support[0].s_nssai[0];
+            ogs_assert(selected_s_nssai);
+        }
+
+        memcpy(&sess->s_nssai, selected_s_nssai, sizeof(ogs_s_nssai_t));
+
+        if (ul_nas_transport->presencemask &
+                OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT) {
+            if (sess->dnn)
+                ogs_free(dnn);
+            sess->dnn = ogs_strdup(dnn->value);
+        }
+
+        amf_sess_sbi_discover_and_send(
+                OpenAPI_nf_type_SMF, sess, NULL,
+                amf_nsmf_pdu_session_build_create_sm_context);
+        break;
+
+    default:
+        ogs_error("[%s] Unknown Payload container type [%d]",
+            amf_ue->supi, payload_container_type->value);
+        return OGS_ERROR;
     }
 
     return OGS_OK;

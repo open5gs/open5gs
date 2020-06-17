@@ -27,6 +27,7 @@ extern "C" {
 #include "ogs-app.h"
 #include "ogs-dbi.h"
 #include "ogs-sctp.h"
+#include "ogs-gtp.h"
 #include "ogs-diameter-common.h"
 #include "ogs-nas-eps.h"
 #include "ogs-nas-5gs.h"
@@ -41,6 +42,8 @@ extern "C" {
 #include "common/application.h"
 #include "common/gmm-build.h"
 #include "common/gmm-handler.h"
+#include "common/gsm-build.h"
+#include "common/gsm-handler.h"
 #include "common/nas-path.h"
 #include "common/nas-security.h"
 

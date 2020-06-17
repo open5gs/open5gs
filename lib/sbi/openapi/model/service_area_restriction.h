@@ -36,6 +36,7 @@ OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_create(
 void OpenAPI_service_area_restriction_free(OpenAPI_service_area_restriction_t *service_area_restriction);
 OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_parseFromJSON(cJSON *service_area_restrictionJSON);
 cJSON *OpenAPI_service_area_restriction_convertToJSON(OpenAPI_service_area_restriction_t *service_area_restriction);
+OpenAPI_service_area_restriction_t *OpenAPI_service_area_restriction_copy(OpenAPI_service_area_restriction_t *dst, OpenAPI_service_area_restriction_t *src);
 
 #ifdef __cplusplus
 }

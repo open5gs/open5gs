@@ -28,6 +28,7 @@ OpenAPI_link_t *OpenAPI_link_create(
 void OpenAPI_link_free(OpenAPI_link_t *link);
 OpenAPI_link_t *OpenAPI_link_parseFromJSON(cJSON *linkJSON);
 cJSON *OpenAPI_link_convertToJSON(OpenAPI_link_t *link);
+OpenAPI_link_t *OpenAPI_link_copy(OpenAPI_link_t *dst, OpenAPI_link_t *src);
 
 #ifdef __cplusplus
 }

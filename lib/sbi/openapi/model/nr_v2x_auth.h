@@ -31,6 +31,7 @@ OpenAPI_nr_v2x_auth_t *OpenAPI_nr_v2x_auth_create(
 void OpenAPI_nr_v2x_auth_free(OpenAPI_nr_v2x_auth_t *nr_v2x_auth);
 OpenAPI_nr_v2x_auth_t *OpenAPI_nr_v2x_auth_parseFromJSON(cJSON *nr_v2x_authJSON);
 cJSON *OpenAPI_nr_v2x_auth_convertToJSON(OpenAPI_nr_v2x_auth_t *nr_v2x_auth);
+OpenAPI_nr_v2x_auth_t *OpenAPI_nr_v2x_auth_copy(OpenAPI_nr_v2x_auth_t *dst, OpenAPI_nr_v2x_auth_t *src);
 
 #ifdef __cplusplus
 }

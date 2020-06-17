@@ -34,6 +34,7 @@ OpenAPI_polygon_t *OpenAPI_polygon_create(
 void OpenAPI_polygon_free(OpenAPI_polygon_t *polygon);
 OpenAPI_polygon_t *OpenAPI_polygon_parseFromJSON(cJSON *polygonJSON);
 cJSON *OpenAPI_polygon_convertToJSON(OpenAPI_polygon_t *polygon);
+OpenAPI_polygon_t *OpenAPI_polygon_copy(OpenAPI_polygon_t *dst, OpenAPI_polygon_t *src);
 
 #ifdef __cplusplus
 }

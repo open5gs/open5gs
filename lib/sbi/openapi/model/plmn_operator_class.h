@@ -31,6 +31,7 @@ OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_create(
 void OpenAPI_plmn_operator_class_free(OpenAPI_plmn_operator_class_t *plmn_operator_class);
 OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_parseFromJSON(cJSON *plmn_operator_classJSON);
 cJSON *OpenAPI_plmn_operator_class_convertToJSON(OpenAPI_plmn_operator_class_t *plmn_operator_class);
+OpenAPI_plmn_operator_class_t *OpenAPI_plmn_operator_class_copy(OpenAPI_plmn_operator_class_t *dst, OpenAPI_plmn_operator_class_t *src);
 
 #ifdef __cplusplus
 }

@@ -23,7 +23,7 @@ static amf_timer_cfg_t g_amf_timer_cfg[MAX_NUM_OF_AMF_TIMER] = {
     [AMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL] =
         { .duration = ogs_time_from_sec(3) },
     [AMF_TIMER_SBI_CLIENT_WAIT] =
-        { .duration = ogs_time_from_sec(2) },
+        { .duration = ogs_time_from_msec(500) },
 
     /* Paging procedure for EPS services initiated */
     [AMF_TIMER_T3513] =
@@ -38,6 +38,10 @@ static amf_timer_cfg_t g_amf_timer_cfg[MAX_NUM_OF_AMF_TIMER] = {
      * TRACKING AREA UPDATE ACCEPT sent with TMSI
      * GUTI REALLOCATION COMMAND sent */
     [AMF_TIMER_T3550] =
+        { .max_count = 4, .duration = ogs_time_from_sec(6) },
+
+    /* CONFIGURATION UPDATE COMMAND sent */
+    [AMF_TIMER_T3555] =
         { .max_count = 4, .duration = ogs_time_from_sec(6) },
 
     /* AUTHENTICATION REQUEST sent
@@ -88,6 +92,8 @@ const char *amf_timer_get_name(amf_timer_e id)
         return "AMF_TIMER_T3522";
     case AMF_TIMER_T3550:
         return "AMF_TIMER_T3550";
+    case AMF_TIMER_T3555:
+        return "AMF_TIMER_T3555";
     case AMF_TIMER_T3560:
         return "AMF_TIMER_T3560";
     case AMF_TIMER_T3570:
@@ -217,6 +223,10 @@ void amf_timer_t3522_expire(void *data)
 void amf_timer_t3550_expire(void *data)
 {
     gmm_timer_event_send(AMF_TIMER_T3550, data);
+}
+void amf_timer_t3555_expire(void *data)
+{
+    gmm_timer_event_send(AMF_TIMER_T3555, data);
 }
 void amf_timer_t3560_expire(void *data)
 {

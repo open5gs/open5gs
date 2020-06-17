@@ -27,6 +27,7 @@ OpenAPI_odb_packet_services_t *OpenAPI_odb_packet_services_create(
 void OpenAPI_odb_packet_services_free(OpenAPI_odb_packet_services_t *odb_packet_services);
 OpenAPI_odb_packet_services_t *OpenAPI_odb_packet_services_parseFromJSON(cJSON *odb_packet_servicesJSON);
 cJSON *OpenAPI_odb_packet_services_convertToJSON(OpenAPI_odb_packet_services_t *odb_packet_services);
+OpenAPI_odb_packet_services_t *OpenAPI_odb_packet_services_copy(OpenAPI_odb_packet_services_t *dst, OpenAPI_odb_packet_services_t *src);
 
 #ifdef __cplusplus
 }

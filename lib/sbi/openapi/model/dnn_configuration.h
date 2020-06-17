@@ -70,6 +70,7 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_create(
 void OpenAPI_dnn_configuration_free(OpenAPI_dnn_configuration_t *dnn_configuration);
 OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_configurationJSON);
 cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_configuration);
+OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_copy(OpenAPI_dnn_configuration_t *dst, OpenAPI_dnn_configuration_t *src);
 
 #ifdef __cplusplus
 }

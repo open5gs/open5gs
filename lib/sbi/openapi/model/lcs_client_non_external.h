@@ -40,6 +40,7 @@ OpenAPI_lcs_client_non_external_t *OpenAPI_lcs_client_non_external_create(
 void OpenAPI_lcs_client_non_external_free(OpenAPI_lcs_client_non_external_t *lcs_client_non_external);
 OpenAPI_lcs_client_non_external_t *OpenAPI_lcs_client_non_external_parseFromJSON(cJSON *lcs_client_non_externalJSON);
 cJSON *OpenAPI_lcs_client_non_external_convertToJSON(OpenAPI_lcs_client_non_external_t *lcs_client_non_external);
+OpenAPI_lcs_client_non_external_t *OpenAPI_lcs_client_non_external_copy(OpenAPI_lcs_client_non_external_t *dst, OpenAPI_lcs_client_non_external_t *src);
 
 #ifdef __cplusplus
 }

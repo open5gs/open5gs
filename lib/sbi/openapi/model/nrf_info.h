@@ -74,6 +74,7 @@ OpenAPI_nrf_info_t *OpenAPI_nrf_info_create(
 void OpenAPI_nrf_info_free(OpenAPI_nrf_info_t *nrf_info);
 OpenAPI_nrf_info_t *OpenAPI_nrf_info_parseFromJSON(cJSON *nrf_infoJSON);
 cJSON *OpenAPI_nrf_info_convertToJSON(OpenAPI_nrf_info_t *nrf_info);
+OpenAPI_nrf_info_t *OpenAPI_nrf_info_copy(OpenAPI_nrf_info_t *dst, OpenAPI_nrf_info_t *src);
 
 #ifdef __cplusplus
 }

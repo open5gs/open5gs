@@ -49,6 +49,7 @@ OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_create(
 void OpenAPI_context_data_sets_free(OpenAPI_context_data_sets_t *context_data_sets);
 OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_parseFromJSON(cJSON *context_data_setsJSON);
 cJSON *OpenAPI_context_data_sets_convertToJSON(OpenAPI_context_data_sets_t *context_data_sets);
+OpenAPI_context_data_sets_t *OpenAPI_context_data_sets_copy(OpenAPI_context_data_sets_t *dst, OpenAPI_context_data_sets_t *src);
 
 #ifdef __cplusplus
 }

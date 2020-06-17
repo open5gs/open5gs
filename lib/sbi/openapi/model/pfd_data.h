@@ -30,6 +30,7 @@ OpenAPI_pfd_data_t *OpenAPI_pfd_data_create(
 void OpenAPI_pfd_data_free(OpenAPI_pfd_data_t *pfd_data);
 OpenAPI_pfd_data_t *OpenAPI_pfd_data_parseFromJSON(cJSON *pfd_dataJSON);
 cJSON *OpenAPI_pfd_data_convertToJSON(OpenAPI_pfd_data_t *pfd_data);
+OpenAPI_pfd_data_t *OpenAPI_pfd_data_copy(OpenAPI_pfd_data_t *dst, OpenAPI_pfd_data_t *src);
 
 #ifdef __cplusplus
 }

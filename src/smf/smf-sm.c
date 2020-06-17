@@ -45,6 +45,8 @@ void smf_state_final(ogs_fsm_t *s, smf_event_t *e)
 void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 {
     int rv;
+    const char *api_version = NULL;
+
     ogs_pkbuf_t *recvbuf = NULL;
     smf_sess_t *sess = NULL;
 
@@ -65,6 +67,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_sbi_subscription_t *subscription = NULL;
     ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t sbi_message;
+    ogs_sbi_object_t *sbi_object = NULL;
+
+    ogs_nas_5gs_message_t nas_message;
+    ogs_pkbuf_t *pkbuf = NULL;
 
     smf_sm_debug(e);
 
@@ -133,7 +139,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         case OGS_GTP_CREATE_SESSION_REQUEST_TYPE:
             if (gtp_message.h.teid == 0) {
                 ogs_expect(!sess);
-                sess = smf_sess_add_by_message(&gtp_message);
+                sess = smf_sess_add_by_gtp_message(&gtp_message);
                 if (sess)
                     OGS_SETUP_GTP_NODE(sess, gnode);
             }
@@ -264,7 +270,16 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         }
 
-        if (strcmp(sbi_message.h.api.version, OGS_SBI_API_VERSION) != 0) {
+        SWITCH(sbi_message.h.service.name)
+        CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+            api_version = OGS_SBI_API_V2;
+            break;
+        DEFAULT
+            api_version = OGS_SBI_API_V1;
+        END
+
+        ogs_assert(api_version);
+        if (strcmp(sbi_message.h.api.version, api_version) != 0) {
             ogs_error("Not supported version [%s]", sbi_message.h.api.version);
             ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                     &sbi_message, "Not supported version", NULL);
@@ -286,7 +301,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_error("Invalid HTTP method [%s]",
                             sbi_message.h.method);
                     ogs_sbi_server_send_error(session,
-                            OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED,
+                            OGS_SBI_HTTP_STATUS_FORBIDDEN,
                             &sbi_message,
                             "Invalid HTTP method", sbi_message.h.method);
                 END
@@ -296,8 +311,76 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_error("Invalid resource name [%s]",
                         sbi_message.h.resource.component[0]);
                 ogs_sbi_server_send_error(session,
-                        OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, &sbi_message,
-                        "Unknown resource name",
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                        "Invalid resource name",
+                        sbi_message.h.resource.component[0]);
+            END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
+            SWITCH(sbi_message.h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_SM_CONTEXTS)
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_POST)
+                    SWITCH(sbi_message.h.resource.component[2])
+                    CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                    CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+                        if (!sbi_message.h.resource.component[1]) {
+                            ogs_error("No smContextRef [%s]",
+                                    sbi_message.h.resource.component[2]);
+                            smf_sbi_send_sm_context_update_error(session,
+                                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                                    "No smContextRef",
+                                    sbi_message.h.resource.component[2], NULL);
+                            break;
+                        }
+
+                        sess = smf_sess_find_by_sm_context_ref(
+                                sbi_message.h.resource.component[1]);
+
+                        if (!sess) {
+                            ogs_error("Not found [%s]", sbi_message.h.method);
+                            smf_sbi_send_sm_context_update_error(session,
+                                    OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                                    "Not found", sbi_message.h.method, NULL);
+                        }
+                        break;
+
+                    DEFAULT
+                        sess = smf_sess_add_by_sbi_message(&sbi_message);
+                        ogs_assert(sess);
+                    END
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_sbi_server_send_error(session,
+                            OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                            "Invalid HTTP method", sbi_message.h.method);
+                    break;
+                END
+
+                if (sess) {
+                    ogs_assert(OGS_FSM_STATE(&sess->sm));
+
+                    OGS_SETUP_SBI_SESSION(&sess->sbi, session);
+
+                    e->sess = sess;
+                    e->sbi.message = &sbi_message;
+                    ogs_fsm_dispatch(&sess->sm, e);
+                    if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
+                        ogs_error("[%s] State machine exception", sess->supi);
+                        smf_sess_remove(sess);
+                    }
+                }
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message.h.resource.component[0]);
+                ogs_sbi_server_send_error(session,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                        "Invalid resource name",
                         sbi_message.h.resource.component[0]);
             END
             break;
@@ -305,8 +388,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         DEFAULT
             ogs_error("Invalid API name [%s]", sbi_message.h.service.name);
             ogs_sbi_server_send_error(session,
-                    OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, &sbi_message,
-                    "Invalid API name", sbi_message.h.resource.component[0]);
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                    "Invalid API name", sbi_message.h.service.name);
         END
 
         /* In lib/sbi/server.c, notify_completed() releases 'request' buffer. */
@@ -326,7 +409,16 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
         }
 
-        if (strcmp(sbi_message.h.api.version, OGS_SBI_API_VERSION) != 0) {
+        SWITCH(sbi_message.h.service.name)
+        CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+            api_version = OGS_SBI_API_V2;
+            break;
+        DEFAULT
+            api_version = OGS_SBI_API_V1;
+        END
+
+        ogs_assert(api_version);
+        if (strcmp(sbi_message.h.api.version, api_version) != 0) {
             ogs_error("Not supported version [%s]", sbi_message.h.api.version);
             ogs_sbi_message_free(&sbi_message);
             ogs_sbi_response_free(sbi_response);
@@ -392,12 +484,25 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(sbi_message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
-                    smf_nnrf_handle_nf_discover(&sbi_message);
-                } else {
-                    ogs_error("HTTP response error : %d",
-                            sbi_message.res_status);
-                }
+                sbi_object = e->sbi.data;
+                ogs_assert(sbi_object);
+
+                SWITCH(sbi_message.h.method)
+                CASE(OGS_SBI_HTTP_METHOD_GET)
+                    if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
+                        ogs_timer_stop(sbi_object->client_wait.timer);
+
+                        smf_nnrf_handle_nf_discover(sbi_object, &sbi_message);
+                    } else {
+                        ogs_error("HTTP response error [%d]",
+                                sbi_message.res_status);
+                    }
+                    break;
+
+                DEFAULT
+                    ogs_error("Invalid HTTP method [%s]", sbi_message.h.method);
+                    ogs_assert_if_reached();
+                END
                 break;
 
             DEFAULT
@@ -405,6 +510,21 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                         sbi_message.h.resource.component[0]);
                 ogs_assert_if_reached();
             END
+            break;
+
+        CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
+        CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
+            sess = e->sbi.data;
+            ogs_assert(sess);
+            ogs_assert(OGS_FSM_STATE(&sess->sm));
+
+            e->sess = sess;
+            e->sbi.message = &sbi_message;;
+            ogs_fsm_dispatch(&sess->sm, e);
+            if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
+                ogs_error("[%s] State machine exception", sess->supi);
+                smf_sess_remove(sess);
+            }
             break;
 
         DEFAULT
@@ -444,10 +564,68 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     smf_self()->nf_type, subscription->nf_instance_id);
             break;
 
+        case SMF_TIMER_SBI_CLIENT_WAIT:
+            sbi_object = e->sbi.data;
+            ogs_assert(sbi_object);
+            session = sbi_object->session;
+            ogs_assert(session);
+
+            ogs_error("Cannot receive SBI message");
+            ogs_sbi_server_send_error(session,
+                    OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
+                    "Cannot receive SBI message", NULL);
+            break;
+
         default:
             ogs_error("Unknown timer[%s:%d]",
                     smf_timer_get_name(e->timer_id), e->timer_id);
         }
+        break;
+
+    case SMF_EVT_5GSM_MESSAGE:
+        sess = e->sess;
+        ogs_assert(sess);
+        pkbuf = e->pkbuf;
+        ogs_assert(pkbuf);
+
+        if (ogs_nas_5gsm_decode(&nas_message, pkbuf) != OGS_OK) {
+            ogs_error("ogs_nas_5gsm_decode() failed");
+            ogs_pkbuf_free(pkbuf);
+            return;
+        }
+
+        ogs_assert(sess);
+        ogs_assert(OGS_FSM_STATE(&sess->sm));
+
+        sess->pti = nas_message.gsm.h.procedure_transaction_identity;
+
+        e->nas.message = &nas_message;
+        ogs_fsm_dispatch(&sess->sm, e);
+        if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
+            ogs_error("State machine exception");
+            smf_sess_remove(sess);
+        }
+
+        ogs_pkbuf_free(pkbuf);
+        break;
+
+    case SMF_EVT_NGAP_MESSAGE:
+        sess = e->sess;
+        ogs_assert(sess);
+        pkbuf = e->pkbuf;
+        ogs_assert(pkbuf);
+        ogs_assert(e->ngap.type);
+
+        ogs_assert(sess);
+        ogs_assert(OGS_FSM_STATE(&sess->sm));
+
+        ogs_fsm_dispatch(&sess->sm, e);
+        if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
+            ogs_error("State machine exception");
+            smf_sess_remove(sess);
+        }
+
+        ogs_pkbuf_free(pkbuf);
         break;
 
     default:

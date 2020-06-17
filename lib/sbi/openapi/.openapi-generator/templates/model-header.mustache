@@ -171,6 +171,7 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_create(
 void OpenAPI_{{classname}}_free(OpenAPI_{{classname}}_t *{{classname}});
 OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}}JSON);
 cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}});
+OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_copy(OpenAPI_{{classname}}_t *dst, OpenAPI_{{classname}}_t *src);
 {{/isEnum}}
 
 #ifdef __cplusplus

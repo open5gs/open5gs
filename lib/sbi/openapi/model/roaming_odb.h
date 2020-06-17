@@ -26,6 +26,7 @@ OpenAPI_roaming_odb_t *OpenAPI_roaming_odb_create(
 void OpenAPI_roaming_odb_free(OpenAPI_roaming_odb_t *roaming_odb);
 OpenAPI_roaming_odb_t *OpenAPI_roaming_odb_parseFromJSON(cJSON *roaming_odbJSON);
 cJSON *OpenAPI_roaming_odb_convertToJSON(OpenAPI_roaming_odb_t *roaming_odb);
+OpenAPI_roaming_odb_t *OpenAPI_roaming_odb_copy(OpenAPI_roaming_odb_t *dst, OpenAPI_roaming_odb_t *src);
 
 #ifdef __cplusplus
 }

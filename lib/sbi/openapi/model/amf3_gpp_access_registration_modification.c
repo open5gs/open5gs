@@ -71,7 +71,7 @@ cJSON *OpenAPI_amf3_gpp_access_registration_modification_convertToJSON(OpenAPI_a
         goto end;
     }
 
-    if (amf3_gpp_access_registration_modification->purge_flag >= 0) {
+    if (amf3_gpp_access_registration_modification->purge_flag) {
         if (cJSON_AddBoolToObject(item, "purgeFlag", amf3_gpp_access_registration_modification->purge_flag) == NULL) {
             ogs_error("OpenAPI_amf3_gpp_access_registration_modification_convertToJSON() failed [purge_flag]");
             goto end;
@@ -131,7 +131,7 @@ cJSON *OpenAPI_amf3_gpp_access_registration_modification_convertToJSON(OpenAPI_a
         }
     }
 
-    if (amf3_gpp_access_registration_modification->ue_srvcc_capability >= 0) {
+    if (amf3_gpp_access_registration_modification->ue_srvcc_capability) {
         if (cJSON_AddBoolToObject(item, "ueSrvccCapability", amf3_gpp_access_registration_modification->ue_srvcc_capability) == NULL) {
             ogs_error("OpenAPI_amf3_gpp_access_registration_modification_convertToJSON() failed [ue_srvcc_capability]");
             goto end;
@@ -232,5 +232,39 @@ OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_reg
     return amf3_gpp_access_registration_modification_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_amf3_gpp_access_registration_modification_t *OpenAPI_amf3_gpp_access_registration_modification_copy(OpenAPI_amf3_gpp_access_registration_modification_t *dst, OpenAPI_amf3_gpp_access_registration_modification_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_amf3_gpp_access_registration_modification_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_amf3_gpp_access_registration_modification_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_amf3_gpp_access_registration_modification_free(dst);
+    dst = OpenAPI_amf3_gpp_access_registration_modification_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

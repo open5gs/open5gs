@@ -33,6 +33,7 @@ OpenAPI_tai_t *OpenAPI_tai_create(
 void OpenAPI_tai_free(OpenAPI_tai_t *tai);
 OpenAPI_tai_t *OpenAPI_tai_parseFromJSON(cJSON *taiJSON);
 cJSON *OpenAPI_tai_convertToJSON(OpenAPI_tai_t *tai);
+OpenAPI_tai_t *OpenAPI_tai_copy(OpenAPI_tai_t *dst, OpenAPI_tai_t *src);
 
 #ifdef __cplusplus
 }

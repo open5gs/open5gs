@@ -20,7 +20,6 @@
 #include "ogs-app.h"
 #include "ogs-sbi.h"
 
-#include "sbi-private.h"
 #include "curl/curl.h"
 
 typedef struct sockinfo_s {
@@ -49,6 +48,7 @@ typedef struct connection_s {
 
     ogs_timer_t *timer;
     CURL *easy;
+
     char error[CURL_ERROR_SIZE];
 
     ogs_sbi_client_t *client;
@@ -183,18 +183,18 @@ static void mcode_or_die(const char *where, CURLMcode code)
     }
 }
 
-static char *add_params_to_url(CURL *easy, char *url, ogs_hash_t *params)
+static char *add_params_to_uri(CURL *easy, char *uri, ogs_hash_t *params)
 {
     ogs_hash_index_t *hi;
     int has_params = 0;
     const char *fp = "?", *np = "&";
 
     ogs_assert(easy);
-    ogs_assert(url);
+    ogs_assert(uri);
     ogs_assert(params);
     ogs_assert(ogs_hash_count(params));
 
-    has_params = (strchr(url, '?') != NULL);
+    has_params = (strchr(uri, '?') != NULL);
 
     for (hi = ogs_hash_first(params); hi; hi = ogs_hash_next(hi)) {
         const char *key = NULL;
@@ -213,17 +213,17 @@ static char *add_params_to_url(CURL *easy, char *url, ogs_hash_t *params)
         ogs_assert(val_esc);
 
         if (!has_params) {
-            url = ogs_mstrcatf(url, "%s%s=%s", fp, key_esc, val_esc);
+            uri = ogs_mstrcatf(uri, "%s%s=%s", fp, key_esc, val_esc);
             has_params = 1;
         } else {
-            url = ogs_mstrcatf(url, "%s%s=%s", np, key_esc, val_esc);
+            uri = ogs_mstrcatf(uri, "%s%s=%s", np, key_esc, val_esc);
         }
 
         curl_free(val_esc);
         curl_free(key_esc);
     }
 
-    return url;
+    return uri;
 }
 
 static connection_t *connection_add(ogs_sbi_client_t *client,
@@ -277,21 +277,24 @@ static connection_t *connection_add(ogs_sbi_client_t *client,
         strcmp(request->h.method, OGS_SBI_HTTP_METHOD_DELETE) == 0 ||
         strcmp(request->h.method, OGS_SBI_HTTP_METHOD_POST) == 0) {
 
-        curl_easy_setopt(conn->easy, CURLOPT_CUSTOMREQUEST, request->h.method);
+        curl_easy_setopt(conn->easy,
+                CURLOPT_CUSTOMREQUEST, request->h.method);
         if (request->http.content) {
-            curl_easy_setopt(conn->easy, CURLOPT_POSTFIELDS,
-                    request->http.content);
+            curl_easy_setopt(conn->easy,
+                    CURLOPT_POSTFIELDS, request->http.content);
+            curl_easy_setopt(conn->easy,
+                CURLOPT_POSTFIELDSIZE, request->http.content_length);
         }
     }
 
     curl_easy_setopt(conn->easy, CURLOPT_HTTPHEADER, conn->header_list);
 
     if (ogs_hash_count(request->http.params)) {
-        request->h.url = add_params_to_url(conn->easy,
-                            request->h.url, request->http.params);
+        request->h.uri = add_params_to_uri(conn->easy,
+                            request->h.uri, request->http.params);
     }
 
-    curl_easy_setopt(conn->easy, CURLOPT_URL, request->h.url);
+    curl_easy_setopt(conn->easy, CURLOPT_URL, request->h.uri);
 
     curl_easy_setopt(conn->easy, CURLOPT_PRIVATE, conn);
     curl_easy_setopt(conn->easy, CURLOPT_WRITEFUNCTION, write_cb);
@@ -413,9 +416,9 @@ static void check_multi_info(ogs_sbi_client_t *client)
                 response->h.method = ogs_strdup(conn->method);
 
                 /* remove https://localhost:8000 */
-                response->h.url = ogs_strdup(url);
+                response->h.uri = ogs_strdup(url);
 
-                response->http.content = ogs_strdup(conn->memory);
+                response->http.content = ogs_memdup(conn->memory, conn->size);
                 response->http.content_length = conn->size;
 
                 if (content_type)
@@ -452,13 +455,53 @@ void ogs_sbi_client_send_request(
     ogs_assert(client);
     ogs_assert(request);
 
-    if (request->h.url == NULL) {
-        request->h.url = ogs_sbi_client_uri(client, &request->h);
+    if (request->h.uri == NULL) {
+        request->h.uri = ogs_sbi_client_uri(client, &request->h);
     }
 
     conn = connection_add(client, request, data);
     ogs_assert(conn);
-    ogs_sbi_request_free(request);
+}
+
+void ogs_sbi_client_send_request_to_nf_instance(
+        ogs_sbi_nf_instance_t *nf_instance,
+        ogs_sbi_request_t *request, void *data)
+{
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(request);
+    ogs_assert(nf_instance);
+
+    if (request->h.uri == NULL) {
+        client = ogs_sbi_client_find_by_service_name(nf_instance,
+                request->h.service.name, request->h.api.version);
+        if (!client) {
+            ogs_error("[%s] Cannot find client [%s:%s]",
+                    nf_instance->id,
+                    request->h.service.name, request->h.api.version);
+            return;
+        }
+    } else {
+        ogs_sockaddr_t *addr = NULL;
+        char buf[OGS_ADDRSTRLEN];
+
+        addr = ogs_sbi_getaddr_from_uri(request->h.uri);
+        if (!addr) {
+            ogs_error("[%s] Invalid confirmation URL [%s]",
+                nf_instance->id, request->h.uri);
+            return;
+        }
+        client = ogs_sbi_client_find(addr);
+        if (!client) {
+            ogs_error("[%s] Cannot find client [%s:%d]", nf_instance->id,
+                    OGS_ADDR(addr, buf), OGS_PORT(addr));
+            ogs_freeaddrinfo(addr);
+            return;
+        }
+        ogs_freeaddrinfo(addr);
+    }
+
+    ogs_sbi_client_send_request(client, request, data);
 }
 
 static size_t write_cb(void *contents, size_t size, size_t nmemb, void *data)
@@ -492,8 +535,17 @@ static size_t header_cb(void *ptr, size_t size, size_t nmemb, void *data)
     conn = data;
     ogs_assert(conn);
 
-    if (strncmp(ptr, OGS_SBI_LOCATION, strlen(OGS_SBI_LOCATION)) == 0)
-        conn->location = ogs_strdup((char *)ptr + strlen(OGS_SBI_LOCATION) + 2);
+    if (strncmp(ptr, OGS_SBI_LOCATION, strlen(OGS_SBI_LOCATION)) == 0) {
+        /* ptr : "Location: http://xxx/xxx/xxx\r\n"
+           We need to truncate "Location" + ": " + "\r\n" in 'ptr' string */
+        int len = strlen(ptr) - strlen(OGS_SBI_LOCATION) - 2 - 2;
+        if (len) {
+            /* Only copy http://xxx/xxx/xxx" from 'ptr' string */
+            conn->location = ogs_memdup(
+                    (char *)ptr + strlen(OGS_SBI_LOCATION) + 2, len+1);
+            conn->location[len] = 0;
+        }
+    }
 
     return (nmemb*size);
 }

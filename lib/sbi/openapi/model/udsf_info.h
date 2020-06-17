@@ -31,6 +31,7 @@ OpenAPI_udsf_info_t *OpenAPI_udsf_info_create(
 void OpenAPI_udsf_info_free(OpenAPI_udsf_info_t *udsf_info);
 OpenAPI_udsf_info_t *OpenAPI_udsf_info_parseFromJSON(cJSON *udsf_infoJSON);
 cJSON *OpenAPI_udsf_info_convertToJSON(OpenAPI_udsf_info_t *udsf_info);
+OpenAPI_udsf_info_t *OpenAPI_udsf_info_copy(OpenAPI_udsf_info_t *dst, OpenAPI_udsf_info_t *src);
 
 #ifdef __cplusplus
 }

@@ -28,6 +28,7 @@ OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_create(
 void OpenAPI_service_name_cond_free(OpenAPI_service_name_cond_t *service_name_cond);
 OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_parseFromJSON(cJSON *service_name_condJSON);
 cJSON *OpenAPI_service_name_cond_convertToJSON(OpenAPI_service_name_cond_t *service_name_cond);
+OpenAPI_service_name_cond_t *OpenAPI_service_name_cond_copy(OpenAPI_service_name_cond_t *dst, OpenAPI_service_name_cond_t *src);
 
 #ifdef __cplusplus
 }

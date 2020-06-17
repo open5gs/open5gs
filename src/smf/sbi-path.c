@@ -82,8 +82,8 @@ int smf_sbi_open(void)
         service = ogs_sbi_nf_service_build_default(nf_instance,
                 (char*)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION);
         ogs_assert(service);
-        ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_VERSION,
-                (char*)OGS_SBI_API_FULL_VERSION, NULL);
+        ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_V1,
+                (char*)OGS_SBI_API_V1_0_0, NULL);
 
         smf_nf_fsm_init(nf_instance);
         smf_sbi_setup_client_callback(nf_instance);
@@ -113,4 +113,113 @@ void smf_sbi_setup_client_callback(ogs_sbi_nf_instance_t *nf_instance)
         if (client)
             client->cb = client_cb;
     }
+}
+
+void smf_sbi_discover_and_send(
+        OpenAPI_nf_type_e nf_type, smf_sess_t *sess, void *data,
+        ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data))
+{
+    ogs_sbi_session_t *session = NULL;
+
+    ogs_assert(sess);
+    session = sess->sbi.session;
+    ogs_assert(nf_type);
+    ogs_assert(build);
+
+    sess->sbi.nf_state_registered = smf_nf_state_registered;
+    sess->sbi.client_wait.duration =
+        smf_timer_cfg(SMF_TIMER_SBI_CLIENT_WAIT)->duration;
+
+    if (ogs_sbi_discover_and_send(
+            nf_type, &sess->sbi, data, (ogs_sbi_build_f)build) != true) {
+        ogs_sbi_server_send_error(session,
+                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
+                "Cannot discover", sess->supi);
+    }
+}
+
+void smf_sbi_send_sm_context_create_error(
+        ogs_sbi_session_t *session,
+        int status, const char *title, const char *detail,
+        ogs_pkbuf_t *n1smbuf)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    OpenAPI_sm_context_create_error_t SmContextCreateError;
+    OpenAPI_problem_details_t problem;
+    OpenAPI_ref_to_binary_data_t n1_sm_msg;
+
+    ogs_assert(session);
+
+    memset(&problem, 0, sizeof(problem));
+    problem.status = status;
+    problem.title = (char*)title;
+    problem.detail = (char*)detail;
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    sendmsg.SmContextCreateError = &SmContextCreateError;
+
+    memset(&SmContextCreateError, 0, sizeof(SmContextCreateError));
+    SmContextCreateError.error = &problem;
+
+    if (n1smbuf) {
+        SmContextCreateError.n1_sm_msg = &n1_sm_msg;
+        n1_sm_msg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        sendmsg.part[0].content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        sendmsg.part[0].content_type = (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
+        sendmsg.part[0].pkbuf = n1smbuf;
+        sendmsg.num_of_part = 1;
+    }
+
+    response = ogs_sbi_build_response(&sendmsg, problem.status);
+    ogs_assert(response);
+
+    ogs_sbi_server_send_response(session, response);
+
+    if (n1smbuf)
+        ogs_pkbuf_free(n1smbuf);
+}
+
+void smf_sbi_send_sm_context_update_error(
+        ogs_sbi_session_t *session,
+        int status, const char *title, const char *detail,
+        ogs_pkbuf_t *n2smbuf)
+{
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    OpenAPI_sm_context_update_error_t SmContextUpdateError;
+    OpenAPI_problem_details_t problem;
+    OpenAPI_ref_to_binary_data_t n2_sm_info;
+
+    ogs_assert(session);
+
+    memset(&problem, 0, sizeof(problem));
+    problem.status = status;
+    problem.title = (char*)title;
+    problem.detail = (char*)detail;
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+    sendmsg.SmContextUpdateError = &SmContextUpdateError;
+
+    memset(&SmContextUpdateError, 0, sizeof(SmContextUpdateError));
+    SmContextUpdateError.error = &problem;
+
+    if (n2smbuf) {
+        SmContextUpdateError.n2_sm_info = &n2_sm_info;
+        n2_sm_info.content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+        sendmsg.part[0].content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+        sendmsg.part[0].content_type = (char *)OGS_SBI_CONTENT_NGAP_TYPE;
+        sendmsg.part[0].pkbuf = n2smbuf;
+        sendmsg.num_of_part = 1;
+    }
+
+    response = ogs_sbi_build_response(&sendmsg, problem.status);
+    ogs_assert(response);
+
+    ogs_sbi_server_send_response(session, response);
+
+    if (n2smbuf)
+        ogs_pkbuf_free(n2smbuf);
 }

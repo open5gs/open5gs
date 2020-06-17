@@ -40,6 +40,7 @@ OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_create(
 void OpenAPI_global_ran_node_id_free(OpenAPI_global_ran_node_id_t *global_ran_node_id);
 OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_parseFromJSON(cJSON *global_ran_node_idJSON);
 cJSON *OpenAPI_global_ran_node_id_convertToJSON(OpenAPI_global_ran_node_id_t *global_ran_node_id);
+OpenAPI_global_ran_node_id_t *OpenAPI_global_ran_node_id_copy(OpenAPI_global_ran_node_id_t *dst, OpenAPI_global_ran_node_id_t *src);
 
 #ifdef __cplusplus
 }

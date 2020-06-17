@@ -26,6 +26,7 @@ OpenAPI_subscribed_event_t *OpenAPI_subscribed_event_create(
 void OpenAPI_subscribed_event_free(OpenAPI_subscribed_event_t *subscribed_event);
 OpenAPI_subscribed_event_t *OpenAPI_subscribed_event_parseFromJSON(cJSON *subscribed_eventJSON);
 cJSON *OpenAPI_subscribed_event_convertToJSON(OpenAPI_subscribed_event_t *subscribed_event);
+OpenAPI_subscribed_event_t *OpenAPI_subscribed_event_copy(OpenAPI_subscribed_event_t *dst, OpenAPI_subscribed_event_t *src);
 
 #ifdef __cplusplus
 }

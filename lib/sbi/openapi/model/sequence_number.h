@@ -38,6 +38,7 @@ OpenAPI_sequence_number_t *OpenAPI_sequence_number_create(
 void OpenAPI_sequence_number_free(OpenAPI_sequence_number_t *sequence_number);
 OpenAPI_sequence_number_t *OpenAPI_sequence_number_parseFromJSON(cJSON *sequence_numberJSON);
 cJSON *OpenAPI_sequence_number_convertToJSON(OpenAPI_sequence_number_t *sequence_number);
+OpenAPI_sequence_number_t *OpenAPI_sequence_number_copy(OpenAPI_sequence_number_t *dst, OpenAPI_sequence_number_t *src);
 
 #ifdef __cplusplus
 }

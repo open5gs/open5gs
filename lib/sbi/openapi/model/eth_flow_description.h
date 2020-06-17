@@ -43,6 +43,7 @@ OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_create(
 void OpenAPI_eth_flow_description_free(OpenAPI_eth_flow_description_t *eth_flow_description);
 OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_parseFromJSON(cJSON *eth_flow_descriptionJSON);
 cJSON *OpenAPI_eth_flow_description_convertToJSON(OpenAPI_eth_flow_description_t *eth_flow_description);
+OpenAPI_eth_flow_description_t *OpenAPI_eth_flow_description_copy(OpenAPI_eth_flow_description_t *dst, OpenAPI_eth_flow_description_t *src);
 
 #ifdef __cplusplus
 }

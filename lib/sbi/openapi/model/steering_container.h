@@ -26,6 +26,7 @@ OpenAPI_steering_container_t *OpenAPI_steering_container_create(
 void OpenAPI_steering_container_free(OpenAPI_steering_container_t *steering_container);
 OpenAPI_steering_container_t *OpenAPI_steering_container_parseFromJSON(cJSON *steering_containerJSON);
 cJSON *OpenAPI_steering_container_convertToJSON(OpenAPI_steering_container_t *steering_container);
+OpenAPI_steering_container_t *OpenAPI_steering_container_copy(OpenAPI_steering_container_t *dst, OpenAPI_steering_container_t *src);
 
 #ifdef __cplusplus
 }

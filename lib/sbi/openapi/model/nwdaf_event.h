@@ -26,6 +26,7 @@ OpenAPI_nwdaf_event_t *OpenAPI_nwdaf_event_create(
 void OpenAPI_nwdaf_event_free(OpenAPI_nwdaf_event_t *nwdaf_event);
 OpenAPI_nwdaf_event_t *OpenAPI_nwdaf_event_parseFromJSON(cJSON *nwdaf_eventJSON);
 cJSON *OpenAPI_nwdaf_event_convertToJSON(OpenAPI_nwdaf_event_t *nwdaf_event);
+OpenAPI_nwdaf_event_t *OpenAPI_nwdaf_event_copy(OpenAPI_nwdaf_event_t *dst, OpenAPI_nwdaf_event_t *src);
 
 #ifdef __cplusplus
 }

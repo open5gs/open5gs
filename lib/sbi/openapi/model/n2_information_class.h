@@ -17,15 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n2_information_class_s OpenAPI_n2_information_class_t;
-typedef struct OpenAPI_n2_information_class_s {
-} OpenAPI_n2_information_class_t;
+typedef enum { OpenAPI_n2_information_class_NULL = 0, OpenAPI_n2_information_class_SM, OpenAPI_n2_information_class_NRPPa, OpenAPI_n2_information_class_PWS, OpenAPI_n2_information_class_PWS_BCAL, OpenAPI_n2_information_class_PWS_RF, OpenAPI_n2_information_class_RAN } OpenAPI_n2_information_class_e;
 
-OpenAPI_n2_information_class_t *OpenAPI_n2_information_class_create(
-    );
-void OpenAPI_n2_information_class_free(OpenAPI_n2_information_class_t *n2_information_class);
-OpenAPI_n2_information_class_t *OpenAPI_n2_information_class_parseFromJSON(cJSON *n2_information_classJSON);
-cJSON *OpenAPI_n2_information_class_convertToJSON(OpenAPI_n2_information_class_t *n2_information_class);
+char* OpenAPI_n2_information_class_ToString(OpenAPI_n2_information_class_e n2_information_class);
+
+OpenAPI_n2_information_class_e OpenAPI_n2_information_class_FromString(char* n2_information_class);
 
 #ifdef __cplusplus
 }

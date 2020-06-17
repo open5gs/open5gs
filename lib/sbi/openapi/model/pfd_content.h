@@ -37,6 +37,7 @@ OpenAPI_pfd_content_t *OpenAPI_pfd_content_create(
 void OpenAPI_pfd_content_free(OpenAPI_pfd_content_t *pfd_content);
 OpenAPI_pfd_content_t *OpenAPI_pfd_content_parseFromJSON(cJSON *pfd_contentJSON);
 cJSON *OpenAPI_pfd_content_convertToJSON(OpenAPI_pfd_content_t *pfd_content);
+OpenAPI_pfd_content_t *OpenAPI_pfd_content_copy(OpenAPI_pfd_content_t *dst, OpenAPI_pfd_content_t *src);
 
 #ifdef __cplusplus
 }

@@ -23,6 +23,7 @@ static smf_context_t self;
 static ogs_diam_config_t g_diam_conf;
 
 int __smf_log_domain;
+int __gsm_log_domain;
 
 static OGS_POOL(smf_sess_pool, smf_sess_t);
 static OGS_POOL(smf_bearer_pool, smf_bearer_t);
@@ -30,19 +31,6 @@ static OGS_POOL(smf_bearer_pool, smf_bearer_t);
 static OGS_POOL(smf_pf_pool, smf_pf_t);
 
 static int context_initialized = 0;
-
-int num_sessions = 0;
-void stats_add_session(void) {
-    num_sessions = num_sessions + 1;
-    ogs_info("Added a session. Number of active sessions is now %d",
-            num_sessions);
-}
-
-void stats_remove_session(void) {
-    num_sessions = num_sessions - 1;
-    ogs_info("Removed a session. Number of active sessions is now %d",
-            num_sessions);
-}
 
 void smf_context_init(void)
 {
@@ -55,9 +43,12 @@ void smf_context_init(void)
     memset(&self, 0, sizeof(smf_context_t));
     self.diam_config = &g_diam_conf;
 
+    ogs_log_install_domain(&__ogs_ngap_domain, "ngap", ogs_core()->log.level);
+    ogs_log_install_domain(&__ogs_nas_domain, "nas", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_gtp_domain, "gtp", ogs_core()->log.level);
     ogs_log_install_domain(&__ogs_diam_domain, "diam", ogs_core()->log.level);
     ogs_log_install_domain(&__smf_log_domain, "smf", ogs_core()->log.level);
+    ogs_log_install_domain(&__gsm_log_domain, "gsm", ogs_core()->log.level);
 
     ogs_gtp_node_init(512);
 
@@ -73,7 +64,8 @@ void smf_context_init(void)
 
     ogs_pool_init(&smf_pf_pool, ogs_config()->pool.pf);
 
-    self.sess_hash = ogs_hash_make();
+    self.imsi_apn_hash = ogs_hash_make();
+    self.supi_psi_hash = ogs_hash_make();
     self.ipv4_hash = ogs_hash_make();
     self.ipv6_hash = ogs_hash_make();
 
@@ -86,8 +78,10 @@ void smf_context_final(void)
 
     smf_sess_remove_all();
 
-    ogs_assert(self.sess_hash);
-    ogs_hash_destroy(self.sess_hash);
+    ogs_assert(self.imsi_apn_hash);
+    ogs_hash_destroy(self.imsi_apn_hash);
+    ogs_assert(self.supi_psi_hash);
+    ogs_hash_destroy(self.supi_psi_hash);
     ogs_assert(self.ipv4_hash);
     ogs_hash_destroy(self.ipv4_hash);
     ogs_assert(self.ipv6_hash);
@@ -516,7 +510,7 @@ int smf_context_parse_config(void)
     return OGS_OK;
 }
 
-static void *sess_hash_keygen(uint8_t *out, int *out_len,
+static void *imsi_apn_keygen(uint8_t *out, int *out_len,
         uint8_t *imsi, int imsi_len, char *apn)
 {
     memcpy(out, imsi, imsi_len);
@@ -526,10 +520,20 @@ static void *sess_hash_keygen(uint8_t *out, int *out_len,
     return out;
 }
 
-smf_sess_t *smf_sess_add(
+static char *supi_psi_keygen(char *supi, uint8_t psi)
+{
+    ogs_assert(supi);
+    ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
+
+    return ogs_mstrcatf(supi, "%03d", psi);
+}
+
+smf_sess_t *smf_sess_add_by_imsi_apn(
         uint8_t *imsi, int imsi_len, char *apn, 
         uint8_t pdn_type, uint8_t ebi, ogs_paa_t *paa)
 {
+    smf_event_t e;
+
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
     smf_sess_t *sess = NULL;
@@ -606,13 +610,14 @@ smf_sess_t *smf_sess_add(
 
     ogs_info("UE IMSI:[%s] APN:[%s] IPv4:[%s] IPv6:[%s]",
 	    sess->imsi_bcd, apn,
-        sess->ipv4 ? INET_NTOP(&sess->ipv4->addr, buf1) : "",
-        sess->ipv6 ? INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
     /* Generate Hash Key : IMSI + APN */
-    sess_hash_keygen(sess->hash_keybuf, &sess->hash_keylen,
+    imsi_apn_keygen(sess->imsi_apn_keybuf, &sess->imsi_apn_keylen,
             imsi, imsi_len, apn);
-    ogs_hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, sess);
+    ogs_hash_set(self.imsi_apn_hash,
+            sess->imsi_apn_keybuf, sess->imsi_apn_keylen, sess);
 
     /* Select UPF with round-robin manner */
     if (ogs_pfcp_self()->node == NULL)
@@ -639,99 +644,20 @@ smf_sess_t *smf_sess_add(
     ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)
         pdr->precedence = 0xffffffff;
 
+    /* Setup SBI */
+    sess->sbi.client_wait.timer = ogs_timer_add(
+            self.timer_mgr, smf_timer_sbi_client_wait_expire, sess);
+
+    e.sess = sess;
+    ogs_fsm_create(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final);
+    ogs_fsm_init(&sess->sm, &e);
+
     ogs_list_add(&self.sess_list, sess);
-    
-    stats_add_session();
 
     return sess;
 }
 
-int smf_sess_remove(smf_sess_t *sess)
-{
-    int i;
-
-    ogs_assert(sess);
-
-    ogs_list_remove(&self.sess_list, sess);
-
-    OGS_TLV_CLEAR_DATA(&sess->ue_pco);
-    OGS_TLV_CLEAR_DATA(&sess->user_location_information);
-    OGS_TLV_CLEAR_DATA(&sess->ue_timezone);
-
-    for (i = 0; i < sess->num_of_pcc_rule; i++)
-        OGS_PCC_RULE_FREE(&sess->pcc_rule[i]);
-    sess->num_of_pcc_rule = 0;
-
-    ogs_hash_set(self.sess_hash, sess->hash_keybuf, sess->hash_keylen, NULL);
-
-    if (sess->ipv4) {
-        ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, NULL);
-        ogs_pfcp_ue_ip_free(sess->ipv4);
-    }
-    if (sess->ipv6) {
-        ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, NULL);
-        ogs_pfcp_ue_ip_free(sess->ipv6);
-    }
-
-    smf_bearer_remove_all(sess);
-
-    ogs_pool_free(&smf_sess_pool, sess);
-
-    stats_remove_session();
-
-    return OGS_OK;
-}
-
-void smf_sess_remove_all(void)
-{
-    smf_sess_t *sess = NULL, *next = NULL;;
-
-    ogs_list_for_each_safe(&self.sess_list, next, sess)
-        smf_sess_remove(sess);
-}
-
-smf_sess_t *smf_sess_find(uint32_t index)
-{
-    ogs_assert(index);
-    return ogs_pool_find(&smf_sess_pool, index);
-}
-
-smf_sess_t *smf_sess_find_by_teid(uint32_t teid)
-{
-    return smf_sess_find(teid);
-}
-
-smf_sess_t *smf_sess_find_by_seid(uint64_t seid)
-{
-    return smf_sess_find(seid);
-}
-
-smf_sess_t *smf_sess_find_by_imsi_apn(
-    uint8_t *imsi, int imsi_len, char *apn)
-{
-    uint8_t keybuf[OGS_MAX_IMSI_LEN+OGS_MAX_APN_LEN+1];
-    int keylen = 0;
-
-    ogs_assert(self.sess_hash);
-
-    sess_hash_keygen(keybuf, &keylen, imsi, imsi_len, apn);
-    return (smf_sess_t *)ogs_hash_get(self.sess_hash, keybuf, keylen);
-}
-
-smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr)
-{
-    ogs_assert(self.ipv4_hash);
-    return (smf_sess_t *)ogs_hash_get(self.ipv4_hash, &addr, OGS_IPV4_LEN);
-}
-
-smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6)
-{
-    ogs_assert(self.ipv6_hash);
-    ogs_assert(addr6);
-    return (smf_sess_t *)ogs_hash_get(self.ipv6_hash, addr6, OGS_IPV6_LEN);
-}
-
-smf_sess_t *smf_sess_add_by_message(ogs_gtp_message_t *message)
+smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
 {
     smf_sess_t *sess = NULL;
     ogs_paa_t *paa = NULL;
@@ -798,10 +724,301 @@ smf_sess_t *smf_sess_add_by_message(ogs_gtp_message_t *message)
                 sess->imsi_bcd, sess->pdn.apn);
         smf_sess_remove(sess);
     }
-    sess = smf_sess_add(req->imsi.data, req->imsi.len, apn,
+    sess = smf_sess_add_by_imsi_apn(req->imsi.data, req->imsi.len, apn,
                     req->pdn_type.u8,
                     req->bearer_contexts_to_be_created.eps_bearer_id.u8, paa);
     return sess;
+}
+
+void smf_sess_set_ue_ip(smf_sess_t *sess)
+{
+    char buf1[OGS_ADDRSTRLEN];
+    char buf2[OGS_ADDRSTRLEN];
+    ogs_pfcp_subnet_t *subnet6 = NULL;
+
+    ogs_assert(sess);
+
+    sess->pdn.paa.pdn_type = sess->pdn.pdn_type;
+    ogs_assert(sess->pdn.pdn_type);
+
+    if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
+        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
+                AF_INET, sess->pdn.apn, (uint8_t *)&sess->pdn.ue_ip.addr);
+        ogs_assert(sess->ipv4);
+        sess->pdn.paa.addr = sess->ipv4->addr[0];
+        ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, sess);
+    } else if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
+        sess->ipv6 = ogs_pfcp_ue_ip_alloc(
+                AF_INET6, sess->pdn.apn, sess->pdn.ue_ip.addr6);
+        ogs_assert(sess->ipv6);
+
+        subnet6 = sess->ipv6->subnet;
+        ogs_assert(subnet6);
+
+        sess->pdn.paa.len = subnet6->prefixlen;
+        memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
+        ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, sess);
+    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
+                AF_INET, sess->pdn.apn, (uint8_t *)&sess->pdn.ue_ip.addr);
+        ogs_assert(sess->ipv4);
+        sess->ipv6 = ogs_pfcp_ue_ip_alloc(
+                AF_INET6, sess->pdn.apn, sess->pdn.ue_ip.addr6);
+        ogs_assert(sess->ipv6);
+
+        subnet6 = sess->ipv6->subnet;
+        ogs_assert(subnet6);
+
+        sess->pdn.paa.both.addr = sess->ipv4->addr[0];
+        sess->pdn.paa.both.len = subnet6->prefixlen;
+        memcpy(sess->pdn.paa.both.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
+        ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, sess);
+        ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, sess);
+    } else
+        ogs_assert_if_reached();
+
+    ogs_info("UE SUPI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
+	    sess->supi, sess->pdn.apn,
+        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+}
+
+smf_sess_t *smf_sess_add_by_supi_psi(char *supi, uint8_t psi)
+{
+    smf_event_t e;
+
+    smf_sess_t *sess = NULL;
+    smf_bearer_t *bearer = NULL;
+    ogs_pfcp_pdr_t *pdr = NULL;
+
+    ogs_assert(supi);
+    ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
+
+    ogs_pool_alloc(&smf_sess_pool, &sess);
+    if (!sess) {
+        ogs_error("Maximum number of session[%d] reached",
+        ogs_config()->pool.sess);
+        return NULL;
+    }
+    memset(sess, 0, sizeof *sess);
+
+    sess->index = ogs_pool_index(&smf_sess_pool, sess);
+    ogs_assert(sess->index > 0 && sess->index <= ogs_config()->pool.sess);
+
+    sess->sm_context_ref = ogs_msprintf("%d",
+            (int)ogs_pool_index(&smf_sess_pool, sess));
+    ogs_assert(sess->sm_context_ref);
+
+    /* Set TEID & SEID */
+    sess->smf_n4_teid = sess->index;
+    sess->smf_n4_seid = sess->index;
+
+    /* Set SUPI & PSI */
+    sess->supi = ogs_strdup(supi);
+    ogs_assert(sess->supi);
+    sess->psi = psi;
+
+    sess->supi_psi_keybuf = supi_psi_keygen(supi, psi);
+    ogs_assert(sess->supi_psi_keybuf);
+    ogs_hash_set(self.supi_psi_hash,
+            sess->supi_psi_keybuf, strlen(sess->supi_psi_keybuf), sess);
+
+    /* Select UPF with round-robin manner */
+    if (ogs_pfcp_self()->node == NULL)
+        ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+
+    for (; ogs_pfcp_self()->node;
+        ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node)) {
+        if (OGS_FSM_CHECK(
+                &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated)) {
+            OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
+            break;
+        }
+    }
+
+    /* Set Default Bearer */
+    ogs_list_init(&sess->bearer_list);
+
+    bearer = smf_bearer_add(sess);
+    ogs_assert(bearer);
+
+    /* Default PDRs is set to lowest precedence(highest precedence value). */
+    ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)
+        pdr->precedence = 0xffffffff;
+
+    /* Setup SBI */
+    sess->sbi.client_wait.timer = ogs_timer_add(
+            self.timer_mgr, smf_timer_sbi_client_wait_expire, sess);
+
+    e.sess = sess;
+    ogs_fsm_create(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final);
+    ogs_fsm_init(&sess->sm, &e);
+
+    ogs_list_add(&self.sess_list, sess);
+
+    return sess;
+}
+
+smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
+{
+    smf_sess_t *sess = NULL;
+
+    OpenAPI_sm_context_create_data_t *SmContextCreateData = NULL;
+
+    ogs_assert(message);
+    SmContextCreateData = message->SmContextCreateData;
+    ogs_assert(SmContextCreateData);
+
+    if (!SmContextCreateData->supi) {
+        ogs_error("No SUPI");
+        return NULL;
+    }
+
+    if (SmContextCreateData->pdu_session_id ==
+            OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
+        ogs_error("PDU session identitiy is unassigned");
+        return NULL;
+    }
+
+    sess = smf_sess_find_by_supi_psi(
+            SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
+    if (sess) {
+        ogs_warn("OLD Session Release [SUPI:%s,PDU Session identity:%d]",
+                SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
+        smf_sess_remove(sess);
+    }
+
+    sess = smf_sess_add_by_supi_psi(
+                SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
+
+    return sess;
+}
+
+int smf_sess_remove(smf_sess_t *sess)
+{
+    int i;
+    smf_event_t e;
+
+    ogs_assert(sess);
+
+    ogs_list_remove(&self.sess_list, sess);
+
+    e.sess = sess;
+    ogs_fsm_fini(&sess->sm, &e);
+    ogs_fsm_delete(&sess->sm);
+
+    OGS_TLV_CLEAR_DATA(&sess->ue_pco);
+    OGS_TLV_CLEAR_DATA(&sess->user_location_information);
+    OGS_TLV_CLEAR_DATA(&sess->ue_timezone);
+
+    for (i = 0; i < sess->num_of_pcc_rule; i++)
+        OGS_PCC_RULE_FREE(&sess->pcc_rule[i]);
+    sess->num_of_pcc_rule = 0;
+
+    ogs_hash_set(self.imsi_apn_hash,
+            sess->imsi_apn_keybuf, sess->imsi_apn_keylen, NULL);
+
+    if (sess->ipv4) {
+        ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, NULL);
+        ogs_pfcp_ue_ip_free(sess->ipv4);
+    }
+    if (sess->ipv6) {
+        ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, NULL);
+        ogs_pfcp_ue_ip_free(sess->ipv6);
+    }
+
+    if (sess->sm_context_ref)
+        ogs_free(sess->sm_context_ref);
+
+    if (sess->supi_psi_keybuf)
+        ogs_free(sess->supi_psi_keybuf);
+    if (sess->supi)
+        ogs_free(sess->supi);
+    if (sess->dnn)
+        ogs_free(sess->dnn);
+
+    /* Free SBI object memory */
+    ogs_sbi_object_free(&sess->sbi);
+    ogs_timer_delete(sess->sbi.client_wait.timer);
+
+    smf_bearer_remove_all(sess);
+
+    ogs_pool_free(&smf_sess_pool, sess);
+
+    return OGS_OK;
+}
+
+void smf_sess_remove_all(void)
+{
+    smf_sess_t *sess = NULL, *next = NULL;;
+
+    ogs_list_for_each_safe(&self.sess_list, next, sess)
+        smf_sess_remove(sess);
+}
+
+smf_sess_t *smf_sess_find(uint32_t index)
+{
+    ogs_assert(index);
+    return ogs_pool_find(&smf_sess_pool, index);
+}
+
+smf_sess_t *smf_sess_find_by_teid(uint32_t teid)
+{
+    return smf_sess_find(teid);
+}
+
+smf_sess_t *smf_sess_find_by_seid(uint64_t seid)
+{
+    return smf_sess_find(seid);
+}
+
+smf_sess_t *smf_sess_find_by_imsi_apn(
+    uint8_t *imsi, int imsi_len, char *apn)
+{
+    uint8_t keybuf[OGS_MAX_IMSI_LEN+OGS_MAX_APN_LEN+1];
+    int keylen = 0;
+
+    ogs_assert(self.imsi_apn_hash);
+
+    imsi_apn_keygen(keybuf, &keylen, imsi, imsi_len, apn);
+    return (smf_sess_t *)ogs_hash_get(self.imsi_apn_hash, keybuf, keylen);
+}
+
+smf_sess_t *smf_sess_find_by_supi_psi(char *supi, uint8_t psi)
+{
+    smf_sess_t *sess = NULL;
+    char *keybuf = NULL;
+
+    ogs_assert(supi);
+    ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
+
+    keybuf = supi_psi_keygen(supi, psi);
+    ogs_assert(keybuf);
+
+    sess = (smf_sess_t *)ogs_hash_get(self.supi_psi_hash,
+            keybuf, strlen(keybuf));
+    ogs_free(keybuf);
+
+    return sess;
+}
+
+smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref)
+{
+    ogs_assert(sm_context_ref);
+    return smf_sess_find(atoll(sm_context_ref));
+}
+
+smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr)
+{
+    ogs_assert(self.ipv4_hash);
+    return (smf_sess_t *)ogs_hash_get(self.ipv4_hash, &addr, OGS_IPV4_LEN);
+}
+
+smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6)
+{
+    ogs_assert(self.ipv6_hash);
+    ogs_assert(addr6);
+    return (smf_sess_t *)ogs_hash_get(self.ipv6_hash, addr6, OGS_IPV6_LEN);
 }
 
 smf_bearer_t *smf_bearer_add(smf_sess_t *sess)

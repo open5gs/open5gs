@@ -127,7 +127,7 @@ ausf_ue_t *ausf_ue_add(char *suci)
     memset(ausf_ue, 0, sizeof *ausf_ue);
 
     ausf_ue->ctx_id =
-        ogs_msprintf("%ld", ogs_pool_index(&ausf_ue_pool, ausf_ue));
+        ogs_msprintf("%d", (int)ogs_pool_index(&ausf_ue_pool, ausf_ue));
     ogs_assert(ausf_ue->ctx_id);
 
     ausf_ue->suci = ogs_strdup(suci);
@@ -138,7 +138,7 @@ ausf_ue_t *ausf_ue_add(char *suci)
     ogs_assert(ausf_ue->supi);
     ogs_hash_set(self.supi_hash, ausf_ue->supi, strlen(ausf_ue->supi), ausf_ue);
 
-    ausf_ue->sbi_client_wait.timer = ogs_timer_add(
+    ausf_ue->sbi.client_wait.timer = ogs_timer_add(
             self.timer_mgr, ausf_timer_sbi_client_wait_expire, ausf_ue);
 
     e.ausf_ue = ausf_ue;
@@ -153,7 +153,6 @@ ausf_ue_t *ausf_ue_add(char *suci)
 void ausf_ue_remove(ausf_ue_t *ausf_ue)
 {
     ausf_event_t e;
-    int i;
 
     ogs_assert(ausf_ue);
 
@@ -163,7 +162,9 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     ogs_fsm_fini(&ausf_ue->sm, &e);
     ogs_fsm_delete(&ausf_ue->sm);
 
-    ogs_timer_delete(ausf_ue->sbi_client_wait.timer);
+    /* Free SBI object memory */
+    ogs_sbi_object_free(&ausf_ue->sbi);
+    ogs_timer_delete(ausf_ue->sbi.client_wait.timer);
 
     ogs_assert(ausf_ue->ctx_id);
     ogs_free(ausf_ue->ctx_id);
@@ -176,20 +177,12 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     ogs_hash_set(self.supi_hash, ausf_ue->supi, strlen(ausf_ue->supi), NULL);
     ogs_free(ausf_ue->supi);
 
-    if (ausf_ue->state.method)
-        ogs_free(ausf_ue->state.method);
-
     if (ausf_ue->auth_events_url)
         ogs_free(ausf_ue->auth_events_url);
 
     if (ausf_ue->serving_network_name)
         ogs_free(ausf_ue->serving_network_name);
     
-    for (i = 0; i < OGS_SBI_MAX_NF_TYPE; i++) {
-        if (ausf_ue->nf_types[i].nf_instance)
-            ogs_sbi_nf_instance_remove(ausf_ue->nf_types[i].nf_instance);
-    }
-
     ogs_pool_free(&ausf_ue_pool, ausf_ue);
 }
 

@@ -105,7 +105,7 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
             ogs_error("[%s] Invalid HTTP method [%s]",
                     ausf_ue->suci, message->h.method);
             ogs_sbi_server_send_error(session,
-                    OGS_SBI_HTTP_STATUS_MEHTOD_NOT_ALLOWED, message,
+                    OGS_SBI_HTTP_STATUS_FORBIDDEN, message,
                     "Invalid HTTP method", message->h.method);
         END
 
@@ -116,12 +116,12 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         ogs_assert(message);
         ausf_ue = e->sbi.data;
         ogs_assert(ausf_ue);
-        session = ausf_ue->session;
+        session = ausf_ue->sbi.session;
         ogs_assert(session);
 
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UEAU)
-            ogs_timer_stop(ausf_ue->sbi_client_wait.timer);
+            ogs_timer_stop(ausf_ue->sbi.client_wait.timer);
 
             if (message->res_status != OGS_SBI_HTTP_STATUS_OK &&
                 message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {

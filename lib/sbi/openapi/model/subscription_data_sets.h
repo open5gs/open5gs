@@ -56,6 +56,7 @@ OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_create(
 void OpenAPI_subscription_data_sets_free(OpenAPI_subscription_data_sets_t *subscription_data_sets);
 OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_parseFromJSON(cJSON *subscription_data_setsJSON);
 cJSON *OpenAPI_subscription_data_sets_convertToJSON(OpenAPI_subscription_data_sets_t *subscription_data_sets);
+OpenAPI_subscription_data_sets_t *OpenAPI_subscription_data_sets_copy(OpenAPI_subscription_data_sets_t *dst, OpenAPI_subscription_data_sets_t *src);
 
 #ifdef __cplusplus
 }

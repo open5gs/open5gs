@@ -32,6 +32,7 @@ OpenAPI_route_information_t *OpenAPI_route_information_create(
 void OpenAPI_route_information_free(OpenAPI_route_information_t *route_information);
 OpenAPI_route_information_t *OpenAPI_route_information_parseFromJSON(cJSON *route_informationJSON);
 cJSON *OpenAPI_route_information_convertToJSON(OpenAPI_route_information_t *route_information);
+OpenAPI_route_information_t *OpenAPI_route_information_copy(OpenAPI_route_information_t *dst, OpenAPI_route_information_t *src);
 
 #ifdef __cplusplus
 }

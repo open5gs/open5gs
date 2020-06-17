@@ -81,8 +81,8 @@ int udr_sbi_open(void)
         service = ogs_sbi_nf_service_build_default(nf_instance,
                 (char*)OGS_SBI_SERVICE_NAME_NUDR_DR);
         ogs_assert(service);
-        ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_VERSION,
-                (char*)OGS_SBI_API_FULL_VERSION, NULL);
+        ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_V1,
+                (char*)OGS_SBI_API_V1_0_0, NULL);
 
         udr_nf_fsm_init(nf_instance);
         udr_sbi_setup_client_callback(nf_instance);

@@ -26,6 +26,7 @@ OpenAPI_rm_state_t *OpenAPI_rm_state_create(
 void OpenAPI_rm_state_free(OpenAPI_rm_state_t *rm_state);
 OpenAPI_rm_state_t *OpenAPI_rm_state_parseFromJSON(cJSON *rm_stateJSON);
 cJSON *OpenAPI_rm_state_convertToJSON(OpenAPI_rm_state_t *rm_state);
+OpenAPI_rm_state_t *OpenAPI_rm_state_copy(OpenAPI_rm_state_t *dst, OpenAPI_rm_state_t *src);
 
 #ifdef __cplusplus
 }

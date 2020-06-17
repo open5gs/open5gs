@@ -28,6 +28,7 @@ OpenAPI_report_item_t *OpenAPI_report_item_create(
 void OpenAPI_report_item_free(OpenAPI_report_item_t *report_item);
 OpenAPI_report_item_t *OpenAPI_report_item_parseFromJSON(cJSON *report_itemJSON);
 cJSON *OpenAPI_report_item_convertToJSON(OpenAPI_report_item_t *report_item);
+OpenAPI_report_item_t *OpenAPI_report_item_copy(OpenAPI_report_item_t *dst, OpenAPI_report_item_t *src);
 
 #ifdef __cplusplus
 }

@@ -31,6 +31,7 @@ OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_create(
 void OpenAPI_trace_data_response_free(OpenAPI_trace_data_response_t *trace_data_response);
 OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_parseFromJSON(cJSON *trace_data_responseJSON);
 cJSON *OpenAPI_trace_data_response_convertToJSON(OpenAPI_trace_data_response_t *trace_data_response);
+OpenAPI_trace_data_response_t *OpenAPI_trace_data_response_copy(OpenAPI_trace_data_response_t *dst, OpenAPI_trace_data_response_t *src);
 
 #ifdef __cplusplus
 }

@@ -28,6 +28,7 @@ OpenAPI_trigger_request_t *OpenAPI_trigger_request_create(
 void OpenAPI_trigger_request_free(OpenAPI_trigger_request_t *trigger_request);
 OpenAPI_trigger_request_t *OpenAPI_trigger_request_parseFromJSON(cJSON *trigger_requestJSON);
 cJSON *OpenAPI_trigger_request_convertToJSON(OpenAPI_trigger_request_t *trigger_request);
+OpenAPI_trigger_request_t *OpenAPI_trigger_request_copy(OpenAPI_trigger_request_t *dst, OpenAPI_trigger_request_t *src);
 
 #ifdef __cplusplus
 }

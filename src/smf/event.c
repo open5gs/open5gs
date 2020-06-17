@@ -95,6 +95,16 @@ const char *smf_event_get_name(smf_event_t *e)
     case SMF_EVT_SBI_TIMER:
         return "SMF_EVT_SBI_TIMER";
 
+    case SMF_EVT_NGAP_MESSAGE:
+        return "SMF_EVT_NGAP_MESSAGE";
+    case SMF_EVT_NGAP_TIMER:
+        return "SMF_EVT_NGAP_TIMER";
+
+    case SMF_EVT_5GSM_MESSAGE:
+        return "SMF_EVT_5GSM_MESSAGE";
+    case SMF_EVT_5GSM_TIMER:
+        return "SMF_EVT_5GSM_TIMER";
+
     default: 
        break;
     }

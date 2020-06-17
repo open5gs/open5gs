@@ -30,6 +30,7 @@ OpenAPI_geographical_coordinates_t *OpenAPI_geographical_coordinates_create(
 void OpenAPI_geographical_coordinates_free(OpenAPI_geographical_coordinates_t *geographical_coordinates);
 OpenAPI_geographical_coordinates_t *OpenAPI_geographical_coordinates_parseFromJSON(cJSON *geographical_coordinatesJSON);
 cJSON *OpenAPI_geographical_coordinates_convertToJSON(OpenAPI_geographical_coordinates_t *geographical_coordinates);
+OpenAPI_geographical_coordinates_t *OpenAPI_geographical_coordinates_copy(OpenAPI_geographical_coordinates_t *dst, OpenAPI_geographical_coordinates_t *src);
 
 #ifdef __cplusplus
 }

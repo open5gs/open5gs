@@ -31,6 +31,9 @@ extern "C" {
 #define OGS_MAX_NUM_OF_SESS             4   /* Num of APN(Session) per UE */
 #define OGS_MAX_NUM_OF_RULE             4   /* Num of Rule per Session */
 
+/* Num of PacketFilter per Bearer(GTP) or QoS(NAS-5GS) */
+#define OGS_MAX_NUM_OF_PACKET_FILTER    16
+
 #define OGS_MAX_SDU_LEN                 8192
 #define OGS_PLMN_ID_LEN                 3
 #define OGS_MAX_PLMN_ID_BCD_LEN         6
@@ -65,6 +68,11 @@ extern "C" {
     (((((x) % 10) << 4) & 0xf0) | (((x) / 10) & 0x0f))
 
 #define OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED 0
+#define OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED 0
+
+#define OGS_ACCESS_TYPE_3GPP 1
+#define OGS_ACCESS_TYPE_NON_3GPP 2
+#define OGS_ACCESS_TYPE_BOTH_3GPP_AND_NON_3GPP 3
 
 typedef struct ogs_uint24_s {
     uint32_t v:24;
@@ -127,7 +135,12 @@ uint16_t ogs_plmn_id_mnc_len(ogs_plmn_id_t *plmn_id);
 void *ogs_plmn_id_build(ogs_plmn_id_t *plmn_id, 
         uint16_t mcc, uint16_t mnc, uint16_t mnc_len);
 
-char *ogs_plmn_id_string(ogs_plmn_id_t *plmn_id);
+char *ogs_serving_network_name_from_plmn_id(ogs_plmn_id_t *plmn_id);
+char *ogs_plmn_id_mcc_string(ogs_plmn_id_t *plmn_id);
+char *ogs_plmn_id_mnc_string(ogs_plmn_id_t *plmn_id);
+
+#define OGS_PLMNIDSTRLEN    (sizeof(ogs_plmn_id_t)*2+1)
+char *ogs_plmn_id_to_string(ogs_plmn_id_t *plmn_id, char *buf);
 
 /************************************
  * AMF_ID Structure                 */
@@ -154,7 +167,8 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
 /************************************
  * SUPI/SUCI                       */
 char *ogs_supi_from_suci(char *suci);
-char *ogs_ueid_from_supi(char *supi);
+char *ogs_supi_get_type(char *supi);
+char *ogs_supi_get_id(char *supi);
 
 /************************************
  * TAI Structure                    */
@@ -181,12 +195,15 @@ typedef struct ogs_nr_cgi_s {
 
 /************************************
  * S-NSSAI Structure                */
-#define OGS_MAX_NUM_OF_S_NSSAI      8
+#define OGS_MAX_NUM_OF_S_NSSAI      16
 #define OGS_S_NSSAI_NO_SD_VALUE     0xffffff
 typedef struct ogs_s_nssai_s {
     uint8_t sst;
     ogs_uint24_t sd;
 } __attribute__ ((packed)) ogs_s_nssai_t;
+
+char *ogs_s_nssai_sd_to_string(ogs_uint24_t sd);
+ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex);
 
 /**************************************************
  * Common Structure
@@ -211,6 +228,10 @@ ED3(uint8_t       ipv4:1;,
 } ogs_ip_t;
 
 int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list);
+void ogs_sockaddr_to_ip(
+        ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6, ogs_ip_t *ip);
+char *ogs_ipv4_to_string(uint32_t addr);
+char *ogs_ipv6_to_string(uint8_t *addr6);
 
 /**************************************************
  * 8.14 PDN Address Allocation (PAA) */
@@ -220,14 +241,14 @@ int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list);
 typedef struct ogs_paa_s {
 ED2(uint8_t spare:5;,
 /* 8.34 PDN Type  */
-#define OGS_GTP_PDN_TYPE_IPV4                           1
-#define OGS_GTP_PDN_TYPE_IPV6                           2
-#define OGS_GTP_PDN_TYPE_IPV4V6                         3
-#define OGS_GTP_PDN_TYPE_NON_IP                         4
-#define OGS_PFCP_PDN_TYPE_IPV4                          OGS_GTP_PDN_TYPE_IPV4
-#define OGS_PFCP_PDN_TYPE_IPV6                          OGS_GTP_PDN_TYPE_IPV6
-#define OGS_PFCP_PDN_TYPE_IPV4V6                        OGS_GTP_PDN_TYPE_IPV4V6
-#define OGS_PFCP_PDN_TYPE_NONIP                         OGS_GTP_PDN_TYPE_NONIP
+#define OGS_GTP_PDN_TYPE_IPV4                   OGS_PDU_SESSION_TYPE_IPV4
+#define OGS_GTP_PDN_TYPE_IPV6                   OGS_PDU_SESSION_TYPE_IPV6
+#define OGS_GTP_PDN_TYPE_IPV4V6                 OGS_PDU_SESSION_TYPE_IPV4V6
+#define OGS_GTP_PDN_TYPE_NON_IP                 OGS_PDU_SESSION_TYPE_NONIP
+#define OGS_PFCP_PDN_TYPE_IPV4                  OGS_PDU_SESSION_TYPE_IPV4
+#define OGS_PFCP_PDN_TYPE_IPV6                  OGS_PDU_SESSION_TYPE_IPV6
+#define OGS_PFCP_PDN_TYPE_IPV4V6                OGS_PDU_SESSION_TYPE_IPV4V6
+#define OGS_PFCP_PDN_TYPE_NONIP                 OGS_PDU_SESSION_TYPE_NONIP
     uint8_t pdn_type:3;)
     union {
         /* GTP_PDN_TYPE_IPV4 */
@@ -383,19 +404,33 @@ typedef struct ogs_pcc_rule_s {
 /**********************************
  * PDN Structure                 */
 typedef struct ogs_pdn_s {
-    uint32_t        context_identifier;
-    char            apn[OGS_MAX_APN_LEN+1];
+    uint32_t context_identifier;
+    char apn[OGS_MAX_APN_LEN+1];
 #define OGS_DIAM_PDN_TYPE_IPV4                      0
 #define OGS_DIAM_PDN_TYPE_IPV6                      1
 #define OGS_DIAM_PDN_TYPE_IPV4V6                    2
 #define OGS_DIAM_PDN_TYPE_IPV4_OR_IPV6              3
-    uint8_t         pdn_type;
+#define OGS_PDU_SESSION_TYPE_IPV4                   1
+#define OGS_PDU_SESSION_TYPE_IPV6                   2
+#define OGS_PDU_SESSION_TYPE_IPV4V6                 3
+#define OGS_PDU_SESSION_TYPE_UNSTRUCTURED           4
+#define OGS_PDU_SESSION_TYPE_ETHERNET               5
+    uint8_t pdn_type;
 
-    ogs_qos_t       qos;
-    ogs_bitrate_t   ambr; /* APN-AMBR */
+#define OGS_SSC_MODE_1                              1
+#define OGS_SSC_MODE_2                              2
+#define OGS_SSC_MODE_3                              3
+    uint8_t ssc_mode;
 
-    ogs_paa_t       paa;
-    ogs_ip_t        pgw_ip;
+    ogs_qos_t qos;
+    ogs_bitrate_t ambr; /* APN-AMBR */
+
+    ogs_paa_t paa;
+    struct {
+        uint32_t addr;
+        uint8_t addr6[OGS_IPV6_LEN];
+    } ue_ip;
+    ogs_ip_t pgw_ip;
 } ogs_pdn_t;
 
 int ogs_fqdn_build(char *dst, char *src, int len);

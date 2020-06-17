@@ -26,6 +26,7 @@ OpenAPI_flow_direction_t *OpenAPI_flow_direction_create(
 void OpenAPI_flow_direction_free(OpenAPI_flow_direction_t *flow_direction);
 OpenAPI_flow_direction_t *OpenAPI_flow_direction_parseFromJSON(cJSON *flow_directionJSON);
 cJSON *OpenAPI_flow_direction_convertToJSON(OpenAPI_flow_direction_t *flow_direction);
+OpenAPI_flow_direction_t *OpenAPI_flow_direction_copy(OpenAPI_flow_direction_t *dst, OpenAPI_flow_direction_t *src);
 
 #ifdef __cplusplus
 }

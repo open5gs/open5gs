@@ -30,6 +30,7 @@ OpenAPI_tmbr_t *OpenAPI_tmbr_create(
 void OpenAPI_tmbr_free(OpenAPI_tmbr_t *tmbr);
 OpenAPI_tmbr_t *OpenAPI_tmbr_parseFromJSON(cJSON *tmbrJSON);
 cJSON *OpenAPI_tmbr_convertToJSON(OpenAPI_tmbr_t *tmbr);
+OpenAPI_tmbr_t *OpenAPI_tmbr_copy(OpenAPI_tmbr_t *dst, OpenAPI_tmbr_t *src);
 
 #ifdef __cplusplus
 }

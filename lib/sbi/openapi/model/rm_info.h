@@ -32,6 +32,7 @@ OpenAPI_rm_info_t *OpenAPI_rm_info_create(
 void OpenAPI_rm_info_free(OpenAPI_rm_info_t *rm_info);
 OpenAPI_rm_info_t *OpenAPI_rm_info_parseFromJSON(cJSON *rm_infoJSON);
 cJSON *OpenAPI_rm_info_convertToJSON(OpenAPI_rm_info_t *rm_info);
+OpenAPI_rm_info_t *OpenAPI_rm_info_copy(OpenAPI_rm_info_t *dst, OpenAPI_rm_info_t *src);
 
 #ifdef __cplusplus
 }

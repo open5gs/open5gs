@@ -30,6 +30,7 @@ OpenAPI_area_t *OpenAPI_area_create(
 void OpenAPI_area_free(OpenAPI_area_t *area);
 OpenAPI_area_t *OpenAPI_area_parseFromJSON(cJSON *areaJSON);
 cJSON *OpenAPI_area_convertToJSON(OpenAPI_area_t *area);
+OpenAPI_area_t *OpenAPI_area_copy(OpenAPI_area_t *dst, OpenAPI_area_t *src);
 
 #ifdef __cplusplus
 }

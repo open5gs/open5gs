@@ -34,6 +34,7 @@ OpenAPI_ddd_traffic_descriptor_t *OpenAPI_ddd_traffic_descriptor_create(
 void OpenAPI_ddd_traffic_descriptor_free(OpenAPI_ddd_traffic_descriptor_t *ddd_traffic_descriptor);
 OpenAPI_ddd_traffic_descriptor_t *OpenAPI_ddd_traffic_descriptor_parseFromJSON(cJSON *ddd_traffic_descriptorJSON);
 cJSON *OpenAPI_ddd_traffic_descriptor_convertToJSON(OpenAPI_ddd_traffic_descriptor_t *ddd_traffic_descriptor);
+OpenAPI_ddd_traffic_descriptor_t *OpenAPI_ddd_traffic_descriptor_copy(OpenAPI_ddd_traffic_descriptor_t *dst, OpenAPI_ddd_traffic_descriptor_t *src);
 
 #ifdef __cplusplus
 }

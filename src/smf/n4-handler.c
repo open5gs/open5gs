@@ -23,6 +23,7 @@
 #include "gtp-path.h"
 #include "n4-handler.h"
 #include "bearer-binding.h"
+#include "sbi-path.h"
 
 static uint8_t gtp_cause_from_pfcp(uint8_t pfcp_cause)
 {
@@ -137,7 +138,98 @@ void smf_n4_handle_heartbeat_response(
             smf_timer_cfg(SMF_TIMER_PFCP_HEARTBEAT)->duration);
 }
 
-void smf_n4_handle_session_establishment_response(
+void smf_5gc_n4_handle_session_establishment_response(
+        smf_sess_t *sess, ogs_pfcp_xact_t *xact,
+        ogs_pfcp_session_establishment_response_t *rsp)
+{
+    ogs_pfcp_f_seid_t *up_f_seid = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(xact);
+    ogs_assert(rsp);
+
+    ogs_pfcp_xact_commit(xact);
+
+    if (rsp->up_f_seid.presence == 0) {
+        ogs_error("No UP F-SEID");
+        return;
+    }
+
+    if (rsp->cause.presence) {
+        if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("Cause[%d] : No Accepted", rsp->cause.u8);
+            return;
+        }
+    } else {
+        ogs_error("No Cause");
+        return;
+    }
+
+    /* UP F-SEID */
+    up_f_seid = rsp->up_f_seid.data;
+    ogs_assert(up_f_seid);
+    sess->upf_n4_seid = be64toh(up_f_seid->seid);
+
+    smf_sbi_discover_and_send(OpenAPI_nf_type_AMF, sess, NULL,
+            smf_namf_comm_build_n1_n2_message_transfer);
+
+#if 0
+    smf_bearer_binding(sess);
+#endif
+}
+
+void smf_5gc_n4_handle_session_modification_response(
+        smf_sess_t *sess, ogs_pfcp_xact_t *xact,
+        ogs_pfcp_session_modification_response_t *rsp)
+{
+    ogs_sbi_session_t *session = NULL;
+    smf_bearer_t *bearer = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_assert(sess);
+    session = sess->sbi.session;
+    ogs_assert(session);
+    ogs_assert(xact);
+    ogs_assert(rsp);
+
+    bearer = smf_default_bearer_in_sess(sess);
+    ogs_assert(bearer);
+
+    ogs_pfcp_xact_commit(xact);
+
+    if (rsp->cause.presence) {
+        if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+            ogs_error("Cause[%d] : No Accepted", rsp->cause.u8);
+            smf_sbi_send_sm_context_update_error(session,
+                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                    "[PFCP] No Accepted", sess->supi_psi_keybuf, NULL);
+            return;
+        }
+    } else {
+        ogs_error("No Cause");
+        smf_sbi_send_sm_context_update_error(session,
+                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                "[PFCP] No Cause", sess->supi_psi_keybuf, NULL);
+        return;
+    }
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+    ogs_assert(response);
+    ogs_sbi_server_send_response(session, response);
+}
+
+void smf_5gc_n4_handle_session_deletion_response(
+        smf_sess_t *sess, ogs_pfcp_xact_t *xact,
+        ogs_pfcp_session_deletion_response_t *rsp)
+{
+    ogs_fatal("TODO");
+}
+
+void smf_epc_n4_handle_session_establishment_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_establishment_response_t *rsp)
 {
@@ -193,7 +285,7 @@ void smf_n4_handle_session_establishment_response(
     smf_bearer_binding(sess);
 }
 
-void smf_n4_handle_session_modification_response(
+void smf_epc_n4_handle_session_modification_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_modification_response_t *rsp)
 {
@@ -211,7 +303,7 @@ void smf_n4_handle_session_modification_response(
         smf_bearer_remove(bearer);
 }
 
-void smf_n4_handle_session_deletion_response(
+void smf_epc_n4_handle_session_deletion_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_deletion_response_t *rsp)
 {

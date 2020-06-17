@@ -17,15 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_preemption_capability_s OpenAPI_preemption_capability_t;
-typedef struct OpenAPI_preemption_capability_s {
-} OpenAPI_preemption_capability_t;
+typedef enum { OpenAPI_preemption_capability_NULL = 0, OpenAPI_preemption_capability_NOT_PREEMPT, OpenAPI_preemption_capability_MAY_PREEMPT } OpenAPI_preemption_capability_e;
 
-OpenAPI_preemption_capability_t *OpenAPI_preemption_capability_create(
-    );
-void OpenAPI_preemption_capability_free(OpenAPI_preemption_capability_t *preemption_capability);
-OpenAPI_preemption_capability_t *OpenAPI_preemption_capability_parseFromJSON(cJSON *preemption_capabilityJSON);
-cJSON *OpenAPI_preemption_capability_convertToJSON(OpenAPI_preemption_capability_t *preemption_capability);
+char* OpenAPI_preemption_capability_ToString(OpenAPI_preemption_capability_e preemption_capability);
+
+OpenAPI_preemption_capability_e OpenAPI_preemption_capability_FromString(char* preemption_capability);
 
 #ifdef __cplusplus
 }

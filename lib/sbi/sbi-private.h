@@ -20,36 +20,11 @@
 #ifndef OGS_SBI_PRIVATE_H
 #define OGS_SBI_PRIVATE_H
 
-#include "ogs-core.h"
 #include "yuarel.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-typedef struct http_message_s {
-    ogs_hash_t *params;
-    ogs_hash_t *headers;
-
-    char *content;
-    size_t content_length;
-} http_message_t;
-
-typedef struct ogs_sbi_request_s {
-    ogs_sbi_header_t h;
-    http_message_t http;
-
-    /* Used in microhttpd */
-    bool suspended;
-    ogs_poll_t *poll;
-} ogs_sbi_request_t;
-
-typedef struct ogs_sbi_response_s {
-    ogs_sbi_header_t h;
-    http_message_t http;
-
-    int status;
-} ogs_sbi_response_t;
 
 #ifdef __cplusplus
 }

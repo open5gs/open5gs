@@ -30,6 +30,7 @@ OpenAPI_sms_subscription_data_t *OpenAPI_sms_subscription_data_create(
 void OpenAPI_sms_subscription_data_free(OpenAPI_sms_subscription_data_t *sms_subscription_data);
 OpenAPI_sms_subscription_data_t *OpenAPI_sms_subscription_data_parseFromJSON(cJSON *sms_subscription_dataJSON);
 cJSON *OpenAPI_sms_subscription_data_convertToJSON(OpenAPI_sms_subscription_data_t *sms_subscription_data);
+OpenAPI_sms_subscription_data_t *OpenAPI_sms_subscription_data_copy(OpenAPI_sms_subscription_data_t *dst, OpenAPI_sms_subscription_data_t *src);
 
 #ifdef __cplusplus
 }

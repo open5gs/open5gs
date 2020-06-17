@@ -48,6 +48,7 @@ OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_create(
 void OpenAPI_n3ga_location_free(OpenAPI_n3ga_location_t *n3ga_location);
 OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_parseFromJSON(cJSON *n3ga_locationJSON);
 cJSON *OpenAPI_n3ga_location_convertToJSON(OpenAPI_n3ga_location_t *n3ga_location);
+OpenAPI_n3ga_location_t *OpenAPI_n3ga_location_copy(OpenAPI_n3ga_location_t *dst, OpenAPI_n3ga_location_t *src);
 
 #ifdef __cplusplus
 }

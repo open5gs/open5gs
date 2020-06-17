@@ -26,6 +26,7 @@ OpenAPI_access_right_status_t *OpenAPI_access_right_status_create(
 void OpenAPI_access_right_status_free(OpenAPI_access_right_status_t *access_right_status);
 OpenAPI_access_right_status_t *OpenAPI_access_right_status_parseFromJSON(cJSON *access_right_statusJSON);
 cJSON *OpenAPI_access_right_status_convertToJSON(OpenAPI_access_right_status_t *access_right_status);
+OpenAPI_access_right_status_t *OpenAPI_access_right_status_copy(OpenAPI_access_right_status_t *dst, OpenAPI_access_right_status_t *src);
 
 #ifdef __cplusplus
 }

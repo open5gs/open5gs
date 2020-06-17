@@ -30,6 +30,7 @@ OpenAPI_plmn_id_t *OpenAPI_plmn_id_create(
 void OpenAPI_plmn_id_free(OpenAPI_plmn_id_t *plmn_id);
 OpenAPI_plmn_id_t *OpenAPI_plmn_id_parseFromJSON(cJSON *plmn_idJSON);
 cJSON *OpenAPI_plmn_id_convertToJSON(OpenAPI_plmn_id_t *plmn_id);
+OpenAPI_plmn_id_t *OpenAPI_plmn_id_copy(OpenAPI_plmn_id_t *dst, OpenAPI_plmn_id_t *src);
 
 #ifdef __cplusplus
 }

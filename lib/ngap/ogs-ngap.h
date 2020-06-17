@@ -630,6 +630,7 @@
 #include "NGAP_XnTNLConfigurationInfo.h"
 
 #include "asn1c/util/conv.h"
+#include "asn1c/util/message.h"
 
 #define OGS_NGAP_INSIDE
 

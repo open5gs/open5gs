@@ -37,6 +37,7 @@ OpenAPI_change_item_t *OpenAPI_change_item_create(
 void OpenAPI_change_item_free(OpenAPI_change_item_t *change_item);
 OpenAPI_change_item_t *OpenAPI_change_item_parseFromJSON(cJSON *change_itemJSON);
 cJSON *OpenAPI_change_item_convertToJSON(OpenAPI_change_item_t *change_item);
+OpenAPI_change_item_t *OpenAPI_change_item_copy(OpenAPI_change_item_t *dst, OpenAPI_change_item_t *src);
 
 #ifdef __cplusplus
 }

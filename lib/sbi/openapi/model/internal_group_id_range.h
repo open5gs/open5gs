@@ -32,6 +32,7 @@ OpenAPI_internal_group_id_range_t *OpenAPI_internal_group_id_range_create(
 void OpenAPI_internal_group_id_range_free(OpenAPI_internal_group_id_range_t *internal_group_id_range);
 OpenAPI_internal_group_id_range_t *OpenAPI_internal_group_id_range_parseFromJSON(cJSON *internal_group_id_rangeJSON);
 cJSON *OpenAPI_internal_group_id_range_convertToJSON(OpenAPI_internal_group_id_range_t *internal_group_id_range);
+OpenAPI_internal_group_id_range_t *OpenAPI_internal_group_id_range_copy(OpenAPI_internal_group_id_range_t *dst, OpenAPI_internal_group_id_range_t *src);
 
 #ifdef __cplusplus
 }

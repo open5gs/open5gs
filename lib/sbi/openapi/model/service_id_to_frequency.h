@@ -32,6 +32,7 @@ OpenAPI_service_id_to_frequency_t *OpenAPI_service_id_to_frequency_create(
 void OpenAPI_service_id_to_frequency_free(OpenAPI_service_id_to_frequency_t *service_id_to_frequency);
 OpenAPI_service_id_to_frequency_t *OpenAPI_service_id_to_frequency_parseFromJSON(cJSON *service_id_to_frequencyJSON);
 cJSON *OpenAPI_service_id_to_frequency_convertToJSON(OpenAPI_service_id_to_frequency_t *service_id_to_frequency);
+OpenAPI_service_id_to_frequency_t *OpenAPI_service_id_to_frequency_copy(OpenAPI_service_id_to_frequency_t *dst, OpenAPI_service_id_to_frequency_t *src);
 
 #ifdef __cplusplus
 }

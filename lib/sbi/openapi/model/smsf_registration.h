@@ -42,6 +42,7 @@ OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_create(
 void OpenAPI_smsf_registration_free(OpenAPI_smsf_registration_t *smsf_registration);
 OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_parseFromJSON(cJSON *smsf_registrationJSON);
 cJSON *OpenAPI_smsf_registration_convertToJSON(OpenAPI_smsf_registration_t *smsf_registration);
+OpenAPI_smsf_registration_t *OpenAPI_smsf_registration_copy(OpenAPI_smsf_registration_t *dst, OpenAPI_smsf_registration_t *src);
 
 #ifdef __cplusplus
 }

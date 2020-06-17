@@ -26,6 +26,7 @@ OpenAPI_core_network_type_t *OpenAPI_core_network_type_create(
 void OpenAPI_core_network_type_free(OpenAPI_core_network_type_t *core_network_type);
 OpenAPI_core_network_type_t *OpenAPI_core_network_type_parseFromJSON(cJSON *core_network_typeJSON);
 cJSON *OpenAPI_core_network_type_convertToJSON(OpenAPI_core_network_type_t *core_network_type);
+OpenAPI_core_network_type_t *OpenAPI_core_network_type_copy(OpenAPI_core_network_type_t *dst, OpenAPI_core_network_type_t *src);
 
 #ifdef __cplusplus
 }

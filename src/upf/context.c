@@ -461,8 +461,8 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid,
              "APN[%s] PDN-Type[%d] IPv4[%s] IPv6[%s], Default PDR ID[%d]",
         (long)sess->upf_n4_seid, (long)sess->smf_n4_seid,
         apn, pdn_type,
-        sess->ipv4 ? INET_NTOP(&sess->ipv4->addr, buf1) : "",
-        sess->ipv6 ? INET6_NTOP(&sess->ipv6->addr, buf2) : "",
+        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "",
         sess->pfcp.default_pdr->id);
 
     ogs_list_add(&self.sess_list, sess);

@@ -32,6 +32,7 @@ OpenAPI_ip_address_t *OpenAPI_ip_address_create(
 void OpenAPI_ip_address_free(OpenAPI_ip_address_t *ip_address);
 OpenAPI_ip_address_t *OpenAPI_ip_address_parseFromJSON(cJSON *ip_addressJSON);
 cJSON *OpenAPI_ip_address_convertToJSON(OpenAPI_ip_address_t *ip_address);
+OpenAPI_ip_address_t *OpenAPI_ip_address_copy(OpenAPI_ip_address_t *dst, OpenAPI_ip_address_t *src);
 
 #ifdef __cplusplus
 }

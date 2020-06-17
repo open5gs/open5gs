@@ -41,9 +41,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(test_ue_t *test_ue,
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_REGISTRATION_REQUEST;
 
-    registration_type->type = 1;
-    registration_type->follow_on_request = 1;
-    registration_type->value = 1;
+    registration_type->data = test_ue->nas.data;
 
     registration_request->mobile_identity.length = mobile_identity->length;
     registration_request->mobile_identity.buffer = mobile_identity->buffer;
@@ -95,7 +93,8 @@ ogs_pkbuf_t *testgmm_build_authentication_response(test_ue_t *test_ue)
 
     milenage_f2345(test_ue->opc, test_ue->k, test_ue->rand,
             res, ck, ik, ak, NULL);
-    serving_network_name = ogs_plmn_id_string(&test_self()->tai.plmn_id);
+    serving_network_name =
+        ogs_serving_network_name_from_plmn_id(&test_self()->tai.plmn_id);
     ogs_kdf_xres_star(
             ck, ik,
             serving_network_name, test_ue->rand, res, 8,
@@ -161,4 +160,123 @@ ogs_pkbuf_t *testgmm_build_security_mode_complete(
     }
 
     return test_nas_5gs_security_encode(test_ue, &message);
+}
+
+ogs_pkbuf_t *testgmm_build_registration_complete(test_ue_t *test_ue)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_nas_5gs_registration_complete_t *registration_complete =
+            &message.gmm.registration_complete;
+
+    ogs_assert(test_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_REGISTRATION_COMPLETE;
+
+    return test_nas_5gs_security_encode(test_ue, &message);
+}
+
+ogs_pkbuf_t *testgmm_build_configuration_update_complete(test_ue_t *test_ue)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_nas_5gs_configuration_update_complete_t *configuration_update_complete =
+            &message.gmm.configuration_update_complete;
+    ogs_nas_control_plane_service_type_t *control_plane_service_type = NULL;
+
+    ogs_assert(test_ue);
+
+    control_plane_service_type = &configuration_update_complete->control_plane_service_type;
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE;
+
+    control_plane_service_type->value =
+        OGS_NAS_5GS_CONTROL_PLANE_SERVICE_TYPE_MO;
+
+    return test_nas_5gs_security_encode(test_ue, &message);
+}
+
+ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
+        uint8_t payload_type, ogs_pkbuf_t *payload)
+{
+    test_ue_t *test_ue = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport =
+            &message.gmm.ul_nas_transport;
+
+    ogs_nas_payload_container_type_t *payload_container_type = NULL;
+    ogs_nas_payload_container_t *payload_container = NULL;
+    ogs_nas_pdu_session_identity_2_t *pdu_session_id = NULL;
+    ogs_nas_request_type_t *request_type = NULL;
+    ogs_nas_s_nssai_t *s_nssai = NULL;
+
+    ogs_assert(test_sess);
+    test_ue = test_sess->test_ue;
+    ogs_assert(test_ue);
+    ogs_assert(payload_type);
+    ogs_assert(payload);
+
+    payload_container_type = &ul_nas_transport->payload_container_type;
+    payload_container = &ul_nas_transport->payload_container;
+    pdu_session_id = &ul_nas_transport->pdu_session_id;
+    request_type = &ul_nas_transport->request_type;
+    s_nssai = &ul_nas_transport->s_nssai;
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_UL_NAS_TRANSPORT;
+
+    payload_container_type->value = payload_type;
+
+    payload_container->length = payload->len;
+    payload_container->buffer = payload->data;
+
+    ul_nas_transport->presencemask |=
+            OGS_NAS_5GS_UL_NAS_TRANSPORT_PDU_SESSION_ID_PRESENT;
+    *pdu_session_id = test_sess->psi;
+
+    ul_nas_transport->presencemask |=
+            OGS_NAS_5GS_UL_NAS_TRANSPORT_REQUEST_TYPE_PRESENT;
+    request_type->value = OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+
+    ul_nas_transport->presencemask |=
+            OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT;
+    s_nssai->length = 4;
+    s_nssai->sst = test_self()->plmn_support[0].s_nssai[0].sst;
+    s_nssai->sd = ogs_htobe24(test_self()->plmn_support[0].s_nssai[0].sd);
+
+    ul_nas_transport->presencemask |=
+            OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT;
+    ul_nas_transport->dnn.length = strlen(test_sess->dnn);
+    ogs_cpystrn(ul_nas_transport->dnn.value, test_sess->dnn,
+            ogs_min(ul_nas_transport->dnn.length, OGS_MAX_DNN_LEN) + 1);
+
+    pkbuf = test_nas_5gs_security_encode(test_ue, &message);
+    ogs_pkbuf_free(payload);
+
+    return pkbuf;
 }

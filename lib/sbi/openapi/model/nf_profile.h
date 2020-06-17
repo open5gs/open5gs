@@ -176,6 +176,7 @@ OpenAPI_nf_profile_t *OpenAPI_nf_profile_create(
 void OpenAPI_nf_profile_free(OpenAPI_nf_profile_t *nf_profile);
 OpenAPI_nf_profile_t *OpenAPI_nf_profile_parseFromJSON(cJSON *nf_profileJSON);
 cJSON *OpenAPI_nf_profile_convertToJSON(OpenAPI_nf_profile_t *nf_profile);
+OpenAPI_nf_profile_t *OpenAPI_nf_profile_copy(OpenAPI_nf_profile_t *dst, OpenAPI_nf_profile_t *src);
 
 #ifdef __cplusplus
 }

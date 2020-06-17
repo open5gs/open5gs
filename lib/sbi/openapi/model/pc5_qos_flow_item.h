@@ -33,6 +33,7 @@ OpenAPI_pc5_qos_flow_item_t *OpenAPI_pc5_qos_flow_item_create(
 void OpenAPI_pc5_qos_flow_item_free(OpenAPI_pc5_qos_flow_item_t *pc5_qos_flow_item);
 OpenAPI_pc5_qos_flow_item_t *OpenAPI_pc5_qos_flow_item_parseFromJSON(cJSON *pc5_qos_flow_itemJSON);
 cJSON *OpenAPI_pc5_qos_flow_item_convertToJSON(OpenAPI_pc5_qos_flow_item_t *pc5_qos_flow_item);
+OpenAPI_pc5_qos_flow_item_t *OpenAPI_pc5_qos_flow_item_copy(OpenAPI_pc5_qos_flow_item_t *dst, OpenAPI_pc5_qos_flow_item_t *src);
 
 #ifdef __cplusplus
 }

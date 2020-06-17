@@ -290,7 +290,7 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
     security_mode_command->presencemask |=
         OGS_NAS_EPS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT;
     imeisv_request->type = OGS_NAS_IMEISV_TYPE;
-    imeisv_request->imeisv_request_value = OGS_NAS_IMEISV_REQUESTED;
+    imeisv_request->value = OGS_NAS_IMEISV_REQUESTED;
 
     if (mme_ue->selected_int_algorithm == OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
         ogs_error("Encrypt[0x%x] can be skipped with EEA0, "

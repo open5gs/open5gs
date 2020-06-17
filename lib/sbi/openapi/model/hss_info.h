@@ -31,6 +31,7 @@ OpenAPI_hss_info_t *OpenAPI_hss_info_create(
 void OpenAPI_hss_info_free(OpenAPI_hss_info_t *hss_info);
 OpenAPI_hss_info_t *OpenAPI_hss_info_parseFromJSON(cJSON *hss_infoJSON);
 cJSON *OpenAPI_hss_info_convertToJSON(OpenAPI_hss_info_t *hss_info);
+OpenAPI_hss_info_t *OpenAPI_hss_info_copy(OpenAPI_hss_info_t *dst, OpenAPI_hss_info_t *src);
 
 #ifdef __cplusplus
 }

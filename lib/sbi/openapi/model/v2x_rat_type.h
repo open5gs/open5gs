@@ -26,6 +26,7 @@ OpenAPI_v2x_rat_type_t *OpenAPI_v2x_rat_type_create(
 void OpenAPI_v2x_rat_type_free(OpenAPI_v2x_rat_type_t *v2x_rat_type);
 OpenAPI_v2x_rat_type_t *OpenAPI_v2x_rat_type_parseFromJSON(cJSON *v2x_rat_typeJSON);
 cJSON *OpenAPI_v2x_rat_type_convertToJSON(OpenAPI_v2x_rat_type_t *v2x_rat_type);
+OpenAPI_v2x_rat_type_t *OpenAPI_v2x_rat_type_copy(OpenAPI_v2x_rat_type_t *dst, OpenAPI_v2x_rat_type_t *src);
 
 #ifdef __cplusplus
 }

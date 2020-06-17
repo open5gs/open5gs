@@ -33,6 +33,7 @@ OpenAPI_upu_data_2_t *OpenAPI_upu_data_2_create(
 void OpenAPI_upu_data_2_free(OpenAPI_upu_data_2_t *upu_data_2);
 OpenAPI_upu_data_2_t *OpenAPI_upu_data_2_parseFromJSON(cJSON *upu_data_2JSON);
 cJSON *OpenAPI_upu_data_2_convertToJSON(OpenAPI_upu_data_2_t *upu_data_2);
+OpenAPI_upu_data_2_t *OpenAPI_upu_data_2_copy(OpenAPI_upu_data_2_t *dst, OpenAPI_upu_data_2_t *src);
 
 #ifdef __cplusplus
 }

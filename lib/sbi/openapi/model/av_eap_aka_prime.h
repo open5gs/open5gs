@@ -39,6 +39,7 @@ OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_create(
 void OpenAPI_av_eap_aka_prime_free(OpenAPI_av_eap_aka_prime_t *av_eap_aka_prime);
 OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_parseFromJSON(cJSON *av_eap_aka_primeJSON);
 cJSON *OpenAPI_av_eap_aka_prime_convertToJSON(OpenAPI_av_eap_aka_prime_t *av_eap_aka_prime);
+OpenAPI_av_eap_aka_prime_t *OpenAPI_av_eap_aka_prime_copy(OpenAPI_av_eap_aka_prime_t *dst, OpenAPI_av_eap_aka_prime_t *src);
 
 #ifdef __cplusplus
 }

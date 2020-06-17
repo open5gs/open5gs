@@ -5,7 +5,7 @@
 #include "edrx_parameters.h"
 
 OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_create(
-    OpenAPI_rat_type_t *rat_type,
+    OpenAPI_rat_type_e rat_type,
     char *edrx_value
     )
 {
@@ -25,7 +25,6 @@ void OpenAPI_edrx_parameters_free(OpenAPI_edrx_parameters_t *edrx_parameters)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_rat_type_free(edrx_parameters->rat_type);
     ogs_free(edrx_parameters->edrx_value);
     ogs_free(edrx_parameters);
 }
@@ -44,13 +43,7 @@ cJSON *OpenAPI_edrx_parameters_convertToJSON(OpenAPI_edrx_parameters_t *edrx_par
         ogs_error("OpenAPI_edrx_parameters_convertToJSON() failed [rat_type]");
         goto end;
     }
-    cJSON *rat_type_local_JSON = OpenAPI_rat_type_convertToJSON(edrx_parameters->rat_type);
-    if (rat_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_edrx_parameters_convertToJSON() failed [rat_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "ratType", rat_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "ratType", OpenAPI_rat_type_ToString(edrx_parameters->rat_type)) == NULL) {
         ogs_error("OpenAPI_edrx_parameters_convertToJSON() failed [rat_type]");
         goto end;
     }
@@ -77,9 +70,13 @@ OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_parseFromJSON(cJSON *edrx_par
         goto end;
     }
 
-    OpenAPI_rat_type_t *rat_type_local_nonprim = NULL;
+    OpenAPI_rat_type_e rat_typeVariable;
 
-    rat_type_local_nonprim = OpenAPI_rat_type_parseFromJSON(rat_type);
+    if (!cJSON_IsString(rat_type)) {
+        ogs_error("OpenAPI_edrx_parameters_parseFromJSON() failed [rat_type]");
+        goto end;
+    }
+    rat_typeVariable = OpenAPI_rat_type_FromString(rat_type->valuestring);
 
     cJSON *edrx_value = cJSON_GetObjectItemCaseSensitive(edrx_parametersJSON, "edrxValue");
     if (!edrx_value) {
@@ -94,12 +91,46 @@ OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_parseFromJSON(cJSON *edrx_par
     }
 
     edrx_parameters_local_var = OpenAPI_edrx_parameters_create (
-        rat_type_local_nonprim,
+        rat_typeVariable,
         ogs_strdup(edrx_value->valuestring)
         );
 
     return edrx_parameters_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_edrx_parameters_t *OpenAPI_edrx_parameters_copy(OpenAPI_edrx_parameters_t *dst, OpenAPI_edrx_parameters_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_edrx_parameters_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_edrx_parameters_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_edrx_parameters_free(dst);
+    dst = OpenAPI_edrx_parameters_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

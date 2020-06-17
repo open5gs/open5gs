@@ -37,7 +37,6 @@ extern "C" {
 
 extern int __amf_log_domain;
 extern int __gmm_log_domain;
-extern int __gsm_log_domain;
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __amf_log_domain
@@ -46,7 +45,11 @@ typedef struct ran_ue_s ran_ue_t;
 typedef struct amf_ue_s amf_ue_t;
 
 typedef uint32_t amf_m_tmsi_t;
-typedef uint32_t amf_p_tmsi_t;
+
+typedef struct amf_guami_s {
+    ogs_plmn_id_t plmn_id;
+    ogs_amf_id_t amf_id;
+} amf_guami_t;
 
 typedef struct amf_context_s {
     ogs_queue_t     *queue;         /* Queue for processing UPF control */
@@ -57,10 +60,7 @@ typedef struct amf_context_s {
 
     /* Served GUAMI */
     uint8_t num_of_served_guami;
-    struct {
-        ogs_plmn_id_t plmn_id;
-        ogs_amf_id_t amf_id;
-    } served_guami[MAX_NUM_OF_SERVED_GUAMI];
+    amf_guami_t served_guami[MAX_NUM_OF_SERVED_GUAMI];
 
     /* Served TAI */
     uint8_t num_of_served_tai;
@@ -111,7 +111,6 @@ typedef struct amf_context_s {
     ogs_hash_t      *gnb_addr_hash; /* hash table for GNB Address */
     ogs_hash_t      *gnb_id_hash;   /* hash table for GNB-ID */
     ogs_hash_t      *amf_ue_ngap_id_hash;   /* hash table for AMF-UE-NGAP-ID */
-    ogs_hash_t      *imsi_ue_hash;          /* hash table (IMSI : AMF_UE) */
     ogs_hash_t      *guti_ue_hash;          /* hash table (GUTI : AMF_UE) */
     ogs_hash_t      *suci_hash;     /* hash table (SUCI) */
     ogs_hash_t      *supi_hash;     /* hash table (SUPI) */
@@ -189,52 +188,69 @@ struct ran_ue_s {
     amf_ue_t        *amf_ue;
 }; 
 
+#define AMF_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
+    do { \
+        ogs_assert(_nFInstance); \
+        if ((_nFInstance)->reference_count == 1) { \
+            ogs_info("[%s] (%s) NF removed", (_nFInstance)->id, (_cAUSE)); \
+            amf_nf_fsm_fini((_nFInstance)); \
+        } else { \
+            /* There is an assocation with other context */ \
+            ogs_info("[%s:%d] (%s) NF suspended", \
+                    _nFInstance->id, _nFInstance->reference_count, (_cAUSE)); \
+            OGS_FSM_TRAN(&_nFInstance->sm, amf_nf_state_de_registered); \
+            ogs_fsm_dispatch(&_nFInstance->sm, NULL); \
+        } \
+        ogs_sbi_nf_instance_remove(_nFInstance); \
+    } while(0)
+
 struct amf_ue_s {
-    ogs_lnode_t     lnode;
-    ogs_fsm_t       sm;     /* A state machine */
+    ogs_sbi_object_t sbi;
+    ogs_fsm_t sm;
 
     struct {
-#define OGS_NAS_SECURITY_BEARER_3GPP 1
-#define OGS_NAS_SECURITY_BEARER_NON_3GPP 2
-        uint8_t     connection_identifier;
-        uint8_t     type;
-        uint8_t     ksi;
+        uint8_t message_type; /* Type of last NAS message received */
+        int access_type; /* 3GPP or Non-3GPP */
+
         union {
+            struct {
+            ED3(uint8_t tsc:1;,
+                uint8_t ksi:3;,
+                uint8_t spare:4;)
+            };
             ogs_nas_5gs_registration_type_t registration;
 #if 0
             ogs_5gs_update_type_t update;
             ogs_5gs_service_type_t service;
             ogs_5gs_detach_type_t detach;
 #endif
+
             uint8_t data;
         };
-    } nas;
+
+    } __attribute__ ((packed)) nas;
 
     /* UE identity */
-    char            *suci; /* TS33.501 : SUCI */
-    char            *supi; /* TS33.501 : SUPI */
-
 #define AMF_UE_HAVE_SUCI(__aMF) \
     ((__aMF) && ((__aMF)->suci))
-    uint8_t         imsi[OGS_MAX_IMSI_LEN];
-    int             imsi_len;
-    char            imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    char            *suci; /* TS33.501 : SUCI */
+    char            *supi; /* TS33.501 : SUPI */
     ogs_nas_5gs_mobile_identity_imsi_t nas_mobile_identity_imsi;
 
-    bool            imeisv_presence;
+    char            *pei;
     uint8_t         imeisv[OGS_MAX_IMEISV_LEN];
     int             imeisv_len;
     char            imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
     ogs_nas_mobile_identity_imeisv_t nas_mobile_identity_imeisv;
 
     amf_m_tmsi_t    *m_tmsi;
-    amf_p_tmsi_t    p_tmsi;
     ogs_nas_5gs_guti_t guti;
     int             guti_present;
 
     uint16_t        vlr_ostream_id; /* SCTP output stream id for VLR */
 
     /* UE Info */
+    amf_guami_t *guami;
     ogs_5gs_tai_t   tai;
     ogs_nr_cgi_t    cgi;
     ogs_plmn_id_t   last_visited_plmn_id;
@@ -256,6 +272,7 @@ struct amf_ue_s {
         ogs_assert((__aMF)); \
         (__aMF)->security_context_available = 0; \
         (__aMF)->mac_failed = 0; \
+        (__aMF)->nas.tsc = 0; \
         (__aMF)->nas.ksi = 0; \
     } while(0)
     int             security_context_available;
@@ -311,6 +328,8 @@ struct amf_ue_s {
      * #define OGS_NAS_SECURITY_ALGORITHMS_128_NIA3    3 */
     uint8_t         selected_int_algorithm;
 
+    ogs_bitrate_t   subscribed_ue_ambr; /* UE-AMBR */
+
     /* ESM Info */
 #define MIN_5GS_BEARER_ID           5
 #define MAX_5GS_BEARER_ID           15
@@ -331,10 +350,10 @@ struct amf_ue_s {
 
 #define CLEAR_AMF_UE_ALL_TIMERS(__aMF) \
     do { \
-        CLEAR_AMF_UE_TIMER((__aMF)->sbi_client_wait); \
         CLEAR_AMF_UE_TIMER((__aMF)->t3513); \
         CLEAR_AMF_UE_TIMER((__aMF)->t3522); \
         CLEAR_AMF_UE_TIMER((__aMF)->t3550); \
+        CLEAR_AMF_UE_TIMER((__aMF)->t3555); \
         CLEAR_AMF_UE_TIMER((__aMF)->t3560); \
         CLEAR_AMF_UE_TIMER((__aMF)->t3570); \
     } while(0);
@@ -351,7 +370,7 @@ struct amf_ue_s {
         ogs_pkbuf_t     *pkbuf;
         ogs_timer_t     *timer;
         uint32_t        retry_count;;
-    } sbi_client_wait, t3513, t3522, t3550, t3560, t3570;
+    } t3513, t3522, t3550, t3555, t3560, t3570;
 
     /* UE Radio Capability */
     OCTET_STRING_t  ueRadioCapability;
@@ -366,28 +385,6 @@ struct amf_ue_s {
      *    session_context_will_deleted = 0
      */
     int             session_context_will_deleted;
-
-#if 0
-    amf_csmap_t     *csmap;
-#endif
-
-#define AMF_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
-    do { \
-        ogs_assert(_nFInstance); \
-        if ((_nFInstance)->reference_count == 1) { \
-            ogs_info("[%s] (%s) NF removed", (_nFInstance)->id, (_cAUSE)); \
-            amf_nf_fsm_fini((_nFInstance)); \
-        } else { \
-            /* There is an assocation with other context */ \
-            ogs_info("[%s:%d] (%s) NF suspended", \
-                    _nFInstance->id, _nFInstance->reference_count, (_cAUSE)); \
-            OGS_FSM_TRAN(&_nFInstance->sm, amf_nf_state_de_registered); \
-            ogs_fsm_dispatch(&_nFInstance->sm, NULL); \
-        } \
-        ogs_sbi_nf_instance_remove(_nFInstance); \
-    } while(0)
-
-    ogs_sbi_nf_types_t nf_types;
 };
 
 #define AMF_HAVE_SMF_S1U_PATH(__sESS) \
@@ -414,9 +411,16 @@ struct amf_ue_s {
         (__aMF)->session_context_will_deleted = 0; \
     } while(0)
 typedef struct amf_sess_s {
-    ogs_lnode_t     lnode;
+    ogs_sbi_object_t sbi;
 
-    uint8_t         pti;        /* Procedure Trasaction Identity */
+    uint8_t psi;            /* PDU Session Identity */
+    uint8_t pti;            /* Procedure Trasaction Identity */
+
+    char *sm_context_ref;   /* smContextRef from SMF */
+
+    /* last payload for sending back to the UE */
+    uint8_t         payload_container_type;
+    ogs_pkbuf_t     *payload_container;
 
 #if 0
     /* PDN Connectivity Request */
@@ -429,10 +433,14 @@ typedef struct amf_sess_s {
     /* Related Context */
     amf_ue_t        *amf_ue;
 
+#if 0
 #define AMF_UE_HAVE_APN(__aMF) \
     ((__aMF) && (amf_sess_first(__aMF)) && \
     ((amf_sess_first(__aMF))->pdn))
     ogs_pdn_t       *pdn;
+#endif
+    ogs_s_nssai_t   s_nssai;
+    char            *dnn;
 
     /* Save Protocol Configuration Options from UE */
     struct {
@@ -557,8 +565,6 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue);
 void amf_ue_remove(amf_ue_t *amf_ue);
 void amf_ue_remove_all(void);
 
-amf_ue_t *amf_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
-amf_ue_t *amf_ue_find_by_imsi_bcd(char *imsi_bcd);
 amf_ue_t *amf_ue_find_by_guti(ogs_nas_5gs_guti_t *nas_guti);
 amf_ue_t *amf_ue_find_by_teid(uint32_t teid);
 amf_ue_t *amf_ue_find_by_suci(char *suci);
@@ -626,15 +632,11 @@ void amf_ue_deassociate(amf_ue_t *amf_ue);
 void source_ue_associate_target_ue(ran_ue_t *source_ue, ran_ue_t *target_ue);
 void source_ue_deassociate_target_ue(ran_ue_t *ran_ue);
 
-amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t pti);
+amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi);
 void amf_sess_remove(amf_sess_t *sess);
 void amf_sess_remove_all(amf_ue_t *amf_ue);
-amf_sess_t *amf_sess_find_by_pti(amf_ue_t *amf_ue, uint8_t pti);
-amf_sess_t *amf_sess_find_by_ebi(amf_ue_t *amf_ue, uint8_t ebi);
+amf_sess_t *amf_sess_find_by_psi(amf_ue_t *amf_ue, uint8_t psi);
 amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
-amf_sess_t *amf_sess_first(amf_ue_t *amf_ue);
-amf_sess_t *amf_sess_next(amf_sess_t *sess);
-unsigned int amf_sess_count(amf_ue_t *amf_ue);
 
 amf_bearer_t *amf_bearer_add(amf_sess_t *sess);
 void amf_bearer_remove(amf_bearer_t *bearer);
@@ -656,6 +658,8 @@ ogs_pdn_t *amf_pdn_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
 ogs_pdn_t *amf_default_pdn(amf_ue_t *amf_ue);
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai);
+ogs_s_nssai_t *amf_find_s_nssai(
+        ogs_plmn_id_t *served_plmn_id, ogs_nas_s_nssai_t *s_nssai);
 
 int amf_m_tmsi_pool_generate(void);
 amf_m_tmsi_t *amf_m_tmsi_alloc(void);

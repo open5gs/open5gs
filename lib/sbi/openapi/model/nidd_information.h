@@ -32,6 +32,7 @@ OpenAPI_nidd_information_t *OpenAPI_nidd_information_create(
 void OpenAPI_nidd_information_free(OpenAPI_nidd_information_t *nidd_information);
 OpenAPI_nidd_information_t *OpenAPI_nidd_information_parseFromJSON(cJSON *nidd_informationJSON);
 cJSON *OpenAPI_nidd_information_convertToJSON(OpenAPI_nidd_information_t *nidd_information);
+OpenAPI_nidd_information_t *OpenAPI_nidd_information_copy(OpenAPI_nidd_information_t *dst, OpenAPI_nidd_information_t *src);
 
 #ifdef __cplusplus
 }

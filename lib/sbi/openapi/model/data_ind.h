@@ -26,6 +26,7 @@ OpenAPI_data_ind_t *OpenAPI_data_ind_create(
 void OpenAPI_data_ind_free(OpenAPI_data_ind_t *data_ind);
 OpenAPI_data_ind_t *OpenAPI_data_ind_parseFromJSON(cJSON *data_indJSON);
 cJSON *OpenAPI_data_ind_convertToJSON(OpenAPI_data_ind_t *data_ind);
+OpenAPI_data_ind_t *OpenAPI_data_ind_copy(OpenAPI_data_ind_t *dst, OpenAPI_data_ind_t *src);
 
 #ifdef __cplusplus
 }

@@ -217,7 +217,8 @@ bool udm_nnrf_handle_nf_status_notify(
     return true;
 }
 
-void udm_nnrf_handle_nf_discover(udm_ue_t *udm_ue, ogs_sbi_message_t *message)
+void udm_nnrf_handle_nf_discover(
+        ogs_sbi_object_t *sbi_object, ogs_sbi_message_t *message)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_session_t *session = NULL;
@@ -226,8 +227,8 @@ void udm_nnrf_handle_nf_discover(udm_ue_t *udm_ue, ogs_sbi_message_t *message)
     OpenAPI_lnode_t *node = NULL;
     bool handled;
 
-    ogs_assert(udm_ue);
-    session = udm_ue->session;
+    ogs_assert(sbi_object);
+    session = sbi_object->session;
     ogs_assert(session);
     ogs_assert(message);
 
@@ -280,9 +281,9 @@ void udm_nnrf_handle_nf_discover(udm_ue_t *udm_ue, ogs_sbi_message_t *message)
             udm_sbi_setup_client_callback(nf_instance);
 
             if (!OGS_SBI_NF_INSTANCE_GET(
-                        udm_ue->nf_types, nf_instance->nf_type))
-                ogs_sbi_nf_types_associate(udm_ue->nf_types,
-                        nf_instance->nf_type, udm_nf_state_registered);
+                        sbi_object->nf_types, nf_instance->nf_type))
+                ogs_sbi_nf_types_associate(sbi_object->nf_types,
+                        nf_instance->nf_type, sbi_object->nf_state_registered);
 
             /* TIME : Update validity from NRF */
             if (SearchResult->validity_period) {
@@ -300,26 +301,17 @@ void udm_nnrf_handle_nf_discover(udm_ue_t *udm_ue, ogs_sbi_message_t *message)
         }
     }
 
+    ogs_assert(sbi_object->nf_type);
     nf_instance = OGS_SBI_NF_INSTANCE_GET(
-            udm_ue->nf_types, OpenAPI_nf_type_UDR);
+            sbi_object->nf_types, sbi_object->nf_type);
     if (!nf_instance) {
-        ogs_error("[%s] (NF discover) No UDR", udm_ue->suci);
+        ogs_error("(NF discover) No [%s]",
+                OpenAPI_nf_type_ToString(sbi_object->nf_type));
         ogs_sbi_server_send_error(session,
                 OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE, NULL,
-                "(NF discover) No UDR", udm_ue->suci);
+                "(NF discover) No NF",
+                OpenAPI_nf_type_ToString(sbi_object->nf_type));
     } else {
-        ogs_assert(udm_ue->state.component1);
-        SWITCH(udm_ue->state.component1)
-        CASE(OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION)
-            udm_nudr_dr_send_query(udm_ue, nf_instance);
-            break;
-        CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
-            udm_nudr_dr_send_update(udm_ue, nf_instance);
-            break;
-        DEFAULT
-            ogs_fatal("[%s] Unknown state [%s]",
-                    udm_ue->suci, udm_ue->state.component1);
-            ogs_assert_if_reached();
-        END
+        ogs_sbi_send(sbi_object, nf_instance);
     }
 }

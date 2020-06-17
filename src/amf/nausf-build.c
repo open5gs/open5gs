@@ -19,7 +19,8 @@
 
 #include "nausf-build.h"
 
-ogs_sbi_request_t *amf_nausf_auth_build_authenticate(amf_ue_t *amf_ue)
+ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
+        amf_ue_t *amf_ue, void *data)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
@@ -31,7 +32,7 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(amf_ue_t *amf_ue)
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NAUSF_AUTH;
-    message.h.api.version = (char *)OGS_SBI_API_VERSION;
+    message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] =
         (char *)OGS_SBI_RESOURCE_NAME_UE_AUTHENTICATIONS;
 
@@ -44,7 +45,7 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(amf_ue_t *amf_ue)
     ogs_assert(amf_ue->suci);
     AuthenticationInfo->supi_or_suci = amf_ue->suci;
     AuthenticationInfo->serving_network_name =
-        ogs_plmn_id_string(&amf_ue->tai.plmn_id);
+        ogs_serving_network_name_from_plmn_id(&amf_ue->tai.plmn_id);
 
     message.AuthenticationInfo = AuthenticationInfo;
 
@@ -58,7 +59,7 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(amf_ue_t *amf_ue)
 }
 
 ogs_sbi_request_t *amf_nausf_auth_build_authenticate_confirmation(
-        amf_ue_t *amf_ue)
+        amf_ue_t *amf_ue, void *data)
 {
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
@@ -72,7 +73,7 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate_confirmation(
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_PUT;
-    message.h.url = amf_ue->confirmation_url_for_5g_aka;
+    message.h.uri = amf_ue->confirmation_url_for_5g_aka;
 
     ConfirmationData = ogs_calloc(1, sizeof(*ConfirmationData));
     ogs_assert(ConfirmationData);

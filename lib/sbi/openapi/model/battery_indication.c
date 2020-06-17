@@ -40,21 +40,21 @@ cJSON *OpenAPI_battery_indication_convertToJSON(OpenAPI_battery_indication_t *ba
     }
 
     item = cJSON_CreateObject();
-    if (battery_indication->battery_ind >= 0) {
+    if (battery_indication->battery_ind) {
         if (cJSON_AddBoolToObject(item, "batteryInd", battery_indication->battery_ind) == NULL) {
             ogs_error("OpenAPI_battery_indication_convertToJSON() failed [battery_ind]");
             goto end;
         }
     }
 
-    if (battery_indication->replaceable_ind >= 0) {
+    if (battery_indication->replaceable_ind) {
         if (cJSON_AddBoolToObject(item, "replaceableInd", battery_indication->replaceable_ind) == NULL) {
             ogs_error("OpenAPI_battery_indication_convertToJSON() failed [replaceable_ind]");
             goto end;
         }
     }
 
-    if (battery_indication->rechargeable_ind >= 0) {
+    if (battery_indication->rechargeable_ind) {
         if (cJSON_AddBoolToObject(item, "rechargeableInd", battery_indication->rechargeable_ind) == NULL) {
             ogs_error("OpenAPI_battery_indication_convertToJSON() failed [rechargeable_ind]");
             goto end;
@@ -104,5 +104,39 @@ OpenAPI_battery_indication_t *OpenAPI_battery_indication_parseFromJSON(cJSON *ba
     return battery_indication_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_battery_indication_t *OpenAPI_battery_indication_copy(OpenAPI_battery_indication_t *dst, OpenAPI_battery_indication_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_battery_indication_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_battery_indication_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_battery_indication_free(dst);
+    dst = OpenAPI_battery_indication_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

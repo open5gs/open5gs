@@ -5,7 +5,7 @@
 #include "pdu_session_types.h"
 
 OpenAPI_pdu_session_types_t *OpenAPI_pdu_session_types_create(
-    OpenAPI_pdu_session_type_t *default_session_type,
+    OpenAPI_pdu_session_type_e default_session_type,
     OpenAPI_list_t *allowed_session_types
     )
 {
@@ -25,10 +25,6 @@ void OpenAPI_pdu_session_types_free(OpenAPI_pdu_session_types_t *pdu_session_typ
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_pdu_session_type_free(pdu_session_types->default_session_type);
-    OpenAPI_list_for_each(pdu_session_types->allowed_session_types, node) {
-        OpenAPI_pdu_session_type_free(node->data);
-    }
     OpenAPI_list_free(pdu_session_types->allowed_session_types);
     ogs_free(pdu_session_types);
 }
@@ -47,33 +43,22 @@ cJSON *OpenAPI_pdu_session_types_convertToJSON(OpenAPI_pdu_session_types_t *pdu_
         ogs_error("OpenAPI_pdu_session_types_convertToJSON() failed [default_session_type]");
         goto end;
     }
-    cJSON *default_session_type_local_JSON = OpenAPI_pdu_session_type_convertToJSON(pdu_session_types->default_session_type);
-    if (default_session_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_pdu_session_types_convertToJSON() failed [default_session_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "defaultSessionType", default_session_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "defaultSessionType", OpenAPI_pdu_session_type_ToString(pdu_session_types->default_session_type)) == NULL) {
         ogs_error("OpenAPI_pdu_session_types_convertToJSON() failed [default_session_type]");
         goto end;
     }
 
     if (pdu_session_types->allowed_session_types) {
-        cJSON *allowed_session_typesList = cJSON_AddArrayToObject(item, "allowedSessionTypes");
-        if (allowed_session_typesList == NULL) {
+        cJSON *allowed_session_types = cJSON_AddArrayToObject(item, "allowedSessionTypes");
+        if (allowed_session_types == NULL) {
             ogs_error("OpenAPI_pdu_session_types_convertToJSON() failed [allowed_session_types]");
             goto end;
         }
-
         OpenAPI_lnode_t *allowed_session_types_node;
-        if (pdu_session_types->allowed_session_types) {
-            OpenAPI_list_for_each(pdu_session_types->allowed_session_types, allowed_session_types_node) {
-                cJSON *itemLocal = OpenAPI_pdu_session_type_convertToJSON(allowed_session_types_node->data);
-                if (itemLocal == NULL) {
-                    ogs_error("OpenAPI_pdu_session_types_convertToJSON() failed [allowed_session_types]");
-                    goto end;
-                }
-                cJSON_AddItemToArray(allowed_session_typesList, itemLocal);
+        OpenAPI_list_for_each(pdu_session_types->allowed_session_types, allowed_session_types_node) {
+            if (cJSON_AddStringToObject(allowed_session_types, "", OpenAPI_pdu_session_type_ToString((OpenAPI_pdu_session_type_e)allowed_session_types_node->data)) == NULL) {
+                ogs_error("OpenAPI_pdu_session_types_convertToJSON() failed [allowed_session_types]");
+                goto end;
             }
         }
     }
@@ -91,9 +76,13 @@ OpenAPI_pdu_session_types_t *OpenAPI_pdu_session_types_parseFromJSON(cJSON *pdu_
         goto end;
     }
 
-    OpenAPI_pdu_session_type_t *default_session_type_local_nonprim = NULL;
+    OpenAPI_pdu_session_type_e default_session_typeVariable;
 
-    default_session_type_local_nonprim = OpenAPI_pdu_session_type_parseFromJSON(default_session_type);
+    if (!cJSON_IsString(default_session_type)) {
+        ogs_error("OpenAPI_pdu_session_types_parseFromJSON() failed [default_session_type]");
+        goto end;
+    }
+    default_session_typeVariable = OpenAPI_pdu_session_type_FromString(default_session_type->valuestring);
 
     cJSON *allowed_session_types = cJSON_GetObjectItemCaseSensitive(pdu_session_typesJSON, "allowedSessionTypes");
 
@@ -108,23 +97,56 @@ OpenAPI_pdu_session_types_t *OpenAPI_pdu_session_types_parseFromJSON(cJSON *pdu_
         allowed_session_typesList = OpenAPI_list_create();
 
         cJSON_ArrayForEach(allowed_session_types_local_nonprimitive, allowed_session_types ) {
-            if (!cJSON_IsObject(allowed_session_types_local_nonprimitive)) {
+            if (!cJSON_IsString(allowed_session_types_local_nonprimitive)) {
                 ogs_error("OpenAPI_pdu_session_types_parseFromJSON() failed [allowed_session_types]");
                 goto end;
             }
-            OpenAPI_pdu_session_type_t *allowed_session_typesItem = OpenAPI_pdu_session_type_parseFromJSON(allowed_session_types_local_nonprimitive);
 
-            OpenAPI_list_add(allowed_session_typesList, allowed_session_typesItem);
+            OpenAPI_list_add(allowed_session_typesList, (void *)OpenAPI_pdu_session_type_FromString(allowed_session_types_local_nonprimitive->valuestring));
         }
     }
 
     pdu_session_types_local_var = OpenAPI_pdu_session_types_create (
-        default_session_type_local_nonprim,
+        default_session_typeVariable,
         allowed_session_types ? allowed_session_typesList : NULL
         );
 
     return pdu_session_types_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_pdu_session_types_t *OpenAPI_pdu_session_types_copy(OpenAPI_pdu_session_types_t *dst, OpenAPI_pdu_session_types_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_pdu_session_types_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_pdu_session_types_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_pdu_session_types_free(dst);
+    dst = OpenAPI_pdu_session_types_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

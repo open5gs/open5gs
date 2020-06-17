@@ -31,6 +31,7 @@ OpenAPI_authorization_data_t *OpenAPI_authorization_data_create(
 void OpenAPI_authorization_data_free(OpenAPI_authorization_data_t *authorization_data);
 OpenAPI_authorization_data_t *OpenAPI_authorization_data_parseFromJSON(cJSON *authorization_dataJSON);
 cJSON *OpenAPI_authorization_data_convertToJSON(OpenAPI_authorization_data_t *authorization_data);
+OpenAPI_authorization_data_t *OpenAPI_authorization_data_copy(OpenAPI_authorization_data_t *dst, OpenAPI_authorization_data_t *src);
 
 #ifdef __cplusplus
 }

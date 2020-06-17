@@ -160,10 +160,10 @@ ogs_pfcp_pdr_t *upf_pdr_find_by_packet(ogs_pkbuf_t *pkt)
 
         if (ip_h && sess->ipv4)
             ogs_debug("[UPF] PAA IPv4:%s",
-                    INET_NTOP(&sess->ipv4->addr, buf));
+                    OGS_INET_NTOP(&sess->ipv4->addr, buf));
         if (ip6_h && sess->ipv6)
             ogs_debug("[UPF] PAA IPv6:%s",
-                    INET6_NTOP(&sess->ipv6->addr, buf));
+                    OGS_INET6_NTOP(&sess->ipv6->addr, buf));
 
         /* Save the default PDR */
         default_pdr = ogs_pfcp_sess_default_pdr(&sess->pfcp);

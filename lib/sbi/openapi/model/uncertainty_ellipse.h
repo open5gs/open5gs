@@ -32,6 +32,7 @@ OpenAPI_uncertainty_ellipse_t *OpenAPI_uncertainty_ellipse_create(
 void OpenAPI_uncertainty_ellipse_free(OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse);
 OpenAPI_uncertainty_ellipse_t *OpenAPI_uncertainty_ellipse_parseFromJSON(cJSON *uncertainty_ellipseJSON);
 cJSON *OpenAPI_uncertainty_ellipse_convertToJSON(OpenAPI_uncertainty_ellipse_t *uncertainty_ellipse);
+OpenAPI_uncertainty_ellipse_t *OpenAPI_uncertainty_ellipse_copy(OpenAPI_uncertainty_ellipse_t *dst, OpenAPI_uncertainty_ellipse_t *src);
 
 #ifdef __cplusplus
 }

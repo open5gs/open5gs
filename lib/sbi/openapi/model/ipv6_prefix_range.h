@@ -30,6 +30,7 @@ OpenAPI_ipv6_prefix_range_t *OpenAPI_ipv6_prefix_range_create(
 void OpenAPI_ipv6_prefix_range_free(OpenAPI_ipv6_prefix_range_t *ipv6_prefix_range);
 OpenAPI_ipv6_prefix_range_t *OpenAPI_ipv6_prefix_range_parseFromJSON(cJSON *ipv6_prefix_rangeJSON);
 cJSON *OpenAPI_ipv6_prefix_range_convertToJSON(OpenAPI_ipv6_prefix_range_t *ipv6_prefix_range);
+OpenAPI_ipv6_prefix_range_t *OpenAPI_ipv6_prefix_range_copy(OpenAPI_ipv6_prefix_range_t *dst, OpenAPI_ipv6_prefix_range_t *src);
 
 #ifdef __cplusplus
 }

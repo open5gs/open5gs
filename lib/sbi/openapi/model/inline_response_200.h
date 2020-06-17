@@ -29,6 +29,7 @@ OpenAPI_inline_response_200_t *OpenAPI_inline_response_200_create(
 void OpenAPI_inline_response_200_free(OpenAPI_inline_response_200_t *inline_response_200);
 OpenAPI_inline_response_200_t *OpenAPI_inline_response_200_parseFromJSON(cJSON *inline_response_200JSON);
 cJSON *OpenAPI_inline_response_200_convertToJSON(OpenAPI_inline_response_200_t *inline_response_200);
+OpenAPI_inline_response_200_t *OpenAPI_inline_response_200_copy(OpenAPI_inline_response_200_t *dst, OpenAPI_inline_response_200_t *src);
 
 #ifdef __cplusplus
 }

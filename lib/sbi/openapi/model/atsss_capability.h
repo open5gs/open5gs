@@ -30,6 +30,7 @@ OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_create(
 void OpenAPI_atsss_capability_free(OpenAPI_atsss_capability_t *atsss_capability);
 OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_parseFromJSON(cJSON *atsss_capabilityJSON);
 cJSON *OpenAPI_atsss_capability_convertToJSON(OpenAPI_atsss_capability_t *atsss_capability);
+OpenAPI_atsss_capability_t *OpenAPI_atsss_capability_copy(OpenAPI_atsss_capability_t *dst, OpenAPI_atsss_capability_t *src);
 
 #ifdef __cplusplus
 }

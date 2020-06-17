@@ -34,6 +34,7 @@ OpenAPI_parameter_over_uu_t *OpenAPI_parameter_over_uu_create(
 void OpenAPI_parameter_over_uu_free(OpenAPI_parameter_over_uu_t *parameter_over_uu);
 OpenAPI_parameter_over_uu_t *OpenAPI_parameter_over_uu_parseFromJSON(cJSON *parameter_over_uuJSON);
 cJSON *OpenAPI_parameter_over_uu_convertToJSON(OpenAPI_parameter_over_uu_t *parameter_over_uu);
+OpenAPI_parameter_over_uu_t *OpenAPI_parameter_over_uu_copy(OpenAPI_parameter_over_uu_t *dst, OpenAPI_parameter_over_uu_t *src);
 
 #ifdef __cplusplus
 }

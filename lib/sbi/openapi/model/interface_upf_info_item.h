@@ -37,6 +37,7 @@ OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_create(
 void OpenAPI_interface_upf_info_item_free(OpenAPI_interface_upf_info_item_t *interface_upf_info_item);
 OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_parseFromJSON(cJSON *interface_upf_info_itemJSON);
 cJSON *OpenAPI_interface_upf_info_item_convertToJSON(OpenAPI_interface_upf_info_item_t *interface_upf_info_item);
+OpenAPI_interface_upf_info_item_t *OpenAPI_interface_upf_info_item_copy(OpenAPI_interface_upf_info_item_t *dst, OpenAPI_interface_upf_info_item_t *src);
 
 #ifdef __cplusplus
 }

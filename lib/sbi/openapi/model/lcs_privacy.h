@@ -33,6 +33,7 @@ OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_create(
 void OpenAPI_lcs_privacy_free(OpenAPI_lcs_privacy_t *lcs_privacy);
 OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_parseFromJSON(cJSON *lcs_privacyJSON);
 cJSON *OpenAPI_lcs_privacy_convertToJSON(OpenAPI_lcs_privacy_t *lcs_privacy);
+OpenAPI_lcs_privacy_t *OpenAPI_lcs_privacy_copy(OpenAPI_lcs_privacy_t *dst, OpenAPI_lcs_privacy_t *src);
 
 #ifdef __cplusplus
 }

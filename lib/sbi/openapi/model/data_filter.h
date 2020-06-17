@@ -46,6 +46,7 @@ OpenAPI_data_filter_t *OpenAPI_data_filter_create(
 void OpenAPI_data_filter_free(OpenAPI_data_filter_t *data_filter);
 OpenAPI_data_filter_t *OpenAPI_data_filter_parseFromJSON(cJSON *data_filterJSON);
 cJSON *OpenAPI_data_filter_convertToJSON(OpenAPI_data_filter_t *data_filter);
+OpenAPI_data_filter_t *OpenAPI_data_filter_copy(OpenAPI_data_filter_t *dst, OpenAPI_data_filter_t *src);
 
 #ifdef __cplusplus
 }

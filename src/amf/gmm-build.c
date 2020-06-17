@@ -24,32 +24,26 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
 
-#if 0
-ogs_pkbuf_t *gmm_build_registration_accept(
-        amf_ue_t *amf_ue, ogs_pkbuf_t *esmbuf)
+ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
 {
     ogs_nas_5gs_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_nas_5gs_registration_accept_t *registration_accept = &message.gmm.registration_accept;
-    ogs_nas_5gs_registration_result_t *eps_registration_result = 
-        &registration_accept->eps_registration_result;
-    ogs_nas_gprs_timer_t *t3412_value = &registration_accept->t3412_value;
+    ogs_nas_5gs_registration_result_t *registration_result =
+        &registration_accept->registration_result;
+    ogs_nas_5gs_mobile_identity_t *mobile_identity = &registration_accept->guti;
+    ogs_nas_5gs_mobile_identity_guti_t mobile_identity_guti;
     int served_tai_index = 0;
-    ogs_nas_5gs_mobile_identity_t *nas_guti = &registration_accept->guti;
-    ogs_nas_5gs_network_feature_support_t *eps_network_feature_support =
-        &registration_accept->eps_network_feature_support;
-    ogs_nas_location_area_identification_t *lai =
-        &registration_accept->location_area_identification;
-    ogs_nas_mobile_identity_t *ms_identity = &registration_accept->ms_identity;
-    ogs_nas_mobile_identity_tmsi_t *tmsi = &ms_identity->tmsi;;
+    ogs_nas_nssai_t *allowed_nssai = &registration_accept->allowed_nssai;
+    int i, j;
+    ogs_nas_gprs_timer_3_t *t3512_value = &registration_accept->t3512_value;
 
     ogs_assert(amf_ue);
-    ogs_assert(esmbuf);
 
-    ogs_debug("Registration accept");
+    ogs_debug("[%s] Registration accept", amf_ue->supi);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
@@ -58,86 +52,105 @@ ogs_pkbuf_t *gmm_build_registration_accept(
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_REGISTRATION_ACCEPT;
 
-    /* Set T3412 */
-    eps_registration_result->result = amf_ue->nas_5gs.registration.value;
-    t3412_value->unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    t3412_value->value = 9;
+    /* Registration Result */
+    registration_result->length = 1;
+    registration_result->value = amf_ue->nas.access_type;
 
-    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id),
-            amf_ue->tai.tac);
-    ogs_debug("    E_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->e_cgi.plmn_id),
-            amf_ue->e_cgi.cell_id);
-    served_tai_index = amf_find_served_tai(&amf_ue->tai);
-    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
-    ogs_assert(served_tai_index >= 0 &&
-            served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI);
-    ogs_nas_tai_list_build(&registration_accept->tai_list,
-            &amf_self()->served_tai[served_tai_index].list0,
-            &amf_self()->served_tai[served_tai_index].list2);
-
-    registration_accept->esm_message_container.buffer = esmbuf->data;
-    registration_accept->esm_message_container.length = esmbuf->len;
-
-    ogs_debug("    %s GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI:[%s]",
+    /* Set GUTI */
+    ogs_debug("[%s]    %s 5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]", amf_ue->supi,
             amf_ue->guti_present ? "[V]" : "[N]",
-            amf_ue->guti.amf_gid, amf_ue->guti.amf_code,
-            amf_ue->guti.m_tmsi, amf_ue->imsi_bcd);
+            ogs_amf_id_hexdump(&amf_ue->guti.amf_id), amf_ue->guti.m_tmsi);
     if (amf_ue->guti_present) {
-        registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_GUTI_PRESENT;
-        nas_guti->length = sizeof(ogs_nas_5gs_mobile_identity_guti_t);
-        nas_guti->guti.odd_even = OGS_NAS_MOBILE_IDENTITY_EVEN;
-        nas_guti->guti.type = OGS_NAS_5GS_MOBILE_IDENTITY_GUTI;
-        nas_guti->guti.nas_plmn_id = amf_ue->guti.nas_plmn_id;
-        nas_guti->guti.amf_gid = amf_ue->guti.amf_gid;
-        nas_guti->guti.amf_code = amf_ue->guti.amf_code;
-        nas_guti->guti.m_tmsi = amf_ue->guti.m_tmsi;
+        registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_5G_GUTI_PRESENT;
+        memset(&mobile_identity_guti, 0, sizeof(mobile_identity_guti));
+
+        mobile_identity_guti.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_GUTI;
+
+        memcpy(&mobile_identity_guti.nas_plmn_id,
+                &amf_ue->guti.nas_plmn_id, OGS_PLMN_ID_LEN);
+        memcpy(&mobile_identity_guti.amf_id,
+                &amf_ue->guti.amf_id, sizeof(ogs_amf_id_t));
+        mobile_identity_guti.m_tmsi = htobe32(amf_ue->guti.m_tmsi);
+
+        mobile_identity->length = sizeof(mobile_identity_guti);
+        mobile_identity->buffer = &mobile_identity_guti;
     }
     amf_ue->guti_present = 0;
 
-#if 0 /* Need not to include T3402 */
-    /* Set T3402 */
-    registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_T3402_VALUE_PRESENT;
-    registration_accept->t3402_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
-    registration_accept->t3402_value.value = 12;
-#endif
+    /* Set TAI List */
+    registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_TAI_LIST_PRESENT;
 
-    /* Set T3423 */
-    registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_T3423_VALUE_PRESENT;
-    registration_accept->t3423_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    registration_accept->t3423_value.value = 9;
-    registration_accept->presencemask |= 
-        OGS_NAS_5GS_REGISTRATION_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
-    eps_network_feature_support->length = 1;
-    eps_network_feature_support->ims_vops = 1;
+    ogs_debug("[%s]    TAI[PLMN_ID:%06x,TAC:%d]", amf_ue->supi,
+            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
+    ogs_debug("[%s]    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]", amf_ue->supi,
+            ogs_plmn_id_hexdump(&amf_ue->cgi.plmn_id),
+            (long long)amf_ue->cgi.cell_id);
 
-    if (MME_P_TMSI_IS_AVAILABLE(amf_ue)) {
-        ogs_assert(amf_ue->csmap);
-        ogs_assert(amf_ue->p_tmsi);
+    served_tai_index = amf_find_served_tai(&amf_ue->tai);
+    ogs_debug("[%s]    SERVED_TAI_INDEX[%d]", amf_ue->supi, served_tai_index);
+    ogs_assert(served_tai_index >= 0 &&
+            served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI);
 
-        registration_accept->presencemask |=
-            OGS_NAS_5GS_REGISTRATION_ACCEPT_LOCATION_AREA_IDENTIFICATION_PRESENT;
-        lai->nas_plmn_id = amf_ue->csmap->lai.nas_plmn_id;
-        lai->lac = amf_ue->csmap->lai.lac;
-        ogs_debug("    LAI[PLMN_ID:%06x,LAC:%d]",
-                ogs_plmn_id_hexdump(&lai->nas_plmn_id), lai->lac);
+    ogs_nas_5gs_tai_list_build(&registration_accept->tai_list,
+            &amf_self()->served_tai[served_tai_index].list0,
+            &amf_self()->served_tai[served_tai_index].list2);
 
-        registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_MS_IDENTITY_PRESENT;
-        ms_identity->length = 5;
-        tmsi->spare = 0xf;
-        tmsi->odd_even = 0;
-        tmsi->type = OGS_NAS_MOBILE_IDENTITY_TMSI;
-        tmsi->tmsi = amf_ue->p_tmsi;
-        ogs_debug("    P-TMSI: 0x%08x", tmsi->tmsi);
+    /* Set Allowed NSSAI */
+    for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
+        if (memcmp(&amf_ue->tai.plmn_id,
+                &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
+            continue;
+
+        ogs_debug("[%s]    NSSAI[PLMN_ID:%06x]", amf_ue->supi,
+                ogs_plmn_id_hexdump(&amf_self()->plmn_support[i].plmn_id));
+        for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
+            ogs_debug("[%s]         [sst:%d, sd:%06x]", amf_ue->supi,
+                    amf_self()->plmn_support[i].s_nssai[j].sst,
+                    amf_self()->plmn_support[i].s_nssai[j].sd.v);
+            if (allowed_nssai->length < OGS_NAS_MAX_NSSAI_LEN) {
+                allowed_nssai->buffer[allowed_nssai->length] = 1;
+                allowed_nssai->length++;
+
+                allowed_nssai->buffer[allowed_nssai->length] =
+                        amf_self()->plmn_support[i].s_nssai[j].sst;
+                allowed_nssai->length++;
+
+                if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
+                        OGS_S_NSSAI_NO_SD_VALUE) {
+                    ogs_uint24_t v;
+
+                    v = ogs_htobe24(amf_self()->plmn_support[i].s_nssai[j].sd);
+                    memcpy(allowed_nssai->buffer+allowed_nssai->length, &v, 3);
+
+                    allowed_nssai->length += 3;
+                    allowed_nssai->buffer[allowed_nssai->length-5] += 3;
+                }
+            }
+        }
     }
 
+    if (allowed_nssai->length) {
+        registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_ALLOWED_NSSAI_PRESENT;
+    }
+
+    /* Set T3512 */
+    registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_T3512_VALUE_PRESENT;
+    t3512_value->length = 1;
+    t3512_value->unit = OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_1_HH;
+    t3512_value->value = 9;
+
+#if 0
+    /* Set T3502 */
+    registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_T3502_VALUE_PRESENT;
+    registration_accept->t3502_value.length = 1;
+    registration_accept->t3502_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
+    registration_accept->t3502_value.value = 12;
+#endif
+
     pkbuf = nas_5gs_security_encode(amf_ue, &message);
-    ogs_pkbuf_free(esmbuf);
 
     return pkbuf;
 }
-#endif
 
 ogs_pkbuf_t *gmm_build_registration_reject(ogs_nas_5gmm_cause_t gmm_cause)
 {
@@ -158,7 +171,7 @@ ogs_pkbuf_t *gmm_build_registration_reject(ogs_nas_5gmm_cause_t gmm_cause)
 ogs_pkbuf_t *gmm_build_identity_request(amf_ue_t *amf_ue)
 {
     ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_identity_request_t *identity_request = 
+    ogs_nas_5gs_identity_request_t *identity_request =
         &message.gmm.identity_request;
 
     ogs_assert(amf_ue);
@@ -178,7 +191,7 @@ ogs_pkbuf_t *gmm_build_identity_request(amf_ue_t *amf_ue)
 ogs_pkbuf_t *gmm_build_authentication_request(amf_ue_t *amf_ue)
 {
     ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_authentication_request_t *authentication_request = 
+    ogs_nas_5gs_authentication_request_t *authentication_request =
         &message.gmm.authentication_request;
 
     ogs_assert(amf_ue);
@@ -188,6 +201,7 @@ ogs_pkbuf_t *gmm_build_authentication_request(amf_ue_t *amf_ue)
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_AUTHENTICATION_REQUEST;
 
+    authentication_request->ngksi.tsc = amf_ue->nas.tsc;
     authentication_request->ngksi.value = amf_ue->nas.ksi;
     authentication_request->abba.length = amf_ue->abba_len;
     memcpy(authentication_request->abba.value, amf_ue->abba, amf_ue->abba_len);
@@ -201,7 +215,7 @@ ogs_pkbuf_t *gmm_build_authentication_request(amf_ue_t *amf_ue)
             amf_ue->rand, OGS_RAND_LEN);
     memcpy(authentication_request->authentication_parameter_autn.autn,
             amf_ue->autn, OGS_AUTN_LEN);
-    authentication_request->authentication_parameter_autn.length = 
+    authentication_request->authentication_parameter_autn.length =
             OGS_AUTN_LEN;
 
     return ogs_nas_5gs_plain_encode(&message);
@@ -223,12 +237,12 @@ ogs_pkbuf_t *gmm_build_authentication_reject(void)
 ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
 {
     ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_security_mode_command_t *security_mode_command = 
+    ogs_nas_5gs_security_mode_command_t *security_mode_command =
         &message.gmm.security_mode_command;
     ogs_nas_security_algorithms_t *selected_nas_security_algorithms =
         &security_mode_command->selected_nas_security_algorithms;
     ogs_nas_key_set_identifier_t *ngksi = &security_mode_command->ngksi;
-    ogs_nas_ue_security_capability_t *replayed_ue_security_capabilities = 
+    ogs_nas_ue_security_capability_t *replayed_ue_security_capabilities =
         &security_mode_command->replayed_ue_security_capabilities;
     ogs_nas_imeisv_request_t *imeisv_request =
         &security_mode_command->imeisv_request;
@@ -239,7 +253,7 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
     message.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
@@ -256,7 +270,7 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     selected_nas_security_algorithms->type_of_ciphering_algorithm =
         amf_ue->selected_enc_algorithm;
 
-    ngksi->tsc = 0;
+    ngksi->tsc = amf_ue->nas.tsc;
     ngksi->value = amf_ue->nas.ksi;
 
     replayed_ue_security_capabilities->nea = amf_ue->ue_security_capability.nea;
@@ -289,7 +303,7 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     security_mode_command->presencemask |=
         OGS_NAS_5GS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT;
     imeisv_request->type = OGS_NAS_IMEISV_TYPE;
-    imeisv_request->imeisv_request_value = OGS_NAS_IMEISV_REQUESTED;
+    imeisv_request->value = OGS_NAS_IMEISV_REQUESTED;
 
     security_mode_command->presencemask |=
         OGS_NAS_5GS_SECURITY_MODE_COMMAND_ADDITIONAL_5G_SECURITY_INFORMATION_PRESENT;
@@ -310,6 +324,171 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     return nas_5gs_security_encode(amf_ue, &message);
 }
 
+ogs_pkbuf_t *gmm_build_configuration_update_command(
+        amf_ue_t *amf_ue, int ack, int red)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_configuration_update_command_t *configuration_update_command =
+        &message.gmm.configuration_update_command;
+
+    ogs_nas_time_zone_and_time_t *universal_time_and_local_time_zone =
+        &configuration_update_command->universal_time_and_local_time_zone;
+    ogs_nas_daylight_saving_time_t *network_daylight_saving_time =
+        &configuration_update_command->network_daylight_saving_time;
+
+    struct timeval tv;
+    struct tm gmt, local;
+
+    ogs_assert(amf_ue);
+
+    ogs_gettimeofday(&tv);
+    ogs_gmtime(tv.tv_sec, &gmt);
+    ogs_localtime(tv.tv_sec, &local);
+
+    ogs_debug("    GMT Time[Y:M:D H:M:S GMT] - %d:%d:%d, %d:%d:%d, %d",
+        gmt.tm_year, gmt.tm_mon, gmt.tm_mday,
+        gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
+        (int)gmt.tm_gmtoff);
+    ogs_debug("    LOCAL Time[Y:M:D H:M:S GMT] - %d:%d:%d, %d:%d:%d, %d",
+        local.tm_year, local.tm_mon, local.tm_mday,
+        local.tm_hour, local.tm_min, local.tm_sec,
+        (int)local.tm_gmtoff);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND;
+
+    if (ack | red) {
+        ogs_nas_configuration_update_indication_t
+            *configuration_update_indication =
+                &configuration_update_command->configuration_update_indication;
+
+        configuration_update_command->presencemask |=
+            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_CONFIGURATION_UPDATE_INDICATION_PRESENT;
+
+        configuration_update_indication->ack = ack;
+        configuration_update_indication->red = red;
+    }
+
+    configuration_update_command->presencemask |=
+        OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
+    universal_time_and_local_time_zone->year =
+                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
+    universal_time_and_local_time_zone->mon =
+                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
+    universal_time_and_local_time_zone->mday =
+                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
+    universal_time_and_local_time_zone->hour =
+                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
+    universal_time_and_local_time_zone->min =
+                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_min);
+    universal_time_and_local_time_zone->sec =
+                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
+    if (local.tm_gmtoff >= 0) {
+        universal_time_and_local_time_zone->timezone =
+                    OGS_OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
+    } else {
+        universal_time_and_local_time_zone->timezone =
+                    OGS_OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
+        universal_time_and_local_time_zone->timezone |= 0x08;
+    }
+    ogs_debug("    Timezone:0x%x",
+        universal_time_and_local_time_zone->timezone);
+
+    configuration_update_command->presencemask |=
+        OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
+    network_daylight_saving_time->length = 1;
+
+    if (amf_self()->full_name.length) {
+        configuration_update_command->presencemask |=
+            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_FULL_NAME_FOR_NETWORK_PRESENT;
+        memcpy(&configuration_update_command->full_name_for_network,
+            &amf_self()->full_name, sizeof(ogs_nas_network_name_t));
+    }
+
+    if (amf_self()->short_name.length) {
+        configuration_update_command->presencemask |=
+            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_SHORT_NAME_FOR_NETWORK_PRESENT;
+        memcpy(&configuration_update_command->short_name_for_network,
+            &amf_self()->short_name, sizeof(ogs_nas_network_name_t));
+    }
+
+    return nas_5gs_security_encode(amf_ue, &message);
+}
+
+ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
+        uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
+        ogs_nas_5gmm_cause_t cause, uint8_t backoff_time)
+{
+    amf_ue_t *amf_ue = NULL;
+    ogs_pkbuf_t *gmmbuf = NULL;
+
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_dl_nas_transport_t *dl_nas_transport =
+        &message.gmm.dl_nas_transport;
+
+    ogs_nas_pdu_session_identity_2_t *pdu_session_id = NULL;
+    ogs_nas_5gmm_cause_t *gmm_cause = NULL;
+    ogs_nas_gprs_timer_3_t *back_off_timer_value = NULL;
+
+    ogs_assert(sess);
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
+    ogs_assert(payload_container_type);
+    ogs_assert(payload_container);
+
+    pdu_session_id = &dl_nas_transport->pdu_session_id;
+    ogs_assert(pdu_session_id);
+    gmm_cause = &dl_nas_transport->gmm_cause;
+    ogs_assert(gmm_cause);
+    back_off_timer_value = &dl_nas_transport->back_off_timer_value;
+    ogs_assert(back_off_timer_value);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_DL_NAS_TRANSPORT;
+
+    dl_nas_transport->payload_container_type.value = payload_container_type;
+    dl_nas_transport->payload_container.length = payload_container->len;
+    dl_nas_transport->payload_container.buffer = payload_container->data;
+
+    dl_nas_transport->presencemask |=
+        OGS_NAS_5GS_DL_NAS_TRANSPORT_PDU_SESSION_ID_PRESENT;
+    *pdu_session_id = sess->psi;
+
+    if (cause) {
+        dl_nas_transport->presencemask |=
+            OGS_NAS_5GS_DL_NAS_TRANSPORT_5GMM_CAUSE_PRESENT;
+        *gmm_cause = cause;
+    }
+
+    if (backoff_time >= 2) {
+        dl_nas_transport->presencemask |=
+            OGS_NAS_5GS_DL_NAS_TRANSPORT_BACK_OFF_TIMER_VALUE_PRESENT;
+        back_off_timer_value->length = 1;
+        back_off_timer_value->unit =
+            OGS_NAS_GRPS_TIMER_3_UNIT_MULTIPLES_OF_2_SS;
+        back_off_timer_value->value = backoff_time / 2;
+    }
+
+    gmmbuf = nas_5gs_security_encode(amf_ue, &message);
+    ogs_pkbuf_free(payload_container);
+
+    return gmmbuf;
+}
+
 #if 0
 ogs_pkbuf_t *gmm_build_detach_accept(amf_ue_t *amf_ue)
 {
@@ -318,7 +497,7 @@ ogs_pkbuf_t *gmm_build_detach_accept(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
@@ -336,7 +515,7 @@ ogs_pkbuf_t *gmm_build_detach_accept(amf_ue_t *amf_ue)
 ogs_pkbuf_t *gmm_build_tau_accept(amf_ue_t *amf_ue)
 {
     ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_tracking_area_update_accept_t *tau_accept = 
+    ogs_nas_5gs_tracking_area_update_accept_t *tau_accept =
         &message.gmm.tracking_area_update_accept;
     int served_tai_index = 0;
 
@@ -345,7 +524,7 @@ ogs_pkbuf_t *gmm_build_tau_accept(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
@@ -356,11 +535,11 @@ ogs_pkbuf_t *gmm_build_tau_accept(amf_ue_t *amf_ue)
 
     tau_accept->eps_update_result.result = amf_ue->nas_5gs.update.value;
 
-    /* Set T3412 */
+    /* Set T3512 */
     tau_accept->presencemask |=
-        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_PRESENT ;
-    tau_accept->t3412_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    tau_accept->t3412_value.value = 9;
+        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_T3512_VALUE_PRESENT ;
+    tau_accept->t3512_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
+    tau_accept->t3512_value.value = 9;
 
     /* Set TAI */
     tau_accept->presencemask |=
@@ -408,19 +587,19 @@ ogs_pkbuf_t *gmm_build_tau_accept(amf_ue_t *amf_ue)
         sess = amf_sess_next(sess);
     }
 
-#if 0 /* Need not to include T3402 */
-    /* Set T3402 */
+#if 0 /* Need not to include T3502 */
+    /* Set T3502 */
     tau_accept->presencemask |=
-        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_T3402_VALUE_PRESENT;
-    tau_accept->t3402_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
-    tau_accept->t3402_value.value = 12;
+        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_T3502_VALUE_PRESENT;
+    tau_accept->t3502_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
+    tau_accept->t3502_value.value = 12;
 #endif
 
-    /* Set T3423 */
+    /* Set T3523 */
     tau_accept->presencemask |=
-        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_T3423_VALUE_PRESENT;
-    tau_accept->t3423_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
-    tau_accept->t3423_value.value = 9;
+        OGS_NAS_5GS_TRACKING_AREA_UPDATE_ACCEPT_T3523_VALUE_PRESENT;
+    tau_accept->t3523_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
+    tau_accept->t3523_value.value = 9;
 
     /* Set EPS network feature support */
     tau_accept->presencemask |=
@@ -435,7 +614,7 @@ ogs_pkbuf_t *gmm_build_tau_reject(
         ogs_nas_5gmm_cause_t gmm_cause, amf_ue_t *amf_ue)
 {
     ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_tracking_area_update_reject_t *tau_reject = 
+    ogs_nas_5gs_tracking_area_update_reject_t *tau_reject =
         &message.gmm.tracking_area_update_reject;
 
     ogs_assert(amf_ue);
@@ -478,7 +657,7 @@ ogs_pkbuf_t *gmm_build_service_reject(
 ogs_pkbuf_t *gmm_build_cs_service_notification(amf_ue_t *amf_ue)
 {
     ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_cs_service_notification_t *cs_service_notification = 
+    ogs_nas_5gs_cs_service_notification_t *cs_service_notification =
         &message.gmm.cs_service_notification;
     ogs_nas_paging_identity_t *paging_identity =
         &cs_service_notification->paging_identity;
@@ -486,7 +665,7 @@ ogs_pkbuf_t *gmm_build_cs_service_notification(amf_ue_t *amf_ue)
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
@@ -508,7 +687,7 @@ ogs_pkbuf_t *gmm_build_downlink_nas_transport(
         amf_ue_t *amf_ue, uint8_t *buffer, uint8_t length)
 {
     ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_downlink_nas_transport_t *downlink_nas_transport = 
+    ogs_nas_5gs_downlink_nas_transport_t *downlink_nas_transport =
         &message.gmm.downlink_nas_transport;
     ogs_nas_5gs_message_container_t *nas_message_container =
         &downlink_nas_transport->nas_message_container;
@@ -516,7 +695,7 @@ ogs_pkbuf_t *gmm_build_downlink_nas_transport(
     ogs_assert(amf_ue);
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type = 
+    message.h.security_header_type =
         OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
     message.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
@@ -531,3 +710,27 @@ ogs_pkbuf_t *gmm_build_downlink_nas_transport(
     return nas_5gs_security_encode(amf_ue, &message);
 }
 #endif
+
+ogs_pkbuf_t *gmm_build_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_5gmm_status_t *gmm_status = &message.gmm.gmm_status;
+    ogs_nas_5gmm_cause_t *gmm_cause = &gmm_status->gmm_cause;
+
+    ogs_assert(amf_ue);
+    ogs_assert(cause);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_5GMM_STATUS;
+
+    *gmm_cause = cause;
+
+    return nas_5gs_security_encode(amf_ue, &message);
+}

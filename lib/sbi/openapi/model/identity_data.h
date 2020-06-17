@@ -30,6 +30,7 @@ OpenAPI_identity_data_t *OpenAPI_identity_data_create(
 void OpenAPI_identity_data_free(OpenAPI_identity_data_t *identity_data);
 OpenAPI_identity_data_t *OpenAPI_identity_data_parseFromJSON(cJSON *identity_dataJSON);
 cJSON *OpenAPI_identity_data_convertToJSON(OpenAPI_identity_data_t *identity_data);
+OpenAPI_identity_data_t *OpenAPI_identity_data_copy(OpenAPI_identity_data_t *dst, OpenAPI_identity_data_t *src);
 
 #ifdef __cplusplus
 }

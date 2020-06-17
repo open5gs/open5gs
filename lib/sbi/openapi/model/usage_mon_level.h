@@ -26,6 +26,7 @@ OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_create(
 void OpenAPI_usage_mon_level_free(OpenAPI_usage_mon_level_t *usage_mon_level);
 OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_parseFromJSON(cJSON *usage_mon_levelJSON);
 cJSON *OpenAPI_usage_mon_level_convertToJSON(OpenAPI_usage_mon_level_t *usage_mon_level);
+OpenAPI_usage_mon_level_t *OpenAPI_usage_mon_level_copy(OpenAPI_usage_mon_level_t *dst, OpenAPI_usage_mon_level_t *src);
 
 #ifdef __cplusplus
 }

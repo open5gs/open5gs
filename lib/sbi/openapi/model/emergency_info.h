@@ -33,6 +33,7 @@ OpenAPI_emergency_info_t *OpenAPI_emergency_info_create(
 void OpenAPI_emergency_info_free(OpenAPI_emergency_info_t *emergency_info);
 OpenAPI_emergency_info_t *OpenAPI_emergency_info_parseFromJSON(cJSON *emergency_infoJSON);
 cJSON *OpenAPI_emergency_info_convertToJSON(OpenAPI_emergency_info_t *emergency_info);
+OpenAPI_emergency_info_t *OpenAPI_emergency_info_copy(OpenAPI_emergency_info_t *dst, OpenAPI_emergency_info_t *src);
 
 #ifdef __cplusplus
 }

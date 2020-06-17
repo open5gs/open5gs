@@ -43,6 +43,7 @@ OpenAPI_nr_location_t *OpenAPI_nr_location_create(
 void OpenAPI_nr_location_free(OpenAPI_nr_location_t *nr_location);
 OpenAPI_nr_location_t *OpenAPI_nr_location_parseFromJSON(cJSON *nr_locationJSON);
 cJSON *OpenAPI_nr_location_convertToJSON(OpenAPI_nr_location_t *nr_location);
+OpenAPI_nr_location_t *OpenAPI_nr_location_copy(OpenAPI_nr_location_t *dst, OpenAPI_nr_location_t *src);
 
 #ifdef __cplusplus
 }

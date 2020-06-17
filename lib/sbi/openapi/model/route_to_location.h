@@ -33,6 +33,7 @@ OpenAPI_route_to_location_t *OpenAPI_route_to_location_create(
 void OpenAPI_route_to_location_free(OpenAPI_route_to_location_t *route_to_location);
 OpenAPI_route_to_location_t *OpenAPI_route_to_location_parseFromJSON(cJSON *route_to_locationJSON);
 cJSON *OpenAPI_route_to_location_convertToJSON(OpenAPI_route_to_location_t *route_to_location);
+OpenAPI_route_to_location_t *OpenAPI_route_to_location_copy(OpenAPI_route_to_location_t *dst, OpenAPI_route_to_location_t *src);
 
 #ifdef __cplusplus
 }

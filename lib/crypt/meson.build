@@ -42,6 +42,7 @@ libcrypt_sources = files('''
     kasumi.c
 
     ogs-kdf.c
+    ogs-base64.c
 '''.split())
 
 libcrypt_inc = include_directories('.')

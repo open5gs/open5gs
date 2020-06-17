@@ -71,3 +71,38 @@ void testgmm_handle_security_mode_command(test_ue_t *test_ue,
 
     test_ue->security_context_available = 1;
 }
+
+void testgmm_handle_registration_accept(test_ue_t *test_ue,
+        ogs_nas_5gs_registration_accept_t *registration_accept)
+{
+    ogs_assert(test_ue);
+    ogs_assert(registration_accept);
+
+    if (registration_accept->presencemask &
+            OGS_NAS_5GS_REGISTRATION_ACCEPT_5G_GUTI_PRESENT) {
+        ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
+        ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti = NULL;
+
+        mobile_identity = &registration_accept->guti;
+        mobile_identity_guti = mobile_identity->buffer;
+
+        memcpy(&test_ue->nas_guti.nas_plmn_id,
+                &mobile_identity_guti->nas_plmn_id, OGS_PLMN_ID_LEN);
+        memcpy(&test_ue->nas_guti.amf_id,
+                &mobile_identity_guti->amf_id, sizeof(ogs_amf_id_t));
+        test_ue->nas_guti.m_tmsi = be32toh(mobile_identity_guti->m_tmsi);
+    }
+}
+
+void testgmm_handle_dl_nas_transport(test_ue_t *test_ue,
+        ogs_nas_5gs_dl_nas_transport_t *dl_nas_transport)
+{
+    test_sess_t *sess = NULL;
+    ogs_assert(test_ue);
+    ogs_assert(dl_nas_transport);
+
+    sess = test_ue->sess;
+    ogs_assert(sess);
+
+    testgmm_send_to_gsm(sess, &dl_nas_transport->payload_container);
+}

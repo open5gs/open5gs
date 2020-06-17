@@ -56,14 +56,14 @@ cJSON *OpenAPI_pfd_change_notification_convertToJSON(OpenAPI_pfd_change_notifica
         goto end;
     }
 
-    if (pfd_change_notification->removal_flag >= 0) {
+    if (pfd_change_notification->removal_flag) {
         if (cJSON_AddBoolToObject(item, "removalFlag", pfd_change_notification->removal_flag) == NULL) {
             ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [removal_flag]");
             goto end;
         }
     }
 
-    if (pfd_change_notification->partial_flag >= 0) {
+    if (pfd_change_notification->partial_flag) {
         if (cJSON_AddBoolToObject(item, "partialFlag", pfd_change_notification->partial_flag) == NULL) {
             ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed [partial_flag]");
             goto end;
@@ -160,5 +160,39 @@ OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_parseFromJSON
     return pfd_change_notification_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_pfd_change_notification_t *OpenAPI_pfd_change_notification_copy(OpenAPI_pfd_change_notification_t *dst, OpenAPI_pfd_change_notification_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_pfd_change_notification_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_pfd_change_notification_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_pfd_change_notification_free(dst);
+    dst = OpenAPI_pfd_change_notification_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

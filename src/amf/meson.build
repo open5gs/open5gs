@@ -23,7 +23,13 @@ libamf_sources = files('''
     nausf-build.c
     nausf-handler.c
 
+    nudm-build.c
+
+    nsmf-build.c
+    nsmf-handler.c
+
     nnrf-handler.c
+    namf-handler.c
     sbi-path.c
 
     nf-sm.c
@@ -41,7 +47,6 @@ libamf_sources = files('''
     nas-path.c
     gmm-sm.c
 
-    gsm-sm.c
     amf-sm.c
 
     init.c

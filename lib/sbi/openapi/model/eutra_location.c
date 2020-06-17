@@ -89,7 +89,7 @@ cJSON *OpenAPI_eutra_location_convertToJSON(OpenAPI_eutra_location_t *eutra_loca
         goto end;
     }
 
-    if (eutra_location->ignore_ecgi >= 0) {
+    if (eutra_location->ignore_ecgi) {
         if (cJSON_AddBoolToObject(item, "ignoreEcgi", eutra_location->ignore_ecgi) == NULL) {
             ogs_error("OpenAPI_eutra_location_convertToJSON() failed [ignore_ecgi]");
             goto end;
@@ -251,5 +251,39 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_loca
     return eutra_location_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_eutra_location_t *OpenAPI_eutra_location_copy(OpenAPI_eutra_location_t *dst, OpenAPI_eutra_location_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_eutra_location_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_eutra_location_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_eutra_location_free(dst);
+    dst = OpenAPI_eutra_location_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

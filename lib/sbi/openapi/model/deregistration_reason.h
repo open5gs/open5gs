@@ -26,6 +26,7 @@ OpenAPI_deregistration_reason_t *OpenAPI_deregistration_reason_create(
 void OpenAPI_deregistration_reason_free(OpenAPI_deregistration_reason_t *deregistration_reason);
 OpenAPI_deregistration_reason_t *OpenAPI_deregistration_reason_parseFromJSON(cJSON *deregistration_reasonJSON);
 cJSON *OpenAPI_deregistration_reason_convertToJSON(OpenAPI_deregistration_reason_t *deregistration_reason);
+OpenAPI_deregistration_reason_t *OpenAPI_deregistration_reason_copy(OpenAPI_deregistration_reason_t *dst, OpenAPI_deregistration_reason_t *src);
 
 #ifdef __cplusplus
 }

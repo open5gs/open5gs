@@ -41,6 +41,7 @@ OpenAPI_udm_info_t *OpenAPI_udm_info_create(
 void OpenAPI_udm_info_free(OpenAPI_udm_info_t *udm_info);
 OpenAPI_udm_info_t *OpenAPI_udm_info_parseFromJSON(cJSON *udm_infoJSON);
 cJSON *OpenAPI_udm_info_convertToJSON(OpenAPI_udm_info_t *udm_info);
+OpenAPI_udm_info_t *OpenAPI_udm_info_copy(OpenAPI_udm_info_t *dst, OpenAPI_udm_info_t *src);
 
 #ifdef __cplusplus
 }

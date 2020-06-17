@@ -1,0 +1,134 @@
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include "ladn_info.h"
+
+OpenAPI_ladn_info_t *OpenAPI_ladn_info_create(
+    char *ladn,
+    OpenAPI_presence_state_t *presence
+    )
+{
+    OpenAPI_ladn_info_t *ladn_info_local_var = OpenAPI_malloc(sizeof(OpenAPI_ladn_info_t));
+    if (!ladn_info_local_var) {
+        return NULL;
+    }
+    ladn_info_local_var->ladn = ladn;
+    ladn_info_local_var->presence = presence;
+
+    return ladn_info_local_var;
+}
+
+void OpenAPI_ladn_info_free(OpenAPI_ladn_info_t *ladn_info)
+{
+    if (NULL == ladn_info) {
+        return;
+    }
+    OpenAPI_lnode_t *node;
+    ogs_free(ladn_info->ladn);
+    OpenAPI_presence_state_free(ladn_info->presence);
+    ogs_free(ladn_info);
+}
+
+cJSON *OpenAPI_ladn_info_convertToJSON(OpenAPI_ladn_info_t *ladn_info)
+{
+    cJSON *item = NULL;
+
+    if (ladn_info == NULL) {
+        ogs_error("OpenAPI_ladn_info_convertToJSON() failed [LadnInfo]");
+        return NULL;
+    }
+
+    item = cJSON_CreateObject();
+    if (!ladn_info->ladn) {
+        ogs_error("OpenAPI_ladn_info_convertToJSON() failed [ladn]");
+        goto end;
+    }
+    if (cJSON_AddStringToObject(item, "ladn", ladn_info->ladn) == NULL) {
+        ogs_error("OpenAPI_ladn_info_convertToJSON() failed [ladn]");
+        goto end;
+    }
+
+    if (ladn_info->presence) {
+        cJSON *presence_local_JSON = OpenAPI_presence_state_convertToJSON(ladn_info->presence);
+        if (presence_local_JSON == NULL) {
+            ogs_error("OpenAPI_ladn_info_convertToJSON() failed [presence]");
+            goto end;
+        }
+        cJSON_AddItemToObject(item, "presence", presence_local_JSON);
+        if (item->child == NULL) {
+            ogs_error("OpenAPI_ladn_info_convertToJSON() failed [presence]");
+            goto end;
+        }
+    }
+
+end:
+    return item;
+}
+
+OpenAPI_ladn_info_t *OpenAPI_ladn_info_parseFromJSON(cJSON *ladn_infoJSON)
+{
+    OpenAPI_ladn_info_t *ladn_info_local_var = NULL;
+    cJSON *ladn = cJSON_GetObjectItemCaseSensitive(ladn_infoJSON, "ladn");
+    if (!ladn) {
+        ogs_error("OpenAPI_ladn_info_parseFromJSON() failed [ladn]");
+        goto end;
+    }
+
+
+    if (!cJSON_IsString(ladn)) {
+        ogs_error("OpenAPI_ladn_info_parseFromJSON() failed [ladn]");
+        goto end;
+    }
+
+    cJSON *presence = cJSON_GetObjectItemCaseSensitive(ladn_infoJSON, "presence");
+
+    OpenAPI_presence_state_t *presence_local_nonprim = NULL;
+    if (presence) {
+        presence_local_nonprim = OpenAPI_presence_state_parseFromJSON(presence);
+    }
+
+    ladn_info_local_var = OpenAPI_ladn_info_create (
+        ogs_strdup(ladn->valuestring),
+        presence ? presence_local_nonprim : NULL
+        );
+
+    return ladn_info_local_var;
+end:
+    return NULL;
+}
+
+OpenAPI_ladn_info_t *OpenAPI_ladn_info_copy(OpenAPI_ladn_info_t *dst, OpenAPI_ladn_info_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_ladn_info_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_ladn_info_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_ladn_info_free(dst);
+    dst = OpenAPI_ladn_info_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
+}
+

@@ -26,6 +26,7 @@ OpenAPI_up_interface_type_t *OpenAPI_up_interface_type_create(
 void OpenAPI_up_interface_type_free(OpenAPI_up_interface_type_t *up_interface_type);
 OpenAPI_up_interface_type_t *OpenAPI_up_interface_type_parseFromJSON(cJSON *up_interface_typeJSON);
 cJSON *OpenAPI_up_interface_type_convertToJSON(OpenAPI_up_interface_type_t *up_interface_type);
+OpenAPI_up_interface_type_t *OpenAPI_up_interface_type_copy(OpenAPI_up_interface_type_t *dst, OpenAPI_up_interface_type_t *src);
 
 #ifdef __cplusplus
 }

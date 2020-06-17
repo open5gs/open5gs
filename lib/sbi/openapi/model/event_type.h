@@ -26,6 +26,7 @@ OpenAPI_event_type_t *OpenAPI_event_type_create(
 void OpenAPI_event_type_free(OpenAPI_event_type_t *event_type);
 OpenAPI_event_type_t *OpenAPI_event_type_parseFromJSON(cJSON *event_typeJSON);
 cJSON *OpenAPI_event_type_convertToJSON(OpenAPI_event_type_t *event_type);
+OpenAPI_event_type_t *OpenAPI_event_type_copy(OpenAPI_event_type_t *dst, OpenAPI_event_type_t *src);
 
 #ifdef __cplusplus
 }

@@ -23,7 +23,7 @@ static udm_timer_cfg_t g_udm_timer_cfg[MAX_NUM_OF_UDM_TIMER] = {
     [UDM_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL] =
         { .duration = ogs_time_from_sec(3) },
     [UDM_TIMER_SBI_CLIENT_WAIT] =
-        { .duration = ogs_time_from_sec(2) },
+        { .duration = ogs_time_from_msec(500) },
 };
 
 udm_timer_cfg_t *udm_timer_cfg(udm_timer_e id)

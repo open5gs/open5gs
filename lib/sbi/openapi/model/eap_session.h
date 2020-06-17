@@ -38,6 +38,7 @@ OpenAPI_eap_session_t *OpenAPI_eap_session_create(
 void OpenAPI_eap_session_free(OpenAPI_eap_session_t *eap_session);
 OpenAPI_eap_session_t *OpenAPI_eap_session_parseFromJSON(cJSON *eap_sessionJSON);
 cJSON *OpenAPI_eap_session_convertToJSON(OpenAPI_eap_session_t *eap_session);
+OpenAPI_eap_session_t *OpenAPI_eap_session_copy(OpenAPI_eap_session_t *dst, OpenAPI_eap_session_t *src);
 
 #ifdef __cplusplus
 }

@@ -30,6 +30,7 @@ OpenAPI_cag_info_t *OpenAPI_cag_info_create(
 void OpenAPI_cag_info_free(OpenAPI_cag_info_t *cag_info);
 OpenAPI_cag_info_t *OpenAPI_cag_info_parseFromJSON(cJSON *cag_infoJSON);
 cJSON *OpenAPI_cag_info_convertToJSON(OpenAPI_cag_info_t *cag_info);
+OpenAPI_cag_info_t *OpenAPI_cag_info_copy(OpenAPI_cag_info_t *dst, OpenAPI_cag_info_t *src);
 
 #ifdef __cplusplus
 }

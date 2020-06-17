@@ -66,8 +66,19 @@ ogs_pkbuf_t *test_nas_5gs_security_encode(
         test_ue->dl_count.i32 = 0;
     }
 
-    if (test_ue->selected_enc_algorithm == 0)
+    if (test_ue->selected_enc_algorithm == 0) {
         ciphered = 0;
+#if 0 /* Wireshark does not support it */
+        if (message->h.security_header_type ==
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED)
+            message->h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
+        else if (message->h.security_header_type ==
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT)
+            message->h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
+#endif
+    }
     if (test_ue->selected_int_algorithm == 0)
         integrity_protected = 0;
 
@@ -87,7 +98,7 @@ ogs_pkbuf_t *test_nas_5gs_security_encode(
         /* encrypt NAS message */
         ogs_nas_encrypt(test_ue->selected_enc_algorithm,
             test_ue->knas_enc, test_ue->ul_count,
-            test_ue->nas.connection_identifier,
+            test_ue->nas.access_type,
             NAS_SECURITY_UPLINK_DIRECTION, new);
     }
 
@@ -101,7 +112,7 @@ ogs_pkbuf_t *test_nas_5gs_security_encode(
         /* calculate NAS MAC(message authentication code) */
         ogs_nas_mac_calculate(test_ue->selected_int_algorithm,
             test_ue->knas_int, test_ue->ul_count,
-            test_ue->nas.connection_identifier,
+            test_ue->nas.access_type,
             NAS_SECURITY_UPLINK_DIRECTION, new, mac);
         memcpy(&h.message_authentication_code, mac, sizeof(mac));
     }
@@ -162,7 +173,7 @@ int test_nas_5gs_security_decode(test_ue_t *test_ue,
             /* calculate NAS MAC(message authentication code) */
             ogs_nas_mac_calculate(test_ue->selected_int_algorithm,
                 test_ue->knas_int, test_ue->dl_count.i32,
-                test_ue->nas.connection_identifier,
+                test_ue->nas.access_type,
                 NAS_SECURITY_DOWNLINK_DIRECTION, pkbuf, mac);
             h->message_authentication_code = original_mac;
 
@@ -181,7 +192,7 @@ int test_nas_5gs_security_decode(test_ue_t *test_ue,
             /* decrypt NAS message */
             ogs_nas_encrypt(test_ue->selected_enc_algorithm,
                 test_ue->knas_enc, test_ue->dl_count.i32,
-                test_ue->nas.connection_identifier,
+                test_ue->nas.access_type,
                 NAS_SECURITY_DOWNLINK_DIRECTION, pkbuf);
         }
     }

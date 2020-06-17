@@ -29,6 +29,7 @@ OpenAPI_point_all_of_t *OpenAPI_point_all_of_create(
 void OpenAPI_point_all_of_free(OpenAPI_point_all_of_t *point_all_of);
 OpenAPI_point_all_of_t *OpenAPI_point_all_of_parseFromJSON(cJSON *point_all_ofJSON);
 cJSON *OpenAPI_point_all_of_convertToJSON(OpenAPI_point_all_of_t *point_all_of);
+OpenAPI_point_all_of_t *OpenAPI_point_all_of_copy(OpenAPI_point_all_of_t *dst, OpenAPI_point_all_of_t *src);
 
 #ifdef __cplusplus
 }

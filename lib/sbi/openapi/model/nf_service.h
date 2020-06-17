@@ -94,6 +94,7 @@ OpenAPI_nf_service_t *OpenAPI_nf_service_create(
 void OpenAPI_nf_service_free(OpenAPI_nf_service_t *nf_service);
 OpenAPI_nf_service_t *OpenAPI_nf_service_parseFromJSON(cJSON *nf_serviceJSON);
 cJSON *OpenAPI_nf_service_convertToJSON(OpenAPI_nf_service_t *nf_service);
+OpenAPI_nf_service_t *OpenAPI_nf_service_copy(OpenAPI_nf_service_t *dst, OpenAPI_nf_service_t *src);
 
 #ifdef __cplusplus
 }

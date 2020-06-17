@@ -30,6 +30,7 @@ OpenAPI_time_window_t *OpenAPI_time_window_create(
 void OpenAPI_time_window_free(OpenAPI_time_window_t *time_window);
 OpenAPI_time_window_t *OpenAPI_time_window_parseFromJSON(cJSON *time_windowJSON);
 cJSON *OpenAPI_time_window_convertToJSON(OpenAPI_time_window_t *time_window);
+OpenAPI_time_window_t *OpenAPI_time_window_copy(OpenAPI_time_window_t *dst, OpenAPI_time_window_t *src);
 
 #ifdef __cplusplus
 }

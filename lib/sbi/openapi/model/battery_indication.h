@@ -32,6 +32,7 @@ OpenAPI_battery_indication_t *OpenAPI_battery_indication_create(
 void OpenAPI_battery_indication_free(OpenAPI_battery_indication_t *battery_indication);
 OpenAPI_battery_indication_t *OpenAPI_battery_indication_parseFromJSON(cJSON *battery_indicationJSON);
 cJSON *OpenAPI_battery_indication_convertToJSON(OpenAPI_battery_indication_t *battery_indication);
+OpenAPI_battery_indication_t *OpenAPI_battery_indication_copy(OpenAPI_battery_indication_t *dst, OpenAPI_battery_indication_t *src);
 
 #ifdef __cplusplus
 }

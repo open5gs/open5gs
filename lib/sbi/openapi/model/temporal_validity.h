@@ -30,6 +30,7 @@ OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_create(
 void OpenAPI_temporal_validity_free(OpenAPI_temporal_validity_t *temporal_validity);
 OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_parseFromJSON(cJSON *temporal_validityJSON);
 cJSON *OpenAPI_temporal_validity_convertToJSON(OpenAPI_temporal_validity_t *temporal_validity);
+OpenAPI_temporal_validity_t *OpenAPI_temporal_validity_copy(OpenAPI_temporal_validity_t *dst, OpenAPI_temporal_validity_t *src);
 
 #ifdef __cplusplus
 }

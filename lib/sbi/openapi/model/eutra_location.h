@@ -47,6 +47,7 @@ OpenAPI_eutra_location_t *OpenAPI_eutra_location_create(
 void OpenAPI_eutra_location_free(OpenAPI_eutra_location_t *eutra_location);
 OpenAPI_eutra_location_t *OpenAPI_eutra_location_parseFromJSON(cJSON *eutra_locationJSON);
 cJSON *OpenAPI_eutra_location_convertToJSON(OpenAPI_eutra_location_t *eutra_location);
+OpenAPI_eutra_location_t *OpenAPI_eutra_location_copy(OpenAPI_eutra_location_t *dst, OpenAPI_eutra_location_t *src);
 
 #ifdef __cplusplus
 }

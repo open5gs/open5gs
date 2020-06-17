@@ -31,6 +31,7 @@ OpenAPI_time_period_t *OpenAPI_time_period_create(
 void OpenAPI_time_period_free(OpenAPI_time_period_t *time_period);
 OpenAPI_time_period_t *OpenAPI_time_period_parseFromJSON(cJSON *time_periodJSON);
 cJSON *OpenAPI_time_period_convertToJSON(OpenAPI_time_period_t *time_period);
+OpenAPI_time_period_t *OpenAPI_time_period_copy(OpenAPI_time_period_t *dst, OpenAPI_time_period_t *src);
 
 #ifdef __cplusplus
 }

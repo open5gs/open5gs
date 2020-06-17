@@ -70,10 +70,6 @@ void ogs_kdf_kamf(char *supi, uint8_t *abba, uint8_t abba_len,
 void ogs_kdf_nas_5gs(uint8_t algorithm_type_distinguishers,
     uint8_t algorithm_identity, uint8_t *kamf, uint8_t *knas);
 
-/* Access Type Distinguishers */
-#define OGS_KDF_ACCESS_TYPE_3GPP 0x01
-#define OGS_KDF_ACCESS_TYPE_NON_3GPP 0x02
-
 /* TS33.501 Annex A.9 KgNB and Kn3iwf derivation function */
 void ogs_kdf_kgnb_and_kn3iwf(uint8_t *kamf, uint32_t ul_count,
         uint8_t access_type_distinguisher, uint8_t *kgnb);

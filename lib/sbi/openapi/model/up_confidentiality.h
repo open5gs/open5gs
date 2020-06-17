@@ -26,6 +26,7 @@ OpenAPI_up_confidentiality_t *OpenAPI_up_confidentiality_create(
 void OpenAPI_up_confidentiality_free(OpenAPI_up_confidentiality_t *up_confidentiality);
 OpenAPI_up_confidentiality_t *OpenAPI_up_confidentiality_parseFromJSON(cJSON *up_confidentialityJSON);
 cJSON *OpenAPI_up_confidentiality_convertToJSON(OpenAPI_up_confidentiality_t *up_confidentiality);
+OpenAPI_up_confidentiality_t *OpenAPI_up_confidentiality_copy(OpenAPI_up_confidentiality_t *dst, OpenAPI_up_confidentiality_t *src);
 
 #ifdef __cplusplus
 }

@@ -26,6 +26,7 @@ OpenAPI_event_report_mode_t *OpenAPI_event_report_mode_create(
 void OpenAPI_event_report_mode_free(OpenAPI_event_report_mode_t *event_report_mode);
 OpenAPI_event_report_mode_t *OpenAPI_event_report_mode_parseFromJSON(cJSON *event_report_modeJSON);
 cJSON *OpenAPI_event_report_mode_convertToJSON(OpenAPI_event_report_mode_t *event_report_mode);
+OpenAPI_event_report_mode_t *OpenAPI_event_report_mode_copy(OpenAPI_event_report_mode_t *dst, OpenAPI_event_report_mode_t *src);
 
 #ifdef __cplusplus
 }

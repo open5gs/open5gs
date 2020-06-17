@@ -6,8 +6,8 @@
 
 OpenAPI_arp_t *OpenAPI_arp_create(
     int priority_level,
-    OpenAPI_preemption_capability_t *preempt_cap,
-    OpenAPI_preemption_vulnerability_t *preempt_vuln
+    OpenAPI_preemption_capability_e preempt_cap,
+    OpenAPI_preemption_vulnerability_e preempt_vuln
     )
 {
     OpenAPI_arp_t *arp_local_var = OpenAPI_malloc(sizeof(OpenAPI_arp_t));
@@ -27,8 +27,6 @@ void OpenAPI_arp_free(OpenAPI_arp_t *arp)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_preemption_capability_free(arp->preempt_cap);
-    OpenAPI_preemption_vulnerability_free(arp->preempt_vuln);
     ogs_free(arp);
 }
 
@@ -55,13 +53,7 @@ cJSON *OpenAPI_arp_convertToJSON(OpenAPI_arp_t *arp)
         ogs_error("OpenAPI_arp_convertToJSON() failed [preempt_cap]");
         goto end;
     }
-    cJSON *preempt_cap_local_JSON = OpenAPI_preemption_capability_convertToJSON(arp->preempt_cap);
-    if (preempt_cap_local_JSON == NULL) {
-        ogs_error("OpenAPI_arp_convertToJSON() failed [preempt_cap]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "preemptCap", preempt_cap_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "preemptCap", OpenAPI_preemption_capability_ToString(arp->preempt_cap)) == NULL) {
         ogs_error("OpenAPI_arp_convertToJSON() failed [preempt_cap]");
         goto end;
     }
@@ -70,13 +62,7 @@ cJSON *OpenAPI_arp_convertToJSON(OpenAPI_arp_t *arp)
         ogs_error("OpenAPI_arp_convertToJSON() failed [preempt_vuln]");
         goto end;
     }
-    cJSON *preempt_vuln_local_JSON = OpenAPI_preemption_vulnerability_convertToJSON(arp->preempt_vuln);
-    if (preempt_vuln_local_JSON == NULL) {
-        ogs_error("OpenAPI_arp_convertToJSON() failed [preempt_vuln]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "preemptVuln", preempt_vuln_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "preemptVuln", OpenAPI_preemption_vulnerability_ToString(arp->preempt_vuln)) == NULL) {
         ogs_error("OpenAPI_arp_convertToJSON() failed [preempt_vuln]");
         goto end;
     }
@@ -106,9 +92,13 @@ OpenAPI_arp_t *OpenAPI_arp_parseFromJSON(cJSON *arpJSON)
         goto end;
     }
 
-    OpenAPI_preemption_capability_t *preempt_cap_local_nonprim = NULL;
+    OpenAPI_preemption_capability_e preempt_capVariable;
 
-    preempt_cap_local_nonprim = OpenAPI_preemption_capability_parseFromJSON(preempt_cap);
+    if (!cJSON_IsString(preempt_cap)) {
+        ogs_error("OpenAPI_arp_parseFromJSON() failed [preempt_cap]");
+        goto end;
+    }
+    preempt_capVariable = OpenAPI_preemption_capability_FromString(preempt_cap->valuestring);
 
     cJSON *preempt_vuln = cJSON_GetObjectItemCaseSensitive(arpJSON, "preemptVuln");
     if (!preempt_vuln) {
@@ -116,18 +106,56 @@ OpenAPI_arp_t *OpenAPI_arp_parseFromJSON(cJSON *arpJSON)
         goto end;
     }
 
-    OpenAPI_preemption_vulnerability_t *preempt_vuln_local_nonprim = NULL;
+    OpenAPI_preemption_vulnerability_e preempt_vulnVariable;
 
-    preempt_vuln_local_nonprim = OpenAPI_preemption_vulnerability_parseFromJSON(preempt_vuln);
+    if (!cJSON_IsString(preempt_vuln)) {
+        ogs_error("OpenAPI_arp_parseFromJSON() failed [preempt_vuln]");
+        goto end;
+    }
+    preempt_vulnVariable = OpenAPI_preemption_vulnerability_FromString(preempt_vuln->valuestring);
 
     arp_local_var = OpenAPI_arp_create (
         priority_level->valuedouble,
-        preempt_cap_local_nonprim,
-        preempt_vuln_local_nonprim
+        preempt_capVariable,
+        preempt_vulnVariable
         );
 
     return arp_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_arp_t *OpenAPI_arp_copy(OpenAPI_arp_t *dst, OpenAPI_arp_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_arp_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_arp_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_arp_free(dst);
+    dst = OpenAPI_arp_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

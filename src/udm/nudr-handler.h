@@ -28,6 +28,10 @@ extern "C" {
 
 bool udm_nudr_dr_handle_subscription_authentication(
         udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg);
+bool udm_nudr_dr_handle_subscription_context(
+        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg);
+bool udm_nudr_dr_handle_subscription_provisioned(
+        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

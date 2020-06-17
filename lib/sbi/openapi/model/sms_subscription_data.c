@@ -39,7 +39,7 @@ cJSON *OpenAPI_sms_subscription_data_convertToJSON(OpenAPI_sms_subscription_data
     }
 
     item = cJSON_CreateObject();
-    if (sms_subscription_data->sms_subscribed >= 0) {
+    if (sms_subscription_data->sms_subscribed) {
         if (cJSON_AddBoolToObject(item, "smsSubscribed", sms_subscription_data->sms_subscribed) == NULL) {
             ogs_error("OpenAPI_sms_subscription_data_convertToJSON() failed [sms_subscribed]");
             goto end;
@@ -86,5 +86,39 @@ OpenAPI_sms_subscription_data_t *OpenAPI_sms_subscription_data_parseFromJSON(cJS
     return sms_subscription_data_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_sms_subscription_data_t *OpenAPI_sms_subscription_data_copy(OpenAPI_sms_subscription_data_t *dst, OpenAPI_sms_subscription_data_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_sms_subscription_data_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_sms_subscription_data_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_sms_subscription_data_free(dst);
+    dst = OpenAPI_sms_subscription_data_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

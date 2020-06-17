@@ -38,6 +38,7 @@ OpenAPI_nssai_t *OpenAPI_nssai_create(
 void OpenAPI_nssai_free(OpenAPI_nssai_t *nssai);
 OpenAPI_nssai_t *OpenAPI_nssai_parseFromJSON(cJSON *nssaiJSON);
 cJSON *OpenAPI_nssai_convertToJSON(OpenAPI_nssai_t *nssai);
+OpenAPI_nssai_t *OpenAPI_nssai_copy(OpenAPI_nssai_t *dst, OpenAPI_nssai_t *src);
 
 #ifdef __cplusplus
 }

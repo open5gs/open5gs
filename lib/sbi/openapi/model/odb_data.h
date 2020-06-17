@@ -29,6 +29,7 @@ OpenAPI_odb_data_t *OpenAPI_odb_data_create(
 void OpenAPI_odb_data_free(OpenAPI_odb_data_t *odb_data);
 OpenAPI_odb_data_t *OpenAPI_odb_data_parseFromJSON(cJSON *odb_dataJSON);
 cJSON *OpenAPI_odb_data_convertToJSON(OpenAPI_odb_data_t *odb_data);
+OpenAPI_odb_data_t *OpenAPI_odb_data_copy(OpenAPI_odb_data_t *dst, OpenAPI_odb_data_t *src);
 
 #ifdef __cplusplus
 }

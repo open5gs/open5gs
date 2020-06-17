@@ -23,7 +23,7 @@ static ausf_timer_cfg_t g_ausf_timer_cfg[MAX_NUM_OF_AUSF_TIMER] = {
     [AUSF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL] =
         { .duration = ogs_time_from_sec(3) },
     [AUSF_TIMER_SBI_CLIENT_WAIT] =
-        { .duration = ogs_time_from_sec(2) },
+        { .duration = ogs_time_from_msec(500) },
 };
 
 ausf_timer_cfg_t *ausf_timer_cfg(ausf_timer_e id)

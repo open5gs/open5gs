@@ -26,6 +26,7 @@ OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_create(
 void OpenAPI_ue_reachability_free(OpenAPI_ue_reachability_t *ue_reachability);
 OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_parseFromJSON(cJSON *ue_reachabilityJSON);
 cJSON *OpenAPI_ue_reachability_convertToJSON(OpenAPI_ue_reachability_t *ue_reachability);
+OpenAPI_ue_reachability_t *OpenAPI_ue_reachability_copy(OpenAPI_ue_reachability_t *dst, OpenAPI_ue_reachability_t *src);
 
 #ifdef __cplusplus
 }

@@ -17,8 +17,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef NAS_5GS_PATH_H
-#define NAS_5GS_PATH_H
+#ifndef AMF_NAS_5GS_PATH_H
+#define AMF_NAS_5GS_PATH_H
 
 #include "context.h"
 
@@ -26,18 +26,11 @@
 extern "C" {
 #endif
 
+#define AMF_NAS_BACKOFF_TIME  6    /* 6 seconds */
+
 int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf);
-#if 0
-int nas_5gs_send_gmm_to_gsm(
-    amf_ue_t *amf_ue, ogs_nas_5gsm_message_container_t *esm_message_container);
-#endif
 int nas_5gs_send_to_downlink_nas_transport(
         amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf);
-
-void nas_5gs_send_nas_reject(
-        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
-void nas_5gs_send_nas_reject_from_sbi(
-        amf_ue_t *amf_ue, int status);
 
 void nas_5gs_send_registration_accept(amf_ue_t *amf_ue);
 void nas_5gs_send_registration_reject(
@@ -49,6 +42,28 @@ void nas_5gs_send_authentication_request(amf_ue_t *amf_ue);
 void nas_5gs_send_authentication_reject(amf_ue_t *amf_ue);
 
 void nas_5gs_send_security_mode_command(amf_ue_t *amf_ue);
+
+void nas_5gs_send_configuration_update_command(
+        amf_ue_t *amf_ue, int ack, int red);
+
+void nas_send_pdu_session_establishment_accept(amf_sess_t *sess,
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
+
+void nas_5gs_send_gmm_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause);
+
+void nas_5gs_send_gmm_reject(
+        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
+void nas_5gs_send_gmm_reject_from_sbi(amf_ue_t *amf_ue, int status);
+
+void nas_5gs_send_gsm_reject(amf_sess_t *sess,
+        uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
+        ogs_nas_5gmm_cause_t cause, uint8_t backoff_time);
+void nas_5gs_send_gsm_reject_from_sbi(amf_sess_t *sess,
+        uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
+        int status);
+void nas_5gs_send_back_5gsm_message(
+        amf_sess_t *sess, ogs_nas_5gmm_cause_t gmm_cause);
+void nas_5gs_send_back_5gsm_message_from_sbi(amf_sess_t *sess, int status);
 
 #if 0
 void nas_5gs_send_detach_accept(amf_ue_t *amf_ue);
@@ -84,4 +99,4 @@ void nas_5gs_send_downlink_nas_transport(
 }
 #endif
 
-#endif /* NAS_5GS_PATH_H */
+#endif /* AMF_NAS_5GS_PATH_H */

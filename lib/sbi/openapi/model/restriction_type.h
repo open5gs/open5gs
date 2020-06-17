@@ -26,6 +26,7 @@ OpenAPI_restriction_type_t *OpenAPI_restriction_type_create(
 void OpenAPI_restriction_type_free(OpenAPI_restriction_type_t *restriction_type);
 OpenAPI_restriction_type_t *OpenAPI_restriction_type_parseFromJSON(cJSON *restriction_typeJSON);
 cJSON *OpenAPI_restriction_type_convertToJSON(OpenAPI_restriction_type_t *restriction_type);
+OpenAPI_restriction_type_t *OpenAPI_restriction_type_copy(OpenAPI_restriction_type_t *dst, OpenAPI_restriction_type_t *src);
 
 #ifdef __cplusplus
 }

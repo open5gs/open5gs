@@ -32,6 +32,7 @@ OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_create(
 void OpenAPI_vgmlc_address_free(OpenAPI_vgmlc_address_t *vgmlc_address);
 OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_parseFromJSON(cJSON *vgmlc_addressJSON);
 cJSON *OpenAPI_vgmlc_address_convertToJSON(OpenAPI_vgmlc_address_t *vgmlc_address);
+OpenAPI_vgmlc_address_t *OpenAPI_vgmlc_address_copy(OpenAPI_vgmlc_address_t *dst, OpenAPI_vgmlc_address_t *src);
 
 #ifdef __cplusplus
 }

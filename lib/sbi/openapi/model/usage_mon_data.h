@@ -40,6 +40,7 @@ OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_create(
 void OpenAPI_usage_mon_data_free(OpenAPI_usage_mon_data_t *usage_mon_data);
 OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_parseFromJSON(cJSON *usage_mon_dataJSON);
 cJSON *OpenAPI_usage_mon_data_convertToJSON(OpenAPI_usage_mon_data_t *usage_mon_data);
+OpenAPI_usage_mon_data_t *OpenAPI_usage_mon_data_copy(OpenAPI_usage_mon_data_t *dst, OpenAPI_usage_mon_data_t *src);
 
 #ifdef __cplusplus
 }

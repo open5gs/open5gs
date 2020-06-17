@@ -37,6 +37,7 @@ OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_create(
 void OpenAPI_transfer_policy_free(OpenAPI_transfer_policy_t *transfer_policy);
 OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_parseFromJSON(cJSON *transfer_policyJSON);
 cJSON *OpenAPI_transfer_policy_convertToJSON(OpenAPI_transfer_policy_t *transfer_policy);
+OpenAPI_transfer_policy_t *OpenAPI_transfer_policy_copy(OpenAPI_transfer_policy_t *dst, OpenAPI_transfer_policy_t *src);
 
 #ifdef __cplusplus
 }

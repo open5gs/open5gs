@@ -38,6 +38,7 @@ OpenAPI_network_area_info_2_t *OpenAPI_network_area_info_2_create(
 void OpenAPI_network_area_info_2_free(OpenAPI_network_area_info_2_t *network_area_info_2);
 OpenAPI_network_area_info_2_t *OpenAPI_network_area_info_2_parseFromJSON(cJSON *network_area_info_2JSON);
 cJSON *OpenAPI_network_area_info_2_convertToJSON(OpenAPI_network_area_info_2_t *network_area_info_2);
+OpenAPI_network_area_info_2_t *OpenAPI_network_area_info_2_copy(OpenAPI_network_area_info_2_t *dst, OpenAPI_network_area_info_2_t *src);
 
 #ifdef __cplusplus
 }

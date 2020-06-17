@@ -30,6 +30,7 @@ OpenAPI_g_nb_id_t *OpenAPI_g_nb_id_create(
 void OpenAPI_g_nb_id_free(OpenAPI_g_nb_id_t *g_nb_id);
 OpenAPI_g_nb_id_t *OpenAPI_g_nb_id_parseFromJSON(cJSON *g_nb_idJSON);
 cJSON *OpenAPI_g_nb_id_convertToJSON(OpenAPI_g_nb_id_t *g_nb_id);
+OpenAPI_g_nb_id_t *OpenAPI_g_nb_id_copy(OpenAPI_g_nb_id_t *dst, OpenAPI_g_nb_id_t *src);
 
 #ifdef __cplusplus
 }

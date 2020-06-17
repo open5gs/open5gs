@@ -26,6 +26,7 @@ OpenAPI_traffic_profile_t *OpenAPI_traffic_profile_create(
 void OpenAPI_traffic_profile_free(OpenAPI_traffic_profile_t *traffic_profile);
 OpenAPI_traffic_profile_t *OpenAPI_traffic_profile_parseFromJSON(cJSON *traffic_profileJSON);
 cJSON *OpenAPI_traffic_profile_convertToJSON(OpenAPI_traffic_profile_t *traffic_profile);
+OpenAPI_traffic_profile_t *OpenAPI_traffic_profile_copy(OpenAPI_traffic_profile_t *dst, OpenAPI_traffic_profile_t *src);
 
 #ifdef __cplusplus
 }

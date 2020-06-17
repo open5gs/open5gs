@@ -35,6 +35,7 @@ OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_create(
 void OpenAPI_application_data_subs_free(OpenAPI_application_data_subs_t *application_data_subs);
 OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_parseFromJSON(cJSON *application_data_subsJSON);
 cJSON *OpenAPI_application_data_subs_convertToJSON(OpenAPI_application_data_subs_t *application_data_subs);
+OpenAPI_application_data_subs_t *OpenAPI_application_data_subs_copy(OpenAPI_application_data_subs_t *dst, OpenAPI_application_data_subs_t *src);
 
 #ifdef __cplusplus
 }

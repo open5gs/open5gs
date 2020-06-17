@@ -32,6 +32,7 @@ OpenAPI_supi_range_t *OpenAPI_supi_range_create(
 void OpenAPI_supi_range_free(OpenAPI_supi_range_t *supi_range);
 OpenAPI_supi_range_t *OpenAPI_supi_range_parseFromJSON(cJSON *supi_rangeJSON);
 cJSON *OpenAPI_supi_range_convertToJSON(OpenAPI_supi_range_t *supi_range);
+OpenAPI_supi_range_t *OpenAPI_supi_range_copy(OpenAPI_supi_range_t *dst, OpenAPI_supi_range_t *src);
 
 #ifdef __cplusplus
 }

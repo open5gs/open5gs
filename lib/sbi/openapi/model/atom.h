@@ -32,6 +32,7 @@ OpenAPI_atom_t *OpenAPI_atom_create(
 void OpenAPI_atom_free(OpenAPI_atom_t *atom);
 OpenAPI_atom_t *OpenAPI_atom_parseFromJSON(cJSON *atomJSON);
 cJSON *OpenAPI_atom_convertToJSON(OpenAPI_atom_t *atom);
+OpenAPI_atom_t *OpenAPI_atom_copy(OpenAPI_atom_t *dst, OpenAPI_atom_t *src);
 
 #ifdef __cplusplus
 }

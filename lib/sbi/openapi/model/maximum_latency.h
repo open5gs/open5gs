@@ -35,6 +35,7 @@ OpenAPI_maximum_latency_t *OpenAPI_maximum_latency_create(
 void OpenAPI_maximum_latency_free(OpenAPI_maximum_latency_t *maximum_latency);
 OpenAPI_maximum_latency_t *OpenAPI_maximum_latency_parseFromJSON(cJSON *maximum_latencyJSON);
 cJSON *OpenAPI_maximum_latency_convertToJSON(OpenAPI_maximum_latency_t *maximum_latency);
+OpenAPI_maximum_latency_t *OpenAPI_maximum_latency_copy(OpenAPI_maximum_latency_t *dst, OpenAPI_maximum_latency_t *src);
 
 #ifdef __cplusplus
 }

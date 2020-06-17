@@ -115,7 +115,7 @@ cJSON *OpenAPI_traffic_influ_data_convertToJSON(OpenAPI_traffic_influ_data_t *tr
         }
     }
 
-    if (traffic_influ_data->app_relo_ind >= 0) {
+    if (traffic_influ_data->app_relo_ind) {
         if (cJSON_AddBoolToObject(item, "appReloInd", traffic_influ_data->app_relo_ind) == NULL) {
             ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [app_relo_ind]");
             goto end;
@@ -223,7 +223,7 @@ cJSON *OpenAPI_traffic_influ_data_convertToJSON(OpenAPI_traffic_influ_data_t *tr
         }
     }
 
-    if (traffic_influ_data->traff_corre_ind >= 0) {
+    if (traffic_influ_data->traff_corre_ind) {
         if (cJSON_AddBoolToObject(item, "traffCorreInd", traffic_influ_data->traff_corre_ind) == NULL) {
             ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [traff_corre_ind]");
             goto end;
@@ -317,14 +317,14 @@ cJSON *OpenAPI_traffic_influ_data_convertToJSON(OpenAPI_traffic_influ_data_t *tr
         }
     }
 
-    if (traffic_influ_data->af_ack_ind >= 0) {
+    if (traffic_influ_data->af_ack_ind) {
         if (cJSON_AddBoolToObject(item, "afAckInd", traffic_influ_data->af_ack_ind) == NULL) {
             ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [af_ack_ind]");
             goto end;
         }
     }
 
-    if (traffic_influ_data->addr_preser_ind >= 0) {
+    if (traffic_influ_data->addr_preser_ind) {
         if (cJSON_AddBoolToObject(item, "addrPreserInd", traffic_influ_data->addr_preser_ind) == NULL) {
             ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed [addr_preser_ind]");
             goto end;
@@ -625,5 +625,39 @@ OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_parseFromJSON(cJSON *tr
     return traffic_influ_data_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_traffic_influ_data_t *OpenAPI_traffic_influ_data_copy(OpenAPI_traffic_influ_data_t *dst, OpenAPI_traffic_influ_data_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_traffic_influ_data_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_traffic_influ_data_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_traffic_influ_data_free(dst);
+    dst = OpenAPI_traffic_influ_data_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

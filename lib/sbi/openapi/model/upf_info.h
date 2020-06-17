@@ -60,6 +60,7 @@ OpenAPI_upf_info_t *OpenAPI_upf_info_create(
 void OpenAPI_upf_info_free(OpenAPI_upf_info_t *upf_info);
 OpenAPI_upf_info_t *OpenAPI_upf_info_parseFromJSON(cJSON *upf_infoJSON);
 cJSON *OpenAPI_upf_info_convertToJSON(OpenAPI_upf_info_t *upf_info);
+OpenAPI_upf_info_t *OpenAPI_upf_info_copy(OpenAPI_upf_info_t *dst, OpenAPI_upf_info_t *src);
 
 #ifdef __cplusplus
 }

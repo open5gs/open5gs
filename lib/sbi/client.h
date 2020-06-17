@@ -57,6 +57,8 @@ typedef struct ogs_sbi_client_s {
     unsigned int    reference_count;    /* reference count for memory free */
 } ogs_sbi_client_t;
 
+typedef struct ogs_sbi_nf_instance_s ogs_sbi_nf_instance_t;
+
 void ogs_sbi_client_init(int num_of_sockinfo_pool, int num_of_connection_pool);
 void ogs_sbi_client_final(void);
 
@@ -66,6 +68,9 @@ ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr);
 
 void ogs_sbi_client_send_request(
         ogs_sbi_client_t *client, ogs_sbi_request_t *request, void *data);
+void ogs_sbi_client_send_request_to_nf_instance(
+        ogs_sbi_nf_instance_t *nf_instance,
+        ogs_sbi_request_t *request, void *data);
 
 #ifdef __cplusplus
 }

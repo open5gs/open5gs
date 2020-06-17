@@ -45,6 +45,7 @@ OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_create(
 void OpenAPI_ue_policy_set_free(OpenAPI_ue_policy_set_t *ue_policy_set);
 OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_parseFromJSON(cJSON *ue_policy_setJSON);
 cJSON *OpenAPI_ue_policy_set_convertToJSON(OpenAPI_ue_policy_set_t *ue_policy_set);
+OpenAPI_ue_policy_set_t *OpenAPI_ue_policy_set_copy(OpenAPI_ue_policy_set_t *dst, OpenAPI_ue_policy_set_t *src);
 
 #ifdef __cplusplus
 }

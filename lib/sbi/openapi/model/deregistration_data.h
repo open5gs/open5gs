@@ -36,6 +36,7 @@ OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_create(
 void OpenAPI_deregistration_data_free(OpenAPI_deregistration_data_t *deregistration_data);
 OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_parseFromJSON(cJSON *deregistration_dataJSON);
 cJSON *OpenAPI_deregistration_data_convertToJSON(OpenAPI_deregistration_data_t *deregistration_data);
+OpenAPI_deregistration_data_t *OpenAPI_deregistration_data_copy(OpenAPI_deregistration_data_t *dst, OpenAPI_deregistration_data_t *src);
 
 #ifdef __cplusplus
 }

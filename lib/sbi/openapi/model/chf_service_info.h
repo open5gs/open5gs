@@ -30,6 +30,7 @@ OpenAPI_chf_service_info_t *OpenAPI_chf_service_info_create(
 void OpenAPI_chf_service_info_free(OpenAPI_chf_service_info_t *chf_service_info);
 OpenAPI_chf_service_info_t *OpenAPI_chf_service_info_parseFromJSON(cJSON *chf_service_infoJSON);
 cJSON *OpenAPI_chf_service_info_convertToJSON(OpenAPI_chf_service_info_t *chf_service_info);
+OpenAPI_chf_service_info_t *OpenAPI_chf_service_info_copy(OpenAPI_chf_service_info_t *dst, OpenAPI_chf_service_info_t *src);
 
 #ifdef __cplusplus
 }

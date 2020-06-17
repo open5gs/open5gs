@@ -26,6 +26,7 @@ OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_create(
 void OpenAPI_domain_name_protocol_free(OpenAPI_domain_name_protocol_t *domain_name_protocol);
 OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_parseFromJSON(cJSON *domain_name_protocolJSON);
 cJSON *OpenAPI_domain_name_protocol_convertToJSON(OpenAPI_domain_name_protocol_t *domain_name_protocol);
+OpenAPI_domain_name_protocol_t *OpenAPI_domain_name_protocol_copy(OpenAPI_domain_name_protocol_t *dst, OpenAPI_domain_name_protocol_t *src);
 
 #ifdef __cplusplus
 }

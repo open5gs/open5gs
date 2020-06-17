@@ -26,6 +26,7 @@ OpenAPI_dnai_change_type_t *OpenAPI_dnai_change_type_create(
 void OpenAPI_dnai_change_type_free(OpenAPI_dnai_change_type_t *dnai_change_type);
 OpenAPI_dnai_change_type_t *OpenAPI_dnai_change_type_parseFromJSON(cJSON *dnai_change_typeJSON);
 cJSON *OpenAPI_dnai_change_type_convertToJSON(OpenAPI_dnai_change_type_t *dnai_change_type);
+OpenAPI_dnai_change_type_t *OpenAPI_dnai_change_type_copy(OpenAPI_dnai_change_type_t *dst, OpenAPI_dnai_change_type_t *src);
 
 #ifdef __cplusplus
 }

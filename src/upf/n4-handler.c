@@ -257,10 +257,7 @@ static ogs_pfcp_far_t *handle_create_far(ogs_pfcp_sess_t *sess,
     }
     if (message->forwarding_parameters.
             destination_interface.presence == 0) {
-        ogs_warn("No Destination Interface");
-        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
-        *offending_ie_value = OGS_PFCP_DESTINATION_INTERFACE_TYPE;
-        return NULL;
+        return far;
     }
 
     far->apply_action = message->apply_action.u8;
@@ -271,39 +268,117 @@ static ogs_pfcp_far_t *handle_create_far(ogs_pfcp_sess_t *sess,
         ogs_ip_t ip;
         ogs_gtp_node_t *gnode = NULL;
 
-        if (message->forwarding_parameters.
-                outer_header_creation.presence == 0) {
-            ogs_warn("No Outer Header Creation in PDI");
-            *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
-            *offending_ie_value = OGS_PFCP_OUTER_HEADER_CREATION_TYPE;
-            return NULL;
-        }
+        if (message->forwarding_parameters.outer_header_creation.presence) {
+            memcpy(&far->outer_header_creation,
+                    message->forwarding_parameters.outer_header_creation.data,
+                    message->forwarding_parameters.outer_header_creation.len);
+            far->outer_header_creation.teid =
+                be32toh(far->outer_header_creation.teid);
 
-        memcpy(&far->outer_header_creation,
-                message->forwarding_parameters.outer_header_creation.data,
-                message->forwarding_parameters.outer_header_creation.len);
-        far->outer_header_creation.teid =
-            be32toh(far->outer_header_creation.teid);
-
-        /* Setup GTP Node */
-        rv = ogs_pfcp_outer_header_creation_to_ip(
-                &far->outer_header_creation, &ip);
-        ogs_assert(rv == OGS_OK);
-
-        gnode = ogs_gtp_node_find_by_ip(&upf_self()->gnb_n3_list, &ip);
-        if (!gnode) {
-            gnode = ogs_gtp_node_add_by_ip(
-                &upf_self()->gnb_n3_list, &ip, upf_self()->gtpu_port,
-                ogs_config()->parameter.no_ipv4,
-                ogs_config()->parameter.no_ipv6,
-                ogs_config()->parameter.prefer_ipv4);
-            ogs_assert(gnode);
-
-            rv = ogs_gtp_connect(
-                    upf_self()->gtpu_sock, upf_self()->gtpu_sock6, gnode);
+            /* Setup GTP Node */
+            rv = ogs_pfcp_outer_header_creation_to_ip(
+                    &far->outer_header_creation, &ip);
             ogs_assert(rv == OGS_OK);
+
+            gnode = ogs_gtp_node_find_by_ip(&upf_self()->gnb_n3_list, &ip);
+            if (!gnode) {
+                gnode = ogs_gtp_node_add_by_ip(
+                    &upf_self()->gnb_n3_list, &ip, upf_self()->gtpu_port,
+                    ogs_config()->parameter.no_ipv4,
+                    ogs_config()->parameter.no_ipv6,
+                    ogs_config()->parameter.prefer_ipv4);
+                ogs_assert(gnode);
+
+                rv = ogs_gtp_connect(
+                        upf_self()->gtpu_sock, upf_self()->gtpu_sock6, gnode);
+                ogs_assert(rv == OGS_OK);
+            }
+            OGS_SETUP_GTP_NODE(far, gnode);
         }
-        OGS_SETUP_GTP_NODE(far, gnode);
+    } else if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {  /* Uplink */
+
+        /* Nothing */
+
+    } else {
+        ogs_error("Invalid Destination Interface[%d] in FAR", far->dst_if);
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+        *offending_ie_value = OGS_PFCP_DESTINATION_INTERFACE_TYPE;
+        return NULL;
+    }
+
+    return far;
+}
+
+static ogs_pfcp_far_t *handle_update_far(ogs_pfcp_sess_t *sess,
+        ogs_pfcp_tlv_update_far_t *message,
+        uint8_t *cause_value, uint8_t *offending_ie_value)
+{
+    ogs_pfcp_far_t *far = NULL;
+
+    ogs_assert(message);
+    ogs_assert(sess);
+
+    if (message->presence == 0)
+        return NULL;
+
+    if (message->far_id.presence == 0) {
+        ogs_warn("No FAR-ID");
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_MISSING;
+        *offending_ie_value = OGS_PFCP_FAR_ID_TYPE;
+        return NULL;
+    }
+
+    far = ogs_pfcp_far_find(sess, message->far_id.u32);
+    if (!far) {
+        ogs_error("Cannot find FAR-ID[%d] in PDR", message->far_id.u32);
+        *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
+        *offending_ie_value = OGS_PFCP_FAR_ID_TYPE;
+        return NULL;
+    }
+
+    if (message->apply_action.presence)
+        far->apply_action = message->apply_action.u8;
+
+    if (message->update_forwarding_parameters.
+            destination_interface.presence == 0)
+        far->dst_if = message->update_forwarding_parameters.
+            destination_interface.u8;
+
+    if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) { /* Downlink */
+        int rv;
+        ogs_ip_t ip;
+        ogs_gtp_node_t *gnode = NULL;
+
+        if (message->update_forwarding_parameters.
+                outer_header_creation.presence) {
+            memcpy(&far->outer_header_creation,
+                    message->update_forwarding_parameters.
+                        outer_header_creation.data,
+                    message->update_forwarding_parameters.
+                        outer_header_creation.len);
+            far->outer_header_creation.teid =
+                be32toh(far->outer_header_creation.teid);
+
+            /* Setup GTP Node */
+            rv = ogs_pfcp_outer_header_creation_to_ip(
+                    &far->outer_header_creation, &ip);
+            ogs_assert(rv == OGS_OK);
+
+            gnode = ogs_gtp_node_find_by_ip(&upf_self()->gnb_n3_list, &ip);
+            if (!gnode) {
+                gnode = ogs_gtp_node_add_by_ip(
+                    &upf_self()->gnb_n3_list, &ip, upf_self()->gtpu_port,
+                    ogs_config()->parameter.no_ipv4,
+                    ogs_config()->parameter.no_ipv6,
+                    ogs_config()->parameter.prefer_ipv4);
+                ogs_assert(gnode);
+
+                rv = ogs_gtp_connect(
+                        upf_self()->gtpu_sock, upf_self()->gtpu_sock6, gnode);
+                ogs_assert(rv == OGS_OK);
+            }
+            OGS_SETUP_GTP_NODE(far, gnode);
+        }
     } else if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {  /* Uplink */
 
         /* Nothing */
@@ -572,7 +647,15 @@ void upf_n4_handle_session_modification_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
-    for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
+    for (i = 0; i < OGS_MAX_NUM_OF_FAR; i++) {
+        if (handle_update_far(&sess->pfcp, &req->update_far[i],
+                    &cause_value, &offending_ie_value) == NULL)
+            break;
+    }
+    if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
+        goto cleanup;
+
+    for (i = 0; i < OGS_MAX_NUM_OF_FAR; i++) {
         if (handle_remove_far(&sess->pfcp, &req->remove_far[i],
                 &cause_value, &offending_ie_value) == false)
             break;
@@ -596,7 +679,7 @@ void upf_n4_handle_session_modification_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
-    for (i = 0; i < OGS_MAX_NUM_OF_PDR; i++) {
+    for (i = 0; i < OGS_MAX_NUM_OF_QER; i++) {
         if (handle_remove_qer(&sess->pfcp, &req->remove_qer[i],
                 &cause_value, &offending_ie_value) == false)
             break;

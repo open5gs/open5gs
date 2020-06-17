@@ -32,6 +32,7 @@ OpenAPI_user_identifier_t *OpenAPI_user_identifier_create(
 void OpenAPI_user_identifier_free(OpenAPI_user_identifier_t *user_identifier);
 OpenAPI_user_identifier_t *OpenAPI_user_identifier_parseFromJSON(cJSON *user_identifierJSON);
 cJSON *OpenAPI_user_identifier_convertToJSON(OpenAPI_user_identifier_t *user_identifier);
+OpenAPI_user_identifier_t *OpenAPI_user_identifier_copy(OpenAPI_user_identifier_t *dst, OpenAPI_user_identifier_t *src);
 
 #ifdef __cplusplus
 }

@@ -88,6 +88,7 @@ OpenAPI_civic_address_t *OpenAPI_civic_address_create(
 void OpenAPI_civic_address_free(OpenAPI_civic_address_t *civic_address);
 OpenAPI_civic_address_t *OpenAPI_civic_address_parseFromJSON(cJSON *civic_addressJSON);
 cJSON *OpenAPI_civic_address_convertToJSON(OpenAPI_civic_address_t *civic_address);
+OpenAPI_civic_address_t *OpenAPI_civic_address_copy(OpenAPI_civic_address_t *dst, OpenAPI_civic_address_t *src);
 
 #ifdef __cplusplus
 }

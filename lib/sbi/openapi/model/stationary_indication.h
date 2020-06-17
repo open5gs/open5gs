@@ -26,6 +26,7 @@ OpenAPI_stationary_indication_t *OpenAPI_stationary_indication_create(
 void OpenAPI_stationary_indication_free(OpenAPI_stationary_indication_t *stationary_indication);
 OpenAPI_stationary_indication_t *OpenAPI_stationary_indication_parseFromJSON(cJSON *stationary_indicationJSON);
 cJSON *OpenAPI_stationary_indication_convertToJSON(OpenAPI_stationary_indication_t *stationary_indication);
+OpenAPI_stationary_indication_t *OpenAPI_stationary_indication_copy(OpenAPI_stationary_indication_t *dst, OpenAPI_stationary_indication_t *src);
 
 #ifdef __cplusplus
 }

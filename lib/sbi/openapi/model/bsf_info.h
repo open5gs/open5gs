@@ -36,6 +36,7 @@ OpenAPI_bsf_info_t *OpenAPI_bsf_info_create(
 void OpenAPI_bsf_info_free(OpenAPI_bsf_info_t *bsf_info);
 OpenAPI_bsf_info_t *OpenAPI_bsf_info_parseFromJSON(cJSON *bsf_infoJSON);
 cJSON *OpenAPI_bsf_info_convertToJSON(OpenAPI_bsf_info_t *bsf_info);
+OpenAPI_bsf_info_t *OpenAPI_bsf_info_copy(OpenAPI_bsf_info_t *dst, OpenAPI_bsf_info_t *src);
 
 #ifdef __cplusplus
 }

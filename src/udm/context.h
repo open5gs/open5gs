@@ -52,26 +52,26 @@ typedef struct udm_context_s {
 } udm_context_t;
 
 struct udm_ue_s {
-    ogs_lnode_t     lnode;
-    ogs_fsm_t       sm;     /* A state machine */
+    ogs_sbi_object_t sbi;
+    ogs_fsm_t sm;
 
-    struct {
-        char *component1;
-    } state;
+    OpenAPI_auth_event_t *auth_event;
+    OpenAPI_amf3_gpp_access_registration_t *amf_3gpp_access_registration;
 
     char *ctx_id;
     char *suci;
     char *supi;
     char *serving_network_name;
+
     char *ausf_instance_id;
+    char *amf_instance_id;
+
+    char *dereg_callback_uri;
+
+    ogs_amf_id_t amf_id;
+    ogs_plmn_id_t serving_plmn_id;
 
     OpenAPI_auth_type_e auth_type;
-    int auth_success;
-    char *auth_timestamp;
-
-    struct {
-        ogs_timer_t *timer;
-    } sbi_client_wait;
 
 #define UDM_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
     do { \
@@ -88,10 +88,6 @@ struct udm_ue_s {
         } \
         ogs_sbi_nf_instance_remove(_nFInstance); \
     } while(0)
-
-    ogs_sbi_nf_types_t nf_types;
-
-    ogs_sbi_session_t *session;
 };
 
 void udm_context_init(void);

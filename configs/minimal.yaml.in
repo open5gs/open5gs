@@ -32,8 +32,8 @@ amf:
           - sst: 1
             sd: 112233
     security:
-        integrity_order : [ EIA2, EIA1 ]
-        ciphering_order : [ EEA2, EEA1, EEA0 ]
+        integrity_order : [ NIA2, NIA1 ]
+        ciphering_order : [ NEA0, NEA1, NEA2 ]
     network_name:
         full: Open5GS
     amf_name: open5gs-amf0

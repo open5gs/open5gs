@@ -30,6 +30,7 @@ OpenAPI_resource_item_t *OpenAPI_resource_item_create(
 void OpenAPI_resource_item_free(OpenAPI_resource_item_t *resource_item);
 OpenAPI_resource_item_t *OpenAPI_resource_item_parseFromJSON(cJSON *resource_itemJSON);
 cJSON *OpenAPI_resource_item_convertToJSON(OpenAPI_resource_item_t *resource_item);
+OpenAPI_resource_item_t *OpenAPI_resource_item_copy(OpenAPI_resource_item_t *dst, OpenAPI_resource_item_t *src);
 
 #ifdef __cplusplus
 }

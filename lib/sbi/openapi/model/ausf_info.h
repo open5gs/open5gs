@@ -33,6 +33,7 @@ OpenAPI_ausf_info_t *OpenAPI_ausf_info_create(
 void OpenAPI_ausf_info_free(OpenAPI_ausf_info_t *ausf_info);
 OpenAPI_ausf_info_t *OpenAPI_ausf_info_parseFromJSON(cJSON *ausf_infoJSON);
 cJSON *OpenAPI_ausf_info_convertToJSON(OpenAPI_ausf_info_t *ausf_info);
+OpenAPI_ausf_info_t *OpenAPI_ausf_info_copy(OpenAPI_ausf_info_t *dst, OpenAPI_ausf_info_t *src);
 
 #ifdef __cplusplus
 }

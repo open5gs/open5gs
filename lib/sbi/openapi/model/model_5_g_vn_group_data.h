@@ -37,6 +37,7 @@ OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_create(
 void OpenAPI_model_5_g_vn_group_data_free(OpenAPI_model_5_g_vn_group_data_t *model_5_g_vn_group_data);
 OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_parseFromJSON(cJSON *model_5_g_vn_group_dataJSON);
 cJSON *OpenAPI_model_5_g_vn_group_data_convertToJSON(OpenAPI_model_5_g_vn_group_data_t *model_5_g_vn_group_data);
+OpenAPI_model_5_g_vn_group_data_t *OpenAPI_model_5_g_vn_group_data_copy(OpenAPI_model_5_g_vn_group_data_t *dst, OpenAPI_model_5_g_vn_group_data_t *src);
 
 #ifdef __cplusplus
 }

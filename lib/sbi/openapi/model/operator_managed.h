@@ -26,6 +26,7 @@ OpenAPI_operator_managed_t *OpenAPI_operator_managed_create(
 void OpenAPI_operator_managed_free(OpenAPI_operator_managed_t *operator_managed);
 OpenAPI_operator_managed_t *OpenAPI_operator_managed_parseFromJSON(cJSON *operator_managedJSON);
 cJSON *OpenAPI_operator_managed_convertToJSON(OpenAPI_operator_managed_t *operator_managed);
+OpenAPI_operator_managed_t *OpenAPI_operator_managed_copy(OpenAPI_operator_managed_t *dst, OpenAPI_operator_managed_t *src);
 
 #ifdef __cplusplus
 }

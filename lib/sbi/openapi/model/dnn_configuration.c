@@ -119,7 +119,7 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
         goto end;
     }
 
-    if (dnn_configuration->iwk_eps_ind >= 0) {
+    if (dnn_configuration->iwk_eps_ind) {
         if (cJSON_AddBoolToObject(item, "iwkEpsInd", dnn_configuration->iwk_eps_ind) == NULL) {
             ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [iwk_eps_ind]");
             goto end;
@@ -199,7 +199,7 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
         }
     }
 
-    if (dnn_configuration->invoke_nef_selection >= 0) {
+    if (dnn_configuration->invoke_nef_selection) {
         if (cJSON_AddBoolToObject(item, "invokeNefSelection", dnn_configuration->invoke_nef_selection) == NULL) {
             ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [invoke_nef_selection]");
             goto end;
@@ -226,7 +226,7 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
         }
     }
 
-    if (dnn_configuration->redundant_session_allowed >= 0) {
+    if (dnn_configuration->redundant_session_allowed) {
         if (cJSON_AddBoolToObject(item, "redundantSessionAllowed", dnn_configuration->redundant_session_allowed) == NULL) {
             ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [redundant_session_allowed]");
             goto end;
@@ -286,7 +286,7 @@ cJSON *OpenAPI_dnn_configuration_convertToJSON(OpenAPI_dnn_configuration_t *dnn_
         }
     }
 
-    if (dnn_configuration->atsss_allowed >= 0) {
+    if (dnn_configuration->atsss_allowed) {
         if (cJSON_AddBoolToObject(item, "atsssAllowed", dnn_configuration->atsss_allowed) == NULL) {
             ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed [atsss_allowed]");
             goto end;
@@ -512,5 +512,39 @@ OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_parseFromJSON(cJSON *dnn_
     return dnn_configuration_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_dnn_configuration_t *OpenAPI_dnn_configuration_copy(OpenAPI_dnn_configuration_t *dst, OpenAPI_dnn_configuration_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_dnn_configuration_convertToJSON(src);
+    if (!item) {
+        ogs_error("OpenAPI_dnn_configuration_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_dnn_configuration_free(dst);
+    dst = OpenAPI_dnn_configuration_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 

@@ -49,6 +49,7 @@ OpenAPI_shared_data_t *OpenAPI_shared_data_create(
 void OpenAPI_shared_data_free(OpenAPI_shared_data_t *shared_data);
 OpenAPI_shared_data_t *OpenAPI_shared_data_parseFromJSON(cJSON *shared_dataJSON);
 cJSON *OpenAPI_shared_data_convertToJSON(OpenAPI_shared_data_t *shared_data);
+OpenAPI_shared_data_t *OpenAPI_shared_data_copy(OpenAPI_shared_data_t *dst, OpenAPI_shared_data_t *src);
 
 #ifdef __cplusplus
 }

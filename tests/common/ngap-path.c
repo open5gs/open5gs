@@ -32,7 +32,7 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
     ogs_assert(test_ue);
     ogs_assert(pkbuf);
 
-    rv = ogs_ngap_decode(&message, pkbuf);
+    rv = nga_ngap_decode(&message, pkbuf);
     ogs_assert(rv == OGS_OK);
 
     pdu = &message;
@@ -47,6 +47,12 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         case NGAP_ProcedureCode_id_DownlinkNASTransport:
             testngap_handle_downlink_nas_transport(test_ue, pdu);
             break;
+        case NGAP_ProcedureCode_id_InitialContextSetup:
+            testngap_handle_initial_context_setup_request(test_ue, pdu);
+            break;
+        case NGAP_ProcedureCode_id_PDUSessionResourceSetup:
+            testngap_handle_pdu_session_resource_setup_request(test_ue, pdu);
+            break;
         default:
             ogs_error("Not implemented(choice:%d, proc:%d)",
                     pdu->present, (int)initiatingMessage->procedureCode);
@@ -58,6 +64,9 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         ogs_assert(successfulOutcome);
 
         switch (successfulOutcome->procedureCode) {
+        case NGAP_ProcedureCode_id_NGSetup:
+            testngap_handle_ng_setup_response(test_ue, pdu);
+            break;
         default:
             ogs_error("Not implemented(choice:%d, proc:%d)",
                     pdu->present, (int)successfulOutcome->procedureCode);
@@ -80,7 +89,7 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         break;
     }
 
-    ogs_ngap_free(&message);
+    nga_ngap_free(&message);
     ogs_pkbuf_free(pkbuf);
 }
 
@@ -157,9 +166,6 @@ void testngap_send_to_nas(test_ue_t *test_ue, NGAP_NAS_PDU_t *nasPdu)
     if (h->extended_protocol_discriminator ==
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM) {
         testgmm_recv(test_ue, nasbuf);
-    } else if (h->extended_protocol_discriminator ==
-            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM) {
-        testgsm_recv(test_ue, nasbuf);
     } else {
         ogs_error("Unknown NAS Protocol discriminator 0x%02x",
                   h->extended_protocol_discriminator);

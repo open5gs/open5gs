@@ -40,6 +40,7 @@ OpenAPI_search_result_t *OpenAPI_search_result_create(
 void OpenAPI_search_result_free(OpenAPI_search_result_t *search_result);
 OpenAPI_search_result_t *OpenAPI_search_result_parseFromJSON(cJSON *search_resultJSON);
 cJSON *OpenAPI_search_result_convertToJSON(OpenAPI_search_result_t *search_result);
+OpenAPI_search_result_t *OpenAPI_search_result_copy(OpenAPI_search_result_t *dst, OpenAPI_search_result_t *src);
 
 #ifdef __cplusplus
 }

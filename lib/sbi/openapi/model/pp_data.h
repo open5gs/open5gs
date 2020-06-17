@@ -45,6 +45,7 @@ OpenAPI_pp_data_t *OpenAPI_pp_data_create(
 void OpenAPI_pp_data_free(OpenAPI_pp_data_t *pp_data);
 OpenAPI_pp_data_t *OpenAPI_pp_data_parseFromJSON(cJSON *pp_dataJSON);
 cJSON *OpenAPI_pp_data_convertToJSON(OpenAPI_pp_data_t *pp_data);
+OpenAPI_pp_data_t *OpenAPI_pp_data_copy(OpenAPI_pp_data_t *dst, OpenAPI_pp_data_t *src);
 
 #ifdef __cplusplus
 }

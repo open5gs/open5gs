@@ -32,6 +32,7 @@ OpenAPI_lpi_t *OpenAPI_lpi_create(
 void OpenAPI_lpi_free(OpenAPI_lpi_t *lpi);
 OpenAPI_lpi_t *OpenAPI_lpi_parseFromJSON(cJSON *lpiJSON);
 cJSON *OpenAPI_lpi_convertToJSON(OpenAPI_lpi_t *lpi);
+OpenAPI_lpi_t *OpenAPI_lpi_copy(OpenAPI_lpi_t *dst, OpenAPI_lpi_t *src);
 
 #ifdef __cplusplus
 }

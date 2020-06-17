@@ -35,6 +35,7 @@ OpenAPI_location_info_t *OpenAPI_location_info_create(
 void OpenAPI_location_info_free(OpenAPI_location_info_t *location_info);
 OpenAPI_location_info_t *OpenAPI_location_info_parseFromJSON(cJSON *location_infoJSON);
 cJSON *OpenAPI_location_info_convertToJSON(OpenAPI_location_info_t *location_info);
+OpenAPI_location_info_t *OpenAPI_location_info_copy(OpenAPI_location_info_t *dst, OpenAPI_location_info_t *src);
 
 #ifdef __cplusplus
 }

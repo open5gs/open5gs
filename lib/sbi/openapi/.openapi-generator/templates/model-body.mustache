@@ -236,12 +236,7 @@ cJSON *OpenAPI_{{classname}}_convertToJSON(OpenAPI_{{classname}}_t *{{classname}
         {{/isBoolean}}
     {{/required}}
     {{^required}}
-        {{#isBoolean}}
-            if ({{{classname}}}->{{{name}}} >= 0) {
-        {{/isBoolean}}
-        {{^isBoolean}}
-            if ({{{classname}}}->{{{name}}}) {
-        {{/isBoolean}}
+        if ({{{classname}}}->{{{name}}}) {
     {{/required}}
     {{^isContainer}}
         {{#isPrimitiveType}}
@@ -522,7 +517,7 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
                 }
             {{/isByteArray}}
             {{#isBinary}}
-                OpenAPI_binary_t* decoded_str_{{{name}}} = OpenAPI_malloc(sizeof(struct binary_t));
+                OpenAPI_binary_t* decoded_str_{{{name}}} = OpenAPI_malloc(sizeof(OpenAPI_binary_t));
                 {{^required}}if ({{{name}}}) { {{/required}}
                 if (!cJSON_IsString({{{name}}})) {
                     ogs_error("OpenAPI_{{classname}}_parseFromJSON() failed [{{{name}}}]");
@@ -788,6 +783,40 @@ OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_parseFromJSON(cJSON *{{classname}
     return {{classname}}_local_var;
 end:
     return NULL;
+}
+
+OpenAPI_{{classname}}_t *OpenAPI_{{classname}}_copy(OpenAPI_{{classname}}_t *dst, OpenAPI_{{classname}}_t *src)
+{
+    cJSON *item = NULL;
+    char *content = NULL;
+
+    ogs_assert(src);
+    item = OpenAPI_{{classname}}_convertToJSON(src);
+    if (!item) {
+    ogs_error("OpenAPI_{{classname}}_convertToJSON() failed");
+        return NULL;
+    }
+
+    content = cJSON_Print(item);
+    cJSON_Delete(item);
+
+    if (!content) {
+        ogs_error("cJSON_Print() failed");
+        return NULL;
+    }
+
+    item = cJSON_Parse(content);
+    ogs_free(content);
+    if (!item) {
+        ogs_error("cJSON_Parse() failed");
+        return NULL;
+    }
+
+    OpenAPI_{{classname}}_free(dst);
+    dst = OpenAPI_{{classname}}_parseFromJSON(item);
+    cJSON_Delete(item);
+
+    return dst;
 }
 {{/isEnum}}
 {{/model}}{{/models}}

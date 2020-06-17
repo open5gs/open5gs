@@ -28,6 +28,7 @@ OpenAPI_preferred_search_t *OpenAPI_preferred_search_create(
 void OpenAPI_preferred_search_free(OpenAPI_preferred_search_t *preferred_search);
 OpenAPI_preferred_search_t *OpenAPI_preferred_search_parseFromJSON(cJSON *preferred_searchJSON);
 cJSON *OpenAPI_preferred_search_convertToJSON(OpenAPI_preferred_search_t *preferred_search);
+OpenAPI_preferred_search_t *OpenAPI_preferred_search_copy(OpenAPI_preferred_search_t *dst, OpenAPI_preferred_search_t *src);
 
 #ifdef __cplusplus
 }

@@ -37,6 +37,7 @@ OpenAPI_af_external_t *OpenAPI_af_external_create(
 void OpenAPI_af_external_free(OpenAPI_af_external_t *af_external);
 OpenAPI_af_external_t *OpenAPI_af_external_parseFromJSON(cJSON *af_externalJSON);
 cJSON *OpenAPI_af_external_convertToJSON(OpenAPI_af_external_t *af_external);
+OpenAPI_af_external_t *OpenAPI_af_external_copy(OpenAPI_af_external_t *dst, OpenAPI_af_external_t *src);
 
 #ifdef __cplusplus
 }

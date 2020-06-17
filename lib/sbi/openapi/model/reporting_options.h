@@ -39,6 +39,7 @@ OpenAPI_reporting_options_t *OpenAPI_reporting_options_create(
 void OpenAPI_reporting_options_free(OpenAPI_reporting_options_t *reporting_options);
 OpenAPI_reporting_options_t *OpenAPI_reporting_options_parseFromJSON(cJSON *reporting_optionsJSON);
 cJSON *OpenAPI_reporting_options_convertToJSON(OpenAPI_reporting_options_t *reporting_options);
+OpenAPI_reporting_options_t *OpenAPI_reporting_options_copy(OpenAPI_reporting_options_t *dst, OpenAPI_reporting_options_t *src);
 
 #ifdef __cplusplus
 }

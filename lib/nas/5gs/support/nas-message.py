@@ -123,6 +123,10 @@ def get_cells(cells):
     format = cells[4].text.encode('ascii', 'ignore')
     length = cells[5].text.encode('ascii', 'ignore')
 
+# Spec errata - workaround
+    if (type == "Request type" and value == "Request type"):
+        iei = "8-"
+
     return { "iei" : iei, "value" : value, "type" : type, "reference" : reference, "presence" : presence, "format" : format, "length" : length }
 
 def write_cells_to_file(name, cells):
@@ -236,22 +240,22 @@ msg_list["SECURITY MODE COMPLETE"]["table"] = 25
 msg_list["SECURITY MODE REJECT"]["table"] = 26
 msg_list["5GMM STATUS"]["table"] = 28
 
-msg_list["PDU SESSION ESTABLISHMENT REQUEST"]["table"] = 29
-msg_list["PDU SESSION ESTABLISHMENT ACCEPT"]["table"] = 30
-msg_list["PDU SESSION ESTABLISHMENT REJECT"]["table"] = 31
-msg_list["PDU SESSION AUTHENTICATION COMMAND"]["table"] = 32
-msg_list["PDU SESSION AUTHENTICATION COMPLETE"]["table"] = 33
-msg_list["PDU SESSION AUTHENTICATION RESULT"]["table"] = 34
-msg_list["PDU SESSION MODIFICATION REQUEST"]["table"] = 35
-msg_list["PDU SESSION MODIFICATION REJECT"]["table"] = 36
-msg_list["PDU SESSION MODIFICATION COMMAND"]["table"] = 37
-msg_list["PDU SESSION MODIFICATION COMPLETE"]["table"] = 38
-msg_list["PDU SESSION MODIFICATION COMMAND REJECT"]["table"] = 39
-msg_list["PDU SESSION RELEASE REQUEST"]["table"] = 40
-msg_list["PDU SESSION RELEASE REJECT"]["table"] = 41
-msg_list["PDU SESSION RELEASE COMMAND"]["table"] = 42
-msg_list["PDU SESSION RELEASE COMPLETE"]["table"] = 43
-msg_list["5GSM STATUS"]["table"] = 44
+msg_list["PDU SESSION ESTABLISHMENT REQUEST"]["table"] = 33
+msg_list["PDU SESSION ESTABLISHMENT ACCEPT"]["table"] = 34
+msg_list["PDU SESSION ESTABLISHMENT REJECT"]["table"] = 35
+msg_list["PDU SESSION AUTHENTICATION COMMAND"]["table"] = 36
+msg_list["PDU SESSION AUTHENTICATION COMPLETE"]["table"] = 37
+msg_list["PDU SESSION AUTHENTICATION RESULT"]["table"] = 38
+msg_list["PDU SESSION MODIFICATION REQUEST"]["table"] = 39
+msg_list["PDU SESSION MODIFICATION REJECT"]["table"] = 40
+msg_list["PDU SESSION MODIFICATION COMMAND"]["table"] = 41
+msg_list["PDU SESSION MODIFICATION COMPLETE"]["table"] = 42
+msg_list["PDU SESSION MODIFICATION COMMAND REJECT"]["table"] = 43
+msg_list["PDU SESSION RELEASE REQUEST"]["table"] = 44
+msg_list["PDU SESSION RELEASE REJECT"]["table"] = 45
+msg_list["PDU SESSION RELEASE COMMAND"]["table"] = 46
+msg_list["PDU SESSION RELEASE COMPLETE"]["table"] = 47
+msg_list["5GSM STATUS"]["table"] = 48
 
 for key in msg_list.keys():
     if "table" not in msg_list[key].keys():
@@ -388,8 +392,6 @@ for (k, v) in sorted_type_list:
         f.write("    uint16_t size = sizeof(ogs_nas_%s_t);\n\n" % v_lower(k))
         f.write("    ogs_assert(ogs_pkbuf_pull(pkbuf, size));\n")
         f.write("    memcpy(%s, pkbuf->data - size, size);\n\n" % get_value(k))
-        if "decode" in type_list[k]:
-            f.write("%s" % type_list[k]["decode"])
         f.write("    ogs_trace(\"  %s - \");\n" % v_upper(k))
         f.write("    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);\n\n");
         f.write("    return size;\n")
@@ -549,10 +551,10 @@ for (k, v) in sorted_msg_list:
     f.write(" * %s\n" % k)
     f.write(" ******************************************************/")
 
-    for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]):
+    for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]):
         f.write("\n#define OGS_NAS_5GS_%s_%s_PRESENT ((uint64_t)1<<%d)" % (v_upper(k), v_upper(ie["value"]), i))
 
-    for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]):
+    for i, ie in enumerate([ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]):
         f.write("\n#define OGS_NAS_5GS_%s_%s_TYPE 0x%s" % (v_upper(k), v_upper(ie["value"]), re.sub('-', '0', ie["iei"])))
 
     f.write("\n\ntypedef struct ogs_nas_5gs_%s_s {\n" % v_lower(k))
@@ -564,7 +566,7 @@ for (k, v) in sorted_msg_list:
             f.write("    /* Mandatory fields */\n")
             mandatory_fields = True;
 
-        if ie["presence"] == "O" and optional_fields is False:
+        if ie["presence"] != "M" and optional_fields is False:
             f.write("\n    /* Optional fields */\n")
             f.write("    uint64_t presencemask;\n");
             optional_fields = True;
@@ -664,7 +666,7 @@ for (k, v) in sorted_msg_list:
         f.write("    decoded += size;\n\n")
 
     optional_fields = False;
-    for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
+    for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]:
         if optional_fields is False:
             f.write("""    while (pkbuf->len > 0) {
         uint8_t *buffer = pkbuf->data;
@@ -679,15 +681,18 @@ for (k, v) in sorted_msg_list:
             optional_fields = True;
 
         f.write("        case OGS_NAS_5GS_%s_%s_TYPE:\n" % (v_upper(k), v_upper(ie["value"])))
+        if (ie["format"] == "TV" or ie["format"] == "T") and ie["length"] == "1":
+            f.write("            decoded--;\n")
+            f.write("            ogs_assert(ogs_pkbuf_push(pkbuf, 1));\n")
         f.write("            size = ogs_nas_5gs_decode_%s(&%s->%s, pkbuf);\n" % (v_lower(ie["type"]), get_value(k), get_value(ie["value"])))
         f.write("            ogs_assert(size >= 0);\n")
         f.write("            %s->presencemask |= OGS_NAS_5GS_%s_%s_PRESENT;\n" % (get_value(k), v_upper(k), v_upper(ie["value"])))
         f.write("            decoded += size;\n")
         f.write("            break;\n")
 
-    if [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
+    if [ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]:
         f.write("""        default:
-            ogs_warn("Unknown type(0x%x) or not implemented\\n", type);
+            ogs_error("Unknown type(0x%x) or not implemented\\n", type);
             break;
         }
     }
@@ -816,7 +821,7 @@ for (k, v) in sorted_msg_list:
         f.write("    ogs_assert(size >= 0);\n")
         f.write("    encoded += size;\n\n")
 
-    for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] == "O"]:
+    for ie in [ies for ies in msg_list[k]["ies"] if ies["presence"] != "M"]:
         f.write("    if (%s->presencemask & OGS_NAS_5GS_%s_%s_PRESENT) {\n" % (get_value(k), v_upper(k), v_upper(ie["value"])))
         if ie["length"] == "1" and ie["format"] == "TV":
             f.write("        %s->%s.type = (OGS_NAS_5GS_%s_%s_TYPE >> 4);\n\n" % (get_value(k), get_value(ie["value"]), v_upper(k), v_upper(ie["value"])))

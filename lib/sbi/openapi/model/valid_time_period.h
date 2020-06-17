@@ -30,6 +30,7 @@ OpenAPI_valid_time_period_t *OpenAPI_valid_time_period_create(
 void OpenAPI_valid_time_period_free(OpenAPI_valid_time_period_t *valid_time_period);
 OpenAPI_valid_time_period_t *OpenAPI_valid_time_period_parseFromJSON(cJSON *valid_time_periodJSON);
 cJSON *OpenAPI_valid_time_period_convertToJSON(OpenAPI_valid_time_period_t *valid_time_period);
+OpenAPI_valid_time_period_t *OpenAPI_valid_time_period_copy(OpenAPI_valid_time_period_t *dst, OpenAPI_valid_time_period_t *src);
 
 #ifdef __cplusplus
 }

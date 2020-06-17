@@ -4,48 +4,27 @@
 #include <stdio.h>
 #include "ssc_mode.h"
 
-OpenAPI_ssc_mode_t *OpenAPI_ssc_mode_create(
-    )
+char* OpenAPI_ssc_mode_ToString(OpenAPI_ssc_mode_e ssc_mode)
 {
-    OpenAPI_ssc_mode_t *ssc_mode_local_var = OpenAPI_malloc(sizeof(OpenAPI_ssc_mode_t));
-    if (!ssc_mode_local_var) {
-        return NULL;
-    }
-
-    return ssc_mode_local_var;
+    const char *ssc_modeArray[] =  { "NULL", "SSC_MODE_1", "SSC_MODE_2", "SSC_MODE_3" };
+    size_t sizeofArray = sizeof(ssc_modeArray) / sizeof(ssc_modeArray[0]);
+    if (ssc_mode < sizeofArray)
+        return (char *)ssc_modeArray[ssc_mode];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_ssc_mode_free(OpenAPI_ssc_mode_t *ssc_mode)
+OpenAPI_ssc_mode_e OpenAPI_ssc_mode_FromString(char* ssc_mode)
 {
-    if (NULL == ssc_mode) {
-        return;
+    int stringToReturn = 0;
+    const char *ssc_modeArray[] =  { "NULL", "SSC_MODE_1", "SSC_MODE_2", "SSC_MODE_3" };
+    size_t sizeofArray = sizeof(ssc_modeArray) / sizeof(ssc_modeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(ssc_mode, ssc_modeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ssc_mode);
-}
-
-cJSON *OpenAPI_ssc_mode_convertToJSON(OpenAPI_ssc_mode_t *ssc_mode)
-{
-    cJSON *item = NULL;
-
-    if (ssc_mode == NULL) {
-        ogs_error("OpenAPI_ssc_mode_convertToJSON() failed [SscMode]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_ssc_mode_t *OpenAPI_ssc_mode_parseFromJSON(cJSON *ssc_modeJSON)
-{
-    OpenAPI_ssc_mode_t *ssc_mode_local_var = NULL;
-    ssc_mode_local_var = OpenAPI_ssc_mode_create (
-        );
-
-    return ssc_mode_local_var;
-end:
-    return NULL;
+    return 0;
 }
 

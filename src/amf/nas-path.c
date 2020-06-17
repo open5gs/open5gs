@@ -20,9 +20,6 @@
 #include "ngap-path.h"
 #include "ngap-build.h"
 #include "gmm-build.h"
-#if 0
-#include "gsm-build.h"
-#endif
 #include "nas-path.h"
 
 int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
@@ -35,34 +32,6 @@ int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 
     return ngap_send_to_ran_ue(ran_ue, pkbuf);
 }
-
-#if 0
-int nas_5gs_send_gmm_to_esm(amf_ue_t *amf_ue,
-        ogs_nas_esm_message_container_t *esm_message_container)
-{
-    int rv;
-    ogs_pkbuf_t *gsmbuf = NULL;
-
-    ogs_assert(amf_ue);
-    ogs_assert(esm_message_container);
-    ogs_assert(esm_message_container->length);
-
-    /* The Packet Buffer(pkbuf_t) for NAS message MUST make a HEADROOM. 
-     * When calculating AES_CMAC, we need to use the headroom of the packet. */
-    gsmbuf = ogs_pkbuf_alloc(NULL,
-            OGS_NAS_HEADROOM+esm_message_container->length);
-    ogs_pkbuf_reserve(gsmbuf, OGS_NAS_HEADROOM);
-    ogs_pkbuf_put_data(gsmbuf,
-            esm_message_container->buffer, esm_message_container->length);
-
-    rv = ngap_send_to_esm(amf_ue, gsmbuf);
-    if (rv != OGS_OK) {
-        ogs_error("ngap_send_to_esm() failed");
-    }
-
-    return rv;
-}
-#endif
 
 int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
 {
@@ -94,64 +63,13 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
     return OGS_OK;
 }
 
-void nas_5gs_send_nas_reject(
-        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause)
-{
-    ogs_assert(amf_ue);
-
-    switch(amf_ue->nas.type) {
-    case OGS_NAS_5GS_REGISTRATION_REQUEST:
-        if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
-            nas_5gs_send_authentication_reject(amf_ue);
-        } else {
-            nas_5gs_send_registration_reject(amf_ue, gmm_cause);
-        }
-        break;
-    default: 
-        ogs_fatal("Unknown type : %d", amf_ue->nas.type);
-        ogs_assert_if_reached();
-        break;
-    }
-}
-
-void nas_5gs_send_nas_reject_from_sbi(amf_ue_t *amf_ue, int status)
-{
-    ogs_nas_5gmm_cause_t gmm_cause;
-
-    ogs_assert(amf_ue);
-
-    switch(status) {
-    case OGS_SBI_HTTP_STATUS_NOT_FOUND:
-        gmm_cause = OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED;
-        break;
-    default:
-        gmm_cause = OGS_5GMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED;
-    }
-
-    nas_5gs_send_nas_reject(amf_ue, gmm_cause);
-}
-
-#if 0
 void nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
 {
     int rv;
-    amf_sess_t *sess = NULL;
-    amf_bearer_t *bearer = NULL;
     ogs_pkbuf_t *ngapbuf = NULL;
-    ogs_pkbuf_t *gsmbuf = NULL, *gmmbuf = NULL;
+    ogs_pkbuf_t *gmmbuf = NULL;
 
-    ogs_assert(amf_ue);
-    sess = amf_sess_first(amf_ue);
-    ogs_assert(sess);
-    ogs_assert(amf_sess_next(sess) == NULL);
-    bearer = amf_default_bearer_in_sess(sess);
-    ogs_assert(bearer);
-    ogs_assert(amf_bearer_next(bearer) == NULL);
-
-    gsmbuf = esm_build_activate_default_bearer_context_request(sess);
-    ogs_expect_or_return(gsmbuf);
-
-    gmmbuf = gmm_build_registration_accept(amf_ue, gsmbuf);
+    gmmbuf = gmm_build_registration_accept(amf_ue);
     ogs_expect_or_return(gmmbuf);
 
     ngapbuf = ngap_build_initial_context_setup_request(amf_ue, gmmbuf);
@@ -160,7 +78,6 @@ void nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
     rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
     ogs_expect_or_return(rv == OGS_OK);
 }
-#endif
 
 void nas_5gs_send_registration_reject(
         amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause)
@@ -265,6 +182,188 @@ void nas_5gs_send_security_mode_command(amf_ue_t *amf_ue)
 
     rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);
+}
+
+void nas_5gs_send_configuration_update_command(
+        amf_ue_t *amf_ue, int ack, int red)
+{
+    int rv;
+    ogs_pkbuf_t *gmmbuf = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_debug("[%s] Configuration update command", amf_ue->supi);
+
+    if (amf_ue->t3555.pkbuf) {
+        gmmbuf = amf_ue->t3555.pkbuf;
+        ogs_expect_or_return(gmmbuf);
+    } else {
+        gmmbuf = gmm_build_configuration_update_command(amf_ue, ack, red);
+        ogs_expect_or_return(gmmbuf);
+    }
+
+    if (ack) {
+        amf_ue->t3555.pkbuf = ogs_pkbuf_copy(gmmbuf);
+        ogs_timer_start(amf_ue->t3555.timer,
+                amf_timer_cfg(AMF_TIMER_T3555)->duration);
+    }
+
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
+    ogs_expect(rv == OGS_OK);
+}
+
+void nas_send_pdu_session_establishment_accept(amf_sess_t *sess,
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
+{
+    int rv;
+
+    amf_ue_t *amf_ue = NULL;
+
+    ogs_pkbuf_t *gmmbuf = NULL;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    ogs_assert(sess);
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
+    ogs_assert(n1smbuf);
+    ogs_assert(n2smbuf);
+
+    gmmbuf = gmm_build_dl_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
+    ogs_expect_or_return(gmmbuf);
+
+    ngapbuf = ngap_build_pdu_session_resource_setup_request(
+            sess, gmmbuf, n2smbuf);
+    ogs_expect_or_return(ngapbuf);
+
+    rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+    ogs_expect(rv == OGS_OK);
+}
+
+void nas_5gs_send_gmm_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause)
+{
+    int rv;
+    ogs_pkbuf_t *gmmbuf = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_debug("[%s] 5GMM status", amf_ue->supi);
+
+    gmmbuf = gmm_build_status(amf_ue, cause);
+    ogs_expect_or_return(gmmbuf);
+
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
+    ogs_expect(rv == OGS_OK);
+}
+
+void nas_5gs_send_gmm_reject(
+        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause)
+{
+    ogs_assert(amf_ue);
+
+    switch(amf_ue->nas.message_type) {
+    case OGS_NAS_5GS_REGISTRATION_REQUEST:
+        if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
+            nas_5gs_send_authentication_reject(amf_ue);
+        } else {
+            nas_5gs_send_registration_reject(amf_ue, gmm_cause);
+        }
+        break;
+    default:
+        ogs_fatal("Unknown type : %d", amf_ue->nas.message_type);
+        ogs_assert_if_reached();
+        break;
+    }
+}
+
+static ogs_nas_5gmm_cause_t gmm_cause_from_sbi(int status)
+{
+    ogs_nas_5gmm_cause_t gmm_cause;
+
+    switch(status) {
+    case OGS_SBI_HTTP_STATUS_NOT_FOUND:
+        gmm_cause = OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED;
+        break;
+    case OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT:
+        gmm_cause = OGS_5GMM_CAUSE_PAYLOAD_WAS_NOT_FORWARDED;
+        break;
+    case OGS_SBI_HTTP_STATUS_BAD_REQUEST:
+        gmm_cause = OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE;
+        break;
+    case OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR:
+        gmm_cause =
+            OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK;
+        break;
+    default:
+        gmm_cause = OGS_5GMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED;
+    }
+
+    return gmm_cause;
+}
+
+void nas_5gs_send_gmm_reject_from_sbi(amf_ue_t *amf_ue, int status)
+{
+    ogs_assert(amf_ue);
+    nas_5gs_send_gmm_reject(amf_ue, gmm_cause_from_sbi(status));
+}
+
+void nas_5gs_send_gsm_reject(amf_sess_t *sess,
+        uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
+        ogs_nas_5gmm_cause_t cause, uint8_t backoff_time)
+{
+    int rv;
+
+    ogs_pkbuf_t *gmmbuf = NULL;
+    amf_ue_t *amf_ue = NULL;
+
+    ogs_assert(sess);
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
+
+    ogs_assert(payload_container_type);
+    ogs_assert(payload_container);
+
+    ogs_warn("[%s] 5GSM reject", amf_ue->suci);
+
+    gmmbuf = gmm_build_dl_nas_transport(sess,
+            payload_container_type, payload_container, cause, backoff_time);
+    ogs_expect_or_return(gmmbuf);
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
+    ogs_expect_or_return(rv == OGS_OK);
+}
+
+void nas_5gs_send_gsm_reject_from_sbi(amf_sess_t *sess,
+        uint8_t payload_container_type, ogs_pkbuf_t *payload_container,
+        int status)
+{
+    ogs_assert(sess);
+    ogs_assert(payload_container_type);
+    ogs_assert(payload_container);
+
+    nas_5gs_send_gsm_reject(sess, payload_container_type, payload_container,
+            gmm_cause_from_sbi(status), AMF_NAS_BACKOFF_TIME);
+}
+
+void nas_5gs_send_back_5gsm_message(
+        amf_sess_t *sess, ogs_nas_5gmm_cause_t cause)
+{
+    ogs_pkbuf_t *pbuf = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(sess->payload_container_type);
+    ogs_assert(sess->payload_container);
+
+    pbuf = ogs_pkbuf_copy(sess->payload_container);
+    ogs_expect_or_return(pbuf);
+
+    nas_5gs_send_gsm_reject(sess, sess->payload_container_type, pbuf,
+            cause, AMF_NAS_BACKOFF_TIME);
+}
+
+void nas_5gs_send_back_5gsm_message_from_sbi(amf_sess_t *sess, int status)
+{
+    ogs_assert(sess);
+    nas_5gs_send_back_5gsm_message(sess, gmm_cause_from_sbi(status));
 }
 
 #if 0

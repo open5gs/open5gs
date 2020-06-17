@@ -34,6 +34,7 @@ OpenAPI_usage_threshold_t *OpenAPI_usage_threshold_create(
 void OpenAPI_usage_threshold_free(OpenAPI_usage_threshold_t *usage_threshold);
 OpenAPI_usage_threshold_t *OpenAPI_usage_threshold_parseFromJSON(cJSON *usage_thresholdJSON);
 cJSON *OpenAPI_usage_threshold_convertToJSON(OpenAPI_usage_threshold_t *usage_threshold);
+OpenAPI_usage_threshold_t *OpenAPI_usage_threshold_copy(OpenAPI_usage_threshold_t *dst, OpenAPI_usage_threshold_t *src);
 
 #ifdef __cplusplus
 }

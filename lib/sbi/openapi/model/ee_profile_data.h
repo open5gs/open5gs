@@ -31,6 +31,7 @@ OpenAPI_ee_profile_data_t *OpenAPI_ee_profile_data_create(
 void OpenAPI_ee_profile_data_free(OpenAPI_ee_profile_data_t *ee_profile_data);
 OpenAPI_ee_profile_data_t *OpenAPI_ee_profile_data_parseFromJSON(cJSON *ee_profile_dataJSON);
 cJSON *OpenAPI_ee_profile_data_convertToJSON(OpenAPI_ee_profile_data_t *ee_profile_data);
+OpenAPI_ee_profile_data_t *OpenAPI_ee_profile_data_copy(OpenAPI_ee_profile_data_t *dst, OpenAPI_ee_profile_data_t *src);
 
 #ifdef __cplusplus
 }

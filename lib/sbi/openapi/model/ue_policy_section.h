@@ -30,6 +30,7 @@ OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_create(
 void OpenAPI_ue_policy_section_free(OpenAPI_ue_policy_section_t *ue_policy_section);
 OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_parseFromJSON(cJSON *ue_policy_sectionJSON);
 cJSON *OpenAPI_ue_policy_section_convertToJSON(OpenAPI_ue_policy_section_t *ue_policy_section);
+OpenAPI_ue_policy_section_t *OpenAPI_ue_policy_section_copy(OpenAPI_ue_policy_section_t *dst, OpenAPI_ue_policy_section_t *src);
 
 #ifdef __cplusplus
 }

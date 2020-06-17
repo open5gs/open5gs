@@ -30,6 +30,7 @@ OpenAPI_pppp_to_pdb_t *OpenAPI_pppp_to_pdb_create(
 void OpenAPI_pppp_to_pdb_free(OpenAPI_pppp_to_pdb_t *pppp_to_pdb);
 OpenAPI_pppp_to_pdb_t *OpenAPI_pppp_to_pdb_parseFromJSON(cJSON *pppp_to_pdbJSON);
 cJSON *OpenAPI_pppp_to_pdb_convertToJSON(OpenAPI_pppp_to_pdb_t *pppp_to_pdb);
+OpenAPI_pppp_to_pdb_t *OpenAPI_pppp_to_pdb_copy(OpenAPI_pppp_to_pdb_t *dst, OpenAPI_pppp_to_pdb_t *src);
 
 #ifdef __cplusplus
 }

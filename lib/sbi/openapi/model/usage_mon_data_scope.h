@@ -31,6 +31,7 @@ OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_create(
 void OpenAPI_usage_mon_data_scope_free(OpenAPI_usage_mon_data_scope_t *usage_mon_data_scope);
 OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_parseFromJSON(cJSON *usage_mon_data_scopeJSON);
 cJSON *OpenAPI_usage_mon_data_scope_convertToJSON(OpenAPI_usage_mon_data_scope_t *usage_mon_data_scope);
+OpenAPI_usage_mon_data_scope_t *OpenAPI_usage_mon_data_scope_copy(OpenAPI_usage_mon_data_scope_t *dst, OpenAPI_usage_mon_data_scope_t *src);
 
 #ifdef __cplusplus
 }

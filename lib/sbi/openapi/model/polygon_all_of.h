@@ -29,6 +29,7 @@ OpenAPI_polygon_all_of_t *OpenAPI_polygon_all_of_create(
 void OpenAPI_polygon_all_of_free(OpenAPI_polygon_all_of_t *polygon_all_of);
 OpenAPI_polygon_all_of_t *OpenAPI_polygon_all_of_parseFromJSON(cJSON *polygon_all_ofJSON);
 cJSON *OpenAPI_polygon_all_of_convertToJSON(OpenAPI_polygon_all_of_t *polygon_all_of);
+OpenAPI_polygon_all_of_t *OpenAPI_polygon_all_of_copy(OpenAPI_polygon_all_of_t *dst, OpenAPI_polygon_all_of_t *src);
 
 #ifdef __cplusplus
 }

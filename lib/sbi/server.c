@@ -20,7 +20,6 @@
 #include "ogs-app.h"
 #include "ogs-sbi.h"
 
-#include "sbi-private.h"
 #include "microhttpd.h"
 
 typedef struct ogs_sbi_session_s {
@@ -110,9 +109,9 @@ static ogs_sbi_session_t *session_add(ogs_sbi_server_t *server,
             ogs_sbi_self()->timer_mgr, session_timer_expired, session);
     ogs_assert(session->timer);
 
-    /* If User does not send http response within 5 second,
+    /* If User does not send http response within 3 second,
      * we will assert this program. */
-    ogs_timer_start(session->timer, ogs_time_from_sec(5));
+    ogs_timer_start(session->timer, ogs_time_from_sec(3));
 
     ogs_list_add(&server->suspended_session_list, session);
 
@@ -363,7 +362,7 @@ void ogs_sbi_server_send_response(
 
     if (response->http.content) {
         mhd_response = MHD_create_response_from_buffer(
-                strlen(response->http.content), response->http.content,
+                response->http.content_length, response->http.content,
                 MHD_RESPMEM_PERSISTENT);
         ogs_assert(mhd_response);
     } else {
@@ -542,7 +541,7 @@ static int access_handler(
                 (MHD_KeyValueIterator)get_values, request->http.headers);
 
         request->h.method = ogs_strdup(method);
-        request->h.url = ogs_strdup(url);
+        request->h.uri = ogs_strdup(url);
 
         if (ogs_sbi_header_get(request->http.headers, "Content-Length") ||
             ogs_sbi_header_get(request->http.headers, "Transfer-Encoding")) {

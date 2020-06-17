@@ -42,6 +42,7 @@ OpenAPI_smf_info_t *OpenAPI_smf_info_create(
 void OpenAPI_smf_info_free(OpenAPI_smf_info_t *smf_info);
 OpenAPI_smf_info_t *OpenAPI_smf_info_parseFromJSON(cJSON *smf_infoJSON);
 cJSON *OpenAPI_smf_info_convertToJSON(OpenAPI_smf_info_t *smf_info);
+OpenAPI_smf_info_t *OpenAPI_smf_info_copy(OpenAPI_smf_info_t *dst, OpenAPI_smf_info_t *src);
 
 #ifdef __cplusplus
 }

@@ -30,6 +30,7 @@ OpenAPI_amf_cond_t *OpenAPI_amf_cond_create(
 void OpenAPI_amf_cond_free(OpenAPI_amf_cond_t *amf_cond);
 OpenAPI_amf_cond_t *OpenAPI_amf_cond_parseFromJSON(cJSON *amf_condJSON);
 cJSON *OpenAPI_amf_cond_convertToJSON(OpenAPI_amf_cond_t *amf_cond);
+OpenAPI_amf_cond_t *OpenAPI_amf_cond_copy(OpenAPI_amf_cond_t *dst, OpenAPI_amf_cond_t *src);
 
 #ifdef __cplusplus
 }

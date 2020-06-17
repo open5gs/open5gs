@@ -28,6 +28,7 @@ OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_create(
 void OpenAPI_pei_update_info_free(OpenAPI_pei_update_info_t *pei_update_info);
 OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_parseFromJSON(cJSON *pei_update_infoJSON);
 cJSON *OpenAPI_pei_update_info_convertToJSON(OpenAPI_pei_update_info_t *pei_update_info);
+OpenAPI_pei_update_info_t *OpenAPI_pei_update_info_copy(OpenAPI_pei_update_info_t *dst, OpenAPI_pei_update_info_t *src);
 
 #ifdef __cplusplus
 }

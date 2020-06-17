@@ -39,6 +39,7 @@ OpenAPI_udr_info_t *OpenAPI_udr_info_create(
 void OpenAPI_udr_info_free(OpenAPI_udr_info_t *udr_info);
 OpenAPI_udr_info_t *OpenAPI_udr_info_parseFromJSON(cJSON *udr_infoJSON);
 cJSON *OpenAPI_udr_info_convertToJSON(OpenAPI_udr_info_t *udr_info);
+OpenAPI_udr_info_t *OpenAPI_udr_info_copy(OpenAPI_udr_info_t *dst, OpenAPI_udr_info_t *src);
 
 #ifdef __cplusplus
 }

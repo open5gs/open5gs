@@ -28,6 +28,7 @@ OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_create(
 void OpenAPI_hfc_node_id_free(OpenAPI_hfc_node_id_t *hfc_node_id);
 OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_parseFromJSON(cJSON *hfc_node_idJSON);
 cJSON *OpenAPI_hfc_node_id_convertToJSON(OpenAPI_hfc_node_id_t *hfc_node_id);
+OpenAPI_hfc_node_id_t *OpenAPI_hfc_node_id_copy(OpenAPI_hfc_node_id_t *dst, OpenAPI_hfc_node_id_t *src);
 
 #ifdef __cplusplus
 }

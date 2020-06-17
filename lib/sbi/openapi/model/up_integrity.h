@@ -26,6 +26,7 @@ OpenAPI_up_integrity_t *OpenAPI_up_integrity_create(
 void OpenAPI_up_integrity_free(OpenAPI_up_integrity_t *up_integrity);
 OpenAPI_up_integrity_t *OpenAPI_up_integrity_parseFromJSON(cJSON *up_integrityJSON);
 cJSON *OpenAPI_up_integrity_convertToJSON(OpenAPI_up_integrity_t *up_integrity);
+OpenAPI_up_integrity_t *OpenAPI_up_integrity_copy(OpenAPI_up_integrity_t *dst, OpenAPI_up_integrity_t *src);
 
 #ifdef __cplusplus
 }

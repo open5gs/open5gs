@@ -37,6 +37,7 @@ OpenAPI_notification_data_t *OpenAPI_notification_data_create(
 void OpenAPI_notification_data_free(OpenAPI_notification_data_t *notification_data);
 OpenAPI_notification_data_t *OpenAPI_notification_data_parseFromJSON(cJSON *notification_dataJSON);
 cJSON *OpenAPI_notification_data_convertToJSON(OpenAPI_notification_data_t *notification_data);
+OpenAPI_notification_data_t *OpenAPI_notification_data_copy(OpenAPI_notification_data_t *dst, OpenAPI_notification_data_t *src);
 
 #ifdef __cplusplus
 }

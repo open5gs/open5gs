@@ -75,8 +75,10 @@ extern "C" {
 #define OGS_SBI_HTTP_METHOD_PUT                     "PUT"
 #define OGS_SBI_HTTP_METHOD_OPTIONS                 "OPTIONS"
 
-#define OGS_SBI_API_VERSION                         "v1"
-#define OGS_SBI_API_FULL_VERSION                    "1.0.0"
+#define OGS_SBI_API_V1                              "v1"
+#define OGS_SBI_API_V1_0_0                          "1.0.0"
+#define OGS_SBI_API_V2                              "v2"
+#define OGS_SBI_API_V2_0_0                          "2.0.0"
 
 #define OGS_SBI_SERVICE_NAME_NNRF_NFM               "nnrf-nfm"
 #define OGS_SBI_SERVICE_NAME_NNRF_DISC              "nnrf-disc"
@@ -91,11 +93,18 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_EAP_SESSION           "eap-session"
 
 #define OGS_SBI_SERVICE_NAME_NUDM_SDM               "nudm-sdm"
-#define OGS_SBI_SERVICE_NAME_NUDM_UECM              "nudm-uecm"
+#define OGS_SBI_RESOURCE_NAME_AM_DATA               "am-data"
+#define OGS_SBI_RESOURCE_NAME_SM_DATA               "sm-data"
+#define OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA       "smf-select-data"
+#define OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA "ue-context-in-smf-data"
 #define OGS_SBI_SERVICE_NAME_NUDM_UEAU              "nudm-ueau"
 #define OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION  "security-information"
 #define OGS_SBI_RESOURCE_NAME_GENERATE_AUTH_DATA    "generate-auth-data"
 #define OGS_SBI_RESOURCE_NAME_AUTH_EVENTS           "auth-events"
+#define OGS_SBI_SERVICE_NAME_NUDM_UECM              "nudm-uecm"
+#define OGS_SBI_RESOURCE_NAME_REGISTRATIONS         "registrations"
+#define OGS_SBI_RESOURCE_NAME_AMF_3GPP_ACCESS       "amf-3gpp-access"
+#define OGS_SBI_RESOURCE_NAME_DEREG_NOTIFY          "dereg-notify"
 
 #define OGS_SBI_SERVICE_NAME_NUDR_DR                "nudr-dr"
 #define OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA     "subscription-data"
@@ -103,31 +112,66 @@ extern "C" {
 #define OGS_SBI_RESOURCE_NAME_AUTHENTICATION_SUBSCRIPTION \
                                             "authentication-subscription"
 #define OGS_SBI_RESOURCE_NAME_AUTHENTICATION_STATUS "authentication-status"
+#define OGS_SBI_RESOURCE_NAME_CONTEXT_DATA          "context-data"
+#define OGS_SBI_RESOURCE_NAME_PROVISIONED_DATA      "provisioned-data"
 
 #define OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION        "nsmf-pdusession"
+#define OGS_SBI_RESOURCE_NAME_SM_CONTEXTS           "sm-contexts"
 #define OGS_SBI_SERVICE_NAME_NSMF_EVENT_EXPOSURE    "nsmf-event-exposure"
+#define OGS_SBI_RESOURCE_NAME_MODIFY                "modify"
+#define OGS_SBI_RESOURCE_NAME_RELEASE               "release"
+
+#define OGS_SBI_SERVICE_NAME_NAMF_COMM              "namf-comm"
+#define OGS_SBI_SERVICE_NAME_NAMF_CALLBACK          "namf-callback"
+#define OGS_SBI_RESOURCE_NAME_UE_CONTEXTS           "ue-contexts"
+#define OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES        "n1-n2-messages"
+#define OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS     "sm-context-status"
 
 #define OGS_SBI_PARAM_NF_TYPE                       "nf-type"
 #define OGS_SBI_PARAM_TARGET_NF_TYPE                "target-nf-type"
 #define OGS_SBI_PARAM_REQUESTER_NF_TYPE             "requester-nf-type"
 #define OGS_SBI_PARAM_LIMIT                         "limit"
+#define OGS_SBI_PARAM_DNN                           "dnn"
+#define OGS_SBI_PARAM_PLMN_ID                       "plmn-id"
+#define OGS_SBI_PARAM_S_NSSAI                       "single-nssai"
 
 #define OGS_SBI_ACCEPT                              "Accept"
 #define OGS_SBI_ACCEPT_ENCODING                     "Accept-Encoding"
 #define OGS_SBI_CONTENT_TYPE                        "Content-Type"
 #define OGS_SBI_LOCATION                            "Location"
-#define OGS_SBI_CONTENT_JSON_TYPE                   "application/json"
-#define OGS_SBI_CONTENT_PROBLEM_TYPE                "application/problem+json"
-#define OGS_SBI_CONTENT_PATCH_TYPE                  \
-        "application/json-patch+json"
-#define OGS_SBI_CONTENT_3GPPHAL_TYPE                "application/3gppHal+json"
+#define OGS_SBI_APPLICATION_TYPE                    "application"
+#define OGS_SBI_APPLICATION_JSON_TYPE               "json"
+#define OGS_SBI_APPLICATION_PROBLEM_TYPE            "problem+json"
+#define OGS_SBI_APPLICATION_PATCH_TYPE              "json-patch+json"
+#define OGS_SBI_APPLICATION_3GPPHAL_TYPE            "3gppHal+json"
+#define OGS_SBI_APPLICATION_5GNAS_TYPE              "vnd.3gpp.5gnas"
+#define OGS_SBI_APPLICATION_NGAP_TYPE               "vnd.3gpp.ngap"
 
-typedef struct ogs_sbi_request_s ogs_sbi_request_t;
-typedef struct ogs_sbi_response_s ogs_sbi_response_t;
+#define OGS_SBI_CONTENT_JSON_TYPE                   \
+    OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_JSON_TYPE
+#define OGS_SBI_CONTENT_PROBLEM_TYPE                \
+    OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_PROBLEM_TYPE
+#define OGS_SBI_CONTENT_PATCH_TYPE                  \
+    OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_PATCH_TYPE
+#define OGS_SBI_CONTENT_3GPPHAL_TYPE                \
+    OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_3GPPHAL_TYPE
+#define OGS_SBI_CONTENT_5GNAS_TYPE                  \
+    OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_5GNAS_TYPE
+#define OGS_SBI_CONTENT_NGAP_TYPE                   \
+    OGS_SBI_APPLICATION_TYPE "/" OGS_SBI_APPLICATION_NGAP_TYPE
+
+#define OGS_SBI_MULTIPART_TYPE                      "multipart"
+#define OGS_SBI_MULTIPART_RELATED_TYPE              "related"
+#define OGS_SBI_CONTENT_MULTIPART_TYPE              \
+    OGS_SBI_MULTIPART_TYPE "/" OGS_SBI_MULTIPART_RELATED_TYPE
+
+#define OGS_SBI_CONTENT_ID                          "Content-Id"
+#define OGS_SBI_CONTENT_5GNAS_SM_ID                 "5gnas-sm"
+#define OGS_SBI_CONTENT_NGAP_SM_ID                  "ngap-sm"
 
 typedef struct ogs_sbi_header_s {
     char *method;
-    char *url;
+    char *uri;
 
     struct {
         char *name;
@@ -143,6 +187,13 @@ typedef struct ogs_sbi_header_s {
     } resource;
 
 } ogs_sbi_header_t;
+
+typedef struct ogs_sbi_part_s {
+    char *content_id;
+    char *content_type;
+
+    ogs_pkbuf_t *pkbuf;
+} ogs_sbi_part_t;
 
 typedef struct ogs_sbi_message_s {
     ogs_sbi_header_t h;
@@ -160,6 +211,11 @@ typedef struct ogs_sbi_message_s {
         OpenAPI_nf_type_e requester_nf_type;
         OpenAPI_nf_type_e nf_type;
         int limit;
+        char *dnn;
+        bool plmn_id_presence;
+        ogs_plmn_id_t plmn_id;
+        bool s_nssai_presence;
+        ogs_s_nssai_t s_nssai;
     } param;
 
     int res_status;
@@ -179,9 +235,57 @@ typedef struct ogs_sbi_message_s {
     OpenAPI_confirmation_data_t *ConfirmationData;
     OpenAPI_confirmation_data_response_t *ConfirmationDataResponse;
     OpenAPI_auth_event_t *AuthEvent;
+    OpenAPI_amf3_gpp_access_registration_t *Amf3GppAccessRegistration;
+    OpenAPI_access_and_mobility_subscription_data_t
+        *AccessAndMobilitySubscriptionData;
+    OpenAPI_smf_selection_subscription_data_t *SmfSelectionSubscriptionData;
+    OpenAPI_ue_context_in_smf_data_t *UeContextInSmfData;
+    OpenAPI_sm_context_create_data_t *SmContextCreateData;
+    OpenAPI_sm_context_created_data_t *SmContextCreatedData;
+    OpenAPI_sm_context_create_error_t *SmContextCreateError;
+    OpenAPI_sm_context_update_data_t *SmContextUpdateData;
+    OpenAPI_sm_context_updated_data_t *SmContextUpdatedData;
+    OpenAPI_sm_context_update_error_t *SmContextUpdateError;
+    OpenAPI_sm_context_release_data_t *SmContextReleaseData;
+    OpenAPI_sm_context_released_data_t *SmContextReleasedData;
+    OpenAPI_session_management_subscription_data_t *
+            SessionManagementSubscriptionData;
+    OpenAPI_n1_n2_message_transfer_req_data_t *N1N2MessageTransferReqData;
+    OpenAPI_n1_n2_message_transfer_rsp_data_t *N1N2MessageTransferRspData;
 
     ogs_sbi_links_t *links;
+
+#define OGS_SBI_MAX_NUM_OF_PART 8
+    int num_of_part;
+    ogs_sbi_part_t part[OGS_SBI_MAX_NUM_OF_PART];
 } ogs_sbi_message_t;
+
+typedef struct ogs_sbi_http_message_s {
+    ogs_hash_t *params;
+    ogs_hash_t *headers;
+
+    char *content;
+    size_t content_length;
+
+    int num_of_part;
+    ogs_sbi_part_t part[OGS_SBI_MAX_NUM_OF_PART];
+} ogs_sbi_http_message_t;
+
+typedef struct ogs_sbi_request_s {
+    ogs_sbi_header_t h;
+    ogs_sbi_http_message_t http;
+
+    /* Used in microhttpd */
+    bool suspended;
+    ogs_poll_t *poll;
+} ogs_sbi_request_t;
+
+typedef struct ogs_sbi_response_s {
+    ogs_sbi_header_t h;
+    ogs_sbi_http_message_t http;
+
+    int status;
+} ogs_sbi_response_t;
 
 void ogs_sbi_message_init(int num_of_request_pool, int num_of_response_pool);
 void ogs_sbi_message_final(void);
@@ -203,6 +307,13 @@ int ogs_sbi_parse_response(
 
 void ogs_sbi_header_set(ogs_hash_t *ht, const void *key, const void *val);
 void *ogs_sbi_header_get(ogs_hash_t *ht, const void *key);
+
+ogs_pkbuf_t *ogs_sbi_find_part_by_content_id(
+        ogs_sbi_message_t *message, char *content_id);
+
+int ogs_sbi_parse_header(
+        ogs_sbi_message_t *message, ogs_sbi_header_t *header);
+void ogs_sbi_header_free(ogs_sbi_header_t *h);
 
 #ifdef __cplusplus
 }

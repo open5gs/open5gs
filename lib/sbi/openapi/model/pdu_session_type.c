@@ -4,48 +4,27 @@
 #include <stdio.h>
 #include "pdu_session_type.h"
 
-OpenAPI_pdu_session_type_t *OpenAPI_pdu_session_type_create(
-    )
+char* OpenAPI_pdu_session_type_ToString(OpenAPI_pdu_session_type_e pdu_session_type)
 {
-    OpenAPI_pdu_session_type_t *pdu_session_type_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_type_t));
-    if (!pdu_session_type_local_var) {
-        return NULL;
-    }
-
-    return pdu_session_type_local_var;
+    const char *pdu_session_typeArray[] =  { "NULL", "IPV4", "IPV6", "IPV4V6", "UNSTRUCTURED", "ETHERNET" };
+    size_t sizeofArray = sizeof(pdu_session_typeArray) / sizeof(pdu_session_typeArray[0]);
+    if (pdu_session_type < sizeofArray)
+        return (char *)pdu_session_typeArray[pdu_session_type];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_pdu_session_type_free(OpenAPI_pdu_session_type_t *pdu_session_type)
+OpenAPI_pdu_session_type_e OpenAPI_pdu_session_type_FromString(char* pdu_session_type)
 {
-    if (NULL == pdu_session_type) {
-        return;
+    int stringToReturn = 0;
+    const char *pdu_session_typeArray[] =  { "NULL", "IPV4", "IPV6", "IPV4V6", "UNSTRUCTURED", "ETHERNET" };
+    size_t sizeofArray = sizeof(pdu_session_typeArray) / sizeof(pdu_session_typeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(pdu_session_type, pdu_session_typeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(pdu_session_type);
-}
-
-cJSON *OpenAPI_pdu_session_type_convertToJSON(OpenAPI_pdu_session_type_t *pdu_session_type)
-{
-    cJSON *item = NULL;
-
-    if (pdu_session_type == NULL) {
-        ogs_error("OpenAPI_pdu_session_type_convertToJSON() failed [PduSessionType]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_pdu_session_type_t *OpenAPI_pdu_session_type_parseFromJSON(cJSON *pdu_session_typeJSON)
-{
-    OpenAPI_pdu_session_type_t *pdu_session_type_local_var = NULL;
-    pdu_session_type_local_var = OpenAPI_pdu_session_type_create (
-        );
-
-    return pdu_session_type_local_var;
-end:
-    return NULL;
+    return 0;
 }
 
