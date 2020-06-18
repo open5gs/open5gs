@@ -63,6 +63,7 @@ typedef uint32_t mme_p_tmsi_t;
 typedef enum {
     SGW_SELECT_RR = 0,  /* Default SGW Selection Method */
     SGW_SELECT_TAC,
+    SGW_SELECT_ENB_ID,
 } sgw_select_e;
 
 typedef struct served_gummei_s {
@@ -170,6 +171,8 @@ typedef struct mme_sgw_s {
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
+    uint32_t        enb_id[OGS_MAX_NUM_OF_ENB_ID];
+    uint8_t         num_of_enb_id;
 
     ogs_gtp_node_t  *gnode;
 } mme_sgw_t;
