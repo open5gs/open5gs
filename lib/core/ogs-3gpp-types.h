@@ -48,6 +48,7 @@ extern "C" {
     OGS_BCD_TO_BUFFER_LEN(OGS_MAX_IMEISV_BCD_LEN)
 
 #define OGS_MAX_NUM_OF_ENB_ID           16
+#define OGS_MAX_NUM_OF_APN              16
 #define OGS_MAX_NUM_OF_HOSTNAME         16
 #define OGS_MAX_DNN_LEN                 100
 #define OGS_MAX_APN_LEN                 OGS_MAX_DNN_LEN
