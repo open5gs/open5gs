@@ -120,11 +120,16 @@ void smf_sbi_discover_and_send(
         ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data))
 {
     ogs_sbi_session_t *session = NULL;
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_assert(nf_type);
+    ogs_assert(build);
 
     ogs_assert(sess);
     session = sess->sbi.session;
-    ogs_assert(nf_type);
-    ogs_assert(build);
+    ogs_assert(session);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
 
     sess->sbi.nf_state_registered = smf_nf_state_registered;
     sess->sbi.client_wait.duration =
@@ -134,7 +139,7 @@ void smf_sbi_discover_and_send(
             nf_type, &sess->sbi, data, (ogs_sbi_build_f)build) != true) {
         ogs_sbi_server_send_error(session,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", sess->supi);
+                "Cannot discover", smf_ue->supi);
     }
 }
 

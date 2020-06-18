@@ -41,11 +41,9 @@
 
 #define UPF_GTP_HANDLED     1
 
-uint16_t in_cksum(uint16_t *addr, int len);
 static int upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf);
 static int upf_gtp_handle_slaac(upf_sess_t *sess, ogs_pkbuf_t *recvbuf);
-static void upf_gtp_send_to_far(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf);
-static void upf_gtp_send_to_pdr(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf);
+static int upf_gtp_handle_pdr(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *recvbuf);
 static int upf_gtp_send_router_advertisement(
         upf_sess_t *sess, uint8_t *ip6_dst);
 
@@ -72,7 +70,7 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
     pdr = upf_pdr_find_by_packet(recvbuf);
     if (pdr) {
         /* Unicast */
-        upf_gtp_send_to_pdr(pdr, recvbuf);
+        upf_gtp_handle_pdr(pdr, recvbuf);
     } else {
         if (ogs_config()->parameter.multicast) {
             upf_gtp_handle_multicast(recvbuf);
@@ -252,6 +250,49 @@ void upf_gtp_close(void)
     }
 }
 
+void upf_gtp_send_to_gnb(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf)
+{
+    char buf[OGS_ADDRSTRLEN];
+    int rv;
+    ogs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp_node_t *gnode = NULL;
+
+    ogs_assert(far);
+
+    if (far->dst_if != OGS_PFCP_INTERFACE_ACCESS) {
+        ogs_error("FAR is NOT Downlink");
+        return;
+    }
+
+    gnode = far->gnode;
+    ogs_assert(gnode);
+    ogs_assert(gnode->sock);
+    ogs_assert(sendbuf);
+
+    /* Add GTP-U header */
+    ogs_assert(ogs_pkbuf_push(sendbuf, OGS_GTPV1U_HEADER_LEN));
+    gtp_h = (ogs_gtp_header_t *)sendbuf->data;
+    /* Bits    8  7  6  5  4  3  2  1
+     *        +--+--+--+--+--+--+--+--+
+     *        |version |PT| 1| E| S|PN|
+     *        +--+--+--+--+--+--+--+--+
+     *         0  0  1   1  0  0  0  0
+     */
+    gtp_h->flags = 0x30;
+    gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
+    gtp_h->length = htobe16(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
+    gtp_h->teid = htobe32(far->outer_header_creation.teid);
+
+    /* Send to gNB */
+    ogs_debug("[UPF] SEND GPU-U to gNB[%s] : TEID[0x%x]",
+        OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
+    rv = ogs_gtp_sendto(gnode, sendbuf);
+    if (rv != OGS_OK)
+        ogs_error("ogs_gtp_sendto() failed");
+
+    ogs_pkbuf_free(sendbuf);
+}
+
 static int upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
 {
     struct ip *ip_h =  NULL;
@@ -279,7 +320,7 @@ static int upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
 
                     pdr = ogs_pfcp_sess_default_pdr(&sess->pfcp);
                     ogs_assert(pdr);
-                    upf_gtp_send_to_pdr(pdr, recvbuf);
+                    upf_gtp_handle_pdr(pdr, recvbuf);
 
                     return UPF_GTP_HANDLED;
                 }
@@ -319,67 +360,36 @@ static int upf_gtp_handle_slaac(upf_sess_t *sess, ogs_pkbuf_t *recvbuf)
     return OGS_OK;
 }
 
-static void upf_gtp_send_to_far(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf)
-{
-    char buf[OGS_ADDRSTRLEN];
-    int rv;
-    ogs_gtp_header_t *gtp_h = NULL;
-    ogs_gtp_node_t *gnode = NULL;
-
-    ogs_assert(far);
-
-    if (far->dst_if != OGS_PFCP_INTERFACE_ACCESS) {
-        ogs_error("FAR is NOT Downlink");
-        return;
-    }
-
-    gnode = far->gnode;
-    ogs_assert(gnode);
-    ogs_assert(gnode->sock);
-    ogs_assert(sendbuf);
-
-    /* Add GTP-U header */
-    ogs_assert(ogs_pkbuf_push(sendbuf, OGS_GTPV1U_HEADER_LEN));
-    gtp_h = (ogs_gtp_header_t *)sendbuf->data;
-    /* Bits    8  7  6  5  4  3  2  1
-     *        +--+--+--+--+--+--+--+--+
-     *        |version |PT| 1| E| S|PN|
-     *        +--+--+--+--+--+--+--+--+
-     *         0  0  1   1  0  0  0  0
-     */
-    gtp_h->flags = 0x30;
-    gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
-    gtp_h->length = htobe16(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
-    gtp_h->teid = htobe32(far->outer_header_creation.teid);
-
-    /* Send to SGW */
-    ogs_debug("[UPF] SEND GPU-U to gNB[%s] : TEID[0x%x]",
-        OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
-    rv = ogs_gtp_sendto(gnode, sendbuf);
-    if (rv != OGS_OK)
-        ogs_error("ogs_gtp_sendto() failed");
-}
-
-static void upf_gtp_send_to_pdr(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
+static int upf_gtp_handle_pdr(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *recvbuf)
 {
     ogs_pfcp_far_t *far = NULL;
+    ogs_pkbuf_t *sendbuf = NULL;
 
-    ogs_assert(sendbuf);
+    ogs_assert(recvbuf);
     ogs_assert(pdr);
 
     if (pdr->src_if != OGS_PFCP_INTERFACE_CORE) {
         ogs_error("PDR is NOT Downlink");
-        return;
+        return OGS_ERROR;
     }
 
     far = pdr->far;
     ogs_assert(far);
 
-    if (far->gnode) {
-        upf_gtp_send_to_far(far, sendbuf);
+    sendbuf = ogs_pkbuf_copy(recvbuf);
+    ogs_assert(sendbuf);
+    if (!far->gnode) {
+        if (far->num_of_buffered_packet < MAX_NUM_OF_PACKET_BUFFER) {
+            far->buffered_packet[far->num_of_buffered_packet++] = sendbuf;
+            return UPF_GTP_HANDLED;
+        }
     } else {
-        ogs_fatal("TODO Buffering");
+        upf_gtp_send_to_gnb(far, sendbuf);
+        return UPF_GTP_HANDLED;
     }
+
+    ogs_pkbuf_free(sendbuf);
+    return OGS_OK;
 }
 
 static int upf_gtp_send_router_advertisement(
@@ -460,7 +470,7 @@ static int upf_gtp_send_router_advertisement(
     p += OGS_IPV6_LEN;
     p += 2; memcpy(p, &plen, 2); p += 2;
     p += 3; *p = nxt; p += 1;
-    advert_h->nd_ra_cksum = in_cksum((uint16_t *)pkbuf->data, pkbuf->len);
+    advert_h->nd_ra_cksum = ogs_in_cksum((uint16_t *)pkbuf->data, pkbuf->len);
 
     ip6_h->ip6_flow = htobe32(0x60000001);
     ip6_h->ip6_plen = plen;
@@ -469,37 +479,10 @@ static int upf_gtp_send_router_advertisement(
     memcpy(ip6_h->ip6_src.s6_addr, src_ipsub.sub, sizeof src_ipsub.sub);
     memcpy(ip6_h->ip6_dst.s6_addr, ip6_dst, OGS_IPV6_LEN);
     
-    upf_gtp_send_to_pdr(pdr, pkbuf);
+    upf_gtp_handle_pdr(pdr, pkbuf);
 
     ogs_debug("[UPF]      Router Advertisement");
 
     ogs_pkbuf_free(pkbuf);
     return rv;
-}
-
-uint16_t in_cksum(uint16_t *addr, int len)
-{
-    int nleft = len;
-    uint32_t sum = 0;
-    uint16_t *w = addr;
-    uint16_t answer = 0;
-
-    // Adding 16 bits sequentially in sum
-    while (nleft > 1) {
-        sum += *w;
-        nleft -= 2;
-        w++;
-    }
-
-    // If an odd byte is left
-    if (nleft == 1) {
-        *(uint8_t *) (&answer) = *(uint8_t *) w;
-        sum += answer;
-    }
-
-    sum = (sum >> 16) + (sum & 0xffff);
-    sum += (sum >> 16);
-    answer = ~sum;
-
-    return answer;
 }

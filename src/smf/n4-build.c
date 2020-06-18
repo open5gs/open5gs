@@ -90,7 +90,7 @@ static struct {
     ogs_pfcp_ue_ip_addr_t addr;
     ogs_pfcp_outer_header_removal_t outer_header_removal;
     ogs_pfcp_f_teid_t f_teid;
-    char apn[OGS_MAX_APN_LEN];
+    char dnn[OGS_MAX_DNN_LEN];
     char *sdf_filter[OGS_MAX_NUM_OF_RULE];
 } pdrbuf[OGS_MAX_NUM_OF_PDR];
 
@@ -145,8 +145,8 @@ static void build_create_pdr(
 
     message->pdi.network_instance.presence = 1;
     message->pdi.network_instance.len = ogs_fqdn_build(
-        pdrbuf[i].apn, sess->pdn.apn, strlen(sess->pdn.apn));
-    message->pdi.network_instance.data = pdrbuf[i].apn;
+        pdrbuf[i].dnn, sess->pdn.dnn, strlen(sess->pdn.dnn));
+    message->pdi.network_instance.data = pdrbuf[i].dnn;
 
     for (j = 0; j < pdr->num_of_flow; j++) {
         ogs_pfcp_sdf_filter_t pfcp_sdf_filter[OGS_MAX_NUM_OF_RULE];

@@ -25,6 +25,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         smf_sess_t *sess, ogs_pkbuf_t *pkbuf)
 {
     ogs_sbi_session_t *session = NULL;
+    smf_ue_t *smf_ue = NULL;
     smf_bearer_t *bearer = NULL;
     int rv, i;
 
@@ -43,15 +44,18 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     ogs_assert(session);
     bearer = smf_default_bearer_in_sess(sess);
     ogs_assert(bearer);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
 
     rv = ogs_asn_decode(
             &asn_DEF_NGAP_PDUSessionResourceSetupResponseTransfer,
             &message, sizeof(message), pkbuf);
     if (rv != OGS_OK) {
-        ogs_error("[%s:%d] Cannot decode NGAP message", sess->supi, sess->psi);
+        ogs_error("[%s:%d] Cannot decode NGAP message",
+                smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(session,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "No N2 SM Info Type", sess->supi_psi_keybuf, NULL);
+                "No N2 SM Info Type", smf_ue->supi, NULL);
         goto cleanup;
     }
 
@@ -65,11 +69,11 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         NGAP_UPTransportLayerInformation_PR_gTPTunnel) {
         ogs_error(
             "[%s:%d] Unknown NGAP_UPTransportLayerInformation.present [%d]",
-            sess->supi, sess->psi, uPTransportLayerInformation->present);
+            smf_ue->supi, sess->psi, uPTransportLayerInformation->present);
         smf_sbi_send_sm_context_update_error(session,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "Unknown NGAP_UPTransportLayerInformation.present",
-                sess->supi_psi_keybuf, NULL);
+                smf_ue->supi, NULL);
         goto cleanup;
     }
 
@@ -85,10 +89,10 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
 
     gTPTunnel = uPTransportLayerInformation->choice.gTPTunnel;
     if (!gTPTunnel) {
-        ogs_error("[%s:%d] No GTPTunnel", sess->supi, sess->psi);
+        ogs_error("[%s:%d] No GTPTunnel", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(session,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "No GTPTunnel", sess->supi_psi_keybuf, NULL);
+                "No GTPTunnel", smf_ue->supi, NULL);
         goto cleanup;
     }
 

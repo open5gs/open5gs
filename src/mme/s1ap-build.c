@@ -278,7 +278,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
+    ogs_subscription_data_t *subscription_data = NULL;
 
     ogs_assert(mme_ue);
     enb_ue = mme_ue->enb_ue;
@@ -1041,7 +1041,7 @@ ogs_pkbuf_t *s1ap_build_e_rab_release_command(
 
     mme_ue_t *mme_ue = NULL;
     enb_ue_t *enb_ue = NULL;
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
+    ogs_subscription_data_t *subscription_data = NULL;
 
     ogs_assert(esmbuf);
     ogs_assert(bearer);
@@ -1747,7 +1747,7 @@ ogs_pkbuf_t *s1ap_build_handover_request(
 
     mme_sess_t *sess = NULL;
     mme_bearer_t *bearer = NULL;
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
+    ogs_subscription_data_t *subscription_data = NULL;
 
     ogs_assert(handovertype);
     ogs_assert(cause);

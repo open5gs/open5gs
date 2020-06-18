@@ -84,15 +84,58 @@ typedef struct smf_context_s {
     ogs_list_t      sgw_s5c_list;   /* SGW GTPC Node List */
     ogs_list_t      ip_pool_list;
 
-    ogs_hash_t      *imsi_apn_hash; /* hash table (IMSI+APN) */
-    ogs_hash_t      *supi_psi_hash; /* hash table (SUPI+PSI) */
+    ogs_hash_t      *supi_hash;     /* hash table (SUPI) */
+    ogs_hash_t      *imsi_hash;     /* hash table (IMSI) */
     ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
     ogs_hash_t      *ipv6_hash;     /* hash table (IPv6 Address) */
 
     uint16_t        mtu;            /* MTU to advertise in PCO */
 
-    ogs_list_t      sess_list;
+#define SMF_UE_IS_LAST_SESSION(__sMF) \
+     ((__sMF) && (ogs_list_count(&(__sMF)->sess_list)) == 1)
+    ogs_list_t      smf_ue_list;
 } smf_context_t;
+
+typedef struct smf_ue_s {
+    ogs_lnode_t lnode;
+
+    /* SUPI */
+    char *supi;
+
+    /* IMSI */
+    uint8_t imsi[OGS_MAX_IMSI_LEN];
+    int imsi_len;
+    char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+
+    ogs_list_t sess_list;
+} smf_ue_t;
+
+#define SMF_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
+    do { \
+        ogs_assert(_nFInstance); \
+        if ((_nFInstance)->reference_count == 1) { \
+            ogs_info("[%s] (%s) NF removed", (_nFInstance)->id, (_cAUSE)); \
+            smf_nf_fsm_fini((_nFInstance)); \
+        } else { \
+            /* There is an assocation with other context */ \
+            ogs_info("[%s:%d] (%s) NF suspended", \
+                    _nFInstance->id, _nFInstance->reference_count, (_cAUSE)); \
+            OGS_FSM_TRAN(&_nFInstance->sm, smf_nf_state_de_registered); \
+            ogs_fsm_dispatch(&_nFInstance->sm, NULL); \
+        } \
+        ogs_sbi_nf_instance_remove(_nFInstance); \
+    } while(0)
+#define SMF_SESS_CLEAR(__sESS) \
+    do { \
+        smf_ue_t *smf_ue = NULL; \
+        ogs_assert(__sESS); \
+        smf_ue = __sESS->smf_ue; \
+        ogs_assert(smf_ue); \
+        if (SMF_UE_IS_LAST_SESSION(smf_ue)) \
+            smf_ue_remove(smf_ue); \
+        else \
+            smf_sess_remove(__sESS); \
+    } while(0)
 
 typedef struct smf_sess_s {
     ogs_sbi_object_t sbi;
@@ -119,14 +162,8 @@ typedef struct smf_sess_s {
     int             imsi_len;
     char            imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
-    uint8_t         imsi_apn_keybuf[OGS_MAX_IMSI_LEN+OGS_MAX_APN_LEN+1];
-    int             imsi_apn_keylen;
-
-    /* SUPI */
-    char            *sm_context_ref;
-    char            *supi;
-    uint8_t         psi;    /* PDU session identity */
-    char            *supi_psi_keybuf;
+    char            *sm_context_ref; /* smContextRef */
+    uint8_t         psi; /* PDU session identity */
 
     /* Procedure transaction identity */
     uint8_t         pti;
@@ -166,21 +203,8 @@ typedef struct smf_sess_s {
     ogs_gtp_node_t  *gnode;
     ogs_pfcp_node_t *pfcp_node;
 
-#define SMF_NF_INSTANCE_CLEAR(_cAUSE, _nFInstance) \
-    do { \
-        ogs_assert(_nFInstance); \
-        if ((_nFInstance)->reference_count == 1) { \
-            ogs_info("[%s] (%s) NF removed", (_nFInstance)->id, (_cAUSE)); \
-            smf_nf_fsm_fini((_nFInstance)); \
-        } else { \
-            /* There is an assocation with other context */ \
-            ogs_info("[%s:%d] (%s) NF suspended", \
-                    _nFInstance->id, _nFInstance->reference_count, (_cAUSE)); \
-            OGS_FSM_TRAN(&_nFInstance->sm, smf_nf_state_de_registered); \
-            ogs_fsm_dispatch(&_nFInstance->sm, NULL); \
-        } \
-        ogs_sbi_nf_instance_remove(_nFInstance); \
-    } while(0)
+    /* Related Context */
+    smf_ue_t *smf_ue;
 } smf_sess_t;
 
 #define SMF_BEARER(pfcp_sess) ogs_container_of(pfcp_sess, smf_bearer_t, pfcp)
@@ -242,22 +266,29 @@ smf_context_t *smf_self(void);
 
 int smf_context_parse_config(void);
 
+smf_ue_t *smf_ue_add_by_supi(char *supi);
+smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len);
+void smf_ue_remove(smf_ue_t *smf_ue);
+void smf_ue_remove_all(void);
+smf_ue_t *smf_ue_find_by_supi(char *supi);
+smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
+
 smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message);
-smf_sess_t *smf_sess_add_by_imsi_apn(
-        uint8_t *imsi, int imsi_len, char *apn,
+smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
         uint8_t pdn_type, uint8_t ebi, ogs_paa_t *addr);
 
 smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message);
-smf_sess_t *smf_sess_add_by_supi_psi(char *supi, uint8_t psi);
+smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi);
 void smf_sess_set_ue_ip(smf_sess_t *sess);
 
-int smf_sess_remove(smf_sess_t *sess);
-void smf_sess_remove_all(void);
+void smf_sess_remove(smf_sess_t *sess);
+void smf_sess_remove_all(smf_ue_t *smf_ue);
+
 smf_sess_t *smf_sess_find(uint32_t index);
 smf_sess_t *smf_sess_find_by_teid(uint32_t teid);
 smf_sess_t *smf_sess_find_by_seid(uint64_t seid);
-smf_sess_t *smf_sess_find_by_imsi_apn(uint8_t *imsi, int imsi_len, char *apn);
-smf_sess_t *smf_sess_find_by_supi_psi(char *supi, uint8_t psi);
+smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn);
+smf_sess_t *smf_sess_find_by_psi(smf_ue_t *smf_ue, uint8_t psi);
 smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref);
 smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr);
 smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6);

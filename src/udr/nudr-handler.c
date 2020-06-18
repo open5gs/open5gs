@@ -254,7 +254,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
-    ogs_dbi_subscription_data_t subscription_data;
+    ogs_subscription_data_t subscription_data;
 
     char *supi = NULL;
 
@@ -470,20 +470,14 @@ bool udr_nudr_dr_handle_subscription_provisioned(
             staticIpAddress = OpenAPI_list_create();
             ogs_assert(staticIpAddress);
 
-            if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4 ||
-                pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6 ||
-                pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+            if (pdn->ue_ip.ipv4 || pdn->ue_ip.ipv6) {
                 ipAddress = ogs_calloc(1, sizeof(*ipAddress));
                 ogs_assert(ipAddress);
 
-                if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4 ||
-                    pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+                if (pdn->ue_ip.ipv4)
                     ipAddress->ipv4_addr = ogs_ipv4_to_string(pdn->ue_ip.addr);
-                }
-                if (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6 ||
-                    pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+                if (pdn->ue_ip.ipv6)
                     ipAddress->ipv6_addr = ogs_ipv6_to_string(pdn->ue_ip.addr6);
-                }
 
                 if (ipAddress->ipv4_addr || ipAddress->ipv6_addr)
                     OpenAPI_list_add(staticIpAddress, ipAddress);

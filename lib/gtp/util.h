@@ -17,43 +17,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "hss-context.h"
-#include "hss-fd-path.h"
+#if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
+#error "This header cannot be included directly."
+#endif
 
-static int initialized = 0;
+#ifndef OGS_GTP_UTIL_H
+#define OGS_GTP_UTIL_H
 
-int hss_initialize(void)
-{
-    int rv;
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    hss_context_init();
+uint16_t ogs_in_cksum(uint16_t *addr, int len);
 
-    rv = hss_context_parse_config();
-    if (rv != OGS_OK) return rv;
-
-    rv = ogs_log_config_domain(
-            ogs_config()->logger.domain, ogs_config()->logger.level);
-    if (rv != OGS_OK) return rv;
-
-    rv = ogs_dbi_init(ogs_config()->db_uri);
-    if (rv != OGS_OK) return rv;
-
-    rv = hss_fd_init();
-    if (rv != OGS_OK) return OGS_ERROR;
-
-    initialized = 1;
-
-	return OGS_OK;
+#ifdef __cplusplus
 }
+#endif
 
-void hss_terminate(void)
-{
-    if (!initialized) return;
-
-    hss_fd_final();
-
-    ogs_dbi_final();
-    hss_context_final();
-	
-	return;
-}
+#endif /* OGS_GTP_UTIL_H */

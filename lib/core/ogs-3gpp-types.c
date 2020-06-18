@@ -407,8 +407,8 @@ int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list)
     if (ip->ipv4 && ip->ipv6) {
         addr->next = addr6;
 
-        addr->sin.sin_addr.s_addr = ip->both.addr;
-        memcpy(addr6->sin6.sin6_addr.s6_addr, ip->both.addr6, OGS_IPV6_LEN);
+        addr->sin.sin_addr.s_addr = ip->addr;
+        memcpy(addr6->sin6.sin6_addr.s6_addr, ip->addr6, OGS_IPV6_LEN);
 
         *list = addr;
     } else if (ip->ipv4) {
@@ -442,8 +442,8 @@ void ogs_sockaddr_to_ip(
         ip->ipv4 = 1;
         ip->ipv6 = 1;
         ip->len = OGS_IPV4V6_LEN;
-        ip->both.addr = addr->sin.sin_addr.s_addr;
-        memcpy(ip->both.addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
+        ip->addr = addr->sin.sin_addr.s_addr;
+        memcpy(ip->addr6, addr6->sin6.sin6_addr.s6_addr, OGS_IPV6_LEN);
     } else if (addr) {
         ip->ipv4 = 1;
         ip->len = OGS_IPV4_LEN;

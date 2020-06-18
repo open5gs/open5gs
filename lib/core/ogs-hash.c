@@ -97,6 +97,8 @@ void ogs_hash_destroy(ogs_hash_t *ht)
 
 ogs_hash_index_t *ogs_hash_next(ogs_hash_index_t *hi)
 {
+    ogs_assert(hi);
+
     hi->this = hi->next;
     while (!hi->this) {
         if (hi->index > hi->ht->max)
@@ -112,6 +114,8 @@ ogs_hash_index_t *ogs_hash_first(ogs_hash_t *ht)
 {
     ogs_hash_index_t *hi;
 
+    ogs_assert(ht);
+
     hi = &ht->iterator;
 
     hi->ht = ht;
@@ -124,6 +128,8 @@ ogs_hash_index_t *ogs_hash_first(ogs_hash_t *ht)
 void ogs_hash_this(ogs_hash_index_t *hi,
         const void **key, int *klen, void **val)
 {
+    ogs_assert(hi);
+
     if (key)  *key  = hi->this->key;
     if (klen) *klen = hi->this->klen;
     if (val)  *val  = (void *)hi->this->val;
@@ -276,6 +282,11 @@ static ogs_hash_entry_t **find_entry(ogs_hash_t *ht,
 void *ogs_hash_get(ogs_hash_t *ht, const void *key, int klen)
 {
     ogs_hash_entry_t *he;
+
+    ogs_assert(ht);
+    ogs_assert(key);
+    ogs_assert(klen);
+
     he = *find_entry(ht, key, klen, NULL);
     if (he)
         return (void *)he->val;
@@ -286,6 +297,11 @@ void *ogs_hash_get(ogs_hash_t *ht, const void *key, int klen)
 void ogs_hash_set(ogs_hash_t *ht, const void *key, int klen, const void *val)
 {
     ogs_hash_entry_t **hep;
+
+    ogs_assert(ht);
+    ogs_assert(key);
+    ogs_assert(klen);
+
     hep = find_entry(ht, key, klen, val);
     if (*hep) {
         if (!val) {
@@ -311,6 +327,11 @@ void *ogs_hash_get_or_set(ogs_hash_t *ht,
         const void *key, int klen, const void *val)
 {
     ogs_hash_entry_t **hep;
+
+    ogs_assert(ht);
+    ogs_assert(key);
+    ogs_assert(klen);
+
     hep = find_entry(ht, key, klen, val);
     if (*hep) {
         val = (*hep)->val;
@@ -326,12 +347,16 @@ void *ogs_hash_get_or_set(ogs_hash_t *ht,
 
 unsigned int ogs_hash_count(ogs_hash_t *ht)
 {
+    ogs_assert(ht);
     return ht->count;
 }
 
 void ogs_hash_clear(ogs_hash_t *ht)
 {
     ogs_hash_index_t *hi;
+
+    ogs_assert(ht);
+
     for (hi = ogs_hash_first(ht); hi; hi = ogs_hash_next(hi))
         ogs_hash_set(ht, hi->this->key, hi->this->klen, NULL);
 }

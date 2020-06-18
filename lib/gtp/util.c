@@ -17,43 +17,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "hss-context.h"
-#include "hss-fd-path.h"
+#include "ogs-gtp.h"
 
-static int initialized = 0;
-
-int hss_initialize(void)
+uint16_t ogs_in_cksum(uint16_t *addr, int len)
 {
-    int rv;
+    int nleft = len;
+    uint32_t sum = 0;
+    uint16_t *w = addr;
+    uint16_t answer = 0;
 
-    hss_context_init();
+    // Adding 16 bits sequentially in sum
+    while (nleft > 1) {
+        sum += *w;
+        nleft -= 2;
+        w++;
+    }
 
-    rv = hss_context_parse_config();
-    if (rv != OGS_OK) return rv;
+    // If an odd byte is left
+    if (nleft == 1) {
+        *(uint8_t *) (&answer) = *(uint8_t *) w;
+        sum += answer;
+    }
 
-    rv = ogs_log_config_domain(
-            ogs_config()->logger.domain, ogs_config()->logger.level);
-    if (rv != OGS_OK) return rv;
+    sum = (sum >> 16) + (sum & 0xffff);
+    sum += (sum >> 16);
+    answer = ~sum;
 
-    rv = ogs_dbi_init(ogs_config()->db_uri);
-    if (rv != OGS_OK) return rv;
-
-    rv = hss_fd_init();
-    if (rv != OGS_OK) return OGS_ERROR;
-
-    initialized = 1;
-
-	return OGS_OK;
-}
-
-void hss_terminate(void)
-{
-    if (!initialized) return;
-
-    hss_fd_final();
-
-    ogs_dbi_final();
-    hss_context_final();
-	
-	return;
+    return answer;
 }

@@ -203,7 +203,7 @@ out:
 }
 
 int ogs_dbi_subscription_data(char *supi,
-        ogs_dbi_subscription_data_t *subscription_data)
+        ogs_subscription_data_t *subscription_data)
 {
     int rv = OGS_OK;
     mongoc_cursor_t *cursor = NULL;
@@ -256,7 +256,7 @@ int ogs_dbi_subscription_data(char *supi,
         goto out;
     }
 
-    memset(subscription_data, 0, sizeof(ogs_dbi_subscription_data_t));
+    memset(subscription_data, 0, sizeof(ogs_subscription_data_t));
     while (bson_iter_next(&iter)) {
         const char *key = bson_iter_key(&iter);
         if (!strcmp(key, "access_restriction_data") &&
@@ -380,7 +380,7 @@ int ogs_dbi_subscription_data(char *supi,
                                 rv = ogs_ipsubnet(&ipsub, v, NULL);
                                 if (rv == OGS_OK) {
                                     pdn->pgw_ip.ipv4 = 1;
-                                    pdn->pgw_ip.both.addr = ipsub.sub[0];
+                                    pdn->pgw_ip.addr = ipsub.sub[0];
                                 }
                             } else if (!strcmp(child3_key, "addr6") &&
                                 BSON_ITER_HOLDS_UTF8(&child3_iter)) {
@@ -390,7 +390,7 @@ int ogs_dbi_subscription_data(char *supi,
                                 rv = ogs_ipsubnet(&ipsub, v, NULL);
                                 if (rv == OGS_OK) {
                                     pdn->pgw_ip.ipv6 = 1;
-                                    memcpy(pdn->pgw_ip.both.addr6,
+                                    memcpy(pdn->pgw_ip.addr6,
                                             ipsub.sub, sizeof(ipsub.sub));
                                 }
                             }
@@ -408,15 +408,7 @@ int ogs_dbi_subscription_data(char *supi,
                                     bson_iter_utf8(&child3_iter, &length);
                                 rv = ogs_ipsubnet(&ipsub, v, NULL);
                                 if (rv == OGS_OK) {
-                                    if (pdn->paa.pdn_type ==
-                                            OGS_GTP_PDN_TYPE_IPV6) {
-                                        pdn->paa.pdn_type =
-                                            OGS_GTP_PDN_TYPE_IPV4V6;
-                                    } else {
-                                        pdn->paa.pdn_type =
-                                            OGS_GTP_PDN_TYPE_IPV4;
-                                    }
-                                    pdn->paa.both.addr = ipsub.sub[0];
+                                    pdn->ue_ip.ipv4 = true;
                                     pdn->ue_ip.addr = ipsub.sub[0];
                                 }
                             } else if (!strcmp(child3_key, "addr6") &&
@@ -426,16 +418,7 @@ int ogs_dbi_subscription_data(char *supi,
                                     bson_iter_utf8(&child3_iter, &length);
                                 rv = ogs_ipsubnet(&ipsub, v, NULL);
                                 if (rv == OGS_OK) {
-                                    if (pdn->paa.pdn_type ==
-                                            OGS_GTP_PDN_TYPE_IPV4) {
-                                        pdn->paa.pdn_type =
-                                            OGS_GTP_PDN_TYPE_IPV4V6;
-                                    } else {
-                                        pdn->paa.pdn_type =
-                                            OGS_GTP_PDN_TYPE_IPV6;
-                                    }
-                                    memcpy(&(pdn->paa.both.addr6),
-                                            ipsub.sub, OGS_IPV6_LEN);
+                                    pdn->ue_ip.ipv6 = true;
                                     memcpy(pdn->ue_ip.addr6,
                                             ipsub.sub, OGS_IPV6_LEN);
                                 }

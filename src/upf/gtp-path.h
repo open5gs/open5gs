@@ -30,6 +30,8 @@ extern "C" {
 int upf_gtp_open(void);
 void upf_gtp_close(void);
 
+void upf_gtp_send_to_gnb(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf);
+
 #ifdef __cplusplus
 }
 #endif

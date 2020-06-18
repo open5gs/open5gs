@@ -25,6 +25,7 @@ libgtp_sources = files('''
     build.h
     path.h
     xact.h
+    util.h
 
     message.c
     types.c
@@ -33,6 +34,7 @@ libgtp_sources = files('''
     build.c
     path.c
     xact.c
+    util.c
 '''.split())
 
 libgtp_inc = include_directories('.')

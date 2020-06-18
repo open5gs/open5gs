@@ -216,12 +216,6 @@ const View = ({ visible, disableOnClickOutside, profile, onEdit, onDelete, onHid
                     {security.amf}
                     <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>AMF</span>
                   </div>
-                  {security.rand &&
-                    <div className="data">
-                      {security.rand}
-                      <span style={{color:oc.gray[5]}}><KeyboardControlIcon/>RAND</span>
-                    </div>
-                  }
                   {security.sqn &&
                     <div className="data">
                       {security.sqn}

@@ -133,11 +133,11 @@ int ogs_asn_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ogs_ip_t *ip)
     if (bit_string->size == OGS_IPV4V6_LEN) {
         ip->ipv4 = 1;
         ip->ipv6 = 1;
-        memcpy(&ip->both.addr, bit_string->buf, OGS_IPV4_LEN);
-        memcpy(&ip->both.addr6, bit_string->buf+OGS_IPV4_LEN, OGS_IPV6_LEN);
+        memcpy(&ip->addr, bit_string->buf, OGS_IPV4_LEN);
+        memcpy(&ip->addr6, bit_string->buf+OGS_IPV4_LEN, OGS_IPV6_LEN);
         ogs_debug("    IPv4[%s] IPv6[%s]",
-            OGS_INET_NTOP(&ip->both.addr, buf),
-            OGS_INET6_NTOP(&ip->both.addr6, buf2));
+            OGS_INET_NTOP(&ip->addr, buf),
+            OGS_INET6_NTOP(&ip->addr6, buf2));
     } else if (bit_string->size == OGS_IPV4_LEN) {
         ip->ipv4 = 1;
         memcpy(&ip->addr, bit_string->buf, OGS_IPV4_LEN);
@@ -163,11 +163,11 @@ int ogs_asn_ip_to_BIT_STRING(ogs_ip_t *ip, BIT_STRING_t *bit_string)
     if (ip->ipv4 && ip->ipv6) {
         bit_string->size = OGS_IPV4V6_LEN;
         bit_string->buf = CALLOC(bit_string->size, sizeof(uint8_t));
-        memcpy(bit_string->buf, &ip->both.addr, OGS_IPV4_LEN);
-        memcpy(bit_string->buf+OGS_IPV4_LEN, &ip->both.addr6, OGS_IPV6_LEN);
+        memcpy(bit_string->buf, &ip->addr, OGS_IPV4_LEN);
+        memcpy(bit_string->buf+OGS_IPV4_LEN, &ip->addr6, OGS_IPV6_LEN);
         ogs_debug("    IPv4[%s] IPv6[%s]",
-            OGS_INET_NTOP(&ip->both.addr, buf),
-            OGS_INET6_NTOP(&ip->both.addr6, buf2));
+            OGS_INET_NTOP(&ip->addr, buf),
+            OGS_INET6_NTOP(&ip->addr6, buf2));
     } else if (ip->ipv4) {
         bit_string->size = OGS_IPV4_LEN;
         bit_string->buf = CALLOC(bit_string->size, sizeof(uint8_t));

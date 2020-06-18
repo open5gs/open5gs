@@ -48,8 +48,8 @@ extern "C" {
     OGS_BCD_TO_BUFFER_LEN(OGS_MAX_IMEISV_BCD_LEN)
 
 #define OGS_MAX_NUM_OF_HOSTNAME         16
-#define OGS_MAX_APN_LEN                 100
 #define OGS_MAX_DNN_LEN                 100
+#define OGS_MAX_APN_LEN                 OGS_MAX_DNN_LEN
 #define OGS_MAX_PCO_LEN                 251
 #define OGS_MAX_FQDN_LEN                256
 
@@ -213,14 +213,8 @@ ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex);
 #define OGS_IPV6_LEN                16
 #define OGS_IPV4V6_LEN              20
 typedef struct ogs_ip_s {
-    union {
-        uint32_t addr;
-        uint8_t addr6[OGS_IPV6_LEN];
-        struct {
-            uint32_t addr;
-            uint8_t addr6[OGS_IPV6_LEN];
-        } both;
-    };
+    uint32_t addr;
+    uint8_t addr6[OGS_IPV6_LEN];
     uint32_t      len;
 ED3(uint8_t       ipv4:1;,
     uint8_t       ipv6:1;,
@@ -405,7 +399,10 @@ typedef struct ogs_pcc_rule_s {
  * PDN Structure                 */
 typedef struct ogs_pdn_s {
     uint32_t context_identifier;
-    char apn[OGS_MAX_APN_LEN+1];
+    union {
+        char apn[OGS_MAX_APN_LEN+1];
+        char dnn[OGS_MAX_DNN_LEN+1];
+    };
 #define OGS_DIAM_PDN_TYPE_IPV4                      0
 #define OGS_DIAM_PDN_TYPE_IPV6                      1
 #define OGS_DIAM_PDN_TYPE_IPV4V6                    2
@@ -426,10 +423,7 @@ typedef struct ogs_pdn_s {
     ogs_bitrate_t ambr; /* APN-AMBR */
 
     ogs_paa_t paa;
-    struct {
-        uint32_t addr;
-        uint8_t addr6[OGS_IPV6_LEN];
-    } ue_ip;
+    ogs_ip_t ue_ip;
     ogs_ip_t pgw_ip;
 } ogs_pdn_t;
 
@@ -485,6 +479,33 @@ ED3(uint8_t ext:1;,
 
 int ogs_pco_parse(ogs_pco_t *pco, unsigned char *data, int data_len);
 int ogs_pco_build(unsigned char *data, int data_len, ogs_pco_t *pco);
+
+typedef struct ogs_subscription_data_s {
+#define OGS_ACCESS_RESTRICTION_UTRAN_NOT_ALLOWED                (1)
+#define OGS_ACCESS_RESTRICTION_GERAN_NOT_ALLOWED                (1<<1)
+#define OGS_ACCESS_RESTRICTION_GAN_NOT_ALLOWED                  (1<<2)
+#define OGS_ACCESS_RESTRICTION_I_HSPA_EVOLUTION_NOT_ALLOWED     (1<<3)
+#define OGS_ACCESS_RESTRICTION_WB_E_UTRAN_NOT_ALLOWED           (1<<4)
+#define OGS_ACCESS_RESTRICTION_HO_TO_NON_3GPP_ACCESS_NOT_ALLOWED (1<<5)
+#define OGS_ACCESS_RESTRICTION_NB_IOT_NOT_ALLOWED               (1<<6)
+    uint32_t                access_restriction_data;
+#define OGS_SUBSCRIBER_STATUS_SERVICE_GRANTED                   0
+#define OGS_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING       1
+    uint32_t                subscriber_status;
+#define OGS_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT              0
+#define OGS_NETWORK_ACCESS_MODE_RESERVED                        1
+#define OGS_NETWORK_ACCESS_MODE_ONLY_PACKET                     2
+    uint32_t                network_access_mode;
+
+    ogs_bitrate_t           ambr;                           /* UE-AMBR */
+
+#define OGS_RAU_TAU_DEFAULT_TIME                (12*60)     /* 12 min */
+    uint32_t                subscribed_rau_tau_timer;       /* unit : seconds */
+
+    uint32_t                context_identifier;             /* default APN */
+    ogs_pdn_t               pdn[OGS_MAX_NUM_OF_SESS];
+    int                     num_of_pdn;
+} ogs_subscription_data_t;
 
 #ifdef __cplusplus
 }

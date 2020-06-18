@@ -34,6 +34,7 @@
 #include "gtp/build.h"
 #include "gtp/path.h"
 #include "gtp/xact.h"
+#include "gtp/util.h"
 
 #ifdef __cplusplus
 extern "C" {

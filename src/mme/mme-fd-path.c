@@ -604,7 +604,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     ogs_pkbuf_t *s6abuf = NULL;
     ogs_diam_s6a_message_t *s6a_message = NULL;
     ogs_diam_s6a_ula_message_t *ula_message = NULL;
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
+    ogs_subscription_data_t *subscription_data = NULL;
     uint16_t s6abuf_len = 0;
 
     ogs_debug("[MME] Update-Location-Answer");
@@ -752,7 +752,7 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
             subscription_data->subscribed_rau_tau_timer = hdr->avp_value->i32;
         } else {
             subscription_data->subscribed_rau_tau_timer =
-                OGS_DIAM_S6A_RAU_TAU_DEFAULT_TIME;
+                OGS_RAU_TAU_DEFAULT_TIME;
         }
 
         ret = fd_avp_search_avp(avp,
@@ -947,13 +947,13 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
                                 if (addr.ogs_sa_family == AF_INET)
                                 {
                                     pdn->pgw_ip.ipv4 = 1;
-                                    pdn->pgw_ip.both.addr = 
+                                    pdn->pgw_ip.addr =
                                         addr.sin.sin_addr.s_addr;
                                 }
                                 else if (addr.ogs_sa_family == AF_INET6)
                                 {
                                     pdn->pgw_ip.ipv6 = 1;
-                                    memcpy(pdn->pgw_ip.both.addr6,
+                                    memcpy(pdn->pgw_ip.addr6,
                                         addr.sin6.sin6_addr.s6_addr,
                                         OGS_IPV6_LEN);
                                 }

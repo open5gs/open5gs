@@ -136,8 +136,8 @@ int ogs_gtp_f_teid_to_ip(ogs_gtp_f_teid_t *f_teid, ogs_ip_t *ip)
     ip->ipv6 = f_teid->ipv6;
 
     if (ip->ipv4 && ip->ipv6) {
-        ip->both.addr = f_teid->both.addr;
-        memcpy(ip->both.addr6, f_teid->both.addr6, OGS_IPV6_LEN);
+        ip->addr = f_teid->both.addr;
+        memcpy(ip->addr6, f_teid->both.addr6, OGS_IPV6_LEN);
         ip->len = OGS_IPV4V6_LEN;
     } else if (ip->ipv4) {
         ip->addr = f_teid->addr;
@@ -160,8 +160,8 @@ int ogs_gtp_ip_to_f_teid(ogs_ip_t *ip, ogs_gtp_f_teid_t *f_teid, int *len)
     f_teid->ipv6 = ip->ipv6;
 
     if (f_teid->ipv4 && f_teid->ipv6) {
-        f_teid->both.addr = ip->both.addr;
-        memcpy(f_teid->both.addr6, ip->both.addr6, OGS_IPV6_LEN);
+        f_teid->both.addr = ip->addr;
+        memcpy(f_teid->both.addr6, ip->addr6, OGS_IPV6_LEN);
         *len = OGS_GTP_F_TEID_IPV4V6_LEN;
     } else if (f_teid->ipv4) {
         f_teid->addr = ip->addr;

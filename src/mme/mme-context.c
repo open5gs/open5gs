@@ -3032,7 +3032,7 @@ int mme_bearer_set_inactive(mme_ue_t *mme_ue)
 
 void mme_pdn_remove_all(mme_ue_t *mme_ue)
 {
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
+    ogs_subscription_data_t *subscription_data = NULL;
 
     ogs_assert(mme_ue);
     subscription_data = &mme_ue->subscription_data;
@@ -3043,7 +3043,7 @@ void mme_pdn_remove_all(mme_ue_t *mme_ue)
 
 ogs_pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn)
 {
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
+    ogs_subscription_data_t *subscription_data = NULL;
     ogs_pdn_t *pdn = NULL;
     int i = 0;
     
@@ -3064,7 +3064,7 @@ ogs_pdn_t *mme_pdn_find_by_apn(mme_ue_t *mme_ue, char *apn)
 
 ogs_pdn_t *mme_default_pdn(mme_ue_t *mme_ue)
 {
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
+    ogs_subscription_data_t *subscription_data = NULL;
     ogs_pdn_t *pdn = NULL;
     int i = 0;
     

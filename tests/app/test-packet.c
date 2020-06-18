@@ -76,12 +76,8 @@ int testenb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
 
         if (bearer->sgw_s1u_ip.ipv6) {
             sgw.ogs_sa_family = AF_INET6;
-            if (bearer->sgw_s1u_ip.ipv4)
-                memcpy(sgw.sin6.sin6_addr.s6_addr,
-                        bearer->sgw_s1u_ip.both.addr6, OGS_IPV6_LEN);
-            else
-                memcpy(sgw.sin6.sin6_addr.s6_addr,
-                        bearer->sgw_s1u_ip.addr6, OGS_IPV6_LEN);
+            memcpy(sgw.sin6.sin6_addr.s6_addr,
+                    bearer->sgw_s1u_ip.addr6, OGS_IPV6_LEN);
             rv = ogs_socknode_fill_scope_id_in_local(&sgw);
             ogs_assert(rv == OGS_OK);
         } else {
@@ -3394,8 +3390,6 @@ int tests1ap_build_uplink_nas_transport(ogs_pkbuf_t **pkbuf, int i)
     return OGS_OK;
 }
 
-uint16_t in_cksum(uint16_t *addr, int len); /* from pgw_gtp_path.c */
-
 int testgtpu_build_ping(ogs_pkbuf_t **sendbuf,
         const uint32_t teid, const char *src_ip, const char *dst_ip)
 {
@@ -3440,12 +3434,12 @@ int testgtpu_build_ping(ogs_pkbuf_t **sendbuf,
         ip_h->ip_len = gtp_h->length;
         ip_h->ip_src.s_addr = src_ipsub.sub[0];
         ip_h->ip_dst.s_addr = dst_ipsub.sub[0];
-        ip_h->ip_sum = in_cksum((uint16_t *)ip_h, sizeof *ip_h);
+        ip_h->ip_sum = ogs_in_cksum((uint16_t *)ip_h, sizeof *ip_h);
         
         icmp_h->icmp_type = 8;
         icmp_h->icmp_seq = rand();
         icmp_h->icmp_id = rand();
-        icmp_h->icmp_cksum = in_cksum((uint16_t *)icmp_h, ICMP_MINLEN);
+        icmp_h->icmp_cksum = ogs_in_cksum((uint16_t *)icmp_h, ICMP_MINLEN);
     } else if (dst_ipsub.family == AF_INET6) {
         struct ip6_hdr *ip6_h = NULL;
         struct icmp6_hdr *icmp6_h = NULL;
@@ -3472,7 +3466,7 @@ int testgtpu_build_ping(ogs_pkbuf_t **sendbuf,
         icmp6_h->icmp6_seq = rand();
         icmp6_h->icmp6_id = rand();
 
-        icmp6_h->icmp6_cksum = in_cksum(
+        icmp6_h->icmp6_cksum = ogs_in_cksum(
                 (uint16_t *)ip6_h, sizeof *ip6_h + sizeof *icmp6_h);
 
         ip6_h->ip6_flow = htonl(0x60000001);

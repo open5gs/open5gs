@@ -146,11 +146,13 @@ const schema = {
             "properties": {
               "downlink": {
                 "type": "number",
-                "title": "APN-AMBR Downlink (Kbps)",
+                "title": "APN-AMBR Downlink (Kbps)*",
+                "required": true
               },
               "uplink": {
                 "type": "number",
-                "title": "APN-AMBR Uplink (Kbps)",
+                "title": "APN-AMBR Uplink (Kbps)*",
+                "required": true
               },
             }
           },

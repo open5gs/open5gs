@@ -66,7 +66,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
 #define MAC_S_LEN 8
     uint8_t mac_s[MAC_S_LEN];
 
-    hss_db_auth_info_t auth_info;
+    ogs_dbi_auth_info_t auth_info;
     uint8_t zero[OGS_RAND_LEN];
     int rv;
     uint32_t result_code = 0;
@@ -279,7 +279,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 
     int rv;
     uint32_t result_code = 0;
-    ogs_diam_s6a_subscription_data_t subscription_data;
+    ogs_subscription_data_t subscription_data;
     struct sockaddr_in sin;
     struct sockaddr_in6 sin6;
 
@@ -490,13 +490,12 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                 /* Set Served-Party-IP-Address */
                 if ((pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4 ||
                      pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4V6) &&
-                    (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4 ||
-                     pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6)) {
+                    pdn->ue_ip.ipv4) {
                     ret = fd_msg_avp_new(ogs_diam_s6a_served_party_ip_address,
                             0, &served_party_ip_address);
                     ogs_assert(ret == 0);
                     sin.sin_family = AF_INET;
-                    sin.sin_addr.s_addr = pdn->paa.both.addr;
+                    sin.sin_addr.s_addr = pdn->ue_ip.addr;
                     ret = fd_msg_avp_value_encode(
                             &sin, served_party_ip_address);
                     ogs_assert(ret == 0);
@@ -507,14 +506,13 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
 
                 if ((pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV6 ||
                      pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4V6) &&
-                    (pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV6 ||
-                     pdn->paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6)) {
+                    pdn->ue_ip.ipv6) {
                     ret = fd_msg_avp_new(ogs_diam_s6a_served_party_ip_address,
                             0, &served_party_ip_address);
                     ogs_assert(ret == 0);
                     sin6.sin6_family = AF_INET6;
                     memcpy(sin6.sin6_addr.s6_addr,
-                            pdn->paa.both.addr6, OGS_IPV6_LEN);
+                            pdn->ue_ip.addr6, OGS_IPV6_LEN);
                     ret = fd_msg_avp_value_encode(
                             &sin6, served_party_ip_address);
                     ogs_assert(ret == 0);
@@ -605,7 +603,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                                     &mip_home_agent_address);
                         ogs_assert(ret == 0);
                         sin.sin_family = AF_INET;
-                        sin.sin_addr.s_addr = pdn->pgw_ip.both.addr;
+                        sin.sin_addr.s_addr = pdn->pgw_ip.addr;
                         ret = fd_msg_avp_value_encode (
                                     &sin, mip_home_agent_address );
                         ogs_assert(ret == 0);
@@ -619,8 +617,8 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
                                     &mip_home_agent_address);
                         ogs_assert(ret == 0);
                         sin6.sin6_family = AF_INET6;
-                        memcpy(sin6.sin6_addr.s6_addr, pdn->pgw_ip.both.addr6,
-                                sizeof pdn->pgw_ip.both.addr6);
+                        memcpy(sin6.sin6_addr.s6_addr, pdn->pgw_ip.addr6,
+                                sizeof pdn->pgw_ip.addr6);
                         ret = fd_msg_avp_value_encode (
                                     &sin6, mip_home_agent_address );
                         ogs_assert(ret == 0);

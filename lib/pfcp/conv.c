@@ -159,8 +159,8 @@ int ogs_pfcp_f_seid_to_ip(ogs_pfcp_f_seid_t *f_seid, ogs_ip_t *ip)
     ip->ipv6 = f_seid->ipv6;
 
     if (ip->ipv4 && ip->ipv6) {
-        ip->both.addr = f_seid->both.addr;
-        memcpy(ip->both.addr6, f_seid->both.addr6, OGS_IPV6_LEN);
+        ip->addr = f_seid->both.addr;
+        memcpy(ip->addr6, f_seid->both.addr6, OGS_IPV6_LEN);
         ip->len = OGS_IPV4V6_LEN;
     } else if (ip->ipv4) {
         ip->addr = f_seid->addr;
@@ -325,9 +325,9 @@ int ogs_pfcp_ip_to_outer_header_creation(ogs_ip_t *ip,
 
     if (ip->ipv4 && ip->ipv6) {
         outer_header_creation->gtpu4 = 1;
-        outer_header_creation->both.addr = ip->both.addr;
+        outer_header_creation->both.addr = ip->addr;
         outer_header_creation->gtpu6 = 1;
-        memcpy(outer_header_creation->both.addr6, ip->both.addr6, OGS_IPV6_LEN);
+        memcpy(outer_header_creation->both.addr6, ip->addr6, OGS_IPV6_LEN);
         *len = OGS_IPV4V6_LEN + hdr_len;
     } else if (ip->ipv4) {
         outer_header_creation->gtpu4 = 1;
@@ -360,8 +360,8 @@ int ogs_pfcp_outer_header_creation_to_ip(
         outer_header_creation->udp6)) {
         ip->ipv4 = 1; ip->ipv6 = 1;
         ip->len = OGS_IPV4V6_LEN;
-        ip->both.addr = outer_header_creation->both.addr;
-        memcpy(ip->both.addr6, outer_header_creation->both.addr6, OGS_IPV6_LEN);
+        ip->addr = outer_header_creation->both.addr;
+        memcpy(ip->addr6, outer_header_creation->both.addr6, OGS_IPV6_LEN);
     } else if (outer_header_creation->gtpu4 ||
                 outer_header_creation->ip4 ||
                 outer_header_creation->udp4) {

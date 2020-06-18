@@ -109,33 +109,6 @@ void test_gtpu_close(ogs_socknode_t *node)
 #include <netinet/icmp6.h>
 #endif
 
-static uint16_t in_cksum(uint16_t *addr, int len)
-{
-    int nleft = len;
-    uint32_t sum = 0;
-    uint16_t *w = addr;
-    uint16_t answer = 0;
-
-    // Adding 16 bits sequentially in sum
-    while (nleft > 1) {
-        sum += *w;
-        nleft -= 2;
-        w++;
-    }
-
-    // If an odd byte is left
-    if (nleft == 1) {
-        *(uint8_t *) (&answer) = *(uint8_t *) w;
-        sum += answer;
-    }
-
-    sum = (sum >> 16) + (sum & 0xffff);
-    sum += (sum >> 16);
-    answer = ~sum;
-
-    return answer;
-}
-
 int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
         test_sess_t *sess, const char *dst_ip)
 {
@@ -176,17 +149,14 @@ int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
         ip_h->ip_ttl = 255;
         ip_h->ip_p = IPPROTO_ICMP;
         ip_h->ip_len = gtp_h->length;
-        if (sess->ue_ip.ipv4 && sess->ue_ip.ipv6)
-            ip_h->ip_src.s_addr = sess->ue_ip.both.addr;
-        else
-            ip_h->ip_src.s_addr = sess->ue_ip.addr;
+        ip_h->ip_src.s_addr = sess->ue_ip.addr;
         ip_h->ip_dst.s_addr = dst_ipsub.sub[0];
-        ip_h->ip_sum = in_cksum((uint16_t *)ip_h, sizeof *ip_h);
+        ip_h->ip_sum = ogs_in_cksum((uint16_t *)ip_h, sizeof *ip_h);
 
         icmp_h->icmp_type = 8;
         icmp_h->icmp_seq = rand();
         icmp_h->icmp_id = rand();
-        icmp_h->icmp_cksum = in_cksum((uint16_t *)icmp_h, ICMP_MINLEN);
+        icmp_h->icmp_cksum = ogs_in_cksum((uint16_t *)icmp_h, ICMP_MINLEN);
     } else if (dst_ipsub.family == AF_INET6) {
 #if 0
         struct ip6_hdr *ip6_h = NULL;
@@ -214,7 +184,7 @@ int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
         icmp6_h->icmp6_seq = rand();
         icmp6_h->icmp6_id = rand();
 
-        icmp6_h->icmp6_cksum = in_cksum(
+        icmp6_h->icmp6_cksum = ogs_in_cksum(
                 (uint16_t *)ip6_h, sizeof *ip6_h + sizeof *icmp6_h);
 
         ip6_h->ip6_flow = htonl(0x60000001);

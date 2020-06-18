@@ -28,6 +28,10 @@ const formData = {
     {
       "apn": "internet",
       "type": 2,
+      "ambr": {
+        "downlink": 1024000,
+        "uplink": 1024000
+      },
       "qos": {
         "qci": 9,
       // Ch 7.3.40 Allocation-Retenion-Proirty in TS 29.272 V15.9.0

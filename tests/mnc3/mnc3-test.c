@@ -73,6 +73,9 @@ static void test1_func(abts_case *tc, void *data)
               "\"uplink\" : { \"$numberLong\" : \"1000000\" }, "
               "\"downlink\" : { \"$numberLong\" : \"1000000\" } "
             "},"
+#if 0
+            "\"ue\" : { \"addr\" : \"10.45.0.2\", \"addr6\" : \"cafe::2\" },"
+#endif
             "\"qos\" : { "
               "\"qci\" : 9, "
               "\"arp\" : { "

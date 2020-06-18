@@ -49,6 +49,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     ogs_pkbuf_t *recvbuf = NULL;
     smf_sess_t *sess = NULL;
+    smf_ue_t *smf_ue = NULL;
 
     ogs_gtp_node_t *gnode = NULL;
     ogs_gtp_xact_t *gtp_xact = NULL;
@@ -361,6 +362,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 END
 
                 if (sess) {
+                    smf_ue = sess->smf_ue;
+                    ogs_assert(smf_ue);
                     ogs_assert(OGS_FSM_STATE(&sess->sm));
 
                     OGS_SETUP_SBI_SESSION(&sess->sbi, session);
@@ -369,8 +372,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     e->sbi.message = &sbi_message;
                     ogs_fsm_dispatch(&sess->sm, e);
                     if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
-                        ogs_error("[%s] State machine exception", sess->supi);
-                        smf_sess_remove(sess);
+                        ogs_error("[%s] State machine exception", smf_ue->supi);
+                        SMF_SESS_CLEAR(sess);
                     }
                 }
                 break;
@@ -516,14 +519,16 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
             sess = e->sbi.data;
             ogs_assert(sess);
+            smf_ue = sess->smf_ue;
+            ogs_assert(smf_ue);
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
             e->sess = sess;
             e->sbi.message = &sbi_message;;
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
-                ogs_error("[%s] State machine exception", sess->supi);
-                smf_sess_remove(sess);
+                ogs_error("[%s] State machine exception", smf_ue->supi);
+                SMF_SESS_CLEAR(sess);
             }
             break;
 
@@ -603,7 +608,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_fsm_dispatch(&sess->sm, e);
         if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
             ogs_error("State machine exception");
-            smf_sess_remove(sess);
+            SMF_SESS_CLEAR(sess);
         }
 
         ogs_pkbuf_free(pkbuf);
@@ -622,7 +627,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_fsm_dispatch(&sess->sm, e);
         if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
             ogs_error("State machine exception");
-            smf_sess_remove(sess);
+            SMF_SESS_CLEAR(sess);
         }
 
         ogs_pkbuf_free(pkbuf);

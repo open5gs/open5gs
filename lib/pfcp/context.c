@@ -899,11 +899,15 @@ ogs_pfcp_far_t *ogs_pfcp_far_find_or_add(
 
 void ogs_pfcp_far_remove(ogs_pfcp_far_t *far)
 {
+    int i;
     ogs_pfcp_sess_t *sess = NULL;
 
     ogs_assert(far);
     sess = far->sess;
     ogs_assert(sess);
+
+    for (i = 0; i < far->num_of_buffered_packet; i++)
+        ogs_pkbuf_free(far->buffered_packet[i]);
 
     ogs_list_remove(&sess->far_list, far);
     ogs_pool_free(&ogs_pfcp_far_pool, far);

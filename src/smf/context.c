@@ -25,6 +25,7 @@ static ogs_diam_config_t g_diam_conf;
 int __smf_log_domain;
 int __gsm_log_domain;
 
+static OGS_POOL(smf_ue_pool, smf_ue_t);
 static OGS_POOL(smf_sess_pool, smf_sess_t);
 static OGS_POOL(smf_bearer_pool, smf_bearer_t);
 
@@ -52,20 +53,21 @@ void smf_context_init(void)
 
     ogs_gtp_node_init(512);
 
-    ogs_list_init(&self.sess_list);
+    ogs_list_init(&self.smf_ue_list);
 
     ogs_list_init(&self.gtpc_list);
     ogs_list_init(&self.gtpc_list6);
 
     ogs_list_init(&self.sgw_s5c_list);
 
+    ogs_pool_init(&smf_ue_pool, ogs_config()->pool.ue);
     ogs_pool_init(&smf_sess_pool, ogs_config()->pool.sess);
     ogs_pool_init(&smf_bearer_pool, ogs_config()->pool.bearer);
 
     ogs_pool_init(&smf_pf_pool, ogs_config()->pool.pf);
 
-    self.imsi_apn_hash = ogs_hash_make();
-    self.supi_psi_hash = ogs_hash_make();
+    self.supi_hash = ogs_hash_make();
+    self.imsi_hash = ogs_hash_make();
     self.ipv4_hash = ogs_hash_make();
     self.ipv6_hash = ogs_hash_make();
 
@@ -76,17 +78,18 @@ void smf_context_final(void)
 {
     ogs_assert(context_initialized == 1);
 
-    smf_sess_remove_all();
+    smf_ue_remove_all();
 
-    ogs_assert(self.imsi_apn_hash);
-    ogs_hash_destroy(self.imsi_apn_hash);
-    ogs_assert(self.supi_psi_hash);
-    ogs_hash_destroy(self.supi_psi_hash);
+    ogs_assert(self.supi_hash);
+    ogs_hash_destroy(self.supi_hash);
+    ogs_assert(self.imsi_hash);
+    ogs_hash_destroy(self.imsi_hash);
     ogs_assert(self.ipv4_hash);
     ogs_hash_destroy(self.ipv4_hash);
     ogs_assert(self.ipv6_hash);
     ogs_hash_destroy(self.ipv6_hash);
 
+    ogs_pool_final(&smf_ue_pool);
     ogs_pool_final(&smf_bearer_pool);
     ogs_pool_final(&smf_sess_pool);
 
@@ -510,26 +513,92 @@ int smf_context_parse_config(void)
     return OGS_OK;
 }
 
-static void *imsi_apn_keygen(uint8_t *out, int *out_len,
-        uint8_t *imsi, int imsi_len, char *apn)
+smf_ue_t *smf_ue_add_by_supi(char *supi)
 {
-    memcpy(out, imsi, imsi_len);
-    ogs_cpystrn((char*)(out+imsi_len), apn, OGS_MAX_APN_LEN+1);
-    *out_len = imsi_len+strlen((char*)(out+imsi_len));
+    smf_ue_t *smf_ue = NULL;
 
-    return out;
+    ogs_assert(supi);
+
+    ogs_pool_alloc(&smf_ue_pool, &smf_ue);
+    ogs_assert(smf_ue);
+    memset(smf_ue, 0, sizeof *smf_ue);
+
+    ogs_list_init(&smf_ue->sess_list);
+
+    smf_ue->supi = ogs_strdup(supi);
+    ogs_assert(smf_ue->supi);
+    ogs_hash_set(self.supi_hash, smf_ue->supi, strlen(smf_ue->supi), smf_ue);
+
+    ogs_list_add(&self.smf_ue_list, smf_ue);
+
+    return smf_ue;
 }
 
-static char *supi_psi_keygen(char *supi, uint8_t psi)
+smf_ue_t *smf_ue_add_by_imsi(uint8_t *imsi, int imsi_len)
+{
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_assert(imsi);
+    ogs_assert(imsi_len);
+
+    ogs_pool_alloc(&smf_ue_pool, &smf_ue);
+    ogs_assert(smf_ue);
+    memset(smf_ue, 0, sizeof *smf_ue);
+
+    ogs_list_init(&smf_ue->sess_list);
+
+    smf_ue->imsi_len = imsi_len;
+    memcpy(smf_ue->imsi, imsi, smf_ue->imsi_len);
+    ogs_buffer_to_bcd(smf_ue->imsi, smf_ue->imsi_len, smf_ue->imsi_bcd);
+    ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, smf_ue);
+
+    ogs_list_add(&self.smf_ue_list, smf_ue);
+
+    return smf_ue;
+}
+
+void smf_ue_remove(smf_ue_t *smf_ue)
+{
+    ogs_assert(smf_ue);
+
+    ogs_list_remove(&self.smf_ue_list, smf_ue);
+
+    if (smf_ue->supi) {
+        ogs_hash_set(self.supi_hash, smf_ue->supi, strlen(smf_ue->supi), NULL);
+        ogs_free(smf_ue->supi);
+    }
+
+    if (smf_ue->imsi && smf_ue->imsi_len) {
+        ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, NULL);
+    }
+
+    smf_sess_remove_all(smf_ue);
+
+    ogs_pool_free(&smf_ue_pool, smf_ue);
+}
+
+void smf_ue_remove_all(void)
+{
+    smf_ue_t *smf_ue = NULL, *next = NULL;;
+
+    ogs_list_for_each_safe(&self.smf_ue_list, next, smf_ue)
+        smf_ue_remove(smf_ue);
+}
+
+smf_ue_t *smf_ue_find_by_supi(char *supi)
 {
     ogs_assert(supi);
-    ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
-
-    return ogs_mstrcatf(supi, "%03d", psi);
+    return (smf_ue_t *)ogs_hash_get(self.supi_hash, supi, strlen(supi));
 }
 
-smf_sess_t *smf_sess_add_by_imsi_apn(
-        uint8_t *imsi, int imsi_len, char *apn, 
+smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
+{
+    ogs_assert(imsi);
+    ogs_assert(imsi_len);
+    return (smf_ue_t *)ogs_hash_get(self.imsi_hash, imsi, imsi_len);
+}
+
+smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
         uint8_t pdn_type, uint8_t ebi, ogs_paa_t *paa)
 {
     smf_event_t e;
@@ -541,7 +610,7 @@ smf_sess_t *smf_sess_add_by_imsi_apn(
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_subnet_t *subnet6 = NULL;
 
-    ogs_assert(imsi);
+    ogs_assert(smf_ue);
     ogs_assert(apn);
     ogs_assert(paa);
 
@@ -559,11 +628,6 @@ smf_sess_t *smf_sess_add_by_imsi_apn(
     /* Set TEID & SEID */
     sess->smf_n4_teid = sess->index;
     sess->smf_n4_seid = sess->index;
-
-    /* Set IMSI */
-    sess->imsi_len = imsi_len;
-    memcpy(sess->imsi, imsi, sess->imsi_len);
-    ogs_buffer_to_bcd(sess->imsi, sess->imsi_len, sess->imsi_bcd);
 
     /* Set APN */
     ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
@@ -613,12 +677,6 @@ smf_sess_t *smf_sess_add_by_imsi_apn(
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
-    /* Generate Hash Key : IMSI + APN */
-    imsi_apn_keygen(sess->imsi_apn_keybuf, &sess->imsi_apn_keylen,
-            imsi, imsi_len, apn);
-    ogs_hash_set(self.imsi_apn_hash,
-            sess->imsi_apn_keybuf, sess->imsi_apn_keylen, sess);
-
     /* Select UPF with round-robin manner */
     if (ogs_pfcp_self()->node == NULL)
         ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
@@ -652,13 +710,16 @@ smf_sess_t *smf_sess_add_by_imsi_apn(
     ogs_fsm_create(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final);
     ogs_fsm_init(&sess->sm, &e);
 
-    ogs_list_add(&self.sess_list, sess);
+    sess->smf_ue = smf_ue;
+
+    ogs_list_add(&smf_ue->sess_list, sess);
 
     return sess;
 }
 
 smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
 {
+    smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
     ogs_paa_t *paa = NULL;
     char apn[OGS_MAX_APN_LEN];
@@ -718,14 +779,21 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
      * - the existing dedicated bearer context, if the Create Session Request
      *   collides with a dedicated bearer of an existing PDN connection context.
      */
-    sess = smf_sess_find_by_imsi_apn(req->imsi.data, req->imsi.len, apn);
+
+    smf_ue = smf_ue_find_by_imsi(req->imsi.data, req->imsi.len);
+    if (!smf_ue) {
+        smf_ue = smf_ue_add_by_imsi(req->imsi.data, req->imsi.len);
+        ogs_assert(smf_ue);
+    }
+
+    sess = smf_sess_find_by_apn(smf_ue, apn);
     if (sess) {
         ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
-                sess->imsi_bcd, sess->pdn.apn);
-        smf_sess_remove(sess);
+                smf_ue->imsi_bcd, sess->pdn.apn);
+        SMF_SESS_CLEAR(sess);
     }
-    sess = smf_sess_add_by_imsi_apn(req->imsi.data, req->imsi.len, apn,
-                    req->pdn_type.u8,
+
+    sess = smf_sess_add_by_apn(smf_ue, apn, req->pdn_type.u8,
                     req->bearer_contexts_to_be_created.eps_bearer_id.u8, paa);
     return sess;
 }
@@ -735,8 +803,11 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
     ogs_pfcp_subnet_t *subnet6 = NULL;
+    smf_ue_t *smf_ue = NULL;
 
     ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
 
     sess->pdn.paa.pdn_type = sess->pdn.pdn_type;
     ogs_assert(sess->pdn.pdn_type);
@@ -758,7 +829,7 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
         sess->pdn.paa.len = subnet6->prefixlen;
         memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
         ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, sess);
-    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+    } else if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
         sess->ipv4 = ogs_pfcp_ue_ip_alloc(
                 AF_INET, sess->pdn.apn, (uint8_t *)&sess->pdn.ue_ip.addr);
         ogs_assert(sess->ipv4);
@@ -778,12 +849,12 @@ void smf_sess_set_ue_ip(smf_sess_t *sess)
         ogs_assert_if_reached();
 
     ogs_info("UE SUPI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
-	    sess->supi, sess->pdn.apn,
+	    smf_ue->supi, sess->pdn.apn,
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 }
 
-smf_sess_t *smf_sess_add_by_supi_psi(char *supi, uint8_t psi)
+smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
 {
     smf_event_t e;
 
@@ -791,7 +862,7 @@ smf_sess_t *smf_sess_add_by_supi_psi(char *supi, uint8_t psi)
     smf_bearer_t *bearer = NULL;
     ogs_pfcp_pdr_t *pdr = NULL;
 
-    ogs_assert(supi);
+    ogs_assert(smf_ue);
     ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
 
     ogs_pool_alloc(&smf_sess_pool, &sess);
@@ -809,19 +880,12 @@ smf_sess_t *smf_sess_add_by_supi_psi(char *supi, uint8_t psi)
             (int)ogs_pool_index(&smf_sess_pool, sess));
     ogs_assert(sess->sm_context_ref);
 
+    /* Set PSI */
+    sess->psi = psi;
+
     /* Set TEID & SEID */
     sess->smf_n4_teid = sess->index;
     sess->smf_n4_seid = sess->index;
-
-    /* Set SUPI & PSI */
-    sess->supi = ogs_strdup(supi);
-    ogs_assert(sess->supi);
-    sess->psi = psi;
-
-    sess->supi_psi_keybuf = supi_psi_keygen(supi, psi);
-    ogs_assert(sess->supi_psi_keybuf);
-    ogs_hash_set(self.supi_psi_hash,
-            sess->supi_psi_keybuf, strlen(sess->supi_psi_keybuf), sess);
 
     /* Select UPF with round-robin manner */
     if (ogs_pfcp_self()->node == NULL)
@@ -854,13 +918,16 @@ smf_sess_t *smf_sess_add_by_supi_psi(char *supi, uint8_t psi)
     ogs_fsm_create(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final);
     ogs_fsm_init(&sess->sm, &e);
 
-    ogs_list_add(&self.sess_list, sess);
+    sess->smf_ue = smf_ue;
+
+    ogs_list_add(&smf_ue->sess_list, sess);
 
     return sess;
 }
 
 smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
 {
+    smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
 
     OpenAPI_sm_context_create_data_t *SmContextCreateData = NULL;
@@ -880,28 +947,35 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
         return NULL;
     }
 
-    sess = smf_sess_find_by_supi_psi(
-            SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
+    smf_ue = smf_ue_find_by_supi(SmContextCreateData->supi);
+    if (!smf_ue) {
+        smf_ue = smf_ue_add_by_supi(SmContextCreateData->supi);
+        ogs_assert(smf_ue);
+    }
+
+    sess = smf_sess_find_by_psi(smf_ue, SmContextCreateData->pdu_session_id);
     if (sess) {
         ogs_warn("OLD Session Release [SUPI:%s,PDU Session identity:%d]",
                 SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
-        smf_sess_remove(sess);
+        SMF_SESS_CLEAR(sess);
     }
 
-    sess = smf_sess_add_by_supi_psi(
-                SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
+    sess = smf_sess_add_by_psi(smf_ue, SmContextCreateData->pdu_session_id);
 
     return sess;
 }
 
-int smf_sess_remove(smf_sess_t *sess)
+void smf_sess_remove(smf_sess_t *sess)
 {
     int i;
+    smf_ue_t *smf_ue = NULL;
     smf_event_t e;
 
     ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
 
-    ogs_list_remove(&self.sess_list, sess);
+    ogs_list_remove(&smf_ue->sess_list, sess);
 
     e.sess = sess;
     ogs_fsm_fini(&sess->sm, &e);
@@ -915,9 +989,6 @@ int smf_sess_remove(smf_sess_t *sess)
         OGS_PCC_RULE_FREE(&sess->pcc_rule[i]);
     sess->num_of_pcc_rule = 0;
 
-    ogs_hash_set(self.imsi_apn_hash,
-            sess->imsi_apn_keybuf, sess->imsi_apn_keylen, NULL);
-
     if (sess->ipv4) {
         ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, NULL);
         ogs_pfcp_ue_ip_free(sess->ipv4);
@@ -930,10 +1001,6 @@ int smf_sess_remove(smf_sess_t *sess)
     if (sess->sm_context_ref)
         ogs_free(sess->sm_context_ref);
 
-    if (sess->supi_psi_keybuf)
-        ogs_free(sess->supi_psi_keybuf);
-    if (sess->supi)
-        ogs_free(sess->supi);
     if (sess->dnn)
         ogs_free(sess->dnn);
 
@@ -944,15 +1011,15 @@ int smf_sess_remove(smf_sess_t *sess)
     smf_bearer_remove_all(sess);
 
     ogs_pool_free(&smf_sess_pool, sess);
-
-    return OGS_OK;
 }
 
-void smf_sess_remove_all(void)
+void smf_sess_remove_all(smf_ue_t *smf_ue)
 {
     smf_sess_t *sess = NULL, *next = NULL;;
 
-    ogs_list_for_each_safe(&self.sess_list, next, sess)
+    ogs_assert(smf_ue);
+
+    ogs_list_for_each_safe(&smf_ue->sess_list, next, sess)
         smf_sess_remove(sess);
 }
 
@@ -972,34 +1039,34 @@ smf_sess_t *smf_sess_find_by_seid(uint64_t seid)
     return smf_sess_find(seid);
 }
 
-smf_sess_t *smf_sess_find_by_imsi_apn(
-    uint8_t *imsi, int imsi_len, char *apn)
-{
-    uint8_t keybuf[OGS_MAX_IMSI_LEN+OGS_MAX_APN_LEN+1];
-    int keylen = 0;
-
-    ogs_assert(self.imsi_apn_hash);
-
-    imsi_apn_keygen(keybuf, &keylen, imsi, imsi_len, apn);
-    return (smf_sess_t *)ogs_hash_get(self.imsi_apn_hash, keybuf, keylen);
-}
-
-smf_sess_t *smf_sess_find_by_supi_psi(char *supi, uint8_t psi)
+smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn)
 {
     smf_sess_t *sess = NULL;
-    char *keybuf = NULL;
 
-    ogs_assert(supi);
+    ogs_assert(smf_ue);
+    ogs_assert(apn);
+
+    ogs_list_for_each(&smf_ue->sess_list, sess) {
+        if (!strcmp(sess->pdn.apn, apn))
+            return sess;
+    }
+
+    return NULL;
+}
+
+smf_sess_t *smf_sess_find_by_psi(smf_ue_t *smf_ue, uint8_t psi)
+{
+    smf_sess_t *sess = NULL;
+
+    ogs_assert(smf_ue);
     ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
 
-    keybuf = supi_psi_keygen(supi, psi);
-    ogs_assert(keybuf);
+    ogs_list_for_each(&smf_ue->sess_list, sess) {
+        if (sess->psi == psi)
+            return sess;
+    }
 
-    sess = (smf_sess_t *)ogs_hash_get(self.supi_psi_hash,
-            keybuf, strlen(keybuf));
-    ogs_free(keybuf);
-
-    return sess;
+    return NULL;
 }
 
 smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref)

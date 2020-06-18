@@ -46,7 +46,7 @@ void mme_s6a_handle_aia(mme_ue_t *mme_ue,
 void mme_s6a_handle_ula(mme_ue_t *mme_ue,
         ogs_diam_s6a_ula_message_t *ula_message)
 {
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
+    ogs_subscription_data_t *subscription_data = NULL;
 
     ogs_assert(mme_ue);
     ogs_assert(ula_message);
@@ -54,5 +54,5 @@ void mme_s6a_handle_ula(mme_ue_t *mme_ue,
     ogs_assert(subscription_data);
 
     memcpy(&mme_ue->subscription_data,
-            subscription_data, sizeof(ogs_diam_s6a_subscription_data_t));
+            subscription_data, sizeof(ogs_subscription_data_t));
 }

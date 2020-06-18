@@ -136,6 +136,10 @@ typedef struct ogs_pfcp_far_s {
     ogs_pfcp_outer_header_creation_t outer_header_creation;
     int                     outer_header_creation_len;
 
+#define MAX_NUM_OF_PACKET_BUFFER 512
+    uint32_t                num_of_buffered_packet;
+    ogs_pkbuf_t*            buffered_packet[MAX_NUM_OF_PACKET_BUFFER];
+
     /* Related Context */
     ogs_pfcp_sess_t         *sess;
     void                    *gnode;

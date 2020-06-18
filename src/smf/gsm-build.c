@@ -34,6 +34,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     ogs_nas_qos_rules_t *authorized_qos_rules = NULL;
     ogs_nas_session_ambr_t *session_ambr = NULL;
     ogs_nas_pdu_address_t *pdu_address = NULL;
+    ogs_nas_5gsm_cause_t *gsm_cause = NULL;
 
     ogs_nas_qos_rule_t qos_rule[OGS_NAS_MAX_NUM_OF_QOS_RULE];
 
@@ -47,6 +48,8 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     ogs_assert(session_ambr);
     pdu_address = &pdu_session_establishment_accept->pdu_address;
     ogs_assert(pdu_address);
+    gsm_cause = &pdu_session_establishment_accept->gsm_cause;
+    ogs_assert(gsm_cause);
 
     memset(&message, 0, sizeof(message));
     message.gsm.h.extended_protocol_discriminator =
@@ -103,6 +106,19 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     } else {
         ogs_error("Unexpected PDN Type %u", pdu_address->pdn_type);
         return NULL;
+    }
+
+    /* GSM cause */
+    if (sess->ue_pdu_session_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+        if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
+            pdu_session_establishment_accept->presencemask |=
+                OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_5GSM_CAUSE_PRESENT;
+            *gsm_cause = OGS_5GSM_CAUSE_PDU_SESSION_TYPE_IPV4_ONLY_ALLOWED;
+        } else if (pdu_address->pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
+            pdu_session_establishment_accept->presencemask |=
+                OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_5GSM_CAUSE_PRESENT;
+            *gsm_cause = OGS_5GSM_CAUSE_PDU_SESSION_TYPE_IPV6_ONLY_ALLOWED;
+        }
     }
 
     pkbuf = ogs_nas_5gs_plain_encode(&message);

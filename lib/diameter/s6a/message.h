@@ -124,38 +124,11 @@ typedef struct ogs_diam_s6a_aia_message_s {
     ogs_diam_e_utran_vector_t e_utran_vector;
 } ogs_diam_s6a_aia_message_t;
 
-typedef struct ogs_diam_s6a_subscription_data_s {
-#define OGS_DIAM_S6A_ACCESS_RESTRICTION_UTRAN_NOT_ALLOWED               (1)
-#define OGS_DIAM_S6A_ACCESS_RESTRICTION_GERAN_NOT_ALLOWED               (1<<1)
-#define OGS_DIAM_S6A_ACCESS_RESTRICTION_GAN_NOT_ALLOWED                 (1<<2)
-#define OGS_DIAM_S6A_ACCESS_RESTRICTION_I_HSPA_EVOLUTION_NOT_ALLOWED    (1<<3)
-#define OGS_DIAM_S6A_ACCESS_RESTRICTION_WB_E_UTRAN_NOT_ALLOWED          (1<<4)
-#define OGS_DIAM_S6A_ACCESS_RESTRICTION_HO_TO_NON_3GPP_ACCESS_NOT_ALLOWED (1<<5)
-#define OGS_DIAM_S6A_ACCESS_RESTRICTION_NB_IOT_NOT_ALLOWED              (1<<6)
-    uint32_t                access_restriction_data;
-#define OGS_DIAM_S6A_SUBSCRIBER_STATUS_SERVICE_GRANTED                  0
-#define OGS_DIAM_S6A_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING      1 
-    uint32_t                subscriber_status;
-#define OGS_DIAM_S6A_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT             0
-#define OGS_DIAM_S6A_NETWORK_ACCESS_MODE_RESERVED                       1
-#define OGS_DIAM_S6A_NETWORK_ACCESS_MODE_ONLY_PACKET                    2
-    uint32_t                network_access_mode;
-
-    ogs_bitrate_t           ambr;                       /* UE-AMBR */
-
-#define OGS_DIAM_S6A_RAU_TAU_DEFAULT_TIME            (12*60)     /* 12 min */
-    uint32_t                subscribed_rau_tau_timer;   /* unit : seconds */
-
-    uint32_t                context_identifier;         /* default APN */
-    ogs_pdn_t               pdn[OGS_MAX_NUM_OF_SESS];
-    int                     num_of_pdn;
-} ogs_diam_s6a_subscription_data_t;
-
 typedef struct ogs_diam_s6a_ula_message_s {
 #define OGS_DIAM_S6A_ULA_FLAGS_SEPARATION_INDICATION        (0)
 #define OGS_DIAM_S6A_ULA_FLAGS_MME_REGISTERED_FOR_SMS       (1)
     uint32_t ula_flags;
-    ogs_diam_s6a_subscription_data_t subscription_data;
+    ogs_subscription_data_t subscription_data;
 } ogs_diam_s6a_ula_message_t;
 
 typedef struct ogs_diam_s6a_message_s {

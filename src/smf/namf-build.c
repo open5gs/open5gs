@@ -25,6 +25,7 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
         smf_sess_t *sess, void *data)
 {
     int i;
+    smf_ue_t *smf_ue = NULL;
 
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
@@ -40,14 +41,16 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
     OpenAPI_ref_to_binary_data_t ngapData;
 
     ogs_assert(sess);
-    ogs_assert(sess->supi);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+    ogs_assert(smf_ue->supi);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NAMF_COMM;
     message.h.api.version = (char *)OGS_SBI_API_V1;
     message.h.resource.component[0] = (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXTS;
-    message.h.resource.component[1] = sess->supi;
+    message.h.resource.component[1] = smf_ue->supi;
     message.h.resource.component[2] =
         (char *)OGS_SBI_RESOURCE_NAME_N1_N2_MESSAGES;
     message.N1N2MessageTransferReqData = &N1N2MessageTransferReqData;

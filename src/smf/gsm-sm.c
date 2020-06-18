@@ -39,6 +39,7 @@ void smf_gsm_state_final(ogs_fsm_t *s, smf_event_t *e)
 void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 {
     int rv;
+    smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -98,6 +99,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(sess);
         session = sess->sbi.session;
         ogs_assert(session);
+        smf_ue = sess->smf_ue;
+        ogs_assert(smf_ue);
 
         ogs_timer_stop(sess->sbi.client_wait.timer);
 
@@ -107,17 +110,17 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK) {
                     ogs_error("[%s] HTTP response error [%d]",
-                        sess->supi, sbi_message->res_status);
+                        smf_ue->supi, sbi_message->res_status);
                     ogs_sbi_server_send_error(
                         session, sbi_message->res_status,
-                        NULL, "HTTP response error", sess->supi);
+                        NULL, "HTTP response error", smf_ue->supi);
                     break;
                 }
 
                 if (smf_nudm_sdm_handle_get(sess, sbi_message) != true) {
                     ogs_sbi_server_send_error(session,
                             OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                            sbi_message, "HTTP response error", sess->supi);
+                            sbi_message, "HTTP response error", smf_ue->supi);
                     break;
                 }
 
@@ -142,7 +145,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 if (sbi_message->res_status != OGS_SBI_HTTP_STATUS_OK &&
                     sbi_message->res_status != OGS_SBI_HTTP_STATUS_ACCEPTED) {
                     ogs_error("[%s] HTTP response error [%d]",
-                        sess->supi, sbi_message->res_status);
+                        smf_ue->supi, sbi_message->res_status);
                     break;
                 }
 
@@ -166,6 +169,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(nas_message);
         sess = e->sess;
         ogs_assert(sess);
+        smf_ue = sess->smf_ue;
+        ogs_assert(smf_ue);
 
         switch (nas_message->gsm.h.message_type) {
         case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST:
@@ -173,7 +178,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     sess, &nas_message->gsm.pdu_session_establishment_request);
             if (rv != OGS_OK) {
                 ogs_error("[%s:%d] Cannot handle NAS message",
-                        sess->supi, sess->psi);
+                        smf_ue->supi, sess->psi);
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
                 break;
             }
@@ -188,6 +193,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_NGAP_MESSAGE:
         sess = e->sess;
         ogs_assert(sess);
+        smf_ue = sess->smf_ue;
+        ogs_assert(smf_ue);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
         ogs_assert(e->ngap.type);
@@ -198,7 +205,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     sess, pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("[%s:%d] Cannot handle NGAP message",
-                        sess->supi, sess->psi);
+                        smf_ue->supi, sess->psi);
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
             }
             break;
@@ -210,8 +217,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     default:
-        ogs_error("[%s:%d] Unknown event %s",
-                sess->supi, sess->psi, smf_event_get_name(e));
+        ogs_error("Unknown event [%s]", smf_event_get_name(e));
         break;
     }
 }

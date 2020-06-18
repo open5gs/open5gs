@@ -41,7 +41,6 @@
 
 #define PGW_GTP_HANDLED     1
 
-uint16_t in_cksum(uint16_t *addr, int len);
 static int pgw_gtp_handle_multicast(ogs_pkbuf_t *recvbuf);
 static int pgw_gtp_handle_slaac(pgw_sess_t *sess, ogs_pkbuf_t *recvbuf);
 static int pgw_gtp_send_to_bearer(pgw_bearer_t *bearer, ogs_pkbuf_t *sendbuf);
@@ -510,7 +509,7 @@ static int pgw_gtp_send_router_advertisement(
     p += OGS_IPV6_LEN;
     p += 2; memcpy(p, &plen, 2); p += 2;
     p += 3; *p = nxt; p += 1;
-    advert_h->nd_ra_cksum = in_cksum((uint16_t *)pkbuf->data, pkbuf->len);
+    advert_h->nd_ra_cksum = ogs_in_cksum((uint16_t *)pkbuf->data, pkbuf->len);
 
     ip6_h->ip6_flow = htobe32(0x60000001);
     ip6_h->ip6_plen = plen;
@@ -526,31 +525,4 @@ static int pgw_gtp_send_router_advertisement(
 
     ogs_pkbuf_free(pkbuf);
     return rv;
-}
-
-uint16_t in_cksum(uint16_t *addr, int len)
-{
-    int nleft = len;
-    uint32_t sum = 0;
-    uint16_t *w = addr;
-    uint16_t answer = 0;
-
-    // Adding 16 bits sequentially in sum
-    while (nleft > 1) {
-        sum += *w;
-        nleft -= 2;
-        w++;
-    }
-
-    // If an odd byte is left
-    if (nleft == 1) {
-        *(uint8_t *) (&answer) = *(uint8_t *) w;
-        sum += answer;
-    }
-
-    sum = (sum >> 16) + (sum & 0xffff);
-    sum += (sum >> 16);
-    answer = ~sum;
-
-    return answer;
 }

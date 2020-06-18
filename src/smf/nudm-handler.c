@@ -21,6 +21,7 @@
 
 bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
 {
+    smf_ue_t *smf_ue = NULL;
     ogs_sbi_server_t *server = NULL;
     ogs_sbi_session_t *session = NULL;
 
@@ -45,6 +46,8 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
     ogs_assert(sess);
     session = sess->sbi.session;
     ogs_assert(session);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
     server = ogs_sbi_session_get_server(session);
     ogs_assert(server);
 
@@ -53,14 +56,14 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
     SessionManagementSubscriptionData =
         recvmsg->SessionManagementSubscriptionData;
     if (!SessionManagementSubscriptionData) {
-        ogs_error("[%s] No SessionManagementSubscriptionData", sess->supi);
+        ogs_error("[%s] No SessionManagementSubscriptionData", smf_ue->supi);
         return false;
     }
 
     dnnConfigurationList =
         SessionManagementSubscriptionData->dnn_configurations;
     if (!dnnConfigurationList) {
-        ogs_error("[%s] No dnnConfigurations", sess->supi);
+        ogs_error("[%s] No dnnConfigurations", smf_ue->supi);
         return false;
     }
 
@@ -104,15 +107,10 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
                         }
                     }
                 }
-            } else {
-                sess->pdn.pdn_type =
-                    pduSessionTypeList->default_session_type;
             }
 
-            if (!sess->pdn.pdn_type) {
-                ogs_error("PDU Session Type is not allowed");
-                continue;
-            }
+            if (!sess->pdn.pdn_type)
+                sess->pdn.pdn_type = pduSessionTypeList->default_session_type;
 
             if (sess->ue_ssc_mode) {
                 OpenAPI_list_for_each(sscModeList->allowed_ssc_modes, node2) {
@@ -204,16 +202,16 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
             }
 
             /* Succeeded to get PDU Session */
-            ogs_cpystrn(sess->pdn.apn, dnnConfigurationMap->key,
+            ogs_cpystrn(sess->pdn.dnn, dnnConfigurationMap->key,
                 ogs_min(strlen(dnnConfigurationMap->key),
-                    OGS_MAX_APN_LEN)+1);
+                    OGS_MAX_DNN_LEN)+1);
 
             break;
         }
     }
 
-    if (!strlen(sess->pdn.apn)) {
-        ogs_error("[%s] No dnnConfiguration", sess->supi);
+    if (!strlen(sess->pdn.dnn)) {
+        ogs_error("[%s] No dnnConfiguration", smf_ue->supi);
         return false;
     }
 

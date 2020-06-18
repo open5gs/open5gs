@@ -30,32 +30,6 @@ extern "C" {
 
 #define OGS_DBI_SUPI_TYPE_IMSI  "imsi"
 
-typedef struct ogs_dbi_subscription_data_s {
-#define OGS_DBI_ACCESS_RESTRICTION_UTRAN_NOT_ALLOWED                (1)
-#define OGS_DBI_ACCESS_RESTRICTION_GERAN_NOT_ALLOWED                (1<<1)
-#define OGS_DBI_ACCESS_RESTRICTION_GAN_NOT_ALLOWED                  (1<<2)
-#define OGS_DBI_ACCESS_RESTRICTION_I_HSPA_EVOLUTION_NOT_ALLOWED     (1<<3)
-#define OGS_DBI_ACCESS_RESTRICTION_WB_E_UTRAN_NOT_ALLOWED           (1<<4)
-#define OGS_DBI_ACCESS_RESTRICTION_HO_TO_NON_3GPP_ACCESS_NOT_ALLOWED (1<<5)
-#define OGS_DBI_ACCESS_RESTRICTION_NB_IOT_NOT_ALLOWED               (1<<6)
-    uint32_t                access_restriction_data;
-#define OGS_DBI_SUBSCRIBER_STATUS_SERVICE_GRANTED                   0
-#define OGS_DBI_SUBSCRIBER_STATUS_OPERATOR_DETERMINED_BARRING       1 
-    uint32_t                subscriber_status;
-#define OGS_DBI_NETWORK_ACCESS_MODE_PACKET_AND_CIRCUIT              0
-#define OGS_DBI_NETWORK_ACCESS_MODE_RESERVED                        1
-#define OGS_DBI_NETWORK_ACCESS_MODE_ONLY_PACKET                     2
-    uint32_t                network_access_mode;
-
-    ogs_bitrate_t           ambr;                           /* UE-AMBR */
-
-#define OGS_DBI_RAU_TAU_DEFAULT_TIME            (12*60)     /* 12 min */
-    uint32_t                subscribed_rau_tau_timer;       /* unit : seconds */
-
-    ogs_pdn_t               pdn[OGS_MAX_NUM_OF_SESS];
-    int                     num_of_pdn;
-} ogs_dbi_subscription_data_t;
-
 typedef struct ogs_dbi_auth_info_s {
     uint8_t       k[OGS_KEY_LEN];
     uint8_t       use_opc;
@@ -71,7 +45,7 @@ int ogs_dbi_update_sqn(char *supi, uint64_t sqn);
 int ogs_dbi_increment_sqn(char *supi);
 
 int ogs_dbi_subscription_data(char *supi,
-        ogs_dbi_subscription_data_t *subscription_data);
+        ogs_subscription_data_t *subscription_data);
 
 #ifdef __cplusplus
 }

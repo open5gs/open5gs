@@ -21,17 +21,20 @@
 
 ogs_sbi_request_t *smf_nudm_sdm_build_get(smf_sess_t *sess, void *data)
 {
+    smf_ue_t *smf_ue = NULL;
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
     ogs_assert(sess);
-    ogs_assert(sess->supi);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+    ogs_assert(smf_ue->supi);
 
     memset(&message, 0, sizeof(message));
     message.h.method = (char *)OGS_SBI_HTTP_METHOD_GET;
     message.h.service.name = (char *)OGS_SBI_SERVICE_NAME_NUDM_SDM;
     message.h.api.version = (char *)OGS_SBI_API_V2;
-    message.h.resource.component[0] = sess->supi;
+    message.h.resource.component[0] = smf_ue->supi;
     message.h.resource.component[1] = data;
 
     message.param.s_nssai_presence = true;

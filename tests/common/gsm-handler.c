@@ -41,7 +41,7 @@ void testgsm_handle_pdu_session_establishment_accept(test_sess_t *sess,
             break;
         case OGS_PDU_SESSION_TYPE_IPV4V6:
             sess->ue_ip.ipv4 = 1;
-            sess->ue_ip.both.addr = pdu_address->both.addr;
+            sess->ue_ip.addr = pdu_address->both.addr;
             break;
         default:
             ogs_fatal("Invalid PDU Address Type [%d]", pdu_address->pdn_type);

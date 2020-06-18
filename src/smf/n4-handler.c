@@ -204,14 +204,14 @@ void smf_5gc_n4_handle_session_modification_response(
             ogs_error("Cause[%d] : No Accepted", rsp->cause.u8);
             smf_sbi_send_sm_context_update_error(session,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                    "[PFCP] No Accepted", sess->supi_psi_keybuf, NULL);
+                    "[PFCP] No Accepted", NULL, NULL);
             return;
         }
     } else {
         ogs_error("No Cause");
         smf_sbi_send_sm_context_update_error(session,
                 OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                "[PFCP] No Cause", sess->supi_psi_keybuf, NULL);
+                "[PFCP] No Cause", NULL, NULL);
         return;
     }
 
@@ -345,5 +345,5 @@ void smf_epc_n4_handle_session_deletion_response(
 
     smf_gtp_send_delete_session_response(sess, gtp_xact);
 
-    smf_sess_remove(sess);
+    SMF_SESS_CLEAR(sess);
 }

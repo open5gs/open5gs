@@ -383,7 +383,7 @@ struct mme_ue_s {
     uint8_t         selected_int_algorithm;
 
     /* HSS Info */
-    ogs_diam_s6a_subscription_data_t subscription_data;
+    ogs_subscription_data_t subscription_data;
 
     /* ESM Info */
 #define MIN_EPS_BEARER_ID           5
