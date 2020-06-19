@@ -275,7 +275,7 @@ smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 
 smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message);
 smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
-        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *addr);
+        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *addr,  ogs_gtp_create_session_request_t *message);
 
 smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message);
 smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi);

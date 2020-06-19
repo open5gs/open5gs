@@ -263,7 +263,7 @@ mme:
 #     addr: 127.0.2.2
 #     addr: 127.0.4.2
 #
-# o SGW selection by eNodeB TAC
+# o SGW selection by eNodeB TAC (either single TAC or multiple TACs)
 #
 #   selection_mode: tac
 #   gtpc:
@@ -272,6 +272,14 @@ mme:
 #     - addr: 127.0.2.2
 #       tac: [25000, 27000, 28000]
 #
+# o SGW selection by eNodeB ID (either single enb_id or multiple enb_ids, decimal or hex representation)
+#
+#   selection_mode: enb_id
+#   gtpc:
+#     - addr: 127.0.0.2
+#       enb_id: 463
+#     - addr: 127.0.2.2
+#       enb_id: [0x12345, 9413, 0x98765]
 #
 sgw:
     gtpc:
