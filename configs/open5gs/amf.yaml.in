@@ -62,6 +62,104 @@ logger:
 #    sbi:
 #      dev: eth0
 #
+#  <NGAP Server>>
+#
+#  o NGAP Server(all address avaiable)
+#    ngap:
+#
+#  o NGAP Server(0.0.0.0:38412)
+#    ngap:
+#      addr: 0.0.0.0
+#
+#  o NGAP Server(127.0.0.1:38412, [::1]:38412)
+#    ngap:
+#      - addr: 127.0.0.1
+#      - addr: ::1
+#
+#  o NGAP Server(different port)
+#    ngap:
+#      - addr: 127.0.0.1
+#        port: 38413
+#
+#  o NGAP Server(address avaiable in `eth0` interface)
+#    ngap:
+#      dev: eth0
+#
+#  <GUAMI>
+#
+#  o Multiple GUAMI
+#    guami:
+#      - plmn_id:
+#          mcc: 901
+#          mnc: 70
+#        amf_id:
+#          region: 2
+#          set: 1
+#          pointer: 4
+#      - plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        amf_id:
+#          region: 5
+#          set: 2
+#
+#  <TAI>
+#
+#  o Multiple TAI
+#    tai:
+#      - plmn_id:
+#          mcc: 001
+#          mnc: 01
+#        tac: [1, 2, 3]
+#    tai:
+#      - plmn_id:
+#          mcc: 002
+#          mnc: 02
+#        tac: 4
+#      - plmn_id:
+#          mcc: 003
+#          mnc: 03
+#        tac: 5
+#    tai:
+#      - plmn_id:
+#          mcc: 004
+#          mnc: 04
+#        tac: [6, 7]
+#      - plmn_id:
+#          mcc: 005
+#          mnc: 05
+#        tac: 8
+#      - plmn_id:
+#          mcc: 006
+#          mnc: 06
+#        tac: [9, 10]
+#
+#  <PLMN Support>
+#
+#  o Multiple PLMN Support
+#    plmn:
+#      - plmn_id:
+#          mcc: 901
+#          mnc: 70
+#        s_nssai:
+#          - sst: 1
+#          - sd: 010000
+#      - plmn_id:
+#          mcc: 901
+#          mnc: 70
+#        s_nssai:
+#          - sst: 1
+#
+#  <Network Name>
+#
+#    network_name:
+#        full: Open5GS
+#        short: Next
+#
+#  <AMF Name>
+#
+#    amf_name: amf1.open5gs.amf.5gc.mnc70.mcc901.3gppnetwork.org
+#
 amf:
     sbi:
       - addr: 127.0.0.2

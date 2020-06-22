@@ -263,7 +263,8 @@ nrf:
 #  <UPF_SELECTION_MODE>
 #
 # o Round-Robin
-#   (If `upf_selection_mode` is omitted in smf/pfcp, the default mode is Round-Robin)
+#   (If `upf_selection_mode` is omitted in smf/pfcp,
+#    the default mode is Round-Robin)
 #
 #  upf:
 #    pfcp:
@@ -288,7 +289,8 @@ nrf:
 #      - addr: 127.0.0.12
 #        apn: [internet, web]
 #
-# o SGW selection by eNodeB ID (either single enb_id or multiple enb_ids, decimal or hex representation)
+# o SGW selection by eNodeB ID
+#   (either single enb_id or multiple enb_ids, decimal or hex representation)
 #
 #  upf:
 #    pfcp:
