@@ -66,19 +66,8 @@ ogs_pkbuf_t *nas_5gs_security_encode(
         amf_ue->ul_count.i32 = 0;
     }
 
-    if (amf_ue->selected_enc_algorithm == 0) {
+    if (amf_ue->selected_enc_algorithm == 0)
         ciphered = 0;
-#if 0 /* Wireshark does not support it */
-        if (message->h.security_header_type ==
-                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED)
-            message->h.security_header_type =
-                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
-        else if (message->h.security_header_type ==
-                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHTERD_WITH_NEW_INTEGRITY_CONTEXT)
-            message->h.security_header_type =
-                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_NEW_SECURITY_CONTEXT;
-#endif
-    }
     if (amf_ue->selected_int_algorithm == 0)
         integrity_protected = 0;
 

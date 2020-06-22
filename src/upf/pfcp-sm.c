@@ -182,9 +182,6 @@ void upf_pfcp_state_associated(ogs_fsm_t *s, upf_event_t *e)
         xact = e->pfcp_xact;
         ogs_assert(xact);
 
-        xact = e->pfcp_xact;
-        ogs_assert(xact);
-
         if (message->h.seid_presence && message->h.seid != 0)
             sess = upf_sess_find_by_up_seid(message->h.seid);
 

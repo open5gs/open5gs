@@ -35,6 +35,7 @@ const struct testlist {
     {test_idle},
     {test_dereg},
     {test_identity},
+    {test_gmm_status},
     {test_ue_context},
     {NULL},
 };
