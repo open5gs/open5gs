@@ -1,7 +1,7 @@
 /*
  * notification_cause.h
  *
- * Possible values are - QOS_FULFILLED - QOS_NOT_FULFILLED - UP_SEC_FULFILLED - UP_SEC_NOT_FULFILLED
+ *
  */
 
 #ifndef _OpenAPI_notification_cause_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_notification_cause_s OpenAPI_notification_cause_t;
-typedef struct OpenAPI_notification_cause_s {
-} OpenAPI_notification_cause_t;
+typedef enum { OpenAPI_notification_cause_NULL = 0, OpenAPI_notification_cause_QOS_FULFILLED, OpenAPI_notification_cause_QOS_NOT_FULFILLED, OpenAPI_notification_cause_UP_SEC_FULFILLED, OpenAPI_notification_cause_UP_SEC_NOT_FULFILLED } OpenAPI_notification_cause_e;
 
-OpenAPI_notification_cause_t *OpenAPI_notification_cause_create(
-    );
-void OpenAPI_notification_cause_free(OpenAPI_notification_cause_t *notification_cause);
-OpenAPI_notification_cause_t *OpenAPI_notification_cause_parseFromJSON(cJSON *notification_causeJSON);
-cJSON *OpenAPI_notification_cause_convertToJSON(OpenAPI_notification_cause_t *notification_cause);
-OpenAPI_notification_cause_t *OpenAPI_notification_cause_copy(OpenAPI_notification_cause_t *dst, OpenAPI_notification_cause_t *src);
+char* OpenAPI_notification_cause_ToString(OpenAPI_notification_cause_e notification_cause);
+
+OpenAPI_notification_cause_e OpenAPI_notification_cause_FromString(char* notification_cause);
 
 #ifdef __cplusplus
 }

@@ -17,7 +17,7 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     char *pcf_id,
     char *pcf_group_id,
     char *pcf_set_id,
-    OpenAPI_dnn_selection_mode_t *sel_mode,
+    OpenAPI_dnn_selection_mode_e sel_mode,
     char *udm_group_id,
     char *routing_indicator,
     OpenAPI_ambr_t *session_ambr,
@@ -29,7 +29,7 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     char *ue_ipv6_prefix,
     OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info,
     OpenAPI_list_t *eps_bearer_info,
-    OpenAPI_max_integrity_protected_data_rate_t *max_integrity_protected_data_rate,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate,
     int always_on_granted,
     OpenAPI_up_security_t *up_security,
     char *h_smf_service_instance_id,
@@ -103,7 +103,6 @@ void OpenAPI_sm_context_free(OpenAPI_sm_context_t *sm_context)
     ogs_free(sm_context->pcf_id);
     ogs_free(sm_context->pcf_group_id);
     ogs_free(sm_context->pcf_set_id);
-    OpenAPI_dnn_selection_mode_free(sm_context->sel_mode);
     ogs_free(sm_context->udm_group_id);
     ogs_free(sm_context->routing_indicator);
     OpenAPI_ambr_free(sm_context->session_ambr);
@@ -120,7 +119,6 @@ void OpenAPI_sm_context_free(OpenAPI_sm_context_t *sm_context)
         OpenAPI_eps_bearer_info_free(node->data);
     }
     OpenAPI_list_free(sm_context->eps_bearer_info);
-    OpenAPI_max_integrity_protected_data_rate_free(sm_context->max_integrity_protected_data_rate);
     OpenAPI_up_security_free(sm_context->up_security);
     ogs_free(sm_context->h_smf_service_instance_id);
     ogs_free(sm_context->smf_service_instance_id);
@@ -247,13 +245,7 @@ cJSON *OpenAPI_sm_context_convertToJSON(OpenAPI_sm_context_t *sm_context)
     }
 
     if (sm_context->sel_mode) {
-        cJSON *sel_mode_local_JSON = OpenAPI_dnn_selection_mode_convertToJSON(sm_context->sel_mode);
-        if (sel_mode_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_convertToJSON() failed [sel_mode]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "selMode", sel_mode_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "selMode", OpenAPI_dnn_selection_mode_ToString(sm_context->sel_mode)) == NULL) {
             ogs_error("OpenAPI_sm_context_convertToJSON() failed [sel_mode]");
             goto end;
         }
@@ -379,13 +371,7 @@ cJSON *OpenAPI_sm_context_convertToJSON(OpenAPI_sm_context_t *sm_context)
     }
 
     if (sm_context->max_integrity_protected_data_rate) {
-        cJSON *max_integrity_protected_data_rate_local_JSON = OpenAPI_max_integrity_protected_data_rate_convertToJSON(sm_context->max_integrity_protected_data_rate);
-        if (max_integrity_protected_data_rate_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_convertToJSON() failed [max_integrity_protected_data_rate]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "maxIntegrityProtectedDataRate", max_integrity_protected_data_rate_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRate", OpenAPI_max_integrity_protected_data_rate_ToString(sm_context->max_integrity_protected_data_rate)) == NULL) {
             ogs_error("OpenAPI_sm_context_convertToJSON() failed [max_integrity_protected_data_rate]");
             goto end;
         }
@@ -619,9 +605,13 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
 
     cJSON *sel_mode = cJSON_GetObjectItemCaseSensitive(sm_contextJSON, "selMode");
 
-    OpenAPI_dnn_selection_mode_t *sel_mode_local_nonprim = NULL;
+    OpenAPI_dnn_selection_mode_e sel_modeVariable;
     if (sel_mode) {
-        sel_mode_local_nonprim = OpenAPI_dnn_selection_mode_parseFromJSON(sel_mode);
+        if (!cJSON_IsString(sel_mode)) {
+            ogs_error("OpenAPI_sm_context_parseFromJSON() failed [sel_mode]");
+            goto end;
+        }
+        sel_modeVariable = OpenAPI_dnn_selection_mode_FromString(sel_mode->valuestring);
     }
 
     cJSON *udm_group_id = cJSON_GetObjectItemCaseSensitive(sm_contextJSON, "udmGroupId");
@@ -755,9 +745,13 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
 
     cJSON *max_integrity_protected_data_rate = cJSON_GetObjectItemCaseSensitive(sm_contextJSON, "maxIntegrityProtectedDataRate");
 
-    OpenAPI_max_integrity_protected_data_rate_t *max_integrity_protected_data_rate_local_nonprim = NULL;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rateVariable;
     if (max_integrity_protected_data_rate) {
-        max_integrity_protected_data_rate_local_nonprim = OpenAPI_max_integrity_protected_data_rate_parseFromJSON(max_integrity_protected_data_rate);
+        if (!cJSON_IsString(max_integrity_protected_data_rate)) {
+            ogs_error("OpenAPI_sm_context_parseFromJSON() failed [max_integrity_protected_data_rate]");
+            goto end;
+        }
+        max_integrity_protected_data_rateVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate->valuestring);
     }
 
     cJSON *always_on_granted = cJSON_GetObjectItemCaseSensitive(sm_contextJSON, "alwaysOnGranted");
@@ -864,7 +858,7 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
         pcf_id ? ogs_strdup(pcf_id->valuestring) : NULL,
         pcf_group_id ? ogs_strdup(pcf_group_id->valuestring) : NULL,
         pcf_set_id ? ogs_strdup(pcf_set_id->valuestring) : NULL,
-        sel_mode ? sel_mode_local_nonprim : NULL,
+        sel_mode ? sel_modeVariable : 0,
         udm_group_id ? ogs_strdup(udm_group_id->valuestring) : NULL,
         routing_indicator ? ogs_strdup(routing_indicator->valuestring) : NULL,
         session_ambr_local_nonprim,
@@ -876,7 +870,7 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_parseFromJSON(cJSON *sm_contextJSON)
         ue_ipv6_prefix ? ogs_strdup(ue_ipv6_prefix->valuestring) : NULL,
         eps_pdn_cnx_info ? eps_pdn_cnx_info_local_nonprim : NULL,
         eps_bearer_info ? eps_bearer_infoList : NULL,
-        max_integrity_protected_data_rate ? max_integrity_protected_data_rate_local_nonprim : NULL,
+        max_integrity_protected_data_rate ? max_integrity_protected_data_rateVariable : 0,
         always_on_granted ? always_on_granted->valueint : 0,
         up_security ? up_security_local_nonprim : NULL,
         h_smf_service_instance_id ? ogs_strdup(h_smf_service_instance_id->valuestring) : NULL,

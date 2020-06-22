@@ -20,6 +20,7 @@
 #include "nsmf-handler.h"
 #include "nas-path.h"
 #include "ngap-path.h"
+#include "sbi-path.h"
 
 #include "gmm-build.h"
 
@@ -67,6 +68,10 @@ int amf_nsmf_pdu_session_handle_create_sm_context(
             ogs_free(sess->sm_context_ref);
         sess->sm_context_ref = ogs_strdup(message.h.resource.component[1]);
 
+        /* Update UpCnxState */
+        sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+        sess->smfUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+
         ogs_sbi_header_free(&header);
 
     } else {
@@ -113,14 +118,121 @@ int amf_nsmf_pdu_session_handle_create_sm_context(
 int amf_nsmf_pdu_session_handle_update_sm_context(
         amf_sess_t *sess, ogs_sbi_message_t *recvmsg)
 {
+    amf_ue_t *amf_ue = NULL;
     ogs_assert(sess);
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
     ogs_assert(recvmsg);
 
-    if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-        /* Nothing */
+    if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT ||
+        recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
+        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) { 
+            /* Nothing */
+        }
 
-    } else if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
-        ogs_fatal("TODO");
+        /* UPDATE_UpCnxState - SYNC */
+        sess->smfUpCnxState = sess->ueUpCnxState;
+
+        if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+            /*
+             * 1. PDUSessionResourceSetupResponse
+             * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+             * 3. PFCP Session Modifcation Request (OuterHeaderCreation)
+             * 4. PFCP Session Modifcation Response
+             */
+
+            /*
+             * 1. InitialContextSetupResponse
+             * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+             * 3. PFCP Session Modifcation Request (Apply: FORWARD)
+             * 4. PFCP Session Modifcation Response
+             */
+
+            /* Nothing */
+
+        } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+            /*
+             * 1. UEContextReleaseRequest
+             * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+             * 3. PFCP Session Modifcation Request (Apply:Buff & NOCP)
+             * 4. PFCP Session Modifcation Response
+             * 5. UEContextReleaseCommand
+             * 6. UEContextReleaseComplete
+             */
+
+            if (SESSION_UP_CNX_STATE_SYNCHED(amf_ue)) {
+                ran_ue_t *ran_ue = amf_ue->ran_ue;
+                ogs_assert(ran_ue);
+                ngap_send_ue_context_release_command(ran_ue,
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+            }
+
+        } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATING) {
+
+            OpenAPI_sm_context_updated_data_t *SmContextUpdatedData = NULL;
+            OpenAPI_ref_to_binary_data_t *n2SmInfo = NULL;
+            ogs_pkbuf_t *n2smbuf = NULL;
+
+            /*
+             * 1. ServiceRequest
+             * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+             */
+
+            SmContextUpdatedData = recvmsg->SmContextUpdatedData;
+            if (!SmContextUpdatedData) {
+                ogs_error("No SmContextUpdatedData");
+                nas_5gs_send_gmm_reject(amf_ue,
+                        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                return OGS_ERROR;
+            }
+
+            n2SmInfo = SmContextUpdatedData->n2_sm_info;
+            if (!n2SmInfo || !n2SmInfo->content_id) {
+                ogs_error("No SmInfo");
+                nas_5gs_send_gmm_reject(amf_ue,
+                        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                return OGS_ERROR;
+            }
+
+            sess->n2SmInfoType = SmContextUpdatedData->n2_sm_info_type;
+            if (!sess->n2SmInfoType) {
+                ogs_error("No SmInfoType");
+                nas_5gs_send_gmm_reject(amf_ue,
+                        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                return OGS_ERROR;
+            }
+
+            n2smbuf = ogs_sbi_find_part_by_content_id(
+                    recvmsg, n2SmInfo->content_id);
+            if (!n2smbuf) {
+                ogs_error("[%s] No N2 SM Content", amf_ue->supi);
+                nas_5gs_send_gmm_reject(amf_ue,
+                        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                return OGS_ERROR;
+            }
+
+            sess->n2smbuf = ogs_pkbuf_copy(n2smbuf);
+            ogs_assert(sess->n2smbuf);
+
+            if (SESSION_UP_CNX_STATE_SYNCHED(amf_ue)) {
+                switch(amf_ue->nas.message_type) {
+                case OGS_NAS_5GS_REGISTRATION_REQUEST:
+                    nas_5gs_send_registration_accept(amf_ue);
+                    break;
+                case OGS_NAS_5GS_SERVICE_REQUEST:
+                    nas_5gs_send_service_accept(amf_ue);
+                    break;
+                default:
+                    ogs_error("Unknown message type [%d]",
+                            amf_ue->nas.message_type);
+                }
+            }
+
+        } else {
+            ogs_error("Invalid UpCnxState [UE:%d,SMF:%d]",
+                sess->ueUpCnxState, sess->smfUpCnxState);
+        }
 
     } else {
         amf_ue_t *amf_ue = NULL;
@@ -170,6 +282,70 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
         ngap_send_error_indication2(amf_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
     }
+
+    return OGS_OK;
+}
+
+int amf_nsmf_pdu_session_handle_release_sm_context(
+        amf_sess_t *sess, ogs_sbi_message_t *recvmsg)
+{
+    amf_ue_t *amf_ue = NULL;
+
+    ogs_assert(sess);
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
+    ogs_assert(recvmsg);
+
+    ogs_debug("Release SM Context [%d]", recvmsg->res_status);
+
+    if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
+        if (ogs_list_count(&amf_ue->sess_list) == 1) /* Last Session */ {
+            amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
+                    amf_nausf_auth_build_authenticate);
+        }
+    } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_de_registered)) {
+        if (ogs_list_count(&amf_ue->sess_list) == 1) /* Last Session */ {
+            nas_5gs_send_de_registration_accept(amf_ue);
+        }
+    } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered) ||
+                OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
+        /*
+         * TODO : PDUSessionResourceReleaseCommand
+         *
+        if (OGS_FSM_CHECK(&bearer->sm, esm_state_pdn_will_disconnect)) {
+            nas_eps_send_deactivate_bearer_context_request(bearer);
+
+            mme_sess_remove() should not be called here.
+
+            Session will be removed if Deactivate bearer context
+            accept is received
+            CLEAR_SGW_S1U_PATH(sess);
+            return;
+        } else if (OGS_FSM_CHECK(&bearer->sm, esm_state_active) ||
+                OGS_FSM_CHECK(&bearer->sm, esm_state_inactive)) {
+        }
+        */
+        if (ogs_list_count(&amf_ue->sess_list) == 1) /* Last Session */ {
+            ran_ue_t *ran_ue = amf_ue->ran_ue;
+            if (ran_ue) {
+                ngap_send_ue_context_release_command(ran_ue,
+                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                        NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
+            } else {
+                ogs_error("gNB-NG Context has already been removed");
+            }
+        }
+    } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_security_mode)) {
+        ogs_error("Releasing SM Context in security-mode STATE");
+
+    } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_initial_context_setup)) {
+        ogs_error("Releasing SM Context in initial context setup STATE");
+
+    } else {
+        ogs_error("Releasing SM Context : INVALID STATE");
+    }
+
+    amf_sess_remove(sess);
 
     return OGS_OK;
 }

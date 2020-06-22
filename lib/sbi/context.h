@@ -112,6 +112,8 @@ typedef struct ogs_sbi_object_s {
         ogs_time_t duration;
     } client_wait;
 
+    bool running;
+
     OpenAPI_nf_type_e nf_type;
     ogs_sbi_request_t *request;
 

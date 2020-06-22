@@ -41,6 +41,8 @@ bool udr_nudr_dr_handle_subscription_authentication(
     OpenAPI_authentication_subscription_t AuthenticationSubscription;
     OpenAPI_sequence_number_t SequenceNumber;
     OpenAPI_auth_event_t *AuthEvent = NULL;
+    OpenAPI_list_t *PatchItemList = NULL;
+    OpenAPI_lnode_t *node = NULL;
 
     ogs_assert(session);
     ogs_assert(recvmsg);
@@ -63,7 +65,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
 
     rv = ogs_dbi_auth_info(supi, &auth_info);
     if (rv != OGS_OK) {
-        ogs_fatal("[%s] Cannot find SUPI in DB", supi);
+        ogs_warn("[%s] Cannot find SUPI in DB", supi);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_NOT_FOUND,
                 recvmsg, "Cannot find SUPI Type", supi);
         return false;
@@ -99,7 +101,6 @@ bool udr_nudr_dr_handle_subscription_authentication(
             ogs_hex_to_ascii(sqn, sizeof(sqn), sqn_string, sizeof(sqn_string));
 
             memset(&SequenceNumber, 0, sizeof(SequenceNumber));
-            SequenceNumber.sqn_scheme = OpenAPI_sqn_scheme_NON_TIME_BASED;
             SequenceNumber.sqn = sqn_string;
             AuthenticationSubscription.sequence_number = &SequenceNumber;
 
@@ -111,6 +112,64 @@ bool udr_nudr_dr_handle_subscription_authentication(
 
             response = ogs_sbi_build_response(
                     &sendmsg, OGS_SBI_HTTP_STATUS_OK);
+            ogs_assert(response);
+            ogs_sbi_server_send_response(session, response);
+
+            return true;
+
+        CASE(OGS_SBI_HTTP_METHOD_PATCH)
+            char *sqn_string = NULL;
+            uint8_t sqn_ms[OGS_SQN_LEN];
+            uint64_t sqn = 0;
+
+            PatchItemList = recvmsg->PatchItemList;
+            if (!PatchItemList) {
+                ogs_sbi_server_send_error(session,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        recvmsg, "No PatchItemList Array", NULL);
+                return false;
+            }
+
+            OpenAPI_list_for_each(PatchItemList, node) {
+                if (node->data) {
+                    OpenAPI_patch_item_t *patch_item = node->data;
+                    sqn_string = patch_item->value;
+                }
+            }
+
+            if (!sqn_string) {
+                ogs_sbi_server_send_error(session,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                        recvmsg, "No PatchItemList", NULL);
+                return false;
+            }
+
+            ogs_ascii_to_hex(sqn_string, strlen(sqn_string),
+                    sqn_ms, sizeof(sqn_ms));
+            sqn = ogs_buffer_to_uint64(sqn_ms, OGS_SQN_LEN);
+
+            rv = ogs_dbi_update_sqn(supi, sqn);
+            if (rv != OGS_OK) {
+                ogs_fatal("[%s] Cannot update SQN", supi);
+                ogs_sbi_server_send_error(session,
+                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                        recvmsg, "Cannot update SQN", supi);
+                return false;
+            }
+
+            rv = ogs_dbi_increment_sqn(supi);
+            if (rv != OGS_OK) {
+                ogs_fatal("[%s] Cannot increment SQN", supi);
+                ogs_sbi_server_send_error(session,
+                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                        recvmsg, "Cannot increment SQN", supi);
+                return false;
+            }
+
+            memset(&sendmsg, 0, sizeof(sendmsg));
+
+            response = ogs_sbi_build_response(
+                    &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
             ogs_assert(response);
             ogs_sbi_server_send_response(session, response);
 
@@ -285,6 +344,14 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         return false;
     }
 
+    if (!subscription_data.ambr.uplink && !subscription_data.ambr.downlink) {
+        ogs_error("[%s] No UE-AMBR", supi);
+        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_NOT_FOUND,
+                recvmsg, "No UE-AMBR", supi);
+
+        return false;
+    }
+
     SWITCH(recvmsg->h.resource.component[4])
     CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
         OpenAPI_access_and_mobility_subscription_data_t
@@ -369,7 +436,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
 
             if (!pdn->ambr.uplink && !pdn->ambr.downlink) {
                 if (!subscription_data.ambr.uplink &&
-                        subscription_data.ambr.downlink) {
+                        !subscription_data.ambr.downlink) {
                     ogs_error("No Session-AMBR");
                     ogs_error("No UE-AMBR");
                     continue;

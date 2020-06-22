@@ -29,11 +29,11 @@ typedef struct OpenAPI_sm_context_created_data_s {
     char *smf_uri;
     int pdu_session_id;
     struct OpenAPI_snssai_s *s_nssai;
-    struct OpenAPI_up_cnx_state_s *up_cnx_state;
+    OpenAPI_up_cnx_state_e up_cnx_state;
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info;
     OpenAPI_n2_sm_info_type_e n2_sm_info_type;
     OpenAPI_list_t *allocated_ebi_list;
-    struct OpenAPI_ho_state_s *ho_state;
+    OpenAPI_ho_state_e ho_state;
     char *gpsi;
     char *smf_service_instance_id;
     char *recovery_time;
@@ -45,11 +45,11 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     char *smf_uri,
     int pdu_session_id,
     OpenAPI_snssai_t *s_nssai,
-    OpenAPI_up_cnx_state_t *up_cnx_state,
+    OpenAPI_up_cnx_state_e up_cnx_state,
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
     OpenAPI_list_t *allocated_ebi_list,
-    OpenAPI_ho_state_t *ho_state,
+    OpenAPI_ho_state_e ho_state,
     char *gpsi,
     char *smf_service_instance_id,
     char *recovery_time,

@@ -89,8 +89,8 @@ void ngap_send_amf_status_transfer(
             *gnb_statustransfer_transparentContainer);
 void ngap_send_error_indication(
         amf_gnb_t *gnb,
+        uint32_t *ran_ue_ngap_id,
         uint64_t *amf_ue_ngap_id,
-        NGAP_RAN_UE_NGAP_ID_t *ran_ue_ngap_id,
         NGAP_Cause_PR group, long cause);
 void ngap_send_error_indication2(
         amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause);

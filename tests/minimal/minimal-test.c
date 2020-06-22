@@ -33,8 +33,7 @@ static void test1_func(abts_case *tc, void *data)
     int i;
     int msgindex = 0;
 
-    ogs_nas_5gs_mobile_identity_t mobile_identity;
-    ogs_nas_5gs_mobile_identity_imsi_t mobile_identity_imsi;
+    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
     test_ue_t test_ue;
     test_sess_t test_sess;
 
@@ -100,26 +99,24 @@ static void test1_func(abts_case *tc, void *data)
     test_ue.nas.registration.follow_on_request = 1;
     test_ue.nas.registration.value = 1; /* Initial Registration */
 
-    memset(&mobile_identity_imsi, 0, sizeof(mobile_identity_imsi));
-    mobile_identity.length = 12;
-    mobile_identity.buffer = &mobile_identity_imsi;
+    memset(&mobile_identity_suci, 0, sizeof(mobile_identity_suci));
 
-    mobile_identity_imsi.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
-    mobile_identity_imsi.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
-    ogs_nas_from_plmn_id(&mobile_identity_imsi.nas_plmn_id,
+    mobile_identity_suci.h.supi_format = OGS_NAS_5GS_SUPI_FORMAT_IMSI;
+    mobile_identity_suci.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_SUCI;
+    ogs_nas_from_plmn_id(&mobile_identity_suci.nas_plmn_id,
             &test_self()->tai.plmn_id);
-    mobile_identity_imsi.routing_indicator1 = 0;
-    mobile_identity_imsi.routing_indicator2 = 0xf;
-    mobile_identity_imsi.routing_indicator3 = 0xf;
-    mobile_identity_imsi.routing_indicator4 = 0xf;
-    mobile_identity_imsi.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
-    mobile_identity_imsi.home_network_pki_value = 0;
-    mobile_identity_imsi.scheme_output[0] = 0;
-    mobile_identity_imsi.scheme_output[1] = 0;
-    mobile_identity_imsi.scheme_output[2] = 0x47;
-    mobile_identity_imsi.scheme_output[3] = 0x78;
+    mobile_identity_suci.routing_indicator1 = 0;
+    mobile_identity_suci.routing_indicator2 = 0xf;
+    mobile_identity_suci.routing_indicator3 = 0xf;
+    mobile_identity_suci.routing_indicator4 = 0xf;
+    mobile_identity_suci.protection_scheme_id = OGS_NAS_5GS_NULL_SCHEME;
+    mobile_identity_suci.home_network_pki_value = 0;
+    mobile_identity_suci.scheme_output[0] = 0;
+    mobile_identity_suci.scheme_output[1] = 0;
+    mobile_identity_suci.scheme_output[2] = 0x47;
+    mobile_identity_suci.scheme_output[3] = 0x78;
 
-    test_ue_set_mobile_identity(&test_ue, &mobile_identity);
+    test_ue_set_mobile_identity_suci(&test_ue, &mobile_identity_suci, 12);
 
     test_ue.nas.access_type = OGS_ACCESS_TYPE_3GPP;
     test_ue.abba_len = 2;
@@ -132,12 +129,13 @@ static void test1_func(abts_case *tc, void *data)
     test_sess.pdu_session_type = OGS_PDU_SESSION_TYPE_IPV4;
     test_sess.dnn = (char *)"internet";
 
+    memset(&test_sess.gnb_n3_ip, 0, sizeof(test_sess.gnb_n3_ip));
     test_sess.gnb_n3_ip.ipv4 = true;
     test_sess.gnb_n3_ip.addr = inet_addr("127.0.0.5");
     test_sess.gnb_n3_teid = 3;
 
     /* gNB connects to AMF */
-    ngap = testgnb_ngap_client("127.0.0.1");
+    ngap = testgnb_ngap_client("127.0.0.2");
     ABTS_PTR_NOTNULL(tc, ngap);
 
     /* gNB connects to UPF */
@@ -159,6 +157,16 @@ static void test1_func(abts_case *tc, void *data)
     collection = mongoc_client_get_collection(
         ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    count = mongoc_collection_count (
+        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    if (count) {
+        ABTS_TRUE(tc, mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    }
+    bson_destroy(doc);
 
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
@@ -175,9 +183,9 @@ static void test1_func(abts_case *tc, void *data)
     bson_destroy(doc);
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(&test_ue, &mobile_identity);
+    gmmbuf = testgmm_build_registration_request(&test_ue, false);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_initial_ue_message(gmmbuf);
+    sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -201,7 +209,7 @@ static void test1_func(abts_case *tc, void *data)
     testngap_recv(&test_ue, recvbuf);
 
     /* Send Security mode complete */
-    nasbuf = testgmm_build_registration_request(&test_ue, &mobile_identity);
+    nasbuf = testgmm_build_registration_request(&test_ue, false);
     ABTS_PTR_NOTNULL(tc, nasbuf);
     gmmbuf = testgmm_build_security_mode_complete(&test_ue, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
@@ -222,10 +230,8 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
-
     /* Send Initial context setup response */
-    sendbuf = testngap_build_initial_context_setup_response(&test_ue);
+    sendbuf = testngap_build_initial_context_setup_response(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -264,8 +270,6 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testgnb_gtpu_send(gtpu, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(50);
 
     /* Send PDU session resource setup response */
     sendbuf = testngap_build_pdu_session_resource_setup_response(&test_sess);

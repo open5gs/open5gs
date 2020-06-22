@@ -35,6 +35,7 @@ libtestcommon_sources = files('''
     gsm-build.c
     gsm-handler.c
     nas-path.c
+    nas-encoder.c
     nas-security.c
 '''.split())
 

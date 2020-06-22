@@ -284,16 +284,17 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 sbi_object = e->sbi.data;
                 ogs_assert(sbi_object);
 
+                ogs_timer_stop(sbi_object->client_wait.timer);
+
+                sbi_object->running = false;
+
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
-                    if (message.res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        ogs_timer_stop(sbi_object->client_wait.timer);
-
+                    if (message.res_status == OGS_SBI_HTTP_STATUS_OK)
                         udm_nnrf_handle_nf_discover(sbi_object, &message);
-                    } else {
+                    else
                         ogs_error("HTTP response error [%d]",
                                 message.res_status);
-                    }
                     break;
 
                 DEFAULT
@@ -317,6 +318,9 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
                 e->udm_ue = udm_ue;
                 e->sbi.message = &message;
+
+                udm_ue->sbi.running = false;
+
                 ogs_fsm_dispatch(&udm_ue->sm, e);
                 if (OGS_FSM_CHECK(&udm_ue->sm, udm_ue_state_exception)) {
                     ogs_error("[%s] State machine exception", udm_ue->suci);
@@ -374,6 +378,8 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             ogs_assert(sbi_object);
             session = sbi_object->session;
             ogs_assert(session);
+
+            sbi_object->running = false;
 
             ogs_error("Cannot receive SBI message");
             ogs_sbi_server_send_error(session,

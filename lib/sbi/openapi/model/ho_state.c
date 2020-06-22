@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "ho_state.h"
 
-OpenAPI_ho_state_t *OpenAPI_ho_state_create(
-    )
+char* OpenAPI_ho_state_ToString(OpenAPI_ho_state_e ho_state)
 {
-    OpenAPI_ho_state_t *ho_state_local_var = OpenAPI_malloc(sizeof(OpenAPI_ho_state_t));
-    if (!ho_state_local_var) {
-        return NULL;
-    }
-
-    return ho_state_local_var;
+    const char *ho_stateArray[] =  { "NULL", "NONE", "PREPARING", "PREPARED", "COMPLETED", "CANCELLED" };
+    size_t sizeofArray = sizeof(ho_stateArray) / sizeof(ho_stateArray[0]);
+    if (ho_state < sizeofArray)
+        return (char *)ho_stateArray[ho_state];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_ho_state_free(OpenAPI_ho_state_t *ho_state)
+OpenAPI_ho_state_e OpenAPI_ho_state_FromString(char* ho_state)
 {
-    if (NULL == ho_state) {
-        return;
+    int stringToReturn = 0;
+    const char *ho_stateArray[] =  { "NULL", "NONE", "PREPARING", "PREPARED", "COMPLETED", "CANCELLED" };
+    size_t sizeofArray = sizeof(ho_stateArray) / sizeof(ho_stateArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(ho_state, ho_stateArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(ho_state);
-}
-
-cJSON *OpenAPI_ho_state_convertToJSON(OpenAPI_ho_state_t *ho_state)
-{
-    cJSON *item = NULL;
-
-    if (ho_state == NULL) {
-        ogs_error("OpenAPI_ho_state_convertToJSON() failed [HoState]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_ho_state_t *OpenAPI_ho_state_parseFromJSON(cJSON *ho_stateJSON)
-{
-    OpenAPI_ho_state_t *ho_state_local_var = NULL;
-    ho_state_local_var = OpenAPI_ho_state_create (
-        );
-
-    return ho_state_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_ho_state_t *OpenAPI_ho_state_copy(OpenAPI_ho_state_t *dst, OpenAPI_ho_state_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_ho_state_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_ho_state_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_ho_state_free(dst);
-    dst = OpenAPI_ho_state_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

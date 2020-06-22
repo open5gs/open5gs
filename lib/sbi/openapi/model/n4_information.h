@@ -22,13 +22,13 @@ extern "C" {
 
 typedef struct OpenAPI_n4_information_s OpenAPI_n4_information_t;
 typedef struct OpenAPI_n4_information_s {
-    struct OpenAPI_n4_message_type_s *n4_message_type;
+    OpenAPI_n4_message_type_e n4_message_type;
     struct OpenAPI_ref_to_binary_data_s *n4_message_payload;
     struct OpenAPI_dnai_information_s *n4_dnai_info;
 } OpenAPI_n4_information_t;
 
 OpenAPI_n4_information_t *OpenAPI_n4_information_create(
-    OpenAPI_n4_message_type_t *n4_message_type,
+    OpenAPI_n4_message_type_e n4_message_type,
     OpenAPI_ref_to_binary_data_t *n4_message_payload,
     OpenAPI_dnai_information_t *n4_dnai_info
     );

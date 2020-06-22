@@ -47,19 +47,3 @@ void hss_auc_kasme(const uint8_t *ck, const uint8_t *ik,
 
     ogs_hmac_sha256(k, 32, s, 14, kasme, 32);
 }
-
-void hss_auc_sqn(
-    const uint8_t *opc, const uint8_t *k, const uint8_t *auts,
-    uint8_t *sqn_ms, uint8_t *mac_s)
-{
-    int i;
-    uint8_t ak[OGS_AK_LEN];
-    uint8_t amf[2] = { 0, 0 };
-    const uint8_t *rand = auts;
-    const uint8_t *conc_sqn_ms = auts + OGS_RAND_LEN;
-
-    milenage_f2345(opc, k, rand, NULL, NULL, NULL, NULL, ak);
-    for (i = 0; i < OGS_SQN_LEN; i++)
-        sqn_ms[i] = ak[i] ^ conc_sqn_ms[i];
-    milenage_f1(opc, k, auts, sqn_ms, amf, NULL, mac_s);
-}

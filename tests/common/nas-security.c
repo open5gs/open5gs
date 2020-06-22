@@ -88,7 +88,10 @@ ogs_pkbuf_t *test_nas_5gs_security_encode(
         message->h.extended_protocol_discriminator;
     h.sequence_number = (test_ue->ul_count & 0xff);
 
-    new = ogs_nas_5gs_plain_encode(message);
+    if (message->gmm.h.message_type == OGS_NAS_5GS_DEREGISTRATION_REQUEST)
+        new = test_nas_5gs_plain_encode(message);
+    else
+        new = ogs_nas_5gs_plain_encode(message);
     if (!new) {
         ogs_error("ogs_nas_5gs_plain_encode() failed");
         return NULL;

@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "psa_indication.h"
 
-OpenAPI_psa_indication_t *OpenAPI_psa_indication_create(
-    )
+char* OpenAPI_psa_indication_ToString(OpenAPI_psa_indication_e psa_indication)
 {
-    OpenAPI_psa_indication_t *psa_indication_local_var = OpenAPI_malloc(sizeof(OpenAPI_psa_indication_t));
-    if (!psa_indication_local_var) {
-        return NULL;
-    }
-
-    return psa_indication_local_var;
+    const char *psa_indicationArray[] =  { "NULL", "PSA_INSERTED", "PSA_REMOVED" };
+    size_t sizeofArray = sizeof(psa_indicationArray) / sizeof(psa_indicationArray[0]);
+    if (psa_indication < sizeofArray)
+        return (char *)psa_indicationArray[psa_indication];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_psa_indication_free(OpenAPI_psa_indication_t *psa_indication)
+OpenAPI_psa_indication_e OpenAPI_psa_indication_FromString(char* psa_indication)
 {
-    if (NULL == psa_indication) {
-        return;
+    int stringToReturn = 0;
+    const char *psa_indicationArray[] =  { "NULL", "PSA_INSERTED", "PSA_REMOVED" };
+    size_t sizeofArray = sizeof(psa_indicationArray) / sizeof(psa_indicationArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(psa_indication, psa_indicationArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(psa_indication);
-}
-
-cJSON *OpenAPI_psa_indication_convertToJSON(OpenAPI_psa_indication_t *psa_indication)
-{
-    cJSON *item = NULL;
-
-    if (psa_indication == NULL) {
-        ogs_error("OpenAPI_psa_indication_convertToJSON() failed [PsaIndication]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_psa_indication_t *OpenAPI_psa_indication_parseFromJSON(cJSON *psa_indicationJSON)
-{
-    OpenAPI_psa_indication_t *psa_indication_local_var = NULL;
-    psa_indication_local_var = OpenAPI_psa_indication_create (
-        );
-
-    return psa_indication_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_psa_indication_t *OpenAPI_psa_indication_copy(OpenAPI_psa_indication_t *dst, OpenAPI_psa_indication_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_psa_indication_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_psa_indication_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_psa_indication_free(dst);
-    dst = OpenAPI_psa_indication_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

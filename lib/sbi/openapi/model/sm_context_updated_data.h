@@ -26,8 +26,8 @@ extern "C" {
 
 typedef struct OpenAPI_sm_context_updated_data_s OpenAPI_sm_context_updated_data_t;
 typedef struct OpenAPI_sm_context_updated_data_s {
-    struct OpenAPI_up_cnx_state_s *up_cnx_state;
-    struct OpenAPI_ho_state_s *ho_state;
+    OpenAPI_up_cnx_state_e up_cnx_state;
+    OpenAPI_ho_state_e ho_state;
     OpenAPI_list_t *release_ebi_list;
     OpenAPI_list_t *allocated_ebi_list;
     OpenAPI_list_t *modified_ebi_list;
@@ -38,7 +38,7 @@ typedef struct OpenAPI_sm_context_updated_data_s {
     int data_forwarding;
     OpenAPI_list_t *n3_dl_forwarding_tnl_list;
     OpenAPI_list_t *n3_ul_forwarding_tnl_list;
-    struct OpenAPI_cause_s *cause;
+    OpenAPI_cause_e cause;
     int ma_accepted_ind;
     char *supported_features;
     char forwarding_f_teid;
@@ -46,8 +46,8 @@ typedef struct OpenAPI_sm_context_updated_data_s {
 } OpenAPI_sm_context_updated_data_t;
 
 OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
-    OpenAPI_up_cnx_state_t *up_cnx_state,
-    OpenAPI_ho_state_t *ho_state,
+    OpenAPI_up_cnx_state_e up_cnx_state,
+    OpenAPI_ho_state_e ho_state,
     OpenAPI_list_t *release_ebi_list,
     OpenAPI_list_t *allocated_ebi_list,
     OpenAPI_list_t *modified_ebi_list,
@@ -58,7 +58,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     int data_forwarding,
     OpenAPI_list_t *n3_dl_forwarding_tnl_list,
     OpenAPI_list_t *n3_ul_forwarding_tnl_list,
-    OpenAPI_cause_t *cause,
+    OpenAPI_cause_e cause,
     int ma_accepted_ind,
     char *supported_features,
     char forwarding_f_teid,

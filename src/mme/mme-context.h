@@ -536,9 +536,6 @@ typedef struct mme_sess_s {
     /* Related Context */
     mme_ue_t        *mme_ue;
 
-#define MME_UE_HAVE_APN(__mME) \
-    ((__mME) && (mme_sess_first(__mME)) && \
-    ((mme_sess_first(__mME))->pdn))
     ogs_pdn_t       *pdn;
 
     /* Save Protocol Configuration Options from UE */

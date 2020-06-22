@@ -1,7 +1,7 @@
 /*
  * n4_message_type.h
  *
- * Possible values are   - PFCP_SES_EST_REQ   - PFCP_SES_EST_RSP   - PFCP_SES_MOD_REQ   - PFCP_SES_MOD_RSP   - PFCP_SES_DEL_REQ   - PFCP_SES_DEL_RSP   - PFCP_SES_REP_REQ   - PFCP_SES_REP_RSP
+ *
  */
 
 #ifndef _OpenAPI_n4_message_type_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_n4_message_type_s OpenAPI_n4_message_type_t;
-typedef struct OpenAPI_n4_message_type_s {
-} OpenAPI_n4_message_type_t;
+typedef enum { OpenAPI_n4_message_type_NULL = 0, OpenAPI_n4_message_type_PFCP_SES_EST_REQ, OpenAPI_n4_message_type_PFCP_SES_EST_RSP, OpenAPI_n4_message_type_PFCP_SES_MOD_REQ, OpenAPI_n4_message_type_PFCP_SES_MOD_RSP, OpenAPI_n4_message_type_PFCP_SES_DEL_REQ, OpenAPI_n4_message_type_PFCP_SES_DEL_RSP, OpenAPI_n4_message_type_PFCP_SES_REP_REQ, OpenAPI_n4_message_type_PFCP_SES_REP_RSP } OpenAPI_n4_message_type_e;
 
-OpenAPI_n4_message_type_t *OpenAPI_n4_message_type_create(
-    );
-void OpenAPI_n4_message_type_free(OpenAPI_n4_message_type_t *n4_message_type);
-OpenAPI_n4_message_type_t *OpenAPI_n4_message_type_parseFromJSON(cJSON *n4_message_typeJSON);
-cJSON *OpenAPI_n4_message_type_convertToJSON(OpenAPI_n4_message_type_t *n4_message_type);
-OpenAPI_n4_message_type_t *OpenAPI_n4_message_type_copy(OpenAPI_n4_message_type_t *dst, OpenAPI_n4_message_type_t *src);
+char* OpenAPI_n4_message_type_ToString(OpenAPI_n4_message_type_e n4_message_type);
+
+OpenAPI_n4_message_type_e OpenAPI_n4_message_type_FromString(char* n4_message_type);
 
 #ifdef __cplusplus
 }

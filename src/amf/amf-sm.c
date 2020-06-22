@@ -18,10 +18,12 @@
  */
 
 #include "sbi-path.h"
+#include "ngap-path.h"
 #include "nas-path.h"
+#include "amf-path.h"
 #include "nnrf-handler.h"
 #include "namf-handler.h"
-#include "ngap-path.h"
+#include "nsmf-handler.h"
 #include "nas-security.h"
 
 void amf_state_initial(ogs_fsm_t *s, amf_event_t *e)
@@ -330,16 +332,16 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 sbi_object = e->sbi.data;
                 ogs_assert(sbi_object);
 
+                sbi_object->running = false;
+                ogs_timer_stop(sbi_object->client_wait.timer);
+
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
-                    if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
-                        ogs_timer_stop(sbi_object->client_wait.timer);
-
+                    if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK)
                         amf_nnrf_handle_nf_discover(sbi_object, &sbi_message);
-                    } else {
+                    else
                         ogs_error("HTTP response error [%d]",
                                 sbi_message.res_status);
-                    }
                     break;
 
                 DEFAULT
@@ -365,9 +367,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             e->amf_ue = amf_ue;
             e->sbi.message = &sbi_message;;
 
+            amf_ue->sbi.running = false;
+            ogs_timer_stop(amf_ue->sbi.client_wait.timer);
+
             ogs_fsm_dispatch(&amf_ue->sm, e);
             if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
-                amf_ue_remove(amf_ue);
+                amf_send_delete_session_or_amf_ue_context_release(amf_ue);
             }
             break;
 
@@ -382,10 +387,21 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             e->sess = sess;
             e->sbi.message = &sbi_message;;
 
-            ogs_fsm_dispatch(&amf_ue->sm, e);
-            if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
-                amf_ue_remove(amf_ue);
-            }
+            sess->sbi.running = false;
+            ogs_timer_stop(sess->sbi.client_wait.timer);
+
+            SWITCH(sbi_message.h.resource.component[2])
+            CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
+                amf_nsmf_pdu_session_handle_release_sm_context(
+                        sess, &sbi_message);
+                break;
+
+            DEFAULT
+                ogs_fsm_dispatch(&amf_ue->sm, e);
+                if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
+                    amf_send_delete_session_or_amf_ue_context_release(amf_ue);
+                }
+            END
             break;
 
         DEFAULT
@@ -429,6 +445,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         case AMF_TIMER_SBI_CLIENT_WAIT:
             sbi_object = e->sbi.data;
             ogs_assert(sbi_object);
+
+            sbi_object->running = false;
 
             switch(sbi_object->nf_type) {
             case OpenAPI_nf_type_AUSF:
@@ -576,6 +594,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         ogs_assert(ran_ue);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
+
         if (ogs_nas_5gmm_decode(&nas_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_nas_5gmm_decode() failed");
             ogs_pkbuf_free(pkbuf);
@@ -613,7 +632,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             /* If NAS(amf_ue_t) has already been associated with
              * older NG(ran_ue_t) context */
-            if (ECM_CONNECTED(amf_ue)) {
+            if (CM_CONNECTED(amf_ue)) {
                /* Implcit NG release */
                 ogs_debug("[%s] Implicit NG release", amf_ue->suci);
                 ogs_debug("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
@@ -632,11 +651,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
         ogs_fsm_dispatch(&amf_ue->sm, e);
         if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
-#if 0
-            mme_send_delete_session_or_amf_ue_context_release(amf_ue);
-#else
-            amf_ue_remove(amf_ue);
-#endif
+            amf_send_delete_session_or_amf_ue_context_release(amf_ue);
         }
 
         ogs_pkbuf_free(pkbuf);

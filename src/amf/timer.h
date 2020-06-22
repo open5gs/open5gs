@@ -46,8 +46,6 @@ typedef enum {
     AMF_TIMER_T3560,
     AMF_TIMER_T3570,
 
-    AMF_TIMER_T3589,
-
     MAX_NUM_OF_AMF_TIMER,
 
 } amf_timer_e;
@@ -76,7 +74,6 @@ void amf_timer_t3550_expire(void *data);
 void amf_timer_t3555_expire(void *data);
 void amf_timer_t3560_expire(void *data);
 void amf_timer_t3570_expire(void *data);
-void amf_timer_t3589_expire(void *data);
 
 #ifdef __cplusplus
 }

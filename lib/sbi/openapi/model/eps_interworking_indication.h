@@ -1,7 +1,7 @@
 /*
  * eps_interworking_indication.h
  *
- * Possible values are - NONE - WITH_N26 - WITHOUT_N26 - IWK_NON_3GPP
+ *
  */
 
 #ifndef _OpenAPI_eps_interworking_indication_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_eps_interworking_indication_s OpenAPI_eps_interworking_indication_t;
-typedef struct OpenAPI_eps_interworking_indication_s {
-} OpenAPI_eps_interworking_indication_t;
+typedef enum { OpenAPI_eps_interworking_indication_NULL = 0, OpenAPI_eps_interworking_indication_NONE, OpenAPI_eps_interworking_indication_WITH_N26, OpenAPI_eps_interworking_indication_WITHOUT_N26, OpenAPI_eps_interworking_indication_IWK_NON_3GPP } OpenAPI_eps_interworking_indication_e;
 
-OpenAPI_eps_interworking_indication_t *OpenAPI_eps_interworking_indication_create(
-    );
-void OpenAPI_eps_interworking_indication_free(OpenAPI_eps_interworking_indication_t *eps_interworking_indication);
-OpenAPI_eps_interworking_indication_t *OpenAPI_eps_interworking_indication_parseFromJSON(cJSON *eps_interworking_indicationJSON);
-cJSON *OpenAPI_eps_interworking_indication_convertToJSON(OpenAPI_eps_interworking_indication_t *eps_interworking_indication);
-OpenAPI_eps_interworking_indication_t *OpenAPI_eps_interworking_indication_copy(OpenAPI_eps_interworking_indication_t *dst, OpenAPI_eps_interworking_indication_t *src);
+char* OpenAPI_eps_interworking_indication_ToString(OpenAPI_eps_interworking_indication_e eps_interworking_indication);
+
+OpenAPI_eps_interworking_indication_e OpenAPI_eps_interworking_indication_FromString(char* eps_interworking_indication);
 
 #ifdef __cplusplus
 }

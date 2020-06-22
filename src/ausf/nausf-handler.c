@@ -54,7 +54,8 @@ bool ausf_nausf_auth_handle_authenticate(
         ogs_free(ausf_ue->serving_network_name);
     ausf_ue->serving_network_name = ogs_strdup(serving_network_name);
 
-    ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, ausf_ue, NULL,
+    ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, ausf_ue,
+            AuthenticationInfo->resynchronization_info,
             ausf_nudm_ueau_build_get);
 
     return true;

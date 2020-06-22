@@ -28,6 +28,7 @@ void udm_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance)
 
     ogs_assert(nf_instance);
 
+    memset(&e, 0, sizeof(e));
     e.sbi.data = nf_instance;
 
     ogs_fsm_create(&nf_instance->sm,
@@ -40,6 +41,8 @@ void udm_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance)
     udm_event_t e;
 
     ogs_assert(nf_instance);
+
+    memset(&e, 0, sizeof(e));
     e.sbi.data = nf_instance;
 
     ogs_fsm_fini(&nf_instance->sm, &e);

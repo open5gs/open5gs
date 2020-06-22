@@ -11,11 +11,11 @@ amf:
     ngap:
     guami:
       - plmn_id:
-          mcc: 208
-          mnc: 93
+          mcc: 901
+          mnc: 70
         amf_id:
-          region: 202
-          set: 1016
+          region: 2
+          set: 1
     tai:
       - plmn_id:
           mcc: 901
@@ -72,9 +72,6 @@ upf:
     pfcp:
       addr: 127.0.0.4
     gtpu:
-      - addr:
-        - 127.0.0.4
-        - ::1
     pdn:
 
 ausf:

@@ -27,6 +27,7 @@ void nrf_nf_fsm_init(ogs_sbi_nf_instance_t *nf_instance)
     nrf_event_t e;
 
     ogs_assert(nf_instance);
+    memset(&e, 0, sizeof(e));
     e.nf_instance = nf_instance;
 
     ogs_fsm_create(&nf_instance->sm,
@@ -39,6 +40,7 @@ void nrf_nf_fsm_fini(ogs_sbi_nf_instance_t *nf_instance)
     nrf_event_t e;
 
     ogs_assert(nf_instance);
+    memset(&e, 0, sizeof(e));
     e.nf_instance = nf_instance;
 
     ogs_fsm_fini(&nf_instance->sm, &e);

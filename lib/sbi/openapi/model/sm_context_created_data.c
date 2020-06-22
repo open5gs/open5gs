@@ -9,11 +9,11 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_create(
     char *smf_uri,
     int pdu_session_id,
     OpenAPI_snssai_t *s_nssai,
-    OpenAPI_up_cnx_state_t *up_cnx_state,
+    OpenAPI_up_cnx_state_e up_cnx_state,
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
     OpenAPI_list_t *allocated_ebi_list,
-    OpenAPI_ho_state_t *ho_state,
+    OpenAPI_ho_state_e ho_state,
     char *gpsi,
     char *smf_service_instance_id,
     char *recovery_time,
@@ -50,13 +50,11 @@ void OpenAPI_sm_context_created_data_free(OpenAPI_sm_context_created_data_t *sm_
     ogs_free(sm_context_created_data->h_smf_uri);
     ogs_free(sm_context_created_data->smf_uri);
     OpenAPI_snssai_free(sm_context_created_data->s_nssai);
-    OpenAPI_up_cnx_state_free(sm_context_created_data->up_cnx_state);
     OpenAPI_ref_to_binary_data_free(sm_context_created_data->n2_sm_info);
     OpenAPI_list_for_each(sm_context_created_data->allocated_ebi_list, node) {
         OpenAPI_ebi_arp_mapping_free(node->data);
     }
     OpenAPI_list_free(sm_context_created_data->allocated_ebi_list);
-    OpenAPI_ho_state_free(sm_context_created_data->ho_state);
     ogs_free(sm_context_created_data->gpsi);
     ogs_free(sm_context_created_data->smf_service_instance_id);
     ogs_free(sm_context_created_data->recovery_time);
@@ -109,13 +107,7 @@ cJSON *OpenAPI_sm_context_created_data_convertToJSON(OpenAPI_sm_context_created_
     }
 
     if (sm_context_created_data->up_cnx_state) {
-        cJSON *up_cnx_state_local_JSON = OpenAPI_up_cnx_state_convertToJSON(sm_context_created_data->up_cnx_state);
-        if (up_cnx_state_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_created_data_convertToJSON() failed [up_cnx_state]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "upCnxState", up_cnx_state_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "upCnxState", OpenAPI_up_cnx_state_ToString(sm_context_created_data->up_cnx_state)) == NULL) {
             ogs_error("OpenAPI_sm_context_created_data_convertToJSON() failed [up_cnx_state]");
             goto end;
         }
@@ -162,13 +154,7 @@ cJSON *OpenAPI_sm_context_created_data_convertToJSON(OpenAPI_sm_context_created_
     }
 
     if (sm_context_created_data->ho_state) {
-        cJSON *ho_state_local_JSON = OpenAPI_ho_state_convertToJSON(sm_context_created_data->ho_state);
-        if (ho_state_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_created_data_convertToJSON() failed [ho_state]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "hoState", ho_state_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "hoState", OpenAPI_ho_state_ToString(sm_context_created_data->ho_state)) == NULL) {
             ogs_error("OpenAPI_sm_context_created_data_convertToJSON() failed [ho_state]");
             goto end;
         }
@@ -245,9 +231,13 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
 
     cJSON *up_cnx_state = cJSON_GetObjectItemCaseSensitive(sm_context_created_dataJSON, "upCnxState");
 
-    OpenAPI_up_cnx_state_t *up_cnx_state_local_nonprim = NULL;
+    OpenAPI_up_cnx_state_e up_cnx_stateVariable;
     if (up_cnx_state) {
-        up_cnx_state_local_nonprim = OpenAPI_up_cnx_state_parseFromJSON(up_cnx_state);
+        if (!cJSON_IsString(up_cnx_state)) {
+            ogs_error("OpenAPI_sm_context_created_data_parseFromJSON() failed [up_cnx_state]");
+            goto end;
+        }
+        up_cnx_stateVariable = OpenAPI_up_cnx_state_FromString(up_cnx_state->valuestring);
     }
 
     cJSON *n2_sm_info = cJSON_GetObjectItemCaseSensitive(sm_context_created_dataJSON, "n2SmInfo");
@@ -293,9 +283,13 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
 
     cJSON *ho_state = cJSON_GetObjectItemCaseSensitive(sm_context_created_dataJSON, "hoState");
 
-    OpenAPI_ho_state_t *ho_state_local_nonprim = NULL;
+    OpenAPI_ho_state_e ho_stateVariable;
     if (ho_state) {
-        ho_state_local_nonprim = OpenAPI_ho_state_parseFromJSON(ho_state);
+        if (!cJSON_IsString(ho_state)) {
+            ogs_error("OpenAPI_sm_context_created_data_parseFromJSON() failed [ho_state]");
+            goto end;
+        }
+        ho_stateVariable = OpenAPI_ho_state_FromString(ho_state->valuestring);
     }
 
     cJSON *gpsi = cJSON_GetObjectItemCaseSensitive(sm_context_created_dataJSON, "gpsi");
@@ -339,11 +333,11 @@ OpenAPI_sm_context_created_data_t *OpenAPI_sm_context_created_data_parseFromJSON
         smf_uri ? ogs_strdup(smf_uri->valuestring) : NULL,
         pdu_session_id ? pdu_session_id->valuedouble : 0,
         s_nssai ? s_nssai_local_nonprim : NULL,
-        up_cnx_state ? up_cnx_state_local_nonprim : NULL,
+        up_cnx_state ? up_cnx_stateVariable : 0,
         n2_sm_info ? n2_sm_info_local_nonprim : NULL,
         n2_sm_info_type ? n2_sm_info_typeVariable : 0,
         allocated_ebi_list ? allocated_ebi_listList : NULL,
-        ho_state ? ho_state_local_nonprim : NULL,
+        ho_state ? ho_stateVariable : 0,
         gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
         smf_service_instance_id ? ogs_strdup(smf_service_instance_id->valuestring) : NULL,
         recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,

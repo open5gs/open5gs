@@ -27,7 +27,7 @@ typedef struct OpenAPI_sm_context_update_error_s {
     struct OpenAPI_ref_to_binary_data_s *n1_sm_msg;
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info;
     OpenAPI_n2_sm_info_type_e n2_sm_info_type;
-    struct OpenAPI_up_cnx_state_s *up_cnx_state;
+    OpenAPI_up_cnx_state_e up_cnx_state;
     char *recovery_time;
 } OpenAPI_sm_context_update_error_t;
 
@@ -36,7 +36,7 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_create(
     OpenAPI_ref_to_binary_data_t *n1_sm_msg,
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
-    OpenAPI_up_cnx_state_t *up_cnx_state,
+    OpenAPI_up_cnx_state_e up_cnx_state,
     char *recovery_time
     );
 void OpenAPI_sm_context_update_error_free(OpenAPI_sm_context_update_error_t *sm_context_update_error);

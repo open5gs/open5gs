@@ -41,6 +41,7 @@
 
 #define UPF_GTP_HANDLED     1
 
+static void upf_gtp_send_to_gnb(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf);
 static int upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf);
 static int upf_gtp_handle_slaac(upf_sess_t *sess, ogs_pkbuf_t *recvbuf);
 static int upf_gtp_handle_pdr(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *recvbuf);
@@ -250,7 +251,23 @@ void upf_gtp_close(void)
     }
 }
 
-void upf_gtp_send_to_gnb(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf)
+void upf_gtp_send_buffered_packet(ogs_pfcp_far_t *far)
+{
+    int i;
+
+    ogs_assert(far);
+
+    if (far->gnode) {
+        if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
+            for (i = 0; i < far->num_of_buffered_packet; i++) {
+                upf_gtp_send_to_gnb(far, far->buffered_packet[i]);
+            }
+            far->num_of_buffered_packet = 0;
+        }
+    }
+}
+
+static void upf_gtp_send_to_gnb(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf)
 {
     char buf[OGS_ADDRSTRLEN];
     int rv;
@@ -291,6 +308,46 @@ void upf_gtp_send_to_gnb(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf)
         ogs_error("ogs_gtp_sendto() failed");
 
     ogs_pkbuf_free(sendbuf);
+}
+
+static int upf_gtp_handle_pdr(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *recvbuf)
+{
+    ogs_pfcp_far_t *far = NULL;
+    ogs_pkbuf_t *sendbuf = NULL;
+
+    ogs_assert(recvbuf);
+    ogs_assert(pdr);
+
+    if (pdr->src_if != OGS_PFCP_INTERFACE_CORE) {
+        ogs_error("PDR is NOT Downlink");
+        return OGS_ERROR;
+    }
+
+    far = pdr->far;
+    ogs_assert(far);
+
+    sendbuf = ogs_pkbuf_copy(recvbuf);
+    ogs_assert(sendbuf);
+    if (!far->gnode) {
+        /* Default apply action : buffering */
+        if (far->num_of_buffered_packet < MAX_NUM_OF_PACKET_BUFFER) {
+            far->buffered_packet[far->num_of_buffered_packet++] = sendbuf;
+            return UPF_GTP_HANDLED;
+        }
+    } else {
+        if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
+            upf_gtp_send_to_gnb(far, sendbuf);
+        } else if (far->apply_action & OGS_PFCP_APPLY_ACTION_BUFF) {
+            if (far->num_of_buffered_packet < MAX_NUM_OF_PACKET_BUFFER) {
+                far->buffered_packet[far->num_of_buffered_packet++] = sendbuf;
+                return UPF_GTP_HANDLED;
+            }
+        }
+        return UPF_GTP_HANDLED;
+    }
+
+    ogs_pkbuf_free(sendbuf);
+    return OGS_OK;
 }
 
 static int upf_gtp_handle_multicast(ogs_pkbuf_t *recvbuf)
@@ -357,38 +414,6 @@ static int upf_gtp_handle_slaac(upf_sess_t *sess, ogs_pkbuf_t *recvbuf)
         }
     }
 
-    return OGS_OK;
-}
-
-static int upf_gtp_handle_pdr(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *recvbuf)
-{
-    ogs_pfcp_far_t *far = NULL;
-    ogs_pkbuf_t *sendbuf = NULL;
-
-    ogs_assert(recvbuf);
-    ogs_assert(pdr);
-
-    if (pdr->src_if != OGS_PFCP_INTERFACE_CORE) {
-        ogs_error("PDR is NOT Downlink");
-        return OGS_ERROR;
-    }
-
-    far = pdr->far;
-    ogs_assert(far);
-
-    sendbuf = ogs_pkbuf_copy(recvbuf);
-    ogs_assert(sendbuf);
-    if (!far->gnode) {
-        if (far->num_of_buffered_packet < MAX_NUM_OF_PACKET_BUFFER) {
-            far->buffered_packet[far->num_of_buffered_packet++] = sendbuf;
-            return UPF_GTP_HANDLED;
-        }
-    } else {
-        upf_gtp_send_to_gnb(far, sendbuf);
-        return UPF_GTP_HANDLED;
-    }
-
-    ogs_pkbuf_free(sendbuf);
     return OGS_OK;
 }
 

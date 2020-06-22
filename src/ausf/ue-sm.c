@@ -125,8 +125,13 @@ void ausf_ue_state_operational(ogs_fsm_t *s, ausf_event_t *e)
 
             if (message->res_status != OGS_SBI_HTTP_STATUS_OK &&
                 message->res_status != OGS_SBI_HTTP_STATUS_CREATED) {
-                ogs_error("[%s] HTTP response error [%d]",
-                    ausf_ue->suci, message->res_status);
+                if (message->res_status == OGS_SBI_HTTP_STATUS_NOT_FOUND) {
+                    ogs_warn("[%s] Cannot find SUPI [%d]",
+                        ausf_ue->suci, message->res_status);
+                } else {
+                    ogs_error("[%s] HTTP response error [%d]",
+                        ausf_ue->suci, message->res_status);
+                }
                 ogs_sbi_server_send_error(
                     session, message->res_status,
                     NULL, "HTTP response error", ausf_ue->suci);

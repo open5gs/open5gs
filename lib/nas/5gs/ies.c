@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-06-15 13:46:04.075315 by acetcom
+ * Created on: 2020-06-19 19:55:35.932346 by acetcom
  * from 24501-g41.docx
  ******************************************************************************/
 
@@ -473,6 +473,8 @@ int ogs_nas_5gs_decode_allowed_pdu_session_status(ogs_nas_allowed_pdu_session_st
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(allowed_pdu_session_status, pkbuf->data - size, size);
 
+    allowed_pdu_session_status->psi = be16toh(allowed_pdu_session_status->psi);
+
     ogs_trace("  ALLOWED_PDU_SESSION_STATUS - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
@@ -485,6 +487,8 @@ int ogs_nas_5gs_encode_allowed_pdu_session_status(ogs_pkbuf_t *pkbuf, ogs_nas_al
     ogs_nas_allowed_pdu_session_status_t target;
 
     memcpy(&target, allowed_pdu_session_status, sizeof(ogs_nas_allowed_pdu_session_status_t));
+    target.psi = htobe16(allowed_pdu_session_status->psi);
+
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
 
@@ -1861,6 +1865,8 @@ int ogs_nas_5gs_decode_pdu_session_reactivation_result(ogs_nas_pdu_session_react
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pdu_session_reactivation_result, pkbuf->data - size, size);
 
+    pdu_session_reactivation_result->psi = be16toh(pdu_session_reactivation_result->psi);
+
     ogs_trace("  PDU_SESSION_REACTIVATION_RESULT - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
@@ -1873,6 +1879,8 @@ int ogs_nas_5gs_encode_pdu_session_reactivation_result(ogs_pkbuf_t *pkbuf, ogs_n
     ogs_nas_pdu_session_reactivation_result_t target;
 
     memcpy(&target, pdu_session_reactivation_result, sizeof(ogs_nas_pdu_session_reactivation_result_t));
+    target.psi = htobe16(pdu_session_reactivation_result->psi);
+
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
 
@@ -1937,6 +1945,8 @@ int ogs_nas_5gs_decode_pdu_session_status(ogs_nas_pdu_session_status_t *pdu_sess
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pdu_session_status, pkbuf->data - size, size);
 
+    pdu_session_status->psi = be16toh(pdu_session_status->psi);
+
     ogs_trace("  PDU_SESSION_STATUS - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
@@ -1949,6 +1959,8 @@ int ogs_nas_5gs_encode_pdu_session_status(ogs_pkbuf_t *pkbuf, ogs_nas_pdu_sessio
     ogs_nas_pdu_session_status_t target;
 
     memcpy(&target, pdu_session_status, sizeof(ogs_nas_pdu_session_status_t));
+    target.psi = htobe16(pdu_session_status->psi);
+
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
 
@@ -2497,6 +2509,8 @@ int ogs_nas_5gs_decode_uplink_data_status(ogs_nas_uplink_data_status_t *uplink_d
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(uplink_data_status, pkbuf->data - size, size);
 
+    uplink_data_status->psi = be16toh(uplink_data_status->psi);
+
     ogs_trace("  UPLINK_DATA_STATUS - ");
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
@@ -2509,6 +2523,8 @@ int ogs_nas_5gs_encode_uplink_data_status(ogs_pkbuf_t *pkbuf, ogs_nas_uplink_dat
     ogs_nas_uplink_data_status_t target;
 
     memcpy(&target, uplink_data_status, sizeof(ogs_nas_uplink_data_status_t));
+    target.psi = htobe16(uplink_data_status->psi);
+
     ogs_assert(ogs_pkbuf_pull(pkbuf, size));
     memcpy(pkbuf->data - size, &target, size);
 

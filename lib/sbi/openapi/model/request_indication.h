@@ -1,7 +1,7 @@
 /*
  * request_indication.h
  *
- * Possible values are - UE_REQ_PDU_SES_MOD - UE_REQ_PDU_SES_REL - PDU_SES_MOB - NW_REQ_PDU_SES_AUTH - NW_REQ_PDU_SES_MOD - NW_REQ_PDU_SES_REL - EBI_ASSIGNMENT_REQ
+ *
  */
 
 #ifndef _OpenAPI_request_indication_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_request_indication_s OpenAPI_request_indication_t;
-typedef struct OpenAPI_request_indication_s {
-} OpenAPI_request_indication_t;
+typedef enum { OpenAPI_request_indication_NULL = 0, OpenAPI_request_indication_UE_REQ_PDU_SES_MOD, OpenAPI_request_indication_UE_REQ_PDU_SES_REL, OpenAPI_request_indication_PDU_SES_MOB, OpenAPI_request_indication_NW_REQ_PDU_SES_AUTH, OpenAPI_request_indication_NW_REQ_PDU_SES_MOD, OpenAPI_request_indication_NW_REQ_PDU_SES_REL, OpenAPI_request_indication_EBI_ASSIGNMENT_REQ } OpenAPI_request_indication_e;
 
-OpenAPI_request_indication_t *OpenAPI_request_indication_create(
-    );
-void OpenAPI_request_indication_free(OpenAPI_request_indication_t *request_indication);
-OpenAPI_request_indication_t *OpenAPI_request_indication_parseFromJSON(cJSON *request_indicationJSON);
-cJSON *OpenAPI_request_indication_convertToJSON(OpenAPI_request_indication_t *request_indication);
-OpenAPI_request_indication_t *OpenAPI_request_indication_copy(OpenAPI_request_indication_t *dst, OpenAPI_request_indication_t *src);
+char* OpenAPI_request_indication_ToString(OpenAPI_request_indication_e request_indication);
+
+OpenAPI_request_indication_e OpenAPI_request_indication_FromString(char* request_indication);
 
 #ifdef __cplusplus
 }

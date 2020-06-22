@@ -3073,70 +3073,70 @@ components:
 # ENUMERATIONS
 #
     UpCnxState:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - ACTIVATED
           - DEACTIVATED
           - ACTIVATING
           - SUSPENDED
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - ACTIVATED
-        - DEACTIVATED
-        - ACTIVATING
-        - SUSPENDED
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - ACTIVATED
+#        - DEACTIVATED
+#        - ACTIVATING
+#        - SUSPENDED
 
     HoState:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - NONE
           - PREPARING
           - PREPARED
           - COMPLETED
           - CANCELLED
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - NONE
-        - PREPARING
-        - PREPARED
-        - COMPLETED
-        - CANCELLED
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - NONE
+#        - PREPARING
+#        - PREPARED
+#        - COMPLETED
+#        - CANCELLED
 
     RequestType:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - INITIAL_REQUEST
           - EXISTING_PDU_SESSION
           - INITIAL_EMERGENCY_REQUEST
           - EXISTING_EMERGENCY_PDU_SESSION
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - INITIAL_REQUEST
-        - EXISTING_PDU_SESSION
-        - INITIAL_EMERGENCY_REQUEST
-        - EXISTING_EMERGENCY_PDU_SESSION
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - INITIAL_REQUEST
+#        - EXISTING_PDU_SESSION
+#        - INITIAL_EMERGENCY_REQUEST
+#        - EXISTING_EMERGENCY_PDU_SESSION
 
     RequestIndication:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - UE_REQ_PDU_SES_MOD
           - UE_REQ_PDU_SES_REL
@@ -3145,44 +3145,44 @@ components:
           - NW_REQ_PDU_SES_MOD
           - NW_REQ_PDU_SES_REL
           - EBI_ASSIGNMENT_REQ
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - UE_REQ_PDU_SES_MOD
-        - UE_REQ_PDU_SES_REL
-        - PDU_SES_MOB
-        - NW_REQ_PDU_SES_AUTH
-        - NW_REQ_PDU_SES_MOD
-        - NW_REQ_PDU_SES_REL
-        - EBI_ASSIGNMENT_REQ
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - UE_REQ_PDU_SES_MOD
+#        - UE_REQ_PDU_SES_REL
+#        - PDU_SES_MOB
+#        - NW_REQ_PDU_SES_AUTH
+#        - NW_REQ_PDU_SES_MOD
+#        - NW_REQ_PDU_SES_REL
+#        - EBI_ASSIGNMENT_REQ
 
     NotificationCause:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - QOS_FULFILLED
           - QOS_NOT_FULFILLED
           - UP_SEC_FULFILLED
           - UP_SEC_NOT_FULFILLED
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - QOS_FULFILLED
-        - QOS_NOT_FULFILLED
-        - UP_SEC_FULFILLED
-        - UP_SEC_NOT_FULFILLED
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - QOS_FULFILLED
+#        - QOS_NOT_FULFILLED
+#        - UP_SEC_FULFILLED
+#        - UP_SEC_NOT_FULFILLED
 
     Cause:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - REL_DUE_TO_HO
           - EPS_FALLBACK
@@ -3208,93 +3208,93 @@ components:
           - PDU_SESSION_HAND_OVER_FAILURE
           - DDN_FAILURE_STATUS
 
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - REL_DUE_TO_HO
-        - EPS_FALLBACK
-        - REL_DUE_TO_UP_SEC
-        - DNN_CONGESTION
-        - S_NSSAI_CONGESTION
-        - REL_DUE_TO_REACTIVATION
-        - 5G_AN_NOT_RESPONDING
-        - REL_DUE_TO_SLICE_NOT_AVAILABLE
-        - REL_DUE_TO_DUPLICATE_SESSION_ID
-        - PDU_SESSION_STATUS_MISMATCH
-        - HO_FAILURE
-        - INSUFFICIENT_UP_RESOURCES
-        - PDU_SESSION_HANDED_OVER
-        - PDU_SESSION_RESUMED
-        - CN_ASSISTED_RAN_PARAMETER_TUNING
-        - ISMF_CONTEXT_TRANSFER
-        - SMF_CONTEXT_TRANSFER
-        - REL_DUE_TO_PS_TO_CS_HO
-        - REL_DUE_TO_SUBSCRIPTION_CHANGE
-        - HO_CANCEL
-        - REL_DUE_TO_SLICE_NOT_AUTHORIZED
-        - PDU_SESSION_HAND_OVER_FAILURE
-        - DDN_FAILURE_STATUS
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - REL_DUE_TO_HO
+#        - EPS_FALLBACK
+#        - REL_DUE_TO_UP_SEC
+#        - DNN_CONGESTION
+#        - S_NSSAI_CONGESTION
+#        - REL_DUE_TO_REACTIVATION
+#        - 5G_AN_NOT_RESPONDING
+#        - REL_DUE_TO_SLICE_NOT_AVAILABLE
+#        - REL_DUE_TO_DUPLICATE_SESSION_ID
+#        - PDU_SESSION_STATUS_MISMATCH
+#        - HO_FAILURE
+#        - INSUFFICIENT_UP_RESOURCES
+#        - PDU_SESSION_HANDED_OVER
+#        - PDU_SESSION_RESUMED
+#        - CN_ASSISTED_RAN_PARAMETER_TUNING
+#        - ISMF_CONTEXT_TRANSFER
+#        - SMF_CONTEXT_TRANSFER
+#        - REL_DUE_TO_PS_TO_CS_HO
+#        - REL_DUE_TO_SUBSCRIPTION_CHANGE
+#        - HO_CANCEL
+#        - REL_DUE_TO_SLICE_NOT_AUTHORIZED
+#        - PDU_SESSION_HAND_OVER_FAILURE
+#        - DDN_FAILURE_STATUS
 
     ResourceStatus:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - RELEASED
           - UNCHANGED
           - TRANSFERRED
           - UPDATED
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - RELEASED
-        - UNCHANGED
-        - UPDATED
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - RELEASED
+#        - UNCHANGED
+#        - UPDATED
 
     DnnSelectionMode:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - VERIFIED
           - UE_DNN_NOT_VERIFIED
           - NW_DNN_NOT_VERIFIED
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - VERIFIED
-        - UE_DNN_NOT_VERIFIED
-        - NW_DNN_NOT_VERIFIED
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - VERIFIED
+#        - UE_DNN_NOT_VERIFIED
+#        - NW_DNN_NOT_VERIFIED
 
     EpsInterworkingIndication:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - NONE
           - WITH_N26
           - WITHOUT_N26
           - IWK_NON_3GPP
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-        - NONE
-        - WITH_N26
-        - WITHOUT_N26
-        - IWK_NON_3GPP
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#        - NONE
+#        - WITH_N26
+#        - WITHOUT_N26
+#        - IWK_NON_3GPP
 
     N2SmInfoType:
 #      anyOf:
@@ -3353,72 +3353,72 @@ components:
 #        - SECONDARY_RAT_USAGE
 
     MaxIntegrityProtectedDataRate:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - 64_KBPS
           - MAX_UE_RATE
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-          - 64_KBPS
-          - MAX_UE_RATE
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#          - 64_KBPS
+#          - MAX_UE_RATE
 
     MaReleaseIndication:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - REL_MAPDU_OVER_3GPP
           - REL_MAPDU_OVER_N3GPP
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-          - REL_MAPDU_OVER_3GPP
-          - REL_MAPDU_OVER_N3GPP
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#          - REL_MAPDU_OVER_3GPP
+#          - REL_MAPDU_OVER_N3GPP
 
     SmContextType:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - EPS_PDN_CONNECTION
           - SM_CONTEXT
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-          - EPS_PDN_CONNECTION
-          - SM_CONTEXT
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#          - EPS_PDN_CONNECTION
+#          - SM_CONTEXT
 
     PsaIndication:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - PSA_INSERTED
           - PSA_REMOVED
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-          - PSA_INSERTED
-          - PSA_REMOVED
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#          - PSA_INSERTED
+#          - PSA_REMOVED
 
     N4MessageType:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - PFCP_SES_EST_REQ
           - PFCP_SES_EST_RSP
@@ -3428,55 +3428,55 @@ components:
           - PFCP_SES_DEL_RSP
           - PFCP_SES_REP_REQ
           - PFCP_SES_REP_RSP
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-          - PFCP_SES_EST_REQ
-          - PFCP_SES_EST_RSP
-          - PFCP_SES_MOD_REQ
-          - PFCP_SES_MOD_RSP
-          - PFCP_SES_DEL_REQ
-          - PFCP_SES_DEL_RSP
-          - PFCP_SES_REP_REQ
-          - PFCP_SES_REP_RSP
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#          - PFCP_SES_EST_REQ
+#          - PFCP_SES_EST_RSP
+#          - PFCP_SES_MOD_REQ
+#          - PFCP_SES_MOD_RSP
+#          - PFCP_SES_DEL_REQ
+#          - PFCP_SES_DEL_RSP
+#          - PFCP_SES_REP_REQ
+#          - PFCP_SES_REP_RSP
 
     QosFlowAccessType:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - 3GPP
           - NON_3GPP
           - 3GPP_AND_NON_3GPP
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-          - 3GPP
-          - NON_3GPP
-          - 3GPP_AND_NON_3GPP
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#          - 3GPP
+#          - NON_3GPP
+#          - 3GPP_AND_NON_3GPP
 
     UnavailableAccessIndication:
-      anyOf:
-      - type: string
+#      anyOf:
+#      - type: string
         enum:
           - 3GA_UNAVAILABLE
           - N3GA_UNAVAILABLE
-      - type: string
-        description: >
-          This string provides forward-compatibility with future
-          extensions to the enumeration but is not used to encode
-          content defined in the present version of this API.
-      description: >
-        Possible values are
-          - 3GA_UNAVAILABLE
-          - N3GA_UNAVAILABLE
+        type: string
+#        description: >
+#          This string provides forward-compatibility with future
+#          extensions to the enumeration but is not used to encode
+#          content defined in the present version of this API.
+#      description: >
+#        Possible values are
+#          - 3GA_UNAVAILABLE
+#          - N3GA_UNAVAILABLE
 
 #
 # HTTP request bodies

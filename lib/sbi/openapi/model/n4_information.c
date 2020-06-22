@@ -5,7 +5,7 @@
 #include "n4_information.h"
 
 OpenAPI_n4_information_t *OpenAPI_n4_information_create(
-    OpenAPI_n4_message_type_t *n4_message_type,
+    OpenAPI_n4_message_type_e n4_message_type,
     OpenAPI_ref_to_binary_data_t *n4_message_payload,
     OpenAPI_dnai_information_t *n4_dnai_info
     )
@@ -27,7 +27,6 @@ void OpenAPI_n4_information_free(OpenAPI_n4_information_t *n4_information)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_n4_message_type_free(n4_information->n4_message_type);
     OpenAPI_ref_to_binary_data_free(n4_information->n4_message_payload);
     OpenAPI_dnai_information_free(n4_information->n4_dnai_info);
     ogs_free(n4_information);
@@ -47,13 +46,7 @@ cJSON *OpenAPI_n4_information_convertToJSON(OpenAPI_n4_information_t *n4_informa
         ogs_error("OpenAPI_n4_information_convertToJSON() failed [n4_message_type]");
         goto end;
     }
-    cJSON *n4_message_type_local_JSON = OpenAPI_n4_message_type_convertToJSON(n4_information->n4_message_type);
-    if (n4_message_type_local_JSON == NULL) {
-        ogs_error("OpenAPI_n4_information_convertToJSON() failed [n4_message_type]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "n4MessageType", n4_message_type_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "n4MessageType", OpenAPI_n4_message_type_ToString(n4_information->n4_message_type)) == NULL) {
         ogs_error("OpenAPI_n4_information_convertToJSON() failed [n4_message_type]");
         goto end;
     }
@@ -99,9 +92,13 @@ OpenAPI_n4_information_t *OpenAPI_n4_information_parseFromJSON(cJSON *n4_informa
         goto end;
     }
 
-    OpenAPI_n4_message_type_t *n4_message_type_local_nonprim = NULL;
+    OpenAPI_n4_message_type_e n4_message_typeVariable;
 
-    n4_message_type_local_nonprim = OpenAPI_n4_message_type_parseFromJSON(n4_message_type);
+    if (!cJSON_IsString(n4_message_type)) {
+        ogs_error("OpenAPI_n4_information_parseFromJSON() failed [n4_message_type]");
+        goto end;
+    }
+    n4_message_typeVariable = OpenAPI_n4_message_type_FromString(n4_message_type->valuestring);
 
     cJSON *n4_message_payload = cJSON_GetObjectItemCaseSensitive(n4_informationJSON, "n4MessagePayload");
     if (!n4_message_payload) {
@@ -121,7 +118,7 @@ OpenAPI_n4_information_t *OpenAPI_n4_information_parseFromJSON(cJSON *n4_informa
     }
 
     n4_information_local_var = OpenAPI_n4_information_create (
-        n4_message_type_local_nonprim,
+        n4_message_typeVariable,
         n4_message_payload_local_nonprim,
         n4_dnai_info ? n4_dnai_info_local_nonprim : NULL
         );

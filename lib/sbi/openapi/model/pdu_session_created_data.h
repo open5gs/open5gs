@@ -48,7 +48,7 @@ typedef struct OpenAPI_pdu_session_created_data_s {
     struct OpenAPI_eps_pdn_cnx_info_s *eps_pdn_cnx_info;
     OpenAPI_list_t *eps_bearer_info;
     char *supported_features;
-    struct OpenAPI_max_integrity_protected_data_rate_s *max_integrity_protected_data_rate;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate;
     int always_on_granted;
     char *gpsi;
     struct OpenAPI_up_security_s *up_security;
@@ -82,7 +82,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info,
     OpenAPI_list_t *eps_bearer_info,
     char *supported_features,
-    OpenAPI_max_integrity_protected_data_rate_t *max_integrity_protected_data_rate,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate,
     int always_on_granted,
     char *gpsi,
     OpenAPI_up_security_t *up_security,

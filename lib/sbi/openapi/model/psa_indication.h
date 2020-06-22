@@ -1,7 +1,7 @@
 /*
  * psa_indication.h
  *
- * Possible values are   - PSA_INSERTED   - PSA_REMOVED
+ *
  */
 
 #ifndef _OpenAPI_psa_indication_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_psa_indication_s OpenAPI_psa_indication_t;
-typedef struct OpenAPI_psa_indication_s {
-} OpenAPI_psa_indication_t;
+typedef enum { OpenAPI_psa_indication_NULL = 0, OpenAPI_psa_indication_PSA_INSERTED, OpenAPI_psa_indication_PSA_REMOVED } OpenAPI_psa_indication_e;
 
-OpenAPI_psa_indication_t *OpenAPI_psa_indication_create(
-    );
-void OpenAPI_psa_indication_free(OpenAPI_psa_indication_t *psa_indication);
-OpenAPI_psa_indication_t *OpenAPI_psa_indication_parseFromJSON(cJSON *psa_indicationJSON);
-cJSON *OpenAPI_psa_indication_convertToJSON(OpenAPI_psa_indication_t *psa_indication);
-OpenAPI_psa_indication_t *OpenAPI_psa_indication_copy(OpenAPI_psa_indication_t *dst, OpenAPI_psa_indication_t *src);
+char* OpenAPI_psa_indication_ToString(OpenAPI_psa_indication_e psa_indication);
+
+OpenAPI_psa_indication_e OpenAPI_psa_indication_FromString(char* psa_indication);
 
 #ifdef __cplusplus
 }

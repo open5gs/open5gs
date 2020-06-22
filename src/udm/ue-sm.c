@@ -124,8 +124,9 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
                 CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
                 CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
-                    udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue,
-                         message, udm_nudr_dr_build_query_provisioned);
+                    udm_sbi_discover_and_send(
+                        OpenAPI_nf_type_UDR, udm_ue, message,
+                        udm_nudr_dr_build_query_subscription_provisioned);
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
@@ -176,8 +177,14 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_AUTHENTICATION_DATA)
                     if (message->res_status != OGS_SBI_HTTP_STATUS_OK &&
                         message->res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT) {
-                        ogs_error("[%s] HTTP response error [%d]",
-                            udm_ue->suci, message->res_status);
+                        if (message->res_status ==
+                                OGS_SBI_HTTP_STATUS_NOT_FOUND) {
+                            ogs_warn("[%s] Cannot find SUPI [%d]",
+                                udm_ue->suci, message->res_status);
+                        } else {
+                            ogs_error("[%s] HTTP response error [%d]",
+                                udm_ue->suci, message->res_status);
+                        }
                         ogs_sbi_server_send_error(
                             session, message->res_status,
                             NULL, "HTTP response error", udm_ue->suci);

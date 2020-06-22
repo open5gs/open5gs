@@ -306,3 +306,32 @@ void ogs_kdf_nas_eps(uint8_t algorithm_type_distinguishers,
     memcpy(knas, output+16, 16);
 }
 
+/*
+ * TS33.102
+ * 6.3.3 Authentication and key agreement
+ * Re-use and re-transmission of (RAND, AUTN)
+ */
+void ogs_auc_sqn(
+    const uint8_t *opc, const uint8_t *k,
+    const uint8_t *rand, const uint8_t *conc_sqn_ms,
+    uint8_t *sqn_ms, uint8_t *mac_s)
+{
+    int i;
+    uint8_t ak[OGS_AK_LEN];
+    /*
+     * The AMF used to calculate MAC-S assumes a dummy value of
+     * all zeros so that it does not need to be transmitted in the clear
+     * in the re-synch message.
+     */
+    uint8_t amf[2] = { 0, 0 };
+
+    ogs_assert(opc);
+    ogs_assert(k);
+    ogs_assert(rand);
+    ogs_assert(conc_sqn_ms);
+
+    milenage_f2345(opc, k, rand, NULL, NULL, NULL, NULL, ak);
+    for (i = 0; i < OGS_SQN_LEN; i++)
+        sqn_ms[i] = ak[i] ^ conc_sqn_ms[i];
+    milenage_f1(opc, k, rand, sqn_ms, amf, NULL, mac_s);
+}

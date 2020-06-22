@@ -29,6 +29,12 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     smf_bearer_t *bearer = NULL;
     int rv, i;
 
+    uint32_t gnb_n3_teid;
+    ogs_ip_t gnb_n3_ip;
+
+    ogs_pfcp_far_t *far = NULL;
+    bool far_update = false;
+
     NGAP_PDUSessionResourceSetupResponseTransfer_t message;
 
     NGAP_QosFlowPerTNLInformation_t *dLQosFlowPerTNLInformation = NULL;
@@ -69,7 +75,8 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         NGAP_UPTransportLayerInformation_PR_gTPTunnel) {
         ogs_error(
             "[%s:%d] Unknown NGAP_UPTransportLayerInformation.present [%d]",
-            smf_ue->supi, sess->psi, uPTransportLayerInformation->present);
+            smf_ue->supi, sess->psi,
+            uPTransportLayerInformation->present);
         smf_sbi_send_sm_context_update_error(session,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "Unknown NGAP_UPTransportLayerInformation.present",
@@ -97,11 +104,36 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     }
 
     ogs_asn_BIT_STRING_to_ip(
-            &gTPTunnel->transportLayerAddress, &bearer->gnb_ip);
-    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &bearer->gnb_n3_teid);
+            &gTPTunnel->transportLayerAddress, &gnb_n3_ip);
+    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &gnb_n3_teid);
 
-    bearer->state.outer_header_creation_updated = true;
-    smf_pfcp_send_session_modification_request(bearer);
+    if (memcmp(&bearer->gnb_n3_ip, &gnb_n3_ip,
+                sizeof(bearer->gnb_n3_ip)) != 0 ||
+        bearer->gnb_n3_teid != gnb_n3_teid)
+        sess->pfcp_5gc_modify.outer_header_creation_update = true;
+    else
+        sess->pfcp_5gc_modify.outer_header_creation_update = false;
+
+    memcpy(&bearer->gnb_n3_ip, &gnb_n3_ip, sizeof(bearer->gnb_n3_ip));
+    bearer->gnb_n3_teid = gnb_n3_teid;
+
+    ogs_list_for_each(&bearer->pfcp.far_list, far) {
+        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+            if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+                if (far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
+                    far_update = true;
+                }
+            } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+                far_update = true;
+            }
+        }
+    }
+
+    if (far_update || sess->pfcp_5gc_modify.outer_header_creation_update)
+        smf_5gc_pfcp_send_session_modification_request(sess);
+    else
+        smf_sbi_send_sm_context_updated_data(sess);
+
 
     rv = OGS_OK;
 cleanup:

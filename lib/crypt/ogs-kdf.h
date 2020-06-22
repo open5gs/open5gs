@@ -88,6 +88,16 @@ void ogs_kdf_nas_eps(uint8_t algorithm_type_distinguishers,
     uint8_t algorithm_identity, uint8_t *kasme, uint8_t *knas);
 
 
+/*
+ * TS33.102
+ * 6.3.3 Authentication and key agreement
+ * Re-use and re-transmission of (RAND, AUTN)
+ */
+void ogs_auc_sqn(
+    const uint8_t *opc, const uint8_t *k,
+    const uint8_t *rand, const uint8_t *conc_sqn_ms,
+    uint8_t *sqn_ms, uint8_t *mac_s);
+
 #ifdef __cplusplus
 }
 #endif

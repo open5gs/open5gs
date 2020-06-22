@@ -127,59 +127,6 @@ ED8(uint8_t ebi15:1;,
     uint8_t ebi8:1;)
 } __attribute__ ((packed)) ogs_nas_eps_bearer_context_status_t;
 
-/* 9.9.2.3 Mobile identity
- * See subclause 10.5.1.4 in 3GPP TS 24.008 [13].
- * O TLV 7-10 */
-#define OGS_NAS_MOBILE_IDENTITY_NONE 0
-#define OGS_NAS_MOBILE_IDENTITY_IMSI 1
-#define OGS_NAS_MOBILE_IDENTITY_IMEI 2
-#define OGS_NAS_MOBILE_IDENTITY_IMEISV 3
-#define OGS_NAS_MOBILE_IDENTITY_TMSI 4
-#define OGS_NAS_MOBILE_IDENTITY_TMGI 5
-#define OGS_NAS_MOBILE_IDENTITY_GUTI 6
-
-#define OGS_NAS_MOBILE_IDENTITY_EVEN 0
-#define OGS_NAS_MOBILE_IDENTITY_ODD 1
-typedef struct ogs_nas_mobile_identity_imsi_s {
-ED3(uint8_t digit1:4;,
-    uint8_t odd_even:1;,
-    uint8_t type:3;)
-ED2(uint8_t digit3:4;,
-    uint8_t digit2:4;)
-ED2(uint8_t digit5:4;,
-    uint8_t digit4:4;)
-ED2(uint8_t digit7:4;,
-    uint8_t digit6:4;)
-ED2(uint8_t digit9:4;,
-    uint8_t digit8:4;)
-ED2(uint8_t digit11:4;,
-    uint8_t digit10:4;)
-ED2(uint8_t digit13:4;,
-    uint8_t digit12:4;)
-ED2(uint8_t digit15:4;,
-    uint8_t digit14:4;)
-} __attribute__ ((packed)) ogs_nas_mobile_identity_imsi_t;
-
-typedef ogs_nas_mobile_identity_imsi_t ogs_nas_mobile_identity_imei_t;
-
-typedef struct ogs_nas_mobile_identity_tmsi_s {
-ED3(uint8_t spare:4;,
-    uint8_t odd_even:1;,
-    uint8_t type:3;)
-    uint32_t tmsi;
-} __attribute__ ((packed)) ogs_nas_mobile_identity_tmsi_t;
-
-typedef struct ogs_nas_mobile_identity_tmgi_s {
-ED5(uint8_t spare:2;,
-    uint8_t mbms_session_id:1;,
-    uint8_t mcc_mnc:1;,
-    uint8_t odd_even:1;,
-    uint8_t type:3;)
-    uint8_t mbms_servicec_id[3];
-    ogs_nas_plmn_id_t nas_plmn_id;
-    uint8_t mbms_session_identity;
-} __attribute__ ((packed)) ogs_nas_mobile_identity_tmgi_t;
-
 typedef struct ogs_nas_mobile_identity_imeisv_s {
 ED3(uint8_t digit1:4;,
     uint8_t odd_even:1;,
@@ -201,16 +148,6 @@ ED2(uint8_t digit15:4;,
 ED2(uint8_t digit17:4;,
     uint8_t digit16:4;)
 } __attribute__ ((packed)) ogs_nas_mobile_identity_imeisv_t;
-
-typedef struct ogs_nas_mobile_identity_s {
-    uint8_t length;
-    union {
-        ogs_nas_mobile_identity_imsi_t imsi;
-        ogs_nas_mobile_identity_tmsi_t tmsi;
-        ogs_nas_mobile_identity_tmgi_t tmgi;
-        ogs_nas_mobile_identity_imeisv_t imeisv;
-    };
-} ogs_nas_mobile_identity_t;
 
 /* 9.9.2.4 Mobile station classmark 2
  * See subclause 10.5.1.6 in 3GPP TS 24.008

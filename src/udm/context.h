@@ -68,6 +68,12 @@ struct udm_ue_s {
 
     char *dereg_callback_uri;
 
+    uint8_t k[OGS_KEY_LEN];
+    uint8_t opc[OGS_KEY_LEN];
+    uint8_t amf[OGS_AMF_LEN];
+    uint8_t rand[OGS_RAND_LEN];
+    uint8_t sqn[OGS_SQN_LEN];
+
     ogs_amf_id_t amf_id;
     ogs_plmn_id_t serving_plmn_id;
 

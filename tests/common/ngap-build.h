@@ -25,16 +25,22 @@ extern "C" {
 #endif
 
 ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id);
-ogs_pkbuf_t *testngap_build_initial_ue_message(ogs_pkbuf_t *gmmbuf);
+ogs_pkbuf_t *testngap_build_initial_ue_message(
+        test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf);
 ogs_pkbuf_t *testngap_build_uplink_nas_transport(
         test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf);
 
-ogs_pkbuf_t *testngap_build_initial_context_setup_response(test_ue_t *test_ue);
+ogs_pkbuf_t *testngap_build_initial_context_setup_response(
+        test_ue_t *test_ue, test_sess_t *sess);
 ogs_pkbuf_t *testngap_build_initial_context_setup_failure(test_ue_t *test_ue,
         NGAP_Cause_PR group, long cause);
 
 ogs_pkbuf_t *testngap_build_ue_radio_capability_info_indication(
         test_ue_t *test_ue);
+
+ogs_pkbuf_t *testngap_build_ue_context_release_request(test_ue_t *test_ue,
+        NGAP_Cause_PR group, long cause);
+ogs_pkbuf_t *testngap_build_ue_context_release_complete(test_ue_t *test_ue);
 
 ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response(
         test_sess_t *sess);

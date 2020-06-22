@@ -5,7 +5,7 @@
 #include "pdu_session_notify_item.h"
 
 OpenAPI_pdu_session_notify_item_t *OpenAPI_pdu_session_notify_item_create(
-    OpenAPI_notification_cause_t *notification_cause
+    OpenAPI_notification_cause_e notification_cause
     )
 {
     OpenAPI_pdu_session_notify_item_t *pdu_session_notify_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_pdu_session_notify_item_t));
@@ -23,7 +23,6 @@ void OpenAPI_pdu_session_notify_item_free(OpenAPI_pdu_session_notify_item_t *pdu
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_notification_cause_free(pdu_session_notify_item->notification_cause);
     ogs_free(pdu_session_notify_item);
 }
 
@@ -41,13 +40,7 @@ cJSON *OpenAPI_pdu_session_notify_item_convertToJSON(OpenAPI_pdu_session_notify_
         ogs_error("OpenAPI_pdu_session_notify_item_convertToJSON() failed [notification_cause]");
         goto end;
     }
-    cJSON *notification_cause_local_JSON = OpenAPI_notification_cause_convertToJSON(pdu_session_notify_item->notification_cause);
-    if (notification_cause_local_JSON == NULL) {
-        ogs_error("OpenAPI_pdu_session_notify_item_convertToJSON() failed [notification_cause]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "notificationCause", notification_cause_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "notificationCause", OpenAPI_notification_cause_ToString(pdu_session_notify_item->notification_cause)) == NULL) {
         ogs_error("OpenAPI_pdu_session_notify_item_convertToJSON() failed [notification_cause]");
         goto end;
     }
@@ -65,12 +58,16 @@ OpenAPI_pdu_session_notify_item_t *OpenAPI_pdu_session_notify_item_parseFromJSON
         goto end;
     }
 
-    OpenAPI_notification_cause_t *notification_cause_local_nonprim = NULL;
+    OpenAPI_notification_cause_e notification_causeVariable;
 
-    notification_cause_local_nonprim = OpenAPI_notification_cause_parseFromJSON(notification_cause);
+    if (!cJSON_IsString(notification_cause)) {
+        ogs_error("OpenAPI_pdu_session_notify_item_parseFromJSON() failed [notification_cause]");
+        goto end;
+    }
+    notification_causeVariable = OpenAPI_notification_cause_FromString(notification_cause->valuestring);
 
     pdu_session_notify_item_local_var = OpenAPI_pdu_session_notify_item_create (
-        notification_cause_local_nonprim
+        notification_causeVariable
         );
 
     return pdu_session_notify_item_local_var;

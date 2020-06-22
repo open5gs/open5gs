@@ -43,7 +43,7 @@ typedef struct OpenAPI_sm_context_s {
     char *pcf_id;
     char *pcf_group_id;
     char *pcf_set_id;
-    struct OpenAPI_dnn_selection_mode_s *sel_mode;
+    OpenAPI_dnn_selection_mode_e sel_mode;
     char *udm_group_id;
     char *routing_indicator;
     struct OpenAPI_ambr_s *session_ambr;
@@ -55,7 +55,7 @@ typedef struct OpenAPI_sm_context_s {
     char *ue_ipv6_prefix;
     struct OpenAPI_eps_pdn_cnx_info_s *eps_pdn_cnx_info;
     OpenAPI_list_t *eps_bearer_info;
-    struct OpenAPI_max_integrity_protected_data_rate_s *max_integrity_protected_data_rate;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate;
     int always_on_granted;
     struct OpenAPI_up_security_s *up_security;
     char *h_smf_service_instance_id;
@@ -82,7 +82,7 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     char *pcf_id,
     char *pcf_group_id,
     char *pcf_set_id,
-    OpenAPI_dnn_selection_mode_t *sel_mode,
+    OpenAPI_dnn_selection_mode_e sel_mode,
     char *udm_group_id,
     char *routing_indicator,
     OpenAPI_ambr_t *session_ambr,
@@ -94,7 +94,7 @@ OpenAPI_sm_context_t *OpenAPI_sm_context_create(
     char *ue_ipv6_prefix,
     OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info,
     OpenAPI_list_t *eps_bearer_info,
-    OpenAPI_max_integrity_protected_data_rate_t *max_integrity_protected_data_rate,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate,
     int always_on_granted,
     OpenAPI_up_security_t *up_security,
     char *h_smf_service_instance_id,

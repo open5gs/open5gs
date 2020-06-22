@@ -52,16 +52,10 @@ static amf_timer_cfg_t g_amf_timer_cfg[MAX_NUM_OF_AMF_TIMER] = {
     /* IDENTITY REQUEST sent */
     [AMF_TIMER_T3570] =
         { .max_count = 4, .duration = ogs_time_from_sec(3) },
-
-    /* 5GSM INFORMATION REQUEST sent */
-    [AMF_TIMER_T3589] =
-        { .max_count = 2, .duration = ogs_time_from_sec(4) },
 };
 
 static void gmm_timer_event_send(
         amf_timer_e timer_id, amf_ue_t *amf_ue);
-static void gsm_timer_event_send(
-        amf_timer_e timer_id, amf_bearer_t *bearer);
 
 amf_timer_cfg_t *amf_timer_cfg(amf_timer_e id)
 {
@@ -98,12 +92,6 @@ const char *amf_timer_get_name(amf_timer_e id)
         return "AMF_TIMER_T3560";
     case AMF_TIMER_T3570:
         return "AMF_TIMER_T3570";
-    case AMF_TIMER_T3589:
-        return "AMF_TIMER_T3589";
-#if 0
-    case AMF_TIMER_SGS_CLI_CONN_TO_SRV:
-        return "AMF_TIMER_SGS_CLI_CONN_TO_SRV";
-#endif
     default: 
        break;
     }
@@ -235,31 +223,4 @@ void amf_timer_t3560_expire(void *data)
 void amf_timer_t3570_expire(void *data)
 {
     gmm_timer_event_send(AMF_TIMER_T3570, data);
-}
-
-static void gsm_timer_event_send(
-        amf_timer_e timer_id, amf_bearer_t *bearer)
-{
-    int rv;
-    amf_event_t *e = NULL;
-    amf_ue_t *amf_ue = NULL;
-    ogs_assert(bearer);
-    amf_ue = bearer->amf_ue;
-    ogs_assert(bearer);
-
-    e = amf_event_new(AMF_EVT_5GSM_TIMER);
-    e->timer_id = timer_id;
-    e->amf_ue = amf_ue;
-    e->bearer = bearer;
-
-    rv = ogs_queue_push(amf_self()->queue, e);
-    if (rv != OGS_OK) {
-        ogs_warn("ogs_queue_push() failed:%d", (int)rv);
-        amf_event_free(e);
-    }
-}
-
-void amf_timer_t3589_expire(void *data)
-{
-    gsm_timer_event_send(AMF_TIMER_T3589, data);
 }

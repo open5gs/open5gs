@@ -54,7 +54,7 @@ typedef struct OpenAPI_sm_context_create_data_s {
     struct OpenAPI_guami_s *guami;
     char *service_name;
     struct OpenAPI_plmn_id_nid_s *serving_network;
-    struct OpenAPI_request_type_s *request_type;
+    OpenAPI_request_type_e request_type;
     struct OpenAPI_ref_to_binary_data_s *n1_sm_msg;
     OpenAPI_access_type_e an_type;
     OpenAPI_access_type_e additional_an_type;
@@ -71,18 +71,18 @@ typedef struct OpenAPI_sm_context_create_data_s {
     int old_pdu_session_id;
     OpenAPI_list_t *pdu_sessions_activate_list;
     char *ue_eps_pdn_connection;
-    struct OpenAPI_ho_state_s *ho_state;
+    OpenAPI_ho_state_e ho_state;
     char *pcf_id;
     char *pcf_group_id;
     char *pcf_set_id;
     char *nrf_uri;
     char *supported_features;
-    struct OpenAPI_dnn_selection_mode_s *sel_mode;
+    OpenAPI_dnn_selection_mode_e sel_mode;
     OpenAPI_list_t *backup_amf_info;
     struct OpenAPI_trace_data_s *trace_data;
     char *udm_group_id;
     char *routing_indicator;
-    struct OpenAPI_eps_interworking_indication_s *eps_interworking_ind;
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind;
     int indirect_forwarding_flag;
     struct OpenAPI_ng_ran_target_id_s *target_id;
     char *eps_bearer_ctx_status;
@@ -96,7 +96,7 @@ typedef struct OpenAPI_sm_context_create_data_s {
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info_ext1;
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1;
     char *sm_context_ref;
-    struct OpenAPI_up_cnx_state_s *up_cnx_state;
+    OpenAPI_up_cnx_state_e up_cnx_state;
     struct OpenAPI_small_data_rate_status_s *small_data_rate_status;
     struct OpenAPI_apn_rate_status_s *apn_rate_status;
     int extended_nas_sm_timer_ind;
@@ -123,7 +123,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     OpenAPI_guami_t *guami,
     char *service_name,
     OpenAPI_plmn_id_nid_t *serving_network,
-    OpenAPI_request_type_t *request_type,
+    OpenAPI_request_type_e request_type,
     OpenAPI_ref_to_binary_data_t *n1_sm_msg,
     OpenAPI_access_type_e an_type,
     OpenAPI_access_type_e additional_an_type,
@@ -140,18 +140,18 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     int old_pdu_session_id,
     OpenAPI_list_t *pdu_sessions_activate_list,
     char *ue_eps_pdn_connection,
-    OpenAPI_ho_state_t *ho_state,
+    OpenAPI_ho_state_e ho_state,
     char *pcf_id,
     char *pcf_group_id,
     char *pcf_set_id,
     char *nrf_uri,
     char *supported_features,
-    OpenAPI_dnn_selection_mode_t *sel_mode,
+    OpenAPI_dnn_selection_mode_e sel_mode,
     OpenAPI_list_t *backup_amf_info,
     OpenAPI_trace_data_t *trace_data,
     char *udm_group_id,
     char *routing_indicator,
-    OpenAPI_eps_interworking_indication_t *eps_interworking_ind,
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     int indirect_forwarding_flag,
     OpenAPI_ng_ran_target_id_t *target_id,
     char *eps_bearer_ctx_status,
@@ -165,7 +165,7 @@ OpenAPI_sm_context_create_data_t *OpenAPI_sm_context_create_data_create(
     OpenAPI_ref_to_binary_data_t *n2_sm_info_ext1,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1,
     char *sm_context_ref,
-    OpenAPI_up_cnx_state_t *up_cnx_state,
+    OpenAPI_up_cnx_state_e up_cnx_state,
     OpenAPI_small_data_rate_status_t *small_data_rate_status,
     OpenAPI_apn_rate_status_t *apn_rate_status,
     int extended_nas_sm_timer_ind,

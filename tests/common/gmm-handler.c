@@ -19,6 +19,22 @@
 
 #include "test-common.h"
 
+void testgmm_handle_identity_request(test_ue_t *test_ue,
+        ogs_nas_5gs_identity_request_t *identity_request)
+{
+    ogs_assert(test_ue);
+    ogs_assert(identity_request);
+
+    switch (identity_request->identity_type.value) {
+    case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
+        break;
+    default:
+        ogs_error("Not implemented [%d]",
+                identity_request->identity_type.value);
+        break;
+    }
+}
+
 void testgmm_handle_authentication_request(test_ue_t *test_ue,
         ogs_nas_5gs_authentication_request_t *authentication_request)
 {

@@ -24,7 +24,8 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue, void *data)
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
-    OpenAPI_authentication_info_request_t *AuthenticationInfoRequest = NULL;
+    OpenAPI_authentication_info_request_t AuthenticationInfoRequest;
+    OpenAPI_resynchronization_info_t ResynchronizationInfo;
 
     ogs_assert(ausf_ue);
 
@@ -38,21 +39,28 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_get(ausf_ue_t *ausf_ue, void *data)
     message.h.resource.component[2] =
         (char *)OGS_SBI_RESOURCE_NAME_GENERATE_AUTH_DATA;
 
-    AuthenticationInfoRequest =
-        ogs_calloc(1, sizeof(*AuthenticationInfoRequest));
-    ogs_assert(AuthenticationInfoRequest);
+    memset(&AuthenticationInfoRequest, 0, sizeof(AuthenticationInfoRequest));
 
-    AuthenticationInfoRequest->serving_network_name =
+    AuthenticationInfoRequest.serving_network_name =
         ausf_ue->serving_network_name;
-    AuthenticationInfoRequest->ausf_instance_id =
+    AuthenticationInfoRequest.ausf_instance_id =
         ogs_sbi_self()->nf_instance_id;
 
-    message.AuthenticationInfoRequest = AuthenticationInfoRequest;
+    if (data) {
+        OpenAPI_resynchronization_info_t *recvinfo = data;
+
+        memset(&ResynchronizationInfo, 0, sizeof(ResynchronizationInfo));
+        ResynchronizationInfo.rand = recvinfo->rand;
+        ResynchronizationInfo.auts = recvinfo->auts;
+
+        AuthenticationInfoRequest.resynchronization_info =
+            &ResynchronizationInfo;
+    }
+
+    message.AuthenticationInfoRequest = &AuthenticationInfoRequest;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
-
-    ogs_free(AuthenticationInfoRequest);
 
     return request;
 }

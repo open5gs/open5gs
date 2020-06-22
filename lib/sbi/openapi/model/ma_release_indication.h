@@ -1,7 +1,7 @@
 /*
  * ma_release_indication.h
  *
- * Possible values are   - REL_MAPDU_OVER_3GPP   - REL_MAPDU_OVER_N3GPP
+ *
  */
 
 #ifndef _OpenAPI_ma_release_indication_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ma_release_indication_s OpenAPI_ma_release_indication_t;
-typedef struct OpenAPI_ma_release_indication_s {
-} OpenAPI_ma_release_indication_t;
+typedef enum { OpenAPI_ma_release_indication_NULL = 0, OpenAPI_ma_release_indication_REL_MAPDU_OVER_3GPP, OpenAPI_ma_release_indication_REL_MAPDU_OVER_N3GPP } OpenAPI_ma_release_indication_e;
 
-OpenAPI_ma_release_indication_t *OpenAPI_ma_release_indication_create(
-    );
-void OpenAPI_ma_release_indication_free(OpenAPI_ma_release_indication_t *ma_release_indication);
-OpenAPI_ma_release_indication_t *OpenAPI_ma_release_indication_parseFromJSON(cJSON *ma_release_indicationJSON);
-cJSON *OpenAPI_ma_release_indication_convertToJSON(OpenAPI_ma_release_indication_t *ma_release_indication);
-OpenAPI_ma_release_indication_t *OpenAPI_ma_release_indication_copy(OpenAPI_ma_release_indication_t *dst, OpenAPI_ma_release_indication_t *src);
+char* OpenAPI_ma_release_indication_ToString(OpenAPI_ma_release_indication_e ma_release_indication);
+
+OpenAPI_ma_release_indication_e OpenAPI_ma_release_indication_FromString(char* ma_release_indication);
 
 #ifdef __cplusplus
 }

@@ -31,7 +31,7 @@ extern "C" {
 
 typedef struct OpenAPI_vsmf_update_data_s OpenAPI_vsmf_update_data_t;
 typedef struct OpenAPI_vsmf_update_data_s {
-    struct OpenAPI_request_indication_s *request_indication;
+    OpenAPI_request_indication_e request_indication;
     struct OpenAPI_ambr_s *session_ambr;
     OpenAPI_list_t *qos_flows_add_mod_request_list;
     OpenAPI_list_t *qos_flows_rel_request_list;
@@ -44,10 +44,10 @@ typedef struct OpenAPI_vsmf_update_data_s {
     int always_on_granted;
     char *hsmf_pdu_session_uri;
     char *supported_features;
-    struct OpenAPI_cause_s *cause;
+    OpenAPI_cause_e cause;
     char *n1sm_cause;
     int back_off_timer;
-    struct OpenAPI_ma_release_indication_s *ma_release_ind;
+    OpenAPI_ma_release_indication_e ma_release_ind;
     int ma_accepted_ind;
     struct OpenAPI_tunnel_info_s *additional_cn_tunnel_info;
     OpenAPI_list_t *dnai_list;
@@ -57,7 +57,7 @@ typedef struct OpenAPI_vsmf_update_data_s {
 } OpenAPI_vsmf_update_data_t;
 
 OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
-    OpenAPI_request_indication_t *request_indication,
+    OpenAPI_request_indication_e request_indication,
     OpenAPI_ambr_t *session_ambr,
     OpenAPI_list_t *qos_flows_add_mod_request_list,
     OpenAPI_list_t *qos_flows_rel_request_list,
@@ -70,10 +70,10 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
     int always_on_granted,
     char *hsmf_pdu_session_uri,
     char *supported_features,
-    OpenAPI_cause_t *cause,
+    OpenAPI_cause_e cause,
     char *n1sm_cause,
     int back_off_timer,
-    OpenAPI_ma_release_indication_t *ma_release_ind,
+    OpenAPI_ma_release_indication_e ma_release_ind,
     int ma_accepted_ind,
     OpenAPI_tunnel_info_t *additional_cn_tunnel_info,
     OpenAPI_list_t *dnai_list,

@@ -159,10 +159,6 @@ uint8_t ogs_amf_pointer(ogs_amf_id_t *amf_id)
 ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
         uint8_t region, uint16_t set, uint8_t pointer)
 {
-    ogs_assert(amf_id);
-    ogs_assert(region);
-    ogs_assert(set);
-
     amf_id->region = region;
     amf_id->set1 = set >> 2;
     amf_id->set2 = set & 0x3;

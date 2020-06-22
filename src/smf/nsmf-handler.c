@@ -20,6 +20,7 @@
 #include "sbi-path.h"
 #include "nas-path.h"
 #include "ngap-path.h"
+#include "pfcp-path.h"
 #include "nsmf-handler.h"
 
 bool smf_nsmf_handle_create_sm_context(
@@ -45,7 +46,8 @@ bool smf_nsmf_handle_create_sm_context(
 
     SmContextCreateData = message->SmContextCreateData;
     if (!SmContextCreateData) {
-        ogs_error("[%s:%d] No SmContextCreateData", smf_ue->supi, sess->psi);
+        ogs_error("[%s:%d] No SmContextCreateData",
+                smf_ue->supi, sess->psi);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
         smf_sbi_send_sm_context_create_error(session,
@@ -67,7 +69,8 @@ bool smf_nsmf_handle_create_sm_context(
 
     servingNetwork = SmContextCreateData->serving_network;
     if (!servingNetwork || !servingNetwork->mnc || !servingNetwork->mcc) {
-        ogs_error("[%s:%d] No servingNetwork", smf_ue->supi, sess->psi);
+        ogs_error("[%s:%d] No servingNetwork",
+                smf_ue->supi, sess->psi);
         n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
             OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
         smf_sbi_send_sm_context_create_error(session,
@@ -120,10 +123,16 @@ bool smf_nsmf_handle_create_sm_context(
 bool smf_nsmf_handle_update_sm_context(
         smf_sess_t *sess, ogs_sbi_message_t *message)
 {
+    int i;
     smf_ue_t *smf_ue = NULL;
+
     ogs_sbi_session_t *session = NULL;
 
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
     OpenAPI_sm_context_update_data_t *SmContextUpdateData = NULL;
+    OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
     OpenAPI_ref_to_binary_data_t *n2SmMsg = NULL;
 
     ogs_pkbuf_t *n2smbuf = NULL;
@@ -138,38 +147,203 @@ bool smf_nsmf_handle_update_sm_context(
 
     SmContextUpdateData = message->SmContextUpdateData;
     if (!SmContextUpdateData) {
-        ogs_error("[%s:%d] No SmContextUpdateData", smf_ue->supi, sess->psi);
+        ogs_error("[%s:%d] No SmContextUpdateData",
+                smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(session,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No SmContextUpdateData", smf_ue->supi, NULL);
         return false;
     }
     
-    if (!SmContextUpdateData->n2_sm_info_type) {
-        ogs_error("[%s:%d] No n2SmInfoType", smf_ue->supi, sess->psi);
-        smf_sbi_send_sm_context_update_error(session,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "No N2 SM Info Type", smf_ue->supi, NULL);
-        return false;
-    }
+    if (SmContextUpdateData->n2_sm_info) {
 
-    n2SmMsg = SmContextUpdateData->n2_sm_info;
-    if (!n2SmMsg || !n2SmMsg->content_id) {
-        smf_sbi_send_sm_context_update_error(session,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "No n2SmInfo", smf_ue->supi, NULL);
-        return false;
-    }
+        /*********************************************************
+         * Handle ACTIVATED
+         ********************************************************/
 
-    n2smbuf = ogs_sbi_find_part_by_content_id(message, n2SmMsg->content_id);
-    if (!n2smbuf) {
-        smf_sbi_send_sm_context_update_error(session,
-                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "No N2 SM Content", smf_ue->supi, NULL);
-        return false;
-    }
+        if (!SmContextUpdateData->n2_sm_info_type) {
+            ogs_error("[%s:%d] No n2SmInfoType", smf_ue->supi, sess->psi);
+            smf_sbi_send_sm_context_update_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    "No n2SmInfoType", smf_ue->supi, NULL);
+            return false;
+        }
 
-    ngap_send_to_n2sm(sess, SmContextUpdateData->n2_sm_info_type, n2smbuf);
+        n2SmMsg = SmContextUpdateData->n2_sm_info;
+        if (!n2SmMsg || !n2SmMsg->content_id) {
+            ogs_error("[%s:%d] No N2SmInfo.content_id",
+                    smf_ue->supi, sess->psi);
+            smf_sbi_send_sm_context_update_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    "No n2SmInfo.content_id", smf_ue->supi, NULL);
+            return false;
+        }
+
+        n2smbuf = ogs_sbi_find_part_by_content_id(message, n2SmMsg->content_id);
+        if (!n2smbuf) {
+            ogs_error("[%s:%d] No N2 SM Content", smf_ue->supi, sess->psi);
+            smf_sbi_send_sm_context_update_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    "No N2 SM Content", smf_ue->supi, NULL);
+            return false;
+        }
+
+        /* UPDATE_UpCnxState - ACTIVATED */
+        sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATED;
+
+        ngap_send_to_n2sm(sess, SmContextUpdateData->n2_sm_info_type, n2smbuf);
+
+    } else {
+        if (!SmContextUpdateData->up_cnx_state) {
+            ogs_error("[%s:%d] No upCnxState", smf_ue->supi, sess->psi);
+            smf_sbi_send_sm_context_update_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    "No upCnxState", smf_ue->supi, NULL);
+            return false;
+        }
+
+        /* UPDATE_UpCnxState - from SmContextUpdateData */
+        sess->ueUpCnxState = SmContextUpdateData->up_cnx_state;
+
+        if (sess->ueUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+
+        /*********************************************************
+         * Handle DEACTIVATED
+         ********************************************************/
+
+            if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+                smf_5gc_pfcp_send_session_modification_request(sess);
+
+            } else if (sess->smfUpCnxState ==
+                    OpenAPI_up_cnx_state_DEACTIVATED) {
+                ogs_warn("[%s:%d] FALLBACK - UpCnxState has already been"
+                        "DEACTIVATED", smf_ue->supi, sess->psi);
+
+                /* No UPDATE_UPCnxState - ueUpCnxState == smfUpCnxState */
+
+                memset(&sendmsg, 0, sizeof(sendmsg));
+
+                memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
+                SmContextUpdatedData.up_cnx_state =  sess->smfUpCnxState;
+
+                sendmsg.SmContextUpdatedData = &SmContextUpdatedData;
+
+                response = ogs_sbi_build_response(&sendmsg,
+                        OGS_SBI_HTTP_STATUS_OK);
+                ogs_assert(response);
+                ogs_sbi_server_send_response(session, response);
+
+            } else {
+                char *strerror = ogs_msprintf(
+                    "[%s:%d] Invalid upCnxState [%d:%d]",
+                    smf_ue->supi, sess->psi,
+                    sess->ueUpCnxState, sess->smfUpCnxState);
+                ogs_error("%s", strerror);
+                smf_sbi_send_sm_context_update_error(session,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror, NULL, NULL);
+                ogs_free(strerror);
+                return false;
+            }
+
+        } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATING) {
+
+        /*********************************************************
+         * Handle ACTIVATING
+         ********************************************************/
+
+            if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+                ogs_warn("[%s:%d] FALLBACK - UpCnxState has already been "
+                        "ACTIVATED", smf_ue->supi, sess->psi);
+            /*
+             * TODO :
+             *
+             * TS29.502 5.2.2.3.2.2
+             * Activation of User Plane connectivity of PDU session
+             *
+             * 2b. If the request does not include the "UE presence
+             * in LADN service area" indication and the SMF determines
+             * that the DNN corresponds to a LADN, then the SMF shall
+             * consider that the UE is outside of the LADN service area.
+             *
+             * The SMF shall reject the request if the UE is outside
+             * of the LADN service area. If the SMF cannot proceed
+             * with activating the user plane connection of the PDU session
+             * (e.g. if the PDU session corresponds to a PDU session
+             * of SSC mode 2 and the SMF decides to change
+             * the PDU Session Anchor), the SMF shall return an error response,
+             * as specified for step 2b of figure 5.2.2.3.1-1.
+             *
+             * For a 4xx/5xx response, the SmContextUpdateError structure
+             * shall include the following additional information:
+             *
+             * upCnxState attribute set to DEACTIVATED.
+             *
+             *
+             * TS23.502 4.2.3
+             * Service Request Procedures
+             *
+             * 8a. If the SMF find the PDU Session is activated
+             * when receiving the Nsmf_PDUSession_UpdateSMContext Request
+             * in step 4 with Operation Type set to "UP activate"
+             * to indicate establishment of User Plane resources
+             * for the PDU Session(s), it deletes the AN Tunnel Info
+             * and initiates an N4 Session Modification procedure
+             * to remove Tunnel Info of AN in the UPF.
+             */
+            } else if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATING) {
+                ogs_warn("[%s:%d] FALLBACK - UpCnxState has already been "
+                        "ACTIVATING", smf_ue->supi, sess->psi);
+            }
+
+            OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
+            OpenAPI_ref_to_binary_data_t n2SmInfo;
+
+            /* UPDATE_UpCnxState - SYNC */
+            sess->smfUpCnxState = sess->ueUpCnxState;
+
+            memset(&sendmsg, 0, sizeof(sendmsg));
+            sendmsg.SmContextUpdatedData = &SmContextUpdatedData;
+
+            memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
+            SmContextUpdatedData.up_cnx_state =  sess->smfUpCnxState;
+            SmContextUpdatedData.n2_sm_info_type =
+                OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ;
+            SmContextUpdatedData.n2_sm_info = &n2SmInfo;
+
+            memset(&n2SmInfo, 0, sizeof(n2SmInfo));
+            n2SmInfo.content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+
+            sendmsg.num_of_part = 0;
+
+            sendmsg.part[sendmsg.num_of_part].pkbuf =
+                ngap_build_pdu_session_resource_setup_request_transfer(sess);
+            if (sendmsg.part[sendmsg.num_of_part].pkbuf) {
+                sendmsg.part[sendmsg.num_of_part].content_id =
+                    (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+                sendmsg.part[sendmsg.num_of_part].content_type =
+                    (char *)OGS_SBI_CONTENT_NGAP_TYPE;
+                sendmsg.num_of_part++;
+            }
+
+            response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+            ogs_assert(response);
+            ogs_sbi_server_send_response(session, response);
+
+            for (i = 0; i < sendmsg.num_of_part; i++)
+                if (sendmsg.part[i].pkbuf)
+                    ogs_pkbuf_free(sendmsg.part[i].pkbuf);
+
+        } else {
+            char *strerror = ogs_msprintf("[%s:%d] Invalid upCnxState [%d:%d]",
+                smf_ue->supi, sess->psi,
+                sess->ueUpCnxState, sess->smfUpCnxState);
+            ogs_error("%s", strerror);
+            smf_sbi_send_sm_context_update_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror, NULL, NULL);
+            ogs_free(strerror);
+            return false;
+        }
+    }
 
     return true;
 }
@@ -177,6 +351,9 @@ bool smf_nsmf_handle_update_sm_context(
 bool smf_nsmf_handle_release_sm_context(
         smf_sess_t *sess, ogs_sbi_message_t *message)
 {
-    ogs_fatal("TODO");
+    ogs_assert(sess);
+
+    smf_5gc_pfcp_send_session_deletion_request(sess);
+
     return true;
 }

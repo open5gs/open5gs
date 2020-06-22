@@ -177,8 +177,8 @@ struct ran_ue_s {
     /* Store by UE Context Release Command
      * Retrieve by UE Context Release Complete */
 #define NGAP_UE_CTX_REL_INVALID_ACTION                      0
-#define NGAP_UE_CTX_REL_S1_CONTEXT_REMOVE                   1
-#define NGAP_UE_CTX_REL_S1_REMOVE_AND_UNLINK                2
+#define NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE                   1
+#define NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK                2
 #define NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE                   3
 #define NGAP_UE_CTX_REL_DELETE_INDIRECT_TUNNEL              4
     uint8_t         ue_ctx_rel_action;
@@ -216,14 +216,10 @@ struct amf_ue_s {
             struct {
             ED3(uint8_t tsc:1;,
                 uint8_t ksi:3;,
-                uint8_t spare:4;)
+                uint8_t value:4;)
             };
             ogs_nas_5gs_registration_type_t registration;
-#if 0
-            ogs_5gs_update_type_t update;
-            ogs_5gs_service_type_t service;
-            ogs_5gs_detach_type_t detach;
-#endif
+            ogs_nas_de_registration_type_t de_registration;
 
             uint8_t data;
         };
@@ -235,7 +231,7 @@ struct amf_ue_s {
     ((__aMF) && ((__aMF)->suci))
     char            *suci; /* TS33.501 : SUCI */
     char            *supi; /* TS33.501 : SUPI */
-    ogs_nas_5gs_mobile_identity_imsi_t nas_mobile_identity_imsi;
+    ogs_nas_5gs_mobile_identity_suci_t nas_mobile_identity_suci;
 
     char            *pei;
     uint8_t         imeisv[OGS_MAX_IMEISV_LEN];
@@ -247,10 +243,8 @@ struct amf_ue_s {
     ogs_nas_5gs_guti_t guti;
     int             guti_present;
 
-    uint16_t        vlr_ostream_id; /* SCTP output stream id for VLR */
-
     /* UE Info */
-    amf_guami_t *guami;
+    amf_guami_t     *guami;
     ogs_5gs_tai_t   tai;
     ogs_nr_cgi_t    cgi;
     ogs_plmn_id_t   last_visited_plmn_id;
@@ -280,10 +274,6 @@ struct amf_ue_s {
 
     /* Security Context */
     ogs_nas_ue_security_capability_t ue_security_capability;
-#if 0
-    ogs_nas_ue_network_capability_t ue_network_capability;
-    ogs_nas_ms_network_capability_t ms_network_capability;
-#endif
     char            *confirmation_url_for_5g_aka;
     uint8_t         rand[OGS_RAND_LEN];
     uint8_t         autn[OGS_AUTN_LEN];
@@ -330,22 +320,10 @@ struct amf_ue_s {
 
     ogs_bitrate_t   subscribed_ue_ambr; /* UE-AMBR */
 
-    /* ESM Info */
-#define MIN_5GS_BEARER_ID           5
-#define MAX_5GS_BEARER_ID           15
-
-#define CLEAR_5GS_BEARER_ID(__aMF) \
-    do { \
-        ogs_assert((__aMF)); \
-        (__aMF)->ebi = MIN_5GS_BEARER_ID - 1; \
-    } while(0)
-    uint8_t         ebi; /* 5GS Bearer ID generator */
-    ogs_list_t      sess_list;
-
-#define ECM_CONNECTED(__aMF) \
+#define CM_CONNECTED(__aMF) \
     ((__aMF) && ((__aMF)->ran_ue != NULL))
-#define ECM_IDLE(__aMF) (!ECM_CONNECTED(__aMF))
-    /* S1 UE context */
+#define CM_IDLE(__aMF) (!ECM_CONNECTED(__aMF))
+    /* NG UE context */
     ran_ue_t        *ran_ue;
 
 #define CLEAR_AMF_UE_ALL_TIMERS(__aMF) \
@@ -378,38 +356,9 @@ struct amf_ue_s {
     /* NGAP Transparent Container */
     OCTET_STRING_t  container;
 
-    /*
-     * If the AMF sends Delete-Session-Request to the SMF for all sessions,
-     *    session_context_will_deleted = 1
-     * When the AMF receives a Delete-Session-Response for the last session,
-     *    session_context_will_deleted = 0
-     */
-    int             session_context_will_deleted;
+    ogs_list_t      sess_list;
 };
 
-#define AMF_HAVE_SMF_S1U_PATH(__sESS) \
-    ((__sESS) && (amf_bearer_first(__sESS)) && \
-     ((amf_default_bearer_in_sess(__sESS)->smf_s1u_teid)))
-#define CLEAR_SMF_S1U_PATH(__sESS) \
-    do { \
-        amf_bearer_t *__bEARER = NULL; \
-        ogs_assert((__sESS)); \
-        __bEARER = amf_default_bearer_in_sess(__sESS); \
-        __bEARER->smf_s1u_teid = 0; \
-    } while(0)
-
-#define SESSION_CONTEXT_IS_AVAILABLE(__aMF) \
-     ((__aMF) && ((__aMF)->smf_s11_teid))
-
-#define SESSION_CONTEXT_WILL_DELETED(__aMF) \
-     ((__aMF) && ((__aMF)->session_context_will_deleted))
-
-#define CLEAR_SESSION_CONTEXT(__aMF) \
-    do { \
-        ogs_assert((__aMF)); \
-        (__aMF)->smf_s11_teid = 0; \
-        (__aMF)->session_context_will_deleted = 0; \
-    } while(0)
 typedef struct amf_sess_s {
     ogs_sbi_object_t sbi;
 
@@ -418,14 +367,24 @@ typedef struct amf_sess_s {
 
     char *sm_context_ref;   /* smContextRef from SMF */
 
+#define SESSION_CONTEXT_IS_AVAILABLE(__aMF) \
+    ((__aMF) && (ogs_list_first((&(__aMF)->sess_list))) && \
+    (((amf_sess_t *)ogs_list_first((&(__aMF)->sess_list)))->sm_context_ref))
+
+#define SESSION_UP_CNX_STATE_SYNCHED(__aMF)  \
+    (amf_ue_activation_synched(__aMF) == true)
+
+    /* UE session context is activated or not */
+    OpenAPI_up_cnx_state_e ueUpCnxState;
+    /* SMF session context is activated or not */
+    OpenAPI_up_cnx_state_e smfUpCnxState;
+
+    OpenAPI_n2_sm_info_type_e n2SmInfoType;
+    ogs_pkbuf_t *n2smbuf;
+
     /* last payload for sending back to the UE */
     uint8_t         payload_container_type;
     ogs_pkbuf_t     *payload_container;
-
-#if 0
-    /* PDN Connectivity Request */
-    ogs_nas_request_type_t request_type; 
-#endif
 
     /* amf_bearer_first(sess) : Default Bearer Context */
     ogs_list_t      bearer_list;
@@ -433,12 +392,6 @@ typedef struct amf_sess_s {
     /* Related Context */
     amf_ue_t        *amf_ue;
 
-#if 0
-#define AMF_UE_HAVE_APN(__aMF) \
-    ((__aMF) && (amf_sess_first(__aMF)) && \
-    ((amf_sess_first(__aMF))->pdn))
-    ogs_pdn_t       *pdn;
-#endif
     ogs_s_nssai_t   s_nssai;
     char            *dnn;
 
@@ -451,90 +404,6 @@ typedef struct amf_sess_s {
     /* Save Protocol Configuration Options from PGW */
     ogs_tlv_octet_t pgw_pco;
 } amf_sess_t;
-
-#define BEARER_CONTEXT_IS_ACTIVE(__aMF)  \
-    (amf_bearer_is_inactive(__aMF) == 0)
-#define CLEAR_BEARER_CONTEXT(__aMF)   \
-    amf_bearer_set_inactive(__aMF)
-
-#define AMF_HAVE_GNB_S1U_PATH(__bEARER) \
-    ((__bEARER) && ((__bEARER)->gnb_s1u_teid))
-#define CLEAR_GNB_S1U_PATH(__bEARER) \
-    do { \
-        ogs_assert((__bEARER)); \
-        (__bEARER)->gnb_s1u_teid = 0; \
-    } while(0)
-
-#define AMF_HAVE_GNB_DL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->gnb_dl_teid))
-#define AMF_HAVE_GNB_UL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->gnb_ul_teid))
-#define AMF_HAVE_SMF_DL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->smf_dl_teid))
-#define AMF_HAVE_SMF_UL_INDIRECT_TUNNEL(__bEARER) \
-    ((__bEARER) && ((__bEARER)->smf_ul_teid))
-#define CLEAR_INDIRECT_TUNNEL(__bEARER) \
-    do { \
-        ogs_assert((__bEARER)); \
-        (__bEARER)->gnb_dl_teid = 0; \
-        (__bEARER)->gnb_ul_teid = 0; \
-        (__bEARER)->smf_dl_teid = 0; \
-        (__bEARER)->smf_ul_teid = 0; \
-    } while(0)
-typedef struct amf_bearer_s {
-    ogs_lnode_t     lnode;
-    ogs_fsm_t       sm;             /* State Machine */
-
-    uint8_t         ebi;            /* 5GS Bearer ID */
-
-    uint32_t        gnb_s1u_teid;
-    ogs_ip_t        gnb_s1u_ip;
-    uint32_t        smf_s1u_teid;
-    ogs_ip_t        smf_s1u_ip;
-
-    uint32_t        target_s1u_teid;    /* Target S1U TEID from HO-Req-Ack */
-    ogs_ip_t        target_s1u_ip;      /* Target S1U ADDR from HO-Req-Ack */
-
-    uint32_t        gnb_dl_teid;
-    ogs_ip_t        gnb_dl_ip;
-    uint32_t        gnb_ul_teid;
-    ogs_ip_t        gnb_ul_ip;
-
-    uint32_t        smf_dl_teid;
-    ogs_ip_t        smf_dl_ip;
-    uint32_t        smf_ul_teid;
-    ogs_ip_t        smf_ul_ip;
-
-    ogs_qos_t       qos;
-    ogs_tlv_octet_t tft;   /* Saved TFT */
-
-#define CLEAR_BEARER_ALL_TIMERS(__bEARER) \
-    do { \
-        CLEAR_BEARER_TIMER((__bEARER)->t3589); \
-    } while(0);
-#define CLEAR_BEARER_TIMER(__bEARER_TIMER) \
-    do { \
-        ogs_timer_stop((__bEARER_TIMER).timer); \
-        if ((__bEARER_TIMER).pkbuf) \
-        { \
-            ogs_pkbuf_free((__bEARER_TIMER).pkbuf); \
-            (__bEARER_TIMER).pkbuf = NULL; \
-        } \
-        (__bEARER_TIMER).retry_count = 0; \
-    } while(0);
-    struct {
-        ogs_pkbuf_t     *pkbuf;
-        ogs_timer_t     *timer;
-        uint32_t        retry_count;;
-    } t3589;
-
-    /* Related Context */
-    amf_ue_t        *amf_ue;
-    amf_sess_t      *sess;
-#if 0
-    ogs_gtp_xact_t  *xact;
-#endif
-} amf_bearer_t;
 
 void amf_context_init(void);
 void amf_context_final(void);
@@ -574,6 +443,8 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message);
 void amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity);
 void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi);
+
+bool amf_ue_activation_synched(amf_ue_t *amf_ue);
 
 int amf_ue_have_indirect_tunnel(amf_ue_t *amf_ue);
 int amf_ue_clear_indirect_tunnel(amf_ue_t *amf_ue);
@@ -637,25 +508,6 @@ void amf_sess_remove(amf_sess_t *sess);
 void amf_sess_remove_all(amf_ue_t *amf_ue);
 amf_sess_t *amf_sess_find_by_psi(amf_ue_t *amf_ue, uint8_t psi);
 amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
-
-amf_bearer_t *amf_bearer_add(amf_sess_t *sess);
-void amf_bearer_remove(amf_bearer_t *bearer);
-void amf_bearer_remove_all(amf_sess_t *sess);
-amf_bearer_t *amf_bearer_find_by_sess_ebi(amf_sess_t *sess, uint8_t ebi);
-amf_bearer_t *amf_bearer_find_by_ue_ebi(amf_ue_t *amf_ue, uint8_t ebi);
-amf_bearer_t *amf_bearer_find_or_add_by_message(
-                    amf_ue_t *amf_ue, ogs_nas_5gs_message_t *message);
-amf_bearer_t *amf_default_bearer_in_sess(amf_sess_t *sess);
-amf_bearer_t *amf_linked_bearer(amf_bearer_t *bearer);
-amf_bearer_t *amf_bearer_first(amf_sess_t *sess);
-amf_bearer_t *amf_bearer_next(amf_bearer_t *bearer);
-
-int amf_bearer_is_inactive(amf_ue_t *amf_ue);
-int amf_bearer_set_inactive(amf_ue_t *amf_ue);
-
-void amf_pdn_remove_all(amf_ue_t *amf_ue);
-ogs_pdn_t *amf_pdn_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
-ogs_pdn_t *amf_default_pdn(amf_ue_t *amf_ue);
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai);
 ogs_s_nssai_t *amf_find_s_nssai(

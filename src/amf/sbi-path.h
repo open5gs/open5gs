@@ -40,6 +40,8 @@ void amf_sess_sbi_discover_and_send(
         OpenAPI_nf_type_e nf_type, amf_sess_t *sess, void *data,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data));
 
+void amf_sbi_send_release_all_sm_contexts(amf_ue_t *amf_ue);
+
 #ifdef __cplusplus
 }
 #endif

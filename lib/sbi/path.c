@@ -91,6 +91,9 @@ bool ogs_sbi_discover_and_send(
     ogs_assert(nf_type);
     ogs_assert(build);
 
+    ogs_assert(sbi_object->running == false);
+    sbi_object->running = true;
+
     sbi_object->nf_type = nf_type;
     if (sbi_object->request)
         ogs_sbi_request_free(sbi_object->request);

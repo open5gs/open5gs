@@ -1942,8 +1942,8 @@ mme_enb_t *mme_enb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_hash_set(self.enb_addr_hash, enb->addr, sizeof(ogs_sockaddr_t), enb);
 
+    memset(&e, 0, sizeof(e));
     e.enb = enb;
-    e.id = 0;
     ogs_fsm_create(&enb->sm, s1ap_state_initial, s1ap_state_final);
     ogs_fsm_init(&enb->sm, &e);
 
@@ -1963,6 +1963,7 @@ int mme_enb_remove(mme_enb_t *enb)
 
     ogs_list_remove(&self.enb_list, enb);
 
+    memset(&e, 0, sizeof(e));
     e.enb = enb;
     ogs_fsm_fini(&enb->sm, &e);
     ogs_fsm_delete(&enb->sm);
@@ -2395,8 +2396,8 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     mme_ue->t3470.pkbuf = NULL;
 
     /* Create FSM */
+    memset(&e, 0, sizeof(e));
     e.mme_ue = mme_ue;
-    e.id = 0;
     ogs_fsm_create(&mme_ue->sm, emm_state_initial, emm_state_final);
     ogs_fsm_init(&mme_ue->sm, &e);
 
@@ -2413,6 +2414,7 @@ void mme_ue_remove(mme_ue_t *mme_ue)
 
     ogs_list_remove(&self.mme_ue_list, mme_ue);
 
+    memset(&e, 0, sizeof(e));
     e.mme_ue = mme_ue;
     ogs_fsm_fini(&mme_ue->sm, &e);
     ogs_fsm_delete(&mme_ue->sm);
@@ -2910,8 +2912,8 @@ mme_bearer_t *mme_bearer_add(mme_sess_t *sess)
             self.timer_mgr, mme_timer_t3489_expire, bearer);
     bearer->t3489.pkbuf = NULL;
     
+    memset(&e, 0, sizeof(e));
     e.bearer = bearer;
-    e.id = 0;
     ogs_fsm_create(&bearer->sm, esm_state_initial, esm_state_final);
     ogs_fsm_init(&bearer->sm, &e);
 
@@ -2925,6 +2927,7 @@ void mme_bearer_remove(mme_bearer_t *bearer)
     ogs_assert(bearer);
     ogs_assert(bearer->sess);
 
+    memset(&e, 0, sizeof(e));
     e.bearer = bearer;
     ogs_fsm_fini(&bearer->sm, &e);
     ogs_fsm_delete(&bearer->sm);

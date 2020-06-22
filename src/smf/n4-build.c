@@ -249,8 +249,8 @@ static void build_create_far(
         far->dst_if;
 
     if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) { /* Downlink */
-        if (bearer->gnb_ip.ipv4 || bearer->gnb_ip.ipv6) {
-            ogs_pfcp_ip_to_outer_header_creation(&bearer->gnb_ip,
+        if (bearer->gnb_n3_ip.ipv4 || bearer->gnb_n3_ip.ipv6) {
+            ogs_pfcp_ip_to_outer_header_creation(&bearer->gnb_n3_ip,
                     &farbuf[i].outer_header_creation, &len);
             farbuf[i].outer_header_creation.teid =
                     htobe32(bearer->gnb_n3_teid);
@@ -330,8 +330,8 @@ static void build_update_qer(
     }
 }
 
-static void build_update_outer_header_creation(
-    ogs_pfcp_tlv_update_far_t *message, int i, ogs_pfcp_far_t *far)
+static void build_update_far(smf_sess_t *sess,
+        ogs_pfcp_tlv_update_far_t *message, int i, ogs_pfcp_far_t *far)
 {
     ogs_pfcp_sess_t *pfcp_sess = NULL;
     smf_bearer_t *bearer = NULL;
@@ -343,24 +343,46 @@ static void build_update_outer_header_creation(
     ogs_assert(pfcp_sess);
     bearer = SMF_BEARER(pfcp_sess);
     ogs_assert(bearer);
+    ogs_assert(sess);
 
     ogs_assert(far->dst_if == OGS_PFCP_INTERFACE_ACCESS);
-    ogs_assert(bearer->gnb_ip.ipv4 || bearer->gnb_ip.ipv6);
+    ogs_assert(bearer->gnb_n3_ip.ipv4 || bearer->gnb_n3_ip.ipv6);
 
     message->presence = 1;
     message->far_id.presence = 1;
     message->far_id.u32 = far->id;
 
-    ogs_pfcp_ip_to_outer_header_creation(&bearer->gnb_ip,
-            &farbuf[i].outer_header_creation, &len);
-    farbuf[i].outer_header_creation.teid =
-            htobe32(bearer->gnb_n3_teid);
+    if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+        if (sess->pfcp_5gc_modify.outer_header_creation_update) {
+            ogs_pfcp_ip_to_outer_header_creation(&bearer->gnb_n3_ip,
+                    &farbuf[i].outer_header_creation, &len);
+            farbuf[i].outer_header_creation.teid =
+                    htobe32(bearer->gnb_n3_teid);
 
-    message->update_forwarding_parameters.presence = 1;
-    message->update_forwarding_parameters.outer_header_creation.presence = 1;
-    message->update_forwarding_parameters.outer_header_creation.data =
-            &farbuf[i].outer_header_creation;
-    message->update_forwarding_parameters.outer_header_creation.len = len;
+            message->update_forwarding_parameters.presence = 1;
+            message->update_forwarding_parameters.
+                outer_header_creation.presence = 1;
+            message->update_forwarding_parameters.
+                outer_header_creation.data = &farbuf[i].outer_header_creation;
+            message->update_forwarding_parameters.
+                outer_header_creation.len = len;
+        }
+
+        if (far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
+            message->apply_action.presence = 1;
+            far->apply_action = OGS_PFCP_APPLY_ACTION_FORW;
+        }
+    } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+        message->apply_action.presence = 1;
+        far->apply_action =
+            OGS_PFCP_APPLY_ACTION_BUFF | OGS_PFCP_APPLY_ACTION_NOCP;
+    } else {
+        ogs_error("Invalid UpCnxState [%d:%d]",
+            sess->ueUpCnxState, sess->smfUpCnxState);
+    }
+
+    if (message->apply_action.presence)
+        message->apply_action.u8 = far->apply_action;
 }
 
 ogs_pkbuf_t *smf_n4_build_session_establishment_request(
@@ -456,7 +478,132 @@ ogs_pkbuf_t *smf_n4_build_session_establishment_request(
     return pkbuf;
 }
 
-ogs_pkbuf_t *smf_n4_build_session_modification_request(
+ogs_pkbuf_t *smf_5gc_n4_build_session_modification_request(
+        uint8_t type, smf_sess_t *sess)
+{
+    int i;
+
+    ogs_pfcp_message_t pfcp_message;
+    ogs_pfcp_session_modification_request_t *req = NULL;
+    ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_far_t *far = NULL;
+    ogs_pfcp_qer_t *qer = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+    smf_bearer_t *bearer = NULL;
+
+    ogs_debug("Session Modification Request");
+    ogs_assert(sess);
+
+    req = &pfcp_message.pfcp_session_modification_request;
+    memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
+
+    if (!sess->pfcp_5gc_modify.create &&
+        !sess->pfcp_5gc_modify.tft_update &&
+        !sess->pfcp_5gc_modify.qos_update &&
+        !sess->pfcp_5gc_modify.outer_header_creation_update &&
+        !sess->pfcp_5gc_modify.remove &&
+        sess->ueUpCnxState == sess->smfUpCnxState) {
+        ogs_error("No Session Modification [upCnxState:%d-%d]",
+            sess->ueUpCnxState,sess->smfUpCnxState);
+        return NULL;
+    }
+
+    if (sess->pfcp_5gc_modify.remove) {
+        ogs_list_for_each(&sess->bearer_list, bearer) {
+            /* Remove PDR */
+            i = 0;
+            ogs_list_for_each(&bearer->pfcp.pdr_list, pdr) {
+                ogs_pfcp_tlv_remove_pdr_t *message = &req->remove_pdr[i];
+
+                message->presence = 1;
+                message->pdr_id.presence = 1;
+                message->pdr_id.u16 = pdr->id;
+                i++;
+            }
+
+            /* Remove FAR */
+            i = 0;
+            ogs_list_for_each(&bearer->pfcp.far_list, far) {
+                ogs_pfcp_tlv_remove_far_t *message = &req->remove_far[i];
+
+                message->presence = 1;
+                message->far_id.presence = 1;
+                message->far_id.u32 = far->id;
+                i++;
+            }
+
+            /* Remove QER */
+            i = 0;
+            ogs_list_for_each(&bearer->pfcp.qer_list, qer) {
+                ogs_pfcp_tlv_remove_qer_t *message = &req->remove_qer[i];
+
+                message->presence = 1;
+                message->qer_id.presence = 1;
+                message->qer_id.u32 = qer->id;
+                i++;
+            }
+        }
+    } else {
+        if (sess->pfcp_5gc_modify.create) {
+            pdrbuf_init();
+
+            ogs_list_for_each(&sess->bearer_list, bearer) {
+                /* Create PDR */
+                i = 0;
+                ogs_list_for_each(&bearer->pfcp.pdr_list, pdr) {
+                    build_create_pdr(&req->create_pdr[i], i, pdr);
+                    i++;
+                }
+
+                /* Create FAR */
+                i = 0;
+                ogs_list_for_each(&bearer->pfcp.far_list, far) {
+                    build_create_far(&req->create_far[i], i, far);
+                    i++;
+                }
+
+                /* Create QER */
+                i = 0;
+                ogs_list_for_each(&bearer->pfcp.qer_list, qer) {
+                    build_create_qer(&req->create_qer[i], i, qer);
+                    i++;
+                }
+            }
+        }
+        if (sess->pfcp_5gc_modify.qos_update) {
+            /* Update QER */
+            i = 0;
+            ogs_list_for_each(&sess->bearer_list, bearer) {
+                ogs_list_for_each(&bearer->pfcp.qer_list, qer) {
+                    build_update_qer(&req->update_qer[i], i, qer);
+                    i++;
+                }
+            }
+        }
+        if (sess->ueUpCnxState != sess->smfUpCnxState) {
+            i = 0;
+            ogs_list_for_each(&sess->bearer_list, bearer) {
+                ogs_list_for_each(&bearer->pfcp.far_list, far) {
+                    if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+                        build_update_far(sess, &req->update_far[i], i, far);
+                        i++;
+                    }
+                }
+            }
+        }
+    }
+
+    pfcp_message.h.type = type;
+    pkbuf = ogs_pfcp_build_msg(&pfcp_message);
+
+    if (sess->pfcp_5gc_modify.create) {
+        pdrbuf_clear();
+    }
+
+    return pkbuf;
+}
+
+ogs_pkbuf_t *smf_epc_n4_build_session_modification_request(
         uint8_t type, smf_bearer_t *bearer)
 {
     ogs_pfcp_message_t pfcp_message;
@@ -477,16 +624,15 @@ ogs_pkbuf_t *smf_n4_build_session_modification_request(
     req = &pfcp_message.pfcp_session_modification_request;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
 
-    if (!bearer->state.created &&
-        !bearer->state.tft_updated &&
-        !bearer->state.qos_updated &&
-        !bearer->state.outer_header_creation_updated &&
-        !bearer->state.removed) {
+    if (!bearer->pfcp_epc_modify.create &&
+        !bearer->pfcp_epc_modify.tft_update &&
+        !bearer->pfcp_epc_modify.qos_update &&
+        !bearer->pfcp_epc_modify.remove) {
         ogs_error("No Session Modification");
         return NULL;
     }
 
-    if (bearer->state.removed) {
+    if (bearer->pfcp_epc_modify.remove) {
         /* Remove PDR */
         i = 0;
         ogs_list_for_each(&bearer->pfcp.pdr_list, pdr) {
@@ -520,7 +666,7 @@ ogs_pkbuf_t *smf_n4_build_session_modification_request(
             i++;
         }
     } else {
-        if (bearer->state.created) {
+        if (bearer->pfcp_epc_modify.create) {
             pdrbuf_init();
 
             /* Create PDR */
@@ -544,20 +690,11 @@ ogs_pkbuf_t *smf_n4_build_session_modification_request(
                 i++;
             }
         }
-        if (bearer->state.qos_updated) {
+        if (bearer->pfcp_epc_modify.qos_update) {
             /* Update QER */
             i = 0;
             ogs_list_for_each(&bearer->pfcp.qer_list, qer) {
                 build_update_qer(&req->update_qer[i], i, qer);
-                i++;
-            }
-        }
-        if (bearer->state.outer_header_creation_updated) {
-            i = 0;
-            ogs_list_for_each(&bearer->pfcp.far_list, far) {
-                if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS)
-                    build_update_outer_header_creation(
-                            &req->update_far[i], i, far);
                 i++;
             }
         }
@@ -566,7 +703,7 @@ ogs_pkbuf_t *smf_n4_build_session_modification_request(
     pfcp_message.h.type = type;
     pkbuf = ogs_pfcp_build_msg(&pfcp_message);
 
-    if (bearer->state.created) {
+    if (bearer->pfcp_epc_modify.create) {
         pdrbuf_clear();
     }
 

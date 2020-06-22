@@ -5,7 +5,7 @@
 #include "sm_context_release_data.h"
 
 OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_create(
-    OpenAPI_cause_t *cause,
+    OpenAPI_cause_e cause,
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
     int _5g_mm_cause_value,
     OpenAPI_user_location_t *ue_location,
@@ -41,7 +41,6 @@ void OpenAPI_sm_context_release_data_free(OpenAPI_sm_context_release_data_t *sm_
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_cause_free(sm_context_release_data->cause);
     OpenAPI_ng_ap_cause_free(sm_context_release_data->ng_ap_cause);
     OpenAPI_user_location_free(sm_context_release_data->ue_location);
     ogs_free(sm_context_release_data->ue_time_zone);
@@ -61,13 +60,7 @@ cJSON *OpenAPI_sm_context_release_data_convertToJSON(OpenAPI_sm_context_release_
 
     item = cJSON_CreateObject();
     if (sm_context_release_data->cause) {
-        cJSON *cause_local_JSON = OpenAPI_cause_convertToJSON(sm_context_release_data->cause);
-        if (cause_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_release_data_convertToJSON() failed [cause]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "cause", cause_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "cause", OpenAPI_cause_ToString(sm_context_release_data->cause)) == NULL) {
             ogs_error("OpenAPI_sm_context_release_data_convertToJSON() failed [cause]");
             goto end;
         }
@@ -169,9 +162,13 @@ OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_parseFromJSON
     OpenAPI_sm_context_release_data_t *sm_context_release_data_local_var = NULL;
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(sm_context_release_dataJSON, "cause");
 
-    OpenAPI_cause_t *cause_local_nonprim = NULL;
+    OpenAPI_cause_e causeVariable;
     if (cause) {
-        cause_local_nonprim = OpenAPI_cause_parseFromJSON(cause);
+        if (!cJSON_IsString(cause)) {
+            ogs_error("OpenAPI_sm_context_release_data_parseFromJSON() failed [cause]");
+            goto end;
+        }
+        causeVariable = OpenAPI_cause_FromString(cause->valuestring);
     }
 
     cJSON *ng_ap_cause = cJSON_GetObjectItemCaseSensitive(sm_context_release_dataJSON, "ngApCause");
@@ -250,7 +247,7 @@ OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_parseFromJSON
     }
 
     sm_context_release_data_local_var = OpenAPI_sm_context_release_data_create (
-        cause ? cause_local_nonprim : NULL,
+        cause ? causeVariable : 0,
         ng_ap_cause ? ng_ap_cause_local_nonprim : NULL,
         _5g_mm_cause_value ? _5g_mm_cause_value->valuedouble : 0,
         ue_location ? ue_location_local_nonprim : NULL,

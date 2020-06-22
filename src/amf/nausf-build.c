@@ -25,7 +25,12 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
-    OpenAPI_authentication_info_t *AuthenticationInfo = NULL;
+    OpenAPI_authentication_info_t AuthenticationInfo;
+    OpenAPI_resynchronization_info_t ResynchronizationInfo;
+    uint8_t *auts = data;
+
+    char rand_string[OGS_KEYSTRLEN(OGS_RAND_LEN)];
+    char auts_string[OGS_KEYSTRLEN(OGS_AUTS_LEN)];
 
     ogs_assert(amf_ue);
 
@@ -39,21 +44,32 @@ ogs_sbi_request_t *amf_nausf_auth_build_authenticate(
     message.http.accept = (char *)(OGS_SBI_CONTENT_3GPPHAL_TYPE ","
                                     OGS_SBI_CONTENT_PROBLEM_TYPE);
 
-    AuthenticationInfo = ogs_calloc(1, sizeof(*AuthenticationInfo));
-    ogs_assert(AuthenticationInfo);
+    memset(&AuthenticationInfo, 0, sizeof(AuthenticationInfo));
 
     ogs_assert(amf_ue->suci);
-    AuthenticationInfo->supi_or_suci = amf_ue->suci;
-    AuthenticationInfo->serving_network_name =
+    AuthenticationInfo.supi_or_suci = amf_ue->suci;
+    AuthenticationInfo.serving_network_name =
         ogs_serving_network_name_from_plmn_id(&amf_ue->tai.plmn_id);
 
-    message.AuthenticationInfo = AuthenticationInfo;
+    if (auts) {
+        memset(&ResynchronizationInfo, 0, sizeof(ResynchronizationInfo));
+
+        ogs_hex_to_ascii(amf_ue->rand, OGS_RAND_LEN,
+                rand_string, sizeof(rand_string));
+        ogs_hex_to_ascii(auts, OGS_AUTS_LEN, auts_string, sizeof(auts_string));
+
+        ResynchronizationInfo.rand = rand_string;
+        ResynchronizationInfo.auts = auts_string;
+
+        AuthenticationInfo.resynchronization_info = &ResynchronizationInfo;
+    }
+
+    message.AuthenticationInfo = &AuthenticationInfo;
 
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
 
-    ogs_free(AuthenticationInfo->serving_network_name);
-    ogs_free(AuthenticationInfo);
+    ogs_free(AuthenticationInfo.serving_network_name);
 
     return request;
 }

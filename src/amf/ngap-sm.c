@@ -84,10 +84,10 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_UERadioCapabilityInfoIndication:
                 ngap_handle_ue_radio_capability_info_indication(gnb, pdu);
                 break;
-#if 0
             case NGAP_ProcedureCode_id_UEContextReleaseRequest:
                 ngap_handle_ue_context_release_request( gnb, pdu);
                 break;
+#if 0
             case NGAP_ProcedureCode_id_PathSwitchRequest:
                 ngap_handle_path_switch_request(gnb, pdu);
                 break;
@@ -134,10 +134,11 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_UEContextModification:
                 ngap_handle_ue_context_modification_response(gnb, pdu);
                 break;
+#endif
             case NGAP_ProcedureCode_id_UEContextRelease:
-                ngap_handle_ue_context_release_complete(
-                        gnb, pdu);
+                ngap_handle_ue_context_release_complete(gnb, pdu);
                 break;
+#if 0
             case NGAP_ProcedureCode_id_HandoverResourceAllocation:
                 ngap_handle_handover_request_ack(gnb, pdu);
                 break;
@@ -178,15 +179,13 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
         break;
     case AMF_EVT_NGAP_TIMER:
         switch (e->timer_id) {
-#if 0
-        case AMF_TIMER_S1_DELAYED_SEND:
-            ogs_assert(e->gnb_ue);
+        case AMF_TIMER_NG_DELAYED_SEND:
+            ogs_assert(e->ran_ue);
             ogs_assert(e->pkbuf);
 
-            ogs_expect(OGS_OK == ngap_send_to_gnb_ue(e->gnb_ue, e->pkbuf));
+            ogs_expect(OGS_OK == ngap_send_to_ran_ue(e->ran_ue, e->pkbuf));
             ogs_timer_delete(e->timer);
             break;
-#endif
         default:
             ogs_error("Unknown timer[%s:%d]",
                     amf_timer_get_name(e->timer_id), e->timer_id);

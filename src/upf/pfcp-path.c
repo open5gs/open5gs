@@ -27,6 +27,8 @@ static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
     upf_event_t e;
 
     ogs_assert(node);
+
+    memset(&e, 0, sizeof(e));
     e.pfcp_node = node;
 
     if (try_to_assoicate == true) {
@@ -42,6 +44,10 @@ static void pfcp_node_fsm_init(ogs_pfcp_node_t *node, bool try_to_assoicate)
 static void pfcp_node_fsm_fini(ogs_pfcp_node_t *node)
 {
     upf_event_t e;
+
+    ogs_assert(node);
+
+    memset(&e, 0, sizeof(e));
     e.pfcp_node = node;
 
     ogs_fsm_fini(&node->sm, &e);

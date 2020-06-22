@@ -17,8 +17,8 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_user_location_t *ue_location,
     char *ue_time_zone,
     OpenAPI_user_location_t *add_ue_location,
-    OpenAPI_up_cnx_state_t *up_cnx_state,
-    OpenAPI_ho_state_t *ho_state,
+    OpenAPI_up_cnx_state_e up_cnx_state,
+    OpenAPI_ho_state_e ho_state,
     int to_be_switched,
     int failed_to_be_switched,
     OpenAPI_ref_to_binary_data_t *n1_sm_msg,
@@ -34,16 +34,16 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_list_t *eps_bearer_setup,
     OpenAPI_list_t *revoke_ebi_list,
     int release,
-    OpenAPI_cause_t *cause,
+    OpenAPI_cause_e cause,
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
     int _5g_mm_cause_value,
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_trace_data_t *trace_data,
-    OpenAPI_eps_interworking_indication_t *eps_interworking_ind,
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     int an_type_can_be_changed,
     OpenAPI_ref_to_binary_data_t *n2_sm_info_ext1,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1,
-    OpenAPI_ma_release_indication_t *ma_release_ind,
+    OpenAPI_ma_release_indication_e ma_release_ind,
     int ma_nw_upgrade_ind,
     int ma_request_ind,
     OpenAPI_exemption_ind_t *exemption_ind,
@@ -131,8 +131,6 @@ void OpenAPI_sm_context_update_data_free(OpenAPI_sm_context_update_data_t *sm_co
     OpenAPI_user_location_free(sm_context_update_data->ue_location);
     ogs_free(sm_context_update_data->ue_time_zone);
     OpenAPI_user_location_free(sm_context_update_data->add_ue_location);
-    OpenAPI_up_cnx_state_free(sm_context_update_data->up_cnx_state);
-    OpenAPI_ho_state_free(sm_context_update_data->ho_state);
     OpenAPI_ref_to_binary_data_free(sm_context_update_data->n1_sm_msg);
     OpenAPI_ref_to_binary_data_free(sm_context_update_data->n2_sm_info);
     OpenAPI_ng_ran_target_id_free(sm_context_update_data->target_id);
@@ -155,13 +153,10 @@ void OpenAPI_sm_context_update_data_free(OpenAPI_sm_context_update_data_t *sm_co
         ogs_free(node->data);
     }
     OpenAPI_list_free(sm_context_update_data->revoke_ebi_list);
-    OpenAPI_cause_free(sm_context_update_data->cause);
     OpenAPI_ng_ap_cause_free(sm_context_update_data->ng_ap_cause);
     OpenAPI_snssai_free(sm_context_update_data->s_nssai);
     OpenAPI_trace_data_free(sm_context_update_data->trace_data);
-    OpenAPI_eps_interworking_indication_free(sm_context_update_data->eps_interworking_ind);
     OpenAPI_ref_to_binary_data_free(sm_context_update_data->n2_sm_info_ext1);
-    OpenAPI_ma_release_indication_free(sm_context_update_data->ma_release_ind);
     OpenAPI_exemption_ind_free(sm_context_update_data->exemption_ind);
     ogs_free(sm_context_update_data->supported_features);
     OpenAPI_mo_exception_data_flag_free(sm_context_update_data->mo_exp_data_ind);
@@ -312,26 +307,14 @@ cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_da
     }
 
     if (sm_context_update_data->up_cnx_state) {
-        cJSON *up_cnx_state_local_JSON = OpenAPI_up_cnx_state_convertToJSON(sm_context_update_data->up_cnx_state);
-        if (up_cnx_state_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [up_cnx_state]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "upCnxState", up_cnx_state_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "upCnxState", OpenAPI_up_cnx_state_ToString(sm_context_update_data->up_cnx_state)) == NULL) {
             ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [up_cnx_state]");
             goto end;
         }
     }
 
     if (sm_context_update_data->ho_state) {
-        cJSON *ho_state_local_JSON = OpenAPI_ho_state_convertToJSON(sm_context_update_data->ho_state);
-        if (ho_state_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [ho_state]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "hoState", ho_state_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "hoState", OpenAPI_ho_state_ToString(sm_context_update_data->ho_state)) == NULL) {
             ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [ho_state]");
             goto end;
         }
@@ -511,13 +494,7 @@ cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_da
     }
 
     if (sm_context_update_data->cause) {
-        cJSON *cause_local_JSON = OpenAPI_cause_convertToJSON(sm_context_update_data->cause);
-        if (cause_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [cause]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "cause", cause_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "cause", OpenAPI_cause_ToString(sm_context_update_data->cause)) == NULL) {
             ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [cause]");
             goto end;
         }
@@ -570,13 +547,7 @@ cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_da
     }
 
     if (sm_context_update_data->eps_interworking_ind) {
-        cJSON *eps_interworking_ind_local_JSON = OpenAPI_eps_interworking_indication_convertToJSON(sm_context_update_data->eps_interworking_ind);
-        if (eps_interworking_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [eps_interworking_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "epsInterworkingInd", eps_interworking_ind_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "epsInterworkingInd", OpenAPI_eps_interworking_indication_ToString(sm_context_update_data->eps_interworking_ind)) == NULL) {
             ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [eps_interworking_ind]");
             goto end;
         }
@@ -610,13 +581,7 @@ cJSON *OpenAPI_sm_context_update_data_convertToJSON(OpenAPI_sm_context_update_da
     }
 
     if (sm_context_update_data->ma_release_ind) {
-        cJSON *ma_release_ind_local_JSON = OpenAPI_ma_release_indication_convertToJSON(sm_context_update_data->ma_release_ind);
-        if (ma_release_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [ma_release_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "maReleaseInd", ma_release_ind_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "maReleaseInd", OpenAPI_ma_release_indication_ToString(sm_context_update_data->ma_release_ind)) == NULL) {
             ogs_error("OpenAPI_sm_context_update_data_convertToJSON() failed [ma_release_ind]");
             goto end;
         }
@@ -852,16 +817,24 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
 
     cJSON *up_cnx_state = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "upCnxState");
 
-    OpenAPI_up_cnx_state_t *up_cnx_state_local_nonprim = NULL;
+    OpenAPI_up_cnx_state_e up_cnx_stateVariable;
     if (up_cnx_state) {
-        up_cnx_state_local_nonprim = OpenAPI_up_cnx_state_parseFromJSON(up_cnx_state);
+        if (!cJSON_IsString(up_cnx_state)) {
+            ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [up_cnx_state]");
+            goto end;
+        }
+        up_cnx_stateVariable = OpenAPI_up_cnx_state_FromString(up_cnx_state->valuestring);
     }
 
     cJSON *ho_state = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "hoState");
 
-    OpenAPI_ho_state_t *ho_state_local_nonprim = NULL;
+    OpenAPI_ho_state_e ho_stateVariable;
     if (ho_state) {
-        ho_state_local_nonprim = OpenAPI_ho_state_parseFromJSON(ho_state);
+        if (!cJSON_IsString(ho_state)) {
+            ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [ho_state]");
+            goto end;
+        }
+        ho_stateVariable = OpenAPI_ho_state_FromString(ho_state->valuestring);
     }
 
     cJSON *to_be_switched = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "toBeSwitched");
@@ -1045,9 +1018,13 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
 
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "cause");
 
-    OpenAPI_cause_t *cause_local_nonprim = NULL;
+    OpenAPI_cause_e causeVariable;
     if (cause) {
-        cause_local_nonprim = OpenAPI_cause_parseFromJSON(cause);
+        if (!cJSON_IsString(cause)) {
+            ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [cause]");
+            goto end;
+        }
+        causeVariable = OpenAPI_cause_FromString(cause->valuestring);
     }
 
     cJSON *ng_ap_cause = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "ngApCause");
@@ -1082,9 +1059,13 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
 
     cJSON *eps_interworking_ind = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "epsInterworkingInd");
 
-    OpenAPI_eps_interworking_indication_t *eps_interworking_ind_local_nonprim = NULL;
+    OpenAPI_eps_interworking_indication_e eps_interworking_indVariable;
     if (eps_interworking_ind) {
-        eps_interworking_ind_local_nonprim = OpenAPI_eps_interworking_indication_parseFromJSON(eps_interworking_ind);
+        if (!cJSON_IsString(eps_interworking_ind)) {
+            ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [eps_interworking_ind]");
+            goto end;
+        }
+        eps_interworking_indVariable = OpenAPI_eps_interworking_indication_FromString(eps_interworking_ind->valuestring);
     }
 
     cJSON *an_type_can_be_changed = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "anTypeCanBeChanged");
@@ -1116,9 +1097,13 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
 
     cJSON *ma_release_ind = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "maReleaseInd");
 
-    OpenAPI_ma_release_indication_t *ma_release_ind_local_nonprim = NULL;
+    OpenAPI_ma_release_indication_e ma_release_indVariable;
     if (ma_release_ind) {
-        ma_release_ind_local_nonprim = OpenAPI_ma_release_indication_parseFromJSON(ma_release_ind);
+        if (!cJSON_IsString(ma_release_ind)) {
+            ogs_error("OpenAPI_sm_context_update_data_parseFromJSON() failed [ma_release_ind]");
+            goto end;
+        }
+        ma_release_indVariable = OpenAPI_ma_release_indication_FromString(ma_release_ind->valuestring);
     }
 
     cJSON *ma_nw_upgrade_ind = cJSON_GetObjectItemCaseSensitive(sm_context_update_dataJSON, "maNwUpgradeInd");
@@ -1227,8 +1212,8 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         ue_location ? ue_location_local_nonprim : NULL,
         ue_time_zone ? ogs_strdup(ue_time_zone->valuestring) : NULL,
         add_ue_location ? add_ue_location_local_nonprim : NULL,
-        up_cnx_state ? up_cnx_state_local_nonprim : NULL,
-        ho_state ? ho_state_local_nonprim : NULL,
+        up_cnx_state ? up_cnx_stateVariable : 0,
+        ho_state ? ho_stateVariable : 0,
         to_be_switched ? to_be_switched->valueint : 0,
         failed_to_be_switched ? failed_to_be_switched->valueint : 0,
         n1_sm_msg ? n1_sm_msg_local_nonprim : NULL,
@@ -1244,16 +1229,16 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_parseFromJSON(c
         eps_bearer_setup ? eps_bearer_setupList : NULL,
         revoke_ebi_list ? revoke_ebi_listList : NULL,
         release ? release->valueint : 0,
-        cause ? cause_local_nonprim : NULL,
+        cause ? causeVariable : 0,
         ng_ap_cause ? ng_ap_cause_local_nonprim : NULL,
         _5g_mm_cause_value ? _5g_mm_cause_value->valuedouble : 0,
         s_nssai ? s_nssai_local_nonprim : NULL,
         trace_data ? trace_data_local_nonprim : NULL,
-        eps_interworking_ind ? eps_interworking_ind_local_nonprim : NULL,
+        eps_interworking_ind ? eps_interworking_indVariable : 0,
         an_type_can_be_changed ? an_type_can_be_changed->valueint : 0,
         n2_sm_info_ext1 ? n2_sm_info_ext1_local_nonprim : NULL,
         n2_sm_info_type_ext1 ? n2_sm_info_type_ext1Variable : 0,
-        ma_release_ind ? ma_release_ind_local_nonprim : NULL,
+        ma_release_ind ? ma_release_indVariable : 0,
         ma_nw_upgrade_ind ? ma_nw_upgrade_ind->valueint : 0,
         ma_request_ind ? ma_request_ind->valueint : 0,
         exemption_ind ? exemption_ind_local_nonprim : NULL,

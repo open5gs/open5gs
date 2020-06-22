@@ -1,7 +1,7 @@
 /*
  * request_type.h
  *
- * Possible values are - INITIAL_REQUEST - EXISTING_PDU_SESSION - INITIAL_EMERGENCY_REQUEST - EXISTING_EMERGENCY_PDU_SESSION
+ *
  */
 
 #ifndef _OpenAPI_request_type_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_request_type_s OpenAPI_request_type_t;
-typedef struct OpenAPI_request_type_s {
-} OpenAPI_request_type_t;
+typedef enum { OpenAPI_request_type_NULL = 0, OpenAPI_request_type_INITIAL_REQUEST, OpenAPI_request_type_EXISTING_PDU_SESSION, OpenAPI_request_type_INITIAL_EMERGENCY_REQUEST, OpenAPI_request_type_EXISTING_EMERGENCY_PDU_SESSION } OpenAPI_request_type_e;
 
-OpenAPI_request_type_t *OpenAPI_request_type_create(
-    );
-void OpenAPI_request_type_free(OpenAPI_request_type_t *request_type);
-OpenAPI_request_type_t *OpenAPI_request_type_parseFromJSON(cJSON *request_typeJSON);
-cJSON *OpenAPI_request_type_convertToJSON(OpenAPI_request_type_t *request_type);
-OpenAPI_request_type_t *OpenAPI_request_type_copy(OpenAPI_request_type_t *dst, OpenAPI_request_type_t *src);
+char* OpenAPI_request_type_ToString(OpenAPI_request_type_e request_type);
+
+OpenAPI_request_type_e OpenAPI_request_type_FromString(char* request_type);
 
 #ifdef __cplusplus
 }

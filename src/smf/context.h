@@ -164,9 +164,7 @@ typedef struct smf_sess_s {
 
     char            *sm_context_ref; /* smContextRef */
     uint8_t         psi; /* PDU session identity */
-
-    /* Procedure transaction identity */
-    uint8_t         pti;
+    uint8_t         pti; /* Procedure transaction identity */
 
     /* PLMN ID & NID */
     ogs_plmn_id_t   plmn_id;
@@ -197,13 +195,24 @@ typedef struct smf_sess_s {
     ogs_pcc_rule_t  pcc_rule[OGS_MAX_NUM_OF_PCC_RULE]; /* Saved from Gx */
     int             num_of_pcc_rule;
 
+    struct {
+        bool create;
+        bool tft_update;
+        bool qos_update;
+        bool outer_header_creation_update;
+        bool remove;
+    } pfcp_5gc_modify;
+
+    /* UE session context is activated or not */
+    OpenAPI_up_cnx_state_e ueUpCnxState;
+    /* SMF session context is activated or not */
+    OpenAPI_up_cnx_state_e smfUpCnxState;
+
     ogs_list_t      bearer_list;
 
-    /* Related Context */
     ogs_gtp_node_t  *gnode;
     ogs_pfcp_node_t *pfcp_node;
 
-    /* Related Context */
     smf_ue_t *smf_ue;
 } smf_sess_t;
 
@@ -228,7 +237,7 @@ typedef struct smf_bearer_s {
     ogs_sockaddr_t  *upf_addr6;     /* UPF_N3 IPv6 */
 
     uint32_t        gnb_n3_teid;    /* gNB_N3 TEID */
-    ogs_ip_t        gnb_ip;         /* gNB_N3 IP */
+    ogs_ip_t        gnb_n3_ip;      /* gNB_N3 IP */
 
     char            *name;          /* PCC Rule Name */
     ogs_qos_t       qos;            /* QoS Infomration */
@@ -239,12 +248,11 @@ typedef struct smf_bearer_s {
     ogs_list_t      pf_list;
 
     struct {
-        bool created;
-        bool tft_updated;
-        bool qos_updated;
-        bool removed;
-        bool outer_header_creation_updated;
-    } state;
+        bool create;
+        bool tft_update;
+        bool qos_update;
+        bool remove;
+    } pfcp_epc_modify;
 
     smf_sess_t      *sess;
 } smf_bearer_t;

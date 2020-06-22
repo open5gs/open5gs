@@ -217,10 +217,10 @@ ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex);
 typedef struct ogs_ip_s {
     uint32_t addr;
     uint8_t addr6[OGS_IPV6_LEN];
-    uint32_t      len;
-ED3(uint8_t       ipv4:1;,
-    uint8_t       ipv6:1;,
-    uint8_t       reserved:6;)
+    uint32_t len;
+ED3(uint8_t ipv4:1;,
+    uint8_t ipv6:1;,
+    uint8_t reserved:6;)
 } ogs_ip_t;
 
 int ogs_ip_to_sockaddr(ogs_ip_t *ip, uint16_t port, ogs_sockaddr_t **list);

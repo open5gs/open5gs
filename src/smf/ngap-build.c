@@ -44,6 +44,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     ogs_assert(bearer);
 
     ogs_debug("PDUSessionResourceSetupRequestTransfer");
+    memset(&message, 0, sizeof(NGAP_PDUSessionResourceSetupRequestTransfer_t));
 
     ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
     ASN_SEQUENCE_ADD(&message.protocolIEs, ie);

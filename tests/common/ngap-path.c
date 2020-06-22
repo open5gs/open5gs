@@ -53,6 +53,9 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         case NGAP_ProcedureCode_id_PDUSessionResourceSetup:
             testngap_handle_pdu_session_resource_setup_request(test_ue, pdu);
             break;
+        case NGAP_ProcedureCode_id_UEContextRelease:
+            /* Nothing */
+            break;
         default:
             ogs_error("Not implemented(choice:%d, proc:%d)",
                     pdu->present, (int)initiatingMessage->procedureCode);

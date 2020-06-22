@@ -55,8 +55,8 @@ typedef struct OpenAPI_sm_context_update_data_s {
     struct OpenAPI_user_location_s *ue_location;
     char *ue_time_zone;
     struct OpenAPI_user_location_s *add_ue_location;
-    struct OpenAPI_up_cnx_state_s *up_cnx_state;
-    struct OpenAPI_ho_state_s *ho_state;
+    OpenAPI_up_cnx_state_e up_cnx_state;
+    OpenAPI_ho_state_e ho_state;
     int to_be_switched;
     int failed_to_be_switched;
     struct OpenAPI_ref_to_binary_data_s *n1_sm_msg;
@@ -72,16 +72,16 @@ typedef struct OpenAPI_sm_context_update_data_s {
     OpenAPI_list_t *eps_bearer_setup;
     OpenAPI_list_t *revoke_ebi_list;
     int release;
-    struct OpenAPI_cause_s *cause;
+    OpenAPI_cause_e cause;
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
     int _5g_mm_cause_value;
     struct OpenAPI_snssai_s *s_nssai;
     struct OpenAPI_trace_data_s *trace_data;
-    struct OpenAPI_eps_interworking_indication_s *eps_interworking_ind;
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind;
     int an_type_can_be_changed;
     struct OpenAPI_ref_to_binary_data_s *n2_sm_info_ext1;
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1;
-    struct OpenAPI_ma_release_indication_s *ma_release_ind;
+    OpenAPI_ma_release_indication_e ma_release_ind;
     int ma_nw_upgrade_ind;
     int ma_request_ind;
     struct OpenAPI_exemption_ind_s *exemption_ind;
@@ -107,8 +107,8 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_user_location_t *ue_location,
     char *ue_time_zone,
     OpenAPI_user_location_t *add_ue_location,
-    OpenAPI_up_cnx_state_t *up_cnx_state,
-    OpenAPI_ho_state_t *ho_state,
+    OpenAPI_up_cnx_state_e up_cnx_state,
+    OpenAPI_ho_state_e ho_state,
     int to_be_switched,
     int failed_to_be_switched,
     OpenAPI_ref_to_binary_data_t *n1_sm_msg,
@@ -124,16 +124,16 @@ OpenAPI_sm_context_update_data_t *OpenAPI_sm_context_update_data_create(
     OpenAPI_list_t *eps_bearer_setup,
     OpenAPI_list_t *revoke_ebi_list,
     int release,
-    OpenAPI_cause_t *cause,
+    OpenAPI_cause_e cause,
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
     int _5g_mm_cause_value,
     OpenAPI_snssai_t *s_nssai,
     OpenAPI_trace_data_t *trace_data,
-    OpenAPI_eps_interworking_indication_t *eps_interworking_ind,
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     int an_type_can_be_changed,
     OpenAPI_ref_to_binary_data_t *n2_sm_info_ext1,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type_ext1,
-    OpenAPI_ma_release_indication_t *ma_release_ind,
+    OpenAPI_ma_release_indication_e ma_release_ind,
     int ma_nw_upgrade_ind,
     int ma_request_ind,
     OpenAPI_exemption_ind_t *exemption_ind,

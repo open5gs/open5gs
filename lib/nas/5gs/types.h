@@ -149,7 +149,7 @@ ED4(uint8_t spare1:1;,
     uint8_t odd_even:1;,
     uint8_t type:3;)
 } __attribute__ ((packed)) ogs_nas_5gs_mobile_identity_header_t;
-typedef struct ogs_nas_5gs_mobile_identity_imsi_s {
+typedef struct ogs_nas_5gs_mobile_identity_suci_s {
     ogs_nas_5gs_mobile_identity_header_t h;
     ogs_nas_plmn_id_t nas_plmn_id;
     ED2(uint8_t routing_indicator2:4;,
@@ -163,7 +163,7 @@ ED2(uint8_t spare3:4;,
     uint8_t protection_scheme_id:4;)
     uint8_t home_network_pki_value;
     uint8_t scheme_output[OGS_NAS_MAX_SCHEME_OUTPUT_LEN];
-} __attribute__ ((packed)) ogs_nas_5gs_mobile_identity_imsi_t;
+} __attribute__ ((packed)) ogs_nas_5gs_mobile_identity_suci_t;
 typedef struct ogs_nas_5gs_mobile_identity_guti_s {
     ogs_nas_5gs_mobile_identity_header_t h;
     ogs_nas_plmn_id_t nas_plmn_id;
@@ -172,7 +172,9 @@ typedef struct ogs_nas_5gs_mobile_identity_guti_s {
 } __attribute__ ((packed)) ogs_nas_5gs_mobile_identity_guti_t;
 typedef struct ogs_nas_5gs_mobile_identity_s_tmsi_s {
     ogs_nas_5gs_mobile_identity_header_t h;
-    ogs_amf_id_t amf_id;
+    uint8_t set1;
+ED2(uint8_t set2:2;,
+    uint8_t pointer:6;)
     uint32_t m_tmsi;
 } __attribute__ ((packed)) ogs_nas_5gs_mobile_identity_s_tmsi_t;
 typedef struct ogs_nas_5gs_mobile_identity_s {
@@ -321,22 +323,7 @@ ED2(uint8_t spare:7;,
  * O TLV 4-34 */
 typedef struct ogs_nas_allowed_pdu_session_status_s {
     uint8_t length;
-ED8(uint8_t psi7:1;,
-    uint8_t psi6:1;,
-    uint8_t psi5:1;,
-    uint8_t psi4:1;,
-    uint8_t psi3:1;,
-    uint8_t psi2:1;,
-    uint8_t psi1:1;,
-    uint8_t hdr0:1;)
-ED8(uint8_t psi15:1;,
-    uint8_t psi14:1;,
-    uint8_t psi13:1;,
-    uint8_t psi12:1;,
-    uint8_t psi11:1;,
-    uint8_t psi10:1;,
-    uint8_t psi9:1;,
-    uint8_t psi8:1;)
+    uint16_t psi;
 } __attribute__ ((packed)) ogs_nas_allowed_pdu_session_status_t;
 
 /* 9.11.3.18 Configuration update indication
@@ -386,10 +373,11 @@ ED3(uint8_t type:4;,
 /* 9.11.3.20 De-registration type
  * M V 1/2 */
 typedef struct ogs_nas_de_registration_type_s {
-ED4(uint8_t type:4;,
+ED5(uint8_t tsc:1;,
+    uint8_t ksi:3;,
     uint8_t switch_off:1;,
     uint8_t re_registration_required:1;,
-    uint8_t value:1;)
+    uint8_t access_type:2;)
 } __attribute__ ((packed)) ogs_nas_de_registration_type_t;
 
 /* 9.11.3.24 EPS NAS message container

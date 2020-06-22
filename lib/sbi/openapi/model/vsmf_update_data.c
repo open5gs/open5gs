@@ -5,7 +5,7 @@
 #include "vsmf_update_data.h"
 
 OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
-    OpenAPI_request_indication_t *request_indication,
+    OpenAPI_request_indication_e request_indication,
     OpenAPI_ambr_t *session_ambr,
     OpenAPI_list_t *qos_flows_add_mod_request_list,
     OpenAPI_list_t *qos_flows_rel_request_list,
@@ -18,10 +18,10 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_create(
     int always_on_granted,
     char *hsmf_pdu_session_uri,
     char *supported_features,
-    OpenAPI_cause_t *cause,
+    OpenAPI_cause_e cause,
     char *n1sm_cause,
     int back_off_timer,
-    OpenAPI_ma_release_indication_t *ma_release_ind,
+    OpenAPI_ma_release_indication_e ma_release_ind,
     int ma_accepted_ind,
     OpenAPI_tunnel_info_t *additional_cn_tunnel_info,
     OpenAPI_list_t *dnai_list,
@@ -67,7 +67,6 @@ void OpenAPI_vsmf_update_data_free(OpenAPI_vsmf_update_data_t *vsmf_update_data)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_request_indication_free(vsmf_update_data->request_indication);
     OpenAPI_ambr_free(vsmf_update_data->session_ambr);
     OpenAPI_list_for_each(vsmf_update_data->qos_flows_add_mod_request_list, node) {
         OpenAPI_qos_flow_add_modify_request_item_free(node->data);
@@ -96,9 +95,7 @@ void OpenAPI_vsmf_update_data_free(OpenAPI_vsmf_update_data_t *vsmf_update_data)
     OpenAPI_ref_to_binary_data_free(vsmf_update_data->n1_sm_info_to_ue);
     ogs_free(vsmf_update_data->hsmf_pdu_session_uri);
     ogs_free(vsmf_update_data->supported_features);
-    OpenAPI_cause_free(vsmf_update_data->cause);
     ogs_free(vsmf_update_data->n1sm_cause);
-    OpenAPI_ma_release_indication_free(vsmf_update_data->ma_release_ind);
     OpenAPI_tunnel_info_free(vsmf_update_data->additional_cn_tunnel_info);
     OpenAPI_list_for_each(vsmf_update_data->dnai_list, node) {
         ogs_free(node->data);
@@ -124,13 +121,7 @@ cJSON *OpenAPI_vsmf_update_data_convertToJSON(OpenAPI_vsmf_update_data_t *vsmf_u
         ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [request_indication]");
         goto end;
     }
-    cJSON *request_indication_local_JSON = OpenAPI_request_indication_convertToJSON(vsmf_update_data->request_indication);
-    if (request_indication_local_JSON == NULL) {
-        ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [request_indication]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "requestIndication", request_indication_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "requestIndication", OpenAPI_request_indication_ToString(vsmf_update_data->request_indication)) == NULL) {
         ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [request_indication]");
         goto end;
     }
@@ -306,13 +297,7 @@ cJSON *OpenAPI_vsmf_update_data_convertToJSON(OpenAPI_vsmf_update_data_t *vsmf_u
     }
 
     if (vsmf_update_data->cause) {
-        cJSON *cause_local_JSON = OpenAPI_cause_convertToJSON(vsmf_update_data->cause);
-        if (cause_local_JSON == NULL) {
-            ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [cause]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "cause", cause_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "cause", OpenAPI_cause_ToString(vsmf_update_data->cause)) == NULL) {
             ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [cause]");
             goto end;
         }
@@ -333,13 +318,7 @@ cJSON *OpenAPI_vsmf_update_data_convertToJSON(OpenAPI_vsmf_update_data_t *vsmf_u
     }
 
     if (vsmf_update_data->ma_release_ind) {
-        cJSON *ma_release_ind_local_JSON = OpenAPI_ma_release_indication_convertToJSON(vsmf_update_data->ma_release_ind);
-        if (ma_release_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [ma_release_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "maReleaseInd", ma_release_ind_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "maReleaseInd", OpenAPI_ma_release_indication_ToString(vsmf_update_data->ma_release_ind)) == NULL) {
             ogs_error("OpenAPI_vsmf_update_data_convertToJSON() failed [ma_release_ind]");
             goto end;
         }
@@ -433,9 +412,13 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
         goto end;
     }
 
-    OpenAPI_request_indication_t *request_indication_local_nonprim = NULL;
+    OpenAPI_request_indication_e request_indicationVariable;
 
-    request_indication_local_nonprim = OpenAPI_request_indication_parseFromJSON(request_indication);
+    if (!cJSON_IsString(request_indication)) {
+        ogs_error("OpenAPI_vsmf_update_data_parseFromJSON() failed [request_indication]");
+        goto end;
+    }
+    request_indicationVariable = OpenAPI_request_indication_FromString(request_indication->valuestring);
 
     cJSON *session_ambr = cJSON_GetObjectItemCaseSensitive(vsmf_update_dataJSON, "sessionAmbr");
 
@@ -624,9 +607,13 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
 
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(vsmf_update_dataJSON, "cause");
 
-    OpenAPI_cause_t *cause_local_nonprim = NULL;
+    OpenAPI_cause_e causeVariable;
     if (cause) {
-        cause_local_nonprim = OpenAPI_cause_parseFromJSON(cause);
+        if (!cJSON_IsString(cause)) {
+            ogs_error("OpenAPI_vsmf_update_data_parseFromJSON() failed [cause]");
+            goto end;
+        }
+        causeVariable = OpenAPI_cause_FromString(cause->valuestring);
     }
 
     cJSON *n1sm_cause = cJSON_GetObjectItemCaseSensitive(vsmf_update_dataJSON, "n1smCause");
@@ -649,9 +636,13 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
 
     cJSON *ma_release_ind = cJSON_GetObjectItemCaseSensitive(vsmf_update_dataJSON, "maReleaseInd");
 
-    OpenAPI_ma_release_indication_t *ma_release_ind_local_nonprim = NULL;
+    OpenAPI_ma_release_indication_e ma_release_indVariable;
     if (ma_release_ind) {
-        ma_release_ind_local_nonprim = OpenAPI_ma_release_indication_parseFromJSON(ma_release_ind);
+        if (!cJSON_IsString(ma_release_ind)) {
+            ogs_error("OpenAPI_vsmf_update_data_parseFromJSON() failed [ma_release_ind]");
+            goto end;
+        }
+        ma_release_indVariable = OpenAPI_ma_release_indication_FromString(ma_release_ind->valuestring);
     }
 
     cJSON *ma_accepted_ind = cJSON_GetObjectItemCaseSensitive(vsmf_update_dataJSON, "maAcceptedInd");
@@ -712,7 +703,7 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
     }
 
     vsmf_update_data_local_var = OpenAPI_vsmf_update_data_create (
-        request_indication_local_nonprim,
+        request_indicationVariable,
         session_ambr ? session_ambr_local_nonprim : NULL,
         qos_flows_add_mod_request_list ? qos_flows_add_mod_request_listList : NULL,
         qos_flows_rel_request_list ? qos_flows_rel_request_listList : NULL,
@@ -725,10 +716,10 @@ OpenAPI_vsmf_update_data_t *OpenAPI_vsmf_update_data_parseFromJSON(cJSON *vsmf_u
         always_on_granted ? always_on_granted->valueint : 0,
         hsmf_pdu_session_uri ? ogs_strdup(hsmf_pdu_session_uri->valuestring) : NULL,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
-        cause ? cause_local_nonprim : NULL,
+        cause ? causeVariable : 0,
         n1sm_cause ? ogs_strdup(n1sm_cause->valuestring) : NULL,
         back_off_timer ? back_off_timer->valuedouble : 0,
-        ma_release_ind ? ma_release_ind_local_nonprim : NULL,
+        ma_release_ind ? ma_release_indVariable : 0,
         ma_accepted_ind ? ma_accepted_ind->valueint : 0,
         additional_cn_tunnel_info ? additional_cn_tunnel_info_local_nonprim : NULL,
         dnai_list ? dnai_listList : NULL,

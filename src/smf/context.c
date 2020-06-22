@@ -568,7 +568,7 @@ void smf_ue_remove(smf_ue_t *smf_ue)
         ogs_free(smf_ue->supi);
     }
 
-    if (smf_ue->imsi && smf_ue->imsi_len) {
+    if (smf_ue->imsi_len) {
         ogs_hash_set(self.imsi_hash, smf_ue->imsi, smf_ue->imsi_len, NULL);
     }
 
@@ -1027,6 +1027,7 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
     sess->sbi.client_wait.timer = ogs_timer_add(
             self.timer_mgr, smf_timer_sbi_client_wait_expire, sess);
 
+    memset(&e, 0, sizeof(e));
     e.sess = sess;
     ogs_fsm_create(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final);
     ogs_fsm_init(&sess->sm, &e);
@@ -1111,7 +1112,7 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
     if (sess) {
         ogs_warn("OLD Session Release [IMSI:%s,APN:%s]",
                 smf_ue->imsi_bcd, sess->pdn.apn);
-        SMF_SESS_CLEAR(sess);
+        smf_sess_remove(sess);
     }
 
     sess = smf_sess_add_by_apn(smf_ue, apn, req->pdn_type.u8,
@@ -1237,6 +1238,7 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     sess->sbi.client_wait.timer = ogs_timer_add(
             self.timer_mgr, smf_timer_sbi_client_wait_expire, sess);
 
+    memset(&e, 0, sizeof(e));
     e.sess = sess;
     ogs_fsm_create(&sess->sm, smf_gsm_state_initial, smf_gsm_state_final);
     ogs_fsm_init(&sess->sm, &e);
@@ -1280,7 +1282,7 @@ smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message)
     if (sess) {
         ogs_warn("OLD Session Release [SUPI:%s,PDU Session identity:%d]",
                 SmContextCreateData->supi, SmContextCreateData->pdu_session_id);
-        SMF_SESS_CLEAR(sess);
+        smf_sess_remove(sess);
     }
 
     sess = smf_sess_add_by_psi(smf_ue, SmContextCreateData->pdu_session_id);
@@ -1300,6 +1302,7 @@ void smf_sess_remove(smf_sess_t *sess)
 
     ogs_list_remove(&smf_ue->sess_list, sess);
 
+    memset(&e, 0, sizeof(e));
     e.sess = sess;
     ogs_fsm_fini(&sess->sm, &e);
     ogs_fsm_delete(&sess->sm);

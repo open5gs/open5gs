@@ -42,6 +42,7 @@ void smf_sbi_send_sm_context_create_error(
         ogs_sbi_session_t *session,
         int status, const char *title, const char *detail,
         ogs_pkbuf_t *n1smbuf);
+void smf_sbi_send_sm_context_updated_data(smf_sess_t *sess);
 void smf_sbi_send_sm_context_update_error(
         ogs_sbi_session_t *session,
         int status, const char *title, const char *detail,

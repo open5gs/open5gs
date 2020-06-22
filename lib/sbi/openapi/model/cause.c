@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "cause.h"
 
-OpenAPI_cause_t *OpenAPI_cause_create(
-    )
+char* OpenAPI_cause_ToString(OpenAPI_cause_e cause)
 {
-    OpenAPI_cause_t *cause_local_var = OpenAPI_malloc(sizeof(OpenAPI_cause_t));
-    if (!cause_local_var) {
-        return NULL;
-    }
-
-    return cause_local_var;
+    const char *causeArray[] =  { "NULL", "REL_DUE_TO_HO", "EPS_FALLBACK", "REL_DUE_TO_UP_SEC", "DNN_CONGESTION", "S_NSSAI_CONGESTION", "REL_DUE_TO_REACTIVATION", "_5G_AN_NOT_RESPONDING", "REL_DUE_TO_SLICE_NOT_AVAILABLE", "REL_DUE_TO_DUPLICATE_SESSION_ID", "PDU_SESSION_STATUS_MISMATCH", "HO_FAILURE", "INSUFFICIENT_UP_RESOURCES", "PDU_SESSION_HANDED_OVER", "PDU_SESSION_RESUMED", "CN_ASSISTED_RAN_PARAMETER_TUNING", "ISMF_CONTEXT_TRANSFER", "SMF_CONTEXT_TRANSFER", "REL_DUE_TO_PS_TO_CS_HO", "REL_DUE_TO_SUBSCRIPTION_CHANGE", "HO_CANCEL", "REL_DUE_TO_SLICE_NOT_AUTHORIZED", "PDU_SESSION_HAND_OVER_FAILURE", "DDN_FAILURE_STATUS" };
+    size_t sizeofArray = sizeof(causeArray) / sizeof(causeArray[0]);
+    if (cause < sizeofArray)
+        return (char *)causeArray[cause];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_cause_free(OpenAPI_cause_t *cause)
+OpenAPI_cause_e OpenAPI_cause_FromString(char* cause)
 {
-    if (NULL == cause) {
-        return;
+    int stringToReturn = 0;
+    const char *causeArray[] =  { "NULL", "REL_DUE_TO_HO", "EPS_FALLBACK", "REL_DUE_TO_UP_SEC", "DNN_CONGESTION", "S_NSSAI_CONGESTION", "REL_DUE_TO_REACTIVATION", "_5G_AN_NOT_RESPONDING", "REL_DUE_TO_SLICE_NOT_AVAILABLE", "REL_DUE_TO_DUPLICATE_SESSION_ID", "PDU_SESSION_STATUS_MISMATCH", "HO_FAILURE", "INSUFFICIENT_UP_RESOURCES", "PDU_SESSION_HANDED_OVER", "PDU_SESSION_RESUMED", "CN_ASSISTED_RAN_PARAMETER_TUNING", "ISMF_CONTEXT_TRANSFER", "SMF_CONTEXT_TRANSFER", "REL_DUE_TO_PS_TO_CS_HO", "REL_DUE_TO_SUBSCRIPTION_CHANGE", "HO_CANCEL", "REL_DUE_TO_SLICE_NOT_AUTHORIZED", "PDU_SESSION_HAND_OVER_FAILURE", "DDN_FAILURE_STATUS" };
+    size_t sizeofArray = sizeof(causeArray) / sizeof(causeArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(cause, causeArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(cause);
-}
-
-cJSON *OpenAPI_cause_convertToJSON(OpenAPI_cause_t *cause)
-{
-    cJSON *item = NULL;
-
-    if (cause == NULL) {
-        ogs_error("OpenAPI_cause_convertToJSON() failed [Cause]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_cause_t *OpenAPI_cause_parseFromJSON(cJSON *causeJSON)
-{
-    OpenAPI_cause_t *cause_local_var = NULL;
-    cause_local_var = OpenAPI_cause_create (
-        );
-
-    return cause_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_cause_t *OpenAPI_cause_copy(OpenAPI_cause_t *dst, OpenAPI_cause_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_cause_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_cause_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_cause_free(dst);
-    dst = OpenAPI_cause_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

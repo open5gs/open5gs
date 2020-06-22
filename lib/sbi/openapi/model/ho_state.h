@@ -1,7 +1,7 @@
 /*
  * ho_state.h
  *
- * Possible values are - NONE - PREPARING - PREPARED - COMPLETED - CANCELLED
+ *
  */
 
 #ifndef _OpenAPI_ho_state_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_ho_state_s OpenAPI_ho_state_t;
-typedef struct OpenAPI_ho_state_s {
-} OpenAPI_ho_state_t;
+typedef enum { OpenAPI_ho_state_NULL = 0, OpenAPI_ho_state_NONE, OpenAPI_ho_state_PREPARING, OpenAPI_ho_state_PREPARED, OpenAPI_ho_state_COMPLETED, OpenAPI_ho_state_CANCELLED } OpenAPI_ho_state_e;
 
-OpenAPI_ho_state_t *OpenAPI_ho_state_create(
-    );
-void OpenAPI_ho_state_free(OpenAPI_ho_state_t *ho_state);
-OpenAPI_ho_state_t *OpenAPI_ho_state_parseFromJSON(cJSON *ho_stateJSON);
-cJSON *OpenAPI_ho_state_convertToJSON(OpenAPI_ho_state_t *ho_state);
-OpenAPI_ho_state_t *OpenAPI_ho_state_copy(OpenAPI_ho_state_t *dst, OpenAPI_ho_state_t *src);
+char* OpenAPI_ho_state_ToString(OpenAPI_ho_state_e ho_state);
+
+OpenAPI_ho_state_e OpenAPI_ho_state_FromString(char* ho_state);
 
 #ifdef __cplusplus
 }

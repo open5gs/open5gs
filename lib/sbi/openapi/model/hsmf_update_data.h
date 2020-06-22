@@ -44,7 +44,7 @@ extern "C" {
 
 typedef struct OpenAPI_hsmf_update_data_s OpenAPI_hsmf_update_data_t;
 typedef struct OpenAPI_hsmf_update_data_s {
-    struct OpenAPI_request_indication_s *request_indication;
+    OpenAPI_request_indication_e request_indication;
     char *pei;
     struct OpenAPI_tunnel_info_s *vcn_tunnel_info;
     struct OpenAPI_tunnel_info_s *icn_tunnel_info;
@@ -66,18 +66,18 @@ typedef struct OpenAPI_hsmf_update_data_s {
     OpenAPI_list_t *eps_bearer_id;
     int ho_preparation_indication;
     OpenAPI_list_t *revoke_ebi_list;
-    struct OpenAPI_cause_s *cause;
+    OpenAPI_cause_e cause;
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
     int _5g_mm_cause_value;
     int always_on_requested;
-    struct OpenAPI_eps_interworking_indication_s *eps_interworking_ind;
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind;
     OpenAPI_list_t *secondary_rat_usage_report;
     OpenAPI_list_t *secondary_rat_usage_info;
     int an_type_can_be_changed;
-    struct OpenAPI_ma_release_indication_s *ma_release_ind;
+    OpenAPI_ma_release_indication_e ma_release_ind;
     int ma_nw_upgrade_ind;
     int ma_request_ind;
-    struct OpenAPI_unavailable_access_indication_s *unavailable_access_ind;
+    OpenAPI_unavailable_access_indication_e unavailable_access_ind;
     OpenAPI_list_t *psa_info;
     struct OpenAPI_ulcl_bp_information_s *ulcl_bp_info;
     struct OpenAPI_n4_information_s *n4_info;
@@ -100,7 +100,7 @@ typedef struct OpenAPI_hsmf_update_data_s {
 } OpenAPI_hsmf_update_data_t;
 
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
-    OpenAPI_request_indication_t *request_indication,
+    OpenAPI_request_indication_e request_indication,
     char *pei,
     OpenAPI_tunnel_info_t *vcn_tunnel_info,
     OpenAPI_tunnel_info_t *icn_tunnel_info,
@@ -122,18 +122,18 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_list_t *eps_bearer_id,
     int ho_preparation_indication,
     OpenAPI_list_t *revoke_ebi_list,
-    OpenAPI_cause_t *cause,
+    OpenAPI_cause_e cause,
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
     int _5g_mm_cause_value,
     int always_on_requested,
-    OpenAPI_eps_interworking_indication_t *eps_interworking_ind,
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     OpenAPI_list_t *secondary_rat_usage_report,
     OpenAPI_list_t *secondary_rat_usage_info,
     int an_type_can_be_changed,
-    OpenAPI_ma_release_indication_t *ma_release_ind,
+    OpenAPI_ma_release_indication_e ma_release_ind,
     int ma_nw_upgrade_ind,
     int ma_request_ind,
-    OpenAPI_unavailable_access_indication_t *unavailable_access_ind,
+    OpenAPI_unavailable_access_indication_e unavailable_access_ind,
     OpenAPI_list_t *psa_info,
     OpenAPI_ulcl_bp_information_t *ulcl_bp_info,
     OpenAPI_n4_information_t *n4_info,

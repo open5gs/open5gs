@@ -124,6 +124,11 @@ void amf_ue_sbi_discover_and_send(
     ogs_assert(nf_type);
     ogs_assert(amf_ue);
 
+    if (amf_ue->sbi.running == true) {
+        ogs_error("amf_ue_sbi_discover_and_send() is running");
+        return;
+    }
+
     amf_ue->sbi.nf_state_registered = amf_nf_state_registered;
     amf_ue->sbi.client_wait.duration =
         amf_timer_cfg(AMF_TIMER_SBI_CLIENT_WAIT)->duration;
@@ -143,6 +148,11 @@ void amf_sess_sbi_discover_and_send(
     ogs_assert(sess);
     ogs_assert(build);
 
+    if (sess->sbi.running == true) {
+        ogs_error("amf_sess_sbi_discover_and_send() is running");
+        return;
+    }
+
     sess->sbi.nf_state_registered = amf_nf_state_registered;
     sess->sbi.client_wait.duration =
         amf_timer_cfg(AMF_TIMER_SBI_CLIENT_WAIT)->duration;
@@ -151,5 +161,18 @@ void amf_sess_sbi_discover_and_send(
             nf_type, &sess->sbi, data, (ogs_sbi_build_f)build) != true) {
         nas_5gs_send_back_5gsm_message_from_sbi(sess,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+    }
+}
+
+void amf_sbi_send_release_all_sm_contexts(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        amf_sess_sbi_discover_and_send(
+                OpenAPI_nf_type_SMF, sess, NULL,
+                amf_nsmf_pdu_session_build_release_sm_context);
     }
 }

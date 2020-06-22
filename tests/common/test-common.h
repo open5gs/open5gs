@@ -45,6 +45,7 @@ extern "C" {
 #include "common/gsm-build.h"
 #include "common/gsm-handler.h"
 #include "common/nas-path.h"
+#include "common/nas-encoder.h"
 #include "common/nas-security.h"
 
 #undef OGS_TEST_INSIDE

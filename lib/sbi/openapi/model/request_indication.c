@@ -4,82 +4,27 @@
 #include <stdio.h>
 #include "request_indication.h"
 
-OpenAPI_request_indication_t *OpenAPI_request_indication_create(
-    )
+char* OpenAPI_request_indication_ToString(OpenAPI_request_indication_e request_indication)
 {
-    OpenAPI_request_indication_t *request_indication_local_var = OpenAPI_malloc(sizeof(OpenAPI_request_indication_t));
-    if (!request_indication_local_var) {
-        return NULL;
-    }
-
-    return request_indication_local_var;
+    const char *request_indicationArray[] =  { "NULL", "UE_REQ_PDU_SES_MOD", "UE_REQ_PDU_SES_REL", "PDU_SES_MOB", "NW_REQ_PDU_SES_AUTH", "NW_REQ_PDU_SES_MOD", "NW_REQ_PDU_SES_REL", "EBI_ASSIGNMENT_REQ" };
+    size_t sizeofArray = sizeof(request_indicationArray) / sizeof(request_indicationArray[0]);
+    if (request_indication < sizeofArray)
+        return (char *)request_indicationArray[request_indication];
+    else
+        return (char *)"Unknown";
 }
 
-void OpenAPI_request_indication_free(OpenAPI_request_indication_t *request_indication)
+OpenAPI_request_indication_e OpenAPI_request_indication_FromString(char* request_indication)
 {
-    if (NULL == request_indication) {
-        return;
+    int stringToReturn = 0;
+    const char *request_indicationArray[] =  { "NULL", "UE_REQ_PDU_SES_MOD", "UE_REQ_PDU_SES_REL", "PDU_SES_MOB", "NW_REQ_PDU_SES_AUTH", "NW_REQ_PDU_SES_MOD", "NW_REQ_PDU_SES_REL", "EBI_ASSIGNMENT_REQ" };
+    size_t sizeofArray = sizeof(request_indicationArray) / sizeof(request_indicationArray[0]);
+    while (stringToReturn < sizeofArray) {
+        if (strcmp(request_indication, request_indicationArray[stringToReturn]) == 0) {
+            return stringToReturn;
+        }
+        stringToReturn++;
     }
-    OpenAPI_lnode_t *node;
-    ogs_free(request_indication);
-}
-
-cJSON *OpenAPI_request_indication_convertToJSON(OpenAPI_request_indication_t *request_indication)
-{
-    cJSON *item = NULL;
-
-    if (request_indication == NULL) {
-        ogs_error("OpenAPI_request_indication_convertToJSON() failed [RequestIndication]");
-        return NULL;
-    }
-
-    item = cJSON_CreateObject();
-end:
-    return item;
-}
-
-OpenAPI_request_indication_t *OpenAPI_request_indication_parseFromJSON(cJSON *request_indicationJSON)
-{
-    OpenAPI_request_indication_t *request_indication_local_var = NULL;
-    request_indication_local_var = OpenAPI_request_indication_create (
-        );
-
-    return request_indication_local_var;
-end:
-    return NULL;
-}
-
-OpenAPI_request_indication_t *OpenAPI_request_indication_copy(OpenAPI_request_indication_t *dst, OpenAPI_request_indication_t *src)
-{
-    cJSON *item = NULL;
-    char *content = NULL;
-
-    ogs_assert(src);
-    item = OpenAPI_request_indication_convertToJSON(src);
-    if (!item) {
-        ogs_error("OpenAPI_request_indication_convertToJSON() failed");
-        return NULL;
-    }
-
-    content = cJSON_Print(item);
-    cJSON_Delete(item);
-
-    if (!content) {
-        ogs_error("cJSON_Print() failed");
-        return NULL;
-    }
-
-    item = cJSON_Parse(content);
-    ogs_free(content);
-    if (!item) {
-        ogs_error("cJSON_Parse() failed");
-        return NULL;
-    }
-
-    OpenAPI_request_indication_free(dst);
-    dst = OpenAPI_request_indication_parseFromJSON(item);
-    cJSON_Delete(item);
-
-    return dst;
+    return 0;
 }
 

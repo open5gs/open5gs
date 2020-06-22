@@ -14,7 +14,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *vsmf_id,
     char *ismf_id,
     OpenAPI_plmn_id_nid_t *serving_network,
-    OpenAPI_request_type_t *request_type,
+    OpenAPI_request_type_e request_type,
     OpenAPI_list_t *eps_bearer_id,
     char pgw_s8c_fteid,
     char *vsmf_pdu_session_uri,
@@ -38,11 +38,11 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *pcf_group_id,
     char *pcf_set_id,
     int ho_preparation_indication,
-    OpenAPI_dnn_selection_mode_t *sel_mode,
+    OpenAPI_dnn_selection_mode_e sel_mode,
     int always_on_requested,
     char *udm_group_id,
     char *routing_indicator,
-    OpenAPI_eps_interworking_indication_t *eps_interworking_ind,
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     char *v_smf_service_instance_id,
     char *i_smf_service_instance_id,
     char *recovery_time,
@@ -144,7 +144,6 @@ void OpenAPI_pdu_session_create_data_free(OpenAPI_pdu_session_create_data_t *pdu
     ogs_free(pdu_session_create_data->vsmf_id);
     ogs_free(pdu_session_create_data->ismf_id);
     OpenAPI_plmn_id_nid_free(pdu_session_create_data->serving_network);
-    OpenAPI_request_type_free(pdu_session_create_data->request_type);
     OpenAPI_list_for_each(pdu_session_create_data->eps_bearer_id, node) {
         ogs_free(node->data);
     }
@@ -166,10 +165,8 @@ void OpenAPI_pdu_session_create_data_free(OpenAPI_pdu_session_create_data_t *pdu
     ogs_free(pdu_session_create_data->pcf_id);
     ogs_free(pdu_session_create_data->pcf_group_id);
     ogs_free(pdu_session_create_data->pcf_set_id);
-    OpenAPI_dnn_selection_mode_free(pdu_session_create_data->sel_mode);
     ogs_free(pdu_session_create_data->udm_group_id);
     ogs_free(pdu_session_create_data->routing_indicator);
-    OpenAPI_eps_interworking_indication_free(pdu_session_create_data->eps_interworking_ind);
     ogs_free(pdu_session_create_data->v_smf_service_instance_id);
     ogs_free(pdu_session_create_data->i_smf_service_instance_id);
     ogs_free(pdu_session_create_data->recovery_time);
@@ -282,13 +279,7 @@ cJSON *OpenAPI_pdu_session_create_data_convertToJSON(OpenAPI_pdu_session_create_
     }
 
     if (pdu_session_create_data->request_type) {
-        cJSON *request_type_local_JSON = OpenAPI_request_type_convertToJSON(pdu_session_create_data->request_type);
-        if (request_type_local_JSON == NULL) {
-            ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [request_type]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "requestType", request_type_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "requestType", OpenAPI_request_type_ToString(pdu_session_create_data->request_type)) == NULL) {
             ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [request_type]");
             goto end;
         }
@@ -515,13 +506,7 @@ cJSON *OpenAPI_pdu_session_create_data_convertToJSON(OpenAPI_pdu_session_create_
     }
 
     if (pdu_session_create_data->sel_mode) {
-        cJSON *sel_mode_local_JSON = OpenAPI_dnn_selection_mode_convertToJSON(pdu_session_create_data->sel_mode);
-        if (sel_mode_local_JSON == NULL) {
-            ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [sel_mode]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "selMode", sel_mode_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "selMode", OpenAPI_dnn_selection_mode_ToString(pdu_session_create_data->sel_mode)) == NULL) {
             ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [sel_mode]");
             goto end;
         }
@@ -549,13 +534,7 @@ cJSON *OpenAPI_pdu_session_create_data_convertToJSON(OpenAPI_pdu_session_create_
     }
 
     if (pdu_session_create_data->eps_interworking_ind) {
-        cJSON *eps_interworking_ind_local_JSON = OpenAPI_eps_interworking_indication_convertToJSON(pdu_session_create_data->eps_interworking_ind);
-        if (eps_interworking_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [eps_interworking_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "epsInterworkingInd", eps_interworking_ind_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "epsInterworkingInd", OpenAPI_eps_interworking_indication_ToString(pdu_session_create_data->eps_interworking_ind)) == NULL) {
             ogs_error("OpenAPI_pdu_session_create_data_convertToJSON() failed [eps_interworking_ind]");
             goto end;
         }
@@ -845,9 +824,13 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
 
     cJSON *request_type = cJSON_GetObjectItemCaseSensitive(pdu_session_create_dataJSON, "requestType");
 
-    OpenAPI_request_type_t *request_type_local_nonprim = NULL;
+    OpenAPI_request_type_e request_typeVariable;
     if (request_type) {
-        request_type_local_nonprim = OpenAPI_request_type_parseFromJSON(request_type);
+        if (!cJSON_IsString(request_type)) {
+            ogs_error("OpenAPI_pdu_session_create_data_parseFromJSON() failed [request_type]");
+            goto end;
+        }
+        request_typeVariable = OpenAPI_request_type_FromString(request_type->valuestring);
     }
 
     cJSON *eps_bearer_id = cJSON_GetObjectItemCaseSensitive(pdu_session_create_dataJSON, "epsBearerId");
@@ -1063,9 +1046,13 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
 
     cJSON *sel_mode = cJSON_GetObjectItemCaseSensitive(pdu_session_create_dataJSON, "selMode");
 
-    OpenAPI_dnn_selection_mode_t *sel_mode_local_nonprim = NULL;
+    OpenAPI_dnn_selection_mode_e sel_modeVariable;
     if (sel_mode) {
-        sel_mode_local_nonprim = OpenAPI_dnn_selection_mode_parseFromJSON(sel_mode);
+        if (!cJSON_IsString(sel_mode)) {
+            ogs_error("OpenAPI_pdu_session_create_data_parseFromJSON() failed [sel_mode]");
+            goto end;
+        }
+        sel_modeVariable = OpenAPI_dnn_selection_mode_FromString(sel_mode->valuestring);
     }
 
     cJSON *always_on_requested = cJSON_GetObjectItemCaseSensitive(pdu_session_create_dataJSON, "alwaysOnRequested");
@@ -1097,9 +1084,13 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
 
     cJSON *eps_interworking_ind = cJSON_GetObjectItemCaseSensitive(pdu_session_create_dataJSON, "epsInterworkingInd");
 
-    OpenAPI_eps_interworking_indication_t *eps_interworking_ind_local_nonprim = NULL;
+    OpenAPI_eps_interworking_indication_e eps_interworking_indVariable;
     if (eps_interworking_ind) {
-        eps_interworking_ind_local_nonprim = OpenAPI_eps_interworking_indication_parseFromJSON(eps_interworking_ind);
+        if (!cJSON_IsString(eps_interworking_ind)) {
+            ogs_error("OpenAPI_pdu_session_create_data_parseFromJSON() failed [eps_interworking_ind]");
+            goto end;
+        }
+        eps_interworking_indVariable = OpenAPI_eps_interworking_indication_FromString(eps_interworking_ind->valuestring);
     }
 
     cJSON *v_smf_service_instance_id = cJSON_GetObjectItemCaseSensitive(pdu_session_create_dataJSON, "vSmfServiceInstanceId");
@@ -1307,7 +1298,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
         vsmf_id ? ogs_strdup(vsmf_id->valuestring) : NULL,
         ismf_id ? ogs_strdup(ismf_id->valuestring) : NULL,
         serving_network_local_nonprim,
-        request_type ? request_type_local_nonprim : NULL,
+        request_type ? request_typeVariable : 0,
         eps_bearer_id ? eps_bearer_idList : NULL,
         pgw_s8c_fteid ? pgw_s8c_fteid->valueint : 0,
         vsmf_pdu_session_uri ? ogs_strdup(vsmf_pdu_session_uri->valuestring) : NULL,
@@ -1331,11 +1322,11 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_parseFromJSON
         pcf_group_id ? ogs_strdup(pcf_group_id->valuestring) : NULL,
         pcf_set_id ? ogs_strdup(pcf_set_id->valuestring) : NULL,
         ho_preparation_indication ? ho_preparation_indication->valueint : 0,
-        sel_mode ? sel_mode_local_nonprim : NULL,
+        sel_mode ? sel_modeVariable : 0,
         always_on_requested ? always_on_requested->valueint : 0,
         udm_group_id ? ogs_strdup(udm_group_id->valuestring) : NULL,
         routing_indicator ? ogs_strdup(routing_indicator->valuestring) : NULL,
-        eps_interworking_ind ? eps_interworking_ind_local_nonprim : NULL,
+        eps_interworking_ind ? eps_interworking_indVariable : 0,
         v_smf_service_instance_id ? ogs_strdup(v_smf_service_instance_id->valuestring) : NULL,
         i_smf_service_instance_id ? ogs_strdup(i_smf_service_instance_id->valuestring) : NULL,
         recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL,

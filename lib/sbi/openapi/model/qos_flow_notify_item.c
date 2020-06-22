@@ -6,7 +6,7 @@
 
 OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_create(
     int qfi,
-    OpenAPI_notification_cause_t *notification_cause
+    OpenAPI_notification_cause_e notification_cause
     )
 {
     OpenAPI_qos_flow_notify_item_t *qos_flow_notify_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_flow_notify_item_t));
@@ -25,7 +25,6 @@ void OpenAPI_qos_flow_notify_item_free(OpenAPI_qos_flow_notify_item_t *qos_flow_
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_notification_cause_free(qos_flow_notify_item->notification_cause);
     ogs_free(qos_flow_notify_item);
 }
 
@@ -52,13 +51,7 @@ cJSON *OpenAPI_qos_flow_notify_item_convertToJSON(OpenAPI_qos_flow_notify_item_t
         ogs_error("OpenAPI_qos_flow_notify_item_convertToJSON() failed [notification_cause]");
         goto end;
     }
-    cJSON *notification_cause_local_JSON = OpenAPI_notification_cause_convertToJSON(qos_flow_notify_item->notification_cause);
-    if (notification_cause_local_JSON == NULL) {
-        ogs_error("OpenAPI_qos_flow_notify_item_convertToJSON() failed [notification_cause]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "notificationCause", notification_cause_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "notificationCause", OpenAPI_notification_cause_ToString(qos_flow_notify_item->notification_cause)) == NULL) {
         ogs_error("OpenAPI_qos_flow_notify_item_convertToJSON() failed [notification_cause]");
         goto end;
     }
@@ -88,13 +81,17 @@ OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_parseFromJSON(cJSON
         goto end;
     }
 
-    OpenAPI_notification_cause_t *notification_cause_local_nonprim = NULL;
+    OpenAPI_notification_cause_e notification_causeVariable;
 
-    notification_cause_local_nonprim = OpenAPI_notification_cause_parseFromJSON(notification_cause);
+    if (!cJSON_IsString(notification_cause)) {
+        ogs_error("OpenAPI_qos_flow_notify_item_parseFromJSON() failed [notification_cause]");
+        goto end;
+    }
+    notification_causeVariable = OpenAPI_notification_cause_FromString(notification_cause->valuestring);
 
     qos_flow_notify_item_local_var = OpenAPI_qos_flow_notify_item_create (
         qfi->valuedouble,
-        notification_cause_local_nonprim
+        notification_causeVariable
         );
 
     return qos_flow_notify_item_local_var;

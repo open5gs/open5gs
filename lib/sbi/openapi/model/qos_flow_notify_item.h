@@ -21,12 +21,12 @@ extern "C" {
 typedef struct OpenAPI_qos_flow_notify_item_s OpenAPI_qos_flow_notify_item_t;
 typedef struct OpenAPI_qos_flow_notify_item_s {
     int qfi;
-    struct OpenAPI_notification_cause_s *notification_cause;
+    OpenAPI_notification_cause_e notification_cause;
 } OpenAPI_qos_flow_notify_item_t;
 
 OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_create(
     int qfi,
-    OpenAPI_notification_cause_t *notification_cause
+    OpenAPI_notification_cause_e notification_cause
     );
 void OpenAPI_qos_flow_notify_item_free(OpenAPI_qos_flow_notify_item_t *qos_flow_notify_item);
 OpenAPI_qos_flow_notify_item_t *OpenAPI_qos_flow_notify_item_parseFromJSON(cJSON *qos_flow_notify_itemJSON);

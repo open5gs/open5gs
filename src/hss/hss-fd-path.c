@@ -63,8 +63,7 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
     uint8_t kasme[OGS_SHA256_DIGEST_SIZE];
     size_t xres_len = 8;
 
-#define MAC_S_LEN 8
-    uint8_t mac_s[MAC_S_LEN];
+    uint8_t mac_s[OGS_MAC_S_LEN];
 
     ogs_dbi_auth_info_t auth_info;
     uint8_t zero[OGS_RAND_LEN];
@@ -113,9 +112,12 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
         if (avpch) {
             ret = fd_msg_avp_hdr(avpch, &hdr);
             ogs_assert(ret == 0);
-            hss_auc_sqn(opc, auth_info.k, hdr->avp_value->os.data, sqn, mac_s);
+            ogs_auc_sqn(opc, auth_info.k,
+                    hdr->avp_value->os.data,
+                    hdr->avp_value->os.data + OGS_RAND_LEN,
+                    sqn, mac_s);
             if (memcmp(mac_s, hdr->avp_value->os.data +
-                        OGS_RAND_LEN + OGS_SQN_LEN, MAC_S_LEN) == 0) {
+                        OGS_RAND_LEN + OGS_SQN_LEN, OGS_MAC_S_LEN) == 0) {
                 ogs_random(auth_info.rand, OGS_RAND_LEN);
                 auth_info.sqn = ogs_buffer_to_uint64(sqn, OGS_SQN_LEN);
                 /* 33.102 C.3.4 Guide : IND + 1 */
@@ -123,11 +125,11 @@ static int hss_ogs_diam_s6a_air_cb( struct msg **msg, struct avp *avp,
             } else {
                 ogs_error("Re-synch MAC failed for IMSI:`%s`", imsi_bcd);
                 ogs_log_print(OGS_LOG_ERROR, "MAC_S: ");
-                ogs_log_hexdump(OGS_LOG_ERROR, mac_s, MAC_S_LEN);
+                ogs_log_hexdump(OGS_LOG_ERROR, mac_s, OGS_MAC_S_LEN);
                 ogs_log_hexdump(OGS_LOG_ERROR,
                     (void*)(hdr->avp_value->os.data + 
                         OGS_RAND_LEN + OGS_SQN_LEN),
-                    MAC_S_LEN);
+                    OGS_MAC_S_LEN);
                 ogs_log_print(OGS_LOG_ERROR, "SQN: ");
                 ogs_log_hexdump(OGS_LOG_ERROR, sqn, OGS_SQN_LEN);
                 result_code = OGS_DIAM_S6A_AUTHENTICATION_DATA_UNAVAILABLE;

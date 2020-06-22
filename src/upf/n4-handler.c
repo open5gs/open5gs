@@ -264,7 +264,7 @@ static ogs_pfcp_far_t *handle_create_far(ogs_pfcp_sess_t *sess,
     far->dst_if = message->forwarding_parameters.destination_interface.u8;
 
     if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) { /* Downlink */
-        int rv, i;
+        int rv;
         ogs_ip_t ip;
         ogs_gtp_node_t *gnode = NULL;
 
@@ -294,11 +294,10 @@ static ogs_pfcp_far_t *handle_create_far(ogs_pfcp_sess_t *sess,
                 ogs_assert(rv == OGS_OK);
             }
             OGS_SETUP_GTP_NODE(far, gnode);
-
-            for (i = 0; i < far->num_of_buffered_packet; i++)
-                upf_gtp_send_to_gnb(far, far->buffered_packet[i]);
-            far->num_of_buffered_packet = 0;
         }
+
+        upf_gtp_send_buffered_packet(far);
+
     } else if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {  /* Uplink */
 
         /* Nothing */
@@ -349,7 +348,7 @@ static ogs_pfcp_far_t *handle_update_far(ogs_pfcp_sess_t *sess,
             destination_interface.u8;
 
     if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) { /* Downlink */
-        int rv, i;
+        int rv;
         ogs_ip_t ip;
         ogs_gtp_node_t *gnode = NULL;
 
@@ -382,11 +381,10 @@ static ogs_pfcp_far_t *handle_update_far(ogs_pfcp_sess_t *sess,
                 ogs_assert(rv == OGS_OK);
             }
             OGS_SETUP_GTP_NODE(far, gnode);
-
-            for (i = 0; i < far->num_of_buffered_packet; i++)
-                upf_gtp_send_to_gnb(far, far->buffered_packet[i]);
-            far->num_of_buffered_packet = 0;
         }
+
+        upf_gtp_send_buffered_packet(far);
+
     } else if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {  /* Uplink */
 
         /* Nothing */

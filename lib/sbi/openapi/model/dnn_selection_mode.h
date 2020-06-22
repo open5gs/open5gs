@@ -1,7 +1,7 @@
 /*
  * dnn_selection_mode.h
  *
- * Possible values are - VERIFIED - UE_DNN_NOT_VERIFIED - NW_DNN_NOT_VERIFIED
+ *
  */
 
 #ifndef _OpenAPI_dnn_selection_mode_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_dnn_selection_mode_s OpenAPI_dnn_selection_mode_t;
-typedef struct OpenAPI_dnn_selection_mode_s {
-} OpenAPI_dnn_selection_mode_t;
+typedef enum { OpenAPI_dnn_selection_mode_NULL = 0, OpenAPI_dnn_selection_mode_VERIFIED, OpenAPI_dnn_selection_mode_UE_DNN_NOT_VERIFIED, OpenAPI_dnn_selection_mode_NW_DNN_NOT_VERIFIED } OpenAPI_dnn_selection_mode_e;
 
-OpenAPI_dnn_selection_mode_t *OpenAPI_dnn_selection_mode_create(
-    );
-void OpenAPI_dnn_selection_mode_free(OpenAPI_dnn_selection_mode_t *dnn_selection_mode);
-OpenAPI_dnn_selection_mode_t *OpenAPI_dnn_selection_mode_parseFromJSON(cJSON *dnn_selection_modeJSON);
-cJSON *OpenAPI_dnn_selection_mode_convertToJSON(OpenAPI_dnn_selection_mode_t *dnn_selection_mode);
-OpenAPI_dnn_selection_mode_t *OpenAPI_dnn_selection_mode_copy(OpenAPI_dnn_selection_mode_t *dst, OpenAPI_dnn_selection_mode_t *src);
+char* OpenAPI_dnn_selection_mode_ToString(OpenAPI_dnn_selection_mode_e dnn_selection_mode);
+
+OpenAPI_dnn_selection_mode_e OpenAPI_dnn_selection_mode_FromString(char* dnn_selection_mode);
 
 #ifdef __cplusplus
 }

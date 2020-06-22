@@ -103,7 +103,7 @@ void smf_gx_handle_cca_termination_request(
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
-    smf_pfcp_send_session_deletion_request(sess, gtp_xact);
+    smf_epc_pfcp_send_session_deletion_request(sess, gtp_xact);
 }
 
 void smf_gx_handle_re_auth_request(

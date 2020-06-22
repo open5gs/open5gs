@@ -44,7 +44,7 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     char *vsmf_id;
     char *ismf_id;
     struct OpenAPI_plmn_id_nid_s *serving_network;
-    struct OpenAPI_request_type_s *request_type;
+    OpenAPI_request_type_e request_type;
     OpenAPI_list_t *eps_bearer_id;
     char pgw_s8c_fteid;
     char *vsmf_pdu_session_uri;
@@ -68,11 +68,11 @@ typedef struct OpenAPI_pdu_session_create_data_s {
     char *pcf_group_id;
     char *pcf_set_id;
     int ho_preparation_indication;
-    struct OpenAPI_dnn_selection_mode_s *sel_mode;
+    OpenAPI_dnn_selection_mode_e sel_mode;
     int always_on_requested;
     char *udm_group_id;
     char *routing_indicator;
-    struct OpenAPI_eps_interworking_indication_s *eps_interworking_ind;
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind;
     char *v_smf_service_instance_id;
     char *i_smf_service_instance_id;
     char *recovery_time;
@@ -105,7 +105,7 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *vsmf_id,
     char *ismf_id,
     OpenAPI_plmn_id_nid_t *serving_network,
-    OpenAPI_request_type_t *request_type,
+    OpenAPI_request_type_e request_type,
     OpenAPI_list_t *eps_bearer_id,
     char pgw_s8c_fteid,
     char *vsmf_pdu_session_uri,
@@ -129,11 +129,11 @@ OpenAPI_pdu_session_create_data_t *OpenAPI_pdu_session_create_data_create(
     char *pcf_group_id,
     char *pcf_set_id,
     int ho_preparation_indication,
-    OpenAPI_dnn_selection_mode_t *sel_mode,
+    OpenAPI_dnn_selection_mode_e sel_mode,
     int always_on_requested,
     char *udm_group_id,
     char *routing_indicator,
-    OpenAPI_eps_interworking_indication_t *eps_interworking_ind,
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     char *v_smf_service_instance_id,
     char *i_smf_service_instance_id,
     char *recovery_time,

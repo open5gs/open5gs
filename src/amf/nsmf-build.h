@@ -26,9 +26,20 @@
 extern "C" {
 #endif
 
+typedef struct amf_nsmf_pdu_session_update_sm_context_param_s {
+    ogs_pkbuf_t *n2smbuf;
+    OpenAPI_up_cnx_state_e upCnxState;
+    struct {
+        int group;
+        int value;
+    } ngApCause;
+} amf_nsmf_pdu_session_update_sm_context_param_t;
+
 ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
         amf_sess_t *sess, void *data);
 ogs_sbi_request_t *amf_nsmf_pdu_session_build_update_sm_context(
+        amf_sess_t *sess, void *data);
+ogs_sbi_request_t *amf_nsmf_pdu_session_build_release_sm_context(
         amf_sess_t *sess, void *data);
 
 #ifdef __cplusplus

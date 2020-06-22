@@ -296,6 +296,7 @@ void ngap_send_ue_context_modification_request(amf_ue_t *amf_ue)
     rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
     ogs_expect(rv == OGS_OK);
 }
+#endif
 
 void ngap_send_ue_context_release_command(
     ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause,
@@ -306,9 +307,9 @@ void ngap_send_ue_context_release_command(
 
     ogs_assert(ran_ue);
 
-    ogs_debug("[AMF] UE Context release command");
-    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%d]",
-            ran_ue->ran_ue_ngap_id, ran_ue->amf_ue_ngap_id);
+    ogs_debug("UE Context release command");
+    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
 
     if (delay) {
         ogs_assert(action != NGAP_UE_CTX_REL_INVALID_ACTION);
@@ -337,6 +338,7 @@ void ngap_send_ue_context_release_command(
     }
 }
 
+#if 0
 void ngap_send_paging(amf_ue_t *amf_ue, NGAP_CNDomain_t cn_domain)
 {
     ogs_pkbuf_t *ngapbuf = NULL;
@@ -512,8 +514,8 @@ void ngap_send_amf_status_transfer(
 
 void ngap_send_error_indication(
         amf_gnb_t *gnb,
+        uint32_t *ran_ue_ngap_id,
         uint64_t *amf_ue_ngap_id,
-        NGAP_RAN_UE_NGAP_ID_t *ran_ue_ngap_id,
         NGAP_Cause_PR group, long cause)
 {
     int rv;
@@ -522,7 +524,7 @@ void ngap_send_error_indication(
     ogs_assert(gnb);
 
     ngapbuf = ngap_build_error_indication(
-            amf_ue_ngap_id, ran_ue_ngap_id, group, cause);
+            ran_ue_ngap_id, amf_ue_ngap_id, group, cause);
     ogs_expect_or_return(ngapbuf);
 
     rv = ngap_send_to_gnb(gnb, ngapbuf, NGAP_NON_UE_SIGNALLING);
@@ -541,8 +543,8 @@ void ngap_send_error_indication2(
     gnb = ran_ue->gnb;
     ogs_expect_or_return(gnb);
 
-    ngap_send_error_indication(gnb, &ran_ue->amf_ue_ngap_id,
-            (NGAP_RAN_UE_NGAP_ID_t *)&ran_ue->ran_ue_ngap_id, group, cause);
+    ngap_send_error_indication(
+        gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id, group, cause);
 }
 
 #if 0

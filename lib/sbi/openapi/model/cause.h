@@ -1,7 +1,7 @@
 /*
  * cause.h
  *
- * Possible values are - REL_DUE_TO_HO - EPS_FALLBACK - REL_DUE_TO_UP_SEC - DNN_CONGESTION - S_NSSAI_CONGESTION - REL_DUE_TO_REACTIVATION - 5G_AN_NOT_RESPONDING - REL_DUE_TO_SLICE_NOT_AVAILABLE - REL_DUE_TO_DUPLICATE_SESSION_ID - PDU_SESSION_STATUS_MISMATCH - HO_FAILURE - INSUFFICIENT_UP_RESOURCES - PDU_SESSION_HANDED_OVER - PDU_SESSION_RESUMED - CN_ASSISTED_RAN_PARAMETER_TUNING - ISMF_CONTEXT_TRANSFER - SMF_CONTEXT_TRANSFER - REL_DUE_TO_PS_TO_CS_HO - REL_DUE_TO_SUBSCRIPTION_CHANGE - HO_CANCEL - REL_DUE_TO_SLICE_NOT_AUTHORIZED - PDU_SESSION_HAND_OVER_FAILURE - DDN_FAILURE_STATUS
+ *
  */
 
 #ifndef _OpenAPI_cause_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_cause_s OpenAPI_cause_t;
-typedef struct OpenAPI_cause_s {
-} OpenAPI_cause_t;
+typedef enum { OpenAPI_cause_NULL = 0, OpenAPI_cause_REL_DUE_TO_HO, OpenAPI_cause_EPS_FALLBACK, OpenAPI_cause_REL_DUE_TO_UP_SEC, OpenAPI_cause_DNN_CONGESTION, OpenAPI_cause_S_NSSAI_CONGESTION, OpenAPI_cause_REL_DUE_TO_REACTIVATION, OpenAPI_cause__5G_AN_NOT_RESPONDING, OpenAPI_cause_REL_DUE_TO_SLICE_NOT_AVAILABLE, OpenAPI_cause_REL_DUE_TO_DUPLICATE_SESSION_ID, OpenAPI_cause_PDU_SESSION_STATUS_MISMATCH, OpenAPI_cause_HO_FAILURE, OpenAPI_cause_INSUFFICIENT_UP_RESOURCES, OpenAPI_cause_PDU_SESSION_HANDED_OVER, OpenAPI_cause_PDU_SESSION_RESUMED, OpenAPI_cause_CN_ASSISTED_RAN_PARAMETER_TUNING, OpenAPI_cause_ISMF_CONTEXT_TRANSFER, OpenAPI_cause_SMF_CONTEXT_TRANSFER, OpenAPI_cause_REL_DUE_TO_PS_TO_CS_HO, OpenAPI_cause_REL_DUE_TO_SUBSCRIPTION_CHANGE, OpenAPI_cause_HO_CANCEL, OpenAPI_cause_REL_DUE_TO_SLICE_NOT_AUTHORIZED, OpenAPI_cause_PDU_SESSION_HAND_OVER_FAILURE, OpenAPI_cause_DDN_FAILURE_STATUS } OpenAPI_cause_e;
 
-OpenAPI_cause_t *OpenAPI_cause_create(
-    );
-void OpenAPI_cause_free(OpenAPI_cause_t *cause);
-OpenAPI_cause_t *OpenAPI_cause_parseFromJSON(cJSON *causeJSON);
-cJSON *OpenAPI_cause_convertToJSON(OpenAPI_cause_t *cause);
-OpenAPI_cause_t *OpenAPI_cause_copy(OpenAPI_cause_t *dst, OpenAPI_cause_t *src);
+char* OpenAPI_cause_ToString(OpenAPI_cause_e cause);
+
+OpenAPI_cause_e OpenAPI_cause_FromString(char* cause);
 
 #ifdef __cplusplus
 }

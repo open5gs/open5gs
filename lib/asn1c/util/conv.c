@@ -130,6 +130,8 @@ int ogs_asn_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ogs_ip_t *ip)
     ogs_assert(bit_string);
     ogs_assert(ip);
 
+    memset(ip, 0, sizeof(*ip));
+
     if (bit_string->size == OGS_IPV4V6_LEN) {
         ip->ipv4 = 1;
         ip->ipv6 = 1;

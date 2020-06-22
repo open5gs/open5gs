@@ -23,15 +23,15 @@ extern "C" {
 
 typedef struct OpenAPI_status_info_s OpenAPI_status_info_t;
 typedef struct OpenAPI_status_info_s {
-    struct OpenAPI_resource_status_s *resource_status;
-    struct OpenAPI_cause_s *cause;
+    OpenAPI_resource_status_e resource_status;
+    OpenAPI_cause_e cause;
     struct OpenAPI_cn_assisted_ran_para_s *cn_assisted_ran_para;
     OpenAPI_access_type_e an_type;
 } OpenAPI_status_info_t;
 
 OpenAPI_status_info_t *OpenAPI_status_info_create(
-    OpenAPI_resource_status_t *resource_status,
-    OpenAPI_cause_t *cause,
+    OpenAPI_resource_status_e resource_status,
+    OpenAPI_cause_e cause,
     OpenAPI_cn_assisted_ran_para_t *cn_assisted_ran_para,
     OpenAPI_access_type_e an_type
     );

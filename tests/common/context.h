@@ -67,6 +67,10 @@ typedef struct test_ue_s {
     char *suci; /* TS33.501 : SUCI */
     char *supi; /* TS33.501 : SUPI */
 
+    ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
+    uint16_t mobile_identity_suci_length;
+    ogs_nas_5gs_guti_t nas_guti;
+
     uint8_t k[OGS_KEY_LEN];
     uint8_t opc[OGS_KEY_LEN];
 
@@ -84,9 +88,11 @@ typedef struct test_ue_s {
             struct {
             ED3(uint8_t tsc:1;,
                 uint8_t ksi:3;,
-                uint8_t spare:4;)
+                uint8_t value:4;)
             };
             ogs_nas_5gs_registration_type_t registration;
+            ogs_nas_de_registration_type_t de_registration;
+
             uint8_t data;
         };
 
@@ -123,7 +129,7 @@ typedef struct test_ue_s {
     int             security_context_available;
     int             mac_failed;
 
-    ogs_nas_5gs_guti_t nas_guti;
+    uint8_t         gmm_message_type; /* Last received 5GMM message type */
 
     test_sess_t *sess;
 } test_ue_t;
@@ -152,6 +158,9 @@ int test_context_parse_config(void);
 
 void test_ue_set_mobile_identity(test_ue_t *test_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity);
+void test_ue_set_mobile_identity_suci(test_ue_t *test_ue,
+    ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci,
+    uint16_t mobile_identity_suci_length);
 void test_ue_remove(test_ue_t *test_ue);
 
 #ifdef __cplusplus

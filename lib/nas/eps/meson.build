@@ -17,6 +17,7 @@
 
 libnas_eps_sources = files('''
     types.c
+    conv.c
     ies.c
     decoder.c
     encoder.c

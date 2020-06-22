@@ -5,7 +5,7 @@
 #include "hsmf_update_data.h"
 
 OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
-    OpenAPI_request_indication_t *request_indication,
+    OpenAPI_request_indication_e request_indication,
     char *pei,
     OpenAPI_tunnel_info_t *vcn_tunnel_info,
     OpenAPI_tunnel_info_t *icn_tunnel_info,
@@ -27,18 +27,18 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_create(
     OpenAPI_list_t *eps_bearer_id,
     int ho_preparation_indication,
     OpenAPI_list_t *revoke_ebi_list,
-    OpenAPI_cause_t *cause,
+    OpenAPI_cause_e cause,
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
     int _5g_mm_cause_value,
     int always_on_requested,
-    OpenAPI_eps_interworking_indication_t *eps_interworking_ind,
+    OpenAPI_eps_interworking_indication_e eps_interworking_ind,
     OpenAPI_list_t *secondary_rat_usage_report,
     OpenAPI_list_t *secondary_rat_usage_info,
     int an_type_can_be_changed,
-    OpenAPI_ma_release_indication_t *ma_release_ind,
+    OpenAPI_ma_release_indication_e ma_release_ind,
     int ma_nw_upgrade_ind,
     int ma_request_ind,
-    OpenAPI_unavailable_access_indication_t *unavailable_access_ind,
+    OpenAPI_unavailable_access_indication_e unavailable_access_ind,
     OpenAPI_list_t *psa_info,
     OpenAPI_ulcl_bp_information_t *ulcl_bp_info,
     OpenAPI_n4_information_t *n4_info,
@@ -127,7 +127,6 @@ void OpenAPI_hsmf_update_data_free(OpenAPI_hsmf_update_data_t *hsmf_update_data)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_request_indication_free(hsmf_update_data->request_indication);
     ogs_free(hsmf_update_data->pei);
     OpenAPI_tunnel_info_free(hsmf_update_data->vcn_tunnel_info);
     OpenAPI_tunnel_info_free(hsmf_update_data->icn_tunnel_info);
@@ -158,9 +157,7 @@ void OpenAPI_hsmf_update_data_free(OpenAPI_hsmf_update_data_t *hsmf_update_data)
         ogs_free(node->data);
     }
     OpenAPI_list_free(hsmf_update_data->revoke_ebi_list);
-    OpenAPI_cause_free(hsmf_update_data->cause);
     OpenAPI_ng_ap_cause_free(hsmf_update_data->ng_ap_cause);
-    OpenAPI_eps_interworking_indication_free(hsmf_update_data->eps_interworking_ind);
     OpenAPI_list_for_each(hsmf_update_data->secondary_rat_usage_report, node) {
         OpenAPI_secondary_rat_usage_report_free(node->data);
     }
@@ -169,8 +166,6 @@ void OpenAPI_hsmf_update_data_free(OpenAPI_hsmf_update_data_t *hsmf_update_data)
         OpenAPI_secondary_rat_usage_info_free(node->data);
     }
     OpenAPI_list_free(hsmf_update_data->secondary_rat_usage_info);
-    OpenAPI_ma_release_indication_free(hsmf_update_data->ma_release_ind);
-    OpenAPI_unavailable_access_indication_free(hsmf_update_data->unavailable_access_ind);
     OpenAPI_list_for_each(hsmf_update_data->psa_info, node) {
         OpenAPI_psa_information_free(node->data);
     }
@@ -212,13 +207,7 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
         ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [request_indication]");
         goto end;
     }
-    cJSON *request_indication_local_JSON = OpenAPI_request_indication_convertToJSON(hsmf_update_data->request_indication);
-    if (request_indication_local_JSON == NULL) {
-        ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [request_indication]");
-        goto end;
-    }
-    cJSON_AddItemToObject(item, "requestIndication", request_indication_local_JSON);
-    if (item->child == NULL) {
+    if (cJSON_AddStringToObject(item, "requestIndication", OpenAPI_request_indication_ToString(hsmf_update_data->request_indication)) == NULL) {
         ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [request_indication]");
         goto end;
     }
@@ -476,13 +465,7 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
     }
 
     if (hsmf_update_data->cause) {
-        cJSON *cause_local_JSON = OpenAPI_cause_convertToJSON(hsmf_update_data->cause);
-        if (cause_local_JSON == NULL) {
-            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [cause]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "cause", cause_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "cause", OpenAPI_cause_ToString(hsmf_update_data->cause)) == NULL) {
             ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [cause]");
             goto end;
         }
@@ -516,13 +499,7 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
     }
 
     if (hsmf_update_data->eps_interworking_ind) {
-        cJSON *eps_interworking_ind_local_JSON = OpenAPI_eps_interworking_indication_convertToJSON(hsmf_update_data->eps_interworking_ind);
-        if (eps_interworking_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [eps_interworking_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "epsInterworkingInd", eps_interworking_ind_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "epsInterworkingInd", OpenAPI_eps_interworking_indication_ToString(hsmf_update_data->eps_interworking_ind)) == NULL) {
             ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [eps_interworking_ind]");
             goto end;
         }
@@ -576,13 +553,7 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
     }
 
     if (hsmf_update_data->ma_release_ind) {
-        cJSON *ma_release_ind_local_JSON = OpenAPI_ma_release_indication_convertToJSON(hsmf_update_data->ma_release_ind);
-        if (ma_release_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [ma_release_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "maReleaseInd", ma_release_ind_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "maReleaseInd", OpenAPI_ma_release_indication_ToString(hsmf_update_data->ma_release_ind)) == NULL) {
             ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [ma_release_ind]");
             goto end;
         }
@@ -603,13 +574,7 @@ cJSON *OpenAPI_hsmf_update_data_convertToJSON(OpenAPI_hsmf_update_data_t *hsmf_u
     }
 
     if (hsmf_update_data->unavailable_access_ind) {
-        cJSON *unavailable_access_ind_local_JSON = OpenAPI_unavailable_access_indication_convertToJSON(hsmf_update_data->unavailable_access_ind);
-        if (unavailable_access_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [unavailable_access_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "unavailableAccessInd", unavailable_access_ind_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "unavailableAccessInd", OpenAPI_unavailable_access_indication_ToString(hsmf_update_data->unavailable_access_ind)) == NULL) {
             ogs_error("OpenAPI_hsmf_update_data_convertToJSON() failed [unavailable_access_ind]");
             goto end;
         }
@@ -837,9 +802,13 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         goto end;
     }
 
-    OpenAPI_request_indication_t *request_indication_local_nonprim = NULL;
+    OpenAPI_request_indication_e request_indicationVariable;
 
-    request_indication_local_nonprim = OpenAPI_request_indication_parseFromJSON(request_indication);
+    if (!cJSON_IsString(request_indication)) {
+        ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [request_indication]");
+        goto end;
+    }
+    request_indicationVariable = OpenAPI_request_indication_FromString(request_indication->valuestring);
 
     cJSON *pei = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "pei");
 
@@ -1086,9 +1055,13 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
 
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "cause");
 
-    OpenAPI_cause_t *cause_local_nonprim = NULL;
+    OpenAPI_cause_e causeVariable;
     if (cause) {
-        cause_local_nonprim = OpenAPI_cause_parseFromJSON(cause);
+        if (!cJSON_IsString(cause)) {
+            ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [cause]");
+            goto end;
+        }
+        causeVariable = OpenAPI_cause_FromString(cause->valuestring);
     }
 
     cJSON *ng_ap_cause = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "ngApCause");
@@ -1118,9 +1091,13 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
 
     cJSON *eps_interworking_ind = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "epsInterworkingInd");
 
-    OpenAPI_eps_interworking_indication_t *eps_interworking_ind_local_nonprim = NULL;
+    OpenAPI_eps_interworking_indication_e eps_interworking_indVariable;
     if (eps_interworking_ind) {
-        eps_interworking_ind_local_nonprim = OpenAPI_eps_interworking_indication_parseFromJSON(eps_interworking_ind);
+        if (!cJSON_IsString(eps_interworking_ind)) {
+            ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [eps_interworking_ind]");
+            goto end;
+        }
+        eps_interworking_indVariable = OpenAPI_eps_interworking_indication_FromString(eps_interworking_ind->valuestring);
     }
 
     cJSON *secondary_rat_usage_report = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "secondaryRatUsageReport");
@@ -1180,9 +1157,13 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
 
     cJSON *ma_release_ind = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "maReleaseInd");
 
-    OpenAPI_ma_release_indication_t *ma_release_ind_local_nonprim = NULL;
+    OpenAPI_ma_release_indication_e ma_release_indVariable;
     if (ma_release_ind) {
-        ma_release_ind_local_nonprim = OpenAPI_ma_release_indication_parseFromJSON(ma_release_ind);
+        if (!cJSON_IsString(ma_release_ind)) {
+            ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [ma_release_ind]");
+            goto end;
+        }
+        ma_release_indVariable = OpenAPI_ma_release_indication_FromString(ma_release_ind->valuestring);
     }
 
     cJSON *ma_nw_upgrade_ind = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "maNwUpgradeInd");
@@ -1205,9 +1186,13 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
 
     cJSON *unavailable_access_ind = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "unavailableAccessInd");
 
-    OpenAPI_unavailable_access_indication_t *unavailable_access_ind_local_nonprim = NULL;
+    OpenAPI_unavailable_access_indication_e unavailable_access_indVariable;
     if (unavailable_access_ind) {
-        unavailable_access_ind_local_nonprim = OpenAPI_unavailable_access_indication_parseFromJSON(unavailable_access_ind);
+        if (!cJSON_IsString(unavailable_access_ind)) {
+            ogs_error("OpenAPI_hsmf_update_data_parseFromJSON() failed [unavailable_access_ind]");
+            goto end;
+        }
+        unavailable_access_indVariable = OpenAPI_unavailable_access_indication_FromString(unavailable_access_ind->valuestring);
     }
 
     cJSON *psa_info = cJSON_GetObjectItemCaseSensitive(hsmf_update_dataJSON, "psaInfo");
@@ -1389,7 +1374,7 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
     }
 
     hsmf_update_data_local_var = OpenAPI_hsmf_update_data_create (
-        request_indication_local_nonprim,
+        request_indicationVariable,
         pei ? ogs_strdup(pei->valuestring) : NULL,
         vcn_tunnel_info ? vcn_tunnel_info_local_nonprim : NULL,
         icn_tunnel_info ? icn_tunnel_info_local_nonprim : NULL,
@@ -1411,18 +1396,18 @@ OpenAPI_hsmf_update_data_t *OpenAPI_hsmf_update_data_parseFromJSON(cJSON *hsmf_u
         eps_bearer_id ? eps_bearer_idList : NULL,
         ho_preparation_indication ? ho_preparation_indication->valueint : 0,
         revoke_ebi_list ? revoke_ebi_listList : NULL,
-        cause ? cause_local_nonprim : NULL,
+        cause ? causeVariable : 0,
         ng_ap_cause ? ng_ap_cause_local_nonprim : NULL,
         _5g_mm_cause_value ? _5g_mm_cause_value->valuedouble : 0,
         always_on_requested ? always_on_requested->valueint : 0,
-        eps_interworking_ind ? eps_interworking_ind_local_nonprim : NULL,
+        eps_interworking_ind ? eps_interworking_indVariable : 0,
         secondary_rat_usage_report ? secondary_rat_usage_reportList : NULL,
         secondary_rat_usage_info ? secondary_rat_usage_infoList : NULL,
         an_type_can_be_changed ? an_type_can_be_changed->valueint : 0,
-        ma_release_ind ? ma_release_ind_local_nonprim : NULL,
+        ma_release_ind ? ma_release_indVariable : 0,
         ma_nw_upgrade_ind ? ma_nw_upgrade_ind->valueint : 0,
         ma_request_ind ? ma_request_ind->valueint : 0,
-        unavailable_access_ind ? unavailable_access_ind_local_nonprim : NULL,
+        unavailable_access_ind ? unavailable_access_indVariable : 0,
         psa_info ? psa_infoList : NULL,
         ulcl_bp_info ? ulcl_bp_info_local_nonprim : NULL,
         n4_info ? n4_info_local_nonprim : NULL,

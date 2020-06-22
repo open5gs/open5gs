@@ -24,7 +24,7 @@ extern "C" {
 
 typedef struct OpenAPI_sm_context_release_data_s OpenAPI_sm_context_release_data_t;
 typedef struct OpenAPI_sm_context_release_data_s {
-    struct OpenAPI_cause_s *cause;
+    OpenAPI_cause_e cause;
     struct OpenAPI_ng_ap_cause_s *ng_ap_cause;
     int _5g_mm_cause_value;
     struct OpenAPI_user_location_s *ue_location;
@@ -37,7 +37,7 @@ typedef struct OpenAPI_sm_context_release_data_s {
 } OpenAPI_sm_context_release_data_t;
 
 OpenAPI_sm_context_release_data_t *OpenAPI_sm_context_release_data_create(
-    OpenAPI_cause_t *cause,
+    OpenAPI_cause_e cause,
     OpenAPI_ng_ap_cause_t *ng_ap_cause,
     int _5g_mm_cause_value,
     OpenAPI_user_location_t *ue_location,

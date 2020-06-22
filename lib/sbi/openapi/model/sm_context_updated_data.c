@@ -5,8 +5,8 @@
 #include "sm_context_updated_data.h"
 
 OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
-    OpenAPI_up_cnx_state_t *up_cnx_state,
-    OpenAPI_ho_state_t *ho_state,
+    OpenAPI_up_cnx_state_e up_cnx_state,
+    OpenAPI_ho_state_e ho_state,
     OpenAPI_list_t *release_ebi_list,
     OpenAPI_list_t *allocated_ebi_list,
     OpenAPI_list_t *modified_ebi_list,
@@ -17,7 +17,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_create(
     int data_forwarding,
     OpenAPI_list_t *n3_dl_forwarding_tnl_list,
     OpenAPI_list_t *n3_ul_forwarding_tnl_list,
-    OpenAPI_cause_t *cause,
+    OpenAPI_cause_e cause,
     int ma_accepted_ind,
     char *supported_features,
     char forwarding_f_teid,
@@ -55,8 +55,6 @@ void OpenAPI_sm_context_updated_data_free(OpenAPI_sm_context_updated_data_t *sm_
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_up_cnx_state_free(sm_context_updated_data->up_cnx_state);
-    OpenAPI_ho_state_free(sm_context_updated_data->ho_state);
     OpenAPI_list_for_each(sm_context_updated_data->release_ebi_list, node) {
         ogs_free(node->data);
     }
@@ -83,7 +81,6 @@ void OpenAPI_sm_context_updated_data_free(OpenAPI_sm_context_updated_data_t *sm_
         OpenAPI_indirect_data_forwarding_tunnel_info_free(node->data);
     }
     OpenAPI_list_free(sm_context_updated_data->n3_ul_forwarding_tnl_list);
-    OpenAPI_cause_free(sm_context_updated_data->cause);
     ogs_free(sm_context_updated_data->supported_features);
     OpenAPI_list_for_each(sm_context_updated_data->forwarding_bearer_contexts, node) {
         ogs_free(node->data);
@@ -103,26 +100,14 @@ cJSON *OpenAPI_sm_context_updated_data_convertToJSON(OpenAPI_sm_context_updated_
 
     item = cJSON_CreateObject();
     if (sm_context_updated_data->up_cnx_state) {
-        cJSON *up_cnx_state_local_JSON = OpenAPI_up_cnx_state_convertToJSON(sm_context_updated_data->up_cnx_state);
-        if (up_cnx_state_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [up_cnx_state]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "upCnxState", up_cnx_state_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "upCnxState", OpenAPI_up_cnx_state_ToString(sm_context_updated_data->up_cnx_state)) == NULL) {
             ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [up_cnx_state]");
             goto end;
         }
     }
 
     if (sm_context_updated_data->ho_state) {
-        cJSON *ho_state_local_JSON = OpenAPI_ho_state_convertToJSON(sm_context_updated_data->ho_state);
-        if (ho_state_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [ho_state]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "hoState", ho_state_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "hoState", OpenAPI_ho_state_ToString(sm_context_updated_data->ho_state)) == NULL) {
             ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [ho_state]");
             goto end;
         }
@@ -281,13 +266,7 @@ cJSON *OpenAPI_sm_context_updated_data_convertToJSON(OpenAPI_sm_context_updated_
     }
 
     if (sm_context_updated_data->cause) {
-        cJSON *cause_local_JSON = OpenAPI_cause_convertToJSON(sm_context_updated_data->cause);
-        if (cause_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [cause]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "cause", cause_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "cause", OpenAPI_cause_ToString(sm_context_updated_data->cause)) == NULL) {
             ogs_error("OpenAPI_sm_context_updated_data_convertToJSON() failed [cause]");
             goto end;
         }
@@ -339,16 +318,24 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     OpenAPI_sm_context_updated_data_t *sm_context_updated_data_local_var = NULL;
     cJSON *up_cnx_state = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "upCnxState");
 
-    OpenAPI_up_cnx_state_t *up_cnx_state_local_nonprim = NULL;
+    OpenAPI_up_cnx_state_e up_cnx_stateVariable;
     if (up_cnx_state) {
-        up_cnx_state_local_nonprim = OpenAPI_up_cnx_state_parseFromJSON(up_cnx_state);
+        if (!cJSON_IsString(up_cnx_state)) {
+            ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [up_cnx_state]");
+            goto end;
+        }
+        up_cnx_stateVariable = OpenAPI_up_cnx_state_FromString(up_cnx_state->valuestring);
     }
 
     cJSON *ho_state = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "hoState");
 
-    OpenAPI_ho_state_t *ho_state_local_nonprim = NULL;
+    OpenAPI_ho_state_e ho_stateVariable;
     if (ho_state) {
-        ho_state_local_nonprim = OpenAPI_ho_state_parseFromJSON(ho_state);
+        if (!cJSON_IsString(ho_state)) {
+            ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [ho_state]");
+            goto end;
+        }
+        ho_stateVariable = OpenAPI_ho_state_FromString(ho_state->valuestring);
     }
 
     cJSON *release_ebi_list = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "releaseEbiList");
@@ -519,9 +506,13 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
 
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "cause");
 
-    OpenAPI_cause_t *cause_local_nonprim = NULL;
+    OpenAPI_cause_e causeVariable;
     if (cause) {
-        cause_local_nonprim = OpenAPI_cause_parseFromJSON(cause);
+        if (!cJSON_IsString(cause)) {
+            ogs_error("OpenAPI_sm_context_updated_data_parseFromJSON() failed [cause]");
+            goto end;
+        }
+        causeVariable = OpenAPI_cause_FromString(cause->valuestring);
     }
 
     cJSON *ma_accepted_ind = cJSON_GetObjectItemCaseSensitive(sm_context_updated_dataJSON, "maAcceptedInd");
@@ -572,8 +563,8 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
     }
 
     sm_context_updated_data_local_var = OpenAPI_sm_context_updated_data_create (
-        up_cnx_state ? up_cnx_state_local_nonprim : NULL,
-        ho_state ? ho_state_local_nonprim : NULL,
+        up_cnx_state ? up_cnx_stateVariable : 0,
+        ho_state ? ho_stateVariable : 0,
         release_ebi_list ? release_ebi_listList : NULL,
         allocated_ebi_list ? allocated_ebi_listList : NULL,
         modified_ebi_list ? modified_ebi_listList : NULL,
@@ -584,7 +575,7 @@ OpenAPI_sm_context_updated_data_t *OpenAPI_sm_context_updated_data_parseFromJSON
         data_forwarding ? data_forwarding->valueint : 0,
         n3_dl_forwarding_tnl_list ? n3_dl_forwarding_tnl_listList : NULL,
         n3_ul_forwarding_tnl_list ? n3_ul_forwarding_tnl_listList : NULL,
-        cause ? cause_local_nonprim : NULL,
+        cause ? causeVariable : 0,
         ma_accepted_ind ? ma_accepted_ind->valueint : 0,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
         forwarding_f_teid ? forwarding_f_teid->valueint : 0,

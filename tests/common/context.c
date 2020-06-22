@@ -480,6 +480,34 @@ void test_ue_set_mobile_identity(test_ue_t *test_ue,
     test_ue->imsi = ogs_supi_get_id(test_ue->supi);
 }
 
+void test_ue_set_mobile_identity_suci(test_ue_t *test_ue,
+    ogs_nas_5gs_mobile_identity_suci_t *mobile_identity_suci,
+    uint16_t mobile_identity_suci_length)
+{
+    ogs_nas_5gs_mobile_identity_t mobile_identity;
+
+    ogs_assert(test_ue);
+    ogs_assert(mobile_identity_suci);
+    ogs_assert(mobile_identity_suci_length);
+
+    test_ue->mobile_identity_suci_length = mobile_identity_suci_length;
+    memcpy(&test_ue->mobile_identity_suci, mobile_identity_suci,
+            mobile_identity_suci_length);
+
+    mobile_identity.length = test_ue->mobile_identity_suci_length;
+    mobile_identity.buffer = &test_ue->mobile_identity_suci;
+
+    if (test_ue->suci)
+        ogs_free(test_ue->suci);
+    test_ue->suci = ogs_nas_5gs_suci_from_mobile_identity(&mobile_identity);
+    if (test_ue->supi)
+        ogs_free(test_ue->supi);
+    test_ue->supi = ogs_supi_from_suci(test_ue->suci);
+    if (test_ue->imsi)
+        ogs_free(test_ue->imsi);
+    test_ue->imsi = ogs_supi_get_id(test_ue->supi);
+}
+
 void test_ue_remove(test_ue_t *test_ue)
 {
     if (test_ue->suci)

@@ -1,7 +1,7 @@
 /*
  * unavailable_access_indication.h
  *
- * Possible values are   - 3GA_UNAVAILABLE   - N3GA_UNAVAILABLE
+ *
  */
 
 #ifndef _OpenAPI_unavailable_access_indication_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_unavailable_access_indication_s OpenAPI_unavailable_access_indication_t;
-typedef struct OpenAPI_unavailable_access_indication_s {
-} OpenAPI_unavailable_access_indication_t;
+typedef enum { OpenAPI_unavailable_access_indication_NULL = 0, OpenAPI_unavailable_access_indication__3GA_UNAVAILABLE, OpenAPI_unavailable_access_indication_N3GA_UNAVAILABLE } OpenAPI_unavailable_access_indication_e;
 
-OpenAPI_unavailable_access_indication_t *OpenAPI_unavailable_access_indication_create(
-    );
-void OpenAPI_unavailable_access_indication_free(OpenAPI_unavailable_access_indication_t *unavailable_access_indication);
-OpenAPI_unavailable_access_indication_t *OpenAPI_unavailable_access_indication_parseFromJSON(cJSON *unavailable_access_indicationJSON);
-cJSON *OpenAPI_unavailable_access_indication_convertToJSON(OpenAPI_unavailable_access_indication_t *unavailable_access_indication);
-OpenAPI_unavailable_access_indication_t *OpenAPI_unavailable_access_indication_copy(OpenAPI_unavailable_access_indication_t *dst, OpenAPI_unavailable_access_indication_t *src);
+char* OpenAPI_unavailable_access_indication_ToString(OpenAPI_unavailable_access_indication_e unavailable_access_indication);
+
+OpenAPI_unavailable_access_indication_e OpenAPI_unavailable_access_indication_FromString(char* unavailable_access_indication);
 
 #ifdef __cplusplus
 }

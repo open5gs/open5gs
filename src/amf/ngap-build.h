@@ -81,8 +81,8 @@ ogs_pkbuf_t *ngap_build_amf_status_transfer(
         *gnb_statustransfer_transparentContainer);
 
 ogs_pkbuf_t *ngap_build_error_indication(
+    uint32_t *ran_ue_ngap_id,
     uint64_t *amf_ue_ngap_id,
-    NGAP_RAN_UE_NGAP_ID_t *ran_ue_ngap_id,
     NGAP_Cause_PR group, long cause);
 
 ogs_pkbuf_t *ngap_build_s1_reset(

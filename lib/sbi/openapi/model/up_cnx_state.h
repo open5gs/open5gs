@@ -1,7 +1,7 @@
 /*
  * up_cnx_state.h
  *
- * Possible values are - ACTIVATED - DEACTIVATED - ACTIVATING - SUSPENDED
+ *
  */
 
 #ifndef _OpenAPI_up_cnx_state_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_up_cnx_state_s OpenAPI_up_cnx_state_t;
-typedef struct OpenAPI_up_cnx_state_s {
-} OpenAPI_up_cnx_state_t;
+typedef enum { OpenAPI_up_cnx_state_NULL = 0, OpenAPI_up_cnx_state_ACTIVATED, OpenAPI_up_cnx_state_DEACTIVATED, OpenAPI_up_cnx_state_ACTIVATING, OpenAPI_up_cnx_state_SUSPENDED } OpenAPI_up_cnx_state_e;
 
-OpenAPI_up_cnx_state_t *OpenAPI_up_cnx_state_create(
-    );
-void OpenAPI_up_cnx_state_free(OpenAPI_up_cnx_state_t *up_cnx_state);
-OpenAPI_up_cnx_state_t *OpenAPI_up_cnx_state_parseFromJSON(cJSON *up_cnx_stateJSON);
-cJSON *OpenAPI_up_cnx_state_convertToJSON(OpenAPI_up_cnx_state_t *up_cnx_state);
-OpenAPI_up_cnx_state_t *OpenAPI_up_cnx_state_copy(OpenAPI_up_cnx_state_t *dst, OpenAPI_up_cnx_state_t *src);
+char* OpenAPI_up_cnx_state_ToString(OpenAPI_up_cnx_state_e up_cnx_state);
+
+OpenAPI_up_cnx_state_e OpenAPI_up_cnx_state_FromString(char* up_cnx_state);
 
 #ifdef __cplusplus
 }

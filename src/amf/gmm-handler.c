@@ -21,9 +21,10 @@
 
 #include "ngap-path.h"
 #include "nas-path.h"
+#include "amf-path.h"
+#include "sbi-path.h"
 
 #include "gmm-handler.h"
-#include "sbi-path.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
@@ -40,18 +41,25 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti = NULL;
     ogs_nas_5gs_guti_t nas_guti;
 
+    ogs_assert(amf_ue);
+    ran_ue = amf_ue->ran_ue;
+    ogs_assert(ran_ue);
+
     ogs_assert(registration_request);
     registration_type = &registration_request->registration_type;
     ogs_assert(registration_type);
     mobile_identity = &registration_request->mobile_identity;
     ogs_assert(mobile_identity);
+
+    if (!mobile_identity->length || !mobile_identity->buffer) {
+        ogs_error("No Mobile Identity");
+        nas_5gs_send_registration_reject(amf_ue,
+            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
+        return OGS_ERROR;
+    }
+
     mobile_identity_header =
             (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
-    ogs_assert(mobile_identity_header);
-
-    ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
-    ogs_assert(ran_ue);
 
     switch (mobile_identity_header->type) {
     case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
@@ -61,13 +69,13 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
         mobile_identity_guti =
             (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
-        ogs_assert(mobile_identity_guti);
+        if (!mobile_identity_guti) {
+            ogs_error("No mobile identity");
+            return OGS_ERROR;
+        }
 
-        memcpy(&nas_guti.nas_plmn_id,
-                &mobile_identity_guti->nas_plmn_id, OGS_PLMN_ID_LEN);
-        memcpy(&nas_guti.amf_id,
-                &mobile_identity_guti->amf_id, sizeof(ogs_amf_id_t));
-        nas_guti.m_tmsi = be32toh(mobile_identity_guti->m_tmsi);
+        ogs_nas_5gs_mobile_identity_guti_to_nas_guti(
+            mobile_identity_guti, &nas_guti);
 
         ogs_debug("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]",
             AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
@@ -102,7 +110,6 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
      */
     CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
-    CLEAR_5GS_BEARER_ID(amf_ue);
     if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
         ogs_kdf_kgnb_and_kn3iwf(
                 amf_ue->kamf, amf_ue->ul_count.i32,
@@ -191,6 +198,56 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     return OGS_OK;
 }
 
+int gmm_handle_registration_update(amf_ue_t *amf_ue,
+        ogs_nas_5gs_registration_request_t *registration_request)
+{
+    amf_sess_t *sess = NULL;
+    uint16_t psimask = 0;
+    bool handled = false;
+
+    amf_nsmf_pdu_session_update_sm_context_param_t param;
+    ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(registration_request);
+
+    uplink_data_status = &registration_request->uplink_data_status;
+    ogs_assert(uplink_data_status);
+
+    if ((registration_request->presencemask &
+            OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
+        ogs_error("No Update data status");
+        return OGS_ERROR;
+    }
+
+    psimask = 0;
+    psimask |= uplink_data_status->psi << 8;
+    psimask |= uplink_data_status->psi >> 8;
+
+    handled = false;
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (psimask & (1 << sess->psi)) {
+            /* UPDATE_UpCnxState - UE: ACTIVATING, SMF: DEACTIVATED */
+            sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+            sess->smfUpCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
+
+            memset(&param, 0, sizeof(param));
+            param.upCnxState = sess->ueUpCnxState;
+            amf_sess_sbi_discover_and_send(
+                    OpenAPI_nf_type_SMF, sess, &param,
+                    amf_nsmf_pdu_session_build_update_sm_context);
+            handled = true;
+        }
+    }
+
+    if (handled == false) {
+        ogs_error("Cannot find PSI[0x%x]", uplink_data_status->psi);
+        return OGS_ERROR;
+    }
+
+    return OGS_OK;
+}
+
 int gmm_handle_authentication_response(amf_ue_t *amf_ue,
         ogs_nas_5gs_authentication_response_t *authentication_response)
 {
@@ -236,12 +293,13 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
     return OGS_OK;
 }
 
-#if 0
 int gmm_handle_identity_response(amf_ue_t *amf_ue,
         ogs_nas_5gs_identity_response_t *identity_response)
 {
-    ogs_nas_mobile_identity_t *mobile_identity = NULL;
     ran_ue_t *ran_ue = NULL;
+
+    ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
+    ogs_nas_5gs_mobile_identity_header_t *mobile_identity_header = NULL;
 
     ogs_assert(identity_response);
 
@@ -251,27 +309,20 @@ int gmm_handle_identity_response(amf_ue_t *amf_ue,
 
     mobile_identity = &identity_response->mobile_identity;
 
-    if (mobile_identity->imsi.type == OGS_NAS_IDENTITY_TYPE_2_IMSI) {
-        char imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
+    if (!mobile_identity->length || !mobile_identity->buffer) {
+        ogs_error("No Mobile Identity");
+        return OGS_ERROR;
+    }
 
-        if (sizeof(ogs_nas_mobile_identity_imsi_t) != mobile_identity->length) {
-            ogs_error("mobile_identity length (%d != %d)",
-                    (int)sizeof(ogs_nas_mobile_identity_imsi_t),
-                    mobile_identity->length);
-            return OGS_ERROR;
-        }
-        memcpy(&amf_ue->nas_mobile_identity_imsi, 
-            &mobile_identity->imsi, mobile_identity->length);
-        ogs_nas_imsi_to_bcd(
-            &mobile_identity->imsi, mobile_identity->length, imsi_bcd);
-        amf_ue_set_imsi(amf_ue, imsi_bcd);
+    mobile_identity_header =
+            (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
 
-        if (amf_ue->imsi_len != OGS_MAX_IMSI_LEN) {
-            ogs_error("Invalid IMSI LEN[%d]", amf_ue->imsi_len);
-            return OGS_ERROR;
-        }
+    if (mobile_identity_header->type == OGS_NAS_5GS_MOBILE_IDENTITY_SUCI) {
+        amf_ue_set_suci(amf_ue, mobile_identity);
+        ogs_debug("[%s]    SUCI", amf_ue->suci);
     } else {
-        ogs_warn("Not supported Identity type[%d]", mobile_identity->imsi.type);
+        ogs_error("Not supported Identity type[%d]",
+                mobile_identity_header->type);
     }
 
     return OGS_OK;
@@ -280,42 +331,30 @@ int gmm_handle_identity_response(amf_ue_t *amf_ue,
 int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_deregistration_request_from_ue_t *deregistration_request)
 {
-    ogs_nas_deregistration_type_t *deregistration_type = NULL;
+    ogs_nas_de_registration_type_t *de_registration_type = NULL;
 
-    ogs_assert(deregistration_request);
     ogs_assert(amf_ue);
+    ogs_assert(deregistration_request);
 
-    deregistration_type = &deregistration_request->deregistration_type;
+    de_registration_type = &deregistration_request->de_registration_type;
+
+    ogs_debug("[%s] Deregistration request", amf_ue->supi);
 
     /* Set 5GS Attach Type */
-    memcpy(&amf_ue->nas.deregistration, deregistration_type, sizeof(ogs_nas_deregistration_type_t));
-    amf_ue->nas.message_type = AMF_5GS_TYPE_DETACH_REQUEST_FROM_UE;
-    amf_ue->nas.ksi = deregistration_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] DETACH[0x%x]",
-        amf_ue->nas.message_type, amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
+    memcpy(&amf_ue->nas.de_registration,
+            de_registration_type, sizeof(ogs_nas_de_registration_type_t));
+    amf_ue->nas.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST;
+    amf_ue->nas.tsc = de_registration_type->tsc;
+    amf_ue->nas.ksi = de_registration_type->ksi;
+    ogs_debug("[%s]    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] "
+            "DEREGISTRATION[0x%x]",
+            amf_ue->suci, amf_ue->nas.message_type,
+            amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
 
-    switch (deregistration_request->deregistration_type.value) {
-    /* 0 0 1 : 5GS deregistration */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_5GS_DETACH: 
-        ogs_debug("    5GS Detach");
-        break;
-    /* 0 1 0 : IMSI deregistration */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_IMSI_DETACH: 
-        ogs_debug("    IMSI Detach");
-        break;
-    case 6: /* 1 1 0 : reserved */
-    case 7: /* 1 1 1 : reserved */
-        ogs_warn("Unknown Detach type[%d]",
-            deregistration_request->deregistration_type.value);
-        break;
-    /* 0 1 1 : combined 5GS/IMSI deregistration */
-    case OGS_NAS_DETACH_TYPE_FROM_UE_COMBINED_5GS_IMSI_DETACH: 
-        ogs_debug("    Combined 5GS/IMSI Detach");
-    default: /* all other values */
-        break;
-    }
-    if (deregistration_request->deregistration_type.switch_off)
+    if (deregistration_request->de_registration_type.switch_off)
         ogs_debug("    Switch-Off");
+
+    amf_send_delete_session_or_de_register(amf_ue);
 
     return OGS_OK;
 }
@@ -323,16 +362,24 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
 int gmm_handle_service_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_service_request_t *service_request)
 {
-    ogs_nas_ksi_and_sequence_number_t *ksi_and_sequence_number =
-                    &service_request->ksi_and_sequence_number;
+    amf_sess_t *sess = NULL;
+    ogs_nas_key_set_identifier_t *ngksi = NULL;
+    ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
+    uint16_t psimask = 0;
+    bool need_to_activating = false;
 
     ogs_assert(amf_ue);
 
-    /* Set 5GS Update Type */
-    amf_ue->nas.message_type = AMF_5GS_TYPE_SERVICE_REQUEST;
-    amf_ue->nas.ksi = ksi_and_sequence_number->ksi;
-    ogs_debug("    OGS_NAS_5GS TYPE[%d] KSI[%d]",
-            amf_ue->nas.message_type, amf_ue->nas.ksi);
+    ngksi = &service_request->ngksi;
+    ogs_assert(ngksi);
+    uplink_data_status = &service_request->uplink_data_status;
+
+    amf_ue->nas.message_type = OGS_NAS_5GS_SERVICE_REQUEST;
+    amf_ue->nas.tsc = ngksi->tsc;
+    amf_ue->nas.ksi = ngksi->value;
+    ogs_debug("[%s]    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] SERVICE[0x%x]",
+            amf_ue->suci, amf_ue->nas.message_type,
+            amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
 
     /*
      * REGISTRATION_REQUEST
@@ -353,20 +400,105 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
     if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
         ogs_kdf_kgnb_and_kn3iwf(
                 amf_ue->kamf, amf_ue->ul_count.i32,
-                OGS_KDF_ACCESS_TYPE_3GPP, amf_ue->kgnb);
+                amf_ue->nas.access_type, amf_ue->kgnb);
         ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
         amf_ue->nhcc = 1;
     }
 
-    ogs_debug("    GUTI[G:%d,C:%d,M_TMSI:0x%x] IMSI[%s]",
-            amf_ue->guti.amf_gid,
-            amf_ue->guti.amf_code,
-            amf_ue->guti.m_tmsi,
-            AMF_UE_HAVE_IMSI(amf_ue) ? amf_ue->imsi_bcd : "Unknown");
+    ogs_debug("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]",
+        AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
+        ogs_amf_id_hexdump(&amf_ue->guti.amf_id), amf_ue->guti.m_tmsi);
+
+    if (!AMF_UE_HAVE_SUCI(amf_ue)) {
+        ogs_debug("Service request : Unknown UE");
+        nas_5gs_send_service_reject(amf_ue,
+            OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK, false);
+        return OGS_ERROR;
+    }
+
+    if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+        ogs_debug("[%s] No Security Context", amf_ue->supi);
+        nas_5gs_send_service_reject(amf_ue,
+            OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK, false);
+        return OGS_ERROR;
+    }
+
+    if (!SESSION_CONTEXT_IS_AVAILABLE(amf_ue)) {
+        ogs_debug("[%s] No Session Context", amf_ue->supi);
+        nas_5gs_send_service_reject(amf_ue,
+            OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK, false);
+        return OGS_ERROR;
+    }
+
+    if ((service_request->presencemask &
+            OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
+        ogs_error("No Update data status");
+        nas_5gs_send_service_reject(amf_ue,
+            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE, false);
+        return OGS_ERROR;
+    }
+
+    psimask = 0;
+    psimask |= uplink_data_status->psi << 8;
+    psimask |= uplink_data_status->psi >> 8;
+
+    /*
+     * TS24.501
+     * 5.6.1.5 Service request procedure not accepted by the network
+     *
+     * If the AMF needs to initiate PDU session status synchronisation
+     * or a PDU session status IE was included in the SERVICE REQUEST message,
+     * the AMF shall include a PDU session status IE in the SERVICE REJECT
+     * message to indicate which PDU sessions associated with the access type
+     * the SERVICE REJECT message is sent over are active in the AMF.
+     * If the PDU session status IE is included in the SERVICE REJECT message
+     * and if the message is integrity protected, then the UE shall perform
+     * a local release of all those PDU sessions which are active
+     * on the UE side associated with the access type the SERVICE REJECT
+     * message is sent over, but are indicated by the AMF as being inactive.
+     */
+    need_to_activating = false;
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (psimask & (1 << sess->psi)) {
+            if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+                need_to_activating = true;
+
+            } else if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+                nas_5gs_send_service_reject(amf_ue,
+                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
+                    true);
+                return OGS_ERROR;
+
+            } else if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATING) {
+                ogs_warn("Service request has already been received");
+                /* Ignore */
+            }
+        }
+    }
+
+    if (need_to_activating) {
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if (psimask & (1 << sess->psi)) {
+                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+                    amf_nsmf_pdu_session_update_sm_context_param_t param;
+
+                    /* UPDATE_UpCnxState - ACTIVATING */
+                    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+
+                    memset(&param, 0, sizeof(param));
+                    param.upCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+                    amf_sess_sbi_discover_and_send(
+                            OpenAPI_nf_type_SMF, sess, &param,
+                            amf_nsmf_pdu_session_build_update_sm_context);
+                }
+            }
+        }
+    }
 
     return OGS_OK;
 }
 
+#if 0
 int gmm_handle_tau_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_tracking_area_update_request_t *tau_request)
 {

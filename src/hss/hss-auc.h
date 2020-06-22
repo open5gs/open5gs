@@ -30,10 +30,6 @@ void hss_auc_kasme(const uint8_t *ck, const uint8_t *ik,
         const uint8_t plmn_id[3], const uint8_t *sqn,  const uint8_t *ak,
         uint8_t *kasme);
 
-void hss_auc_sqn(
-    const uint8_t *opc, const uint8_t *k, const uint8_t *auts,
-    uint8_t *sqn_ms, uint8_t *mac_s);
-
 #ifdef __cplusplus
 }
 #endif

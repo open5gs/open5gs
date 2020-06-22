@@ -1,7 +1,7 @@
 /*
  * qos_flow_access_type.h
  *
- * Possible values are   - 3GPP   - NON_3GPP   - 3GPP_AND_NON_3GPP
+ *
  */
 
 #ifndef _OpenAPI_qos_flow_access_type_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_qos_flow_access_type_s OpenAPI_qos_flow_access_type_t;
-typedef struct OpenAPI_qos_flow_access_type_s {
-} OpenAPI_qos_flow_access_type_t;
+typedef enum { OpenAPI_qos_flow_access_type_NULL = 0, OpenAPI_qos_flow_access_type__3GPP, OpenAPI_qos_flow_access_type_NON_3GPP, OpenAPI_qos_flow_access_type__3GPP_AND_NON_3GPP } OpenAPI_qos_flow_access_type_e;
 
-OpenAPI_qos_flow_access_type_t *OpenAPI_qos_flow_access_type_create(
-    );
-void OpenAPI_qos_flow_access_type_free(OpenAPI_qos_flow_access_type_t *qos_flow_access_type);
-OpenAPI_qos_flow_access_type_t *OpenAPI_qos_flow_access_type_parseFromJSON(cJSON *qos_flow_access_typeJSON);
-cJSON *OpenAPI_qos_flow_access_type_convertToJSON(OpenAPI_qos_flow_access_type_t *qos_flow_access_type);
-OpenAPI_qos_flow_access_type_t *OpenAPI_qos_flow_access_type_copy(OpenAPI_qos_flow_access_type_t *dst, OpenAPI_qos_flow_access_type_t *src);
+char* OpenAPI_qos_flow_access_type_ToString(OpenAPI_qos_flow_access_type_e qos_flow_access_type);
+
+OpenAPI_qos_flow_access_type_e OpenAPI_qos_flow_access_type_FromString(char* qos_flow_access_type);
 
 #ifdef __cplusplus
 }

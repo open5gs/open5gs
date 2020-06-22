@@ -9,7 +9,7 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_create(
     OpenAPI_ref_to_binary_data_t *n1_sm_msg,
     OpenAPI_ref_to_binary_data_t *n2_sm_info,
     OpenAPI_n2_sm_info_type_e n2_sm_info_type,
-    OpenAPI_up_cnx_state_t *up_cnx_state,
+    OpenAPI_up_cnx_state_e up_cnx_state,
     char *recovery_time
     )
 {
@@ -36,7 +36,6 @@ void OpenAPI_sm_context_update_error_free(OpenAPI_sm_context_update_error_t *sm_
     OpenAPI_problem_details_free(sm_context_update_error->error);
     OpenAPI_ref_to_binary_data_free(sm_context_update_error->n1_sm_msg);
     OpenAPI_ref_to_binary_data_free(sm_context_update_error->n2_sm_info);
-    OpenAPI_up_cnx_state_free(sm_context_update_error->up_cnx_state);
     ogs_free(sm_context_update_error->recovery_time);
     ogs_free(sm_context_update_error);
 }
@@ -100,13 +99,7 @@ cJSON *OpenAPI_sm_context_update_error_convertToJSON(OpenAPI_sm_context_update_e
     }
 
     if (sm_context_update_error->up_cnx_state) {
-        cJSON *up_cnx_state_local_JSON = OpenAPI_up_cnx_state_convertToJSON(sm_context_update_error->up_cnx_state);
-        if (up_cnx_state_local_JSON == NULL) {
-            ogs_error("OpenAPI_sm_context_update_error_convertToJSON() failed [up_cnx_state]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "upCnxState", up_cnx_state_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "upCnxState", OpenAPI_up_cnx_state_ToString(sm_context_update_error->up_cnx_state)) == NULL) {
             ogs_error("OpenAPI_sm_context_update_error_convertToJSON() failed [up_cnx_state]");
             goto end;
         }
@@ -163,9 +156,13 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_parseFromJSON
 
     cJSON *up_cnx_state = cJSON_GetObjectItemCaseSensitive(sm_context_update_errorJSON, "upCnxState");
 
-    OpenAPI_up_cnx_state_t *up_cnx_state_local_nonprim = NULL;
+    OpenAPI_up_cnx_state_e up_cnx_stateVariable;
     if (up_cnx_state) {
-        up_cnx_state_local_nonprim = OpenAPI_up_cnx_state_parseFromJSON(up_cnx_state);
+        if (!cJSON_IsString(up_cnx_state)) {
+            ogs_error("OpenAPI_sm_context_update_error_parseFromJSON() failed [up_cnx_state]");
+            goto end;
+        }
+        up_cnx_stateVariable = OpenAPI_up_cnx_state_FromString(up_cnx_state->valuestring);
     }
 
     cJSON *recovery_time = cJSON_GetObjectItemCaseSensitive(sm_context_update_errorJSON, "recoveryTime");
@@ -182,7 +179,7 @@ OpenAPI_sm_context_update_error_t *OpenAPI_sm_context_update_error_parseFromJSON
         n1_sm_msg ? n1_sm_msg_local_nonprim : NULL,
         n2_sm_info ? n2_sm_info_local_nonprim : NULL,
         n2_sm_info_type ? n2_sm_info_typeVariable : 0,
-        up_cnx_state ? up_cnx_state_local_nonprim : NULL,
+        up_cnx_state ? up_cnx_stateVariable : 0,
         recovery_time ? ogs_strdup(recovery_time->valuestring) : NULL
         );
 

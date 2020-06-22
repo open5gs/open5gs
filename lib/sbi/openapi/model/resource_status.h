@@ -1,7 +1,7 @@
 /*
  * resource_status.h
  *
- * Possible values are - RELEASED - UNCHANGED - UPDATED
+ *
  */
 
 #ifndef _OpenAPI_resource_status_H_
@@ -17,16 +17,11 @@
 extern "C" {
 #endif
 
-typedef struct OpenAPI_resource_status_s OpenAPI_resource_status_t;
-typedef struct OpenAPI_resource_status_s {
-} OpenAPI_resource_status_t;
+typedef enum { OpenAPI_resource_status_NULL = 0, OpenAPI_resource_status_RELEASED, OpenAPI_resource_status_UNCHANGED, OpenAPI_resource_status_TRANSFERRED, OpenAPI_resource_status_UPDATED } OpenAPI_resource_status_e;
 
-OpenAPI_resource_status_t *OpenAPI_resource_status_create(
-    );
-void OpenAPI_resource_status_free(OpenAPI_resource_status_t *resource_status);
-OpenAPI_resource_status_t *OpenAPI_resource_status_parseFromJSON(cJSON *resource_statusJSON);
-cJSON *OpenAPI_resource_status_convertToJSON(OpenAPI_resource_status_t *resource_status);
-OpenAPI_resource_status_t *OpenAPI_resource_status_copy(OpenAPI_resource_status_t *dst, OpenAPI_resource_status_t *src);
+char* OpenAPI_resource_status_ToString(OpenAPI_resource_status_e resource_status);
+
+OpenAPI_resource_status_e OpenAPI_resource_status_FromString(char* resource_status);
 
 #ifdef __cplusplus
 }

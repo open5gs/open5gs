@@ -28,7 +28,6 @@ static OGS_POOL(amf_gnb_pool, amf_gnb_t);
 static OGS_POOL(amf_ue_pool, amf_ue_t);
 static OGS_POOL(ran_ue_pool, ran_ue_t);
 static OGS_POOL(amf_sess_pool, amf_sess_t);
-static OGS_POOL(amf_bearer_pool, amf_bearer_t);
 
 static int context_initialized = 0;
 
@@ -53,7 +52,6 @@ void amf_context_init(void)
     ogs_pool_init(&amf_ue_pool, ogs_config()->pool.ue);
     ogs_pool_init(&ran_ue_pool, ogs_config()->pool.ue);
     ogs_pool_init(&amf_sess_pool, ogs_config()->pool.sess);
-    ogs_pool_init(&amf_bearer_pool, ogs_config()->pool.bearer);
     ogs_pool_init(&self.m_tmsi, ogs_config()->pool.ue);
 
     ogs_list_init(&self.gnb_list);
@@ -91,7 +89,6 @@ void amf_context_final(void)
     ogs_hash_destroy(self.supi_hash);
 
     ogs_pool_final(&self.m_tmsi);
-    ogs_pool_final(&amf_bearer_pool);
     ogs_pool_final(&amf_sess_pool);
     ogs_pool_final(&amf_ue_pool);
     ogs_pool_final(&ran_ue_pool);
@@ -849,8 +846,8 @@ amf_gnb_t *amf_gnb_add(ogs_sock_t *sock, ogs_sockaddr_t *addr)
 
     ogs_hash_set(self.gnb_addr_hash, gnb->addr, sizeof(ogs_sockaddr_t), gnb);
 
+    memset(&e, 0, sizeof(e));
     e.gnb = gnb;
-    e.id = 0;
     ogs_fsm_create(&gnb->sm, ngap_state_initial, ngap_state_final);
     ogs_fsm_init(&gnb->sm, &e);
 
@@ -868,6 +865,7 @@ int amf_gnb_remove(amf_gnb_t *gnb)
 
     ogs_list_remove(&self.gnb_list, gnb);
 
+    memset(&e, 0, sizeof(e));
     e.gnb = gnb;
     ogs_fsm_fini(&gnb->sm, &e);
     ogs_fsm_delete(&gnb->sm);
@@ -1105,12 +1103,6 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     /* Create New GUTI */
     amf_ue_new_guti(amf_ue);
 
-#if 0
-    /* Clear VLR */
-    amf_ue->csmap = NULL;
-    amf_ue->vlr_ostream_id = 0;
-#endif
-
     /* Add All Timers */
     amf_ue->sbi.client_wait.timer = ogs_timer_add(
             self.timer_mgr, amf_timer_sbi_client_wait_expire, amf_ue);
@@ -1135,6 +1127,7 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     amf_ue->t3570.pkbuf = NULL;
 
     /* Create FSM */
+    memset(&e, 0, sizeof(e));
     e.amf_ue = amf_ue;
     ogs_fsm_create(&amf_ue->sm, gmm_state_initial, gmm_state_final);
     ogs_fsm_init(&amf_ue->sm, &e);
@@ -1152,6 +1145,7 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     ogs_list_remove(&self.amf_ue_list, amf_ue);
 
+    memset(&e, 0, sizeof(e));
     e.amf_ue = amf_ue;
     ogs_fsm_fini(&amf_ue->sm, &e);
     ogs_fsm_delete(&amf_ue->sm);
@@ -1199,7 +1193,6 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     amf_ue_deassociate(amf_ue);
 
     amf_sess_remove_all(amf_ue);
-    amf_pdn_remove_all(amf_ue);
 
     ogs_pool_free(&amf_ue_pool, amf_ue);
 }
@@ -1243,7 +1236,6 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
     ogs_nas_5gs_registration_request_t *registration_request = NULL;
 #if 0
     ogs_nas_5gs_tracking_area_update_request_t *tau_request = NULL;
-    ogs_nas_5gs_extended_service_request_t *extended_service_request = NULL;
 #endif
     ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
     ogs_nas_5gs_mobile_identity_header_t *mobile_identity_header = NULL;
@@ -1254,16 +1246,19 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
 
     ogs_assert(message);
 
-    registration_request = &message->gmm.registration_request;
-    ogs_assert(registration_request);
-    mobile_identity = &registration_request->mobile_identity;
-    ogs_assert(mobile_identity);
-    mobile_identity_header =
-            (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
-    ogs_assert(mobile_identity_header);
-
     switch (message->gmm.h.message_type) {
     case OGS_NAS_5GS_REGISTRATION_REQUEST:
+        registration_request = &message->gmm.registration_request;
+        ogs_assert(registration_request);
+        mobile_identity = &registration_request->mobile_identity;
+        ogs_assert(mobile_identity);
+
+        if (!mobile_identity->length || !mobile_identity->buffer)
+            return NULL;
+
+        mobile_identity_header =
+                (ogs_nas_5gs_mobile_identity_header_t *)mobile_identity->buffer;
+
         switch (mobile_identity_header->type) {
         case OGS_NAS_5GS_MOBILE_IDENTITY_SUCI:
             suci = ogs_nas_5gs_suci_from_mobile_identity(mobile_identity);
@@ -1275,16 +1270,18 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
             }
             ogs_free(suci);
             break;
+
         case OGS_NAS_5GS_MOBILE_IDENTITY_GUTI:
             mobile_identity_guti =
                 (ogs_nas_5gs_mobile_identity_guti_t *)mobile_identity->buffer;
-            ogs_assert(mobile_identity_guti);
 
-            memcpy(&nas_guti.nas_plmn_id,
-                    &mobile_identity_guti->nas_plmn_id, OGS_PLMN_ID_LEN);
-            memcpy(&nas_guti.amf_id,
-                    &mobile_identity_guti->amf_id, sizeof(ogs_amf_id_t));
-            nas_guti.m_tmsi = be32toh(mobile_identity_guti->m_tmsi);
+            if (!mobile_identity_guti) {
+                ogs_error("No mobile identity");
+                return NULL;
+            }
+
+            ogs_nas_5gs_mobile_identity_guti_to_nas_guti(
+                mobile_identity_guti, &nas_guti);
 
             amf_ue = amf_ue_find_by_guti(&nas_guti);
             if (amf_ue) {
@@ -1297,7 +1294,7 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
             break;
         default:
             ogs_error("Unknown SUCI type [%d]", mobile_identity_header->type);
-            break;
+
         }
         break;
 #if 0
@@ -1332,40 +1329,7 @@ amf_ue_t *amf_ue_find_by_message(ogs_nas_5gs_message_t *message)
             break;
         }
         break;
-    case OGS_NAS_5GS_EXTENDED_SERVICE_REQUEST:
-        extended_service_request = &message->gmm.extended_service_request;
-        mobile_identity = &extended_service_request->m_tmsi;
 
-        switch(mobile_identity->tmsi.type) {
-        case OGS_NAS_MOBILE_IDENTITY_TMSI:
-            mobile_identity_tmsi = &mobile_identity->tmsi;
-            served_guami = &amf_self()->served_guami[0];
-
-            /* Use the first configured plmn_id and amf group id */
-            ogs_nas_from_plmn_id(
-                    &ogs_nas_guti.nas_plmn_id, &served_guami->plmn_id[0]);
-            ogs_nas_guti.amf_gid = served_guami->amf_gid[0];
-            ogs_nas_guti.amf_code = served_guami->amf_code[0];
-            ogs_nas_guti.m_tmsi = mobile_identity_tmsi->tmsi;
-
-            amf_ue = amf_ue_find_by_guti(&ogs_nas_guti);
-            if (amf_ue) {
-                ogs_trace("Known UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
-                        ogs_nas_guti.amf_gid,
-                        ogs_nas_guti.amf_code,
-                        ogs_nas_guti.m_tmsi);
-            } else {
-                ogs_warn("Unknown UE by GUTI[G:%d,C:%d,M_TMSI:0x%x]",
-                        ogs_nas_guti.amf_gid,
-                        ogs_nas_guti.amf_code,
-                        ogs_nas_guti.m_tmsi);
-            }
-            break;
-        default:
-            ogs_error("Unknown TMSI type [%d]", mobile_identity->tmsi.type);
-            break;
-        }
-        break;
 #endif
     default:
         break;
@@ -1422,47 +1386,14 @@ void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)
     ogs_hash_set(self.supi_hash, amf_ue->supi, strlen(amf_ue->supi), amf_ue);
 }
 
-int amf_ue_have_indirect_tunnel(amf_ue_t *amf_ue)
+bool amf_ue_activation_synched(amf_ue_t *amf_ue)
 {
     amf_sess_t *sess = NULL;
 
-    sess = ogs_list_first(&amf_ue->sess_list);
-    while (sess) {
-        amf_bearer_t *bearer = ogs_list_first(&sess->bearer_list);
-        while (bearer) {
-            if (AMF_HAVE_GNB_DL_INDIRECT_TUNNEL(bearer) ||
-                AMF_HAVE_GNB_UL_INDIRECT_TUNNEL(bearer) ||
-                AMF_HAVE_SMF_DL_INDIRECT_TUNNEL(bearer) ||
-                AMF_HAVE_SMF_UL_INDIRECT_TUNNEL(bearer)) {
-                return 1;
-            }
+    ogs_list_for_each(&amf_ue->sess_list, sess)
+        if (sess->ueUpCnxState != sess->smfUpCnxState) return false;
 
-            bearer = ogs_list_next(bearer);
-        }
-        sess = ogs_list_next(sess);
-    }
-
-    return 0;
-}
-
-int amf_ue_clear_indirect_tunnel(amf_ue_t *amf_ue)
-{
-    amf_sess_t *sess = NULL;
-
-    ogs_assert(amf_ue);
-
-    sess = ogs_list_first(&amf_ue->sess_list);
-    while (sess) {
-        amf_bearer_t *bearer = ogs_list_first(&sess->bearer_list);
-        while (bearer) {
-            CLEAR_INDIRECT_TUNNEL(bearer);
-
-            bearer = ogs_list_next(bearer);
-        }
-        sess = ogs_list_next(sess);
-    }
-
-    return OGS_OK;
+    return true;
 }
 
 void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
@@ -1529,9 +1460,6 @@ void source_ue_deassociate_target_ue(ran_ue_t *ran_ue)
 amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi)
 {
     amf_sess_t *sess = NULL;
-#if 0
-    amf_bearer_t *bearer = NULL;
-#endif
 
     ogs_assert(amf_ue);
     ogs_assert(psi != OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED);
@@ -1540,20 +1468,11 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi)
     ogs_assert(sess);
     memset(sess, 0, sizeof *sess);
 
-#if 0
-    ogs_list_init(&sess->bearer_list);
-#endif
-
     sess->amf_ue = amf_ue;
     sess->psi = psi;
 
     sess->sbi.client_wait.timer = ogs_timer_add(
             self.timer_mgr, amf_timer_sbi_client_wait_expire, sess);
-
-#if 0
-    bearer = amf_bearer_add(sess);
-    ogs_assert(bearer);
-#endif
 
     ogs_list_add(&amf_ue->sess_list, sess);
 
@@ -1566,10 +1485,6 @@ void amf_sess_remove(amf_sess_t *sess)
     ogs_assert(sess->amf_ue);
     
     ogs_list_remove(&sess->amf_ue->sess_list, sess);
-
-#if 0
-    amf_bearer_remove_all(sess);
-#endif
 
     /* Free SBI object memory */
     ogs_sbi_object_free(&sess->sbi);
@@ -1605,408 +1520,6 @@ amf_sess_t *amf_sess_find_by_psi(amf_ue_t *amf_ue, uint8_t psi)
 
     ogs_list_for_each(&amf_ue->sess_list, sess)
         if (psi == sess->psi) return sess;
-
-    return NULL;
-}
-
-#if 0
-amf_sess_t *amf_sess_find_by_ebi(amf_ue_t *amf_ue, uint8_t ebi)
-{
-    amf_bearer_t *bearer = NULL;
-
-    bearer = amf_bearer_find_by_ue_ebi(amf_ue, ebi);
-    if (bearer)
-        return bearer->sess;
-
-    return NULL;
-}
-#endif
-
-amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn)
-{
-#if 0
-    amf_sess_t *sess = NULL;
-
-    sess = amf_sess_first(amf_ue);
-    while (sess) {
-        if (sess->pdn && strcmp(sess->pdn->dnn, dnn) == 0)
-            return sess;
-
-        sess = amf_sess_next(sess);
-    }
-#endif
-
-    return NULL;
-}
-
-#if 0
-amf_bearer_t *amf_bearer_add(amf_sess_t *sess)
-{
-    amf_event_t e;
-
-    amf_bearer_t *bearer = NULL;
-    amf_ue_t *amf_ue = NULL;
-
-    ogs_assert(sess);
-    amf_ue = sess->amf_ue;
-    ogs_assert(amf_ue);
-
-    ogs_pool_alloc(&amf_bearer_pool, &bearer);
-    ogs_assert(bearer);
-    memset(bearer, 0, sizeof *bearer);
-
-    bearer->ebi = OGS_NEXT_ID(amf_ue->ebi,
-            MIN_5GS_BEARER_ID, MAX_5GS_BEARER_ID);
-
-    bearer->amf_ue = amf_ue;
-    bearer->sess = sess;
-
-    ogs_list_add(&sess->bearer_list, bearer);
-
-    bearer->t3589.timer = ogs_timer_add(
-            self.timer_mgr, amf_timer_t3589_expire, bearer);
-    bearer->t3589.pkbuf = NULL;
-    
-    e.bearer = bearer;
-    e.id = 0;
-    ogs_fsm_create(&bearer->sm, gsm_state_initial, gsm_state_final);
-    ogs_fsm_init(&bearer->sm, &e);
-
-    return bearer;
-}
-
-void amf_bearer_remove(amf_bearer_t *bearer)
-{
-    amf_event_t e;
-
-    ogs_assert(bearer);
-    ogs_assert(bearer->sess);
-
-    e.bearer = bearer;
-    ogs_fsm_fini(&bearer->sm, &e);
-    ogs_fsm_delete(&bearer->sm);
-
-    CLEAR_BEARER_ALL_TIMERS(bearer);
-    ogs_timer_delete(bearer->t3589.timer);
-
-    ogs_list_remove(&bearer->sess->bearer_list, bearer);
-
-    OGS_TLV_CLEAR_DATA(&bearer->tft);
-    
-    ogs_pool_free(&amf_bearer_pool, bearer);
-}
-
-void amf_bearer_remove_all(amf_sess_t *sess)
-{
-    amf_bearer_t *bearer = NULL, *next_bearer = NULL;
-
-    ogs_assert(sess);
-    
-    bearer = amf_bearer_first(sess);
-    while (bearer) {
-        next_bearer = amf_bearer_next(bearer);
-
-        amf_bearer_remove(bearer);
-
-        bearer = next_bearer;
-    }
-}
-
-amf_bearer_t *amf_bearer_find_by_sess_ebi(amf_sess_t *sess, uint8_t ebi)
-{
-    amf_bearer_t *bearer = NULL;
-
-    ogs_assert(sess);
-
-    bearer = amf_bearer_first(sess);
-    while (bearer) {
-        if (ebi == bearer->ebi)
-            return bearer;
-
-        bearer = amf_bearer_next(bearer);
-    }
-
-    return NULL;
-}
-
-amf_bearer_t *amf_bearer_find_by_ue_ebi(amf_ue_t *amf_ue, uint8_t ebi)
-{
-    amf_sess_t *sess = NULL;
-    amf_bearer_t *bearer = NULL;
-    
-    ogs_assert(amf_ue);
-
-    sess = amf_sess_first(amf_ue);
-    while (sess) {
-        bearer = amf_bearer_find_by_sess_ebi(sess, ebi);
-        if (bearer) {
-            return bearer;
-        }
-
-        sess = amf_sess_next(sess);
-    }
-
-    return NULL;
-}
-
-amf_bearer_t *amf_bearer_find_or_add_by_message(
-        amf_ue_t *amf_ue, ogs_nas_5gs_message_t *message)
-{
-#if 0
-    uint8_t pti = OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED;
-    uint8_t ebi = OGS_NAS_5GS_BEARER_IDENTITY_UNASSIGNED;
-#endif
-
-    amf_bearer_t *bearer = NULL;
-#if 0
-    amf_sess_t *sess = NULL;
-#endif
-
-#if 0
-    ogs_assert(amf_ue);
-    ogs_assert(message);
-
-    pti = message->esm.h.procedure_transaction_identity;
-    ebi = message->esm.h.eps_bearer_identity;
-
-    ogs_debug("amf_bearer_find_or_add_by_message() [PTI:%d, EBI:%d]",
-            pti, ebi);
-
-    if (ebi != OGS_NAS_5GS_BEARER_IDENTITY_UNASSIGNED) {
-        bearer = amf_bearer_find_by_ue_ebi(amf_ue, ebi);
-        if (!bearer) {
-            ogs_error("No Bearer : EBI[%d]", ebi);
-            nas_eps_send_attach_reject(amf_ue,
-                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-            return NULL;
-        }
-
-        return bearer;
-    }
-
-    if (pti == OGS_NAS_PROCEDURE_TRANSACTION_IDENTITY_UNASSIGNED) {
-        ogs_error("Both PTI[%d] and EBI[%d] are 0", pti, ebi);
-        nas_eps_send_attach_reject(amf_ue,
-            EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-            ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-        return NULL;
-    }
-
-    if (message->esm.h.message_type == OGS_NAS_5GS_PDN_DISCONNECT_REQUEST) {
-        ogs_nas_eps_pdn_disconnect_request_t *pdn_disconnect_request = 
-            &message->esm.pdn_disconnect_request;
-        ogs_nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity =
-            &pdn_disconnect_request->linked_eps_bearer_identity;
-
-        bearer = amf_bearer_find_by_ue_ebi(amf_ue,
-                linked_eps_bearer_identity->eps_bearer_identity);
-        if (!bearer) {
-            ogs_error("No Bearer : Linked-EBI[%d]", 
-                    linked_eps_bearer_identity->eps_bearer_identity);
-            nas_eps_send_attach_reject(amf_ue,
-                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-            return NULL;
-        }
-    } else if (message->esm.h.message_type ==
-            OGS_NAS_5GS_BEARER_RESOURCE_ALLOCATION_REQUEST) {
-        ogs_nas_eps_bearer_resource_allocation_request_t
-            *bearer_allocation_request =
-                &message->esm.bearer_resource_allocation_request;
-        ogs_nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity =
-            &bearer_allocation_request->linked_eps_bearer_identity;
-
-        bearer = amf_bearer_find_by_ue_ebi(amf_ue,
-                linked_eps_bearer_identity->eps_bearer_identity);
-        if (!bearer) {
-            ogs_error("No Bearer : Linked-EBI[%d]", 
-                    linked_eps_bearer_identity->eps_bearer_identity);
-            nas_eps_send_attach_reject(amf_ue,
-                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-            return NULL;
-        }
-    } else if (message->esm.h.message_type ==
-            OGS_NAS_5GS_BEARER_RESOURCE_MODIFICATION_REQUEST) {
-        ogs_nas_eps_bearer_resource_modification_request_t
-            *bearer_modification_request =
-                &message->esm.bearer_resource_modification_request;
-        ogs_nas_linked_eps_bearer_identity_t *linked_eps_bearer_identity =
-            &bearer_modification_request->eps_bearer_identity_for_packet_filter;
-
-        bearer = amf_bearer_find_by_ue_ebi(amf_ue,
-                linked_eps_bearer_identity->eps_bearer_identity);
-        if (!bearer) {
-            ogs_error("No Bearer : Linked-EBI[%d]", 
-                    linked_eps_bearer_identity->eps_bearer_identity);
-            nas_eps_send_attach_reject(amf_ue,
-                EMM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED,
-                ESM_CAUSE_PROTOCOL_ERROR_UNSPECIFIED);
-            return NULL;
-        }
-    }
-
-    if (bearer) {
-        sess = bearer->sess;
-        ogs_assert(sess);
-        sess->pti = pti;
-
-        return bearer;
-    }
-
-    if (message->esm.h.message_type == OGS_NAS_5GS_PDN_CONNECTIVITY_REQUEST) {
-        ogs_nas_eps_pdn_connectivity_request_t *pdn_connectivity_request =
-            &message->esm.pdn_connectivity_request;
-        if (pdn_connectivity_request->presencemask &
-                OGS_NAS_5GS_PDN_CONNECTIVITY_REQUEST_ACCESS_POINT_NAME_PRESENT)
-            sess = amf_sess_find_by_dnn(amf_ue,
-                    pdn_connectivity_request->access_point_name.dnn);
-        else
-            sess = amf_sess_first(amf_ue);
-
-        if (!sess)
-            sess = amf_sess_add(amf_ue, pti);
-        else
-            sess->pti = pti;
-
-        ogs_assert(sess);
-    } else {
-        sess = amf_sess_find_by_pti(amf_ue, pti);
-        ogs_assert(sess);
-    }
-
-    bearer = amf_default_bearer_in_sess(sess);
-    ogs_assert(bearer);
-#endif
-
-    return bearer;
-}
-
-amf_bearer_t *amf_default_bearer_in_sess(amf_sess_t *sess)
-{
-    ogs_assert(sess);
-    return amf_bearer_first(sess);
-}
-
-amf_bearer_t *amf_linked_bearer(amf_bearer_t *bearer)
-{
-    amf_sess_t *sess = NULL;
-
-    ogs_assert(bearer);
-    sess = bearer->sess;
-    ogs_assert(sess);
-
-    return amf_default_bearer_in_sess(sess);
-}
-
-amf_bearer_t *amf_bearer_first(amf_sess_t *sess)
-{
-    ogs_assert(sess);
-
-    return ogs_list_first(&sess->bearer_list);
-}
-
-amf_bearer_t *amf_bearer_next(amf_bearer_t *bearer)
-{
-    ogs_assert(bearer);
-    return ogs_list_next(bearer);
-}
-
-int amf_bearer_is_inactive(amf_ue_t *amf_ue)
-{
-    amf_sess_t *sess = NULL;
-    ogs_assert(amf_ue);
-
-    sess = amf_sess_first(amf_ue);
-    while (sess) {
-        amf_bearer_t *bearer = amf_bearer_first(sess);
-        while (bearer) {
-            if (AMF_HAVE_GNB_S1U_PATH(bearer)) {
-                return 0;
-            }
-
-            bearer = amf_bearer_next(bearer);
-        }
-        sess = amf_sess_next(sess);
-    }
-
-    return 1;
-}
-
-int amf_bearer_set_inactive(amf_ue_t *amf_ue)
-{
-    amf_sess_t *sess = NULL;
-
-    ogs_assert(amf_ue);
-    sess = amf_sess_first(amf_ue);
-    while (sess) {
-        amf_bearer_t *bearer = amf_bearer_first(sess);
-        while (bearer) {
-            CLEAR_GNB_S1U_PATH(bearer);
-
-            bearer = amf_bearer_next(bearer);
-        }
-        sess = amf_sess_next(sess);
-    }
-
-    return OGS_OK;
-}
-#endif
-
-void amf_pdn_remove_all(amf_ue_t *amf_ue)
-{
-#if 0
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
-
-    ogs_assert(amf_ue);
-    subscription_data = &amf_ue->subscription_data;
-    ogs_assert(subscription_data);
-
-    subscription_data->num_of_pdn = 0;
-#endif
-}
-
-ogs_pdn_t *amf_pdn_find_by_dnn(amf_ue_t *amf_ue, char *dnn)
-{
-#if 0
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
-    ogs_pdn_t *pdn = NULL;
-    int i = 0;
-    
-    ogs_assert(amf_ue);
-    ogs_assert(dnn);
-
-    subscription_data = &amf_ue->subscription_data;
-    ogs_assert(subscription_data);
-
-    for (i = 0; i < subscription_data->num_of_pdn; i++) {
-        pdn = &subscription_data->pdn[i];
-        if (strcmp(pdn->dnn, dnn) == 0)
-            return pdn;
-    }
-#endif
-
-    return NULL;
-}
-
-ogs_pdn_t *amf_default_pdn(amf_ue_t *amf_ue)
-{
-#if 0
-    ogs_diam_s6a_subscription_data_t *subscription_data = NULL;
-    ogs_pdn_t *pdn = NULL;
-    int i = 0;
-    
-    ogs_assert(amf_ue);
-    subscription_data = &amf_ue->subscription_data;
-    ogs_assert(subscription_data);
-
-    for (i = 0; i < subscription_data->num_of_pdn; i++) {
-        pdn = &subscription_data->pdn[i];
-        if (pdn->context_identifier == subscription_data->context_identifier)
-            return pdn;
-    }
-#endif
 
     return NULL;
 }

@@ -6,7 +6,7 @@
 
 OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_create(
     int qfi,
-    OpenAPI_cause_t *cause
+    OpenAPI_cause_e cause
     )
 {
     OpenAPI_qos_flow_item_t *qos_flow_item_local_var = OpenAPI_malloc(sizeof(OpenAPI_qos_flow_item_t));
@@ -25,7 +25,6 @@ void OpenAPI_qos_flow_item_free(OpenAPI_qos_flow_item_t *qos_flow_item)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_cause_free(qos_flow_item->cause);
     ogs_free(qos_flow_item);
 }
 
@@ -49,13 +48,7 @@ cJSON *OpenAPI_qos_flow_item_convertToJSON(OpenAPI_qos_flow_item_t *qos_flow_ite
     }
 
     if (qos_flow_item->cause) {
-        cJSON *cause_local_JSON = OpenAPI_cause_convertToJSON(qos_flow_item->cause);
-        if (cause_local_JSON == NULL) {
-            ogs_error("OpenAPI_qos_flow_item_convertToJSON() failed [cause]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "cause", cause_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "cause", OpenAPI_cause_ToString(qos_flow_item->cause)) == NULL) {
             ogs_error("OpenAPI_qos_flow_item_convertToJSON() failed [cause]");
             goto end;
         }
@@ -82,14 +75,18 @@ OpenAPI_qos_flow_item_t *OpenAPI_qos_flow_item_parseFromJSON(cJSON *qos_flow_ite
 
     cJSON *cause = cJSON_GetObjectItemCaseSensitive(qos_flow_itemJSON, "cause");
 
-    OpenAPI_cause_t *cause_local_nonprim = NULL;
+    OpenAPI_cause_e causeVariable;
     if (cause) {
-        cause_local_nonprim = OpenAPI_cause_parseFromJSON(cause);
+        if (!cJSON_IsString(cause)) {
+            ogs_error("OpenAPI_qos_flow_item_parseFromJSON() failed [cause]");
+            goto end;
+        }
+        causeVariable = OpenAPI_cause_FromString(cause->valuestring);
     }
 
     qos_flow_item_local_var = OpenAPI_qos_flow_item_create (
         qfi->valuedouble,
-        cause ? cause_local_nonprim : NULL
+        cause ? causeVariable : 0
         );
 
     return qos_flow_item_local_var;

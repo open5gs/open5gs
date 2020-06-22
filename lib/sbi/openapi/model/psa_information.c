@@ -5,7 +5,7 @@
 #include "psa_information.h"
 
 OpenAPI_psa_information_t *OpenAPI_psa_information_create(
-    OpenAPI_psa_indication_t *psa_ind,
+    OpenAPI_psa_indication_e psa_ind,
     OpenAPI_list_t *dnai_list,
     char *ue_ipv6_prefix,
     char *psa_upf_id
@@ -29,7 +29,6 @@ void OpenAPI_psa_information_free(OpenAPI_psa_information_t *psa_information)
         return;
     }
     OpenAPI_lnode_t *node;
-    OpenAPI_psa_indication_free(psa_information->psa_ind);
     OpenAPI_list_for_each(psa_information->dnai_list, node) {
         ogs_free(node->data);
     }
@@ -50,13 +49,7 @@ cJSON *OpenAPI_psa_information_convertToJSON(OpenAPI_psa_information_t *psa_info
 
     item = cJSON_CreateObject();
     if (psa_information->psa_ind) {
-        cJSON *psa_ind_local_JSON = OpenAPI_psa_indication_convertToJSON(psa_information->psa_ind);
-        if (psa_ind_local_JSON == NULL) {
-            ogs_error("OpenAPI_psa_information_convertToJSON() failed [psa_ind]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "psaInd", psa_ind_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "psaInd", OpenAPI_psa_indication_ToString(psa_information->psa_ind)) == NULL) {
             ogs_error("OpenAPI_psa_information_convertToJSON() failed [psa_ind]");
             goto end;
         }
@@ -101,9 +94,13 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
     OpenAPI_psa_information_t *psa_information_local_var = NULL;
     cJSON *psa_ind = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "psaInd");
 
-    OpenAPI_psa_indication_t *psa_ind_local_nonprim = NULL;
+    OpenAPI_psa_indication_e psa_indVariable;
     if (psa_ind) {
-        psa_ind_local_nonprim = OpenAPI_psa_indication_parseFromJSON(psa_ind);
+        if (!cJSON_IsString(psa_ind)) {
+            ogs_error("OpenAPI_psa_information_parseFromJSON() failed [psa_ind]");
+            goto end;
+        }
+        psa_indVariable = OpenAPI_psa_indication_FromString(psa_ind->valuestring);
     }
 
     cJSON *dnai_list = cJSON_GetObjectItemCaseSensitive(psa_informationJSON, "dnaiList");
@@ -145,7 +142,7 @@ OpenAPI_psa_information_t *OpenAPI_psa_information_parseFromJSON(cJSON *psa_info
     }
 
     psa_information_local_var = OpenAPI_psa_information_create (
-        psa_ind ? psa_ind_local_nonprim : NULL,
+        psa_ind ? psa_indVariable : 0,
         dnai_list ? dnai_listList : NULL,
         ue_ipv6_prefix ? ogs_strdup(ue_ipv6_prefix->valuestring) : NULL,
         psa_upf_id ? ogs_strdup(psa_upf_id->valuestring) : NULL

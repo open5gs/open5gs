@@ -23,7 +23,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_create(
     OpenAPI_eps_pdn_cnx_info_t *eps_pdn_cnx_info,
     OpenAPI_list_t *eps_bearer_info,
     char *supported_features,
-    OpenAPI_max_integrity_protected_data_rate_t *max_integrity_protected_data_rate,
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rate,
     int always_on_granted,
     char *gpsi,
     OpenAPI_up_security_t *up_security,
@@ -104,7 +104,6 @@ void OpenAPI_pdu_session_created_data_free(OpenAPI_pdu_session_created_data_t *p
     }
     OpenAPI_list_free(pdu_session_created_data->eps_bearer_info);
     ogs_free(pdu_session_created_data->supported_features);
-    OpenAPI_max_integrity_protected_data_rate_free(pdu_session_created_data->max_integrity_protected_data_rate);
     ogs_free(pdu_session_created_data->gpsi);
     OpenAPI_up_security_free(pdu_session_created_data->up_security);
     OpenAPI_roaming_charging_profile_free(pdu_session_created_data->roaming_charging_profile);
@@ -328,13 +327,7 @@ cJSON *OpenAPI_pdu_session_created_data_convertToJSON(OpenAPI_pdu_session_create
     }
 
     if (pdu_session_created_data->max_integrity_protected_data_rate) {
-        cJSON *max_integrity_protected_data_rate_local_JSON = OpenAPI_max_integrity_protected_data_rate_convertToJSON(pdu_session_created_data->max_integrity_protected_data_rate);
-        if (max_integrity_protected_data_rate_local_JSON == NULL) {
-            ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [max_integrity_protected_data_rate]");
-            goto end;
-        }
-        cJSON_AddItemToObject(item, "maxIntegrityProtectedDataRate", max_integrity_protected_data_rate_local_JSON);
-        if (item->child == NULL) {
+        if (cJSON_AddStringToObject(item, "maxIntegrityProtectedDataRate", OpenAPI_max_integrity_protected_data_rate_ToString(pdu_session_created_data->max_integrity_protected_data_rate)) == NULL) {
             ogs_error("OpenAPI_pdu_session_created_data_convertToJSON() failed [max_integrity_protected_data_rate]");
             goto end;
         }
@@ -638,9 +631,13 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
 
     cJSON *max_integrity_protected_data_rate = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "maxIntegrityProtectedDataRate");
 
-    OpenAPI_max_integrity_protected_data_rate_t *max_integrity_protected_data_rate_local_nonprim = NULL;
+    OpenAPI_max_integrity_protected_data_rate_e max_integrity_protected_data_rateVariable;
     if (max_integrity_protected_data_rate) {
-        max_integrity_protected_data_rate_local_nonprim = OpenAPI_max_integrity_protected_data_rate_parseFromJSON(max_integrity_protected_data_rate);
+        if (!cJSON_IsString(max_integrity_protected_data_rate)) {
+            ogs_error("OpenAPI_pdu_session_created_data_parseFromJSON() failed [max_integrity_protected_data_rate]");
+            goto end;
+        }
+        max_integrity_protected_data_rateVariable = OpenAPI_max_integrity_protected_data_rate_FromString(max_integrity_protected_data_rate->valuestring);
     }
 
     cJSON *always_on_granted = cJSON_GetObjectItemCaseSensitive(pdu_session_created_dataJSON, "alwaysOnGranted");
@@ -777,7 +774,7 @@ OpenAPI_pdu_session_created_data_t *OpenAPI_pdu_session_created_data_parseFromJS
         eps_pdn_cnx_info ? eps_pdn_cnx_info_local_nonprim : NULL,
         eps_bearer_info ? eps_bearer_infoList : NULL,
         supported_features ? ogs_strdup(supported_features->valuestring) : NULL,
-        max_integrity_protected_data_rate ? max_integrity_protected_data_rate_local_nonprim : NULL,
+        max_integrity_protected_data_rate ? max_integrity_protected_data_rateVariable : 0,
         always_on_granted ? always_on_granted->valueint : 0,
         gpsi ? ogs_strdup(gpsi->valuestring) : NULL,
         up_security ? up_security_local_nonprim : NULL,

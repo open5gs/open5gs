@@ -170,6 +170,10 @@ void smf_5gc_n4_handle_session_establishment_response(
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
 
+    /* UPDATE_UpCnxState - ACTIVATING */
+    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+    sess->smfUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+
     smf_sbi_discover_and_send(OpenAPI_nf_type_AMF, sess, NULL,
             smf_namf_comm_build_n1_n2_message_transfer);
 
@@ -185,9 +189,6 @@ void smf_5gc_n4_handle_session_modification_response(
     ogs_sbi_session_t *session = NULL;
     smf_bearer_t *bearer = NULL;
 
-    ogs_sbi_message_t sendmsg;
-    ogs_sbi_response_t *response = NULL;
-
     ogs_assert(sess);
     session = sess->sbi.session;
     ogs_assert(session);
@@ -201,32 +202,70 @@ void smf_5gc_n4_handle_session_modification_response(
 
     if (rsp->cause.presence) {
         if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
-            ogs_error("Cause[%d] : No Accepted", rsp->cause.u8);
+            char *strerror = ogs_msprintf(
+                    "PFCP Cause[%d] : No Accepted", rsp->cause.u8);
+            ogs_error("%s", strerror);
             smf_sbi_send_sm_context_update_error(session,
-                    OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
-                    "[PFCP] No Accepted", NULL, NULL);
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror, NULL, NULL);
+            ogs_free(strerror);
             return;
         }
     } else {
         ogs_error("No Cause");
         smf_sbi_send_sm_context_update_error(session,
-                OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "[PFCP] No Cause", NULL, NULL);
         return;
     }
 
-    memset(&sendmsg, 0, sizeof(sendmsg));
+    /* UPDATE_UpCnxState - SYNC */
+    sess->smfUpCnxState = sess->ueUpCnxState;
 
-    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
-    ogs_assert(response);
-    ogs_sbi_server_send_response(session, response);
+    smf_sbi_send_sm_context_updated_data(sess);
 }
 
 void smf_5gc_n4_handle_session_deletion_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_deletion_response_t *rsp)
 {
-    ogs_fatal("TODO");
+    ogs_sbi_session_t *session = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_assert(sess);
+    session = sess->sbi.session;
+    ogs_assert(session);
+    ogs_assert(rsp);
+
+    ogs_pfcp_xact_commit(xact);
+
+    if (rsp->cause.presence) {
+        if (rsp->cause.u8 != OGS_PFCP_CAUSE_REQUEST_ACCEPTED) {
+            char *strerror = ogs_msprintf(
+                    "PFCP Cause[%d] : No Accepted", rsp->cause.u8);
+            ogs_error("%s", strerror);
+            ogs_sbi_server_send_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL);
+            ogs_free(strerror);
+            return;
+        }
+    } else {
+        ogs_error("No Cause");
+        ogs_sbi_server_send_error(session,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL,
+                "[PFCP] No Cause", NULL);
+        return;
+    }
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    response = ogs_sbi_build_response(
+            &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+    ogs_assert(response);
+    ogs_sbi_server_send_response(session, response);
+
+    SMF_SESS_CLEAR(sess);
 }
 
 void smf_epc_n4_handle_session_establishment_response(
@@ -299,7 +338,7 @@ void smf_epc_n4_handle_session_modification_response(
 
     ogs_pfcp_xact_commit(xact);
 
-    if (bearer->state.removed)
+    if (bearer->pfcp_epc_modify.remove)
         smf_bearer_remove(bearer);
 }
 

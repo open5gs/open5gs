@@ -131,6 +131,11 @@ void smf_sbi_discover_and_send(
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
+    if (sess->sbi.running == true) {
+        ogs_error("smf_sbi_discover_and_send() is running");
+        return;
+    }
+
     sess->sbi.nf_state_registered = smf_nf_state_registered;
     sess->sbi.client_wait.duration =
         smf_timer_cfg(SMF_TIMER_SBI_CLIENT_WAIT)->duration;
@@ -184,6 +189,38 @@ void smf_sbi_send_sm_context_create_error(
 
     if (n1smbuf)
         ogs_pkbuf_free(n1smbuf);
+}
+
+void smf_sbi_send_sm_context_updated_data(smf_sess_t *sess)
+{
+    ogs_sbi_session_t *session = NULL;
+    int status;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
+
+    ogs_assert(sess);
+    session = sess->sbi.session;
+    ogs_assert(session);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED &&
+        sess->pfcp_5gc_modify.outer_header_creation_update == true) {
+        status = OGS_SBI_HTTP_STATUS_NO_CONTENT;
+    } else {
+        memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
+        SmContextUpdatedData.up_cnx_state =  sess->smfUpCnxState;
+
+        sendmsg.SmContextUpdatedData = &SmContextUpdatedData;
+        status = OGS_SBI_HTTP_STATUS_OK;
+    }
+
+    response = ogs_sbi_build_response(&sendmsg, status);
+    ogs_assert(response);
+    ogs_sbi_server_send_response(session, response);
 }
 
 void smf_sbi_send_sm_context_update_error(

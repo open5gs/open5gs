@@ -141,6 +141,7 @@ ausf_ue_t *ausf_ue_add(char *suci)
     ausf_ue->sbi.client_wait.timer = ogs_timer_add(
             self.timer_mgr, ausf_timer_sbi_client_wait_expire, ausf_ue);
 
+    memset(&e, 0, sizeof(e));
     e.ausf_ue = ausf_ue;
     ogs_fsm_create(&ausf_ue->sm, ausf_ue_state_initial, ausf_ue_state_final);
     ogs_fsm_init(&ausf_ue->sm, &e);
@@ -158,6 +159,7 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
 
     ogs_list_remove(&self.ausf_ue_list, ausf_ue);
 
+    memset(&e, 0, sizeof(e));
     e.ausf_ue = ausf_ue;
     ogs_fsm_fini(&ausf_ue->sm, &e);
     ogs_fsm_delete(&ausf_ue->sm);

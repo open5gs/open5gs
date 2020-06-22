@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+void testgmm_handle_identity_request(test_ue_t *test_ue,
+        ogs_nas_5gs_identity_request_t *identity_request);
 void testgmm_handle_authentication_request(test_ue_t *test_ue,
         ogs_nas_5gs_authentication_request_t *authentication_request);
 void testgmm_handle_security_mode_command(test_ue_t *test_ue,

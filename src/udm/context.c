@@ -141,6 +141,7 @@ udm_ue_t *udm_ue_add(char *suci)
     udm_ue->sbi.client_wait.timer = ogs_timer_add(udm_self()->timer_mgr,
             udm_timer_sbi_client_wait_expire, udm_ue);
 
+    memset(&e, 0, sizeof(e));
     e.udm_ue = udm_ue;
     ogs_fsm_create(&udm_ue->sm, udm_ue_state_initial, udm_ue_state_final);
     ogs_fsm_init(&udm_ue->sm, &e);
@@ -158,6 +159,7 @@ void udm_ue_remove(udm_ue_t *udm_ue)
 
     ogs_list_remove(&self.udm_ue_list, udm_ue);
 
+    memset(&e, 0, sizeof(e));
     e.udm_ue = udm_ue;
     ogs_fsm_fini(&udm_ue->sm, &e);
     ogs_fsm_delete(&udm_ue->sm);

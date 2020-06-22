@@ -21,11 +21,12 @@
 #include "nnrf-handler.h"
 #include "nudm-handler.h"
 
-bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *message)
+bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_session_t *session = NULL;
 
     OpenAPI_authentication_info_request_t *AuthenticationInfoRequest = NULL;
+    OpenAPI_resynchronization_info_t *ResynchronizationInfo = NULL;
     char *serving_network_name = NULL;
     char *ausf_instance_id = NULL;
 
@@ -33,13 +34,13 @@ bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *message)
     session = udm_ue->sbi.session;
     ogs_assert(session);
 
-    ogs_assert(message);
+    ogs_assert(recvmsg);
 
-    AuthenticationInfoRequest = message->AuthenticationInfoRequest;
+    AuthenticationInfoRequest = recvmsg->AuthenticationInfoRequest;
     if (!AuthenticationInfoRequest) {
         ogs_error("[%s] No AuthenticationInfoRequest", udm_ue->suci);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No AuthenticationInfoRequest", udm_ue->suci);
+                recvmsg, "No AuthenticationInfoRequest", udm_ue->suci);
         return false;
     }
 
@@ -47,15 +48,7 @@ bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *message)
     if (!AuthenticationInfoRequest) {
         ogs_error("[%s] No servingNetworkName", udm_ue->suci);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No servingNetworkName", udm_ue->suci);
-        return false;
-    }
-
-    ausf_instance_id = AuthenticationInfoRequest->ausf_instance_id;
-    if (!AuthenticationInfoRequest) {
-        ogs_error("[%s] No ausfInstanceId", udm_ue->suci);
-        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                message, "No ausfInstanceId", udm_ue->suci);
+                recvmsg, "No servingNetworkName", udm_ue->suci);
         return false;
     }
 
@@ -63,12 +56,92 @@ bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *message)
         ogs_free(udm_ue->serving_network_name);
     udm_ue->serving_network_name = ogs_strdup(serving_network_name);
 
+    ausf_instance_id = AuthenticationInfoRequest->ausf_instance_id;
+    if (!AuthenticationInfoRequest) {
+        ogs_error("[%s] No ausfInstanceId", udm_ue->suci);
+        ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                recvmsg, "No ausfInstanceId", udm_ue->suci);
+        return false;
+    }
+
     if (udm_ue->ausf_instance_id)
         ogs_free(udm_ue->ausf_instance_id);
     udm_ue->ausf_instance_id = ogs_strdup(ausf_instance_id);
 
-    udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, NULL,
-            udm_nudr_dr_build_query_authentication);
+    ResynchronizationInfo = AuthenticationInfoRequest->resynchronization_info;
+    if (!ResynchronizationInfo) {
+
+        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, NULL,
+                    udm_nudr_dr_build_authentication_subscription);
+
+    } else {
+        uint8_t rand[OGS_RAND_LEN];
+        uint8_t auts[OGS_AUTS_LEN];
+        uint8_t sqn_ms[OGS_SQN_LEN];
+        uint8_t mac_s[OGS_MAC_S_LEN];
+        uint64_t sqn = 0;
+
+        if (!ResynchronizationInfo->rand) {
+            ogs_error("[%s] No RAND", udm_ue->suci);
+            ogs_sbi_server_send_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No RAND", udm_ue->suci);
+            return false;
+        }
+
+        if (!ResynchronizationInfo->auts) {
+            ogs_error("[%s] No AUTS", udm_ue->suci);
+            ogs_sbi_server_send_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "No AUTS", udm_ue->suci);
+            return false;
+        }
+
+        ogs_ascii_to_hex(
+            ResynchronizationInfo->rand, strlen(ResynchronizationInfo->rand),
+            rand, sizeof(rand));
+        ogs_ascii_to_hex(
+            ResynchronizationInfo->auts, strlen(ResynchronizationInfo->auts),
+            auts, sizeof(auts));
+
+        if (memcmp(udm_ue->rand, rand, OGS_RAND_LEN) != 0) {
+            ogs_error("[%s] Invalid RAND", udm_ue->suci);
+            ogs_log_hexdump(OGS_LOG_ERROR, udm_ue->rand, sizeof(udm_ue)->rand);
+            ogs_log_hexdump(OGS_LOG_ERROR, rand, sizeof(rand));
+
+            ogs_sbi_server_send_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                    recvmsg, "Invalid RAND", udm_ue->suci);
+            return false;
+        }
+
+        ogs_auc_sqn(udm_ue->opc, udm_ue->k, rand, auts, sqn_ms, mac_s);
+
+        if (memcmp(auts + OGS_SQN_LEN, mac_s, OGS_MAC_S_LEN) != 0) {
+            ogs_error("[%s] Re-synch MAC failed", udm_ue->suci);
+            ogs_log_print(OGS_LOG_ERROR, "[MAC_S] ");
+            ogs_log_hexdump(OGS_LOG_ERROR, mac_s, OGS_MAC_S_LEN);
+            ogs_log_hexdump(OGS_LOG_ERROR, auts + OGS_SQN_LEN, OGS_MAC_S_LEN);
+            ogs_log_print(OGS_LOG_ERROR, "[SQN] UDM 0x%llx  UE ",
+                    (long long)udm_ue->sqn);
+            ogs_log_hexdump(OGS_LOG_ERROR, sqn_ms, OGS_SQN_LEN);
+            ogs_sbi_server_send_error(session,
+                    OGS_SBI_HTTP_STATUS_UNAUTHORIZED,
+                    recvmsg, "Re-sync MAC failed", udm_ue->suci);
+            return false;
+
+        }
+
+        sqn = ogs_buffer_to_uint64(sqn_ms, OGS_SQN_LEN);
+
+        /* 33.102 C.3.4 Guide : IND + 1 */
+        sqn = (sqn + 32 + 1) & OGS_MAX_SQN;
+
+        ogs_uint64_to_buffer(sqn, OGS_SQN_LEN, udm_ue->sqn);
+
+        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, udm_ue->sqn,
+                udm_nudr_dr_build_authentication_subscription);
+    }
 
     return true;
 }
@@ -95,7 +168,7 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
             udm_ue->auth_event, message->AuthEvent);
 
     udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, NULL,
-            udm_nudr_dr_build_update_authentication);
+            udm_nudr_dr_build_update_authentication_status);
 
     return true;
 }
@@ -183,7 +256,7 @@ bool udm_nudm_uecm_handle_registration(
                 message->Amf3GppAccessRegistration);
 
     udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, NULL,
-            udm_nudr_dr_build_update_context);
+            udm_nudr_dr_build_update_amf_context);
 
     return true;
 }
