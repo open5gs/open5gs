@@ -123,7 +123,7 @@ static void test1_func(abts_case *tc, void *data)
     OGS_HEX(_k_string, strlen(_k_string), test_ue.k);
     OGS_HEX(_opc_string, strlen(_opc_string), test_ue.opc);
 
-    test_sess.psi = 1;
+    test_sess.psi = 5;
     test_sess.pti = 1;
     test_sess.pdu_session_type = OGS_PDU_SESSION_TYPE_IPV4V6;
     test_sess.dnn = (char *)"internet";
@@ -213,6 +213,7 @@ static void test1_func(abts_case *tc, void *data)
     sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive Initial context setup request */
     recvbuf = testgnb_ngap_read(ngap);

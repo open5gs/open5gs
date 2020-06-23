@@ -25,6 +25,7 @@
 ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 {
     ogs_pkbuf_t *pkbuf = NULL;
+
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_pdu_session_establishment_accept_t *
         pdu_session_establishment_accept =
@@ -33,10 +34,19 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     ogs_nas_pdu_session_type_t *selected_pdu_session_type = NULL;
     ogs_nas_qos_rules_t *authorized_qos_rules = NULL;
     ogs_nas_session_ambr_t *session_ambr = NULL;
-    ogs_nas_pdu_address_t *pdu_address = NULL;
     ogs_nas_5gsm_cause_t *gsm_cause = NULL;
+    ogs_nas_pdu_address_t *pdu_address = NULL;
+    ogs_nas_s_nssai_t *nas_s_nssai = NULL;
+    ogs_nas_qos_flow_descriptions_t *authorized_qos_flow_descriptions = NULL;
+    ogs_nas_extended_protocol_configuration_options_t
+        *extended_protocol_configuration_options = NULL;
+    ogs_nas_dnn_t *dnn = NULL;
 
     ogs_nas_qos_rule_t qos_rule[OGS_NAS_MAX_NUM_OF_QOS_RULE];
+    ogs_nas_qos_flow_description_t qos_flow_description;
+
+    uint8_t pco_buf[OGS_MAX_PCO_LEN];
+    int16_t pco_len;
 
     selected_pdu_session_type = &pdu_session_establishment_accept->
         selected_pdu_session_type;
@@ -50,6 +60,17 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     ogs_assert(pdu_address);
     gsm_cause = &pdu_session_establishment_accept->gsm_cause;
     ogs_assert(gsm_cause);
+    nas_s_nssai = &pdu_session_establishment_accept->s_nssai;
+    ogs_assert(nas_s_nssai);
+    authorized_qos_flow_descriptions =
+        &pdu_session_establishment_accept->authorized_qos_flow_descriptions;
+    ogs_assert(authorized_qos_flow_descriptions);
+    extended_protocol_configuration_options =
+        &pdu_session_establishment_accept->
+            extended_protocol_configuration_options;
+    ogs_assert(extended_protocol_configuration_options);
+    dnn = &pdu_session_establishment_accept->dnn;
+    ogs_assert(dnn);
 
     memset(&message, 0, sizeof(message));
     message.gsm.h.extended_protocol_discriminator =
@@ -73,7 +94,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     qos_rule[0].pf[0].length = 1;
     qos_rule[0].pf[0].num_of_component = 1;
     qos_rule[0].pf[0].component[0].type = OGS_PACKET_FILTER_MATCH_ALL;
-    qos_rule[0].precedence = 1; /* lowest precedence */
+    qos_rule[0].precedence = 255; /* lowest precedence */
     qos_rule[0].flow.segregation = 0;
     qos_rule[0].flow.identifier = 1;
 
@@ -120,6 +141,52 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
             *gsm_cause = OGS_5GSM_CAUSE_PDU_SESSION_TYPE_IPV6_ONLY_ALLOWED;
         }
     }
+
+    /* S-NSSAI */
+    pdu_session_establishment_accept->presencemask |=
+        OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_S_NSSAI_PRESENT;
+    if (sess->s_nssai.sd.v == OGS_S_NSSAI_NO_SD_VALUE) {
+        nas_s_nssai->length = 1;
+        nas_s_nssai->sst = sess->s_nssai.sst;
+    } else {
+        nas_s_nssai->length = 4;
+        nas_s_nssai->sst = sess->s_nssai.sst;
+        nas_s_nssai->sd.v = sess->s_nssai.sd.v;
+    }
+
+    /* QoS flow descriptions */
+    memset(&qos_flow_description, 0, sizeof(qos_flow_description));
+    qos_flow_description.identifier = 1;
+    qos_flow_description.code = OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION;
+    qos_flow_description.E = 1;
+    qos_flow_description.num_of_parameter = 1;
+    qos_flow_description.param[0].identifier =
+        OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI;
+    qos_flow_description.param[0].len = 1;
+    qos_flow_description.param[0].content[0] = sess->pdn.qos.qci;
+
+    pdu_session_establishment_accept->presencemask |=
+        OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_AUTHORIZED_QOS_FLOW_DESCRIPTIONS_PRESENT;
+    authorized_qos_flow_descriptions->length = 6;
+    authorized_qos_flow_descriptions->buffer = &qos_flow_description;
+
+    /* Extended protocol configuration options */
+    if (sess->nas.ue_pco.buffer && sess->nas.ue_pco.length) {
+        pco_len = smf_pco_build(pco_buf,
+                sess->nas.ue_pco.buffer, sess->nas.ue_pco.length);
+        ogs_assert(pco_len > 0);
+        pdu_session_establishment_accept->presencemask |=
+            OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+        extended_protocol_configuration_options->buffer = pco_buf;
+        extended_protocol_configuration_options->length = pco_len;
+    }
+
+    /* DNN */
+    pdu_session_establishment_accept->presencemask |=
+        OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_ACCEPT_DNN_PRESENT;
+    dnn->length = strlen(sess->pdn.dnn);
+    ogs_cpystrn(dnn->value, sess->pdn.dnn,
+            ogs_min(dnn->length, OGS_MAX_DNN_LEN) + 1);
 
     pkbuf = ogs_nas_5gs_plain_encode(&message);
     ogs_assert(pkbuf);

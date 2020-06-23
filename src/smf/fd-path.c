@@ -386,19 +386,20 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_assert(ret == 0);
 
         /* Set 3GPP-User-Location-Info */
-        if (sess->user_location_information.presence) {
+        if (sess->gtp.user_location_information.presence) {
             ogs_gtp_uli_t uli;
             int16_t uli_len;
 
             uint8_t uli_buf[OGS_GTP_MAX_ULI_LEN];
 
-            uli_len = ogs_gtp_parse_uli(&uli, &sess->user_location_information);
-            ogs_assert(sess->user_location_information.len == uli_len);
+            uli_len = ogs_gtp_parse_uli(
+                    &uli, &sess->gtp.user_location_information);
+            ogs_assert(sess->gtp.user_location_information.len == uli_len);
 
-            ogs_assert(sess->user_location_information.data);
-            ogs_assert(sess->user_location_information.len);
-            memcpy(&uli_buf, sess->user_location_information.data,
-                    sess->user_location_information.len);
+            ogs_assert(sess->gtp.user_location_information.data);
+            ogs_assert(sess->gtp.user_location_information.len);
+            memcpy(&uli_buf, sess->gtp.user_location_information.data,
+                    sess->gtp.user_location_information.len);
 
             /* Update Gx ULI Type */
             if (uli.flags.tai && uli.flags.e_cgi)
@@ -414,7 +415,7 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
                         ogs_diam_gx_3gpp_user_location_info, 0, &avp);
                 ogs_assert(ret == 0);
                 val.os.data = (uint8_t *)&uli_buf;
-                val.os.len = sess->user_location_information.len;
+                val.os.len = sess->gtp.user_location_information.len;
                 ret = fd_msg_avp_setvalue(avp, &val);
                 ogs_assert(ret == 0);
                 ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);
@@ -423,12 +424,12 @@ void smf_gx_send_ccr(smf_sess_t *sess, ogs_gtp_xact_t *xact,
         }
 
         /* Set 3GPP-MS-Timezone */
-        if (sess->ue_timezone.presence &&
-                sess->ue_timezone.len && sess->ue_timezone.data) {
+        if (sess->gtp.ue_timezone.presence &&
+                sess->gtp.ue_timezone.len && sess->gtp.ue_timezone.data) {
             ret = fd_msg_avp_new(ogs_diam_gx_3gpp_ms_timezone, 0, &avp);
             ogs_assert(ret == 0);
-            val.os.data = sess->ue_timezone.data;
-            val.os.len = sess->ue_timezone.len;
+            val.os.data = sess->gtp.ue_timezone.data;
+            val.os.len = sess->gtp.ue_timezone.len;
             ret = fd_msg_avp_setvalue(avp, &val);
             ogs_assert(ret == 0);
             ret = fd_msg_avp_add(req, MSG_BRW_LAST_CHILD, avp);

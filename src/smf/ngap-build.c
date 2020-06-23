@@ -28,6 +28,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     NGAP_PDUSessionResourceSetupRequestTransfer_t message;
 
     NGAP_PDUSessionResourceSetupRequestTransferIEs_t *ie = NULL;
+    NGAP_PDUSessionAggregateMaximumBitRate_t *PDUSessionAggregateMaximumBitRate;
     NGAP_UPTransportLayerInformation_t *UPTransportLayerInformation = NULL;
     NGAP_GTPTunnel_t *gTPTunnel = NULL;
     NGAP_PDUSessionType_t *PDUSessionType = NULL;
@@ -46,6 +47,24 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     ogs_debug("PDUSessionResourceSetupRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceSetupRequestTransfer_t));
 
+    if (sess->pdn.ambr.downlink || sess->pdn.ambr.uplink) {
+        ie = CALLOC(1,
+                sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
+        ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+
+        ie->id = NGAP_ProtocolIE_ID_id_PDUSessionAggregateMaximumBitRate;
+        ie->criticality = NGAP_Criticality_reject;
+        ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_PDUSessionAggregateMaximumBitRate;
+
+        PDUSessionAggregateMaximumBitRate =
+            &ie->value.choice.PDUSessionAggregateMaximumBitRate;
+
+        asn_uint642INTEGER(&PDUSessionAggregateMaximumBitRate->
+            pDUSessionAggregateMaximumBitRateUL, sess->pdn.ambr.uplink);
+        asn_uint642INTEGER(&PDUSessionAggregateMaximumBitRate->
+            pDUSessionAggregateMaximumBitRateDL, sess->pdn.ambr.downlink);
+    }
+
     ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
     ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
 
@@ -55,24 +74,6 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
 
     UPTransportLayerInformation = &ie->value.choice.UPTransportLayerInformation;
 
-    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
-    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
-
-    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionType;
-    ie->criticality = NGAP_Criticality_reject;
-    ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_PDUSessionType;
-
-    PDUSessionType = &ie->value.choice.PDUSessionType;
-
-    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
-    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
-
-    ie->id = NGAP_ProtocolIE_ID_id_QosFlowSetupRequestList;
-    ie->criticality = NGAP_Criticality_reject;
-    ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_QosFlowSetupRequestList;
-
-    QosFlowSetupRequestList = &ie->value.choice.QosFlowSetupRequestList;
-
     gTPTunnel = CALLOC(1, sizeof(struct NGAP_GTPTunnel));
     UPTransportLayerInformation->present =
         NGAP_UPTransportLayerInformation_PR_gTPTunnel;
@@ -81,6 +82,15 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     ogs_sockaddr_to_ip(bearer->upf_addr, bearer->upf_addr6, &upf_n3_ip);
     ogs_asn_ip_to_BIT_STRING(&upf_n3_ip, &gTPTunnel->transportLayerAddress);
     ogs_asn_uint32_to_OCTET_STRING(bearer->upf_n3_teid, &gTPTunnel->gTP_TEID);
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
+    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionType;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_PDUSessionType;
+
+    PDUSessionType = &ie->value.choice.PDUSessionType;
 
     *PDUSessionType = OGS_PDU_SESSION_TYPE_IPV4;
     switch (sess->pdn.pdn_type) {
@@ -97,6 +107,15 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         ogs_fatal("Unknown PDU Session Type [%d]", sess->pdn.pdn_type);
         ogs_assert_if_reached();
     }
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
+    ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_QosFlowSetupRequestList;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_PDUSessionResourceSetupRequestTransferIEs__value_PR_QosFlowSetupRequestList;
+
+    QosFlowSetupRequestList = &ie->value.choice.QosFlowSetupRequestList;
 
     QosFlowSetupRequestItem =
         CALLOC(1, sizeof(struct NGAP_QosFlowSetupRequestItem));

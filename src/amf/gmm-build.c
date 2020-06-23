@@ -26,16 +26,21 @@
 
 ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
 {
-    ogs_nas_5gs_message_t message;
+    int i, j;
+    int served_tai_index = 0;
     ogs_pkbuf_t *pkbuf = NULL;
-    ogs_nas_5gs_registration_accept_t *registration_accept = &message.gmm.registration_accept;
+
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_registration_accept_t *registration_accept =
+        &message.gmm.registration_accept;
     ogs_nas_5gs_registration_result_t *registration_result =
         &registration_accept->registration_result;
-    ogs_nas_5gs_mobile_identity_t *mobile_identity = &registration_accept->guti;
+    ogs_nas_5gs_mobile_identity_t *mobile_identity =
+        &registration_accept->guti;
     ogs_nas_5gs_mobile_identity_guti_t mobile_identity_guti;
-    int served_tai_index = 0;
     ogs_nas_nssai_t *allowed_nssai = &registration_accept->allowed_nssai;
-    int i, j;
+    ogs_nas_5gs_network_feature_support_t *network_feature_support =
+        &registration_accept->network_feature_support;
     ogs_nas_gprs_timer_3_t *t3512_value = &registration_accept->t3512_value;
 
     ogs_assert(amf_ue);
@@ -126,6 +131,12 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     if (allowed_nssai->length) {
         registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_ALLOWED_NSSAI_PRESENT;
     }
+
+    /* 5GS network feature support */
+    registration_accept->presencemask |=
+        OGS_NAS_5GS_REGISTRATION_ACCEPT_5GS_NETWORK_FEATURE_SUPPORT_PRESENT;
+    network_feature_support->length = 1;
+    network_feature_support->ims_vops_3gpp = 1;
 
     /* Set T3512 */
     registration_accept->presencemask |= OGS_NAS_5GS_REGISTRATION_ACCEPT_T3512_VALUE_PRESENT;
@@ -284,7 +295,6 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
             sizeof(replayed_ue_security_capabilities->nia) +
             sizeof(replayed_ue_security_capabilities->eps_ea) +
             sizeof(replayed_ue_security_capabilities->eps_ia);
-    replayed_ue_security_capabilities->length = 8;
     ogs_debug("    Replayed UE SEC[LEN:%d NEA:0x%x NIA:0x%x EEA:0x%x EIA:0x%x",
             replayed_ue_security_capabilities->length,
             replayed_ue_security_capabilities->nea,

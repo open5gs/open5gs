@@ -39,6 +39,7 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     ogs_nas_5gs_mobile_identity_t *mobile_identity = NULL;
     ogs_nas_5gs_mobile_identity_header_t *mobile_identity_header = NULL;
     ogs_nas_5gs_mobile_identity_guti_t *mobile_identity_guti = NULL;
+    ogs_nas_ue_security_capability_t *ue_security_capability = NULL;
     ogs_nas_5gs_guti_t nas_guti;
 
     ogs_assert(amf_ue);
@@ -50,6 +51,8 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     ogs_assert(registration_type);
     mobile_identity = &registration_request->mobile_identity;
     ogs_assert(mobile_identity);
+    ue_security_capability = &registration_request->ue_security_capability;
+    ogs_assert(ue_security_capability);
 
     if (!mobile_identity->length || !mobile_identity->buffer) {
         ogs_error("No Mobile Identity");
@@ -178,16 +181,25 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
 
     if (registration_request->presencemask &
             OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT) {
-        memcpy(&amf_ue->ue_security_capability, 
+        memcpy(&amf_ue->ue_security_capability,
                 &registration_request->ue_security_capability,
-                ogs_min(sizeof(amf_ue->ue_security_capability),
-                    registration_request->ue_security_capability.length));
+                registration_request->ue_security_capability.length +
+                sizeof(registration_request->ue_security_capability.length));
+    }
+
+    if (registration_request->presencemask &
+            OGS_NAS_5GS_REGISTRATION_REQUEST_S1_UE_NETWORK_CAPABILITY_PRESENT) {
+        memcpy(&amf_ue->ue_network_capability,
+                &registration_request->s1_ue_network_capability,
+                registration_request->s1_ue_network_capability.length +
+                sizeof(registration_request->s1_ue_network_capability.length));
     }
 
     if (amf_selected_int_algorithm(amf_ue) ==
             OGS_NAS_SECURITY_ALGORITHMS_NIA0) {
-        ogs_warn("[%s] NEA0 can be used in Encrypt[0x%x], "
+        ogs_error("[%s] [UE:0x%x:0x%x], NEA0 can be used in Encrypt[0x%x], "
             "but Integrity[0x%x] cannot be bypassed with NIA0", amf_ue->suci,
+            ue_security_capability->nea, ue_security_capability->nia,
             amf_selected_enc_algorithm(amf_ue), 
             amf_selected_int_algorithm(amf_ue));
         nas_5gs_send_registration_reject(amf_ue,
@@ -765,7 +777,7 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     ogs_nas_payload_container_type_t *payload_container_type = NULL;
     ogs_nas_payload_container_t *payload_container = NULL;
     ogs_nas_pdu_session_identity_2_t *pdu_session_id = NULL;
-    ogs_nas_s_nssai_t *s_nssai = NULL;
+    ogs_nas_s_nssai_t *nas_s_nssai = NULL;
     ogs_s_nssai_t *selected_s_nssai = NULL;
     ogs_nas_dnn_t *dnn = NULL;
 
@@ -798,8 +810,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     case OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION:
         pdu_session_id = &ul_nas_transport->pdu_session_id;
         ogs_assert(pdu_session_id);
-        s_nssai = &ul_nas_transport->s_nssai;
-        ogs_assert(s_nssai);
+        nas_s_nssai = &ul_nas_transport->s_nssai;
+        ogs_assert(nas_s_nssai);
         dnn = &ul_nas_transport->dnn;
         ogs_assert(dnn);
 
@@ -833,8 +845,13 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
         if (ul_nas_transport->presencemask &
                 OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT) {
-            s_nssai->sd = ogs_be24toh(s_nssai->sd);
-            selected_s_nssai = amf_find_s_nssai(&amf_ue->tai.plmn_id, s_nssai);
+            ogs_s_nssai_t s_nssai;
+            s_nssai.sst = nas_s_nssai->sst;
+            if (nas_s_nssai->length > 1)
+                s_nssai.sd = ogs_be24toh(nas_s_nssai->sd);
+            else
+                s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+            selected_s_nssai = amf_find_s_nssai(&amf_ue->tai.plmn_id, &s_nssai);
         }
 
         if (!selected_s_nssai) {

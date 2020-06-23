@@ -94,7 +94,7 @@ static void test1_func(abts_case *tc, void *data)
     test_sess.test_ue = &test_ue;
     test_ue.sess = &test_sess;
 
-    test_ue.nas.registration.type = 1; /* TSC[0], KSI[1] */
+    test_ue.nas.registration.type = OGS_NAS_KSI_NO_KEY_IS_AVAILABLE;
     test_ue.nas.registration.follow_on_request = 1;
     test_ue.nas.registration.value = OGS_NAS_5GS_REGISTRATION_TYPE_INITIAL;
 
@@ -124,7 +124,7 @@ static void test1_func(abts_case *tc, void *data)
     OGS_HEX(_k_string, strlen(_k_string), test_ue.k);
     OGS_HEX(_opc_string, strlen(_opc_string), test_ue.opc);
 
-    test_sess.psi = 1;
+    test_sess.psi = 5;
     test_sess.pti = 1;
     test_sess.pdu_session_type = OGS_PDU_SESSION_TYPE_IPV4V6;
     test_sess.dnn = (char *)"internet";
@@ -209,9 +209,7 @@ static void test1_func(abts_case *tc, void *data)
     testngap_recv(&test_ue, recvbuf);
 
     /* Send Security mode complete */
-    nasbuf = testgmm_build_registration_request(&test_ue, false);
-    ABTS_PTR_NOTNULL(tc, nasbuf);
-    gmmbuf = testgmm_build_security_mode_complete(&test_ue, nasbuf);
+    gmmbuf = testgmm_build_security_mode_complete(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);

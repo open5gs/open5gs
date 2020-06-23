@@ -81,6 +81,8 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         ogs_assert(unsuccessfulOutcome);
 
         switch (unsuccessfulOutcome->procedureCode) {
+        case NGAP_ProcedureCode_id_NGSetup:
+            break;
         default:
             ogs_error("Not implemented(choice:%d, proc:%d)",
                     pdu->present, (int)unsuccessfulOutcome->procedureCode);

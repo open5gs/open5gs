@@ -27,6 +27,7 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id)
     ogs_pkbuf_t *pkbuf = NULL;
     int i, j;
     ogs_plmn_id_t *plmn_id = NULL;
+    const char *ran_node_name = "5G gNB-CU";
 
     NGAP_NGAP_PDU_t pdu;
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
@@ -34,6 +35,7 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id)
 
     NGAP_NGSetupRequestIEs_t *ie = NULL;
     NGAP_GlobalRANNodeID_t *GlobalRANNodeID = NULL;
+    NGAP_RANNodeName_t *RANNodeName = NULL;
     NGAP_GlobalGNB_ID_t *globalGNB_ID = NULL;
     NGAP_SupportedTAList_t *SupportedTAList = NULL;
     NGAP_SupportedTAItem_t *SupportedTAItem = NULL;
@@ -75,6 +77,15 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id)
     ie = CALLOC(1, sizeof(NGAP_NGSetupRequestIEs_t));
     ASN_SEQUENCE_ADD(&NGSetupRequest->protocolIEs, ie);
 
+    ie->id = NGAP_ProtocolIE_ID_id_RANNodeName;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_NGSetupRequestIEs__value_PR_RANNodeName;
+
+    RANNodeName = &ie->value.choice.RANNodeName;
+
+    ie = CALLOC(1, sizeof(NGAP_NGSetupRequestIEs_t));
+    ASN_SEQUENCE_ADD(&NGSetupRequest->protocolIEs, ie);
+
     ie->id = NGAP_ProtocolIE_ID_id_SupportedTAList;
     ie->criticality = NGAP_Criticality_reject;
     ie->value.present = NGAP_NGSetupRequestIEs__value_PR_SupportedTAList;
@@ -92,6 +103,9 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id)
 
     GlobalRANNodeID->present = NGAP_GlobalRANNodeID_PR_globalGNB_ID;
     GlobalRANNodeID->choice.globalGNB_ID = globalGNB_ID;
+
+    ogs_asn_buffer_to_OCTET_STRING((char*)ran_node_name,
+            strlen(ran_node_name), RANNodeName);
 
     SupportedTAItem = CALLOC(1, sizeof(NGAP_SupportedTAItem_t));
     if (test_self()->served_tai[0].list2.num)
@@ -115,15 +129,16 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id)
 
         for (j = 0; j < test_self()->plmn_support[i].num_of_s_nssai; j++) {
             ogs_s_nssai_t *s_nssai = &test_self()->plmn_support[i].s_nssai[j];
+            ogs_uint24_t sd;
 
             SliceSupportItem = CALLOC(1, sizeof(NGAP_SliceSupportItem_t));
             ogs_asn_uint8_to_OCTET_STRING(s_nssai->sst,
                     &SliceSupportItem->s_NSSAI.sST);
-            if (s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
-                SliceSupportItem->s_NSSAI.sD = CALLOC(1, sizeof(ogs_uint24_t));
-                ogs_asn_uint24_to_OCTET_STRING(
-                        s_nssai->sd, SliceSupportItem->s_NSSAI.sD);
-            }
+            sd.v = s_nssai->sd.v;
+            if (sd.v == OGS_S_NSSAI_NO_SD_VALUE)
+                sd.v = 0x010000;
+            SliceSupportItem->s_NSSAI.sD = CALLOC(1, sizeof(ogs_uint24_t));
+            ogs_asn_uint24_to_OCTET_STRING(sd, SliceSupportItem->s_NSSAI.sD);
 
             ASN_SEQUENCE_ADD(&BroadcastPLMNItem->tAISliceSupportList.list,
                             SliceSupportItem);
@@ -135,7 +150,7 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id)
 
     ASN_SEQUENCE_ADD(&SupportedTAList->list, SupportedTAItem);
 
-    *PagingDRX = NGAP_PagingDRX_v64;
+    *PagingDRX = NGAP_PagingDRX_v32;
 
     return nga_ngap_encode(&pdu);
 }
@@ -237,7 +252,7 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
     UserLocationInformation->choice.userLocationInformationNR =
         userLocationInformationNR;
 
-    *RRCEstablishmentCause = NGAP_RRCEstablishmentCause_mt_Access;
+    *RRCEstablishmentCause = NGAP_RRCEstablishmentCause_mo_Signalling;
 
     if (test_ue->nas_guti.m_tmsi) {
         NGAP_AMFSetID_t *aMFSetID = NULL;
@@ -345,7 +360,7 @@ ogs_pkbuf_t *testngap_build_uplink_nas_transport(
     ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_UserLocationInformation;
-    ie->criticality = NGAP_Criticality_reject;
+    ie->criticality = NGAP_Criticality_ignore;
     ie->value.present =
         NGAP_UplinkNASTransport_IEs__value_PR_UserLocationInformation;
 

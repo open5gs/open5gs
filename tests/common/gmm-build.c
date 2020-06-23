@@ -35,6 +35,8 @@ ogs_pkbuf_t *testgmm_build_registration_request(
             &registration_request->gmm_capability;
     ogs_nas_ue_security_capability_t *ue_security_capability =
             &registration_request->ue_security_capability;
+    ogs_nas_s1_ue_network_capability_t *s1_ue_network_capability =
+            &registration_request->s1_ue_network_capability;
     ogs_nas_uplink_data_status_t *uplink_data_status =
             &registration_request->uplink_data_status;
     ogs_nas_5gs_mobile_identity_guti_t mobile_identity_guti;
@@ -81,17 +83,27 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_5GMM_CAPABILITY_PRESENT;
     gmm_capability->length = 1;
-    gmm_capability->lte_positioning_protocol_capability = 1;
+    gmm_capability->lte_positioning_protocol_capability = 0;
     gmm_capability->ho_attach = 1; 
     gmm_capability->s1_mode = 1; 
 
     registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT;
-    ue_security_capability->length = 8;
-    ue_security_capability->nea = 0xff;
-    ue_security_capability->nia = 0xff;
-    ue_security_capability->eps_ea = 0xff;
-    ue_security_capability->eps_ia = 0xff;
+    ue_security_capability->length = 2;
+    ue_security_capability->nea = 0xf0;
+    ue_security_capability->nia = 0xf0;
+
+    registration_request->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_REQUEST_S1_UE_NETWORK_CAPABILITY_PRESENT;
+    s1_ue_network_capability->length = 7;
+    s1_ue_network_capability->eea = 0xf0;
+    s1_ue_network_capability->eia = 0xf0;
+    s1_ue_network_capability->uea = 0xc0;
+    s1_ue_network_capability->uia = 0x40;
+    s1_ue_network_capability->notification_procedure = 1;
+    s1_ue_network_capability->extended_protocol_configuration_options = 1;
+    s1_ue_network_capability->n1_mode = 1;
+    s1_ue_network_capability->dual_connectivity_with_nr = 1;
 
     if (update)
         return test_nas_5gs_security_encode(test_ue, &message);
@@ -388,7 +400,10 @@ ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
     ogs_nas_payload_container_t *payload_container = NULL;
     ogs_nas_pdu_session_identity_2_t *pdu_session_id = NULL;
     ogs_nas_request_type_t *request_type = NULL;
+#define S_NSSAI_PRECENSE 0
+#if S_NSSAI_PRECENSE
     ogs_nas_s_nssai_t *s_nssai = NULL;
+#endif
 
     ogs_assert(test_sess);
     test_ue = test_sess->test_ue;
@@ -400,7 +415,9 @@ ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
     payload_container = &ul_nas_transport->payload_container;
     pdu_session_id = &ul_nas_transport->pdu_session_id;
     request_type = &ul_nas_transport->request_type;
+#if S_NSSAI_PRECENSE
     s_nssai = &ul_nas_transport->s_nssai;
+#endif
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
@@ -425,11 +442,19 @@ ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
             OGS_NAS_5GS_UL_NAS_TRANSPORT_REQUEST_TYPE_PRESENT;
     request_type->value = OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
 
+#if S_NSSAI_PRECENSE
     ul_nas_transport->presencemask |=
             OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT;
-    s_nssai->length = 4;
-    s_nssai->sst = test_self()->plmn_support[0].s_nssai[0].sst;
-    s_nssai->sd = ogs_htobe24(test_self()->plmn_support[0].s_nssai[0].sd);
+    if (test_self()->plmn_support[0].s_nssai[0].sd.v ==
+            OGS_S_NSSAI_NO_SD_VALUE) {
+        s_nssai->length = 1;
+        s_nssai->sst = test_self()->plmn_support[0].s_nssai[0].sst;
+    } else {
+        s_nssai->length = 4;
+        s_nssai->sst = test_self()->plmn_support[0].s_nssai[0].sst;
+        s_nssai->sd = ogs_htobe24(test_self()->plmn_support[0].s_nssai[0].sd);
+    }
+#endif
 
     ul_nas_transport->presencemask |=
             OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT;

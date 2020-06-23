@@ -40,6 +40,9 @@ void mme_s6a_handle_aia(mme_ue_t *mme_ue,
 
     CLEAR_MME_UE_TIMER(mme_ue->t3460);
 
+    if (mme_ue->nas_eps.ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE)
+        mme_ue->nas_eps.ksi = 0;
+
     nas_eps_send_authentication_request(mme_ue, e_utran_vector);
 }
 

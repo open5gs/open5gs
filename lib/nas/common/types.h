@@ -64,8 +64,6 @@ extern "C" {
         memcpy((__dST)->buffer, (__sRC)->buffer, (__dST)->length); \
     } while(0)
 
-#define OGS_NAS_KSI_NO_KEY_IS_AVAILABLE             0x7
-
 /****************************
  * NAS Security Header Type */
 typedef struct ogs_nas_security_header_type_s {
@@ -311,6 +309,7 @@ ED3(uint8_t type:4;,
 typedef struct ogs_nas_key_set_identifier_s {
 ED3(uint8_t type:4;,
     uint8_t tsc:1;,
+#define OGS_NAS_KSI_NO_KEY_IS_AVAILABLE             0x7
     uint8_t value:3;)
 } __attribute__ ((packed)) ogs_nas_key_set_identifier_t;
 
@@ -463,23 +462,29 @@ typedef struct ogs_nas_ue_network_capability_s {
         };
         uint8_t uia; 
     };
-ED8(uint8_t prose_dd:1;,
+ED8(uint8_t prose_direct_discovery:1;,
     uint8_t prose:1;,
-    uint8_t h_245_ash:1;,
-    uint8_t acc_csfb:1;,
-    uint8_t lpp:1;,
-    uint8_t lcs:1;,
-    uint8_t srvcc:1;,
-    uint8_t nf:1;)
-ED8(uint8_t epco:1;,
-    uint8_t hc_cp_ciot:1;,
-    uint8_t erw_opdn:1;,
-    uint8_t s1u_data:1;,
-    uint8_t up_ciot:1;,
-    uint8_t cp_ciot:1;,
-    uint8_t prose_relay:1;,
-    uint8_t prose_dc:1;)
-ED2(uint8_t spare:7;,
+    uint8_t h_245_after_srvcc_handover:1;,
+    uint8_t access_class_control_for_csdb:1;,
+    uint8_t lte_positioning_protocol:1;,
+    uint8_t location_service_notification_mechanisms:1;,
+    uint8_t srvcc_from_e_utran_to_cdma2000:1;,
+    uint8_t notification_procedure:1;)
+ED8(uint8_t extended_protocol_configuration_options:1;,
+    uint8_t hedaer_compression_for_control_plane_ciot_eps_optimization:1;,
+    uint8_t emm_registered_without_pdn_connectivity:1;,
+    uint8_t s1_u_data_transfer:1;,
+    uint8_t user_plane_ciot_eps_optimization:1;,
+    uint8_t control_plane_ciot_eps_optimization:1;,
+    uint8_t prose_ue_to_network_relay:1;,
+    uint8_t prose_direct_communication:1;)
+ED8(uint8_t signalling_for_a_maximum_number_of_15_eps_bearer_contexts:1;,
+    uint8_t service_gap_control:1;,
+    uint8_t n1_mode:1;,
+    uint8_t dual_connectivity_with_nr:1;,
+    uint8_t control_plane_data_backoff:1;,
+    uint8_t retstriction_on_use_of_enhanced_coverage:1;,
+    uint8_t v2x_communication_over_pc5:1;,
     uint8_t multiple_drb:1;)
 } __attribute__ ((packed)) ogs_nas_ue_network_capability_t;
 

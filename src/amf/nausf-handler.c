@@ -103,6 +103,9 @@ int amf_nausf_auth_handle_authenticate(
     ogs_ascii_to_hex(AV5G_AKA->autn, strlen(AV5G_AKA->autn),
         amf_ue->autn, sizeof(amf_ue->autn));
 
+    if (amf_ue->nas.ksi == OGS_NAS_KSI_NO_KEY_IS_AVAILABLE)
+        amf_ue->nas.ksi = 0;
+
     nas_5gs_send_authentication_request(amf_ue);
 
     return OGS_OK;

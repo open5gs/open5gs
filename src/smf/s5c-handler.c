@@ -154,18 +154,19 @@ void smf_s5c_handle_create_session_request(
 
     /* PCO */
     if (req->protocol_configuration_options.presence) {
-        OGS_TLV_STORE_DATA(&sess->ue_pco, &req->protocol_configuration_options);
+        OGS_TLV_STORE_DATA(&sess->gtp.ue_pco,
+                &req->protocol_configuration_options);
     }
 
     /* Set User Location Information */
     if (req->user_location_information.presence) {
-        OGS_TLV_STORE_DATA(&sess->user_location_information,
+        OGS_TLV_STORE_DATA(&sess->gtp.user_location_information,
                 &req->user_location_information);
     }
 
     /* Set UE Timezone */
     if (req->ue_time_zone.presence) {
-        OGS_TLV_STORE_DATA(&sess->ue_timezone, &req->ue_time_zone);
+        OGS_TLV_STORE_DATA(&sess->gtp.ue_timezone, &req->ue_time_zone);
     }
     
     smf_gx_send_ccr(sess, xact,

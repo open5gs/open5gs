@@ -57,6 +57,14 @@ int gsm_handle_pdu_session_establishment_request(smf_sess_t *sess,
         OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_SSC_MODE_PRESENT)
         sess->ue_ssc_mode = ssc_mode->value;
 
+    if (pdu_session_establishment_request->presencemask &
+        OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT) {
+        OGS_NAS_STORE_DATA(&sess->nas.ue_pco,
+            &pdu_session_establishment_request->
+                extended_protocol_configuration_options);
+    }
+
+
     smf_sbi_discover_and_send(OpenAPI_nf_type_UDM, sess,
             (char *)OGS_SBI_RESOURCE_NAME_SM_DATA, smf_nudm_sdm_build_get);
 

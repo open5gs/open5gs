@@ -728,8 +728,52 @@ ED3(uint8_t type:4;,
 
 /* 9.11.4.12 QoS flow descriptions
  * O TLV-E 6-65535 */
+typedef struct ogs_nas_qos_flow_parameter_s {
+#define OGS_NAX_QOS_FLOW_PARAMETER_ID_5QI                   1
+#define OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_UPLINK           2
+#define OGS_NAX_QOS_FLOW_PARAMETER_ID_GFBR_DOWNLINK         3
+#define OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_UPLINK           4
+#define OGS_NAX_QOS_FLOW_PARAMETER_ID_MFBR_DOWNLINK         5
+#define OGS_NAX_QOS_FLOW_PARAMETER_ID_AVERAGING_WINDOW      6
+#define OGS_NAX_QOS_FLOW_PARAMETER_ID_EPS_BEARER_IDENTITY   7
+    uint8_t identifier;
+    uint8_t len;
+#define OGS_NAS_MAX_QOS_FLOW_PARAEMTER_LEN 255
+    uint8_t content[OGS_NAS_MAX_QOS_FLOW_PARAEMTER_LEN];
+} ogs_nas_qos_flow_parameter_t;
+
+typedef struct ogs_nas_qos_flow_description_s {
+ED2(uint8_t spare1:2;,
+    uint8_t identifier:6;)
+#define OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION 1
+#define OGS_NAS_DELETE_NEW_QOS_FLOW_DESCRIPTION 2
+#define OGS_NAS_MODIFY_NEW_QOS_FLOW_DESCRIPTION 3
+ED2(uint8_t code:3;,
+    uint8_t spare2:5;)
+ED3(uint8_t spare3:1;,
+/*
+ * For the "create new QoS flow description" operation,
+ * the E bit is encoded as follows:
+ *   0 reserved
+ *   1 parameters list is included
+ *
+ * For the "Delete existing QoS flow description" operation,
+ *   0 parameters list is not included
+ *   1 reserved
+ *
+ * For the "modify existing QoS flow description" operation,
+ *   0 extension of previously provided parameters
+ *   1 replacement of all previously provided parameters
+ */
+    uint8_t E:1;,
+    uint8_t num_of_parameter:6;)
+
+#define OGS_NAS_MAX_NUM_OF_QOS_FLOW_PARAMETER 8
+    ogs_nas_qos_flow_parameter_t param[OGS_NAS_MAX_NUM_OF_QOS_FLOW_PARAMETER];
+} ogs_nas_qos_flow_description_t;
+
 typedef struct ogs_nas_qos_flow_descriptions_s {
-    uint8_t length;
+    uint16_t length;
     void *buffer;
 } ogs_nas_qos_flow_descriptions_t;
 

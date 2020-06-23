@@ -1568,7 +1568,7 @@ int amf_find_served_tai(ogs_5gs_tai_t *tai)
 }
 
 ogs_s_nssai_t *amf_find_s_nssai(
-        ogs_plmn_id_t *served_plmn_id, ogs_nas_s_nssai_t *s_nssai)
+        ogs_plmn_id_t *served_plmn_id, ogs_s_nssai_t *s_nssai)
 {
     int i, j;
 
@@ -1584,8 +1584,9 @@ ogs_s_nssai_t *amf_find_s_nssai(
             if (amf_self()->plmn_support[i].s_nssai[j].sst != s_nssai->sst)
                 continue;
 
-            if (s_nssai->length > 1 &&
-                    s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
+            if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
+                    OGS_S_NSSAI_NO_SD_VALUE &&
+                        s_nssai->sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
                 if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
                         s_nssai->sd.v)
                     continue;

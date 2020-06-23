@@ -188,9 +188,15 @@ typedef struct smf_sess_s {
     ogs_pfcp_ue_ip_t *ipv4;
     ogs_pfcp_ue_ip_t *ipv6;
 
-    ogs_tlv_octet_t ue_pco; /* Saved from S5-C */
-    ogs_tlv_octet_t user_location_information; /* Saved from S5-C */
-    ogs_tlv_octet_t ue_timezone; /* Saved from S5-C */
+    struct {
+        ogs_tlv_octet_t ue_pco;
+        ogs_tlv_octet_t user_location_information;
+        ogs_tlv_octet_t ue_timezone;
+    } gtp; /* Saved from S5-C */
+
+    struct {
+        ogs_nas_extended_protocol_configuration_options_t ue_pco;
+    } nas; /* Saved from NAS-5GS */
 
     ogs_pcc_rule_t  pcc_rule[OGS_MAX_NUM_OF_PCC_RULE]; /* Saved from Gx */
     int             num_of_pcc_rule;
@@ -325,8 +331,7 @@ smf_pf_t *smf_pf_find_by_id(smf_bearer_t *smf_bearer, uint8_t id);
 smf_pf_t *smf_pf_first(smf_bearer_t *bearer);
 smf_pf_t *smf_pf_next(smf_pf_t *pf);
 
-void stats_add_session(void);
-void stats_remove_session(void);
+int smf_pco_build(uint8_t *pco_buf, uint8_t *buffer, int length);
 
 #ifdef __cplusplus
 }

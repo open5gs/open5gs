@@ -22,15 +22,59 @@
 
 static bool served_tai_is_found(amf_gnb_t *gnb)
 {
-    int i;
+    int i, j;
     int served_tai_index;
 
     for (i = 0; i < gnb->num_of_supported_ta_list; i++) {
-        served_tai_index = amf_find_served_tai(&gnb->supported_ta_list[i]);
-        if (served_tai_index >= 0 &&
-                served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI) {
-            ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
-            return true;
+        for (j = 0; j < gnb->supported_ta_list[i].num_of_bplmn_list; j++) {
+            ogs_5gs_tai_t tai;
+            memcpy(&tai.plmn_id,
+                    &gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
+                        OGS_PLMN_ID_LEN);
+            tai.tac.v = gnb->supported_ta_list[i].tac.v;
+            served_tai_index = amf_find_served_tai(&tai);
+            if (served_tai_index >= 0 &&
+                    served_tai_index < OGS_MAX_NUM_OF_SERVED_TAI) {
+                ogs_debug("    TAC[%d]", gnb->supported_ta_list[i].tac.v);
+                ogs_debug("    PLMN_ID[MCC:%d MNC:%d]",
+                    ogs_plmn_id_mcc(&gnb->supported_ta_list[i].
+                        bplmn_list[j].plmn_id),
+                    ogs_plmn_id_mnc(&gnb->supported_ta_list[i].
+                        bplmn_list[j].plmn_id));
+                ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+static bool s_nssai_is_found(amf_gnb_t *gnb)
+{
+    int i, j, k;
+    ogs_s_nssai_t *s_nssai = NULL;
+
+    for (i = 0; i < gnb->num_of_supported_ta_list; i++) {
+        for (j = 0; j < gnb->supported_ta_list[i].num_of_bplmn_list; j++) {
+            for (k = 0; k < gnb->supported_ta_list[i].
+                                bplmn_list[j].num_of_s_nssai; k++) {
+                s_nssai = amf_find_s_nssai(
+                    &gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
+                    &gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k]);
+                if (s_nssai) {
+                    ogs_debug("    PLMN_ID[MCC:%d MNC:%d]",
+                        ogs_plmn_id_mcc(&gnb->supported_ta_list[i].
+                            bplmn_list[j].plmn_id),
+                        ogs_plmn_id_mnc(&gnb->supported_ta_list[i].
+                            bplmn_list[j].plmn_id));
+                    ogs_debug("    S_NSSAI[SST:%d SD:0x%x]",
+                        gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k].sst,
+                        gnb->supported_ta_list[i].bplmn_list[j].
+                                    s_nssai[k].sd.v);
+                    return true;
+                }
+            }
         }
     }
 
@@ -54,7 +98,7 @@ static bool maximum_number_of_gnbs_is_reached(void)
 void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
-    int i, j;
+    int i, j, k;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_NGSetupRequest_t *NGSetupRequest = NULL;
@@ -129,42 +173,102 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     if (PagingDRX)
         ogs_debug("    PagingDRX[%ld]", *PagingDRX);
 
-    amf_gnb_set_gnb_id(gnb, gnb_id);
-
     /* Parse Supported TA */
-    gnb->num_of_supported_ta_list = 0;
-    for (i = 0; i < SupportedTAList->list.count; i++) {
+    for (i = 0, gnb->num_of_supported_ta_list = 0;
+            i < SupportedTAList->list.count &&
+            gnb->num_of_supported_ta_list < OGS_MAX_NUM_OF_TAI;
+                i++) {
         NGAP_SupportedTAItem_t *SupportedTAItem = NULL;
 
         SupportedTAItem = (NGAP_SupportedTAItem_t *)
                 SupportedTAList->list.array[i];
-        ogs_assert(SupportedTAItem);
+        if (!SupportedTAItem) {
+            ogs_error("No SupportedTAItem");
+            group = NGAP_Cause_PR_protocol;
+            cause = NGAP_CauseProtocol_semantic_error;
+            ngap_send_ng_setup_failure(gnb, group, cause);
+            return;
+        }
 
-        for (j = 0; j < SupportedTAItem->broadcastPLMNList.list.count; j++) {
+        ogs_asn_OCTET_STRING_to_uint24(&SupportedTAItem->tAC,
+            &gnb->supported_ta_list[i].tac);
+
+        ogs_debug("    TAC[%d]", gnb->supported_ta_list[i].tac.v);
+
+        for (j = 0, gnb->supported_ta_list[i].num_of_bplmn_list = 0;
+                j < SupportedTAItem->broadcastPLMNList.list.count &&
+                gnb->supported_ta_list[i].num_of_bplmn_list <
+                    OGS_MAX_NUM_OF_BPLMN;
+                        j++) {
+
             NGAP_BroadcastPLMNItem_t *BroadcastPLMNItem = NULL;
             NGAP_PLMNIdentity_t *pLMNIdentity = NULL;
 
             BroadcastPLMNItem = (NGAP_BroadcastPLMNItem_t *)
-                    SupportedTAItem->broadcastPLMNList.list.array[i];
-            ogs_assert(BroadcastPLMNItem);
+                    SupportedTAItem->broadcastPLMNList.list.array[j];
+            if (!BroadcastPLMNItem) {
+                ogs_error("No BroadcastPLMNItem");
+                group = NGAP_Cause_PR_protocol;
+                cause = NGAP_CauseProtocol_semantic_error;
+                ngap_send_ng_setup_failure(gnb, group, cause);
+                return;
+            }
+
             pLMNIdentity = (NGAP_PLMNIdentity_t *)
                     &BroadcastPLMNItem->pLMNIdentity;
             ogs_assert(pLMNIdentity);
 
-            ogs_asn_OCTET_STRING_to_uint24(&SupportedTAItem->tAC,
-                &gnb->supported_ta_list[gnb->num_of_supported_ta_list].tac);
-
-            memcpy(&gnb->supported_ta_list
-                        [gnb->num_of_supported_ta_list].plmn_id,
+            memcpy(&gnb->supported_ta_list[i].bplmn_list[j].plmn_id,
                     pLMNIdentity->buf, sizeof(ogs_plmn_id_t));
-            ogs_debug("    PLMN_ID[MCC:%d MNC:%d] TAC[%d]",
-                ogs_plmn_id_mcc(&gnb->supported_ta_list
-                    [gnb->num_of_supported_ta_list].plmn_id),
-                ogs_plmn_id_mnc(&gnb->supported_ta_list
-                    [gnb->num_of_supported_ta_list].plmn_id),
-                gnb->supported_ta_list[gnb->num_of_supported_ta_list].tac.v);
-            gnb->num_of_supported_ta_list++;
+            ogs_debug("    PLMN_ID[MCC:%d MNC:%d]",
+                ogs_plmn_id_mcc(&gnb->supported_ta_list[i].
+                    bplmn_list[j].plmn_id),
+                ogs_plmn_id_mnc(&gnb->supported_ta_list[i].
+                    bplmn_list[j].plmn_id));
+
+            for (k = 0, gnb->supported_ta_list[i].
+                            bplmn_list[j].num_of_s_nssai = 0;
+                    k < BroadcastPLMNItem->tAISliceSupportList.list.count &&
+                    gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai <
+                        OGS_MAX_NUM_OF_S_NSSAI;
+                            k++) {
+                NGAP_SliceSupportItem_t *SliceSupportItem = NULL;
+                NGAP_S_NSSAI_t *s_NSSAI = NULL;
+
+                SliceSupportItem = (NGAP_SliceSupportItem_t *)
+                        BroadcastPLMNItem->tAISliceSupportList.list.array[k];
+                if (!SliceSupportItem) {
+                    ogs_error("No SliceSupportItem");
+                    group = NGAP_Cause_PR_protocol;
+                    cause = NGAP_CauseProtocol_semantic_error;
+                    ngap_send_ng_setup_failure(gnb, group, cause);
+                    return;
+                }
+
+                s_NSSAI = &SliceSupportItem->s_NSSAI;
+                ogs_assert(s_NSSAI);
+
+                ogs_asn_OCTET_STRING_to_uint8(&s_NSSAI->sST,
+                    &gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k].sst);
+                if (!s_NSSAI->sD) {
+                    gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k].sd.v =
+                        OGS_S_NSSAI_NO_SD_VALUE;
+                } else {
+                    ogs_asn_OCTET_STRING_to_uint24(s_NSSAI->sD,
+                    &gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k].sd);
+                }
+
+                ogs_debug("    S_NSSAI[SST:%d SD:0x%x]",
+                    gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k].sst,
+                    gnb->supported_ta_list[i].bplmn_list[j].s_nssai[k].sd.v);
+
+                gnb->supported_ta_list[i].bplmn_list[j].num_of_s_nssai++;
+            }
+
+            gnb->supported_ta_list[i].num_of_bplmn_list++;
         }
+
+        gnb->num_of_supported_ta_list++;
     }
 
     if (maximum_number_of_gnbs_is_reached()) {
@@ -196,6 +300,19 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
         ngap_send_ng_setup_failure(gnb, group, cause);
         return;
     }
+
+    if (!s_nssai_is_found(gnb)) {
+        ogs_warn("NG-Setup failure:");
+        ogs_warn("    Cannot find S_NSSAI. "
+                    "Check 'amf.plmn.s_nssai' configuration");
+        group = NGAP_Cause_PR_misc;
+        cause = NGAP_CauseMisc_unknown_PLMN;
+
+        ngap_send_ng_setup_failure(gnb, group, cause);
+        return;
+    }
+
+    amf_gnb_set_gnb_id(gnb, gnb_id);
 
     gnb->state.ng_setup_success = true;
     ngap_send_ng_setup_response(gnb);

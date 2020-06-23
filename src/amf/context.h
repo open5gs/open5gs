@@ -144,7 +144,15 @@ typedef struct amf_gnb_s {
 
 
     uint8_t         num_of_supported_ta_list;
-    ogs_5gs_tai_t   supported_ta_list[OGS_MAX_NUM_OF_TAI*OGS_MAX_NUM_OF_BPLMN];
+    struct {
+        ogs_uint24_t tac;
+        uint8_t num_of_bplmn_list;
+        struct {
+            ogs_plmn_id_t plmn_id;
+            uint8_t num_of_s_nssai;
+            ogs_s_nssai_t s_nssai[OGS_MAX_NUM_OF_S_NSSAI];
+        } bplmn_list[OGS_MAX_NUM_OF_BPLMN];
+    } supported_ta_list[OGS_MAX_NUM_OF_TAI];
 
     ogs_list_t      ran_ue_list;
 
@@ -274,6 +282,7 @@ struct amf_ue_s {
 
     /* Security Context */
     ogs_nas_ue_security_capability_t ue_security_capability;
+    ogs_nas_ue_network_capability_t ue_network_capability;
     char            *confirmation_url_for_5g_aka;
     uint8_t         rand[OGS_RAND_LEN];
     uint8_t         autn[OGS_AUTN_LEN];
@@ -511,7 +520,7 @@ amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai);
 ogs_s_nssai_t *amf_find_s_nssai(
-        ogs_plmn_id_t *served_plmn_id, ogs_nas_s_nssai_t *s_nssai);
+        ogs_plmn_id_t *served_plmn_id, ogs_s_nssai_t *s_nssai);
 
 int amf_m_tmsi_pool_generate(void);
 amf_m_tmsi_t *amf_m_tmsi_alloc(void);

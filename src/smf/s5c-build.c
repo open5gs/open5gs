@@ -22,8 +22,6 @@
 
 #include "ipfw/ipfw2.h"
 
-static int16_t smf_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco);
-
 ogs_pkbuf_t *smf_s5c_build_create_session_response(
         uint8_t type, smf_sess_t *sess)
 {
@@ -94,8 +92,10 @@ ogs_pkbuf_t *smf_s5c_build_create_session_response(
      * if PCRF changes APN-AMBR, this should be included. */
 
     /* PCO */
-    if (sess->ue_pco.presence && sess->ue_pco.len && sess->ue_pco.data) {
-        pco_len = smf_pco_build(pco_buf, &sess->ue_pco);
+    if (sess->gtp.ue_pco.presence &&
+            sess->gtp.ue_pco.len && sess->gtp.ue_pco.data) {
+        pco_len = smf_pco_build(
+                pco_buf, sess->gtp.ue_pco.data, sess->gtp.ue_pco.len);
         ogs_assert(pco_len > 0);
         rsp->protocol_configuration_options.presence = 1;
         rsp->protocol_configuration_options.data = pco_buf;
@@ -155,8 +155,10 @@ ogs_pkbuf_t *smf_s5c_build_delete_session_response(
     /* Recovery */
 
     /* PCO */
-    if (sess->ue_pco.presence && sess->ue_pco.len && sess->ue_pco.data) {
-        pco_len = smf_pco_build(pco_buf, &sess->ue_pco);
+    if (sess->gtp.ue_pco.presence &&
+            sess->gtp.ue_pco.len && sess->gtp.ue_pco.data) {
+        pco_len = smf_pco_build(
+                pco_buf, sess->gtp.ue_pco.data, sess->gtp.ue_pco.len);
         ogs_assert(pco_len > 0);
         rsp->protocol_configuration_options.presence = 1;
         rsp->protocol_configuration_options.data = pco_buf;
@@ -366,170 +368,4 @@ ogs_pkbuf_t *smf_s5c_build_delete_bearer_request(
 
     gtp_message.h.type = type;
     return ogs_gtp_build_msg(&gtp_message);
-}
-
-static int16_t smf_pco_build(uint8_t *pco_buf, ogs_gtp_tlv_pco_t *tlv_pco)
-{
-    int rv;
-    ogs_pco_t ue, smf;
-    ogs_pco_ipcp_t pco_ipcp;
-    ogs_ipsubnet_t dns_primary, dns_secondary, dns6_primary, dns6_secondary;
-    ogs_ipsubnet_t p_cscf, p_cscf6;
-    int size = 0;
-    int i = 0;
-    uint16_t mtu = 0;
-
-    ogs_assert(pco_buf);
-    ogs_assert(tlv_pco);
-
-    size = ogs_pco_parse(&ue, tlv_pco->data, tlv_pco->len);
-    ogs_assert(size);
-
-    memset(&smf, 0, sizeof(ogs_pco_t));
-    smf.ext = ue.ext;
-    smf.configuration_protocol = ue.configuration_protocol;
-
-    for (i = 0; i < ue.num_of_id; i++) {
-        uint8_t *data = ue.ids[i].data;
-        switch(ue.ids[i].id) {
-        case OGS_PCO_ID_CHALLENGE_HANDSHAKE_AUTHENTICATION_PROTOCOL:
-            if (data[0] == 2) { /* Code : Response */
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = 4;
-                smf.ids[smf.num_of_id].data =
-                    (uint8_t *)"\x03\x00\x00\x04"; /* Code : Success */
-                smf.num_of_id++;
-            }
-            break;
-        case OGS_PCO_ID_INTERNET_PROTOCOL_CONTROL_PROTOCOL:
-            if (data[0] == 1) { /* Code : Configuration Request */
-                uint16_t len = 0;
-
-                ogs_assert(smf_self()->dns[0] || smf_self()->dns[1]);
-
-                memset(&pco_ipcp, 0, sizeof(ogs_pco_ipcp_t));
-                pco_ipcp.code = 2; /* Code : Configuration Ack */
-                pco_ipcp.len = htobe16(len);
-
-                len = 4;
-                /* Primary DNS Server IP Address */
-                if (smf_self()->dns[0]) {
-                    rv = ogs_ipsubnet(
-                            &dns_primary, smf_self()->dns[0], NULL);
-                    ogs_assert(rv == OGS_OK);
-                    pco_ipcp.options[0].type = 129; 
-                    pco_ipcp.options[0].len = 6; 
-                    pco_ipcp.options[0].addr = dns_primary.sub[0];
-                    len += 6;
-                }
-
-                /* Secondary DNS Server IP Address */
-                if (smf_self()->dns[1]) {
-                    rv = ogs_ipsubnet(
-                            &dns_secondary, smf_self()->dns[1], NULL);
-                    ogs_assert(rv == OGS_OK);
-                    pco_ipcp.options[1].type = 131; 
-                    pco_ipcp.options[1].len = 6; 
-                    pco_ipcp.options[1].addr = dns_secondary.sub[0];
-                    len += 6;
-                }
-
-                pco_ipcp.len = htobe16(len);
-
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = len;
-                smf.ids[smf.num_of_id].data = (uint8_t *)&pco_ipcp;
-
-                smf.num_of_id++;
-            }
-            break;
-        case OGS_PCO_ID_DNS_SERVER_IPV4_ADDRESS_REQUEST:
-            if (smf_self()->dns[0]) {
-                rv = ogs_ipsubnet(
-                        &dns_primary, smf_self()->dns[0], NULL);
-                ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV4_LEN;
-                smf.ids[smf.num_of_id].data = dns_primary.sub;
-                smf.num_of_id++;
-            }
-
-            if (smf_self()->dns[1]) {
-                rv = ogs_ipsubnet(
-                        &dns_secondary, smf_self()->dns[1], NULL);
-                ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV4_LEN;
-                smf.ids[smf.num_of_id].data = dns_secondary.sub;
-                smf.num_of_id++;
-            }
-            break;
-        case OGS_PCO_ID_DNS_SERVER_IPV6_ADDRESS_REQUEST:
-            if (smf_self()->dns6[0]) {
-                rv = ogs_ipsubnet(
-                        &dns6_primary, smf_self()->dns6[0], NULL);
-                ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV6_LEN;
-                smf.ids[smf.num_of_id].data = dns6_primary.sub;
-                smf.num_of_id++;
-            }
-
-            if (smf_self()->dns6[1]) {
-                rv = ogs_ipsubnet(
-                        &dns6_secondary, smf_self()->dns6[1], NULL);
-                ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV6_LEN;
-                smf.ids[smf.num_of_id].data = dns6_secondary.sub;
-                smf.num_of_id++;
-            }
-            break;
-        case OGS_PCO_ID_P_CSCF_IPV4_ADDRESS_REQUEST:
-            if (smf_self()->num_of_p_cscf) {
-                rv = ogs_ipsubnet(&p_cscf,
-                    smf_self()->p_cscf[smf_self()->p_cscf_index], NULL);
-                ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV4_LEN;
-                smf.ids[smf.num_of_id].data = p_cscf.sub;
-                smf.num_of_id++;
-
-                smf_self()->p_cscf_index++;
-                smf_self()->p_cscf_index %= smf_self()->num_of_p_cscf;
-            }
-            break;
-        case OGS_PCO_ID_P_CSCF_IPV6_ADDRESS_REQUEST:
-            if (smf_self()->num_of_p_cscf6) {
-                rv = ogs_ipsubnet(&p_cscf6,
-                    smf_self()->p_cscf6[smf_self()->p_cscf6_index], NULL);
-                ogs_assert(rv == OGS_OK);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = OGS_IPV6_LEN;
-                smf.ids[smf.num_of_id].data = p_cscf6.sub;
-                smf.num_of_id++;
-
-                smf_self()->p_cscf6_index++;
-                smf_self()->p_cscf6_index %= smf_self()->num_of_p_cscf6;
-            }
-            break;
-        case OGS_PCO_ID_IP_ADDRESS_ALLOCATION_VIA_NAS_SIGNALLING:
-            /* TODO */
-            break;
-        case OGS_PCO_ID_IPV4_LINK_MTU_REQUEST:
-            if (smf_self()->mtu) {
-                mtu = htons(smf_self()->mtu);
-                smf.ids[smf.num_of_id].id = ue.ids[i].id;
-                smf.ids[smf.num_of_id].len = sizeof(uint16_t);
-                smf.ids[smf.num_of_id].data = &mtu;
-                smf.num_of_id++;
-            }
-            break;
-        default:
-            ogs_warn("Unknown PCO ID:(0x%x)", ue.ids[i].id);
-        }
-    }
-
-    size = ogs_pco_build(pco_buf, OGS_MAX_PCO_LEN, &smf);
-    return size;
 }

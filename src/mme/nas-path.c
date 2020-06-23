@@ -185,7 +185,7 @@ void nas_eps_send_authentication_request(
         ogs_expect_or_return(emmbuf);
     } else {
         ogs_assert(e_utran_vector);
-        emmbuf = emm_build_authentication_request(e_utran_vector);
+        emmbuf = emm_build_authentication_request(mme_ue, e_utran_vector);
         ogs_expect_or_return(emmbuf);
     }
 

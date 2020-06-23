@@ -217,7 +217,6 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    ogs_pkbuf_free(nasbuf);
 
     /* Receive Initial context setup request */
     recvbuf = testgnb_ngap_read(ngap);

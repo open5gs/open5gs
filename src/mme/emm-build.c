@@ -104,6 +104,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
     attach_accept->presencemask |= OGS_NAS_EPS_ATTACH_ACCEPT_T3423_VALUE_PRESENT;
     attach_accept->t3423_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_DECI_HH;
     attach_accept->t3423_value.value = 9;
+
     attach_accept->presencemask |= 
         OGS_NAS_EPS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     eps_network_feature_support->length = 1;
@@ -181,19 +182,23 @@ ogs_pkbuf_t *emm_build_identity_request(mme_ue_t *mme_ue)
     return ogs_nas_eps_plain_encode(&message);
 }
 
-ogs_pkbuf_t *emm_build_authentication_request(
+ogs_pkbuf_t *emm_build_authentication_request(mme_ue_t *mme_ue,
         ogs_diam_e_utran_vector_t *e_utran_vector)
 {
     ogs_nas_eps_message_t message;
     ogs_nas_eps_authentication_request_t *authentication_request = 
         &message.emm.authentication_request;
 
+    ogs_assert(mme_ue);
     ogs_assert(e_utran_vector);
 
     memset(&message, 0, sizeof(message));
     message.emm.h.protocol_discriminator = OGS_NAS_PROTOCOL_DISCRIMINATOR_EMM;
     message.emm.h.message_type = OGS_NAS_EPS_AUTHENTICATION_REQUEST;
 
+    authentication_request->nas_key_set_identifierasme.tsc = 0;
+    authentication_request->nas_key_set_identifierasme.value =
+        mme_ue->nas_eps.ksi;
     memcpy(authentication_request->authentication_parameter_rand.rand,
             e_utran_vector->rand, OGS_RAND_LEN);
     memcpy(authentication_request->authentication_parameter_autn.autn,
@@ -277,7 +282,8 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
             sizeof(replayed_ue_security_capabilities->uea) +
             sizeof(replayed_ue_security_capabilities->uia) +
             sizeof(replayed_ue_security_capabilities->gea);
-    ogs_debug("    Replayed UE SEC[LEN:%d EEA:0x%x EIA:0x%x UEA:0x%x UIA:0x%x GEA:0x%x]",
+    ogs_debug("    Replayed UE SEC[LEN:%d EEA:0x%x EIA:0x%x UEA:0x%x "
+            "UIA:0x%x GEA:0x%x]",
             replayed_ue_security_capabilities->length,
             replayed_ue_security_capabilities->eea,
             replayed_ue_security_capabilities->eia,
