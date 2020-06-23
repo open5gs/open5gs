@@ -1285,9 +1285,16 @@ static ogs_pfcp_subnet_t *find_subnet(int family, const char *apn)
         }
     }
 
-    if (subnet == NULL)
-        ogs_error("CHECK CONFIGURATION: Cannot find PDN[family:%d, apn:%s]",
+    if (subnet == NULL) {
+        ogs_error("CHECK CONFIGURATION: Cannot find subnet [family:%d, apn:%s]",
                 family, apn);
+        ogs_error("smf");
+        ogs_error("    pdn:");
+        if (family == AF_INET)
+            ogs_error("     - addr: 10.45.0.1/16");
+        else if (family == AF_INET6)
+            ogs_error("     - addr: cafe:1::1/64");
+    }
 
     return subnet;
 }
