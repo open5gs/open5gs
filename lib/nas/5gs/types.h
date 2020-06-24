@@ -307,8 +307,8 @@ ED3(uint8_t type:4;,
 typedef struct ogs_nas_additional_5g_security_information_s {
     uint8_t length;
 ED3(uint8_t spare:6;,
-    uint8_t rinmr:1;,
-    uint8_t hdr:1;)
+    uint8_t retransmission_of_initial_nas_message_request:1;,
+    uint8_t horizontal_derivation_parameter:1;)
 } __attribute__ ((packed)) ogs_nas_additional_5g_security_information_t;
 
 /* 9.11.3.12A Additional information requested
@@ -452,6 +452,10 @@ typedef struct ogs_nas_nssai_s {
     char buffer[OGS_NAS_MAX_NSSAI_LEN];
 } __attribute__ ((packed)) ogs_nas_nssai_t;
 
+void ogs_nas_build_nssai(ogs_nas_nssai_t *nas_nssai,
+        ogs_s_nssai_t *s_nssai, int num_of_s_nssai);
+int ogs_nas_parse_nssai(ogs_s_nssai_t *s_nssai, ogs_nas_nssai_t *nas_nssai);
+
 /* 9.11.3.37A NSSAI inclusion mode
  * O TV 1 */
 #define OGS_NAS_NSSAI_INCLUSION_MODE_A 0
@@ -570,8 +574,8 @@ typedef ogs_nas_ue_security_capability_t ogs_nas_s1_ue_security_capability_t;
  * O TLV 3 */
 typedef struct ogs_nas_ue_usage_setting_s {
     uint8_t length;
-ED2(uint8_t spare:6;,
-    uint8_t value:2;)
+ED2(uint8_t spare:7;,
+    uint8_t data_centric:1;)
 } __attribute__ ((packed)) ogs_nas_ue_usage_setting_t;
 
 /* 9.11.3.56 UE status

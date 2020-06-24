@@ -183,9 +183,9 @@ static void test1_func(abts_case *tc, void *data)
     bson_destroy(doc);
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(&test_ue, false);
+    gmmbuf = testgmm_build_registration_request(&test_ue);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf);
+    sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, false);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -240,7 +240,7 @@ static void test1_func(abts_case *tc, void *data)
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
     bson_destroy(doc);
 
     mongoc_collection_destroy(collection);

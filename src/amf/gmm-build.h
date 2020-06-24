@@ -26,7 +26,8 @@
 extern "C" {
 #endif
 
-ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue);
+ogs_pkbuf_t *gmm_build_registration_accept(
+        amf_ue_t *amf_ue, bool reactivation_result);
 ogs_pkbuf_t *gmm_build_registration_reject(ogs_nas_5gmm_cause_t gmm_cause);
 
 ogs_pkbuf_t *gmm_build_identity_request(amf_ue_t *amf_ue);
@@ -42,7 +43,8 @@ ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
         uint8_t payload_container_type, ogs_pkbuf_t *payload,
         ogs_nas_5gmm_cause_t cause, uint8_t backoff_time);
 
-ogs_pkbuf_t *gmm_build_service_accept(amf_ue_t *amf_ue);
+ogs_pkbuf_t *gmm_build_service_accept(
+        amf_ue_t *amf_ue, bool reactivation_result);
 
 ogs_pkbuf_t *gmm_build_service_reject(amf_ue_t *amf_ue,
         ogs_nas_5gmm_cause_t gmm_cause, bool pdu_session_status_present);

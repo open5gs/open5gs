@@ -993,10 +993,13 @@ void ngap_handle_ue_context_release_request(
     int i;
     char buf[OGS_ADDRSTRLEN];
     uint64_t amf_ue_ngap_id;
-    bool handled = false;
+    bool handled;
 
     ran_ue_t *ran_ue = NULL;
     amf_ue_t *amf_ue = NULL;
+    amf_sess_t *sess = NULL;
+
+    amf_nsmf_pdu_session_update_sm_context_param_t param;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_UEContextReleaseRequest_t *UEContextReleaseRequest = NULL;
@@ -1100,16 +1103,39 @@ void ngap_handle_ue_context_release_request(
         return;
     }
 
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+    }
+
+    handled = false;
+
     if (!PDUSessionList) {
-        ogs_error("No PDUSessionResourceListCxtRelReq");
-        ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
-                NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if (sess->smfUpCnxState != OpenAPI_up_cnx_state_DEACTIVATED) {
+                /* UPDATE_UpCnxState - DEACTIVATED */
+                sess->ueUpCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
+
+                memset(&param, 0, sizeof(param));
+                param.upCnxState = sess->ueUpCnxState;
+                param.ngApCause.group = Cause->present;
+                param.ngApCause.value = (int)Cause->choice.radioNetwork;
+                amf_sess_sbi_discover_and_send(
+                        OpenAPI_nf_type_SMF, sess, &param,
+                        amf_nsmf_pdu_session_build_update_sm_context);
+
+                handled = true;
+            }
+        }
+
+        if (!handled) {
+            ngap_send_ue_context_release_command(ran_ue,
+                    NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                    NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+        }
+
         return;
     }
 
     for (i = 0; i < PDUSessionList->list.count; i++) {
-        amf_sess_t *sess = NULL;
         PDUSessionItem = (NGAP_PDUSessionResourceItemCxtRelReq_t *)
             PDUSessionList->list.array[i];
 
@@ -1138,11 +1164,10 @@ void ngap_handle_ue_context_release_request(
             return;
         }
 
-        /* UPDATE_UpCnxState - DEACTIVATED */
-        sess->ueUpCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
+        if (sess->smfUpCnxState != OpenAPI_up_cnx_state_DEACTIVATED) {
 
-        if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
-            amf_nsmf_pdu_session_update_sm_context_param_t param;
+            /* UPDATE_UpCnxState - DEACTIVATED */
+            sess->ueUpCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
 
             memset(&param, 0, sizeof(param));
             param.upCnxState = sess->ueUpCnxState;

@@ -24,9 +24,12 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
 
-ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
+static uint16_t get_pdu_session_status(amf_ue_t *amf_ue, bool reactivation);
+
+ogs_pkbuf_t *gmm_build_registration_accept(
+        amf_ue_t *amf_ue, bool reactivation_result)
 {
-    int i, j;
+    int i;
     int served_tai_index = 0;
     ogs_pkbuf_t *pkbuf = NULL;
 
@@ -41,6 +44,8 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     ogs_nas_nssai_t *allowed_nssai = &registration_accept->allowed_nssai;
     ogs_nas_5gs_network_feature_support_t *network_feature_support =
         &registration_accept->network_feature_support;
+    ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result =
+        &registration_accept->pdu_session_reactivation_result;
     ogs_nas_gprs_timer_3_t *t3512_value = &registration_accept->t3512_value;
 
     ogs_assert(amf_ue);
@@ -95,6 +100,8 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
             &amf_self()->served_tai[served_tai_index].list2);
 
     /* Set Allowed NSSAI */
+    allowed_nssai->length = 0;
+
     for (i = 0; i < amf_self()->num_of_plmn_support; i++) {
         if (memcmp(&amf_ue->tai.plmn_id,
                 &amf_self()->plmn_support[i].plmn_id, OGS_PLMN_ID_LEN) != 0)
@@ -102,30 +109,10 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
 
         ogs_debug("[%s]    NSSAI[PLMN_ID:%06x]", amf_ue->supi,
                 ogs_plmn_id_hexdump(&amf_self()->plmn_support[i].plmn_id));
-        for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
-            ogs_debug("[%s]         [sst:%d, sd:%06x]", amf_ue->supi,
-                    amf_self()->plmn_support[i].s_nssai[j].sst,
-                    amf_self()->plmn_support[i].s_nssai[j].sd.v);
-            if (allowed_nssai->length < OGS_NAS_MAX_NSSAI_LEN) {
-                allowed_nssai->buffer[allowed_nssai->length] = 1;
-                allowed_nssai->length++;
 
-                allowed_nssai->buffer[allowed_nssai->length] =
-                        amf_self()->plmn_support[i].s_nssai[j].sst;
-                allowed_nssai->length++;
-
-                if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
-                        OGS_S_NSSAI_NO_SD_VALUE) {
-                    ogs_uint24_t v;
-
-                    v = ogs_htobe24(amf_self()->plmn_support[i].s_nssai[j].sd);
-                    memcpy(allowed_nssai->buffer+allowed_nssai->length, &v, 3);
-
-                    allowed_nssai->length += 3;
-                    allowed_nssai->buffer[allowed_nssai->length-5] += 3;
-                }
-            }
-        }
+        ogs_nas_build_nssai(allowed_nssai,
+            amf_self()->plmn_support[i].s_nssai,
+            amf_self()->plmn_support[i].num_of_s_nssai);
     }
 
     if (allowed_nssai->length) {
@@ -151,6 +138,14 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     registration_accept->t3502_value.unit = OGS_NAS_GRPS_TIMER_UNIT_MULTIPLES_OF_1_MM;
     registration_accept->t3502_value.value = 12;
 #endif
+
+    if (reactivation_result) {
+        registration_accept->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_PRESENT;
+        pdu_session_reactivation_result->length = 2;
+        pdu_session_reactivation_result->psi =
+            get_pdu_session_status(amf_ue, true);
+    }
 
     pkbuf = nas_5gs_security_encode(amf_ue, &message);
 
@@ -312,6 +307,8 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     security_mode_command->presencemask |=
         OGS_NAS_5GS_SECURITY_MODE_COMMAND_ADDITIONAL_5G_SECURITY_INFORMATION_PRESENT;
     additional_security_information->length = 1;
+    additional_security_information->
+        retransmission_of_initial_nas_message_request = 1;
 
     if (amf_ue->selected_int_algorithm == OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
         ogs_error("Encrypt[0x%x] can be skipped with NEA0, "
@@ -493,32 +490,8 @@ ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
     return gmmbuf;
 }
 
-static uint16_t get_pdu_session_status(amf_ue_t *amf_ue, bool reactivation)
-{
-    amf_sess_t *sess = NULL;
-
-    uint16_t psimask = 0;
-    uint16_t status = 0;
-
-    ogs_assert(amf_ue);
-
-    ogs_list_for_each(&amf_ue->sess_list, sess) {
-        if (reactivation) {
-            if (sess->smfUpCnxState != OpenAPI_up_cnx_state_ACTIVATING)
-                psimask |= (1 << sess->psi);
-        } else {
-            if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATING)
-                psimask |= (1 << sess->psi);
-        }
-    }
-
-    status |= (psimask << 8);
-    status |= (psimask >> 8);
-
-    return status;
-}
-
-ogs_pkbuf_t *gmm_build_service_accept(amf_ue_t *amf_ue)
+ogs_pkbuf_t *gmm_build_service_accept(
+        amf_ue_t *amf_ue, bool reactivation_result)
 {
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_service_accept_t *service_accept = &message.gmm.service_accept;
@@ -542,7 +515,7 @@ ogs_pkbuf_t *gmm_build_service_accept(amf_ue_t *amf_ue)
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_SERVICE_ACCEPT;
 
-    if (SESSION_CONTEXT_IS_AVAILABLE(amf_ue)) {
+    if (reactivation_result) {
         service_accept->presencemask |=
             OGS_NAS_5GS_SERVICE_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_PRESENT;
         pdu_session_reactivation_result->length = 2;
@@ -564,7 +537,7 @@ ogs_pkbuf_t *gmm_build_service_reject(amf_ue_t *amf_ue,
 
     pdu_session_status = &service_reject->pdu_session_status;
 
-    ogs_debug("[%s] Service reject", amf_ue->supi);
+    ogs_debug("Service reject");
 
     memset(&message, 0, sizeof(message));
     message.gmm.h.extended_protocol_discriminator =
@@ -805,4 +778,29 @@ ogs_pkbuf_t *gmm_build_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause)
     *gmm_cause = cause;
 
     return nas_5gs_security_encode(amf_ue, &message);
+}
+
+static uint16_t get_pdu_session_status(amf_ue_t *amf_ue, bool reactivation)
+{
+    amf_sess_t *sess = NULL;
+
+    uint16_t psimask = 0;
+    uint16_t status = 0;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (reactivation) {
+            if (sess->smfUpCnxState != OpenAPI_up_cnx_state_ACTIVATING)
+                psimask |= (1 << sess->psi);
+        } else {
+            if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATING)
+                psimask |= (1 << sess->psi);
+        }
+    }
+
+    status |= (psimask << 8);
+    status |= (psimask >> 8);
+
+    return status;
 }

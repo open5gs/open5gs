@@ -63,13 +63,14 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
     return OGS_OK;
 }
 
-void nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
+void nas_5gs_send_registration_accept(
+        amf_ue_t *amf_ue, bool reactivation_result)
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    gmmbuf = gmm_build_registration_accept(amf_ue);
+    gmmbuf = gmm_build_registration_accept(amf_ue, reactivation_result);
     ogs_expect_or_return(gmmbuf);
 
     ngapbuf = ngap_build_initial_context_setup_request(amf_ue, gmmbuf);
@@ -364,7 +365,8 @@ void nas_5gs_send_back_5gsm_message_from_sbi(amf_sess_t *sess, int status)
     nas_5gs_send_back_5gsm_message(sess, gmm_cause_from_sbi(status));
 }
 
-void nas_5gs_send_service_accept(amf_ue_t *amf_ue)
+void nas_5gs_send_service_accept(
+        amf_ue_t *amf_ue, bool reactivation_result)
 {
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
@@ -372,7 +374,7 @@ void nas_5gs_send_service_accept(amf_ue_t *amf_ue)
 
     ogs_assert(amf_ue);
 
-    gmmbuf = gmm_build_service_accept(amf_ue);
+    gmmbuf = gmm_build_service_accept(amf_ue, reactivation_result);
     ogs_expect_or_return(gmmbuf);
 
     ngapbuf = ngap_build_initial_context_setup_request(amf_ue, gmmbuf);

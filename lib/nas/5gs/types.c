@@ -108,6 +108,83 @@ void ogs_nas_bitrate_from_uint64(ogs_nas_bitrate_t *nas, uint64_t bitrate)
     nas->bitrate = bitrate;
 }
 
+
+void ogs_nas_build_nssai(ogs_nas_nssai_t *nas_nssai,
+        ogs_s_nssai_t *s_nssai, int num_of_s_nssai)
+{
+    int i;
+    ogs_s_nssai_t target;
+
+    ogs_assert(nas_nssai);
+    ogs_assert(s_nssai);
+    ogs_assert(num_of_s_nssai);
+
+    for (i = 0; i < num_of_s_nssai; i++) {
+        if (nas_nssai->length < OGS_NAS_MAX_NSSAI_LEN) {
+            memcpy(&target, s_nssai + i, sizeof(ogs_s_nssai_t));
+
+            nas_nssai->buffer[nas_nssai->length] = 1;
+            nas_nssai->length++;
+
+            nas_nssai->buffer[nas_nssai->length] = target.sst;
+            nas_nssai->length++;
+
+            if (target.sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
+                ogs_uint24_t v;
+
+                v = ogs_htobe24(target.sd);
+                memcpy(nas_nssai->buffer+nas_nssai->length, &v, 3);
+
+                nas_nssai->length += 3;
+                nas_nssai->buffer[nas_nssai->length-5] += 3;
+            }
+        }
+    }
+}
+
+int ogs_nas_parse_nssai(ogs_s_nssai_t *s_nssai, ogs_nas_nssai_t *nas_nssai)
+{
+    int num_of_s_nssai = 0;
+    ogs_s_nssai_t *iter = NULL;
+    int pos = 0, len;
+
+    ogs_assert(nas_nssai);
+    ogs_assert(s_nssai);
+
+    if (!nas_nssai->buffer || !nas_nssai->length) {
+        ogs_error("No NSSAI [%p:%d]", nas_nssai->buffer, nas_nssai->length);
+        return OGS_ERROR;
+    }
+
+    while (pos < nas_nssai->length &&
+            num_of_s_nssai < OGS_MAX_NUM_OF_S_NSSAI) {
+
+        iter = s_nssai + num_of_s_nssai;
+        ogs_assert(iter);
+
+        len = nas_nssai->buffer[pos++];
+        if (len == 1) {
+            iter->sst = nas_nssai->buffer[pos++];
+            iter->sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+        } else if (len == 4) {
+            ogs_uint24_t v;
+            iter->sst = nas_nssai->buffer[pos++];
+            memcpy(&v, nas_nssai->buffer+pos, 3);
+            pos += 3;
+            iter->sd = ogs_htobe24(v);
+        } else {
+            ogs_error("Cannot parse NSSAI [%d]", nas_nssai->length);
+            ogs_log_hexdump(OGS_LOG_ERROR,
+                    (uint8_t *)nas_nssai->buffer, nas_nssai->length);
+            return 0;
+        }
+
+        num_of_s_nssai++;
+    }
+
+    return num_of_s_nssai;
+}
+
 void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         ogs_nas_qos_rule_t *rule, int num_of_rule)
 {

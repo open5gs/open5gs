@@ -218,10 +218,10 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
             if (SESSION_UP_CNX_STATE_SYNCHED(amf_ue)) {
                 switch(amf_ue->nas.message_type) {
                 case OGS_NAS_5GS_REGISTRATION_REQUEST:
-                    nas_5gs_send_registration_accept(amf_ue);
+                    nas_5gs_send_registration_accept(amf_ue, true);
                     break;
                 case OGS_NAS_5GS_SERVICE_REQUEST:
-                    nas_5gs_send_service_accept(amf_ue);
+                    nas_5gs_send_service_accept(amf_ue, true);
                     break;
                 default:
                     ogs_error("Unknown message type [%d]",

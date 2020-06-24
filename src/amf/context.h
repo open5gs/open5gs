@@ -217,7 +217,7 @@ struct amf_ue_s {
     ogs_fsm_t sm;
 
     struct {
-        uint8_t message_type; /* Type of last NAS message received */
+        uint8_t message_type; /* Type of last specific NAS message received */
         int access_type; /* 3GPP or Non-3GPP */
 
         union {
@@ -256,6 +256,10 @@ struct amf_ue_s {
     ogs_5gs_tai_t   tai;
     ogs_nr_cgi_t    cgi;
     ogs_plmn_id_t   last_visited_plmn_id;
+    ogs_nas_ue_usage_setting_t ue_usage_setting;
+
+    int num_of_requested_nssai;
+    ogs_s_nssai_t   requested_nssai[OGS_MAX_NUM_OF_S_NSSAI];
 
     /* 5GMM Capability */
     struct {

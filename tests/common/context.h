@@ -59,6 +59,36 @@ typedef struct test_context_s {
 
 typedef struct test_sess_s test_sess_t;
 
+typedef struct test_registration_request_type_s {
+    union {
+        struct {
+        ED7(uint8_t integrity_protected:1;,
+            uint8_t guti:1;,
+            uint8_t requested_nssai:1;,
+            uint8_t last_visited_registered_tai:1;,
+            uint8_t ue_usage_setting:1;,
+            uint8_t uplink_data_status:1;,
+            uint8_t reserved:2;)
+        };
+        uint8_t value;
+    };
+} __attribute__ ((packed)) test_registration_request_type_t;
+
+typedef struct test_service_request_type_s {
+    union {
+        struct {
+        ED5(uint8_t integrity_protected:1;,
+            uint8_t pdu_session_status:1;,
+            uint8_t uplink_data_status:1;,
+            uint8_t allowed_pdu_session_status:1;,
+            uint8_t reserved:4;)
+        };
+        uint8_t value;
+    };
+    uint8_t service_type;
+    uint16_t psimask;
+} __attribute__ ((packed)) test_service_request_type_t;
+
 typedef struct test_ue_s {
     uint32_t ran_ue_ngap_id; /* eNB-UE-NGAP-ID received from eNB */
     uint64_t amf_ue_ngap_id; /* AMF-UE-NGAP-ID received from AMF */
@@ -81,7 +111,6 @@ typedef struct test_ue_s {
     uint8_t kamf[OGS_SHA256_DIGEST_SIZE];
 
     struct {
-        uint8_t message_type; /* Type of last NAS message received */
         int access_type; /* 3GPP or Non-3GPP */
 
         union {
@@ -129,6 +158,8 @@ typedef struct test_ue_s {
     int             security_context_available;
     int             mac_failed;
 
+    test_registration_request_type_t registration_request_type;
+    test_service_request_type_t service_request_type;
     uint8_t         gmm_message_type; /* Last received 5GMM message type */
 
     test_sess_t *sess;

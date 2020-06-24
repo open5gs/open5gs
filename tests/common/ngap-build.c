@@ -156,7 +156,7 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id)
 }
 
 ogs_pkbuf_t *testngap_build_initial_ue_message(
-        test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf)
+        test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf, bool s_tmsi)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     int i, j;
@@ -254,7 +254,7 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
 
     *RRCEstablishmentCause = NGAP_RRCEstablishmentCause_mo_Signalling;
 
-    if (test_ue->nas_guti.m_tmsi) {
+    if (s_tmsi) {
         NGAP_AMFSetID_t *aMFSetID = NULL;
         NGAP_AMFPointer_t *aMFPointer = NULL;
         NGAP_FiveG_TMSI_t *fiveG_TMSI = NULL;
@@ -616,7 +616,7 @@ ogs_pkbuf_t *testngap_build_ue_radio_capability_info_indication(
 }
 
 ogs_pkbuf_t *testngap_build_ue_context_release_request(test_ue_t *test_ue,
-        NGAP_Cause_PR group, long cause)
+        NGAP_Cause_PR group, long cause, bool pdu_session)
 {
     int rv;
     test_sess_t *sess = NULL;
@@ -666,15 +666,28 @@ ogs_pkbuf_t *testngap_build_ue_context_release_request(test_ue_t *test_ue,
 
     RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
 
-    ie = CALLOC(1, sizeof(NGAP_UEContextReleaseRequest_IEs_t));
-    ASN_SEQUENCE_ADD(&UEContextReleaseRequest->protocolIEs, ie);
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
 
-    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceListCxtRelReq;
-    ie->criticality = NGAP_Criticality_reject;
-    ie->value.present =
-    NGAP_UEContextReleaseRequest_IEs__value_PR_PDUSessionResourceListCxtRelReq;
+    if (pdu_session) {
+        ie = CALLOC(1, sizeof(NGAP_UEContextReleaseRequest_IEs_t));
+        ASN_SEQUENCE_ADD(&UEContextReleaseRequest->protocolIEs, ie);
 
-    PDUSessionList = &ie->value.choice.PDUSessionResourceListCxtRelReq;
+        ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceListCxtRelReq;
+        ie->criticality = NGAP_Criticality_reject;
+        ie->value.present = NGAP_UEContextReleaseRequest_IEs__value_PR_PDUSessionResourceListCxtRelReq;
+
+        PDUSessionList = &ie->value.choice.PDUSessionResourceListCxtRelReq;
+
+        PDUSessionItem =
+            CALLOC(1, sizeof(struct NGAP_PDUSessionResourceSetupItemSURes));
+        ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
+
+        sess = test_ue->sess;
+        ogs_assert(sess);
+
+        PDUSessionItem->pDUSessionID = sess->psi;
+    }
 
     ie = CALLOC(1, sizeof(NGAP_UEContextReleaseRequest_IEs_t));
     ASN_SEQUENCE_ADD(&UEContextReleaseRequest->protocolIEs, ie);
@@ -684,18 +697,6 @@ ogs_pkbuf_t *testngap_build_ue_context_release_request(test_ue_t *test_ue,
     ie->value.present = NGAP_UEContextReleaseRequest_IEs__value_PR_Cause;
 
     Cause = &ie->value.choice.Cause;
-
-    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
-    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
-
-    PDUSessionItem =
-        CALLOC(1, sizeof(struct NGAP_PDUSessionResourceSetupItemSURes));
-    ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
-
-    sess = test_ue->sess;
-    ogs_assert(sess);
-
-    PDUSessionItem->pDUSessionID = sess->psi;
 
     Cause->present = group;
     Cause->choice.radioNetwork = cause;

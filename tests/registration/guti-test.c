@@ -183,9 +183,30 @@ static void test1_func(abts_case *tc, void *data)
     bson_destroy(doc);
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(&test_ue, false);
+    test_ue.registration_request_type.guti = 1;
+    gmmbuf = testgmm_build_registration_request(&test_ue);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf);
+
+    test_ue.registration_request_type.requested_nssai = 1;
+    test_ue.registration_request_type.last_visited_registered_tai = 1;
+    test_ue.registration_request_type.ue_usage_setting = 1;
+    nasbuf = testgmm_build_registration_request(&test_ue);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, false);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    /* Receive Identity request */
+    recvbuf = testgnb_ngap_read(ngap);
+    ABTS_PTR_NOTNULL(tc, recvbuf);
+    testngap_recv(&test_ue, recvbuf);
+
+    /* Send Identity response */
+    gmmbuf = testgmm_build_identity_response(&test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -209,7 +230,7 @@ static void test1_func(abts_case *tc, void *data)
     testngap_recv(&test_ue, recvbuf);
 
     /* Send Security mode complete */
-    gmmbuf = testgmm_build_security_mode_complete(&test_ue, NULL);
+    gmmbuf = testgmm_build_security_mode_complete(&test_ue, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -301,9 +322,11 @@ static void test1_func(abts_case *tc, void *data)
     ogs_msleep(50);
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(&test_ue, true);
+    test_ue.registration_request_type.integrity_protected = 1;
+    test_ue.registration_request_type.uplink_data_status = 1;
+    gmmbuf = testgmm_build_registration_request(&test_ue);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf);
+    sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -341,9 +364,15 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Registration request - INVALID_GUTI */
     test_ue.nas_guti.m_tmsi = 0x1234;
-    gmmbuf = testgmm_build_registration_request(&test_ue, true);
+    gmmbuf = testgmm_build_registration_request(&test_ue);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf);
+
+    test_ue.registration_request_type.integrity_protected = 0;
+    test_ue.registration_request_type.uplink_data_status = 0;
+    nasbuf = testgmm_build_registration_request(&test_ue);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -380,8 +409,6 @@ static void test1_func(abts_case *tc, void *data)
     testngap_recv(&test_ue, recvbuf);
 
     /* Send Security mode complete */
-    nasbuf = testgmm_build_registration_request(&test_ue, false);
-    ABTS_PTR_NOTNULL(tc, nasbuf);
     gmmbuf = testgmm_build_security_mode_complete(&test_ue, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
@@ -458,7 +485,7 @@ static void test1_func(abts_case *tc, void *data)
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection,
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
     bson_destroy(doc);
 
     mongoc_collection_destroy(collection);

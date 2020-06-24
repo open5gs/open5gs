@@ -29,6 +29,9 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
 
+static int gmm_handle_nas_message_container(amf_ue_t *amf_ue,
+        ogs_nas_message_container_t *nas_message_container);
+
 int gmm_handle_registration_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_registration_request_t *registration_request)
 {
@@ -94,8 +97,8 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     memcpy(&amf_ue->nas.registration, registration_type,
             sizeof(ogs_nas_5gs_registration_type_t));
     amf_ue->nas.message_type = OGS_NAS_5GS_REGISTRATION_REQUEST;
-    ogs_debug("[%s]    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] REGISTRATION[0x%x]",
-            amf_ue->suci, amf_ue->nas.message_type,
+    ogs_debug("    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] REGISTRATION[0x%x]",
+            amf_ue->nas.message_type,
             amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
     /*
      * REGISTRATION_REQUEST
@@ -121,15 +124,15 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
         amf_ue->nhcc = 1;
     }
 
-    ogs_debug("[%s]    OLD TAI[PLMN_ID:%06x,TAC:%d]", amf_ue->suci,
+    ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
-    ogs_debug("[%s]    OLD NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]", amf_ue->suci,
+    ogs_debug("    OLD NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
             ogs_plmn_id_hexdump(&amf_ue->cgi.plmn_id),
             (long long)amf_ue->cgi.cell_id);
-    ogs_debug("[%s]    TAI[PLMN_ID:%06x,TAC:%d]", amf_ue->suci,
+    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&ran_ue->saved.tai.plmn_id),
             ran_ue->saved.tai.tac.v);
-    ogs_debug("[%s]    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]", amf_ue->suci,
+    ogs_debug("    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
             ogs_plmn_id_hexdump(&ran_ue->saved.cgi.plmn_id),
             (long long)ran_ue->saved.cgi.cell_id);
 
@@ -141,26 +144,13 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     served_tai_index = amf_find_served_tai(&amf_ue->tai);
     if (served_tai_index < 0) {
         /* Send Registration Reject */
-        ogs_warn("[%s] Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
-            amf_ue->suci,
+        ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
         nas_5gs_send_registration_reject(amf_ue,
             OGS_5GMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
         return OGS_ERROR;
     }
-    ogs_debug("[%s]    SERVED_TAI_INDEX[%d]", amf_ue->suci, served_tai_index);
-
-    /* Store UE specific information */
-    if (registration_request->presencemask &
-        OGS_NAS_5GS_REGISTRATION_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
-        ogs_nas_5gs_tai_t *last_visited_registered_tai = 
-            &registration_request->last_visited_registered_tai;
-
-        ogs_nas_to_plmn_id(&amf_ue->last_visited_plmn_id,
-            &last_visited_registered_tai->nas_plmn_id);
-        ogs_debug("[%s]    Visited_PLMN_ID:%06x", amf_ue->suci,
-                ogs_plmn_id_hexdump(&amf_ue->last_visited_plmn_id));
-    }
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
 
     if (registration_request->presencemask &
             OGS_NAS_5GS_REGISTRATION_REQUEST_5GMM_CAPABILITY_PRESENT) {
@@ -172,8 +162,7 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
         amf_ue->gmm_capability.ho_attach = gmm_capability->ho_attach;
         amf_ue->gmm_capability.s1_mode = gmm_capability->s1_mode;
             
-        ogs_debug("[%s]    5GMM Capability:[LPP:%d, HO_ATTACH:%d, S1_MODE:%d]",
-            amf_ue->suci,
+        ogs_debug("    5GMM Capability:[LPP:%d, HO_ATTACH:%d, S1_MODE:%d]",
             amf_ue->gmm_capability.lte_positioning_protocol_capability,
             amf_ue->gmm_capability.ho_attach,
             amf_ue->gmm_capability.s1_mode);
@@ -197,8 +186,8 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
 
     if (amf_selected_int_algorithm(amf_ue) ==
             OGS_NAS_SECURITY_ALGORITHMS_NIA0) {
-        ogs_error("[%s] [UE:0x%x:0x%x], NEA0 can be used in Encrypt[0x%x], "
-            "but Integrity[0x%x] cannot be bypassed with NIA0", amf_ue->suci,
+        ogs_error("[UE:0x%x:0x%x], NEA0 can be used in Encrypt[0x%x], "
+            "but Integrity[0x%x] cannot be bypassed with NIA0",
             ue_security_capability->nea, ue_security_capability->nia,
             amf_selected_enc_algorithm(amf_ue), 
             amf_selected_int_algorithm(amf_ue));
@@ -214,46 +203,126 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
         ogs_nas_5gs_registration_request_t *registration_request)
 {
     amf_sess_t *sess = NULL;
-    uint16_t psimask = 0;
     bool handled = false;
 
     amf_nsmf_pdu_session_update_sm_context_param_t param;
+
+    ogs_nas_5gs_tracking_area_identity_t *last_visited_registered_tai = NULL;
     ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
+    ogs_nas_pdu_session_status_t *pdu_session_status = NULL;
 
     ogs_assert(amf_ue);
     ogs_assert(registration_request);
 
+    last_visited_registered_tai =
+        &registration_request->last_visited_registered_tai;
+    ogs_assert(last_visited_registered_tai);
     uplink_data_status = &registration_request->uplink_data_status;
     ogs_assert(uplink_data_status);
+    pdu_session_status = &registration_request->pdu_session_status;
+    ogs_assert(pdu_session_status);
 
-    if ((registration_request->presencemask &
-            OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
-        ogs_error("No Update data status");
-        return OGS_ERROR;
+    if (registration_request->presencemask &
+        OGS_NAS_5GS_REGISTRATION_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
+
+        ogs_nas_to_plmn_id(&amf_ue->last_visited_plmn_id,
+            &last_visited_registered_tai->nas_plmn_id);
     }
 
-    psimask = 0;
-    psimask |= uplink_data_status->psi << 8;
-    psimask |= uplink_data_status->psi >> 8;
+    if (registration_request->presencemask &
+        OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NSSAI_PRESENT) {
+
+        amf_ue->num_of_requested_nssai = ogs_nas_parse_nssai(
+            amf_ue->requested_nssai, &registration_request->requested_nssai);
+    }
+
+    if (registration_request->presencemask &
+        OGS_NAS_5GS_REGISTRATION_REQUEST_UE_USAGE_SETTING_PRESENT) {
+        memcpy(&amf_ue->ue_usage_setting,
+                &registration_request->ue_usage_setting,
+                registration_request->ue_usage_setting.length +
+                sizeof(registration_request->ue_usage_setting.length));
+    }
 
     handled = false;
-    ogs_list_for_each(&amf_ue->sess_list, sess) {
-        if (psimask & (1 << sess->psi)) {
-            /* UPDATE_UpCnxState - UE: ACTIVATING, SMF: DEACTIVATED */
-            sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
-            sess->smfUpCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
 
-            memset(&param, 0, sizeof(param));
-            param.upCnxState = sess->ueUpCnxState;
-            amf_sess_sbi_discover_and_send(
-                    OpenAPI_nf_type_SMF, sess, &param,
-                    amf_nsmf_pdu_session_build_update_sm_context);
-            handled = true;
+    if (registration_request->presencemask &
+            OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT) {
+
+        uint16_t psimask = 0;
+        psimask |= uplink_data_status->psi << 8;
+        psimask |= uplink_data_status->psi >> 8;
+
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if (psimask & (1 << sess->psi)) {
+                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+                    /* Nothing */
+
+                } else if (sess->smfUpCnxState ==
+                        OpenAPI_up_cnx_state_ACTIVATING) {
+                    handled = true;
+
+                } else if (sess->smfUpCnxState ==
+                        OpenAPI_up_cnx_state_DEACTIVATED) {
+                    /* UPDATE_UpCnxState - ACTIVATING */
+                    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+
+                    memset(&param, 0, sizeof(param));
+                    param.upCnxState = sess->ueUpCnxState;
+                    amf_sess_sbi_discover_and_send(
+                            OpenAPI_nf_type_SMF, sess, &param,
+                            amf_nsmf_pdu_session_build_update_sm_context);
+
+                    handled = true;
+                }
+            }
         }
-    }
 
-    if (handled == false) {
-        ogs_error("Cannot find PSI[0x%x]", uplink_data_status->psi);
+        if (!handled) {
+            nas_5gs_send_registration_accept(amf_ue, true);
+            return OGS_OK;
+        }
+
+    } else if (registration_request->presencemask &
+            OGS_NAS_5GS_REGISTRATION_REQUEST_PDU_SESSION_STATUS_PRESENT) {
+        uint16_t psimask = 0;
+        psimask |= pdu_session_status->psi << 8;
+        psimask |= pdu_session_status->psi >> 8;
+
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if (psimask & (1 << sess->psi)) {
+                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+                    /* UPDATE_UpCnxState - ACTIVATING */
+                    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+
+                    memset(&param, 0, sizeof(param));
+                    param.upCnxState = sess->ueUpCnxState;
+                    amf_sess_sbi_discover_and_send(
+                            OpenAPI_nf_type_SMF, sess, &param,
+                            amf_nsmf_pdu_session_build_update_sm_context);
+
+                    handled = true;
+
+                } else {
+                    ogs_error("Not implemented "
+                            "for AMF active in PDU Session Status IE");
+                    nas_5gs_send_registration_reject(amf_ue,
+                        OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
+                    return OGS_ERROR;
+                }
+            }
+        }
+
+        if (!handled) {
+            nas_5gs_send_registration_accept(amf_ue, false);
+            return OGS_OK;
+        }
+
+    } else if (registration_request->presencemask &
+        OGS_NAS_5GS_REGISTRATION_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT) {
+        ogs_error("Not implemented Allowed PDU Session Status IE");
+        nas_5gs_send_registration_reject(amf_ue,
+                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
         return OGS_ERROR;
     }
 
@@ -374,23 +443,18 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
 int gmm_handle_service_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_service_request_t *service_request)
 {
-    amf_sess_t *sess = NULL;
     ogs_nas_key_set_identifier_t *ngksi = NULL;
-    ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
-    uint16_t psimask = 0;
-    bool need_to_activating = false;
 
     ogs_assert(amf_ue);
 
     ngksi = &service_request->ngksi;
     ogs_assert(ngksi);
-    uplink_data_status = &service_request->uplink_data_status;
 
     amf_ue->nas.message_type = OGS_NAS_5GS_SERVICE_REQUEST;
     amf_ue->nas.tsc = ngksi->tsc;
     amf_ue->nas.ksi = ngksi->value;
-    ogs_debug("[%s]    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] SERVICE[0x%x]",
-            amf_ue->suci, amf_ue->nas.message_type,
+    ogs_debug("    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] SERVICE[0x%x]",
+            amf_ue->nas.message_type,
             amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
 
     /*
@@ -429,31 +493,88 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
     }
 
     if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
-        ogs_debug("[%s] No Security Context", amf_ue->supi);
+        ogs_debug("No Security Context");
         nas_5gs_send_service_reject(amf_ue,
             OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK, false);
         return OGS_ERROR;
     }
 
-    if (!SESSION_CONTEXT_IS_AVAILABLE(amf_ue)) {
-        ogs_debug("[%s] No Session Context", amf_ue->supi);
-        nas_5gs_send_service_reject(amf_ue,
-            OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK, false);
-        return OGS_ERROR;
+    if (service_request->presencemask &
+        OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT) {
+
+        return gmm_handle_nas_message_container(
+                amf_ue, &service_request->nas_message_container);
     }
 
-    if ((service_request->presencemask &
-            OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
-        ogs_error("No Update data status");
-        nas_5gs_send_service_reject(amf_ue,
-            OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE, false);
-        return OGS_ERROR;
-    }
+    return gmm_handle_service_update(amf_ue, service_request);
+}
 
-    psimask = 0;
-    psimask |= uplink_data_status->psi << 8;
-    psimask |= uplink_data_status->psi >> 8;
+int gmm_handle_service_update(amf_ue_t *amf_ue,
+        ogs_nas_5gs_service_request_t *service_request)
+{
+    amf_sess_t *sess = NULL;
+    ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
+    ogs_nas_pdu_session_status_t *pdu_session_status = NULL;
+    ogs_nas_allowed_pdu_session_status_t *allowed_pdu_session_status = NULL;
+    amf_nsmf_pdu_session_update_sm_context_param_t param;
+    bool handled;
 
+    ogs_assert(amf_ue);
+
+    uplink_data_status = &service_request->uplink_data_status;
+    ogs_assert(uplink_data_status);
+    pdu_session_status = &service_request->pdu_session_status;
+    ogs_assert(pdu_session_status);
+    allowed_pdu_session_status = &service_request->allowed_pdu_session_status;
+    ogs_assert(allowed_pdu_session_status);
+
+    handled = false;
+
+    if (service_request->presencemask &
+            OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT) {
+
+        uint16_t psimask = 0;
+        psimask |= uplink_data_status->psi << 8;
+        psimask |= uplink_data_status->psi >> 8;
+
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if (psimask & (1 << sess->psi)) {
+                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+                    /* Nothing */
+
+                } else if (sess->smfUpCnxState ==
+                        OpenAPI_up_cnx_state_ACTIVATING) {
+                    handled = true;
+
+                } else if (sess->smfUpCnxState ==
+                        OpenAPI_up_cnx_state_DEACTIVATED) {
+                    /* UPDATE_UpCnxState - ACTIVATING */
+                    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+
+                    memset(&param, 0, sizeof(param));
+                    param.upCnxState = sess->ueUpCnxState;
+                    amf_sess_sbi_discover_and_send(
+                            OpenAPI_nf_type_SMF, sess, &param,
+                            amf_nsmf_pdu_session_build_update_sm_context);
+
+                    handled = true;
+                }
+            }
+        }
+
+        if (!handled) {
+            nas_5gs_send_service_accept(amf_ue, true);
+            return OGS_OK;
+        }
+
+    } else if (service_request->presencemask &
+            OGS_NAS_5GS_SERVICE_REQUEST_PDU_SESSION_STATUS_PRESENT) {
+        uint16_t psimask = 0;
+        psimask |= pdu_session_status->psi << 8;
+        psimask |= pdu_session_status->psi >> 8;
+
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if (psimask & (1 << sess->psi)) {
     /*
      * TS24.501
      * 5.6.1.5 Service request procedure not accepted by the network
@@ -469,42 +590,48 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
      * on the UE side associated with the access type the SERVICE REJECT
      * message is sent over, but are indicated by the AMF as being inactive.
      */
-    need_to_activating = false;
-    ogs_list_for_each(&amf_ue->sess_list, sess) {
-        if (psimask & (1 << sess->psi)) {
-            if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
-                need_to_activating = true;
-
-            } else if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
-                nas_5gs_send_service_reject(amf_ue,
-                    OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
-                    true);
-                return OGS_ERROR;
-
-            } else if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATING) {
-                ogs_warn("Service request has already been received");
-                /* Ignore */
-            }
-        }
-    }
-
-    if (need_to_activating) {
-        ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if (psimask & (1 << sess->psi)) {
                 if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
-                    amf_nsmf_pdu_session_update_sm_context_param_t param;
-
                     /* UPDATE_UpCnxState - ACTIVATING */
                     sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
 
                     memset(&param, 0, sizeof(param));
-                    param.upCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+                    param.upCnxState = sess->ueUpCnxState;
                     amf_sess_sbi_discover_and_send(
                             OpenAPI_nf_type_SMF, sess, &param,
                             amf_nsmf_pdu_session_build_update_sm_context);
+
+                    handled = true;
+
+                } else {
+                    ogs_error("Not implemented "
+                            "for AMF active in PDU Session Status IE");
+                    nas_5gs_send_service_reject(amf_ue,
+                            OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
+                            true);
+                    return OGS_ERROR;
                 }
             }
         }
+
+        if (!handled) {
+            nas_5gs_send_service_accept(amf_ue, false);
+            return OGS_OK;
+        }
+
+    } else if (service_request->presencemask &
+            OGS_NAS_5GS_SERVICE_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT) {
+        ogs_error("Not implemented Allowed PDU Session Status IE");
+        nas_5gs_send_service_reject(amf_ue,
+                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
+                true);
+        return OGS_ERROR;
+    }
+
+    if (!handled) {
+        ogs_error("No Session Status IE");
+        nas_5gs_send_service_reject(amf_ue,
+                OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE, false);
+        return OGS_ERROR;
     }
 
     return OGS_OK;
@@ -740,7 +867,7 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
     ogs_assert(security_mode_complete);
 
     if (security_mode_complete->presencemask &
-        OGS_NAS_5GS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT) {
+        OGS_NAS_5GS_SECURITY_MODE_COMPLETE_IMEISV_PRESENT) {
 
         imeisv = &security_mode_complete->imeisv;
         ogs_assert(imeisv);
@@ -766,6 +893,13 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
             break;
 
         }
+    }
+
+    if (security_mode_complete->presencemask &
+        OGS_NAS_5GS_SECURITY_MODE_COMPLETE_NAS_MESSAGE_CONTAINER_PRESENT) {
+
+        return gmm_handle_nas_message_container(
+                amf_ue, &security_mode_complete->nas_message_container);
     }
 
     return OGS_OK;
@@ -816,14 +950,15 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         ogs_assert(dnn);
 
         if ((ul_nas_transport->presencemask &
-                OGS_NAS_5GS_UL_NAS_TRANSPORT_PDU_SESSION_ID_PRESENT) == 0) {
+            OGS_NAS_5GS_UL_NAS_TRANSPORT_PDU_SESSION_ID_PRESENT) == 0) {
             ogs_error("[%s] No PDU session ID", amf_ue->supi);
             return OGS_ERROR;
         }
 
         pdu_session_id = &ul_nas_transport->pdu_session_id;
         if (*pdu_session_id == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
-            ogs_error("[%s] PDU session identity is unassigned", amf_ue->supi);
+            ogs_error("[%s] PDU session identity is unassigned",
+                    amf_ue->supi);
             return OGS_ERROR;
         }
 
@@ -851,11 +986,18 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 s_nssai.sd = ogs_be24toh(nas_s_nssai->sd);
             else
                 s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-            selected_s_nssai = amf_find_s_nssai(&amf_ue->tai.plmn_id, &s_nssai);
+            selected_s_nssai =
+                amf_find_s_nssai(&amf_ue->tai.plmn_id, &s_nssai);
         }
 
         if (!selected_s_nssai) {
-            ogs_warn("No S_NSSAI : Set default S_NSSAI using AMF config");
+            if (amf_ue->num_of_requested_nssai) {
+                selected_s_nssai = &amf_ue->requested_nssai[0];
+            }
+        }
+
+        if (!selected_s_nssai) {
+            ogs_error("No S_NSSAI : Set default S_NSSAI using AMF config");
             selected_s_nssai = &amf_self()->plmn_support[0].s_nssai[0];
             ogs_assert(selected_s_nssai);
         }
@@ -881,4 +1023,51 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
     }
 
     return OGS_OK;
+}
+
+static int gmm_handle_nas_message_container(amf_ue_t *amf_ue,
+        ogs_nas_message_container_t *nas_message_container)
+{
+    int rv = OGS_ERROR;
+
+    ogs_pkbuf_t *nasbuf = NULL;
+    ogs_nas_5gs_message_t nas_message;
+
+    ogs_assert(amf_ue);
+    ogs_assert(nas_message_container);
+
+    if (!nas_message_container->buffer || !nas_message_container->length) {
+        ogs_error("No NAS message container [%p:%d]",
+            nas_message_container->buffer,nas_message_container->length);
+        return OGS_ERROR;
+    }
+
+    nasbuf = ogs_pkbuf_alloc(NULL, nas_message_container->length);
+    ogs_pkbuf_put_data(nasbuf,
+            nas_message_container->buffer, nas_message_container->length);
+
+    if (ogs_nas_5gmm_decode(&nas_message, nasbuf) != OGS_OK) {
+        ogs_error("ogs_nas_5gmm_decode() failed");
+        ogs_pkbuf_free(nasbuf);
+        return OGS_ERROR;
+    }
+
+    switch (nas_message.gmm.h.message_type) {
+        case OGS_NAS_5GS_REGISTRATION_REQUEST:
+            ogs_debug("Registration request in NAS message container");
+            rv = gmm_handle_registration_update(
+                    amf_ue, &nas_message.gmm.registration_request);
+            break;
+        case OGS_NAS_5GS_SERVICE_REQUEST:
+            ogs_debug("Service request in NAS message container");
+            rv = gmm_handle_service_update(
+                    amf_ue, &nas_message.gmm.service_request);
+            break;
+        default:
+            ogs_error("Unknown message [%d]", nas_message.gmm.h.message_type);
+            rv = OGS_ERROR;
+    }
+
+    ogs_pkbuf_free(nasbuf);
+    return rv;
 }

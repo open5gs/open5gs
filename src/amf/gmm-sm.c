@@ -154,7 +154,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case OGS_NAS_5GS_SERVICE_REQUEST:
-            ogs_debug("[%s] Service request", amf_ue->supi);
+            ogs_debug("Service request");
             rv = gmm_handle_service_request(
                     amf_ue, &nas_message->gmm.service_request);
             if (rv != OGS_OK) {
@@ -214,7 +214,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             return;
 
         default:
-            ogs_error("Unknown message[%d]", nas_message->gmm.h.message_type);
+            ogs_error("Unknown message [%d]", nas_message->gmm.h.message_type);
             return;
         }
         break;
@@ -883,7 +883,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-                    nas_5gs_send_registration_accept(amf_ue);
+                    nas_5gs_send_registration_accept(amf_ue, false);
                     break;
 
                 DEFAULT

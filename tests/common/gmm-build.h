@@ -24,8 +24,8 @@
 extern "C" {
 #endif
 
-ogs_pkbuf_t *testgmm_build_registration_request(
-        test_ue_t *test_ue, bool update);
+ogs_pkbuf_t *testgmm_build_registration_request(test_ue_t *test_ue);
+
 ogs_pkbuf_t *testgmm_build_identity_response(test_ue_t *test_ue);
 ogs_pkbuf_t *testgmm_build_authentication_response(test_ue_t *test_ue);
 ogs_pkbuf_t *testgmm_build_authentication_failure(
@@ -33,7 +33,8 @@ ogs_pkbuf_t *testgmm_build_authentication_failure(
 ogs_pkbuf_t *testgmm_build_security_mode_complete(
         test_ue_t *test_ue, ogs_pkbuf_t *nasbuf);
 ogs_pkbuf_t *testgmm_build_registration_complete(test_ue_t *test_ue);
-ogs_pkbuf_t *testgmm_build_service_request(test_ue_t *test_ue);
+ogs_pkbuf_t *testgmm_build_service_request(
+        test_ue_t *test_ue, ogs_pkbuf_t *nasbuf);
 ogs_pkbuf_t *testgmm_build_configuration_update_complete(test_ue_t *test_ue);
 ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
         uint8_t payload_type, ogs_pkbuf_t *payload);

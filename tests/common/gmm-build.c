@@ -19,11 +19,11 @@
 
 #include "test-common.h"
 
-ogs_pkbuf_t *testgmm_build_registration_request(
-        test_ue_t *test_ue, bool update)
+ogs_pkbuf_t *testgmm_build_registration_request(test_ue_t *test_ue)
 {
     test_sess_t *sess = NULL;
     uint16_t psimask = 0;
+    ogs_s_nssai_t *s_nssai = NULL;
 
     ogs_nas_5gs_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -39,6 +39,13 @@ ogs_pkbuf_t *testgmm_build_registration_request(
             &registration_request->s1_ue_network_capability;
     ogs_nas_uplink_data_status_t *uplink_data_status =
             &registration_request->uplink_data_status;
+
+    ogs_nas_nssai_t *requested_nssai = &registration_request->requested_nssai;
+    ogs_nas_5gs_tracking_area_identity_t *last_visited_registered_tai =
+        &registration_request->last_visited_registered_tai;
+    ogs_nas_ue_usage_setting_t *ue_usage_setting =
+        &registration_request->ue_usage_setting;
+
     ogs_nas_5gs_mobile_identity_guti_t mobile_identity_guti;
 
     ogs_assert(test_ue);
@@ -46,7 +53,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     ogs_assert(sess);
 
     memset(&message, 0, sizeof(message));
-    if (update) {
+    if (test_ue->registration_request_type.integrity_protected) {
         message.h.security_header_type =
             OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         message.h.extended_protocol_discriminator =
@@ -58,7 +65,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
 
     registration_type->data = test_ue->nas.data;
 
-    if (update) {
+    if (test_ue->registration_request_type.guti) {
         ogs_nas_5gs_nas_guti_to_mobilty_identity_guti(
                 &test_ue->nas_guti, &mobile_identity_guti);
         registration_request->mobile_identity.length =
@@ -66,18 +73,20 @@ ogs_pkbuf_t *testgmm_build_registration_request(
         registration_request->mobile_identity.buffer =
             &mobile_identity_guti;
 
+    } else {
+        registration_request->mobile_identity.length =
+            test_ue->mobile_identity_suci_length;
+        registration_request->mobile_identity.buffer =
+            &test_ue->mobile_identity_suci;
+    }
+
+    if (test_ue->registration_request_type.uplink_data_status) {
         registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT;
         psimask = 1 << sess->psi;
         uplink_data_status->length = 2;
         uplink_data_status->psi |= psimask << 8;
         uplink_data_status->psi |= psimask >> 8;
-
-    } else {
-        registration_request->mobile_identity.length =
-            test_ue->mobile_identity_suci_length;
-        registration_request->mobile_identity.buffer =
-            &test_ue->mobile_identity_suci;
     }
 
     registration_request->presencemask |=
@@ -105,7 +114,35 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     s1_ue_network_capability->n1_mode = 1;
     s1_ue_network_capability->dual_connectivity_with_nr = 1;
 
-    if (update)
+    if (test_ue->registration_request_type.requested_nssai) {
+        /* Set Requested NSSAI */
+        registration_request->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NSSAI_PRESENT;
+
+        requested_nssai->length = 0;
+
+        ogs_nas_build_nssai(requested_nssai,
+            &test_self()->plmn_support[0].s_nssai[0], 1);
+    }
+
+    if (test_ue->registration_request_type.last_visited_registered_tai) {
+        /* Set Last visited registered TAI */
+        registration_request->presencemask |=
+        OGS_NAS_5GS_REGISTRATION_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT;
+        ogs_nas_from_plmn_id(&last_visited_registered_tai->nas_plmn_id,
+                &test_self()->tai.plmn_id);
+        last_visited_registered_tai->tac.v = test_self()->tai.tac.v;
+    }
+
+    if (test_ue->registration_request_type.ue_usage_setting) {
+        /* Set UE's usage setting */
+        registration_request->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_REQUEST_UE_USAGE_SETTING_PRESENT;
+        ue_usage_setting->length = 1;
+        ue_usage_setting->data_centric = 1;
+    }
+
+    if (test_ue->registration_request_type.integrity_protected)
         return test_nas_5gs_security_encode(test_ue, &message);
     else
         return ogs_nas_5gs_plain_encode(&message);
@@ -304,35 +341,40 @@ ogs_pkbuf_t *testgmm_build_registration_complete(test_ue_t *test_ue)
     return test_nas_5gs_security_encode(test_ue, &message);
 }
 
-ogs_pkbuf_t *testgmm_build_service_request(test_ue_t *test_ue)
+ogs_pkbuf_t *testgmm_build_service_request(
+        test_ue_t *test_ue, ogs_pkbuf_t *nasbuf)
 {
     ogs_nas_5gs_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
     ogs_nas_5gs_service_request_t *service_request =
             &message.gmm.service_request;
     ogs_nas_5gs_mobile_identity_s_tmsi_t mobile_identity_s_tmsi;
-    ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
-
-    test_sess_t *sess = NULL;
-    uint16_t psimask = 0;
+    ogs_nas_message_container_t *nas_message_container =
+            &service_request->nas_message_container;
+    ogs_nas_uplink_data_status_t *uplink_data_status =
+            &service_request->uplink_data_status;
+    ogs_nas_pdu_session_status_t *pdu_session_status =
+            &service_request->pdu_session_status;
+    ogs_nas_allowed_pdu_session_status_t *allowed_pdu_session_status =
+            &service_request->allowed_pdu_session_status;
 
     ogs_assert(test_ue);
-    sess = test_ue->sess;
-    ogs_assert(sess);
 
     uplink_data_status = &service_request->uplink_data_status;
 
     memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    if (test_ue->service_request_type.integrity_protected) {
+        message.h.security_header_type =
+            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        message.h.extended_protocol_discriminator =
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    }
 
     message.gmm.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_SERVICE_REQUEST;
 
-    service_request->ngksi.type = OGS_NAS_SERVICE_TYPE_DATA;
+    service_request->ngksi.type = test_ue->service_request_type.service_type;
     service_request->ngksi.tsc = test_ue->nas.tsc;
     service_request->ngksi.value = test_ue->nas.ksi;
 
@@ -347,14 +389,44 @@ ogs_pkbuf_t *testgmm_build_service_request(test_ue_t *test_ue)
     service_request->s_tmsi.length = sizeof(mobile_identity_s_tmsi);
     service_request->s_tmsi.buffer = &mobile_identity_s_tmsi;
 
-    service_request->presencemask |=
-        OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT;
-    psimask = 1 << sess->psi;
-    uplink_data_status->length = 2;
-    uplink_data_status->psi |= psimask << 8;
-    uplink_data_status->psi |= psimask >> 8;
+    if (nasbuf) {
+        service_request->presencemask |=
+            OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT;
+        nas_message_container->length = nasbuf->len;
+        nas_message_container->buffer = nasbuf->data;
+        ogs_pkbuf_free(nasbuf);
+    }
 
-    return test_nas_5gs_security_encode(test_ue, &message);
+    if (test_ue->service_request_type.uplink_data_status) {
+        service_request->presencemask |=
+            OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT;
+        uplink_data_status->length = 2;
+        uplink_data_status->psi |= test_ue->service_request_type.psimask << 8;
+        uplink_data_status->psi |= test_ue->service_request_type.psimask >> 8;
+    }
+
+    if (test_ue->service_request_type.pdu_session_status) {
+        service_request->presencemask |=
+            OGS_NAS_5GS_SERVICE_REQUEST_PDU_SESSION_STATUS_PRESENT;
+        pdu_session_status->length = 2;
+        pdu_session_status->psi |= test_ue->service_request_type.psimask << 8;
+        pdu_session_status->psi |= test_ue->service_request_type.psimask >> 8;
+    }
+
+    if (test_ue->service_request_type.allowed_pdu_session_status) {
+        service_request->presencemask |=
+            OGS_NAS_5GS_SERVICE_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT;
+        allowed_pdu_session_status->length = 2;
+        allowed_pdu_session_status->psi |=
+            test_ue->service_request_type.psimask << 8;
+        allowed_pdu_session_status->psi |=
+            test_ue->service_request_type.psimask >> 8;
+    }
+
+    if (test_ue->service_request_type.integrity_protected)
+        return test_nas_5gs_security_encode(test_ue, &message);
+    else
+        return ogs_nas_5gs_plain_encode(&message);
 }
 
 ogs_pkbuf_t *testgmm_build_configuration_update_complete(test_ue_t *test_ue)

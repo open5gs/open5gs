@@ -41,6 +41,8 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
 
 int gmm_handle_service_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_service_request_t *service_request);
+int gmm_handle_service_update(amf_ue_t *amf_ue,
+        ogs_nas_5gs_service_request_t *service_request);
 
 #if 0
 int gmm_handle_tau_request(amf_ue_t *amf_ue,
