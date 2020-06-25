@@ -443,10 +443,19 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             case OGS_5GMM_CAUSE_MAC_FAILURE:
                 ogs_warn("Authentication failure(MAC failure)");
                 break;
+
             case OGS_5GMM_CAUSE_NON_5G_AUTHENTICATION_UNACCEPTABLE:
                 ogs_error("Authentication failure"
                         "(Non-5GS authentication unacceptable)");
                 break;
+
+            case OGS_5GMM_CAUSE_NGKSI_ALREADY_IN_USE:
+                ogs_warn("Authentication failure(ngKSI already in use)");
+                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue,
+                        authentication_failure_parameter->auts,
+                        amf_nausf_auth_build_authenticate);
+                return;
+
             case OGS_5GMM_CAUSE_SYNCH_FAILURE:
                 ogs_warn("Authentication failure(Synch failure)");
                 if (authentication_failure_parameter->length != OGS_AUTS_LEN) {
