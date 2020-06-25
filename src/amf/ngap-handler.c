@@ -18,7 +18,8 @@
  */
 
 #include "ngap-handler.h"
-#include "amf-path.h"
+#include "ngap-path.h"
+#include "sbi-path.h"
 
 static bool served_tai_is_found(amf_gnb_t *gnb)
 {
@@ -865,7 +866,9 @@ void ngap_handle_initial_context_setup_failure(
      * may in principle be adopted. The RAN should ensure
      * that no hanging resources remain at the RAN.
      */
-    amf_send_delete_session_or_ran_ue_context_release(ran_ue);
+    ngap_send_session_sync_or_context_release_command(ran_ue,
+        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
 }
 
 #if 0
@@ -993,13 +996,10 @@ void ngap_handle_ue_context_release_request(
     int i;
     char buf[OGS_ADDRSTRLEN];
     uint64_t amf_ue_ngap_id;
-    bool handled;
 
     ran_ue_t *ran_ue = NULL;
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
-
-    amf_nsmf_pdu_session_update_sm_context_param_t param;
 
     NGAP_InitiatingMessage_t *initiatingMessage = NULL;
     NGAP_UEContextReleaseRequest_t *UEContextReleaseRequest = NULL;
@@ -1097,93 +1097,48 @@ void ngap_handle_ue_context_release_request(
     amf_ue = ran_ue->amf_ue;
     if (!amf_ue) {
         ogs_debug("No UE Context");
-        ngap_send_ue_context_release_command(ran_ue,
+        ngap_send_ran_ue_context_release_command(ran_ue,
                 NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                 NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-        return;
-    }
+    } else {
+        if (!PDUSessionList) {
+            amf_sbi_send_deactivate_all_sessions(
+                    amf_ue, Cause->present, (int)Cause->choice.radioNetwork);
+        } else {
+            for (i = 0; i < PDUSessionList->list.count; i++) {
+                PDUSessionItem = (NGAP_PDUSessionResourceItemCxtRelReq_t *)
+                    PDUSessionList->list.array[i];
 
-    ogs_list_for_each(&amf_ue->sess_list, sess) {
-    }
+                if (!PDUSessionItem) {
+                    ogs_error("No PDUSessionResourceSetupItemSURes");
+                    ngap_send_error_indication2(
+                            amf_ue, NGAP_Cause_PR_protocol,
+                            NGAP_CauseProtocol_semantic_error);
+                    return;
+                }
 
-    handled = false;
+                if (PDUSessionItem->pDUSessionID ==
+                        OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
+                    ogs_error("PDU Session Identity is unassigned");
+                    ngap_send_error_indication2(
+                            amf_ue, NGAP_Cause_PR_protocol,
+                            NGAP_CauseProtocol_semantic_error);
+                    return;
+                }
 
-    if (!PDUSessionList) {
-        ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if (sess->smfUpCnxState != OpenAPI_up_cnx_state_DEACTIVATED) {
-                /* UPDATE_UpCnxState - DEACTIVATED */
-                sess->ueUpCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
-
-                memset(&param, 0, sizeof(param));
-                param.upCnxState = sess->ueUpCnxState;
-                param.ngApCause.group = Cause->present;
-                param.ngApCause.value = (int)Cause->choice.radioNetwork;
-                amf_sess_sbi_discover_and_send(
-                        OpenAPI_nf_type_SMF, sess, &param,
-                        amf_nsmf_pdu_session_build_update_sm_context);
-
-                handled = true;
+                sess = amf_sess_find_by_psi(amf_ue,
+                        PDUSessionItem->pDUSessionID);
+                if (sess)
+                    amf_sbi_send_deactivate_session(
+                            sess, Cause->present,
+                            (int)Cause->choice.radioNetwork);
             }
         }
 
-        if (!handled) {
-            ngap_send_ue_context_release_command(ran_ue,
+        if (SESSION_SYNC_DONE(amf_ue))
+            ngap_send_amf_ue_context_release_command(amf_ue,
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                     NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-        }
-
-        return;
-    }
-
-    for (i = 0; i < PDUSessionList->list.count; i++) {
-        PDUSessionItem = (NGAP_PDUSessionResourceItemCxtRelReq_t *)
-            PDUSessionList->list.array[i];
-
-        if (!PDUSessionItem) {
-            ogs_error("No PDUSessionResourceSetupItemSURes");
-            ngap_send_error_indication2(amf_ue,
-                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
-            return;
-        }
-
-        if (PDUSessionItem->pDUSessionID ==
-                OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
-            ogs_error("PDU Session Identity is unassigned");
-            ngap_send_error_indication2(amf_ue,
-                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
-            return;
-        }
-
-        sess = amf_sess_find_by_psi(amf_ue, PDUSessionItem->pDUSessionID);
-        if (!sess) {
-            ogs_error("Cannot find PDU Session ID [%d]",
-                    (int)PDUSessionItem->pDUSessionID);
-            ngap_send_error_indication2(amf_ue,
-                    NGAP_Cause_PR_radioNetwork,
-                    NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
-            return;
-        }
-
-        if (sess->smfUpCnxState != OpenAPI_up_cnx_state_DEACTIVATED) {
-
-            /* UPDATE_UpCnxState - DEACTIVATED */
-            sess->ueUpCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
-
-            memset(&param, 0, sizeof(param));
-            param.upCnxState = sess->ueUpCnxState;
-            param.ngApCause.group = Cause->present;
-            param.ngApCause.value = (int)Cause->choice.radioNetwork;
-            amf_sess_sbi_discover_and_send(
-                    OpenAPI_nf_type_SMF, sess, &param,
-                    amf_nsmf_pdu_session_build_update_sm_context);
-
-            handled = true;
-        }
-    }
-
-    if (!handled) {
-        ogs_error("SMF has already been deactivated");
-        amf_send_delete_session_or_amf_ue_context_release(amf_ue);
     }
 }
 

@@ -48,7 +48,6 @@ libamf_sources = files('''
     gmm-sm.c
 
     amf-sm.c
-    amf-path.c
 
     init.c
 '''.split())

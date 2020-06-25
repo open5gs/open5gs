@@ -24,14 +24,18 @@
 extern "C" {
 #endif
 
+void testgmm_handle_registration_accept(test_ue_t *test_ue,
+        ogs_nas_5gs_registration_accept_t *registration_accept);
+void testgmm_handle_service_accept(test_ue_t *test_ue,
+        ogs_nas_5gs_service_accept_t *service_accept);
+void testgmm_handle_service_reject(test_ue_t *test_ue,
+        ogs_nas_5gs_service_reject_t *service_reject);
 void testgmm_handle_identity_request(test_ue_t *test_ue,
         ogs_nas_5gs_identity_request_t *identity_request);
 void testgmm_handle_authentication_request(test_ue_t *test_ue,
         ogs_nas_5gs_authentication_request_t *authentication_request);
 void testgmm_handle_security_mode_command(test_ue_t *test_ue,
         ogs_nas_5gs_security_mode_command_t *security_mode_command);
-void testgmm_handle_registration_accept(test_ue_t *test_ue,
-        ogs_nas_5gs_registration_accept_t *registration_accept);
 void testgmm_handle_dl_nas_transport(test_ue_t *test_ue,
         ogs_nas_5gs_dl_nas_transport_t *dl_nas_transport);
 

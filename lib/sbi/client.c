@@ -284,6 +284,12 @@ static connection_t *connection_add(ogs_sbi_client_t *client,
                     CURLOPT_POSTFIELDS, request->http.content);
             curl_easy_setopt(conn->easy,
                 CURLOPT_POSTFIELDSIZE, request->http.content_length);
+#if 1 /* Disable HTTP/1.1 100 Continue : Use "Expect:" in libcurl */
+            conn->header_list = curl_slist_append(
+                    conn->header_list, "Expect:");
+#else
+            curl_easy_setopt(conn->easy, CURLOPT_EXPECT_100_TIMEOUT_MS, 0L);
+#endif
         }
     }
 

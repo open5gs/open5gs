@@ -87,7 +87,8 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ssize_t size;
     ogs_pkbuf_t *pkbuf = NULL;
     uint32_t len = OGS_GTPV1U_HEADER_LEN;
-    ogs_gtp_header_t *gtp_h = NULL;
+    uint32_t extension_header_type = 0;
+    ogs_5gs_gtp_header_t *gtp_h = NULL;
     struct ip *ip_h = NULL;
 
     uint32_t teid;
@@ -113,13 +114,25 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
-    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
-    if (gtp_h->flags & OGS_GTPU_FLAGS_S) len += 4;
+    gtp_h = (ogs_5gs_gtp_header_t *)pkbuf->data;
     teid = be32toh(gtp_h->teid);
 
-    ogs_debug("[UPF] RECV GPU-U from SGW : TEID[0x%x]", teid);
+    ogs_debug("[UPF] RECV GPU-U from gNB : TEID[0x%x]", teid);
 
     /* Remove GTP header and send packets to TUN interface */
+    if (gtp_h->seqence_number) len += 4;
+    if (gtp_h->next_extension) {
+        extension_header_type = be32toh(gtp_h->extension_header.type);
+        switch (extension_header_type) {
+        case OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER:
+            len += 8; /* TODO : QoS QFI */
+            break;
+        default:
+            ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+            ogs_error("[DROP] Cannot decode extension header");
+            goto cleanup;
+        }
+    }
     ogs_assert(ogs_pkbuf_pull(pkbuf, len));
 
     ip_h = (struct ip *)pkbuf->data;
@@ -140,7 +153,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         subnet = sess->ipv6->subnet;
 
     if (!subnet) {
-        ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data, pkbuf->len);
+        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
         ogs_error("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
                 ip_h->ip_v, sess->ipv4, sess->ipv6);
         goto cleanup;

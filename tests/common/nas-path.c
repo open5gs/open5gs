@@ -32,10 +32,20 @@ void testgmm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
 
     test_ue->gmm_message_type = message.gmm.h.message_type;
     switch (message.gmm.h.message_type) {
-    case OGS_NAS_5GS_IDENTITY_REQUEST:
-        testgmm_handle_identity_request(test_ue, &message.gmm.identity_request);
+    case OGS_NAS_5GS_REGISTRATION_ACCEPT:
+        testgmm_handle_registration_accept(test_ue,
+                &message.gmm.registration_request);
         break;
     case OGS_NAS_5GS_REGISTRATION_REJECT:
+        break;
+    case OGS_NAS_5GS_SERVICE_ACCEPT:
+        testgmm_handle_service_accept(test_ue, &message.gmm.service_accept);
+        break;
+    case OGS_NAS_5GS_SERVICE_REJECT:
+        testgmm_handle_service_reject(test_ue, &message.gmm.service_reject);
+        break;
+    case OGS_NAS_5GS_IDENTITY_REQUEST:
+        testgmm_handle_identity_request(test_ue, &message.gmm.identity_request);
         break;
     case OGS_NAS_5GS_AUTHENTICATION_REQUEST:
         testgmm_handle_authentication_request(test_ue,
@@ -44,12 +54,6 @@ void testgmm_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
     case OGS_NAS_5GS_AUTHENTICATION_REJECT:
         break;
     case OGS_NAS_5GS_SECURITY_MODE_COMMAND:
-        break;
-    case OGS_NAS_5GS_REGISTRATION_ACCEPT:
-        testgmm_handle_registration_accept(test_ue,
-                &message.gmm.authentication_request);
-        break;
-    case OGS_NAS_5GS_SERVICE_ACCEPT:
         break;
     case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND:
         break;

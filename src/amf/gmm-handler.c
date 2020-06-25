@@ -21,7 +21,6 @@
 
 #include "ngap-path.h"
 #include "nas-path.h"
-#include "amf-path.h"
 #include "sbi-path.h"
 
 #include "gmm-handler.h"
@@ -56,6 +55,8 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     ogs_assert(mobile_identity);
     ue_security_capability = &registration_request->ue_security_capability;
     ogs_assert(ue_security_capability);
+
+    ogs_debug("Registration request");
 
     if (!mobile_identity->length || !mobile_identity->buffer) {
         ogs_error("No Mobile Identity");
@@ -203,9 +204,7 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
         ogs_nas_5gs_registration_request_t *registration_request)
 {
     amf_sess_t *sess = NULL;
-    bool handled = false;
-
-    amf_nsmf_pdu_session_update_sm_context_param_t param;
+    uint16_t psimask;
 
     ogs_nas_5gs_tracking_area_identity_t *last_visited_registered_tai = NULL;
     ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
@@ -221,6 +220,14 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
     ogs_assert(uplink_data_status);
     pdu_session_status = &registration_request->pdu_session_status;
     ogs_assert(pdu_session_status);
+
+    if (registration_request->presencemask &
+        OGS_NAS_5GS_REGISTRATION_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT) {
+
+        return gmm_handle_nas_message_container(
+                amf_ue, &registration_request->nas_message_container);
+    }
+
 
     if (registration_request->presencemask &
         OGS_NAS_5GS_REGISTRATION_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
@@ -244,87 +251,225 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
                 sizeof(registration_request->ue_usage_setting.length));
     }
 
-    handled = false;
+    if ((registration_request->presencemask &
+    OGS_NAS_5GS_REGISTRATION_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT) == 0) {
+        amf_ue->nas.present.allowed_pdu_session_status = 0;
+    } else {
+        amf_ue->nas.present.allowed_pdu_session_status = 1;
+        ogs_error("Not implemented for Allowed PDU Session Status IE");
+    }
 
-    if (registration_request->presencemask &
-            OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT) {
+    if ((registration_request->presencemask &
+            OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
+        amf_ue->nas.present.uplink_data_status = 0;
+    } else {
+        amf_ue->nas.present.uplink_data_status = 1;
 
-        uint16_t psimask = 0;
+        psimask = 0;
         psimask |= uplink_data_status->psi << 8;
         psimask |= uplink_data_status->psi >> 8;
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
             if (psimask & (1 << sess->psi)) {
-                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
-                    /* Nothing */
-
-                } else if (sess->smfUpCnxState ==
-                        OpenAPI_up_cnx_state_ACTIVATING) {
-                    handled = true;
-
-                } else if (sess->smfUpCnxState ==
-                        OpenAPI_up_cnx_state_DEACTIVATED) {
-                    /* UPDATE_UpCnxState - ACTIVATING */
-                    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
-
-                    memset(&param, 0, sizeof(param));
-                    param.upCnxState = sess->ueUpCnxState;
-                    amf_sess_sbi_discover_and_send(
-                            OpenAPI_nf_type_SMF, sess, &param,
-                            amf_nsmf_pdu_session_build_update_sm_context);
-
-                    handled = true;
-                }
+                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED)
+                    amf_sbi_send_activating_session(sess);
             }
         }
+    }
 
-        if (!handled) {
-            nas_5gs_send_registration_accept(amf_ue, true);
-            return OGS_OK;
-        }
+    if ((registration_request->presencemask &
+            OGS_NAS_5GS_REGISTRATION_REQUEST_PDU_SESSION_STATUS_PRESENT) == 0) {
+        amf_ue->nas.present.pdu_session_status = 0;
+    } else {
+        amf_ue->nas.present.pdu_session_status = 1;
 
-    } else if (registration_request->presencemask &
-            OGS_NAS_5GS_REGISTRATION_REQUEST_PDU_SESSION_STATUS_PRESENT) {
-        uint16_t psimask = 0;
+        psimask = 0;
         psimask |= pdu_session_status->psi << 8;
         psimask |= pdu_session_status->psi >> 8;
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if (psimask & (1 << sess->psi)) {
-                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
-                    /* UPDATE_UpCnxState - ACTIVATING */
-                    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
-
-                    memset(&param, 0, sizeof(param));
-                    param.upCnxState = sess->ueUpCnxState;
-                    amf_sess_sbi_discover_and_send(
-                            OpenAPI_nf_type_SMF, sess, &param,
-                            amf_nsmf_pdu_session_build_update_sm_context);
-
-                    handled = true;
-
-                } else {
-                    ogs_error("Not implemented "
-                            "for AMF active in PDU Session Status IE");
-                    nas_5gs_send_registration_reject(amf_ue,
-                        OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-                    return OGS_ERROR;
-                }
+            if ((psimask & (1 << sess->psi)) == 0) {
+                amf_sbi_send_release_session(sess);
             }
         }
-
-        if (!handled) {
-            nas_5gs_send_registration_accept(amf_ue, false);
-            return OGS_OK;
-        }
-
-    } else if (registration_request->presencemask &
-        OGS_NAS_5GS_REGISTRATION_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT) {
-        ogs_error("Not implemented Allowed PDU Session Status IE");
-        nas_5gs_send_registration_reject(amf_ue,
-                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK);
-        return OGS_ERROR;
     }
+
+    if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
+        if (SESSION_SYNC_DONE(amf_ue))
+            nas_5gs_send_registration_accept(amf_ue);
+    }
+
+    return OGS_OK;
+}
+
+int gmm_handle_service_request(amf_ue_t *amf_ue,
+        ogs_nas_5gs_service_request_t *service_request)
+{
+    ogs_nas_key_set_identifier_t *ngksi = NULL;
+
+    ogs_assert(amf_ue);
+
+    ngksi = &service_request->ngksi;
+    ogs_assert(ngksi);
+
+    ogs_debug("Service request");
+
+    amf_ue->nas.message_type = OGS_NAS_5GS_SERVICE_REQUEST;
+    amf_ue->nas.tsc = ngksi->tsc;
+    amf_ue->nas.ksi = ngksi->value;
+    ogs_debug("    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] SERVICE[0x%x]",
+            amf_ue->nas.message_type,
+            amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
+
+    /*
+     * REGISTRATION_REQUEST
+     *   Clear EBI generator
+     *   Clear Timer and Message
+     *
+     * TAU_REQUEST
+     *   Clear Timer and Message
+     *
+     * SERVICE_REQUEST
+     *   Clear Timer and Message
+     *
+     * EXTENDED_SERVICE_REQUEST
+     *   Clear Timer and Message
+     */
+    CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
+
+    if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
+        ogs_kdf_kgnb_and_kn3iwf(
+                amf_ue->kamf, amf_ue->ul_count.i32,
+                amf_ue->nas.access_type, amf_ue->kgnb);
+        ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
+        amf_ue->nhcc = 1;
+    }
+
+    ogs_debug("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]",
+        AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
+        ogs_amf_id_hexdump(&amf_ue->guti.amf_id), amf_ue->guti.m_tmsi);
+
+    return OGS_OK;
+}
+
+int gmm_handle_service_update(amf_ue_t *amf_ue,
+        ogs_nas_5gs_service_request_t *service_request)
+{
+    amf_sess_t *sess = NULL;
+    uint16_t psimask = 0;
+
+    ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
+    ogs_nas_pdu_session_status_t *pdu_session_status = NULL;
+    ogs_nas_allowed_pdu_session_status_t *allowed_pdu_session_status = NULL;
+
+    ogs_assert(amf_ue);
+
+    uplink_data_status = &service_request->uplink_data_status;
+    ogs_assert(uplink_data_status);
+    pdu_session_status = &service_request->pdu_session_status;
+    ogs_assert(pdu_session_status);
+    allowed_pdu_session_status = &service_request->allowed_pdu_session_status;
+    ogs_assert(allowed_pdu_session_status);
+
+    if (service_request->presencemask &
+        OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT) {
+
+        return gmm_handle_nas_message_container(
+                amf_ue, &service_request->nas_message_container);
+    }
+
+    if ((service_request->presencemask &
+        OGS_NAS_5GS_SERVICE_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT) == 0) {
+        amf_ue->nas.present.allowed_pdu_session_status = 0;
+    } else {
+        amf_ue->nas.present.allowed_pdu_session_status = 1;
+        ogs_error("Not implemented for Allowed PDU Session Status IE");
+    }
+
+    if ((service_request->presencemask &
+            OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT) == 0) {
+        amf_ue->nas.present.uplink_data_status = 0;
+    } else {
+        amf_ue->nas.present.uplink_data_status = 1;
+
+        psimask = 0;
+        psimask |= uplink_data_status->psi << 8;
+        psimask |= uplink_data_status->psi >> 8;
+
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if (psimask & (1 << sess->psi)) {
+                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED)
+                    amf_sbi_send_activating_session(sess);
+            }
+        }
+    }
+
+    /*
+     * TS24.501
+     * 5.6.1.5 Service request procedure not accepted by the network
+     *
+     * If the AMF needs to initiate PDU session status synchronisation
+     * or a PDU session status IE was included in the SERVICE REQUEST message,
+     * the AMF shall include a PDU session status IE in the SERVICE REJECT
+     * message to indicate which PDU sessions associated with the access type
+     * the SERVICE REJECT message is sent over are active in the AMF.
+     * If the PDU session status IE is included in the SERVICE REJECT message
+     * and if the message is integrity protected, then the UE shall perform
+     * a local release of all those PDU sessions which are active
+     * on the UE side associated with the access type the SERVICE REJECT
+     * message is sent over, but are indicated by the AMF as being inactive.
+     */
+    if ((service_request->presencemask &
+            OGS_NAS_5GS_SERVICE_REQUEST_PDU_SESSION_STATUS_PRESENT) == 0) {
+        amf_ue->nas.present.pdu_session_status = 0;
+    } else {
+        amf_ue->nas.present.pdu_session_status = 1;
+
+        psimask = 0;
+        psimask |= pdu_session_status->psi << 8;
+        psimask |= pdu_session_status->psi >> 8;
+
+        ogs_list_for_each(&amf_ue->sess_list, sess) {
+            if ((psimask & (1 << sess->psi)) == 0)
+                amf_sbi_send_release_session(sess);
+        }
+    }
+
+    if (SESSION_SYNC_DONE(amf_ue))
+        nas_5gs_send_service_accept(amf_ue);
+
+    return OGS_OK;
+}
+
+int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
+        ogs_nas_5gs_deregistration_request_from_ue_t *deregistration_request)
+{
+    ogs_nas_de_registration_type_t *de_registration_type = NULL;
+
+    ogs_assert(amf_ue);
+    ogs_assert(deregistration_request);
+
+    de_registration_type = &deregistration_request->de_registration_type;
+
+    ogs_debug("[%s] Deregistration request", amf_ue->supi);
+
+    /* Set 5GS Attach Type */
+    memcpy(&amf_ue->nas.de_registration,
+            de_registration_type, sizeof(ogs_nas_de_registration_type_t));
+    amf_ue->nas.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST;
+    amf_ue->nas.tsc = de_registration_type->tsc;
+    amf_ue->nas.ksi = de_registration_type->ksi;
+    ogs_debug("[%s]    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] "
+            "DEREGISTRATION[0x%x]",
+            amf_ue->suci, amf_ue->nas.message_type,
+            amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
+
+    if (deregistration_request->de_registration_type.switch_off)
+        ogs_debug("    Switch-Off");
+
+    amf_sbi_send_release_all_sessions(amf_ue);
+    if (SESSION_SYNC_DONE(amf_ue))
+        nas_5gs_send_de_registration_accept(amf_ue);
 
     return OGS_OK;
 }
@@ -404,234 +549,6 @@ int gmm_handle_identity_response(amf_ue_t *amf_ue,
     } else {
         ogs_error("Not supported Identity type[%d]",
                 mobile_identity_header->type);
-    }
-
-    return OGS_OK;
-}
-
-int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
-        ogs_nas_5gs_deregistration_request_from_ue_t *deregistration_request)
-{
-    ogs_nas_de_registration_type_t *de_registration_type = NULL;
-
-    ogs_assert(amf_ue);
-    ogs_assert(deregistration_request);
-
-    de_registration_type = &deregistration_request->de_registration_type;
-
-    ogs_debug("[%s] Deregistration request", amf_ue->supi);
-
-    /* Set 5GS Attach Type */
-    memcpy(&amf_ue->nas.de_registration,
-            de_registration_type, sizeof(ogs_nas_de_registration_type_t));
-    amf_ue->nas.message_type = OGS_NAS_5GS_DEREGISTRATION_REQUEST;
-    amf_ue->nas.tsc = de_registration_type->tsc;
-    amf_ue->nas.ksi = de_registration_type->ksi;
-    ogs_debug("[%s]    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] "
-            "DEREGISTRATION[0x%x]",
-            amf_ue->suci, amf_ue->nas.message_type,
-            amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
-
-    if (deregistration_request->de_registration_type.switch_off)
-        ogs_debug("    Switch-Off");
-
-    amf_send_delete_session_or_de_register(amf_ue);
-
-    return OGS_OK;
-}
-
-int gmm_handle_service_request(amf_ue_t *amf_ue,
-        ogs_nas_5gs_service_request_t *service_request)
-{
-    ogs_nas_key_set_identifier_t *ngksi = NULL;
-
-    ogs_assert(amf_ue);
-
-    ngksi = &service_request->ngksi;
-    ogs_assert(ngksi);
-
-    amf_ue->nas.message_type = OGS_NAS_5GS_SERVICE_REQUEST;
-    amf_ue->nas.tsc = ngksi->tsc;
-    amf_ue->nas.ksi = ngksi->value;
-    ogs_debug("    OGS_NAS_5GS TYPE[%d] TSC[%d] KSI[%d] SERVICE[0x%x]",
-            amf_ue->nas.message_type,
-            amf_ue->nas.tsc, amf_ue->nas.ksi, amf_ue->nas.data);
-
-    /*
-     * REGISTRATION_REQUEST
-     *   Clear EBI generator
-     *   Clear Timer and Message
-     *
-     * TAU_REQUEST
-     *   Clear Timer and Message
-     *
-     * SERVICE_REQUEST
-     *   Clear Timer and Message
-     *
-     * EXTENDED_SERVICE_REQUEST
-     *   Clear Timer and Message
-     */
-    CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
-
-    if (SECURITY_CONTEXT_IS_VALID(amf_ue)) {
-        ogs_kdf_kgnb_and_kn3iwf(
-                amf_ue->kamf, amf_ue->ul_count.i32,
-                amf_ue->nas.access_type, amf_ue->kgnb);
-        ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
-        amf_ue->nhcc = 1;
-    }
-
-    ogs_debug("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]",
-        AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
-        ogs_amf_id_hexdump(&amf_ue->guti.amf_id), amf_ue->guti.m_tmsi);
-
-    if (!AMF_UE_HAVE_SUCI(amf_ue)) {
-        ogs_debug("Service request : Unknown UE");
-        nas_5gs_send_service_reject(amf_ue,
-            OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK, false);
-        return OGS_ERROR;
-    }
-
-    if (!SECURITY_CONTEXT_IS_VALID(amf_ue)) {
-        ogs_debug("No Security Context");
-        nas_5gs_send_service_reject(amf_ue,
-            OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK, false);
-        return OGS_ERROR;
-    }
-
-    if (service_request->presencemask &
-        OGS_NAS_5GS_SERVICE_REQUEST_NAS_MESSAGE_CONTAINER_PRESENT) {
-
-        return gmm_handle_nas_message_container(
-                amf_ue, &service_request->nas_message_container);
-    }
-
-    return gmm_handle_service_update(amf_ue, service_request);
-}
-
-int gmm_handle_service_update(amf_ue_t *amf_ue,
-        ogs_nas_5gs_service_request_t *service_request)
-{
-    amf_sess_t *sess = NULL;
-    ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
-    ogs_nas_pdu_session_status_t *pdu_session_status = NULL;
-    ogs_nas_allowed_pdu_session_status_t *allowed_pdu_session_status = NULL;
-    amf_nsmf_pdu_session_update_sm_context_param_t param;
-    bool handled;
-
-    ogs_assert(amf_ue);
-
-    uplink_data_status = &service_request->uplink_data_status;
-    ogs_assert(uplink_data_status);
-    pdu_session_status = &service_request->pdu_session_status;
-    ogs_assert(pdu_session_status);
-    allowed_pdu_session_status = &service_request->allowed_pdu_session_status;
-    ogs_assert(allowed_pdu_session_status);
-
-    handled = false;
-
-    if (service_request->presencemask &
-            OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT) {
-
-        uint16_t psimask = 0;
-        psimask |= uplink_data_status->psi << 8;
-        psimask |= uplink_data_status->psi >> 8;
-
-        ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if (psimask & (1 << sess->psi)) {
-                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
-                    /* Nothing */
-
-                } else if (sess->smfUpCnxState ==
-                        OpenAPI_up_cnx_state_ACTIVATING) {
-                    handled = true;
-
-                } else if (sess->smfUpCnxState ==
-                        OpenAPI_up_cnx_state_DEACTIVATED) {
-                    /* UPDATE_UpCnxState - ACTIVATING */
-                    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
-
-                    memset(&param, 0, sizeof(param));
-                    param.upCnxState = sess->ueUpCnxState;
-                    amf_sess_sbi_discover_and_send(
-                            OpenAPI_nf_type_SMF, sess, &param,
-                            amf_nsmf_pdu_session_build_update_sm_context);
-
-                    handled = true;
-                }
-            }
-        }
-
-        if (!handled) {
-            nas_5gs_send_service_accept(amf_ue, true);
-            return OGS_OK;
-        }
-
-    } else if (service_request->presencemask &
-            OGS_NAS_5GS_SERVICE_REQUEST_PDU_SESSION_STATUS_PRESENT) {
-        uint16_t psimask = 0;
-        psimask |= pdu_session_status->psi << 8;
-        psimask |= pdu_session_status->psi >> 8;
-
-        ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if (psimask & (1 << sess->psi)) {
-    /*
-     * TS24.501
-     * 5.6.1.5 Service request procedure not accepted by the network
-     *
-     * If the AMF needs to initiate PDU session status synchronisation
-     * or a PDU session status IE was included in the SERVICE REQUEST message,
-     * the AMF shall include a PDU session status IE in the SERVICE REJECT
-     * message to indicate which PDU sessions associated with the access type
-     * the SERVICE REJECT message is sent over are active in the AMF.
-     * If the PDU session status IE is included in the SERVICE REJECT message
-     * and if the message is integrity protected, then the UE shall perform
-     * a local release of all those PDU sessions which are active
-     * on the UE side associated with the access type the SERVICE REJECT
-     * message is sent over, but are indicated by the AMF as being inactive.
-     */
-                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
-                    /* UPDATE_UpCnxState - ACTIVATING */
-                    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
-
-                    memset(&param, 0, sizeof(param));
-                    param.upCnxState = sess->ueUpCnxState;
-                    amf_sess_sbi_discover_and_send(
-                            OpenAPI_nf_type_SMF, sess, &param,
-                            amf_nsmf_pdu_session_build_update_sm_context);
-
-                    handled = true;
-
-                } else {
-                    ogs_error("Not implemented "
-                            "for AMF active in PDU Session Status IE");
-                    nas_5gs_send_service_reject(amf_ue,
-                            OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
-                            true);
-                    return OGS_ERROR;
-                }
-            }
-        }
-
-        if (!handled) {
-            nas_5gs_send_service_accept(amf_ue, false);
-            return OGS_OK;
-        }
-
-    } else if (service_request->presencemask &
-            OGS_NAS_5GS_SERVICE_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT) {
-        ogs_error("Not implemented Allowed PDU Session Status IE");
-        nas_5gs_send_service_reject(amf_ue,
-                OGS_5GMM_CAUSE_UE_IDENTITY_CANNOT_BE_DERIVED_BY_THE_NETWORK,
-                true);
-        return OGS_ERROR;
-    }
-
-    if (!handled) {
-        ogs_error("No Session Status IE");
-        nas_5gs_send_service_reject(amf_ue,
-                OGS_5GMM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE, false);
-        return OGS_ERROR;
     }
 
     return OGS_OK;
@@ -774,87 +691,6 @@ int gmm_handle_tau_request(amf_ue_t *amf_ue,
     return OGS_OK;
 }
 
-int gmm_handle_extended_service_request(amf_ue_t *amf_ue,
-        ogs_nas_5gs_extended_service_request_t *extended_service_request)
-{
-    int served_tai_index = 0;
-
-    ogs_nas_service_type_t *service_type =
-        &extended_service_request->service_type;
-    ogs_nas_mobile_identity_t *mobile_identity =
-        &extended_service_request->m_tmsi;
-    ogs_nas_mobile_identity_tmsi_t *mobile_identity_tmsi = NULL;
-    ran_ue_t *ran_ue = NULL;
-
-    ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
-    ogs_assert(ran_ue);
-
-    /* Set Service Type */
-    memcpy(&amf_ue->nas.service, service_type,
-            sizeof(ogs_nas_service_type_t));
-    amf_ue->nas.message_type = AMF_5GS_TYPE_EXTENDED_SERVICE_REQUEST;
-    amf_ue->nas.ksi = service_type->nas_key_set_identifier;
-    ogs_debug("    OGS_NAS_5GS TYPE[%d] KSI[%d] SERVICE[0x%x]",
-            amf_ue->nas.message_type, amf_ue->nas.ksi, amf_ue->nas.value);
-    
-    /*
-     * REGISTRATION_REQUEST
-     *   Clear EBI generator
-     *   Clear Timer and Message
-     *
-     * TAU_REQUEST
-     *   Clear Timer and Message
-     *
-     * SERVICE_REQUEST
-     *   Clear Timer and Message
-     *
-     * EXTENDED_SERVICE_REQUEST
-     *   Clear Timer and Message
-     */
-    CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
-
-    ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac);
-    ogs_debug("    OLD NR_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->e_cgi.plmn_id), amf_ue->e_cgi.cell_id);
-    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&ran_ue->saved.tai.plmn_id),
-            ran_ue->saved.tai.tac);
-    ogs_debug("    NR_CGI[PLMN_ID:%06x,CELL_ID:%d]",
-            ogs_plmn_id_hexdump(&ran_ue->saved.e_cgi.plmn_id),
-            ran_ue->saved.e_cgi.cell_id);
-
-    /* Copy TAI and ECGI from ran_ue */
-    memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
-    memcpy(&amf_ue->e_cgi, &ran_ue->saved.e_cgi, sizeof(ogs_e_cgi_t));
-
-    /* Check TAI */
-    served_tai_index = amf_find_served_tai(&amf_ue->tai);
-    if (served_tai_index < 0) {
-        /* Send TAU reject */
-        ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
-            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac);
-        nas_5gs_send_tau_reject(amf_ue, EMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
-        return OGS_ERROR;
-    }
-    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
-
-    switch(mobile_identity->tmsi.type) {
-    case OGS_NAS_MOBILE_IDENTITY_TMSI:
-        mobile_identity_tmsi = &mobile_identity->tmsi;
-
-        ogs_debug("    M-TMSI:[0x%x] IMSI:[%s]",
-                mobile_identity_tmsi->tmsi,
-                AMF_UE_HAVE_IMSI(amf_ue) ? amf_ue->imsi_bcd : "Unknown");
-        break;
-    default:
-        ogs_error("Unknown TMSI type [%d]", mobile_identity->tmsi.type);
-        break;
-    }
-
-    return OGS_OK;
-}
 #endif
 
 int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,

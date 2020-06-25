@@ -79,9 +79,14 @@ void udm_nnrf_handle_nf_status_subscribe(
             duration = diff - (int)VALIDITY_MARGIN;
 
             if (duration < (int)VALIDITY_MINIMUM) {
-                ogs_warn("[%s] Validation period [%d seconds, %s] is too small",
-                        subscription->id,
-                        (int)diff, SubscriptionData->validity_time);
+                char buf[64];
+                strftime(buf, sizeof buf, "%Y-%m-%d %H:%M:%S", &local);
+                ogs_warn("[%s] Validation period [%lld seconds, "
+                        "(%lld)(%lld)(%s)(%s)] is too small", subscription->id,
+                        (long long)diff,
+                        (long long)ogs_mktime(&next),
+                        (long long)ogs_mktime(&local),
+                        SubscriptionData->validity_time, buf);
                 duration = VALIDITY_MINIMUM;
                 ogs_warn("[%s] Forced to %d seconds",
                         subscription->id, VALIDITY_MINIMUM);

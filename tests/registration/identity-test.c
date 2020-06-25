@@ -183,13 +183,13 @@ static void test1_func(abts_case *tc, void *data)
     bson_destroy(doc);
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(&test_ue);
+    gmmbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue.registration_request_type.requested_nssai = 1;
     test_ue.registration_request_type.last_visited_registered_tai = 1;
     test_ue.registration_request_type.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(&test_ue);
+    nasbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, false);
@@ -287,7 +287,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue.registration_request_type.integrity_protected = 1;
     test_ue.registration_request_type.guti = 1;
     test_ue.registration_request_type.uplink_data_status = 1;
-    gmmbuf = testgmm_build_registration_request(&test_ue);
+    gmmbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, true);
@@ -338,7 +338,7 @@ static void test1_func(abts_case *tc, void *data)
     test_ue.nas_guti.m_tmsi = 0x1234;
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(&test_ue);
+    gmmbuf = testgmm_build_registration_request(&test_ue, NULL);
 
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, true);

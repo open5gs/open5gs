@@ -20,7 +20,6 @@
 #include "sbi-path.h"
 #include "ngap-path.h"
 #include "nas-path.h"
-#include "amf-path.h"
 #include "nnrf-handler.h"
 #include "namf-handler.h"
 #include "nsmf-handler.h"
@@ -371,9 +370,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_timer_stop(amf_ue->sbi.client_wait.timer);
 
             ogs_fsm_dispatch(&amf_ue->sm, e);
-            if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
-                amf_send_delete_session_or_amf_ue_context_release(amf_ue);
-            }
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
@@ -391,16 +387,19 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             ogs_timer_stop(sess->sbi.client_wait.timer);
 
             SWITCH(sbi_message.h.resource.component[2])
+            CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
+                amf_nsmf_pdu_session_handle_update_sm_context(
+                        sess, &sbi_message);
+                break;
+
             CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
                 amf_nsmf_pdu_session_handle_release_sm_context(
                         sess, &sbi_message);
                 break;
 
             DEFAULT
-                ogs_fsm_dispatch(&amf_ue->sm, e);
-                if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
-                    amf_send_delete_session_or_amf_ue_context_release(amf_ue);
-                }
+                amf_nsmf_pdu_session_handle_create_sm_context(
+                        sess, &sbi_message);
             END
             break;
 
@@ -650,9 +649,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         e->nas.message = &nas_message;
 
         ogs_fsm_dispatch(&amf_ue->sm, e);
-        if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
-            amf_send_delete_session_or_amf_ue_context_release(amf_ue);
-        }
 
         ogs_pkbuf_free(pkbuf);
         break;

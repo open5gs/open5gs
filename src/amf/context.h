@@ -220,6 +220,9 @@ struct amf_ue_s {
         uint8_t message_type; /* Type of last specific NAS message received */
         int access_type; /* 3GPP or Non-3GPP */
 
+        /* InitialUEMessage or UplinkNASTrasnport */
+        NGAP_ProcedureCode_t ngapProcedureCode;
+
         union {
             struct {
             ED3(uint8_t tsc:1;,
@@ -231,6 +234,13 @@ struct amf_ue_s {
 
             uint8_t data;
         };
+
+        struct {
+        ED4(uint8_t uplink_data_status:1;,
+            uint8_t pdu_session_status:1;,
+            uint8_t allowed_pdu_session_status:1;,
+            uint8_t reserved:5;)
+        } present;
 
     } __attribute__ ((packed)) nas;
 
@@ -380,12 +390,8 @@ typedef struct amf_sess_s {
 
     char *sm_context_ref;   /* smContextRef from SMF */
 
-#define SESSION_CONTEXT_IS_AVAILABLE(__aMF) \
-    ((__aMF) && (ogs_list_first((&(__aMF)->sess_list))) && \
-    (((amf_sess_t *)ogs_list_first((&(__aMF)->sess_list)))->sm_context_ref))
-
-#define SESSION_UP_CNX_STATE_SYNCHED(__aMF)  \
-    (amf_ue_activation_synched(__aMF) == true)
+#define SESSION_SYNC_DONE(__aMF)  \
+    (amf_sess_sync_done(__aMF) == true)
 
     /* UE session context is activated or not */
     OpenAPI_up_cnx_state_e ueUpCnxState;
@@ -457,8 +463,6 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
         ogs_nas_5gs_mobile_identity_t *mobile_identity);
 void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi);
 
-bool amf_ue_activation_synched(amf_ue_t *amf_ue);
-
 int amf_ue_have_indirect_tunnel(amf_ue_t *amf_ue);
 int amf_ue_clear_indirect_tunnel(amf_ue_t *amf_ue);
 
@@ -521,6 +525,8 @@ void amf_sess_remove(amf_sess_t *sess);
 void amf_sess_remove_all(amf_ue_t *amf_ue);
 amf_sess_t *amf_sess_find_by_psi(amf_ue_t *amf_ue, uint8_t psi);
 amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
+
+bool amf_sess_sync_done(amf_ue_t *amf_ue);
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai);
 ogs_s_nssai_t *amf_find_s_nssai(

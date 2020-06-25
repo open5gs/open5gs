@@ -25,6 +25,7 @@
 #include "ngap-path.h"
 #include "nas-security.h"
 #include "nas-path.h"
+#include "sbi-path.h"
 
 int ngap_open(void)
 {
@@ -298,7 +299,7 @@ void ngap_send_ue_context_modification_request(amf_ue_t *amf_ue)
 }
 #endif
 
-void ngap_send_ue_context_release_command(
+void ngap_send_ran_ue_context_release_command(
     ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause,
     uint8_t action, uint32_t delay)
 {
@@ -335,6 +336,45 @@ void ngap_send_ue_context_release_command(
 
         rv = ngap_delayed_send_to_ran_ue(ran_ue, ngapbuf, 0);
         ogs_expect(rv == OGS_OK);
+    }
+}
+
+void ngap_send_amf_ue_context_release_command(
+    amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause,
+    uint8_t action, uint32_t delay)
+{
+    ogs_assert(amf_ue);
+
+    ran_ue_t *ran_ue = amf_ue->ran_ue;
+    if (ran_ue) {
+        ngap_send_ran_ue_context_release_command(ran_ue,
+                group, cause, action, delay);
+        ogs_debug("    SUPI[%s]", amf_ue->supi);
+    } else {
+        ogs_error("[%s] No NG Context - "
+                "Group[%d] Cause[%d] Action[%d] Delay[%d]",
+                amf_ue->supi, group, (int)cause, action, delay);
+    }
+}
+
+void ngap_send_session_sync_or_context_release_command(
+    ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause,
+    uint8_t action, uint32_t delay)
+{
+    amf_ue_t *amf_ue = NULL;
+
+    ogs_assert(ran_ue);
+
+    amf_ue = ran_ue->amf_ue;
+    if (!amf_ue) {
+        ngap_send_ran_ue_context_release_command(ran_ue,
+                group, cause, action, delay);
+    } else {
+        amf_sbi_send_release_all_sessions(amf_ue);
+        if (SESSION_SYNC_DONE(amf_ue)) {
+            ngap_send_ran_ue_context_release_command(ran_ue,
+                    group, cause, action, delay);
+        }
     }
 }
 

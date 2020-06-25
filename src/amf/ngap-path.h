@@ -53,7 +53,15 @@ void ngap_send_ng_setup_failure(
 
 void ngap_send_initial_context_setup_request(amf_ue_t *amf_ue);
 void ngap_send_ue_context_modification_request(amf_ue_t *amf_ue);
-void ngap_send_ue_context_release_command(
+
+void ngap_send_ran_ue_context_release_command(
+    ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause,
+    uint8_t action, uint32_t delay);
+void ngap_send_amf_ue_context_release_command(
+    amf_ue_t *amf_ue, NGAP_Cause_PR group, long cause,
+    uint8_t action, uint32_t delay);
+
+void ngap_send_session_sync_or_context_release_command(
     ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause,
     uint8_t action, uint32_t delay);
 

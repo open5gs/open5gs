@@ -1386,16 +1386,6 @@ void amf_ue_set_supi(amf_ue_t *amf_ue, char *supi)
     ogs_hash_set(self.supi_hash, amf_ue->supi, strlen(amf_ue->supi), amf_ue);
 }
 
-bool amf_ue_activation_synched(amf_ue_t *amf_ue)
-{
-    amf_sess_t *sess = NULL;
-
-    ogs_list_for_each(&amf_ue->sess_list, sess)
-        if (sess->ueUpCnxState != sess->smfUpCnxState) return false;
-
-    return true;
-}
-
 void amf_ue_associate_ran_ue(amf_ue_t *amf_ue, ran_ue_t *ran_ue)
 {
     ogs_assert(amf_ue);
@@ -1522,6 +1512,16 @@ amf_sess_t *amf_sess_find_by_psi(amf_ue_t *amf_ue, uint8_t psi)
         if (psi == sess->psi) return sess;
 
     return NULL;
+}
+
+bool amf_sess_sync_done(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_list_for_each(&amf_ue->sess_list, sess)
+        if (sess->sbi.running) return false;
+
+    return true;
 }
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai)

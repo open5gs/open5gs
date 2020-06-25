@@ -164,15 +164,70 @@ void amf_sess_sbi_discover_and_send(
     }
 }
 
-void amf_sbi_send_release_all_sm_contexts(amf_ue_t *amf_ue)
+void amf_sbi_send_activating_session(amf_sess_t *sess)
+{
+    amf_nsmf_pdu_session_update_sm_context_param_t param;
+
+    ogs_assert(sess);
+
+    /* UPDATE_UpCnxState - ACTIVATING */
+    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+
+    memset(&param, 0, sizeof(param));
+    param.upCnxState = sess->ueUpCnxState;
+    amf_sess_sbi_discover_and_send(
+            OpenAPI_nf_type_SMF, sess, &param,
+            amf_nsmf_pdu_session_build_update_sm_context);
+}
+
+void amf_sbi_send_deactivate_session(
+        amf_sess_t *sess, int group, int cause)
+{
+    amf_nsmf_pdu_session_update_sm_context_param_t param;
+
+    ogs_assert(sess);
+
+    /* UPDATE_UpCnxState - DEACTIVATED */
+    sess->ueUpCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
+
+    if (sess->smfUpCnxState != OpenAPI_up_cnx_state_DEACTIVATED) {
+
+        memset(&param, 0, sizeof(param));
+        param.upCnxState = sess->ueUpCnxState;
+        param.ngApCause.group = group;
+        param.ngApCause.value = cause;
+        amf_sess_sbi_discover_and_send(
+                OpenAPI_nf_type_SMF, sess, &param,
+                amf_nsmf_pdu_session_build_update_sm_context);
+    }
+}
+
+void amf_sbi_send_deactivate_all_sessions(
+        amf_ue_t *amf_ue, int group, int cause)
 {
     amf_sess_t *sess = NULL;
 
     ogs_assert(amf_ue);
 
-    ogs_list_for_each(&amf_ue->sess_list, sess) {
-        amf_sess_sbi_discover_and_send(
-                OpenAPI_nf_type_SMF, sess, NULL,
-                amf_nsmf_pdu_session_build_release_sm_context);
-    }
+    ogs_list_for_each(&amf_ue->sess_list, sess)
+        amf_sbi_send_deactivate_session(sess, group, cause);
+}
+
+void amf_sbi_send_release_session(amf_sess_t *sess)
+{
+    ogs_assert(sess);
+
+    amf_sess_sbi_discover_and_send(
+            OpenAPI_nf_type_SMF, sess, NULL,
+            amf_nsmf_pdu_session_build_release_sm_context);
+}
+
+void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess)
+        amf_sbi_send_release_session(sess);
 }

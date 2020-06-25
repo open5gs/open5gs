@@ -63,14 +63,13 @@ int nas_5gs_send_to_downlink_nas_transport(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf)
     return OGS_OK;
 }
 
-void nas_5gs_send_registration_accept(
-        amf_ue_t *amf_ue, bool reactivation_result)
+void nas_5gs_send_registration_accept(amf_ue_t *amf_ue)
 {
     int rv;
     ogs_pkbuf_t *ngapbuf = NULL;
     ogs_pkbuf_t *gmmbuf = NULL;
 
-    gmmbuf = gmm_build_registration_accept(amf_ue, reactivation_result);
+    gmmbuf = gmm_build_registration_accept(amf_ue);
     ogs_expect_or_return(gmmbuf);
 
     ngapbuf = ngap_build_initial_context_setup_request(amf_ue, gmmbuf);
@@ -95,6 +94,93 @@ void nas_5gs_send_registration_reject(
 
     rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
     ogs_expect_or_return(rv == OGS_OK);
+}
+
+void nas_5gs_send_service_accept(amf_ue_t *amf_ue)
+{
+    int rv;
+    ogs_pkbuf_t *gmmbuf = NULL;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    ogs_assert(amf_ue);
+
+    gmmbuf = gmm_build_service_accept(amf_ue);
+    ogs_expect_or_return(gmmbuf);
+
+    switch (amf_ue->nas.ngapProcedureCode) {
+    case NGAP_ProcedureCode_id_InitialUEMessage:
+        ngapbuf = ngap_build_initial_context_setup_request(amf_ue, gmmbuf);
+        ogs_expect_or_return(ngapbuf);
+
+        rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
+        ogs_expect_or_return(rv == OGS_OK);
+        break;
+
+    case NGAP_ProcedureCode_id_UplinkNASTransport:
+        rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
+        ogs_expect_or_return(rv == OGS_OK);
+        break;
+
+    default:
+        ogs_error("Invalid NGAP ProcedureCode [%d]",
+                (int)amf_ue->nas.ngapProcedureCode);
+        return;
+    }
+}
+
+void nas_5gs_send_service_reject(
+        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause)
+{
+    int rv;
+    ogs_pkbuf_t *gmmbuf = NULL;
+
+    ogs_assert(amf_ue);
+
+    gmmbuf = gmm_build_service_reject(amf_ue, gmm_cause);
+    ogs_expect_or_return(gmmbuf);
+
+    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
+    ogs_expect(rv == OGS_OK);
+}
+
+void nas_5gs_send_accept(amf_ue_t *amf_ue)
+{
+    ogs_assert(amf_ue);
+
+    switch(amf_ue->nas.message_type) {
+    case OGS_NAS_5GS_REGISTRATION_REQUEST:
+        nas_5gs_send_registration_accept(amf_ue);
+        break;
+    case OGS_NAS_5GS_SERVICE_REQUEST:
+        nas_5gs_send_service_accept(amf_ue);
+        break;
+    default:
+        ogs_error("Unknown message type [%d]", amf_ue->nas.message_type);
+    }
+}
+
+void nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)
+{
+    ran_ue_t *ran_ue = NULL;
+    ogs_pkbuf_t *gmmbuf = NULL;
+
+    ogs_assert(amf_ue);
+    ran_ue = amf_ue->ran_ue;
+    ogs_assert(ran_ue);
+
+    if (amf_ue->nas.de_registration.switch_off == 0) {
+        int rv;
+
+        gmmbuf = gmm_build_de_registration_accept(amf_ue);
+        ogs_expect_or_return(gmmbuf);
+
+        rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
+        ogs_expect_or_return(rv == OGS_OK);
+    }
+
+    ngap_send_ran_ue_context_release_command(ran_ue,
+            NGAP_Cause_PR_nas, NGAP_CauseNas_deregister,
+            NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
 }
 
 void nas_5gs_send_identity_request(amf_ue_t *amf_ue)
@@ -268,7 +354,7 @@ void nas_5gs_send_gmm_reject(
         nas_5gs_send_registration_reject(amf_ue, gmm_cause);
         break;
     case OGS_NAS_5GS_SERVICE_REQUEST:
-        nas_5gs_send_service_reject(amf_ue, gmm_cause, true);
+        nas_5gs_send_service_reject(amf_ue, gmm_cause);
         break;
     default:
         ogs_error("Unknown message type [%d]", amf_ue->nas.message_type);
@@ -363,65 +449,6 @@ void nas_5gs_send_back_5gsm_message_from_sbi(amf_sess_t *sess, int status)
 {
     ogs_assert(sess);
     nas_5gs_send_back_5gsm_message(sess, gmm_cause_from_sbi(status));
-}
-
-void nas_5gs_send_service_accept(
-        amf_ue_t *amf_ue, bool reactivation_result)
-{
-    int rv;
-    ogs_pkbuf_t *gmmbuf = NULL;
-    ogs_pkbuf_t *ngapbuf = NULL;
-
-    ogs_assert(amf_ue);
-
-    gmmbuf = gmm_build_service_accept(amf_ue, reactivation_result);
-    ogs_expect_or_return(gmmbuf);
-
-    ngapbuf = ngap_build_initial_context_setup_request(amf_ue, gmmbuf);
-    ogs_expect_or_return(ngapbuf);
-
-    rv = nas_5gs_send_to_gnb(amf_ue, ngapbuf);
-    ogs_expect_or_return(rv == OGS_OK);
-}
-
-void nas_5gs_send_service_reject(amf_ue_t *amf_ue,
-        ogs_nas_5gmm_cause_t gmm_cause, bool pdu_session_status_present)
-{
-    int rv;
-    ogs_pkbuf_t *gmmbuf = NULL;
-
-    ogs_assert(amf_ue);
-
-    gmmbuf = gmm_build_service_reject(amf_ue,
-            gmm_cause, pdu_session_status_present);
-    ogs_expect_or_return(gmmbuf);
-
-    rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
-    ogs_expect(rv == OGS_OK);
-}
-
-void nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue)
-{
-    ran_ue_t *ran_ue = NULL;
-    ogs_pkbuf_t *gmmbuf = NULL;
-
-    ogs_assert(amf_ue);
-    ran_ue = amf_ue->ran_ue;
-    ogs_assert(ran_ue);
-
-    if (amf_ue->nas.de_registration.switch_off == 0) {
-        int rv;
-
-        gmmbuf = gmm_build_de_registration_accept(amf_ue);
-        ogs_expect_or_return(gmmbuf);
-
-        rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
-        ogs_expect_or_return(rv == OGS_OK);
-    }
-
-    ngap_send_ue_context_release_command(ran_ue,
-            NGAP_Cause_PR_nas, NGAP_CauseNas_deregister,
-            NGAP_UE_CTX_REL_NG_REMOVE_AND_UNLINK, 0);
 }
 
 #if 0

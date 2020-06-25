@@ -183,7 +183,7 @@ static void test1_func(abts_case *tc, void *data)
     bson_destroy(doc);
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(&test_ue);
+    gmmbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
     sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, false);
     ABTS_PTR_NOTNULL(tc, sendbuf);
@@ -209,7 +209,7 @@ static void test1_func(abts_case *tc, void *data)
     testngap_recv(&test_ue, recvbuf);
 
     /* Send Security mode complete */
-    nasbuf = testgmm_build_registration_request(&test_ue);
+    nasbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
     gmmbuf = testgmm_build_security_mode_complete(&test_ue, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);

@@ -184,13 +184,13 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Registration request */
     test_ue.registration_request_type.guti = 1;
-    gmmbuf = testgmm_build_registration_request(&test_ue);
+    gmmbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue.registration_request_type.requested_nssai = 1;
     test_ue.registration_request_type.last_visited_registered_tai = 1;
     test_ue.registration_request_type.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(&test_ue);
+    nasbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, false);
@@ -321,20 +321,29 @@ static void test1_func(abts_case *tc, void *data)
 
     ogs_msleep(50);
 
-    /* Send Registration request */
-    test_ue.registration_request_type.integrity_protected = 1;
+    /* Send Registration request : Uplink Data Status */
+    test_ue.registration_request_type.integrity_protected = 0;
     test_ue.registration_request_type.uplink_data_status = 1;
-    gmmbuf = testgmm_build_registration_request(&test_ue);
+    test_ue.registration_request_type.psimask.uplink_data_status =
+        1 << test_sess.psi;
+    nasbuf = testgmm_build_registration_request(&test_ue, NULL);
+    ABTS_PTR_NOTNULL(tc, nasbuf);
+
+    test_ue.registration_request_type.integrity_protected = 1;
+    test_ue.registration_request_type.uplink_data_status = 0;
+    gmmbuf = testgmm_build_registration_request(&test_ue, nasbuf);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
+
     sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, true);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    /* Receive Initial context setup request */
+    /* Receive Registration accept */
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(&test_ue, recvbuf);
+    ABTS_INT_EQUAL(tc, 0x0000, test_ue.pdu_session_reactivation_result);
 
     /* Send Initial context setup response */
     sendbuf = testngap_build_initial_context_setup_response(
@@ -364,12 +373,12 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Registration request - INVALID_GUTI */
     test_ue.nas_guti.m_tmsi = 0x1234;
-    gmmbuf = testgmm_build_registration_request(&test_ue);
+    gmmbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue.registration_request_type.integrity_protected = 0;
     test_ue.registration_request_type.uplink_data_status = 0;
-    nasbuf = testgmm_build_registration_request(&test_ue);
+    nasbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, true);

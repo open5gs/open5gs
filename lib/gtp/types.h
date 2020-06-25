@@ -28,6 +28,36 @@
 extern "C" {
 #endif
 
+#define OGS_5GS_GTP_HEADER_LEN 16
+typedef struct ogs_5gs_gtp_header_s {
+    union {
+        struct {
+        ED6(uint8_t version:3;,
+            uint8_t protocol_type:1;,
+            uint8_t reserved:1;,
+            uint8_t next_extension:1;,
+            uint8_t seqence_number:1;,
+            uint8_t n_pdu_number:1;)
+        };
+        uint8_t flags;
+    };
+    uint8_t type;
+    uint16_t length;
+    uint32_t teid;
+    struct {
+#define OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER 0x85
+#define OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS 0x0
+        uint32_t type;
+        uint8_t len;
+#define OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION 1
+        ED2(uint8_t pdu_type:4;,
+            uint8_t spare1:4;);
+        ED2(uint8_t spare2:2;,
+            uint8_t qos_flow_identifier:6;);
+        uint8_t next_type;
+    } extension_header;
+} __attribute__ ((packed)) ogs_5gs_gtp_header_t;
+
 /* 8.4 Cause */
 #define OGS_GTP_CAUSE_LOCAL_DETACH  2
 #define OGS_GTP_CAUSE_COMPLETE_DETACH_3

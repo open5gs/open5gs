@@ -32,10 +32,17 @@ int nas_5gs_send_to_gnb(amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf);
 int nas_5gs_send_to_downlink_nas_transport(
         amf_ue_t *amf_ue, ogs_pkbuf_t *pkbuf);
 
-void nas_5gs_send_registration_accept(
-        amf_ue_t *amf_ue, bool reactivation_result);
+void nas_5gs_send_registration_accept(amf_ue_t *amf_ue);
 void nas_5gs_send_registration_reject(
         amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
+
+void nas_5gs_send_service_accept(amf_ue_t *amf_ue);
+void nas_5gs_send_service_reject(
+        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause);
+
+void nas_5gs_send_accept(amf_ue_t *amf_ue);
+
+void nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue);
 
 void nas_5gs_send_identity_request(amf_ue_t *amf_ue);
 
@@ -65,13 +72,6 @@ void nas_5gs_send_gsm_reject_from_sbi(amf_sess_t *sess,
 void nas_5gs_send_back_5gsm_message(
         amf_sess_t *sess, ogs_nas_5gmm_cause_t gmm_cause);
 void nas_5gs_send_back_5gsm_message_from_sbi(amf_sess_t *sess, int status);
-
-void nas_5gs_send_service_accept(
-        amf_ue_t *amf_ue, bool reactivation_result);
-void nas_5gs_send_service_reject(amf_ue_t *amf_ue,
-        ogs_nas_5gmm_cause_t gmm_cause, bool pdu_session_status_present);
-
-void nas_5gs_send_de_registration_accept(amf_ue_t *amf_ue);
 
 #if 0
 void nas_5gs_send_tau_accept(

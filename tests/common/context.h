@@ -62,31 +62,42 @@ typedef struct test_sess_s test_sess_t;
 typedef struct test_registration_request_type_s {
     union {
         struct {
-        ED7(uint8_t integrity_protected:1;,
+        ED8(uint8_t integrity_protected:1;,
             uint8_t guti:1;,
             uint8_t requested_nssai:1;,
             uint8_t last_visited_registered_tai:1;,
             uint8_t ue_usage_setting:1;,
             uint8_t uplink_data_status:1;,
-            uint8_t reserved:2;)
+            uint8_t pdu_session_status:1;,
+            uint8_t allowed_pdu_session_status:1;)
         };
         uint8_t value;
     };
+    struct {
+        uint16_t pdu_session_status;
+        uint16_t uplink_data_status;
+        uint16_t allowed_pdu_session_status;
+    } psimask;
 } __attribute__ ((packed)) test_registration_request_type_t;
 
 typedef struct test_service_request_type_s {
     union {
         struct {
-        ED5(uint8_t integrity_protected:1;,
+        ED6(uint8_t integrity_protected:1;,
+            uint8_t ciphered:1;,
             uint8_t pdu_session_status:1;,
             uint8_t uplink_data_status:1;,
             uint8_t allowed_pdu_session_status:1;,
-            uint8_t reserved:4;)
+            uint8_t reserved:3;)
         };
         uint8_t value;
     };
     uint8_t service_type;
-    uint16_t psimask;
+    struct {
+        uint16_t pdu_session_status;
+        uint16_t uplink_data_status;
+        uint16_t allowed_pdu_session_status;
+    } psimask;
 } __attribute__ ((packed)) test_service_request_type_t;
 
 typedef struct test_ue_s {
@@ -161,6 +172,9 @@ typedef struct test_ue_s {
     test_registration_request_type_t registration_request_type;
     test_service_request_type_t service_request_type;
     uint8_t         gmm_message_type; /* Last received 5GMM message type */
+
+    uint16_t pdu_session_status;
+    uint16_t pdu_session_reactivation_result;
 
     test_sess_t *sess;
 } test_ue_t;

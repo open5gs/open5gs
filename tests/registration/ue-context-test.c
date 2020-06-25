@@ -183,13 +183,13 @@ static void test1_func(abts_case *tc, void *data)
     bson_destroy(doc);
 
     /* Send Registration request */
-    gmmbuf = testgmm_build_registration_request(&test_ue);
+    gmmbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
     test_ue.registration_request_type.requested_nssai = 1;
     test_ue.registration_request_type.last_visited_registered_tai = 1;
     test_ue.registration_request_type.ue_usage_setting = 1;
-    nasbuf = testgmm_build_registration_request(&test_ue);
+    nasbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
     sendbuf = testngap_build_initial_ue_message(&test_ue, gmmbuf, false);

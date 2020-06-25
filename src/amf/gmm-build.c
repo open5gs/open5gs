@@ -24,10 +24,10 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gmm_log_domain
 
-static uint16_t get_pdu_session_status(amf_ue_t *amf_ue, bool reactivation);
+static uint16_t get_pdu_session_status(amf_ue_t *amf_ue);
+static uint16_t get_pdu_session_reactivation_result(amf_ue_t *amf_ue);
 
-ogs_pkbuf_t *gmm_build_registration_accept(
-        amf_ue_t *amf_ue, bool reactivation_result)
+ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
 {
     int i;
     int served_tai_index = 0;
@@ -44,6 +44,8 @@ ogs_pkbuf_t *gmm_build_registration_accept(
     ogs_nas_nssai_t *allowed_nssai = &registration_accept->allowed_nssai;
     ogs_nas_5gs_network_feature_support_t *network_feature_support =
         &registration_accept->network_feature_support;
+    ogs_nas_pdu_session_status_t *pdu_session_status =
+        &registration_accept->pdu_session_status;
     ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result =
         &registration_accept->pdu_session_reactivation_result;
     ogs_nas_gprs_timer_3_t *t3512_value = &registration_accept->t3512_value;
@@ -139,12 +141,23 @@ ogs_pkbuf_t *gmm_build_registration_accept(
     registration_accept->t3502_value.value = 12;
 #endif
 
-    if (reactivation_result) {
+    if (amf_ue->nas.present.pdu_session_status) {
+        registration_accept->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_ACCEPT_PDU_SESSION_STATUS_PRESENT;
+        pdu_session_status->length = 2;
+        pdu_session_status->psi = get_pdu_session_status(amf_ue);
+        ogs_debug("[%s]    PDU Session Status : %04x",
+                amf_ue->supi, pdu_session_status->psi);
+    }
+
+    if (amf_ue->nas.present.uplink_data_status) {
         registration_accept->presencemask |=
             OGS_NAS_5GS_REGISTRATION_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_PRESENT;
         pdu_session_reactivation_result->length = 2;
         pdu_session_reactivation_result->psi =
-            get_pdu_session_status(amf_ue, true);
+            get_pdu_session_reactivation_result(amf_ue);
+        ogs_debug("[%s]    PDU Session Reactivation Result : %04x",
+                amf_ue->supi, pdu_session_reactivation_result->psi);
     }
 
     pkbuf = nas_5gs_security_encode(amf_ue, &message);
@@ -166,6 +179,108 @@ ogs_pkbuf_t *gmm_build_registration_reject(ogs_nas_5gmm_cause_t gmm_cause)
     registration_reject->gmm_cause = gmm_cause;
 
     return ogs_nas_5gs_plain_encode(&message);
+}
+
+ogs_pkbuf_t *gmm_build_service_accept(amf_ue_t *amf_ue)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_service_accept_t *service_accept = &message.gmm.service_accept;
+    ogs_nas_pdu_session_status_t *pdu_session_status = NULL;
+    ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result;
+
+    ogs_assert(amf_ue);
+
+    pdu_session_status = &service_accept->pdu_session_status;
+    ogs_assert(pdu_session_status);
+    pdu_session_reactivation_result = &service_accept->
+        pdu_session_reactivation_result;
+    ogs_assert(pdu_session_reactivation_result);
+
+    ogs_debug("[%s] Service accept", amf_ue->supi);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_SERVICE_ACCEPT;
+
+    if (amf_ue->nas.present.pdu_session_status) {
+        service_accept->presencemask |=
+            OGS_NAS_5GS_SERVICE_ACCEPT_PDU_SESSION_STATUS_PRESENT;
+        pdu_session_status->length = 2;
+        pdu_session_status->psi = get_pdu_session_status(amf_ue);
+        ogs_debug("[%s]    PDU Session Status : %04x",
+                amf_ue->supi, pdu_session_status->psi);
+    }
+
+    if (amf_ue->nas.present.uplink_data_status) {
+        service_accept->presencemask |=
+            OGS_NAS_5GS_SERVICE_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_PRESENT;
+        pdu_session_reactivation_result->length = 2;
+        pdu_session_reactivation_result->psi =
+            get_pdu_session_reactivation_result(amf_ue);
+        ogs_debug("[%s]    PDU Session Reactivation Result : %04x",
+                amf_ue->supi, pdu_session_reactivation_result->psi);
+    }
+
+    return nas_5gs_security_encode(amf_ue, &message);
+}
+
+ogs_pkbuf_t *gmm_build_service_reject(
+        amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t gmm_cause)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_service_reject_t *service_reject = &message.gmm.service_reject;
+    ogs_nas_pdu_session_status_t *pdu_session_status = NULL;
+
+    ogs_assert(amf_ue);
+
+    pdu_session_status = &service_reject->pdu_session_status;
+
+    ogs_debug("Service reject");
+
+    memset(&message, 0, sizeof(message));
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_SERVICE_REJECT;
+
+    service_reject->gmm_cause = gmm_cause;
+
+    if (amf_ue->nas.present.pdu_session_status) {
+        service_reject->presencemask |=
+            OGS_NAS_5GS_SERVICE_REJECT_PDU_SESSION_STATUS_PRESENT;
+        pdu_session_status->length = 2;
+        pdu_session_status->psi = get_pdu_session_status(amf_ue);
+        ogs_debug("[%s]    PDU Session Status : %04x",
+                amf_ue->supi, pdu_session_status->psi);
+    }
+
+    return ogs_nas_5gs_plain_encode(&message);
+}
+
+ogs_pkbuf_t *gmm_build_de_registration_accept(amf_ue_t *amf_ue)
+{
+    ogs_nas_5gs_message_t message;
+
+    ogs_assert(amf_ue);
+
+    memset(&message, 0, sizeof(message));
+    message.h.security_header_type =
+        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+    message.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+
+    ogs_debug("[%s] De-registration accept", amf_ue->supi);
+
+    message.gmm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
+    message.gmm.h.message_type = OGS_NAS_5GS_DEREGISTRATION_ACCEPT;
+
+    return nas_5gs_security_encode(amf_ue, &message);
 }
 
 ogs_pkbuf_t *gmm_build_identity_request(amf_ue_t *amf_ue)
@@ -489,94 +604,6 @@ ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
 
     return gmmbuf;
 }
-
-ogs_pkbuf_t *gmm_build_service_accept(
-        amf_ue_t *amf_ue, bool reactivation_result)
-{
-    ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_service_accept_t *service_accept = &message.gmm.service_accept;
-    ogs_nas_pdu_session_reactivation_result_t *pdu_session_reactivation_result;
-
-    ogs_assert(amf_ue);
-
-    pdu_session_reactivation_result = &service_accept->
-        pdu_session_reactivation_result;
-    ogs_assert(pdu_session_reactivation_result);
-
-    ogs_debug("[%s] Service accept", amf_ue->supi);
-
-    memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
-    message.gmm.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-    message.gmm.h.message_type = OGS_NAS_5GS_SERVICE_ACCEPT;
-
-    if (reactivation_result) {
-        service_accept->presencemask |=
-            OGS_NAS_5GS_SERVICE_ACCEPT_PDU_SESSION_REACTIVATION_RESULT_PRESENT;
-        pdu_session_reactivation_result->length = 2;
-        pdu_session_reactivation_result->psi =
-            get_pdu_session_status(amf_ue, true);
-    }
-
-    return nas_5gs_security_encode(amf_ue, &message);
-}
-
-ogs_pkbuf_t *gmm_build_service_reject(amf_ue_t *amf_ue,
-        ogs_nas_5gmm_cause_t gmm_cause, bool pdu_session_status_present)
-{
-    ogs_nas_5gs_message_t message;
-    ogs_nas_5gs_service_reject_t *service_reject = &message.gmm.service_reject;
-    ogs_nas_pdu_session_status_t *pdu_session_status = NULL;
-
-    ogs_assert(amf_ue);
-
-    pdu_session_status = &service_reject->pdu_session_status;
-
-    ogs_debug("Service reject");
-
-    memset(&message, 0, sizeof(message));
-    message.gmm.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-    message.gmm.h.message_type = OGS_NAS_5GS_SERVICE_REJECT;
-
-    service_reject->gmm_cause = gmm_cause;
-
-    if (pdu_session_status_present) {
-        service_reject->presencemask |=
-            OGS_NAS_5GS_SERVICE_REJECT_PDU_SESSION_STATUS_PRESENT;
-        pdu_session_status->length = 2;
-        pdu_session_status->psi = get_pdu_session_status(amf_ue, false);
-    }
-
-    return ogs_nas_5gs_plain_encode(&message);
-}
-
-ogs_pkbuf_t *gmm_build_de_registration_accept(amf_ue_t *amf_ue)
-{
-    ogs_nas_5gs_message_t message;
-
-    ogs_assert(amf_ue);
-
-    memset(&message, 0, sizeof(message));
-    message.h.security_header_type =
-        OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
-    message.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-
-    ogs_debug("[%s] De-registration accept", amf_ue->supi);
-
-    message.gmm.h.extended_protocol_discriminator =
-        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
-    message.gmm.h.message_type = OGS_NAS_5GS_DEREGISTRATION_ACCEPT;
-
-    return nas_5gs_security_encode(amf_ue, &message);
-}
-
 #if 0
 ogs_pkbuf_t *gmm_build_tau_accept(amf_ue_t *amf_ue)
 {
@@ -780,7 +807,7 @@ ogs_pkbuf_t *gmm_build_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause)
     return nas_5gs_security_encode(amf_ue, &message);
 }
 
-static uint16_t get_pdu_session_status(amf_ue_t *amf_ue, bool reactivation)
+static uint16_t get_pdu_session_status(amf_ue_t *amf_ue)
 {
     amf_sess_t *sess = NULL;
 
@@ -790,13 +817,27 @@ static uint16_t get_pdu_session_status(amf_ue_t *amf_ue, bool reactivation)
     ogs_assert(amf_ue);
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
-        if (reactivation) {
-            if (sess->smfUpCnxState != OpenAPI_up_cnx_state_ACTIVATING)
-                psimask |= (1 << sess->psi);
-        } else {
-            if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATING)
-                psimask |= (1 << sess->psi);
-        }
+        psimask |= (1 << sess->psi);
+    }
+
+    status |= (psimask << 8);
+    status |= (psimask >> 8);
+
+    return status;
+}
+
+static uint16_t get_pdu_session_reactivation_result(amf_ue_t *amf_ue)
+{
+    amf_sess_t *sess = NULL;
+
+    uint16_t psimask = 0;
+    uint16_t status = 0;
+
+    ogs_assert(amf_ue);
+
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED)
+            psimask |= (1 << sess->psi);
     }
 
     status |= (psimask << 8);
