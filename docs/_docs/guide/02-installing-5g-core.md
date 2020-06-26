@@ -60,7 +60,7 @@ $ ninja -C build
 Check whether the compilation is correct in your environment.
 ```bash
 $ cd build
-$ ./test/registration/registration
+$ ./tests/registration/registration
 ```
 
 **Tip:** You can also check the result of `./test/registration/registration` with a tool that captures packets. If you are running `wireshark`, select the `any` interface and set FILTER to `ngap || http || pfcp || gtp`.
