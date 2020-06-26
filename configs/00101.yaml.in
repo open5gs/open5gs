@@ -1,0 +1,101 @@
+db_uri: mongodb://localhost/open5gs
+
+logger:
+
+parameter:
+
+amf:
+    sbi:
+      - addr: 127.0.0.2
+        port: 7777
+    ngap:
+      - addr: 127.0.0.2
+    guami:
+      - plmn_id:
+          mcc: 001
+          mnc: 01
+        amf_id:
+          region: 1
+          set: 1
+          pointer: 1
+    tai:
+      - plmn_id:
+          mcc: 001
+          mnc: 01
+        tac: 81
+    plmn:
+      - plmn_id:
+          mcc: 001
+          mnc: 01
+        s_nssai:
+          - sst: 1
+    security:
+        integrity_order : [ NIA2, NIA1, NIA0 ]
+        ciphering_order : [ NEA0, NEA1, NEA2 ]
+    network_name:
+        full: Open5GS
+    amf_name: open5gs-amf0
+
+smf:
+    sbi:
+      - addr: 127.0.0.3
+        port: 7777
+    gtpc:
+      - addr: 127.0.0.3
+      - addr: ::1
+    pfcp:
+      - addr: 127.0.0.3
+    pdn:
+      - addr: 10.45.0.1/16
+      - addr: cafe::1/64
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 2001:4860:4860::8888
+      - 2001:4860:4860::8844
+    mtu: 1400
+    freeDiameter:
+      identity: pgw.open-ims.test
+      realm: open-ims.test
+      listen_on: 127.0.0.3
+      load_extension:
+        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+          conf: 0x8888
+        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
+        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
+        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
+        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+      connect:
+        - identity: pcrf.open-ims.test
+          addr: 127.0.0.5
+upf:
+    pfcp:
+      - addr: 127.0.0.4
+    gtpu:
+      - addr:
+        - 127.0.0.4
+        - ::1
+    pdn:
+
+ausf:
+    sbi:
+      - addr: 127.0.0.5
+        port: 7777
+
+udm:
+    sbi:
+      - addr: 127.0.0.6
+        port: 7777
+
+udr:
+    sbi:
+      - addr: 127.0.0.7
+        port: 7777
+nrf:
+    sbi:
+      - addr:
+          - 127.0.0.1
+          - ::1
+        port: 7777

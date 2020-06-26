@@ -69,6 +69,8 @@ void udr_nnrf_handle_nf_status_subscribe(
         struct timeval tv;
         struct tm local, next;
         ogs_time_t diff, duration;
+
+        memset(&next, 0, sizeof(next));
         if (ogs_strptime(SubscriptionData->validity_time,
                 OGS_TIME_ISO8601_FORMAT, &next)) {
             ogs_gettimeofday(&tv);

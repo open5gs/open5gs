@@ -131,7 +131,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     int rv;
     ssize_t size;
     ogs_pkbuf_t *pkbuf = NULL;
-    uint32_t len = OGS_GTPV1U_HEADER_LEN;
+    int len;
     ogs_gtp_header_t *gtp_h = NULL;
     struct ip *ip_h = NULL;
 
@@ -159,12 +159,17 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(pkbuf->len);
 
     gtp_h = (ogs_gtp_header_t *)pkbuf->data;
-    if (gtp_h->flags & OGS_GTPU_FLAGS_S) len += 4;
     teid = be32toh(gtp_h->teid);
 
     ogs_debug("[PGW] RECV GPU-U from SGW : TEID[0x%x]", teid);
 
     /* Remove GTP header and send packets to TUN interface */
+    len = ogs_gtpu_header_len(pkbuf);
+    if (len < 0) {
+        ogs_error("[DROP] Cannot decode GTPU packet");
+        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+        goto cleanup;
+    }
     ogs_assert(ogs_pkbuf_pull(pkbuf, len));
 
     ip_h = (struct ip *)pkbuf->data;

@@ -134,7 +134,24 @@ bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
 
         sqn = ogs_buffer_to_uint64(sqn_ms, OGS_SQN_LEN);
 
-        /* 33.102 C.3.4 Guide : IND + 1 */
+        /* 33.102 C.3.4 Guide : IND + 1
+         *
+         * General rule: index values IND used in the array scheme,
+         * according to Annex C.1.2, shall be allocated cyclically
+         * within its range 0, ... , a-1. This means that the index value IND
+         * used with the previously generated authentication vector is stored
+         * in SQN HE , and the next authentication vector shall use index
+         * value IND +1 mod a.
+         *
+         * In future releases there may be additional information
+         * about the requesting node identity. If this information is
+         * available it is recommended to use it in the following way:
+         *
+         * - If the new request comes from the same serving node
+         *   as the previous request, then the index value used for
+         *   the new request shall be the same as was used for
+         *   the previous request.
+         */
         sqn = (sqn + 32 + 1) & OGS_MAX_SQN;
 
         ogs_uint64_to_buffer(sqn, OGS_SQN_LEN, udm_ue->sqn);

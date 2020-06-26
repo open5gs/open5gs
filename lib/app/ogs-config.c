@@ -187,7 +187,7 @@ static int config_prepare(void)
 
     recalculate_pool_size();
 
-    self.time.nf_instance.heartbeat = 3;        /* 3 second */
+    self.time.nf_instance.heartbeat = 5;        /* 5 second */
     self.time.nf_instance.validity = 3600;      /* 3600 seconds = 1 hour */
     self.time.subscription.validity = 86400;    /* 86400 seconds = 1 day */
 

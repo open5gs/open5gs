@@ -22,7 +22,7 @@
 static ogs_pkbuf_t *testngap_build_pdu_session_resource_response_trasfer(
         test_sess_t *sess);
 
-ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id)
+ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize)
 {
     ogs_pkbuf_t *pkbuf = NULL;
     int i, j;
@@ -63,7 +63,7 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id)
     ogs_asn_buffer_to_OCTET_STRING(
             plmn_id, OGS_PLMN_ID_LEN, &globalGNB_ID->pLMNIdentity);
 
-    ogs_ngap_uint32_to_GNB_ID(gnb_id, &globalGNB_ID->gNB_ID);
+    ogs_ngap_uint32_to_GNB_ID(gnb_id, bitsize, &globalGNB_ID->gNB_ID);
 
     ie = CALLOC(1, sizeof(NGAP_NGSetupRequestIEs_t));
     ASN_SEQUENCE_ADD(&NGSetupRequest->protocolIEs, ie);
@@ -242,7 +242,7 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
             CALLOC(1, sizeof(NGAP_UserLocationInformationNR_t));
 
     nR_CGI = &userLocationInformationNR->nR_CGI;
-    ogs_ngap_nr_cgi_to_ASN(&test_self()->cgi, nR_CGI);
+    ogs_ngap_nr_cgi_to_ASN(&test_self()->nr_cgi, nR_CGI);
 
     tAI = &userLocationInformationNR->tAI;
     ogs_ngap_5gs_tai_to_ASN(&test_self()->tai, tAI);
@@ -378,7 +378,7 @@ ogs_pkbuf_t *testngap_build_uplink_nas_transport(
             CALLOC(1, sizeof(NGAP_UserLocationInformationNR_t));
 
     nR_CGI = &userLocationInformationNR->nR_CGI;
-    ogs_ngap_nr_cgi_to_ASN(&test_self()->cgi, nR_CGI);
+    ogs_ngap_nr_cgi_to_ASN(&test_self()->nr_cgi, nR_CGI);
 
     tAI = &userLocationInformationNR->tAI;
     ogs_ngap_5gs_tai_to_ASN(&test_self()->tai, tAI);
@@ -556,7 +556,21 @@ ogs_pkbuf_t *testngap_build_ue_radio_capability_info_indication(
     NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_UERadioCapability_t *UERadioCapability = NULL;
 
-    char capability[] = "abcd";
+    uint8_t tmp[OGS_MAX_SDU_LEN];
+    char *_capability_captured = "040ca1080f"
+        "de1a00000074e5a0 31e000380a03c126 0c80038d80818804 804c0203018022a3"
+        "6146b040d0d00012 0098087ad8202020 e1de38720c380020 64f1f570000f001c"
+        "0003c002a36266b0 40d0d00012009808 7ad8202020e1de38 720c38002064f1f5"
+        "70000f001c0003c0 02a3626eb040d0d0 00120098087ad820 2020e1de38720c38"
+        "002064f1f570000f 001c0003c0003403 898000000e480713 4000001c900e1400"
+        "0000390088407022 6c70e04089b1c381 0226c70e007b0380 c000a07010140c00"
+        "a0341f0000800000 00032a6802080000 4b2ca82000032cb2 800a955d52a9a020"
+        "7000b00000004008 0118b10000204060 71112131b1f21252 62728292a4a50123"
+        "bb40002000208183 91244cd9f4295327 50a551021ffff21f fff21ffff21ffff2"
+        "1ffff21ffff21fff f21ffff21ffff21f fff21ffff21ffff2 1ffff21ffff21fff"
+        "f21ffff21fffffe0 dd88600280706900 00000054888af410 0001a47a08000023"
+        "fe40000331401c36 980610fffffffff3 5500020045240000 80000412c3804260"
+        "9a143c0c00000410 0004104394000000 0000";
 
     ogs_assert(test_ue);
 
@@ -599,7 +613,7 @@ ogs_pkbuf_t *testngap_build_ue_radio_capability_info_indication(
     ASN_SEQUENCE_ADD(&UERadioCapabilityInfoIndication->protocolIEs, ie);
 
     ie->id = NGAP_ProtocolIE_ID_id_UERadioCapability;
-    ie->criticality = NGAP_Criticality_reject;
+    ie->criticality = NGAP_Criticality_ignore;
     ie->value.present =
         NGAP_UERadioCapabilityInfoIndicationIEs__value_PR_UERadioCapability;
 
@@ -608,9 +622,11 @@ ogs_pkbuf_t *testngap_build_ue_radio_capability_info_indication(
     asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
     *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
 
-    UERadioCapability->size = strlen(capability);
+    OGS_HEX(_capability_captured, strlen(_capability_captured), tmp),
+
+    UERadioCapability->size = 407;
     UERadioCapability->buf = CALLOC(UERadioCapability->size, sizeof(uint8_t));
-    memcpy(UERadioCapability->buf, capability, UERadioCapability->size);
+    memcpy(UERadioCapability->buf, tmp, UERadioCapability->size);
 
     return nga_ngap_encode(&pdu);
 }

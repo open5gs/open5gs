@@ -91,9 +91,6 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
     amf_sess_t *sess = NULL;
     ran_ue_t *ran_ue = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
-#if 0
-    NGAP_ProcedureCode_t procedureCode;
-#endif
     ogs_nas_security_header_type_t h;
 
     ogs_assert(e);

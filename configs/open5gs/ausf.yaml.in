@@ -167,13 +167,13 @@ pool:
 #
 # time:
 #
-#  o NF Instance Heartbeat (Default : 3 seconds)
+#  o NF Instance Heartbeat (Default : 5 seconds)
 #
 #  o NF Instance Heartbeat (Disabled)
 #    nf_instance:
 #      heartbeat: 0
 #
-#  o NF Instance Heartbeat (5 seconds)
+#  o NF Instance Heartbeat (10 seconds)
 #    nf_instance:
-#      heartbeat: 5
+#      heartbeat: 10
 time:

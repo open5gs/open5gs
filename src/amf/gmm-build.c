@@ -89,8 +89,8 @@ ogs_pkbuf_t *gmm_build_registration_accept(amf_ue_t *amf_ue)
     ogs_debug("[%s]    TAI[PLMN_ID:%06x,TAC:%d]", amf_ue->supi,
             ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
     ogs_debug("[%s]    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]", amf_ue->supi,
-            ogs_plmn_id_hexdump(&amf_ue->cgi.plmn_id),
-            (long long)amf_ue->cgi.cell_id);
+            ogs_plmn_id_hexdump(&amf_ue->nr_cgi.plmn_id),
+            (long long)amf_ue->nr_cgi.cell_id);
 
     served_tai_index = amf_find_served_tai(&amf_ue->tai);
     ogs_debug("[%s]    SERVED_TAI_INDEX[%d]", amf_ue->supi, served_tai_index);

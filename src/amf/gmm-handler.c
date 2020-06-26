@@ -128,18 +128,18 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
     ogs_debug("    OLD NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
-            ogs_plmn_id_hexdump(&amf_ue->cgi.plmn_id),
-            (long long)amf_ue->cgi.cell_id);
+            ogs_plmn_id_hexdump(&amf_ue->nr_cgi.plmn_id),
+            (long long)amf_ue->nr_cgi.cell_id);
     ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
             ogs_plmn_id_hexdump(&ran_ue->saved.tai.plmn_id),
             ran_ue->saved.tai.tac.v);
     ogs_debug("    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
-            ogs_plmn_id_hexdump(&ran_ue->saved.cgi.plmn_id),
-            (long long)ran_ue->saved.cgi.cell_id);
+            ogs_plmn_id_hexdump(&ran_ue->saved.nr_cgi.plmn_id),
+            (long long)ran_ue->saved.nr_cgi.cell_id);
 
     /* Copy TAI and ECGI from ran_ue */
     memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
-    memcpy(&amf_ue->cgi, &ran_ue->saved.cgi, sizeof(ogs_nr_cgi_t));
+    memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
 
     /* Check TAI */
     served_tai_index = amf_find_served_tai(&amf_ue->tai);

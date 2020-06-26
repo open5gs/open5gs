@@ -123,6 +123,29 @@ void ogs_asn_buffer_to_BIT_STRING(
     memcpy(bit_string->buf, buf, size);
 }
 
+void ogs_asn_uint32_to_BIT_STRING(
+        uint32_t uint32, uint8_t bitsize, BIT_STRING_t *bit_string)
+{
+    char tmp[32];
+    uint64_t uint64;
+    ogs_assert(bit_string);
+
+    uint64 = uint32;
+    ogs_uint64_to_buffer(
+            uint64 << ((32 - bitsize) % 8), (bitsize + 7) / 8, tmp);
+    ogs_asn_buffer_to_BIT_STRING(
+            tmp, (bitsize + 7) / 8, (32 - bitsize) % 8, bit_string);
+}
+
+void ogs_asn_BIT_STRING_to_uint32(BIT_STRING_t *bit_string, uint32_t *uint32)
+{
+    ogs_assert(bit_string);
+    ogs_assert(uint32);
+
+    *uint32 = ogs_buffer_to_uint64(bit_string->buf, bit_string->size)
+                    >> bit_string->bits_unused;
+}
+
 int ogs_asn_BIT_STRING_to_ip(BIT_STRING_t *bit_string, ogs_ip_t *ip)
 {
     char buf[OGS_ADDRSTRLEN], buf2[OGS_ADDRSTRLEN];

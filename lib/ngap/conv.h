@@ -28,7 +28,8 @@
 extern "C" {
 #endif
 
-void ogs_ngap_uint32_to_GNB_ID(uint32_t gnb_id, NGAP_GNB_ID_t *gNB_ID);
+void ogs_ngap_uint32_to_GNB_ID(
+        uint32_t gnb_id, uint8_t bitsize, NGAP_GNB_ID_t *gNB_ID);
 void ogs_ngap_GNB_ID_to_uint32(NGAP_GNB_ID_t *gNB_ID, uint32_t *gnb_id);
 
 void ogs_ngap_uint8_to_AMFRegionID(

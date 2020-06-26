@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id);
+ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize);
 ogs_pkbuf_t *testngap_build_initial_ue_message(
         test_ue_t *test_ue, ogs_pkbuf_t *gmmbuf, bool s_tmsi);
 ogs_pkbuf_t *testngap_build_uplink_nas_transport(

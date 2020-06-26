@@ -28,6 +28,7 @@
 extern "C" {
 #endif
 
+int ogs_gtpu_header_len(ogs_pkbuf_t *pkbuf);
 uint16_t ogs_in_cksum(uint16_t *addr, int len);
 
 #ifdef __cplusplus

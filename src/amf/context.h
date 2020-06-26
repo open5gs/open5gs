@@ -173,13 +173,13 @@ struct ran_ue_s {
     ran_ue_t        *source_ue;
     ran_ue_t        *target_ue;
 
-    /* Use amf_ue->tai, amf_ue->e_cgi.
-     * Do not access ran_ue->saved.tai ran_ue->saved.e_cgi.
+    /* Use amf_ue->tai, amf_ue->nr_cgi.
+     * Do not access ran_ue->saved.tai ran_ue->saved.nr_cgi.
      * 
      * Save TAI and ECGI. And then, this will copy 'amf_ue_t' context later */
     struct {
         ogs_5gs_tai_t   tai;
-        ogs_nr_cgi_t    cgi;
+        ogs_nr_cgi_t    nr_cgi;
     } saved;
 
     /* Store by UE Context Release Command
@@ -264,7 +264,7 @@ struct amf_ue_s {
     /* UE Info */
     amf_guami_t     *guami;
     ogs_5gs_tai_t   tai;
-    ogs_nr_cgi_t    cgi;
+    ogs_nr_cgi_t    nr_cgi;
     ogs_plmn_id_t   last_visited_plmn_id;
     ogs_nas_ue_usage_setting_t ue_usage_setting;
 

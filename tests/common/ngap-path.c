@@ -56,6 +56,9 @@ void testngap_recv(test_ue_t *test_ue, ogs_pkbuf_t *pkbuf)
         case NGAP_ProcedureCode_id_UEContextRelease:
             /* Nothing */
             break;
+        case NGAP_ProcedureCode_id_ErrorIndication:
+            /* Nothing */
+            break;
         default:
             ogs_error("Not implemented(choice:%d, proc:%d)",
                     pdu->present, (int)initiatingMessage->procedureCode);

@@ -169,7 +169,7 @@ void ngap_handle_ng_setup_request(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     }
 
     ogs_ngap_GNB_ID_to_uint32(&globalGNB_ID->gNB_ID, &gnb_id);
-    ogs_debug("    IP[%s] GNB_ID[%x]", OGS_ADDR(gnb->addr, buf), gnb_id);
+    ogs_debug("    IP[%s] GNB_ID[0x%x]", OGS_ADDR(gnb->addr, buf), gnb_id);
 
     if (PagingDRX)
         ogs_debug("    PagingDRX[%ld]", *PagingDRX);
@@ -450,7 +450,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             UserLocationInformation->choice.userLocationInformationNR;
 
         ogs_ngap_ASN_to_nr_cgi(
-                &userLocationInformationNR->nR_CGI, &ran_ue->saved.cgi);
+                &userLocationInformationNR->nR_CGI, &ran_ue->saved.nr_cgi);
         ogs_ngap_ASN_to_5gs_tai(
                 &userLocationInformationNR->tAI, &ran_ue->saved.tai);
 
@@ -461,7 +461,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
     ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld] "
             "TAC[%d] CellID[0x%llx]",
         ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id,
-        ran_ue->saved.tai.tac.v, (long long)ran_ue->saved.cgi.cell_id);
+        ran_ue->saved.tai.tac.v, (long long)ran_ue->saved.nr_cgi.cell_id);
 
     ngap_send_to_nas(ran_ue,
             NGAP_ProcedureCode_id_InitialUEMessage, NAS_PDU);
@@ -1058,7 +1058,7 @@ void ngap_handle_ue_context_release_request(
 
     ran_ue = ran_ue_find_by_amf_ue_ngap_id(amf_ue_ngap_id);
     if (!ran_ue) {
-        ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
+        ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
         ngap_send_error_indication(gnb, NULL, &amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
@@ -1678,7 +1678,8 @@ void ngap_handle_gnb_configuration_transfer(
 
         target_gnb = amf_gnb_find_by_gnb_id(target_gnb_id);
         if (target_gnb == NULL) {
-            ogs_warn("RAN configuration transfer : cannot find target RAN-id[%d]",
+            ogs_warn("RAN configuration transfer : "
+                    "cannot find target RAN-id[%d]",
                     target_gnb_id);
             return;
         }

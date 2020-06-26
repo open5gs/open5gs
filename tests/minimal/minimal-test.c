@@ -143,7 +143,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, gtpu);
 
     /* Send NG-Setup Reqeust */
-    sendbuf = testngap_build_ng_setup_request(0x000102);
+    sendbuf = testngap_build_ng_setup_request(0x102, 32);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);

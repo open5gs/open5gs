@@ -394,6 +394,8 @@ extern "C" {
 typedef struct ogs_gtp_header_s {
     union {
         struct {
+#define OGS_GTP_VERSION_0 0
+#define OGS_GTP_VERSION_1 1
         ED4(uint8_t version:3;,
             uint8_t piggybacked:1;,
             uint8_t teid_presence:1;,
@@ -402,8 +404,16 @@ typedef struct ogs_gtp_header_s {
 /* GTU-U flags */
 #define OGS_GTPU_FLAGS_PN                       0x1
 #define OGS_GTPU_FLAGS_S                        0x2
+#define OGS_GTPU_FLAGS_E                        0x4
         uint8_t flags;
     };
+/* GTP-U message type, defined in 3GPP TS 29.281 Release 11 */
+#define OGS_GTPU_MSGTYPE_ECHO_REQ               1
+#define OGS_GTPU_MSGTYPE_ECHO_RSP               2
+#define OGS_GTPU_MSGTYPE_ERR_IND                26
+#define OGS_GTPU_MSGTYPE_SUPP_EXTHDR_NOTI       31
+#define OGS_GTPU_MSGTYPE_END_MARKER             254
+#define OGS_GTPU_MSGTYPE_GPDU                   255
     uint8_t type;
     uint16_t length;
     union {
@@ -418,14 +428,6 @@ typedef struct ogs_gtp_header_s {
         uint32_t sqn_only;
     };
 } __attribute__ ((packed)) ogs_gtp_header_t;
-
-/* GTP-U message type, defined in 3GPP TS 29.281 Release 11 */
-#define OGS_GTPU_MSGTYPE_ECHO_REQ               1
-#define OGS_GTPU_MSGTYPE_ECHO_RSP               2
-#define OGS_GTPU_MSGTYPE_ERR_IND                26
-#define OGS_GTPU_MSGTYPE_SUPP_EXTHDR_NOTI       31
-#define OGS_GTPU_MSGTYPE_END_MARKER             254
-#define OGS_GTPU_MSGTYPE_GPDU                   255
 
 /* GTPv2-C message type */
 """)

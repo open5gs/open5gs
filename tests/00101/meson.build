@@ -1,4 +1,4 @@
-# Copyright (C) 2019 by Sukchan Lee <acetcom@gmail.com>
+# Copyright (C) 2019,2020 by Sukchan Lee <acetcom@gmail.com>
 
 # This file is part of Open5GS.
 
@@ -15,19 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testinc = include_directories('.')
+test00101_sources = files('''
+    abts-main.c
+    issues-482-test.c
+'''.split())
 
-subdir('core')
-subdir('crypt')
-subdir('sctp')
-subdir('common')
-subdir('app')
-subdir('unit')
-subdir('epc-simple')
-subdir('mnc3')
-subdir('volte')
-subdir('csfb')
-subdir('cups')
-subdir('minimal')
-subdir('registration')
-subdir('00101')
+test00101_exe = executable('00101',
+    sources : test00101_sources,
+    c_args : testcore_cc_flags,
+    dependencies : libtest5gc_dep)

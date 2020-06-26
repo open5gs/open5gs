@@ -252,6 +252,21 @@ ogs_pkbuf_t *testgmm_build_service_request(
     ogs_assert(test_ue->nas_guti.m_tmsi);
     memset(&mobile_identity_s_tmsi, 0, sizeof(mobile_identity_s_tmsi));
 
+    /*
+     * TS24.501
+     * 9.11.3.4 5GS mobile identity
+     * Figure 9.11.3.4.5 5GS mobile identity IE for type of identity "5G-S-TMSI"
+     *
+     * Octet 1 : 5GS mobile identity IEI
+     * Octet 2-3 : Length of 5GS mobile identity contents
+     * Octet 4 : 1 1 1 1 0 1 0 0
+     *
+     * <Octet 4>
+     *   h.supi_format = 0xf (1 1 1 1)
+     *   h.odd_even = 0 (Spare 0)
+     *   h.type = 1 0 0 (Type of identity : 5G-S-TMSI)
+     */
+    mobile_identity_s_tmsi.h.supi_format = 0xf;
     mobile_identity_s_tmsi.h.type = OGS_NAS_5GS_MOBILE_IDENTITY_S_TMSI;
     mobile_identity_s_tmsi.m_tmsi = htobe32(test_ue->nas_guti.m_tmsi);
     mobile_identity_s_tmsi.set1 = test_ue->nas_guti.amf_id.set1;
@@ -424,7 +439,7 @@ ogs_pkbuf_t *testgmm_build_authentication_response(test_ue_t *test_ue)
 }
 
 ogs_pkbuf_t *testgmm_build_authentication_failure(
-        test_ue_t *test_ue, ogs_nas_5gmm_cause_t gmm_cause)
+        test_ue_t *test_ue, ogs_nas_5gmm_cause_t gmm_cause, uint64_t sqn_ms)
 
 {
     ogs_nas_5gs_message_t message;
@@ -436,7 +451,11 @@ ogs_pkbuf_t *testgmm_build_authentication_failure(
             &authentication_failure->authentication_failure_parameter;
 
     uint8_t ak[OGS_AK_LEN];
+#if 0
     uint8_t sqn_ms[OGS_SQN_LEN] = "\x00\x00\x11\x22\x33\x44";
+    uint8_t sqn_ms[OGS_SQN_LEN] = "\x00\x00\x00\x00\x1f\x60"; /* Issues 482 */
+#endif
+    uint8_t sqn[OGS_SQN_LEN];
     uint8_t mac_s[OGS_MAC_S_LEN];
     uint8_t amf[2] = { 0, 0 };
     uint8_t auts[OGS_AUTS_LEN];
@@ -458,10 +477,11 @@ ogs_pkbuf_t *testgmm_build_authentication_failure(
         milenage_f2345(test_ue->opc, test_ue->k, test_ue->rand,
                 NULL, NULL, NULL, NULL, ak);
 
+        ogs_uint64_to_buffer(sqn_ms, 6, sqn);
         milenage_f1(test_ue->opc, test_ue->k, test_ue->rand,
-                sqn_ms, amf, NULL, auts + OGS_SQN_LEN);
+                sqn, amf, NULL, auts + OGS_SQN_LEN);
         for (i = 0; i < OGS_SQN_LEN; i++)
-            auts[i] = sqn_ms[i] ^ ak[i];
+            auts[i] = sqn[i] ^ ak[i];
 
         authentication_failure_parameter->length = OGS_AUTS_LEN;
         memcpy(authentication_failure_parameter->auts, auts,

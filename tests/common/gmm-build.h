@@ -37,7 +37,7 @@ ogs_pkbuf_t *testgmm_build_de_registration_request(
 ogs_pkbuf_t *testgmm_build_identity_response(test_ue_t *test_ue);
 ogs_pkbuf_t *testgmm_build_authentication_response(test_ue_t *test_ue);
 ogs_pkbuf_t *testgmm_build_authentication_failure(
-        test_ue_t *test_ue, ogs_nas_5gmm_cause_t gmm_cause);
+        test_ue_t *test_ue, ogs_nas_5gmm_cause_t gmm_cause, uint64_t sqn_ms);
 ogs_pkbuf_t *testgmm_build_security_mode_complete(
         test_ue_t *test_ue, ogs_pkbuf_t *nasbuf);
 ogs_pkbuf_t *testgmm_build_configuration_update_complete(test_ue_t *test_ue);

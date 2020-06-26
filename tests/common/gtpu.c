@@ -114,7 +114,8 @@ int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
 {
     int rv;
     ogs_pkbuf_t *pkbuf = NULL;
-    ogs_5gs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp_extension_header_t *ext_h = NULL;
     ogs_ipsubnet_t dst_ipsub;
 
     ogs_assert(sess);
@@ -127,28 +128,30 @@ int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
     ogs_pkbuf_put(pkbuf, 200);
     memset(pkbuf->data, 0, pkbuf->len);
 
-    gtp_h = (ogs_5gs_gtp_header_t *)pkbuf->data;
+    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
     gtp_h->flags = 0x34;
     gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
     gtp_h->teid = htobe32(sess->upf_n3_teid);
-    gtp_h->extension_header.type =
-        htobe32(OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER);
-    gtp_h->extension_header.len = 1;
-    gtp_h->extension_header.pdu_type =
+
+    ext_h = (ogs_gtp_extension_header_t *)(pkbuf->data + OGS_GTPV1U_HEADER_LEN);
+    ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
+    ext_h->len = 1;
+    ext_h->pdu_type =
         OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
-    gtp_h->extension_header.qos_flow_identifier = 1;
-    gtp_h->extension_header.next_type =
-        OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+    ext_h->qos_flow_identifier = 1;
+    ext_h->next_type = OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
 
     if (dst_ipsub.family == AF_INET) {
         struct ip *ip_h = NULL;
         struct icmp *icmp_h = NULL;
 
-#define GTP_EXTENSION_HEADER_SIZE 8
         gtp_h->length = htobe16(
-                sizeof *ip_h + ICMP_MINLEN + GTP_EXTENSION_HEADER_SIZE);
+                sizeof *ip_h + ICMP_MINLEN +
+                OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4);
 
-        ip_h = (struct ip *)(pkbuf->data + OGS_5GS_GTP_HEADER_LEN);
+        ip_h = (struct ip *)(pkbuf->data +
+                OGS_GTPV1U_HEADER_LEN +
+                OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4);
         icmp_h = (struct icmp *)((uint8_t *)ip_h + sizeof *ip_h);
 
         ip_h->ip_v = 4;

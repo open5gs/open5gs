@@ -142,10 +142,9 @@ ED3(uint8_t type:4;,
  * M LV-E 6-n */
 #define OGS_NAS_MAX_SCHEME_OUTPUT_LEN 64
 typedef struct ogs_nas_5gs_mobile_identity_header_s {
-ED4(uint8_t spare1:1;,
 #define OGS_NAS_5GS_SUPI_FORMAT_IMSI 0
 #define OGS_NAS_5GS_SUPI_FORMAT_NETWORK_SPECIFIC_IDENTIFIER 1
-    uint8_t supi_format:3;,
+ED3(uint8_t supi_format:4;,
     uint8_t odd_even:1;,
     uint8_t type:3;)
 } __attribute__ ((packed)) ogs_nas_5gs_mobile_identity_header_t;

@@ -83,12 +83,14 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
 
 static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
 {
-    int rv;
+    int rv, len;
     ssize_t size;
+    char buf[OGS_ADDRSTRLEN];
+
     ogs_pkbuf_t *pkbuf = NULL;
-    uint32_t len = OGS_GTPV1U_HEADER_LEN;
-    uint32_t extension_header_type = 0;
-    ogs_5gs_gtp_header_t *gtp_h = NULL;
+    ogs_sockaddr_t from;
+
+    ogs_gtp_header_t *gtp_h = NULL;
     struct ip *ip_h = NULL;
 
     uint32_t teid;
@@ -102,7 +104,7 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
     ogs_pkbuf_put(pkbuf, OGS_MAX_SDU_LEN);
 
-    size = ogs_recv(fd, pkbuf->data, pkbuf->len, 0);
+    size = ogs_recvfrom(fd, pkbuf->data, pkbuf->len, 0, &from);
     if (size <= 0) {
         ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
                 "ogs_recv() failed");
@@ -114,24 +116,79 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_assert(pkbuf);
     ogs_assert(pkbuf->len);
 
-    gtp_h = (ogs_5gs_gtp_header_t *)pkbuf->data;
+    gtp_h = (ogs_gtp_header_t *)pkbuf->data;
+    if (gtp_h->version != OGS_GTP_VERSION_1) {
+        ogs_error("[DROP] Invalid GTPU version [%d]", gtp_h->version);
+        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+        goto cleanup;
+    }
+
+    if (gtp_h->type == OGS_GTPU_MSGTYPE_ECHO_REQ) {
+        ogs_pkbuf_t *echo_rsp;
+
+        ogs_debug("[RECV] Echo Request from [%s]", OGS_ADDR(&from, buf));
+        echo_rsp = ogs_gtp_handle_echo_req(pkbuf);
+        if (echo_rsp) {
+            ssize_t sent;
+
+            /* Echo reply */
+            ogs_debug("[SEND] Echo Response to [%s]", OGS_ADDR(&from, buf));
+
+            sent = ogs_sendto(fd, echo_rsp->data, echo_rsp->len, 0, &from);
+            if (sent < 0 || sent != echo_rsp->len) {
+                ogs_log_message(OGS_LOG_ERROR, ogs_socket_errno,
+                        "ogs_sendto() failed");
+            }
+            ogs_pkbuf_free(echo_rsp);
+        }
+        goto cleanup;
+    }
+
     teid = be32toh(gtp_h->teid);
 
-    ogs_debug("[UPF] RECV GPU-U from gNB : TEID[0x%x]", teid);
+    if (gtp_h->type == OGS_GTPU_MSGTYPE_END_MARKER) {
+        ogs_debug("[RECV] End Marker from [%s] : TEID[0x%x]",
+                OGS_ADDR(&from, buf), teid);
+        goto cleanup;
+    }
+
+    if (gtp_h->type != OGS_GTPU_MSGTYPE_GPDU) {
+        ogs_error("[DROP] Invalid GTPU Type [%d]", gtp_h->type);
+        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+        goto cleanup;
+    }
+
+    ogs_debug("[RECV] GPU-U from [%s] : TEID[0x%x]",
+            OGS_ADDR(&from, buf), teid);
+
+    if (gtp_h->flags & OGS_GTPU_FLAGS_E) {
+        /*
+         * TS29.281
+         * 5.2.1 General format of the GTP-U Extension Header
+         * Figure 5.2.1-3: Definition of Extension Header Type
+         *
+         * Note 4 : For a GTP-PDU with several Extension Headers, the PDU
+         *          Session Container should be the first Extension Header
+         */
+        ogs_gtp_extension_header_t *extension_header =
+            (ogs_gtp_extension_header_t *)(pkbuf->data + OGS_GTPV1U_HEADER_LEN);
+        ogs_assert(extension_header);
+        if (extension_header->type ==
+                OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER) {
+            if (extension_header->pdu_type ==
+                OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION) {
+                    ogs_debug("   QFI [0x%x]",
+                            extension_header->qos_flow_identifier);
+            }
+        }
+    }
 
     /* Remove GTP header and send packets to TUN interface */
-    if (gtp_h->seqence_number) len += 4;
-    if (gtp_h->next_extension) {
-        extension_header_type = be32toh(gtp_h->extension_header.type);
-        switch (extension_header_type) {
-        case OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER:
-            len += 8; /* TODO : QoS QFI */
-            break;
-        default:
-            ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
-            ogs_error("[DROP] Cannot decode extension header");
-            goto cleanup;
-        }
+    len = ogs_gtpu_header_len(pkbuf);
+    if (len < 0) {
+        ogs_error("[DROP] Cannot decode GTPU packet");
+        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
+        goto cleanup;
     }
     ogs_assert(ogs_pkbuf_pull(pkbuf, len));
 
@@ -153,9 +210,9 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         subnet = sess->ipv6->subnet;
 
     if (!subnet) {
-        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
         ogs_error("[DROP] Cannot find subnet V:%d, IPv4:%p, IPv6:%p",
                 ip_h->ip_v, sess->ipv4, sess->ipv6);
+        ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);
         goto cleanup;
     }
 
