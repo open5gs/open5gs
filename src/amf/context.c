@@ -1488,6 +1488,9 @@ void amf_sess_remove(amf_sess_t *sess)
     if (sess->dnn)
         ogs_free(sess->dnn);
 
+    if (sess->n2smbuf)
+        ogs_pkbuf_free(sess->n2smbuf);
+
     OGS_NAS_CLEAR_DATA(&sess->ue_pco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);
 

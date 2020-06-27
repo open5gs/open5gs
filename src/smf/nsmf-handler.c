@@ -115,6 +115,13 @@ bool smf_nsmf_handle_create_sm_context(
         sess->dnn = ogs_strdup(SmContextCreateData->dnn);
     }
 
+    /*
+     * NOTE : The pkbuf created in the SBI message will be removed
+     *        from ogs_sbi_message_free().
+     *        So it must be copied and push a event queue.
+     */
+    n1smbuf = ogs_pkbuf_copy(n1smbuf);
+    ogs_assert(n1smbuf);
     nas_5gs_send_to_gsm(sess, n1smbuf);
 
     return true;
@@ -191,6 +198,13 @@ bool smf_nsmf_handle_update_sm_context(
         /* UPDATE_UpCnxState - ACTIVATED */
         sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATED;
 
+        /*
+         * NOTE : The pkbuf created in the SBI message will be removed
+         *        from ogs_sbi_message_free().
+         *        So it must be copied and push a event queue.
+         */
+        n2smbuf = ogs_pkbuf_copy(n2smbuf);
+        ogs_assert(n2smbuf);
         ngap_send_to_n2sm(sess, SmContextUpdateData->n2_sm_info_type, n2smbuf);
 
     } else {

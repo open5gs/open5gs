@@ -421,8 +421,6 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
         transfer->size = sess->n2smbuf->len;
         transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
         memcpy(transfer->buf, sess->n2smbuf->data, transfer->size);
-        ogs_pkbuf_free(sess->n2smbuf);
-        sess->n2smbuf = NULL;
     }
 
     ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));

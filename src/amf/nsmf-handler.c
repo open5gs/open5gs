@@ -105,6 +105,10 @@ int amf_nsmf_pdu_session_handle_create_sm_context(
             return OGS_ERROR;
         }
 
+        /*
+         * NOTE : The pkbuf created in the SBI message will be removed
+         *        from ogs_sbi_message_free(), so it must be copied.
+         */
         n1smbuf = ogs_pkbuf_copy(n1smbuf);
         ogs_assert(n1smbuf);
         nas_5gs_send_gsm_reject_from_sbi(sess,
@@ -210,18 +214,29 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                 return OGS_ERROR;
             }
 
+            if (sess->n2smbuf) {
+                /* Free the old n2smbuf */
+                ogs_pkbuf_free(sess->n2smbuf);
+            }
+            /*
+             * NOTE : The pkbuf created in the SBI message will be removed
+             *        from ogs_sbi_message_free().
+             *        So it must be copied and push a event queue.
+             */
             sess->n2smbuf = ogs_pkbuf_copy(n2smbuf);
             ogs_assert(sess->n2smbuf);
 
             if (SESSION_SYNC_DONE(amf_ue)) {
                 nas_5gs_send_accept(amf_ue);
 
+#if 0 /* Move the context free to amf_sess_remove() */
                 ogs_list_for_each(&amf_ue->sess_list, sess) {
                     if (sess->n2smbuf) {
                         ogs_pkbuf_free(sess->n2smbuf);
                         sess->n2smbuf = NULL;
                     }
                 }
+#endif
             }
 
         } else {

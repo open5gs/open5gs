@@ -120,6 +120,10 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_error("[%s] No N1 SM Content", amf_ue->supi);
         return OGS_ERROR;
     }
+    /*
+     * NOTE : The pkbuf created in the SBI message will be removed
+     *        from ogs_sbi_message_free(), so it must be copied.
+     */
     n1smbuf = ogs_pkbuf_copy(n1smbuf);
     ogs_assert(n1smbuf);
 
@@ -128,6 +132,10 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_error("[%s] No N2 SM Content", amf_ue->supi);
         return OGS_ERROR;
     }
+    /*
+     * NOTE : The pkbuf created in the SBI message will be removed
+     *        from ogs_sbi_message_free(), so it must be copied.
+     */
     n2smbuf = ogs_pkbuf_copy(n2smbuf);
     ogs_assert(n2smbuf);
 

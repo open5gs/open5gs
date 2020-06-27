@@ -17,11 +17,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if 0
-#include "ngap-path.h"
-#include "ngap-build.h"
-#include "gsm-build.h"
-#endif
 #include "nas-path.h"
 
 void nas_5gs_send_to_gsm(smf_sess_t *sess, ogs_pkbuf_t *pkbuf)
