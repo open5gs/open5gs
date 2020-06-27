@@ -109,6 +109,7 @@ typedef struct test_ue_s {
     char *supi; /* TS33.501 : SUPI */
 
     ogs_nas_5gs_mobile_identity_suci_t mobile_identity_suci;
+    ogs_nas_mobile_identity_imeisv_t mobile_identity_imeisv;
     uint16_t mobile_identity_suci_length;
     ogs_nas_5gs_guti_t nas_guti;
 

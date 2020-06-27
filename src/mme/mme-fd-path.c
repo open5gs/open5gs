@@ -493,7 +493,7 @@ void mme_s6a_send_ulr(mme_ue_t *mme_ue)
     ogs_assert(ret == 0);
 
     /* Set the Terminal-Information AVP */
-    if (mme_ue->imeisv_presence) {
+    if (mme_ue->imeisv_len) {
         ret = fd_msg_avp_new(ogs_diam_s6a_terminal_information, 0, &avp);
         ogs_assert(ret == 0);
 

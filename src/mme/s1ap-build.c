@@ -274,6 +274,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     S1AP_E_RABToBeSetupListCtxtSUReq_t *E_RABToBeSetupListCtxtSUReq = NULL;
     S1AP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
     S1AP_SecurityKey_t *SecurityKey = NULL;
+    S1AP_Masked_IMEISV_t *Masked_IMEISV = NULL;
 
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -535,6 +536,23 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
         ogs_s1ap_buffer_to_OCTET_STRING(
                 mme_ue->ueRadioCapability.buf, mme_ue->ueRadioCapability.size,
                 UERadioCapability);
+    }
+
+    if (mme_ue->imeisv_len) {
+        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_Masked_IMEISV;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present =
+            S1AP_InitialContextSetupRequestIEs__value_PR_Masked_IMEISV;
+
+        Masked_IMEISV = &ie->value.choice.Masked_IMEISV;
+
+        Masked_IMEISV->size = mme_ue->masked_imeisv_len;
+        Masked_IMEISV->buf = CALLOC(Masked_IMEISV->size, sizeof(uint8_t));
+        Masked_IMEISV->bits_unused = 0;
+        memcpy(Masked_IMEISV->buf, mme_ue->masked_imeisv, Masked_IMEISV->size);
     }
 
     return ogs_s1ap_encode(&pdu);

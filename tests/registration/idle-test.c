@@ -118,6 +118,28 @@ static void test1_func(abts_case *tc, void *data)
 
     test_ue_set_mobile_identity_suci(&test_ue, &mobile_identity_suci, 13);
 
+    memset(&test_ue.mobile_identity_imeisv, 0,
+            sizeof(ogs_nas_mobile_identity_imeisv_t));
+    test_ue.mobile_identity_imeisv.type = OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV;
+    test_ue.mobile_identity_imeisv.odd_even = OGS_NAS_MOBILE_IDENTITY_EVEN;
+    test_ue.mobile_identity_imeisv.digit1 = 8;
+    test_ue.mobile_identity_imeisv.digit2 = 6;
+    test_ue.mobile_identity_imeisv.digit3 = 6;
+    test_ue.mobile_identity_imeisv.digit4 = 5;
+    test_ue.mobile_identity_imeisv.digit5 = 0;
+    test_ue.mobile_identity_imeisv.digit6 = 7;
+    test_ue.mobile_identity_imeisv.digit7 = 0;
+    test_ue.mobile_identity_imeisv.digit8 = 4;
+    test_ue.mobile_identity_imeisv.digit9 = 0;
+    test_ue.mobile_identity_imeisv.digit10 = 0;
+    test_ue.mobile_identity_imeisv.digit11 = 4;
+    test_ue.mobile_identity_imeisv.digit12 = 0;
+    test_ue.mobile_identity_imeisv.digit13 = 5;
+    test_ue.mobile_identity_imeisv.digit14 = 3;
+    test_ue.mobile_identity_imeisv.digit15 = 0;
+    test_ue.mobile_identity_imeisv.digit16 = 1;
+    test_ue.mobile_identity_imeisv.digit17 = 0xf;
+
     test_ue.nas.access_type = OGS_ACCESS_TYPE_3GPP;
     test_ue.abba_len = 2;
 
@@ -240,8 +262,6 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
-
     /* Send Registration complete */
     gmmbuf = testgmm_build_registration_complete(&test_ue);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
@@ -277,9 +297,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testgnb_gtpu_send(gtpu, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
-
     /* Send PDU session resource setup response */
+    ogs_msleep(100);
+
     sendbuf = testngap_build_pdu_session_resource_setup_response(&test_sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
@@ -301,7 +321,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /* Send UE context release request */
     sendbuf = testngap_build_ue_context_release_request(&test_ue,
@@ -379,7 +399,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /* Send UE context release request */
     sendbuf = testngap_build_ue_context_release_request(&test_ue,
@@ -461,7 +481,7 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
@@ -580,6 +600,28 @@ static void test2_func(abts_case *tc, void *data)
     mobile_identity_suci.scheme_output[4] = 0x90;
 
     test_ue_set_mobile_identity_suci(&test_ue, &mobile_identity_suci, 13);
+
+    memset(&test_ue.mobile_identity_imeisv, 0,
+            sizeof(ogs_nas_mobile_identity_imeisv_t));
+    test_ue.mobile_identity_imeisv.type = OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV;
+    test_ue.mobile_identity_imeisv.odd_even = OGS_NAS_MOBILE_IDENTITY_EVEN;
+    test_ue.mobile_identity_imeisv.digit1 = 8;
+    test_ue.mobile_identity_imeisv.digit2 = 6;
+    test_ue.mobile_identity_imeisv.digit3 = 6;
+    test_ue.mobile_identity_imeisv.digit4 = 5;
+    test_ue.mobile_identity_imeisv.digit5 = 0;
+    test_ue.mobile_identity_imeisv.digit6 = 7;
+    test_ue.mobile_identity_imeisv.digit7 = 0;
+    test_ue.mobile_identity_imeisv.digit8 = 4;
+    test_ue.mobile_identity_imeisv.digit9 = 0;
+    test_ue.mobile_identity_imeisv.digit10 = 0;
+    test_ue.mobile_identity_imeisv.digit11 = 4;
+    test_ue.mobile_identity_imeisv.digit12 = 0;
+    test_ue.mobile_identity_imeisv.digit13 = 5;
+    test_ue.mobile_identity_imeisv.digit14 = 3;
+    test_ue.mobile_identity_imeisv.digit15 = 0;
+    test_ue.mobile_identity_imeisv.digit16 = 1;
+    test_ue.mobile_identity_imeisv.digit17 = 0xf;
 
     test_ue.nas.access_type = OGS_ACCESS_TYPE_3GPP;
     test_ue.abba_len = 2;
@@ -703,7 +745,7 @@ static void test2_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /* Send Registration complete */
     gmmbuf = testgmm_build_registration_complete(&test_ue);
@@ -737,7 +779,7 @@ static void test2_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /*
      * Send Service request Using InitialUEMessage
@@ -770,7 +812,7 @@ static void test2_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
@@ -889,6 +931,28 @@ static void test3_func(abts_case *tc, void *data)
     mobile_identity_suci.scheme_output[4] = 0x90;
 
     test_ue_set_mobile_identity_suci(&test_ue, &mobile_identity_suci, 13);
+
+    memset(&test_ue.mobile_identity_imeisv, 0,
+            sizeof(ogs_nas_mobile_identity_imeisv_t));
+    test_ue.mobile_identity_imeisv.type = OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV;
+    test_ue.mobile_identity_imeisv.odd_even = OGS_NAS_MOBILE_IDENTITY_EVEN;
+    test_ue.mobile_identity_imeisv.digit1 = 8;
+    test_ue.mobile_identity_imeisv.digit2 = 6;
+    test_ue.mobile_identity_imeisv.digit3 = 6;
+    test_ue.mobile_identity_imeisv.digit4 = 5;
+    test_ue.mobile_identity_imeisv.digit5 = 0;
+    test_ue.mobile_identity_imeisv.digit6 = 7;
+    test_ue.mobile_identity_imeisv.digit7 = 0;
+    test_ue.mobile_identity_imeisv.digit8 = 4;
+    test_ue.mobile_identity_imeisv.digit9 = 0;
+    test_ue.mobile_identity_imeisv.digit10 = 0;
+    test_ue.mobile_identity_imeisv.digit11 = 4;
+    test_ue.mobile_identity_imeisv.digit12 = 0;
+    test_ue.mobile_identity_imeisv.digit13 = 5;
+    test_ue.mobile_identity_imeisv.digit14 = 3;
+    test_ue.mobile_identity_imeisv.digit15 = 0;
+    test_ue.mobile_identity_imeisv.digit16 = 1;
+    test_ue.mobile_identity_imeisv.digit17 = 0xf;
 
     test_ue.nas.access_type = OGS_ACCESS_TYPE_3GPP;
     test_ue.abba_len = 2;
@@ -1012,7 +1076,7 @@ static void test3_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /* Send Registration complete */
     gmmbuf = testgmm_build_registration_complete(&test_ue);
@@ -1049,9 +1113,9 @@ static void test3_func(abts_case *tc, void *data)
     rv = testgnb_gtpu_send(gtpu, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
-
     /* Send PDU session resource setup response */
+    ogs_msleep(100);
+
     sendbuf = testngap_build_pdu_session_resource_setup_response(&test_sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
@@ -1073,7 +1137,7 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /*
      * Send Service request Using InitialUEMessage
@@ -1160,7 +1224,7 @@ static void test3_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
@@ -1283,6 +1347,28 @@ static void test4_func(abts_case *tc, void *data)
     mobile_identity_suci.scheme_output[4] = 0x90;
 
     test_ue_set_mobile_identity_suci(&test_ue, &mobile_identity_suci, 13);
+
+    memset(&test_ue.mobile_identity_imeisv, 0,
+            sizeof(ogs_nas_mobile_identity_imeisv_t));
+    test_ue.mobile_identity_imeisv.type = OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV;
+    test_ue.mobile_identity_imeisv.odd_even = OGS_NAS_MOBILE_IDENTITY_EVEN;
+    test_ue.mobile_identity_imeisv.digit1 = 8;
+    test_ue.mobile_identity_imeisv.digit2 = 6;
+    test_ue.mobile_identity_imeisv.digit3 = 6;
+    test_ue.mobile_identity_imeisv.digit4 = 5;
+    test_ue.mobile_identity_imeisv.digit5 = 0;
+    test_ue.mobile_identity_imeisv.digit6 = 7;
+    test_ue.mobile_identity_imeisv.digit7 = 0;
+    test_ue.mobile_identity_imeisv.digit8 = 4;
+    test_ue.mobile_identity_imeisv.digit9 = 0;
+    test_ue.mobile_identity_imeisv.digit10 = 0;
+    test_ue.mobile_identity_imeisv.digit11 = 4;
+    test_ue.mobile_identity_imeisv.digit12 = 0;
+    test_ue.mobile_identity_imeisv.digit13 = 5;
+    test_ue.mobile_identity_imeisv.digit14 = 3;
+    test_ue.mobile_identity_imeisv.digit15 = 0;
+    test_ue.mobile_identity_imeisv.digit16 = 1;
+    test_ue.mobile_identity_imeisv.digit17 = 0xf;
 
     test_ue.nas.access_type = OGS_ACCESS_TYPE_3GPP;
     test_ue.abba_len = 2;
@@ -1420,7 +1506,7 @@ static void test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /* Send Registration complete */
     gmmbuf = testgmm_build_registration_complete(&test_ue);
@@ -1454,7 +1540,7 @@ static void test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /*
      * Send Service request Using InitialUEMessage
@@ -1504,12 +1590,12 @@ static void test4_func(abts_case *tc, void *data)
     testngap_recv(&test_ue, recvbuf);
 
     /* Send PDU session resource setup response */
+    ogs_msleep(100);
+
     sendbuf = testngap_build_pdu_session_resource_setup_response(&test_sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
-    ogs_msleep(50);
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_build_ping(&sendbuf, &test_sess, "10.45.0.1");
@@ -1522,7 +1608,7 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /*
      * Send Service request Using InitialUEMessage
@@ -1564,7 +1650,7 @@ static void test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /* Send GTP-U ICMP Packet */
     rv = test_gtpu_build_ping(&sendbuf, &test_sess, "10.45.0.1");
@@ -1577,7 +1663,7 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < 200; i++) {
         /*
          * Send Service request Using UplinkNASTransport
          *  - Uplink Data Status
@@ -1620,12 +1706,12 @@ static void test4_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(&test_ue, recvbuf);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     test_ue.ran_ue_ngap_id = ran_ue_ngap_id;
     test_ue.amf_ue_ngap_id = amf_ue_ngap_id;
 
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < 200; i++) {
         /*
          * Send Service request Using UplinkNASTransport
          *  - Uplink Data Status
@@ -1669,7 +1755,7 @@ static void test4_func(abts_case *tc, void *data)
     rv = testgnb_ngap_send(ngap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
+    ogs_msleep(100);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));

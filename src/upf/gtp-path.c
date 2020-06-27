@@ -152,6 +152,11 @@ static void _gtpv1_u_recv_cb(short when, ogs_socket_t fd, void *data)
         goto cleanup;
     }
 
+    if (gtp_h->type == OGS_GTPU_MSGTYPE_ERR_IND) {
+        ogs_error("[RECV] Error Indication from [%s]", OGS_ADDR(&from, buf));
+        goto cleanup;
+    }
+
     if (gtp_h->type != OGS_GTPU_MSGTYPE_GPDU) {
         ogs_error("[DROP] Invalid GTPU Type [%d]", gtp_h->type);
         ogs_log_hexdump(OGS_LOG_ERROR, pkbuf->data, pkbuf->len);

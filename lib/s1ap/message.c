@@ -31,8 +31,6 @@ ogs_pkbuf_t *ogs_s1ap_encode(ogs_s1ap_message_t *message)
         asn_fprint(stdout, &asn_DEF_S1AP_S1AP_PDU, message);
 
     pkbuf = ogs_asn_encode(&asn_DEF_S1AP_S1AP_PDU, message);
-    ogs_asn_free(&asn_DEF_S1AP_S1AP_PDU, message);
-
     if (pkbuf == NULL) {
         ogs_error("Failed to encode S1AP-PDU");
         return NULL;

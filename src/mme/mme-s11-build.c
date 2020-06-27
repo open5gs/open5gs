@@ -61,7 +61,7 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
     req->imsi.data = mme_ue->imsi;
     req->imsi.len = mme_ue->imsi_len;
 
-    if (mme_ue->imeisv_presence) {
+    if (mme_ue->imeisv_len) {
         req->me_identity.presence = 1;
         req->me_identity.data = mme_ue->imeisv;
         req->me_identity.len = mme_ue->imeisv_len;

@@ -517,17 +517,14 @@ ogs_pkbuf_t *testgmm_build_security_mode_complete(
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_SECURITY_MODE_COMPLETE;
 
-    security_mode_complete->presencemask |=
-        OGS_NAS_5GS_SECURITY_MODE_COMPLETE_IMEISV_PRESENT;
-    memset(&mobile_identity_imeisv, 0, sizeof(mobile_identity_imeisv));
-    imeisv->length = sizeof(mobile_identity_imeisv);
-    imeisv->buffer = &mobile_identity_imeisv;
-
-    mobile_identity_imeisv.type = OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV;
-    mobile_identity_imeisv.odd_even = OGS_NAS_MOBILE_IDENTITY_EVEN;
-    mobile_identity_imeisv.digit1 = 1;
-    mobile_identity_imeisv.digit2 = 1;
-    mobile_identity_imeisv.digit3 = 1;
+    if (test_ue->mobile_identity_imeisv.type ==
+            OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV) {
+        security_mode_complete->presencemask |=
+            OGS_NAS_5GS_SECURITY_MODE_COMPLETE_IMEISV_PRESENT;
+        memset(&mobile_identity_imeisv, 0, sizeof(mobile_identity_imeisv));
+        imeisv->length = sizeof(mobile_identity_imeisv);
+        imeisv->buffer = &test_ue->mobile_identity_imeisv;
+    }
 
     if (nasbuf) {
         security_mode_complete->presencemask |=

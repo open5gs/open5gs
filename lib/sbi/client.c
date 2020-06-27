@@ -133,6 +133,7 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
 
     ogs_assert(client->t_curl);
     ogs_timer_delete(client->t_curl);
+    client->t_curl = NULL;
 
     ogs_assert(client->multi);
     curl_multi_cleanup(client->multi);
@@ -581,8 +582,8 @@ static void event_cb(short when, ogs_socket_t fd, void *data)
         ogs_timer_t *timer;
 
         timer = client->t_curl;
-        ogs_assert(timer);
-        ogs_timer_stop(timer);
+        if (timer)
+            ogs_timer_stop(timer);
     }
 }
 

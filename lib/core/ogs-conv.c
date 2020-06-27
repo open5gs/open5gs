@@ -108,6 +108,27 @@ void *ogs_bcd_to_buffer(const char *in, void *out, int *out_len)
     return out;
 }
 
+void *ogs_bcd_to_buffer_reverse_order(const char *in, void *out, int *out_len)
+{
+    int i = 0;
+    uint8_t *out_p = out;
+    int in_len = strlen(in);
+
+    for (i = 0; i < in_len; i++) {
+        if (i & 0x01)
+            out_p[i>>1] = out_p[i>>1] | ((in[i] - 0x30) & 0x0F);
+        else
+            out_p[i>>1] = ((in[i] - 0x30) << 4) & 0xF0;
+    }
+
+    *out_len = (in_len + 1) / 2;
+    if (in_len & 0x01) {
+        out_p[(*out_len)-1] |= 0xF0;
+    }
+
+    return out;
+}
+
 void *ogs_buffer_to_bcd(uint8_t *in, int in_len, void *out)
 {
     int i = 0;

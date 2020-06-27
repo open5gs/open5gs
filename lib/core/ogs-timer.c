@@ -27,18 +27,6 @@ typedef struct ogs_timer_mgr_s {
     ogs_rbtree_t tree;
 } ogs_timer_mgr_t;
 
-typedef struct ogs_timer_s {
-    ogs_rbnode_t rbnode;
-    ogs_lnode_t lnode;
-
-    void (*cb)(void*);
-    void *data;
-
-    ogs_timer_mgr_t *manager;
-    bool running;
-    ogs_time_t timeout;;       
-} ogs_timer_t;
-
 static void add_timer_node(
         ogs_rbtree_t *tree, ogs_timer_t *timer, ogs_time_t duration)
 {

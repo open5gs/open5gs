@@ -29,7 +29,17 @@ extern "C" {
 #endif
 
 typedef struct ogs_timer_mgr_s ogs_timer_mgr_t;
-typedef struct ogs_timer_s ogs_timer_t;;
+typedef struct ogs_timer_s {
+    ogs_rbnode_t rbnode;
+    ogs_lnode_t lnode;
+
+    void (*cb)(void*);
+    void *data;
+
+    ogs_timer_mgr_t *manager;
+    bool running;
+    ogs_time_t timeout;
+} ogs_timer_t;
 
 ogs_timer_mgr_t *ogs_timer_mgr_create(void);
 void ogs_timer_mgr_destroy(ogs_timer_mgr_t *manager);

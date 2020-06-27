@@ -151,7 +151,7 @@ int ogs_nas_parse_nssai(ogs_s_nssai_t *s_nssai, ogs_nas_nssai_t *nas_nssai)
     ogs_assert(nas_nssai);
     ogs_assert(s_nssai);
 
-    if (!nas_nssai->buffer || !nas_nssai->length) {
+    if (!nas_nssai->length) {
         ogs_error("No NSSAI [%p:%d]", nas_nssai->buffer, nas_nssai->length);
         return OGS_ERROR;
     }

@@ -252,8 +252,8 @@ struct amf_ue_s {
     ogs_nas_5gs_mobile_identity_suci_t nas_mobile_identity_suci;
 
     char            *pei;
-    uint8_t         imeisv[OGS_MAX_IMEISV_LEN];
-    int             imeisv_len;
+    uint8_t         masked_imeisv[OGS_MAX_IMEISV_LEN];
+    int             masked_imeisv_len;
     char            imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
     ogs_nas_mobile_identity_imeisv_t nas_mobile_identity_imeisv;
 

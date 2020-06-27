@@ -213,8 +213,16 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
             sess->n2smbuf = ogs_pkbuf_copy(n2smbuf);
             ogs_assert(sess->n2smbuf);
 
-            if (SESSION_SYNC_DONE(amf_ue))
+            if (SESSION_SYNC_DONE(amf_ue)) {
                 nas_5gs_send_accept(amf_ue);
+
+                ogs_list_for_each(&amf_ue->sess_list, sess) {
+                    if (sess->n2smbuf) {
+                        ogs_pkbuf_free(sess->n2smbuf);
+                        sess->n2smbuf = NULL;
+                    }
+                }
+            }
 
         } else {
             ogs_error("Invalid UpCnxState [UE:%d,SMF:%d]",

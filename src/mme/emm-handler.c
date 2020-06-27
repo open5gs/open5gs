@@ -655,7 +655,10 @@ int emm_handle_security_mode_complete(mme_ue_t *mme_ue,
                     mme_ue->imeisv_bcd);
             ogs_bcd_to_buffer(mme_ue->imeisv_bcd,
                     mme_ue->imeisv, &mme_ue->imeisv_len);
-            mme_ue->imeisv_presence = true;
+            ogs_nas_imeisv_bcd_to_buffer(mme_ue->imeisv_bcd,
+                    mme_ue->masked_imeisv, &mme_ue->masked_imeisv_len);
+            mme_ue->masked_imeisv[5] = 0xff;
+            mme_ue->masked_imeisv[6] = 0xff;
             break;
         default:
             ogs_warn("Invalid IMEISV Type[%d]", imeisv->imeisv.type);

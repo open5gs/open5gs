@@ -137,7 +137,7 @@ ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize)
             sd.v = s_nssai->sd.v;
             if (sd.v == OGS_S_NSSAI_NO_SD_VALUE)
                 sd.v = 0x010000;
-            SliceSupportItem->s_NSSAI.sD = CALLOC(1, sizeof(ogs_uint24_t));
+            SliceSupportItem->s_NSSAI.sD = CALLOC(1, sizeof(NGAP_SD_t));
             ogs_asn_uint24_to_OCTET_STRING(sd, SliceSupportItem->s_NSSAI.sD);
 
             ASN_SEQUENCE_ADD(&BroadcastPLMNItem->tAISliceSupportList.list,
@@ -696,7 +696,7 @@ ogs_pkbuf_t *testngap_build_ue_context_release_request(test_ue_t *test_ue,
         PDUSessionList = &ie->value.choice.PDUSessionResourceListCxtRelReq;
 
         PDUSessionItem =
-            CALLOC(1, sizeof(struct NGAP_PDUSessionResourceSetupItemSURes));
+            CALLOC(1, sizeof(struct NGAP_PDUSessionResourceItemCxtRelReq));
         ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
 
         sess = test_ue->sess;

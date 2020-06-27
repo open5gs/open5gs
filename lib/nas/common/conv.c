@@ -53,3 +53,22 @@ void ogs_nas_imeisv_to_bcd(
 
     bcd[bcd_len] = 0;
 }
+
+void *ogs_nas_imeisv_bcd_to_buffer(const char *in, uint8_t *out, int *out_len)
+{
+
+    /*
+     * TS38.413
+     * 9.3.1.54 Masked IMEISV
+     *
+     * The first to fourth bits correspond to the first digit of the IMEISV,
+     * the fifth to eighth bits correspond to the second digit of the IMEISV,
+     * and so on
+     *
+     * IMEISV buffer uses different ordering.
+     * So, I'll other function instead of ogs_bcd_to_buffer();
+     *
+     */
+
+    return ogs_bcd_to_buffer_reverse_order(in, out, out_len);
+}

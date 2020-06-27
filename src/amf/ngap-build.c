@@ -146,7 +146,7 @@ ogs_pkbuf_t *ngap_build_ng_setup_response(void)
                 amf_self()->plmn_support[i].s_nssai[j].sst, sST);
             if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
                     OGS_S_NSSAI_NO_SD_VALUE) {
-                s_NSSAI->sD = CALLOC(1, sizeof(ogs_uint24_t));
+                s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
                 ogs_asn_uint24_to_OCTET_STRING(
                     amf_self()->plmn_support[i].s_nssai[j].sd, s_NSSAI->sD);
             }
@@ -413,7 +413,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
 
         ogs_asn_uint8_to_OCTET_STRING(sess->s_nssai.sst, sST);
         if (sess->s_nssai.sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
-            s_NSSAI->sD = CALLOC(1, sizeof(ogs_uint24_t));
+            s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
             ogs_asn_uint24_to_OCTET_STRING(sess->s_nssai.sd, s_NSSAI->sD);
         }
 
@@ -489,7 +489,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
                 amf_self()->plmn_support[i].s_nssai[j].sst, sST);
             if (amf_self()->plmn_support[i].s_nssai[j].sd.v !=
                     OGS_S_NSSAI_NO_SD_VALUE) {
-                s_NSSAI->sD = CALLOC(1, sizeof(ogs_uint24_t));
+                s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
                 ogs_asn_uint24_to_OCTET_STRING(
                     amf_self()->plmn_support[i].s_nssai[j].sd, s_NSSAI->sD);
             }
@@ -555,7 +555,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
                 UERadioCapability);
     }
 
-    if (amf_ue->imeisv_len) {
+    if (amf_ue->masked_imeisv_len) {
         ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
         ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
 
@@ -566,12 +566,10 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
 
         MaskedIMEISV = &ie->value.choice.MaskedIMEISV;
 
-        MaskedIMEISV->size = amf_ue->imeisv_len;
+        MaskedIMEISV->size = amf_ue->masked_imeisv_len;
         MaskedIMEISV->buf = CALLOC(MaskedIMEISV->size, sizeof(uint8_t));
         MaskedIMEISV->bits_unused = 0;
-        memcpy(MaskedIMEISV->buf, amf_ue->imeisv, MaskedIMEISV->size);
-        MaskedIMEISV->buf[5] = 0xff;
-        MaskedIMEISV->buf[6] = 0xff;
+        memcpy(MaskedIMEISV->buf, amf_ue->masked_imeisv, MaskedIMEISV->size);
     }
 
     if (gmmbuf) {
@@ -900,7 +898,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
     sST = &s_NSSAI->sST;
     ogs_asn_uint8_to_OCTET_STRING(sess->s_nssai.sst, sST);
     if (sess->s_nssai.sd.v != OGS_S_NSSAI_NO_SD_VALUE) {
-        s_NSSAI->sD = CALLOC(1, sizeof(ogs_uint24_t));
+        s_NSSAI->sD = CALLOC(1, sizeof(NGAP_SD_t));
         ogs_asn_uint24_to_OCTET_STRING(sess->s_nssai.sd, s_NSSAI->sD);
     }
 

@@ -62,18 +62,16 @@ void udr_nf_state_initial(ogs_fsm_t *s, udr_event_t *e)
     ogs_assert(nf_instance);
     ogs_assert(nf_instance->id);
 
-    nf_instance->t_registration_interval = ogs_timer_add(udr_self()->timer_mgr,
-            udr_timer_nf_instance_registration_interval, nf_instance);
     ogs_assert(nf_instance->t_registration_interval);
-    nf_instance->t_heartbeat_interval = ogs_timer_add(udr_self()->timer_mgr,
-            udr_timer_nf_instance_heartbeat_interval, nf_instance);
+    nf_instance->t_registration_interval->cb =
+            udr_timer_nf_instance_registration_interval;
     ogs_assert(nf_instance->t_heartbeat_interval);
-    nf_instance->t_heartbeat = ogs_timer_add(udr_self()->timer_mgr,
-            udr_timer_nf_instance_heartbeat, nf_instance);
+    nf_instance->t_heartbeat_interval->cb =
+            udr_timer_nf_instance_heartbeat_interval;
     ogs_assert(nf_instance->t_heartbeat);
-    nf_instance->t_validity = ogs_timer_add(udr_self()->timer_mgr,
-            udr_timer_nf_instance_validity, nf_instance);
+    nf_instance->t_heartbeat->cb = udr_timer_nf_instance_heartbeat;
     ogs_assert(nf_instance->t_validity);
+    nf_instance->t_validity->cb = udr_timer_nf_instance_validity;
 
     if (NF_INSTANCE_IS_SELF(nf_instance->id)) {
         OGS_FSM_TRAN(s, &udr_nf_state_will_register);
@@ -84,20 +82,10 @@ void udr_nf_state_initial(ogs_fsm_t *s, udr_event_t *e)
 
 void udr_nf_state_final(ogs_fsm_t *s, udr_event_t *e)
 {
-    ogs_sbi_nf_instance_t *nf_instance = NULL;
-
     ogs_assert(s);
     ogs_assert(e);
 
     udr_sm_debug(e);
-
-    nf_instance = e->sbi.data;
-    ogs_assert(nf_instance);
-
-    ogs_timer_delete(nf_instance->t_registration_interval);
-    ogs_timer_delete(nf_instance->t_heartbeat_interval);
-    ogs_timer_delete(nf_instance->t_heartbeat);
-    ogs_timer_delete(nf_instance->t_validity);
 }
 
 void udr_nf_state_will_register(ogs_fsm_t *s, udr_event_t *e)
@@ -117,7 +105,8 @@ void udr_nf_state_will_register(ogs_fsm_t *s, udr_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        ogs_timer_start(nf_instance->t_registration_interval,
+        if (NF_INSTANCE_IS_SELF(nf_instance->id))
+            ogs_timer_start(nf_instance->t_registration_interval,
                 udr_timer_cfg(UDR_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL)->
                     duration);
 
@@ -125,7 +114,8 @@ void udr_nf_state_will_register(ogs_fsm_t *s, udr_event_t *e)
         break;
 
     case OGS_FSM_EXIT_SIG:
-        ogs_timer_stop(nf_instance->t_registration_interval);
+        if (NF_INSTANCE_IS_SELF(nf_instance->id))
+            ogs_timer_stop(nf_instance->t_registration_interval);
         break;
 
     case UDR_EVT_SBI_CLIENT:
@@ -171,8 +161,9 @@ void udr_nf_state_will_register(ogs_fsm_t *s, udr_event_t *e)
 
             ogs_warn("[%s] Retry to registration with NRF", nf_instance->id);
 
-            ogs_timer_start(nf_instance->t_registration_interval,
-                udr_timer_cfg(UDR_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL)->
+            if (NF_INSTANCE_IS_SELF(nf_instance->id))
+                ogs_timer_start(nf_instance->t_registration_interval,
+                    udr_timer_cfg(UDR_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL)->
                     duration);
 
             ogs_nnrf_nfm_send_nf_register(nf_instance);
@@ -276,10 +267,9 @@ void udr_nf_state_registered(ogs_fsm_t *s, udr_event_t *e)
     case UDR_EVT_SBI_TIMER:
         switch(e->timer_id) {
         case UDR_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-            if (nf_instance->time.heartbeat) {
+            if (nf_instance->time.heartbeat)
                 ogs_timer_start(nf_instance->t_heartbeat_interval,
                         ogs_time_from_sec(nf_instance->time.heartbeat));
-            }
 
             ogs_nnrf_nfm_send_nf_update(nf_instance);
             break;
@@ -352,17 +342,15 @@ void udr_nf_state_exception(ogs_fsm_t *s, udr_event_t *e)
 
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
-        if (NF_INSTANCE_IS_SELF(nf_instance->id)) {
+        if (NF_INSTANCE_IS_SELF(nf_instance->id))
             ogs_timer_start(nf_instance->t_registration_interval,
                 udr_timer_cfg(UDR_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL)->
                     duration);
-        }
         break;
 
     case OGS_FSM_EXIT_SIG:
-        if (NF_INSTANCE_IS_SELF(nf_instance->id)) {
+        if (NF_INSTANCE_IS_SELF(nf_instance->id))
             ogs_timer_stop(nf_instance->t_registration_interval);
-        }
         break;
 
     case UDR_EVT_SBI_TIMER:

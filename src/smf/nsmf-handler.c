@@ -250,6 +250,8 @@ bool smf_nsmf_handle_update_sm_context(
         /*********************************************************
          * Handle ACTIVATING
          ********************************************************/
+            OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
+            OpenAPI_ref_to_binary_data_t n2SmInfo;
 
             if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
                 ogs_warn("[%s:%d] FALLBACK - UpCnxState has already been "
@@ -294,9 +296,6 @@ bool smf_nsmf_handle_update_sm_context(
                 ogs_warn("[%s:%d] FALLBACK - UpCnxState has already been "
                         "ACTIVATING", smf_ue->supi, sess->psi);
             }
-
-            OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
-            OpenAPI_ref_to_binary_data_t n2SmInfo;
 
             /* UPDATE_UpCnxState - SYNC */
             sess->smfUpCnxState = sess->ueUpCnxState;

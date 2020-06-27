@@ -118,6 +118,14 @@ static void test1_func(abts_case *tc, void *data)
 
     test_ue_set_mobile_identity_suci(&test_ue, &mobile_identity_suci, 12);
 
+    memset(&test_ue.mobile_identity_imeisv, 0,
+            sizeof(ogs_nas_mobile_identity_imeisv_t));
+    test_ue.mobile_identity_imeisv.type = OGS_NAS_5GS_MOBILE_IDENTITY_IMEISV;
+    test_ue.mobile_identity_imeisv.odd_even = OGS_NAS_MOBILE_IDENTITY_EVEN;
+    test_ue.mobile_identity_imeisv.digit1 = 1;
+    test_ue.mobile_identity_imeisv.digit2 = 1;
+    test_ue.mobile_identity_imeisv.digit3 = 1;
+
     test_ue.nas.access_type = OGS_ACCESS_TYPE_3GPP;
     test_ue.abba_len = 2;
 
@@ -291,6 +299,8 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testgnb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
+
+    ogs_msleep(100);
 
     /********** Remove Subscriber in Database */
     doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
