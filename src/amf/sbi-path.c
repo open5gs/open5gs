@@ -209,8 +209,10 @@ void amf_sbi_send_deactivate_all_sessions(
 
     ogs_assert(amf_ue);
 
-    ogs_list_for_each(&amf_ue->sess_list, sess)
-        amf_sbi_send_deactivate_session(sess, group, cause);
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (SESSION_CONTEXT_IN_SMF(sess))
+            amf_sbi_send_deactivate_session(sess, group, cause);
+    }
 }
 
 void amf_sbi_send_release_session(amf_sess_t *sess)
@@ -228,6 +230,8 @@ void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue)
 
     ogs_assert(amf_ue);
 
-    ogs_list_for_each(&amf_ue->sess_list, sess)
-        amf_sbi_send_release_session(sess);
+    ogs_list_for_each(&amf_ue->sess_list, sess) {
+        if (SESSION_CONTEXT_IN_SMF(sess))
+            amf_sbi_send_release_session(sess);
+    }
 }

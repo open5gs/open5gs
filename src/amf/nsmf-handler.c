@@ -214,8 +214,16 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                 return OGS_ERROR;
             }
 
+            /*
+             * To Deliver N2 SM Content to gNB Temporarily,
+             * Store N2 SM Context in Session Context
+             */
             if (sess->n2smbuf) {
-                /* Free the old n2smbuf */
+                /*
+                 * It should not be reached this way.
+                 * If the problem occurred, free the old n2smbuf
+                 */
+                ogs_error("N2 SM Content is duplicated");
                 ogs_pkbuf_free(sess->n2smbuf);
             }
             /*
@@ -229,14 +237,16 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
             if (SESSION_SYNC_DONE(amf_ue)) {
                 nas_5gs_send_accept(amf_ue);
 
-#if 0 /* Move the context free to amf_sess_remove() */
+                /*
+                 * After sending accept message, N2 SM context is freed
+                 * For checking memory, NULL pointer should be set to n2smbuf.
+                 */
                 ogs_list_for_each(&amf_ue->sess_list, sess) {
                     if (sess->n2smbuf) {
                         ogs_pkbuf_free(sess->n2smbuf);
                         sess->n2smbuf = NULL;
                     }
                 }
-#endif
             }
 
         } else {

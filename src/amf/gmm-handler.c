@@ -271,7 +271,19 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
             if (psimask & (1 << sess->psi)) {
-                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED)
+#if REMOVED
+    /*
+     * TS23.502
+     * 4.2.3.2 UE Triggered Service Request
+     *
+     * Step 4. The Nsmf_PDUSession_UpdateSMContext Request is invoked:
+     *
+     *  - If the UE identifies List Of PDU Sessions To Be Activated
+     *    in the Service Request message;
+     *          if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED)
+     */
+#endif
+                if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_activating_session(sess);
             }
         }
@@ -289,7 +301,8 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
             if ((psimask & (1 << sess->psi)) == 0) {
-                amf_sbi_send_release_session(sess);
+                if (SESSION_CONTEXT_IN_SMF(sess))
+                    amf_sbi_send_release_session(sess);
             }
         }
     }
@@ -407,9 +420,10 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
      *
      *  - If the UE identifies List Of PDU Sessions To Be Activated
      *    in the Service Request message;
+     *          if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED)
      */
-                if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED)
 #endif
+                if (SESSION_CONTEXT_IN_SMF(sess))
                     amf_sbi_send_activating_session(sess);
             }
         }
@@ -441,8 +455,10 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
         psimask |= pdu_session_status->psi >> 8;
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
-            if ((psimask & (1 << sess->psi)) == 0)
-                amf_sbi_send_release_session(sess);
+            if ((psimask & (1 << sess->psi)) == 0) {
+                if (SESSION_CONTEXT_IN_SMF(sess))
+                    amf_sbi_send_release_session(sess);
+            }
         }
     }
 

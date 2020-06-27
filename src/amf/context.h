@@ -388,6 +388,8 @@ typedef struct amf_sess_s {
     uint8_t psi;            /* PDU Session Identity */
     uint8_t pti;            /* Procedure Trasaction Identity */
 
+#define SESSION_CONTEXT_IN_SMF(__sESS)  \
+    ((__sESS) && (__sESS)->sm_context_ref)
     char *sm_context_ref;   /* smContextRef from SMF */
 
 #define SESSION_SYNC_DONE(__aMF)  \

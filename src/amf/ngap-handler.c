@@ -757,6 +757,15 @@ void ngap_handle_initial_context_setup_response(
             return;
         }
 
+        if (!SESSION_CONTEXT_IN_SMF(sess)) {
+            ogs_error("Session Context is not in SMF [%d]",
+                    (int)PDUSessionItem->pDUSessionID);
+            ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_radioNetwork,
+                    NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
+            return;
+        }
+
         /* UPDATE_UpCnxState - ACTIVATED */
         sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATED;
 
@@ -1128,10 +1137,11 @@ void ngap_handle_ue_context_release_request(
 
                 sess = amf_sess_find_by_psi(amf_ue,
                         PDUSessionItem->pDUSessionID);
-                if (sess)
+                if (SESSION_CONTEXT_IN_SMF(sess)) {
                     amf_sbi_send_deactivate_session(
                             sess, Cause->present,
                             (int)Cause->choice.radioNetwork);
+                }
             }
         }
 
@@ -1381,6 +1391,15 @@ void ngap_handle_pdu_session_resource_setup_response(
         sess = amf_sess_find_by_psi(amf_ue, PDUSessionItem->pDUSessionID);
         if (!sess) {
             ogs_error("Cannot find PDU Session ID [%d]",
+                    (int)PDUSessionItem->pDUSessionID);
+            ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_radioNetwork,
+                    NGAP_CauseRadioNetwork_unknown_PDU_session_ID);
+            return;
+        }
+
+        if (!SESSION_CONTEXT_IN_SMF(sess)) {
+            ogs_error("Session Context is not in SMF [%d]",
                     (int)PDUSessionItem->pDUSessionID);
             ngap_send_error_indication2(amf_ue,
                     NGAP_Cause_PR_radioNetwork,
