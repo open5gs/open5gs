@@ -398,7 +398,18 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
 
         ogs_list_for_each(&amf_ue->sess_list, sess) {
             if (psimask & (1 << sess->psi)) {
+#if REMOVED
+    /*
+     * TS23.502
+     * 4.2.3.2 UE Triggered Service Request
+     *
+     * Step 4. The Nsmf_PDUSession_UpdateSMContext Request is invoked:
+     *
+     *  - If the UE identifies List Of PDU Sessions To Be Activated
+     *    in the Service Request message;
+     */
                 if (sess->smfUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED)
+#endif
                     amf_sbi_send_activating_session(sess);
             }
         }
