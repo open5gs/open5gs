@@ -265,7 +265,7 @@ int hss_db_auth_info(char *imsi_bcd, ogs_dbi_auth_info_t *auth_info)
     ogs_assert(auth_info);
 
     ogs_thread_mutex_lock(&self.db_lock);
-    supi = ogs_msprintf("%s-%s", OGS_DBI_SUPI_TYPE_IMSI, imsi_bcd);
+    supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     ogs_assert(supi);
 
     rv = ogs_dbi_auth_info(supi, auth_info);
@@ -285,7 +285,7 @@ int hss_db_update_rand_and_sqn(
     ogs_assert(imsi_bcd);
 
     ogs_thread_mutex_lock(&self.db_lock);
-    supi = ogs_msprintf("%s-%s", OGS_DBI_SUPI_TYPE_IMSI, imsi_bcd);
+    supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     ogs_assert(supi);
 
     rv = ogs_dbi_update_sqn(supi, sqn);
@@ -304,7 +304,7 @@ int hss_db_increment_sqn(char *imsi_bcd)
     ogs_assert(imsi_bcd);
 
     ogs_thread_mutex_lock(&self.db_lock);
-    supi = ogs_msprintf("%s-%s", OGS_DBI_SUPI_TYPE_IMSI, imsi_bcd);
+    supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     ogs_assert(supi);
 
     rv = ogs_dbi_increment_sqn(supi);
@@ -325,7 +325,7 @@ int hss_db_subscription_data(
     ogs_assert(subscription_data);
 
     ogs_thread_mutex_lock(&self.db_lock);
-    supi = ogs_msprintf("%s-%s", OGS_DBI_SUPI_TYPE_IMSI, imsi_bcd);
+    supi = ogs_msprintf("%s-%s", OGS_ID_SUPI_TYPE_IMSI, imsi_bcd);
     ogs_assert(supi);
 
     rv = ogs_dbi_subscription_data(supi, subscription_data);

@@ -711,10 +711,51 @@ static void mme_s6a_ula_cb(void *data, struct msg **msg)
     ret = fd_msg_search_avp(*msg, ogs_diam_s6a_subscription_data, &avp);
     ogs_assert(ret == 0);
     if (avp) {
+
+        /*
+         * TS29.328
+         * 6.3.2 MSISDN AVP
+         *
+         * The MSISDN AVP is of type OctetString.
+         * This AVP contains an MSISDN, in international number format
+         * as described in ITU-T Rec E.164 [8], encoded as a TBCD-string,
+         * i.e. digits from 0 through 9 are encoded 0000 to 1001;
+         * 1111 is used as a filler when there is an odd number of digits;
+         * bits 8 to 5 of octet n encode digit 2n;
+         * bits 4 to 1 of octet n encode digit 2(n-1)+1.
+         */
+        ret = fd_avp_search_avp(avp, ogs_diam_s6a_msisdn, &avpch1);
+        ogs_assert(ret == 0);
+        if (avpch1) {
+            ret = fd_msg_avp_hdr(avpch1, &hdr);
+            ogs_assert(ret == 0);
+            if (hdr->avp_value->os.len) {
+                mme_ue->msisdn_len = hdr->avp_value->os.len;
+                memcpy(mme_ue->msisdn,
+                    hdr->avp_value->os.data, mme_ue->msisdn_len);
+                ogs_buffer_to_bcd(mme_ue->msisdn,
+                        mme_ue->msisdn_len, mme_ue->msisdn_bcd);
+            }
+        }
+
+        ret = fd_avp_search_avp(avp, ogs_diam_s6a_a_msisdn, &avpch1);
+        ogs_assert(ret == 0);
+        if (avpch1) {
+            ret = fd_msg_avp_hdr(avpch1, &hdr);
+            ogs_assert(ret == 0);
+            if (hdr->avp_value->os.len) {
+                mme_ue->a_msisdn_len = hdr->avp_value->os.len;
+                memcpy(mme_ue->a_msisdn,
+                    hdr->avp_value->os.data, mme_ue->a_msisdn_len);
+                ogs_buffer_to_bcd(mme_ue->a_msisdn,
+                        mme_ue->a_msisdn_len, mme_ue->a_msisdn_bcd);
+            }
+        }
+
         ret = fd_avp_search_avp(avp, ogs_diam_s6a_ambr, &avpch1);
         ogs_assert(ret == 0);
         if (avpch1) {
-            ret = fd_avp_search_avp( avpch1,
+            ret = fd_avp_search_avp(avpch1,
                     ogs_diam_s6a_max_bandwidth_ul, &avpch2);
             ogs_assert(ret == 0);
             if (avpch2) {

@@ -344,6 +344,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
     ret = fd_msg_avp_hdr(avp, &hdr);
     ogs_assert(ret == 0);
     if (!(hdr->avp_value->u32 & OGS_DIAM_S6A_ULR_SKIP_SUBSCRIBER_DATA)) {
+        struct avp *avp_msisdn, *avp_a_msisdn;
         struct avp *avp_access_restriction_data;
         struct avp *avp_subscriber_status, *avp_network_access_mode;
         struct avp *avp_ambr, *avp_max_bandwidth_ul, *avp_max_bandwidth_dl;
@@ -351,8 +352,43 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         int i;
 
         /* Set the Subscription Data */
+
         ret = fd_msg_avp_new(ogs_diam_s6a_subscription_data, 0, &avp);
         ogs_assert(ret == 0);
+
+        /*
+         * TS29.328
+         * 6.3.2 MSISDN AVP
+         *
+         * The MSISDN AVP is of type OctetString.
+         * This AVP contains an MSISDN, in international number format
+         * as described in ITU-T Rec E.164 [8], encoded as a TBCD-string,
+         * i.e. digits from 0 through 9 are encoded 0000 to 1001;
+         * 1111 is used as a filler when there is an odd number of digits;
+         * bits 8 to 5 of octet n encode digit 2n;
+         * bits 4 to 1 of octet n encode digit 2(n-1)+1.
+         */
+        if (subscription_data.num_of_msisdn >= 1)  {
+            ret = fd_msg_avp_new(ogs_diam_s6a_msisdn, 0, &avp_msisdn);
+            ogs_assert(ret == 0);
+            val.os.data = subscription_data.msisdn[0].buf;
+            val.os.len = subscription_data.msisdn[0].len;
+            ret = fd_msg_avp_setvalue(avp_msisdn, &val);
+            ogs_assert(ret == 0);
+            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_msisdn);
+            ogs_assert(ret == 0);
+        }
+
+        if (subscription_data.num_of_msisdn >= 2)  {
+            ret = fd_msg_avp_new(ogs_diam_s6a_a_msisdn, 0, &avp_a_msisdn);
+            ogs_assert(ret == 0);
+            val.os.data = subscription_data.msisdn[1].buf;
+            val.os.len = subscription_data.msisdn[1].len;
+            ret = fd_msg_avp_setvalue(avp_a_msisdn, &val);
+            ogs_assert(ret == 0);
+            ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_a_msisdn);
+            ogs_assert(ret == 0);
+        }
 
         if (subscription_data.access_restriction_data) {
             ret = fd_msg_avp_new(ogs_diam_s6a_access_restriction_data, 0,
@@ -384,7 +420,7 @@ static int hss_ogs_diam_s6a_ulr_cb( struct msg **msg, struct avp *avp,
         ret = fd_msg_avp_add(avp, MSG_BRW_LAST_CHILD, avp_network_access_mode);
         ogs_assert(ret == 0);
 
-            /* Set the AMBR */
+        /* Set the AMBR */
         ret = fd_msg_avp_new(ogs_diam_s6a_ambr, 0, &avp_ambr);
         ogs_assert(ret == 0);
         ret = fd_msg_avp_new(

@@ -1139,6 +1139,7 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
 
 void amf_ue_remove(amf_ue_t *amf_ue)
 {
+    int i;
     amf_event_t e;
 
     ogs_assert(amf_ue);
@@ -1167,6 +1168,11 @@ void amf_ue_remove(amf_ue_t *amf_ue)
 
     if (amf_ue->pei)
         ogs_free(amf_ue->pei);
+
+    for (i = 0; i < amf_ue->num_of_msisdn; i++) {
+        ogs_assert(amf_ue->msisdn[i]);
+        ogs_free(amf_ue->msisdn[i]);
+    }
 
     if (amf_ue->confirmation_url_for_5g_aka)
         ogs_free(amf_ue->confirmation_url_for_5g_aka);

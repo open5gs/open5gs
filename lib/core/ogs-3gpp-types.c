@@ -233,14 +233,14 @@ char *ogs_supi_from_suci(char *suci)
     return supi;
 }
 
-char *ogs_supi_get_type(char *supi)
+char *ogs_id_get_type(char *str)
 {
     char *saveptr = NULL;
     char *p, *tmp;
     char *type = NULL;
 
-    ogs_assert(supi);
-    tmp = ogs_strdup(supi);
+    ogs_assert(str);
+    tmp = ogs_strdup(str);
 
     p = strtok_r(tmp, "-", &saveptr);
     ogs_assert(p);
@@ -250,14 +250,14 @@ char *ogs_supi_get_type(char *supi)
     return type;
 }
 
-char *ogs_supi_get_id(char *supi)
+char *ogs_id_get_value(char *str)
 {
     char *saveptr = NULL;
     char *p, *tmp;
     char *ueid = NULL;
 
-    ogs_assert(supi);
-    tmp = ogs_strdup(supi);
+    ogs_assert(str);
+    tmp = ogs_strdup(str);
 
     p = strtok_r(tmp, "-", &saveptr);
     ogs_assert(p);

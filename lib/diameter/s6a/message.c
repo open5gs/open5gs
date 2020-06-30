@@ -72,6 +72,9 @@ struct dict_object *ogs_diam_s6a_terminal_information = NULL;
 struct dict_object *ogs_diam_s6a_imei = NULL;
 struct dict_object *ogs_diam_s6a_software_version = NULL;
 
+struct dict_object *ogs_diam_s6a_msisdn = NULL;
+struct dict_object *ogs_diam_s6a_a_msisdn = NULL;
+
 extern int ogs_dict_s6a_entry(char *conffile);
 
 int ogs_diam_s6a_init(void)
@@ -134,6 +137,9 @@ int ogs_diam_s6a_init(void)
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Terminal-Information", &ogs_diam_s6a_terminal_information);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "IMEI", &ogs_diam_s6a_imei);
     CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "Software-Version", &ogs_diam_s6a_software_version);
+
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "MSISDN", &ogs_diam_s6a_msisdn);
+    CHECK_dict_search(DICT_AVP, AVP_BY_NAME_ALL_VENDORS, "A-MSISDN", &ogs_diam_s6a_a_msisdn);
 
 	return 0;
 }

@@ -25,6 +25,7 @@
 #include "ngap-path.h"
 #include "nausf-handler.h"
 #include "nsmf-handler.h"
+#include "nudm-handler.h"
 #include "sbi-path.h"
 #include "amf-sm.h"
 
@@ -851,39 +852,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-                SWITCH(sbi_message->h.resource.component[1])
-                CASE(OGS_SBI_RESOURCE_NAME_AM_DATA)
-                    if (sbi_message->AccessAndMobilitySubscriptionData) {
-                        OpenAPI_ambr_rm_t *subscribed_ue_ambr =
-                            sbi_message->AccessAndMobilitySubscriptionData->
-                                subscribed_ue_ambr;
-                        if (subscribed_ue_ambr) {
-                            amf_ue->subscribed_ue_ambr.uplink =
-                                ogs_sbi_bitrate_from_string(
-                                        subscribed_ue_ambr->uplink);
-                            amf_ue->subscribed_ue_ambr.downlink =
-                                ogs_sbi_bitrate_from_string(
-                                        subscribed_ue_ambr->downlink);
-                        }
-                    }
-
-                    amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue,
-                        (char *)OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA,
-                        amf_nudm_sdm_build_get);
-                    break;
-
-                CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
-                    amf_ue_sbi_discover_and_send(OpenAPI_nf_type_UDM, amf_ue,
-                        (char *)OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA,
-                        amf_nudm_sdm_build_get);
-                    break;
-
-                CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
-                    nas_5gs_send_accept(amf_ue);
-                    break;
-
-                DEFAULT
-                END
+                amf_nudm_sdm_handle_provisioned(amf_ue, sbi_message);
                 break;
 
             DEFAULT

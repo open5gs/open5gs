@@ -257,6 +257,9 @@ struct amf_ue_s {
     char            imeisv_bcd[OGS_MAX_IMEISV_BCD_LEN+1];
     ogs_nas_mobile_identity_imeisv_t nas_mobile_identity_imeisv;
 
+    int             num_of_msisdn;
+    char            *msisdn[OGS_MAX_NUM_OF_MSISDN];
+
     amf_m_tmsi_t    *m_tmsi;
     ogs_nas_5gs_guti_t guti;
     int             guti_present;

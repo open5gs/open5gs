@@ -192,7 +192,7 @@ void ogs_kdf_kamf(char *supi, uint8_t *abba, uint8_t abba_len,
     ogs_assert(kamf);
 
     memset(param, 0, sizeof(param));
-    param[0].buf = (uint8_t *)ogs_supi_get_id(supi);
+    param[0].buf = (uint8_t *)ogs_id_get_value(supi);
     ogs_assert(param[0].buf);
     param[0].len = strlen((char *)param[0].buf);
     param[1].buf = abba;

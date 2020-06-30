@@ -24,6 +24,7 @@ libamf_sources = files('''
     nausf-handler.c
 
     nudm-build.c
+    nudm-handler.c
 
     nsmf-build.c
     nsmf-handler.c

@@ -67,6 +67,12 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
         req->me_identity.len = mme_ue->imeisv_len;
     }
 
+    if (mme_ue->msisdn_len) {
+        req->msisdn.presence = 1;
+        req->msisdn.data = mme_ue->msisdn;
+        req->msisdn.len = mme_ue->msisdn_len;
+    }
+
     memset(&uli, 0, sizeof(ogs_gtp_uli_t));
     uli.flags.e_cgi = 1;
     uli.flags.tai = 1;

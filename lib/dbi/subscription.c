@@ -38,9 +38,9 @@ int ogs_dbi_auth_info(char *supi, ogs_dbi_auth_info_t *auth_info)
     ogs_assert(supi);
     ogs_assert(auth_info);
 
-    supi_type = ogs_supi_get_type(supi);
+    supi_type = ogs_id_get_type(supi);
     ogs_assert(supi_type);
-    supi_id = ogs_supi_get_id(supi);
+    supi_id = ogs_id_get_value(supi);
     ogs_assert(supi_id);
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
@@ -121,9 +121,9 @@ int ogs_dbi_update_sqn(char *supi, uint64_t sqn)
 
     ogs_assert(supi);
 
-    supi_type = ogs_supi_get_type(supi);
+    supi_type = ogs_id_get_type(supi);
     ogs_assert(supi_type);
-    supi_id = ogs_supi_get_id(supi);
+    supi_id = ogs_id_get_value(supi);
     ogs_assert(supi_id);
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
@@ -161,9 +161,9 @@ int ogs_dbi_increment_sqn(char *supi)
 
     ogs_assert(supi);
 
-    supi_type = ogs_supi_get_type(supi);
+    supi_type = ogs_id_get_type(supi);
     ogs_assert(supi_type);
-    supi_id = ogs_supi_get_id(supi);
+    supi_id = ogs_id_get_value(supi);
     ogs_assert(supi_id);
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
@@ -221,9 +221,9 @@ int ogs_dbi_subscription_data(char *supi,
     ogs_assert(subscription_data);
     ogs_assert(supi);
 
-    supi_type = ogs_supi_get_type(supi);
+    supi_type = ogs_id_get_type(supi);
     ogs_assert(supi_type);
-    supi_id = ogs_supi_get_id(supi);
+    supi_id = ogs_id_get_value(supi);
     ogs_assert(supi_id);
 
     query = BCON_NEW(supi_type, BCON_UTF8(supi_id));
@@ -259,11 +259,36 @@ int ogs_dbi_subscription_data(char *supi,
     memset(subscription_data, 0, sizeof(ogs_subscription_data_t));
     while (bson_iter_next(&iter)) {
         const char *key = bson_iter_key(&iter);
-        if (!strcmp(key, "access_restriction_data") &&
+        if (!strcmp(key, "msisdn") &&
+            BSON_ITER_HOLDS_ARRAY(&iter)) {
+            int msisdn_index = 0;
+
+            bson_iter_recurse(&iter, &child1_iter);
+            while (bson_iter_next(&child1_iter)) {
+                const char *child1_key = bson_iter_key(&child1_iter);
+
+                ogs_assert(child1_key);
+                msisdn_index = atoi(child1_key);
+                ogs_assert(msisdn_index < OGS_MAX_NUM_OF_MSISDN);
+
+                if (BSON_ITER_HOLDS_UTF8(&child1_iter)) {
+                    utf8 = bson_iter_utf8(&child1_iter, &length);
+                    ogs_cpystrn(subscription_data->msisdn[msisdn_index].bcd,
+                            utf8, ogs_min(length, OGS_MAX_MSISDN_BCD_LEN)+1);
+                    ogs_bcd_to_buffer(
+                            subscription_data->msisdn[msisdn_index].bcd,
+                            subscription_data->msisdn[msisdn_index].buf,
+                            &subscription_data->msisdn[msisdn_index].len);
+
+                    msisdn_index++;
+                }
+            }
+            subscription_data->num_of_msisdn = msisdn_index;
+
+        } else if (!strcmp(key, "access_restriction_data") &&
             BSON_ITER_HOLDS_INT32(&iter)) {
             subscription_data->access_restriction_data =
                 bson_iter_int32(&iter);
-
         } else if (!strcmp(key, "subscriber_status") &&
             BSON_ITER_HOLDS_INT32(&iter)) {
             subscription_data->subscriber_status =

@@ -60,6 +60,12 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
 
     SmContextCreateData.supi = amf_ue->supi;
     SmContextCreateData.pei = amf_ue->pei;
+    if (amf_ue->num_of_msisdn) {
+        if (amf_ue->msisdn[0]) {
+            SmContextCreateData.gpsi = ogs_msprintf("%s-%s",
+                        OGS_ID_GPSI_TYPE_MSISDN, amf_ue->msisdn[0]);
+        }
+    }
     SmContextCreateData.pdu_session_id = sess->psi;
     SmContextCreateData.dnn = sess->dnn;
 
@@ -114,6 +120,8 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
     ogs_free(header.resource.component[2]);
     if (s_nssai.sd)
         ogs_free(s_nssai.sd);
+    if (SmContextCreateData.gpsi)
+        ogs_free(SmContextCreateData.gpsi);
 
     return request;
 }

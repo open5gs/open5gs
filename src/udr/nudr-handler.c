@@ -56,7 +56,7 @@ bool udr_nudr_dr_handle_subscription_authentication(
     }
 
     if (strncmp(supi,
-            OGS_DBI_SUPI_TYPE_IMSI, strlen(OGS_DBI_SUPI_TYPE_IMSI)) != 0) {
+            OGS_ID_SUPI_TYPE_IMSI, strlen(OGS_ID_SUPI_TYPE_IMSI)) != 0) {
         ogs_error("[%s] Unknown SUPI Type", supi);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
                 recvmsg, "Unknwon SUPI Type", supi);
@@ -252,7 +252,7 @@ bool udr_nudr_dr_handle_subscription_context(
     }
 
     if (strncmp(supi,
-            OGS_DBI_SUPI_TYPE_IMSI, strlen(OGS_DBI_SUPI_TYPE_IMSI)) != 0) {
+            OGS_ID_SUPI_TYPE_IMSI, strlen(OGS_ID_SUPI_TYPE_IMSI)) != 0) {
         ogs_error("[%s] Unknown SUPI Type", supi);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
                 recvmsg, "Unknwon SUPI Type", supi);
@@ -329,7 +329,7 @@ bool udr_nudr_dr_handle_subscription_provisioned(
     }
 
     if (strncmp(supi,
-            OGS_DBI_SUPI_TYPE_IMSI, strlen(OGS_DBI_SUPI_TYPE_IMSI)) != 0) {
+            OGS_ID_SUPI_TYPE_IMSI, strlen(OGS_ID_SUPI_TYPE_IMSI)) != 0) {
         ogs_error("[%s] Unknown SUPI Type", supi);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
                 recvmsg, "Unknwon SUPI Type", supi);
@@ -357,11 +357,22 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         OpenAPI_access_and_mobility_subscription_data_t
             AccessAndMobilitySubscriptionData;
         OpenAPI_ambr_rm_t subscribed_ue_ambr;
+        OpenAPI_list_t *gpsiList = NULL;
+        OpenAPI_lnode_t *node = NULL;
 
         subscribed_ue_ambr.uplink = ogs_sbi_bitrate_to_string(
                 subscription_data.ambr.uplink, OGS_SBI_BITRATE_KBPS);
         subscribed_ue_ambr.downlink = ogs_sbi_bitrate_to_string(
                 subscription_data.ambr.downlink, OGS_SBI_BITRATE_KBPS);
+
+        gpsiList = OpenAPI_list_create();
+
+        for (i = 0; i < subscription_data.num_of_msisdn; i++) {
+            char *gpsi = ogs_msprintf("%s-%s",
+                    OGS_ID_GPSI_TYPE_MSISDN, subscription_data.msisdn[i].bcd);
+            ogs_assert(gpsi);
+            OpenAPI_list_add(gpsiList, gpsi);
+        }
 
         memset(&AccessAndMobilitySubscriptionData, 0,
                 sizeof(AccessAndMobilitySubscriptionData));
@@ -372,12 +383,19 @@ bool udr_nudr_dr_handle_subscription_provisioned(
         sendmsg.AccessAndMobilitySubscriptionData =
             &AccessAndMobilitySubscriptionData;
 
+        if (gpsiList->count)
+            AccessAndMobilitySubscriptionData.gpsis = gpsiList;
+
         response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
         ogs_assert(response);
         ogs_sbi_server_send_response(session, response);
 
         ogs_free(subscribed_ue_ambr.uplink);
         ogs_free(subscribed_ue_ambr.downlink);
+        OpenAPI_list_for_each(gpsiList, node) {
+            if (node->data) ogs_free(node->data);
+        }
+        OpenAPI_list_free(gpsiList);
 
         break;
 

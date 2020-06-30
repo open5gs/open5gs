@@ -47,6 +47,10 @@ extern "C" {
 #define OGS_MAX_IMEISV_LEN              \
     OGS_BCD_TO_BUFFER_LEN(OGS_MAX_IMEISV_BCD_LEN)
 
+#define OGS_MAX_MSISDN_BCD_LEN          15
+#define OGS_MAX_MSISDN_LEN              \
+    OGS_BCD_TO_BUFFER_LEN(OGS_MAX_MSISDN_BCD_LEN)
+
 #define OGS_MAX_NUM_OF_ENB_ID           16
 #define OGS_MAX_NUM_OF_APN              16
 #define OGS_MAX_NUM_OF_HOSTNAME         16
@@ -169,8 +173,13 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
 /************************************
  * SUPI/SUCI                       */
 char *ogs_supi_from_suci(char *suci);
-char *ogs_supi_get_type(char *supi);
-char *ogs_supi_get_id(char *supi);
+
+/************************************
+ * SUPI/GPSI                       */
+#define OGS_ID_SUPI_TYPE_IMSI "imsi"
+#define OGS_ID_GPSI_TYPE_MSISDN "msisdn"
+char *ogs_id_get_type(char *str);
+char *ogs_id_get_value(char *str);
 
 /************************************
  * TAI Structure                    */
@@ -507,6 +516,14 @@ typedef struct ogs_subscription_data_s {
     uint32_t                context_identifier;             /* default APN */
     ogs_pdn_t               pdn[OGS_MAX_NUM_OF_SESS];
     int                     num_of_pdn;
+
+#define OGS_MAX_NUM_OF_MSISDN                                   4
+    int num_of_msisdn;
+    struct {
+        uint8_t buf[OGS_MAX_MSISDN_LEN];
+        int len;
+        char bcd[OGS_MAX_MSISDN_BCD_LEN+1];
+    } msisdn[OGS_MAX_NUM_OF_MSISDN];
 } ogs_subscription_data_t;
 
 #ifdef __cplusplus
