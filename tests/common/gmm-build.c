@@ -541,14 +541,8 @@ ogs_pkbuf_t *testgmm_build_configuration_update_complete(test_ue_t *test_ue)
 {
     ogs_nas_5gs_message_t message;
     ogs_pkbuf_t *pkbuf = NULL;
-    ogs_nas_5gs_configuration_update_complete_t *configuration_update_complete =
-            &message.gmm.configuration_update_complete;
-    ogs_nas_control_plane_service_type_t *control_plane_service_type = NULL;
 
     ogs_assert(test_ue);
-
-    control_plane_service_type =
-        &configuration_update_complete->control_plane_service_type;
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
@@ -559,9 +553,6 @@ ogs_pkbuf_t *testgmm_build_configuration_update_complete(test_ue_t *test_ue)
     message.gmm.h.extended_protocol_discriminator =
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE;
-
-    control_plane_service_type->value =
-        OGS_NAS_5GS_CONTROL_PLANE_SERVICE_TYPE_MO;
 
     return test_nas_5gs_security_encode(test_ue, &message);
 }

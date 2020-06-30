@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-06-19 19:55:35.960740 by acetcom
+ * Created on: 2020-06-30 08:13:45.459717 by acetcom
  * from 24501-g41.docx
  ******************************************************************************/
 
@@ -44,7 +44,6 @@ int ogs_nas_5gs_encode_service_request(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_message_t
 int ogs_nas_5gs_encode_service_reject(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_message_t *message);
 int ogs_nas_5gs_encode_service_accept(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_message_t *message);
 int ogs_nas_5gs_encode_configuration_update_command(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_message_t *message);
-int ogs_nas_5gs_encode_configuration_update_complete(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_message_t *message);
 int ogs_nas_5gs_encode_authentication_request(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_message_t *message);
 int ogs_nas_5gs_encode_authentication_response(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_message_t *message);
 int ogs_nas_5gs_encode_authentication_reject(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_message_t *message);
@@ -1309,107 +1308,6 @@ int ogs_nas_5gs_encode_configuration_update_command(ogs_pkbuf_t *pkbuf, ogs_nas_
         encoded += size;
 
         size = ogs_nas_5gs_encode_truncated_5g_s_tmsi_configuration(pkbuf, &configuration_update_command->truncated_s_tmsi_configuration);
-        ogs_assert(size >= 0);
-        encoded += size;
-    }
-
-    return encoded;
-}
-
-int ogs_nas_5gs_encode_configuration_update_complete(ogs_pkbuf_t *pkbuf, ogs_nas_5gs_message_t *message)
-{
-    ogs_nas_5gs_configuration_update_complete_t *configuration_update_complete = &message->gmm.configuration_update_complete;
-    int encoded = 0;
-    int size = 0;
-
-    ogs_trace("[NAS] Encode CONFIGURATION_UPDATE_COMPLETE");
-
-    size = ogs_nas_5gs_encode_control_plane_service_type(pkbuf, &configuration_update_complete->control_plane_service_type);
-    ogs_assert(size >= 0);
-    encoded += size;
-
-    if (configuration_update_complete->presencemask & OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_CIOT_SMALL_DATA_CONTAINER_PRESENT) {
-        size = ogs_nas_5gs_encode_optional_type(pkbuf, OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_CIOT_SMALL_DATA_CONTAINER_TYPE);
-        ogs_assert(size >= 0);
-        encoded += size;
-
-        size = ogs_nas_5gs_encode_ciot_small_data_container(pkbuf, &configuration_update_complete->ciot_small_data_container);
-        ogs_assert(size >= 0);
-        encoded += size;
-    }
-
-    if (configuration_update_complete->presencemask & OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PAYLOAD_CONTAINER_TYPE_PRESENT) {
-        configuration_update_complete->payload_container_type.type = (OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PAYLOAD_CONTAINER_TYPE_TYPE >> 4);
-
-        size = ogs_nas_5gs_encode_payload_container_type(pkbuf, &configuration_update_complete->payload_container_type);
-        ogs_assert(size >= 0);
-        encoded += size;
-    }
-
-    if (configuration_update_complete->presencemask & OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PAYLOAD_CONTAINER_PRESENT) {
-        size = ogs_nas_5gs_encode_optional_type(pkbuf, OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PAYLOAD_CONTAINER_TYPE);
-        ogs_assert(size >= 0);
-        encoded += size;
-
-        size = ogs_nas_5gs_encode_payload_container(pkbuf, &configuration_update_complete->payload_container);
-        ogs_assert(size >= 0);
-        encoded += size;
-    }
-
-    if (configuration_update_complete->presencemask & OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PDU_SESSION_ID_PRESENT) {
-        size = ogs_nas_5gs_encode_optional_type(pkbuf, OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PDU_SESSION_ID_TYPE);
-        ogs_assert(size >= 0);
-        encoded += size;
-
-        size = ogs_nas_5gs_encode_pdu_session_identity_2(pkbuf, &configuration_update_complete->pdu_session_id);
-        ogs_assert(size >= 0);
-        encoded += size;
-    }
-
-    if (configuration_update_complete->presencemask & OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PDU_SESSION_STATUS_PRESENT) {
-        size = ogs_nas_5gs_encode_optional_type(pkbuf, OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PDU_SESSION_STATUS_TYPE);
-        ogs_assert(size >= 0);
-        encoded += size;
-
-        size = ogs_nas_5gs_encode_pdu_session_status(pkbuf, &configuration_update_complete->pdu_session_status);
-        ogs_assert(size >= 0);
-        encoded += size;
-    }
-
-    if (configuration_update_complete->presencemask & OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_RELEASE_ASSISTANCE_INDICATION_PRESENT) {
-        configuration_update_complete->release_assistance_indication.type = (OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_RELEASE_ASSISTANCE_INDICATION_TYPE >> 4);
-
-        size = ogs_nas_5gs_encode_release_assistance_indication(pkbuf, &configuration_update_complete->release_assistance_indication);
-        ogs_assert(size >= 0);
-        encoded += size;
-    }
-
-    if (configuration_update_complete->presencemask & OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_UPLINK_DATA_STATUS_PRESENT) {
-        size = ogs_nas_5gs_encode_optional_type(pkbuf, OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_UPLINK_DATA_STATUS_TYPE);
-        ogs_assert(size >= 0);
-        encoded += size;
-
-        size = ogs_nas_5gs_encode_uplink_data_status(pkbuf, &configuration_update_complete->uplink_data_status);
-        ogs_assert(size >= 0);
-        encoded += size;
-    }
-
-    if (configuration_update_complete->presencemask & OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_NAS_MESSAGE_CONTAINER_PRESENT) {
-        size = ogs_nas_5gs_encode_optional_type(pkbuf, OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_NAS_MESSAGE_CONTAINER_TYPE);
-        ogs_assert(size >= 0);
-        encoded += size;
-
-        size = ogs_nas_5gs_encode_message_container(pkbuf, &configuration_update_complete->nas_message_container);
-        ogs_assert(size >= 0);
-        encoded += size;
-    }
-
-    if (configuration_update_complete->presencemask & OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_ADDITIONAL_INFORMATION_PRESENT) {
-        size = ogs_nas_5gs_encode_optional_type(pkbuf, OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_ADDITIONAL_INFORMATION_TYPE);
-        ogs_assert(size >= 0);
-        encoded += size;
-
-        size = ogs_nas_5gs_encode_additional_information(pkbuf, &configuration_update_complete->additional_information);
         ogs_assert(size >= 0);
         encoded += size;
     }
@@ -2978,9 +2876,6 @@ ogs_pkbuf_t *ogs_nas_5gmm_encode(ogs_nas_5gs_message_t *message)
         encoded += size;
         break;
     case OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE:
-        size = ogs_nas_5gs_encode_configuration_update_complete(pkbuf, message);
-        ogs_assert(size >= 0);
-        encoded += size;
         break;
     case OGS_NAS_5GS_AUTHENTICATION_REQUEST:
         size = ogs_nas_5gs_encode_authentication_request(pkbuf, message);

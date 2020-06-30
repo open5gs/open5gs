@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-06-19 19:55:35.929537 by acetcom
+ * Created on: 2020-06-30 08:13:45.429071 by acetcom
  * from 24501-g41.docx
  ******************************************************************************/
 
@@ -64,9 +64,7 @@ int ogs_nas_5gs_decode_authentication_parameter_rand(ogs_nas_authentication_para
 int ogs_nas_5gs_decode_authentication_response_parameter(ogs_nas_authentication_response_parameter_t *authentication_response_parameter, ogs_pkbuf_t *pkbuf);
 int ogs_nas_5gs_decode_configuration_update_indication(ogs_nas_configuration_update_indication_t *configuration_update_indication, ogs_pkbuf_t *pkbuf);
 int ogs_nas_5gs_decode_cag_information_list(ogs_nas_cag_information_list_t *cag_information_list, ogs_pkbuf_t *pkbuf);
-int ogs_nas_5gs_decode_ciot_small_data_container(ogs_nas_ciot_small_data_container_t *ciot_small_data_container, ogs_pkbuf_t *pkbuf);
 int ogs_nas_5gs_decode_ciphering_key_data(ogs_nas_ciphering_key_data_t *ciphering_key_data, ogs_pkbuf_t *pkbuf);
-int ogs_nas_5gs_decode_control_plane_service_type(ogs_nas_control_plane_service_type_t *control_plane_service_type, ogs_pkbuf_t *pkbuf);
 int ogs_nas_5gs_decode_daylight_saving_time(ogs_nas_daylight_saving_time_t *daylight_saving_time, ogs_pkbuf_t *pkbuf);
 int ogs_nas_5gs_decode_5gmm_cause(ogs_nas_5gmm_cause_t *gmm_cause, ogs_pkbuf_t *pkbuf);
 int ogs_nas_5gs_decode_de_registration_type(ogs_nas_de_registration_type_t *de_registration_type, ogs_pkbuf_t *pkbuf);
@@ -174,9 +172,7 @@ int ogs_nas_5gs_encode_authentication_parameter_rand(ogs_pkbuf_t *pkbuf, ogs_nas
 int ogs_nas_5gs_encode_authentication_response_parameter(ogs_pkbuf_t *pkbuf, ogs_nas_authentication_response_parameter_t *authentication_response_parameter);
 int ogs_nas_5gs_encode_configuration_update_indication(ogs_pkbuf_t *pkbuf, ogs_nas_configuration_update_indication_t *configuration_update_indication);
 int ogs_nas_5gs_encode_cag_information_list(ogs_pkbuf_t *pkbuf, ogs_nas_cag_information_list_t *cag_information_list);
-int ogs_nas_5gs_encode_ciot_small_data_container(ogs_pkbuf_t *pkbuf, ogs_nas_ciot_small_data_container_t *ciot_small_data_container);
 int ogs_nas_5gs_encode_ciphering_key_data(ogs_pkbuf_t *pkbuf, ogs_nas_ciphering_key_data_t *ciphering_key_data);
-int ogs_nas_5gs_encode_control_plane_service_type(ogs_pkbuf_t *pkbuf, ogs_nas_control_plane_service_type_t *control_plane_service_type);
 int ogs_nas_5gs_encode_daylight_saving_time(ogs_pkbuf_t *pkbuf, ogs_nas_daylight_saving_time_t *daylight_saving_time);
 int ogs_nas_5gs_encode_5gmm_cause(ogs_pkbuf_t *pkbuf, ogs_nas_5gmm_cause_t *gmm_cause);
 int ogs_nas_5gs_encode_de_registration_type(ogs_pkbuf_t *pkbuf, ogs_nas_de_registration_type_t *de_registration_type);

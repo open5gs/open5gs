@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-06-19 19:55:35.941362 by acetcom
+ * Created on: 2020-06-30 08:13:45.441307 by acetcom
  * from 24501-g41.docx
  ******************************************************************************/
 
@@ -570,46 +570,6 @@ typedef struct ogs_nas_5gs_configuration_update_command_s {
     ogs_nas_5gs_registration_result_t registration_result;
     ogs_nas_truncated_5g_s_tmsi_configuration_t truncated_s_tmsi_configuration;
 } ogs_nas_5gs_configuration_update_command_t;
-
-
-/*******************************************************
- * CONFIGURATION UPDATE COMPLETE
- ******************************************************/
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_CIOT_SMALL_DATA_CONTAINER_PRESENT ((uint64_t)1<<0)
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PAYLOAD_CONTAINER_TYPE_PRESENT ((uint64_t)1<<1)
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PAYLOAD_CONTAINER_PRESENT ((uint64_t)1<<2)
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PDU_SESSION_ID_PRESENT ((uint64_t)1<<3)
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PDU_SESSION_STATUS_PRESENT ((uint64_t)1<<4)
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_RELEASE_ASSISTANCE_INDICATION_PRESENT ((uint64_t)1<<5)
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_UPLINK_DATA_STATUS_PRESENT ((uint64_t)1<<6)
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_NAS_MESSAGE_CONTAINER_PRESENT ((uint64_t)1<<7)
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_ADDITIONAL_INFORMATION_PRESENT ((uint64_t)1<<8)
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_CIOT_SMALL_DATA_CONTAINER_TYPE 0x6F
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PAYLOAD_CONTAINER_TYPE_TYPE 0x80
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PAYLOAD_CONTAINER_TYPE 0x7B
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PDU_SESSION_ID_TYPE 0x12
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_PDU_SESSION_STATUS_TYPE 0x50
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_RELEASE_ASSISTANCE_INDICATION_TYPE 0xF0
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_UPLINK_DATA_STATUS_TYPE 0x40
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_NAS_MESSAGE_CONTAINER_TYPE 0x71
-#define OGS_NAS_5GS_CONFIGURATION_UPDATE_COMPLETE_ADDITIONAL_INFORMATION_TYPE 0x24
-
-typedef struct ogs_nas_5gs_configuration_update_complete_s {
-    /* Mandatory fields */
-    ogs_nas_control_plane_service_type_t control_plane_service_type;
-
-    /* Optional fields */
-    uint64_t presencemask;
-    ogs_nas_ciot_small_data_container_t ciot_small_data_container;
-    ogs_nas_payload_container_type_t payload_container_type;
-    ogs_nas_payload_container_t payload_container;
-    ogs_nas_pdu_session_identity_2_t pdu_session_id;
-    ogs_nas_pdu_session_status_t pdu_session_status;
-    ogs_nas_release_assistance_indication_t release_assistance_indication;
-    ogs_nas_uplink_data_status_t uplink_data_status;
-    ogs_nas_message_container_t nas_message_container;
-    ogs_nas_additional_information_t additional_information;
-} ogs_nas_5gs_configuration_update_complete_t;
 
 
 /*******************************************************
@@ -1316,7 +1276,6 @@ typedef struct ogs_nas_5gmm_message_s {
         ogs_nas_5gs_service_reject_t service_reject;
         ogs_nas_5gs_service_accept_t service_accept;
         ogs_nas_5gs_configuration_update_command_t configuration_update_command;
-        ogs_nas_5gs_configuration_update_complete_t configuration_update_complete;
         ogs_nas_5gs_authentication_request_t authentication_request;
         ogs_nas_5gs_authentication_response_t authentication_response;
         ogs_nas_5gs_authentication_reject_t authentication_reject;

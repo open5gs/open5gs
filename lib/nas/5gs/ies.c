@@ -28,7 +28,7 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.2.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-06-19 19:55:35.932346 by acetcom
+ * Created on: 2020-06-30 08:13:45.431932 by acetcom
  * from 24501-g41.docx
  ******************************************************************************/
 
@@ -700,40 +700,6 @@ int ogs_nas_5gs_encode_cag_information_list(ogs_pkbuf_t *pkbuf, ogs_nas_cag_info
     return cag_information_list->length + sizeof(cag_information_list->length);
 }
 
-/* 9.11.3.18B CIoT small data container
- * O TLV 4-257 */
-int ogs_nas_5gs_decode_ciot_small_data_container(ogs_nas_ciot_small_data_container_t *ciot_small_data_container, ogs_pkbuf_t *pkbuf)
-{
-    uint16_t size = 0;
-    ogs_nas_ciot_small_data_container_t *source = (ogs_nas_ciot_small_data_container_t *)pkbuf->data;
-
-    ciot_small_data_container->length = source->length;
-    size = ciot_small_data_container->length + sizeof(ciot_small_data_container->length);
-
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    memcpy(ciot_small_data_container, pkbuf->data - size, size);
-
-    ogs_trace("  CIOT_SMALL_DATA_CONTAINER - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
-
-    return size;
-}
-
-int ogs_nas_5gs_encode_ciot_small_data_container(ogs_pkbuf_t *pkbuf, ogs_nas_ciot_small_data_container_t *ciot_small_data_container)
-{
-    uint16_t size = ciot_small_data_container->length + sizeof(ciot_small_data_container->length);
-    ogs_nas_ciot_small_data_container_t target;
-
-    memcpy(&target, ciot_small_data_container, sizeof(ogs_nas_ciot_small_data_container_t));
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    memcpy(pkbuf->data - size, &target, size);
-
-    ogs_trace("  CIOT_SMALL_DATA_CONTAINER - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
-
-    return size;
-}
-
 /* 9.11.3.18C Ciphering key data
  * O TLV-E x-n */
 int ogs_nas_5gs_decode_ciphering_key_data(ogs_nas_ciphering_key_data_t *ciphering_key_data, ogs_pkbuf_t *pkbuf)
@@ -774,36 +740,6 @@ int ogs_nas_5gs_encode_ciphering_key_data(ogs_pkbuf_t *pkbuf, ogs_nas_ciphering_
     ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
 
     return ciphering_key_data->length + sizeof(ciphering_key_data->length);
-}
-
-/* 9.11.3.18D Control plane service type
- * M V 1/2 */
-int ogs_nas_5gs_decode_control_plane_service_type(ogs_nas_control_plane_service_type_t *control_plane_service_type, ogs_pkbuf_t *pkbuf)
-{
-    uint16_t size = sizeof(ogs_nas_control_plane_service_type_t);
-
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    memcpy(control_plane_service_type, pkbuf->data - size, size);
-
-    ogs_trace("  CONTROL_PLANE_SERVICE_TYPE - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
-
-    return size;
-}
-
-int ogs_nas_5gs_encode_control_plane_service_type(ogs_pkbuf_t *pkbuf, ogs_nas_control_plane_service_type_t *control_plane_service_type)
-{
-    uint16_t size = sizeof(ogs_nas_control_plane_service_type_t);
-    ogs_nas_control_plane_service_type_t target;
-
-    memcpy(&target, control_plane_service_type, size);
-    ogs_assert(ogs_pkbuf_pull(pkbuf, size));
-    memcpy(pkbuf->data - size, &target, size);
-
-    ogs_trace("  CONTROL_PLANE_SERVICE_TYPE - ");
-    ogs_log_hexdump(OGS_LOG_TRACE, pkbuf->data - size, size);
-
-    return size;
 }
 
 /* 9.11.3.19 Daylight saving time

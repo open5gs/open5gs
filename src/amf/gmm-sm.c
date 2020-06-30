@@ -504,7 +504,7 @@ void gmm_state_authentication(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         default:
-            ogs_warn("Unknown message[%d]", nas_message->gmm.h.message_type);
+            ogs_error("Unknown message[%d]", nas_message->gmm.h.message_type);
             break;
         }
         break;
@@ -735,7 +735,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         default:
-            ogs_warn("Unknown message[%d]", nas_message->gmm.h.message_type);
+            ogs_error("Unknown message[%d]", nas_message->gmm.h.message_type);
             break;
         }
         break;
@@ -911,7 +911,7 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         default:
-            ogs_warn("Unknown message[%d]", nas_message->gmm.h.message_type);
+            ogs_error("Unknown message [%d]", nas_message->gmm.h.message_type);
             break;
         }
         break;
