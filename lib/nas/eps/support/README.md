@@ -13,4 +13,4 @@ user@host ~/Documents/git/open5gs/lib/gtp/support$ \
 
 * Generate Message support files
 user@host ~/Documents/git/open5gs/lib/s1ap/support$ \
-    python nas-message.py -f 24301-d80.docx -o ..
+    python nas-message.py -f 24301-g40.docx -o ..

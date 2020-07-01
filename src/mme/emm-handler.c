@@ -138,6 +138,12 @@ int emm_handle_attach_request(
                 &attach_request->ms_network_capability,
                 sizeof(attach_request->ms_network_capability));
     }
+    if (attach_request->presencemask &
+        OGS_NAS_EPS_ATTACH_REQUEST_UE_ADDITIONAL_SECURITY_CAPABILITY_PRESENT) {
+        memcpy(&mme_ue->ue_additional_security_capability,
+                &attach_request->ue_additional_security_capability,
+                sizeof(attach_request->ue_additional_security_capability));
+    }
 
     if (mme_selected_int_algorithm(mme_ue) ==
             OGS_NAS_SECURITY_ALGORITHMS_EIA0) {

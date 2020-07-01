@@ -358,6 +358,7 @@ struct mme_ue_s {
     /* Security Context */
     ogs_nas_ue_network_capability_t ue_network_capability;
     ogs_nas_ms_network_capability_t ms_network_capability;
+    ogs_nas_ue_additional_security_capability_t ue_additional_security_capability;
     uint8_t         xres[OGS_MAX_RES_LEN];
     uint8_t         xres_len;
     uint8_t         kasme[OGS_SHA256_DIGEST_SIZE];

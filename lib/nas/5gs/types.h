@@ -194,6 +194,7 @@ ED6(uint8_t mpsi:1;,
 ED3(uint8_t spare:6;,
     uint8_t mcsi:1;,
     uint8_t emcn :1;)
+    uint8_t spare2;
 } ogs_nas_5gs_network_feature_support_t;
 
 /* 9.11.3.6 5GS registration result
@@ -310,14 +311,6 @@ ED3(uint8_t spare:6;,
     uint8_t horizontal_derivation_parameter:1;)
 } __attribute__ ((packed)) ogs_nas_additional_5g_security_information_t;
 
-/* 9.11.3.12A Additional information requested
- * O TLV 3 */
-typedef struct ogs_nas_additional_information_requested_s {
-    uint8_t length;
-ED2(uint8_t spare:7;,
-    uint8_t cipher_key:1;)
-} ogs_nas_additional_information_requested_t;
-
 /* 9.11.3.13 Allowed PDU session status
  * O TLV 4-34 */
 typedef struct ogs_nas_allowed_pdu_session_status_s {
@@ -351,13 +344,6 @@ ED3(uint8_t data_type:3;,
     uint8_t pdu_session_identity:1;)
     uint8_t buffer[OGS_NAS_MAX_CIOT_SMALL_DATA_CONTAINER_LEN];
 } __attribute__ ((packed)) ogs_nas_ciot_small_data_container_t;
-
-/* 9.11.3.18C Ciphering key data
- * O TLV-E x-n */
-typedef struct ogs_nas_ciphering_key_data_s {
-    uint16_t length;
-    void *buffer;
-} ogs_nas_ciphering_key_data_t;
 
 /* 9.11.3.18D Control plane service type
  * M V 1/2 */
@@ -577,34 +563,9 @@ ED2(uint8_t spare:7;,
     uint8_t data_centric:1;)
 } __attribute__ ((packed)) ogs_nas_ue_usage_setting_t;
 
-/* 9.11.3.56 UE status
- * O TLV 3 */
-typedef struct ogs_nas_ue_status_s {
-    uint8_t length;
-ED3(uint8_t spare:6;,
-    uint8_t n1:1;,
-    uint8_t s1:1;)
-} __attribute__ ((packed)) ogs_nas_ue_status_t;
-
 /* 9.11.3.57 Uplink data status
  * O TLV 4-34 */
 typedef ogs_nas_allowed_pdu_session_status_t ogs_nas_uplink_data_status_t;
-
-/* 9.11.3.68 UE radio capability ID
- * O TLV 3-n */
-#define OGS_NAS_MAX_UE_RADIO_CAPABILITY_ID_LEN 255
-typedef struct ogs_nas_ue_radio_capability_id_s {
-    uint8_t length;
-    uint8_t buffer[OGS_NAS_MAX_UE_RADIO_CAPABILITY_ID_LEN];
-} ogs_nas_ue_radio_capability_id_t;
-
-/* 9.11.3.69 UE radio capability ID deletion infication
- * O TV 1 */
-typedef struct ogs_nas_ue_radio_capability_id_deletion_indication_s {
-ED3(uint8_t type:4;,
-    uint8_t spare:1;,
-    uint8_t value:3;)
-} __attribute__ ((packed)) ogs_nas_ue_radio_capability_id_deletion_indication_t;
 
 /* 9.11.3.70 Truncated 5G-S-TMSI configuration
  * O TLV 3 */
@@ -873,47 +834,6 @@ typedef struct ogs_nas_qos_rules_s {
 
 void ogs_nas_build_qos_rules(ogs_nas_qos_rules_t *rules,
         ogs_nas_qos_rule_t *rule, int num_of_rule);
-
-/* 9.11.4.14 Session-AMBR
- * M LV 7 */
-#define OGS_NAS_BR_UNIT_1K      1
-#define OGS_NAS_BR_UNIT_4K      2
-#define OGS_NAS_BR_UNIT_16K     3
-#define OGS_NAS_BR_UNIT_64K     4
-#define OGS_NAS_BR_UNIT_256K    5
-#define OGS_NAS_BR_UNIT_1M      6
-#define OGS_NAS_BR_UNIT_4M      7
-#define OGS_NAS_BR_UNIT_16M     8
-#define OGS_NAS_BR_UNIT_64M     9
-#define OGS_NAS_BR_UNIT_256M    10
-#define OGS_NAS_BR_UNIT_1G      11
-#define OGS_NAS_BR_UNIT_4G      12
-#define OGS_NAS_BR_UNIT_16G     13
-#define OGS_NAS_BR_UNIT_64G     14
-#define OGS_NAS_BR_UNIT_256G    15
-#define OGS_NAS_BR_UNIT_1T      16
-#define OGS_NAS_BR_UNIT_4T      17
-#define OGS_NAS_BR_UNIT_16T     18
-#define OGS_NAS_BR_UNIT_64T     19
-#define OGS_NAS_BR_UNIT_256T    20
-#define OGS_NAS_BR_UNIT_1P      21
-#define OGS_NAS_BR_UNIT_4P      22
-#define OGS_NAS_BR_UNIT_16P     23
-#define OGS_NAS_BR_UNIT_64P     24
-#define OGS_NAS_BR_UNIT_256P    25
-typedef struct ogs_nas_bitrate_s {
-    uint8_t unit;
-    uint16_t bitrate;
-} __attribute__ ((packed)) ogs_nas_bitrate_t;
-
-void ogs_nas_bitrate_from_uint64(
-        ogs_nas_bitrate_t *nas_bitrate, uint64_t bitrate);
-
-typedef struct ogs_nas_session_ambr_s {
-    uint8_t length;
-    ogs_nas_bitrate_t downlink;
-    ogs_nas_bitrate_t uplink;
-} __attribute__ ((packed)) ogs_nas_session_ambr_t;
 
 /* 9.11.4.15 SM PDU DN request container
  * O TLV 3-255 */

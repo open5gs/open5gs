@@ -159,8 +159,12 @@ libasn1c_s1ap_sources = files('''
     S1AP_UEInformationTransfer.h
     S1AP_ENBCPRelocationIndication.h
     S1AP_MMECPRelocationIndication.h
+    S1AP_SecondaryRATDataUsageReport.h
     S1AP_Additional-GUTI.h
+    S1AP_AdditionalRRMPriorityIndex.h
+    S1AP_AerialUEsubscriptionInformation.h
     S1AP_AreaScopeOfMDT.h
+    S1AP_AreaScopeOfQMC.h
     S1AP_AllocationAndRetentionPriority.h
     S1AP_AssistanceDataForCECapableUEs.h
     S1AP_AssistanceDataForPaging.h
@@ -169,6 +173,10 @@ libasn1c_s1ap_sources = files('''
     S1AP_Bearers-SubjectToStatusTransfer-Item.h
     S1AP_BearerType.h
     S1AP_BitRate.h
+    S1AP_BluetoothMeasurementConfiguration.h
+    S1AP_BluetoothMeasConfigNameList.h
+    S1AP_BluetoothMeasConfig.h
+    S1AP_BluetoothName.h
     S1AP_BPLMNs.h
     S1AP_BroadcastCancelledAreaList.h
     S1AP_BroadcastCompletedAreaList.h
@@ -193,6 +201,8 @@ libasn1c_s1ap_sources = files('''
     S1AP_CellID-Cancelled-Item.h
     S1AP_CellBasedMDT.h
     S1AP_CellIdListforMDT.h
+    S1AP_CellBasedQMC.h
+    S1AP_CellIdListforQMC.h
     S1AP_Cdma2000PDU.h
     S1AP_Cdma2000RATType.h
     S1AP_Cdma2000SectorID.h
@@ -208,7 +218,13 @@ libasn1c_s1ap_sources = files('''
     S1AP_CGI.h
     S1AP_CI.h
     S1AP_CNDomain.h
+    S1AP_CNTypeRestrictions.h
+    S1AP_CNTypeRestrictions-Item.h
+    S1AP_CNType.h
     S1AP_ConcurrentWarningMessageIndicator.h
+    S1AP_ConnectedengNBList.h
+    S1AP_ConnectedengNBItem.h
+    S1AP_ContextatSource.h
     S1AP_Correlation-ID.h
     S1AP_CSFallbackIndicator.h
     S1AP_AdditionalCSFallbackIndicator.h
@@ -236,6 +252,7 @@ libasn1c_s1ap_sources = files('''
     S1AP_EARFCN.h
     S1AP_ECGIList.h
     S1AP_PWSfailedECGIList.h
+    S1AP_EDT-Session.h
     S1AP_EmergencyAreaIDList.h
     S1AP_EmergencyAreaID.h
     S1AP_EmergencyAreaID-Broadcast.h
@@ -247,15 +264,25 @@ libasn1c_s1ap_sources = files('''
     S1AP_ECGI-List.h
     S1AP_EmergencyAreaIDListForRestart.h
     S1AP_ENB-ID.h
+    S1AP_En-gNB-ID.h
     S1AP_GERAN-Cell-ID.h
     S1AP_Global-ENB-ID.h
+    S1AP_Global-en-gNB-ID.h
     S1AP_GUMMEIList.h
     S1AP_ENB-StatusTransfer-TransparentContainer.h
     S1AP_ENB-UE-S1AP-ID.h
     S1AP_ENBname.h
     S1AP_ENBX2TLAs.h
     S1AP_EncryptionAlgorithms.h
+    S1AP_EN-DCSONConfigurationTransfer.h
+    S1AP_EN-DCSONTransferType.h
+    S1AP_EN-DCTransferTypeRequest.h
+    S1AP_EN-DCTransferTypeReply.h
+    S1AP_EN-DCSONeNBIdentification.h
+    S1AP_EN-DCSONengNBIdentification.h
+    S1AP_EndIndication.h
     S1AP_EnhancedCoverageRestricted.h
+    S1AP_CE-ModeBRestricted.h
     S1AP_EPLMNs.h
     S1AP_EventType.h
     S1AP_E-RAB-ID.h
@@ -264,6 +291,8 @@ libasn1c_s1ap_sources = files('''
     S1AP_E-RABList.h
     S1AP_E-RABItem.h
     S1AP_E-RABLevelQoSParameters.h
+    S1AP_E-RABUsageReportList.h
+    S1AP_E-RABUsageReportItem.h
     S1AP_EUTRAN-CGI.h
     S1AP_EUTRANRoundTripDelayEstimationInfo.h
     S1AP_ExpectedUEBehaviour.h
@@ -272,9 +301,12 @@ libasn1c_s1ap_sources = files('''
     S1AP_ExpectedIdlePeriod.h
     S1AP_SourceOfUEActivityBehaviourInformation.h
     S1AP_ExpectedHOInterval.h
+    S1AP_ExtendedBitRate.h
     S1AP_ExtendedRNC-ID.h
     S1AP_ExtendedRepetitionPeriod.h
     S1AP_Extended-UEIdentityIndexValue.h
+    S1AP_FiveGSTAC.h
+    S1AP_FiveGSTAI.h
     S1AP_ForbiddenInterRATs.h
     S1AP_ForbiddenTAs.h
     S1AP_ForbiddenTAs-Item.h
@@ -287,6 +319,7 @@ libasn1c_s1ap_sources = files('''
     S1AP_GUMMEI.h
     S1AP_GUMMEIType.h
     S1AP_GWContextReleaseIndication.h
+    S1AP_HandoverFlag.h
     S1AP_HandoverRestrictionList.h
     S1AP_HandoverType.h
     S1AP_HFN.h
@@ -299,11 +332,13 @@ libasn1c_s1ap_sources = files('''
     S1AP_IntegrityProtectionAlgorithms.h
     S1AP_IntendedNumberOfPagingAttempts.h
     S1AP_InterfacesToTrace.h
+    S1AP_IMSvoiceEPSfallbackfrom5G.h
     S1AP_KillAllWarningMessages.h
     S1AP_LAC.h
     S1AP_LAI.h
     S1AP_LastVisitedCell-Item.h
     S1AP_LastVisitedEUTRANCellInformation.h
+    S1AP_LastVisitedNGRANCellInformation.h
     S1AP_LastVisitedUTRANCellInformation.h
     S1AP_LastVisitedGERANCellInformation.h
     S1AP_L3-Information.h
@@ -315,6 +350,7 @@ libasn1c_s1ap_sources = files('''
     S1AP_LoggingInterval.h
     S1AP_LoggingDuration.h
     S1AP_LoggedMBSFNMDT.h
+    S1AP_LTE-M-Indication.h
     S1AP_M3Configuration.h
     S1AP_M3period.h
     S1AP_M4Configuration.h
@@ -360,11 +396,19 @@ libasn1c_s1ap_sources = files('''
     S1AP_NB-IoT-PagingTimeWindow.h
     S1AP_NB-IoT-UEIdentityIndexValue.h
     S1AP_NextPagingAreaScope.h
+    S1AP_NRCellIdentity.h
+    S1AP_NR-CGI.h
+    S1AP_NRencryptionAlgorithms.h
+    S1AP_NRintegrityProtectionAlgorithms.h
+    S1AP_NRrestrictioninEPSasSecondaryRAT.h
+    S1AP_NRrestrictionin5GS.h
+    S1AP_NRUESecurityCapabilities.h
     S1AP_NumberofBroadcastRequest.h
     S1AP_NumberOfBroadcasts.h
     S1AP_OldBSS-ToNewBSS-Information.h
     S1AP_OverloadAction.h
     S1AP_OverloadResponse.h
+    S1AP_Packet-LossRate.h
     S1AP_PagingAttemptInformation.h
     S1AP_PagingAttemptCount.h
     S1AP_Paging-eDRXInformation.h
@@ -375,8 +419,11 @@ libasn1c_s1ap_sources = files('''
     S1AP_PDCP-SN.h
     S1AP_PDCP-SNExtended.h
     S1AP_PDCP-SNlength18.h
+    S1AP_PendingDataIndication.h
     S1AP_M1PeriodicReporting.h
     S1AP_PLMNidentity.h
+    S1AP_PLMNAreaBasedQMC.h
+    S1AP_PLMNListforQMC.h
     S1AP_Port-Number.h
     S1AP_Pre-emptionCapability.h
     S1AP_Pre-emptionVulnerability.h
@@ -386,7 +433,9 @@ libasn1c_s1ap_sources = files('''
     S1AP_ProSeUEtoNetworkRelaying.h
     S1AP_ProSeDirectCommunication.h
     S1AP_PS-ServiceNotAvailable.h
+    S1AP_PSCellInformation.h
     S1AP_QCI.h
+    S1AP_RAN-UE-NGAP-ID.h
     S1AP_ReceiveStatusofULPDCPSDUs.h
     S1AP_ReceiveStatusOfULPDCPSDUsExtended.h
     S1AP_ReceiveStatusOfULPDCPSDUsPDCP-SNlength18.h
@@ -404,6 +453,7 @@ libasn1c_s1ap_sources = files('''
     S1AP_ReportIntervalMDT.h
     S1AP_M1ReportingTrigger.h
     S1AP_RequestType.h
+    S1AP_RequestTypeAdditionalInfo.h
     S1AP_RIMTransfer.h
     S1AP_RIMInformation.h
     S1AP_RIMRoutingAddress.h
@@ -417,7 +467,12 @@ libasn1c_s1ap_sources = files('''
     S1AP_Routing-ID.h
     S1AP_SecurityKey.h
     S1AP_SecurityContext.h
+    S1AP_SecondaryRATType.h
+    S1AP_SecondaryRATDataUsageRequest.h
+    S1AP_SecondaryRATDataUsageReportList.h
+    S1AP_SecondaryRATDataUsageReportItem.h
     S1AP_SerialNumber.h
+    S1AP_ServiceType.h
     S1AP_SONInformation.h
     S1AP_SONInformation-Extension.h
     S1AP_SONInformationRequest.h
@@ -433,12 +488,15 @@ libasn1c_s1ap_sources = files('''
     S1AP_SRVCCHOIndication.h
     S1AP_SourceeNB-ToTargeteNB-TransparentContainer.h
     S1AP_SourceRNC-ToTargetRNC-TransparentContainer.h
+    S1AP_SourceNgRanNode-ToTargetNgRanNode-TransparentContainer.h
     S1AP_ServedGUMMEIs.h
     S1AP_ServedGUMMEIsItem.h
     S1AP_ServedGroupIDs.h
     S1AP_ServedMMECs.h
     S1AP_ServedPLMNs.h
     S1AP_SubscriberProfileIDforRFP.h
+    S1AP_Subscription-Based-UE-DifferentiationInfo.h
+    S1AP_ScheduledCommunicationTime.h
     S1AP_SupportedTAs.h
     S1AP_SupportedTAs-Item.h
     S1AP_StratumLevel.h
@@ -456,22 +514,35 @@ libasn1c_s1ap_sources = files('''
     S1AP_TAI-Cancelled-Item.h
     S1AP_TABasedMDT.h
     S1AP_TAListforMDT.h
+    S1AP_TABasedQMC.h
+    S1AP_TAListforQMC.h
+    S1AP_TAIBasedQMC.h
+    S1AP_TAIListforQMC.h
     S1AP_CompletedCellinTAI.h
     S1AP_CompletedCellinTAI-Item.h
     S1AP_TBCD-STRING.h
     S1AP_TargetID.h
     S1AP_TargeteNB-ID.h
     S1AP_TargetRNC-ID.h
+    S1AP_TargetNgRanNode-ID.h
+    S1AP_Global-RAN-NODE-ID.h
+    S1AP_GNB.h
+    S1AP_Global-GNB-ID.h
+    S1AP_GNB-Identity.h
+    S1AP_NG-eNB.h
+    S1AP_GNB-ID.h
     S1AP_TargeteNB-ToSourceeNB-TransparentContainer.h
     S1AP_Target-ToSource-TransparentContainer.h
     S1AP_TargetRNC-ToSourceRNC-TransparentContainer.h
     S1AP_TargetBSS-ToSourceBSS-TransparentContainer.h
+    S1AP_TargetNgRanNode-ToSourceNgRanNode-TransparentContainer.h
     S1AP_M1ThresholdEventA2.h
     S1AP_Threshold-RSRP.h
     S1AP_Threshold-RSRQ.h
     S1AP_TimeToWait.h
     S1AP_Time-UE-StayedInCell.h
     S1AP_Time-UE-StayedInCell-EnhancedGranularity.h
+    S1AP_TimeSinceSecondaryNodeRelease.h
     S1AP_TransportInformation.h
     S1AP_TransportLayerAddress.h
     S1AP_TraceActivation.h
@@ -482,6 +553,8 @@ libasn1c_s1ap_sources = files('''
     S1AP_TypeOfError.h
     S1AP_TAIListForRestart.h
     S1AP_UEAggregateMaximumBitrate.h
+    S1AP_UEAppLayerMeasConfig.h
+    S1AP_UECapabilityInfoRequest.h
     S1AP_UE-RetentionInformation.h
     S1AP_UE-S1AP-IDs.h
     S1AP_UE-S1AP-ID-pair.h
@@ -500,16 +573,23 @@ libasn1c_s1ap_sources = files('''
     S1AP_UL-CP-SecurityInformation.h
     S1AP_UL-NAS-MAC.h
     S1AP_UL-NAS-Count.h
+    S1AP_UnlicensedSpectrumRestriction.h
     S1AP_UserLocationInformation.h
     S1AP_UEUserPlaneCIoTSupportIndicator.h
+    S1AP_UE-Application-Layer-Measurement-Capability.h
     S1AP_VoiceSupportMatchIndicator.h
     S1AP_V2XServicesAuthorized.h
     S1AP_VehicleUE.h
     S1AP_PedestrianUE.h
+    S1AP_WarningAreaCoordinates.h
     S1AP_WarningAreaList.h
     S1AP_WarningType.h
     S1AP_WarningSecurityInfo.h
     S1AP_WarningMessageContents.h
+    S1AP_WLANMeasurementConfiguration.h
+    S1AP_WLANMeasConfigNameList.h
+    S1AP_WLANMeasConfig.h
+    S1AP_WLANName.h
     S1AP_X2TNLConfigurationInfo.h
     S1AP_ENBX2ExtTLAs.h
     S1AP_ENBX2ExtTLA.h
@@ -533,7 +613,6 @@ libasn1c_s1ap_sources = files('''
     S1AP_ProtocolExtensionField.h
     S1AP_PrivateIE-Container.h
     S1AP_PrivateIE-Field.h
-    S1AP_asn_constant.h
 
     S1AP_S1AP-PDU.c
     S1AP_InitiatingMessage.c
@@ -676,8 +755,12 @@ libasn1c_s1ap_sources = files('''
     S1AP_UEInformationTransfer.c
     S1AP_ENBCPRelocationIndication.c
     S1AP_MMECPRelocationIndication.c
+    S1AP_SecondaryRATDataUsageReport.c
     S1AP_Additional-GUTI.c
+    S1AP_AdditionalRRMPriorityIndex.c
+    S1AP_AerialUEsubscriptionInformation.c
     S1AP_AreaScopeOfMDT.c
+    S1AP_AreaScopeOfQMC.c
     S1AP_AllocationAndRetentionPriority.c
     S1AP_AssistanceDataForCECapableUEs.c
     S1AP_AssistanceDataForPaging.c
@@ -686,6 +769,10 @@ libasn1c_s1ap_sources = files('''
     S1AP_Bearers-SubjectToStatusTransfer-Item.c
     S1AP_BearerType.c
     S1AP_BitRate.c
+    S1AP_BluetoothMeasurementConfiguration.c
+    S1AP_BluetoothMeasConfigNameList.c
+    S1AP_BluetoothMeasConfig.c
+    S1AP_BluetoothName.c
     S1AP_BPLMNs.c
     S1AP_BroadcastCancelledAreaList.c
     S1AP_BroadcastCompletedAreaList.c
@@ -710,6 +797,8 @@ libasn1c_s1ap_sources = files('''
     S1AP_CellID-Cancelled-Item.c
     S1AP_CellBasedMDT.c
     S1AP_CellIdListforMDT.c
+    S1AP_CellBasedQMC.c
+    S1AP_CellIdListforQMC.c
     S1AP_Cdma2000PDU.c
     S1AP_Cdma2000RATType.c
     S1AP_Cdma2000SectorID.c
@@ -725,7 +814,13 @@ libasn1c_s1ap_sources = files('''
     S1AP_CGI.c
     S1AP_CI.c
     S1AP_CNDomain.c
+    S1AP_CNTypeRestrictions.c
+    S1AP_CNTypeRestrictions-Item.c
+    S1AP_CNType.c
     S1AP_ConcurrentWarningMessageIndicator.c
+    S1AP_ConnectedengNBList.c
+    S1AP_ConnectedengNBItem.c
+    S1AP_ContextatSource.c
     S1AP_Correlation-ID.c
     S1AP_CSFallbackIndicator.c
     S1AP_AdditionalCSFallbackIndicator.c
@@ -753,6 +848,7 @@ libasn1c_s1ap_sources = files('''
     S1AP_EARFCN.c
     S1AP_ECGIList.c
     S1AP_PWSfailedECGIList.c
+    S1AP_EDT-Session.c
     S1AP_EmergencyAreaIDList.c
     S1AP_EmergencyAreaID.c
     S1AP_EmergencyAreaID-Broadcast.c
@@ -764,15 +860,25 @@ libasn1c_s1ap_sources = files('''
     S1AP_ECGI-List.c
     S1AP_EmergencyAreaIDListForRestart.c
     S1AP_ENB-ID.c
+    S1AP_En-gNB-ID.c
     S1AP_GERAN-Cell-ID.c
     S1AP_Global-ENB-ID.c
+    S1AP_Global-en-gNB-ID.c
     S1AP_GUMMEIList.c
     S1AP_ENB-StatusTransfer-TransparentContainer.c
     S1AP_ENB-UE-S1AP-ID.c
     S1AP_ENBname.c
     S1AP_ENBX2TLAs.c
     S1AP_EncryptionAlgorithms.c
+    S1AP_EN-DCSONConfigurationTransfer.c
+    S1AP_EN-DCSONTransferType.c
+    S1AP_EN-DCTransferTypeRequest.c
+    S1AP_EN-DCTransferTypeReply.c
+    S1AP_EN-DCSONeNBIdentification.c
+    S1AP_EN-DCSONengNBIdentification.c
+    S1AP_EndIndication.c
     S1AP_EnhancedCoverageRestricted.c
+    S1AP_CE-ModeBRestricted.c
     S1AP_EPLMNs.c
     S1AP_EventType.c
     S1AP_E-RAB-ID.c
@@ -781,6 +887,8 @@ libasn1c_s1ap_sources = files('''
     S1AP_E-RABList.c
     S1AP_E-RABItem.c
     S1AP_E-RABLevelQoSParameters.c
+    S1AP_E-RABUsageReportList.c
+    S1AP_E-RABUsageReportItem.c
     S1AP_EUTRAN-CGI.c
     S1AP_EUTRANRoundTripDelayEstimationInfo.c
     S1AP_ExpectedUEBehaviour.c
@@ -789,9 +897,12 @@ libasn1c_s1ap_sources = files('''
     S1AP_ExpectedIdlePeriod.c
     S1AP_SourceOfUEActivityBehaviourInformation.c
     S1AP_ExpectedHOInterval.c
+    S1AP_ExtendedBitRate.c
     S1AP_ExtendedRNC-ID.c
     S1AP_ExtendedRepetitionPeriod.c
     S1AP_Extended-UEIdentityIndexValue.c
+    S1AP_FiveGSTAC.c
+    S1AP_FiveGSTAI.c
     S1AP_ForbiddenInterRATs.c
     S1AP_ForbiddenTAs.c
     S1AP_ForbiddenTAs-Item.c
@@ -804,6 +915,7 @@ libasn1c_s1ap_sources = files('''
     S1AP_GUMMEI.c
     S1AP_GUMMEIType.c
     S1AP_GWContextReleaseIndication.c
+    S1AP_HandoverFlag.c
     S1AP_HandoverRestrictionList.c
     S1AP_HandoverType.c
     S1AP_HFN.c
@@ -816,11 +928,13 @@ libasn1c_s1ap_sources = files('''
     S1AP_IntegrityProtectionAlgorithms.c
     S1AP_IntendedNumberOfPagingAttempts.c
     S1AP_InterfacesToTrace.c
+    S1AP_IMSvoiceEPSfallbackfrom5G.c
     S1AP_KillAllWarningMessages.c
     S1AP_LAC.c
     S1AP_LAI.c
     S1AP_LastVisitedCell-Item.c
     S1AP_LastVisitedEUTRANCellInformation.c
+    S1AP_LastVisitedNGRANCellInformation.c
     S1AP_LastVisitedUTRANCellInformation.c
     S1AP_LastVisitedGERANCellInformation.c
     S1AP_L3-Information.c
@@ -832,6 +946,7 @@ libasn1c_s1ap_sources = files('''
     S1AP_LoggingInterval.c
     S1AP_LoggingDuration.c
     S1AP_LoggedMBSFNMDT.c
+    S1AP_LTE-M-Indication.c
     S1AP_M3Configuration.c
     S1AP_M3period.c
     S1AP_M4Configuration.c
@@ -877,11 +992,19 @@ libasn1c_s1ap_sources = files('''
     S1AP_NB-IoT-PagingTimeWindow.c
     S1AP_NB-IoT-UEIdentityIndexValue.c
     S1AP_NextPagingAreaScope.c
+    S1AP_NRCellIdentity.c
+    S1AP_NR-CGI.c
+    S1AP_NRencryptionAlgorithms.c
+    S1AP_NRintegrityProtectionAlgorithms.c
+    S1AP_NRrestrictioninEPSasSecondaryRAT.c
+    S1AP_NRrestrictionin5GS.c
+    S1AP_NRUESecurityCapabilities.c
     S1AP_NumberofBroadcastRequest.c
     S1AP_NumberOfBroadcasts.c
     S1AP_OldBSS-ToNewBSS-Information.c
     S1AP_OverloadAction.c
     S1AP_OverloadResponse.c
+    S1AP_Packet-LossRate.c
     S1AP_PagingAttemptInformation.c
     S1AP_PagingAttemptCount.c
     S1AP_Paging-eDRXInformation.c
@@ -892,8 +1015,11 @@ libasn1c_s1ap_sources = files('''
     S1AP_PDCP-SN.c
     S1AP_PDCP-SNExtended.c
     S1AP_PDCP-SNlength18.c
+    S1AP_PendingDataIndication.c
     S1AP_M1PeriodicReporting.c
     S1AP_PLMNidentity.c
+    S1AP_PLMNAreaBasedQMC.c
+    S1AP_PLMNListforQMC.c
     S1AP_Port-Number.c
     S1AP_Pre-emptionCapability.c
     S1AP_Pre-emptionVulnerability.c
@@ -903,7 +1029,9 @@ libasn1c_s1ap_sources = files('''
     S1AP_ProSeUEtoNetworkRelaying.c
     S1AP_ProSeDirectCommunication.c
     S1AP_PS-ServiceNotAvailable.c
+    S1AP_PSCellInformation.c
     S1AP_QCI.c
+    S1AP_RAN-UE-NGAP-ID.c
     S1AP_ReceiveStatusofULPDCPSDUs.c
     S1AP_ReceiveStatusOfULPDCPSDUsExtended.c
     S1AP_ReceiveStatusOfULPDCPSDUsPDCP-SNlength18.c
@@ -921,6 +1049,7 @@ libasn1c_s1ap_sources = files('''
     S1AP_ReportIntervalMDT.c
     S1AP_M1ReportingTrigger.c
     S1AP_RequestType.c
+    S1AP_RequestTypeAdditionalInfo.c
     S1AP_RIMTransfer.c
     S1AP_RIMInformation.c
     S1AP_RIMRoutingAddress.c
@@ -934,7 +1063,12 @@ libasn1c_s1ap_sources = files('''
     S1AP_Routing-ID.c
     S1AP_SecurityKey.c
     S1AP_SecurityContext.c
+    S1AP_SecondaryRATType.c
+    S1AP_SecondaryRATDataUsageRequest.c
+    S1AP_SecondaryRATDataUsageReportList.c
+    S1AP_SecondaryRATDataUsageReportItem.c
     S1AP_SerialNumber.c
+    S1AP_ServiceType.c
     S1AP_SONInformation.c
     S1AP_SONInformation-Extension.c
     S1AP_SONInformationRequest.c
@@ -950,12 +1084,15 @@ libasn1c_s1ap_sources = files('''
     S1AP_SRVCCHOIndication.c
     S1AP_SourceeNB-ToTargeteNB-TransparentContainer.c
     S1AP_SourceRNC-ToTargetRNC-TransparentContainer.c
+    S1AP_SourceNgRanNode-ToTargetNgRanNode-TransparentContainer.c
     S1AP_ServedGUMMEIs.c
     S1AP_ServedGUMMEIsItem.c
     S1AP_ServedGroupIDs.c
     S1AP_ServedMMECs.c
     S1AP_ServedPLMNs.c
     S1AP_SubscriberProfileIDforRFP.c
+    S1AP_Subscription-Based-UE-DifferentiationInfo.c
+    S1AP_ScheduledCommunicationTime.c
     S1AP_SupportedTAs.c
     S1AP_SupportedTAs-Item.c
     S1AP_StratumLevel.c
@@ -973,22 +1110,35 @@ libasn1c_s1ap_sources = files('''
     S1AP_TAI-Cancelled-Item.c
     S1AP_TABasedMDT.c
     S1AP_TAListforMDT.c
+    S1AP_TABasedQMC.c
+    S1AP_TAListforQMC.c
+    S1AP_TAIBasedQMC.c
+    S1AP_TAIListforQMC.c
     S1AP_CompletedCellinTAI.c
     S1AP_CompletedCellinTAI-Item.c
     S1AP_TBCD-STRING.c
     S1AP_TargetID.c
     S1AP_TargeteNB-ID.c
     S1AP_TargetRNC-ID.c
+    S1AP_TargetNgRanNode-ID.c
+    S1AP_Global-RAN-NODE-ID.c
+    S1AP_GNB.c
+    S1AP_Global-GNB-ID.c
+    S1AP_GNB-Identity.c
+    S1AP_NG-eNB.c
+    S1AP_GNB-ID.c
     S1AP_TargeteNB-ToSourceeNB-TransparentContainer.c
     S1AP_Target-ToSource-TransparentContainer.c
     S1AP_TargetRNC-ToSourceRNC-TransparentContainer.c
     S1AP_TargetBSS-ToSourceBSS-TransparentContainer.c
+    S1AP_TargetNgRanNode-ToSourceNgRanNode-TransparentContainer.c
     S1AP_M1ThresholdEventA2.c
     S1AP_Threshold-RSRP.c
     S1AP_Threshold-RSRQ.c
     S1AP_TimeToWait.c
     S1AP_Time-UE-StayedInCell.c
     S1AP_Time-UE-StayedInCell-EnhancedGranularity.c
+    S1AP_TimeSinceSecondaryNodeRelease.c
     S1AP_TransportInformation.c
     S1AP_TransportLayerAddress.c
     S1AP_TraceActivation.c
@@ -999,6 +1149,8 @@ libasn1c_s1ap_sources = files('''
     S1AP_TypeOfError.c
     S1AP_TAIListForRestart.c
     S1AP_UEAggregateMaximumBitrate.c
+    S1AP_UEAppLayerMeasConfig.c
+    S1AP_UECapabilityInfoRequest.c
     S1AP_UE-RetentionInformation.c
     S1AP_UE-S1AP-IDs.c
     S1AP_UE-S1AP-ID-pair.c
@@ -1017,16 +1169,23 @@ libasn1c_s1ap_sources = files('''
     S1AP_UL-CP-SecurityInformation.c
     S1AP_UL-NAS-MAC.c
     S1AP_UL-NAS-Count.c
+    S1AP_UnlicensedSpectrumRestriction.c
     S1AP_UserLocationInformation.c
     S1AP_UEUserPlaneCIoTSupportIndicator.c
+    S1AP_UE-Application-Layer-Measurement-Capability.c
     S1AP_VoiceSupportMatchIndicator.c
     S1AP_V2XServicesAuthorized.c
     S1AP_VehicleUE.c
     S1AP_PedestrianUE.c
+    S1AP_WarningAreaCoordinates.c
     S1AP_WarningAreaList.c
     S1AP_WarningType.c
     S1AP_WarningSecurityInfo.c
     S1AP_WarningMessageContents.c
+    S1AP_WLANMeasurementConfiguration.c
+    S1AP_WLANMeasConfigNameList.c
+    S1AP_WLANMeasConfig.c
+    S1AP_WLANName.c
     S1AP_X2TNLConfigurationInfo.c
     S1AP_ENBX2ExtTLAs.c
     S1AP_ENBX2ExtTLA.c

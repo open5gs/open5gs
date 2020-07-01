@@ -11,4 +11,6 @@ ies.append({ "iei" : "C-", "value" : "WLAN offload indication", "type" : "WLAN o
 ies.append({ "iei" : "33", "value" : "NBIFOM container", "type" : "NBIFOM container", "reference" : "9.9.4.19", "presence" : "O", "format" : "TLV", "length" : "3-257"})
 ies.append({ "iei" : "66", "value" : "Header compression configuration", "type" : "Header compression configuration", "reference" : "9.9.4.22", "presence" : "O", "format" : "TLV", "length" : "5-257"})
 ies.append({ "iei" : "7B", "value" : "Extended protocol configuration options", "type" : "Extended protocol configuration options", "reference" : "9.9.4.26", "presence" : "O", "format" : "TLV-E", "length" : "4-65538"})
+ies.append({ "iei" : "5F", "value" : "Extended APN-AMBR", "type" : "Extended APN aggregate maximum bit rate", "reference" : "9.9.4.29", "presence" : "O", "format" : "TLV", "length" : "8"})
+ies.append({ "iei" : "5C", "value" : "Extended EPS QoS", "type" : "Extended quality of service", "reference" : "9.9.4.30", "presence" : "O", "format" : "TLV", "length" : "12"})
 msg_list[key]["ies"] = ies

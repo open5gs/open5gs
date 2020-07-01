@@ -17,4 +17,5 @@ ies.append({ "iei" : "66", "value" : "Header compression configuration", "type" 
 ies.append({ "iei" : "9-", "value" : "Control plane only indication", "type" : "Control plane only indication", "reference" : "9.9.4.23", "presence" : "O", "format" : "TV", "length" : "1"})
 ies.append({ "iei" : "7B", "value" : "Extended protocol configuration options", "type" : "Extended protocol configuration options", "reference" : "9.9.4.26", "presence" : "O", "format" : "TLV-E", "length" : "4-65538"})
 ies.append({ "iei" : "6E", "value" : "Serving PLMN rate control", "type" : "Serving PLMN rate control", "reference" : "9.9.4.28", "presence" : "O", "format" : "TLV", "length" : "4"})
+ies.append({ "iei" : "5F", "value" : "Extended APN-AMBR", "type" : "Extended APN aggregate maximum bit rate", "reference" : "9.9.4.29", "presence" : "O", "format" : "TLV", "length" : "8"})
 msg_list[key]["ies"] = ies

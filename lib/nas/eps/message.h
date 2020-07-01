@@ -28,8 +28,8 @@
 /*******************************************************************************
  * This file had been created by nas-message.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-05-22 18:16:04.849851 by acetcom
- * from 24301-d80.docx
+ * Created on: 2020-06-30 16:47:16.497641 by acetcom
+ * from 24301-g40.docx
  ******************************************************************************/
 
 #if !defined(OGS_NAS_INSIDE) && !defined(OGS_NAS_COMPILATION)
@@ -144,6 +144,10 @@ ED2(uint8_t security_header_type:4;,
 #define OGS_NAS_EPS_ATTACH_REQUEST_T3324_VALUE_PRESENT (1<<16)
 #define OGS_NAS_EPS_ATTACH_REQUEST_T3412_EXTENDED_VALUE_PRESENT (1<<17)
 #define OGS_NAS_EPS_ATTACH_REQUEST_EXTENDED_DRX_PARAMETERS_PRESENT (1<<18)
+#define OGS_NAS_EPS_ATTACH_REQUEST_UE_ADDITIONAL_SECURITY_CAPABILITY_PRESENT (1<<19)
+#define OGS_NAS_EPS_ATTACH_REQUEST_UE_STATUS_PRESENT (1<<20)
+#define OGS_NAS_EPS_ATTACH_REQUEST_ADDITIONAL_INFORMATION_REQUESTED_PRESENT (1<<21)
+#define OGS_NAS_EPS_ATTACH_REQUEST_N1_UE_NETWORK_CAPABILITY_PRESENT (1<<22)
 #define OGS_NAS_EPS_ATTACH_REQUEST_OLD_P_TMSI_SIGNATURE_TYPE 0x19
 #define OGS_NAS_EPS_ATTACH_REQUEST_ADDITIONAL_GUTI_TYPE 0x50
 #define OGS_NAS_EPS_ATTACH_REQUEST_LAST_VISITED_REGISTERED_TAI_TYPE 0x52
@@ -163,6 +167,10 @@ ED2(uint8_t security_header_type:4;,
 #define OGS_NAS_EPS_ATTACH_REQUEST_T3324_VALUE_TYPE 0x6A
 #define OGS_NAS_EPS_ATTACH_REQUEST_T3412_EXTENDED_VALUE_TYPE 0x5E
 #define OGS_NAS_EPS_ATTACH_REQUEST_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
+#define OGS_NAS_EPS_ATTACH_REQUEST_UE_ADDITIONAL_SECURITY_CAPABILITY_TYPE 0x6F
+#define OGS_NAS_EPS_ATTACH_REQUEST_UE_STATUS_TYPE 0x6D
+#define OGS_NAS_EPS_ATTACH_REQUEST_ADDITIONAL_INFORMATION_REQUESTED_TYPE 0x17
+#define OGS_NAS_EPS_ATTACH_REQUEST_N1_UE_NETWORK_CAPABILITY_TYPE 0x32
 
 typedef struct ogs_nas_eps_attach_request_s {
     /* Mandatory fields */
@@ -192,6 +200,10 @@ typedef struct ogs_nas_eps_attach_request_s {
     ogs_nas_gprs_timer_2_t t3324_value;
     ogs_nas_gprs_timer_3_t t3412_extended_value;
     ogs_nas_extended_drx_parameters_t extended_drx_parameters;
+    ogs_nas_ue_additional_security_capability_t ue_additional_security_capability;
+    ogs_nas_ue_status_t ue_status;
+    ogs_nas_additional_information_requested_t additional_information_requested;
+    ogs_nas_n1_ue_network_capability_t n1_ue_network_capability;
 } ogs_nas_eps_attach_request_t;
 
 
@@ -211,6 +223,16 @@ typedef struct ogs_nas_eps_attach_request_s {
 #define OGS_NAS_EPS_ATTACH_ACCEPT_T3412_EXTENDED_VALUE_PRESENT (1<<10)
 #define OGS_NAS_EPS_ATTACH_ACCEPT_T3324_VALUE_PRESENT (1<<11)
 #define OGS_NAS_EPS_ATTACH_ACCEPT_EXTENDED_DRX_PARAMETERS_PRESENT (1<<12)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_DCN_ID_PRESENT (1<<13)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_SMS_SERVICES_STATUS_PRESENT (1<<14)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_NON__NW_PROVIDED_POLICIES_PRESENT (1<<15)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_T3448_VALUE_PRESENT (1<<16)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_NETWORK_POLICY_PRESENT (1<<17)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_T3447_VALUE_PRESENT (1<<18)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_EXTENDED_EMERGENCY_NUMBER_LIST_PRESENT (1<<19)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_CIPHERING_KEY_DATA_PRESENT (1<<20)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_UE_RADIO_CAPABILITY_ID_PRESENT (1<<21)
+#define OGS_NAS_EPS_ATTACH_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_PRESENT (1<<22)
 #define OGS_NAS_EPS_ATTACH_ACCEPT_GUTI_TYPE 0x50
 #define OGS_NAS_EPS_ATTACH_ACCEPT_LOCATION_AREA_IDENTIFICATION_TYPE 0x13
 #define OGS_NAS_EPS_ATTACH_ACCEPT_MS_IDENTITY_TYPE 0x23
@@ -224,6 +246,16 @@ typedef struct ogs_nas_eps_attach_request_s {
 #define OGS_NAS_EPS_ATTACH_ACCEPT_T3412_EXTENDED_VALUE_TYPE 0x5E
 #define OGS_NAS_EPS_ATTACH_ACCEPT_T3324_VALUE_TYPE 0x6A
 #define OGS_NAS_EPS_ATTACH_ACCEPT_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
+#define OGS_NAS_EPS_ATTACH_ACCEPT_DCN_ID_TYPE 0x65
+#define OGS_NAS_EPS_ATTACH_ACCEPT_SMS_SERVICES_STATUS_TYPE 0xE0
+#define OGS_NAS_EPS_ATTACH_ACCEPT_NON__NW_PROVIDED_POLICIES_TYPE 0xD0
+#define OGS_NAS_EPS_ATTACH_ACCEPT_T3448_VALUE_TYPE 0x6B
+#define OGS_NAS_EPS_ATTACH_ACCEPT_NETWORK_POLICY_TYPE 0xC0
+#define OGS_NAS_EPS_ATTACH_ACCEPT_T3447_VALUE_TYPE 0x6C
+#define OGS_NAS_EPS_ATTACH_ACCEPT_EXTENDED_EMERGENCY_NUMBER_LIST_TYPE 0x7A
+#define OGS_NAS_EPS_ATTACH_ACCEPT_CIPHERING_KEY_DATA_TYPE 0x7C
+#define OGS_NAS_EPS_ATTACH_ACCEPT_UE_RADIO_CAPABILITY_ID_TYPE 0x66
+#define OGS_NAS_EPS_ATTACH_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE 0xB0
 
 typedef struct ogs_nas_eps_attach_accept_s {
     /* Mandatory fields */
@@ -247,6 +279,16 @@ typedef struct ogs_nas_eps_attach_accept_s {
     ogs_nas_gprs_timer_3_t t3412_extended_value;
     ogs_nas_gprs_timer_2_t t3324_value;
     ogs_nas_extended_drx_parameters_t extended_drx_parameters;
+    ogs_nas_dcn_id_t dcn_id;
+    ogs_nas_sms_services_status_t sms_services_status;
+    ogs_nas_non__nw_provided_policies_t non__nw_provided_policies;
+    ogs_nas_gprs_timer_2_t t3448_value;
+    ogs_nas_network_policy_t network_policy;
+    ogs_nas_gprs_timer_3_t t3447_value;
+    ogs_nas_extended_emergency_number_list_t extended_emergency_number_list;
+    ogs_nas_ciphering_key_data_t ciphering_key_data;
+    ogs_nas_ue_radio_capability_id_t ue_radio_capability_id;
+    ogs_nas_ue_radio_capability_id_deletion_indication_t ue_radio_capability_id_deletion_indication;
 } ogs_nas_eps_attach_accept_t;
 
 
@@ -340,6 +382,10 @@ typedef struct ogs_nas_eps_detach_request_to_ue_s {
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_T3324_VALUE_PRESENT (1<<22)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_T3412_EXTENDED_VALUE_PRESENT (1<<23)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EXTENDED_DRX_PARAMETERS_PRESENT (1<<24)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_ADDITIONAL_SECURITY_CAPABILITY_PRESENT (1<<25)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_STATUS_PRESENT (1<<26)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_INFORMATION_REQUESTED_PRESENT (1<<27)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_N1_UE_NETWORK_CAPABILITY_PRESENT (1<<28)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_NON_CURRENT_NATIVE_NAS_KEY_SET_IDENTIFIER_TYPE 0xB0
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_GPRS_CIPHERING_KEY_SEQUENCE_NUMBER_TYPE 0x80
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_OLD_P_TMSI_SIGNATURE_TYPE 0x19
@@ -365,6 +411,10 @@ typedef struct ogs_nas_eps_detach_request_to_ue_s {
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_T3324_VALUE_TYPE 0x6A
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_T3412_EXTENDED_VALUE_TYPE 0x5E
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_ADDITIONAL_SECURITY_CAPABILITY_TYPE 0x6F
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_UE_STATUS_TYPE 0x6D
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_ADDITIONAL_INFORMATION_REQUESTED_TYPE 0x17
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST_N1_UE_NETWORK_CAPABILITY_TYPE 0x32
 
 typedef struct ogs_nas_eps_tracking_area_update_request_s {
     /* Mandatory fields */
@@ -398,6 +448,10 @@ typedef struct ogs_nas_eps_tracking_area_update_request_s {
     ogs_nas_gprs_timer_2_t t3324_value;
     ogs_nas_gprs_timer_3_t t3412_extended_value;
     ogs_nas_extended_drx_parameters_t extended_drx_parameters;
+    ogs_nas_ue_additional_security_capability_t ue_additional_security_capability;
+    ogs_nas_ue_status_t ue_status;
+    ogs_nas_additional_information_requested_t additional_information_requested;
+    ogs_nas_n1_ue_network_capability_t n1_ue_network_capability;
 } ogs_nas_eps_tracking_area_update_request_t;
 
 
@@ -421,6 +475,16 @@ typedef struct ogs_nas_eps_tracking_area_update_request_s {
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3324_VALUE_PRESENT (1<<14)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_EXTENDED_DRX_PARAMETERS_PRESENT (1<<15)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_STATUS_PRESENT (1<<16)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_DCN_ID_PRESENT (1<<17)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_SMS_SERVICES_STATUS_PRESENT (1<<18)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NON__NW_POLICIES_PRESENT (1<<19)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3448_VALUE_PRESENT (1<<20)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NETWORK_POLICY_PRESENT (1<<21)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3447_VALUE_PRESENT (1<<22)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_EXTENDED_EMERGENCY_NUMBER_LIST_PRESENT (1<<23)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_CIPHERING_KEY_DATA_PRESENT (1<<24)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_UE_RADIO_CAPABILITY_ID_PRESENT (1<<25)
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_PRESENT (1<<26)
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3412_VALUE_TYPE 0x5A
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_GUTI_TYPE 0x50
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_TAI_LIST_TYPE 0x54
@@ -438,6 +502,16 @@ typedef struct ogs_nas_eps_tracking_area_update_request_s {
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3324_VALUE_TYPE 0x6A
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_EXTENDED_DRX_PARAMETERS_TYPE 0x6E
 #define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_HEADER_COMPRESSION_CONFIGURATION_STATUS_TYPE 0x68
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_DCN_ID_TYPE 0x65
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_SMS_SERVICES_STATUS_TYPE 0xE0
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NON__NW_POLICIES_TYPE 0xD0
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3448_VALUE_TYPE 0x6B
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_NETWORK_POLICY_TYPE 0xC0
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_T3447_VALUE_TYPE 0x6C
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_EXTENDED_EMERGENCY_NUMBER_LIST_TYPE 0x7A
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_CIPHERING_KEY_DATA_TYPE 0x7C
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_UE_RADIO_CAPABILITY_ID_TYPE 0x66
+#define OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE 0xB0
 
 typedef struct ogs_nas_eps_tracking_area_update_accept_s {
     /* Mandatory fields */
@@ -462,6 +536,16 @@ typedef struct ogs_nas_eps_tracking_area_update_accept_s {
     ogs_nas_gprs_timer_2_t t3324_value;
     ogs_nas_extended_drx_parameters_t extended_drx_parameters;
     ogs_nas_header_compression_configuration_status_t header_compression_configuration_status;
+    ogs_nas_dcn_id_t dcn_id;
+    ogs_nas_sms_services_status_t sms_services_status;
+    ogs_nas_non__nw_provided_policies_t non__nw_policies;
+    ogs_nas_gprs_timer_2_t t3448_value;
+    ogs_nas_network_policy_t network_policy;
+    ogs_nas_gprs_timer_3_t t3447_value;
+    ogs_nas_extended_emergency_number_list_t extended_emergency_number_list;
+    ogs_nas_ciphering_key_data_t ciphering_key_data;
+    ogs_nas_ue_radio_capability_id_t ue_radio_capability_id;
+    ogs_nas_ue_radio_capability_id_deletion_indication_t ue_radio_capability_id_deletion_indication;
 } ogs_nas_eps_tracking_area_update_accept_t;
 
 
@@ -522,7 +606,9 @@ typedef struct ogs_nas_eps_service_request_s {
  * SERVICE REJECT
  ******************************************************/
 #define OGS_NAS_EPS_SERVICE_REJECT_T3346_VALUE_PRESENT (1<<0)
+#define OGS_NAS_EPS_SERVICE_REJECT_T3448_VALUE_PRESENT (1<<1)
 #define OGS_NAS_EPS_SERVICE_REJECT_T3346_VALUE_TYPE 0x5F
+#define OGS_NAS_EPS_SERVICE_REJECT_T3448_VALUE_TYPE 0x6B
 
 typedef struct ogs_nas_eps_service_reject_s {
     /* Mandatory fields */
@@ -532,6 +618,7 @@ typedef struct ogs_nas_eps_service_reject_s {
     /* Optional fields */
     uint32_t presencemask;
     ogs_nas_gprs_timer_2_t t3346_value;
+    ogs_nas_gprs_timer_2_t t3448_value;
 } ogs_nas_eps_service_reject_t;
 
 
@@ -539,7 +626,13 @@ typedef struct ogs_nas_eps_service_reject_s {
  * GUTI REALLOCATION COMMAND
  ******************************************************/
 #define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_TAI_LIST_PRESENT (1<<0)
+#define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_DCN_ID_PRESENT (1<<1)
+#define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_UE_RADIO_CAPABILITY_ID_PRESENT (1<<2)
+#define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_PRESENT (1<<3)
 #define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_TAI_LIST_TYPE 0x54
+#define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_DCN_ID_TYPE 0x65
+#define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_UE_RADIO_CAPABILITY_ID_TYPE 0x66
+#define OGS_NAS_EPS_GUTI_REALLOCATION_COMMAND_UE_RADIO_CAPABILITY_ID_DELETION_INDICATION_TYPE 0xB0
 
 typedef struct ogs_nas_eps_guti_reallocation_command_s {
     /* Mandatory fields */
@@ -548,6 +641,9 @@ typedef struct ogs_nas_eps_guti_reallocation_command_s {
     /* Optional fields */
     uint32_t presencemask;
     ogs_nas_tracking_area_identity_list_t tai_list;
+    ogs_nas_dcn_id_t dcn_id;
+    ogs_nas_ue_radio_capability_id_t ue_radio_capability_id;
+    ogs_nas_ue_radio_capability_id_deletion_indication_t ue_radio_capability_id_deletion_indication;
 } ogs_nas_eps_guti_reallocation_command_t;
 
 
@@ -615,9 +711,15 @@ typedef struct ogs_nas_eps_authentication_failure_s {
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT (1<<0)
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_REPLAYED_NONCEUE_PRESENT (1<<1)
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_NONCEMME_PRESENT (1<<2)
+#define OGS_NAS_EPS_SECURITY_MODE_COMMAND_HASHMME_PRESENT (1<<3)
+#define OGS_NAS_EPS_SECURITY_MODE_COMMAND_REPLAYED_UE_ADDITIONAL_SECURITY_CAPABILITY_PRESENT (1<<4)
+#define OGS_NAS_EPS_SECURITY_MODE_COMMAND_UE_RADIO_CAPABILITY_ID_REQUEST_PRESENT (1<<5)
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_TYPE 0xC0
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_REPLAYED_NONCEUE_TYPE 0x55
 #define OGS_NAS_EPS_SECURITY_MODE_COMMAND_NONCEMME_TYPE 0x56
+#define OGS_NAS_EPS_SECURITY_MODE_COMMAND_HASHMME_TYPE 0x4F
+#define OGS_NAS_EPS_SECURITY_MODE_COMMAND_REPLAYED_UE_ADDITIONAL_SECURITY_CAPABILITY_TYPE 0x6F
+#define OGS_NAS_EPS_SECURITY_MODE_COMMAND_UE_RADIO_CAPABILITY_ID_REQUEST_TYPE 0xD0
 
 typedef struct ogs_nas_eps_security_mode_command_s {
     /* Mandatory fields */
@@ -630,6 +732,9 @@ typedef struct ogs_nas_eps_security_mode_command_s {
     ogs_nas_imeisv_request_t imeisv_request;
     ogs_nas_nonce_t replayed_nonceue;
     ogs_nas_nonce_t noncemme;
+    ogs_nas_hashmme_t hashmme;
+    ogs_nas_ue_additional_security_capability_t replayed_ue_additional_security_capability;
+    ogs_nas_ue_radio_capability_id_request_t ue_radio_capability_id_request;
 } ogs_nas_eps_security_mode_command_t;
 
 
@@ -637,13 +742,19 @@ typedef struct ogs_nas_eps_security_mode_command_s {
  * SECURITY MODE COMPLETE
  ******************************************************/
 #define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_IMEISV_PRESENT (1<<0)
+#define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_REPLAYED_NAS_MESSAGE_CONTAINER_PRESENT (1<<1)
+#define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_UE_RADIO_CAPABILITY_ID_PRESENT (1<<2)
 #define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_IMEISV_TYPE 0x23
+#define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_REPLAYED_NAS_MESSAGE_CONTAINER_TYPE 0x79
+#define OGS_NAS_EPS_SECURITY_MODE_COMPLETE_UE_RADIO_CAPABILITY_ID_TYPE 0x66
 
 typedef struct ogs_nas_eps_security_mode_complete_s {
 
     /* Optional fields */
     uint32_t presencemask;
     ogs_nas_mobile_identity_t imeisv;
+    ogs_nas_replayed_nas_message_container_t replayed_nas_message_container;
+    ogs_nas_ue_radio_capability_id_t ue_radio_capability_id;
 } ogs_nas_eps_security_mode_complete_t;
 
 
@@ -790,6 +901,7 @@ typedef struct ogs_nas_eps_downlink_generic_nas_transport_s {
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_CONTROL_PLANE_ONLY_INDICATION_PRESENT (1<<12)
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<13)
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_SERVING_PLMN_RATE_CONTROL_PRESENT (1<<14)
+#define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_APN_AMBR_PRESENT (1<<15)
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_TYPE 0x5D
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_TYPE 0x30
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_TYPE 0x32
@@ -805,6 +917,7 @@ typedef struct ogs_nas_eps_downlink_generic_nas_transport_s {
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_CONTROL_PLANE_ONLY_INDICATION_TYPE 0x90
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
 #define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_SERVING_PLMN_RATE_CONTROL_TYPE 0x6E
+#define OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_APN_AMBR_TYPE 0x5F
 
 typedef struct ogs_nas_eps_activate_default_eps_bearer_context_request_s {
     /* Mandatory fields */
@@ -829,6 +942,7 @@ typedef struct ogs_nas_eps_activate_default_eps_bearer_context_request_s {
     ogs_nas_control_plane_only_indication_t control_plane_only_indication;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
     ogs_nas_serving_plmn_rate_control_t serving_plmn_rate_control;
+    ogs_nas_extended_apn_aggregate_maximum_bit_rate_t extended_apn_ambr;
 } ogs_nas_eps_activate_default_eps_bearer_context_request_t;
 
 
@@ -880,6 +994,7 @@ typedef struct ogs_nas_eps_activate_default_eps_bearer_context_reject_s {
 #define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_PRESENT (1<<6)
 #define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_PRESENT (1<<7)
 #define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<8)
+#define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_EPS_QOS_PRESENT (1<<9)
 #define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_TRANSACTION_IDENTIFIER_TYPE 0x5D
 #define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_QOS_TYPE 0x30
 #define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NEGOTIATED_LLC_SAPI_TYPE 0x32
@@ -889,6 +1004,7 @@ typedef struct ogs_nas_eps_activate_default_eps_bearer_context_reject_s {
 #define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_WLAN_OFFLOAD_INDICATION_TYPE 0xC0
 #define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
 #define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+#define OGS_NAS_EPS_ACTIVATE_DEDICATED_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_EPS_QOS_TYPE 0x5C
 
 typedef struct ogs_nas_eps_activate_dedicated_eps_bearer_context_request_s {
     /* Mandatory fields */
@@ -907,6 +1023,7 @@ typedef struct ogs_nas_eps_activate_dedicated_eps_bearer_context_request_s {
     ogs_nas_wlan_offload_acceptability_t wlan_offload_indication;
     ogs_nas_nbifom_container_t nbifom_container;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+    ogs_nas_extended_quality_of_service_t extended_eps_qos;
 } ogs_nas_eps_activate_dedicated_eps_bearer_context_request_t;
 
 
@@ -967,6 +1084,8 @@ typedef struct ogs_nas_eps_activate_dedicated_eps_bearer_context_reject_s {
 #define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_PRESENT (1<<9)
 #define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT (1<<10)
 #define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<11)
+#define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_APN_AMBR_PRESENT (1<<12)
+#define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_EPS_QOS_PRESENT (1<<13)
 #define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NEW_EPS_QOS_TYPE 0x5B
 #define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_TFT_TYPE 0x36
 #define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NEW_QOS_TYPE 0x30
@@ -979,6 +1098,8 @@ typedef struct ogs_nas_eps_activate_dedicated_eps_bearer_context_reject_s {
 #define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
 #define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
 #define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+#define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_APN_AMBR_TYPE 0x5F
+#define OGS_NAS_EPS_MODIFY_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_EPS_QOS_TYPE 0x5C
 
 typedef struct ogs_nas_eps_modify_eps_bearer_context_request_s {
 
@@ -996,6 +1117,8 @@ typedef struct ogs_nas_eps_modify_eps_bearer_context_request_s {
     ogs_nas_nbifom_container_t nbifom_container;
     ogs_nas_header_compression_configuration_t header_compression_configuration;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+    ogs_nas_extended_apn_aggregate_maximum_bit_rate_t extended_apn_ambr;
+    ogs_nas_extended_quality_of_service_t extended_eps_qos;
 } ogs_nas_eps_modify_eps_bearer_context_request_t;
 
 
@@ -1193,10 +1316,12 @@ typedef struct ogs_nas_eps_pdn_disconnect_reject_s {
 #define OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_DEVICE_PROPERTIES_PRESENT (1<<1)
 #define OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_NBIFOM_CONTAINER_PRESENT (1<<2)
 #define OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<3)
+#define OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_EPS_QOS_PRESENT (1<<4)
 #define OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
 #define OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_DEVICE_PROPERTIES_TYPE 0xC0
 #define OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
 #define OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+#define OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST_EXTENDED_EPS_QOS_TYPE 0x5C
 
 typedef struct ogs_nas_eps_bearer_resource_allocation_request_s {
     /* Mandatory fields */
@@ -1210,6 +1335,7 @@ typedef struct ogs_nas_eps_bearer_resource_allocation_request_s {
     ogs_nas_device_properties_t device_properties;
     ogs_nas_nbifom_container_t nbifom_container;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+    ogs_nas_extended_quality_of_service_t extended_eps_qos;
 } ogs_nas_eps_bearer_resource_allocation_request_t;
 
 
@@ -1251,6 +1377,7 @@ typedef struct ogs_nas_eps_bearer_resource_allocation_reject_s {
 #define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_NBIFOM_CONTAINER_PRESENT (1<<4)
 #define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_PRESENT (1<<5)
 #define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT (1<<6)
+#define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_EPS_QOS_PRESENT (1<<7)
 #define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_TYPE 0x5B
 #define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_ESM_CAUSE_TYPE 0x58
 #define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x27
@@ -1258,6 +1385,7 @@ typedef struct ogs_nas_eps_bearer_resource_allocation_reject_s {
 #define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_NBIFOM_CONTAINER_TYPE 0x33
 #define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_HEADER_COMPRESSION_CONFIGURATION_TYPE 0x66
 #define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_TYPE 0x7B
+#define OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_EXTENDED_EPS_QOS_TYPE 0x5C
 
 typedef struct ogs_nas_eps_bearer_resource_modification_request_s {
     /* Mandatory fields */
@@ -1273,6 +1401,7 @@ typedef struct ogs_nas_eps_bearer_resource_modification_request_s {
     ogs_nas_nbifom_container_t nbifom_container;
     ogs_nas_header_compression_configuration_t header_compression_configuration;
     ogs_nas_extended_protocol_configuration_options_t extended_protocol_configuration_options;
+    ogs_nas_extended_quality_of_service_t extended_eps_qos;
 } ogs_nas_eps_bearer_resource_modification_request_t;
 
 

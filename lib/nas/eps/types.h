@@ -159,6 +159,18 @@ ED3(uint8_t type:4;,
     uint8_t key_sequence:3;)
 } __attribute__ ((packed)) ogs_nas_ciphering_key_sequence_number_t;
 
+/* 9.9.3.4B SMS services status
+ * O TV 1 */
+#define OGS_NAS_SMS_SERVICES_STATUS_NOT_AVAILABLE 0
+#define OGS_NAS_SMS_SERVICES_STATUS_NOT_AVAILABLE_IN_THIS_PLMN 1
+#define OGS_NAS_SMS_SERVICES_STATUS_NETWORK_FAILURE 2
+#define OGS_NAS_SMS_SERVICES_STATUS_CONGESTION 3
+typedef struct ogs_nas_sms_services_status_s {
+ED3(uint8_t type:4;,
+    uint8_t spare:1;,
+    uint8_t value:3;)
+} __attribute__ ((packed)) ogs_nas_sms_services_status_t;
+
 /* 9.9.3.5 CSFB response
  * O TV 1 */
 #define OGS_NAS_CS_FALLBACK_RESPONSE_REJECTED_BY_THE_UE     0
@@ -610,6 +622,131 @@ ED3(uint8_t type:4;,
     uint8_t guti_type:1;)
 } __attribute__ ((packed)) ogs_nas_guti_type_t;
 
+/* 9.9.3.48 DCN-ID
+ * See subclause 10.5.5.35 in 3GPP TS 24.008.
+ * O TLV 4
+ *
+ * This field contains the 16 bit DCN-ID.
+ * The coding of the DCN-ID value part is defined in 3GPP TS 23.003 [2]
+ */
+typedef struct ogs_nas_dcn_id_s {
+    uint8_t length;
+    uint16_t value;
+} ogs_nas_dcn_id_t;
+
+/* 9.9.3.49 Non-3GPP NW provided policies
+ * See subclause 10.5.5.37 in 3GPP TS 24.008.
+ * O TV 1 */
+typedef struct ogs_nas_non__nw_provided_policies_s {
+ED3(uint8_t type:4;,
+    uint8_t spare:3;,
+    uint8_t use_of_non_3gpp_emergency_numbers_permitted:1;)
+} __attribute__ ((packed)) ogs_nas_non__nw_provided_policies_t;
+
+/* 9.9.3.50 HashMME
+ * O TLV 10 */
+#define OGS_NAS_HASHMME_LEN 8
+typedef struct ogs_nas_hashmme_s {
+    uint8_t length;
+    uint8_t value[OGS_NAS_HASHMME_LEN];
+} ogs_nas_hashmme_t;
+
+/* 9.9.3.51 Replayed NAS message container
+ * O TLV-E 3-n */
+typedef struct ogs_nas_replayed_nas_message_container_s {
+    uint16_t length;
+    void *buffer;
+} ogs_nas_replayed_nas_message_container_t;
+
+/* 9.9.3.52 Network policy
+ * O TV 1 */
+typedef struct ogs_nas_network_policy_s {
+ED3(uint8_t type:4;,
+    uint8_t spare:3;,
+    uint8_t unsecured_redirection_to_geran_not_allowed:1;)
+} __attribute__ ((packed)) ogs_nas_network_policy_t;
+
+/* 9.9.3.53 UE additional security capability
+ * O TLV 6 */
+typedef struct ogs_nas_ue_additional_security_capability_s {
+    uint8_t length;
+    union {
+        struct {
+        ED8(uint8_t nea0:1;,
+            uint8_t nea1:1;,
+            uint8_t nea2:1;,
+            uint8_t nea3:1;,
+            uint8_t nea4:1;,
+            uint8_t nea5:1;,
+            uint8_t nea6:1;,
+            uint8_t nea7:1;)
+        };
+        uint8_t nea;
+    };
+    union {
+        struct {
+        ED8(uint8_t nea8:1;,
+            uint8_t nea9:1;,
+            uint8_t nea10:1;,
+            uint8_t nea11:1;,
+            uint8_t nea12:1;,
+            uint8_t nea13:1;,
+            uint8_t nea14:1;,
+            uint8_t nea15:1;)
+        };
+        uint8_t nea_8_15;
+    };
+    union {
+        struct {
+        ED8(uint8_t nia0:1;,
+            uint8_t nia1:1;,
+            uint8_t nia2:1;,
+            uint8_t nia3:1;,
+            uint8_t nia4:1;,
+            uint8_t nia5:1;,
+            uint8_t nia6:1;,
+            uint8_t nia7:1;)
+        };
+        uint8_t nia;
+    };
+    union {
+        struct {
+        ED8(uint8_t nia8:1;,
+            uint8_t nia9:1;,
+            uint8_t nia10:1;,
+            uint8_t nia11:1;,
+            uint8_t nia12:1;,
+            uint8_t nia13:1;,
+            uint8_t nia14:1;,
+            uint8_t nia15:1;)
+        };
+        uint8_t nia_8_15;
+    };
+} __attribute__ ((packed)) ogs_nas_ue_additional_security_capability_t;
+
+/* 9.9.3.57 N1 UE network capability
+ * O TLV 3-15 */
+typedef struct ogs_nas_n1_ue_network_capability_s {
+    uint8_t length;
+    struct {
+    ED7(uint8_t spare:2;,
+        uint8_t user_plane_ciot_5gs_optimization:1;,
+        uint8_t control_plane_ciot_5gs_optimization:1;,
+        uint8_t user_plane_ciot_5gs_optimization_supported:1;,
+        uint8_t header_compression_for_control_plane_ciot_5gs_optimization_supported:1;,
+        uint8_t n3_data_transfer_not_supported:1;,
+        uint8_t control_plane_ciot_5gs_optimization_supported:1;)
+    };
+} ogs_nas_n1_ue_network_capability_t;
+
+/* 9.9.3.59 UE radio capability ID request
+ * O TV 1 */
+typedef struct ogs_nas_ue_radio_capability_id_request_s {
+ED3(uint8_t type:4;,
+    uint8_t spare:3;,
+    uint8_t ue_radio_capability_id_available:1;)
+} __attribute__ ((packed)) ogs_nas_ue_radio_capability_id_request_t;
+
 /* 9.9.4.1 Access point name
  * See subclause 10.5.6.1 in 3GPP TS 24.008 [13].
  * O TLV 3-102 */
@@ -787,6 +924,10 @@ typedef struct ogs_nas_header_compression_configuration_status_s {
     uint8_t length;
     uint16_t value;
 } __attribute__ ((packed)) ogs_nas_header_compression_configuration_status_t;
+
+/* 9.9.4.29 Extended APN aggregate maximum bit rate
+ * O TLV 8 */
+typedef ogs_nas_session_ambr_t ogs_nas_extended_apn_aggregate_maximum_bit_rate_t;
 
 #ifdef __cplusplus
 }

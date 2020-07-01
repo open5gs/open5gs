@@ -99,7 +99,7 @@ def get_cells(cells):
     instance = cells[4].text.encode('ascii', 'ignore')
     if instance.isdigit() is not True:
         return None
-    ie_type = re.sub('\s*$', '', re.sub('\s*\n*\s*\(NOTE.*\)*', '', cells[3].text.encode('ascii', 'ignore')))
+    ie_type = re.sub('\s*$', '', re.sub('\s*\n*\s*\([A-z]*\s*NOTE.*\)*', '', cells[3].text.encode('ascii', 'ignore')))
     if ie_type.find('LDN') != -1:
         ie_type = 'LDN'
     elif ie_type.find('APCO') != -1:
@@ -110,10 +110,17 @@ def get_cells(cells):
         ie_type = 'eNB Information Reporting'
     elif ie_type.find('IPv4 Configuration Parameters (IP4CP)') != -1:
         ie_type = 'IP4CP'
+    elif ie_type.find('Charging characteristics') != -1:
+        ie_type = 'Charging Characteristics'
+    elif ie_type.find('Change To Report Flags') != -1:
+        ie_type = 'Change to Report Flags'
+    elif ie_type.find('APN RATE Control Status') != -1:
+        ie_type = 'APN Rate Control Status'
     if ie_type not in type_list.keys():
         assert False, "Unknown IE type : [" \
                 + cells[3].text + "]" + "(" + ie_type + ")"
     presence = cells[1].text.encode('ascii', 'ignore')
+    presence = re.sub('\n', '', presence);
     ie_value = re.sub('\s*\n*\s*\([^\)]*\)*', '', cells[0].text).encode('ascii', 'ignore')
     comment = cells[2].text.encode('ascii', 'ignore')
     comment = re.sub('\n|\"|\'|\\\\', '', comment);
@@ -274,8 +281,9 @@ else:
                         ies.append(cells)
                         write_cells_to_file("ies", cells)
 
-                group_list[ie_name] = { "type" : ie_type, "ies" : ies }
-                write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"ies\" : ies }\n")
+                ie_idx = str(int(ie_type)+100)
+                group_list[ie_name] = { "index" : ie_idx, "type" : ie_type, "ies" : ies }
+                write_file(f, "group_list[\"" + ie_name + "\"] = { \"index\" : \"" + ie_idx + "\", \"type\" : \"" + ie_type + "\", \"ies\" : ies }\n")
             else:
                 group_list_is_added = False
                 added_ies = group_list[ie_name]["ies"]
@@ -297,41 +305,42 @@ else:
                         write_cells_to_file("added_ies", cells)
                         group_list_is_added = True
                 if group_list_is_added is True:
-                    group_list[ie_name] = { "type" : ie_type, "ies" : added_ies }
-                    write_file(f, "group_list[\"" + ie_name + "\"] = { \"type\" : \"" + ie_type + "\", \"ies\" : added_ies }\n")
+                    ie_idx = str(int(ie_type)+100)
+                    group_list[ie_name] = { "index" : ie_idx, "type" : ie_type, "ies" : added_ies }
+                    write_file(f, "group_list[\"" + ie_name + "\"] = { \"index\" : \"" + ie_idx + "\", \"type\" : \"" + ie_type + "\", \"ies\" : added_ies }\n")
     f.close()
 
-msg_list["Echo Request"]["table"] = 6
-msg_list["Echo Response"]["table"] = 7
-msg_list["Create Session Request"]["table"] = 8
-msg_list["Create Session Response"]["table"] = 13
-msg_list["Create Bearer Request"]["table"] = 18
-msg_list["Create Bearer Response"]["table"] = 22
-msg_list["Bearer Resource Command"]["table"] = 25
-msg_list["Bearer Resource Failure Indication"]["table"] = 27
-msg_list["Modify Bearer Request"]["table"] = 29
-msg_list["Modify Bearer Response"]["table"] = 33
-msg_list["Delete Session Request"]["table"] = 38
-msg_list["Delete Bearer Request"]["table"] = 40
-msg_list["Delete Session Response"]["table"] = 44
-msg_list["Delete Bearer Response"]["table"] = 47
-msg_list["Downlink Data Notification"]["table"] = 50
-msg_list["Downlink Data Notification Acknowledge"]["table"] = 53
-msg_list["Downlink Data Notification Failure Indication"]["table"] = 54
-msg_list["Delete Indirect Data Forwarding Tunnel Request"]["table"] = 55
-msg_list["Delete Indirect Data Forwarding Tunnel Response"]["table"] = 56
-msg_list["Modify Bearer Command"]["table"] = 57
-msg_list["Modify Bearer Failure Indication"]["table"] = 60
-msg_list["Update Bearer Request"]["table"] = 62
-msg_list["Update Bearer Response"]["table"] = 66
-msg_list["Delete Bearer Command"]["table"] = 69
-msg_list["Delete Bearer Failure Indication"]["table"] = 72
-msg_list["Create Indirect Data Forwarding Tunnel Request"]["table"] = 75
-msg_list["Create Indirect Data Forwarding Tunnel Response"]["table"] = 77
-msg_list["Release Access Bearers Request"]["table"] = 79
-msg_list["Release Access Bearers Response"]["table"] = 80
-msg_list["Modify Access Bearers Request"]["table"] = 84
-msg_list["Modify Access Bearers Response"]["table"] = 87
+msg_list["Echo Request"]["table"] = 8
+msg_list["Echo Response"]["table"] = 9
+msg_list["Create Session Request"]["table"] = 10
+msg_list["Create Session Response"]["table"] = 15
+msg_list["Create Bearer Request"]["table"] = 20
+msg_list["Create Bearer Response"]["table"] = 24
+msg_list["Bearer Resource Command"]["table"] = 27
+msg_list["Bearer Resource Failure Indication"]["table"] = 29
+msg_list["Modify Bearer Request"]["table"] = 31
+msg_list["Modify Bearer Response"]["table"] = 35
+msg_list["Delete Session Request"]["table"] = 40
+msg_list["Delete Bearer Request"]["table"] = 42
+msg_list["Delete Session Response"]["table"] = 46
+msg_list["Delete Bearer Response"]["table"] = 49
+msg_list["Downlink Data Notification"]["table"] = 52
+msg_list["Downlink Data Notification Acknowledge"]["table"] = 55
+msg_list["Downlink Data Notification Failure Indication"]["table"] = 56
+msg_list["Delete Indirect Data Forwarding Tunnel Request"]["table"] = 57
+msg_list["Delete Indirect Data Forwarding Tunnel Response"]["table"] = 58
+msg_list["Modify Bearer Command"]["table"] = 59
+msg_list["Modify Bearer Failure Indication"]["table"] = 62
+msg_list["Update Bearer Request"]["table"] = 64
+msg_list["Update Bearer Response"]["table"] = 68
+msg_list["Delete Bearer Command"]["table"] = 71
+msg_list["Delete Bearer Failure Indication"]["table"] = 74
+msg_list["Create Indirect Data Forwarding Tunnel Request"]["table"] = 77
+msg_list["Create Indirect Data Forwarding Tunnel Response"]["table"] = 79
+msg_list["Release Access Bearers Request"]["table"] = 81
+msg_list["Release Access Bearers Response"]["table"] = 82
+msg_list["Modify Access Bearers Request"]["table"] = 86
+msg_list["Modify Access Bearers Response"]["table"] = 89
 
 for key in msg_list.keys():
     if "table" in msg_list[key].keys():
@@ -453,7 +462,13 @@ for (k, v) in sorted_type_list:
         f.write("_" + str(instance) + ";\n")
 f.write("\n")
 
-tmp = [(k, v["type"]) for k, v in group_list.items()]
+for k, v in group_list.items():
+    if v_lower(k) == "pc5_qos_parameters":
+        v["index"] = "1"
+    if v_lower(k) == "remote_ue_context":
+        v["index"] = "2"
+
+tmp = [(k, v["index"]) for k, v in group_list.items()]
 sorted_group_list = sorted(tmp, key=lambda tup: int(tup[1]))
 
 f.write("/* Group Infomration Element TLV Descriptor */\n")

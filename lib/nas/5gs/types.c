@@ -91,24 +91,6 @@ void ogs_nas_5gs_tai_list_build(
     }
 }
 
-void ogs_nas_bitrate_from_uint64(ogs_nas_bitrate_t *nas, uint64_t bitrate)
-{
-    ogs_assert(nas);
-    ogs_assert(bitrate);
-
-    bitrate >>= 10; /* bps to Kbps */
-
-    for (nas->unit = OGS_NAS_BR_UNIT_1K;
-            nas->unit < OGS_NAS_BR_UNIT_256P; nas->unit++) {
-        if ((bitrate >> 2) == 0) {
-            break;
-        }
-        bitrate >>= 2;
-    }
-    nas->bitrate = bitrate;
-}
-
-
 void ogs_nas_build_nssai(ogs_nas_nssai_t *nas_nssai,
         ogs_s_nssai_t *s_nssai, int num_of_s_nssai)
 {

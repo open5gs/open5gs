@@ -275,6 +275,7 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     S1AP_UESecurityCapabilities_t *UESecurityCapabilities = NULL;
     S1AP_SecurityKey_t *SecurityKey = NULL;
     S1AP_Masked_IMEISV_t *Masked_IMEISV = NULL;
+    S1AP_NRUESecurityCapabilities_t *NRUESecurityCapabilities = NULL;
 
     enb_ue_t *enb_ue = NULL;
     mme_sess_t *sess = NULL;
@@ -448,11 +449,11 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
     UESecurityCapabilities = &ie->value.choice.UESecurityCapabilities;
 
     UESecurityCapabilities->encryptionAlgorithms.size = 2;
-    UESecurityCapabilities->encryptionAlgorithms.buf = 
-        CALLOC(UESecurityCapabilities->encryptionAlgorithms.size, 
+    UESecurityCapabilities->encryptionAlgorithms.buf =
+        CALLOC(UESecurityCapabilities->encryptionAlgorithms.size,
                     sizeof(uint8_t));
     UESecurityCapabilities->encryptionAlgorithms.bits_unused = 0;
-    UESecurityCapabilities->encryptionAlgorithms.buf[0] = 
+    UESecurityCapabilities->encryptionAlgorithms.buf[0] =
         (mme_ue->ue_network_capability.eea << 1);
 
     UESecurityCapabilities->integrityProtectionAlgorithms.size = 2;
@@ -553,6 +554,35 @@ ogs_pkbuf_t *s1ap_build_initial_context_setup_request(
         Masked_IMEISV->buf = CALLOC(Masked_IMEISV->size, sizeof(uint8_t));
         Masked_IMEISV->bits_unused = 0;
         memcpy(Masked_IMEISV->buf, mme_ue->masked_imeisv, Masked_IMEISV->size);
+    }
+
+    if (mme_ue->ue_additional_security_capability.length) {
+        ie = CALLOC(1, sizeof(S1AP_InitialContextSetupRequestIEs_t));
+        ASN_SEQUENCE_ADD(&InitialContextSetupRequest->protocolIEs, ie);
+
+        ie->id = S1AP_ProtocolIE_ID_id_NRUESecurityCapabilities;
+        ie->criticality = S1AP_Criticality_ignore;
+        ie->value.present = S1AP_InitialContextSetupRequestIEs__value_PR_NRUESecurityCapabilities;
+
+        NRUESecurityCapabilities = &ie->value.choice.NRUESecurityCapabilities;
+
+        NRUESecurityCapabilities->nRencryptionAlgorithms.size = 2;
+        NRUESecurityCapabilities->nRencryptionAlgorithms.buf =
+            CALLOC(NRUESecurityCapabilities->nRencryptionAlgorithms.size,
+                        sizeof(uint8_t));
+        NRUESecurityCapabilities->nRencryptionAlgorithms.bits_unused = 0;
+        NRUESecurityCapabilities->nRencryptionAlgorithms.buf[0] =
+            (mme_ue->ue_additional_security_capability.nea << 1);
+
+        NRUESecurityCapabilities->nRintegrityProtectionAlgorithms.size = 2;
+        NRUESecurityCapabilities->nRintegrityProtectionAlgorithms.buf =
+            CALLOC(NRUESecurityCapabilities->
+                    nRintegrityProtectionAlgorithms.size, sizeof(uint8_t));
+        NRUESecurityCapabilities->nRintegrityProtectionAlgorithms.
+            bits_unused = 0;
+        NRUESecurityCapabilities->nRintegrityProtectionAlgorithms.buf[0] =
+            (mme_ue->ue_additional_security_capability.nia << 1);
+
     }
 
     return ogs_s1ap_encode(&pdu);

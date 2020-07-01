@@ -429,3 +429,20 @@ void eps_qos_build(ogs_nas_eps_quality_of_service_t *eps_qos, uint8_t qci,
 
     eps_qos->length = length*4+1;
 }
+
+void ogs_nas_bitrate_from_uint64(ogs_nas_bitrate_t *nas, uint64_t bitrate)
+{
+    ogs_assert(nas);
+    ogs_assert(bitrate);
+
+    bitrate >>= 10; /* bps to Kbps */
+
+    for (nas->unit = OGS_NAS_BR_UNIT_1K;
+            nas->unit < OGS_NAS_BR_UNIT_256P; nas->unit++) {
+        if ((bitrate >> 2) == 0) {
+            break;
+        }
+        bitrate >>= 2;
+    }
+    nas->bitrate = bitrate;
+}

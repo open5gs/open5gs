@@ -24,7 +24,7 @@ extern "C" {
 #define S1AP_maxnoofForbLACs (4096)
 #define S1AP_maxnoofForbTACs (4096)
 #define S1AP_maxnoofIndividualS1ConnectionsToReset (256)
-#define S1AP_maxnoofCells (16)
+#define S1AP_maxnoofCellsinUEHistoryInfo (16)
 #define S1AP_maxnoofCellsineNB (256)
 #define S1AP_maxnoofTAIforWarning (65535)
 #define S1AP_maxnoofCellID (65535)
@@ -48,6 +48,13 @@ extern "C" {
 #define S1AP_maxnoofMBSFNAreaMDT (8)
 #define S1AP_maxnoofRecommendedCells (16)
 #define S1AP_maxnoofRecommendedENBs (16)
+#define S1AP_maxnooftimeperiods (2)
+#define S1AP_maxnoofCellIDforQMC (32)
+#define S1AP_maxnoofTAforQMC (8)
+#define S1AP_maxnoofPLMNforQMC (16)
+#define S1AP_maxnoofBluetoothName (4)
+#define S1AP_maxnoofWLANName (4)
+#define S1AP_maxnoofConnectedengNBs (256)
 
 
 #ifdef __cplusplus

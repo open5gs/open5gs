@@ -20,8 +20,8 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-06-25 16:31:59.426452 by acetcom
- * from 29274-d80.docx
+ * Created on: 2020-06-30 21:17:14.929915 by acetcom
+ * from 29274-g30.docx
  ******************************************************************************/
 
 #if !defined(OGS_GTP_INSIDE) && !defined(OGS_GTP_COMPILATION)
@@ -254,6 +254,19 @@ typedef struct ogs_gtp_header_s {
 #define OGS_GTP_EPCO_TYPE 197
 #define OGS_GTP_SERVING_PLMN_RATE_CONTROL_TYPE 198
 #define OGS_GTP_COUNTER_TYPE 199
+#define OGS_GTP_MAPPED_UE_USAGE_TYPE_TYPE 200
+#define OGS_GTP_SECONDARY_RAT_USAGE_DATA_REPORT_TYPE 201
+#define OGS_GTP_UP_FUNCTION_SELECTION_INDICATION_FLAGS_TYPE 202
+#define OGS_GTP_MAXIMUM_PACKET_LOSS_RATE_TYPE 203
+#define OGS_GTP_APN_RATE_CONTROL_STATUS_TYPE 204
+#define OGS_GTP_EXTENDED_TRACE_INFORMATION_TYPE 205
+#define OGS_GTP_MONITORING_EVENT_EXTENSION_INFORMATION_TYPE 206
+#define OGS_GTP_ADDITIONAL_RRM_POLICY_INDEX_TYPE 207
+#define OGS_GTP_V2X_CONTEXT_TYPE 208
+#define OGS_GTP_PC5_QOS_PARAMETERS_TYPE 209
+#define OGS_GTP_SERVICES_AUTHORIZED_TYPE 210
+#define OGS_GTP_BIT_RATE_TYPE 211
+#define OGS_GTP_PC5_QOS_FLOW_TYPE 212
 
 /* Infomration Element TLV Descriptor */
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_imsi_0;
@@ -280,6 +293,7 @@ extern ogs_tlv_desc_t ogs_gtp_tlv_desc_serving_network_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_tft_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_tad_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_uli_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_uli_1;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_1;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_f_teid_2;
@@ -334,6 +348,7 @@ extern ogs_tlv_desc_t ogs_gtp_tlv_desc_channel_needed_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_emlpp_priority_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_node_type_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_fqdn_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_fqdn_1;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_ti_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_session_duration_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_mbms_service_area_0;
@@ -397,8 +412,24 @@ extern ogs_tlv_desc_t ogs_gtp_tlv_desc_header_compression_configuration_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_epco_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_serving_plmn_rate_control_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_counter_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_mapped_ue_usage_type_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_secondary_rat_usage_data_report_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_up_function_selection_indication_flags_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_maximum_packet_loss_rate_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_apn_rate_control_status_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_extended_trace_information_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_monitoring_event_extension_information_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_additional_rrm_policy_index_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_services_authorized_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_services_authorized_1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bit_rate_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bit_rate_1;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_flow_0;
 
 /* Group Infomration Element TLV Descriptor */
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pc5_qos_parameters_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context_0;
+extern ogs_tlv_desc_t ogs_gtp_tlv_desc_v2x_context_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_1;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_2;
@@ -417,7 +448,6 @@ extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_2;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_1;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_load_control_information_2;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_scef_pdn_connection_0;
 
 /* Message Descriptor */
@@ -592,8 +622,40 @@ typedef ogs_tlv_octet_t ogs_gtp_tlv_header_compression_configuration_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_epco_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_serving_plmn_rate_control_t;
 typedef ogs_tlv_octet_t ogs_gtp_tlv_counter_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_mapped_ue_usage_type_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_secondary_rat_usage_data_report_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_up_function_selection_indication_flags_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_maximum_packet_loss_rate_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_apn_rate_control_status_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_extended_trace_information_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_monitoring_event_extension_information_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_additional_rrm_policy_index_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_services_authorized_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_bit_rate_t;
+typedef ogs_tlv_octet_t ogs_gtp_tlv_pc5_qos_flow_t;
 
 /* Structure for Group Infomration Element */
+typedef struct ogs_gtp_tlv_pc5_qos_parameters_s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_pc5_qos_flow_t pc5_qos_flows;
+    ogs_gtp_tlv_bit_rate_t pc5_link_aggregated_bit_rates;
+} ogs_gtp_tlv_pc5_qos_parameters_t;
+
+typedef struct ogs_gtp_tlv_remote_ue_context_s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_remote_user_id_t remote_user_id;
+    ogs_gtp_tlv_remote_ue_ip_information_t remote_ue_ip_information;
+} ogs_gtp_tlv_remote_ue_context_t;
+
+typedef struct ogs_gtp_tlv_v2x_context_s {
+    ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_services_authorized_t lte_v2x_services_authorized;
+    ogs_gtp_tlv_services_authorized_t nr_v2x_services_authorized;
+    ogs_gtp_tlv_bit_rate_t lte_ue_sidelink_aggregate_maximum_bit_rate;
+    ogs_gtp_tlv_bit_rate_t nr_ue_sidelink_aggregate_maximum_bit_rate;
+    ogs_gtp_tlv_pc5_qos_parameters_t pc5_qos_parameters;
+} ogs_gtp_tlv_v2x_context_t;
+
 typedef struct ogs_gtp_tlv_bearer_context_s {
     ogs_tlv_presence_t presence;
     ogs_gtp_tlv_ebi_t eps_bearer_id;
@@ -612,6 +674,7 @@ typedef struct ogs_gtp_tlv_bearer_context_s {
     ogs_gtp_tlv_bearer_flags_t bearer_flags;
     ogs_gtp_tlv_pco_t protocol_configuration_options;
     ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
+    ogs_gtp_tlv_maximum_packet_loss_rate_t maximum_packet_loss_rate;
     ogs_gtp_tlv_f_teid_t s2b_u_epdg_f_teid_8; /* Instance : 8 */
     ogs_gtp_tlv_f_teid_t s2b_u_pgw_f_teid; /* Instance : 9 */
     ogs_gtp_tlv_f_teid_t s2a_u_twan_f_teid_10; /* Instance : 10 */
@@ -625,6 +688,29 @@ typedef struct ogs_gtp_tlv_bearer_context_s {
 
 typedef struct ogs_gtp_tlv_pdn_connection_s {
     ogs_tlv_presence_t presence;
+    ogs_gtp_tlv_apn_t apn;
+    ogs_gtp_tlv_apn_restriction_t apn_restriction;
+    ogs_gtp_tlv_selection_mode_t selection_mode;
+    ogs_gtp_tlv_ip_address_t ipv4_address;
+    ogs_gtp_tlv_ip_address_t ipv6_address;
+    ogs_gtp_tlv_ebi_t linked_eps_bearer_id;
+    ogs_gtp_tlv_f_teid_t pgw_s5_s8_ip_address_for_control_plane_or_pmip; /* Instance : 0 */
+    ogs_gtp_tlv_fqdn_t pgw_node_name;
+    ogs_gtp_tlv_bearer_context_t bearer_contexts_;
+    ogs_gtp_tlv_ambr_t aggregate_maximum_bit_rate;
+    ogs_gtp_tlv_charging_characteristics_t charging_characteristics;
+    ogs_gtp_tlv_change_reporting_action_t change_reporting_action;
+    ogs_gtp_tlv_csg_information_reporting_action_t csg_information_reporting_action;
+    ogs_gtp_tlv_enb_information_reporting_t hnb_information_reporting_;
+    ogs_gtp_tlv_indication_t indication_flags;
+    ogs_gtp_tlv_signalling_priority_indication_t signalling_priority_indication__;
+    ogs_gtp_tlv_change_to_report_flags_t change_to_report_flags;
+    ogs_gtp_tlv_fqdn_t local_home_network_id;
+    ogs_gtp_tlv_presence_reporting_area_action_t presence_reporting_area_action;
+    ogs_gtp_tlv_wlan_offloadability_indication_t wlan_offloadability_indication;
+    ogs_gtp_tlv_remote_ue_context_t remote_ue_context_connected;
+    ogs_gtp_tlv_pdn_type_t pdn_type;
+    ogs_gtp_tlv_header_compression_configuration_t header_compression_configuration;
 } ogs_gtp_tlv_pdn_connection_t;
 
 typedef struct ogs_gtp_tlv_overload_control_information_s {
@@ -641,12 +727,6 @@ typedef struct ogs_gtp_tlv_load_control_information_s {
     ogs_gtp_tlv_metric_t load_metric;
     ogs_gtp_tlv_apn_and_relative_capacity_t list_of_apn_and_relative_capacity;
 } ogs_gtp_tlv_load_control_information_t;
-
-typedef struct ogs_gtp_tlv_remote_ue_context_s {
-    ogs_tlv_presence_t presence;
-    ogs_gtp_tlv_remote_user_id_t remote_user_id;
-    ogs_gtp_tlv_remote_ue_ip_information_t remote_ue_ip_information;
-} ogs_gtp_tlv_remote_ue_context_t;
 
 typedef struct ogs_gtp_tlv_scef_pdn_connection_s {
     ogs_tlv_presence_t presence;
@@ -725,6 +805,12 @@ typedef struct ogs_gtp_create_session_request_s {
     ogs_gtp_tlv_serving_plmn_rate_control_t serving_plmn_rate_control;
     ogs_gtp_tlv_counter_t mo_exception_data_counter;
     ogs_gtp_tlv_port_number_t ue_tcp_port;
+    ogs_gtp_tlv_mapped_ue_usage_type_t mapped_ue_usage_type;
+    ogs_gtp_tlv_uli_t user_location_information_for_sgw_;
+    ogs_gtp_tlv_fqdn_t sgw_u_node_name;
+    ogs_gtp_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
+    ogs_gtp_tlv_up_function_selection_indication_flags_t up_function_selection_indication_flags;
+    ogs_gtp_tlv_apn_rate_control_status_t apn_rate_control_status;
 } ogs_gtp_create_session_request_t;
 
 typedef struct ogs_gtp_create_session_response_s {
@@ -792,6 +878,11 @@ typedef struct ogs_gtp_modify_bearer_request_s {
     ogs_gtp_tlv_overload_control_information_t epdg_s_overload_control_information;
     ogs_gtp_tlv_serving_plmn_rate_control_t serving_plmn_rate_control;
     ogs_gtp_tlv_counter_t mo_exception_data_counter;
+    ogs_gtp_tlv_imsi_t imsi;
+    ogs_gtp_tlv_uli_t user_location_information_for_sgw_;
+    ogs_gtp_tlv_twan_identifier_t wlan_location_information;
+    ogs_gtp_tlv_twan_identifier_timestamp_t wlan_location_timestamp;
+    ogs_gtp_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
 } ogs_gtp_modify_bearer_request_t;
 
 typedef struct ogs_gtp_modify_bearer_response_s {
@@ -844,6 +935,7 @@ typedef struct ogs_gtp_delete_session_request_s {
     ogs_gtp_tlv_port_number_t ue_udp_port;
     ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
     ogs_gtp_tlv_port_number_t ue_tcp_port;
+    ogs_gtp_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
 } ogs_gtp_delete_session_request_t;
 
 typedef struct ogs_gtp_delete_session_response_s {
@@ -857,6 +949,7 @@ typedef struct ogs_gtp_delete_session_response_s {
     ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
     ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
     ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
+    ogs_gtp_tlv_apn_rate_control_status_t apn_rate_control_status;
 } ogs_gtp_delete_session_response_t;
 
 typedef struct ogs_gtp_modify_bearer_command_s {
@@ -884,6 +977,7 @@ typedef struct ogs_gtp_delete_bearer_command_s {
     ogs_gtp_tlv_overload_control_information_t mme_s4_sgsn_s_overload_control_information;
     ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
+    ogs_gtp_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
 } ogs_gtp_delete_bearer_command_t;
 
 typedef struct ogs_gtp_delete_bearer_failure_indication_s {
@@ -1037,6 +1131,7 @@ typedef struct ogs_gtp_delete_bearer_request_s {
     ogs_gtp_tlv_overload_control_information_t pgw_s_overload_control_information;
     ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
     ogs_gtp_tlv_f_container_t nbifom_container;
+    ogs_gtp_tlv_apn_rate_control_status_t apn_rate_control_status;
     ogs_gtp_tlv_epco_t extended_protocol_configuration_options;
 } ogs_gtp_delete_bearer_request_t;
 
@@ -1063,7 +1158,8 @@ typedef struct ogs_gtp_delete_bearer_response_s {
     ogs_gtp_tlv_twan_identifier_timestamp_t wlan_location_timestamp;
     ogs_gtp_tlv_port_number_t ue_udp_port;
     ogs_gtp_tlv_f_container_t nbifom_container;
-    ogs_gtp_tlv_port_number_t ue_tcp_port	;
+    ogs_gtp_tlv_port_number_t ue_tcp_port;
+    ogs_gtp_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
 } ogs_gtp_delete_bearer_response_t;
 
 typedef struct ogs_gtp_create_indirect_data_forwarding_tunnel_request_s {
@@ -1114,6 +1210,7 @@ typedef struct ogs_gtp_release_access_bearers_request_s {
     ogs_gtp_tlv_ebi_t list_of_rabs;
     ogs_gtp_tlv_node_type_t originating_node;
     ogs_gtp_tlv_indication_t indication_flags;
+    ogs_gtp_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
 } ogs_gtp_release_access_bearers_request_t;
 
 typedef struct ogs_gtp_release_access_bearers_response_s {
@@ -1134,6 +1231,7 @@ typedef struct ogs_gtp_downlink_data_notification_s {
     ogs_gtp_tlv_load_control_information_t sgw_s_node_level_load_control_information;
     ogs_gtp_tlv_overload_control_information_t sgw_s_overload_control_information;
     ogs_gtp_tlv_paging_and_service_information_t paging_and_service_information;
+    ogs_gtp_tlv_integer_number_t dl_data_packets_size;
 } ogs_gtp_downlink_data_notification_t;
 
 typedef struct ogs_gtp_downlink_data_notification_acknowledge_s {
@@ -1153,6 +1251,7 @@ typedef struct ogs_gtp_modify_access_bearers_request_s {
     ogs_gtp_tlv_bearer_context_t bearer_contexts_to_be_modified;
     ogs_gtp_tlv_bearer_context_t bearer_contexts_to_be_removed;
     ogs_gtp_tlv_recovery_t recovery;
+    ogs_gtp_tlv_secondary_rat_usage_data_report_t secondary_rat_usage_data_report;
 } ogs_gtp_modify_access_bearers_request_t;
 
 typedef struct ogs_gtp_modify_access_bearers_response_s {

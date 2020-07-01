@@ -107,7 +107,7 @@ ogs_pkbuf_t *emm_build_attach_accept(
 
     attach_accept->presencemask |= 
         OGS_NAS_EPS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
-    eps_network_feature_support->length = 1;
+    eps_network_feature_support->length = 2;
     eps_network_feature_support->ims_vops = 1;
 
     if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
@@ -234,6 +234,9 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
         &security_mode_command->replayed_ue_security_capabilities;
     ogs_nas_imeisv_request_t *imeisv_request =
         &security_mode_command->imeisv_request;
+    ogs_nas_ue_additional_security_capability_t
+        *replayed_ue_additional_security_capability =
+            &security_mode_command->replayed_ue_additional_security_capability;
 
     ogs_assert(mme_ue);
 
@@ -297,6 +300,14 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
         OGS_NAS_EPS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT;
     imeisv_request->type = OGS_NAS_IMEISV_TYPE;
     imeisv_request->value = OGS_NAS_IMEISV_REQUESTED;
+
+    if (mme_ue->ue_additional_security_capability.length) {
+        security_mode_command->presencemask |=
+            OGS_NAS_EPS_SECURITY_MODE_COMMAND_REPLAYED_UE_ADDITIONAL_SECURITY_CAPABILITY_PRESENT;
+        memcpy(replayed_ue_additional_security_capability,
+                &mme_ue->ue_additional_security_capability,
+                sizeof(mme_ue->ue_additional_security_capability));
+    }
 
     if (mme_ue->selected_int_algorithm == OGS_NAS_SECURITY_ALGORITHMS_EIA0) {
         ogs_error("Encrypt[0x%x] can be skipped with EEA0, "

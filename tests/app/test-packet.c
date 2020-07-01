@@ -308,6 +308,16 @@ int tests1ap_build_initial_ue_msg(ogs_pkbuf_t **pkbuf, int i)
         "ff00031301845264 f0130002e0004300 060000f110303900 6440080000f11000"
         "0640100086400130 004b00070000f110 02000100aa400100",
         "",
+
+        /* 24 */
+        "000c"
+        "4080870000050008 00020001001a005f 5e0741720bf632f5 40800101dde9c6cf"
+        "07f0f0c040010010 00230201d031271d 8080211001010010 8106000000008306"
+        "0000000000030000 0a00000d005232f5 4000015c20001332 f540000111034f18"
+        "805d0105e010028d c06f04f000f00000 4300060032f54000 01006440080032f5"
+        "4000200010008640 0130",
+        "",
+        "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         92,
@@ -341,6 +351,11 @@ int tests1ap_build_initial_ue_msg(ogs_pkbuf_t **pkbuf, int i)
         /* 21 */
         120,
         120,
+        0,
+
+        /* 24 */
+        140,
+        0,
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
@@ -400,6 +415,13 @@ int tests1ap_build_identity_response(ogs_pkbuf_t **pkbuf, int i)
         "000d403b00000500 00000200d1000800 0200d1001a001211 170baa6c40030756"
         "0839118900000070 52006440080064f0 1300064010004340 060064f0130002",
         "",
+
+        /* 24 */
+        "000d"
+        "4035000005000000 0200640008000200 01001a000c0b0756 0829534037460000"
+        "06006440080032f5 4000200010004340 060032f5400001",
+        "",
+        "",
     };
 
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -434,6 +456,11 @@ int tests1ap_build_identity_response(ogs_pkbuf_t **pkbuf, int i)
         /* 21 */
         63,
         63,
+        0,
+
+        /* 24 */
+        57,
+        0,
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
@@ -507,6 +534,13 @@ int tests1ap_build_authentication_response(ogs_pkbuf_t **pkbuf, int i)
         "000d403b00000500 00000200d1000800 0200d1001a001211 17e41759f6040753"
         "0831c964f0761378 76006440080064f0 1300064010004340 060064f0130002",
         "",
+
+        /* 24 */
+        "000d"
+        "4035000005000000 0200640008000200 01001a000c0b0753 086fe8c7de55d0a2"
+        "74006440080032f5 4000200010004340 060032f5400001",
+        "",
+        "",
     };
 
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
@@ -542,6 +576,11 @@ int tests1ap_build_authentication_response(ogs_pkbuf_t **pkbuf, int i)
         63,
         63,
         0,
+
+        /* 24 */
+        57,
+        0,
+        0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];
 
@@ -567,7 +606,6 @@ int tests1ap_build_authentication_failure(ogs_pkbuf_t **pkbuf, int i)
         "402d000005000000 0200030008000200 21001a00040307 5c14006440080000"
         "f1101a2d10100043 40060000f1100001",
         "",
-
 
         "",
         "",
@@ -667,6 +705,13 @@ int tests1ap_build_security_mode_complete(ogs_pkbuf_t **pkbuf, int i)
         "000d403200000500 00000200d1000800 0200d1001a000908 47e68241c900075e"
         "006440080064f013 0006401000434006 0064f0130002",
         "",
+
+        /* 24 */
+        "000d"
+        "403d000005000000 0200640008000200 01001a0014134713 a0e91700075e2309"
+        "8306370004448009 f1006440080032f5 4000200010004340 060032f5400001",
+        "",
+        "",
     };
     uint16_t len[TESTS1AP_MAX_MESSAGE] = {
         57,
@@ -700,6 +745,11 @@ int tests1ap_build_security_mode_complete(ogs_pkbuf_t **pkbuf, int i)
         /* 21 */
         54,
         54,
+        0,
+
+        /* 24 */
+        65,
+        0,
         0,
     };
     char hexbuf[OGS_MAX_SDU_LEN];

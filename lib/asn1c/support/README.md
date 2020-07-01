@@ -1,8 +1,3 @@
-Modify 36413-e40.txt to 36413-e40.asn
-===========================================
-user@host ~/Documents/git/nextgnb/lib/asn1c/support/s1ap-r14.4.0$ \
-    diff 36413-e40.txt 36413-e40.asn
-
 Use velichkov git's fork for asn1c
 ===========================================
 user@host ~/Documents/git/my$ \
@@ -12,16 +7,63 @@ user@host ~/Documents/git/my$ \
 user@host Documents/git/my/asn1c$ \
     autoreconf -fi;./configure;make -j4
 
+Modify 36413-g10.txt to 36413-g10.asn
+===========================================
+user@host ~/documents/git/open5gs/lib/asn1c/support/s1ap-r16.1.0$ \
+    diff 36413-g40.txt 36413-g10.asn
+
 ASN.1 encoder/decoder
 ===========================================
-user@host ~/Documents/git/open5gs/lib/asn1c/s1ap$ \
+user@host ~/documents/git/open5gs/lib/asn1c/s1ap$ \
     ASN1C_PREFIX=S1AP_ ../../../../my/asn1c/asn1c/asn1c -pdu=all \
     -fcompound-names -findirect-choice -fno-include-deps \
-    ../support/s1ap-r14.4.0/36413-e40.asn
+    ../support/s1ap-r16.1.0/36413-g10.asn
 
+user@host ~/Documents/git/open5gs/lib/asn1c/ngap$ \
     ASN1C_PREFIX=NGAP_ ../../../../my/asn1c/asn1c/asn1c -pdu=all \
     -fcompound-names -findirect-choice -fno-include-deps \
     ../support/ngap-r16.1.0/38413-g10.asn
+
+Fix S1AP_E-RABUsageReportItem.c
+===========================================
+diff --git a/lib/asn1c/s1ap/S1AP_E-RABUsageReportItem.c b/lib/asn1c/s1ap/S1AP_E-RABUsageReportItem.c
+index c8e6d551..73aae4fd 100644
+--- a/lib/asn1c/s1ap/S1AP_E-RABUsageReportItem.c
++++ b/lib/asn1c/s1ap/S1AP_E-RABUsageReportItem.c
+@@ -80,7 +80,7 @@ memb_S1AP_usageCountUL_constraint_1(const asn_TYPE_descriptor_t *td, const void
+                return -1;
+        }
+
+-       if((value >= 0 && value <= 18446744073709551615)) {
++       if((value >= 0 && value <= 18446744073709551615U)) {
+                /* Constraint check succeeded */
+                return 0;
+        } else {
+@@ -111,7 +111,7 @@ memb_S1AP_usageCountDL_constraint_1(const asn_TYPE_descriptor_t *td, const void
+                return -1;
+        }
+
+-       if((value >= 0 && value <= 18446744073709551615)) {
++       if((value >= 0 && value <= 18446744073709551615U)) {
+                /* Constraint check succeeded */
+                return 0;
+        } else {
+@@ -142,7 +142,7 @@ static asn_oer_constraints_t asn_OER_memb_S1AP_usageCountUL_constr_4 CC_NOTUSED
+        { 8, 1 }        /* (0..18446744073709551615) */,
+        -1};
+ static asn_per_constraints_t asn_PER_memb_S1AP_usageCountUL_constr_4 CC_NOTUSED = {
+-       { APC_CONSTRAINED,       64, -1,  0,  18446744073709551615 }    /* (0..18446744073709551615) */,
++       { APC_CONSTRAINED,       64, -1,  0,  18446744073709551615U }   /* (0..18446744073709551615) */,
+        { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
+        0, 0    /* No PER value map */
+ };
+@@ -150,7 +150,7 @@ static asn_oer_constraints_t asn_OER_memb_S1AP_usageCountDL_constr_5 CC_NOTUSED
+        { 8, 1 }        /* (0..18446744073709551615) */,
+        -1};
+ static asn_per_constraints_t asn_PER_memb_S1AP_usageCountDL_constr_5 CC_NOTUSED = {
+-       { APC_CONSTRAINED,       64, -1,  0,  18446744073709551615 }    /* (0..18446744073709551615) */,
++       { APC_CONSTRAINED,       64, -1,  0,  18446744073709551615U }   /* (0..18446744073709551615) */,
+        { APC_UNCONSTRAINED,    -1, -1,  0,  0 },
 
 Fix NGAP_ProtocolExtensionField.c
 ===========================================
@@ -83,16 +125,11 @@ index 26da1b34..940db758 100644
 Check common file
 ===========================================
 user@host ~/Documents/git/open5gs/lib/asn1c/common$ \
-    ls
-
-user@host ~/Documents/git/open5gs/lib/asn1c/common$ \
     git diff asn_internal.h
 
 Check meson.build
 ===========================================
 user@host ~/Documents/git/open5gs/lib/asn1c/s1ap$ \
-    cat Makefile.am.libasncodec
-
 user@host ~/Documents/git/open5gs/lib/asn1c/ngap$ \
     cat Makefile.am.libasncodec
 
@@ -113,4 +150,3 @@ user@host ~/Documents/git/open5gs/lib/asn1c/s1ap$ \
 
 user@host ~/Documents/git/open5gs/lib/asn1c/s1ap$ \
     rm -f converter-example.mk converter-example.c pdu_collection.c
-

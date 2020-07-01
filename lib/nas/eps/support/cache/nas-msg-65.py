@@ -22,4 +22,8 @@ ies.append({ "iei" : "10", "value" : "TMSI based NRI container", "type" : "Netwo
 ies.append({ "iei" : "6A", "value" : "T3324 value", "type" : "GPRS timer 2", "reference" : "9.9.3.16A", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "5E", "value" : "T3412 extended value", "type" : "GPRS timer 3", "reference" : "9.9.3.16B", "presence" : "O", "format" : "TLV", "length" : "3"})
 ies.append({ "iei" : "6E", "value" : "Extended DRX parameters", "type" : "Extended DRX parameters", "reference" : "9.9.3.46", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "6F", "value" : "UE additional security capability", "type" : "UE additional security capability", "reference" : "9.9.3.53", "presence" : "O", "format" : "TLV", "length" : "6"})
+ies.append({ "iei" : "6D", "value" : "UE status", "type" : "UE status", "reference" : "9.9.3.54", "presence" : "O", "format" : "TLV", "length" : "3"})
+ies.append({ "iei" : "17", "value" : "Additional information requested", "type" : "Additional information requested", "reference" : "9.9.3.55", "presence" : "O", "format" : "TV", "length" : "2"})
+ies.append({ "iei" : "32", "value" : "N1 UE network capability", "type" : "N1 UE network capability", "reference" : "9.9.3.57", "presence" : "O", "format" : "TLV", "length" : "3-15"})
 msg_list[key]["ies"] = ies

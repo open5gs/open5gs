@@ -14,3 +14,4 @@ user@host ~/Documents/git/open5gs/lib/gtp/support$ \
 * Generate TLV support files
 user@host ~/Documents/git/open5gs/lib/s1ap/support$ \
     python gtp-tlv.py -f 29274-d80.docx -o ..
+    python gtp-tlv.py -f 29274-g30.docx -o ..
