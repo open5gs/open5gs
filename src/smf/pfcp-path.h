@@ -36,7 +36,7 @@ void smf_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node);
 
 void smf_5gc_pfcp_send_session_establishment_request(smf_sess_t *sess);
 void smf_5gc_pfcp_send_session_modification_request(smf_sess_t *sess);
-void smf_5gc_pfcp_send_session_deletion_request(smf_sess_t *sess);
+void smf_5gc_pfcp_send_session_deletion_request(smf_sess_t *sess, int trigger);
 
 void smf_epc_pfcp_send_session_establishment_request(
         smf_sess_t *sess, void *gtp_xact);

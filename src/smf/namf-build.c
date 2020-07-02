@@ -113,3 +113,34 @@ ogs_sbi_request_t *smf_namf_comm_build_n1_n2_message_transfer(
 
     return request;
 }
+
+ogs_sbi_request_t *smf_namf_callback_build_sm_context_status(
+        smf_sess_t *sess, void *data)
+{
+    ogs_sbi_message_t message;
+    ogs_sbi_request_t *request = NULL;
+
+    OpenAPI_sm_context_status_notification_t SmContextStatusNotification;
+    OpenAPI_status_info_t StatusInfo;
+
+    ogs_assert(sess);
+    ogs_assert(sess->sm_context_status_uri);
+
+    memset(&StatusInfo, 0, sizeof(StatusInfo));
+    StatusInfo.resource_status = OpenAPI_resource_status_RELEASED;
+
+    memset(&SmContextStatusNotification, 0,
+            sizeof(SmContextStatusNotification));
+    SmContextStatusNotification.status_info = &StatusInfo;
+
+    memset(&message, 0, sizeof(message));
+    message.h.method = (char *)OGS_SBI_HTTP_METHOD_POST;
+    message.h.uri = sess->sm_context_status_uri;
+
+    message.SmContextStatusNotification = &SmContextStatusNotification;
+
+    request = ogs_sbi_build_request(&message);
+    ogs_assert(request);
+
+    return request;
+}

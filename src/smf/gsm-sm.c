@@ -39,6 +39,7 @@ void smf_gsm_state_final(ogs_fsm_t *s, smf_event_t *e)
 void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 {
     int rv;
+    char *strerror = NULL;
     smf_ue_t *smf_ue = NULL;
     smf_sess_t *sess = NULL;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -169,6 +170,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(nas_message);
         sess = e->sess;
         ogs_assert(sess);
+        session = sess->sbi.session;
+        ogs_assert(session);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
 
@@ -180,11 +183,29 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_error("[%s:%d] Cannot handle NAS message",
                         smf_ue->supi, sess->psi);
                 OGS_FSM_TRAN(s, smf_gsm_state_exception);
-                break;
             }
             break;
+
+        case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
+            smf_5gc_pfcp_send_session_deletion_request(
+                    sess, OGS_PFCP_5GC_DELETE_TRIGGER_UE_REQUESTED);
+            break;
+
+        case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
+            smf_sbi_send_response(sess, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            smf_sbi_send_sm_context_status_notify(sess);
+
+            OGS_FSM_TRAN(s, smf_gsm_state_released);
+            break;
+
         default:
-            ogs_error("Unknown message[%d]", nas_message->gsm.h.message_type);
+            strerror = ogs_msprintf("Unknown message [%d]",
+                    nas_message->gsm.h.message_type);
+            ogs_assert(strerror);
+            ogs_error("%s", strerror);
+            ogs_sbi_server_send_error(session,
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, NULL, strerror, NULL);
+            ogs_free(strerror);
             break;
         }
 
@@ -210,6 +231,10 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             }
             break;
 
+        case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
+            smf_sbi_send_response(sess, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            break;
+
         default:
             ogs_error("Unknown message[%d]", e->ngap.type);
         }
@@ -218,6 +243,31 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
     default:
         ogs_error("Unknown event [%s]", smf_event_get_name(e));
+        break;
+    }
+}
+
+void smf_gsm_state_released(ogs_fsm_t *s, smf_event_t *e)
+{
+    smf_sess_t *sess = NULL;
+    ogs_assert(s);
+    ogs_assert(e);
+
+    smf_sm_debug(e);
+
+    sess = e->sess;
+    ogs_assert(sess);
+
+    switch (e->id) {
+    case OGS_FSM_ENTRY_SIG:
+        break;
+
+    case OGS_FSM_EXIT_SIG:
+        break;
+
+    default:
+        ogs_error("[%s] Unknown event %s",
+                sess->imsi_bcd, smf_event_get_name(e));
         break;
     }
 }
@@ -241,7 +291,8 @@ void smf_gsm_state_exception(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     default:
-        ogs_error("[%s] Unknown event %s", sess->imsi_bcd, smf_event_get_name(e));
+        ogs_error("[%s] Unknown event %s",
+                sess->imsi_bcd, smf_event_get_name(e));
         break;
     }
 }

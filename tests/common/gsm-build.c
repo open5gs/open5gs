@@ -88,3 +88,51 @@ ogs_pkbuf_t *testgsm_build_pdu_session_establishment_request(
 
     return ogs_nas_5gs_plain_encode(&message);
 }
+
+ogs_pkbuf_t *testgsm_build_pdu_session_release_request(test_sess_t *test_sess)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_pdu_session_release_request_t *pdu_session_release_request =
+            &message.gsm.pdu_session_release_request;
+
+    test_ue_t *test_ue = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(test_sess);
+    test_ue = test_sess;
+    ogs_assert(test_ue);
+
+    memset(&message, 0, sizeof(message));
+
+    message.gsm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM;
+    message.gsm.h.pdu_session_identity = test_sess->psi;
+    message.gsm.h.procedure_transaction_identity = test_sess->pti;
+    message.gsm.h.message_type = OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST;
+
+    return ogs_nas_5gs_plain_encode(&message);
+}
+
+ogs_pkbuf_t *testgsm_build_pdu_session_release_complete(test_sess_t *test_sess)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_pdu_session_release_complete_t *pdu_session_release_complete =
+            &message.gsm.pdu_session_release_complete;
+
+    test_ue_t *test_ue = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
+
+    ogs_assert(test_sess);
+    test_ue = test_sess;
+    ogs_assert(test_ue);
+
+    memset(&message, 0, sizeof(message));
+
+    message.gsm.h.extended_protocol_discriminator =
+        OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM;
+    message.gsm.h.pdu_session_identity = test_sess->psi;
+    message.gsm.h.procedure_transaction_identity = test_sess->pti;
+    message.gsm.h.message_type = OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE;
+
+    return ogs_nas_5gs_plain_encode(&message);
+}

@@ -252,6 +252,7 @@ typedef struct ogs_sbi_message_s {
             SessionManagementSubscriptionData;
     OpenAPI_n1_n2_message_transfer_req_data_t *N1N2MessageTransferReqData;
     OpenAPI_n1_n2_message_transfer_rsp_data_t *N1N2MessageTransferRspData;
+    OpenAPI_sm_context_status_notification_t *SmContextStatusNotification;
 
     ogs_sbi_links_t *links;
 

@@ -33,6 +33,8 @@ void testngap_handle_initial_context_setup_request(
         test_ue_t *test_ue, ogs_ngap_message_t *message);
 void testngap_handle_pdu_session_resource_setup_request(
         test_ue_t *test_ue, ogs_ngap_message_t *message);
+void testngap_handle_pdu_session_resource_release_command(
+        test_ue_t *test_ue, ogs_ngap_message_t *message);
 
 #ifdef __cplusplus
 }

@@ -19,6 +19,7 @@
 
 #include "gsm-handler.h"
 #include "sbi-path.h"
+#include "pfcp-path.h"
 
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gsm_log_domain
@@ -63,7 +64,6 @@ int gsm_handle_pdu_session_establishment_request(smf_sess_t *sess,
             &pdu_session_establishment_request->
                 extended_protocol_configuration_options);
     }
-
 
     smf_sbi_discover_and_send(OpenAPI_nf_type_UDM, sess,
             (char *)OGS_SBI_RESOURCE_NAME_SM_DATA, smf_nudm_sdm_build_get);

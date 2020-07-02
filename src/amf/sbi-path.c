@@ -190,16 +190,13 @@ void amf_sbi_send_deactivate_session(
     /* UPDATE_UpCnxState - DEACTIVATED */
     sess->ueUpCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
 
-    if (sess->smfUpCnxState != OpenAPI_up_cnx_state_DEACTIVATED) {
-
-        memset(&param, 0, sizeof(param));
-        param.upCnxState = sess->ueUpCnxState;
-        param.ngApCause.group = group;
-        param.ngApCause.value = cause;
-        amf_sess_sbi_discover_and_send(
-                OpenAPI_nf_type_SMF, sess, &param,
-                amf_nsmf_pdu_session_build_update_sm_context);
-    }
+    memset(&param, 0, sizeof(param));
+    param.upCnxState = sess->ueUpCnxState;
+    param.ngApCause.group = group;
+    param.ngApCause.value = cause;
+    amf_sess_sbi_discover_and_send(
+            OpenAPI_nf_type_SMF, sess, &param,
+            amf_nsmf_pdu_session_build_update_sm_context);
 }
 
 void amf_sbi_send_deactivate_all_sessions(

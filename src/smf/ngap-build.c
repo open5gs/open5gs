@@ -157,3 +157,23 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceSetupRequestTransfer, &message);
 }
+
+ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
+        NGAP_Cause_PR group, long cause)
+{
+    NGAP_PDUSessionResourceReleaseCommandTransfer_t message;
+    NGAP_Cause_t *Cause = NULL;
+
+    ogs_debug("PDUSessionResourceReleaseCommandTransfer");
+    memset(&message, 0,
+            sizeof(NGAP_PDUSessionResourceReleaseCommandTransfer_t));
+
+    ogs_debug("    Group[%d] Cause[%d]", group, (int)cause);
+
+    Cause = &message.cause;
+    Cause->present = group;
+    Cause->choice.radioNetwork = cause;
+
+    return ogs_asn_encode(
+            &asn_DEF_NGAP_PDUSessionResourceReleaseCommandTransfer, &message);
+}

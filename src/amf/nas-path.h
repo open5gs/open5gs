@@ -56,6 +56,8 @@ void nas_5gs_send_configuration_update_command(
 
 void nas_send_pdu_session_establishment_accept(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
+void nas_send_pdu_session_release_command(amf_sess_t *sess,
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);
 
 void nas_5gs_send_gmm_status(amf_ue_t *amf_ue, ogs_nas_5gmm_cause_t cause);
 

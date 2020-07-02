@@ -166,6 +166,11 @@ typedef struct smf_sess_s {
     uint8_t         psi; /* PDU session identity */
     uint8_t         pti; /* Procedure transaction identity */
 
+    char            *sm_context_status_uri; /* SmContextStatusNotification */
+    struct {
+        ogs_sbi_client_t *client;
+    } namf;
+
     /* PLMN ID & NID */
     ogs_plmn_id_t   plmn_id;
     char            *nid;

@@ -28,6 +28,8 @@ extern "C" {
 
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         smf_sess_t *sess);
+ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command_transfer(
+        NGAP_Cause_PR group, long cause);
 
 #ifdef __cplusplus
 }

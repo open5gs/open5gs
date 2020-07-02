@@ -18,6 +18,7 @@
  */
 
 #include "context.h"
+#include "ngap-path.h"
 #include "sbi-path.h"
 
 static int server_cb(ogs_sbi_server_t *server,
@@ -148,6 +149,24 @@ void smf_sbi_discover_and_send(
     }
 }
 
+void smf_sbi_send_response(smf_sess_t *sess, int status)
+{
+    ogs_sbi_session_t *session = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    ogs_assert(sess);
+    session = sess->sbi.session;
+    ogs_assert(session);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    response = ogs_sbi_build_response(&sendmsg, status);
+    ogs_assert(response);
+    ogs_sbi_server_send_response(session, response);
+}
+
 void smf_sbi_send_sm_context_create_error(
         ogs_sbi_session_t *session,
         int status, const char *title, const char *detail,
@@ -158,7 +177,7 @@ void smf_sbi_send_sm_context_create_error(
 
     OpenAPI_sm_context_create_error_t SmContextCreateError;
     OpenAPI_problem_details_t problem;
-    OpenAPI_ref_to_binary_data_t n1_sm_msg;
+    OpenAPI_ref_to_binary_data_t n1SmMsg;
 
     ogs_assert(session);
 
@@ -174,8 +193,8 @@ void smf_sbi_send_sm_context_create_error(
     SmContextCreateError.error = &problem;
 
     if (n1smbuf) {
-        SmContextCreateError.n1_sm_msg = &n1_sm_msg;
-        n1_sm_msg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        SmContextCreateError.n1_sm_msg = &n1SmMsg;
+        n1SmMsg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
         sendmsg.part[0].content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
         sendmsg.part[0].content_type = (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
         sendmsg.part[0].pkbuf = n1smbuf;
@@ -223,17 +242,82 @@ void smf_sbi_send_sm_context_updated_data(smf_sess_t *sess)
     ogs_sbi_server_send_response(session, response);
 }
 
+void smf_sbi_send_sm_context_updated_data_in_session_deletion(smf_sess_t *sess)
+{
+    int i;
+    ogs_sbi_session_t *session = NULL;
+
+    ogs_sbi_message_t sendmsg;
+    ogs_sbi_response_t *response = NULL;
+
+    OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
+    OpenAPI_ref_to_binary_data_t n1SmMsg;
+    OpenAPI_ref_to_binary_data_t n2SmInfo;
+
+    ogs_assert(sess);
+    session = sess->sbi.session;
+    ogs_assert(session);
+
+    memset(&sendmsg, 0, sizeof(sendmsg));
+
+    memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
+
+    sendmsg.num_of_part = 0;
+
+    n1SmMsg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+    SmContextUpdatedData.n1_sm_msg = &n1SmMsg;
+
+    sendmsg.part[sendmsg.num_of_part].pkbuf =
+        gsm_build_pdu_session_release_command(
+                sess, OGS_5GSM_CAUSE_REGULAR_DEACTIVATION);
+    if (sendmsg.part[sendmsg.num_of_part].pkbuf) {
+        sendmsg.part[sendmsg.num_of_part].content_id =
+            (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        sendmsg.part[sendmsg.num_of_part].content_type =
+            (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
+        sendmsg.num_of_part++;
+    }
+
+    SmContextUpdatedData.n2_sm_info_type =
+        OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD;
+    SmContextUpdatedData.n2_sm_info = &n2SmInfo;
+
+    memset(&n2SmInfo, 0, sizeof(n2SmInfo));
+    n2SmInfo.content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+
+    sendmsg.part[sendmsg.num_of_part].pkbuf =
+        ngap_build_pdu_session_resource_release_command_transfer(
+                NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release);
+    if (sendmsg.part[sendmsg.num_of_part].pkbuf) {
+        sendmsg.part[sendmsg.num_of_part].content_id =
+            (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+        sendmsg.part[sendmsg.num_of_part].content_type =
+            (char *)OGS_SBI_CONTENT_NGAP_TYPE;
+        sendmsg.num_of_part++;
+    }
+
+    sendmsg.SmContextUpdatedData = &SmContextUpdatedData;
+
+    response = ogs_sbi_build_response(&sendmsg, OGS_SBI_HTTP_STATUS_OK);
+    ogs_assert(response);
+    ogs_sbi_server_send_response(session, response);
+
+    for (i = 0; i < sendmsg.num_of_part; i++)
+        ogs_pkbuf_free(sendmsg.part[i].pkbuf);
+}
+
 void smf_sbi_send_sm_context_update_error(
         ogs_sbi_session_t *session,
         int status, const char *title, const char *detail,
-        ogs_pkbuf_t *n2smbuf)
+        ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf)
 {
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
 
     OpenAPI_sm_context_update_error_t SmContextUpdateError;
     OpenAPI_problem_details_t problem;
-    OpenAPI_ref_to_binary_data_t n2_sm_info;
+    OpenAPI_ref_to_binary_data_t n1SmMsg;
+    OpenAPI_ref_to_binary_data_t n2SmInfo;
 
     ogs_assert(session);
 
@@ -248,13 +332,26 @@ void smf_sbi_send_sm_context_update_error(
     memset(&SmContextUpdateError, 0, sizeof(SmContextUpdateError));
     SmContextUpdateError.error = &problem;
 
+    if (n1smbuf) {
+        SmContextUpdateError.n1_sm_msg = &n1SmMsg;
+        n1SmMsg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        sendmsg.part[sendmsg.num_of_part].content_id =
+            (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        sendmsg.part[sendmsg.num_of_part].content_type =
+            (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
+        sendmsg.part[sendmsg.num_of_part].pkbuf = n1smbuf;
+        sendmsg.num_of_part++;
+    }
+
     if (n2smbuf) {
-        SmContextUpdateError.n2_sm_info = &n2_sm_info;
-        n2_sm_info.content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
-        sendmsg.part[0].content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
-        sendmsg.part[0].content_type = (char *)OGS_SBI_CONTENT_NGAP_TYPE;
-        sendmsg.part[0].pkbuf = n2smbuf;
-        sendmsg.num_of_part = 1;
+        SmContextUpdateError.n2_sm_info = &n2SmInfo;
+        n2SmInfo.content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+        sendmsg.part[sendmsg.num_of_part].content_id =
+            (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+        sendmsg.part[sendmsg.num_of_part].content_type =
+            (char *)OGS_SBI_CONTENT_NGAP_TYPE;
+        sendmsg.part[sendmsg.num_of_part].pkbuf = n2smbuf;
+        sendmsg.num_of_part++;
     }
 
     response = ogs_sbi_build_response(&sendmsg, problem.status);
@@ -262,6 +359,52 @@ void smf_sbi_send_sm_context_update_error(
 
     ogs_sbi_server_send_response(session, response);
 
+    if (n1smbuf)
+        ogs_pkbuf_free(n1smbuf);
+
     if (n2smbuf)
         ogs_pkbuf_free(n2smbuf);
+}
+
+#if 0
+static int client_notify_cb(ogs_sbi_response_t *response, void *data)
+{
+    int rv;
+
+    ogs_sbi_message_t message;
+
+    ogs_assert(response);
+
+    rv = ogs_sbi_parse_response(&message, response);
+    if (rv != OGS_OK) {
+        ogs_error("cannot parse HTTP response");
+        ogs_sbi_message_free(&message);
+        ogs_sbi_response_free(response);
+        return OGS_ERROR;
+    }
+
+    if (message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
+        ogs_error("SmContextStatusNotification failed [%d]",
+                message.res_status);
+
+    ogs_sbi_message_free(&message);
+    ogs_sbi_response_free(response);
+    return OGS_OK;
+}
+#endif
+
+void smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
+{
+    ogs_sbi_request_t *request = NULL;
+    ogs_sbi_client_t *client = NULL;
+
+    ogs_assert(sess);
+    client = sess->namf.client;
+    ogs_assert(client);
+    client->cb = client_cb;
+
+    request = smf_namf_callback_build_sm_context_status(sess, NULL);
+    ogs_assert(request);
+    ogs_sbi_client_send_request(client, request, NULL);
+    ogs_sbi_request_free(request);
 }

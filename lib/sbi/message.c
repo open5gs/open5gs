@@ -133,6 +133,9 @@ void ogs_sbi_message_free(ogs_sbi_message_t *message)
     if (message->N1N2MessageTransferRspData)
         OpenAPI_n1_n2_message_transfer_rsp_data_free(
                 message->N1N2MessageTransferRspData);
+    if (message->SmContextStatusNotification)
+        OpenAPI_sm_context_status_notification_free(
+                message->SmContextStatusNotification);
 
     for (i = 0; i < message->num_of_part; i++) {
         if (message->part[i].pkbuf)
@@ -709,6 +712,10 @@ static char *build_json(ogs_sbi_message_t *message)
         item = OpenAPI_n1_n2_message_transfer_rsp_data_convertToJSON(
                 message->N1N2MessageTransferRspData);
         ogs_assert(item);
+    } else if (message->SmContextStatusNotification) {
+        item = OpenAPI_sm_context_status_notification_convertToJSON(
+                message->SmContextStatusNotification);
+        ogs_assert(item);
     }
 
     if (item) {
@@ -1232,6 +1239,23 @@ static int parse_json(ogs_sbi_message_t *message,
                 rv = OGS_ERROR;
                 ogs_error("Unknown resource name [%s]",
                         message->h.resource.component[0]);
+            END
+            break;
+        CASE(OGS_SBI_SERVICE_NAME_NAMF_CALLBACK)
+            SWITCH(message->h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS)
+                message->SmContextStatusNotification =
+                    OpenAPI_sm_context_status_notification_parseFromJSON(item);
+                if (!message->SmContextStatusNotification) {
+                    rv = OGS_ERROR;
+                    ogs_error("JSON parse error");
+                }
+                break;
+
+            DEFAULT
+                rv = OGS_ERROR;
+                ogs_error("Unknown resource name [%s]",
+                        message->h.resource.component[1]);
             END
             break;
 

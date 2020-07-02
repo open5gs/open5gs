@@ -238,6 +238,34 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
         *replayed_ue_additional_security_capability =
             &security_mode_command->replayed_ue_additional_security_capability;
 
+#if 0
+    char *_reg = (char *)
+        "0741720bf632f540 800101dde9c6cf07 f0f0c04001001000 230201d031271d80"
+        "8021100101001081 0600000000830600 000000000300000a 00000d005232f540"
+        "00015c20001332f5 40000111034f1880 5d0105e010028dc0 6f04f000f000";
+    uint8_t tmp[OGS_MAX_SDU_LEN];
+    uint8_t s[OGS_MAX_SDU_LEN];
+    uint16_t len;
+    uint8_t key[32];
+    uint8_t output[OGS_SHA256_DIGEST_SIZE];
+
+    OGS_HEX(_reg, strlen(_reg), tmp);
+
+    len = htobe16(94);
+    memcpy(&s[94], &len, sizeof(len));
+    memset(key, 0, 32);
+
+    ogs_log_hexdump(OGS_LOG_FATAL, s, 96);
+    ogs_log_hexdump(OGS_LOG_FATAL, key, 32);
+
+    ogs_hmac_sha256(key, 32, s, 94, output, OGS_SHA256_DIGEST_SIZE);
+    ogs_log_hexdump(OGS_LOG_FATAL, output, 32);
+    memcpy(s, key, 32);
+    memcpy(s+32, tmp, 94);
+    ogs_sha256(s, 32+94, output);
+    ogs_log_hexdump(OGS_LOG_FATAL, output, 32);
+#endif
+
     ogs_assert(mme_ue);
 
     memset(&message, 0, sizeof(message));

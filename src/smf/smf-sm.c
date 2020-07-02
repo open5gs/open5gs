@@ -332,7 +332,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                             smf_sbi_send_sm_context_update_error(session,
                                     OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                                     "No smContextRef",
-                                    sbi_message.h.resource.component[2], NULL);
+                                    sbi_message.h.resource.component[2],
+                                    NULL, NULL);
                             break;
                         }
 
@@ -340,10 +341,12 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                 sbi_message.h.resource.component[1]);
 
                         if (!sess) {
-                            ogs_error("Not found [%s]", sbi_message.h.method);
+                            ogs_error("Not found [%s]",
+                                    sbi_message.h.resource.component[1]);
                             smf_sbi_send_sm_context_update_error(session,
-                                    OGS_SBI_HTTP_STATUS_NOT_FOUND,
-                                    "Not found", sbi_message.h.method, NULL);
+                                    OGS_SBI_HTTP_STATUS_NOT_FOUND, "Not found",
+                                    sbi_message.h.resource.component[1],
+                                    NULL, NULL);
                         }
                         break;
 
@@ -537,8 +540,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         DEFAULT
-            ogs_error("Invalid API name [%s]", sbi_message.h.service.name);
-            ogs_assert_if_reached();
         END
 
         ogs_sbi_message_free(&sbi_message);
@@ -612,7 +613,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         e->nas.message = &nas_message;
         ogs_fsm_dispatch(&sess->sm, e);
-        if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
+        if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_released)) {
+            SMF_SESS_CLEAR(sess);
+
+        } else if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
             ogs_error("State machine exception");
             SMF_SESS_CLEAR(sess);
         }

@@ -248,3 +248,44 @@ void testngap_handle_pdu_session_resource_setup_request(
         }
     }
 }
+
+void testngap_handle_pdu_session_resource_release_command(
+        test_ue_t *test_ue, ogs_ngap_message_t *message)
+{
+    test_sess_t *sess = NULL;
+    int rv, i, j, k;
+    char buf[OGS_ADDRSTRLEN];
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_PDUSessionResourceReleaseCommand_t *PDUSessionResourceReleaseCommand;
+
+    NGAP_PDUSessionResourceReleaseCommandIEs_t *ie = NULL;
+    NGAP_NAS_PDU_t *NAS_PDU = NULL;
+
+    ogs_assert(test_ue);
+    sess = test_ue->sess;
+    ogs_assert(sess);
+    ogs_assert(message);
+
+    initiatingMessage = message->choice.initiatingMessage;
+    ogs_assert(initiatingMessage);
+    PDUSessionResourceReleaseCommand =
+        &initiatingMessage->value.choice.PDUSessionResourceReleaseCommand;
+    ogs_assert(PDUSessionResourceReleaseCommand);
+
+    for (i = 0; i < PDUSessionResourceReleaseCommand->protocolIEs.list.count;
+            i++) {
+        ie = PDUSessionResourceReleaseCommand->protocolIEs.list.array[i];
+        switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_NAS_PDU:
+            NAS_PDU = &ie->value.choice.NAS_PDU;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (NAS_PDU)
+        testngap_send_to_nas(test_ue, NAS_PDU);
+}

@@ -773,14 +773,16 @@ int gmm_handle_security_mode_complete(amf_ue_t *amf_ue,
 int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         ogs_nas_5gs_ul_nas_transport_t *ul_nas_transport)
 {
+    amf_sess_t *sess = NULL;
+    amf_nsmf_pdu_session_update_sm_context_param_t param;
+
     ogs_nas_payload_container_type_t *payload_container_type = NULL;
     ogs_nas_payload_container_t *payload_container = NULL;
     ogs_nas_pdu_session_identity_2_t *pdu_session_id = NULL;
     ogs_nas_s_nssai_t *nas_s_nssai = NULL;
     ogs_s_nssai_t *selected_s_nssai = NULL;
     ogs_nas_dnn_t *dnn = NULL;
-
-    amf_sess_t *sess = NULL;
+    ogs_nas_5gsm_header_t *gsm_header = NULL;
 
     ogs_assert(amf_ue);
     ogs_assert(ul_nas_transport);
@@ -792,16 +794,22 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
     if (!payload_container_type->value) {
         ogs_error("[%s] No Payload container type", amf_ue->supi);
+        nas_5gs_send_gmm_status(
+                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
         return OGS_ERROR;
     }
 
     if (!payload_container->length) {
         ogs_error("[%s] No Payload container length", amf_ue->supi);
+        nas_5gs_send_gmm_status(
+                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
         return OGS_ERROR;
     }
 
     if (!payload_container->buffer) {
         ogs_error("[%s] No Payload container buffer", amf_ue->supi);
+        nas_5gs_send_gmm_status(
+                amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
         return OGS_ERROR;
     }
 
@@ -814,9 +822,14 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         dnn = &ul_nas_transport->dnn;
         ogs_assert(dnn);
 
+        gsm_header = (ogs_nas_5gsm_header_t *)payload_container->buffer;
+        ogs_assert(gsm_header);
+
         if ((ul_nas_transport->presencemask &
             OGS_NAS_5GS_UL_NAS_TRANSPORT_PDU_SESSION_ID_PRESENT) == 0) {
             ogs_error("[%s] No PDU session ID", amf_ue->supi);
+            nas_5gs_send_gmm_status(
+                    amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
             return OGS_ERROR;
         }
 
@@ -824,6 +837,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         if (*pdu_session_id == OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED) {
             ogs_error("[%s] PDU session identity is unassigned",
                     amf_ue->supi);
+            nas_5gs_send_gmm_status(
+                    amf_ue, OGS_5GMM_CAUSE_INVALID_MANDATORY_INFORMATION);
             return OGS_ERROR;
         }
 
@@ -872,18 +887,42 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         if (ul_nas_transport->presencemask &
                 OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT) {
             if (sess->dnn)
-                ogs_free(dnn);
+                ogs_free(sess->dnn);
             sess->dnn = ogs_strdup(dnn->value);
         }
 
-        amf_sess_sbi_discover_and_send(
-                OpenAPI_nf_type_SMF, sess, NULL,
-                amf_nsmf_pdu_session_build_create_sm_context);
+        if (gsm_header->message_type ==
+                OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST) {
+
+            amf_sess_sbi_discover_and_send(
+                    OpenAPI_nf_type_SMF, sess, NULL,
+                    amf_nsmf_pdu_session_build_create_sm_context);
+
+        } else {
+
+            if (!SESSION_CONTEXT_IN_SMF(sess)) {
+                ogs_error("[%s] Session Context is not in SMF [%d]",
+                    amf_ue->supi, sess->psi);
+                nas_5gs_send_back_5gsm_message(sess,
+                    OGS_5GSM_CAUSE_PDU_SESSION_DOES_NOT_EXIST);
+                return OGS_ERROR;
+            }
+
+            memset(&param, 0, sizeof(param));
+            param.n1smbuf = sess->payload_container;
+
+            amf_sess_sbi_discover_and_send(
+                    OpenAPI_nf_type_SMF, sess, &param,
+                    amf_nsmf_pdu_session_build_update_sm_context);
+
+        }
         break;
 
     default:
         ogs_error("[%s] Unknown Payload container type [%d]",
             amf_ue->supi, payload_container_type->value);
+        nas_5gs_send_gmm_status(amf_ue,
+                OGS_5GMM_CAUSE_MESSAGE_TYPE_NON_EXISTENT_OR_NOT_IMPLEMENTED);
         return OGS_ERROR;
     }
 

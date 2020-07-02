@@ -61,6 +61,13 @@ typedef struct ogs_pfcp_xact_s {
     uint8_t         holding_rcount;
 
     void            *assoc_xact;    /**< Associated GTP transaction */
+#define OGS_PFCP_5GC_DELETE_TRIGGER_UE_REQUESTED 1
+#define OGS_PFCP_5GC_DELETE_TRIGGER_PCF_INITIATED 2
+#define OGS_PFCP_5GC_DELETE_TRIGGER_RAN_INITIATED 3
+#define OGS_PFCP_5GC_DELETE_TRIGGER_SMF_INITIATED 4
+#define OGS_PFCP_5GC_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT 5
+#define OGS_PFCP_5GC_DELETE_TRIGGER_AMF_UPDATE_SM_CONTEXT 6
+    int             trigger;
 } ogs_pfcp_xact_t;
 
 int ogs_pfcp_xact_init(ogs_timer_mgr_t *timer_mgr, int size);

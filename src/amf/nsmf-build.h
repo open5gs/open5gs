@@ -27,7 +27,9 @@ extern "C" {
 #endif
 
 typedef struct amf_nsmf_pdu_session_update_sm_context_param_s {
+    ogs_pkbuf_t *n1smbuf;
     ogs_pkbuf_t *n2smbuf;
+    OpenAPI_n2_sm_info_type_e n2SmInfoType;
     OpenAPI_up_cnx_state_e upCnxState;
     struct {
         int group;

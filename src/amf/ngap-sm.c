@@ -130,6 +130,9 @@ void ngap_state_operational(ogs_fsm_t *s, amf_event_t *e)
             case NGAP_ProcedureCode_id_PDUSessionResourceSetup:
                 ngap_handle_pdu_session_resource_setup_response(gnb, pdu);
                 break;
+            case NGAP_ProcedureCode_id_PDUSessionResourceRelease:
+                ngap_handle_pdu_session_resource_release_response(gnb, pdu);
+                break;
 #if 0
             case NGAP_ProcedureCode_id_UEContextModification:
                 ngap_handle_ue_context_modification_response(gnb, pdu);

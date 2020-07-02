@@ -909,6 +909,113 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request(
     return nga_ngap_encode(&pdu);
 }
 
+ogs_pkbuf_t *ngap_build_pdu_session_resource_release_command(
+    amf_sess_t *sess, ogs_pkbuf_t *gmmbuf, ogs_pkbuf_t *n2smbuf)
+{
+    amf_ue_t *amf_ue = NULL;
+    ran_ue_t *ran_ue = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_InitiatingMessage_t *initiatingMessage = NULL;
+    NGAP_PDUSessionResourceReleaseCommand_t *PDUSessionResourceReleaseCommand;
+
+    NGAP_PDUSessionResourceReleaseCommandIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_NAS_PDU_t *NAS_PDU = NULL;
+
+    NGAP_PDUSessionResourceToReleaseListRelCmd_t *PDUSessionList = NULL;
+    NGAP_PDUSessionResourceToReleaseItemRelCmd_t *PDUSessionItem = NULL;
+    OCTET_STRING_t *transfer = NULL;
+
+    ogs_assert(gmmbuf);
+    ogs_assert(n2smbuf);
+    ogs_assert(sess);
+
+    amf_ue = sess->amf_ue;
+    ogs_assert(amf_ue);
+    ran_ue = amf_ue->ran_ue;
+    ogs_assert(ran_ue);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage = CALLOC(1, sizeof(NGAP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        NGAP_ProcedureCode_id_PDUSessionResourceRelease;
+    initiatingMessage->criticality = NGAP_Criticality_reject;
+    initiatingMessage->value.present =
+        NGAP_InitiatingMessage__value_PR_PDUSessionResourceReleaseCommand;
+
+    PDUSessionResourceReleaseCommand =
+        &initiatingMessage->value.choice.PDUSessionResourceReleaseCommand;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceReleaseCommandIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceReleaseCommand->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PDUSessionResourceReleaseCommandIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceReleaseCommandIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceReleaseCommand->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present =
+        NGAP_PDUSessionResourceReleaseCommandIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceReleaseCommandIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceReleaseCommand->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_NAS_PDU;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_PDUSessionResourceReleaseCommandIEs__value_PR_NAS_PDU;
+
+    NAS_PDU = &ie->value.choice.NAS_PDU;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceReleaseCommandIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceReleaseCommand->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceToReleaseListRelCmd;
+    ie->criticality = NGAP_Criticality_reject;
+    ie->value.present = NGAP_PDUSessionResourceReleaseCommandIEs__value_PR_PDUSessionResourceToReleaseListRelCmd;
+
+    PDUSessionList = &ie->value.choice.PDUSessionResourceToReleaseListRelCmd;
+
+    ogs_debug("    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+            ran_ue->ran_ue_ngap_id, (long long)ran_ue->amf_ue_ngap_id);
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, ran_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = ran_ue->ran_ue_ngap_id;
+
+    NAS_PDU->size = gmmbuf->len;
+    NAS_PDU->buf = CALLOC(NAS_PDU->size, sizeof(uint8_t));
+    memcpy(NAS_PDU->buf, gmmbuf->data, NAS_PDU->size);
+    ogs_pkbuf_free(gmmbuf);
+
+    PDUSessionItem =
+        CALLOC(1, sizeof(struct NGAP_PDUSessionResourceToReleaseItemRelCmd));
+    ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
+
+    PDUSessionItem->pDUSessionID = sess->psi;
+
+    transfer = &PDUSessionItem->pDUSessionResourceReleaseCommandTransfer;
+    transfer->size = n2smbuf->len;
+    transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+    memcpy(transfer->buf, n2smbuf->data, transfer->size);
+    ogs_pkbuf_free(n2smbuf);
+
+    return nga_ngap_encode(&pdu);
+}
+
 #if 0
 ogs_pkbuf_t *ngap_build_paging(
         amf_ue_t *amf_ue, NGAP_CNDomain_t cn_domain)

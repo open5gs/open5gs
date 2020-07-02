@@ -30,6 +30,11 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess);
 ogs_pkbuf_t *gsm_build_pdu_session_establishment_reject(
         smf_sess_t *sess, ogs_nas_5gsm_cause_t gsm_cause);
 
+ogs_pkbuf_t *gsm_build_pdu_session_release_command(
+        smf_sess_t *sess, ogs_nas_5gsm_cause_t gsm_cause);
+ogs_pkbuf_t *gsm_build_pdu_session_release_reject(
+        smf_sess_t *sess, ogs_nas_5gsm_cause_t gsm_cause);
+
 ogs_pkbuf_t *gsm_build_status(smf_sess_t *sess, ogs_nas_5gsm_cause_t cause);
 
 #ifdef __cplusplus

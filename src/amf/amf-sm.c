@@ -229,6 +229,23 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             END
             break;
 
+        CASE(OGS_SBI_SERVICE_NAME_NAMF_CALLBACK)
+            SWITCH(sbi_message.h.resource.component[1])
+            CASE(OGS_SBI_RESOURCE_NAME_SM_CONTEXT_STATUS)
+                amf_namf_callback_handle_sm_context_status(
+                        session, &sbi_message);
+                break;
+
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        sbi_message.h.resource.component[1]);
+                ogs_sbi_server_send_error(session,
+                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, &sbi_message,
+                        "Invalid resource name",
+                        sbi_message.h.resource.component[1]);
+            END
+            break;
+
         DEFAULT
             ogs_error("Invalid API name [%s]", sbi_message.h.service.name);
             ogs_sbi_server_send_error(session,

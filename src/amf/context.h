@@ -403,7 +403,6 @@ typedef struct amf_sess_s {
     /* SMF session context is activated or not */
     OpenAPI_up_cnx_state_e smfUpCnxState;
 
-    OpenAPI_n2_sm_info_type_e n2SmInfoType;
     ogs_pkbuf_t *n2smbuf;
 
     /* last payload for sending back to the UE */

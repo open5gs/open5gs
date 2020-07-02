@@ -49,12 +49,9 @@ static int client_notify_cb(ogs_sbi_response_t *response, void *data)
 {
     int rv;
 
-    ogs_sbi_client_t *client = NULL;
     ogs_sbi_message_t message;
 
     ogs_assert(response);
-    client = data;
-    ogs_assert(client);
 
     rv = ogs_sbi_parse_response(&message, response);
     if (rv != OGS_OK) {
@@ -99,7 +96,7 @@ void nrf_nnrf_nfm_send_nf_status_notify(ogs_sbi_subscription_t *subscription,
     request = nrf_nnrf_nfm_build_nf_status_notify(
             client, subscription, event, nf_instance);
     ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, client);
+    ogs_sbi_client_send_request(client, request, NULL);
     ogs_sbi_request_free(request);
 }
 

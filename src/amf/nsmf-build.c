@@ -34,7 +34,7 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
     OpenAPI_sm_context_create_data_t SmContextCreateData;
     OpenAPI_plmn_id_nid_t plmn_id_nid;
     OpenAPI_snssai_t s_nssai;
-    OpenAPI_ref_to_binary_data_t n1_sm_msg;
+    OpenAPI_ref_to_binary_data_t n1SmMsg;
     OpenAPI_guami_t guami;
 
     ogs_assert(sess);
@@ -94,8 +94,8 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(
     SmContextCreateData.sm_context_status_uri =
         ogs_sbi_server_uri(server, &header);
 
-    n1_sm_msg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
-    SmContextCreateData.n1_sm_msg = &n1_sm_msg;
+    n1SmMsg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+    SmContextCreateData.n1_sm_msg = &n1SmMsg;
 
     message.SmContextCreateData = &SmContextCreateData;
 
@@ -134,6 +134,7 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_update_sm_context(
     ogs_sbi_request_t *request = NULL;
 
     OpenAPI_sm_context_update_data_t SmContextUpdateData;
+    OpenAPI_ref_to_binary_data_t n1SmMsg;
     OpenAPI_ref_to_binary_data_t n2SmInfo;
     OpenAPI_ng_ap_cause_t ngApCause;
 
@@ -150,29 +151,43 @@ ogs_sbi_request_t *amf_nsmf_pdu_session_build_update_sm_context(
     message.h.resource.component[1] = sess->sm_context_ref;
     message.h.resource.component[2] = (char *)OGS_SBI_RESOURCE_NAME_MODIFY;
 
+    memset(&SmContextUpdateData, 0, sizeof(SmContextUpdateData));
+
+    message.num_of_part = 0;
+
+    if (param->n1smbuf) {
+        n1SmMsg.content_id = (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        SmContextUpdateData.n1_sm_msg = &n1SmMsg;
+
+        message.part[message.num_of_part].pkbuf = param->n1smbuf;
+        message.part[message.num_of_part].content_id =
+            (char *)OGS_SBI_CONTENT_5GNAS_SM_ID;
+        message.part[message.num_of_part].content_type =
+            (char *)OGS_SBI_CONTENT_5GNAS_TYPE;
+        message.num_of_part++;
+
+        message.SmContextUpdateData = &SmContextUpdateData;
+    }
+
     if (param->n2smbuf) {
-        memset(&SmContextUpdateData, 0, sizeof(SmContextUpdateData));
-        SmContextUpdateData.n2_sm_info_type =
-            OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP;
+        ogs_assert(param->n2SmInfoType);
+        SmContextUpdateData.n2_sm_info_type = param->n2SmInfoType;
         SmContextUpdateData.n2_sm_info = &n2SmInfo;
 
         memset(&n2SmInfo, 0, sizeof(n2SmInfo));
         n2SmInfo.content_id = (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
 
         message.part[message.num_of_part].pkbuf = param->n2smbuf;
-        if (message.part[message.num_of_part].pkbuf) {
-            message.part[message.num_of_part].content_id =
-                (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
-            message.part[message.num_of_part].content_type =
-                (char *)OGS_SBI_CONTENT_NGAP_TYPE;
-            message.num_of_part++;
-        }
+        message.part[message.num_of_part].content_id =
+            (char *)OGS_SBI_CONTENT_NGAP_SM_ID;
+        message.part[message.num_of_part].content_type =
+            (char *)OGS_SBI_CONTENT_NGAP_TYPE;
+        message.num_of_part++;
 
         message.SmContextUpdateData = &SmContextUpdateData;
     }
 
     if (param->upCnxState) {
-        memset(&SmContextUpdateData, 0, sizeof(SmContextUpdateData));
         SmContextUpdateData.up_cnx_state = param->upCnxState;
 
         if (param->ngApCause.group) {

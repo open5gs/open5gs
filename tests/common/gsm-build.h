@@ -26,6 +26,8 @@ extern "C" {
 
 ogs_pkbuf_t *testgsm_build_pdu_session_establishment_request(
         test_sess_t *test_sess);
+ogs_pkbuf_t *testgsm_build_pdu_session_release_request(test_sess_t *test_sess);
+ogs_pkbuf_t *testgsm_build_pdu_session_release_complete(test_sess_t *test_sess);
 
 #ifdef __cplusplus
 }

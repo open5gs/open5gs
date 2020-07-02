@@ -206,7 +206,8 @@ void smf_5gc_n4_handle_session_modification_response(
                     "PFCP Cause[%d] : No Accepted", rsp->cause.u8);
             ogs_error("%s", strerror);
             smf_sbi_send_sm_context_update_error(session,
-                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror, NULL, NULL);
+                    OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror,
+                    NULL, NULL, NULL);
             ogs_free(strerror);
             return;
         }
@@ -214,7 +215,7 @@ void smf_5gc_n4_handle_session_modification_response(
         ogs_error("No Cause");
         smf_sbi_send_sm_context_update_error(session,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "[PFCP] No Cause", NULL, NULL);
+                "[PFCP] No Cause", NULL, NULL, NULL);
         return;
     }
 
@@ -228,6 +229,8 @@ void smf_5gc_n4_handle_session_deletion_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_deletion_response_t *rsp)
 {
+    int trigger;
+
     ogs_sbi_session_t *session = NULL;
 
     ogs_sbi_message_t sendmsg;
@@ -237,6 +240,9 @@ void smf_5gc_n4_handle_session_deletion_response(
     session = sess->sbi.session;
     ogs_assert(session);
     ogs_assert(rsp);
+
+    trigger = xact->trigger;
+    ogs_assert(trigger);
 
     ogs_pfcp_xact_commit(xact);
 
@@ -258,14 +264,20 @@ void smf_5gc_n4_handle_session_deletion_response(
         return;
     }
 
-    memset(&sendmsg, 0, sizeof(sendmsg));
+    if (trigger == OGS_PFCP_5GC_DELETE_TRIGGER_UE_REQUESTED) {
 
-    response = ogs_sbi_build_response(
-            &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
-    ogs_assert(response);
-    ogs_sbi_server_send_response(session, response);
+        smf_sbi_send_sm_context_updated_data_in_session_deletion(sess);
 
-    SMF_SESS_CLEAR(sess);
+    } else {
+        memset(&sendmsg, 0, sizeof(sendmsg));
+
+        response = ogs_sbi_build_response(
+                &sendmsg, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+        ogs_assert(response);
+        ogs_sbi_server_send_response(session, response);
+
+        SMF_SESS_CLEAR(sess);
+    }
 }
 
 void smf_epc_n4_handle_session_establishment_response(

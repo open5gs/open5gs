@@ -44,6 +44,8 @@ ogs_pkbuf_t *testngap_build_ue_context_release_complete(test_ue_t *test_ue);
 
 ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response(
         test_sess_t *sess);
+ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
+        test_sess_t *sess);
 
 #ifdef __cplusplus
 }

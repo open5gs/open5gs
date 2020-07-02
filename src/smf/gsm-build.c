@@ -215,3 +215,41 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_reject(
 
     return ogs_nas_5gs_plain_encode(&message);
 }
+
+ogs_pkbuf_t *gsm_build_pdu_session_release_command(
+        smf_sess_t *sess, ogs_nas_5gsm_cause_t gsm_cause)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_pdu_session_release_command_t *pdu_session_release_command =
+        &message.gsm.pdu_session_release_command;
+
+    memset(&message, 0, sizeof(message));
+    message.gsm.h.extended_protocol_discriminator =
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM;
+    message.gsm.h.pdu_session_identity = sess->psi;
+    message.gsm.h.procedure_transaction_identity = sess->pti;
+    message.gsm.h.message_type = OGS_NAS_5GS_PDU_SESSION_RELEASE_COMMAND;
+
+    pdu_session_release_command->gsm_cause = gsm_cause;
+
+    return ogs_nas_5gs_plain_encode(&message);
+}
+
+ogs_pkbuf_t *gsm_build_pdu_session_release_reject(
+        smf_sess_t *sess, ogs_nas_5gsm_cause_t gsm_cause)
+{
+    ogs_nas_5gs_message_t message;
+    ogs_nas_5gs_pdu_session_release_reject_t *
+        pdu_session_release_reject = &message.gsm.pdu_session_release_reject;
+
+    memset(&message, 0, sizeof(message));
+    message.gsm.h.extended_protocol_discriminator =
+            OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM;
+    message.gsm.h.pdu_session_identity = sess->psi;
+    message.gsm.h.procedure_transaction_identity = sess->pti;
+    message.gsm.h.message_type = OGS_NAS_5GS_PDU_SESSION_RELEASE_REJECT;
+
+    pdu_session_release_reject->gsm_cause = gsm_cause;
+
+    return ogs_nas_5gs_plain_encode(&message);
+}

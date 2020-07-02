@@ -19,7 +19,7 @@
 
 #include "test-ngap.h"
 
-static ogs_pkbuf_t *testngap_build_pdu_session_resource_response_trasfer(
+static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
         test_sess_t *sess);
 
 ogs_pkbuf_t *testngap_build_ng_setup_request(uint32_t gnb_id, uint8_t bitsize)
@@ -462,7 +462,8 @@ ogs_pkbuf_t *testngap_build_initial_context_setup_response(
 
         PDUSessionItem->pDUSessionID = sess->psi;
 
-        n2smbuf = testngap_build_pdu_session_resource_response_trasfer(sess);
+        n2smbuf = testngap_build_pdu_session_resource_setup_response_trasfer(
+                sess);
         ogs_assert(n2smbuf);
         transfer = &PDUSessionItem->pDUSessionResourceSetupResponseTransfer;
 
@@ -847,7 +848,7 @@ ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response(
 
     PDUSessionItem->pDUSessionID = sess->psi;
 
-    n2smbuf = testngap_build_pdu_session_resource_response_trasfer(sess);
+    n2smbuf = testngap_build_pdu_session_resource_setup_response_trasfer(sess);
     ogs_assert(n2smbuf);
     transfer = &PDUSessionItem->pDUSessionResourceSetupResponseTransfer;
 
@@ -859,7 +860,89 @@ ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response(
     return nga_ngap_encode(&pdu);
 }
 
-static ogs_pkbuf_t *testngap_build_pdu_session_resource_response_trasfer(
+ogs_pkbuf_t *testngap_build_pdu_session_resource_release_response(
+        test_sess_t *sess)
+{
+    int rv;
+    test_ue_t *test_ue;
+    ogs_pkbuf_t *ngapbuf = NULL;
+
+    NGAP_NGAP_PDU_t pdu;
+    NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
+    NGAP_PDUSessionResourceReleaseResponse_t *PDUSessionResourceReleaseResponse;
+
+    NGAP_PDUSessionResourceReleaseResponseIEs_t *ie = NULL;
+    NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
+    NGAP_PDUSessionResourceReleasedListRelRes_t *PDUSessionList = NULL;
+    NGAP_PDUSessionResourceReleasedItemRelRes_t *PDUSessionItem = NULL;
+    OCTET_STRING_t *transfer = NULL;
+
+    ogs_assert(sess);
+    test_ue = sess->test_ue;
+    ogs_assert(test_ue);
+
+    memset(&pdu, 0, sizeof (NGAP_NGAP_PDU_t));
+    pdu.present = NGAP_NGAP_PDU_PR_successfulOutcome;
+    pdu.choice.successfulOutcome = CALLOC(1, sizeof(NGAP_SuccessfulOutcome_t));
+
+    successfulOutcome = pdu.choice.successfulOutcome;
+    successfulOutcome->procedureCode =
+        NGAP_ProcedureCode_id_PDUSessionResourceRelease;
+    successfulOutcome->criticality = NGAP_Criticality_reject;
+    successfulOutcome->value.present =
+        NGAP_SuccessfulOutcome__value_PR_PDUSessionResourceReleaseResponse;
+
+    PDUSessionResourceReleaseResponse =
+        &successfulOutcome->value.choice.PDUSessionResourceReleaseResponse;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceReleaseResponseIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceReleaseResponse->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_PDUSessionResourceReleaseResponseIEs__value_PR_AMF_UE_NGAP_ID;
+
+    AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceReleaseResponseIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceReleaseResponse->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present =
+        NGAP_PDUSessionResourceReleaseResponseIEs__value_PR_RAN_UE_NGAP_ID;
+
+    RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+
+    ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceReleaseResponseIEs_t));
+    ASN_SEQUENCE_ADD(&PDUSessionResourceReleaseResponse->protocolIEs, ie);
+
+    ie->id = NGAP_ProtocolIE_ID_id_PDUSessionResourceReleasedListRelRes;
+    ie->criticality = NGAP_Criticality_ignore;
+    ie->value.present = NGAP_PDUSessionResourceReleaseResponseIEs__value_PR_PDUSessionResourceReleasedListRelRes;
+
+    PDUSessionList = &ie->value.choice.PDUSessionResourceReleasedListRelRes;
+
+    asn_uint642INTEGER(AMF_UE_NGAP_ID, test_ue->amf_ue_ngap_id);
+    *RAN_UE_NGAP_ID = test_ue->ran_ue_ngap_id;
+
+    PDUSessionItem =
+        CALLOC(1, sizeof(struct NGAP_PDUSessionResourceReleasedItemRelRes));
+    ASN_SEQUENCE_ADD(&PDUSessionList->list, PDUSessionItem);
+
+    PDUSessionItem->pDUSessionID = sess->psi;
+
+    transfer = &PDUSessionItem->pDUSessionResourceReleaseResponseTransfer;
+
+    transfer->size = 1;
+    transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
+
+    return nga_ngap_encode(&pdu);
+}
+
+static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
         test_sess_t *sess)
 {
     ogs_ip_t gnb_n3_ip;

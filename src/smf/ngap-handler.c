@@ -61,7 +61,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
                 smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(session,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "No N2 SM Info Type", smf_ue->supi, NULL);
+                "No N2 SM Info Type", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
 
@@ -80,7 +80,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         smf_sbi_send_sm_context_update_error(session,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "Unknown NGAP_UPTransportLayerInformation.present",
-                smf_ue->supi, NULL);
+                smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
 
@@ -99,7 +99,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         ogs_error("[%s:%d] No GTPTunnel", smf_ue->supi, sess->psi);
         smf_sbi_send_sm_context_update_error(session,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
-                "No GTPTunnel", smf_ue->supi, NULL);
+                "No GTPTunnel", smf_ue->supi, NULL, NULL);
         goto cleanup;
     }
 

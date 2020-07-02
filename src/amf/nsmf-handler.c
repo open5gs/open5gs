@@ -90,30 +90,28 @@ int amf_nsmf_pdu_session_handle_create_sm_context(
             nas_5gs_send_back_5gsm_message_from_sbi(sess, recvmsg->res_status);
             return OGS_ERROR;
         }
+
         n1SmMsg = SmContextCreateError->n1_sm_msg;
-        if (!n1SmMsg || !n1SmMsg->content_id) {
-            ogs_error("[%d:%d] No N1 SM Message", sess->psi, sess->pti);
-            nas_5gs_send_back_5gsm_message_from_sbi(sess, recvmsg->res_status);
-            return OGS_ERROR;
+        if (n1SmMsg && n1SmMsg->content_id) {
+            n1smbuf = ogs_sbi_find_part_by_content_id(
+                    recvmsg, n1SmMsg->content_id);
+            if (n1smbuf) {
+                /*
+                 * NOTE : The pkbuf created in the SBI message will be removed
+                 *        from ogs_sbi_message_free(), so it must be copied.
+                 */
+                n1smbuf = ogs_pkbuf_copy(n1smbuf);
+                ogs_assert(n1smbuf);
+                nas_5gs_send_gsm_reject_from_sbi(sess,
+                    OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
+                    n1smbuf, recvmsg->res_status);
+                return OGS_ERROR;
+            }
         }
 
-        n1smbuf = ogs_sbi_find_part_by_content_id(recvmsg, n1SmMsg->content_id);
-        if (!n1smbuf) {
-            ogs_error("[%d:%d] No N1 SM Content [%s]",
-                    sess->psi, sess->pti, n1SmMsg->content_id);
-            nas_5gs_send_back_5gsm_message_from_sbi(sess, recvmsg->res_status);
-            return OGS_ERROR;
-        }
+        nas_5gs_send_back_5gsm_message_from_sbi(sess, recvmsg->res_status);
 
-        /*
-         * NOTE : The pkbuf created in the SBI message will be removed
-         *        from ogs_sbi_message_free(), so it must be copied.
-         */
-        n1smbuf = ogs_pkbuf_copy(n1smbuf);
-        ogs_assert(n1smbuf);
-        nas_5gs_send_gsm_reject_from_sbi(sess,
-            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
-            n1smbuf, recvmsg->res_status);
+        return OGS_ERROR;
     }
 
     return OGS_OK;
@@ -130,134 +128,167 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
 
     if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT ||
         recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) {
-        if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_OK) { 
-            /* Nothing */
-        }
+
+        OpenAPI_sm_context_updated_data_t *SmContextUpdatedData = NULL;
+        OpenAPI_ref_to_binary_data_t *n1SmMsg = NULL;
+        OpenAPI_ref_to_binary_data_t *n2SmInfo = NULL;
+        ogs_pkbuf_t *n1smbuf = NULL;
+        ogs_pkbuf_t *n2smbuf = NULL;
 
         /* UPDATE_UpCnxState - SYNC */
         sess->smfUpCnxState = sess->ueUpCnxState;
 
-        if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
-            /*
-             * 1. PDUSessionResourceSetupResponse
-             * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
-             * 3. PFCP Session Modifcation Request (OuterHeaderCreation)
-             * 4. PFCP Session Modifcation Response
-             */
-
-            /*
-             * 1. InitialContextSetupResponse
-             * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
-             * 3. PFCP Session Modifcation Request (Apply: FORWARD)
-             * 4. PFCP Session Modifcation Response
-             */
-
-            /* Nothing */
-
-        } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
-            /*
-             * 1. UEContextReleaseRequest
-             * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
-             * 3. PFCP Session Modifcation Request (Apply:Buff & NOCP)
-             * 4. PFCP Session Modifcation Response
-             * 5. UEContextReleaseCommand
-             * 6. UEContextReleaseComplete
-             */
-
-            if (SESSION_SYNC_DONE(amf_ue)) {
-                ngap_send_amf_ue_context_release_command(amf_ue,
-                        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-                        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
-            }
-
-        } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATING) {
-
-            OpenAPI_sm_context_updated_data_t *SmContextUpdatedData = NULL;
-            OpenAPI_ref_to_binary_data_t *n2SmInfo = NULL;
-            ogs_pkbuf_t *n2smbuf = NULL;
-
-            /*
-             * 1. ServiceRequest
-             * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
-             */
+        if (recvmsg->SmContextUpdatedData &&
+            recvmsg->SmContextUpdatedData->n2_sm_info) {
 
             SmContextUpdatedData = recvmsg->SmContextUpdatedData;
-            if (!SmContextUpdatedData) {
-                ogs_error("No SmContextUpdatedData");
-                nas_5gs_send_gmm_reject(amf_ue,
-                        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
-                return OGS_ERROR;
-            }
-
+            ogs_assert(SmContextUpdatedData);
             n2SmInfo = SmContextUpdatedData->n2_sm_info;
-            if (!n2SmInfo || !n2SmInfo->content_id) {
-                ogs_error("No SmInfo");
-                nas_5gs_send_gmm_reject(amf_ue,
-                        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
-                return OGS_ERROR;
+            ogs_assert(n2SmInfo);
+
+            if (n2SmInfo->content_id) {
+                n2smbuf = ogs_sbi_find_part_by_content_id(
+                        recvmsg, n2SmInfo->content_id);
             }
 
-            sess->n2SmInfoType = SmContextUpdatedData->n2_sm_info_type;
-            if (!sess->n2SmInfoType) {
-                ogs_error("No SmInfoType");
-                nas_5gs_send_gmm_reject(amf_ue,
-                        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
-                return OGS_ERROR;
+            n1SmMsg = SmContextUpdatedData->n1_sm_msg;
+            if (n1SmMsg && n1SmMsg->content_id) {
+                n1smbuf = ogs_sbi_find_part_by_content_id(
+                        recvmsg, n1SmMsg->content_id);
             }
 
-            n2smbuf = ogs_sbi_find_part_by_content_id(
-                    recvmsg, n2SmInfo->content_id);
-            if (!n2smbuf) {
-                ogs_error("[%s] No N2 SM Content", amf_ue->supi);
-                nas_5gs_send_gmm_reject(amf_ue,
-                        OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
-                return OGS_ERROR;
-            }
+            switch (SmContextUpdatedData->n2_sm_info_type) {
+            case OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ:
+                if (!n2smbuf) {
+                    ogs_error("[%s:%d] No N2 SM Content",
+                            amf_ue->supi, sess->psi);
+                    nas_5gs_send_gmm_reject(amf_ue,
+                            OGS_5GMM_CAUSE_5GS_SERVICES_NOT_ALLOWED);
+                    return OGS_ERROR;
+                }
 
-            /*
-             * To Deliver N2 SM Content to gNB Temporarily,
-             * Store N2 SM Context in Session Context
-             */
-            if (sess->n2smbuf) {
                 /*
-                 * It should not be reached this way.
-                 * If the problem occurred, free the old n2smbuf
+                 * To Deliver N2 SM Content to gNB Temporarily,
+                 * Store N2 SM Context in Session Context
                  */
-                ogs_error("N2 SM Content is duplicated");
-                ogs_pkbuf_free(sess->n2smbuf);
-            }
-            /*
-             * NOTE : The pkbuf created in the SBI message will be removed
-             *        from ogs_sbi_message_free().
-             *        So it must be copied and push a event queue.
-             */
-            sess->n2smbuf = ogs_pkbuf_copy(n2smbuf);
-            ogs_assert(sess->n2smbuf);
+                if (sess->n2smbuf) {
+                    /*
+                     * It should not be reached this way.
+                     * If the problem occurred, free the old n2smbuf
+                     */
+                    ogs_error("[%s:%d] N2 SM Content is duplicated",
+                            amf_ue->supi, sess->psi);
+                    ogs_pkbuf_free(sess->n2smbuf);
+                }
+                /*
+                 * NOTE : The pkbuf created in the SBI message will be removed
+                 *        from ogs_sbi_message_free().
+                 *        So it must be copied and push a event queue.
+                 */
+                sess->n2smbuf = ogs_pkbuf_copy(n2smbuf);
+                ogs_assert(sess->n2smbuf);
 
-            if (SESSION_SYNC_DONE(amf_ue)) {
-                nas_5gs_send_accept(amf_ue);
+                if (SESSION_SYNC_DONE(amf_ue)) {
+                    nas_5gs_send_accept(amf_ue);
 
                 /*
                  * After sending accept message, N2 SM context is freed
                  * For checking memory, NULL pointer should be set to n2smbuf.
                  */
-                ogs_list_for_each(&amf_ue->sess_list, sess) {
-                    if (sess->n2smbuf) {
-                        ogs_pkbuf_free(sess->n2smbuf);
-                        sess->n2smbuf = NULL;
+                    ogs_list_for_each(&amf_ue->sess_list, sess) {
+                        if (sess->n2smbuf) {
+                            ogs_pkbuf_free(sess->n2smbuf);
+                            sess->n2smbuf = NULL;
+                        }
                     }
                 }
+                break;
+
+            case OpenAPI_n2_sm_info_type_PDU_RES_REL_CMD:
+                if (!n1smbuf) {
+                    ogs_error("[%s:%d] No N1 SM Content [%s]",
+                            amf_ue->supi, sess->psi, n1SmMsg->content_id);
+                    nas_5gs_send_back_5gsm_message(sess,
+                            OGS_5GSM_CAUSE_SEMANTICALLY_INCORRECT_MESSAGE);
+                    return OGS_ERROR;
+                }
+
+                /*
+                 * NOTE : The pkbuf created in the SBI message will be removed
+                 *        from ogs_sbi_message_free(), so it must be copied.
+                 */
+                n1smbuf = ogs_pkbuf_copy(n1smbuf);
+                ogs_assert(n1smbuf);
+
+                n2smbuf = ogs_pkbuf_copy(n2smbuf);
+                ogs_assert(n2smbuf);
+
+                nas_send_pdu_session_release_command(sess, n1smbuf, n2smbuf);
+                break;
+
+            default:
+                ogs_error("Not implemented [%d]",
+                        SmContextUpdatedData->n2_sm_info_type);
+                ngap_send_error_indication2(amf_ue,
+                    NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             }
 
         } else {
-            ogs_error("Invalid UpCnxState [UE:%d,SMF:%d]",
-                sess->ueUpCnxState, sess->smfUpCnxState);
-        }
 
+            if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+                /*
+                 * 1. PDUSessionResourceSetupResponse
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 * 3. PFCP Session Modifcation Request (OuterHeaderCreation)
+                 * 4. PFCP Session Modifcation Response
+                 */
+
+                /*
+                 * 1. InitialContextSetupResponse
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 * 3. PFCP Session Modifcation Request (Apply: FORWARD)
+                 * 4. PFCP Session Modifcation Response
+                 */
+
+                /*
+                 * 1. PDUSessionResourceReleaseResponse
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 */
+
+                /* Nothing */
+
+            } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+                /*
+                 * 1. UEContextReleaseRequest
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 * 3. PFCP Session Modifcation Request (Apply:Buff & NOCP)
+                 * 4. PFCP Session Modifcation Response
+                 * 5. UEContextReleaseCommand
+                 * 6. UEContextReleaseComplete
+                 */
+
+                if (SESSION_SYNC_DONE(amf_ue)) {
+                    ngap_send_amf_ue_context_release_command(amf_ue,
+                            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+                            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+                }
+
+            } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATING) {
+
+                /* Not reached here */
+
+            } else {
+                ogs_error("Invalid UpCnxState [UE:%d,SMF:%d]",
+                    sess->ueUpCnxState, sess->smfUpCnxState);
+            }
+        }
     } else {
         amf_ue_t *amf_ue = NULL;
 
         OpenAPI_sm_context_update_error_t *SmContextUpdateError = NULL;
+        OpenAPI_ref_to_binary_data_t *n1SmMsg = NULL;
+        ogs_pkbuf_t *n1smbuf = NULL;
+
 #if 0 /* Is it needed? */
         OpenAPI_ref_to_binary_data_t *n2SmInfo = NULL;
         ogs_pkbuf_t *n2smbuf = NULL;
@@ -279,6 +310,25 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                     NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
             return OGS_ERROR;
         }
+
+        n1SmMsg = SmContextUpdateError->n1_sm_msg;
+        if (n1SmMsg && n1SmMsg->content_id) {
+            n1smbuf = ogs_sbi_find_part_by_content_id(
+                    recvmsg, n1SmMsg->content_id);
+            if (n1smbuf) {
+                /*
+                 * NOTE : The pkbuf created in the SBI message will be removed
+                 *        from ogs_sbi_message_free(), so it must be copied.
+                 */
+                n1smbuf = ogs_pkbuf_copy(n1smbuf);
+                ogs_assert(n1smbuf);
+                nas_5gs_send_gsm_reject_from_sbi(sess,
+                    OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION,
+                    n1smbuf, recvmsg->res_status);
+                return OGS_ERROR;
+            }
+        }
+
 #if 0 /* Is it needed? */
         n2SmInfo = SmContextUpdateError->n2_sm_info;
         if (!n2SmInfo || !n2SmInfo->content_id) {
@@ -301,6 +351,8 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
 
         ngap_send_error_indication2(amf_ue,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
+
+        return OGS_ERROR;
     }
 
     return OGS_OK;

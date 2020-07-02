@@ -1329,6 +1329,11 @@ void smf_sess_remove(smf_sess_t *sess)
     if (sess->sm_context_ref)
         ogs_free(sess->sm_context_ref);
 
+    if (sess->sm_context_status_uri)
+        ogs_free(sess->sm_context_status_uri);
+    if (sess->namf.client)
+        ogs_sbi_client_remove(sess->namf.client);
+
     if (sess->dnn)
         ogs_free(sess->dnn);
 

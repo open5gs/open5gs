@@ -266,6 +266,7 @@ void mme_state_operational(ogs_fsm_t *s, mme_event_t *e)
         ogs_assert(enb_ue);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
+
         if (ogs_nas_emm_decode(&nas_message, pkbuf) != OGS_OK) {
             ogs_error("ogs_nas_emm_decode() failed");
             ogs_pkbuf_free(pkbuf);
