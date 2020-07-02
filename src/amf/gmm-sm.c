@@ -345,7 +345,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                  * If t3555 is timeout, the saved pkbuf is used.
                  * In this case, ack should be set to 1 for timer expiration
                  */
-                nas_5gs_send_configuration_update_command(amf_ue, 1, 0);
+                nas_5gs_send_configuration_update_command(amf_ue, 0);
             }
             break;
 
@@ -873,9 +873,18 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
         case OGS_NAS_5GS_REGISTRATION_COMPLETE:
             ogs_debug("[%s] Registration complete", amf_ue->supi);
 
-            /* Ack/Red to 0
-             *  - No need to receive configuration update complete */
-            nas_5gs_send_configuration_update_command(amf_ue, 0, 0);
+            /*
+             * TS24.501
+             * 5.4.4.2 Generic UE configuration update procedure initiated
+             *         by the network
+             *
+             * If an acknowledgement from the UE is requested, the AMF shall
+             * indicate acknowledgement requested in the Configuration update
+             * indication IE in the CONFIGURATION UPDATE COMMAND message and
+             * shall start timer T3555. Acknowledgement shall be requested
+             * for all parameters except when only NITZ is included.
+             */
+            nas_5gs_send_configuration_update_command(amf_ue, 0);
 
             OGS_FSM_TRAN(s, &gmm_state_registered);
             break;

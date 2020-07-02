@@ -275,6 +275,14 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(&test_ue, recvbuf);
 
+    /* Send Configuration update complete */
+    gmmbuf = testgmm_build_configuration_update_complete(&test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Send PDU session establishment request */
     gsmbuf = testgsm_build_pdu_session_establishment_request(&test_sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
@@ -760,6 +768,14 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(&test_ue, recvbuf);
 
+    /* Send Configuration update complete */
+    gmmbuf = testgmm_build_configuration_update_complete(&test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
     /* Send UE context release request */
     sendbuf = testngap_build_ue_context_release_request(&test_ue,
             NGAP_Cause_PR_radioNetwork, NGAP_CauseRadioNetwork_user_inactivity,
@@ -1090,6 +1106,14 @@ static void test3_func(abts_case *tc, void *data)
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(&test_ue, recvbuf);
+
+    /* Send Configuration update complete */
+    gmmbuf = testgmm_build_configuration_update_complete(&test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send PDU session establishment request */
     gsmbuf = testgsm_build_pdu_session_establishment_request(&test_sess);
@@ -1520,6 +1544,14 @@ static void test4_func(abts_case *tc, void *data)
     recvbuf = testgnb_ngap_read(ngap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(&test_ue, recvbuf);
+
+    /* Send Configuration update complete */
+    gmmbuf = testgmm_build_configuration_update_complete(&test_ue);
+    ABTS_PTR_NOTNULL(tc, gmmbuf);
+    sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
+    ABTS_PTR_NOTNULL(tc, sendbuf);
+    rv = testgnb_ngap_send(ngap, sendbuf);
+    ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send UE context release request */
     sendbuf = testngap_build_ue_context_release_request(&test_ue,

@@ -51,8 +51,7 @@ void nas_5gs_send_authentication_reject(amf_ue_t *amf_ue);
 
 void nas_5gs_send_security_mode_command(amf_ue_t *amf_ue);
 
-void nas_5gs_send_configuration_update_command(
-        amf_ue_t *amf_ue, int ack, int red);
+void nas_5gs_send_configuration_update_command(amf_ue_t *amf_ue, int red);
 
 void nas_send_pdu_session_establishment_accept(amf_sess_t *sess,
         ogs_pkbuf_t *n1smbuf, ogs_pkbuf_t *n2smbuf);

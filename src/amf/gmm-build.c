@@ -440,8 +440,7 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     return nas_5gs_security_encode(amf_ue, &message);
 }
 
-ogs_pkbuf_t *gmm_build_configuration_update_command(
-        amf_ue_t *amf_ue, int ack, int red)
+ogs_pkbuf_t *gmm_build_configuration_update_command(amf_ue_t *amf_ue, int red)
 {
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_configuration_update_command_t *configuration_update_command =
@@ -451,6 +450,9 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
         &configuration_update_command->universal_time_and_local_time_zone;
     ogs_nas_daylight_saving_time_t *network_daylight_saving_time =
         &configuration_update_command->network_daylight_saving_time;
+    ogs_nas_configuration_update_indication_t
+        *configuration_update_indication =
+            &configuration_update_command->configuration_update_indication;
 
     struct timeval tv;
     struct tm gmt, local;
@@ -480,17 +482,11 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND;
 
-    if (ack | red) {
-        ogs_nas_configuration_update_indication_t
-            *configuration_update_indication =
-                &configuration_update_command->configuration_update_indication;
+    configuration_update_command->presencemask |=
+        OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_CONFIGURATION_UPDATE_INDICATION_PRESENT;
 
-        configuration_update_command->presencemask |=
-            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_CONFIGURATION_UPDATE_INDICATION_PRESENT;
-
-        configuration_update_indication->ack = ack;
-        configuration_update_indication->red = red;
-    }
+    configuration_update_indication->ack = 1;
+    configuration_update_indication->red = red;
 
     configuration_update_command->presencemask |=
         OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
