@@ -809,6 +809,8 @@ static void test2_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(&test_ue, recvbuf);
 
+    ogs_msleep(100);
+
     /* Send PDU session resource setup response */
     sendbuf = testngap_build_pdu_session_resource_setup_response(&test_sess);
     ABTS_PTR_NOTNULL(tc, sendbuf);
