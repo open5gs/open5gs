@@ -58,6 +58,8 @@ extern "C" {
 #define OGS_SQN_LEN                     6
 #define OGS_MAX_SQN                     0xffffffffffff
 
+#define OGS_HASH_MME_LEN                8
+
 #define OGS_KEYSTRLEN(x)                ((x*2)+1)
 
 #ifdef __cplusplus

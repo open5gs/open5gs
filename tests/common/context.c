@@ -423,6 +423,10 @@ int test_context_parse_config(void)
                                             s_nssai->sd.v =
                                                 OGS_S_NSSAI_NO_SD_VALUE;
 
+                                        s_nssai->mapped_hplmn_sst = 0;
+                                        s_nssai->mapped_hplmn_sd.v =
+                                                OGS_S_NSSAI_NO_SD_VALUE;
+
                                         self.plmn_support[
                                             self.num_of_plmn_support].
                                                 num_of_s_nssai++;

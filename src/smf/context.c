@@ -1207,6 +1207,12 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     /* Set PSI */
     sess->psi = psi;
 
+    /* Set S-NSSAI */
+    sess->s_nssai.sst = 0;
+    sess->s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+    sess->s_nssai.mapped_hplmn_sst = 0;
+    sess->s_nssai.mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+
     /* Set TEID & SEID */
     sess->smf_n4_teid = sess->index;
     sess->smf_n4_seid = sess->index;

@@ -228,19 +228,18 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
                 amf_ue, &registration_request->nas_message_container);
     }
 
+    if (registration_request->presencemask &
+        OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NSSAI_PRESENT) {
+
+        amf_ue->num_of_requested_nssai = ogs_nas_parse_nssai(
+            amf_ue->requested_nssai, &registration_request->requested_nssai);
+    }
 
     if (registration_request->presencemask &
         OGS_NAS_5GS_REGISTRATION_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT) {
 
         ogs_nas_to_plmn_id(&amf_ue->last_visited_plmn_id,
             &last_visited_registered_tai->nas_plmn_id);
-    }
-
-    if (registration_request->presencemask &
-        OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NSSAI_PRESENT) {
-
-        amf_ue->num_of_requested_nssai = ogs_nas_parse_nssai(
-            amf_ue->requested_nssai, &registration_request->requested_nssai);
     }
 
     if (registration_request->presencemask &
@@ -861,13 +860,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
         if (ul_nas_transport->presencemask &
                 OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT) {
             ogs_s_nssai_t s_nssai;
-            s_nssai.sst = nas_s_nssai->sst;
-            if (nas_s_nssai->length > 1)
-                s_nssai.sd = ogs_be24toh(nas_s_nssai->sd);
-            else
-                s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-            selected_s_nssai =
-                amf_find_s_nssai(&amf_ue->tai.plmn_id, &s_nssai);
+            if (ogs_nas_parse_s_nssai(&s_nssai, nas_s_nssai) != 0) {
+                selected_s_nssai =
+                    amf_find_s_nssai(&amf_ue->tai.plmn_id, &s_nssai);
+            }
         }
 
         if (!selected_s_nssai) {

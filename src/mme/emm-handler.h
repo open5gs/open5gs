@@ -26,8 +26,8 @@
 extern "C" {
 #endif
 
-int emm_handle_attach_request(
-    mme_ue_t *mme_ue, ogs_nas_eps_attach_request_t *attach_request);
+int emm_handle_attach_request(mme_ue_t *mme_ue,
+        ogs_nas_eps_attach_request_t *attach_request, ogs_pkbuf_t *pkbuf);
 int emm_handle_attach_complete(
     mme_ue_t *mme_ue, ogs_nas_eps_attach_complete_t *attach_complete);
 
@@ -40,8 +40,9 @@ int emm_handle_detach_request(
 int emm_handle_service_request(
     mme_ue_t *mme_ue, ogs_nas_eps_service_request_t *service_request);
 
-int emm_handle_tau_request(
-    mme_ue_t *mme_ue, ogs_nas_eps_tracking_area_update_request_t *tau_request);
+int emm_handle_tau_request(mme_ue_t *mme_ue,
+    ogs_nas_eps_tracking_area_update_request_t *tau_request,
+    ogs_pkbuf_t *pkbuf);
 
 int emm_handle_extended_service_request(mme_ue_t *mme_ue,
     ogs_nas_eps_extended_service_request_t *extended_service_request);

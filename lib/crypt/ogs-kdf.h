@@ -87,6 +87,11 @@ void ogs_kdf_nh_enb(uint8_t *kasme, uint8_t *sync_input, uint8_t *kenb);
 void ogs_kdf_nas_eps(uint8_t algorithm_type_distinguishers,
     uint8_t algorithm_identity, uint8_t *kasme, uint8_t *knas);
 
+/*
+ * TS33.401 Annex I Hash Functions
+ * Use the KDF given in TS33.220
+ */
+void ogs_kdf_hash_mme(uint8_t *message, uint8_t message_len, uint8_t *hash_mme);
 
 /*
  * TS33.102

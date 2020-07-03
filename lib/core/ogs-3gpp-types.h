@@ -211,6 +211,8 @@ typedef struct ogs_nr_cgi_s {
 typedef struct ogs_s_nssai_s {
     uint8_t sst;
     ogs_uint24_t sd;
+    uint8_t mapped_hplmn_sst;
+    ogs_uint24_t mapped_hplmn_sd;
 } __attribute__ ((packed)) ogs_s_nssai_t;
 
 char *ogs_s_nssai_sd_to_string(ogs_uint24_t sd);

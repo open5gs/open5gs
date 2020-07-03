@@ -106,6 +106,10 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
     ogs_nas_protocol_configuration_options_t *protocol_configuration_options =
         &activate_default_eps_bearer_context_request
             ->protocol_configuration_options;
+    ogs_nas_extended_protocol_configuration_options_t
+        *extended_protocol_configuration_options =
+            &activate_default_eps_bearer_context_request
+                ->extended_protocol_configuration_options;
     
     mme_ue_t *mme_ue = NULL;
     mme_bearer_t *bearer = NULL;
@@ -225,11 +229,20 @@ ogs_pkbuf_t *esm_build_activate_default_bearer_context_request(
     }
 
     if (sess->pgw_pco.presence && sess->pgw_pco.len && sess->pgw_pco.data) {
-        activate_default_eps_bearer_context_request->presencemask |=
-            OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
-        protocol_configuration_options->length = sess->pgw_pco.len;
-        memcpy(protocol_configuration_options->buffer, 
-                sess->pgw_pco.data, protocol_configuration_options->length);
+        if (mme_ue->ue_network_capability.
+                extended_protocol_configuration_options) {
+            activate_default_eps_bearer_context_request->presencemask |=
+                OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_EXTENDED_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+            extended_protocol_configuration_options->length = sess->pgw_pco.len;
+            extended_protocol_configuration_options->buffer =
+                sess->pgw_pco.data;
+        } else {
+            activate_default_eps_bearer_context_request->presencemask |=
+                OGS_NAS_EPS_ACTIVATE_DEFAULT_EPS_BEARER_CONTEXT_REQUEST_PROTOCOL_CONFIGURATION_OPTIONS_PRESENT;
+            protocol_configuration_options->length = sess->pgw_pco.len;
+            memcpy(protocol_configuration_options->buffer,
+                    sess->pgw_pco.data, protocol_configuration_options->length);
+        }
     }
 
     if (OGS_FSM_CHECK(&mme_ue->sm, emm_state_registered)) {

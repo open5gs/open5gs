@@ -634,6 +634,10 @@ int amf_context_parse_config(void)
                                             s_nssai->sd.v =
                                                 OGS_S_NSSAI_NO_SD_VALUE;
 
+                                        s_nssai->mapped_hplmn_sst = 0;
+                                        s_nssai->mapped_hplmn_sd.v =
+                                                OGS_S_NSSAI_NO_SD_VALUE;
+
                                         self.plmn_support[
                                             self.num_of_plmn_support].
                                                 num_of_s_nssai++;
@@ -1466,6 +1470,11 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi)
 
     sess->amf_ue = amf_ue;
     sess->psi = psi;
+
+    sess->s_nssai.sst = 0;
+    sess->s_nssai.sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+    sess->s_nssai.mapped_hplmn_sst = 0;
+    sess->s_nssai.mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
     sess->sbi.client_wait.timer = ogs_timer_add(
             self.timer_mgr, amf_timer_sbi_client_wait_expire, sess);

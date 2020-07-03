@@ -22,6 +22,7 @@
 ogs_pkbuf_t *testgmm_build_registration_request(
         test_ue_t *test_ue, ogs_pkbuf_t *nasbuf)
 {
+    int i;
     test_sess_t *sess = NULL;
     uint16_t psimask = 0;
     ogs_s_nssai_t *s_nssai = NULL;
@@ -147,11 +148,13 @@ ogs_pkbuf_t *testgmm_build_registration_request(
         /* Set Requested NSSAI */
         registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NSSAI_PRESENT;
-
         requested_nssai->length = 0;
 
-        ogs_nas_build_nssai(requested_nssai,
-            &test_self()->plmn_support[0].s_nssai[0], 1);
+        for (i = 0; i < test_self()->num_of_plmn_support; i++) {
+            ogs_nas_build_nssai(requested_nssai,
+                test_self()->plmn_support[i].s_nssai,
+                test_self()->plmn_support[i].num_of_s_nssai);
+        }
     }
 
     if (test_ue->registration_request_type.last_visited_registered_tai) {
@@ -573,7 +576,7 @@ ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
     ogs_nas_request_type_t *request_type = NULL;
 #define S_NSSAI_PRECENSE 0
 #if S_NSSAI_PRECENSE
-    ogs_nas_s_nssai_t *s_nssai = NULL;
+    ogs_nas_s_nssai_t *nas_s_nssai = NULL;
 #endif
 
     ogs_assert(test_sess);
@@ -587,7 +590,7 @@ ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
     pdu_session_id = &ul_nas_transport->pdu_session_id;
     request_type = &ul_nas_transport->request_type;
 #if S_NSSAI_PRECENSE
-    s_nssai = &ul_nas_transport->s_nssai;
+    nas_s_nssai = &ul_nas_transport->s_nssai;
 #endif
 
     memset(&message, 0, sizeof(message));
@@ -616,15 +619,8 @@ ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
 #if S_NSSAI_PRECENSE
     ul_nas_transport->presencemask |=
             OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT;
-    if (test_self()->plmn_support[0].s_nssai[0].sd.v ==
-            OGS_S_NSSAI_NO_SD_VALUE) {
-        s_nssai->length = 1;
-        s_nssai->sst = test_self()->plmn_support[0].s_nssai[0].sst;
-    } else {
-        s_nssai->length = 4;
-        s_nssai->sst = test_self()->plmn_support[0].s_nssai[0].sst;
-        s_nssai->sd = ogs_htobe24(test_self()->plmn_support[0].s_nssai[0].sd);
-    }
+    ogs_nas_build_s_nssai(
+            nas_s_nssai, &test_self()->plmn_support[0].s_nssai[0]);
 #endif
 
     ul_nas_transport->presencemask |=

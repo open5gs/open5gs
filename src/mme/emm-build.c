@@ -108,7 +108,8 @@ ogs_pkbuf_t *emm_build_attach_accept(
     attach_accept->presencemask |= 
         OGS_NAS_EPS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     eps_network_feature_support->length = 2;
-    eps_network_feature_support->ims_vops = 1;
+    eps_network_feature_support->ims_voice_over_ps_session_in_s1_mode = 1;
+    eps_network_feature_support->extended_protocol_configuration_options = 1;
 
     if (MME_P_TMSI_IS_AVAILABLE(mme_ue)) {
         ogs_assert(mme_ue->csmap);
@@ -234,6 +235,7 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
         &security_mode_command->replayed_ue_security_capabilities;
     ogs_nas_imeisv_request_t *imeisv_request =
         &security_mode_command->imeisv_request;
+    ogs_nas_hashmme_t *hashmme = &security_mode_command->hashmme;
     ogs_nas_ue_additional_security_capability_t
         *replayed_ue_additional_security_capability =
             &security_mode_command->replayed_ue_additional_security_capability;
@@ -251,18 +253,14 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
 
     OGS_HEX(_reg, strlen(_reg), tmp);
 
+    memcpy(s, tmp, 94);
+
     len = htobe16(94);
     memcpy(&s[94], &len, sizeof(len));
     memset(key, 0, 32);
 
-    ogs_log_hexdump(OGS_LOG_FATAL, s, 96);
-    ogs_log_hexdump(OGS_LOG_FATAL, key, 32);
-
     ogs_hmac_sha256(key, 32, s, 94, output, OGS_SHA256_DIGEST_SIZE);
-    ogs_log_hexdump(OGS_LOG_FATAL, output, 32);
-    memcpy(s, key, 32);
-    memcpy(s+32, tmp, 94);
-    ogs_sha256(s, 32+94, output);
+    ogs_fatal("output");
     ogs_log_hexdump(OGS_LOG_FATAL, output, 32);
 #endif
 
@@ -328,6 +326,11 @@ ogs_pkbuf_t *emm_build_security_mode_command(mme_ue_t *mme_ue)
         OGS_NAS_EPS_SECURITY_MODE_COMMAND_IMEISV_REQUEST_PRESENT;
     imeisv_request->type = OGS_NAS_IMEISV_TYPE;
     imeisv_request->value = OGS_NAS_IMEISV_REQUESTED;
+
+    security_mode_command->presencemask |=
+        OGS_NAS_EPS_SECURITY_MODE_COMMAND_HASHMME_PRESENT;
+    hashmme->length = OGS_HASH_MME_LEN;
+    memcpy(hashmme->value, mme_ue->hash_mme, hashmme->length);
 
     if (mme_ue->ue_additional_security_capability.length) {
         security_mode_command->presencemask |=
@@ -463,7 +466,10 @@ ogs_pkbuf_t *emm_build_tau_accept(mme_ue_t *mme_ue)
     tau_accept->presencemask |=
         OGS_NAS_EPS_TRACKING_AREA_UPDATE_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     tau_accept->eps_network_feature_support.length = 1;
-    tau_accept->eps_network_feature_support.ims_vops = 1;
+    tau_accept->eps_network_feature_support.
+        ims_voice_over_ps_session_in_s1_mode = 1;
+    tau_accept->eps_network_feature_support.
+        extended_protocol_configuration_options = 1;
 
     return nas_eps_security_encode(mme_ue, &message);
 }

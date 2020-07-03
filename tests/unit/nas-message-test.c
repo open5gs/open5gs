@@ -121,9 +121,12 @@ static void ogs_nas_eps_message_test2(abts_case *tc, void *data)
     attach_accept->presencemask |= 
         OGS_NAS_EPS_ATTACH_ACCEPT_EPS_NETWORK_FEATURE_SUPPORT_PRESENT;
     attach_accept->eps_network_feature_support.length = 1;
-    attach_accept->eps_network_feature_support.esr_ps = 1;
-    attach_accept->eps_network_feature_support.emc_bs = 1;
-    attach_accept->eps_network_feature_support.ims_vops = 1;
+    attach_accept->eps_network_feature_support.
+        support_of_extended_service_request_for_packet_services = 1;
+    attach_accept->eps_network_feature_support.
+        emergency_bearer_services_in_s1_mode = 1;
+    attach_accept->eps_network_feature_support.
+        ims_voice_over_ps_session_in_s1_mode = 1;
 
     pkbuf = ogs_nas_eps_plain_encode(&message);
     ABTS_INT_EQUAL(tc, sizeof(buffer), pkbuf->len);

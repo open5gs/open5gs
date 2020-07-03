@@ -307,6 +307,26 @@ void ogs_kdf_nas_eps(uint8_t algorithm_type_distinguishers,
 }
 
 /*
+ * TS33.401 Annex I Hash Functions
+ * Use the KDF given in TS33.220
+ */
+void ogs_kdf_hash_mme(uint8_t *message, uint8_t message_len, uint8_t *hash_mme)
+{
+    uint8_t key[32];
+    uint8_t output[OGS_SHA256_DIGEST_SIZE];
+
+    ogs_assert(message);
+    ogs_assert(message_len);
+    ogs_assert(hash_mme);
+
+    memset(key, 0, 32);
+    ogs_hmac_sha256(key, 32, message, message_len,
+            output, OGS_SHA256_DIGEST_SIZE);
+
+    memcpy(hash_mme, output+24, OGS_HASH_MME_LEN);
+}
+
+/*
  * TS33.102
  * 6.3.3 Authentication and key agreement
  * Re-use and re-transmission of (RAND, AUTN)

@@ -132,7 +132,7 @@ ogs_pkbuf_t *ngap_build_ng_setup_response(void)
         ogs_asn_buffer_to_OCTET_STRING(
                 &amf_self()->plmn_support[i].plmn_id,
                 OGS_PLMN_ID_LEN, pLMNIdentity);
-        for (j = 0; j < amf_self()->plmn_support[j].num_of_s_nssai; j++) {
+        for (j = 0; j < amf_self()->plmn_support[i].num_of_s_nssai; j++) {
             NGAP_SliceSupportItem_t *NGAP_SliceSupportItem = NULL;
             NGAP_S_NSSAI_t *s_NSSAI = NULL;
             NGAP_SST_t *sST = NULL;

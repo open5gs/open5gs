@@ -32,8 +32,8 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __emm_log_domain
 
-int emm_handle_attach_request(
-        mme_ue_t *mme_ue, ogs_nas_eps_attach_request_t *attach_request)
+int emm_handle_attach_request(mme_ue_t *mme_ue,
+        ogs_nas_eps_attach_request_t *attach_request, ogs_pkbuf_t *pkbuf)
 {
     int served_tai_index = 0;
 
@@ -56,6 +56,13 @@ int emm_handle_attach_request(
 
     ogs_assert(esm_message_container);
     ogs_assert(esm_message_container->length);
+
+    ogs_assert(pkbuf);
+    ogs_assert(pkbuf->data);
+    ogs_assert(pkbuf->len);
+
+    /* HashMME */
+    ogs_kdf_hash_mme(pkbuf->data, pkbuf->len, mme_ue->hash_mme);
 
     /* Set EPS Attach Type */
     memcpy(&mme_ue->nas_eps.attach, eps_attach_type,
@@ -426,7 +433,7 @@ int emm_handle_service_request(
 }
 
 int emm_handle_tau_request(mme_ue_t *mme_ue,
-        ogs_nas_eps_tracking_area_update_request_t *tau_request)
+    ogs_nas_eps_tracking_area_update_request_t *tau_request, ogs_pkbuf_t *pkbuf)
 {
     int served_tai_index = 0;
 
@@ -442,6 +449,13 @@ int emm_handle_tau_request(mme_ue_t *mme_ue,
     ogs_assert(mme_ue);
     enb_ue = mme_ue->enb_ue;
     ogs_assert(enb_ue);
+
+    ogs_assert(pkbuf);
+    ogs_assert(pkbuf->data);
+    ogs_assert(pkbuf->len);
+
+    /* HashMME */
+    ogs_kdf_hash_mme(pkbuf->data, pkbuf->len, mme_ue->hash_mme);
 
     /* Set EPS Update Type */
     memcpy(&mme_ue->nas_eps.update, eps_update_type,

@@ -185,7 +185,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
         case OGS_NAS_EPS_ATTACH_REQUEST:
             ogs_debug("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
-                    mme_ue, &message->emm.attach_request);
+                    mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
@@ -222,8 +222,8 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
 
         case OGS_NAS_EPS_TRACKING_AREA_UPDATE_REQUEST:
             ogs_debug("[EMM] Tracking area update request");
-            rv = emm_handle_tau_request(
-                    mme_ue, &message->emm.tracking_area_update_request);
+            rv = emm_handle_tau_request(mme_ue,
+                    &message->emm.tracking_area_update_request, e->pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_tau_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
@@ -390,7 +390,7 @@ static void common_register_state(ogs_fsm_t *s, mme_event_t *e)
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
-                ogs_error("emm_handle_attach_request() failed");
+                ogs_error("emm_handle_detach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
                 break;
             }
@@ -581,7 +581,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
         case OGS_NAS_EPS_ATTACH_REQUEST:
             ogs_warn("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
-                    mme_ue, &message->emm.attach_request);
+                    mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
@@ -603,7 +603,7 @@ void emm_state_authentication(ogs_fsm_t *s, mme_event_t *e)
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
-                ogs_error("emm_handle_attach_request() failed");
+                ogs_error("emm_handle_detach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
                 return;
             }
@@ -737,7 +737,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
         case OGS_NAS_EPS_ATTACH_REQUEST:
             ogs_warn("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
-                    mme_ue, &message->emm.attach_request);
+                    mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
@@ -765,7 +765,7 @@ void emm_state_security_mode(ogs_fsm_t *s, mme_event_t *e)
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
-                ogs_error("emm_handle_attach_request() failed");
+                ogs_error("emm_handle_detach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
                 break;
             }
@@ -852,7 +852,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
         case OGS_NAS_EPS_ATTACH_REQUEST:
             ogs_warn("[EMM] Attach request[%s]", mme_ue->imsi_bcd);
             rv = emm_handle_attach_request(
-                    mme_ue, &message->emm.attach_request);
+                    mme_ue, &message->emm.attach_request, e->pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("emm_handle_attach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
@@ -874,7 +874,7 @@ void emm_state_initial_context_setup(ogs_fsm_t *s, mme_event_t *e)
             rv = emm_handle_detach_request(
                     mme_ue, &message->emm.detach_request_from_ue);
             if (rv != OGS_OK) {
-                ogs_error("emm_handle_attach_request() failed");
+                ogs_error("emm_handle_detach_request() failed");
                 OGS_FSM_TRAN(s, emm_state_exception);
                 return;
             }

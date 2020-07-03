@@ -324,18 +324,21 @@ typedef struct ogs_nas_eps_mobile_identity_s {
  * O TLV 3 */
 typedef struct ogs_nas_eps_network_feature_support_s {
     uint8_t length;
-ED7(uint8_t cp_ciot:1;,
-    uint8_t erw_opdn:1;,
-    uint8_t esr_ps:1;,
-    uint8_t cs_lcs:2;,
-    uint8_t epc_lcs:1;,
-    uint8_t emc_bs:1;,
-    uint8_t ims_vops:1;)
-ED5(uint8_t spare:4;,
-    uint8_t e_pco:1;,
-    uint8_t hc_cp_ciot:1;,
-    uint8_t s1_u_data:1;,
-    uint8_t up_ciot :1;)
+ED7(uint8_t control_plane_ciot_eps_optimization:1;,
+    uint8_t emm_registered_without_pdn_connectivity:1;,
+    uint8_t support_of_extended_service_request_for_packet_services:1;,
+    uint8_t cs_lcs_no_information_about_support_of_location_service_via_cs_domain_is_avaiable:2;,
+    uint8_t location_service_via_epc:1;,
+    uint8_t emergency_bearer_services_in_s1_mode:1;,
+    uint8_t ims_voice_over_ps_session_in_s1_mode:1;)
+ED8(uint8_t signalling_for_a_maximum_number_of_16_eps_bearer_contexts:1;,
+    uint8_t interworking_without_n26_interface:1;,
+    uint8_t restriction_on_the_use_of_dual_connectivity_with_nr:1;,
+    uint8_t restriction_on_enhanced_coverage:1;,
+    uint8_t extended_protocol_configuration_options:1;,
+    uint8_t header_compression_for_control_plan_ciot_eps_optimization:1;,
+    uint8_t s1_u_data_transfer:1;,
+    uint8_t user_plane_ciot_eps_optimization :1;)
 } __attribute__ ((packed)) ogs_nas_eps_network_feature_support_t;
 
 /* 9.9.3.13 EPS update result
@@ -645,10 +648,9 @@ ED3(uint8_t type:4;,
 
 /* 9.9.3.50 HashMME
  * O TLV 10 */
-#define OGS_NAS_HASHMME_LEN 8
 typedef struct ogs_nas_hashmme_s {
     uint8_t length;
-    uint8_t value[OGS_NAS_HASHMME_LEN];
+    uint8_t value[OGS_HASH_MME_LEN];
 } ogs_nas_hashmme_t;
 
 /* 9.9.3.51 Replayed NAS message container

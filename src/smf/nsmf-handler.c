@@ -136,6 +136,13 @@ bool smf_nsmf_handle_create_sm_context(
 
     sess->s_nssai.sst = sNssai->sst;
     sess->s_nssai.sd = ogs_s_nssai_sd_from_string(sNssai->sd);
+    if (SmContextCreateData->hplmn_snssai) {
+        sess->s_nssai.mapped_hplmn_sst =
+            SmContextCreateData->hplmn_snssai->sst;
+        sess->s_nssai.mapped_hplmn_sd =
+            ogs_s_nssai_sd_from_string(
+                    SmContextCreateData->hplmn_snssai->sd);
+    }
 
     if (sess->sm_context_status_uri)
         ogs_free(sess->sm_context_status_uri);
