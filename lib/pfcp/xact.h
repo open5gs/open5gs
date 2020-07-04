@@ -41,10 +41,11 @@ typedef struct ogs_pfcp_xact_s {
                                          local or remote */
 
     uint32_t        xid;            /**< Transaction ID */
-    ogs_pfcp_node_t *node;       /**< Relevant PFCP node context */
+    ogs_pfcp_node_t *node;          /**< Relevant PFCP node context */
 
-    void (*cb)(ogs_pfcp_xact_t *, void *); /**< Local timer expiration handler */
-    void            *data;          /**< Transaction Data */
+    /**< Local timer expiration handler & Data*/
+    void (*cb)(ogs_pfcp_xact_t *, void *);
+    void            *data;
 
     int             step;           /**< Current step in the sequence.
                                          1 : Initial 
@@ -61,6 +62,7 @@ typedef struct ogs_pfcp_xact_s {
     uint8_t         holding_rcount;
 
     void            *assoc_xact;    /**< Associated GTP transaction */
+    void            *assoc_session; /**< Associated SBI session */
 #define OGS_PFCP_5GC_DELETE_TRIGGER_UE_REQUESTED 1
 #define OGS_PFCP_5GC_DELETE_TRIGGER_PCF_INITIATED 2
 #define OGS_PFCP_5GC_DELETE_TRIGGER_RAN_INITIATED 3

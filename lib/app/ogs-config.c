@@ -187,7 +187,7 @@ static int config_prepare(void)
 
     recalculate_pool_size();
 
-    self.time.nf_instance.heartbeat = 5;        /* 5 second */
+    self.time.nf_instance.heartbeat = 10;        /* 10 second */
     self.time.nf_instance.validity = 3600;      /* 3600 seconds = 1 hour */
     self.time.subscription.validity = 86400;    /* 86400 seconds = 1 day */
 
@@ -268,11 +268,17 @@ int ogs_config_parse()
                 } else if (!strcmp(parameter_key, "no_pcrf")) {
                     self.parameter.no_pcrf =
                         ogs_yaml_iter_bool(&parameter_iter);
-                } else if (!strcmp(parameter_key, "no_upf")) {
-                    self.parameter.no_upf =
+                } else if (!strcmp(parameter_key, "no_nrf")) {
+                    self.parameter.no_nrf =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_amf")) {
+                    self.parameter.no_amf =
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_smf")) {
                     self.parameter.no_smf =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_upf")) {
+                    self.parameter.no_upf =
                         ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_ausf")) {
                     self.parameter.no_ausf =

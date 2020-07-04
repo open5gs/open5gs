@@ -125,11 +125,6 @@ void ausf_sbi_discover_and_send(
     ogs_assert(nf_type);
     ogs_assert(build);
 
-    if (ausf_ue->sbi.running == true) {
-        ogs_error("ausf_sbi_discover_and_send() is running");
-        return;
-    }
-
     ausf_ue->sbi.nf_state_registered = ausf_nf_state_registered;
     ausf_ue->sbi.client_wait.duration =
         ausf_timer_cfg(AUSF_TIMER_SBI_CLIENT_WAIT)->duration;

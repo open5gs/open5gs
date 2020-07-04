@@ -629,7 +629,7 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
 
     /* Set TEID & SEID */
     sess->smf_n4_teid = sess->index;
-    sess->smf_n4_seid = sess->index;
+    sess->smf_n4_seid = SMF_INDEX_TO_SEID(sess->index);
 
     /* Set APN */
     ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
@@ -1375,7 +1375,7 @@ smf_sess_t *smf_sess_find_by_teid(uint32_t teid)
 
 smf_sess_t *smf_sess_find_by_seid(uint64_t seid)
 {
-    return smf_sess_find(seid);
+    return smf_sess_find(SMF_SEID_TO_INDEX(seid));
 }
 
 smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn)

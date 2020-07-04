@@ -124,11 +124,6 @@ void amf_ue_sbi_discover_and_send(
     ogs_assert(nf_type);
     ogs_assert(amf_ue);
 
-    if (amf_ue->sbi.running == true) {
-        ogs_error("amf_ue_sbi_discover_and_send() is running");
-        return;
-    }
-
     amf_ue->sbi.nf_state_registered = amf_nf_state_registered;
     amf_ue->sbi.client_wait.duration =
         amf_timer_cfg(AMF_TIMER_SBI_CLIENT_WAIT)->duration;
@@ -147,11 +142,6 @@ void amf_sess_sbi_discover_and_send(
     ogs_assert(nf_type);
     ogs_assert(sess);
     ogs_assert(build);
-
-    if (sess->sbi.running == true) {
-        ogs_error("amf_sess_sbi_discover_and_send() is running");
-        return;
-    }
 
     sess->sbi.nf_state_registered = amf_nf_state_registered;
     sess->sbi.client_wait.duration =

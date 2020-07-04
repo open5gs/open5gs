@@ -447,14 +447,3 @@ bool smf_nsmf_handle_update_sm_context(
 
     return true;
 }
-
-bool smf_nsmf_handle_release_sm_context(
-        smf_sess_t *sess, ogs_sbi_message_t *message)
-{
-    ogs_assert(sess);
-
-    smf_5gc_pfcp_send_session_deletion_request(
-            sess, OGS_PFCP_5GC_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT);
-
-    return true;
-}

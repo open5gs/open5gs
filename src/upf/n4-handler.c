@@ -716,7 +716,7 @@ void upf_n4_handle_session_deletion_request(
     if (!sess) {
         ogs_warn("No Context");
         ogs_pfcp_send_error_message(xact, 0,
-                OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE,
+                OGS_PFCP_SESSION_DELETION_RESPONSE_TYPE,
                 OGS_PFCP_CAUSE_SESSION_CONTEXT_NOT_FOUND, 0);
         return;
     }

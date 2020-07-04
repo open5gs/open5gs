@@ -132,11 +132,6 @@ void smf_sbi_discover_and_send(
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
-    if (sess->sbi.running == true) {
-        ogs_error("smf_sbi_discover_and_send() is running");
-        return;
-    }
-
     sess->sbi.nf_state_registered = smf_nf_state_registered;
     sess->sbi.client_wait.duration =
         smf_timer_cfg(SMF_TIMER_SBI_CLIENT_WAIT)->duration;

@@ -207,21 +207,22 @@ int amf_namf_callback_handle_sm_context_status(
     sess = amf_sess_find_by_psi(amf_ue, pdu_session_identity);
     if (!sess) {
         status = OGS_SBI_HTTP_STATUS_NOT_FOUND;
-        ogs_error("[%s] Cannot find session [%d]", amf_ue->supi, sess->psi);
+        ogs_warn("[%s] Cannot find session", amf_ue->supi);
         goto cleanup;
     }
 
     SmContextStatusNotification = recvmsg->SmContextStatusNotification;
     if (!SmContextStatusNotification) {
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        ogs_error("No SmContextStatusNotification");
+        ogs_error("[%s:%d] No SmContextStatusNotification",
+                amf_ue->supi, sess->psi);
         goto cleanup;
     }
 
     StatusInfo = SmContextStatusNotification->status_info;
     if (!StatusInfo) {
         status = OGS_SBI_HTTP_STATUS_BAD_REQUEST;
-        ogs_error("No StatusInfo");
+        ogs_error("[%s:%d] No StatusInfo", amf_ue->supi, sess->psi);
         goto cleanup;
     }
 

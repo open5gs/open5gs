@@ -341,12 +341,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                                 sbi_message.h.resource.component[1]);
 
                         if (!sess) {
-                            ogs_error("Not found [%s]",
-                                    sbi_message.h.resource.component[1]);
+                            ogs_warn("Not found [%s]", sbi_message.h.uri);
                             smf_sbi_send_sm_context_update_error(session,
                                     OGS_SBI_HTTP_STATUS_NOT_FOUND, "Not found",
-                                    sbi_message.h.resource.component[1],
-                                    NULL, NULL);
+                                    sbi_message.h.uri, NULL, NULL);
                         }
                         break;
 
