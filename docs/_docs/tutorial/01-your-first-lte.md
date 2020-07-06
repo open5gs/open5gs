@@ -172,7 +172,7 @@ The following shows how to install the Web UI of Open5GS.
 ```bash
 $ curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
 $ sudo apt install nodejs
-$ curl -sL http://open5gs.org/static/webui/install | sudo -E bash -
+$ curl -sL https://open5gs.org/open5gs/assets/webui/install | sudo -E bash -
 ```
 
 ### Configuration & Running
