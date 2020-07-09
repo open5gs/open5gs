@@ -22,6 +22,12 @@
 
 #include "microhttpd.h"
 
+#if MHD_VERSION >= 0x00097001
+typedef enum MHD_Result _MHD_Result;
+#else
+typedef int _MHD_Result;
+#endif
+
 typedef struct ogs_sbi_session_s {
     ogs_lnode_t             lnode;
 
@@ -56,7 +62,7 @@ static void notify_connection(void *cls,
         struct MHD_Connection *connection,
         void **socket_context,
         enum MHD_ConnectionNotificationCode toe);
-static int access_handler(
+static _MHD_Result access_handler(
         void *cls,
         struct MHD_Connection *connection,
         const char *url,
@@ -503,7 +509,7 @@ static int get_values(ogs_hash_t *hash,
     return MHD_YES;
 }
 
-static int access_handler(
+static _MHD_Result access_handler(
         void *cls,
         struct MHD_Connection *connection,
         const char *url,
