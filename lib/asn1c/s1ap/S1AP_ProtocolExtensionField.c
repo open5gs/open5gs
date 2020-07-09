@@ -15243,6 +15243,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_extensionValue_28[] = {
 		0, 0, /* No default value */
 		"Correlation-ID"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue, choice.Correlation_ID_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),
+		0,
+		&asn_DEF_S1AP_Correlation_ID,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"Correlation-ID"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue, choice.BearerType),
 		(ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		0,
@@ -15254,8 +15263,9 @@ static asn_TYPE_member_t asn_MBR_S1AP_extensionValue_28[] = {
 		},
 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_extensionValue_tag2el_28[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 0, 0, 0 }, /* Correlation-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 1, 0, 0 } /* BearerType */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 0, 0, 1 }, /* Correlation-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 1, -1, 0 }, /* Correlation-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 2, 0, 0 } /* BearerType */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_28 = {
 	sizeof(struct S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue),
@@ -15263,7 +15273,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_28 = {
 	offsetof(struct S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue, present),
 	sizeof(((struct S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue *)0)->present),
 	asn_MAP_S1AP_extensionValue_tag2el_28,
-	2,	/* Count of tags in the map */
+	3,	/* Count of tags in the map */
 	0, 0,
 	-1	/* Extensions start */
 };
@@ -15278,7 +15288,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_extensionValue_28 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_extensionValue_28,
-	2,	/* Elements count */
+	3,	/* Elements count */
 	&asn_SPC_S1AP_extensionValue_specs_28	/* Additional specs */
 };
 
@@ -15708,6 +15718,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_extensionValue_48[] = {
 		0, 0, /* No default value */
 		"Correlation-ID"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue, choice.Correlation_ID_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),
+		0,
+		&asn_DEF_S1AP_Correlation_ID,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"Correlation-ID"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue, choice.BearerType),
 		(ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		0,
@@ -15719,8 +15738,9 @@ static asn_TYPE_member_t asn_MBR_S1AP_extensionValue_48[] = {
 		},
 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_extensionValue_tag2el_48[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 0, 0, 0 }, /* Correlation-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 1, 0, 0 } /* BearerType */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 0, 0, 1 }, /* Correlation-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 1, -1, 0 }, /* Correlation-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 2, 0, 0 } /* BearerType */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_48 = {
 	sizeof(struct S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue),
@@ -15728,7 +15748,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_48 = {
 	offsetof(struct S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue, present),
 	sizeof(((struct S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue *)0)->present),
 	asn_MAP_S1AP_extensionValue_tag2el_48,
-	2,	/* Count of tags in the map */
+	3,	/* Count of tags in the map */
 	0, 0,
 	-1	/* Extensions start */
 };
@@ -15743,7 +15763,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_extensionValue_48 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_extensionValue_48,
-	2,	/* Elements count */
+	3,	/* Elements count */
 	&asn_SPC_S1AP_extensionValue_specs_48	/* Additional specs */
 };
 
@@ -16923,6 +16943,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_extensionValue_104[] = {
 		0, 0, /* No default value */
 		"COUNTValueExtended"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue, choice.COUNTValueExtended_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_S1AP_COUNTValueExtended,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"COUNTValueExtended"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue, choice.ReceiveStatusOfULPDCPSDUsExtended),
 		(ASN_TAG_CLASS_UNIVERSAL | (3 << 2)),
 		0,
@@ -16941,6 +16970,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_extensionValue_104[] = {
 		0, 0, /* No default value */
 		"COUNTvaluePDCP-SNlength18"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue, choice.COUNTvaluePDCP_SNlength18_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_S1AP_COUNTvaluePDCP_SNlength18,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"COUNTvaluePDCP-SNlength18"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue, choice.ReceiveStatusOfULPDCPSDUsPDCP_SNlength18),
 		(ASN_TAG_CLASS_UNIVERSAL | (3 << 2)),
 		0,
@@ -16951,13 +16989,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_extensionValue_104[] = {
 		"ReceiveStatusOfULPDCPSDUsPDCP-SNlength18"
 		},
 };
-static const unsigned asn_MAP_S1AP_extensionValue_to_canonical_104[] = { 1, 3, 0, 2 };
-static const unsigned asn_MAP_S1AP_extensionValue_from_canonical_104[] = { 2, 0, 3, 1 };
+static const unsigned asn_MAP_S1AP_extensionValue_to_canonical_104[] = { 2, 5, 0, 1, 3, 4 };
+static const unsigned asn_MAP_S1AP_extensionValue_from_canonical_104[] = { 2, 3, 0, 4, 5, 1 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_extensionValue_tag2el_104[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 1, 0, 1 }, /* ReceiveStatusOfULPDCPSDUsExtended */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 3, -1, 0 }, /* ReceiveStatusOfULPDCPSDUsPDCP-SNlength18 */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 0, 0, 1 }, /* COUNTValueExtended */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 2, -1, 0 } /* COUNTvaluePDCP-SNlength18 */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 2, 0, 1 }, /* ReceiveStatusOfULPDCPSDUsExtended */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 5, -1, 0 }, /* ReceiveStatusOfULPDCPSDUsPDCP-SNlength18 */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 0, 0, 3 }, /* COUNTValueExtended */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 1, -1, 2 }, /* COUNTValueExtended */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 3, -2, 1 }, /* COUNTvaluePDCP-SNlength18 */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 4, -3, 0 } /* COUNTvaluePDCP-SNlength18 */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_104 = {
 	sizeof(struct S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue),
@@ -16965,7 +17005,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_104 = {
 	offsetof(struct S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue, present),
 	sizeof(((struct S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue *)0)->present),
 	asn_MAP_S1AP_extensionValue_tag2el_104,
-	4,	/* Count of tags in the map */
+	6,	/* Count of tags in the map */
 	asn_MAP_S1AP_extensionValue_to_canonical_104,
 	asn_MAP_S1AP_extensionValue_from_canonical_104,
 	-1	/* Extensions start */
@@ -16981,7 +17021,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_extensionValue_104 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_extensionValue_104,
-	4,	/* Elements count */
+	6,	/* Elements count */
 	&asn_SPC_S1AP_extensionValue_specs_104	/* Additional specs */
 };
 
@@ -20116,9 +20156,19 @@ static asn_TYPE_member_t asn_MBR_S1AP_extensionValue_252[] = {
 		0, 0, /* No default value */
 		"Packet-LossRate"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_E_RABQoSParameters_ExtIEs__extensionValue, choice.Packet_LossRate_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
+		0,
+		&asn_DEF_S1AP_Packet_LossRate,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"Packet-LossRate"
+		},
 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_extensionValue_tag2el_252[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 0 } /* Packet-LossRate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* Packet-LossRate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 } /* Packet-LossRate */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_252 = {
 	sizeof(struct S1AP_E_RABQoSParameters_ExtIEs__extensionValue),
@@ -20126,7 +20176,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_252 = {
 	offsetof(struct S1AP_E_RABQoSParameters_ExtIEs__extensionValue, present),
 	sizeof(((struct S1AP_E_RABQoSParameters_ExtIEs__extensionValue *)0)->present),
 	asn_MAP_S1AP_extensionValue_tag2el_252,
-	1,	/* Count of tags in the map */
+	2,	/* Count of tags in the map */
 	0, 0,
 	-1	/* Extensions start */
 };
@@ -20141,7 +20191,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_extensionValue_252 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_extensionValue_252,
-	1,	/* Elements count */
+	2,	/* Elements count */
 	&asn_SPC_S1AP_extensionValue_specs_252	/* Additional specs */
 };
 
@@ -20811,9 +20861,39 @@ static asn_TYPE_member_t asn_MBR_S1AP_extensionValue_284[] = {
 		0, 0, /* No default value */
 		"ExtendedBitRate"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_GBR_QosInformation_ExtIEs__extensionValue, choice.ExtendedBitRate_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
+		0,
+		&asn_DEF_S1AP_ExtendedBitRate,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"ExtendedBitRate"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_GBR_QosInformation_ExtIEs__extensionValue, choice.ExtendedBitRate_2),
+		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
+		0,
+		&asn_DEF_S1AP_ExtendedBitRate,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"ExtendedBitRate"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_GBR_QosInformation_ExtIEs__extensionValue, choice.ExtendedBitRate_3),
+		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
+		0,
+		&asn_DEF_S1AP_ExtendedBitRate,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"ExtendedBitRate"
+		},
 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_extensionValue_tag2el_284[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 0 } /* ExtendedBitRate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 3 }, /* ExtendedBitRate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 2 }, /* ExtendedBitRate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 2, -2, 1 }, /* ExtendedBitRate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 3, -3, 0 } /* ExtendedBitRate */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_284 = {
 	sizeof(struct S1AP_GBR_QosInformation_ExtIEs__extensionValue),
@@ -20821,7 +20901,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_284 = {
 	offsetof(struct S1AP_GBR_QosInformation_ExtIEs__extensionValue, present),
 	sizeof(((struct S1AP_GBR_QosInformation_ExtIEs__extensionValue *)0)->present),
 	asn_MAP_S1AP_extensionValue_tag2el_284,
-	1,	/* Count of tags in the map */
+	4,	/* Count of tags in the map */
 	0, 0,
 	-1	/* Extensions start */
 };
@@ -20836,7 +20916,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_extensionValue_284 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_extensionValue_284,
-	1,	/* Elements count */
+	4,	/* Elements count */
 	&asn_SPC_S1AP_extensionValue_specs_284	/* Additional specs */
 };
 
@@ -26774,9 +26854,19 @@ static asn_TYPE_member_t asn_MBR_S1AP_extensionValue_544[] = {
 		0, 0, /* No default value */
 		"ExtendedBitRate"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue, choice.ExtendedBitRate_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
+		0,
+		&asn_DEF_S1AP_ExtendedBitRate,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"ExtendedBitRate"
+		},
 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_extensionValue_tag2el_544[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 0 } /* ExtendedBitRate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* ExtendedBitRate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 } /* ExtendedBitRate */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_544 = {
 	sizeof(struct S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue),
@@ -26784,7 +26874,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_extensionValue_specs_544 = {
 	offsetof(struct S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue, present),
 	sizeof(((struct S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue *)0)->present),
 	asn_MAP_S1AP_extensionValue_tag2el_544,
-	1,	/* Count of tags in the map */
+	2,	/* Count of tags in the map */
 	0, 0,
 	-1	/* Extensions start */
 };
@@ -26799,7 +26889,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_extensionValue_544 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_extensionValue_544,
-	1,	/* Elements count */
+	2,	/* Elements count */
 	&asn_SPC_S1AP_extensionValue_specs_544	/* Additional specs */
 };
 

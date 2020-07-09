@@ -453,7 +453,7 @@ SEQUENCE_encode_oer(const asn_TYPE_descriptor_t *td,
      */
     for(edx = 0; edx < td->elements_count; edx++) {
         asn_TYPE_member_t *elm = &td->elements[edx];
-        asn_enc_rval_t er;
+        asn_enc_rval_t er = {0,0,0};
         const void *memb_ptr;
 
         if(IN_EXTENSION_GROUP(specs, edx)) break;
@@ -486,7 +486,7 @@ SEQUENCE_encode_oer(const asn_TYPE_descriptor_t *td,
     }
 
     /*
-     * Before encode extensions, encode extensions additions presense bitmap
+     * Before encode extensions, encode extensions additions presence bitmap
      # X.696 (08/2015) #16.4.
      */
     if(has_extensions) {

@@ -613,6 +613,7 @@ libasn1c_s1ap_sources = files('''
     S1AP_ProtocolExtensionField.h
     S1AP_PrivateIE-Container.h
     S1AP_PrivateIE-Field.h
+    S1AP_EXTERNAL.h
 
     S1AP_S1AP-PDU.c
     S1AP_InitiatingMessage.c
@@ -1206,6 +1207,7 @@ libasn1c_s1ap_sources = files('''
     S1AP_ProtocolExtensionField.c
     S1AP_PrivateIE-Container.c
     S1AP_PrivateIE-Field.c
+    S1AP_EXTERNAL.c
 '''.split())
 
 libasn1c_s1ap_inc = include_directories('.')

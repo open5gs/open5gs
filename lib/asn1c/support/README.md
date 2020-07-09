@@ -1,9 +1,15 @@
-Use velichkov git's fork for asn1c
+Use mounse07410(vlm_master) git's fork for asn1c
 ===========================================
 user@host ~/Documents/git/my$ \
-    git clone https://github.com/velichkov/asn1c.git
+    git clone https://github.com/mouse07410/asn1c.git
 user@host ~/Documents/git/my$ \
-    git checkout s1ap
+    git checkout ca3d87a0a3e27ce71b3800210f58d2a3c759f573
+
+OR
+
+user@host ~/Documents/git/my$ \
+    git clone https://github.com/open5gs/asn1c.git
+
 user@host Documents/git/my/asn1c$ \
     autoreconf -fi;./configure;make -j4
 
@@ -143,7 +149,9 @@ user@host ~/Documents/git/open5gs/lib/asn1c/s1ap$ \
 
 user@host ~/Documents/git/open5gs/lib/asn1c/ngap$ \
     rm -f NGAP_ProtocolIE-ContainerPair.c NGAP_ProtocolIE-FieldPair.c \
-    NGAP_ProtocolIE-ContainerPairList.c
+    NGAP_ProtocolIE-ContainerPairList.c \
+    NGAP_ProtocolIE-ContainerPair.h NGAP_ProtocolIE-ContainerPairList.h \
+    NGAP_ProtocolIE-FieldPair.h
 
 user@host ~/Documents/git/open5gs/lib/asn1c/s1ap$ \
     rm -f Makefile.am.asn1convert Makefile.am.libasncodec

@@ -20,12 +20,13 @@ libasn1c_common_sources = files('''
     OCTET_STRING.h
     OPEN_TYPE.h
     constr_CHOICE.h
-    BOOLEAN.h
+    GraphicString.h
     INTEGER.h
     NULL.h
     NativeEnumerated.h
     NativeInteger.h
     OBJECT_IDENTIFIER.h
+    ObjectDescriptor.h
     PrintableString.h
     asn_SEQUENCE_OF.h
     asn_SET_OF.h
@@ -60,12 +61,13 @@ libasn1c_common_sources = files('''
 
     ANY.c
     OPEN_TYPE.c
-    BOOLEAN.c
+    GraphicString.c
     INTEGER.c
     NULL.c
     NativeEnumerated.c
     NativeInteger.c
     OBJECT_IDENTIFIER.c
+    ObjectDescriptor.c
     PrintableString.c
     asn_SEQUENCE_OF.c
     asn_SET_OF.c

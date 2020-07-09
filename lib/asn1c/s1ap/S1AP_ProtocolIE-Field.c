@@ -23959,6 +23959,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_84[] = {
 		0, 0, /* No default value */
 		"Source-ToTarget-TransparentContainer"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_HandoverRequiredIEs__value, choice.Source_ToTarget_TransparentContainer_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),
+		0,
+		&asn_DEF_S1AP_Source_ToTarget_TransparentContainer,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"Source-ToTarget-TransparentContainer"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_HandoverRequiredIEs__value, choice.MSClassmark2),
 		(ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),
 		0,
@@ -24005,20 +24014,21 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_84[] = {
 		"PS-ServiceNotAvailable"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_84[] = { 0, 1, 10, 7, 8, 9, 2, 5, 6, 11, 12, 3, 4 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_84[] = { 0, 1, 6, 11, 12, 7, 8, 3, 4, 5, 2, 9, 10 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_84[] = { 0, 1, 11, 7, 8, 9, 10, 2, 5, 6, 12, 13, 3, 4 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_84[] = { 0, 1, 7, 12, 13, 8, 9, 3, 4, 5, 6, 2, 10, 11 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_84[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 }, /* ENB-UE-S1AP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 10, 0, 0 }, /* CSG-Id */
-    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 7, 0, 2 }, /* Source-ToTarget-TransparentContainer */
-    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 8, -1, 1 }, /* MSClassmark2 */
-    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 9, -2, 0 }, /* MSClassmark3 */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 11, 0, 0 }, /* CSG-Id */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 7, 0, 3 }, /* Source-ToTarget-TransparentContainer */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 8, -1, 2 }, /* Source-ToTarget-TransparentContainer */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 9, -2, 1 }, /* MSClassmark2 */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 10, -3, 0 }, /* MSClassmark3 */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 2, 0, 4 }, /* HandoverType */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 5, -1, 3 }, /* Direct-Forwarding-Path-Availability */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 6, -2, 2 }, /* SRVCCHOIndication */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 11, -3, 1 }, /* CellAccessMode */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 12, -4, 0 }, /* PS-ServiceNotAvailable */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 12, -3, 1 }, /* CellAccessMode */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 13, -4, 0 }, /* PS-ServiceNotAvailable */
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 3, 0, 1 }, /* radioNetwork */
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 4, -1, 0 }, /* targeteNB-ID */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 3, 0, 1 }, /* transport */
@@ -24035,7 +24045,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_84 = {
 	offsetof(struct S1AP_HandoverRequiredIEs__value, present),
 	sizeof(((struct S1AP_HandoverRequiredIEs__value *)0)->present),
 	asn_MAP_S1AP_value_tag2el_84,
-	20,	/* Count of tags in the map */
+	21,	/* Count of tags in the map */
 	asn_MAP_S1AP_value_to_canonical_84,
 	asn_MAP_S1AP_value_from_canonical_84,
 	-1	/* Extensions start */
@@ -24051,7 +24061,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_value_84 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_value_84,
-	13,	/* Elements count */
+	14,	/* Elements count */
 	&asn_SPC_S1AP_value_specs_84	/* Additional specs */
 };
 
@@ -24180,6 +24190,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_88[] = {
 		0, 0, /* No default value */
 		"Target-ToSource-TransparentContainer"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_HandoverCommandIEs__value, choice.Target_ToSource_TransparentContainer_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),
+		0,
+		&asn_DEF_S1AP_Target_ToSource_TransparentContainer,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"Target-ToSource-TransparentContainer"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_HandoverCommandIEs__value, choice.CriticalityDiagnostics),
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
@@ -24190,17 +24209,18 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_88[] = {
 		"CriticalityDiagnostics"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_88[] = { 0, 1, 3, 6, 2, 4, 5, 7 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_88[] = { 0, 1, 4, 2, 5, 6, 3, 7 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_88[] = { 0, 1, 3, 6, 7, 2, 4, 5, 8 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_88[] = { 0, 1, 5, 2, 6, 7, 3, 4, 8 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_88[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 }, /* ENB-UE-S1AP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 3, 0, 1 }, /* NASSecurityParametersfromE-UTRAN */
-    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 6, -1, 0 }, /* Target-ToSource-TransparentContainer */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 3, 0, 2 }, /* NASSecurityParametersfromE-UTRAN */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 6, -1, 1 }, /* Target-ToSource-TransparentContainer */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 7, -2, 0 }, /* Target-ToSource-TransparentContainer */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 2, 0, 0 }, /* HandoverType */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 4, 0, 2 }, /* E-RABSubjecttoDataForwardingList */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 5, -1, 1 }, /* E-RABList */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 7, -2, 0 } /* CriticalityDiagnostics */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 8, -2, 0 } /* CriticalityDiagnostics */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_88 = {
 	sizeof(struct S1AP_HandoverCommandIEs__value),
@@ -24208,7 +24228,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_88 = {
 	offsetof(struct S1AP_HandoverCommandIEs__value, present),
 	sizeof(((struct S1AP_HandoverCommandIEs__value *)0)->present),
 	asn_MAP_S1AP_value_tag2el_88,
-	8,	/* Count of tags in the map */
+	9,	/* Count of tags in the map */
 	asn_MAP_S1AP_value_to_canonical_88,
 	asn_MAP_S1AP_value_from_canonical_88,
 	-1	/* Extensions start */
@@ -24224,7 +24244,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_value_88 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_value_88,
-	8,	/* Elements count */
+	9,	/* Elements count */
 	&asn_SPC_S1AP_value_specs_88	/* Additional specs */
 };
 
@@ -24571,6 +24591,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_96[] = {
 		0, 0, /* No default value */
 		"GUMMEI"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_HandoverRequestIEs__value, choice.MME_UE_S1AP_ID_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
+		0,
+		&asn_DEF_S1AP_MME_UE_S1AP_ID,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"MME-UE-S1AP-ID"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_HandoverRequestIEs__value, choice.ManagementBasedMDTAllowed),
 		(ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		0,
@@ -24707,24 +24736,25 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_96[] = {
 		"AdditionalRRMPriorityIndex"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_96[] = { 0, 13, 18, 30, 5, 12, 1, 10, 14, 16, 21, 24, 26, 27, 28, 3, 4, 6, 7, 8, 9, 11, 15, 17, 19, 20, 22, 23, 25, 29, 2 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_96[] = { 0, 6, 30, 15, 16, 4, 17, 18, 19, 20, 7, 21, 5, 1, 8, 22, 9, 23, 2, 24, 25, 10, 26, 27, 11, 28, 12, 13, 14, 29, 3 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_96[] = { 0, 16, 13, 19, 31, 5, 12, 1, 10, 14, 17, 22, 25, 27, 28, 29, 3, 4, 6, 7, 8, 9, 11, 15, 18, 20, 21, 23, 24, 26, 30, 2 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_96[] = { 0, 7, 31, 16, 17, 5, 18, 19, 20, 21, 8, 22, 6, 2, 9, 23, 1, 10, 24, 3, 25, 26, 11, 27, 28, 12, 29, 13, 14, 15, 30, 4 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_96[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 0 }, /* MME-UE-S1AP-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 16, -1, 0 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 13, 0, 2 }, /* CSG-Id */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 18, -1, 1 }, /* Masked-IMEISV */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 30, -2, 0 }, /* AdditionalRRMPriorityIndex */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 19, -1, 1 }, /* Masked-IMEISV */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 31, -2, 0 }, /* AdditionalRRMPriorityIndex */
     { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 5, 0, 1 }, /* Source-ToTarget-TransparentContainer */
     { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 12, -1, 0 }, /* NASSecurityParameterstoE-UTRAN */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 1, 0, 8 }, /* HandoverType */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 10, -1, 7 }, /* SRVCCOperationPossible */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 14, -2, 6 }, /* CSGMembershipStatus */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 16, -3, 5 }, /* ManagementBasedMDTAllowed */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 21, -4, 4 }, /* UEUserPlaneCIoTSupportIndicator */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 24, -5, 3 }, /* EnhancedCoverageRestricted */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 26, -6, 2 }, /* CE-ModeBRestricted */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 27, -7, 1 }, /* AerialUEsubscriptionInformation */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 28, -8, 0 }, /* PendingDataIndication */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 17, -3, 5 }, /* ManagementBasedMDTAllowed */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 22, -4, 4 }, /* UEUserPlaneCIoTSupportIndicator */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 25, -5, 3 }, /* EnhancedCoverageRestricted */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 27, -6, 2 }, /* CE-ModeBRestricted */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 28, -7, 1 }, /* AerialUEsubscriptionInformation */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 29, -8, 0 }, /* PendingDataIndication */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 3, 0, 14 }, /* UEAggregateMaximumBitrate */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 4, -1, 13 }, /* E-RABToBeSetupListHOReq */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 6, -2, 12 }, /* UESecurityCapabilities */
@@ -24733,13 +24763,13 @@ static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_96[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 9, -5, 9 }, /* RequestType */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 11, -6, 8 }, /* SecurityContext */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 15, -7, 7 }, /* GUMMEI */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 17, -8, 6 }, /* MDTPLMNList */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 19, -9, 5 }, /* ExpectedUEBehaviour */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 20, -10, 4 }, /* ProSeAuthorized */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 22, -11, 3 }, /* V2XServicesAuthorized */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 23, -12, 2 }, /* UESidelinkAggregateMaximumBitrate */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 25, -13, 1 }, /* NRUESecurityCapabilities */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 29, -14, 0 }, /* Subscription-Based-UE-DifferentiationInfo */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 18, -8, 6 }, /* MDTPLMNList */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 20, -9, 5 }, /* ExpectedUEBehaviour */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 21, -10, 4 }, /* ProSeAuthorized */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 23, -11, 3 }, /* V2XServicesAuthorized */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 24, -12, 2 }, /* UESidelinkAggregateMaximumBitrate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 26, -13, 1 }, /* NRUESecurityCapabilities */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 30, -14, 0 }, /* Subscription-Based-UE-DifferentiationInfo */
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 2, 0, 0 }, /* radioNetwork */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 2, 0, 0 }, /* transport */
     { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* nas */
@@ -24752,7 +24782,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_96 = {
 	offsetof(struct S1AP_HandoverRequestIEs__value, present),
 	sizeof(((struct S1AP_HandoverRequestIEs__value *)0)->present),
 	asn_MAP_S1AP_value_tag2el_96,
-	35,	/* Count of tags in the map */
+	36,	/* Count of tags in the map */
 	asn_MAP_S1AP_value_to_canonical_96,
 	asn_MAP_S1AP_value_from_canonical_96,
 	-1	/* Extensions start */
@@ -24768,7 +24798,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_value_96 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_value_96,
-	31,	/* Elements count */
+	32,	/* Elements count */
 	&asn_SPC_S1AP_value_specs_96	/* Additional specs */
 };
 
@@ -25613,6 +25643,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_116[] = {
 		0, 0, /* No default value */
 		"CriticalityDiagnostics"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_PathSwitchRequestAcknowledgeIEs__value, choice.MME_UE_S1AP_ID_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
+		0,
+		&asn_DEF_S1AP_MME_UE_S1AP_ID,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"MME-UE-S1AP-ID"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_PathSwitchRequestAcknowledgeIEs__value, choice.CSGMembershipStatus),
 		(ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		0,
@@ -25731,29 +25770,30 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_116[] = {
 		"AdditionalRRMPriorityIndex"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_116[] = { 0, 1, 19, 7, 9, 12, 14, 15, 16, 2, 3, 4, 5, 6, 8, 10, 11, 13, 17, 18 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_116[] = { 0, 1, 9, 10, 11, 12, 13, 3, 14, 4, 15, 16, 5, 17, 6, 7, 8, 18, 19, 2 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_116[] = { 0, 1, 7, 20, 8, 10, 13, 15, 16, 17, 2, 3, 4, 5, 6, 9, 11, 12, 14, 18, 19 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_116[] = { 0, 1, 10, 11, 12, 13, 14, 2, 4, 15, 5, 16, 17, 6, 18, 7, 8, 9, 19, 20, 3 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_116[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 }, /* ENB-UE-S1AP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 19, 0, 0 }, /* AdditionalRRMPriorityIndex */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 7, 0, 5 }, /* CSGMembershipStatus */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 9, -1, 4 }, /* UEUserPlaneCIoTSupportIndicator */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 12, -2, 3 }, /* EnhancedCoverageRestricted */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 14, -3, 2 }, /* CE-ModeBRestricted */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 15, -4, 1 }, /* AerialUEsubscriptionInformation */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 16, -5, 0 }, /* PendingDataIndication */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 2 }, /* MME-UE-S1AP-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 1 }, /* ENB-UE-S1AP-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 7, -2, 0 }, /* MME-UE-S1AP-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 20, 0, 0 }, /* AdditionalRRMPriorityIndex */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 8, 0, 5 }, /* CSGMembershipStatus */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 10, -1, 4 }, /* UEUserPlaneCIoTSupportIndicator */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 13, -2, 3 }, /* EnhancedCoverageRestricted */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 15, -3, 2 }, /* CE-ModeBRestricted */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 16, -4, 1 }, /* AerialUEsubscriptionInformation */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 17, -5, 0 }, /* PendingDataIndication */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 2, 0, 10 }, /* UEAggregateMaximumBitrate */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 3, -1, 9 }, /* E-RABToBeSwitchedULList */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 4, -2, 8 }, /* E-RABList */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 5, -3, 7 }, /* SecurityContext */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 6, -4, 6 }, /* CriticalityDiagnostics */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 8, -5, 5 }, /* ProSeAuthorized */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 10, -6, 4 }, /* V2XServicesAuthorized */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 11, -7, 3 }, /* UESidelinkAggregateMaximumBitrate */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 13, -8, 2 }, /* NRUESecurityCapabilities */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 17, -9, 1 }, /* Subscription-Based-UE-DifferentiationInfo */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 18, -10, 0 } /* HandoverRestrictionList */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 9, -5, 5 }, /* ProSeAuthorized */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 11, -6, 4 }, /* V2XServicesAuthorized */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 12, -7, 3 }, /* UESidelinkAggregateMaximumBitrate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 14, -8, 2 }, /* NRUESecurityCapabilities */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 18, -9, 1 }, /* Subscription-Based-UE-DifferentiationInfo */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 19, -10, 0 } /* HandoverRestrictionList */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_116 = {
 	sizeof(struct S1AP_PathSwitchRequestAcknowledgeIEs__value),
@@ -25761,7 +25801,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_116 = {
 	offsetof(struct S1AP_PathSwitchRequestAcknowledgeIEs__value, present),
 	sizeof(((struct S1AP_PathSwitchRequestAcknowledgeIEs__value *)0)->present),
 	asn_MAP_S1AP_value_tag2el_116,
-	20,	/* Count of tags in the map */
+	21,	/* Count of tags in the map */
 	asn_MAP_S1AP_value_to_canonical_116,
 	asn_MAP_S1AP_value_from_canonical_116,
 	-1	/* Extensions start */
@@ -25777,7 +25817,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_value_116 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_value_116,
-	20,	/* Elements count */
+	21,	/* Elements count */
 	&asn_SPC_S1AP_value_specs_116	/* Additional specs */
 };
 
@@ -27365,6 +27405,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_160[] = {
 		0, 0, /* No default value */
 		"GUMMEI"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_InitialContextSetupRequestIEs__value, choice.MME_UE_S1AP_ID_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
+		0,
+		&asn_DEF_S1AP_MME_UE_S1AP_ID,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"MME-UE-S1AP-ID"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_InitialContextSetupRequestIEs__value, choice.ManagementBasedMDTAllowed),
 		(ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		0,
@@ -27510,26 +27559,27 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_160[] = {
 		"AdditionalRRMPriorityIndex"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_160[] = { 0, 1, 9, 5, 18, 30, 8, 10, 11, 12, 15, 17, 21, 24, 26, 27, 28, 2, 3, 4, 6, 7, 13, 14, 16, 19, 20, 22, 23, 25, 29 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_160[] = { 0, 1, 17, 18, 19, 3, 20, 21, 6, 2, 7, 8, 9, 22, 23, 10, 24, 11, 4, 25, 26, 12, 27, 28, 13, 29, 14, 15, 16, 30, 5 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_160[] = { 0, 1, 9, 15, 5, 19, 31, 8, 10, 11, 12, 16, 18, 22, 25, 27, 28, 29, 2, 3, 4, 6, 7, 13, 14, 17, 20, 21, 23, 24, 26, 30 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_160[] = { 0, 1, 18, 19, 20, 4, 21, 22, 7, 2, 8, 9, 10, 23, 24, 3, 11, 25, 12, 5, 26, 27, 13, 28, 29, 14, 30, 15, 16, 17, 31, 6 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_160[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 2 }, /* MME-UE-S1AP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 1 }, /* ENB-UE-S1AP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 9, -2, 0 }, /* SubscriberProfileIDforRFP */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 3 }, /* MME-UE-S1AP-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 2 }, /* ENB-UE-S1AP-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 9, -2, 1 }, /* SubscriberProfileIDforRFP */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 15, -3, 0 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 5, 0, 2 }, /* SecurityKey */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 18, -1, 1 }, /* Masked-IMEISV */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 30, -2, 0 }, /* AdditionalRRMPriorityIndex */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 19, -1, 1 }, /* Masked-IMEISV */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 31, -2, 0 }, /* AdditionalRRMPriorityIndex */
     { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 8, 0, 0 }, /* UERadioCapability */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 10, 0, 9 }, /* CSFallbackIndicator */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 11, -1, 8 }, /* SRVCCOperationPossible */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 12, -2, 7 }, /* CSGMembershipStatus */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 15, -3, 6 }, /* ManagementBasedMDTAllowed */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 17, -4, 5 }, /* AdditionalCSFallbackIndicator */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 21, -5, 4 }, /* UEUserPlaneCIoTSupportIndicator */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 24, -6, 3 }, /* EnhancedCoverageRestricted */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 26, -7, 2 }, /* CE-ModeBRestricted */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 27, -8, 1 }, /* AerialUEsubscriptionInformation */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 28, -9, 0 }, /* PendingDataIndication */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 16, -3, 6 }, /* ManagementBasedMDTAllowed */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 18, -4, 5 }, /* AdditionalCSFallbackIndicator */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 22, -5, 4 }, /* UEUserPlaneCIoTSupportIndicator */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 25, -6, 3 }, /* EnhancedCoverageRestricted */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 27, -7, 2 }, /* CE-ModeBRestricted */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 28, -8, 1 }, /* AerialUEsubscriptionInformation */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 29, -9, 0 }, /* PendingDataIndication */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 2, 0, 13 }, /* UEAggregateMaximumBitrate */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 3, -1, 12 }, /* E-RABToBeSetupListCtxtSUReq */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 4, -2, 11 }, /* UESecurityCapabilities */
@@ -27537,13 +27587,13 @@ static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_160[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 7, -4, 9 }, /* HandoverRestrictionList */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 13, -5, 8 }, /* LAI */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 14, -6, 7 }, /* GUMMEI */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 16, -7, 6 }, /* MDTPLMNList */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 19, -8, 5 }, /* ExpectedUEBehaviour */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 20, -9, 4 }, /* ProSeAuthorized */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 22, -10, 3 }, /* V2XServicesAuthorized */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 23, -11, 2 }, /* UESidelinkAggregateMaximumBitrate */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 25, -12, 1 }, /* NRUESecurityCapabilities */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 29, -13, 0 } /* Subscription-Based-UE-DifferentiationInfo */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 17, -7, 6 }, /* MDTPLMNList */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 20, -8, 5 }, /* ExpectedUEBehaviour */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 21, -9, 4 }, /* ProSeAuthorized */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 23, -10, 3 }, /* V2XServicesAuthorized */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 24, -11, 2 }, /* UESidelinkAggregateMaximumBitrate */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 26, -12, 1 }, /* NRUESecurityCapabilities */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 30, -13, 0 } /* Subscription-Based-UE-DifferentiationInfo */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_160 = {
 	sizeof(struct S1AP_InitialContextSetupRequestIEs__value),
@@ -27551,7 +27601,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_160 = {
 	offsetof(struct S1AP_InitialContextSetupRequestIEs__value, present),
 	sizeof(((struct S1AP_InitialContextSetupRequestIEs__value *)0)->present),
 	asn_MAP_S1AP_value_tag2el_160,
-	31,	/* Count of tags in the map */
+	32,	/* Count of tags in the map */
 	asn_MAP_S1AP_value_to_canonical_160,
 	asn_MAP_S1AP_value_from_canonical_160,
 	-1	/* Extensions start */
@@ -27567,7 +27617,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_value_160 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_value_160,
-	31,	/* Elements count */
+	32,	/* Elements count */
 	&asn_SPC_S1AP_value_specs_160	/* Additional specs */
 };
 
@@ -29739,6 +29789,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_212[] = {
 		0, 0, /* No default value */
 		"TunnelInformation"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_InitialUEMessage_IEs__value, choice.TransportLayerAddress_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (3 << 2)),
+		0,
+		&asn_DEF_S1AP_TransportLayerAddress,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"TransportLayerAddress"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_InitialUEMessage_IEs__value, choice.LHN_ID),
 		(ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),
 		0,
@@ -29812,25 +29871,26 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_212[] = {
 		"EDT-Session"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_212[] = { 0, 15, 17, 6, 9, 19, 1, 13, 14, 4, 8, 10, 11, 16, 18, 20, 2, 3, 5, 7, 12 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_212[] = { 0, 6, 16, 17, 9, 18, 3, 19, 10, 4, 11, 12, 20, 7, 8, 1, 13, 2, 14, 5, 15 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_212[] = { 0, 16, 18, 6, 9, 13, 20, 1, 14, 15, 4, 8, 10, 11, 17, 19, 21, 2, 3, 5, 7, 12 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_212[] = { 0, 7, 17, 18, 10, 19, 3, 20, 11, 4, 12, 13, 21, 5, 8, 9, 1, 14, 2, 15, 6, 16 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_212[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 2 }, /* ENB-UE-S1AP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 15, -1, 1 }, /* UE-Usage-Type */
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 17, -2, 0 }, /* DCN-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 6, 0, 2 }, /* CSG-Id */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 9, -1, 1 }, /* TransportLayerAddress */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 19, -2, 0 }, /* UE-Application-Layer-Measurement-Capability */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 16, -1, 1 }, /* UE-Usage-Type */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 18, -2, 0 }, /* DCN-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 6, 0, 3 }, /* CSG-Id */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 9, -1, 2 }, /* TransportLayerAddress */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 13, -2, 1 }, /* TransportLayerAddress */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 20, -3, 0 }, /* UE-Application-Layer-Measurement-Capability */
     { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 1, 0, 2 }, /* NAS-PDU */
-    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 13, -1, 1 }, /* LHN-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 14, -2, 0 }, /* MME-Group-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 14, -1, 1 }, /* LHN-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 15, -2, 0 }, /* MME-Group-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 4, 0, 6 }, /* RRC-Establishment-Cause */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 8, -1, 5 }, /* CellAccessMode */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 10, -2, 4 }, /* RelayNode-Indicator */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 11, -3, 3 }, /* GUMMEIType */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 16, -4, 2 }, /* CE-mode-B-SupportIndicator */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 18, -5, 1 }, /* Coverage-Level */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 20, -6, 0 }, /* EDT-Session */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 17, -4, 2 }, /* CE-mode-B-SupportIndicator */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 19, -5, 1 }, /* Coverage-Level */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 21, -6, 0 }, /* EDT-Session */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 2, 0, 4 }, /* TAI */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 3, -1, 3 }, /* EUTRAN-CGI */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 5, -2, 2 }, /* S-TMSI */
@@ -29843,7 +29903,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_212 = {
 	offsetof(struct S1AP_InitialUEMessage_IEs__value, present),
 	sizeof(((struct S1AP_InitialUEMessage_IEs__value *)0)->present),
 	asn_MAP_S1AP_value_tag2el_212,
-	21,	/* Count of tags in the map */
+	22,	/* Count of tags in the map */
 	asn_MAP_S1AP_value_to_canonical_212,
 	asn_MAP_S1AP_value_from_canonical_212,
 	-1	/* Extensions start */
@@ -29859,7 +29919,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_value_212 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_value_212,
-	21,	/* Elements count */
+	22,	/* Elements count */
 	&asn_SPC_S1AP_value_specs_212	/* Additional specs */
 };
 
@@ -29979,6 +30039,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_216[] = {
 		0, 0, /* No default value */
 		"TransportLayerAddress"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_UplinkNASTransport_IEs__value, choice.TransportLayerAddress_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (3 << 2)),
+		0,
+		&asn_DEF_S1AP_TransportLayerAddress,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"TransportLayerAddress"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_UplinkNASTransport_IEs__value, choice.LHN_ID),
 		(ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),
 		0,
@@ -29998,17 +30067,18 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_216[] = {
 		"PSCellInformation"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_216[] = { 0, 1, 5, 2, 6, 3, 4, 7 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_216[] = { 0, 1, 3, 5, 6, 2, 4, 7 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_216[] = { 0, 1, 5, 6, 2, 7, 3, 4, 8 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_216[] = { 0, 1, 4, 6, 7, 2, 3, 5, 8 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_216[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 }, /* ENB-UE-S1AP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 5, 0, 0 }, /* TransportLayerAddress */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 5, 0, 1 }, /* TransportLayerAddress */
+    { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 6, -1, 0 }, /* TransportLayerAddress */
     { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 2, 0, 1 }, /* NAS-PDU */
-    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 6, -1, 0 }, /* LHN-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)), 7, -1, 0 }, /* LHN-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 3, 0, 2 }, /* EUTRAN-CGI */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 4, -1, 1 }, /* TAI */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 7, -2, 0 } /* PSCellInformation */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 8, -2, 0 } /* PSCellInformation */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_216 = {
 	sizeof(struct S1AP_UplinkNASTransport_IEs__value),
@@ -30016,7 +30086,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_216 = {
 	offsetof(struct S1AP_UplinkNASTransport_IEs__value, present),
 	sizeof(((struct S1AP_UplinkNASTransport_IEs__value *)0)->present),
 	asn_MAP_S1AP_value_tag2el_216,
-	8,	/* Count of tags in the map */
+	9,	/* Count of tags in the map */
 	asn_MAP_S1AP_value_to_canonical_216,
 	asn_MAP_S1AP_value_from_canonical_216,
 	-1	/* Extensions start */
@@ -30032,7 +30102,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_value_216 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_value_216,
-	8,	/* Elements count */
+	9,	/* Elements count */
 	&asn_SPC_S1AP_value_specs_216	/* Additional specs */
 };
 
@@ -31384,15 +31454,25 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_256[] = {
 		0, 0, /* No default value */
 		"ConnectedengNBList"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_ENBConfigurationUpdateIEs__value, choice.ConnectedengNBList_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_S1AP_ConnectedengNBList,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"ConnectedengNBList"
+		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_256[] = { 3, 4, 1, 2, 5, 0 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_256[] = { 5, 2, 3, 0, 1, 4 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_256[] = { 3, 4, 1, 2, 5, 6, 0 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_256[] = { 6, 2, 3, 0, 1, 4, 5 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_256[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 3, 0, 1 }, /* PagingDRX */
     { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 4, -1, 0 }, /* NB-IoT-DefaultPagingDRX */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 1, 0, 2 }, /* SupportedTAs */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 2, -1, 1 }, /* CSG-IdList */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 5, -2, 0 }, /* ConnectedengNBList */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 1, 0, 3 }, /* SupportedTAs */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 2, -1, 2 }, /* CSG-IdList */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 5, -2, 1 }, /* ConnectedengNBList */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 6, -3, 0 }, /* ConnectedengNBList */
     { (ASN_TAG_CLASS_UNIVERSAL | (19 << 2)), 0, 0, 0 } /* ENBname */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_256 = {
@@ -31401,7 +31481,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_256 = {
 	offsetof(struct S1AP_ENBConfigurationUpdateIEs__value, present),
 	sizeof(((struct S1AP_ENBConfigurationUpdateIEs__value *)0)->present),
 	asn_MAP_S1AP_value_tag2el_256,
-	6,	/* Count of tags in the map */
+	7,	/* Count of tags in the map */
 	asn_MAP_S1AP_value_to_canonical_256,
 	asn_MAP_S1AP_value_from_canonical_256,
 	-1	/* Extensions start */
@@ -31417,7 +31497,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_value_256 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_value_256,
-	6,	/* Elements count */
+	7,	/* Elements count */
 	&asn_SPC_S1AP_value_specs_256	/* Additional specs */
 };
 
@@ -35909,6 +35989,15 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_396[] = {
 		0, 0, /* No default value */
 		"E-RABList"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_E_RABModificationConfirmIEs__value, choice.E_RABList_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_S1AP_E_RABList,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"E-RABList"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct S1AP_E_RABModificationConfirmIEs__value, choice.CriticalityDiagnostics),
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
@@ -35928,15 +36017,16 @@ static asn_TYPE_member_t asn_MBR_S1AP_value_396[] = {
 		"CSGMembershipStatus"
 		},
 };
-static const unsigned asn_MAP_S1AP_value_to_canonical_396[] = { 0, 1, 5, 2, 3, 4 };
-static const unsigned asn_MAP_S1AP_value_from_canonical_396[] = { 0, 1, 3, 4, 5, 2 };
+static const unsigned asn_MAP_S1AP_value_to_canonical_396[] = { 0, 1, 6, 2, 3, 4, 5 };
+static const unsigned asn_MAP_S1AP_value_from_canonical_396[] = { 0, 1, 3, 4, 5, 6, 2 };
 static const asn_TYPE_tag2member_t asn_MAP_S1AP_value_tag2el_396[] = {
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 1 }, /* MME-UE-S1AP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 0 }, /* ENB-UE-S1AP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 5, 0, 0 }, /* CSGMembershipStatus */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 2, 0, 2 }, /* E-RABModifyListBearerModConf */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 3, -1, 1 }, /* E-RABList */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 4, -2, 0 } /* CriticalityDiagnostics */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 6, 0, 0 }, /* CSGMembershipStatus */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 2, 0, 3 }, /* E-RABModifyListBearerModConf */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 3, -1, 2 }, /* E-RABList */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 4, -2, 1 }, /* E-RABList */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 5, -3, 0 } /* CriticalityDiagnostics */
 };
 static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_396 = {
 	sizeof(struct S1AP_E_RABModificationConfirmIEs__value),
@@ -35944,7 +36034,7 @@ static asn_CHOICE_specifics_t asn_SPC_S1AP_value_specs_396 = {
 	offsetof(struct S1AP_E_RABModificationConfirmIEs__value, present),
 	sizeof(((struct S1AP_E_RABModificationConfirmIEs__value *)0)->present),
 	asn_MAP_S1AP_value_tag2el_396,
-	6,	/* Count of tags in the map */
+	7,	/* Count of tags in the map */
 	asn_MAP_S1AP_value_to_canonical_396,
 	asn_MAP_S1AP_value_from_canonical_396,
 	-1	/* Extensions start */
@@ -35960,7 +36050,7 @@ asn_TYPE_descriptor_t asn_DEF_S1AP_value_396 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_S1AP_value_396,
-	6,	/* Elements count */
+	7,	/* Elements count */
 	&asn_SPC_S1AP_value_specs_396	/* Additional specs */
 };
 

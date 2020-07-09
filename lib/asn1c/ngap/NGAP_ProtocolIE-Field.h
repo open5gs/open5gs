@@ -420,6 +420,7 @@ typedef enum NGAP_UEContextModificationRequestIEs__value_PR {
 	NGAP_UEContextModificationRequestIEs__value_PR_UESecurityCapabilities,
 	NGAP_UEContextModificationRequestIEs__value_PR_CoreNetworkAssistanceInformationForInactive,
 	NGAP_UEContextModificationRequestIEs__value_PR_EmergencyFallbackIndicator,
+	NGAP_UEContextModificationRequestIEs__value_PR_AMF_UE_NGAP_ID_1,
 	NGAP_UEContextModificationRequestIEs__value_PR_RRCInactiveTransitionReportRequest,
 	NGAP_UEContextModificationRequestIEs__value_PR_GUAMI,
 	NGAP_UEContextModificationRequestIEs__value_PR_CNAssistedRANTuning,
@@ -1646,6 +1647,7 @@ typedef struct NGAP_UEContextModificationRequestIEs {
 			NGAP_UESecurityCapabilities_t	 UESecurityCapabilities;
 			NGAP_CoreNetworkAssistanceInformationForInactive_t	 CoreNetworkAssistanceInformationForInactive;
 			NGAP_EmergencyFallbackIndicator_t	 EmergencyFallbackIndicator;
+			NGAP_AMF_UE_NGAP_ID_t	 AMF_UE_NGAP_ID_1;
 			NGAP_RRCInactiveTransitionReportRequest_t	 RRCInactiveTransitionReportRequest;
 			NGAP_GUAMI_t	 GUAMI;
 			NGAP_CNAssistedRANTuning_t	 CNAssistedRANTuning;

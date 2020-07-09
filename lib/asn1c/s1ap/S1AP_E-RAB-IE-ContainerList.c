@@ -24,7 +24,7 @@ S1AP_E_RAB_IE_ContainerList_1199P0_constraint(const asn_TYPE_descriptor_t *td, c
 	
 	if((size >= 1 && size <= 256)) {
 		/* Perform validation of the inner elements */
-		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+		return SEQUENCE_OF_constraint(td, sptr, ctfailcb, app_key);
 	} else {
 		ASN__CTFAIL(app_key, td, sptr,
 			"%s: constraint failed (%s:%d)",
@@ -54,7 +54,7 @@ S1AP_E_RAB_IE_ContainerList_1199P1_constraint(const asn_TYPE_descriptor_t *td, c
 	
 	if((size >= 1 && size <= 256)) {
 		/* Perform validation of the inner elements */
-		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+		return SEQUENCE_OF_constraint(td, sptr, ctfailcb, app_key);
 	} else {
 		ASN__CTFAIL(app_key, td, sptr,
 			"%s: constraint failed (%s:%d)",
@@ -84,7 +84,7 @@ S1AP_E_RAB_IE_ContainerList_1199P2_constraint(const asn_TYPE_descriptor_t *td, c
 	
 	if((size >= 1 && size <= 256)) {
 		/* Perform validation of the inner elements */
-		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+		return SEQUENCE_OF_constraint(td, sptr, ctfailcb, app_key);
 	} else {
 		ASN__CTFAIL(app_key, td, sptr,
 			"%s: constraint failed (%s:%d)",
@@ -114,7 +114,7 @@ S1AP_E_RAB_IE_ContainerList_1199P3_constraint(const asn_TYPE_descriptor_t *td, c
 	
 	if((size >= 1 && size <= 256)) {
 		/* Perform validation of the inner elements */
-		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+		return SEQUENCE_OF_constraint(td, sptr, ctfailcb, app_key);
 	} else {
 		ASN__CTFAIL(app_key, td, sptr,
 			"%s: constraint failed (%s:%d)",
@@ -144,7 +144,7 @@ S1AP_E_RAB_IE_ContainerList_1199P4_constraint(const asn_TYPE_descriptor_t *td, c
 	
 	if((size >= 1 && size <= 256)) {
 		/* Perform validation of the inner elements */
-		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+		return SEQUENCE_OF_constraint(td, sptr, ctfailcb, app_key);
 	} else {
 		ASN__CTFAIL(app_key, td, sptr,
 			"%s: constraint failed (%s:%d)",
@@ -174,7 +174,7 @@ S1AP_E_RAB_IE_ContainerList_1199P5_constraint(const asn_TYPE_descriptor_t *td, c
 	
 	if((size >= 1 && size <= 256)) {
 		/* Perform validation of the inner elements */
-		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+		return SEQUENCE_OF_constraint(td, sptr, ctfailcb, app_key);
 	} else {
 		ASN__CTFAIL(app_key, td, sptr,
 			"%s: constraint failed (%s:%d)",
@@ -204,7 +204,7 @@ S1AP_E_RAB_IE_ContainerList_1199P6_constraint(const asn_TYPE_descriptor_t *td, c
 	
 	if((size >= 1 && size <= 256)) {
 		/* Perform validation of the inner elements */
-		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+		return SEQUENCE_OF_constraint(td, sptr, ctfailcb, app_key);
 	} else {
 		ASN__CTFAIL(app_key, td, sptr,
 			"%s: constraint failed (%s:%d)",
@@ -234,7 +234,7 @@ S1AP_E_RAB_IE_ContainerList_1199P7_constraint(const asn_TYPE_descriptor_t *td, c
 	
 	if((size >= 1 && size <= 256)) {
 		/* Perform validation of the inner elements */
-		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+		return SEQUENCE_OF_constraint(td, sptr, ctfailcb, app_key);
 	} else {
 		ASN__CTFAIL(app_key, td, sptr,
 			"%s: constraint failed (%s:%d)",
@@ -264,7 +264,7 @@ S1AP_E_RAB_IE_ContainerList_1199P8_constraint(const asn_TYPE_descriptor_t *td, c
 	
 	if((size >= 1 && size <= 256)) {
 		/* Perform validation of the inner elements */
-		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+		return SEQUENCE_OF_constraint(td, sptr, ctfailcb, app_key);
 	} else {
 		ASN__CTFAIL(app_key, td, sptr,
 			"%s: constraint failed (%s:%d)",
@@ -294,7 +294,7 @@ S1AP_E_RAB_IE_ContainerList_1199P9_constraint(const asn_TYPE_descriptor_t *td, c
 	
 	if((size >= 1 && size <= 256)) {
 		/* Perform validation of the inner elements */
-		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+		return SEQUENCE_OF_constraint(td, sptr, ctfailcb, app_key);
 	} else {
 		ASN__CTFAIL(app_key, td, sptr,
 			"%s: constraint failed (%s:%d)",

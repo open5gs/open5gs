@@ -6,23 +6,24 @@
 #define	ASN_TYPE_NULL_H
 
 #include <asn_application.h>
-#include <BOOLEAN.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*
- * The value of the NULL type is meaningless: see BOOLEAN if you want to
- * carry true/false semantics.
+ * The value of the NULL type is meaningless.
+ * Use the BOOLEAN type if you need to carry true/false semantics.
  */
 typedef int NULL_t;
 
 extern asn_TYPE_descriptor_t asn_DEF_NULL;
 extern asn_TYPE_operation_t asn_OP_NULL;
 
+asn_struct_free_f NULL_free;
 asn_struct_print_f NULL_print;
 asn_struct_compare_f NULL_compare;
+ber_type_decoder_f NULL_decode_ber;
 der_type_encoder_f NULL_encode_der;
 xer_type_decoder_f NULL_decode_xer;
 xer_type_encoder_f NULL_encode_xer;
@@ -34,8 +35,6 @@ per_type_decoder_f NULL_decode_aper;
 per_type_encoder_f NULL_encode_aper;
 asn_random_fill_f  NULL_random_fill;
 
-#define NULL_free	BOOLEAN_free
-#define NULL_decode_ber	BOOLEAN_decode_ber
 #define NULL_constraint	asn_generic_no_constraint
 
 #ifdef __cplusplus

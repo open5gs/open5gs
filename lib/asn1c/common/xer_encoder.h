@@ -54,7 +54,7 @@ int xer_fprint(FILE *stream, const struct asn_TYPE_descriptor_s *td,
 enum xer_equivalence_e {
     XEQ_SUCCESS,          /* The only completely positive return value */
     XEQ_FAILURE,          /* General failure */
-    XEQ_ENCODE1_FAILED,   /* First sructure XER encoding failed */
+    XEQ_ENCODE1_FAILED,   /* First structure XER encoding failed */
     XEQ_ENCODE2_FAILED,   /* Second structure XER encoding failed */
     XEQ_DIFFERENT,        /* Structures encoded into different XER */
     XEQ_DECODE_FAILED,    /* Decode of the XER data failed */

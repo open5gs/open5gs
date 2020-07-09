@@ -134,7 +134,7 @@ asn_encode(const asn_codec_ctx_t *opt_codec_ctx,
            enum asn_transfer_syntax syntax, const asn_TYPE_descriptor_t *td,
            const void *sptr, asn_app_consume_bytes_f *callback, void *callback_key) {
     struct callback_failure_catch_key cb_key;
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
 
     if(!callback) {
         errno = EINVAL;
@@ -162,7 +162,7 @@ asn_encode_to_buffer(const asn_codec_ctx_t *opt_codec_ctx,
                      const asn_TYPE_descriptor_t *td, const void *sptr,
                      void *buffer, size_t buffer_size) {
     struct overrun_encoder_key buf_key;
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
 
     if(buffer_size > 0 && !buffer) {
         errno = EINVAL;
@@ -225,7 +225,7 @@ asn_encode_internal(const asn_codec_ctx_t *opt_codec_ctx,
                     enum asn_transfer_syntax syntax,
                     const asn_TYPE_descriptor_t *td, const void *sptr,
                     asn_app_consume_bytes_f *callback, void *callback_key) {
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
     enum xer_encoder_flags_e xer_flags = XER_F_CANONICAL;
 
     (void)opt_codec_ctx; /* Parameters are not checked on encode yet. */

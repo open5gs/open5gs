@@ -36,7 +36,7 @@ asn_bit_data_t *asn_bit_data_new_contiguous(const void *data, size_t size_bits);
  */
 int32_t asn_get_few_bits(asn_bit_data_t *, int get_nbits);
 
-/* Undo the immediately preceeding "get_few_bits" operation */
+/* Undo the immediately preceding "get_few_bits" operation */
 void asn_get_undo(asn_bit_data_t *, int get_nbits);
 
 /*

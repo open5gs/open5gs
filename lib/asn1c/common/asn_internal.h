@@ -7,7 +7,9 @@
  */
 #ifndef	ASN_INTERNAL_H
 #define	ASN_INTERNAL_H
+#ifndef __EXTENSIONS__
 #define __EXTENSIONS__          /* for Sun */
+#endif
 
 #include "asn_application.h"	/* Application-visible API */
 
@@ -30,10 +32,10 @@ int get_asn1c_environment_version(void);	/* Run-time version */
 #define	FREEMEM(ptr)		free(ptr)
 #else
 #include "ogs-core.h"
-#define	CALLOC(nmemb, size)	ogs_calloc(nmemb, size)
-#define	MALLOC(size)		ogs_malloc(size)
-#define	REALLOC(oldptr, size)	ogs_realloc(oldptr, size)
-#define	FREEMEM(ptr)		ogs_free(ptr)
+#define        CALLOC(nmemb, size)     ogs_calloc(nmemb, size)
+#define        MALLOC(size)            ogs_malloc(size)
+#define        REALLOC(oldptr, size)   ogs_realloc(oldptr, size)
+#define        FREEMEM(ptr)            ogs_free(ptr)
 #endif
 
 #define	asn_debug_indent	0

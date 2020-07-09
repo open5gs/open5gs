@@ -83,8 +83,8 @@ enum asn_strtox_result_e {
     ASN_STRTOX_ERROR_RANGE = -3,  /* Input outside of supported numeric range */
     ASN_STRTOX_ERROR_INVAL = -2,  /* Invalid data encountered (e.g., "+-") */
     ASN_STRTOX_EXPECT_MORE = -1,  /* More data expected (e.g. "+") */
-    ASN_STRTOX_OK          =  0,  /* Conversion succeded, number ends at (*end) */
-    ASN_STRTOX_EXTRA_DATA  =  1   /* Conversion succeded, but the string has extra stuff */
+    ASN_STRTOX_OK          =  0,  /* Conversion succeeded, number ends at (*end) */
+    ASN_STRTOX_EXTRA_DATA  =  1   /* Conversion succeeded, but the string has extra stuff */
 };
 enum asn_strtox_result_e asn_strtol_lim(const char *str, const char **end,
                                         long *l);

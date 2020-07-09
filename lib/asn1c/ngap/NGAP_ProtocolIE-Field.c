@@ -21747,6 +21747,15 @@ static asn_TYPE_member_t asn_MBR_NGAP_value_168[] = {
 		0, 0, /* No default value */
 		"EmergencyFallbackIndicator"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct NGAP_UEContextModificationRequestIEs__value, choice.AMF_UE_NGAP_ID_1),
+		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
+		0,
+		&asn_DEF_NGAP_AMF_UE_NGAP_ID,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		"AMF-UE-NGAP-ID"
+		},
 	{ ATF_NOFLAGS, 0, offsetof(struct NGAP_UEContextModificationRequestIEs__value, choice.RRCInactiveTransitionReportRequest),
 		(ASN_TAG_CLASS_UNIVERSAL | (10 << 2)),
 		0,
@@ -21784,22 +21793,23 @@ static asn_TYPE_member_t asn_MBR_NGAP_value_168[] = {
 		"SRVCCOperationPossible"
 		},
 };
-static const unsigned asn_MAP_NGAP_value_to_canonical_168[] = { 0, 1, 2, 4, 3, 9, 12, 5, 6, 7, 8, 10, 11 };
-static const unsigned asn_MAP_NGAP_value_from_canonical_168[] = { 0, 1, 2, 4, 3, 7, 8, 9, 10, 5, 11, 12, 6 };
+static const unsigned asn_MAP_NGAP_value_to_canonical_168[] = { 0, 1, 2, 4, 9, 3, 10, 13, 5, 6, 7, 8, 11, 12 };
+static const unsigned asn_MAP_NGAP_value_from_canonical_168[] = { 0, 1, 2, 5, 3, 8, 9, 10, 11, 4, 6, 12, 13, 7 };
 static const asn_TYPE_tag2member_t asn_MAP_NGAP_value_tag2el_168[] = {
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 3 }, /* AMF-UE-NGAP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 2 }, /* RAN-UE-NGAP-ID */
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 2, -2, 1 }, /* RANPagingPriority */
-    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 4, -3, 0 }, /* IndexToRFSP */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 0, 0, 4 }, /* AMF-UE-NGAP-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 1, -1, 3 }, /* RAN-UE-NGAP-ID */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 2, -2, 2 }, /* RANPagingPriority */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 4, -3, 1 }, /* IndexToRFSP */
+    { (ASN_TAG_CLASS_UNIVERSAL | (2 << 2)), 9, -4, 0 }, /* AMF-UE-NGAP-ID */
     { (ASN_TAG_CLASS_UNIVERSAL | (3 << 2)), 3, 0, 0 }, /* SecurityKey */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 9, 0, 1 }, /* RRCInactiveTransitionReportRequest */
-    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 12, -1, 0 }, /* SRVCCOperationPossible */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 10, 0, 1 }, /* RRCInactiveTransitionReportRequest */
+    { (ASN_TAG_CLASS_UNIVERSAL | (10 << 2)), 13, -1, 0 }, /* SRVCCOperationPossible */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 5, 0, 5 }, /* UEAggregateMaximumBitRate */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 6, -1, 4 }, /* UESecurityCapabilities */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 7, -2, 3 }, /* CoreNetworkAssistanceInformationForInactive */
     { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 8, -3, 2 }, /* EmergencyFallbackIndicator */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 10, -4, 1 }, /* GUAMI */
-    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 11, -5, 0 } /* CNAssistedRANTuning */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 11, -4, 1 }, /* GUAMI */
+    { (ASN_TAG_CLASS_UNIVERSAL | (16 << 2)), 12, -5, 0 } /* CNAssistedRANTuning */
 };
 static asn_CHOICE_specifics_t asn_SPC_NGAP_value_specs_168 = {
 	sizeof(struct NGAP_UEContextModificationRequestIEs__value),
@@ -21807,7 +21817,7 @@ static asn_CHOICE_specifics_t asn_SPC_NGAP_value_specs_168 = {
 	offsetof(struct NGAP_UEContextModificationRequestIEs__value, present),
 	sizeof(((struct NGAP_UEContextModificationRequestIEs__value *)0)->present),
 	asn_MAP_NGAP_value_tag2el_168,
-	13,	/* Count of tags in the map */
+	14,	/* Count of tags in the map */
 	asn_MAP_NGAP_value_to_canonical_168,
 	asn_MAP_NGAP_value_from_canonical_168,
 	-1	/* Extensions start */
@@ -21823,7 +21833,7 @@ asn_TYPE_descriptor_t asn_DEF_NGAP_value_168 = {
 	0,	/* No tags (count) */
 	{ 0, 0, OPEN_TYPE_constraint },
 	asn_MBR_NGAP_value_168,
-	13,	/* Elements count */
+	14,	/* Elements count */
 	&asn_SPC_NGAP_value_specs_168	/* Additional specs */
 };
 

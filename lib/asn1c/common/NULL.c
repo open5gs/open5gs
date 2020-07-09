@@ -5,7 +5,6 @@
 #include <asn_internal.h>
 #include <asn_codecs_prim.h>
 #include <NULL.h>
-#include <BOOLEAN.h>	/* Implemented in terms of BOOLEAN type */
 
 /*
  * NULL basic type description.
@@ -14,10 +13,10 @@ static const ber_tlv_tag_t asn_DEF_NULL_tags[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (5 << 2))
 };
 asn_TYPE_operation_t asn_OP_NULL = {
-	BOOLEAN_free,
+	NULL_free,
 	NULL_print,
 	NULL_compare,
-	BOOLEAN_decode_ber,	/* Implemented in terms of BOOLEAN */
+	NULL_decode_ber,
 	NULL_encode_der,	/* Special handling of DER encoding */
 	NULL_decode_xer,
 	NULL_encode_xer,
@@ -55,10 +54,69 @@ asn_TYPE_descriptor_t asn_DEF_NULL = {
 	0	/* No specifics */
 };
 
+void
+NULL_free(const asn_TYPE_descriptor_t *td, void *ptr,
+          enum asn_struct_free_method method) {
+    if(td && ptr) {
+        switch(method) {
+        case ASFM_FREE_EVERYTHING:
+            FREEMEM(ptr);
+            break;
+        case ASFM_FREE_UNDERLYING:
+            break;
+        case ASFM_FREE_UNDERLYING_AND_RESET:
+            memset(ptr, 0, sizeof(NULL_t));
+            break;
+        }
+    }
+}
+
+/*
+ * Decode NULL type.
+ */
+asn_dec_rval_t
+NULL_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
+                const asn_TYPE_descriptor_t *td, void **bool_value,
+                const void *buf_ptr, size_t size, int tag_mode) {
+    NULL_t *st = (NULL_t *)*bool_value;
+    asn_dec_rval_t rval;
+    ber_tlv_len_t length;
+
+    if(st == NULL) {
+        st = (NULL_t *)(*bool_value = CALLOC(1, sizeof(*st)));
+        if(st == NULL) {
+            rval.code = RC_FAIL;
+            rval.consumed = 0;
+            return rval;
+        }
+    }
+
+    ASN_DEBUG("Decoding %s as NULL (tm=%d)", td->name, tag_mode);
+
+    /*
+     * Check tags.
+     */
+    rval = ber_check_tags(opt_codec_ctx, td, 0, buf_ptr, size, tag_mode, 0,
+                          &length, 0);
+    if(rval.code != RC_OK) {
+        return rval;
+    }
+
+    // X.690-201508, #8.8.2, length shall be zero.
+    if(length != 0) {
+        ASN_DEBUG("Decoding %s as NULL failed: too much data", td->name);
+        rval.code = RC_FAIL;
+        rval.consumed = 0;
+        return rval;
+    }
+
+    return rval;
+}
+
 asn_enc_rval_t
 NULL_encode_der(const asn_TYPE_descriptor_t *td, const void *ptr, int tag_mode,
                 ber_tlv_tag_t tag, asn_app_consume_bytes_f *cb, void *app_key) {
-    asn_enc_rval_t erval;
+	asn_enc_rval_t erval = {0,0,0};
 
 	erval.encoded = der_write_tags(td, 0, tag_mode, 0, tag, cb, app_key);
 	if(erval.encoded == -1) {
@@ -73,7 +131,7 @@ asn_enc_rval_t
 NULL_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
                 enum xer_encoder_flags_e flags, asn_app_consume_bytes_f *cb,
                 void *app_key) {
-    asn_enc_rval_t er;
+	asn_enc_rval_t er = {0,0,0};
 
 	(void)td;
 	(void)sptr;
@@ -164,7 +222,7 @@ asn_enc_rval_t
 NULL_encode_oer(const asn_TYPE_descriptor_t *td,
                 const asn_oer_constraints_t *constraints, const void *sptr,
                 asn_app_consume_bytes_f *cb, void *app_key) {
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
 
     (void)td;
     (void)sptr;
@@ -215,7 +273,7 @@ asn_enc_rval_t
 NULL_encode_uper(const asn_TYPE_descriptor_t *td,
                  const asn_per_constraints_t *constraints, const void *sptr,
                  asn_per_outp_t *po) {
-    asn_enc_rval_t er;
+	asn_enc_rval_t er = {0,0,0};
 
 	(void)td;
 	(void)constraints;
@@ -230,7 +288,7 @@ asn_dec_rval_t
 NULL_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                  const asn_TYPE_descriptor_t *td,
                  const asn_per_constraints_t *constraints, void **sptr, asn_per_data_t *pd) {
-	asn_dec_rval_t rv;
+	asn_dec_rval_t rv = {RC_OK, 0};
 
 	(void)opt_codec_ctx;
 	(void)td;
@@ -260,7 +318,7 @@ asn_enc_rval_t
 NULL_encode_aper(const asn_TYPE_descriptor_t *td,
                  const asn_per_constraints_t *constraints,
                  const void *sptr, asn_per_outp_t *po) {
-	asn_enc_rval_t er;
+	asn_enc_rval_t er = {0,0,0};
 
 	(void)td;
 	(void)constraints;

@@ -628,6 +628,7 @@
 #include "NGAP_XnGTP-TLAs.h"
 #include "NGAP_XnTLAs.h"
 #include "NGAP_XnTNLConfigurationInfo.h"
+#include "NGAP_EXTERNAL.h"
 
 #include "asn1c/util/conv.h"
 #include "asn1c/util/message.h"

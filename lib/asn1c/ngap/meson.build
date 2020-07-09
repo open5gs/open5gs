@@ -621,6 +621,7 @@ libasn1c_ngap_sources = files('''
 	NGAP_ProtocolExtensionField.c
 	NGAP_PrivateIE-Container.c
 	NGAP_PrivateIE-Field.c
+    NGAP_EXTERNAL.c
 '''.split())
 
 libasn1c_ngap_inc = include_directories('.')

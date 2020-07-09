@@ -104,7 +104,7 @@ INTEGER_encode_oer(const asn_TYPE_descriptor_t *td,
                    const asn_oer_constraints_t *constraints, const void *sptr,
                    asn_app_consume_bytes_f *cb, void *app_key) {
     const INTEGER_t *st = sptr;
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
     struct asn_oer_constraint_number_s ct = {0, 0};
     const uint8_t *buf;
     const uint8_t *end;

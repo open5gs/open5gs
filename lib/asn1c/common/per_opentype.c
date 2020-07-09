@@ -137,7 +137,7 @@ uper_open_type_get_simple(const asn_codec_ctx_t *ctx,
 	} else {
 		FREEMEM(buf);
 		/* rv.code could be RC_WMORE, nonsense in this context */
-		rv.code = RC_FAIL; /* Noone would give us more */
+		rv.code = RC_FAIL; /* No one would give us more */
 	}
 
 	return rv;
@@ -487,11 +487,16 @@ aper_open_type_put(const asn_TYPE_descriptor_t *td,
 	if(size <= 0) return -1;
 
 	for(bptr = buf, toGo = size; toGo;) {
-		ssize_t maySave = aper_put_length(po, -1, toGo);
+        int need_eom = 0;
+		ssize_t maySave = aper_put_length(po, -1, toGo, &need_eom);
 		if(maySave < 0) break;
 		if(per_put_many_bits(po, bptr, maySave * 8)) break;
 		bptr = (char *)bptr + maySave;
 		toGo -= maySave;
+        if(need_eom && aper_put_length(po, -1, 0, 0)) {
+            FREEMEM(buf);
+            return -1;
+        }
 	}
 
 	FREEMEM(buf);

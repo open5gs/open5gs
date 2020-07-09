@@ -382,6 +382,221 @@ static void test3_func(abts_case *tc, void *data)
     ogs_pkbuf_free(enb_pkbuf);
 }
 
+static void test4_func(abts_case *tc, void *data)
+{
+    const char *payload =
+        "000d"
+        "4037000005000000 0200640008000200 01001a000e0d277a 6f1f5b0107430003"
+        "5200c20064400800 32f5400020001000 4340060032f54000 01";
+
+    ogs_s1ap_message_t message;
+    ogs_pkbuf_t *enb_pkbuf;
+    int result;
+    char hexbuf[OGS_MAX_SDU_LEN];
+
+    enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put_data(enb_pkbuf,
+            OGS_HEX(payload, strlen(payload), hexbuf), 59);
+
+    result = ogs_s1ap_decode(&message, enb_pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+
+    ogs_s1ap_free(&message);
+    ogs_pkbuf_free(enb_pkbuf);
+}
+
+static void test5_func(abts_case *tc, void *data)
+{
+    const char *payload =
+        "000d404400000600 0000020001000800 020001001a000e0d 2728e58e6d010743"
+        "00035200c2006440 080009f107000200 10004340060009f1 0700010120400900"
+        "09f1070012345020";
+
+    ogs_s1ap_message_t message;
+    ogs_pkbuf_t *enb_pkbuf;
+    int result;
+    char hexbuf[OGS_MAX_SDU_LEN];
+
+    enb_pkbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put_data(enb_pkbuf,
+            OGS_HEX(payload, strlen(payload), hexbuf), 72);
+
+    result = ogs_s1ap_decode(&message, enb_pkbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+
+    ogs_s1ap_free(&message);
+    ogs_pkbuf_free(enb_pkbuf);
+}
+
+static ogs_pkbuf_t *test_build_uplink_nas_transport(
+        uint32_t mme_ue_s1ap_id, uint32_t enb_ue_s1ap_id, ogs_pkbuf_t *emmbuf)
+{
+    ogs_pkbuf_t *s1apbuf = NULL;
+
+    S1AP_S1AP_PDU_t pdu;
+    S1AP_InitiatingMessage_t *initiatingMessage = NULL;
+    S1AP_UplinkNASTransport_t *UplinkNASTransport = NULL;
+
+    S1AP_UplinkNASTransport_IEs_t *ie = NULL;
+    S1AP_MME_UE_S1AP_ID_t *MME_UE_S1AP_ID = NULL;
+    S1AP_ENB_UE_S1AP_ID_t *ENB_UE_S1AP_ID = NULL;
+    S1AP_NAS_PDU_t *NAS_PDU = NULL;
+    S1AP_EUTRAN_CGI_t *EUTRAN_CGI = NULL;
+    S1AP_TAI_t *TAI = NULL;
+    S1AP_PSCellInformation_t *PSCellInformation = NULL;
+    S1AP_NR_CGI_t *nCGI = NULL;
+
+    ogs_plmn_id_t plmn_id;
+    uint32_t e_cell_id; /* 28 bit */
+    uint64_t nr_cell_id; /* 36 bit */
+    uint16_t tac;
+
+    ogs_assert(emmbuf);
+
+    memset(&pdu, 0, sizeof (S1AP_S1AP_PDU_t));
+    pdu.present = S1AP_S1AP_PDU_PR_initiatingMessage;
+    pdu.choice.initiatingMessage =
+        CALLOC(1, sizeof(S1AP_InitiatingMessage_t));
+
+    initiatingMessage = pdu.choice.initiatingMessage;
+    initiatingMessage->procedureCode =
+        S1AP_ProcedureCode_id_uplinkNASTransport;
+    initiatingMessage->criticality = S1AP_Criticality_ignore;
+    initiatingMessage->value.present =
+        S1AP_InitiatingMessage__value_PR_UplinkNASTransport;
+
+    UplinkNASTransport = &initiatingMessage->value.choice.UplinkNASTransport;
+
+    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UplinkNASTransport_IEs__value_PR_MME_UE_S1AP_ID;
+
+    MME_UE_S1AP_ID = &ie->value.choice.MME_UE_S1AP_ID;
+
+    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present =
+        S1AP_UplinkNASTransport_IEs__value_PR_ENB_UE_S1AP_ID;
+
+    ENB_UE_S1AP_ID = &ie->value.choice.ENB_UE_S1AP_ID;
+
+    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_NAS_PDU;
+    ie->criticality = S1AP_Criticality_reject;
+    ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_NAS_PDU;
+
+    NAS_PDU = &ie->value.choice.NAS_PDU;
+
+    NAS_PDU->size = emmbuf->len;
+    NAS_PDU->buf = CALLOC(NAS_PDU->size, sizeof(uint8_t));
+    memcpy(NAS_PDU->buf, emmbuf->data, NAS_PDU->size);
+    ogs_pkbuf_free(emmbuf);
+
+    *MME_UE_S1AP_ID = mme_ue_s1ap_id;
+    *ENB_UE_S1AP_ID = enb_ue_s1ap_id;
+
+    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_EUTRAN_CGI;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_EUTRAN_CGI;
+
+    EUTRAN_CGI = &ie->value.choice.EUTRAN_CGI;
+
+    ogs_plmn_id_build(&plmn_id, 901, 70, 2);
+
+    ogs_s1ap_buffer_to_OCTET_STRING(
+            &plmn_id, OGS_PLMN_ID_LEN, &EUTRAN_CGI->pLMNidentity);
+    EUTRAN_CGI->cell_ID.size = 4;
+    EUTRAN_CGI->cell_ID.buf =  CALLOC(
+         EUTRAN_CGI->cell_ID.size, sizeof(uint8_t));
+    ogs_assert(EUTRAN_CGI->cell_ID.buf);
+
+    e_cell_id = 0x20010;
+
+    EUTRAN_CGI->cell_ID.buf[0] = (e_cell_id >> 24);
+    EUTRAN_CGI->cell_ID.buf[1] = (e_cell_id >> 16);
+    EUTRAN_CGI->cell_ID.buf[2] = (e_cell_id >> 8);
+    EUTRAN_CGI->cell_ID.buf[3] = (e_cell_id);
+    EUTRAN_CGI->cell_ID.bits_unused = 4;
+
+    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_TAI;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_TAI;
+
+    TAI = &ie->value.choice.TAI;
+
+    tac = 1;
+    ogs_asn_uint16_to_OCTET_STRING(tac, &TAI->tAC);
+    ogs_s1ap_buffer_to_OCTET_STRING(
+            &plmn_id, OGS_PLMN_ID_LEN, &TAI->pLMNidentity);
+
+    ie = CALLOC(1, sizeof(S1AP_UplinkNASTransport_IEs_t));
+    ASN_SEQUENCE_ADD(&UplinkNASTransport->protocolIEs, ie);
+
+    ie->id = S1AP_ProtocolIE_ID_id_PSCellInformation;
+    ie->criticality = S1AP_Criticality_ignore;
+    ie->value.present = S1AP_UplinkNASTransport_IEs__value_PR_PSCellInformation;
+
+    PSCellInformation = &ie->value.choice.PSCellInformation;
+    nCGI = &PSCellInformation->nCGI;
+
+    ogs_s1ap_buffer_to_OCTET_STRING(
+            &plmn_id, OGS_PLMN_ID_LEN, &nCGI->pLMNIdentity);
+
+    nr_cell_id = 0x0012345020;
+    nCGI->nRCellIdentity.size = 5;
+    nCGI->nRCellIdentity.buf =  CALLOC(
+         nCGI->nRCellIdentity.size, sizeof(uint8_t));
+    ogs_assert(nCGI->nRCellIdentity.buf);
+    nCGI->nRCellIdentity.buf[0] = (nr_cell_id >> 32);
+    nCGI->nRCellIdentity.buf[1] = (nr_cell_id >> 24);
+    nCGI->nRCellIdentity.buf[2] = (nr_cell_id >> 16);
+    nCGI->nRCellIdentity.buf[3] = (nr_cell_id >> 8);
+    nCGI->nRCellIdentity.buf[4] = (nr_cell_id);
+    nCGI->nRCellIdentity.bits_unused = 4;
+
+    return ogs_s1ap_encode(&pdu);
+}
+
+static void test6_func(abts_case *tc, void *data)
+{
+    const char *nas_payload = "2728 e58e6d0107430003 5200c2";
+
+    ogs_s1ap_message_t message;
+    int result;
+
+    ogs_pkbuf_t *s1apbuf = NULL;
+    ogs_pkbuf_t *emmbuf = NULL;
+    char hexbuf[OGS_MAX_SDU_LEN];
+
+    emmbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
+    ogs_pkbuf_put_data(emmbuf,
+            OGS_HEX(nas_payload, strlen(nas_payload), hexbuf), 13);
+
+    s1apbuf = test_build_uplink_nas_transport(1, 1, emmbuf);
+    ABTS_PTR_NOTNULL(tc, s1apbuf);
+
+    result = ogs_s1ap_decode(&message, s1apbuf);
+    ABTS_INT_EQUAL(tc, 0, result);
+
+    ogs_s1ap_free(&message);
+    ogs_pkbuf_free(s1apbuf);
+}
+
 abts_suite *test_crash(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -389,6 +604,9 @@ abts_suite *test_crash(abts_suite *suite)
     abts_run_test(suite, test1_func, NULL);
     abts_run_test(suite, test2_func, NULL);
     abts_run_test(suite, test3_func, NULL);
+    abts_run_test(suite, test4_func, NULL);
+    abts_run_test(suite, test5_func, NULL);
+    abts_run_test(suite, test6_func, NULL);
 
     return suite;
 }

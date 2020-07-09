@@ -113,7 +113,7 @@ NativeInteger_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
 	/*
 	 * ASN.1 encoded INTEGER: buf_ptr, length
 	 * Fill the native, at the same time checking for overflow.
-	 * If overflow occured, return with RC_FAIL.
+	 * If overflow occurred, return with RC_FAIL.
 	 */
 	{
 		INTEGER_t tmp;
@@ -154,8 +154,8 @@ asn_enc_rval_t
 NativeInteger_encode_der(const asn_TYPE_descriptor_t *sd, const void *ptr,
                          int tag_mode, ber_tlv_tag_t tag,
                          asn_app_consume_bytes_f *cb, void *app_key) {
-    unsigned long native = *(const unsigned long *)ptr; /* Disable sign ext. */
-    asn_enc_rval_t erval;
+	unsigned long native = *(const unsigned long *)ptr; /* Disable sign ext. */
+	asn_enc_rval_t erval = {0,0,0};
 	INTEGER_t tmp;
 
 #ifdef	WORDS_BIGENDIAN		/* Opportunistic optimization */
@@ -236,7 +236,7 @@ NativeInteger_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
     char scratch[32];	/* Enough for 64-bit int */
-	asn_enc_rval_t er;
+	asn_enc_rval_t er = {0,0,0};
 	const long *native = (const long *)sptr;
 
 	(void)ilevel;
@@ -299,7 +299,7 @@ NativeInteger_encode_uper(const asn_TYPE_descriptor_t *td,
                           const void *sptr, asn_per_outp_t *po) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
 	long native;
 	INTEGER_t tmpint;
 
@@ -361,7 +361,7 @@ NativeInteger_encode_aper(const asn_TYPE_descriptor_t *td,
                           const void *sptr, asn_per_outp_t *po) {
 
 	const asn_INTEGER_specifics_t *specs = (const asn_INTEGER_specifics_t *)td->specifics;
-	asn_enc_rval_t er;
+	asn_enc_rval_t er = {0,0,0};
 	long native;
 	INTEGER_t tmpint;
 

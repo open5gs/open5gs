@@ -82,7 +82,7 @@ static int ANY__consume_bytes(const void *buffer, size_t size, void *key);
 int
 ANY_fromType(ANY_t *st, asn_TYPE_descriptor_t *td, void *sptr) {
 	struct _callback_arg arg;
-	asn_enc_rval_t erval;
+	asn_enc_rval_t erval = {0,0,0};
 
 	if(!st || !td) {
 		errno = EINVAL;

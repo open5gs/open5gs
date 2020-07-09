@@ -17,7 +17,7 @@ uper_encode(const asn_TYPE_descriptor_t *td,
             const asn_per_constraints_t *constraints, const void *sptr,
             asn_app_consume_bytes_f *cb, void *app_key) {
     asn_per_outp_t po;
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
 
     /*
      * Invoke type-specific encoder.
@@ -114,7 +114,7 @@ ssize_t
 uper_encode_to_new_buffer(const asn_TYPE_descriptor_t *td,
                           const asn_per_constraints_t *constraints,
                           const void *sptr, void **buffer_r) {
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
 	enc_dyn_arg key;
 
 	memset(&key, 0, sizeof(key));
@@ -181,7 +181,7 @@ ssize_t
 aper_encode_to_new_buffer(const asn_TYPE_descriptor_t *td,
                           const asn_per_constraints_t *constraints,
                           const void *sptr, void **buffer_r) {
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
 	enc_dyn_arg key;
 
 	memset(&key, 0, sizeof(key));
@@ -233,7 +233,7 @@ aper_encode(const asn_TYPE_descriptor_t *td,
         const asn_per_constraints_t *constraints,
         const void *sptr, asn_app_consume_bytes_f *cb, void *app_key) {
 	asn_per_outp_t po;
-	asn_enc_rval_t er;
+	asn_enc_rval_t er = {0,0,0};
 
 	/*
 	 * Invoke type-specific encoder.
@@ -244,7 +244,7 @@ aper_encode(const asn_TYPE_descriptor_t *td,
 	po.buffer = po.tmpspace;
 	po.nboff = 0;
 	po.nbits = 8 * sizeof(po.tmpspace);
-	po.output = cb;
+	po.output = cb ? cb : ignore_output;
 	po.op_key = app_key;
 	po.flushed_bytes = 0;
 

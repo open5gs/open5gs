@@ -364,7 +364,7 @@ OPEN_TYPE_encode_uper(const asn_TYPE_descriptor_t *td,
                       const void *sptr, asn_per_outp_t *po) {
     const void *memb_ptr;   /* Pointer to the member */
     asn_TYPE_member_t *elm; /* CHOICE's element */
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
     unsigned present;
 
     (void)constraints;
@@ -474,7 +474,7 @@ OPEN_TYPE_encode_aper(const asn_TYPE_descriptor_t *td,
                       const void *sptr, asn_per_outp_t *po) {
     const void *memb_ptr;   /* Pointer to the member */
     asn_TYPE_member_t *elm; /* CHOICE's element */
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
     unsigned present;
 
     (void)constraints;

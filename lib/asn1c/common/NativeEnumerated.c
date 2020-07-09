@@ -66,7 +66,7 @@ NativeEnumerated_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
                             asn_app_consume_bytes_f *cb, void *app_key) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
-    asn_enc_rval_t er;
+    asn_enc_rval_t er = {0,0,0};
     const long *native = (const long *)sptr;
     const asn_INTEGER_enum_map_t *el;
 
@@ -161,9 +161,9 @@ asn_enc_rval_t
 NativeEnumerated_encode_uper(const asn_TYPE_descriptor_t *td,
                              const asn_per_constraints_t *constraints,
                              const void *sptr, asn_per_outp_t *po) {
-    const asn_INTEGER_specifics_t *specs =
+	const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
-    asn_enc_rval_t er;
+	asn_enc_rval_t er = {0,0,0};
 	long native, value;
 	const asn_per_constraint_t *ct;
 	int inext = 0;
@@ -282,11 +282,19 @@ NativeEnumerated_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 		/*
 		 * X.691, #10.6: normally small non-negative whole number;
 		 */
-		value = uper_get_nsnnwn(pd);
+		 
+		/* XXX handle indefinite index length > 64k */
+ 		value = aper_get_nsnnwn(pd, 65537);
 		if(value < 0) ASN__DECODE_STARVED;
 		value += specs->extension - 1;
-		if(value >= specs->map_count)
-			ASN__DECODE_FAILED;
+		//if(value >= specs->map_count)
+		//	ASN__DECODE_FAILED;
+		if(value >= specs->map_count) {
+ 			ASN_DEBUG("Decoded unknown index value %s = %ld", td->name, value);
+ 			/* unknown index. Workaround => set the first enumeration value */
+ 			*native = specs->value2enum[0].nat_value;
+ 			return rval;
+ 		}
 	}
 
 	*native = specs->value2enum[value].nat_value;
@@ -300,7 +308,7 @@ NativeEnumerated_encode_aper(const asn_TYPE_descriptor_t *td,
                              const asn_per_constraints_t *constraints,
                              const void *sptr, asn_per_outp_t *po) {
 	const asn_INTEGER_specifics_t *specs = (const asn_INTEGER_specifics_t *)td->specifics;
-	asn_enc_rval_t er;
+	asn_enc_rval_t er = {0,0,0};
 	long native, value;
 	const asn_per_constraint_t *ct;
 	int inext = 0;

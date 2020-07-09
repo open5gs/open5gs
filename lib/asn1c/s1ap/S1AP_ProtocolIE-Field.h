@@ -315,6 +315,7 @@ typedef enum S1AP_HandoverRequiredIEs__value_PR {
 	S1AP_HandoverRequiredIEs__value_PR_Direct_Forwarding_Path_Availability,
 	S1AP_HandoverRequiredIEs__value_PR_SRVCCHOIndication,
 	S1AP_HandoverRequiredIEs__value_PR_Source_ToTarget_TransparentContainer,
+	S1AP_HandoverRequiredIEs__value_PR_Source_ToTarget_TransparentContainer_1,
 	S1AP_HandoverRequiredIEs__value_PR_MSClassmark2,
 	S1AP_HandoverRequiredIEs__value_PR_MSClassmark3,
 	S1AP_HandoverRequiredIEs__value_PR_CSG_Id,
@@ -330,6 +331,7 @@ typedef enum S1AP_HandoverCommandIEs__value_PR {
 	S1AP_HandoverCommandIEs__value_PR_E_RABSubjecttoDataForwardingList,
 	S1AP_HandoverCommandIEs__value_PR_E_RABList,
 	S1AP_HandoverCommandIEs__value_PR_Target_ToSource_TransparentContainer,
+	S1AP_HandoverCommandIEs__value_PR_Target_ToSource_TransparentContainer_1,
 	S1AP_HandoverCommandIEs__value_PR_CriticalityDiagnostics
 } S1AP_HandoverCommandIEs__value_PR;
 typedef enum S1AP_HandoverPreparationFailureIEs__value_PR {
@@ -357,6 +359,7 @@ typedef enum S1AP_HandoverRequestIEs__value_PR {
 	S1AP_HandoverRequestIEs__value_PR_CSG_Id,
 	S1AP_HandoverRequestIEs__value_PR_CSGMembershipStatus,
 	S1AP_HandoverRequestIEs__value_PR_GUMMEI,
+	S1AP_HandoverRequestIEs__value_PR_MME_UE_S1AP_ID_1,
 	S1AP_HandoverRequestIEs__value_PR_ManagementBasedMDTAllowed,
 	S1AP_HandoverRequestIEs__value_PR_MDTPLMNList,
 	S1AP_HandoverRequestIEs__value_PR_Masked_IMEISV,
@@ -428,6 +431,7 @@ typedef enum S1AP_PathSwitchRequestAcknowledgeIEs__value_PR {
 	S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_E_RABList,
 	S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_SecurityContext,
 	S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_CriticalityDiagnostics,
+	S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_MME_UE_S1AP_ID_1,
 	S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_CSGMembershipStatus,
 	S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_ProSeAuthorized,
 	S1AP_PathSwitchRequestAcknowledgeIEs__value_PR_UEUserPlaneCIoTSupportIndicator,
@@ -536,6 +540,7 @@ typedef enum S1AP_InitialContextSetupRequestIEs__value_PR {
 	S1AP_InitialContextSetupRequestIEs__value_PR_CSGMembershipStatus,
 	S1AP_InitialContextSetupRequestIEs__value_PR_LAI,
 	S1AP_InitialContextSetupRequestIEs__value_PR_GUMMEI,
+	S1AP_InitialContextSetupRequestIEs__value_PR_MME_UE_S1AP_ID_1,
 	S1AP_InitialContextSetupRequestIEs__value_PR_ManagementBasedMDTAllowed,
 	S1AP_InitialContextSetupRequestIEs__value_PR_MDTPLMNList,
 	S1AP_InitialContextSetupRequestIEs__value_PR_AdditionalCSFallbackIndicator,
@@ -691,6 +696,7 @@ typedef enum S1AP_InitialUEMessage_IEs__value_PR {
 	S1AP_InitialUEMessage_IEs__value_PR_RelayNode_Indicator,
 	S1AP_InitialUEMessage_IEs__value_PR_GUMMEIType,
 	S1AP_InitialUEMessage_IEs__value_PR_TunnelInformation,
+	S1AP_InitialUEMessage_IEs__value_PR_TransportLayerAddress_1,
 	S1AP_InitialUEMessage_IEs__value_PR_LHN_ID,
 	S1AP_InitialUEMessage_IEs__value_PR_MME_Group_ID,
 	S1AP_InitialUEMessage_IEs__value_PR_UE_Usage_Type,
@@ -708,6 +714,7 @@ typedef enum S1AP_UplinkNASTransport_IEs__value_PR {
 	S1AP_UplinkNASTransport_IEs__value_PR_EUTRAN_CGI,
 	S1AP_UplinkNASTransport_IEs__value_PR_TAI,
 	S1AP_UplinkNASTransport_IEs__value_PR_TransportLayerAddress,
+	S1AP_UplinkNASTransport_IEs__value_PR_TransportLayerAddress_1,
 	S1AP_UplinkNASTransport_IEs__value_PR_LHN_ID,
 	S1AP_UplinkNASTransport_IEs__value_PR_PSCellInformation
 } S1AP_UplinkNASTransport_IEs__value_PR;
@@ -784,7 +791,8 @@ typedef enum S1AP_ENBConfigurationUpdateIEs__value_PR {
 	S1AP_ENBConfigurationUpdateIEs__value_PR_CSG_IdList,
 	S1AP_ENBConfigurationUpdateIEs__value_PR_PagingDRX,
 	S1AP_ENBConfigurationUpdateIEs__value_PR_NB_IoT_DefaultPagingDRX,
-	S1AP_ENBConfigurationUpdateIEs__value_PR_ConnectedengNBList
+	S1AP_ENBConfigurationUpdateIEs__value_PR_ConnectedengNBList,
+	S1AP_ENBConfigurationUpdateIEs__value_PR_ConnectedengNBList_1
 } S1AP_ENBConfigurationUpdateIEs__value_PR;
 typedef enum S1AP_ENBConfigurationUpdateAcknowledgeIEs__value_PR {
 	S1AP_ENBConfigurationUpdateAcknowledgeIEs__value_PR_NOTHING,	/* No components present */
@@ -1021,6 +1029,7 @@ typedef enum S1AP_E_RABModificationConfirmIEs__value_PR {
 	S1AP_E_RABModificationConfirmIEs__value_PR_ENB_UE_S1AP_ID,
 	S1AP_E_RABModificationConfirmIEs__value_PR_E_RABModifyListBearerModConf,
 	S1AP_E_RABModificationConfirmIEs__value_PR_E_RABList,
+	S1AP_E_RABModificationConfirmIEs__value_PR_E_RABList_1,
 	S1AP_E_RABModificationConfirmIEs__value_PR_CriticalityDiagnostics,
 	S1AP_E_RABModificationConfirmIEs__value_PR_CSGMembershipStatus
 } S1AP_E_RABModificationConfirmIEs__value_PR;
@@ -1499,6 +1508,7 @@ typedef struct S1AP_HandoverRequiredIEs {
 			S1AP_Direct_Forwarding_Path_Availability_t	 Direct_Forwarding_Path_Availability;
 			S1AP_SRVCCHOIndication_t	 SRVCCHOIndication;
 			S1AP_Source_ToTarget_TransparentContainer_t	 Source_ToTarget_TransparentContainer;
+			S1AP_Source_ToTarget_TransparentContainer_t	 Source_ToTarget_TransparentContainer_1;
 			S1AP_MSClassmark2_t	 MSClassmark2;
 			S1AP_MSClassmark3_t	 MSClassmark3;
 			S1AP_CSG_Id_t	 CSG_Id;
@@ -1526,6 +1536,7 @@ typedef struct S1AP_HandoverCommandIEs {
 			S1AP_E_RABSubjecttoDataForwardingList_t	 E_RABSubjecttoDataForwardingList;
 			S1AP_E_RABList_t	 E_RABList;
 			S1AP_Target_ToSource_TransparentContainer_t	 Target_ToSource_TransparentContainer;
+			S1AP_Target_ToSource_TransparentContainer_t	 Target_ToSource_TransparentContainer_1;
 			S1AP_CriticalityDiagnostics_t	 CriticalityDiagnostics;
 		} choice;
 		
@@ -1577,6 +1588,7 @@ typedef struct S1AP_HandoverRequestIEs {
 			S1AP_CSG_Id_t	 CSG_Id;
 			S1AP_CSGMembershipStatus_t	 CSGMembershipStatus;
 			S1AP_GUMMEI_t	 GUMMEI;
+			S1AP_MME_UE_S1AP_ID_t	 MME_UE_S1AP_ID_1;
 			S1AP_ManagementBasedMDTAllowed_t	 ManagementBasedMDTAllowed;
 			S1AP_MDTPLMNList_t	 MDTPLMNList;
 			S1AP_Masked_IMEISV_t	 Masked_IMEISV;
@@ -1708,6 +1720,7 @@ typedef struct S1AP_PathSwitchRequestAcknowledgeIEs {
 			S1AP_E_RABList_t	 E_RABList;
 			S1AP_SecurityContext_t	 SecurityContext;
 			S1AP_CriticalityDiagnostics_t	 CriticalityDiagnostics;
+			S1AP_MME_UE_S1AP_ID_t	 MME_UE_S1AP_ID_1;
 			S1AP_CSGMembershipStatus_t	 CSGMembershipStatus;
 			S1AP_ProSeAuthorized_t	 ProSeAuthorized;
 			S1AP_UEUserPlaneCIoTSupportIndicator_t	 UEUserPlaneCIoTSupportIndicator;
@@ -1948,6 +1961,7 @@ typedef struct S1AP_InitialContextSetupRequestIEs {
 			S1AP_CSGMembershipStatus_t	 CSGMembershipStatus;
 			S1AP_LAI_t	 LAI;
 			S1AP_GUMMEI_t	 GUMMEI;
+			S1AP_MME_UE_S1AP_ID_t	 MME_UE_S1AP_ID_1;
 			S1AP_ManagementBasedMDTAllowed_t	 ManagementBasedMDTAllowed;
 			S1AP_MDTPLMNList_t	 MDTPLMNList;
 			S1AP_AdditionalCSFallbackIndicator_t	 AdditionalCSFallbackIndicator;
@@ -2259,6 +2273,7 @@ typedef struct S1AP_InitialUEMessage_IEs {
 			S1AP_RelayNode_Indicator_t	 RelayNode_Indicator;
 			S1AP_GUMMEIType_t	 GUMMEIType;
 			S1AP_TunnelInformation_t	 TunnelInformation;
+			S1AP_TransportLayerAddress_t	 TransportLayerAddress_1;
 			S1AP_LHN_ID_t	 LHN_ID;
 			S1AP_MME_Group_ID_t	 MME_Group_ID;
 			S1AP_UE_Usage_Type_t	 UE_Usage_Type;
@@ -2288,6 +2303,7 @@ typedef struct S1AP_UplinkNASTransport_IEs {
 			S1AP_EUTRAN_CGI_t	 EUTRAN_CGI;
 			S1AP_TAI_t	 TAI;
 			S1AP_TransportLayerAddress_t	 TransportLayerAddress;
+			S1AP_TransportLayerAddress_t	 TransportLayerAddress_1;
 			S1AP_LHN_ID_t	 LHN_ID;
 			S1AP_PSCellInformation_t	 PSCellInformation;
 		} choice;
@@ -2485,6 +2501,7 @@ typedef struct S1AP_ENBConfigurationUpdateIEs {
 			S1AP_PagingDRX_t	 PagingDRX;
 			S1AP_NB_IoT_DefaultPagingDRX_t	 NB_IoT_DefaultPagingDRX;
 			S1AP_ConnectedengNBList_t	 ConnectedengNBList;
+			S1AP_ConnectedengNBList_t	 ConnectedengNBList_1;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -3141,6 +3158,7 @@ typedef struct S1AP_E_RABModificationConfirmIEs {
 			S1AP_ENB_UE_S1AP_ID_t	 ENB_UE_S1AP_ID;
 			S1AP_E_RABModifyListBearerModConf_t	 E_RABModifyListBearerModConf;
 			S1AP_E_RABList_t	 E_RABList;
+			S1AP_E_RABList_t	 E_RABList_1;
 			S1AP_CriticalityDiagnostics_t	 CriticalityDiagnostics;
 			S1AP_CSGMembershipStatus_t	 CSGMembershipStatus;
 		} choice;

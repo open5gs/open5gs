@@ -239,8 +239,8 @@ typedef struct asn_TYPE_member_s {
 typedef struct asn_TYPE_tag2member_s {
     ber_tlv_tag_t el_tag;   /* Outmost tag of the member */
     unsigned el_no;         /* Index of the associated member, base 0 */
-    int toff_first;         /* First occurence of the el_tag, relative */
-    int toff_last;          /* Last occurence of the el_tag, relative */
+    int toff_first;         /* First occurrence of the el_tag, relative */
+    int toff_last;          /* Last occurrence of the el_tag, relative */
 } asn_TYPE_tag2member_t;
 
 /*

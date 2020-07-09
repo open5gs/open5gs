@@ -100,6 +100,7 @@ typedef enum S1AP_E_RABToBeSwitchedULItem_ExtIEs__extensionValue_PR {
 typedef enum S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR {
 	S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR_NOTHING,	/* No components present */
 	S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR_Correlation_ID,
+	S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR_Correlation_ID_1,
 	S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR_BearerType
 } S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABSetupItemBearerSUResExtIEs__extensionValue_PR {
@@ -121,6 +122,7 @@ typedef enum S1AP_E_RABReleaseItemBearerRelCompExtIEs__extensionValue_PR {
 typedef enum S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR {
 	S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR_NOTHING,	/* No components present */
 	S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR_Correlation_ID,
+	S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR_Correlation_ID_1,
 	S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR_BearerType
 } S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABSetupItemCtxtSUResExtIEs__extensionValue_PR {
@@ -178,8 +180,10 @@ typedef enum S1AP_AssistanceDataForRecommendedCells_ExtIEs__extensionValue_PR {
 typedef enum S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR {
 	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_NOTHING,	/* No components present */
 	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_COUNTValueExtended,
+	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_COUNTValueExtended_1,
 	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_ReceiveStatusOfULPDCPSDUsExtended,
 	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_COUNTvaluePDCP_SNlength18,
+	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_COUNTvaluePDCP_SNlength18_1,
 	S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR_ReceiveStatusOfULPDCPSDUsPDCP_SNlength18
 } S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR;
 typedef enum S1AP_BluetoothMeasurementConfiguration_ExtIEs__extensionValue_PR {
@@ -328,7 +332,8 @@ typedef enum S1AP_E_RABItem_ExtIEs__extensionValue_PR {
 } S1AP_E_RABItem_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABQoSParameters_ExtIEs__extensionValue_PR {
 	S1AP_E_RABQoSParameters_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	S1AP_E_RABQoSParameters_ExtIEs__extensionValue_PR_Packet_LossRate
+	S1AP_E_RABQoSParameters_ExtIEs__extensionValue_PR_Packet_LossRate,
+	S1AP_E_RABQoSParameters_ExtIEs__extensionValue_PR_Packet_LossRate_1
 } S1AP_E_RABQoSParameters_ExtIEs__extensionValue_PR;
 typedef enum S1AP_E_RABUsageReportItem_ExtIEs__extensionValue_PR {
 	S1AP_E_RABUsageReportItem_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
@@ -360,7 +365,10 @@ typedef enum S1AP_ForbiddenLAs_Item_ExtIEs__extensionValue_PR {
 } S1AP_ForbiddenLAs_Item_ExtIEs__extensionValue_PR;
 typedef enum S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR {
 	S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR_ExtendedBitRate
+	S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR_ExtendedBitRate,
+	S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR_ExtendedBitRate_1,
+	S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR_ExtendedBitRate_2,
+	S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR_ExtendedBitRate_3
 } S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR;
 typedef enum S1AP_GUMMEI_ExtIEs__extensionValue_PR {
 	S1AP_GUMMEI_ExtIEs__extensionValue_PR_NOTHING	/* No components present */
@@ -640,7 +648,8 @@ typedef enum S1AP_Tunnel_Information_ExtIEs__extensionValue_PR {
 } S1AP_Tunnel_Information_ExtIEs__extensionValue_PR;
 typedef enum S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR {
 	S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
-	S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR_ExtendedBitRate
+	S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR_ExtendedBitRate,
+	S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR_ExtendedBitRate_1
 } S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR;
 typedef enum S1AP_UEAppLayerMeasConfig_ExtIEs__extensionValue_PR {
 	S1AP_UEAppLayerMeasConfig_ExtIEs__extensionValue_PR_NOTHING,	/* No components present */
@@ -788,6 +797,7 @@ typedef struct S1AP_E_RABToBeSetupItemBearerSUReqExtIEs {
 		S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__extensionValue_PR present;
 		union S1AP_E_RABToBeSetupItemBearerSUReqExtIEs__S1AP_extensionValue_u {
 			S1AP_Correlation_ID_t	 Correlation_ID;
+			S1AP_Correlation_ID_t	 Correlation_ID_1;
 			S1AP_BearerType_t	 BearerType;
 		} choice;
 		
@@ -866,6 +876,7 @@ typedef struct S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs {
 		S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__extensionValue_PR present;
 		union S1AP_E_RABToBeSetupItemCtxtSUReqExtIEs__S1AP_extensionValue_u {
 			S1AP_Correlation_ID_t	 Correlation_ID;
+			S1AP_Correlation_ID_t	 Correlation_ID_1;
 			S1AP_BearerType_t	 BearerType;
 		} choice;
 		
@@ -1078,8 +1089,10 @@ typedef struct S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs {
 		S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__extensionValue_PR present;
 		union S1AP_Bearers_SubjectToStatusTransfer_ItemExtIEs__S1AP_extensionValue_u {
 			S1AP_COUNTValueExtended_t	 COUNTValueExtended;
+			S1AP_COUNTValueExtended_t	 COUNTValueExtended_1;
 			S1AP_ReceiveStatusOfULPDCPSDUsExtended_t	 ReceiveStatusOfULPDCPSDUsExtended;
 			S1AP_COUNTvaluePDCP_SNlength18_t	 COUNTvaluePDCP_SNlength18;
+			S1AP_COUNTvaluePDCP_SNlength18_t	 COUNTvaluePDCP_SNlength18_1;
 			S1AP_ReceiveStatusOfULPDCPSDUsPDCP_SNlength18_t	 ReceiveStatusOfULPDCPSDUsPDCP_SNlength18;
 		} choice;
 		
@@ -1637,6 +1650,7 @@ typedef struct S1AP_E_RABQoSParameters_ExtIEs {
 		S1AP_E_RABQoSParameters_ExtIEs__extensionValue_PR present;
 		union S1AP_E_RABQoSParameters_ExtIEs__S1AP_extensionValue_u {
 			S1AP_Packet_LossRate_t	 Packet_LossRate;
+			S1AP_Packet_LossRate_t	 Packet_LossRate_1;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -1758,6 +1772,9 @@ typedef struct S1AP_GBR_QosInformation_ExtIEs {
 		S1AP_GBR_QosInformation_ExtIEs__extensionValue_PR present;
 		union S1AP_GBR_QosInformation_ExtIEs__S1AP_extensionValue_u {
 			S1AP_ExtendedBitRate_t	 ExtendedBitRate;
+			S1AP_ExtendedBitRate_t	 ExtendedBitRate_1;
+			S1AP_ExtendedBitRate_t	 ExtendedBitRate_2;
+			S1AP_ExtendedBitRate_t	 ExtendedBitRate_3;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -2768,6 +2785,7 @@ typedef struct S1AP_UEAggregate_MaximumBitrates_ExtIEs {
 		S1AP_UEAggregate_MaximumBitrates_ExtIEs__extensionValue_PR present;
 		union S1AP_UEAggregate_MaximumBitrates_ExtIEs__S1AP_extensionValue_u {
 			S1AP_ExtendedBitRate_t	 ExtendedBitRate;
+			S1AP_ExtendedBitRate_t	 ExtendedBitRate_1;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
