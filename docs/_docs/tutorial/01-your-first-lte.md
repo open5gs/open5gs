@@ -35,7 +35,7 @@ If you want to use GPS antenna, setup your devices in the following order:
 {: .notice--warning}
 
 Then, setup the USRP B200/B210 as below:
-  1. **4x Small Antennas** should be connected to USRP Rx/Tx ports (RF-A/RF-B)
+  1. **Small Antennas** should be connected to USRP Rx/Tx ports (RF-A/RF-B)
   2. USRP powered via power supply or over **USB 3.0**
   3. USRP **USB 3.0** port connected to your PC 
 
@@ -388,50 +388,24 @@ Now, run the srsENB as follows:
 ```bash
 $ cd srsenb/
 $ sudo ../build/srsenb/src/srsenb ./enb.conf
-linux; GNU C++ version 6.2.0 20161027; Boost_106200; UHD_003.009.005-0-unknow
+
+Built in Release mode using commit d045213fb on branch HEAD.
 
 ---  Software Radio Systems LTE eNodeB  ---
 
 Reading configuration file ./enb.conf...
--- Loading firmware image: /usr/share/uhd/images/usrp_b200_fw.hex...
-Opening USRP with args: "",master_clock_rate=30.72e6
--- Detected Device: B200
--- Loading FPGA image: /usr/share/uhd/images/usrp_b200_fpga.bin... done
--- Operating over 'USB 2'.
--- Detecting internal GPSDO.... 'No GPSDO found'
--- Initialize CODEC control...
--- Initialize Radio control...
--- Performing register loopback test... pass
--- Performing CODEC loopback test... pass
--- Asking for clock rate 30.720000 MHz...
--- Actually got clock rate 30.720000 MHz.
--- Performing timer loopback test... pass
-Setting frequency: DL=1845.0 Mhz, UL=1750.0 MHz
-Setting Sampling frequency 11.52 MHz
-
-==== eNodeB started ===
-Type <t> to view trace
-```
-If you see the `No GPSDO found`, please exit the program with Ctrl-C.
-And also, if you see the `USB 2`, it will not be working properly.
-
-The following console output is the correct result of srsENB.
-```bash
-linux; GNU C++ version 6.2.0 20161027; Boost_106200; UHD_003.009.005-0-unknow
-
----  Software Radio Systems LTE eNodeB  ---
-
-Reading configuration file ./enb.conf...
-Opening USRP with args: "",master_clock_rate=30.72e6
--- Detected Device: B200
--- Operating over USB 3.
--- Initialize CODEC control...
--- Initialize Radio control...
--- Performing register loopback test... pass
--- Performing CODEC loopback test... pass
--- Asking for clock rate 30.720000 MHz...
--- Actually got clock rate 30.720000 MHz.
--- Performing timer loopback test... pass
+Opening 1 RF devices with 1 RF channels...
+[INFO] [UHD] linux; GNU C++ version 7.4.0; Boost_106501; UHD_3.14.1.1-release
+[INFO] [LOGGING] Fastpath logging disabled at runtime.
+Opening USRP with args: type=b200,master_clock_rate=23.04e6
+[INFO] [B200] Detected Device: B200
+[INFO] [B200] Operating over USB 3.
+[INFO] [B200] Initialize CODEC control...
+[INFO] [B200] Initialize Radio control...
+[INFO] [B200] Performing register loopback test...
+[INFO] [B200] Register loopback test passed
+[INFO] [B200] Asking for clock rate 23.040000 MHz...
+[INFO] [B200] Actually got clock rate 23.040000 MHz.
 Setting frequency: DL=1845.0 Mhz, UL=1750.0 MHz
 Setting Sampling frequency 11.52 MHz
 
