@@ -327,8 +327,8 @@ typedef struct ogs_nas_allowed_pdu_session_status_s {
 typedef struct ogs_nas_configuration_update_indication_s {
 ED4(uint8_t type:4;,
     uint8_t spare:2;,
-    uint8_t red:1;,
-    uint8_t ack:1;)
+    uint8_t registration_requested:1;,
+    uint8_t acknowledgement_requested:1;)
 } __attribute__ ((packed)) ogs_nas_configuration_update_indication_t;
 
 /* 9.11.3.18A CAG information list

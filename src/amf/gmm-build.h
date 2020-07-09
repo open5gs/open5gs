@@ -41,7 +41,14 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue);
 ogs_pkbuf_t *gmm_build_authentication_request(amf_ue_t *amf_ue);
 ogs_pkbuf_t *gmm_build_authentication_reject(void);
 
-ogs_pkbuf_t *gmm_build_configuration_update_command(amf_ue_t *amf_ue, int red);
+typedef struct gmm_configuration_update_command_param_s {
+    int registration_requested;
+    int acknowledgement_requested;
+    int nitz;
+} gmm_configuration_update_command_param_t;
+
+ogs_pkbuf_t *gmm_build_configuration_update_command(
+        amf_ue_t *amf_ue, gmm_configuration_update_command_param_t *param);
 
 ogs_pkbuf_t *gmm_build_dl_nas_transport(amf_sess_t *sess,
         uint8_t payload_container_type, ogs_pkbuf_t *payload,

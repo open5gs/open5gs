@@ -272,7 +272,8 @@ void nas_5gs_send_security_mode_command(amf_ue_t *amf_ue)
     ogs_expect(rv == OGS_OK);
 }
 
-void nas_5gs_send_configuration_update_command(amf_ue_t *amf_ue, int red)
+void nas_5gs_send_configuration_update_command(
+        amf_ue_t *amf_ue, gmm_configuration_update_command_param_t *param)
 {
     int rv;
     ogs_pkbuf_t *gmmbuf = NULL;
@@ -284,14 +285,21 @@ void nas_5gs_send_configuration_update_command(amf_ue_t *amf_ue, int red)
     if (amf_ue->t3555.pkbuf) {
         gmmbuf = amf_ue->t3555.pkbuf;
         ogs_expect_or_return(gmmbuf);
-    } else {
-        gmmbuf = gmm_build_configuration_update_command(amf_ue, red);
-        ogs_expect_or_return(gmmbuf);
-    }
 
-    amf_ue->t3555.pkbuf = ogs_pkbuf_copy(gmmbuf);
-    ogs_timer_start(amf_ue->t3555.timer,
-            amf_timer_cfg(AMF_TIMER_T3555)->duration);
+        amf_ue->t3555.pkbuf = ogs_pkbuf_copy(gmmbuf);
+        ogs_timer_start(amf_ue->t3555.timer,
+                amf_timer_cfg(AMF_TIMER_T3555)->duration);
+
+    } else {
+        gmmbuf = gmm_build_configuration_update_command(amf_ue, param);
+        ogs_expect_or_return(gmmbuf);
+
+        if (param->acknowledgement_requested) {
+            amf_ue->t3555.pkbuf = ogs_pkbuf_copy(gmmbuf);
+            ogs_timer_start(amf_ue->t3555.timer,
+                    amf_timer_cfg(AMF_TIMER_T3555)->duration);
+        }
+    }
 
     rv = nas_5gs_send_to_downlink_nas_transport(amf_ue, gmmbuf);
     ogs_expect(rv == OGS_OK);

@@ -267,7 +267,7 @@ char *ogs_sbi_timezone_string(int tm_gmtoff)
 
     char timezone[MAX_TIMESTR_LEN];
 
-    memset(&tm, 0, sizeof(tm));
+    ogs_localtime(ogs_time_now(), &tm);
     tm.tm_gmtoff = tm_gmtoff;
     ogs_strftime(timezone, sizeof timezone, "%z", &tm);
 

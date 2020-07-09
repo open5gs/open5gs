@@ -275,14 +275,6 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     testngap_recv(&test_ue, recvbuf);
 
-    /* Send Configuration update complete */
-    gmmbuf = testgmm_build_configuration_update_complete(&test_ue);
-    ABTS_PTR_NOTNULL(tc, gmmbuf);
-    sendbuf = testngap_build_uplink_nas_transport(&test_ue, gmmbuf);
-    ABTS_PTR_NOTNULL(tc, sendbuf);
-    rv = testgnb_ngap_send(ngap, sendbuf);
-    ABTS_INT_EQUAL(tc, OGS_OK, rv);
-
     /* Send PDU session establishment request */
     test_sess.ul_nas_transport_param.request_type =
         OGS_NAS_5GS_REQUEST_TYPE_INITIAL;

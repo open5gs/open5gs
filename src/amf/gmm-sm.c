@@ -345,7 +345,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                  * If t3555 is timeout, the saved pkbuf is used.
                  * In this case, ack should be set to 1 for timer expiration
                  */
-                nas_5gs_send_configuration_update_command(amf_ue, 0);
+                nas_5gs_send_configuration_update_command(amf_ue, NULL);
             }
             break;
 
@@ -771,6 +771,8 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
     ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t *sbi_message = NULL;
 
+    gmm_configuration_update_command_param_t param;
+
     ogs_assert(s);
     ogs_assert(e);
 
@@ -883,8 +885,23 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
              * indication IE in the CONFIGURATION UPDATE COMMAND message and
              * shall start timer T3555. Acknowledgement shall be requested
              * for all parameters except when only NITZ is included.
+             *
+             * TS23.502
+             * 4.2.4.2 UE Configuration Update procedure for access and
+             * mobility management related parameters
+             *
+             * The AMF includes one or more of 5G-GUTI, TAI List,
+             * Allowed NSSAI, Mapping Of Allowed NSSAI, Configured NSSAI
+             * for the Serving PLMN, Mapping Of Configured NSSAI,
+             * rejected S-NSSAIs, NITZ (Network Identity and Time Zone),
+             * Mobility Restrictions parameters, LADN Information,
+             * Operator-defined access category definitions or SMS Subscribed
+             * Indication if the AMF wants to update these NAS parameters
+             * without triggering a UE Registration procedure.
              */
-            nas_5gs_send_configuration_update_command(amf_ue, 0);
+            memset(&param, 0, sizeof(param));
+            param.nitz = 1;
+            nas_5gs_send_configuration_update_command(amf_ue, &param);
 
             OGS_FSM_TRAN(s, &gmm_state_registered);
             break;

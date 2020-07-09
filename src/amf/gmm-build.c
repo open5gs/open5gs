@@ -440,7 +440,8 @@ ogs_pkbuf_t *gmm_build_security_mode_command(amf_ue_t *amf_ue)
     return nas_5gs_security_encode(amf_ue, &message);
 }
 
-ogs_pkbuf_t *gmm_build_configuration_update_command(amf_ue_t *amf_ue, int red)
+ogs_pkbuf_t *gmm_build_configuration_update_command(
+        amf_ue_t *amf_ue, gmm_configuration_update_command_param_t *param)
 {
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_configuration_update_command_t *configuration_update_command =
@@ -458,19 +459,7 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(amf_ue_t *amf_ue, int red)
     struct tm gmt, local;
 
     ogs_assert(amf_ue);
-
-    ogs_gettimeofday(&tv);
-    ogs_gmtime(tv.tv_sec, &gmt);
-    ogs_localtime(tv.tv_sec, &local);
-
-    ogs_debug("    GMT Time[Y:M:D H:M:S GMT:DST] - %d:%d:%d, %d:%d:%d, %d:%d",
-        gmt.tm_year, gmt.tm_mon, gmt.tm_mday,
-        gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
-        (int)gmt.tm_gmtoff, gmt.tm_isdst);
-    ogs_debug("    LOCAL Time[Y:M:D H:M:S GMT:DST] - %d:%d:%d, %d:%d:%d, %d:%d",
-        local.tm_year, local.tm_mon, local.tm_mday,
-        local.tm_hour, local.tm_min, local.tm_sec,
-        (int)local.tm_gmtoff, local.tm_isdst);
+    ogs_assert(param);
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
@@ -482,53 +471,74 @@ ogs_pkbuf_t *gmm_build_configuration_update_command(amf_ue_t *amf_ue, int red)
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND;
 
-    configuration_update_command->presencemask |=
-        OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_CONFIGURATION_UPDATE_INDICATION_PRESENT;
-
-    configuration_update_indication->ack = 1;
-    configuration_update_indication->red = red;
-
-    configuration_update_command->presencemask |=
-        OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
-    universal_time_and_local_time_zone->year =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
-    universal_time_and_local_time_zone->mon =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
-    universal_time_and_local_time_zone->mday =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
-    universal_time_and_local_time_zone->hour =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
-    universal_time_and_local_time_zone->min =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_min);
-    universal_time_and_local_time_zone->sec =
-                OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
-    if (local.tm_gmtoff >= 0) {
-        universal_time_and_local_time_zone->timezone =
-                    OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
-    } else {
-        universal_time_and_local_time_zone->timezone =
-                    OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
-        universal_time_and_local_time_zone->timezone |= 0x08;
-    }
-    ogs_debug("    Timezone:0x%x",
-        universal_time_and_local_time_zone->timezone);
-
-    configuration_update_command->presencemask |=
-        OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
-    network_daylight_saving_time->length = 1;
-
-    if (amf_self()->full_name.length) {
+    if (param->registration_requested || param->acknowledgement_requested) {
         configuration_update_command->presencemask |=
-            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_FULL_NAME_FOR_NETWORK_PRESENT;
-        memcpy(&configuration_update_command->full_name_for_network,
-            &amf_self()->full_name, sizeof(ogs_nas_network_name_t));
+            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_CONFIGURATION_UPDATE_INDICATION_PRESENT;
+
+        configuration_update_indication->acknowledgement_requested =
+            param->acknowledgement_requested;
+        configuration_update_indication->registration_requested =
+            param->registration_requested;
     }
 
-    if (amf_self()->short_name.length) {
+    if (param->nitz) {
+        ogs_gettimeofday(&tv);
+        ogs_gmtime(tv.tv_sec, &gmt);
+        ogs_localtime(tv.tv_sec, &local);
+
+        ogs_debug("    GMT Time[Y:M:D H:M:S GMT:DST] - "
+                    "%d:%d:%d, %d:%d:%d, %d:%d",
+            gmt.tm_year, gmt.tm_mon, gmt.tm_mday,
+            gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
+            (int)gmt.tm_gmtoff, gmt.tm_isdst);
+        ogs_debug("    LOCAL Time[Y:M:D H:M:S GMT:DST] - "
+                    "%d:%d:%d, %d:%d:%d, %d:%d",
+            local.tm_year, local.tm_mon, local.tm_mday,
+            local.tm_hour, local.tm_min, local.tm_sec,
+            (int)local.tm_gmtoff, local.tm_isdst);
+
         configuration_update_command->presencemask |=
-            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_SHORT_NAME_FOR_NETWORK_PRESENT;
-        memcpy(&configuration_update_command->short_name_for_network,
-            &amf_self()->short_name, sizeof(ogs_nas_network_name_t));
+            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
+        universal_time_and_local_time_zone->year =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
+        universal_time_and_local_time_zone->mon =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
+        universal_time_and_local_time_zone->mday =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
+        universal_time_and_local_time_zone->hour =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
+        universal_time_and_local_time_zone->min =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_min);
+        universal_time_and_local_time_zone->sec =
+                    OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
+        if (local.tm_gmtoff >= 0) {
+            universal_time_and_local_time_zone->timezone =
+                        OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
+        } else {
+            universal_time_and_local_time_zone->timezone =
+                        OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
+            universal_time_and_local_time_zone->timezone |= 0x08;
+        }
+        ogs_debug("    Timezone:0x%x",
+            universal_time_and_local_time_zone->timezone);
+
+        configuration_update_command->presencemask |=
+            OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_NETWORK_DAYLIGHT_SAVING_TIME_PRESENT;
+        network_daylight_saving_time->length = 1;
+
+        if (amf_self()->full_name.length) {
+            configuration_update_command->presencemask |=
+                OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_FULL_NAME_FOR_NETWORK_PRESENT;
+            memcpy(&configuration_update_command->full_name_for_network,
+                &amf_self()->full_name, sizeof(ogs_nas_network_name_t));
+        }
+
+        if (amf_self()->short_name.length) {
+            configuration_update_command->presencemask |=
+                OGS_NAS_5GS_CONFIGURATION_UPDATE_COMMAND_SHORT_NAME_FOR_NETWORK_PRESENT;
+            memcpy(&configuration_update_command->short_name_for_network,
+                &amf_self()->short_name, sizeof(ogs_nas_network_name_t));
+        }
     }
 
     return nas_5gs_security_encode(amf_ue, &message);
