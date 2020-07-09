@@ -538,6 +538,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         DEFAULT
+            ogs_error("Invalid service name [%s]", sbi_message.h.service.name);
+            ogs_assert_if_reached();
         END
 
         ogs_sbi_message_free(&sbi_message);

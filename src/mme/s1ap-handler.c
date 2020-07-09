@@ -1410,7 +1410,8 @@ void s1ap_handle_handover_required(mme_enb_t *enb, ogs_s1ap_message_t *message)
             Source_ToTarget_TransparentContainer);
 }
 
-void s1ap_handle_handover_request_ack(mme_enb_t *enb, ogs_s1ap_message_t *message)
+void s1ap_handle_handover_request_ack(
+        mme_enb_t *enb, ogs_s1ap_message_t *message)
 {
     int rv;
     char buf[OGS_ADDRSTRLEN];

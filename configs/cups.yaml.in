@@ -108,7 +108,7 @@ nrf:
 
 upf:
     pfcp:
-      addr: 127.0.0.4
+      - addr: 127.0.0.4
     gtpu:
       - addr:
         - 127.0.0.4

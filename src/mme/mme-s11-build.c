@@ -139,7 +139,8 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
             pgw_addr6 = mme_self()->pgw_addr6;
         }
 
-        rv = ogs_gtp_sockaddr_to_f_teid(pgw_addr, pgw_addr6, &pgw_s5c_teid, &len);
+        rv = ogs_gtp_sockaddr_to_f_teid(
+                pgw_addr, pgw_addr6, &pgw_s5c_teid, &len);
         ogs_assert(rv == OGS_OK);
         req->pgw_s5_s8_address_for_control_plane_or_pmip.presence = 1;
         req->pgw_s5_s8_address_for_control_plane_or_pmip.data = &pgw_s5c_teid;
@@ -162,7 +163,11 @@ ogs_pkbuf_t *mme_s11_build_create_session_request(
         pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV6 ||
         pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4V6) {
         req->pdn_type.u8 = ((pdn->pdn_type + 1) & sess->request_type.type);
-        ogs_assert(req->pdn_type.u8 != 0);
+        if (req->pdn_type.u8 == 0) {
+            ogs_fatal("Cannot derive PDN Type [UE:%d,HSS:%d]",
+                sess->request_type.type, pdn->pdn_type);
+            ogs_assert_if_reached();
+        }
     } else if (pdn->pdn_type == OGS_DIAM_PDN_TYPE_IPV4_OR_IPV6) {
         req->pdn_type.u8 = sess->request_type.type;
     } else {
@@ -673,7 +678,6 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     ogs_gtp_create_indirect_data_forwarding_tunnel_request_t *req =
         &gtp_message.create_indirect_data_forwarding_tunnel_request;
     
-    ogs_gtp_tlv_bearer_context_t *bearers[OGS_GTP_MAX_INDIRECT_TUNNEL];
     ogs_gtp_f_teid_t dl_teid[OGS_GTP_MAX_INDIRECT_TUNNEL];
     ogs_gtp_f_teid_t ul_teid[OGS_GTP_MAX_INDIRECT_TUNNEL];
     int len;
@@ -684,7 +688,6 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
             mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
 
-    ogs_gtp_bearers_in_create_indirect_tunnel_request(&bearers, req);
     memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
 
     i = 0;
@@ -700,10 +703,9 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 rv = ogs_gtp_ip_to_f_teid(
                         &bearer->enb_dl_ip, &dl_teid[i], &len);
                 ogs_assert(rv == OGS_OK);
-                ogs_assert(bearers[i]);
-                bearers[i]->s1_u_enodeb_f_teid.presence = 1;
-                bearers[i]->s1_u_enodeb_f_teid.data = &dl_teid[i];
-                bearers[i]->s1_u_enodeb_f_teid.len = len;
+                req->bearer_contexts[i].s1_u_enodeb_f_teid.presence = 1;
+                req->bearer_contexts[i].s1_u_enodeb_f_teid.data = &dl_teid[i];
+                req->bearer_contexts[i].s1_u_enodeb_f_teid.len = len;
             }
 
             if (MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer)) {
@@ -714,17 +716,16 @@ ogs_pkbuf_t *mme_s11_build_create_indirect_data_forwarding_tunnel_request(
                 rv = ogs_gtp_ip_to_f_teid(
                         &bearer->enb_ul_ip, &ul_teid[i], &len);
                 ogs_assert(rv == OGS_OK);
-                ogs_assert(bearers[i]);
-                bearers[i]->s12_rnc_f_teid.presence = 1;
-                bearers[i]->s12_rnc_f_teid.data = &ul_teid[i];
-                bearers[i]->s12_rnc_f_teid.len = len;
+                req->bearer_contexts[i].s12_rnc_f_teid.presence = 1;
+                req->bearer_contexts[i].s12_rnc_f_teid.data = &ul_teid[i];
+                req->bearer_contexts[i].s12_rnc_f_teid.len = len;
             }
 
             if (MME_HAVE_ENB_DL_INDIRECT_TUNNEL(bearer) ||
                 MME_HAVE_ENB_UL_INDIRECT_TUNNEL(bearer)) {
-                bearers[i]->presence = 1;
-                bearers[i]->eps_bearer_id.presence = 1;
-                bearers[i]->eps_bearer_id.u8 = bearer->ebi;
+                req->bearer_contexts[i].presence = 1;
+                req->bearer_contexts[i].eps_bearer_id.presence = 1;
+                req->bearer_contexts[i].eps_bearer_id.u8 = bearer->ebi;
                 i++;
             }
 
@@ -763,80 +764,80 @@ ogs_pkbuf_t *mme_s11_build_bearer_resource_command(
     ogs_assert(mme_ue);
 
     ogs_assert(nas_message);
-        switch (nas_message->esm.h.message_type) {
-        case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST:
-            allocation = &nas_message->esm.bearer_resource_allocation_request;
-            qos = &allocation->required_traffic_flow_qos;
-            tad = &allocation->traffic_flow_aggregate;
-            break;
-        case OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST:
-            modification = &nas_message->esm.bearer_resource_modification_request;
-            if (modification->presencemask &
-                OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT) {
-                qos = &modification->required_traffic_flow_qos;
-            }
-            tad = &modification->traffic_flow_aggregate;
-            break;
-        default:
-            ogs_error("Invalid NAS ESM Type[%d]",
-                    nas_message->esm.h.message_type);
-            return NULL;
+    switch (nas_message->esm.h.message_type) {
+    case OGS_NAS_EPS_BEARER_RESOURCE_ALLOCATION_REQUEST:
+        allocation = &nas_message->esm.bearer_resource_allocation_request;
+        qos = &allocation->required_traffic_flow_qos;
+        tad = &allocation->traffic_flow_aggregate;
+        break;
+    case OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST:
+        modification = &nas_message->esm.bearer_resource_modification_request;
+        if (modification->presencemask &
+            OGS_NAS_EPS_BEARER_RESOURCE_MODIFICATION_REQUEST_REQUIRED_TRAFFIC_FLOW_QOS_PRESENT) {
+            qos = &modification->required_traffic_flow_qos;
         }
-
-        linked_bearer = mme_linked_bearer(bearer);
-        ogs_assert(linked_bearer);
-
-        ogs_debug("[MME] Bearer Resource Command");
-        ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
-                mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
-
-        memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
-
-        /* Linked Bearer Context : EBI */
-        cmd->linked_eps_bearer_id.presence = 1;
-        cmd->linked_eps_bearer_id.u8 = bearer->ebi;
-
-        /* Procedure Transaction ID(PTI) */
-        cmd->procedure_transaction_id.presence = 1;
-        cmd->procedure_transaction_id.u8 = sess->pti;
-
-        /* Flow Quality of Service(QoS) */
-        if (qos) {
-            memset(&flow_qos, 0, sizeof(flow_qos));
-            flow_qos.qci = qos->qci;
-
-            /* Octet 4
-             *
-             * In UE to network direction:
-             * 00000000 Subscribed maximum bit rate
-             *
-             * In network to UE direction:
-             * 00000000 Reserved
-             */
-            flow_qos.ul_mbr = qos->ul_mbr == 0 ? bearer->qos.mbr.uplink :
-                ogs_gtp_qos_to_bps(
-                    qos->ul_mbr, qos->ul_mbr_extended, qos->ul_mbr_extended2);
-            flow_qos.dl_mbr = qos->dl_mbr == 0 ? bearer->qos.mbr.downlink :
-                ogs_gtp_qos_to_bps(
-                    qos->dl_mbr, qos->dl_mbr_extended, qos->dl_mbr_extended2);
-            flow_qos.ul_gbr = qos->ul_gbr == 0 ? bearer->qos.gbr.uplink :
-                ogs_gtp_qos_to_bps(
-                    qos->ul_gbr, qos->ul_gbr_extended, qos->ul_gbr_extended2);
-            flow_qos.dl_gbr = qos->dl_gbr == 0 ? bearer->qos.gbr.downlink :
-                ogs_gtp_qos_to_bps(
-                    qos->dl_gbr, qos->dl_gbr_extended, qos->dl_gbr_extended2);
-
-            ogs_gtp_build_flow_qos(
-                    &cmd->flow_quality_of_service,
-                    &flow_qos, flow_qos_buf, GTP_FLOW_QOS_LEN);
-            cmd->flow_quality_of_service.presence = 1;
-        }
-
-        /* Traffic Aggregate Description(TAD) */
-        cmd->traffic_aggregate_description.presence = 1;
-        cmd->traffic_aggregate_description.data = tad->buffer;
-        cmd->traffic_aggregate_description.len = tad->length;
-
-        gtp_message.h.type = type;
-        return ogs_gtp_build_msg(&gtp_message);
+        tad = &modification->traffic_flow_aggregate;
+        break;
+    default:
+        ogs_error("Invalid NAS ESM Type[%d]",
+                nas_message->esm.h.message_type);
+        return NULL;
     }
+
+    linked_bearer = mme_linked_bearer(bearer);
+    ogs_assert(linked_bearer);
+
+    ogs_debug("[MME] Bearer Resource Command");
+    ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
+            mme_ue->mme_s11_teid, mme_ue->sgw_s11_teid);
+
+    memset(&gtp_message, 0, sizeof(ogs_gtp_message_t));
+
+    /* Linked Bearer Context : EBI */
+    cmd->linked_eps_bearer_id.presence = 1;
+    cmd->linked_eps_bearer_id.u8 = bearer->ebi;
+
+    /* Procedure Transaction ID(PTI) */
+    cmd->procedure_transaction_id.presence = 1;
+    cmd->procedure_transaction_id.u8 = sess->pti;
+
+    /* Flow Quality of Service(QoS) */
+    if (qos) {
+        memset(&flow_qos, 0, sizeof(flow_qos));
+        flow_qos.qci = qos->qci;
+
+        /* Octet 4
+         *
+         * In UE to network direction:
+         * 00000000 Subscribed maximum bit rate
+         *
+         * In network to UE direction:
+         * 00000000 Reserved
+         */
+        flow_qos.ul_mbr = qos->ul_mbr == 0 ? bearer->qos.mbr.uplink :
+            ogs_gtp_qos_to_bps(
+                qos->ul_mbr, qos->ul_mbr_extended, qos->ul_mbr_extended2);
+        flow_qos.dl_mbr = qos->dl_mbr == 0 ? bearer->qos.mbr.downlink :
+            ogs_gtp_qos_to_bps(
+                qos->dl_mbr, qos->dl_mbr_extended, qos->dl_mbr_extended2);
+        flow_qos.ul_gbr = qos->ul_gbr == 0 ? bearer->qos.gbr.uplink :
+            ogs_gtp_qos_to_bps(
+                qos->ul_gbr, qos->ul_gbr_extended, qos->ul_gbr_extended2);
+        flow_qos.dl_gbr = qos->dl_gbr == 0 ? bearer->qos.gbr.downlink :
+            ogs_gtp_qos_to_bps(
+                qos->dl_gbr, qos->dl_gbr_extended, qos->dl_gbr_extended2);
+
+        ogs_gtp_build_flow_qos(
+                &cmd->flow_quality_of_service,
+                &flow_qos, flow_qos_buf, GTP_FLOW_QOS_LEN);
+        cmd->flow_quality_of_service.presence = 1;
+    }
+
+    /* Traffic Aggregate Description(TAD) */
+    cmd->traffic_aggregate_description.presence = 1;
+    cmd->traffic_aggregate_description.data = tad->buffer;
+    cmd->traffic_aggregate_description.len = tad->length;
+
+    gtp_message.h.type = type;
+    return ogs_gtp_build_msg(&gtp_message);
+}

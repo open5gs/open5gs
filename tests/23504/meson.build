@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-test23504_sources = files('''
+test5gc_23504_sources = files('''
     abts-main.c
     r16-test.c
 '''.split())
 
-test23504_exe = executable('23504',
-    sources : test23504_sources,
-    c_args : testcore_cc_flags,
+test5gc_23504_exe = executable('23504',
+    sources : test5gc_23504_sources,
+    c_args : testunit_core_cc_flags,
     dependencies : libtestepc_dep)

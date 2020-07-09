@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testunit_sources = files('''
+testunit_unit_sources = files('''
     abts-main.c
     s1ap-message-test.c
     nas-message-test.c
@@ -25,9 +25,9 @@ testunit_sources = files('''
     crash-test.c
 '''.split())
 
-testunit_exe = executable('unit',
-    sources : testunit_sources,
-    c_args : [testcore_cc_flags, sbi_cc_flags],
+testunit_unit_exe = executable('unit',
+    sources : testunit_unit_sources,
+    c_args : [testunit_core_cc_flags, sbi_cc_flags],
     dependencies : [libtestepc_dep, libsbi_dep])
 
-test('unit', testunit_exe, is_parallel : false, suite: 'unit')
+test('unit', testunit_unit_exe, is_parallel : false, suite: 'unit')

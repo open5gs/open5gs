@@ -71,10 +71,6 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
     ogs_sbi_message_t message;
     ogs_sbi_request_t *request = NULL;
 
-    char buf[OGS_TIME_ISO8601_FORMATTED_LENGTH];
-    struct timeval tv;
-    struct tm local;
-
     OpenAPI_auth_event_t *AuthEvent = NULL;
 
     ogs_assert(ausf_ue);
@@ -89,11 +85,7 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
     AuthEvent = ogs_calloc(1, sizeof(*AuthEvent));
     ogs_assert(AuthEvent);
 
-    ogs_gettimeofday(&tv);
-    ogs_localtime(tv.tv_sec, &local);
-    ogs_strftime(buf, OGS_TIME_ISO8601_FORMATTED_LENGTH,
-            OGS_TIME_ISO8601_FORMAT, &local);
-    AuthEvent->time_stamp = buf;
+    AuthEvent->time_stamp = ogs_sbi_localtime_string(ogs_time_now());
 
     AuthEvent->nf_instance_id = ogs_sbi_self()->nf_instance_id;
     if (ausf_ue->auth_result == OpenAPI_auth_result_AUTHENTICATION_SUCCESS)
@@ -108,6 +100,8 @@ ogs_sbi_request_t *ausf_nudm_ueau_build_result_confirmation_inform(
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
 
+    if (AuthEvent->time_stamp)
+        ogs_free(AuthEvent->time_stamp);
     ogs_free(AuthEvent);
 
     return request;

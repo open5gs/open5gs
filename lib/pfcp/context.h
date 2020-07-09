@@ -33,13 +33,6 @@ extern "C" {
 
 typedef struct ogs_pfcp_node_s ogs_pfcp_node_t;
 
-typedef enum {
-    UPF_SELECT_RR = 0,  /* Default UPF Selection Method */
-    UPF_SELECT_TAC,     /* Select UPF by enb_tac */
-    UPF_SELECT_APN,     /* Select UPF by UE's APN */
-    UPF_SELECT_ENB_ID,  /* Select UPF by enb_id */
-} upf_select_e;
-
 typedef struct ogs_pfcp_context_s {
     uint32_t        pfcp_port;      /* PFCP local port */
     const char      *tun_ifname;    /* PFCP TUN Interface Name */
@@ -54,8 +47,7 @@ typedef struct ogs_pfcp_context_s {
     uint32_t        pfcp_started;   /* UTC time when the PFCP entity started */
 
     ogs_list_t      n4_list;        /* PFCP Node List */
-    upf_select_e    upf_selection_mode;  /* Selection algorithm for selecting UPF */
-    ogs_pfcp_node_t *node;    /* Iterator for Peer round-robin */
+    ogs_pfcp_node_t *node;          /* Iterator for Peer round-robin */
 
     ogs_list_t      dev_list;       /* Tun Device List */
     ogs_list_t      subnet_list;    /* UE Subnet List */
@@ -89,8 +81,10 @@ typedef struct ogs_pfcp_node_s {
     uint8_t         num_of_tac;
     const char*     apn[OGS_MAX_APN_LEN];
     uint8_t         num_of_apn;
-    uint32_t        enb_id[OGS_MAX_NUM_OF_ENB_ID];
-    uint8_t         num_of_enb_id;
+    uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
+    uint8_t         num_of_e_cell_id;
+    uint32_t        nr_cell_id[OGS_MAX_NUM_OF_CELL_ID];
+    uint8_t         num_of_nr_cell_id;
 
     ogs_list_t      gtpu_resource_list; /* User Plane IP Resource Information */
 } ogs_pfcp_node_t;

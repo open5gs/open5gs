@@ -75,19 +75,37 @@ int smf_sbi_open(void)
 
     ogs_sbi_server_start_all(server_cb);
 
+    /*
+     * The connection between NF and NRF is a little special.
+     *
+     * NF and NRF share nf_instance. I get the NRF EndPoint(client) information
+     * the configuration file via lib/sbi/context.c.
+     * And, the NFService information will be transmitted to NRF.
+     *
+     * ogs_sbi_self()->nf_instance_id means NF's InstanceId.
+     */
     ogs_list_for_each(&ogs_sbi_self()->nf_instance_list, nf_instance) {
         ogs_sbi_nf_service_t *service = NULL;
+        ogs_sbi_client_t *client = NULL;
 
+        /* Build NF instance information. It will be transmitted to NRF. */
         ogs_sbi_nf_instance_build_default(nf_instance, smf_self()->nf_type);
 
+        /* Build NF service information. It will be transmitted to NRF. */
         service = ogs_sbi_nf_service_build_default(nf_instance,
                 (char*)OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION);
         ogs_assert(service);
         ogs_sbi_nf_service_add_version(service, (char*)OGS_SBI_API_V1,
                 (char*)OGS_SBI_API_V1_0_0, NULL);
 
+        /* Client callback is only used when NF sends to NRF */
+        client = nf_instance->client;
+        ogs_assert(client);
+        client->cb = client_cb;
+
+        /* NFRegister is sent and the response is received
+         * by the above client callback. */
         smf_nf_fsm_init(nf_instance);
-        smf_sbi_setup_client_callback(nf_instance);
     }
 
     return OGS_OK;
@@ -96,24 +114,6 @@ int smf_sbi_open(void)
 void smf_sbi_close(void)
 {
     ogs_sbi_server_stop_all();
-}
-
-void smf_sbi_setup_client_callback(ogs_sbi_nf_instance_t *nf_instance)
-{
-    ogs_sbi_client_t *client = NULL;
-    ogs_sbi_nf_service_t *nf_service = NULL;
-    ogs_assert(nf_instance);
-
-    client = nf_instance->client;
-    ogs_assert(client);
-
-    client->cb = client_cb;
-
-    ogs_list_for_each(&nf_instance->nf_service_list, nf_service) {
-        client = nf_service->client;
-        if (client)
-            client->cb = client_cb;
-    }
 }
 
 void smf_sbi_discover_and_send(
@@ -135,6 +135,7 @@ void smf_sbi_discover_and_send(
     sess->sbi.nf_state_registered = smf_nf_state_registered;
     sess->sbi.client_wait.duration =
         smf_timer_cfg(SMF_TIMER_SBI_CLIENT_WAIT)->duration;
+    sess->sbi.client_cb = client_cb;
 
     if (ogs_sbi_discover_and_send(
             nf_type, &sess->sbi, data, (ogs_sbi_build_f)build) != true) {
@@ -361,7 +362,6 @@ void smf_sbi_send_sm_context_update_error(
         ogs_pkbuf_free(n2smbuf);
 }
 
-#if 0
 static int client_notify_cb(ogs_sbi_response_t *response, void *data)
 {
     int rv;
@@ -386,7 +386,6 @@ static int client_notify_cb(ogs_sbi_response_t *response, void *data)
     ogs_sbi_response_free(response);
     return OGS_OK;
 }
-#endif
 
 void smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
 {
@@ -400,6 +399,6 @@ void smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
 
     request = smf_namf_callback_build_sm_context_status(sess, NULL);
     ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, NULL);
+    ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
     ogs_sbi_request_free(request);
 }

@@ -242,22 +242,6 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 dev = ogs_yaml_iter_value(&pfcp_iter);
                             } else if (!strcmp(pfcp_key, "apn")) {
                                 /* Skip */
-                            } else if (!strcmp(pfcp_key, "upf_selection_mode")) {
-                                ogs_assert(ogs_yaml_iter_type(&pfcp_iter) !=
-                                        YAML_SCALAR_NODE);
-                                const char *upf_selection_mode = ogs_yaml_iter_value(&pfcp_iter);
-
-                                if (!strcmp(upf_selection_mode, "rr"))
-                                    self.upf_selection_mode = UPF_SELECT_RR;
-                                else if (!strcmp(upf_selection_mode, "tac"))
-                                    self.upf_selection_mode = UPF_SELECT_TAC;
-                                else if (!strcmp(upf_selection_mode, "apn"))
-                                    self.upf_selection_mode = UPF_SELECT_APN;
-                                else if (!strcmp(upf_selection_mode, "enb_id"))
-                                    self.upf_selection_mode = UPF_SELECT_ENB_ID;
-                                else
-                                    ogs_warn("unknown upf_selection_mode `%s`",
-                                            upf_selection_mode);
                             } else
                                 ogs_warn("unknown key `%s`", pfcp_key);
                         }
@@ -453,10 +437,12 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         uint16_t port = self.pfcp_port;
                         uint16_t tac[OGS_MAX_NUM_OF_TAI] = {0,};
                         uint8_t num_of_tac = 0;
-                        const char * apn[OGS_MAX_NUM_OF_APN];
+                        const char *apn[OGS_MAX_NUM_OF_APN];
                         uint8_t num_of_apn = 0;
-                        uint32_t enb_id[OGS_MAX_NUM_OF_ENB_ID] = {0,};
-                        uint8_t num_of_enb_id = 0;
+                        uint32_t e_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
+                        uint8_t num_of_e_cell_id = 0;
+                        uint32_t nr_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
+                        uint8_t num_of_nr_cell_id = 0;
 
                         if (ogs_yaml_iter_type(&pfcp_array) ==
                                 YAML_MAPPING_NODE) {
@@ -537,7 +523,8 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 } while (
                                     ogs_yaml_iter_type(&tac_iter) ==
                                         YAML_SEQUENCE_NODE);
-                            } else if (!strcmp(pfcp_key, "apn")) {
+                            } else if (!strcmp(pfcp_key, "apn") ||
+                                        !strcmp(pfcp_key, "dnn")) {
                                 ogs_yaml_iter_t apn_iter;
                                 ogs_yaml_iter_recurse(&pfcp_iter, &apn_iter);
                                 ogs_assert(ogs_yaml_iter_type(&apn_iter) !=
@@ -562,38 +549,62 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 } while (
                                     ogs_yaml_iter_type(&apn_iter) ==
                                         YAML_SEQUENCE_NODE);
-                            } else if (!strcmp(pfcp_key, "enb_id")) {
-                                ogs_yaml_iter_t enb_id_iter;
-                                ogs_yaml_iter_recurse(&pfcp_iter, &enb_id_iter);
-                                ogs_assert(ogs_yaml_iter_type(&enb_id_iter) !=
-                                    YAML_MAPPING_NODE);
+                            } else if (!strcmp(pfcp_key, "e_cell_id")) {
+                                ogs_yaml_iter_t e_cell_id_iter;
+                                ogs_yaml_iter_recurse(
+                                        &pfcp_iter, &e_cell_id_iter);
+                                ogs_assert(ogs_yaml_iter_type(
+                                        &e_cell_id_iter) != YAML_MAPPING_NODE);
 
                                 do {
                                     const char *v = NULL;
 
-                                    ogs_assert(num_of_enb_id <= 
+                                    ogs_assert(num_of_e_cell_id <= 
                                             OGS_MAX_NUM_OF_ENB_ID);
-                                    if (ogs_yaml_iter_type(&enb_id_iter) ==
+                                    if (ogs_yaml_iter_type(&e_cell_id_iter) ==
                                             YAML_SEQUENCE_NODE) {
-                                        if (!ogs_yaml_iter_next(&enb_id_iter))
+                                        if (!ogs_yaml_iter_next(
+                                                    &e_cell_id_iter))
                                             break;
                                     }
 
-                                    v = ogs_yaml_iter_value(&enb_id_iter);
+                                    v = ogs_yaml_iter_value(&e_cell_id_iter);
                                     if (v) {
-                                        if (strncmp(v,"0x",2)) {
-                                            // integer enb_id
-                                            enb_id[num_of_enb_id] = atoi(v);
-                                        } else {
-                                            // hex enb_id
-                                            enb_id[num_of_enb_id] = strtol(v, NULL, 16);
-                                        }                                        
-                                        num_of_enb_id++;
+                                        e_cell_id[num_of_e_cell_id]
+                                            = ogs_uint28_from_string((char*)v);
+                                        num_of_e_cell_id++;
                                     }
                                 } while (
-                                    ogs_yaml_iter_type(&enb_id_iter) ==
+                                    ogs_yaml_iter_type(&e_cell_id_iter) ==
                                         YAML_SEQUENCE_NODE);
-                            
+                            } else if (!strcmp(pfcp_key, "nr_cell_id")) {
+                                ogs_yaml_iter_t nr_cell_id_iter;
+                                ogs_yaml_iter_recurse(
+                                        &pfcp_iter, &nr_cell_id_iter);
+                                ogs_assert(ogs_yaml_iter_type(
+                                        &nr_cell_id_iter) != YAML_MAPPING_NODE);
+
+                                do {
+                                    const char *v = NULL;
+
+                                    ogs_assert(num_of_nr_cell_id <=
+                                            OGS_MAX_NUM_OF_ENB_ID);
+                                    if (ogs_yaml_iter_type(&nr_cell_id_iter) ==
+                                            YAML_SEQUENCE_NODE) {
+                                        if (!ogs_yaml_iter_next(
+                                                    &nr_cell_id_iter))
+                                            break;
+                                    }
+
+                                    v = ogs_yaml_iter_value(&nr_cell_id_iter);
+                                    if (v) {
+                                        nr_cell_id[num_of_nr_cell_id]
+                                            = ogs_uint28_from_string((char*)v);
+                                        num_of_nr_cell_id++;
+                                    }
+                                } while (
+                                    ogs_yaml_iter_type(&nr_cell_id_iter) ==
+                                        YAML_SEQUENCE_NODE);
                             } else
                                 ogs_warn("unknown key `%s`", pfcp_key);
                         }
@@ -622,10 +633,15 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                         if (num_of_apn != 0)
                             memcpy(node->apn, apn, sizeof(node->apn));
                         
-                        node->num_of_enb_id = num_of_enb_id;
-                        if (num_of_enb_id != 0)
-                            memcpy(node->enb_id, enb_id, sizeof(node->enb_id));
+                        node->num_of_e_cell_id = num_of_e_cell_id;
+                        if (num_of_e_cell_id != 0)
+                            memcpy(node->e_cell_id, e_cell_id,
+                                    sizeof(node->e_cell_id));
 
+                        node->num_of_nr_cell_id = num_of_nr_cell_id;
+                        if (num_of_nr_cell_id != 0)
+                            memcpy(node->nr_cell_id, nr_cell_id,
+                                    sizeof(node->nr_cell_id));
                     } while (ogs_yaml_iter_type(&pfcp_array) ==
                             YAML_SEQUENCE_NODE);
                 }

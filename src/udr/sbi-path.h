@@ -29,8 +29,6 @@ extern "C" {
 int udr_sbi_open(void);
 void udr_sbi_close(void);
 
-void udr_sbi_setup_client_callback(ogs_sbi_nf_instance_t *nf_instance);
-
 #ifdef __cplusplus
 }
 #endif

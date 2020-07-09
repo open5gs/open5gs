@@ -62,7 +62,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     ogs_assert(sess);
 
     memset(&message, 0, sizeof(message));
-    if (test_ue->registration_request_type.integrity_protected) {
+    if (test_ue->registration_request_param.integrity_protected) {
         message.h.security_header_type =
             OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         message.h.extended_protocol_discriminator =
@@ -74,7 +74,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
 
     registration_type->data = test_ue->nas.data;
 
-    if (test_ue->registration_request_type.guti) {
+    if (test_ue->registration_request_param.guti) {
         ogs_nas_5gs_nas_guti_to_mobilty_identity_guti(
                 &test_ue->nas_guti, &mobile_identity_guti);
         registration_request->mobile_identity.length =
@@ -89,34 +89,34 @@ ogs_pkbuf_t *testgmm_build_registration_request(
             &test_ue->mobile_identity_suci;
     }
 
-    if (test_ue->registration_request_type.uplink_data_status) {
+    if (test_ue->registration_request_param.uplink_data_status) {
         registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_UPLINK_DATA_STATUS_PRESENT;
         uplink_data_status->length = 2;
         uplink_data_status->psi |=
-            test_ue->registration_request_type.psimask.uplink_data_status << 8;
+            test_ue->registration_request_param.psimask.uplink_data_status << 8;
         uplink_data_status->psi |=
-            test_ue->registration_request_type.psimask.uplink_data_status >> 8;
+            test_ue->registration_request_param.psimask.uplink_data_status >> 8;
     }
 
-    if (test_ue->registration_request_type.pdu_session_status) {
+    if (test_ue->registration_request_param.pdu_session_status) {
         registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_PDU_SESSION_STATUS_PRESENT;
         pdu_session_status->length = 2;
         pdu_session_status->psi |=
-            test_ue->registration_request_type.psimask.pdu_session_status << 8;
+            test_ue->registration_request_param.psimask.pdu_session_status << 8;
         pdu_session_status->psi |=
-            test_ue->registration_request_type.psimask.pdu_session_status >> 8;
+            test_ue->registration_request_param.psimask.pdu_session_status >> 8;
     }
 
-    if (test_ue->registration_request_type.allowed_pdu_session_status) {
+    if (test_ue->registration_request_param.allowed_pdu_session_status) {
         registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT;
         allowed_pdu_session_status->length = 2;
         allowed_pdu_session_status->psi |= test_ue->
-            registration_request_type.psimask.allowed_pdu_session_status << 8;
+            registration_request_param.psimask.allowed_pdu_session_status << 8;
         allowed_pdu_session_status->psi |= test_ue->
-            registration_request_type.psimask.allowed_pdu_session_status >> 8;
+            registration_request_param.psimask.allowed_pdu_session_status >> 8;
     }
 
     registration_request->presencemask |=
@@ -144,7 +144,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
     s1_ue_network_capability->n1_mode = 1;
     s1_ue_network_capability->dual_connectivity_with_nr = 1;
 
-    if (test_ue->registration_request_type.requested_nssai) {
+    if (test_ue->registration_request_param.requested_nssai) {
         /* Set Requested NSSAI */
         registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_REQUESTED_NSSAI_PRESENT;
@@ -157,7 +157,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
         }
     }
 
-    if (test_ue->registration_request_type.last_visited_registered_tai) {
+    if (test_ue->registration_request_param.last_visited_registered_tai) {
         /* Set Last visited registered TAI */
         registration_request->presencemask |=
         OGS_NAS_5GS_REGISTRATION_REQUEST_LAST_VISITED_REGISTERED_TAI_PRESENT;
@@ -166,7 +166,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
         last_visited_registered_tai->tac.v = test_self()->tai.tac.v;
     }
 
-    if (test_ue->registration_request_type.ue_usage_setting) {
+    if (test_ue->registration_request_param.ue_usage_setting) {
         /* Set UE's usage setting */
         registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_UE_USAGE_SETTING_PRESENT;
@@ -182,7 +182,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
         ogs_pkbuf_free(nasbuf);
     }
 
-    if (test_ue->registration_request_type.integrity_protected)
+    if (test_ue->registration_request_param.integrity_protected)
         return test_nas_5gs_security_encode(test_ue, &message);
     else
         return ogs_nas_5gs_plain_encode(&message);
@@ -232,11 +232,11 @@ ogs_pkbuf_t *testgmm_build_service_request(
     uplink_data_status = &service_request->uplink_data_status;
 
     memset(&message, 0, sizeof(message));
-    if (test_ue->service_request_type.integrity_protected) {
+    if (test_ue->service_request_param.integrity_protected) {
         message.h.extended_protocol_discriminator =
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
 
-        if (test_ue->service_request_type.ciphered)
+        if (test_ue->service_request_param.ciphered)
             message.h.security_header_type =
                 OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
         else
@@ -248,7 +248,7 @@ ogs_pkbuf_t *testgmm_build_service_request(
         OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     message.gmm.h.message_type = OGS_NAS_5GS_SERVICE_REQUEST;
 
-    service_request->ngksi.type = test_ue->service_request_type.service_type;
+    service_request->ngksi.type = test_ue->service_request_param.service_type;
     service_request->ngksi.tsc = test_ue->nas.tsc;
     service_request->ngksi.value = test_ue->nas.ksi;
 
@@ -286,37 +286,37 @@ ogs_pkbuf_t *testgmm_build_service_request(
         ogs_pkbuf_free(nasbuf);
     }
 
-    if (test_ue->service_request_type.uplink_data_status) {
+    if (test_ue->service_request_param.uplink_data_status) {
         service_request->presencemask |=
             OGS_NAS_5GS_SERVICE_REQUEST_UPLINK_DATA_STATUS_PRESENT;
         uplink_data_status->length = 2;
         uplink_data_status->psi |=
-            test_ue->service_request_type.psimask.uplink_data_status << 8;
+            test_ue->service_request_param.psimask.uplink_data_status << 8;
         uplink_data_status->psi |=
-            test_ue->service_request_type.psimask.uplink_data_status >> 8;
+            test_ue->service_request_param.psimask.uplink_data_status >> 8;
     }
 
-    if (test_ue->service_request_type.pdu_session_status) {
+    if (test_ue->service_request_param.pdu_session_status) {
         service_request->presencemask |=
             OGS_NAS_5GS_SERVICE_REQUEST_PDU_SESSION_STATUS_PRESENT;
         pdu_session_status->length = 2;
         pdu_session_status->psi |=
-            test_ue->service_request_type.psimask.pdu_session_status << 8;
+            test_ue->service_request_param.psimask.pdu_session_status << 8;
         pdu_session_status->psi |=
-            test_ue->service_request_type.psimask.pdu_session_status >> 8;
+            test_ue->service_request_param.psimask.pdu_session_status >> 8;
     }
 
-    if (test_ue->service_request_type.allowed_pdu_session_status) {
+    if (test_ue->service_request_param.allowed_pdu_session_status) {
         service_request->presencemask |=
             OGS_NAS_5GS_SERVICE_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT;
         allowed_pdu_session_status->length = 2;
         allowed_pdu_session_status->psi |= test_ue->
-            service_request_type.psimask.allowed_pdu_session_status << 8;
+            service_request_param.psimask.allowed_pdu_session_status << 8;
         allowed_pdu_session_status->psi |= test_ue->
-            service_request_type.psimask.allowed_pdu_session_status >> 8;
+            service_request_param.psimask.allowed_pdu_session_status >> 8;
     }
 
-    if (test_ue->service_request_type.integrity_protected)
+    if (test_ue->service_request_param.integrity_protected)
         return test_nas_5gs_security_encode(test_ue, &message);
     else
         return ogs_nas_5gs_plain_encode(&message);
@@ -574,10 +574,7 @@ ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
     ogs_nas_payload_container_t *payload_container = NULL;
     ogs_nas_pdu_session_identity_2_t *pdu_session_id = NULL;
     ogs_nas_request_type_t *request_type = NULL;
-#define S_NSSAI_PRECENSE 0
-#if S_NSSAI_PRECENSE
     ogs_nas_s_nssai_t *nas_s_nssai = NULL;
-#endif
 
     ogs_assert(test_sess);
     test_ue = test_sess->test_ue;
@@ -589,9 +586,7 @@ ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
     payload_container = &ul_nas_transport->payload_container;
     pdu_session_id = &ul_nas_transport->pdu_session_id;
     request_type = &ul_nas_transport->request_type;
-#if S_NSSAI_PRECENSE
     nas_s_nssai = &ul_nas_transport->s_nssai;
-#endif
 
     memset(&message, 0, sizeof(message));
     message.h.security_header_type =
@@ -612,22 +607,26 @@ ogs_pkbuf_t *testgmm_build_ul_nas_transport(test_sess_t *test_sess,
             OGS_NAS_5GS_UL_NAS_TRANSPORT_PDU_SESSION_ID_PRESENT;
     *pdu_session_id = test_sess->psi;
 
-    ul_nas_transport->presencemask |=
-            OGS_NAS_5GS_UL_NAS_TRANSPORT_REQUEST_TYPE_PRESENT;
-    request_type->value = OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+    if (test_sess->ul_nas_transport_param.request_type) {
+        ul_nas_transport->presencemask |=
+                OGS_NAS_5GS_UL_NAS_TRANSPORT_REQUEST_TYPE_PRESENT;
+        request_type->value = test_sess->ul_nas_transport_param.request_type;
+    }
 
-#if S_NSSAI_PRECENSE
-    ul_nas_transport->presencemask |=
-            OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT;
-    ogs_nas_build_s_nssai(
-            nas_s_nssai, &test_self()->plmn_support[0].s_nssai[0]);
-#endif
+    if (test_sess->ul_nas_transport_param.s_nssai) {
+        ul_nas_transport->presencemask |=
+                OGS_NAS_5GS_UL_NAS_TRANSPORT_S_NSSAI_PRESENT;
+        ogs_nas_build_s_nssai(
+                nas_s_nssai, &test_self()->plmn_support[0].s_nssai[0]);
+    }
 
-    ul_nas_transport->presencemask |=
-            OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT;
-    ul_nas_transport->dnn.length = strlen(test_sess->dnn);
-    ogs_cpystrn(ul_nas_transport->dnn.value, test_sess->dnn,
-            ogs_min(ul_nas_transport->dnn.length, OGS_MAX_DNN_LEN) + 1);
+    if (test_sess->ul_nas_transport_param.dnn) {
+        ul_nas_transport->presencemask |=
+                OGS_NAS_5GS_UL_NAS_TRANSPORT_DNN_PRESENT;
+        ul_nas_transport->dnn.length = strlen(test_sess->dnn);
+        ogs_cpystrn(ul_nas_transport->dnn.value, test_sess->dnn,
+                ogs_min(ul_nas_transport->dnn.length, OGS_MAX_DNN_LEN) + 1);
+    }
 
     pkbuf = test_nas_5gs_security_encode(test_ue, &message);
     ogs_pkbuf_free(payload);

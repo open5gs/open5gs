@@ -35,6 +35,7 @@ bool smf_nsmf_handle_create_sm_context(
     ogs_sockaddr_t *addr = NULL;
 
     OpenAPI_sm_context_create_data_t *SmContextCreateData = NULL;
+    OpenAPI_nr_location_t *NrLocation = NULL;
     OpenAPI_snssai_t *sNssai = NULL;
     OpenAPI_plmn_id_nid_t *servingNetwork = NULL;
     OpenAPI_ref_to_binary_data_t *n1SmMsg = NULL;
@@ -79,6 +80,31 @@ bool smf_nsmf_handle_create_sm_context(
         smf_sbi_send_sm_context_create_error(session,
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No servingNetwork", smf_ue->supi, n1smbuf);
+        return false;
+    }
+
+    if (!SmContextCreateData->ue_location ||
+        !SmContextCreateData->ue_location->nr_location) {
+        ogs_error("[%s:%d] No UeLocation", smf_ue->supi, sess->psi);
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
+        smf_sbi_send_sm_context_create_error(session,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No UeLocation", smf_ue->supi, n1smbuf);
+        return false;
+    }
+
+    NrLocation = SmContextCreateData->ue_location->nr_location;
+    if (!NrLocation->tai ||
+        !NrLocation->tai->plmn_id || !NrLocation->tai->tac ||
+        !NrLocation->ncgi ||
+        !NrLocation->ncgi->plmn_id || !NrLocation->ncgi->nr_cell_id) {
+        ogs_error("[%s:%d] No NrLocation", smf_ue->supi, sess->psi);
+        n1smbuf = gsm_build_pdu_session_establishment_reject(sess,
+            OGS_5GSM_CAUSE_INVALID_MANDATORY_INFORMATION);
+        smf_sbi_send_sm_context_create_error(session,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No UeLocation", smf_ue->supi, n1smbuf);
         return false;
     }
 
@@ -129,10 +155,11 @@ bool smf_nsmf_handle_create_sm_context(
         return false;
     }
 
-    ogs_plmn_id_build(&sess->plmn_id,
-        atoi(servingNetwork->mcc), atoi(servingNetwork->mnc),
-        strlen(servingNetwork->mnc));
-    sess->nid = servingNetwork->nid;
+    ogs_sbi_parse_plmn_id_nid(&sess->plmn_id, servingNetwork);
+    ogs_sbi_parse_nr_location(&sess->nr_tai, &sess->nr_cgi, NrLocation);
+    if (NrLocation->ue_location_timestamp)
+        ogs_sbi_time_from_string(&sess->ue_location_timestamp,
+                NrLocation->ue_location_timestamp);
 
     sess->s_nssai.sst = sNssai->sst;
     sess->s_nssai.sd = ogs_s_nssai_sd_from_string(sNssai->sd);
@@ -210,6 +237,28 @@ bool smf_nsmf_handle_update_sm_context(
                 OGS_SBI_HTTP_STATUS_BAD_REQUEST,
                 "No SmContextUpdateData", smf_ue->supi, NULL, NULL);
         return false;
+    }
+
+    if (SmContextUpdateData->ue_location &&
+        SmContextUpdateData->ue_location->nr_location) {
+        OpenAPI_nr_location_t *NrLocation =
+            SmContextUpdateData->ue_location->nr_location;
+        if (NrLocation->tai &&
+            NrLocation->tai->plmn_id && NrLocation->tai->tac &&
+            NrLocation->ncgi &&
+            NrLocation->ncgi->plmn_id && NrLocation->ncgi->nr_cell_id) {
+
+            ogs_sbi_parse_nr_location(&sess->nr_tai, &sess->nr_cgi, NrLocation);
+            if (NrLocation->ue_location_timestamp)
+                ogs_sbi_time_from_string(&sess->ue_location_timestamp,
+                        NrLocation->ue_location_timestamp);
+
+            ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+                ogs_plmn_id_hexdump(&sess->nr_tai.plmn_id), sess->nr_tai.tac.v);
+            ogs_debug("    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
+                ogs_plmn_id_hexdump(&sess->nr_cgi.plmn_id),
+                (long long)sess->nr_cgi.cell_id);
+        }
     }
 
     if (SmContextUpdateData->n1_sm_msg) {
@@ -444,6 +493,47 @@ bool smf_nsmf_handle_update_sm_context(
             return false;
         }
     }
+
+    return true;
+}
+
+bool smf_nsmf_handle_release_sm_context(
+        smf_sess_t *sess, ogs_sbi_message_t *message)
+{
+    OpenAPI_sm_context_release_data_t *SmContextReleaseData = NULL;
+
+    ogs_assert(sess);
+    ogs_assert(message);
+
+    SmContextReleaseData = message->SmContextReleaseData;
+    if (SmContextReleaseData) {
+        if (SmContextReleaseData->ue_location &&
+            SmContextReleaseData->ue_location->nr_location) {
+            OpenAPI_nr_location_t *NrLocation =
+                SmContextReleaseData->ue_location->nr_location;
+            if (NrLocation->tai &&
+                NrLocation->tai->plmn_id && NrLocation->tai->tac &&
+                NrLocation->ncgi &&
+                NrLocation->ncgi->plmn_id && NrLocation->ncgi->nr_cell_id) {
+
+                ogs_sbi_parse_nr_location(
+                        &sess->nr_tai, &sess->nr_cgi, NrLocation);
+                if (NrLocation->ue_location_timestamp)
+                    ogs_sbi_time_from_string(&sess->ue_location_timestamp,
+                            NrLocation->ue_location_timestamp);
+
+                ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+                    ogs_plmn_id_hexdump(&sess->nr_tai.plmn_id),
+                    sess->nr_tai.tac.v);
+                ogs_debug("    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
+                    ogs_plmn_id_hexdump(&sess->nr_cgi.plmn_id),
+                    (long long)sess->nr_cgi.cell_id);
+            }
+        }
+    }
+
+    smf_5gc_pfcp_send_session_deletion_request(sess,
+            OGS_PFCP_5GC_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT);
 
     return true;
 }

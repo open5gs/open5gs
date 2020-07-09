@@ -124,6 +124,26 @@ extern "C" {
 #endif
 #endif
 
+typedef struct ogs_uint24_s {
+    uint32_t v:24;
+}  __attribute__ ((packed)) ogs_uint24_t;
+
+static ogs_inline ogs_uint24_t ogs_be24toh(ogs_uint24_t x)
+{
+    uint32_t tmp = x.v;
+    tmp = be32toh(tmp);
+    x.v = tmp >> 8;
+    return x;
+}
+
+static ogs_inline ogs_uint24_t ogs_htobe24(ogs_uint24_t x)
+{
+    uint32_t tmp = x.v;
+    tmp = htobe32(tmp);
+    x.v = tmp >> 8;
+    return x;
+}
+
 #if OGS_BYTE_ORDER == OGS_BIG_ENDIAN
 #define ED2(x1, x2) x1 x2
 #define ED3(x1, x2, x3) x1 x2 x3

@@ -59,7 +59,7 @@ typedef struct test_context_s {
 
 typedef struct test_sess_s test_sess_t;
 
-typedef struct test_registration_request_type_s {
+typedef struct test_registration_request_param_s {
     union {
         struct {
         ED8(uint8_t integrity_protected:1;,
@@ -78,9 +78,9 @@ typedef struct test_registration_request_type_s {
         uint16_t uplink_data_status;
         uint16_t allowed_pdu_session_status;
     } psimask;
-} __attribute__ ((packed)) test_registration_request_type_t;
+} __attribute__ ((packed)) test_registration_request_param_t;
 
-typedef struct test_service_request_type_s {
+typedef struct test_service_request_param_s {
     union {
         struct {
         ED6(uint8_t integrity_protected:1;,
@@ -98,7 +98,19 @@ typedef struct test_service_request_type_s {
         uint16_t uplink_data_status;
         uint16_t allowed_pdu_session_status;
     } psimask;
-} __attribute__ ((packed)) test_service_request_type_t;
+} __attribute__ ((packed)) test_service_request_param_t;
+
+typedef struct test_ul_nas_transport_param_s {
+    union {
+        struct {
+        ED4(uint8_t request_type:4;,
+            uint8_t dnn:1;,
+            uint8_t s_nssai:1;,
+            uint8_t reserved:2;)
+        };
+        uint8_t value;
+    };
+} __attribute__ ((packed)) test_ul_nas_transport_param_t;
 
 typedef struct test_ue_s {
     uint32_t ran_ue_ngap_id; /* eNB-UE-NGAP-ID received from eNB */
@@ -170,8 +182,8 @@ typedef struct test_ue_s {
     int             security_context_available;
     int             mac_failed;
 
-    test_registration_request_type_t registration_request_type;
-    test_service_request_type_t service_request_type;
+    test_registration_request_param_t registration_request_param;
+    test_service_request_param_t service_request_param;
     uint8_t         gmm_message_type; /* Last received 5GMM message type */
 
     uint16_t pdu_session_status;
@@ -192,6 +204,8 @@ typedef struct test_sess_s {
     uint32_t upf_n3_teid;
     ogs_ip_t gnb_n3_ip;
     uint32_t gnb_n3_teid;
+
+    test_ul_nas_transport_param_t ul_nas_transport_param;
 
     test_ue_t *test_ue;
 } test_sess_t;

@@ -39,6 +39,16 @@ void *ogs_buffer_to_bcd(uint8_t *in, int in_len, void *out);
 
 char ogs_from_hex(char ch);
 
+char *ogs_uint24_to_string(ogs_uint24_t x);
+char *ogs_uint28_to_string(uint32_t x);
+char *ogs_uint32_to_string(uint32_t x);
+char *ogs_uint36_to_string(uint64_t x);
+
+ogs_uint24_t ogs_uint24_from_string(char *str);
+uint32_t ogs_uint28_from_string(char *str);
+uint32_t ogs_uint32_from_string(char *str);
+uint64_t ogs_uint36_from_string(char *str);
+
 #ifdef __cplusplus
 }
 #endif

@@ -210,13 +210,13 @@ static void test1_func(abts_case *tc, void *data)
     test_self()->nr_cgi.cell_id = 0x000000ce7;
 
     /* Send Registration request */
-    test_ue.registration_request_type.guti = 1;
+    test_ue.registration_request_param.guti = 1;
     gmmbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 
-    test_ue.registration_request_type.requested_nssai = 1;
-    test_ue.registration_request_type.last_visited_registered_tai = 1;
-    test_ue.registration_request_type.ue_usage_setting = 1;
+    test_ue.registration_request_param.requested_nssai = 1;
+    test_ue.registration_request_param.last_visited_registered_tai = 1;
+    test_ue.registration_request_param.ue_usage_setting = 1;
     nasbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, nasbuf);
 
@@ -309,6 +309,11 @@ static void test1_func(abts_case *tc, void *data)
     testngap_recv(&test_ue, recvbuf);
 
     /* Send PDU session establishment request */
+    test_sess.ul_nas_transport_param.request_type =
+        OGS_NAS_5GS_REQUEST_TYPE_INITIAL;
+    test_sess.ul_nas_transport_param.dnn = 1;
+    test_sess.ul_nas_transport_param.s_nssai = 1;
+
     gsmbuf = testgsm_build_pdu_session_establishment_request(&test_sess);
     ABTS_PTR_NOTNULL(tc, gsmbuf);
     gmmbuf = testgmm_build_ul_nas_transport(&test_sess,

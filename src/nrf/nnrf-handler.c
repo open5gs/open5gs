@@ -179,18 +179,8 @@ bool nrf_nnrf_handle_nf_status_subscribe(
     ogs_freeaddrinfo(addr);
 
     if (subscription->time.validity) {
-        char buf[OGS_TIME_ISO8601_FORMATTED_LENGTH];
-        struct timeval tv;
-        struct tm local;
-
-        ogs_gettimeofday(&tv);
-        tv.tv_sec += subscription->time.validity;
-        ogs_localtime(tv.tv_sec, &local);
-
-        ogs_strftime(buf, OGS_TIME_ISO8601_FORMATTED_LENGTH,
-                OGS_TIME_ISO8601_FORMAT, &local);
-
-        SubscriptionData->validity_time = ogs_strdup(buf);
+        SubscriptionData->validity_time = ogs_sbi_localtime_string(
+            ogs_time_now() + ogs_time_from_sec(subscription->time.validity));
 
         subscription->t_validity = ogs_timer_add(nrf_self()->timer_mgr,
             nrf_timer_subscription_validity, subscription);

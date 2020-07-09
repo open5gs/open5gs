@@ -162,7 +162,7 @@ ogs_sbi_request_t *udm_nudr_dr_build_query_subscription_provisioned(
         (char *)OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA;
     sendmsg.h.resource.component[1] = udm_ue->supi;
     sendmsg.h.resource.component[2] =
-        (char *)ogs_plmn_id_to_string(&udm_ue->serving_plmn_id, buf);
+        (char *)ogs_plmn_id_to_string(&udm_ue->guami.plmn_id, buf);
     sendmsg.h.resource.component[3] =
         (char *)OGS_SBI_RESOURCE_NAME_PROVISIONED_DATA;
     sendmsg.h.resource.component[4] = recvmsg->h.resource.component[1];

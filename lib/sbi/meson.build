@@ -31,6 +31,7 @@ libsbi_sources = files('''
 
     nnrf-build.c
     nnrf-handler.c
+
     path.c
 '''.split())
 

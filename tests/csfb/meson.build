@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testcsfb_sources = files('''
+testepc_csfb_sources = files('''
     abts-main.c
     mo-idle-test.c
     mt-idle-test.c
@@ -26,9 +26,9 @@ testcsfb_sources = files('''
     crash-test.c
 '''.split())
 
-testcsfb_exe = executable('csfb',
-    sources : testcsfb_sources,
-    c_args : testcore_cc_flags,
+testepc_csfb_exe = executable('csfb',
+    sources : testepc_csfb_sources,
+    c_args : testunit_core_cc_flags,
     dependencies : libtestepc_dep)
 
-test('csfb', testcsfb_exe, is_parallel : false, suite: 'epc')
+test('csfb', testepc_csfb_exe, is_parallel : false, suite: 'epc')

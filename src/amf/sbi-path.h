@@ -31,8 +31,6 @@ extern "C" {
 int amf_sbi_open(void);
 void amf_sbi_close(void);
 
-void amf_sbi_setup_client_callback(ogs_sbi_nf_instance_t *nf_instance);
-
 void amf_ue_sbi_discover_and_send(
         OpenAPI_nf_type_e nf_type, amf_ue_t *amf_ue, void *data,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data));

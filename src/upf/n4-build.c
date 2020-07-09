@@ -33,7 +33,7 @@ ogs_pkbuf_t *upf_n4_build_association_setup_request(uint8_t type)
                 [OGS_PFCP_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN];
     int i = 0;
 
-    ogs_debug("[UPF] Association Setup Request");
+    ogs_debug("Association Setup Request");
 
     req = &pfcp_message.pfcp_association_setup_request;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
@@ -84,7 +84,7 @@ ogs_pkbuf_t *upf_n4_build_association_setup_response(uint8_t type,
                 [OGS_PFCP_MAX_USER_PLANE_IP_RESOURCE_INFO_LEN];
     int i = 0;
 
-    ogs_debug("[UPF] Association Setup Response");
+    ogs_debug("Association Setup Response");
 
     rsp = &pfcp_message.pfcp_association_setup_response;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
@@ -136,7 +136,7 @@ ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
     ogs_pfcp_f_seid_t f_seid;
     int len = 0;
 
-    ogs_debug("[UPF] Session Establishment Response");
+    ogs_debug("Session Establishment Response");
 
     rsp = &pfcp_message.pfcp_session_establishment_response;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
@@ -185,7 +185,7 @@ ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,
 
     int i = 0;
 
-    ogs_debug("[UPF] Session Modification Response");
+    ogs_debug("Session Modification Response");
 
     rsp = &pfcp_message.pfcp_session_modification_response;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));
@@ -214,7 +214,7 @@ ogs_pkbuf_t *upf_n4_build_session_deletion_response(uint8_t type,
     ogs_pfcp_message_t pfcp_message;
     ogs_pfcp_session_deletion_response_t *rsp = NULL;
 
-    ogs_debug("[UPF] Session Deletion Response");
+    ogs_debug("Session Deletion Response");
 
     rsp = &pfcp_message.pfcp_session_deletion_response;
     memset(&pfcp_message, 0, sizeof(ogs_pfcp_message_t));

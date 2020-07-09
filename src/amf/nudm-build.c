@@ -27,11 +27,7 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
     ogs_sbi_request_t *request = NULL;
     ogs_sbi_server_t *server = NULL;
 
-    char buf[OGS_AMFIDSTRLEN];
-
     OpenAPI_amf3_gpp_access_registration_t Amf3GppAccessRegistration;
-    OpenAPI_plmn_id_t plmn_id;
-    OpenAPI_guami_t guami;
 
     ogs_assert(amf_ue);
     ogs_assert(amf_ue->supi);
@@ -63,14 +59,7 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
                         ogs_sbi_server_uri(server, &header);
     ogs_assert(Amf3GppAccessRegistration.dereg_callback_uri);
 
-    plmn_id.mcc = ogs_plmn_id_mcc_string(&amf_ue->tai.plmn_id);
-    plmn_id.mnc = ogs_plmn_id_mnc_string(&amf_ue->tai.plmn_id);
-
-    ogs_assert(amf_ue->guami);
-    guami.amf_id = ogs_amf_id_to_string(&amf_ue->guami->amf_id, buf);
-    guami.plmn_id = &plmn_id;
-    Amf3GppAccessRegistration.guami = &guami;
-
+    Amf3GppAccessRegistration.guami = ogs_sbi_build_guami(amf_ue->guami);
     Amf3GppAccessRegistration.rat_type = OpenAPI_rat_type_NR;
 
     message.Amf3GppAccessRegistration = &Amf3GppAccessRegistration;
@@ -78,8 +67,8 @@ ogs_sbi_request_t *amf_nudm_uecm_build_registration(
     request = ogs_sbi_build_request(&message);
     ogs_assert(request);
 
-    ogs_free(plmn_id.mcc);
-    ogs_free(plmn_id.mnc);
+    if (Amf3GppAccessRegistration.guami)
+        ogs_sbi_free_guami(Amf3GppAccessRegistration.guami);
     ogs_free(Amf3GppAccessRegistration.dereg_callback_uri);
 
     return request;

@@ -255,31 +255,29 @@ mme:
 # <SGW Selection Mode>
 #
 # o Round-Robin
-#   (If `selection_mode` is omitted, the default mode is Round-Robin)
 #
-#   selection_mode: rr
 #   gtpc:
 #     addr: 127.0.0.2
 #     addr: 127.0.2.2
 #     addr: 127.0.4.2
 #
-# o SGW selection by eNodeB TAC (either single TAC or multiple TACs)
+# o SGW selection by eNodeB TAC
+#   (either single TAC or multiple TACs, DECIMAL representation)
 #
-#   selection_mode: tac
 #   gtpc:
 #     - addr: 127.0.0.2
 #       tac: 26000
 #     - addr: 127.0.2.2
 #       tac: [25000, 27000, 28000]
 #
-# o SGW selection by eNodeB ID (either single enb_id or multiple enb_ids, decimal or hex representation)
+# o SGW selection by e_cell_id(28bit)
+#   (either single or multiple e_cell_id, HEX representation)
 #
-#   selection_mode: enb_id
 #   gtpc:
 #     - addr: 127.0.0.2
-#       enb_id: 463
+#       e_cell_id: abcde01
 #     - addr: 127.0.2.2
-#       enb_id: [0x12345, 9413, 0x98765]
+#       e_cell_id: [12345, a9413, 98765]
 #
 sgw:
     gtpc:
@@ -388,9 +386,9 @@ max:
 #    8192: 128
 #    big:  8
 #
-# o Memory of Packet Buffering in SGW
-#   - Maximum Number of packet(SDU size = 8Kbytes) pool in SGW
-#   - SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
+# o Memory of Packet Buffering in UPF/SGW
+#   - Maximum Number of packet(SDU size = 8Kbytes) pool in UPF/SGW
+#   - UPF/SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
 #
 #   packet: 65536
 #

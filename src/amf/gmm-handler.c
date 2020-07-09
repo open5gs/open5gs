@@ -140,6 +140,7 @@ int gmm_handle_registration_request(amf_ue_t *amf_ue,
     /* Copy TAI and ECGI from ran_ue */
     memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
     memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+    amf_ue->ue_location_timestamp = ogs_time_now();
 
     /* Check TAI */
     served_tai_index = amf_find_served_tai(&amf_ue->tai);
@@ -317,9 +318,14 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
 int gmm_handle_service_request(amf_ue_t *amf_ue,
         ogs_nas_5gs_service_request_t *service_request)
 {
+    int served_tai_index = 0;
+
+    ran_ue_t *ran_ue = NULL;
     ogs_nas_key_set_identifier_t *ngksi = NULL;
 
     ogs_assert(amf_ue);
+    ran_ue = amf_ue->ran_ue;
+    ogs_assert(ran_ue);
 
     ngksi = &service_request->ngksi;
     ogs_assert(ngksi);
@@ -356,6 +362,35 @@ int gmm_handle_service_request(amf_ue_t *amf_ue,
         ogs_kdf_nh_gnb(amf_ue->kamf, amf_ue->kgnb, amf_ue->nh);
         amf_ue->nhcc = 1;
     }
+
+    ogs_debug("    OLD TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
+    ogs_debug("    OLD NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
+            ogs_plmn_id_hexdump(&amf_ue->nr_cgi.plmn_id),
+            (long long)amf_ue->nr_cgi.cell_id);
+    ogs_debug("    TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&ran_ue->saved.tai.plmn_id),
+            ran_ue->saved.tai.tac.v);
+    ogs_debug("    NR_CGI[PLMN_ID:%06x,CELL_ID:0x%llx]",
+            ogs_plmn_id_hexdump(&ran_ue->saved.nr_cgi.plmn_id),
+            (long long)ran_ue->saved.nr_cgi.cell_id);
+
+    /* Copy TAI and ECGI from ran_ue */
+    memcpy(&amf_ue->tai, &ran_ue->saved.tai, sizeof(ogs_5gs_tai_t));
+    memcpy(&amf_ue->nr_cgi, &ran_ue->saved.nr_cgi, sizeof(ogs_nr_cgi_t));
+    amf_ue->ue_location_timestamp = ogs_time_now();
+
+    /* Check TAI */
+    served_tai_index = amf_find_served_tai(&amf_ue->tai);
+    if (served_tai_index < 0) {
+        /* Send Registration Reject */
+        ogs_warn("Cannot find Served TAI[PLMN_ID:%06x,TAC:%d]",
+            ogs_plmn_id_hexdump(&amf_ue->tai.plmn_id), amf_ue->tai.tac.v);
+        nas_5gs_send_registration_reject(amf_ue,
+            OGS_5GMM_CAUSE_TRACKING_AREA_NOT_ALLOWED);
+        return OGS_ERROR;
+    }
+    ogs_debug("    SERVED_TAI_INDEX[%d]", served_tai_index);
 
     ogs_debug("[%s]    5G-S_GUTI[AMF_ID:0x%x,M_TMSI:0x%x]",
         AMF_UE_HAVE_SUCI(amf_ue) ? amf_ue->suci : "Unknown ID",
@@ -916,6 +951,12 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
 
             memset(&param, 0, sizeof(param));
             param.n1smbuf = sess->payload_container;
+
+            if (gsm_header->message_type ==
+                    OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE) {
+                param.ue_location = true;
+                param.ue_timezone = true;
+            }
 
             amf_sess_sbi_discover_and_send(
                     OpenAPI_nf_type_SMF, sess, &param,

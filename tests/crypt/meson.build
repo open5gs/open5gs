@@ -15,16 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testcrypt_sources = files('''
+testunit_crypt_sources = files('''
     aes-test.c
     sha-test.c
     base64-test.c
     abts-main.c
 '''.split())
 
-testcrypt_exe = executable('crypt',
-    sources : testcrypt_sources,
-    c_args : testcore_cc_flags,
+testunit_crypt_exe = executable('crypt',
+    sources : testunit_crypt_sources,
+    c_args : testunit_core_cc_flags,
     dependencies : libcrypt_dep)
 
-test('crypt', testcrypt_exe, is_parallel : false, suite: 'unit')
+test('crypt', testunit_crypt_exe, is_parallel : false, suite: 'unit')

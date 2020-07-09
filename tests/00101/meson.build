@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-test00101_sources = files('''
+test5gc_00101_sources = files('''
     abts-main.c
     issues-482-test.c
 '''.split())
 
-test00101_exe = executable('00101',
-    sources : test00101_sources,
-    c_args : testcore_cc_flags,
+test5gc_00101_exe = executable('00101',
+    sources : test5gc_00101_sources,
+    c_args : testunit_core_cc_flags,
     dependencies : libtest5gc_dep)

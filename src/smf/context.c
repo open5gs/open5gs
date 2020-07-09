@@ -598,8 +598,55 @@ smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len)
     return (smf_ue_t *)ogs_hash_get(self.imsi_hash, imsi, imsi_len);
 }
 
+static bool compare_ue_info(ogs_pfcp_node_t *node, smf_sess_t *sess)
+{
+    int i;
+
+    ogs_assert(node);
+    ogs_assert(sess);
+
+    for (i = 0; i < node->num_of_tac; i++)
+        if (node->tac[i] == sess->e_tai.tac ||
+            node->tac[i] == sess->nr_tai.tac.v) return true;
+
+    for (i = 0; i < node->num_of_e_cell_id; i++)
+        if (node->e_cell_id[i] == sess->e_cgi.cell_id) return true;
+
+    for (i = 0; i < node->num_of_nr_cell_id; i++)
+        if (node->nr_cell_id[i] == sess->nr_cgi.cell_id) return true;
+
+    for (i = 0; i < node->num_of_apn; i++)
+        if (strcmp(node->apn[i], sess->pdn.apn) == 0) return true;
+
+    return false;
+}
+
+static ogs_pfcp_node_t *selected_upf_node(
+        ogs_pfcp_node_t *current, smf_sess_t *sess)
+{
+    ogs_pfcp_node_t *next, *node;
+
+    ogs_assert(current);
+    ogs_assert(sess);
+
+    next = ogs_list_next(current);
+    for (node = next; node; node = ogs_list_next(node)) {
+        if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
+            compare_ue_info(node, sess) == true) return node;
+    }
+
+    for (node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+            node != next; node = ogs_list_next(node)) {
+        if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
+            compare_ue_info(node, sess) == true) return node;
+    }
+
+    return next ? next : ogs_list_first(&ogs_pfcp_self()->n4_list);
+}
+
+
 smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
-        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *paa, ogs_gtp_create_session_request_t *req)
+        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *paa, ogs_gtp_uli_t *uli)
 {
     ogs_debug("smf_sess_add_by_apn");
     smf_event_t e;
@@ -615,6 +662,7 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
     ogs_assert(smf_ue);
     ogs_assert(apn);
     ogs_assert(paa);
+    ogs_assert(uli);
 
     ogs_pool_alloc(&smf_sess_pool, &sess);
     if (!sess) {
@@ -674,342 +722,30 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
     } else
         ogs_assert_if_reached();
 
+    memcpy(&sess->e_tai, &uli->tai, sizeof(sess->e_tai));
+    memcpy(&sess->e_cgi, &uli->e_cgi, sizeof(sess->e_cgi));
+
     ogs_info("UE IMSI:[%s] APN:[%s] IPv4:[%s] IPv6:[%s]",
 	    sess->imsi_bcd, apn,
         sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
         sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
 
-    // on first UE connection, initialise at top of UPF (PFCP) list
-    // for subsequent UE connections, begin from current position 
+    /*
+     * When used for the first time, if last node is set,
+     * the search is performed from the first SGW in a round-robin manner.
+     */
     if (ogs_pfcp_self()->node == NULL)
-        ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+        ogs_pfcp_self()->node = ogs_list_last(&ogs_pfcp_self()->n4_list);
 
-    if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_RR) {
-        /* Select UPF (PFCP) with round-robin manner */
-        ogs_debug("Select UPF by RR");
-        /* 
-        - starting from list position of last used UPF, search down list for next PFCP associated UPF
-            - if PFCP associated UPF found
-                - use it
-            - if no associated UPF found, keep searching
-            - if bottom of list reached, reset search to top of list
-            - if completed full cyclic search of list and still not found a UPF, use default (first)
-        */
+    /* setup GTP session with selected UPF */
+    ogs_pfcp_self()->node = selected_upf_node(ogs_pfcp_self()->node, sess);
+    ogs_assert(ogs_pfcp_self()->node);
+    OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
+    ogs_debug("UE using UPF on IP[%s]",
+            OGS_ADDR(&ogs_pfcp_self()->node->addr, buf));
 
-        int connect=0, numreset=0;
-        char startUPFIP[OGS_ADDRSTRLEN];
-        OGS_ADDR(&ogs_pfcp_self()->node->addr, startUPFIP);
-
-        //search UPF list, find next UPF that is associated
-        while (!connect)
-        {
-            // (when end of UPF (PFCP) list reached, reset search to top of UPF list)
-            if(ogs_pfcp_self()->node == NULL){
-                ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-                numreset = 1;
-            }
-            // search UPF (PFCP) list, find next UPF that is associated
-            while(ogs_pfcp_self()->node && !connect) {
-                // if cyclic list check complete and still not found a UPF, break
-                OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                if (numreset == 1 && !strcmp(buf,startUPFIP)) {
-                    break;
-                }
-                // has UPF <x> associated over PFCP?
-                if (OGS_FSM_CHECK( &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated) ){
-                    // then use it
-                    connect = 1;
-                } else {
-                    // else check next UPF in list
-                    OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                    ogs_debug("UPF on IP[%s] is not PFCP associated",
-                        buf);
-                    ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-                }
-            }            
-            // after checking from the top of the list and not finding a suitable UPF
-            if (!connect && numreset == 1 ){
-                // default to first in list
-                ogs_error("No UPF (PFCP) is currently PFCP associated");
-                ogs_error("Defaulting to first UPF (PFCP) in smf.yaml list");
-                ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-                break;
-            }
-        }
-
-        // list UPF used
-        OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-        ogs_debug("UE using UPF on IP[%s]", 
-            buf);
-
-        // setup GTP session with selected UPF
-        ogs_assert(ogs_pfcp_self()->node);
-        OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
-
-        // iterate to next UPF in list for next UE attach (RR)
-        ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-
-
-    } else if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_TAC) {
-        /* Select UPF by eNB/gNB TAC */
-        ogs_debug("Select UPF by UE's enb_tac,(RR)");
-        /* 
-        - starting from list position of last used UPF, search down list for a UPF that serves the enb_tac **AND** is PFCP associated
-            - if suitable UPF found
-                - if PFCP associated
-                    - use it
-                - else keep searching
-            - if no suitable UPF found, keep searching
-            - if bottom of list reached, reset search to top of list
-            - if completed full cyclic search of list and still not found a UPF, use default (first)
-        */
-
-        int i, found=0, numreset=0;
-        char startUPFIP[OGS_ADDRSTRLEN];
-        OGS_ADDR(&ogs_pfcp_self()->node->addr, startUPFIP);
-        
-        // fetch the user location information from the incoming S5c request
-        ogs_gtp_uli_t uli;
-        ogs_gtp_parse_uli(&uli, &req->user_location_information);
-
-        //ogs_info("UE enb_tac: [%d]", uli.tai.tac); 
-      
-        //search UPF list, find next UPF that serves the enb_tac **AND** is associated
-        while (!found)
-        {
-            // (when end of UPF (PFCP) list reached, reset search to top of UPF list)
-            if(ogs_pfcp_self()->node == NULL){
-                ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-                numreset = 1;
-            }
-            // search UPF list, find next UPF that serves the enb_tac **AND** is associated
-            while(ogs_pfcp_self()->node && !found) {
-                // if cyclic list check complete and still not found a UPF, break
-                OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                if (numreset == 1 && !strcmp(buf,startUPFIP)) {
-                    break;
-                }
-                // search from current list position
-                for (i = 0; i < ogs_pfcp_self()->node->num_of_tac && !found; i++){
-                    found = ogs_pfcp_self()->node->tac[i] == uli.tai.tac ? 1: 0;
-                }
-                if(found){
-                    // has UPF <x> associated over PFCP?
-                    if (!OGS_FSM_CHECK( &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated )){
-                        // no - keep searching
-                        OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                        ogs_warn("UPF on IP[%s] serves enb_tac[%d] - but is **NOT** associated", 
-                            buf, uli.tai.tac);
-                        found = 0;
-                        ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-                    } else {
-                        // found a UPF that serves the enb_tac **AND** is associated
-                        OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                        ogs_debug("UPF on IP[%s] serves enb_tac[%d] - and is associated, use it", 
-                            buf, uli.tai.tac);
-                    }
-                } else {
-                    // not found, check next UPF in list
-                    ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-                }
-            }
-            // after checking from the top of the list and not finding a suitable UPF
-            if (!found && numreset == 1 ){
-                // default to first in list
-                ogs_error("No UPF that serves enb_tac[%d] is currently PFCP associated", 
-                    uli.tai.tac);
-                ogs_error("Defaulting to first UPF (PFCP) in smf.yaml list");
-                ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-                break;
-            }
-        }
-
-        // list UPF used
-        OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-        ogs_debug("UE using UPF on IP[%s]", 
-            buf);
-
-        // setup GTP session with selected UPF
-        ogs_assert(ogs_pfcp_self()->node);
-        OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
-
-        // iterate to next UPF in list for next UE attach (RR)
-        ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-
-    } else if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_APN) {
-        /* Select UPF by UE APN */
-        ogs_debug("Select UPF by UE's apn,(RR)");
-        /* 
-        - starting from list position of last used UPF, search down list for a UPF that serves the UE's APN **AND** is PFCP associated
-            - if suitable UPF found
-                - if PFCP associated
-                    - use it
-                - else keep searching
-            - if no suitable UPF found, keep searching
-            - if bottom of list reached, reset search to top of list
-            - if completed full cyclic search of list and still not found a UPF, use default (first)
-        */
-
-        int i, found=0, numreset=0;
-        char startUPFIP[OGS_ADDRSTRLEN];
-        OGS_ADDR(&ogs_pfcp_self()->node->addr, startUPFIP);
-
-        //ogs_info("UE apn: [%s]", apn); 
-        
-        // search UPF list, find next UPF that serves the ue_apn **AND** is associated
-        while (!found)
-        {
-            // (when end of UPF (PFCP) list reached, reset search to top of UPF list)
-            if(ogs_pfcp_self()->node == NULL){
-                ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-                numreset = 1;
-            }
-            // search UPF list, find next UPF that serves the ue_apn **AND** is associated
-            while(ogs_pfcp_self()->node && !found) {
-                // if cyclic list check complete and still not found a UPF, break
-                OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                if (numreset == 1 && !strcmp(buf,startUPFIP)) {
-                    break;
-                }
-                // search from current list position
-                for (i = 0; i < ogs_pfcp_self()->node->num_of_apn && !found; i++){
-                    found = strncmp( ogs_pfcp_self()->node->apn[i], apn, OGS_MAX_APN_LEN ) ? 0: 1;
-                }
-                if(found){
-                    // has UPF <x> associated over PFCP?
-                    if (!OGS_FSM_CHECK( &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated )){
-                        // no - keep searching
-                        OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                        ogs_warn("UPF on IP[%s] serves ue_apn[%s] - but is **NOT** associated", 
-                            buf, apn);
-                        found = 0;
-                        ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-                    } else {
-                        // found a UPF that serves the ue_apn **AND** is associated
-                        OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                        ogs_debug("UPF on IP[%s] serves ue_apn[%s] - and is associated, use it", 
-                            buf, apn);
-                    }
-                } else {
-                    // not found, check next UPF in list
-                    ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-                }
-            }            
-            // after checking from the top of the list and not finding a suitable UPF
-            if (!found && numreset == 1 ){
-                // default to first in list
-                ogs_error("No UPF that serves ue_apn[%s] is currently PFCP associated", 
-                    apn);
-                ogs_error("Defaulting to first UPF (PFCP) in smf.yaml list");
-                ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-                break;
-            }
-        }
-
-        // list UPF used
-        OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-        ogs_debug("UE using UPF on IP[%s]", 
-            buf);
-
-        // setup GTP session with selected UPF
-        ogs_assert(ogs_pfcp_self()->node);
-        OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
-
-        // iterate to next UPF in list for next UE attach (RR)
-        ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-
-    } else if (ogs_pfcp_self()->upf_selection_mode == UPF_SELECT_ENB_ID) {
-        /* Select UPF by eNB/gNB ID */
-        ogs_debug("Select UPF by UE's enb_id,(RR)");
-        /* 
-        - starting from list position of last used UPF, search down list for a UPF that serves the enb_id **AND** is PFCP associated
-            - if suitable UPF found
-                - if PFCP associated
-                    - use it
-                - else keep searching
-            - if no suitable UPF found, keep searching
-            - if bottom of list reached, reset search to top of list
-            - if completed full cyclic search of list and still not found a UPF, use default (first)
-        */
-
-        int i, found=0, numreset=0;
-        char startUPFIP[OGS_ADDRSTRLEN];
-        OGS_ADDR(&ogs_pfcp_self()->node->addr, startUPFIP);
-        
-        // fetch the user location information from the incoming S5c request
-        ogs_gtp_uli_t uli;
-        ogs_gtp_parse_uli(&uli, &req->user_location_information);
-
-        int UE_enb_id = ((uli.e_cgi.cell_id & 0xfffff00) >> 8); //shift 2 bytes right
-        //int UE_cell_id = (uli.e_cgi.cell_id & 0x00000ff);
-        // e_cgi.cell_id = [enb_id, cell_id] [20bit, 8bit]
-
-        //ogs_info("UE enb_id:  [0x%02x]", UE_enb_id); 
-
-        //search UPF list, find next UPF that serves the enb_id **AND** is associated
-        while (!found)
-        {
-            // (when end of UPF (PFCP) list reached, reset search to top of UPF list)
-            if(ogs_pfcp_self()->node == NULL){
-                ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-                numreset = 1;
-            }
-            // search UPF list, find next UPF that serves the enb_id **AND** is associated
-            while(ogs_pfcp_self()->node && !found) {
-                // if cyclic list check complete and still not found a UPF, break
-                OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                if (numreset == 1 && !strcmp(buf,startUPFIP)) {
-                    break;
-                }
-                // search from current list position
-                for (i = 0; i < ogs_pfcp_self()->node->num_of_enb_id && !found; i++){
-                    found = ogs_pfcp_self()->node->enb_id[i] == UE_enb_id ? 1: 0;
-                }
-                if(found){
-                    // has UPF <x> associated over PFCP?
-                    if (!OGS_FSM_CHECK( &ogs_pfcp_self()->node->sm, smf_pfcp_state_associated )){
-                        // no - keep searching
-                        OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                        ogs_warn("UPF on IP[%s] serves enb_id[%d]/[0x%02x] - but is **NOT** associated", 
-                            buf, UE_enb_id, UE_enb_id);
-                        found = 0;
-                        ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-                    } else {
-                        // found a UPF that serves the enb_id **AND** is associated
-                        OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-                        ogs_debug("UPF on IP[%s] serves enb_id[%d]/[0x%02x] - and is associated, use it", 
-                            buf, UE_enb_id, UE_enb_id);
-                    }
-                } else {
-                    // not found, check next UPF in list
-                    ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-                }
-            }
-            // after checking from the top of the list and not finding a suitable UPF
-            if (!found && numreset == 1 ){
-                // default to first in list
-                ogs_error("No UPF that serves enb_id[%d]/[0x%02x] is currently PFCP associated", 
-                    UE_enb_id, UE_enb_id);
-                ogs_error("Defaulting to first UPF (PFCP) in smf.yaml list");
-                ogs_pfcp_self()->node = ogs_list_first(&ogs_pfcp_self()->n4_list);
-                break;
-            }
-        }
-
-        // list UPF used
-        OGS_ADDR(&ogs_pfcp_self()->node->addr, buf);
-        ogs_debug("UE using UPF on IP[%s]", 
-            buf);
-
-        // setup GTP session with selected UPF
-        ogs_assert(ogs_pfcp_self()->node);
-        OGS_SETUP_PFCP_NODE(sess, ogs_pfcp_self()->node);
-
-        // iterate to next UPF in list for next UE attach (RR)
-        ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
-
-    } else
-        ogs_assert_if_reached();
+    /* iterate to next UPF in list for next UE attach */
+    ogs_pfcp_self()->node = ogs_list_next(ogs_pfcp_self()->node);
 
     /* Set Default Bearer */
     ogs_list_init(&sess->bearer_list);
@@ -1045,6 +781,7 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
     smf_sess_t *sess = NULL;
     ogs_paa_t *paa = NULL;
     char apn[OGS_MAX_APN_LEN];
+    ogs_gtp_uli_t uli;
 
     ogs_gtp_create_session_request_t *req = &message->create_session_request;
 
@@ -1070,7 +807,12 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
     }
 
     if (req->pdn_address_allocation.presence == 0) {
-        ogs_error("No PAA Type");
+        ogs_error("No PAA");
+        return NULL;
+    }
+
+    if (req->user_location_information.presence == 0) {
+        ogs_error("No UE Location Information");
         return NULL;
     }
 
@@ -1082,6 +824,8 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
             req->bearer_contexts_to_be_created.eps_bearer_id.u8);
 
     paa = (ogs_paa_t *)req->pdn_address_allocation.data;
+
+    ogs_gtp_parse_uli(&uli, &req->user_location_information);
 
     /* 
      * 7.2.1 in 3GPP TS 29.274 Release 15
@@ -1116,7 +860,7 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
     }
 
     sess = smf_sess_add_by_apn(smf_ue, apn, req->pdn_type.u8,
-                    req->bearer_contexts_to_be_created.eps_bearer_id.u8, paa, req);
+                req->bearer_contexts_to_be_created.eps_bearer_id.u8, paa, &uli);
     return sess;
 }
 
@@ -1471,6 +1215,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     ul_far->dst_if = OGS_PFCP_INTERFACE_CORE;
     ogs_pfcp_pdr_associate_far(ul_pdr, ul_far);
 
+    ogs_assert(sess->pfcp_node);
     resource = ogs_pfcp_gtpu_resource_find(
             &sess->pfcp_node->gtpu_resource_list,
             sess->pdn.apn, OGS_PFCP_INTERFACE_ACCESS);

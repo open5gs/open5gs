@@ -144,10 +144,10 @@ ogs_pfcp_pdr_t *upf_pdr_find_by_packet(ogs_pkbuf_t *pkt)
     } else
         ogs_error("Invalid IP version = %d", ip_h->ip_v);
 
-    ogs_debug("[UPF] PROTO:%d SRC:%08x %08x %08x %08x",
+    ogs_debug("PROTO:%d SRC:%08x %08x %08x %08x",
             proto, be32toh(src_addr[0]), be32toh(src_addr[1]),
             be32toh(src_addr[2]), be32toh(src_addr[3]));
-    ogs_debug("[UPF] HLEN:%d  DST:%08x %08x %08x %08x",
+    ogs_debug("HLEN:%d  DST:%08x %08x %08x %08x",
             ip_hlen, be32toh(dst_addr[0]), be32toh(dst_addr[1]),
             be32toh(dst_addr[2]), be32toh(dst_addr[3]));
 
@@ -159,18 +159,16 @@ ogs_pfcp_pdr_t *upf_pdr_find_by_packet(ogs_pkbuf_t *pkt)
         ogs_pfcp_far_t *far = NULL;
 
         if (ip_h && sess->ipv4)
-            ogs_debug("[UPF] PAA IPv4:%s",
-                    OGS_INET_NTOP(&sess->ipv4->addr, buf));
+            ogs_debug("PAA IPv4:%s", OGS_INET_NTOP(&sess->ipv4->addr, buf));
         if (ip6_h && sess->ipv6)
-            ogs_debug("[UPF] PAA IPv6:%s",
-                    OGS_INET6_NTOP(&sess->ipv6->addr, buf));
+            ogs_debug("PAA IPv6:%s", OGS_INET6_NTOP(&sess->ipv6->addr, buf));
 
         /* Save the default PDR */
         default_pdr = ogs_pfcp_sess_default_pdr(&sess->pfcp);
         ogs_assert(default_pdr);
 
         /* Found */
-        ogs_debug("[UPF] Found Session : Default PDR-ID[%d]", default_pdr->id);
+        ogs_debug("Found Session : Default PDR-ID[%d]", default_pdr->id);
 
         ogs_list_for_each(&sess->sdf_filter_list, sdf_filter) {
             int k;
@@ -313,7 +311,7 @@ ogs_pfcp_pdr_t *upf_pdr_find_by_packet(ogs_pkbuf_t *pkt)
 
         return default_pdr;
     } else {
-        ogs_debug("[UPF] No Session");
+        ogs_debug("No Session");
     }
 
     return NULL;

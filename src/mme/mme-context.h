@@ -60,12 +60,6 @@ typedef struct ogs_diam_config_s ogs_diam_config_t;
 typedef uint32_t mme_m_tmsi_t;
 typedef uint32_t mme_p_tmsi_t;
 
-typedef enum {
-    SGW_SELECT_RR = 0,  /* Default SGW Selection Method */
-    SGW_SELECT_TAC,
-    SGW_SELECT_ENB_ID,
-} sgw_select_e;
-
 typedef struct served_gummei_s {
     uint32_t        num_of_plmn_id;
     ogs_plmn_id_t   plmn_id[OGS_MAX_NUM_OF_PLMN];
@@ -139,9 +133,6 @@ typedef struct mme_context_s {
     /* MME Name */
     const char *mme_name;
 
-    /* SGW Selection */
-    sgw_select_e    sgw_selection;
-
     /* S1SetupResponse */
     uint8_t         relative_capacity;
 
@@ -171,8 +162,8 @@ typedef struct mme_sgw_s {
 
     uint16_t        tac[OGS_MAX_NUM_OF_TAI];
     uint8_t         num_of_tac;
-    uint32_t        enb_id[OGS_MAX_NUM_OF_ENB_ID];
-    uint8_t         num_of_enb_id;
+    uint32_t        e_cell_id[OGS_MAX_NUM_OF_CELL_ID];
+    uint8_t         num_of_e_cell_id;
 
     ogs_gtp_node_t  *gnode;
 } mme_sgw_t;

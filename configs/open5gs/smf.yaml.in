@@ -263,41 +263,39 @@ nrf:
 #  <UPF_SELECTION_MODE>
 #
 # o Round-Robin
-#   (If `upf_selection_mode` is omitted in smf/pfcp,
-#    the default mode is Round-Robin)
-#
 #  upf:
 #    pfcp:
 #      - addr: 127.0.0.4
 #      - addr: 127.0.0.12
 #
-# o UPF selection by eNodeB TAC (either single TAC or multiple TACs)
+# o UPF selection by eNodeB TAC
+#   (either single TAC or multiple TACs, DECIMAL representation)
 #
 #  upf:
 #    pfcp:
 #      - addr: 127.0.0.4
-#        tac: 1                   < either single TAC or multiple TACs
+#        tac: 1
 #      - addr: 127.0.0.12
 #        tac: [3,5,8]
 #
-# o SGW selection by UE's APN (either single APN or multiple APNs)
+# o UPF selection by UE's DNN/APN (either single DNN/APN or multiple DNNs/APNs)
 #
 #  upf:
 #    pfcp:
 #      - addr: 127.0.0.4
-#        apn: ims                 < either single APN or multiple APNs
+#        dnn: ims
 #      - addr: 127.0.0.12
 #        apn: [internet, web]
 #
-# o SGW selection by eNodeB ID
-#   (either single enb_id or multiple enb_ids, decimal or hex representation)
+# o UPF selection by CellID(e_cell_id: 28bit, nr_cell_id: 36bit)
+#   (either single enb_id or multiple enb_ids, HEX representation)
 #
 #  upf:
 #    pfcp:
 #      - addr: 127.0.0.4
-#        enb_id: 463              < either single enb_id or multiple enb_id,
-#      - addr: 127.0.0.12           can be entered in decimal or hex format
-#        enb_id: [0x12345, 9413]
+#        e_cell_id: 463
+#      - addr: 127.0.0.12
+#        nr_cell_id: [123456789, 9413]
 #
 upf:
     pfcp:
@@ -359,9 +357,9 @@ max:
 #    8192: 128
 #    big:  8
 #
-# o Memory of Packet Buffering in SGW
-#   - Maximum Number of packet(SDU size = 8Kbytes) pool in SGW
-#   - SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
+# o Memory of Packet Buffering in UPF/SGW
+#   - Maximum Number of packet(SDU size = 8Kbytes) pool in UPF/SGW
+#   - UPF/SGW Memory Usage : 65536 * 8Kbytes = 512Mbytes
 #
 #   packet: 65536
 #

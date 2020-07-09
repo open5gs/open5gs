@@ -524,6 +524,7 @@ int ogs_sbi_parse_header(
     message->h.method = header->method;
     message->h.uri = header->uri;
     ogs_assert(message->h.uri);
+    ogs_debug("[%s] %s", message->h.method, message->h.uri);
 
     uri = ogs_strdup(header->uri);
     ogs_assert(uri);
@@ -721,6 +722,7 @@ static char *build_json(ogs_sbi_message_t *message)
     if (item) {
         content = cJSON_Print(item);
         ogs_assert(content);
+        ogs_log_print(OGS_LOG_TRACE, "%s", content);
         cJSON_Delete(item);
     }
 
@@ -738,6 +740,7 @@ static int parse_json(ogs_sbi_message_t *message,
     if (!json)
         return OGS_OK;
 
+    ogs_log_print(OGS_LOG_TRACE, "%s", json);
     item = cJSON_Parse(json);
     if (!item) {
         ogs_error("JSON parse error");

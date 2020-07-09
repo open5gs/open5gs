@@ -74,8 +74,7 @@ struct udm_ue_s {
     uint8_t rand[OGS_RAND_LEN];
     uint8_t sqn[OGS_SQN_LEN];
 
-    ogs_amf_id_t amf_id;
-    ogs_plmn_id_t serving_plmn_id;
+    ogs_guami_t guami;
 
     OpenAPI_auth_type_e auth_type;
 

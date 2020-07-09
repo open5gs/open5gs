@@ -1408,8 +1408,8 @@ int mme_context_parse_config()
                         uint16_t port = self.gtpc_port;
                         uint16_t tac[OGS_MAX_NUM_OF_TAI] = {0,};
                         uint8_t num_of_tac = 0;
-                        uint32_t enb_id[OGS_MAX_NUM_OF_ENB_ID] = {0,};
-                        uint8_t num_of_enb_id = 0;                        
+                        uint32_t e_cell_id[OGS_MAX_NUM_OF_CELL_ID] = {0,};
+                        uint8_t num_of_e_cell_id = 0;
 
                         if (ogs_yaml_iter_type(&gtpc_array) ==
                                 YAML_MAPPING_NODE) {
@@ -1490,35 +1490,32 @@ int mme_context_parse_config()
                                 } while (
                                     ogs_yaml_iter_type(&tac_iter) ==
                                         YAML_SEQUENCE_NODE);
-                            } else if (!strcmp(gtpc_key, "enb_id")) {
-                                ogs_yaml_iter_t enb_id_iter;
-                                ogs_yaml_iter_recurse(&gtpc_iter, &enb_id_iter);
-                                ogs_assert(ogs_yaml_iter_type(&enb_id_iter) !=
-                                    YAML_MAPPING_NODE);
+                            } else if (!strcmp(gtpc_key, "e_cell_id")) {
+                                ogs_yaml_iter_t e_cell_id_iter;
+                                ogs_yaml_iter_recurse(&gtpc_iter,
+                                        &e_cell_id_iter);
+                                ogs_assert(ogs_yaml_iter_type(&e_cell_id_iter)
+                                        != YAML_MAPPING_NODE);
 
                                 do {
                                     const char *v = NULL;
 
-                                    ogs_assert(num_of_enb_id <=
-                                            OGS_MAX_NUM_OF_ENB_ID);
-                                    if (ogs_yaml_iter_type(&enb_id_iter) ==
+                                    ogs_assert(num_of_e_cell_id <=
+                                            OGS_MAX_NUM_OF_CELL_ID);
+                                    if (ogs_yaml_iter_type(&e_cell_id_iter) ==
                                             YAML_SEQUENCE_NODE) {
-                                        if (!ogs_yaml_iter_next(&enb_id_iter))
+                                        if (!ogs_yaml_iter_next(
+                                                    &e_cell_id_iter))
                                             break;
                                     }
-                                    v = ogs_yaml_iter_value(&enb_id_iter);
+                                    v = ogs_yaml_iter_value(&e_cell_id_iter);
                                     if (v) {
-                                        if (strncmp(v,"0x",2)) {
-                                            // integer enb_id
-                                            enb_id[num_of_enb_id] = atoi(v);
-                                        } else {
-                                            // hex enb_id
-                                            enb_id[num_of_enb_id] = strtol(v, NULL, 16);
-                                        }                                        
-                                        num_of_enb_id++;
+                                        e_cell_id[num_of_e_cell_id]
+                                            = ogs_uint28_from_string((char*)v);
+                                        num_of_e_cell_id++;
                                     }
                                 } while (
-                                    ogs_yaml_iter_type(&enb_id_iter) ==
+                                    ogs_yaml_iter_type(&e_cell_id_iter) ==
                                         YAML_SEQUENCE_NODE);
                             } else
                                 ogs_warn("unknown key `%s`", gtpc_key);
@@ -1543,25 +1540,13 @@ int mme_context_parse_config()
                         if (num_of_tac != 0)
                             memcpy(sgw->tac, tac, sizeof(sgw->tac));
 
-                        sgw->num_of_enb_id = num_of_enb_id;
-                        if (num_of_enb_id != 0)
-                            memcpy(sgw->enb_id, enb_id, sizeof(sgw->enb_id));
+                        sgw->num_of_e_cell_id = num_of_e_cell_id;
+                        if (num_of_e_cell_id != 0)
+                            memcpy(sgw->e_cell_id, e_cell_id,
+                                    sizeof(sgw->e_cell_id));
 
                     } while (ogs_yaml_iter_type(&gtpc_array) ==
                             YAML_SEQUENCE_NODE);
-                } else if (!strcmp(mme_key, "selection_mode")) {
-                    const char *selection_mode =
-                    ogs_yaml_iter_value(&sgw_iter);
-
-                    if (!strcmp(selection_mode, "rr"))
-                        self.sgw_selection = SGW_SELECT_RR;
-                    else if (!strcmp(selection_mode, "tac"))
-                        self.sgw_selection = SGW_SELECT_TAC;
-                    else if (!strcmp(selection_mode, "enb_id"))
-                        self.sgw_selection = SGW_SELECT_ENB_ID;
-                    else
-                        ogs_warn("unknown sgw_selection mode `%s`",
-                                selection_mode);
                 }
             }
         } else if (!strcmp(root_key, "pgw") || !strcmp(root_key, "smf")) {
@@ -2195,6 +2180,42 @@ static int mme_ue_new_guti(mme_ue_t *mme_ue)
     return OGS_OK;
 }
 
+static bool compare_ue_info(mme_sgw_t *node, enb_ue_t *enb_ue)
+{
+    int i;
+
+    ogs_assert(node);
+    ogs_assert(enb_ue);
+
+    for (i = 0; i < node->num_of_tac; i++)
+        if (node->tac[i] == enb_ue->saved.tai.tac) return true;
+
+    for (i = 0; i < node->num_of_e_cell_id; i++)
+        if (node->e_cell_id[i] == enb_ue->saved.e_cgi.cell_id) return true;
+
+    return false;
+}
+
+static mme_sgw_t *selected_sgw_node(mme_sgw_t *current, enb_ue_t *enb_ue)
+{
+    mme_sgw_t *next, *node;
+
+    ogs_assert(current);
+    ogs_assert(enb_ue);
+
+    next = ogs_list_next(current);
+    for (node = next; node; node = ogs_list_next(node)) {
+        if (compare_ue_info(node, enb_ue) == true) return node;
+    }
+
+    for (node = ogs_list_first(&mme_self()->sgw_list);
+            node != next; node = ogs_list_next(node)) {
+        if (compare_ue_info(node, enb_ue) == true) return node;
+    }
+
+    return next ? next : ogs_list_first(&mme_self()->sgw_list);
+}
+
 mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
 {
     mme_enb_t *enb = NULL;
@@ -2220,160 +2241,19 @@ mme_ue_t *mme_ue_add(enb_ue_t *enb_ue)
     /* Create New GUTI */
     mme_ue_new_guti(mme_ue);
 
-    // on first UE connection, initialise at top of SGW list
-    // for subsequent UE connections, begin from current position 
+    /*
+     * When used for the first time, if last node is set,
+     * the search is performed from the first SGW in a round-robin manner.
+     */
     if (mme_self()->sgw == NULL)
-        mme_self()->sgw = ogs_list_first(&mme_self()->sgw_list);
+        mme_self()->sgw = ogs_list_last(&mme_self()->sgw_list);
 
-    if (mme_self()->sgw_selection == SGW_SELECT_RR) {
-        /* Select SGW with round-robin manner */
-        ogs_debug("Select SGW by RR");
+    /* setup GTP path with selected SGW */
+    mme_self()->sgw = selected_sgw_node(mme_self()->sgw, enb_ue);
+    ogs_assert(mme_self()->sgw);
+    OGS_SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
+    ogs_debug("UE using SGW on IP[%s]", OGS_ADDR(&mme_ue->gnode->addr, buf));
 
-        // list SGW used
-        OGS_ADDR(&mme_self()->sgw->gnode->addr, buf);
-        ogs_debug("UE using SGW on IP[%s]", 
-            buf);
-        // setup GTP path with selected SGW
-        ogs_assert(mme_self()->sgw);
-        OGS_SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
-        // iterate to next SGW in list for next UE attach (RR)
-        mme_self()->sgw = ogs_list_next(mme_self()->sgw);
-
-    } else if (mme_self()->sgw_selection == SGW_SELECT_TAC) {
-        /* Select SGW by eNB TAC */
-        ogs_debug("Select SGW by enb_tac,(RR)");
-        /* 
-        - starting from list position of last used SGW, search down list for a SGW that serves the enb_tac
-            - if suitable SGW found
-                - use it
-            - if no suitable SGW found, keep searching
-            - if bottom of list reached, reset search to top of list
-            - if completed full cyclic search of list and still not found a suitable SGW, use default (first)
-        */
-
-        int i, found=0, numreset=0;;
-        char startSGWIP[OGS_ADDRSTRLEN];
-        OGS_ADDR(&mme_self()->sgw->gnode->addr, startSGWIP);
-
-        // search SGW list, find next SGW that serves the TAC || use default (first) if not found
-        while (!found) {
-            // (when end of SGW list reached, reset search to top of SGW list)
-            if(mme_self()->sgw == NULL){
-                mme_self()->sgw = ogs_list_first(&mme_self()->sgw_list);
-                numreset = 1;
-            }
-            // search SGW list, find next SGW that serves the TAC
-            while(mme_self()->sgw && !found) {
-                // if cyclic list check complete and still not found a SGW, break
-                OGS_ADDR(&mme_self()->sgw->gnode->addr, buf);
-                if (numreset == 1 && !strcmp(buf,startSGWIP)) {
-                    break;
-                }
-                // search from current list position
-                for (i = 0; i < mme_self()->sgw->num_of_tac && !found; i++){
-                    found = mme_self()->sgw->tac[i] == enb_ue->saved.tai.tac ? 1: 0;
-                }
-                if(found){
-                    // found a SGW that serves the TAC                   
-                    OGS_ADDR(&mme_self()->sgw->gnode->addr, buf);
-                    ogs_debug("SGW on IP[%s] serves enb_tac[%d] - use it", 
-                            buf, enb_ue->saved.tai.tac);
-                } else {
-                    // not found, check next SGW in list
-                    mme_self()->sgw = ogs_list_next(mme_self()->sgw);
-                }
-            }
-            // after checking from the top of the list and not finding a suitable SGW
-            if (!found && numreset == 1 ){
-                // default to first in list
-                ogs_warn("No SGW found that serves enb_tac[%d], defaulting to first SGW in mme.yaml list",
-                    enb_ue->saved.tai.tac);
-                mme_self()->sgw = ogs_list_first(&mme_self()->sgw_list);
-                break;
-            }
-        } 
-
-        // list SGW used
-        OGS_ADDR(&mme_self()->sgw->gnode->addr, buf);
-        ogs_debug("UE using SGW on IP[%s]", 
-            buf);
-
-        // setup GTP path with selected SGW
-        ogs_assert(mme_self()->sgw);
-        OGS_SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
-
-        // iterate to next SGW in list for next UE attach (RR)
-        mme_self()->sgw = ogs_list_next(mme_self()->sgw);
-
-    } else if (mme_self()->sgw_selection == SGW_SELECT_ENB_ID) {
-        /* Select SGW by eNB_ID */
-        ogs_debug("Select SGW by enb_id,(RR)");
-        /* 
-        - starting from list position of last used SGW, search down list for a SGW that serves the enb_id
-            - if suitable SGW found
-                - use it
-            - if no suitable SGW found, keep searching
-            - if bottom of list reached, reset search to top of list
-            - if completed full cyclic search of list and still not found a suitable SGW, use default (first)
-        */
-
-        int i, found=0, numreset=0;
-        char startSGWIP[OGS_ADDRSTRLEN];
-        OGS_ADDR(&mme_self()->sgw->gnode->addr, startSGWIP);
-
-        // search SGW list, find next SGW that serves the enb_id || use default (first) if not found
-        while (!found) {
-            // (when end of SGW list reached, reset search to top of SGW list)
-            if(mme_self()->sgw == NULL){
-                mme_self()->sgw = ogs_list_first(&mme_self()->sgw_list);
-                numreset = 1;
-            }
-            // search SGW list, find next SGW that serves the enb_id
-            while(mme_self()->sgw && !found) {
-                // if cyclic list check complete and still not found a SGW, break
-                OGS_ADDR(&mme_self()->sgw->gnode->addr, buf);
-                if (numreset == 1 && !strcmp(buf,startSGWIP)) {
-                    break;
-                }
-                // search from current list position
-                for (i = 0; i < mme_self()->sgw->num_of_enb_id && !found; i++){
-                    found = mme_self()->sgw->enb_id[i] == enb->enb_id ? 1: 0;
-                }
-                if(found){
-                    // found a SGW that serves the enb_id                   
-                    OGS_ADDR(&mme_self()->sgw->gnode->addr, buf);
-                    ogs_debug("SGW on IP[%s] serves enb_id[%d]/[0x%02x] - use it", 
-                        buf, enb->enb_id, enb->enb_id);
-                } else {
-                    // not found, check next SGW in list
-                    mme_self()->sgw = ogs_list_next(mme_self()->sgw);
-                }
-            }
-            // after checking from the top of the list and not finding a suitable SGW
-            if (!found && numreset == 1 ){
-                // default to first in list
-                ogs_warn("No SGW found that serves enb_id[%d]/[0x%02x], defaulting to first SGW in mme.yaml list",
-                    enb->enb_id, enb->enb_id);
-                mme_self()->sgw = ogs_list_first(&mme_self()->sgw_list);
-                break;
-            }
-        } 
-
-        // list SGW used
-        OGS_ADDR(&mme_self()->sgw->gnode->addr, buf);
-        ogs_debug("UE using SGW on IP[%s]", 
-            buf);
-
-        // setup GTP path with selected SGW
-        ogs_assert(mme_self()->sgw);
-        OGS_SETUP_GTP_NODE(mme_ue, mme_self()->sgw->gnode);
-
-        // iterate to next SGW in list for next UE attach (RR)
-        mme_self()->sgw = ogs_list_next(mme_self()->sgw);
-
-    } else
-        ogs_assert_if_reached();
-        
     /* Clear VLR */
     mme_ue->csmap = NULL;
     mme_ue->vlr_ostream_id = 0;

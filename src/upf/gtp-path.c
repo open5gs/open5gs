@@ -376,7 +376,7 @@ static void upf_gtp_send_to_gnb(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf)
     gtp_h->teid = htobe32(far->outer_header_creation.teid);
 
     /* Send to gNB */
-    ogs_debug("[UPF] SEND GPU-U to gNB[%s] : TEID[0x%x]",
+    ogs_debug("SEND GPU-U to gNB[%s] : TEID[0x%x]",
         OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
     rv = ogs_gtp_sendto(gnode, sendbuf);
     if (rv != OGS_OK)
@@ -478,7 +478,7 @@ static int upf_gtp_handle_slaac(upf_sess_t *sess, ogs_pkbuf_t *recvbuf)
             struct icmp6_hdr *icmp_h =
                 (struct icmp6_hdr *)(recvbuf->data + sizeof(struct ip6_hdr));
             if (icmp_h->icmp6_type == ND_ROUTER_SOLICIT) {
-                ogs_debug("[UPF]      Router Solict");
+                ogs_debug("      Router Solict");
                 if (sess->ipv6) {
                     rv = upf_gtp_send_router_advertisement(
                             sess, ip6_h->ip6_src.s6_addr);
@@ -581,7 +581,7 @@ static int upf_gtp_send_router_advertisement(
     
     upf_gtp_handle_pdr(pdr, pkbuf);
 
-    ogs_debug("[UPF]      Router Advertisement");
+    ogs_debug("      Router Advertisement");
 
     ogs_pkbuf_free(pkbuf);
     return rv;

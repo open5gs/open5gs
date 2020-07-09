@@ -15,14 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testsctp_sources = files('''
+testsystem_sctp_sources = files('''
     abts-main.c
     sctp-test.c
 '''.split())
 
-testsctp_exe = executable('sctp',
-    sources : testsctp_sources,
-    c_args : testcore_cc_flags,
+testsystem_sctp_exe = executable('sctp',
+    sources : testsystem_sctp_sources,
+    c_args : testunit_core_cc_flags,
     dependencies : libsctp_dep)
 
-test('sctp', testsctp_exe, is_parallel : false, suite: 'system')
+test('sctp', testsystem_sctp_exe, is_parallel : false, suite: 'system')

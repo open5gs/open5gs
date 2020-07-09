@@ -43,7 +43,7 @@ libtestcommon_inc = include_directories('.')
 
 libtestcommon = static_library('testcomon',
     sources : libtestcommon_sources,
-    c_args : testcore_cc_flags,
+    c_args : testunit_core_cc_flags,
     include_directories : [libtestcommon_inc, testinc, srcinc],
     dependencies : [libcore_dep,
                     libapp_dep,

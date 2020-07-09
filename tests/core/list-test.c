@@ -315,6 +315,109 @@ static void list_test5(abts_case *tc, void *data)
     }
 }
 
+lt_type1 *find_rr(lt_type1 *current, int m1)
+{
+    lt_type1 *next, *node;
+
+    ogs_assert(current);
+
+    next = ogs_list_next(current);
+    for (node = next; node; node = ogs_list_next(node)) {
+        if (node->m1 == m1) return node;
+    }
+
+    for (node = ogs_list_first(&tlist1);
+            node != next; node = ogs_list_next(node)) {
+        if (node->m1 == m1) return node;
+    }
+
+    return next ? next : ogs_list_first(&tlist1);
+}
+
+static void list_test6(abts_case *tc, void *data)
+{
+    int i;
+    lt_type1 *iter, *tmp, node[SIZE_OF_lt_type1];
+
+    for (i = 0; i < SIZE_OF_lt_type1; i++)
+        node[i].m1 = i/3;
+
+    ogs_list_init(&tlist1);
+
+    for (i = 0; i < 10; i++)
+        ogs_list_add(&tlist1, &node[i]);
+    ABTS_INT_EQUAL(tc, 10, ogs_list_count(&tlist1));
+
+    iter = ogs_list_last(&tlist1);
+    ABTS_INT_EQUAL(tc, 3, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 0, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 0, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 0, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 1, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 1, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 1, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 3, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 0, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 0, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 0, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 1, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 1, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 1, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 3, iter->m1);
+    iter = find_rr(iter, 2);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 2);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 3);
+    ABTS_INT_EQUAL(tc, 3, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 0, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 0, iter->m1);
+    iter = find_rr(iter, 2);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 3);
+    ABTS_INT_EQUAL(tc, 3, iter->m1);
+    iter = find_rr(iter, 0);
+    ABTS_INT_EQUAL(tc, 0, iter->m1);
+    iter = find_rr(iter, 2);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 2, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 3, iter->m1);
+    iter = find_rr(iter, 9);
+    ABTS_INT_EQUAL(tc, 0, iter->m1);
+}
+
 abts_suite *test_list(abts_suite *suite)
 {
     suite = ADD_SUITE(suite)
@@ -324,6 +427,7 @@ abts_suite *test_list(abts_suite *suite)
     abts_run_test(suite, list_test3, NULL);
     abts_run_test(suite, list_test4, NULL);
     abts_run_test(suite, list_test5, NULL);
+    abts_run_test(suite, list_test6, NULL);
 
     return suite;
 }

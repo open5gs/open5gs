@@ -77,6 +77,7 @@
 
 #include "sbi/nnrf-build.h"
 #include "sbi/nnrf-handler.h"
+
 #include "sbi/path.h"
 
 #undef OGS_SBI_INSIDE

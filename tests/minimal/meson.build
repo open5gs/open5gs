@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testminimal_sources = files('''
+test5gc_minimal_sources = files('''
     abts-main.c
     minimal-test.c
 '''.split())
 
-testminimal_exe = executable('minimal',
-    sources : testminimal_sources,
-    c_args : testcore_cc_flags,
+test5gc_minimal_exe = executable('minimal',
+    sources : test5gc_minimal_sources,
+    c_args : testunit_core_cc_flags,
     dependencies : libtest5gc_dep)

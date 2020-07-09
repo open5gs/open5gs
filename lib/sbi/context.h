@@ -121,6 +121,8 @@ typedef struct ogs_sbi_object_s {
 
     ogs_sbi_session_t *session;
     void *nf_state_registered;
+
+    ogs_sbi_client_cb_f client_cb;
 } ogs_sbi_object_t;
 
 typedef struct ogs_sbi_nf_service_s {

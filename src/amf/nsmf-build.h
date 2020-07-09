@@ -35,6 +35,14 @@ typedef struct amf_nsmf_pdu_session_update_sm_context_param_s {
         int group;
         int value;
     } ngApCause;
+    union {
+        struct {
+        ED3(uint8_t ue_location:1;,
+            uint8_t ue_timezone:1;,
+            uint8_t spare:6;)
+        };
+        uint8_t indications;
+    };
 } amf_nsmf_pdu_session_update_sm_context_param_t;
 
 ogs_sbi_request_t *amf_nsmf_pdu_session_build_create_sm_context(

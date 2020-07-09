@@ -20,6 +20,9 @@
 #include "ogs-core.h"
 #include "core/abts.h"
 
+/* 2002-09-14 12:05:36.186711 -25200 [257 Sat]. */
+static ogs_time_t now = 1032030336186711L;
+
 static void test_now(abts_case *tc, void *data)
 {
     struct timeval tv;
@@ -38,21 +41,63 @@ static void test_now(abts_case *tc, void *data)
 
 #define STR_SIZE 100
 
-static void test_strftime(abts_case *tc, void *data)
+static void test_gmtstr(abts_case *tc, void *data)
 {
     struct tm tm;
-    char str[STR_SIZE+1];
-    time_t now = (time_t)1542100786;
+    char *str = NULL;
 
-    ogs_gmtime(now, &tm);
-    strftime(str, sizeof str, "%Y/%m/%d %H:%M:%S", &tm);
-    ABTS_STR_EQUAL(tc, "2018/11/13 09:19:46", str);
+    char datetime[STR_SIZE];
 
-    ogs_localtime(now, &tm);
-    strftime(str, sizeof str, "%Y/%m/%d %H:%M:%S", &tm);
-#if 0 /* FIXME */
-    ABTS_STR_EQUAL(tc, "2018/11/13 18:19:46", str);
-#endif
+    ogs_gmtime(ogs_time_sec(now), &tm);
+    ogs_strftime(datetime, sizeof datetime, "%Y-%m-%dT%H:%M:%S", &tm);
+
+    str = ogs_msprintf("%s.%06lldZ",
+            datetime, (long long)ogs_time_usec(now));
+    ogs_assert(str);
+
+    ABTS_STR_EQUAL(tc, "2002-09-14T19:05:36.186711Z", str);
+
+    ogs_free(str);
+}
+
+static void test_get_gmt(abts_case *tc, void *data)
+{
+    int rv;
+    struct tm xt;
+    ogs_time_t imp;
+    int64_t hr_off_64;
+
+    ogs_gmtime(ogs_time_sec(now), &xt);
+    rv = ogs_time_from_lt(&imp, &xt, ogs_time_usec(now));
+    ABTS_TRUE(tc, rv == OGS_OK);
+    hr_off_64 = (int64_t) xt.tm_gmtoff * OGS_USEC_PER_SEC;
+    ABTS_TRUE(tc, now + hr_off_64 == imp);
+}
+
+static void test_get_lt(abts_case *tc, void *data)
+{
+    int rv;
+    struct tm xt;
+    ogs_time_t imp;
+    int64_t hr_off_64;
+
+    ogs_localtime(ogs_time_sec(now), &xt);
+    rv = ogs_time_from_lt(&imp, &xt, ogs_time_usec(now));
+    ABTS_TRUE(tc, rv == OGS_OK);
+    hr_off_64 = (int64_t) xt.tm_gmtoff * OGS_USEC_PER_SEC;
+    ABTS_TRUE(tc, now + hr_off_64 == imp);
+}
+
+static void test_imp_gmt(abts_case *tc, void *data)
+{
+    int rv;
+    struct tm xt;
+    ogs_time_t imp;
+
+    ogs_gmtime(ogs_time_sec(now), &xt);
+    rv = ogs_time_from_gmt(&imp, &xt, ogs_time_usec(now));
+    ABTS_TRUE(tc, rv == OGS_OK);
+    ABTS_TRUE(tc, now == imp);
 }
 
 abts_suite *test_time(abts_suite *suite)
@@ -60,7 +105,10 @@ abts_suite *test_time(abts_suite *suite)
     suite = ADD_SUITE(suite)
 
     abts_run_test(suite, test_now, NULL);
-    abts_run_test(suite, test_strftime, NULL);
+    abts_run_test(suite, test_gmtstr, NULL);
+    abts_run_test(suite, test_get_gmt, NULL);
+    abts_run_test(suite, test_get_lt, NULL);
+    abts_run_test(suite, test_imp_gmt, NULL);
 
     return suite;
 }

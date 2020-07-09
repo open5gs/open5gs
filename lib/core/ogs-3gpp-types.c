@@ -130,14 +130,18 @@ ogs_amf_id_t *ogs_amf_id_from_string(ogs_amf_id_t *amf_id, const char *hex)
     return amf_id;
 }
 
-char *ogs_amf_id_to_string(ogs_amf_id_t *amf_id, char *buf)
+#define OGS_AMFIDSTRLEN    (sizeof(ogs_amf_id_t)*2+1)
+char *ogs_amf_id_to_string(ogs_amf_id_t *amf_id)
 {
+    char *str = NULL;
     ogs_assert(amf_id);
-    ogs_assert(buf);
 
-    ogs_hex_to_ascii(amf_id, sizeof(ogs_amf_id_t), buf, OGS_AMFIDSTRLEN);
+    str = ogs_calloc(1, OGS_AMFIDSTRLEN);
+    ogs_assert(str);
 
-    return buf;
+    ogs_hex_to_ascii(amf_id, sizeof(ogs_amf_id_t), str, OGS_AMFIDSTRLEN);
+
+    return str;
 }
 
 uint8_t ogs_amf_region_id(ogs_amf_id_t *amf_id)
@@ -165,29 +169,6 @@ ogs_amf_id_t *ogs_amf_id_build(ogs_amf_id_t *amf_id,
     amf_id->pointer = pointer;
 
     return amf_id;
-}
-
-char *ogs_s_nssai_sd_to_string(ogs_uint24_t sd)
-{
-    if (sd.v != OGS_S_NSSAI_NO_SD_VALUE)
-        return ogs_msprintf("%06x", sd.v);
-    else
-        return NULL;
-}
-
-ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex)
-{
-    ogs_uint24_t sd;
-    char hexbuf[sizeof(ogs_uint24_t)];
-
-    sd.v = OGS_S_NSSAI_NO_SD_VALUE;
-    if (hex == NULL)
-        return sd;
-
-    OGS_HEX(hex, strlen(hex), hexbuf);
-    memcpy(&sd, hexbuf, 3);
-
-    return ogs_be24toh(sd);
 }
 
 char *ogs_supi_from_suci(char *suci)
@@ -267,6 +248,25 @@ char *ogs_id_get_value(char *str)
 
     ogs_free(tmp);
     return ueid;
+}
+
+char *ogs_s_nssai_sd_to_string(ogs_uint24_t sd)
+{
+    if (sd.v == OGS_S_NSSAI_NO_SD_VALUE)
+        return NULL;
+
+    return ogs_uint24_to_string(sd);
+}
+
+ogs_uint24_t ogs_s_nssai_sd_from_string(const char *hex)
+{
+    ogs_uint24_t sd;
+
+    sd.v = OGS_S_NSSAI_NO_SD_VALUE;
+    if (hex == NULL)
+        return sd;
+
+    return ogs_uint24_from_string((char *)hex);
 }
 
 int ogs_fqdn_build(char *dst, char *src, int length)

@@ -68,39 +68,24 @@ void amf_nnrf_handle_nf_status_subscribe(
         subscription, SubscriptionData->subscription_id);
 
     if (SubscriptionData->validity_time) {
-        struct timeval tv;
-        struct tm local, next;
-        ogs_time_t diff, duration;
-
-        memset(&next, 0, sizeof(next));
-        if (ogs_strptime(SubscriptionData->validity_time,
-                OGS_TIME_ISO8601_FORMAT, &next)) {
-            ogs_gettimeofday(&tv);
-            ogs_localtime(tv.tv_sec, &local);
-            diff = ogs_mktime(&next) - ogs_mktime(&local);
-#define VALIDITY_MARGIN 5 /* 5 seconds */
-#define VALIDITY_MINIMUM 60 /* 60 seconds */
-            duration = diff - (int)VALIDITY_MARGIN;
-
-            if (duration < (int)VALIDITY_MINIMUM) {
-                char buf[64];
-                strftime(buf, sizeof buf, "%Y-%m-%d %H:%M:%S", &local);
-                ogs_warn("[%s] Validation period [%lld seconds, "
-                        "(%lld)(%lld)(%s)(%s)] is too small", subscription->id,
-                        (long long)diff,
-                        (long long)ogs_mktime(&next),
-                        (long long)ogs_mktime(&local),
-                        SubscriptionData->validity_time, buf);
+#define VALIDITY_MARGIN (5 * OGS_USEC_PER_SEC) /* 5 seconds */
+#define VALIDITY_MINIMUM (3600 * OGS_USEC_PER_SEC) /* 3600 seconds */
+        ogs_time_t time, duration;
+        if (ogs_sbi_time_from_string(
+                &time, SubscriptionData->validity_time) == true) {
+            duration = time - ogs_time_now() - VALIDITY_MARGIN;
+            if (duration < VALIDITY_MINIMUM) {
                 duration = VALIDITY_MINIMUM;
                 ogs_warn("[%s] Forced to %d seconds",
-                        subscription->id, VALIDITY_MINIMUM);
+                    subscription->id, (int)ogs_time_sec(VALIDITY_MINIMUM));
             }
-
             subscription->t_validity = ogs_timer_add(amf_self()->timer_mgr,
                 amf_timer_subscription_validity, subscription);
             ogs_assert(subscription->t_validity);
-            ogs_timer_start(
-                    subscription->t_validity, ogs_time_from_sec(duration));
+            ogs_timer_start(subscription->t_validity, duration);
+        } else {
+            ogs_error("Cannot parse validitiyTime [%s]",
+                    SubscriptionData->validity_time);
         }
     }
 }
@@ -194,8 +179,6 @@ bool amf_nnrf_handle_nf_status_notify(
             return false;
         }
 
-        amf_sbi_setup_client_callback(nf_instance);
-
     } else if (NotificationData->event ==
             OpenAPI_notification_event_type_NF_DEREGISTERED) {
         nf_instance = ogs_sbi_nf_instance_find(NFProfile->nf_instance_id);
@@ -287,8 +270,6 @@ void amf_nnrf_handle_nf_discover(
                 continue;
             }
 
-            amf_sbi_setup_client_callback(nf_instance);
-
             if (!OGS_SBI_NF_INSTANCE_GET(
                         sbi_object->nf_types, nf_instance->nf_type))
                 ogs_sbi_nf_types_associate(sbi_object->nf_types,
@@ -343,6 +324,6 @@ void amf_nnrf_handle_nf_discover(
                 OpenAPI_nf_type_ToString(sbi_object->nf_type));
         }
     } else {
-        ogs_sbi_send(sbi_object, nf_instance);
+        ogs_sbi_send(nf_instance, sbi_object);
     }
 }

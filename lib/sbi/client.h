@@ -36,6 +36,9 @@ extern "C" {
             __pCLIENT->reference_count++; \
         (__cTX)->client = __pCLIENT; \
     } while(0)
+
+typedef int (*ogs_sbi_client_cb_f)(ogs_sbi_response_t *response, void *data);
+
 typedef struct ogs_sbi_client_s {
     ogs_lnode_t     lnode;
 
@@ -46,7 +49,7 @@ typedef struct ogs_sbi_client_s {
         const char  *pem;
     } tls;
 
-    int             (*cb)(ogs_sbi_response_t *response, void *data);
+    ogs_sbi_client_cb_f cb;             /* Only used when NF send to NRF */
 
     ogs_timer_t     *t_curl;            /* timer for CURL */
     ogs_list_t      connection_list;    /* CURL connection list */
@@ -67,9 +70,7 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client);
 ogs_sbi_client_t *ogs_sbi_client_find(ogs_sockaddr_t *addr);
 
 void ogs_sbi_client_send_request(
-        ogs_sbi_client_t *client, ogs_sbi_request_t *request, void *data);
-void ogs_sbi_client_send_request_to_nf_instance(
-        ogs_sbi_nf_instance_t *nf_instance,
+        ogs_sbi_client_t *client, ogs_sbi_client_cb_f client_cb,
         ogs_sbi_request_t *request, void *data);
 
 #ifdef __cplusplus

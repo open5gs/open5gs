@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testregistration_sources = files('''
+test5gc_registration_sources = files('''
     abts-main.c
     guti-test.c
     auth-test.c
@@ -26,7 +26,7 @@ testregistration_sources = files('''
     ue-context-test.c
 '''.split())
 
-testregistration_exe = executable('registration',
-    sources : testregistration_sources,
-    c_args : testcore_cc_flags,
+test5gc_registration_exe = executable('registration',
+    sources : test5gc_registration_sources,
+    c_args : testunit_core_cc_flags,
     dependencies : libtest5gc_dep)

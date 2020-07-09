@@ -762,7 +762,6 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
     enb_ue_t *source_ue = NULL;
     int i;
 
-    ogs_gtp_tlv_bearer_context_t *bearers[OGS_GTP_MAX_INDIRECT_TUNNEL];
     ogs_gtp_f_teid_t *teid = NULL;
 
     ogs_assert(xact);
@@ -796,28 +795,26 @@ void mme_s11_handle_create_indirect_data_forwarding_tunnel_response(
         return;
     }
 
-    ogs_gtp_bearers_in_create_indirect_tunnel_response(&bearers, rsp);
-
-    for (i = 0; bearers[i]->presence; i++) {
-        if (bearers[i]->eps_bearer_id.presence == 0) {
+    for (i = 0; rsp->bearer_contexts[i].presence; i++) {
+        if (rsp->bearer_contexts[i].eps_bearer_id.presence == 0) {
             ogs_error("No EBI");
             return;
         }
 
         bearer = mme_bearer_find_by_ue_ebi(mme_ue, 
-                    bearers[i]->eps_bearer_id.u8);
+                    rsp->bearer_contexts[i].eps_bearer_id.u8);
         ogs_expect_or_return(bearer);
 
-        if (bearers[i]->s4_u_sgsn_f_teid.presence) {
-            teid = bearers[i]->s4_u_sgsn_f_teid.data;
+        if (rsp->bearer_contexts[i].s4_u_sgsn_f_teid.presence) {
+            teid = rsp->bearer_contexts[i].s4_u_sgsn_f_teid.data;
             ogs_assert(teid);
 
             bearer->sgw_dl_teid = ntohl(teid->teid);
             rv = ogs_gtp_f_teid_to_ip(teid, &bearer->sgw_dl_ip);
             ogs_expect_or_return(rv == OGS_OK);
         }
-        if (bearers[i]->s2b_u_epdg_f_teid_5.presence) {
-            teid = bearers[i]->s2b_u_epdg_f_teid_5.data;
+        if (rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5.presence) {
+            teid = rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5.data;
             ogs_assert(teid);
 
             bearer->sgw_ul_teid = ntohl(teid->teid);

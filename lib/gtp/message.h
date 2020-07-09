@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-06-30 21:17:14.929915 by acetcom
+ * Created on: 2020-07-08 16:42:53.173072 by acetcom
  * from 29274-g30.docx
  ******************************************************************************/
 
@@ -432,15 +432,6 @@ extern ogs_tlv_desc_t ogs_gtp_tlv_desc_remote_ue_context_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_v2x_context_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_1;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_2;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_3;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_4;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_5;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_6;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_7;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_8;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_9;
-extern ogs_tlv_desc_t ogs_gtp_tlv_desc_bearer_context_10;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_pdn_connection_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_0;
 extern ogs_tlv_desc_t ogs_gtp_tlv_desc_overload_control_information_1;
@@ -1167,34 +1158,14 @@ typedef struct ogs_gtp_create_indirect_data_forwarding_tunnel_request_s {
     ogs_gtp_tlv_mei_t me_identity;
     ogs_gtp_tlv_indication_t indication_flags;
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
-    ogs_gtp_tlv_bearer_context_t bearer_context_0;
-    ogs_gtp_tlv_bearer_context_t bearer_context_1;
-    ogs_gtp_tlv_bearer_context_t bearer_context_2;
-    ogs_gtp_tlv_bearer_context_t bearer_context_3;
-    ogs_gtp_tlv_bearer_context_t bearer_context_4;
-    ogs_gtp_tlv_bearer_context_t bearer_context_5;
-    ogs_gtp_tlv_bearer_context_t bearer_context_6;
-    ogs_gtp_tlv_bearer_context_t bearer_context_7;
-    ogs_gtp_tlv_bearer_context_t bearer_context_8;
-    ogs_gtp_tlv_bearer_context_t bearer_context_9;
-    ogs_gtp_tlv_bearer_context_t bearer_context_10;
+    ogs_gtp_tlv_bearer_context_t bearer_contexts[8];
     ogs_gtp_tlv_recovery_t recovery;
 } ogs_gtp_create_indirect_data_forwarding_tunnel_request_t;
 
 typedef struct ogs_gtp_create_indirect_data_forwarding_tunnel_response_s {
     ogs_gtp_tlv_cause_t cause;
     ogs_gtp_tlv_f_teid_t sender_f_teid_for_control_plane;
-    ogs_gtp_tlv_bearer_context_t bearer_context_0;
-    ogs_gtp_tlv_bearer_context_t bearer_context_1;
-    ogs_gtp_tlv_bearer_context_t bearer_context_2;
-    ogs_gtp_tlv_bearer_context_t bearer_context_3;
-    ogs_gtp_tlv_bearer_context_t bearer_context_4;
-    ogs_gtp_tlv_bearer_context_t bearer_context_5;
-    ogs_gtp_tlv_bearer_context_t bearer_context_6;
-    ogs_gtp_tlv_bearer_context_t bearer_context_7;
-    ogs_gtp_tlv_bearer_context_t bearer_context_8;
-    ogs_gtp_tlv_bearer_context_t bearer_context_9;
-    ogs_gtp_tlv_bearer_context_t bearer_context_10;
+    ogs_gtp_tlv_bearer_context_t bearer_contexts[8];
     ogs_gtp_tlv_recovery_t recovery;
 } ogs_gtp_create_indirect_data_forwarding_tunnel_response_t;
 

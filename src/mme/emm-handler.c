@@ -227,14 +227,14 @@ int emm_handle_attach_complete(
 
     ogs_assert(mme_ue);
 
-    ogs_debug("    GMT Time[Y:M:D H:M:S GMT] - %d:%d:%d, %d:%d:%d, %d",
+    ogs_debug("    GMT Time[Y:M:D H:M:S GMT:DST] - %d:%d:%d, %d:%d:%d, %d:%d",
         gmt.tm_year, gmt.tm_mon, gmt.tm_mday,
         gmt.tm_hour, gmt.tm_min, gmt.tm_sec,
-        (int)gmt.tm_gmtoff);
-    ogs_debug("    LOCAL Time[Y:M:D H:M:S GMT] - %d:%d:%d, %d:%d:%d, %d",
+        (int)gmt.tm_gmtoff, gmt.tm_isdst);
+    ogs_debug("    LOCAL Time[Y:M:D H:M:S GMT:DST] - %d:%d:%d, %d:%d:%d, %d:%d",
         local.tm_year, local.tm_mon, local.tm_mday,
         local.tm_hour, local.tm_min, local.tm_sec,
-        (int)local.tm_gmtoff);
+        (int)local.tm_gmtoff, local.tm_isdst);
 
     rv = nas_eps_send_emm_to_esm(
             mme_ue, &attach_complete->esm_message_container);
@@ -254,23 +254,23 @@ int emm_handle_attach_complete(
     emm_information->presencemask |=
         OGS_NAS_EPS_EMM_INFORMATION_UNIVERSAL_TIME_AND_LOCAL_TIME_ZONE_PRESENT;
     universal_time_and_local_time_zone->year = 
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
+                OGS_NAS_TIME_TO_BCD(gmt.tm_year % 100);
     universal_time_and_local_time_zone->mon =
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
+                OGS_NAS_TIME_TO_BCD(gmt.tm_mon+1);
     universal_time_and_local_time_zone->mday = 
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
+                OGS_NAS_TIME_TO_BCD(gmt.tm_mday);
     universal_time_and_local_time_zone->hour = 
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
+                OGS_NAS_TIME_TO_BCD(gmt.tm_hour);
     universal_time_and_local_time_zone->min =
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_min);
+                OGS_NAS_TIME_TO_BCD(gmt.tm_min);
     universal_time_and_local_time_zone->sec =
-                OGS_OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
+                OGS_NAS_TIME_TO_BCD(gmt.tm_sec);
     if (local.tm_gmtoff >= 0) {
         universal_time_and_local_time_zone->timezone = 
-                    OGS_OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
+                    OGS_NAS_TIME_TO_BCD(local.tm_gmtoff / 900);
     } else {
         universal_time_and_local_time_zone->timezone = 
-                    OGS_OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
+                    OGS_NAS_TIME_TO_BCD((-local.tm_gmtoff) / 900);
         universal_time_and_local_time_zone->timezone |= 0x08;
     }
     ogs_debug("    Timezone:0x%x", 

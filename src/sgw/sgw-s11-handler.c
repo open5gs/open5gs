@@ -974,8 +974,6 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
     sgw_tunnel_t *tunnel = NULL;
     
     ogs_gtp_cause_t cause;
-    ogs_gtp_tlv_bearer_context_t *req_bearers[OGS_GTP_MAX_INDIRECT_TUNNEL];
-    ogs_gtp_tlv_bearer_context_t *rsp_bearers[OGS_GTP_MAX_INDIRECT_TUNNEL];
     ogs_gtp_f_teid_t *req_teid = NULL;
     ogs_gtp_f_teid_t rsp_dl_teid[OGS_GTP_MAX_INDIRECT_TUNNEL];
     ogs_gtp_f_teid_t rsp_ul_teid[OGS_GTP_MAX_INDIRECT_TUNNEL];
@@ -1011,21 +1009,18 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
     ogs_debug("    MME_S11_TEID[%d] SGW_S11_TEID[%d]",
         sgw_ue->mme_s11_teid, sgw_ue->sgw_s11_teid);
 
-    ogs_gtp_bearers_in_create_indirect_tunnel_request(&req_bearers, req);
-    ogs_gtp_bearers_in_create_indirect_tunnel_response(&rsp_bearers, rsp);
-
-    for (i = 0; req_bearers[i]->presence; i++) {
-        if (req_bearers[i]->eps_bearer_id.presence == 0) {
+    for (i = 0; req->bearer_contexts[i].presence; i++) {
+        if (req->bearer_contexts[i].eps_bearer_id.presence == 0) {
             ogs_error("No EBI");
             return;
         }
 
         bearer = sgw_bearer_find_by_ue_ebi(sgw_ue, 
-                    req_bearers[i]->eps_bearer_id.u8);
+                    req->bearer_contexts[i].eps_bearer_id.u8);
         ogs_assert(bearer);
 
-        if (req_bearers[i]->s1_u_enodeb_f_teid.presence) {
-            req_teid = req_bearers[i]->s1_u_enodeb_f_teid.data;
+        if (req->bearer_contexts[i].s1_u_enodeb_f_teid.presence) {
+            req_teid = req->bearer_contexts[i].s1_u_enodeb_f_teid.data;
             ogs_assert(req_teid);
 
             tunnel = sgw_tunnel_add(bearer,
@@ -1056,16 +1051,16 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             rv = ogs_gtp_sockaddr_to_f_teid(sgw_self()->gtpu_addr,
                     sgw_self()->gtpu_addr6, &rsp_dl_teid[i], &len);
             ogs_assert(len > 0);
-            rsp_bearers[i]->s4_u_sgsn_f_teid.presence = 1;
-            rsp_bearers[i]->s4_u_sgsn_f_teid.data = &rsp_dl_teid[i];
-            rsp_bearers[i]->s4_u_sgsn_f_teid.len = len;
+            rsp->bearer_contexts[i].s4_u_sgsn_f_teid.presence = 1;
+            rsp->bearer_contexts[i].s4_u_sgsn_f_teid.data = &rsp_dl_teid[i];
+            rsp->bearer_contexts[i].s4_u_sgsn_f_teid.len = len;
 
             ogs_debug("    SGW_DL_TEID[%d] ENB_DL_TEID[%d]",
                     tunnel->local_teid, tunnel->remote_teid);
         }
 
-        if (req_bearers[i]->s12_rnc_f_teid.presence) {
-            req_teid = req_bearers[i]->s12_rnc_f_teid.data;
+        if (req->bearer_contexts[i].s12_rnc_f_teid.presence) {
+            req_teid = req->bearer_contexts[i].s12_rnc_f_teid.data;
             ogs_assert(req_teid);
 
             tunnel = sgw_tunnel_add(bearer,
@@ -1097,22 +1092,22 @@ void sgw_s11_handle_create_indirect_data_forwarding_tunnel_request(
             rv = ogs_gtp_sockaddr_to_f_teid(sgw_self()->gtpu_addr,
                     sgw_self()->gtpu_addr6, &rsp_ul_teid[i], &len);
             ogs_assert(rv == OGS_OK);
-            rsp_bearers[i]->s2b_u_epdg_f_teid_5.presence = 1;
-            rsp_bearers[i]->s2b_u_epdg_f_teid_5.data = &rsp_ul_teid[i];
-            rsp_bearers[i]->s2b_u_epdg_f_teid_5.len = len;
+            rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5.presence = 1;
+            rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5.data = &rsp_ul_teid[i];
+            rsp->bearer_contexts[i].s2b_u_epdg_f_teid_5.len = len;
             ogs_debug("    SGW_UL_TEID[%d] ENB_UL_TEID[%d]",
                     tunnel->local_teid, tunnel->remote_teid);
         }
 
-        if (req_bearers[i]->s1_u_enodeb_f_teid.presence ||
-            req_bearers[i]->s12_rnc_f_teid.presence) {
-            rsp_bearers[i]->presence = 1;
-            rsp_bearers[i]->eps_bearer_id.presence = 1;
-            rsp_bearers[i]->eps_bearer_id.u8 = bearer->ebi;
+        if (req->bearer_contexts[i].s1_u_enodeb_f_teid.presence ||
+            req->bearer_contexts[i].s12_rnc_f_teid.presence) {
+            rsp->bearer_contexts[i].presence = 1;
+            rsp->bearer_contexts[i].eps_bearer_id.presence = 1;
+            rsp->bearer_contexts[i].eps_bearer_id.u8 = bearer->ebi;
 
-            rsp_bearers[i]->cause.presence = 1;
-            rsp_bearers[i]->cause.data = &cause;
-            rsp_bearers[i]->cause.len = sizeof(cause);
+            rsp->bearer_contexts[i].cause.presence = 1;
+            rsp->bearer_contexts[i].cause.data = &cause;
+            rsp->bearer_contexts[i].cause.len = sizeof(cause);
         }
     }
 

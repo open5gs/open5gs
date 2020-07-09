@@ -553,7 +553,7 @@ void upf_n4_handle_session_establishment_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("[UPF] Session Establishment Request");
+    ogs_debug("Session Establishment Request");
 
     cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
@@ -615,7 +615,7 @@ void upf_n4_handle_session_modification_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("[UPF] Session Modification Request");
+    ogs_debug("Session Modification Request");
 
     cause_value = OGS_PFCP_CAUSE_REQUEST_ACCEPTED;
 
@@ -711,7 +711,7 @@ void upf_n4_handle_session_deletion_request(
     ogs_assert(xact);
     ogs_assert(req);
 
-    ogs_debug("[UPF] Session Deletion Request");
+    ogs_debug("Session Deletion Request");
 
     if (!sess) {
         ogs_warn("No Context");

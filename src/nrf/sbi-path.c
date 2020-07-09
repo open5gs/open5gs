@@ -91,12 +91,11 @@ void nrf_nnrf_nfm_send_nf_status_notify(ogs_sbi_subscription_t *subscription,
     ogs_assert(subscription);
     client = subscription->client;
     ogs_assert(client);
-    client->cb = client_notify_cb;
 
     request = nrf_nnrf_nfm_build_nf_status_notify(
             client, subscription, event, nf_instance);
     ogs_assert(request);
-    ogs_sbi_client_send_request(client, request, NULL);
+    ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
     ogs_sbi_request_free(request);
 }
 

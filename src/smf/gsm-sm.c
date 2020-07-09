@@ -77,8 +77,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 smf_nsmf_handle_update_sm_context(sess, sbi_message);
                 break;
             CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
-                smf_5gc_pfcp_send_session_deletion_request(sess,
-                        OGS_PFCP_5GC_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT);
+                smf_nsmf_handle_release_sm_context(sess, sbi_message);
                 break;
             DEFAULT
                 smf_nsmf_handle_create_sm_context(sess, sbi_message);

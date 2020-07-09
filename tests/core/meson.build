@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testcore_sources = files('''
+testunit_core_sources = files('''
     list-test.c
     pool-test.c
     strings-test.c
@@ -37,9 +37,9 @@ testcore_sources = files('''
     abts-main.c
 '''.split())
 
-testcore_cc_flags = []
+testunit_core_cc_flags = []
 if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
-    testcore_cc_flags += cc.get_supported_arguments([
+    testunit_core_cc_flags += cc.get_supported_arguments([
                     '-Wno-missing-prototypes',
                     '-Wno-missing-declarations',
                     '-Wno-discarded-qualifiers',
@@ -48,9 +48,9 @@ if cc.get_id() == 'gcc' or cc.get_id() == 'clang'
                     '-Wno-deprecated-declarations'])
 endif
 
-testcore_exe = executable('core',
-    sources : testcore_sources,
-    c_args : testcore_cc_flags,
+testunit_core_exe = executable('core',
+    sources : testunit_core_sources,
+    c_args : testunit_core_cc_flags,
     dependencies : libcore_dep)
 
-test('core', testcore_exe, is_parallel : false, suite: 'unit')
+test('core', testunit_core_exe, is_parallel : false, suite: 'unit')
