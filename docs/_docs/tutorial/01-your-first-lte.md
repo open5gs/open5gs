@@ -142,13 +142,16 @@ $ sudo apt install cmake libfftw3-dev libmbedtls-dev libboost-program-options-de
 Download and build srsLTE:
 
 ```bash
-➜  git git clone https://github.com/srsLTE/srsLTE.git
-➜  git cd srsLTE
-➜  srsLTE git:(master) ✗ mkdir build
-➜  srsLTE git:(master) ✗ cd build
-➜  build git:(master) ✗ cmake ../
-➜  build git:(master) ✗ make
-➜  build git:(master) ✗ make test
+$ git clone https://github.com/srsLTE/srsLTE.git
+$ cd srsLTE
+$ git checkout release_19_12
+$ git rev-parse HEAD
+d045213fb9cbf98c83c06d7c17197a9dcbfddacf
+$ mkdir build
+$ cd build
+$ cmake ../
+$ make
+$ make test
 ```
 
 #### 3. Open5GS
@@ -325,10 +328,10 @@ $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 Change back to the srsENB source directory and copy the main config example as well as all additional config files for RR, SIB and DRB.
 
 ```bash
-➜  srsLTE git:(master) ✗ cp srsenb/enb.conf.example srsenb/enb.conf
-➜  srsLTE git:(master) ✗ cp srsenb/rr.conf.example srsenb/rr.conf
-➜  srsLTE git:(master) ✗ cp srsenb/sib.conf.example srsenb/sib.conf
-➜  srsLTE git:(master) ✗ cp srsenb/drb.conf.example srsenb/drb.conf
+$ cp srsenb/enb.conf.example srsenb/enb.conf
+$ cp srsenb/rr.conf.example srsenb/rr.conf
+$ cp srsenb/sib.conf.example srsenb/sib.conf
+$ cp srsenb/drb.conf.example srsenb/drb.conf
 ```
 
 You should check your phone frequency. If your phone does not support Band-3, you should use a different DL EARFCN value.
@@ -383,8 +386,8 @@ If you do not use the GPS-DO, you should use:
 Now, run the srsENB as follows:
 
 ```bash
-➜  srsLTE git:(master) ✗ cd srsenb/
-➜  srsenb git:(master) ✗ sudo ../build/srsenb/src/srsenb ./enb.conf
+$ cd srsenb/
+$ sudo ../build/srsenb/src/srsenb ./enb.conf
 linux; GNU C++ version 6.2.0 20161027; Boost_106200; UHD_003.009.005-0-unknow
 
 ---  Software Radio Systems LTE eNodeB  ---
