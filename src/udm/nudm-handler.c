@@ -122,8 +122,6 @@ bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
             ogs_log_print(OGS_LOG_ERROR, "[MAC_S] ");
             ogs_log_hexdump(OGS_LOG_ERROR, mac_s, OGS_MAC_S_LEN);
             ogs_log_hexdump(OGS_LOG_ERROR, auts + OGS_SQN_LEN, OGS_MAC_S_LEN);
-            ogs_log_print(OGS_LOG_ERROR, "[SQN] UDM 0x%llx  UE ",
-                    (long long)udm_ue->sqn);
             ogs_log_hexdump(OGS_LOG_ERROR, sqn_ms, OGS_SQN_LEN);
             ogs_sbi_server_send_error(session,
                     OGS_SBI_HTTP_STATUS_UNAUTHORIZED,

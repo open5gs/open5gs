@@ -68,16 +68,16 @@ void amf_nnrf_handle_nf_status_subscribe(
         subscription, SubscriptionData->subscription_id);
 
     if (SubscriptionData->validity_time) {
-#define VALIDITY_MARGIN (5 * OGS_USEC_PER_SEC) /* 5 seconds */
-#define VALIDITY_MINIMUM (3600 * OGS_USEC_PER_SEC) /* 3600 seconds */
+#define VALIDITY_MARGIN (5LL * OGS_USEC_PER_SEC) /* 5 seconds */
+#define VALIDITY_MINIMUM (3600LL * OGS_USEC_PER_SEC) /* 3600 seconds */
         ogs_time_t time, duration;
         if (ogs_sbi_time_from_string(
                 &time, SubscriptionData->validity_time) == true) {
             duration = time - ogs_time_now() - VALIDITY_MARGIN;
             if (duration < VALIDITY_MINIMUM) {
                 duration = VALIDITY_MINIMUM;
-                ogs_warn("[%s] Forced to %d seconds",
-                    subscription->id, (int)ogs_time_sec(VALIDITY_MINIMUM));
+                ogs_warn("[%s] Forced to %lld seconds", subscription->id,
+                        (long long)ogs_time_sec(VALIDITY_MINIMUM));
             }
             subscription->t_validity = ogs_timer_add(amf_self()->timer_mgr,
                 amf_timer_subscription_validity, subscription);

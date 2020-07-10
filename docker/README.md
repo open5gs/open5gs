@@ -68,6 +68,7 @@ export DEBEMAIL='acetcom@gmail.com'
 
 * Version Change
   $ vi meson.build
+  $ ./misc/git-version-gen . > .tarball-version 2>/dev/null
 
 * Upload OpenBuildService
   $ dch -i
