@@ -8,6 +8,8 @@ title: Quickstart
 ### Install Open5GS with a Package Manager
 ---
 
+#### Ubuntu
+
 *Ubuntu* makes it easy to install Open5GS as shown below,
 
 ```bash
@@ -18,30 +20,20 @@ $ sudo apt update
 $ sudo apt install open5gs
 ```
 
-Other Linux distributions, such as *Debian*, are additionally available on [OBS](https://build.opensuse.org/project/show/home:acetcom:open5gs).
-```bash
-$ sudo apt update
-$ sudo apt install wget gnupg
-$ wget https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/Release.key
-$ sudo apt-key add Release.key
-```
+#### Debian
 
-If there is no MongoDB package like *Debian* 10(Buster), you'll need to install this first as shown below,
+The Open5GS packages for Debian are available on [OBS](https://build.opensuse.org/project/show/home:acetcom:open5gs). If you want to use the latest Debian version like *Debian* 10(Buster), you need to install MongoDB first.
+
 
 ```bash
 $ sudo apt update
 $ sudo apt install wget gnupg
-wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
+$ wget -qO - https://www.mongodb.org/static/pgp/server-4.2.asc | sudo apt-key add -
 $ echo "deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main" | sudo tee /etc/apt/sources.list.d/mongodb-org.list
-$ sudo apt update
-$ sudo apt -y install mongodb-org
-```
-
-On *Debian* 10(buster), you can install Open5GS as shown below,
-
-```bash
+$ wget -qO - https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/Release.key | sudo apt-key add -
 $ sudo sh -c "echo 'deb http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/ ./' > /etc/apt/sources.list.d/open5gs.list"
 $ sudo apt update
+$ sudo apt install mongodb-org
 $ sudo apt install open5gs
 ```
 
@@ -55,7 +47,10 @@ http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbia
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.04/
 http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.10/
+http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/
 ```
+
+#### openSUSE
 
 [Martin Hauke](https://build.opensuse.org/user/show/mnhauke) packaged Open5GS for *openSUSE* on [OBS](https://build.opensuse.org/package/show/home:mnhauke:open5gs/open5gs).
 
@@ -221,7 +216,7 @@ $ sudo iptables -t nat -A POSTROUTING -s 10.45.0.0/16 ! -o ogstun -j MASQUERADE
 
 How to remove Open5GS package:
 
-1. On *Ubuntu*:
+1. On *Ubuntu/Debian*:
 
     ```bash
     $ sudo apt purge open5gs

@@ -69,23 +69,6 @@ logger:
 #      - addr: 127.0.0.3
 #      - addr: ::1
 #
-#  o UPF (PFCP) selection can be based on three options. Round Robin is default.
-#      Round Robin (rr)
-#        OR
-#      UE's serving eNB/gNB TAC (tac)
-#        OR
-#      UE's APN (apn)
-#        OR
-#      UE's serving eNB/gNB_id (enb_id)
-#
-#    smf:
-#      pfcp:
-#        - addr: 127.0.0.3
-#        - upf_selection_mode: rr   < one of these
-#        - upf_selection_mode: tac
-#        - upf_selection_mode: apn
-#        - upf_selection_mode: enb_id
-#
 #  <GTP-C Server>
 #
 #  o GTP-C Server(127.0.0.3:2123, [fe80::3%@loopback_devname@]:2123)
@@ -260,7 +243,7 @@ nrf:
 #    pfcp:
 #      addr: 127.0.0.4
 #
-#  <UPF_SELECTION_MODE>
+#  <UPF_SELECTION_MODE - EPC only>
 #
 # o Round-Robin
 #  upf:
