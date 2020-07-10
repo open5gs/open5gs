@@ -14,7 +14,7 @@ $ meson test
 5/8 open5gs:epc / simple                    OK       7.69 s
 
 --- command ---
-08:06:23 /home/parallels/open5gs/build/tests/epc-simple/simple
+08:06:23 /home/parallels/open5gs/build/tests/epc/simple
 --- stdout ---
 s1setup-test        :  SUCCESS
 attach-test         :  SUCCESS
@@ -385,11 +385,11 @@ You can start MongoDB using systemctl.
 $ sudo systemctl start mongodb
 ```
 
-#### I have some error when running `./build/test/epc-simple/simple`
+#### I have some error when running `./build/test/epc/simple`
 
-Did you see the following error after executing `./build/test/epc-simple/simple`?
+Did you see the following error after executing `./build/test/epc/simple`?
 ```bash
-$ ./build/test/epc-simple/simple
+$ ./build/test/epc/simple
 s1setup_test        : SUCCESS  
 attach_test         : -Line 134: Condition is false, but expected true  
 \04/09 15:49:09.285: [esm] FATAL: esm_handle_pdn_connectivity_request: Assertion `SECURITY_CONTEXT_IS_VALID(mme_ue)' failed. (esm_handler.c:29)  
@@ -415,9 +415,9 @@ $ sudo pkill -9 simple
 $ sudo pkill -9 open5gs-mmed ...
 ```
 
-Execute `./build/test/epc-simple/simple`
+Execute `./build/test/epc/simple`
 ```bash
-$ ./build/test/epc-simple/simple
+$ ./build/test/epc/simple
 ```
 
 #### My eNB does not support IPv6.

@@ -16,7 +16,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 project('open5gs', 'c',
-    version : run_command('misc/git-version-gen', '@0@/.tarball-version'.format(meson.source_root()), check : true).stdout().strip(),
+#   Ubuntu 18.04 does not support.
+#
+#    version : run_command('misc/git-version-gen', '@0@/.tarball-version'.format(meson.source_root()), check : true).stdout().strip(),
+    version : '1.3.0',
     license : 'AGPL-3.0-or-later',
     meson_version : '>= 0.43.0',
     default_options : [
