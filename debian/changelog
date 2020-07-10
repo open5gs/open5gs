@@ -1,8 +1,26 @@
+open5gs (1.3.0~eoan1) eoan; urgency=medium
+
+  * Release-16
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 10 Jul 2020 17:33:18 -0400
+
+open5gs (1.3.0~focal1) focal; urgency=medium
+
+  * Release-16
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 10 Jul 2020 17:32:17 -0400
+
+open5gs (1.3.0~bionic1) bionic; urgency=medium
+
+  * Release-16
+
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 10 Jul 2020 17:30:57 -0400
+
 open5gs (1.3.0) unstable; urgency=medium
 
   * Release-16
 
- -- Sukchan Lee <acetcom@gmail.com>  Sun, 21 Jun 2020 23:14:04 -0400
+ -- Sukchan Lee <acetcom@gmail.com>  Fri, 10 Jul 2020 17:29:33 -0400
 
 open5gs (1.2.4~eoan) eoan; urgency=medium
 

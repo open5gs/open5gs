@@ -40,14 +40,27 @@ $ sudo apt install open5gs
 Other distributions can be installed by changing the path.
 
 ```
-http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/
-http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_Testing/
-http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_Unstable/
-http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_10/
-http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/
-http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.04/
-http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.10/
-http://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_10/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_Testing/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Debian_Unstable/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/Raspbian_10/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_18.04/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.04/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_19.10/
+https://download.opensuse.org/repositories/home:/acetcom:/open5gs:/latest/xUbuntu_20.04/
+```
+
+Nightly package build are provided by [Osmocom](https://osmocom.org) on [OBS](https://build.opensuse.org/package/show/network:osmocom:nightly/open5gs).
+
+```
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_10/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_Testing/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/Debian_Unstable/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/Raspbian_10/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_18.04/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_18.10/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_19.04/
+https://download.opensuse.org/repositories/network:/osmocom:/nightly/xUbuntu_19.10/
 ```
 
 #### openSUSE
