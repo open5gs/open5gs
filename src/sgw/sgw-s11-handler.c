@@ -162,7 +162,8 @@ void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
             ogs_config()->parameter.prefer_ipv4);
         ogs_assert(pgw);
 
-        rv = ogs_gtp_connect(sgw_self()->gtpc_sock, sgw_self()->gtpc_sock6, pgw);
+        rv = ogs_gtp_connect(
+                sgw_self()->gtpc_sock, sgw_self()->gtpc_sock6, pgw);
         ogs_assert(rv == OGS_OK);
     }
     /* Setup GTP Node */
@@ -187,7 +188,8 @@ void sgw_s11_handle_create_session_request(ogs_gtp_xact_t *s11_xact,
     ogs_assert(req->user_location_information.len == decoded);
     memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
     bearer->tai.tac = uli.tai.tac;
-    memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
+    memcpy(&bearer->e_cgi.plmn_id,
+            &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
     bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
 
     message->h.type = OGS_GTP_CREATE_SESSION_REQUEST_TYPE;
@@ -293,7 +295,8 @@ void sgw_s11_handle_modify_bearer_request(ogs_gtp_xact_t *s11_xact,
             ogs_config()->parameter.prefer_ipv4);
         ogs_assert(enb);
 
-        rv = ogs_gtp_connect(sgw_self()->gtpu_sock, sgw_self()->gtpu_sock6, enb);
+        rv = ogs_gtp_connect(
+                sgw_self()->gtpu_sock, sgw_self()->gtpu_sock6, enb);
         ogs_assert(rv == OGS_OK);
     }
 
@@ -557,7 +560,8 @@ void sgw_s11_handle_create_bearer_response(ogs_gtp_xact_t *s11_xact,
             ogs_config()->parameter.prefer_ipv4);
         ogs_assert(enb);
 
-        rv = ogs_gtp_connect(sgw_self()->gtpu_sock, sgw_self()->gtpu_sock6, enb);
+        rv = ogs_gtp_connect(
+                sgw_self()->gtpu_sock, sgw_self()->gtpu_sock6, enb);
         ogs_assert(rv == OGS_OK);
     }
     /* Setup GTP Node */

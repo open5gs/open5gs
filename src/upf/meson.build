@@ -85,6 +85,6 @@ executable('open5gs-upfd',
     sources : upf_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/upf.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
-    dependencies : libupf_dep,
+    dependencies : [versiondep, libupf_dep],
     install_rpath : libdir,
     install : true)

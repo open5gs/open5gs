@@ -297,7 +297,8 @@ void pgw_s5c_handle_create_bearer_response(
             ogs_config()->parameter.prefer_ipv4);
         ogs_assert(sgw);
 
-        rv = ogs_gtp_connect(pgw_self()->gtpu_sock, pgw_self()->gtpu_sock6, sgw);
+        rv = ogs_gtp_connect(
+                pgw_self()->gtpu_sock, pgw_self()->gtpu_sock6, sgw);
         ogs_assert(rv == OGS_OK);
     }
     /* Setup GTP Node */

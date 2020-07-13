@@ -103,6 +103,6 @@ executable('open5gs-mmed',
     sources : mme_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/mme.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
-    dependencies : libmme_dep,
+    dependencies : [versiondep, libmme_dep],
     install_rpath : libdir,
     install : true)

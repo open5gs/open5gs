@@ -56,7 +56,7 @@ executable('epc',
     sources : [testepc_sources],
     c_args : libtestepc_cc_args,
     include_directories : srcinc,
-    dependencies : [libtestepc_dep])
+    dependencies : [versiondep, libtestepc_dep])
 
 libtest5gc_cc_args = '-DDEFAULT_CONFIG_FILENAME="@0@/configs/5gc.yaml"'.format(meson.build_root())
 
@@ -85,4 +85,4 @@ executable('5gc',
     sources : [test5gc_sources],
     c_args : libtest5gc_cc_args,
     include_directories : srcinc,
-    dependencies : [libtest5gc_dep])
+    dependencies : [versiondep, libtest5gc_dep])

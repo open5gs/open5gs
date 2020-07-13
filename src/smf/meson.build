@@ -123,6 +123,6 @@ executable('open5gs-smfd',
     sources : smf_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/smf.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
-    dependencies : libsmf_dep,
+    dependencies : [versiondep, libsmf_dep],
     install_rpath : libdir,
     install : true)

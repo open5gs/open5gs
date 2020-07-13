@@ -15,18 +15,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-srcinc = include_directories('.')
-
-subdir('mme')
-subdir('hss')
-subdir('sgw')
-subdir('pgw')
-subdir('pcrf')
-
-subdir('nrf')
-subdir('udr')
-subdir('udm')
-subdir('ausf')
-subdir('upf')
-subdir('smf')
-subdir('amf')
+option('version-tag', type : 'string',
+       description : 'override the git version string')

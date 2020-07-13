@@ -16,9 +16,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 project('open5gs', 'c',
-#   Ubuntu 18.04 does not support.
-#
-#    version : run_command('misc/git-version-gen', '@0@/.tarball-version'.format(meson.source_root()), check : true).stdout().strip(),
     version : '1.3.0',
     license : 'AGPL-3.0-or-later',
     meson_version : '>= 0.43.0',
@@ -110,6 +107,18 @@ endif
 add_project_arguments(
     cc.get_supported_arguments(possible_cc_flags),
     language : 'c')
+
+vcs_tagger = [meson.source_root() + '/misc/meson-vcs-tag.sh',
+              meson.source_root(),
+              get_option('version-tag'),
+              meson.project_version()]
+
+version_h = vcs_tag(
+        input : 'src/version.h.in',
+        output : 'version.h',
+        command: vcs_tagger)
+
+versiondep = declare_dependency(sources: version_h)
 
 subdir('configs')
 subdir('lib')

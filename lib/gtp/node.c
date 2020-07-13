@@ -97,8 +97,7 @@ ogs_gtp_node_t *ogs_gtp_node_add_by_f_teid(
     return node;
 }
 
-ogs_gtp_node_t *ogs_gtp_node_add_by_addr(
-        ogs_list_t *list, ogs_sockaddr_t *addr)
+ogs_gtp_node_t *ogs_gtp_node_add_by_addr(ogs_list_t *list, ogs_sockaddr_t *addr)
 {
     ogs_gtp_node_t *gnode = NULL;
     ogs_sockaddr_t *new = NULL;

@@ -85,8 +85,7 @@ static void _gtpv2_c_recv_cb(short when, ogs_socket_t fd, void *data)
         e = sgw_event_new(SGW_EVT_S11_MESSAGE);
         gnode = ogs_gtp_node_find_by_addr(&sgw_self()->mme_s11_list, &from);
         if (!gnode) {
-            gnode = ogs_gtp_node_add_by_addr(
-                    &sgw_self()->mme_s11_list, &from);
+            gnode = ogs_gtp_node_add_by_addr(&sgw_self()->mme_s11_list, &from);
             ogs_assert(gnode);
             gnode->sock = data;
         }
