@@ -108,18 +108,6 @@ add_project_arguments(
     cc.get_supported_arguments(possible_cc_flags),
     language : 'c')
 
-vcs_tagger = [meson.source_root() + '/misc/meson-vcs-tag.sh',
-              meson.source_root(),
-              get_option('version-tag'),
-              meson.project_version()]
-
-version_h = vcs_tag(
-        input : 'src/version.h.in',
-        output : 'version.h',
-        command: vcs_tagger)
-
-versiondep = declare_dependency(sources: version_h)
-
 subdir('configs')
 subdir('lib')
 subdir('src')

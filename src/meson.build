@@ -17,6 +17,21 @@
 
 srcinc = include_directories('.')
 
+#version_conf = configuration_data()
+#version_conf.set_quoted('OPEN5GS_VERSION', meson.project_version())
+#configure_file(output : 'version.h', configuration : version_conf)
+
+version_data = configuration_data()
+version_data.set_quoted('OPEN5GS_VERSION', '@VCS_TAG@')
+
+version_h = vcs_tag(
+    input : configure_file(
+        output : 'version.h.in',
+        configuration : version_data),
+    output : 'version.h')
+
+versiondep = declare_dependency(sources: version_h)
+
 subdir('mme')
 subdir('hss')
 subdir('sgw')
