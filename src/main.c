@@ -24,7 +24,7 @@
 #include "ogs-app.h"
 #include "version.h"
 
-static const char *version = "Open5GS daemon v" OPEN5GS_VERSION;
+static const char *version = "Open5GS daemon " OPEN5GS_VERSION;
 
 static void show_version(void)
 {

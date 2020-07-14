@@ -50,6 +50,6 @@ executable('open5gs-sgwd',
     sources : sgw_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/sgw.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
-    dependencies : [versiondep, libsgw_dep],
+    dependencies : libsgw_dep,
     install_rpath : libdir,
     install : true)

@@ -17,20 +17,17 @@
 
 srcinc = include_directories('.')
 
-#version_conf = configuration_data()
-#version_conf.set_quoted('OPEN5GS_VERSION', meson.project_version())
-#configure_file(output : 'version.h', configuration : version_conf)
+package_version = 'v' + meson.project_version()
+if git.found()
+    git_version = run_command('git', ['describe', '--abbrev=7', '--dirty=+'])
+    if git_version.returncode() == 0
+        package_version = git_version.stdout().strip()
+    endif
+endif
 
-version_data = configuration_data()
-version_data.set_quoted('OPEN5GS_VERSION', '@VCS_TAG@')
-
-version_h = vcs_tag(
-    input : configure_file(
-        output : 'version.h.in',
-        configuration : version_data),
-    output : 'version.h')
-
-versiondep = declare_dependency(sources: version_h)
+version_conf = configuration_data()
+version_conf.set_quoted('OPEN5GS_VERSION', package_version)
+configure_file(output : 'version.h', configuration : version_conf)
 
 subdir('mme')
 subdir('hss')

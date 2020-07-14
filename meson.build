@@ -35,6 +35,7 @@ localstatedir = join_paths(prefix, get_option('localstatedir'))
 cc = meson.get_compiler('c')
 host_system = host_machine.system()
 
+git = find_program('git', required: false)
 #python = import('python')
 #python3 = python.find_installation('python3')
 python3 = find_program('python3', 'python')

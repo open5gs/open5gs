@@ -80,6 +80,6 @@ executable('open5gs-pgwd',
     sources : pgw_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/pgw.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
-    dependencies : [versiondep, libpgw_dep],
+    dependencies : libpgw_dep,
     install_rpath : libdir,
     install : true)

@@ -54,6 +54,6 @@ executable('open5gs-udrd',
     sources : udr_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/udr.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
-    dependencies : [versiondep, libudr_dep],
+    dependencies : libudr_dep,
     install_rpath : libdir,
     install : true)

@@ -50,6 +50,6 @@ executable('open5gs-pcrfd',
     sources : pcrf_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/pcrf.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
-    dependencies : [versiondep, libpcrf_dep],
+    dependencies : libpcrf_dep,
     install_rpath : libdir,
     install : true)
