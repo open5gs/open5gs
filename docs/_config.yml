@@ -52,7 +52,7 @@ minima_reboot:
   date_format: "%Y-%m-%d %H:%M"
 
 footer_icons:
-  - username: open5gs
+  - username: acetcom
     url: https://open5gs.org
     icon: icon-github.svg
 

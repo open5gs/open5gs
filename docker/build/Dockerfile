@@ -8,7 +8,7 @@ MAINTAINER Sukchan Lee <acetcom@gmail.com>
 WORKDIR /root
 COPY setup.sh /root
 
-ARG USER=open5gs
+ARG USER=acetcom
 ARG REPO=open5gs
 ARG BRANCH=master
 RUN	git clone https://github.com/$USER/$REPO
