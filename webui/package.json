@@ -16,7 +16,7 @@
     "express-restify-mongoose": "^4.3.0",
     "express-session": "^1.15.2",
     "immutable": "^3.8.1",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.19",
     "lusca": "^1.6.0",
     "method-override": "^2.3.9",
     "mongoose": "^4.13.14",
