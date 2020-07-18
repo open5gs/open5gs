@@ -149,6 +149,7 @@ typedef struct ogs_pfcp_far_s {
     /* Related Context */
     ogs_pfcp_sess_t         *sess;
     void                    *gnode;
+    ogs_pfcp_pdr_t          *pdr;
 } ogs_pfcp_far_t;
 
 typedef struct ogs_pfcp_urr_s {
@@ -156,6 +157,7 @@ typedef struct ogs_pfcp_urr_s {
 
     ogs_pfcp_urr_id_t       id;
 
+    ogs_pfcp_pdr_t          *pdr;
     ogs_pfcp_sess_t         *sess;
 } ogs_pfcp_urr_t;
 
@@ -168,6 +170,9 @@ typedef struct ogs_pfcp_qer_s {
     ogs_pfcp_bitrate_t      mbr;
     ogs_pfcp_bitrate_t      gbr;
 
+    uint8_t                 qfi;
+
+    ogs_pfcp_pdr_t          *pdr;
     ogs_pfcp_sess_t         *sess;
 } ogs_pfcp_qer_t;
 

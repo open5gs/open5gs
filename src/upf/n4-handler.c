@@ -471,6 +471,9 @@ static ogs_pfcp_qer_t *handle_create_qer(ogs_pfcp_sess_t *sess,
     if (message->guaranteed_bitrate.presence)
         ogs_pfcp_parse_bitrate(&qer->gbr, &message->guaranteed_bitrate);
 
+    if (message->qos_flow_identifier.presence)
+        qer->qfi = message->qos_flow_identifier.u8;
+
     return qer;
 }
 

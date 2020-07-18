@@ -304,6 +304,11 @@ static void build_create_qer(
                 &message->guaranteed_bitrate,
                 &qer->gbr, create_qer_buf[i].gbr, OGS_PFCP_BITRATE_LEN);
     }
+
+    if (qer->qfi) {
+        message->qos_flow_identifier.presence = 1;
+        message->qos_flow_identifier.u8 = qer->qfi;
+    }
 }
 
 static void build_update_qer(

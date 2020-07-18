@@ -911,6 +911,7 @@ void ogs_pfcp_pdr_associate_far(ogs_pfcp_pdr_t *pdr, ogs_pfcp_far_t *far)
     ogs_assert(far);
     
     pdr->far = far;
+    far->pdr = pdr;
 }
 void ogs_pfcp_pdr_associate_urr(ogs_pfcp_pdr_t *pdr, ogs_pfcp_urr_t *urr)
 {
@@ -918,6 +919,7 @@ void ogs_pfcp_pdr_associate_urr(ogs_pfcp_pdr_t *pdr, ogs_pfcp_urr_t *urr)
     ogs_assert(urr);
 
     pdr->urr = urr;
+    urr->pdr = pdr;
 }
 void ogs_pfcp_pdr_associate_qer(ogs_pfcp_pdr_t *pdr, ogs_pfcp_qer_t *qer)
 {
@@ -925,6 +927,7 @@ void ogs_pfcp_pdr_associate_qer(ogs_pfcp_pdr_t *pdr, ogs_pfcp_qer_t *qer)
     ogs_assert(qer);
 
     pdr->qer = qer;
+    qer->pdr = pdr;
 }
 
 void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)

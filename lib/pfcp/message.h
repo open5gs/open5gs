@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-04-22 22:57:07.579730 by acetcom
+ * Created on: 2020-07-17 20:36:05.504399 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -569,8 +569,8 @@ typedef ogs_tlv_octet_t ogs_pfcp_tlv_multiplier_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_aggregated_urr_id_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_subsequent_volume_quota_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_subsequent_time_quota_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_rqi_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_qfi_t;
+typedef ogs_tlv_uint8_t ogs_pfcp_tlv_rqi_t;
+typedef ogs_tlv_uint8_t ogs_pfcp_tlv_qfi_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_query_urr_reference_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_additional_usage_reports_information_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_update_traffic_endpoint_t;
@@ -598,8 +598,8 @@ typedef ogs_tlv_octet_t ogs_pfcp_tlv_framed_route_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_framed_routing_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_framed_ipv6_route_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_event_time_stamp_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_averaging_window_t;
-typedef ogs_tlv_octet_t ogs_pfcp_tlv_paging_policy_indicator_t;
+typedef ogs_tlv_uint32_t ogs_pfcp_tlv_averaging_window_t;
+typedef ogs_tlv_uint8_t ogs_pfcp_tlv_paging_policy_indicator_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_apn_dnn_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv__interface_type_t;
 typedef ogs_tlv_octet_t ogs_pfcp_tlv_pfcpsrreq_flags_t;

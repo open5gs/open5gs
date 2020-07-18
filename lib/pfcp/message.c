@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-04-22 22:57:07.588861 by acetcom
+ * Created on: 2020-07-17 20:36:05.513686 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -996,10 +996,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_subsequent_time_quota =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_rqi =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "RQI",
     OGS_PFCP_RQI_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_rqi_t),
     { NULL }
@@ -1007,10 +1007,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_rqi =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_qfi =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "QFI",
     OGS_PFCP_QFI_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_qfi_t),
     { NULL }
@@ -1315,10 +1315,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_event_time_stamp =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_averaging_window =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT32,
     "Averaging Window",
     OGS_PFCP_AVERAGING_WINDOW_TYPE,
-    0,
+    4,
     0,
     sizeof(ogs_pfcp_tlv_averaging_window_t),
     { NULL }
@@ -1326,10 +1326,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_averaging_window =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_paging_policy_indicator =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "Paging Policy Indicator",
     OGS_PFCP_PAGING_POLICY_INDICATOR_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_paging_policy_indicator_t),
     { NULL }

@@ -18,10 +18,20 @@
  */
 
 #include "nudm-handler.h"
+#include "pfcp-path.h"
 
 bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
 {
+    char buf1[OGS_ADDRSTRLEN];
+    char buf2[OGS_ADDRSTRLEN];
+
     smf_ue_t *smf_ue = NULL;
+    ogs_pfcp_subnet_t *subnet6 = NULL;
+
+    smf_bearer_t *bearer = NULL;
+    ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_qer_t *qer = NULL;
+
     ogs_sbi_server_t *server = NULL;
     ogs_sbi_session_t *session = NULL;
 
@@ -235,6 +245,86 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
     ogs_sbi_server_send_response(session, response);
 
     ogs_free(sendmsg.http.location);
+
+    sess->pdn.paa.pdn_type = sess->pdn.pdn_type;
+    ogs_assert(sess->pdn.pdn_type);
+
+    if (sess->ipv4) {
+        ogs_hash_set(smf_self()->ipv4_hash,
+                sess->ipv4->addr, OGS_IPV4_LEN, NULL);
+        ogs_pfcp_ue_ip_free(sess->ipv4);
+    }
+    if (sess->ipv6) {
+        ogs_hash_set(smf_self()->ipv6_hash,
+                sess->ipv6->addr, OGS_IPV6_LEN, NULL);
+        ogs_pfcp_ue_ip_free(sess->ipv6);
+    }
+
+    if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
+        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
+                AF_INET, sess->pdn.apn, (uint8_t *)&sess->pdn.ue_ip.addr);
+        ogs_assert(sess->ipv4);
+        sess->pdn.paa.addr = sess->ipv4->addr[0];
+        ogs_hash_set(smf_self()->ipv4_hash,
+                sess->ipv4->addr, OGS_IPV4_LEN, sess);
+    } else if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
+        sess->ipv6 = ogs_pfcp_ue_ip_alloc(
+                AF_INET6, sess->pdn.apn, sess->pdn.ue_ip.addr6);
+        ogs_assert(sess->ipv6);
+
+        subnet6 = sess->ipv6->subnet;
+        ogs_assert(subnet6);
+
+        sess->pdn.paa.len = subnet6->prefixlen;
+        memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
+        ogs_hash_set(smf_self()->ipv6_hash,
+                sess->ipv6->addr, OGS_IPV6_LEN, sess);
+    } else if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
+        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
+                AF_INET, sess->pdn.apn, (uint8_t *)&sess->pdn.ue_ip.addr);
+        ogs_assert(sess->ipv4);
+        sess->ipv6 = ogs_pfcp_ue_ip_alloc(
+                AF_INET6, sess->pdn.apn, sess->pdn.ue_ip.addr6);
+        ogs_assert(sess->ipv6);
+
+        subnet6 = sess->ipv6->subnet;
+        ogs_assert(subnet6);
+
+        sess->pdn.paa.both.addr = sess->ipv4->addr[0];
+        sess->pdn.paa.both.len = subnet6->prefixlen;
+        memcpy(sess->pdn.paa.both.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
+        ogs_hash_set(smf_self()->ipv4_hash,
+                sess->ipv4->addr, OGS_IPV4_LEN, sess);
+        ogs_hash_set(smf_self()->ipv6_hash,
+                sess->ipv6->addr, OGS_IPV6_LEN, sess);
+    } else
+        ogs_assert_if_reached();
+
+    ogs_info("UE SUPI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
+	    smf_ue->supi, sess->pdn.apn,
+        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+
+    bearer = smf_default_bearer_in_sess(sess);
+    ogs_assert(bearer);
+
+    /* Only 1 QER is used per bearer */
+    qer = ogs_list_first(&bearer->pfcp.qer_list);
+    if (!qer) {
+        qer = ogs_pfcp_qer_add(&bearer->pfcp);
+        ogs_assert(qer);
+        qer->id = OGS_NEXT_ID(sess->qer_id, 1, OGS_MAX_NUM_OF_QER+1);
+    }
+
+    qer->mbr.uplink = sess->pdn.ambr.uplink;
+    qer->mbr.downlink = sess->pdn.ambr.downlink;
+
+    qer->qfi = bearer->qfi;
+
+    ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)
+        ogs_pfcp_pdr_associate_qer(pdr, qer);
+
+    smf_5gc_pfcp_send_session_establishment_request(sess);
 
     return true;
 }

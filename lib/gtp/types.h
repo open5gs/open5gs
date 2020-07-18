@@ -28,10 +28,28 @@
 extern "C" {
 #endif
 
-#define OGS_GTPV1U_EXTENSION_HEADER_LEN 4
-
 #define OGS_GTP_MAX_INDIRECT_TUNNEL 8
 
+#define OGS_GTPV1U_5GC_HEADER_LEN 16
+/*
+ * 5GC GTP Header (16byte)
+ *  o Flags(1byte) : 0x34
+ *  o Message Type(1byte) : T-PDU (0xff)
+ *  o Length(2byte) : 36
+ *  o TEID(4byte) : 0x00000001
+ *  o Next extension header type(4byte)
+ *    - Sequence Number(2byte) : 0x0000
+ *    - N PDU Number(1byte) : 0x00
+ *    - PDU Session container(1byte) : (0x85)
+ *  o Extension header(4byte)
+ *    - Extension HEader Length(1byte) : 1
+ *    - PDU Session Container(2byte)
+ *      ; PDU Type : UL PDU SESSION INFORMATION (1)
+ *      ; QoS Flow Identifier (QFI) : 1
+ *    - Next extension header type : No more extension headers (0x00)
+ */
+
+#define OGS_GTPV1U_EXTENSION_HEADER_LEN 4
 typedef struct ogs_gtp_extension_header_s {
 #define OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER 0x85
 #define OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS 0x0
@@ -39,10 +57,12 @@ typedef struct ogs_gtp_extension_header_s {
     uint8_t n_pdu_number;
     uint8_t type;
     uint8_t len;
+#define OGS_GTP_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION 0
 #define OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION 1
     ED2(uint8_t pdu_type:4;,
         uint8_t spare1:4;);
-    ED2(uint8_t spare2:2;,
+    ED3(uint8_t paging_policy_presence:1;,
+        uint8_t reflective_qos_indicator:1;,
         uint8_t qos_flow_identifier:6;);
     uint8_t next_type;
 } __attribute__ ((packed)) ogs_gtp_extension_header_t;

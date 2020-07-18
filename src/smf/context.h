@@ -154,11 +154,13 @@ typedef struct smf_sess_s {
 
     char            *gx_sid;        /* Gx Session ID */
 
-    ogs_pfcp_pdr_id_t   pdr_id;     /* ID Generator(1~MAX_NUM_OF_PDR) */
-    ogs_pfcp_far_id_t   far_id;     /* ID Generator(1~MAX_NUM_OF_FAR) */
-    ogs_pfcp_urr_id_t   urr_id;     /* ID Generator(1~MAX_NUM_OF_URR) */
-    ogs_pfcp_qer_id_t   qer_id;     /* ID Generator(1~MAX_NUM_OF_URR) */
-    ogs_pfcp_bar_id_t   bar_id;     /* ID Generator(1~MAX_NUM_OF_BAR) */
+    ogs_pfcp_pdr_id_t   pdr_id;     /* ID Generator(1~OGS_MAX_NUM_OF_PDR) */
+    ogs_pfcp_far_id_t   far_id;     /* ID Generator(1~OGS_MAX_NUM_OF_FAR) */
+    ogs_pfcp_urr_id_t   urr_id;     /* ID Generator(1~OGS_MAX_NUM_OF_URR) */
+    ogs_pfcp_qer_id_t   qer_id;     /* ID Generator(1~OGS_MAX_NUM_OF_URR) */
+    ogs_pfcp_bar_id_t   bar_id;     /* ID Generator(1~OGS_MAX_NUM_OF_BAR) */
+
+    uint8_t qos_flow_identifier;    /* ID Generator(1~OGS_MAX_QOS_FLOW_ID) */
 
     /* IMSI */
     uint8_t         imsi[OGS_MAX_IMSI_LEN];
@@ -245,7 +247,9 @@ typedef struct smf_bearer_s {
 
     ogs_pfcp_sess_t pfcp;           /* PFCP session context */
 
-    uint8_t         ebi;
+    uint8_t         qfi;            /* 5GC */
+    uint8_t         ebi;            /* EPC */
+
     /* 
      * UPF-S5U-TEID     = INDEX         | TEID_RANGE 
      * INDEX            = UPF-S5U-TEID  & ~TEID_RANGE
@@ -309,7 +313,6 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
 
 smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message);
 smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi);
-void smf_sess_set_ue_ip(smf_sess_t *sess);
 
 void smf_sess_remove(smf_sess_t *sess);
 void smf_sess_remove_all(smf_ue_t *smf_ue);

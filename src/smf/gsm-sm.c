@@ -122,12 +122,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_sbi_server_send_error(session,
                             OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                             sbi_message, "HTTP response error", smf_ue->supi);
-                    break;
                 }
-
-                smf_sess_set_ue_ip(sess);
-
-                smf_5gc_pfcp_send_session_establishment_request(sess);
                 break;
 
             DEFAULT

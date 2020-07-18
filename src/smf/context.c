@@ -753,7 +753,7 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
     bearer = smf_bearer_add(sess);
     ogs_assert(bearer);
 
-    bearer->ebi = ebi;
+    bearer->ebi = ebi; /* EPC only */
 
     /* Default PDRs is set to lowest precedence(highest precedence value). */
     ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)
@@ -864,62 +864,6 @@ smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message)
     return sess;
 }
 
-void smf_sess_set_ue_ip(smf_sess_t *sess)
-{
-    char buf1[OGS_ADDRSTRLEN];
-    char buf2[OGS_ADDRSTRLEN];
-    ogs_pfcp_subnet_t *subnet6 = NULL;
-    smf_ue_t *smf_ue = NULL;
-
-    ogs_assert(sess);
-    smf_ue = sess->smf_ue;
-    ogs_assert(smf_ue);
-
-    sess->pdn.paa.pdn_type = sess->pdn.pdn_type;
-    ogs_assert(sess->pdn.pdn_type);
-
-    if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
-                AF_INET, sess->pdn.apn, (uint8_t *)&sess->pdn.ue_ip.addr);
-        ogs_assert(sess->ipv4);
-        sess->pdn.paa.addr = sess->ipv4->addr[0];
-        ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, sess);
-    } else if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        sess->ipv6 = ogs_pfcp_ue_ip_alloc(
-                AF_INET6, sess->pdn.apn, sess->pdn.ue_ip.addr6);
-        ogs_assert(sess->ipv6);
-
-        subnet6 = sess->ipv6->subnet;
-        ogs_assert(subnet6);
-
-        sess->pdn.paa.len = subnet6->prefixlen;
-        memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
-        ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, sess);
-    } else if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
-                AF_INET, sess->pdn.apn, (uint8_t *)&sess->pdn.ue_ip.addr);
-        ogs_assert(sess->ipv4);
-        sess->ipv6 = ogs_pfcp_ue_ip_alloc(
-                AF_INET6, sess->pdn.apn, sess->pdn.ue_ip.addr6);
-        ogs_assert(sess->ipv6);
-
-        subnet6 = sess->ipv6->subnet;
-        ogs_assert(subnet6);
-
-        sess->pdn.paa.both.addr = sess->ipv4->addr[0];
-        sess->pdn.paa.both.len = subnet6->prefixlen;
-        memcpy(sess->pdn.paa.both.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
-        ogs_hash_set(self.ipv4_hash, sess->ipv4->addr, OGS_IPV4_LEN, sess);
-        ogs_hash_set(self.ipv6_hash, sess->ipv6->addr, OGS_IPV6_LEN, sess);
-    } else
-        ogs_assert_if_reached();
-
-    ogs_info("UE SUPI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
-	    smf_ue->supi, sess->pdn.apn,
-        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
-}
-
 smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
 {
     ogs_debug("smf_sess_add_by_psi");
@@ -979,6 +923,10 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
 
     bearer = smf_bearer_add(sess);
     ogs_assert(bearer);
+
+    /* QFI is only used in 5GC */
+    bearer->qfi = OGS_NEXT_ID(
+            sess->qos_flow_identifier, 1, OGS_MAX_QOS_FLOW_ID+1);
 
     /* Default PDRs is set to lowest precedence(highest precedence value). */
     ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)

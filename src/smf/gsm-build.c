@@ -25,6 +25,7 @@
 ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 {
     ogs_pkbuf_t *pkbuf = NULL;
+    smf_bearer_t *bearer = NULL;
 
     ogs_nas_5gs_message_t message;
     ogs_nas_5gs_pdu_session_establishment_accept_t *
@@ -72,6 +73,10 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     dnn = &pdu_session_establishment_accept->dnn;
     ogs_assert(dnn);
 
+    ogs_assert(sess);
+    bearer = smf_default_bearer_in_sess(sess);
+    ogs_assert(bearer);
+
     memset(&message, 0, sizeof(message));
     message.gsm.h.extended_protocol_discriminator =
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GSM;
@@ -96,7 +101,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     qos_rule[0].pf[0].component[0].type = OGS_PACKET_FILTER_MATCH_ALL;
     qos_rule[0].precedence = 255; /* lowest precedence */
     qos_rule[0].flow.segregation = 0;
-    qos_rule[0].flow.identifier = 1;
+    qos_rule[0].flow.identifier = bearer->qfi;
 
     ogs_nas_build_qos_rules(authorized_qos_rules, qos_rule, 1);
 
@@ -149,7 +154,7 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
 
     /* QoS flow descriptions */
     memset(&qos_flow_description, 0, sizeof(qos_flow_description));
-    qos_flow_description.identifier = 1;
+    qos_flow_description.identifier = bearer->qfi;
     qos_flow_description.code = OGS_NAS_CREATE_NEW_QOS_FLOW_DESCRIPTION;
     qos_flow_description.E = 1;
     qos_flow_description.num_of_parameter = 1;

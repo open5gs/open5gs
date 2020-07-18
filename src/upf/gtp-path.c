@@ -55,8 +55,8 @@ static void _gtpv1_tun_recv_cb(short when, ogs_socket_t fd, void *data)
     ogs_pfcp_pdr_t *pdr = NULL;
 
     recvbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
-    ogs_pkbuf_reserve(recvbuf, OGS_GTPV1U_HEADER_LEN);
-    ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN-OGS_GTPV1U_HEADER_LEN);
+    ogs_pkbuf_reserve(recvbuf, OGS_GTPV1U_5GC_HEADER_LEN);
+    ogs_pkbuf_put(recvbuf, OGS_MAX_SDU_LEN-OGS_GTPV1U_5GC_HEADER_LEN);
 
     n = ogs_read(fd, recvbuf->data, recvbuf->len);
     if (n <= 0) {
@@ -347,7 +347,11 @@ static void upf_gtp_send_to_gnb(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf)
     char buf[OGS_ADDRSTRLEN];
     int rv;
     ogs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp_extension_header_t *ext_h = NULL;
     ogs_gtp_node_t *gnode = NULL;
+
+    ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_qer_t *qer = NULL;
 
     ogs_assert(far);
 
@@ -361,19 +365,48 @@ static void upf_gtp_send_to_gnb(ogs_pfcp_far_t *far, ogs_pkbuf_t *sendbuf)
     ogs_assert(gnode->sock);
     ogs_assert(sendbuf);
 
+    pdr = far->pdr;
+    ogs_assert(pdr);
+    qer = pdr->qer;
+
     /* Add GTP-U header */
-    ogs_assert(ogs_pkbuf_push(sendbuf, OGS_GTPV1U_HEADER_LEN));
-    gtp_h = (ogs_gtp_header_t *)sendbuf->data;
-    /* Bits    8  7  6  5  4  3  2  1
-     *        +--+--+--+--+--+--+--+--+
-     *        |version |PT| 1| E| S|PN|
-     *        +--+--+--+--+--+--+--+--+
-     *         0  0  1   1  0  0  0  0
-     */
-    gtp_h->flags = 0x30;
-    gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
-    gtp_h->length = htobe16(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
-    gtp_h->teid = htobe32(far->outer_header_creation.teid);
+    if (qer && qer->qfi) {
+        ogs_assert(ogs_pkbuf_push(sendbuf, OGS_GTPV1U_5GC_HEADER_LEN));
+        gtp_h = (ogs_gtp_header_t *)sendbuf->data;
+        /* Bits    8  7  6  5  4  3  2  1
+         *        +--+--+--+--+--+--+--+--+
+         *        |version |PT| 1| E| S|PN|
+         *        +--+--+--+--+--+--+--+--+
+         *         0  0  1   1  0  1  0  0
+         */
+        gtp_h->flags = 0x34;
+        gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
+        gtp_h->length = htobe16(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
+        gtp_h->teid = htobe32(far->outer_header_creation.teid);
+
+        ext_h = (ogs_gtp_extension_header_t *)(
+                sendbuf->data + OGS_GTPV1U_HEADER_LEN);
+        ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
+        ext_h->len = 1;
+        ext_h->pdu_type =
+            OGS_GTP_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
+        ext_h->qos_flow_identifier = qer->qfi;
+        ext_h->next_type =
+            OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+    } else {
+        ogs_assert(ogs_pkbuf_push(sendbuf, OGS_GTPV1U_HEADER_LEN));
+        gtp_h = (ogs_gtp_header_t *)sendbuf->data;
+        /* Bits    8  7  6  5  4  3  2  1
+         *        +--+--+--+--+--+--+--+--+
+         *        |version |PT| 1| E| S|PN|
+         *        +--+--+--+--+--+--+--+--+
+         *         0  0  1   1  0  0  0  0
+         */
+        gtp_h->flags = 0x30;
+        gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
+        gtp_h->length = htobe16(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
+        gtp_h->teid = htobe32(far->outer_header_creation.teid);
+    }
 
     /* Send to gNB */
     ogs_debug("SEND GPU-U to gNB[%s] : TEID[0x%x]",
@@ -524,8 +557,8 @@ static int upf_gtp_send_router_advertisement(
     dev = subnet->dev;
     ogs_assert(dev);
 
-    pkbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_HEADER_LEN+200);
-    ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_HEADER_LEN);
+    pkbuf = ogs_pkbuf_alloc(NULL, OGS_GTPV1U_5GC_HEADER_LEN+200);
+    ogs_pkbuf_reserve(pkbuf, OGS_GTPV1U_5GC_HEADER_LEN);
     ogs_pkbuf_put(pkbuf, 200);
     pkbuf->len = sizeof *ip6_h + sizeof *advert_h + sizeof *prefix;
     memset(pkbuf->data, 0, pkbuf->len);

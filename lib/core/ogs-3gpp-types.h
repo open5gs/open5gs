@@ -81,6 +81,8 @@ extern "C" {
 #define OGS_ACCESS_TYPE_NON_3GPP 2
 #define OGS_ACCESS_TYPE_BOTH_3GPP_AND_NON_3GPP 3
 
+#define OGS_MAX_QOS_FLOW_ID             63
+
 /************************************
  * PLMN_ID Structure                */
 #define OGS_MAX_NUM_OF_PLMN         6
