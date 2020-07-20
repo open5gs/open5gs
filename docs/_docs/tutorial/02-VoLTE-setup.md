@@ -378,7 +378,7 @@ $ mysql -u root -p scscf < standard-create.sql
 $ mysql -u root -p scscf < presence-create.sql
 $ mysql -u root -p scscf < ims_usrloc_scscf-create.sql
 $ mysql -u root -p scscf < ims_dialog-create.sql
-$ mysql -u root -p scscf < ims_charging_create.sql
+$ mysql -u root -p scscf < ims_charging-create.sql
 
 $ cd /usr/local/src/kamailio/misc/examples/ims/icscf
 $ mysql -u root -p icscf < icscf.sql
