@@ -26,9 +26,9 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
     char buf2[OGS_ADDRSTRLEN];
 
     smf_ue_t *smf_ue = NULL;
-    ogs_pfcp_subnet_t *subnet6 = NULL;
 
-    smf_bearer_t *bearer = NULL;
+    smf_bearer_t *qos_flow = NULL;
+    ogs_pfcp_gtpu_resource_t *resource = NULL;
     ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_qer_t *qer = NULL;
 
@@ -225,6 +225,59 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
         return false;
     }
 
+    /* Select UPF based on UE Location Information */
+    smf_sess_select_upf(sess);
+
+    /* Check if selected UPF is associated with SMF */
+    ogs_assert(sess->pfcp_node);
+    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
+        ogs_error("[%s] No associated UPF", smf_ue->supi);
+        return false;
+    }
+
+    /* Setup GTP-U Tunnel */
+    resource = ogs_pfcp_gtpu_resource_find(
+            &sess->pfcp_node->gtpu_resource_list,
+            sess->pdn.dnn, OGS_PFCP_INTERFACE_ACCESS);
+    if (resource) {
+        ogs_pfcp_user_plane_ip_resource_info_to_sockaddr(&resource->info,
+            &sess->upf_n3_addr, &sess->upf_n3_addr6);
+        ogs_assert(sess->upf_n3_addr || sess->upf_n3_addr6);
+        if (resource->info.teidri)
+            sess->upf_n3_teid = UPF_GTPU_INDEX_TO_TEID(
+                    sess->index, resource->info.teidri,
+                    resource->info.teid_range);
+        else
+            sess->upf_n3_teid = sess->index;
+    } else {
+        if (sess->pfcp_node->addr.ogs_sa_family == AF_INET)
+            ogs_copyaddrinfo(&sess->upf_n3_addr, &sess->pfcp_node->addr);
+        else if (sess->pfcp_node->addr.ogs_sa_family == AF_INET6)
+            ogs_copyaddrinfo(&sess->upf_n3_addr6, &sess->pfcp_node->addr);
+        else
+            ogs_assert_if_reached();
+        ogs_assert(sess->upf_n3_addr || sess->upf_n3_addr6);
+
+        sess->upf_n3_teid = sess->index;
+    }
+
+    ogs_debug("UPF TEID:[0x%x], IPv4:[%s] IPv6:[%s]",
+            sess->upf_n3_teid,
+            sess->upf_n3_addr ? OGS_ADDR(sess->upf_n3_addr, buf1) : "",
+            sess->upf_n3_addr6 ? OGS_ADDR(sess->upf_n3_addr6, buf2) : "");
+
+    /* UE IP Address */
+    smf_sess_set_ue_ip(sess);
+
+    ogs_info("UE SUPI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
+	    smf_ue->supi, sess->pdn.dnn,
+        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+
+    /*********************************************************************
+     * Send HTTP_STATUS_CREATED(/nsmf-pdusession/v1/sm-context) to the AMF
+     *********************************************************************/
+
     memset(&SmContextCreatedData, 0, sizeof(SmContextCreatedData));
 
     memset(&sendmsg, 0, sizeof(sendmsg));
@@ -246,83 +299,43 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
 
     ogs_free(sendmsg.http.location);
 
-    sess->pdn.paa.pdn_type = sess->pdn.pdn_type;
-    ogs_assert(sess->pdn.pdn_type);
 
-    if (sess->ipv4) {
-        ogs_hash_set(smf_self()->ipv4_hash,
-                sess->ipv4->addr, OGS_IPV4_LEN, NULL);
-        ogs_pfcp_ue_ip_free(sess->ipv4);
-    }
-    if (sess->ipv6) {
-        ogs_hash_set(smf_self()->ipv6_hash,
-                sess->ipv6->addr, OGS_IPV6_LEN, NULL);
-        ogs_pfcp_ue_ip_free(sess->ipv6);
-    }
+    /*********************************************************************
+     * Send PFCP Session Establiashment Request to the UPF
+     *********************************************************************/
 
-    if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4) {
-        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
-                AF_INET, sess->pdn.apn, (uint8_t *)&sess->pdn.ue_ip.addr);
-        ogs_assert(sess->ipv4);
-        sess->pdn.paa.addr = sess->ipv4->addr[0];
-        ogs_hash_set(smf_self()->ipv4_hash,
-                sess->ipv4->addr, OGS_IPV4_LEN, sess);
-    } else if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV6) {
-        sess->ipv6 = ogs_pfcp_ue_ip_alloc(
-                AF_INET6, sess->pdn.apn, sess->pdn.ue_ip.addr6);
-        ogs_assert(sess->ipv6);
+    /* Remove all previous QoS flow */
+    smf_bearer_remove_all(sess);
 
-        subnet6 = sess->ipv6->subnet;
-        ogs_assert(subnet6);
+    /* Setup Default QoS flow */
+    qos_flow = smf_qos_flow_add(sess);
+    ogs_assert(qos_flow);
 
-        sess->pdn.paa.len = subnet6->prefixlen;
-        memcpy(sess->pdn.paa.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
-        ogs_hash_set(smf_self()->ipv6_hash,
-                sess->ipv6->addr, OGS_IPV6_LEN, sess);
-    } else if (sess->pdn.pdn_type == OGS_PDU_SESSION_TYPE_IPV4V6) {
-        sess->ipv4 = ogs_pfcp_ue_ip_alloc(
-                AF_INET, sess->pdn.apn, (uint8_t *)&sess->pdn.ue_ip.addr);
-        ogs_assert(sess->ipv4);
-        sess->ipv6 = ogs_pfcp_ue_ip_alloc(
-                AF_INET6, sess->pdn.apn, sess->pdn.ue_ip.addr6);
-        ogs_assert(sess->ipv6);
-
-        subnet6 = sess->ipv6->subnet;
-        ogs_assert(subnet6);
-
-        sess->pdn.paa.both.addr = sess->ipv4->addr[0];
-        sess->pdn.paa.both.len = subnet6->prefixlen;
-        memcpy(sess->pdn.paa.both.addr6, sess->ipv6->addr, OGS_IPV6_LEN);
-        ogs_hash_set(smf_self()->ipv4_hash,
-                sess->ipv4->addr, OGS_IPV4_LEN, sess);
-        ogs_hash_set(smf_self()->ipv6_hash,
-                sess->ipv6->addr, OGS_IPV6_LEN, sess);
-    } else
-        ogs_assert_if_reached();
-
-    ogs_info("UE SUPI:[%s] DNN:[%s] IPv4:[%s] IPv6:[%s]",
-	    smf_ue->supi, sess->pdn.apn,
-        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
-        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
-
-    bearer = smf_default_bearer_in_sess(sess);
-    ogs_assert(bearer);
-
-    /* Only 1 QER is used per bearer */
-    qer = ogs_list_first(&bearer->pfcp.qer_list);
-    if (!qer) {
-        qer = ogs_pfcp_qer_add(&bearer->pfcp);
-        ogs_assert(qer);
-        qer->id = OGS_NEXT_ID(sess->qer_id, 1, OGS_MAX_NUM_OF_QER+1);
+    /* Setup QER */
+    ogs_list_for_each(&qos_flow->pfcp.qer_list, qer) {
+        qer->mbr.uplink = sess->pdn.ambr.uplink;
+        qer->mbr.downlink = sess->pdn.ambr.downlink;
     }
 
-    qer->mbr.uplink = sess->pdn.ambr.uplink;
-    qer->mbr.downlink = sess->pdn.ambr.downlink;
+    /* Setup PDR */
+    ogs_list_for_each(&qos_flow->pfcp.pdr_list, pdr) {
 
-    qer->qfi = bearer->qfi;
+        /* Set UE IP Address to the Default DL PDR */
+        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
+            ogs_pfcp_paa_to_ue_ip_addr(&sess->pdn.paa,
+                    &pdr->ue_ip_addr, &pdr->ue_ip_addr_len);
+            pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
 
-    ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)
-        ogs_pfcp_pdr_associate_qer(pdr, qer);
+        /* Set UPF-N3 TEID & ADDR to the Default UL PDR */
+        } else if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) {
+            ogs_pfcp_sockaddr_to_f_teid(sess->upf_n3_addr, sess->upf_n3_addr6,
+                    &pdr->f_teid, &pdr->f_teid_len);
+            pdr->f_teid.teid = sess->upf_n3_teid;
+        }
+
+        /* Default PDRs is set to lowest precedence(highest precedence value) */
+        pdr->precedence = 0xffffffff;
+    }
 
     smf_5gc_pfcp_send_session_establishment_request(sess);
 

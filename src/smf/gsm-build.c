@@ -87,18 +87,44 @@ ogs_pkbuf_t *gsm_build_pdu_session_establishment_accept(smf_sess_t *sess)
     selected_pdu_session_type->type = sess->pdn.ssc_mode;
     selected_pdu_session_type->value = sess->pdn.pdn_type;
 
-    /* Default QoS Rule */
+    /*
+     * TS23.501
+     * 5.7.1.3 QoS Rules
+     *
+     * A default QoS rule is required to be sent to the UE for every PDU
+     * Session establishment and it is associated with a QoS Flow. For IP type
+     * PDU Session or Ethernet type PDU Session, the default QoS rule is
+     * the only QoS rule of a PDU Session which may contain a Packet Filter
+     * Set that allows all UL packets, and in this case, the highest
+     * precedence value shall be used for the QoS rule.
+     *
+     * As long as the default QoS rule does not contain a Packet Filter Set or
+     * contains a Packet Filter Set that allows all UL packets, Reflective QoS
+     * should not be applied for the QoS Flow which the default QoS rule is
+     * associated with and the RQA should not be sent for this QoS Flow.
+     */
     memset(qos_rule, 0, sizeof(qos_rule));
     qos_rule[0].identifier = 1;
     qos_rule[0].length = 6;
     qos_rule[0].code = OGS_NAS_QOS_CODE_CREATE_NEW_QOS_RULE;
     qos_rule[0].DQR_bit = 1;
     qos_rule[0].num_of_packet_filter = 1;
+
     qos_rule[0].pf[0].direction = OGS_NAS_QOS_DIRECTION_UPLINK;
     qos_rule[0].pf[0].pf_identifier = 1;
     qos_rule[0].pf[0].length = 1;
     qos_rule[0].pf[0].num_of_component = 1;
     qos_rule[0].pf[0].component[0].type = OGS_PACKET_FILTER_MATCH_ALL;
+
+    /*
+     * TS23.501
+     * 5.7.1.9 Precedence Value
+     *
+     * The QoS rule precedence value and the PDR precedence value determine
+     * the order in which a QoS rule or a PDR, respectively, shall be evaluated.
+     * The evaluation of the QoS rules or PDRs is performed in increasing order
+     * of their precedence value.
+     */
     qos_rule[0].precedence = 255; /* lowest precedence */
     qos_rule[0].flow.segregation = 0;
     qos_rule[0].flow.identifier = bearer->qfi;

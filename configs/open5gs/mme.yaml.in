@@ -204,18 +204,20 @@ logger:
 mme:
     freeDiameter: @sysconfdir@/freeDiameter/mme.conf
     s1ap:
+      addr: 127.0.0.1
     gtpc:
+      addr: 127.0.0.1
     gummei: 
       plmn_id:
-        mcc: 001
-        mnc: 01
+        mcc: 901
+        mnc: 70
       mme_gid: 2
       mme_code: 1
     tai:
       plmn_id:
-        mcc: 001
-        mnc: 01
-      tac: 12345
+        mcc: 901
+        mnc: 70
+      tac: 1
     security:
         integrity_order : [ EIA1, EIA2, EIA0 ]
         ciphering_order : [ EEA0, EEA1, EEA2 ]

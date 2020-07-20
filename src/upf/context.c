@@ -28,19 +28,6 @@ static OGS_POOL(upf_sdf_filter_pool, upf_sdf_filter_t);
 
 static int context_initialized = 0;
 
-int num_sessions = 0;
-void stats_add_session(void) {
-    num_sessions = num_sessions + 1;
-    ogs_info("Added a session. Number of active sessions is now %d",
-            num_sessions);
-}
-
-void stats_remove_session(void) {
-    num_sessions = num_sessions - 1;
-    ogs_info("Removed a session. Number of active sessions is now %d",
-            num_sessions);
-}
-
 void upf_context_init(void)
 {
     ogs_assert(context_initialized == 0);
@@ -457,7 +444,7 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid,
     OGS_SETUP_DEFAULT_PDR(&sess->pfcp,
         ogs_pfcp_pdr_find_or_add(&sess->pfcp, default_pdr_id));
 
-    ogs_info("UE F-SEID[CP:%ld,UP:%ld] "
+    ogs_info("UE F-SEID[CP:0x%lx,UP:0x%lx] "
              "APN[%s] PDN-Type[%d] IPv4[%s] IPv6[%s], Default PDR ID[%d]",
         (long)sess->upf_n4_seid, (long)sess->smf_n4_seid,
         apn, pdn_type,
@@ -467,7 +454,8 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid,
 
     ogs_list_add(&self.sess_list, sess);
     
-    stats_add_session();
+    ogs_info("Added a session. Number of active sessions is now %d",
+            ogs_list_count(&self.sess_list));
 
     return sess;
 
@@ -498,7 +486,8 @@ int upf_sess_remove(upf_sess_t *sess)
 
     ogs_pool_free(&upf_sess_pool, sess);
 
-    stats_remove_session();
+    ogs_info("Removed a session. Number of active sessions is now %d",
+            ogs_list_count(&self.sess_list));
 
     return OGS_OK;
 }

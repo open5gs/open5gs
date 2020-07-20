@@ -35,6 +35,8 @@ int ogs_gtp_sockaddr_to_f_teid(ogs_sockaddr_t *addr, ogs_sockaddr_t *addr6,
 int ogs_gtp_f_teid_to_ip(ogs_gtp_f_teid_t *f_teid, ogs_ip_t *ip);
 int ogs_gtp_ip_to_f_teid(ogs_ip_t *ip, ogs_gtp_f_teid_t *f_teid, int *len);
 
+int ogs_gtp_paa_to_ip(ogs_paa_t *paa, ogs_ip_t *ip);
+
 #ifdef __cplusplus
 }
 #endif

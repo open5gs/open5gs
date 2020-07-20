@@ -868,9 +868,36 @@ ogs_pfcp_pdr_t *ogs_pfcp_pdr_find(
     return NULL;
 }
 
-ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_teid(uint32_t teid)
+static uint64_t pdr_hash_keygen(uint32_t teid, uint8_t qfi)
 {
-    return (ogs_pfcp_pdr_t *)ogs_hash_get(self.pdr_hash, &teid, sizeof(teid));
+    uint64_t hashkey = (teid << 8) + qfi;
+    return hashkey;
+}
+
+void ogs_pfcp_pdr_hash_set(ogs_pfcp_pdr_t *pdr)
+{
+    ogs_pfcp_qer_t *qer = NULL;
+    uint8_t qfi = 0;
+
+    ogs_assert(pdr);
+
+    qer = pdr->qer;
+    if (qer && qer->qfi) qfi = qer->qfi;
+
+    if (pdr->hashkey)
+        ogs_hash_set(ogs_pfcp_self()->pdr_hash, &pdr->hashkey,
+                sizeof(pdr->hashkey), NULL);
+
+    pdr->hashkey = pdr_hash_keygen(pdr->f_teid.teid, qfi);
+    ogs_hash_set(ogs_pfcp_self()->pdr_hash, &pdr->hashkey,
+            sizeof(pdr->hashkey), pdr);
+}
+
+ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_teid_and_qfi(uint32_t teid, uint8_t qfi)
+{
+    uint64_t hashkey = pdr_hash_keygen(teid, qfi);
+    return (ogs_pfcp_pdr_t *)ogs_hash_get(self.pdr_hash,
+            &hashkey, sizeof(hashkey));
 }
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
@@ -911,7 +938,6 @@ void ogs_pfcp_pdr_associate_far(ogs_pfcp_pdr_t *pdr, ogs_pfcp_far_t *far)
     ogs_assert(far);
     
     pdr->far = far;
-    far->pdr = pdr;
 }
 void ogs_pfcp_pdr_associate_urr(ogs_pfcp_pdr_t *pdr, ogs_pfcp_urr_t *urr)
 {
@@ -919,7 +945,6 @@ void ogs_pfcp_pdr_associate_urr(ogs_pfcp_pdr_t *pdr, ogs_pfcp_urr_t *urr)
     ogs_assert(urr);
 
     pdr->urr = urr;
-    urr->pdr = pdr;
 }
 void ogs_pfcp_pdr_associate_qer(ogs_pfcp_pdr_t *pdr, ogs_pfcp_qer_t *qer)
 {
@@ -927,7 +952,6 @@ void ogs_pfcp_pdr_associate_qer(ogs_pfcp_pdr_t *pdr, ogs_pfcp_qer_t *qer)
     ogs_assert(qer);
 
     pdr->qer = qer;
-    qer->pdr = pdr;
 }
 
 void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
@@ -937,9 +961,9 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
 
     ogs_list_remove(&pdr->sess->pdr_list, pdr);
 
-    if (pdr->f_teid.teid)
-        ogs_hash_set(self.pdr_hash, &pdr->f_teid.teid,
-                sizeof(pdr->f_teid.teid), NULL);
+    if (pdr->hashkey)
+        ogs_hash_set(ogs_pfcp_self()->pdr_hash, &pdr->hashkey,
+                sizeof(pdr->hashkey), NULL);
 
     ogs_pool_free(&ogs_pfcp_pdr_pool, pdr);
 }

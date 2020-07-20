@@ -49,9 +49,18 @@ void smf_s5c_handle_create_session_request(
         smf_sess_t *sess, ogs_gtp_xact_t *xact,
         ogs_gtp_create_session_request_t *req)
 {
+    char buf1[OGS_ADDRSTRLEN];
+    char buf2[OGS_ADDRSTRLEN];
+
     int rv;
     uint8_t cause_value = 0;
-    ogs_gtp_f_teid_t *sgw_s5c_teid, *gnb_n3_teid;
+
+    char apn[OGS_MAX_APN_LEN];
+    ogs_gtp_uli_t uli;
+
+    smf_ue_t *smf_ue = NULL;
+
+    ogs_gtp_f_teid_t *sgw_s5c_teid, *sgw_s5u_teid;
     smf_bearer_t *bearer = NULL;
     ogs_gtp_bearer_qos_t bearer_qos;
     ogs_gtp_ambr_t *ambr = NULL;
@@ -64,12 +73,8 @@ void smf_s5c_handle_create_session_request(
 
     cause_value = OGS_GTP_CAUSE_REQUEST_ACCEPTED;
 
-    if (sess) {
-        bearer = smf_default_bearer_in_sess(sess);
-        ogs_assert(bearer);
-    }
-    if (!bearer) {
-        ogs_warn("No Context");
+    if (!sess) {
+        ogs_error("No Context");
         cause_value = OGS_GTP_CAUSE_CONTEXT_NOT_FOUND;
     }
 
@@ -85,12 +90,28 @@ void smf_s5c_handle_create_session_request(
         ogs_error("No Bearer");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
+    if (req->bearer_contexts_to_be_created.eps_bearer_id.presence == 0) {
+        ogs_error("No EPS Bearer ID");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
     if (req->bearer_contexts_to_be_created.bearer_level_qos.presence == 0) {
         ogs_error("No EPS Bearer QoS");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
     if (req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.presence == 0) {
         ogs_error("No TEID");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (req->pdn_type.presence == 0) {
+        ogs_error("No PDN Type");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (req->pdn_address_allocation.presence == 0) {
+        ogs_error("No PAA");
+        cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
+    }
+    if (req->user_location_information.presence == 0) {
+        ogs_error("No UE Location Information");
         cause_value = OGS_GTP_CAUSE_MANDATORY_IE_MISSING;
     }
 
@@ -104,28 +125,67 @@ void smf_s5c_handle_create_session_request(
                 OGS_GTP_CREATE_SESSION_RESPONSE_TYPE, cause_value);
         return;
     }
-    
-    /* Set IMSI */
-    sess->imsi_len = req->imsi.len;
-    memcpy(sess->imsi, req->imsi.data, sess->imsi_len);
-    ogs_buffer_to_bcd(sess->imsi, sess->imsi_len, sess->imsi_bcd);
+
+    ogs_assert(sess);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    /* UE Location Inforamtion*/
+    ogs_gtp_parse_uli(&uli, &req->user_location_information);
+    memcpy(&sess->e_tai, &uli.tai, sizeof(sess->e_tai));
+    memcpy(&sess->e_cgi, &uli.e_cgi, sizeof(sess->e_cgi));
+
+    /* Select UPF based on UE Location Information */
+    smf_sess_select_upf(sess);
+
+    /* Check if selected UPF is associated with SMF */
+    ogs_assert(sess->pfcp_node);
+    if (!OGS_FSM_CHECK(&sess->pfcp_node->sm, smf_pfcp_state_associated)) {
+        ogs_gtp_send_error_message(xact, sess ? sess->sgw_s5c_teid : 0,
+                OGS_GTP_CREATE_SESSION_RESPONSE_TYPE,
+                OGS_GTP_CAUSE_REMOTE_PEER_NOT_RESPONDING);
+        return;
+    }
+
+    /* UE IP Address */
+    ogs_assert(req->pdn_address_allocation.data);
+    sess->pdn.pdn_type = req->pdn_type.u8;
+    ogs_gtp_paa_to_ip(
+            (ogs_paa_t *)req->pdn_address_allocation.data, &sess->pdn.ue_ip);
+
+    smf_sess_set_ue_ip(sess);
+
+    ogs_info("UE IMSI:[%s] APN:[%s] IPv4:[%s] IPv6:[%s]",
+	    smf_ue->imsi_bcd, apn,
+        sess->ipv4 ? OGS_INET_NTOP(&sess->ipv4->addr, buf1) : "",
+        sess->ipv6 ? OGS_INET6_NTOP(&sess->ipv6->addr, buf2) : "");
+
+    /* Remove all previous bearer */
+    smf_bearer_remove_all(sess);
+
+    /* Setup Default Bearer */
+    bearer = smf_bearer_add(sess);
+    ogs_assert(bearer);
+
+    /* Set Bearer EBI */
+    bearer->ebi = req->bearer_contexts_to_be_created.eps_bearer_id.u8;
 
     /* Control Plane(DL) : SGW-S5C */
     sgw_s5c_teid = req->sender_f_teid_for_control_plane.data;
     ogs_assert(sgw_s5c_teid);
     sess->sgw_s5c_teid = be32toh(sgw_s5c_teid->teid);
 
-    /* Data Plane(DL) : gNB-N3 */
-    gnb_n3_teid = req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data;
-    ogs_assert(gnb_n3_teid);
-    bearer->gnb_n3_teid = be32toh(gnb_n3_teid->teid);
-    rv = ogs_gtp_f_teid_to_ip(gnb_n3_teid, &bearer->gnb_n3_ip);
+    /* Data Plane(DL) : SGW-S5U */
+    sgw_s5u_teid = req->bearer_contexts_to_be_created.s5_s8_u_sgw_f_teid.data;
+    ogs_assert(sgw_s5u_teid);
+    bearer->sgw_s5u_teid = be32toh(sgw_s5u_teid->teid);
+    rv = ogs_gtp_f_teid_to_ip(sgw_s5u_teid, &bearer->sgw_s5u_ip);
     ogs_assert(rv == OGS_OK);
 
     ogs_debug("    SGW_S5C_TEID[0x%x] SMF_N4_TEID[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
-    ogs_debug("    gNB_N3_TEID[0x%x] UPF_N3_TEID[0x%x]",
-            bearer->gnb_n3_teid, bearer->upf_n3_teid);
+    ogs_debug("    SGW_S5U_TEID[0x%x] UPF_S5U_TEID[0x%x]",
+            bearer->sgw_s5u_teid, bearer->upf_s5u_teid);
 
     decoded = ogs_gtp_parse_bearer_qos(&bearer_qos,
         &req->bearer_contexts_to_be_created.bearer_level_qos);
@@ -168,7 +228,7 @@ void smf_s5c_handle_create_session_request(
     if (req->ue_time_zone.presence) {
         OGS_TLV_STORE_DATA(&sess->gtp.ue_timezone, &req->ue_time_zone);
     }
-    
+
     smf_gx_send_ccr(sess, xact,
         OGS_DIAM_GX_CC_REQUEST_TYPE_INITIAL_REQUEST);
 }
@@ -214,8 +274,9 @@ void smf_s5c_handle_create_bearer_response(
         ogs_gtp_create_bearer_response_t *rsp)
 {
     int rv;
-    ogs_gtp_f_teid_t *gnb_n3_teid, *smf_s5u_teid;
+    ogs_gtp_f_teid_t *sgw_s5u_teid, *smf_s5u_teid;
     smf_bearer_t *bearer = NULL;
+    ogs_pfcp_far_t *far = NULL;
 
     ogs_assert(xact);
     ogs_assert(rsp);
@@ -271,16 +332,26 @@ void smf_s5c_handle_create_bearer_response(
     /* Set EBI */
     bearer->ebi = rsp->bearer_contexts.eps_bearer_id.u8;
 
-    /* Data Plane(DL) : gNB-N3 */
-    gnb_n3_teid =  rsp->bearer_contexts.s5_s8_u_sgw_f_teid.data;
-    ogs_assert(gnb_n3_teid);
-    bearer->gnb_n3_teid = be32toh(gnb_n3_teid->teid);
-    rv = ogs_gtp_f_teid_to_ip(gnb_n3_teid, &bearer->gnb_n3_ip);
+    /* Data Plane(DL) : SGW-S5U */
+    sgw_s5u_teid =  rsp->bearer_contexts.s5_s8_u_sgw_f_teid.data;
+    ogs_assert(sgw_s5u_teid);
+    bearer->sgw_s5u_teid = be32toh(sgw_s5u_teid->teid);
+    rv = ogs_gtp_f_teid_to_ip(sgw_s5u_teid, &bearer->sgw_s5u_ip);
     ogs_assert(rv == OGS_OK);
 
     ogs_debug("[SMF] Create Bearer Response : SGW[0x%x] --> SMF[0x%x]",
             sess->sgw_s5c_teid, sess->smf_n4_teid);
 
+    /* Setup FAR */
+    ogs_list_for_each(&bearer->pfcp.far_list, far) {
+        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+            ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
+                &far->outer_header_creation, &far->outer_header_creation_len);
+            far->outer_header_creation.teid = bearer->sgw_s5u_teid;
+        }
+    }
+
+    /* Setup QER */
     if (bearer->qos.mbr.downlink || bearer->qos.mbr.uplink ||
         bearer->qos.gbr.downlink || bearer->qos.gbr.uplink) {
         ogs_pfcp_pdr_t *pdr = NULL;

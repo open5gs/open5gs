@@ -205,6 +205,8 @@ typedef struct test_sess_s {
     ogs_ip_t gnb_n3_ip;
     uint32_t gnb_n3_teid;
 
+    uint8_t qfi;
+
     test_ul_nas_transport_param_t ul_nas_transport_param;
 
     test_ue_t *test_ue;

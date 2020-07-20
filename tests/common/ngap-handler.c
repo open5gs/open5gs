@@ -158,7 +158,7 @@ void testngap_handle_pdu_session_resource_setup_request(
         test_ue_t *test_ue, ogs_ngap_message_t *message)
 {
     test_sess_t *sess = NULL;
-    int rv, i, j, k;
+    int rv, i, j, k, l;
     char buf[OGS_ADDRSTRLEN];
 
     NGAP_NGAP_PDU_t pdu;
@@ -176,6 +176,8 @@ void testngap_handle_pdu_session_resource_setup_request(
     NGAP_UPTransportLayerInformation_t *UPTransportLayerInformation = NULL;
     NGAP_GTPTunnel_t *gTPTunnel = NULL;
     NGAP_PDUSessionType_t *PDUSessionType = NULL;
+    NGAP_QosFlowSetupRequestList_t *QosFlowSetupRequestList = NULL;
+    NGAP_QosFlowSetupRequestItem_t *QosFlowSetupRequestItem = NULL;
     OCTET_STRING_t *transfer = NULL;
     ogs_pkbuf_t *n2smbuf = NULL;
 
@@ -219,6 +221,20 @@ void testngap_handle_pdu_session_resource_setup_request(
                 for (k = 0; k < n2sm_message.protocolIEs.list.count; k++) {
                     ie2 = n2sm_message.protocolIEs.list.array[k];
                     switch (ie2->id) {
+                    case NGAP_ProtocolIE_ID_id_QosFlowSetupRequestList:
+                        QosFlowSetupRequestList =
+                            &ie2->value.choice.QosFlowSetupRequestList;
+                        ogs_assert(QosFlowSetupRequestList);
+                        for (l = 0;
+                                l < QosFlowSetupRequestList->list.count; l++) {
+                            QosFlowSetupRequestItem =
+                                (struct NGAP_QosFlowSetupRequestItem *)
+                                QosFlowSetupRequestList->list.array[l];
+                            ogs_assert(QosFlowSetupRequestItem);
+                            sess->qfi =
+                                    QosFlowSetupRequestItem->qosFlowIdentifier;
+                        }
+                        break;
                     case NGAP_ProtocolIE_ID_id_UL_NGU_UP_TNLInformation:
                         UPTransportLayerInformation =
                             &ie2->value.choice.UPTransportLayerInformation;
@@ -231,6 +247,7 @@ void testngap_handle_pdu_session_resource_setup_request(
                                 &sess->upf_n3_ip);
                         ogs_asn_OCTET_STRING_to_uint32(
                                 &gTPTunnel->gTP_TEID, &sess->upf_n3_teid);
+                        break;
                     default:
                         break;
                     }

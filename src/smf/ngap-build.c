@@ -22,7 +22,7 @@
 ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         smf_sess_t *sess)
 {
-    smf_bearer_t *bearer = NULL;
+    smf_bearer_t *qos_flow = NULL;
     ogs_ip_t upf_n3_ip;
 
     NGAP_PDUSessionResourceSetupRequestTransfer_t message;
@@ -41,8 +41,8 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     NGAP_AllocationAndRetentionPriority_t *allocationAndRetentionPriority;
 
     ogs_assert(sess);
-    bearer = smf_default_bearer_in_sess(sess);
-    ogs_assert(bearer);
+    qos_flow = smf_default_bearer_in_sess(sess);
+    ogs_assert(qos_flow);
 
     ogs_debug("PDUSessionResourceSetupRequestTransfer");
     memset(&message, 0, sizeof(NGAP_PDUSessionResourceSetupRequestTransfer_t));
@@ -79,9 +79,9 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
         NGAP_UPTransportLayerInformation_PR_gTPTunnel;
     UPTransportLayerInformation->choice.gTPTunnel = gTPTunnel;
 
-    ogs_sockaddr_to_ip(bearer->upf_addr, bearer->upf_addr6, &upf_n3_ip);
+    ogs_sockaddr_to_ip(sess->upf_n3_addr, sess->upf_n3_addr6, &upf_n3_ip);
     ogs_asn_ip_to_BIT_STRING(&upf_n3_ip, &gTPTunnel->transportLayerAddress);
-    ogs_asn_uint32_to_OCTET_STRING(bearer->upf_n3_teid, &gTPTunnel->gTP_TEID);
+    ogs_asn_uint32_to_OCTET_STRING(sess->upf_n3_teid, &gTPTunnel->gTP_TEID);
 
     ie = CALLOC(1, sizeof(NGAP_PDUSessionResourceSetupRequestTransferIEs_t));
     ASN_SEQUENCE_ADD(&message.protocolIEs, ie);
@@ -132,7 +132,7 @@ ogs_pkbuf_t *ngap_build_pdu_session_resource_setup_request_transfer(
     qosCharacteristics->choice.nonDynamic5QI = nonDynamic5QI;
     qosCharacteristics->present = NGAP_QosCharacteristics_PR_nonDynamic5QI;
 
-    *qosFlowIdentifier = bearer->qfi;
+    *qosFlowIdentifier = qos_flow->qfi;
 
     nonDynamic5QI->fiveQI = sess->pdn.qos.qci;
 

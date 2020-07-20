@@ -87,7 +87,6 @@ ogs_pkbuf_t *smf_n4_build_association_setup_response(uint8_t type,
 }
 
 static struct {
-    ogs_pfcp_ue_ip_addr_t addr;
     ogs_pfcp_outer_header_removal_t outer_header_removal;
     ogs_pfcp_f_teid_t f_teid;
     char dnn[OGS_MAX_DNN_LEN];
@@ -164,25 +163,21 @@ static void build_create_pdr(
     }
 
     if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) { /* Downlink */
-        if (smf_bearer_is_default(bearer)) { /* Default Bearer */
-            ogs_pfcp_paa_to_ue_ip_addr(&sess->pdn.paa,
-                    &pdrbuf[i].addr, &len);
-            pdrbuf[i].addr.sd = OGS_PFCP_UE_IP_DST;
-
+        if (pdr->ue_ip_addr_len) {
             message->pdi.ue_ip_address.presence = 1;
-            message->pdi.ue_ip_address.data = &pdrbuf[i].addr;
-            message->pdi.ue_ip_address.len = len;
+            message->pdi.ue_ip_address.data = &pdr->ue_ip_addr;
+            message->pdi.ue_ip_address.len = pdr->ue_ip_addr_len;
         }
 
     } else if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) { /* Uplink */
-        ogs_pfcp_sockaddr_to_f_teid(
-                bearer->upf_addr, bearer->upf_addr6,
-                &pdrbuf[i].f_teid, &len);
-        pdrbuf[i].f_teid.teid = htobe32(bearer->upf_n3_teid);
+        if (pdr->f_teid_len) {
+            memcpy(&pdrbuf[i].f_teid, &pdr->f_teid, pdr->f_teid_len);
+            pdrbuf[i].f_teid.teid = htobe32(pdr->f_teid.teid);
 
-        message->pdi.local_f_teid.presence = 1;
-        message->pdi.local_f_teid.data = &pdrbuf[i].f_teid;
-        message->pdi.local_f_teid.len = len;
+            message->pdi.local_f_teid.presence = 1;
+            message->pdi.local_f_teid.data = &pdrbuf[i].f_teid;
+            message->pdi.local_f_teid.len = pdr->f_teid_len;
+        }
 
         if (sess->pdn.paa.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
             pdrbuf[i].outer_header_removal.description =
@@ -226,15 +221,11 @@ static void build_create_far(
     ogs_pfcp_tlv_create_far_t *message, int i, ogs_pfcp_far_t *far)
 {
     ogs_pfcp_sess_t *pfcp_sess = NULL;
-    smf_bearer_t *bearer = NULL;
-    int len;
 
     ogs_assert(message);
     ogs_assert(far);
     pfcp_sess = far->sess;
     ogs_assert(pfcp_sess);
-    bearer = SMF_BEARER(pfcp_sess);
-    ogs_assert(bearer);
 
     message->presence = 1;
     message->far_id.presence = 1;
@@ -249,16 +240,17 @@ static void build_create_far(
         far->dst_if;
 
     if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) { /* Downlink */
-        if (bearer->gnb_n3_ip.ipv4 || bearer->gnb_n3_ip.ipv6) {
-            ogs_pfcp_ip_to_outer_header_creation(&bearer->gnb_n3_ip,
-                    &farbuf[i].outer_header_creation, &len);
+        if (far->outer_header_creation_len) {
+            memcpy(&farbuf[i].outer_header_creation,
+                &far->outer_header_creation, far->outer_header_creation_len);
             farbuf[i].outer_header_creation.teid =
-                    htobe32(bearer->gnb_n3_teid);
+                    htobe32(far->outer_header_creation.teid);
 
             message->forwarding_parameters.outer_header_creation.presence = 1;
             message->forwarding_parameters.outer_header_creation.data =
                     &farbuf[i].outer_header_creation;
-            message->forwarding_parameters.outer_header_creation.len = len;
+            message->forwarding_parameters.outer_header_creation.len =
+                    far->outer_header_creation_len;
         }
     }
 }
@@ -339,19 +331,14 @@ static void build_update_far(smf_sess_t *sess,
         ogs_pfcp_tlv_update_far_t *message, int i, ogs_pfcp_far_t *far)
 {
     ogs_pfcp_sess_t *pfcp_sess = NULL;
-    smf_bearer_t *bearer = NULL;
-    int len;
 
     ogs_assert(message);
     ogs_assert(far);
     pfcp_sess = far->sess;
     ogs_assert(pfcp_sess);
-    bearer = SMF_BEARER(pfcp_sess);
-    ogs_assert(bearer);
-    ogs_assert(sess);
 
     ogs_assert(far->dst_if == OGS_PFCP_INTERFACE_ACCESS);
-    ogs_assert(bearer->gnb_n3_ip.ipv4 || bearer->gnb_n3_ip.ipv6);
+    ogs_assert(far->outer_header_creation_len);
 
     message->presence = 1;
     message->far_id.presence = 1;
@@ -359,10 +346,10 @@ static void build_update_far(smf_sess_t *sess,
 
     if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
         if (sess->pfcp_5gc_modify.outer_header_creation_update) {
-            ogs_pfcp_ip_to_outer_header_creation(&bearer->gnb_n3_ip,
-                    &farbuf[i].outer_header_creation, &len);
+            memcpy(&farbuf[i].outer_header_creation,
+                &far->outer_header_creation, far->outer_header_creation_len);
             farbuf[i].outer_header_creation.teid =
-                    htobe32(bearer->gnb_n3_teid);
+                    htobe32(far->outer_header_creation.teid);
 
             message->update_forwarding_parameters.presence = 1;
             message->update_forwarding_parameters.
@@ -370,7 +357,7 @@ static void build_update_far(smf_sess_t *sess,
             message->update_forwarding_parameters.
                 outer_header_creation.data = &farbuf[i].outer_header_creation;
             message->update_forwarding_parameters.
-                outer_header_creation.len = len;
+                outer_header_creation.len = far->outer_header_creation_len;
         }
 
         if (far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {

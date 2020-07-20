@@ -46,6 +46,12 @@ void smf_gx_handle_cca_initial_request(
         ogs_gtp_xact_t *gtp_xact)
 {
     int i;
+
+    smf_bearer_t *bearer = NULL;
+    ogs_pfcp_pdr_t *pdr = NULL;
+    ogs_pfcp_far_t *far = NULL;
+    ogs_pfcp_qer_t *qer = NULL;
+
     ogs_assert(sess);
     ogs_assert(gx_message);
     ogs_assert(gtp_xact);
@@ -63,12 +69,55 @@ void smf_gx_handle_cca_initial_request(
         return;
     }
 
-    if (sess->pdn.ambr.downlink || sess->pdn.ambr.uplink) {
-        smf_bearer_t *bearer = smf_default_bearer_in_sess(sess);
-        ogs_pfcp_pdr_t *pdr = NULL;
-        ogs_pfcp_qer_t *qer = NULL;
-        ogs_assert(bearer);
+    sess->num_of_pcc_rule = gx_message->num_of_pcc_rule;
+    for (i = 0; i < gx_message->num_of_pcc_rule; i++)
+        OGS_STORE_PCC_RULE(&sess->pcc_rule[i], &gx_message->pcc_rule[i]);
 
+    /* APN-AMBR
+     * if PCRF changes APN-AMBR, this should be included. */
+    sess->gtp_5gc.create_session_response_apn_ambr = false;
+    if ((gx_message->pdn.ambr.uplink &&
+            (sess->pdn.ambr.uplink / 1000) !=
+                (gx_message->pdn.ambr.uplink / 1000)) ||
+        (gx_message->pdn.ambr.downlink &&
+            (sess->pdn.ambr.downlink / 1000) !=
+                (gx_message->pdn.ambr.downlink / 1000))) {
+
+        sess->pdn.ambr.downlink = gx_message->pdn.ambr.downlink;
+        sess->pdn.ambr.uplink = gx_message->pdn.ambr.uplink;
+
+        sess->gtp_5gc.create_session_response_apn_ambr = true;
+    }
+
+    /* Bearer QoS
+     * if PCRF changes Bearer QoS, this should be included. */
+    sess->gtp_5gc.create_session_response_bearer_qos = false;
+    if ((gx_message->pdn.qos.qci &&
+        sess->pdn.qos.qci != gx_message->pdn.qos.qci) ||
+        (gx_message->pdn.qos.arp.priority_level &&
+        sess->pdn.qos.arp.priority_level !=
+            gx_message->pdn.qos.arp.priority_level) ||
+        sess->pdn.qos.arp.pre_emption_capability !=
+            gx_message->pdn.qos.arp.pre_emption_capability ||
+        sess->pdn.qos.arp.pre_emption_vulnerability !=
+            gx_message->pdn.qos.arp.pre_emption_vulnerability) {
+
+        sess->pdn.qos.qci = gx_message->pdn.qos.qci;
+        sess->pdn.qos.arp.priority_level =
+            gx_message->pdn.qos.arp.priority_level;
+        sess->pdn.qos.arp.pre_emption_capability =
+            gx_message->pdn.qos.arp.pre_emption_capability;
+        sess->pdn.qos.arp.pre_emption_vulnerability =
+            gx_message->pdn.qos.arp.pre_emption_vulnerability;
+
+        sess->gtp_5gc.create_session_response_bearer_qos = true;
+    }
+
+    bearer = smf_default_bearer_in_sess(sess);
+    ogs_assert(bearer);
+
+    /* Setup QER */
+    if (sess->pdn.ambr.downlink || sess->pdn.ambr.uplink) {
         /* Only 1 QER is used per bearer */
         qer = ogs_list_first(&bearer->pfcp.qer_list);
         if (!qer) {
@@ -79,14 +128,35 @@ void smf_gx_handle_cca_initial_request(
 
         qer->mbr.uplink = sess->pdn.ambr.uplink;
         qer->mbr.downlink = sess->pdn.ambr.downlink;
-
-        ogs_list_for_each(&bearer->pfcp.pdr_list, pdr)
-            ogs_pfcp_pdr_associate_qer(pdr, qer);
     }
 
-    sess->num_of_pcc_rule = gx_message->num_of_pcc_rule;
-    for (i = 0; i < gx_message->num_of_pcc_rule; i++)
-        OGS_STORE_PCC_RULE(&sess->pcc_rule[i], &gx_message->pcc_rule[i]);
+    /* Setup FAR */
+    ogs_list_for_each(&bearer->pfcp.far_list, far) {
+
+        /* Set Outer Header Creation to the Default DL FAR */
+        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+            ogs_pfcp_ip_to_outer_header_creation(&bearer->sgw_s5u_ip,
+                &far->outer_header_creation, &far->outer_header_creation_len);
+            far->outer_header_creation.teid = bearer->sgw_s5u_teid;
+        }
+    }
+
+    /* Setup PDR */
+    ogs_list_for_each(&bearer->pfcp.pdr_list, pdr) {
+
+        /* Set UE IP Address to the Default DL PDR */
+        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) {
+            ogs_pfcp_paa_to_ue_ip_addr(&sess->pdn.paa,
+                    &pdr->ue_ip_addr, &pdr->ue_ip_addr_len);
+            pdr->ue_ip_addr.sd = OGS_PFCP_UE_IP_DST;
+        }
+
+        /* Default PDRs is set to lowest precedence(highest precedence value) */
+        pdr->precedence = 0xffffffff;
+
+        if (qer)
+            ogs_pfcp_pdr_associate_qer(pdr, qer);
+    }
 
     smf_epc_pfcp_send_session_establishment_request(sess, gtp_xact);
 }

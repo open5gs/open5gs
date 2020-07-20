@@ -261,8 +261,7 @@ void smf_gsm_state_released(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     default:
-        ogs_error("[%s] Unknown event %s",
-                sess->imsi_bcd, smf_event_get_name(e));
+        ogs_error("Unknown event %s", smf_event_get_name(e));
         break;
     }
 }
@@ -286,8 +285,7 @@ void smf_gsm_state_exception(ogs_fsm_t *s, smf_event_t *e)
         break;
 
     default:
-        ogs_error("[%s] Unknown event %s",
-                sess->imsi_bcd, smf_event_get_name(e));
+        ogs_error("Unknown event %s", smf_event_get_name(e));
         break;
     }
 }

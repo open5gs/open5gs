@@ -977,7 +977,7 @@ static ogs_pkbuf_t *testngap_build_pdu_session_resource_setup_response_trasfer(
         CALLOC(1, sizeof(struct NGAP_AssociatedQosFlowItem));
     ASN_SEQUENCE_ADD(&associatedQosFlowList->list, associatedQosFlowItem);
 
-    associatedQosFlowItem->qosFlowIdentifier = 1;
+    associatedQosFlowItem->qosFlowIdentifier = sess->qfi;
 
     return ogs_asn_encode(
             &asn_DEF_NGAP_PDUSessionResourceSetupResponseTransfer, &message);

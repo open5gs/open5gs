@@ -58,6 +58,40 @@ void upf_n4_handle_heartbeat_response(
             upf_timer_cfg(UPF_TIMER_HEARTBEAT)->duration);
 }
 
+static void setup_gtp_node(ogs_pfcp_far_t *far,
+    ogs_pfcp_tlv_outer_header_creation_t *outer_header_creation)
+{
+    int rv;
+    ogs_ip_t ip;
+    ogs_gtp_node_t *gnode = NULL;
+
+    ogs_assert(far);
+    ogs_assert(outer_header_creation);
+    ogs_assert(outer_header_creation->presence);
+
+    memcpy(&far->outer_header_creation,
+            outer_header_creation->data, outer_header_creation->len);
+    far->outer_header_creation.teid = be32toh(far->outer_header_creation.teid);
+
+    rv = ogs_pfcp_outer_header_creation_to_ip(&far->outer_header_creation, &ip);
+    ogs_assert(rv == OGS_OK);
+
+    gnode = ogs_gtp_node_find_by_ip(&upf_self()->gnb_n3_list, &ip);
+    if (!gnode) {
+        gnode = ogs_gtp_node_add_by_ip(
+            &upf_self()->gnb_n3_list, &ip, upf_self()->gtpu_port,
+            ogs_config()->parameter.no_ipv4,
+            ogs_config()->parameter.no_ipv6,
+            ogs_config()->parameter.prefer_ipv4);
+        ogs_assert(gnode);
+
+        rv = ogs_gtp_connect(
+                upf_self()->gtpu_sock, upf_self()->gtpu_sock6, gnode);
+        ogs_assert(rv == OGS_OK);
+    }
+    OGS_SETUP_GTP_NODE(far, gnode);
+}
+
 static ogs_pfcp_pdr_t *handle_create_pdr(ogs_pfcp_sess_t *sess,
         ogs_pfcp_tlv_create_pdr_t *message,
         uint8_t *cause_value, uint8_t *offending_ie_value)
@@ -159,16 +193,13 @@ static ogs_pfcp_pdr_t *handle_create_pdr(ogs_pfcp_sess_t *sess,
             return NULL;
         }
 
-        memcpy(&pdr->f_teid, message->pdi.local_f_teid.data,
-                message->pdi.local_f_teid.len);
+        pdr->f_teid_len = message->pdi.local_f_teid.len;
+        memcpy(&pdr->f_teid, message->pdi.local_f_teid.data, pdr->f_teid_len);
         pdr->f_teid.teid = be32toh(pdr->f_teid.teid);
+
         memcpy(&pdr->outer_header_removal,
                 message->outer_header_removal.data,
                 message->outer_header_removal.len);
-
-        /* Setup UPF-N3-TEID */
-        ogs_hash_set(ogs_pfcp_self()->pdr_hash, &pdr->f_teid.teid,
-                sizeof(pdr->f_teid.teid), pdr);
     } else {
         ogs_error("Invalid Source Interface[%d] in PDR", pdr->src_if);
         *cause_value = OGS_PFCP_CAUSE_MANDATORY_IE_INCORRECT;
@@ -264,39 +295,10 @@ static ogs_pfcp_far_t *handle_create_far(ogs_pfcp_sess_t *sess,
     far->dst_if = message->forwarding_parameters.destination_interface.u8;
 
     if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) { /* Downlink */
-        int rv;
-        ogs_ip_t ip;
-        ogs_gtp_node_t *gnode = NULL;
-
         if (message->forwarding_parameters.outer_header_creation.presence) {
-            memcpy(&far->outer_header_creation,
-                    message->forwarding_parameters.outer_header_creation.data,
-                    message->forwarding_parameters.outer_header_creation.len);
-            far->outer_header_creation.teid =
-                be32toh(far->outer_header_creation.teid);
-
-            /* Setup GTP Node */
-            rv = ogs_pfcp_outer_header_creation_to_ip(
-                    &far->outer_header_creation, &ip);
-            ogs_assert(rv == OGS_OK);
-
-            gnode = ogs_gtp_node_find_by_ip(&upf_self()->gnb_n3_list, &ip);
-            if (!gnode) {
-                gnode = ogs_gtp_node_add_by_ip(
-                    &upf_self()->gnb_n3_list, &ip, upf_self()->gtpu_port,
-                    ogs_config()->parameter.no_ipv4,
-                    ogs_config()->parameter.no_ipv6,
-                    ogs_config()->parameter.prefer_ipv4);
-                ogs_assert(gnode);
-
-                rv = ogs_gtp_connect(
-                        upf_self()->gtpu_sock, upf_self()->gtpu_sock6, gnode);
-                ogs_assert(rv == OGS_OK);
-            }
-            OGS_SETUP_GTP_NODE(far, gnode);
+            setup_gtp_node(far,
+                    &message->forwarding_parameters.outer_header_creation);
         }
-
-        upf_gtp_send_buffered_packet(far);
 
     } else if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {  /* Uplink */
 
@@ -348,42 +350,11 @@ static ogs_pfcp_far_t *handle_update_far(ogs_pfcp_sess_t *sess,
             destination_interface.u8;
 
     if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) { /* Downlink */
-        int rv;
-        ogs_ip_t ip;
-        ogs_gtp_node_t *gnode = NULL;
-
         if (message->update_forwarding_parameters.
                 outer_header_creation.presence) {
-            memcpy(&far->outer_header_creation,
-                    message->update_forwarding_parameters.
-                        outer_header_creation.data,
-                    message->update_forwarding_parameters.
-                        outer_header_creation.len);
-            far->outer_header_creation.teid =
-                be32toh(far->outer_header_creation.teid);
-
-            /* Setup GTP Node */
-            rv = ogs_pfcp_outer_header_creation_to_ip(
-                    &far->outer_header_creation, &ip);
-            ogs_assert(rv == OGS_OK);
-
-            gnode = ogs_gtp_node_find_by_ip(&upf_self()->gnb_n3_list, &ip);
-            if (!gnode) {
-                gnode = ogs_gtp_node_add_by_ip(
-                    &upf_self()->gnb_n3_list, &ip, upf_self()->gtpu_port,
-                    ogs_config()->parameter.no_ipv4,
-                    ogs_config()->parameter.no_ipv6,
-                    ogs_config()->parameter.prefer_ipv4);
-                ogs_assert(gnode);
-
-                rv = ogs_gtp_connect(
-                        upf_self()->gtpu_sock, upf_self()->gtpu_sock6, gnode);
-                ogs_assert(rv == OGS_OK);
-            }
-            OGS_SETUP_GTP_NODE(far, gnode);
+            setup_gtp_node(far,
+                &message->update_forwarding_parameters.outer_header_creation);
         }
-
-        upf_gtp_send_buffered_packet(far);
 
     } else if (far->dst_if == OGS_PFCP_INTERFACE_CORE) {  /* Uplink */
 
@@ -547,6 +518,7 @@ void upf_n4_handle_session_establishment_request(
         upf_sess_t *sess, ogs_pfcp_xact_t *xact, 
         ogs_pfcp_session_establishment_request_t *req)
 {
+    ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_pdr_t *created_pdr[OGS_MAX_NUM_OF_PDR];
     int num_of_created_pdr = 0;
     uint8_t cause_value = 0;
@@ -594,6 +566,24 @@ void upf_n4_handle_session_establishment_request(
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
 
+    /* Setup UPF-N3-TEID & QFI Hash */
+    for (i = 0; i < num_of_created_pdr; i++) {
+        pdr = created_pdr[i];
+        ogs_assert(pdr);
+
+        if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) { /* Uplink */
+            if (pdr->f_teid_len)
+                ogs_pfcp_pdr_hash_set(pdr);
+        }
+    }
+
+    /* Send Buffered Packet to gNB/SGW */
+    ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
+        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) { /* Downlink */
+            upf_gtp_send_buffered_packet(pdr);
+        }
+    }
+
     upf_pfcp_send_session_establishment_response(
             xact, sess, created_pdr, num_of_created_pdr);
     return;
@@ -609,6 +599,7 @@ void upf_n4_handle_session_modification_request(
         upf_sess_t *sess, ogs_pfcp_xact_t *xact, 
         ogs_pfcp_session_modification_request_t *req)
 {
+    ogs_pfcp_pdr_t *pdr = NULL;
     ogs_pfcp_pdr_t *created_pdr[OGS_MAX_NUM_OF_PDR];
     int num_of_created_pdr = 0;
     uint8_t cause_value = 0;
@@ -695,6 +686,24 @@ void upf_n4_handle_session_modification_request(
     }
     if (cause_value != OGS_PFCP_CAUSE_REQUEST_ACCEPTED)
         goto cleanup;
+
+    /* Setup UPF-N3-TEID & QFI Hash */
+    for (i = 0; i < num_of_created_pdr; i++) {
+        pdr = created_pdr[i];
+        ogs_assert(pdr);
+
+        if (pdr->src_if == OGS_PFCP_INTERFACE_ACCESS) { /* Uplink */
+            if (pdr->f_teid_len)
+                ogs_pfcp_pdr_hash_set(pdr);
+        }
+    }
+
+    /* Send Buffered Packet to gNB/SGW */
+    ogs_list_for_each(&sess->pfcp.pdr_list, pdr) {
+        if (pdr->src_if == OGS_PFCP_INTERFACE_CORE) { /* Downlink */
+            upf_gtp_send_buffered_packet(pdr);
+        }
+    }
 
     upf_pfcp_send_session_modification_response(
             xact, sess, created_pdr, num_of_created_pdr);

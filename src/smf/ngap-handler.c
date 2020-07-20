@@ -26,11 +26,11 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
 {
     ogs_sbi_session_t *session = NULL;
     smf_ue_t *smf_ue = NULL;
-    smf_bearer_t *bearer = NULL;
+    smf_bearer_t *qos_flow = NULL;
     int rv, i;
 
-    uint32_t gnb_n3_teid;
-    ogs_ip_t gnb_n3_ip;
+    uint32_t upf_n3_teid;
+    ogs_ip_t upf_n3_ip;
 
     ogs_pfcp_far_t *far = NULL;
     bool far_update = false;
@@ -48,8 +48,6 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     ogs_assert(sess);
     session = sess->sbi.session;
     ogs_assert(session);
-    bearer = smf_default_bearer_in_sess(sess);
-    ogs_assert(bearer);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
@@ -90,8 +88,17 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         associatedQosFlowItem = (NGAP_AssociatedQosFlowItem_t *)
                 associatedQosFlowList->list.array[i];
         if (associatedQosFlowItem) {
-            /* TODO : associatedQosFlowItem->qosFlowIdentifier */
+            qos_flow = smf_qos_flow_find_by_qfi(sess,
+                    associatedQosFlowItem->qosFlowIdentifier);
         }
+    }
+
+    if (!qos_flow) {
+        ogs_error("[%s:%d] No QoS flow", smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(session,
+                OGS_SBI_HTTP_STATUS_BAD_REQUEST,
+                "No QoS flow", smf_ue->supi, NULL, NULL);
+        goto cleanup;
     }
 
     gTPTunnel = uPTransportLayerInformation->choice.gTPTunnel;
@@ -104,20 +111,20 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     }
 
     ogs_asn_BIT_STRING_to_ip(
-            &gTPTunnel->transportLayerAddress, &gnb_n3_ip);
-    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &gnb_n3_teid);
+            &gTPTunnel->transportLayerAddress, &upf_n3_ip);
+    ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &upf_n3_teid);
 
-    if (memcmp(&bearer->gnb_n3_ip, &gnb_n3_ip,
-                sizeof(bearer->gnb_n3_ip)) != 0 ||
-        bearer->gnb_n3_teid != gnb_n3_teid)
+    if (memcmp(&sess->gnb_n3_ip, &upf_n3_ip, sizeof(sess->gnb_n3_ip)) != 0 ||
+        sess->gnb_n3_teid != upf_n3_teid)
         sess->pfcp_5gc_modify.outer_header_creation_update = true;
     else
         sess->pfcp_5gc_modify.outer_header_creation_update = false;
 
-    memcpy(&bearer->gnb_n3_ip, &gnb_n3_ip, sizeof(bearer->gnb_n3_ip));
-    bearer->gnb_n3_teid = gnb_n3_teid;
+    memcpy(&sess->gnb_n3_ip, &upf_n3_ip, sizeof(sess->gnb_n3_ip));
+    sess->gnb_n3_teid = upf_n3_teid;
 
-    ogs_list_for_each(&bearer->pfcp.far_list, far) {
+    /* Need to Update? */
+    ogs_list_for_each(&qos_flow->pfcp.far_list, far) {
         if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
             if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
                 if (far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
@@ -126,6 +133,15 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
             } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
                 far_update = true;
             }
+        }
+    }
+
+    /* Setup FAR */
+    ogs_list_for_each(&qos_flow->pfcp.far_list, far) {
+        if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
+            ogs_pfcp_ip_to_outer_header_creation(&sess->gnb_n3_ip,
+                &far->outer_header_creation, &far->outer_header_creation_len);
+            far->outer_header_creation.teid = sess->gnb_n3_teid;
         }
     }
 

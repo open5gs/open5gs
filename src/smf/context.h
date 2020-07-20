@@ -143,7 +143,6 @@ typedef struct smf_sess_s {
     ogs_fsm_t       sm;             /* A state machine */
 
     uint32_t        smf_n4_teid;    /* SMF-N4-TEID is derived from INDEX */
-#define SMF_5GC_SESS(__sESS)  ((__sESS)->sgw_s5c_teid == 0)
     uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is received from SGW */
 
 #define SMF_SEID_TO_INDEX(__iNDEX) (__iNDEX & ~0x8000000000000000)
@@ -151,6 +150,21 @@ typedef struct smf_sess_s {
 #define SMF_EPC_SEID(__sEID) (__sEID & 0x8000000000000000)
     uint64_t        smf_n4_seid;    /* SMF SEID is dervied from INDEX */
     uint64_t        upf_n4_seid;    /* UPF SEID is received from Peer */
+
+    /*
+     * UPF-GTPU-TEID    = INDEX         | TEID_RANGE
+     * INDEX            = UPF-GTPU-TEID  & ~TEID_RANGE
+     */
+#define UPF_GTPU_TEID_TO_INDEX(__tEID, __iND, __rANGE) \
+    (__tEID & ~(__rANGE << (32 - __iND)))
+#define UPF_GTPU_INDEX_TO_TEID(__iNDEX, __iND, __rANGE) \
+    (__iNDEX | (__rANGE << (32 - __iND)))
+    uint32_t        upf_n3_teid;    /* UPF-N3 TEID */
+    ogs_sockaddr_t  *upf_n3_addr;   /* UPF-N3 IPv4 */
+    ogs_sockaddr_t  *upf_n3_addr6;  /* UPF-N3 IPv6 */
+
+    uint32_t        gnb_n3_teid;    /* gNB-N3 TEID */
+    ogs_ip_t        gnb_n3_ip;      /* gNB-N3 IPv4/IPv6 */
 
     char            *gx_sid;        /* Gx Session ID */
 
@@ -161,11 +175,6 @@ typedef struct smf_sess_s {
     ogs_pfcp_bar_id_t   bar_id;     /* ID Generator(1~OGS_MAX_NUM_OF_BAR) */
 
     uint8_t qos_flow_identifier;    /* ID Generator(1~OGS_MAX_QOS_FLOW_ID) */
-
-    /* IMSI */
-    uint8_t         imsi[OGS_MAX_IMSI_LEN];
-    int             imsi_len;
-    char            imsi_bcd[OGS_MAX_IMSI_BCD_LEN+1];
 
     char            *sm_context_ref; /* smContextRef */
     uint8_t         psi; /* PDU session identity */
@@ -227,6 +236,11 @@ typedef struct smf_sess_s {
         bool remove;
     } pfcp_5gc_modify;
 
+    struct {
+        bool create_session_response_apn_ambr;
+        bool create_session_response_bearer_qos;
+    } gtp_5gc;;
+
     /* UE session context is activated or not */
     OpenAPI_up_cnx_state_e ueUpCnxState;
     /* SMF session context is activated or not */
@@ -250,20 +264,12 @@ typedef struct smf_bearer_s {
     uint8_t         qfi;            /* 5GC */
     uint8_t         ebi;            /* EPC */
 
-    /* 
-     * UPF-S5U-TEID     = INDEX         | TEID_RANGE 
-     * INDEX            = UPF-S5U-TEID  & ~TEID_RANGE
-     */
-#define UPF_S5U_TEID_TO_INDEX(__tEID, __iND, __rANGE) \
-    (__tEID & ~(__rANGE << (32 - __iND)))
-#define UPF_S5U_INDEX_TO_TEID(__iNDEX, __iND, __rANGE) \
-    (__iNDEX | (__rANGE << (32 - __iND)))
-    uint32_t        upf_n3_teid;    /* UPF_N3 TEID */
-    ogs_sockaddr_t  *upf_addr;      /* UPF_N3 IPv4 */
-    ogs_sockaddr_t  *upf_addr6;     /* UPF_N3 IPv6 */
+    uint32_t        upf_s5u_teid;   /* UPF-S5U TEID */
+    ogs_sockaddr_t  *upf_s5u_addr;  /* UPF-S5U IPv4 */
+    ogs_sockaddr_t  *upf_s5u_addr6; /* UPF-S5U IPv6 */
 
-    uint32_t        gnb_n3_teid;    /* gNB_N3 TEID */
-    ogs_ip_t        gnb_n3_ip;      /* gNB_N3 IP */
+    uint32_t        sgw_s5u_teid;   /* SGW-S5U TEID */
+    ogs_ip_t        sgw_s5u_ip;     /* SGW-S5U IPv4/IPv6 */
 
     char            *name;          /* PCC Rule Name */
     ogs_qos_t       qos;            /* QoS Infomration */
@@ -308,11 +314,13 @@ smf_ue_t *smf_ue_find_by_supi(char *supi);
 smf_ue_t *smf_ue_find_by_imsi(uint8_t *imsi, int imsi_len);
 
 smf_sess_t *smf_sess_add_by_gtp_message(ogs_gtp_message_t *message);
-smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn,
-        uint8_t pdn_type, uint8_t ebi, ogs_paa_t *paa, ogs_gtp_uli_t *uli);
+smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn);
 
 smf_sess_t *smf_sess_add_by_sbi_message(ogs_sbi_message_t *message);
 smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi);
+
+void smf_sess_select_upf(smf_sess_t *sess);
+void smf_sess_set_ue_ip(smf_sess_t *sess);
 
 void smf_sess_remove(smf_sess_t *sess);
 void smf_sess_remove_all(smf_ue_t *smf_ue);
@@ -325,6 +333,9 @@ smf_sess_t *smf_sess_find_by_psi(smf_ue_t *smf_ue, uint8_t psi);
 smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref);
 smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr);
 smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6);
+
+smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess);
+smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi);
 
 smf_bearer_t *smf_bearer_add(smf_sess_t *sess);
 int smf_bearer_remove(smf_bearer_t *bearer);

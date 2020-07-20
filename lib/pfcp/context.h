@@ -115,11 +115,17 @@ typedef struct ogs_pfcp_sess_s {
 typedef struct ogs_pfcp_pdr_s {
     ogs_lnode_t             lnode;
 
+    uint64_t                hashkey;
+
     ogs_pfcp_pdr_id_t       id;
     ogs_pfcp_precedence_t   precedence;
     ogs_pfcp_interface_t    src_if;
 
+    ogs_pfcp_ue_ip_addr_t   ue_ip_addr;
+    int                     ue_ip_addr_len;
+
     ogs_pfcp_f_teid_t       f_teid;
+    int                     f_teid_len;
     ogs_pfcp_outer_header_removal_t outer_header_removal;
 
     ogs_pfcp_far_t          *far;
@@ -149,7 +155,6 @@ typedef struct ogs_pfcp_far_s {
     /* Related Context */
     ogs_pfcp_sess_t         *sess;
     void                    *gnode;
-    ogs_pfcp_pdr_t          *pdr;
 } ogs_pfcp_far_t;
 
 typedef struct ogs_pfcp_urr_s {
@@ -157,7 +162,6 @@ typedef struct ogs_pfcp_urr_s {
 
     ogs_pfcp_urr_id_t       id;
 
-    ogs_pfcp_pdr_t          *pdr;
     ogs_pfcp_sess_t         *sess;
 } ogs_pfcp_urr_t;
 
@@ -172,7 +176,6 @@ typedef struct ogs_pfcp_qer_s {
 
     uint8_t                 qfi;
 
-    ogs_pfcp_pdr_t          *pdr;
     ogs_pfcp_sess_t         *sess;
 } ogs_pfcp_qer_t;
 
@@ -256,9 +259,11 @@ ogs_pfcp_pdr_t *ogs_pfcp_sess_default_pdr(ogs_pfcp_sess_t *sess);
 void ogs_pfcp_sess_clear(ogs_pfcp_sess_t *sess);
 
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_add(ogs_pfcp_sess_t *sess);
+void ogs_pfcp_pdr_hash_set(ogs_pfcp_pdr_t *pdr);
+
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find(
         ogs_pfcp_sess_t *sess, ogs_pfcp_pdr_id_t id);
-ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_teid(uint32_t teid);
+ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_by_teid_and_qfi(uint32_t teid, uint8_t qfi);
 ogs_pfcp_pdr_t *ogs_pfcp_pdr_find_or_add(
         ogs_pfcp_sess_t *sess, ogs_pfcp_pdr_id_t id);
 void ogs_pfcp_pdr_reorder_by_precedence(

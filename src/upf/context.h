@@ -120,9 +120,6 @@ upf_sdf_filter_t *upf_sdf_filter_add(ogs_pfcp_pdr_t *pdr);
 void upf_sdf_filter_remove(upf_sdf_filter_t *sdf_filter);
 void upf_sdf_filter_remove_all(upf_sess_t *sess);
 
-void stats_add_session(void);
-void stats_remove_session(void);
-
 #ifdef __cplusplus
 }
 #endif
