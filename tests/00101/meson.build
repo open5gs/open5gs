@@ -18,6 +18,7 @@
 test5gc_00101_sources = files('''
     abts-main.c
     issues-482-test.c
+    issues-508-test.c
 '''.split())
 
 test5gc_00101_exe = executable('00101',

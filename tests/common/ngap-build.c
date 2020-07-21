@@ -276,7 +276,7 @@ ogs_pkbuf_t *testngap_build_initial_ue_message(
         ogs_ngap_uint16_to_AMFSetID(
                 ogs_amf_set_id(&test_ue->nas_guti.amf_id), aMFSetID);
         ogs_ngap_uint8_to_AMFPointer(
-                ogs_amf_set_id(&test_ue->nas_guti.amf_id), aMFPointer);
+                ogs_amf_pointer(&test_ue->nas_guti.amf_id), aMFPointer);
         ogs_asn_uint32_to_OCTET_STRING(test_ue->nas_guti.m_tmsi, fiveG_TMSI);
     }
 

@@ -398,7 +398,7 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
 
             /* Getting from 5G-S_TMSI */
             ogs_ngap_AMFSetID_to_uint16(&FiveG_S_TMSI->aMFSetID, &set);
-            ogs_ngap_AMFPointer_to_uint8(&FiveG_S_TMSI->aMFSetID, &pointer);
+            ogs_ngap_AMFPointer_to_uint8(&FiveG_S_TMSI->aMFPointer, &pointer);
 
             ogs_amf_id_build(&nas_guti.amf_id, region, set, pointer);
 

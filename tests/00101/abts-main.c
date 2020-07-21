@@ -20,11 +20,13 @@
 #include "test-5gc.h"
 
 abts_suite *test_issues_482(abts_suite *suite);
+abts_suite *test_issues_508(abts_suite *suite);
 
 const struct testlist {
     abts_suite *(*func)(abts_suite *suite);
 } alltests[] = {
     {test_issues_482},
+    {test_issues_508},
     {NULL},
 };
 
