@@ -125,8 +125,6 @@ def get_cells(cells):
     
     if ie_type.find('PFD Contents') != -1:
         ie_type = 'PFD contents'
-    elif ie_type.find('PFD') != -1:
-        ie_type = 'PFD context'
     elif ie_type.find('UE IP address') != -1:
         ie_type = 'UE IP Address'
     elif ie_type.find('SxSMReq-Flags') != -1:

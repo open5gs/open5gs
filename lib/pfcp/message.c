@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-07-17 20:36:05.513686 by acetcom
+ * Created on: 2020-07-23 13:41:55.927459 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -2413,7 +2413,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_pfd_management_request =
     OGS_TLV_MESSAGE,
     "PFCP PFD Management Request",
     0, 0, 0, 0, {
-        &ogs_pfcp_tlv_desc_pfd_context,
+        &ogs_pfcp_tlv_desc_application_id_s_pfds,
     NULL,
 }};
 

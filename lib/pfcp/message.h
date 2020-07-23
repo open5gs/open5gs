@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-07-17 20:36:05.504399 by acetcom
+ * Created on: 2020-07-23 13:41:55.918372 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -1091,7 +1091,7 @@ typedef struct ogs_pfcp_heartbeat_response_s {
 } ogs_pfcp_heartbeat_response_t;
 
 typedef struct ogs_pfcp_pfd_management_request_s {
-    ogs_pfcp_tlv_pfd_context_t application_id_s_pfds;
+    ogs_pfcp_tlv_application_id_s_pfds_t application_id_s_pfds;
 } ogs_pfcp_pfd_management_request_t;
 
 typedef struct ogs_pfcp_pfd_management_response_s {
