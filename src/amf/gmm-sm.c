@@ -149,6 +149,11 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
+                if (SESSION_SYNC_DONE(amf_ue))
+                    nas_5gs_send_registration_accept(amf_ue);
+
+                OGS_FSM_TRAN(s, &gmm_state_registered);
+
             } else {
 
                 amf_sbi_send_release_all_sessions(amf_ue);

@@ -211,6 +211,7 @@ static void test1_func(abts_case *tc, void *data)
 
     /* Send Registration request */
     test_ue.registration_request_param.guti = 1;
+    test_ue.registration_request_param.gmm_capability = 1;
     gmmbuf = testgmm_build_registration_request(&test_ue, NULL);
     ABTS_PTR_NOTNULL(tc, gmmbuf);
 

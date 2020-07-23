@@ -60,18 +60,21 @@ typedef struct test_context_s {
 typedef struct test_sess_s test_sess_t;
 
 typedef struct test_registration_request_param_s {
-    union {
-        struct {
-        ED8(uint8_t integrity_protected:1;,
-            uint8_t guti:1;,
-            uint8_t requested_nssai:1;,
-            uint8_t last_visited_registered_tai:1;,
-            uint8_t ue_usage_setting:1;,
-            uint8_t uplink_data_status:1;,
-            uint8_t pdu_session_status:1;,
-            uint8_t allowed_pdu_session_status:1;)
-        };
-        uint8_t value;
+    struct {
+    ED8(uint8_t integrity_protected:1;,
+        uint8_t ciphered:1;,
+        uint8_t guti:1;,
+        uint8_t gmm_capability:1;,
+        uint8_t requested_nssai:1;,
+        uint8_t last_visited_registered_tai:1;,
+        uint8_t ue_usage_setting:1;,
+        uint8_t update_type:1;)
+    };
+    struct {
+    ED4(uint8_t uplink_data_status:1;,
+        uint8_t pdu_session_status:1;,
+        uint8_t allowed_pdu_session_status:1;,
+        uint8_t spare2:5;)
     };
     struct {
         uint16_t pdu_session_status;

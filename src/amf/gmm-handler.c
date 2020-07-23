@@ -307,11 +307,6 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
         }
     }
 
-    if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
-        if (SESSION_SYNC_DONE(amf_ue))
-            nas_5gs_send_registration_accept(amf_ue);
-    }
-
     return OGS_OK;
 }
 

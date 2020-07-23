@@ -51,6 +51,7 @@ ogs_pkbuf_t *testgmm_build_registration_request(
         &registration_request->last_visited_registered_tai;
     ogs_nas_ue_usage_setting_t *ue_usage_setting =
         &registration_request->ue_usage_setting;
+    ogs_nas_5gs_update_type_t *update_type = &registration_request->update_type;
 
     ogs_nas_message_container_t *nas_message_container =
             &registration_request->nas_message_container;
@@ -63,8 +64,12 @@ ogs_pkbuf_t *testgmm_build_registration_request(
 
     memset(&message, 0, sizeof(message));
     if (test_ue->registration_request_param.integrity_protected) {
-        message.h.security_header_type =
-            OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        if (test_ue->registration_request_param.ciphered)
+            message.h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED_AND_CIPHERED;
+        else
+            message.h.security_header_type =
+                OGS_NAS_SECURITY_HEADER_INTEGRITY_PROTECTED;
         message.h.extended_protocol_discriminator =
             OGS_NAS_EXTENDED_PROTOCOL_DISCRIMINATOR_5GMM;
     }
@@ -119,12 +124,14 @@ ogs_pkbuf_t *testgmm_build_registration_request(
             registration_request_param.psimask.allowed_pdu_session_status >> 8;
     }
 
-    registration_request->presencemask |=
-            OGS_NAS_5GS_REGISTRATION_REQUEST_5GMM_CAPABILITY_PRESENT;
-    gmm_capability->length = 1;
-    gmm_capability->lte_positioning_protocol_capability = 0;
-    gmm_capability->ho_attach = 1; 
-    gmm_capability->s1_mode = 1; 
+    if (test_ue->registration_request_param.gmm_capability) {
+        registration_request->presencemask |=
+                OGS_NAS_5GS_REGISTRATION_REQUEST_5GMM_CAPABILITY_PRESENT;
+        gmm_capability->length = 1;
+        gmm_capability->lte_positioning_protocol_capability = 0;
+        gmm_capability->ho_attach = 1;
+        gmm_capability->s1_mode = 1; 
+    }
 
     registration_request->presencemask |=
             OGS_NAS_5GS_REGISTRATION_REQUEST_UE_SECURITY_CAPABILITY_PRESENT;
@@ -172,6 +179,14 @@ ogs_pkbuf_t *testgmm_build_registration_request(
             OGS_NAS_5GS_REGISTRATION_REQUEST_UE_USAGE_SETTING_PRESENT;
         ue_usage_setting->length = 1;
         ue_usage_setting->data_centric = 1;
+    }
+
+    if (test_ue->registration_request_param.update_type) {
+        /* Set 5GS update type */
+        registration_request->presencemask |=
+            OGS_NAS_5GS_REGISTRATION_REQUEST_5GS_UPDATE_TYPE_PRESENT;
+        update_type->length = 1;
+        update_type->sms_over_nas_supported = 1;
     }
 
     if (nasbuf) {

@@ -282,12 +282,13 @@ void ogs_nas_5gs_tai_list_build(
  * O TLV 3 */
 typedef struct ogs_nas_5gs_update_type_s {
     uint8_t length;
-ED6(uint8_t spare:2;,
-    uint8_t pnb_ciot_eps:1;,
-    uint8_t pnb_ciot_5gs:1;,
-    uint8_t ng_ran_rcu:1;,
-    uint8_t sms_requested:1;,
-    uint8_t amf_pointer_value:2;)
+ED7(uint8_t spare:2;,
+    uint8_t user_plane_ciot_eps_optimization:1;,
+    uint8_t control_plane_ciot_eps_optimization:1;,
+    uint8_t user_plane_ciot_5gs_optimization:1;,
+    uint8_t control_plane_ciot_5gs_optimization:1;,
+    uint8_t ng_ran_radio_capability_update_needed:1;,
+    uint8_t sms_over_nas_supported:1;)
 } __attribute__ ((packed)) ogs_nas_5gs_update_type_t;
 
 /* 9.11.3.10 ABBA
