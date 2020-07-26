@@ -55,7 +55,7 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
                 nf_instance->fqdn, strlen(nf_instance->fqdn));
         NFProfile->fqdn = ogs_memdup(fqdn, fqdn_len);
 
-        ogs_fatal("FQDN[%s]", nf_instance->fqdn);
+        ogs_trace("FQDN[%s]", nf_instance->fqdn);
     }
 
     Ipv4AddrList = OpenAPI_list_create();
