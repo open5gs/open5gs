@@ -42,11 +42,20 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
 	NFProfile->nf_type = nf_instance->nf_type;
 	NFProfile->nf_status = nf_instance->nf_status;
 
+    ogs_trace("[%s] ogs_nnrf_nfm_build_nf_profile()", nf_instance->id);
+
+    ogs_trace("NF-Type[%s] NF-Status[%s] IPv4[%d] IPv6[%d]",
+                OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                OpenAPI_nf_status_ToString(nf_instance->nf_status),
+                nf_instance->num_of_ipv4, nf_instance->num_of_ipv6);
+
     if (strlen(nf_instance->fqdn)) {
         memset(fqdn, 0, sizeof(fqdn));
         fqdn_len = ogs_fqdn_build(fqdn,
                 nf_instance->fqdn, strlen(nf_instance->fqdn));
         NFProfile->fqdn = ogs_memdup(fqdn, fqdn_len);
+
+        ogs_fatal("FQDN[%s]", nf_instance->fqdn);
     }
 
     Ipv4AddrList = OpenAPI_list_create();
@@ -55,12 +64,23 @@ OpenAPI_nf_profile_t *ogs_nnrf_nfm_build_nf_profile(
     ogs_assert(Ipv6AddrList);
 
     for (i = 0; i < nf_instance->num_of_ipv4; i++) {
-        if (nf_instance->ipv4[i])
+        if (nf_instance->ipv4[i]) {
+            ogs_trace("IPv4 [family:%d, addr:%x, port:%d]",
+                    nf_instance->ipv4[i]->ogs_sa_family,
+                    htobe32(nf_instance->ipv4[i]->sin.sin_addr.s_addr),
+                    nf_instance->ipv4[i]->ogs_sin_port);
+            ogs_assert(nf_instance->ipv4[i]->ogs_sa_family == AF_INET);
             OpenAPI_list_add(Ipv4AddrList, ogs_ipstrdup(nf_instance->ipv4[i]));
+        }
     }
     for (i = 0; i < nf_instance->num_of_ipv6; i++) {
-        if (nf_instance->ipv6[i])
+        if (nf_instance->ipv6[i]) {
+            ogs_trace("IPv6 [family:%d, port:%d]",
+                    nf_instance->ipv6[i]->ogs_sa_family,
+                    nf_instance->ipv6[i]->ogs_sin_port);
+            ogs_assert(nf_instance->ipv4[i]->ogs_sa_family == AF_INET6);
             OpenAPI_list_add(Ipv6AddrList, ogs_ipstrdup(nf_instance->ipv6[i]));
+        }
     }
 
     if (Ipv4AddrList->count)

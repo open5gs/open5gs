@@ -350,6 +350,10 @@ bool nrf_nnrf_handle_nf_discover(
         return false;
     }
 
+    ogs_debug("NF-Discover : Requester[%s] Target[%s]",
+            OpenAPI_nf_type_ToString(recvmsg->param.requester_nf_type),
+            OpenAPI_nf_type_ToString(recvmsg->param.target_nf_type));
+
     SearchResult = ogs_calloc(1, sizeof(*SearchResult));
     ogs_assert(SearchResult);
 
@@ -370,13 +374,20 @@ bool nrf_nnrf_handle_nf_discover(
 
         if (!recvmsg->param.limit ||
              (recvmsg->param.limit && i < recvmsg->param.limit)) {
+
+            ogs_debug("[%s:%d] NF-Discovered [NF-Type:%s,NF-Status:%s,"
+                    "IPv4:%d,IPv6:%d]", nf_instance->id, i,
+                    OpenAPI_nf_type_ToString(nf_instance->nf_type),
+                    OpenAPI_nf_status_ToString(nf_instance->nf_status),
+                    nf_instance->num_of_ipv4, nf_instance->num_of_ipv6);
+
             NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
             ogs_assert(NFProfile);
 
             OpenAPI_list_add(SearchResult->nf_instances, NFProfile);
-        }
 
-        i++;
+            i++;
+        }
     }
 
     if (recvmsg->param.limit) SearchResult->num_nf_inst_complete = i;

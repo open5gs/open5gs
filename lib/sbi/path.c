@@ -44,7 +44,7 @@ static ogs_sbi_nf_instance_t *find_or_discover_nf_instance(
     }
 
     if (*nf == false) {
-        ogs_warn("[%s] Try to discover",
+        ogs_warn("Try to discover [%s]",
                 OpenAPI_nf_type_ToString(sbi_object->nf_type));
         ogs_timer_start(sbi_object->client_wait.timer,
                 sbi_object->client_wait.duration);

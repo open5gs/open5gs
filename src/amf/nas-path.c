@@ -238,7 +238,7 @@ void nas_5gs_send_authentication_reject(amf_ue_t *amf_ue)
 
     ogs_assert(amf_ue);
 
-    ogs_debug("[%s] Authentication reject", amf_ue->suci);
+    ogs_warn("[%s] Authentication reject", amf_ue->suci);
 
     gmmbuf = gmm_build_authentication_reject();
     ogs_expect_or_return(gmmbuf);

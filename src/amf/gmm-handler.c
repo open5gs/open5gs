@@ -557,11 +557,12 @@ int gmm_handle_authentication_response(amf_ue_t *amf_ue,
             amf_ue->rand, authentication_response_parameter->res, hxres_star);
 
     if (memcmp(hxres_star, amf_ue->hxres_star, OGS_MAX_RES_LEN) != 0) {
-        ogs_log_hexdump(OGS_LOG_WARN,
+        ogs_error("[%s] MAC failure", amf_ue->suci);
+        ogs_log_hexdump(OGS_LOG_ERROR,
                 authentication_response_parameter->res,
                 authentication_response_parameter->length);
-        ogs_log_hexdump(OGS_LOG_WARN, hxres_star, OGS_MAX_RES_LEN);
-        ogs_log_hexdump(OGS_LOG_WARN,
+        ogs_log_hexdump(OGS_LOG_ERROR, hxres_star, OGS_MAX_RES_LEN);
+        ogs_log_hexdump(OGS_LOG_ERROR,
                 amf_ue->hxres_star, OGS_MAX_RES_LEN);
         return OGS_ERROR;
     }

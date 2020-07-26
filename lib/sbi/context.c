@@ -470,10 +470,13 @@ void ogs_sbi_nf_instance_clear(ogs_sbi_nf_instance_t *nf_instance)
         if (nf_instance->ipv4[i])
             ogs_freeaddrinfo(nf_instance->ipv4[i]);
     }
+    nf_instance->num_of_ipv4 = 0;
+
     for (i = 0; i < nf_instance->num_of_ipv6; i++) {
         if (nf_instance->ipv6[i])
             ogs_freeaddrinfo(nf_instance->ipv6[i]);
     }
+    nf_instance->num_of_ipv6 = 0;
 
     ogs_sbi_nf_service_remove_all(nf_instance);
 }
@@ -595,6 +598,7 @@ void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service)
         if (nf_service->versions[i].expiry)
             ogs_free(nf_service->versions[i].expiry);
     }
+    nf_service->num_of_version = 0;
 
     for (i = 0; i < nf_service->num_of_addr; i++) {
         if (nf_service->addr[i].ipv4)
@@ -602,6 +606,7 @@ void ogs_sbi_nf_service_clear(ogs_sbi_nf_service_t *nf_service)
         if (nf_service->addr[i].ipv6)
             ogs_freeaddrinfo(nf_service->addr[i].ipv6);
     }
+    nf_service->num_of_addr = 0;
 }
 
 void ogs_sbi_nf_service_remove(ogs_sbi_nf_service_t *nf_service)

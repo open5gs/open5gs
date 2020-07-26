@@ -145,7 +145,6 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
             ogs_fqdn_parse(nf_service->fqdn,
                     NFService->fqdn, strlen(NFService->fqdn));
 
-        nf_service->num_of_addr = 0;
         OpenAPI_list_for_each(IpEndPointList, node2) {
             OpenAPI_ip_end_point_t *IpEndPoint = node2->data;
             ogs_sockaddr_t *addr = NULL, *addr6 = NULL;

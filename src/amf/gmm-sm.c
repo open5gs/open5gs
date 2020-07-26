@@ -979,7 +979,7 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
     case OGS_FSM_EXIT_SIG:
         break;
     default:
-        ogs_error("Unknown event[%s]", amf_event_get_name(e));
+        ogs_error("GMM exception occurred [%s]", amf_event_get_name(e));
         break;
     }
 }
