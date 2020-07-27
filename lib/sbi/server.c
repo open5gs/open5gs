@@ -118,7 +118,7 @@ static ogs_sbi_session_t *session_add(ogs_sbi_server_t *server,
     /* If User does not send http response within deadline,
      * Open5GS will assert this program. */
     ogs_timer_start(session->timer,
-            ogs_config()->time.message.sbi.server_response_deadline);
+            ogs_config()->time.message.sbi.connection_deadline);
 
     ogs_list_add(&server->suspended_session_list, session);
 

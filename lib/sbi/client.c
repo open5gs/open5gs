@@ -274,9 +274,10 @@ static connection_t *connection_add(
 
     ogs_list_add(&client->connection_list, conn);
 
-    /* If http response is not received within 1 second,
-     * we will discard this request. */
-    ogs_timer_start(conn->timer, ogs_time_from_sec(1));
+    /* If http response is not received within deadline,
+     * Open5GS will discard this request. */
+    ogs_timer_start(conn->timer,
+            ogs_config()->time.message.sbi.connection_deadline);
 
     conn->easy = curl_easy_init();
     ogs_assert(conn->easy);

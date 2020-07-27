@@ -159,7 +159,7 @@ static void regenerate_all_timer_duration(void)
     ogs_assert(self.time.message.duration);
 
     self.time.message.sbi.client_wait_duration = self.time.message.duration;
-    self.time.message.sbi.server_response_deadline =
+    self.time.message.sbi.connection_deadline =
         self.time.message.sbi.client_wait_duration + ogs_time_from_sec(1);
     self.time.message.sbi.nf_register_interval =
         ogs_max(ogs_time_from_sec(3),
@@ -207,7 +207,7 @@ static void regenerate_all_timer_duration(void)
     ogs_trace("%lld, %lld, %lld, %d, %lld, %d %lld, %d, %lld, %d, %lld",
         (long long)self.time.message.duration,
         (long long)self.time.message.sbi.client_wait_duration,
-        (long long)self.time.message.sbi.server_response_deadline,
+        (long long)self.time.message.sbi.connection_deadline,
         self.time.message.pfcp.n1_response_rcount,
         (long long)self.time.message.pfcp.t1_response_duration,
         self.time.message.pfcp.n1_holding_rcount,
@@ -266,8 +266,8 @@ static int config_prepare(void)
     /* 86400 seconds = 1 day */
     self.time.subscription.validity_duration = 86400;
 
-    /* Message Wait Duration : 1 seconds */
-    self.time.message.duration = ogs_time_from_sec(1);
+    /* Message Wait Duration : 2 seconds */
+    self.time.message.duration = ogs_time_from_sec(2);
 
     regenerate_all_timer_duration();
 

@@ -112,7 +112,7 @@ typedef struct ogs_config_s {
             ogs_time_t duration;
             struct {
                 ogs_time_t client_wait_duration;
-                ogs_time_t server_response_deadline;
+                ogs_time_t connection_deadline;
                 ogs_time_t nf_register_interval;
                 ogs_time_t nf_register_interval_in_exception;
             } sbi;
