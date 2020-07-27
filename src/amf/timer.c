@@ -20,8 +20,6 @@
 #include "context.h"
 
 static amf_timer_cfg_t g_amf_timer_cfg[MAX_NUM_OF_AMF_TIMER] = {
-    [AMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL] =
-        { .duration = ogs_time_from_sec(3) },
     [AMF_TIMER_SBI_CLIENT_WAIT] =
         { .duration = ogs_time_from_msec(500) },
 
@@ -70,8 +68,8 @@ const char *amf_timer_get_name(amf_timer_e id)
         return "AMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL";
     case AMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
         return "AMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL";
-    case AMF_TIMER_NF_INSTANCE_HEARTBEAT:
-        return "AMF_TIMER_NF_INSTANCE_HEARTBEAT";
+    case AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+        return "AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT";
     case AMF_TIMER_NF_INSTANCE_VALIDITY:
         return "AMF_TIMER_NF_INSTANCE_VALIDITY";
     case AMF_TIMER_SUBSCRIPTION_VALIDITY:
@@ -124,7 +122,7 @@ static void sbi_timer_send_event(int timer_id, void *data)
     switch (timer_id) {
     case AMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
     case AMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-    case AMF_TIMER_NF_INSTANCE_HEARTBEAT:
+    case AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
     case AMF_TIMER_NF_INSTANCE_VALIDITY:
     case AMF_TIMER_SUBSCRIPTION_VALIDITY:
         e = amf_event_new(AMF_EVT_SBI_TIMER);
@@ -162,9 +160,9 @@ void amf_timer_nf_instance_heartbeat_interval(void *data)
     sbi_timer_send_event(AMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL, data);
 }
 
-void amf_timer_nf_instance_heartbeat(void *data)
+void amf_timer_nf_instance_no_heartbeat(void *data)
 {
-    sbi_timer_send_event(AMF_TIMER_NF_INSTANCE_HEARTBEAT, data);
+    sbi_timer_send_event(AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT, data);
 }
 
 void amf_timer_nf_instance_validity(void *data)

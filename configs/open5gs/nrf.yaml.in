@@ -153,4 +153,9 @@ pool:
 #    subscription:
 #      validity: 3600
 #
+#  o Message Wait Duration (Default : 2000ms = 2 seconds)
+#
+#  o Message Wait Duration (3 seconds)
+#    message:
+#        duration: 3000
 time:

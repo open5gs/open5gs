@@ -137,7 +137,7 @@ void udm_sbi_discover_and_send(
 
     udm_ue->sbi.nf_state_registered = udm_nf_state_registered;
     udm_ue->sbi.client_wait.duration =
-        udm_timer_cfg(UDM_TIMER_SBI_CLIENT_WAIT)->duration;
+        ogs_config()->time.message.sbi.client_wait_duration;
     udm_ue->sbi.client_cb = client_cb;
 
     if (ogs_sbi_discover_and_send(

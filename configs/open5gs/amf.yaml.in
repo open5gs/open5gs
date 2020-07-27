@@ -300,4 +300,10 @@ pool:
 #  o NF Instance Heartbeat (10 seconds)
 #    nf_instance:
 #      heartbeat: 10
+#
+#  o Message Wait Duration (Default : 2000ms = 2 seconds)
+#
+#  o Message Wait Duration (3 seconds)
+#    message:
+#        duration: 3000
 time:

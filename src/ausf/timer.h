@@ -32,7 +32,7 @@ typedef enum {
 
     AUSF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL,
     AUSF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL,
-    AUSF_TIMER_NF_INSTANCE_HEARTBEAT,
+    AUSF_TIMER_NF_INSTANCE_NO_HEARTBEAT,
     AUSF_TIMER_NF_INSTANCE_VALIDITY,
     AUSF_TIMER_SUBSCRIPTION_VALIDITY,
     AUSF_TIMER_SBI_CLIENT_WAIT,
@@ -41,18 +41,11 @@ typedef enum {
 
 } ausf_timer_e;
 
-typedef struct ausf_timer_cfg_s {
-    int max_count;
-    ogs_time_t duration;
-} ausf_timer_cfg_t;
-
-ausf_timer_cfg_t *ausf_timer_cfg(ausf_timer_e id);
-
 const char *ausf_timer_get_name(ausf_timer_e id);
 
 void ausf_timer_nf_instance_registration_interval(void *data);
 void ausf_timer_nf_instance_heartbeat_interval(void *data);
-void ausf_timer_nf_instance_heartbeat(void *data);
+void ausf_timer_nf_instance_no_heartbeat(void *data);
 void ausf_timer_nf_instance_validity(void *data);
 void ausf_timer_subscription_validity(void *data);
 void ausf_timer_sbi_client_wait_expire(void *data);

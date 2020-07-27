@@ -127,7 +127,7 @@ void ausf_sbi_discover_and_send(
 
     ausf_ue->sbi.nf_state_registered = ausf_nf_state_registered;
     ausf_ue->sbi.client_wait.duration =
-        ausf_timer_cfg(AUSF_TIMER_SBI_CLIENT_WAIT)->duration;
+        ogs_config()->time.message.sbi.client_wait_duration;
     ausf_ue->sbi.client_cb = client_cb;
 
     if (ogs_sbi_discover_and_send(

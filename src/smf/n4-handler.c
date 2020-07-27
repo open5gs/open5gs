@@ -165,8 +165,8 @@ void smf_n4_handle_heartbeat_response(
     ogs_assert(xact);
     ogs_pfcp_xact_commit(xact);
 
-    ogs_timer_start(node->t_heartbeat,
-            smf_timer_cfg(SMF_TIMER_PFCP_HEARTBEAT)->duration);
+    ogs_timer_start(node->t_no_heartbeat,
+            ogs_config()->time.message.pfcp.no_heartbeat_duration);
 }
 
 void smf_5gc_n4_handle_session_establishment_response(

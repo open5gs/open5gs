@@ -100,12 +100,39 @@ typedef struct ogs_config_s {
 
     struct {
         struct {
-            int heartbeat;
-            int validity;
+            int heartbeat_interval;
+            int no_heartbeat_margin;
+            int validity_duration;
         } nf_instance;
         struct {
-            int validity;
+            int validity_duration;
         } subscription;
+
+        struct {
+            ogs_time_t duration;
+            struct {
+                ogs_time_t client_wait_duration;
+                ogs_time_t server_response_deadline;
+                ogs_time_t nf_register_interval;
+                ogs_time_t nf_register_interval_in_exception;
+            } sbi;
+
+            struct {
+                ogs_time_t t3_response_duration;
+                int n3_response_rcount;
+                ogs_time_t t3_holding_duration;
+                int n3_holding_rcount;
+            } gtp;
+
+            struct {
+                ogs_time_t t1_response_duration;
+                int n1_response_rcount;
+                ogs_time_t t1_holding_duration;
+                int n1_holding_rcount;
+                ogs_time_t association_interval;
+                ogs_time_t no_heartbeat_duration;
+            } pfcp;
+        } message;
     } time;
 } ogs_config_t;
 

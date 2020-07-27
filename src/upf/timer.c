@@ -21,26 +21,13 @@
 #include "event.h"
 #include "context.h"
 
-static upf_timer_cfg_t g_upf_timer_cfg[MAX_NUM_OF_UPF_TIMER] = {
-    [UPF_TIMER_ASSOCIATION] =
-        { .duration = ogs_time_from_sec(12) },
-    [UPF_TIMER_HEARTBEAT] =
-        { .duration = ogs_time_from_sec(12) },
-};
-
-upf_timer_cfg_t *upf_timer_cfg(upf_timer_e id)
-{
-    ogs_assert(id < MAX_NUM_OF_UPF_TIMER);
-    return &g_upf_timer_cfg[id];
-}
-
 const char *upf_timer_get_name(upf_timer_e id)
 {
     switch (id) {
     case UPF_TIMER_ASSOCIATION:
         return "UPF_TIMER_ASSOCIATION";
-    case UPF_TIMER_HEARTBEAT:
-        return "UPF_TIMER_HEARTBEAT";
+    case UPF_TIMER_NO_HEARTBEAT:
+        return "UPF_TIMER_NO_HEARTBEAT";
     default: 
        break;
     }
@@ -70,7 +57,7 @@ void upf_timer_association(void *data)
     timer_send_event(UPF_TIMER_ASSOCIATION, data);
 }
 
-void upf_timer_heartbeat(void *data)
+void upf_timer_no_heartbeat(void *data)
 {
-    timer_send_event(UPF_TIMER_HEARTBEAT, data);
+    timer_send_event(UPF_TIMER_NO_HEARTBEAT, data);
 }

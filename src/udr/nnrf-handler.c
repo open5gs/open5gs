@@ -38,7 +38,7 @@ void udr_nnrf_handle_nf_register(
     }
 
     /* TIME : Update heartbeat from NRF */
-    nf_instance->time.heartbeat = NFProfile->heart_beat_timer;
+    nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
 }
 
 void udr_nnrf_handle_nf_status_subscribe(

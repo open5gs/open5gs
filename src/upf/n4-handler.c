@@ -54,8 +54,8 @@ void upf_n4_handle_heartbeat_response(
     ogs_assert(xact);
     ogs_pfcp_xact_commit(xact);
 
-    ogs_timer_start(node->t_heartbeat,
-            upf_timer_cfg(UPF_TIMER_HEARTBEAT)->duration);
+    ogs_timer_start(node->t_no_heartbeat,
+            ogs_config()->time.message.pfcp.no_heartbeat_duration);
 }
 
 static void setup_gtp_node(ogs_pfcp_far_t *far,

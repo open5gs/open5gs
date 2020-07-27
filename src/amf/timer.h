@@ -32,7 +32,7 @@ typedef enum {
 
     AMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL,
     AMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL,
-    AMF_TIMER_NF_INSTANCE_HEARTBEAT,
+    AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT,
     AMF_TIMER_NF_INSTANCE_VALIDITY,
     AMF_TIMER_SUBSCRIPTION_VALIDITY,
     AMF_TIMER_SBI_CLIENT_WAIT,
@@ -61,7 +61,7 @@ const char *amf_timer_get_name(amf_timer_e id);
 
 void amf_timer_nf_instance_registration_interval(void *data);
 void amf_timer_nf_instance_heartbeat_interval(void *data);
-void amf_timer_nf_instance_heartbeat(void *data);
+void amf_timer_nf_instance_no_heartbeat(void *data);
 void amf_timer_nf_instance_validity(void *data);
 void amf_timer_subscription_validity(void *data);
 void amf_timer_sbi_client_wait_expire(void *data);

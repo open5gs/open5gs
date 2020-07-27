@@ -32,8 +32,8 @@ nrf_timer_cfg_t *nrf_timer_cfg(nrf_timer_e id)
 const char *nrf_timer_get_name(nrf_timer_e id)
 {
     switch (id) {
-    case NRF_TIMER_NF_INSTANCE_HEARTBEAT:
-        return "NRF_TIMER_NF_INSTANCE_HEARTBEAT";
+    case NRF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+        return "NRF_TIMER_NF_INSTANCE_NO_HEARTBEAT";
     case NRF_TIMER_SUBSCRIPTION_VALIDITY:
         return "NRF_TIMER_SUBSCRIPTION_VALIDITY";
     default: 
@@ -50,7 +50,7 @@ static void timer_send_event(int timer_id, void *data)
     ogs_assert(data);
 
     switch (timer_id) {
-    case NRF_TIMER_NF_INSTANCE_HEARTBEAT:
+    case NRF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
         e = nrf_event_new(NRF_EVT_SBI_TIMER);
         e->timer_id = timer_id;
         e->nf_instance = data;
@@ -73,9 +73,9 @@ static void timer_send_event(int timer_id, void *data)
     }
 }
 
-void nrf_timer_nf_instance_heartbeat(void *data)
+void nrf_timer_nf_instance_no_heartbeat(void *data)
 {
-    timer_send_event(NRF_TIMER_NF_INSTANCE_HEARTBEAT, data);
+    timer_send_event(NRF_TIMER_NF_INSTANCE_NO_HEARTBEAT, data);
 }
 
 void nrf_timer_subscription_validity(void *data)

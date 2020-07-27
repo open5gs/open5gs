@@ -442,7 +442,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 ogs_fsm_dispatch(&nf_instance->sm, e);
 
                 if (OGS_FSM_CHECK(&nf_instance->sm, smf_nf_state_exception)) {
-                    ogs_error("State machine exception");
+                    ogs_warn("State machine exception");
                 }
                 break;
 
@@ -552,7 +552,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         switch(e->timer_id) {
         case SMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
         case SMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-        case SMF_TIMER_NF_INSTANCE_HEARTBEAT:
+        case SMF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
         case SMF_TIMER_NF_INSTANCE_VALIDITY:
             nf_instance = e->sbi.data;
             ogs_assert(nf_instance);

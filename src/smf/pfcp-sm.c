@@ -40,9 +40,9 @@ void smf_pfcp_state_initial(ogs_fsm_t *s, smf_event_t *e)
             ogs_pfcp_self()->pfcp_sock, ogs_pfcp_self()->pfcp_sock6, node);
     ogs_assert(rv == OGS_OK);
 
-    node->t_heartbeat = ogs_timer_add(smf_self()->timer_mgr,
-            smf_timer_pfcp_heartbeat, node);
-    ogs_assert(node->t_heartbeat);
+    node->t_no_heartbeat = ogs_timer_add(smf_self()->timer_mgr,
+            smf_timer_pfcp_no_heartbeat, node);
+    ogs_assert(node->t_no_heartbeat);
 
     OGS_FSM_TRAN(s, &smf_pfcp_state_will_associate);
 }
@@ -58,7 +58,7 @@ void smf_pfcp_state_final(ogs_fsm_t *s, smf_event_t *e)
     node = e->pfcp_node;
     ogs_assert(node);
 
-    ogs_timer_delete(node->t_heartbeat);
+    ogs_timer_delete(node->t_no_heartbeat);
 }
 
 void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
@@ -85,7 +85,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (node->t_association) {
             ogs_timer_start(node->t_association,
-                    smf_timer_cfg(SMF_TIMER_PFCP_ASSOCIATION)->duration);
+                    ogs_config()->time.message.pfcp.association_interval);
 
             smf_pfcp_send_association_setup_request(node);
         }
@@ -108,7 +108,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
 
             ogs_assert(node->t_association);
             ogs_timer_start(node->t_association,
-                smf_timer_cfg(SMF_TIMER_PFCP_ASSOCIATION)->duration);
+                ogs_config()->time.message.pfcp.association_interval);
 
             smf_pfcp_send_association_setup_request(node);
             break;
@@ -171,12 +171,12 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
         ogs_info("PFCP associated");
-        ogs_timer_start(node->t_heartbeat,
-                smf_timer_cfg(SMF_TIMER_PFCP_HEARTBEAT)->duration);
+        ogs_timer_start(node->t_no_heartbeat,
+                ogs_config()->time.message.pfcp.no_heartbeat_duration);
         break;
     case OGS_FSM_EXIT_SIG:
         ogs_info("PFCP de-associated");
-        ogs_timer_stop(node->t_heartbeat);
+        ogs_timer_stop(node->t_no_heartbeat);
         break;
     case SMF_EVT_N4_MESSAGE:
         message = e->pfcp_message;
@@ -257,7 +257,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
         break;
     case SMF_EVT_N4_TIMER:
         switch(e->timer_id) {
-        case SMF_TIMER_PFCP_HEARTBEAT:
+        case SMF_TIMER_PFCP_NO_HEARTBEAT:
             node = e->pfcp_node;
             ogs_assert(node);
 

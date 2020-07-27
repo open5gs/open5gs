@@ -68,8 +68,8 @@ void smf_nf_state_initial(ogs_fsm_t *s, smf_event_t *e)
     ogs_assert(nf_instance->t_heartbeat_interval);
     nf_instance->t_heartbeat_interval->cb =
             smf_timer_nf_instance_heartbeat_interval;
-    ogs_assert(nf_instance->t_heartbeat);
-    nf_instance->t_heartbeat->cb = smf_timer_nf_instance_heartbeat;
+    ogs_assert(nf_instance->t_no_heartbeat);
+    nf_instance->t_no_heartbeat->cb = smf_timer_nf_instance_no_heartbeat;
     ogs_assert(nf_instance->t_validity);
     nf_instance->t_validity->cb = smf_timer_nf_instance_validity;
 
@@ -107,8 +107,7 @@ void smf_nf_state_will_register(ogs_fsm_t *s, smf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (NF_INSTANCE_IS_SELF(nf_instance->id))
             ogs_timer_start(nf_instance->t_registration_interval,
-                smf_timer_cfg(SMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL)->
-                    duration);
+                ogs_config()->time.message.sbi.nf_register_interval);
 
         ogs_nnrf_nfm_send_nf_register(nf_instance);
         break;
@@ -163,8 +162,7 @@ void smf_nf_state_will_register(ogs_fsm_t *s, smf_event_t *e)
 
             if (NF_INSTANCE_IS_SELF(nf_instance->id))
                 ogs_timer_start(nf_instance->t_registration_interval,
-                    smf_timer_cfg(SMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL)->
-                    duration);
+                    ogs_config()->time.message.sbi.nf_register_interval);
 
             ogs_nnrf_nfm_send_nf_register(nf_instance);
             break;
@@ -203,12 +201,13 @@ void smf_nf_state_registered(ogs_fsm_t *s, smf_event_t *e)
             client = nf_instance->client;
             ogs_assert(client);
 
-            if (nf_instance->time.heartbeat) {
+            if (nf_instance->time.heartbeat_interval) {
                 ogs_timer_start(nf_instance->t_heartbeat_interval,
-                        ogs_time_from_sec(nf_instance->time.heartbeat));
-                ogs_timer_start(nf_instance->t_heartbeat,
-                        ogs_time_from_sec(nf_instance->time.heartbeat *
-                            OGS_SBI_HEARTBEAT_RETRYCOUNT));
+                    ogs_time_from_sec(nf_instance->time.heartbeat_interval));
+                ogs_timer_start(nf_instance->t_no_heartbeat,
+                    ogs_time_from_sec(
+                        nf_instance->time.heartbeat_interval +
+                        ogs_config()->time.nf_instance.no_heartbeat_margin));
             }
 
             ogs_nnrf_nfm_send_nf_status_subscribe(client,
@@ -221,12 +220,14 @@ void smf_nf_state_registered(ogs_fsm_t *s, smf_event_t *e)
         if (NF_INSTANCE_IS_SELF(nf_instance->id)) {
             ogs_info("[%s] NF de-registered", nf_instance->id);
 
-            if (nf_instance->time.heartbeat) {
+            if (nf_instance->time.heartbeat_interval) {
                 ogs_timer_stop(nf_instance->t_heartbeat_interval);
-                ogs_timer_stop(nf_instance->t_heartbeat);
+                ogs_timer_stop(nf_instance->t_no_heartbeat);
             }
 
-            ogs_nnrf_nfm_send_nf_de_register(nf_instance);
+            if (!OGS_FSM_CHECK(&nf_instance->sm, smf_nf_state_exception)) {
+                ogs_nnrf_nfm_send_nf_de_register(nf_instance);
+            }
         }
         break;
 
@@ -242,13 +243,16 @@ void smf_nf_state_registered(ogs_fsm_t *s, smf_event_t *e)
 
                 if (message->res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT ||
                     message->res_status == OGS_SBI_HTTP_STATUS_OK) {
-                    if (nf_instance->time.heartbeat)
-                        ogs_timer_start(nf_instance->t_heartbeat,
-                                ogs_time_from_sec(nf_instance->time.heartbeat *
-                                    OGS_SBI_HEARTBEAT_RETRYCOUNT));
+                    if (nf_instance->time.heartbeat_interval)
+                        ogs_timer_start(nf_instance->t_no_heartbeat,
+                            ogs_time_from_sec(
+                                nf_instance->time.heartbeat_interval +
+                                ogs_config()->time.nf_instance.
+                                    no_heartbeat_margin));
                 } else {
-                    ogs_error("[%s] HTTP response error [%d]",
+                    ogs_warn("[%s] HTTP response error [%d]",
                             nf_instance->id, message->res_status);
+                    OGS_FSM_TRAN(s, &smf_nf_state_exception);
                 }
 
                 break;
@@ -268,14 +272,14 @@ void smf_nf_state_registered(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_SBI_TIMER:
         switch(e->timer_id) {
         case SMF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-            if (nf_instance->time.heartbeat)
+            if (nf_instance->time.heartbeat_interval)
                 ogs_timer_start(nf_instance->t_heartbeat_interval,
-                        ogs_time_from_sec(nf_instance->time.heartbeat));
+                    ogs_time_from_sec(nf_instance->time.heartbeat_interval));
 
             ogs_nnrf_nfm_send_nf_update(nf_instance);
             break;
 
-        case SMF_TIMER_NF_INSTANCE_HEARTBEAT:
+        case SMF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
             OGS_FSM_TRAN(s, &smf_nf_state_will_register);
             break;
 
@@ -332,6 +336,7 @@ void smf_nf_state_exception(ogs_fsm_t *s, smf_event_t *e)
 {
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_client_t *client = NULL;
+    ogs_sbi_message_t *message = NULL;
     ogs_sockaddr_t *addr = NULL;
     ogs_assert(s);
     ogs_assert(e);
@@ -345,8 +350,8 @@ void smf_nf_state_exception(ogs_fsm_t *s, smf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         if (NF_INSTANCE_IS_SELF(nf_instance->id))
             ogs_timer_start(nf_instance->t_registration_interval,
-                smf_timer_cfg(SMF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL)->
-                    duration);
+                ogs_config()->time.message.sbi.
+                    nf_register_interval_in_exception);
         break;
 
     case OGS_FSM_EXIT_SIG:
@@ -372,6 +377,26 @@ void smf_nf_state_exception(ogs_fsm_t *s, smf_event_t *e)
                     smf_timer_get_name(e->timer_id), e->timer_id);
             break;
         }
+        break;
+
+    case SMF_EVT_SBI_CLIENT:
+        message = e->sbi.message;
+        ogs_assert(message);
+
+        SWITCH(message->h.service.name)
+        CASE(OGS_SBI_SERVICE_NAME_NNRF_NFM)
+
+            SWITCH(message->h.resource.component[0])
+            CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
+                break;
+            DEFAULT
+                ogs_error("Invalid resource name [%s]",
+                        message->h.resource.component[0]);
+            END
+            break;
+        DEFAULT
+            ogs_error("Invalid API name [%s]", message->h.service.name);
+        END
         break;
 
     default:

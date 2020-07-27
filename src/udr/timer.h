@@ -32,7 +32,7 @@ typedef enum {
 
     UDR_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL,
     UDR_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL,
-    UDR_TIMER_NF_INSTANCE_HEARTBEAT,
+    UDR_TIMER_NF_INSTANCE_NO_HEARTBEAT,
     UDR_TIMER_NF_INSTANCE_VALIDITY,
     UDR_TIMER_SUBSCRIPTION_VALIDITY,
 
@@ -40,18 +40,11 @@ typedef enum {
 
 } udr_timer_e;
 
-typedef struct udr_timer_cfg_s {
-    int max_count;
-    ogs_time_t duration;
-} udr_timer_cfg_t;
-
-udr_timer_cfg_t *udr_timer_cfg(udr_timer_e id);
-
 const char *udr_timer_get_name(udr_timer_e id);
 
 void udr_timer_nf_instance_registration_interval(void *data);
 void udr_timer_nf_instance_heartbeat_interval(void *data);
-void udr_timer_nf_instance_heartbeat(void *data);
+void udr_timer_nf_instance_no_heartbeat(void *data);
 void udr_timer_nf_instance_validity(void *data);
 void udr_timer_subscription_validity(void *data);
 

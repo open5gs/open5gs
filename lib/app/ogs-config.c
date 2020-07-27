@@ -154,6 +154,75 @@ static void recalculate_pool_size(void)
     self.pool.nf_subscription = self.max.nf * MAX_NUM_OF_NF_SUBSCRIPTION;
 }
 
+static void regenerate_all_timer_duration(void)
+{
+    ogs_assert(self.time.message.duration);
+
+    self.time.message.sbi.client_wait_duration = self.time.message.duration;
+    self.time.message.sbi.server_response_deadline =
+        self.time.message.sbi.client_wait_duration + ogs_time_from_sec(1);
+    self.time.message.sbi.nf_register_interval =
+        ogs_max(ogs_time_from_sec(3),
+            self.time.message.sbi.client_wait_duration + ogs_time_from_sec(1));
+    self.time.message.sbi.nf_register_interval_in_exception =
+                ogs_time_from_msec(300);
+
+#define PFCP_N1_RESPONSE_RETRY_COUNT  3
+    self.time.message.pfcp.n1_response_rcount = PFCP_N1_RESPONSE_RETRY_COUNT;
+    self.time.message.pfcp.t1_response_duration =
+        (self.time.message.duration /
+         (self.time.message.pfcp.n1_response_rcount + 1));
+    ogs_assert(self.time.message.pfcp.t1_response_duration);
+
+#define PFCP_N1_HOLDING_RETRY_COUNT 1
+    self.time.message.pfcp.n1_holding_rcount = PFCP_N1_HOLDING_RETRY_COUNT;
+    self.time.message.pfcp.t1_holding_duration =
+        self.time.message.pfcp.n1_response_rcount *
+        self.time.message.pfcp.t1_response_duration;
+    ogs_assert(self.time.message.pfcp.t1_holding_duration);
+
+    self.time.message.pfcp.association_interval =
+        ogs_max(ogs_time_from_sec(3),
+            self.time.message.sbi.client_wait_duration + ogs_time_from_sec(1));
+
+    self.time.message.pfcp.no_heartbeat_duration =
+        ogs_max(ogs_time_from_sec(10),
+            self.time.message.sbi.client_wait_duration + ogs_time_from_sec(1));
+
+#define GTP_N3_RESPONSE_RETRY_COUNT  3
+    self.time.message.gtp.n3_response_rcount = GTP_N3_RESPONSE_RETRY_COUNT;
+    self.time.message.gtp.t3_response_duration =
+        (self.time.message.duration /
+         (self.time.message.gtp.n3_response_rcount + 1));
+    ogs_assert(self.time.message.gtp.t3_response_duration);
+
+#define GTP_N3_HOLDING_RETRY_COUNT 1
+    self.time.message.gtp.n3_holding_rcount = GTP_N3_HOLDING_RETRY_COUNT;
+    self.time.message.gtp.t3_holding_duration =
+        self.time.message.gtp.n3_response_rcount *
+        self.time.message.gtp.t3_response_duration;
+    ogs_assert(self.time.message.gtp.t3_holding_duration);
+
+#if 0
+    ogs_trace("%lld, %lld, %lld, %d, %lld, %d %lld, %d, %lld, %d, %lld",
+        (long long)self.time.message.duration,
+        (long long)self.time.message.sbi.client_wait_duration,
+        (long long)self.time.message.sbi.server_response_deadline,
+        self.time.message.pfcp.n1_response_rcount,
+        (long long)self.time.message.pfcp.t1_response_duration,
+        self.time.message.pfcp.n1_holding_rcount,
+        (long long)self.time.message.pfcp.t1_holding_duration,
+        self.time.message.gtp.n3_response_rcount,
+        (long long)self.time.message.gtp.t3_response_duration,
+        self.time.message.gtp.n3_holding_rcount,
+        (long long)self.time.message.gtp.t3_holding_duration);
+    ogs_trace("%lld, %lld, %lld",
+        (long long)self.time.message.sbi.nf_register_interval,
+        (long long)self.time.message.pfcp.association_interval,
+        (long long)self.time.message.pfcp.no_heartbeat_duration);
+#endif
+}
+
 static int config_prepare(void)
 {
 #define USRSCTP_LOCAL_UDP_PORT      9899
@@ -187,13 +256,24 @@ static int config_prepare(void)
 
     recalculate_pool_size();
 
-    self.time.nf_instance.heartbeat = 10;        /* 10 second */
-    self.time.nf_instance.validity = 3600;      /* 3600 seconds = 1 hour */
-    self.time.subscription.validity = 86400;    /* 86400 seconds = 1 day */
+    /* 10 second */
+    self.time.nf_instance.heartbeat_interval = 10;
+    self.time.nf_instance.no_heartbeat_margin = 1;
+
+    /* 3600 seconds = 1 hour */
+    self.time.nf_instance.validity_duration = 3600;
+
+    /* 86400 seconds = 1 day */
+    self.time.subscription.validity_duration = 86400;
+
+    /* Message Wait Duration : 2 seconds */
+    self.time.message.duration = ogs_time_from_sec(2);
+
+    regenerate_all_timer_duration();
 
     return OGS_OK;
 }
-
+ 
 static int ogs_app_ctx_validation(void)
 {
     if (self.parameter.no_ipv4 == 1 &&
@@ -203,7 +283,7 @@ static int ogs_app_ctx_validation(void)
         return OGS_ERROR;
     }
 
-    if (self.time.nf_instance.validity == 0) {
+    if (self.time.nf_instance.validity_duration == 0) {
         ogs_error("NF Instance validity-time should not 0");
         ogs_error("time:");
         ogs_error("  nf_instance:");
@@ -425,10 +505,12 @@ int ogs_config_parse()
 
                         if (!strcmp(sbi_key, "heartbeat")) {
                             const char *v = ogs_yaml_iter_value(&sbi_iter);
-                            if (v) self.time.nf_instance.heartbeat = atoi(v);
+                            if (v) self.time.nf_instance.heartbeat_interval =
+                                        atoi(v);
                         } else if (!strcmp(sbi_key, "validity")) {
                             const char *v = ogs_yaml_iter_value(&sbi_iter);
-                            if (v) self.time.nf_instance.validity = atoi(v);
+                            if (v) self.time.nf_instance.validity_duration =
+                                        atoi(v);
                         } else
                             ogs_warn("unknown key `%s`", sbi_key);
                     }
@@ -443,9 +525,29 @@ int ogs_config_parse()
 
                         if (!strcmp(sbi_key, "validity")) {
                             const char *v = ogs_yaml_iter_value(&sbi_iter);
-                            if (v) self.time.subscription.validity = atoi(v);
+                            if (v) self.time.subscription.validity_duration =
+                                        atoi(v);
                         } else
                             ogs_warn("unknown key `%s`", sbi_key);
+                    }
+                } else if (!strcmp(time_key, "message")) {
+                    ogs_yaml_iter_t msg_iter;
+                    ogs_yaml_iter_recurse(&time_iter, &msg_iter);
+
+                    while (ogs_yaml_iter_next(&msg_iter)) {
+                        const char *msg_key =
+                            ogs_yaml_iter_key(&msg_iter);
+                        ogs_assert(msg_key);
+
+                        if (!strcmp(msg_key, "duration")) {
+                            const char *v = ogs_yaml_iter_value(&msg_iter);
+                            if (v) {
+                                self.time.message.duration = 
+                                    ogs_time_from_msec(atoll(v));
+                                regenerate_all_timer_duration();
+                            }
+                        } else
+                            ogs_warn("unknown key `%s`", msg_key);
                     }
                 } else
                     ogs_warn("unknown key `%s`", time_key);

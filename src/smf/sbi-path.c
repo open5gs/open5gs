@@ -134,7 +134,7 @@ void smf_sbi_discover_and_send(
 
     sess->sbi.nf_state_registered = smf_nf_state_registered;
     sess->sbi.client_wait.duration =
-        smf_timer_cfg(SMF_TIMER_SBI_CLIENT_WAIT)->duration;
+        ogs_config()->time.message.sbi.client_wait_duration;
     sess->sbi.client_cb = client_cb;
 
     if (ogs_sbi_discover_and_send(

@@ -59,9 +59,9 @@ void nrf_nf_state_initial(ogs_fsm_t *s, nrf_event_t *e)
     nf_instance = e->nf_instance;
     ogs_assert(nf_instance);
 
-    nf_instance->t_heartbeat = ogs_timer_add(nrf_self()->timer_mgr,
-            nrf_timer_nf_instance_heartbeat, nf_instance);
-    ogs_assert(nf_instance->t_heartbeat);
+    nf_instance->t_no_heartbeat = ogs_timer_add(nrf_self()->timer_mgr,
+            nrf_timer_nf_instance_no_heartbeat, nf_instance);
+    ogs_assert(nf_instance->t_no_heartbeat);
 
     OGS_FSM_TRAN(s, &nrf_nf_state_will_register);
 }
@@ -78,7 +78,7 @@ void nrf_nf_state_final(ogs_fsm_t *s, nrf_event_t *e)
     nf_instance = e->nf_instance;
     ogs_assert(nf_instance);
 
-    ogs_timer_delete(nf_instance->t_heartbeat);
+    ogs_timer_delete(nf_instance->t_no_heartbeat);
 }
 
 void nrf_nf_state_will_register(ogs_fsm_t *s, nrf_event_t *e)
@@ -186,10 +186,11 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
     switch (e->id) {
     case OGS_FSM_ENTRY_SIG:
         ogs_info("[%s] NF registred", nf_instance->id);
-        if (nf_instance->time.heartbeat) {
-            ogs_timer_start(nf_instance->t_heartbeat,
-                ogs_time_from_sec(nf_instance->time.heartbeat) *
-                    OGS_SBI_HEARTBEAT_RETRYCOUNT);
+        if (nf_instance->time.heartbeat_interval) {
+            ogs_timer_start(nf_instance->t_no_heartbeat,
+                    ogs_time_from_sec(
+                        nf_instance->time.heartbeat_interval +
+                        ogs_config()->time.nf_instance.no_heartbeat_margin));
         }
 
         nrf_nnrf_nfm_send_nf_status_notify_all(
@@ -198,8 +199,8 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
 
     case OGS_FSM_EXIT_SIG:
         ogs_info("[%s] NF de-registered", nf_instance->id);
-        if (nf_instance->time.heartbeat) {
-            ogs_timer_stop(nf_instance->t_heartbeat);
+        if (nf_instance->time.heartbeat_interval) {
+            ogs_timer_stop(nf_instance->t_no_heartbeat);
         }
 
         nrf_nnrf_nfm_send_nf_status_notify_all(
@@ -221,10 +222,12 @@ void nrf_nf_state_registered(ogs_fsm_t *s, nrf_event_t *e)
                 SWITCH(message->h.method)
                 CASE(OGS_SBI_HTTP_METHOD_PUT)
                 CASE(OGS_SBI_HTTP_METHOD_PATCH)
-                    if (nf_instance->time.heartbeat) {
-                        ogs_timer_start(nf_instance->t_heartbeat,
-                            ogs_time_from_sec(nf_instance->time.heartbeat) *
-                                OGS_SBI_HEARTBEAT_RETRYCOUNT);
+                    if (nf_instance->time.heartbeat_interval) {
+                        ogs_timer_start(nf_instance->t_no_heartbeat,
+                            ogs_time_from_sec(
+                                nf_instance->time.heartbeat_interval +
+                                ogs_config()->time.nf_instance.
+                                    no_heartbeat_margin));
                     }
 
                     handled = nrf_nnrf_handle_nf_update(

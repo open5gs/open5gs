@@ -40,7 +40,7 @@ void amf_nnrf_handle_nf_register(
     }
 
     /* TIME : Update heartbeat from NRF */
-    nf_instance->time.heartbeat = NFProfile->heart_beat_timer;
+    nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
 }
 
 void amf_nnrf_handle_nf_status_subscribe(
@@ -277,11 +277,12 @@ void amf_nnrf_handle_nf_discover(
 
             /* TIME : Update validity from NRF */
             if (SearchResult->validity_period) {
-                nf_instance->time.validity = SearchResult->validity_period;
+                nf_instance->time.validity_duration =
+                        SearchResult->validity_period;
 
                 ogs_assert(nf_instance->t_validity);
                 ogs_timer_start(nf_instance->t_validity,
-                        ogs_time_from_sec(nf_instance->time.validity));
+                    ogs_time_from_sec(nf_instance->time.validity_duration));
 
             } else
                 ogs_warn("[%s] NF Instance validity-time should not 0",

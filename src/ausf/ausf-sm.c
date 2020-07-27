@@ -207,7 +207,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
                 ogs_fsm_dispatch(&nf_instance->sm, e);
 
                 if (OGS_FSM_CHECK(&nf_instance->sm, ausf_nf_state_exception)) {
-                    ogs_error("[%s] State machine exception", nf_instance->id);
+                    ogs_warn("[%s] State machine exception", nf_instance->id);
                 }
                 break;
 
@@ -315,7 +315,7 @@ void ausf_state_operational(ogs_fsm_t *s, ausf_event_t *e)
         switch(e->timer_id) {
         case AUSF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
         case AUSF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-        case AUSF_TIMER_NF_INSTANCE_HEARTBEAT:
+        case AUSF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
         case AUSF_TIMER_NF_INSTANCE_VALIDITY:
             nf_instance = e->sbi.data;
             ogs_assert(nf_instance);

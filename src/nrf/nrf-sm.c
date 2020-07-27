@@ -112,7 +112,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
                             nrf_nf_fsm_init(nf_instance);
                             break;
                         DEFAULT
-                            ogs_error("Not found [%s]",
+                            ogs_warn("Not found [%s]",
                                     message.h.resource.component[1]);
                             ogs_sbi_server_send_error(session,
                                 OGS_SBI_HTTP_STATUS_NOT_FOUND,
@@ -216,7 +216,7 @@ void nrf_state_operational(ogs_fsm_t *s, nrf_event_t *e)
 
     case NRF_EVT_SBI_TIMER:
         switch(e->timer_id) {
-        case NRF_TIMER_NF_INSTANCE_HEARTBEAT:
+        case NRF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
             nf_instance = e->nf_instance;
             ogs_assert(nf_instance);
 

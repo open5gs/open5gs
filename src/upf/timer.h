@@ -31,23 +31,16 @@ typedef enum {
     UPF_TIMER_BASE = 0,
 
     UPF_TIMER_ASSOCIATION,
-    UPF_TIMER_HEARTBEAT,
+    UPF_TIMER_NO_HEARTBEAT,
 
     MAX_NUM_OF_UPF_TIMER,
 
 } upf_timer_e;
 
-typedef struct upf_timer_cfg_s {
-    int max_count;
-    ogs_time_t duration;
-} upf_timer_cfg_t;
-
-upf_timer_cfg_t *upf_timer_cfg(upf_timer_e id);
-
 const char *upf_timer_get_name(upf_timer_e id);
 
 void upf_timer_association(void *data);
-void upf_timer_heartbeat(void *data);
+void upf_timer_no_heartbeat(void *data);
 
 #ifdef __cplusplus
 }

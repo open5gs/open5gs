@@ -440,7 +440,8 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id)
     nf_instance->id = ogs_strdup(id);
     ogs_assert(nf_instance->id);
 
-    nf_instance->time.heartbeat = ogs_config()->time.nf_instance.heartbeat;
+    nf_instance->time.heartbeat_interval =
+            ogs_config()->time.nf_instance.heartbeat_interval;
 
     nf_instance->t_registration_interval = ogs_timer_add(
             ogs_sbi_self()->timer_mgr, NULL, nf_instance);
@@ -448,9 +449,9 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id)
     nf_instance->t_heartbeat_interval = ogs_timer_add(
             ogs_sbi_self()->timer_mgr, NULL, nf_instance);
     ogs_assert(nf_instance->t_heartbeat_interval);
-    nf_instance->t_heartbeat = ogs_timer_add(
+    nf_instance->t_no_heartbeat = ogs_timer_add(
             ogs_sbi_self()->timer_mgr, NULL, nf_instance);
-    ogs_assert(nf_instance->t_heartbeat);
+    ogs_assert(nf_instance->t_no_heartbeat);
     nf_instance->t_validity = ogs_timer_add(
             ogs_sbi_self()->timer_mgr, NULL, nf_instance);
     ogs_assert(nf_instance->t_validity);
@@ -500,7 +501,7 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
 
     ogs_timer_delete(nf_instance->t_registration_interval);
     ogs_timer_delete(nf_instance->t_heartbeat_interval);
-    ogs_timer_delete(nf_instance->t_heartbeat);
+    ogs_timer_delete(nf_instance->t_no_heartbeat);
     ogs_timer_delete(nf_instance->t_validity);
 
     if (nf_instance->client)
@@ -990,7 +991,8 @@ ogs_sbi_subscription_t *ogs_sbi_subscription_add(void)
     ogs_assert(subscription);
     memset(subscription, 0, sizeof(ogs_sbi_subscription_t));
 
-    subscription->time.validity = ogs_config()->time.subscription.validity;
+    subscription->time.validity_duration =
+            ogs_config()->time.subscription.validity_duration;
 
     ogs_list_add(&ogs_sbi_self()->subscription_list, subscription);
 

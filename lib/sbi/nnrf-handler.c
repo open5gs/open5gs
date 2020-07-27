@@ -66,7 +66,7 @@ bool ogs_sbi_nnrf_handle_nf_profile(ogs_sbi_nf_instance_t *nf_instance,
 
     nf_instance->nf_type = NFProfile->nf_type;
     nf_instance->nf_status = NFProfile->nf_status;
-    nf_instance->time.heartbeat = NFProfile->heart_beat_timer;
+    nf_instance->time.heartbeat_interval = NFProfile->heart_beat_timer;
 
     if (NFProfile->fqdn)
         ogs_fqdn_parse(nf_instance->fqdn,

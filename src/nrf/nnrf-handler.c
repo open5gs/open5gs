@@ -178,15 +178,16 @@ bool nrf_nnrf_handle_nf_status_subscribe(
 
     ogs_freeaddrinfo(addr);
 
-    if (subscription->time.validity) {
+    if (subscription->time.validity_duration) {
         SubscriptionData->validity_time = ogs_sbi_localtime_string(
-            ogs_time_now() + ogs_time_from_sec(subscription->time.validity));
+            ogs_time_now() + ogs_time_from_sec(
+                subscription->time.validity_duration));
 
         subscription->t_validity = ogs_timer_add(nrf_self()->timer_mgr,
             nrf_timer_subscription_validity, subscription);
         ogs_assert(subscription->t_validity);
         ogs_timer_start(subscription->t_validity,
-                ogs_time_from_sec(subscription->time.validity));
+                ogs_time_from_sec(subscription->time.validity_duration));
     }
 
     message->http.location = message->h.uri;
@@ -357,7 +358,8 @@ bool nrf_nnrf_handle_nf_discover(
     SearchResult = ogs_calloc(1, sizeof(*SearchResult));
     ogs_assert(SearchResult);
 
-    SearchResult->validity_period = ogs_config()->time.nf_instance.validity;
+    SearchResult->validity_period =
+        ogs_config()->time.nf_instance.validity_duration;
     ogs_assert(SearchResult->validity_period);
 
     SearchResult->nf_instances = OpenAPI_list_create();

@@ -19,17 +19,6 @@
 
 #include "context.h"
 
-static udr_timer_cfg_t g_udr_timer_cfg[MAX_NUM_OF_UDR_TIMER] = {
-    [UDR_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL] =
-        { .duration = ogs_time_from_sec(3) },
-};
-
-udr_timer_cfg_t *udr_timer_cfg(udr_timer_e id)
-{
-    ogs_assert(id < MAX_NUM_OF_UDR_TIMER);
-    return &g_udr_timer_cfg[id];
-}
-
 const char *udr_timer_get_name(udr_timer_e id)
 {
     switch (id) {
@@ -37,8 +26,8 @@ const char *udr_timer_get_name(udr_timer_e id)
         return "UDR_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL";
     case UDR_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
         return "UDR_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL";
-    case UDR_TIMER_NF_INSTANCE_HEARTBEAT:
-        return "UDR_TIMER_NF_INSTANCE_HEARTBEAT";
+    case UDR_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+        return "UDR_TIMER_NF_INSTANCE_NO_HEARTBEAT";
     case UDR_TIMER_NF_INSTANCE_VALIDITY:
         return "UDR_TIMER_NF_INSTANCE_VALIDITY";
     case UDR_TIMER_SUBSCRIPTION_VALIDITY:
@@ -59,7 +48,7 @@ static void sbi_timer_send_event(int timer_id, void *data)
     switch (timer_id) {
     case UDR_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
     case UDR_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-    case UDR_TIMER_NF_INSTANCE_HEARTBEAT:
+    case UDR_TIMER_NF_INSTANCE_NO_HEARTBEAT:
     case UDR_TIMER_NF_INSTANCE_VALIDITY:
     case UDR_TIMER_SUBSCRIPTION_VALIDITY:
         e = udr_event_new(UDR_EVT_SBI_TIMER);
@@ -91,9 +80,9 @@ void udr_timer_nf_instance_heartbeat_interval(void *data)
     sbi_timer_send_event(UDR_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL, data);
 }
 
-void udr_timer_nf_instance_heartbeat(void *data)
+void udr_timer_nf_instance_no_heartbeat(void *data)
 {
-    sbi_timer_send_event(UDR_TIMER_NF_INSTANCE_HEARTBEAT, data);
+    sbi_timer_send_event(UDR_TIMER_NF_INSTANCE_NO_HEARTBEAT, data);
 }
 
 void udr_timer_nf_instance_validity(void *data)

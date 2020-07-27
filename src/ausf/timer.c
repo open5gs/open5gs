@@ -19,19 +19,6 @@
 
 #include "context.h"
 
-static ausf_timer_cfg_t g_ausf_timer_cfg[MAX_NUM_OF_AUSF_TIMER] = {
-    [AUSF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL] =
-        { .duration = ogs_time_from_sec(3) },
-    [AUSF_TIMER_SBI_CLIENT_WAIT] =
-        { .duration = ogs_time_from_msec(500) },
-};
-
-ausf_timer_cfg_t *ausf_timer_cfg(ausf_timer_e id)
-{
-    ogs_assert(id < MAX_NUM_OF_AUSF_TIMER);
-    return &g_ausf_timer_cfg[id];
-}
-
 const char *ausf_timer_get_name(ausf_timer_e id)
 {
     switch (id) {
@@ -39,8 +26,8 @@ const char *ausf_timer_get_name(ausf_timer_e id)
         return "AUSF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL";
     case AUSF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
         return "AUSF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL";
-    case AUSF_TIMER_NF_INSTANCE_HEARTBEAT:
-        return "AUSF_TIMER_NF_INSTANCE_HEARTBEAT";
+    case AUSF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+        return "AUSF_TIMER_NF_INSTANCE_NO_HEARTBEAT";
     case AUSF_TIMER_NF_INSTANCE_VALIDITY:
         return "AUSF_TIMER_NF_INSTANCE_VALIDITY";
     case AUSF_TIMER_SUBSCRIPTION_VALIDITY:
@@ -63,7 +50,7 @@ static void sbi_timer_send_event(int timer_id, void *data)
     switch (timer_id) {
     case AUSF_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
     case AUSF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-    case AUSF_TIMER_NF_INSTANCE_HEARTBEAT:
+    case AUSF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
     case AUSF_TIMER_NF_INSTANCE_VALIDITY:
     case AUSF_TIMER_SUBSCRIPTION_VALIDITY:
     case AUSF_TIMER_SBI_CLIENT_WAIT:
@@ -96,9 +83,9 @@ void ausf_timer_nf_instance_heartbeat_interval(void *data)
     sbi_timer_send_event(AUSF_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL, data);
 }
 
-void ausf_timer_nf_instance_heartbeat(void *data)
+void ausf_timer_nf_instance_no_heartbeat(void *data)
 {
-    sbi_timer_send_event(AUSF_TIMER_NF_INSTANCE_HEARTBEAT, data);
+    sbi_timer_send_event(AUSF_TIMER_NF_INSTANCE_NO_HEARTBEAT, data);
 }
 
 void ausf_timer_nf_instance_validity(void *data)

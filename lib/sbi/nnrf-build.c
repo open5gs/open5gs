@@ -259,7 +259,7 @@ ogs_sbi_request_t *ogs_nnrf_nfm_build_register(
     NFProfile = ogs_nnrf_nfm_build_nf_profile(nf_instance);
     ogs_assert(NFProfile);
 
-    NFProfile->heart_beat_timer = nf_instance->time.heartbeat;
+    NFProfile->heart_beat_timer = nf_instance->time.heartbeat_interval;
 
     message.NFProfile = NFProfile;
 

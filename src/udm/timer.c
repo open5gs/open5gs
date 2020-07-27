@@ -19,19 +19,6 @@
 
 #include "context.h"
 
-static udm_timer_cfg_t g_udm_timer_cfg[MAX_NUM_OF_UDM_TIMER] = {
-    [UDM_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL] =
-        { .duration = ogs_time_from_sec(3) },
-    [UDM_TIMER_SBI_CLIENT_WAIT] =
-        { .duration = ogs_time_from_msec(500) },
-};
-
-udm_timer_cfg_t *udm_timer_cfg(udm_timer_e id)
-{
-    ogs_assert(id < MAX_NUM_OF_UDM_TIMER);
-    return &g_udm_timer_cfg[id];
-}
-
 const char *udm_timer_get_name(udm_timer_e id)
 {
     switch (id) {
@@ -39,8 +26,8 @@ const char *udm_timer_get_name(udm_timer_e id)
         return "UDM_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL";
     case UDM_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
         return "UDM_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL";
-    case UDM_TIMER_NF_INSTANCE_HEARTBEAT:
-        return "UDM_TIMER_NF_INSTANCE_HEARTBEAT";
+    case UDM_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+        return "UDM_TIMER_NF_INSTANCE_NO_HEARTBEAT";
     case UDM_TIMER_NF_INSTANCE_VALIDITY:
         return "UDM_TIMER_NF_INSTANCE_VALIDITY";
     case UDM_TIMER_SUBSCRIPTION_VALIDITY:
@@ -63,7 +50,7 @@ static void sbi_timer_send_event(int timer_id, void *data)
     switch (timer_id) {
     case UDM_TIMER_NF_INSTANCE_REGISTRATION_INTERVAL:
     case UDM_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL:
-    case UDM_TIMER_NF_INSTANCE_HEARTBEAT:
+    case UDM_TIMER_NF_INSTANCE_NO_HEARTBEAT:
     case UDM_TIMER_NF_INSTANCE_VALIDITY:
     case UDM_TIMER_SUBSCRIPTION_VALIDITY:
     case UDM_TIMER_SBI_CLIENT_WAIT:
@@ -96,9 +83,9 @@ void udm_timer_nf_instance_heartbeat_interval(void *data)
     sbi_timer_send_event(UDM_TIMER_NF_INSTANCE_HEARTBEAT_INTERVAL, data);
 }
 
-void udm_timer_nf_instance_heartbeat(void *data)
+void udm_timer_nf_instance_no_heartbeat(void *data)
 {
-    sbi_timer_send_event(UDM_TIMER_NF_INSTANCE_HEARTBEAT, data);
+    sbi_timer_send_event(UDM_TIMER_NF_INSTANCE_NO_HEARTBEAT, data);
 }
 
 void udm_timer_nf_instance_validity(void *data)

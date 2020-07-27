@@ -64,14 +64,13 @@ typedef struct ogs_sbi_nf_instance_s {
     ogs_fsm_t       sm;                         /* A state machine */
     ogs_timer_t     *t_registration_interval;   /* timer to retry
                                                    to register peer node */
-#define OGS_SBI_HEARTBEAT_RETRYCOUNT 4
     struct {
-        int heartbeat;
-        int validity;
+        int heartbeat_interval;
+        int validity_duration;
     } time;
 
     ogs_timer_t     *t_heartbeat_interval;  /* heartbeat interval */
-    ogs_timer_t     *t_heartbeat;           /* check heartbeat */
+    ogs_timer_t     *t_no_heartbeat;        /* check heartbeat */
     ogs_timer_t     *t_validity;            /* check validation */
 
 #define NF_INSTANCE_IS_SELF(_iD) \
@@ -159,7 +158,7 @@ typedef struct ogs_sbi_subscription_s {
     ogs_lnode_t lnode;
 
     struct {
-        int validity;
+        int validity_duration;
     } time;
 
     ogs_timer_t *t_validity;            /* check validation */

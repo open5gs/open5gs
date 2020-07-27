@@ -18,12 +18,7 @@
  */
 
 #include "ogs-gtp.h"
-
-#define GTP_T3_RESPONSE_DURATION        ogs_time_from_sec(3) /* 3 seconds */
-#define GTP_T3_RESPONSE_RETRY_COUNT     3
-#define GTP_T3_DUPLICATED_DURATION \
-    (GTP_T3_RESPONSE_DURATION * GTP_T3_RESPONSE_RETRY_COUNT) /* 9 seconds */
-#define GTP_T3_DUPLICATED_RETRY_COUNT   1
+#include "ogs-app.h"
 
 typedef enum {
     GTP_XACT_UNKNOWN_STAGE,
@@ -99,11 +94,11 @@ ogs_gtp_xact_t *ogs_gtp_xact_local_create(ogs_gtp_node_t *gnode,
 
     xact->tm_response = ogs_timer_add(g_timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = GTP_T3_RESPONSE_RETRY_COUNT;
+    xact->response_rcount = ogs_config()->time.message.gtp.n3_response_rcount,
 
     xact->tm_holding = ogs_timer_add(g_timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = GTP_T3_DUPLICATED_RETRY_COUNT;
+    xact->holding_rcount = ogs_config()->time.message.gtp.n3_holding_rcount,
 
     ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
@@ -142,11 +137,11 @@ ogs_gtp_xact_t *ogs_gtp_xact_remote_create(ogs_gtp_node_t *gnode, uint32_t sqn)
 
     xact->tm_response = ogs_timer_add(g_timer_mgr, response_timeout, xact);
     ogs_assert(xact->tm_response);
-    xact->response_rcount = GTP_T3_RESPONSE_RETRY_COUNT;
+    xact->response_rcount = ogs_config()->time.message.gtp.n3_response_rcount,
 
     xact->tm_holding = ogs_timer_add(g_timer_mgr, holding_timeout, xact);
     ogs_assert(xact->tm_holding);
-    xact->holding_rcount = GTP_T3_DUPLICATED_RETRY_COUNT;
+    xact->holding_rcount = ogs_config()->time.message.gtp.n3_holding_rcount,
 
     ogs_list_add(xact->org == OGS_GTP_LOCAL_ORIGINATOR ?  
             &xact->gnode->local_list : &xact->gnode->remote_list, xact);
@@ -311,8 +306,9 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 pkbuf = xact->seq[2].pkbuf;
                 if (pkbuf) {
                     if (xact->tm_holding)
-                        ogs_timer_start(
-                                xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
+                        ogs_timer_start(xact->tm_holding,
+                                ogs_config()->time.message.
+                                    gtp.t3_holding_duration);
 
                     ogs_warn("[%d] %s Request Duplicated. Retransmit!"
                             " for step %d type %d peer [%s]:%d",
@@ -346,8 +342,8 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
             }
 
             if (xact->tm_holding)
-                ogs_timer_start(
-                        xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
+                ogs_timer_start(xact->tm_holding,
+                        ogs_config()->time.message.gtp.t3_holding_duration);
 
             break;
 
@@ -376,8 +372,9 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 pkbuf = xact->seq[1].pkbuf;
                 if (pkbuf) {
                     if (xact->tm_holding)
-                        ogs_timer_start(
-                                xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
+                        ogs_timer_start(xact->tm_holding,
+                                ogs_config()->time.message.
+                                    gtp.t3_holding_duration);
 
                     ogs_warn("[%d] %s Request Duplicated. Retransmit!"
                             " for step %d type %d peer [%s]:%d",
@@ -410,8 +407,8 @@ int ogs_gtp_xact_update_rx(ogs_gtp_xact_t *xact, uint8_t type)
                 return OGS_ERROR;
             }
             if (xact->tm_holding)
-                ogs_timer_start(
-                        xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
+                ogs_timer_start(xact->tm_holding,
+                        ogs_config()->time.message.gtp.t3_holding_duration);
 
             break;
 
@@ -481,7 +478,8 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
             }
 
             if (xact->tm_response)
-                ogs_timer_start(xact->tm_response, GTP_T3_RESPONSE_DURATION);
+                ogs_timer_start(xact->tm_response,
+                        ogs_config()->time.message.gtp.t3_response_duration);
 
             break;
 
@@ -522,8 +520,8 @@ int ogs_gtp_xact_commit(ogs_gtp_xact_t *xact)
                 return OGS_ERROR;
             }
             if (xact->tm_response)
-                ogs_timer_start(
-                        xact->tm_response, GTP_T3_RESPONSE_DURATION);
+                ogs_timer_start(xact->tm_response,
+                        ogs_config()->time.message.gtp.t3_response_duration);
 
             break;
 
@@ -580,7 +578,8 @@ static void response_timeout(void *data)
         ogs_pkbuf_t *pkbuf = NULL;
 
         if (xact->tm_response)
-            ogs_timer_start(xact->tm_response, GTP_T3_RESPONSE_DURATION);
+            ogs_timer_start(xact->tm_response,
+                    ogs_config()->time.message.gtp.t3_response_duration);
 
         pkbuf = xact->seq[xact->step-1].pkbuf;
         ogs_assert(pkbuf);
@@ -628,7 +627,8 @@ static void holding_timeout(void *data)
 
     if (--xact->holding_rcount > 0) {
         if (xact->tm_holding)
-            ogs_timer_start(xact->tm_holding, GTP_T3_DUPLICATED_DURATION);
+            ogs_timer_start(xact->tm_holding,
+                    ogs_config()->time.message.gtp.t3_holding_duration);
     } else {
         ogs_debug("[%d] %s Delete Transaction "
                 "for step %d type %d peer [%s]:%d",
