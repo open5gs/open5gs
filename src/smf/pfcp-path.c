@@ -17,8 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "context.h"
-
+#include "sbi-path.h"
 #include "pfcp-path.h"
 #include "n4-build.h"
 
@@ -197,6 +196,73 @@ static void timeout(ogs_pfcp_xact_t *xact, void *data)
         }
         break;
     default:
+        ogs_error("Not implemented [type:%d]", type);
+        break;
+    }
+}
+
+static void sess_5gc_timeout(ogs_pfcp_xact_t *xact, void *data)
+{
+    smf_ue_t *smf_ue = NULL;
+    smf_sess_t *sess = NULL;
+    ogs_sbi_session_t *session = NULL;
+    uint8_t type;
+    char *strerror = NULL;
+
+    ogs_assert(xact);
+    ogs_assert(data);
+
+    sess = data;
+    ogs_assert(sess);
+    session = sess->sbi.session;
+    ogs_assert(session);
+    smf_ue = sess->smf_ue;
+    ogs_assert(smf_ue);
+
+    type = xact->seq[0].type;
+    switch (type) {
+    case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
+        ogs_error("No PFCP session establishment response");
+        break;
+    case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
+        strerror = ogs_msprintf("[%s:%d] No PFCP session modification response",
+                smf_ue->supi, sess->psi);
+        smf_sbi_send_sm_context_update_error(session,
+                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT,
+                strerror, NULL, NULL, NULL);
+        break;
+    case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
+        strerror = ogs_msprintf("[%s:%d] No PFCP session deletion response",
+                smf_ue->supi, sess->psi);
+        ogs_sbi_server_send_error(session,
+                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL, strerror, NULL);
+        ogs_free(strerror);
+        break;
+    default:
+        ogs_error("Not implemented [type:%d]", type);
+        break;
+    }
+}
+
+static void sess_epc_timeout(ogs_pfcp_xact_t *xact, void *data)
+{
+    uint8_t type;
+
+    ogs_assert(xact);
+    type = xact->seq[0].type;
+
+    switch (type) {
+    case OGS_PFCP_SESSION_ESTABLISHMENT_REQUEST_TYPE:
+        ogs_error("No PFCP session establishment response");
+        break;
+    case OGS_PFCP_SESSION_MODIFICATION_REQUEST_TYPE:
+        ogs_error("No PFCP session modification response");
+        break;
+    case OGS_PFCP_SESSION_DELETION_REQUEST_TYPE:
+        ogs_error("No PFCP session deletion response");
+        break;
+    default:
+        ogs_error("Not implemented [type:%d]", type);
         break;
     }
 }
@@ -287,7 +353,7 @@ void smf_5gc_pfcp_send_session_establishment_request(smf_sess_t *sess)
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, timeout, sess);
+            sess->pfcp_node, &h, n4buf, sess_5gc_timeout, sess);
     ogs_expect_or_return(xact);
 
     rv = ogs_pfcp_xact_commit(xact);
@@ -300,7 +366,6 @@ void smf_5gc_pfcp_send_session_modification_request(smf_sess_t *sess)
     ogs_pkbuf_t *n4buf = NULL;
     ogs_pfcp_header_t h;
     ogs_pfcp_xact_t *xact = NULL;
-    smf_bearer_t *bearer = NULL;
 
     ogs_assert(sess);
 
@@ -312,7 +377,7 @@ void smf_5gc_pfcp_send_session_modification_request(smf_sess_t *sess)
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, timeout, bearer);
+            sess->pfcp_node, &h, n4buf, sess_5gc_timeout, sess);
     ogs_expect_or_return(xact);
     xact->assoc_session = sess->sbi.session;
 
@@ -338,7 +403,7 @@ void smf_5gc_pfcp_send_session_deletion_request(smf_sess_t *sess, int trigger)
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, timeout, sess);
+            sess->pfcp_node, &h, n4buf, sess_5gc_timeout, sess);
     ogs_expect_or_return(xact);
     xact->assoc_session = sess->sbi.session;
     xact->trigger = trigger;
@@ -365,7 +430,7 @@ void smf_epc_pfcp_send_session_establishment_request(
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, timeout, sess);
+            sess->pfcp_node, &h, n4buf, sess_epc_timeout, sess);
     ogs_expect_or_return(xact);
     xact->assoc_xact = gtp_xact;
 
@@ -393,7 +458,7 @@ void smf_epc_pfcp_send_session_modification_request(smf_bearer_t *bearer)
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, timeout, bearer);
+            sess->pfcp_node, &h, n4buf, sess_epc_timeout, bearer);
     ogs_expect_or_return(xact);
 
     rv = ogs_pfcp_xact_commit(xact);
@@ -418,7 +483,7 @@ void smf_epc_pfcp_send_session_deletion_request(
     ogs_expect_or_return(n4buf);
 
     xact = ogs_pfcp_xact_local_create(
-            sess->pfcp_node, &h, n4buf, timeout, sess);
+            sess->pfcp_node, &h, n4buf, sess_epc_timeout, sess);
     ogs_expect_or_return(xact);
     xact->assoc_xact = gtp_xact;
 

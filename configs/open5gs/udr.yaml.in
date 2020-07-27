@@ -179,9 +179,9 @@ pool:
 #    nf_instance:
 #      heartbeat: 10
 #
-#  o Message Wait Duration (Default : 2000ms = 2 seconds)
+#  o Message Wait Duration (Default : 1000ms = 1 second)
 #
-#  o Message Wait Duration (3 seconds)
+#  o Message Wait Duration (1200 ms)
 #    message:
-#        duration: 3000
+#        duration: 1200
 time:

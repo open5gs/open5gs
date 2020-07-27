@@ -266,8 +266,8 @@ static int config_prepare(void)
     /* 86400 seconds = 1 day */
     self.time.subscription.validity_duration = 86400;
 
-    /* Message Wait Duration : 2 seconds */
-    self.time.message.duration = ogs_time_from_sec(2);
+    /* Message Wait Duration : 1 seconds */
+    self.time.message.duration = ogs_time_from_sec(1);
 
     regenerate_all_timer_duration();
 
