@@ -62,7 +62,7 @@ static int client_notify_cb(ogs_sbi_response_t *response, void *data)
     }
 
     if (message.res_status != OGS_SBI_HTTP_STATUS_NO_CONTENT)
-        ogs_error("Subscription notification failed [%d]", message.res_status);
+        ogs_warn("Subscription notification failed [%d]", message.res_status);
 
     ogs_sbi_message_free(&message);
     ogs_sbi_response_free(response);

@@ -279,6 +279,7 @@ void amf_nf_state_registered(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case AMF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
+            ogs_error("[%s] No heartbeat", nf_instance->id);
             OGS_FSM_TRAN(s, &amf_nf_state_will_register);
             break;
 

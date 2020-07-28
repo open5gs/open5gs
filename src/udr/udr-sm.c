@@ -210,10 +210,6 @@ void udr_state_operational(ogs_fsm_t *s, udr_event_t *e)
 
                 e->sbi.message = &message;
                 ogs_fsm_dispatch(&nf_instance->sm, e);
-
-                if (OGS_FSM_CHECK(&nf_instance->sm, udr_nf_state_exception)) {
-                    ogs_warn("[%s] State machine exception", nf_instance->id);
-                }
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTIONS)
