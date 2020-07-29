@@ -35,6 +35,7 @@ extern "C" {
         if ((__cTX)->client != __pCLIENT) \
             __pCLIENT->reference_count++; \
         (__cTX)->client = __pCLIENT; \
+        ogs_trace("client->reference_count = %d", __pCLIENT->reference_count); \
     } while(0)
 
 typedef int (*ogs_sbi_client_cb_f)(ogs_sbi_response_t *response, void *data);

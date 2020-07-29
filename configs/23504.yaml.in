@@ -4,6 +4,13 @@ logger:
 
 parameter:
     no_ipv6: true
+#    no_nrf: true
+#    no_amf: true
+#    no_smf: true
+#    no_upf: true
+#    no_ausf: true
+#    no_udm: true
+#    no_udr: true
 
 mme:
     freeDiameter:

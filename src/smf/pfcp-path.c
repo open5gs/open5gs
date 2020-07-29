@@ -195,6 +195,8 @@ static void timeout(ogs_pfcp_xact_t *xact, void *data)
             smf_event_free(e);
         }
         break;
+    case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
+        break;
     default:
         ogs_error("Not implemented [type:%d]", type);
         break;

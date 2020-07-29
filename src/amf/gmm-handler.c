@@ -958,6 +958,10 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                     OpenAPI_nf_type_SMF, sess, &param,
                     amf_nsmf_pdu_session_build_update_sm_context);
 
+            if (gsm_header->message_type ==
+                    OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE) {
+                CLEAR_SM_CONTEXT_REF(sess);
+            }
         }
         break;
 

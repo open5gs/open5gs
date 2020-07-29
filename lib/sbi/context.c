@@ -436,6 +436,7 @@ ogs_sbi_nf_instance_t *ogs_sbi_nf_instance_add(char *id)
     memset(nf_instance, 0, sizeof(ogs_sbi_nf_instance_t));
 
     nf_instance->reference_count++;
+    ogs_trace("ogs_sbi_nf_instance_add()");
 
     nf_instance->id = ogs_strdup(id);
     ogs_assert(nf_instance->id);
@@ -486,10 +487,13 @@ void ogs_sbi_nf_instance_remove(ogs_sbi_nf_instance_t *nf_instance)
 {
     ogs_assert(nf_instance);
 
+    ogs_trace("nf_instance->reference_count = %d",
+            nf_instance->reference_count);
     nf_instance->reference_count--;
     if (nf_instance->reference_count > 0)
         return;
 
+    ogs_trace("ogs_sbi_nf_instance_remove()");
     ogs_list_remove(&ogs_sbi_self()->nf_instance_list, nf_instance);
 
     ogs_sbi_subscription_remove_all_by_nf_instance_id(nf_instance->id);

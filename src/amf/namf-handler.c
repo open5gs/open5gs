@@ -18,6 +18,7 @@
  */
 
 #include "namf-handler.h"
+#include "nsmf-handler.h"
 
 #include "nas-path.h"
 #include "gmm-build.h"
@@ -227,8 +228,8 @@ int amf_namf_callback_handle_sm_context_status(
     }
 
     if (StatusInfo->resource_status == OpenAPI_resource_status_RELEASED) {
-        ogs_info("[%s:%d] Session Released", amf_ue->supi, sess->psi);
-        amf_sess_remove(sess);
+        ogs_info("[%s:%d] SM context status released", amf_ue->supi, sess->psi);
+        amf_nsmf_pdu_session_handle_release_sm_context(sess);
     }
 
 cleanup:

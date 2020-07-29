@@ -389,6 +389,13 @@ typedef struct amf_sess_s {
 
 #define SESSION_CONTEXT_IN_SMF(__sESS)  \
     ((__sESS) && (__sESS)->sm_context_ref)
+#define CLEAR_SM_CONTEXT_REF(__sESS) \
+    do { \
+        ogs_assert(__sESS); \
+        ogs_assert((__sESS)->sm_context_ref); \
+        ogs_free((__sESS)->sm_context_ref); \
+        (__sESS)->sm_context_ref = NULL; \
+    } while(0);
     char *sm_context_ref;   /* smContextRef from SMF */
 
 #define SESSION_SYNC_DONE(__aMF)  \

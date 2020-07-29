@@ -395,7 +395,10 @@ void ogs_sbi_server_send_response(
     ogs_assert(request->poll);
 
     ret = MHD_queue_response(connection, response->status, mhd_response);
-    ogs_assert(ret == MHD_YES);
+    if (ret != MHD_YES) {
+        ogs_fatal("MHD_queue_response_error [%d]", ret);
+        ogs_assert_if_reached();
+    }
     MHD_destroy_response(mhd_response);
 }
 

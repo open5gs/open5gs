@@ -406,8 +406,16 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
-                amf_nsmf_pdu_session_handle_release_sm_context(
-                        sess, &sbi_message);
+                if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_NO_CONTENT ||
+                    sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK) {
+                    ogs_info("[%s:%d] Release SM context [%d]",
+                            amf_ue->supi, sess->psi, sbi_message.res_status);
+                } else {
+                    ogs_error("[%s] HTTP response error [%d]",
+                            amf_ue->supi, sbi_message.res_status);
+                }
+
+                amf_nsmf_pdu_session_handle_release_sm_context(sess);
                 break;
 
             DEFAULT

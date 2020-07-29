@@ -98,6 +98,8 @@ ogs_sbi_client_t *ogs_sbi_client_add(ogs_sockaddr_t *addr)
     ogs_assert(client);
     memset(client, 0, sizeof(ogs_sbi_client_t));
 
+    ogs_trace("ogs_sbi_client_add()");
+
     ogs_copyaddrinfo(&client->addr, addr);
 
     ogs_list_init(&client->connection_list);
@@ -124,10 +126,12 @@ void ogs_sbi_client_remove(ogs_sbi_client_t *client)
     /* ogs_sbi_client_t is always created with reference context */
     ogs_assert(client->reference_count > 0);
 
+    ogs_trace("client->reference_count = %d", client->reference_count);
     client->reference_count--;
     if (client->reference_count > 0)
         return;
 
+    ogs_trace("ogs_sbi_client_remove()");
     ogs_list_remove(&ogs_sbi_self()->client_list, client);
 
     connection_remove_all(client);

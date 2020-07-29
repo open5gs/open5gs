@@ -57,6 +57,8 @@ typedef struct ogs_sbi_context_s {
         if ((__cTX)->nf_instance != __pNF_INSTANCE) \
             __pNF_INSTANCE->reference_count++; \
         (__cTX)->nf_instance = __pNF_INSTANCE; \
+        ogs_trace("nf_instance->reference_count = %d", \
+                __pNF_INSTANCE->reference_count); \
     } while(0)
 typedef struct ogs_sbi_nf_instance_s {
     ogs_lnode_t     lnode;

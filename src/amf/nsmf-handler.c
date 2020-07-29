@@ -358,19 +358,17 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
     return OGS_OK;
 }
 
-int amf_nsmf_pdu_session_handle_release_sm_context(
-        amf_sess_t *sess, ogs_sbi_message_t *recvmsg)
+int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess)
 {
     amf_ue_t *amf_ue = NULL;
 
     ogs_assert(sess);
     amf_ue = sess->amf_ue;
     ogs_assert(amf_ue);
-    ogs_assert(recvmsg);
 
-    ogs_debug("Release SM Context [%d]", recvmsg->res_status);
+    amf_sess_remove(sess);
 
-    if (SESSION_SYNC_DONE(amf_ue)) {
+    if (ogs_list_count(&amf_ue->sess_list) == 0) {
 
         if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
 
@@ -420,8 +418,6 @@ int amf_nsmf_pdu_session_handle_release_sm_context(
 
         }
     }
-
-    amf_sess_remove(sess);
 
     return OGS_OK;
 }

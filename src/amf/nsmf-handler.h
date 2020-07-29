@@ -30,8 +30,7 @@ int amf_nsmf_pdu_session_handle_create_sm_context(
         amf_sess_t *sess, ogs_sbi_message_t *message);
 int amf_nsmf_pdu_session_handle_update_sm_context(
         amf_sess_t *sess, ogs_sbi_message_t *message);
-int amf_nsmf_pdu_session_handle_release_sm_context(
-        amf_sess_t *sess, ogs_sbi_message_t *message);
+int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess);
 
 #ifdef __cplusplus
 }

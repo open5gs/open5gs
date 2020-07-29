@@ -3,6 +3,13 @@ db_uri: mongodb://localhost/open5gs
 logger:
 
 parameter:
+#    no_nrf: true
+#    no_amf: true
+#    no_smf: true
+#    no_upf: true
+#    no_ausf: true
+#    no_udm: true
+#    no_udr: true
 
 amf:
     sbi:
