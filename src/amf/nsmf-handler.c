@@ -366,9 +366,8 @@ int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess)
     amf_ue = sess->amf_ue;
     ogs_assert(amf_ue);
 
-    amf_sess_remove(sess);
-
-    if (ogs_list_count(&amf_ue->sess_list) == 0) {
+    /* Check last session */
+    if (ogs_list_count(&amf_ue->sess_list) == 1) {
 
         if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_authentication)) {
 
@@ -418,6 +417,8 @@ int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess)
 
         }
     }
+
+    amf_sess_remove(sess);
 
     return OGS_OK;
 }
