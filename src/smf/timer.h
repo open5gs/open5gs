@@ -39,6 +39,7 @@ typedef enum {
     SMF_TIMER_NF_INSTANCE_VALIDITY,
     SMF_TIMER_SUBSCRIPTION_VALIDITY,
     SMF_TIMER_SBI_CLIENT_WAIT,
+    SMF_TIMER_RELEASE_HOLDING,
 
     MAX_NUM_OF_SMF_TIMER,
 
@@ -55,6 +56,7 @@ void smf_timer_nf_instance_no_heartbeat(void *data);
 void smf_timer_nf_instance_validity(void *data);
 void smf_timer_subscription_validity(void *data);
 void smf_timer_sbi_client_wait_expire(void *data);
+void smf_timer_release_holding_expire(void *data);
 
 #ifdef __cplusplus
 }

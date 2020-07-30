@@ -695,9 +695,11 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
     /* Set APN */
     ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
 
-    /* Setup SBI */
+    /* Setup Timer */
     sess->sbi.client_wait.timer = ogs_timer_add(
             self.timer_mgr, smf_timer_sbi_client_wait_expire, sess);
+    sess->t_release_holding = ogs_timer_add(
+            self.timer_mgr, smf_timer_release_holding_expire, sess);
 
     memset(&e, 0, sizeof(e));
     e.sess = sess;
@@ -806,9 +808,11 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     sess->smf_n4_teid = sess->index;
     sess->smf_n4_seid = sess->index;
 
-    /* Setup SBI */
+    /* Setup Timer */
     sess->sbi.client_wait.timer = ogs_timer_add(
             self.timer_mgr, smf_timer_sbi_client_wait_expire, sess);
+    sess->t_release_holding = ogs_timer_add(
+            self.timer_mgr, smf_timer_release_holding_expire, sess);
 
     memset(&e, 0, sizeof(e));
     e.sess = sess;
@@ -979,8 +983,13 @@ void smf_sess_remove(smf_sess_t *sess)
         ogs_freeaddrinfo(sess->upf_n3_addr6);
 
     /* Free SBI object memory */
+    if (sess->sbi.running_count)
+        ogs_error("[%s:%d] SBI running [%d]",
+                smf_ue->supi, sess->psi, sess->sbi.running_count);
     ogs_sbi_object_free(&sess->sbi);
+
     ogs_timer_delete(sess->sbi.client_wait.timer);
+    ogs_timer_delete(sess->t_release_holding);
 
     smf_bearer_remove_all(sess);
 
@@ -1060,6 +1069,16 @@ smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6)
     ogs_assert(self.ipv6_hash);
     ogs_assert(addr6);
     return (smf_sess_t *)ogs_hash_get(self.ipv6_hash, addr6, OGS_IPV6_LEN);
+}
+
+smf_ue_t *smf_ue_cycle(smf_ue_t *smf_ue)
+{
+    return ogs_pool_cycle(&smf_ue_pool, smf_ue);
+}
+
+smf_sess_t *smf_sess_cycle(smf_sess_t *sess)
+{
+    return ogs_pool_cycle(&smf_sess_pool, sess);
 }
 
 smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)

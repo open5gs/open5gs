@@ -235,7 +235,21 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
 
         } else {
 
-            if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+            if (!SESSION_CONTEXT_IN_SMF(sess)) {
+                /*
+                 * 1. PDU session release complete
+                 *    CLEAR_SM_CONTEXT_REF(sess) in gmm-handler.c
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 *
+                 * If resource-status has already been updated by
+                 *   notify(/namf-callback/v1/{supi}/sm-context-status/{psi})
+                 * Remove 'amf_sess_t' context to call
+                 *   amf_nsmf_pdu_session_handle_release_sm_context().
+                 */
+                if (sess->resource_status == OpenAPI_resource_status_RELEASED)
+                    amf_nsmf_pdu_session_handle_release_sm_context(sess);
+
+            } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
                 /*
                  * 1. PDUSessionResourceSetupResponse
                  * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
@@ -391,10 +405,6 @@ int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess)
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                     NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
 
-        } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
-
-            nas_5gs_send_accept(amf_ue);
-
         } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_exception)) {
 
             /*
@@ -407,13 +417,17 @@ int amf_nsmf_pdu_session_handle_release_sm_context(amf_sess_t *sess)
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                     NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);
 
+        } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_registered)) {
+
+            ogs_debug("Release SM Context in registered STATE");
+
         } else if (OGS_FSM_CHECK(&amf_ue->sm, gmm_state_security_mode)) {
 
-            ogs_error("Releasing SM Context in security-mode STATE");
+            ogs_error("Release SM Context in security-mode STATE");
 
         } else {
 
-            ogs_error("Releasing SM Context : INVALID STATE");
+            ogs_error("Release SM Context : INVALID STATE");
 
         }
     }

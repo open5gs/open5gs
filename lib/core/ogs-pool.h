@@ -67,6 +67,8 @@ typedef unsigned int ogs_index_t;
 #define ogs_pool_index(pool, node) (((node) - (pool)->array)+1)
 #define ogs_pool_find(pool, _index) \
     (_index > 0 && _index <= (pool)->size) ? (pool)->index[_index-1] : NULL
+#define ogs_pool_cycle(pool, node) \
+    ogs_pool_find((pool), ogs_pool_index((pool), (node)))
 
 #define ogs_pool_alloc(pool, node) do { \
     *(node) = NULL; \

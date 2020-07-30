@@ -1197,6 +1197,9 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     ogs_timer_delete(amf_ue->t3570.timer);
 
     /* Free SBI object memory */
+    if (amf_ue->sbi.running_count)
+        ogs_error("[%s] SBI running [%d]",
+                amf_ue->supi, amf_ue->sbi.running_count);
     ogs_sbi_object_free(&amf_ue->sbi);
     ogs_timer_delete(amf_ue->sbi.client_wait.timer);
 
@@ -1492,6 +1495,9 @@ void amf_sess_remove(amf_sess_t *sess)
     ogs_list_remove(&sess->amf_ue->sess_list, sess);
 
     /* Free SBI object memory */
+    if (sess->sbi.running_count)
+        ogs_error("[%s:%d] SBI running [%d]",
+                sess->amf_ue->supi, sess->psi, sess->sbi.running_count);
     ogs_sbi_object_free(&sess->sbi);
     ogs_timer_delete(sess->sbi.client_wait.timer);
 
@@ -1529,12 +1535,33 @@ amf_sess_t *amf_sess_find_by_psi(amf_ue_t *amf_ue, uint8_t psi)
     return NULL;
 }
 
-bool amf_sess_sync_done(amf_ue_t *amf_ue)
+amf_ue_t *amf_ue_cycle(amf_ue_t *amf_ue)
+{
+    return ogs_pool_cycle(&amf_ue_pool, amf_ue);
+}
+
+amf_sess_t *amf_sess_cycle(amf_sess_t *sess)
+{
+    return ogs_pool_cycle(&amf_sess_pool, sess);
+}
+
+bool amf_ue_sync_done(amf_ue_t *amf_ue)
 {
     amf_sess_t *sess = NULL;
 
+    ogs_assert(amf_ue);
+    if (amf_ue->sbi.running_count) return false;
+
     ogs_list_for_each(&amf_ue->sess_list, sess)
-        if (sess->sbi.running) return false;
+        if (sess->sbi.running_count) return false;
+
+    return true;
+}
+
+bool amf_sess_sync_done(amf_sess_t *sess)
+{
+    ogs_assert(sess);
+    if (sess->sbi.running_count) return false;
 
     return true;
 }

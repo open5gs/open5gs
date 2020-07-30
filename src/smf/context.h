@@ -246,6 +246,9 @@ typedef struct smf_sess_s {
     /* SMF session context is activated or not */
     OpenAPI_up_cnx_state_e smfUpCnxState;
 
+    /* Release Holding timer of SMF session context */
+    ogs_timer_t     *t_release_holding;
+
     ogs_list_t      bearer_list;
 
     ogs_gtp_node_t  *gnode;
@@ -333,6 +336,9 @@ smf_sess_t *smf_sess_find_by_psi(smf_ue_t *smf_ue, uint8_t psi);
 smf_sess_t *smf_sess_find_by_sm_context_ref(char *sm_context_ref);
 smf_sess_t *smf_sess_find_by_ipv4(uint32_t addr);
 smf_sess_t *smf_sess_find_by_ipv6(uint32_t *addr6);
+
+smf_ue_t *smf_ue_cycle(smf_ue_t *smf_ue);
+smf_sess_t *smf_sess_cycle(smf_sess_t *sess);
 
 smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess);
 smf_bearer_t *smf_qos_flow_find_by_qfi(smf_sess_t *sess, uint8_t qfi);

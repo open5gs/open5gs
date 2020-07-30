@@ -165,6 +165,9 @@ void udm_ue_remove(udm_ue_t *udm_ue)
     ogs_fsm_delete(&udm_ue->sm);
 
     /* Free SBI object memory */
+    if (udm_ue->sbi.running_count)
+        ogs_error("[%s] SBI running [%d]",
+                udm_ue->supi, udm_ue->sbi.running_count);
     ogs_sbi_object_free(&udm_ue->sbi);
     ogs_timer_delete(udm_ue->sbi.client_wait.timer);
     OpenAPI_auth_event_free(udm_ue->auth_event);
@@ -227,4 +230,9 @@ udm_ue_t *udm_ue_find_by_ctx_id(char *ctx_id)
 {
     ogs_assert(ctx_id);
     return ogs_pool_find(&udm_ue_pool, atoll(ctx_id));
+}
+
+udm_ue_t *udm_ue_cycle(udm_ue_t *udm_ue)
+{
+    return ogs_pool_cycle(&udm_ue_pool, udm_ue);
 }

@@ -487,10 +487,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                 sbi_object = e->sbi.data;
                 ogs_assert(sbi_object);
 
-                ogs_timer_stop(sbi_object->client_wait.timer);
-
-                sbi_object->running = false;
-
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
                     if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK)
@@ -517,14 +513,19 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
             sess = e->sbi.data;
             ogs_assert(sess);
+            sess = smf_sess_cycle(sess);
+            ogs_assert(sess);
             smf_ue = sess->smf_ue;
+            ogs_assert(smf_ue);
+            smf_ue = smf_ue_cycle(smf_ue);
             ogs_assert(smf_ue);
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
             e->sess = sess;
             e->sbi.message = &sbi_message;;
 
-            sess->sbi.running = false;
+            sess->sbi.running_count--;
+            ogs_timer_stop(sess->sbi.client_wait.timer);
 
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
@@ -576,12 +577,22 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             session = sbi_object->session;
             ogs_assert(session);
 
-            sbi_object->running = false;
+            sbi_object->running_count--;
 
             ogs_error("Cannot receive SBI message");
             ogs_sbi_server_send_error(session,
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                     "Cannot receive SBI message", NULL);
+            break;
+
+        case SMF_TIMER_RELEASE_HOLDING:
+            sess = e->sbi.data;
+            ogs_assert(sess);
+            sess = smf_sess_cycle(sess);
+            ogs_assert(sess);
+
+            smf_sbi_send_sm_context_status_notify(sess);
+            SMF_SESS_CLEAR(sess);
             break;
 
         default:
@@ -609,10 +620,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         e->nas.message = &nas_message;
         ogs_fsm_dispatch(&sess->sm, e);
-        if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_released)) {
-            SMF_SESS_CLEAR(sess);
-
-        } else if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
+        if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
             ogs_error("State machine exception");
             SMF_SESS_CLEAR(sess);
         }

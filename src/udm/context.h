@@ -109,6 +109,8 @@ udm_ue_t *udm_ue_find_by_supi(char *supi);
 udm_ue_t *udm_ue_find_by_suci_or_supi(char *suci_or_supi);
 udm_ue_t *udm_ue_find_by_ctx_id(char *ctx_id);
 
+udm_ue_t *udm_ue_cycle(udm_ue_t *udm_ue);
+
 #ifdef __cplusplus
 }
 #endif

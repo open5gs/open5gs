@@ -40,6 +40,8 @@ const char *smf_timer_get_name(smf_timer_e id)
         return "SMF_TIMER_SUBSCRIPTION_VALIDITY";
     case SMF_TIMER_SBI_CLIENT_WAIT:
         return "SMF_TIMER_SBI_CLIENT_WAIT";
+    case SMF_TIMER_RELEASE_HOLDING:
+        return "SMF_TIMER_RELEASE_HOLDING";
     default: 
        break;
     }
@@ -66,12 +68,8 @@ static void timer_send_event(int timer_id, void *data)
     case SMF_TIMER_NF_INSTANCE_NO_HEARTBEAT:
     case SMF_TIMER_NF_INSTANCE_VALIDITY:
     case SMF_TIMER_SUBSCRIPTION_VALIDITY:
-        e = smf_event_new(SMF_EVT_SBI_TIMER);
-        ogs_assert(e);
-        e->timer_id = timer_id;
-        e->sbi.data = data;
-        break;
     case SMF_TIMER_SBI_CLIENT_WAIT:
+    case SMF_TIMER_RELEASE_HOLDING:
         e = smf_event_new(SMF_EVT_SBI_TIMER);
         ogs_assert(e);
         e->timer_id = timer_id;
@@ -129,4 +127,9 @@ void smf_timer_subscription_validity(void *data)
 void smf_timer_sbi_client_wait_expire(void *data)
 {
     timer_send_event(SMF_TIMER_SBI_CLIENT_WAIT, data);
+}
+
+void smf_timer_release_holding_expire(void *data)
+{
+    timer_send_event(SMF_TIMER_RELEASE_HOLDING, data);
 }

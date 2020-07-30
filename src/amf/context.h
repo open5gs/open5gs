@@ -399,12 +399,14 @@ typedef struct amf_sess_s {
     char *sm_context_ref;   /* smContextRef from SMF */
 
 #define SESSION_SYNC_DONE(__aMF)  \
-    (amf_sess_sync_done(__aMF) == true)
+    (amf_ue_sync_done(__aMF) == true)
 
     /* UE session context is activated or not */
     OpenAPI_up_cnx_state_e ueUpCnxState;
     /* SMF session context is activated or not */
     OpenAPI_up_cnx_state_e smfUpCnxState;
+    /* SMF notify status when PDU session release complete is received */
+    OpenAPI_resource_status_e resource_status;
 
     ogs_pkbuf_t *n2smbuf;
 
@@ -533,7 +535,11 @@ void amf_sess_remove_all(amf_ue_t *amf_ue);
 amf_sess_t *amf_sess_find_by_psi(amf_ue_t *amf_ue, uint8_t psi);
 amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
 
-bool amf_sess_sync_done(amf_ue_t *amf_ue);
+amf_ue_t *amf_ue_cycle(amf_ue_t *amf_ue);
+amf_sess_t *amf_sess_cycle(amf_sess_t *sess);
+
+bool amf_ue_sync_done(amf_ue_t *amf_ue);
+bool amf_sess_sync_done(amf_sess_t *sess);
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai);
 ogs_s_nssai_t *amf_find_s_nssai(

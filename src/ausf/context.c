@@ -165,6 +165,9 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     ogs_fsm_delete(&ausf_ue->sm);
 
     /* Free SBI object memory */
+    if (ausf_ue->sbi.running_count)
+        ogs_error("[%s] SBI running [%d]",
+                ausf_ue->supi, ausf_ue->sbi.running_count);
     ogs_sbi_object_free(&ausf_ue->sbi);
     ogs_timer_delete(ausf_ue->sbi.client_wait.timer);
 
@@ -221,4 +224,9 @@ ausf_ue_t *ausf_ue_find_by_ctx_id(char *ctx_id)
 {
     ogs_assert(ctx_id);
     return ogs_pool_find(&ausf_ue_pool, atoll(ctx_id));
+}
+
+ausf_ue_t *ausf_ue_cycle(ausf_ue_t *ausf_ue)
+{
+    return ogs_pool_cycle(&ausf_ue_pool, ausf_ue);
 }

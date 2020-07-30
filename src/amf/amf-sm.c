@@ -344,9 +344,6 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                 sbi_object = e->sbi.data;
                 ogs_assert(sbi_object);
 
-                sbi_object->running = false;
-                ogs_timer_stop(sbi_object->client_wait.timer);
-
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
                     if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK)
@@ -374,12 +371,14 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
             amf_ue = e->sbi.data;
             ogs_assert(amf_ue);
+            amf_ue = amf_ue_cycle(amf_ue);
+            ogs_assert(amf_ue);
             ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
 
             e->amf_ue = amf_ue;
             e->sbi.message = &sbi_message;;
 
-            amf_ue->sbi.running = false;
+            amf_ue->sbi.running_count--;
             ogs_timer_stop(amf_ue->sbi.client_wait.timer);
 
             ogs_fsm_dispatch(&amf_ue->sm, e);
@@ -388,7 +387,11 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
             sess = e->sbi.data;
             ogs_assert(sess);
+            sess = amf_sess_cycle(sess);
+            ogs_assert(sess);
             amf_ue = sess->amf_ue;
+            ogs_assert(amf_ue);
+            amf_ue = amf_ue_cycle(amf_ue);
             ogs_assert(amf_ue);
             ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
 
@@ -396,7 +399,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             e->sess = sess;
             e->sbi.message = &sbi_message;;
 
-            sess->sbi.running = false;
+            sess->sbi.running_count--;
             ogs_timer_stop(sess->sbi.client_wait.timer);
 
             SWITCH(sbi_message.h.resource.component[2])
@@ -466,7 +469,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             sbi_object = e->sbi.data;
             ogs_assert(sbi_object);
 
-            sbi_object->running = false;
+            sbi_object->running_count--;
 
             switch(sbi_object->nf_type) {
             case OpenAPI_nf_type_AUSF:

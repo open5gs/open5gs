@@ -121,7 +121,7 @@ bool ogs_sbi_discover_and_send(
     ogs_assert(nf_type);
     ogs_assert(build);
 
-    sbi_object->running = true;
+    sbi_object->running_count++;
 
     sbi_object->nf_type = nf_type;
     if (sbi_object->request)

@@ -167,8 +167,6 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
         session = udm_ue->sbi.session;
         ogs_assert(session);
 
-        ogs_timer_stop(udm_ue->sbi.client_wait.timer);
-
         SWITCH(message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDR_DR)
             SWITCH(message->h.resource.component[0])
