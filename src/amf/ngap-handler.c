@@ -356,7 +356,8 @@ void ngap_handle_initial_ue_message(amf_gnb_t *gnb, ogs_ngap_message_t *message)
             NAS_PDU = &ie->value.choice.NAS_PDU;
             break;
         case NGAP_ProtocolIE_ID_id_UserLocationInformation:
-            UserLocationInformation = &ie->value.choice.UserLocationInformation;
+            UserLocationInformation =
+                &ie->value.choice.UserLocationInformation;
             break;
         case NGAP_ProtocolIE_ID_id_FiveG_S_TMSI:
             FiveG_S_TMSI = &ie->value.choice.FiveG_S_TMSI;
@@ -480,6 +481,7 @@ void ngap_handle_uplink_nas_transport(
     NGAP_UplinkNASTransport_t *UplinkNASTransport = NULL;
 
     NGAP_UplinkNASTransport_IEs_t *ie = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_NAS_PDU_t *NAS_PDU = NULL;
 
@@ -497,6 +499,9 @@ void ngap_handle_uplink_nas_transport(
     for (i = 0; i < UplinkNASTransport->protocolIEs.list.count; i++) {
         ie = UplinkNASTransport->protocolIEs.list.array[i];
         switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
             break;
@@ -512,7 +517,7 @@ void ngap_handle_uplink_nas_transport(
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -520,7 +525,7 @@ void ngap_handle_uplink_nas_transport(
     if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
                 (unsigned long *)&amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -529,7 +534,8 @@ void ngap_handle_uplink_nas_transport(
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
-        ngap_send_error_indication(gnb, NULL, &amf_ue_ngap_id, 
+        ngap_send_error_indication(
+                gnb, (uint32_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
         return;
@@ -561,6 +567,7 @@ void ngap_handle_ue_radio_capability_info_indication(
         *UERadioCapabilityInfoIndication = NULL;
 
     NGAP_UERadioCapabilityInfoIndicationIEs_t *ie = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_UERadioCapability_t *UERadioCapability = NULL;
 
@@ -580,6 +587,9 @@ void ngap_handle_ue_radio_capability_info_indication(
             i < UERadioCapabilityInfoIndication->protocolIEs.list.count; i++) {
         ie = UERadioCapabilityInfoIndication->protocolIEs.list.array[i];
         switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
             break;
@@ -595,7 +605,7 @@ void ngap_handle_ue_radio_capability_info_indication(
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -603,7 +613,7 @@ void ngap_handle_ue_radio_capability_info_indication(
     if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
                 (unsigned long *)&amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -613,7 +623,7 @@ void ngap_handle_ue_radio_capability_info_indication(
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
         ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                gnb, (uint32_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
         return;
@@ -650,6 +660,7 @@ void ngap_handle_initial_context_setup_response(
     NGAP_InitialContextSetupResponse_t *InitialContextSetupResponse = NULL;
 
     NGAP_InitialContextSetupResponseIEs_t *ie = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_PDUSessionResourceSetupListCxtRes_t *PDUSessionList = NULL;
     NGAP_PDUSessionResourceSetupItemCxtRes_t *PDUSessionItem = NULL;
@@ -670,6 +681,9 @@ void ngap_handle_initial_context_setup_response(
     for (i = 0; i < InitialContextSetupResponse->protocolIEs.list.count; i++) {
         ie = InitialContextSetupResponse->protocolIEs.list.array[i];
         switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
             break;
@@ -686,7 +700,7 @@ void ngap_handle_initial_context_setup_response(
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -694,7 +708,7 @@ void ngap_handle_initial_context_setup_response(
     if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
                 (unsigned long *)&amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -704,7 +718,7 @@ void ngap_handle_initial_context_setup_response(
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
         ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                gnb, (uint32_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
         return;
@@ -795,6 +809,7 @@ void ngap_handle_initial_context_setup_failure(
     NGAP_InitialContextSetupFailure_t *InitialContextSetupFailure = NULL;
 
     NGAP_InitialContextSetupFailureIEs_t *ie = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_Cause_t *Cause = NULL;
 
@@ -813,6 +828,9 @@ void ngap_handle_initial_context_setup_failure(
     for (i = 0; i < InitialContextSetupFailure->protocolIEs.list.count; i++) {
         ie = InitialContextSetupFailure->protocolIEs.list.array[i];
         switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
             break;
@@ -828,7 +846,7 @@ void ngap_handle_initial_context_setup_failure(
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -836,7 +854,7 @@ void ngap_handle_initial_context_setup_failure(
     if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
                 (unsigned long *)&amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -846,7 +864,7 @@ void ngap_handle_initial_context_setup_failure(
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
         ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                gnb, (uint32_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
         return;
@@ -1015,6 +1033,7 @@ void ngap_handle_ue_context_release_request(
     NGAP_UEContextReleaseRequest_t *UEContextReleaseRequest = NULL;
 
     NGAP_UEContextReleaseRequest_IEs_t *ie = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_PDUSessionResourceListCxtRelReq_t *PDUSessionList = NULL;
     NGAP_PDUSessionResourceItemCxtRelReq_t *PDUSessionItem = NULL;
@@ -1035,6 +1054,9 @@ void ngap_handle_ue_context_release_request(
     for (i = 0; i < UEContextReleaseRequest->protocolIEs.list.count; i++) {
         ie = UEContextReleaseRequest->protocolIEs.list.array[i];
         switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
             break;
@@ -1053,7 +1075,7 @@ void ngap_handle_ue_context_release_request(
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -1061,7 +1083,7 @@ void ngap_handle_ue_context_release_request(
     if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
                 (unsigned long *)&amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -1070,7 +1092,8 @@ void ngap_handle_ue_context_release_request(
     if (!ran_ue) {
         ogs_warn("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
-        ngap_send_error_indication(gnb, NULL, &amf_ue_ngap_id,
+        ngap_send_error_indication(
+                gnb, (uint32_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
         return;
@@ -1167,6 +1190,7 @@ void ngap_handle_ue_context_release_complete(
     NGAP_UEContextReleaseComplete_t *UEContextReleaseComplete = NULL;
 
     NGAP_UEContextReleaseComplete_IEs_t *ie = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
 
     ogs_assert(gnb);
@@ -1184,6 +1208,9 @@ void ngap_handle_ue_context_release_complete(
     for (i = 0; i < UEContextReleaseComplete->protocolIEs.list.count; i++) {
         ie = UEContextReleaseComplete->protocolIEs.list.array[i];
         switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
             break;
@@ -1196,7 +1223,7 @@ void ngap_handle_ue_context_release_complete(
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -1204,7 +1231,7 @@ void ngap_handle_ue_context_release_complete(
     if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
                 (unsigned long *)&amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -1213,7 +1240,8 @@ void ngap_handle_ue_context_release_complete(
     if (!ran_ue) {
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
-        ngap_send_error_indication(gnb, NULL, &amf_ue_ngap_id,
+        ngap_send_error_indication(
+                gnb, (uint32_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
         return;
@@ -1280,6 +1308,7 @@ void ngap_handle_pdu_session_resource_setup_response(
     NGAP_PDUSessionResourceSetupResponse_t *PDUSessionResourceSetupResponse;
 
     NGAP_PDUSessionResourceSetupResponseIEs_t *ie = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_PDUSessionResourceSetupListSURes_t *PDUSessionList = NULL;
     NGAP_PDUSessionResourceSetupItemSURes_t *PDUSessionItem = NULL;
@@ -1301,11 +1330,15 @@ void ngap_handle_pdu_session_resource_setup_response(
             i++) {
         ie = PDUSessionResourceSetupResponse->protocolIEs.list.array[i];
         switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
             break;
         case NGAP_ProtocolIE_ID_id_PDUSessionResourceSetupListSURes:
-            PDUSessionList = &ie->value.choice.PDUSessionResourceSetupListSURes;
+            PDUSessionList =
+                &ie->value.choice.PDUSessionResourceSetupListSURes;
             break;
         default:
             break;
@@ -1316,7 +1349,7 @@ void ngap_handle_pdu_session_resource_setup_response(
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -1324,7 +1357,7 @@ void ngap_handle_pdu_session_resource_setup_response(
     if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
                 (unsigned long *)&amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -1334,7 +1367,7 @@ void ngap_handle_pdu_session_resource_setup_response(
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
         ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                gnb, (uint32_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
         return;
@@ -1436,9 +1469,11 @@ void ngap_handle_pdu_session_resource_release_response(
     amf_nsmf_pdu_session_update_sm_context_param_t param;
 
     NGAP_SuccessfulOutcome_t *successfulOutcome = NULL;
-    NGAP_PDUSessionResourceReleaseResponse_t *PDUSessionResourceReleaseResponse;
+    NGAP_PDUSessionResourceReleaseResponse_t
+        *PDUSessionResourceReleaseResponse;
 
     NGAP_PDUSessionResourceReleaseResponseIEs_t *ie = NULL;
+    NGAP_RAN_UE_NGAP_ID_t *RAN_UE_NGAP_ID = NULL;
     NGAP_AMF_UE_NGAP_ID_t *AMF_UE_NGAP_ID = NULL;
     NGAP_PDUSessionResourceReleasedListRelRes_t *PDUSessionList = NULL;
     NGAP_PDUSessionResourceReleasedItemRelRes_t *PDUSessionItem = NULL;
@@ -1460,6 +1495,9 @@ void ngap_handle_pdu_session_resource_release_response(
             i++) {
         ie = PDUSessionResourceReleaseResponse->protocolIEs.list.array[i];
         switch (ie->id) {
+        case NGAP_ProtocolIE_ID_id_RAN_UE_NGAP_ID:
+            RAN_UE_NGAP_ID = &ie->value.choice.RAN_UE_NGAP_ID;
+            break;
         case NGAP_ProtocolIE_ID_id_AMF_UE_NGAP_ID:
             AMF_UE_NGAP_ID = &ie->value.choice.AMF_UE_NGAP_ID;
             break;
@@ -1476,7 +1514,7 @@ void ngap_handle_pdu_session_resource_release_response(
 
     if (!AMF_UE_NGAP_ID) {
         ogs_error("No AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -1484,7 +1522,7 @@ void ngap_handle_pdu_session_resource_release_response(
     if (asn_INTEGER2ulong(AMF_UE_NGAP_ID,
                 (unsigned long *)&amf_ue_ngap_id) != 0) {
         ogs_error("Invalid AMF_UE_NGAP_ID");
-        ngap_send_error_indication(gnb, NULL, NULL,
+        ngap_send_error_indication(gnb, (uint32_t *)RAN_UE_NGAP_ID, NULL,
                 NGAP_Cause_PR_protocol, NGAP_CauseProtocol_semantic_error);
         return;
     }
@@ -1494,7 +1532,7 @@ void ngap_handle_pdu_session_resource_release_response(
         ogs_error("No RAN UE Context : AMF_UE_NGAP_ID[%lld]",
                 (long long)amf_ue_ngap_id);
         ngap_send_error_indication(
-                gnb, &ran_ue->ran_ue_ngap_id, &ran_ue->amf_ue_ngap_id,
+                gnb, (uint32_t *)RAN_UE_NGAP_ID, &amf_ue_ngap_id,
                 NGAP_Cause_PR_radioNetwork,
                 NGAP_CauseRadioNetwork_unknown_local_UE_NGAP_ID);
         return;

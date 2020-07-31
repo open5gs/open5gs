@@ -296,10 +296,6 @@ void smf_nnrf_handle_nf_discover(
     if (!nf_instance) {
         ogs_error("(NF discover) No [%s]",
                 OpenAPI_nf_type_ToString(sbi_object->nf_type));
-        ogs_sbi_server_send_error(session,
-                OGS_SBI_HTTP_STATUS_SERVICE_UNAVAILABLE, NULL,
-                "(NF discover) No NF",
-                OpenAPI_nf_type_ToString(sbi_object->nf_type));
     } else {
         ogs_sbi_send(nf_instance, sbi_object);
     }

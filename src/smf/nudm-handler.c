@@ -337,7 +337,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
         pdr->precedence = 0xffffffff;
     }
 
-    smf_5gc_pfcp_send_session_establishment_request(sess);
+    smf_5gc_pfcp_send_session_establishment_request(sess, session);
 
     return true;
 }

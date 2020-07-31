@@ -24,10 +24,9 @@
 #include "nsmf-handler.h"
 
 bool smf_nsmf_handle_create_sm_context(
-        smf_sess_t *sess, ogs_sbi_message_t *message)
+    smf_sess_t *sess, ogs_sbi_session_t *session, ogs_sbi_message_t *message)
 {
     smf_ue_t *smf_ue = NULL;
-    ogs_sbi_session_t *session = NULL;
 
     ogs_pkbuf_t *n1smbuf = NULL;
 
@@ -40,13 +39,12 @@ bool smf_nsmf_handle_create_sm_context(
     OpenAPI_plmn_id_nid_t *servingNetwork = NULL;
     OpenAPI_ref_to_binary_data_t *n1SmMsg = NULL;
 
-    ogs_assert(sess);
-    session = sess->sbi.session;
     ogs_assert(session);
+    ogs_assert(message);
+
+    ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
-
-    ogs_assert(message);
 
     SmContextCreateData = message->SmContextCreateData;
     if (!SmContextCreateData) {
@@ -197,18 +195,16 @@ bool smf_nsmf_handle_create_sm_context(
      */
     n1smbuf = ogs_pkbuf_copy(n1smbuf);
     ogs_assert(n1smbuf);
-    nas_5gs_send_to_gsm(sess, n1smbuf);
+    nas_5gs_send_to_gsm(sess, session, n1smbuf);
 
     return true;
 }
 
 bool smf_nsmf_handle_update_sm_context(
-        smf_sess_t *sess, ogs_sbi_message_t *message)
+    smf_sess_t *sess, ogs_sbi_session_t *session, ogs_sbi_message_t *message)
 {
     int i;
     smf_ue_t *smf_ue = NULL;
-
-    ogs_sbi_session_t *session = NULL;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
@@ -221,13 +217,12 @@ bool smf_nsmf_handle_update_sm_context(
     ogs_pkbuf_t *n1smbuf = NULL;
     ogs_pkbuf_t *n2smbuf = NULL;
 
-    ogs_assert(sess);
-    session = sess->sbi.session;
     ogs_assert(session);
+    ogs_assert(message);
+
+    ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
-
-    ogs_assert(message);
 
     SmContextUpdateData = message->SmContextUpdateData;
     if (!SmContextUpdateData) {
@@ -292,7 +287,7 @@ bool smf_nsmf_handle_update_sm_context(
          */
         n1smbuf = ogs_pkbuf_copy(n1smbuf);
         ogs_assert(n1smbuf);
-        nas_5gs_send_to_gsm(sess, n1smbuf);
+        nas_5gs_send_to_gsm(sess, session, n1smbuf);
 
         return true;
     
@@ -339,7 +334,8 @@ bool smf_nsmf_handle_update_sm_context(
          */
         n2smbuf = ogs_pkbuf_copy(n2smbuf);
         ogs_assert(n2smbuf);
-        ngap_send_to_n2sm(sess, SmContextUpdateData->n2_sm_info_type, n2smbuf);
+        ngap_send_to_n2sm(
+                sess, session, SmContextUpdateData->n2_sm_info_type, n2smbuf);
 
     } else {
         if (!SmContextUpdateData->up_cnx_state) {
@@ -360,7 +356,7 @@ bool smf_nsmf_handle_update_sm_context(
          ********************************************************/
 
             if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
-                smf_5gc_pfcp_send_session_modification_request(sess);
+                smf_5gc_pfcp_send_session_modification_request(sess, session);
 
             } else if (sess->smfUpCnxState ==
                     OpenAPI_up_cnx_state_DEACTIVATED) {
@@ -498,12 +494,13 @@ bool smf_nsmf_handle_update_sm_context(
 }
 
 bool smf_nsmf_handle_release_sm_context(
-        smf_sess_t *sess, ogs_sbi_message_t *message)
+    smf_sess_t *sess, ogs_sbi_session_t *session, ogs_sbi_message_t *message)
 {
     OpenAPI_sm_context_release_data_t *SmContextReleaseData = NULL;
 
-    ogs_assert(sess);
+    ogs_assert(session);
     ogs_assert(message);
+    ogs_assert(sess);
 
     SmContextReleaseData = message->SmContextReleaseData;
     if (SmContextReleaseData) {
@@ -532,7 +529,7 @@ bool smf_nsmf_handle_release_sm_context(
         }
     }
 
-    smf_5gc_pfcp_send_session_deletion_request(sess,
+    smf_5gc_pfcp_send_session_deletion_request(sess, session,
             OGS_PFCP_5GC_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT);
 
     return true;

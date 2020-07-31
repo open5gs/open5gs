@@ -21,7 +21,7 @@
 #include "nsmf-handler.h"
 
 #include "nas-path.h"
-#include "gmm-build.h"
+#include "ngap-path.h"
 
 int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
@@ -33,6 +33,9 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
 
     ogs_pkbuf_t *n1smbuf = NULL;
     ogs_pkbuf_t *n2smbuf = NULL;
+
+    ogs_pkbuf_t *gmmbuf = NULL;
+    ogs_pkbuf_t *ngapbuf = NULL;
 
     char *supi = NULL;
     uint8_t pdu_session_id = OGS_NAS_PDU_SESSION_IDENTITY_UNASSIGNED;
@@ -140,7 +143,37 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     n2smbuf = ogs_pkbuf_copy(n2smbuf);
     ogs_assert(n2smbuf);
 
-    nas_send_pdu_session_establishment_accept(sess, n1smbuf, n2smbuf);
+    if (sess->pdu_session_establishment_accept) {
+        ogs_pkbuf_free(sess->pdu_session_establishment_accept);
+        sess->pdu_session_establishment_accept = NULL;
+    }
+
+    gmmbuf = gmm_build_dl_nas_transport(sess,
+            OGS_NAS_PAYLOAD_CONTAINER_N1_SM_INFORMATION, n1smbuf, 0, 0);
+    ogs_assert(gmmbuf);
+
+    ngapbuf = ngap_build_pdu_session_resource_setup_request(
+            sess, gmmbuf, n2smbuf);
+    ogs_assert(ngapbuf);
+
+    status = OGS_SBI_HTTP_STATUS_OK;
+
+    if (SESSION_CONTEXT_IN_SMF(sess)) {
+        /*
+         * [1-CLIENT] /nsmf-pdusession/v1/sm-contexts
+         * [2-SERVER] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages
+         *
+         * If [2-SERVER] arrives after [1-CLIENT],
+         * sm-context-ref is created in [1-CLIENT].
+         * So, the PDU session establishment accpet can be transmitted now.
+         */
+        if (nas_5gs_send_to_gnb(amf_ue, ngapbuf) != OGS_OK) {
+            ogs_error("nas_5gs_send_to_gnb() failed");
+            status = OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR;
+        }
+    } else {
+        sess->pdu_session_establishment_accept = ngapbuf;
+    }
 
     memset(&N1N2MessageTransferRspData, 0, sizeof(N1N2MessageTransferRspData));
     N1N2MessageTransferRspData.cause =
@@ -149,9 +182,6 @@ int amf_namf_comm_handle_n1_n2_message_transfer(
     memset(&sendmsg, 0, sizeof(sendmsg));
 
     sendmsg.N1N2MessageTransferRspData = &N1N2MessageTransferRspData;
-
-    status = OGS_SBI_HTTP_STATUS_OK;
-    /* TODO : OGS_SBI_HTTP_STATUS_ACCEPTED */
 
     response = ogs_sbi_build_response(&sendmsg, status);
     ogs_assert(response);
@@ -229,7 +259,8 @@ int amf_namf_callback_handle_sm_context_status(
 
     sess->resource_status = StatusInfo->resource_status;
     if (sess->resource_status == OpenAPI_resource_status_RELEASED) {
-        ogs_info("[%s:%d] SM context status released", amf_ue->supi, sess->psi);
+        ogs_debug("[%s:%d] SM context status released",
+                amf_ue->supi, sess->psi);
 
         /*
          * Race condition for PDU session release complete
@@ -243,8 +274,10 @@ int amf_namf_callback_handle_sm_context_status(
          * If NOTIFICATION comes after the CLIENT response is received,
          * sync is done. So, the session context can be removed.
          */
-        if (amf_sess_sync_done(sess))
+        if (amf_sess_sync_done(sess)) {
+            ogs_debug("[%s:%d] SM context remove", amf_ue->supi, sess->psi);
             amf_nsmf_pdu_session_handle_release_sm_context(sess);
+        }
     }
 
 cleanup:

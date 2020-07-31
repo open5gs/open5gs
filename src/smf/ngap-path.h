@@ -26,7 +26,8 @@
 extern "C" {
 #endif
 
-void ngap_send_to_n2sm(smf_sess_t *sess, int type, ogs_pkbuf_t *pkbuf);
+void ngap_send_to_n2sm(smf_sess_t *sess,
+        ogs_sbi_session_t *session, int type, ogs_pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

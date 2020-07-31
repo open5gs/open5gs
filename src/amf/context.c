@@ -1199,7 +1199,8 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     /* Free SBI object memory */
     if (amf_ue->sbi.running_count)
         ogs_error("[%s] SBI running [%d]",
-                amf_ue->supi, amf_ue->sbi.running_count);
+                amf_ue->supi ? amf_ue->supi : "Unknown",
+                amf_ue->sbi.running_count);
     ogs_sbi_object_free(&amf_ue->sbi);
     ogs_timer_delete(amf_ue->sbi.client_wait.timer);
 
@@ -1497,7 +1498,8 @@ void amf_sess_remove(amf_sess_t *sess)
     /* Free SBI object memory */
     if (sess->sbi.running_count)
         ogs_error("[%s:%d] SBI running [%d]",
-                sess->amf_ue->supi, sess->psi, sess->sbi.running_count);
+                sess->amf_ue->supi ? sess->amf_ue->supi : "Unknown",
+                sess->psi, sess->sbi.running_count);
     ogs_sbi_object_free(&sess->sbi);
     ogs_timer_delete(sess->sbi.client_wait.timer);
 
@@ -1508,6 +1510,9 @@ void amf_sess_remove(amf_sess_t *sess)
         ogs_pkbuf_free(sess->payload_container);
     if (sess->dnn)
         ogs_free(sess->dnn);
+
+    if (sess->pdu_session_establishment_accept)
+        ogs_pkbuf_free(sess->pdu_session_establishment_accept);
 
     OGS_NAS_CLEAR_DATA(&sess->ue_pco);
     OGS_TLV_CLEAR_DATA(&sess->pgw_pco);

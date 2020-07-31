@@ -20,10 +20,10 @@
 #ifndef SMF_SBI_PATH_H
 #define SMF_SBI_PATH_H
 
-#include "nnrf-build.h"
 #include "nudm-build.h"
 #include "namf-build.h"
 #include "gsm-build.h"
+#include "nnrf-build.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,14 +37,16 @@ void smf_sbi_discover_and_send(
         OpenAPI_nf_type_e nf_type, smf_sess_t *sess, void *data,
         ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data));
 
-void smf_sbi_send_response(smf_sess_t *sess, int status);
+void smf_sbi_send_response(ogs_sbi_session_t *session, int status);
 
 void smf_sbi_send_sm_context_create_error(
         ogs_sbi_session_t *session,
         int status, const char *title, const char *detail,
         ogs_pkbuf_t *n1smbuf);
-void smf_sbi_send_sm_context_updated_data(smf_sess_t *sess);
-void smf_sbi_send_sm_context_updated_data_in_session_deletion(smf_sess_t *sess);
+void smf_sbi_send_sm_context_updated_data(
+        smf_sess_t *sess, ogs_sbi_session_t *session);
+void smf_sbi_send_sm_context_updated_data_in_session_deletion(
+        smf_sess_t *sess, ogs_sbi_session_t *session);
 void smf_sbi_send_sm_context_update_error(
         ogs_sbi_session_t *session,
         int status, const char *title, const char *detail,

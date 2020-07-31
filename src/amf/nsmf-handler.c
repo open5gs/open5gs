@@ -27,11 +27,12 @@
 int amf_nsmf_pdu_session_handle_create_sm_context(
         amf_sess_t *sess, ogs_sbi_message_t *recvmsg)
 {
+    int rv;
+
     ogs_assert(sess);
     ogs_assert(recvmsg);
 
     if (recvmsg->res_status == OGS_SBI_HTTP_STATUS_CREATED) {
-        int rv;
         ogs_sbi_message_t message;
         ogs_sbi_header_t header;
 
@@ -62,6 +63,34 @@ int amf_nsmf_pdu_session_handle_create_sm_context(
             nas_5gs_send_back_5gsm_message_from_sbi(sess,
                     OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
             return OGS_ERROR;
+        }
+
+        if (sess->pdu_session_establishment_accept) {
+            /*
+             * [1-SERVER] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages
+             * [2-CLIENT] /nsmf-pdusession/v1/sm-contexts
+             *
+             * If [1-SERVER] arrives before [2-CLIENT],
+             * there is no sm-context-ref. The PDU session establishment accept
+             * stored in [1-SERVER] is now trasnmitted to gNB.
+             */
+            amf_ue_t *amf_ue = sess->amf_ue;
+            ogs_assert(amf_ue);
+
+            rv = nas_5gs_send_to_gnb(amf_ue,
+                    sess->pdu_session_establishment_accept);
+
+            sess->pdu_session_establishment_accept = NULL;
+
+            if (rv != OGS_OK) {
+                ogs_error("[%d:%d] nas_5gs_send_to_gnb() failed",
+                        sess->psi, sess->pti);
+
+                ogs_sbi_header_free(&header);
+                nas_5gs_send_back_5gsm_message_from_sbi(sess,
+                        OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR);
+                return OGS_ERROR;
+            }
         }
 
         if (sess->sm_context_ref)
@@ -246,8 +275,13 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  * Remove 'amf_sess_t' context to call
                  *   amf_nsmf_pdu_session_handle_release_sm_context().
                  */
-                if (sess->resource_status == OpenAPI_resource_status_RELEASED)
+                ogs_debug("[%s:%d] Receive Update SM context",
+                        amf_ue->supi, sess->psi);
+                if (sess->resource_status == OpenAPI_resource_status_RELEASED) {
+                    ogs_debug("[%s:%d] SM context remove",
+                            amf_ue->supi, sess->psi);
                     amf_nsmf_pdu_session_handle_release_sm_context(sess);
+                }
 
             } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
                 /*

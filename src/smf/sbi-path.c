@@ -145,15 +145,11 @@ void smf_sbi_discover_and_send(
     }
 }
 
-void smf_sbi_send_response(smf_sess_t *sess, int status)
+void smf_sbi_send_response(ogs_sbi_session_t *session, int status)
 {
-    ogs_sbi_session_t *session = NULL;
-
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
 
-    ogs_assert(sess);
-    session = sess->sbi.session;
     ogs_assert(session);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
@@ -206,9 +202,9 @@ void smf_sbi_send_sm_context_create_error(
         ogs_pkbuf_free(n1smbuf);
 }
 
-void smf_sbi_send_sm_context_updated_data(smf_sess_t *sess)
+void smf_sbi_send_sm_context_updated_data(
+        smf_sess_t *sess, ogs_sbi_session_t *session)
 {
-    ogs_sbi_session_t *session = NULL;
     int status;
 
     ogs_sbi_message_t sendmsg;
@@ -217,7 +213,6 @@ void smf_sbi_send_sm_context_updated_data(smf_sess_t *sess)
     OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
 
     ogs_assert(sess);
-    session = sess->sbi.session;
     ogs_assert(session);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
@@ -238,10 +233,10 @@ void smf_sbi_send_sm_context_updated_data(smf_sess_t *sess)
     ogs_sbi_server_send_response(session, response);
 }
 
-void smf_sbi_send_sm_context_updated_data_in_session_deletion(smf_sess_t *sess)
+void smf_sbi_send_sm_context_updated_data_in_session_deletion(
+        smf_sess_t *sess, ogs_sbi_session_t *session)
 {
     int i;
-    ogs_sbi_session_t *session = NULL;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
@@ -251,7 +246,6 @@ void smf_sbi_send_sm_context_updated_data_in_session_deletion(smf_sess_t *sess)
     OpenAPI_ref_to_binary_data_t n2SmInfo;
 
     ogs_assert(sess);
-    session = sess->sbi.session;
     ogs_assert(session);
 
     memset(&sendmsg, 0, sizeof(sendmsg));

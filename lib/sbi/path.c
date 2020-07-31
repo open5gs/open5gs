@@ -101,9 +101,6 @@ void ogs_sbi_send(
         ogs_freeaddrinfo(addr);
     }
 
-    ogs_timer_start(sbi_object->client_wait.timer,
-            sbi_object->client_wait.duration);
-
     ogs_sbi_client_send_request(
             client, sbi_object->client_cb, request, sbi_object);
 }
@@ -122,6 +119,8 @@ bool ogs_sbi_discover_and_send(
     ogs_assert(build);
 
     sbi_object->running_count++;
+    ogs_timer_start(sbi_object->client_wait.timer,
+            sbi_object->client_wait.duration);
 
     sbi_object->nf_type = nf_type;
     if (sbi_object->request)

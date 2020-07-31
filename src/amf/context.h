@@ -409,6 +409,7 @@ typedef struct amf_sess_s {
     OpenAPI_resource_status_e resource_status;
 
     ogs_pkbuf_t *n2smbuf;
+    ogs_pkbuf_t *pdu_session_establishment_accept;
 
     /* last payload for sending back to the UE */
     uint8_t         payload_container_type;

@@ -604,6 +604,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_5GSM_MESSAGE:
         sess = e->sess;
         ogs_assert(sess);
+        session = e->sbi.session;
+        ogs_assert(session);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
 
@@ -631,6 +633,8 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_NGAP_MESSAGE:
         sess = e->sess;
         ogs_assert(sess);
+        session = e->sbi.session;
+        ogs_assert(session);
         pkbuf = e->pkbuf;
         ogs_assert(pkbuf);
         ogs_assert(e->ngap.type);

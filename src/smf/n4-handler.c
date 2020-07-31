@@ -265,7 +265,7 @@ void smf_5gc_n4_handle_session_modification_response(
     /* UPDATE_UpCnxState - SYNC */
     sess->smfUpCnxState = sess->ueUpCnxState;
 
-    smf_sbi_send_sm_context_updated_data(sess);
+    smf_sbi_send_sm_context_updated_data(sess, session);
 }
 
 void smf_5gc_n4_handle_session_deletion_response(
@@ -319,7 +319,7 @@ void smf_5gc_n4_handle_session_deletion_response(
 
     if (trigger == OGS_PFCP_5GC_DELETE_TRIGGER_UE_REQUESTED) {
 
-        smf_sbi_send_sm_context_updated_data_in_session_deletion(sess);
+        smf_sbi_send_sm_context_updated_data_in_session_deletion(sess, session);
 
     } else {
 

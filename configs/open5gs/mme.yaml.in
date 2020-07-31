@@ -292,7 +292,7 @@ sgw:
 #
 #  o By default, the PGW uses the first PGW node.
 #    - To use a different APN for each PGW, specify gtpc.apn as the APN name.
-#    - If the HSS uses WebUI to set the PGW IP for eacho UE,
+#    - If the HSS uses WebUI to set the PGW IP for each UE,
 #      you can use a specific PGW node for each UE.
 #
 #  o Two PGW are defined. 127.0.0.3:2123 is used.

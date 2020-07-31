@@ -27,11 +27,11 @@ extern "C" {
 #endif
 
 bool smf_nsmf_handle_create_sm_context(
-        smf_sess_t *sess, ogs_sbi_message_t *message);
+    smf_sess_t *sess, ogs_sbi_session_t *session, ogs_sbi_message_t *message);
 bool smf_nsmf_handle_update_sm_context(
-        smf_sess_t *sess, ogs_sbi_message_t *message);
+    smf_sess_t *sess, ogs_sbi_session_t *session, ogs_sbi_message_t *message);
 bool smf_nsmf_handle_release_sm_context(
-        smf_sess_t *sess, ogs_sbi_message_t *message);
+    smf_sess_t *sess, ogs_sbi_session_t *session, ogs_sbi_message_t *message);
 
 #ifdef __cplusplus
 }

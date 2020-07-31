@@ -339,6 +339,7 @@ void ogs_sbi_server_send_response(
         ogs_sbi_session_t *session, ogs_sbi_response_t *response)
 {
     int ret;
+    int status;
 
     struct MHD_Connection *connection = NULL;
     struct MHD_Response *mhd_response;
@@ -385,16 +386,18 @@ void ogs_sbi_server_send_response(
         MHD_add_response_header(mhd_response, key, val);
     }
 
+    status = response->status;
+    request = session->request;
+    ogs_assert(request);
+
     ogs_sbi_response_free(response);
     session_remove(session);
 
-    request = session->request;
-    ogs_assert(request);
     request->poll = ogs_pollset_add(ogs_sbi_self()->pollset,
                     OGS_POLLOUT, mhd_socket, run, mhd_daemon);
     ogs_assert(request->poll);
 
-    ret = MHD_queue_response(connection, response->status, mhd_response);
+    ret = MHD_queue_response(connection, status, mhd_response);
     if (ret != MHD_YES) {
         ogs_fatal("MHD_queue_response_error [%d]", ret);
         ogs_assert_if_reached();

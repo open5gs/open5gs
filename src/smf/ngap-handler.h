@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 int ngap_handle_pdu_session_resource_setup_response_transfer(
-        smf_sess_t *sess, ogs_pkbuf_t *pkbuf);
+        smf_sess_t *sess, ogs_sbi_session_t *session, ogs_pkbuf_t *pkbuf);
 
 #ifdef __cplusplus
 }

@@ -20,7 +20,7 @@
 #ifndef NGAP_PATH_H
 #define NGAP_PATH_H
 
-#include "context.h"
+#include "ngap-build.h"
 
 #ifdef __cplusplus
 extern "C" {

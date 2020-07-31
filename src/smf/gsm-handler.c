@@ -24,7 +24,8 @@
 #undef OGS_LOG_DOMAIN
 #define OGS_LOG_DOMAIN __gsm_log_domain
 
-int gsm_handle_pdu_session_establishment_request(smf_sess_t *sess,
+int gsm_handle_pdu_session_establishment_request(
+        smf_sess_t *sess, ogs_sbi_session_t *session,
         ogs_nas_5gs_pdu_session_establishment_request_t *
             pdu_session_establishment_request)
 {
@@ -34,10 +35,8 @@ int gsm_handle_pdu_session_establishment_request(smf_sess_t *sess,
                 integrity_protection_maximum_data_rate;
     ogs_nas_pdu_session_type_t *pdu_session_type = NULL;
     ogs_nas_ssc_mode_t *ssc_mode = NULL;
-    ogs_sbi_session_t *session = NULL;
 
     ogs_assert(sess);
-    session = sess->sbi.session;
     ogs_assert(session);
     ogs_assert(pdu_session_establishment_request);
 

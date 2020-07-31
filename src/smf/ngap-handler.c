@@ -22,9 +22,8 @@
 #include "pfcp-path.h"
 
 int ngap_handle_pdu_session_resource_setup_response_transfer(
-        smf_sess_t *sess, ogs_pkbuf_t *pkbuf)
+        smf_sess_t *sess, ogs_sbi_session_t *session, ogs_pkbuf_t *pkbuf)
 {
-    ogs_sbi_session_t *session = NULL;
     smf_ue_t *smf_ue = NULL;
     smf_bearer_t *qos_flow = NULL;
     int rv, i;
@@ -45,9 +44,9 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     NGAP_AssociatedQosFlowList_t *associatedQosFlowList = NULL;
 
     ogs_assert(pkbuf);
-    ogs_assert(sess);
-    session = sess->sbi.session;
     ogs_assert(session);
+
+    ogs_assert(sess);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
@@ -146,9 +145,9 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
     }
 
     if (far_update || sess->pfcp_5gc_modify.outer_header_creation_update)
-        smf_5gc_pfcp_send_session_modification_request(sess);
+        smf_5gc_pfcp_send_session_modification_request(sess, session);
     else
-        smf_sbi_send_sm_context_updated_data(sess);
+        smf_sbi_send_sm_context_updated_data(sess, session);
 
 
     rv = OGS_OK;

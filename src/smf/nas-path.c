@@ -19,7 +19,8 @@
 
 #include "nas-path.h"
 
-void nas_5gs_send_to_gsm(smf_sess_t *sess, ogs_pkbuf_t *pkbuf)
+void nas_5gs_send_to_gsm(
+        smf_sess_t *sess, ogs_sbi_session_t *session, ogs_pkbuf_t *pkbuf)
 {
     int rv;
     smf_event_t *e = NULL;
@@ -30,6 +31,7 @@ void nas_5gs_send_to_gsm(smf_sess_t *sess, ogs_pkbuf_t *pkbuf)
     e = smf_event_new(SMF_EVT_5GSM_MESSAGE);
     ogs_assert(e);
     e->sess = sess;
+    e->sbi.session = session;
     e->pkbuf = pkbuf;
     rv = ogs_queue_push(smf_self()->queue, e);
     if (rv != OGS_OK) {

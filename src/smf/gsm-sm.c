@@ -74,13 +74,13 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
             SWITCH(sbi_message->h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
-                smf_nsmf_handle_update_sm_context(sess, sbi_message);
+                smf_nsmf_handle_update_sm_context(sess, session, sbi_message);
                 break;
             CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
-                smf_nsmf_handle_release_sm_context(sess, sbi_message);
+                smf_nsmf_handle_release_sm_context(sess, session, sbi_message);
                 break;
             DEFAULT
-                smf_nsmf_handle_create_sm_context(sess, sbi_message);
+                smf_nsmf_handle_create_sm_context(sess, session, sbi_message);
                 break;
             END
             break;
@@ -163,15 +163,15 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         ogs_assert(nas_message);
         sess = e->sess;
         ogs_assert(sess);
-        session = sess->sbi.session;
+        session = e->sbi.session;
         ogs_assert(session);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
 
         switch (nas_message->gsm.h.message_type) {
         case OGS_NAS_5GS_PDU_SESSION_ESTABLISHMENT_REQUEST:
-            rv = gsm_handle_pdu_session_establishment_request(
-                    sess, &nas_message->gsm.pdu_session_establishment_request);
+            rv = gsm_handle_pdu_session_establishment_request(sess, session,
+                    &nas_message->gsm.pdu_session_establishment_request);
             if (rv != OGS_OK) {
                 ogs_error("[%s:%d] Cannot handle NAS message",
                         smf_ue->supi, sess->psi);
@@ -181,18 +181,18 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_REQUEST:
             smf_5gc_pfcp_send_session_deletion_request(
-                    sess, OGS_PFCP_5GC_DELETE_TRIGGER_UE_REQUESTED);
+                    sess, session, OGS_PFCP_5GC_DELETE_TRIGGER_UE_REQUESTED);
             break;
 
         case OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE:
-            smf_sbi_send_response(sess, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            smf_sbi_send_response(session, OGS_SBI_HTTP_STATUS_NO_CONTENT);
 
             /*
              * Race condition for PDU session release complete
              *  - CLIENT : /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
              *  - SERVER : /namf-callback/v1/{supi}/sm-context-status/{psi})
              *
-             * smf_sbi_send_response(sess, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+             * smf_sbi_send_response(session, OGS_SBI_HTTP_STATUS_NO_CONTENT);
              * smf_sbi_send_sm_context_status_notify(sess);
              *
              * When executed as above,
@@ -220,6 +220,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_NGAP_MESSAGE:
         sess = e->sess;
         ogs_assert(sess);
+        session = e->sbi.session;
+        ogs_assert(session);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
         pkbuf = e->pkbuf;
@@ -229,7 +231,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
         switch (e->ngap.type) {
         case OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP:
             rv = ngap_handle_pdu_session_resource_setup_response_transfer(
-                    sess, pkbuf);
+                    sess, session, pkbuf);
             if (rv != OGS_OK) {
                 ogs_error("[%s:%d] Cannot handle NGAP message",
                         smf_ue->supi, sess->psi);
@@ -238,7 +240,7 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP:
-            smf_sbi_send_response(sess, OGS_SBI_HTTP_STATUS_NO_CONTENT);
+            smf_sbi_send_response(session, OGS_SBI_HTTP_STATUS_NO_CONTENT);
             break;
 
         default:
