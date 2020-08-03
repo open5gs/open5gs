@@ -114,26 +114,33 @@ void ausf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-void ausf_sbi_discover_and_send(
-        OpenAPI_nf_type_e nf_type, ausf_ue_t *ausf_ue, void *data,
+void ausf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
+{
+    ogs_sbi_send(nf_instance, client_cb, xact);
+}
+
+void ausf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+        ausf_ue_t *ausf_ue, ogs_sbi_session_t *session, void *data,
         ogs_sbi_request_t *(*build)(ausf_ue_t *ausf_ue, void *data))
 {
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_xact_t *xact = NULL;
 
+    ogs_assert(target_nf_type);
     ogs_assert(ausf_ue);
-    session = ausf_ue->sbi.session;
-    ogs_assert(nf_type);
+    ogs_assert(session);
     ogs_assert(build);
 
-    ausf_ue->sbi.nf_state_registered = ausf_nf_state_registered;
-    ausf_ue->sbi.client_wait.duration =
-        ogs_config()->time.message.sbi.client_wait_duration;
-    ausf_ue->sbi.client_cb = client_cb;
+    xact = ogs_sbi_xact_add(target_nf_type, &ausf_ue->sbi, data,
+            (ogs_sbi_build_f)build, ausf_timer_sbi_client_wait_expire);
+    ogs_assert(xact);
 
-    if (ogs_sbi_discover_and_send(
-            nf_type, &ausf_ue->sbi, data, (ogs_sbi_build_f)build) != true) {
+    xact->assoc_session = session;
+
+    if (ogs_sbi_discover_and_send(xact,
+            (ogs_fsm_handler_t)ausf_nf_state_registered, client_cb) != true) {
+
         ogs_sbi_server_send_error(session,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
-                "Cannot discover", ausf_ue->suci);
+            OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
+            "Cannot discover", ausf_ue->suci);
     }
 }

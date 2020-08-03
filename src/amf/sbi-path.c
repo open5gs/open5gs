@@ -116,42 +116,54 @@ void amf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
+void amf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
+{
+    ogs_sbi_send(nf_instance, client_cb, xact);
+}
+
 void amf_ue_sbi_discover_and_send(
-        OpenAPI_nf_type_e nf_type, amf_ue_t *amf_ue, void *data,
+        OpenAPI_nf_type_e target_nf_type, amf_ue_t *amf_ue, void *data,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data))
 {
-    ogs_assert(nf_type);
+    ogs_sbi_xact_t *xact = NULL;
+
+    ogs_assert(target_nf_type);
     ogs_assert(amf_ue);
+    ogs_assert(build);
 
-    amf_ue->sbi.nf_state_registered = amf_nf_state_registered;
-    amf_ue->sbi.client_wait.duration =
-        ogs_config()->time.message.sbi.client_wait_duration;
-    amf_ue->sbi.client_cb = client_cb;
+    xact = ogs_sbi_xact_add(target_nf_type, &amf_ue->sbi, data,
+            (ogs_sbi_build_f)build, amf_timer_sbi_client_wait_expire);
+    ogs_assert(xact);
 
-    if (ogs_sbi_discover_and_send(
-            nf_type, &amf_ue->sbi, data, (ogs_sbi_build_f)build) != true) {
-        nas_5gs_send_gmm_reject_from_sbi(amf_ue,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+    if (ogs_sbi_discover_and_send(xact,
+            (ogs_fsm_handler_t)amf_nf_state_registered, client_cb) != true) {
+
+        nas_5gs_send_gmm_reject_from_sbi(
+                amf_ue, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
     }
 }
 
-void amf_sess_sbi_discover_and_send(
-        OpenAPI_nf_type_e nf_type, amf_sess_t *sess, void *data,
+void amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+        amf_sess_t *sess, int state, void *data,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data))
 {
-    ogs_assert(nf_type);
+    ogs_sbi_xact_t *xact = NULL;
+
+    ogs_assert(target_nf_type);
     ogs_assert(sess);
     ogs_assert(build);
 
-    sess->sbi.nf_state_registered = amf_nf_state_registered;
-    sess->sbi.client_wait.duration =
-        ogs_config()->time.message.sbi.client_wait_duration;
-    sess->sbi.client_cb = client_cb;
+    xact = ogs_sbi_xact_add(target_nf_type, &sess->sbi, data,
+            (ogs_sbi_build_f)build, amf_timer_sbi_client_wait_expire);
+    ogs_assert(xact);
 
-    if (ogs_sbi_discover_and_send(
-            nf_type, &sess->sbi, data, (ogs_sbi_build_f)build) != true) {
-        nas_5gs_send_back_5gsm_message_from_sbi(sess,
-                OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
+    xact->state = state;
+
+    if (ogs_sbi_discover_and_send(xact,
+            (ogs_fsm_handler_t)amf_nf_state_registered, client_cb) != true) {
+
+        nas_5gs_send_back_5gsm_message_from_sbi(
+                sess, OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
     }
 }
 
@@ -161,13 +173,12 @@ void amf_sbi_send_activating_session(amf_sess_t *sess)
 
     ogs_assert(sess);
 
-    /* UPDATE_UpCnxState - ACTIVATING */
-    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
-
     memset(&param, 0, sizeof(param));
-    param.upCnxState = sess->ueUpCnxState;
-    amf_sess_sbi_discover_and_send(
-            OpenAPI_nf_type_SMF, sess, &param,
+    param.upCnxState = OpenAPI_up_cnx_state_ACTIVATING;
+
+    /* UPDATE_UpCnxState - ACTIVATING */
+    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+            sess, AMF_UPDATE_SM_CONTEXT_ACTIVATING, &param,
             amf_nsmf_pdu_session_build_update_sm_context);
 }
 
@@ -178,17 +189,16 @@ void amf_sbi_send_deactivate_session(
 
     ogs_assert(sess);
 
-    /* UPDATE_UpCnxState - DEACTIVATED */
-    sess->ueUpCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
-
     memset(&param, 0, sizeof(param));
-    param.upCnxState = sess->ueUpCnxState;
+    param.upCnxState = OpenAPI_up_cnx_state_DEACTIVATED;
     param.ngApCause.group = group;
     param.ngApCause.value = cause;
     param.ue_location = true;
     param.ue_timezone = true;
-    amf_sess_sbi_discover_and_send(
-            OpenAPI_nf_type_SMF, sess, &param,
+
+    /* UPDATE_UpCnxState - DEACTIVATED */
+    amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+            sess, AMF_UPDATE_SM_CONTEXT_DEACTIVATED, &param,
             amf_nsmf_pdu_session_build_update_sm_context);
 }
 
@@ -210,8 +220,11 @@ void amf_sbi_send_release_session(amf_sess_t *sess)
     ogs_assert(sess);
 
     amf_sess_sbi_discover_and_send(
-            OpenAPI_nf_type_SMF, sess, NULL,
+            OpenAPI_nf_type_SMF, sess, AMF_UPDATE_SM_CONTEXT_NO_STATE, NULL,
             amf_nsmf_pdu_session_build_release_sm_context);
+
+    /* Prevent to invoke SMF for this session */
+    CLEAR_SM_CONTEXT_REF(sess);
 }
 
 void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue)

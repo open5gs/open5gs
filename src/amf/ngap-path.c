@@ -370,11 +370,12 @@ void ngap_send_session_sync_or_context_release_command(
         ngap_send_ran_ue_context_release_command(ran_ue,
                 group, cause, action, delay);
     } else {
+        int xact_count = amf_sess_xact_count(amf_ue);
+
         amf_sbi_send_release_all_sessions(amf_ue);
-        if (SESSION_SYNC_DONE(amf_ue)) {
+        if (amf_sess_xact_count(amf_ue) == xact_count)
             ngap_send_ran_ue_context_release_command(ran_ue,
                     group, cause, action, delay);
-        }
     }
 }
 

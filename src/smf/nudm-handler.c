@@ -20,7 +20,8 @@
 #include "nudm-handler.h"
 #include "pfcp-path.h"
 
-bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
+bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
+        ogs_sbi_message_t *recvmsg)
 {
     char buf1[OGS_ADDRSTRLEN];
     char buf2[OGS_ADDRSTRLEN];
@@ -33,7 +34,6 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
     ogs_pfcp_qer_t *qer = NULL;
 
     ogs_sbi_server_t *server = NULL;
-    ogs_sbi_session_t *session = NULL;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_header_t header;
@@ -54,7 +54,6 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_message_t *recvmsg)
     OpenAPI_lnode_t *node = NULL, *node2 = NULL;
 
     ogs_assert(sess);
-    session = sess->sbi.session;
     ogs_assert(session);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);

@@ -138,9 +138,6 @@ udm_ue_t *udm_ue_add(char *suci)
     ogs_assert(udm_ue->supi);
     ogs_hash_set(self.supi_hash, udm_ue->supi, strlen(udm_ue->supi), udm_ue);
 
-    udm_ue->sbi.client_wait.timer = ogs_timer_add(udm_self()->timer_mgr,
-            udm_timer_sbi_client_wait_expire, udm_ue);
-
     memset(&e, 0, sizeof(e));
     e.udm_ue = udm_ue;
     ogs_fsm_create(&udm_ue->sm, udm_ue_state_initial, udm_ue_state_final);
@@ -165,11 +162,8 @@ void udm_ue_remove(udm_ue_t *udm_ue)
     ogs_fsm_delete(&udm_ue->sm);
 
     /* Free SBI object memory */
-    if (udm_ue->sbi.running_count)
-        ogs_error("[%s] SBI running [%d]",
-                udm_ue->supi, udm_ue->sbi.running_count);
     ogs_sbi_object_free(&udm_ue->sbi);
-    ogs_timer_delete(udm_ue->sbi.client_wait.timer);
+
     OpenAPI_auth_event_free(udm_ue->auth_event);
     OpenAPI_amf3_gpp_access_registration_free(
             udm_ue->amf_3gpp_access_registration);

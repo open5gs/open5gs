@@ -31,11 +31,20 @@ extern "C" {
 int amf_sbi_open(void);
 void amf_sbi_close(void);
 
-void amf_ue_sbi_discover_and_send(
-        OpenAPI_nf_type_e nf_type, amf_ue_t *amf_ue, void *data,
+void amf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+void amf_ue_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+        amf_ue_t *amf_ue, void *data,
         ogs_sbi_request_t *(*build)(amf_ue_t *amf_ue, void *data));
-void amf_sess_sbi_discover_and_send(
-        OpenAPI_nf_type_e nf_type, amf_sess_t *sess, void *data,
+
+#define AMF_UPDATE_SM_CONTEXT_NO_STATE          0
+#define AMF_UPDATE_SM_CONTEXT_ACTIVATED         1
+#define AMF_UPDATE_SM_CONTEXT_DEACTIVATED       2
+#define AMF_UPDATE_SM_CONTEXT_ACTIVATING        3
+#define AMF_UPDATE_SM_CONTEXT_SUSPENDED         4
+#define AMF_UPDATE_SM_CONTEXT_N2_RELEASED       5
+#define AMF_UPDATE_SM_CONTEXT_N1_RELEASED       6
+void amf_sess_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+        amf_sess_t *sess, int state, void *data,
         ogs_sbi_request_t *(*build)(amf_sess_t *sess, void *data));
 
 void amf_sbi_send_activating_session(amf_sess_t *sess);

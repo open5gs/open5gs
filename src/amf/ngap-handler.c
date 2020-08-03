@@ -780,16 +780,14 @@ void ngap_handle_initial_context_setup_response(
             return;
         }
 
-        /* UPDATE_UpCnxState - ACTIVATED */
-        sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATED;
-
         memset(&param, 0, sizeof(param));
         param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
-        amf_sess_sbi_discover_and_send(
-                OpenAPI_nf_type_SMF, sess, &param,
+        /* UPDATE_UpCnxState - ACTIVATED */
+        amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                sess, AMF_UPDATE_SM_CONTEXT_ACTIVATED, &param,
                 amf_nsmf_pdu_session_build_update_sm_context);
 
         ogs_pkbuf_free(param.n2smbuf);
@@ -1134,6 +1132,8 @@ void ngap_handle_ue_context_release_request(
                 NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                 NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
     } else {
+        int xact_count = amf_sess_xact_count(amf_ue);
+
         if (!PDUSessionList) {
             amf_sbi_send_deactivate_all_sessions(
                     amf_ue, Cause->present, (int)Cause->choice.radioNetwork);
@@ -1169,7 +1169,7 @@ void ngap_handle_ue_context_release_request(
             }
         }
 
-        if (SESSION_SYNC_DONE(amf_ue))
+        if (amf_sess_xact_count(amf_ue) == xact_count)
             ngap_send_amf_ue_context_release_command(amf_ue,
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                     NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
@@ -1441,16 +1441,14 @@ void ngap_handle_pdu_session_resource_setup_response(
             return;
         }
 
-        /* UPDATE_UpCnxState - ACTIVATED */
-        sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATED;
-
         memset(&param, 0, sizeof(param));
         param.n2smbuf = ogs_pkbuf_alloc(NULL, OGS_MAX_SDU_LEN);
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_SETUP_RSP;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
-        amf_sess_sbi_discover_and_send(
-                OpenAPI_nf_type_SMF, sess, &param,
+        /* UPDATE_UpCnxState - ACTIVATED */
+        amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                sess, AMF_UPDATE_SM_CONTEXT_ACTIVATED, &param,
                 amf_nsmf_pdu_session_build_update_sm_context);
 
         ogs_pkbuf_free(param.n2smbuf);
@@ -1611,8 +1609,8 @@ void ngap_handle_pdu_session_resource_release_response(
         param.n2SmInfoType = OpenAPI_n2_sm_info_type_PDU_RES_REL_RSP;
         ogs_pkbuf_put_data(param.n2smbuf, transfer->buf, transfer->size);
 
-        amf_sess_sbi_discover_and_send(
-                OpenAPI_nf_type_SMF, sess, &param,
+        amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                sess, AMF_UPDATE_SM_CONTEXT_N2_RELEASED, &param,
                 amf_nsmf_pdu_session_build_update_sm_context);
 
         ogs_pkbuf_free(param.n2smbuf);

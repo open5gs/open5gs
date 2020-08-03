@@ -131,7 +131,7 @@ bool udm_nnrf_handle_nf_status_notify(
     }
 
     if (NF_INSTANCE_IS_SELF(NFProfile->nf_instance_id)) {
-        ogs_error("The notification is not allowed [%s]",
+        ogs_warn("The notification is not allowed [%s]",
                 NFProfile->nf_instance_id);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
                 message, "The notification is not allowed",
@@ -208,8 +208,9 @@ bool udm_nnrf_handle_nf_status_notify(
 }
 
 void udm_nnrf_handle_nf_discover(
-        ogs_sbi_object_t *sbi_object, ogs_sbi_message_t *message)
+        ogs_sbi_xact_t *xact, ogs_sbi_message_t *message)
 {
+    ogs_sbi_object_t *sbi_object = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
     ogs_sbi_session_t *session = NULL;
 
@@ -217,8 +218,10 @@ void udm_nnrf_handle_nf_discover(
     OpenAPI_lnode_t *node = NULL;
     bool handled;
 
+    ogs_assert(xact);
+    sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
-    session = sbi_object->session;
+    session = xact->assoc_session;
     ogs_assert(session);
     ogs_assert(message);
 
@@ -269,9 +272,9 @@ void udm_nnrf_handle_nf_discover(
             }
 
             if (!OGS_SBI_NF_INSTANCE_GET(
-                        sbi_object->nf_types, nf_instance->nf_type))
-                ogs_sbi_nf_types_associate(sbi_object->nf_types,
-                        nf_instance->nf_type, sbi_object->nf_state_registered);
+                        sbi_object->nf_type_array, nf_instance->nf_type))
+                ogs_sbi_nf_instance_associate(sbi_object->nf_type_array,
+                        nf_instance->nf_type, udm_nf_state_registered);
 
             /* TIME : Update validity from NRF */
             if (SearchResult->validity_period) {
@@ -290,13 +293,13 @@ void udm_nnrf_handle_nf_discover(
         }
     }
 
-    ogs_assert(sbi_object->nf_type);
+    ogs_assert(xact->target_nf_type);
     nf_instance = OGS_SBI_NF_INSTANCE_GET(
-            sbi_object->nf_types, sbi_object->nf_type);
+            sbi_object->nf_type_array, xact->target_nf_type);
     if (!nf_instance) {
         ogs_error("(NF discover) No [%s]",
-                OpenAPI_nf_type_ToString(sbi_object->nf_type));
+                OpenAPI_nf_type_ToString(xact->target_nf_type));
     } else {
-        ogs_sbi_send(nf_instance, sbi_object);
+        udm_sbi_send(nf_instance, xact);
     }
 }

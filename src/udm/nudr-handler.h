@@ -27,11 +27,11 @@ extern "C" {
 #endif
 
 bool udm_nudr_dr_handle_subscription_authentication(
-        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg);
+    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg);
 bool udm_nudr_dr_handle_subscription_context(
-        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg);
+    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg);
 bool udm_nudr_dr_handle_subscription_provisioned(
-        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg);
+    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

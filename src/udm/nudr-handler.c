@@ -20,10 +20,9 @@
 #include "nudr-handler.h"
 
 bool udm_nudr_dr_handle_subscription_authentication(
-        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
+    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_server_t *server = NULL;
-    ogs_sbi_session_t *session = NULL;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_header_t header;
@@ -60,7 +59,6 @@ bool udm_nudr_dr_handle_subscription_authentication(
     OpenAPI_authentication_vector_t AuthenticationVector;
 
     ogs_assert(udm_ue);
-    session = udm_ue->sbi.session;
     ogs_assert(session);
     server = ogs_sbi_session_get_server(session);
     ogs_assert(server);
@@ -253,10 +251,9 @@ bool udm_nudr_dr_handle_subscription_authentication(
 }
 
 bool udm_nudr_dr_handle_subscription_context(
-        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
+    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_server_t *server = NULL;
-    ogs_sbi_session_t *session = NULL;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_header_t header;
@@ -267,7 +264,6 @@ bool udm_nudr_dr_handle_subscription_context(
     OpenAPI_amf3_gpp_access_registration_t *Amf3GppAccessRegistration = NULL;
 
     ogs_assert(udm_ue);
-    session = udm_ue->sbi.session;
     ogs_assert(session);
     server = ogs_sbi_session_get_server(session);
     ogs_assert(server);
@@ -335,16 +331,14 @@ bool udm_nudr_dr_handle_subscription_context(
 }
 
 bool udm_nudr_dr_handle_subscription_provisioned(
-        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
+    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_server_t *server = NULL;
-    ogs_sbi_session_t *session = NULL;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
 
     ogs_assert(udm_ue);
-    session = udm_ue->sbi.session;
     ogs_assert(session);
     server = ogs_sbi_session_get_server(session);
     ogs_assert(server);

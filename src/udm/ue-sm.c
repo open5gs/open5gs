@@ -68,11 +68,11 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_HTTP_METHOD_POST)
                 SWITCH(message->h.resource.component[1])
                 CASE(OGS_SBI_RESOURCE_NAME_SECURITY_INFORMATION)
-                    udm_nudm_ueau_handle_get(udm_ue, message);
+                    udm_nudm_ueau_handle_get(udm_ue, session, message);
                     break;
                 CASE(OGS_SBI_RESOURCE_NAME_AUTH_EVENTS)
                     udm_nudm_ueau_handle_result_confirmation_inform(
-                            udm_ue, message);
+                            udm_ue, session, message);
                     break;
                 DEFAULT
                     ogs_error("[%s] Invalid resource name [%s]",
@@ -97,7 +97,7 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
             CASE(OGS_SBI_HTTP_METHOD_PUT)
                 SWITCH(message->h.resource.component[1])
                 CASE(OGS_SBI_RESOURCE_NAME_REGISTRATIONS)
-                    udm_nudm_uecm_handle_registration(udm_ue, message);
+                    udm_nudm_uecm_handle_registration(udm_ue, session, message);
                     break;
 
                 DEFAULT
@@ -125,13 +125,13 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                 CASE(OGS_SBI_RESOURCE_NAME_SMF_SELECT_DATA)
                 CASE(OGS_SBI_RESOURCE_NAME_SM_DATA)
                     udm_sbi_discover_and_send(
-                        OpenAPI_nf_type_UDR, udm_ue, message,
+                        OpenAPI_nf_type_UDR, udm_ue, session, message,
                         udm_nudr_dr_build_query_subscription_provisioned);
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_UE_CONTEXT_IN_SMF_DATA)
                     udm_nudm_sdm_handle_subscription_provisioned(
-                            udm_ue, message);
+                            udm_ue, session, message);
                     break;
 
                 DEFAULT
@@ -162,9 +162,10 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
     case UDM_EVT_SBI_CLIENT:
         message = e->sbi.message;
         ogs_assert(message);
-        udm_ue = e->sbi.data;
+
+        udm_ue = e->udm_ue;
         ogs_assert(udm_ue);
-        session = udm_ue->sbi.session;
+        session = e->sbi.session;
         ogs_assert(session);
 
         SWITCH(message->h.service.name)
@@ -190,7 +191,7 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                     }
 
                     udm_nudr_dr_handle_subscription_authentication(
-                            udm_ue, message);
+                            udm_ue, session, message);
                     break;
 
                 CASE(OGS_SBI_RESOURCE_NAME_CONTEXT_DATA)
@@ -203,14 +204,15 @@ void udm_ue_state_operational(ogs_fsm_t *s, udm_event_t *e)
                         break;
                     }
 
-                    udm_nudr_dr_handle_subscription_context(udm_ue, message);
+                    udm_nudr_dr_handle_subscription_context(
+                            udm_ue, session, message);
                     break;
 
                 DEFAULT
                     SWITCH(message->h.resource.component[3])
                     CASE(OGS_SBI_RESOURCE_NAME_PROVISIONED_DATA)
                         handled = udm_nudr_dr_handle_subscription_provisioned(
-                                udm_ue, message);
+                                udm_ue, session, message);
                         if (!handled) {
                             ogs_sbi_server_send_error(
                                 session, message->res_status,

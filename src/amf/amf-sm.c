@@ -62,6 +62,8 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
     amf_sess_t *sess = NULL;
 
     ogs_sbi_object_t *sbi_object = NULL;
+    ogs_sbi_xact_t *sbi_xact = NULL;
+    int state = AMF_UPDATE_SM_CONTEXT_NO_STATE;
     ogs_sbi_session_t *session = NULL;
     ogs_sbi_request_t *sbi_request = NULL;
 
@@ -341,13 +343,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(sbi_message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_object = e->sbi.data;
-                ogs_assert(sbi_object);
+                sbi_xact = e->sbi.data;
+                ogs_assert(sbi_xact);
 
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
                     if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK)
-                        amf_nnrf_handle_nf_discover(sbi_object, &sbi_message);
+                        amf_nnrf_handle_nf_discover(sbi_xact, &sbi_message);
                     else
                         ogs_error("HTTP response error [%d]",
                                 sbi_message.res_status);
@@ -369,43 +371,75 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NAUSF_AUTH)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_UECM)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
-            amf_ue = e->sbi.data;
+            sbi_xact = e->sbi.data;
+            ogs_assert(sbi_xact);
+
+            amf_ue = (amf_ue_t *)sbi_xact->sbi_object;
             ogs_assert(amf_ue);
             amf_ue = amf_ue_cycle(amf_ue);
             ogs_assert(amf_ue);
+
             ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
 
             e->amf_ue = amf_ue;
             e->sbi.message = &sbi_message;;
 
-            amf_ue->sbi.running_count--;
-            ogs_timer_stop(amf_ue->sbi.client_wait.timer);
+            ogs_sbi_xact_remove(sbi_xact);
 
             ogs_fsm_dispatch(&amf_ue->sm, e);
             break;
 
         CASE(OGS_SBI_SERVICE_NAME_NSMF_PDUSESSION)
-            sess = e->sbi.data;
+            sbi_xact = e->sbi.data;
+            ogs_assert(sbi_xact);
+
+            sess = (amf_sess_t *)sbi_xact->sbi_object;
             ogs_assert(sess);
             sess = amf_sess_cycle(sess);
+
+            /*
+             * 1. If AMF-UE context is duplicated in Identity-Response,
+             *    OLD AMF-UE's all session contexts are removed.
+             * 2. If there is an unfinished transaction with SMF,
+             *    Transaction's session context is NULL.
+             *
+             * For example,
+             *
+             * 1. gNB->AMF : PDUSessionResourceSetupResponse
+             * 2. AMF->SMF : [POST] /nsmf-pdusession/v1/sm-contexts/1/modify
+             * 3. UE ->AMF : Registration request with Unknwon GUTI
+             * 4. AMF->UE  : Identity request
+             * 5. UE ->AMF : Identity response
+             *               AMF UE context duplicated.
+             *               All session contexts are removed
+             * 6. SMF->AMF : RESPONSE /nsmf-pdusession/v1/sm-contexts/1/modify
+             *               No Session Context
+             *               Assertion
+             *
+             * IF THIS HAPPENS IN THE REAL WORLD,
+             * I WILL MODIFY THE ASSERTS BELOW.
+             */
             ogs_assert(sess);
+
             amf_ue = sess->amf_ue;
             ogs_assert(amf_ue);
             amf_ue = amf_ue_cycle(amf_ue);
             ogs_assert(amf_ue);
+
             ogs_assert(OGS_FSM_STATE(&amf_ue->sm));
 
             e->amf_ue = amf_ue;
             e->sess = sess;
             e->sbi.message = &sbi_message;;
 
-            sess->sbi.running_count--;
-            ogs_timer_stop(sess->sbi.client_wait.timer);
+            state = sbi_xact->state;
+
+            ogs_sbi_xact_remove(sbi_xact);
 
             SWITCH(sbi_message.h.resource.component[2])
             CASE(OGS_SBI_RESOURCE_NAME_MODIFY)
                 amf_nsmf_pdu_session_handle_update_sm_context(
-                        sess, &sbi_message);
+                        sess, state, &sbi_message);
                 break;
 
             CASE(OGS_SBI_RESOURCE_NAME_RELEASE)
@@ -466,12 +500,13 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
             break;
 
         case AMF_TIMER_SBI_CLIENT_WAIT:
-            sbi_object = e->sbi.data;
+            sbi_xact = e->sbi.data;
+            ogs_assert(sbi_xact);
+
+            sbi_object = sbi_xact->sbi_object;
             ogs_assert(sbi_object);
 
-            sbi_object->running_count--;
-
-            switch(sbi_object->nf_type) {
+            switch(sbi_xact->target_nf_type) {
             case OpenAPI_nf_type_AUSF:
             case OpenAPI_nf_type_UDM:
                 amf_ue = (amf_ue_t *)sbi_object;
@@ -498,9 +533,12 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
 
             default:
                 ogs_fatal("Not implemented [%s]",
-                    OpenAPI_nf_type_ToString(sbi_object->nf_type));
+                    OpenAPI_nf_type_ToString(sbi_xact->target_nf_type));
             }
+
+            ogs_sbi_xact_remove(sbi_xact);
             break;
+
         default:
             ogs_error("Unknown timer[%s:%d]",
                     amf_timer_get_name(e->timer_id), e->timer_id);

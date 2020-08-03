@@ -474,6 +474,8 @@ void ogs_sbi_client_send_request(
 
     conn = connection_add(client, client_cb, request, data);
     ogs_assert(conn);
+
+    ogs_sbi_request_free(request);
 }
 
 static size_t write_cb(void *contents, size_t size, size_t nmemb, void *data)

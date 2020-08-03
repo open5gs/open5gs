@@ -113,29 +113,23 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
             &gTPTunnel->transportLayerAddress, &upf_n3_ip);
     ogs_asn_OCTET_STRING_to_uint32(&gTPTunnel->gTP_TEID, &upf_n3_teid);
 
+    /* Need to Update? */
     if (memcmp(&sess->gnb_n3_ip, &upf_n3_ip, sizeof(sess->gnb_n3_ip)) != 0 ||
         sess->gnb_n3_teid != upf_n3_teid)
-        sess->pfcp_5gc_modify.outer_header_creation_update = true;
-    else
-        sess->pfcp_5gc_modify.outer_header_creation_update = false;
+        far_update = true;
 
-    memcpy(&sess->gnb_n3_ip, &upf_n3_ip, sizeof(sess->gnb_n3_ip));
-    sess->gnb_n3_teid = upf_n3_teid;
-
-    /* Need to Update? */
     ogs_list_for_each(&qos_flow->pfcp.far_list, far) {
         if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
-            if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
-                if (far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
-                    far_update = true;
-                }
-            } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+            if (far->apply_action != OGS_PFCP_APPLY_ACTION_FORW) {
                 far_update = true;
             }
         }
     }
 
     /* Setup FAR */
+    memcpy(&sess->gnb_n3_ip, &upf_n3_ip, sizeof(sess->gnb_n3_ip));
+    sess->gnb_n3_teid = upf_n3_teid;
+
     ogs_list_for_each(&qos_flow->pfcp.far_list, far) {
         if (far->dst_if == OGS_PFCP_INTERFACE_ACCESS) {
             ogs_pfcp_ip_to_outer_header_creation(&sess->gnb_n3_ip,
@@ -144,11 +138,13 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
         }
     }
 
-    if (far_update || sess->pfcp_5gc_modify.outer_header_creation_update)
-        smf_5gc_pfcp_send_session_modification_request(sess, session);
-    else
-        smf_sbi_send_sm_context_updated_data(sess, session);
-
+    if (far_update) {
+        smf_5gc_pfcp_send_qos_flow_modification_request(
+                qos_flow, session, OGS_PFCP_5GC_MODIFY_ACTIVATE);
+    } else {
+        /* ACTIVATED Is NOT Inlcuded in RESPONSE */
+        smf_sbi_send_sm_context_updated_data(sess, session, 0);
+    }
 
     rv = OGS_OK;
 cleanup:

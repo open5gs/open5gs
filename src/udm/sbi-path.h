@@ -31,8 +31,9 @@ extern "C" {
 int udm_sbi_open(void);
 void udm_sbi_close(void);
 
-void udm_sbi_discover_and_send(
-        OpenAPI_nf_type_e nf_type, udm_ue_t *udm_ue, void *data,
+void udm_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact);
+void udm_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+        udm_ue_t *udm_ue, ogs_sbi_session_t *session, void *data,
         ogs_sbi_request_t *(*build)(udm_ue_t *udm_ue, void *data));
 
 #ifdef __cplusplus

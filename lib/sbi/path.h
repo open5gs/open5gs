@@ -26,14 +26,10 @@
 extern "C" {
 #endif
 
-typedef ogs_sbi_request_t *(*ogs_sbi_build_f)(
-        ogs_sbi_object_t *sbi_object, void *data);
-
-void ogs_sbi_send(
-        ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_object_t *sbi_object);
-bool ogs_sbi_discover_and_send(
-        OpenAPI_nf_type_e nf_type, ogs_sbi_object_t *sbi_object, void *data,
-        ogs_sbi_build_f build);
+void ogs_sbi_send(ogs_sbi_nf_instance_t *nf_instance,
+        ogs_sbi_client_cb_f client_cb, ogs_sbi_xact_t *xact);
+bool ogs_sbi_discover_and_send(ogs_sbi_xact_t *xact,
+        ogs_fsm_handler_t nf_state_registered, ogs_sbi_client_cb_f client_cb);
 
 void ogs_nnrf_nfm_send_nf_register(ogs_sbi_nf_instance_t *nf_instance);
 void ogs_nnrf_nfm_send_nf_update(ogs_sbi_nf_instance_t *nf_instance);

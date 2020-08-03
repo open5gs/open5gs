@@ -173,10 +173,15 @@ void smf_5gc_n4_handle_session_establishment_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
         ogs_pfcp_session_establishment_response_t *rsp)
 {
+    ogs_sbi_session_t *session = NULL;
+
     ogs_pfcp_f_seid_t *up_f_seid = NULL;
 
     ogs_assert(xact);
     ogs_assert(rsp);
+
+    session = xact->assoc_session;
+    ogs_assert(session);
 
     ogs_pfcp_xact_commit(xact);
 
@@ -207,11 +212,7 @@ void smf_5gc_n4_handle_session_establishment_response(
     ogs_assert(up_f_seid);
     sess->upf_n4_seid = be64toh(up_f_seid->seid);
 
-    /* UPDATE_UpCnxState - ACTIVATING */
-    sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
-    sess->smfUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
-
-    smf_sbi_discover_and_send(OpenAPI_nf_type_AMF, sess, NULL,
+    smf_sbi_discover_and_send(OpenAPI_nf_type_AMF, sess, session, NULL,
             smf_namf_comm_build_n1_n2_message_transfer);
 
 #if 0
@@ -224,6 +225,7 @@ void smf_5gc_n4_handle_session_modification_response(
         ogs_pfcp_session_modification_response_t *rsp)
 {
     int status = 0;
+    uint64_t flags = 0;
     ogs_sbi_session_t *session = NULL;
 
     ogs_assert(xact);
@@ -231,6 +233,8 @@ void smf_5gc_n4_handle_session_modification_response(
 
     session = xact->assoc_session;
     ogs_assert(session);
+    flags = xact->modify_flags;
+    ogs_assert(flags);
 
     ogs_pfcp_xact_commit(xact);
 
@@ -262,10 +266,15 @@ void smf_5gc_n4_handle_session_modification_response(
 
     ogs_assert(sess);
 
-    /* UPDATE_UpCnxState - SYNC */
-    sess->smfUpCnxState = sess->ueUpCnxState;
+    if (flags & OGS_PFCP_5GC_MODIFY_ACTIVATE) {
+        /* ACTIVATED Is NOT Inlcuded in RESPONSE */
+        smf_sbi_send_sm_context_updated_data(sess, session, 0);
 
-    smf_sbi_send_sm_context_updated_data(sess, session);
+    } else if (flags & OGS_PFCP_5GC_MODIFY_DEACTIVATE) {
+        /* Only ACTIVING & DEACTIVATED is Included */
+        smf_sbi_send_sm_context_updated_data(
+                sess, session, OpenAPI_up_cnx_state_DEACTIVATED);
+    }
 }
 
 void smf_5gc_n4_handle_session_deletion_response(
@@ -285,7 +294,7 @@ void smf_5gc_n4_handle_session_deletion_response(
 
     session = xact->assoc_session;
     ogs_assert(session);
-    trigger = xact->trigger;
+    trigger = xact->delete_trigger;
     ogs_assert(trigger);
 
     ogs_pfcp_xact_commit(xact);

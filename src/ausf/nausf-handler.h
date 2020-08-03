@@ -26,10 +26,10 @@
 extern "C" {
 #endif
 
-bool ausf_nausf_auth_handle_authenticate(
-        ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg);
-bool ausf_nausf_auth_handle_authenticate_confirmation(
-        ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg);
+bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
+        ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg);
+bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
+        ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg);
 
 #ifdef __cplusplus
 }

@@ -1108,9 +1108,6 @@ amf_ue_t *amf_ue_add(ran_ue_t *ran_ue)
     amf_ue_new_guti(amf_ue);
 
     /* Add All Timers */
-    amf_ue->sbi.client_wait.timer = ogs_timer_add(
-            self.timer_mgr, amf_timer_sbi_client_wait_expire, amf_ue);
-
     amf_ue->t3513.timer = ogs_timer_add(
             self.timer_mgr, amf_timer_t3513_expire, amf_ue);
     amf_ue->t3513.pkbuf = NULL;
@@ -1197,12 +1194,7 @@ void amf_ue_remove(amf_ue_t *amf_ue)
     ogs_timer_delete(amf_ue->t3570.timer);
 
     /* Free SBI object memory */
-    if (amf_ue->sbi.running_count)
-        ogs_error("[%s] SBI running [%d]",
-                amf_ue->supi ? amf_ue->supi : "Unknown",
-                amf_ue->sbi.running_count);
     ogs_sbi_object_free(&amf_ue->sbi);
-    ogs_timer_delete(amf_ue->sbi.client_wait.timer);
 
     amf_ue_deassociate(amf_ue);
 
@@ -1370,9 +1362,16 @@ void amf_ue_set_suci(amf_ue_t *amf_ue,
         /* Check if OLD amf_ue_t is different with NEW amf_ue_t */
         if (ogs_pool_index(&amf_ue_pool, amf_ue) !=
             ogs_pool_index(&amf_ue_pool, old_amf_ue)) {
+
             ogs_warn("[%s] OLD UE Context Release", suci);
-            if (old_amf_ue->ran_ue)
-                ran_ue_deassociate(old_amf_ue->ran_ue);
+            if (CM_CONNECTED(old_amf_ue)) {
+               /* Implcit NG release */
+                ogs_debug("[%s] Implicit NG release", suci);
+                ogs_debug("[%s]    RAN_UE_NGAP_ID[%d] AMF_UE_NGAP_ID[%lld]",
+                        old_amf_ue->suci, old_amf_ue->ran_ue->ran_ue_ngap_id,
+                        (long long)old_amf_ue->ran_ue->amf_ue_ngap_id);
+                ran_ue_remove(old_amf_ue->ran_ue);
+            }
             amf_ue_remove(old_amf_ue);
         }
     }
@@ -1480,9 +1479,6 @@ amf_sess_t *amf_sess_add(amf_ue_t *amf_ue, uint8_t psi)
     sess->s_nssai.mapped_hplmn_sst = 0;
     sess->s_nssai.mapped_hplmn_sd.v = OGS_S_NSSAI_NO_SD_VALUE;
 
-    sess->sbi.client_wait.timer = ogs_timer_add(
-            self.timer_mgr, amf_timer_sbi_client_wait_expire, sess);
-
     ogs_list_add(&amf_ue->sess_list, sess);
 
     return sess;
@@ -1496,12 +1492,7 @@ void amf_sess_remove(amf_sess_t *sess)
     ogs_list_remove(&sess->amf_ue->sess_list, sess);
 
     /* Free SBI object memory */
-    if (sess->sbi.running_count)
-        ogs_error("[%s:%d] SBI running [%d]",
-                sess->amf_ue->supi ? sess->amf_ue->supi : "Unknown",
-                sess->psi, sess->sbi.running_count);
     ogs_sbi_object_free(&sess->sbi);
-    ogs_timer_delete(sess->sbi.client_wait.timer);
 
     if (sess->sm_context_ref)
         ogs_free(sess->sm_context_ref);
@@ -1550,25 +1541,17 @@ amf_sess_t *amf_sess_cycle(amf_sess_t *sess)
     return ogs_pool_cycle(&amf_sess_pool, sess);
 }
 
-bool amf_ue_sync_done(amf_ue_t *amf_ue)
+int amf_sess_xact_count(amf_ue_t *amf_ue)
 {
     amf_sess_t *sess = NULL;
+    int xact_count = 0;
 
     ogs_assert(amf_ue);
-    if (amf_ue->sbi.running_count) return false;
 
     ogs_list_for_each(&amf_ue->sess_list, sess)
-        if (sess->sbi.running_count) return false;
+        xact_count += ogs_list_count(&sess->sbi.xact_list);
 
-    return true;
-}
-
-bool amf_sess_sync_done(amf_sess_t *sess)
-{
-    ogs_assert(sess);
-    if (sess->sbi.running_count) return false;
-
-    return true;
+    return xact_count;;
 }
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai)

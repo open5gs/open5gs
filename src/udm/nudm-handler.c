@@ -21,19 +21,16 @@
 #include "nnrf-handler.h"
 #include "nudm-handler.h"
 
-bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
+bool udm_nudm_ueau_handle_get(
+    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
 {
-    ogs_sbi_session_t *session = NULL;
-
     OpenAPI_authentication_info_request_t *AuthenticationInfoRequest = NULL;
     OpenAPI_resynchronization_info_t *ResynchronizationInfo = NULL;
     char *serving_network_name = NULL;
     char *ausf_instance_id = NULL;
 
     ogs_assert(udm_ue);
-    session = udm_ue->sbi.session;
     ogs_assert(session);
-
     ogs_assert(recvmsg);
 
     AuthenticationInfoRequest = recvmsg->AuthenticationInfoRequest;
@@ -71,7 +68,7 @@ bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
     ResynchronizationInfo = AuthenticationInfoRequest->resynchronization_info;
     if (!ResynchronizationInfo) {
 
-        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, NULL,
+        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, session, NULL,
                     udm_nudr_dr_build_authentication_subscription);
 
     } else {
@@ -154,7 +151,8 @@ bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
 
         ogs_uint64_to_buffer(sqn, OGS_SQN_LEN, udm_ue->sqn);
 
-        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, udm_ue->sqn,
+        udm_sbi_discover_and_send(OpenAPI_nf_type_UDR,
+                udm_ue, session, udm_ue->sqn,
                 udm_nudr_dr_build_authentication_subscription);
     }
 
@@ -162,14 +160,10 @@ bool udm_nudm_ueau_handle_get(udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
 }
 
 bool udm_nudm_ueau_handle_result_confirmation_inform(
-        udm_ue_t *udm_ue, ogs_sbi_message_t *message)
+    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *message)
 {
-    ogs_sbi_session_t *session = NULL;
-
     ogs_assert(udm_ue);
-    session = udm_ue->sbi.session;
     ogs_assert(session);
-
     ogs_assert(message);
 
     if (!message->AuthEvent) {
@@ -182,24 +176,20 @@ bool udm_nudm_ueau_handle_result_confirmation_inform(
     udm_ue->auth_event = OpenAPI_auth_event_copy(
             udm_ue->auth_event, message->AuthEvent);
 
-    udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, NULL,
+    udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, session, NULL,
             udm_nudr_dr_build_update_authentication_status);
 
     return true;
 }
 
 bool udm_nudm_uecm_handle_registration(
-        udm_ue_t *udm_ue, ogs_sbi_message_t *message)
+    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *message)
 {
-    ogs_sbi_session_t *session = NULL;
-
     OpenAPI_amf3_gpp_access_registration_t *Amf3GppAccessRegistration = NULL;
     OpenAPI_guami_t *Guami = NULL;
 
     ogs_assert(udm_ue);
-    session = udm_ue->sbi.session;
     ogs_assert(session);
-
     ogs_assert(message);
 
     Amf3GppAccessRegistration = message->Amf3GppAccessRegistration;
@@ -265,24 +255,20 @@ bool udm_nudm_uecm_handle_registration(
             udm_ue->amf_3gpp_access_registration,
                 message->Amf3GppAccessRegistration);
 
-    udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, NULL,
+    udm_sbi_discover_and_send(OpenAPI_nf_type_UDR, udm_ue, session, NULL,
             udm_nudr_dr_build_update_amf_context);
 
     return true;
 }
 
 bool udm_nudm_sdm_handle_subscription_provisioned(
-        udm_ue_t *udm_ue, ogs_sbi_message_t *recvmsg)
+    udm_ue_t *udm_ue, ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
 {
-    ogs_sbi_session_t *session = NULL;
-
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
 
     ogs_assert(udm_ue);
-    session = udm_ue->sbi.session;
     ogs_assert(session);
-
     ogs_assert(recvmsg);
 
     SWITCH(recvmsg->h.resource.component[1])

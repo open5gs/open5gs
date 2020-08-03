@@ -101,30 +101,35 @@ typedef struct ogs_sbi_nf_instance_s {
 
 #define OGS_SBI_NF_INSTANCE_GET(__aRRAY, __nFType) \
     ((__aRRAY)[__nFType].nf_instance) 
-typedef struct ogs_sbi_nf_types_s {
+typedef struct ogs_sbi_nf_type_array_s {
     ogs_sbi_nf_instance_t *nf_instance;
-} ogs_sbi_nf_types_t[OGS_SBI_MAX_NF_TYPE];
+} ogs_sbi_nf_type_array_t[OGS_SBI_MAX_NF_TYPE];
 
 typedef struct ogs_sbi_object_s {
     ogs_lnode_t lnode;
 
-    struct {
-        ogs_timer_t *timer;
-        ogs_time_t duration;
-    } client_wait;
+    ogs_sbi_nf_type_array_t nf_type_array;
 
-    int running_count;
+    ogs_list_t xact_list;
 
-    OpenAPI_nf_type_e nf_type;
-    ogs_sbi_request_t *request;
-
-    ogs_sbi_nf_types_t nf_types;
-
-    ogs_sbi_session_t *session;
-    void *nf_state_registered;
-
-    ogs_sbi_client_cb_f client_cb;
 } ogs_sbi_object_t;
+
+typedef ogs_sbi_request_t *(*ogs_sbi_build_f)(
+        ogs_sbi_object_t *sbi_object, void *data);
+
+typedef struct ogs_sbi_xact_s {
+    ogs_lnode_t lnode;
+
+    OpenAPI_nf_type_e target_nf_type;
+
+    ogs_sbi_request_t *request;
+    ogs_timer_t *t_response;
+
+    ogs_sbi_session_t *assoc_session;
+    uint8_t state;
+
+    ogs_sbi_object_t *sbi_object;
+} ogs_sbi_xact_t;
 
 typedef struct ogs_sbi_nf_service_s {
     ogs_lnode_t lnode;
@@ -174,20 +179,6 @@ typedef struct ogs_sbi_subscription_s {
     void *client;                       /* only used in SERVER */
 } ogs_sbi_subscription_t;
 
-typedef struct ogs_sbi_discover_s {
-    OpenAPI_nf_type_e nf_type;
-
-    char *uri;
-    struct {
-        char *name;
-    } service;
-    struct {
-        char *version;
-    } api;
-
-    ogs_sbi_request_t *request;
-} ogs_sbi_discover_t;
-
 void ogs_sbi_context_init(ogs_pollset_t *pollset, ogs_timer_mgr_t *timer_mgr);
 void ogs_sbi_context_final(void);
 ogs_sbi_context_t *ogs_sbi_self(void);
@@ -220,10 +211,16 @@ ogs_sbi_client_t *ogs_sbi_client_find_by_service_name(
         ogs_sbi_nf_instance_t *nf_instance, char *name, char *version);
 
 bool ogs_sbi_client_associate(ogs_sbi_nf_instance_t *nf_instance);
-bool ogs_sbi_nf_types_associate(
-        ogs_sbi_nf_types_t nf_types, OpenAPI_nf_type_e nf_type, void *state);
+bool ogs_sbi_nf_instance_associate(ogs_sbi_nf_type_array_t nf_type_array,
+        OpenAPI_nf_type_e nf_type, void *state);
 
 void ogs_sbi_object_free(ogs_sbi_object_t *sbi_object);
+
+ogs_sbi_xact_t *ogs_sbi_xact_add(OpenAPI_nf_type_e target_nf_type,
+        ogs_sbi_object_t *sbi_object, void *data,
+        ogs_sbi_build_f build, void (*timer_cb)(void *data));
+void ogs_sbi_xact_remove(ogs_sbi_xact_t *xact);
+void ogs_sbi_xact_remove_all(ogs_sbi_object_t *sbi_object);
 
 ogs_sbi_subscription_t *ogs_sbi_subscription_add(void);
 void ogs_sbi_subscription_set_id(

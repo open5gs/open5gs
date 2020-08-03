@@ -96,7 +96,6 @@ void nrf_nnrf_nfm_send_nf_status_notify(ogs_sbi_subscription_t *subscription,
             client, subscription, event, nf_instance);
     ogs_assert(request);
     ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
-    ogs_sbi_request_free(request);
 }
 
 void nrf_nnrf_nfm_send_nf_status_notify_all(

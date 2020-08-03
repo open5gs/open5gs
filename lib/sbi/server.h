@@ -28,13 +28,6 @@
 extern "C" {
 #endif
 
-#define OGS_SETUP_SBI_SESSION(__cTX, __pSESSION) \
-    do { \
-        ogs_assert((__cTX)); \
-        ogs_assert((__pSESSION)); \
-        (__cTX)->session = __pSESSION; \
-    } while(0)
-
 typedef struct ogs_sbi_server_s ogs_sbi_server_t;
 typedef struct ogs_sbi_session_s ogs_sbi_session_t;
 

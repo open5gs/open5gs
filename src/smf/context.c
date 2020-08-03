@@ -696,8 +696,6 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
     ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
 
     /* Setup Timer */
-    sess->sbi.client_wait.timer = ogs_timer_add(
-            self.timer_mgr, smf_timer_sbi_client_wait_expire, sess);
     sess->t_release_holding = ogs_timer_add(
             self.timer_mgr, smf_timer_release_holding_expire, sess);
 
@@ -809,8 +807,6 @@ smf_sess_t *smf_sess_add_by_psi(smf_ue_t *smf_ue, uint8_t psi)
     sess->smf_n4_seid = sess->index;
 
     /* Setup Timer */
-    sess->sbi.client_wait.timer = ogs_timer_add(
-            self.timer_mgr, smf_timer_sbi_client_wait_expire, sess);
     sess->t_release_holding = ogs_timer_add(
             self.timer_mgr, smf_timer_release_holding_expire, sess);
 
@@ -983,12 +979,8 @@ void smf_sess_remove(smf_sess_t *sess)
         ogs_freeaddrinfo(sess->upf_n3_addr6);
 
     /* Free SBI object memory */
-    if (sess->sbi.running_count)
-        ogs_error("[%s:%d] SBI running [%d]",
-                smf_ue->supi, sess->psi, sess->sbi.running_count);
     ogs_sbi_object_free(&sess->sbi);
 
-    ogs_timer_delete(sess->sbi.client_wait.timer);
     ogs_timer_delete(sess->t_release_holding);
 
     smf_bearer_remove_all(sess);

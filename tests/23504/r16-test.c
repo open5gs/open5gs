@@ -379,8 +379,6 @@ static void test2_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
-
     /* Receive Initial Context Setup Request +
      * Attach Accept +
      * Activate Default Bearer Context Request */

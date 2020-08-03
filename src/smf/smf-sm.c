@@ -68,7 +68,7 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
     ogs_sbi_subscription_t *subscription = NULL;
     ogs_sbi_response_t *sbi_response = NULL;
     ogs_sbi_message_t sbi_message;
-    ogs_sbi_object_t *sbi_object = NULL;
+    ogs_sbi_xact_t *sbi_xact = NULL;
 
     ogs_nas_5gs_message_t nas_message;
     ogs_pkbuf_t *pkbuf = NULL;
@@ -367,8 +367,6 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     ogs_assert(smf_ue);
                     ogs_assert(OGS_FSM_STATE(&sess->sm));
 
-                    OGS_SETUP_SBI_SESSION(&sess->sbi, session);
-
                     e->sess = sess;
                     e->sbi.message = &sbi_message;
                     ogs_fsm_dispatch(&sess->sm, e);
@@ -484,13 +482,13 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(sbi_message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_object = e->sbi.data;
-                ogs_assert(sbi_object);
+                sbi_xact = e->sbi.data;
+                ogs_assert(sbi_xact);
 
                 SWITCH(sbi_message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
                     if (sbi_message.res_status == OGS_SBI_HTTP_STATUS_OK)
-                        smf_nnrf_handle_nf_discover(sbi_object, &sbi_message);
+                        smf_nnrf_handle_nf_discover(sbi_xact, &sbi_message);
                     else
                         ogs_error("HTTP response error [%d]",
                                 sbi_message.res_status);
@@ -511,7 +509,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
 
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
         CASE(OGS_SBI_SERVICE_NAME_NAMF_COMM)
-            sess = e->sbi.data;
+            sbi_xact = e->sbi.data;
+            ogs_assert(sbi_xact);
+
+            sess = (smf_sess_t *)sbi_xact->sbi_object;
             ogs_assert(sess);
             sess = smf_sess_cycle(sess);
             ogs_assert(sess);
@@ -522,10 +523,10 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             ogs_assert(OGS_FSM_STATE(&sess->sm));
 
             e->sess = sess;
-            e->sbi.message = &sbi_message;;
+            e->sbi.message = &sbi_message;
+            e->sbi.session = sbi_xact->assoc_session;
 
-            sess->sbi.running_count--;
-            ogs_timer_stop(sess->sbi.client_wait.timer);
+            ogs_sbi_xact_remove(sbi_xact);
 
             ogs_fsm_dispatch(&sess->sm, e);
             if (OGS_FSM_CHECK(&sess->sm, smf_gsm_state_exception)) {
@@ -572,12 +573,13 @@ void smf_state_operational(ogs_fsm_t *s, smf_event_t *e)
             break;
 
         case SMF_TIMER_SBI_CLIENT_WAIT:
-            sbi_object = e->sbi.data;
-            ogs_assert(sbi_object);
-            session = sbi_object->session;
+            sbi_xact = e->sbi.data;
+            ogs_assert(sbi_xact);
+
+            session = sbi_xact->assoc_session;
             ogs_assert(session);
 
-            sbi_object->running_count--;
+            ogs_sbi_xact_remove(sbi_xact);
 
             ogs_error("Cannot receive SBI message");
             ogs_sbi_server_send_error(session,

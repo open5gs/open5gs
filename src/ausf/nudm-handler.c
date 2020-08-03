@@ -32,10 +32,10 @@ static const char *links_member_name(OpenAPI_auth_type_e auth_type)
     return NULL;
 }
 
-bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg)
+bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue,
+        ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
 {
     ogs_sbi_server_t *server = NULL;
-    ogs_sbi_session_t *session = NULL;
 
     ogs_sbi_message_t sendmsg;
     ogs_sbi_header_t header;
@@ -51,7 +51,6 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg)
     OpenAPI_links_value_schema_t LinksValueSchemeValue;
 
     ogs_assert(ausf_ue);
-    session = ausf_ue->sbi.session;
     ogs_assert(session);
     server = ogs_sbi_session_get_server(session);
     ogs_assert(server);
@@ -206,11 +205,9 @@ bool ausf_nudm_ueau_handle_get(ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg)
     return true;
 }
 
-bool ausf_nudm_ueau_handle_result_confirmation_inform(
-        ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg)
+bool ausf_nudm_ueau_handle_result_confirmation_inform(ausf_ue_t *ausf_ue,
+        ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
 {
-    ogs_sbi_session_t *session = NULL;
-
     ogs_sbi_message_t sendmsg;
     ogs_sbi_response_t *response = NULL;
 
@@ -220,7 +217,6 @@ bool ausf_nudm_ueau_handle_result_confirmation_inform(
     OpenAPI_auth_event_t *AuthEvent = NULL;
 
     ogs_assert(ausf_ue);
-    session = ausf_ue->sbi.session;
     ogs_assert(session);
 
     ogs_assert(recvmsg);

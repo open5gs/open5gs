@@ -116,29 +116,36 @@ void smf_sbi_close(void)
     ogs_sbi_server_stop_all();
 }
 
-void smf_sbi_discover_and_send(
-        OpenAPI_nf_type_e nf_type, smf_sess_t *sess, void *data,
+void smf_sbi_send(ogs_sbi_nf_instance_t *nf_instance, ogs_sbi_xact_t *xact)
+{
+    ogs_sbi_send(nf_instance, client_cb, xact);
+}
+
+void smf_sbi_discover_and_send(OpenAPI_nf_type_e target_nf_type,
+        smf_sess_t *sess, ogs_sbi_session_t *session, void *data,
         ogs_sbi_request_t *(*build)(smf_sess_t *sess, void *data))
 {
-    ogs_sbi_session_t *session = NULL;
+    ogs_sbi_xact_t *xact = NULL;
     smf_ue_t *smf_ue = NULL;
 
-    ogs_assert(nf_type);
-    ogs_assert(build);
+    ogs_assert(target_nf_type);
 
     ogs_assert(sess);
-    session = sess->sbi.session;
-    ogs_assert(session);
     smf_ue = sess->smf_ue;
     ogs_assert(smf_ue);
 
-    sess->sbi.nf_state_registered = smf_nf_state_registered;
-    sess->sbi.client_wait.duration =
-        ogs_config()->time.message.sbi.client_wait_duration;
-    sess->sbi.client_cb = client_cb;
+    ogs_assert(session);
+    ogs_assert(build);
 
-    if (ogs_sbi_discover_and_send(
-            nf_type, &sess->sbi, data, (ogs_sbi_build_f)build) != true) {
+    xact = ogs_sbi_xact_add(target_nf_type, &sess->sbi, data,
+            (ogs_sbi_build_f)build, smf_timer_sbi_client_wait_expire);
+    ogs_assert(xact);
+
+    xact->assoc_session = session;
+
+    if (ogs_sbi_discover_and_send(xact,
+            (ogs_fsm_handler_t)smf_nf_state_registered, client_cb) != true) {
+
         ogs_sbi_server_send_error(session,
                 OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT, NULL,
                 "Cannot discover", smf_ue->supi);
@@ -202,8 +209,8 @@ void smf_sbi_send_sm_context_create_error(
         ogs_pkbuf_free(n1smbuf);
 }
 
-void smf_sbi_send_sm_context_updated_data(
-        smf_sess_t *sess, ogs_sbi_session_t *session)
+void smf_sbi_send_sm_context_updated_data(smf_sess_t *sess,
+        ogs_sbi_session_t *session, OpenAPI_up_cnx_state_e up_cnx_state)
 {
     int status;
 
@@ -216,16 +223,15 @@ void smf_sbi_send_sm_context_updated_data(
     ogs_assert(session);
 
     memset(&sendmsg, 0, sizeof(sendmsg));
-
-    if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED &&
-        sess->pfcp_5gc_modify.outer_header_creation_update == true) {
-        status = OGS_SBI_HTTP_STATUS_NO_CONTENT;
-    } else {
+    
+    if (up_cnx_state) {
         memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
-        SmContextUpdatedData.up_cnx_state =  sess->smfUpCnxState;
+        SmContextUpdatedData.up_cnx_state = up_cnx_state;
 
         sendmsg.SmContextUpdatedData = &SmContextUpdatedData;
         status = OGS_SBI_HTTP_STATUS_OK;
+    } else {
+        status = OGS_SBI_HTTP_STATUS_NO_CONTENT;
     }
 
     response = ogs_sbi_build_response(&sendmsg, status);
@@ -394,5 +400,4 @@ void smf_sbi_send_sm_context_status_notify(smf_sess_t *sess)
     request = smf_namf_callback_build_sm_context_status(sess, NULL);
     ogs_assert(request);
     ogs_sbi_client_send_request(client, client_notify_cb, request, NULL);
-    ogs_sbi_request_free(request);
 }

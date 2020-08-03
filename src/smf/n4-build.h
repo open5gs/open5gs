@@ -32,12 +32,17 @@ ogs_pkbuf_t *smf_n4_build_association_setup_response(uint8_t type,
 
 ogs_pkbuf_t *smf_n4_build_session_establishment_request(
         uint8_t type, smf_sess_t *sess);
+
 ogs_pkbuf_t *smf_5gc_n4_build_session_modification_request(
-        uint8_t type, smf_sess_t *sess);
-ogs_pkbuf_t *smf_epc_n4_build_session_modification_request(
-        uint8_t type, smf_bearer_t *bearer);
+        uint8_t type, smf_sess_t *sess, uint64_t modify_flags);
+ogs_pkbuf_t *smf_5gc_n4_build_qos_flow_modification_request(
+        uint8_t type, smf_bearer_t *qos_flow, uint64_t modify_flags);
+
 ogs_pkbuf_t *smf_n4_build_session_deletion_request(
         uint8_t type, smf_sess_t *sess);
+
+ogs_pkbuf_t *smf_epc_n4_build_session_modification_request(
+        uint8_t type, smf_bearer_t *bearer);
 
 #ifdef __cplusplus
 }

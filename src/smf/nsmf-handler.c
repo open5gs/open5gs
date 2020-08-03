@@ -210,7 +210,6 @@ bool smf_nsmf_handle_update_sm_context(
     ogs_sbi_response_t *response = NULL;
 
     OpenAPI_sm_context_update_data_t *SmContextUpdateData = NULL;
-    OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
     OpenAPI_ref_to_binary_data_t *n1SmMsg = NULL;
     OpenAPI_ref_to_binary_data_t *n2SmMsg = NULL;
 
@@ -324,9 +323,6 @@ bool smf_nsmf_handle_update_sm_context(
             return false;
         }
 
-        /* UPDATE_UpCnxState - ACTIVATED */
-        sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATED;
-
         /*
          * NOTE : The pkbuf created in the SBI message will be removed
          *        from ogs_sbi_message_free().
@@ -346,51 +342,17 @@ bool smf_nsmf_handle_update_sm_context(
             return false;
         }
 
-        /* UPDATE_UpCnxState - from SmContextUpdateData */
-        sess->ueUpCnxState = SmContextUpdateData->up_cnx_state;
-
-        if (sess->ueUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+        if (SmContextUpdateData->up_cnx_state ==
+                OpenAPI_up_cnx_state_DEACTIVATED) {
 
         /*********************************************************
          * Handle DEACTIVATED
          ********************************************************/
+            smf_5gc_pfcp_send_session_modification_request(
+                    sess, session, OGS_PFCP_5GC_MODIFY_DEACTIVATE);
 
-            if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
-                smf_5gc_pfcp_send_session_modification_request(sess, session);
-
-            } else if (sess->smfUpCnxState ==
-                    OpenAPI_up_cnx_state_DEACTIVATED) {
-                ogs_warn("[%s:%d] FALLBACK - UpCnxState has already been"
-                        "DEACTIVATED", smf_ue->supi, sess->psi);
-
-                /* No UPDATE_UPCnxState - ueUpCnxState == smfUpCnxState */
-
-                memset(&sendmsg, 0, sizeof(sendmsg));
-
-                memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
-                SmContextUpdatedData.up_cnx_state =  sess->smfUpCnxState;
-
-                sendmsg.SmContextUpdatedData = &SmContextUpdatedData;
-
-                response = ogs_sbi_build_response(&sendmsg,
-                        OGS_SBI_HTTP_STATUS_OK);
-                ogs_assert(response);
-                ogs_sbi_server_send_response(session, response);
-
-            } else {
-                char *strerror = ogs_msprintf(
-                    "[%s:%d] Invalid upCnxState [%d:%d]",
-                    smf_ue->supi, sess->psi,
-                    sess->ueUpCnxState, sess->smfUpCnxState);
-                ogs_error("%s", strerror);
-                smf_sbi_send_sm_context_update_error(session,
-                        OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror,
-                        NULL, NULL, NULL);
-                ogs_free(strerror);
-                return false;
-            }
-
-        } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATING) {
+        } else if (SmContextUpdateData->up_cnx_state ==
+                OpenAPI_up_cnx_state_ACTIVATING) {
 
         /*********************************************************
          * Handle ACTIVATING
@@ -398,9 +360,6 @@ bool smf_nsmf_handle_update_sm_context(
             OpenAPI_sm_context_updated_data_t SmContextUpdatedData;
             OpenAPI_ref_to_binary_data_t n2SmInfo;
 
-            if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
-                ogs_warn("[%s:%d] FALLBACK - UpCnxState has already been "
-                        "ACTIVATED", smf_ue->supi, sess->psi);
             /*
              * TODO :
              *
@@ -437,19 +396,13 @@ bool smf_nsmf_handle_update_sm_context(
              * and initiates an N4 Session Modification procedure
              * to remove Tunnel Info of AN in the UPF.
              */
-            } else if (sess->smfUpCnxState == OpenAPI_up_cnx_state_ACTIVATING) {
-                ogs_warn("[%s:%d] FALLBACK - UpCnxState has already been "
-                        "ACTIVATING", smf_ue->supi, sess->psi);
-            }
-
-            /* UPDATE_UpCnxState - SYNC */
-            sess->smfUpCnxState = sess->ueUpCnxState;
 
             memset(&sendmsg, 0, sizeof(sendmsg));
             sendmsg.SmContextUpdatedData = &SmContextUpdatedData;
 
             memset(&SmContextUpdatedData, 0, sizeof(SmContextUpdatedData));
-            SmContextUpdatedData.up_cnx_state =  sess->smfUpCnxState;
+            /* Only ACTIVING & DEACTIVATED is Included */
+            SmContextUpdatedData.up_cnx_state = OpenAPI_up_cnx_state_ACTIVATING;
             SmContextUpdatedData.n2_sm_info_type =
                 OpenAPI_n2_sm_info_type_PDU_RES_SETUP_REQ;
             SmContextUpdatedData.n2_sm_info = &n2SmInfo;
@@ -478,9 +431,9 @@ bool smf_nsmf_handle_update_sm_context(
                     ogs_pkbuf_free(sendmsg.part[i].pkbuf);
 
         } else {
-            char *strerror = ogs_msprintf("[%s:%d] Invalid upCnxState [%d:%d]",
+            char *strerror = ogs_msprintf("[%s:%d] Invalid upCnxState [%d]",
                 smf_ue->supi, sess->psi,
-                sess->ueUpCnxState, sess->smfUpCnxState);
+                SmContextUpdateData->up_cnx_state);
             ogs_error("%s", strerror);
             smf_sbi_send_sm_context_update_error(session,
                     OGS_SBI_HTTP_STATUS_BAD_REQUEST, strerror,

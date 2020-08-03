@@ -46,7 +46,7 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
     ogs_sbi_subscription_t *subscription = NULL;
     ogs_sbi_response_t *response = NULL;
     ogs_sbi_message_t message;
-    ogs_sbi_object_t *sbi_object = NULL;
+    ogs_sbi_xact_t *sbi_xact = NULL;
 
     udm_ue_t *udm_ue = NULL;
 
@@ -171,8 +171,6 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
 
             ogs_assert(OGS_FSM_STATE(&udm_ue->sm));
 
-            OGS_SETUP_SBI_SESSION(&udm_ue->sbi, session);
-
             e->udm_ue = udm_ue;
             e->sbi.message = &message;
             ogs_fsm_dispatch(&udm_ue->sm, e);
@@ -277,13 +275,13 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NNRF_DISC)
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_NF_INSTANCES)
-                sbi_object = e->sbi.data;
-                ogs_assert(sbi_object);
+                sbi_xact = e->sbi.data;
+                ogs_assert(sbi_xact);
 
                 SWITCH(message.h.method)
                 CASE(OGS_SBI_HTTP_METHOD_GET)
                     if (message.res_status == OGS_SBI_HTTP_STATUS_OK)
-                        udm_nnrf_handle_nf_discover(sbi_object, &message);
+                        udm_nnrf_handle_nf_discover(sbi_xact, &message);
                     else
                         ogs_error("HTTP response error [%d]",
                                 message.res_status);
@@ -305,22 +303,26 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
         CASE(OGS_SBI_SERVICE_NAME_NUDR_DR)
             SWITCH(message.h.resource.component[0])
             CASE(OGS_SBI_RESOURCE_NAME_SUBSCRIPTION_DATA)
-                udm_ue = e->sbi.data;
+                sbi_xact = e->sbi.data;
+                ogs_assert(sbi_xact);
+
+                udm_ue = (udm_ue_t *)sbi_xact->sbi_object;
                 ogs_assert(udm_ue);
                 udm_ue = udm_ue_cycle(udm_ue);
                 ogs_assert(udm_ue);
 
                 e->udm_ue = udm_ue;
                 e->sbi.message = &message;
+                e->sbi.session = sbi_xact->assoc_session;
 
-                udm_ue->sbi.running_count--;
-                ogs_timer_stop(udm_ue->sbi.client_wait.timer);
+                ogs_sbi_xact_remove(sbi_xact);
 
                 ogs_fsm_dispatch(&udm_ue->sm, e);
                 if (OGS_FSM_CHECK(&udm_ue->sm, udm_ue_state_exception)) {
                     ogs_error("[%s] State machine exception", udm_ue->suci);
                     udm_ue_remove(udm_ue);
                 }
+
                 break;
 
             DEFAULT
@@ -369,12 +371,13 @@ void udm_state_operational(ogs_fsm_t *s, udm_event_t *e)
             break;
 
         case UDM_TIMER_SBI_CLIENT_WAIT:
-            sbi_object = e->sbi.data;
-            ogs_assert(sbi_object);
-            session = sbi_object->session;
+            sbi_xact = e->sbi.data;
+            ogs_assert(sbi_xact);
+
+            session = sbi_xact->assoc_session;
             ogs_assert(session);
 
-            sbi_object->running_count--;
+            ogs_sbi_xact_remove(sbi_xact);
 
             ogs_error("Cannot receive SBI message");
             ogs_sbi_server_send_error(session,

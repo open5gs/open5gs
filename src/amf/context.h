@@ -396,20 +396,46 @@ typedef struct amf_sess_s {
         ogs_free((__sESS)->sm_context_ref); \
         (__sESS)->sm_context_ref = NULL; \
     } while(0);
-    char *sm_context_ref;   /* smContextRef from SMF */
 
-#define SESSION_SYNC_DONE(__aMF)  \
-    (amf_ue_sync_done(__aMF) == true)
+    /* SMF sends the RESPONSE
+     * of [POST] /nsmf-pdusession/v1/sm-contexts */
+    char *sm_context_ref;
 
-    /* UE session context is activated or not */
-    OpenAPI_up_cnx_state_e ueUpCnxState;
-    /* SMF session context is activated or not */
-    OpenAPI_up_cnx_state_e smfUpCnxState;
-    /* SMF notify status when PDU session release complete is received */
-    OpenAPI_resource_status_e resource_status;
-
-    ogs_pkbuf_t *n2smbuf;
+    /* SMF sends the REQUEST
+     * of [POST] /namf-comm/v1/ue-contexts/{supi}/n1-n2-messages */
     ogs_pkbuf_t *pdu_session_establishment_accept;
+
+    /*
+     * [AMF]
+     *   1. PDUSessionResourceReleaseResponse
+     *      REQUEST [POST] /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+     *   2. PDU Session release complete
+     *      REQUEST [POST] /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+     *
+     * [SMF]
+     *   1. RESPONSE /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+     *      sess->n2_released = true;
+     *
+     *   2. RESPONSE /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+     *      sess->n1_released = true;
+     *
+     *   3. NOTIFY /namf-callback/v1/{supi}/sm-context-status/{psi})
+     *      sess->resource_status = OpenAPI_resource_status_RELEASED;
+     *
+     * if (sess->n1_released == true &&
+     *     sess->n2_released == true &&
+     *     sess->resource_status == OpenAPI_resource_status_RELEASED) {
+     *
+     *     REMOVE_SESSION_CONTEXT()
+     * }
+     */
+    OpenAPI_resource_status_e resource_status;
+    bool n1_released;
+    bool n2_released;
+
+    /* SMF sends the RESPONSE
+     * of [POST] /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify */
+    ogs_pkbuf_t *pdu_session_resource_setup_request_transfer;
 
     /* last payload for sending back to the UE */
     uint8_t         payload_container_type;
@@ -539,8 +565,8 @@ amf_sess_t *amf_sess_find_by_dnn(amf_ue_t *amf_ue, char *dnn);
 amf_ue_t *amf_ue_cycle(amf_ue_t *amf_ue);
 amf_sess_t *amf_sess_cycle(amf_sess_t *sess);
 
-bool amf_ue_sync_done(amf_ue_t *amf_ue);
-bool amf_sess_sync_done(amf_sess_t *sess);
+#define SESSION_SYNC_DONE(__aMF) (amf_sess_xact_count(__aMF) == 0)
+int amf_sess_xact_count(amf_ue_t *amf_ue);
 
 int amf_find_served_tai(ogs_5gs_tai_t *tai);
 ogs_s_nssai_t *amf_find_s_nssai(

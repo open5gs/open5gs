@@ -229,22 +229,9 @@ typedef struct smf_sess_s {
     int             num_of_pcc_rule;
 
     struct {
-        bool create;
-        bool tft_update;
-        bool qos_update;
-        bool outer_header_creation_update;
-        bool remove;
-    } pfcp_5gc_modify;
-
-    struct {
         bool create_session_response_apn_ambr;
         bool create_session_response_bearer_qos;
-    } gtp_5gc;;
-
-    /* UE session context is activated or not */
-    OpenAPI_up_cnx_state_e ueUpCnxState;
-    /* SMF session context is activated or not */
-    OpenAPI_up_cnx_state_e smfUpCnxState;
+    } gtp_5gc;
 
     /* Release Holding timer of SMF session context */
     ogs_timer_t     *t_release_holding;

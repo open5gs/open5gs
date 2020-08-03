@@ -97,10 +97,6 @@ int amf_nsmf_pdu_session_handle_create_sm_context(
             ogs_free(sess->sm_context_ref);
         sess->sm_context_ref = ogs_strdup(message.h.resource.component[1]);
 
-        /* Update UpCnxState */
-        sess->ueUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
-        sess->smfUpCnxState = OpenAPI_up_cnx_state_ACTIVATING;
-
         ogs_sbi_header_free(&header);
 
     } else {
@@ -147,7 +143,7 @@ int amf_nsmf_pdu_session_handle_create_sm_context(
 }
 
 int amf_nsmf_pdu_session_handle_update_sm_context(
-        amf_sess_t *sess, ogs_sbi_message_t *recvmsg)
+        amf_sess_t *sess, int state, ogs_sbi_message_t *recvmsg)
 {
     amf_ue_t *amf_ue = NULL;
     ogs_assert(sess);
@@ -163,9 +159,6 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
         OpenAPI_ref_to_binary_data_t *n2SmInfo = NULL;
         ogs_pkbuf_t *n1smbuf = NULL;
         ogs_pkbuf_t *n2smbuf = NULL;
-
-        /* UPDATE_UpCnxState - SYNC */
-        sess->smfUpCnxState = sess->ueUpCnxState;
 
         if (recvmsg->SmContextUpdatedData &&
             recvmsg->SmContextUpdatedData->n2_sm_info) {
@@ -200,22 +193,24 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  * To Deliver N2 SM Content to gNB Temporarily,
                  * Store N2 SM Context in Session Context
                  */
-                if (sess->n2smbuf) {
+                if (sess->pdu_session_resource_setup_request_transfer) {
                     /*
                      * It should not be reached this way.
                      * If the problem occurred, free the old n2smbuf
                      */
                     ogs_error("[%s:%d] N2 SM Content is duplicated",
                             amf_ue->supi, sess->psi);
-                    ogs_pkbuf_free(sess->n2smbuf);
+                    ogs_pkbuf_free(
+                            sess->pdu_session_resource_setup_request_transfer);
                 }
                 /*
                  * NOTE : The pkbuf created in the SBI message will be removed
                  *        from ogs_sbi_message_free().
                  *        So it must be copied and push a event queue.
                  */
-                sess->n2smbuf = ogs_pkbuf_copy(n2smbuf);
-                ogs_assert(sess->n2smbuf);
+                sess->pdu_session_resource_setup_request_transfer =
+                    ogs_pkbuf_copy(n2smbuf);
+                ogs_assert(sess->pdu_session_resource_setup_request_transfer);
 
                 if (SESSION_SYNC_DONE(amf_ue)) {
                     nas_5gs_send_accept(amf_ue);
@@ -225,9 +220,11 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  * For checking memory, NULL pointer should be set to n2smbuf.
                  */
                     ogs_list_for_each(&amf_ue->sess_list, sess) {
-                        if (sess->n2smbuf) {
-                            ogs_pkbuf_free(sess->n2smbuf);
-                            sess->n2smbuf = NULL;
+                        if (sess->pdu_session_resource_setup_request_transfer) {
+                            ogs_pkbuf_free(sess->
+                                pdu_session_resource_setup_request_transfer);
+                            sess->pdu_session_resource_setup_request_transfer =
+                                NULL;
                         }
                     }
                 }
@@ -264,26 +261,7 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
 
         } else {
 
-            if (!SESSION_CONTEXT_IN_SMF(sess)) {
-                /*
-                 * 1. PDU session release complete
-                 *    CLEAR_SM_CONTEXT_REF(sess) in gmm-handler.c
-                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
-                 *
-                 * If resource-status has already been updated by
-                 *   notify(/namf-callback/v1/{supi}/sm-context-status/{psi})
-                 * Remove 'amf_sess_t' context to call
-                 *   amf_nsmf_pdu_session_handle_release_sm_context().
-                 */
-                ogs_debug("[%s:%d] Receive Update SM context",
-                        amf_ue->supi, sess->psi);
-                if (sess->resource_status == OpenAPI_resource_status_RELEASED) {
-                    ogs_debug("[%s:%d] SM context remove",
-                            amf_ue->supi, sess->psi);
-                    amf_nsmf_pdu_session_handle_release_sm_context(sess);
-                }
-
-            } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATED) {
+            if (state == AMF_UPDATE_SM_CONTEXT_ACTIVATED) {
                 /*
                  * 1. PDUSessionResourceSetupResponse
                  * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
@@ -297,15 +275,7 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                  * 3. PFCP Session Modifcation Request (Apply: FORWARD)
                  * 4. PFCP Session Modifcation Response
                  */
-
-                /*
-                 * 1. PDUSessionResourceReleaseResponse
-                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
-                 */
-
-                /* Nothing */
-
-            } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_DEACTIVATED) {
+            } else if (state == AMF_UPDATE_SM_CONTEXT_DEACTIVATED) {
                 /*
                  * 1. UEContextReleaseRequest
                  * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
@@ -321,14 +291,51 @@ int amf_nsmf_pdu_session_handle_update_sm_context(
                             NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
                 }
 
-            } else if (sess->ueUpCnxState == OpenAPI_up_cnx_state_ACTIVATING) {
+            } else if (state == AMF_UPDATE_SM_CONTEXT_ACTIVATING) {
 
                 /* Not reached here */
 
+            } else if (state == AMF_UPDATE_SM_CONTEXT_N2_RELEASED) {
+
+                /*
+                 * 1. PDUSessionResourceReleaseResponse
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 */
+                ogs_debug("[%s:%d] Receive Update SM context(N2-RELEASED)",
+                        amf_ue->supi, sess->psi);
+
+                sess->n2_released = true;
+
+            } else if (state == AMF_UPDATE_SM_CONTEXT_N1_RELEASED) {
+                /*
+                 * 1. PDU session release complete
+                 *    CLEAR_SM_CONTEXT_REF(sess) in gmm-handler.c
+                 * 2. /nsmf-pdusession/v1/sm-contexts/{smContextRef}/modify
+                 */
+
+                ogs_debug("[%s:%d] Receive Update SM context(N1-RELEASED)",
+                        amf_ue->supi, sess->psi);
+
+                sess->n1_released = true;
+
             } else {
-                ogs_error("Invalid UpCnxState [UE:%d,SMF:%d]",
-                    sess->ueUpCnxState, sess->smfUpCnxState);
+                ogs_error("Invalid STATE[%d]", state);
             }
+
+            /*
+             * If resource-status has already been updated by
+             *   notify(/namf-callback/v1/{supi}/sm-context-status/{psi})
+             * Remove 'amf_sess_t' context to call
+             *   amf_nsmf_pdu_session_handle_release_sm_context().
+             */
+            if (sess->n1_released == true &&
+                sess->n2_released == true &&
+                sess->resource_status == OpenAPI_resource_status_RELEASED) {
+
+                ogs_debug("[%s:%d] SM context remove", amf_ue->supi, sess->psi);
+                amf_nsmf_pdu_session_handle_release_sm_context(sess);
+            }
+
         }
     } else {
         amf_ue_t *amf_ue = NULL;

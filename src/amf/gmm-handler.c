@@ -399,6 +399,7 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
 {
     amf_sess_t *sess = NULL;
     uint16_t psimask = 0;
+    int xact_count = 0;
 
     ogs_nas_uplink_data_status_t *uplink_data_status = NULL;
     ogs_nas_pdu_session_status_t *pdu_session_status = NULL;
@@ -419,6 +420,8 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
         return gmm_handle_nas_message_container(
                 amf_ue, &service_request->nas_message_container);
     }
+
+    xact_count = amf_sess_xact_count(amf_ue);
 
     if ((service_request->presencemask &
         OGS_NAS_5GS_SERVICE_REQUEST_ALLOWED_PDU_SESSION_STATUS_PRESENT) == 0) {
@@ -491,7 +494,7 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
         }
     }
 
-    if (SESSION_SYNC_DONE(amf_ue))
+    if (amf_sess_xact_count(amf_ue) == xact_count)
         nas_5gs_send_service_accept(amf_ue);
 
     return OGS_OK;
@@ -524,7 +527,8 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
         ogs_debug("    Switch-Off");
 
     amf_sbi_send_release_all_sessions(amf_ue);
-    if (SESSION_SYNC_DONE(amf_ue))
+
+    if (ogs_list_count(&amf_ue->sess_list) == 0)
         nas_5gs_send_de_registration_accept(amf_ue);
 
     return OGS_OK;
@@ -931,8 +935,8 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 sess->dnn = ogs_strdup(dnn->value);
             }
 
-            amf_sess_sbi_discover_and_send(
-                    OpenAPI_nf_type_SMF, sess, NULL,
+            amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                    sess, AMF_UPDATE_SM_CONTEXT_NO_STATE, NULL,
                     amf_nsmf_pdu_session_build_create_sm_context);
 
         } else {
@@ -954,12 +958,13 @@ int gmm_handle_ul_nas_transport(amf_ue_t *amf_ue,
                 param.ue_timezone = true;
             }
 
-            amf_sess_sbi_discover_and_send(
-                    OpenAPI_nf_type_SMF, sess, &param,
+            amf_sess_sbi_discover_and_send(OpenAPI_nf_type_SMF,
+                    sess, AMF_UPDATE_SM_CONTEXT_N1_RELEASED, &param,
                     amf_nsmf_pdu_session_build_update_sm_context);
 
             if (gsm_header->message_type ==
                     OGS_NAS_5GS_PDU_SESSION_RELEASE_COMPLETE) {
+                /* Prevent to invoke SMF for this session */
                 CLEAR_SM_CONTEXT_REF(sess);
             }
         }

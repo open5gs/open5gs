@@ -93,6 +93,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
     ran_ue_t *ran_ue = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
+    int xact_count = 0;
 
     ogs_assert(e);
         
@@ -120,6 +121,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
         h.type = e->nas.type;
         amf_ue->nas.ngapProcedureCode = e->ngap.code;
+
+        xact_count = amf_sess_xact_count(amf_ue);
 
         switch (nas_message->gmm.h.message_type) {
         case OGS_NAS_5GS_REGISTRATION_REQUEST:
@@ -149,7 +152,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                     break;
                 }
 
-                if (SESSION_SYNC_DONE(amf_ue))
+                if (amf_sess_xact_count(amf_ue) == xact_count)
                     nas_5gs_send_registration_accept(amf_ue);
 
                 OGS_FSM_TRAN(s, &gmm_state_registered);
@@ -157,7 +160,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             } else {
 
                 amf_sbi_send_release_all_sessions(amf_ue);
-                if (SESSION_SYNC_DONE(amf_ue)) {
+                if (amf_sess_xact_count(amf_ue) == xact_count) {
                     amf_ue_sbi_discover_and_send(
                             OpenAPI_nf_type_AUSF, amf_ue, NULL,
                             amf_nausf_auth_build_authenticate);
@@ -218,7 +221,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
             }
 
             amf_sbi_send_release_all_sessions(amf_ue);
-            if (SESSION_SYNC_DONE(amf_ue)) {
+            if (amf_sess_xact_count(amf_ue) == xact_count) {
                 amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
                         amf_nausf_auth_build_authenticate);
             }
@@ -971,7 +974,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
         amf_sbi_send_release_all_sessions(amf_ue);
-        if (SESSION_SYNC_DONE(amf_ue))
+
+        if (ogs_list_count(&amf_ue->sess_list) == 0)
             ngap_send_amf_ue_context_release_command(amf_ue,
                     NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
                     NGAP_UE_CTX_REL_UE_CONTEXT_REMOVE, 0);

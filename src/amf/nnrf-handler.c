@@ -133,7 +133,7 @@ bool amf_nnrf_handle_nf_status_notify(
     }
 
     if (NF_INSTANCE_IS_SELF(NFProfile->nf_instance_id)) {
-        ogs_error("[%s] The notification is not allowed",
+        ogs_warn("[%s] The notification is not allowed",
                 NFProfile->nf_instance_id);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
                 message, "The notification is not allowed",
@@ -210,10 +210,11 @@ bool amf_nnrf_handle_nf_status_notify(
 }
 
 void amf_nnrf_handle_nf_discover(
-        ogs_sbi_object_t *sbi_object, ogs_sbi_message_t *message)
+        ogs_sbi_xact_t *xact, ogs_sbi_message_t *message)
 {
     bool handled;
 
+    ogs_sbi_object_t *sbi_object = NULL;
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
     ogs_sbi_nf_instance_t *nf_instance = NULL;
@@ -221,6 +222,8 @@ void amf_nnrf_handle_nf_discover(
     OpenAPI_search_result_t *SearchResult = NULL;
     OpenAPI_lnode_t *node = NULL;
 
+    ogs_assert(xact);
+    sbi_object = xact->sbi_object;
     ogs_assert(sbi_object);
     ogs_assert(message);
 
@@ -271,9 +274,9 @@ void amf_nnrf_handle_nf_discover(
             }
 
             if (!OGS_SBI_NF_INSTANCE_GET(
-                        sbi_object->nf_types, nf_instance->nf_type))
-                ogs_sbi_nf_types_associate(sbi_object->nf_types,
-                        nf_instance->nf_type, sbi_object->nf_state_registered);
+                        sbi_object->nf_type_array, nf_instance->nf_type))
+                ogs_sbi_nf_instance_associate(sbi_object->nf_type_array,
+                        nf_instance->nf_type, amf_nf_state_registered);
 
             /* TIME : Update validity from NRF */
             if (SearchResult->validity_period) {
@@ -292,17 +295,17 @@ void amf_nnrf_handle_nf_discover(
         }
     }
 
-    ogs_assert(sbi_object->nf_type);
+    ogs_assert(xact->target_nf_type);
     nf_instance = OGS_SBI_NF_INSTANCE_GET(
-            sbi_object->nf_types, sbi_object->nf_type);
+            sbi_object->nf_type_array, xact->target_nf_type);
     if (!nf_instance) {
-        switch(sbi_object->nf_type) {
+        switch(xact->target_nf_type) {
         case OpenAPI_nf_type_AUSF:
         case OpenAPI_nf_type_UDM:
             amf_ue = (amf_ue_t *)sbi_object;
             ogs_assert(amf_ue);
             ogs_error("[%s] (NF discover) No [%s]", amf_ue->suci,
-                    OpenAPI_nf_type_ToString(sbi_object->nf_type));
+                    OpenAPI_nf_type_ToString(xact->target_nf_type));
             nas_5gs_send_gmm_reject_from_sbi(amf_ue,
                     OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
             break;
@@ -310,7 +313,7 @@ void amf_nnrf_handle_nf_discover(
             sess = (amf_sess_t *)sbi_object;
             ogs_assert(sess);
             ogs_error("[%d:%d] (NF discover) No [%s]", sess->psi, sess->pti,
-                    OpenAPI_nf_type_ToString(sbi_object->nf_type));
+                    OpenAPI_nf_type_ToString(xact->target_nf_type));
             if (sess->payload_container_type) {
                 nas_5gs_send_back_5gsm_message_from_sbi(sess,
                         OGS_SBI_HTTP_STATUS_GATEWAY_TIMEOUT);
@@ -322,9 +325,9 @@ void amf_nnrf_handle_nf_discover(
             break;
         default:
             ogs_fatal("(NF discover) Not implemented [%s]",
-                OpenAPI_nf_type_ToString(sbi_object->nf_type));
+                OpenAPI_nf_type_ToString(xact->target_nf_type));
         }
     } else {
-        ogs_sbi_send(nf_instance, sbi_object);
+        amf_sbi_send(nf_instance, xact);
     }
 }

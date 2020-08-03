@@ -388,7 +388,7 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
         NGAP_S_NSSAI_t *s_NSSAI = NULL;
         NGAP_SST_t *sST = NULL;
 
-        if (!sess->n2smbuf) continue;
+        if (!sess->pdu_session_resource_setup_request_transfer) continue;
 
         if (!PDUSessionList) {
             ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));
@@ -418,9 +418,11 @@ ogs_pkbuf_t *ngap_build_initial_context_setup_request(
         }
 
         transfer = &PDUSessionItem->pDUSessionResourceSetupRequestTransfer;
-        transfer->size = sess->n2smbuf->len;
+        transfer->size = sess->pdu_session_resource_setup_request_transfer->len;
         transfer->buf = CALLOC(transfer->size, sizeof(uint8_t));
-        memcpy(transfer->buf, sess->n2smbuf->data, transfer->size);
+        memcpy(transfer->buf,
+                sess->pdu_session_resource_setup_request_transfer->data,
+                transfer->size);
     }
 
     ie = CALLOC(1, sizeof(NGAP_InitialContextSetupRequestIEs_t));

@@ -21,16 +21,13 @@
 #include "nnrf-handler.h"
 #include "nausf-handler.h"
 
-bool ausf_nausf_auth_handle_authenticate(
-        ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg)
+bool ausf_nausf_auth_handle_authenticate(ausf_ue_t *ausf_ue,
+        ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
 {
-    ogs_sbi_session_t *session = NULL;
-
     OpenAPI_authentication_info_t *AuthenticationInfo = NULL;
     char *serving_network_name = NULL;
 
     ogs_assert(ausf_ue);
-    session = ausf_ue->sbi.session;
     ogs_assert(session);
     ogs_assert(recvmsg);
 
@@ -54,24 +51,21 @@ bool ausf_nausf_auth_handle_authenticate(
         ogs_free(ausf_ue->serving_network_name);
     ausf_ue->serving_network_name = ogs_strdup(serving_network_name);
 
-    ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, ausf_ue,
+    ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, ausf_ue, session,
             AuthenticationInfo->resynchronization_info,
             ausf_nudm_ueau_build_get);
 
     return true;
 }
 
-bool ausf_nausf_auth_handle_authenticate_confirmation(
-        ausf_ue_t *ausf_ue, ogs_sbi_message_t *recvmsg)
+bool ausf_nausf_auth_handle_authenticate_confirmation(ausf_ue_t *ausf_ue,
+        ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
 {
-    ogs_sbi_session_t *session = NULL;
-
     OpenAPI_confirmation_data_t *ConfirmationData = NULL;
     char *res_star_string = NULL;
     uint8_t res_star[OGS_KEYSTRLEN(OGS_MAX_RES_LEN)];
 
     ogs_assert(ausf_ue);
-    session = ausf_ue->sbi.session;
     ogs_assert(session);
     ogs_assert(recvmsg);
 
@@ -103,7 +97,7 @@ bool ausf_nausf_auth_handle_authenticate_confirmation(
         ausf_ue->auth_result = OpenAPI_auth_result_AUTHENTICATION_SUCCESS;
     }
 
-    ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, ausf_ue, NULL,
+    ausf_sbi_discover_and_send(OpenAPI_nf_type_UDM, ausf_ue, session, NULL,
             ausf_nudm_ueau_build_result_confirmation_inform);
 
     return true;

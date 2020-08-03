@@ -131,7 +131,7 @@ bool udr_nnrf_handle_nf_status_notify(
     }
 
     if (NF_INSTANCE_IS_SELF(NFProfile->nf_instance_id)) {
-        ogs_error("The notification is not allowed [%s]",
+        ogs_warn("The notification is not allowed [%s]",
                 NFProfile->nf_instance_id);
         ogs_sbi_server_send_error(session, OGS_SBI_HTTP_STATUS_FORBIDDEN,
                 message, "The notification is not allowed",

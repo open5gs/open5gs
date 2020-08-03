@@ -138,9 +138,6 @@ ausf_ue_t *ausf_ue_add(char *suci)
     ogs_assert(ausf_ue->supi);
     ogs_hash_set(self.supi_hash, ausf_ue->supi, strlen(ausf_ue->supi), ausf_ue);
 
-    ausf_ue->sbi.client_wait.timer = ogs_timer_add(
-            self.timer_mgr, ausf_timer_sbi_client_wait_expire, ausf_ue);
-
     memset(&e, 0, sizeof(e));
     e.ausf_ue = ausf_ue;
     ogs_fsm_create(&ausf_ue->sm, ausf_ue_state_initial, ausf_ue_state_final);
@@ -165,11 +162,7 @@ void ausf_ue_remove(ausf_ue_t *ausf_ue)
     ogs_fsm_delete(&ausf_ue->sm);
 
     /* Free SBI object memory */
-    if (ausf_ue->sbi.running_count)
-        ogs_error("[%s] SBI running [%d]",
-                ausf_ue->supi, ausf_ue->sbi.running_count);
     ogs_sbi_object_free(&ausf_ue->sbi);
-    ogs_timer_delete(ausf_ue->sbi.client_wait.timer);
 
     ogs_assert(ausf_ue->ctx_id);
     ogs_free(ausf_ue->ctx_id);

@@ -96,12 +96,14 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
     case SMF_EVT_SBI_CLIENT:
         sbi_message = e->sbi.message;
         ogs_assert(sbi_message);
-        sess = e->sbi.data;
+
+        sess = e->sess;
         ogs_assert(sess);
-        session = sess->sbi.session;
-        ogs_assert(session);
         smf_ue = sess->smf_ue;
         ogs_assert(smf_ue);
+
+        session = e->sbi.session;
+        ogs_assert(session);
 
         SWITCH(sbi_message->h.service.name)
         CASE(OGS_SBI_SERVICE_NAME_NUDM_SDM)
@@ -116,7 +118,8 @@ void smf_gsm_state_operational(ogs_fsm_t *s, smf_event_t *e)
                     break;
                 }
 
-                if (smf_nudm_sdm_handle_get(sess, sbi_message) != true) {
+                if (smf_nudm_sdm_handle_get(
+                            sess, session, sbi_message) != true) {
                     ogs_sbi_server_send_error(session,
                             OGS_SBI_HTTP_STATUS_INTERNAL_SERVER_ERROR,
                             sbi_message, "HTTP response error", smf_ue->supi);
