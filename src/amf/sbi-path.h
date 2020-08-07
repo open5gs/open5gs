@@ -54,8 +54,12 @@ void amf_sbi_send_deactivate_session(
 void amf_sbi_send_deactivate_all_sessions(
         amf_ue_t *amf_ue, int group, int cause);
 
-void amf_sbi_send_release_session(amf_sess_t *sess);
-void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue);
+#define AMF_RELEASE_SM_CONTEXT_NO_STATE             0
+#define AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE    1
+#define AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT  2
+#define AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT       3
+void amf_sbi_send_release_session(amf_sess_t *sess, int state);
+void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state);
 
 #ifdef __cplusplus
 }

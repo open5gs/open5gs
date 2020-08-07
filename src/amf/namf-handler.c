@@ -22,6 +22,7 @@
 
 #include "nas-path.h"
 #include "ngap-path.h"
+#include "sbi-path.h"
 
 int amf_namf_comm_handle_n1_n2_message_transfer(
         ogs_sbi_session_t *session, ogs_sbi_message_t *recvmsg)
@@ -276,7 +277,8 @@ int amf_namf_callback_handle_sm_context_status(
         sess->resource_status == OpenAPI_resource_status_RELEASED) {
 
         ogs_debug("[%s:%d] SM context remove", amf_ue->supi, sess->psi);
-        amf_nsmf_pdu_session_handle_release_sm_context(sess);
+        amf_nsmf_pdu_session_handle_release_sm_context(
+                sess, AMF_RELEASE_SM_CONTEXT_NO_STATE);
     }
 
 cleanup:

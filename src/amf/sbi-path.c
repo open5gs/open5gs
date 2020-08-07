@@ -215,19 +215,19 @@ void amf_sbi_send_deactivate_all_sessions(
     }
 }
 
-void amf_sbi_send_release_session(amf_sess_t *sess)
+void amf_sbi_send_release_session(amf_sess_t *sess, int state)
 {
     ogs_assert(sess);
 
     amf_sess_sbi_discover_and_send(
-            OpenAPI_nf_type_SMF, sess, AMF_UPDATE_SM_CONTEXT_NO_STATE, NULL,
+            OpenAPI_nf_type_SMF, sess, state, NULL,
             amf_nsmf_pdu_session_build_release_sm_context);
 
     /* Prevent to invoke SMF for this session */
     CLEAR_SM_CONTEXT_REF(sess);
 }
 
-void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue)
+void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue, int state)
 {
     amf_sess_t *sess = NULL;
 
@@ -235,6 +235,6 @@ void amf_sbi_send_release_all_sessions(amf_ue_t *amf_ue)
 
     ogs_list_for_each(&amf_ue->sess_list, sess) {
         if (SESSION_CONTEXT_IN_SMF(sess))
-            amf_sbi_send_release_session(sess);
+            amf_sbi_send_release_session(sess, state);
     }
 }

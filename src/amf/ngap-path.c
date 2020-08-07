@@ -357,28 +357,6 @@ void ngap_send_amf_ue_context_release_command(
     }
 }
 
-void ngap_send_session_sync_or_context_release_command(
-    ran_ue_t *ran_ue, NGAP_Cause_PR group, long cause,
-    uint8_t action, uint32_t delay)
-{
-    amf_ue_t *amf_ue = NULL;
-
-    ogs_assert(ran_ue);
-
-    amf_ue = ran_ue->amf_ue;
-    if (!amf_ue) {
-        ngap_send_ran_ue_context_release_command(ran_ue,
-                group, cause, action, delay);
-    } else {
-        int xact_count = amf_sess_xact_count(amf_ue);
-
-        amf_sbi_send_release_all_sessions(amf_ue);
-        if (amf_sess_xact_count(amf_ue) == xact_count)
-            ngap_send_ran_ue_context_release_command(ran_ue,
-                    group, cause, action, delay);
-    }
-}
-
 #if 0
 void ngap_send_paging(amf_ue_t *amf_ue, NGAP_CNDomain_t cn_domain)
 {

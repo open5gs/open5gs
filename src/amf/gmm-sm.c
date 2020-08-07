@@ -86,14 +86,13 @@ void gmm_state_registered(ogs_fsm_t *s, amf_event_t *e)
 
 static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 {
-    int rv;
+    int rv, xact_count = 0;
 
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
     ran_ue_t *ran_ue = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
     ogs_nas_security_header_type_t h;
-    int xact_count = 0;
 
     ogs_assert(e);
         
@@ -146,9 +145,7 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                         amf_ue, &nas_message->gmm.registration_request);
                 if (rv != OGS_OK) {
                     ogs_error("gmm_handle_registration_update() failed");
-
-                    amf_sbi_send_release_all_sessions(amf_ue);
-                    OGS_FSM_TRAN(s, &gmm_state_authentication);
+                    OGS_FSM_TRAN(s, gmm_state_exception);
                     break;
                 }
 
@@ -159,7 +156,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
 
             } else {
 
-                amf_sbi_send_release_all_sessions(amf_ue);
+                amf_sbi_send_release_all_sessions(
+                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
                 if (amf_sess_xact_count(amf_ue) == xact_count) {
                     amf_ue_sbi_discover_and_send(
                             OpenAPI_nf_type_AUSF, amf_ue, NULL,
@@ -220,7 +218,8 @@ static void common_register_state(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            amf_sbi_send_release_all_sessions(amf_ue);
+            amf_sbi_send_release_all_sessions(
+                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
             if (amf_sess_xact_count(amf_ue) == xact_count) {
                 amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
                         amf_nausf_auth_build_authenticate);
@@ -771,7 +770,7 @@ void gmm_state_security_mode(ogs_fsm_t *s, amf_event_t *e)
 
 void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
 {
-    int rv;
+    int rv, xact_count = 0;
     amf_ue_t *amf_ue = NULL;
     amf_sess_t *sess = NULL;
     ogs_nas_5gs_message_t *nas_message = NULL;
@@ -924,7 +923,12 @@ void gmm_state_initial_context_setup(ogs_fsm_t *s, amf_event_t *e)
                 break;
             }
 
-            amf_sbi_send_release_all_sessions(amf_ue);
+            amf_sbi_send_release_all_sessions(
+                        amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
+            if (amf_sess_xact_count(amf_ue) == xact_count) {
+                amf_ue_sbi_discover_and_send(OpenAPI_nf_type_AUSF, amf_ue, NULL,
+                        amf_nausf_auth_build_authenticate);
+            }
             OGS_FSM_TRAN(s, &gmm_state_authentication);
             break;
 
@@ -973,7 +977,8 @@ void gmm_state_exception(ogs_fsm_t *s, amf_event_t *e)
     case OGS_FSM_ENTRY_SIG:
         CLEAR_AMF_UE_ALL_TIMERS(amf_ue);
 
-        amf_sbi_send_release_all_sessions(amf_ue);
+        amf_sbi_send_release_all_sessions(
+                amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
         if (ogs_list_count(&amf_ue->sess_list) == 0)
             ngap_send_amf_ue_context_release_command(amf_ue,

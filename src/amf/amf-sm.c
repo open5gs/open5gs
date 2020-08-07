@@ -452,7 +452,7 @@ void amf_state_operational(ogs_fsm_t *s, amf_event_t *e)
                             amf_ue->supi, sbi_message.res_status);
                 }
 
-                amf_nsmf_pdu_session_handle_release_sm_context(sess);
+                amf_nsmf_pdu_session_handle_release_sm_context(sess, state);
                 break;
 
             DEFAULT

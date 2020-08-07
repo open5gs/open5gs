@@ -302,7 +302,8 @@ int gmm_handle_registration_update(amf_ue_t *amf_ue,
         ogs_list_for_each(&amf_ue->sess_list, sess) {
             if ((psimask & (1 << sess->psi)) == 0) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
-                    amf_sbi_send_release_session(sess);
+                    amf_sbi_send_release_session(
+                            sess, AMF_RELEASE_SM_CONTEXT_REGISTRATION_ACCEPT);
             }
         }
     }
@@ -489,7 +490,8 @@ int gmm_handle_service_update(amf_ue_t *amf_ue,
         ogs_list_for_each(&amf_ue->sess_list, sess) {
             if ((psimask & (1 << sess->psi)) == 0) {
                 if (SESSION_CONTEXT_IN_SMF(sess))
-                    amf_sbi_send_release_session(sess);
+                    amf_sbi_send_release_session(
+                            sess, AMF_RELEASE_SM_CONTEXT_SERVICE_ACCEPT);
             }
         }
     }
@@ -526,7 +528,8 @@ int gmm_handle_deregistration_request(amf_ue_t *amf_ue,
     if (deregistration_request->de_registration_type.switch_off)
         ogs_debug("    Switch-Off");
 
-    amf_sbi_send_release_all_sessions(amf_ue);
+    amf_sbi_send_release_all_sessions(
+            amf_ue, AMF_RELEASE_SM_CONTEXT_NO_STATE);
 
     if (ogs_list_count(&amf_ue->sess_list) == 0)
         nas_5gs_send_de_registration_accept(amf_ue);

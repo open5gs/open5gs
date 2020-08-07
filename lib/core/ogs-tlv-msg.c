@@ -115,7 +115,11 @@ static ogs_tlv_t *tlv_add_leaf(
     {
         ogs_tlv_octet_t *v = (ogs_tlv_octet_t *)msg;
 
-        ogs_assert(v->len > 0);
+        if (v->len == 0) {
+            ogs_fatal("No TLV length - [%s] T:%d I:%d (vsz=%d)",
+                    desc->name, desc->type, desc->instance, desc->vsize);
+            ogs_assert_if_reached();
+        }
 
         if (parent_tlv)
             tlv = ogs_tlv_embed(parent_tlv, 
@@ -185,7 +189,8 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                         tlv = ogs_tlv_embed(parent_tlv, 
                                 desc->type, 0, desc->instance, NULL);
                     else
-                        tlv = ogs_tlv_add(tlv, desc->type, 0, desc->instance, NULL);
+                        tlv = ogs_tlv_add(tlv,
+                                desc->type, 0, desc->instance, NULL);
 
                     r = tlv_add_compound(&emb_tlv, tlv, desc,
                             p + offset2 + sizeof(ogs_tlv_presence_t),
@@ -224,7 +229,8 @@ static uint32_t tlv_add_compound(ogs_tlv_t **root, ogs_tlv_t *parent_tlv,
                         tlv = ogs_tlv_embed(parent_tlv, 
                                 desc->type, 0, desc->instance, NULL);
                     else
-                        tlv = ogs_tlv_add(tlv, desc->type, 0, desc->instance, NULL);
+                        tlv = ogs_tlv_add(tlv,
+                                desc->type, 0, desc->instance, NULL);
 
                     r = tlv_add_compound(&emb_tlv, tlv, desc,
                             p + offset + sizeof(ogs_tlv_presence_t),

@@ -798,9 +798,10 @@ void ngap_handle_initial_context_setup_failure(
         amf_gnb_t *gnb, ogs_ngap_message_t *message)
 {
     char buf[OGS_ADDRSTRLEN];
-    int i;
+    int i, old_xact_count = 0, new_xact_count = 0;
 
     ran_ue_t *ran_ue = NULL;
+    amf_ue_t *amf_ue = NULL;
     uint64_t amf_ue_ngap_id;
 
     NGAP_UnsuccessfulOutcome_t *unsuccessfulOutcome = NULL;
@@ -892,9 +893,21 @@ void ngap_handle_initial_context_setup_failure(
      * may in principle be adopted. The RAN should ensure
      * that no hanging resources remain at the RAN.
      */
-    ngap_send_session_sync_or_context_release_command(ran_ue,
-        NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
-        NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+    amf_ue = ran_ue->amf_ue;
+    if (amf_ue) {
+        old_xact_count = amf_sess_xact_count(amf_ue);
+
+        amf_sbi_send_release_all_sessions(amf_ue,
+                AMF_RELEASE_SM_CONTEXT_NG_CONTEXT_REMOVE);
+
+        new_xact_count = amf_sess_xact_count(amf_ue);
+    }
+
+    if (old_xact_count == new_xact_count) {
+        ngap_send_ran_ue_context_release_command(ran_ue,
+            NGAP_Cause_PR_nas, NGAP_CauseNas_normal_release,
+            NGAP_UE_CTX_REL_NG_CONTEXT_REMOVE, 0);
+    }
 }
 
 #if 0
