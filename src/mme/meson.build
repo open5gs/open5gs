@@ -41,6 +41,7 @@ libmme_sources = files('''
     sbc-handler.h
     mme-sm.h
     mme-path.h 
+    mme-metrics.h
 
     mme-init.c
     mme-event.c
@@ -94,6 +95,18 @@ libmme_dep = declare_dependency(
                     libdiameter_s6a_dep,
                     libgtp_dep])
 
+libprom_dep = dependency('libprom', version: '>=0.1.0', required: false)
+if not libprom_dep.found()
+  libprom_dep = cc.find_library('libprom', required: true)
+endif
+libpromhttpd_dep = dependency('promhttp', version: '>=0.1.0', required: false)
+if not libpromhttpd_dep.found()
+  libpromhttpd_dep = cc.find_library('libpromhttp', required: true)
+endif
+
+libmicrohttpd_dep = dependency('libmicrohttpd')
+
+
 mme_sources = files('''
     app-init.c
     ../main.c
@@ -103,6 +116,6 @@ executable('open5gs-mmed',
     sources : mme_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/mme.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
-    dependencies : libmme_dep,
+    dependencies : [libmme_dep,libprom_dep,libpromhttpd_dep,libmicrohttpd_dep],
     install_rpath : libdir,
     install : true)

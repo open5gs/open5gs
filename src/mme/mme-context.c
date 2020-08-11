@@ -26,6 +26,8 @@
 #include "s1ap-path.h"
 #include "s1ap-handler.h"
 #include "mme-sm.h"
+#include "prom.h"
+#include "mme-metrics.h"
 
 #define MAX_CELL_PER_ENB            8
 
@@ -55,32 +57,39 @@ int num_mme_sessions = 0;
 
 void stats_add_ue(void) {
     num_ues = num_ues + 1;
+    prom_gauge_set(mme_ue_gauge,num_ues,NULL);
     ogs_info("Added a UE. Number of UEs is now %d", num_ues);
 }
 
 void stats_remove_ue(void) {
     num_ues = num_ues - 1;
+    prom_gauge_set(mme_ue_gauge,num_ues,NULL);
     ogs_info("Removed a UE. Number of UEs is now %d", num_ues);
 }
 
 void stats_add_enb(void) {
     num_enbs = num_enbs + 1;
+    prom_gauge_set(mme_enb_gauge,num_enbs,NULL);
     ogs_info("Added a eNB. Number of eNBs is now %d", num_enbs);
 }
 
 void stats_remove_enb(void) {
     num_enbs = num_enbs - 1;
+    prom_gauge_set(mme_enb_gauge,num_enbs,NULL);
     ogs_info("Removed a eNB. Number of eNBs is now %d", num_enbs);
 }
 
 void stats_add_mme_session(void) {
     num_mme_sessions = num_mme_sessions + 1;
+    prom_counter_inc(mme_sessions_counter, NULL);
+    prom_gauge_set(mme_sessions_gauge,num_mme_sessions,NULL);
     ogs_info("Added a session. Number of sessions is now %d",
             num_mme_sessions);
 }
 
 void stats_remove_mme_session(void) {
     num_mme_sessions = num_mme_sessions - 1;
+    prom_gauge_set(mme_sessions_gauge,num_mme_sessions,NULL);
     ogs_info("Removed a session. Number of sessions is now %d",
             num_mme_sessions);
 }

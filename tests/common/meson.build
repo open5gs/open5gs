@@ -41,6 +41,21 @@ libtestcommon_sources = files('''
 
 libtestcommon_inc = include_directories('.')
 
+
+
+libprom_dep = dependency('libprom', version: '>=0.1.0', required: false)
+if not libprom_dep.found()
+  libprom_dep = cc.find_library('libprom', required: true)
+endif
+libpromhttpd_dep = dependency('promhttp', version: '>=0.1.0', required: false)
+if not libpromhttpd_dep.found()
+  libpromhttpd_dep = cc.find_library('libpromhttp', required: true)
+endif
+
+libmicrohttpd_dep = dependency('libmicrohttpd')
+
+
+
 libtestcommon = static_library('testcomon',
     sources : libtestcommon_sources,
     c_args : testunit_core_cc_flags,
@@ -53,7 +68,10 @@ libtestcommon = static_library('testcomon',
                     libngap_dep,
                     libnas_eps_dep,
                     libnas_5gs_dep,
-                    libdiameter_common_dep],
+                    libdiameter_common_dep,
+                    libprom_dep,
+		    libpromhttpd_dep,
+		    libmicrohttpd_dep],
     install : false)
 
 libtestcommon_dep = declare_dependency(
@@ -67,4 +85,8 @@ libtestcommon_dep = declare_dependency(
                     libngap_dep,
                     libnas_eps_dep,
                     libnas_5gs_dep,
-                    libdiameter_common_dep])
+                    libdiameter_common_dep,
+                    libprom_dep,
+                    libpromhttpd_dep,
+                    libmicrohttpd_dep],
+    )
