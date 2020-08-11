@@ -19,6 +19,8 @@
 
 #include "ogs-dbi.h"
 #include "pcrf-context.h"
+#include "prom.h"
+#include "pcrf-metrics.h"
 
 static pcrf_context_t self;
 static ogs_diam_config_t g_diam_conf;
@@ -634,6 +636,7 @@ int pcrf_sess_set_ipv4(const void *key, uint8_t *sid)
     ogs_thread_mutex_lock(&self.hash_lock);
 
     ogs_hash_set(self.ip_hash, key, OGS_IPV4_LEN, sid);
+    prom_counter_inc(pcrf_sessions_counter, NULL);
 
     ogs_thread_mutex_unlock(&self.hash_lock);
 

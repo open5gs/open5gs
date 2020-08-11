@@ -18,6 +18,7 @@
 libpcrf_sources = files('''
     pcrf-context.h
     pcrf-fd-path.h
+    pcrf-metrics.h
 
     pcrf-init.c
     pcrf-context.c
@@ -41,6 +42,17 @@ libpcrf_dep = declare_dependency(
                     libdiameter_rx_dep,
                     libdiameter_gx_dep])
 
+libprom_dep = dependency('libprom', version: '>=0.1.0', required: false)
+if not libprom_dep.found()
+  libprom_dep = cc.find_library('libprom', required: true)
+endif
+libpromhttpd_dep = dependency('promhttp', version: '>=0.1.0', required: false)
+if not libpromhttpd_dep.found()
+  libpromhttpd_dep = cc.find_library('libpromhttp', required: true)
+endif
+
+libmicrohttpd_dep = dependency('libmicrohttpd')
+
 pcrf_sources = files('''
     app-init.c
     ../main.c
@@ -50,6 +62,6 @@ executable('open5gs-pcrfd',
     sources : pcrf_sources,
     c_args : '-DDEFAULT_CONFIG_FILENAME="@0@/pcrf.yaml"'.format(open5gs_sysconfdir),
     include_directories : srcinc,
-    dependencies : libpcrf_dep,
+    dependencies : [libpcrf_dep,libprom_dep,libpromhttpd_dep,libmicrohttpd_dep],
     install_rpath : libdir,
     install : true)

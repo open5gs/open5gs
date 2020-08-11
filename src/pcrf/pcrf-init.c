@@ -19,13 +19,35 @@
 
 #include "pcrf-context.h"
 #include "pcrf-fd-path.h"
+#include "prom.h"
+#include "pcrf-metrics.h"
 
 static int initialized = 0;
+void pcrf_metrics_initialize(void);
+
+void pcrf_metrics_initialize(void) {
+    pcrf_up_gauge = prom_collector_registry_must_register_metric(
+            prom_gauge_new(
+                    "open5gs_pcrf_up",
+                    "Open5gs Pcrf is up",
+                    0,
+                    NULL)
+                    );
+    pcrf_sessions_counter = prom_collector_registry_must_register_metric(
+            prom_counter_new(
+                    "open5gs_pcrf_sessions",
+                    "Open5gs Pcrf active sessions",
+                    0,
+                    NULL)
+    );
+}
+
 
 int pcrf_initialize(void)
 {
     int rv;
 
+    pcrf_metrics_initialize();
     pcrf_context_init();
 
     rv = pcrf_context_parse_config();
@@ -42,6 +64,7 @@ int pcrf_initialize(void)
     if (rv != OGS_OK) return OGS_ERROR;
 
     initialized = 1;
+    prom_gauge_set(pcrf_up_gauge,1,NULL);
 
 	return OGS_OK;
 }
