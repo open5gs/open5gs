@@ -29,26 +29,21 @@ extern "C" {
 int smf_pfcp_open(void);
 void smf_pfcp_close(void);
 
-void smf_pfcp_send_association_setup_request(ogs_pfcp_node_t *node);
-void smf_pfcp_send_association_setup_response(ogs_pfcp_xact_t *xact,
-        uint8_t cause);
-void smf_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node);
-
 void smf_5gc_pfcp_send_session_establishment_request(
         smf_sess_t *sess, ogs_sbi_session_t *session);
 void smf_5gc_pfcp_send_session_modification_request(
         smf_sess_t *sess, ogs_sbi_session_t *session, uint64_t flags);
+void smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
+        ogs_sbi_session_t *session, uint64_t flags);
 void smf_5gc_pfcp_send_session_deletion_request(
         smf_sess_t *sess, ogs_sbi_session_t *session, int trigger);
 
 void smf_epc_pfcp_send_session_establishment_request(
         smf_sess_t *sess, void *gtp_xact);
-void smf_epc_pfcp_send_session_modification_request(smf_bearer_t *bearer);
+void smf_epc_pfcp_send_bearer_modification_request(
+        smf_bearer_t *bearer, uint64_t flags);
 void smf_epc_pfcp_send_session_deletion_request(
         smf_sess_t *sess, void *gtp_xact);
-
-void smf_5gc_pfcp_send_qos_flow_modification_request(smf_bearer_t *qos_flow,
-        ogs_sbi_session_t *session, uint64_t flags);
 
 #ifdef __cplusplus
 }

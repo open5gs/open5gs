@@ -5,6 +5,13 @@ logger:
 parameter:
     no_ipv6: true
 
+nrf:
+    sbi:
+      addr:
+        - 127.0.0.1
+        - ::1
+      port: 7777
+
 mme:
     freeDiameter:
       identity: mme.localdomain
@@ -79,6 +86,63 @@ mme:
     network_name:
         full: Open5GS
 
+sgwc:
+    gtpc:
+      addr: 127.0.0.6
+    pfcp:
+      addr: 127.0.0.6
+
+sgwu:
+    gtpu:
+      addr: 127.0.0.7
+    pfcp:
+      addr: 127.0.0.7
+
+smf:
+    sbi:
+      - addr: 127.0.0.3
+        port: 7777
+    gtpc:
+      - addr: 127.0.0.3
+      - addr: ::1
+    pfcp:
+      - addr: 127.0.0.3
+    pdn:
+      - addr: 10.45.0.1/16
+      - addr: cafe::1/64
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 2001:4860:4860::8888
+      - 2001:4860:4860::8844
+    mtu: 1400
+    freeDiameter:
+      identity: smf.localdomain
+      realm: localdomain
+      listen_on: 127.0.0.3
+      load_extension:
+        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
+          conf: 0x8888
+        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
+        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
+        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
+        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
+        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
+      connect:
+        - identity: pcrf.localdomain
+          addr: 127.0.0.5
+upf:
+    pfcp:
+      - addr: 127.0.0.4
+    gtpu:
+      - addr:
+        - 127.0.0.4
+        - ::1
+    pdn:
+      - addr: 10.45.0.1/16
+      - addr: cafe::1/64
+
 hss:
     freeDiameter:
       identity: hss.localdomain
@@ -97,47 +161,6 @@ hss:
         - identity: mme.localdomain
           addr: 127.0.0.2
 
-sgw:
-    gtpc:
-      addr: 127.0.0.2
-    gtpu:
-      addr: 127.0.0.2
-
-pgw:
-    freeDiameter:
-      identity: pgw.localdomain
-      realm: localdomain
-      listen_on: 127.0.0.3
-      load_extension:
-        - module: @freediameter_extensions_builddir@/dbg_msg_dumps.fdx
-          conf: 0x8888
-        - module: @freediameter_extensions_builddir@/dict_rfc5777.fdx
-        - module: @freediameter_extensions_builddir@/dict_mip6i.fdx
-        - module: @freediameter_extensions_builddir@/dict_nasreq.fdx
-        - module: @freediameter_extensions_builddir@/dict_nas_mipv6.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca.fdx
-        - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
-      connect:
-        - identity: pcrf.localdomain
-          addr: 127.0.0.5
-
-    gtpc:
-      - addr:
-        - 127.0.0.3
-        - ::1
-    gtpu:
-      - addr: 127.0.0.3
-      - addr: ::1
-    pdn:
-      - addr: 10.45.0.1/16
-      - addr: cafe::1/64
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
-      - 2001:4860:4860::8888
-      - 2001:4860:4860::8844
-    mtu: 1400
-
 pcrf:
     freeDiameter:
       identity: pcrf.localdomain
@@ -153,5 +176,5 @@ pcrf:
         - module: @freediameter_extensions_builddir@/dict_dcca.fdx
         - module: @freediameter_extensions_builddir@/dict_dcca_3gpp.fdx
       connect:
-        - identity: pgw.localdomain
+        - identity: smf.localdomain
           addr: 127.0.0.3

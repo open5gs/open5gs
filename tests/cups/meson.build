@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-test5gc_cups_sources = files('''
+testapp_cups_sources = files('''
     pcscf-fd-path.h
     pcscf-fd-path.c
 
@@ -23,10 +23,10 @@ test5gc_cups_sources = files('''
     cups-test.c
 '''.split())
 
-test5gc_cups_exe = executable('cups',
-    sources : test5gc_cups_sources,
+testapp_cups_exe = executable('cups',
+    sources : testapp_cups_sources,
     c_args : [testunit_core_cc_flags,
         '-DFD_EXT_DIR="@0@"'.format(freediameter_extensions_builddir)],
-    dependencies : libtestepc_dep)
+    dependencies : libtestapp_dep)
 
-test('cups', test5gc_cups_exe, is_parallel : false, suite: '5gc')
+test('cups', testapp_cups_exe, is_parallel : false, suite: 'app')

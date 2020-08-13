@@ -30,8 +30,6 @@ extern "C" {
 int upf_gtp_open(void);
 void upf_gtp_close(void);
 
-void upf_gtp_send_buffered_packet(ogs_pfcp_pdr_t *pdr);
-
 #ifdef __cplusplus
 }
 #endif

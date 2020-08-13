@@ -78,10 +78,12 @@ void test_epc_run(int argc, const char *const argv[],
 
     test_app_run(argc, argv, name, init);
 
+#if 0 /* We will not use this */
     while(1) {
         if (connected_count == 1) break;
         ogs_msleep(50);
     }
+#endif
 
     ogs_msleep(500); /* Wait for listening all sockets */
 }

@@ -403,6 +403,9 @@ int ogs_sbi_context_parse_config(const char *local, const char *remote)
                                 ogs_config()->parameter.no_ipv4,
                                 ogs_config()->parameter.no_ipv6,
                                 ogs_config()->parameter.prefer_ipv4);
+
+                        if (addr == NULL) continue;
+
                         client = ogs_sbi_client_add(addr);
                         ogs_assert(client);
 

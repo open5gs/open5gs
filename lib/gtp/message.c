@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by gtp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-07-08 16:42:53.180060 by acetcom
+ * Created on: 2020-08-11 20:17:53.518172 by acetcom
  * from 29274-g30.docx
  ******************************************************************************/
 
@@ -2711,8 +2711,10 @@ int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
     if (h->teid_presence)
         gtp_message->h.teid = be32toh(gtp_message->h.teid);
 
-    if (pkbuf->len == 0)
+    if (pkbuf->len == 0) {
+        ogs_assert(ogs_pkbuf_push(pkbuf, size));
         return OGS_OK;
+    }
 
     switch(gtp_message->h.type) {
     case OGS_GTP_ECHO_REQUEST_TYPE:
@@ -2843,6 +2845,8 @@ int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pkbuf)
         ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
         break;
     }
+
+    ogs_assert(ogs_pkbuf_push(pkbuf, size));
 
     return rv;
 }

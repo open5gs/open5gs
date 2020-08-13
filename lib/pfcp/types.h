@@ -96,6 +96,82 @@ typedef uint32_t ogs_pfcp_precedence_t;
 #define OGS_PFCP_INTERFACE_UNKNOWN                          0xff
 typedef uint8_t  ogs_pfcp_interface_t;
 
+/* 8.2.25 UP Function Features */
+typedef struct ogs_pfcp_up_function_features_s {
+    union {
+        struct {
+ED8(uint8_t treu:1;,
+    uint8_t heeu:1;,
+    uint8_t pfdm:1;,
+    uint8_t ftup:1;,
+    uint8_t trst:1;,
+    uint8_t dldb:1;,
+    uint8_t ddnd:1;,
+    uint8_t bucp:1;)
+        };
+        uint8_t octet5;
+    };
+    union {
+        struct {
+ED8(uint8_t epfar:1;,
+    uint8_t pfde:1;,
+    uint8_t frrt:1;,
+    uint8_t trace:1;,
+    uint8_t quoac:1;,
+    uint8_t udbc:1;,
+    uint8_t pdiu:1;,
+    uint8_t empu:1;)
+        };
+        uint8_t octet6;
+    };
+    union {
+        struct {
+ED8(uint8_t gcom:1;,
+    uint8_t bundl:1;,
+    uint8_t mte:1;,
+    uint8_t mnop:1;,
+    uint8_t sset:1;,
+    uint8_t ueip:1;,
+    uint8_t adpdp:1;,
+    uint8_t dpdra:1;)
+        };
+        uint8_t octet7;
+    };
+    union {
+        struct {
+ED8(uint8_t mptcp:1;,
+    uint8_t tscu:1;,
+    uint8_t ip6pl:1;,
+    uint8_t iptv:1;,
+    uint8_t norp:1;,
+    uint8_t vtime:1;,
+    uint8_t rttl:1;,
+    uint8_t mpas:1;)
+        };
+        uint8_t octet8;
+    };
+    union {
+        struct {
+ED8(uint8_t rds:1;,
+    uint8_t ddds:1;,
+    uint8_t ethar:1;,
+    uint8_t ciot:1;,
+    uint8_t mt_edt:1;,
+    uint8_t gpqm:1;,
+    uint8_t qfqm:1;,
+    uint8_t atsss_ll:1;)
+        };
+        uint8_t octet9;
+    };
+    union {
+        struct {
+ED2(uint8_t reserved:7;,
+    uint8_t rttwp:1;)
+        };
+        uint8_t octet10;
+    };
+} __attribute__ ((packed)) ogs_pfcp_up_function_features_t;
+
 /* 
  * 8.2.26 Apply Action
  *
@@ -122,6 +198,23 @@ typedef uint8_t  ogs_pfcp_interface_t;
 #define OGS_PFCP_APPLY_ACTION_NOCP                          8
 #define OGS_PFCP_APPLY_ACTION_DUPL                          16
 typedef uint8_t  ogs_pfcp_apply_action_t;
+
+/* 8.2.58 CP Function Features */
+typedef struct ogs_pfcp_cp_function_features_s {
+    union {
+        struct {
+ED8(uint8_t reserved:1;,
+    uint8_t apdr:1;,
+    uint8_t mpas:1;,
+    uint8_t bundl:1;,
+    uint8_t sset:1;,
+    uint8_t epfar:1;,
+    uint8_t ovrl:1;,
+    uint8_t load:1;)
+        };
+        uint8_t octet5;
+    };
+} __attribute__ ((packed)) ogs_pfcp_cp_function_features_t;
 
 /*
  * 8.2.64 Outer Header Remaval
@@ -403,6 +496,14 @@ ED6(uint8_t     spare:1;,
         uint8_t flags;
     };
 
+    /*
+     * OGS_PFCP-GTPU-TEID   = INDEX              | TEID_RANGE
+     * INDEX                = OGS_PFCP-GTPU-TEID & ~TEID_RANGE
+     */
+#define OGS_PFCP_GTPU_TEID_TO_INDEX(__tEID, __iND, __rANGE) \
+    (__tEID & ~(__rANGE << (32 - __iND)))
+#define OGS_PFCP_GTPU_INDEX_TO_TEID(__iNDEX, __iND, __rANGE) \
+    (__iNDEX | (__rANGE << (32 - __iND)))
     uint8_t     teid_range;
     uint32_t    addr;
     uint8_t     addr6[OGS_IPV6_LEN];
@@ -574,9 +675,96 @@ ED3(uint8_t     spare:4;,
     };
 } __attribute__ ((packed)) ogs_pfcp_gate_status_t;
 
+/*
+ * 8.2.21 Report Type
+ *
+ * Octet 5 shall be encoded as follows:
+ *
+ * - Bit 1 – DLDR (Downlink Data Report): when set to 1,
+ *           this indicates Downlink Data Report
+ * - Bit 2 – USAR (Usage Report): when set to 1, this indicates a Usage Report
+ * - Bit 3 – ERIR (Error Indication Report): when set to 1,
+ *           this indicates an Error Indication Report.
+ * - Bit 4 – UPIR (User Plane Inactivity Report): when set to 1,
+ *           this indicates a User Plane Inactivity Report.
+ * - Bit 5 to 8 – Spare, for future use and set to 0.
+ *
+ * At least one bit shall be set to 1. Several bits may be set to 1.
+ */
+typedef struct ogs_pfcp_report_type_s {
+    union {
+        struct {
+ED5(uint8_t     spare:4;,
+    uint8_t     user_plane_inactivity_report:1;,
+    uint8_t     error_indication_report:1;,
+    uint8_t     usage_report:1;,
+    uint8_t     downlink_data_report:1;)
+        };
+        uint8_t value;
+    };
+} __attribute__ ((packed)) ogs_pfcp_report_type_t;
+
+typedef struct ogs_pfcp_downlink_data_service_information_s {
+    struct {
+ED3(uint8_t     spare:6;,
+    uint8_t     qfii:1;,
+    uint8_t     ppi:1;)
+    };
+    union {
+        uint8_t paging_policy_indication_value;
+        uint8_t qfi;
+        struct {
+            uint8_t paging_policy_indication_value;
+            uint8_t qfi;
+        } both;
+    };
+} __attribute__ ((packed)) ogs_pfcp_downlink_data_service_information_t;
+
+/*
+ * 8.2.31 PFCPSMReq-Flags
+ *
+ * The following bits within Octet 5 shall indicate:
+ * - Bit 1 – DROBU (Drop Buffered Packets): if this bit is set to 1,
+ *   it indicates that the UP function shall drop all the packets currently
+ *   buffered for the PFCP session, if any, prior to further applying
+ *   the action specified in the Apply Action value of the FARs.
+ * - Bit 2 – SNDEM (Send End Marker Packets): if this bit is set to 1,
+ *   it indicates that the UP function shall construct and send End Marker
+ *   packets towards the old F-TEID of the downstream node when switching
+ *   to the new F- TEID.
+ * - Bit 3 – QAURR (Query All URRs): if this bit is set to 1, it indicates
+ *   that the UP function shall return immediate usage report(s)
+ *   for all the URRs previously provisioned for this PFCP session.
+ * - Bit 4 to 8 – Spare, for future use, shall be set to 0 by the sender and
+ *   discarded by the receiver.
+ */
+typedef struct ogs_pfcp_smreq_flags_s {
+    union {
+        struct {
+ED4(uint8_t     spare:5;,
+    uint8_t     query_all_urrs:1;,
+    uint8_t     send_end_marker_packets:1;,
+    uint8_t     drop_buffered_packets:1;)
+        };
+        uint8_t value;
+    };
+} __attribute__ ((packed)) ogs_pfcp_smreq_flags_t;
+
+typedef struct ogs_pfcp_user_plane_report_s {
+    ogs_pfcp_report_type_t type;
+    struct {
+        uint8_t pdr_id;
+        uint8_t paging_policy_indication_value;
+        uint8_t qfi;
+    } downlink_data;
+    struct {
+        ogs_pfcp_f_teid_t remote_f_teid;
+        int remote_f_teid_len;
+    } error_indication;
+} ogs_pfcp_user_plane_report_t;
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* OGS_PFCP_TYPES_H */
-

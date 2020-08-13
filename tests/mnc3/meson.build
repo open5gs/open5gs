@@ -15,14 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-testepc_mnc3_sources = files('''
+testapp_mnc3_sources = files('''
     abts-main.c
     mnc3-test.c
 '''.split())
 
-testepc_mnc3_exe = executable('mnc3',
-    sources : testepc_mnc3_sources,
+testapp_mnc3_exe = executable('mnc3',
+    sources : testapp_mnc3_sources,
     c_args : testunit_core_cc_flags,
-    dependencies : libtestepc_dep)
+    dependencies : libtestapp_dep)
 
-test('mnc3', testepc_mnc3_exe, is_parallel : false, suite: 'epc')
+test('mnc3', testapp_mnc3_exe, is_parallel : false, suite: 'app')

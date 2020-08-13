@@ -135,6 +135,10 @@ static int smf_context_validation(void)
         ogs_error("No smf.dns in '%s'", ogs_config()->file);
         return OGS_ERROR;
     }
+    if (ogs_list_first(&ogs_pfcp_self()->subnet_list) == NULL) {
+        ogs_error("No smf.pdn: in '%s'", ogs_config()->file);
+        return OGS_ERROR;
+    }
     return OGS_OK;
 }
 
@@ -635,13 +639,13 @@ static ogs_pfcp_node_t *selected_upf_node(
             compare_ue_info(node, sess) == true) return node;
     }
 
-    for (node = ogs_list_first(&ogs_pfcp_self()->n4_list);
+    for (node = ogs_list_first(&ogs_pfcp_self()->peer_list);
             node != next; node = ogs_list_next(node)) {
         if (OGS_FSM_CHECK(&node->sm, smf_pfcp_state_associated) &&
             compare_ue_info(node, sess) == true) return node;
     }
 
-    return next ? next : ogs_list_first(&ogs_pfcp_self()->n4_list);
+    return next ? next : ogs_list_first(&ogs_pfcp_self()->peer_list);
 }
 
 void smf_sess_select_upf(smf_sess_t *sess)
@@ -652,10 +656,10 @@ void smf_sess_select_upf(smf_sess_t *sess)
 
     /*
      * When used for the first time, if last node is set,
-     * the search is performed from the first SGW in a round-robin manner.
+     * the search is performed from the first UPF in a round-robin manner.
      */
     if (ogs_pfcp_self()->node == NULL)
-        ogs_pfcp_self()->node = ogs_list_last(&ogs_pfcp_self()->n4_list);
+        ogs_pfcp_self()->node = ogs_list_last(&ogs_pfcp_self()->peer_list);
 
     /* setup GTP session with selected UPF */
     ogs_pfcp_self()->node = selected_upf_node(ogs_pfcp_self()->node, sess);
@@ -680,7 +684,7 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
     ogs_pool_alloc(&smf_sess_pool, &sess);
     if (!sess) {
         ogs_error("Maximum number of session[%d] reached",
-        ogs_config()->pool.sess);
+                    ogs_config()->pool.sess);
         return NULL;
     }
     memset(sess, 0, sizeof *sess);
@@ -690,7 +694,7 @@ smf_sess_t *smf_sess_add_by_apn(smf_ue_t *smf_ue, char *apn)
 
     /* Set TEID & SEID */
     sess->smf_n4_teid = sess->index;
-    sess->smf_n4_seid = SMF_INDEX_TO_SEID(sess->index);
+    sess->smf_n4_seid = sess->index;
 
     /* Set APN */
     ogs_cpystrn(sess->pdn.apn, apn, OGS_MAX_APN_LEN+1);
@@ -1011,7 +1015,7 @@ smf_sess_t *smf_sess_find_by_teid(uint32_t teid)
 
 smf_sess_t *smf_sess_find_by_seid(uint64_t seid)
 {
-    return smf_sess_find(SMF_SEID_TO_INDEX(seid));
+    return smf_sess_find(seid);
 }
 
 smf_sess_t *smf_sess_find_by_apn(smf_ue_t *smf_ue, char *apn)
@@ -1100,10 +1104,29 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
     dl_pdr->id = OGS_NEXT_ID(sess->pdr_id, 1, OGS_MAX_NUM_OF_PDR+1);
     dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
+    if (strlen(sess->pdn.apn))
+        dl_pdr->apn = ogs_strdup(sess->pdn.apn);
+
     ul_pdr = ogs_pfcp_pdr_add(&qos_flow->pfcp);
     ogs_assert(ul_pdr);
     ul_pdr->id = OGS_NEXT_ID(sess->pdr_id, 1, OGS_MAX_NUM_OF_PDR+1);
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    if (strlen(sess->pdn.apn))
+        ul_pdr->apn = ogs_strdup(sess->pdn.apn);
+
+    ul_pdr->outer_header_removal_len = 1;
+    if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+        ul_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+        ul_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+        ul_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+    } else
+        ogs_assert_if_reached();
 
     dl_far = ogs_pfcp_far_add(&qos_flow->pfcp);
     ogs_assert(dl_far);
@@ -1125,7 +1148,8 @@ smf_bearer_t *smf_qos_flow_add(smf_sess_t *sess)
 
     /* Allocate QFI */
     qer->qfi = OGS_NEXT_ID(sess->qos_flow_identifier, 1, OGS_MAX_QOS_FLOW_ID+1);
-    qos_flow->qfi = qer->qfi;
+
+    qos_flow->qfi = ul_pdr->qfi = qer->qfi;
 
     qos_flow->sess = sess;
 
@@ -1174,10 +1198,29 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
     dl_pdr->id = OGS_NEXT_ID(sess->pdr_id, 1, OGS_MAX_NUM_OF_PDR+1);
     dl_pdr->src_if = OGS_PFCP_INTERFACE_CORE;
 
+    if (strlen(sess->pdn.apn))
+        dl_pdr->apn = ogs_strdup(sess->pdn.apn);
+
     ul_pdr = ogs_pfcp_pdr_add(&bearer->pfcp);
     ogs_assert(ul_pdr);
     ul_pdr->id = OGS_NEXT_ID(sess->pdr_id, 1, OGS_MAX_NUM_OF_PDR+1);
     ul_pdr->src_if = OGS_PFCP_INTERFACE_ACCESS;
+
+    if (strlen(sess->pdn.apn))
+        ul_pdr->apn = ogs_strdup(sess->pdn.apn);
+
+    ul_pdr->outer_header_removal_len = 1;
+    if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4) {
+        ul_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV4;
+    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV6) {
+        ul_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IPV6;
+    } else if (sess->pdn.pdn_type == OGS_GTP_PDN_TYPE_IPV4V6) {
+        ul_pdr->outer_header_removal.description =
+            OGS_PFCP_OUTER_HEADER_REMOVAL_GTPU_UDP_IP;
+    } else
+        ogs_assert_if_reached();
 
     dl_far = ogs_pfcp_far_add(&bearer->pfcp);
     ogs_assert(dl_far);
@@ -1200,7 +1243,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess)
             &bearer->upf_s5u_addr, &bearer->upf_s5u_addr6);
         ogs_assert(bearer->upf_s5u_addr || bearer->upf_s5u_addr6);
         if (resource->info.teidri)
-            bearer->upf_s5u_teid = UPF_GTPU_INDEX_TO_TEID(
+            bearer->upf_s5u_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
                     bearer->index, resource->info.teidri,
                     resource->info.teid_range);
         else
@@ -1265,9 +1308,9 @@ smf_bearer_t *smf_bearer_find(uint32_t index)
     return ogs_pool_find(&smf_bearer_pool, index);
 }
 
-smf_bearer_t *smf_bearer_find_by_smf_s5u_teid(uint32_t smf_s5u_teid)
+smf_bearer_t *smf_bearer_find_by_upf_s5u_teid(uint32_t upf_s5u_teid)
 {
-    return smf_bearer_find(smf_s5u_teid);
+    return smf_bearer_find(upf_s5u_teid);
 }
 
 smf_bearer_t *smf_bearer_find_by_ebi(smf_sess_t *sess, uint8_t ebi)
@@ -1397,6 +1440,9 @@ int smf_pf_remove(smf_pf_t *pf)
     ogs_assert(pf->bearer);
 
     ogs_list_remove(&pf->bearer->pf_list, pf);
+    if (pf->flow_description)
+        ogs_free(pf->flow_description);
+
     ogs_pool_free(&smf_pf_pool, pf);
 
     return OGS_OK;

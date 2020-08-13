@@ -30,7 +30,6 @@ typedef struct ogs_pfcp_node_s ogs_pfcp_node_t;
 typedef struct ogs_pfcp_xact_s ogs_pfcp_xact_t;
 typedef struct ogs_pfcp_message_s ogs_pfcp_message_t;
 typedef struct upf_sess_s upf_sess_t;
-typedef struct upf_upf_s upf_upf_t;
 
 typedef enum {
     UPF_EVT_BASE = OGS_FSM_USER_SIG,

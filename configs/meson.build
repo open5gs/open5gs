@@ -47,6 +47,7 @@ example_conf = '''
     volte.yaml
     srslte.yaml
     cups.yaml
+    app.yaml
 '''.split()
 
 foreach file : example_conf

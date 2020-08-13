@@ -46,7 +46,15 @@ typedef struct ogs_pfcp_context_s {
 
     uint32_t        pfcp_started;   /* UTC time when the PFCP entity started */
 
-    ogs_list_t      n4_list;        /* PFCP Node List */
+    /* CP Function Features */
+    ogs_pfcp_cp_function_features_t cp_function_features;
+    /* UP Function Features */
+    ogs_pfcp_up_function_features_t up_function_features;
+    int up_function_features_len;
+
+    ogs_list_t      gtpu_resource_list; /* UP IP Resource List */
+
+    ogs_list_t      peer_list;      /* PFCP Node List */
     ogs_pfcp_node_t *node;          /* Iterator for Peer round-robin */
 
     ogs_list_t      dev_list;       /* Tun Device List */
@@ -121,12 +129,20 @@ typedef struct ogs_pfcp_pdr_s {
     ogs_pfcp_precedence_t   precedence;
     ogs_pfcp_interface_t    src_if;
 
+    union {
+        char *apn;
+        char *dnn;
+    };
+
     ogs_pfcp_ue_ip_addr_t   ue_ip_addr;
     int                     ue_ip_addr_len;
 
     ogs_pfcp_f_teid_t       f_teid;
     int                     f_teid_len;
     ogs_pfcp_outer_header_removal_t outer_header_removal;
+    int                     outer_header_removal_len;
+
+    uint8_t                 qfi;
 
     ogs_pfcp_far_t          *far;
     ogs_pfcp_urr_t          *urr;
@@ -134,6 +150,8 @@ typedef struct ogs_pfcp_pdr_s {
 
     int                     num_of_flow;
     char                    *flow_description[OGS_MAX_NUM_OF_RULE];
+
+    ogs_list_t              rule_list;      /* Rule List */
 
     /* Related Context */
     ogs_pfcp_sess_t         *sess;
@@ -147,6 +165,8 @@ typedef struct ogs_pfcp_far_s {
     ogs_pfcp_interface_t    dst_if;
     ogs_pfcp_outer_header_creation_t outer_header_creation;
     int                     outer_header_creation_len;
+
+    ogs_pfcp_smreq_flags_t  smreq_flags;
 
 #define MAX_NUM_OF_PACKET_BUFFER 512
     uint32_t                num_of_buffered_packet;
@@ -225,6 +245,15 @@ typedef struct ogs_pfcp_subnet_s {
     ogs_pfcp_dev_t  *dev;           /* Related Context */
 } ogs_pfcp_subnet_t;
 
+typedef struct ogs_pfcp_rule_s {
+    ogs_lnode_t lnode;
+
+    ogs_ipfw_rule_t ipfw;
+
+    /* Related Context */
+    ogs_pfcp_pdr_t  *pdr;
+} ogs_pfcp_rule_t;
+
 void ogs_pfcp_context_init(int num_of_gtpu_resource);
 void ogs_pfcp_context_final(void);
 ogs_pfcp_context_t *ogs_pfcp_self(void);
@@ -300,6 +329,10 @@ void ogs_pfcp_qer_remove_all(ogs_pfcp_sess_t *sess);
 
 ogs_pfcp_bar_t *ogs_pfcp_bar_new(ogs_pfcp_sess_t *sess);
 void ogs_pfcp_bar_delete(ogs_pfcp_bar_t *bar);
+
+ogs_pfcp_rule_t *ogs_pfcp_rule_add(ogs_pfcp_pdr_t *pdr);
+void ogs_pfcp_rule_remove(ogs_pfcp_rule_t *rule);
+void ogs_pfcp_rule_remove_all(ogs_pfcp_pdr_t *pdr);
 
 int ogs_pfcp_ue_pool_generate(void);
 ogs_pfcp_ue_ip_t *ogs_pfcp_ue_ip_alloc(

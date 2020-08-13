@@ -86,6 +86,33 @@ int testgnb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf)
     return OGS_OK;
 }
 
+int testgnb_gtpu_sendto(
+        ogs_socknode_t *node, ogs_pkbuf_t *sendbuf, const char *ipstr)
+{
+    int rv;
+
+    ogs_sockaddr_t *addr;
+    int port = OGS_GTPV1_U_UDP_PORT;
+    ssize_t sent;
+
+    ogs_assert(node);
+    ogs_assert(node->sock);
+    ogs_assert(ipstr);
+
+    rv = ogs_getaddrinfo(&addr, AF_UNSPEC, ipstr, port, 0);
+    ogs_assert(rv == OGS_OK);
+
+    sent = ogs_sendto(node->sock->fd, sendbuf->data, sendbuf->len, 0, addr);
+
+    ogs_pkbuf_free(sendbuf);
+    ogs_freeaddrinfo(addr);
+
+    if (sent < 0 || sent != sendbuf->len)
+        return OGS_ERROR;
+
+    return OGS_OK;
+}
+
 void test_gtpu_close(ogs_socknode_t *node)
 {
     ogs_socknode_free(node);
@@ -129,30 +156,44 @@ int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,
     memset(pkbuf->data, 0, pkbuf->len);
 
     gtp_h = (ogs_gtp_header_t *)pkbuf->data;
-    gtp_h->flags = 0x34;
+    if (sess->qfi)
+        gtp_h->flags = 0x34;
+    else
+        gtp_h->flags = 0x30;
     gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
     gtp_h->teid = htobe32(sess->upf_n3_teid);
 
-    ext_h = (ogs_gtp_extension_header_t *)(pkbuf->data + OGS_GTPV1U_HEADER_LEN);
-    ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
-    ext_h->len = 1;
-    ext_h->pdu_type =
-        OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
-    ext_h->qos_flow_identifier = 1;
-    ext_h->next_type = OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+    if (sess->qfi) {
+        ext_h = (ogs_gtp_extension_header_t *)
+            (pkbuf->data + OGS_GTPV1U_HEADER_LEN);
+        ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
+        ext_h->len = 1;
+        ext_h->pdu_type =
+            OGS_GTP_EXTENSION_HEADER_PDU_TYPE_UL_PDU_SESSION_INFORMATION;
+        ext_h->qos_flow_identifier = sess->qfi;
+        ext_h->next_type =
+            OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+    }
 
     if (dst_ipsub.family == AF_INET) {
         struct ip *ip_h = NULL;
         struct icmp *icmp_h = NULL;
 
-        gtp_h->length = htobe16(
-                sizeof *ip_h + ICMP_MINLEN +
-                OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4);
+        if (sess->qfi) {
+            gtp_h->length = htobe16(
+                    sizeof *ip_h + ICMP_MINLEN +
+                    OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4);
 
-        ip_h = (struct ip *)(pkbuf->data +
-                OGS_GTPV1U_HEADER_LEN +
-                OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4);
-        icmp_h = (struct icmp *)((uint8_t *)ip_h + sizeof *ip_h);
+            ip_h = (struct ip *)(pkbuf->data +
+                    OGS_GTPV1U_HEADER_LEN +
+                    OGS_GTPV1U_EXTENSION_HEADER_LEN + ext_h->len * 4);
+            icmp_h = (struct icmp *)((uint8_t *)ip_h + sizeof *ip_h);
+        } else {
+            gtp_h->length = htobe16(sizeof *ip_h + ICMP_MINLEN);
+
+            ip_h = (struct ip *)(pkbuf->data + OGS_GTPV1U_HEADER_LEN);
+            icmp_h = (struct icmp *)((uint8_t *)ip_h + sizeof *ip_h);
+        }
 
         ip_h->ip_v = 4;
         ip_h->ip_hl = 5;

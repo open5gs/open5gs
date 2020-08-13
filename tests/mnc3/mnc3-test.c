@@ -35,25 +35,33 @@ static void test1_func(abts_case *tc, void *data)
 
     uint8_t tmp[OGS_MAX_SDU_LEN];
     const char *_authentication_request = 
-        "000b403b00000300 000005c001a00102 000800020018001a 002524075200906d"
-        "231ff57ef278c719 1d170303deb610d0 7c4defa47480001f 2b5350926bdb3a";
+        "000b403800000300 0000020001000800 020018001a002524 075200906d231ff5"
+        "7ef278c7191d1703 03deb610d07c4def a47480001f2b5350 926bdb3a";
     const char *_security_mode_command = 
-        "000b402f00000300 000005c001a00102 000800020018001a 00191837b4fe6e27"
-        "00075d010002e0e0 c14f08d14b7a88d1 d1d02e";
+        "000b402c00000300 0000020001000800 020018001a001918 37b4fe6e2700075d"
+        "010002e0e0c14f08 d14b7a88d1d1d02e";
     const char *_esm_information_request =
-        "000b402000000300 000005c001a00102 000800020018001a 000a0927846a01a8"
-        "010201d9";
+        "000b401d00000300 0000020001000800 020018001a000a09 27846a01a8010201"
+        "d9";
     const char *_initial_context_setup_request = 
-        "00090080c2000006 00000005c001a001 0200080002001800 42000a183d090000"
-        "603d090000001800 71000034006c4500 093d0f807f000002 000000015d279cc9"
-        "988102074201490c 0313401000320033 0034003500315201 c101090c07737461"
-        "72656e7403636f6d 05010a2d00025e06 fefee2e20303270f 80000d0408080808"
-        "000d040808040450 0bf6134010801e64 ee00502459496402 0108006b00051800"
-        "0c00000049002046 c789cba93e9b9775 8335c097e6c386c8 72e4b82434a48037"
-        "c30601590edd8e";
+        "00090080bf000006 0000000200010008 000200180042000a 183d090000603d09"
+        "0000001800710000 34006c4500093d0f 807f000007000000 025d2722ab599e02"
+        "074201490c031340 1000320033003400 3500315201c10109 0c0773746172656e"
+        "7403636f6d05010a 2d00025e06fefee2 e20303270f80000d 0408080808000d04"
+        "08080404500bf613 4010801e64e400ae b859496402010800 6b000518000c0000"
+        "0049002046c789cb a93e9b97758335c0 97e6c386c872e4b8 2434a48037c30601"
+        "590edd8e";
     const char *_emm_information = 
-        "000b403b00000300 000005c001a00102 000800020018001a 0025242729f8b0bb"
-        "030761430f10004f 00700065006e0035 0047005347914032 80113463490100";
+        "000b403800000300 0000020001000800 020018001a002524 27e211a94a030761"
+        "430f10004f007000 65006e0035004700 5347028040325204 69490100";
+
+    test_ue_t test_ue;
+    test_sess_t test_sess;
+
+    const char *_k_string = "465b5ce8b199b49faa5f0a2ee238a6bc";
+    uint8_t k[OGS_KEY_LEN];
+    const char *_opc_string = "e8ed289deba952e4283b54e88e6183ca";
+    uint8_t opc[OGS_KEY_LEN];
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -107,12 +115,27 @@ static void test1_func(abts_case *tc, void *data)
         "\"__v\" : 0 "
       "}";
 
+    /* Setup Test UE & Session Context */
+    memset(&test_ue, 0, sizeof(test_ue));
+    memset(&test_sess, 0, sizeof(test_sess));
+    test_sess.test_ue = &test_ue;
+    test_ue.sess = &test_sess;
+
+    test_ue.imsi = (char *)"310014987654004";
+
+    test_sess.gnb_n3_ip.ipv4 = true;
+    test_sess.gnb_n3_ip.addr = inet_addr(TEST_GNB_IPV4);
+    test_sess.gnb_n3_teid = 0;
+
+    test_sess.upf_n3_ip.ipv4 = true;
+    test_sess.upf_n3_ip.addr = inet_addr(TEST_SGWU_IPV4);
+
     /* eNB connects to MME */
-    s1ap = testenb_s1ap_client("127.0.0.1");
+    s1ap = testenb_s1ap_client(TEST_MME_IPV4);
     ABTS_PTR_NOTNULL(tc, s1ap);
 
     /* eNB connects to SGW */
-    gtpu = testenb_gtpu_server("127.0.0.5");
+    gtpu = testenb_gtpu_server(TEST_ENB_IPV4);
     ABTS_PTR_NOTNULL(tc, gtpu);
 
     /* Send S1-Setup Reqeust */
@@ -130,18 +153,28 @@ static void test1_func(abts_case *tc, void *data)
     ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
+    /********** Insert Subscriber in Database */
     collection = mongoc_client_get_collection(
         ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
 
-    /********** Insert Subscriber in Database */
+    count = mongoc_collection_count (
+        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    if (count) {
+        ABTS_TRUE(tc, mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    }
+    bson_destroy(doc);
+
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_insert(collection, 
+    ABTS_TRUE(tc, mongoc_collection_insert(collection,
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
-    doc = BCON_NEW("imsi", BCON_UTF8("310014987654004"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     do {
         count = mongoc_collection_count (
@@ -149,7 +182,7 @@ static void test1_func(abts_case *tc, void *data)
     } while (count == 0);
     bson_destroy(doc);
 
-    mme_self()->mme_ue_s1ap_id = 27263233;
+    /* Send Attach Request */
     rv = tests1ap_build_initial_ue_msg(&sendbuf, msgindex);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
@@ -187,7 +220,8 @@ static void test1_func(abts_case *tc, void *data)
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ABTS_TRUE(tc, memcmp(recvbuf->data, 
-        OGS_HEX(_esm_information_request, strlen(_security_mode_command), tmp),
+        OGS_HEX(_esm_information_request,
+            strlen(_esm_information_request), tmp),
         recvbuf->len) == 0);
     ogs_pkbuf_free(recvbuf);
 
@@ -204,9 +238,9 @@ static void test1_func(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     OGS_HEX(_initial_context_setup_request,
             strlen(_initial_context_setup_request), tmp);
-    ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 62) == 0);
-    ABTS_TRUE(tc, memcmp(recvbuf->data+66, tmp+66, 78) == 0);
-    ABTS_TRUE(tc, memcmp(recvbuf->data+148, tmp+148, 50) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 59) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data+63, tmp+63, 78) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data+145, tmp+145, 50) == 0);
     ogs_pkbuf_free(recvbuf);
 
     /* Send UE Capability Info Indication */
@@ -215,11 +249,9 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
-
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(&sendbuf,
-            27263233, 24, 5, 1, "127.0.0.5");
+            1, 24, 5, 1, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -230,20 +262,21 @@ static void test1_func(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
-    ogs_msleep(50);
-
     /* Receive EMM information */
     recvbuf = testenb_s1ap_read(s1ap);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     OGS_HEX(_emm_information, strlen(_emm_information), tmp);
-    ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 28) == 0);
-    ABTS_TRUE(tc, memcmp(recvbuf->data+32, tmp+32, 20) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data, tmp, 25) == 0);
+    ABTS_TRUE(tc, memcmp(recvbuf->data+29, tmp+29, 20) == 0);
     ogs_pkbuf_free(recvbuf);
 
     /* Send GTP-U ICMP Packet */
-    rv = testgtpu_build_ping(&sendbuf, 1, "10.45.0.2", "10.45.0.1");
+    test_sess.upf_n3_teid = 2;
+    test_sess.ue_ip.addr = inet_addr("10.45.0.2");
+
+    rv = test_gtpu_build_ping(&sendbuf, &test_sess, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_gtpu_send(gtpu, sendbuf);
+    rv = testgnb_gtpu_sendto(gtpu, sendbuf, TEST_SGWU_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
@@ -252,10 +285,10 @@ static void test1_func(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8("310014987654004"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
-    ABTS_TRUE(tc, mongoc_collection_remove(collection, 
-            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error)) 
+    ABTS_TRUE(tc, mongoc_collection_remove(collection,
+            MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
     bson_destroy(doc);
 
     mongoc_collection_destroy(collection);

@@ -1365,6 +1365,8 @@ int mme_context_parse_config()
                                 ogs_config()->parameter.no_ipv6,
                                 ogs_config()->parameter.prefer_ipv4);
 
+                        if (addr == NULL) continue;
+
                         vlr = mme_vlr_add(addr);
                         ogs_assert(vlr);
 
@@ -1390,7 +1392,7 @@ int mme_context_parse_config()
                 } else
                     ogs_warn("unknown key `%s`", mme_key);
             }
-        } else if (!strcmp(root_key, "sgw")) {
+        } else if (!strcmp(root_key, "sgw") || !strcmp(root_key, "sgwc")) {
             ogs_yaml_iter_t sgw_iter;
             ogs_yaml_iter_recurse(&root_iter, &sgw_iter);
             while (ogs_yaml_iter_next(&sgw_iter)) {
@@ -1533,6 +1535,8 @@ int mme_context_parse_config()
                                 ogs_config()->parameter.no_ipv6,
                                 ogs_config()->parameter.prefer_ipv4);
 
+                        if (addr == NULL) continue;
+
                         sgw = mme_sgw_add(addr);
                         ogs_assert(sgw);
 
@@ -1638,6 +1642,8 @@ int mme_context_parse_config()
                                 ogs_config()->parameter.no_ipv4,
                                 ogs_config()->parameter.no_ipv6,
                                 ogs_config()->parameter.prefer_ipv4);
+
+                        if (addr == NULL) continue;
 
                         pgw = mme_pgw_add(addr);
                         ogs_assert(pgw);

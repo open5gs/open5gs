@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-epc.h"
+#include "test-app.h"
 
 abts_suite *test_mnc3(abts_suite *suite);
 
@@ -35,7 +35,7 @@ static void terminate(void)
     test_child_terminate();
     app_terminate();
 
-    test_epc_final();
+    test_app_final();
     ogs_app_terminate();
 }
 
@@ -45,7 +45,7 @@ static void initialize(const char *const argv[])
 
     rv = ogs_app_initialize(NULL, argv);
     ogs_assert(rv == OGS_OK);
-    test_epc_init();
+    test_app_init();
 
     rv = app_initialize(argv);
     ogs_assert(rv == OGS_OK);
@@ -57,7 +57,8 @@ int main(int argc, const char *const argv[])
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_epc_run(argc, argv, "mnc3.yaml", initialize);
+    test_5gc_run(argc, argv, "mnc3.yaml", initialize);
+    ogs_msleep(1000);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

@@ -118,10 +118,34 @@ int ogs_pfcp_sendto(ogs_pfcp_node_t *node, ogs_pkbuf_t *pkbuf)
     return OGS_OK;
 }
 
+void ogs_pfcp_send_heartbeat_request(ogs_pfcp_node_t *node,
+        void (*cb)(ogs_pfcp_xact_t *xact, void *data))
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_pfcp_header_t h;
+    ogs_pfcp_xact_t *xact = NULL;
+
+    ogs_assert(node);
+
+    memset(&h, 0, sizeof(ogs_pfcp_header_t));
+    h.type = OGS_PFCP_HEARTBEAT_REQUEST_TYPE;
+    h.seid = 0;
+
+    pkbuf = ogs_pfcp_build_heartbeat_request(h.type);
+    ogs_expect_or_return(pkbuf);
+
+    xact = ogs_pfcp_xact_local_create(node, &h, pkbuf, cb, node);
+    ogs_expect_or_return(xact);
+
+    rv = ogs_pfcp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+}
+
 void ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact)
 {
     int rv;
-    ogs_pkbuf_t *n4buf = NULL;
+    ogs_pkbuf_t *pkbuf = NULL;
     ogs_pfcp_header_t h;
 
     ogs_assert(xact);
@@ -130,14 +154,280 @@ void ogs_pfcp_send_heartbeat_response(ogs_pfcp_xact_t *xact)
     h.type = OGS_PFCP_HEARTBEAT_RESPONSE_TYPE;
     h.seid = 0;
 
-    n4buf = ogs_pfcp_n4_build_heartbeat_response(h.type);
-    ogs_expect_or_return(n4buf);
+    pkbuf = ogs_pfcp_build_heartbeat_response(h.type);
+    ogs_expect_or_return(pkbuf);
 
-    rv = ogs_pfcp_xact_update_tx(xact, &h, n4buf);
+    rv = ogs_pfcp_xact_update_tx(xact, &h, pkbuf);
     ogs_expect_or_return(rv == OGS_OK);
 
     rv = ogs_pfcp_xact_commit(xact);
     ogs_expect(rv == OGS_OK);
+}
+
+void ogs_pfcp_cp_send_association_setup_request(ogs_pfcp_node_t *node,
+        void (*cb)(ogs_pfcp_xact_t *xact, void *data))
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_pfcp_header_t h;
+    ogs_pfcp_xact_t *xact = NULL;
+
+    ogs_assert(node);
+
+    memset(&h, 0, sizeof(ogs_pfcp_header_t));
+    h.type = OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE;
+    h.seid = 0;
+
+    pkbuf = ogs_pfcp_cp_build_association_setup_request(h.type);
+    ogs_expect_or_return(pkbuf);
+
+    xact = ogs_pfcp_xact_local_create(node, &h, pkbuf, cb, node);
+    ogs_expect_or_return(xact);
+
+    rv = ogs_pfcp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+}
+
+void ogs_pfcp_cp_send_association_setup_response(ogs_pfcp_xact_t *xact,
+        uint8_t cause)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_pfcp_header_t h;
+
+    ogs_assert(xact);
+
+    memset(&h, 0, sizeof(ogs_pfcp_header_t));
+    h.type = OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE;
+    h.seid = 0;
+
+    pkbuf = ogs_pfcp_cp_build_association_setup_response(h.type, cause);
+    ogs_expect_or_return(pkbuf);
+
+    rv = ogs_pfcp_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return(rv == OGS_OK);
+
+    rv = ogs_pfcp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+}
+
+void ogs_pfcp_up_send_association_setup_request(ogs_pfcp_node_t *node,
+        void (*cb)(ogs_pfcp_xact_t *xact, void *data))
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_pfcp_header_t h;
+    ogs_pfcp_xact_t *xact = NULL;
+
+    ogs_assert(node);
+
+    memset(&h, 0, sizeof(ogs_pfcp_header_t));
+    h.type = OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE;
+    h.seid = 0;
+
+    pkbuf = ogs_pfcp_up_build_association_setup_request(h.type);
+    ogs_expect_or_return(pkbuf);
+
+    xact = ogs_pfcp_xact_local_create(node, &h, pkbuf, cb, node);
+    ogs_expect_or_return(xact);
+
+    rv = ogs_pfcp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+}
+
+void ogs_pfcp_up_send_association_setup_response(ogs_pfcp_xact_t *xact,
+        uint8_t cause)
+{
+    int rv;
+    ogs_pkbuf_t *pkbuf = NULL;
+    ogs_pfcp_header_t h;
+
+    ogs_assert(xact);
+
+    memset(&h, 0, sizeof(ogs_pfcp_header_t));
+    h.type = OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE;
+    h.seid = 0;
+
+    pkbuf = ogs_pfcp_up_build_association_setup_response(h.type, cause);
+    ogs_expect_or_return(pkbuf);
+
+    rv = ogs_pfcp_xact_update_tx(xact, &h, pkbuf);
+    ogs_expect_or_return(rv == OGS_OK);
+
+    rv = ogs_pfcp_xact_commit(xact);
+    ogs_expect(rv == OGS_OK);
+}
+
+void ogs_pfcp_send_g_pdu(ogs_pfcp_pdr_t *pdr, ogs_pkbuf_t *sendbuf)
+{
+    char buf[OGS_ADDRSTRLEN];
+    int rv;
+    ogs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp_extension_header_t *ext_h = NULL;
+    ogs_gtp_node_t *gnode = NULL;
+
+    ogs_pfcp_far_t *far = NULL;
+    ogs_pfcp_qer_t *qer = NULL;
+
+    ogs_assert(pdr);
+
+    far = pdr->far;
+    if (!far) {
+        ogs_error("No FAR");
+        return;
+    }
+
+    gnode = far->gnode;
+    ogs_assert(gnode);
+    ogs_assert(gnode->sock);
+    ogs_assert(sendbuf);
+
+    qer = pdr->qer;
+
+    /* Add GTP-U header */
+    if (qer && qer->qfi) {
+        ogs_assert(ogs_pkbuf_push(sendbuf, OGS_GTPV1U_5GC_HEADER_LEN));
+        gtp_h = (ogs_gtp_header_t *)sendbuf->data;
+        /* Bits    8  7  6  5  4  3  2  1
+         *        +--+--+--+--+--+--+--+--+
+         *        |version |PT| 1| E| S|PN|
+         *        +--+--+--+--+--+--+--+--+
+         *         0  0  1   1  0  1  0  0
+         */
+        gtp_h->flags = 0x34;
+        gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
+        gtp_h->length = htobe16(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
+        gtp_h->teid = htobe32(far->outer_header_creation.teid);
+
+        ext_h = (ogs_gtp_extension_header_t *)(
+                sendbuf->data + OGS_GTPV1U_HEADER_LEN);
+        ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
+        ext_h->len = 1;
+        ext_h->pdu_type =
+            OGS_GTP_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
+        ext_h->qos_flow_identifier = qer->qfi;
+        ext_h->next_type =
+            OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+    } else {
+        ogs_assert(ogs_pkbuf_push(sendbuf, OGS_GTPV1U_HEADER_LEN));
+        gtp_h = (ogs_gtp_header_t *)sendbuf->data;
+        /* Bits    8  7  6  5  4  3  2  1
+         *        +--+--+--+--+--+--+--+--+
+         *        |version |PT| 1| E| S|PN|
+         *        +--+--+--+--+--+--+--+--+
+         *         0  0  1   1  0  0  0  0
+         */
+        gtp_h->flags = 0x30;
+        gtp_h->type = OGS_GTPU_MSGTYPE_GPDU;
+        gtp_h->length = htobe16(sendbuf->len - OGS_GTPV1U_HEADER_LEN);
+        gtp_h->teid = htobe32(far->outer_header_creation.teid);
+    }
+
+    /* Send G-PDU */
+    ogs_debug("SEND G-PDU to Peer[%s] : TEID[0x%x]",
+        OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
+    rv = ogs_gtp_sendto(gnode, sendbuf);
+    if (rv != OGS_OK)
+        ogs_error("ogs_gtp_sendto() failed");
+
+    ogs_pkbuf_free(sendbuf);
+}
+
+void ogs_pfcp_send_end_marker(ogs_pfcp_pdr_t *pdr)
+{
+    char buf[OGS_ADDRSTRLEN];
+    int rv;
+    ogs_pkbuf_t *sendbuf = NULL;
+
+    ogs_gtp_header_t *gtp_h = NULL;
+    ogs_gtp_extension_header_t *ext_h = NULL;
+    ogs_gtp_node_t *gnode = NULL;
+
+    ogs_pfcp_far_t *far = NULL;
+    ogs_pfcp_qer_t *qer = NULL;
+
+    ogs_assert(pdr);
+    far = pdr->far;
+    ogs_assert(far);
+
+    gnode = far->gnode;
+    if (!gnode) {
+        ogs_error("No GTP Node Setup");
+        return;
+    }
+    if (!gnode->sock) {
+        ogs_error("No GTP Socket Setup");
+        return;
+    }
+
+    sendbuf = ogs_pkbuf_alloc(NULL,
+            100 /* enough for END_MARKER; use smaller buffer */);
+    ogs_pkbuf_put(sendbuf, 100);
+    memset(sendbuf->data, 0, sendbuf->len);
+
+    gtp_h = (ogs_gtp_header_t *)sendbuf->data;
+
+    qer = pdr->qer;
+
+    /* Add GTP-U header */
+    if (qer && qer->qfi) {
+        /* Bits    8  7  6  5  4  3  2  1
+         *        +--+--+--+--+--+--+--+--+
+         *        |version |PT| 1| E| S|PN|
+         *        +--+--+--+--+--+--+--+--+
+         *         0  0  1   1  0  1  0  0
+         */
+        gtp_h->flags = 0x34;
+        gtp_h->type = OGS_GTPU_MSGTYPE_END_MARKER;
+        gtp_h->teid = htobe32(far->outer_header_creation.teid);
+
+        ext_h = (ogs_gtp_extension_header_t *)(
+                sendbuf->data + OGS_GTPV1U_HEADER_LEN);
+        ext_h->type = OGS_GTP_EXTENSION_HEADER_TYPE_PDU_SESSION_CONTAINER;
+        ext_h->len = 1;
+        ext_h->pdu_type =
+            OGS_GTP_EXTENSION_HEADER_PDU_TYPE_DL_PDU_SESSION_INFORMATION;
+        ext_h->qos_flow_identifier = qer->qfi;
+        ext_h->next_type =
+            OGS_GTP_EXTENSION_HEADER_TYPE_NO_MORE_EXTENSION_HEADERS;
+    } else {
+        /* Bits    8  7  6  5  4  3  2  1
+         *        +--+--+--+--+--+--+--+--+
+         *        |version |PT| 1| E| S|PN|
+         *        +--+--+--+--+--+--+--+--+
+         *         0  0  1   1  0  0  0  0
+         */
+        gtp_h->flags = 0x30;
+        gtp_h->type = OGS_GTPU_MSGTYPE_END_MARKER;
+        gtp_h->teid = htobe32(far->outer_header_creation.teid);
+    }
+
+    /* Send End Marker */
+    ogs_debug("SEND End Marker to Peer[%s] : TEID[0x%x]",
+        OGS_ADDR(&gnode->addr, buf), far->outer_header_creation.teid);
+    rv = ogs_gtp_sendto(gnode, sendbuf);
+    if (rv != OGS_OK)
+        ogs_error("ogs_gtp_sendto() failed");
+
+    ogs_pkbuf_free(sendbuf);
+}
+
+void ogs_pfcp_send_buffered_packet(ogs_pfcp_pdr_t *pdr)
+{
+    ogs_pfcp_far_t *far = NULL;
+    int i;
+
+    ogs_assert(pdr);
+    far = pdr->far;
+
+    if (far && far->gnode) {
+        if (far->apply_action & OGS_PFCP_APPLY_ACTION_FORW) {
+            for (i = 0; i < far->num_of_buffered_packet; i++) {
+                ogs_pfcp_send_g_pdu(pdr, far->buffered_packet[i]);
+            }
+            far->num_of_buffered_packet = 0;
+        }
+    }
 }
 
 void ogs_pfcp_send_error_message(

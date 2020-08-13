@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test-epc.h"
+#include "test-app.h"
 
 #include "pcscf-fd-path.h"
 
@@ -30,33 +30,16 @@ const struct testlist {
     {NULL},
 };
 
-static ogs_thread_t *nrf_thread = NULL;
-static ogs_thread_t *pcrf_thread = NULL;
-static ogs_thread_t *upf_thread = NULL;
-static ogs_thread_t *smf_thread = NULL;
-static ogs_thread_t *sgw_thread = NULL;
-static ogs_thread_t *hss_thread = NULL;
-static ogs_thread_t *mme_thread = NULL;
-
 static void terminate(void)
 {
     ogs_msleep(50);
 
     test_child_terminate();
-
-    if (mme_thread) ogs_thread_destroy(mme_thread);
-    if (hss_thread) ogs_thread_destroy(hss_thread);
-    if (sgw_thread) ogs_thread_destroy(sgw_thread);
-    if (smf_thread) ogs_thread_destroy(smf_thread);
-    if (upf_thread) ogs_thread_destroy(upf_thread);
-    if (pcrf_thread) ogs_thread_destroy(pcrf_thread);
-    if (nrf_thread) ogs_thread_destroy(nrf_thread);
+    app_terminate();
 
     pcscf_fd_final();
 
-    ogs_sctp_final();
-
-    test_epc_final();
+    test_app_final();
     ogs_app_terminate();
 }
 
@@ -64,21 +47,12 @@ static void initialize(const char *const argv[])
 {
     int rv;
 
-    test_no_mme_self = true;
-
     rv = ogs_app_initialize(NULL, argv);
     ogs_assert(rv == OGS_OK);
+    test_app_init();
 
-    nrf_thread = test_child_create("nrf", argv);
-    pcrf_thread = test_child_create("pcrf", argv);
-    upf_thread = test_child_create("upf", argv);
-    smf_thread = test_child_create("smf", argv);
-    sgw_thread = test_child_create("sgw", argv);
-    hss_thread = test_child_create("hss", argv);
-    mme_thread = test_child_create("mme", argv);
-
-    test_epc_init();
-    ogs_sctp_init(ogs_config()->usrsctp.udp_port);
+    rv = app_initialize(argv);
+    ogs_assert(rv == OGS_OK);
 
     rv = pcscf_fd_init();
     ogs_assert(rv == OGS_OK);
@@ -90,7 +64,8 @@ int main(int argc, const char *const argv[])
     abts_suite *suite = NULL;
 
     atexit(terminate);
-    test_epc_run(argc, argv, "cups.yaml", initialize);
+    test_5gc_run(argc, argv, "cups.yaml", initialize);
+    ogs_msleep(1000);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

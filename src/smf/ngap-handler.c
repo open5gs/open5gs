@@ -140,7 +140,7 @@ int ngap_handle_pdu_session_resource_setup_response_transfer(
 
     if (far_update) {
         smf_5gc_pfcp_send_qos_flow_modification_request(
-                qos_flow, session, OGS_PFCP_5GC_MODIFY_ACTIVATE);
+                qos_flow, session, OGS_PFCP_MODIFY_ACTIVATE);
     } else {
         /* ACTIVATED Is NOT Inlcuded in RESPONSE */
         smf_sbi_send_sm_context_updated_data(sess, session, 0);

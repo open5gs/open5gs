@@ -17,18 +17,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef OGS_PFCP_N4_BUILD_H
-#define OGS_PFCP_N4_BUILD_H
+#ifndef SGWC_SM_H
+#define SGWC_SM_H
+
+#include "event.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-ogs_pkbuf_t *ogs_pfcp_n4_build_heartbeat_request(uint8_t type);
-ogs_pkbuf_t *ogs_pfcp_n4_build_heartbeat_response(uint8_t type);
+void sgwc_state_initial(ogs_fsm_t *s, sgwc_event_t *e);
+void sgwc_state_final(ogs_fsm_t *s, sgwc_event_t *e);
+void sgwc_state_operational(ogs_fsm_t *s, sgwc_event_t *e);
+void sgwc_state_exception(ogs_fsm_t *s, sgwc_event_t *e);
+
+void sgwc_pfcp_state_initial(ogs_fsm_t *s, sgwc_event_t *e);
+void sgwc_pfcp_state_final(ogs_fsm_t *s, sgwc_event_t *e);
+void sgwc_pfcp_state_will_associate(ogs_fsm_t *s, sgwc_event_t *e);
+void sgwc_pfcp_state_associated(ogs_fsm_t *s, sgwc_event_t *e);
+void sgwc_pfcp_state_exception(ogs_fsm_t *s, sgwc_event_t *e);
+
+#define sgwc_sm_debug(__pe) \
+    ogs_debug("%s(): %s\n", __func__, sgwc_event_get_name(__pe))
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* OGS_PFCP_N4_BUILD_H */
+#endif /* !SGWC_SM_H */

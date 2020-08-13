@@ -20,8 +20,7 @@
 #include "test-epc.h"
 #include "pcscf-fd-path.h"
 
-#define TEST1_PING 1
-#define TEST3_PING 0
+#define TEST3_ONLY_PING 0
 
 static void cups_test1(abts_case *tc, void *data)
 {
@@ -34,6 +33,9 @@ static void cups_test1(abts_case *tc, void *data)
     int i;
     int msgindex = 0;
     uint8_t *rx_sid = NULL;
+
+    test_ue_t test_ue;
+    test_sess_t test_sess;
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -97,12 +99,27 @@ static void cups_test1(abts_case *tc, void *data)
       "\"__v\" : 0"
     "}";
 
+    /* Setup Test UE & Session Context */
+    memset(&test_ue, 0, sizeof(test_ue));
+    memset(&test_sess, 0, sizeof(test_sess));
+    test_sess.test_ue = &test_ue;
+    test_ue.sess = &test_sess;
+
+    test_ue.imsi = (char *)"001010123456819";
+
+    test_sess.gnb_n3_ip.ipv4 = true;
+    test_sess.gnb_n3_ip.addr = inet_addr(TEST_GNB_IPV4);
+    test_sess.gnb_n3_teid = 0;
+
+    test_sess.upf_n3_ip.ipv4 = true;
+    test_sess.upf_n3_ip.addr = inet_addr(TEST_SGWU_IPV4);
+
     /* eNB connects to MME */
-    s1ap = testenb_s1ap_client("127.0.0.1");
+    s1ap = testenb_s1ap_client(TEST_MME_IPV4);
     ABTS_PTR_NOTNULL(tc, s1ap);
 
     /* eNB connects to SGW */
-    gtpu = testenb_gtpu_server("127.0.0.5");
+    gtpu = testenb_gtpu_server(TEST_ENB_IPV4);
     ABTS_PTR_NOTNULL(tc, gtpu);
 
     /* Send S1-Setup Reqeust */
@@ -120,9 +137,20 @@ static void cups_test1(abts_case *tc, void *data)
     ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
+    /********** Insert Subscriber in Database */
     collection = mongoc_client_get_collection(
         ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    count = mongoc_collection_count (
+        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    if (count) {
+        ABTS_TRUE(tc, mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    }
+    bson_destroy(doc);
 
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
@@ -130,7 +158,7 @@ static void cups_test1(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     do {
         count = mongoc_collection_count (
@@ -193,8 +221,8 @@ static void cups_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
-            1, 1, 5, 1, "127.0.0.5");
+    rv = tests1ap_build_initial_context_setup_response(
+            &sendbuf, 1, 1, 5, 1, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -210,18 +238,19 @@ static void cups_test1(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-#if TEST1_PING
     /* Send GTP-U ICMP Packet */
-    rv = testgtpu_build_ping(&sendbuf, 1, "10.45.0.2", "10.45.0.1");
+    test_sess.upf_n3_teid = 2;
+    test_sess.ue_ip.addr = inet_addr("10.45.0.2");
+
+    rv = test_gtpu_build_ping(&sendbuf, &test_sess, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_gtpu_send(gtpu, sendbuf);
+    rv = testgnb_gtpu_sendto(gtpu, sendbuf, TEST_SGWU_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
     recvbuf = testenb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
-#endif
 
     /* Send PDN Connectivity Request */
     rv = tests1ap_build_pdn_connectivity_request(&sendbuf, msgindex);
@@ -236,7 +265,8 @@ static void cups_test1(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 6, 2, "127.0.0.5");
+    rv = tests1ap_build_e_rab_setup_response(
+            &sendbuf, 1, 1, 6, 2, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -248,19 +278,18 @@ static void cups_test1(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send GTP-U ICMP Packet */
-    ogs_msleep(50);
+    test_sess.upf_n3_teid = 4;
+    test_sess.ue_ip.addr = inet_addr("10.45.0.3");
 
-#if TEST1_PING
-    rv = testgtpu_build_ping(&sendbuf, 3, "10.45.0.3", "10.45.0.1");
+    rv = test_gtpu_build_ping(&sendbuf, &test_sess, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_gtpu_send(gtpu, sendbuf);
+    rv = testgnb_gtpu_sendto(gtpu, sendbuf, TEST_SGWU_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
     recvbuf = testenb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
-#endif
 
     /* Send AA-Request */
     ogs_msleep(300);
@@ -273,7 +302,8 @@ static void cups_test1(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 7, 3, "127.0.0.5");
+    rv = tests1ap_build_e_rab_setup_response(&sendbuf,
+            1, 1, 7, 3, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -433,7 +463,7 @@ static void cups_test1(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection,
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
@@ -458,6 +488,9 @@ static void cups_test2(abts_case *tc, void *data)
     int i;
     int msgindex = 0;
     uint8_t *rx_sid = NULL;
+
+    test_ue_t test_ue;
+    test_sess_t test_sess;
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -534,8 +567,23 @@ static void cups_test2(abts_case *tc, void *data)
       "\"__v\" : 0"
     "}";
 
+    /* Setup Test UE & Session Context */
+    memset(&test_ue, 0, sizeof(test_ue));
+    memset(&test_sess, 0, sizeof(test_sess));
+    test_sess.test_ue = &test_ue;
+    test_ue.sess = &test_sess;
+
+    test_ue.imsi = (char *)"001010123456819";
+
+    test_sess.gnb_n3_ip.ipv4 = true;
+    test_sess.gnb_n3_ip.addr = inet_addr(TEST_GNB_IPV4);
+    test_sess.gnb_n3_teid = 0;
+
+    test_sess.upf_n3_ip.ipv4 = true;
+    test_sess.upf_n3_ip.addr = inet_addr(TEST_SGWU_IPV4);
+
     /* eNB connects to MME */
-    s1ap = testenb_s1ap_client("127.0.0.1");
+    s1ap = testenb_s1ap_client(TEST_MME_IPV4);
     ABTS_PTR_NOTNULL(tc, s1ap);
 
     /* Send S1-Setup Reqeust */
@@ -553,9 +601,20 @@ static void cups_test2(abts_case *tc, void *data)
     ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
+    /********** Insert Subscriber in Database */
     collection = mongoc_client_get_collection(
         ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    count = mongoc_collection_count (
+        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    if (count) {
+        ABTS_TRUE(tc, mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    }
+    bson_destroy(doc);
 
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
@@ -563,7 +622,7 @@ static void cups_test2(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     do {
         count = mongoc_collection_count (
@@ -626,8 +685,8 @@ static void cups_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send Initial Context Setup Response */
-    rv = tests1ap_build_initial_context_setup_response(&sendbuf,
-            1, 1, 5, 1, "127.0.0.5");
+    rv = tests1ap_build_initial_context_setup_response(
+            &sendbuf, 1, 1, 5, 1, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -656,7 +715,8 @@ static void cups_test2(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 6, 2, "127.0.0.5");
+    rv = tests1ap_build_e_rab_setup_response(
+            &sendbuf, 1, 1, 6, 2, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -680,7 +740,8 @@ static void cups_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 7, 3, "127.0.0.5");
+    rv = tests1ap_build_e_rab_setup_response(
+            &sendbuf, 1, 1, 7, 3, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -728,7 +789,7 @@ static void cups_test2(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection,
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
@@ -750,6 +811,9 @@ static void cups_test3(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     int i;
     int msgindex = 0;
+
+    test_ue_t test_ue;
+    test_sess_t test_sess;
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -826,12 +890,27 @@ static void cups_test3(abts_case *tc, void *data)
       "\"__v\" : 0"
     "}";
 
+    /* Setup Test UE & Session Context */
+    memset(&test_ue, 0, sizeof(test_ue));
+    memset(&test_sess, 0, sizeof(test_sess));
+    test_sess.test_ue = &test_ue;
+    test_ue.sess = &test_sess;
+
+    test_ue.imsi = (char *)"001010123456819";
+
+    test_sess.gnb_n3_ip.ipv4 = true;
+    test_sess.gnb_n3_ip.addr = inet_addr(TEST_GNB_IPV4);
+    test_sess.gnb_n3_teid = 0;
+
+    test_sess.upf_n3_ip.ipv4 = true;
+    test_sess.upf_n3_ip.addr = inet_addr(TEST_SGWU_IPV4);
+
     /* eNB connects to MME */
-    s1ap = testenb_s1ap_client("127.0.0.1");
+    s1ap = testenb_s1ap_client(TEST_MME_IPV4);
     ABTS_PTR_NOTNULL(tc, s1ap);
 
     /* eNB connects to SGW */
-    gtpu = testenb_gtpu_server("127.0.0.5");
+    gtpu = testenb_gtpu_server(TEST_ENB_IPV4);
     ABTS_PTR_NOTNULL(tc, gtpu);
 
     /* Send S1-Setup Reqeust */
@@ -849,9 +928,20 @@ static void cups_test3(abts_case *tc, void *data)
     ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
+    /********** Insert Subscriber in Database */
     collection = mongoc_client_get_collection(
         ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    count = mongoc_collection_count (
+        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    if (count) {
+        ABTS_TRUE(tc, mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    }
+    bson_destroy(doc);
 
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
@@ -859,7 +949,7 @@ static void cups_test3(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     do {
         count = mongoc_collection_count (
@@ -939,18 +1029,24 @@ static void cups_test3(abts_case *tc, void *data)
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
 
-#if TEST3_PING
     /* Send GTP-U ICMP Packet */
-    rv = testgtpu_build_ping(&sendbuf, 1, "10.45.0.2", "10.45.0.1");
+#if TEST3_ONLY_PING
+    test_sess.upf_n3_teid = 2;
+    test_sess.ue_ip.addr = inet_addr("10.45.0.2");
+#else
+    test_sess.upf_n3_teid = 0xe;
+    test_sess.ue_ip.addr = inet_addr("10.45.0.6");
+#endif
+
+    rv = test_gtpu_build_ping(&sendbuf, &test_sess, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_gtpu_send(gtpu, sendbuf);
+    rv = testgnb_gtpu_sendto(gtpu, sendbuf, TEST_SGWU_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
     recvbuf = testenb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
-#endif
 
     /* Send PDN Connectivity Request */
     rv = tests1ap_build_pdn_connectivity_request(&sendbuf, msgindex);
@@ -965,7 +1061,8 @@ static void cups_test3(abts_case *tc, void *data)
     ogs_pkbuf_free(recvbuf);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 6, 2, "127.0.0.5");
+    rv = tests1ap_build_e_rab_setup_response(
+            &sendbuf, 1, 1, 6, 2, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -989,7 +1086,8 @@ static void cups_test3(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Send E-RAB Setup Response */
-    rv = tests1ap_build_e_rab_setup_response(&sendbuf, 1, 1, 7, 3, "127.0.0.5");
+    rv = tests1ap_build_e_rab_setup_response(
+            &sendbuf, 1, 1, 7, 3, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -997,17 +1095,26 @@ static void cups_test3(abts_case *tc, void *data)
     /* Send GTP-U ICMP Packet */
     ogs_msleep(50);
 
-#if TEST3_PING
-    rv = testgtpu_build_ping(&sendbuf, 3, "10.45.0.3", "10.45.0.1");
+    /* Send GTP-U ICMP Packet */
+#if TEST3_ONLY_PING
+    test_sess.upf_n3_teid = 4;
+    test_sess.ue_ip.addr = inet_addr("10.45.0.3");
+#else
+    test_sess.upf_n3_teid = 0x12;
+    test_sess.ue_ip.addr = inet_addr("10.45.0.7");
+#endif
+
+    rv = test_gtpu_build_ping(&sendbuf, &test_sess, TEST_PING_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
-    rv = testenb_gtpu_send(gtpu, sendbuf);
+    rv = testgnb_gtpu_sendto(gtpu, sendbuf, TEST_SGWU_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
     /* Receive GTP-U ICMP Packet */
     recvbuf = testenb_gtpu_read(gtpu);
     ABTS_PTR_NOTNULL(tc, recvbuf);
     ogs_pkbuf_free(recvbuf);
-#endif
+
+    ogs_msleep(300);
 
     /* Send PDN disconnectivity request */
     rv = tests1ap_build_pdn_disconnectivity_request(&sendbuf, msgindex);
@@ -1058,7 +1165,7 @@ static void cups_test3(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection,
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
@@ -1082,6 +1189,9 @@ static void cups_test4(abts_case *tc, void *data)
     ogs_s1ap_message_t message;
     int i;
     int msgindex = 0;
+
+    test_ue_t test_ue;
+    test_sess_t test_sess;
 
     mongoc_collection_t *collection = NULL;
     bson_t *doc = NULL;
@@ -1158,8 +1268,23 @@ static void cups_test4(abts_case *tc, void *data)
       "\"__v\" : 0"
     "}";
 
+    /* Setup Test UE & Session Context */
+    memset(&test_ue, 0, sizeof(test_ue));
+    memset(&test_sess, 0, sizeof(test_sess));
+    test_sess.test_ue = &test_ue;
+    test_ue.sess = &test_sess;
+
+    test_ue.imsi = (char *)"001010123456819";
+
+    test_sess.gnb_n3_ip.ipv4 = true;
+    test_sess.gnb_n3_ip.addr = inet_addr(TEST_GNB_IPV4);
+    test_sess.gnb_n3_teid = 0;
+
+    test_sess.upf_n3_ip.ipv4 = true;
+    test_sess.upf_n3_ip.addr = inet_addr(TEST_SGWU_IPV4);
+
     /* eNB connects to MME */
-    s1ap = testenb_s1ap_client("127.0.0.1");
+    s1ap = testenb_s1ap_client(TEST_MME_IPV4);
     ABTS_PTR_NOTNULL(tc, s1ap);
 
     /* Send S1-Setup Reqeust */
@@ -1177,9 +1302,20 @@ static void cups_test4(abts_case *tc, void *data)
     ogs_s1ap_free(&message);
     ogs_pkbuf_free(recvbuf);
 
+    /********** Insert Subscriber in Database */
     collection = mongoc_client_get_collection(
         ogs_mongoc()->client, ogs_mongoc()->name, "subscribers");
     ABTS_PTR_NOTNULL(tc, collection);
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
+    ABTS_PTR_NOTNULL(tc, doc);
+
+    count = mongoc_collection_count (
+        collection, MONGOC_QUERY_NONE, doc, 0, 0, NULL, &error);
+    if (count) {
+        ABTS_TRUE(tc, mongoc_collection_remove(collection,
+                MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))
+    }
+    bson_destroy(doc);
 
     doc = bson_new_from_json((const uint8_t *)json, -1, &error);;
     ABTS_PTR_NOTNULL(tc, doc);
@@ -1187,7 +1323,7 @@ static void cups_test4(abts_case *tc, void *data)
                 MONGOC_INSERT_NONE, doc, NULL, &error));
     bson_destroy(doc);
 
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     do {
         count = mongoc_collection_count (
@@ -1251,7 +1387,7 @@ static void cups_test4(abts_case *tc, void *data)
 
     /* Send Initial Context Setup Response */
     rv = tests1ap_build_initial_context_setup_response(
-            &sendbuf, 16777373, 1, 5, 1, "127.0.0.5");
+            &sendbuf, 16777373, 1, 5, 1, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1275,7 +1411,7 @@ static void cups_test4(abts_case *tc, void *data)
 
     /* Send E-RAB Setup Response */
     rv = tests1ap_build_e_rab_setup_response(
-            &sendbuf, 33554492, 1, 6, 2, "127.0.0.5");
+            &sendbuf, 33554492, 1, 6, 2, TEST_ENB_IPV4);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -1289,7 +1425,7 @@ static void cups_test4(abts_case *tc, void *data)
     ogs_msleep(300);
 
     /********** Remove Subscriber in Database */
-    doc = BCON_NEW("imsi", BCON_UTF8("001010123456819"));
+    doc = BCON_NEW("imsi", BCON_UTF8(test_ue.imsi));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection,
             MONGOC_REMOVE_SINGLE_REMOVE, doc, NULL, &error))

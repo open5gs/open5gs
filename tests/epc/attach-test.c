@@ -747,6 +747,7 @@ static void attach_test3(abts_case *tc, void *data)
 {
     int rv;
     ogs_socknode_t *s1ap;
+    ogs_socknode_t *gtpu;
     ogs_pkbuf_t *sendbuf;
     ogs_pkbuf_t *recvbuf;
     ogs_s1ap_message_t message;
@@ -833,6 +834,10 @@ static void attach_test3(abts_case *tc, void *data)
     /* eNB connects to MME */
     s1ap = testenb_s1ap_client("127.0.0.1");
     ABTS_PTR_NOTNULL(tc, s1ap);
+
+    /* eNB connects to SGW */
+    gtpu = testenb_gtpu_server("127.0.0.5");
+    ABTS_PTR_NOTNULL(tc, gtpu);
 
     /* Send S1-Setup Reqeust */
     rv = tests1ap_build_setup_req(
@@ -1060,6 +1065,9 @@ static void attach_test3(abts_case *tc, void *data)
 
     /* eNB disonncect from MME */
     testenb_s1ap_close(s1ap);
+
+    /* eNB disonncect from SGW */
+    testenb_gtpu_close(gtpu);
 }
 
 /**************************************************************

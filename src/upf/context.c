@@ -24,7 +24,6 @@ static upf_context_t self;
 int __upf_log_domain;
 
 static OGS_POOL(upf_sess_pool, upf_sess_t);
-static OGS_POOL(upf_sdf_filter_pool, upf_sdf_filter_t);
 
 static int context_initialized = 0;
 
@@ -38,18 +37,17 @@ void upf_context_init(void)
     ogs_log_install_domain(&__ogs_gtp_domain, "gtp", ogs_core()->log.level);
     ogs_log_install_domain(&__upf_log_domain, "upf", ogs_core()->log.level);
 
+    /* Setup UP Function Features */
+    ogs_pfcp_self()->up_function_features.empu = 1;
+    ogs_pfcp_self()->up_function_features_len = 2;
+
     ogs_gtp_node_init(512);
 
     ogs_list_init(&self.sess_list);
-
     ogs_list_init(&self.gtpu_list);
-    ogs_list_init(&self.gtpu_resource_list);
-
-    ogs_list_init(&self.gnb_n3_list);
+    ogs_list_init(&self.peer_list);
 
     ogs_pool_init(&upf_sess_pool, ogs_config()->pool.sess);
-    ogs_pool_init(&upf_sdf_filter_pool,
-            ogs_config()->pool.sess * OGS_MAX_NUM_OF_RULE);
 
     self.sess_hash = ogs_hash_make();
     self.ipv4_hash = ogs_hash_make();
@@ -72,12 +70,10 @@ void upf_context_final(void)
     ogs_hash_destroy(self.ipv6_hash);
 
     ogs_pool_final(&upf_sess_pool);
-    ogs_pool_final(&upf_sdf_filter_pool);
 
-    ogs_gtp_node_remove_all(&self.gnb_n3_list);
+    ogs_gtp_node_remove_all(&self.peer_list);
 
     ogs_gtp_node_final();
-    ogs_pfcp_gtpu_resource_remove_all(&self.gtpu_resource_list);
 
     context_initialized = 0;
 }
@@ -98,6 +94,10 @@ static int upf_context_validation(void)
 {
     if (ogs_list_first(&self.gtpu_list) == NULL) {
         ogs_error("No upf.gtpu in '%s'", ogs_config()->file);
+        return OGS_ERROR;
+    }
+    if (ogs_list_first(&ogs_pfcp_self()->subnet_list) == NULL) {
+        ogs_error("No upf.pdn: in '%s'", ogs_config()->file);
         return OGS_ERROR;
     }
     return OGS_OK;
@@ -166,7 +166,7 @@ int upf_context_parse_config(void)
                             ogs_assert(gtpu_key);
 
                             if (ogs_list_count(
-                                &self.gtpu_resource_list) >=
+                                    &ogs_pfcp_self()->gtpu_resource_list) >=
                                 OGS_MAX_NUM_OF_GTPU_RESOURCE) {
                                 ogs_warn("[Overflow]: Number of User Plane "
                                     "IP Resource <= %d",
@@ -311,7 +311,7 @@ int upf_context_parse_config(void)
                             }
 
                             ogs_pfcp_gtpu_resource_add(
-                                &self.gtpu_resource_list, &info);
+                                &ogs_pfcp_self()->gtpu_resource_list, &info);
                         }
 
                         ogs_list_for_each_safe(&list, next_iter, iter)
@@ -319,7 +319,7 @@ int upf_context_parse_config(void)
                         ogs_list_for_each_safe(&list6, next_iter, iter)
                             ogs_list_add(&self.gtpu_list, iter);
 
-                    } while (ogs_yaml_iter_type(&gtpu_array) == 
+                    } while (ogs_yaml_iter_type(&gtpu_array) ==
                             YAML_SEQUENCE_NODE);
 
                     if (ogs_list_first(&self.gtpu_list) == NULL) {
@@ -351,7 +351,7 @@ int upf_context_parse_config(void)
                                     &info);
 
                             ogs_pfcp_gtpu_resource_add(
-                                &self.gtpu_resource_list, &info);
+                                &ogs_pfcp_self()->gtpu_resource_list, &info);
                         }
 
                         ogs_list_for_each_safe(&list, next_iter, iter)
@@ -453,7 +453,7 @@ upf_sess_t *upf_sess_add(ogs_pfcp_f_seid_t *cp_f_seid,
         sess->pfcp.default_pdr->id);
 
     ogs_list_add(&self.sess_list, sess);
-    
+
     ogs_info("Added a session. Number of active sessions is now %d",
             ogs_list_count(&self.sess_list));
 
@@ -470,7 +470,6 @@ int upf_sess_remove(upf_sess_t *sess)
 
     ogs_list_remove(&self.sess_list, sess);
     ogs_pfcp_sess_clear(&sess->pfcp);
-    upf_sdf_filter_remove_all(sess);
 
     ogs_hash_set(self.sess_hash, &sess->smf_n4_seid,
             sizeof(sess->smf_n4_seid), NULL);
@@ -618,54 +617,4 @@ upf_sess_t *upf_sess_add_by_message(ogs_pfcp_message_t *message)
     ogs_assert(sess);
 
     return sess;
-}
-
-upf_sdf_filter_t *upf_sdf_filter_add(ogs_pfcp_pdr_t *pdr)
-{
-    upf_sdf_filter_t *sdf_filter = NULL;
-    ogs_pfcp_sess_t *pfcp = NULL;
-    upf_sess_t *sess = NULL;
-
-    ogs_assert(pdr);
-    pfcp = pdr->sess;
-    ogs_assert(pfcp);
-    sess = UPF_SESS(pfcp);
-    ogs_assert(sess);
-
-    ogs_pool_alloc(&upf_sdf_filter_pool, &sdf_filter);
-    ogs_assert(sdf_filter);
-    memset(sdf_filter, 0, sizeof *sdf_filter);
-
-    sdf_filter->pdr = pdr;
-    ogs_list_add(&sess->sdf_filter_list, sdf_filter);
-
-    return sdf_filter;
-}
-
-void upf_sdf_filter_remove(upf_sdf_filter_t *sdf_filter)
-{
-    ogs_pfcp_pdr_t *pdr = NULL;
-    ogs_pfcp_sess_t *pfcp = NULL;
-    upf_sess_t *sess = NULL;
-
-    ogs_assert(sdf_filter);
-    pdr = sdf_filter->pdr;
-    ogs_assert(pdr);
-    pfcp = pdr->sess;
-    ogs_assert(pfcp);
-    sess = UPF_SESS(pfcp);
-    ogs_assert(sess);
-
-    ogs_list_remove(&sess->sdf_filter_list, sdf_filter);
-    ogs_pool_free(&upf_sdf_filter_pool, sdf_filter);
-}
-
-void upf_sdf_filter_remove_all(upf_sess_t *sess)
-{
-    upf_sdf_filter_t *sdf_filter = NULL, *next_sdf_filter = NULL;
-
-    ogs_assert(sess);
-
-    ogs_list_for_each_safe(&sess->sdf_filter_list, next_sdf_filter, sdf_filter)
-        upf_sdf_filter_remove(sdf_filter);
 }

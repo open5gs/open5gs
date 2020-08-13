@@ -26,21 +26,21 @@ logger:
 #
 #  <GTP-C Server>
 #
-#  o GTP-C Server(127.0.0.2:2123, [fe80::2%@loopback_devname@]:2123)
+#  o GTP-C Server(127.0.0.6:2123, [fe80::2%@loopback_devname@]:2123)
 #    gtpc:
 #      addr:
-#        - 127.0.0.2
+#        - 127.0.0.6
 #        - fe80::2%@loopback_devname@
 #
-#  o On SGW, Same Configuration(127.0.0.2:2123,
+#  o On SGW, Same Configuration(127.0.0.6:2123,
 #  [fe80::2%@loopback_devname@]:2123) as below.
 #    gtpc:
-#      - addr: 127.0.0.2
+#      - addr: 127.0.0.6
 #      - addr: fe80::2%@loopback_devname@
 #
 #  <GTP-U Server>
 #
-#  o GTP-U Server(all address avaiable)
+#  o GTP-U Server(all address available)
 #    gtpu:
 #
 #  o Provide custom SGW GTP-U address to be advertised inside S1AP messages
@@ -53,14 +53,14 @@ logger:
 #      advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
 #
 #    gtpu:
-#     dev: ens3
-#     advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
+#      dev: ens3
+#      advertise_name: sgw1.epc.mnc001.mcc001.3gppnetwork.org
 #
 sgw:
     gtpc:
-      addr: 127.0.0.2
+      addr: 127.0.0.6
     gtpu:
-      addr: 127.0.0.2
+      addr: 127.0.0.6
 
 #
 # parameter:

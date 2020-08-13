@@ -24,6 +24,8 @@
 extern "C" {
 #endif
 
+#include "ogs-core.h"
+
 typedef struct ogs_ipfw_rule_s {
     uint8_t proto;
 
@@ -59,7 +61,8 @@ typedef struct ogs_ipfw_rule_s {
     uint32_t sdf_filter_id;
 } ogs_ipfw_rule_t;
 
-int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *description);
+int ogs_ipfw_compile_rule(ogs_ipfw_rule_t *ipfw_rule, char *flow_description);
+char *ogs_ipfw_encode_flow_description(ogs_ipfw_rule_t *ipfw_rule);
 
 #ifdef __cplusplus
 }

@@ -143,9 +143,9 @@ def get_cells(cells):
 
     tlv_more = "0"  # PFCP has no tlv_more
     if ie_type == 'Create PDR' or ie_type == 'Created PDR' or ie_type == 'Update PDR' or ie_type == "Remove PDR":
-        tlv_more = "3"
+        tlv_more = "7"
     if ie_type == 'Create FAR' or ie_type == 'Update FAR' or ie_type == "Remove FAR":
-        tlv_more = "3"
+        tlv_more = "7"
     if ie_type == 'Create URR' or ie_type == 'Update URR' or ie_type == "Remove URR":
         tlv_more = "1"
     if ie_type == 'Create QER' or ie_type == 'Update QER' or ie_type == "Remove QER":
@@ -153,7 +153,7 @@ def get_cells(cells):
     if ie_type == 'User Plane IP Resource Information':
         tlv_more = "3"
     if ie_type == 'SDF Filter':
-        tlv_more = "3"
+        tlv_more = "7"
 
     if int(tlv_more) > int(type_list[ie_type]["max_tlv_more"]):
         type_list[ie_type]["max_tlv_more"] = tlv_more
@@ -408,10 +408,12 @@ type_list["Gate Status"]["size"] = 1                        # Type 25
 type_list["QER Correlation ID"]["size"] = 4                 # Type 28
 type_list["Precedence"]["size"] = 4                         # Type 29
 type_list["Reporting Triggers"]["size"] = 1                 # Type 37
+type_list["Report Type"]["size"] = 1                        # Type 39
 type_list["Offending IE"]["size"] = 2                       # Type 40
 type_list["Destination Interface"]["size"] = 1              # Type 42
-type_list["UP Function Features"]["size"] = 2               # Type 43
 type_list["Apply Action"]["size"] = 1                       # Type 44
+type_list["PFCPSMReq-Flags"]["size"] = 1                    # Type 49
+type_list["PFCPSRRsp-Flags"]["size"] = 1                    # Type 50
 type_list["PDR ID"]["size"] = 2                             # Type 56
 type_list["Measurement Method"]["size"] = 1                 # Type 62
 type_list["URR ID"]["size"] = 4                             # Type 81
@@ -425,6 +427,8 @@ type_list["RQI"]["size"] = 1                                # Type 123
 type_list["QFI"]["size"] = 1                                # Type 124
 type_list["Averaging Window"]["size"] = 4                   # Type 157
 type_list["Paging Policy Indicator"]["size"] = 1            # Type 158
+type_list["PFCPSRReq-Flags"]["size"] = 1                    # Type 161
+type_list["PFCPAUReq-Flags"]["size"] = 1                    # Type 162
 
 f = open(outdir + 'message.h', 'w')
 output_header_to_file(f)

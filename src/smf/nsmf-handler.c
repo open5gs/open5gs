@@ -349,7 +349,7 @@ bool smf_nsmf_handle_update_sm_context(
          * Handle DEACTIVATED
          ********************************************************/
             smf_5gc_pfcp_send_session_modification_request(
-                    sess, session, OGS_PFCP_5GC_MODIFY_DEACTIVATE);
+                    sess, session, OGS_PFCP_MODIFY_DEACTIVATE);
 
         } else if (SmContextUpdateData->up_cnx_state ==
                 OpenAPI_up_cnx_state_ACTIVATING) {
@@ -483,7 +483,7 @@ bool smf_nsmf_handle_release_sm_context(
     }
 
     smf_5gc_pfcp_send_session_deletion_request(sess, session,
-            OGS_PFCP_5GC_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT);
+            OGS_PFCP_DELETE_TRIGGER_AMF_RELEASE_SM_CONTEXT);
 
     return true;
 }

@@ -17,27 +17,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef UPF_N4_HANDLER_H
-#define UPF_N4_HANDLER_H
+#ifndef SMF_N4_HANDLER_H
+#define SMF_N4_HANDLER_H
 
 #include "ogs-gtp.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-void smf_n4_handle_association_setup_request(
-        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_association_setup_request_t *req);
-void smf_n4_handle_association_setup_response(
-        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_association_setup_response_t *req);
-void smf_n4_handle_heartbeat_request(
-        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_heartbeat_request_t *req);
-void smf_n4_handle_heartbeat_response(
-        ogs_pfcp_node_t *node, ogs_pfcp_xact_t *xact,
-        ogs_pfcp_heartbeat_response_t *req);
 
 void smf_5gc_n4_handle_session_establishment_response(
         smf_sess_t *sess, ogs_pfcp_xact_t *xact,
@@ -63,4 +50,4 @@ void smf_epc_n4_handle_session_deletion_response(
 }
 #endif
 
-#endif /* UPF_N4_HANDLER_H */
+#endif /* SMF_N4_HANDLER_H */

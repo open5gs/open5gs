@@ -51,15 +51,12 @@ typedef struct upf_context_s {
     ogs_list_t      gtpu_list;      /* UPF GTPU Server List */
     ogs_sock_t      *gtpu_sock;     /* UPF GTPU IPv4 Socket */
     ogs_sock_t      *gtpu_sock6;    /* UPF GTPU IPv6 Socket */
-    ogs_list_t      gtpu_resource_list; /* UP IP Resource List */
-    uint16_t        function_features; /* UP Function Features */
 
     ogs_queue_t     *queue;         /* Queue for processing UPF control */
     ogs_timer_mgr_t *timer_mgr;     /* Timer Manager */
     ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
 
-    ogs_list_t      gnb_n3_list;    /* gNB N3 Node List */
-    ogs_list_t      ip_pool_list;
+    ogs_list_t      peer_list;    /* gNB N3 Node List */
 
     ogs_hash_t      *sess_hash;     /* hash table (F-SEID) */
     ogs_hash_t      *ipv4_hash;     /* hash table (IPv4 Address) */
@@ -74,7 +71,6 @@ typedef struct upf_sess_s {
     uint32_t        index;              /**< An index of this node */
 
     ogs_pfcp_sess_t pfcp;
-    ogs_list_t      sdf_filter_list;    /* SDF Filter List */
 
     uint64_t        upf_n4_seid;        /* UPF SEID is dervied from INDEX */
     uint64_t        smf_n4_seid;        /* SMF SEID is received from Peer */
@@ -87,15 +83,6 @@ typedef struct upf_sess_s {
     char            *gx_sid;            /* Gx Session ID */
     ogs_pfcp_node_t *pfcp_node;
 } upf_sess_t;
-
-typedef struct upf_sdf_filter_s {
-    ogs_lnode_t     lnode;
-
-    ogs_ipfw_rule_t rule;
-
-    /* Related Context */
-    ogs_pfcp_pdr_t  *pdr;
-} upf_sdf_filter_t;
 
 void upf_context_init(void);
 void upf_context_final(void);
@@ -115,10 +102,6 @@ upf_sess_t *upf_sess_find_by_cp_seid(uint64_t seid);
 upf_sess_t *upf_sess_find_by_up_seid(uint64_t seid);
 upf_sess_t *upf_sess_find_by_ipv4(uint32_t addr);
 upf_sess_t *upf_sess_find_by_ipv6(uint32_t *addr6);
-
-upf_sdf_filter_t *upf_sdf_filter_add(ogs_pfcp_pdr_t *pdr);
-void upf_sdf_filter_remove(upf_sdf_filter_t *sdf_filter);
-void upf_sdf_filter_remove_all(upf_sess_t *sess);
 
 #ifdef __cplusplus
 }

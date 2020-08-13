@@ -34,6 +34,7 @@ static OGS_POOL(ogs_pfcp_bar_pool, ogs_pfcp_bar_t);
 
 static OGS_POOL(ogs_pfcp_dev_pool, ogs_pfcp_dev_t);
 static OGS_POOL(ogs_pfcp_subnet_pool, ogs_pfcp_subnet_t);
+static OGS_POOL(ogs_pfcp_rule_pool, ogs_pfcp_rule_t);
 
 static int context_initialized = 0;
 
@@ -66,7 +67,8 @@ void ogs_pfcp_context_init(int num_of_gtpu_resource)
     ogs_pool_init(&ogs_pfcp_node_pool, ogs_config()->pool.pfcp);
     ogs_pool_init(&ogs_pfcp_gtpu_resource_pool, num_of_gtpu_resource);
 
-    ogs_list_init(&self.n4_list);
+    ogs_list_init(&self.peer_list);
+    ogs_list_init(&self.gtpu_resource_list);
 
     ogs_pool_init(&ogs_pfcp_sess_pool, ogs_config()->pool.sess);
 
@@ -80,6 +82,8 @@ void ogs_pfcp_context_init(int num_of_gtpu_resource)
             ogs_config()->pool.sess * OGS_MAX_NUM_OF_QER);
     ogs_pool_init(&ogs_pfcp_bar_pool,
             ogs_config()->pool.sess * OGS_MAX_NUM_OF_BAR);
+    ogs_pool_init(&ogs_pfcp_rule_pool,
+            ogs_config()->pool.sess * OGS_MAX_NUM_OF_RULE);
 
     ogs_list_init(&self.dev_list);
     ogs_pool_init(&ogs_pfcp_dev_pool, OGS_MAX_NUM_OF_DEV);
@@ -103,6 +107,7 @@ void ogs_pfcp_context_final(void)
 
     ogs_pool_final(&ogs_pfcp_dev_pool);
     ogs_pool_final(&ogs_pfcp_subnet_pool);
+    ogs_pool_final(&ogs_pfcp_rule_pool);
 
     ogs_pool_final(&ogs_pfcp_sess_pool);
     ogs_pool_final(&ogs_pfcp_pdr_pool);
@@ -111,7 +116,8 @@ void ogs_pfcp_context_final(void)
     ogs_pool_final(&ogs_pfcp_qer_pool);
     ogs_pool_final(&ogs_pfcp_bar_pool);
 
-    ogs_pfcp_node_remove_all(&ogs_pfcp_self()->n4_list);
+    ogs_pfcp_node_remove_all(&self.peer_list);
+    ogs_pfcp_gtpu_resource_remove_all(&self.gtpu_resource_list);
 
     ogs_pool_final(&ogs_pfcp_node_pool);
     ogs_pool_final(&ogs_pfcp_gtpu_resource_pool);
@@ -139,11 +145,6 @@ static int ogs_pfcp_context_validation(const char *local)
         ogs_error("No %s.pfcp: in '%s'", local, ogs_config()->file);
         return OGS_ERROR;
     }
-    if (ogs_list_first(&self.subnet_list) == NULL) {
-        ogs_error("No %s.pdn: in '%s'", local, ogs_config()->file);
-        return OGS_ERROR;
-    }
-
     return OGS_OK;
 }
 
@@ -621,9 +622,11 @@ int ogs_pfcp_context_parse_config(const char *local, const char *remote)
                                 ogs_config()->parameter.no_ipv6,
                                 ogs_config()->parameter.prefer_ipv4);
 
+                        if (addr == NULL) continue;
+
                         node = ogs_pfcp_node_new(addr);
                         ogs_assert(node);
-                        ogs_list_add(&self.n4_list, node);
+                        ogs_list_add(&self.peer_list, node);
 
                         node->num_of_tac = num_of_tac;
                         if (num_of_tac != 0)
@@ -876,19 +879,13 @@ static uint64_t pdr_hash_keygen(uint32_t teid, uint8_t qfi)
 
 void ogs_pfcp_pdr_hash_set(ogs_pfcp_pdr_t *pdr)
 {
-    ogs_pfcp_qer_t *qer = NULL;
-    uint8_t qfi = 0;
-
     ogs_assert(pdr);
-
-    qer = pdr->qer;
-    if (qer && qer->qfi) qfi = qer->qfi;
 
     if (pdr->hashkey)
         ogs_hash_set(ogs_pfcp_self()->pdr_hash, &pdr->hashkey,
                 sizeof(pdr->hashkey), NULL);
 
-    pdr->hashkey = pdr_hash_keygen(pdr->f_teid.teid, qfi);
+    pdr->hashkey = pdr_hash_keygen(pdr->f_teid.teid, pdr->qfi);
     ogs_hash_set(ogs_pfcp_self()->pdr_hash, &pdr->hashkey,
             sizeof(pdr->hashkey), pdr);
 }
@@ -961,9 +958,13 @@ void ogs_pfcp_pdr_remove(ogs_pfcp_pdr_t *pdr)
 
     ogs_list_remove(&pdr->sess->pdr_list, pdr);
 
+    ogs_pfcp_rule_remove_all(pdr);
+
     if (pdr->hashkey)
         ogs_hash_set(ogs_pfcp_self()->pdr_hash, &pdr->hashkey,
                 sizeof(pdr->hashkey), NULL);
+    if (pdr->dnn)
+        ogs_free(pdr->dnn);
 
     ogs_pool_free(&ogs_pfcp_pdr_pool, pdr);
 }
@@ -1216,6 +1217,44 @@ void ogs_pfcp_bar_delete(ogs_pfcp_bar_t *bar)
     sess->bar = NULL;
 
     ogs_pool_free(&ogs_pfcp_bar_pool, bar);
+}
+
+ogs_pfcp_rule_t *ogs_pfcp_rule_add(ogs_pfcp_pdr_t *pdr)
+{
+    ogs_pfcp_rule_t *rule = NULL;
+
+    ogs_assert(pdr);
+
+    ogs_pool_alloc(&ogs_pfcp_rule_pool, &rule);
+    ogs_assert(rule);
+    memset(rule, 0, sizeof *rule);
+
+    rule->pdr = pdr;
+    ogs_list_add(&pdr->rule_list, rule);
+
+    return rule;
+}
+
+void ogs_pfcp_rule_remove(ogs_pfcp_rule_t *rule)
+{
+    ogs_pfcp_pdr_t *pdr = NULL;
+
+    ogs_assert(rule);
+    pdr = rule->pdr;
+    ogs_assert(pdr);
+
+    ogs_list_remove(&pdr->rule_list, rule);
+    ogs_pool_free(&ogs_pfcp_rule_pool, rule);
+}
+
+void ogs_pfcp_rule_remove_all(ogs_pfcp_pdr_t *pdr)
+{
+    ogs_pfcp_rule_t *rule = NULL, *next_rule = NULL;
+
+    ogs_assert(pdr);
+
+    ogs_list_for_each_safe(&pdr->rule_list, next_rule, rule)
+        ogs_pfcp_rule_remove(rule);
 }
 
 int ogs_pfcp_ue_pool_generate(void)

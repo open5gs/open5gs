@@ -43,8 +43,11 @@ typedef struct ogs_config_s {
 
     struct {
         /* Element */
+        int no_mme;
         int no_hss;
         int no_sgw;
+        int no_sgwc;
+        int no_sgwu;
         int no_pgw;
         int no_pcrf;
 

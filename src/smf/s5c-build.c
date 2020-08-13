@@ -234,7 +234,7 @@ ogs_pkbuf_t *smf_s5c_build_create_bearer_request(
     req->bearer_contexts.eps_bearer_id.presence = 1;
     req->bearer_contexts.eps_bearer_id.u8 = bearer->ebi;
 
-    /* Data Plane(UL) : SMF_S5U */
+    /* Data Plane(UL) : UPF-S5U */
     memset(&upf_s5u_teid, 0, sizeof(ogs_gtp_f_teid_t));
     upf_s5u_teid.interface_type = OGS_GTP_F_TEID_S5_S8_PGW_GTP_U;
     upf_s5u_teid.teid = htobe32(bearer->upf_s5u_teid);

@@ -31,6 +31,8 @@ extern "C" {
 ogs_socknode_t *test_gtpu_server(const char *ipstr, int port);
 ogs_pkbuf_t *test_gtpu_read(ogs_socknode_t *node);
 int testgnb_gtpu_send(ogs_socknode_t *node, ogs_pkbuf_t *sendbuf);
+int testgnb_gtpu_sendto(
+        ogs_socknode_t *node, ogs_pkbuf_t *sendbuf, const char *ipstr);
 void test_gtpu_close(ogs_socknode_t *node);
 
 int test_gtpu_build_ping(ogs_pkbuf_t **sendbuf,

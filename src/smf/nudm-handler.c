@@ -243,7 +243,7 @@ bool smf_nudm_sdm_handle_get(smf_sess_t *sess, ogs_sbi_session_t *session,
             &sess->upf_n3_addr, &sess->upf_n3_addr6);
         ogs_assert(sess->upf_n3_addr || sess->upf_n3_addr6);
         if (resource->info.teidri)
-            sess->upf_n3_teid = UPF_GTPU_INDEX_TO_TEID(
+            sess->upf_n3_teid = OGS_PFCP_GTPU_INDEX_TO_TEID(
                     sess->index, resource->info.teidri,
                     resource->info.teid_range);
         else

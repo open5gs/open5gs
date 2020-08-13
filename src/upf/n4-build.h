@@ -26,10 +26,6 @@
 extern "C" {
 #endif
 
-ogs_pkbuf_t *upf_n4_build_association_setup_request(uint8_t type);
-ogs_pkbuf_t *upf_n4_build_association_setup_response(uint8_t type,
-        uint8_t cause);
-
 ogs_pkbuf_t *upf_n4_build_session_establishment_response(uint8_t type,
     upf_sess_t *sess, ogs_pfcp_pdr_t *created_pdr[], int num_of_created_pdr);
 ogs_pkbuf_t *upf_n4_build_session_modification_response(uint8_t type,

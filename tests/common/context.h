@@ -28,6 +28,15 @@
 extern "C" {
 #endif
 
+#define TEST_MME_IPV4           "127.0.0.1"
+#define TEST_ENB_IPV4           "127.0.0.5"
+#define TEST_AMF_IPV4           TEST_MME_IPV4
+#define TEST_GNB_IPV4           TEST_ENB_IPV4
+#define TEST_UPF_IPV4           "127.0.0.4"
+#define TEST_SGWU_IPV4          "127.0.0.7"
+
+#define TEST_PING_IPV4          "10.45.0.1"
+
 #define MAX_NUM_OF_SERVED_GUAMI     8
 
 typedef struct test_context_s {

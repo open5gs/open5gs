@@ -258,6 +258,8 @@ static void crash_test1(abts_case *tc, void *data)
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
 
+    ogs_msleep(300);
+
     doc = BCON_NEW("imsi", BCON_UTF8("311980000000725"));
     ABTS_PTR_NOTNULL(tc, doc);
     ABTS_TRUE(tc, mongoc_collection_remove(collection,
@@ -566,6 +568,8 @@ static void crash_test2(abts_case *tc, void *data)
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
+
+    ogs_msleep(300);
 
     doc = BCON_NEW("imsi", BCON_UTF8("311980000000725"));
     ABTS_PTR_NOTNULL(tc, doc);

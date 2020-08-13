@@ -20,7 +20,7 @@
 /*******************************************************************************
  * This file had been created by pfcp-tlv.py script v0.1.0
  * Please do not modify this file but regenerate it via script.
- * Created on: 2020-07-23 13:41:55.927459 by acetcom
+ * Created on: 2020-08-12 20:18:49.875450 by acetcom
  * from 29244-g10.docx
  ******************************************************************************/
 
@@ -248,10 +248,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_redirect_information =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_report_type =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "Report Type",
     OGS_PFCP_REPORT_TYPE_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_report_type_t),
     { NULL }
@@ -292,10 +292,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_destination_interface =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_up_function_features =
 {
-    OGS_TLV_UINT16,
+    OGS_TLV_VAR_STR,
     "UP Function Features",
     OGS_PFCP_UP_FUNCTION_FEATURES_TYPE,
-    2,
+    0,
     0,
     sizeof(ogs_pfcp_tlv_up_function_features_t),
     { NULL }
@@ -358,10 +358,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_dl_buffering_suggested_packet_count =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpsmreq_flags =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "PFCPSMReq-Flags",
     OGS_PFCP_PFCPSMREQ_FLAGS_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_pfcpsmreq_flags_t),
     { NULL }
@@ -369,10 +369,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpsmreq_flags =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpsrrsp_flags =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "PFCPSRRsp-Flags",
     OGS_PFCP_PFCPSRRSP_FLAGS_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_pfcpsrrsp_flags_t),
     { NULL }
@@ -1359,10 +1359,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc__interface_type =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpsrreq_flags =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "PFCPSRReq-Flags",
     OGS_PFCP_PFCPSRREQ_FLAGS_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_pfcpsrreq_flags_t),
     { NULL }
@@ -1370,10 +1370,10 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpsrreq_flags =
 
 ogs_tlv_desc_t ogs_pfcp_tlv_desc_pfcpaureq_flags =
 {
-    OGS_TLV_VAR_STR,
+    OGS_TLV_UINT8,
     "PFCPAUReq-Flags",
     OGS_PFCP_PFCPAUREQ_FLAGS_TYPE,
-    0,
+    1,
     0,
     sizeof(ogs_pfcp_tlv_pfcpaureq_flags_t),
     { NULL }
@@ -1527,7 +1527,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_ethernet_packet_filter =
         &ogs_pfcp_tlv_desc_c_tag,
         &ogs_pfcp_tlv_desc_s_tag,
         &ogs_pfcp_tlv_desc_sdf_filter,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         NULL,
     }
 };
@@ -1547,7 +1547,7 @@ ogs_tlv_desc_t ogs_pfcp_tlv_desc_pdi =
         &ogs_pfcp_tlv_desc_ue_ip_address,
         &ogs_pfcp_tlv_desc_traffic_endpoint_id,
         &ogs_pfcp_tlv_desc_sdf_filter,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_application_id,
         &ogs_pfcp_tlv_desc_ethernet_pdu_session_information,
         &ogs_pfcp_tlv_desc_ethernet_packet_filter,
@@ -2573,9 +2573,9 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_establishment_request =
         &ogs_pfcp_tlv_desc_node_id,
         &ogs_pfcp_tlv_desc_f_seid,
         &ogs_pfcp_tlv_desc_create_pdr,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_create_far,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_create_urr,
         &ogs_tlv_desc_more2,
         &ogs_pfcp_tlv_desc_create_qer,
@@ -2606,7 +2606,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_establishment_response =
         &ogs_pfcp_tlv_desc_offending_ie,
         &ogs_pfcp_tlv_desc_f_seid,
         &ogs_pfcp_tlv_desc_created_pdr,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_load_control_information,
         &ogs_pfcp_tlv_desc_overload_control_information,
         &ogs_pfcp_tlv_desc_fq_csid,
@@ -2623,9 +2623,9 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_request =
     0, 0, 0, 0, {
         &ogs_pfcp_tlv_desc_f_seid,
         &ogs_pfcp_tlv_desc_remove_pdr,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_remove_far,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_remove_urr,
         &ogs_tlv_desc_more2,
         &ogs_pfcp_tlv_desc_remove_qer,
@@ -2633,9 +2633,9 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_request =
         &ogs_pfcp_tlv_desc_remove_bar,
         &ogs_pfcp_tlv_desc_remove_traffic_endpoint,
         &ogs_pfcp_tlv_desc_create_pdr,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_create_far,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_create_urr,
         &ogs_tlv_desc_more2,
         &ogs_pfcp_tlv_desc_create_qer,
@@ -2643,9 +2643,9 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_request =
         &ogs_pfcp_tlv_desc_create_bar,
         &ogs_pfcp_tlv_desc_create_traffic_endpoint,
         &ogs_pfcp_tlv_desc_update_pdr,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_update_far,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_update_urr,
         &ogs_tlv_desc_more2,
         &ogs_pfcp_tlv_desc_update_qer,
@@ -2677,7 +2677,7 @@ ogs_tlv_desc_t ogs_pfcp_msg_desc_pfcp_session_modification_response =
         &ogs_pfcp_tlv_desc_cause,
         &ogs_pfcp_tlv_desc_offending_ie,
         &ogs_pfcp_tlv_desc_created_pdr,
-        &ogs_tlv_desc_more4,
+        &ogs_tlv_desc_more8,
         &ogs_pfcp_tlv_desc_load_control_information,
         &ogs_pfcp_tlv_desc_overload_control_information,
         &ogs_pfcp_tlv_desc_usage_report_session_modification_response,

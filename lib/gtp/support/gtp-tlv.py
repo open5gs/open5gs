@@ -650,8 +650,10 @@ f.write("""int ogs_gtp_parse_msg(ogs_gtp_message_t *gtp_message, ogs_pkbuf_t *pk
     if (h->teid_presence)
         gtp_message->h.teid = be32toh(gtp_message->h.teid);
 
-    if (pkbuf->len == 0)
+    if (pkbuf->len == 0) {
+        ogs_assert(ogs_pkbuf_push(pkbuf, size));
         return OGS_OK;
+    }
 
     switch(gtp_message->h.type) {
 """)
@@ -665,6 +667,8 @@ f.write("""    default:
         ogs_warn("Not implmeneted(type:%d)", gtp_message->h.type);
         break;
     }
+
+    ogs_assert(ogs_pkbuf_push(pkbuf, size));
 
     return rv;
 }

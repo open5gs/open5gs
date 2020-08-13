@@ -106,7 +106,7 @@ typedef struct sgw_sess_s {
      */
 #define SGW_S5C_TEID_TO_INDEX(__iNDEX) (__iNDEX & ~0x80000000)
 #define SGW_S5C_INDEX_TO_TEID(__iNDEX) (__iNDEX | 0x80000000)
-    uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is derived from INDEX */    
+    uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is derived from INDEX */
     uint32_t        pgw_s5c_teid;   /* PGW-S5C-TEID is received from PGW */
 
     /* APN Configuration */

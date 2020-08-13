@@ -17,11 +17,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "context.h"
-#include "timer.h"
-
+#include "sbi-path.h"
 #include "pfcp-path.h"
+
 #include "n4-handler.h"
+
+static void node_timeout(ogs_pfcp_xact_t *xact, void *data);
 
 void smf_pfcp_state_initial(ogs_fsm_t *s, smf_event_t *e)
 {
@@ -87,7 +88,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
             ogs_timer_start(node->t_association,
                     ogs_config()->time.message.pfcp.association_interval);
 
-            smf_pfcp_send_association_setup_request(node);
+            ogs_pfcp_cp_send_association_setup_request(node, node_timeout);
         }
         break;
 
@@ -110,7 +111,7 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
             ogs_timer_start(node->t_association,
                 ogs_config()->time.message.pfcp.association_interval);
 
-            smf_pfcp_send_association_setup_request(node);
+            ogs_pfcp_cp_send_association_setup_request(node, node_timeout);
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
@@ -126,12 +127,12 @@ void smf_pfcp_state_will_associate(ogs_fsm_t *s, smf_event_t *e)
 
         switch (message->h.type) {
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
-            smf_n4_handle_association_setup_request(node, xact,
+            ogs_pfcp_cp_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
             OGS_FSM_TRAN(s, smf_pfcp_state_associated);
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
-            smf_n4_handle_association_setup_response(node, xact,
+            ogs_pfcp_cp_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
             OGS_FSM_TRAN(s, smf_pfcp_state_associated);
             break;
@@ -189,21 +190,21 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
 
         switch (message->h.type) {
         case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
-            smf_n4_handle_heartbeat_request(node, xact,
+            ogs_pfcp_handle_heartbeat_request(node, xact,
                     &message->pfcp_heartbeat_request);
             break;
         case OGS_PFCP_HEARTBEAT_RESPONSE_TYPE:
-            smf_n4_handle_heartbeat_response(node, xact,
+            ogs_pfcp_handle_heartbeat_response(node, xact,
                     &message->pfcp_heartbeat_response);
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
             ogs_warn("PFCP[REQ] has already been associated");
-            smf_n4_handle_association_setup_request(node, xact,
+            ogs_pfcp_cp_handle_association_setup_request(node, xact,
                     &message->pfcp_association_setup_request);
             break;
         case OGS_PFCP_ASSOCIATION_SETUP_RESPONSE_TYPE:
             ogs_warn("PFCP[RSP] has already been associated");
-            smf_n4_handle_association_setup_response(node, xact,
+            ogs_pfcp_cp_handle_association_setup_response(node, xact,
                     &message->pfcp_association_setup_response);
             break;
         case OGS_PFCP_SESSION_ESTABLISHMENT_RESPONSE_TYPE:
@@ -212,7 +213,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                 break;
             }
 
-            if (SMF_EPC_SEID(message->h.seid))
+            if (xact->epc)
                 smf_epc_n4_handle_session_establishment_response(
                     sess, xact, &message->pfcp_session_establishment_response);
             else
@@ -226,7 +227,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                 break;
             }
 
-            if (SMF_EPC_SEID(message->h.seid))
+            if (xact->epc)
                 smf_epc_n4_handle_session_modification_response(
                     sess, xact, &message->pfcp_session_modification_response);
             else
@@ -240,7 +241,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
                 break;
             }
 
-            if (SMF_EPC_SEID(message->h.seid))
+            if (xact->epc)
                 smf_epc_n4_handle_session_deletion_response(
                     sess, xact, &message->pfcp_session_deletion_response);
             else
@@ -261,7 +262,7 @@ void smf_pfcp_state_associated(ogs_fsm_t *s, smf_event_t *e)
             node = e->pfcp_node;
             ogs_assert(node);
 
-            smf_pfcp_send_heartbeat_request(node);
+            ogs_pfcp_send_heartbeat_request(node, node_timeout);
             break;
         default:
             ogs_error("Unknown timer[%s:%d]",
@@ -294,6 +295,37 @@ void smf_pfcp_state_exception(ogs_fsm_t *s, smf_event_t *e)
         break;
     default:
         ogs_error("Unknown event %s", smf_event_get_name(e));
+        break;
+    }
+}
+
+static void node_timeout(ogs_pfcp_xact_t *xact, void *data)
+{
+    int rv;
+
+    smf_event_t *e = NULL;
+    uint8_t type;
+
+    ogs_assert(xact);
+    type = xact->seq[0].type;
+
+    switch (type) {
+    case OGS_PFCP_HEARTBEAT_REQUEST_TYPE:
+        ogs_assert(data);
+
+        e = smf_event_new(SMF_EVT_N4_NO_HEARTBEAT);
+        e->pfcp_node = data;
+
+        rv = ogs_queue_push(smf_self()->queue, e);
+        if (rv != OGS_OK) {
+            ogs_warn("ogs_queue_push() failed:%d", (int)rv);
+            smf_event_free(e);
+        }
+        break;
+    case OGS_PFCP_ASSOCIATION_SETUP_REQUEST_TYPE:
+        break;
+    default:
+        ogs_error("Not implemented [type:%d]", type);
         break;
     }
 }

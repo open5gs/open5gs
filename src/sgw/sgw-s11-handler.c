@@ -574,7 +574,8 @@ void sgw_s11_handle_create_bearer_response(ogs_gtp_xact_t *s11_xact,
     ogs_assert(req->user_location_information.len == decoded);
     memcpy(&bearer->tai.plmn_id, &uli.tai.plmn_id, sizeof(uli.tai.plmn_id));
     bearer->tai.tac = uli.tai.tac;
-    memcpy(&bearer->e_cgi.plmn_id, &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
+    memcpy(&bearer->e_cgi.plmn_id,
+            &uli.e_cgi.plmn_id, sizeof(uli.e_cgi.plmn_id));
     bearer->e_cgi.cell_id = uli.e_cgi.cell_id;
 
     /* Reset UE state */
@@ -1284,4 +1285,3 @@ void sgw_s11_handle_bearer_resource_command(ogs_gtp_xact_t *s11_xact,
     rv = ogs_gtp_xact_commit(s5c_xact);
     ogs_expect(rv == OGS_OK);
 }
-

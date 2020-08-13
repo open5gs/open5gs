@@ -226,7 +226,7 @@ mme:
     mme_name: open5gs-mme0
 
 #
-# sgw:
+# sgwc:
 #
 # <GTP-C Client>
 #
@@ -236,18 +236,18 @@ mme:
 #    If prefer_ipv4 is not true, [fe80::2%@loopback_devname@] is selected.
 #    gtpc:
 #      addr:
-#        - 127.0.0.2
+#        - 127.0.0.6
 #        - fe80::2%@loopback_devname@
 #
 #  o Two SGW are defined. MME selects SGW with round-robin manner per UE
 #    gtpc:
-#      - addr: 127.0.0.2
+#      - addr: 127.0.0.6
 #      - addr: fe80::2%@loopback_devname@
 #
 #  o Three SGW are defined. MME selects SGW with round-robin manner per UE
 #    gtpc:
 #      - addr
-#        - 127.0.0.2
+#        - 127.0.0.6
 #        - fe80::2%@loopback_devname@
 #      - addr
 #        - 127.0.0.12
@@ -259,7 +259,7 @@ mme:
 # o Round-Robin
 #
 #   gtpc:
-#     addr: 127.0.0.2
+#     addr: 127.0.0.6
 #     addr: 127.0.2.2
 #     addr: 127.0.4.2
 #
@@ -267,7 +267,7 @@ mme:
 #   (either single TAC or multiple TACs, DECIMAL representation)
 #
 #   gtpc:
-#     - addr: 127.0.0.2
+#     - addr: 127.0.0.6
 #       tac: 26000
 #     - addr: 127.0.2.2
 #       tac: [25000, 27000, 28000]
@@ -276,40 +276,40 @@ mme:
 #   (either single or multiple e_cell_id, HEX representation)
 #
 #   gtpc:
-#     - addr: 127.0.0.2
+#     - addr: 127.0.0.6
 #       e_cell_id: abcde01
 #     - addr: 127.0.2.2
 #       e_cell_id: [12345, a9413, 98765]
 #
-sgw:
+sgwc:
     gtpc:
-      addr: 127.0.0.2
+      addr: 127.0.0.6
 
 #
-# pgw:
+# smf:
 #
 #  <GTP-C Client>
 #
-#  o By default, the PGW uses the first PGW node.
-#    - To use a different APN for each PGW, specify gtpc.apn as the APN name.
-#    - If the HSS uses WebUI to set the PGW IP for each UE,
-#      you can use a specific PGW node for each UE.
+#  o By default, the SMF uses the first SMF node.
+#    - To use a different APN for each SMF, specify gtpc.apn as the APN name.
+#    - If the HSS uses WebUI to set the SMF IP for each UE,
+#      you can use a specific SMF node for each UE.
 #
-#  o Two PGW are defined. 127.0.0.3:2123 is used.
+#  o Two SMF are defined. 127.0.0.3:2123 is used.
 #    [fe80::3%@loopback_devname@]:2123 is ignored.
 #    gtpc:
 #      - addr: 127.0.0.3
 #      - addr: fe80::3%@loopback_devname@
 #
-#  o One PGW is defined. if prefer_ipv4 is not true,
+#  o One SMF is defined. if prefer_ipv4 is not true,
 #    [fe80::3%@loopback_devname@] is selected.
 #    gtpc:
 #      - addr:
 #        - 127.0.0.3
 #        - fe80::3%@loopback_devname@
 #
-#  o Two PGW are defined with a different APN.
-#    - Note that if PGW IP for UE is configured in HSS,
+#  o Two SMF are defined with a different APN.
+#    - Note that if SMF IP for UE is configured in HSS,
 #      the following configurion for this UE is ignored.
 #    gtpc:
 #      - addr: 127.0.0.3
@@ -317,12 +317,12 @@ sgw:
 #      - addr: 127.0.0.5
 #        apn: volte
 #
-#  o If APN is omitted, the default APN uses the first PGW node.
+#  o If APN is omitted, the default APN uses the first SMF node.
 #    gtpc:
 #      - addr: 127.0.0.3
 #      - addr: 127.0.0.5
 #        apn: volte
-pgw:
+smf:
     gtpc:
       addr:
         - 127.0.0.3

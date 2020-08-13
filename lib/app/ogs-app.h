@@ -51,6 +51,12 @@ void hss_terminate(void);
 int sgw_initialize(void);
 void sgw_terminate(void);
 
+int sgwc_initialize(void);
+void sgwc_terminate(void);
+
+int sgwu_initialize(void);
+void sgwu_terminate(void);
+
 int pgw_initialize(void);
 void pgw_terminate(void);
 

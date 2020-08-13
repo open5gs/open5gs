@@ -63,8 +63,6 @@ typedef struct smf_context_s {
     ogs_sockaddr_t  *gtpc_addr;     /* SMF GTPC IPv4 Address */
     ogs_sockaddr_t  *gtpc_addr6;    /* SMF GTPC IPv6 Address */
 
-    uint8_t         function_features; /* CP Function Features */
-
     ogs_queue_t     *queue;         /* Queue for processing SMF control */
     ogs_timer_mgr_t *timer_mgr;     /* Timer Manager */
     ogs_pollset_t   *pollset;       /* Poll Set for I/O Multiplexing */
@@ -145,20 +143,9 @@ typedef struct smf_sess_s {
     uint32_t        smf_n4_teid;    /* SMF-N4-TEID is derived from INDEX */
     uint32_t        sgw_s5c_teid;   /* SGW-S5C-TEID is received from SGW */
 
-#define SMF_SEID_TO_INDEX(__iNDEX) (__iNDEX & ~0x8000000000000000)
-#define SMF_INDEX_TO_SEID(__iNDEX) (__iNDEX | 0x8000000000000000)
-#define SMF_EPC_SEID(__sEID) (__sEID & 0x8000000000000000)
     uint64_t        smf_n4_seid;    /* SMF SEID is dervied from INDEX */
     uint64_t        upf_n4_seid;    /* UPF SEID is received from Peer */
 
-    /*
-     * UPF-GTPU-TEID    = INDEX         | TEID_RANGE
-     * INDEX            = UPF-GTPU-TEID  & ~TEID_RANGE
-     */
-#define UPF_GTPU_TEID_TO_INDEX(__tEID, __iND, __rANGE) \
-    (__tEID & ~(__rANGE << (32 - __iND)))
-#define UPF_GTPU_INDEX_TO_TEID(__iNDEX, __iND, __rANGE) \
-    (__iNDEX | (__rANGE << (32 - __iND)))
     uint32_t        upf_n3_teid;    /* UPF-N3 TEID */
     ogs_sockaddr_t  *upf_n3_addr;   /* UPF-N3 IPv4 */
     ogs_sockaddr_t  *upf_n3_addr6;  /* UPF-N3 IPv6 */
@@ -269,13 +256,6 @@ typedef struct smf_bearer_s {
     /* Packet Filter List */
     ogs_list_t      pf_list;
 
-    struct {
-        bool create;
-        bool tft_update;
-        bool qos_update;
-        bool remove;
-    } pfcp_epc_modify;
-
     smf_sess_t      *sess;
 } smf_bearer_t;
 
@@ -285,7 +265,9 @@ typedef struct smf_pf_s {
 ED3(uint8_t spare:2;,
     uint8_t direction:2;,
     uint8_t identifier:4;)
-    ogs_ipfw_rule_t rule;
+
+    ogs_ipfw_rule_t ipfw_rule;
+    char *flow_description;
 
     smf_bearer_t    *bearer;
 } smf_pf_t;
@@ -334,7 +316,7 @@ smf_bearer_t *smf_bearer_add(smf_sess_t *sess);
 int smf_bearer_remove(smf_bearer_t *bearer);
 void smf_bearer_remove_all(smf_sess_t *sess);
 smf_bearer_t *smf_bearer_find(uint32_t index);
-smf_bearer_t *smf_bearer_find_by_smf_s5u_teid(uint32_t smf_s5u_teid);
+smf_bearer_t *smf_bearer_find_by_upf_s5u_teid(uint32_t upf_s5u_teid);
 smf_bearer_t *smf_bearer_find_by_ebi(smf_sess_t *sess, uint8_t ebi);
 smf_bearer_t *smf_bearer_find_by_name(smf_sess_t *sess, char *name);
 smf_bearer_t *smf_bearer_find_by_qci_arp(smf_sess_t *sess, 

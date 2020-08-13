@@ -339,6 +339,15 @@ int ogs_config_parse()
                 if (!strcmp(parameter_key, "no_hss")) {
                     self.parameter.no_hss =
                         ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_mme")) {
+                    self.parameter.no_mme =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_sgwu")) {
+                    self.parameter.no_sgwu =
+                        ogs_yaml_iter_bool(&parameter_iter);
+                } else if (!strcmp(parameter_key, "no_sgwc")) {
+                    self.parameter.no_sgwc =
+                        ogs_yaml_iter_bool(&parameter_iter);
                 } else if (!strcmp(parameter_key, "no_sgw")) {
                     self.parameter.no_sgw =
                         ogs_yaml_iter_bool(&parameter_iter);
