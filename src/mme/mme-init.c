@@ -29,54 +29,10 @@
 #include "prom.h"
 #include "mme-metrics.h"
 
-
 static ogs_thread_t *thread;
 static void mme_main(void *data);
-void mme_metrics_initialize(void);
 
 static int initialized = 0;
-
-void mme_metrics_initialize(void) {
-    mme_up_gauge = prom_collector_registry_must_register_metric(
-            prom_gauge_new(
-                    "open5gs_mme_up",
-                    "Open5gs MME is up",
-                    0,
-                    NULL)
-                    );
-    mme_sessions_counter = prom_collector_registry_must_register_metric(
-            prom_counter_new(
-                    "open5gs_mme_sessions",
-                    "Open5gs MME sessions added",
-                    0,
-                    NULL)
-    );
-
-    mme_ue_gauge = prom_collector_registry_must_register_metric(
-            prom_gauge_new(
-                    "open5gs_mme_gauge",
-                    "Open5gs MME number of UE",
-                    0,
-                    NULL)
-                    );
-
-    mme_enb_gauge = prom_collector_registry_must_register_metric(
-            prom_gauge_new(
-                    "open5gs_enb_gauge",
-                    "Open5gs MME number of eNB",
-                    0,
-                    NULL)
-                    );
-
-    mme_sessions_gauge = prom_collector_registry_must_register_metric(
-            prom_gauge_new(
-                    "open5gs_mme_session_gauge",
-                    "Open5gs MME number of sessions",
-                    0,
-                    NULL)
-                    );
-
-}
 
 int mme_initialize()
 {
@@ -106,7 +62,7 @@ int mme_initialize()
     if (!thread) return OGS_ERROR;
 
     initialized = 1;
-    prom_gauge_set(mme_up_gauge,1,NULL);
+    prom_gauge_set(mme_up_gauge, 1, NULL);
 
     return OGS_OK;
 }

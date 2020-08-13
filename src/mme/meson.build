@@ -72,7 +72,8 @@ libmme_sources = files('''
     mme-s11-build.c
     mme-s11-handler.c
     mme-sm.c
-    mme-path.c 
+    mme-path.c
+    mme-metrics.c
     sbc-handler.c 
 '''.split())
 

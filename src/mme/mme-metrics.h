@@ -20,11 +20,14 @@
 #ifndef BUILD_MME_METRICS_H
 #define BUILD_MME_METRICS_H
 
+#include "prom.h"
+
 prom_gauge_t *mme_up_gauge;
 prom_gauge_t *mme_ue_gauge;
 prom_gauge_t *mme_enb_gauge;
 prom_gauge_t *mme_sessions_gauge;
 prom_counter_t *mme_sessions_counter;
 
+void mme_metrics_initialize(void);
 
 #endif //BUILD_MME_METRICS_H
