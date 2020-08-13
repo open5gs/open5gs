@@ -124,7 +124,7 @@ static void handover_test1(abts_case *tc, void *data)
     gtpu1 = testenb_gtpu_server("127.0.0.5");
     ABTS_PTR_NOTNULL(tc, gtpu1);
 
-    gtpu2 = testenb_gtpu_server("127.0.0.4");
+    gtpu2 = testenb_gtpu_server("127.0.0.6");
     ABTS_PTR_NOTNULL(tc, gtpu2);
 
     /* S1-Setup Reqeust/Response for Source eNB */
@@ -262,7 +262,7 @@ static void handover_test1(abts_case *tc, void *data)
 
     /* Send Path Switch Request */
     rv = tests1ap_build_path_switch_request(&sendbuf,
-            1, 16777690, 1, 2, 5, 1, "127.0.0.5", "127.0.0.4");
+            1, 16777690, 1, 2, 5, 1, "127.0.0.5", "127.0.0.6");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -286,7 +286,7 @@ static void handover_test1(abts_case *tc, void *data)
 
     /* Send Path Switch Request */
     rv = tests1ap_build_path_switch_request(&sendbuf, 0, 16777690, 2, 2, 5, 1,
-            "127.0.0.5", "127.0.0.4");
+            "127.0.0.5", "127.0.0.6");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -428,7 +428,7 @@ static void handover_test2(abts_case *tc, void *data)
     gtpu1 = testenb_gtpu_server("127.0.0.5");
     ABTS_PTR_NOTNULL(tc, gtpu1);
 
-    gtpu2 = testenb_gtpu_server("127.0.0.4");
+    gtpu2 = testenb_gtpu_server("127.0.0.6");
     ABTS_PTR_NOTNULL(tc, gtpu2);
 
     /* S1-Setup Reqeust/Response for Source eNB */
@@ -623,7 +623,7 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Send Handover Request Ack */
     rv = tests1ap_build_handover_request_ack(&sendbuf,
-            1, 33554629, 8, 2, 5, 1, "127.0.0.5", "127.0.0.4");
+            1, 33554629, 8, 2, 5, 1, "127.0.0.5", "127.0.0.6");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -696,7 +696,7 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Send Handover Request Ack */
     rv = tests1ap_build_handover_request_ack(&sendbuf,
-            0, 33554630, 13, 2, 5, 1, "127.0.0.5", "127.0.0.4");
+            0, 33554630, 13, 2, 5, 1, "127.0.0.5", "127.0.0.6");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap1, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
@@ -757,7 +757,7 @@ static void handover_test2(abts_case *tc, void *data)
 
     /* Send Handover Request Ack */
     rv = tests1ap_build_handover_request_ack(&sendbuf,
-            0, 33554631, 9, 2, 5, 1, "127.0.0.5", "127.0.0.4");
+            0, 33554631, 9, 2, 5, 1, "127.0.0.5", "127.0.0.6");
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
     rv = testenb_s1ap_send(s1ap2, sendbuf);
     ABTS_INT_EQUAL(tc, OGS_OK, rv);
