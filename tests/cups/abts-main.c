@@ -54,6 +54,14 @@ static void initialize(const char *const argv[])
     rv = app_initialize(argv);
     ogs_assert(rv == OGS_OK);
 
+    /*
+     * To avoid freeDiameter error
+     *
+     * ROUTING ERROR
+     * 'No remaining suitable candidate to route the message to' for:
+     */
+    ogs_msleep(300);
+
     rv = pcscf_fd_init();
     ogs_assert(rv == OGS_OK);
 }
@@ -65,7 +73,6 @@ int main(int argc, const char *const argv[])
 
     atexit(terminate);
     test_5gc_run(argc, argv, "cups.yaml", initialize);
-    ogs_msleep(1000);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

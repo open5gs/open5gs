@@ -58,7 +58,6 @@ int main(int argc, const char *const argv[])
 
     atexit(terminate);
     test_5gc_run(argc, argv, "mnc3.yaml", initialize);
-    ogs_msleep(1000);
 
     for (i = 0; alltests[i].func; i++)
         suite = alltests[i].func(suite);

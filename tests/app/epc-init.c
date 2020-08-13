@@ -55,14 +55,32 @@ int app_initialize(const char *const argv[])
         pcrf_thread = test_child_create("pcrf", argv_out);
     if (ogs_config()->parameter.no_hss == 0)
         hss_thread = test_child_create("hss", argv_out);
+
+    /*
+     * To avoid freeDiameter error
+     *
+     * ROUTING ERROR
+     * 'No remaining suitable candidate to route the message to' for:
+     */
+    ogs_msleep(300);
+
     if (ogs_config()->parameter.no_upf == 0)
         upf_thread = test_child_create("upf", argv_out);
     if (ogs_config()->parameter.no_sgwu == 0)
         sgwu_thread = test_child_create("sgwu", argv_out);
-    if (ogs_config()->parameter.no_smf == 0)
-        smf_thread = test_child_create("smf", argv_out);
     if (ogs_config()->parameter.no_sgwc == 0)
         sgwc_thread = test_child_create("sgwc", argv_out);
+
+    /*
+     * To avoid freeDiameter error
+     *
+     * ROUTING ERROR
+     * 'No remaining suitable candidate to route the message to' for:
+     */
+    ogs_msleep(300);
+
+    if (ogs_config()->parameter.no_smf == 0)
+        smf_thread = test_child_create("smf", argv_out);
 
     ogs_sctp_init(ogs_config()->usrsctp.udp_port);
 
