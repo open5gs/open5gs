@@ -24,40 +24,38 @@ void mme_metrics_initialize(void) {
     mme_up_gauge = prom_collector_registry_must_register_metric(
             prom_gauge_new(
                     "open5gs_mme_up",
-                    "Open5gs MME is up",
+                    "Open5GS MME is up",
                     0,
-                    NULL)
-                    );
+                    NULL));
     mme_sessions_counter = prom_collector_registry_must_register_metric(
             prom_counter_new(
-                    "open5gs_mme_sessions",
-                    "Open5gs MME sessions added",
+                    "open5gs_mme_sessions_total",
+                    "Open5GS MME sessions added",
                     0,
-                    NULL)
-    );
-
+                    NULL));
     mme_ue_gauge = prom_collector_registry_must_register_metric(
             prom_gauge_new(
                     "open5gs_mme_gauge",
-                    "Open5gs MME number of UE",
+                    "Open5GS MME number of UE",
                     0,
-                    NULL)
-                    );
-
+                    NULL));
     mme_enb_gauge = prom_collector_registry_must_register_metric(
             prom_gauge_new(
                     "open5gs_enb_gauge",
-                    "Open5gs MME number of eNB",
+                    "Open5GS MME number of eNB",
                     0,
-                    NULL)
-                    );
-
+                    NULL));
     mme_sessions_gauge = prom_collector_registry_must_register_metric(
             prom_gauge_new(
                     "open5gs_mme_session_gauge",
-                    "Open5gs MME number of sessions",
+                    "Open5GS MME number of sessions",
                     0,
-                    NULL)
-                    );
-
+                    NULL));
+    const char* messagesCounterLabels[5] = {"s1ap", "emm", "esm", "s6a", "s11"};
+    mme_messages_counter = prom_collector_registry_must_register_metric(
+            prom_counter_new(
+                    "open5gs_mme_messages_total",
+                    "open5gs MME messages handled by the state machine",
+                    5,
+                    messagesCounterLabels));
 }
