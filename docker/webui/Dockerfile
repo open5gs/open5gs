@@ -8,7 +8,7 @@ ARG VERSION=1.0.0
 RUN set -e; \
     cd /usr/src; \
     rm -rf ./$PACKAGE; \
-    curl -SLO "https://github.com/acetcom/$PACKAGE/archive/v$VERSION.tar.gz"; \
+    curl -SLO "https://github.com/open5gs/$PACKAGE/archive/v$VERSION.tar.gz"; \
     tar -xvf v$VERSION.tar.gz; \
     mv ./$PACKAGE-$VERSION/ ./$PACKAGE;
 

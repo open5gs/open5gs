@@ -22,8 +22,8 @@ Build-Depends: debhelper (>= 11),
 Standards-Version: 4.3.0
 Rules-Requires-Root: no
 Homepage: https://open5gs.org
-Vcs-Browser: https://github.com/acetcom/open5gs
-Vcs-Git: git://github.com/acetcom/open5gs
+Vcs-Browser: https://github.com/open5gs/open5gs
+Vcs-Git: git://github.com/open5gs/open5gs
 
 Package: open5gs-common
 Architecture: any

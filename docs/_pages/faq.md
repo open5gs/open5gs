@@ -17,4 +17,4 @@ Please contact [Harald Welte \<sales@sysmocom.de\>](mailto:sales@sysmocom.de) fo
 
 #### Are there any success stories about Open5GS deployments?
 
-See [https://github.com/acetcom/open5gs/issues/360](https://github.com/acetcom/open5gs/issues/360)
+See [https://github.com/open5gs/open5gs/issues/360](https://github.com/open5gs/open5gs/issues/360)
