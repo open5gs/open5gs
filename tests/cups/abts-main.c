@@ -60,7 +60,7 @@ static void initialize(const char *const argv[])
      * ROUTING ERROR
      * 'No remaining suitable candidate to route the message to' for:
      */
-    ogs_msleep(300);
+    ogs_msleep(500);
 
     rv = pcscf_fd_init();
     ogs_assert(rv == OGS_OK);

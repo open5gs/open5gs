@@ -62,7 +62,7 @@ int app_initialize(const char *const argv[])
      * ROUTING ERROR
      * 'No remaining suitable candidate to route the message to' for:
      */
-    ogs_msleep(300);
+    ogs_msleep(500);
 
     if (ogs_config()->parameter.no_upf == 0)
         upf_thread = test_child_create("upf", argv_out);
@@ -77,7 +77,7 @@ int app_initialize(const char *const argv[])
      * ROUTING ERROR
      * 'No remaining suitable candidate to route the message to' for:
      */
-    ogs_msleep(300);
+    ogs_msleep(500);
 
     if (ogs_config()->parameter.no_smf == 0)
         smf_thread = test_child_create("smf", argv_out);
