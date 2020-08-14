@@ -53,7 +53,7 @@ minima_reboot:
 
 footer_icons:
   - username: open5gs
-    url: https://open5gs.org
+    url: https://github.com/open5gs/open5gs
     icon: icon-github.svg
 
 header_pages:
